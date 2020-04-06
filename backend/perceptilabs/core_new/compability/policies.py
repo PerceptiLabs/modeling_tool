@@ -9,7 +9,7 @@
 # TODO: fix the above to avoid confusion.
 
 import numpy as np
-
+import cv2
 
 def policy_classification(core, graphs, sanitized_to_name, sanitized_to_id):
 
@@ -332,11 +332,76 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id):
         }
         return data
 
+    def iou(box1, box2):
+     
+        tb = min(box1[0] + 0.5 * box1[2], box2[0] + 0.5 * box2[2]) - \
+            max(box1[0] - 0.5 * box1[2], box2[0] - 0.5 * box2[2])
+        lr = min(box1[1] + 0.5 * box1[3], box2[1] + 0.5 * box2[3]) - \
+            max(box1[1] - 0.5 * box1[3], box2[1] - 0.5 * box2[3])
+        inter = 0 if tb < 0 or lr < 0 else tb * lr
+        return inter / (box1[2] * box1[3] + box2[2] * box2[3] - inter)
+
+    def plot_bounding_boxes(input_image, predicted_object, predicted_class, predicted_normalized_box):
+        img_size = input_image.shape[0]
+        predicted_box= predicted_normalized_box*img_size
+        predicted_object = np.expand_dims(predicted_object, axis=-1)
+        predicted_class = np.expand_dims(predicted_class, axis=-2)
+        class_probs = predicted_object*predicted_class
+        
+        filter_mat_probs = np.array(class_probs >= 0.2, dtype='bool')
+        filter_mat_boxes = np.nonzero(filter_mat_probs)
+        boxes_filtered = predicted_box[filter_mat_boxes[0], filter_mat_boxes[1], filter_mat_boxes[2]]
+        class_probs_filtered = class_probs[filter_mat_probs]
+        
+        classes_num_filtered = np.argmax(
+            filter_mat_probs, axis=3)[
+            filter_mat_boxes[0], filter_mat_boxes[1], filter_mat_boxes[2]]
+
+        argsort = np.array(np.argsort(class_probs_filtered))[::-1]
+        boxes_filtered = boxes_filtered[argsort]
+        class_probs_filtered = class_probs_filtered[argsort]
+        classes_num_filtered = classes_num_filtered[argsort]
+
+        for i in range(len(boxes_filtered)):
+            if class_probs_filtered[i] == 0:
+                continue
+            for j in range(i + 1, len(boxes_filtered)):
+                if iou(boxes_filtered[i], boxes_filtered[j]) > 0.5:
+                    class_probs_filtered[j] = 0.0
+                    
+        filter_iou = np.array(class_probs_filtered > 0.0, dtype='bool')
+        boxes_filtered = boxes_filtered[filter_iou]
+        class_probs_filtered = class_probs_filtered[filter_iou]
+        classes_num_filtered = classes_num_filtered[filter_iou]
+
+        result = []
+        for i in range(len(boxes_filtered)):
+            result.append(
+                [classes_num_filtered[i],
+                boxes_filtered[i][0],
+                boxes_filtered[i][1],
+                boxes_filtered[i][2],
+                boxes_filtered[i][3],
+                class_probs_filtered[i]])
+        
+        img = np.pad(input_image, [(50,50), (50,50), (0,0)], mode='constant', constant_values=255)
+        for i in range(len(result)):
+            x = int(result[i][1])+50
+            y = int(result[i][2])+50
+            w = int(result[i][3] / 2)
+            h = int(result[i][4] / 2)
+            cv2.rectangle(img, (x - w, y - h), (x + w, y + h), (231, 76, 60), 2)
+            cv2.rectangle(img, (x - w, y - h - 20),
+                        (x -w + 50, y - h), (46, 204, 113), -1)
+            cv2.putText(
+                img, '{} : {:.2f}'.format(result[i][0] ,result[i][5]),
+                (x - w + 5, y - h - 7), cv2.FONT_HERSHEY_SIMPLEX, 0.3,
+                (0, 0, 0), 1, cv2.LINE_AA)
+
+        return img, class_probs_filtered
+
     def get_metrics(graphs):
         data = {}
-        x = np.random.random((60,)) # TODO: these are temporary whiel figuring out F1 and AUC
-        y = np.random.random((10,))
-
 
         # ---- Get the metrics for ongoing epoch
         current_epoch = graphs[-1].active_training_node.layer.epoch
@@ -350,25 +415,33 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id):
         loss_val_iter = []
         classification_loss_val_iter = []
         bbox_loss_val_iter = []
-        bbox_images = []
-        confidence = []
+
+        predicted_objects = 0.
+        predicted_classes = 0.
+        predicted_normalized_boxes = 0.
+        # confidence_scores = []
+        
         for graph in graphs:
             trn_layer = graph.active_training_node.layer
+            input_data_node = trn_layer.get_input_data_node
+            input_images = trn_node.layer.layer_outputs.get(input_data_node.layer_id)
+
             if trn_layer.epoch == current_epoch and trn_layer.status == 'training':
                 acc_trn_iter.append(trn_layer.accuracy_training)
                 loss_trn_iter.append(trn_layer.loss_training)                
                 classification_loss_trn_iter.append(trn_layer.loss_clssification_training)
-                bbox_loss_trn_iter.append(trn_layer.loss_bboxes_training)       
-                bbox_images.append(trn_layer.get_bbox_images[-1])
-                confidence.append(trn_layer.get_confidence[-1])
-
+                bbox_loss_trn_iter.append(trn_layer.loss_bbox_training)       
+                predicted_objects = trn_layer.get_predicted_objects
+                predicted_classes = trn_layer.get_predicted_classes
+                predicted_normalized_boxes = trn_layer.get_predicted_normalized_boxes
             if trn_layer.epoch == current_epoch and trn_layer.status == 'validation':
                 acc_val_iter.append(trn_layer.accuracy_validation)
                 loss_val_iter.append(trn_layer.loss_validation)                
                 classification_loss_val_iter.append(trn_layer.loss_clssification_validation)
                 bbox_loss_val_iter.append(trn_layer.loss_bboxes_validation)   
-                bbox_images.append(trn_layer.get_bbox_images[-1])
-                confidence.append(trn_layer.get_confidence[-1])
+                predicted_objects = trn_layer.get_predicted_objects
+                predicted_classes = trn_layer.get_predicted_classes
+                predicted_normalized_boxes = trn_layer.get_predicted_normalized_boxes
 
         # ---- Get the metrics from the end of each epoch
         acc_trn_epoch = []
@@ -381,7 +454,7 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id):
         classification_loss_val_epoch = []
         bbox_loss_val_epoch = []
         
-
+        
         idx = 1
         while idx < len(graphs):
             is_new_epoch = graphs[idx].active_training_node.layer.epoch != graphs[idx-1].active_training_node.layer.epoch
@@ -393,14 +466,16 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id):
                 acc_trn_epoch.append(trn_layer.accuracy_training)
                 loss_trn_epoch.append(trn_layer.loss_training)
                 classification_loss_trn_epoch.append(trn_layer.loss_clssification_training)
-                bbox_loss_trn_epoch.append(trn_layer.loss_bboxes_training)       
+                bbox_loss_trn_epoch.append(trn_layer.loss_bbox_training)       
                 
                 acc_val_epoch.append(trn_layer.accuracy_validation)
                 loss_val_epoch.append(trn_layer.loss_validation)
                 classification_loss_val_epoch.append(trn_layer.loss_classification_validation)
-                bbox_loss_val_epoch.append(trn_layer.loss_bboxes_validation)
+                bbox_loss_val_epoch.append(trn_layer.loss_bbox_validation)
             idx += 1
 
+        bbox_image, confidence_scores = plot_bounding_boxes(input_images[-1], predicted_objects[-1], predicted_classes[-1], predicted_normalized_boxes[-1])
+        
         # ---- Update the dicts
         
         data['loss_train_iter'] = loss_trn_iter
@@ -423,8 +498,8 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id):
         data['classification_loss_validation_iter'] = classification_loss_val_epoch
         data['bboxes_loss_validation_iter'] = bbox_loss_val_epoch      
 
-        data['confidence_scores_iter'] = confidence
-        data['image_bboxes'] = bbox_images
+        data['confidence_scores'] = confidence_scores
+        data['image_bboxes'] = np.random.randint(0,255,[2244,224,3]) #bbox_image
         
         return data
 

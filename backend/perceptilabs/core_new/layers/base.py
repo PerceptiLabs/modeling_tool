@@ -426,6 +426,39 @@ class ObjectDetectionLayer(TrainingLayer):
         raise NotImplementedError
     
     @property
+    @abstractmethod
+    def grid_size(self) -> int:
+        """ size of the grid """
+        return self._grid_size
+    
+    @property
+    def classes(self) -> List[str]:
+        """classes in the dataset"""
+        return self._classes
+
+    @property
+    @abstractmethod
+    def num_class(self) -> int:
+        """ number of classes in the dataset"""
+        return self._num_class
+
+    @property 
+    @abstractmethod  
+    def num_box(self) -> int:
+        """ number of boxes per grid"""
+        return self._num_box 
+
+    @property
+    @abstractmethod
+    def lambdacoord(self) -> float:
+        return self._lambdacoord
+        
+    @property
+    @abstractmethod
+    def lambdanoobj(self) -> float:  
+        return self._lambdanoobj
+
+    @property
     def training_iteration(self) -> int:
         """The current training iteration"""
         return self._training_iteration
@@ -441,11 +474,22 @@ class ObjectDetectionLayer(TrainingLayer):
         return self._testing_iteration
 
     @property
-    def get_confidence(self) -> np.ndarray:
-        """ returns the confidences of the predicted bounding boxes in the image"""
-        raise NotImplementedError
+    def get_predicted_normalized_boxes(self) -> np.ndarray:
+        """ """
+        return self._predicted_normalized_box
 
     @property
-    def get_bbox_images(self) -> np.ndarray:
-        """ returns the images with predicted bboxes"""
-        raise NotImplementedError
+    def get_predicted_classes(self) -> np.ndarray:
+        """ """
+        return self._predicted_class
+
+    @property
+    def get_predicted_objects(self) -> np.ndarray:
+        """ """
+        return self._predicted_object
+
+
+    @property
+    def get_input_data_node(self):
+        """ node corresponding to input tensor"""
+        return self._input_data_node

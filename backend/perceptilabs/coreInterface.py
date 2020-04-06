@@ -1144,11 +1144,12 @@ class coreLogic():
                 #Make sure that all the inputs are sent to frontend!!!!!!!!!!!!!!!
                 
                 image = self.getStatistics({"layerId": layerId, "variable":"image_bboxes", "innervariable":""})
-                Bboxes = createDataObject(image)    
+                Bboxes = createDataObject([image])    
+
 
                 # Confidence of the boxes in sample
-                confidence_scores = self.getStatistics({"layerId":layerId,"variable":"confidence_scores_iter","innervariable":""})
-                Confidence = createDataObject([confidences], nameList=['Confidence scores'])
+                confidence_scores = self.getStatistics({"layerId":layerId,"variable":"confidence_scores","innervariable":""})
+                Confidence = createDataObject([confidence_scores])
                 
                 # PIE
                 acc_train=self.getStatistics({"layerId":layerId,"variable":"acc_train_iter","innervariable":""})

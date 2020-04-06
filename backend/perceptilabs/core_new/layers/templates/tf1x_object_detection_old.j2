@@ -1,29 +1,54 @@
 {% macro run_normal(graph, layer_name, output_layer, target_layer, n_epochs, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory) %}
         self._status = 'initializing'
 
-        self._grid_size = 5
-        self._classes = ['rectangle','triangle','circle']
-        self._num_class = len(self._classes)
-        self._num_box = 2 #number of boxes per cell
+        self._grid_size = 2
+        self._num_class = 108
+        self._num_box = 2
+        alpha = 0.1
+        threshold = 0.2
+        iou_threshold = 0.5
         
-        w_img = 224
-        h_img = 224
+        w_img = 100 
+        h_img = 100
 
         self._lambdacoord = 5.0
         self._lambdanoobj = 0.5
         
         # we need classes
-        
+        self._classes = ['branche_maxi', 'valser_vivabirne', 'fuse_peach','ovomaltine_kekse', 'evian', 'powerbar_proteinplusschoko','vivitz_classiczitrone', 'torino', 'volvic_pinapple',
+       'volvic_teeminze', 'rivella_rot', 'fuse_lemon', 'granini_orange','corny_schoko', 'berger', 'pepsi_max', 'fuse_lemon_dose_33','haribo_goldbaerensauer',
+       'stimorol_wildcherry_riegel_14_1_57060330', 'bifi_roll','caferoyal_classicmacchiato', 'ramseier_schorle','tiki_himbeerbrause_dose_33_1_', 'panettone', 'vivitz_gruentee',
+       'jlbrichard_gauffrechoko', 'berger_brunsli','airwaves_menthoneucalyptus_riegel_14_1_50173167','zweifel_paprika', 'redbull', 'fuse_peach_dose_33',
+       'balisto_muesli', 'coke_zero_flasche_50', 'sinalco', 'coke','darwida_chocaulait', 'jacklinks_beefjerkyorginal','fini_jellykisses_packung_80_1_8410525116704', 'kitkat',
+       'zweifel_salz', 'skittles_sour_riegel_51_1_0000000000004','valser_still', 'zweifel_saltedpeanuts', 'tiki_himbeer_brause','wasser_???', 'milka_tender', 'oreo',
+       'milka_oreo_riegel_37_1_7622210704740','fini_galaxymix_packung_100_1_8410525150364','berger_mailaenderli', 'fanta', 'stimorol_spearmint_riegel_14_1_',
+       'berger_???', 'henniez_gruen', 'sprite', 'bueno','lorenz_studentenfutter', 'kinder_delice', 'henniez_rot','jlbrichard_gauffre', 'berger_schoggitoertli', 'balisto_yoberry',
+       'malburner_partysticks', 'snickers_weiß', 'zweifel_graneochilli','sinalco_orange', 'berger_bruensli', 'b_tarteaupomme','caprisun_multivitamin', 'erle', 'momo_icetea', 'knoppers_riegel',
+       'coke_light_flasche_50', 'toffifee', 'redbull_light', 'twix','henniez_blau', 'mezzomix', 'maltesers_teasers','comella_schokodrink', 'comella_schokodrink_flasche_50',
+       'ramseier_jusdepomme_tetrapak_33', 'fuse_blackicetea','kagi_specialedition', 'maltesers', 'valser_classic','berger_nusstoertli', 'schweppes_citrus', 'mnms_gelb',
+       'lorenz_nicnacs', 'kagi', 'c+swiss_dosenabisicetea','vitaminwell_reload', 'berger_spitzbueb', 'volvic_pink','ramseier_jusdepomme', 'ragusa',
+       'stimorol_spearmint_riegel_14_1_0000000000005','skittles_sour_riegel_51_1_', 'ramseier_orange_tetrapak_33','7days_croissantschoko_packung_80_1_0000000000003', 'bounty',
+       'berger_vogelnestli', 'schweppes_bitterlemon','milka_peanutbutter', 'lindt_nocciolate', 'darwida_sandwich','snickers']
+
+        self._x = tf.placeholder(tf.float32, [None,self._grid_size, self._grid_size, self._num_box])  
+        self._y = tf.placeholder(tf.float32, [None,self._grid_size, self._grid_size, self._num_box])
+        self._w = tf.placeholder(tf.float32, [None,self._grid_size, self._grid_size, self._num_box])
+        self._h = tf.placeholder(tf.float32, [None,self._grid_size, self._grid_size, self._num_box])
+        self._C = tf.placeholder(tf.float32, [None,self._grid_size, self._grid_size, self._num_box])
+        self._p = tf.placeholder(tf.float32, [None,self._grid_size, self._grid_size, self._num_class])
+        self._obj = tf.placeholder(tf.float32, [None,self._grid_size, self._grid_size, self._num_box])
+        self._objI = tf.placeholder(tf.float32, [None,self._grid_size, self._grid_size])
+        self._noobj = tf.placeholder(tf.float32, [None,self._grid_size, self._grid_size, self._num_box])
+
         output_layer_id = '{{output_layer}}'
         target_layer_id = '{{target_layer}}'
         input_data_nodes = graph.get_direct_data_nodes(output_layer_id)
         label_data_nodes = graph.get_direct_data_nodes(target_layer_id)
+
         assert len(input_data_nodes) == 1
         assert len(label_data_nodes) == 1
         input_data_node = input_data_nodes[0]
         label_data_node = label_data_nodes[0]
-
-        self._input_data_node = input_data_node
 
         self._trn_sz_tot = input_data_node.layer.size_training
         self._val_sz_tot = input_data_node.layer.size_validation
@@ -99,7 +124,7 @@
 
 
             return layer_output_tensors
-        
+
         layer_output_tensors = build_graph(input_tensor, label_tensor)
         output_tensor = layer_output_tensors[output_layer_id]
         target_tensor = layer_output_tensors[target_layer_id]
@@ -112,124 +137,211 @@
         )[output_layer_id]
 
         # loss function here
-        def compute_iou(boxes1, boxes2):
-            """calculate ious
-            Args:
-            boxes1: 5-D tensor [self._batch_size, self._grid_size, self._grid_size, self._num_box, 4]  ====> (x_center, y_center, w, h)
-            boxes2: 5-D tensor [self._batch_size, self._grid_size, self._grid_size, self._num_box, 4] ===> (x_center, y_center, w, h)
-            Return:
-            iou: 4-D tensor [self._batch_size, self._grid_size, self._grid_size, self._num_box]
-            """
-            # transform (x_center, y_center, w, h) to (x1, y1, x2, y2)
-            boxes1_t = tf.stack([boxes1[..., 0] - boxes1[..., 2] / 2.0,
-                                boxes1[..., 1] - boxes1[..., 3] / 2.0,
-                                boxes1[..., 0] + boxes1[..., 2] / 2.0,
-                                boxes1[..., 1] + boxes1[..., 3] / 2.0],
-                                axis=-1)
 
-            boxes2_t = tf.stack([boxes2[..., 0] - boxes2[..., 2] / 2.0,
-                                boxes2[..., 1] - boxes2[..., 3] / 2.0,
-                                boxes2[..., 0] + boxes2[..., 2] / 2.0,
-                                boxes2[..., 1] + boxes2[..., 3] / 2.0],
-                                axis=-1)
-            # calculate the left up point & right down point
-            lu = tf.maximum(boxes1_t[..., :2], boxes2_t[..., :2])
-            rd = tf.minimum(boxes1_t[..., 2:], boxes2_t[..., 2:])
-            # intersection
-            intersection = tf.maximum(0.0, rd - lu)
-            inter_square = intersection[..., 0] * intersection[..., 1]
-            # calculate the boxs1 square and boxs2 square
-            square1 = boxes1[..., 2] * boxes1[..., 3]
-            square2 = boxes2[..., 2] * boxes2[..., 3]
-            union_square = tf.maximum(square1 + square2 - inter_square, 1e-10)
-            return tf.clip_by_value(inter_square / union_square, 0.0, 1.0)  
+        # target reshaping
+        def interpreting_target_tensor(_batch_size, _grid_size, _num_box, _num_class, input_tensor, target_tensor):
+            X_=[]; Y_=[]; W_=[]; H_=[]; C_=[]; P_=[]; obj_=[]; objI_=[]; noobj_=[]
+            for i in range(_batch_size):
+                label = target_tensor[i,:]
+                image = input_tensor[i,:]
+                shape = image.get_shape().as_list()
+                x = np.zeros([_grid_size,_grid_size,_num_box]).tolist(); y = np.zeros([_grid_size,_grid_size,_num_box]).tolist()
+                w = np.zeros([_grid_size,_grid_size,_num_box]).tolist(); h = np.zeros([_grid_size,_grid_size,_num_box]).tolist()
+                C = np.zeros([_grid_size,_grid_size,_num_box]).tolist(); p = np.zeros([_grid_size,_grid_size,_num_class]).tolist()
+                obj = np.zeros([_grid_size,_grid_size,_num_box]).tolist(); objI = np.zeros([_grid_size,_grid_size]).tolist()
+                noobj = np.zeros([_grid_size,_grid_size,_num_box]).tolist()
+               
+                for m,j in itertools.product(range(0,_grid_size),range(0,_grid_size)):
+                    if label[m,j,0,0] != 9999.0:
+                        index=0
+                        if label[m,j,1,0] == 9999.0:
+                            l = 1
+                        else:
+                            l = 2
+                        while(index < l and index< _num_box):
+                            x[m][j][index] = (label[m,j,index,0]/shape[0])*_grid_size - m
+                            y[m][j][index] = (label[m][j][index][1]/shape[1])*_grid_size - j
+                            w[m][j][index] = tf.sqrt(label[m][j][index][2])/shape[0]*_grid_size
+                            h[m][j][index] = tf.sqrt(label[m][j][index][3])/shape[1]
+                            C[m][j][index] = 1.0
+                            #p[m][j] = [1.0/l if label[i,j,index,4] == t else 0 for t in range(_num_class)]
+                            obj[m][j][index] = 1.0
+                            objI[m][j] = 1.0
+                            noobj[m][j][ index]=0.0
+                            index=index+1
+                
+                X_.append(x); Y_.append(y); W_.append(w); H_.append(h); C_.append(C)
+                P_.append(p); obj_.append(obj); objI_.append(objI); noobj_.append(noobj)
+                
+            X_=tf.convert_to_tensor(X_)
+            Y_=tf.convert_to_tensor(Y_) 
+            W_=tf.convert_to_tensor(W_) 
+            H_=tf.convert_to_tensor(H_)
+            C_=tf.convert_to_tensor(C_)
+            P_=tf.convert_to_tensor(P_)
+            obj_=tf.convert_to_tensor(obj_)
+            objI_=tf.convert_to_tensor(objI_)
+            noobj_= tf.convert_to_tensor(noobj_)
+            return X_, Y_, W_, H_, C_, P_, obj_, objI_, noobj_
 
-        def loss_fn(output, labels):
-            """calculate loss function
-            Args:
-            output: 4-D tensor [self._batch_size, self._grid_size, self._grid_size, 5*self._num_box+self._num_class] 
-            labels: 4-D tensor [self._batch_size, self._grid_size, 7, 5+self._num_class]
-            Return:
-            loss: scalar
-            """
-            # first step: reshape the output
-            output = tf.reshape(output, shape = [self._batch_size, self._grid_size, self._grid_size, 5*self._num_box+self._num_class])
-            offset = np.transpose(np.reshape(np.array(
-                [np.arange(self._grid_size)] * self._grid_size * self._num_box),
-                (self._num_box, self._grid_size, self._grid_size)), (1, 2, 0))
-            offset = offset[None, :]
-            offset = tf.constant(offset, dtype=tf.float32)
-            offset_tran = tf.transpose(offset, (0, 2, 1, 3))
-            
-            predicted_object = output[..., :self._num_box]
-            
-            
-            predict_box_offset = tf.reshape(output[...,self._num_box:5*self._num_box], (-1, self._grid_size, self._grid_size, self._num_box, 4))
-            
-            
-            predicted_class = output[...,5*self._num_box:]
-            
-            
-            predicted_normalized_box = tf.stack(
-                                        [(predict_box_offset[..., 0] + offset) / self._grid_size,
-                                        (predict_box_offset[..., 1] + offset_tran) / self._grid_size,
-                                        tf.square(predict_box_offset[..., 2]),
-                                        tf.square(predict_box_offset[..., 3])], axis=-1)
+        self._x, self._y, self._w, self._h, self._C, self._p, self._obj, self._objI, self._noobj = interpreting_target_tensor(self._batch_size, self._grid_size, self._num_box, self._num_class, input_tensor, target_tensor)
 
-            
-            true_object = labels[..., :1]
-            true_box = tf.reshape(labels[..., 1:5], (-1, self._grid_size, self._grid_size, 1, 4))
-            
-            true_normalized_box = tf.tile(true_box, (1, 1, 1, self._num_box, 1))/w_img
-            true_class = labels[..., 5:]
-            
-            true_box_offset =  tf.stack(
-                                        [true_normalized_box[..., 0] * self._grid_size - offset,
-                                        true_normalized_box[..., 1] * self._grid_size - offset_tran,
-                                        tf.sqrt(true_normalized_box[..., 2]),
-                                        tf.sqrt(true_normalized_box[..., 3])], axis=-1)
-            
-            predict_iou = compute_iou(true_normalized_box, predicted_normalized_box)
-            
-            object_mask = tf.reduce_max(predict_iou, 3, keepdims=True)  
-                        
-            object_mask = tf.cast((predict_iou>=object_mask), tf.float32)*true_object
-
-            noobject_mask = tf.ones_like(object_mask) - object_mask
-            
-            ## class loss
-            class_delta = true_object*(predicted_class - true_class)
-            class_loss = tf.reduce_mean(tf.reduce_sum(tf.square(class_delta), axis=[1,2,3]))
-            
-            ## object loss
-            object_delta = object_mask*(predicted_object - predict_iou)
-            object_loss = tf.reduce_mean(tf.reduce_sum(tf.square(object_delta), axis=[1,2,3]))
-            
-            ## noobject loss
-            noobject_delta = noobject_mask*predicted_object
-            noobject_loss = tf.reduce_mean(tf.reduce_sum(tf.square(noobject_delta), axis=[1,2,3]))
-            
-            ## coord loss
-            box_mask = tf.expand_dims(object_mask, 4)
-            box_delta = box_mask*(predict_box_offset - true_box_offset)
-            box_loss = tf.reduce_mean(tf.reduce_sum(tf.square(box_delta), axis=[1,2,3]))
-            
-
-            loss = 0.5*class_loss + object_loss + 0.1*noobject_loss + 10*box_loss
-
-            # make changes here
-
-            return loss, class_loss, box_loss, predicted_object, predicted_class, predicted_normalized_box
-
-        loss_tensor, classification_loss_tensor, bbox_loss_tensor, predicted_object, predicted_class, predicted_normalized_box = loss_fn(output_tensor, target_tensor)
         
-        #bbox_loss_tensor = tf.Variable(0.3, dtype = tf.float32)
-        #classification_loss_tensor = tf.Variable(0.1, dtype = tf.float32)
-        #loss_tensor = tf.Variable(0.4, dtype = tf.float32)
+        # output reshaping
+        class_probs = tf.reshape(output_tensor[:,0:self._num_class*self._grid_size*self._grid_size], (self._batch_size, self._grid_size, self._grid_size, self._num_class))
+        scales = tf.reshape(output_tensor[:,self._num_class*self._grid_size*self._grid_size:self._num_class*self._grid_size*self._grid_size+self._grid_size*self._grid_size*self._num_box], (self._batch_size, self._grid_size, self._grid_size, self._num_box))
+        boxes = tf.reshape(output_tensor[:,self._grid_size*self._grid_size*(self._num_class+self._num_box):], (self._batch_size, self._grid_size, self._grid_size, self._num_box, 4))
 
-        #accuracy here
+        boxes0 = boxes[:,:, :, :, 0]
+        boxes1 = boxes[:,:, :, :, 1]
+        boxes2 = boxes[:,:, :, :, 2]
+        boxes3 = boxes[:,:, :, :, 3]
 
-        accuracy_tensor = tf.subtract(tf.Variable(1., dtype = tf.float32) , classification_loss_tensor)
+        # loss funtion
+        subX = tf.subtract(boxes0, self._x)
+        subY = tf.subtract(boxes1, self._y)
+        subW = tf.subtract(tf.sqrt(tf.abs(boxes2)), tf.sqrt(self._w))
+        subH = tf.subtract(tf.sqrt(tf.abs(boxes3)), tf.sqrt(self._h))
+        subC = tf.subtract(scales, self._C)
+        subP = tf.subtract(class_probs, self._p)
+        lossX=tf.multiply(self._lambdacoord,tf.reduce_sum(tf.multiply(self._obj,tf.multiply(subX, subX)),axis=[1,2,3]))
+        lossY=tf.multiply(self._lambdacoord, tf.reduce_sum(tf.multiply(self._obj, tf.multiply(subY, subY)),axis=[1,2,3]))
+        lossW=tf.multiply(self._lambdacoord, tf.reduce_sum(tf.multiply(self._obj, tf.multiply(subW, subW)),axis=[1,2,3]))
+        lossH=tf.multiply(self._lambdacoord, tf.reduce_sum(tf.multiply(self._obj, tf.multiply(subH, subH)),axis=[1,2,3]))
+        lossCObj=tf.reduce_sum(tf.multiply(self._obj, tf.multiply(subC, subC)),axis=[1,2,3])
+        lossCNobj=tf.multiply(self._lambdanoobj, tf.reduce_sum(tf.multiply(self._noobj, tf.multiply(subC, subC)),axis=[1,2,3]))
+        lossP=tf.reduce_sum(tf.multiply(self._objI,tf.reduce_sum(tf.multiply(subP, subP), axis=3)) ,axis=[1,2])
+        loss = tf.add_n([lossX,lossY,lossW,lossH,lossCObj,lossCNobj,lossP])
+        classification_loss = tf.add_n([lossCNobj, lossCObj, lossP])
+        bbox_loss = tf.add_n([lossX,lossY,lossW,lossH])
+        classification_loss_tensor = tf.reduce_mean(classification_loss)
+        bbox_loss_tensor = tf.reduce_mean(bbox_loss)
+        loss_tensor = tf.reduce_mean(loss)
+
+        #bounding boxes here
+
+        def get_bounding_boxes(batch_size, _num_box, _num_class, threshold, iou_threshold, w_img, h_img, _grid_size, images, outputs):
+            bbox_images = []
+            confidences = []
+            predicted_classes = []
+            
+            for i in range(batch_size):
+                output = outputs[i,:]
+                image = images[i,:]
+                
+                probs = np.zeros((self._grid_size, self._grid_size, self._num_box, self._num_class), dtype = np.float32).tolist()
+                class_probs = tf.reshape(output[0:self._grid_size*self._grid_size*self._num_class], (self._grid_size, self._grid_size, self._num_class))
+                scales = tf.reshape(output[self._grid_size*self._grid_size*self._num_class : self._grid_size*self._grid_size*self._num_class + self._grid_size*self._grid_size*self._num_box], (self._grid_size, self._grid_size, self._num_box))
+                boxes_ = tf.reshape(output[self._grid_size*self._grid_size*self._num_class + self._grid_size*self._grid_size*self._num_box : ], (self._grid_size, self._grid_size, self._num_box, 4))
+                offset = tf.transpose(tf.reshape(np.array([np.arange(self._grid_size, dtype = np.float32)]*2*self._grid_size), (self._num_box, self._grid_size, self._grid_size)), (1, 2, 0))
+                
+                new_boxes = np.zeros((boxes_.get_shape())).tolist()
+
+                new_boxes[:][:][:][0] = tf.add(boxes_[:, :, :, 0], offset)
+                new_boxes[:][:][:][1] = tf.add(boxes_[:, :, :, 1],tf.transpose(offset, (1, 0, 2)))
+                new_boxes[:][:][:][:2] = new_boxes[:][:][:][:2] 
+                for i1 in new_boxes:
+                    for i2 in i1:
+                        for i3 in i2:
+                            i3[0] = i3[0]/float(self._grid_size)
+                            i3[1] = i3[1]/float(self._grid_size)
+                new_boxes[:][:][:][2] = tf.multiply(new_boxes[:][:][:][2], new_boxes[:][:][:][2])
+                new_boxes[:][:][:][3] = tf.multiply(new_boxes[:][:][:][3], new_boxes[:][:][:][3])
+
+
+                new_boxes[:][:][:][0] = tf.scalar_mul(w_img, tf.cast(new_boxes[:][:][:][0],dtype = tf.float32))
+                new_boxes[:][:][:][1] = tf.scalar_mul(h_img, tf.cast(new_boxes[:][:][:][1],dtype = tf.float32))
+                new_boxes[:][:][:][2]  = tf.scalar_mul(w_img, tf.cast(new_boxes[:][:][:][2],dtype = tf.float32))
+                new_boxes[:][:][:][3] = tf.scalar_mul(h_img, tf.cast(new_boxes[:][:][:][3],dtype = tf.float32))
+
+                for i3 in range(_grid_size):
+                    for i4 in range(_grid_size):
+                        for i1 in range(_num_box):
+                            for i2 in range(_num_class):
+                                probs[i3][i4][i1][i2] = tf.multiply(class_probs[i3, i4, i2], scales[i3, i4, i1])
+
+                probs = np.array(probs)
+                filter_mat_probs  = np.zeros(probs.shape).tolist()
+                for i3 in range(_grid_size):
+                    for i4 in range(_grid_size):
+                        for i1 in range(_num_box):
+                            for i2 in range(_num_class):
+                                filter_mat_probs[i3][i4][i1][i2] = tf.greater(filter_mat_probs[i3][i4][i1][i2], threshold )
+                
+
+                filter_mat_boxes = np.nonzero(filter_mat_probs)
+                boxes_filtered = boxes_[filter_mat_boxes[0], filter_mat_boxes[1], filter_mat_boxes[2]]
+                probs_filtered = probs[filter_mat_probs]
+                classes_num_filtered = np.argmax(filter_mat_probs, axis=3)[
+                    filter_mat_boxes[0], filter_mat_boxes[1], filter_mat_boxes[2]]
+
+                argsort = np.array(np.argsort(probs_filtered))[::-1]
+                boxes_filtered = boxes_filtered[argsort]
+                probs_filtered = probs_filtered[argsort]
+                classes_num_filtered = classes_num_filtered[argsort]
+                
+                def iou(box1, box2):
+                    tb = min(box1[0] + 0.5 * box1[2], box2[0] + 0.5 * box2[2]) - max(box1[0] - 0.5 * box1[2],
+                                                                                    box2[0] - 0.5 * box2[2])
+                    lr = min(box1[1] + 0.5 * box1[3], box2[1] + 0.5 * box2[3]) - max(box1[1] - 0.5 * box1[3],
+                                                                                    box2[1] - 0.5 * box2[3])
+                    if tb < 0 or lr < 0:
+                        intersection = 0
+                    else:
+                        intersection = tb * lr
+                    return intersection / (box1[2] * box1[3] + box2[2] * box2[3] - intersection)
+                
+                for i in range(len(boxes_filtered)):
+                    if probs_filtered[i] == 0: continue
+                    for j in range(i + 1, len(boxes_filtered)):
+                        if self.iou(boxes_filtered[i], boxes_filtered[j]) > iou_threshold:
+                            probs_filtered[j] = 0.0
+
+                filter_iou = np.array(probs_filtered > 0.0, dtype='bool')
+                boxes_filtered = boxes_filtered[filter_iou]
+                probs_filtered = probs_filtered[filter_iou]
+                classes_num_filtered = classes_num_filtered[filter_iou]
+
+                result = []
+                for i in range(len(boxes_filtered)):
+                    result.append([self._classes[classes_num_filtered[i]], boxes_filtered[i][0], boxes_filtered[i][1],
+                                boxes_filtered[i][2], boxes_filtered[i][3], probs_filtered[i]])
+
+    
+                for i in range(len(result)):
+                    x = int(result[i][1])
+                    y = int(result[i][2])
+                    w = int(result[i][3]) // 2
+                    h = int(result[i][4]) // 2
+                    
+                    image_ = cv2.rectangle(image, (x - w, y - h), (x + w, y + h), (0, 255, 0), 2)
+                    image_ = cv2.rectangle(image_, (x - w, y - h - 20), (x + w, y - h), (125, 125, 125), -1)
+                    iamge_ = cv2.putText(image_, result[i][0] + ' : %.2f' % result[i][5], (x - w + 5, y - h - 7),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 1)
+                
+                bbox_images.append(image_)
+                confidences.append(result[i][5])
+                predicted_classes.append(result[0])
+
+            return bbox_images, confidences, predicted_classes    
+        
+        
+        #bbox_images, confidences, predicted_classes = get_bounding_boxes(self._batch_size, self._num_box, self._num_class, threshold, iou_threshold, w_img, h_img, self._grid_size, input_tensor, output_tensor)
+
+        ## testing with trivial outputs
+        bbox_images =  input_tensor # tf.convert_to_tensor( bbox_images )
+        confidences =  tf.zeros([self._batch_size,10])  #np.ndarray(confidences)
+        
+        '''
+        target_classes = []
+        for i in target_tensor:
+            target_classes[i] = i[:,:,:,4].ravel()
+            target_classes[i] = target_classes[i][~np.isnan(b)]
+        # classification accuracy
+        self._accuracies = np.ndarray([len( set(target_classes[i]) and set(classes[i]) )/ len( set(target_classes[i]) ) for i in range(self._batch_size)])
+        accuracy_tensor = tf.reduce_mean(self._accuracies)
+        '''
+        accuracy_tensor = tf.Variable(0.7, dtype = tf.float32)
 
         #training
         global_step = None
@@ -303,11 +415,11 @@
         
         def train_step():
             if not self._headless:
-                _, self._predicted_object, self._predicted_class, self._predicted_normalized_box, self._classification_loss_training, self._bbox_loss_training, self._loss_training, self._accuracy_training, \
+                _,self._bbox_images, self._confidences, self._classification_loss_training, self._bbox_loss_training, self._loss_training, self._accuracy_training, \
                     self._layer_outputs, self._layer_weights, self._layer_biases, \
                     self._layer_gradients \
                     = sess.run([
-                        update_weights, predicted_object, predicted_class, predicted_normalized_box, classification_loss_tensor, bbox_loss_tensor, loss_tensor, accuracy_tensor,
+                        update_weights, bbox_images, confidences, classification_loss_tensor, bbox_loss_tensor, loss_tensor, accuracy_tensor,
                         layer_output_tensors, layer_weight_tensors, layer_bias_tensors, layer_gradient_tensors
                     ])
             else:
@@ -315,14 +427,14 @@
                     = sess.run([
                         update_weights, classification_loss_tensor, bbox_loss_tensor, loss_tensor, accuracy_tensor
                     ])
-
+            print(self._confidences.shape)
         def validation_step():
             if not self._headless:
-                self._predicted_object, self._predicted_class, self._predicted_normalized_box, self._classification_loss_validation, self._bbox_loss_validation, self._loss_validation, self._accuracy_validation, \
+                self._bbox_images, self._confidences, self._classification_loss_validation, self._bbox_loss_validation, self._loss_validation, self._accuracy_validation, \
                     self._layer_outputs, self._layer_weights, self._layer_biases, \
                     self._layer_gradients \
                     = sess.run([
-                        predicted_object, predicted_class, predicted_normalized_box, classification_loss_tensor, bbox_loss_tensor, loss_tensor, accuracy_tensor,
+                        bbox_images, confidences, classification_loss_tensor, bbox_loss_tensor, loss_tensor, accuracy_tensor,
                         layer_output_tensors, layer_weight_tensors, layer_bias_tensors, layer_gradient_tensors
                     ])
             else:
@@ -333,10 +445,10 @@
 
             
         def test_step():
-            self._predicted_object, self._predicted_class, self._predicted_normalized_box, self._classification_loss_testing, self._bbox_loss_testing, self._loss_testing, self._accuracy_testing, \
+            self._bbox_images, self._confidences, self._classification_loss_testing, self._bbox_loss_testing, self._loss_testing, self._accuracy_testing, \
                 self._layer_outputs, self._layer_weights, self._layer_gradients \
                 = sess.run([
-                    predicted_object, predicted_class, predicted_normalized_box, classification_loss_tensor, bbox_loss_tensor, loss_tensor, accuracy_tensor,
+                    bbox_images, confidences, classification_loss_tensor, bbox_loss_tensor, loss_tensor, accuracy_tensor,
                     layer_output_tensors, layer_weight_tensors, layer_gradient_tensors
                 ])
             #accuracy_list.append(acc)
@@ -417,13 +529,10 @@ class {{layer_name}}(ClassificationLayer):
         
         self._loss_training = 0.0
         self._loss_validation = 0.0
-        self._loss_testing = 0.0  
+        self._loss_testing = 0.0      
 
-        self._input_data_node = ''
-        self._predicted_object = []
-        self._predicted_class = []
-        self._predicted_normalized_box = []
-
+        self._bbox_images = 0.0
+        self._confidences = 0.0
         self._accuracy_training = 0.0
         self._accuracy_validation = 0.0
         self._accuracy_testing = 0.0      
@@ -527,39 +636,6 @@ class {{layer_name}}(ClassificationLayer):
     def batch_size(self):
         """ Size of the current training batch """        
         return self._batch_size
-    
-    @property
-    def get_input_data_node(self):
-        """ node corresponding to input tensor"""
-        return self._input_data_node
-
-    @property
-    def grid_size(self):
-        """ size of the grid """
-        return self._grid_size
-    
-    @property
-    def classes(self):
-        """classes in the dataset"""
-        return self._classes
-
-    @property
-    def num_class(self):
-        """ number of classes in the dataset"""
-        return self._num_class
-
-    @property   
-    def num_box(self):
-        """ number of boxes per grid"""
-        return self._num_box 
-
-    @property
-    def lambdacoord(self):
-        return self._lambdacoord
-        
-    @property
-    def lambdanoobj(self):  
-        return self._lambdanoobj
 
     @property
     def status(self):
@@ -639,17 +715,17 @@ class {{layer_name}}(ClassificationLayer):
         return self._loss_validation   
 
     @property
-    def loss_bbox_training(self) -> float:
+    def loss_bboxes_training(self) -> float:
         """Returns the current loss of the training phase"""                
         return self._bbox_loss_training        
 
     @property
-    def loss_bbox_validation(self) -> float:
+    def loss_bboxes_validation(self) -> float:
         """Returns the current loss of the validation phase"""                        
         return self._bbox_loss_validation        
 
     @property
-    def loss_bbox_testing(self) -> float:
+    def loss_bboxes_testing(self) -> float:
         """Returns the current loss of the testing phase"""                
         return self._bbox_loss_testing
 
@@ -674,19 +750,14 @@ class {{layer_name}}(ClassificationLayer):
         return self._classification_loss_testing
 
     @property
-    def get_predicted_normalized_boxes(self) -> np.ndarray:
-        """ returns the images with predicted bboxes"""
-        return self._predicted_normalized_box
+    def get_confidence(self) -> np.ndarray:
+        """ returns the confidences of the predicted bounding boxes in the image"""
+        return self._confidences
 
     @property
-    def get_predicted_classes(self) -> np.ndarray:
+    def get_bbox_images(self) -> np.ndarray:
         """ returns the images with predicted bboxes"""
-        return self._predicted_class
-
-    @property
-    def get_predicted_objects(self) -> np.ndarray:
-        """ returns the images with predicted bboxes"""
-        return self._predicted_object
+        return self._bbox_images
 
     @property
     def layer_weights(self) -> Dict[str, Dict[str, Picklable]]:
@@ -739,7 +810,6 @@ class {{layer_name}}(ClassificationLayer):
         """The current testing iteration"""                
         return self._testing_iteration
         
-
     @property
     def progress(self) -> float:
         """A number indicating the overall progress of the training
