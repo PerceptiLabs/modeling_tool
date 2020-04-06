@@ -8,7 +8,8 @@ const deepLearnElements = ['DeepLearningFC', 'DeepLearningConv', 'DeepLearningDe
 
 const pathWebWorkers = './static/webworkers';
 
-const baseUrlCloud  = 'http://perceptilabs.trafficmanager.net/api/';
+const baseUrlCloud  = 'http://perceptilabsamerica.azurewebsites.net/api/';
+// const baseUrlCloud  = 'http://perceptilabs.trafficmanager.net/api/';
 const baseUrlSite   = 'https://perceptilabs-website-dev.azurewebsites.net';
 
 const widthElement = 60;
