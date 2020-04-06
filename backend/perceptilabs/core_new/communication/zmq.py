@@ -1,11 +1,8 @@
-import zmq
+uimport zmq
 import time
 import logging
 import threading
 import itertools
-
-
-from perceptilabs.core_new.communication.utils import KillableThread
 
 
 log = logging.getLogger(__name__)
@@ -124,7 +121,7 @@ class ZmqClient:
             return self._tag
 
 
-class ServerWorker(KillableThread):
+class ServerWorker(threading.Thread):
     def __init__(self, context, publish_address, pull_address, ping_interval):
         super().__init__(daemon=True)
         
@@ -132,6 +129,7 @@ class ServerWorker(KillableThread):
         self._publish_address = publish_address
         self._pull_address = pull_address
         self._ping_interval = ping_interval
+        self._force_stopped = threading.Event()
         
     def run(self):
         log.info(f"Creating sockets [{self.tag}]")        
@@ -150,7 +148,7 @@ class ServerWorker(KillableThread):
 
         stopped = False
         t_ping = None
-        while not stopped:
+        while not stopped and not self._force_stopped:
             items = dict(poller.poll(timeout=1)) # msec
             if pull_socket in items:
                 stopped = self._process_message(pull_socket, publish_socket)
@@ -159,6 +157,9 @@ class ServerWorker(KillableThread):
             if t_ping is None or t - t_ping >= self._ping_interval:
                 publish_socket.send_multipart([b'control', b'keep-alive'])
                 t_ping = t
+
+        if self._force_stopped.is_set():
+            log.info(f"Worker force stopped..! [{self.tag}]")
 
         log.info(f"Closing sockets [{self.tag}]")                                
         publish_socket.close()
@@ -188,6 +189,9 @@ class ServerWorker(KillableThread):
     @property
     def tag(self):
         return f"server worker {id(self)}"
+
+    def force_stop(self):
+        self._threading_event.set()
     
         
 class ZmqServer:
@@ -232,10 +236,13 @@ class ZmqServer:
             self._client.stop(terminate_context=False)
             
             log.info(f"Joining worker thread [{self.tag}]")        
-            self._worker_thread.join(timeout=25)
+            self._worker_thread.join(timeout=30)
+
             if self._worker_thread.is_alive():
-                log.info(f"Join failed. Killing thread! [{self.tag}]")                        
-                self._worker_thread.kill()
+                log.info(f"Force stopping worker [{self.tag}]")
+                self._worker_thread.force_stop()
+                self._worker_thread.join()
+                log.info(f"Joining worker thread [{self.tag}]")                    
                 
             log.info(f"Terminating ZMQ context. [{self.tag}]")
             self._context.term()
