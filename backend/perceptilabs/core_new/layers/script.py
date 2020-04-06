@@ -31,13 +31,15 @@ def is_syntax_ok(code):
         return True
 
 class ScriptFactory:
-    def __init__(self, mode='default'):
+    def __init__(self, mode='default', max_time_run=None):
         # if legacy, simply reuse codehq
         # if modern, use modern when possible if not try to wrap hq layers
 
         templates_directory = pkg_resources.resource_filename('perceptilabs', TEMPLATES_DIRECTORY)
         self._engine = J2Engine(templates_directory)
         self._definition_table = DEFINITION_TABLE
+
+        self._max_time_run = max_time_run
 
     def _create_imports_snippet(self, graph):
         plabs_imports = set([
@@ -130,7 +132,9 @@ class ScriptFactory:
         code += "    {}, {},\n".format(port1, port2)
         code += "    graph,\n"
         code += "    snapshot_builder=snapshot_builder,\n"
-        code += "    userland_timeout={}\n".format(userland_timeout)
+        code += "    userland_timeout={},\n".format(userland_timeout)
+        if self._max_time_run is not None:
+            code += "    max_time_run={},\n".format(self._max_time_run) # For debugging
         code += ")\n\n"
         return code
 
@@ -144,7 +148,7 @@ class ScriptFactory:
         code += "\n"
         code += "if __name__ == '__main__':\n"
         #code += "    wait = '--wait' in sys.argv\n"
-        code += "    server.run()\n"        
+        code += "    main()\n"
         
         return code
 

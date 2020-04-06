@@ -168,7 +168,7 @@ def run_core_until_convergence(graph_spec, metric_fn, max_attempts=10):
     passed = False
     for attempt in range(max_attempts):
         print(f"Beginning attempt {attempt}")
-        script_factory = ScriptFactory()
+        script_factory = ScriptFactory(max_time_run=180)
         
         replica_by_name = {repl_cls.__name__: repl_cls for repl_cls in BASE_TO_REPLICA_MAP.values()}
         graph_builder = GraphBuilder(replica_by_name)
@@ -242,7 +242,8 @@ def test_core_handles_userland_timeout():
                 port1, port2,
                 graph,
                 snapshot_builder=MagicMock(),
-                userland_timeout=userland_timeout
+                userland_timeout=userland_timeout,
+                max_time_run=120
             )
             training_server.run()
         thread = threading.Thread(target=fn, daemon=True)
@@ -297,7 +298,8 @@ def test_core_handles_userland_error():
             training_server = TrainingServer(
                 port1, port2,
                 graph,
-                snapshot_builder=MagicMock()
+                snapshot_builder=MagicMock(),
+                max_time_run=120                
             )
             training_server.run()
         thread = threading.Thread(target=fn, daemon=True)
@@ -352,7 +354,8 @@ def test_core_handles_training_server_timeout():
                 graph,
                 snapshot_builder=MagicMock(),
                 userland_timeout=userland_timeout,
-                ping_interval=ping_interval
+                ping_interval=ping_interval,
+                max_time_run=120                
             )
             training_server.run()
         thread = threading.Thread(target=fn, daemon=True)
@@ -402,7 +405,8 @@ def test_pause_works(graph_spec_binary_classification):
             training_server = TrainingServer(
                 port1, port2,
                 graph,
-                snapshot_builder=MagicMock()
+                snapshot_builder=MagicMock(),
+                max_time_run=120                
             )
             training_server.run()
         thread = threading.Thread(target=fn, daemon=True)
@@ -451,7 +455,8 @@ def test_resume_works(graph_spec_binary_classification):
             training_server = TrainingServer(
                 port1, port2,
                 graph,
-                snapshot_builder=MagicMock()
+                snapshot_builder=MagicMock(),
+                max_time_run=120                
             )
             training_server.run()
         thread = threading.Thread(target=fn, daemon=True)

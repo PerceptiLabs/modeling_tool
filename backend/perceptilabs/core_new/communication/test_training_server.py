@@ -27,7 +27,8 @@ def create_server(port1, port2, graph=None, snapshot_builder=None, userland_time
         port1, port2,
         graph,
         snapshot_builder=snapshot_builder,
-        userland_timeout=userland_timeout
+        userland_timeout=userland_timeout,
+        max_time_run=120
     )
     return server
 

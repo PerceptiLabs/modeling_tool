@@ -28,7 +28,7 @@ log = logging.getLogger(__name__)
         
 
 class TrainingServer:
-    def __init__(self, port_pub_sub, port_push_pull, graph, snapshot_builder=None, userland_timeout=15, ping_interval=3):
+    def __init__(self, port_pub_sub, port_push_pull, graph, snapshot_builder=None, userland_timeout=15, ping_interval=3, max_time_run=None):
         self._port_pub_sub = port_pub_sub
         self._port_push_pull = port_push_pull
         self._ping_interval = ping_interval
@@ -36,16 +36,22 @@ class TrainingServer:
         self._snapshot_builder = snapshot_builder        
         self._userland_timeout = userland_timeout
         self._graph = graph
-        self._closing = False        
+        self._closing = False
+        self._max_time_run = max_time_run
 
     def run(self):
+        t0 = time.perf_counter()
         update_client = self.run_stepwise()
         for counter, _ in enumerate(update_client):
             if counter % 100 == 0:
-                log.info(f"Running step {counter}")            
+                log.info(f"Running step {counter}")
             if self._closing:
-                log.info(f"Leaving run {counter}")                            
-                
+                log.info(f"Server closing. Leaving run loop {counter}")
+                break
+            if self._max_time_run is not None and time.perf_counter() - t0 >= self._max_time_run:
+                log.info(f"Exceeded run method max time. Leaving run loop {counter}")
+                break
+
     def run_stepwise(self):
         zmq = self._zmq = ZmqServer(
             f'tcp://*:{self._port_pub_sub}',
