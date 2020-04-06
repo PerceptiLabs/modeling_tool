@@ -119,10 +119,10 @@ export default {
       settings: {
         Labels: '',
         Epochs: '10',
-        grid_size: '5',
-        num_box: '4',
+        grid_size: '7',
+        num_box: '2',
         threshold: '0.8',
-        lambda_coord: '0.7',
+        lambda_coord: '5',
         lambda_no_obj: '0.7',
         N_class: '1',
         Loss: "Quadratic", //#Cross_entropy, Quadratic, W_cross_entropy, Dice
