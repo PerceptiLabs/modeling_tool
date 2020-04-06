@@ -163,7 +163,7 @@ class ServerWorker(KillableThread):
         log.info(f"Closing sockets [{self.tag}]")                                
         publish_socket.close()
         pull_socket.close()
-        self._context.term()
+        #self._context.term()
         log.info(f"Leaving worker run method [{self.tag}]")                                        
                     
     def _process_message(self, pull_socket, publish_socket):
