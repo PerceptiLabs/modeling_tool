@@ -191,7 +191,7 @@ class ServerWorker(threading.Thread):
         return f"server worker {id(self)}"
 
     def force_stop(self):
-        self._threading_event.set()
+        self._force_stopped.set()
     
         
 class ZmqServer:
