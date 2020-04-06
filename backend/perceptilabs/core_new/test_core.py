@@ -374,8 +374,6 @@ def test_core_handles_training_server_timeout():
     try:
         assert wait_for_condition(lambda _: core.is_running)
         assert wait_for_condition(lambda _: not core.is_running)
-        print("AAA")
-        
         assert wait_for_condition(lambda _: issue_handler.put_error.call_count == 1)                
     finally:
         core.close()

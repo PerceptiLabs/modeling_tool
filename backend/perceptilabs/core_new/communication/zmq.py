@@ -237,10 +237,13 @@ class ZmqServer:
             self._worker_thread.join(timeout=30)
 
             if self._worker_thread.is_alive():
-                log.info(f"Force stopping worker [{self.tag}]")
+                log.info(f"Join timed out after 30s. Force stopping worker [{self.tag}]")
                 self._worker_thread.force_stop()
-                self._worker_thread.join()
-                log.info(f"Joining worker thread (attempt 2) [{self.tag}]")                    
+                self._worker_thread.join(timeout=30)
+                log.info(f"Joining worker thread (attempt 2) [{self.tag}]")
+
+                if self._worker_thread.is_alive():
+                    log.warning(f"Join timed out after 30s. Worker thread stoppage failed! [{self.tag}]")                                    
                 
             #log.info(f"Terminating ZMQ context. [{self.tag}]")
             #self._context.term()
