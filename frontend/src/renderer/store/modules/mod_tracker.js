@@ -65,7 +65,6 @@ const actions = {
     mixPanel.track('Training Stop');
   },
   EVENT_trainingCompleted() {
-    console.log('EVENT_trainingCompleted');
     mixPanel.track('Training Completed');
   },
   EVENT_trainingLayerView({}, ) {
