@@ -159,8 +159,12 @@ export default {
     ...mapActions({
       tutorialPointActivate:   'mod_tutorials/pointActivate',
       SET_elementNetworkField: 'mod_workspaceHelpers/SET_elementNetworkField',
+      markAllUnselectedAction: 'mod_workspace/markAllUnselectedAction',
     }),
     refNetworkMouseDown(ev) {
+      if(ev.target.nodeName === 'svg' && !(ev.shiftKey || ev.metaKey || ev.ctrlKey)) {
+        this.markAllUnselectedAction();
+      }
       const isLeftBtn = ev.buttons === 1;
       const isEditMode = this.networkMode === 'edit';
       const isOpenNet = this.canEditLayers;
