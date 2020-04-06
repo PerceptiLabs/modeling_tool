@@ -325,8 +325,8 @@ def test_core_handles_userland_error():
 
 def test_core_handles_training_server_timeout():
     # No ping and stuck in userland means server will timeout
-    ping_interval = 10
-    userland_timeout = 10
+    ping_interval = 100
+    userland_timeout = 100
     server_timeout = 3
     
     def run_graph():
@@ -374,6 +374,8 @@ def test_core_handles_training_server_timeout():
     try:
         assert wait_for_condition(lambda _: core.is_running)
         assert wait_for_condition(lambda _: not core.is_running)
+        print("AAA")
+        
         assert wait_for_condition(lambda _: issue_handler.put_error.call_count == 1)                
     finally:
         core.close()

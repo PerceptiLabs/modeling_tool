@@ -38,6 +38,8 @@ class TrainingClient:
         self._on_receive_graph = on_receive_graph
         self._graph_builder = graph_builder
         
+        self._out_queue = queue.Queue()
+        
         self._training_state = None
     
     def run_stepwise(self):
@@ -49,23 +51,26 @@ class TrainingClient:
         zmq.connect()
 
         while True:
+
             try:
-                self._process_messages(zmq)
+                self._process_incoming_messages(zmq)                            
             except ConnectionLost:
                 log.error("No vital signs from training server..!")                            
                 if self._on_server_timeout:
                     self._on_server_timeout()
+            
+            self._process_outgoing_messages(zmq)                    
             yield
 
-    def _process_messages(self, zmq):
+    def _process_incoming_messages(self, zmq):
         raw_messages = zmq.get_messages()
         for raw_message in raw_messages:
             message = deserialize(raw_message)
             message_key = message['key']
             message_value = message['value']
-            self._process_message(message_key, message_value)
+            self._process_incoming_message(message_key, message_value)
 
-    def _process_message(self, key, value):
+    def _process_incoming_message(self, key, value):
         if key == 'state':
             self._training_state = value
         elif key == 'log-message':
@@ -86,13 +91,18 @@ class TrainingClient:
         else:
             log.warning(f"Unknown message key {key} [TrainingClient]")
 
+    def _process_outgoing_messages(self, zmq):
+        while not self._out_queue.empty():
+            message = self._out_queue.get()
+            self._zmq.send_message(message)            
+            
     def shutdown(self):
         self._zmq.stop()
 
     def _send_message(self, key, value=None):
         message_dict = {'key': key, 'value': value or ''}
         message = serialize(message_dict)
-        self._zmq.send_message(message)
+        self._out_queue.put(message)
         
     def request_start(self):
         self._send_message('on_request_start')
