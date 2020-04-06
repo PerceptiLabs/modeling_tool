@@ -28,6 +28,11 @@ export default {
   },
   mounted() {
     console.log(this.$refs.networkField);
+    
+    window.addEventListener('mousemove',  this.startCursorListener);
+  },
+  beforeDestroy() {
+    window.removeEventListener('mousemove', this.startCursorListener);
   },
   data() {
     return {
@@ -120,6 +125,7 @@ export default {
       set_cursorPosition:       'mod_workspace/SET_CopyCursorPosition',
       set_cursorInsideWorkspace:'mod_workspace/SET_cursorInsideWorkspace',
       set_hideSidebar:          'globalView/SET_hideSidebar',
+
     }),
     ...mapActions({
       popupConfirm:         'globalView/GP_confirmPopup',
@@ -136,6 +142,19 @@ export default {
       offMainTutorial:      'mod_tutorials/offTutorial',
       pushSnapshotToHistory:'mod_workspace-history/PUSH_newSnapshot',
     }),
+    startCursorListener (event) {
+      const borderline = 15;
+      this.set_cursorPosition({x: event.offsetX, y: event.offsetY});
+      this.set_cursorInsideWorkspace(true);
+
+      if(event.offsetX <= borderline ||
+          event.offsetY <= borderline ||
+          event.offsetY >= event.target.clientHeight - borderline ||
+          event.offsetX >= event.target.clientWidth - borderline)
+      {
+        this.set_cursorInsideWorkspace(false);
+      }
+    },
     toggleSidebar() {
       this.set_hideSidebar(!this.hideSidebar)
     },

@@ -23,6 +23,9 @@ const state = {
     cursorInsideWorkspace: true
   },
   showStartTrainingSpinner: false,
+<<<<<<< HEAD
+  isOpenElement: false
+=======
   isOpenElement: false,
   // for dragging multiple elements
   dragBoxContainer: {
@@ -32,6 +35,7 @@ const state = {
     width: 0,
     height: 0,
   }
+>>>>>>> dev
 };
 
 const getters = {
@@ -63,6 +67,7 @@ const getters = {
     if(getters.GET_networkIsNotEmpty) {
       let elList = getters.GET_currentNetworkElementList;
       for(var el in elList) {
+        if (elList[el].componentName === 'LayerContainer' && elList[el].layerNone) continue;
         if (elList[el].layerMeta.isSelected) selectedIndex.push(elList[el]);
       }
     }
@@ -473,15 +478,14 @@ const mutations = {
 
     let top = newEl.layerMeta.position.top;
     let left = newEl.layerMeta.position.left;
-    let zoom = getters.GET_currentNetwork.networkMeta.zoom;
     let elementList = getters.GET_currentNetworkElementList;
 
     newEl.layerMeta.tutorialId = getters.GET_tutorialActiveId;
-    newEl.layerMeta.position.top = (event.offsetY - top)/zoom;
-    newEl.layerMeta.position.left = (event.offsetX - left)/zoom;
+    newEl.layerMeta.position.top = (event.offsetY - top);
+    newEl.layerMeta.position.left = (event.offsetX - left);
     let depth = checkPosition(newEl, elementList);
 
-    if(isCursorInsideWorkspace && depth > 0) {
+    if(isCursorInsideWorkspace) {
       newEl.layerMeta.position.top =  (cursorPosition.y + newEl.layerMeta.position.top) - firstCopyPositionElement.top - duplicatePositionIndent;
       newEl.layerMeta.position.left =  (cursorPosition.x + newEl.layerMeta.position.left) - firstCopyPositionElement.left - duplicatePositionIndent;
     }
