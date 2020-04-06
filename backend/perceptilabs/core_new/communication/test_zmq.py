@@ -3,34 +3,41 @@ import socket
 import time
 
 from perceptilabs.utils import loop_until_true
+from perceptilabs.core_new.utils import find_free_port
 from perceptilabs.core_new.communication.zmq import ZmqClient, ZmqServer, ConnectionTimeout, ConnectionLost, NotConnectedError, ConnectionClosed
 
 
 @pytest.fixture(scope='function')
-def server():
+def ports():
+    port1, port2 = find_free_port(count=2)        
+    return port1, port2
+
+
+@pytest.fixture(scope='function')
+def server(ports):
     server = ZmqServer(
-        'tcp://*:5556',
-        'tcp://*:5557',
+        'tcp://*:{}'.format(ports[0]),
+        'tcp://*:{}'.format(ports[1]),
     )
     yield server
     server.stop()
 
 
 @pytest.fixture(scope='function')
-def client1():
+def client1(ports):
     client = ZmqClient(
-         'tcp://localhost:5556',
-         'tcp://localhost:5557',
+         'tcp://localhost:{}'.format(ports[0]),
+         'tcp://localhost:{}'.format(ports[1]),
         tag='client 1'
     )
     return client
 
 
 @pytest.fixture(scope='function')
-def client2():
+def client2(ports):
     client = ZmqClient(
-         'tcp://localhost:5556',
-         'tcp://localhost:5557',
+         'tcp://localhost:{}'.format(ports[0]),
+         'tcp://localhost:{}'.format(ports[1]),
         tag='client 2'
     )
     yield client

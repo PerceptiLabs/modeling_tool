@@ -3,16 +3,17 @@ import pytest
 from unittest.mock import MagicMock
 
 from perceptilabs.utils import loop_until_true
+from perceptilabs.core_new.utils import find_free_port
 from perceptilabs.core_new.utils import YieldLevel
 from perceptilabs.core_new.communication import TrainingClient, TrainingServer, State
 
     
-def create_server(graph=None, snapshot_builder=None, userland_timeout=15):
+def create_server(port1, port2, graph=None, snapshot_builder=None, userland_timeout=15):
     graph = graph or MagicMock()
     snapshot_builder = snapshot_builder or MagicMock()
     
     server = TrainingServer(
-        6556, 6557,
+        port1, port2,
         graph,
         snapshot_builder=snapshot_builder,
         userland_timeout=userland_timeout
@@ -20,9 +21,9 @@ def create_server(graph=None, snapshot_builder=None, userland_timeout=15):
     return server
 
 
-def create_client(graph_builder=None, on_receive_graph=None, on_log_message=None, on_userland_error=None, on_userland_timeout=None, on_server_timeout=None, server_timeout=60):
+def create_client(port1, port2, graph_builder=None, on_receive_graph=None, on_log_message=None, on_userland_error=None, on_userland_timeout=None, on_server_timeout=None, server_timeout=60):
     client = TrainingClient(
-        6556, 6557,
+        port1, port2,
         graph_builder=graph_builder,
         on_receive_graph=on_receive_graph,
         on_log_message=on_log_message,
@@ -35,8 +36,9 @@ def create_client(graph_builder=None, on_receive_graph=None, on_log_message=None
 
     
 def test_receives_status_ready():
-    server = create_server()
-    client = create_client()
+    port1, port2 = find_free_port(count=2)
+    server = create_server(port1, port2)
+    client = create_client(port1, port2)
 
     try:
         server_step = server.run_stepwise()
@@ -53,8 +55,9 @@ def test_receives_status_ready():
 
 
 def test_receives_status_running_on_request_start():
-    server = create_server()
-    client = create_client()
+    port1, port2 = find_free_port(count=2)
+    server = create_server(port1, port2)
+    client = create_client(port1, port2)
     try:
         server_step = server.run_stepwise()
         client_step = client.run_stepwise()
@@ -75,8 +78,9 @@ def test_receives_status_running_on_request_start():
 
         
 def test_receives_status_paused_on_request():
-    server = create_server()
-    client = create_client()
+    port1, port2 = find_free_port(count=2)    
+    server = create_server(port1, port2)
+    client = create_client(port1, port2)
     try:
         server_step = server.run_stepwise()
         client_step = client.run_stepwise()
@@ -100,8 +104,9 @@ def test_receives_status_paused_on_request():
         
 
 def test_can_resume_when_paused():
-    server = create_server()
-    client = create_client()
+    port1, port2 = find_free_port(count=2)    
+    server = create_server(port1, port2)
+    client = create_client(port1, port2)
     try:
         server_step = server.run_stepwise()
         client_step = client.run_stepwise()
@@ -132,8 +137,9 @@ def test_can_resume_when_paused():
 
 
 def test_receives_status_paused_on_request():
-    server = create_server()
-    client = create_client()
+    port1, port2 = find_free_port(count=2)    
+    server = create_server(port1, port2)
+    client = create_client(port1, port2)
     try:
         server_step = server.run_stepwise()
         client_step = client.run_stepwise()
@@ -170,9 +176,10 @@ def test_handles_received_graphs():
 
     graph = MagicMock()
     graph.run = graph_run
-    
-    server = create_server(graph, snapshot_builder=snapshot_builder)
-    client = create_client(graph_builder=graph_builder, on_receive_graph=on_receive_graph)
+
+    port1, port2 = find_free_port(count=2)        
+    server = create_server(port1, port2, graph, snapshot_builder=snapshot_builder)
+    client = create_client(port1, port2, graph_builder=graph_builder, on_receive_graph=on_receive_graph)
     try:
         server_step = server.run_stepwise()
         client_step = client.run_stepwise()

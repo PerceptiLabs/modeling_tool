@@ -8,16 +8,19 @@ from perceptilabs.utils import loop_until_true
 from perceptilabs.core_new.serialization import serialize, deserialize
 from perceptilabs.core_new.communication import TrainingServer, TrainingClient, State
 from perceptilabs.core_new.communication.zmq import ZmqClient
+from perceptilabs.core_new.utils import find_free_port
 
 log = logging.getLogger(__name__)
 
+
+
     
-def create_server(graph=None, snapshot_builder=None, userland_timeout=15):
+def create_server(port1, port2, graph=None, snapshot_builder=None, userland_timeout=15):
     graph = graph or MagicMock()
     snapshot_builder = snapshot_builder or MagicMock()
     
     server = TrainingServer(
-        6556, 6557,
+        port1, port2,
         graph,
         snapshot_builder=snapshot_builder,
         userland_timeout=userland_timeout
@@ -25,17 +28,18 @@ def create_server(graph=None, snapshot_builder=None, userland_timeout=15):
     return server
 
 
-def create_client():
+def create_client(port1, port2):
     client = ZmqClient(
-        'tcp://localhost:6556',
-        'tcp://localhost:6557'        
+        'tcp://localhost:{}'.format(port1),
+        'tcp://localhost:{}'.format(port2)        
     )
     return client
 
 
 def test_sends_state_ready():
-    server = create_server()
-    client = create_client()
+    port1, port2 = find_free_port(count=2)
+    server = create_server(port1, port2)
+    client = create_client(port1, port2)
     try:
         step = server.run_stepwise()
         next(step) # Initiates ZMQ and enters state ready
@@ -54,8 +58,9 @@ def test_sends_state_ready():
 
 
 def test_can_stop_when_ready():
-    server = create_server()
-    client = create_client()
+    port1, port2 = find_free_port(count=2)    
+    server = create_server(port1, port2)
+    client = create_client(port1, port2)
     try:
         step = server.run_stepwise()
         
@@ -84,13 +89,14 @@ def test_can_stop_when_ready():
 
 
 def test_can_connect_before_server_and_receive_status_ready():
+    port1, port2 = find_free_port(count=2)    
     try:
         keep_running = True
         def server_fn():
             time.sleep(2) # Wait for client to try to connect
             
             nonlocal keep_running
-            server = create_server()
+            server = create_server(port1, port2)
             step = server.run_stepwise()
 
             while keep_running:
@@ -103,7 +109,7 @@ def test_can_connect_before_server_and_receive_status_ready():
         server_thread = threading.Thread(target=server_fn)
         server_thread.start()
         
-        client = create_client()            
+        client = create_client(port1, port2)            
         client.connect()
 
         def cond(_):
@@ -132,9 +138,10 @@ def test_can_start_when_ready():
             
     graph = MagicMock()
     graph.run.side_effect = run_graph
-    
-    server = create_server(graph)
-    client = create_client()
+
+    port1, port2 = find_free_port(count=2)    
+    server = create_server(port1, port2, graph)
+    client = create_client(port1, port2)
     try:
         step = server.run_stepwise()
         
@@ -174,9 +181,10 @@ def test_reaches_state_completed():
             
     graph = MagicMock()
     graph.run.side_effect = run_graph
-    
-    server = create_server(graph)
-    client = create_client()
+
+    port1, port2 = find_free_port(count=2)
+    server = create_server(port1, port2, graph)
+    client = create_client(port1, port2)
     try:
         step = server.run_stepwise()
         
@@ -217,9 +225,11 @@ def test_userland_timeout_gives_timeout_state():
             
     graph = MagicMock()
     graph.run.side_effect = run_graph
+
     
-    server = create_server(graph, userland_timeout=1)
-    client = create_client()
+    port1, port2 = find_free_port(count=2)        
+    server = create_server(port1, port2, graph, userland_timeout=1)
+    client = create_client(port1, port2)
     try:
         step = server.run_stepwise()    
         next(step) # Initiates ZMQ and enters state ready
@@ -260,9 +270,10 @@ def test_userland_timeout_sends_timeout_message():
             
     graph = MagicMock()
     graph.run.side_effect = run_graph
-    
-    server = create_server(graph, userland_timeout=1)
-    client = create_client()
+
+    port1, port2 = find_free_port(count=2)    
+    server = create_server(port1, port2, graph, userland_timeout=1)
+    client = create_client(port1, port2)
     try:
         step = server.run_stepwise()    
         next(step) # Initiates ZMQ and enters state ready
@@ -303,9 +314,10 @@ def test_userland_error_gives_error_state():
             
     graph = MagicMock()
     graph.run.side_effect = run_graph
-    
-    server = create_server(graph, userland_timeout=1)
-    client = create_client()
+
+    port1, port2 = find_free_port(count=2)    
+    server = create_server(port1, port2, graph, userland_timeout=1)
+    client = create_client(port1, port2)
     try:
         step = server.run_stepwise()    
         next(step) # Initiates ZMQ and enters state ready
@@ -346,9 +358,10 @@ def test_userland_error_sends_error_message():
             
     graph = MagicMock()
     graph.run.side_effect = run_graph
-    
-    server = create_server(graph, userland_timeout=1)
-    client = create_client()
+
+    port1, port2 = find_free_port(count=2)
+    server = create_server(port1, port2, graph, userland_timeout=1)
+    client = create_client(port1, port2)
     try:
         step = server.run_stepwise()    
         next(step) # Initiates ZMQ and enters state ready
@@ -394,9 +407,10 @@ def test_can_pause():
             
     graph = MagicMock()
     graph.run.side_effect = run_graph
-    
-    server = create_server(graph, userland_timeout=1)
-    client = create_client()
+
+    port1, port2 = find_free_port(count=2)    
+    server = create_server(port1, port2, graph, userland_timeout=1)
+    client = create_client(port1, port2)
     try:
         step = server.run_stepwise()    
         next(step) # Initiates ZMQ and enters state ready
@@ -441,9 +455,10 @@ def test_can_resume_when_paused():
             
     graph = MagicMock()
     graph.run.side_effect = run_graph
-    
-    server = create_server(graph, userland_timeout=1)
-    client = create_client()
+
+    port1, port2 = find_free_port(count=2)        
+    server = create_server(port1, port2, graph, userland_timeout=1)
+    client = create_client(port1, port2)
     try:
         step = server.run_stepwise()    
         next(step) # Initiates ZMQ and enters state ready
@@ -495,9 +510,10 @@ def test_can_resume_when_paused():
     
 def test_calls_graph_stop_when_requested():
     graph = MagicMock()
-    
-    server = create_server(graph)
-    client = create_client()
+
+    port1, port2 = find_free_port(count=2)        
+    server = create_server(port1, port2, graph)
+    client = create_client(port1, port2)
     try:
         step = server.run_stepwise()
         
@@ -527,9 +543,10 @@ def test_calls_graph_stop_when_requested():
 
 def test_calls_graph_export_when_requested():
     graph = MagicMock()
-    
-    server = create_server(graph)
-    client = create_client()
+
+    port1, port2 = find_free_port(count=2)        
+    server = create_server(port1, port2, graph)
+    client = create_client(port1, port2)
     try:
         step = server.run_stepwise()
         
@@ -563,9 +580,10 @@ def test_calls_graph_export_when_requested():
 
 def test_calls_graph_headless_activate_when_requested():
     graph = MagicMock()
-    
-    server = create_server(graph)
-    client = create_client()
+
+    port1, port2 = find_free_port(count=2)        
+    server = create_server(port1, port2, graph)
+    client = create_client(port1, port2)
     try:
         step = server.run_stepwise()
         
@@ -599,9 +617,10 @@ def test_calls_graph_headless_activate_when_requested():
 
 def test_calls_graph_headless_deactivate_when_requested():
     graph = MagicMock()
-    
-    server = create_server(graph)
-    client = create_client()
+
+    port1, port2 = find_free_port(count=2)
+    server = create_server(port1, port2, graph)
+    client = create_client(port1, port2)
     try:
         step = server.run_stepwise()
         

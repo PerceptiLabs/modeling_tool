@@ -20,6 +20,7 @@ from queue import Queue
 
 from perceptilabs.issues import IssueHandler, UserlandError
 from perceptilabs.core_new.graph import Graph, JsonNetwork
+from perceptilabs.core_new.utils import find_free_port
 from perceptilabs.core_new.graph.builder import GraphBuilder
 from perceptilabs.core_new.layers import TrainingLayer
 from perceptilabs.core_new.layers.definitions import DEFINITION_TABLE
@@ -29,27 +30,8 @@ from perceptilabs.core_new.communication import TrainingClient, State
 from perceptilabs.core_new.layers.script import ScriptFactory
 from perceptilabs.core_new.communication.deployment import ThreadStrategy, DeploymentStrategy
 
+
 log = logging.getLogger(__name__)
-
-
-def find_free_port(count=1):
-    """Find free port(s) and then close. WARNING: this approach is subject to race conditions!"""
-
-    sockets = []
-    for _ in range(count):
-        s = socket.socket()
-        s.bind(('', 0)) # Bind to a free port
-        sockets.append(s)
-        
-    ports = []
-    for s in sockets:
-        ports.append(s.getsockname()[1])
-        s.close()
-        
-    if len(ports) == 1:
-        return ports[0]
-    else:
-        return tuple(ports)    
     
     
 class Core:
