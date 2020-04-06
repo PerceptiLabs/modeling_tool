@@ -148,7 +148,7 @@ class ServerWorker(threading.Thread):
 
         stopped = False
         t_ping = None
-        while not stopped and not self._force_stopped:
+        while not stopped and not self._force_stopped.is_set():
             items = dict(poller.poll(timeout=1)) # msec
             if pull_socket in items:
                 stopped = self._process_message(pull_socket, publish_socket)
