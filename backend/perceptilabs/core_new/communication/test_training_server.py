@@ -84,32 +84,41 @@ def test_can_stop_when_ready():
 
 
 def test_can_connect_before_server_and_receive_status_ready():
-    server = create_server()
-
     try:
-        client = None
-        def fn(): 
-            nonlocal client
-            client = create_client()            
-            client.connect()
+        keep_running = True
+        def server_fn():
+            time.sleep(2) # Wait for client to try to connect
+            
+            nonlocal keep_running
+            server = create_server()
+            step = server.run_stepwise()
 
-        threading.Thread(target=fn).start()
-        time.sleep(2)
+            while keep_running:
+                next(step)
+                time.sleep(0.1)
+                
+            server.shutdown()
+                
+
+        server_thread = threading.Thread(target=server_fn)
+        server_thread.start()
         
-        step = server.run_stepwise()
+        client = create_client()            
+        client.connect()
 
         def cond(_):
-            next(step)
             raw_messages = client.get_messages()
             messages = [deserialize(m) for m in raw_messages]
             return {'key': 'state', 'value': State.READY} in messages
 
         assert loop_until_true(cond)
         client.send_message(serialize({'key': 'on_request_stop', 'value': ''}))
-
+        
     finally:
         client.stop()
-        server.shutdown()
+        
+        keep_running = False
+        server_thread.join()
         
 
 def test_can_start_when_ready():
