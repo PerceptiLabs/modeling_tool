@@ -146,7 +146,13 @@ export default {
       this.fetchPathInformation(folderPath);
     },
     calcFolderPath(dirName) {
-      let folderPath = this.osPathPrefix + this.currentPath.join('/') + '/' + dirName + this.osPathSuffix ;
+      let folderPath;
+
+      if (isOsWindows() && this.currentPath.length === 0) {
+        folderPath = dirName + this.osPathSuffix;
+      } else {
+        folderPath = this.osPathPrefix + this.currentPath.join('/') + '/' + dirName + this.osPathSuffix;
+      }
       this.fetchPathInformation(folderPath);
     },
     onDirectoryClick(dirName) {
@@ -210,7 +216,12 @@ export default {
             }
           }
           
-          this.currentPath = jsonData.current_path.split('/').filter(el => el);
+          if (jsonData.current_path === '.') {
+            this.currentPath = [];
+          } else {
+            this.currentPath = jsonData.current_path.split('/').filter(el => el);
+          }
+
           this.directories = jsonData.dirs.filter(d => !d.startsWith('.')).sort();
           if (this.fileTypeFilter.length === 0) {
             this.files = jsonData.files;
