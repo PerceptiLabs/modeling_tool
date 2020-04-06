@@ -23,9 +23,6 @@ const state = {
     cursorInsideWorkspace: true
   },
   showStartTrainingSpinner: false,
-<<<<<<< HEAD
-  isOpenElement: false
-=======
   isOpenElement: false,
   // for dragging multiple elements
   dragBoxContainer: {
@@ -35,7 +32,6 @@ const state = {
     width: 0,
     height: 0,
   }
->>>>>>> dev
 };
 
 const getters = {
