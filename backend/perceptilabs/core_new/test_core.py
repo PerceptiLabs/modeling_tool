@@ -1,3 +1,4 @@
+import os
 import sys
 import time
 import pytest
@@ -22,6 +23,14 @@ from perceptilabs.utils import wait_for_condition
 logging.basicConfig(stream=sys.stdout,
                     format='%(asctime)s - %(levelname)s - %(threadName)s - %(filename)s:%(lineno)d - %(message)s',
                     level=logging.DEBUG)
+
+
+log = logging.getLogger(__name__)
+
+
+@pytest.fixture(scope='function', autouse=True)
+def log_name():
+    log.info(os.environ.get('PYTEST_CURRENT_TEST'))
 
 
 @pytest.fixture

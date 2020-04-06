@@ -1,5 +1,7 @@
 import pytest
 import socket
+import os
+import logging
 import time
 
 from perceptilabs.utils import loop_until_true
@@ -7,6 +9,14 @@ from perceptilabs.core_new.utils import find_free_port
 from perceptilabs.core_new.communication.zmq import ZmqClient, ZmqServer, ConnectionTimeout, ConnectionLost, NotConnectedError, ConnectionClosed
 
 
+log = logging.getLogger(__name__)
+
+
+@pytest.fixture(scope='function', autouse=True)
+def log_name():
+    log.info(os.environ.get('PYTEST_CURRENT_TEST'))
+
+    
 @pytest.fixture(scope='function')
 def ports():
     port1, port2 = find_free_port(count=2)        

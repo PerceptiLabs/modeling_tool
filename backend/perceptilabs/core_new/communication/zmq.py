@@ -22,7 +22,6 @@ class ConnectionClosed(Exception):
 
 class NotConnectedError(Exception):
     pass
-
     
 
 class ZmqClient:
