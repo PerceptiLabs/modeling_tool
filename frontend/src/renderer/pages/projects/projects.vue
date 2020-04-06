@@ -119,14 +119,19 @@
         const selectedProject = this.projects[indexCheckedProj];
         //const isProjectNotExist = selectedProject.notExist;
         const pathDelete = selectedProject.pathProject;
-        folderPCDelete(pathDelete)
-          .then(()=> {
-            const newProjectsList = deepCopy(this.localUserInfo.projectsList);
-            newProjectsList.splice(indexCheckedProj, 1);
-            this.saveLocalUserInfo({key: 'projectsList', data: newProjectsList });
-            this.$nextTick(()=> this.showInfoPopup("The project has been successfully deleted"))
-          })
-          .catch ((err)=> {console.error(err)})
+
+        const newProjectsList = deepCopy(this.localUserInfo.projectsList);
+        newProjectsList.splice(indexCheckedProj, 1);
+        this.saveLocalUserInfo({key: 'projectsList', data: newProjectsList });
+
+        // folderPCDelete(pathDelete)
+        //   .then(()=> {
+        //     const newProjectsList = deepCopy(this.localUserInfo.projectsList);
+        //     newProjectsList.splice(indexCheckedProj, 1);
+        //     this.saveLocalUserInfo({key: 'projectsList', data: newProjectsList });
+        //     this.$nextTick(()=> this.showInfoPopup("The project has been successfully deleted"))
+        //   })
+        //   .catch ((err)=> {console.error(err)})
       }
     },
     methods: {
