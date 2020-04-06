@@ -105,9 +105,9 @@ class ZmqClient:
             self._subscribe_socket.close()
             self._push_socket.close()
 
-            if terminate_context:
-                log.info(f"Terminating ZMQ context. [{self.tag}]")
-                self._context.term()
+            #if terminate_context:
+            #    log.info(f"Terminating ZMQ context. [{self.tag}]")
+            #    self._context.term()
 
     def shutdown_server(self):
         self._push_socket.send_multipart([b'control', b'shutdown'])        
@@ -163,7 +163,6 @@ class ServerWorker(threading.Thread):
         log.info(f"Closing sockets [{self.tag}]")                                
         publish_socket.close()
         pull_socket.close()
-        #self._context.term()
         log.info(f"Leaving worker run method [{self.tag}]")                                        
                     
     def _process_message(self, pull_socket, publish_socket):
@@ -243,8 +242,8 @@ class ZmqServer:
                 self._worker_thread.join()
                 log.info(f"Joining worker thread (attempt 2) [{self.tag}]")                    
                 
-            log.info(f"Terminating ZMQ context. [{self.tag}]")
-            self._context.term()
+            #log.info(f"Terminating ZMQ context. [{self.tag}]")
+            #self._context.term()
 
     @property
     def tag(self):
