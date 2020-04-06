@@ -123,7 +123,7 @@ class ZmqClient:
 
 class ServerWorker(threading.Thread):
     def __init__(self, context, publish_address, pull_address, ping_interval):
-        super().__init__(daemon=True)
+        super().__init__()
         
         self._context = context
         self._publish_address = publish_address

@@ -221,8 +221,8 @@ def test_core_handles_userland_timeout():
     server_timeout = 10000    
 
     def run_graph():
-        while True:
-            time.sleep(1000) # A single iteration will take 1000s
+        for _ in range(2):
+            time.sleep(100) # A single iteration will take 100s
             yield YieldLevel.DEFAULT
 
     graph_spec = MagicMock()
@@ -330,8 +330,8 @@ def test_core_handles_training_server_timeout():
     server_timeout = 3
     
     def run_graph():
-        while True:
-            time.sleep(1000) # A single iteration will take 1000s
+        for _ in range(2):
+            time.sleep(100) # A single iteration will take 100s
             yield YieldLevel.DEFAULT
 
     graph_spec = MagicMock()
@@ -383,8 +383,8 @@ def test_core_handles_training_server_timeout():
 def test_pause_works(graph_spec_binary_classification):
     
     def run_graph():
-        while True:
-            time.sleep(0.1)
+        for _ in range(100):
+            time.sleep(1.0)
             yield YieldLevel.DEFAULT
 
     graph_spec = MagicMock()
@@ -432,8 +432,8 @@ def test_pause_works(graph_spec_binary_classification):
         
 def test_resume_works(graph_spec_binary_classification):
     def run_graph():
-        while True:
-            time.sleep(0.1)
+        for _ in range(100):
+            time.sleep(1.0)
             yield YieldLevel.DEFAULT
 
     graph_spec = MagicMock()
