@@ -14,11 +14,6 @@ from perceptilabs.core_new.utils import find_free_port
 log = logging.getLogger(__name__)
 
 
-@pytest.fixture(scope='function', autouse=True)
-def log_name():
-    log.info(os.environ.get('PYTEST_CURRENT_TEST'))
-
-    
 def create_server(port1, port2, graph=None, snapshot_builder=None, userland_timeout=15):
     graph = graph or MagicMock()
     snapshot_builder = snapshot_builder or MagicMock()

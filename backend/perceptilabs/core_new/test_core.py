@@ -28,11 +28,6 @@ logging.basicConfig(stream=sys.stdout,
 log = logging.getLogger(__name__)
 
 
-@pytest.fixture(scope='function', autouse=True)
-def log_name():
-    log.info(os.environ.get('PYTEST_CURRENT_TEST'))
-
-
 @pytest.fixture
 def graph_builder():
     replica_by_name = {repl_cls.__name__: repl_cls for repl_cls in BASE_TO_REPLICA_MAP.values()}

@@ -11,11 +11,6 @@ from perceptilabs.core_new.communication.zmq import ZmqClient, ZmqServer, Connec
 
 log = logging.getLogger(__name__)
 
-
-@pytest.fixture(scope='function', autouse=True)
-def log_name():
-    log.info(os.environ.get('PYTEST_CURRENT_TEST'))
-
     
 @pytest.fixture(scope='function')
 def ports():

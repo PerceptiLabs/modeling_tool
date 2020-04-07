@@ -13,13 +13,6 @@ from perceptilabs.core_new.communication import TrainingClient, TrainingServer, 
 log = logging.getLogger(__name__)
 
 
-@pytest.fixture(scope='function', autouse=True)
-def log_name():
-    log.info('Initializing test: ' + os.environ.get('PYTEST_CURRENT_TEST'))
-    yield
-    log.info('Finalizing test: ' + os.environ.get('PYTEST_CURRENT_TEST'))    
-
-    
 def create_server(port1, port2, graph=None, snapshot_builder=None, userland_timeout=15):
     graph = graph or MagicMock()
     snapshot_builder = snapshot_builder or MagicMock()
