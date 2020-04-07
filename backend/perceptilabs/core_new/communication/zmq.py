@@ -84,7 +84,7 @@ class ZmqClient:
                 if key == b'generic':
                     messages.append(value)
                 elif key == b'control':
-                    #log.info(f"Received control message {value} [{self.tag}]")
+                    log.info(f"Received control message {value} [{self.tag}]")
                     if value == b'ack-shutdown':
                         raise ConnectionClosed                    
                 items = dict(self._poller.poll(timeout=timeout*1000)) # msec
@@ -149,18 +149,22 @@ class ServerWorker(threading.Thread):
         stopped = False
         t_ping = None
         while not stopped and not self._force_stopped.is_set():
-            items = dict(poller.poll(timeout=1)) # msec
+            items = dict(poller.poll(timeout=1.0)) # msec
             if pull_socket in items:
                 stopped = self._process_message(pull_socket, publish_socket)
 
             t = time.time()
-            if t_ping is None or t - t_ping >= self._ping_interval:
+            if t_ping is None or t - t_ping >= self._ping_interval and not stopped:
                 publish_socket.send_multipart([b'control', b'keep-alive'])
                 t_ping = t
 
-        if self._force_stopped.is_set():
-            log.info(f"Worker force stopped..! [{self.tag}]")
-
+        if stopped and not self._force_stopped.is_set():
+            log.info(f"Worker was stopped gracefully... [{self.tag}]")
+        elif not stopped and self._force_stopped.is_set():
+            log.info(f"Worker was force stopped..! [{self.tag}]")
+        elif stopped and self._force_stopped.is_set():
+            raise RuntimeError("Both stopped and and force stopped was set!")
+            
         log.info(f"Closing sockets [{self.tag}]")                                
         publish_socket.close()
         pull_socket.close()
@@ -172,8 +176,10 @@ class ServerWorker(threading.Thread):
 
         if key == b'control':
             if value == b'connect':
+                log.info(f"Received connect message. Sending acknowledgement [{self.tag}]")                
                 publish_socket.send_multipart([b'control', b'ack-connect'])
             elif value == b'shutdown':
+                log.info(f"Received shutdown message. Sending acknowledgement [{self.tag}]")
                 publish_socket.send_multipart([b'control', b'ack-shutdown'])
                 stopped = True
             else:

@@ -260,7 +260,7 @@ def test_detects_stopped_server():
     server.start()
     client.connect()
     server.stop()
-    
+
     with pytest.raises(ConnectionClosed):
         client.get_messages()
         
