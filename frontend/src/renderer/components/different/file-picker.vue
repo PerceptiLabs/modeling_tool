@@ -138,7 +138,15 @@ export default {
       return (this.selectedFiles.includes(name)) || (this.selectedDirectories.includes(name));
     },
     calcBreadcrumbPath(pathIdx) {
-      let breadcrumbPath = this.osPathPrefix + this.currentPath.slice(0,pathIdx + 1).join('/') + this.osPathSuffix;
+
+      let breadcrumbPath = this.osPathPrefix + this.currentPath.slice(0,pathIdx + 1).join('/') + this.osPathSuffix;;
+      if (isOsWindows() && 
+        this.currentPath[pathIdx] && 
+        this.currentPath[pathIdx].charAt(this.currentPath[pathIdx].length - 1) === ':') {
+        // to handle click on paths such as C:
+        breadcrumbPath += '/';
+      }
+
       this.fetchPathInformation(breadcrumbPath);
     },
     calcRootFolderPath() {
