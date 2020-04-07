@@ -257,7 +257,7 @@
         }
       },
       disableHotKeys(event) {
-        const isHotkey = isOsMacintosh ? event.metaKey : event.ctrlKey;
+        const isHotkey = isOsMacintosh() ? event.metaKey : event.ctrlKey;
         if (!isHotkey) { 
           return; 
         }
