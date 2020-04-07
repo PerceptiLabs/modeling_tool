@@ -1,7 +1,7 @@
 <template lang="pug">
   nav.app-header_nav(
     :class="{'app-header--hidden': isMac && isDesktop}"
-    v-hotkey.prevent="keymap"
+    v-hotkey="keymap"
     )
     ul.header-nav
       li.header-nav_item(
