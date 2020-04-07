@@ -267,7 +267,7 @@ def test_core_handles_userland_timeout():
         assert wait_for_condition(lambda _: not core.is_running)
         assert wait_for_condition(lambda _: issue_handler.put_error.call_count == 1)        
     finally:
-        core.close()
+        core.close(wait_for_deployment=True)
         thread.join()
 
 
@@ -321,7 +321,7 @@ def test_core_handles_userland_error():
         assert wait_for_condition(lambda _: not core.is_running)
         assert wait_for_condition(lambda _: issue_handler.put_error.call_count == 1)
     finally:
-        core.close()
+        core.close(wait_for_deployment=True)
         thread.join()
         
 
@@ -379,7 +379,7 @@ def test_core_handles_training_server_timeout():
         assert wait_for_condition(lambda _: not core.is_running)
         assert wait_for_condition(lambda _: issue_handler.put_error.call_count == 1)                
     finally:
-        core.close()
+        core.close(wait_for_deployment=True)
         thread.join()
 
         
@@ -430,7 +430,7 @@ def test_pause_works(graph_spec_binary_classification):
         core.pause()
         assert wait_for_condition(lambda _: core.is_paused)
     finally:
-        core.close()
+        core.close(wait_for_deployment=True)
         thread.join()
 
         
@@ -485,5 +485,5 @@ def test_resume_works(graph_spec_binary_classification):
         assert wait_for_condition(lambda _: core.is_running)
         assert wait_for_condition(lambda _: not core.is_paused)
     finally:
-        core.close()
+        core.close(wait_for_deployment=True)
         thread.join()

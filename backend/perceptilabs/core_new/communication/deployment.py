@@ -1,12 +1,20 @@
 from abc import abstractmethod, ABC
 import os
+import logging
 import threading
 import subprocess
+
+
+log = logging.getLogger(__name__)
 
 
 class DeploymentStrategy(ABC):
     @abstractmethod
     def run(self, path):
+        raise NotImplementedError
+
+    @abstractmethod
+    def shutdown(self, timeout=None):
         raise NotImplementedError
 
 
@@ -21,6 +29,9 @@ class SubprocessStrategy(DeploymentStrategy):
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE
         )
+        
+    def shutdown(self, timeout=None):
+        raise NotImplementedError
 
         
 class ThreadStrategy(DeploymentStrategy):
@@ -34,6 +45,10 @@ class ThreadStrategy(DeploymentStrategy):
             module.main()
     
     def run(self, path):
-        thread = threading.Thread(target=self._fn_start, args=(path,), daemon=True)
-        thread.start()
+        self._thread = threading.Thread(target=self._fn_start, args=(path,), daemon=True)
+        self._thread.start()
     
+    def shutdown(self, timeout=None):
+        self._thread.join(timeout=timeout)
+
+        return not self._thread.is_alive() # If thread is dead, success

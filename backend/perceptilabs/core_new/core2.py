@@ -202,7 +202,7 @@ class Core:
     def graphs(self) -> List[Graph]:
         return list(self._graphs)
 
-    def close(self):
+    def close(self, wait_for_deployment=False):
         #if self._client is not None:
         #    self._client.send_event('on_stop')
         #    self._client.stop()
@@ -212,7 +212,15 @@ class Core:
             self._client.request_close()
             self._client.shutdown()
             self._client = None
+
+            if wait_for_deployment:
+                log.info("Waiting for deployment to shutdown...")
+                if self._deployment_strategy.shutdown(timeout=240):
+                    log.info("Deployment shut down!")
+                else:
+                    log.info("Deployment did not shut down!")                                        
         self._is_running = False
+
 
     #def stop(self):
     #    if self._client is not None:
