@@ -1,4 +1,5 @@
 import os
+import sys
 import psutil
 import pytest
 import logging
@@ -18,10 +19,23 @@ def print_name_and_memory():
     #    rss_max = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/1024/1024
     #    log.info('Initializing test: {}. Max RSS: {} [MiB]'.format(test_name, rss_max))
 
-    log.info('Initializing test: {}. Virtual memory: {}%'.format(test_name, psutil.virtual_memory().percent))    
+
+
+    def mem_str():
+        if sys.platform == 'darwin':
+            import resource
+            mem_str = 'Virtual memory: {}%, RSS max: {:.2f} [MiB]'.format(psutil.virtual_memory().percent, resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/1024/1024)        
+        elif sys.platform == 'linux' or sys.platform == 'linux2':
+            import resource            
+            mem_str = 'Virtual memory: {}%, RSS max: {:.2f} [MiB]'.format(psutil.virtual_memory().percent, resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/1024)    
+        else:
+            mem_str = 'Virtual memory: {}%'.format(psutil.virtual_memory().percent)
+        return mem_str
+
+    log.info('Initializing test: '.format(test_name) + '. ' + mem_str())
         
     yield
 
-    log.info('Finalizing test: {}. Virtual memory: {}%'.format(test_name, psutil.virtual_memory().percent))        
+    log.info('Finalizing test: '.format(test_name) +'. ' + mem_str())
 
 
