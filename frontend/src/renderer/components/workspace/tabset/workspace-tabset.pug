@@ -1,7 +1,7 @@
 .tab-arrow(
-  v-if="tabArrows.show"
+  v-show="tabArrows.show"
   :class="{'disabled': !tabArrows.isLeftActive }"
-  @click="scrollTab(-25)")
+  @click="onTabArrowClick(-25)")
   span &lt;
 ul.bookmark_tab-list.workspace_tab-list(ref="tablist")
   li.bookmark_tab.workspace_tab(
@@ -31,12 +31,14 @@ ul.bookmark_tab-list.workspace_tab-list(ref="tablist")
       @click.stop="openTest(i)"
       )
       span Test
-.tab-arrow(
-  v-if="tabArrows.show"
+.tab-arrow.right(
+  v-show="tabArrows.show"
   :class="{'disabled': !tabArrows.isRightActive }"
-  @click="scrollTab(25)")
+  @click="onTabArrowClick(25)")
   span &gt;
 
-.toggle-sidebar(:class="{'hide-sidebar': !hideSidebar}")
+.toggle-sidebar(
+  :class="{'hide-sidebar': !hideSidebar}"
+  ref="sidebarToggle")
   button.btn.btn--toolbar(type="button" @click="toggleSidebar()")
     i.icon.icon-hide-right

@@ -122,6 +122,9 @@ export default {
           validation: newStatus[0].layerMeta.tutorialId
         });
       }
+    },
+    hideSidebar(newVal) {
+      // this.checkTabWidths();
     }
   },
   methods: {
@@ -219,7 +222,7 @@ export default {
 
       this.checkTabWidths();
     },
-    scrollTab(value) {
+    onTabArrowClick(value) {
       // when the scroll buttons are pressed
 
       if (!this.$refs.tablist) { return; }
@@ -230,14 +233,20 @@ export default {
     onResize() {
       this.checkTabWidths();
     },
-    checkTabWidths() {
-      if (!this.$refs.tablist) { return; }
-
+    checkTabWidths() {      
       const maxScrollWidth = this.$refs.tablist.scrollWidth - this.$refs.tablist.clientWidth;
+
       this.tabArrows.isLeftActive = (this.$refs.tablist.scrollLeft !== 0);
       this.tabArrows.isRightActive = (this.$refs.tablist.scrollLeft !== maxScrollWidth);
+
+      this.tabArrows.show = this.tabArrows.isLeftActive || this.tabArrows.isRightActive;
       
-      this.tabArrows.show = this.$refs.tablist.clientWidth !== this.$refs.tablist.scrollWidth;
+      if (this.tabArrows.show && this.$refs.sidebarToggle) {
+        this.$refs.sidebarToggle.style.marginLeft = 0;
+      } else {
+        this.$refs.sidebarToggle.style.marginLeft = 'auto';
+      }
+
     }
-  },
+  }
 }
