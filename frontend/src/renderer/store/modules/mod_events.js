@@ -86,6 +86,9 @@ const actions = {
 
         if(pathIndex > -1 && localProjectsList) {
           net.networkID = localProjectsList[pathIndex].id;
+          net.networkRootFolder = localProjectsList[pathIndex].pathProject;
+        } else {
+          net.networkRootFolder = pathProject;
         }
         dispatch('mod_workspace/ADD_network', net, {root: true});
       }).catch(err => {
