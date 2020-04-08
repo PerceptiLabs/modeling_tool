@@ -233,7 +233,9 @@ export default {
     onResize() {
       this.checkTabWidths();
     },
-    checkTabWidths() {      
+    checkTabWidths() {
+      if (!this.$refs.tablist) { return; }
+      
       const maxScrollWidth = this.$refs.tablist.scrollWidth - this.$refs.tablist.clientWidth;
 
       this.tabArrows.isLeftActive = (this.$refs.tablist.scrollLeft !== 0);
