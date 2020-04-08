@@ -56,7 +56,11 @@ const workspaceScale = {
       event = event || window.event;
       const charCode = event.which || event.keyCode;
 
-      if (charCode < 48 || charCode > 57) {
+      if (charCode === 13) {
+        event.currentTarget.blur();
+        return true;
+      }
+      else if (charCode < 48 || charCode > 57) {
         event.preventDefault();
       } else {
         return true;
