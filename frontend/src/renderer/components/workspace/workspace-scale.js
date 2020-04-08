@@ -8,7 +8,13 @@ const workspaceScale = {
         return Math.round(zoom);
       },
       set: function (newValue) {
-        this.set_statusNetworkZoom(newValue/100);
+
+        let numberToUse = this.scaleNet;
+        if (newValue >= 30 &&  newValue <= 200) {
+          numberToUse = newValue;
+        }
+        
+        this.set_statusNetworkZoom(numberToUse/100);
       }
     },
   },
@@ -45,7 +51,17 @@ const workspaceScale = {
     incScale () {
       if (this.scaleNet > 95) this.scaleNet = 100;
       else this.scaleNet = this.scaleNet + 5
-    },
+    },   
+    filterNonNumber: function(event) {
+      event = event || window.event;
+      const charCode = event.which || event.keyCode;
+
+      if (charCode < 48 || charCode > 57) {
+        event.preventDefault();
+      } else {
+        return true;
+      }
+    }
   }
 };
 
