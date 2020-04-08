@@ -101,11 +101,9 @@ def test_can_connect_before_server_and_receive_status_ready():
 
             while keep_running:
                 next(step)
-                time.sleep(0.1)
-                
+                time.sleep(0.1)                
             server.shutdown()
                 
-
         server_thread = threading.Thread(target=server_fn)
         server_thread.start()
         

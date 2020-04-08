@@ -94,9 +94,11 @@ class TrainingClient:
     def _process_outgoing_messages(self, zmq):
         while not self._out_queue.empty():
             message = self._out_queue.get()
+            print("client send mesage", message)
             self._zmq.send_message(message)            
             
     def shutdown(self):
+        self._process_outgoing_messages(self._zmq)
         self._zmq.stop()
 
     def _send_message(self, key, value=None):

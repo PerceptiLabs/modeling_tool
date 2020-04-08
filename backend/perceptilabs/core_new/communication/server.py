@@ -80,6 +80,7 @@ class TrainingServer:
         state.transition(State.READY)
         log.info("Entering main-loop [TrainingServer]")
         t1 = t2 = 0
+        counter = 0
         while state.value not in State.exit_states:
             t0 = time.perf_counter()
             new_state = self._process_messages(zmq, state)
@@ -96,19 +97,22 @@ class TrainingServer:
                 t2 = time.perf_counter()
                 state.transition(new_state)                
             elif state.value in State.idle_states:
-                self._send_message(zmq, 'state', state.value)                            
+                if counter % 10 == 0:
+                    log.info(f"In idle state '{state.value}'")                
+                
+                self._send_message(zmq, 'state', state.value)
                 time.sleep(1.0)
             elif state.value not in State.exit_states:
                 raise RuntimeError(f"Unexpected state: {state}")
             
-            t3 = time.perf_counter()
-            
+            t3 = time.perf_counter()            
             main_step_times.append(t3 - t0)
             train_step_times.append(t2 - t1)
 
             #import numpy as np
             #print(np.average(main_step_times))
-            #print(np.average(train_step_times))            
+            #print(np.average(train_step_times))
+            counter += 1
             yield
 
         self._closing = True
@@ -159,7 +163,7 @@ class TrainingServer:
 
     def _process_message(self, raw_message, state):
         message = deserialize(raw_message)
-        #print('MESSAGE', message)
+        print('TRN SRVR PROCESSING MESSAGE', message)
         message_key = message['key']
         message_value = message['value']
 

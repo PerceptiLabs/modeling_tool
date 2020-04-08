@@ -229,7 +229,9 @@ def test_core_handles_userland_timeout():
     script_factory = MagicMock()
     script_factory.make.return_value = ('', {})
 
+    thread2 = None
     def run_deploy(path):
+        nonlocal thread2
         def fn():
             port1 = script_factory.make.call_args[0][2]
             port2 = script_factory.make.call_args[0][3]
@@ -241,8 +243,8 @@ def test_core_handles_userland_timeout():
                 max_time_run=120
             )
             training_server.run()
-        thread = threading.Thread(target=fn, daemon=True)
-        thread.start()
+        thread2 = threading.Thread(target=fn, daemon=True)
+        thread2.start()
     
     deployment_strategy.run.side_effect = run_deploy
     
@@ -255,15 +257,16 @@ def test_core_handles_userland_timeout():
         issue_handler=issue_handler
     )
 
-    thread = threading.Thread(target=core.run, args=(graph_spec,), daemon=True)
-    thread.start()
+    thread1 = threading.Thread(target=core.run, args=(graph_spec,), daemon=True)
+    thread1.start()
     try:
         assert wait_for_condition(lambda _: core.is_running)
         assert wait_for_condition(lambda _: not core.is_running)
         assert wait_for_condition(lambda _: issue_handler.put_error.call_count == 1)        
     finally:
         core.close(wait_for_deployment=True)
-        thread.join()
+        thread1.join()
+        thread2.join()        
 
 
 def test_core_handles_userland_error():
@@ -286,7 +289,9 @@ def test_core_handles_userland_error():
     script_factory = MagicMock()
     script_factory.make.return_value = ('', line_to_node_map)
 
+    thread2 = None
     def run_deploy(path):
+        nonlocal thread2
         def fn():
             port1 = script_factory.make.call_args[0][2]
             port2 = script_factory.make.call_args[0][3]
@@ -297,8 +302,8 @@ def test_core_handles_userland_error():
                 max_time_run=120                
             )
             training_server.run()
-        thread = threading.Thread(target=fn, daemon=True)
-        thread.start()
+        thread2 = threading.Thread(target=fn, daemon=True)
+        thread2.start()
     
     deployment_strategy.run.side_effect = run_deploy
     
@@ -309,17 +314,18 @@ def test_core_handles_userland_error():
         issue_handler=issue_handler
     )
 
-    thread = threading.Thread(target=core.run, args=(graph_spec,), daemon=True)
-    thread.start()
+    thread1 = threading.Thread(target=core.run, args=(graph_spec,), daemon=True)
+    thread1.start()
     try:
         assert wait_for_condition(lambda _: core.is_running)
         assert wait_for_condition(lambda _: not core.is_running)
         assert wait_for_condition(lambda _: issue_handler.put_error.call_count == 1)
     finally:
         core.close(wait_for_deployment=True)
-        thread.join()
-        
+        thread1.join()
+        thread2.join()        
 
+        
 def test_core_handles_training_server_timeout():
     # No ping and stuck in userland means server will timeout
     ping_interval = 100
@@ -339,7 +345,8 @@ def test_core_handles_training_server_timeout():
     issue_handler = MagicMock()
     script_factory = MagicMock()
     script_factory.make.return_value = ('', {})
-    
+
+    thread2 = None
     def run_deploy(path):
         def fn():
             port1 = script_factory.make.call_args[0][2]
@@ -353,8 +360,10 @@ def test_core_handles_training_server_timeout():
                 max_time_run=120                
             )
             training_server.run()
-        thread = threading.Thread(target=fn, daemon=True)
-        thread.start()
+            
+        nonlocal thread2            
+        thread2 = threading.Thread(target=fn, daemon=True)
+        thread2.start()
             
     deployment_strategy.run.side_effect = run_deploy
     
@@ -367,15 +376,16 @@ def test_core_handles_training_server_timeout():
         issue_handler=issue_handler    
     )
 
-    thread = threading.Thread(target=core.run, args=(graph_spec,), daemon=True)
-    thread.start()
+    thread1 = threading.Thread(target=core.run, args=(graph_spec,), daemon=True)
+    thread1.start()
     try:
         assert wait_for_condition(lambda _: core.is_running)
         assert wait_for_condition(lambda _: not core.is_running)
         assert wait_for_condition(lambda _: issue_handler.put_error.call_count == 1)                
     finally:
         core.close(wait_for_deployment=True)
-        thread.join()
+        thread1.join()
+        thread2.join()        
 
         
 def test_pause_works(graph_spec_binary_classification):
@@ -393,6 +403,7 @@ def test_pause_works(graph_spec_binary_classification):
     script_factory = MagicMock()
     script_factory.make.return_value = ('', {})
 
+    thread2 = None
     def run_deploy(path):
         def fn():
             port1 = script_factory.make.call_args[0][2]
@@ -404,8 +415,9 @@ def test_pause_works(graph_spec_binary_classification):
                 max_time_run=120                
             )
             training_server.run()
-        thread = threading.Thread(target=fn, daemon=True)
-        thread.start()
+        nonlocal thread2
+        thread2 = threading.Thread(target=fn, daemon=True)
+        thread2.start()
         
     deployment_strategy = MagicMock()    
     deployment_strategy.run.side_effect = run_deploy
@@ -416,8 +428,8 @@ def test_pause_works(graph_spec_binary_classification):
         deployment_strategy=deployment_strategy
     )
     
-    thread = threading.Thread(target=core.run, args=(graph_spec_binary_classification,), daemon=True)
-    thread.start()
+    thread1 = threading.Thread(target=core.run, args=(graph_spec_binary_classification,), daemon=True)
+    thread1.start()
     try:
         assert wait_for_condition(lambda _: core.training_state == State.TRAINING_RUNNING) # Pausing in State.READY doesn't make sense (right now), so we have to wait... 
         assert wait_for_condition(lambda _: not core.is_paused)
@@ -426,8 +438,9 @@ def test_pause_works(graph_spec_binary_classification):
         assert wait_for_condition(lambda _: core.is_paused)
     finally:
         core.close(wait_for_deployment=True)
-        thread.join()
-
+        thread1.join()
+        thread2.join()
+        
         
 def test_resume_works(graph_spec_binary_classification):
     def run_graph():
@@ -443,6 +456,7 @@ def test_resume_works(graph_spec_binary_classification):
     script_factory = MagicMock()
     script_factory.make.return_value = ('', {})
 
+    thread2 = None
     def run_deploy(path):
         def fn():
             port1 = script_factory.make.call_args[0][2]
@@ -454,8 +468,9 @@ def test_resume_works(graph_spec_binary_classification):
                 max_time_run=120                
             )
             training_server.run()
-        thread = threading.Thread(target=fn, daemon=True)
-        thread.start()
+        nonlocal thread2
+        thread2 = threading.Thread(target=fn, daemon=True)
+        thread2.start()
         
     deployment_strategy = MagicMock()    
     deployment_strategy.run.side_effect = run_deploy
@@ -466,8 +481,8 @@ def test_resume_works(graph_spec_binary_classification):
         deployment_strategy=deployment_strategy
     )
     
-    thread = threading.Thread(target=core.run, args=(graph_spec_binary_classification,), daemon=True)
-    thread.start()
+    thread1 = threading.Thread(target=core.run, args=(graph_spec_binary_classification,), daemon=True)
+    thread1.start()
     try:
         assert wait_for_condition(lambda _: core.training_state == State.TRAINING_RUNNING) # Pausing in State.READY doesn't make sense (right now), so we have to wait... 
         assert wait_for_condition(lambda _: not core.is_paused)
@@ -481,4 +496,5 @@ def test_resume_works(graph_spec_binary_classification):
         assert wait_for_condition(lambda _: not core.is_paused)
     finally:
         core.close(wait_for_deployment=True)
-        thread.join()
+        thread1.join()
+        thread2.join()        
