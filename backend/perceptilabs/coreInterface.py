@@ -66,6 +66,7 @@ class coreLogic():
         self.paused=False
 
         self.status="Created"
+        self.core=None
 
         self.testIter=0
         self.maxTestIter=0

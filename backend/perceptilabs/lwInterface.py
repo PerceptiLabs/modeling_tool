@@ -163,6 +163,7 @@ class getCodeV2(LW_interface_base):
         node = Node(layer_id, layer_type, layer_instance, layer_spec)
         
         script_factory = ScriptFactory()        
+        print("Properties: ", node.layer_spec)
         code = script_factory.render_layer_code(node.layer_id, node.layer_type, node.layer_spec)
 
         return {'Output': code}        
