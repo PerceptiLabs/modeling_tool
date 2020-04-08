@@ -18,6 +18,8 @@ import collections
 from perceptilabs.networkExporter import exportNetwork
 from perceptilabs.networkSaver import saveNetwork
 
+
+from perceptilabs.issues import IssueHandler
 from perceptilabs.modules import ModuleProvider
 from perceptilabs.core_new.core import *
 from perceptilabs.core_new.data import DataContainer
@@ -41,7 +43,7 @@ CoreCommand = collections.namedtuple('CoreCommand', ['type', 'parameters', 'allo
 class coreLogic():
     def __init__(self,networkName, core_mode='v1'):
         log.info(f"Created coreLogic for network '{networkName}' with core mode '{core_mode}'")
-        
+
         assert core_mode in ['v1', 'v2']
         self._core_mode = core_mode
         
@@ -56,8 +58,9 @@ class coreLogic():
         self._save_counter = 0
 
     def setupLogic(self):
-        self.warningQueue=queue.Queue()
-        self.errorQueue=queue.Queue()
+        #self.warningQueue=queue.Queue()
+        self.issue_handler = IssueHandler()
+        
         self.commandQ=queue.Queue()
         # self.resultQ=queue.LifoQueue()
         self.resultQ=queue.Queue()
@@ -80,8 +83,8 @@ class coreLogic():
 
     def _logAndWarningQueue(self, msg):
         log.warning(msg)
-        self.warningQueue.put(msg)
-
+        self.issue_handler.put_warning(msg)        
+        
     def gpu_list(self):
         try:
             gpus = GPUtil.getGPUs()
@@ -207,8 +210,7 @@ class coreLogic():
         graph_dict=self.graphObj.graphs
 
         from perceptilabs.codehq import CodeHqNew as CodeHq
-
-        error_handler = CoreErrorHandler(self.errorQueue)
+        error_handler = CoreErrorHandler(self.issue_handler)
 
         module_provider = ModuleProvider()
         module_provider.load('tensorflow', as_name='tf')
@@ -261,7 +263,7 @@ class coreLogic():
                 deployment_pipe,
                 network,
                 threaded=True,
-                error_queue=self.errorQueue
+                issue_handler=self.issue_handler
             )            
             
         if self.cThread is not None and self.cThread.isAlive():
@@ -273,25 +275,27 @@ class coreLogic():
                 
             try:
                 log.debug("Starting core..." + repr(self.core))                
-                self.cThread=CoreThread(self.core.run,self.errorQueue)
+                self.cThread=CoreThread(self.core.run, self.issue_handler)
                 self.cThread.daemon = True
                 self.cThread.start_with_traces()
                 # self.cThread.start()
             except Exception as e:
                 message = "Could not boot up the new thread to run the computations on because of: " + str(e)
-                self.errorQueue.put(message)
-                log.exception(message)                
+                with self.issue_handler.create_issue(message, e) as issue:
+                    self._issue_handler.put_error(issue.frontend_message)
+                    log.error(issue.internal_message)
         else:
             try:
                 log.debug("Starting core..." + repr(self.core))                                
-                self.cThread=CoreThread(self.core.run,self.errorQueue)
+                self.cThread=CoreThread(self.core.run, self.issue_handler)
                 self.cThread.daemon = True
                 self.cThread.start_with_traces()
                 # self.cThread.start()
             except Exception as e:
                 message = "Could not boot up the new thread to run the computations on because of: " + str(e)
-                self.errorQueue.put(message)
-                log.exception(message)
+                with self.issue_handler.create_issue(message, e) as issue:
+                    self.issue_handler.put_error(issue.frontend_message)
+                    log.error(issue.internal_message)
                 
         self.status="Running"
 
@@ -431,7 +435,7 @@ class coreLogic():
         
     def exportNetworkV1(self,value):        
         if self.saver is None:
-            self.warningQueue.put("Export failed.\nMake sure you have started running the network before you try to Export it.")
+            self._logAndWarningQueue("Export failed.\nMake sure you have started running the network before you try to Export it.")
             return {"content":"Export Failed.\nNo trained weights to Export."}
         try:
             exporter = exportNetwork(self.saver)
@@ -447,10 +451,11 @@ class coreLogic():
                 return {"content":"Export success!\nSaved as:\n" + path}
 
         except Exception as e:
-            self.warningQueue.put("Export Failed with this error: ")
-            self.warningQueue.put(str(e))
-            log.exception("Export failed")
-            return {"content":"Export Failed with this error: " + str(e)}
+            message = "Export failed with this error: " + str(e)
+            with self.issue_handler.create_issue(message, e) as issue:
+                self.issue_handler.put_warning(issue.frontend_message)
+                log.warning(issue.internal_message)
+                return {"content": self.issue_handler.frontend_message}
 
     def saveNetwork(self, value):
         if self._core_mode == 'v1':
@@ -483,7 +488,7 @@ class coreLogic():
         
     def saveNetworkV1(self, value):
         if self.saver is None:
-            self.warningQueue.put("Save failed.\nMake sure you have started running the network before you try to Export it.")
+            self._logAndWarningQueue("Save failed.\nMake sure you have started running the network before you try to Export it.")
             return {"content":"Save Failed.\nNo trained weights to Export."}
         try:
             if "all_tensors" not in self.saver:
@@ -502,10 +507,11 @@ class coreLogic():
 
             return {"content":"Save succeeded!"}
         except Exception as e:
-            self.errorQueue.put("Save Failed with this error: ")
-            self.errorQueue.put(str(e))
-            log.exception("Save failed")
-            return {"content":"Save Failed with this error: " + str(e)}
+            message = "Save failed with this error: " + str(e)
+            with self.issue_handler.create_issue(message, e) as issue:
+                self.issue_handler.put_error(issue.frontend_message)
+                log.error(issue.internal_message)
+                return {"content": issue.frontend_message}
 
     def skipValidation(self):
         self.commandQ.put("skip")
@@ -1247,14 +1253,14 @@ class coreLogic():
                 except:
                     try:
                         log.debug("FieldError, only keys available are: "+str(list(self.resultDict[layerId][variable].keys()))+" |||| Expected: "+str(innervariable))
-                        self.warningQueue.put("FieldError, only keys available are: "+str(list(self.resultDict[layerId][variable].keys()))+" |||| Expected: "+str(innervariable))
+                        self._logAndWarningQueue("FieldError, only keys available are: "+str(list(self.resultDict[layerId][variable].keys()))+" |||| Expected: "+str(innervariable))
                     except:
                         try:
                             log.debug("FieldError, only keys available are: "+str(list(self.resultDict[layerId].keys()))+" |||| Expected: " + str(variable))
-                            self.warningQueue.put("FieldError, only keys available are: "+str(list(self.resultDict[layerId].keys()))+" |||| Expected: " + str(variable))
+                            self._logAndWarningQueue("FieldError, only keys available are: "+str(list(self.resultDict[layerId].keys()))+" |||| Expected: " + str(variable))
                         except:
                             log.debug("FieldError, only keys available are: "+str(list(self.resultDict.keys()))+" |||| Expected: " + str(layerId))
-                            self.warningQueue.put("FieldError, only keys available are: "+str(list(self.resultDict.keys()))+" |||| Expected: " + str(layerId))
+                            self._logAndWarningQueue("FieldError, only keys available are: "+str(list(self.resultDict.keys()))+" |||| Expected: " + str(layerId))
 
                     result=[]
             elif variable!="":
@@ -1263,21 +1269,21 @@ class coreLogic():
                 except:
                     try:
                         log.debug("FieldError, only keys available are: "+str(list(self.resultDict[layerId].keys()))+" |||| Expected: " + str(variable))
-                        self.warningQueue.put("FieldError, only keys available are: "+str(list(self.resultDict[layerId].keys()))+" |||| Expected: " + str(variable))
+                        self._logAndWarningQueue("FieldError, only keys available are: "+str(list(self.resultDict[layerId].keys()))+" |||| Expected: " + str(variable))
                     except:
                         log.debug("FieldError, only keys available are: "+str(list(self.resultDict.keys()))+" |||| Expected: " + str(layerId))
-                        self.warningQueue.put("FieldError, only keys available are: "+str(list(self.resultDict.keys()))+" |||| Expected: " + str(layerId))
+                        self._logAndWarningQueue("FieldError, only keys available are: "+str(list(self.resultDict.keys()))+" |||| Expected: " + str(layerId))
                     result=[]
             else:
                 try:
                     result=self.resultDict[layerId]
                 except:
                     log.debug("FieldError, only keys available are: "+str(list(self.resultDict.keys()))+" |||| Expected: " + str(layerId))
-                    self.warningQueue.put("FieldError, only keys available are: "+str(list(self.resultDict.keys()))+" |||| Expected: " + str(layerId))
+                    self._logAndWarningQueue("FieldError, only keys available are: "+str(list(self.resultDict.keys()))+" |||| Expected: " + str(layerId))
                     result=[]
         else:
             log.debug("ResultDict is empty :'(")
-            self.warningQueue.put("There are no results to fetch")
+            self._logAndWarningQueue("There are no results to fetch")
             result=[]
 
         if log.isEnabledFor(logging.DEBUG):
