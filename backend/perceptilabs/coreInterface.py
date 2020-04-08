@@ -389,7 +389,7 @@ class coreLogic():
         return {"content":"Alive"}
 
     def isRunning(self):
-        return self.cThread.isAlive()
+        return self.cThread is not None and self.cThread.isAlive()
 
     def isTrained(self):
         is_trained = (

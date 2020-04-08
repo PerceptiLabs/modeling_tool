@@ -74,8 +74,6 @@ class J2Engine:
     
     #@log_rendering_errors        
     def render_string(self, code, **kwargs):
-        #print(code)
-        import pdb; pdb.set_trace()
         text = self._jenv.from_string(code).render(**kwargs)
 
         if self._verbose:
