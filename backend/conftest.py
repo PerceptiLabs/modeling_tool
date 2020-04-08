@@ -32,10 +32,10 @@ def print_name_and_memory():
             mem_str = 'Virtual memory: {}%'.format(psutil.virtual_memory().percent)
         return mem_str
 
-    log.info('Initializing test: '.format(test_name) + '. ' + mem_str())
+    log.info('Initializing test: {}'.format(test_name) + '. ' + mem_str())
         
     yield
 
-    log.info('Finalizing test: '.format(test_name) +'. ' + mem_str())
+    log.info('Finalizing test: {}'.format(test_name) +'. ' + mem_str())
 
 
