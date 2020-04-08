@@ -27,12 +27,14 @@ export default {
     TheMiniMap, FilePickerPopup
   },
   destroyed () {
-    this.$refs.tablist.removeEventListener('wheel', this.onTabScroll);
     window.removeEventListener('resize', this.onResize);
+
+    if (!this.$refs.tabset) { return; }
+    this.$refs.tabset.removeEventListener('wheel', this.onTabScroll);
   },
   mounted() {
     window.addEventListener('resize', this.onResize);
-    this.$refs.tablist.addEventListener('wheel', this.onTabScroll);
+    this.$refs.tabset.addEventListener('wheel', this.onTabScroll);
 
     this.checkTabWidths();
   },
@@ -235,7 +237,7 @@ export default {
     },
     checkTabWidths() {
       if (!this.$refs.tablist) { return; }
-      
+
       const maxScrollWidth = this.$refs.tablist.scrollWidth - this.$refs.tablist.clientWidth;
 
       this.tabArrows.isLeftActive = (this.$refs.tablist.scrollLeft !== 0);
