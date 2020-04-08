@@ -142,6 +142,7 @@ def test_out_shapes_ok(graph_spec_binary_classification):
     assert results['5'].out_shape == (10,) # One hot
     assert results['6'].out_shape is None
 
+    
 def test_out_shapes_ok_partial_graph(graph_spec_binary_classification):
     del graph_spec_binary_classification['Layers']['2']['Properties']['accessProperties']
     
