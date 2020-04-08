@@ -165,7 +165,6 @@ DEFINITION_TABLE = {
             'activation': resolve_tf1x_activation_name,            
             'pool': lambda specs: specs['Properties']['PoolBool'],
             'pooling': lambda specs: specs['Properties']['Pooling'],
-            'pool_padding': lambda specs: specs['Properties']['Pool_padding'],
             'pool_area': lambda specs: specs['Properties']['Pool_area'],
             'pool_stride': lambda specs: specs['Properties']['Pool_stride'],            
         },
