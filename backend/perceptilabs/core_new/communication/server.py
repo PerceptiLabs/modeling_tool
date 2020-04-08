@@ -163,7 +163,7 @@ class TrainingServer:
 
     def _process_message(self, raw_message, state):
         message = deserialize(raw_message)
-        print('TRN SRVR PROCESSING MESSAGE', message)
+        #print('TRN SRVR PROCESSING MESSAGE', message)
         message_key = message['key']
         message_value = message['value']
 
