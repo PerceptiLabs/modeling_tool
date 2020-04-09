@@ -494,7 +494,7 @@ class {{layer_name}}(Tf1xLayer):
             {% endfilter %}
             {% filter remove_lspaces(8) %}
                 {% if pool and pooling == "Max" %}
-                    y = tf.nn.max_pool(y, ksize={{pool_area}}, strides={{pool_stride}}, padding={{pool_padding}})
+                    y = tf.nn.max_pool(y, ksize=[1, {{pool_area}}, {{pool_area}}, 1], strides=[1, {{pool_stride}}, {{pool_stride}}, 1], padding={{pool_padding}})
                 {% endif %}
             {% endfilter %}
             {% filter remove_lspaces(8) %}
