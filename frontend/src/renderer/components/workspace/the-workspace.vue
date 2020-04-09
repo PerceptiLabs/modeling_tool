@@ -38,9 +38,14 @@
             network-field(
               ref="networkField"
               :key="i"
+              :scaleNet="scaleNet"
               :style="{transformOrigin: '0 0', transform: `scale(${scaleNet / 100})`}"
             )
-
+            // when select more then 2 network item it's display
+            div(:style="dragBoxHorizontalTopBorder()")
+            div(:style="dragBoxHorizontalBottomBorder()")
+            div(:style="dragBoxVerticalLeftBorder()")
+            div(:style="dragBoxVerticalRightBorder()")
         //-general-settings(v-if="showGlobalSet")
         general-result(v-if="showGlobalResult")
         select-core-side(v-if="showCoreSide")
@@ -131,6 +136,7 @@
     overflow: hidden;
   }
   .info-section_main {
+    display: block;
     overflow: auto;
   }
   .workspace_meta {

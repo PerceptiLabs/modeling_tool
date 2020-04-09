@@ -3,6 +3,7 @@ import saveNet    from './workspace-save-net.js'
 import scaleNet   from './workspace-scale.js'
 import spinnerNet from './workspace-spinner.js'
 import helpersNet from './workspace-helpers.js'
+import Analytics  from '@/core/analytics'
 
 import TextEditable           from '@/components/base/text-editable.vue'
 import NetworkField           from '@/components/network-field/network-field.vue'
@@ -26,17 +27,22 @@ export default {
     TheTesting, TheViewBox, StartTrainingSpinner,
     TheMiniMap, FilePickerPopup
   },
-  destroyed () {
-    window.removeEventListener('resize', this.onResize);
-
-    if (!this.$refs.tabset) { return; }
-    this.$refs.tabset.removeEventListener('wheel', this.onTabScroll);
-  },
   mounted() {
     window.addEventListener('resize', this.onResize);
     this.$refs.tabset.addEventListener('wheel', this.onTabScroll);
 
     this.checkTabWidths();
+    console.log(this.$refs.networkField);
+    
+    window.addEventListener('mousemove',  this.startCursorListener);
+  },
+  beforeDestroy() {
+    window.removeEventListener('resize', this.onResize);
+
+    if (!this.$refs.tabset) { return; }
+    this.$refs.tabset.removeEventListener('wheel', this.onTabScroll);
+
+    window.removeEventListener('mousemove', this.startCursorListener);
   },
   data() {
     return {
@@ -61,6 +67,7 @@ export default {
     ...mapState({
       workspace:                  state => state.mod_workspace.workspaceContent,
       indexCurrentNetwork:        state => state.mod_workspace.currentNetwork,
+      dragBoxContainer:           state => state.mod_workspace.dragBoxContainer,
       statisticsElSelected:       state => state.mod_statistics.selectedElArr,
       hideSidebar:                state => state.globalView.hideSidebar,
       showGlobalResult:           state => state.globalView.globalPopup.showNetResult,
@@ -110,6 +117,10 @@ export default {
       if(newStatus === 'Finished'
         && this.testIsOpen === null
       ) {
+        // user journey tracking
+        this.$store.dispatch('mod_tracker/EVENT_trainingCompleted');
+        Analytics.googleAnalytics.trackCustomEvent('training-completed');
+
         this.net_trainingDone();
         this.event_startDoRequest(false);
       }
@@ -139,6 +150,7 @@ export default {
       set_cursorPosition:       'mod_workspace/SET_CopyCursorPosition',
       set_cursorInsideWorkspace:'mod_workspace/SET_cursorInsideWorkspace',
       set_hideSidebar:          'globalView/SET_hideSidebar',
+
     }),
     ...mapActions({
       popupConfirm:         'globalView/GP_confirmPopup',
@@ -155,6 +167,19 @@ export default {
       offMainTutorial:      'mod_tutorials/offTutorial',
       pushSnapshotToHistory:'mod_workspace-history/PUSH_newSnapshot',
     }),
+    startCursorListener (event) {
+      const borderline = 15;
+      this.set_cursorPosition({x: event.offsetX, y: event.offsetY});
+      this.set_cursorInsideWorkspace(true);
+
+      if(event.offsetX <= borderline ||
+          event.offsetY <= borderline ||
+          event.offsetY >= event.target.clientHeight - borderline ||
+          event.offsetX >= event.target.clientWidth - borderline)
+      {
+        this.set_cursorInsideWorkspace(false);
+      }
+    },
     toggleSidebar() {
       this.set_hideSidebar(!this.hideSidebar)
     },
@@ -254,6 +279,63 @@ export default {
         this.$refs.sidebarToggle.style.marginLeft = 'auto';
       }
 
-    }
+    },
+    dragBoxHorizontalTopBorder() {
+      const { width, left, top,  isVisible } = this.dragBoxContainer;
+      const scaleCoefficient = this.scaleNet / 100;
+      return {
+        zIndex: 2,
+        display: isVisible ? 'block' : 'none',
+        width: width * scaleCoefficient + 'px',
+        height: 1 + 'px',
+        position: 'absolute',
+        top: top * scaleCoefficient  + 'px',
+        left: left * scaleCoefficient + 'px',
+        borderTop: '1px dashed #22DDE5'
+      }
+    },
+    dragBoxHorizontalBottomBorder() {
+      const { width, height, left, top,  isVisible } = this.dragBoxContainer;
+      const scaleCoefficient = this.scaleNet / 100;
+      return {
+        zIndex: 2,
+        display: isVisible ? 'block' : 'none',
+        width: width * scaleCoefficient + 'px',
+        height: 1 + 'px',
+        position: 'absolute',
+        top: (top + height) * scaleCoefficient  + 'px',
+        left: left * scaleCoefficient + 'px',
+        borderTop: '1px dashed #22DDE5'
+      }
+    },
+
+    dragBoxVerticalLeftBorder() {
+      const { width, height, left, top,  isVisible } = this.dragBoxContainer;
+      const scaleCoefficient = this.scaleNet / 100;
+      return {
+        zIndex: 2,
+        display: isVisible ? 'block' : 'none',
+        width: 1 + 'px',
+        height: height * scaleCoefficient + 'px',
+        position: 'absolute',
+        top: top * scaleCoefficient  + 'px',
+        left: left * scaleCoefficient + 'px',
+        borderLeft: '1px dashed #22DDE5'
+      }
+    },
+    dragBoxVerticalRightBorder() {
+      const { width, height, left, top,  isVisible } = this.dragBoxContainer;
+      const scaleCoefficient = this.scaleNet / 100;
+      return {
+        zIndex: 2,
+        display: isVisible ? 'block' : 'none',
+        width: 1 + 'px',
+        height: height * scaleCoefficient + 'px',
+        position: 'absolute',
+        top: top * scaleCoefficient  + 'px',
+        left: (left + width) * scaleCoefficient + 'px',
+        borderRight: '1px dashed #22DDE5'
+      }
+    },
   }
 }

@@ -11,6 +11,10 @@ export const hubSpot = (function() {
         window._hsq.push(input);
     }
 
+    const getCookieValue = function() {
+      return document.cookie.replace(/(?:(?:^|.*;\s*)hubspotutk\s*\=\s*([^;]*).*$)|^.*$/, "$1");
+    }
+
     publicMethods.setup = function() {
         const hubSpotId = process.env.HUBSPOT_ID;
         if (!hubSpotId || isDevelopMode) { return; }
@@ -35,59 +39,69 @@ export const hubSpot = (function() {
         }
     }
 
-    publicMethods.trackRunButtonPress = function(userEmail) {
-        addTag(['trackEvent"', {
+    publicMethods.trackRunButtonPress = function(userEmail = '') {
+        // not currently used because it's not part of our plan
+        addTag(['trackEvent', {
             id: "Run button clicked",
             value: userEmail
         }]);
     }
 
+    publicMethods.identifyUser = function(userEmail = '') {
+        addTag(['identify', {
+            email: userEmail
+        }]);
+    }
+
     publicMethods.trackUserRegistration = function({email, firstName, lastName, communicationsConsent}) {
-        const payload = {
-          "submittedAt": (new Date()).getTime(),
-          "fields": [
-            {
-              "name": "email",
-              "value": email
-            },
-            {
-              "name": "firstname",
-              "value": firstName
-            },
-            {
-              "name": "lastname",
-              "value": lastName
-            },
-          ],
-          "context": {
-            // "hutk": hubspotutk, // include this parameter and set it to the hubspotutk cookie value to enable cookie tracking on your submission
-            "pageUri": "perceptilabs.com/register",
-            "pageName": "User registration"
-          },
-          "legalConsentOptions": {
-            "consent": {
-              "consentToProcess": true,
-              "text": "By clicking Sign up below, you consent to allow PerceptiLabs to store and process the personal information submitted above to provide you the content requested.",
-              "communications": [
-                {
-                  "value": communicationsConsent,
-                  "subscriptionTypeId": 8790776,
-                  "text": "I agree to receive other communications from PerceptiLabs."
-                }
-              ]
-            }
-          },
-          "skipValidation": true
-        }
         
-        const url = 'https://api.hsforms.com/submissions/v3/integration/submit/7122301/d3fd6e39-4be1-4316-b93b-af60978f2337';
-        return axios.post(url, payload)
-          .then(response => {
-              
-          })
-          .catch(error => {
-            console.error('Error tracking user registration', error);
-          });
+      let hubspotutkValue = getCookieValue();
+
+      const payload = {
+        "submittedAt": (new Date()).getTime(),
+        "fields": [
+          {
+            "name": "email",
+            "value": email
+          },
+          {
+            "name": "firstname",
+            "value": firstName
+          },
+          {
+            "name": "lastname",
+            "value": lastName
+          },
+        ],
+        "context": {
+          "hutk": hubspotutkValue, // include this parameter and set it to the hubspotutk cookie value to enable cookie tracking on your submission
+          "pageUri": "perceptilabs.com/register",
+          "pageName": "User registration"
+        },
+        "legalConsentOptions": {
+          "consent": {
+            "consentToProcess": true,
+            "text": "By clicking Sign up below, you consent to allow PerceptiLabs to store and process the personal information submitted above to provide you the content requested.",
+            "communications": [
+              {
+                "value": communicationsConsent,
+                "subscriptionTypeId": 8790776,
+                "text": "I agree to receive other communications from PerceptiLabs."
+              }
+            ]
+          }
+        },
+        "skipValidation": true
+      }
+      
+      const url = 'https://api.hsforms.com/submissions/v3/integration/submit/7122301/d3fd6e39-4be1-4316-b93b-af60978f2337';
+      return axios.post(url, payload)
+        .then(response => {
+            
+        })
+        .catch(error => {
+          console.error('Error tracking user registration', error);
+        });
     }
 
     return publicMethods;
