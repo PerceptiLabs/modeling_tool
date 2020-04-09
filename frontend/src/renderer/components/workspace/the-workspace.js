@@ -126,7 +126,10 @@ export default {
       }
     },
     hideSidebar(newVal) {
-      // this.checkTabWidths();
+      const timer = setTimeout(() => {
+        this.checkTabWidths();
+        clearTimeout(timer);
+      }, 300)
     }
   },
   methods: {
