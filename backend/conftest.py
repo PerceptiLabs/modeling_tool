@@ -20,7 +20,7 @@ def print_name_and_memory():
     #    log.info('Initializing test: {}. Max RSS: {} [MiB]'.format(test_name, rss_max))
 
 
-
+    '''
     def mem_str():
         if sys.platform == 'darwin':
             import resource
@@ -31,11 +31,11 @@ def print_name_and_memory():
         else:
             mem_str = 'Virtual memory: {}%'.format(psutil.virtual_memory().percent)
         return mem_str
-
-    log.info('Initializing test: {}'.format(test_name) + '. ' + mem_str())
+    '''
+    log.info('Initializing test: {}, memory: {}'.format(test_name, psutil.Process().memory_full_info()))
         
     yield
 
-    log.info('Finalizing test: {}'.format(test_name) +'. ' + mem_str())
+    log.info('Finalizing test: {}, memory: {}'.format(test_name, psutil.Process().memory_full_info()))    
 
 
