@@ -1,4 +1,4 @@
-# TODO: (1) create flask server for running in remote process. (2) dynamic imports (3) more descriptive errors.
+3# TODO: (1) create flask server for running in remote process. (2) dynamic imports (3) more descriptive errors.
 
 import traceback
 import logging
@@ -153,6 +153,8 @@ class Tf1xStrategy:
                 y = tf.constant(layer_infos[layer_id].sample)            
                 output_tensors[layer_id] = y
             elif layer_id in layer_instances:
+                if layer_instances[layer_id] is None:
+                    continue                
                 self._add_output_tensors_from_instance(
                     layer_id,
                     graph_spec[layer_id],
@@ -370,9 +372,11 @@ class LightweightCoreAdapter:
 
         self._errors_dict = {}            
         for layer_id, error in strategy_errors.items():
+            print(layer_id, graph_spec[layer_id]['Type'], error)                        
             self._errors_dict[layer_id] = error
         
         for layer_id, error in instance_errors.items():
+            print(error)            
             self._errors_dict[layer_id] = error            
 
     @property
