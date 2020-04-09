@@ -129,7 +129,7 @@ export default {
       const timer = setTimeout(() => {
         this.checkTabWidths();
         clearTimeout(timer);
-      }, 300)
+      }, 300); // transitionDuration of .page_sidebar element
     }
   },
   methods: {
