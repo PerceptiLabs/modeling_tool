@@ -45,15 +45,15 @@ export default {
     networkElementList() {
       let currentNet = this.$store.getters['mod_workspace/GET_currentNetworkElementList'];
       var newNet = {...currentNet};
-      clearContainer(currentNet);
+      // clearContainer(currentNet);
 
       const keysArrayNewNet = Object.keys(newNet);
       const lastElement = newNet[keysArrayNewNet[keysArrayNewNet.length -1]];
 
-      if(lastElement && lastElement.componentName === 'LayerContainer' && lastElement.parentContainerID) {
-        const duplicateElement = document.getElementById(lastElement.layerId);
-        duplicateElement.classList.add('hide-duplicate-element');
-      }
+      // if(lastElement && lastElement.componentName === 'LayerContainer' && lastElement.parentContainerID) {
+      //   const duplicateElement = document.getElementById(lastElement.layerId);
+      //   duplicateElement.classList.add('hide-duplicate-element');
+      // }
 
       function clearContainer(net) {
         for(let idEl in net) {
@@ -67,6 +67,24 @@ export default {
           }
         }
       }
+      
+      let filterItemsWithThoseId = filterItemIdsRecursion(newNet,  []);
+      
+      
+      function filterItemIdsRecursion(net, data) {
+        for(let elId in  net) {
+          const el = net[elId];
+          if(el.layerType === 'Container') {
+            data = [...data, ...Object.keys(el.containerLayersList)];
+          }
+          
+        }
+        return data;
+      }
+      filterItemsWithThoseId.map(id => {
+        delete newNet[id];
+      });
+      
       return newNet
     },
   },

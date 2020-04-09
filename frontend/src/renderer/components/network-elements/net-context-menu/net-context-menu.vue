@@ -2,7 +2,8 @@
   ul.action-list
     li
       button.action-list_btn(type="button" @mousedown="openSettings($event)")
-        span.action-list_btn-text Open layer
+        span.action-list_btn-text(v-if="dataEl.componentName === 'LayerContainer'")  {{ dataEl.layerNone ? 'Close Group' : 'Open Group'}}
+        span.action-list_btn-text(v-else) Open layer
         span DblClick
     li
       button.action-list_btn(type="button" @mousedown="deleteElement")

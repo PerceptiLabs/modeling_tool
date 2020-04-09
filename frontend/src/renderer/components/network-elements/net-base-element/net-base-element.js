@@ -205,7 +205,7 @@ export default {
       if(!this.isTutorialMode && !this.settingsIsOpen) {
         this.hideAllWindow();
         if(!this.currentSelectedEl.length) {
-          this.setFocusEl(event);
+          this.elementSelect({id: this.currentId, setValue: true })
         }
         //this.calcWindowPosition();
         if(this.networkMode === 'edit' && this.editIsOpen) {
