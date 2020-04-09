@@ -32,6 +32,8 @@ def print_name_and_memory():
             mem_str = 'Virtual memory: {}%'.format(psutil.virtual_memory().percent)
         return mem_str
     '''
+
+    #http://www.pybloggers.com/2016/02/psutil-4-0-0-and-how-to-get-real-process-memory-and-environ-in-python/
     log.info('Initializing test: {}, memory: {}'.format(test_name, psutil.Process().memory_full_info()))
         
     yield
