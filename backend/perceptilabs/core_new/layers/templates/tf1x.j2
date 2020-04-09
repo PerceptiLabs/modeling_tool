@@ -403,7 +403,7 @@ class {{layer_name}}(Tf1xLayer):
 {% endmacro %}
 
 
-{% macro layer_tf1x_conv(layer_name, conv_dim, patch_size, feature_maps, stride, padding, dropout, keep_prob, activation, pool, pooling, pool_area, pool_stride) %}
+{% macro layer_tf1x_conv(layer_name, conv_dim, patch_size, feature_maps, stride, padding, dropout, keep_prob, activation, pool, pooling, pool_padding, pool_area, pool_stride) %}
 class {{layer_name}}(Tf1xLayer):
     def __init__(self):
         self._scope = '{{layer_name}}'        
@@ -494,12 +494,12 @@ class {{layer_name}}(Tf1xLayer):
             {% endfilter %}
             {% filter remove_lspaces(8) %}
                 {% if pool and pooling == "Max" %}
-                    y = tf.nn.max_pool(y, ksize={{pool_area}}, strides={{pool_stride}}, padding='SAME')
+                    y = tf.nn.max_pool(y, ksize={{pool_area}}, strides={{pool_stride}}, padding={{pool_padding}})
                 {% endif %}
             {% endfilter %}
             {% filter remove_lspaces(8) %}
                 {% if pool and pooling == "Mean" %}
-                    y = tf.nn.avg_pool(y, ksize={{pool_area}}, strides={{pool_stride}}, padding='SAME')
+                    y = tf.nn.avg_pool(y, ksize={{pool_area}}, strides={{pool_stride}}, padding={{pool_padding}})
                 {% endif %}
             {% endfilter %}
         self._variables = {k: v for k, v in locals().items() if dill.pickles(v)}

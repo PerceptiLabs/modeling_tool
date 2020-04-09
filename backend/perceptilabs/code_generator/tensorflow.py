@@ -323,14 +323,14 @@ class ConvCodeGenerator(CodeGenerator):
         self._patch_size = patch_size
         self._feature_maps = feature_maps
         self._stride = stride
-        self._padding = padding
+        self._padding = "'"+padding+"'"
         self._dropout = dropout
         self._keep_prob = keep_prob
         self._activation = activation
         self._pool = pool
         self._pooling = pooling
         self._pool_area = pool_area
-        self._pool_padding = pool_padding
+        self._pool_padding = "'"+pool_padding+"'" if pool_padding is not None else pool_padding
         self._pool_stride = pool_stride
         self._variable_scope = variable_scope
 
