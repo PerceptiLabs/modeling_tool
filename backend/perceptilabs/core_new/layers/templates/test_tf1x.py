@@ -36,7 +36,7 @@ def test_grayscale_8x8x3_to_8x8x1(j2_engine, sess):
 
 def test_reshape_9x1_to_3x3(j2_engine, sess):
     layer = create_layer(j2_engine, DEFINITION_TABLE, 'ProcessReshape',
-                         shape=[3, 3], permutation=[0, 1]) 
+                        shape=[3, 3], permutation=[0, 1]) 
     
     x = tf.constant(np.random.random((1, 9, 1)))
     y = layer(x)
@@ -44,11 +44,28 @@ def test_reshape_9x1_to_3x3(j2_engine, sess):
 
     
 def test_reshape_27x1_to_3x3x3(j2_engine, sess):
-    layer = create_layer(j2_engine, DEFINITION_TABLE, 'ProcessReshape', shape=[3, 3, 3], permutation=[0, 1, 2]) 
+    layer = create_layer(j2_engine, DEFINITION_TABLE, 'ProcessReshape', 
+                        shape=[3, 3, 3], permutation=[0, 1, 2]) 
     
     x = tf.constant(np.random.random((1, 27, 1)))
     y = layer(x)
     assert y.shape == (1, 3, 3, 3)
+
+def test_image_reshape_10x1_to_256x256(j2_engine, sess):
+    layer = create_layer(j2_engine, DEFINITION_TABLE, 'ProcessImageReshape', 
+                        shape=[256,256])
+    x = tf.constant(np.random.random((1,10,1)))
+
+    y = layer(x)
+    assert y.shape == (256,256,1)
+
+def test_image_reshape_300x1_to_16x16(j2_engine, sess):
+    layer = create_layer(j2_engine, DEFINITION_TABLE, 'ProcessImageReshape', 
+                        shape=[16,16])
+    x = tf.constant(np.random.random((1,300,1)))
+
+    y = layer(x)
+    assert y.shape == (16,16,1)
 
     
 def test_fully_connected_1x1_should_be_normal_multiplication(j2_engine, sess):
