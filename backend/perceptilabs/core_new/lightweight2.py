@@ -113,7 +113,7 @@ class Tf1xStrategy:
             status.assert_consumed().run_restore_ops(session=sess)
 
     def _add_output_tensors_from_instance(self, layer_id, layer_spec, layer, output_tensors, errors):
-        layer_type = layer_spec[layer_id]
+        layer_type = layer_spec['Type']
         if isinstance(layer, TrainingLayer):
             pass
         elif isinstance(layer, DataLayer):
