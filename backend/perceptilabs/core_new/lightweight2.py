@@ -11,8 +11,9 @@ import importlib
 import threading
 from flask import Flask, request, jsonify
 from collections import namedtuple
-
-
+import tensorflow as tf
+from tensorflow.python.training.tracking.base import Trackable
+        
 from perceptilabs.issues import UserlandError
 from perceptilabs.core_new.layers.definitions import resolve_checkpoint_path
 from perceptilabs.core_new.layers import BaseLayer, DataLayer, InnerLayer, Tf1xLayer, TrainingLayer, ClassificationLayer
@@ -36,7 +37,7 @@ def simplify_spec(func):
         return func(self, graph_spec)
     return inner
 
-def exception_to_error(exception):
+def exception_to_error(layer_id, exception):
     tb_obj = traceback.TracebackException(
         exception.__class__,
         exception,
@@ -63,7 +64,6 @@ class Tf1xStrategy:
         return results, {**errors1, **errors2}
 
     def _create_results(self, graph_spec, output_tensors, ordered_ids, layer_instances, layer_infos):
-        import tensorflow as tf
         sess = tf.Session()
 
         sess.run(tf.global_variables_initializer())
@@ -116,11 +116,10 @@ class Tf1xStrategy:
             pass
         elif isinstance(layer, DataLayer):
             try:
-                import tensorflow as tf
                 y = tf.constant(layer.sample)            
                 output_tensors[layer_id] = y
             except Exception as e:
-                errors[layer_id] = exception_to_error(e)                    
+                errors[layer_id] = exception_to_error(layer_id, e)                    
         elif isinstance(layer, InnerLayer):
             bw_cons = [input_id for input_id, _ in layer_spec['backward_connections']]
             
@@ -135,7 +134,7 @@ class Tf1xStrategy:
                     output_tensors[layer_id] = y
                 except Exception as e:
                     # 'userland runtime errors'
-                    errors[layer_id] = exception_to_error(e)
+                    errors[layer_id] = exception_to_error(layer_id, e)
             else:
                 log.debug(f'Layer {layer_id} expected inputs from layers {bw_cons}, got {list(args.keys())}. Skipping.')
         else:
@@ -143,7 +142,6 @@ class Tf1xStrategy:
 
     
     def _get_output_tensors(self, graph_spec, ordered_ids, layer_instances, layer_infos):
-        import tensorflow as tf        
         errors = {}
         output_tensors = {}
         for layer_id in ordered_ids:
@@ -320,10 +318,10 @@ class LightweightCore:
         try:
             exec(code, globs, locs) # TODO: catch errors here!
         except SyntaxError as e:
-            error = exception_to_error(e)
+            error = exception_to_error(layer_id, e)
             return None, error
         except Exception as e:
-            error = exception_to_error(e)            
+            error = exception_to_error(layer_id, e)            
             return None, error
 
         if len(locs.values()) == 0:
@@ -335,7 +333,7 @@ class LightweightCore:
             instance = layer_class()
         except Exception as e:
             # "userland runtime errors"        
-            error = exception_to_error(e)
+            error = exception_to_error(layer_id, e)
             return None, error
         
         return instance, None
