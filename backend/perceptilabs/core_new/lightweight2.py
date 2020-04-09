@@ -13,7 +13,8 @@ from flask import Flask, request, jsonify
 from collections import namedtuple
 import tensorflow as tf
 from tensorflow.python.training.tracking.base import Trackable
-        
+import numpy as np
+
 from perceptilabs.issues import UserlandError
 from perceptilabs.core_new.layers.definitions import resolve_checkpoint_path
 from perceptilabs.core_new.layers import BaseLayer, DataLayer, InnerLayer, Tf1xLayer, TrainingLayer, ClassificationLayer
