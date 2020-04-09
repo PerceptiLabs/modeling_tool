@@ -249,7 +249,7 @@ class LightweightCore:
                 instances[layer_id] = None
                 log.debug(f"Code for layer {layer_id} [{layer_type}] was none. Skipping.")                            
                 continue
-            
+
             if self._cache is not None:
                 layer_info = self._cache.get(layer_id, code_map, edges_by_id)
                 if layer_info is not None:
@@ -257,7 +257,7 @@ class LightweightCore:
                     log.debug(f"Using cached values for layer {layer_id} [{graph_spec[layer_id]['Type']}].")
                     continue
                 
-            log.debug(f"Instantiating layer {layer_id} [{layer_type}]")            
+            log.debug(f"Instantiating layer {layer_id} [{layer_type}]")
             instance, error = self._get_layer_instance(layer_id, layer_type, code)
             instances[layer_id] = instance
 
@@ -267,7 +267,8 @@ class LightweightCore:
             if error is not None:
                 errors[layer_id] = error
                 log.debug(f"Got userland error when trying to instantiate {layer_id} [{layer_type}]: {repr(error)}")                        
-                
+
+            
         return instances, infos, errors
 
     def _get_layer_code(self, layer_id, layer_spec):
@@ -316,7 +317,6 @@ class LightweightCore:
         globs.update(locals())
         locs = {}
 
-        code += 'time.sleep(1)\n'
         try:
             exec(code, globs, locs) # TODO: catch errors here!
         except SyntaxError as e:
