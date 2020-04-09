@@ -37,7 +37,7 @@ def simplify_spec(func):
         return func(self, graph_spec)
     return inner
 
-def exception_to_error(layer_id, exception):
+def exception_to_error(layer_id, layer_type, exception):
     tb_obj = traceback.TracebackException(
         exception.__class__,
         exception,
@@ -112,6 +112,7 @@ class Tf1xStrategy:
             status.assert_consumed().run_restore_ops(session=sess)
 
     def _add_output_tensors_from_instance(self, layer_id, layer_spec, layer, output_tensors, errors):
+        layer_type = layer_spec[layer_id]
         if isinstance(layer, TrainingLayer):
             pass
         elif isinstance(layer, DataLayer):
@@ -119,7 +120,7 @@ class Tf1xStrategy:
                 y = tf.constant(layer.sample)            
                 output_tensors[layer_id] = y
             except Exception as e:
-                errors[layer_id] = exception_to_error(layer_id, e)                    
+                errors[layer_id] = exception_to_error(layer_id, layer_type, e)                    
         elif isinstance(layer, InnerLayer):
             bw_cons = [input_id for input_id, _ in layer_spec['backward_connections']]
             
@@ -134,7 +135,7 @@ class Tf1xStrategy:
                     output_tensors[layer_id] = y
                 except Exception as e:
                     # 'userland runtime errors'
-                    errors[layer_id] = exception_to_error(layer_id, e)
+                    errors[layer_id] = exception_to_error(layer_id, layer_type, e)
             else:
                 log.debug(f'Layer {layer_id} expected inputs from layers {bw_cons}, got {list(args.keys())}. Skipping.')
         else:
@@ -318,10 +319,10 @@ class LightweightCore:
         try:
             exec(code, globs, locs) # TODO: catch errors here!
         except SyntaxError as e:
-            error = exception_to_error(layer_id, e)
+            error = exception_to_error(layer_id, layer_type, e)
             return None, error
         except Exception as e:
-            error = exception_to_error(layer_id, e)            
+            error = exception_to_error(layer_id, layer_type, e)            
             return None, error
 
         if len(locs.values()) == 0:
@@ -332,8 +333,8 @@ class LightweightCore:
         try:
             instance = layer_class()
         except Exception as e:
-            # "userland runtime errors"        
-            error = exception_to_error(layer_id, e)
+            # "userland runtime errors"
+            error = exception_to_error(layer_id, layer_type, e)                        
             return None, error
         
         return instance, None
