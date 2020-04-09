@@ -164,9 +164,9 @@ class Tf1xStrategy:
     
     
 class LightweightCore:
-    def __init__(self, issue_handler=None):
+    def __init__(self, issue_handler=None, cache=None):
         self._issue_handler = issue_handler
-        self._cache = LightweightCache(max_size=20)
+        self._cache = cache
 
     @simplify_spec
     def run(self, graph_spec):
@@ -241,22 +241,31 @@ class LightweightCore:
     def _get_layer_instances_and_info(self, code_map, graph_spec, edges_by_id):
         instances, infos, errors = {}, {}, {}
         for layer_id, code in code_map.items():
+            layer_type = graph_spec[layer_id]['Type']
+            
             if code is None:
                 instances[layer_id] = None
+                log.debug(f"Code for layer {layer_id} [{layer_type}] was none. Skipping.")                            
                 continue
-
+            
             if self._cache is not None:
                 layer_info = self._cache.get(layer_id, code_map, edges_by_id)
                 if layer_info is not None:
                     infos[layer_id] = layer_info
+                    log.debug(f"Using cached values for layer {layer_id} [{graph_spec[layer_id]['Type']}].")
                     continue
                 
-            layer_type = graph_spec[layer_id]['Type']
+            log.debug(f"Instantiating layer {layer_id} [{layer_type}]")            
             instance, error = self._get_layer_instance(layer_id, layer_type, code)
             instances[layer_id] = instance
+
+            if instance is None:
+                log.debug(f"Couldn't instantiate {layer_id} [{layer_type}]")                        
             
             if error is not None:
                 errors[layer_id] = error
+                log.debug(f"Got userland error when trying to instantiate {layer_id} [{layer_type}]: {repr(error)}")                        
+                
         return instances, infos, errors
 
     def _get_layer_code(self, layer_id, layer_spec):
@@ -319,7 +328,6 @@ class LightweightCore:
             return None, None
         
         layer_class = list(locs.values())[0]
-        log.debug(f"Instantiating layer {layer_id}")
         
         try:
             instance = layer_class()
@@ -332,13 +340,17 @@ class LightweightCore:
 
 
 class LightweightCoreAdapter:
-    def __init__(self, graph_dict, layer_extras_reader, error_handler, issue_handler):
+    """ Compability with v1 core """
+    def __init__(self, graph_dict, layer_extras_reader, error_handler, issue_handler, cache):
         self._graph_dict = graph_dict
         self._error_handler = error_handler
         self._extras_reader = layer_extras_reader
         self._error_handler = error_handler
-
-        self._core = LightweightCore(issue_handler)
+        
+        self._core = LightweightCore(
+            issue_handler=issue_handler,
+            cache=cache
+        )
 
     def run(self):
         graph_spec = copy.deepcopy(self._graph_dict)
@@ -346,8 +358,6 @@ class LightweightCoreAdapter:
 
         extras_dict = {}
         for layer_id, layer_info in results.items():
-            #if layer_id == '1564399786876':
-            #    import pdb; pdb.set_trace()
             entry = {
                 'Sample': layer_info.sample,
                 'outShape': [] if layer_info.out_shape is None else list(layer_info.out_shape),

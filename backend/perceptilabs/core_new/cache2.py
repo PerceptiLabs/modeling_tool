@@ -1,9 +1,8 @@
-import networkx as nx
-import numpy as np
+import logging
 import hashlib
+import numpy as np
+import networkx as nx
 from collections import namedtuple
-
-#from perceptilabs.core_new.layers import LightweightDataLayer, LightweightInnerLayer, LightweightTrainingLayer
 
 
 #def print_order(l, d):
@@ -16,6 +15,9 @@ from collections import namedtuple
 #        next = e.next.value if e.next else '<none>'        
 #        print(f'value: {e.value}, prev: {prev}, next: {next}')
 #    print('-- -- --')
+
+
+log = logging.getLogger(__name__)
 
 
 class ListEntry:
@@ -89,7 +91,6 @@ class LightweightCache:
 
             new_entry = self._list.move_up(entry)
             self._map[key] = new_entry
-            #print_order(self._list, self._map)                    
             return value
         else:
             return None
