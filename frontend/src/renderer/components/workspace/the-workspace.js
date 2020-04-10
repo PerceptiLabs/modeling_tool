@@ -143,10 +143,14 @@ export default {
     },
     workspace(newVal) {
       // handles add/delete networks
-      this.$nextTick().then(x => {
-        this.checkTabWidths();
-        this.scrollActiveTabIntoView();
-      });
+      this.$nextTick()
+        .then(x => {
+          this.checkTabWidths();
+          return this.$nextTick();
+        })
+        .then(x => {
+          this.scrollActiveTabIntoView();
+        });
     },
     hideSidebar(newVal) {
       const timer = setTimeout(() => {
@@ -314,7 +318,7 @@ export default {
 
       const tabArrow = document.querySelector('.tab-arrow');
       const sidebarToggle = document.querySelector('.toggle-sidebar');
-      
+  
       // adding activeNetworkTab.clientWidth so the entire tab is visible
       const widthNotVisible = 
         (activeNetworkTab.offsetLeft + activeNetworkTab.clientWidth) // position to end of tab
@@ -324,6 +328,9 @@ export default {
 
       if (widthNotVisible > 0) {
         this.$refs.tablist.scrollLeft += widthNotVisible;
+
+        this.tabArrows.isLeftActive = true;
+        this.tabArrows.isRightActive = false;
       }
       
     },
