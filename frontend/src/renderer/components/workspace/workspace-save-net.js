@@ -51,11 +51,9 @@ const workspaceSaveNet = {
     eventSaveNetwork() {
       const projectsList = this.getLocalUserInfo.projectsList;
       const network = this.currentNetwork;
-      console.log("WHY");
+
       this.checkTrainedNetwork()
         .then((isTrained)=> {
-          //IF New project
-            console.log('Nothing');
 //          if(!projectsList.length || findIndexId(projectsList, network) < 0) {
           if(!network.networkRootFolder) {
             this.saveNetworkPopup.isSyncName = true;
@@ -63,7 +61,6 @@ const workspaceSaveNet = {
             return
           }
 
-          console.log("Here", "SAVE");
           if(isTrained) {
             this.saveNetworkPopup.isFreezeInfo = true;
             this.eventSaveNetworkAs(network.networkID)
