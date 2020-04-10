@@ -53,6 +53,11 @@ const getters = {
       ? state.workspaceContent[state.currentNetwork].networkElementList
       : null
   },
+  GET_currentNetworkElementListLength(state, getters) {
+    return getters.GET_currentNetworkElementList
+      ? getters.GET_currentNetworkElementList.length
+      : 0
+  },
   GET_networkCoreStatus(state, getters) {
     return getters.GET_networkIsNotEmpty
       ? getters.GET_currentNetwork.networkMeta.coreStatus.Status
@@ -524,7 +529,7 @@ const mutations = {
     let arrSelect = getters.GET_currentSelectedEl;
     if(!arrSelect.length) return;
     let arrSelectID = [];
-
+    const copyOfNetwork = {...getters.GET_currentNetworkElementList};
     let net = {...getters.GET_currentNetworkElementList};
     deleteElement(arrSelect);
     for(let el in net) {
@@ -545,7 +550,7 @@ const mutations = {
           delete element.containerLayersList[select.layerId];
           element.layerNone = true;
           const layerListLength = Object.keys(element.containerLayersList).length;
-          
+
           if (layerListLength === 0) {
             if(net[el] && net[el].parentContainerID) {
               delete net[net[el].parentContainerID].containerLayersList[net[el].layerId]
@@ -561,17 +566,26 @@ const mutations = {
           const elementKeyId = Object.keys(net[el].containerLayersList)[0];
           if(net[el].parentContainerID) {
             // is last item and parent component is container
-            delete net[net[el].parentContainerID].containerLayersList[net[el].layerId]; 
-            net[net[el].parentContainerID].containerLayersList[elementKeyId] = net[el].containerLayersList[elementKeyId];
-            delete net[el]; 
+            if(net[net[el].parentContainerID]) {
+              delete net[net[el].parentContainerID].containerLayersList[net[el].layerId];
+              net[net[el].parentContainerID].containerLayersList[elementKeyId] = elementKeyId;
+              delete net[el];
+            } else {
+              // if parent container was deleted on this iteration
+              let parentId = copyOfNetwork[net[el].parentContainerID].parentContainerID;
+              delete net[parentId].containerLayersList[net[el].layerId];
+              net[parentId].containerLayersList[elementKeyId] = elementKeyId;
+              delete net[el];
+            }
           } else {
             // is last item and haven't parent container component
-            delete net[el].containerLayersList[elementKeyId].parentContainerID;
+            delete net[elementKeyId].parentContainerID;
             delete net[el];
           }
         }
       }
     }
+    
     
     state.workspaceContent[state.currentNetwork].networkElementList = net;
     dispatch('mod_events/EVENT_calcArray', null, {root: true});
@@ -580,7 +594,7 @@ const mutations = {
     function deleteElement(list) {
       list.forEach((el)=> {
         if(el.componentName === 'LayerContainer') {
-          deleteElement(Object.values(el.containerLayersList))
+          deleteElement(Object.keys(el.containerLayersList).map(key => net[key]))
         }
         delete net[el.layerId];
         arrSelectID.push(el.layerId);
@@ -779,7 +793,7 @@ const mutations = {
     updateLayerName(newContainer, elementList, 1);
     // creation of group inside another group
     if(parentContainerID) {
-      Vue.set(state.workspaceContent[state.currentNetwork].networkElementList[parentContainerID].containerLayersList, newContainer.layerId, newContainer);
+      Vue.set(state.workspaceContent[state.currentNetwork].networkElementList[parentContainerID].containerLayersList, newContainer.layerId, newContainer.layerId);
       Vue.set(state.workspaceContent[state.currentNetwork].networkElementList, newContainer.layerId, newContainer);
     } else {
       Vue.set(state.workspaceContent[state.currentNetwork].networkElementList, newContainer.layerId, newContainer);
@@ -819,7 +833,7 @@ const mutations = {
       }
       selectList.forEach((el)=>{
         el.parentContainerID = container.layerId;
-        container.containerLayersList[el.layerId] = el;
+        container.containerLayersList[el.layerId] = el.layerId;
       });
       return container
     }
@@ -846,9 +860,8 @@ const mutations = {
         if (element.componentName === 'LayerContainer') {
           element.isShow = false;
           for(let idEl in element.containerLayersList) {
-            const childElement = element.containerLayersList[idEl];
+            const childElement = network[idEl];
             childElement.layerNone = true;
-            network[idEl].layerNone = true; // hide child el from root (history issue)
             if(childElement.componentName === 'LayerContainer') {
               childElement.isShow = false;
             }
@@ -859,7 +872,7 @@ const mutations = {
     }
 
     function calcContainer(container, net) {
-      let el = container;
+      let el = network[container.layerId];
       let listInside = el.containerLayersList;
       let allIdEl = [];
       let allIdOut = [];
@@ -868,7 +881,7 @@ const mutations = {
       let allLeft = [];
 
       for(let elID in listInside) {
-        let item = listInside[elID];
+        let item = network[elID];
         allIdEl.push(elID);
         allIdOut = [...allIdOut, ...new Set(item.connectionOut)];
         allIdIn  = [...allIdIn,  ...new Set(item.connectionIn)];
@@ -923,7 +936,7 @@ const mutations = {
       let containerTop = containerEl.layerMeta.position.top;
       let containerLeft = containerEl.layerMeta.position.left;
       for(let elID in listInside) {
-        let item = listInside[elID];
+        let item = network[elID];
         let itemTop = item.layerMeta.position.top;
         let itemLeft = item.layerMeta.position.left;
         item.layerMeta.containerDiff.top = itemTop - containerTop;
@@ -952,7 +965,7 @@ const mutations = {
           element.isShow = true;
         }
       });
-   
+
     }
     function calcLayerPosition(containerEl) {
       let listInside = containerEl.containerLayersList;
@@ -960,9 +973,9 @@ const mutations = {
       let containerLeft = containerEl.layerMeta.position.left;
       for(let elID in listInside) {
         let netEl = net[elID];
-        let item = listInside[elID];
-        let diffTop = item.layerMeta.containerDiff.top;
-        let diffLeft = item.layerMeta.containerDiff.left;
+        // let item = listInside[elID];
+        let diffTop = netEl.layerMeta.containerDiff.top;
+        let diffLeft = netEl.layerMeta.containerDiff.left;
         // item.layerMeta.position.top = diffTop + containerTop;
         netEl.layerMeta.position.top = diffTop + containerTop;
         // item.layerMeta.position.left = diffLeft + containerLeft;
@@ -978,32 +991,77 @@ const mutations = {
   },
   ungroup_container(state, {dispatch, getters, container: passedContainer}) {
     let net = {...getters.GET_currentNetworkElementList};
+    let linkNet = getters.GET_currentNetworkElementList;
     let selectedEl = getters.GET_currentSelectedEl[0];
     let container = selectedEl || passedContainer;
     if(!(container.layerType === 'Container')) {
       alert('nui container');
       return;
     }
+    dispatch('SET_elementUnselect');
+    
+    const parentContainerId = net[container.layerId].parentContainerID;
+    const containerId = container.layerId;
+    
+    
+    let childContainersIds = []
+    let childElementsIds = [];
+    selectChildContainers({[container.layerId]: container.layerId});
+     function selectChildContainers (elements) {
+       for(let id in elements) {
+         let element = linkNet[id];
+         if(element.layerType === 'Container') {
+           selectChildContainers(element.containerLayersList)
+           childContainersIds.push(element.layerId)
+         } else {
+           childElementsIds.push(element.layerId)
+         }
+       }
+      }
+      
+    
 
-    dispatch('OPEN_container', container);
-    for(let idEl in net) {
+    if(parentContainerId) {
+      delete linkNet[container.parentContainerID].containerLayersList[container.layerId];
+    }
+    
+    for(let position in childContainersIds) {
+      dispatch('OPEN_container', linkNet[childContainersIds[position]]);
+    }
+    
+    
+    for(let position in childElementsIds) {
+      let el = linkNet[childElementsIds[position]];
+      if(parentContainerId) {
+        el.parentContainerID = parentContainerId;
+        linkNet[parentContainerId].containerLayersList[childElementsIds[position]] = childElementsIds[position];
+      } else {
+        delete el.parentContainerID 
+      }
+    }
+
+    
+    
+    for(let idEl in linkNet) {
       let el = net[idEl];
       el.connectionArrow = el.connectionArrow.filter((arrow)=> arrow !== container.layerId)
       // delete el.layerContainerID;
     }
 
-    for(let elId in container.containerLayersList) {
-      net[elId].parentContainerID = container.parentContainerID;
-      if(container.parentContainerID){
-        net[container.parentContainerID].containerLayersList[elId] = net[elId];
-      }
-    }
-
-    delete net[container.layerId];
-    if(container.parentContainerID) {
-      delete net[container.parentContainerID].containerLayersList[container.layerId]; 
-    }
-    state.workspaceContent[state.currentNetwork].networkElementList = net;
+    // for(let elId in container.containerLayersList) {
+    //   net[elId].parentContainerID = container.parentContainerID;
+    //   if(container.parentContainerID){
+    //     debugger;
+    //     net[container.parentContainerID].containerLayersList[elId] = elId;
+    //   }
+    // }
+    for(let position in childContainersIds) {
+      delete linkNet[childContainersIds[position]];
+    };
+    // delete linkNet[containerId]
+    // state.workspaceContent[state.currentNetwork].networkElementList = linkNet;
+    let newMockNet = deepCloneNetwork(linkNet);
+    state.workspaceContent[state.currentNetwork].networkElementList = newMockNet;
   },
   //---------------
   //  OTHER

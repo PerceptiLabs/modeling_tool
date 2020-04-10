@@ -48,6 +48,9 @@
     props: {
       elementData: Object
     },
+    destroyed() {
+      document.removeEventListener('click', this.closeContext);
+    },
     data() {
       return {
         contextIsOpen: false,
@@ -70,11 +73,8 @@
         let arrLeft = [];
         let rootNet = this.currentNetList;
         let net = {};
-        // for (let ix in this.elementData.containerLayersList) {
-        //   net[ix] = rootNet[ix];
-        // }
         
-        
+        // let containerZIndex = 40;
         let containerHaveOpenSubContainer = false;
         let acumulator = collectPositionRecursion(this.elementData.containerLayersList, []);
 
@@ -92,6 +92,7 @@
         const widthEl = widthElement;
        
         return {
+          // zIndex: containerZIndex,
           left: minLeft - padding + 'px',
           width: Math.max(...arrLeft) - minLeft + widthEl + padding*2 + 'px',
           top: minTop - padding + 'px',
@@ -105,6 +106,7 @@
             if(el.layerType === 'Container' && el.layerNone) {
               collectPositionRecursion(el.containerLayersList, data);
               containerHaveOpenSubContainer = true;
+              // containerZIndex = containerZIndex - 2;
             }
 
             data.push([el.layerMeta.position.top, el.layerMeta.position.left]);
@@ -146,26 +148,15 @@
       toggleContainer(val) {
         this.$store.dispatch('mod_workspace/TOGGLE_container', {val, container: this.elementData})
       },
-      switchDblclick(ev) {
-        console.log(ev);
+      closeContext() {
+        this.contextIsOpen = false;
+        console.error('context is closed by event');
+        document.removeEventListener('click', this.closeContext);
       },
       openContext(event) {
         this.contextIsOpen = true;
-        this.elementSelect({id: this.elementData.layerId, setValue: true, resetOther: true })
-        // document.onclick = function (e) {
-        //   this.contextIsOpen = false;
-        // }
-        // if(!this.isTutorialMode && !this.settingsIsOpen) {
-        //   this.hideAllWindow();
-        //   if(!this.currentSelectedEl.length) {
-        //     this.elementSelect({id: this.currentId, setValue: true })
-        //   }
-        //   //this.calcWindowPosition();
-        //   if(this.networkMode === 'edit' && this.editIsOpen) {
-        //     this.setElementInfoOpen(true);
-        //     this.contextIsOpen = true;
-        //   }
-        // }
+        this.elementSelect({id: this.elementData.layerId, setValue: true, resetOther: true });
+        document.addEventListener('click', this.closeContext)
       },
     }
   }

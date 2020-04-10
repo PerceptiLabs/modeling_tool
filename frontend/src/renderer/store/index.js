@@ -8,26 +8,32 @@ Vue.use(Vuex);
 
 
 const logger = createLogger({
-  collapsed: true, // auto-expand logged mutations
+  collapsed: false, // auto-expand logged mutations
   filter (mutation, stateBefore, stateAfter) {
     // returns `true` if a mutation should be logged
     // `mutation` is a `{ type, payload }`
-    return mutation.type !== "aBlacklistedMutation"
+    return mutation.type === "mod_workspace/add_container" || mutation.type === 'mod_workspace/delete_element';
   },
   transformer (state) {
     // transform the state before logging it.
     // for example return only a specific sub-tree
     let netList = state.mod_workspace.workspaceContent[state.mod_workspace.currentNetwork] &&  state.mod_workspace.workspaceContent[state.mod_workspace.currentNetwork].networkElementList;
-    let data = {}; 
-    if(netList) {
-      Object.values(netList).map(el => {
-        if(el.layerType === 'Container') {
-          data[el.layerId] = el.containerLayersList;
-        }
-      })
+    // let data = {}; 
+    // if(netList) {
+    //   Object.values(netList).map(el => {
+    //     if(el.layerType === 'Container') {
+    //       data[el.layerId] = el.containerLayersList;
+    //     }
+    //   })
+    // }
+    if(!!netList) {
+      netList = Object.values(netList).map(el => ({
+        layerId: el.layerId,
+        parentContainerID: el.parentContainerID,
+        containerLayersList: el.containerLayersList
+      }));
     }
-    
-    return data;
+    return netList;
     // return state.mod_workspace.workspaceContent[state.mod_workspace.currentNetwork] &&  state.mod_workspace.workspaceContent[state.mod_workspace.currentNetwork].networkElementList
   },
   mutationTransformer (mutation) {
@@ -40,7 +46,7 @@ const logger = createLogger({
 
 const devPlugins = [];
 if(process.env.NODE_ENV !== 'production') {
-  devPlugins.push(logger);
+  // devPlugins.push(logger);
 }
 
 export default new Vuex.Store({
