@@ -253,7 +253,6 @@ class coreLogic():
             
             script_factory = ScriptFactory()
             deployment_pipe = InProcessDeploymentPipe(script_factory)
-            #deployment_pipe = LocalEnvironmentPipe('/home/anton/Source/perceptilabs/backend/venv-user/bin/python', script_factory)
 
             
             self.core = CompabilityCore(

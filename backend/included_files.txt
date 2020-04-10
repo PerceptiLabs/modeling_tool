@@ -66,6 +66,8 @@ perceptilabs/core_new/errors.py
 perceptilabs/core_new/extras.py
 perceptilabs/core_new/history.py
 perceptilabs/core_new/lightweight.py
+perceptilabs/core_new/lightweight2.py
+perceptilabs/core_new/cache2.py
 perceptilabs/core_new/networkCache.py
 perceptilabs/core_new/session.py
 perceptilabs/core_new/utils.py
@@ -103,6 +105,7 @@ perceptilabs/core_new/graph/__init__.py
 perceptilabs/core_new/graph/base.py
 perceptilabs/core_new/graph/builder.py
 perceptilabs/core_new/graph/utils.py
+perceptilabs/core_new/graph/splitter.py
 
 # perceptilabs/core_new/layers/
 perceptilabs/core_new/layers/__init__.py

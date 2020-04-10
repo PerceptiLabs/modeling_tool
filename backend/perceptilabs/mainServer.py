@@ -50,7 +50,10 @@ def setup_logger(log_level, core_mode):
     logging.basicConfig(
         format='%(asctime)s - %(levelname)s - %(threadName)s - %(filename)s:%(lineno)d - %(message)s',
         level=logging.getLevelName(log_level),
-        handlers=[logging.FileHandler("log.txt"), logging.StreamHandler()]
+        handlers=[
+            logging.FileHandler("kernel.log"),
+            logging.StreamHandler()
+        ]
     )
 
     
