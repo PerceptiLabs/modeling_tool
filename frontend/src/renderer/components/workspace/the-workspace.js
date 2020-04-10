@@ -33,6 +33,9 @@ export default {
     this.$refs.tabset.addEventListener('wheel', this.onTabScroll);
 
     this.checkTabWidths();
+    this.$nextTick().then(x => {
+      this.scrollActiveTabIntoView();
+    });
     console.log(this.$refs.networkField);
     
     window.addEventListener('mousemove',  this.startCursorListener);
@@ -139,7 +142,11 @@ export default {
       }
     },
     workspace(newVal) {
-      this.$nextTick().then(x => this.checkTabWidths());
+      // handles add/delete networks
+      this.$nextTick().then(x => {
+        this.checkTabWidths();
+        this.scrollActiveTabIntoView();
+      });
     },
     hideSidebar(newVal) {
       const timer = setTimeout(() => {
@@ -279,12 +286,6 @@ export default {
     checkTabWidths() {
       if (!this.$refs.tablist) { return; }
 
-      console.group('checkTabWidths');
-      
-      console.log('this.$refs.tablist.scrollWidth', this.$refs.tablist.scrollWidth);
-      console.log('this.$refs.tablist.clientWidth', this.$refs.tablist.clientWidth);
-      console.log('this.$refs.tablist.scrollLeft', this.$refs.tablist.scrollLeft);
-      
       // for rounding errors because of zoom levels
       const pixelToleranceLimit = 1; 
       // scrollWidth can be less than clientWidth!!
@@ -294,24 +295,37 @@ export default {
         ? Math.min(scrollableDistance, 0) // remove the tiny rounding difference 
         : scrollableDistance;
       
-      console.log('maxScrollWidth', maxScrollWidth);
-
       this.tabArrows.isLeftActive = (this.$refs.tablist.scrollLeft !== 0);
-      this.tabArrows.isRightActive = Math.abs(Math.floor(this.$refs.tablist.scrollLeft) - maxScrollWidth) > pixelToleranceLimit;
-      
+      this.tabArrows.isRightActive = Math.abs(Math.floor(this.$refs.tablist.scrollLeft) - maxScrollWidth) > pixelToleranceLimit;      
       this.tabArrows.show = this.tabArrows.isLeftActive || this.tabArrows.isRightActive;
-      console.log('---------------------------------------------');
-      console.log('this.tabArrows.isLeftActive', this.tabArrows.isLeftActive);
-      console.log('this.tabArrows.isRightActive', this.tabArrows.isRightActive);
-      console.log('this.tabArrows.show', this.tabArrows.show);
 
-      console.groupEnd();
       if (this.tabArrows.show && this.$refs.sidebarToggle) {
         this.$refs.sidebarToggle.style.marginLeft = 0;
       } else {
         this.$refs.sidebarToggle.style.marginLeft = 'auto';
       }
 
+    },
+    scrollActiveTabIntoView() {
+
+      if (!this.$refs.tablist) { return; }
+
+      const activeNetworkTab = document.querySelector('.bookmark_tab.workspace_tab.bookmark_tab--active');
+
+      const tabArrow = document.querySelector('.tab-arrow');
+      const sidebarToggle = document.querySelector('.toggle-sidebar');
+      
+      // adding activeNetworkTab.clientWidth so the entire tab is visible
+      const widthNotVisible = 
+        (activeNetworkTab.offsetLeft + activeNetworkTab.clientWidth) // position to end of tab
+        + (tabArrow.clientWidth * 2) // size of arrow
+        + sidebarToggle.clientWidth // size of sidebar toggle
+        - this.$refs.tablist.clientWidth; // position of what's already in view
+
+      if (widthNotVisible > 0) {
+        this.$refs.tablist.scrollLeft += widthNotVisible;
+      }
+      
     },
     dragBoxHorizontalTopBorder() {
       const { width, left, top,  isVisible } = this.dragBoxContainer;
