@@ -1,7 +1,9 @@
 .tab-arrow(
   v-show="tabArrows.show"
   :class="{'disabled': !tabArrows.isLeftActive }"
-  @click="onTabArrowClick(-25)")
+  @mousedown="onTabArrowMouseDown(-25)"
+  @mouseup="onTabArrowMouseUp"
+  @mouseout="onTabArrowMouseUp")
   span &lt;
 ul.bookmark_tab-list.workspace_tab-list(ref="tablist")
   li.bookmark_tab.workspace_tab(
@@ -34,7 +36,9 @@ ul.bookmark_tab-list.workspace_tab-list(ref="tablist")
 .tab-arrow.right(
   v-show="tabArrows.show"
   :class="{'disabled': !tabArrows.isRightActive }"
-  @click="onTabArrowClick(25)")
+  @mousedown="onTabArrowMouseDown(25)"
+  @mouseup="onTabArrowMouseUp"
+  @mouseout="onTabArrowMouseUp")
   span &gt;
 
 .toggle-sidebar(

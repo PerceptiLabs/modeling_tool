@@ -51,7 +51,8 @@ export default {
         show: false,
         isLeftActive: false,
         isRightActive: false,
-      }
+      },
+      mouseDownIntervalTimer: null
     }
   },
   computed: {
@@ -256,13 +257,20 @@ export default {
 
       this.checkTabWidths();
     },
-    onTabArrowClick(value) {
+    onTabArrowMouseDown(value) {
       // when the scroll buttons are pressed
 
       if (!this.$refs.tablist) { return; }
-      this.$refs.tablist.scrollLeft += value | 0;
 
-      this.checkTabWidths();
+      const mouseDownInterval = 100; //ms
+      
+      this.mouseDownIntervalTimer = setInterval(() => {
+        this.$refs.tablist.scrollLeft += value | 0;
+        this.checkTabWidths();
+      }, mouseDownInterval);
+    },
+    onTabArrowMouseUp() {
+      clearInterval(this.mouseDownIntervalTimer);
     },
     onResize() {
       this.checkTabWidths();
