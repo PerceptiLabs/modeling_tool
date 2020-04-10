@@ -55,8 +55,9 @@ const workspaceSaveNet = {
       this.checkTrainedNetwork()
         .then((isTrained)=> {
           //IF New project
-          if(!projectsList.length || findIndexId(projectsList, network) < 0) {
             console.log('Nothing');
+//          if(!projectsList.length || findIndexId(projectsList, network) < 0) {
+          if(!network.networkRootFolder) {
             this.saveNetworkPopup.isSyncName = true;
             this.eventSaveNetworkAs(network.networkID, true)
             return
