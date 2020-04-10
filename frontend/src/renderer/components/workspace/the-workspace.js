@@ -136,6 +136,9 @@ export default {
         });
       }
     },
+    workspace(newVal) {
+      this.$nextTick().then(x => this.checkTabWidths());
+    },
     hideSidebar(newVal) {
       const timer = setTimeout(() => {
         this.checkTabWidths();
@@ -207,14 +210,12 @@ export default {
             text: 'Are you sure you want to end the tutorial?',
             ok: () => {
               this.offMainTutorial();
-              this.delete_network(index)
-                .then(_ => this.checkTabWidths());
+              this.delete_network(index);
             }
           });
       }
       else {
-        this.delete_network(index)
-          .then(_ => this.checkTabWidths());
+        this.delete_network(index);
       }
     },
     openStatistics(i) {
