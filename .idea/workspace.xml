@@ -3,8 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="ae4c30d3-78b4-43e9-92a3-25fa079cdaae" name="Default Changelist" comment="Fix the local storage issue">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/components/sidebar/sidebar-layers.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/components/sidebar/sidebar-layers.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/store/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/store/index.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -338,10 +336,10 @@
       <screen x="40" y="23" width="1640" height="1027" />
     </state>
     <state width="826" height="466" key="DebuggerActiveHint/1680.-550.1920.1057/-240.-1057.1920.1057/40.23.1640.1027@40.23.1640.1027" timestamp="1584434242647" />
-    <state x="114" y="138" width="1692" height="948" key="DiffContextDialog" timestamp="1586525549055">
+    <state x="114" y="138" width="1536" height="941" key="DiffContextDialog" timestamp="1586530259167">
       <screen x="0" y="23" width="1920" height="1177" />
     </state>
-    <state x="114" y="138" key="DiffContextDialog/-1080.-1057.1080.1897/0.-1057.1920.1057/0.23.1920.1177@0.23.1920.1177" timestamp="1586525549055" />
+    <state x="114" y="138" width="1536" height="941" key="DiffContextDialog/-1080.-1057.1080.1897/0.-1057.1920.1057/0.23.1920.1177@0.23.1920.1177" timestamp="1586530259167" />
     <state x="-134" y="-1057" width="1905" height="1057" maximized="true" key="DiffContextDialog/-134.-1057.1920.1057/40.23.1640.1027@40.23.1640.1027" timestamp="1584456668320" />
     <state x="114" y="138" width="1692" height="948" key="DiffContextDialog/-1775.-1057.1920.1057/145.-1057.1920.1057/0.23.1920.1177@0.23.1920.1177" timestamp="1586426381621" />
     <state x="183" y="23" width="1344" height="1027" key="DiffContextDialog/0.0.1680.1050@0.0.1680.1050" timestamp="1583940423313" />
@@ -500,10 +498,10 @@
       <screen x="40" y="23" width="1640" height="1027" />
     </state>
     <state x="604" y="256" key="git4idea.branch.GitSmartOperationDialog/40.23.1640.1027@40.23.1640.1027" timestamp="1584347997836" />
-    <state x="577" y="284" width="785" height="759" key="search.everywhere.popup" timestamp="1586530077433">
+    <state x="577" y="284" width="785" height="759" key="search.everywhere.popup" timestamp="1586530178060">
       <screen x="0" y="23" width="1920" height="1177" />
     </state>
-    <state x="577" y="284" width="785" height="759" key="search.everywhere.popup/-1080.-1057.1080.1897/0.-1057.1920.1057/0.23.1920.1177@0.23.1920.1177" timestamp="1586530077433" />
+    <state x="577" y="284" width="785" height="759" key="search.everywhere.popup/-1080.-1057.1080.1897/0.-1057.1920.1057/0.23.1920.1177@0.23.1920.1177" timestamp="1586530178060" />
     <state x="533" y="251" width="670" height="662" key="search.everywhere.popup/-134.-1057.1920.1057/40.23.1640.1027@40.23.1640.1027" timestamp="1584456397851" />
     <state x="577" y="284" width="785" height="759" key="search.everywhere.popup/-1775.-1057.1920.1057/145.-1057.1920.1057/0.23.1920.1177@0.23.1920.1177" timestamp="1586460240387" />
     <state x="505" y="233" width="670" height="676" key="search.everywhere.popup/0.0.1680.1050@0.0.1680.1050" timestamp="1583940217574" />
