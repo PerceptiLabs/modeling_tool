@@ -3,6 +3,7 @@ import saveNet    from './workspace-save-net.js'
 import scaleNet   from './workspace-scale.js'
 import spinnerNet from './workspace-spinner.js'
 import helpersNet from './workspace-helpers.js'
+import {debounce} from '@/core/helpers'
 import Analytics  from '@/core/analytics'
 
 import TextEditable           from '@/components/base/text-editable.vue'
@@ -263,7 +264,7 @@ export default {
       if (!this.$refs.tablist) { return; }
 
       const mouseDownInterval = 100; //ms
-      
+
       this.mouseDownIntervalTimer = setInterval(() => {
         this.$refs.tablist.scrollLeft += value | 0;
         this.checkTabWidths();
@@ -273,7 +274,7 @@ export default {
       clearInterval(this.mouseDownIntervalTimer);
     },
     onResize() {
-      this.checkTabWidths();
+      debounce(this.checkTabWidths(), 100);
     },
     checkTabWidths() {
       if (!this.$refs.tablist) { return; }
