@@ -266,13 +266,33 @@ export default {
     checkTabWidths() {
       if (!this.$refs.tablist) { return; }
 
-      const maxScrollWidth = this.$refs.tablist.scrollWidth - this.$refs.tablist.clientWidth;
+      console.group('checkTabWidths');
+      
+      console.log('this.$refs.tablist.scrollWidth', this.$refs.tablist.scrollWidth);
+      console.log('this.$refs.tablist.clientWidth', this.$refs.tablist.clientWidth);
+      console.log('this.$refs.tablist.scrollLeft', this.$refs.tablist.scrollLeft);
+      
+      // for rounding errors because of zoom levels
+      const pixelToleranceLimit = 1; 
+      // scrollWidth can be less than clientWidth!!
+      const scrollableDistance = Math.abs(this.$refs.tablist.scrollWidth - this.$refs.tablist.clientWidth);
+      const maxScrollWidth = 
+        scrollableDistance <= pixelToleranceLimit
+        ? Math.min(scrollableDistance, 0) // remove the tiny rounding difference 
+        : scrollableDistance;
+      
+      console.log('maxScrollWidth', maxScrollWidth);
 
       this.tabArrows.isLeftActive = (this.$refs.tablist.scrollLeft !== 0);
       this.tabArrows.isRightActive = (this.$refs.tablist.scrollLeft !== maxScrollWidth);
-
-      this.tabArrows.show = this.tabArrows.isLeftActive || this.tabArrows.isRightActive;
       
+      this.tabArrows.show = this.tabArrows.isLeftActive || this.tabArrows.isRightActive;
+      console.log('---------------------------------------------');
+      console.log('this.tabArrows.isLeftActive', this.tabArrows.isLeftActive);
+      console.log('this.tabArrows.isRightActive', this.tabArrows.isRightActive);
+      console.log('this.tabArrows.show', this.tabArrows.show);
+
+      console.groupEnd();
       if (this.tabArrows.show && this.$refs.sidebarToggle) {
         this.$refs.sidebarToggle.style.marginLeft = 0;
       } else {
