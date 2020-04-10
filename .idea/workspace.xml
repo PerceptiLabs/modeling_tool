@@ -3,12 +3,8 @@
   <component name="ChangeListManager">
     <list default="true" id="ae4c30d3-78b4-43e9-92a3-25fa079cdaae" name="Default Changelist" comment="Fix the local storage issue">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/components/network-elements/elements/layer-container/layer-container.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/components/network-elements/elements/layer-container/layer-container.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/components/network-elements/net-context-menu/net-context-menu.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/components/network-elements/net-context-menu/net-context-menu.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/components/sidebar/sidebar-layers--item.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/components/sidebar/sidebar-layers--item.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/renderer/components/sidebar/sidebar-layers.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/components/sidebar/sidebar-layers.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/renderer/store/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/store/index.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/store/modules/mod_workspace.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/store/modules/mod_workspace.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -426,10 +422,10 @@
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
     <state x="553" y="248" width="996" height="554" key="MultipleFileMergeDialog/0.0.1680.1050@0.0.1680.1050" timestamp="1583938913965" />
-    <state x="473" y="196" key="RollbackChangesDialog" timestamp="1586525390299">
+    <state x="473" y="196" key="RollbackChangesDialog" timestamp="1586529838947">
       <screen x="0" y="23" width="1920" height="1177" />
     </state>
-    <state x="473" y="196" key="RollbackChangesDialog/-1080.-1057.1080.1897/0.-1057.1920.1057/0.23.1920.1177@0.23.1920.1177" timestamp="1586525390299" />
+    <state x="473" y="196" key="RollbackChangesDialog/-1080.-1057.1080.1897/0.-1057.1920.1057/0.23.1920.1177@0.23.1920.1177" timestamp="1586529838947" />
     <state x="473" y="196" key="RollbackChangesDialog/-1775.-1057.1920.1057/145.-1057.1920.1057/0.23.1920.1177@0.23.1920.1177" timestamp="1586431026306" />
     <state x="414" y="154" key="RollbackChangesDialog/0.0.1680.1050@0.0.1680.1050" timestamp="1583939144069" />
     <state x="729" y="154" key="RollbackChangesDialog/0.0.1920.1032@0.0.1920.1032" timestamp="1583938148517" />
@@ -484,10 +480,10 @@
       <screen x="40" y="23" width="1640" height="1027" />
     </state>
     <state x="649" y="460" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/40.23.1640.1027@40.23.1640.1027" timestamp="1584370760402" />
-    <state x="419" y="151" width="1337" height="1049" key="find.popup" timestamp="1586525418869">
+    <state x="419" y="151" width="1337" height="1049" key="find.popup" timestamp="1586528266696">
       <screen x="0" y="23" width="1920" height="1177" />
     </state>
-    <state x="419" y="151" width="1337" height="1049" key="find.popup/-1080.-1057.1080.1897/0.-1057.1920.1057/0.23.1920.1177@0.23.1920.1177" timestamp="1586525418869" />
+    <state x="419" y="151" width="1337" height="1049" key="find.popup/-1080.-1057.1080.1897/0.-1057.1920.1057/0.23.1920.1177@0.23.1920.1177" timestamp="1586528266696" />
     <state x="419" y="151" width="1337" height="1049" key="find.popup/-1080.-803.1080.1897/0.-1057.1920.1057/0.23.1920.1177@0.23.1920.1177" timestamp="1586515467481" />
     <state x="398" y="135" width="1142" height="915" key="find.popup/-134.-1057.1920.1057/40.23.1640.1027@40.23.1640.1027" timestamp="1584458324440" />
     <state x="419" y="151" width="1337" height="1049" key="find.popup/-1775.-1057.1920.1057/145.-1057.1920.1057/0.23.1920.1177@0.23.1920.1177" timestamp="1586510482469" />
@@ -504,10 +500,10 @@
       <screen x="40" y="23" width="1640" height="1027" />
     </state>
     <state x="604" y="256" key="git4idea.branch.GitSmartOperationDialog/40.23.1640.1027@40.23.1640.1027" timestamp="1584347997836" />
-    <state x="577" y="284" width="785" height="759" key="search.everywhere.popup" timestamp="1586525556608">
+    <state x="577" y="284" width="785" height="759" key="search.everywhere.popup" timestamp="1586530077433">
       <screen x="0" y="23" width="1920" height="1177" />
     </state>
-    <state x="577" y="284" width="785" height="759" key="search.everywhere.popup/-1080.-1057.1080.1897/0.-1057.1920.1057/0.23.1920.1177@0.23.1920.1177" timestamp="1586525556608" />
+    <state x="577" y="284" width="785" height="759" key="search.everywhere.popup/-1080.-1057.1080.1897/0.-1057.1920.1057/0.23.1920.1177@0.23.1920.1177" timestamp="1586530077433" />
     <state x="533" y="251" width="670" height="662" key="search.everywhere.popup/-134.-1057.1920.1057/40.23.1640.1027@40.23.1640.1027" timestamp="1584456397851" />
     <state x="577" y="284" width="785" height="759" key="search.everywhere.popup/-1775.-1057.1920.1057/145.-1057.1920.1057/0.23.1920.1177@0.23.1920.1177" timestamp="1586460240387" />
     <state x="505" y="233" width="670" height="676" key="search.everywhere.popup/0.0.1680.1050@0.0.1680.1050" timestamp="1583940217574" />

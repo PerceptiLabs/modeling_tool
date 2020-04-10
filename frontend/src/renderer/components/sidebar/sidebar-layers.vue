@@ -44,7 +44,6 @@ export default {
       networkElementListLength: 'mod_workspace/GET_currentNetworkElementListLength',
     }),
     networkElementList() {
-      console.log('update in sidebar');
       let currentNet = this.$store.getters['mod_workspace/GET_currentNetworkElementList'];
       console.log(currentNet);
       var newNet = {...currentNet};
