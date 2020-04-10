@@ -297,7 +297,7 @@ export default {
       console.log('maxScrollWidth', maxScrollWidth);
 
       this.tabArrows.isLeftActive = (this.$refs.tablist.scrollLeft !== 0);
-      this.tabArrows.isRightActive = (this.$refs.tablist.scrollLeft !== maxScrollWidth);
+      this.tabArrows.isRightActive = Math.abs(Math.floor(this.$refs.tablist.scrollLeft) - maxScrollWidth) > pixelToleranceLimit;
       
       this.tabArrows.show = this.tabArrows.isLeftActive || this.tabArrows.isRightActive;
       console.log('---------------------------------------------');
