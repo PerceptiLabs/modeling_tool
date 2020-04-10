@@ -247,9 +247,12 @@ export default {
     },
     onTabScroll(event) {
       event.preventDefault();
-
+      
       if (!this.$refs.tablist) { return; }
-      this.$refs.tablist.scrollLeft += event.deltaY | 0;
+
+      const scrollFactor = 20;
+      const scrollDelta = event.deltaY > 0 ? scrollFactor : -1 * scrollFactor;
+      this.$refs.tablist.scrollLeft += scrollDelta | 0;
 
       this.checkTabWidths();
     },
