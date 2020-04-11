@@ -291,7 +291,6 @@ const fixFilepathSeparator = function fileUrl(filepath) {
 
 const debounce = function(callback, waitInMs) {
 
-  console.log('in debounce');
   let timerHandle;
 
   return function() {
