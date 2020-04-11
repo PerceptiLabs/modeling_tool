@@ -1,6 +1,6 @@
 # Adding new files to the backend build
 
-All files that should be a part of the build (usually, everything except tests) must be added to the included_files.txt
+All files that should be a part of the build (usually, everything except tests) must be added to the backend/included_files.txt
 
 
 # Adding new Python dependencies
