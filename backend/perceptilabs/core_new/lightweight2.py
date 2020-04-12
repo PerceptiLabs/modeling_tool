@@ -9,11 +9,10 @@ import networkx as nx
 import requests
 import importlib
 import threading
-from flask import Flask, request, jsonify
 from collections import namedtuple
 import tensorflow as tf
-from tensorflow.python.training.tracking.base import Trackable
 import numpy as np
+
 
 from perceptilabs.issues import UserlandError
 from perceptilabs.core_new.layers.definitions import resolve_checkpoint_path
@@ -37,6 +36,7 @@ def simplify_spec(func):
             graph_spec = copy.deepcopy(graph_spec['Layers'])
         return func(self, graph_spec)
     return inner
+
 
 def exception_to_error(layer_id, layer_type, exception):
     tb_obj = traceback.TracebackException(
@@ -68,7 +68,12 @@ class Tf1xStrategy:
         sess = tf.Session()
 
         sess.run(tf.global_variables_initializer())
-        self._restore_checkpoint(graph_spec, sess)
+
+        if tf.version.VERSION.startswith('1.15'):
+            self._restore_checkpoint(graph_spec, sess)
+        else:
+            log.warning(f"Checkpoint restore only works with TensorFlow 1.15. Current version is {tf.version.VERSION}")
+            
         outputs = sess.run(output_tensors)
 
         errors = {}        
@@ -98,6 +103,8 @@ class Tf1xStrategy:
         return results, errors
 
     def _restore_checkpoint(self, graph_spec, sess):
+        from tensorflow.python.training.tracking.base import Trackable
+
         export_directory = None
         for spec in graph_spec.values():
             export_directory = resolve_checkpoint_path(spec)                    
@@ -110,7 +117,7 @@ class Tf1xStrategy:
 
             path = tf.train.latest_checkpoint(export_directory)
             status = checkpoint.restore(path)
-            status.assert_consumed().run_restore_ops(session=sess)
+            status.run_restore_ops(session=sess)
 
     def _add_output_tensors_from_instance(self, layer_id, layer_spec, layer, output_tensors, errors):
         layer_type = layer_spec['Type']
