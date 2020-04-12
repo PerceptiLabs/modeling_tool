@@ -1,26 +1,13 @@
-import sys
-import time
 import pytest
-import logging
 import tempfile
 import numpy as np
-from queue import Queue
-
-from perceptilabs.core_new.layers.script import ScriptFactory
-from perceptilabs.core_new.core2 import Core
-from perceptilabs.core_new.graph.builder import GraphBuilder
-from perceptilabs.core_new.graph import Graph
-from perceptilabs.core_new.layers import TrainingLayer
-from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP
-from perceptilabs.core_new.deployment import InProcessDeploymentPipe, LocalEnvironmentPipe
 
 
-logging.basicConfig(stream=sys.stdout,
-                    format='%(asctime)s - %(levelname)s - %(threadName)s - %(filename)s:%(lineno)d - %(message)s',
-                    level=logging.DEBUG)
+from perceptilabs.core_new.lightweight2 import LightweightCore
+from perceptilabs.utils import sanitize_path
 
 
-@pytest.fixture
+@pytest.fixture(scope='function')
 def graph_spec_binary_classification():
     n_classes = 10
     n_samples = 30
@@ -33,8 +20,8 @@ def graph_spec_binary_classification():
     mat = np.random.randint(0, n_classes, (n_samples,))
     np.save(f2.name, mat)
     
-    inputs_path = f1.name.replace("\\","/")
-    labels_path = f2.name.replace("\\","/")    
+    inputs_path = sanitize_path(f1.name)
+    labels_path = sanitize_path(f2.name)
 
     #inputs_path = "/home/anton/Data/mnist_split/mnist_input.npy"
     #labels_path = "/home/anton/Data/mnist_split/mnist_labels.npy"
@@ -144,84 +131,94 @@ def graph_spec_binary_classification():
     f2.close()
 
 
-'''
-Disabling these tests while intermittent failures are being worked on
+def test_out_shapes_ok(graph_spec_binary_classification):
+    lw_core = LightweightCore()
+    results, instance_errors, strategy_errors = lw_core.run(graph_spec_binary_classification)
+ 
+    assert results['1'].out_shape == (784,) # Datadata inputs
+    assert results['2'].out_shape == (1,) # Datadata labels
+    assert results['3'].out_shape == (28, 28, 1) # Reshape
+    assert results['4'].out_shape == (10,) # FC
+    assert results['5'].out_shape == (10,) # One hot
+    assert results['6'].out_shape is None
 
-@pytest.mark.slow
-def test_train_normal_converges(graph_spec_binary_classification):
     
-    script_factory = ScriptFactory()
-    deployment_pipe = InProcessDeploymentPipe(script_factory)
-    #deployment_pipe = LocalEnvironmentPipe('/home/anton/Source/perceptilabs/backend/venv-user/bin/python', script_factory)    
-
-    replica_by_name = {repl_cls.__name__: repl_cls for repl_cls in BASE_TO_REPLICA_MAP.values()}
-    graph_builder = GraphBuilder(replica_by_name)    
+def test_out_shapes_ok_partial_graph(graph_spec_binary_classification):
+    del graph_spec_binary_classification['Layers']['2']['Properties']['accessProperties']
     
-    core = Core(
-        graph_builder,
-        deployment_pipe,
-    )
-
-    core.run(graph_spec_binary_classification)
-
-    #print("POST RUN CALL")
+    lw_core = LightweightCore()
+    results, instance_errors, strategy_errors = lw_core.run(graph_spec_binary_classification)
+ 
+    assert results['1'].out_shape == (784,) # Datadata inputs
+    assert results['2'].out_shape == None # Datadata labels
+    assert results['3'].out_shape == (28, 28, 1) # Reshape
+    assert results['4'].out_shape == (10,) # FC
+    assert results['5'].out_shape == None # One hot
+    assert results['6'].out_shape is None
     
-    while core.is_running:
 
-        #graphs = core.graphs
-        #print("aaaa", graph)
-        #print(graph.active_training_node.layer.layer_gradients.keys())
+def test_out_shapes_ok_with_syntax_error(graph_spec_binary_classification):
+    code  = "print('hello')\n"
+    code += "!!!" # Bad syntax
+    graph_spec_binary_classification['Layers']['3']['Code'] = {"Output": code}
     
-        time.sleep(1)
+    lw_core = LightweightCore()
+    results, instance_errors, strategy_errors = lw_core.run(graph_spec_binary_classification)
+ 
+    assert results['1'].out_shape == (784,) # Datadata inputs
+    assert results['2'].out_shape == (1,) # Datadata labels
+    assert results['3'].out_shape == None # Reshape
+    assert results['4'].out_shape == None # FC
+    assert results['5'].out_shape == (10,) # One hot
+    assert results['6'].out_shape is None
 
 
-    accuracy_list = []
-    for graph in core.graphs:
-        acc = graph.active_training_node.layer.accuracy_training
-        accuracy_list.append(acc)
-
-    print("Accuracy: ", np.mean(accuracy_list[-10:]))
+def test_errors_ok_with_syntax_error(graph_spec_binary_classification):
+    code  = "print('hello')\n"
+    code += "!!!" # Bad syntax
+    graph_spec_binary_classification['Layers']['3']['Code'] = {"Output": code}
     
-    assert np.mean(accuracy_list[-10:]) >= 0.75
+    lw_core = LightweightCore()
+    results, instance_errors, strategy_errors = lw_core.run(graph_spec_binary_classification)
+
+    assert instance_errors['3'].line_number == 2
 
 
-@pytest.mark.slow
-def test_train_normal_distributed_converges(graph_spec_binary_classification):
+def test_out_shapes_ok_with_runtime_error(graph_spec_binary_classification):
+    code  = "print('hello')\n"
+    code += "1/0" # Will generate runtime error
+    graph_spec_binary_classification['Layers']['3']['Code'] = {"Output": code}
     
-    script_factory = ScriptFactory()
-    deployment_pipe = InProcessDeploymentPipe(script_factory)
-    #deployment_pipe = LocalEnvironmentPipe('/home/anton/Source/perceptilabs/backend/venv-user/bin/python', script_factory)    
-
-    replica_by_name = {repl_cls.__name__: repl_cls for repl_cls in BASE_TO_REPLICA_MAP.values()}
-    graph_builder = GraphBuilder(replica_by_name)    
+    lw_core = LightweightCore()
+    results, instance_errors, strategy_errors = lw_core.run(graph_spec_binary_classification)
+ 
+    assert results['1'].out_shape == (784,) # Datadata inputs
+    assert results['2'].out_shape == (1,) # Datadata labels
+    assert results['3'].out_shape == None # Reshape
+    assert results['4'].out_shape == None # FC
+    assert results['5'].out_shape == (10,) # One hot
+    assert results['6'].out_shape is None
     
-    core = Core(
-        graph_builder,
-        deployment_pipe,
-    )
 
-    json_network = graph_spec_binary_classification
-    json_network['Layers']['6']['Properties']['Distributed'] = True
-
-    core.run(json_network)
-
-    #print("POST RUN CALL")
+def test_errors_ok_with_runtime_error(graph_spec_binary_classification):
+    code  = "print('hello')\n"
+    code += "1/0" # Will generate runtime error
+    graph_spec_binary_classification['Layers']['3']['Code'] = {"Output": code}
     
-    while core.is_running:
+    lw_core = LightweightCore()
+    results, instance_errors, strategy_errors = lw_core.run(graph_spec_binary_classification)
 
-        #graphs = core.graphs
-        #print("aaaa", graph)
-        #print(graph.active_training_node.layer.layer_gradients.keys())
+    assert '3' in instance_errors
+
+
+def test_errors_detected_in_training_layer(graph_spec_binary_classification):
+    code  = "print('hello')\n"
+    code += "1/0" # Will generate runtime error
+    graph_spec_binary_classification['Layers']['6']['Code'] = {"Output": code}
     
-        time.sleep(1)
+    lw_core = LightweightCore()
+    results, instance_errors, strategy_errors = lw_core.run(graph_spec_binary_classification)
 
+    assert '6' in instance_errors
 
-    accuracy_list = []
-    for graph in core.graphs:
-        acc = graph.active_training_node.layer.accuracy_training
-        accuracy_list.append(acc)
-        #print(acc)
     
-    assert np.mean(accuracy_list[-10:]) >= 0.75
-
-'''

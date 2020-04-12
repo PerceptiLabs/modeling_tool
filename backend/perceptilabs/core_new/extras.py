@@ -6,6 +6,9 @@ class LayerExtrasReader:
     def __init__(self):
         self.clear()
 
+    def set_dict(self, dict_):
+        self._dict = dict_.copy()
+
     def clear(self):
         self._dict = {}
 

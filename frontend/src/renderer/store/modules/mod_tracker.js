@@ -64,6 +64,9 @@ const actions = {
   EVENT_trainingStop() {
     mixPanel.track('Training Stop');
   },
+  EVENT_trainingCompleted() {
+    mixPanel.track('Training Completed');
+  },
   EVENT_trainingLayerView({}, ) {
     if(isElectron()) {
       mixPanel.track('Training Layer View', {'Layer Name': '', 'Chart Type': ''});

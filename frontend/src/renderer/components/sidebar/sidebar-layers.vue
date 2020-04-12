@@ -22,7 +22,8 @@
         ref="sidebarLayersItem"
         :item-data="item"
         )
-
+    // .form_row
+    //   base-checkbox.bigest-text(v-model="isGridEnabled") Grid
 
 
 
@@ -30,7 +31,7 @@
 
 <script>
 import SidebarLayersItem from '@/components/sidebar/sidebar-layers--item.vue'
-import {mapGetters} from 'vuex';
+import {mapGetters, mapMutations} from 'vuex';
 
 export default {
   name: 'SidebarLayers',
@@ -69,6 +70,14 @@ export default {
       }
       return newNet
     },
+    isGridEnabled: {
+      get() {
+        return this.$store.state.globalView.isGridEnabled 
+      },
+      set(value) {
+        this.setGridValue(value);
+      }
+    },
   },
   watch: {
     currentSelectedList(newList) {
@@ -86,6 +95,9 @@ export default {
     }
   },
   methods: {
+    ...mapMutations({
+      setGridValue: 'globalView/setGridStateMutation'
+    }),
     deleteElement() {
       // let currentSelect =  this.networkElementList.findIndex((item)=> {
       //   return item.meta.isSelected === true;
@@ -146,5 +158,8 @@ export default {
   }
   .hide-duplicate-element {
     display: none;
+  }
+  .form_row {
+    padding: 10px 15px;
   }
 </style>

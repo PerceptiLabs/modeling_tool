@@ -54,10 +54,10 @@ ls -l -R
 ################### BUILD FRONTEND #######################
 echo "----- Building frontend -----"
 cd ../../frontend
-npm run build:web
+npm run build-render
 if [ $? -ne 0 ]; then exit 1; fi
 
-cp -r dist/* ../build/frontend_out/
+cp -r src/dist/* ../build/frontend_out/
 
 ################### MOVING EVERYTHING TO CORRECT PLACES #######################
 cd ../

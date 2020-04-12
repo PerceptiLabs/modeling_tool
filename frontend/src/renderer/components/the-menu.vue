@@ -137,6 +137,7 @@ export default {
       openNetwork:      'mod_events/EVENT_openNetwork',
       loadNetwork:      'mod_events/EVENT_loadNetwork',
       HCCopy:           'mod_events/EVENT_hotKeyCopy',
+      HCCut:           'mod_events/EVENT_hotKeyCut',
       HCPaste:          'mod_events/EVENT_hotKeyPaste',
       HCSelectAll:      'mod_workspace/SET_elementSelectAll',
       HCDeselectAll:    'mod_workspace/SET_elementUnselect',
@@ -455,8 +456,11 @@ export default {
             {label: 'Redo',         accelerator: this.isMac ? 'meta+shift+z' : 'ctrl+shift+z',  role: 'redo',       enabled: this.openApp,        active: this.toNextStepHistory },
             {label: 'Redo',         accelerator: this.isMac ? 'meta+y' : 'ctrl+y',              role: 'redo',       enabled: this.openApp,        active: this.toNextStepHistory },
             {type:  'separator'},
+
+            {label: 'Cut',          accelerator: this.isMac ? 'meta+x' : 'ctrl+x',              role: 'cut',        enabled: this.openApp,        active: this.HCCut },
             {label: 'Copy',         accelerator: this.isMac ? 'meta+c' : 'ctrl+c',              role: 'copy',       enabled: this.openApp,        active: this.HCCopy },
             {label: 'Paste',        accelerator: this.isMac ? 'meta+v' : 'ctrl+v',              role: 'paste',      enabled: this.openApp,        active: this.HCPaste },
+
             {type:  'separator'},
             {label: 'Select all',   accelerator: this.isMac ? 'meta+a' : 'ctrl+a',              role: 'selectAll',  enabled: this.openApp,        active: this.HCSelectAll },
             {label: 'Deselect all', accelerator: this.isMac ? 'meta+shift+a' : 'ctrl+shift+a',                      enabled: this.openApp,        active: this.HCDeselectAll },
