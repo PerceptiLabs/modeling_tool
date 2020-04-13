@@ -80,7 +80,7 @@ const actions = {
               throw('err');
             }
         } catch(e) {
-          dispatch('globalView/GP_infoPopup', 'The model is not valid', {root: true});
+          dispatch('globalView/GP_infoPopup', 'The model does not exist or the Kernel is not online.', {root: true});
           return
         }
 
