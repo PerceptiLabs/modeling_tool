@@ -1,12 +1,32 @@
 # Introduction 
-Future home of the PerceptiLabs API server
+This is the PerceptiLabs API server.
 
-# Getting Started
-TODO: Guide users through getting your code up and running on their own system. In this section you can talk about:
-1.	Installation process
-2.	Software dependencies
-3.	Latest releases
-4.	API references
+# Installation
+1. Create a venv:
+    ```
+    python3 -m venv .venv
+    source .venv/bin/activate
+    ```
 
-# Build and Test
-TODO: Describe and show how to build your code and run the tests. 
+2. Install the dependencies:
+    ```
+    pip install --upgrate pip setuptools
+    pip install -r requirements.txt
+    ```
+
+3. Create the database
+    ```
+    ./manage.py migrate
+    ```
+
+# Run the server
+```
+./manage.py runserver
+```
+
+# Play with the API
+Go to http://localhost:8000
+
+# Running Integration Tests
+With a started server, run `python rygg/api/integration/run.py` and
+wait for success
