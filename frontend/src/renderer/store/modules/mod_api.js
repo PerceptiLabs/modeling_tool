@@ -555,13 +555,15 @@ const actions = {
       }
     };
 
-    console.log('getCode', theData);
+    // console.log('getCode - payload', theData);
+    // console.log('getCode - layerId', layerId);
     if(isWeb()) {
       dispatch('globalView/ShowCoreNotFoundPopup', null, { root: true });
     }
     return coreRequest(theData)
       .then((data)=> {
-        // console.log('coreRequest data', data);
+        // console.log('getCode - response', data);
+        // console.log('getCode - layerId', layerId);
         return data
       })
       .catch((err)=> {
