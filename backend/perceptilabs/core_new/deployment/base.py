@@ -89,10 +89,9 @@ class DeploymentPipe(ABC):
         return self.config_table[session_id].copy()
 
 class InProcessDeploymentPipe(DeploymentPipe):
-    def __init__(self, script_factory, script_name='training_script.py',on_script_created=None):
+    def __init__(self, script_factory, on_script_created=None):
         self._script_factory = script_factory   
         self.on_script_created = on_script_created     
-        self.script_name = script_name
 
     def deploy(self, graph, session_id: str, timeout=10):
         config = self.get_session_config(session_id)
@@ -100,7 +99,7 @@ class InProcessDeploymentPipe(DeploymentPipe):
 
         self._line_to_node_map = line_to_node_map # TODO: inject script_factory instead of exposing this here
         
-        with open(self.script_name, 'wt') as f:
+        with open('training_script.py', 'wt') as f:
             f.write(code)
             f.flush()
 
