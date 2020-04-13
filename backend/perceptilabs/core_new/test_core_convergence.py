@@ -169,6 +169,7 @@ def test_train_normal_converges(graph_spec_binary_classification):
         os.mkdir('./training_scripts')
     
     copyfile('./training_script.py', './training_scripts/train_normal_training_script.py')
+    print("training_script has been saved")
 
     #print("POST RUN CALL")
     
@@ -214,7 +215,8 @@ def test_train_normal_distributed_converges(graph_spec_binary_classification):
         os.mkdir('./training_scripts')
     
     copyfile('./training_script.py', './training_scripts/train_normal_distributed_training_script.py')
-
+    print("training_script has been saved")
+    
     #print("POST RUN CALL")
     
     while core.is_running:
