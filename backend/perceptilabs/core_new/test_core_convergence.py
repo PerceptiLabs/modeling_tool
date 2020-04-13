@@ -147,7 +147,7 @@ def graph_spec_binary_classification():
 
 
 
-Disabling these tests while intermittent failures are being worked on
+#Disabling these tests while intermittent failures are being worked on
 
 @pytest.mark.slow
 def test_train_normal_converges(graph_spec_binary_classification):
