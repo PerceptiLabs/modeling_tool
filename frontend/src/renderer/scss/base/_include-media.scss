@@ -560,6 +560,11 @@ $im-no-media-expressions: ('screen', 'portrait', 'landscape') !default;
   } @else if ($im-media-support and length($conditions) > 0) {
     @media #{unquote(parse-expression(nth($conditions, 1)))} {
       // Recursive call
+      .is-electron & {
+        @include media(slice($conditions, 2)...) {
+          @content;
+        }
+      }
 /*      @include media(slice($conditions, 2)...) {
         @content;
       }*/

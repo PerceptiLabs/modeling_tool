@@ -120,7 +120,7 @@ def send_request(request):
     checkpointDict=dict()
     lwDict=dict()
 
-    core_interface = Interface(cores, dataDict, checkpointDict, lwDict)
+    core_interface = Interface(cores, dataDict, checkpointDict, lwDict, core_mode='v1')
 
     return core_interface.create_response(request)
 
@@ -131,8 +131,8 @@ def test_getGraphOrder():
 
     request = create_request(reciever, action, value)
     
-    response, warnings, errors = send_request(request)
+    response, issue_handler = send_request(request)
     
-    assert warnings.empty()
-    assert errors.empty()
+    assert len(issue_handler.pop_warnings()) == 0
+    assert len(issue_handler.pop_errors()) == 0
     assert response == ['1','2','3','5','4','6']

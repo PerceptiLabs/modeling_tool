@@ -4,6 +4,14 @@
     ref="network"
     @mousedown="refNetworkMouseDown($event)"
   )
+    svg(v-if="isGridEnabled" width="100%" height="100%" xmlns='http://www.w3.org/2000/svg')
+      defs
+        pattern#smallGrid(width='10' height='10' patternUnits='userSpaceOnUse')
+          path(d='M 10 0 L 0 0 0 10' fill='none' stroke='gray' stroke-width='0.5')
+        pattern#grid(width='60' height='60' patternUnits='userSpaceOnUse')
+          rect(width='100' height='100' fill='url(#smallGrid)')
+          path(d='M 60 0 L 0 0 0 60' fill='none' stroke='gray' stroke-width='1')
+      rect(width='100%' height='100%' fill='url(#grid)')
     svg.svg-arrow(:style="styleSvgArrow")
       defs
         marker#svg-arrow_triangle(
@@ -117,11 +125,6 @@
     marker#svg-arrow_end polyline {
       fill: #000
     }
-  }
-  .svg-arrow_line {
-    stroke: $col-primary; //inline styles for the canvas plagin
-    stroke-width: 3;
-    fill: transparent;
   }
   .svg-arrow_line {
     stroke: $col-primary; //inline styles for the canvas plagin

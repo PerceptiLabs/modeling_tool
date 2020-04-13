@@ -2,6 +2,8 @@ import { generateID, calcLayerPosition, deepCopy, deepCloneNetwork, isLocalStora
 import { widthElement } from '@/core/constants.js'
 import Vue    from 'vue'
 import router from '@/router'
+import {isElectron} from "@/core/helpers";
+
 const namespaced = true;
 
 const state = {
@@ -22,6 +24,14 @@ const state = {
   },
   showStartTrainingSpinner: false,
   isOpenElement: false,
+  // for dragging multiple elements
+  dragBoxContainer: {
+    isVisible: false,
+    top: 0,
+    left: 0,
+    width: 0,
+    height: 0,
+  }
 };
 
 const getters = {
@@ -53,10 +63,21 @@ const getters = {
     if(getters.GET_networkIsNotEmpty) {
       let elList = getters.GET_currentNetworkElementList;
       for(var el in elList) {
+        if (elList[el].componentName === 'LayerContainer' && elList[el].layerNone) continue;
         if (elList[el].layerMeta.isSelected) selectedIndex.push(elList[el]);
       }
     }
     return selectedIndex;
+  },
+  GET_currentSelectedElIds(state, getters) {
+    let selectedIds = [];
+    if(getters.GET_networkIsNotEmpty) {
+      let elList = getters.GET_currentNetworkElementList;
+      for(var el in elList) {
+        if (elList[el].layerMeta.isSelected) selectedIds.push(el);
+      }
+    }
+    return selectedIds;
   },
   GET_networkIsTraining(state, getters) {
     const coreStatus = getters.GET_networkCoreStatus;
@@ -170,7 +191,7 @@ const mutations = {
         const network = JSON.parse(localStorage.getItem(key));
 
         // remove focus from previous focused network elements
-        if (network.networkElementList && network.networkElementList.length >0) {
+        if (network.networkElementList) {
           Object.keys(network.networkElementList).map(elKey => {
             network.networkElementList[elKey].layerMeta.isSelected = false;
           });
@@ -453,15 +474,14 @@ const mutations = {
 
     let top = newEl.layerMeta.position.top;
     let left = newEl.layerMeta.position.left;
-    let zoom = getters.GET_currentNetwork.networkMeta.zoom;
     let elementList = getters.GET_currentNetworkElementList;
 
     newEl.layerMeta.tutorialId = getters.GET_tutorialActiveId;
-    newEl.layerMeta.position.top = (event.offsetY - top)/zoom;
-    newEl.layerMeta.position.left = (event.offsetX - left)/zoom;
+    newEl.layerMeta.position.top = (event.offsetY - top);
+    newEl.layerMeta.position.left = (event.offsetX - left);
     let depth = checkPosition(newEl, elementList);
 
-    if(isCursorInsideWorkspace && depth > 0) {
+    if(isCursorInsideWorkspace) {
       newEl.layerMeta.position.top =  (cursorPosition.y + newEl.layerMeta.position.top) - firstCopyPositionElement.top - duplicatePositionIndent;
       newEl.layerMeta.position.left =  (cursorPosition.x + newEl.layerMeta.position.left) - firstCopyPositionElement.left - duplicatePositionIndent;
     }
@@ -500,16 +520,12 @@ const mutations = {
       }
     }
   },
-  async delete_element(state, {getters, dispatch}) {
+  delete_element(state, {getters, dispatch}) {
     let arrSelect = getters.GET_currentSelectedEl;
     if(!arrSelect.length) return;
     let arrSelectID = [];
-    let linkedNet = getters.GET_currentNetworkElementList;
-    removeIsSelectedAfterDeleteItems(arrSelect);
-    // make new history with unselected item
-    await dispatch('mod_events/EVENT_calcArray', null, {root: true});
-    
-    let net = {...linkedNet};
+
+    let net = {...getters.GET_currentNetworkElementList};
     deleteElement(arrSelect);
     for(let el in net) {
       let element = net[el];
@@ -544,11 +560,6 @@ const mutations = {
         }
         delete net[el.layerId];
         arrSelectID.push(el.layerId);
-      });
-    }
-    function removeIsSelectedAfterDeleteItems(arrSelect){
-      arrSelect.forEach((el)=> {
-        linkedNet[el.layerId].layerMeta.isSelected = false;
       });
     }
   },
@@ -616,8 +627,12 @@ const mutations = {
       currentElement(layer).layerMeta.isSelected = false;
     }
   },
-  set_elementSelect(state, value) {
-
+  set_elementSelect(state, { getters, value }) {
+    if(value.resetOther) {
+      for(let layer in getters.GET_currentNetworkElementList) {
+        currentElement(layer).layerMeta.isSelected = false;
+      }
+    }
     currentElement(value.id).layerMeta.isSelected = value.setValue;
   },
   set_elementSelectAll(state, {getters}) {
@@ -644,10 +659,17 @@ const mutations = {
     let el = currentElement(id);
     el.layerNone = value
   },
-  change_elementPosition(state, value) {
+  change_elementPosition(state, {value, getters}) {
+    // here should calculate how much change position and apply on all elements selected
     let elPosition = currentElement(value.id).layerMeta.position;
-    elPosition.top = value.top;
-    elPosition.left = value.left;
+    const toTop = value.top - elPosition.top;
+    const toLeft = value.left - elPosition.left;
+    
+    const selectedElIds = getters.GET_currentSelectedElIds;
+    selectedElIds.map(id => {
+      state.workspaceContent[state.currentNetwork].networkElementList[id].layerMeta.position.top += toTop;
+      state.workspaceContent[state.currentNetwork].networkElementList[id].layerMeta.position.left += toLeft;
+    });
   },
   set_elementInputDim(state, value) {
     for(let element in value) {
@@ -656,8 +678,6 @@ const mutations = {
     }
   },
   set_elementOutputDim(state, {value}) {
-    //console.log('current net', state.workspaceContent[state.currentNetwork].networkElementList);
-    //console.log('core answer', value);
     for(let element in value) {
       currentElement(element).layerMeta.OutputDim = value[element].Dim;
       currentElement(element).layerCodeError = value[element].Error
@@ -931,6 +951,18 @@ const mutations = {
     state.workspaceContent[state.currentNetwork].networkName = value.networkName;
     state.workspaceContent[state.currentNetwork].networkElementList = value.networkElementList;
   },
+  markAllUnselectedMutation(state) {
+    const networkElementList = state.workspaceContent[state.currentNetwork].networkElementList;
+    Object.keys(networkElementList).map(key => {
+      networkElementList[key].layerMeta.isSelected = false;
+    });
+  },
+  updateDragBoxContainerMutation(state, value) {
+    state.dragBoxContainer = {
+      ...state.dragBoxContainer,
+      ...value
+    }
+  }
 };
 
 const actions = {
@@ -938,30 +970,47 @@ const actions = {
   //  NETWORK
   //---------------
   ADD_network({commit, dispatch}, network) {
-    commit('add_network', network);
-
-    const lastNetworkID = state.workspaceContent[state.currentNetwork].networkID;
-    commit('set_lastActiveTabInLocalStorage', lastNetworkID);
-    commit('set_workspacesInLocalStorage');
+    if(isElectron()) {
+      commit('add_network', network);
+    } else {
+      commit('add_network', network);
+      const lastNetworkID = state.workspaceContent[state.currentNetwork].networkID;
+      commit('set_lastActiveTabInLocalStorage', lastNetworkID);
+      commit('set_workspacesInLocalStorage'); 
+    }
   },
   DELETE_network({commit, dispatch}, index) {
-    // API_closeSession stops the process in the core
-    const network = state.workspaceContent[index];
-    dispatch('mod_api/API_closeSession', network.networkID, { root: true });
-
-    if (index === state.currentNetwork) {
-
-      if (state.workspaceContent.length === 1) {
-        commit('set_lastActiveTabInLocalStorage', '');
-      } else if (index === 0) {
-        commit('set_lastActiveTabInLocalStorage', state.workspaceContent[index + 1].networkID);
+    return new Promise(resolve => {
+       
+      if(isElectron()) {
+        const networkID = state.workspaceContent[index].networkID;
+        commit('delete_network', index);
+        dispatch('mod_api/API_closeSession', networkID, { root: true });
       } else {
-        commit('set_lastActiveTabInLocalStorage', state.workspaceContent[index - 1].networkID);
+        // API_closeSession stops the process in the core
+        const network = state.workspaceContent[index];
+        dispatch('mod_api/API_closeSession', network.networkID, { root: true });
+    
+        if (index === state.currentNetwork) {
+    
+          if (state.workspaceContent.length === 1) {
+            commit('set_lastActiveTabInLocalStorage', '');
+          } else if (index === 0) {
+            commit('set_lastActiveTabInLocalStorage', state.workspaceContent[index + 1].networkID);
+          } else {
+            commit('set_lastActiveTabInLocalStorage', state.workspaceContent[index - 1].networkID);
+          }
+        }
+    
+        commit('delete_network', index);
+        commit('set_workspacesInLocalStorage');
       }
-    }
 
-    commit('delete_network', index);
-    commit('set_workspacesInLocalStorage');
+      resolve();
+    });
+  },
+  markAllUnselectedAction({commit}){
+    commit('markAllUnselectedMutation');
   },
   GET_workspacesFromLocalStorage({commit, dispatch}) {
     return new Promise(resolve => {
@@ -1118,24 +1167,12 @@ const actions = {
   RESET_network({commit}) {
     commit('reset_network')
   },
-  // CHECK_requestInterval({dispatch, commit, rootState, getters, state}, time) {
-  //   const timeRequest = time + 500;
-  //   const isLongRequest = timeRequest > rootState.globalView.timeIntervalDoRequest;
-  //   if(isLongRequest) {
-  //     const currentMeta = getters.GET_currentNetwork.networkMeta.chartsRequest;
-  //     clearInterval(currentMeta.timerID);
-  //     dispatch('globalView/SET_timeIntervalDoRequest', timeRequest, {root: true});
-  //     dispatch('EVENT_startDoRequest', true);
-  //   }
-  // },
   CHECK_requestInterval({dispatch, commit, rootState, getters, state}, time) {
-    //console.log(`request -> can show`, `${time}ms`);
     const timeRequest = time + 500;
     const isLongRequest = timeRequest > rootState.globalView.timeIntervalDoRequest;
     if(isLongRequest) {
       const currentMeta = getters.GET_currentNetwork.networkMeta.chartsRequest;
       clearInterval(currentMeta.timerID);
-      console.log('new time', timeRequest);
       dispatch('globalView/SET_timeIntervalDoRequest', timeRequest, {root: true});
       dispatch('EVENT_startDoRequest', true);
     }
@@ -1183,7 +1220,7 @@ const actions = {
   },
   DELETE_element({commit, getters, dispatch}) {
     if(getters.GET_networkIsOpen) {
-      commit('delete_element', {getters, dispatch, commit});
+      commit('delete_element', {getters, dispatch});
       dispatch('mod_api/API_getOutputDim', null, {root: true});
     }
   },
@@ -1196,8 +1233,8 @@ const actions = {
   SET_elementUnselect({commit, getters}) {
     commit('set_elementUnselect', {getters})
   },
-  SET_elementSelect({commit}, value) {
-    commit('set_elementSelect', value)
+  SET_elementSelect({commit, getters }, value) {
+    commit('set_elementSelect', { value, getters })
   },
   SET_elementSelectAll({commit, getters}) {
     if(getters.GET_enableHotKeyElement) commit('set_elementSelectAll', {getters})
@@ -1211,8 +1248,8 @@ const actions = {
   SET_elementOutputDim({commit, getters}, value) {
     commit('set_elementOutputDim', {getters, value})
   },
-  CHANGE_elementPosition({commit}, value) {
-    commit('change_elementPosition', value)
+  CHANGE_elementPosition({commit, getters}, value) {
+    commit('change_elementPosition', {value, getters})
   },
   //---------------
   //  NETWORK CONTAINER

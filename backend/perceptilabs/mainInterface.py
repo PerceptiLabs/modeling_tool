@@ -9,7 +9,7 @@ from perceptilabs.s3buckets import S3BucketAdapter
 #core interface
 from perceptilabs.coreInterface import coreLogic
 
-#Create LW Core
+from perceptilabs.utils import stringify
 from perceptilabs.graph import Graph
 from perceptilabs.core_new.core import DataContainer
 from perceptilabs.core_new.history import SessionHistory
@@ -20,21 +20,33 @@ from perceptilabs.modules import ModuleProvider
 from perceptilabs.core_new.cache import get_cache
 from perceptilabs.core_new.networkCache import NetworkCache
 from perceptilabs.codehq import CodeHqNew as CodeHq
+from perceptilabs.core_new.lightweight2 import LightweightCoreAdapter
+from perceptilabs.core_new.cache2 import LightweightCache
 
+        
 #LW interface
-from perceptilabs.lwInterface import getGraphOrder, getFolderContent, getDataMeta, getJsonModel, saveJsonModel, getPartitionSummary, getCode, getNetworkInputDim, getNetworkOutputDim, getPreviewSample, getPreviewVariableList, Parse
+from perceptilabs.lwInterface import getFolderContent, saveJsonModel, getJsonModel, getGraphOrder, getDataMeta, getPartitionSummary, getCodeV1, getCodeV2, getNetworkInputDim, getNetworkOutputDim, getPreviewSample, getPreviewVariableList, Parse
 
 log = logging.getLogger(__name__)
 
+
+LW_CACHE_MAX_ITEMS = 25 # Only for '--core-mode v2'
+
+
 class Interface():
-    def __init__(self, cores, dataDict, checkpointDict, lwDict):
+    def __init__(self, cores, dataDict, checkpointDict, lwDict, core_mode):
         self._cores=cores
         self._dataDict=dataDict
         self._checkpointDict=checkpointDict
         self._lwDict=lwDict
+        self._core_mode = core_mode
+        assert core_mode in ['v1', 'v2']
+
+        if core_mode == 'v2':
+            self._lw_cache_v2 = LightweightCache(max_size=LW_CACHE_MAX_ITEMS)        
 
     def _addCore(self, reciever):
-        core=coreLogic(reciever)
+        core=coreLogic(reciever, self._core_mode)
         self._cores[reciever] = core
 
     def _setCore(self, reciever):
@@ -66,6 +78,20 @@ class Interface():
             ckptObj.close()
 
     def create_lw_core(self, reciever, jsonNetwork):
+        if self._core_mode == 'v1':
+            return self._create_lw_core_v1(reciever, jsonNetwork)
+        else:
+            return self._create_lw_core_v2(reciever, jsonNetwork)
+
+    def _create_lw_core_v2(self, reciever, jsonNetwork):
+        data_container = DataContainer()
+        extras_reader = LayerExtrasReader()
+        error_handler = LightweightErrorHandler()
+        
+        lw_core = LightweightCoreAdapter(jsonNetwork, extras_reader, error_handler, self._core.issue_handler, self._lw_cache_v2)
+        return lw_core, extras_reader, data_container
+
+    def _create_lw_core_v1(self, reciever, jsonNetwork):                
         if reciever not in self._lwDict:
             self._lwDict[reciever]=NetworkCache()
         else:
@@ -83,10 +109,23 @@ class Interface():
 
         for value in graph_dict.values():
             if "checkpoint" in value["Info"] and value["Info"]["checkpoint"]:
-                self._add_to_checkpointDict(value["Info"])
+                info = value["Info"].copy()
+
+                ckpt_path = info['checkpoint'][1]
+                if '//' in ckpt_path:
+                    new_ckpt_path = os.path.sep+ckpt_path.split(2*os.path.sep)[1] # Sometimes frontend repeats the directory path. /<dir-path>//<dir-path>/model.ckpt-1
+                    log.warning(
+                        f"Splitting malformed checkpoint path: '{ckpt_path}'. "
+                        f"New path: '{new_ckpt_path}'"
+                    )
+                    info['checkpoint'][1] = new_ckpt_path
+                    
+                self._add_to_checkpointDict(info)
+
+        if log.isEnabledFor(logging.DEBUG):
+            log.debug("create_lw_core: checkpoint dict: \n" + stringify(self._checkpointDict))
 
         data_container = DataContainer()
-            
         extras_reader = LayerExtrasReader()
 
         module_provider = ModuleProvider()
@@ -107,12 +146,18 @@ class Interface():
         
         global session_history_lw
         cache = get_cache()
-        session_history_lw = SessionHistory(cache) # TODO: don't use global!!!!        
-        lw_core = LightweightCore(CodeHq, graph_dict,
-                                data_container, session_history_lw,
-                                module_provider, error_handler,
-                                extras_reader, checkpointValues=self._checkpointDict.copy(),
-                                network_cache=self._lwDict[reciever])
+        session_history_lw = SessionHistory(cache) # TODO: don't use global!!!!
+
+
+        lw_core = LightweightCore(
+            CodeHq, graph_dict,
+            data_container, session_history_lw,
+            module_provider, error_handler,
+            extras_reader, checkpointValues=self._checkpointDict.copy(),
+            network_cache=self._lwDict[reciever],
+            core_mode=self._core_mode
+        )
+
         
         return lw_core, extras_reader, data_container
 
@@ -133,9 +178,24 @@ class Interface():
             scope.set_extra("value",value)
 
         self._setCore(reciever)
+        
+        #try:
         response = self._create_response(reciever, action, value)
+        #except Exception as e:
+        #    with self._core.issue_handler.create_issue('Error in create_response', e) as issue:
+        #        self._core.issue_handler.put_error(issue.frontend_message)
+        #        response = {'content': issue.frontend_message}                
+        #        log.error(issue.internal_message)
 
-        return response, self._core.warningQueue, self._core.errorQueue
+        if log.isEnabledFor(logging.DEBUG):
+            log.debug("created response for action: {}. \nFull request:\n{}\nResponse:\n{}".format(
+                action,
+                pprint.pformat(request, depth=3),
+                stringify(response)
+            ))
+
+                
+        return response, self._core.issue_handler
 
     def _create_response(self, reciever, action, value):
         #Parse the value and send it to the correct function
@@ -186,7 +246,12 @@ class Interface():
                 layerSettings = value["layerSettings"]
                 jsonNetwork[Id]["Properties"]=layerSettings
 
-            return getCode(id_=Id, network=jsonNetwork).run()
+            if self._core_mode == 'v1':
+                get_code = getCodeV1(id_=Id, network=jsonNetwork)
+            else:
+                get_code = getCodeV2(id_=Id, network=jsonNetwork)                
+            
+            return get_code.run()
 
         elif action == "getNetworkInputDim":
             jsonNetwork=value
@@ -301,7 +366,7 @@ class Interface():
         elif action == "Start":
             network = value
             for value in network['Layers'].values():
-                if "checkpoint" in value and value["checkpoint"]:
+                if "checkpoint" in value and value["checkpoint"] and self._core_mode == 'v1':
                     self._add_to_checkpointDict(value)
             response = self._core.startCore(network, self._checkpointDict.copy())
             return response
@@ -386,4 +451,4 @@ class Interface():
             return "User has been set to " + value
 
         else:
-            raise LookupError("The requested action does not exist")
+            raise LookupError(f"The requested action '{action}' does not exist")

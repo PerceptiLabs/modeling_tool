@@ -1,4 +1,4 @@
-tensorflow==1.13.1
+tensorflow==1.15
 numpy==1.16.4
 fsspec==0.6.0
 pandas==0.25.0
@@ -24,3 +24,7 @@ dill==0.3.1.1
 scikit-learn==0.22.1 
 cryptography==2.8
 six==1.14.0
+dill==0.3.1.1
+Flask==1.1.1
+zmq
+Pillow==7.0.0

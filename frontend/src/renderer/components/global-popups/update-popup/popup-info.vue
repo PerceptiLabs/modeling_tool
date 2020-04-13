@@ -37,7 +37,13 @@
 
 </template>
 <script>
-//import {ipcRenderer}  from 'electron'
+import { isElectron } from "@/core/helpers";
+let ipcRenderer = null;
+
+if(navigator.userAgent.toLowerCase().indexOf(' electron/') > -1) {
+  const electron = require('electron');
+  ipcRenderer = electron.ipcRenderer;
+}
 
 export default {
   name: 'PopupInfo',
@@ -60,13 +66,15 @@ export default {
   methods: {
     startUpdate() {
       this.$store.commit('mod_autoUpdate/SET_updateStatus', 'downloading');
-      //ipcRenderer.send('update-start')
+      if(isElectron())
+      ipcRenderer.send('update-start')
     },
     closeUpdatePopup() {
       this.$store.commit('mod_autoUpdate/SET_showPopupUpdates', false)
     },
     restartApp () {
-      //ipcRenderer.send('restart-app-after-update')
+      if(isElectron())
+      ipcRenderer.send('restart-app-after-update')
     },
   }
 }

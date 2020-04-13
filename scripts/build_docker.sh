@@ -53,14 +53,14 @@ ls -l -R
 
 ################### BUILD FRONTEND #######################
 echo "----- Building frontend -----"
-cd ../../frontend/src
-npm run build
+cd ../../frontend
+npm run build-render
 if [ $? -ne 0 ]; then exit 1; fi
 
-cp -r dist/* ../../build/frontend_out/
+cp -r src/dist/* ../build/frontend_out/
 
 ################### MOVING EVERYTHING TO CORRECT PLACES #######################
-cd ../../
+cd ../
 
 ls -l -a Docker/Frontend
 cp -r Docker/Frontend/. build/frontend_out

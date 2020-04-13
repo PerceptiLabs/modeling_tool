@@ -1,9 +1,23 @@
-import {coreRequest, openWS}  from "@/core/apiWeb.js";
-//import coreRequest    from "@/core/apiCore.js";
-import { deepCopy, parseJWT, stringifyNetworkObjects }   from "@/core/helpers.js";
+import {coreRequest as coreRequestWeb, openWS}  from "@/core/apiWeb.js";
+import coreRequestElectron from "@/core/apiCore.js";
+import { deepCopy, parseJWT, isWeb, stringifyNetworkObjects }   from "@/core/helpers.js";
 import { pathSlash }  from "@/core/constants.js";
+import {isElectron} from "@/core/helpers";
 
-const {spawn} = require('child_process');
+let coreRequest = null;
+let ipcRenderer = null;
+let spawn = null;
+
+
+if(!(navigator.userAgent.toLowerCase().indexOf(' electron/') > -1)) {
+  coreRequest = coreRequestWeb;
+} else {
+const electron =  require('electron');
+  spawn = require('child_process').spawn;
+  ipcRenderer = electron.ipcRenderer;
+  coreRequest = coreRequestElectron
+};
+
 
 const namespaced = true;
 //let pauseAction = 'Pause';
@@ -68,6 +82,10 @@ const mutations = {
 };
 
 const actions = {
+  SET_corePid({commit}, id) {
+    commit('set_corePid', id);
+    ipcRenderer.send('save-corePid', id)
+  },
   //---------------
   //  CORE
   //---------------
@@ -81,11 +99,13 @@ const actions = {
           // set user when core switch from offline to online
           if(state.statusLocalCore === 'offline') {
             dispatch('API_setUserInCore');
+            commit('SET_statusLocalCore', 'online');
           }
-          commit('SET_statusLocalCore', 'online');
         })
         .catch(()=> {
-          commit('SET_statusLocalCore', 'offline');
+          if(state.statusLocalCore === 'online') {
+            commit('SET_statusLocalCore', 'offline');
+          }
         });
   },
   coreStatusWatcher({dispatch}) {
@@ -97,59 +117,74 @@ const actions = {
     let timer;
     let coreIsStarting = false;
     var path = rootGetters['globalView/GET_appPath'];
+    let userEmail = rootGetters['mod_user/GET_userEmail'];
     startCore();
 
     function startCore() {
-      // coreIsStarting = true;
-      // let openServer;
-      // let platformPath = '';
-      // switch (process.platform) {
-      //   case 'win32':
-      //     platformPath = 'core/appServer.exe';
-      //     break;
-      //   case 'darwin':
-      //   case 'linux':
-      //     process.env.NODE_ENV === 'production'
-      //       ? platformPath = path + 'core/appServer'
-      //       : platformPath = 'core/appServer';
-      //     break;
-      // }
-      // openServer = spawn(platformPath, [], {stdio: ['ignore', 'ignore', 'pipe']});
-      // commit('set_corePid', openServer.pid);
-      // openServer.on('error', (err)=>  { coreOffline() });
-      // openServer.on('close', (code)=> { coreOffline() });
-      dispatch('checkCoreAvailability');
-      dispatch("coreStatusWatcher");
-      // waitOnlineCore()
+      if(isElectron()) {
+        coreIsStarting = true;
+        let openServer;
+        let platformPath = '';
+        switch (process.platform) {
+          case 'win32':
+            platformPath = 'core/appServer.exe';
+            break;
+          case 'darwin':
+          case 'linux':
+            process.env.NODE_ENV === 'production'
+              ? platformPath = path + 'core/appServer'
+              : platformPath = 'core/appServer';
+            break;
+        }
+        console.log('PID: ', process.pid);
+        openServer = spawn(platformPath, ['-f', process.pid, '-u', userEmail], {stdio: ['ignore', 'ignore', 'pipe']});
+        dispatch('SET_corePid', openServer.pid);
+        openServer.on('error', (err)=>  {
+          console.log('core error', err)
+          coreOffline()
+        });
+        openServer.on('close', (code)=> {
+          console.log('core close', code)
+          coreOffline()
+        });
+        waitOnlineCore()
+      }
+      if(isWeb()) {
+        dispatch('checkCoreAvailability');
+        dispatch("coreStatusWatcher");
+      }
+      
     }
-    // function waitOnlineCore() {
-    //   timer = setInterval(()=> {
-    //     let status = state.statusLocalCore;
-    //     if(status === 'offline') {
-    //       // getCoreRequest();
-    //       dispatch('checkCoreAvailability');
-    //     }
-    //     else {
-    //       clearInterval(timer);
-    //     }
-    //   }, 5000);
-    // }
-    // function getCoreRequest() {
-    //   const theData = {
-    //     action: 'checkCore',
-    //     value: ''
-    //   };
-    //   coreRequest(theData)
-    //     .then((data)=> {
-    //       //console.log('checkCore', data);
-    //       commit('SET_statusLocalCore', 'online')
-    //     })
-    //     .catch((err)=> { coreOffline()  });
-    // }
-    // function coreOffline() {
-    //   debugger;
-    //   commit('SET_statusLocalCore', 'offline');
-    // }
+    function waitOnlineCore() {
+      timer = setInterval(()=> {
+        let status = state.statusLocalCore;
+        if(status === 'offline') {
+          if(isWeb()) {
+            dispatch('checkCoreAvailability');
+          } else {
+            getCoreRequest();
+          }
+        }
+        else {
+          clearInterval(timer);
+        }
+      }, 5000);
+    }
+    function getCoreRequest() {
+      const theData = {
+        action: 'checkCore',
+        value: ''
+      };
+      coreRequest(theData)
+        .then((data)=> {
+          //console.log('checkCore', data);
+          commit('SET_statusLocalCore', 'online')
+        })
+        .catch((err)=> { if(isWeb()) {coreOffline()}  });
+    }
+    function coreOffline() {
+      commit('SET_statusLocalCore', 'offline');
+    }
     function getCoreRequest() {
       const theData = {
         action: 'checkCore',
@@ -159,7 +194,9 @@ const actions = {
         .then((data)=> {
           //console.log('checkCore', data);
           commit('SET_statusLocalCore', 'online');
-          dispatch('API_setUserInCore');
+          if(isWeb()) {
+            dispatch('API_setUserInCore');
+          }
         })
         .catch((err)=> {  });
     }
@@ -203,7 +240,9 @@ const actions = {
         Layers: getters.GET_coreNetwork
       }
     };
-    dispatch('globalView/ShowCoreNotFoundPopup', null, { root: true });
+    if(isWeb()) {
+      dispatch('globalView/ShowCoreNotFoundPopup', null, { root: true });
+    }
     //console.log('API_startTraining', theData);
     coreRequest(theData)
       .then((data)=> {
@@ -291,7 +330,9 @@ const actions = {
       action: 'startTest',
       value: ''
     };
-    dispatch('globalView/ShowCoreNotFoundPopup', null, { root: true });
+    if(isWeb()) {
+      dispatch('globalView/ShowCoreNotFoundPopup', null, { root: true });
+    }
     return coreRequest(theData)
       .then((data)=> { dispatch('mod_tracker/EVENT_testOpenTab', null, {root: true}) })
       .catch((err)=> { console.error(err) });
@@ -425,7 +466,9 @@ const actions = {
       value: getters.GET_coreNetwork
     };
     //console.log('getNetworkInputDim request', theData);
-    dispatch('globalView/ShowCoreNotFoundPopup', null, { root: true });
+    if(isWeb()) {
+      dispatch('globalView/ShowCoreNotFoundPopup', null, { root: true });
+    }
     return coreRequest(theData)
       .then((data)=> {
         //console.log('getNetworkInputDim answer', data);
@@ -443,7 +486,9 @@ const actions = {
       action: "getNetworkOutputDim",
       value: getters.GET_coreNetwork
     };
-    dispatch('globalView/ShowCoreNotFoundPopup', null, { root: true });
+    if(isWeb()) {
+      dispatch('globalView/ShowCoreNotFoundPopup', null, { root: true });
+    }
     //console.log('API_getOutputDim');
     return coreRequest(theData)
       .then((data)=> {
@@ -510,8 +555,10 @@ const actions = {
       }
     };
 
-    // console.log('getCode', theData);
-    dispatch('globalView/ShowCoreNotFoundPopup', null, { root: true });
+    console.log('getCode', theData);
+    if(isWeb()) {
+      dispatch('globalView/ShowCoreNotFoundPopup', null, { root: true });
+    }
     return coreRequest(theData)
       .then((data)=> {
         // console.log('coreRequest data', data);
@@ -610,7 +657,9 @@ const actions = {
         frontendNetwork: rootGetters['mod_workspace/GET_currentNetwork'].networkName
       }
     };
-    dispatch('globalView/ShowCoreNotFoundPopup', null, { root: true });
+    if(isWeb()) {
+      dispatch('globalView/ShowCoreNotFoundPopup', null, { root: true });
+    }
     const trackerData = {
       result: '',
       network: getters.GET_coreNetwork,

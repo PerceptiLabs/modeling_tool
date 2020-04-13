@@ -9,8 +9,16 @@ import PageRestoreAccount from '@/pages/restore-account/restore-account.vue';
 import PageProjects from '@/pages/projects/projects.vue';
 
 import Analytics from '@/core/analytics';
+import {isWeb} from "@/core/helpers";
 
 Vue.use(Router);
+let routerOptions = {};
+let routesElectron = [];
+if (!(navigator.userAgent.toLowerCase().indexOf(' electron/') > -1)) {
+  routerOptions.mode = 'history';
+} else {
+  routesElectron.push({path: '/', name: 'login',    component: PageLogin});
+}
 
 const authorizeRoutes = [
   {path: '/',                 name: 'home',             component: PageProjects},
@@ -29,7 +37,7 @@ const unauthorizedRoutesNames = unauthorizedRoutes.map(route => route.name);
 
 
 const router = new Router({
-  mode: 'history',
+  ...routerOptions,
   routes: [
     ...authorizeRoutes,
     ...unauthorizedRoutes,

@@ -12,10 +12,10 @@ from perceptilabs.core_new.errors import LayerSessionAbort
 log = logging.getLogger(__name__)
 
 class CoreThread(threading.Thread):
-   def __init__(self, func, errorQueue):
+   def __init__(self, func, issue_handler):
       super(CoreThread,self).__init__()
-      self.func=func
-      self.errorQueue=errorQueue
+      self.func = func
+      self.issue_handler = issue_handler
       self.killed = False
 
    def start_with_traces(self):
@@ -35,14 +35,15 @@ class CoreThread(threading.Thread):
       try:
          self.func()
       except HistoryInputException as e:
-         self.errorQueue.put(str(e))
+         #self.errorQueue.put(str(e))
+         pass
       except LayerSessionAbort:
          pass
       except Exception as e:
-         # capture_exception()       
-         log.exception("Unexpected exception in CoreThread")
-         self.errorQueue.put(str(e))
-
+         with self.issue_handler.create_issue('Unexpected exception in CoreThread', e) as issue:
+            self.issue_handler.put_error(issue.frontend_message)
+            log.error(issue.internal_message)
+         
    def globaltrace(self, frame, event, arg): 
       if event == 'call': 
          return self.localtrace 
@@ -57,3 +58,5 @@ class CoreThread(threading.Thread):
    
    def kill(self): 
       self.killed = True
+
+

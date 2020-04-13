@@ -35,9 +35,10 @@ class CodeGenerator(ABC):
 class CustomCodeGenerator(CodeGenerator):
     def __init__(self, input_):
         if isinstance(input_, str):
-            self._code_parts = [CodePart(name=None, code=input_)]
+            self._code_parts = [CodePart(name=None, code=(input_ if input_ is not None else ''))]
         elif isinstance(input_, list) and all([isinstance(x, CodePart) for x in input_]):
-            self._code_parts = copy.copy(input_)
+            self._code_parts = [CodePart(name=x.name, code=(x.code if x.code is not None else '')) for x in input_]
+            #self._code_parts = copy.copy(input_)#[CodePart(name=x.name, code=(x.code if x.code is not None else '')) for x in input_]
         else:
             raise ValueError("Inputs must be either string or list of CodeParts")
 

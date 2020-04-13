@@ -5,7 +5,7 @@
     section.popup(ref="popup")
       .popup_tab-set
         .popup_header
-            h3 {{ popupTitle }}
+          h3 {{ popupTitle }}
       .popup_body
         file-picker(
             :filePickerType="filePickerType"

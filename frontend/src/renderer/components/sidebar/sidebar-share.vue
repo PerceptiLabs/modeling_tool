@@ -6,7 +6,7 @@
     //.sidebar-share_btn
       button.btn.btn--primary(type="button"  disabled="disabled") Share
     .sidebar-share_bug-report-btn
-      a.btn.btn--primary.report-button(target="_blank" href="https://join.slack.com/t/perceptilabs-com/shared_invite/enQtODQ5NzAwNDkxOTExLWUxODAwZDk0MzA1MmM4OTViNWE4MmVjYjc2OTQwMTQ4N2NmM2ZlYmI5NjZjOWRiYjBkYjBjMTMzNjEyMDNiNDk" :class="{'tutorial-active': activeStepStoryboard === 5}")
+      button.btn.btn--primary(type="button" @click="goToReport" :class="{'tutorial-active': activeStepStoryboard === 5}")
         span Report
         i.icon.icon-bug-report
 
@@ -14,9 +14,20 @@
 </template>
 
 <script>
+  import { goToLink }    from '@/core/helpers.js'
 
   export default {
     name: 'SidebarShare',
+    data() {
+      return {
+        reportLink: 'https://join.slack.com/t/perceptilabs-com/shared_invite/enQtODQ5NzAwNDkxOTExLWUxODAwZDk0MzA1MmM4OTViNWE4MmVjYjc2OTQwMTQ4N2NmM2ZlYmI5NjZjOWRiYjBkYjBjMTMzNjEyMDNiNDk'
+      }
+    },
+    methods: {
+      goToReport() {
+        goToLink(this.reportLink)
+      }
+    },
     computed: {
       activeStepStoryboard() {
         return this.$store.state.mod_tutorials.activeStepStoryboard
@@ -47,7 +58,5 @@
       font-size: 1.3rem;
     }
   }
-  .report-button {
-    display: block;
-  }
+
 </style>

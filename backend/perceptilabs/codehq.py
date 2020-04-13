@@ -138,7 +138,9 @@ class CodeHqNew:
                                          pool=props["PoolBool"],
                                          pooling=props["Pooling"],
                                          pool_area=props["Pool_area"],
-                                         pool_stride=props["Pool_stride"])
+                                         pool_stride=props["Pool_stride"],
+                                         pool_padding=props["Pool_padding"])
+
             return code_gen
         elif type_ == 'DeepLearningDeconv':
             code_gen = DeconvCodeGenerator(layer_id=id_,
