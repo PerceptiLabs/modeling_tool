@@ -961,6 +961,7 @@ const mutations = {
     showChildContainer(container);
 
     dispatch('mod_events/EVENT_calcArray', null, {root: true});
+    dispatch('SET_isOpenElement', false);
     function showChildContainer(container) {
       const layerListKeys = Object.keys(container.containerLayersList);
       layerListKeys.forEach(id => {
