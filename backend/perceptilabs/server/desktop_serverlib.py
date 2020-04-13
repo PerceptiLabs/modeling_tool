@@ -91,18 +91,9 @@ class Message:
         message = json_bytes
         return message
 
-    def _add_errors_and_warnings(self, content, errors, warnings):
-        errorList=[]
-        warningList=[]
-
-        while not errors.empty():
-            message=errors.get(timeout=0.05)
-            errorList.append(message)
-
-        while not warnings.empty():
-            message=warnings.get(timeout=0.05)
-            warningList.append(message)
-
+    def _add_errors_and_warnings(self, content, issue_handler):
+        errorList = issue_handler.pop_errors()
+        warningList = issue_handler.pop_warnings()
 
         if errorList:
             self._interface.close_core(self.request.get("reciever"))
@@ -122,9 +113,8 @@ class Message:
 
 
     def _create_response_json_content(self):
-        response, warnings, errors = self._interface.create_response(self.request)
-
-        content = self._add_errors_and_warnings(response, errors, warnings)
+        response, issue_handler = self._interface.create_response(self.request)
+        content = self._add_errors_and_warnings(response, issue_handler)
 
         if type(content) is not dict:
             content={"content":content}

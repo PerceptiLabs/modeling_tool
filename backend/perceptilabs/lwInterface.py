@@ -163,8 +163,7 @@ class getCodeV2(LW_interface_base):
         node = Node(layer_id, layer_type, layer_instance, layer_spec)
         
         script_factory = ScriptFactory()        
-        code = script_factory.render_layer_code(node.layer_id, node.layer_type, node.layer_spec)
-
+        code = script_factory.render_layer_code(node.layer_id, node.layer_type, node.layer_spec, node.custom_code)
         return {'Output': code}        
 
         
@@ -227,8 +226,8 @@ class getNetworkInputDim(LW_interface_base):
                 log.info("ErrorMessage: " + str(self.lw_core.error_handler[id_]))
 
                 content[id_]['Error'] = {
-                    'Message': self.lw_core.error_handler[id_].error_message,
-                    'Row': self.lw_core.error_handler[id_].error_line
+                    'Message': self.lw_core.error_handler[id_].message,
+                    'Row': str(self.lw_core.error_handler[id_].line_number)
                 }
             else:
                 content[id_]['Error'] = None
@@ -255,8 +254,8 @@ class getNetworkOutputDim(LW_interface_base):
                 log.info("ErrorMessage: " + str(self.lw_core.error_handler[Id]))
 
                 content[Id]['Error'] = {
-                    'Message': self.lw_core.error_handler[Id].error_message,
-                    'Row': self.lw_core.error_handler[Id].error_line
+                    'Message': self.lw_core.error_handler[Id].message,
+                    'Row': str(self.lw_core.error_handler[Id].line_number)
                 }
             else:
                 content[Id]['Error'] = None  
@@ -338,8 +337,8 @@ class getPreviewVariableList(LW_interface_base):
                 log.info("ErrorMessage: " + str(self.lw_core.error_handler[self._id]))
                 
                 content['Error'] = {
-                    'Message': self.lw_core.error_handler[self._id].error_message,
-                    'Row': self.lw_core.error_handler[self._id].error_line
+                    'Message': self.lw_core.error_handler[self._id].message,
+                    'Row': str(self.lw_core.error_handler[self._id].line_number)
                 }
         else:
             content = ""

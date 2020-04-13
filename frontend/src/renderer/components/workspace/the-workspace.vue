@@ -38,6 +38,7 @@
             network-field(
               ref="networkField"
               :key="i"
+              :scaleNet="scaleNet"
               :style="{transformOrigin: '0 0', transform: `scale(${scaleNet / 100})`}"
             )
             // when select more then 2 network item it's display
@@ -135,6 +136,7 @@
     overflow: hidden;
   }
   .info-section_main {
+    display: block;
     overflow: auto;
   }
   .workspace_meta {
