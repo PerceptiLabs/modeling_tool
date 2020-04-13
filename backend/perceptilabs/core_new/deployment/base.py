@@ -58,7 +58,7 @@ class DeploymentPipe(ABC):
                     ready = True
                     break
             except Exception as e:
-                print(e)
+                log.error('error ' +repr(e))
                 errors.append(e)
             time.sleep(0.3)
 

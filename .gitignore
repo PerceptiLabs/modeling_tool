@@ -19,7 +19,6 @@ build/
 backend/.vscode/
 #Frontend ignores
 frontend_out
-frontend/.DS_Store
 frontend/core/*
 frontend/dist/*
 frontend/dist/electron/*
@@ -42,3 +41,5 @@ frontend/src/node_modules/
 .vscode/*
 app.log
 backend.log
+log.txt
+.DS_Store
