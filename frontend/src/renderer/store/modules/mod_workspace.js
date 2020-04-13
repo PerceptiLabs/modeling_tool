@@ -588,6 +588,7 @@ const mutations = {
     
     
     state.workspaceContent[state.currentNetwork].networkElementList = net;
+    dispatch('SET_isOpenElement', false);
     dispatch('mod_events/EVENT_calcArray', null, {root: true});
     dispatch('mod_api/API_getOutputDim', null, {root: true});
 
@@ -671,7 +672,10 @@ const mutations = {
         currentElement(layer).layerMeta.isSelected = false;
       }
     }
-    currentElement(value.id).layerMeta.isSelected = value.setValue;
+    let el = currentElement(value.id);
+    if(el) {
+      currentElement(value.id).layerMeta.isSelected = value.setValue; 
+    }
   },
   set_elementSelectAll(state, {getters}) {
     
