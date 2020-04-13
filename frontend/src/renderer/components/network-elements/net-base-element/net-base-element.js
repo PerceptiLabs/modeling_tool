@@ -43,6 +43,8 @@ export default {
     this.$refs.rootBaseElement.removeEventListener('touchstart', this.Mix_paintArrow_arrowEndPaint, true);
     /*clickOutsideAction*/
     document.removeEventListener('mousedown', this.mousedownOutside);
+    document.removeEventListener('click', this.hideAllWindow, true);
+    document.removeEventListener('contextmenu', this.hideAllWindow, true);
   },
   data() {
     return {
@@ -211,6 +213,8 @@ export default {
         if(this.networkMode === 'edit' && this.editIsOpen) {
           this.setElementInfoOpen(true);
           this.contextIsOpen = true;
+          document.addEventListener('click', this.hideAllWindow, true);
+          document.addEventListener('contextmenu', this.hideAllWindow, true);
         }
       }
     },
@@ -263,6 +267,8 @@ export default {
         top: false,
         offset: 0
       }
+      document.removeEventListener('click', this.hideAllWindow, true);
+      document.removeEventListener('contextmenu', this.hideAllWindow, true);
     },
     deselect() {
       if(!this.isTutorialMode) this.hideAllWindow();

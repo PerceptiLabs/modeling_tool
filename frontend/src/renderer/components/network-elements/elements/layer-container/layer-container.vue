@@ -49,7 +49,8 @@
       elementData: Object
     },
     destroyed() {
-      document.removeEventListener('click', this.closeContext);
+      document.removeEventListener('click', this.closeContext, true);
+      document.removeEventListener('contextmenu', this.closeContext, true);
     },
     data() {
       return {
