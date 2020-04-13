@@ -150,13 +150,15 @@
       },
       closeContext() {
         this.contextIsOpen = false;
-        console.error('context is closed by event');
-        document.removeEventListener('click', this.closeContext);
+        document.removeEventListener('click', this.closeContext, true);
+        document.removeEventListener('contextmenu', this.closeContext, true);
+        return false;
       },
       openContext(event) {
         this.contextIsOpen = true;
         this.elementSelect({id: this.elementData.layerId, setValue: true, resetOther: true });
-        document.addEventListener('click', this.closeContext)
+        document.addEventListener('click', this.closeContext, true);
+        document.addEventListener('contextmenu', this.closeContext, true);
       },
     }
   }

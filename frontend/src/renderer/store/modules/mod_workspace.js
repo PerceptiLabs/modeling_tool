@@ -1063,7 +1063,11 @@ const mutations = {
     for(let position in childContainersIds) {
       delete linkNet[childContainersIds[position]];
     };
-    // delete linkNet[containerId]
+
+    if(parentContainerId) {
+      dispatch('CLOSE_container', linkNet[container.parentContainerID]);
+      dispatch('OPEN_container', linkNet[container.parentContainerID]);
+    }
     // state.workspaceContent[state.currentNetwork].networkElementList = linkNet;
     let newMockNet = deepCloneNetwork(linkNet);
     state.workspaceContent[state.currentNetwork].networkElementList = newMockNet;
