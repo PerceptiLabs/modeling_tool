@@ -26,9 +26,6 @@ export default {
       coreNetwork: "mod_api/GET_coreNetwork"
     })
   },
-  created() {
-    this.updateNotebook();
-  },
   data() {
     return {
       cells: []
