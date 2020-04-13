@@ -61,6 +61,7 @@ export default {
       showWorkspaceBeforeImport:  state => state.globalView.globalPopup.showWorkspaceBeforeImport,
       showCoreSide:               state => state.globalView.globalPopup.showCoreSideSettings,
       showFilePickerPopup:        state => state.globalView.globalPopup.showFilePickerPopup,
+      showLoadSettingPopup:       state => state.globalView.globalPopup.showLoadSettingPopup,
     }),
 
     hasStatistics() {

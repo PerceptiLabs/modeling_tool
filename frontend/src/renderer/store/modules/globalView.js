@@ -21,6 +21,7 @@ const state = {
     showConfirmPopup: false,
     coreNotFoundPopup: false,
     showFilePickerPopup: false,
+    showLoadSettingPopup: false,
   },
   popupConfirmCancel: null,
   popupConfirmOk: null,
@@ -78,6 +79,9 @@ const mutations = {
   },
   set_filePickerPopup(state, value) {
     state.globalPopup.showFilePickerPopup = value;
+  },
+  set_loadSettingPopup(state, value) {
+    state.globalPopup.showLoadSettingPopup = value;
   },
   gp_confirmPopup(state, value) {
     state.globalPopup.showConfirmPopup = value.text;
@@ -146,6 +150,9 @@ const actions = {
   },
   SET_filePickerPopup({commit}, value) {
     commit('set_filePickerPopup', value);
+  },
+  SET_loadSettingPopup({commit}, value) {
+    commit('set_loadSettingPopup', value);
   },
   GP_confirmPopup({commit}, value) {
     commit('gp_confirmPopup', value);
