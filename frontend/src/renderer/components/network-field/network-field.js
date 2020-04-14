@@ -140,7 +140,7 @@ export default {
       this.calcSvgSize()
     },
     networkScale() {
-      this.calcSvgSize()
+      this.calcSvgSize(true)
     },
     eventCalcArrow() {
       //this.tutorialPointActivate({way: 'next', validation: this.tutorialActiveAction.id});
@@ -241,7 +241,7 @@ export default {
        offsetY: this.$refs.network.parentElement.offsetTop
       };
     },
-    calcSvgSize() {
+    calcSvgSize(isZoomed) {
       const parentWorkspace = this.$parent.$refs.container;
       let offsetHeight = parentWorkspace.offsetHeight;
       let offsetWidth = parentWorkspace.offsetWidth;
@@ -252,6 +252,11 @@ export default {
       const maxHeightPositions = Math.max(...positions.map(position => position.top)) + 60;
 
       
+      if (isZoomed) {
+        console.log(isZoomed);
+        parentWorkspace.scrollLeft = 0;
+        parentWorkspace.scrollTop = 0;
+      }
     },
 
     //-------------
