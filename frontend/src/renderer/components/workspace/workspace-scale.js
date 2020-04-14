@@ -3,7 +3,7 @@ import {mapActions} from "vuex";
 const workspaceScale = {
   data() {
     return {
-      scalingSteps: [100, 110, 120, 133, 150, 170, 200]
+      scalingSteps: [25, 33, 50, 67, 75, 80, 90, 100, 110, 120, 133, 150, 170, 200] // must be sorted
     }
   },
   computed: {
@@ -15,7 +15,7 @@ const workspaceScale = {
       set: function (newValue) {
 
         let numberToUse = this.scaleNet;
-        if (newValue >= 30 &&  newValue <= 200) {
+        if (newValue >= 25 &&  newValue <= 200) {
           numberToUse = newValue;
         }
         
@@ -50,26 +50,23 @@ const workspaceScale = {
       }
     },
     decScale() {
-      if (this.scaleNet <= 100) {
-        this.scaleNet = this.scaleNet - 5;
-        return;
-      }
+      // if (this.scaleNet <= 100) {
+      //   this.scaleNet = this.scaleNet - 5;
+      //   return;
+      // }
 
       const nextSmallest = this.scalingSteps.reduce((prev, curr) => {
         return (this.scaleNet <= curr) ? prev : curr;
       });
 
-      console.log('nextSmallest', nextSmallest);
-
-
       this.scaleNet = nextSmallest;
 
     },
     incScale () {
-      if (this.scaleNet < 95) { //Old zoom steps, 5% each
-        this.scaleNet = this.scaleNet + 5;
-        return; 
-      } 
+      // if (this.scaleNet < 95) { //Old zoom steps, 5% each
+      //   this.scaleNet = this.scaleNet + 5;
+      //   return; 
+      // } 
 
       const nextLargest = this.scalingSteps.reduce((prev, curr) => {
         return (this.scaleNet < prev) ? prev : curr;
