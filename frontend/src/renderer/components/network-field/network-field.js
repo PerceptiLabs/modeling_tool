@@ -597,16 +597,17 @@ export default {
       return (event.pageY - this.offset.offsetY + scrollPosition) / this.networkScale
     },
     getLastElementLegArrowData(arrow) {
-      const isLayerTypeContainer = arrow.l1.layerType === 'Сontainer';
+      const isLayerTypeContainer = arrow.l1.layerType === 'Container';
       let arrowLeg1 = arrow.l1;
       if(isLayerTypeContainer) {
         // find id
         let keysOfContainerLayersListFrom = Object.keys(arrow.l1.containerLayersList);
         let keysOfContainerLayersListTo = arrow.l2.connectionIn;
         const keyOfLastElementFromGroup = keysOfContainerLayersListFrom.filter(value => keysOfContainerLayersListTo.includes(value))[0];
-
-        let currentNetworkElementList = this.fullNetworkElementList;
-        arrowLeg1 = currentNetworkElementList[keyOfLastElementFromGroup];
+        if(keyOfLastElementFromGroup) {
+          let currentNetworkElementList = this.fullNetworkElementList;
+          arrowLeg1 = currentNetworkElementList[keyOfLastElementFromGroup]; 
+        }
       }
       return arrowLeg1;
     },
