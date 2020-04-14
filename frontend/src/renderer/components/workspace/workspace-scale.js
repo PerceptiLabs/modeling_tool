@@ -1,6 +1,11 @@
 import {mapActions} from "vuex";
 
 const workspaceScale = {
+  data() {
+    return {
+      scalingSteps: [100, 110, 120, 133, 150, 170, 200]
+    }
+  },
   computed: {
     scaleNet: {
       get: function () {
@@ -45,12 +50,32 @@ const workspaceScale = {
       }
     },
     decScale() {
-      if (this.scaleNet <= 30) this.scaleNet = 30;
-      else this.scaleNet = this.scaleNet - 5
+      if (this.scaleNet <= 100) {
+        this.scaleNet = this.scaleNet - 5;
+        return;
+      }
+
+      const nextSmallest = this.scalingSteps.reduce((prev, curr) => {
+        return (this.scaleNet <= curr) ? prev : curr;
+      });
+
+      console.log('nextSmallest', nextSmallest);
+
+
+      this.scaleNet = nextSmallest;
+
     },
     incScale () {
-      if (this.scaleNet > 95) this.scaleNet = 100;
-      else this.scaleNet = this.scaleNet + 5
+      if (this.scaleNet < 95) { //Old zoom steps, 5% each
+        this.scaleNet = this.scaleNet + 5;
+        return; 
+      } 
+
+      const nextLargest = this.scalingSteps.reduce((prev, curr) => {
+        return (this.scaleNet < prev) ? prev : curr;
+      });
+
+      this.scaleNet = nextLargest;
     },   
     filterNonNumber: function(event) {
       event = event || window.event;
