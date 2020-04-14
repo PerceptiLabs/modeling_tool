@@ -1,10 +1,10 @@
-{% macro run_normal(graph, layer_name, output_layer, target_layer, n_epochs, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory) %}
+{% macro run_normal(graph, layer_name, output_layer, target_layer, n_epochs, num_box, grid_size, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory) %}
         self._status = 'initializing'
 
-        self._grid_size = 5
+        self._grid_size = {{grid_size}}
         self._classes = ['rectangle','triangle','circle']
         self._num_class = len(self._classes)
-        self._num_box = 2 #number of boxes per cell
+        self._num_box = {{num_box}} #number of boxes per cell
         
         w_img = 224
         h_img = 224
@@ -398,7 +398,7 @@
 
 
 ################################################### Main #####################################################
-{% macro layer_tf1x_object_detection(layer_name, output_layer, target_layer, n_epochs, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory) %}
+{% macro layer_tf1x_object_detection(layer_name, output_layer, target_layer, n_epochs, num_box, grid_size, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory) %}
 import itertools
 import cv2
 import copy
@@ -458,7 +458,7 @@ class {{layer_name}}(ObjectDetectionLayer):
             graph: A PerceptiLabs Graph object containing references to all layers objects included in the model produced by this training layer.
         """   
         {% if not distributed -%}
-            {{ run_normal(graph, layer_name, output_layer, target_layer, n_epochs, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory) }}
+            {{ run_normal(graph, layer_name, output_layer, target_layer, n_epochs, num_box, grid_size, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory) }}
         {% endif %}            
 
     def on_export(self, path: str, mode: str) -> None:

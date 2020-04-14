@@ -215,6 +215,8 @@ DEFINITION_TABLE = {
         'tf1x_object_detection.j2',
         'layer_tf1x_object_detection',
         {
+            'grid_size': lambda specs: specs['Properties']['grid_size'],
+            'num_box': lambda specs: specs['Properties']['num_box'],
             'output_layer': lambda specs: [sanitize_layer_name(x) for true_id, x in specs['backward_connections'] if true_id != specs['Properties']['Labels']][0],
             'target_layer': lambda specs: [sanitize_layer_name(x) for true_id, x in specs['backward_connections'] if true_id == specs['Properties']['Labels']][0],
             'n_epochs': lambda specs: specs['Properties']['Epochs'],
