@@ -16,6 +16,7 @@ backend/deploy.py
 build/
 .vscode/
 backend/.vscode/
+backend/Kernel.log
 #Frontend ignores
 frontend_out
 frontend/core/*

@@ -289,6 +289,20 @@ const fixFilepathSeparator = function fileUrl(filepath) {
   return filepath.replace(/\\/g, '/');
 };
 
+const debounce = function(callback, waitInMs) {
+
+  let timerHandle;
+
+  return function() {
+    clearInterval(timerHandle);
+    timerHandle = setTimeout(() => {
+
+      callback.apply(this, arguments);
+
+    }, waitInMs);
+  }
+}
+
 export {
   openLoadDialog,
   openSaveDialog,
@@ -318,4 +332,5 @@ export {
   isWeb,
   fixFilepathSeparator,
   setAppTypeRootClasses,
+  debounce
 }

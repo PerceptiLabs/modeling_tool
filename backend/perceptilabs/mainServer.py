@@ -18,7 +18,7 @@ def get_input_args():
                         help="Set this to instantly kill the core, for test purposes.")
     parser.add_argument('-u', '--user', default="dev@dev.com", type=str,
                         help="Set this to attach a user to all Sentry logs.")
-    parser.add_argument('-p','--platform', default='desktop', type=str, choices=['desktop', 'browser'],
+    parser.add_argument('-p','--platform', default='browser', type=str, choices=['desktop', 'browser'],
                         help="Sets what type of frontend you want to communicate with. Can be either 'desktop' or 'browser'.")
     parser.add_argument('-e', '--error', default=False, type=bool, 
                         help="Force an error to see that all the error logging works as it should")

@@ -186,7 +186,8 @@ class coreLogic():
 
         for _id, layer in network['Layers'].items():
             if layer['Type'] == 'DataData':
-                layer['Properties']['accessProperties']['Sources'][0]['path'] = layer['Properties']['accessProperties']['Sources'][0]['path'].replace('\\','/')
+                if layer['Properties'] and 'accessProperties' in layer['Properties']:
+                    layer['Properties']['accessProperties']['Sources'][0]['path'] = layer['Properties']['accessProperties']['Sources'][0]['path'].replace('\\','/')
             if layer['Type'] == 'TrainNormal':
                 layer['Properties']['Distributed'] = distributed
                 if distributed:
