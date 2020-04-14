@@ -1,10 +1,10 @@
 <template lang="pug">
-  .project-wrapper(@click="closePageAction()")
+  .project-wrapper
     .project-box
       .header Projects
       .content
         .sidebar
-          button.create-new-button
+          button.create-new-button(@click="createNewProject")
             img(src="../../../../static/img/plus.svg")
             span  create new
           button.project-list-filter-button.is-active All Projects
@@ -28,26 +28,28 @@
             .main-list-header
               .list-name-name Name
               .list-last-opened Last Opened
-            div.main-list-item(v-for="mock in [0,1,2,3]")
-              span.main-list-name.fz-16 Placeholder {{mock}}
-              span.main-list-date.fz-16 Yesterday
+            div.main-list-item(v-for="project in projectsList.filter(pr => pr.name.indexOf(searchValue) !== -1)" @click="onProjectSelectHandler(project)") 
+              span.main-list-name.fz-16 {{project.name}}
+              span.main-list-date.fz-16 {{project.createdAt.toString().substring(0, 24)}}
           
   
 </template>
 <script>
-  import { mapActions } from "vuex";
+  import { mapActions, mapMutations } from "vuex";
   import SortByButton from "@/components/sort-by-button";
+  import { generateID } from "@/core/helpers";
 
   export default {
     name: 'CreateSelectProject',
     components: {SortByButton},
-    data: function() {
+    data() {
       return {
-        searchValue: ''
+        searchValue: '',
       }
     },
     created() {
       // this.setActivePageAction()
+      this.getProjects();
     },
     computed:{
       isOpen() {
@@ -55,13 +57,36 @@
       },
       currentPage() {
         return this.$store.state.modal_pages.currentPage
+      },
+      projectsList() {
+        return this.$store.state.mod_project.projectsList;
       }
     },
     methods: {
+      ...mapMutations({
+        selectProject: 'mod_project/selectProject',
+        setPageTitleMutation: 'globalView/setPageTitleMutation'
+      }),
       ...mapActions({
         setActivePageAction: 'modal_pages/setActivePageAction',
         closePageAction: 'modal_pages/closePageAction',
-      })
+        getProjects:    'mod_project/getProjects',
+        createProject:    'mod_project/createProject',
+      }),
+      onProjectSelectHandler(project) {
+        this.selectProject(project.id);
+        this.closePageAction();
+        this.setPageTitleMutation(`${project.name} / Models`);
+      },
+      createNewProject() {
+       let payload = {
+         id: generateID(),
+         name: 'New project',
+         createdAt: new Date(),
+       };
+       this.createProject(payload);
+       this.onProjectSelectHandler(payload);
+      },
     }
   }
 
