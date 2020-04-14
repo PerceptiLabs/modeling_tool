@@ -45,11 +45,6 @@ const workspaceScale = {
       }
     },
     decScale() {
-      // if (this.scaleNet <= 100) {
-      //   this.scaleNet = this.scaleNet - 5;
-      //   return;
-      // }
-
       const nextSmallest = this.scalingSteps.reduce((prev, curr) => {
         return (this.scaleNet <= curr) ? prev : curr;
       });
@@ -57,11 +52,6 @@ const workspaceScale = {
       this.set_statusNetworkZoom(nextSmallest/100);
     },
     incScale () {
-      // if (this.scaleNet < 95) { //Old zoom steps, 5% each
-      //   this.scaleNet = this.scaleNet + 5;
-      //   return; 
-      // } 
-
       const nextLargest = this.scalingSteps.reduce((prev, curr) => {
         return (this.scaleNet < prev) ? prev : curr;
       });
