@@ -194,7 +194,7 @@ class ClassificationLayerReplica(ClassificationLayer):
     def export_modes(self):
         return self._export_modes
         
-class RegressionLayerReplica(ClassificationLayer):
+class RegressionLayerReplica(RegressionLayer):
     def __init__(self, sample, size_training, size_validation, size_testing, variables,
                  loss_training, loss_testing, loss_validation,
                  status, layer_weights, layer_biases, layer_gradients, layer_outputs,

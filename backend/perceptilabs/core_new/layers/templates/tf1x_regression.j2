@@ -439,21 +439,6 @@ class {{layer_name}}(RegressionLayer):
         """Returns a generator yielding single samples of testing data. In the case of a training layer, this typically yields the model output."""                        
         yield from []
 
-{#     @property
-    def accuracy_training(self) -> float:
-        """Returns the current accuracy of the training phase"""        
-        return self._accuracy_training
-    
-    @property
-    def accuracy_validation(self) -> float:
-        """Returns the current accuracy of the validation phase"""                
-        return self._accuracy_validation
-
-    @property
-    def accuracy_testing(self) -> float:
-        """Returns the current accuracy of the testing phase"""                        
-        return self._accuracy_testing #}
-
     @property
     def loss_training(self) -> float:
         """Returns the current loss of the training phase"""                
