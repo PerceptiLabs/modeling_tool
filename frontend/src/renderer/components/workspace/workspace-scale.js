@@ -3,6 +3,7 @@ import {mapActions} from "vuex";
 const workspaceScale = {
   data() {
     return {
+      tempZoomValue: 100, // used for intermediate calculations
       scalingSteps: [25, 33, 50, 67, 75, 80, 90, 100, 110, 120, 133, 150, 170, 200] // must be sorted
     }
   },
@@ -13,13 +14,7 @@ const workspaceScale = {
         return Math.round(zoom);
       },
       set: function (newValue) {
-
-        let numberToUse = this.scaleNet;
-        if (newValue >= 25 &&  newValue <= 200) {
-          numberToUse = newValue;
-        }
-        
-        this.set_statusNetworkZoom(numberToUse/100);
+        this.tempZoomValue = newValue;
       }
     },
   },
@@ -59,8 +54,7 @@ const workspaceScale = {
         return (this.scaleNet <= curr) ? prev : curr;
       });
 
-      this.scaleNet = nextSmallest;
-
+      this.set_statusNetworkZoom(nextSmallest/100);
     },
     incScale () {
       // if (this.scaleNet < 95) { //Old zoom steps, 5% each
@@ -72,7 +66,7 @@ const workspaceScale = {
         return (this.scaleNet < prev) ? prev : curr;
       });
 
-      this.scaleNet = nextLargest;
+      this.set_statusNetworkZoom(nextLargest/100);
     },   
     filterNonNumber: function(event) {
       event = event || window.event;
@@ -87,6 +81,18 @@ const workspaceScale = {
       } else {
         return true;
       }
+    },
+    onZoomInputBlur() {
+      const smallestVal = this.scalingSteps[0];
+      const largestVal = this.scalingSteps[this.scalingSteps.length - 1];
+
+      let numberToUse = 0;
+
+      if (this.tempZoomValue < smallestVal) { numberToUse = smallestVal; }
+      else if (this.tempZoomValue > largestVal) { numberToUse = largestVal; }
+      else { numberToUse = this.tempZoomValue; }
+
+      this.set_statusNetworkZoom(numberToUse/100);
     }
   }
 };
