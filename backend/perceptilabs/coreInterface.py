@@ -749,7 +749,7 @@ class coreLogic():
                 return output
             if view=="Weights&Bias":
                 w=self.getStatistics({"layerId":layerId,"variable":"W","innervariable":""})
-                w=np.average(w,axis=0)
+                # w=np.average(w,axis=0)
                 dataObjectWeights = createDataObject([w], typeList=['line'])
                 
                 b=self.getStatistics({"layerId":layerId,"variable":"b","innervariable":""})
@@ -772,15 +772,14 @@ class coreLogic():
                 return output
         elif layerType=="DeepLearningConv":
             if view=="Weights&Output":
-                weights=self.getStatistics({"layerId":layerId,"variable":"W","innervariable":""})                
-                Wshapes=weights.shape
-                if len(Wshapes)==3:
-                    weights=np.expand_dims(np.average(weights[:,:,-1],1),axis=0)
-                elif len(Wshapes)==4:
-                    weights=np.average(weights[:,:,:,-1],2)
-                elif len(Wshapes)==5:
-                    weights=np.average(weights[:,:,:,:,-1],3)
-
+                weights=self.getStatistics({"layerId":layerId,"variable":"W","innervariable":""})              
+                # Wshapes=weights.shape
+                # if len(Wshapes)==3:
+                #     weights=np.expand_dims(np.average(weights[:,:,-1],1),axis=0)
+                # elif len(Wshapes)==4:
+                #     weights=np.average(weights[:,:,:,-1],2)
+                # elif len(Wshapes)==5:
+                #     weights=np.average(weights[:,:,:,:,-1],3)
                 outputs=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})[-1]
                 outputs=outputs[:, :, 0]
                     
@@ -810,13 +809,13 @@ class coreLogic():
         elif layerType=="DeepLearningDeconv":
             if view=="Weights&Output":
                 weights=self.getStatistics({"layerId":layerId,"variable":"W","innervariable":""})                
-                Wshapes=weights.shape
-                if len(Wshapes)==3:
-                    weights=np.expand_dims(np.average(weights[:,:,-1],1),axis=0)
-                elif len(Wshapes)==4:
-                    weights=np.average(weights[:,:,:,-1],2)
-                elif len(Wshapes)==5:
-                    weights=np.average(weights[:,:,:,:,-1],3)
+                # Wshapes=weights.shape
+                # if len(Wshapes)==3:
+                #     weights=np.expand_dims(np.average(weights[:,:,-1],1),axis=0)
+                # elif len(Wshapes)==4:
+                #     weights=np.average(weights[:,:,:,-1],2)
+                # elif len(Wshapes)==5:
+                #     weights=np.average(weights[:,:,:,:,-1],3)
 
                 outputs=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})[-1]
                 outputs=outputs[:, :, 0]
@@ -1224,7 +1223,6 @@ class coreLogic():
                         currentValidation=classification_loss_train+classification_loss_val
                     else:
                         currentValidation=classification_loss_train+list(classification_loss_val)
-                # print(currentValidation)
                 totalTraining=self.getStatistics({"layerId":layerId,"variable":"classification_loss_training_epoch","innervariable":""})
                 totalValidation=self.getStatistics({"layerId":layerId,"variable":"classification_loss_validation_epoch","innervariable":""})
 
@@ -1239,18 +1237,17 @@ class coreLogic():
                 return output
             
             if view=="Bounding Boxes Loss":
-                loss_train=self.getStatistics({"layerId":layerId,"variable":"bboxes_loss_train_iter","innervariable":""})
-                loss_val=self.getStatistics({"layerId":layerId,"variable":"bboxes_loss_val_iter","innervariable":""})
+                bbox_loss_train=self.getStatistics({"layerId":layerId,"variable":"bboxes_loss_train_iter","innervariable":""})
+                bbox_loss_val=self.getStatistics({"layerId":layerId,"variable":"bboxes_loss_val_iter","innervariable":""})
 
-                currentTraining=loss_train
-                if isinstance(loss_train,np.ndarray):
-                    currentValidation=np.concatenate((loss_train,np.asarray(loss_val)))
-                elif isinstance(loss_train,list):
-                    if isinstance(loss_val,list):
-                        currentValidation=loss_train+loss_val
+                currentTraining=bbox_loss_train
+                if isinstance(bbox_loss_train,np.ndarray):
+                    currentValidation=np.concatenate((bbox_loss_train,np.asarray(bbox_loss_val)))
+                elif isinstance(bbox_loss_train,list):
+                    if isinstance(bbox_loss_val,list):
+                        currentValidation=bbox_loss_train+bbox_loss_val
                     else:
-                        currentValidation=loss_train+list(loss_val)
-
+                        currentValidation=bbox_loss_train+list(bbox_loss_val)
                 totalTraining=self.getStatistics({"layerId":layerId,"variable":"bboxes_loss_training_epoch","innervariable":""})
                 totalValidation=self.getStatistics({"layerId":layerId,"variable":"bboxes_loss_validation_epoch","innervariable":""})
 

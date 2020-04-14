@@ -1,6 +1,7 @@
 import logging
 from collections import namedtuple
 import copy
+import gc 
 
 CacheEntry = namedtuple('CacheEntry', ['hash', 'session', 'error'])
 

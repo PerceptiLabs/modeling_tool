@@ -85,7 +85,6 @@ class Core:
                 break
 
             snapshots = self._client.pop_snapshots()
-
             total_size = 0
             new_graphs = []
             for snapshot, size in snapshots:

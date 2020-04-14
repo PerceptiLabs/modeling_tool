@@ -311,19 +311,18 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id):
             # (1) compute the min, max and average for gradients w.r.t each tensor in a layer
             # (2) compute min, max and average among the output of (1)
             # is there a more meaningful way to do it?
-            
             layer_min_list, layer_max_list, layer_avg_list = [], [], []
             for name, grad in gradient_dict.items():
                 grad = np.asarray(grad)
-            
-                layer_min_list.append(np.min(grad))
-                layer_max_list.append(np.max(grad))
-                layer_avg_list.append(np.average(grad))
+                layer_min_list.append(grad[0])
+                layer_max_list.append(grad[1])
+                layer_avg_list.append(grad[2])
 
             if len(gradient_dict) > 0:
                 min_list.append(np.min(layer_min_list))
                 max_list.append(np.max(layer_max_list))
                 avg_list.append(np.average(layer_avg_list))
+            
 
         data['Gradient'] = {
             'Min': min_list,
@@ -439,7 +438,7 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id):
                 acc_val_iter.append(trn_layer.accuracy_validation)
                 loss_val_iter.append(trn_layer.loss_validation)                
                 classification_loss_val_iter.append(trn_layer.loss_classification_validation)
-                bbox_loss_val_iter.append(trn_layer.loss_bboxes_validation)   
+                bbox_loss_val_iter.append(trn_layer.loss_bbox_validation)   
                 predicted_objects = trn_layer.get_predicted_objects
                 predicted_classes = trn_layer.get_predicted_classes
                 predicted_normalized_boxes = trn_layer.get_predicted_normalized_boxes
@@ -475,7 +474,7 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id):
                 bbox_loss_val_epoch.append(trn_layer.loss_bbox_validation)
             idx += 1
 
-        bbox_image, confidence_scores = plot_bounding_boxes(input_images[-1], predicted_objects[-1], predicted_classes[-1], predicted_normalized_boxes[-1])
+        bbox_image, confidence_scores = plot_bounding_boxes(input_images[-1], predicted_objects, predicted_classes, predicted_normalized_boxes)
         
         # ---- Update the dicts
         

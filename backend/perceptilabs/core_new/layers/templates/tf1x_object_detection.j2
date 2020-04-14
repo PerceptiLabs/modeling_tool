@@ -218,9 +218,8 @@
             loss = 0.5*class_loss + object_loss + 0.1*noobject_loss + 10*box_loss
 
             # accuracy
-
             correct_predictions =  tf.equal(tf.argmax(predicted_class, axis =3), tf.argmax(true_class, axis = 3) )
-            
+
             image_accuracy =  tf.reduce_mean(tf.cast(correct_predictions, tf.float32), axis = [1,2])[-1]
             total_accuracy =tf.reduce_mean(tf.cast(correct_predictions, tf.float32))
             return loss, class_loss, box_loss, predicted_object, predicted_class, predicted_normalized_box, image_accuracy, total_accuracy
@@ -306,8 +305,7 @@
                         update_weights, predicted_object, predicted_class, predicted_normalized_box, classification_loss_tensor, bbox_loss_tensor, loss_tensor, accuracy_tensor,
                         image_accuracy_tensor, layer_output_tensors, layer_weight_tensors, layer_bias_tensors, layer_gradient_tensors
                     ])
-                #print( 'type of self.image_accuracy is ' + str(type(self._image_accuracy)))
-                #print( 'self.image_accuracy is ' + str(self._image_accuracy))
+                
             else:
                 _, self._classification_loss_training, self._bbox_loss_training, self._loss_training, self._accuracy_training, \
                     = sess.run([
@@ -403,6 +401,7 @@
 {% macro layer_tf1x_object_detection(layer_name, output_layer, target_layer, n_epochs, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory) %}
 import itertools
 import cv2
+import copy
 class {{layer_name}}(ObjectDetectionLayer):
     def __init__(self):
         self._n_epochs = {{n_epochs}}
@@ -684,17 +683,17 @@ class {{layer_name}}(ObjectDetectionLayer):
     @property
     def get_predicted_normalized_boxes(self) -> np.ndarray:
         """ returns the images with predicted bboxes"""
-        return self._predicted_normalized_box
+        return self._predicted_normalized_box[-1]
 
     @property
     def get_predicted_classes(self) -> np.ndarray:
         """ returns the images with predicted bboxes"""
-        return self._predicted_class
+        return self._predicted_class[-1]
 
     @property
     def get_predicted_objects(self) -> np.ndarray:
         """ returns the images with predicted bboxes"""
-        return self._predicted_object
+        return self._predicted_object[-1]
 
     @property
     def layer_weights(self) -> Dict[str, Dict[str, Picklable]]:
@@ -702,8 +701,25 @@ class {{layer_name}}(ObjectDetectionLayer):
 
         Returns:
             A dictionary of nested dictionaries, where each key is a layer id. The nested dictionaries contain weight name and value pairs. The values must be picklable.
-        """        
-        return self._layer_weights
+        """
+        w = copy.deepcopy(self._layer_weights)
+        for layer_name in w:
+            for layer_type in w[layer_name]:
+                weights = w[layer_name][layer_type]
+                Wshapes=weights.shape
+                if len(Wshapes)==2:
+                    weights = np.average(weights,axis=0)
+                elif len(Wshapes)==3:
+                    weights=np.expand_dims(np.average(weights[:,:,-1],1),axis=0)
+                elif len(Wshapes)==4:
+                    weights= np.average(weights[:,:,:,-1],2)
+                    #print(weights.shape)
+                elif len(Wshapes)==5:
+                    weights=np.average(weights[:,:,:,:,-1],3)
+
+                w[layer_name][layer_type] = weights
+
+        return w
 
     @property
     def layer_biases(self) -> Dict[str, Dict[str, Picklable]]:
@@ -711,17 +727,27 @@ class {{layer_name}}(ObjectDetectionLayer):
 
         Returns:
             A dictionary of nested dictionaries, where each key is a layer id. The nested dictionaries contain weight name and value pairs. The values must be picklable.
-        """        
+        """
         return self._layer_biases
     
     @property
     def layer_gradients(self) -> Dict[str, Dict[str, Picklable]]:
-        """The gradients with respect to the loss of all trainable variables of each layer in the input Graph.
+        """
+        The gradients with respect to the loss of all trainable variables of each layer in the input Graph.
 
         Returns:
             A dictionary of nested dictionaries, where each key is a layer id. The nested dictionaries contain gradient name and value pairs. The values must be picklable.
-        """        
-        return self._layer_gradients
+        """
+        gradients =  copy.deepcopy(self._layer_gradients)
+        for layer in self._layer_gradients:
+            for name, grad in self._layer_gradients[layer].items():
+                grad = np.asarray(grad)
+                layer_min = np.min(grad)
+                layer_max = np.max(grad)
+                layer_avg = np.average(grad)
+                gradients[layer][name] = [layer_min, layer_max, layer_avg]
+        
+        return gradients
     
     @property
     def layer_outputs(self) -> Dict[str, Dict[str, Picklable]]:
@@ -750,6 +776,12 @@ class {{layer_name}}(ObjectDetectionLayer):
     @property
     def image_accuracy(self) -> float:
         return self._image_accuracy
+
+    @property 
+    def bbox_images(self) -> np.ndarray:
+
+        return images
+
 
     @property
     def progress(self) -> float:

@@ -60,7 +60,7 @@ REPLICATED_PROPERTIES_TABLE = {
         ReplicatedProperty('loss_validation', (np.float32, float), -1),        
         ReplicatedProperty('loss_testing', (np.float32, float), -1),
         ReplicatedProperty('status', str, '<none>'),
-        ReplicatedProperty('layer_gradients', dict, lambda _: dict()),
+        ReplicatedProperty('layer_gradients', dict, {}),
         ReplicatedProperty('layer_weights', dict, lambda _: dict()),
         ReplicatedProperty('layer_biases', dict, lambda _: dict()),
         ReplicatedProperty('layer_outputs', dict, lambda _: dict()),
