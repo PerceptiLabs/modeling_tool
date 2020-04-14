@@ -251,6 +251,8 @@ export default {
       const maxWidthPositions = Math.max(...positions.map(position => position.left)) + 60;
       const maxHeightPositions = Math.max(...positions.map(position => position.top)) + 60;
 
+      this.svgWidth = Math.max(offsetWidth, maxWidthPositions);
+      this.svgHeight = Math.max(offsetHeight, maxHeightPositions);
       
       if (isZoomed) {
         console.log(isZoomed);
