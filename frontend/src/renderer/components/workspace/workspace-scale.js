@@ -14,7 +14,9 @@ const workspaceScale = {
         return Math.round(zoom);
       },
       set: function (newValue) {
-        this.tempZoomValue = newValue;
+        // used to store what gets typed in
+        // actual system-wide zoom level gets updated on blur
+        this.tempZoomValue = newValue; 
       }
     },
   },
