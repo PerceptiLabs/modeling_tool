@@ -255,7 +255,6 @@ export default {
       this.svgHeight = Math.max(offsetHeight, maxHeightPositions);
       
       if (isZoomed) {
-        console.log(isZoomed);
         parentWorkspace.scrollLeft = 0;
         parentWorkspace.scrollTop = 0;
       }
