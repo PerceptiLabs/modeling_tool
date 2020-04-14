@@ -271,7 +271,7 @@
 
 ################################################### Main #####################################################
 {% macro layer_tf1x_regression(layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, decay_steps, learning_rate, decay_rate, momentum, beta1, beta2, distributed, export_directory) %}
-class {{layer_name}}(ClassificationLayer):
+class {{layer_name}}(RegressionLayer):
     def __init__(self):
         self._n_epochs = {{n_epochs}}
         self._batch_size = 10 # TODO: {{batch_size}}?
@@ -439,7 +439,7 @@ class {{layer_name}}(ClassificationLayer):
         """Returns a generator yielding single samples of testing data. In the case of a training layer, this typically yields the model output."""                        
         yield from []
 
-    @property
+{#     @property
     def accuracy_training(self) -> float:
         """Returns the current accuracy of the training phase"""        
         return self._accuracy_training
@@ -452,7 +452,7 @@ class {{layer_name}}(ClassificationLayer):
     @property
     def accuracy_testing(self) -> float:
         """Returns the current accuracy of the testing phase"""                        
-        return self._accuracy_testing
+        return self._accuracy_testing #}
 
     @property
     def loss_training(self) -> float:

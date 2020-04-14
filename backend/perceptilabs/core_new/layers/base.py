@@ -208,7 +208,104 @@ class TrainingLayer(DataLayer):
         """Returns the possible modes of exporting a model."""
         raise NotImplementedError
     
+class RegressionLayer(TrainingLayer):
+    @property
+    @abstractmethod
+    def loss_training(self) -> float:
+        """Returns the current correctness of the training phase"""
+        raise NotImplementedError
 
+    @property
+    @abstractmethod
+    def loss_validation(self) -> float:
+        """Returns the current correctness of the validation phase"""
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def loss_testing(self) -> float:
+        """Returns the current correctness of the testing phase"""
+        raise NotImplementedError
+
+    @property
+    @abstractmethod    
+    def layer_weights(self) -> Dict[str, Dict[str, Picklable]]:
+        """The weight values of each layer in the input Graph during the training.
+
+        Returns:
+            A dictionary of nested dictionaries, where each key is a layer id. The nested dictionaries contain weight name and value pairs. The values must be picklable.
+        """        
+        raise NotImplementedError
+
+    @property
+    @abstractmethod    
+    def layer_biases(self) -> Dict[str, Dict[str, Picklable]]:
+        """The bias values of each layer in the input Graph during the training.
+
+        Returns:
+            A dictionary of nested dictionaries, where each key is a layer id. The nested dictionaries contain weight name and value pairs. The values must be picklable.
+        """        
+        raise NotImplementedError
+    @property
+    @abstractmethod    
+    def layer_weights(self) -> Dict[str, Dict[str, Picklable]]:
+        """The weight values of each layer in the input Graph during the training.
+
+        Returns:
+            A dictionary of nested dictionaries, where each key is a layer id. The nested dictionaries contain weight name and value pairs. The values must be picklable.
+        """        
+        raise NotImplementedError
+
+    @property
+    @abstractmethod    
+    def layer_biases(self) -> Dict[str, Dict[str, Picklable]]:
+        """The bias values of each layer in the input Graph during the training.
+
+        Returns:
+            A dictionary of nested dictionaries, where each key is a layer id. The nested dictionaries contain weight name and value pairs. The values must be picklable.
+        """        
+        raise NotImplementedError
+    
+    @property
+    @abstractmethod    
+    def layer_gradients(self) -> Dict[str, Dict[str, Picklable]]:
+        """The gradients with respect to the loss of all trainable variables of each layer in the input Graph.
+
+        Returns:
+            A dictionary of nested dictionaries, where each key is a layer id. The nested dictionaries contain gradient name and value pairs. The values must be picklable.
+        """        
+        raise NotImplementedError
+    
+    @property
+    @abstractmethod    
+    def batch_size(self) -> int:
+        """Size of the current training batch """
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def epoch(self) -> int:
+        """The current epoch"""
+        raise NotImplementedError
+    
+    @property
+    @abstractmethod
+    def training_iteration(self) -> int:
+        """The current training iteration"""
+        return self._training_iteration
+
+    @property
+    @abstractmethod
+    def validation_iteration(self) -> int:
+        """The current validation iteration"""        
+        return self._validation_iteration
+
+    @property
+    @abstractmethod
+    def testing_iteration(self) -> int:
+        """The current testing iteration"""                
+        return self._testing_iteration
+    
 class ClassificationLayer(TrainingLayer):
     """A layer for training classifiers."""
     
