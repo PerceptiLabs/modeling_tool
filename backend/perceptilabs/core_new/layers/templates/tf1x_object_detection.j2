@@ -311,7 +311,7 @@
                     = sess.run([
                         update_weights, classification_loss_tensor, bbox_loss_tensor, loss_tensor, accuracy_tensor
                     ])
-
+            #print(self._layer_outputs)
         def validation_step():
             if not self._headless:
                 self._predicted_object, self._predicted_class, self._predicted_normalized_box, self._classification_loss_validation, self._bbox_loss_validation, self._loss_validation, self._accuracy_validation, \
@@ -594,7 +594,7 @@ class {{layer_name}}(ObjectDetectionLayer):
 
     @property
     def size_training(self) -> int:
-        """Returns the size of the training dataset"""                                    
+        """Returns the size of the training dataset"""
         return self._trn_sz_tot
 
     @property
