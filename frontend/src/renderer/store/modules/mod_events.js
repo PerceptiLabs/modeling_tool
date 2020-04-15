@@ -61,11 +61,13 @@ const actions = {
   },
   EVENT_loadNetwork({dispatch, rootGetters}, pathProject) {
     const pathFile = projectPathModel(pathProject);
+
     const localUserInfo = rootGetters['mod_user/GET_LOCAL_userInfo'];
     let localProjectsList = localUserInfo ? localUserInfo.projectsList : [];
     let pathIndex;
+
     if(localProjectsList.length) {
-      pathIndex = localProjectsList.findIndex((proj)=> proj.pathModel === pathFile);
+      pathIndex = localProjectsList.findIndex((proj)=> proj.pathProject === pathProject);
     }
 
     dispatch('mod_api/API_loadNetwork', pathFile, {root: true})
@@ -78,12 +80,15 @@ const actions = {
               throw('err');
             }
         } catch(e) {
-          dispatch('globalView/GP_infoPopup', 'The model is not valid', {root: true});
+          dispatch('globalView/GP_infoPopup', 'The model does not exist or the Kernel is not online.', {root: true});
           return
         }
 
         if(pathIndex > -1 && localProjectsList) {
           net.networkID = localProjectsList[pathIndex].id;
+          net.networkRootFolder = localProjectsList[pathIndex].pathProject;
+        } else {
+          net.networkRootFolder = pathProject;
         }
         dispatch('mod_workspace/ADD_network', net, {root: true});
       }).catch(err => {

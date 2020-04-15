@@ -437,14 +437,13 @@ const actions = {
         console.error('SaveTrained answer', err);
       });
   },
-  API_saveJsonModel({rootGetters}, {name, path}) {
+  API_saveJsonModel({rootGetters}, {path}) {
     const networkJson = stringifyNetworkObjects(rootGetters['mod_workspace/GET_currentNetwork']);
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
       action: 'saveJsonModel',
       value:  {
         json: networkJson,
-        name, 
         path
       }
     };

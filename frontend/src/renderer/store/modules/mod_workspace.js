@@ -272,22 +272,31 @@ const mutations = {
 
     newNetwork.networkMeta = defaultMeta;
     //-- Create unic ID
-    if(findNetId(newNetwork, workspace) || !newNetwork.networkID) {
+    if(!newNetwork.networkID) {
       newNetwork.networkID = generateID();
     }
+
     //-- Check and create the position
     createPositionElements(newNetwork.networkElementList);
     //-- Add to workspace
-    workspace.push(deepCopy(newNetwork));
+
+    const netIndex = findNetId(newNetwork, workspace);
+    if (netIndex > -1) {
+      workspace.splice(netIndex, 1, newNetwork)
+      state.currentNetwork = netIndex;
+    } else {
+      workspace.push(deepCopy(newNetwork));
+      state.currentNetwork = workspace.length - 1;
+    }
+
     //-- Open last Network
-    state.currentNetwork = workspace.length - 1;
     //-- Go to app page
     if(router.history.current.name !== 'app') {
       router.replace({name: 'app'});
     }
     function findNetId(newNet, netList) {
       let indexId = netList.findIndex((el)=> el.networkID === newNet.networkID);
-      return (indexId < 0) ? false : true
+      return indexId; 
     }
     function createPositionElements(list) {
       if(!list || list.length === 0 || Object.values(list)[0].layerMeta.position.top !== null) {
