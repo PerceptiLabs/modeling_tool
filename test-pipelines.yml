@@ -23,9 +23,14 @@ jobs:
         bash -i test_ubuntu.sh
       displayName: 'Python tests'
 
+    -bash: |
+        $fileExists = -d "$(System.DefaultWorkingDirectory)/backend/training_scripts"
+        Write-Output "##vso[task.setvariable variable=FileExists]$fileExists"
+      displayName: 'Check artifact'
+
     - publish: $(System.DefaultWorkingDirectory)/backend/training_scripts
       artifact: linux_training_scripts
-      condition: always()
+      condition: eq(variables['FileExists'], True)
 
 
 
