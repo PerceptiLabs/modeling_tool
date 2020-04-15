@@ -118,8 +118,10 @@ export default {
     if(localStorage.hasOwnProperty(filePickerStorageKey) && !this.isTutorialMode) {
       path = localStorage.getItem(filePickerStorageKey);
     }
-    
-    this.fetchPathInformation(path);
+    if(!this.fetchPathInformation(path)) {
+      let path = '';
+      this.fetchPathInformation(path);
+    };
   },
   methods: {
     calculateBreadcrumbsLength(path) {
@@ -239,7 +241,8 @@ export default {
               return ~this.fileTypeFilter.indexOf(ext);
             })
           }
-      });
+      })
+      .catch(err => {return false});
     },
     onConfirm() {
         let emitPayload;
