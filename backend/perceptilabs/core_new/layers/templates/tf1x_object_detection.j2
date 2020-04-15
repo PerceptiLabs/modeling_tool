@@ -1177,10 +1177,17 @@ class {{layer_name}}(ObjectDetectionLayer):
                             nested_dict[variable] = tensors[0]
                     return nested_dict
 
+                ###### this is not done yet. Need to look into the other outputs from loss function ##########
                 ##### Training statistics #####
                 dist_loss_train, accuracy_train, \
                     layer_outputs_train, layer_weights_train, layer_biases_train, \
-                    layer_gradients_train = strategy.experimental_run(train_step, train_iterator)
+                    layer_gradients_train = 
+                
+                predicted_object, predicted_class, predicted_normalized_box,\ 
+                    dist_loss_train, dist_classification_loss_train, dist_bbox_loss_tensor,\
+                    image_accuracy_train, accuracy_train, \
+                    layer_output_train, layer_weight_train, layer_bias_train, \
+                    layer_gradient_train = strategy.experimental_run(train_step, train_iterator)
 
                 dist_loss_train = [dist_loss_train.get(device) for device in dist_loss_train.devices]
                 loss_train = tf.reduce_sum(dist_loss_train)
@@ -1271,10 +1278,6 @@ class {{layer_name}}(ObjectDetectionLayer):
                             self._layer_outputs, self._layer_weights, self._layer_biases, \
                             self._layer_gradients = sess.run([loss_val, accuracy_val, layer_outputs_val, layer_weights_val, layer_biases_val, layer_gradients_val])
 
-                        if INCLUDE_KERAS_METRICS:
-                            auc_val.reset_states()
-                            recall_val.reset_states()
-                            precision_val.reset_states()                                
                         yield YieldLevel.SNAPSHOT
                         self._validation_iteration += 1 * n_devices     
                 except tf.errors.OutOfRangeError:
