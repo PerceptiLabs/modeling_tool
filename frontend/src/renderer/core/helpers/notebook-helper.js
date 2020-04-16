@@ -69,7 +69,7 @@ const fetchNetworkCode = () => {
   const networkElements = Object.entries(currentNetwork.networkElementList);
   for (let networkElement of networkElements) {
     const promise = addIdToLayerCode.call(this, networkElement);
-    fetchCodePromises.push(promiseWithTimeout(200, promise));
+    fetchCodePromises.push(promiseWithTimeout(1000, promise));
   }
 
   return Promise.all(fetchCodePromises).then(code => {
