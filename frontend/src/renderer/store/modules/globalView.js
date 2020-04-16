@@ -81,7 +81,8 @@ const mutations = {
     state.globalPopup.showFilePickerPopup = value;
   },
   set_loadSettingPopup(state, value) {
-    state.globalPopup.showLoadSettingPopup = value;
+    state.globalPopup.showLoadSettingPopup = value.visible;
+    state.popupConfirmOk = value.ok;
   },
   gp_confirmPopup(state, value) {
     state.globalPopup.showConfirmPopup = value.text;

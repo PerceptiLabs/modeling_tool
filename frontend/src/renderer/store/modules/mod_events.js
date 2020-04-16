@@ -90,7 +90,22 @@ const actions = {
         } else {
           net.networkRootFolder = pathProject;
         }
-        dispatch('mod_workspace/ADD_network', net, {root: true});
+
+        dispatch('globalView/SET_loadSettingPopup', {
+          visible: 'true',
+          ok: (isLoadingTrainedModel) => {
+            if (isLoadingTrainedModel) {
+              dispatch('mod_workspace/ADD_network', net, {root: true});
+            } else {
+              for(let id in net.networkElementList) {
+                let element = net.networkElementList[id];
+                element.checkpoint = [];
+              }
+              dispatch('mod_workspace/ADD_network', net, {root: true});
+            }
+          }
+        }, {root: true})
+
       }).catch(err => {
         console.log(err);
         dispatch('globalView/GP_infoPopup', 'Fetching went wrong', {root: true});

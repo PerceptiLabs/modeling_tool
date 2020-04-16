@@ -16,7 +16,7 @@
       button.btn.btn--primary.btn--disabled(type="button"
         @click="closePopup") Cancel
       button.btn.btn--primary(type="button"
-        @click="answerPopup") Continue
+        @click="ok") Continue
 
 
 </template>
@@ -30,23 +30,21 @@ export default {
   data() {
     return {
       popupTitle: ['Choose what to load'],
-      promiseOk: null,
-      promiseFail: null,
       isLoadTrainedModel: true
     }
   },
+  computed: {
+    okAction() {
+      return this.$store.state.globalView.popupConfirmOk
+    }
+  },
   methods: {
-    openPopup() {
-      return new Promise((resolve, reject) => {
-        this.promiseOk = resolve;
-        this.promiseFail = reject;
-      });
-    },
     closePopup() {
-      this.promiseFail(false)
+      this.$store.commit('globalView/HIDE_allGlobalPopups');
     },
-    answerPopup() {
-      this.promiseOk(this.isLoadTrainedModel);
+    ok() {
+      this.okAction(this.isLoadTrainedModel);
+      this.closePopup();
     },
    }
 }

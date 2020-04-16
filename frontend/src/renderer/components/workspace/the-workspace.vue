@@ -56,7 +56,7 @@
           :popup-settings="saveNetworkPopup"
           )
         workspace-load-network(
-          v-if="true"
+          v-if="showLoadSettingPopup"
         )
 
       start-training-spinner(v-if="showTrainingSpinner")
