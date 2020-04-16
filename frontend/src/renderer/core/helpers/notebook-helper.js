@@ -4,60 +4,67 @@ let store;
 let coreNetwork;
 let currentNetwork;
 
-const updateNotebook = () => {
-  return Promise.all([
-      fetchNetworkCode(),
-      fetchNetworkCodeOrder()
-    ])
-    .then(([networkCodes, networkCodeOrder]) => {
+const promiseTimeoutMs = 4000;
 
-      // console.log('notebookJson', notebookJson);
-      // console.log('networkCode', networkCodes);
-      // console.log('networkCodeOrder', networkCodeOrder);
+const notebookJsonBuilderV4 = (function (networkCode) {
 
-      const validNetworkCodes = networkCodes.filter(nc => nc);
-      const sortedCode = sortNetworkCode(validNetworkCodes, networkCodeOrder);
+  let publicMethods = {};
 
-      return sortedCode;
+  let currentNotebook;
+
+  const initNotebook = function () {
+    currentNotebook = JSON.parse(JSON.stringify({
+      "cells": [],
+      "metadata": {
+        "kernelspec": {
+        "display_name": "Python 3",
+        "language": "python",
+        "name": "python3"
+        },
+        "language_info": {
+        "codemirror_mode": {
+          "name": "ipython",
+          "version": 3
+        },
+        "file_extension": ".py",
+        "mimetype": "text/x-python",
+        "name": "python",
+        "nbconvert_exporter": "python",
+        "pygments_lexer": "ipython3",
+        "version": "3.6.2"
+        }
+      },
+      "nbformat": 4,
+      "nbformat_minor": 4
+    }));
+  }
+
+  const addCodeCells = function (networkCode) {
+    if (!networkCode || networkCode.length == 0) { return; }
+
+    const tempCells = networkCode.map(nc => {
+        return ({
+          "cell_type": "code",
+          "execution_count": null,
+          "metadata": {},
+          "outputs": [],
+          "source": [nc]
+        });
     });
-}
 
-const getDefaultNotebookJson = () => {
-  const defaultJson = {
-    "cells": [
-      {
-      "cell_type": "code",
-      "execution_count": null,
-      "metadata": {},
-      "outputs": [],
-      "source": []
-      }
-    ],
-    "metadata": {
-      "kernelspec": {
-      "display_name": "Python 3",
-      "language": "python",
-      "name": "python3"
-      },
-      "language_info": {
-      "codemirror_mode": {
-        "name": "ipython",
-        "version": 3
-      },
-      "file_extension": ".py",
-      "mimetype": "text/x-python",
-      "name": "python",
-      "nbconvert_exporter": "python",
-      "pygments_lexer": "ipython3",
-      "version": "3.6.2"
-      }
-    },
-    "nbformat": 4,
-    "nbformat_minor": 4
-  };
-  
-  return JSON.parse(JSON.stringify(defaultJson));
-}
+    currentNotebook.cells = tempCells;
+  }
+
+  publicMethods.build = function (networkCode) {
+    initNotebook();
+    addCodeCells(networkCode);
+
+    return currentNotebook;
+  }
+
+  return publicMethods;
+
+})();
 
 const fetchNetworkCode = () => {
   if (!currentNetwork || !currentNetwork.networkElementList) {
@@ -69,7 +76,7 @@ const fetchNetworkCode = () => {
   const networkElements = Object.entries(currentNetwork.networkElementList);
   for (let networkElement of networkElements) {
     const promise = addIdToLayerCode.call(this, networkElement);
-    fetchCodePromises.push(promiseWithTimeout(1000, promise));
+    fetchCodePromises.push(promiseWithTimeout(promiseTimeoutMs, promise));
   }
 
   return Promise.all(fetchCodePromises).then(code => {
@@ -118,7 +125,7 @@ const sortNetworkCode = (array, sortOrder = null) => {
   return sortedArray;
 }
 
-export const createNotebookJson = (storeReference) => {
+export const createNotebookJson = async (storeReference) => {
 
   if (!storeReference) { return; }
 
@@ -127,14 +134,22 @@ export const createNotebookJson = (storeReference) => {
   coreNetwork = store.getters['mod_api/GET_coreNetwork'];
   currentNetwork = store.getters['mod_workspace/GET_currentNetwork'];
 
-  
+  return Promise.all([
+    fetchNetworkCode(),
+    fetchNetworkCodeOrder()
+  ])
+  .then(([networkCodes, networkCodeOrder]) => {
 
-  // mod_workspace/GET_currentNetwork
-  // store.
+    // console.log('notebookJson', notebookJson);
+    // console.log('networkCode', networkCodes);
+    // console.log('networkCodeOrder', networkCodeOrder);
 
-  // 'mod_workspace/GET_currentNetwork'
-  const notebook = updateNotebook();
-  console.log('notebook', notebook);
+    const validNetworkCodes = networkCodes.filter(nc => nc); // remove undefined (timedout)
+    const sortedCode = sortNetworkCode(validNetworkCodes, networkCodeOrder);
+    const notebookJson = notebookJsonBuilderV4.build(sortedCode);
+
+    return notebookJson;
+  });
 
 }
 
