@@ -7,9 +7,7 @@ let currentNetwork;
 const promiseTimeoutMs = 4000;
 
 const notebookJsonBuilderV4 = (function (networkCode) {
-
   let publicMethods = {};
-
   let currentNotebook;
 
   const initNotebook = function () {
@@ -117,7 +115,6 @@ const sortNetworkCode = (array, sortOrder = null) => {
   // current sort is O(n^2), will use Map if most networks have many elements
   const sortedArray = [];
   for (let sortKey of sortOrder) {
-
     let targetCode = array.find(element => element.layerId === sortKey);
     if (targetCode) {
       sortedArray.push(targetCode);
@@ -129,7 +126,6 @@ const sortNetworkCode = (array, sortOrder = null) => {
 export const createNotebookJson = async (storeReference) => {
   if (!storeReference) { return; }
 
-  // so that we can use the Vuex actions
   store = storeReference;
   coreNetwork = store.getters['mod_api/GET_coreNetwork'];
   currentNetwork = store.getters['mod_workspace/GET_currentNetwork'];
@@ -151,10 +147,5 @@ export const createNotebookJson = async (storeReference) => {
 }
 
 export default {
-  // updateNotebook,
-  // getDefaultNotebookJson,
-  // fetchNetworkCode,
-  // fetchNetworkCodeOrder,
-  // sortNetworkCode,
   createNotebookJson
 }
