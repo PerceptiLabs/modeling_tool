@@ -125,7 +125,7 @@ class Core:
             for frame in traceback_frames:
                 node, true_lineno = line_to_node_map.get(frame.lineno, (None, None))
 
-                if frame.filename == 'deploy.py' and node is not None:
+                if frame.filename == 'training_script.py' and node is not None:
                     message += f'File "{frame.filename}", line {frame.lineno}, in {frame.name}, ' + \
                                f'origin {node.layer_id}:{true_lineno} [{node.layer_type}]\n' +\
                                f'  {frame.line}\n'

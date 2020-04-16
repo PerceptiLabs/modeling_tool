@@ -80,7 +80,7 @@
     methods: {
       goToLink,
       copyClipboard() {
-        navigator.clipboard.writeText(JSON.stringify(this.popupText))
+        navigator.clipboard.writeText(this.popupText)
           .then((data)=> { this.styleClipboard['text-primary'] = true })
           .catch((err)=> { this.styleClipboard['text-error'] = true })
       },
