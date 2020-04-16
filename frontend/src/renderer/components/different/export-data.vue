@@ -87,7 +87,6 @@ export default {
       }
     },
     exportData() {
-      console.log('settings', this.settings);
       this.$store.dispatch('mod_api/API_exportData', this.settings);
     }
   }
