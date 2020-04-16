@@ -303,6 +303,19 @@ const debounce = function(callback, waitInMs) {
   }
 }
 
+
+const promiseWithTimeout = function (timeout, promise) {
+  const timeoutPromise = new Promise((resolve, reject) =>
+      setTimeout(
+          // () => reject(`Timed out after ${timeout} ms.`),
+          () => resolve(),
+          timeout));
+  return Promise.race([
+      promise,
+      timeoutPromise
+  ]);
+}
+
 export {
   openLoadDialog,
   openSaveDialog,
@@ -332,5 +345,6 @@ export {
   isWeb,
   fixFilepathSeparator,
   setAppTypeRootClasses,
-  debounce
+  debounce,
+  promiseWithTimeout
 }
