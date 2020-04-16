@@ -1,3 +1,5 @@
+import { promiseWithTimeout } from '@/core/helpers';
+
 let store;
 let coreNetwork;
 let currentNetwork;
