@@ -408,10 +408,28 @@ class coreLogic():
 
     def exportNetwork(self,value):
         log.debug(f"exportNetwork called. Value = {pprint.pformat(value)}")
+        # print('exportNetwork', value)
+        # print('exportNetwork _core_mode', self._core_mode)
+
+        # {
+        #     'Location': '/Users/davidh/Desktop/Image Classification 1', 
+        #     'Type': 'TFModel', 
+        #     'Compressed': False, 
+        #     'frontendNetwork': 'Image Classification'
+        # }
+
+        if value["Type"] == 'ipynb':
+            return self.saveIpynbToDisk(vale)
+
         if self._core_mode == 'v1':
             return self.exportNetworkV1(value)
         else:
             return self.exportNetworkV2(value)            
+
+    def saveIpynbToDisk(self, value):
+        print('saveIpynbToDisk', value)
+        path = os.path.join(value["Location"], value.get('frontendNetwork', self.networkName), '1')
+        path = os.path.abspath(path)
 
     def exportNetworkV2(self, value):
         path = os.path.join(value["Location"], value.get('frontendNetwork', self.networkName), '1')
