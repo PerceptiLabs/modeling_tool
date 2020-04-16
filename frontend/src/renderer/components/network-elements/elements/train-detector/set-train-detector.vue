@@ -25,6 +25,11 @@
             input(type="number" v-model="settings.grid_size")
       .settings-layer_section
         .form_row
+          .form_label(v-tooltip-interactive:right="interactiveInfo.batch_size") Batch Size:
+          #tutorial_batch_size.form_input(data-tutorial-hover-info)
+            input(type="number" v-model="settings.batch_size")
+      .settings-layer_section
+        .form_row
           .form_label(v-tooltip-interactive:right="interactiveInfo.num_box") Number of Boxes:
           #tutorial_num_box.form_input(data-tutorial-hover-info)
             input(type="number" v-model="settings.num_box")
@@ -120,6 +125,7 @@ export default {
         Labels: '',
         Epochs: '10',
         grid_size: '7',
+        batch_size: '3',
         num_box: '2',
         threshold: '0.8',
         lambda_coord: '5',
@@ -148,6 +154,10 @@ export default {
         grid_size: {
           title: 'Grid Size',
           text: 'Input the grid size'
+        },
+        batch_size: {
+          title: 'Batch Size',
+          text: 'Input the batch size'
         },
         num_box: {
           title: 'Number of Box',
