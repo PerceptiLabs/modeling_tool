@@ -92,9 +92,9 @@ jobs:
       displayName: 'Python tests'
 
     - bash: |
-      cd $(System.DefaultWorkingDirectory)/backend
-      mkdir training_scripts
-    displayName: 'Create test folder if it doesnt exist'
+        cd $(System.DefaultWorkingDirectory)/backend
+        mkdir training_scripts
+      displayName: 'Create test folder if it doesnt exist'
 
     - publish: $(System.DefaultWorkingDirectory)/backend/training_scripts
       artifact: osx_training_scripts
