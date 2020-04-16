@@ -1,7 +1,7 @@
 import {coreRequest as coreRequestWeb, openWS}  from "@/core/apiWeb.js";
 import coreRequestElectron from "@/core/apiCore.js";
 import { deepCopy, parseJWT, isWeb, stringifyNetworkObjects }   from "@/core/helpers.js";
-import { createNotebookJson }   from "@/core/notebook-helpers.js";
+import { createNotebookJson }   from "@/core/helpers/notebook-helper.js";
 import { pathSlash }  from "@/core/constants.js";
 import {isElectron} from "@/core/helpers";
 
@@ -626,10 +626,11 @@ const actions = {
   },
 
   API_exportData({rootGetters, getters, dispatch}, settings) {
+
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
       action: 'Export',
-      value: makePayload(settings)
+      value: makePayload.call(this, settings)
     };
     if(isWeb()) {
       dispatch('globalView/ShowCoreNotFoundPopup', null, { root: true });
@@ -639,19 +640,19 @@ const actions = {
       network: getters.GET_coreNetwork,
       settings
     };
-    coreRequest(theData)
-      .then((data)=> {
-        dispatch('globalView/GP_infoPopup', data, {root: true});
-        trackerData.result = 'success';
-      })
-      .catch((err)=> {
-        console.error(err);
-        dispatch('globalView/GP_errorPopup', err, {root: true});
-        trackerData.result = 'error';
-      })
-      .finally(()=> {
-        dispatch('mod_tracker/EVENT_modelExport', trackerData, {root: true});
-      })
+    // coreRequest(theData)
+    //   .then((data)=> {
+    //     dispatch('globalView/GP_infoPopup', data, {root: true});
+    //     trackerData.result = 'success';
+    //   })
+    //   .catch((err)=> {
+    //     console.error(err);
+    //     dispatch('globalView/GP_errorPopup', err, {root: true});
+    //     trackerData.result = 'error';
+    //   })
+    //   .finally(()=> {
+    //     dispatch('mod_tracker/EVENT_modelExport', trackerData, {root: true});
+    //   })
 
     function makePayload(settings = null) {
       if (!settings || settings.Type === 'TFModel') {
@@ -662,6 +663,9 @@ const actions = {
       }
   
       if (settings.Type === 'ipynb') {
+        // current 'this' is the Vuex store object
+        const payload = createNotebookJson(this);
+        console.log('ipynb payload', payload);
         return ({
           ...settings,
           frontendNetwork: rootGetters['mod_workspace/GET_currentNetwork'].networkName,
