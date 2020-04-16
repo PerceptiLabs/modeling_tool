@@ -53,26 +53,26 @@
       chart-switch(
         key="9"
         chart-label="Classification Loss during one epoch"
-        :chart-data="chartData.CLoss.Current"
+        :chart-data="chartData.ClassificationLoss.Current"
         :custom-color="colorListAccuracy"
       )
       chart-switch(
         key="10"
         chart-label="Classification Loss over all epochs"
-        :chart-data="chartData.CLoss.Total"
+        :chart-data="chartData.ClassificationLoss.Total"
         :custom-color="colorListAccuracy"
       )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Bounding Boxes Loss'")
       chart-switch(
         key="11"
         chart-label="Bounding Boxes Loss during one epoch"
-        :chart-data="chartData.BBLoss.Current"
+        :chart-data="chartData.BoundingBoxesLoss.Current"
         :custom-color="colorListAccuracy"
       )
       chart-switch(
         key="12"
         chart-label="Bounding Boxes Loss over all epochs"
-        :chart-data="chartData.BBLoss.Total"
+        :chart-data="chartData.BoundingBoxesLoss.Total"
         :custom-color="colorListAccuracy"
       )
 </template>
@@ -92,8 +92,8 @@
           Prediction: { Bboxes: null, Confidence: null, Accuracy: null },
           Accuracy:   { Current: null, Total: null },
           Loss:       { Current: null, Total: null },
-          CLoss:         { Current: null, Total: null },
-          BBLoss:        { Current: null, Total: null }
+          ClassificationLoss:         { Current: null, Total: null },
+          BoundingBoxesLoss:        { Current: null, Total: null }
         },
         btnList: {
           'Prediction': {
@@ -161,10 +161,10 @@
             this.chartRequest(this.statElementID, 'TrainDetector', 'Loss');
             break;
           case 'Classification Loss':
-            this.chartRequest(this.statElementID, 'TrainDetector', 'Classification Loss');
+            this.chartRequest(this.statElementID, 'TrainDetector', 'ClassificationLoss');
             break;
-          case 'BoundingBoxes Loss':
-            this.chartRequest(this.statElementID, 'TrainDetector', 'BoundingBoxes Loss');
+          case 'Bounding Boxes Loss':
+            this.chartRequest(this.statElementID, 'TrainDetector', 'BoundingBoxesLoss');
             break;
         }
       }

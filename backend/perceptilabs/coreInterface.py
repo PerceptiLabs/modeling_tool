@@ -1212,7 +1212,7 @@ class coreLogic():
                 output = {"Current": dataObjectCurrent, "Total": dataObjectTotal}
                 return output
             
-            if view=="Classification Loss":
+            if view=="ClassificationLoss":
                 classification_loss_train=self.getStatistics({"layerId":layerId,"variable":"classification_loss_train_iter","innervariable":""})
                 classification_loss_val=self.getStatistics({"layerId":layerId,"variable":"classification_loss_val_iter","innervariable":""})
 
@@ -1237,7 +1237,7 @@ class coreLogic():
                 output = {"Current": dataObjectCurrent, "Total": dataObjectTotal}
                 return output
             
-            if view=="Bounding Boxes Loss":
+            if view=="BoundingBoxesLoss":
                 bbox_loss_train=self.getStatistics({"layerId":layerId,"variable":"bboxes_loss_train_iter","innervariable":""})
                 bbox_loss_val=self.getStatistics({"layerId":layerId,"variable":"bboxes_loss_val_iter","innervariable":""})
 
