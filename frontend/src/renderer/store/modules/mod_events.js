@@ -102,20 +102,26 @@ const actions = {
           net.networkRootFolder = pathProject;
         }
 
-        dispatch('globalView/SET_loadSettingPopup', {
-          visible: 'true',
-          ok: (isLoadingTrainedModel) => {
-            if (isLoadingTrainedModel) {
-              dispatch('mod_workspace/ADD_network', net, {root: true});
-            } else {
-              for(let id in net.networkElementList) {
-                let element = net.networkElementList[id];
-                element.checkpoint = [];
+        if(isTrained) {
+          dispatch('globalView/SET_loadSettingPopup', {
+            visible: 'true',
+            ok: (isLoadingTrainedModel) => {
+              if (isLoadingTrainedModel) {
+                dispatch('mod_workspace/ADD_network', net, {root: true});
+              } else {
+                for(let id in net.networkElementList) {
+                  let element = net.networkElementList[id];
+                  element.checkpoint = [];
+                }
+                console.log(net);
+                dispatch('mod_workspace/ADD_network', net, {root: true});
               }
-              dispatch('mod_workspace/ADD_network', net, {root: true});
             }
-          }
-        }, {root: true})
+          }, {root: true})
+        } 
+        else {
+          dispatch('mod_workspace/ADD_network', net, {root: true});
+        }
 
       }).catch(err => {
         console.log(err);
