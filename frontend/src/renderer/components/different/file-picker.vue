@@ -118,7 +118,7 @@ export default {
     if(localStorage.hasOwnProperty(filePickerStorageKey) && !this.isTutorialMode) {
       path = localStorage.getItem(filePickerStorageKey);
     }
-    if(!this.fetchPathInformation(path)) {
+    if(this.fetchPathInformation(path) === false) {
       let path = '';
       this.fetchPathInformation(path);
     };
