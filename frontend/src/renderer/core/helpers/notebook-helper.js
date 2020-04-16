@@ -71,9 +71,10 @@ const fetchNetworkCode = () => {
     return [];
   }
 
+  // call getCode for all blocks at the same time to speed things up
   const fetchCodePromises = [];
-
   const networkElements = Object.entries(currentNetwork.networkElementList);
+
   for (let networkElement of networkElements) {
     const promise = addIdToLayerCode.call(this, networkElement);
     fetchCodePromises.push(promiseWithTimeout(promiseTimeoutMs, promise));
@@ -126,7 +127,6 @@ const sortNetworkCode = (array, sortOrder = null) => {
 }
 
 export const createNotebookJson = async (storeReference) => {
-
   if (!storeReference) { return; }
 
   // so that we can use the Vuex actions
@@ -139,13 +139,10 @@ export const createNotebookJson = async (storeReference) => {
     fetchNetworkCodeOrder()
   ])
   .then(([networkCodes, networkCodeOrder]) => {
-
-    // console.log('notebookJson', notebookJson);
     // console.log('networkCode', networkCodes);
     // console.log('networkCodeOrder', networkCodeOrder);
-
-    const validNetworkCodes = networkCodes.filter(nc => nc); // remove undefined (timedout)
-    const sortedCode = sortNetworkCode(validNetworkCodes, networkCodeOrder);
+    const validCodes = networkCodes.filter(nc => nc); // remove undefined (timedout)
+    const sortedCode = sortNetworkCode(validCodes, networkCodeOrder);
     const notebookJson = notebookJsonBuilderV4.build(sortedCode);
 
     return notebookJson;
