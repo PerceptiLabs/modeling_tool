@@ -26,7 +26,7 @@ jobs:
     - bash: |
         cd $(System.DefaultWorkingDirectory)/backend
         mkdir training_scripts
-      displayName: 'Create test folder if it doesn't exist'
+      displayName: 'Create test folder if it doesnt exist'
 
     - publish: $(System.DefaultWorkingDirectory)/backend/training_scripts
       artifact: linux_training_scripts
@@ -59,7 +59,7 @@ jobs:
     - script: |
         cd $(System.DefaultWorkingDirectory)/backend
         mkdir training_scripts
-      displayName: 'Create test folder if it doesn't exist'
+      displayName: 'Create test folder if it doesnt exist'
 
     - publish: $(System.DefaultWorkingDirectory)/backend/training_scripts
       artifact: windows_training_scripts
@@ -94,7 +94,7 @@ jobs:
     - bash: |
       cd $(System.DefaultWorkingDirectory)/backend
       mkdir training_scripts
-    displayName: 'Create test folder if it doesn't exist'
+    displayName: 'Create test folder if it doesnt exist'
 
     - publish: $(System.DefaultWorkingDirectory)/backend/training_scripts
       artifact: osx_training_scripts
