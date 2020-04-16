@@ -111,3 +111,16 @@ export const sortNetworkCode = (array, sortOrder = null) => {
   }
   return sortedArray;
 }
+
+export const createNotebookJson = (networkId) => {
+
+}
+
+export default {
+  updateNotebook,
+  getDefaultNotebookJson,
+  fetchNetworkCode,
+  fetchNetworkCodeOrder,
+  sortNetworkCode,
+  createNotebookJson
+}
