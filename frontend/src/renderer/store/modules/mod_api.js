@@ -662,19 +662,20 @@ const actions = {
       network: getters.GET_coreNetwork,
       settings
     };
-    // coreRequest(theData)
-    //   .then((data)=> {
-    //     dispatch('globalView/GP_infoPopup', data, {root: true});
-    //     trackerData.result = 'success';
-    //   })
-    //   .catch((err)=> {
-    //     console.error(err);
-    //     dispatch('globalView/GP_errorPopup', err, {root: true});
-    //     trackerData.result = 'error';
-    //   })
-    //   .finally(()=> {
-    //     dispatch('mod_tracker/EVENT_modelExport', trackerData, {root: true});
-    //   })
+    coreRequest(theData)
+      .then((data)=> {
+        console.log('data', data);
+        dispatch('globalView/GP_infoPopup', data, {root: true});
+        trackerData.result = 'success';
+      })
+      .catch((err)=> {
+        console.error(err);
+        dispatch('globalView/GP_errorPopup', err, {root: true});
+        trackerData.result = 'error';
+      })
+      .finally(()=> {
+        dispatch('mod_tracker/EVENT_modelExport', trackerData, {root: true});
+      })
 
     async function makePayload(settings = null) {
       if (!settings || settings.Type === 'TFModel') {
