@@ -125,6 +125,7 @@ export default {
         Labels: '',
         Epochs: '10',
         grid_size: '7',
+        batch_size: '3',
         num_box: '2',
         threshold: '0.8',
         lambda_coord: '5',
@@ -153,6 +154,10 @@ export default {
         grid_size: {
           title: 'Grid Size',
           text: 'Input the grid size'
+        },
+        batch_size: {
+          title: 'Batch Size',
+          text: 'Input the batch size'
         },
         num_box: {
           title: 'Number of Box',
