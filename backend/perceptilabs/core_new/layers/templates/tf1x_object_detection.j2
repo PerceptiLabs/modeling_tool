@@ -297,7 +297,7 @@
         {% endfilter %}                    
         
         def train_step():
-            #self._batch_size = {{batch_size}}
+            self._batch_size = {{batch_size}}
             if not self._headless:
                 _, self._predicted_object, self._predicted_class, self._predicted_normalized_box, self._classification_loss_training, self._bbox_loss_training, self._loss_training, self._accuracy_training, \
                     self._image_accuracy, self._layer_outputs, self._layer_weights, self._layer_biases, \
@@ -314,7 +314,7 @@
                     ])
 
         def validation_step():
-            #self._batch_size = {{batch_size}}
+            self._batch_size = {{batch_size}}
             if not self._headless:
                 self._predicted_object, self._predicted_class, self._predicted_normalized_box, self._classification_loss_validation, self._bbox_loss_validation, self._loss_validation, self._accuracy_validation, \
                     self._image_accuracy, self._layer_outputs, self._layer_weights, self._layer_biases, \
@@ -408,7 +408,7 @@ import copy
 class {{layer_name}}(ObjectDetectionLayer):
     def __init__(self):
         self._n_epochs = {{n_epochs}}
-        self._batch_size = 10 #{{batch_size}}
+        self._batch_size = {{batch_size}}
 
         self._stopped = False
         self._paused = False
