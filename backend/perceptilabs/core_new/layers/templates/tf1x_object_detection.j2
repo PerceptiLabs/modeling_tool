@@ -154,7 +154,7 @@
             loss: scalar
             """
             # first step: reshape the output
-            output = tf.reshape(output, shape = [self._batch_size, self._grid_size, self._grid_size, 5*self._num_box+self._num_class])
+            #output = tf.reshape(output, shape = [self._batch_size, self._grid_size, self._grid_size, 5*self._num_box+self._num_class])
             offset = np.transpose(np.reshape(np.array(
                 [np.arange(self._grid_size)] * self._grid_size * self._num_box),
                 (self._num_box, self._grid_size, self._grid_size)), (1, 2, 0))
@@ -313,7 +313,7 @@
                     = sess.run([
                         update_weights, classification_loss_tensor, bbox_loss_tensor, loss_tensor, accuracy_tensor
                     ])
-
+            print(self._loss_training)
         def validation_step():
             self._batch_size = {{batch_size}}
             if not self._headless:

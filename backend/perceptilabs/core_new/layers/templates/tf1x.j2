@@ -426,11 +426,11 @@ class {{layer_name}}(Tf1xLayer):
                     x.get_shape().as_list()[-1],
                     self._feature_maps
                     ]
-                    initial = tf.random.truncated_normal(
-                        shape,
-                        stddev=np.sqrt(2/(self._patch_size)**2 + self._feature_maps)
-                    )
-                    W = tf.compat.v1.get_variable('W', initializer=initial)
+                    #initial = tf.random.truncated_normal(
+                    #    shape,
+                    #   stddev=np.sqrt(2/(self._patch_size)**2 + self._feature_maps)
+                    #)
+                    W = tf.compat.v1.get_variable('W', shape = shape, initializer=  tf.contrib.layers.xavier_initializer())
                     
                     initial = tf.constant(0.1, shape=[self._feature_maps])
                     b = tf.compat.v1.get_variable('b', initializer=initial)
