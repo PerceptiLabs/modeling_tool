@@ -96,7 +96,7 @@ const fetchNetworkCode = () => {
   }
 }
 
-const fetchNetworkCodeOrder = (coreNetwork) => {
+const fetchNetworkCodeOrder = () => {
   return store
     .dispatch("mod_api/API_getGraphOrder", coreNetwork)
     .then(codeOrder => codeOrder)
