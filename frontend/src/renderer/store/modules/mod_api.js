@@ -625,13 +625,20 @@ const actions = {
   },
 
   API_exportData({rootGetters, getters, dispatch}, settings) {
+
+    const valuePayload = {
+      ...settings,
+      frontendNetwork: rootGetters['mod_workspace/GET_currentNetwork'].networkName
+    }
+
+    if (settings.Type === 'ipynb') {
+      valuePayload.JsonPayload = '';
+    }
+
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
       action: 'Export',
-      value: {
-        ...settings,
-        frontendNetwork: rootGetters['mod_workspace/GET_currentNetwork'].networkName
-      }
+      value: valuePayload
     };
     if(isWeb()) {
       dispatch('globalView/ShowCoreNotFoundPopup', null, { root: true });
