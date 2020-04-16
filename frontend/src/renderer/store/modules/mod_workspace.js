@@ -477,7 +477,7 @@ const mutations = {
   SET_elementName(state, value) {
     currentElement(value.id).layerName = value.setValue
   },
-  add_element(state, {getters, dispatch, event}) {
+  add_element(state, {getters, dispatch, event, setChangeToWorkspaceHistory}) {
     let duplicatePositionIndent = 60;
     let cursorPosition = getters.GET_positionForCopyElement.cursor;
     let firstCopyPositionElement = getters.GET_positionForCopyElement.elementsPosition[0];
@@ -510,6 +510,8 @@ const mutations = {
     if(!elementList || elementList.length === 0) state.workspaceContent[state.currentNetwork].networkElementList = {};
     Vue.set(state.workspaceContent[state.currentNetwork].networkElementList, newEl.layerId, newEl);
     state.dragElement = null;
+    
+    if(setChangeToWorkspaceHistory)
     dispatch('mod_workspace-history/PUSH_newSnapshot', null, {root: true});
 
     function checkPosition(el, list) {
@@ -1379,8 +1381,8 @@ const actions = {
   SET_elementSettings({commit, dispatch}, settings) {
     commit('set_elementSettings', {dispatch, settings})
   },
-  ADD_element({commit, getters, dispatch}, event) {
-    commit('add_element', {getters, dispatch, event})
+  ADD_element({commit, getters, dispatch}, { event, setChangeToWorkspaceHistory = true }) {
+    commit('add_element', {getters, dispatch, event, setChangeToWorkspaceHistory})
   },
   DELETE_element({commit, getters, dispatch}) {
     if(getters.GET_networkIsOpen) {

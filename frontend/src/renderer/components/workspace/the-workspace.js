@@ -73,6 +73,8 @@ export default {
       workspace:                  state => state.mod_workspace.workspaceContent,
       indexCurrentNetwork:        state => state.mod_workspace.currentNetwork,
       dragBoxContainer:           state => state.mod_workspace.dragBoxContainer,
+      isCursorInsideWorkspace:    state => state.mod_workspace.positionForCopyElement.cursorInsideWorkspace,
+      cursorPosition:             state => state.mod_workspace.positionForCopyElement.cursor,
       statisticsElSelected:       state => state.mod_statistics.selectedElArr,
       hideSidebar:                state => state.globalView.hideSidebar,
       showGlobalResult:           state => state.globalView.globalPopup.showNetResult,
@@ -185,15 +187,24 @@ export default {
     }),
     startCursorListener (event) {
       const borderline = 15;
-      this.set_cursorPosition({x: event.offsetX, y: event.offsetY});
-      this.set_cursorInsideWorkspace(true);
+      const { x: oldX, y: oldY } = this.cursorPosition;
+      const newX = event.offsetX - (event.offsetX % 10);
+      const newY = event.offsetY  - (event.offsetY % 10);
+      
+      if((oldX !== newX) || (oldY !== newY)) {
+        debounce(this.set_cursorPosition({x: newX, y: newY}), 60);
+      }
 
       if(event.offsetX <= borderline ||
           event.offsetY <= borderline ||
           event.offsetY >= event.target.clientHeight - borderline ||
           event.offsetX >= event.target.clientWidth - borderline)
       {
+        if(this.isCursorInsideWorkspace)
         this.set_cursorInsideWorkspace(false);
+      } else {
+        if(!this.isCursorInsideWorkspace)
+        this.set_cursorInsideWorkspace(true);
       }
     },
     toggleSidebar() {
