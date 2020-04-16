@@ -23,14 +23,14 @@ jobs:
         bash -i test_ubuntu.sh
       displayName: 'Python tests'
 
-    -bash: |
-        $fileExists = -d "$(System.DefaultWorkingDirectory)/backend/training_scripts"
-        Write-Output "##vso[task.setvariable variable=FileExists]$fileExists"
-      displayName: 'Check artifact'
+    - bash: |
+        cd $(System.DefaultWorkingDirectory)/backend
+        mkdir training_scripts
+      displayName: 'Create test folder if it doesn't exist'
 
     - publish: $(System.DefaultWorkingDirectory)/backend/training_scripts
       artifact: linux_training_scripts
-      condition: eq(variables['FileExists'], True)
+      condition: always()
 
 
 
@@ -55,6 +55,11 @@ jobs:
         cd scripts/
         ./test_windows.bat
       displayName: 'Python tests'
+
+    - script: |
+        cd $(System.DefaultWorkingDirectory)/backend
+        mkdir training_scripts
+      displayName: 'Create test folder if it doesn't exist'
 
     - publish: $(System.DefaultWorkingDirectory)/backend/training_scripts
       artifact: windows_training_scripts
@@ -85,6 +90,11 @@ jobs:
         chmod 755 test_osx.sh
         ./test_osx.sh
       displayName: 'Python tests'
+
+    - bash: |
+      cd $(System.DefaultWorkingDirectory)/backend
+      mkdir training_scripts
+    displayName: 'Create test folder if it doesn't exist'
 
     - publish: $(System.DefaultWorkingDirectory)/backend/training_scripts
       artifact: osx_training_scripts
