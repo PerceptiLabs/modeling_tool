@@ -1,6 +1,7 @@
 import {coreRequest as coreRequestWeb, openWS}  from "@/core/apiWeb.js";
 import coreRequestElectron from "@/core/apiCore.js";
 import { deepCopy, parseJWT, isWeb, stringifyNetworkObjects }   from "@/core/helpers.js";
+import { createNotebookJson }   from "@/core/notebook-helpers.js";
 import { pathSlash }  from "@/core/constants.js";
 import {isElectron} from "@/core/helpers";
 
@@ -625,20 +626,10 @@ const actions = {
   },
 
   API_exportData({rootGetters, getters, dispatch}, settings) {
-
-    const valuePayload = {
-      ...settings,
-      frontendNetwork: rootGetters['mod_workspace/GET_currentNetwork'].networkName
-    }
-
-    if (settings.Type === 'ipynb') {
-      valuePayload.JsonPayload = '';
-    }
-
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
       action: 'Export',
-      value: valuePayload
+      value: makePayload(settings)
     };
     if(isWeb()) {
       dispatch('globalView/ShowCoreNotFoundPopup', null, { root: true });
@@ -661,6 +652,23 @@ const actions = {
       .finally(()=> {
         dispatch('mod_tracker/EVENT_modelExport', trackerData, {root: true});
       })
+
+    function makePayload(settings = null) {
+      if (!settings || settings.Type === 'TFModel') {
+        return ({
+          ...settings,
+          frontendNetwork: rootGetters['mod_workspace/GET_currentNetwork'].networkName
+        });
+      }
+  
+      if (settings.Type === 'ipynb') {
+        return ({
+          ...settings,
+          frontendNetwork: rootGetters['mod_workspace/GET_currentNetwork'].networkName,
+          // NotebookJson: createNotebookJson()
+        });
+      }
+    }
   },
   //---------------
   //  OTHER
