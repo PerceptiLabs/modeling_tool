@@ -644,13 +644,16 @@ const actions = {
       });
   },
 
-  API_exportData({rootGetters, getters, dispatch}, settings) {
+  async API_exportData({rootGetters, getters, dispatch}, settings) {
 
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
       action: 'Export',
-      value: makePayload.call(this, settings)
+      value: await makePayload.call(this, settings)
     };
+
+    console.log('API_exportData', theData);
+
     if(isWeb()) {
       dispatch('globalView/ShowCoreNotFoundPopup', null, { root: true });
     }
@@ -673,7 +676,7 @@ const actions = {
     //     dispatch('mod_tracker/EVENT_modelExport', trackerData, {root: true});
     //   })
 
-    function makePayload(settings = null) {
+    async function makePayload(settings = null) {
       if (!settings || settings.Type === 'TFModel') {
         return ({
           ...settings,
@@ -683,12 +686,11 @@ const actions = {
   
       if (settings.Type === 'ipynb') {
         // current 'this' is the Vuex store object
-        const payload = createNotebookJson(this);
-        console.log('ipynb payload', payload);
+        const payload = await createNotebookJson(this);
         return ({
           ...settings,
           frontendNetwork: rootGetters['mod_workspace/GET_currentNetwork'].networkName,
-          // NotebookJson: createNotebookJson()
+          NotebookJson: payload
         });
       }
     }
