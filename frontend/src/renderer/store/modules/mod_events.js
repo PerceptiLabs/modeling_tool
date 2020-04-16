@@ -73,12 +73,23 @@ const actions = {
     dispatch('mod_api/API_loadNetwork', pathFile, {root: true})
       .then((net) => {
         //validate model
+        let isTrained = false;
+
         try {
           if(!(net.networkName
             && net.networkMeta
             && net.networkElementList)) {
               throw('err');
             }
+
+            for(let id in net.networkElementList) {
+              let element = net.networkElementList[id];
+              if (element.checkpoint.length > 0) {
+                isTrained = true;
+                break;
+              }
+            }
+
         } catch(e) {
           dispatch('globalView/GP_infoPopup', 'The model does not exist or the Kernel is not online.', {root: true});
           return
