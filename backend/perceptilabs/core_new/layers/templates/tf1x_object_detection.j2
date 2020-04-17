@@ -741,16 +741,16 @@ class {{layer_name}}(ObjectDetectionLayer):
         Returns:
             A dictionary of nested dictionaries, where each key is a layer id. The nested dictionaries contain gradient name and value pairs. The values must be picklable.
         """
-        gradients =  copy.deepcopy(self._layer_gradients)
-        for layer in self._layer_gradients:
-            for name, grad in self._layer_gradients[layer].items():
-                grad = np.asarray(grad)
-                layer_min = np.min(grad)
-                layer_max = np.max(grad)
-                layer_avg = np.average(grad)
-                gradients[layer][name] = [layer_min, layer_max, layer_avg]
+        # gradients =  copy.deepcopy(self._layer_gradients)
+        # for layer in self._layer_gradients:
+        #     for name, grad in self._layer_gradients[layer].items():
+        #         grad = np.asarray(grad)
+        #         layer_min = np.min(grad)
+        #         layer_max = np.max(grad)
+        #         layer_avg = np.average(grad)
+        #         gradients[layer][name] = [layer_min, layer_max, layer_avg]
         
-        return gradients
+        return self._layer_gradients
     
     @property
     def layer_outputs(self) -> Dict[str, Dict[str, Picklable]]:

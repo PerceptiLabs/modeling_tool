@@ -95,6 +95,8 @@ class Core:
             with self._lock:
                 self._graphs.extend(new_graphs)
  
+            print("graph len: ", len(self._graphs))
+ 
             for f in on_iterate:
                 f(counter, self)
 
@@ -140,7 +142,9 @@ class Core:
     @property
     def graphs(self) -> List[Graph]:
         with self._lock:
-            return self._graphs.copy()
+            copy_graph = self._graphs.copy()
+            self._graphs = []
+            return copy_graph
 
     def stop(self):
         if self._client is not None:

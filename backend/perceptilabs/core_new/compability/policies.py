@@ -277,7 +277,7 @@ def policy_classification(core, graphs, sanitized_to_name, sanitized_to_id):
 
         return result_dict
 
-def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id):
+def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id, results):
     
     def get_layer_inputs_and_outputs(graph, node, trn_node):
         data = {}
@@ -300,13 +300,20 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id):
             data['b'] = b
         return data
 
-    def get_layer_gradients(layer_id, graphs):
+    def get_layer_gradients(layer_id, graphs, results):
         data = {}
 
-        min_list, max_list, avg_list = [], [], []
+        if 'trainDict' in results:
+            min_list = results['trainDict'][layer_id]['Gradient']['Min']
+            max_list = results['trainDict'][layer_id]['Gradient']['Max']
+            avg_list = results['trainDict'][layer_id]['Gradient']['Average']
+        else:
+            min_list = []
+            max_list = []
+            avg_list = []
+        
         for graph in graphs:
             gradient_dict = graph.active_training_node.layer.layer_gradients.get(layer_id, {})
-
 
             # (1) compute the min, max and average for gradients w.r.t each tensor in a layer
             # (2) compute min, max and average among the output of (1)
@@ -314,9 +321,9 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id):
             layer_min_list, layer_max_list, layer_avg_list = [], [], []
             for name, grad in gradient_dict.items():
                 grad = np.asarray(grad)
-                layer_min_list.append(grad[0])
-                layer_max_list.append(grad[1])
-                layer_avg_list.append(grad[2])
+                layer_min_list.append(np.min(grad))
+                layer_max_list.append(np.max(grad))
+                layer_avg_list.append(np.average(grad))
 
             if len(gradient_dict) > 0:
                 min_list.append(np.min(layer_min_list))
@@ -398,21 +405,35 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id):
                 (0, 0, 0), 1, cv2.LINE_AA)
         return img, class_probs_filtered
 
-    def get_metrics(graphs):
+    def get_metrics(graphs, results):
         data = {}
 
         # ---- Get the metrics for ongoing epoch
         current_epoch = graphs[-1].active_training_node.layer.epoch
 
-        acc_trn_iter = []
-        loss_trn_iter = []
-        classification_loss_trn_iter = []
-        bbox_loss_trn_iter = []
-        
-        acc_val_iter = []
-        loss_val_iter = []
-        classification_loss_val_iter = []
-        bbox_loss_val_iter = []
+        print(results.keys())
+
+        if 'trainDict' in results:
+            acc_trn_iter = results['trainDict']["acc_train_iter"] if "acc_train_iter" in results['trainDict'] else []
+            loss_trn_iter = results['trainDict']["loss_train_iter"] if "loss_train_iter" in results['trainDict'] else []
+            classification_loss_trn_iter = results['trainDict']["classification_loss_train_iter"] if "classification_loss_train_iter" in results['trainDict'] else []
+            bbox_loss_trn_iter = results['trainDict']["bboxes_loss_train_iter"] if "bboxes_loss_train_iter" in results['trainDict'] else []
+            
+            acc_val_iter = results['trainDict']["acc_val_iter"] if "acc_val_iter" in results['trainDict'] else []
+            loss_val_iter = results['trainDict']["loss_val_iter"] if "loss_val_iter" in results['trainDict'] else []
+            classification_loss_val_iter = results['trainDict']["classification_loss_val_iter"] if "classification_loss_val_iter" in results['trainDict'] else []
+            bbox_loss_val_iter = results['trainDict']["bboxes_loss_val_iter"] if "bboxes_loss_val_iter" in results['trainDict'] else []
+
+        else:
+            acc_trn_iter = []
+            loss_trn_iter = []
+            classification_loss_trn_iter =[]
+            bbox_loss_trn_iter = []
+            
+            acc_val_iter = []
+            loss_val_iter = []
+            classification_loss_val_iter = []
+            bbox_loss_val_iter = []
 
         predicted_objects = 0.
         predicted_classes = 0.
@@ -445,15 +466,26 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id):
                 image_accuracy.append(trn_layer.image_accuracy)
         
         # ---- Get the metrics from the end of each epoch
-        acc_trn_epoch = []
-        loss_trn_epoch = []
-        classification_loss_trn_epoch = []
-        bbox_loss_trn_epoch = []
-        
-        acc_val_epoch = []
-        loss_val_epoch = []
-        classification_loss_val_epoch = []
-        bbox_loss_val_epoch = []
+        if 'trainDict' in results:
+            acc_trn_epoch = results['trainDict']["acc_training_epoch"] if "acc_training_epoch" in results['trainDict'] else []
+            loss_trn_epoch = results['trainDict']["loss_training_epoch"] if "loss_training_epoch" in results['trainDict'] else []
+            classification_loss_trn_epoch = results['trainDict']["classification_loss_training_epoch"] if "classification_loss_training_epoch" in results['trainDict'] else []
+            bbox_loss_trn_epoch = results['trainDict']["bboxes_loss_training_epoch"] if "bboxes_loss_training_epoch" in results['trainDict'] else []
+            
+            acc_val_epoch = results['trainDict']["acc_validation_epoch"] if "acc_validation_epoch" in results['trainDict'] else []
+            loss_val_epoch = results['trainDict']["loss_validation_epoch"] if "loss_validation_epoch" in results['trainDict'] else []
+            classification_loss_val_epoch = results['trainDict']["classification_loss_validation_epoch"] if "classification_loss_validation_epoch" in results['trainDict'] else []
+            bbox_loss_val_epoch = results['trainDict']["bboxes_loss_validation_epoch"] if "bboxes_loss_validation_epoch" in results['trainDict'] else []
+        else:
+            acc_trn_epoch = []
+            loss_trn_epoch = []
+            classification_loss_trn_epoch = []
+            bbox_loss_trn_epoch = []
+
+            acc_val_epoch = []
+            loss_val_epoch = []
+            classification_loss_val_epoch = []
+            bbox_loss_val_epoch = []
         
         idx = 1
         while idx < len(graphs):
@@ -525,13 +557,13 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id):
                 data.update(node.layer.variables)
             data.update(get_layer_inputs_and_outputs(current_graph, node, trn_node))
             data.update(get_layer_weights_and_biases(node, trn_node))
-            data.update(get_layer_gradients(node.layer_id, graphs))
+            data.update(get_layer_gradients(node.layer_id, graphs, results))
             train_dict[true_id] = data
 
         # ----- Get data specific to the training layer.
         data = {}        
         true_trn_id = sanitized_to_id[trn_node.layer_id]
-        data.update(get_metrics(graphs))
+        data.update(get_metrics(graphs, results))
         train_dict[true_trn_id].update(data)
 
         itr = 0
