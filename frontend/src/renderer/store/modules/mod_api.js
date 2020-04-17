@@ -652,8 +652,6 @@ const actions = {
       value: await makePayload.call(this, settings)
     };
 
-    console.log('API_exportData', theData);
-
     if(isWeb()) {
       dispatch('globalView/ShowCoreNotFoundPopup', null, { root: true });
     }
@@ -664,7 +662,6 @@ const actions = {
     };
     coreRequest(theData)
       .then((data)=> {
-        console.log('data', data);
         dispatch('globalView/GP_infoPopup', data, {root: true});
         trackerData.result = 'success';
       })
