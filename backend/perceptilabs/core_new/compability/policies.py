@@ -300,13 +300,13 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id, re
             data['b'] = b
         return data
 
-    def get_layer_gradients(layer_id, graphs, results):
+    def get_layer_gradients(layer_id, true_id, graphs, results):
         data = {}
-
+        
         if 'trainDict' in results:
-            min_list = results['trainDict'][layer_id]['Gradient']['Min']
-            max_list = results['trainDict'][layer_id]['Gradient']['Max']
-            avg_list = results['trainDict'][layer_id]['Gradient']['Average']
+            min_list = results['trainDict'][true_id]['Gradient']['Min'] 
+            max_list = results['trainDict'][true_id]['Gradient']['Max']
+            avg_list = results['trainDict'][true_id]['Gradient']['Average']
         else:
             min_list = []
             max_list = []
@@ -405,24 +405,22 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id, re
                 (0, 0, 0), 1, cv2.LINE_AA)
         return img, class_probs_filtered
 
-    def get_metrics(graphs, results):
+    def get_metrics(graphs, true_trn_id, results):
         data = {}
 
         # ---- Get the metrics for ongoing epoch
         current_epoch = graphs[-1].active_training_node.layer.epoch
 
-        print(results.keys())
-
         if 'trainDict' in results:
-            acc_trn_iter = results['trainDict']["acc_train_iter"] if "acc_train_iter" in results['trainDict'] else []
-            loss_trn_iter = results['trainDict']["loss_train_iter"] if "loss_train_iter" in results['trainDict'] else []
-            classification_loss_trn_iter = results['trainDict']["classification_loss_train_iter"] if "classification_loss_train_iter" in results['trainDict'] else []
-            bbox_loss_trn_iter = results['trainDict']["bboxes_loss_train_iter"] if "bboxes_loss_train_iter" in results['trainDict'] else []
+            acc_trn_iter = results['trainDict'][true_trn_id]["acc_train_iter"] 
+            loss_trn_iter = results['trainDict'][true_trn_id]["loss_train_iter"] 
+            classification_loss_trn_iter = results['trainDict'][true_trn_id]["classification_loss_train_iter"] 
+            bbox_loss_trn_iter = results['trainDict'][true_trn_id]["bboxes_loss_train_iter"] 
             
-            acc_val_iter = results['trainDict']["acc_val_iter"] if "acc_val_iter" in results['trainDict'] else []
-            loss_val_iter = results['trainDict']["loss_val_iter"] if "loss_val_iter" in results['trainDict'] else []
-            classification_loss_val_iter = results['trainDict']["classification_loss_val_iter"] if "classification_loss_val_iter" in results['trainDict'] else []
-            bbox_loss_val_iter = results['trainDict']["bboxes_loss_val_iter"] if "bboxes_loss_val_iter" in results['trainDict'] else []
+            acc_val_iter = results['trainDict'][true_trn_id]["acc_val_iter"] 
+            loss_val_iter = results['trainDict'][true_trn_id]["loss_val_iter"] 
+            classification_loss_val_iter = results['trainDict'][true_trn_id]["classification_loss_val_iter"] 
+            bbox_loss_val_iter = results['trainDict'][true_trn_id]["bboxes_loss_val_iter"] 
 
         else:
             acc_trn_iter = []
@@ -467,15 +465,15 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id, re
         
         # ---- Get the metrics from the end of each epoch
         if 'trainDict' in results:
-            acc_trn_epoch = results['trainDict']["acc_training_epoch"] if "acc_training_epoch" in results['trainDict'] else []
-            loss_trn_epoch = results['trainDict']["loss_training_epoch"] if "loss_training_epoch" in results['trainDict'] else []
-            classification_loss_trn_epoch = results['trainDict']["classification_loss_training_epoch"] if "classification_loss_training_epoch" in results['trainDict'] else []
-            bbox_loss_trn_epoch = results['trainDict']["bboxes_loss_training_epoch"] if "bboxes_loss_training_epoch" in results['trainDict'] else []
+            acc_trn_epoch = results['trainDict'][true_trn_id]["acc_training_epoch"]
+            loss_trn_epoch = results['trainDict'][true_trn_id]["loss_training_epoch"] 
+            classification_loss_trn_epoch = results['trainDict'][true_trn_id]["classification_loss_training_epoch"] 
+            bbox_loss_trn_epoch = results['trainDict'][true_trn_id]["bboxes_loss_training_epoch"] 
             
-            acc_val_epoch = results['trainDict']["acc_validation_epoch"] if "acc_validation_epoch" in results['trainDict'] else []
-            loss_val_epoch = results['trainDict']["loss_validation_epoch"] if "loss_validation_epoch" in results['trainDict'] else []
-            classification_loss_val_epoch = results['trainDict']["classification_loss_validation_epoch"] if "classification_loss_validation_epoch" in results['trainDict'] else []
-            bbox_loss_val_epoch = results['trainDict']["bboxes_loss_validation_epoch"] if "bboxes_loss_validation_epoch" in results['trainDict'] else []
+            acc_val_epoch = results['trainDict'][true_trn_id]["acc_validation_epoch"] 
+            loss_val_epoch = results['trainDict'][true_trn_id]["loss_validation_epoch"] 
+            classification_loss_val_epoch = results['trainDict'][true_trn_id]["classification_loss_validation_epoch"] 
+            bbox_loss_val_epoch = results['trainDict'][true_trn_id]["bboxes_loss_validation_epoch"] 
         else:
             acc_trn_epoch = []
             loss_trn_epoch = []
@@ -557,13 +555,13 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id, re
                 data.update(node.layer.variables)
             data.update(get_layer_inputs_and_outputs(current_graph, node, trn_node))
             data.update(get_layer_weights_and_biases(node, trn_node))
-            data.update(get_layer_gradients(node.layer_id, graphs, results))
+            data.update(get_layer_gradients(node.layer_id, true_id, graphs, results))
             train_dict[true_id] = data
 
         # ----- Get data specific to the training layer.
         data = {}        
         true_trn_id = sanitized_to_id[trn_node.layer_id]
-        data.update(get_metrics(graphs, results))
+        data.update(get_metrics(graphs, true_trn_id, results))
         train_dict[true_trn_id].update(data)
 
         itr = 0
