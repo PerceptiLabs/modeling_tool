@@ -432,9 +432,9 @@ class {{layer_name}}(Tf1xLayer):
                     #)
                     W = tf.compat.v1.get_variable('W', shape = shape, initializer=  tf.contrib.layers.xavier_initializer())
                     
-                    initial = tf.constant(0.1, shape=[self._feature_maps])
-                    b = tf.compat.v1.get_variable('b', initializer=initial)
-                    y = tf.nn.conv2d(x, W, strides=[1, self._stride, self._stride, 1], padding=self._padding)+b
+                    #initial = tf.constant(0.1, shape=[self._feature_maps])
+                    b = tf.compat.v1.get_variable('b', shape=[self._feature_maps], initializer=tf.zeros_initializer())
+                    y = tf.add(tf.nn.conv2d(x, W, strides=[1, self._stride, self._stride, 1], padding=self._padding), b)
                 {% elif conv_dim == '1D' %}
                     shape = [
                     self._patch_size,
