@@ -231,7 +231,7 @@ DEFINITION_TABLE = {
             'beta2': lambda specs: specs['Properties']['Beta_2'],
             'distributed': lambda specs: specs['Properties'].get('Distributed', False),
             'export_directory': resolve_checkpoint_path,
-            # 'batch_size': lambda specs: specs['Properties']['Batch_size'],
+            'batch_size': lambda specs: specs['Properties']['batch_size'],
         },
         import_statements=[
             'import tensorflow as tf',

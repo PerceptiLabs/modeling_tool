@@ -1,4 +1,4 @@
-{% macro run_normal(graph, layer_name, output_layer, target_layer, n_epochs, num_box, grid_size, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory) %}
+{% macro run_normal(graph, layer_name, output_layer, target_layer, n_epochs, num_box, grid_size, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory, batch_size) %}
         self._status = 'initializing'
 
         self._grid_size = {{grid_size}}
@@ -12,6 +12,7 @@
         self._lambdacoord = 5.0
         self._lambdanoobj = 0.5
         
+        self._batch_size = {{batch_size}}
         # we need classes
         
         output_layer_id = '{{output_layer}}'
@@ -153,7 +154,7 @@
             loss: scalar
             """
             # first step: reshape the output
-            output = tf.reshape(output, shape = [self._batch_size, self._grid_size, self._grid_size, 5*self._num_box+self._num_class])
+            #output = tf.reshape(output, shape = [self._batch_size, self._grid_size, self._grid_size, 5*self._num_box+self._num_class])
             offset = np.transpose(np.reshape(np.array(
                 [np.arange(self._grid_size)] * self._grid_size * self._num_box),
                 (self._num_box, self._grid_size, self._grid_size)), (1, 2, 0))
@@ -297,7 +298,7 @@
         {% endfilter %}                    
         
         def train_step():
-            #self._batch_size = {{batch_size}}
+            self._batch_size = {{batch_size}}
             if not self._headless:
                 _, self._predicted_object, self._predicted_class, self._predicted_normalized_box, self._classification_loss_training, self._bbox_loss_training, self._loss_training, self._accuracy_training, \
                     self._image_accuracy, self._layer_outputs, self._layer_weights, self._layer_biases, \
@@ -312,9 +313,9 @@
                     = sess.run([
                         update_weights, classification_loss_tensor, bbox_loss_tensor, loss_tensor, accuracy_tensor
                     ])
-
+            print(self._loss_training)
         def validation_step():
-            #self._batch_size = {{batch_size}}
+            self._batch_size = {{batch_size}}
             if not self._headless:
                 self._predicted_object, self._predicted_class, self._predicted_normalized_box, self._classification_loss_validation, self._bbox_loss_validation, self._loss_validation, self._accuracy_validation, \
                     self._image_accuracy, self._layer_outputs, self._layer_weights, self._layer_biases, \
@@ -401,14 +402,14 @@
 
 
 ################################################### Main #####################################################
-{% macro layer_tf1x_object_detection(layer_name, output_layer, target_layer, n_epochs, num_box, grid_size, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory) %} #batch_size
+{% macro layer_tf1x_object_detection(layer_name, output_layer, target_layer, n_epochs, num_box, grid_size, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory, batch_size) %} #
 import itertools
 import cv2
 import copy
 class {{layer_name}}(ObjectDetectionLayer):
     def __init__(self):
         self._n_epochs = {{n_epochs}}
-        self._batch_size = 10 #{{batch_size}}
+        self._batch_size = {{batch_size}}
 
         self._stopped = False
         self._paused = False
@@ -461,7 +462,7 @@ class {{layer_name}}(ObjectDetectionLayer):
             graph: A PerceptiLabs Graph object containing references to all layers objects included in the model produced by this training layer.
         """   
         {% if not distributed -%}
-            {{ run_normal(graph, layer_name, output_layer, target_layer, n_epochs, num_box, grid_size, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory) }}
+            {{ run_normal(graph, layer_name, output_layer, target_layer, n_epochs, num_box, grid_size, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory, batch_size) }}
         {% endif %}            
 
     def on_export(self, path: str, mode: str) -> None:
@@ -1177,10 +1178,17 @@ class {{layer_name}}(ObjectDetectionLayer):
                             nested_dict[variable] = tensors[0]
                     return nested_dict
 
+                ###### this is not done yet. Need to look into the other outputs from loss function ##########
                 ##### Training statistics #####
                 dist_loss_train, accuracy_train, \
                     layer_outputs_train, layer_weights_train, layer_biases_train, \
-                    layer_gradients_train = strategy.experimental_run(train_step, train_iterator)
+                    layer_gradients_train = 
+                
+                predicted_object, predicted_class, predicted_normalized_box,\ 
+                    dist_loss_train, dist_classification_loss_train, dist_bbox_loss_tensor,\
+                    image_accuracy_train, accuracy_train, \
+                    layer_output_train, layer_weight_train, layer_bias_train, \
+                    layer_gradient_train = strategy.experimental_run(train_step, train_iterator)
 
                 dist_loss_train = [dist_loss_train.get(device) for device in dist_loss_train.devices]
                 loss_train = tf.reduce_sum(dist_loss_train)
@@ -1271,10 +1279,6 @@ class {{layer_name}}(ObjectDetectionLayer):
                             self._layer_outputs, self._layer_weights, self._layer_biases, \
                             self._layer_gradients = sess.run([loss_val, accuracy_val, layer_outputs_val, layer_weights_val, layer_biases_val, layer_gradients_val])
 
-                        if INCLUDE_KERAS_METRICS:
-                            auc_val.reset_states()
-                            recall_val.reset_states()
-                            precision_val.reset_states()                                
                         yield YieldLevel.SNAPSHOT
                         self._validation_iteration += 1 * n_devices     
                 except tf.errors.OutOfRangeError:
