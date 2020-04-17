@@ -40,14 +40,14 @@ const notebookJsonBuilderV4 = (function (networkCode) {
   const addCodeCells = function (networkCode) {
     if (!networkCode || networkCode.length == 0) { return; }
 
-    const tempCells = networkCode.map(nc => {
-        return ({
-          "cell_type": "code",
-          "execution_count": null,
-          "metadata": {},
-          "outputs": [],
-          "source": [nc]
-        });
+    const tempCells = networkCode.map(nc => {      
+      return ({
+        "cell_type": "code",
+        "execution_count": null,
+        "metadata": {},
+        "outputs": [],
+        "source": nc.split(/\r?\n/).map(code => code + '\n')
+      });
     });
 
     currentNotebook.cells = tempCells;
@@ -117,7 +117,7 @@ const sortNetworkCode = (array, sortOrder = null) => {
   for (let sortKey of sortOrder) {
     let targetCode = array.find(element => element.layerId === sortKey);
     if (targetCode) {
-      sortedArray.push(targetCode);
+      sortedArray.push(targetCode.Output);
     }
   }
   return sortedArray;
