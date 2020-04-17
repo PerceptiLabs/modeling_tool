@@ -422,9 +422,20 @@ class coreLogic():
             return self.exportNetworkV2(value)            
 
     def saveIpynbToDisk(self, value):
-        print('saveIpynbToDisk', value)
-        # path = os.path.join(value["Location"], value.get('frontendNetwork', self.networkName), '1')
-        # path = os.path.abspath(path)
+        path = value.get('Location')
+        if path is None or not path:
+            return {"content": 'Location not specified'}
+        
+        notebook_json = value.get('NotebookJson')
+        if notebook_json is None or not notebook_json:
+            return {"content": 'Cannot export empty network'}
+
+        filepath = os.path.abspath(path + '/' + value.get("frontendNetwork") + '.ipynb')
+
+        with open(filepath, 'w') as json_file:
+            json.dump(notebook_json, json_file)
+        
+        return {"content":"Export success!\nSaved as:\n" + filepath}
 
     def exportNetworkV2(self, value):
         path = os.path.join(value["Location"], value.get('frontendNetwork', self.networkName), '1')
