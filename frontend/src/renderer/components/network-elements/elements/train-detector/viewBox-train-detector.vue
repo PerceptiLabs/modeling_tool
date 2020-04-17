@@ -14,7 +14,7 @@
               key="2"
               chart-label="Accuracy"
               :chart-data="chartData.Prediction.Accuracy"
-              :custom-color="colorList"
+              :custom-color="colorPie"
               )
           .statistics-box_row(v-if="!testIsOpen")
             chart-switch(
