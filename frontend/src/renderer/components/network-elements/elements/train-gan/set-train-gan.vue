@@ -5,13 +5,29 @@
     @press-confirm="confirmSettings"
   )
     template(slot="Settings-content")
+      // .settings-layer_section
+      //   .form_row(v-tooltip-interactive:right="interactiveInfo.labels")
+      //     .form_label Labels:
+      //     #tutorial_labels.form_input(data-tutorial-hover-info)
+      //       base-select(
+      //         v-model="settings.Labels"
+      //         :select-options="inputLayers"
+      //       )
       .settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.labels")
-          .form_label Labels:
+          .form_label Switch:
           #tutorial_labels.form_input(data-tutorial-hover-info)
             base-select(
-              v-model="settings.Labels"
-              :select-options="inputLayers"
+              v-model="settings.switch_layer"
+              :select-options="allSwitchLayers"
+            )
+      .settings-layer_section
+        .form_row(v-tooltip-interactive:right="interactiveInfo.labels")
+          .form_label Real Data:
+          #tutorial_labels.form_input(data-tutorial-hover-info)
+            base-select(
+              v-model="settings.real_data_layer"
+              :select-options="allRealDataLayers"
             )
       .settings-layer_section
         .form_row
@@ -95,21 +111,43 @@ export default {
   name: 'SetTrainGan',
   mixins: [ mixinSet ],
   beforeMount() {
+    let elList = this.currentNetworkList;
     this.inputId.forEach((id)=> {
-      let elList = this.currentNetworkList;
       this.inputLayers.push({
         text: elList[id].layerName,
         value: elList[id].layerId,
         tutorialId: elList[id].tutorialId
       })
     });
+    for(let key in elList) {
+      if(elList[key].layerType==="Data") {
+        this.allRealDataLayers.push({
+          text: elList[key].layerName,
+          value: elList[key].layerId,
+          tutorialId: elList[key].tutorialId
+        })
+      }
+      if(elList[key].layerType==="Other") {
+        this.allSwitchLayers.push({
+          text: elList[key].layerName,
+          value: elList[key].layerId,
+          tutorialId: elList[key].tutorialId
+        })
+      }
+    }
     if(!this.settings.Labels && this.inputLayers.length) this.settings.Labels = this.inputLayers[0].value.toString();
+    if(!this.settings.switch_layer && this.allSwitchLayers.length) this.settings.switch_layer = this.allSwitchLayers[0].value.toString();
+    if(!this.settings.real_data_layer && this.allRealDataLayers.length) this.settings.real_data_layer = this.allRealDataLayers[0].value.toString();
   },
   data() {
     return {
       inputLayers: [],
+      allSwitchLayers: [],
+      allRealDataLayers: [],
       settings: {
         Labels: '',
+        switch_layer: '',
+        real_data_layer: '',
         Epochs: '10',
         N_class: '1',
         Loss: "Quadratic", //#Cross_entropy, Quadratic, W_cross_entropy, Dice
