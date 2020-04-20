@@ -30,7 +30,6 @@ class {{layer_name}}(GANLayer):
         self._dis_layer_biases = {}        
         self._dis_layer_gradients = {}
 
-
         self._layer_outputs = {}
         self._layer_weights = {}
         self._layer_biases = {}        
@@ -44,8 +43,8 @@ class {{layer_name}}(GANLayer):
         self._val_sz_tot = 0
         self._tst_sz_tot = 0        
         
-        self._fake_means = []
-        self._fake_stds = []
+        self._random_means = []
+        self._random_stds = []
         self._real_means = []
         self._real_stds = []
 
@@ -63,7 +62,7 @@ class {{layer_name}}(GANLayer):
 
         for node in graph.data_nodes():
             if node.layer_id != random_data_layer_id:
-                training_data_node = node
+                real_data_node = node
             else:
                 random_data_node = node
 
@@ -75,25 +74,25 @@ class {{layer_name}}(GANLayer):
         generator_layer_ids = [node.layer_id for node in generator_nodes]
         discriminator_nodes = graph._get_nodes_inbetween(switch_node, training_node)  
         discriminator_layer_ids = [node.layer_id for node in discriminator_nodes]
-        real_data_nodes = graph._get_nodes_inbetween(training_data_node, switch_node)
+        real_data_nodes = graph._get_nodes_inbetween(real_data_node, switch_node)
         
-        fake_data_path = graph._get_nodes_inbetween(random_data_node, training_node)
-        real_data_path = graph._get_nodes_inbetween(training_data_node, training_node)
+        random_data_path = graph._get_nodes_inbetween(random_data_node, training_node)
+        real_data_path = graph._get_nodes_inbetween(real_data_node, training_node)
 
-        self._trn_sz_tot = training_data_node.layer.size_training
-        self._val_sz_tot = training_data_node.layer.size_validation
-        self._tst_sz_tot = training_data_node.layer.size_testing
+        self._trn_sz_tot = real_data_node.layer.size_training
+        self._val_sz_tot = real_data_node.layer.size_validation
+        self._tst_sz_tot = real_data_node.layer.size_testing
         
         # Make training set
         dataset_trn = tf.data.Dataset.zip((
             tf.data.Dataset.from_generator(
-                training_data_node.layer_instance.make_generator_training,
-                output_shapes=training_data_node.layer_instance.sample.shape,
+                real_data_node.layer_instance.make_generator_training,
+                output_shapes=real_data_node.layer_instance.sample.shape,
                 output_types=np.float32                
             ),
             tf.data.Dataset.from_generator(
                 random_data_node.layer_instance.generate_data,
-                output_shapes=training_data_node.layer_instance.sample.shape,
+                output_shapes=real_data_node.layer_instance.sample.shape,
                 output_types=np.float32
             )
         ))
@@ -101,13 +100,13 @@ class {{layer_name}}(GANLayer):
         # Make validation set
         dataset_val = tf.data.Dataset.zip((
             tf.data.Dataset.from_generator(
-                training_data_node.layer_instance.make_generator_training,
-                output_shapes=training_data_node.layer_instance.sample.shape,
+                real_data_node.layer_instance.make_generator_training,
+                output_shapes=real_data_node.layer_instance.sample.shape,
                 output_types=np.float32                
             ),
             tf.data.Dataset.from_generator(
                 random_data_node.layer_instance.generate_data,
-                output_shapes=training_data_node.layer_instance.sample.shape,
+                output_shapes=real_data_node.layer_instance.sample.shape,
                 output_types=np.float32
             )
         ))
@@ -115,13 +114,13 @@ class {{layer_name}}(GANLayer):
         # Make testing set
         dataset_tst = tf.data.Dataset.zip((
             tf.data.Dataset.from_generator(
-                training_data_node.layer_instance.make_generator_training,
-                output_shapes=training_data_node.layer_instance.sample.shape,
+                real_data_node.layer_instance.make_generator_training,
+                output_shapes=real_data_node.layer_instance.sample.shape,
                 output_types=np.float32                
             ),
             tf.data.Dataset.from_generator(
                 random_data_node.layer_instance.generate_data,
-                output_shapes=training_data_node.layer_instance.sample.shape,
+                output_shapes=real_data_node.layer_instance.sample.shape,
                 output_types=np.float32
             )
         ))
@@ -139,26 +138,26 @@ class {{layer_name}}(GANLayer):
         real_tensor , random_tensor = iterator.get_next()
         
         # Build the TensorFlow graph # TODO: perhaps this part can be delegated to the graph?
-        fake_output_tensors = {
+        random_output_tensors = {
             random_data_node.layer_id: random_tensor
         }
 
         real_output_tensors = {
-            training_data_node.layer_id: real_tensor
+            real_data_node.layer_id: real_tensor
         }
         
         switch_node.layer_instance._selected_layer = generator_nodes[-1].layer_id 
-        for node in fake_data_path:
+        for node in random_data_path:
             args = []
             for input_node in graph.get_input_nodes(node):
                 args.append(generator_layer_output_tensors[input_node.layer_id])
             y = node.layer_instance(*args)
-            fake_output_tensors[node.layer_id] = y
+            random_output_tensors[node.layer_id] = y
 
         if real_data_nodes != []:
             switch_node.layer_instance._selected_layer = real_data_nodes[-1].layer_id 
         else:
-            switch_node.layer_instance._selected_layer = training_data_node.layer_id 
+            switch_node.layer_instance._selected_layer = real_data_node.layer_id 
         for node in real_data_path:
             args = []
             for input_node in graph.get_input_nodes(node):
@@ -167,19 +166,19 @@ class {{layer_name}}(GANLayer):
             real_output_tensors[node.layer_id] = y
 
         real_tensor = real_output_tensors[output_node.layer_id]
-        fake_tensor = fake_output_tensors[output_node.layer_id]
+        random_tensor = random_output_tensors[output_node.layer_id]
 
         self._real_input = real_tensor
-        self._generated_output = fake_output_tensors[generator_nodes[-1].layer_id]
+        self._generated_output = random_output_tensors[generator_nodes[-1].layer_id]
 
         def loss_func(logits_in,labels_in):
             return tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=logits_in,labels=labels_in))
 
         dis_real_loss=loss_func(real_tensor,tf.ones_like(real_tensor)*0.9) #Smoothing for generalization
-        dis_fake_loss=loss_func(fake_tensor,tf.zeros_like(real_tensor))
+        dis_random_loss=loss_func(random_tensor,tf.zeros_like(real_tensor))
         
-        dis_loss=dis_real_loss+dis_fake_loss
-        gen_loss= loss_func(fake_tensor,tf.ones_like(fake_tensor))
+        dis_loss=dis_real_loss+dis_random_loss
+        gen_loss= loss_func(random_tensor,tf.ones_like(random_tensor))
 
         global_step = None
         {% filter remove_lspaces(8) %}        
@@ -267,11 +266,11 @@ class {{layer_name}}(GANLayer):
                 time.sleep(1.0)
 
         def train_step():
-            _, self._generator_loss_training, self._fake_outputs, self._gen_layer_weights,
+            _, self._generator_loss_training, self._random_outputs, self._gen_layer_weights,
              self._gen_layer_biases, self._gen_layer_gradients \
                 = sess.run([
                     gen_update_weights, gen_loss, 
-                    fake_output_tensors, gen_layer_weight_tensors, gen_layer_bias_tensors, gen_layer_gradient_tensors
+                    random_output_tensors, gen_layer_weight_tensors, gen_layer_bias_tensors, gen_layer_gradient_tensors
                 ])
             _, self._discriminator_loss_training, self._real_outputs, self._dis_layer_weights,
              self._dis_layer_biases, self._dis_layer_gradients \
@@ -282,11 +281,11 @@ class {{layer_name}}(GANLayer):
             
         def validation_step():
             self._generator_loss_validation,  \
-                self._fake_outputs, self._gen_layer_weights, self._gen_layer_biases, \
+                self._random_outputs, self._gen_layer_weights, self._gen_layer_biases, \
                 self._gen_layer_gradients \
                 = sess.run([
                     gen_loss, 
-                    fake_output_tensors, gen_layer_weight_tensors, gen_layer_bias_tensors, gen_layer_gradient_tensors
+                    random_output_tensors, gen_layer_weight_tensors, gen_layer_bias_tensors, gen_layer_gradient_tensors
                 ])
             self._discriminator_loss_validation,  \
                 self._real_outputs, self._dis_layer_weights, self._dis_layer_biases, \
@@ -299,10 +298,10 @@ class {{layer_name}}(GANLayer):
             
         def test_step():
             self._generator_loss_testing, \
-                self._fake_outputs, self._gen_layer_weights, gen_layer_gradients \
+                self._random_outputs, self._gen_layer_weights, gen_layer_gradients \
                 = sess.run([
-                    fake_loss,
-                    fake_output_tensors, gen_layer_weight_tensors, gen_layer_gradient_tensors
+                    random_loss,
+                    random_output_tensors, gen_layer_weight_tensors, gen_layer_gradient_tensors
                 ])
             self._discriminator_loss_testing, \
                 self._real_outputs, self._dis_layer_weights, dis_layer_gradients \
@@ -538,7 +537,7 @@ class {{layer_name}}(GANLayer):
         Returns:
             A dictionary of nested dictionaries, where each key is a layer id. The nested dictionaries contain variable name and value pairs. The values must be picklable.
         """
-        self._layer_outputs.update(self._fake_outputs)
+        self._layer_outputs.update(self._random_outputs)
         self._layer_outputs.update(self._real_outputs)
         return self._layer_outputs
 
@@ -567,8 +566,8 @@ class {{layer_name}}(GANLayer):
     
     @property
     def get_generator_distribution(self):
-        self._fake_means.append()
-        self._fake_stds.append()
+        self._random_means.append()
+        self._random_stds.append()
         return
 
     @property
