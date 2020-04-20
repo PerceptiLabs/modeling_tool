@@ -276,7 +276,13 @@
 
         trainable_vars = tf.trainable_variables() # TODO: safer to get from nodes. Especially with split graph in mind.
         grads = tf.gradients(loss_tensor, trainable_vars)
-        update_weights = optimizer.apply_gradients(zip(grads, trainable_vars), global_step=global_step)        
+        update_weights = optimizer.apply_gradients(list(zip(grads, trainable_vars)), global_step=global_step)
+
+        # grads_and_vars = optimizer.compute_gradients(loss_tensor)
+        # print(grads_and_vars)
+        # update_weights = optimizer.apply_gradients(grads_and_vars, global_step=global_step)
+
+        # update_weights = optimizer.minimize(loss_tensor, global_step=global_step)
 
         config = tf.ConfigProto()
         config.gpu_options.allow_growth = True
@@ -314,7 +320,6 @@
                         update_weights, classification_loss_tensor, bbox_loss_tensor, loss_tensor, accuracy_tensor
                     ])
             print(self._loss_training)
-            print(np.max(self._layer_gradients[output_layer_id]))
         def validation_step():
             self._batch_size = {{batch_size}}
             if not self._headless:
@@ -1108,7 +1113,8 @@ class {{layer_name}}(ObjectDetectionLayer):
                         self._layer_gradients[node.layer_id] = {name: [] for name in node.layer.trainable_variables.keys()} # Initialize
 
                 trainable_vars = tf.trainable_variables()
-                grads = tf.gradients(loss_tensor, trainable_vars)        
+                # grads = tf.gradients(loss_tensor, trainable_vars)
+                grads_and_vars = optimizer.compute_gradients(loss_tensor)        
                 update_weights = optimizer.apply_gradients(zip(grads, trainable_vars), global_step=global_step)
 
                 
