@@ -14,6 +14,10 @@ variables:
 pool:
   vmImage: 'ubuntu-16.04'
 
+workspace:
+  # options are: outputs, resources, all
+  clean: all 
+
 steps:
 - task: FileTransform@2
   inputs:
