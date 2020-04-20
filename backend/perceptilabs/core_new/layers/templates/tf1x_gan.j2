@@ -8,17 +8,17 @@ class {{layer_name}}(GANLayer):
         self._paused = False
         self._status = 'created'
         
-        self._generator_loss_training = 0.0
-        self._generator_loss_validation = 0.0
-        self._generator_loss_testing = 0.0   
+        self._gen_loss_training = 0.0
+        self._gen_loss_validation = 0.0
+        self._gen_loss_testing = 0.0   
 
-        self._discriminator_loss_training = 0.0
-        self._discriminator_loss_validation = 0.0
-        self._discriminator_loss_testing = 0.0   
+        self._dis_loss_training = 0.0
+        self._dis_loss_validation = 0.0
+        self._dis_loss_testing = 0.0   
 
         self._variables = {}
-        self._generator_variables = {}
-        self._discriminator_variables = {}
+        self._gen_variables = {}
+        self._dis_variables = {}
 
         self._gen_layer_outputs = {}
         self._gen_layer_weights = {}

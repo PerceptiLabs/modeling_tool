@@ -656,7 +656,7 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id, re
 
 def policy_gan(graphs, sanitized_to_name, sanitized_to_id):
 
-     def get_distributions(graph):
+    def get_distributions(graph):
 
         return distributions
     
