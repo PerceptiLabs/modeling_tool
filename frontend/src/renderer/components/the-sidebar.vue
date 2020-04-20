@@ -11,7 +11,7 @@
         ) {{tab.name}}
 
     .sidebar_tab(v-if="tabSelected === 0")
-      sidebar-layers
+      sidebar-layers(:class="showTraining ? 'training' : ''")
       sidebar-training(v-if="ifTraining" v-show="showTraining")
     .sidebar_tab(v-if="tabSelected === 1")
       user-profile
