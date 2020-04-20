@@ -750,7 +750,7 @@ class coreLogic():
                 return output
             if view=="Weights&Bias":
                 w=self.getStatistics({"layerId":layerId,"variable":"W","innervariable":""})
-                # w=np.average(w,axis=0)
+                w=np.average(w,axis=0)
                 dataObjectWeights = createDataObject([w], typeList=['line'])
                 
                 b=self.getStatistics({"layerId":layerId,"variable":"b","innervariable":""})
@@ -774,13 +774,13 @@ class coreLogic():
         elif layerType=="DeepLearningConv":
             if view=="Weights&Output":
                 weights=self.getStatistics({"layerId":layerId,"variable":"W","innervariable":""})              
-                # Wshapes=weights.shape
-                # if len(Wshapes)==3:
-                #     weights=np.expand_dims(np.average(weights[:,:,-1],1),axis=0)
-                # elif len(Wshapes)==4:
-                #     weights=np.average(weights[:,:,:,-1],2)
-                # elif len(Wshapes)==5:
-                #     weights=np.average(weights[:,:,:,:,-1],3)
+                Wshapes=weights.shape
+                if len(Wshapes)==3:
+                    weights=np.expand_dims(np.average(weights[:,:,-1],1),axis=0)
+                elif len(Wshapes)==4:
+                    weights=np.average(weights[:,:,:,-1],2)
+                elif len(Wshapes)==5:
+                    weights=np.average(weights[:,:,:,:,-1],3)
                 outputs=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})[-1]
                 outputs=outputs[:, :, 0]
                     
@@ -810,13 +810,13 @@ class coreLogic():
         elif layerType=="DeepLearningDeconv":
             if view=="Weights&Output":
                 weights=self.getStatistics({"layerId":layerId,"variable":"W","innervariable":""})                
-                # Wshapes=weights.shape
-                # if len(Wshapes)==3:
-                #     weights=np.expand_dims(np.average(weights[:,:,-1],1),axis=0)
-                # elif len(Wshapes)==4:
-                #     weights=np.average(weights[:,:,:,-1],2)
-                # elif len(Wshapes)==5:
-                #     weights=np.average(weights[:,:,:,:,-1],3)
+                Wshapes=weights.shape
+                if len(Wshapes)==3:
+                    weights=np.expand_dims(np.average(weights[:,:,-1],1),axis=0)
+                elif len(Wshapes)==4:
+                    weights=np.average(weights[:,:,:,-1],2)
+                elif len(Wshapes)==5:
+                    weights=np.average(weights[:,:,:,:,-1],3)
 
                 outputs=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})[-1]
                 outputs=outputs[:, :, 0]
