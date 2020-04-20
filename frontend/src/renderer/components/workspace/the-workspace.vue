@@ -1,6 +1,6 @@
 <template lang="pug">
   main.page_workspace
-    .workspace_tabset
+    .workspace_tabset(ref="tabset")
       include ./tabset/workspace-tabset.pug
     .workspace_content.bookmark_content.js-workspace(
       ref="workspaceNet"
@@ -38,9 +38,14 @@
             network-field(
               ref="networkField"
               :key="i"
+              :scaleNet="scaleNet"
               :style="{transformOrigin: '0 0', transform: `scale(${scaleNet / 100})`}"
             )
-
+            // when select more then 2 network item it's display
+            div(:style="dragBoxHorizontalTopBorder()")
+            div(:style="dragBoxHorizontalBottomBorder()")
+            div(:style="dragBoxVerticalLeftBorder()")
+            div(:style="dragBoxVerticalRightBorder()")
         //-general-settings(v-if="showGlobalSet")
         general-result(v-if="showGlobalResult")
         select-core-side(v-if="showCoreSide")
@@ -50,7 +55,7 @@
           ref="saveNetworkPopup"
           :popup-settings="saveNetworkPopup"
           )
-        
+
 
       start-training-spinner(v-if="showTrainingSpinner")
       file-picker-popup(
@@ -58,7 +63,7 @@
         :filePickerType="showFilePickerPopup.filePickerType"
         :fileTypeFilter="showFilePickerPopup.fileTypeFilter"
         :popupTitle="showFilePickerPopup.popupTitle"
-        :confirmCallback="showFilePickerPopup.confirmCallback || showFilePickerPopup") 
+        :confirmCallback="showFilePickerPopup.confirmCallback || showFilePickerPopup")
       //- showFilePickerPopup container the callback function
 
     .workspace_meta
@@ -82,7 +87,7 @@
     flex: 0 0 auto;
     padding-top: 1px;
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: flex-end;
   }
   .workspace_content {
@@ -131,6 +136,7 @@
     overflow: hidden;
   }
   .info-section_main {
+    display: block;
     overflow: auto;
   }
   .workspace_meta {

@@ -91,9 +91,19 @@
             localProjectsList.forEach((el) => {
               el.notExist = false;
               el.isChecked = false;
-              filePCRead(projectPathModel(el.pathProject))
-                .then(() => { })
-                .catch((err) => {
+
+              this.$store.dispatch('mod_api/API_loadNetwork', el.pathProject, {root: true})
+                .then((net) => {
+                  try {
+                    if(!(net.networkName
+                      && net.networkMeta
+                      && net.networkElementList)) {
+                        throw('err');
+                      }
+                  } catch(e) {
+                    throw('err');
+                  }
+                }).catch(err => {
                   el.notExist = true
                 })
             });
@@ -109,14 +119,19 @@
         const selectedProject = this.projects[indexCheckedProj];
         //const isProjectNotExist = selectedProject.notExist;
         const pathDelete = selectedProject.pathProject;
-        folderPCDelete(pathDelete)
-          .then(()=> {
-            const newProjectsList = deepCopy(this.localUserInfo.projectsList);
-            newProjectsList.splice(indexCheckedProj, 1);
-            this.saveLocalUserInfo({key: 'projectsList', data: newProjectsList });
-            this.$nextTick(()=> this.showInfoPopup("The project has been successfully deleted"))
-          })
-          .catch ((err)=> {console.error(err)})
+
+        const newProjectsList = deepCopy(this.localUserInfo.projectsList);
+        newProjectsList.splice(indexCheckedProj, 1);
+        this.saveLocalUserInfo({key: 'projectsList', data: newProjectsList });
+
+        // folderPCDelete(pathDelete)
+        //   .then(()=> {
+        //     const newProjectsList = deepCopy(this.localUserInfo.projectsList);
+        //     newProjectsList.splice(indexCheckedProj, 1);
+        //     this.saveLocalUserInfo({key: 'projectsList', data: newProjectsList });
+        //     this.$nextTick(()=> this.showInfoPopup("The project has been successfully deleted"))
+        //   })
+        //   .catch ((err)=> {console.error(err)})
       }
     },
     methods: {

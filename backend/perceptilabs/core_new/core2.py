@@ -6,10 +6,12 @@ import requests
 import tempfile
 import threading
 import subprocess
+import sentry_sdk
 from typing import Dict, List, Callable
 from abc import ABC, abstractmethod
 from queue import Queue
 
+from perceptilabs.issues import IssueHandler, UserlandError
 from perceptilabs.core_new.graph import Graph, JsonNetwork
 from perceptilabs.core_new.graph.builder import GraphBuilder
 from perceptilabs.core_new.layers import TrainingLayer
@@ -21,16 +23,13 @@ from perceptilabs.core_new.communication.status import *
 
 log = logging.getLogger(__name__)
 
-class RemoteError(Exception):
-    pass
-
 
 class Core:
-    def __init__(self, graph_builder: GraphBuilder, deployment_pipe: DeploymentPipe, error_queue: Queue=None):
+    def __init__(self, graph_builder: GraphBuilder, deployment_pipe: DeploymentPipe, issue_handler: IssueHandler=None):
         self._graph_builder = graph_builder
         self._deployment_pipe = deployment_pipe
         self._graphs = []
-        self._error_queue = error_queue
+        self._issue_handler = issue_handler
         
         self._lock = threading.Lock()        
         self._is_running = threading.Event()
@@ -125,7 +124,7 @@ class Core:
             for frame in traceback_frames:
                 node, true_lineno = line_to_node_map.get(frame.lineno, (None, None))
 
-                if frame.filename == 'deploy.py' and node is not None:
+                if frame.filename == 'training_script.py' and node is not None:
                     message += f'File "{frame.filename}", line {frame.lineno}, in {frame.name}, ' + \
                                f'origin {node.layer_id}:{true_lineno} [{node.layer_type}]\n' +\
                                f'  {frame.line}\n'
@@ -133,9 +132,17 @@ class Core:
                     message += f'File "{frame.filename}", line {frame.lineno}, in {frame.name}\n' + \
                                f'  {frame.line}\n'
 
-            log.error('Remote error:\n' + message)
-            if self._error_queue is not None:
-                self._error_queue.put(message)          
+            userland_error = UserlandError(node.layer_id, node.layer_type, frame.lineno, message)
+
+
+            with sentry_sdk.push_scope() as scope:
+                scope.set_tag('error-type', 'userland-error')
+                scope.level = 'info'
+                sentry_sdk.capture_message(userland_error.format())
+            
+            log.info('Userland error:\n' + userland_error.format())
+            if self._issue_handler is not None:
+                self._issue_handler.put_error(userland_error.format())          
             
     @property
     def graphs(self) -> List[Graph]:

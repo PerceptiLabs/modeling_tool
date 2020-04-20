@@ -348,7 +348,7 @@ class ConvCodeGenerator(CodeGenerator):
             code += self._get_code_autodim()
 
         if self._dropout:
-            code += "tf.nn.dropout(node, %f)\n\n" % self._keep_prob
+            code += "tf.nn.dropout(node, %f)\n\n" % float(self._keep_prob)
 
         # Activation
         code += "node = node + b\n"
@@ -356,16 +356,15 @@ class ConvCodeGenerator(CodeGenerator):
             
         # Pooling        
         if self._pool and self._pooling == "Max":
-            if self._conv_dim != "Automatic":
-                code += "dim_str = '%s'\n" % self._conv_dim
-            else:
-                code += "dim_str = str(len(X['Y'].get_shape().as_list())-1)+'D'\n"
+            code += "dim_str = 'NHWC'\n"
 
-            code += "Y = tf.nn.max_pool(Y, %s, %s, '%s', dim_str)" % (self._pool_area, self._pool_stride, self._pool_padding)
+
+            code += "Y = tf.nn.max_pool(Y, %s, %s, %s, dim_str)" % (self._pool_area, self._pool_stride, self._pool_padding)
         if self._pool and self._pooling == "Mean":
             code += "Y = tf.nn.pool(Y, window_shape=%s, pooling_type='AVG', padding=%s, strides=%s)" % (self._pool_area, self._pool_padding, self._pool_stride)            
-        if self._variable_scope is not None:
+        if self._variable_scope is not None:  
             code = Add_variable_scope.get_code(code, self._variable_scope)
+ 
         return code
 
     def _get_code_1d(self):
