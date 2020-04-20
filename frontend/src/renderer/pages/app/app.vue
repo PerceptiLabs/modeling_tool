@@ -20,25 +20,51 @@
   import TheSidebar         from '@/components/the-sidebar.vue'
   import TheWorkspace       from '@/components/workspace/the-workspace.vue'
   import TheTutorialStoryboard from "@/components/tutorial/tutorial-storyboard.vue";
+  import {shouldHideSidebar, calculateSidebarScaleCoefficient } from "../../core/helpers";
+  import {isWeb} from "@/core/helpers";
 
   export default {
     name: 'pageQuantum',
     components: { TheToolbar, TheLayersbar, TheSidebar, TheWorkspace, TheTutorialStoryboard },
     created() {
-      if(!this.workspaceContent.length) this.ADD_network();
-      this.DELETE_userWorkspace();
+      if(isWeb()) {
+        this.$store.dispatch('mod_workspace/GET_workspacesFromLocalStorage')
+          .then(_ => {
+            if(!this.workspaceContent.length) { this.ADD_network(); }
+
+            // request charts if the page has been refreshed, and
+            // the current tab is the first one
+
+            this.SET_chartRequests(this.workspaceContent[0].networkID);
+          });
+      } else {
+        if(!this.workspaceContent.length) this.ADD_network();
+        this.DELETE_userWorkspace();
+      }
     },
     mounted() {
       this.showPage = true;
       this.set_appIsOpen(true);
       window.addEventListener("resize",  this.resizeEv, false);
+      if(isWeb()) {
+        window.addEventListener('beforeunload', this.saveWorkspaces);
+      }
       this.$nextTick(()=> {
         this.addDragListeners();
-        if(this.getLocalUserInfo.showFirstAppTutorial) this.setShowStoryboard(true)
-      })
+        if(this.getLocalUserInfo && this.getLocalUserInfo.showFirstAppTutorial) this.setShowStoryboard(true)
+      });
+      if(isWeb()) {
+        if(shouldHideSidebar()) {
+          this.setSidebarStateAction(false);
+        }
+        calculateSidebarScaleCoefficient(); 
+      }
     },
     beforeDestroy() {
       window.removeEventListener("resize", this.resizeEv, false);
+      if(isWeb()) {
+        window.removeEventListener('beforeunload', this.saveWorkspaces);
+      }
       this.removeDragListeners();
       this.set_appIsOpen(false);
     },
@@ -84,22 +110,28 @@
     },
     methods: {
       ...mapMutations({
-        setShowStoryboard:'mod_tutorials/SET_showTutorialStoryBoard',
-        set_appIsOpen:    'globalView/SET_appIsOpen',
-        add_dragElement:  'mod_workspace/ADD_dragElement',
+        setShowStoryboard:            'mod_tutorials/SET_showTutorialStoryBoard',
+        set_appIsOpen:                'globalView/SET_appIsOpen',
+        add_dragElement:              'mod_workspace/ADD_dragElement',
+        set_workspacesInLocalStorage: 'mod_workspace/set_workspacesInLocalStorage',
       }),
       ...mapActions({
         tutorialPointActivate:'mod_tutorials/pointActivate',
         eventResize:          'mod_events/EVENT_eventResize',
         ADD_network:          'mod_workspace/ADD_network',
         ADD_element:          'mod_workspace/ADD_element',
-        DELETE_userWorkspace: 'mod_user/DELETE_userWorkspace'
+        SET_chartRequests:    'mod_workspace/SET_chartsRequestsIfNeeded',
+        DELETE_userWorkspace: 'mod_user/DELETE_userWorkspace',
+        setSidebarStateAction: 'globalView/hideSidebarAction',
       }),
       addDragListeners() {
         this.$refs.layersbar.addEventListener("dragstart", this.dragStart, false);
       },
       removeDragListeners() {
         this.$refs.layersbar.removeEventListener("dragstart", this.dragStart, false);
+      },
+      saveWorkspaces() {
+        this.set_workspacesInLocalStorage();
       },
       offDragListener() {
         this.$refs.layersbar.removeEventListener("dragend", this.dragEnd, false);
@@ -109,6 +141,8 @@
         this.$refs.layersbar.removeEventListener("drop", this.dragDrop, false);
       },
       dragStart(event) {
+        if(isWeb())
+        event.dataTransfer.setData('text/plain', event.target.outerHTML);
         if ( event.target.draggable
           && this.editIsOpen
           && event.target.className.includes('btn--layersbar')
@@ -122,6 +156,8 @@
           this.dragMeta.dragged = event.target;
           this.add_dragElement(event);
           event.target.style.opacity = .75;
+          if(isWeb())
+          this.adjustDraggingForFireFox(event);
         }
       },
       dragEnd(event) {
@@ -140,6 +176,12 @@
           this.ADD_element(event)
         }
       },
+      adjustDraggingForFireFox(event) {
+        event.dataTransfer.setDragImage(
+          event.target, 
+          event.target.clientWidth/2, 
+          event.target.clientHeight/2);
+      }
     }
   }
 </script>

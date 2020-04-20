@@ -1,6 +1,7 @@
 trigger:
- - master
- - stage
+- none
+#  - master
+#  - stage
 
 variables:
   BuildVariables.CommitId : $(Build.SourceVersion)
@@ -16,6 +17,12 @@ jobs:
         folderPath: '$(System.DefaultWorkingDirectory)/'
         xmlTransformationRules: 
         jsonTargetFiles: '**/app_variables.json'
+    
+    - task: UsePythonVersion@0
+      inputs: 
+        versionSpec: '3.6'
+        architecture: 'x64'
+        addToPath: true
 
     - bash: |
         cd scripts/
@@ -40,10 +47,16 @@ jobs:
         folderPath: '$(System.DefaultWorkingDirectory)/'
         xmlTransformationRules: 
         jsonTargetFiles: '**/app_variables.json'
+    
+    - task: UsePythonVersion@0
+      inputs: 
+        versionSpec: '3.7'
+        architecture: 'x64'
+        addToPath: true
 
     - bash: |
         cd scripts/
-        bash -i setup_ubuntu-py37.sh
+        bash -i setup_ubuntu.sh
       displayName: 'Environment setup'
     
     - bash: |
@@ -55,7 +68,7 @@ jobs:
       artifact: linux_3.7_wheel
 
 
-### BUILD WINDOWS ###
+# ### BUILD WINDOWS ###
 
   - job: build_windows_py36
     pool:
@@ -134,15 +147,23 @@ jobs:
         folderPath: '$(System.DefaultWorkingDirectory)/'
         xmlTransformationRules: 
         jsonTargetFiles: '**/app_variables.json'
+
+    - task: UsePythonVersion@0
+      inputs: 
+        versionSpec: '3.6'
+        architecture: 'x64'
+        addToPath: true
         
     - bash: |
         cd scripts/
+        chmod 755 setup_osx.sh
         ./setup_osx.sh
       displayName: 'Environment setup'
 
     - bash: |
         cd scripts/
-        bash -i build_osx_wheel.sh
+        chmod 755 build_osx_wheel.sh
+        ./build_osx_wheel.sh
       displayName: 'Build'
 
     - publish: $(Build.Repository.LocalPath)/build/backend_out/
@@ -160,15 +181,23 @@ jobs:
         folderPath: '$(System.DefaultWorkingDirectory)/'
         xmlTransformationRules: 
         jsonTargetFiles: '**/app_variables.json'
+
+    - task: UsePythonVersion@0
+      inputs: 
+        versionSpec: '3.7'
+        architecture: 'x64'
+        addToPath: true
         
     - bash: |
         cd scripts/
-        bash -i setup_osx-py37.sh
+        chmod 755 setup_osx.sh
+        ./setup_osx.sh
       displayName: 'Environment setup'
 
     - bash: |
         cd scripts/
-        bash -i build_osx_wheel.sh
+        chmod 755 build_osx_wheel.sh
+        ./build_osx_wheel.sh
       displayName: 'Build'
 
     - publish: $(Build.Repository.LocalPath)/build/backend_out/

@@ -10,14 +10,22 @@
           .section_text
             p(v-if="isText && !comingSoonPopup") {{ popupText }}
             p(v-else-if="isText && comingSoonPopup") This feature is coming soon. For suggestions on new features, hit us up on:&ensp;
-              button.btn.btn--link.text-primary(@click="goToLink('https://join.slack.com/t/perceptilabs-com/shared_invite/enQtODQ5NzAwNDkxOTExLWUxODAwZDk0MzA1MmM4OTViNWE4MmVjYjc2OTQwMTQ4N2NmM2ZlYmI5NjZjOWRiYjBkYjBjMTMzNjEyMDNiNDk')") slack
+              a.btn.btn--link.text-primary(@click="goToLink('https://join.slack.com/t/perceptilabs-com/shared_invite/enQtODQ5NzAwNDkxOTExLWUxODAwZDk0MzA1MmM4OTViNWE4MmVjYjc2OTQwMTQ4N2NmM2ZlYmI5NjZjOWRiYjBkYjBjMTMzNjEyMDNiNDk')") slack
+            div(v-else-if="coreNotFoundPopup && isWeb")
+              p
+                | It seems we can not find any running kernel on your local machine.
+                | Download the kernel by "pip install perceptilabs" and then
+                | start it by entering "perceptilabs" in the installed environment.
+              div
+                | For more information, visit &nbsp;
+                a.btn.btn--link.text-primary(target="_blank" href="https://perceptilabs.com/docs/installation") https://perceptilabs.com/docs/installation
             ul.w-100(v-else)
               li(
                 v-for="(text, i) in popupText"
                 :key="i"
                 ) {{ text }}
 
-          .popup_clipboard
+          .popup_clipboard(v-if="!coreNotFoundPopup")
             button.btn.btn--icon.icon.icon-clipboard-add(type="button"
               :class="styleClipboard"
               @click="copyClipboard")
@@ -29,6 +37,7 @@
 
 <script>
   import { goToLink }    from '@/core/helpers.js'
+  import {isWeb} from "@/core/helpers";
   export default {
     name: "TheInfoPopup",
     data() {
@@ -36,7 +45,8 @@
         styleClipboard: {
           'text-error': false,
           'text-primary': false
-        }
+        },
+        isWeb: isWeb(),
       }
     },
     computed: {
@@ -48,6 +58,9 @@
       },
       comingSoonPopup() {
         return this.$store.state.globalView.globalPopup.ComingSoonPopup
+      },
+      coreNotFoundPopup() {
+        return this.$store.state.globalView.globalPopup.coreNotFoundPopup
       },
       isShowPopup() {
         return this.errorPopup.length || this.infoPopup.length

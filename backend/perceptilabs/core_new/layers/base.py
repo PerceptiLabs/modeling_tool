@@ -73,7 +73,6 @@ class DataLayer(BaseLayer):
 
 class InnerLayer(BaseLayer):
     """Base class for any layer that is not a DataLayer or TrainingLayer. These layers typically transform the data somehow."""
-    
     @abstractmethod
     def __call__(self, x: ...) -> Any:
         """ Returns a transformed version of the input data.
@@ -161,39 +160,20 @@ class TrainingLayer(DataLayer):
     #    raise NotImplementedError
 
     @abstractmethod
-    def on_pause(self) -> None:
-        """Called when the pause button is clicked in the frontend. 
-        It is up to the implementing layer to pause its execution. 
-
-        CAUTION:: This method will be called from a different thread than run - keep thread-safety in mind.
-        """
-        raise NotImplementedError
-
-    @abstractmethod
-    def on_resume(self) -> None:
-        """Called when the resume button is clicked in the frontend. 
-        It is up to the implementing layer to resume execution. 
-        
-        CAUTION: This method will be called from a different thread than run - keep thread-safety in mind.
-        """
-        raise NotImplementedError
-
-    @abstractmethod
     def on_stop(self) -> None:
         """Called when the stop button is clicked in the frontend. 
         It is up to the implementing layer to save the model to disk.
-        
-        CAUTION: This method will be called from a different thread than run - keep thread-safety in mind.
         """
         raise NotImplementedError
     
     @abstractmethod
-    def on_save(self) -> None:
-        """Called when the save model button is clicked in the frontend. 
-        It is up to the implementing layer to save the model to disk.
+    def on_export(self, path: str, mode: str) -> None:
+        """Called when the export model button is clicked in the frontend. 
+        It is up to the implementing layer to export the model to disk.
         
-        CAUTION: This method will be called from a different thread than run - keep thread-safety in mind.
-        """
+        Args:
+            path: the path to a directory where the model will be stored.
+            mode: how to export the model. Made available to frontend via 'export_modes' property."""
         raise NotImplementedError
 
     @property
@@ -224,11 +204,10 @@ class TrainingLayer(DataLayer):
         raise NotImplementedError
 
     @property
-    @abstractmethod
-    def is_paused(self):
-        """Returns true when the training is paused."""
+    def export_modes(self) -> List[str]:
+        """Returns the possible modes of exporting a model."""
         raise NotImplementedError
-
+    
 
 class ClassificationLayer(TrainingLayer):
     """A layer for training classifiers."""
@@ -326,27 +305,69 @@ class ClassificationLayer(TrainingLayer):
         """The current testing iteration"""                
         return self._testing_iteration
 
-class ReinforcementLayer(TrainingLayer):
-    """A layer for reinforcement learning."""
 
+class ObjectDetectionLayer(TrainingLayer):
+    """A layer for training classifiers."""
+    
     @property
     @abstractmethod
     def accuracy_training(self) -> float:
-        """Returns the current accuracy of the training phase"""
+        """Returns the current classification accuracy of the training phase"""
         raise NotImplementedError
 
     @property
     @abstractmethod
     def accuracy_validation(self) -> float:
-        """Returns the current accuracy of the validation phase"""        
+        """Returns the current classification accuracy of the validation phase"""        
         raise NotImplementedError
 
     @property
     @abstractmethod
     def accuracy_testing(self) -> float:
-        """Returns the current accuracy of the testing phase"""                
+        """Returns the current classification accuracy of the testing phase"""                
         raise NotImplementedError
     
+    @property
+    def image_accuracy(self) -> float:
+        return self._image_accuracy
+
+    @property
+    @abstractmethod
+    def loss_bbox_training(self) -> float:
+        """Returns the current loss of the training phase"""        
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def loss_bbox_validation(self) -> float:
+        """Returns the current loss of the validation phase"""                
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def loss_bbox_testing(self) -> float:
+        """Returns the current loss of the testing phase"""                        
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def loss_classification_training(self) -> float:
+        """Returns the current loss of the training phase"""        
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def loss_classification_validation(self) -> float:
+        """Returns the current loss of the validation phase"""                
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def loss_classification_testing(self) -> float:
+        """Returns the current loss of the testing phase"""                        
+        raise NotImplementedError
+
+
     @property
     @abstractmethod
     def loss_training(self) -> float:
@@ -408,6 +429,39 @@ class ReinforcementLayer(TrainingLayer):
         raise NotImplementedError
     
     @property
+    @abstractmethod
+    def grid_size(self) -> int:
+        """ size of the grid """
+        return self._grid_size
+    
+    @property
+    def classes(self) -> List[str]:
+        """classes in the dataset"""
+        return self._classes
+
+    @property
+    @abstractmethod
+    def num_class(self) -> int:
+        """ number of classes in the dataset"""
+        return self._num_class
+
+    @property 
+    @abstractmethod  
+    def num_box(self) -> int:
+        """ number of boxes per grid"""
+        return self._num_box 
+
+    @property
+    @abstractmethod
+    def lambdacoord(self) -> float:
+        return self._lambdacoord
+        
+    @property
+    @abstractmethod
+    def lambdanoobj(self) -> float:  
+        return self._lambdanoobj
+
+    @property
     def training_iteration(self) -> int:
         """The current training iteration"""
         return self._training_iteration
@@ -421,3 +475,24 @@ class ReinforcementLayer(TrainingLayer):
     def testing_iteration(self) -> int:
         """The current testing iteration"""                
         return self._testing_iteration
+
+    @property
+    def get_predicted_normalized_boxes(self) -> np.ndarray:
+        """ """
+        return self._predicted_normalized_box
+
+    @property
+    def get_predicted_classes(self) -> np.ndarray:
+        """ """
+        return self._predicted_class
+
+    @property
+    def get_predicted_objects(self) -> np.ndarray:
+        """ """
+        return self._predicted_object
+
+
+    @property
+    def get_input_data_node(self):
+        """ node corresponding to input tensor"""
+        return self._input_data_node

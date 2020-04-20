@@ -13,7 +13,7 @@ log = logging.getLogger(__name__)
 
 
 class GraphBuilder:
-    def __init__(self, replica_by_name=None):
+    def __init__(self, replica_by_name=None): 
         self._replica_by_name = replica_by_name    
     
     def build(self, layer_map: Dict[str, BaseLayer], edges_by_id: Set[Tuple[str, str]]):
@@ -61,18 +61,32 @@ class GraphBuilder:
         replica = replica_class(**kwargs)
         return replica
     
-    def build_from_spec(self, graph_spec, session_config):
+    def build_from_spec(self, graph_spec): 
         graph_spec = graph_spec['Layers'] # TODO: remove!
         
         nodes = {}
         for layer_spec in graph_spec.values():
+            #from pprint import pprint
+            #pprint(layer_spec)
+            
             layer_type = layer_spec['Type']
+
+            #TODO: Remove this if-case when frontend is sending back correct file path on Windows
+            if layer_type == "DataData" and layer_spec['Properties'] is not None:
+                sources = layer_spec['Properties']['accessProperties']['Sources']
+                new_sources = []
+                for source in sources:
+                    tmp = source
+                    if tmp["path"]:
+                        tmp["path"] = tmp["path"].replace("\\","/")
+                    new_sources.append(tmp)
+                layer_spec['Properties']['accessProperties']['Sources'] = new_sources
+
             layer_id = sanitize_layer_name(layer_spec['Name'])
             layer_instance = None#self._get_layer_instance(layer_id, layer_type, session_config['session_id'])
             node = Node(layer_id, layer_type, layer_instance, layer_spec)
             nodes[layer_id] = node
 
-        print(nodes)
         edges = set()
         for layer_spec in graph_spec.values():
             from_id = sanitize_layer_name(layer_spec['Name'])
@@ -161,6 +175,8 @@ class SnapshotBuilder:
                     f'got {type(value)}. Using default: {default_value} [{type(default_value)}].'
                 )
                 value = default_value
+
+        #copied_value = copy.deepcopy(value)
         return {unique_key: value}
     
 

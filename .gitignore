@@ -2,7 +2,9 @@
 backend/*.pyc
 backend/*.pyo
 backend/net.json
+backend/net.json_
 backend/venv/
+backend/.venv/
 backend/venv-user/
 backend/dist/
 backend/deploy.py
@@ -15,6 +17,7 @@ build/
 .vscode/
 backend/.vscode/
 #Frontend ignores
+frontend_out
 frontend/.DS_Store
 frontend/core/*
 frontend/dist/*
@@ -24,6 +27,7 @@ frontend/node_modules/
 frontend/build/*
 !frontend/build/icons
 !frontend/build/*.plist
+!frontend/src/build/
 frontend/npm-debug.log
 frontend/npm-debug.log.*
 frontend/thumbs.db
@@ -37,3 +41,5 @@ frontend/src/node_modules/
 .vscode/*
 app.log
 backend.log
+backend/deploy.py
+backend/log.txt

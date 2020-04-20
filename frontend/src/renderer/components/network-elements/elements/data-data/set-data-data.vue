@@ -2,40 +2,61 @@
   net-base-settings(
     :tab-set="dynamicTabs"
     :current-el="currentEl"
+    :showControls="!showFilePicker"
     id-set-btn="tutorial_button-apply"
     @press-apply="saveSettings($event)"
   )
     template(slot="Computer-content")
-      .settings-layer_section.section-data-select(v-if="!settings.accessProperties.Sources.length")
-
+      .settings-layer_section.section-data-select(v-if="!settings.accessProperties.Sources.length && !showFilePicker" id="tutorial_button-load")
         button.btn.tutorial-relative(type="button"
-          @click="loadFile"
-          id="tutorial_button-load"
+          @click="openFilePicker('file')"
           v-tooltip-interactive:right="interactiveInfo.file"
-        )
-          i.icon.icon-open-file
-          span Choose files
+          v-if="!showFilePicker"
+          )
+            i.icon.icon-open-file
+            span Choose files
 
         button.btn.tutorial-relative(type="button"
-          @click="loadFolder"
+          @click="openFilePicker('folder')"
           v-tooltip-interactive:bottom="interactiveInfo.folder"
-        )
-          i.icon.icon-open-folder
-          span Choose folders
+          )
+            i.icon.icon-open-folder
+            span Choose folders
+
+      template(v-else-if="showFilePicker")
+        file-picker(
+          :filePickerType="filePickerType"
+          :fileTypeFilter="validFileExtensions"
+          :confirmCallback="confirmFilePickerSelection"
+          :cancelCallback="clearPath")
+
+        //-web-upload-file#tutorial_button-load.tutorial-relative(
+          v-model="settings.accessProperties.PathFake"
+          /:input-disabled="disabledBtn"
+          /:input-multiple="true"
+          /:showPath="false"
+          )
+          .btn.tutorial-relative
+            i.icon.icon-open-file
+            span Choose files
 
       template(v-else)
-        //-chart-spinner(v-if="showSpinner")
         .settings-layer_section
           .form_row
             button.btn.btn--link(type="button" @click="clearPath")
               i.icon.icon-backward
               span Back
+          .form_row(v-if="dataColumns.length")
+            base-select(
+              v-model="dataColumnsSelected"
+              :select-options="dataColumns"
+              :select-multiple="true"
+            )
         .settings-layer_section.settings-layer_section--data
           .form_row
             settings-file-list(
               v-model="fileList"
               :name-add-item="typeOpened"
-              :show-spinner="showSpinner"
               @partition-list="setPartitionList"
               @add-file="addFiles"
               )
@@ -55,17 +76,6 @@
               input(type="number" v-model="settings.accessProperties.Batch_size")
           .form_row
             base-checkbox.bigest-text(v-model="settings.accessProperties.Shuffle_data") Shuffle
-        .settings-layer_section
-          .form_row(v-if="dataColumns.length")
-            base-select(
-              v-model="dataColumnsSelected"
-              :select-options="dataColumns"
-              :select-multiple="true"
-            )
-        //-.settings-layer_foot
-          button.btn.btn--primary(type="button") Apply
-    //-template(slot="Cloud-content")
-      //-settings-cloud
     template(slot="Code-content")
       settings-code(
         :current-el="currentEl"
@@ -89,7 +99,8 @@
   import SettingsFileList  from '@/components/network-elements/elements-settings/setting-file-list.vue';
   import ChartSwitch    from "@/components/charts/chart-switch.vue";
   import TripleInput    from "@/components/base/triple-input";
-  import ChartSpinner   from '@/components/charts/chart-spinner'
+  import WebUploadFile  from "@/components/web/upload-file.vue";
+  import FilePicker     from "@/components/different/file-picker.vue";
 
   import {openLoadDialog, loadPathFolder} from '@/core/helpers.js'
   import {mapActions, mapGetters}     from 'vuex';
@@ -97,7 +108,7 @@
   export default {
     name: 'SetDataData',
     mixins: [mixinSet, mixinData],
-    components: {ChartSwitch, SettingsCloud, TripleInput, SettingsFileList, ChartSpinner },
+    components: {ChartSwitch, SettingsCloud, TripleInput, SettingsFileList, WebUploadFile, FilePicker },
     mounted() {
       if(this.settings.accessProperties.Columns.length) {
         this.dataColumnsSelected = this.settings.accessProperties.Columns;
@@ -109,6 +120,7 @@
         tabs: ['Computer', 'Code'],
         dataColumns: [],
         dataColumnsSelected: [],
+          disabledBtn: false,
         interactiveInfo: {
           folder: {
             title: 'Select Folder',
@@ -119,8 +131,11 @@
             text: 'Select a file that is the data'
           }
         },
+        testPath: [''],
+        testSelectFile: true,
         settings: {
           Type: 'Data',
+          testInfoIsInput: true,//input  false - labels
           accessProperties: {
             Columns: [],
             Dataset_size: 3000,
@@ -128,18 +143,23 @@
             Type: 'Data',
             //Path: [],
             Sources: [], //{type: 'file'/'directory', path: 'PATH'}
+            PathFake: [],
             Partition_list: [],
             Batch_size: 10,
             Shuffle_data: true,
           }
         },
-        showSpinner: false
+        serverListFile: ['1', '2', '3'],
+        serverListFileSelected: '2',
+        showFilePicker: false,
+        filePickerType: 'file',
+        filePickerAppendingItems: false,
       }
     },
     computed: {
       ...mapGetters({
-        appPath:        'globalView/GET_appPath',
-        isTutorialMode: 'mod_tutorials/getIstutorialMode',
+        appPath:            'globalView/GET_appPath',
+        isTutorialMode:     'mod_tutorials/getIstutorialMode',
       }),
       dynamicTabs() {
         return this.settings.accessProperties.Sources.length ? ['Computer', 'Code'] : ['Computer']
@@ -152,6 +172,7 @@
       fileList: {
         get() {
           const path = this.settings.accessProperties.Sources;
+          //const path = [this.settings.accessProperties.Sources];
           const partitionList = this.settings.accessProperties.Partition_list;
           const fileArray = path.map((item, index)=> {
             return {
@@ -174,14 +195,28 @@
           this.settings.accessProperties.Sources = pathList;
           this.settings.accessProperties.Partition_list = partitionList;
         }
+      },
+      validFileExtensions() {
+        let optionBasic = ['png', 'gif', 'jpg', 'jpeg', 'bmp', 'tif', 'tiff', 'txt', 'json', 'csv', 'mat', 'npy', 'npz'];
+        let optionTutorial = ['npy'];
+
+        return this.isTutorialMode ? optionTutorial : optionBasic;
       }
     },
     watch: {
       dataColumnsSelected(newVal) {
         this.settings.accessProperties.Columns = newVal;
-        //this.Mix_settingsData_getDataPlot('DataData')
-        //this.Mix_settingsData_getPreviewVariableList(this.currentEl.layerId)
+        // this.Mix_settingsData_getDataPlot('DataData')
+        // this.Mix_settingsData_getPreviewVariableList(this.currentEl.layerId)
       },
+      // 'settings.accessProperties.PathFake': {
+      //   handler(newPath) {
+      //       console.log(newPath);
+      //       console.log(newPath[0].name);
+      //       this.saveLoadFile([newPath[0].name], 'file', false);
+      //   },
+      //   //deep: true
+      // },
       fileList: {
         handler(newVal) {
           this.Mix_settingsData_getPartitionSummary(this.currentEl.layerId);
@@ -196,7 +231,7 @@
           this.getSettingsInfo()
         },
         immediate: true
-      }
+      },
     },
     methods: {
       ...mapActions({
@@ -204,41 +239,48 @@
         // API_getPartitionSummary:'mod_api/API_getPartitionSummary',
         // API_getDataMeta:        'mod_api/API_getDataMeta',
       }),
+      addPath() {
+        this.testPath.push('')
+      },
+      removePath(i) {
+        this.testPath.splice(i, 1);
+      },
+      getfolder(e) {
+        console.log(e);
+        var files = e.target.files;
+        var path = files[0].webkitRelativePath;
+        var Folder = path.split("/");
+        console.log(files, path, Folder);
+      },
       setPartitionList(list) {
         this.settings.accessProperties.Partition_list = list
       },
       loadFile(isAppend) {
-        let optionBasic = {
-          title:"Load file or files",
-          properties: ['openFile', 'multiSelections'],
-          filters: [
-            {name: 'All',     extensions: ['png', 'gif', 'jpg', 'jpeg', 'bmp', 'tif', 'tiff', 'txt', 'json', 'csv', 'mat', 'npy', 'npz']},
-            {name: 'Images',  extensions: ['png', 'gif', 'jpg', 'jpeg', 'bmp', 'tif', 'tiff']},
-            {name: 'Text',    extensions: ['txt', 'json', 'csv', 'mat', 'npy', 'npz']},
-          ]
-        };
-        let optionTutorial = {
-          title: "Load file",
-          buttonLabel: 'Load file',
-          defaultPath: `${this.appPath}basic-data`,
-          properties: ['openFile'],
-          filters: [
-            {name: 'All', extensions: ['npy']},
-          ]
-        };
-        let optionDialog = this.isTutorialMode ? optionTutorial : optionBasic;
-        openLoadDialog(optionDialog)
-          .then((pathArr)=> this.saveLoadFile(pathArr, 'file', isAppend))
-          .catch(()=> { })
+
+        // this.$store.commit('globalView/gp_filePickerPopup', true);
+
+        this.showFilePicker = true;
+        this.filePickerType = 'file';
+      },
+      openFilePicker(fileType) {
+        this.showFilePicker = true;
+        this.filePickerType = fileType;
+      },
+      TESTload() {
+        this.testSelectFile = false;
+        this.settings.accessProperties.Sources = this.testPath;
+        this.saveLoadFile(this.settings.accessProperties.Sources, 'file', false);
       },
       loadFolder(isAppend) {
-        loadPathFolder()
-          .then((pathArr)=> this.saveLoadFile(pathArr, 'directory', isAppend))
-          .catch(()=> { })
+        this.showFilePicker = true;
+        this.filePickerType = 'folder';
+        //loadPathFolder()
+        //  .then((pathArr)=> this.saveLoadFile(pathArr, 'directory', isAppend))
+        //  .catch(()=> { })
       },
       addFiles() {
-        if(this.typeOpened === 'file') this.loadFile(true);
-        else this.loadFolder(true)
+        this.filePickerAppendingItems = true;
+        this.openFilePicker(this.filePickerType);
       },
       saveLoadFile(pathArr, type, isAppend) {
         this.tutorialPointActivate({way: 'next', validation: 'tutorial_button-load'});
@@ -248,12 +290,15 @@
         }
         else this.settings.accessProperties.Sources = this.Mix_settingsData_prepareSources(pathArr, type);
         //this.getSettingsInfo();
+
+        this.filePickerAppendingItems = false;
       },
       clearPath() {
+        this.showFilePicker = false;
         this.Mix_settingsData_deleteDataMeta('DataData')
           .then(()=> {
             this.settings.accessProperties.Sources = [];
-            //this.getSettingsInfo()
+            this.getSettingsInfo()
           })
           .catch((err)=> console.log(err))
       },
@@ -263,14 +308,17 @@
           this.Mix_settingsData_getDataMeta(this.currentEl.layerId)
             .then((data) => {
               //console.log(data);
-              if (data.Columns && data.Columns.length) this.createSelectArr(data.Columns);
+              if (data && data.Columns && data.Columns.length) this.createSelectArr(data.Columns);
             });
 
         }
       },
       createSelectArr(data) {
         let selectArr = [];
-        data.forEach((el, index)=> selectArr.push({text: el, value: index}));
+        data.forEach((el, index)=> {
+          selectArr.push({text: el, value: index});
+          //this.settings.accessProperties.Columns.push(index)
+        });
         this.dataColumns = [...selectArr];
         this.dataColumnsSelected.push(this.dataColumns[0].value);
       },
@@ -294,6 +342,17 @@
         const btn = document.getElementById('js-hide-btn');
         if(btn) btn.style.cssText = ''
       },
+      confirmFilePickerSelection(selectedItems) {
+        this.showFilePicker = false;
+        if (!selectedItems.length) { return; }
+
+        if (this.filePickerType === 'file') {
+          this.saveLoadFile(selectedItems, 'file', this.filePickerAppendingItems);
+        } else if (this.filePickerType === 'folder') {
+          this.saveLoadFile(selectedItems, 'directory', this.filePickerAppendingItems)
+        }
+
+      }
     }
   }
 </script>
@@ -310,7 +369,6 @@
     /*justify-content: center;*/
     font-size: 1.4rem;
     text-align: center;
-    padding-bottom: 0;
     .btn {
       display: inline-flex;
       align-items: center;
@@ -329,6 +387,9 @@
       &:hover {
         box-shadow: inset 0 0 1px 1px $color-5;
       }
+      input[type="file"] {
+        display: none;
+      }
     }
   }
   .data-select_text {
@@ -340,7 +401,7 @@
       max-width: 2.8em;
     }
     .triple-input_input ~ .triple-input_input {
-      margin-left: 1em;
+      //margin-left: 1em;
     }
   }
   .settings-layer_section--data label.bigest-text {

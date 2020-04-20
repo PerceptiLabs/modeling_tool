@@ -2,6 +2,7 @@ import copy
 import time
 import pprint
 import logging
+import threading
 import numpy as np
 
 
@@ -10,67 +11,134 @@ from perceptilabs.core_new.graph.utils import sanitize_layer_name
 from perceptilabs.core_new.core2 import Core
 from perceptilabs.core_new.layers import *
 from perceptilabs.core_new.layers.replicas import NotReplicatedError
-from perceptilabs.core_new.compability.policies import policy_classification
+from perceptilabs.core_new.compability.policies import policy_classification, policy_object_detection
 
 
 log = logging.getLogger(__name__)
 
 
+PROCESS_COMMANDS_DELAY = 0.3
+PROCESS_RESULTS_DELAY = 0.1
+
+
 class CompabilityCore:
-    def __init__(self, command_queue, result_queue, graph_builder, deployment_pipe, graph_spec):
+    def __init__(self, command_queue, result_queue, graph_builder, deployment_pipe, graph_spec, threaded=False, error_queue=None):
         self._command_queue = command_queue
         self._result_queue = result_queue
         self._graph_builder = graph_builder
         self._deployment_pipe = deployment_pipe
         self._graph_spec = copy.deepcopy(graph_spec)
+        self._error_queue = error_queue
 
         self._sanitized_to_id = {sanitize_layer_name(spec['Name']): id_ for id_, spec in graph_spec['Layers'].items()}
         self._sanitized_to_name = {sanitize_layer_name(spec['Name']): spec['Name'] for spec in graph_spec['Layers'].values()}        
 
-    def run(self):
-        set_tensorflow_mode('graph')
-        core = Core(self._graph_builder, self._deployment_pipe)
-        core.run(self._graph_spec)
+        self._threaded = threaded
+        self._running = False
+        self._core = None
+        self.results = {}
+
+    @property
+    def core_v2(self):
+        return self._core        
         
-        #import uuid
-        #session_id = uuid.uuid4().hex        
-        #core.deploy(self._graph_spec, session_id)
-
-        while core.is_running:
-            time.sleep(0.5)
-
+    def run(self):
+        self._running = True
+        
+        def do_process_commands(counter, core): 
+            commands = {}
+            count = {}
+            
             while not self._command_queue.empty():
                 command = self._command_queue.get()
-                self._send_command(core, command)
 
-            #core.step()
-                
-            results = self._get_results_dict(core.graphs)
-            self._result_queue.put(results)
+                if command.type not in count:
+                    count[command.type] = 0
+                count[command.type] += 1
+
+                if command.allow_override:
+                    id_ = f'{command.type}-0'
+                else:
+                    id_ = f'{command.type}-{count[command.type]}'
+                commands[id_] = command
+
+            for command_id, command in commands.items():
+                if command.allow_override and count[command.type] > 1:
+                    log.debug(f'Processing command {command_id}: {command}. Overriding {count[command.type]-1} previous commands of the same type.') # TODO: log.debug instead
+                else:
+                    log.debug(f'Processing command {command_id}: {command}.') # TODO: log.debug instead
+                self._send_command(core, command)
+            
+        def do_process_results(counter, core):
+            graphs = core.graphs
+
+            if len(graphs) > 0:
+                log.debug(f"Processing {len(graphs)} graph snapshots")
+                self.results = self._get_results_dict(graphs, self.results)
+                self._result_queue.put(copy.deepcopy(self.results))
+            
+        set_tensorflow_mode('graph')
+        core = Core(self._graph_builder, self._deployment_pipe, self._error_queue)
+        self._core = core
+        
+        if self._threaded:
+            def worker(func, delay):
+                counter = 0
+                while self._running:
+                    func(counter, core)
+                    counter += 1
+                    time.sleep(delay)
+                func(counter, core)    #One extra for good measure
+
+            threading.Thread(target=worker, args=(do_process_commands, PROCESS_COMMANDS_DELAY), daemon=True).start()    
+            threading.Thread(target=worker, args=(do_process_results, PROCESS_RESULTS_DELAY), daemon=True).start()                  
+            self._run_core(core, self._graph_spec)
+        else:
+            self._run_core(core, self._graph_spec, on_iterate=[do_process_commands, do_process_results])            
+
+    def _run_core(self, core, graph_spec, on_iterate=None):
+        try:
+            core.run(self._graph_spec, on_iterate=on_iterate)
+        except:
+            self._running = False            
+            raise     
 
     def _send_command(self, core, command):
-        pass
-    
-    def _get_results_dict(self, graphs):
+        if command.type == 'pause' and command.parameters['paused']:
+            core.pause()
+        elif command.type == 'pause' and not command.parameters['paused']:            
+            core.unpause()
+        elif command.type == 'stop':
+            core.stop()
+        elif command.type == 'headless' and command.parameters['on']:
+            core.headlessOn()
+        elif command.type == 'headless' and not command.parameters['on']:            
+            core.headlessOff()
+        elif command.type == 'export':
+            core.export(command.parameters['path'], command.parameters['mode'])            
+            
+    def _get_results_dict(self, graphs, results):
         self._print_graph_debug_info(graphs)
         
         result_dict = {}        
         try:
-            result_dict = self._get_results_dict_internal(graphs)
+            result_dict = self._get_results_dict_internal(graphs, results)
         except:
             log.exception('Error when getting results dict')
         finally:
             self._print_result_dict_debug_info(result_dict)
             return result_dict                
     
-    def _get_results_dict_internal(self, graph):
-        if graph is None:
+    def _get_results_dict_internal(self, graphs, results):
+        if not graphs:
             log.debug("graph is None, returning empty results")
             return {}
-
         # TODO: if isinstance(training_layer, Classification) etc
-        
-        result_dict = policy_classification(graph, self._sanitized_to_name, self._sanitized_to_id)
+        layer = graphs[-1].active_training_node.layer
+        if isinstance(layer, ClassificationLayer):
+            result_dict = policy_classification(self._core, graphs, self._sanitized_to_name, self._sanitized_to_id)
+        elif  isinstance(layer, ObjectDetectionLayer):
+            result_dict = policy_object_detection(self._core, graphs, self._sanitized_to_name, self._sanitized_to_id, results)
         return result_dict
 
     def _print_graph_debug_info(self, graphs):
@@ -139,7 +207,7 @@ if __name__ == "__main__":
 
     script_factory = ScriptFactory()
     deployment_pipe = InProcessDeploymentPipe(script_factory)
-    #deployment_pipe = LocalEnvironmentPipe('/home/anton/Source/perceptilabs/backend/venv-user/bin/python', script_factory)
+    #deployment_pipe = LocalEnvironmentPipe('/home/anton/Source/perceptilabs/backend/venv-user/bin/python', script_factory) # TODO: 
     
     replica_by_name = {repl_cls.__name__: repl_cls for repl_cls in BASE_TO_REPLICA_MAP.values()}    
     graph_builder = GraphBuilder(replica_by_name)                
@@ -147,6 +215,6 @@ if __name__ == "__main__":
     commandQ=queue.Queue()
     resultQ=queue.Queue()
     
-    core = CompabilityCore(commandQ, resultQ, graph_builder, deployment_pipe, network)
+    core = CompabilityCore(commandQ, resultQ, graph_builder, deployment_pipe, network, threaded=False)
     core.run()
         

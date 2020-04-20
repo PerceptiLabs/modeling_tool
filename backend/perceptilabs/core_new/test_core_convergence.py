@@ -1,6 +1,7 @@
 import sys
 import time
 import pytest
+import logging
 import tempfile
 import numpy as np
 from queue import Queue
@@ -12,6 +13,11 @@ from perceptilabs.core_new.graph import Graph
 from perceptilabs.core_new.layers import TrainingLayer
 from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP
 from perceptilabs.core_new.deployment import InProcessDeploymentPipe, LocalEnvironmentPipe
+
+
+logging.basicConfig(stream=sys.stdout,
+                    format='%(asctime)s - %(levelname)s - %(threadName)s - %(filename)s:%(lineno)d - %(message)s',
+                    level=logging.DEBUG)
 
 
 @pytest.fixture
@@ -27,8 +33,8 @@ def graph_spec_binary_classification():
     mat = np.random.randint(0, n_classes, (n_samples,))
     np.save(f2.name, mat)
     
-    inputs_path = f1.name
-    labels_path = f2.name    
+    inputs_path = f1.name.replace("\\","/")
+    labels_path = f2.name.replace("\\","/")    
 
     #inputs_path = "/home/anton/Data/mnist_split/mnist_input.npy"
     #labels_path = "/home/anton/Data/mnist_split/mnist_labels.npy"
@@ -49,7 +55,8 @@ def graph_spec_binary_classification():
                 },
                 "backward_connections": [],
                 "forward_connections": [["3", "reshape"]],
-                "Code": ""
+                "Code": None,
+                "checkpoint": []
             },
             "2": {
                 "Name": "data_labels",
@@ -66,7 +73,8 @@ def graph_spec_binary_classification():
                 },
                 "backward_connections": [],
                 "forward_connections": [["5", "one_hot"]],
-                "Code": ""
+                "Code": None,
+                "checkpoint": []
             },
             "3": {
                 "Name": "reshape",
@@ -77,7 +85,8 @@ def graph_spec_binary_classification():
                 },
                 "backward_connections": [["1", "data_inputs"]],
                 "forward_connections": [["4", "fc"]],
-                "Code": ""
+                "Code": None,
+                "checkpoint": []
             },
             "4": {
                 "Name": "fc",
@@ -90,7 +99,8 @@ def graph_spec_binary_classification():
                 },
                 "backward_connections": [["3", "reshape"]],
                 "forward_connections": [["6", "training"]],
-                "Code": ""
+                "Code": None,
+                "checkpoint": []
             },
             "5": {
                 "Name": "one_hot",
@@ -100,7 +110,8 @@ def graph_spec_binary_classification():
                 },
                 "backward_connections": [["2", "data_labels"]],
                 "forward_connections": [["6", "training"]],
-                "Code": ""
+                "Code": None,
+                "checkpoint": []
             },
             "6": {
                 "Name": "training",
@@ -108,7 +119,7 @@ def graph_spec_binary_classification():
                 "Properties": {
                     "Labels": "5",
                     "Loss": "Quadratic",
-                    "Epochs": "100",
+                    "Epochs": 200,
                     "Class_weights": "1",  # TODO: what's this?
                     "Optimizer": "SGD",
                     "Beta_1": "0.9",
@@ -116,12 +127,13 @@ def graph_spec_binary_classification():
                     "Momentum": "0.9",
                     "Decay_steps": "100000",
                     "Decay_rate": "0.96",
-                    "Learning_rate": "0.5",
+                    "Learning_rate": "0.05",
                     "Distributed": False
                 },
                 "backward_connections": [["4", "fc"], ["5", "one_hot"]],
                 "forward_connections": [],
-                "Code": ""
+                "Code": None,
+                "checkpoint": []
             }
         }
     }
@@ -150,7 +162,7 @@ def test_train_normal_converges(graph_spec_binary_classification):
 
     core.run(graph_spec_binary_classification)
 
-    print("POST RUN CALL")
+    #print("POST RUN CALL")
     
     while core.is_running:
 
@@ -165,5 +177,48 @@ def test_train_normal_converges(graph_spec_binary_classification):
     for graph in core.graphs:
         acc = graph.active_training_node.layer.accuracy_training
         accuracy_list.append(acc)
+
+    print("Accuracy: ", np.mean(accuracy_list[-10:]))
     
-    assert np.mean(accuracy_list[-10:]) >= 0.9 
+    assert np.mean(accuracy_list[-10:]) >= 0.75
+
+
+@pytest.mark.slow
+def test_train_normal_distributed_converges(graph_spec_binary_classification):
+    
+    script_factory = ScriptFactory()
+    deployment_pipe = InProcessDeploymentPipe(script_factory)
+    #deployment_pipe = LocalEnvironmentPipe('/home/anton/Source/perceptilabs/backend/venv-user/bin/python', script_factory)    
+
+    replica_by_name = {repl_cls.__name__: repl_cls for repl_cls in BASE_TO_REPLICA_MAP.values()}
+    graph_builder = GraphBuilder(replica_by_name)    
+    
+    core = Core(
+        graph_builder,
+        deployment_pipe,
+    )
+
+    json_network = graph_spec_binary_classification
+    json_network['Layers']['6']['Properties']['Distributed'] = True
+
+    core.run(json_network)
+
+    #print("POST RUN CALL")
+    
+    while core.is_running:
+
+        #graphs = core.graphs
+        #print("aaaa", graph)
+        #print(graph.active_training_node.layer.layer_gradients.keys())
+    
+        time.sleep(1)
+
+
+    accuracy_list = []
+    for graph in core.graphs:
+        acc = graph.active_training_node.layer.accuracy_training
+        accuracy_list.append(acc)
+        #print(acc)
+    
+    assert np.mean(accuracy_list[-10:]) >= 0.75
+

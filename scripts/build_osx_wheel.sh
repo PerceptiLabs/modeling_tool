@@ -1,16 +1,8 @@
-echo "Adding conda to environment variables..."
-export PATH="$HOME/miniconda/bin:$PATH"
-eval "$(conda shell.bash hook)"
-
-echo "Activating conda environment"
-source ~/miniconda/etc/profile.d/conda.sh
-conda activate py362_
-
 echo "Python location:"
-which python3
+which python
 
-echo "Conda list:"
-conda list
+echo "Pip list:"
+pip list
 
 cd ..
 
@@ -38,16 +30,26 @@ echo "Copying files files from ../../backend/"
 cd backend_tmp/
 rsync -a ../../backend --files-from=../../backend/included_files.txt .
 ls -l code_generator
-cp ../../backend/setup_wheel.py .
+cp ../../backend/setup.py .
 cp ../../backend/setup.cfg .
 cp "../../Docker/Core/licenses/PerceptiLabs EULA.txt" .
 cp ../../backend/perceptilabs/app_variables.json ./perceptilabs/
+cd perceptilabs
+mkdir tutorial_data
+cd ..
+cp ../../backend/perceptilabs/tutorial_data/* ./perceptilabs/tutorial_data/
 
 echo "Listing files to be included in build (contents of 'backend_tmp/')"
 ls -l -R
 
-python setup_wheel.py build_ext bdist_wheel
+python setup.py build_ext bdist_wheel
 if [ $? -ne 0 ]; then exit 1; fi
 
 cd ../backend_out
 cp ../backend_tmp/dist/* .
+
+# Test installation
+pip3 install perceptilabs --find-links .
+if [ $? -ne 0 ]; then exit 1; fi
+python -c "import perceptilabs"
+if [ $? -ne 0 ]; then exit 1; fi

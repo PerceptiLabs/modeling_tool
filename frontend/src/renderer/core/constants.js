@@ -1,6 +1,6 @@
 const isDevelopMode = process.env.NODE_ENV !== 'production';
 
-const trainingElements  = ['TrainLoss', 'TrainOptimizer', 'TrainNormal', 'TrainReinforce', 'TrainGan'
+const trainingElements  = ['TrainLoss', 'TrainOptimizer', 'TrainNormal', 'TrainReinforce', 'TrainGan', 'TrainDetector'
   //'TrainGenetic',
   //'TrainDynamic'
 ];
@@ -15,6 +15,10 @@ const widthElement = 60;
 const workspaceGrid = 10;
 const pathSlash = process.platform === 'win32' ? '\\' : '/';
 
+const hideSidebarOnBreakpoint = 1280;
+const sidebarNavCoefficientScaleCalculateFromHeight = 920;
+const filePickerStorageKey = 'filePickerPathSource';
+
 export {
   isDevelopMode,
   trainingElements,
@@ -24,5 +28,8 @@ export {
   workspaceGrid,
   baseUrlCloud,
   baseUrlSite,
-  pathSlash
+  pathSlash,
+  hideSidebarOnBreakpoint,
+  sidebarNavCoefficientScaleCalculateFromHeight,
+  filePickerStorageKey,
 }

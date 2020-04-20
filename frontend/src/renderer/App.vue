@@ -1,28 +1,36 @@
 <template lang="pug">
   #app
     header-win.app-header(
-      v-if="platform === 'win32'"
+      v-if="platform === 'win32' || (showMenuBar && isWeb) "
       @app-closed="appClose"
       @app-minimized="appMinimize"
       @app-maximized="appMaximize"
     )
     header-mac.app-header(
-      v-if="platform === 'darwin' && showMacHeader"
+      v-if="platform === 'darwin' && showMacHeader && isElectron"
     )
-    header-linux.app-header(
-      v-if="platform === 'linux'"
-      @app-closed="appClose"
-      @app-minimized="appMinimize"
-      @app-maximized="appMaximize"
-    )
+      header-linux.app-header(
+        v-if="platform === 'linux' && isElectron"
+        @app-closed="appClose"
+        @app-minimized="appMinimize"
+        @app-maximized="appMaximize"
+      )
     router-view.app-page
-    update-popup
-    the-info-popup(v-if="isShowPopup")
+    update-popup(v-if="isElectron")
+    the-info-popup(v-if="showPopup")
     confirm-popup
 </template>
 
 <script>
-  import {ipcRenderer}  from 'electron'
+  import { isWeb, isElectron } from "@/core/helpers";
+  let ipcRenderer = null;
+  if(isElectron()) {
+    const electron = require('electron');
+    ipcRenderer = electron.ipcRenderer;
+
+  }
+  import Analytics from '@/core/analytics';
+
   import { mapMutations, mapActions } from 'vuex';
 
   import HeaderLinux    from '@/components/header/header-linux.vue';
@@ -45,37 +53,42 @@
       this.readUserInfo();
     },
     mounted() {
-      this.appReady();
-      this.updateOnlineStatus();
-      /*Menu*/
-      ipcRenderer.on('get-app-version', (event, data)=> this.SET_appVersion(data));
+      if(isWeb()) {
+        this.updateOnlineStatus();
+        this.$store.dispatch('mod_api/API_runServer', null, {root: true});
+      } else {
+        this.appReady();
+        this.updateOnlineStatus();
+        /*Menu*/
+        ipcRenderer.on('get-app-version', (event, data)=> this.SET_appVersion(data));
 
-      /*Auto update*/
-      ipcRenderer.on('checking-for-update', (event, updateInfo)=> this.SET_updateInfo(updateInfo));
-      ipcRenderer.on('update-available', (event, updateInfo)=> {
-        this.$nextTick(()=> {
-          this.SET_showPopupUpdates(true);
-          this.SET_updateInfo(updateInfo)
-        })
-      });
-      ipcRenderer.on('update-not-available', (event, update)=> {
-        if(this.showNotAvailable) {
-          this.SET_showPopupUpdates(true);
-          this.SET_updateStatus('not update')
-        }
-      });
-      ipcRenderer.on('update-downloading', (event, percent)=> this.SET_updateProgress(Math.round(percent)));
-      ipcRenderer.on('update-completed', (event, percent)=> this.SET_updateStatus('done'));
-      ipcRenderer.on('update-error', (event, error)=> {
-        this.SET_showPopupUpdates(false);
-        if(error) this.openErrorPopup(error);
-      });
+        /*Auto update*/
+        ipcRenderer.on('checking-for-update', (event, updateInfo)=> this.SET_updateInfo(updateInfo));
+        ipcRenderer.on('update-available', (event, updateInfo)=> {
+          this.$nextTick(()=> {
+            this.SET_showPopupUpdates(true);
+            this.SET_updateInfo(updateInfo)
+          })
+        });
+        ipcRenderer.on('update-not-available', (event, update)=> {
+          if(this.showNotAvailable) {
+            this.SET_showPopupUpdates(true);
+            this.SET_updateStatus('not update')
+          }
+        });
+        ipcRenderer.on('update-downloading', (event, percent)=> this.SET_updateProgress(Math.round(percent)));
+        ipcRenderer.on('update-completed', (event, percent)=> this.SET_updateStatus('done'));
+        ipcRenderer.on('update-error', (event, error)=> {
+          this.SET_showPopupUpdates(false);
+          if(error) this.openErrorPopup(error);
+        });
 
-      ipcRenderer.on('show-mac-header', (event, value)=> { this.showMacHeader = value });
-      ipcRenderer.on('info',            (event, data)=> { /*console.log(data); */});
-      ipcRenderer.on('show-restore-down-icon', (event, value)=> this.SET_appIsFullView(value));
+        ipcRenderer.on('show-mac-header', (event, value)=> { this.showMacHeader = value });
+        ipcRenderer.on('info',            (event, data)=> { /*console.log(data); */});
+        ipcRenderer.on('show-restore-down-icon', (event, value)=> this.SET_appIsFullView(value));
 
-      this.calcAppPath();
+        this.calcAppPath();
+      }
       this.checkLocalToken();
       this.$nextTick(()=> {
         //if(this.userId === 'Guest') this.trackerInitUser(this.userId);
@@ -89,7 +102,9 @@
     },
     data() {
       return {
-        showMacHeader: true
+        showMacHeader: true,
+        isWeb: isWeb(),
+        isElectron: isElectron(),
       }
     },
     computed: {
@@ -99,6 +114,9 @@
       showNotAvailable() {
         return this.$store.state.mod_autoUpdate.showNotAvailable
       },
+      // userToken() {
+      //   return this.$store.state.mod_user.userToken
+      // },
       userId() {
         return this.$store.getters['mod_user/GET_userID']
       },
@@ -112,18 +130,40 @@
       errorPopup() {
         return this.$store.state.globalView.globalPopup.showErrorPopup
       },
-      isShowPopup() {
-        return this.errorPopup.length || this.infoPopup.length
+      corePopup() {
+        return this.$store.state.globalView.globalPopup.coreNotFoundPopup
       },
+      showPopup() {
+        return this.errorPopup.length || this.infoPopup.length || this.corePopup;
+      },
+      showMenuBar() {
+        const GET_userIsLogin = this.$store.getters['mod_user/GET_userIsLogin']
+
+        if (GET_userIsLogin && ['home', 'app', 'projects'].includes(this.$route.name)) { 
+          return true; 
+        }
+
+        return false;
+      }
     },
     watch: {
       '$route': {
-        handler(to) {
-          this.sendPathToAnalist(to.fullPath)
+        handler(to, from) {
+          if(this.isElectron) {
+            this.sendPathToAnalist(to.fullPath);
+          }
         }
       },
-      userId() {
-        this.initUser()
+      userId(newVal) {
+        if(this.isWeb) {
+          Analytics.googleAnalytics.trackUserId(this.$store.getters['mod_user/GET_userID']);
+
+          this.$store.dispatch('mod_tracker/TRACK_initMixPanelUser', newVal);
+        }
+        if(this.isElectron) {
+          this.initUser()
+        }
+
       }
     },
     methods: {
@@ -168,17 +208,21 @@
       },
       sendPathToAnalist(path) {
         if(process.env.NODE_ENV === 'production') {
-          ipcRenderer.send('change-route', {path, id: this.userId})
+          if(this.isElectron) {
+            ipcRenderer.send('change-route', {path, id: this.userId})
+          }
         }
       },
       appReady() {
         const splash = document.getElementById('splashscreen');
         setTimeout(()=> {
-          ipcRenderer.send('app-ready');
+          if(this.isElectron) {
+            ipcRenderer.send('app-ready');
+          }
           splash.remove();
-          document.body.className = "";
+          document.body.classList.remove('show-splashscreen');
           this.trackerAppStart();
-        }, 2000)
+        }, this.isElectron ? 2000 : 1000)
       },
       calcAppPath() {
         let resPath = process.resourcesPath;
@@ -200,21 +244,28 @@
         let localUserToken = JSON.parse(localStorage.getItem('currentUser'));
         if(localUserToken) {
           this.setUserToken(localUserToken);
-          if(this.$router.history.current.name === 'login') {
+          if(['home', 'login', 'register'].includes(this.$router.history.current.name)) {
             this.$router.replace({name: 'projects'});
           }
+        } else {
+          this.$router.push({name: 'register'}).catch(err => {});
         }
-        else this.trackerInitUser(this.userId)
       },
       /*Header actions*/
       appClose() {
-        this.eventAppClose();
+        if(this.isElectron) {
+          this.eventAppClose();
+        }
       },
       appMinimize() {
-        this.eventAppMinimize();
+        if(this.isElectron) {
+          this.eventAppMinimize();
+        }
       },
       appMaximize() {
-        this.eventAppMaximize();
+        if(this.isElectron) {
+          this.eventAppMaximize();
+        }
       },
     },
   }

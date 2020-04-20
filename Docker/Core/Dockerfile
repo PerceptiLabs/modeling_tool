@@ -41,7 +41,7 @@ EXPOSE 5000
 
 ENTRYPOINT [ "/usr/bin/entrypoint.sh" ]
 
-CMD ["python3.6", "-u", "main.py"]
+CMD ["python3.6", "-u", "main.py", "-p=browser"]
 
 
 

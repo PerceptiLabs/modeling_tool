@@ -1,9 +1,8 @@
 .copyryght
-  //-img.copyryght_logo(src="../../../../static/img/perceptilabs-logo-splashscreen.svg" alt="PerceptiLabs logo")
-  img.copyryght_logo(src="../../../../static/img/PerceptiLabs_Logo_vert-web-dark_beta-02.svg" alt="PerceptiLabs logo")
-
+  img(v-if="isWeb").copyryght_logo(src="../../../../static/img/perceptilabs-logo-splashscreen.svg" alt="PerceptiLabs logo")
+  img(v-if="!isWeb").copyryght_logo(src="../../../../static/img/PerceptiLabs_Logo_vert-web-dark_beta-02.svg" alt="PerceptiLabs logo")
   .copyryght_text
-    p Version: {{appVersion}}
+    p(v-if="!isWeb") Version: {{appVersion}}
     p Copyright ©2019
 
 .form_holder.text-center
@@ -14,6 +13,6 @@
     span Continue
 
   button.btn.btn--outline-blue.projects-sidebar_link(type="button"
-    @click="openNetwork"
+    @click="loadFolderPath"
   )
-    span Open model
+    span Load model

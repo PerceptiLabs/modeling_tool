@@ -1,0 +1,829 @@
+{% macro run_normal(graph, layer_name, output_layer, target_layer, n_epochs, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory) %}
+        self._status = 'initializing'
+
+        self._grid_size = 2
+        self._num_class = 108
+        self._num_box = 2
+        alpha = 0.1
+        threshold = 0.2
+        iou_threshold = 0.5
+        
+        w_img = 100 
+        h_img = 100
+
+        self._lambdacoord = 5.0
+        self._lambdanoobj = 0.5
+        
+        # we need classes
+        self._classes = ['branche_maxi', 'valser_vivabirne', 'fuse_peach','ovomaltine_kekse', 'evian', 'powerbar_proteinplusschoko','vivitz_classiczitrone', 'torino', 'volvic_pinapple',
+       'volvic_teeminze', 'rivella_rot', 'fuse_lemon', 'granini_orange','corny_schoko', 'berger', 'pepsi_max', 'fuse_lemon_dose_33','haribo_goldbaerensauer',
+       'stimorol_wildcherry_riegel_14_1_57060330', 'bifi_roll','caferoyal_classicmacchiato', 'ramseier_schorle','tiki_himbeerbrause_dose_33_1_', 'panettone', 'vivitz_gruentee',
+       'jlbrichard_gauffrechoko', 'berger_brunsli','airwaves_menthoneucalyptus_riegel_14_1_50173167','zweifel_paprika', 'redbull', 'fuse_peach_dose_33',
+       'balisto_muesli', 'coke_zero_flasche_50', 'sinalco', 'coke','darwida_chocaulait', 'jacklinks_beefjerkyorginal','fini_jellykisses_packung_80_1_8410525116704', 'kitkat',
+       'zweifel_salz', 'skittles_sour_riegel_51_1_0000000000004','valser_still', 'zweifel_saltedpeanuts', 'tiki_himbeer_brause','wasser_???', 'milka_tender', 'oreo',
+       'milka_oreo_riegel_37_1_7622210704740','fini_galaxymix_packung_100_1_8410525150364','berger_mailaenderli', 'fanta', 'stimorol_spearmint_riegel_14_1_',
+       'berger_???', 'henniez_gruen', 'sprite', 'bueno','lorenz_studentenfutter', 'kinder_delice', 'henniez_rot','jlbrichard_gauffre', 'berger_schoggitoertli', 'balisto_yoberry',
+       'malburner_partysticks', 'snickers_weiß', 'zweifel_graneochilli','sinalco_orange', 'berger_bruensli', 'b_tarteaupomme','caprisun_multivitamin', 'erle', 'momo_icetea', 'knoppers_riegel',
+       'coke_light_flasche_50', 'toffifee', 'redbull_light', 'twix','henniez_blau', 'mezzomix', 'maltesers_teasers','comella_schokodrink', 'comella_schokodrink_flasche_50',
+       'ramseier_jusdepomme_tetrapak_33', 'fuse_blackicetea','kagi_specialedition', 'maltesers', 'valser_classic','berger_nusstoertli', 'schweppes_citrus', 'mnms_gelb',
+       'lorenz_nicnacs', 'kagi', 'c+swiss_dosenabisicetea','vitaminwell_reload', 'berger_spitzbueb', 'volvic_pink','ramseier_jusdepomme', 'ragusa',
+       'stimorol_spearmint_riegel_14_1_0000000000005','skittles_sour_riegel_51_1_', 'ramseier_orange_tetrapak_33','7days_croissantschoko_packung_80_1_0000000000003', 'bounty',
+       'berger_vogelnestli', 'schweppes_bitterlemon','milka_peanutbutter', 'lindt_nocciolate', 'darwida_sandwich','snickers']
+
+        self._x = tf.placeholder(tf.float32, [None,self._grid_size, self._grid_size, self._num_box])  
+        self._y = tf.placeholder(tf.float32, [None,self._grid_size, self._grid_size, self._num_box])
+        self._w = tf.placeholder(tf.float32, [None,self._grid_size, self._grid_size, self._num_box])
+        self._h = tf.placeholder(tf.float32, [None,self._grid_size, self._grid_size, self._num_box])
+        self._C = tf.placeholder(tf.float32, [None,self._grid_size, self._grid_size, self._num_box])
+        self._p = tf.placeholder(tf.float32, [None,self._grid_size, self._grid_size, self._num_class])
+        self._obj = tf.placeholder(tf.float32, [None,self._grid_size, self._grid_size, self._num_box])
+        self._objI = tf.placeholder(tf.float32, [None,self._grid_size, self._grid_size])
+        self._noobj = tf.placeholder(tf.float32, [None,self._grid_size, self._grid_size, self._num_box])
+
+        output_layer_id = '{{output_layer}}'
+        target_layer_id = '{{target_layer}}'
+        input_data_nodes = graph.get_direct_data_nodes(output_layer_id)
+        label_data_nodes = graph.get_direct_data_nodes(target_layer_id)
+
+        assert len(input_data_nodes) == 1
+        assert len(label_data_nodes) == 1
+        input_data_node = input_data_nodes[0]
+        label_data_node = label_data_nodes[0]
+
+        self._trn_sz_tot = input_data_node.layer.size_training
+        self._val_sz_tot = input_data_node.layer.size_validation
+        self._tst_sz_tot = input_data_node.layer.size_testing
+
+        # Make training set
+        dataset_trn = tf.data.Dataset.zip((
+            tf.data.Dataset.from_generator(
+                input_data_node.layer_instance.make_generator_training,
+                output_shapes=input_data_node.layer_instance.sample.shape,
+                output_types=np.float32                
+            ),
+            tf.data.Dataset.from_generator(
+                label_data_node.layer_instance.make_generator_training,
+                output_shapes=label_data_node.layer_instance.sample.shape,
+                output_types=np.float32
+            )
+        ))
+
+        # Make validation set
+        dataset_val = tf.data.Dataset.zip((
+            tf.data.Dataset.from_generator(
+                input_data_node.layer_instance.make_generator_validation,
+                output_shapes=input_data_node.layer_instance.sample.shape,
+                output_types=np.float32                
+            ),
+            tf.data.Dataset.from_generator(
+                label_data_node.layer_instance.make_generator_validation,
+                output_shapes=label_data_node.layer_instance.sample.shape,
+                output_types=np.float32
+            )
+        ))
+
+        # Make testing set
+        dataset_tst = tf.data.Dataset.zip((
+            tf.data.Dataset.from_generator(
+                input_data_node.layer_instance.make_generator_testing,
+                output_shapes=input_data_node.layer_instance.sample.shape,
+                output_types=np.float32                
+            ),
+            tf.data.Dataset.from_generator(
+                label_data_node.layer_instance.make_generator_testing,
+                output_shapes=label_data_node.layer_instance.sample.shape,
+                output_types=np.float32
+            )
+        ))
+
+        dataset_trn = dataset_trn.batch(self._batch_size)
+        dataset_val = dataset_val.batch(self._batch_size)
+        dataset_tst = dataset_tst.batch(1)                
+
+        # Make initializers
+        iterator = tf.data.Iterator.from_structure(dataset_trn.output_types, dataset_trn.output_shapes)
+        trn_init = iterator.make_initializer(dataset_trn)
+        val_init = iterator.make_initializer(dataset_val)
+        tst_init = iterator.make_initializer(dataset_tst)        
+        input_tensor, label_tensor = iterator.get_next()
+
+        # Build the TensorFlow graph # TODO: perhaps this part can be delegated to the graph?
+
+        def build_graph(input_tensor, label_tensor):
+            layer_output_tensors = {
+                input_data_node.layer_id: input_tensor,
+                label_data_node.layer_id: label_tensor
+            }
+
+            for node in graph.inner_nodes:
+                args = []
+                for input_node in graph.get_input_nodes(node):
+                    args.append(layer_output_tensors[input_node.layer_id])
+                    y = node.layer_instance(*args)
+                layer_output_tensors[node.layer_id] = y
+
+
+            return layer_output_tensors
+
+        layer_output_tensors = build_graph(input_tensor, label_tensor)
+        output_tensor = layer_output_tensors[output_layer_id]
+        target_tensor = layer_output_tensors[target_layer_id]
+        
+        # Create an exportable version of the TensorFlow graph
+        self._input_tensor_export = tf.placeholder(shape=dataset_trn.output_shapes[0], dtype=dataset_trn.output_types[0])
+        self._output_tensor_export = build_graph(
+            self._input_tensor_export,
+            tf.placeholder(shape=dataset_trn.output_shapes[1], dtype=dataset_trn.output_types[1])
+        )[output_layer_id]
+
+        # loss function here
+
+        # target reshaping
+        def interpreting_target_tensor(_batch_size, _grid_size, _num_box, _num_class, input_tensor, target_tensor):
+            X_=[]; Y_=[]; W_=[]; H_=[]; C_=[]; P_=[]; obj_=[]; objI_=[]; noobj_=[]
+            for i in range(_batch_size):
+                label = target_tensor[i,:]
+                image = input_tensor[i,:]
+                shape = image.get_shape().as_list()
+                x = np.zeros([_grid_size,_grid_size,_num_box]).tolist(); y = np.zeros([_grid_size,_grid_size,_num_box]).tolist()
+                w = np.zeros([_grid_size,_grid_size,_num_box]).tolist(); h = np.zeros([_grid_size,_grid_size,_num_box]).tolist()
+                C = np.zeros([_grid_size,_grid_size,_num_box]).tolist(); p = np.zeros([_grid_size,_grid_size,_num_class]).tolist()
+                obj = np.zeros([_grid_size,_grid_size,_num_box]).tolist(); objI = np.zeros([_grid_size,_grid_size]).tolist()
+                noobj = np.zeros([_grid_size,_grid_size,_num_box]).tolist()
+               
+                for m,j in itertools.product(range(0,_grid_size),range(0,_grid_size)):
+                    if label[m,j,0,0] != 9999.0:
+                        index=0
+                        if label[m,j,1,0] == 9999.0:
+                            l = 1
+                        else:
+                            l = 2
+                        while(index < l and index< _num_box):
+                            x[m][j][index] = (label[m,j,index,0]/shape[0])*_grid_size - m
+                            y[m][j][index] = (label[m][j][index][1]/shape[1])*_grid_size - j
+                            w[m][j][index] = tf.sqrt(label[m][j][index][2])/shape[0]*_grid_size
+                            h[m][j][index] = tf.sqrt(label[m][j][index][3])/shape[1]
+                            C[m][j][index] = 1.0
+                            #p[m][j] = [1.0/l if label[i,j,index,4] == t else 0 for t in range(_num_class)]
+                            obj[m][j][index] = 1.0
+                            objI[m][j] = 1.0
+                            noobj[m][j][ index]=0.0
+                            index=index+1
+                
+                X_.append(x); Y_.append(y); W_.append(w); H_.append(h); C_.append(C)
+                P_.append(p); obj_.append(obj); objI_.append(objI); noobj_.append(noobj)
+                
+            X_=tf.convert_to_tensor(X_)
+            Y_=tf.convert_to_tensor(Y_) 
+            W_=tf.convert_to_tensor(W_) 
+            H_=tf.convert_to_tensor(H_)
+            C_=tf.convert_to_tensor(C_)
+            P_=tf.convert_to_tensor(P_)
+            obj_=tf.convert_to_tensor(obj_)
+            objI_=tf.convert_to_tensor(objI_)
+            noobj_= tf.convert_to_tensor(noobj_)
+            return X_, Y_, W_, H_, C_, P_, obj_, objI_, noobj_
+
+        self._x, self._y, self._w, self._h, self._C, self._p, self._obj, self._objI, self._noobj = interpreting_target_tensor(self._batch_size, self._grid_size, self._num_box, self._num_class, input_tensor, target_tensor)
+
+        
+        # output reshaping
+        class_probs = tf.reshape(output_tensor[:,0:self._num_class*self._grid_size*self._grid_size], (self._batch_size, self._grid_size, self._grid_size, self._num_class))
+        scales = tf.reshape(output_tensor[:,self._num_class*self._grid_size*self._grid_size:self._num_class*self._grid_size*self._grid_size+self._grid_size*self._grid_size*self._num_box], (self._batch_size, self._grid_size, self._grid_size, self._num_box))
+        boxes = tf.reshape(output_tensor[:,self._grid_size*self._grid_size*(self._num_class+self._num_box):], (self._batch_size, self._grid_size, self._grid_size, self._num_box, 4))
+
+        boxes0 = boxes[:,:, :, :, 0]
+        boxes1 = boxes[:,:, :, :, 1]
+        boxes2 = boxes[:,:, :, :, 2]
+        boxes3 = boxes[:,:, :, :, 3]
+
+        # loss funtion
+        subX = tf.subtract(boxes0, self._x)
+        subY = tf.subtract(boxes1, self._y)
+        subW = tf.subtract(tf.sqrt(tf.abs(boxes2)), tf.sqrt(self._w))
+        subH = tf.subtract(tf.sqrt(tf.abs(boxes3)), tf.sqrt(self._h))
+        subC = tf.subtract(scales, self._C)
+        subP = tf.subtract(class_probs, self._p)
+        lossX=tf.multiply(self._lambdacoord,tf.reduce_sum(tf.multiply(self._obj,tf.multiply(subX, subX)),axis=[1,2,3]))
+        lossY=tf.multiply(self._lambdacoord, tf.reduce_sum(tf.multiply(self._obj, tf.multiply(subY, subY)),axis=[1,2,3]))
+        lossW=tf.multiply(self._lambdacoord, tf.reduce_sum(tf.multiply(self._obj, tf.multiply(subW, subW)),axis=[1,2,3]))
+        lossH=tf.multiply(self._lambdacoord, tf.reduce_sum(tf.multiply(self._obj, tf.multiply(subH, subH)),axis=[1,2,3]))
+        lossCObj=tf.reduce_sum(tf.multiply(self._obj, tf.multiply(subC, subC)),axis=[1,2,3])
+        lossCNobj=tf.multiply(self._lambdanoobj, tf.reduce_sum(tf.multiply(self._noobj, tf.multiply(subC, subC)),axis=[1,2,3]))
+        lossP=tf.reduce_sum(tf.multiply(self._objI,tf.reduce_sum(tf.multiply(subP, subP), axis=3)) ,axis=[1,2])
+        loss = tf.add_n([lossX,lossY,lossW,lossH,lossCObj,lossCNobj,lossP])
+        classification_loss = tf.add_n([lossCNobj, lossCObj, lossP])
+        bbox_loss = tf.add_n([lossX,lossY,lossW,lossH])
+        classification_loss_tensor = tf.reduce_mean(classification_loss)
+        bbox_loss_tensor = tf.reduce_mean(bbox_loss)
+        loss_tensor = tf.reduce_mean(loss)
+
+        #bounding boxes here
+
+        def get_bounding_boxes(batch_size, _num_box, _num_class, threshold, iou_threshold, w_img, h_img, _grid_size, images, outputs):
+            bbox_images = []
+            confidences = []
+            predicted_classes = []
+            
+            for i in range(batch_size):
+                output = outputs[i,:]
+                image = images[i,:]
+                
+                probs = np.zeros((self._grid_size, self._grid_size, self._num_box, self._num_class), dtype = np.float32).tolist()
+                class_probs = tf.reshape(output[0:self._grid_size*self._grid_size*self._num_class], (self._grid_size, self._grid_size, self._num_class))
+                scales = tf.reshape(output[self._grid_size*self._grid_size*self._num_class : self._grid_size*self._grid_size*self._num_class + self._grid_size*self._grid_size*self._num_box], (self._grid_size, self._grid_size, self._num_box))
+                boxes_ = tf.reshape(output[self._grid_size*self._grid_size*self._num_class + self._grid_size*self._grid_size*self._num_box : ], (self._grid_size, self._grid_size, self._num_box, 4))
+                offset = tf.transpose(tf.reshape(np.array([np.arange(self._grid_size, dtype = np.float32)]*2*self._grid_size), (self._num_box, self._grid_size, self._grid_size)), (1, 2, 0))
+                
+                new_boxes = np.zeros((boxes_.get_shape())).tolist()
+
+                new_boxes[:][:][:][0] = tf.add(boxes_[:, :, :, 0], offset)
+                new_boxes[:][:][:][1] = tf.add(boxes_[:, :, :, 1],tf.transpose(offset, (1, 0, 2)))
+                new_boxes[:][:][:][:2] = new_boxes[:][:][:][:2] 
+                for i1 in new_boxes:
+                    for i2 in i1:
+                        for i3 in i2:
+                            i3[0] = i3[0]/float(self._grid_size)
+                            i3[1] = i3[1]/float(self._grid_size)
+                new_boxes[:][:][:][2] = tf.multiply(new_boxes[:][:][:][2], new_boxes[:][:][:][2])
+                new_boxes[:][:][:][3] = tf.multiply(new_boxes[:][:][:][3], new_boxes[:][:][:][3])
+
+
+                new_boxes[:][:][:][0] = tf.scalar_mul(w_img, tf.cast(new_boxes[:][:][:][0],dtype = tf.float32))
+                new_boxes[:][:][:][1] = tf.scalar_mul(h_img, tf.cast(new_boxes[:][:][:][1],dtype = tf.float32))
+                new_boxes[:][:][:][2]  = tf.scalar_mul(w_img, tf.cast(new_boxes[:][:][:][2],dtype = tf.float32))
+                new_boxes[:][:][:][3] = tf.scalar_mul(h_img, tf.cast(new_boxes[:][:][:][3],dtype = tf.float32))
+
+                for i3 in range(_grid_size):
+                    for i4 in range(_grid_size):
+                        for i1 in range(_num_box):
+                            for i2 in range(_num_class):
+                                probs[i3][i4][i1][i2] = tf.multiply(class_probs[i3, i4, i2], scales[i3, i4, i1])
+
+                probs = np.array(probs)
+                filter_mat_probs  = np.zeros(probs.shape).tolist()
+                for i3 in range(_grid_size):
+                    for i4 in range(_grid_size):
+                        for i1 in range(_num_box):
+                            for i2 in range(_num_class):
+                                filter_mat_probs[i3][i4][i1][i2] = tf.greater(filter_mat_probs[i3][i4][i1][i2], threshold )
+                
+
+                filter_mat_boxes = np.nonzero(filter_mat_probs)
+                boxes_filtered = boxes_[filter_mat_boxes[0], filter_mat_boxes[1], filter_mat_boxes[2]]
+                probs_filtered = probs[filter_mat_probs]
+                classes_num_filtered = np.argmax(filter_mat_probs, axis=3)[
+                    filter_mat_boxes[0], filter_mat_boxes[1], filter_mat_boxes[2]]
+
+                argsort = np.array(np.argsort(probs_filtered))[::-1]
+                boxes_filtered = boxes_filtered[argsort]
+                probs_filtered = probs_filtered[argsort]
+                classes_num_filtered = classes_num_filtered[argsort]
+                
+                def iou(box1, box2):
+                    tb = min(box1[0] + 0.5 * box1[2], box2[0] + 0.5 * box2[2]) - max(box1[0] - 0.5 * box1[2],
+                                                                                    box2[0] - 0.5 * box2[2])
+                    lr = min(box1[1] + 0.5 * box1[3], box2[1] + 0.5 * box2[3]) - max(box1[1] - 0.5 * box1[3],
+                                                                                    box2[1] - 0.5 * box2[3])
+                    if tb < 0 or lr < 0:
+                        intersection = 0
+                    else:
+                        intersection = tb * lr
+                    return intersection / (box1[2] * box1[3] + box2[2] * box2[3] - intersection)
+                
+                for i in range(len(boxes_filtered)):
+                    if probs_filtered[i] == 0: continue
+                    for j in range(i + 1, len(boxes_filtered)):
+                        if self.iou(boxes_filtered[i], boxes_filtered[j]) > iou_threshold:
+                            probs_filtered[j] = 0.0
+
+                filter_iou = np.array(probs_filtered > 0.0, dtype='bool')
+                boxes_filtered = boxes_filtered[filter_iou]
+                probs_filtered = probs_filtered[filter_iou]
+                classes_num_filtered = classes_num_filtered[filter_iou]
+
+                result = []
+                for i in range(len(boxes_filtered)):
+                    result.append([self._classes[classes_num_filtered[i]], boxes_filtered[i][0], boxes_filtered[i][1],
+                                boxes_filtered[i][2], boxes_filtered[i][3], probs_filtered[i]])
+
+    
+                for i in range(len(result)):
+                    x = int(result[i][1])
+                    y = int(result[i][2])
+                    w = int(result[i][3]) // 2
+                    h = int(result[i][4]) // 2
+                    
+                    image_ = cv2.rectangle(image, (x - w, y - h), (x + w, y + h), (0, 255, 0), 2)
+                    image_ = cv2.rectangle(image_, (x - w, y - h - 20), (x + w, y - h), (125, 125, 125), -1)
+                    iamge_ = cv2.putText(image_, result[i][0] + ' : %.2f' % result[i][5], (x - w + 5, y - h - 7),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 1)
+                
+                bbox_images.append(image_)
+                confidences.append(result[i][5])
+                predicted_classes.append(result[0])
+
+            return bbox_images, confidences, predicted_classes    
+        
+        
+        #bbox_images, confidences, predicted_classes = get_bounding_boxes(self._batch_size, self._num_box, self._num_class, threshold, iou_threshold, w_img, h_img, self._grid_size, input_tensor, output_tensor)
+
+        ## testing with trivial outputs
+        bbox_images =  input_tensor # tf.convert_to_tensor( bbox_images )
+        confidences =  tf.zeros([self._batch_size,10])  #np.ndarray(confidences)
+        
+        '''
+        target_classes = []
+        for i in target_tensor:
+            target_classes[i] = i[:,:,:,4].ravel()
+            target_classes[i] = target_classes[i][~np.isnan(b)]
+        # classification accuracy
+        self._accuracies = np.ndarray([len( set(target_classes[i]) and set(classes[i]) )/ len( set(target_classes[i]) ) for i in range(self._batch_size)])
+        accuracy_tensor = tf.reduce_mean(self._accuracies)
+        '''
+        accuracy_tensor = tf.Variable(0.7, dtype = tf.float32)
+
+        #training
+        global_step = None
+        {% filter remove_lspaces(8) %}        
+            {% if optimizer == 'tf.compat.v1.train.GradientDescentOptimizer' %}
+                optimizer = tf.compat.v1.train.GradientDescentOptimizer(learning_rate={{learning_rate}})
+            {% elif optimizer == 'tf.compat.v1.train.MomentumOptimizer' %}
+                global_step = tf.Variable(0)
+                learning_rate_momentum = tf.train.exponential_decay(
+                    learning_rate={{learning_rate}},
+                    global_step=global_step,
+                    decay_steps={{decay_steps}},
+                    decay_rate={{decay_rate}},
+                    staircase=True
+                )
+                optimizer = tf.train.MomentumOptimizer(learning_rate=learning_rate_momentum, momentum={{momentum}})
+            {% elif optimizer == 'tf.compat.v1.train.AdamOptimizer' %}
+                optimizer = tf.train.AdamOptimizer(learning_rate={{learning_rate}}, beta1={{beta1}}, beta2={{beta2}})
+            {% elif optimizer == 'tf.compat.v1.train.AdagradOptimizer' %}
+                optimizer = tf.compat.v1.train.AdagradOptimizer(learning_rate={{learning_rate}})            
+            {% elif optimizer == 'tf.compat.v1.train.RmsPropOptimizer' %}
+                optimizer = tf.compat.v1.train.RMSPropOptimizer(learning_rate={{learning_rate}})                        
+            {% else %}
+                raise NotImplementedError('Optimizer {{optimizer}} not supported yet')
+            {% endif %}
+        {% endfilter %}
+
+        layer_weight_tensors = {}
+        layer_bias_tensors = {}        
+        layer_gradient_tensors = {}
+        for node in graph.inner_nodes:
+            if not isinstance(node.layer, Tf1xLayer): # In case of pure custom layers...
+                continue
+            
+            layer_weight_tensors[node.layer_id] = node.layer.weights
+            layer_bias_tensors[node.layer_id] = node.layer.biases            
+            
+            if len(node.layer.trainable_variables) > 0:
+                gradients = {}
+                for name, tensor in node.layer.trainable_variables.items():
+                    grad_tensor = tf.gradients(loss_tensor, tensor)
+                    if any(x is None for x in grad_tensor):
+                        grad_tensor = tf.constant(0)
+                    gradients[name] = grad_tensor
+                layer_gradient_tensors[node.layer_id] = gradients
+                # self._internal_layer_gradients[node.layer_id] = {name: [] for name in node.layer.trainable_variables.keys()} # Initialize
+                # self._layer_gradients = self._internal_layer_gradients.copy()
+
+        trainable_vars = tf.trainable_variables() # TODO: safer to get from nodes. Especially with split graph in mind.
+        grads = tf.gradients(loss_tensor, trainable_vars)
+        update_weights = optimizer.apply_gradients(zip(grads, trainable_vars), global_step=global_step)        
+
+        config = tf.ConfigProto()
+        config.gpu_options.allow_growth = True
+        sess = tf.Session(config=config)
+        self._sess = sess
+
+        trackable_variables = {}
+        trackable_variables.update({x.name: x for x in tf.trainable_variables() if isinstance(x, Trackable)})
+        trackable_variables.update({k: v for k, v in locals().items() if isinstance(v, Trackable) and not isinstance(v, tf.python.data.ops.iterator_ops.Iterator)}) # TODO: Iterators based on 'stateful functions' cannot be serialized.
+        self._checkpoint = tf.train.Checkpoint(**trackable_variables)
+        sess.run(tf.global_variables_initializer())
+        
+        {% filter remove_lspaces(8) %}
+            {% if export_directory is not none %}        
+                path = tf.train.latest_checkpoint('{{export_directory}}')
+                status = self._checkpoint.restore(path)
+                status.assert_consumed().run_restore_ops(session=self._sess)
+            {% endif %}
+        {% endfilter %}                    
+        
+        def train_step():
+            if not self._headless:
+                _,self._bbox_images, self._confidences, self._classification_loss_training, self._bbox_loss_training, self._loss_training, self._accuracy_training, \
+                    self._layer_outputs, self._layer_weights, self._layer_biases, \
+                    self._layer_gradients \
+                    = sess.run([
+                        update_weights, bbox_images, confidences, classification_loss_tensor, bbox_loss_tensor, loss_tensor, accuracy_tensor,
+                        layer_output_tensors, layer_weight_tensors, layer_bias_tensors, layer_gradient_tensors
+                    ])
+            else:
+                _, self._classification_loss_training, self._bbox_loss_training, self._loss_training, self._accuracy_training, \
+                    = sess.run([
+                        update_weights, classification_loss_tensor, bbox_loss_tensor, loss_tensor, accuracy_tensor
+                    ])
+            print(self._confidences.shape)
+        def validation_step():
+            if not self._headless:
+                self._bbox_images, self._confidences, self._classification_loss_validation, self._bbox_loss_validation, self._loss_validation, self._accuracy_validation, \
+                    self._layer_outputs, self._layer_weights, self._layer_biases, \
+                    self._layer_gradients \
+                    = sess.run([
+                        bbox_images, confidences, classification_loss_tensor, bbox_loss_tensor, loss_tensor, accuracy_tensor,
+                        layer_output_tensors, layer_weight_tensors, layer_bias_tensors, layer_gradient_tensors
+                    ])
+            else:
+                self._classification_loss_validation, self._bbox_loss_validation, self._loss_validation, self._accuracy_validation, \
+                    = sess.run([
+                        classification_loss_tensor, bbox_loss_tensor, loss_tensor, accuracy_tensor
+                    ])
+
+            
+        def test_step():
+            self._bbox_images, self._confidences, self._classification_loss_testing, self._bbox_loss_testing, self._loss_testing, self._accuracy_testing, \
+                self._layer_outputs, self._layer_weights, self._layer_gradients \
+                = sess.run([
+                    bbox_images, confidences, classification_loss_tensor, bbox_loss_tensor, loss_tensor, accuracy_tensor,
+                    layer_output_tensors, layer_weight_tensors, layer_gradient_tensors
+                ])
+            #accuracy_list.append(acc)
+            #loss_list.append(loss)
+
+        self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
+
+        log.info("Entering training loop")
+        
+        # Training loop
+        self._epoch = 0
+        print(self._epoch)
+        while self._epoch < self._n_epochs and not self._stopped:
+            t0 = time.perf_counter()
+            self._training_iteration = 0
+            self._validation_iteration = 0
+            self._status = 'training'
+            sess.run(trn_init)            
+            try:
+                while not self._stopped:
+                    train_step()
+                    yield YieldLevel.SNAPSHOT
+                    self._training_iteration += 1
+            except tf.errors.OutOfRangeError:
+                pass
+
+            self._status = 'validation'
+            sess.run(val_init)            
+            try:
+                while not self._stopped:
+                    validation_step()
+                    yield YieldLevel.SNAPSHOT                    
+                    self._validation_iteration += 1
+            except tf.errors.OutOfRangeError:
+                pass
+            log.info(
+                f"Finished epoch {self._epoch+1}/{self._n_epochs} - "
+                f"loss training, validation: {self.loss_training:.6f}, {self.loss_validation:.6f} - "
+                f"acc. training, validation: {self.accuracy_training:.6f}, {self.accuracy_validation:.6f}"
+            )
+            log.info(f"Epoch duration: {round(time.perf_counter() - t0, 3)} s")            
+            self._epoch += 1
+
+        self._variables = {k: v for k, v in locals().items() if can_serialize(v)}            
+        yield YieldLevel.DEFAULT            
+        
+        # Test loop
+        self._testing_iteration = 0
+        self._status = 'testing'
+        sess.run(tst_init)                                
+        try:
+            while not self._stopped:
+                test_step()
+                yield YieldLevel.SNAPSHOT
+                self._testing_iteration += 1
+        except tf.errors.OutOfRangeError:
+            pass
+
+        self._status = 'finished'
+        self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
+        yield YieldLevel.DEFAULT
+{% endmacro %}
+
+
+################################################### Main #####################################################
+{% macro layer_tf1x_object_detection(layer_name, output_layer, target_layer, n_epochs, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory) %}
+import itertools
+import cv2
+class {{layer_name}}(ClassificationLayer):
+    def __init__(self):
+        self._n_epochs = {{n_epochs}}
+        self._batch_size = 10 # TODO: {{batch_size}}?
+
+        self._stopped = False
+        self._paused = False
+        self._headless = False
+        self._status = 'created'
+        
+        self._loss_training = 0.0
+        self._loss_validation = 0.0
+        self._loss_testing = 0.0      
+
+        self._bbox_images = 0.0
+        self._confidences = 0.0
+        self._accuracy_training = 0.0
+        self._accuracy_validation = 0.0
+        self._accuracy_testing = 0.0      
+        
+        self._variables = {}
+        self._layer_outputs = {}
+        self._layer_weights = {}
+        self._layer_biases = {}        
+        self._layer_gradients = {}
+
+        self._training_iteration = 0
+        self._validation_iteration = 0
+        self._testing_iteration = 0
+
+        self._trn_sz_tot = 0
+        self._val_sz_tot = 0
+        self._tst_sz_tot = 0
+
+        self._checkpoint = None
+        
+    def run(self, graph: Graph):
+        """Called as the main entry point for training. Responsible for training the model.
+
+        Args:
+            graph: A PerceptiLabs Graph object containing references to all layers objects included in the model produced by this training layer.
+        """   
+        {% if not distributed -%}
+            {{ run_normal(graph, layer_name, output_layer, target_layer, n_epochs, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory) }}
+        {% endif %}            
+
+    def on_export(self, path: str, mode: str) -> None:
+        """Called when the export or save button is clicked in the frontend.
+        It is up to the implementing layer to save the model to disk.
+        
+        Args:
+            path: the directory where the exported model will be stored.
+            mode: how to export the model. Made available to frontend via 'export_modes' property."""
+
+        log.debug(f"Export called. Project path = {path}, mode = {mode}")
+        pb_path = os.path.join(path, '1')
+        
+        # Export non-compressed model
+        if mode in ['TFModel', 'TFModel+checkpoint']:
+            tf.compat.v1.saved_model.simple_save(self._sess, pb_path, inputs={'input': self._input_tensor_export}, outputs={'output': self._output_tensor_export})
+
+        # Export compressed model
+        if mode in ['TFLite', 'TFLite+checkpoint']:
+            converter = tf.lite.TFLiteConverter.from_session(self._sess, [self._input_tensor_export], [self._output_tensor_export])
+            converter.post_training_quantize = True
+            tflite_model = converter.convert()
+            open(pb_path, "wb").write(tflite_model)
+
+        # Export checkpoint
+        if mode in ['TFModel+checkpoint', 'TFLite+checkpoint']:
+            {% filter remove_lspaces(8) %}
+                {% if distributed %}
+                    self._saver.save(self._sess, os.path.join(path, 'model.ckpt'), global_step=0)
+                {% else %}
+                    self._checkpoint.save(file_prefix=os.path.join(path, 'model.ckpt'), session=self._sess)
+                {% endif %}
+            {% endfilter %}
+                
+    def on_stop(self) -> None:
+        """Called when the save model button is clicked in the frontend. 
+        It is up to the implementing layer to save the model to disk."""
+        self._stopped = True
+
+    def on_headless_activate(self) -> None:
+        """"Called when the statistics shown in statistics window are not needed.
+        Purose is to speed up the iteration speed significantly."""
+        self._headless = True
+
+        self._layer_outputs = {} 
+        self._layer_weights = {}
+        self._layer_biases = {}
+        self._layer_gradients = {}
+
+    def on_headless_deactivate(self) -> None:
+        """"Called when the statistics shown in statistics window are needed.
+        May slow down the iteration speed of the training."""
+        import time
+        log.info(f"Set to headless_off at time {time.time()}")
+        self._headless = False
+
+    @property
+    def export_modes(self) -> List[str]:
+        """Returns the possible modes of exporting a model."""        
+        return [
+            'TFModel',
+            'TFLite'
+            'TFModel+checkpoint',
+            'TFLite+checkpoint',            
+        ]
+        
+    @property
+    def is_paused(self) -> None:
+        """Returns true when the training is paused."""        
+        return self._paused
+
+    @property
+    def batch_size(self):
+        """ Size of the current training batch """        
+        return self._batch_size
+
+    @property
+    def status(self):
+        """Called when the pause button is clicked in the frontend. It is up to the implementing layer to pause its execution."""        
+        return self._status
+    
+    @property
+    def epoch(self):
+        """The current epoch"""        
+        return self._epoch
+
+    @property
+    def variables(self):
+        """Any variables belonging to this layer that should be rendered in the frontend.
+        
+        Returns:
+            A dictionary with tensor names for keys and picklable for values.
+        """
+        return self._variables.copy()        
+
+    @property
+    def sample(self) -> np.ndarray:
+        """Returns a single data sample"""        
+        return np.empty(())
+
+    @property
+    def size_training(self) -> int:
+        """Returns the size of the training dataset"""                                    
+        return self._trn_sz_tot
+
+    @property
+    def size_validation(self) -> int:
+        """Returns the size of the validation dataset"""                                            
+        return self._val_sz_tot
+
+    @property
+    def size_testing(self) -> int:
+        """Returns the size of the testing dataset"""
+        return self._tst_sz_tot
+
+    def make_generator_training(self) -> Generator[np.ndarray, None, None]:
+        """Returns a generator yielding single samples of training data. In the case of a training layer, this typically yields the model output."""        
+        # Simply call sess.run on the output & target tensors :)  #TODO: how to make generators generic? We have two datasets here, but not all datasets will be labeled. Distinguish between supervised/unsupervised data layers and instead REQUIRE pairs of data layers for supervised?
+        yield from []
+        
+    def make_generator_validation(self) -> Generator[np.ndarray, None, None]:
+        """Returns a generator yielding single samples of validation data. In the case of a training layer, this typically yields the model output."""                
+        yield from []
+        
+    def make_generator_testing(self) -> Generator[np.ndarray, None, None]:
+        """Returns a generator yielding single samples of testing data. In the case of a training layer, this typically yields the model output."""                        
+        yield from []
+
+    @property
+    def accuracy_training(self) -> float:
+        """Returns the current accuracy of the training phase"""        
+        return self._accuracy_training
+    
+    @property
+    def accuracy_validation(self) -> float:
+        """Returns the current accuracy of the validation phase"""                
+        return self._accuracy_validation
+
+    @property
+    def accuracy_testing(self) -> float:
+        """Returns the current accuracy of the testing phase"""                        
+        return self._accuracy_testing
+
+    @property
+    def loss_training(self) -> float:
+        """Returns the current loss of the training phase"""                
+        return self._loss_training        
+
+    @property
+    def loss_validation(self) -> float:
+        """Returns the current loss of the validation phase"""                        
+        return self._loss_validation   
+
+    @property
+    def loss_bboxes_training(self) -> float:
+        """Returns the current loss of the training phase"""                
+        return self._bbox_loss_training        
+
+    @property
+    def loss_bboxes_validation(self) -> float:
+        """Returns the current loss of the validation phase"""                        
+        return self._bbox_loss_validation        
+
+    @property
+    def loss_bboxes_testing(self) -> float:
+        """Returns the current loss of the testing phase"""                
+        return self._bbox_loss_testing
+
+    @property
+    def loss_testing(self) -> float:
+        """Returns the current loss of the testing phase"""                
+        return self._loss_testing
+
+    @property
+    def loss_classification_training(self) -> float:
+        """Returns the current loss of the training phase"""                
+        return self._classification_loss_training        
+
+    @property
+    def loss_classfication_validation(self) -> float:
+        """Returns the current loss of the validation phase"""                        
+        return self._classification_loss_validation        
+
+    @property
+    def loss_classification_testing(self) -> float:
+        """Returns the current loss of the testing phase"""                
+        return self._classification_loss_testing
+
+    @property
+    def get_confidence(self) -> np.ndarray:
+        """ returns the confidences of the predicted bounding boxes in the image"""
+        return self._confidences
+
+    @property
+    def get_bbox_images(self) -> np.ndarray:
+        """ returns the images with predicted bboxes"""
+        return self._bbox_images
+
+    @property
+    def layer_weights(self) -> Dict[str, Dict[str, Picklable]]:
+        """The weight values of each layer in the input Graph during the training.
+
+        Returns:
+            A dictionary of nested dictionaries, where each key is a layer id. The nested dictionaries contain weight name and value pairs. The values must be picklable.
+        """        
+        return self._layer_weights
+
+    @property
+    def layer_biases(self) -> Dict[str, Dict[str, Picklable]]:
+        """The bias values of each layer in the input Graph during the training.
+
+        Returns:
+            A dictionary of nested dictionaries, where each key is a layer id. The nested dictionaries contain weight name and value pairs. The values must be picklable.
+        """        
+        return self._layer_biases
+    
+    @property
+    def layer_gradients(self) -> Dict[str, Dict[str, Picklable]]:
+        """The gradients with respect to the loss of all trainable variables of each layer in the input Graph.
+
+        Returns:
+            A dictionary of nested dictionaries, where each key is a layer id. The nested dictionaries contain gradient name and value pairs. The values must be picklable.
+        """        
+        return self._layer_gradients
+    
+    @property
+    def layer_outputs(self) -> Dict[str, Dict[str, Picklable]]:
+        """The output values of each layer in the input Graph during the training (e.g., tf.Tensors evaluated for each iteration)
+
+        Returns:
+            A dictionary of nested dictionaries, where each key is a layer id. The nested dictionaries contain variable name and value pairs. The values must be picklable.
+        """
+        return self._layer_outputs
+
+    @property
+    def training_iteration(self) -> int:
+        """The current training iteration"""
+        return self._training_iteration
+
+    @property
+    def validation_iteration(self) -> int:
+        """The current validation iteration"""        
+        return self._validation_iteration
+
+    @property
+    def testing_iteration(self) -> int:
+        """The current testing iteration"""                
+        return self._testing_iteration
+        
+    @property
+    def progress(self) -> float:
+        """A number indicating the overall progress of the training
+        
+        Returns:
+            A floating point number between 0 and 1
+        """        
+        n_iterations_per_epoch = np.ceil(self.size_training / self._batch_size) + \
+                                 np.ceil(self.size_validation / self._batch_size)
+        n_iterations_total = self._n_epochs * n_iterations_per_epoch
+
+        iteration = self.epoch * n_iterations_per_epoch + \
+                    self.training_iteration + self.validation_iteration
+        
+        progress = min(iteration/(n_iterations_total - 1), 1.0) 
+        return progress
+{% endmacro %}

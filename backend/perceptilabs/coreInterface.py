@@ -1,7 +1,9 @@
+import json
 import queue
 import numpy as np
 import time
 import psutil
+import shutil
 import copy
 import traceback
 import os
@@ -10,6 +12,7 @@ import pprint
 import logging
 import skimage
 import GPUtil
+import collections
 
 from perceptilabs.networkExporter import exportNetwork
 from perceptilabs.networkSaver import saveNetwork
@@ -25,24 +28,31 @@ from perceptilabs.CoreThread import CoreThread
 from perceptilabs.createDataObject import createDataObject
 from perceptilabs.core_new.core_distr import DistributedCore
 
+from perceptilabs.license_checker import LicenseV2
 
 log = logging.getLogger(__name__)
 scraper = get_scraper()
 
 
-DEFAULT_CORE_MODE = 'normal' # normal or compability
-DEFAULT_CORE_MODE = 'compability' 
-
+CoreCommand = collections.namedtuple('CoreCommand', ['type', 'parameters', 'allow_override'])
 
 
 class coreLogic():
-    def __init__(self,networkName):
+    def __init__(self,networkName, core_mode='v1'):
+        log.info(f"Created coreLogic for network '{networkName}' with core mode '{core_mode}'")
+        
+        assert core_mode in ['v1', 'v2']
+        self._core_mode = core_mode
+        
         self.networkName=networkName
         self.cThread=None
         self.status="Created"
         self.network=None
 
         self.setupLogic()
+        self.plLicense = LicenseV2()
+        
+        self._save_counter = 0
 
     def setupLogic(self):
         self.warningQueue=queue.Queue()
@@ -56,6 +66,7 @@ class coreLogic():
         self.paused=False
 
         self.status="Created"
+        self.core=None
 
         self.testIter=0
         self.maxTestIter=0
@@ -66,6 +77,46 @@ class coreLogic():
         self.saver=None
 
         self.savedResultsDict={}
+
+    def _logAndWarningQueue(self, msg):
+        log.warning(msg)
+        self.warningQueue.put(msg)
+
+    def gpu_list(self):
+        try:
+            gpus = GPUtil.getGPUs()
+        except:
+            log.error("No compatible nvidia GPU drivers available. Defaulting to 0 GPUs")
+            gpus = []
+
+        if self.plLicense.is_expired():
+            self._logAndWarningQueue(f"Your license is in demo mode. Limiting to one GPU.")
+            gpus = gpus[:1]
+
+        print(f"GPU limit: {self.plLicense.gpu_limit()}")
+        limit = self.plLicense.gpu_limit()
+        if limit > len(gpus):
+            self._logAndWarningQueue(f"Your license limits training to {limit}.")
+            gpus = gpus[:limit]
+
+        print(f"GPU count: {len(gpus)}")
+        return gpus
+
+    def isDistributable(self, gpus):
+        print(f"Core limit: {self.plLicense.core_limit()}")
+        if len(gpus) <= 1:
+            self._logAndWarningQueue(f"Not enough GPUs to distribute training. Using one core.")
+            return False
+
+        if self.plLicense.core_limit() <= 1:
+            self._logAndWarningQueue(f"Your license limits you to one core.")
+            return False
+
+        if self.plLicense.is_expired():
+            self._logAndWarningQueue(f"Your license is in demo mode. Limiting to one core.")
+            return False
+
+        return True
 
     def _dump_deployment_script(self, target_file, graph_spec):
         """
@@ -78,7 +129,6 @@ class coreLogic():
             for id_, layer in graph_spec['Layers'].items():
                 if layer['Type'] == 'TrainNormal' and 'Distributed' not in layer['Properties']:
                     layer['Properties']['Distributed'] = False 
-            
             log.info("Creating deployment script...")            
             config = {'session_id': '1234567'}
             
@@ -88,7 +138,7 @@ class coreLogic():
 
             replica_by_name = {repl_cls.__name__: repl_cls for repl_cls in BASE_TO_REPLICA_MAP.values()}                
             graph_builder = GraphBuilder(replica_by_name)
-            graph = graph_builder.build_from_spec(graph_spec, config)
+            graph = graph_builder.build_from_spec(graph_spec)
             
             script_factory = ScriptFactory()        
             code = script_factory.make(graph, config)
@@ -100,6 +150,7 @@ class coreLogic():
 
     def startCore(self,network, checkpointValues):
         #Start the backendthread and give it the network
+
         self.setupLogic()
         self.network=network
         log.debug('printing network .......\n')
@@ -109,38 +160,42 @@ class coreLogic():
             with open('net.json_', 'w') as f:
                 json.dump(network, f, indent=4) 
 
+        if log.isEnabledFor(logging.DEBUG):        
+            import json
+            with open('net.json_', 'w') as f:
+                json.dump(network, f, indent=4)
+            
         data_container = DataContainer()
 
         def backprop(layer_id):
-            b_con = network['Layers'][layer_id]['backward_connections']
-            if b_con:
-                return backprop(b_con[0])
+            backward_connections = network['Layers'][layer_id]['backward_connections']
+            if backward_connections:
+                id_, name = backward_connections[0]
+                return backprop(id_)
             else:
                 return layer_id
 
-        core_mode = DEFAULT_CORE_MODE
-        try:
-            gpus = GPUtil.getGPUs()
-        except:
-            log.error("No compatible nvidia GPU drivers available, defaulting to 0 GPUs")
-            gpus = []
-        if len(gpus)>1 and is_licensed():     #TODO: Replace len(gpus) with a frontend choice of how many GPUs (if any) they want to use
-            core_mode = 'distributed'            
+        #TODO: Replace len(gpus) with a frontend choice of how many GPUs (if any) they want to use
+        gpus = self.gpu_list()
+        distributed = self.isDistributable(gpus)
+        #distributed = True
 
         for _id, layer in network['Layers'].items():
+            if layer['Type'] == 'DataData':
+                layer['Properties']['accessProperties']['Sources'][0]['path'] = layer['Properties']['accessProperties']['Sources'][0]['path'].replace('\\','/')
             if layer['Type'] == 'TrainNormal':
-                layer['Properties']['Distributed'] = core_mode == 'distributed'
-                if core_mode == 'distributed':
-                    labels = layer['Properties']['Labels']
+                layer['Properties']['Distributed'] = distributed
+                if distributed:
+                    targets_id = layer['Properties']['Labels']
 
-                    for b_con in layer['backward_connections']:
-                        if b_con != labels:
-                            pred = b_con
-
-                    input_data_layer = backprop(pred)
-                    target_data_layer = backprop(labels)
+                    for id_, name in layer['backward_connections']:
+                        if id_ != targets_id:
+                            outputs_id = id_
+                    
+                    input_data_layer = backprop(outputs_id)
+                    labels_data_layer = backprop(targets_id)
                     layer['Properties']['InputDataId'] = input_data_layer
-                    layer['Properties']['TargetDataId'] = target_data_layer
+                    layer['Properties']['TargetDataId'] = labels_data_layer
 
                 else:
                     layer['Properties']['InputDataId'] = ''
@@ -174,14 +229,15 @@ class coreLogic():
         
 
 
-        if core_mode == 'normal':
-            self.core = Core(CodeHq, graph_dict, data_container, session_history, module_provider,
-                             error_handler, session_proc_handler, checkpointValues)
-        elif core_mode == 'distributed':
-            from perceptilabs.core_new.core_distr import DistributedCore
-            self.core = DistributedCore(CodeHq, graph_dict, data_container, session_history, module_provider,
-                                        error_handler, session_proc_handler, checkpointValues)
-        elif core_mode == 'compability':
+        if self._core_mode == 'v1':
+            if not distributed:
+                self.core = Core(CodeHq, graph_dict, data_container, session_history, module_provider,
+                                error_handler, session_proc_handler, checkpointValues)
+            else:
+                from perceptilabs.core_new.core_distr import DistributedCore
+                self.core = DistributedCore(CodeHq, graph_dict, data_container, session_history, module_provider,
+                                            error_handler, session_proc_handler, checkpointValues)
+        elif self._core_mode == 'v2':
             from perceptilabs.core_new.compability import CompabilityCore
             from perceptilabs.core_new.graph.builder import GraphBuilder
             from perceptilabs.core_new.deployment import InProcessDeploymentPipe, LocalEnvironmentPipe
@@ -197,8 +253,15 @@ class coreLogic():
             #deployment_pipe = LocalEnvironmentPipe('/home/anton/Source/perceptilabs/backend/venv-user/bin/python', script_factory)
 
             
-            self.core = CompabilityCore(self.commandQ, self.resultQ, graph_builder, deployment_pipe, network)
-            
+            self.core = CompabilityCore(
+                self.commandQ,
+                self.resultQ,
+                graph_builder,
+                deployment_pipe,
+                network,
+                threaded=True,
+                error_queue=self.errorQueue
+            )            
             
         if self.cThread is not None and self.cThread.isAlive():
             self.Stop()
@@ -234,27 +297,73 @@ class coreLogic():
         return {"content":"core started"}
 
     def Pause(self):
-        self.commandQ.put('pause')
+        if self._core_mode == 'v1':
+            self.commandQ.put('pause')
+        else:
+            self.commandQ.put(
+                CoreCommand(
+                    type='pause',
+                    parameters={'paused': True},
+                    allow_override=True
+                )
+            )
+            
         self.paused=True
         return {"content": "Paused"}
         
     def Unpause(self):
-        self.commandQ.put('unpause')
+        if self._core_mode == 'v1':
+            self.commandQ.put('unpause')
+        else:
+            self.commandQ.put(
+                CoreCommand(
+                    type='pause',
+                    parameters={'paused': False},
+                    allow_override=True
+                )
+            )
         self.paused=False
         return {"content":"Unpaused"}
 
     def headless(self, On):
-        if On:
-            self.commandQ.put("headlessOn")
-        else:
-            self.commandQ.put("headlessOff")
+        if self._core_mode == 'v1':
+            if On:
+                self.commandQ.put("headlessOn")
+            else:
+                self.commandQ.put("headlessOff")                
+        else:        
+            self.commandQ.put(
+                CoreCommand(
+                    type='headless',
+                    parameters={'on': On},
+                    allow_override=True
+                )
+            )
 
     def headlessOn(self):
-        self.commandQ.put("headlessOn")
+        if self._core_mode == 'v1':
+            self.commandQ.put("headlessOn")
+        else:
+            self.commandQ.put(
+                CoreCommand(
+                    type='headless',
+                    parameters={'on': True},
+                    allow_override=True
+                )
+        )        
 
     def headlessOff(self):
-        self.commandQ.put("headlessOff")
-
+        if self._core_mode == 'v1':
+            self.commandQ.put("headlessOff")
+        else:
+            self.commandQ.put(
+                CoreCommand(
+                    type='headless',
+                    parameters={'on': False},
+                    allow_override=True
+                )
+            )        
+        
     def Close(self):
         if self.cThread and self.cThread.isAlive():
             self.cThread.kill()
@@ -262,22 +371,61 @@ class coreLogic():
 
     def Stop(self):
         self.status="Stop"
-        self.commandQ.put("stop")
+
+        if self._core_mode == 'v1':
+            self.commandQ.put('stop')
+        else:
+            self.commandQ.put(
+                CoreCommand(
+                    type='stop',
+                    parameters=None,
+                    allow_override=False
+                )
+            )
+            
         return {"content":"Stopping"}
 
     def checkCore(self):
         return {"content":"Alive"}
 
     def isRunning(self):
-        return self.cThread.isAlive()
+        return self.cThread is not None and self.cThread.isAlive()
 
-    def isTrained(self,):
-        if self.saver:
-            return {"content":True}
-        else:
-            return {"content":False}
+    def isTrained(self):
+        is_trained = (
+            (self._core_mode == 'v1' and self.saver is not None) or
+            (self._core_mode == 'v2' and self.core is not None and len(self.core.core_v2.graphs) > 0)
+        )
+        return {"content": is_trained}
 
     def exportNetwork(self,value):
+        log.debug(f"exportNetwork called. Value = {pprint.pformat(value)}")
+        if self._core_mode == 'v1':
+            return self.exportNetworkV1(value)
+        else:
+            return self.exportNetworkV2(value)            
+
+    def exportNetworkV2(self, value):
+        path = os.path.join(value["Location"], value.get('frontendNetwork', self.networkName), '1')
+        path = os.path.abspath(path)
+            
+        if os.path.exists(path):
+            shutil.rmtree(path)
+
+        mode = 'TFModel+checkpoint' # Default mode. # TODO: perhaps all export modes should be exposed to frontend?
+        if value["Compressed"]:
+            mode = 'TFLite+checkpoint'         
+
+        self.commandQ.put(
+            CoreCommand(
+                type='export',
+                parameters={'path': path, 'mode': mode},
+                allow_override=False
+            )
+        )
+        return {"content": f"Exporting model to path {path}"}
+        
+    def exportNetworkV1(self,value):        
         if self.saver is None:
             self.warningQueue.put("Export failed.\nMake sure you have started running the network before you try to Export it.")
             return {"content":"Export Failed.\nNo trained weights to Export."}
@@ -300,7 +448,36 @@ class coreLogic():
             log.exception("Export failed")
             return {"content":"Export Failed with this error: " + str(e)}
 
-    def saveNetwork(self,value):
+    def saveNetwork(self, value):
+        if self._core_mode == 'v1':
+            return self.saveNetworkV1(value)
+        else:
+            return self.saveNetworkV2(value)            
+
+    def saveNetworkV2(self, value):
+        """ Saves json network to disk and exports tensorflow model+checkpoints. """
+        self._save_counter += 1
+        path = os.path.abspath(value["Location"][0])
+        
+        if not os.path.exists(path):   
+            os.mkdir(path)
+            
+        frontend_network = value['frontendNetwork'].copy()
+
+        if self.isTrained():
+            #export_path = os.path.join(path, '1')            
+            self.core.core_v2.export(path, mode='TFModel+checkpoint') # TODO: will all types of graphs support this?
+
+            # The following is used to restore the checkpoint when the saved network is loaded again.. networkElementList is the usual json_network, but with some extra frontend stuff.
+            for id_ in frontend_network['networkElementList'].keys():
+                frontend_network['networkElementList'][id_]['checkpoint'] = [None, os.path.join(path, 'model.ckpt-'+str(self._save_counter))] 
+
+        with open(os.path.join(path, 'model.json'), 'w') as json_file:
+            json.dump(frontend_network, json_file, indent=4)        
+            
+        return {"content": f"Saving to: {path}"}            
+        
+    def saveNetworkV1(self, value):
         if self.saver is None:
             self.warningQueue.put("Save failed.\nMake sure you have started running the network before you try to Export it.")
             return {"content":"Save Failed.\nNo trained weights to Export."}
@@ -328,6 +505,7 @@ class coreLogic():
 
     def skipValidation(self):
         self.commandQ.put("skip")
+        log.warning('skipValidation called... incompatible with core v2')
         #Check if validation was skipped or not before returning message
         return {"content":"skipped validation"}
 
@@ -370,9 +548,6 @@ class coreLogic():
             progress = self.savedResultsDict.get('progress') 
             if progress is None:
                 progress = (self.savedResultsDict["epoch"]*self.savedResultsDict["maxIter"]+self.savedResultsDict["iter"])/(max(self.savedResultsDict["maxEpochs"]*self.savedResultsDict["maxIter"],1))
-
-            for i in range(10):
-                print("PROGRESS", progress)
 
                 
             if self.status=="Running":
@@ -467,6 +642,11 @@ class coreLogic():
                 self.testList.append(tmp["testDict"])
                 if not self.maxTestIter:
                     self.maxTestIter = tmp['maxTestIter']
+
+            if 'testDicts' in tmp:
+                self.testList = tmp["testDicts"]
+                self.maxTestIter = tmp['maxTestIter']
+
             count += 1
 
         if count > 0:
@@ -482,6 +662,9 @@ class coreLogic():
         layer_id = value["layerId"]
         layer_type = value["layerType"]
         view = value["view"]
+
+        if not self.savedResultsDict:
+            return {}
         
         try:
             self.iter=self.savedResultsDict["iter"]
@@ -515,7 +698,6 @@ class coreLogic():
         view = value["view"]
         
         try:
-            # self.maxTestIter=self.maxTestIter
             self.batch_size=1
             self.resultDict=self.testList[self.testIter]
         except IndexError:
@@ -550,9 +732,8 @@ class coreLogic():
 
     
     def getLayerStatistics(self, layerId, layerType, view):
-        log.info("getLayerStatistics for layer {} with type {}. View: {}".format(layerId,
-                                                                                 layerType,
-                                                                                 view))
+        log.debug("getLayerStatistics for layer '{}' with type '{}' and view: '{}'".format(layerId, layerType, view))
+        
         if layerType=="DataEnvironment":
             state = self.getStatistics({"layerId":layerId,"variable":"state","innervariable":""})
             dataObj = createDataObject([state])
@@ -592,7 +773,7 @@ class coreLogic():
                 return output
         elif layerType=="DeepLearningConv":
             if view=="Weights&Output":
-                weights=self.getStatistics({"layerId":layerId,"variable":"W","innervariable":""})                
+                weights=self.getStatistics({"layerId":layerId,"variable":"W","innervariable":""})              
                 Wshapes=weights.shape
                 if len(Wshapes)==3:
                     weights=np.expand_dims(np.average(weights[:,:,-1],1),axis=0)
@@ -600,7 +781,6 @@ class coreLogic():
                     weights=np.average(weights[:,:,:,-1],2)
                 elif len(Wshapes)==5:
                     weights=np.average(weights[:,:,:,:,-1],3)
-
                 outputs=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})[-1]
                 outputs=outputs[:, :, 0]
                     
@@ -769,7 +949,6 @@ class coreLogic():
                     cType=self.getPlot(network_output[-1])
                     if cType=="bar" or cType=="line" or cType=='scatter':
                         PvG = createDataObject([network_output[-1], labels[-1]], nameList=['Prediction', 'Ground Truth'])                        
-
                         # average over samples
                         network_average=np.average(network_output,axis=0)
                         labels_average = np.average(labels, axis=0)
@@ -1034,6 +1213,204 @@ class coreLogic():
             if view=="Generator_distribution":
                 generator_distribution = self.getStatistics({"layerId":layerId,"variable":"generator_distribution","innervariable":""})
 
+        elif layerType=="TrainDetector":
+            if view=="Prediction":
+                #Make sure that all the inputs are sent to frontend!!!!!!!!!!!!!!!
+                
+                image = self.getStatistics({"layerId": layerId, "variable":"image_bboxes", "innervariable":""})
+                # image = np.random.randint(0,255,[224,224,3])
+                Bboxes = createDataObject([image])    
+
+
+                # Confidence of the boxes in sample
+                confidence_scores = self.getStatistics({"layerId":layerId,"variable":"confidence_scores","innervariable":""})
+                Confidence = createDataObject([confidence_scores])
+                
+                # PIE
+                acc=self.getStatistics({"layerId":layerId,"variable":"image_accuracy","innervariable":""})[0]
+                accList = [[('Accuracy', acc*100.0), ('Empty', (1-acc)*100.0)]]
+                Accuracy = createDataObject(accList, typeList=['pie'])
+
+                returnDict={"Bboxes":Bboxes,"Confidence":Confidence,"Accuracy":Accuracy}
+                return returnDict
+                
+            if view=="Accuracy":
+                acc_train=self.getStatistics({"layerId":layerId,"variable":"acc_train_iter","innervariable":""})
+                acc_val=self.getStatistics({"layerId":layerId,"variable":"acc_val_iter","innervariable":""})
+
+                currentTraining=acc_train
+                if isinstance(acc_train,np.ndarray):
+                    currentValidation=np.concatenate((acc_train,np.asarray(acc_val)))
+                elif isinstance(acc_train,list):
+                    if isinstance(acc_val,list):
+                        currentValidation=acc_train+acc_val
+                    else:
+                        currentValidation=acc_train+list(acc_val)
+                
+                totalTraining=self.getStatistics({"layerId":layerId,"variable":"acc_training_epoch","innervariable":""})
+                totalValidation=self.getStatistics({"layerId":layerId,"variable":"acc_validation_epoch","innervariable":""})
+
+                dataObjectCurrent = createDataObject([currentValidation, currentTraining],
+                                                     typeList=['line', 'line'],
+                                                     nameList=['Validation', 'Training'])
+            
+                dataObjectTotal = createDataObject([totalValidation, totalTraining],
+                                                   typeList=['line', 'line'],
+                                                   nameList=['Validation', 'Training'])
+                output = {"Current": dataObjectCurrent, "Total": dataObjectTotal}
+                return output
+                
+            if view=="Loss":
+                loss_train=self.getStatistics({"layerId":layerId,"variable":"loss_train_iter","innervariable":""})
+                loss_val=self.getStatistics({"layerId":layerId,"variable":"loss_val_iter","innervariable":""})
+
+                currentTraining=loss_train
+                if isinstance(loss_train,np.ndarray):
+                    currentValidation=np.concatenate((loss_train,np.asarray(loss_val)))
+                elif isinstance(loss_train,list):
+                    if isinstance(loss_val,list):
+                        currentValidation=loss_train+loss_val
+                    else:
+                        currentValidation=loss_train+list(loss_val)
+
+                totalTraining=self.getStatistics({"layerId":layerId,"variable":"loss_training_epoch","innervariable":""})
+                totalValidation=self.getStatistics({"layerId":layerId,"variable":"loss_validation_epoch","innervariable":""})
+
+                dataObjectCurrent = createDataObject([currentValidation, currentTraining],
+                                                     typeList=['line', 'line'],
+                                                     nameList=['Validation', 'Training'])
+            
+                dataObjectTotal = createDataObject([totalValidation, totalTraining],
+                                                   typeList=['line', 'line'],
+                                                   nameList=['Validation', 'Training'])
+                output = {"Current": dataObjectCurrent, "Total": dataObjectTotal}
+                return output
+            
+            if view=="ClassificationLoss":
+                classification_loss_train=self.getStatistics({"layerId":layerId,"variable":"classification_loss_train_iter","innervariable":""})
+                classification_loss_val=self.getStatistics({"layerId":layerId,"variable":"classification_loss_val_iter","innervariable":""})
+
+                currentTraining=classification_loss_train
+                if isinstance(classification_loss_train,np.ndarray):
+                    currentValidation=np.concatenate((classification_loss_train,np.asarray(classification_loss_val)))
+                elif isinstance(classification_loss_train,list):
+                    if isinstance(classification_loss_val,list):
+                        currentValidation=classification_loss_train+classification_loss_val
+                    else:
+                        currentValidation=classification_loss_train+list(classification_loss_val)
+                totalTraining=self.getStatistics({"layerId":layerId,"variable":"classification_loss_training_epoch","innervariable":""})
+                totalValidation=self.getStatistics({"layerId":layerId,"variable":"classification_loss_validation_epoch","innervariable":""})
+
+                dataObjectCurrent = createDataObject([currentValidation, currentTraining],
+                                                     typeList=['line', 'line'],
+                                                     nameList=['Validation', 'Training'])
+            
+                dataObjectTotal = createDataObject([totalValidation, totalTraining],
+                                                   typeList=['line', 'line'],
+                                                   nameList=['Validation', 'Training'])
+                output = {"Current": dataObjectCurrent, "Total": dataObjectTotal}
+                return output
+            
+            if view=="BoundingBoxesLoss":
+                bbox_loss_train=self.getStatistics({"layerId":layerId,"variable":"bboxes_loss_train_iter","innervariable":""})
+                bbox_loss_val=self.getStatistics({"layerId":layerId,"variable":"bboxes_loss_val_iter","innervariable":""})
+
+                currentTraining=bbox_loss_train
+                if isinstance(bbox_loss_train,np.ndarray):
+                    currentValidation=np.concatenate((bbox_loss_train,np.asarray(bbox_loss_val)))
+                elif isinstance(bbox_loss_train,list):
+                    if isinstance(bbox_loss_val,list):
+                        currentValidation=bbox_loss_train+bbox_loss_val
+                    else:
+                        currentValidation=bbox_loss_train+list(bbox_loss_val)
+                totalTraining=self.getStatistics({"layerId":layerId,"variable":"bboxes_loss_training_epoch","innervariable":""})
+                totalValidation=self.getStatistics({"layerId":layerId,"variable":"bboxes_loss_validation_epoch","innervariable":""})
+
+                dataObjectCurrent = createDataObject([currentValidation, currentTraining],
+                                                     typeList=['line', 'line'],
+                                                     nameList=['Validation', 'Training'])
+            
+                dataObjectTotal = createDataObject([totalValidation, totalTraining],
+                                                   typeList=['line', 'line'],
+                                                   nameList=['Validation', 'Training'])
+                output = {"Current": dataObjectCurrent, "Total": dataObjectTotal}
+                return output
+
+        elif layerType=="TrainGan":
+            
+            if view=="Generator_Loss":
+                loss_train=self.getStatistics({"layerId":layerId,"variable":"gen_loss_train_iter","innervariable":""})
+                loss_val=self.getStatistics({"layerId":layerId,"variable":"gen_loss_val_iter","innervariable":""})
+
+                currentTraining=loss_train
+                if isinstance(loss_train,np.ndarray):
+                    currentValidation=np.concatenate((loss_train,np.asarray(loss_val)))
+                elif isinstance(loss_train,list):
+                    if isinstance(loss_val,list):
+                        currentValidation=loss_train+loss_val
+                    else:
+                        currentValidation=loss_train+list(loss_val)
+
+                totalTraining=self.getStatistics({"layerId":layerId,"variable":"gen_loss_training_epoch","innervariable":""})
+                totalValidation=self.getStatistics({"layerId":layerId,"variable":"gen_loss_validation_epoch","innervariable":""})
+
+                dataObjectCurrent = createDataObject([currentValidation, currentTraining],
+                                                     typeList=['line', 'line'],
+                                                     nameList=['Validation', 'Training'])
+            
+                dataObjectTotal = createDataObject([totalValidation, totalTraining],
+                                                   typeList=['line', 'line'],
+                                                   nameList=['Validation', 'Training'])
+                output = {"Current": dataObjectCurrent, "Total": dataObjectTotal}
+                return output
+            
+            if view=="Discriminator_Loss":
+                loss_train=self.getStatistics({"layerId":layerId,"variable":"dis_loss_train_iter","innervariable":""})
+                loss_val=self.getStatistics({"layerId":layerId,"variable":"dis_loss_val_iter","innervariable":""})
+
+                currentTraining=loss_train
+                if isinstance(loss_train,np.ndarray):
+                    currentValidation=np.concatenate((loss_train,np.asarray(loss_val)))
+                elif isinstance(loss_train,list):
+                    if isinstance(loss_val,list):
+                        currentValidation=loss_train+loss_val
+                    else:
+                        currentValidation=loss_train+list(loss_val)
+
+                totalTraining=self.getStatistics({"layerId":layerId,"variable":"dis_loss_training_epoch","innervariable":""})
+                totalValidation=self.getStatistics({"layerId":layerId,"variable":"dis_loss_validation_epoch","innervariable":""})
+
+                dataObjectCurrent = createDataObject([currentValidation, currentTraining],
+                                                     typeList=['line', 'line'],
+                                                     nameList=['Validation', 'Training'])
+            
+                dataObjectTotal = createDataObject([totalValidation, totalTraining],
+                                                   typeList=['line', 'line'],
+                                                   nameList=['Validation', 'Training'])
+                output = {"Current": dataObjectCurrent, "Total": dataObjectTotal}
+                return output
+
+            if view=="Generated_output":
+                generated_sample=self.getStatistics({"layerId":layerId,"variable":"gen_output_train","innervariable":""})
+
+                dataObjectOutput = createDataObject(generated_sample)
+            
+    
+                output = {"generated_output": dataObjectOutput}
+                return output
+
+            if view=="Real_input":
+                real_sample=self.getStatistics({"layerId":layerId,"variable":"real_input_train","innervariable":""})
+
+                dataObjectOutput = createDataObject(real_sample)
+            
+    
+                output = {"real_input": dataObjectOutput}
+                return output
+            
+            if view=="Generator_distribution":
+                generator_distribution = self.getStatistics({"layerId":layerId,"variable":"generator_distribution","innervariable":""})
+
                 dataObjectOutput = createDataObject(generator_distribution)
     
                 output = {"generator_distribution": dataObjectOutput}
@@ -1046,7 +1423,7 @@ class coreLogic():
 
                 output = {"real_distribution": dataObjectOutput}
                 return output
-                
+                  
         elif layerType=="TrainReinforce":
             if view=="Prediction":
                 state = self.getStatistics({"layerId":layerId,"variable":"state","innervariable":""})

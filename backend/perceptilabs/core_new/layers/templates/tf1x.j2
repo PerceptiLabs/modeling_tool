@@ -337,7 +337,7 @@ class {{layer_name}}(Tf1xLayer):
         
     def __call__(self, x: tf.Tensor):
         """ Takes a tensor as input and feeds it forward through a layer of neurons, returning a newtensor."""        
-        n_neurons = {{n_neurons}}
+        self._n_neurons = {{n_neurons}}
         n_inputs = np.prod(x.get_shape().as_list()[1:], dtype=np.int32)
 
         with tf.compat.v1.variable_scope(self._scope, reuse=tf.compat.v1.AUTO_REUSE):        
@@ -403,7 +403,7 @@ class {{layer_name}}(Tf1xLayer):
 {% endmacro %}
 
 
-{% macro layer_tf1x_conv(layer_name, conv_dim, patch_size, feature_maps, stride, padding, dropout, keep_prob, activation, pool, pooling, pool_area, pool_stride) %}
+{% macro layer_tf1x_conv(layer_name, conv_dim, patch_size, feature_maps, stride, padding, dropout, keep_prob, activation, pool, pooling, pool_padding, pool_area, pool_stride) %}
 class {{layer_name}}(Tf1xLayer):
     def __init__(self):
         self._scope = '{{layer_name}}'        
@@ -426,15 +426,15 @@ class {{layer_name}}(Tf1xLayer):
                     x.get_shape().as_list()[-1],
                     self._feature_maps
                     ]
-                    initial = tf.random.truncated_normal(
-                        shape,
-                        stddev=np.sqrt(2/(self._patch_size)**2 + self._feature_maps)
-                    )
-                    W = tf.compat.v1.get_variable('W', initializer=initial)
+                    #initial = tf.random.truncated_normal(
+                    #    shape,
+                    #   stddev=np.sqrt(2/(self._patch_size)**2 + self._feature_maps)
+                    #)
+                    W = tf.compat.v1.get_variable('W', shape = shape, initializer=  tf.contrib.layers.xavier_initializer())
                     
-                    initial = tf.constant(0.1, shape=[self._feature_maps])
-                    b = tf.compat.v1.get_variable('b', initializer=initial)
-                    y = tf.nn.conv2d(x, W, strides=[1, self._stride, self._stride, 1], padding=self._padding)
+                    #initial = tf.constant(0.1, shape=[self._feature_maps])
+                    b = tf.compat.v1.get_variable('b', shape=[self._feature_maps], initializer=tf.zeros_initializer())
+                    y = tf.add(tf.nn.conv2d(x, W, strides=[1, self._stride, self._stride, 1], padding=self._padding), b)
                 {% elif conv_dim == '1D' %}
                     shape = [
                     self._patch_size,
@@ -449,7 +449,7 @@ class {{layer_name}}(Tf1xLayer):
                     
                     initial = tf.constant(0.1, shape=[self._feature_maps])
                     b = tf.compat.v1.get_variable('b', initializer=initial)
-                    y = tf.nn.conv1d(x, W, strides=[1, self._stride, 1], padding=self._padding)
+                    y = tf.nn.conv1d(x, W, strides=[1, self._stride, 1], padding=self._padding)+b
                 {% elif conv_dim == '3D' %}
                     shape = [
                     self._patch_size,
@@ -466,7 +466,7 @@ class {{layer_name}}(Tf1xLayer):
                     
                     initial = tf.constant(0.1, shape=[self._feature_maps])
                     b = tf.compat.v1.get_variable('b', initializer=initial)
-                    y = tf.nn.conv3d(x, W, strides=[1, self._stride, self._stride, self._stride, 1], padding=self._padding)
+                    y = tf.nn.conv3d(x, W, strides=[1, self._stride, self._stride, self._stride, 1], padding=self._padding)+b
                 {% elif conv_dim == 'Automatic' %}
                     dim = len(x.get_shape().as_list())-1
                     shape = [self._patch_size]*dim + [x.get_shape().as_list()[-1], self._feature_maps]
@@ -478,7 +478,12 @@ class {{layer_name}}(Tf1xLayer):
                     
                     initial = tf.constant(0.1, shape=[self._feature_maps])
                     b = tf.compat.v1.get_variable('b', initializer=initial)
-                    y = tf.nn.conv2d(x, W, strides=[1]+ [self._stride]*dim +[1], padding=self._padding)
+                    y = tf.nn.conv2d(x, W, strides=[1]+ [self._stride]*dim +[1], padding=self._padding) + b
+                {% endif %}
+            {% endfilter %}
+            {% filter remove_lspaces(8) %}
+                {% if activation is not none %}
+                    y = {{activation}}(y)
                 {% endif %}
             {% endfilter %}
             {% filter remove_lspaces(8) %}
@@ -487,20 +492,13 @@ class {{layer_name}}(Tf1xLayer):
                 {% endif %}
             {% endfilter %}
             {% filter remove_lspaces(8) %}
-                {% if activation is not none %}
-                    y = y + b
-                    y = {{activation}}(y)
-                {% endif %}
-            {% endfilter %}
-            {% filter remove_lspaces(8) %}
                 {% if pool and pooling == "Max" %}
-                    dim_str = str(len(x.get_shape().as_list())-1)+'D'
-                    y = tf.nn.max_pool(y, {{pool_area}}, {{pool_stride}}, dim_str)
+                    y = tf.nn.max_pool(y, ksize=[1, {{pool_area}}, {{pool_area}}, 1], strides=[1, {{pool_stride}}, {{pool_stride}}, 1], padding='{{pool_padding}}')
                 {% endif %}
             {% endfilter %}
             {% filter remove_lspaces(8) %}
                 {% if pool and pooling == "Mean" %}
-                    y = tf.nn.max_pool(y, window_shape = {{pool_area}}, pooling_type='AVG', strides={{pool_stride}})
+                    y = tf.nn.avg_pool(y, ksize={{pool_area}}, strides={{pool_stride}}, padding={{pool_padding}})
                 {% endif %}
             {% endfilter %}
         self._variables = {k: v for k, v in locals().items() if dill.pickles(v)}

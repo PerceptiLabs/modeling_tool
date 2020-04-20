@@ -79,8 +79,14 @@
   justify-content: center;
   //font-size: var(--size-layers-btn);
   font-size: 1rem;
-  width: 6em;
-  height: 6em;
+  .is-web & {
+    width: calc(var(--sidebar-scale-coefficient) * 6rem);
+    height: calc(var(--sidebar-scale-coefficient) * 6rem);
+  }
+  .is-electron & {
+    width: 6em;
+    height: 6em;
+  }
   &[draggable="true"] {
     cursor: grab;
     &:active {
@@ -88,8 +94,11 @@
     }
   }
   .icon {
-    font-size: 3.3em;
+    font-size: calc(var(--sidebar-scale-coefficient) * 3.3rem);
     text-shadow: $icon-shad;
+    .is-electron & {
+      font-size: 3.3em;
+    }
   }
 
   &[disabled] {

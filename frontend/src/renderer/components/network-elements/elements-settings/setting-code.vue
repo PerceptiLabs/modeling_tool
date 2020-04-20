@@ -44,11 +44,19 @@ export default {
   },
   mounted () {
     //console.log(this.currentEl, this.currentEl.layerCode);
-    if(this.currentEl.layerCode) {
-      this.setCode(this.currentEl.layerCode)
+    if (!this.currentEl.layerCode) {
+      // for normal elements (except for custom code)
+      this.getCode();
+
+    } else if (typeof this.currentEl.layerCode === 'object' && !this.currentEl.layerCode.Output) {
+      // for custom code element, not sure why it's not a string
+      this.getCode();
+        
+    } else {
+      // when there is are confirmed code changes
+      this.setCode(this.currentEl.layerCode);
     }
 
-    else this.getCode();
   },
   beforeDestroy() {
     this.closeFullView()

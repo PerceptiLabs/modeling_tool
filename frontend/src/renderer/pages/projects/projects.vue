@@ -11,18 +11,29 @@
         i.icon.icon-shevron-right
     main.page-projects_recent-files
       include ./recent-files/recent-files.pug
-
+    file-picker-popup(
+      v-if="showFilePickerPopup"
+      popupTitle="Load Project Folder"
+      :confirmCallback="confirmCallback"
+    )
 </template>
 <script>
   import {filePCRead, folderPCDelete, deepCopy, projectPathModel}  from '@/core/helpers.js'
   import {mapState, mapGetters, mapMutations, mapActions} from 'vuex';
+  import FilePickerPopup        from "@/components/global-popups/file-picker-popup.vue";
 
   import imageClassification    from '@/core/basic-template/image-classification.js'
   import reinforcementLearning  from '@/core/basic-template/reinforcement-learning.js'
   import timeseriesRegression   from '@/core/basic-template/timeseries-regression.js'
+  import {isWeb} from "@/core/helpers";
 
   export default {
     name: 'PageProjects',
+    created() {
+      if(isWeb()) {
+        this.$store.dispatch('mod_workspace/GET_workspacesFromLocalStorage');
+      }
+    },
     mounted() {
       this.checkCloudToken()
     },
@@ -48,8 +59,12 @@
             imgPath: './static/img/project-page/reinforcement-learning.svg',
             template: reinforcementLearning
           },
-        ]
+        ],
+        isWeb: isWeb()
       }
+    },
+    components: {
+      FilePickerPopup
     },
     computed: {
       ...mapGetters({
@@ -57,8 +72,9 @@
         localUserInfo:      'mod_user/GET_LOCAL_userInfo'
       }),
       ...mapState({
-        appVersion:         state => state.globalView.appVersion,
-        hotKeyPressDelete:  state => state.mod_events.globalPressKey.del,
+        appVersion:          state => state.globalView.appVersion,
+        hotKeyPressDelete:   state => state.mod_events.globalPressKey.del,
+        showFilePickerPopup: state => state.globalView.globalPopup.showFilePickerPopup
       }),
       filteredProjects() {
         this.selectedProject = null;
@@ -118,6 +134,13 @@
         showInfoPopup:    'globalView/GP_infoPopup',
         checkCloudToken:  'mod_apiCloud/CloudAPI_checkStatus',
       }),
+      loadFolderPath() {
+        this.$store.commit("globalView/set_filePickerPopup", true);
+      },
+      confirmCallback(el) {
+        this.openTemplate(el[0]);
+        this.$store.commit("globalView/HIDE_allGlobalPopups");
+      },
       openTemplate(path) {
         this.loadNetwork(path)
       },
