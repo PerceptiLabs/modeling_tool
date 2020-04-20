@@ -118,8 +118,12 @@ export default {
     if(localStorage.hasOwnProperty(filePickerStorageKey) && !this.isTutorialMode) {
       path = localStorage.getItem(filePickerStorageKey);
     }
-    
-    this.fetchPathInformation(path);
+    this.fetchPathInformation(path)
+          .then(response => {
+            if (response == false) {
+              this.fetchPathInformation('');
+            }
+          });
   },
   methods: {
     calculateBreadcrumbsLength(path) {
@@ -197,7 +201,7 @@ export default {
       this.selectedDirectories = [];
       this.selectedDirectories.push(dirName);
     },
-    fetchPathInformation(path, isSearching = false) {
+    async fetchPathInformation(path, isSearching = false) {
       this.selectedFiles = [];
       let theData = {
           reciever: '0',
@@ -207,39 +211,42 @@ export default {
 
       this.$store.dispatch('globalView/ShowCoreNotFoundPopup', null, { root: true });
 
-      coreRequest(theData)
-      .then(jsonData => {
-          const pathNotFound = jsonData.current_path === "";
-          if(isSearching && pathNotFound) {
-            this.searchDirNotFound = true;
-            return 0;
-          } else {
-            this.searchDirNotFound = false;
-          }
-          
-          if(!pathNotFound) {
-            this.calculateBreadcrumbsLength(jsonData.current_path);
-            if(!this.isTutorialMode) {
-              localStorage.setItem(filePickerStorageKey, jsonData.current_path);
-            }
-          }
-          
-          if (jsonData.current_path === '.') {
-            this.currentPath = [];
-          } else {
-            this.currentPath = jsonData.current_path.split('/').filter(el => el);
-          }
+      try {
+        const jsonData = await coreRequest(theData);
 
-          this.directories = jsonData.dirs.filter(d => !d.startsWith('.')).sort();
-          if (this.fileTypeFilter.length === 0) {
-            this.files = jsonData.files;
-          } else {
-            this.files = jsonData.files.filter(f => {
-              let ext = f.replace(/.*\./, '').toLowerCase();
-              return ~this.fileTypeFilter.indexOf(ext);
-            })
+        const pathNotFound = jsonData.current_path === "";
+        if(isSearching && pathNotFound) {
+          this.searchDirNotFound = true;
+          return 0;
+        } else {
+          this.searchDirNotFound = false;
+        }
+        
+        if(!pathNotFound) {
+          this.calculateBreadcrumbsLength(jsonData.current_path);
+          if(!this.isTutorialMode) {
+            localStorage.setItem(filePickerStorageKey, jsonData.current_path);
           }
-      });
+        }
+        
+        if (jsonData.current_path === '.') {
+          this.currentPath = [];
+        } else {
+          this.currentPath = jsonData.current_path.split('/').filter(el => el);
+        }
+
+        this.directories = jsonData.dirs.filter(d => !d.startsWith('.')).sort();
+        if (this.fileTypeFilter.length === 0) {
+          this.files = jsonData.files;
+        } else {
+          this.files = jsonData.files.filter(f => {
+            let ext = f.replace(/.*\./, '').toLowerCase();
+            return ~this.fileTypeFilter.indexOf(ext);
+          })
+        }
+      } catch(e) {
+        return false;
+      }
     },
     onConfirm() {
         let emitPayload;
