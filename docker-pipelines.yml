@@ -14,11 +14,8 @@ variables:
 pool:
   vmImage: 'ubuntu-16.04'
 
-workspace:
-  # options are: outputs, resources, all
-  clean: all 
-
 steps:
+  fetchDepth: 1
 - task: FileTransform@2
   inputs:
     folderPath: '$(System.DefaultWorkingDirectory)/'
