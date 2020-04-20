@@ -95,8 +95,6 @@ class Core:
             with self._lock:
                 self._graphs.extend(new_graphs)
  
-            print("graph len: ", len(self._graphs))
- 
             for f in on_iterate:
                 f(counter, self)
 

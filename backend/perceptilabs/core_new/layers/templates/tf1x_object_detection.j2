@@ -313,8 +313,6 @@
                     = sess.run([
                         update_weights, classification_loss_tensor, bbox_loss_tensor, loss_tensor, accuracy_tensor
                     ])
-            print(self._loss_training)
-            print(np.max(self._layer_gradients[output_layer_id]))
         def validation_step():
             self._batch_size = {{batch_size}}
             if not self._headless:
