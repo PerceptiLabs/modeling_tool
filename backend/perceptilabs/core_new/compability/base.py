@@ -199,7 +199,9 @@ if __name__ == "__main__":
         for _id, layer in network['Layers'].items():
             if layer['Type'] == 'TrainNormal':
                 layer['Properties']['Distributed'] = False
-        
+            if layer['Type'] == 'Regression':
+                import pdb 
+                pdb.set_trace()        
 
     script_factory = ScriptFactory()
     deployment_pipe = InProcessDeploymentPipe(script_factory)
