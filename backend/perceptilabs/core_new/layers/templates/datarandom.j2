@@ -43,11 +43,11 @@ class {{layer_name}}(DataLayer):
             {% if distribution == 'normal' %}
                 def gen():
                     batch = tf.random.normal(self._shape, mean = self._mean, stddev = self._stddev, dtype=tf.dtypes.float32, seed=None, name=None)
-                    yeild batch
+                    yield batch
             {% elif distribution == 'uniform' %}
                 def gen():
                     batch = tf.random.normal(tf.random.uniform(shape = self._shape, minval=0, maxval=None, dtype=tf.dtypes.float32, seed=None, name=None)
-                    yeild batch
+                    yield batch
             {% endif %}
         {% endfilter %}
         return gen()
@@ -58,11 +58,11 @@ class {{layer_name}}(DataLayer):
             {% if distribution == 'normal' %}
                 def gen():
                     batch = tf.random.normal(self._shape, mean = self._mean, stddev = self._stddev, dtype=tf.dtypes.float32, seed=None, name=None)
-                    yeild batch
+                    yield batch
             {% elif distribution == 'uniform' %}
                 def gen():
                     batch = tf.random.normal(tf.random.uniform(shape = self._shape, minval=0, maxval=None, dtype=tf.dtypes.float32, seed=None, name=None)
-                    yeild batch
+                    yield batch
             {% endif %}
         {% endfilter %}
         return gen()
@@ -73,11 +73,11 @@ class {{layer_name}}(DataLayer):
             {% if distribution == 'normal' %}
                 def gen():
                     batch = tf.random.normal(self._shape, mean = self._mean, stddev = self._stddev, dtype=tf.dtypes.float32, seed=None, name=None)
-                    yeild batch
+                    yield batch
             {% elif distribution == 'uniform' %}
                 def gen():
                     batch = tf.random.normal(tf.random.uniform(shape = self._shape, minval=0, maxval=None, dtype=tf.dtypes.float32, seed=None, name=None)
-                    yeild batch
+                    yield batch
             {% endif %}
         {% endfilter %}
         return gen()
