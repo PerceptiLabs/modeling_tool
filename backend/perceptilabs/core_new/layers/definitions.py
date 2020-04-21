@@ -87,6 +87,42 @@ DEFINITION_TABLE = {
             'from perceptilabs.core_new.utils import Picklable',
             'from perceptilabs.core_new.serialization import can_serialize, serialize'                    ]
     ),
+    'DataRandom': LayerDef(
+        DataLayer,
+        'datarandom.j2',
+        'layer_datarandom',
+        {   
+            'distribution': lambda specs: specs['Properties']['accessProperties']['distribution'],
+            'shape': lambda specs: specs['Properties']['accessProperties']['shape'],
+            'mean': lambda specs: specs['Properties']['accessProperties']['mean'],
+            'stddev': lambda specs: specs['Properties']['accessProperties']['stddev'],
+            'batch_size': lambda specs: specs['Properties']['accessProperties']['Batch_size'],
+            'seed': 0,
+            'shuffle_buffer_size': None,
+        },
+        import_statements=[
+            'from perceptilabs.core_new.layers.base import DataLayer',
+            'from typing import Dict, Generator',
+            'import multiprocessing', 
+            'import tensorflow as tf',                                    
+            'from perceptilabs.core_new.utils import Picklable',
+            'from perceptilabs.core_new.serialization import can_serialize, serialize'                    ]
+    ),
+    'Switch' : LayerDef(
+        Tf1xLayer,
+        'tf1x.j2',
+        'layer_tf1x_switch',
+        {
+            'selected_layer': lambda specs: specs['Properties']['selected_layer'],
+        },
+        import_statements=[
+            'import tensorflow as tf',
+            'from typing import Dict',
+            'from perceptilabs.core_new.utils import Picklable',
+            'from perceptilabs.core_new.layers.base import Tf1xLayer',
+            'from perceptilabs.core_new.serialization import can_serialize, serialize'            
+        ]
+    ),
     'ProcessGrayscale' : LayerDef(
         Tf1xLayer,
         'tf1x.j2',
@@ -207,6 +243,39 @@ DEFINITION_TABLE = {
             'from perceptilabs.core_new.utils import Picklable, YieldLevel',
             'from perceptilabs.core_new.graph import Graph',
             'from perceptilabs.core_new.layers.base import ClassificationLayer, Tf1xLayer',
+            'from perceptilabs.core_new.serialization import can_serialize, serialize',
+            'from tensorflow.python.training.tracking.base import Trackable'            
+        ]
+    ),
+    'TrainGAN': LayerDef(
+        GANLayer,
+        'tf1x_gan.j2',
+        'layer_tf1x_gan',
+        {   'batch_size': lambda specs: specs['Properties']['batch_size'],
+            'switch_layer': lambda specs: specs['Properties']['switch_layer'],
+            'random_layer': lambda specs: specs['Properties']['random_layer'],
+            'n_epochs': lambda specs: specs['Properties']['Epochs'],
+            'class_weights': lambda specs: specs['Properties']['Class_weights'],
+            'generator_optimizer': resolve_tf1x_optimizer,
+            'discriminator_optimizer': resolve_tf1x_optimizer,
+            'learning_rate': lambda specs: specs['Properties']['Learning_rate'],
+            'decay_steps': lambda specs: specs['Properties']['Decay_steps'],
+            'decay_rate': lambda specs: specs['Properties']['Decay_rate'],
+            'momentum': lambda specs: specs['Properties']['Momentum'],
+            'beta1': lambda specs: specs['Properties']['Beta_1'],
+            'beta2': lambda specs: specs['Properties']['Beta_2'],
+            'distributed': lambda specs: specs['Properties'].get('Distributed', False),
+            'export_directory': resolve_checkpoint_path            
+        },
+        import_statements=[
+            'import tensorflow as tf',
+            'import numpy as np',
+            'import time',
+            'import os',
+            'from typing import Dict, List, Generator',
+            'from perceptilabs.core_new.utils import Picklable, YieldLevel',
+            'from perceptilabs.core_new.graph import Graph',
+            'from perceptilabs.core_new.layers.base import GANLayer, Tf1xLayer',
             'from perceptilabs.core_new.serialization import can_serialize, serialize',
             'from tensorflow.python.training.tracking.base import Trackable'            
         ]
