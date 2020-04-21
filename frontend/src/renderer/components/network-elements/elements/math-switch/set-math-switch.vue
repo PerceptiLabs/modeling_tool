@@ -6,11 +6,11 @@
   )
     template(slot="Settings-content")
       .settings-layer_section
-        .form_row(v-tooltip-interactive:right="interactiveInfo.labels")
-          .form_label Labels:
-          #tutorial_labels.form_input(data-tutorial-hover-info)
+        .form_row(v-tooltip-interactive:right="interactiveInfo.selected_layer")
+          .form_label Selected Layer:
+          #tutorial_selected_layer.form_input(data-tutorial-hover-info)
             base-select(
-              v-model="settings.Labels"
+              v-model="settings.selected_layer"
               :select-options="inputLayers"
             )
 
@@ -39,14 +39,13 @@ export default {
         tutorialId: elList[id].tutorialId
       })
     });
-    if(!this.settings.Labels && this.inputLayers.length) this.settings.Labels = this.inputLayers[0].value.toString();
+    if(!this.settings.selected_layer && this.inputLayers.length) this.settings.selected_layer = this.inputLayers[0].value.toString();
   },
   computed: {
     ...mapGetters({
       currentNetworkList: 'mod_workspace/GET_currentNetworkElementList'
     }),
     inputId() {
-      console.log(this.currentEl.connectionIn);
       return this.currentEl.connectionIn
     }
   },
@@ -54,13 +53,12 @@ export default {
     return {
       inputLayers: [],
       settings: {        
-        Labels: '',
-        Dim: -1,
+        selected_layer: ''
       },
       interactiveInfo: {
-        labels: {
-          title: 'Labels',
-          text: 'Choose which input connection is represent the labels'
+        selected_layer: {
+          title: 'Selected Layer',
+          text: 'Choose which input connection is represent the selected layer'
         },
       }
     }
