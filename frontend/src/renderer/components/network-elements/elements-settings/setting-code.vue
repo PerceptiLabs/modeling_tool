@@ -92,8 +92,7 @@ export default {
       };
       this.$store.dispatch('mod_api/API_getCode', value)
         .then((code)=> {
-          console.log('get code answer', code);
-          this.setCode(code)
+          this.setCode(code);
         })
     },
     setCode(objCode) {

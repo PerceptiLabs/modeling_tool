@@ -554,7 +554,6 @@ const actions = {
       }
     };
 
-    console.log('getCode', theData);
     if(isWeb()) {
       dispatch('globalView/ShowCoreNotFoundPopup', null, { root: true });
     }
