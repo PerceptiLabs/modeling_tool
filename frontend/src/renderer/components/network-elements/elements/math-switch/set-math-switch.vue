@@ -25,22 +25,43 @@
 
 <script>
 import mixinSet       from '@/core/mixins/net-element-settings.js';
-import TripleInput    from "@/components/base/triple-input";
+import { mapGetters, mapActions } from 'vuex';
 
 export default {
   name: 'SetMathSwitch',
   mixins: [mixinSet],
-  components: { TripleInput },
+  beforeMount() {
+    this.inputId.forEach((id)=> {
+      let elList = this.currentNetworkList;
+      this.inputLayers.push({
+        text: elList[id].layerName,
+        value: elList[id].layerId,
+        tutorialId: elList[id].tutorialId
+      })
+    });
+    if(!this.settings.Labels && this.inputLayers.length) this.settings.Labels = this.inputLayers[0].value.toString();
+  },
+  computed: {
+    ...mapGetters({
+      currentNetworkList: 'mod_workspace/GET_currentNetworkElementList'
+    }),
+    inputId() {
+      console.log(this.currentEl.connectionIn);
+      return this.currentEl.connectionIn
+    }
+  },
   data() {
     return {
-      settings: {
+      inputLayers: [],
+      settings: {        
+        Labels: '',
         Dim: -1,
       },
       interactiveInfo: {
-        dimension: {
-          title: 'Dimension',
-          text: 'Choose which axis to do the operation on'
-        }
+        labels: {
+          title: 'Labels',
+          text: 'Choose which input connection is represent the labels'
+        },
       }
     }
   }
