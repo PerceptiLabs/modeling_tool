@@ -6,10 +6,14 @@
   )
     template(slot="Settings-content")
       .settings-layer_section
-        .form_row(v-tooltip-interactive:right="interactiveInfo.dimension")
-          .form_label Dimension:
-          .form_input
-            input(type="text" v-model="settings.Dim")
+        .form_row(v-tooltip-interactive:right="interactiveInfo.labels")
+          .form_label Labels:
+          #tutorial_labels.form_input(data-tutorial-hover-info)
+            base-select(
+              v-model="settings.Labels"
+              :select-options="inputLayers"
+            )
+
     template(slot="Code-content")
       settings-code(
         :current-el="currentEl"
