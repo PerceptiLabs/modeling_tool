@@ -549,7 +549,7 @@ class GANLayerReplica(GANLayer):
     def gen_layer_outputs(self):
         return self._gen_layer_outputs
 
-     @property
+    @property
     def dis_layer_outputs(self):
         return self._dis_layer_outputs
 
