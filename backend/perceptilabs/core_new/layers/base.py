@@ -209,6 +209,7 @@ class TrainingLayer(DataLayer):
         raise NotImplementedError
     
 class RegressionLayer(TrainingLayer):
+    """A layer for training regression models."""
     @property
     @abstractmethod
     def loss_training(self) -> float:
@@ -225,6 +226,61 @@ class RegressionLayer(TrainingLayer):
     @abstractmethod
     def loss_testing(self) -> float:
         """Returns the current correctness of the testing phase"""
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def squared_error_training(self) -> float:
+        """Returns the current squared error of the training phase"""
+        raise NotImplementedError
+    
+    @property
+    @abstractmethod
+    def squared_error_testing(self) -> float:
+        """Returns the current squared error of the testing phase"""
+        raise NotImplementedError
+    
+    @property
+    @abstractmethod
+    def squared_error_validation(self) -> float:
+        """Returns the current squared error of the validation phase"""
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def squared_variance_training(self) -> float:
+        """Returns the squared variance of the training phase"""
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def squared_variance_testing(self) -> float:
+        """Returns the squared variance of the testing phase"""
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def squared_variance_validation(self) -> float:
+        """Returns the squared variance of the validation phase"""
+        raise NotImplementedError
+
+
+    @property
+    @abstractmethod
+    def r_squared_training(self) -> float:
+        """Returns the R^2 of the training phase"""
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def r_squared_testing(self) -> float:
+        """Returns the R^2 of the testing phase"""
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def r_squared_validation(self) -> float:
+        """Returns the R^2 of the validation phase"""
         raise NotImplementedError
 
     @property

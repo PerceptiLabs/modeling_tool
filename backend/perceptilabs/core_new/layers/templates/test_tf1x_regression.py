@@ -101,6 +101,8 @@ def make_graph(j2_engine, tmpdir_del, layer_inputs, layer_targets, layer_fc, exp
         output_layer='layer_fc',
         target_layer='layer_targets',
         n_epochs=n_epochs,
+
+        #TODO: The loss function doesn't do anything. You can put any string and the code will work. Should be fixed
         loss_function='Mean Absolute Error',
         class_weights='1',
         optimizer='tf.compat.v1.train.GradientDescentOptimizer',
@@ -159,7 +161,6 @@ def test_save_model(j2_engine, tmpdir_del, layer_inputs, layer_targets, layer_fc
     
     training_layer = graph.active_training_node.layer
     iterator = training_layer.run(graph) # TODO: self reference is weird. shouldnt be!
-
     next(iterator) # First iteration (including initialization)
     assert not os.path.isfile(fix_path(os.path.join(tmpdir_del, '1', 'saved_model.pb')))
     

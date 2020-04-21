@@ -152,10 +152,6 @@ class ClassificationLayerReplica(ClassificationLayer):
         return self._layer_gradients
 
     @property
-    def batch_size(self):
-        return self._batch_size
-
-    @property
     def layer_outputs(self):
         return self._layer_outputs
 
@@ -197,6 +193,9 @@ class ClassificationLayerReplica(ClassificationLayer):
 class RegressionLayerReplica(RegressionLayer):
     def __init__(self, sample, size_training, size_validation, size_testing, variables,
                  loss_training, loss_testing, loss_validation,
+                 squared_error_training, squared_error_testing, squared_error_validation,
+                 squared_variance_training, squared_variance_testing, squared_variance_validation,
+                 r_squared_training, r_squared_testing, r_squared_validation,
                  status, layer_weights, layer_biases, layer_gradients, layer_outputs,
                  batch_size, training_iteration, validation_iteration,
                  testing_iteration, progress, epoch, export_modes):
@@ -211,6 +210,15 @@ class RegressionLayerReplica(RegressionLayer):
         self._loss_training = loss_training
         self._loss_validation = loss_validation
         self._loss_testing = loss_testing
+        self._squared_error_training = squared_error_training
+        self._squared_error_validation = squared_error_validation
+        self._squared_error_testing = squared_error_testing
+        self._squared_variance_training = squared_variance_training
+        self._squared_variance_testing = squared_variance_testing
+        self._squared_variance_validation = squared_variance_validation
+        self._r_squared_training = r_squared_training
+        self._r_squared_testing = r_squared_testing
+        self._r_squared_validation = r_squared_validation 
         self._status = status
 
         self._layer_weights = layer_weights
@@ -263,6 +271,42 @@ class RegressionLayerReplica(RegressionLayer):
     @property
     def loss_validation(self):
         return self._loss_validation
+
+    @property
+    def squared_error_training(self) -> float:
+        return self._squared_error_training
+    
+    @property
+    def squared_error_testing(self) -> float:
+        return self._squared_error_testing
+    
+    @property
+    def squared_error_validation(self) -> float:
+        return self._squared_error_validation
+
+    @property
+    def squared_variance_training(self) -> float:
+        return self._squared_variance_training
+
+    @property
+    def squared_variance_testing(self) -> float:
+        return self._squared_variance_testing
+
+    @property
+    def squared_variance_validation(self) -> float:
+        return self._squared_variance_validation
+
+    @property
+    def r_squared_training(self) -> float:
+        return self._r_squared_training
+
+    @property
+    def r_squared_testing(self) -> float:
+        return self._r_squared_testing
+
+    @property
+    def r_squared_validation(self) -> float:
+        return self._r_squared_validation
         
     @property
     def status(self):
