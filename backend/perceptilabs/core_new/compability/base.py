@@ -132,11 +132,12 @@ class CompabilityCore:
         if not graphs:
             log.debug("graph is None, returning empty results")
             return {}
-            
+
         if isinstance(graphs[-1].active_training_node.layer, ClassificationLayer):
             result_dict = policy_classification(self._core, graphs, self._sanitized_to_name, self._sanitized_to_id)
         elif isinstance(graphs[-1].active_training_node.layer, RegressionLayer):
             result_dict = policy_regression(self._core, graphs, self._sanitized_to_name, self._sanitized_to_id)
+
         return result_dict
 
     def _print_graph_debug_info(self, graphs):
