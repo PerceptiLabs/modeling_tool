@@ -302,6 +302,14 @@ class {{layer_name}}(RegressionLayer):
         self._loss_validation = 0.0
         self._loss_testing = 0.0
 
+        self._squared_error_training = 0.0
+        self._squared_error_validation = 0.0
+        self._squared_error_testing = 0.0
+
+        self._squared_variance_training = 0.0
+        self._squared_variance_validation = 0.0
+        self._squared_variance_testing = 0.0
+
         self._r_squared_training = 0.0
         self._r_squared_validation = 0.0               
         self._r_squared_testing = 0.0

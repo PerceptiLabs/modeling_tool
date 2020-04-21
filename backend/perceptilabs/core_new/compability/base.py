@@ -11,7 +11,7 @@ from perceptilabs.core_new.graph.utils import sanitize_layer_name
 from perceptilabs.core_new.core2 import Core
 from perceptilabs.core_new.layers import *
 from perceptilabs.core_new.layers.replicas import NotReplicatedError
-from perceptilabs.core_new.compability.policies import policy_classification
+from perceptilabs.core_new.compability.policies import policy_classification, policy_regression
 
 
 log = logging.getLogger(__name__)
@@ -93,7 +93,7 @@ class CompabilityCore:
             threading.Thread(target=worker, args=(do_process_results, PROCESS_RESULTS_DELAY), daemon=True).start()                  
             self._run_core(core, self._graph_spec)
         else:
-            self._run_core(core, self._graph_spec, on_iterate=[do_process_commands, do_process_result])            
+            self._run_core(core, self._graph_spec, on_iterate=[do_process_commands, do_process_results])            
 
     def _run_core(self, core, graph_spec, on_iterate=None):
         try:
@@ -128,13 +128,15 @@ class CompabilityCore:
             self._print_result_dict_debug_info(result_dict)
             return result_dict                
     
-    def _get_results_dict_internal(self, graph):
-        if not graph:
+    def _get_results_dict_internal(self, graphs):
+        if not graphs:
             log.debug("graph is None, returning empty results")
             return {}
-
-        # TODO: if isinstance(training_layer, Classification) etc
-        result_dict = policy_classification(self._core, graph, self._sanitized_to_name, self._sanitized_to_id)
+            
+        if isinstance(graphs[-1].active_training_node.layer, ClassificationLayer):
+            result_dict = policy_classification(self._core, graphs, self._sanitized_to_name, self._sanitized_to_id)
+        elif isinstance(graphs[-1].active_training_node.layer, RegressionLayer):
+            result_dict = policy_regression(self._core, graphs, self._sanitized_to_name, self._sanitized_to_id)
         return result_dict
 
     def _print_graph_debug_info(self, graphs):
@@ -193,15 +195,14 @@ if __name__ == "__main__":
     from perceptilabs.core_new.layers.script import ScriptFactory
     from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP    
 
-    with open('net.json_', 'r') as f:
+    with open('network.json', 'r') as f:
         network = json.load(f)
 
         for _id, layer in network['Layers'].items():
             if layer['Type'] == 'TrainNormal':
                 layer['Properties']['Distributed'] = False
             if layer['Type'] == 'Regression':
-                import pdb 
-                pdb.set_trace()        
+                layer['Properties']['Distributed'] = False
 
     script_factory = ScriptFactory()
     deployment_pipe = InProcessDeploymentPipe(script_factory)
