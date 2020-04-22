@@ -9,8 +9,8 @@
 
 <script>
   import BaseNetEl    from '@/components/network-elements/net-base-element/net-base-element.vue';
-  import ViewEl       from './view-train-normal.vue';
-  import SettingsEl   from './set-train-normal';
+  import ViewEl       from './view-train-gan.vue';
+  import SettingsEl   from './set-train-gan';
 
   export default {
     name: 'TrainGan',

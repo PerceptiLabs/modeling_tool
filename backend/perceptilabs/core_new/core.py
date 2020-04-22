@@ -176,6 +176,7 @@ class BaseCore:
 
             log.info("Preparing layer session for {} [{}]".format(layer_id, layer_type))
             t_start = time.perf_counter()
+
             try:
                 self._run_layer(layer_id, content)
             except LayerSessionStop:

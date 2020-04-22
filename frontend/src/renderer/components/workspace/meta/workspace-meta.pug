@@ -3,7 +3,10 @@
     i.icon.icon-minus
 
   .input-wrap_icon.workspace-scale_input
-    input(type="text" v-model.number="scaleNet")
+    input(type="text" 
+    v-model.number="scaleNet" 
+    @keypress="filterNonNumber($event)" 
+    @blur="onZoomInputBlur")
     span %
 
   button.btn.btn--icon.workspace-scale_btn(type="button" @click="incScale()")

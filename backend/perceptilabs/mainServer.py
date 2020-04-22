@@ -18,7 +18,7 @@ def get_input_args():
                         help="Set this to instantly kill the core, for test purposes.")
     parser.add_argument('-u', '--user', default="dev@dev.com", type=str,
                         help="Set this to attach a user to all Sentry logs.")
-    parser.add_argument('-p','--platform', default='desktop', type=str, choices=['desktop', 'browser'],
+    parser.add_argument('-p','--platform', default='browser', type=str, choices=['desktop', 'browser'],
                         help="Sets what type of frontend you want to communicate with. Can be either 'desktop' or 'browser'.")
     parser.add_argument('-e', '--error', default=False, type=bool, 
                         help="Force an error to see that all the error logging works as it should")
@@ -50,7 +50,10 @@ def setup_logger(log_level, core_mode):
     logging.basicConfig(
         format='%(asctime)s - %(levelname)s - %(threadName)s - %(filename)s:%(lineno)d - %(message)s',
         level=logging.getLevelName(log_level),
-        handlers=[logging.FileHandler("log.txt"), logging.StreamHandler()]
+        handlers=[
+            logging.FileHandler("kernel.log"),
+            logging.StreamHandler()
+        ]
     )
 
     
@@ -75,7 +78,11 @@ def main():
         app_variables = json.load(f)
 
     commit_id = app_variables["BuildVariables"]["CommitId"]
+
+    setup_sentry(args.user, commit_id)
     log.info("Reporting errors with commit id: " + str(commit_id))
+
+
     
     cores=dict()
     dataDict=dict()
@@ -85,7 +92,7 @@ def main():
     core_interface = Interface(cores, dataDict, checkpointDict, lwDict, args.core_mode)
 
     data_bundle = setup_scraper()
-    setup_sentry(args.user, commit_id)
+
 
     if args.error:
         raise Exception("Test error")

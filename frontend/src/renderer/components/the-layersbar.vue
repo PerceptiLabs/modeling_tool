@@ -57,6 +57,7 @@
   import TrainDetector        from '@/components/network-elements/elements/train-detector/view-train-detector.vue'
 
   import MathArgmax           from '@/components/network-elements/elements/math-argmax/view-math-argmax.vue'
+  import MathSwitch           from '@/components/network-elements/elements/math-switch/view-math-switch.vue'
   import MathMerge            from '@/components/network-elements/elements/math-merge/view-math-merge.vue'
   import MathSoftmax          from '@/components/network-elements/elements/math-softmax/view-math-softmax.vue'
   import MathSplit            from '@/components/network-elements/elements/math-split/view-math-split.vue'
@@ -78,7 +79,7 @@ export default {
     DeepLearningFC, DeepLearningConv, DeepLearningDeconv, DeepLearningRecurrent,
     ProcessCrop, ProcessEmbed, ProcessGrayscale, ProcessOneHot, ProcessReshape,
     TrainNormal, TrainGenetic, TrainDynamic, TrainReinforce, TrainLoss, TrainOptimizer, TrainGan, TrainDetector,
-    MathArgmax, MathMerge, MathSoftmax, MathSplit,
+    MathArgmax, MathMerge, MathSoftmax, MathSplit, MathSwitch,
     ClassicMLDbscans, ClassicMLKMeans, ClassicMLKNN, ClassicMLRandomForest, ClassicMLSVM,
     LayerCustom
   },
@@ -137,7 +138,7 @@ export default {
           iconClass: 'icon-calc',
           childListClass: '',
           showEl: false,
-          networkElements: ['MathArgmax', 'MathMerge', 'MathSplit', 'MathSoftmax'],
+          networkElements: ['MathArgmax', 'MathMerge', 'MathSplit', 'MathSoftmax', 'MathSwitch'],
           id:'tutorial_mathematics'
         },
         {

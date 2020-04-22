@@ -20,8 +20,10 @@ import TrainReinforce       from '@/components/network-elements/elements/train-r
 import TrainLoss            from '@/components/network-elements/elements/train-loss/train-loss.vue'
 import TrainOptimizer       from '@/components/network-elements/elements/train-optimizer/train-optimizer.vue'
 import TrainDetector       from '@/components/network-elements/elements/train-detector/train-detector.vue'
+import TrainGan       from '@/components/network-elements/elements/train-gan/train-gan.vue'
 
 import MathArgmax           from '@/components/network-elements/elements/math-argmax/math-argmax.vue'
+import MathSwitch           from '@/components/network-elements/elements/math-switch/math-switch.vue'
 import MathMerge            from '@/components/network-elements/elements/math-merge/math-merge.vue'
 import MathSoftmax          from '@/components/network-elements/elements/math-softmax/math-softmax.vue'
 import MathSplit            from '@/components/network-elements/elements/math-split/math-split.vue'
@@ -46,8 +48,8 @@ export default {
     DataData, DataEnvironment, DataCloud,
     DeepLearningFC, DeepLearningConv, DeepLearningDeconv, DeepLearningRecurrent,
     ProcessCrop, ProcessEmbed, ProcessGrayscale, ProcessOneHot, ProcessReshape,
-    TrainNormal, TrainGenetic, TrainDynamic, TrainReinforce, TrainLoss, TrainOptimizer, TrainDetector,
-    MathArgmax, MathMerge, MathSoftmax, MathSplit,
+    TrainNormal, TrainGenetic, TrainDynamic, TrainReinforce, TrainLoss, TrainOptimizer, TrainDetector, TrainGan,
+    MathArgmax, MathMerge, MathSoftmax, MathSplit, MathSwitch,
     ClassicMLDbscans, ClassicMLKMeans, ClassicMLKNN, ClassicMLRandomForest, ClassicMLSVM,
     LayerContainer, LayerCustom,
     SettingsArrow
@@ -59,6 +61,12 @@ export default {
   },
   beforeDestroy() {
     this.removeArrowListener();
+  },
+  props: {
+    scaleNet: {
+      type: Number,
+      default: 100,
+    },
   },
   data() {
     return {
@@ -91,6 +99,10 @@ export default {
       statisticsIsOpen:     'mod_workspace/GET_statisticsIsOpen',
       testingIsOpen:        'mod_workspace/GET_testIsOpen',
     }),
+    isGridEnabled() {
+      return false;
+      return this.$store.state.globalView.isGridEnabled;
+    },
     fullNetworkElementList() {
       return this.$store.getters['mod_workspace/GET_currentNetworkElementList'];
     },
@@ -131,7 +143,7 @@ export default {
       this.calcSvgSize()
     },
     networkScale() {
-      this.calcSvgSize()
+      this.calcSvgSize(true)
     },
     eventCalcArrow() {
       //this.tutorialPointActivate({way: 'next', validation: this.tutorialActiveAction.id});
@@ -150,8 +162,12 @@ export default {
     ...mapActions({
       tutorialPointActivate:   'mod_tutorials/pointActivate',
       SET_elementNetworkField: 'mod_workspaceHelpers/SET_elementNetworkField',
+      markAllUnselectedAction: 'mod_workspace/markAllUnselectedAction',
     }),
     refNetworkMouseDown(ev) {
+      if(ev.target.nodeName === 'svg' && !(ev.shiftKey || ev.metaKey || ev.ctrlKey)) {
+        this.markAllUnselectedAction();
+      }
       const isLeftBtn = ev.buttons === 1;
       const isEditMode = this.networkMode === 'edit';
       const isOpenNet = this.canEditLayers;
@@ -228,31 +244,23 @@ export default {
        offsetY: this.$refs.network.parentElement.offsetTop
       };
     },
-    // calcLayerSize() {
-    //   if(this.networkElementList) {
-    //     this.layerSize = this.$refs.layer[0].$el.offsetWidth;
-    //   }
-    // },
-    // calcViewPort(needCalcArray) {
-    //   window.innerWidth > 1440 ? this.smallViewPort = false : this.smallViewPort = true;
-    //   if(!this.smallViewPort) this.layerSize = 72;
-    //   if(needCalcArray) this.drawArrows();
-    // },
-    calcSvgSize() {
-      let scrollHeight = this.$refs.network.scrollHeight;
-      let scrollWidth = this.$refs.network.scrollWidth;
-      let offsetHeight = this.$refs.network.offsetHeight;
-      let offsetWidth = this.$refs.network.offsetWidth;
-      const canvasHeight = scrollHeight + 40;
-      const canvasWidth = scrollWidth + 40;
-      // this.svgHeight = canvasHeight +'px';
-      // this.svgWidth = canvasWidth +'px';
-      scrollHeight > offsetHeight
-        ? this.svgHeight = canvasHeight +'px'
-        : this.svgHeight = '100%';
-      scrollWidth > offsetWidth
-        ? this.svgWidth = canvasWidth +'px'
-        : this.svgWidth = '100%';
+    calcSvgSize(isZoomed) {
+      const parentWorkspace = this.$parent.$refs.container;
+      let offsetHeight = parentWorkspace.offsetHeight;
+      let offsetWidth = parentWorkspace.offsetWidth;
+      
+      // calculate max boundaries for network elements
+      const positions = Object.values(this.networkElementList).map(item => item.layerMeta.position);
+      const maxWidthPositions = Math.max(...positions.map(position => position.left)) + 60;
+      const maxHeightPositions = Math.max(...positions.map(position => position.top)) + 60;
+
+      this.svgWidth = Math.max(offsetWidth, maxWidthPositions);
+      this.svgHeight = Math.max(offsetHeight, maxHeightPositions);
+      
+      if (isZoomed) {
+        parentWorkspace.scrollLeft = 0;
+        parentWorkspace.scrollTop = 0;
+      }
     },
 
     //-------------
@@ -566,16 +574,17 @@ export default {
       return (event.pageY - this.offset.offsetY + scrollPosition) / this.networkScale
     },
     getLastElementLegArrowData(arrow) {
-      const isLayerTypeContainer = arrow.l1.layerType === 'Сontainer';
+      const isLayerTypeContainer = arrow.l1.layerType === 'Container';
       let arrowLeg1 = arrow.l1;
       if(isLayerTypeContainer) {
         // find id
         let keysOfContainerLayersListFrom = Object.keys(arrow.l1.containerLayersList);
         let keysOfContainerLayersListTo = arrow.l2.connectionIn;
         const keyOfLastElementFromGroup = keysOfContainerLayersListFrom.filter(value => keysOfContainerLayersListTo.includes(value))[0];
-
-        let currentNetworkElementList = this.fullNetworkElementList;
-        arrowLeg1 = currentNetworkElementList[keyOfLastElementFromGroup];
+        if(keyOfLastElementFromGroup) {
+          let currentNetworkElementList = this.fullNetworkElementList;
+          arrowLeg1 = currentNetworkElementList[keyOfLastElementFromGroup]; 
+        }
       }
       return arrowLeg1;
     },
