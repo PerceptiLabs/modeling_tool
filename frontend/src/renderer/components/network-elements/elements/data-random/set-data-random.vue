@@ -6,16 +6,34 @@
     @press-confirm="confirmSettings"
   )
     template(slot="Settings-content")
-      .settings-layer_section(style="position:relative")
+      .settings-layer_section
+        .form_row
+          .form_label Distribution:
+          .form_input
+            base-radio(group-name="group1" value-input="Normal" v-model="settings.distribution")
+              span Normal
+            base-radio(group-name="group1" value-input="Uniform" v-model="settings.distribution")
+              span Uniform
+      .settings-layer_section(style="position:relative" v-if="settings.distribution=='Normal'")
         .form_row
           .form_label Mean:
           .form_input
             input(type="number" v-model="settings.mean")
-      .settings-layer_section(style="position:relative")
+      .settings-layer_section(style="position:relative" v-if="settings.distribution=='Normal'")
         .form_row
           .form_label Stddev:
           .form_input
             input(type="number" v-model="settings.stddev")
+      .settings-layer_section(style="position:relative"  v-if="settings.distribution!='Normal'")
+        .form_row
+          .form_label Min:
+          .form_input
+            input(type="number" v-model="settings.min")
+      .settings-layer_section(style="position:relative"  v-if="settings.distribution!='Normal'")
+        .form_row
+          .form_label Max:
+          .form_input
+            input(type="number" v-model="settings.max")
       .settings-layer_section(style="position:relative")
         .form_row
           .form_label Batch Size:
@@ -26,14 +44,6 @@
           .form_label Shape:
           .form_input
             input(type="string" v-model="settings.shape")
-      .settings-layer_section
-        .form_row
-          .form_label Distribution:
-          .form_input
-            base-radio(group-name="group1" value-input="Normal" v-model="settings.distribution")
-              span Normal
-            base-radio(group-name="group1" value-input="Uniform" v-model="settings.distribution")
-              span Uniform
 
     template(slot="Code-content")
       settings-code(
@@ -60,7 +70,9 @@
         settings: {
           mean: '0.1',
           stddev: '0.5',
+          min: '0.1',
           batch_size: '3',
+          max: '3.4',
           distribution: 'Normal',
           shape: '(1, 5, 7, 4, 7)',
         },
