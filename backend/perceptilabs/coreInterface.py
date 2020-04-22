@@ -210,14 +210,9 @@ class coreLogic():
         graph_dict=self.graphObj.graphs
 
         from perceptilabs.codehq import CodeHqNew as CodeHq
-<<<<<<< HEAD
 
         error_handler = CoreErrorHandler(self.errorQueue)
         
-=======
-        error_handler = CoreErrorHandler(self.issue_handler)
-
->>>>>>> dev
         module_provider = ModuleProvider()
         module_provider.load('tensorflow', as_name='tf')
         module_provider.load('numpy', as_name='np')
