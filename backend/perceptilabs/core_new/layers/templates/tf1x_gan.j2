@@ -1,65 +1,11 @@
-{% macro layer_tf1x_gan(layer_name, skip_layer, random_data_layer, n_epochs, loss_function, class_weights, generator_optimizer, discriminator_optimiser, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, batch_size) %}
-class {{layer_name}}(GANLayer):
-    def __init__(self):
-        self._n_epochs = {{n_epochs}}
-        self._batch_size = {{batch_size}}
+{% macro run_normal(layer_name, switch_layer, random_layer, batch_size, n_epochs, class_weights, generator_optimizer, discriminator_optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory) %}
+        self._status = 'initializing'
 
-        self._stopped = False
-        self._paused = False
-        self._status = 'created'
-        
-        self._gen_loss_training = 0.0
-        self._gen_loss_validation = 0.0
-        self._gen_loss_testing = 0.0   
-
-        self._dis_loss_training = 0.0
-        self._dis_loss_validation = 0.0
-        self._dis_loss_testing = 0.0   
-
-        self._variables = {}
-        self._gen_variables = {}
-        self._dis_variables = {}
-
-        self._gen_layer_outputs = {}
-        self._gen_layer_weights = {}
-        self._gen_layer_biases = {}        
-        self._gen_layer_gradients = {}
-
-        self._dis_layer_outputs = {}
-        self._dis_layer_weights = {}
-        self._dis_layer_biases = {}        
-        self._dis_layer_gradients = {}
-
-        self._layer_outputs = {}
-        self._layer_weights = {}
-        self._layer_biases = {}        
-        self._layer_gradients = {}
-
-        self._training_iteration = 0
-        self._validation_iteration = 0
-        self._testing_iteration = 0
-
-        self._trn_sz_tot = 0
-        self._val_sz_tot = 0
-        self._tst_sz_tot = 0        
-        
-        self._random_means = []
-        self._random_stds = []
-        self._real_means = []
-        self._real_stds = []
-
-    def run(self, graph: Graph):
-        """Called as the main entry point for training. Responsible for training the model.
-
-        Args:
-            graph: A PerceptiLabs Graph object containing references to all layers objects included in the model produced by this training layer.
-        """        
-        self._status = 'initializing'    
-        random_data_layer_id = '{{random_layer}}'
+        random_data_layer_id = '{{random_data_layer}}'
         switch_layer_id = '{{switch_layer}}'    
 
         assert len(graph.data_nodes) == 2
-
+        
         for node in graph.data_nodes():
             if node.layer_id != random_data_layer_id:
                 real_data_node = node
@@ -69,20 +15,24 @@ class {{layer_name}}(GANLayer):
         training_node = graph.nodes[-1]
         switch_node = graph.get_node_by_id(switch_layer_id)
         output_node = graph.get_input_nodes(training_node)
-
-        generator_nodes = graph._get_nodes_inbetween(random_data_node, switch_node)
-        generator_layer_ids = [node.layer_id for node in generator_nodes]
-        discriminator_nodes = graph._get_nodes_inbetween(switch_node, training_node)  
-        discriminator_layer_ids = [node.layer_id for node in discriminator_nodes]
-        real_data_nodes = graph._get_nodes_inbetween(real_data_node, switch_node)
+        output_layer_id = output_node.layer_id
         
-        random_data_path = graph._get_nodes_inbetween(random_data_node, training_node)
-        real_data_path = graph._get_nodes_inbetween(real_data_node, training_node)
+        self._switch_layer_id = switch_layer_id
+
+        gen_nodes = graph.get_nodes_inbetween( random_data_node, switch_node)
+        dis_nodes = graph.get_nodes_inbetween(switch_node, output_node)
+        real_nodes = graph.get_nodes_inbetween(real_data_node, switch_node)
+
+        gen_layer_ids = [node.layer_id for node in generator_nodes]
+        disc_layer_ids = [node.layer_id for node in dis_nodes]
+        
+        # random_data_path = graph._get_nodes_inbetween(random_data_node, training_node)
+        # real_data_path = graph._get_nodes_inbetween(real_data_node, training_node)
 
         self._trn_sz_tot = real_data_node.layer.size_training
         self._val_sz_tot = real_data_node.layer.size_validation
         self._tst_sz_tot = real_data_node.layer.size_testing
-        
+
         # Make training set
         dataset_trn = tf.data.Dataset.zip((
             tf.data.Dataset.from_generator(
@@ -125,74 +75,132 @@ class {{layer_name}}(GANLayer):
             )
         ))
 
-
-        real_data_trn = dataset_trn.batch(self._batch_size)
-        real_data_val = dataset_val.batch(self._batch_size)
-        real_data_tst = dataset_tst.batch(1)                
+        dataset_trn = dataset_trn.batch(self._batch_size)
+        dataset_val = dataset_val.batch(self._batch_size)
+        dataset_tst = dataset_tst.batch(1)
 
         # Make initializers
         iterator = tf.data.Iterator.from_structure(dataset_trn.output_types, dataset_trn.output_shapes)
-        trn_init = iterator.make_initializer(real_data_trn)
-        val_init = iterator.make_initializer(real_data_val)
-        tst_init = iterator.make_initializer(real_data_tst)        
+        trn_init = iterator.make_initializer(dataset_trn)
+        val_init = iterator.make_initializer(dataset_val)
+        tst_init = iterator.make_initializer(dataset_tst)        
         real_tensor , random_tensor = iterator.get_next()
-        
+
         # Build the TensorFlow graph # TODO: perhaps this part can be delegated to the graph?
-        random_output_tensors = {
-            random_data_node.layer_id: random_tensor
-        }
 
-        real_output_tensors = {
-            real_data_node.layer_id: real_tensor
-        }
+        def build_real_graph(real_tensor):
+            layer_output_tensors = {
+                real_data_node.layer_id: real_tensor
+            }
+            for node in real_nodes:
+                args = []
+                for input_node in graph.get_input_nodes(node):
+                    args.append(layer_output_tensors[input_node.layer_id])
+                    y = node.layer_instance(*args)
+                layer_output_tensors[node.layer_id] = y
+            return layer_output_tensors
+
+        def build_gen_graph(random_tensor):
+            layer_output_tensors = {
+                random_data_node.layer_id: random_tensor
+            }
+            for node in gen_nodes:
+                args = []
+                for input_node in graph.get_input_nodes(node):
+                    args.append(layer_output_tensors[input_node.layer_id])
+                    y = node.layer_instance(*args)
+                layer_output_tensors[node.layer_id] = y
+            return layer_output_tensors
         
-        switch_node.layer_instance._selected_layer = generator_nodes[-1].layer_id 
-        for node in random_data_path:
-            args = []
-            for input_node in graph.get_input_nodes(node):
-                args.append(generator_layer_output_tensors[input_node.layer_id])
-            y = node.layer_instance(*args)
-            random_output_tensors[node.layer_id] = y
+        def build_dis_graph(input_tensor):
+            layer_output_tensors = {
+                switch_node.layer_id: input_tensor
+            }
+            for node in dis_nodes:
+                args = []
+                for input_node in graph.get_input_nodes(node):
+                    args.append(layer_output_tensors[input_node.layer_id])
+                    y = node.layer_instance(*args)
+                layer_output_tensors[node.layer_id] = y
+            return layer_output_tensors
 
-        if real_data_nodes != []:
-            switch_node.layer_instance._selected_layer = real_data_nodes[-1].layer_id 
-        else:
-            switch_node.layer_instance._selected_layer = real_data_node.layer_id 
-        for node in real_data_path:
-            args = []
-            for input_node in graph.get_input_nodes(node):
-                args.append(layer_output_tensors[input_node.layer_id])
-            y = node.layer_instance(*args)
-            real_output_tensors[node.layer_id] = y
+        real_layer_output_tensors = build_real_graph(real_tensor)
+        gen_layer_output_tensors = build_gen_graph(random_tensor)
 
-        real_tensor = real_output_tensors[output_node.layer_id]
-        random_tensor = random_output_tensors[output_node.layer_id]
-
-        self._real_input = real_tensor
-        self._generated_output = random_output_tensors[generator_nodes[-1].layer_id]
+        real_output_tensor = real_layer_output_tensors[switch_layer_id]
+        gen_output_tensor = gen_layer_output_tensors[switch_layer_id]
+        
+        real_dis_layer_output_tensors = build_dis_graph(real_output_tensor)
+        random_dis_layer_output_tensors = build_dis_graph(gen_output_tensor)
+        
+        real_dis_output_tensor = real_dis_layer_output_tensors[output_layer_id]
+        random_dis_output_tensor = random_dis_layer_output_tensors[output_layer_id]
+        
+        # Create an exportable version of the TensorFlow graph
+        """
+        self._input_tensor_export = tf.placeholder(shape=dataset_trn.output_shapes[0], dtype=dataset_trn.output_types[0])
+        self._output_tensor_export = build_graph(
+            self._input_tensor_export,
+            tf.placeholder(shape=dataset_trn.output_shapes[1], dtype=dataset_trn.output_types[1])
+        )[output_layer_id]
+        """
+        #loss function
 
         def loss_func(logits_in,labels_in):
             return tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=logits_in,labels=labels_in))
-
-        dis_real_loss=loss_func(real_tensor,tf.ones_like(real_tensor)*0.9) #Smoothing for generalization
-        dis_random_loss=loss_func(random_tensor,tf.zeros_like(real_tensor))
         
-        dis_loss=dis_real_loss+dis_random_loss
-        gen_loss= loss_func(random_tensor,tf.ones_like(random_tensor))
+        dis_real_loss=loss_func(real_dis_output_tensor,tf.ones_like(real_dis_output_tensor)*0.9) 
+        dis_random_loss=loss_func(random_dis_output_tensor,tf.zeros_like(random_dis_output_tensor))
+        
+        dis_loss_tensor = dis_real_loss+dis_random_loss
+        gen_loss_tensor = loss_func(random_dis_output_tensor,tf.ones_like(random_dis_output_tensor))
 
         global_step = None
         {% filter remove_lspaces(8) %}        
-            {% if generator_optimizer == 'tf.compat.v1.train.AdamOptimizer' %}
-                generator_optimizer = tf.train.AdamOptimizer(learning_rate={{learning_rate}}, beta1={{beta1}}, beta2={{beta2}})       
-                               
+            {% if generator_optimizer == 'tf.compat.v1.train.GradientDescentOptimizer' %}
+                generator_optimizer = tf.compat.v1.train.GradientDescentOptimizer(learning_rate={{learning_rate}})
+            {% elif generator_optimizer == 'tf.compat.v1.train.MomentumOptimizer' %}
+                global_step = tf.Variable(0)
+                learning_rate_momentum = tf.train.exponential_decay(
+                    learning_rate={{learning_rate}},
+                    global_step=global_step,
+                    decay_steps={{decay_steps}},
+                    decay_rate={{decay_rate}},
+                    staircase=True
+                )
+                generator_optimizer = tf.train.MomentumOptimizer(learning_rate=learning_rate_momentum, momentum={{momentum}})
+            {% elif generator_optimizer == 'tf.compat.v1.train.AdamOptimizer' %}
+                generator_optimizer = tf.train.AdamOptimizer(learning_rate={{learning_rate}}, beta1={{beta1}}, beta2={{beta2}})
+            {% elif generator_optimizer == 'tf.compat.v1.train.AdagradOptimizer' %}
+                generator_optimizer = tf.compat.v1.train.AdagradOptimizer(learning_rate={{learning_rate}})            
+            {% elif generator_optimizer == 'tf.compat.v1.train.RmsPropOptimizer' %}
+                generator_optimizer = tf.compat.v1.train.RMSPropOptimizer(learning_rate={{learning_rate}})                        
             {% else %}
-                raise NotImplementedError('Optimizer {{optimizer}} not supported yet')
+                raise NotImplementedError('Optimizer {{generator_optimizer}} not supported yet')
             {% endif %}
-            {% if discriminator_optimizer == 'tf.compat.v1.train.AdamOptimizer' %}
-                discriminator_optimizer = tf.train.AdamOptimizer(learning_rate={{learning_rate}}, beta1={{beta1}}, beta2={{beta2}})       
-                               
+        {% endfilter %}
+
+        {% filter remove_lspaces(8) %}        
+            {% if discriminator_optimizer == 'tf.compat.v1.train.GradientDescentOptimizer' %}
+                discriminator_optimizer = tf.compat.v1.train.GradientDescentOptimizer(learning_rate={{learning_rate}})
+            {% elif discriminator_optimizer == 'tf.compat.v1.train.MomentumOptimizer' %}
+                global_step = tf.Variable(0)
+                learning_rate_momentum = tf.train.exponential_decay(
+                    learning_rate={{learning_rate}},
+                    global_step=global_step,
+                    decay_steps={{decay_steps}},
+                    decay_rate={{decay_rate}},
+                    staircase=True
+                )
+                discriminator_optimizer = tf.train.MomentumOptimizer(learning_rate=learning_rate_momentum, momentum={{momentum}})
+            {% elif discriminator_optimizer == 'tf.compat.v1.train.AdamOptimizer' %}
+                discriminator_optimizer = tf.train.AdamOptimizer(learning_rate={{learning_rate}}, beta1={{beta1}}, beta2={{beta2}})
+            {% elif discriminator_optimizer == 'tf.compat.v1.train.AdagradOptimizer' %}
+                discriminator_optimizer = tf.compat.v1.train.AdagradOptimizer(learning_rate={{learning_rate}})            
+            {% elif discriminator_optimizer == 'tf.compat.v1.train.RmsPropOptimizer' %}
+                discriminator_optimizer = tf.compat.v1.train.RMSPropOptimizer(learning_rate={{learning_rate}})                        
             {% else %}
-                raise NotImplementedError('Optimizer {{optimizer}} not supported yet')
+                raise NotImplementedError('Optimizer {{discriminator_optimizer}} not supported yet')
             {% endif %}
         {% endfilter %}
 
@@ -200,12 +208,12 @@ class {{layer_name}}(GANLayer):
         gen_layer_bias_tensors = {}        
         gen_layer_gradient_tensors = {}
 
-        dis_layer_weight_tensors = {}
-        dis_layer_bias_tensors = {}        
-        dis_layer_gradient_tensors = {}
-        for node in generator_nodes:
+        for node in gen_nodes+real_nodes:
+            if not isinstance(node.layer, Tf1xLayer): # In case of pure custom layers...
+                continue
+            
             gen_layer_weight_tensors[node.layer_id] = node.layer.weights
-            gen_layer_bias_tensors[node.layer_id] = node.layer.biases            
+            gen_layer_bias_tensors[node.layer_id] = node.layer.biases
             
             if len(node.layer.trainable_variables) > 0:
                 gradients = {}
@@ -215,11 +223,17 @@ class {{layer_name}}(GANLayer):
                         grad_tensor = tf.constant(0)
                     gradients[name] = grad_tensor
                 gen_layer_gradient_tensors[node.layer_id] = gradients
-                self._layer_gradients[node.layer_id] = {name: [] for name in node.layer.trainable_variables.keys()} # Initialize
-        
-        for node in discriminator_nodes:
+
+        dis_layer_weight_tensors = {}
+        dis_layer_bias_tensors = {}        
+        dis_layer_gradient_tensors = {}
+
+        for node in dis_nodes:
+            if not isinstance(node.layer, Tf1xLayer): # In case of pure custom layers...
+                continue
+            
             dis_layer_weight_tensors[node.layer_id] = node.layer.weights
-            dis_layer_bias_tensors[node.layer_id] = node.layer.biases            
+            dis_layer_bias_tensors[node.layer_id] = node.layer.biases
             
             if len(node.layer.trainable_variables) > 0:
                 gradients = {}
@@ -229,185 +243,290 @@ class {{layer_name}}(GANLayer):
                         grad_tensor = tf.constant(0)
                     gradients[name] = grad_tensor
                 dis_layer_gradient_tensors[node.layer_id] = gradients
-                self._layer_gradients[node.layer_id] = {name: [] for name in node.layer.trainable_variables.keys()} # Initialize       
 
-        for node in graph.inner_nodes:
-            if node not in discriminator_nodes and not in generator_nodes:
-                self._layer_weights[node.layer_id] = node.layer.weights
-                self._layer_biases[node.layer_id] = node.layer.biases            
-            
-                if len(node.layer.trainable_variables) > 0:
-                    gradients = {}
-                    for name, tensor in node.layer.trainable_variables.items():
-                        grad_tensor = tf.gradients(loss_tensor, tensor)
-                        if any(x is None for x in grad_tensor):
-                            grad_tensor = tf.constant(0)
-                        gradients[name] = grad_tensor
-                    layer_gradient_tensors[node.layer_id] = gradients
-                    self._layer_gradients[node.layer_id] = {name: [] for name in node.layer.trainable_variables.keys()}
-                
+        
+        trainable_vars = tf.trainable_variables() # TODO: safer to get from nodes. Especially with split graph in mind.
+        
+        dis_vars=[var for var in trainable_vars if var.name in discriminator_layer_id for discriminator_layer_id in dis_layer_ids ]
+        dis_update_weights = discriminator_optimizer.minimize(dis_loss_tensor, var_list = dis_vars, global_step=global_step)
 
-        dis_vars=[var for var in tvars if var.name in discriminator_layer_id for discriminator_layer_id in discriminator_layer_ids ]
-        dis_grads = tf.gradients(dis_loss, dis_vars)
-        dis_update_weights = discriminator_optimizer.apply_gradients(zip(dis_grads, dis_vars), global_step=global_step) 
-
-        g_vars=[var for var in tvars if var.name in generator_layer_id for generator_layer_id in generator_layer_ids]
-        gen_grads = tf.gradients(gen_loss, gen_vars)
-        gen_update_weights = generator_optimizer.apply_gradients(zip(gen_grads, gen_vars), global_step=global_step) 
+        g_vars=[var for var in trainable_vars if var.name in generator_layer_id for generator_layer_id in gen_layer_ids]
+        gen_update_weights = generator_optimizer.minimize(gen_loss_tensor, var_list = gen_vars, global_step=global_step) 
+             
 
         config = tf.ConfigProto()
         config.gpu_options.allow_growth = True
         sess = tf.Session(config=config)
-        self._saver = tf.train.Saver()
+        self._sess = sess
+
+        trackable_variables = {}
+        trackable_variables.update({x.name: x for x in tf.trainable_variables() if isinstance(x, Trackable)})
+        trackable_variables.update({k: v for k, v in locals().items() if isinstance(v, Trackable) and not isinstance(v, tf.python.data.ops.iterator_ops.Iterator)}) # TODO: Iterators based on 'stateful functions' cannot be serialized.
+        self._checkpoint = tf.train.Checkpoint(**trackable_variables)
         sess.run(tf.global_variables_initializer())
-
-        def sleep_while_paused():
-            while self._paused:
-                time.sleep(1.0)
-
+        
+        {% filter remove_lspaces(8) %}
+            {% if export_directory is not none %}        
+                path = tf.train.latest_checkpoint('{{export_directory}}')
+                status = self._checkpoint.restore(path)
+                status.assert_consumed().run_restore_ops(session=self._sess)
+            {% endif %}
+        {% endfilter %}                    
+        
         def train_step():
-            _, self._generator_loss_training, self._random_outputs, self._gen_layer_weights,
-             self._gen_layer_biases, self._gen_layer_gradients \
-                = sess.run([
-                    gen_update_weights, gen_loss, 
-                    random_output_tensors, gen_layer_weight_tensors, gen_layer_bias_tensors, gen_layer_gradient_tensors
-                ])
-            _, self._discriminator_loss_training, self._real_outputs, self._dis_layer_weights,
-             self._dis_layer_biases, self._dis_layer_gradients \
-                = sess.run([
-                    dis_update_weights, dis_loss, 
-                    real_output_tensors, dis_layer_weight_tensors, dis_layer_bias_tensors, dis_layer_gradient_tensors
-                ])
-            
+            if not self._headless:
+                _, self._gen_loss_training, self._gen_layer_outputs,\
+                     self._gen_layer_weights, self._gen_layer_biases, \
+                    self._gen_layer_gradients \
+                    = sess.run([
+                        gen_update_weights, gen_loss_tensor, \
+                        gen_layer_output_tensors, gen_layer_weight_tensors, gen_layer_bias_tensors, gen_layer_gradient_tensors
+                    ])
+                _, self.__dis_loss_training, self.__dis_layer_outputs,\
+                     self.__dis_layer_weights, self.__dis_layer_biases, \
+                    self.__dis_layer_gradients \
+                    = sess.run([
+                        _dis_update_weights, _dis_loss_tensor, \
+                        _dis_layer_output_tensors, _dis_layer_weight_tensors, _dis_layer_bias_tensors, _dis_layer_gradient_tensors
+                    ])
+            else:
+                _, self._gen_loss_training
+                    = sess.run([
+                        gen_update_weights, gen_loss_tensor
+                    ])
+                _, self.__dis_loss_training,
+                    = sess.run([
+                        _dis_update_weights, _dis_loss_tensor
+                    ])
         def validation_step():
-            self._generator_loss_validation,  \
-                self._random_outputs, self._gen_layer_weights, self._gen_layer_biases, \
-                self._gen_layer_gradients \
-                = sess.run([
-                    gen_loss, 
-                    random_output_tensors, gen_layer_weight_tensors, gen_layer_bias_tensors, gen_layer_gradient_tensors
-                ])
-            self._discriminator_loss_validation,  \
-                self._real_outputs, self._dis_layer_weights, self._dis_layer_biases, \
-                self._dis_layer_gradients \
-                = sess.run([
-                    dis_loss, 
-                    real_output_tensors, dis_layer_weight_tensors, dis_layer_bias_tensors, dis_layer_gradient_tensors
-                ])
+            if not self._headless:
+                self._gen_loss_validation, self._gen_layer_outputs,\
+                     self._gen_layer_weights, self._gen_layer_biases, \
+                    self._gen_layer_gradients \
+                    = sess.run([
+                        gen_loss_tensor, \
+                        gen_layer_output_tensors, gen_layer_weight_tensors, gen_layer_bias_tensors, gen_layer_gradient_tensors
+                    ])
+                self.__dis_loss_validation, self.__dis_layer_outputs,\
+                     self.__dis_layer_weights, self.__dis_layer_biases, \
+                    self.__dis_layer_gradients \
+                    = sess.run([
+                        _dis_loss_tensor, \
+                        _dis_layer_output_tensors, _dis_layer_weight_tensors, _dis_layer_bias_tensors, _dis_layer_gradient_tensors
+                    ])
+            else:
+                self._gen_loss_validation
+                    = sess.run([
+                        gen_loss_tensor
+                    ])
+                self.__dis_loss_validation,
+                    = sess.run([
+                        _dis_loss_tensor
+                    ])
 
             
         def test_step():
-            self._generator_loss_testing, \
-                self._random_outputs, self._gen_layer_weights, gen_layer_gradients \
+            self._gen_loss_testing, self._gen_layer_outputs,\
+                    self._gen_layer_weights, self._gen_layer_gradients \
                 = sess.run([
-                    random_loss,
-                    random_output_tensors, gen_layer_weight_tensors, gen_layer_gradient_tensors
+                    gen_loss_tensor, \
+                    gen_layer_output_tensors, gen_layer_weight_tensors, gen_layer_gradient_tensors
                 ])
-            self._discriminator_loss_testing, \
-                self._real_outputs, self._dis_layer_weights, dis_layer_gradients \
+            self.__dis_loss_testing, self.__dis_layer_outputs,\
+                    self.__dis_layer_weights, self.__dis_layer_gradients \
                 = sess.run([
-                    real_loss,
-                    real_output_tensors, dis_layer_weight_tensors, dis_layer_gradient_tensors
+                    _dis_loss_tensor, \
+                    _dis_layer_output_tensors, _dis_layer_weight_tensors, _dis_layer_gradient_tensors
                 ])
             
-        self._variables = {k: v for k, v in locals().items() if dill.pickles(v)}
+        self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
 
         log.info("Entering training loop")
-        
+
         # Training loop
         self._epoch = 0
-        while self._epoch < self._n_epochs:
+        while self._epoch < self._n_epochs and not self._stopped:
+            t0 = time.perf_counter()
             self._training_iteration = 0
+            self._validation_iteration = 0
             self._status = 'training'
             sess.run(trn_init)            
             try:
                 while not self._stopped:
-                    sleep_while_paused()
                     train_step()
-                    self.save_snapshot(graph)
+                    yield YieldLevel.SNAPSHOT
                     self._training_iteration += 1
             except tf.errors.OutOfRangeError:
                 pass
 
-
-            self._validation_iteration = 0
             self._status = 'validation'
             sess.run(val_init)            
             try:
                 while not self._stopped:
-                    sleep_while_paused()
                     validation_step()
-                    self.save_snapshot(graph)                    
+                    yield YieldLevel.SNAPSHOT                    
                     self._validation_iteration += 1
             except tf.errors.OutOfRangeError:
                 pass
-
-
             log.info(
                 f"Finished epoch {self._epoch+1}/{self._n_epochs} - "
-                f"generator loss training, validation: {self.generator_loss_training:.6f}, {self.generator_loss_validation:.6f} - "
-                f"discriminator loss training, validation: {self.discriminator_loss_training:.6f}, {self.discriminator_loss_validation:.6f}"
+                f"loss training, validation: {self.loss_training:.6f}, {self.loss_validation:.6f} - "
+                f"acc. training, validation: {self.accuracy_training:.6f}, {self.accuracy_validation:.6f}"
             )
-
-
-            print(
-                f"Finished epoch {self._epoch+1}/{self._n_epochs} - "
-                f"generator loss training, validation: {self.generator_loss_training:.6f}, {self.generator_loss_validation:.6f} - "
-                f"discriminator loss training, validation: {self.discriminator_loss_training:.6f}, {self.discriminator_loss_validation:.6f}"
-            )
-
+            log.info(f"Epoch duration: {round(time.perf_counter() - t0, 3)} s")            
             self._epoch += 1
 
-        self._variables = {k: v for k, v in locals().items() if dill.pickles(v)}            
-            
+        self._variables = {k: v for k, v in locals().items() if can_serialize(v)}            
+        yield YieldLevel.DEFAULT            
+        
         # Test loop
         self._testing_iteration = 0
         self._status = 'testing'
         sess.run(tst_init)                                
         try:
             while not self._stopped:
-                sleep_while_paused()
                 test_step()
-                self.save_snapshot(graph)                                    
+                yield YieldLevel.SNAPSHOT
                 self._testing_iteration += 1
         except tf.errors.OutOfRangeError:
             pass
 
         self._status = 'finished'
-        self._variables = {k: v for k, v in locals().items() if dill.pickles(v)}
-        self.save_snapshot(graph)        
+        self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
+        yield YieldLevel.DEFAULT
+{% endmacro %}
 
-    def on_pause(self):
-        """Called when the pause button is clicked in the frontend. 
-        It is up to the implementing layer to pause its execution. 
+################################################### Main #####################################################
+{% macro layer_tf1x_gan(layer_name, switch_layer, random_layer, batch_size, n_epochs, class_weights, generator_optimizer, discriminator_optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory) %}
+class {{layer_name}}(GANLayer):
 
-        CAUTION: This method will be called from a different thread than run - keep thread-safety in mind."""
-        self._paused = True
+    def __init__(self):
+        self._n_epochs = {{n_epochs}}
+        self._batch_size = {{batch_size}}
 
-    def on_resume(self):
-        """Called when the resume button is clicked in the frontend. 
-        It is up to the implementing layer to resume execution. 
-        
-        CAUTION: This method will be called from a different thread than run - keep thread-safety in mind."""
+        self._stopped = False
         self._paused = False
+        self._headless = False
+        self._status = 'created'
+        
+        self._gen_loss_training = 0.0
+        self._gen_loss_validation = 0.0
+        self._gen_loss_testing = 0.0   
 
-    def on_save(self):
-        """Called when the resume button is clicked in the frontend. 
+        self._dis_loss_training = 0.0
+        self._dis_loss_validation = 0.0
+        self._dis_loss_testing = 0.0   
+
+        self._variables = {}
+        self._gen_variables = {}
+        self._dis_variables = {}
+
+        self._gen_layer_outputs = {}
+        self._gen_layer_weights = {}
+        self._gen_layer_biases = {}        
+        self._gen_layer_gradients = {}
+
+        self._dis_layer_outputs = {}
+        self._dis_layer_weights = {}
+        self._dis_layer_biases = {}        
+        self._dis_layer_gradients = {}
+
+        self._layer_outputs = {}
+        self._layer_weights = {}
+        self._layer_biases = {}        
+        self._layer_gradients = {}
+
+        self._training_iteration = 0
+        self._validation_iteration = 0
+        self._testing_iteration = 0
+
+        self._trn_sz_tot = 0
+        self._val_sz_tot = 0
+        self._tst_sz_tot = 0        
+        
+        self._random_means = []
+        self._random_stds = []
+        self._real_means = []
+        self._real_stds = []
+
+        self._checkpoint = None
+        
+    def run(self, graph: Graph):
+        """Called as the main entry point for training. Responsible for training the model.
+
+        Args:
+            graph: A PerceptiLabs Graph object containing references to all layers objects included in the model produced by this training layer.
+        """   
+        {% if not distributed -%}
+            {{ run_normal(layer_name, switch_layer, random_layer, batch_size, n_epochs, class_weights, generator_optimizer, discriminator_optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory) }}
+        {% endif %}                
+
+    def on_export(self, path: str, mode: str) -> None:
+        """Called when the export or save button is clicked in the frontend.
         It is up to the implementing layer to save the model to disk.
         
-        CAUTION: This method will be called from a different thread than run - keep thread-safety in mind."""
-        # TODO: Call ._saver, verify thread-safety
-        pass
+        Args:
+            path: the directory where the exported model will be stored.
+            mode: how to export the model. Made available to frontend via 'export_modes' property."""
 
-    def on_stop(self):
+        log.debug(f"Export called. Project path = {path}, mode = {mode}")
+        pb_path = os.path.join(path, '1')
+        
+        # Export non-compressed model
+        if mode in ['TFModel', 'TFModel+checkpoint']:
+            tf.compat.v1.saved_model.simple_save(self._sess, pb_path, inputs={'input': self._input_tensor_export}, outputs={'output': self._output_tensor_export})
+
+        # Export compressed model
+        if mode in ['TFLite', 'TFLite+checkpoint']:
+            converter = tf.lite.TFLiteConverter.from_session(self._sess, [self._input_tensor_export], [self._output_tensor_export])
+            converter.post_training_quantize = True
+            tflite_model = converter.convert()
+            open(pb_path, "wb").write(tflite_model)
+
+        # Export checkpoint
+        if mode in ['TFModel+checkpoint', 'TFLite+checkpoint']:
+            {% filter remove_lspaces(8) %}
+                {% if distributed %}
+                    self._saver.save(self._sess, os.path.join(path, 'model.ckpt'), global_step=0)
+                {% else %}
+                    self._checkpoint.save(file_prefix=os.path.join(path, 'model.ckpt'), session=self._sess)
+                {% endif %}
+            {% endfilter %}
+                
+    def on_stop(self) -> None:
         """Called when the save model button is clicked in the frontend. 
-        It is up to the implementing layer to save the model to disk.
-        
-        CAUTION: This method will be called from a different thread than run - keep thread-safety in mind."""
+        It is up to the implementing layer to save the model to disk."""
         self._stopped = True
 
+    def on_headless_activate(self) -> None:
+        """"Called when the statistics shown in statistics window are not needed.
+        Purose is to speed up the iteration speed significantly."""
+        self._headless = True
+
+        self._layer_outputs = {} 
+        self._layer_weights = {}
+        self._layer_biases = {}
+        self._layer_gradients = {}
+
+    def on_headless_deactivate(self) -> None:
+        """"Called when the statistics shown in statistics window are needed.
+        May slow down the iteration speed of the training."""
+        import time
+        log.info(f"Set to headless_off at time {time.time()}")
+        self._headless = False
+
     @property
-    def is_paused(self):
+    def export_modes(self) -> List[str]:
+        """Returns the possible modes of exporting a model."""        
+        return [
+            'TFModel',
+            'TFLite'
+            'TFModel+checkpoint',
+            'TFLite+checkpoint',            
+        ]
+        
+    @property
+    def is_paused(self) -> None:
         """Returns true when the training is paused."""        
         return self._paused
 
@@ -470,34 +589,38 @@ class {{layer_name}}(GANLayer):
 
 
     @property
-    def generator_loss_training(self) -> float:
-        """Returns the current loss of the training phase"""                
-        return self._generator_loss_training        
-
-    @property
-    def generator_loss_validation(self) -> float:
-        """Returns the current loss of the validation phase"""                        
-        return self._generator_loss_validation        
-
-    @property
-    def generator_loss_testing(self) -> float:
-        """Returns the current loss of the testing phase"""                
-        return self._generator_loss_testing
+    def get_switch_layer_id(self):
+        return self._switch_layer_id
     
     @property
-    def discriminator_loss_validation(self) -> float:
-        """Returns the current loss of the validation phase"""                        
-        return self._discriminator_loss_validation        
+    def gen_loss_training(self) -> float:
+        """Returns the current loss of the generator training phase"""                
+        return self._gen_loss_training        
 
     @property
-    def discriminator_loss_testing(self) -> float:
-        """Returns the current loss of the testing phase"""                
-        return self._discriminator_loss_testing
+    def gen_loss_validation(self) -> float:
+        """Returns the current loss of the generator validation phase"""                        
+        return self._gen_loss_validation        
 
     @property
-    def discriminator_loss_testing(self) -> float:
-        """Returns the current loss of the testing phase"""                
-        return self._discriminator_loss_testing
+    def gen_loss_testing(self) -> float:
+        """Returns the current loss of the generator testing phase"""                
+        return self._gen_loss_testing
+    
+    @property
+    def dis_loss_validation(self) -> float:
+        """Returns the current loss of the discriminator validation phase"""                        
+        return self._dis_loss_validation        
+
+    @property
+    def dis_loss_testing(self) -> float:
+        """Returns the current loss of the discriminator testing phase"""                
+        return self._dis_loss_testing
+
+    @property
+    def dis_loss_testing(self) -> float:
+        """Returns the current loss of the discriminator testing phase"""                
+        return self._dis_loss_testing
 
     @property
     def layer_weights(self) -> Dict[str, Dict[str, Picklable]]:
@@ -516,7 +639,7 @@ class {{layer_name}}(GANLayer):
             A dictionary of nested dictionaries, where each key is a layer id. The nested dictionaries contain weight name and value pairs. The values must be picklable.
         """       
         self._layer_biases.update(self._gen_layer_biases)
-        self._layer_biases.update(self._dis_layer_biases)
+        self._layer_biases.update(self._dis_layer_biases) 
         return self._layer_biases
     
     @property
@@ -525,9 +648,9 @@ class {{layer_name}}(GANLayer):
 
         Returns:
             A dictionary of nested dictionaries, where each key is a layer id. The nested dictionaries contain gradient name and value pairs. The values must be picklable.
-        """        
+        """
         self._layer_gradients.update(self._gen_layer_gradients)
-        self._layer_gradients.update(self._dis_layer_gradients)
+        self._layer_gradients.update(self._dis_layer_gradients)       
         return self._layer_gradients
     
     @property
@@ -537,9 +660,27 @@ class {{layer_name}}(GANLayer):
         Returns:
             A dictionary of nested dictionaries, where each key is a layer id. The nested dictionaries contain variable name and value pairs. The values must be picklable.
         """
-        self._layer_outputs.update(self._random_outputs)
-        self._layer_outputs.update(self._real_outputs)
+        self._layer_outputs.update(self._gen_layer_outputs)
+        self._layer_outputs.update(self._dis_layer_outputs)
         return self._layer_outputs
+
+    @property
+    def gen_layer_outputs(self) -> Dict[str, Dict[str, Picklable]]:
+        """The output values of each layer in the input Graph during the training (e.g., tf.Tensors evaluated for each iteration)
+
+        Returns:
+            A dictionary of nested dictionaries, where each key is a layer id. The nested dictionaries contain variable name and value pairs. The values must be picklable.
+        """
+        return self._gen_layer_outputs
+    
+    @property
+    def dis_layer_outputs(self) -> Dict[str, Dict[str, Picklable]]:
+        """The output values of each layer in the input Graph during the training (e.g., tf.Tensors evaluated for each iteration)
+
+        Returns:
+            A dictionary of nested dictionaries, where each key is a layer id. The nested dictionaries contain variable name and value pairs. The values must be picklable.
+        """
+        return self._dis_layer_outputs
 
     @property
     def training_iteration(self) -> int:
@@ -555,27 +696,7 @@ class {{layer_name}}(GANLayer):
     def testing_iteration(self) -> int:
         """The current testing iteration"""                
         return self._testing_iteration
-
-    @property
-    def get_real_input(self):
-        return self._real_input
-
-    @property
-    def get_gengerated_output(self):
-        return self._generated_output
     
-    @property
-    def get_generator_distribution(self):
-        self._random_means.append()
-        self._random_stds.append()
-        return
-
-    @property
-    def get_real_distribution(self):
-        self._real_means.append()
-        self._real_stds.append()
-        return
-
     @property
     def progress(self) -> float:
         """A number indicating the overall progress of the training

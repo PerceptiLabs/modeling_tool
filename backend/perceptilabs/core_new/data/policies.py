@@ -163,7 +163,7 @@ class TrainValDataPolicy(DataPolicy):
                         elif key.split(':')[2]=="Average":
                             train_dict[grad_layer_id]['Gradient']['Average'] = value
 
-            if content["Info"]["Type"] in ["DataData", "DataEnvironment"]:
+            if content["Info"]["Type"] in ["DataData", "DataEnvironment","Data"]:
                 batch_size = self._data[id_].get('batch_size', -1)
 
         # Set up variables to mimic FSM:
@@ -416,7 +416,7 @@ class GanTrainValDataPolicy(DataPolicy):
                         elif key.split(':')[2]=="Average":
                             train_dict[grad_layer_id]['Gradient']['Average'] = value
 
-            if content["Info"]["Type"] in ["DataData", "DataEnvironment"]:
+            if content["Info"]["Type"] in ["DataData", "DataEnvironment", "DataRandom"]:
                 batch_size = self._data[id_].get('batch_size', -1)
 
         # Set up variables to mimic FSM:

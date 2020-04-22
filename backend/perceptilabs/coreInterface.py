@@ -210,14 +210,9 @@ class coreLogic():
         graph_dict=self.graphObj.graphs
 
         from perceptilabs.codehq import CodeHqNew as CodeHq
-<<<<<<< HEAD
 
         error_handler = CoreErrorHandler(self.errorQueue)
         
-=======
-        error_handler = CoreErrorHandler(self.issue_handler)
-
->>>>>>> dev
         module_provider = ModuleProvider()
         module_provider.load('tensorflow', as_name='tf')
         module_provider.load('numpy', as_name='np')
@@ -754,6 +749,10 @@ class coreLogic():
             D=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})           
             dataObj = createDataObject([D[-1]])      
             return {"Data":dataObj}
+        elif layerType=="DataRandom":
+            D=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})           
+            dataObj = createDataObject([D[-1]])      
+            return {"Data":dataObj}
         elif layerType=="DeepLearningFC":
             if view=="Output":
                 D=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})[-1]
@@ -1205,7 +1204,7 @@ class coreLogic():
                 return output
 
             if view=="Generated_output":
-                generated_sample=self.getStatistics({"layerId":layerId,"variable":"gen_output_train","innervariable":""})
+                generated_sample=self.getStatistics({"layerId":layerId,"variable":"generated_image","innervariable":""})
 
                 dataObjectOutput = createDataObject(generated_sample)
             
@@ -1214,7 +1213,7 @@ class coreLogic():
                 return output
 
             if view=="Real_input":
-                real_sample=self.getStatistics({"layerId":layerId,"variable":"real_input_train","innervariable":""})
+                real_sample=self.getStatistics({"layerId":layerId,"variable":"real_image","innervariable":""})
 
                 dataObjectOutput = createDataObject(real_sample)
             
@@ -1222,8 +1221,13 @@ class coreLogic():
                 output = {"real_input": dataObjectOutput}
                 return output
             
-            if view=="Generator_distribution":
-                generator_distribution = self.getStatistics({"layerId":layerId,"variable":"generator_distribution","innervariable":""})
+            if view=="Data_distribution":
+                data_distribution = self.getStatistics({"layerId":layerId,"variable":"data_distribution","innervariable":""})
+                dataObjectOutput = createDataObject(data_distribution)
+    
+                output = {"Data_distribution": dataObjectOutput}
+                return output
+        
 
         elif layerType=="TrainDetector":
             if view=="Prediction":
