@@ -113,6 +113,8 @@ DEFINITION_TABLE = {
             'shape': lambda specs: specs['Properties']['accessProperties']['shape'],
             'mean': lambda specs: specs['Properties']['accessProperties']['mean'],
             'stddev': lambda specs: specs['Properties']['accessProperties']['stddev'],
+            'minval': lambda specs: specs['Properties']['accessProperties']['min'],
+            'maxval': lambda specs: specs['Properties']['accessProperties']['max'],
             'batch_size': lambda specs: specs['Properties']['accessProperties']['Batch_size'],
             'seed': 0,
             'shuffle_buffer_size': None,

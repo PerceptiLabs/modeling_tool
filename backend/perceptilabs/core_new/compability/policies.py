@@ -442,7 +442,7 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id, re
         for graph in graphs:
             trn_layer = graph.active_training_node.layer
             input_data_layer = trn_layer.get_input_data_node
-            input_images = trn_node.layer.layer_outputs.get(input_data_layer)
+            input_images = trn_layer.layer_outputs.get(input_data_layer)
 
             if trn_layer.epoch == current_epoch and trn_layer.status == 'training':
                 acc_trn_iter.append(trn_layer.accuracy_training)

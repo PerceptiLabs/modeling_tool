@@ -779,12 +779,6 @@ class {{layer_name}}(ObjectDetectionLayer):
     def image_accuracy(self) -> float:
         return self._image_accuracy
 
-    @property 
-    def bbox_images(self) -> np.ndarray:
-
-        return images
-
-
     @property
     def progress(self) -> float:
         """A number indicating the overall progress of the training

@@ -184,6 +184,27 @@ class Graph:
     def edges(self):
         return self._nx_graph.edges    
     
+    @property
+    def get_rl_graph(self, graph):
+        rl_graph = copy.deepcopy(graph)
+        new_nodes = []
+        new_edges = []
+        node_pairs = {}
+        for node in graph.inner_nodes():
+            new_node = copy.deepcopy(node)
+            new_node.layer_id = new_node.layer_id + '_copy'
+            new_nodes.append(new_node)
+            node_pairs[node.layer_id] = new_node.layer_id
+        
+        for edge in graph.edges():
+            if edge[0] in graph.inner_nodes and edge[1] in graph.inner_nodes:
+                new_edge = [node_pairs[edge[0]], node_pairs[edge[1]]]
+                new_edges.append(new_edge)
+        
+        rl_graph.add_nodes_from(new_nodes)
+        rl_graph.add_edges_from(new_edges)
+        return rl_graph
+    
 #    def clone(self):
 #        layers = {n.layer_id: node.layer.__class__() for n in self.nodes}
 #        new_graph = self._builder.build(layers, self._nx_graph.edges)

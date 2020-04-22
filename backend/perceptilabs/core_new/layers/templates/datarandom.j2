@@ -1,13 +1,13 @@
-{% macro layer_datarandom(layer_name, distribution, mean, stddev, shape, batch_size) %}
+{% macro layer_datarandom(layer_name, distribution, shape, batch_size) %} # mean, stddev,
 class {{layer_name}}(DataLayer):
     """Class responsible for generating random noise"""    
     def __init__(self):
         self._variables = {}
-        self._batch_size = {{batch_size}}
-        self._mean = {{mean}}
-        self._stddev = {{stddev}}
+        # self._batch_size = {{batch_size}}
+        # self._mean = {{mean}}
+        # self._stddev = {{stddev}}
         self._distribution = '{{distribution}}'
-        self._shape = [{{batch_size}}] + [{{shape}}]
+        # self._shape =  {{shape}} #[{{batch_size}}] +
         self._variables = {k: v for k, v in locals().items() if dill.pickles(v)}
 
     @property
@@ -37,47 +37,48 @@ class {{layer_name}}(DataLayer):
         return sample
 
                     
-    def make_generator_training(self):
-        """Returns a single batch of random noise data."""                                        
+    def make_generator_training(self) -> Generator[np.ndarray, None, None]:
+        """Returns a sample of random noise data."""                                        
         {% filter remove_lspaces(8) %}
-            {% if distribution == 'normal' %}
+            {% if distribution == 'Normal' %}
                 def gen():
-                    batch = tf.random.normal(self._shape, mean = self._mean, stddev = self._stddev, dtype=tf.dtypes.float32, seed=None, name=None)
-                    yield batch
-            {% elif distribution == 'uniform' %}
+                    sample = np.random.normal({{mean}}, {{stddev}}, {{shape}})
+                    yield sample
+            {% elif distribution == 'Uniform' %}
                 def gen():
-                    batch = tf.random.normal(tf.random.uniform(shape = self._shape, minval=0, maxval=None, dtype=tf.dtypes.float32, seed=None, name=None)
-                    yield batch
+                    sample = np.random.uniform({{minval}}, {{maxval}}, {{shape}})
+                    yield sample
             {% endif %}
         {% endfilter %}
         return gen()
     
     def make_generator_testing(self) -> Generator[np.ndarray, None, None]:
-        """Returns a single batch of random noise data."""                                        
+        """Returns a sample of random noise data."""                                        
         {% filter remove_lspaces(8) %}
-            {% if distribution == 'normal' %}
+            {% if distribution == 'Normal' %}
                 def gen():
-                    batch = tf.random.normal(self._shape, mean = self._mean, stddev = self._stddev, dtype=tf.dtypes.float32, seed=None, name=None)
-                    yield batch
-            {% elif distribution == 'uniform' %}
+                    sample = np.random.normal({{mean}}, {{stddev}}, {{shape}})
+                    yield sample
+            {% elif distribution == 'Uniform' %}
                 def gen():
-                    batch = tf.random.normal(tf.random.uniform(shape = self._shape, minval=0, maxval=None, dtype=tf.dtypes.float32, seed=None, name=None)
-                    yield batch
+                    sample = np.random.uniform({{minval}}, {{maxval}}, {{shape}})
+                    yield sample
             {% endif %}
         {% endfilter %}
         return gen()
         
     def make_generator_validation(self) -> Generator[np.ndarray, None, None]:
-        """Returns a single batch of random noise data."""                                        
+        """Returns a sample of random noise data."""      
+        np.random.seed(1024)                                  
         {% filter remove_lspaces(8) %}
-            {% if distribution == 'normal' %}
+            {% if distribution == 'Normal' %}
                 def gen():
-                    batch = tf.random.normal(self._shape, mean = self._mean, stddev = self._stddev, dtype=tf.dtypes.float32, seed=None, name=None)
-                    yield batch
-            {% elif distribution == 'uniform' %}
+                    sample = np.random.normal({{mean}}, {{stddev}}, {{shape}})
+                    yield sample
+            {% elif distribution == 'Uniform' %}
                 def gen():
-                    batch = tf.random.normal(tf.random.uniform(shape = self._shape, minval=0, maxval=None, dtype=tf.dtypes.float32, seed=None, name=None)
-                    yield batch
+                    sample = np.random.uniform({{minval}}, {{maxval}}, {{shape}})
+                    yield sample
             {% endif %}
         {% endfilter %}
         return gen()

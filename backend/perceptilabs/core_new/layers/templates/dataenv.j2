@@ -5,6 +5,8 @@ class {{layer_name}}(DataLayer):
         self._variables = {}
         self._env_name = '{{environment_name}}'
         self._hist_len = {{history_length}}
+        self._env = gym.make(self._env_name)
+        self._sample = self._env.reset()
         self._variables = {k: v for k, v in locals().items() if dill.pickles(v)}
     
     @property
@@ -36,34 +38,27 @@ class {{layer_name}}(DataLayer):
     def make_generator_training(self):
         """Returns a single batch of random noise data."""                                        
         def gen():
-            env = gym.make(self._env_name)
-            sample = env.reset()
-            _action_space = env.action_space.n
+            _action_space = self._env.action_space.n
             history_length = self._hist_len
-            state_tensor = tf.placeholder(tf.float32, shape=(None, ) + sample.shape[:-1] + (sample.shape[-1]*history_length, ), name='state_tensor')
+            state_tensor = tf.placeholder(tf.float32, shape=(None, ) + self._sample.shape[:-1] + (self._sample.shape[-1]*history_length, ), name='state_tensor')
             yield state_tensor
-
         return gen()
     
     def make_generator_testing(self) -> Generator[np.ndarray, None, None]:
         """Returns a single batch of random noise data."""                                        
         def gen():
-            env = gym.make(self._env_name)
-            sample = env.reset()
-            _action_space = env.action_space.n
+            _action_space = self._env.action_space.n
             history_length = self._hist_len
-            state_tensor = tf.placeholder(tf.float32, shape=(None, ) + sample.shape[:-1] + (sample.shape[-1]*history_length, ), name='state_tensor')
+            state_tensor = tf.placeholder(tf.float32, shape=(None, ) + self._sample.shape[:-1] + (self._sample.shape[-1]*history_length, ), name='state_tensor')
             yield state_tensor
         return gen()
         
     def make_generator_validation(self) -> Generator[np.ndarray, None, None]:
         """Returns a single batch of random noise data."""                                        
         def gen():
-            env = gym.make(self._env_name)
-            sample = env.reset()
-            _action_space = env.action_space.n
+            _action_space = self._env.action_space.n
             history_length = self._hist_len
-            state_tensor = tf.placeholder(tf.float32, shape=(None, ) + sample.shape[:-1] + (sample.shape[-1]*history_length, ), name='state_tensor')
+            state_tensor = tf.placeholder(tf.float32, shape=(None, ) + self._sample.shape[:-1] + (self._sample.shape[-1]*history_length, ), name='state_tensor')
             yield state_tensor
         return gen()
 {% endmacro %}
