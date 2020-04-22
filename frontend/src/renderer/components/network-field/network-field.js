@@ -1,6 +1,7 @@
 import DataData             from '@/components/network-elements/elements/data-data/data-data.vue'
 import DataEnvironment      from '@/components/network-elements/elements/data-environment/data-environment.vue'
 import DataCloud            from '@/components/network-elements/elements/data-cloud/data-cloud.vue'
+import DataRandom            from '@/components/network-elements/elements/data-random/data-random.vue'
 
 import DeepLearningFC       from '@/components/network-elements/elements/deep-learning-fc/deep-learning-fc.vue'
 import DeepLearningConv     from '@/components/network-elements/elements/deep-learning-conv/deep-learning-conv.vue'
@@ -45,7 +46,7 @@ import { deepCopy } from "@/core/helpers.js";
 export default {
   name: 'NetworkField',
   components: {
-    DataData, DataEnvironment, DataCloud,
+    DataData, DataEnvironment, DataCloud, DataRandom,
     DeepLearningFC, DeepLearningConv, DeepLearningDeconv, DeepLearningRecurrent,
     ProcessCrop, ProcessEmbed, ProcessGrayscale, ProcessOneHot, ProcessReshape,
     TrainNormal, TrainGenetic, TrainDynamic, TrainReinforce, TrainLoss, TrainOptimizer, TrainDetector, TrainGan,
