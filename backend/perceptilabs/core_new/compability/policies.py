@@ -92,6 +92,7 @@ def policy_regression(core, graphs, sanitized_to_name, sanitized_to_id):
                 mse_trn_iter.append(trn_layer.squared_error_training)
                 sq_variance_trn_iter.append(trn_layer.squared_variance_training)
                 r_sq_trn_iter.append(trn_layer.r_squared_training)
+
              
 
             if trn_layer.epoch == current_epoch and trn_layer.status == 'validation':
@@ -99,7 +100,6 @@ def policy_regression(core, graphs, sanitized_to_name, sanitized_to_id):
                 mse_val_iter.append(trn_layer.squared_error_validation)
                 sq_variance_val_iter.append(trn_layer.squared_variance_validation)
                 r_sq_val_iter.append(trn_layer.r_squared_validation)                
-
 
         
         loss_trn_epoch = []
@@ -117,7 +117,6 @@ def policy_regression(core, graphs, sanitized_to_name, sanitized_to_id):
             is_new_epoch = graphs[idx].active_training_node.layer.epoch != graphs[idx-1].active_training_node.layer.epoch
             #is_final_iteration = idx == len(graphs) - 1
             is_final_iteration = False
-
             if is_new_epoch or is_final_iteration:
                 trn_layer = graphs[idx-1].active_training_node.layer                                                
                 loss_trn_epoch.append(trn_layer.loss_training)
@@ -143,14 +142,15 @@ def policy_regression(core, graphs, sanitized_to_name, sanitized_to_id):
         data['r_sq_validation_iter'] = r_sq_val_iter     
                 
         data['loss_train_epoch'] = loss_trn_epoch
-        data['mse_train_iter'] = mse_trn_epoch
-        data['sq_variance_train_iter'] = sq_variance_trn_epoch
-        data['r_sq_train_iter'] = r_sq_trn_epoch
+        data['mse_train_epoch'] = mse_trn_epoch
+        data['sq_variance_train_epoch'] = sq_variance_trn_epoch
+        data['r_sq_train_epoch'] = r_sq_trn_epoch
         
         data['loss_validation_epoch'] = loss_val_epoch
         data['mse_validation_epoch'] = mse_val_epoch
         data['sq_variance_validation_epoch'] = sq_variance_val_epoch
         data['r_sq_validation_epoch'] = r_sq_val_epoch
+        
 
         return data
 
@@ -257,20 +257,20 @@ def policy_regression(core, graphs, sanitized_to_name, sanitized_to_id):
             test_dict[true_id]['r_sq_training_epoch'] = 0.0
                     
 
-            test_dict[true_id]['loss_val_epoch'] = 0.0 
-            test_dict[true_id]['mse_val_epoch'] = 0.0
-            test_dict[true_id]['sq_variance_val_epoch'] = 0.0
-            test_dict[true_id]['r_sq_val_epoch'] = 0.0
+            test_dict[true_id]['loss_validation_epoch'] = 0.0 
+            test_dict[true_id]['mse_validation_epoch'] = 0.0
+            test_dict[true_id]['sq_variance_validation_epoch'] = 0.0
+            test_dict[true_id]['r_sq_validation_epoch'] = 0.0
 
             test_dict[true_id]['loss_training_iter'] = 0.0 
             test_dict[true_id]['mse_training_iter'] = 0.0
             test_dict[true_id]['sq_variance_training_iter'] = 0.0
             test_dict[true_id]['r_sq_training_iter'] = 0.0
 
-            test_dict[true_id]['loss_val_iter'] = 0.0 
-            test_dict[true_id]['mse_val_iter'] = 0.0
-            test_dict[true_id]['sq_variance_val_iter'] = 0.0
-            test_dict[true_id]['r_sq_val_iter'] = 0.0
+            test_dict[true_id]['loss_validation_iter'] = 0.0 
+            test_dict[true_id]['mse_validation_iter'] = 0.0
+            test_dict[true_id]['sq_variance_validation_iter'] = 0.0
+            test_dict[true_id]['r_sq_validation_iter'] = 0.0
 
             test_dicts.append(test_dict)
 
@@ -597,6 +597,7 @@ def policy_classification(core, graphs, sanitized_to_name, sanitized_to_id):
 
         idx = 1
         while idx < len(graphs):
+
             is_new_epoch = graphs[idx].active_training_node.layer.epoch != graphs[idx-1].active_training_node.layer.epoch
             #is_final_iteration = idx == len(graphs) - 1
             is_final_iteration = False

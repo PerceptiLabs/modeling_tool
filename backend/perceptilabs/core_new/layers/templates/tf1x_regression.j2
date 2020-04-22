@@ -104,7 +104,7 @@
         squared_error_tensor = tf.reduce_mean(tf.square(output_tensor - target_tensor))
 
         squared_variance_tensor = tf.reduce_mean(tf.square(output_tensor - tf.reduce_mean(output_tensor)))
-        r_squared_tensor = (squared_error_tensor / squared_variance_tensor) - 1
+        r_squared_tensor = 1 - (squared_error_tensor / squared_variance_tensor)
 
 
         global_step = None

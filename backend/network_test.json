@@ -16,7 +16,7 @@
                     "Sources": [
                         {
                             "type": "file",
-                            "path": "/Users/adilsalhotra/Developer/PerceptiLabs/backend/perceptilabs/tutorial_data/mnist_input.npy"
+                            "path": "/Users/adilsalhotra/Developer/PerceptiLabs/backend/perceptilabs/tutorial_data/linreg_inputs.npy"
                         }
                     ],
                     "PathFake": [],
@@ -36,71 +36,6 @@
             "backward_connections": [],
             "forward_connections": [
                 [
-                    "1564399777283",
-                    "Reshape_1"
-                ]
-            ]
-        },
-        "1564399777283": {
-            "Name": "Reshape_1",
-            "Type": "ProcessReshape",
-            "checkpoint": [],
-            "endPoints": [],
-            "Properties": {
-                "Shape": [
-                    28,
-                    28,
-                    1
-                ],
-                "Permutation": [
-                    0,
-                    1,
-                    2
-                ]
-            },
-            "Code": null,
-            "backward_connections": [
-                [
-                    "1564399775664",
-                    "Data_1"
-                ]
-            ],
-            "forward_connections": [
-                [
-                    "1564399781738",
-                    "Convolution_1"
-                ]
-            ]
-        },
-        "1564399781738": {
-            "Name": "Convolution_1",
-            "Type": "DeepLearningConv",
-            "checkpoint": [],
-            "endPoints": [],
-            "Properties": {
-                "Conv_dim": "2D",
-                "Patch_size": "3",
-                "Stride": "2",
-                "Padding": "'SAME'",
-                "Feature_maps": "8",
-                "Activation_function": "Sigmoid",
-                "Dropout": false,
-                "Keep_prob": "1",
-                "PoolBool": false,
-                "Pooling": "Max",
-                "Pool_area": "2",
-                "Pool_padding": "'SAME'",
-                "Pool_stride": "2"
-            },
-            "Code": null,
-            "backward_connections": [
-                [
-                    "1564399777283",
-                    "Reshape_1"
-                ]
-            ],
-            "forward_connections": [
-                [
                     "1564399782856",
                     "Fully Connected_1"
                 ]
@@ -113,21 +48,21 @@
             "endPoints": [],
             "Properties": {
                 "Neurons": "10",
-                "Activation_function": "Sigmoid",
+                "Activation_function": "",
                 "Dropout": false,
                 "Keep_prob": "1"
             },
             "Code": null,
             "backward_connections": [
                 [
-                    "1564399781738",
-                    "Convolution_1"
+                    "1564399775664",
+                    "Data_1"
                 ]
             ],
             "forward_connections": [
                 [
                     "1564399790363",
-                    "Normal_1"
+                    "Reg_1"
                 ]
             ]
         },
@@ -147,7 +82,7 @@
                     "Sources": [
                         {
                             "type": "file",
-                            "path": "/Users/adilsalhotra/Developer/PerceptiLabs/backend/perceptilabs/tutorial_data/mnist_labels.npy"
+                            "path": "/Users/adilsalhotra/Developer/PerceptiLabs/backend/perceptilabs/tutorial_data/linreg_outputs.npy"
                         }
                     ],
                     "PathFake": [],
@@ -167,46 +102,25 @@
             "backward_connections": [],
             "forward_connections": [
                 [
-                    "1564399788744",
-                    "OneHot_1"
-                ]
-            ]
-        },
-        "1564399788744": {
-            "Name": "OneHot_1",
-            "Type": "ProcessOneHot",
-            "checkpoint": [],
-            "endPoints": [],
-            "Properties": {
-                "N_class": "10"
-            },
-            "Code": null,
-            "backward_connections": [
-                [
-                    "1564399786876",
-                    "Data_2"
-                ]
-            ],
-            "forward_connections": [
-                [
                     "1564399790363",
-                    "Normal_1"
+                    "Reg_1"
                 ]
             ]
         },
+
         "1564399790363": {
-            "Name": "Normal_1",
-            "Type": "TrainNormal",
+            "Name": "Reg_1",
+            "Type": "Regression",
             "checkpoint": [],
             "endPoints": [],
             "Properties": {
-                "Labels": "1564399788744",
+                "Labels": "1564399786876",
                 "Epochs": "10",
                 "N_class": "1",
-                "Loss": "Quadratic",
+                "Loss": "Mean Absolute Error",
                 "Class_weights": "1",
                 "Learning_rate": "0.001",
-                "Optimizer": "ADAM",
+                "Optimizer": "SGD",
                 "Beta_1": "0.9",
                 "Beta_2": "0.999",
                 "Momentum": "0.9",
@@ -221,8 +135,8 @@
                     "Fully Connected_1"
                 ],
                 [
-                    "1564399788744",
-                    "OneHot_1"
+                    "1564399786876",
+                    "Data_2"
                 ]
             ],
             "forward_connections": []
