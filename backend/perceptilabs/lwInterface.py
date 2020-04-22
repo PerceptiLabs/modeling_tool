@@ -7,6 +7,7 @@ import tensorflow as tf
 import logging
 
 from perceptilabs.createDataObject import createDataObject
+from perceptilabs.core_new.core import Core
 
 
 log = logging.getLogger(__name__)
@@ -119,6 +120,34 @@ class getGraphOrder(LW_interface_base):
         graph = Graph(self.jsonNetwork)
         graph_dict = graph.graphs
         return list(graph_dict.keys())
+
+class getNotebookExtras(LW_interface_base, Core):
+    def __init__(self, jsonNetwork):
+        self.jsonNetwork = jsonNetwork
+
+    def run(self):
+        from perceptilabs.graph import Graph
+        graph = Graph(self.jsonNetwork)
+        graph_dict = graph.graphs
+        from perceptilabs.core_new.script_distr import ScriptBuilder
+        sb = ScriptBuilder()
+        
+        for layer_id, content in graph_dict.items():
+            layer_type = content["Info"]["Type"]
+
+            if self._should_skip_layer(layer_id, content):
+                continue
+
+            code_gen = self._codehq.get_code_generator(layer_id, content)            
+            log.debug(repr(code_gen))
+
+            sb.layer(f"{layer_id}",
+                     code_gen.get_code(),
+                     input_layers=content["Con"],
+                     checkpoint=None,
+                     layer_type=layer_type)
+            
+        return (sb.build_imports(),sb.build_runscript())
 
 class getPartitionSummary(LW_interface_base):
     def __init__(self, id_, lw_core, data_container):
