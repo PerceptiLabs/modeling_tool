@@ -115,7 +115,7 @@ DEFINITION_TABLE = {
             'stddev': lambda specs: specs['Properties']['accessProperties']['stddev'],
             'minval': lambda specs: specs['Properties']['accessProperties']['min'],
             'maxval': lambda specs: specs['Properties']['accessProperties']['max'],
-            'batch_size': lambda specs: specs['Properties']['accessProperties']['Batch_size'],
+            # 'batch_size': lambda specs: specs['Properties']['accessProperties']['Batch_size'],
             'seed': 0,
             'shuffle_buffer_size': None,
         },
@@ -127,7 +127,7 @@ DEFINITION_TABLE = {
             'from perceptilabs.core_new.utils import Picklable',
             'from perceptilabs.core_new.serialization import can_serialize, serialize'                    ]
     ),
-    'Switch' : LayerDef(
+    'MathSwitch' : LayerDef(
         Tf1xLayer,
         'tf1x.j2',
         'layer_tf1x_switch',
