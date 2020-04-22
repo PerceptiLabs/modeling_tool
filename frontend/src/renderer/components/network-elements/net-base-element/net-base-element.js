@@ -241,21 +241,10 @@ export default {
       let windowWs = document.querySelector('.js-info-section_main');
       let windowWsWidth = windowWs.clientWidth /this.wsZoom;
       let windowWsHeight = windowWs.clientHeight /this.wsZoom;
-      let elementSettingsHeight = this.$refs.elementSettings.clientHeight;
       let layerHeight = this.$refs.rootBaseElement.clientHeight;
       let layerTop = this.dataEl.layerMeta.position.top;
       let winCenterWidth = windowWs.scrollLeft + (windowWsWidth - layerHeight)/2;
       let winCenterHeight = windowWs.scrollTop + (windowWsHeight - layerHeight)/2;
-
-      console.group('calcWindowPosition');
-      console.log('this.wsZoom', this.wsZoom);
-      console.log('layerTop', layerTop);
-      console.log('elementSettingsHeight', elementSettingsHeight);
-      console.log('windowWsWidth', windowWsWidth);
-      console.log('windowWsHeight', windowWsHeight);
-      console.log('rootBaseElement', this.$refs.rootBaseElement.getBoundingClientRect());
-      console.log('elementSettings', this.$refs.elementSettings.getBoundingClientRect());
-      console.groupEnd();
 
       winCenterWidth < this.dataEl.layerMeta.position.left
         ? this.openWinPosition.left = true
@@ -263,18 +252,6 @@ export default {
       winCenterHeight < layerTop
         ? this.openWinPosition.top = true
         : this.openWinPosition.top = false;
-
-      // if(this.openWinPosition.top) {
-      //   if(layerTop < elementSettingsHeight) {
-
-      //     this.openWinPosition.offset = (elementSettingsHeight - layerTop - layerHeight + 10) //*this.wsZoom
-      //   }
-      // }
-      // else {
-      //   if((windowWsHeight - layerTop) < elementSettingsHeight) {
-      //     this.openWinPosition.offset = (elementSettingsHeight - (windowWsHeight - layerTop) + 10) //*this.wsZoom
-      //   }
-      // }
     },
     setFocusEl(ev) {
       // ev.ctrlKey
