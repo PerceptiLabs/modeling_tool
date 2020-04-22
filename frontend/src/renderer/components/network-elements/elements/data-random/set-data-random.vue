@@ -23,6 +23,11 @@
             input(type="number" v-model="settings.batch_size")
       .settings-layer_section
         .form_row
+          .form_label Shape:
+          .form_input
+            input(type="string" v-model="settings.shape")
+      .settings-layer_section
+        .form_row
           .form_label Distribution:
           .form_input
             base-radio(group-name="group1" value-input="Normal" v-model="settings.distribution")
@@ -56,7 +61,8 @@
           mean: '0.1',
           stddev: '0.5',
           batch_size: '3',
-          distribution: 'Normal'
+          distribution: 'Normal',
+          shape: '(1, 5, 7, 4, 7)',
         },
       }
     },
