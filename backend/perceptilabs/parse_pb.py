@@ -267,7 +267,7 @@ def getLayerType(componentName):
    #Can be Data, Other, Train or Сontainer
    if componentName=="LayerContainer":
       return "Container"
-   elif componentName in ["DataData","DataEnvironment"]:
+   elif componentName in ["DataData","DataEnvironment", "DataRandom"]:
       return "Data"
    elif componentName in ["TrainNormal","TrainReinforce","TrainGAN"]:
       return "Train"

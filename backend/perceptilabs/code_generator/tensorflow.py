@@ -912,7 +912,7 @@ class TrainReinforceCodeGenerator(CodeGenerator):
         self._copy_weights_frequency = target_network_update_frequency
         self._n_steps_max = n_steps_max
 
-        #Exploartion
+        #Exploration
         self._initial_exploration=str(initial_exploration)
         self._final_exploration=str(final_exploration)
         self._final_exporation_frame=str(final_exporation_frame)

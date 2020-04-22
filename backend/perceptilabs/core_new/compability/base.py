@@ -11,7 +11,7 @@ from perceptilabs.core_new.graph.utils import sanitize_layer_name
 from perceptilabs.core_new.core2 import Core
 from perceptilabs.core_new.layers import *
 from perceptilabs.core_new.layers.replicas import NotReplicatedError
-from perceptilabs.core_new.compability.policies import policy_classification, policy_object_detection
+from perceptilabs.core_new.compability.policies import policy_classification, policy_object_detection, policy_gan
 
 
 log = logging.getLogger(__name__)
@@ -138,6 +138,8 @@ class CompabilityCore:
         if isinstance(layer, ClassificationLayer):
             result_dict = policy_classification(self._core, graphs, self._sanitized_to_name, self._sanitized_to_id)
         elif  isinstance(layer, ObjectDetectionLayer):
+            result_dict = policy_object_detection(self._core, graphs, self._sanitized_to_name, self._sanitized_to_id, results)
+        elif  isinstance(layer, GANLayer):
             result_dict = policy_object_detection(self._core, graphs, self._sanitized_to_name, self._sanitized_to_id, results)
         return result_dict
 
