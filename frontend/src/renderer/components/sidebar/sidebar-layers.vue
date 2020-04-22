@@ -139,6 +139,9 @@ export default {
     max-height: 50vh;
     border-bottom: 1px solid $bg-toolbar;
     overflow: hidden;
+    &.training {
+      max-height: calc(100vh - 600px);
+    }    
   }
   .layers_title {
     align-items: center;
