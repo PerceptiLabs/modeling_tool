@@ -63,6 +63,14 @@ class getFolderContent(LW_interface_base):
                 "files" :  [],
             }
 
+class createFolder(LW_interface_base):
+    def __init__(self, folder_path, folder_name):
+        self.folder_path = folder_path
+        self.folder_name = folder_name
+
+    def run(self):
+        os.mkdir(os.path.join(self.folder_path, self.folder_name))
+
 class getDataMeta(LW_interface_base):
     def __init__(self, id_, lw_core, data_container):
         self._id = id_
