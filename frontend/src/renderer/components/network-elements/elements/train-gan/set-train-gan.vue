@@ -150,7 +150,7 @@ export default {
       allSwitchLayers: [],
       allRealDataLayers: [],
       settings: {
-        Labels: '',
+//        Labels: '',
         switch_layer: '',
         real_data_layer: '',
         Epochs: '10',
