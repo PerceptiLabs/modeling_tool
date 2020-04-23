@@ -125,7 +125,6 @@ DEFINITION_TABLE = {
         },
         import_statements=[
             'import tensorflow as tf',
-            'import cv2',
             'import numpy as np',
             'from typing import Dict',
             'from perceptilabs.core_new.utils import Picklable',
