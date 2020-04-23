@@ -156,6 +156,24 @@ export default {
 <style lang="scss" scoped>
 @import '../../scss/base/_variables.scss';
 
+
+::-webkit-scrollbar {
+  background: $bg-workspace;
+  width: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 3px;
+  background-color: rgba(#989FB0, .5);
+  box-shadow: 0 0 6px rgba(#000, .3);
+  &:hover {
+    background-color: rgba(#989FB0, 1);
+  }
+  &:window-inactive {
+    background-color: rgba(#989FB0, .2);
+  }
+}
+
 #notebook-container {
   background-color: $bg-workspace;
   padding: 5rem 0;
