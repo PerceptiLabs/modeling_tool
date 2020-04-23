@@ -1,7 +1,7 @@
 {% macro load_npy(path, tag) %}
     {% filter remove_lspaces(8) %}
         global matrix_{{tag}}
-        matrix_{{tag}} = np.load("{{path}}", mmap_mode='r+').astype(np.float32)
+        matrix_{{tag}} = np.load("{{path}}").astype(np.float32)
         size_{{tag}} = len(matrix_{{tag}})
 
         def generator_{{tag}}(idx_lo, idx_hi):
