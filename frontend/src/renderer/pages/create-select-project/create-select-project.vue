@@ -92,6 +92,8 @@ import { debug } from 'util';
         this.selectProject(project.project_id);
         this.closePageAction();
         this.setPageTitleMutation(`${project.name} / Models`);
+        // @todo load models from local project folder and store it in vuex store.
+        this.$router.push({name: 'projects'})
       },
       createNewProject() {
        let payload = {
@@ -120,7 +122,7 @@ import { debug } from 'util';
 
       },
       renameProject() {
-        
+
       },
       closeContext() {
         document.removeEventListener('click', this.closeContext);

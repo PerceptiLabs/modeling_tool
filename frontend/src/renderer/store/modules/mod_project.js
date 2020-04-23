@@ -43,6 +43,15 @@ const actions = {
       .then(res => {
         crx.commit('removeProject', res.data.project_id);
       })
+  },
+  /*
+  // payload : { project: number, name: string };
+  */
+  createProjectModel(ctx, payload) {
+    return axios.post('http://localhost:8000/models/', payload)
+      .then(res => {
+        return res.data
+      })
   }
 };
 

@@ -7,7 +7,7 @@
           span.btn-round-icon(@click="toggleSelectedItems()")
             img(v-if="isAtLeastOneItemSelected()" src="../../../../static/img/project-page/minus.svg")
             img(v-if="!isAtLeastOneItemSelected()" src="../../../../static/img/project-page/checked.svg")
-          span.btn-round-icon(@click="addNetwork()" :class="{'high-lighted': isNewUser}")
+          span.btn-round-icon(@click="handleAddNetwork" :class="{'high-lighted': isNewUser}")
             img(src="../../../../static/img/project-page/plus.svg")
             div(v-if="isNewUser").create-first-model Create your first model
           div.search-input
@@ -95,7 +95,7 @@
   import projectSidebar from '@/pages/layout/project-sidebar.vue';
   import SortByButton from '@/pages/projects/components/sort-by-button.vue';
   import CollaboratorAvatar from '@/pages/projects/components/collaborator-avatar.vue'
-  import {mapActions, mapMutations} from 'vuex';
+  import { mapActions, mapMutations, mapState } from 'vuex';
   import {isWeb} from "@/core/helpers";
   const mockModelList = [
     {id: 1, dateCreated: new Date().setHours(15), dateLastOpened: new Date(), size: '10', name:'Placeholder 1', status: '75%', savedVersion: '-', sessionEndTime: 'Placeholder', collaborators: [{id: 1, name: 'Anton', img: null,}], lastModified: { user: {id: 1, name: 'Anton', img: null}, date: '19/02/20 13:00:00'}, isFavorite: true},
@@ -150,6 +150,9 @@
       this.setPageTitleMutation('')
     },
     computed: {
+      ...mapState({
+        currentProjectId: state => state.mod_project.currentProject
+      }),
       workspaceContent() {
         return this.$store.state.mod_workspace.workspaceContent
       }
@@ -159,6 +162,7 @@
         loadNetwork:      'mod_events/EVENT_loadNetwork',
         addNetwork:       'mod_workspace/ADD_network',
         set_currentNetwork: 'mod_workspace/SET_currentNetwork',
+        createProjectModel: 'mod_project/createProjectModel',
       }),
       ...mapMutations({
         setPageTitleMutation: 'globalView/setPageTitleMutation'
@@ -281,6 +285,16 @@
         this.initialModelList = initialModelList;
 
       },
+      handleAddNetwork() {
+        this.createProjectModel({
+          name: 'New_Model',
+          project: this.currentProjectId,
+        }).then(apiMeta => {
+          this.addNetwork({apiMeta});
+          //@todo save the network in project folder
+          
+        });
+      }
     }
   }
 </script>

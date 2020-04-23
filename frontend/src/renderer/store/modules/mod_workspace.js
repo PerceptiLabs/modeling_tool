@@ -213,7 +213,7 @@ const mutations = {
   set_networkRootFolder(state, {getters, value}) {
     getters.GET_currentNetwork.networkRootFolder = value
   },
-  add_network (state, network) {
+  add_network (state, { network , apiMeta }) {
     let workspace = state.workspaceContent;
     let newNetwork = {};
     //-- DEFAULT DATA
@@ -243,6 +243,8 @@ const mutations = {
     network === undefined
       ? newNetwork = defaultNetwork
       : newNetwork = network;
+    
+    newNetwork.apiMeta = apiMeta 
 
     newNetwork.networkMeta = defaultMeta;
     //-- Create unic ID
@@ -935,11 +937,12 @@ const actions = {
   //---------------
   //  NETWORK
   //---------------
-  ADD_network({commit, dispatch}, network) {
+  ADD_network({commit, dispatch}, { network, apiMeta = {} }) {
+    debugger;
     if(isElectron()) {
-      commit('add_network', network);
+      commit('add_network', { network, apiMeta });
     } else {
-      commit('add_network', network);
+      commit('add_network', { network, apiMeta });
       const lastNetworkID = state.workspaceContent[state.currentNetwork].networkID;
       commit('set_lastActiveTabInLocalStorage', lastNetworkID);
       commit('set_workspacesInLocalStorage'); 
