@@ -84,7 +84,6 @@ class Core:
                 break
 
             snapshots = self._client.pop_snapshots()
-
             total_size = 0
             new_graphs = []
             for snapshot, size in snapshots:
@@ -148,7 +147,9 @@ class Core:
     @property
     def graphs(self) -> List[Graph]:
         with self._lock:
-            return self._graphs.copy()
+            copy_graph = self._graphs.copy()
+            self._graphs = []
+            return copy_graph
 
     def stop(self):
         if self._client is not None:
