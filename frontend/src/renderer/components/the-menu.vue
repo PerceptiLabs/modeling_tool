@@ -334,6 +334,7 @@ export default {
           submenu: [
             {label: 'New',          accelerator: this.isMac ? 'meta+n' : 'ctrl+n',              enabled: this.isLogin,  active: this.addNewNetwork },
             {label: 'Open',         accelerator: this.isMac ? 'meta+o' : 'ctrl+o',              enabled: this.isLogin,  active: this.openModel },
+            {label: 'Manage Projects',    enabled: true,         active: this.setActivePage },
             {label: 'Save',         accelerator: this.isMac ? 'meta+s' : 'ctrl+s',              enabled: this.openApp,  active: this.saveModel },
             {label: 'Save as...',   accelerator: this.isMac ? 'meta+shift+s' : 'ctrl+shift+s',  enabled: this.openApp,  active: this.saveModelAs },
             {type: 'separator'},
@@ -358,12 +359,6 @@ export default {
             {label: 'Deselect all', accelerator: this.isMac ? 'meta+shift+a' : 'ctrl+shift+a',  enabled: this.openApp,  active: this.HCDeselectAll },
 
           ] 
-        },
-        {
-          label: 'Project', visible: true,
-          submenu: [
-            {label: 'New',    enabled: true,         active: this.setActivePage },
-          ]
         },
         {
           label: 'Settings', visible: true,
@@ -442,6 +437,7 @@ export default {
           submenu: [
             {label: 'New',          accelerator: this.isMac ? 'meta+n' : 'ctrl+n',              enabled: this.isLogin,  active: this.addNewNetwork },
             {label: 'Open',         accelerator: this.isMac ? 'meta+o' : 'ctrl+o',              enabled: this.isLogin,  active: this.openModel },
+            {label: 'Manage Projects',    enabled: true,         active: this.setActivePage },
             {label: 'Save',         accelerator: this.isMac ? 'meta+s' : 'ctrl+s',              enabled: this.openApp,  active: this.saveModel },
             {label: 'Save as...',   accelerator: this.isMac ? 'meta+shift+s' : 'ctrl+shift+s',  enabled: this.openApp,  active: this.saveModelAs },
           ]
@@ -459,12 +455,6 @@ export default {
             {label: 'Select all',   accelerator: this.isMac ? 'meta+a' : 'ctrl+a',              role: 'selectAll',      active: this.HCSelectAll },
             {label: 'Deselect all', accelerator: this.isMac ? 'meta+shift+a' : 'ctrl+shift+a',  enabled: this.openApp,  active: this.HCDeselectAll },
 
-          ]
-        },
-        {
-          label: 'Project', visible: true,
-          submenu: [
-            {label: 'New',    enabled: true,         active: this.setActivePage },
           ]
         },
         {

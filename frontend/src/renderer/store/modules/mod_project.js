@@ -1,6 +1,6 @@
 import { requestCloudApi } from "@/core/apiCloud";
 import {generateID} from "@/core/helpers";
-
+import axios from 'axios';
 const namespaced = true;
 
 const state = {
@@ -22,18 +22,28 @@ const mutations = {
 
 const actions = {
   getProjects(ctx) {
-    // @todo commit response not mock data
-    return requestCloudApi('get', 'v1/projects')
-      .then((response) => {
-        ctx.commit('setProjectList', [{id: 1, name: 'project test', createdAt: new Date()},{id: 2, name: 'Second project', createdAt: new Date()}])
+    return axios.get('http://localhost:8000/projects')
+      .then((res) => {
+        ctx.commit('setProjectList', res.data.results)
       })
       .catch((error)=> {
-        ctx.commit('setProjectList', [{id: 1, name: 'project test', createdAt: new Date()},{id: 2, name: 'Second project', createdAt: new Date()}])
+        console.error(error); 
       })
   },
   createProject(ctx, payload) {
-    ctx.commit('createProject', payload);
+    return axios.post('http://localhost:8000/projects/', payload)
+      .then(res => {
+        ctx.commit('createProject', res.data); 
+        return res.data;
+      })
   },
+  deleteProject(ctx, payload) {
+    // @todo 
+    return axios.delete(`http://localhost:8000/projects/${payload.projectId}`)
+      .then(res => {
+        crx.commit('removeProject', res.data.project_id);
+      })
+  }
 };
 
 export default {

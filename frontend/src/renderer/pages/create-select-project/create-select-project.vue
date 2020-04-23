@@ -1,17 +1,20 @@
 <template lang="pug">
   .project-wrapper
+    .projectContext(v-if="isContextOpened" :style="projectContextStyles")
+      button(@click="renameProject") Rename
+      button(@click="deleteProject") Delete
     .project-box
       .header Projects
       .content
         .sidebar
-          button.create-new-button(@click="createNewProject")
-            img(src="../../../../static/img/plus.svg")
-            span  create new
-          button.project-list-filter-button.is-active All Projects
-          button.project-list-filter-button My Projects
-          button.project-list-filter-button Shared with me
+          button.project-list-filter-button.is-active Local Projects
+          button.project-list-filter-button Cloud Projects
         .main
           .main-header
+            button.btn-icon
+              img(src="../../../../static/img/project-page/import.svg")
+            button.btn-icon.rounded-border(@click="createNewProject")
+              img(src="../../../../static/img/plus.svg")
             div.search-input
               img(src="../../../../static/img/search-input.svg")
               input(
@@ -28,9 +31,13 @@
             .main-list-header
               .list-name-name Name
               .list-last-opened Last Opened
-            div.main-list-item(v-for="project in projectsList.filter(pr => pr.name.indexOf(searchValue) !== -1)" @click="onProjectSelectHandler(project)") 
-              span.main-list-name.fz-16 {{project.name}}
-              span.main-list-date.fz-16 {{project.createdAt.toString().substring(0, 24)}}
+            div.main-list-item(
+              v-for="project in projectsList.filter(pr => pr.name.indexOf(searchValue) !== -1)" 
+              @dblclick="onProjectSelectHandler(project)"
+              @contextmenu.prevent.stop="openContext($event, project.project_id)"
+            ) 
+              span.main-list-name.fz-16 {{project.name | trimText}}
+              span.main-list-date.fz-16 {{project.created.toString().substring(0, 16)}}
           
   
 </template>
@@ -45,11 +52,17 @@
     data() {
       return {
         searchValue: '',
+        contextTargetProject: null,
+        isContextOpened: false,
+        projectContextStyles: {},
       }
     },
     created() {
       // this.setActivePageAction()
       this.getProjects();
+    },
+    beforeDestroy() {
+      document.removeEventListener('click', this.closeContext);
     },
     computed:{
       isOpen() {
@@ -74,24 +87,68 @@
         createProject:    'mod_project/createProject',
       }),
       onProjectSelectHandler(project) {
-        this.selectProject(project.id);
+        this.selectProject(project.project_id);
         this.closePageAction();
         this.setPageTitleMutation(`${project.name} / Models`);
       },
       createNewProject() {
        let payload = {
-         id: generateID(),
-         name: 'New project',
-         createdAt: new Date(),
+         name: 'New project ' + Date.now().toString(),
        };
-       this.createProject(payload);
-       this.onProjectSelectHandler(payload);
+       this.createProject(payload)
+        .then(res => {
+          this.onProjectSelectHandler(res);
+        })
       },
+      openContext(e, projectId) {
+        const { pageX, pageY } = e;
+        this.projectContextStyles = {
+          top: pageY + 'px',
+          left: pageX + 'px',
+        };
+        this.isContextOpened = true;
+        this.contextTargetProject = projectId;
+        document.addEventListener('click', this.closeContext);
+      },
+      deleteProject() {
+        const { contextTargetProject } = this;
+
+      },
+      renameProject() {
+
+      },
+      closeContext() {
+        document.removeEventListener('click', this.closeContext);
+        this.contextTargetProject = null;
+        this.isContextOpened = false
+      },
+    },
+    filters: {
+      trimText (value) {
+        return value.length > 24 ? value.substring(0, 24) + '..' : value;
+      }
     }
   }
 
 </script>
 <style lang="scss" scoped>
+  .projectContext {
+    position: fixed;
+    background: #1C1C1E;
+    border: 1px solid #363E51;
+    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+    border-radius: 2px;
+    display: flex;
+    flex-direction: column;
+    z-index: 12;
+    padding: 5px 8px;
+    button {
+      padding: 5px 8px;
+      background: none;
+      font-size: 16px;;
+      text-align: left;
+    }
+  }
   .project-wrapper {
     display: flex;
     justify-content: center;
@@ -157,11 +214,14 @@
   .main-header {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     margin-bottom: 20px;
   }
   .search-input {
     position: relative;
-    width: 333px;
+    /*width: 333px;*/
+    width: auto;
+    width: 55%;
     img {
       cursor: pointer;
       position: absolute;
@@ -175,6 +235,7 @@
       border: 1px solid #363E51;
       border-radius: 5px;
       height: 29px;
+      font-size: 16px;
     }
   }
   
@@ -196,6 +257,7 @@
     font-weight: bold;
   }
   .main-list-item {
+    position: relative;
     cursor: pointer;
     display: flex;
     justify-content: space-between;
@@ -204,5 +266,14 @@
   }
   .fz-16 {
     font-size: 16px;
+  }
+  .btn-icon {
+    background: none;
+    &.rounded-border {
+      border: 1px solid #fff;
+      border-radius: 50%;
+      padding: 3px;
+      line-height: 100%;
+    }
   }
 </style>
