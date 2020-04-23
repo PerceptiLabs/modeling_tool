@@ -157,7 +157,6 @@ def _assert_replica_classes_have_all_arguments(base_to_replica_map, replicated_p
     for base_class, replica_class in base_to_replica_map.items():
         replicated_properties = replicated_properties_table.get(base_class, [])
         existing_args = inspect.getargspec(replica_class.__init__).args
-        print(existing_args)
         for repl_prop in replicated_properties:
             if repl_prop.name not in existing_args:
                 raise ValueError(f"Replica class {replica_class.__name__} constructor has no positional argument named '{repl_prop.name}'")

@@ -394,12 +394,15 @@ class coreLogic():
         return {"content":"Alive"}
 
     def isRunning(self):
-        return self.cThread is not None and self.cThread.isAlive()
+        if self.cThread is not None and self.cThread.isAlive():
+            return { "content": True }
+        else:
+            return { "content": False }
 
     def isTrained(self):
         is_trained = (
             (self._core_mode == 'v1' and self.saver is not None) or
-            (self._core_mode == 'v2' and self.core is not None and self.resultDict is not None)
+            (self._core_mode == 'v2' and self.core is not None and len(self.core.core_v2.graphs) > 0)
         )
         return {"content": is_trained}
 
