@@ -271,16 +271,13 @@
                         grad_tensor = tf.constant(0)
                     gradients[name] = grad_tensor
                 layer_gradient_tensors[node.layer_id] = gradients
-                # self._internal_layer_gradients[node.layer_id] = {name: [] for name in node.layer.trainable_variables.keys()} # Initialize
-                # self._layer_gradients = self._internal_layer_gradients.copy()
+                
+        # trainable_vars = tf.trainable_variables() # TODO: safer to get from nodes. Especially with split graph in mind.
+        # grads = tf.gradients(loss_tensor, trainable_vars)
+        # update_weights = optimizer.apply_gradients(list(zip(grads, trainable_vars)), global_step=global_step)
 
-        trainable_vars = tf.trainable_variables() # TODO: safer to get from nodes. Especially with split graph in mind.
-        grads = tf.gradients(loss_tensor, trainable_vars)
-        update_weights = optimizer.apply_gradients(list(zip(grads, trainable_vars)), global_step=global_step)
-
-        # grads_and_vars = optimizer.compute_gradients(loss_tensor)
-        # print(grads_and_vars)
-        # update_weights = optimizer.apply_gradients(grads_and_vars, global_step=global_step)
+        grads_and_vars = optimizer.compute_gradients(loss_tensor)
+        update_weights = optimizer.apply_gradients(grads_and_vars, global_step=global_step)
 
         # update_weights = optimizer.minimize(loss_tensor, global_step=global_step)
 

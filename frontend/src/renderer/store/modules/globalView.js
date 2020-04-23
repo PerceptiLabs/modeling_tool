@@ -1,4 +1,5 @@
 const namespaced = true;
+import { localStorageGridKey } from '@/core/constants.js';
 const state = {
   onlineStatus: true,
   hideLayers: true,
@@ -23,6 +24,7 @@ const state = {
   },
   popupConfirmCancel: null,
   popupConfirmOk: null,
+  isGridEnabled: false,
 };
 const getters = {
   GET_appPath(state) {
@@ -98,6 +100,10 @@ const mutations = {
   clear_requestCounter(state) {
     state.requestCounter = 0
   },
+  setGridStateMutation(state, value) {
+    localStorage.setItem(localStorageGridKey, value);
+    state.isGridEnabled = value;
+  }
 };
 
 const actions = {

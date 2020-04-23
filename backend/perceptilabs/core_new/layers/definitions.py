@@ -35,12 +35,16 @@ class LayerDef:
 
         
 def resolve_checkpoint_path(specs):
+    import platform
     if len(specs['checkpoint']) == 0:
         return None
     
     ckpt_path = specs['checkpoint'][1]
     if '//' in ckpt_path:
-        new_ckpt_path = os.path.sep+ckpt_path.split(2*os.path.sep)[1] # Sometimes frontend repeats the directory path. /<dir-path>//<dir-path>/model.ckpt-1
+        if platform.system() == 'Windows':
+            new_ckpt_path = ckpt_path.split('//')[1]
+        else:
+            new_ckpt_path = os.path.sep+ckpt_path.split(2*os.path.sep)[1] # Sometimes frontend repeats the directory path. /<dir-path>//<dir-path>/model.ckpt-1
         log.warning(
             f"Splitting malformed checkpoint path: '{ckpt_path}'. "
             f"New path: '{new_ckpt_path}'"
@@ -48,6 +52,7 @@ def resolve_checkpoint_path(specs):
         ckpt_path = new_ckpt_path
 
     ckpt_path = os.path.dirname(ckpt_path)
+    ckpt_path=ckpt_path.replace('\\','/')
     return ckpt_path
 
 

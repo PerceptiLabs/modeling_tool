@@ -49,43 +49,41 @@ const workspaceSaveNet = {
       this.saveNetworkPopup = {...this.saveNetworkPopupDefault}
     },
     eventSaveNetwork() {
-      // const projectsList = this.getLocalUserInfo.projectsList;
+      const projectsList = this.getLocalUserInfo.projectsList;
       const network = this.currentNetwork;
-      this.eventSaveNetworkAs(network.networkID)
-      // this.checkTrainedNetwork()
-      //   .then((isTrained)=> {
 
-      //     if(!projectsList.length || findIndexId(projectsList, network) < 0) {
-      //       console.log('eventSaveNetwork 1');
-      //       this.saveNetworkPopup.isSyncName = true;
-      //       this.eventSaveNetworkAs(network.networkID, true)
-      //       return
-      //     }
-      //   if(isTrained) {
+      this.checkTrainedNetwork()
+        .then((isTrained)=> {
+//          if(!projectsList.length || findIndexId(projectsList, network) < 0) {
+          if(!network.networkRootFolder) {
+            this.saveNetworkPopup.isSyncName = true;
+            this.eventSaveNetworkAs(network.networkID, true)
+            return
+          }
 
-      //     this.saveNetworkPopup.isFreezeInfo = true;
-      //     this.eventSaveNetworkAs(network.networkID)
-      //   }
-      //   else {
-
-      //     const settings = {
-      //       isSaveTrainedModel: false,
-      //       projectName: network.networkName,
-      //       projectPath: network.networkRootFolder
-      //     };
-      //     this.eventSaveNetworkAs(network.networkID)
-      //   }
-      // })
+          if(isTrained) {
+            this.saveNetworkPopup.isFreezeInfo = true;
+            this.eventSaveNetworkAs(network.networkID)
+          }
+          else {
+            const settings = {
+              isSaveTrainedModel: false,
+              projectName: network.networkName,
+              projectPath: network.networkRootFolder
+            };
+            this.saveNetwork(settings, network.networkID)
+          }
+        })
 
       function findIndexId(list, currentNet) {
         return list.findIndex((proj) => proj.id === currentNet.networkID)
       }
     },
     eventSaveNetworkAs(netId, isSaveProjectPath) {
-      // console.log('eventSaveNetworkAs');
       this.askSaveFilePopup()
         .then((answer)=> {
           if(answer) {
+            answer.projectPath += '/' + answer.projectName;
             this.saveNetwork(answer, netId, isSaveProjectPath);
           }
         })
@@ -126,7 +124,6 @@ const workspaceSaveNet = {
             // return projectPCSave(prepareNet.toFile)
 
             const payload = {
-              name: prepareNet.toLocal.name,
               path: prepareNet.toLocal.pathProject
             };
 
@@ -137,8 +134,8 @@ const workspaceSaveNet = {
         .then(()=> {
           /*save project to project page*/
 
-          // saveProjectToLocalStore(prepareNet.toLocal, this);
-          // if(saveProjectPath) this.set_networkRootFolder(pathSaveProject);
+          saveProjectToLocalStore(prepareNet.toLocal, this);
+          if(saveProjectPath) this.set_networkRootFolder(pathSaveProject);
           this.infoPopup('The file has been successfully saved');
           this.trackerModelSave(prepareNet.toFile);
         })
