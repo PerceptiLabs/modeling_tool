@@ -50,6 +50,7 @@ class coreLogic():
         self.cThread=None
         self.status="Created"
         self.network=None
+        self.resultDict=None
 
         self.setupLogic()
         self.plLicense = LicenseV2()
@@ -398,7 +399,7 @@ class coreLogic():
     def isTrained(self):
         is_trained = (
             (self._core_mode == 'v1' and self.saver is not None) or
-            (self._core_mode == 'v2' and self.core is not None and len(self.core.core_v2.graphs) > 0)
+            (self._core_mode == 'v2' and self.core is not None and self.resultDict is not None)
         )
         return {"content": is_trained}
 
