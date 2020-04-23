@@ -22,7 +22,7 @@ from perceptilabs.core_new.networkCache import NetworkCache
 from perceptilabs.codehq import CodeHqNew as CodeHq
 
 #LW interface
-from perceptilabs.lwInterface import getFolderContent, getDataMeta, getPartitionSummary, getCode, getNetworkInputDim, getNetworkOutputDim, getPreviewSample, getPreviewVariableList, Parse
+from perceptilabs.lwInterface import createFolder, getFolderContent, getDataMeta, getPartitionSummary, getCode, getNetworkInputDim, getNetworkOutputDim, getPreviewSample, getPreviewVariableList, Parse
 
 log = logging.getLogger(__name__)
 
@@ -155,6 +155,11 @@ class Interface():
         elif action == "getFolderContent":
             current_path = value
             return getFolderContent(current_path=current_path).run()
+
+        elif action == "createFolder":
+            folder_path = value['folder_path']
+            folder_name = value['folder_name']
+            return createFolder(folder_path=folder_path, folder_name=folder_name).run()
 
         elif action == "getPartitionSummary":
             Id=value["Id"]
