@@ -93,6 +93,11 @@
           .form_label Learning rate:
           #tutorial_learning_rate.form_input(data-tutorial-hover-info)
             input(type="number" v-model="settings.Learning_rate")
+      .settings-layer_section
+        .form_row
+          .form_label Batch Size:
+          .form_input
+            input(type="number" v-model="settings.batch_size")
 
     template(slot="Code-content")
       settings-code(
@@ -153,6 +158,7 @@ export default {
         Loss: "Quadratic", //#Cross_entropy, Quadratic, W_cross_entropy, Dice
         Class_weights: '1',
         Learning_rate: "0.001",
+        batch_size: '3',
         Optimizer: "ADAM", //#SGD, Momentum, ADAM, RMSprop
         Beta_1: '0.9',
         Beta_2: '0.999',
