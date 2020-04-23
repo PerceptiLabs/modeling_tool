@@ -120,8 +120,7 @@ import { debug } from 'util';
 
       },
       renameProject() {
-        debugger;
-        this.createLocalProjectFolder('suka');
+        
       },
       closeContext() {
         document.removeEventListener('click', this.closeContext);

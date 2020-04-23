@@ -699,15 +699,12 @@ const actions = {
         "folder_name": folder_name
       },
     }
-    console.log(theData);
 
     return coreRequest(theData)
       .then(res => {
-        debugger;
         return res;
       })
       .catch(err => {
-        debugger;
         console.error(err);
       });
   }
