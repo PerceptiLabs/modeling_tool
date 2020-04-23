@@ -8,7 +8,8 @@
         :autofocus="false" 
         :lineNumbers="false"
         :styleActiveLine="false"
-        :mode="codeMirrorMode" />
+        :mode="codeMirrorMode" 
+        :maxWidth="'100%'" />
     </div>
     
     <div 

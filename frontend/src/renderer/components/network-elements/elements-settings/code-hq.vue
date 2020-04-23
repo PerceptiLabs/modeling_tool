@@ -49,12 +49,19 @@
       events:           {type: Array,    default: () => ([])},
       globalOptions:    {type: Object,   default: () => ({})},
       globalEvents:     {type: Array,    default: () => ([])},
+      maxWidth:         {type: String,   default: '' },
 
       errorRow: {type: [Number, String] }
     },
     mounted() {
       this.initialize();
       this.$nextTick(() => {
+
+        const elements = document.querySelectorAll('.code-hq');
+        for (const el of elements) {
+          el.style.maxWidth = this.maxWidth;
+        }
+        
         this.cminstance.refresh();
 
         if(this.errorRowNumber) {
