@@ -34,25 +34,25 @@
           .form_label Epochs:
           .form_input
             input(type="number" v-model="settings.Epochs")
-      .settings-layer_section
-        .form_row(v-tooltip-interactive:right="interactiveInfo.costFunction")
-          .form_label Cost function:
-          #tutorial_cost-function.tutorial-relative.form_input(data-tutorial-hover-info)
-            base-radio(group-name="group" value-input="Cross_entropy" v-model="settings.Loss")
-              span Cross-Entropy
-            base-radio(group-name="group" value-input="Quadratic" v-model="settings.Loss")
-              span Quadratic
-            base-radio(group-name="group" value-input="W_cross_entropy" v-model="settings.Loss")
-              span Weighted Cross-Entropy
-            base-radio(group-name="group" value-input="Dice" v-model="settings.Loss")
-              span DICE
-            base-radio(group-name="group" value-input="Regression" v-model="settings.Loss")
-              span Regression
-              //-Cross-Entropy
-        .form_row(v-if="settings.Loss === 'W_cross_entropy'")
-          .form_label Class weights:
-          .form_input
-            input(type="number" v-model="settings.Class_weights")
+      // .settings-layer_section
+      //   .form_row(v-tooltip-interactive:right="interactiveInfo.costFunction")
+      //     .form_label Cost function:
+      //     #tutorial_cost-function.tutorial-relative.form_input(data-tutorial-hover-info)
+      //       base-radio(group-name="group" value-input="Cross_entropy" v-model="settings.Loss")
+      //         span Cross-Entropy
+      //       base-radio(group-name="group" value-input="Quadratic" v-model="settings.Loss")
+      //         span Quadratic
+      //       base-radio(group-name="group" value-input="W_cross_entropy" v-model="settings.Loss")
+      //         span Weighted Cross-Entropy
+      //       base-radio(group-name="group" value-input="Dice" v-model="settings.Loss")
+      //         span DICE
+      //       base-radio(group-name="group" value-input="Regression" v-model="settings.Loss")
+      //         span Regression
+      //         //-Cross-Entropy
+      //   .form_row(v-if="settings.Loss === 'W_cross_entropy'")
+      //     .form_label Class weights:
+      //     .form_input
+      //       input(type="number" v-model="settings.Class_weights")
       .settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.optimizer")
           .form_label Optimizer:
