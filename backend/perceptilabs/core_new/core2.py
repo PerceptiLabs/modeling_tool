@@ -45,7 +45,7 @@ class Core:
             raise
         finally:
             log.info(f"Stopping core with session id {session_id}")
-            self.stop()                
+            #self.stop()                
         
     def _run_internal(self, graph_spec: JsonNetwork, session_id: str=None, on_iterate: List[Callable]=None):        
         session_id = session_id or uuid.uuid4().hex
