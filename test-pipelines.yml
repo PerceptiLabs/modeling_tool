@@ -26,6 +26,7 @@ jobs:
     - bash: |
         cd $(System.DefaultWorkingDirectory)/backend
         mkdir training_scripts
+        if [ $? -ne 0 ]; then exit 0; fi
       displayName: 'Create test folder if it doesnt exist'
 
     - publish: $(System.DefaultWorkingDirectory)/backend/training_scripts
@@ -59,6 +60,7 @@ jobs:
     - script: |
         cd $(System.DefaultWorkingDirectory)/backend
         mkdir training_scripts
+        IF %ERRORLEVEL% NEQ 0 (exit 0)
       displayName: 'Create test folder if it doesnt exist'
 
     - publish: $(System.DefaultWorkingDirectory)/backend/training_scripts
@@ -94,6 +96,7 @@ jobs:
     - bash: |
         cd $(System.DefaultWorkingDirectory)/backend
         mkdir training_scripts
+        if [ $? -ne 0 ]; then exit 0; fi
       displayName: 'Create test folder if it doesnt exist'
 
     - publish: $(System.DefaultWorkingDirectory)/backend/training_scripts
