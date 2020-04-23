@@ -60,9 +60,7 @@ setup(
     description="",
     long_description="",
     install_requires=[
-        'tensorflow == 1.13.1; platform_system == "Windows"',
-        'tensorflow == 1.13.1; platform_system == "Darwin"',
-        'tensorflow-gpu == 1.15; platform_system == "Linux"',
+        'tensorflow-gpu == 1.15',
         'numpy >= 1.16.4',
         'fsspec >= 0.6.0',
         'pandas >= 0.25.0',
@@ -85,7 +83,11 @@ setup(
         'cryptography >= 2.8',
         'pycparser >= 2.19',
         'six >= 1.14.0',
-        'scikit-learn >= 0.22.1'
+        'scikit-learn >= 0.22.1',
+        'flask >= 1.1.1',
+        'Pillow==7.0.0',
+        'zmq',
+        'websockets==8.1'
     ],
     dependency_links=[
         'git+https://github.com/Kojoley/atari-py.git; platform_system == "Windows"',
