@@ -73,6 +73,7 @@ perceptilabs/core_new/session.py
 perceptilabs/core_new/utils.py
 perceptilabs/core_new/core_distr.py
 perceptilabs/core_new/script_distr.py
+perceptilabs/core_new/serialization.py
 
 # perceptilabs/core_new/api/
 perceptilabs/core_new/api/__init__.py
