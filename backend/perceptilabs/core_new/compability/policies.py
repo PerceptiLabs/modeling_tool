@@ -11,7 +11,7 @@
 import numpy as np
 import cv2
 
-def policy_classification(core, graphs, sanitized_to_name, sanitized_to_id):
+def policy_classification(core, graphs, sanitized_to_name, sanitized_to_id, results):
 
 
     def get_layer_inputs_and_outputs(graph, node, trn_node):
@@ -35,22 +35,27 @@ def policy_classification(core, graphs, sanitized_to_name, sanitized_to_id):
             data['b'] = b
         return data
 
-    def get_layer_gradients(layer_id, graphs):
+    def get_layer_gradients(layer_id, true_id, graphs, results):
         data = {}
-
-        min_list, max_list, avg_list = [], [], []
+        
+        if 'trainDict' in results:
+            min_list = results['trainDict'][true_id]['Gradient']['Min'] 
+            max_list = results['trainDict'][true_id]['Gradient']['Max']
+            avg_list = results['trainDict'][true_id]['Gradient']['Average']
+        else:
+            min_list = []
+            max_list = []
+            avg_list = []
+        
         for graph in graphs:
             gradient_dict = graph.active_training_node.layer.layer_gradients.get(layer_id, {})
-
 
             # (1) compute the min, max and average for gradients w.r.t each tensor in a layer
             # (2) compute min, max and average among the output of (1)
             # is there a more meaningful way to do it?
-            
             layer_min_list, layer_max_list, layer_avg_list = [], [], []
             for name, grad in gradient_dict.items():
                 grad = np.asarray(grad)
-            
                 layer_min_list.append(np.min(grad))
                 layer_max_list.append(np.max(grad))
                 layer_avg_list.append(np.average(grad))
@@ -59,6 +64,7 @@ def policy_classification(core, graphs, sanitized_to_name, sanitized_to_id):
                 min_list.append(np.min(layer_min_list))
                 max_list.append(np.max(layer_max_list))
                 avg_list.append(np.average(layer_avg_list))
+            
 
         data['Gradient'] = {
             'Min': min_list,
@@ -67,25 +73,36 @@ def policy_classification(core, graphs, sanitized_to_name, sanitized_to_id):
         }
         return data
 
-    def get_metrics(graphs):
+    def get_metrics(graphs, true_trn_id, results):
         data = {}
         x = np.random.random((60,)) # TODO: these are temporary whiel figuring out F1 and AUC
         y = np.random.random((10,))
 
-
         # ---- Get the metrics for ongoing epoch
         current_epoch = graphs[-1].active_training_node.layer.epoch
 
-        acc_trn_iter = []
-        loss_trn_iter = []
-        f1_trn_iter = x
-        auc_trn_iter = x
-        
-        acc_val_iter = []
-        loss_val_iter = []
-        f1_val_iter = x
-        auc_val_iter = x
-        
+        if 'trainDict' in results:
+            acc_trn_iter = results['trainDict'][true_trn_id]["acc_train_iter"] 
+            loss_trn_iter = results['trainDict'][true_trn_id]["loss_train_iter"] 
+            f1_trn_iter = results['trainDict'][true_trn_id]["f1_train_iter"] 
+            auc_trn_iter = results['trainDict'][true_trn_id]["auc_train_iter"] 
+
+            acc_val_iter = results['trainDict'][true_trn_id]["acc_val_iter"] 
+            loss_val_iter = results['trainDict'][true_trn_id]["loss_val_iter"] 
+            f1_val_iter = results['trainDict'][true_trn_id]["f1_val_iter"] 
+            auc_val_iter = results['trainDict'][true_trn_id]["auc_val_iter"] 
+
+        else:
+            acc_trn_iter = []
+            loss_trn_iter = []
+            f1_trn_iter = x
+            auc_trn_iter = x
+            
+            acc_val_iter = []
+            loss_val_iter = []
+            f1_val_iter = x
+            auc_val_iter = x
+
         for graph in graphs:
             trn_layer = graph.active_training_node.layer
             if trn_layer.epoch == current_epoch and trn_layer.status == 'training':
@@ -110,6 +127,27 @@ def policy_classification(core, graphs, sanitized_to_name, sanitized_to_id):
         loss_val_epoch = []
         f1_val_epoch = x
         auc_val_epoch = x
+
+        if 'trainDict' in results:
+            acc_trn_epoch = results['trainDict'][true_trn_id]["acc_training_epoch"]
+            loss_trn_epoch = results['trainDict'][true_trn_id]["loss_training_epoch"] 
+            f1_trn_epoch = results['trainDict'][true_trn_id]["f1_training_epoch"] 
+            auc_trn_epoch = results['trainDict'][true_trn_id]["auc_training_epoch"] 
+
+            acc_val_epoch = results['trainDict'][true_trn_id]["acc_validation_epoch"] 
+            loss_val_epoch = results['trainDict'][true_trn_id]["loss_validation_epoch"] 
+            f1_val_epoch = results['trainDict'][true_trn_id]["f1_validation_epoch"] 
+            auc_val_epoch = results['trainDict'][true_trn_id]["auc_validation_epoch"] 
+        else:
+            acc_trn_epoch = []
+            loss_trn_epoch = []
+            f1_trn_epoch = x
+            auc_trn_epoch = x
+
+            acc_val_epoch = []
+            loss_val_epoch = []
+            f1_val_epoch = x
+            auc_val_epoch = x
 
         idx = 1
         while idx < len(graphs):
@@ -171,13 +209,13 @@ def policy_classification(core, graphs, sanitized_to_name, sanitized_to_id):
                 data.update(node.layer.variables)
             data.update(get_layer_inputs_and_outputs(current_graph, node, trn_node))
             data.update(get_layer_weights_and_biases(node, trn_node))
-            data.update(get_layer_gradients(node.layer_id, graphs))
+            data.update(get_layer_gradients(node.layer_id, true_id, graphs, results))
             train_dict[true_id] = data
 
         # ----- Get data specific to the training layer.
         data = {}        
         true_trn_id = sanitized_to_id[trn_node.layer_id]
-        data.update(get_metrics(graphs))
+        data.update(get_metrics(graphs, true_trn_id, results))
         train_dict[true_trn_id].update(data)
 
         itr = 0

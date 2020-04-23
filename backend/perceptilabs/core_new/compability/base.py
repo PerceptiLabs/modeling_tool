@@ -136,7 +136,7 @@ class CompabilityCore:
         # TODO: if isinstance(training_layer, Classification) etc
         layer = graphs[-1].active_training_node.layer
         if isinstance(layer, ClassificationLayer):
-            result_dict = policy_classification(self._core, graphs, self._sanitized_to_name, self._sanitized_to_id)
+            result_dict = policy_classification(self._core, graphs, self._sanitized_to_name, self._sanitized_to_id, results)
         elif  isinstance(layer, ObjectDetectionLayer):
             result_dict = policy_object_detection(self._core, graphs, self._sanitized_to_name, self._sanitized_to_id, results)
         return result_dict
