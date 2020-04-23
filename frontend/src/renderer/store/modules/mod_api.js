@@ -690,7 +690,27 @@ const actions = {
         console.error(err);
       });
   },
+  API_createFolder(ctx, folder_name) {
+    const theData = {
+      receiver: '',
+      action: 'createFolder',
+      value: {
+        "folder_path": '/Users/antonbourosu/proj/',
+        "folder_name": folder_name
+      },
+    }
+    console.log(theData);
 
+    return coreRequest(theData)
+      .then(res => {
+        debugger;
+        return res;
+      })
+      .catch(err => {
+        debugger;
+        console.error(err);
+      });
+  }
 };
 
 export default {

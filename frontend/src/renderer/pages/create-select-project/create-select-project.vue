@@ -45,6 +45,7 @@
   import { mapActions, mapMutations } from "vuex";
   import SortByButton from "@/components/sort-by-button";
   import { generateID } from "@/core/helpers";
+import { debug } from 'util';
 
   export default {
     name: 'CreateSelectProject',
@@ -85,6 +86,7 @@
         closePageAction: 'modal_pages/closePageAction',
         getProjects:    'mod_project/getProjects',
         createProject:    'mod_project/createProject',
+        createLocalProjectFolder: 'mod_api/API_createFolder',
       }),
       onProjectSelectHandler(project) {
         this.selectProject(project.project_id);
@@ -95,9 +97,12 @@
        let payload = {
          name: 'New project ' + Date.now().toString(),
        };
+      
        this.createProject(payload)
         .then(res => {
           this.onProjectSelectHandler(res);
+          const projectName = `project_${res.project_id}`; 
+          this.createLocalProjectFolder(projectName);
         })
       },
       openContext(e, projectId) {
@@ -115,7 +120,8 @@
 
       },
       renameProject() {
-
+        debugger;
+        this.createLocalProjectFolder('suka');
       },
       closeContext() {
         document.removeEventListener('click', this.closeContext);
