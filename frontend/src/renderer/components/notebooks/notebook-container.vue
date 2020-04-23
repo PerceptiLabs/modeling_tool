@@ -95,7 +95,7 @@ export default {
       const networkElements = Object.entries(this.currentNetwork.networkElementList);
       for (let networkElement of networkElements) {
         const promise = addIdToLayerCode.call(this, networkElement);
-        fetchCodePromises.push(promiseWithTimeout(200, promise));
+        fetchCodePromises.push(promiseWithTimeout(400, promise));
       }
 
       return Promise.all(fetchCodePromises).then(code => {
@@ -154,8 +154,10 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import '../../scss/base/_variables.scss';
+
 #notebook-container {
-  background-color: #d9d9d9;
+  background-color: $bg-workspace;
   padding: 5rem 0;
 
   width: 100%;

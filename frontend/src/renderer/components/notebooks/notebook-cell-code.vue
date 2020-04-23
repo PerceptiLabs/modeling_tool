@@ -1,7 +1,7 @@
 <template>
   <div class="cell-contents">
     <div class="cell-input">
-      <div :class="['cell-input-operation', {'focused': isFocused}]">In [{{ cell.execution_count }}]:</div>
+      <div :class="['cell-input-operation-count', {'focused': isFocused}]">In [ {{ cell.execution_count || '&nbsp;' }} ]:</div>
       <CodeHQ 
         class="cell-input-code"
         :value="cell.Output" 
@@ -56,20 +56,27 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import '../../scss/base/_variables.scss';
 
-$cell-left-gutter: 5rem;
+$cell-left-gutter: 6.6rem;
 
 .cell-contents {
+  font-family: Roboto;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 12px;
   padding: 0.5rem;
 
   .cell-input {
     display: flex;
-    background-color: #d9d9d9;
+    background-color: $bg-workspace;
 
-    .cell-input-operation {
+    .cell-input-operation-count {
       flex-basis: $cell-left-gutter;
       flex-shrink: 0;
       padding-top: 0.75rem;
+      padding-right: 1rem;
+      text-align: right;
     }
 
     .cell-input-code {

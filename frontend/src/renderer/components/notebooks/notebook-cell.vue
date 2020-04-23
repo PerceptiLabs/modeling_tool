@@ -43,16 +43,17 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-$border-width: 5px;
-$col-primary2: #6E92FA;
+@import '../../scss/base/_variables.scss';
+
+$border-width: 3px;
 
 .cell-container {
-  width: 70rem;
+  width: calc(100% - 10rem);
 
   margin: 0 auto;
 
-  background-color: #d9d9d9;
-  color: #282d39;
+  background-color: $bg-workspace;
+  color: $color-6;
 
   font-family: monospace;
 
@@ -60,7 +61,7 @@ $col-primary2: #6E92FA;
   border-left: $border-width solid transparent;
 
   &:hover {
-    border-left: $border-width solid #4D556A;
+    border-left: $border-width solid $white;
   }
 
   &.focused {
