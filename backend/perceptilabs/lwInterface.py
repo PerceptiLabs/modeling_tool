@@ -5,6 +5,7 @@ import numpy as np
 import tensorflow as tf
 
 import logging
+import platform
 
 from perceptilabs.createDataObject import createDataObject
 
@@ -39,7 +40,6 @@ class saveJsonModel(LW_interface_base):
         with open(file_path, 'w') as outfile:
             json.dump(json.loads(self._json_model), outfile)
 
-
 class getFolderContent(LW_interface_base):
     def __init__(self, current_path):
         self._current_path = current_path
@@ -55,7 +55,7 @@ class getFolderContent(LW_interface_base):
                 self._current_path = os.path.abspath('')
 
         drives = []
-        if self._current_path == '.':
+        if self._current_path == '.' and platform.system() == 'Windows':            
             import win32api
             drives = win32api.GetLogicalDriveStrings()
             drives = drives.split('\000')[:-1]
@@ -65,6 +65,7 @@ class getFolderContent(LW_interface_base):
                 "current_path" : '',
                 "dirs" : '',
                 "files" :  '',
+                "platform": platform.system(),
             }
         
         if not drives:
@@ -72,12 +73,14 @@ class getFolderContent(LW_interface_base):
                 "current_path" : self._current_path.replace('\\','/'),
                 "dirs" : [x for x in os.listdir(self._current_path) if os.path.isdir(os.path.join(self._current_path,x))],
                 "files" :  [x for x in os.listdir(self._current_path) if os.path.isfile(os.path.join(self._current_path,x))],
+                "platform": platform.system(),
             }
         else:
             return {
                 "current_path" : self._current_path.replace('\\','/'),
                 "dirs" : drives,
                 "files" :  [],
+                "platform": platform.system(),
             }
 
 class getJsonModel(LW_interface_base):
