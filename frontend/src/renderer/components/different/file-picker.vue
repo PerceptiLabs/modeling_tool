@@ -209,10 +209,14 @@ export default {
           value: path
       };
 
+      console.group('fetchPathInformation');
+      console.log('path', path);
+
       this.$store.dispatch('globalView/ShowCoreNotFoundPopup', null, { root: true });
 
       try {
         const jsonData = await coreRequest(theData);
+        console.log('jsonData', jsonData);
 
         const pathNotFound = jsonData.current_path === "";
         if(isSearching && pathNotFound) {
@@ -246,6 +250,8 @@ export default {
         }
       } catch(e) {
         return false;
+      } finally {
+        console.groupEnd;
       }
     },
     onConfirm() {
