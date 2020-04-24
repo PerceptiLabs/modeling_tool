@@ -63,7 +63,6 @@
 
 <script>
 import { coreRequest } from '@/core/apiWeb.js';
-import { isOsWindows } from '@/core/helpers.js';
 import { filePickerStorageKey } from '@/core/constants.js';
 import { mapGetters } from "vuex";
 
@@ -105,12 +104,13 @@ export default {
       files: [],
       selectedFiles: [],
       selectedDirectories: [],
-      osPathPrefix: isOsWindows() ? '' : '/',
-      osPathSuffix: isOsWindows() && this.filePickerType === 'folder' ? '/' : '', // on windows folder should end with `/`
+      osPathPrefix: this.isOsWindows ? '' : '/',
+      osPathSuffix: this.isOsWindows && this.filePickerType === 'folder' ? '/' : '', // on windows folder should end with `/`
       clickTimer: null,
       searchValue: '',
       searchDirNotFound: false,
       breadcrumbShowLastXPositions: 5,
+      isOsWindows: false
     }
   },
   mounted() {
@@ -126,6 +126,13 @@ export default {
           });
   },
   methods: {
+    setOsSpecifics(platform) {
+      if (!platform) { return; }
+
+      this.isOsWindows = platform.toLowerCase().includes('windows');
+      this.osPathPrefix = this.isOsWindows ? '' : '/';
+      this.osPathSuffix = this.isOsWindows && this.filePickerType === 'folder' ? '/' : ''; // on windows folder should end with `/`
+    },
     calculateBreadcrumbsLength(path) {
       const reducer = (accumulator, currentValue, index) => {
         const nextValue = accumulator + currentValue;
@@ -144,7 +151,7 @@ export default {
     calcBreadcrumbPath(pathIdx) {
 
       let breadcrumbPath = this.osPathPrefix + this.currentPath.slice(0,pathIdx + 1).join('/') + this.osPathSuffix;;
-      if (isOsWindows() && 
+      if (this.isOsWindows && 
         this.currentPath[pathIdx] && 
         this.currentPath[pathIdx].charAt(this.currentPath[pathIdx].length - 1) === ':') {
         // to handle click on paths such as C:
@@ -154,13 +161,13 @@ export default {
       this.fetchPathInformation(breadcrumbPath);
     },
     calcRootFolderPath() {
-      let folderPath = isOsWindows() ? '.' : this.osPathPrefix + this.osPathSuffix ;
+      let folderPath = this.isOsWindows ? '.' : this.osPathPrefix + this.osPathSuffix ;
       this.fetchPathInformation(folderPath);
     },
     calcFolderPath(dirName) {
       let folderPath;
 
-      if (isOsWindows() && this.currentPath.length === 0) {
+      if (this.isOsWindows && this.currentPath.length === 0) {
         folderPath = dirName + this.osPathSuffix;
       } else {
         folderPath = this.osPathPrefix + this.currentPath.join('/') + '/' + dirName + this.osPathSuffix;
@@ -209,14 +216,12 @@ export default {
           value: path
       };
 
-      console.group('fetchPathInformation');
-      console.log('path', path);
-
       this.$store.dispatch('globalView/ShowCoreNotFoundPopup', null, { root: true });
 
       try {
         const jsonData = await coreRequest(theData);
-        console.log('jsonData', jsonData);
+        
+        this.setOsSpecifics(jsonData.platform);
 
         const pathNotFound = jsonData.current_path === "";
         if(isSearching && pathNotFound) {
@@ -250,9 +255,7 @@ export default {
         }
       } catch(e) {
         return false;
-      } finally {
-        console.groupEnd;
-      }
+      } 
     },
     onConfirm() {
         let emitPayload;
