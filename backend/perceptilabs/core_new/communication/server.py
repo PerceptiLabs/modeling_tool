@@ -1,5 +1,3 @@
-import zmq
-import dill
 import zlib
 import uuid
 import json
@@ -9,7 +7,6 @@ import ctypes
 import urllib
 import logging
 import requests
-import threading
 import traceback
 import collections
 from queue import Queue
@@ -18,7 +15,6 @@ from queue import Queue
 
 from perceptilabs.core_new.utils import YieldLevel
 from perceptilabs.core_new.serialization import serialize, can_serialize, deserialize
-from perceptilabs.core_new.communication.zmq import ZmqClient, ZmqServer, ConnectionLost
 from perceptilabs.core_new.communication.state import State, StateTransitionError
 from perceptilabs.core_new.communication.task_executor import TaskExecutor, TaskError, TaskTimeout
 
@@ -28,10 +24,10 @@ log = logging.getLogger(__name__)
         
 
 class TrainingServer:
-    def __init__(self, port_pub_sub, port_push_pull, graph, snapshot_builder=None, userland_timeout=15, ping_interval=3, max_time_run=None):
-        self._port_pub_sub = port_pub_sub
-        self._port_push_pull = port_push_pull
-        self._ping_interval = ping_interval
+    def __init__(self, producer_key_value, producer_snapshots, consumer, graph, snapshot_builder=None, userland_timeout=15, ping_interval=3, max_time_run=None):
+        self._producer_key_value = producer_key_value
+        self._producer_snapshots = producer_snapshots
+        self._consumer = consumer
 
         self._snapshot_builder = snapshot_builder        
         self._userland_timeout = userland_timeout
@@ -53,23 +49,20 @@ class TrainingServer:
                 break
 
     def run_stepwise(self):
-        zmq = self._zmq = ZmqServer(
-            f'tcp://*:{self._port_pub_sub}',
-            f'tcp://*:{self._port_push_pull}',
-            ping_interval=self._ping_interval
-        )
-        zmq.start()
-
+        self._consumer.start()                        
+        self._producer_key_value.start()
+        self._producer_snapshots.start()
+        
         def on_transition(new_state):
             log.info(f"Entered new state {new_state}")
-            self._send_message(zmq, 'state', new_state)            
-
+            self._send_key_value('state', new_state)
+            
         state = State(on_transition=on_transition)
         
         training_iterator = self._graph.run()
         training_sentinel = object()
         training_step_result = None
-        
+
         def training_step():
             return next(training_iterator, training_sentinel)
         
@@ -83,13 +76,12 @@ class TrainingServer:
         counter = 0
         while state.value not in State.exit_states:
             t0 = time.perf_counter()
-            new_state = self._process_messages(zmq, state)
+            new_state = self._process_messages(state)
             state.transition(new_state)
-
+            
             if state.value in State.running_states:
                 t1 = time.perf_counter()                
                 new_state = self._process_training(
-                    zmq,
                     training_step,
                     training_sentinel,
                     task_executor
@@ -100,7 +92,7 @@ class TrainingServer:
                 if counter % 10 == 0:
                     log.info(f"In idle state '{state.value}'")                
                 
-                self._send_message(zmq, 'state', state.value)
+                self._send_key_value('state', state.value)
                 time.sleep(1.0)
             elif state.value not in State.exit_states:
                 raise RuntimeError(f"Unexpected state: {state}")
@@ -116,17 +108,15 @@ class TrainingServer:
             yield
 
         self._closing = True
-        log.info(f"Leaving main-loop. Exit state: {state.value} [TrainingServer]")
-        log.info(f"Giving 10s grace period for messages to finish sending... [TrainingServer]")
-        time.sleep(10)
-        log.info(f"Stopping ZMQ server [TrainingServer]")        
-        zmq.stop()
+        self.shutdown()
         return state.value
 
     def shutdown(self):
-        self._zmq.stop()
+        self._producer_key_value.stop()
+        self._producer_snapshots.stop()
+        self._consumer.stop()
 
-    def _process_training(self, zmq, training_step, sentinel, task_executor):
+    def _process_training(self, training_step, sentinel, task_executor):
         new_state = None
         try:
             training_step_result = task_executor.run(
@@ -145,20 +135,21 @@ class TrainingServer:
             if training_step_result is sentinel:
                 new_state = State.TRAINING_COMPLETED
             elif training_step_result is YieldLevel.SNAPSHOT:
-                self._send_graph(zmq, self._graph)
+                self._send_graph(self._graph)
         finally:
             return new_state
 
     def _send_userland_timeout(self):
-        self._send_message(self._zmq, 'userland-timeout')        
+        self._send_key_value('userland-timeout')        
     
     def _send_userland_error(self, exception):
         tb_frames = traceback.extract_tb(exception.__traceback__)
         data = {'exception': exception, 'traceback_frames': tb_frames}
-        self._send_message(self._zmq, 'userland-error', data)                
+        self._send_key_value('userland-error', data)                
         
-    def _process_messages(self, zmq, state):
-        for message in zmq.get_messages():
+    def _process_messages(self, state):
+        messages = self._consumer.get_messages()
+        for message in messages:
             self._process_message(message, state)
 
     def _process_message(self, raw_message, state):
@@ -166,7 +157,7 @@ class TrainingServer:
         #print('TRN SRVR PROCESSING MESSAGE', message)
         message_key = message['key']
         message_value = message['value']
-
+        
         new_state = None
         if message_key == 'on_request_start':
             state.transition(State.TRAINING_RUNNING)
@@ -231,7 +222,6 @@ class TrainingServer:
         else:
             #raise RuntimeError(f"Unknown event key '{message_key}'")
             #log.warning(f"Unknown event key '{message_key}'")            
-            pass # TODO: hmm, snapshots will go here too.... Block them in ZMQ server somehow?
         
         return new_state
 
@@ -247,12 +237,12 @@ class TrainingServer:
         else:
             state.transition(success_state)
         
-    def _send_message(self, zmq, key, value=None):
+    def _send_key_value(self, key, value=None):
         message_dict = {'key': key, 'value': value or ''}
         message = serialize(message_dict)
-        zmq.send_message(message)
+        self._producer_key_value.send(message)
 
-    def _send_graph(self, zmq, graph):
+    def _send_graph(self, graph):
         if self._snapshot_builder is not None:
             snapshot = self._snapshot_builder.build(graph)
-            self._send_message(zmq, 'graph', snapshot)
+            self._producer_snapshots.send(snapshot)
