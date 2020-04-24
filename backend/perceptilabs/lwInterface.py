@@ -121,33 +121,38 @@ class getGraphOrder(LW_interface_base):
         graph_dict = graph.graphs
         return list(graph_dict.keys())
 
-class getNotebookExtras(LW_interface_base, Core):
+class getNotebookRunscript(LW_interface_base):
     def __init__(self, jsonNetwork):
         self.jsonNetwork = jsonNetwork
 
     def run(self):
-        from perceptilabs.graph import Graph
-        graph = Graph(self.jsonNetwork)
-        graph_dict = graph.graphs
-        from perceptilabs.core_new.script_distr import ScriptBuilder
-        sb = ScriptBuilder()
+        from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP
+        from perceptilabs.core_new.layers.script import ScriptFactory
+        from perceptilabs.core_new.graph.builder import GraphBuilder
         
-        for layer_id, content in graph_dict.items():
-            layer_type = content["Info"]["Type"]
+        script_factory = ScriptFactory()
+        replica_by_name = {repl_cls.__name__: repl_cls for repl_cls in BASE_TO_REPLICA_MAP.values()}
+        graph_builder = GraphBuilder(replica_by_name)
+        graph = graph_builder.build_from_spec(self.jsonNetwork)
 
-            if self._should_skip_layer(layer_id, content):
-                continue
+        return script_factory.get_runscript(graph)
 
-            code_gen = self._codehq.get_code_generator(layer_id, content)            
-            log.debug(repr(code_gen))
+class getNotebookImports(LW_interface_base):
+    def __init__(self, jsonNetwork):
+        self.jsonNetwork = jsonNetwork
 
-            sb.layer(f"{layer_id}",
-                     code_gen.get_code(),
-                     input_layers=content["Con"],
-                     checkpoint=None,
-                     layer_type=layer_type)
-            
-        return (sb.build_imports(),sb.build_runscript())
+    def run(self):
+        from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP
+        from perceptilabs.core_new.layers.script import ScriptFactory
+        from perceptilabs.core_new.graph.builder import GraphBuilder
+        
+        script_factory = ScriptFactory()
+        replica_by_name = {repl_cls.__name__: repl_cls for repl_cls in BASE_TO_REPLICA_MAP.values()}
+        graph_builder = GraphBuilder(replica_by_name)
+        graph = graph_builder.build_from_spec(self.jsonNetwork)
+
+        return script_factory.get_imports(graph)
+
 
 class getPartitionSummary(LW_interface_base):
     def __init__(self, id_, lw_core, data_container):

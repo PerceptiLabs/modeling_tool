@@ -25,7 +25,7 @@ from perceptilabs.core_new.cache2 import LightweightCache
 
         
 #LW interface
-from perceptilabs.lwInterface import getNotebookExtras, getFolderContent, saveJsonModel, getJsonModel, getGraphOrder, getDataMeta, getPartitionSummary, getCodeV1, getCodeV2, getNetworkInputDim, getNetworkOutputDim, getPreviewSample, getPreviewVariableList, Parse
+from perceptilabs.lwInterface import getNotebookImports, getNotebookRunscript, getFolderContent, saveJsonModel, getJsonModel, getGraphOrder, getDataMeta, getPartitionSummary, getCodeV1, getCodeV2, getNetworkInputDim, getNetworkOutputDim, getPreviewSample, getPreviewVariableList, Parse
 
 log = logging.getLogger(__name__)
 
@@ -324,9 +324,13 @@ class Interface():
             jsonNetwork = value
             return getGraphOrder(jsonNetwork=jsonNetwork).run()       
 
-        elif action == "getNotebookExtras":
+        elif action == "getNotebookImports":
             jsonNetwork = value
-            return getNotebookExtras(jsonNetwork=jsonNetwork).run()          
+            return getNotebookImports(jsonNetwork=jsonNetwork).run()          
+
+        elif action == "getNotebookRunscript":
+            jsonNetwork = value
+            return getNotebookRunscript(jsonNetwork=jsonNetwork).run()         
 
         elif action == "Close":
             self.shutDown()

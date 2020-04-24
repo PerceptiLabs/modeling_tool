@@ -36,6 +36,12 @@ class ScriptFactory:
         self._engine = J2Engine(templates_directory)
         self._definition_table = DEFINITION_TABLE
 
+    def get_runscript(self, graph: Graph)
+        return ""
+
+    def get_imports(self, graph: Graph)
+        return ""
+
     def make(self, graph: Graph, session_config: Dict[str, str]):
         #imports = {}
         #macro_calls = []
