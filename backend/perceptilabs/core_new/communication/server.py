@@ -20,7 +20,6 @@ from perceptilabs.core_new.communication.task_executor import TaskExecutor, Task
 
 
 log = logging.getLogger(__name__)
-
         
 
 class TrainingServer:
@@ -222,6 +221,7 @@ class TrainingServer:
         else:
             #raise RuntimeError(f"Unknown event key '{message_key}'")
             #log.warning(f"Unknown event key '{message_key}'")            
+            pass # TODO: hmm, snapshots will go here too.... Block them in ZMQ server somehow?
         
         return new_state
 

@@ -1,9 +1,11 @@
 import os
+import uuid
 import time
 import pytest
 import logging
 from unittest.mock import MagicMock
 
+from perceptilabs.messaging import get_message_bus, MessageConsumer, MessageProducer
 from perceptilabs.utils import loop_until_true
 from perceptilabs.core_new.utils import find_free_port
 from perceptilabs.core_new.utils import YieldLevel
@@ -13,12 +15,56 @@ from perceptilabs.core_new.communication import TrainingClient, TrainingServer, 
 log = logging.getLogger(__name__)
 
 
-def create_server(port1, port2, graph=None, snapshot_builder=None, userland_timeout=15):
+@pytest.fixture(scope='function')
+def session_id():
+    return uuid.uuid4().hex
+
+
+@pytest.fixture(scope='function')
+def topic_kv(session_id):
+    topic_key_value = f'key_value-{session_id}'.encode()    
+    return topic_key_value
+
+
+@pytest.fixture(scope='function')
+def topic_sn(session_id):
+    topic_snapshots = f'snapshots-{session_id}'.encode()
+    return topic_snapshots
+
+
+@pytest.fixture(scope='module', autouse=True)
+def message_bus():
+    bus = get_message_bus()
+    bus.start()
+    yield
+    bus.stop()
+
+
+@pytest.fixture
+def consumer(topic_kv, topic_sn):
+    consumer = MessageConsumer([topic_kv, topic_sn])
+    consumer.start()
+    yield consumer
+    consumer.stop()
+
+@pytest.fixture
+def producer(topic_kv):
+    producer = MessageProducer(topic_kv)
+    producer.start()
+    yield producer
+    producer.stop()    
+
+    
+def create_server(topic_kv, topic_sn, graph=None, snapshot_builder=None, userland_timeout=15):
+    server_producer_key_value = MessageProducer(topic_kv)
+    server_producer_snapshots = MessageProducer(topic_sn)
+    server_consumer = MessageConsumer([topic_kv])
+
     graph = graph or MagicMock()
     snapshot_builder = snapshot_builder or MagicMock()
     
     server = TrainingServer(
-        port1, port2,
+        server_producer_key_value, server_producer_snapshots, server_consumer,
         graph,
         snapshot_builder=snapshot_builder,
         userland_timeout=userland_timeout,
@@ -27,9 +73,12 @@ def create_server(port1, port2, graph=None, snapshot_builder=None, userland_time
     return server
 
 
-def create_client(port1, port2, graph_builder=None, on_receive_graph=None, on_log_message=None, on_userland_error=None, on_userland_timeout=None, on_server_timeout=None, server_timeout=60):
+def create_client(topic_kv, topic_sn, graph_builder=None, on_receive_graph=None, on_log_message=None, on_userland_error=None, on_userland_timeout=None, on_server_timeout=None, server_timeout=60):
+    consumer = MessageConsumer([topic_kv, topic_sn])
+    producer = MessageProducer(topic_kv)
+    
     client = TrainingClient(
-        port1, port2,
+        producer, consumer,
         graph_builder=graph_builder,
         on_receive_graph=on_receive_graph,
         on_log_message=on_log_message,
@@ -41,11 +90,11 @@ def create_client(port1, port2, graph_builder=None, on_receive_graph=None, on_lo
     return client
 
     
-def test_receives_status_ready():
+def test_receives_status_ready(topic_kv, topic_sn):
     port1, port2 = find_free_port(count=2)
-    server = create_server(port1, port2)
-    client = create_client(port1, port2)
-
+    server = create_server(topic_kv, topic_sn)
+    client = create_client(topic_kv, topic_sn)
+    
     try:
         server_step = server.run_stepwise()
         client_step = client.run_stepwise()        

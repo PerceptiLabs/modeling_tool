@@ -27,9 +27,9 @@ log = logging.getLogger(__name__)
     
 
 class TrainingClient:
-    def __init__(self, port_pub_sub, port_push_pull, graph_builder=None, on_receive_graph=None, on_log_message=None, on_userland_error=None, on_userland_timeout=None, on_server_timeout=None, server_timeout=20):
-        self._port_pub_sub = port_pub_sub
-        self._port_push_pull = port_push_pull
+    def __init__(self, producer, consumer, graph_builder=None, on_receive_graph=None, on_log_message=None, on_userland_error=None, on_userland_timeout=None, on_server_timeout=None, server_timeout=20):
+        self._producer = producer
+        self._consumer = consumer
         self._on_log_message = on_log_message
         self._on_userland_error = on_userland_error
         self._on_userland_timeout = on_userland_timeout
@@ -43,27 +43,22 @@ class TrainingClient:
         self._training_state = None
     
     def run_stepwise(self):
-        zmq = self._zmq = ZmqClient(
-            f'tcp://localhost:{self._port_pub_sub}',
-            f'tcp://localhost:{self._port_push_pull}',
-            server_timeout=self._server_timeout
-        )
-        zmq.connect()
-
+        self._consumer.start()
+        self._producer.start()
+        
         while True:
-
             try:
-                self._process_incoming_messages(zmq)                            
+                self._process_incoming_messages()                            
             except ConnectionLost:
                 log.error("No vital signs from training server..!")                            
                 if self._on_server_timeout:
                     self._on_server_timeout()
             
-            self._process_outgoing_messages(zmq)                    
+            self._process_outgoing_messages()                    
             yield
 
-    def _process_incoming_messages(self, zmq):
-        raw_messages = zmq.get_messages()
+    def _process_incoming_messages(self):
+        raw_messages = self._consumer.get_messages()
         for raw_message in raw_messages:
             message = deserialize(raw_message)
             message_key = message['key']
@@ -91,15 +86,16 @@ class TrainingClient:
         else:
             log.warning(f"Unknown message key {key} [TrainingClient]")
 
-    def _process_outgoing_messages(self, zmq):
+    def _process_outgoing_messages(self):
         while not self._out_queue.empty():
             message = self._out_queue.get()
             #print("client send mesage", message)
-            self._zmq.send_message(message)            
+            self._producer.send(message)            
             
     def shutdown(self):
         self._process_outgoing_messages(self._zmq)
-        self._zmq.stop()
+        self._producer.stop()
+        self._consumer.stop()        
 
     def _send_message(self, key, value=None):
         message_dict = {'key': key, 'value': value or ''}
@@ -129,7 +125,6 @@ class TrainingClient:
         
     def request_export(self, path, mode):
         self._send_message('on_request_export', {'path': path, 'mode': mode})
-
         
     @property
     def training_state(self):
