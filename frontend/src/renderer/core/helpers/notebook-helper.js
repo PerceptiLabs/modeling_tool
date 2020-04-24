@@ -102,6 +102,20 @@ const fetchNetworkCode = () => {
   }
 }
 
+const fetchImports = () => {
+  return store
+    .dispatch("mod_api/API_getNotebookImports", { 'Layers': coreNetwork })
+    .then(importStatements => importStatements)
+    .catch(error => []);
+}
+
+const fetchRunScripts = () => {
+  return store
+    .dispatch("mod_api/API_getNotebookRunscript", { 'Layers': coreNetwork })
+    .then(runStatements => runStatements)
+    .catch(error => []);
+}
+
 const fetchNetworkCodeOrder = () => {
   return store
     .dispatch("mod_api/API_getGraphOrder", coreNetwork)
@@ -132,13 +146,19 @@ export const createNotebookJson = async (storeReference) => {
 
   return Promise.all([
     fetchNetworkCode(),
-    fetchNetworkCodeOrder()
+    fetchNetworkCodeOrder(),
+    fetchImports(),
+    fetchRunScripts()
   ])
-  .then(([networkCodes, networkCodeOrder]) => {
+  .then(([networkCodes, networkCodeOrder, importStatements, fetchRunScripts]) => {
     // console.log('networkCode', networkCodes);
     // console.log('networkCodeOrder', networkCodeOrder);
     const validCodes = networkCodes.filter(nc => nc); // remove undefined (timedout)
     const sortedCode = sortNetworkCode(validCodes, networkCodeOrder);
+
+    sortedCode.unshift(importStatements);
+    sortedCode.push(fetchRunScripts);
+
     const notebookJson = notebookJsonBuilderV4.build(sortedCode);
 
     return notebookJson;
