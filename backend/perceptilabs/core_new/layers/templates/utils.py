@@ -44,7 +44,7 @@ def instantiate_layer_from_macro(j2_engine, macro_file, macro_name, macro_parame
     with NamedTemporaryFile('wt', delete=is_unix, suffix='.py') as f:
         f.write(code)
         f.flush()
-            
+
         spec = importlib.util.spec_from_file_location("my_module", f.name)        
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)

@@ -97,12 +97,14 @@ def img_5x32x32x3():
         
 def test_npy_shape_1d_ok(j2_engine, npy_30x784):
     sources = [{'type': 'file', 'path': npy_30x784}]
+    exts = ['.npy']
     partitions = [(70, 20, 10)]
 
     layer = create_layer(
         j2_engine, DEFINITION_TABLE,
         'DataData',
         sources=sources,
+        file_extensions=exts,
         partitions=partitions,
         selected_columns=None,        
     )
@@ -112,12 +114,14 @@ def test_npy_shape_1d_ok(j2_engine, npy_30x784):
 
 def test_npy_shape_2d_ok(j2_engine, npy_30x28x28):
     sources = [{'type': 'file', 'path': npy_30x28x28}]
+    exts = ['.npy']    
     partitions = [(70, 20, 10)]
 
     layer = create_layer(
         j2_engine, DEFINITION_TABLE,
         'DataData',
         sources=sources,
+        file_extensions=exts,
         partitions=partitions,
         selected_columns=None,        
     )
@@ -127,12 +131,14 @@ def test_npy_shape_2d_ok(j2_engine, npy_30x28x28):
 
 def test_npy_shape_3d_ok(j2_engine, npy_30x28x28x3):
     sources = [{'type': 'file', 'path': npy_30x28x28x3}]
+    exts = ['.npy']        
     partitions = [(70, 20, 10)]
 
     layer = create_layer(
         j2_engine, DEFINITION_TABLE,
         'DataData',
         sources=sources,
+        file_extensions=exts,        
         partitions=partitions,
         selected_columns=None,        
     )
@@ -142,12 +148,14 @@ def test_npy_shape_3d_ok(j2_engine, npy_30x28x28x3):
 
 def test_csv_shape_ok(j2_engine, csv_30x784):
     sources = [{'type': 'file', 'path': csv_30x784}]
+    exts = ['.csv']        
     partitions = [(70, 20, 10)]
 
     layer = create_layer(
         j2_engine, DEFINITION_TABLE,
         'DataData',
         sources=sources,
+        file_extensions=exts,        
         partitions=partitions,
         selected_columns=None,        
     )
@@ -157,12 +165,14 @@ def test_csv_shape_ok(j2_engine, csv_30x784):
 
 def test_npy_shape_1d_ok_lazy(j2_engine, npy_30x784):
     sources = [{'type': 'file', 'path': npy_30x784}]
+    exts = ['.npy']            
     partitions = [(70, 20, 10)]
 
     layer = create_layer(
         j2_engine, DEFINITION_TABLE,
         'DataData',
         sources=sources,
+        file_extensions=exts,        
         partitions=partitions,
         selected_columns=None,        
         lazy=True
@@ -173,12 +183,14 @@ def test_npy_shape_1d_ok_lazy(j2_engine, npy_30x784):
 
 def test_npy_shape_2d_ok_lazy(j2_engine, npy_30x28x28):
     sources = [{'type': 'file', 'path': npy_30x28x28}]
+    exts = ['.npy']            
     partitions = [(70, 20, 10)]
 
     layer = create_layer(
         j2_engine, DEFINITION_TABLE,
         'DataData',
         sources=sources,
+        file_extensions=exts,
         partitions=partitions,
         selected_columns=None,        
         lazy=True
@@ -190,11 +202,13 @@ def test_npy_shape_2d_ok_lazy(j2_engine, npy_30x28x28):
 def test_npy_shape_3d_ok_lazy(j2_engine, npy_30x28x28x3):
     sources = [{'type': 'file', 'path': npy_30x28x28x3}]
     partitions = [(70, 20, 10)]
-
+    exts = ['.npy']            
+    
     layer = create_layer(
         j2_engine, DEFINITION_TABLE,
         'DataData',
         sources=sources,
+        file_extensions=exts,
         partitions=partitions,
         selected_columns=None,        
         lazy=True
@@ -205,12 +219,14 @@ def test_npy_shape_3d_ok_lazy(j2_engine, npy_30x28x28x3):
 
 def test_csv_shape_ok_lazy(j2_engine, csv_30x784):
     sources = [{'type': 'file', 'path': csv_30x784}]
+    exts = ['.csv']                
     partitions = [(70, 20, 10)]
 
     layer = create_layer(
         j2_engine, DEFINITION_TABLE,
         'DataData',
         sources=sources,
+        file_extensions=exts,        
         partitions=partitions,
         selected_columns=None,
         lazy=True        
@@ -221,12 +237,14 @@ def test_csv_shape_ok_lazy(j2_engine, csv_30x784):
 
 def test_npy_samples_appear_in_order(j2_engine, npy_30x784):
     sources = [{'type': 'file', 'path': npy_30x784}]
+    exts = ['.npy']                    
     partitions = [(70, 20, 10)]
 
     layer = create_layer(
         j2_engine, DEFINITION_TABLE,
         'DataData',
         sources=sources,
+        file_extensions=exts,
         partitions=partitions,
         selected_columns=None,
         lazy=False
@@ -243,12 +261,14 @@ def test_npy_samples_appear_in_order(j2_engine, npy_30x784):
 
 def test_csv_samples_appear_in_order(j2_engine, csv_30x784):
     sources = [{'type': 'file', 'path': csv_30x784}]
+    exts = ['.csv']                        
     partitions = [(70, 20, 10)]
 
     layer = create_layer(
         j2_engine, DEFINITION_TABLE,
         'DataData',
         sources=sources,
+        file_extensions=exts,        
         partitions=partitions,
         selected_columns=None,
         lazy=False
@@ -269,11 +289,13 @@ def test_npy_and_csv_samples_appear_interleaved(j2_engine, npy_30x784, csv_30x78
         {'type': 'file', 'path': csv_30x784},        
     ]
     partitions = [(70, 20, 10), (70, 20, 10)]
-
+    exts = ['.npy', '.csv']
+        
     layer = create_layer(
         j2_engine, DEFINITION_TABLE,
         'DataData',
         sources=sources,
+        file_extensions=exts,        
         partitions=partitions,
         selected_columns=None,
         lazy=False
@@ -299,12 +321,14 @@ def test_npy_and_csv_samples_appear_interleaved(j2_engine, npy_30x784, csv_30x78
     
 def test_npy_samples_appear_in_order_lazy(j2_engine, npy_30x784):
     sources = [{'type': 'file', 'path': npy_30x784}]
+    exts = ['.npy']
     partitions = [(70, 20, 10)]
 
     layer = create_layer(
         j2_engine, DEFINITION_TABLE,
         'DataData',
         sources=sources,
+        file_extensions=exts,                
         partitions=partitions,
         selected_columns=None,
         lazy=True
@@ -321,12 +345,14 @@ def test_npy_samples_appear_in_order_lazy(j2_engine, npy_30x784):
 
 def test_csv_samples_appear_in_order_lazy(j2_engine, csv_30x784):
     sources = [{'type': 'file', 'path': csv_30x784}]
+    exts = ['.csv']    
     partitions = [(70, 20, 10)]
 
     layer = create_layer(
         j2_engine, DEFINITION_TABLE,
         'DataData',
         sources=sources,
+        file_extensions=exts,                
         partitions=partitions,
         selected_columns=None,
         lazy=True
@@ -346,12 +372,14 @@ def test_npy_and_csv_samples_appear_interleaved_lazy(j2_engine, npy_30x784, csv_
         {'type': 'file', 'path': npy_30x784},
         {'type': 'file', 'path': csv_30x784},        
     ]
+    exts = ['.npy', '.csv']    
     partitions = [(70, 20, 10), (70, 20, 10)]
 
     layer = create_layer(
         j2_engine, DEFINITION_TABLE,
         'DataData',
         sources=sources,
+        file_extensions=exts,
         partitions=partitions,
         selected_columns=None,
         lazy=True
