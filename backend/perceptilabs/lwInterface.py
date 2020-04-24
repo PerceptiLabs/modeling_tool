@@ -63,6 +63,23 @@ class getFolderContent(LW_interface_base):
                 "files" :  [],
             }
 
+class saveJsonModel(LW_interface_base):
+    def __init__(self, save_path, json_model):
+        self._save_path = save_path
+        self._json_model = json_model
+
+    def run(self):
+        import json
+        full_path = self._save_path
+
+        if not os.path.isdir(full_path):
+            os.mkdir(full_path)
+        
+        file_path = os.path.join(full_path, 'model.json')
+        with open(file_path, 'w') as outfile:
+            json.dump(json.loads(self._json_model), outfile)
+
+
 class createFolder(LW_interface_base):
     def __init__(self, folder_path, folder_name):
         self.folder_path = folder_path
