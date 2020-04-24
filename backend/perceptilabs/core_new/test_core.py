@@ -161,10 +161,11 @@ def graph_spec_binary_classification():
 
 def run_core_until_convergence(graph_spec, metric_fn, max_attempts=10):
     passed = False
+    graphs = []
     for attempt in range(max_attempts):
         print(f"Beginning attempt {attempt}")
         script_factory = ScriptFactory(max_time_run=180)
-        
+
         replica_by_name = {repl_cls.__name__: repl_cls for repl_cls in BASE_TO_REPLICA_MAP.values()}
         graph_builder = GraphBuilder(replica_by_name)
         
@@ -172,9 +173,11 @@ def run_core_until_convergence(graph_spec, metric_fn, max_attempts=10):
             graph_builder,
             script_factory
         )
-
+        
         core.run(graph_spec, auto_close=True)
-        if metric_fn(core):
+        graphs.extend(core.graphs)
+
+        if metric_fn(graphs):
             passed = True
             break
 
@@ -184,9 +187,10 @@ def run_core_until_convergence(graph_spec, metric_fn, max_attempts=10):
 
 @pytest.mark.slow
 def test_train_normal_converges(graph_spec_binary_classification, graph_builder):
-    def metric_fn(core):
-        if len(core.graphs) > 10:
-            accuracy_list = [g.active_training_node.layer.accuracy_training for g in core.graphs[-10:]]
+    
+    def metric_fn(graphs):
+        if len(graphs) > 10:
+            accuracy_list = [g.active_training_node.layer.accuracy_training for g in graphs[-10:]]
             accuracy = np.mean(accuracy_list)
             return accuracy >= 0.75
         else:
@@ -200,9 +204,10 @@ def test_train_normal_distributed_converges(graph_spec_binary_classification, gr
     json_network = graph_spec_binary_classification
     json_network['Layers']['6']['Properties']['Distributed'] = True
 
-    def metric_fn(core):
-        if len(core.graphs) > 10:
-            accuracy_list = [g.active_training_node.layer.accuracy_training for g in core.graphs[-10:]]
+
+    def metric_fn(graphs):
+        if len(graphs) > 10:
+            accuracy_list = [g.active_training_node.layer.accuracy_training for g in graphs[-10:]]
             accuracy = np.mean(accuracy_list)
             return accuracy >= 0.75
         else:
