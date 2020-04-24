@@ -62,12 +62,25 @@ class getFolderContent(LW_interface_base):
                 "dirs" : drives,
                 "files" :  [],
             }
+class getJsonModel(LW_interface_base):
+    print('huiak')
+    def __init__(self, json_path):
+        self._json_path = json_path
+    
+    def run(self):
+        if not os.path.exists(self._json_path):
+            return ""
+        
+        import json
+        with open(self._json_path, 'r') as f:
+            json_model = json.load(f)
+        return json_model
 
 class saveJsonModel(LW_interface_base):
     def __init__(self, save_path, json_model):
         self._save_path = save_path
         self._json_model = json_model
-
+        print(json_model)
     def run(self):
         import json
         full_path = self._save_path

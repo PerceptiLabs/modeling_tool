@@ -26,6 +26,8 @@ export const MODAL_PAGE_SIGN_IN = 'MODAL_PAGE_SIGN_IN';
 export const MODAL_PAGE_SIGN_UP = 'MODAL_PAGE_SIGN_UP';
 export const MODAL_PAGE_RESTORE_ACCOUNT = 'MODAL_PAGE_RESTORE_ACCOUNT';
 
+export const PROJECT_DEFAULT_FOLDER = '/Users/antonbourosu/proj/'
+
 export {
   isDevelopMode,
   trainingElements,

@@ -79,7 +79,8 @@ import { debug } from 'util';
     methods: {
       ...mapMutations({
         selectProject: 'mod_project/selectProject',
-        setPageTitleMutation: 'globalView/setPageTitleMutation'
+        setPageTitleMutation: 'globalView/setPageTitleMutation',
+        addModelFromLocalDataMutation: 'mod_workspace/add_model_from_local_data',
       }),
       ...mapActions({
         setActivePageAction: 'modal_pages/setActivePageAction',
@@ -87,12 +88,23 @@ import { debug } from 'util';
         getProjects:    'mod_project/getProjects',
         createProject:    'mod_project/createProject',
         createLocalProjectFolder: 'mod_api/API_createFolder',
+        API_getModelAction: 'mod_api/API_getModel',
       }),
       onProjectSelectHandler(project) {
-        this.selectProject(project.project_id);
+        const {project_id: projectId} = project;
+        this.selectProject(projectId);
         this.closePageAction();
         this.setPageTitleMutation(`${project.name} / Models`);
-        // @todo load models from local project folder and store it in vuex store.
+
+        project.models.map(modelId => {
+          this.API_getModelAction({modelId, projectId})
+            .then(model => {
+              this.addModelFromLocalDataMutation(model)
+            }).catch(e => {
+              console.log(e);
+            })
+        })
+
         this.$router.push({name: 'projects'})
       },
       createNewProject() {

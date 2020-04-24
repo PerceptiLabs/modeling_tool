@@ -420,6 +420,39 @@ const actions = {
         console.error('SaveTrained answer', err);
       });
   },
+  API_saveModel({dispatch, getters, rootGetters}, {model}) {
+    // location shoul be getted from default location of project
+    // /model_${model.apiMeta.model_id}
+    const save_path = `/Users/antonbourosu/proj/project_${model.apiMeta.project}/model_${model.apiMeta.model_id}`;
+    
+    const theData = {
+      action: "saveJsonModel",
+      value:  {
+        reciever: model,
+        path: save_path,
+        json: JSON.stringify(model),
+      }
+    };
+    return coreRequest(theData)
+      .then((data)=> {
+        return data;
+      })
+      .catch((err)=> {
+        console.error('SaveModel', err);
+      });
+  },
+  API_getModel(ctx, {projectId, modelId}) {
+    const theData = {
+      action: 'getJsonModel',
+      value: `/Users/antonbourosu/proj/project_${projectId}/model_${modelId}/model.json`
+    }
+    return coreRequest(theData)
+      .then(res=> {
+        return res;
+      }).catch(e => {
+        console.log(e);
+      })
+  },
 
 
   //---------------

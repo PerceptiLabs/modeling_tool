@@ -292,6 +292,7 @@
         }).then(apiMeta => {
           this.addNetwork({apiMeta});
           //@todo save the network in project folder
+          //
           
         });
       }

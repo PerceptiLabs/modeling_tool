@@ -117,6 +117,9 @@ const getters = {
 };
 
 const mutations = {
+  add_model_from_local_data(state, model){
+    state.workspaceContent.push(model);
+  },
   reset_network(state) {
     state.workspaceContent = []
   },
@@ -147,7 +150,7 @@ const mutations = {
   get_workspacesFromLocalStorage(state) {
     // this function is invoked when the pageQuantum (workspace) component is created
     // the networks that were saved in the localStorage are hydrated
-
+    return 0;
     const activeNetworkIDs = localStorage.getItem('_network.ids') || [];
     const keys = Object.keys(localStorage)
       .filter(key =>
@@ -213,7 +216,7 @@ const mutations = {
   set_networkRootFolder(state, {getters, value}) {
     getters.GET_currentNetwork.networkRootFolder = value
   },
-  add_network (state, { network , apiMeta }) {
+  add_network (state, { network , apiMeta, dispatch }) {
     let workspace = state.workspaceContent;
     let newNetwork = {};
     //-- DEFAULT DATA
@@ -261,6 +264,9 @@ const mutations = {
     if(router.history.current.name !== 'app') {
       router.replace({name: 'app'});
     }
+
+    dispatch('mod_api/API_saveModel', {model: newNetwork}, {root: true});
+
     function findNetId(newNet, netList) {
       let indexId = netList.findIndex((el)=> el.networkID === newNet.networkID);
       return (indexId < 0) ? false : true
@@ -938,11 +944,10 @@ const actions = {
   //  NETWORK
   //---------------
   ADD_network({commit, dispatch}, { network, apiMeta = {} }) {
-    debugger;
     if(isElectron()) {
-      commit('add_network', { network, apiMeta });
+      commit('add_network', { network, apiMeta, dispatch });
     } else {
-      commit('add_network', { network, apiMeta });
+      commit('add_network', { network, apiMeta, dispatch });
       const lastNetworkID = state.workspaceContent[state.currentNetwork].networkID;
       commit('set_lastActiveTabInLocalStorage', lastNetworkID);
       commit('set_workspacesInLocalStorage'); 
