@@ -12,7 +12,7 @@ def get_input_args():
                         help='Frontend process id.')
     parser.add_argument('-l','--log-level', default=None, type=str, choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
                         help='Log level name.')
-    parser.add_argument('-m','--core-mode', default='v1', type=str, choices=['v1', 'v2'],
+    parser.add_argument('-m','--core-mode', default='v2', type=str, choices=['v1', 'v2'],
                         help='Specifies which version of the core to run.')
     parser.add_argument('-k','--instantly-kill', default=False, type=bool,
                         help="Set this to instantly kill the core, for test purposes.")
