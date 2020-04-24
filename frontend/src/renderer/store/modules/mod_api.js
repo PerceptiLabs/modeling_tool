@@ -585,6 +585,44 @@ const actions = {
       });
   },
 
+  API_getNotebookImports({ rootGetters }, jsonNetwork) {
+
+    const theData = {
+      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
+      action: 'getNotebookImports',
+      value: jsonNetwork
+    };
+
+    return coreRequest(theData)
+      .then((data)=> {
+        // console.log('API_getNotebookImports data', data);
+        return data;
+      })
+      .catch((err)=> {
+        // console.log('API_getNotebookImports error');
+        console.error(err);
+      });
+  },
+
+  API_getNotebookRunscript({ rootGetters }, jsonNetwork) {
+
+    const theData = {
+      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
+      action: 'getNotebookRunscript',
+      value: jsonNetwork
+    };
+
+    return coreRequest(theData)
+      .then((data)=> {
+        // console.log('API_getNotebookRunscript data', data);
+        return data;
+      })
+      .catch((err)=> {
+        // console.log('API_getNotebookRunscript error');
+        console.error(err);
+      });
+  },
+
   API_getPartitionSummary({getters, rootGetters},  {layerId, settings}) {
     const net = getters.GET_coreNetwork;
     if(settings) net[layerId].Properties = settings;
