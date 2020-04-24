@@ -49,11 +49,9 @@ def layer_fc(j2_engine):
 def layer_inputs(j2_engine, tmpdir_del):
     mat_inputs = np.array(
         [
-            [0.1, 0.2, 0.3, 1.0],
-            [0.1, 0.2, 0.3, 1.1],        
-            [0.1, -1.0, -1.0, 1.0],
-            [0.0, 0.1, 1.0, -1.0],
-        ]*4
+            [0.1, 0.2, 0.3, 1.0],        
+    
+        ]*200
     )
     inputs_path = fix_path(os.path.join(tmpdir_del, 'inputs.npy'))
     np.save(inputs_path, mat_inputs)
@@ -73,11 +71,8 @@ def layer_inputs(j2_engine, tmpdir_del):
 def layer_targets(j2_engine, tmpdir_del):
     mat_targets = np.array(
         [
-            [1, 0, 0],
             [1, 0, 0],        
-            [0, 1, 0],
-            [0, 0, 1],
-        ]*4
+        ]*200
     )
     targets_path = fix_path(os.path.join(tmpdir_del, 'targets.npy'))
     np.save(targets_path, mat_targets)
@@ -142,17 +137,24 @@ def test_convergence(j2_engine, tmpdir_del, layer_inputs, layer_targets, layer_f
 
     sentinel = object()
     result = None
-    converged = True
+    converged = False
     
     loss_list = []
+    r_squared_list = []
     while result is not sentinel and not converged:
         result = next(iterator, sentinel)
 
         loss_list.append(training_layer.loss_training)
+        r_squared_list.append(training_layer.r_squared_training)
         
         # If the loss is not going down, then we are not converging, so return false!
-        if np.min(loss_list) != training_layer.loss_training:
-            converged = False
+        if len(loss_list) > 100:
+            if((np.mean(np.diff(loss_list) < 0))) and (r_squared_list[-1] > 0 and r_squared_list[-1] <= 1):
+                import pdb
+                pdb.set_trace()
+                converged = True
+            else:
+                converged = False
             
     assert converged
 
