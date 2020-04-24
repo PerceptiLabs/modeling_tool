@@ -113,6 +113,11 @@ def frontend_watcher(process_id, sleep_period=1, grace_period=15, log=None):
 
         time.sleep(sleep_period)
 
+
+def sanitize_path(path):
+    path = path.replace('\\', '/')
+    return path
+
     
 if __name__ == "__main__":
     import numpy as np

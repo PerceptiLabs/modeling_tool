@@ -24,14 +24,14 @@ class LW_interface_base(ABC):
 
 
 class saveJsonModel(LW_interface_base):
-    def __init__(self, save_path, json_model, network_name):
+    def __init__(self, save_path, json_model):
         self._save_path = save_path
         self._json_model = json_model
-        self._network_name = network_name
 
     def run(self):
         import json
-        full_path = os.path.join(self._save_path, self._network_name)
+        full_path = self._save_path
+
         if not os.path.isdir(full_path):
             os.mkdir(full_path)
         
@@ -163,8 +163,7 @@ class getCodeV2(LW_interface_base):
         node = Node(layer_id, layer_type, layer_instance, layer_spec)
         
         script_factory = ScriptFactory()        
-        code = script_factory.render_layer_code(node.layer_id, node.layer_type, node.layer_spec)
-
+        code = script_factory.render_layer_code(node.layer_id, node.layer_type, node.layer_spec, node.custom_code)
         return {'Output': code}        
 
         

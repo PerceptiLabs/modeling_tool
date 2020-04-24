@@ -35,12 +35,16 @@ class LayerDef:
 
         
 def resolve_checkpoint_path(specs):
+    import platform
     if len(specs['checkpoint']) == 0:
         return None
     
     ckpt_path = specs['checkpoint'][1]
     if '//' in ckpt_path:
-        new_ckpt_path = os.path.sep+ckpt_path.split(2*os.path.sep)[1] # Sometimes frontend repeats the directory path. /<dir-path>//<dir-path>/model.ckpt-1
+        if platform.system() == 'Windows':
+            new_ckpt_path = ckpt_path.split('//')[1]
+        else:
+            new_ckpt_path = os.path.sep+ckpt_path.split(2*os.path.sep)[1] # Sometimes frontend repeats the directory path. /<dir-path>//<dir-path>/model.ckpt-1
         log.warning(
             f"Splitting malformed checkpoint path: '{ckpt_path}'. "
             f"New path: '{new_ckpt_path}'"
@@ -48,6 +52,7 @@ def resolve_checkpoint_path(specs):
         ckpt_path = new_ckpt_path
 
     ckpt_path = os.path.dirname(ckpt_path)
+    ckpt_path=ckpt_path.replace('\\','/')
     return ckpt_path
 
 
@@ -159,12 +164,13 @@ DEFINITION_TABLE = {
             'patch_size': lambda specs: specs['Properties']['Patch_size'],
             'feature_maps': lambda specs: specs['Properties']['Feature_maps'],
             'stride': lambda specs: specs['Properties']['Stride'],
-            'padding': lambda specs: specs['Properties']['Padding'][1:-1],
+            'padding': lambda specs: specs['Properties']['Padding'],
             'dropout': lambda specs: specs['Properties']['Dropout'],
             'keep_prob': lambda specs: specs['Properties']['Keep_prob'],
             'activation': resolve_tf1x_activation_name,            
             'pool': lambda specs: specs['Properties']['PoolBool'],
             'pooling': lambda specs: specs['Properties']['Pooling'],
+            'pool_padding': lambda specs: specs['Properties']['Pool_padding'],
             'pool_area': lambda specs: specs['Properties']['Pool_area'],
             'pool_stride': lambda specs: specs['Properties']['Pool_stride'],            
         },
@@ -206,6 +212,43 @@ DEFINITION_TABLE = {
             'from perceptilabs.core_new.utils import Picklable, YieldLevel',
             'from perceptilabs.core_new.graph import Graph',
             'from perceptilabs.core_new.layers.base import ClassificationLayer, Tf1xLayer',
+            'from perceptilabs.core_new.serialization import can_serialize, serialize',
+            'from tensorflow.python.training.tracking.base import Trackable'            
+        ]
+    ),
+    'TrainDetector': LayerDef(
+       ObjectDetectionLayer,
+        'tf1x_object_detection.j2',
+        'layer_tf1x_object_detection',
+        {
+            'grid_size': lambda specs: specs['Properties']['grid_size'],
+            'num_box': lambda specs: specs['Properties']['num_box'],
+            'output_layer': lambda specs: [sanitize_layer_name(x) for true_id, x in specs['backward_connections'] if true_id != specs['Properties']['Labels']][0],
+            'target_layer': lambda specs: [sanitize_layer_name(x) for true_id, x in specs['backward_connections'] if true_id == specs['Properties']['Labels']][0],
+            'n_epochs': lambda specs: specs['Properties']['Epochs'],
+            'class_weights': lambda specs: specs['Properties']['Class_weights'],
+            'optimizer': resolve_tf1x_optimizer,
+            'learning_rate': lambda specs: specs['Properties']['Learning_rate'],
+            'decay_steps': lambda specs: specs['Properties']['Decay_steps'],
+            'decay_rate': lambda specs: specs['Properties']['Decay_rate'],
+            'momentum': lambda specs: specs['Properties']['Momentum'],
+            'beta1': lambda specs: specs['Properties']['Beta_1'],
+            'beta2': lambda specs: specs['Properties']['Beta_2'],
+            'distributed': lambda specs: specs['Properties'].get('Distributed', False),
+            'export_directory': resolve_checkpoint_path,
+            'batch_size': lambda specs: specs['Properties']['batch_size'],
+        },
+        import_statements=[
+            'import tensorflow as tf',
+            'import numpy as np',
+            'import time',
+            'import itertools',
+            'import cv2',
+            'import os',
+            'from typing import Dict, List, Generator',
+            'from perceptilabs.core_new.utils import Picklable, YieldLevel',
+            'from perceptilabs.core_new.graph import Graph',
+            'from perceptilabs.core_new.layers.base import ObjectDetectionLayer, Tf1xLayer',
             'from perceptilabs.core_new.serialization import can_serialize, serialize',
             'from tensorflow.python.training.tracking.base import Trackable'            
         ]

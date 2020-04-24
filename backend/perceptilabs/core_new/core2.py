@@ -63,11 +63,13 @@ class Core:
             log.exception("Exception in core.run")
             raise
         finally:
-            log.info(f"Closing core with session id {session_id}")
-            self.close()                
+            #log.info(f"Closing core with session id {session_id}")
+            #self.close()                
+            pass        
 
     def _run_internal(self, graph_spec, session_id=None, on_iterate=None, auto_close=False):
         session_id = session_id or uuid.uuid4().hex
+        log.info(f"Running core with session id {session_id}")        
         graph = self._graph_builder.build_from_spec(graph_spec)
         port1, port2 = find_free_port(count=2)        
         code, self._line_to_node_map = self._script_factory.make(graph, session_id, port1, port2, userland_timeout=self._userland_timeout)
@@ -200,7 +202,9 @@ class Core:
         
     @property
     def graphs(self) -> List[Graph]:
-        return list(self._graphs)
+        copy_graph = self._graphs.copy()
+        self._graphs = []
+        return copy_graph
 
     def close(self, wait_for_deployment=False):
         #if self._client is not None:

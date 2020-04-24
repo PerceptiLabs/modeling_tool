@@ -1,4 +1,5 @@
 const namespaced = true;
+import { localStorageGridKey } from '@/core/constants.js';
 const state = {
   onlineStatus: true,
   hideLayers: true,
@@ -23,6 +24,7 @@ const state = {
   },
   popupConfirmCancel: null,
   popupConfirmOk: null,
+  isGridEnabled: false,
 };
 const getters = {
   GET_appPath(state) {
@@ -98,6 +100,10 @@ const mutations = {
   clear_requestCounter(state) {
     state.requestCounter = 0
   },
+  setGridStateMutation(state, value) {
+    localStorage.setItem(localStorageGridKey, value);
+    state.isGridEnabled = value;
+  }
 };
 
 const actions = {
@@ -119,23 +125,23 @@ const actions = {
     commit('gp_ComingSoonPopup', true);
   },
   ShowCoreNotFoundPopup({ commit, rootState, dispatch }) {
-    let isServerRequestDone = false;
-    dispatch('mod_api/checkCoreAvailability', null, { root: true })
-      .then(() =>{
-        isServerRequestDone = true;
-      })
-      .catch((e) =>{
-        isServerRequestDone = true;
-      });
-
-    const delayActionDispatch = setTimeout(() => {
-      const coreIsOffline = rootState.mod_api.statusLocalCore === 'offline';
-      //if server responds more then a second or currently is offline show the core offline modal
-      if(coreIsOffline || !isServerRequestDone) {
-        commit('coreNotFoundPopup', true);
-      }
-      clearTimeout(delayActionDispatch)
-    }, 1000);
+    // let isServerRequestDone = false;
+    // dispatch('mod_api/checkCoreAvailability', null, { root: true })
+    //   .then(() =>{
+    //     isServerRequestDone = true;
+    //   })
+    //   .catch((e) =>{
+    //     isServerRequestDone = true;
+    //   });
+    //
+    // const delayActionDispatch = setTimeout(() => {
+    //   const coreIsOffline = rootState.mod_api.statusLocalCore === 'offline';
+    //   //if server responds more then a second or currently is offline show the core offline modal
+    //   if(coreIsOffline || !isServerRequestDone) {
+    //     commit('coreNotFoundPopup', true);
+    //   }
+    //   clearTimeout(delayActionDispatch)
+    // }, 1000);
 
   },
   SET_filePickerPopup({commit}, value) {

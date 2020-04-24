@@ -22,5 +22,30 @@ def sanitize_layer_name(name):
     name = name.replace(' ', '_')
     name = '_' + name
     return name
+
+
+def get_json_net_topology(json_network, names_as_id=False):
+    if 'Layers' in json_network:
+        json_network = json_network['Layers']
+
+    node_ids = []
+    edges_by_id = []
+    for id_, spec in json_network.items():
+        node_ids.append(str(id_))
+
+        for bw_id, bw_name in spec['backward_connections']:
+            if names_as_id:
+                bw_id = bw_name
+            edge = (str(bw_id), str(id_))
+            edges_by_id.append(edge)
+
+    return node_ids, edges_by_id
+
+        
+
+        
+    
+    
+    
     
     

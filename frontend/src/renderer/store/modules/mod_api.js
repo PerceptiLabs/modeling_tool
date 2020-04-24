@@ -99,11 +99,13 @@ const actions = {
           // set user when core switch from offline to online
           if(state.statusLocalCore === 'offline') {
             dispatch('API_setUserInCore');
+            commit('SET_statusLocalCore', 'online');
           }
-          commit('SET_statusLocalCore', 'online');
         })
         .catch(()=> {
-          commit('SET_statusLocalCore', 'offline');
+          if(state.statusLocalCore === 'online') {
+            commit('SET_statusLocalCore', 'offline');
+          }
         });
   },
   coreStatusWatcher({dispatch}) {
@@ -435,14 +437,13 @@ const actions = {
         console.error('SaveTrained answer', err);
       });
   },
-  API_saveJsonModel({rootGetters}, {name, path}) {
+  API_saveJsonModel({rootGetters}, {path}) {
     const networkJson = stringifyNetworkObjects(rootGetters['mod_workspace/GET_currentNetwork']);
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
       action: 'saveJsonModel',
       value:  {
         json: networkJson,
-        name, 
         path
       }
     };

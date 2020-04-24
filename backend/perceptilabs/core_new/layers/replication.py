@@ -19,7 +19,8 @@ from perceptilabs.core_new.layers.replicas import *
 
 WARNING: MUST HAVE SUBCLASSES APPEARING FIRST (if not, e.g., a training layer could be erroneously replicated as a data layer, which would hide a lot of information to the core)."""
 BASE_TO_REPLICA_MAP = {
-    ClassificationLayer: ClassificationLayerReplica,    
+    ClassificationLayer: ClassificationLayerReplica,  
+    ObjectDetectionLayer: ObjectDetectionLayerReplica,  
     DataLayer: DataLayerReplica,
     Tf1xLayer: Tf1xLayerReplica,
     InnerLayer: InnerLayerReplica,        
@@ -58,6 +59,48 @@ REPLICATED_PROPERTIES_TABLE = {
         ReplicatedProperty('loss_training', (np.float32, float), -1),
         ReplicatedProperty('loss_validation', (np.float32, float), -1),        
         ReplicatedProperty('loss_testing', (np.float32, float), -1),
+        ReplicatedProperty('status', str, '<none>'),
+        ReplicatedProperty('layer_gradients', dict, {}),
+        ReplicatedProperty('layer_weights', dict, lambda _: dict()),
+        ReplicatedProperty('layer_biases', dict, lambda _: dict()),
+        ReplicatedProperty('layer_outputs', dict, lambda _: dict()),
+        ReplicatedProperty('batch_size', int, -1),
+        ReplicatedProperty('training_iteration', int, -1),
+        ReplicatedProperty('validation_iteration', int, -1),        
+        ReplicatedProperty('testing_iteration', int, -1),
+        ReplicatedProperty('progress', (np.float32, float), -1),
+        ReplicatedProperty('export_modes', list, []),        
+    ],
+    ObjectDetectionLayer: [
+        ReplicatedProperty('sample', (np.float32, np.ndarray), lambda _: np.empty(())),
+        ReplicatedProperty('size_training', int, -1),
+        ReplicatedProperty('size_validation', int, -1),
+        ReplicatedProperty('size_testing', int, -1),
+        ReplicatedProperty('epoch', int, -1),        
+        ReplicatedProperty('variables', dict, lambda _: dict()),
+        ReplicatedProperty('accuracy_training', (np.float32, float), -1),
+        ReplicatedProperty('accuracy_validation', (np.float32, float), -1),
+        ReplicatedProperty('accuracy_testing', (np.float32, float), -1),
+        ReplicatedProperty('image_accuracy', (np.float32, float), -1),
+        ReplicatedProperty('loss_training', (np.float32, float), -1),
+        ReplicatedProperty('loss_validation', (np.float32, float), -1),        
+        ReplicatedProperty('loss_testing', (np.float32, float), -1),
+        ReplicatedProperty('loss_classification_training', (np.float32, float), -1),
+        ReplicatedProperty('loss_classification_validation', (np.float32, float), -1),        
+        ReplicatedProperty('loss_classification_testing', (np.float32, float), -1),
+        ReplicatedProperty('loss_bbox_training', (np.float32, float), -1),
+        ReplicatedProperty('loss_bbox_validation', (np.float32, float), -1),        
+        ReplicatedProperty('loss_bbox_testing', (np.float32, float), -1),
+        ReplicatedProperty('get_predicted_objects', (np.float32, np.ndarray), lambda _: np.empty(())),
+        ReplicatedProperty('get_predicted_classes', (np.float32, np.ndarray), lambda _: np.empty(())),
+        ReplicatedProperty('get_predicted_normalized_boxes', (np.float32, np.ndarray), lambda _: np.empty(())),
+        ReplicatedProperty('grid_size',int, 7),
+        ReplicatedProperty('num_class', int, 3),
+        ReplicatedProperty('num_box', int, 2),
+        ReplicatedProperty('classes', list, []),
+        ReplicatedProperty('lambdacoord', (np.float32, float), 5),
+        ReplicatedProperty('lambdanoobj', (np.float32, float), 0.5),
+        ReplicatedProperty('get_input_data_node', str,''),
         ReplicatedProperty('status', str, '<none>'),
         ReplicatedProperty('layer_gradients', dict, lambda _: dict()),
         ReplicatedProperty('layer_weights', dict, lambda _: dict()),
@@ -114,7 +157,6 @@ def _assert_replica_classes_have_all_arguments(base_to_replica_map, replicated_p
     for base_class, replica_class in base_to_replica_map.items():
         replicated_properties = replicated_properties_table.get(base_class, [])
         existing_args = inspect.getargspec(replica_class.__init__).args
-
         for repl_prop in replicated_properties:
             if repl_prop.name not in existing_args:
                 raise ValueError(f"Replica class {replica_class.__name__} constructor has no positional argument named '{repl_prop.name}'")

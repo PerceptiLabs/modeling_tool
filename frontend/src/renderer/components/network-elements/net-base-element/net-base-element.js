@@ -43,6 +43,8 @@ export default {
     this.$refs.rootBaseElement.removeEventListener('touchstart', this.Mix_paintArrow_arrowEndPaint, true);
     /*clickOutsideAction*/
     document.removeEventListener('mousedown', this.mousedownOutside);
+    document.removeEventListener('click', this.hideAllWindow, true);
+    document.removeEventListener('contextmenu', this.hideAllWindow, true);
   },
   data() {
     return {
@@ -205,12 +207,14 @@ export default {
       if(!this.isTutorialMode && !this.settingsIsOpen) {
         this.hideAllWindow();
         if(!this.currentSelectedEl.length) {
-          this.setFocusEl(event);
+          this.elementSelect({id: this.currentId, setValue: true })
         }
         //this.calcWindowPosition();
         if(this.networkMode === 'edit' && this.editIsOpen) {
           this.setElementInfoOpen(true);
           this.contextIsOpen = true;
+          document.addEventListener('click', this.hideAllWindow, true);
+          document.addEventListener('contextmenu', this.hideAllWindow, true);
         }
       }
     },
@@ -243,9 +247,9 @@ export default {
       }
     },
     setFocusEl(ev) {
-      ev.ctrlKey
-        ? this.elementMultiSelect({id: this.currentId, setValue: true })
-        : this.elementSelect({id: this.currentId, setValue: true })
+      // ev.ctrlKey
+      //   ? this.elementMultiSelect({id: this.currentId, setValue: true })
+      //   : this.elementSelect({id: this.currentId, setValue: true })
     },
     mousedownOutsideBefore() {
       this.MousedownElementTracking = this.$refs.rootBaseElement;
@@ -263,10 +267,12 @@ export default {
         top: false,
         offset: 0
       }
+      document.removeEventListener('click', this.hideAllWindow, true);
+      document.removeEventListener('contextmenu', this.hideAllWindow, true);
     },
     deselect() {
       if(!this.isTutorialMode) this.hideAllWindow();
-      this.elementSelect({id: this.currentId, setValue: false });
+      // this.elementSelect({id: this.currentId, setValue: false });
       this.tutorialShowHideTooltip();
     },
     tutorialSearchId(event) {

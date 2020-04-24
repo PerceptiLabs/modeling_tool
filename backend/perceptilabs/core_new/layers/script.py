@@ -30,6 +30,10 @@ def is_syntax_ok(code):
     else:
         return True
 
+class FetchParameterError(ScriptBuildError):
+    pass
+
+
 class ScriptFactory:
     def __init__(self, mode='default', max_time_run=None):
         # if legacy, simply reuse codehq
@@ -122,6 +126,7 @@ class ScriptFactory:
         code += "graph_builder = GraphBuilder()\n"
         code += "graph = graph_builder.build(layers, edges)\n\n"        
         return code
+
 
     def _create_training_server_snippet(self, port1, port2, userland_timeout):
         code  = "snapshot_builder = SnapshotBuilder(\n"
@@ -219,7 +224,10 @@ class ScriptFactory:
                 raise ScriptBuildError("Cannot use reserved name 'layer_name' for macro parameter")
 
             if callable(value):
-                value = value(layer_spec)
+                try:
+                    value = value(layer_spec)
+                except Exception as e:
+                    raise FetchParameterError(f"Failed to fetch parameter '{key}'") from e
             value = copy.deepcopy(value)
             
             if isinstance(value, str):

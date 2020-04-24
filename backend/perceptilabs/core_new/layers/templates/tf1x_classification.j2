@@ -88,7 +88,7 @@
         layer_output_tensors = build_graph(input_tensor, label_tensor)
         output_tensor = layer_output_tensors[output_layer_id]
         target_tensor = layer_output_tensors[target_layer_id]
-
+        
         # Create an exportable version of the TensorFlow graph
         self._input_tensor_export = tf.placeholder(shape=dataset_trn.output_shapes[0], dtype=dataset_trn.output_types[0])
         self._output_tensor_export = build_graph(
@@ -146,10 +146,13 @@
                 # self._internal_layer_gradients[node.layer_id] = {name: [] for name in node.layer.trainable_variables.keys()} # Initialize
                 # self._layer_gradients = self._internal_layer_gradients.copy()
 
-        trainable_vars = tf.trainable_variables() # TODO: safer to get from nodes. Especially with split graph in mind.
-        grads = tf.gradients(loss_tensor, trainable_vars)
-        update_weights = optimizer.apply_gradients(zip(grads, trainable_vars), global_step=global_step)        
-
+        # trainable_vars = tf.trainable_variables() # TODO: safer to get from nodes. Especially with split graph in mind.
+        # grads = tf.gradients(loss_tensor, trainable_vars)
+        # update_weights = optimizer.apply_gradients(zip(grads, trainable_vars), global_step=global_step)        
+        
+        grads_and_vars = optimizer.compute_gradients(loss_tensor)
+        update_weights = optimizer.apply_gradients(grads_and_vars, global_step=global_step)
+        
         config = tf.ConfigProto()
         config.gpu_options.allow_growth = True
         sess = tf.Session(config=config)
@@ -716,6 +719,7 @@
 ################################################### Main #####################################################
 {% macro layer_tf1x_classification(layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory) %}
 class {{layer_name}}(ClassificationLayer):
+
     def __init__(self):
         self._n_epochs = {{n_epochs}}
         self._batch_size = 10 # TODO: {{batch_size}}?

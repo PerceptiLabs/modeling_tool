@@ -11,7 +11,7 @@ from perceptilabs.core_new.graph.utils import sanitize_layer_name
 from perceptilabs.core_new.core2 import Core
 from perceptilabs.core_new.layers import *
 from perceptilabs.core_new.layers.replicas import NotReplicatedError
-from perceptilabs.core_new.compability.policies import policy_classification
+from perceptilabs.core_new.compability.policies import policy_classification, policy_object_detection
 
 
 log = logging.getLogger(__name__)
@@ -36,6 +36,7 @@ class CompabilityCore:
         self._threaded = threaded
         self._running = False
         self._core = None
+        self.results = {}
 
     @property
     def core_v2(self):
@@ -73,8 +74,8 @@ class CompabilityCore:
 
             if len(graphs) > 0:
                 log.debug(f"Processing {len(graphs)} graph snapshots")
-                results = self._get_results_dict(graphs)
-                self._result_queue.put(results)
+                self.results = self._get_results_dict(graphs, self.results)
+                self._result_queue.put(copy.deepcopy(self.results))
             
         set_tensorflow_mode('graph')
         core = Core(self._graph_builder, self._script_factory, self._issue_handler, use_sentry=True)
@@ -93,7 +94,7 @@ class CompabilityCore:
             threading.Thread(target=worker, args=(do_process_results, PROCESS_RESULTS_DELAY), daemon=True).start()                  
             self._run_core(core, self._graph_spec)
         else:
-            self._run_core(core, self._graph_spec, on_iterate=[do_process_commands, do_process_result])            
+            self._run_core(core, self._graph_spec, on_iterate=[do_process_commands, do_process_results])            
 
     def _run_core(self, core, graph_spec, on_iterate=None):
         try:
@@ -116,25 +117,28 @@ class CompabilityCore:
         elif command.type == 'export':
             core.export(command.parameters['path'], command.parameters['mode'])            
             
-    def _get_results_dict(self, graphs):
+    def _get_results_dict(self, graphs, results):
         self._print_graph_debug_info(graphs)
         
         result_dict = {}        
         try:
-            result_dict = self._get_results_dict_internal(graphs)
+            result_dict = self._get_results_dict_internal(graphs, results)
         except:
             log.exception('Error when getting results dict')
         finally:
             self._print_result_dict_debug_info(result_dict)
             return result_dict                
     
-    def _get_results_dict_internal(self, graph):
-        if not graph:
+    def _get_results_dict_internal(self, graphs, results):
+        if not graphs:
             log.debug("graph is None, returning empty results")
             return {}
-
         # TODO: if isinstance(training_layer, Classification) etc
-        result_dict = policy_classification(self._core, graph, self._sanitized_to_name, self._sanitized_to_id)
+        layer = graphs[-1].active_training_node.layer
+        if isinstance(layer, ClassificationLayer):
+            result_dict = policy_classification(self._core, graphs, self._sanitized_to_name, self._sanitized_to_id, results)
+        elif  isinstance(layer, ObjectDetectionLayer):
+            result_dict = policy_object_detection(self._core, graphs, self._sanitized_to_name, self._sanitized_to_id, results)
         return result_dict
 
     def _print_graph_debug_info(self, graphs):

@@ -9,6 +9,8 @@ backend/venv-user/
 backend/dist/
 backend/deploy.py
 backend/training_script.py
+backend/training_script.py
+backend/training_scripts/
 **/__pycache__/
 *.pyc
 *.py~
@@ -17,9 +19,9 @@ backend/training_script.py
 build/
 .vscode/
 backend/.vscode/
+backend/kernel.log
 #Frontend ignores
 frontend_out
-frontend/.DS_Store
 frontend/core/*
 frontend/dist/*
 frontend/dist/electron/*
@@ -42,3 +44,5 @@ frontend/src/node_modules/
 .vscode/*
 app.log
 backend.log
+log.txt
+.DS_Store

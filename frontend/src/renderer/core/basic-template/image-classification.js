@@ -101,7 +101,7 @@ const imageClassification = {
           "Conv_dim": "2D",
           "Patch_size": "3",
           "Stride": "2",
-          "Padding": "'SAME'",
+          "Padding": "SAME",
           "Feature_maps": "8",
           "Activation_function": "Sigmoid",
           "Dropout": false,
@@ -109,7 +109,7 @@ const imageClassification = {
           "PoolBool": false,
           "Pooling": "Max",
           "Pool_area": "2",
-          "Pool_padding": "'SAME'",
+          "Pool_padding": "SAME",
           "Pool_stride": "2"
         },
         "layerCode": null,
