@@ -126,13 +126,11 @@ class getNotebookRunscript(LW_interface_base):
         self.jsonNetwork = jsonNetwork
 
     def run(self):
-        from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP
         from perceptilabs.core_new.layers.script import ScriptFactory
         from perceptilabs.core_new.graph.builder import GraphBuilder
         
         script_factory = ScriptFactory()
-        replica_by_name = {repl_cls.__name__: repl_cls for repl_cls in BASE_TO_REPLICA_MAP.values()}
-        graph_builder = GraphBuilder(replica_by_name)
+        graph_builder = GraphBuilder()
         graph = graph_builder.build_from_spec(self.jsonNetwork)
 
         return script_factory.get_runscript(graph)
@@ -142,13 +140,11 @@ class getNotebookImports(LW_interface_base):
         self.jsonNetwork = jsonNetwork
 
     def run(self):
-        from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP
         from perceptilabs.core_new.layers.script import ScriptFactory
         from perceptilabs.core_new.graph.builder import GraphBuilder
         
         script_factory = ScriptFactory()
-        replica_by_name = {repl_cls.__name__: repl_cls for repl_cls in BASE_TO_REPLICA_MAP.values()}
-        graph_builder = GraphBuilder(replica_by_name)
+        graph_builder = GraphBuilder()
         graph = graph_builder.build_from_spec(self.jsonNetwork)
 
         return script_factory.get_imports(graph)
