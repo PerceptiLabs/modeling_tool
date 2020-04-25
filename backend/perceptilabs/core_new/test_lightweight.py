@@ -262,7 +262,7 @@ def test_out_shapes_ok(graph_spec_binary_classification):
  
     assert results['1'].out_shape == (784,) # Datadata inputs
     assert results['2'].out_shape == (1,) # Datadata labels
-    assert results['3'].out_shape == (28, 28, 1) # Reshape
+    assert results['3'].out_shape == (28, 28) # Reshape
     assert results['4'].out_shape == (10,) # FC
     assert results['5'].out_shape == (10,) # One hot
     assert results['6'].out_shape is None

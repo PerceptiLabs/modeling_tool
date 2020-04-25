@@ -101,6 +101,8 @@ class Tf1xStrategy:
                     variables=var_names,
                     default_var=default_var
                 )
+
+        tf.reset_default_graph()
         return results, errors
 
     def _restore_checkpoint(self, graph_spec, sess):
