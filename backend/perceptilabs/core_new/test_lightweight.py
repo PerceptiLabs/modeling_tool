@@ -256,13 +256,13 @@ def graph_spec_binary_classification_3d():
     f2.close()
     
 
-def test_out_shapes_ok(graph_spec_binary_classification):
+def test_out_shapes_ok_basic(graph_spec_binary_classification):
     lw_core = LightweightCore()
     results, instance_errors, strategy_errors = lw_core.run(graph_spec_binary_classification)
  
     assert results['1'].out_shape == (784,) # Datadata inputs
     assert results['2'].out_shape == (1,) # Datadata labels
-    assert results['3'].out_shape == (28, 28) # Reshape
+    assert results['3'].out_shape == (28, 28, 1) # Reshape
     assert results['4'].out_shape == (10,) # FC
     assert results['5'].out_shape == (10,) # One hot
     assert results['6'].out_shape is None
@@ -274,7 +274,7 @@ def test_out_shapes_ok_for_3d_samples(graph_spec_binary_classification_3d):
  
     assert results['1'].out_shape == (28, 28, 3) # Datadata inputs
     assert results['2'].out_shape == (1,) # Datadata labels
-    assert results['3'].out_shape == (2352,) # Reshape
+    assert results['3'].out_shape == (2352, 1, 1) # Reshape
     assert results['4'].out_shape == (10,) # FC
     assert results['5'].out_shape == (10,) # One hot
     assert results['6'].out_shape is None
@@ -288,7 +288,7 @@ def test_out_shapes_ok_partial_graph(graph_spec_binary_classification):
  
     assert results['1'].out_shape == (784,) # Datadata inputs
     assert results['2'].out_shape == None # Datadata labels
-    assert results['3'].out_shape == (28, 28) # Reshape
+    assert results['3'].out_shape == (28, 28, 1) # Reshape
     assert results['4'].out_shape == (10,) # FC
     assert results['5'].out_shape == None # One hot
     assert results['6'].out_shape is None

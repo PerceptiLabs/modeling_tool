@@ -93,10 +93,10 @@ class Tf1xStrategy:
                         break                
 
                 output = outputs.get(layer_id, None)
-                
+
                 results[layer_id] = LayerInfo(
                     sample=output,
-                    out_shape=np.atleast_1d(output.squeeze()).shape if output is not None else None,
+                    out_shape=np.atleast_1d(output[0]).shape if output is not None else None,
                     in_shape=None,
                     variables=var_names,
                     default_var=default_var
@@ -128,7 +128,7 @@ class Tf1xStrategy:
             pass
         elif isinstance(layer, DataLayer):
             try:
-                y = tf.constant(layer.sample)
+                y = tf.constant(np.array([layer.sample]))
                 output_tensors[layer_id] = y
             except Exception as e:
                 errors[layer_id] = exception_to_error(layer_id, layer_type, e)                    
@@ -146,6 +146,7 @@ class Tf1xStrategy:
                     output_tensors[layer_id] = y
                 except Exception as e:
                     # 'userland runtime errors'
+                    log.exception('Userland error')
                     errors[layer_id] = exception_to_error(layer_id, layer_type, e)
             else:
                 log.debug(f'Layer {layer_id} expected inputs from layers {bw_cons}, got {list(args.keys())}. Skipping.')
