@@ -67,21 +67,21 @@ def resolve_custom_code(specs):
     return code
 
 
-def resolve_data_file_extensions(specs):
+def update_sources_with_file_exts(specs):
     sources = specs['Properties']['accessProperties']['Sources']
     exts = []
     for source in sources:
         if source['type'] == 'file':
-            ext = source['path'][-4:]
+            ext = os.path.splitext(source['path'])[1]
         elif source['type'] == 'directory':
             path = source['path']
-            src_exts = [x[-4:] for x in os.listdir(path)]
+            src_exts = [os.path.splitext(x)[1] for x in os.listdir(path)]
             ext = max(set(src_exts), key=src_exts.count) # Most frequent
         else:
             ext = None
-            
-        exts.append(ext)
-    return exts
+        source['ext'] = ext
+
+    return sources
 
 
 DEFINITION_TABLE = {
@@ -90,8 +90,7 @@ DEFINITION_TABLE = {
         'datadata.j2',
         'layer_datadata',
         {
-            'sources': lambda specs: specs['Properties']['accessProperties']['Sources'],
-            'file_extensions': resolve_data_file_extensions,
+            'sources': update_sources_with_file_exts,
             'partitions': lambda specs: specs['Properties']['accessProperties']['Partition_list'],
             'batch_size': lambda specs: specs['Properties']['accessProperties']['Batch_size'],
             'shuffle': lambda specs: specs['Properties']['accessProperties']['Shuffle_data'],
