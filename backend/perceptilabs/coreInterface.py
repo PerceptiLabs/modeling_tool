@@ -409,10 +409,34 @@ class coreLogic():
 
     def exportNetwork(self,value):
         log.debug(f"exportNetwork called. Value = {pprint.pformat(value)}")
+
+        # Keys in 'value' : 
+        # ['Location', 'Type', 'Compressed', 'frontendNetwork', 'NotebookJson']
+
+        if value["Type"] == 'ipynb':
+            return self.saveIpynbToDisk(value)
+
+        # For value["Type"] = 'TFModel'
         if self._core_mode == 'v1':
             return self.exportNetworkV1(value)
         else:
             return self.exportNetworkV2(value)            
+
+    def saveIpynbToDisk(self, value):
+        path = value.get('Location')
+        if path is None or not path:
+            return {"content": 'Location not specified'}
+        
+        notebook_json = value.get('NotebookJson')
+        if notebook_json is None or not notebook_json:
+            return {"content": 'Cannot export empty network'}
+
+        filepath = os.path.abspath(path + '/' + value.get("frontendNetwork") + '.ipynb')
+
+        with open(filepath, 'w') as json_file:
+            json.dump(notebook_json, json_file)
+        
+        return {"content":"Export success!\nSaved as:\n" + filepath}
 
     def exportNetworkV2(self, value):
         path = os.path.join(value["Location"], value.get('frontendNetwork', self.networkName), '1')

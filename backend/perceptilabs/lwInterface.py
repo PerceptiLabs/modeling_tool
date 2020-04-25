@@ -8,6 +8,7 @@ import logging
 import platform
 
 from perceptilabs.createDataObject import createDataObject
+from perceptilabs.core_new.core import Core
 
 
 log = logging.getLogger(__name__)
@@ -122,6 +123,35 @@ class getGraphOrder(LW_interface_base):
         graph = Graph(self.jsonNetwork)
         graph_dict = graph.graphs
         return list(graph_dict.keys())
+
+class getNotebookRunscript(LW_interface_base):
+    def __init__(self, jsonNetwork):
+        self.jsonNetwork = jsonNetwork
+
+    def run(self):
+        from perceptilabs.core_new.layers.script import ScriptFactory
+        from perceptilabs.core_new.graph.builder import GraphBuilder
+        
+        script_factory = ScriptFactory()
+        graph_builder = GraphBuilder()
+        graph = graph_builder.build_from_spec(self.jsonNetwork)
+
+        return script_factory.get_runscript(graph)
+
+class getNotebookImports(LW_interface_base):
+    def __init__(self, jsonNetwork):
+        self.jsonNetwork = jsonNetwork
+
+    def run(self):
+        from perceptilabs.core_new.layers.script import ScriptFactory
+        from perceptilabs.core_new.graph.builder import GraphBuilder
+        
+        script_factory = ScriptFactory()
+        graph_builder = GraphBuilder()
+        graph = graph_builder.build_from_spec(self.jsonNetwork)
+
+        return script_factory.get_imports(graph)
+
 
 class getPartitionSummary(LW_interface_base):
     def __init__(self, id_, lw_core, data_container):

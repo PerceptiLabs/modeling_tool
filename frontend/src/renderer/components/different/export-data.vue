@@ -58,9 +58,10 @@ export default {
         //{name: 'git' , html: '<i class="icon icon-git"></i> Git'},
       ],
       selectOptions: [
-        { text: 'TensorFlow Model',  value: 'TFModel' },
-        //{ text: 'Docker Image',       value: 'Docker' },
-        //{ text: 'Raw Parameters',     value: 'Raw' }
+        { text: 'TensorFlow Model',         value: 'TFModel' },
+        { text: 'Jupyter Notebook (ipynb)', value: 'ipynb' }
+        //{ text: 'Docker Image',           value: 'Docker' },
+        //{ text: 'Raw Parameters',         value: 'Raw' }
       ],
       settings: {
         Location: '',
@@ -86,10 +87,6 @@ export default {
       }
     },
     exportData() {
-      googleAnalytics.trackCustomEvent('export-data', {
-        'export-type': this.settings.Type, 
-        'compressed': this.settings.Compressed
-      });
       this.$store.dispatch('mod_api/API_exportData', this.settings);
     }
   }
