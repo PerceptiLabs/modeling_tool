@@ -290,19 +290,36 @@
         self._val_sz_tot = input_data_node.layer.size_validation
         self._tst_sz_tot = input_data_node.layer.size_testing
 
-        # Set Devices and Distribution Strategy
-        n_devices = 4
-        config = tf.ConfigProto(device_count={"CPU": n_devices, "GPU": 0},
-                               gpu_options={"allow_growth": True},
-                               inter_op_parallelism_threads=n_devices,
-                               intra_op_parallelism_threads=1)
-        # config = tf.ConfigProto(gpu_options={"allow_growth": True}, log_device_placement=True, allow_soft_placement=True)
 
-        sess = tf.Session(config=config)
-        tf.keras.backend.set_session(sess) # since we use keras metrics
-        self._sess = sess
+        if {{use_cpus}}:
+            # Set Devices and Distribution Strategy
+            n_devices = 4
+            config = tf.ConfigProto(device_count={"CPU": n_devices, "GPU": 0},
+                                gpu_options={"allow_growth": True},
+                                inter_op_parallelism_threads=n_devices,
+                                intra_op_parallelism_threads=1)
+            # config = tf.ConfigProto(gpu_options={"allow_growth": True}, log_device_placement=True, allow_soft_placement=True)
 
-        strategy = tf.distribute.MirroredStrategy(devices=[f'/CPU:{i}' for i in range(n_devices)]) # TODO: not needed under real circumstances, should default to all.
+            sess = tf.Session(config=config)
+            tf.keras.backend.set_session(sess) # since we use keras metrics
+            self._sess = sess
+
+            strategy = tf.distribute.MirroredStrategy(devices=[f'/CPU:{i}' for i in range(n_devices)]) # TODO: not needed under real circumstances, should default to all.
+        else:
+            # Set Devices and Distribution Strategy
+            import GPUtil
+            n_devices = len(GPUtil.getGPUs())
+            config = tf.ConfigProto(device_count={"CPU": n_devices, "GPU": 0},
+                                gpu_options={"allow_growth": True},
+                                inter_op_parallelism_threads=n_devices,
+                                intra_op_parallelism_threads=1)
+            # config = tf.ConfigProto(gpu_options={"allow_growth": True}, log_device_placement=True, allow_soft_placement=True)
+
+            sess = tf.Session(config=config)
+            tf.keras.backend.set_session(sess) # since we use keras metrics
+            self._sess = sess
+
+            strategy = tf.distribute.MirroredStrategy(devices=[f'/CPU:{i}' for i in range(n_devices)]) # TODO: not needed under real circumstances, should default to all.
 
         BATCH_SIZE_PER_REPLICA = self._batch_size # TODO: should this be batch_size divided by n_devices or not?
         GLOBAL_BATCH_SIZE = BATCH_SIZE_PER_REPLICA * n_devices
