@@ -647,7 +647,6 @@
                 {% endif %}
             {% endfilter %}
 
-            #import pdb; pdb.set_trace()      
             log.info("Entering training loop")
 
             self._epoch = 0
@@ -722,7 +721,7 @@ class {{layer_name}}(ClassificationLayer):
 
     def __init__(self):
         self._n_epochs = {{n_epochs}}
-        self._batch_size = 10 # TODO: {{batch_size}}?
+        self._batch_size = 10 
 
         self._stopped = False
         self._paused = False

@@ -195,7 +195,7 @@ def test_train_normal_converges(graph_spec_binary_classification):
     
     assert np.mean(accuracy_list[-10:]) >= 0.75
 
-
+    
 @pytest.mark.slow
 @pytest.mark.skip(reason="Until intermittent failures on Azure are fixed")
 def test_train_normal_distributed_converges(graph_spec_binary_classification):
