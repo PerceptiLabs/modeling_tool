@@ -272,7 +272,7 @@
 {% endmacro %}
 
 #################################################### Distributed Training #################################################
-{% macro run_distributed(graph, layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory) %}
+{% macro run_distributed(graph, layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory, use_cpus) %}
         INCLUDE_KERAS_METRICS = False
 
         self_layer_name = '{{layer_name}}' # this is passed as input
@@ -290,19 +290,31 @@
         self._val_sz_tot = input_data_node.layer.size_validation
         self._tst_sz_tot = input_data_node.layer.size_testing
 
-        # Set Devices and Distribution Strategy
-        n_devices = 4
-        config = tf.ConfigProto(device_count={"CPU": n_devices, "GPU": 0},
-                               gpu_options={"allow_growth": True},
-                               inter_op_parallelism_threads=n_devices,
-                               intra_op_parallelism_threads=1)
-        # config = tf.ConfigProto(gpu_options={"allow_growth": True}, log_device_placement=True, allow_soft_placement=True)
 
-        sess = tf.Session(config=config)
-        tf.keras.backend.set_session(sess) # since we use keras metrics
-        self._sess = sess
+        if {{use_cpus}}:
+            # Set Devices and Distribution Strategy
+            n_devices = 4
+            config = tf.ConfigProto(device_count={"CPU": n_devices, "GPU": 0},
+                                gpu_options={"allow_growth": True},
+                                inter_op_parallelism_threads=n_devices,
+                                intra_op_parallelism_threads=1)
 
-        strategy = tf.distribute.MirroredStrategy(devices=[f'/CPU:{i}' for i in range(n_devices)]) # TODO: not needed under real circumstances, should default to all.
+            sess = tf.Session(config=config)
+            tf.keras.backend.set_session(sess) # since we use keras metrics
+            self._sess = sess
+
+            strategy = tf.distribute.MirroredStrategy(devices=[f'/CPU:{i}' for i in range(n_devices)]) # TODO: not needed under real circumstances, should default to all.
+        else:
+            # Set Devices and Distribution Strategy
+            n_devices = len(GPUtil.getGPUs())
+
+            config = tf.ConfigProto(gpu_options={"allow_growth": True}, log_device_placement=True, allow_soft_placement=True)
+
+            sess = tf.Session(config=config)
+            tf.keras.backend.set_session(sess) # since we use keras metrics
+            self._sess = sess
+
+            strategy = tf.distribute.MirroredStrategy(devices=[f'/GPU:{i}' for i in range(n_devices)]) # TODO: not needed under real circumstances, should default to all.
 
         BATCH_SIZE_PER_REPLICA = self._batch_size # TODO: should this be batch_size divided by n_devices or not?
         GLOBAL_BATCH_SIZE = BATCH_SIZE_PER_REPLICA * n_devices
@@ -716,7 +728,7 @@
 
 
 ################################################### Main #####################################################
-{% macro layer_tf1x_classification(layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory) %}
+{% macro layer_tf1x_classification(layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory, use_cpus) %}
 class {{layer_name}}(ClassificationLayer):
 
     def __init__(self):
@@ -759,7 +771,7 @@ class {{layer_name}}(ClassificationLayer):
             graph: A PerceptiLabs Graph object containing references to all layers objects included in the model produced by this training layer.
         """   
         {% if distributed -%}
-            {{ run_distributed(graph, layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory) }}
+            {{ run_distributed(graph, layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory, use_cpus) }}
         {% else -%}
             {{ run_normal(graph, layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory) }}
         {% endif %}                
@@ -774,6 +786,11 @@ class {{layer_name}}(ClassificationLayer):
 
         log.debug(f"Export called. Project path = {path}, mode = {mode}")
         pb_path = os.path.join(path, '1')
+
+        if os.path.exists(pb_path):
+            shutil.rmtree(pb_path)
+
+        os.makedirs(pb_path, exist_ok=True)
         
         # Export non-compressed model
         if mode in ['TFModel', 'TFModel+checkpoint']:
@@ -781,10 +798,12 @@ class {{layer_name}}(ClassificationLayer):
 
         # Export compressed model
         if mode in ['TFLite', 'TFLite+checkpoint']:
+            frozen_path = os.path.join(pb_path, 'frozen_model.pb')
             converter = tf.lite.TFLiteConverter.from_session(self._sess, [self._input_tensor_export], [self._output_tensor_export])
             converter.post_training_quantize = True
             tflite_model = converter.convert()
-            open(pb_path, "wb").write(tflite_model)
+            with open(frozen_path, "wb") as f:
+                f.write(tflite_model)
 
         # Export checkpoint
         if mode in ['TFModel+checkpoint', 'TFLite+checkpoint']:

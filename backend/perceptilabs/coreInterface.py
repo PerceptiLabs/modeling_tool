@@ -184,11 +184,16 @@ class coreLogic():
         distributed = self.isDistributable(gpus)
         #distributed = True
 
+        use_cpus = True
+
         for _id, layer in network['Layers'].items():
             if layer['Type'] == 'DataData':
                 if layer['Properties'] and 'accessProperties' in layer['Properties']:
                     layer['Properties']['accessProperties']['Sources'][0]['path'] = layer['Properties']['accessProperties']['Sources'][0]['path'].replace('\\','/')
             if layer['Type'] == 'TrainNormal':
+                if not 'Use_CPUs' in layer['Properties']:
+                    layer['Properties']['Use_CPUs'] = use_cpus
+
                 layer['Properties']['Distributed'] = distributed
                 if distributed:
                     targets_id = layer['Properties']['Labels']
@@ -267,7 +272,7 @@ class coreLogic():
             )            
             
         if self.cThread is not None and self.cThread.isAlive():
-            self.Stop()
+            self.Close()
 
             while self.cThread.isAlive():
                 time.sleep(0.05)
@@ -403,7 +408,7 @@ class coreLogic():
     def isTrained(self):
         is_trained = (
             (self._core_mode == 'v1' and self.saver is not None) or
-            (self._core_mode == 'v2' and self.core is not None and len(self.core.core_v2.graphs) > 0)
+            (self._core_mode == 'v2' and self.core is not None and self.resultDict is not None)
         )
         return {"content": is_trained}
 
@@ -439,11 +444,8 @@ class coreLogic():
         return {"content":"Export success!\nSaved as:\n" + filepath}
 
     def exportNetworkV2(self, value):
-        path = os.path.join(value["Location"], value.get('frontendNetwork', self.networkName), '1')
+        path = os.path.join(value["Location"], value.get('frontendNetwork', self.networkName))
         path = os.path.abspath(path)
-            
-        if os.path.exists(path):
-            shutil.rmtree(path)
 
         mode = 'TFModel+checkpoint' # Default mode. # TODO: perhaps all export modes should be exposed to frontend?
         if value["Compressed"]:
