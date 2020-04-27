@@ -145,7 +145,7 @@
             Sources: [], //{type: 'file'/'directory', path: 'PATH'}
             PathFake: [],
             Partition_list: [],
-            Batch_size: 10,
+            // Batch_size: 10,
             Shuffle_data: true,
           }
         },
