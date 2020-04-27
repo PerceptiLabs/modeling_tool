@@ -775,7 +775,6 @@ class {{layer_name}}(ClassificationLayer):
         log.debug(f"Export called. Project path = {path}, mode = {mode}")
         pb_path = os.path.join(path, '1')
 
-        import shutil
         if os.path.exists(pb_path):
             shutil.rmtree(pb_path)
 
@@ -793,7 +792,6 @@ class {{layer_name}}(ClassificationLayer):
             tflite_model = converter.convert()
             with open(frozen_path, "wb") as f:
                 f.write(tflite_model)
-            # open(pb_path, "wb").write(tflite_model)
 
         # Export checkpoint
         if mode in ['TFModel+checkpoint', 'TFLite+checkpoint']:
