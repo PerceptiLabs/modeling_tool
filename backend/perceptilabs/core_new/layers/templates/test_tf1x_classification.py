@@ -50,7 +50,7 @@ def layer_inputs(j2_engine, tmpdir_del):
     layer_inputs_ = create_layer(
         j2_engine, DEFINITION_TABLE,
         'DataData',
-        sources=[{'type': 'file', 'path': inputs_path}],
+        sources=[{'type': 'file', 'path': inputs_path, 'ext': '.npy'}],
         partitions=[(100, 0, 0)],
     )
 
@@ -74,7 +74,7 @@ def layer_targets(j2_engine, tmpdir_del):
     layer_targets_ = create_layer(
         j2_engine, DEFINITION_TABLE,
         'DataData',
-        sources=[{'type': 'file', 'path': targets_path}],
+        sources=[{'type': 'file', 'path': targets_path, 'ext': '.npy'}],
         partitions=[(100, 0, 0)],
     )
 
@@ -112,7 +112,8 @@ def make_graph(j2_engine, tmpdir_del, layer_inputs, layer_targets, layer_fc, exp
         beta1=0.9,
         batch_size = 10,
         distributed=distributed,
-        export_directory=export_dir
+        export_directory=export_dir,
+        use_cpus=True
     )
     
     layers = {
@@ -181,7 +182,7 @@ def test_convergence_distributed(j2_engine, tmpdir_del, layer_inputs, layer_targ
 
 def test_save_model(j2_engine, tmpdir_del, layer_inputs, layer_targets, layer_fc):
     graph = make_graph(j2_engine, tmpdir_del, layer_inputs, layer_targets, layer_fc)
-    
+
     training_layer = graph.active_training_node.layer
     iterator = training_layer.run(graph) # TODO: self reference is weird. shouldnt be!
 
