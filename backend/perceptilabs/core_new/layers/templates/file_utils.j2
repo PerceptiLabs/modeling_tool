@@ -57,12 +57,12 @@
         df_{{tag}} = pd.read_csv("{{path}}").astype(np.float32)
         columns_{{tag}} = df_{{tag}}.columns.tolist()        
         size_{{tag}} = len(df_{{tag}})        
-        
+
         {% filter remove_lspaces(8) %}
-            {% if selected_columns is not none %}
+            {% if selected_columns is not none and selected_columns|length > 0 %}
                 df_{{tag}} = df_{{tag}}.iloc[:, {{selected_columns}}]
             {% endif %}
-        {% endfilter %}        
+        {% endfilter %}
         
         def generator_{{tag}}(idx_lo, idx_hi):
             global df_{{tag}}

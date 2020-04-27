@@ -7,7 +7,7 @@ import shutil
 
 from perceptilabs.core_new.layers.templates.base import J2Engine
 from perceptilabs.core_new.layers.templates.utils import instantiate_layer_from_macro, create_layer
-from perceptilabs.core_new.layers.definitions import TEMPLATES_DIRECTORY, DEFINITION_TABLE
+from perceptilabs.core_new.layers.definitions import TEMPLATES_DIRECTORY, DEFINITION_TABLE, TOP_LEVEL_IMPORTS_FLAT
 from perceptilabs.core_new.graph.builder import GraphBuilder
 
 
@@ -48,7 +48,7 @@ def layer_inputs(j2_engine, tmpdir_del):
     np.save(inputs_path, mat_inputs)
 
     layer_inputs_ = create_layer(
-        j2_engine, DEFINITION_TABLE,
+        j2_engine, DEFINITION_TABLE, TOP_LEVEL_IMPORTS_FLAT, 
         'DataData',
         sources=[{'type': 'file', 'path': inputs_path, 'ext': '.npy'}],
         partitions=[(100, 0, 0)],
@@ -72,7 +72,7 @@ def layer_targets(j2_engine, tmpdir_del):
     np.save(targets_path, mat_targets)
 
     layer_targets_ = create_layer(
-        j2_engine, DEFINITION_TABLE,
+        j2_engine, DEFINITION_TABLE, TOP_LEVEL_IMPORTS_FLAT, 
         'DataData',
         sources=[{'type': 'file', 'path': targets_path, 'ext': '.npy'}],
         partitions=[(100, 0, 0)],
@@ -85,7 +85,7 @@ def layer_targets(j2_engine, tmpdir_del):
 def layer_fc(j2_engine):
     layer_fc_ = create_layer(
         j2_engine,
-        DEFINITION_TABLE,
+        DEFINITION_TABLE, TOP_LEVEL_IMPORTS_FLAT, 
         'DeepLearningFC',
         n_neurons=3,
         activation='tf.compat.v1.sigmoid',
@@ -97,7 +97,7 @@ def layer_fc(j2_engine):
 def make_graph(j2_engine, tmpdir_del, layer_inputs, layer_targets, layer_fc, export_dir=None, distributed=False, learning_rate=0.3, n_epochs=200):
     layer_training = create_layer(
         j2_engine,
-        DEFINITION_TABLE,
+        DEFINITION_TABLE, TOP_LEVEL_IMPORTS_FLAT, 
         'TrainNormal',
         output_layer='layer_fc',
         target_layer='layer_targets',
@@ -234,7 +234,7 @@ def test_initial_weights_differ(j2_engine, tmpdir_del, layer_inputs, layer_targe
     # --- Create a graph ---    
     fc1 = create_layer(
         j2_engine,
-        DEFINITION_TABLE,
+        DEFINITION_TABLE, TOP_LEVEL_IMPORTS_FLAT, 
         'DeepLearningFC',
         n_neurons=3,
         activation='tf.compat.v1.sigmoid',
@@ -253,7 +253,7 @@ def test_initial_weights_differ(j2_engine, tmpdir_del, layer_inputs, layer_targe
     # --- Create a second graph ---
     fc2 = create_layer(
         j2_engine,
-        DEFINITION_TABLE,
+        DEFINITION_TABLE, TOP_LEVEL_IMPORTS_FLAT, 
         'DeepLearningFC',
         n_neurons=3,
         activation='tf.compat.v1.sigmoid',
@@ -274,7 +274,7 @@ def test_initial_weights_differ_distributed(j2_engine, tmpdir_del, layer_inputs,
     # --- Create a graph ---    
     fc1 = create_layer(
         j2_engine,
-        DEFINITION_TABLE,
+        DEFINITION_TABLE, TOP_LEVEL_IMPORTS_FLAT, 
         'DeepLearningFC',
         n_neurons=3,
         activation='tf.compat.v1.sigmoid',
@@ -293,7 +293,7 @@ def test_initial_weights_differ_distributed(j2_engine, tmpdir_del, layer_inputs,
     # --- Create a second graph ---
     fc2 = create_layer(
         j2_engine,
-        DEFINITION_TABLE,
+        DEFINITION_TABLE, TOP_LEVEL_IMPORTS_FLAT, 
         'DeepLearningFC',
         n_neurons=3,
         activation='tf.compat.v1.sigmoid',
@@ -316,7 +316,7 @@ def test_load_checkpoint(j2_engine, tmpdir_del, layer_inputs, layer_targets):
     # --- Create a graph, do some training and save a checkpoint ---    
     fc1 = create_layer(
         j2_engine,
-        DEFINITION_TABLE,
+        DEFINITION_TABLE, TOP_LEVEL_IMPORTS_FLAT, 
         'DeepLearningFC',
         n_neurons=3,
         activation='tf.compat.v1.sigmoid',
@@ -337,7 +337,7 @@ def test_load_checkpoint(j2_engine, tmpdir_del, layer_inputs, layer_targets):
     # --- Create a second graph and restore the checkpoint ---
     fc2 = create_layer(
         j2_engine,
-        DEFINITION_TABLE,
+        DEFINITION_TABLE, TOP_LEVEL_IMPORTS_FLAT, 
         'DeepLearningFC',
         n_neurons=3,
         activation='tf.compat.v1.sigmoid',
@@ -359,7 +359,7 @@ def test_load_checkpoint_distributed(j2_engine, tmpdir_del, layer_inputs, layer_
     # --- Create a graph ---    
     fc1 = create_layer(
         j2_engine,
-        DEFINITION_TABLE,
+        DEFINITION_TABLE, TOP_LEVEL_IMPORTS_FLAT, 
         'DeepLearningFC',
         n_neurons=3,
         activation='tf.compat.v1.sigmoid',
@@ -383,7 +383,7 @@ def test_load_checkpoint_distributed(j2_engine, tmpdir_del, layer_inputs, layer_
     # --- Create a second graph ---
     fc2 = create_layer(
         j2_engine,
-        DEFINITION_TABLE,
+        DEFINITION_TABLE, TOP_LEVEL_IMPORTS_FLAT, 
         'DeepLearningFC',
         n_neurons=3,
         activation='tf.compat.v1.sigmoid',

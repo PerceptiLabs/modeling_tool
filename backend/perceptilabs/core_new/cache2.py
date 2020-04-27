@@ -84,7 +84,7 @@ class LightweightCache:
 
     def get(self, layer_id, id_to_code, edges_by_id):
         key = self._compute_hash(layer_id, id_to_code, edges_by_id)
-        
+
         if key in self._map:
             entry = self._map[key]
             value = entry.value

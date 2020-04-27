@@ -28,7 +28,7 @@ from perceptilabs.core_new.cache2 import LightweightCache
 
 log = logging.getLogger(__name__)
 
-LayerInfo = namedtuple('LayerInfo', ['sample', 'out_shape', 'in_shape', 'variables', 'default_var'])
+LayerInfo = namedtuple('LayerInfo', ['sample', 'out_shape', 'in_shape', 'variables', 'default_var', 'columns'])
 
 
 def simplify_spec(func):
@@ -48,13 +48,13 @@ def exception_to_error(layer_id, layer_type, exception):
     line_no = int(tb_obj.lineno) if hasattr(tb_obj, 'lineno') else None
 
     message = ''
-    include_following = False
+    #include_following = False
     for counter, line in enumerate(tb_obj.format()):
-        if '_call_with_frames_removed' in line:
-            include_following = True
-            continue
-        if counter == 0 or include_following:
-            message += line
+        #if '_call_with_frames_removed' in line:
+        #    include_following = True
+        #    continue
+        #if counter == 0 or include_following:
+        message += line
 
     error = UserlandError(layer_id, layer_type, line_no, message)
     return error
@@ -82,21 +82,31 @@ class Tf1xStrategy:
         results = {}
         for layer_id in ordered_ids:
             # Find the default variable (the one that matches output tensor...)
-            default_var = None
 
-            if layer_id in layer_infos:
+            instance = layer_instances.get(layer_id)
+            if instance is None:
+                results[layer_id] = LayerInfo(
+                    sample=None, out_shape=None, in_shape=None,
+                    variables=[], default_var=None, columns=[]
+                )
+            elif layer_id in layer_infos:
                 results[layer_id] = layer_infos[layer_id]
             else:
-            
-                var_names = list(layer_instances[layer_id].variables.keys() if layer_instances[layer_id] is not None else [])
+                default_var = None
+                var_names = list(instance.variables.keys() if instance is not None else [])
                 for var_name in var_names:
-                    if layer_instances[layer_id].variables[var_name] is output_tensors[layer_id]:
+                    if instance.variables[var_name] is output_tensors[layer_id]:
                         default_var = var_name
                         break                
-
+                    
+                if hasattr(instance, 'columns'):
+                    col_names = instance.columns
+                else:
+                    col_names = None
+                    
                 not_present = object()
                 output = outputs.get(layer_id, not_present)
-
+            
                 if output is not_present:
                     log.warning(f"No lw core output for layer {layer_id}")
 
@@ -105,8 +115,11 @@ class Tf1xStrategy:
                     out_shape=np.atleast_1d(output[0]).shape if output is not not_present else None,
                     in_shape=None,
                     variables=var_names,
-                    default_var=default_var
+                    default_var=default_var,
+                    columns=col_names
                 )
+                log.debug(f"Created LayerInfo for layer {layer_id}: {results[layer_id]}")
+            # -----            
 
         tf.reset_default_graph()
         return results, errors
@@ -224,7 +237,9 @@ class LightweightCore:
         code_map, code_errors = self._get_code_from_layers(subgraph_spec)
         _, edges_by_id = get_json_net_topology(subgraph_spec)
         layer_instances, layer_infos, instance_errors = self._get_layer_instances_and_info(code_map, subgraph_spec, edges_by_id)
-                
+
+        #log.info(f"ran get_layer_instances_and_info. layer_instances = {layer_instances}, layer_infos = {layer_infos}, instance_errors = {instance_errors}")
+        
         strategy = self._get_subgraph_strategy(subgraph_spec)
         results, strategy_errors = strategy.run(subgraph_spec, ordered_ids, layer_instances, layer_infos)
         if self._cache is not None:
@@ -371,15 +386,18 @@ class LightweightCoreAdapter:
         extras_dict = {}
         for layer_id, layer_info in results.items():
             entry = {
-                'Sample': layer_info.sample,
+                'Sample': layer_info.sample.tolist() if layer_info.sample is not None else None,
                 'outShape': [] if layer_info.out_shape is None else list(layer_info.out_shape),
                 'inShape': [] if layer_info.in_shape is None else list(layer_info.in_shape),
                 'Variables': layer_info.variables,
-                'Default_var': layer_info.default_var
+                'Default_var': layer_info.default_var,
+                'cols': layer_info.columns
             }
             extras_dict[layer_id] = entry
-            self._extras_reader.set_dict(extras_dict)
+        self._extras_reader.set_dict(extras_dict)
 
+        #print("extras dict populated in lw core", extras_dict)
+        
         self._errors_dict = {}            
         for layer_id, error in strategy_errors.items():
             print(layer_id, graph_spec[layer_id]['Type'], error)                        
@@ -388,6 +406,9 @@ class LightweightCoreAdapter:
         for layer_id, error in instance_errors.items():
             print(error)            
             self._errors_dict[layer_id] = error
+
+        #import pdb; pdb.set_trace()
+        
 
     @property
     def error_handler(self):
@@ -423,16 +444,23 @@ if __name__ == "__main__":
     import time
     t0 = time.time()
     
-    x = lw.run(dd)
+    x, _, _ = lw.run(dd)
 
-    t1 = time.time()
+    print('columns', x['1564399775664'].columns)
+
+
+    import pdb; pdb.set_trace()
     
-    y = lw.run(dd)    
+    #t1 = time.time()
+    
+    #y = lw.run(dd)    
 
-    t2 = time.time()
+    #t2 = time.time()
 
 
-    print('2nd, 1st',t2-t1, t1-t0)
+
+    
+    #print('2nd, 1st',t2-t1, t1-t0)
     
         
             

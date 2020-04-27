@@ -96,6 +96,9 @@ TOP_LEVEL_IMPORTS = {
         'from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP, REPLICATED_PROPERTIES_TABLE'                    
     ]
 }
+TOP_LEVEL_IMPORTS_FLAT = TOP_LEVEL_IMPORTS['standard_library'] + \
+                         TOP_LEVEL_IMPORTS['third_party'] + \
+                         TOP_LEVEL_IMPORTS['perceptilabs']
 
 
 DEFINITION_TABLE = {

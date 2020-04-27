@@ -5,6 +5,7 @@ class {{layer_name}}(DataLayer):
     """Class responsible for loading data from files (e.g., numpy, csv, etc)."""    
     def __init__(self):
         self._variables = {}
+        self._columns = []
 
         columns = {}
         trn_sz_tot, val_sz_tot, tst_sz_tot = 0, 0, 0        
@@ -34,7 +35,8 @@ class {{layer_name}}(DataLayer):
         
                 if columns_{{tag}} is not None:
                     columns["{{tag}}"] = columns_{{tag}}
-        
+                    self._columns = columns_{{tag}}
+
                 trn_sz = int(round(0.01*{{partition[0]}}*size_{{tag}}))
                 val_sz = int(round(0.01*{{partition[1]}}*size_{{tag}}))
                 tst_sz = int(size_{{tag}} - trn_sz - val_sz)
@@ -56,7 +58,7 @@ class {{layer_name}}(DataLayer):
         self._trn_sz_tot = trn_sz_tot
         self._val_sz_tot = val_sz_tot
         self._tst_sz_tot = tst_sz_tot
-                    
+
         self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
 
     @property
@@ -69,6 +71,11 @@ class {{layer_name}}(DataLayer):
         """Returns a single data sample"""                    
         sample = next(self.make_generator_training())
         return sample
+
+    @property
+    def columns(self) -> List[str]:
+        """Column names. Corresponds to each column in a sample """
+        return self._columns.copy()
 
     @property
     def size_training(self) -> int:

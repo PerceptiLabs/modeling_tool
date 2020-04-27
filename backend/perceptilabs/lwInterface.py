@@ -112,8 +112,46 @@ class getDataMeta(LW_interface_base):
             "Dataset_size": self._try_fetch(self.data_container[self._id], "_data_size"),
             "Columns": self._try_fetch(self.data_container[self._id], "cols")
         }
+
         return content
 
+    
+class getDataMetaV2(LW_interface_base):
+    def __init__(self, id_, lw_core, extras_reader):
+        self._id = id_
+        self.lw_core = lw_core
+        self.extras_reader = extras_reader
+
+    def run(self):
+        # lw_core, _, data_container = self.lwObj.create_lw_core()
+
+        print("running lw core from getdatametav2")
+        
+        self.lw_core.run()
+
+        print("ran lw core from getdatametav2")
+        
+        extras_dict = self.extras_reader.to_dict()
+
+
+        print(extras_dict[self._id])
+        cols = extras_dict[self._id].get("cols", '')
+        print("COLS COLS COLS", cols)
+                                         
+        
+        content = {
+            "Action_space": "",
+            "Dataset_size": "",
+            "Columns": cols
+        }
+
+        print("built content getdatametav2", content)
+
+        #import pdb; pdb.set_trace()
+        
+        return content
+    
+    
 class getGraphOrder(LW_interface_base):
     def __init__(self, jsonNetwork):
         self.jsonNetwork = jsonNetwork

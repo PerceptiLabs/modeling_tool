@@ -1,4 +1,5 @@
 import pytest
+import pandas as pd
 import tempfile
 import numpy as np
 
@@ -12,9 +13,14 @@ def graph_spec_binary_classification():
     n_classes = 10
     n_samples = 30
 
-    f1 = tempfile.NamedTemporaryFile(mode='w', suffix='.npy', delete=False)
-    mat = np.random.random((n_samples, 28*28*1))
-    np.save(f1.name, mat)
+    #f1 = tempfile.NamedTemporaryFile(mode='w', suffix='.npy', delete=False)
+    #mat = np.random.random((n_samples, 28*28*1))
+    #np.save(f1.name, mat)
+
+    f1 = tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False)
+    mat = np.random.random((n_samples, 784))
+    df = pd.DataFrame.from_records(mat, columns=['col_'+str(x) for x in range(784)])
+    df.to_csv(f1.name, index=False)
 
     f2 = tempfile.NamedTemporaryFile(mode='w', suffix='.npy', delete=False)
     mat = np.random.randint(0, n_classes, (n_samples,))
@@ -267,6 +273,13 @@ def test_out_shapes_ok_basic(graph_spec_binary_classification):
     assert results['5'].out_shape == (10,) # One hot
     assert results['6'].out_shape is None
 
+
+def test_columns_ok_lw(graph_spec_binary_classification):
+    lw_core = LightweightCore()
+    results, instance_errors, strategy_errors = lw_core.run(graph_spec_binary_classification)
+
+    assert results['1'].columns == [f'col_{x}' for x in range(784)]
+    
 
 def test_out_shapes_ok_for_3d_samples(graph_spec_binary_classification_3d):
     lw_core = LightweightCore()
