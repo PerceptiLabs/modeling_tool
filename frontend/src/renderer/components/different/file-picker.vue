@@ -11,10 +11,12 @@
       .search.search-input-box
         i.icon.icon-close(@click="clearSearchValue")
         input.search-input(
+          ref="navigate-to-search-input"
           :class="{error: searchDirNotFound}" 
           type="text" 
           v-model="searchValue" 
           @keyup.enter="searchPath"
+          @click="onNavigateToClick"
           placeholder="Navigate to...")
     .filepicker(ref="file-picker")
       .directory-breadcrumb(ref="directory-breadcrumb")
@@ -126,6 +128,11 @@ export default {
           });
   },
   methods: {
+    onNavigateToClick() {
+      if (this.$refs['navigate-to-search-input']) {
+        this.$refs['navigate-to-search-input'].focus();
+      }
+    },
     setOsSpecifics(platform) {
       if (!platform) { return; }
 
