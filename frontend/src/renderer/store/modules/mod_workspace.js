@@ -31,6 +31,7 @@ const getters = {
     return !!state.workspaceContent.length
   },
   GET_currentNetwork(state, getters)  {
+    debugger;
     return getters.GET_networkIsNotEmpty
       ? state.workspaceContent[state.currentNetwork]
       : {networkID: '1'} //for the close ap when the empty workspace
@@ -134,23 +135,26 @@ const mutations = {
     if (!isLocalStorageAvailable()) { return; }
 
     try {
-      const networkIDs = [];
-
+      let networkIDs = JSON.parse(localStorage.getItem('_network.ids')) || [];
       state.workspaceContent.forEach(network => {
         networkIDs.push(network.networkID);
 
         localStorage.setItem(`_network.${network.networkID}`, stringifyNetworkObjects(network));
       });
+      networkIDs = networkIDs.filter(onlyUnique);
 
       localStorage.setItem('_network.ids', JSON.stringify(networkIDs.sort()));
     } catch (error) {
       // console.error('Error persisting networks to localStorage', error);
     }
+    function onlyUnique(value, index, self) { 
+      return self.indexOf(value) === index;
+  }
   },
-  get_workspacesFromLocalStorage(state) {
+  get_workspacesFromLocalStorage(state, currentProject) {
     // this function is invoked when the pageQuantum (workspace) component is created
     // the networks that were saved in the localStorage are hydrated
-    return 0;
+    let newWorkspaceContent = [];
     const activeNetworkIDs = localStorage.getItem('_network.ids') || [];
     const keys = Object.keys(localStorage)
       .filter(key =>
@@ -158,10 +162,10 @@ const mutations = {
         key !== '_network.ids'&&
         key !== '_network.meta')
         .sort();
-
+    debugger;
     for(const key of keys) {
       const networkID = key.replace('_network.', '');
-
+      // state.workspaceContent = [];
       // _network.<networkID> entries in localStorage are only cleared on load
       if (!activeNetworkIDs.includes(networkID)) {
         localStorage.removeItem(key);
@@ -175,6 +179,8 @@ const mutations = {
         const network = JSON.parse(localStorage.getItem(key));
 
         // remove focus from previous focused network elements
+
+        if(network.networkElementList)
         Object.keys(network.networkElementList).map(elKey => {
           network.networkElementList[elKey].layerMeta.isSelected = false;
         });
@@ -183,16 +189,19 @@ const mutations = {
         // this value is used to determine if a new setInterval call should be made
         network.networkMeta.chartsRequest.timerID = null;
 
-
-
-        state.workspaceContent.push(network);
+        if(currentProject === network.apiMeta.project)  {
+          newWorkspaceContent.push(network);
+        }
+        
       }
+      debugger;
+      state.workspaceContent = newWorkspaceContent;
     }
   },
   set_lastActiveTabInLocalStorage(state, networkID) {
-    if (!isLocalStorageAvailable()) { return; }
+    // if (!isLocalStorageAvailable()) { return; }
 
-    localStorage.setItem('_network.meta', JSON.stringify({ 'lastActiveNetworkID': networkID }));
+    // localStorage.setItem('_network.meta', JSON.stringify({ 'lastActiveNetworkID': networkID }));
 
   },
   get_lastActiveTabFromLocalStorage(state) {
@@ -907,6 +916,7 @@ const mutations = {
   //  OTHER
   //---------------
   set_currentNetwork(state, tabIndex) {
+    debugger;
     state.currentNetwork = tabIndex;
   },
   ADD_dragElement(state, event) {
@@ -978,12 +988,12 @@ const actions = {
       commit('set_workspacesInLocalStorage');
     }
   },
-  GET_workspacesFromLocalStorage({commit, dispatch}) {
+  GET_workspacesFromLocalStorage({commit, dispatch, rootState: { mod_project: { currentProject } }}) {
     return new Promise(resolve => {
       if (!isLocalStorageAvailable()) { resolve(); }
 
-      commit('get_workspacesFromLocalStorage');
-      commit('get_lastActiveTabFromLocalStorage');
+      commit('get_workspacesFromLocalStorage', currentProject);
+      // commit('get_lastActiveTabFromLocalStorage');
 
       processNonActiveWorkspaces();
       processActiveWorkspaces();
@@ -1018,7 +1028,7 @@ const actions = {
       function processActiveWorkspaces() {
         const network = state.workspaceContent.find(network =>
           network.networkID === state.workspaceContent[state.currentNetwork].networkID);
-
+          if(!network) return;
           const isRunningPromise = dispatch('mod_api/API_checkNetworkRunning', network.networkID, { root: true });
           const isTrainedPromise = dispatch('mod_api/API_checkTrainedNetwork', network.networkID, { root: true });
           Promise.all([isRunningPromise, isTrainedPromise])

@@ -3,6 +3,7 @@ import coreRequestElectron from "@/core/apiCore.js";
 import { deepCopy, parseJWT, isWeb }   from "@/core/helpers.js";
 import { pathSlash }  from "@/core/constants.js";
 import {isElectron} from "@/core/helpers";
+import { PROJECT_DEFAULT_FOLDER } from "../../core/constants";
 
 let coreRequest = null;
 let ipcRenderer = null;
@@ -423,7 +424,7 @@ const actions = {
   API_saveModel({dispatch, getters, rootGetters}, {model}) {
     // location shoul be getted from default location of project
     // /model_${model.apiMeta.model_id}
-    const save_path = `/Users/antonbourosu/proj/project_${model.apiMeta.project}/model_${model.apiMeta.model_id}`;
+    const save_path = `${PROJECT_DEFAULT_FOLDER}project_${model.apiMeta.project}/model_${model.apiMeta.model_id}`;
     
     const theData = {
       action: "saveJsonModel",
@@ -444,7 +445,7 @@ const actions = {
   API_getModel(ctx, {projectId, modelId}) {
     const theData = {
       action: 'getJsonModel',
-      value: `/Users/antonbourosu/proj/project_${projectId}/model_${modelId}/model.json`
+      value: `${PROJECT_DEFAULT_FOLDER}project_${projectId}/model_${modelId}/model.json`
     }
     return coreRequest(theData)
       .then(res=> {

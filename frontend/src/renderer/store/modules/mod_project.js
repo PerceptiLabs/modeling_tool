@@ -4,7 +4,7 @@ import axios from 'axios';
 const namespaced = true;
 
 const state = {
-  currentProject: null, // maybe we should copy all project object instead id and did modification in this one in case it wouldn't save changes.
+  currentProject: parseInt(localStorage.getItem('targetProject')) || null, // maybe we should copy all project object instead id and did modification in this one in case it wouldn't save changes.
   projectsList: [],
 };
 
@@ -13,6 +13,7 @@ const mutations = {
     state.projectsList = payload;
   },
   selectProject(state, projectId) {
+    localStorage.setItem('targetProject', projectId);
     state.currentProject = projectId;
   },
   createProject(state, payload) {

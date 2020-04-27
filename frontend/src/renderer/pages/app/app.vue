@@ -30,12 +30,12 @@
       if(isWeb()) {
         this.$store.dispatch('mod_workspace/GET_workspacesFromLocalStorage')
           .then(_ => {
-            if(!this.workspaceContent.length) { this.ADD_network(); }
+            // if(!this.workspaceContent.length) { this.ADD_network(); }
 
             // request charts if the page has been refreshed, and
             // the current tab is the first one
 
-            this.SET_chartRequests(this.workspaceContent[0].networkID);
+            // this.SET_chartRequests(this.workspaceContent[0].networkID);
           });
       } else {
         if(!this.workspaceContent.length) this.ADD_network();

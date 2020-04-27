@@ -81,6 +81,8 @@ import { debug } from 'util';
         selectProject: 'mod_project/selectProject',
         setPageTitleMutation: 'globalView/setPageTitleMutation',
         addModelFromLocalDataMutation: 'mod_workspace/add_model_from_local_data',
+        loadProjectFromLocalStorage: 'mod_workspace/get_workspacesFromLocalStorage',
+        set_currentNetwork : 'mod_workspace/set_currentNetwork',
       }),
       ...mapActions({
         setActivePageAction: 'modal_pages/setActivePageAction',
@@ -92,18 +94,25 @@ import { debug } from 'util';
       }),
       onProjectSelectHandler(project) {
         const {project_id: projectId} = project;
+
         this.selectProject(projectId);
         this.closePageAction();
         this.setPageTitleMutation(`${project.name} / Models`);
 
-        project.models.map(modelId => {
-          this.API_getModelAction({modelId, projectId})
-            .then(model => {
-              this.addModelFromLocalDataMutation(model)
-            }).catch(e => {
-              console.log(e);
-            })
-        })
+        this.loadProjectFromLocalStorage(projectId);
+        this.set_currentNetwork(0);
+        // project.models.map(modelId => {
+          
+        //   // @todo extract models from local storage
+        //   // make mutation for set the models in store
+          
+        //   this.API_getModelAction({modelId, projectId})
+        //     .then(model => {
+        //       this.addModelFromLocalDataMutation(model)
+        //     }).catch(e => {
+        //       console.log(e);
+        //     })
+        // })
 
         this.$router.push({name: 'projects'})
       },
@@ -116,7 +125,7 @@ import { debug } from 'util';
         .then(res => {
           this.onProjectSelectHandler(res);
           const projectName = `project_${res.project_id}`; 
-          this.createLocalProjectFolder(projectName);
+          // this.createLocalProjectFolder(projectName);
         })
       },
       openContext(e, projectId) {
