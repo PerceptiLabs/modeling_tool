@@ -111,7 +111,8 @@ def make_graph(j2_engine, tmpdir_del, layer_inputs, layer_targets, layer_fc, exp
         momentum=0.9,
         beta1=0.9,
         distributed=distributed,
-        export_directory=export_dir
+        export_directory=export_dir,
+        use_cpus=True
     )
     
     layers = {
