@@ -219,7 +219,8 @@ DEFINITION_TABLE = {
             'beta1': lambda specs: specs['Properties']['Beta_1'],
             'beta2': lambda specs: specs['Properties']['Beta_2'],
             'distributed': lambda specs: specs['Properties'].get('Distributed', False),
-            'export_directory': resolve_checkpoint_path            
+            'export_directory': resolve_checkpoint_path,
+            'use_cpus': lambda specs: specs['Properties'].get('Use_CPUs', True),            
         },
         import_statements=[
             'import tensorflow as tf',
@@ -227,6 +228,7 @@ DEFINITION_TABLE = {
             'import time',
             'import os',
             'import shutil',
+            'import GPUtil',
             'from typing import Dict, List, Generator',
             'from perceptilabs.core_new.utils import Picklable, YieldLevel',
             'from perceptilabs.core_new.graph import Graph',
