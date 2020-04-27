@@ -112,7 +112,6 @@ class getDataMeta(LW_interface_base):
             "Dataset_size": self._try_fetch(self.data_container[self._id], "_data_size"),
             "Columns": self._try_fetch(self.data_container[self._id], "cols")
         }
-
         return content
 
     

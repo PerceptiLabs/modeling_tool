@@ -82,15 +82,16 @@ class Tf1xStrategy:
         results = {}
         for layer_id in ordered_ids:
             # Find the default variable (the one that matches output tensor...)
-
+            if layer_id in layer_infos:
+                results[layer_id] = layer_infos[layer_id]
+                continue
+            
             instance = layer_instances.get(layer_id)
             if instance is None:
                 results[layer_id] = LayerInfo(
                     sample=None, out_shape=None, in_shape=None,
                     variables=[], default_var=None, columns=[]
                 )
-            elif layer_id in layer_infos:
-                results[layer_id] = layer_infos[layer_id]
             else:
                 default_var = None
                 var_names = list(instance.variables.keys() if instance is not None else [])
