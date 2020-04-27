@@ -101,7 +101,7 @@ class Tf1xStrategy:
                     log.warning(f"No lw core output for layer {layer_id}")
 
                 results[layer_id] = LayerInfo(
-                    sample=output,
+                    sample=output if output is not not_present else None,
                     out_shape=np.atleast_1d(output[0]).shape if output is not not_present else None,
                     in_shape=None,
                     variables=var_names,
@@ -167,6 +167,7 @@ class Tf1xStrategy:
             if layer_id in layer_infos:
                 if layer_infos[layer_id].sample is None:
                     continue
+
                 y = tf.constant(layer_infos[layer_id].sample)            
                 output_tensors[layer_id] = y
             elif layer_id in layer_instances:

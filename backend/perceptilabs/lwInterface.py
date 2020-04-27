@@ -164,15 +164,15 @@ class getPartitionSummary(LW_interface_base):
         content = self._try_fetch(self.data_container[self._id], "_action_space")
 
 
-        if id_ in self.lw_core.error_handler:
+        if self._id in self.lw_core.error_handler:
             log.info("ErrorMessage: " + str(self.lw_core.error_handler[id_]))
             
-            content[id_]['Error'] = {
+            content[self._id]['Error'] = {
                 'Message': self.lw_core.error_handler[id_].message,
                 'Row': str(self.lw_core.error_handler[id_].line_number)
             }
         else:
-            content[id_]['Error'] = None
+            content[self._id]['Error'] = None
         
         return content
 
