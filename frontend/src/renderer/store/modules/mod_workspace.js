@@ -162,7 +162,7 @@ const mutations = {
         key !== '_network.ids'&&
         key !== '_network.meta')
         .sort();
-    debugger;
+
     for(const key of keys) {
       const networkID = key.replace('_network.', '');
       // state.workspaceContent = [];
@@ -175,7 +175,7 @@ const mutations = {
       const networkIsLoaded = state.workspaceContent
         .some(networkInWorkspace => networkInWorkspace.networkID === networkID)
 
-      if (!networkIsLoaded) {
+      if (true) {
         const network = JSON.parse(localStorage.getItem(key));
 
         // remove focus from previous focused network elements
