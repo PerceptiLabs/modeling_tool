@@ -92,7 +92,6 @@ DEFINITION_TABLE = {
         {
             'sources': update_sources_with_file_exts,
             'partitions': lambda specs: specs['Properties']['accessProperties']['Partition_list'],
-            'batch_size': lambda specs: specs['Properties']['accessProperties']['Batch_size'],
             'shuffle': lambda specs: specs['Properties']['accessProperties']['Shuffle_data'],
             'selected_columns': lambda specs: specs['Properties']['accessProperties']['Columns'],
             'seed': 0,
