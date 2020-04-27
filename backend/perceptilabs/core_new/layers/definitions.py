@@ -191,6 +191,7 @@ DEFINITION_TABLE = {
             'output_layer': lambda specs: [sanitize_layer_name(x) for true_id, x in specs['backward_connections'] if true_id != specs['Properties']['Labels']][0],
             'target_layer': lambda specs: [sanitize_layer_name(x) for true_id, x in specs['backward_connections'] if true_id == specs['Properties']['Labels']][0],
             'n_epochs': lambda specs: specs['Properties']['Epochs'],
+            'batch_size': lambda specs: specs['Properties']['Batch_size'],
             'loss_function': lambda specs: specs['Properties']['Loss'],
             'class_weights': lambda specs: specs['Properties']['Class_weights'],
             'optimizer': resolve_tf1x_optimizer,
