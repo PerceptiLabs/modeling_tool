@@ -22,10 +22,10 @@
           :layer-id="currentEl.layerId"
           @apply-settings="applySettings"
         )
-        .form_row
-          .form_label History length:
-          .form_input
-            input(type="number" v-model="settings.accessProperties.History_length")
+        //- .form_row
+        //-   .form_label History length:
+        //-   .form_input
+        //-     input(type="number" v-model="settings.accessProperties.History_length")
 
     template(slot="Code-content")
       settings-code(
@@ -92,7 +92,7 @@
             Atari: 'Breakout', //select
             Category: 'Local',
             Type: 'Data',
-            History_length: 10,
+            // History_length: 10,
           }
         },
         interactiveInfo: {
