@@ -199,6 +199,8 @@ const actions = {
             clientWidth: el.layerMeta.position.left * 2,
           },
           layerSettings: el.layerSettings,
+          layerSettingsTabName: el.layerSettingsTabName,
+          layerCode: el.layerCode,
           offsetY: el.layerMeta.position.top * 2,
           offsetX: el.layerMeta.position.left * 2
         };
@@ -253,6 +255,8 @@ const actions = {
             clientWidth: el.layerMeta.position.left * 2,
           },
           layerSettings: el.layerSettings,
+          layerSettingsTabName: el.layerSettingsTabName,
+          layerCode: el.layerCode,
           offsetY: el.layerMeta.position.top * 2,
           offsetX: el.layerMeta.position.left * 2
         };

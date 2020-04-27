@@ -1483,8 +1483,8 @@ const createNetElement = function (event) {
     layerName: event.target.dataset.layer,
     layerType: event.target.dataset.type,
     layerSettings: event.layerSettings ? event.layerSettings : null,
-    layerSettingsTabName: undefined,
-    layerCode: '',
+    layerSettingsTabName: event.layerSettingsTabName || undefined,
+    layerCode: event.layerCode || '',
     layerCodeError: null,
     layerNone: false,
     layerMeta: {
