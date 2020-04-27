@@ -163,17 +163,17 @@ class getPartitionSummary(LW_interface_base):
         self.lw_core.run()
         content = self._try_fetch(self.data_container[self._id], "_action_space")
 
-
-        if self._id in self.lw_core.error_handler:
-            log.info("ErrorMessage: " + str(self.lw_core.error_handler[id_]))
-            
-            content[self._id]['Error'] = {
-                'Message': self.lw_core.error_handler[id_].message,
-                'Row': str(self.lw_core.error_handler[id_].line_number)
-            }
-        else:
-            content[self._id]['Error'] = None
-        
+        if isinstance(content, dict):
+            if self._id in self.lw_core.error_handler:
+                log.info("ErrorMessage: " + str(self.lw_core.error_handler[id_]))
+                
+                content[self._id]['Error'] = {
+                    'Message': self.lw_core.error_handler[id_].message,
+                    'Row': str(self.lw_core.error_handler[id_].line_number)
+                }
+            else:
+                content[self._id]['Error'] = None
+                
         return content
 
     
