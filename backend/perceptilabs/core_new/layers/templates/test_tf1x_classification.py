@@ -110,6 +110,7 @@ def make_graph(j2_engine, tmpdir_del, layer_inputs, layer_targets, layer_fc, exp
         decay_rate=0.96,
         momentum=0.9,
         beta1=0.9,
+        batch_size = 10,
         distributed=distributed,
         export_directory=export_dir
     )
