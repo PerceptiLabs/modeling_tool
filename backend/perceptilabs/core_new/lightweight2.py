@@ -314,7 +314,6 @@ class LightweightCore:
             return None, e
         else:
             return code, None    
-
         
     def _get_layer_instance(self, layer_id, layer_type, code):
         layer_name = layer_type + layer_id
@@ -338,27 +337,8 @@ class LightweightCore:
 
             class_object = getattr(module, layer_name)
         
-
         if not is_unix:
             os.remove(f.name)
-
-        '''
-        
-        try:
-            exec(code, {}, locs) # TODO: catch errors here!
-        except SyntaxError as e:
-            error = exception_to_error(layer_id, layer_type, e)
-            return None, error
-        except Exception as e:
-            error = exception_to_error(layer_id, layer_type, e)
-            return None, error
-        
-        if len(locs.values()) == 0:
-            return None, None
-        
-        layer_class = list(locs.values())[0]
-        '''
-
         
         try:
             instance = class_object()            
@@ -404,14 +384,9 @@ class LightweightCoreAdapter:
             print(layer_id, graph_spec[layer_id]['Type'], error)                        
             self._errors_dict[layer_id] = error
 
-
-            
-        
         for layer_id, error in instance_errors.items():
             print(error)            
             self._errors_dict[layer_id] = error
-
-
 
     @property
     def error_handler(self):
