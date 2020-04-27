@@ -48,16 +48,15 @@ class DataData_data_inputs(DataLayer):
     """Class responsible for loading data from files (e.g., numpy, csv, etc)."""    
     def __init__(self):
         self._variables = {}
+
         columns = {}
         trn_sz_tot, val_sz_tot, tst_sz_tot = 0, 0, 0        
         trn_gens_args_DataData_data_inputs, val_gens_args_DataData_data_inputs, tst_gens_args_DataData_data_inputs = [], [], []        
 
-        
-
         columns_DataData_data_inputs_0 = None
-    
+
         global matrix_DataData_data_inputs_0
-        matrix_DataData_data_inputs_0 = np.load("C:/Users/Robert/AppData/Local/Temp/tmpw39vlaq0.npy").astype(np.float32)
+        matrix_DataData_data_inputs_0 = np.load("/tmp/tmpuu5nmi4m.npy").astype(np.float32)
         size_DataData_data_inputs_0 = len(matrix_DataData_data_inputs_0)
 
         def generator_DataData_data_inputs_0(idx_lo, idx_hi):
@@ -83,105 +82,6 @@ class DataData_data_inputs(DataLayer):
         self._trn_gens_args = trn_gens_args_DataData_data_inputs
         self._val_gens_args = val_gens_args_DataData_data_inputs                                        
         self._tst_gens_args = tst_gens_args_DataData_data_inputs
-                    
-        self._trn_sz_tot = trn_sz_tot
-        self._val_sz_tot = val_sz_tot
-        self._tst_sz_tot = tst_sz_tot
-                    
-        self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
-
-    @property
-    def variables(self) -> Dict[str, Picklable]:
-        """Returns any variables that the layer should make available and that can be pickled."""
-        return self._variables
-
-    @property
-    def sample(self) -> np.ndarray:
-        """Returns a single data sample"""                    
-        sample = next(self.make_generator_training())
-        return sample
-
-    @property
-    def size_training(self) -> int:
-        """Returns the size of the training dataset"""                    
-        return self._trn_sz_tot
-
-    @property
-    def size_validation(self) -> int:
-        """Returns the size of the validation dataset"""
-        return self._val_sz_tot
-
-    @property
-    def size_testing(self) -> int:
-        """Returns the size of the testing dataset"""                    
-        return self._tst_sz_tot
-                    
-    def make_generator_training(self) -> Generator[np.ndarray, None, None]:
-        """Returns a generator yielding single samples of training data."""                                        
-        def gen():
-            for fn, lo, hi in self._trn_gens_args:
-                for x in fn(lo, hi):
-                    self._output = x
-                    yield x
-        return gen()
-        
-    def make_generator_validation(self) -> Generator[np.ndarray, None, None]:
-        """Returns a generator yielding single samples of validation data."""                    
-        def gen():
-            for fn, lo, hi in self._val_gens_args:
-                for x in fn(lo, hi):
-                    self._output = x
-                    yield x
-        return gen()
-
-    def make_generator_testing(self) -> Generator[np.ndarray, None, None]:
-        """Returns a generator yielding single samples of testing data."""                            
-        def gen():
-            for fn, lo, hi in self._tst_gens_args:
-                for x in fn(lo, hi):
-                    self._output = x
-                    yield x
-        return gen()
-
-class DataData_data_labels(DataLayer):
-    """Class responsible for loading data from files (e.g., numpy, csv, etc)."""    
-    def __init__(self):
-        self._variables = {}
-        columns = {}
-        trn_sz_tot, val_sz_tot, tst_sz_tot = 0, 0, 0        
-        trn_gens_args_DataData_data_labels, val_gens_args_DataData_data_labels, tst_gens_args_DataData_data_labels = [], [], []        
-
-        
-
-        columns_DataData_data_labels_0 = None
-    
-        global matrix_DataData_data_labels_0
-        matrix_DataData_data_labels_0 = np.load("C:/Users/Robert/AppData/Local/Temp/tmpoudenogx.npy").astype(np.float32)
-        size_DataData_data_labels_0 = len(matrix_DataData_data_labels_0)
-
-        def generator_DataData_data_labels_0(idx_lo, idx_hi):
-            global matrix_DataData_data_labels_0
-            yield from matrix_DataData_data_labels_0[idx_lo:idx_hi].squeeze()
-
-
-        if columns_DataData_data_labels_0 is not None:
-            columns["DataData_data_labels_0"] = columns_DataData_data_labels_0
-
-        trn_sz = int(round(0.01*70*size_DataData_data_labels_0))
-        val_sz = int(round(0.01*20*size_DataData_data_labels_0))
-        tst_sz = int(size_DataData_data_labels_0 - trn_sz - val_sz)
-
-        trn_sz_tot += trn_sz
-        val_sz_tot += val_sz
-        tst_sz_tot += tst_sz
-        
-        trn_gens_args_DataData_data_labels.append((generator_DataData_data_labels_0, 0, trn_sz))
-        val_gens_args_DataData_data_labels.append((generator_DataData_data_labels_0, trn_sz, trn_sz+val_sz))
-        tst_gens_args_DataData_data_labels.append((generator_DataData_data_labels_0, trn_sz+val_sz, trn_sz+val_sz+tst_sz))
-                    
-        self._trn_gens_args = trn_gens_args_DataData_data_labels
-        self._val_gens_args = val_gens_args_DataData_data_labels                                        
-        self._tst_gens_args = tst_gens_args_DataData_data_labels
                     
         self._trn_sz_tot = trn_sz_tot
         self._val_sz_tot = val_sz_tot
@@ -285,46 +185,103 @@ class ProcessReshape_reshape(Tf1xLayer):
         """        
         return {}        
 
-class ProcessOneHot_one_hot(Tf1xLayer):
-    def __call__(self, x):
-        y = tf.one_hot(tf.cast(x, dtype=tf.int32), 10)        
-        return y
+class DataData_data_labels(DataLayer):
+    """Class responsible for loading data from files (e.g., numpy, csv, etc)."""    
+    def __init__(self):
+        self._variables = {}
+
+        columns = {}
+        trn_sz_tot, val_sz_tot, tst_sz_tot = 0, 0, 0        
+        trn_gens_args_DataData_data_labels, val_gens_args_DataData_data_labels, tst_gens_args_DataData_data_labels = [], [], []        
+
+        columns_DataData_data_labels_0 = None
+
+        global matrix_DataData_data_labels_0
+        matrix_DataData_data_labels_0 = np.load("/tmp/tmpouytz6o6.npy").astype(np.float32)
+        size_DataData_data_labels_0 = len(matrix_DataData_data_labels_0)
+
+        def generator_DataData_data_labels_0(idx_lo, idx_hi):
+            global matrix_DataData_data_labels_0
+            yield from matrix_DataData_data_labels_0[idx_lo:idx_hi].squeeze()
+
+
+        if columns_DataData_data_labels_0 is not None:
+            columns["DataData_data_labels_0"] = columns_DataData_data_labels_0
+
+        trn_sz = int(round(0.01*70*size_DataData_data_labels_0))
+        val_sz = int(round(0.01*20*size_DataData_data_labels_0))
+        tst_sz = int(size_DataData_data_labels_0 - trn_sz - val_sz)
+
+        trn_sz_tot += trn_sz
+        val_sz_tot += val_sz
+        tst_sz_tot += tst_sz
+        
+        trn_gens_args_DataData_data_labels.append((generator_DataData_data_labels_0, 0, trn_sz))
+        val_gens_args_DataData_data_labels.append((generator_DataData_data_labels_0, trn_sz, trn_sz+val_sz))
+        tst_gens_args_DataData_data_labels.append((generator_DataData_data_labels_0, trn_sz+val_sz, trn_sz+val_sz+tst_sz))
+                    
+        self._trn_gens_args = trn_gens_args_DataData_data_labels
+        self._val_gens_args = val_gens_args_DataData_data_labels                                        
+        self._tst_gens_args = tst_gens_args_DataData_data_labels
+                    
+        self._trn_sz_tot = trn_sz_tot
+        self._val_sz_tot = val_sz_tot
+        self._tst_sz_tot = tst_sz_tot
+                    
+        self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
 
     @property
     def variables(self) -> Dict[str, Picklable]:
-        """Any variables belonging to this layer that should be rendered in the frontend.
-        
-        Returns:
-            A dictionary with tensor names for keys and picklable for values.
-        """
-        return {}
+        """Returns any variables that the layer should make available and that can be pickled."""
+        return self._variables
 
     @property
-    def trainable_variables(self) -> Dict[str, tf.Tensor]:
-        """Any trainable variables belonging to this layer that should be updated during backpropagation. Their gradients will also be rendered in the frontend.
-        
-        Returns:
-            A dictionary with tensor names for keys and tensors for values.
-        """
-        return {}
+    def sample(self) -> np.ndarray:
+        """Returns a single data sample"""                    
+        sample = next(self.make_generator_training())
+        return sample
 
     @property
-    def weights(self) -> Dict[str, tf.Tensor]:
-        """Any weight tensors belonging to this layer that should be rendered in the frontend.
+    def size_training(self) -> int:
+        """Returns the size of the training dataset"""                    
+        return self._trn_sz_tot
 
-        Return:
-            A dictionary with tensor names for keys and tensors for values.
-        """        
-        return {}
+    @property
+    def size_validation(self) -> int:
+        """Returns the size of the validation dataset"""
+        return self._val_sz_tot
 
-    @property    
-    def biases(self) -> Dict[str, tf.Tensor]:
-        """Any weight tensors belonging to this layer that should be rendered in the frontend.
+    @property
+    def size_testing(self) -> int:
+        """Returns the size of the testing dataset"""                    
+        return self._tst_sz_tot
+                    
+    def make_generator_training(self) -> Generator[np.ndarray, None, None]:
+        """Returns a generator yielding single samples of training data."""                                        
+        def gen():
+            for fn, lo, hi in self._trn_gens_args:
+                for x in fn(lo, hi):
+                    self._output = x
+                    yield x
+        return gen()
+        
+    def make_generator_validation(self) -> Generator[np.ndarray, None, None]:
+        """Returns a generator yielding single samples of validation data."""                    
+        def gen():
+            for fn, lo, hi in self._val_gens_args:
+                for x in fn(lo, hi):
+                    self._output = x
+                    yield x
+        return gen()
 
-        Return:
-            A dictionary with tensor names for keys and tensors for values.
-        """        
-        return {}    
+    def make_generator_testing(self) -> Generator[np.ndarray, None, None]:
+        """Returns a generator yielding single samples of testing data."""                            
+        def gen():
+            for fn, lo, hi in self._tst_gens_args:
+                for x in fn(lo, hi):
+                    self._output = x
+                    yield x
+        return gen()
 
 class DeepLearningFC_fc(Tf1xLayer):
     def __init__(self):
@@ -393,10 +350,52 @@ class DeepLearningFC_fc(Tf1xLayer):
             b = tf.compat.v1.get_variable('b')
             return {b.name: b}    
 
+class ProcessOneHot_one_hot(Tf1xLayer):
+    def __call__(self, x):
+        y = tf.one_hot(tf.cast(x, dtype=tf.int32), 10)        
+        return y
+
+    @property
+    def variables(self) -> Dict[str, Picklable]:
+        """Any variables belonging to this layer that should be rendered in the frontend.
+        
+        Returns:
+            A dictionary with tensor names for keys and picklable for values.
+        """
+        return {}
+
+    @property
+    def trainable_variables(self) -> Dict[str, tf.Tensor]:
+        """Any trainable variables belonging to this layer that should be updated during backpropagation. Their gradients will also be rendered in the frontend.
+        
+        Returns:
+            A dictionary with tensor names for keys and tensors for values.
+        """
+        return {}
+
+    @property
+    def weights(self) -> Dict[str, tf.Tensor]:
+        """Any weight tensors belonging to this layer that should be rendered in the frontend.
+
+        Return:
+            A dictionary with tensor names for keys and tensors for values.
+        """        
+        return {}
+
+    @property    
+    def biases(self) -> Dict[str, tf.Tensor]:
+        """Any weight tensors belonging to this layer that should be rendered in the frontend.
+
+        Return:
+            A dictionary with tensor names for keys and tensors for values.
+        """        
+        return {}    
+
 class TrainNormal_training(ClassificationLayer):
+
     def __init__(self):
         self._n_epochs = 200
-        self._batch_size = 10 # TODO: ?
+        self._batch_size = 10 
 
         self._stopped = False
         self._paused = False
@@ -523,7 +522,7 @@ class TrainNormal_training(ClassificationLayer):
         layer_output_tensors = build_graph(input_tensor, label_tensor)
         output_tensor = layer_output_tensors[output_layer_id]
         target_tensor = layer_output_tensors[target_layer_id]
-
+        
         # Create an exportable version of the TensorFlow graph
         self._input_tensor_export = tf.placeholder(shape=dataset_trn.output_shapes[0], dtype=dataset_trn.output_types[0])
         self._output_tensor_export = build_graph(
@@ -560,10 +559,13 @@ class TrainNormal_training(ClassificationLayer):
                 # self._internal_layer_gradients[node.layer_id] = {name: [] for name in node.layer.trainable_variables.keys()} # Initialize
                 # self._layer_gradients = self._internal_layer_gradients.copy()
 
-        trainable_vars = tf.trainable_variables() # TODO: safer to get from nodes. Especially with split graph in mind.
-        grads = tf.gradients(loss_tensor, trainable_vars)
-        update_weights = optimizer.apply_gradients(zip(grads, trainable_vars), global_step=global_step)        
-
+        # trainable_vars = tf.trainable_variables() # TODO: safer to get from nodes. Especially with split graph in mind.
+        # grads = tf.gradients(loss_tensor, trainable_vars)
+        # update_weights = optimizer.apply_gradients(zip(grads, trainable_vars), global_step=global_step)        
+        
+        grads_and_vars = optimizer.compute_gradients(loss_tensor)
+        update_weights = optimizer.apply_gradients(grads_and_vars, global_step=global_step)
+        
         config = tf.ConfigProto()
         config.gpu_options.allow_growth = True
         sess = tf.Session(config=config)
@@ -897,19 +899,19 @@ class TrainNormal_training(ClassificationLayer):
 
 LAYERS = {
     '_data_inputs': DataData_data_inputs(),
-    '_data_labels': DataData_data_labels(),
     '_reshape': ProcessReshape_reshape(),
-    '_one_hot': ProcessOneHot_one_hot(),
+    '_data_labels': DataData_data_labels(),
     '_fc': DeepLearningFC_fc(),
+    '_one_hot': ProcessOneHot_one_hot(),
     '_training': TrainNormal_training(),
 }
 
 EDGES = {
     ('_data_inputs', '_reshape'),
-    ('_data_labels', '_one_hot'),
     ('_reshape', '_fc'),
-    ('_one_hot', '_training'),
+    ('_data_labels', '_one_hot'),
     ('_fc', '_training'),
+    ('_one_hot', '_training'),
 }
 
 global snapshots_produced
@@ -953,6 +955,7 @@ def endpoint_event():
 @app.route('/')
 def endpoint_index():
     global status, t_start, snapshots_produced
+    import itertools, cv2
     result = {
         'status': status,
         'n_snapshots': snapshots_produced,

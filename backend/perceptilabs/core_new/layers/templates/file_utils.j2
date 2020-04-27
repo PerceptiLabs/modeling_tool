@@ -84,6 +84,7 @@
         global matrices_{{tag}}
         matrices_{{tag}} = []
         for file_path in file_paths:
+            import skimage.io
             matrix = skimage.io.imread(file_path).astype(np.float32)
             matrices_{{tag}}.append(matrix)
 

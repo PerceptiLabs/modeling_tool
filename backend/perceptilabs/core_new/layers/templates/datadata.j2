@@ -5,14 +5,13 @@ class {{layer_name}}(DataLayer):
     """Class responsible for loading data from files (e.g., numpy, csv, etc)."""    
     def __init__(self):
         self._variables = {}
+
         columns = {}
         trn_sz_tot, val_sz_tot, tst_sz_tot = 0, 0, 0        
         trn_gens_args_{{layer_name}}, val_gens_args_{{layer_name}}, tst_gens_args_{{layer_name}} = [], [], []        
         {% filter remove_lspaces(8) %}
             {% for idx, source, partition in zip(range(0, len(sources)), sources, partitions): %}
                 {% set tag = str(layer_name) + '_' + str(idx) %}
-
-                {% set ext = source['path'][-4:] %}                
         
                 columns_{{tag}} = None
                 {# The following block highlights a quirk in Jinja2. The macro calls are indented by 24 spaces, #}
@@ -20,16 +19,16 @@ class {{layer_name}}(DataLayer):
                 {# Solution: #}
                 {# Apply the 'indent' filter with 24 spaces. This will align the subsequent macro lines (it ignores the first #}
                 {# Now we can remove the spaces properly using the 'remove_lspaces' filter #}
-    
+
                 {% filter remove_lspaces(8) %}
-                    {% if source['type'] == 'file' and ext in ['.npy', '.npz'] %}
+                    {% if source['type'] == 'file' and source['ext'] in ['.npy', '.npz'] %}
                         {{ load_npy(source['path'], tag) | indent(width=24)}}
-                    {% elif source['type'] == 'file' and ext in ['.csv', '.txt'] %}
+                    {% elif source['type'] == 'file' and source['ext'] in ['.csv', '.txt'] %}
                         {{ load_csv(source['path'], tag, lazy, selected_columns) | indent(width=24)}}
-                    {% elif source['type'] == 'directory' and ext in ['.jpg', '.png', '.jpeg', '.tif', '.tiff'] %}
+                    {% elif source['type'] == 'directory' and source['ext'] in ['.jpg', '.png', '.jpeg', '.tif', '.tiff'] %}
                         {{ load_img_dir(source['path'], tag) | indent(width=24)}}
                     {% else %}
-                        raise NotImplementedError("No loader for file with extension {{ext}}")
+                        raise NotImplementedError("No loader for file with extension {{source['ext']}}")
                     {% endif %}
                 {% endfilter %}
         
