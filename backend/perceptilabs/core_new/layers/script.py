@@ -177,18 +177,18 @@ class ScriptFactory:
         #    macros = ', '.join(macro_names)
         #    template += "{% from '" + file_name + "' import " + macros + " %}\n"
 
+
+        template += self._create_imports_snippet(graph)        
         template += 'import tensorflow as tf\n'
         template += 'import numpy as np\n'
         template += 'import dill\n'
         template += 'import os\n'        
         template += 'import pickle\n'        
         template += 'import zmq\n'        
-        template += 'import sys\n'
         template += 'import json\n'
         template += 'import time\n'        
         template += 'import zlib\n'
         template += 'from queue import Queue\n'                
-        template += 'import logging\n'
         template += 'import threading\n'
         template += 'from typing import Dict, Any, List, Tuple, Generator\n'        
         template += 'from flask import Flask, jsonify\n'#, request\n'
