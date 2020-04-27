@@ -22,9 +22,12 @@ def log_rendering_errors(func):
 class J2Engine:
     def __init__(self, templates_directory, verbose=False):
         self._templates_directory = templates_directory
-        self._jenv = jinja2.Environment(loader=jinja2.FileSystemLoader(templates_directory),
-                                        trim_blocks=True,
-                                        lstrip_blocks=True)
+        self._jenv = jinja2.Environment(
+            loader=jinja2.FileSystemLoader(templates_directory),
+            trim_blocks=True,
+            lstrip_blocks=True,
+            undefined=jinja2.StrictUndefined
+        )
         self._jenv.globals.update({
             'zip': zip,
             'len': len,
@@ -63,7 +66,7 @@ class J2Engine:
                 
         return new_text
 
-    #@log_rendering_errors
+    @log_rendering_errors
     def render(self, path, **kwargs):
         text = self._jenv.get_template(path).render(**kwargs)
 
@@ -72,9 +75,10 @@ class J2Engine:
 
         return text
     
-    #@log_rendering_errors        
+    @log_rendering_errors        
     def render_string(self, code, **kwargs):
         text = self._jenv.from_string(code).render(**kwargs)
+        
         if self._verbose:
             log.info(add_line_numbering(text))
         
