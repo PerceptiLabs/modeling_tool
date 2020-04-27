@@ -83,6 +83,20 @@ def update_sources_with_file_exts(specs):
 
     return sources
 
+TOP_LEVEL_IMPORTS = {
+    'standard_library': [
+        'import sys',
+        'import logging',
+        'from typing import Dict, List, Generator',                
+    ],
+    'third_party': [
+    ],
+    'perceptilabs': [
+        'from perceptilabs.core_new.graph.builder import GraphBuilder, SnapshotBuilder',
+        'from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP, REPLICATED_PROPERTIES_TABLE'                    
+    ]
+}
+
 
 DEFINITION_TABLE = {
     'DataData': LayerDef(

@@ -1,5 +1,6 @@
-3# TODO: (1) create flask server for running in remote process. (2) dynamic imports (3) more descriptive errors.
+# TODO: (1) create flask server for running in remote process. (2) dynamic imports (3) more descriptive errors.
 
+import os
 import traceback
 import logging
 import copy
@@ -12,10 +13,10 @@ import threading
 from collections import namedtuple
 import tensorflow as tf
 import numpy as np
-
+from tempfile import NamedTemporaryFile
 
 from perceptilabs.issues import UserlandError
-from perceptilabs.core_new.layers.definitions import resolve_checkpoint_path
+from perceptilabs.core_new.layers.definitions import resolve_checkpoint_path, TOP_LEVEL_IMPORTS, DEFINITION_TABLE
 from perceptilabs.core_new.layers import BaseLayer, DataLayer, InnerLayer, Tf1xLayer, TrainingLayer, ClassificationLayer
 from perceptilabs.core_new.graph.splitter import GraphSplitter
 from perceptilabs.core_new.graph.utils import get_json_net_topology
@@ -47,13 +48,14 @@ def exception_to_error(layer_id, layer_type, exception):
     line_no = int(tb_obj.lineno) if hasattr(tb_obj, 'lineno') else None
 
     message = ''
-    include_remainder = False
+    include_following = False
     for counter, line in enumerate(tb_obj.format()):
-        if '<string>' in line:
-            include_remainder = True
-        if counter == 0 or include_remainder:
+        if '_call_with_frames_removed' in line:
+            include_following = True
+            continue
+        if counter == 0 or include_following:
             message += line
-            
+
     error = UserlandError(layer_id, layer_type, line_no, message)
     return error
 
@@ -61,7 +63,7 @@ def exception_to_error(layer_id, layer_type, exception):
 class Tf1xStrategy:
     def run(self, graph_spec, ordered_ids, layer_instances, layer_infos):
         output_tensors, errors1 = self._get_output_tensors(graph_spec, ordered_ids, layer_instances, layer_infos)
-        results, errors2 = self._create_results(graph_spec, output_tensors, ordered_ids, layer_instances, layer_infos)        
+        results, errors2 = self._create_results(graph_spec, output_tensors, ordered_ids, layer_instances, layer_infos)
         return results, {**errors1, **errors2}
 
     def _create_results(self, graph_spec, output_tensors, ordered_ids, layer_instances, layer_infos):
@@ -92,11 +94,15 @@ class Tf1xStrategy:
                         default_var = var_name
                         break                
 
-                output = outputs.get(layer_id, None)
+                not_present = object()
+                output = outputs.get(layer_id, not_present)
+
+                if output is not_present:
+                    log.warning(f"No lw core output for layer {layer_id}")
 
                 results[layer_id] = LayerInfo(
                     sample=output,
-                    out_shape=np.atleast_1d(output[0]).shape if output is not None else None,
+                    out_shape=np.atleast_1d(output[0]).shape if output is not not_present else None,
                     in_shape=None,
                     variables=var_names,
                     default_var=default_var
@@ -255,7 +261,7 @@ class LightweightCore:
         for layer_id, code in code_map.items():
             layer_type = graph_spec[layer_id]['Type']
             
-            if code is None:
+            if code is None or code.strip() == '':
                 instances[layer_id] = None
                 log.debug(f"Code for layer {layer_id} [{layer_type}] was none. Skipping.")                            
                 continue
@@ -270,7 +276,7 @@ class LightweightCore:
             log.debug(f"Instantiating layer {layer_id} [{layer_type}]")
             instance, error = self._get_layer_instance(layer_id, layer_type, code)
             instances[layer_id] = instance
-
+            
             if instance is None:
                 log.debug(f"Couldn't instantiate {layer_id} [{layer_type}]")                        
             
@@ -282,13 +288,28 @@ class LightweightCore:
         return instances, infos, errors
 
     def _get_layer_code(self, layer_id, layer_spec):
-        # TODO: this should simply check that all the parameters are present in the spec. Until we have a stronger spec, try to render it and if it doesn't work return false
-        sf = ScriptFactory()                 
+        code = ''
+        sf = ScriptFactory()
+
+        # TODO: retrieve imports from script factory
+        top_level_imports = TOP_LEVEL_IMPORTS['standard_library'] + \
+                            TOP_LEVEL_IMPORTS['third_party'] + \
+                            TOP_LEVEL_IMPORTS['perceptilabs']
+
+        for stmt in top_level_imports:
+            code += stmt + '\n'
+
+        layer_def = DEFINITION_TABLE.get(layer_spec['Type'])
+        for stmt in layer_def.import_statements:
+            code += stmt + '\n'
+            
+        code += '\n'
+
         try:
             if layer_spec['Code'] is None or layer_spec['Code'] == '' or layer_spec['Code'].get('Output') is None:
-                code = sf.render_layer_code(layer_id, layer_spec['Type'], layer_spec)
+                code += sf.render_layer_code(layer_id, layer_spec['Type'], layer_spec)
             else:
-                code = layer_spec['Code'].get('Output')
+                code += layer_spec['Code'].get('Output')
         except Exception as e:
             return None, e
         else:
@@ -296,56 +317,54 @@ class LightweightCore:
 
         
     def _get_layer_instance(self, layer_id, layer_type, code):
-        import tensorflow as tf
-        import numpy as np
-        import dill
-        import os        
-        import pickle        
-        import zmq        
-        import sys
-        import json
-        import time        
-        import zlib
-        from queue import Queue                
-        import logging
-        import threading
-        from typing import Dict, Any, List, Tuple, Generator        
-        from flask import Flask, jsonify#, request
-        from tensorflow.python.training.tracking.base import Trackable
-        import flask
+        layer_name = layer_type + layer_id
 
-        from perceptilabs.core_new.utils import Picklable
-        #from perceptilabs.core_new.communication.status import *        
+        is_unix = os.name != 'nt' # Windows has permission issues when deleting tempfiles
+        with NamedTemporaryFile('wt', delete=is_unix, suffix='.py') as f:
+            f.write(code)
+            f.flush()
+            
+            spec = importlib.util.spec_from_file_location("my_module", f.name)        
+            module = importlib.util.module_from_spec(spec)
 
-        from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP, REPLICATED_PROPERTIES_TABLE        
-        from perceptilabs.core_new.graph import Graph
-        from perceptilabs.core_new.graph.builder import GraphBuilder, SnapshotBuilder                
-        from perceptilabs.core_new.api.mapping import MapServer, ByteMap
-        from perceptilabs.core_new.serialization import can_serialize, serialize
+            try:
+                spec.loader.exec_module(module)
+            except SyntaxError as e:
+                error = exception_to_error(layer_id, layer_type, e)
+                return None, error
+            except Exception as e:
+                error = exception_to_error(layer_id, layer_type, e)
+                return None, error
+
+            class_object = getattr(module, layer_name)
         
-        globs = globals()
-        globs.update(locals())
-        locs = {}
 
+        if not is_unix:
+            os.remove(f.name)
+
+        '''
+        
         try:
-            exec(code, globs, locs) # TODO: catch errors here!
+            exec(code, {}, locs) # TODO: catch errors here!
         except SyntaxError as e:
             error = exception_to_error(layer_id, layer_type, e)
             return None, error
         except Exception as e:
-            error = exception_to_error(layer_id, layer_type, e)            
+            error = exception_to_error(layer_id, layer_type, e)
             return None, error
-
+        
         if len(locs.values()) == 0:
             return None, None
         
         layer_class = list(locs.values())[0]
+        '''
+
         
         try:
-            instance = layer_class()
+            instance = class_object()            
         except Exception as e:
             # "userland runtime errors"
-            error = exception_to_error(layer_id, layer_type, e)                        
+            error = exception_to_error(layer_id, layer_type, e)
             return None, error
         
         return instance, None
@@ -384,10 +403,15 @@ class LightweightCoreAdapter:
         for layer_id, error in strategy_errors.items():
             print(layer_id, graph_spec[layer_id]['Type'], error)                        
             self._errors_dict[layer_id] = error
+
+
+            
         
         for layer_id, error in instance_errors.items():
             print(error)            
-            self._errors_dict[layer_id] = error            
+            self._errors_dict[layer_id] = error
+
+
 
     @property
     def error_handler(self):
@@ -434,7 +458,6 @@ if __name__ == "__main__":
 
     print('2nd, 1st',t2-t1, t1-t0)
     
-    import pdb; pdb.set_trace()
         
             
 

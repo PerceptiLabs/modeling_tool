@@ -318,7 +318,7 @@ def test_errors_ok_with_syntax_error(graph_spec_binary_classification):
     lw_core = LightweightCore()
     results, instance_errors, strategy_errors = lw_core.run(graph_spec_binary_classification)
 
-    assert instance_errors['3'].line_number == 2
+    assert "SyntaxError" in instance_errors['3'].message
 
 
 def test_out_shapes_ok_with_runtime_error(graph_spec_binary_classification):
