@@ -220,7 +220,7 @@ DEFINITION_TABLE = {
             'beta2': lambda specs: specs['Properties']['Beta_2'],
             'distributed': lambda specs: specs['Properties'].get('Distributed', False),
             'export_directory': resolve_checkpoint_path,
-            'use_cpus': True            
+            'use_cpus': lambda specs: specs['Properties'].get('Use_CPUs', False),            
         },
         import_statements=[
             'import tensorflow as tf',
