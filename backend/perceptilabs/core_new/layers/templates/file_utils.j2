@@ -13,7 +13,7 @@
 {% macro load_csv(path, tag, lazy=False, selected_columns=none, blocksize='64MB') -%}
 {% filter remove_lspaces(8) %}
     {% if lazy %}
-        df = dd.read_csv("{{path}}", blocksize="{{blocksize}}").astype(np.float32)
+        df = dd.read_csv("{{path}}", blocksize="{{blocksize}}")
 
         # Manually compute divisions.
         n_rows_per_partition = df.map_partitions(lambda df: df.shape[0]).compute(
@@ -51,10 +51,10 @@
 
             for p, div_lo, div_hi in sub_divs:
                 df = df_{{tag}}.get_partition(p).compute()
-                yield from df.iloc[div_lo-divs[p]:div_hi-divs[p]].values.squeeze()
+                yield from df.astype(np.float32).iloc[div_lo-divs[p]:div_hi-divs[p]].values.squeeze()
     {% else %}
         global df_{{tag}}
-        df_{{tag}} = pd.read_csv("{{path}}").astype(np.float32)
+        df_{{tag}} = pd.read_csv("{{path}}")
         columns_{{tag}} = df_{{tag}}.columns.tolist()        
         size_{{tag}} = len(df_{{tag}})        
 
@@ -66,7 +66,7 @@
         
         def generator_{{tag}}(idx_lo, idx_hi):
             global df_{{tag}}
-            yield from df_{{tag}}.iloc[idx_lo:idx_hi].values.squeeze()
+            yield from df_{{tag}}.astype(np.float32).iloc[idx_lo:idx_hi].values.squeeze()
     {% endif %}
 {% endfilter %}
 {%- endmacro %}

@@ -408,8 +408,7 @@ class LightweightCoreAdapter:
             print(error)            
             self._errors_dict[layer_id] = error
 
-        #import pdb; pdb.set_trace()
-        
+        #import pdb; pdb.set_trace()        
 
     @property
     def error_handler(self):
