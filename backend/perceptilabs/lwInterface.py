@@ -162,6 +162,18 @@ class getPartitionSummary(LW_interface_base):
     def run(self):
         self.lw_core.run()
         content = self._try_fetch(self.data_container[self._id], "_action_space")
+
+
+        if id_ in self.lw_core.error_handler:
+            log.info("ErrorMessage: " + str(self.lw_core.error_handler[id_]))
+            
+            content[id_]['Error'] = {
+                'Message': self.lw_core.error_handler[id_].message,
+                'Row': str(self.lw_core.error_handler[id_].line_number)
+            }
+        else:
+            content[id_]['Error'] = None
+        
         return content
 
     
