@@ -99,7 +99,6 @@ export default {
   name: 'SetTrainNormal',
   mixins: [ mixinSet ],
   beforeMount() {
-    console.log(this.inputId);
     this.inputId.forEach((id)=> {
       let elList = this.currentNetworkList;
       this.inputLayers.push({
