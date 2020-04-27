@@ -272,7 +272,7 @@ class coreLogic():
             )            
             
         if self.cThread is not None and self.cThread.isAlive():
-            self.Stop()
+            self.Close()
 
             while self.cThread.isAlive():
                 time.sleep(0.05)
