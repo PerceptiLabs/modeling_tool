@@ -728,7 +728,7 @@
 
 
 ################################################### Main #####################################################
-{% macro layer_tf1x_classification(layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory) %}
+{% macro layer_tf1x_classification(layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory, use_cpus) %}
 class {{layer_name}}(ClassificationLayer):
 
     def __init__(self):
@@ -771,7 +771,7 @@ class {{layer_name}}(ClassificationLayer):
             graph: A PerceptiLabs Graph object containing references to all layers objects included in the model produced by this training layer.
         """   
         {% if distributed -%}
-            {{ run_distributed(graph, layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory) }}
+            {{ run_distributed(graph, layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory, use_cpus) }}
         {% else -%}
             {{ run_normal(graph, layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory) }}
         {% endif %}                
