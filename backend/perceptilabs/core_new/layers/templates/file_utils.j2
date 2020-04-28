@@ -63,7 +63,7 @@
                 df_{{tag}} = df_{{tag}}.iloc[:, {{selected_columns}}]
             {% endif %}
         {% endfilter %}
-        
+
         def generator_{{tag}}(idx_lo, idx_hi):
             global df_{{tag}}
             yield from df_{{tag}}.astype(np.float32).iloc[idx_lo:idx_hi].values.squeeze()
