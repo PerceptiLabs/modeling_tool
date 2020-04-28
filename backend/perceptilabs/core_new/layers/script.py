@@ -11,7 +11,7 @@ from typing import Dict
 from perceptilabs.utils import add_line_numbering
 from perceptilabs.core_new.graph import Graph
 from perceptilabs.core_new.layers.templates import J2Engine
-from perceptilabs.core_new.layers.definitions import DEFINITION_TABLE, TEMPLATES_DIRECTORY
+from perceptilabs.core_new.layers.definitions import DEFINITION_TABLE, TEMPLATES_DIRECTORY, TOP_LEVEL_IMPORTS
 from perceptilabs.core_new.graph.utils import sanitize_layer_name
 
 # TODO: move this to a more suitable location? Deployment?
@@ -44,6 +44,7 @@ class ScriptFactory:
         templates_directory = pkg_resources.resource_filename('perceptilabs', TEMPLATES_DIRECTORY)
         self._engine = J2Engine(templates_directory)
         self._definition_table = DEFINITION_TABLE
+        self._top_level_imports = TOP_LEVEL_IMPORTS
 
     def get_runscript(self, graph: Graph):
         code  = self._create_graph_snippet(graph)
@@ -61,14 +62,8 @@ class ScriptFactory:
         return code
 
     def _create_imports_snippet(self, graph):
-        plabs_imports = set([
-            'from perceptilabs.core_new.graph.builder import GraphBuilder, SnapshotBuilder',
-            'from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP, REPLICATED_PROPERTIES_TABLE'                    
-        ])
-        other_imports = set([
-            'import sys',
-            'import logging'
-        ])
+        plabs_imports = set(self._top_level_imports['perceptilabs'])
+        other_imports = set(self._top_level_imports['standard_library'] + self._top_level_imports['third_party'])
         
         for node in graph.nodes:
             layer_def = self._definition_table.get(node.layer_type)
@@ -76,7 +71,9 @@ class ScriptFactory:
             for stmt in layer_def.import_statements:
                 if not is_syntax_ok(stmt):
                     raise ScriptBuildError(f"Invalid syntax for import statement '{stmt}' found in layer def for {node.layer_type}")
-                
+
+
+                # TODO: the import_statements property should do this distinction (and into third party as well to comply with pep8)
                 if 'perceptilabs' in stmt:
                     plabs_imports.add(stmt)
                 else:
@@ -180,18 +177,18 @@ class ScriptFactory:
         #    macros = ', '.join(macro_names)
         #    template += "{% from '" + file_name + "' import " + macros + " %}\n"
 
+
+        template += self._create_imports_snippet(graph)        
         template += 'import tensorflow as tf\n'
         template += 'import numpy as np\n'
         template += 'import dill\n'
         template += 'import os\n'        
         template += 'import pickle\n'        
         template += 'import zmq\n'        
-        template += 'import sys\n'
         template += 'import json\n'
         template += 'import time\n'        
         template += 'import zlib\n'
         template += 'from queue import Queue\n'                
-        template += 'import logging\n'
         template += 'import threading\n'
         template += 'from typing import Dict, Any, List, Tuple, Generator\n'        
         template += 'from flask import Flask, jsonify\n'#, request\n'
