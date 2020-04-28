@@ -37,7 +37,6 @@ export default {
     this.$nextTick().then(x => {
       this.scrollActiveTabIntoView();
     });
-    console.log(this.$refs.networkField);
     
     window.addEventListener('mousemove',  this.startCursorListener);
   },

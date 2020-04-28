@@ -20,5 +20,3 @@ class DataEnvironmentCodeGenerator(CodeGenerator):
         code += "Y = state_tensor\n"        
         return code
 
-
-    

@@ -18,29 +18,38 @@
           .form_label(v-tooltip-interactive:right="interactiveInfo.epochs") Epochs:
           #tutorial_epochs.form_input(data-tutorial-hover-info)
             input(type="number" v-model="settings.Epochs")
-        .form_row
-          .form_label Batch size:
-          .form_input
-            input(type="number" v-model="settings.Batch_size")
       .settings-layer_section
-        .form_row(v-tooltip-interactive:right="interactiveInfo.costFunction")
-          .form_label Loss function:
-          #tutorial_cost-function.tutorial-relative.form_input(data-tutorial-hover-info)
-            base-radio(group-name="group" value-input="Cross_entropy" v-model="settings.Loss")
-              span Cross-Entropy
-            base-radio(group-name="group" value-input="Quadratic" v-model="settings.Loss")
-              span Quadratic
-            base-radio(group-name="group" value-input="W_cross_entropy" v-model="settings.Loss")
-              span Weighted Cross-Entropy
-            base-radio(group-name="group" value-input="Dice" v-model="settings.Loss")
-              span DICE
-            base-radio(group-name="group" value-input="Regression" v-model="settings.Loss")
-              span Regression
-              //-Cross-Entropy
-        .form_row(v-if="settings.Loss === 'W_cross_entropy'")
-          .form_label Class weights:
-          .form_input
-            input(type="number" v-model="settings.Class_weights")
+        .form_row
+          .form_label(v-tooltip-interactive:right="interactiveInfo.grid_size") Grid Size:
+          #tutorial_grid_size.form_input(data-tutorial-hover-info)
+            input(type="number" v-model="settings.grid_size")
+      .settings-layer_section
+        .form_row
+          .form_label(v-tooltip-interactive:right="interactiveInfo.batch_size") Batch Size:
+          #tutorial_batch_size.form_input(data-tutorial-hover-info)
+            input(type="number" v-model="settings.batch_size")
+      .settings-layer_section
+        .form_row
+          .form_label(v-tooltip-interactive:right="interactiveInfo.num_box") Number of Boxes:
+          #tutorial_num_box.form_input(data-tutorial-hover-info)
+            input(type="number" v-model="settings.num_box")
+      .settings-layer_section
+        .form_row
+          .form_label(v-tooltip-interactive:right="interactiveInfo.threshold") Threshold:
+          #tutorial_threshold.form_input(data-tutorial-hover-info)
+            input(type="number" v-model="settings.threshold")
+      .settings-layer_section
+        .form_row
+          .form_label(v-tooltip-interactive:right="interactiveInfo.lambda_coord") λ
+            sub coord:
+          #tutorial_lambda_coord.form_input(data-tutorial-hover-info)
+            input(type="number" v-model="settings.lambda_coord")
+      .settings-layer_section
+        .form_row
+          .form_label(v-tooltip-interactive:right="interactiveInfo.lambda_no_obj") λ
+            sub non object:
+          #tutorial_lambda_no_obj.form_input(data-tutorial-hover-info)
+            input(type="number" v-model="settings.lambda_no_obj")
       .settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.optimizer")
           .form_label Optimizer:
@@ -96,7 +105,7 @@ import mixinSet from '@/core/mixins/net-element-settings.js';
 import { mapGetters, mapActions } from 'vuex';
 
 export default {
-  name: 'SetTrainNormal',
+  name: 'SetTrainDetector',
   mixins: [ mixinSet ],
   beforeMount() {
     this.inputId.forEach((id)=> {
@@ -115,6 +124,12 @@ export default {
       settings: {
         Labels: '',
         Epochs: '10',
+        grid_size: '7',
+        batch_size: '3',
+        num_box: '2',
+        threshold: '0.8',
+        lambda_coord: '5',
+        lambda_no_obj: '0.7',
         N_class: '1',
         Loss: "Quadratic", //#Cross_entropy, Quadratic, W_cross_entropy, Dice
         Class_weights: '1',
@@ -125,8 +140,7 @@ export default {
         Momentum: '0.9',
         Decay_steps: '100000',
         Decay_rate: '0.96',
-        Training_iters: "20000",
-        Batch_size: '10'
+        Training_iters: "20000"
       },
       interactiveInfo: {
         labels: {
@@ -137,10 +151,30 @@ export default {
           title: 'epochs',
           text: 'Choose'
         },
-        costFunction: {
-          title: 'Split on',
-          text: 'Choose in which position to split on at the chosen axis'
-         },
+        grid_size: {
+          title: 'Grid Size',
+          text: 'Input the grid size'
+        },
+        batch_size: {
+          title: 'Batch Size',
+          text: 'Input the batch size'
+        },
+        num_box: {
+          title: 'Number of Box',
+          text: 'Input number of box'
+        },
+        threshold: {
+          title: 'Threshold',
+          text: 'Input the threshold'
+        },
+        lambda_coord: {
+          title: 'Lambda Coord',
+          text: 'Input the Lambda Coord'
+        },
+        lambda_no_obj: {
+          title: 'Lambda No Obj',
+          text: 'Input the Lambda No Obj'
+        },
         optimizer: {
           title: 'Optimizer',
           text: 'Choose which optimizer to use'

@@ -5,8 +5,10 @@ import numpy as np
 import tensorflow as tf
 
 import logging
+import platform
 
 from perceptilabs.createDataObject import createDataObject
+from perceptilabs.core_new.core import Core
 
 
 log = logging.getLogger(__name__)
@@ -39,7 +41,6 @@ class saveJsonModel(LW_interface_base):
         with open(file_path, 'w') as outfile:
             json.dump(json.loads(self._json_model), outfile)
 
-
 class getFolderContent(LW_interface_base):
     def __init__(self, current_path):
         self._current_path = current_path
@@ -55,7 +56,7 @@ class getFolderContent(LW_interface_base):
                 self._current_path = os.path.abspath('')
 
         drives = []
-        if self._current_path == '.':
+        if self._current_path == '.' and platform.system() == 'Windows':            
             import win32api
             drives = win32api.GetLogicalDriveStrings()
             drives = drives.split('\000')[:-1]
@@ -65,6 +66,7 @@ class getFolderContent(LW_interface_base):
                 "current_path" : '',
                 "dirs" : '',
                 "files" :  '',
+                "platform": platform.system(),
             }
         
         if not drives:
@@ -72,12 +74,14 @@ class getFolderContent(LW_interface_base):
                 "current_path" : self._current_path.replace('\\','/'),
                 "dirs" : [x for x in os.listdir(self._current_path) if os.path.isdir(os.path.join(self._current_path,x))],
                 "files" :  [x for x in os.listdir(self._current_path) if os.path.isfile(os.path.join(self._current_path,x))],
+                "platform": platform.system(),
             }
         else:
             return {
                 "current_path" : self._current_path.replace('\\','/'),
                 "dirs" : drives,
                 "files" :  [],
+                "platform": platform.system(),
             }
 
 class getJsonModel(LW_interface_base):
@@ -119,6 +123,35 @@ class getGraphOrder(LW_interface_base):
         graph = Graph(self.jsonNetwork)
         graph_dict = graph.graphs
         return list(graph_dict.keys())
+
+class getNotebookRunscript(LW_interface_base):
+    def __init__(self, jsonNetwork):
+        self.jsonNetwork = jsonNetwork
+
+    def run(self):
+        from perceptilabs.core_new.layers.script import ScriptFactory
+        from perceptilabs.core_new.graph.builder import GraphBuilder
+        
+        script_factory = ScriptFactory()
+        graph_builder = GraphBuilder()
+        graph = graph_builder.build_from_spec(self.jsonNetwork)
+
+        return script_factory.get_runscript(graph)
+
+class getNotebookImports(LW_interface_base):
+    def __init__(self, jsonNetwork):
+        self.jsonNetwork = jsonNetwork
+
+    def run(self):
+        from perceptilabs.core_new.layers.script import ScriptFactory
+        from perceptilabs.core_new.graph.builder import GraphBuilder
+        
+        script_factory = ScriptFactory()
+        graph_builder = GraphBuilder()
+        graph = graph_builder.build_from_spec(self.jsonNetwork)
+
+        return script_factory.get_imports(graph)
+
 
 class getPartitionSummary(LW_interface_base):
     def __init__(self, id_, lw_core, data_container):

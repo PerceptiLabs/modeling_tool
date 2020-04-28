@@ -164,7 +164,7 @@ const goToLink = function (url) {
 };
 
 const deepCopy = function (object) {
-  return JSON.parse(JSON.stringify(object))
+  return {...object}
 };
 
 const deepCloneNetwork = function (object) {
@@ -303,6 +303,20 @@ const debounce = function(callback, waitInMs) {
   }
 }
 
+
+const promiseWithTimeout = function (timeout, promise) {
+  const timeoutPromise = new Promise((resolve, reject) => {
+    const timerHandle = setTimeout(
+      () => resolve(),
+      timeout);
+  });
+  
+  return Promise.race([
+    promise,
+    timeoutPromise
+  ]);
+}
+
 export {
   openLoadDialog,
   openSaveDialog,
@@ -332,5 +346,6 @@ export {
   isWeb,
   fixFilepathSeparator,
   setAppTypeRootClasses,
-  debounce
+  debounce,
+  promiseWithTimeout
 }
