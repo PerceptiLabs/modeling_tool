@@ -772,7 +772,7 @@ class coreLogic():
         log.debug("getLayerStatistics for layer '{}' with type '{}' and view: '{}'".format(layerId, layerType, view))
         
         if layerType=="DataEnvironment":
-            state = self.getStatistics({"layerId":layerId,"variable":"state","innervariable":""})
+            state = self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})
             dataObj = createDataObject([state])
             return {"Data":dataObj}            
         elif layerType=="DataData":

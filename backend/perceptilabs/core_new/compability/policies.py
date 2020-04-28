@@ -768,11 +768,12 @@ def policy_reinforce(core, graphs, sanitized_to_name, sanitized_to_id, results):
     
         for graph in graphs:
             trn_layer = graph.active_training_node.layer
-            data_node = graph.data_nodes()[0]
-            state = trn_node.layer.layer_outputs.get(data_node.layer_id)
+            data_node = graph.data_nodes[0]
+            state = trn_node.layer.layer_outputs.get(data_node.layer_id)[-1,:,:,-3:]
+            print(state.shape)
             steps = trn_node.layer.step_counter
             n_actions = trn_node.layer.n_actions
-            current_action = trn_node.layer.transition()['action']
+            current_action = trn_node.layer.transition['action']
             if n_actions != -1 and current_action != -1:
                 pred = np.zeros((n_actions,))
                 pred[int(current_action)] = 1
@@ -793,7 +794,7 @@ def policy_reinforce(core, graphs, sanitized_to_name, sanitized_to_id, results):
 
 
         idx = 1
-        while idx <= len(graphs):
+        while idx < len(graphs):
             is_new_episode = graphs[idx].active_training_node.layer.episode != graphs[idx-1].active_training_node.layer.episode
             #is_final_iteration = idx == len(graphs) - 1
             is_final_iteration = False
@@ -881,7 +882,7 @@ def policy_reinforce(core, graphs, sanitized_to_name, sanitized_to_id, results):
             "epoch": epoch,
             "maxEpochs": max_epoch,
             "batch_size": batch_size,
-            "trainingIterations": trn_node.layer.training_iteration,
+            "trainingIterations": trn_node.layer.step_counter,
             "trainDict": train_dict,
             "trainingStatus": training_status,  
             "status": status,
