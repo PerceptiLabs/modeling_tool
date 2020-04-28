@@ -39,7 +39,7 @@ def resolve_checkpoint_path(specs):
     if len(specs['checkpoint']) == 0:
         return None
     
-    ckpt_path = specs['checkpoint'][1]
+    ckpt_path = specs['checkpoint']['1']
     if '//' in ckpt_path:
         if platform.system() == 'Windows':
             new_ckpt_path = ckpt_path.split('//')[1]
