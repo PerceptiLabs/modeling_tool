@@ -179,7 +179,7 @@ class ScriptFactory:
         #for file_name, macro_names in imports.items():
         #    macros = ', '.join(macro_names)
         #    template += "{% from '" + file_name + "' import " + macros + " %}\n"
-
+        template += self._create_imports_snippet(graph)
         template += 'import tensorflow as tf\n'
         template += 'import numpy as np\n'
         template += 'import dill\n'
