@@ -409,9 +409,6 @@ class getPreviewVariableList(LW_interface_base):
         else:
             content = ""
 
-        print("PREVIEWVARIABLELIST"content)
-        
-            
         return content
 
 class Parse(LW_interface_base):

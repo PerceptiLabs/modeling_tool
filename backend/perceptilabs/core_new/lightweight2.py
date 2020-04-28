@@ -41,8 +41,6 @@ def simplify_spec(func):
     return inner
 
 
-
-
 def exception_to_error(layer_id, layer_type, exception):
     tb_obj = traceback.TracebackException(
         exception.__class__,
@@ -196,7 +194,7 @@ class DataStrategy(BaseStrategy):
 class LightweightCore:
     def __init__(self, issue_handler=None, cache=None):
         self._issue_handler = issue_handler
-        self._cache = cache = None
+        self._cache = cache
         
     @simplify_spec
     def run(self, graph_spec):
