@@ -200,8 +200,8 @@ class DataStrategy(BaseStrategy):
 class LightweightCore:
     def __init__(self, issue_handler=None, cache=None):
         self._issue_handler = issue_handler
-        self._cache = cache = None
-
+        self._cache = cache
+        
     @simplify_spec
     def run(self, graph_spec):
         layer_ids, edges_by_id = get_json_net_topology(graph_spec)
@@ -273,7 +273,7 @@ class LightweightCore:
 
     def _cache_computed_results(self, layer_id, layer_results, code_map, edges_by_id):
         if self._cache is not None:
-            self._cache.put(layerid, layer_results, codde_map, edges_by_id)
+            self._cache.put(layer_id, layer_results, code_map, edges_by_id)
 
     def _get_cached_results(self, code_map, graph_spec, edges_by_id):
         if self._cache is None:
@@ -281,7 +281,9 @@ class LightweightCore:
 
         results = {}
         for layer_id in graph_spec.keys():
-            results[layer_id] = self._cache.get(layer_id, code_map, edges_by_id)
+            cached_result = self._cache.get(layer_id, code_map, edges_by_id)
+            if cached_result is not None:
+                results[layer_id] = cached_result
         return results
         
     def _get_ordered_ids(self, graph_spec, edges_by_id):
