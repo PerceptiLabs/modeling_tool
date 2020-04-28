@@ -88,7 +88,7 @@ class Interface():
         extras_reader = LayerExtrasReader()
         error_handler = LightweightErrorHandler()
         
-        lw_core = LightweightCoreAdapter(jsonNetwork, extras_reader, error_handler, self._core.issue_handler, self._lw_cache_v2)
+        lw_core = LightweightCoreAdapter(jsonNetwork, extras_reader, error_handler, self._core.issue_handler, self._lw_cache_v2, data_container)
         return lw_core, extras_reader, data_container
 
     def _create_lw_core_v1(self, reciever, jsonNetwork):                

@@ -426,6 +426,15 @@ def test_columns_ok_when_some_columns_are_strings(graph_spec_binary_classificati
     assert results['1'].columns == [f'col_{x}' for x in range(784)]
 
 
+def test_variables_are_present(graph_spec_binary_classification):
+    lw_core = LightweightCore()
+    results = lw_core.run(graph_spec_binary_classification)
+
+
+    assert len(results['1'].variables) > 0 # data layer has vars
+    assert len(results['4'].variables) > 0 # fc layer has vars   
+
+    
 def test_out_shapes_ok_for_3d_samples(graph_spec_binary_classification_3d):
     lw_core = LightweightCore()
     results = lw_core.run(graph_spec_binary_classification_3d)

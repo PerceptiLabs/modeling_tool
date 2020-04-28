@@ -30,9 +30,7 @@ from perceptilabs.core_new.cache2 import LightweightCache
 
 log = logging.getLogger(__name__)
 
-LayerInfo = namedtuple('LayerInfo', ['sample', 'out_shape', 'in_shape', 'variables', 'default_var', 'columns'])
-
-LayerResults = namedtuple('LayerResults', ['sample', 'out_shape', 'variables', 'default_var', 'columns', 'code_error', 'instantiation_error', 'strategy_error'])
+LayerResults = namedtuple('LayerResults', ['sample', 'out_shape', 'variables', 'columns', 'code_error', 'instantiation_error', 'strategy_error'])
 
 
 def simplify_spec(func):
@@ -76,8 +74,7 @@ class BaseStrategy(ABC):
         results = LayerResults(
             sample=None,
             out_shape=None,
-            variables=[],
-            default_var=[],
+            variables={},
             columns=[],
             code_error=code_error,
             instantiation_error=instantiation_error,
@@ -127,19 +124,12 @@ class Tf1xStrategy(BaseStrategy):
             return self.get_default(strategy_error=error)
         
         y = y_batch[0]
+        variables = layer_instance.variables.copy()
 
-        default_var = None
-        var_names = list(layer_instance.variables.keys())
-        for var_name in var_names:
-            if layer_instance.variables[var_name] is output_tensor:
-                default_var = var_name
-                break                
-        
         results = LayerResults(
             sample=y,
             out_shape=y.shape,
-            variables=var_names,
-            default_var=default_var,
+            variables=variables,
             columns=[],
             code_error=None,
             instantiation_error=None,
@@ -181,14 +171,12 @@ class DataStrategy(BaseStrategy):
             shape = np.atleast_1d(y).shape
             strategy_error=None
 
-        var_names = list(layer_instance.variables.keys())
-        default_var = None# = var_names[-1] if len(var_names) > 0 else None
+        variables = layer_instance.variables.copy()
         
         results = LayerResults(
             sample=y,
             out_shape=shape,
-            variables=var_names,
-            default_var=default_var,
+            variables=variables,
             columns=columns,
             code_error=None,
             instantiation_error=None,
@@ -414,11 +402,12 @@ class LightweightCore:
 
 class LightweightCoreAdapter:
     """ Compability with v1 core """
-    def __init__(self, graph_dict, layer_extras_reader, error_handler, issue_handler, cache):
+    def __init__(self, graph_dict, layer_extras_reader, error_handler, issue_handler, cache, data_container):
         self._graph_dict = graph_dict
         self._error_handler = error_handler
         self._extras_reader = layer_extras_reader
         self._error_handler = error_handler
+        self._data_container = data_container
         
         self._core = LightweightCore(
             issue_handler=issue_handler,
@@ -432,12 +421,20 @@ class LightweightCoreAdapter:
         extras_dict = {}
         self._errors_dict = {}                    
         for layer_id, layer_info in results.items():
+            var_names = ['(sample)']            
+            self._data_container.store_value(layer_id, '(sample)', layer_info.sample)
+            for name, value in layer_info.variables.items():
+                var_names.append(name)
+                self._data_container.store_value(layer_id, name, value)
+                
+            default_var = '(sample)'
+            
             entry = {
                 'Sample': layer_info.sample.tolist() if layer_info.sample is not None else None,
                 'outShape': [] if layer_info.out_shape is None else list(layer_info.out_shape),
                 'inShape': [],
-                'Variables': layer_info.variables,
-                'Default_var': layer_info.default_var,
+                'Variables': var_names,
+                'Default_var': default_var,
                 'cols': layer_info.columns
             }
             extras_dict[layer_id] = entry
@@ -500,7 +497,7 @@ if __name__ == "__main__":
     import time
     t0 = time.time()
     
-    x, _, _ = lw.run(dd)
+    x = lw.run(dd)
 
     print('columns', x['1564399775664'].columns)
 
