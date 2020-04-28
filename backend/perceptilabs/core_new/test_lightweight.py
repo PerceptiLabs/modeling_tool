@@ -118,6 +118,7 @@ def graph_spec_binary_classification():
                     "Beta_1": "0.9",
                     "Beta_2": "0.999",
                     "Momentum": "0.9",
+                    "Batch_size": 8,                    
                     "Decay_steps": "100000",
                     "Decay_rate": "0.96",
                     "Learning_rate": "0.05",

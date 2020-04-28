@@ -339,11 +339,15 @@ class LightweightCore:
             else:
                 code += layer_spec['Code'].get('Output')
             ast.parse(code)
-        except Exception as e:
-            log.warning(f"Couldn't get code for {layer_id}. Treating it as not fully specified")
-            return None, None
-        except SyntaxError:
+        except SyntaxError as e:
             return None, exception_to_error(layer_id, layer_spec['Type'], e)
+        except Exception as e:
+            log.warning(f"{str(e)}: couldn't get code for {layer_id}. Treating it as not fully specified")
+            if log.isEnabledFor(logging.DEBUG):
+                from perceptilabs.utils import stringify
+                log.warning("layer spec: \n" + stringify(layer_spec))
+                
+            return None, None
         else:
             return code, None
 
