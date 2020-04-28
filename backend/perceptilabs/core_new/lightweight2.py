@@ -26,7 +26,7 @@ from perceptilabs.core_new.graph.builder import GraphBuilder, SnapshotBuilder
 from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP, REPLICATED_PROPERTIES_TABLE
 from perceptilabs.core_new.layers.script import ScriptFactory
 from perceptilabs.core_new.cache2 import LightweightCache
-
+from perceptilabs.core_new.graph.utils import sanitize_layer_name
 
 log = logging.getLogger(__name__)
 
@@ -91,8 +91,13 @@ class DefaultStrategy(BaseStrategy):
 class Tf1xStrategy(BaseStrategy):
     def run(self, layer_id, layer_type, layer_class, input_results, layer_spec):
         with tf.Graph().as_default() as graph:
-            layer_instance = layer_class()
-
+            try:
+                layer_instance = layer_class()                
+            except Exception as e:
+                error = exception_to_error(layer_id, layer_type, e)
+                log.exception(f"Layer {layer_id} raised an error when instantiating layer class")
+                return self.get_default(strategy_error=error)                    
+            
             input_tensors = {}
             for key, value in input_results.items():
                 if value.sample is None:
@@ -104,7 +109,8 @@ class Tf1xStrategy(BaseStrategy):
             try:
                 output_tensor = layer_instance(*input_tensors.values())
             except Exception as e:
-                error = exception_to_error(layer_id, layer_type, e)                
+                error = exception_to_error(layer_id, layer_type, e)
+                log.exception(f"Layer {layer_id} raised an error in __call__")
                 return self.get_default(strategy_error=error)                    
                 
             with tf.Session() as sess:
@@ -120,7 +126,8 @@ class Tf1xStrategy(BaseStrategy):
         try:
             y_batch = sess.run(output_tensor)
         except Exception as e:
-            error = exception_to_error(layer_id, layer_type, e)                
+            error = exception_to_error(layer_id, layer_type, e)
+            log.exception(f"Layer {layer_id} raised an error on sess.run")            
             return self.get_default(strategy_error=error)
         
         y = y_batch[0]
@@ -167,6 +174,7 @@ class DataStrategy(BaseStrategy):
             y = None
             shape = None
             strategy_error = exception_to_error(layer_id, layer_type, e)
+            log.exception(f"Layer {layer_id} raised an error when calling sample property")                        
         else:
             shape = np.atleast_1d(y).shape
             strategy_error=None
@@ -188,7 +196,7 @@ class DataStrategy(BaseStrategy):
 class LightweightCore:
     def __init__(self, issue_handler=None, cache=None):
         self._issue_handler = issue_handler
-        self._cache = cache
+        self._cache = cache = None
         
     @simplify_spec
     def run(self, graph_spec):
@@ -238,7 +246,8 @@ class LightweightCore:
             return BaseStrategy.get_default(code_error=code_error)
 
         layer_type = layer_spec['Type']
-        layer_class, instantiation_error = self._get_layer_class(layer_id, layer_type, code)
+        layer_name = layer_spec['Name']
+        layer_class, instantiation_error = self._get_layer_class(layer_id, layer_name, layer_type, code)
         if layer_class is None:
             return BaseStrategy.get_default(instantiation_error=instantiation_error)            
         
@@ -297,6 +306,7 @@ class LightweightCore:
     def _get_code_from_layers(self, graph_spec):
         code_map, error_map = {}, {}        
         for layer_id, spec in graph_spec.items():
+            layer_name = spec['Name']
             code, error = self._get_layer_code(layer_id, spec)
             
             code_map[layer_id] = code
@@ -323,14 +333,16 @@ class LightweightCore:
             
         code += '\n'
 
+        layer_name_id = sanitize_layer_name(layer_spec['Name'])
         try:
             if layer_spec['Code'] is None or layer_spec['Code'] == '' or layer_spec['Code'].get('Output') is None:
-                code += sf.render_layer_code(layer_id, layer_spec['Type'], layer_spec)
+                code += sf.render_layer_code(layer_name_id, layer_spec['Type'], layer_spec)
             else:
                 code += layer_spec['Code'].get('Output')
             ast.parse(code)
         except SyntaxError as e:
             return None, exception_to_error(layer_id, layer_spec['Type'], e)
+            log.exception(f"Layer {layer_id} raised an error when getting layer code")                                
         except Exception as e:
             log.warning(f"{str(e)}: couldn't get code for {layer_id}. Treating it as not fully specified")
             if log.isEnabledFor(logging.DEBUG):
@@ -341,14 +353,13 @@ class LightweightCore:
         else:
             return code, None
 
-    def _get_layer_class(self, layer_id, layer_type, code):
-        layer_name = layer_type + layer_id
+    def _get_layer_class(self, layer_id, layer_name, layer_type, code):
 
         is_unix = os.name != 'nt' # Windows has permission issues when deleting tempfiles
         with NamedTemporaryFile('wt', delete=is_unix, suffix='.py') as f:
             f.write(code)
             f.flush()
-            
+
             spec = importlib.util.spec_from_file_location("my_module", f.name)        
             module = importlib.util.module_from_spec(spec)
             
@@ -356,49 +367,17 @@ class LightweightCore:
                 spec.loader.exec_module(module)
             except Exception as e:
                 error = exception_to_error(layer_id, layer_type, e)
+                log.exception(f"Layer {layer_id} raised an error when executing module")                                        
                 return None, error
 
-            class_object = getattr(module, layer_name)
+            class_name = layer_type + sanitize_layer_name(layer_name)
+            class_object = getattr(module, class_name)
         
         if not is_unix:
             os.remove(f.name)
 
         return class_object, None
         
-    def _get_layer_instance(self, layer_id, layer_type, code):
-        layer_name = layer_type + layer_id
-
-        is_unix = os.name != 'nt' # Windows has permission issues when deleting tempfiles
-        with NamedTemporaryFile('wt', delete=is_unix, suffix='.py') as f:
-            f.write(code)
-            f.flush()
-            
-            spec = importlib.util.spec_from_file_location("my_module", f.name)        
-            module = importlib.util.module_from_spec(spec)
-
-            try:
-                spec.loader.exec_module(module)
-            except SyntaxError as e:
-                error = exception_to_error(layer_id, layer_type, e)
-                return None, error
-            except Exception as e:
-                error = exception_to_error(layer_id, layer_type, e)
-                return None, error
-
-            class_object = getattr(module, layer_name)
-        
-        if not is_unix:
-            os.remove(f.name)
-        
-        try:
-            instance = class_object()            
-        except Exception as e:
-            # "userland runtime errors"
-            error = exception_to_error(layer_id, layer_type, e)
-            return None, error
-        
-        return instance, None
-
 
 class LightweightCoreAdapter:
     """ Compability with v1 core """
@@ -450,19 +429,6 @@ class LightweightCoreAdapter:
             
         self._extras_reader.set_dict(extras_dict)
 
-        #print("extras dict populated in lw core", extras_dict)
-        '''
-        self._errors_dict = {}            
-        for layer_id, error in strategy_errors.items():
-            print(layer_id, graph_spec[layer_id]['Type'], error)                        
-            self._errors_dict[layer_id] = error
-
-        for layer_id, error in instance_errors.items():
-            print(error)            
-            self._errors_dict[layer_id] = error
-
-        #import pdb; pdb.set_trace()        
-        '''
     @property
     def error_handler(self):
 
