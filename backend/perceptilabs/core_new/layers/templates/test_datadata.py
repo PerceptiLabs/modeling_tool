@@ -9,7 +9,7 @@ import pkg_resources
 
 from perceptilabs.core_new.layers.templates.base import J2Engine
 from perceptilabs.core_new.layers.templates.utils import instantiate_layer_from_macro, create_layer
-from perceptilabs.core_new.layers.definitions import TEMPLATES_DIRECTORY, DEFINITION_TABLE
+from perceptilabs.core_new.layers.definitions import TEMPLATES_DIRECTORY, DEFINITION_TABLE, TOP_LEVEL_IMPORTS_FLAT
 
 
 def fix_path(x):
@@ -38,7 +38,7 @@ def csv_3000x784():
     np.random.seed(789)    
     with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False) as f:
         mat = np.random.random((3000, 784))
-        df = pd.DataFrame.from_records(mat, columns=[str(x) for x in range(784)])
+        df = pd.DataFrame.from_records(mat, columns=['col_'+str(x) for x in range(784)])
         df.to_csv(f.name, index=False)
         yield fix_path(f.name)
         f.close()
@@ -79,7 +79,7 @@ def csv_30x784():
     np.random.seed(456)
     with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False) as f:
         mat = np.random.random((30, 784))
-        df = pd.DataFrame.from_records(mat, columns=[str(x) for x in range(784)])
+        df = pd.DataFrame.from_records(mat, columns=['col_'+str(x) for x in range(784)])        
         df.to_csv(f.name, index=False)
         yield fix_path(f.name)
         f.close()
@@ -100,7 +100,7 @@ def test_npy_shape_1d_ok(j2_engine, npy_30x784):
     partitions = [(70, 20, 10)]
 
     layer = create_layer(
-        j2_engine, DEFINITION_TABLE,
+        j2_engine, DEFINITION_TABLE, TOP_LEVEL_IMPORTS_FLAT, 
         'DataData',
         sources=sources,
         partitions=partitions,
@@ -115,7 +115,7 @@ def test_npy_shape_2d_ok(j2_engine, npy_30x28x28):
     partitions = [(70, 20, 10)]
 
     layer = create_layer(
-        j2_engine, DEFINITION_TABLE,
+        j2_engine, DEFINITION_TABLE, TOP_LEVEL_IMPORTS_FLAT, 
         'DataData',
         sources=sources,
         partitions=partitions,
@@ -130,7 +130,7 @@ def test_npy_shape_3d_ok(j2_engine, npy_30x28x28x3):
     partitions = [(70, 20, 10)]
 
     layer = create_layer(
-        j2_engine, DEFINITION_TABLE,
+        j2_engine, DEFINITION_TABLE, TOP_LEVEL_IMPORTS_FLAT, 
         'DataData',
         sources=sources,
         partitions=partitions,
@@ -145,7 +145,7 @@ def test_csv_shape_ok(j2_engine, csv_30x784):
     partitions = [(70, 20, 10)]
 
     layer = create_layer(
-        j2_engine, DEFINITION_TABLE,
+        j2_engine, DEFINITION_TABLE, TOP_LEVEL_IMPORTS_FLAT, 
         'DataData',
         sources=sources,
         partitions=partitions,
@@ -156,12 +156,78 @@ def test_csv_shape_ok(j2_engine, csv_30x784):
     assert layer.sample.shape == (784,)
     
 
+def test_csv_columns_ok(j2_engine, csv_30x784):
+    sources = [{'type': 'file', 'path': csv_30x784, 'ext': '.csv'}]
+    partitions = [(70, 20, 10)]
+
+    layer = create_layer(
+        j2_engine, DEFINITION_TABLE, TOP_LEVEL_IMPORTS_FLAT,
+        'DataData',
+        sources=sources,
+        partitions=partitions,
+        selected_columns=None,
+        lazy=False
+    )
+
+    expected_columns = ['col_' + str(x) for x in range(784)]
+    assert layer.columns == expected_columns
+
+    
+def test_csv_columns_ok_lazy(j2_engine, csv_30x784):
+    sources = [{'type': 'file', 'path': csv_30x784, 'ext': '.csv'}]
+    partitions = [(70, 20, 10)]
+
+    layer = create_layer(
+        j2_engine, DEFINITION_TABLE, TOP_LEVEL_IMPORTS_FLAT,
+        'DataData',
+        sources=sources,
+        partitions=partitions,
+        selected_columns=None,
+        lazy=True
+    )
+
+    expected_columns = ['col_' + str(x) for x in range(784)]
+    assert layer.columns == expected_columns
+
+
+def test_csv_columns_ok_when_selected(j2_engine, csv_30x784):
+    sources = [{'type': 'file', 'path': csv_30x784, 'ext': '.csv'}]
+    partitions = [(70, 20, 10)]
+
+    layer = create_layer(
+        j2_engine, DEFINITION_TABLE, TOP_LEVEL_IMPORTS_FLAT,
+        'DataData',
+        sources=sources,
+        partitions=partitions,
+        selected_columns=[0, 1],
+        lazy=False
+    )
+
+    assert layer.sample.shape == (2,)
+
+
+def test_csv_columns_ok_when_selected_lazy(j2_engine, csv_30x784):
+    sources = [{'type': 'file', 'path': csv_30x784, 'ext': '.csv'}]
+    partitions = [(70, 20, 10)]
+
+    layer = create_layer(
+        j2_engine, DEFINITION_TABLE, TOP_LEVEL_IMPORTS_FLAT,
+        'DataData',
+        sources=sources,
+        partitions=partitions,
+        selected_columns=[0, 1],
+        lazy=True
+    )
+
+    assert layer.sample.shape == (2,)
+
+    
 def test_npy_shape_1d_ok_lazy(j2_engine, npy_30x784):
     sources = [{'type': 'file', 'path': npy_30x784, 'ext': '.npy'}]
     partitions = [(70, 20, 10)]
 
     layer = create_layer(
-        j2_engine, DEFINITION_TABLE,
+        j2_engine, DEFINITION_TABLE, TOP_LEVEL_IMPORTS_FLAT, 
         'DataData',
         sources=sources,
         partitions=partitions,
@@ -177,7 +243,7 @@ def test_npy_shape_2d_ok_lazy(j2_engine, npy_30x28x28):
     partitions = [(70, 20, 10)]
 
     layer = create_layer(
-        j2_engine, DEFINITION_TABLE,
+        j2_engine, DEFINITION_TABLE, TOP_LEVEL_IMPORTS_FLAT, 
         'DataData',
         sources=sources,
         partitions=partitions,
@@ -193,7 +259,7 @@ def test_npy_shape_3d_ok_lazy(j2_engine, npy_30x28x28x3):
     partitions = [(70, 20, 10)]
     
     layer = create_layer(
-        j2_engine, DEFINITION_TABLE,
+        j2_engine, DEFINITION_TABLE, TOP_LEVEL_IMPORTS_FLAT, 
         'DataData',
         sources=sources,
         partitions=partitions,
@@ -209,7 +275,7 @@ def test_csv_shape_ok_lazy(j2_engine, csv_30x784):
     partitions = [(70, 20, 10)]
 
     layer = create_layer(
-        j2_engine, DEFINITION_TABLE,
+        j2_engine, DEFINITION_TABLE, TOP_LEVEL_IMPORTS_FLAT, 
         'DataData',
         sources=sources,
         partitions=partitions,
@@ -225,7 +291,7 @@ def test_npy_samples_appear_in_order(j2_engine, npy_30x784):
     partitions = [(70, 20, 10)]
 
     layer = create_layer(
-        j2_engine, DEFINITION_TABLE,
+        j2_engine, DEFINITION_TABLE, TOP_LEVEL_IMPORTS_FLAT, 
         'DataData',
         sources=sources,
         partitions=partitions,
@@ -247,7 +313,7 @@ def test_csv_samples_appear_in_order(j2_engine, csv_30x784):
     partitions = [(70, 20, 10)]
 
     layer = create_layer(
-        j2_engine, DEFINITION_TABLE,
+        j2_engine, DEFINITION_TABLE, TOP_LEVEL_IMPORTS_FLAT, 
         'DataData',
         sources=sources,
         partitions=partitions,
@@ -272,7 +338,7 @@ def test_npy_and_csv_samples_appear_interleaved(j2_engine, npy_30x784, csv_30x78
     partitions = [(70, 20, 10), (70, 20, 10)]
         
     layer = create_layer(
-        j2_engine, DEFINITION_TABLE,
+        j2_engine, DEFINITION_TABLE, TOP_LEVEL_IMPORTS_FLAT, 
         'DataData',
         sources=sources,
         partitions=partitions,
@@ -303,7 +369,7 @@ def test_npy_samples_appear_in_order_lazy(j2_engine, npy_30x784):
     partitions = [(70, 20, 10)]
 
     layer = create_layer(
-        j2_engine, DEFINITION_TABLE,
+        j2_engine, DEFINITION_TABLE, TOP_LEVEL_IMPORTS_FLAT, 
         'DataData',
         sources=sources,
         partitions=partitions,
@@ -325,7 +391,7 @@ def test_csv_samples_appear_in_order_lazy(j2_engine, csv_30x784):
     partitions = [(70, 20, 10)]
 
     layer = create_layer(
-        j2_engine, DEFINITION_TABLE,
+        j2_engine, DEFINITION_TABLE, TOP_LEVEL_IMPORTS_FLAT, 
         'DataData',
         sources=sources,
         partitions=partitions,
@@ -350,7 +416,7 @@ def test_npy_and_csv_samples_appear_interleaved_lazy(j2_engine, npy_30x784, csv_
     partitions = [(70, 20, 10), (70, 20, 10)]
 
     layer = create_layer(
-        j2_engine, DEFINITION_TABLE,
+        j2_engine, DEFINITION_TABLE, TOP_LEVEL_IMPORTS_FLAT, 
         'DataData',
         sources=sources,
         partitions=partitions,

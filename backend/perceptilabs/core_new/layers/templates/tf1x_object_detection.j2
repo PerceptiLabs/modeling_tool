@@ -796,6 +796,11 @@ class {{layer_name}}(ObjectDetectionLayer):
 
 
     @property
+    def columns(self) -> List[str]: 
+        """Column names. Corresponds to each column in a sample """
+        return []
+
+    @property
     def progress(self) -> float:
         """A number indicating the overall progress of the training
         
