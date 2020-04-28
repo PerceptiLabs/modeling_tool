@@ -189,8 +189,8 @@ class getPartitionSummary(LW_interface_base):
                 log.info("ErrorMessage: " + str(self.lw_core.error_handler[id_]))
                 
                 content[self._id]['Error'] = {
-                    'Message': self.lw_core.error_handler[id_].message,
-                    'Row': str(self.lw_core.error_handler[id_].line_number)
+                    'Message': self.lw_core.error_handler[self._id].message,
+                    'Row': str(self.lw_core.error_handler[self._id].line_number)
                 }
             else:
                 content[self._id]['Error'] = None
@@ -409,6 +409,9 @@ class getPreviewVariableList(LW_interface_base):
         else:
             content = ""
 
+        print("PREVIEWVARIABLELIST"content)
+        
+            
         return content
 
 class Parse(LW_interface_base):
