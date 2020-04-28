@@ -39,13 +39,12 @@
 
 
         input_data_node = graph.data_nodes[0]
-        sample = next(input_data_node.layer_instance.make_generator_training())
         global env, state_
-        env = env
+        state_ = next(input_data_node.layer_instance.make_generator_training())
         n_actions = env.action_space.n
         self._n_actions = n_actions
         # create state tensor
-        state_tensor = tf.placeholder(tf.float32, shape=(None, ) + sample.shape[:-1] + (sample.shape[-1]*self._history_length, ),name='state_tensor')
+        state_tensor = tf.placeholder(tf.float32, shape=(None, ) + state_.shape[:-1] + (state_.shape[-1]*self._history_length, ))
 
         # Build the TensorFlow graph 
         def build_graph(state_tensor, graph, nodes):
@@ -75,8 +74,8 @@
         
         
         input_shape = state_tensor.get_shape().as_list()[1:]
-        y_tensor = tf.placeholder(tf.float32, [None, 1], name='y')
-        a_tensor = tf.placeholder(tf.uint8, [None, 1], name='a')
+        y_tensor = tf.placeholder(tf.float32, [None, 1])
+        a_tensor = tf.placeholder(tf.uint8, [None, 1])
         a_one_hot = tf.one_hot(a_tensor, n_actions, dtype=tf.float32)
         a_one_hot = a_one_hot[:, -1, :]
         q_performed = tf.reduce_sum(tf.multiply(Q_online_tensor , a_one_hot), axis=1, keep_dims=True)
