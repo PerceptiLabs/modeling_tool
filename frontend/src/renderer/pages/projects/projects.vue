@@ -27,6 +27,8 @@
   import timeseriesRegression   from '@/core/basic-template/timeseries-regression.js'
   import {isWeb} from "@/core/helpers";
 
+  import cloneDeep from 'lodash.clonedeep';
+
   export default {
     name: 'PageProjects',
     created() {
@@ -167,7 +169,7 @@
         this.addNetwork()
       },
       openBasicTemplate(net) {
-        this.addNetwork(net.network)
+        this.addNetwork(cloneDeep(net.network));
       },
       openLastWS() {
         this.restore_network(this.localUserInfo.workspace);

@@ -96,6 +96,7 @@
     "echarts-gl": "^1.1.1",
     "electron-updater": "^4.1.2",
     "html2canvas": "^1.0.0-rc.4",
+    "lodash.clonedeep": "4.5.0",
     "mixpanel-browser": "^2.29.1",
     "moveable": "0.15.2",
     "universal-analytics": "^0.4.20",
