@@ -770,7 +770,6 @@ def policy_reinforce(core, graphs, sanitized_to_name, sanitized_to_id, results):
             trn_layer = graph.active_training_node.layer
             data_node = graph.data_nodes[0]
             state = trn_node.layer.layer_outputs.get(data_node.layer_id)[-1,:,:,-3:]
-            print(state.shape)
             steps = trn_node.layer.step_counter
             n_actions = trn_node.layer.n_actions
             current_action = trn_node.layer.transition['action']

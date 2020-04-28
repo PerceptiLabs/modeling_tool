@@ -37,9 +37,10 @@ class {{layer_name}}(DataLayer):
         """Returns a sample from gym environment."""                                        
         def gen():
             import gym
-            global env, state_
+            global env, state_, _action_space
             env = gym.make(self._env_name)
             sample = env.reset()
+            _action_space = env.action_space.n
             state_ = np.float32(sample)
             while True:
                 yield state_

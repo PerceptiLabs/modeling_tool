@@ -190,8 +190,8 @@
         while self._episode < self._n_episodes and not self._stopped:
             t0 = time.perf_counter()
             self._status = 'training'
-            state = env.reset()
-            state_seq = [state]*self._history_length
+            state_ = env.reset()
+            state_seq = [state_]*self._history_length
             self._step_counter = 0
             done = False
             self._reward = 0
@@ -252,11 +252,9 @@
                             online_layer_output_tensors, online_layer_weight_tensors, online_layer_bias_tensors, online_layer_gradient_tensors
                         ], feed_dict=feed_dict)
                     # Copy weights
-                    print( self._reward)
-                    print(self._loss_training)
                     if iterations % 100 == 0:
                         copy_weights(sess)
-                    state = new_state
+                    state_ = new_state
                     
                     
                     

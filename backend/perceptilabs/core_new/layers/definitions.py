@@ -302,7 +302,7 @@ DEFINITION_TABLE = {
             'learning_rate': lambda specs: specs['Properties']['Learning_rate'],
             'distributed': lambda specs: specs['Properties'].get('Distributed', False),
             'export_directory': resolve_checkpoint_path,
-            'batch_size':  32, #lambda specs: specs['Properties']['Batch_size'],
+            'batch_size':  lambda specs: specs['Properties']['Batch_size'],
             'n_steps_max': lambda specs: specs['Properties']['Max_steps'],
             'update_frequency': 4,
             'initial_exploration': 0.9,
