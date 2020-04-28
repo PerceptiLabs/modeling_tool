@@ -186,7 +186,7 @@ class getPartitionSummary(LW_interface_base):
 
         if isinstance(content, dict):
             if self._id in self.lw_core.error_handler:
-                log.info("ErrorMessage: " + str(self.lw_core.error_handler[id_]))
+                log.info("ErrorMessage: " + str(self.lw_core.error_handler[self._id]))
                 
                 content[self._id]['Error'] = {
                     'Message': self.lw_core.error_handler[self._id].message,
