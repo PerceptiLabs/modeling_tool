@@ -768,11 +768,12 @@ def policy_reinforce(core, graphs, sanitized_to_name, sanitized_to_id, results):
     
         for graph in graphs:
             trn_layer = graph.active_training_node.layer
-            data_node = graph.data_nodes[0]
-            state = trn_node.layer.layer_outputs.get(data_node.layer_id)[-1,:,:,-3:]
+            # data_node = graph.data_nodes[0]
+            state = trn_node.layer.transition['state_seq'][-1]
             steps = trn_node.layer.step_counter
             n_actions = trn_node.layer.n_actions
             current_action = trn_node.layer.transition['action']
+            probs = trn_node.layer.transition['probs']
             if n_actions != -1 and current_action != -1:
                 pred = np.zeros((n_actions,))
                 pred[int(current_action)] = 1
@@ -800,7 +801,7 @@ def policy_reinforce(core, graphs, sanitized_to_name, sanitized_to_id, results):
 
             if is_new_episode or is_final_iteration:
                 trn_layer = graphs[idx-1].active_training_node.layer                                                
-                reward_trn_episode.append(trn_layer.reward)
+                reward_trn_episode.append(np.sum(reward_trn_iter))
                 loss_trn_episode.append(trn_layer.loss_training)
 
             idx += 1
@@ -813,6 +814,7 @@ def policy_reinforce(core, graphs, sanitized_to_name, sanitized_to_id, results):
         data['loss_training_episode'] = loss_trn_episode
         data['Steps'] = steps
         data['state'] = state
+        data['probs'] = probs
         data['pred'] = pred
         return data
 
@@ -845,10 +847,10 @@ def policy_reinforce(core, graphs, sanitized_to_name, sanitized_to_id, results):
         data.update(get_metrics(graphs, true_trn_id, results))
         train_dict[true_trn_id].update(data)
 
-        itr = 0
-        max_itr = 0
+        # itr = 0
+        # max_itr = 0
         epoch = 0
-        max_epoch = -1
+        # max_epoch = -1
         itr_trn = 0
         max_itr_trn = -1
         max_itr_val = -1
