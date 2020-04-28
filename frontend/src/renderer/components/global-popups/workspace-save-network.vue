@@ -101,9 +101,9 @@ export default {
       this.promiseFail(false)
     },
     answerPopup() {
-      // if(!this.popupSettings.isFreezeInfo) {
-      //   this.settings.projectPath = this.settings.projectPath + pathSlash + this.settings.projectName;
-      // }
+      if(!this.popupSettings.isFreezeInfo) {
+        this.settings.projectPath = this.settings.projectPath + pathSlash + this.settings.projectName;
+      }
       this.promiseOk(this.settings);
     },
     // loadPathProject() {

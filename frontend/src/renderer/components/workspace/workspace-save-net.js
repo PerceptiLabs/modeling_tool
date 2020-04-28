@@ -83,7 +83,6 @@ const workspaceSaveNet = {
       this.askSaveFilePopup()
         .then((answer)=> {
           if(answer) {
-            answer.projectPath += '/' + answer.projectName;
             this.saveNetwork(answer, netId, isSaveProjectPath);
           }
         })
@@ -111,7 +110,6 @@ const workspaceSaveNet = {
           prepareNet.toLocal.image = img;
           if(netInfo.isSaveTrainedModel) {
             /*core save*/
-
             prepareNet.toLocal.isTrained = true;
             return this.saveTrainedNetwork({
               'Location': [pathSaveProject],
