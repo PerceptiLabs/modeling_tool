@@ -39,7 +39,7 @@ def resolve_checkpoint_path(specs):
     if len(specs['checkpoint']) == 0:
         return None
     
-    ckpt_path = specs['checkpoint'][1]
+    ckpt_path = specs['checkpoint']['1']
     if '//' in ckpt_path:
         if platform.system() == 'Windows':
             new_ckpt_path = ckpt_path.split('//')[1]
@@ -82,6 +82,24 @@ def update_sources_with_file_exts(specs):
         source['ext'] = ext
 
     return sources
+
+TOP_LEVEL_IMPORTS = {
+    'standard_library': [
+        'import os',        
+        'import sys',
+        'import logging',
+        'from typing import Dict, List, Generator',                
+    ],
+    'third_party': [
+    ],
+    'perceptilabs': [
+        'from perceptilabs.core_new.graph.builder import GraphBuilder, SnapshotBuilder',
+        'from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP, REPLICATED_PROPERTIES_TABLE'                    
+    ]
+}
+TOP_LEVEL_IMPORTS_FLAT = TOP_LEVEL_IMPORTS['standard_library'] + \
+                         TOP_LEVEL_IMPORTS['third_party'] + \
+                         TOP_LEVEL_IMPORTS['perceptilabs']
 
 
 DEFINITION_TABLE = {

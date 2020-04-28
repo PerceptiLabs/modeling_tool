@@ -11,17 +11,22 @@ class NotReplicatedError(Exception):
 
 
 class DataLayerReplica(DataLayer):
-    def __init__(self, sample, size_training, size_validation, size_testing, variables):
+    def __init__(self, sample, size_training, size_validation, size_testing, variables, columns):
         self._sample = sample
         self._size_training = size_training
         self._size_validation = size_validation
         self._size_testing = size_testing
         self._variables = variables
+        self._columns = columns        
 
     @property
     def sample(self):
         return self._sample 
 
+    @property
+    def columns(self):
+        return self._columns
+    
     @property
     def size_training(self):
         return self._size_training 
@@ -54,11 +59,12 @@ class ClassificationLayerReplica(ClassificationLayer):
                  loss_training, loss_testing, loss_validation,
                  status, layer_weights, layer_biases, layer_gradients, layer_outputs,
                  batch_size, training_iteration, validation_iteration,
-                 testing_iteration, progress, epoch, export_modes):
+                 testing_iteration, progress, epoch, export_modes, columns):
 
         self._export_modes = export_modes
         self._epoch = epoch
         self._sample = sample
+        self._columns = columns        
         self._size_training = size_training
         self._size_validation = size_validation        
         self._size_testing = size_testing
@@ -94,6 +100,10 @@ class ClassificationLayerReplica(ClassificationLayer):
     def sample(self):
         return self._sample 
 
+    @property
+    def columns(self):
+        return self._columns
+    
     @property
     def size_training(self):
         return self._size_training 
@@ -204,7 +214,7 @@ class ObjectDetectionLayerReplica(ObjectDetectionLayer):
                  get_predicted_normalized_boxes, get_predicted_classes, get_predicted_objects,
                  status, layer_weights, layer_biases, layer_gradients, layer_outputs,
                  batch_size, training_iteration, validation_iteration,
-                 testing_iteration, progress, epoch, export_modes, get_input_data_node):
+                 testing_iteration, progress, epoch, export_modes, get_input_data_node, columns):
 
         self._export_modes = export_modes
         self._epoch = epoch
@@ -251,6 +261,7 @@ class ObjectDetectionLayerReplica(ObjectDetectionLayer):
         self._validation_iteration = validation_iteration
         self._testing_iteration = testing_iteration
         self._progress = progress
+        self._columns = columns
 
     @property
     def epoch(self):
@@ -288,6 +299,10 @@ class ObjectDetectionLayerReplica(ObjectDetectionLayer):
     def sample(self):
         return self._sample 
 
+    @property
+    def columns(self):
+        return self._columns
+    
     @property
     def size_training(self):
         return self._size_training 

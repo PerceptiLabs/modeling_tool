@@ -164,7 +164,7 @@ const goToLink = function (url) {
 };
 
 const deepCopy = function (object) {
-  return {...object}
+  return JSON.parse(JSON.stringify(object))
 };
 
 const deepCloneNetwork = function (object) {
