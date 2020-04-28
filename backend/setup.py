@@ -98,6 +98,7 @@ setup(
             '*.json',
             'insights/csv_ram_estimator/*.csv',
             'script/templates/*.j2',
+            'core_new/layers/templates/*.j2',
             'tutorial_data/mnist_input.npy',
             'tutorial_data/mnist_labels.npy'
         ],
