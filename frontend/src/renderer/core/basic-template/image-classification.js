@@ -274,6 +274,7 @@ const imageClassification = {
         "layerSettings": {
           "Labels": "1564399788744",
           "Epochs": "10",
+          "Batch_size": "10",
           "N_class": "1",
           "Loss": "Quadratic",
           "Class_weights": "1",
@@ -284,7 +285,8 @@ const imageClassification = {
           "Momentum": "0.9",
           "Decay_steps": "100000",
           "Decay_rate": "0.96",
-          "Training_iters": "20000"
+          "Training_iters": "20000",
+          "Batch_size": '10'
         },
         "layerCode": null,
         "layerCodeError": null,
