@@ -143,7 +143,7 @@
     created() {
       this.setPageTitleMutation('Project Name / Models');
       if(isWeb()) {
-        this.$store.dispatch('mod_workspace/GET_workspacesFromLocalStorage');
+        // this.$store.dispatch('mod_workspace/GET_workspacesFromLocalStorage');
       }
     },
     beforeDestroy() {

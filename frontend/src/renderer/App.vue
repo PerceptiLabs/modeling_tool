@@ -56,6 +56,17 @@
       this.readUserInfo();
     },
     mounted() {
+      if(localStorage.hasOwnProperty('targetProject')) {
+        const targetProjectId = parseInt(localStorage.getItem('targetProject'));
+        debugger;
+        this.loadProjectFromLocalStorage(targetProjectId)
+      } else {
+        alert('haven"t this proprety');
+        // should open modal for creating project
+      }
+      
+      alert(!!targetProject);
+      // @todo fetch models for project;
       if(isWeb()) {
         this.updateOnlineStatus();
         this.$store.dispatch('mod_api/API_runServer', null, {root: true});
@@ -170,6 +181,7 @@
         SET_showPopupUpdates: 'mod_autoUpdate/SET_showPopupUpdates',
         SET_updateStatus:     'mod_autoUpdate/SET_updateStatus',
         SET_updateProgress:   'mod_autoUpdate/SET_updateProgress',
+        loadProjectFromLocalStorage: 'mod_workspace/get_workspacesFromLocalStorage',
       }),
       ...mapActions({
         openErrorPopup:   'globalView/GP_infoPopup',
