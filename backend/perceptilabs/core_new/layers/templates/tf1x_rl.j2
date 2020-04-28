@@ -238,7 +238,7 @@
                             a_batch[i] = t['action']
                             X_batch[i] = np.concatenate(t['state_seq'],-1)
                         
-                        state_ = X_batch[-1,:,:,-3:] #to show the same frame in the frontend
+                        state_ = np.atleast_2d(X_batch)[-1,:,:,-3:] #to show the same frame in the frontend
                         
                         feed_dict = {
                          state_tensor: np.atleast_2d(X_batch),
