@@ -68,7 +68,8 @@ REPLICATED_PROPERTIES_TABLE = {
         ReplicatedProperty('validation_iteration', int, -1),        
         ReplicatedProperty('testing_iteration', int, -1),
         ReplicatedProperty('progress', (np.float32, float), -1),
-        ReplicatedProperty('export_modes', list, []),        
+        ReplicatedProperty('export_modes', list, []),
+        ReplicatedProperty('columns', list, []),                
     ],
     ObjectDetectionLayer: [
         ReplicatedProperty('sample', (np.float32, np.ndarray), lambda _: np.empty(())),
@@ -110,10 +111,12 @@ REPLICATED_PROPERTIES_TABLE = {
         ReplicatedProperty('validation_iteration', int, -1),        
         ReplicatedProperty('testing_iteration', int, -1),
         ReplicatedProperty('progress', (np.float32, float), -1),
-        ReplicatedProperty('export_modes', list, []),        
+        ReplicatedProperty('export_modes', list, []),
+        ReplicatedProperty('columns', list, []),                
     ],
     DataLayer: [
         ReplicatedProperty('sample', ((np.float32, float), np.ndarray), lambda _: np.empty(())),
+        ReplicatedProperty('columns', list, []),        
         ReplicatedProperty('size_training', int, -1),
         ReplicatedProperty('size_validation', int, -1),
         ReplicatedProperty('size_testing', int, -1),

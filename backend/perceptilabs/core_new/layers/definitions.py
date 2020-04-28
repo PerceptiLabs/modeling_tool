@@ -85,6 +85,7 @@ def update_sources_with_file_exts(specs):
 
 TOP_LEVEL_IMPORTS = {
     'standard_library': [
+        'import os',        
         'import sys',
         'import logging',
         'from typing import Dict, List, Generator',                
