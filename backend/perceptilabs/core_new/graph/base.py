@@ -52,7 +52,7 @@ class Node:
 
     @property
     def custom_code(self):
-        if self._layer_spec['Code'] is None:
+        if self._layer_spec['Code'] is None or self._layer_spec['Code'] is '':
             return None
 
         if self._layer_spec['Code'].get('Output') is None:
