@@ -275,6 +275,44 @@ DEFINITION_TABLE = {
             'from tensorflow.python.training.tracking.base import Trackable'            
         ]
     ),
+    'TrainReinforce': LayerDef(
+       RLLayer,
+        'tf1x_rl.j2',
+        'layer_tf1x_rl',
+        {
+            'history_length': lambda specs: specs['Properties']['History_length'],
+            'n_episodes': lambda specs: specs['Properties']['Episodes'],
+            'optimizer': resolve_tf1x_optimizer,
+            'learning_rate': lambda specs: specs['Properties']['Learning_rate'],
+            'distributed': lambda specs: specs['Properties'].get('Distributed', False),
+            'export_directory': resolve_checkpoint_path,
+            'batch_size':  32, #lambda specs: specs['Properties']['Batch_size'],
+            'n_steps_max': lambda specs: specs['Properties']['Max_steps'],
+            'update_frequency': 4,
+            'initial_exploration': 0.9,
+            'discount_factor': 0.99,
+            'replay_memory_size': 300000,
+            'final_exploration': 0.1,
+            'final_exporation_frame': 500,
+            'target_network_update_frequency': 100
+        },
+        import_statements=[
+            'import tensorflow as tf',
+            'import numpy as np',
+            'import time',
+            'import gym',
+            'import copy',
+            'import itertools',
+            'import os',
+            'import shutil',
+            'from typing import Dict, List, Generator',
+            'from perceptilabs.core_new.utils import Picklable, YieldLevel',
+            'from perceptilabs.core_new.graph import Graph',
+            'from perceptilabs.core_new.layers.base import ObjectDetectionLayer, Tf1xLayer',
+            'from perceptilabs.core_new.serialization import can_serialize, serialize',
+            'from tensorflow.python.training.tracking.base import Trackable'            
+        ]
+    ),
     'LayerCustom': LayerDef(
         InnerLayer,
         'custom.j2',

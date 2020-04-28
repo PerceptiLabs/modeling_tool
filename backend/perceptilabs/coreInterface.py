@@ -1400,24 +1400,8 @@ class coreLogic():
                 return output
 
             if view=="Reward":
-                currentReward=self.getStatistics({"layerId":layerId,"variable":"X","innervariable":"Reward"})
-                totalReward=self.getStatistics({"layerId":layerId,"variable":"X","innervariable":"epochTotalReward"})
-
-
-                # doneState=self.getStatistics({"layerId":layerId,"variable":"X","innervariable":"Done"})
-                # allDones=np.where(doneState==True)[0]
-                # if allDones.size>0:
-                #     for i in range(len(allDones)):
-                #         if i>0:
-                #             r[allDones[i-1]:allDones[i]]=np.cumsum(r[allDones[i-1]:allDones[i]])
-                #         else:
-                #             r[0:allDones[i]]=np.cumsum(r[0:allDones[i]])
-                #     r[allDones[-1]:]=np.cumsum(r[allDones[i]:])
-                # else:
-                #     r=np.cumsum(r)
-
-                # currentReward=r[int(allDones[-1] if allDones.size>0 else 0):int(doneState.size)]
-                # totalReward=np.array([r[int(i-1)] for i in allDones]) if allDones.size>0 else np.array([])
+                currentReward=self.getStatistics({"layerId":layerId,"variable":"X","innervariable":"reward_train_iter"})
+                totalReward=self.getStatistics({"layerId":layerId,"variable":"X","innervariable":"reward_training_epoch"})
                 current_reward = createDataObject([currentReward],
                                                 typeList=['line'])
                 total_reward = createDataObject([totalReward],
@@ -1425,17 +1409,22 @@ class coreLogic():
                 obj = {"Current": current_reward, "Total": total_reward}
                 return obj
             if view=="Loss":
-                currentLoss=self.getStatistics({"layerId":layerId,"variable":"loss","innervariable":""})
-                totalLoss=self.getStatistics({"layerId":layerId,"variable":"epochTrainLoss","innervariable":""})
-                
-                current_loss = createDataObject([currentLoss],
-                                                typeList=['line'])
-                total_loss = createDataObject([totalLoss],
-                                               typeList=['line'])
-                obj = {"Current": current_loss, "Total": total_loss}
-                return obj
+                loss_train=self.getStatistics({"layerId":layerId,"variable":"loss_train_iter","innervariable":""})
+                currentTraining=loss_train
+
+                totalTraining=self.getStatistics({"layerId":layerId,"variable":"loss_training_epoch","innervariable":""})
+            
+                dataObjectCurrent = createDataObject([currentTraining],
+                                                     typeList=['line'],
+                                                     nameList=['Training'])
+            
+                dataObjectTotal = createDataObject([totalTraining],
+                                                   typeList=['line'],
+                                                   nameList=['Training'])
+                output = {"Current": dataObjectCurrent, "Total": dataObjectTotal}
+                return output
             if view=="Steps":
-                steps=self.getStatistics({"layerId":layerId,"variable":"X","innervariable":"epochTotalSteps"})
+                steps=self.getStatistics({"layerId":layerId,"variable":"X","innervariable":"steps"})
                 steps = createDataObject([steps])
                 obj = {"Steps": steps}
                 return obj
