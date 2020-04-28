@@ -4,6 +4,11 @@
     div.project-wrapper
       div.header-controls
         div.left-side
+          span(
+            @click="loadModel()"
+            style="margin: 5px 20px 0 0; cursor: pointer"
+            )
+            img(src="../../../../static/img/project-page/import.svg")
           span.btn-round-icon(@click="toggleSelectedItems()")
             img(v-if="isAtLeastOneItemSelected()" src="../../../../static/img/project-page/minus.svg")
             img(v-if="!isAtLeastOneItemSelected()" src="../../../../static/img/project-page/checked.svg")
@@ -89,12 +94,22 @@
               :list="[model.lastModified.user]"
             )
             | {{model.lastModified.date }}
+    
+    template(v-if="isImportModelsOpen")
+      .file-picker-wrapper
+        file-picker(
+          filePickerType="folder"
+          :fileTypeFilter="[]"
+          @confirm-selection="confirmFilePickerSelection"
+          @close="clearPath")
 </template>s
 
 <script>
   import projectSidebar from '@/pages/layout/project-sidebar.vue';
   import SortByButton from '@/pages/projects/components/sort-by-button.vue';
   import CollaboratorAvatar from '@/pages/projects/components/collaborator-avatar.vue'
+  import FilePicker     from "@/components/different/file-picker.vue";
+
   import { mapActions, mapMutations, mapState } from 'vuex';
   import {isWeb} from "@/core/helpers";
   const mockModelList = [
@@ -110,7 +125,7 @@
   
   export default {
     name: "pageProjects",
-    components: {projectSidebar, SortByButton, CollaboratorAvatar},
+    components: {projectSidebar, SortByButton, CollaboratorAvatar, FilePicker},
     data: function () {
       return {
         isSelectedSortType: 0,
@@ -126,6 +141,7 @@
         initialModelList: mockModelList,
         modelList: mockModelList,
         selectedListIds: [],
+        isImportModelsOpen: false,
       }
     },                                                     
     watch: {
@@ -295,7 +311,25 @@
           //
           
         });
-      }
+      },
+      loadModel() {
+        // 1. open file picker modal
+        this.isImportModelsOpen = true;
+        // 2. get path from file picker
+        // 3. send path to get model api
+        // 4. make post request to create model for project
+        
+
+      },
+      confirmFilePickerSelection(selectedItems) {
+        console.log(selectedItems);
+        debugger;
+        this.clearPath();
+      },
+      clearPath(x){
+        this.isImportModelsOpen = false;
+        console.log(x);
+      },
     }
   }
 </script>
@@ -500,5 +534,18 @@
       border-left: 6px solid transparent;
       border-right: 6px solid transparent;
     }
+  }
+  .file-picker-wrapper {
+    position: absolute;
+    z-index: 1234;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: black;
+    border-radius: 9px;
+    border-radius: 0.5rem;
+    background-color: #4D556A;
+    min-width: 29rem;
+    box-shadow: 0 0 6px rgba(0, 0, 0, 0.7);
   }
 </style>

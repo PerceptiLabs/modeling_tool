@@ -382,7 +382,19 @@ const actions = {
   //---------------
   //  NETWORK SAVE
   //---------------
+  API_loadNetwork(ctx, path) {
+    const theData = {
+      reciever: "",
+      action: "getJsonModel",
+      value: path
+    }
 
+    return coreRequest(theData)
+      .then((data) => data)
+      .catch((err) => {
+        console.error('loading network error: ', err);
+      });
+  },
   API_checkNetworkRunning({rootGetters}, receiver) {
     const theData = {
       reciever: receiver,

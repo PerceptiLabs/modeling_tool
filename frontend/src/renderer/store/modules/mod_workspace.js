@@ -189,12 +189,11 @@ const mutations = {
         // this value is used to determine if a new setInterval call should be made
         network.networkMeta.chartsRequest.timerID = null;
 
-        if(currentProject === network.apiMeta.project)  {
+        if(network.apiMeta && currentProject === network.apiMeta.project)  {
           newWorkspaceContent.push(network);
         }
         
       }
-      debugger;
       state.workspaceContent = newWorkspaceContent;
     }
   },

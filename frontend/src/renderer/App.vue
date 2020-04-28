@@ -58,14 +58,12 @@
     mounted() {
       if(localStorage.hasOwnProperty('targetProject')) {
         const targetProjectId = parseInt(localStorage.getItem('targetProject'));
-        debugger;
         this.loadProjectFromLocalStorage(targetProjectId)
       } else {
         alert('haven"t this proprety');
         // should open modal for creating project
       }
       
-      alert(!!targetProject);
       // @todo fetch models for project;
       if(isWeb()) {
         this.updateOnlineStatus();
