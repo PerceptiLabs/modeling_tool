@@ -109,6 +109,22 @@ DEFINITION_TABLE = {
             'from perceptilabs.core_new.utils import Picklable',
             'from perceptilabs.core_new.serialization import can_serialize, serialize'                    ]
     ),
+    'DataEnvironment': LayerDef(
+        DataLayer,
+        'dataenv.j2',
+        'layer_dataenvironment',
+        {   
+            'environment_name': lambda specs: specs['Properties']['accessProperties']['Atari'] + '-v0',
+        },
+        import_statements=[
+            'from perceptilabs.core_new.layers.base import DataLayer',
+            'from typing import Dict, Generator',
+            'import multiprocessing', 
+            'import tensorflow as tf',
+            'import gym',                                    
+            'from perceptilabs.core_new.utils import Picklable',
+            'from perceptilabs.core_new.serialization import can_serialize, serialize'                    ]
+    ),
     'ProcessGrayscale' : LayerDef(
         Tf1xLayer,
         'tf1x.j2',

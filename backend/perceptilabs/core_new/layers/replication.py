@@ -118,7 +118,7 @@ REPLICATED_PROPERTIES_TABLE = {
         ReplicatedProperty('size_training', int, -1),
         ReplicatedProperty('size_validation', int, -1),
         ReplicatedProperty('size_testing', int, -1),
-        ReplicatedProperty('reward', int, -1),
+        ReplicatedProperty('reward',(np.float32, float), -1),
         ReplicatedProperty('n_actions', int, -1),
         ReplicatedProperty('n_episodes', int, -1),
         ReplicatedProperty('episode', int, -1),

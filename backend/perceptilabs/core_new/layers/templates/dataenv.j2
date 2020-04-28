@@ -4,7 +4,7 @@ class {{layer_name}}(DataLayer):
     def __init__(self):
         self._variables = {}
         self._env_name = '{{environment_name}}'
-        self._env = gym.make(self._env_name)
+        # self._env = gym.make(self._env_name)
         self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
     
     @property
@@ -38,16 +38,17 @@ class {{layer_name}}(DataLayer):
         def gen():
             import gym
             global env, state
-            sample = self._env.reset()
+            env = gym.make(self._env_name)
+            sample = env.reset()
             state = sample
             while True:
-                yield state
+                yield np.float32(state)
         return gen()
 
     def make_generator_testing(self) -> Generator[np.ndarray, None, None]:
         """Returns a sample from gym environment."""                                        
-         def gen():
-                import gym
+        def gen():
+            import gym
             global env, state
             sample = self._env.reset()
             state = sample
@@ -57,8 +58,8 @@ class {{layer_name}}(DataLayer):
         
     def make_generator_validation(self) -> Generator[np.ndarray, None, None]:
         """Returns a sample from gym environment."""                                        
-         def gen():
-                import gym
+        def gen():
+            import gym
             global env, state
             sample = self._env.reset()
             state = sample

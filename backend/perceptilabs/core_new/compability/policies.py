@@ -693,7 +693,7 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id, re
         return result_dict
 
 
-def policy_reinforcementlearning(core, graphs, sanitized_to_name, sanitized_to_id, results):
+def policy_reinforce(core, graphs, sanitized_to_name, sanitized_to_id, results):
     
     def get_layer_inputs_and_outputs(graph, node, trn_node):
         data = {}
