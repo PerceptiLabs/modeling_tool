@@ -1,9 +1,9 @@
 <template>
   <div class="cell-contents">
     <div class="cell-input">
-      <div :class="['cell-input-operation-count', {'focused': isFocused}]">In [ {{ cell.execution_count || '&nbsp;' }} ]:</div>
+      <div class="cell-input-operation-count">In [ {{ cell.execution_count || '&nbsp;' }} ]:</div>
       <CodeHQ 
-        class="cell-input-code"
+        :class="['cell-input-code', {'focused': isFocused}]"
         :value="cell.Output" 
         :autofocus="false" 
         :lineNumbers="false"
@@ -40,11 +40,6 @@ export default {
       type: Boolean
     }
   },
-  methods: {
-    onCellContainterClick() {
-      this.$emit('click', this.cell.hashCode);
-    }
-  },
   computed: {
     codeMirrorMode() {
       if (!this.cell) { return ''; }
@@ -75,21 +70,25 @@ $cell-left-gutter: 6.6rem;
     .cell-input-operation-count {
       flex-basis: $cell-left-gutter;
       flex-shrink: 0;
-      padding-top: 0.75rem;
+      padding-top: 0.9rem;
       padding-right: 1rem;
       text-align: right;
     }
 
     .cell-input-code {
       flex-grow: 1;
-      padding: 0.5rem 1rem 0.5rem 0;
+      padding: 0.5rem 1rem 0.5rem 1rem;
       border-radius: 2px;
+      border: 1px solid $bg-toolbar;
+      box-sizing: border-box;
+      border-radius: 2px;
+      
+      &.focused {
+        border: 1px solid $white;
+      }
 
       /deep/ .CodeMirror {
         background-color: $bg-workspace;
-        border: 1px solid $bg-toolbar;
-        box-sizing: border-box;
-        border-radius: 2px;
       }
 
     }

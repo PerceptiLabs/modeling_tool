@@ -26,8 +26,8 @@ export default {
     }
   },
   methods: {
-    onCellContainterClick() {
-      // this.$emit('click', this.cell.hashCode);
+    onCellContainterClick(event) {
+      this.$emit('click', this.cell.layerId);
     }
   },
   computed: {
@@ -62,11 +62,6 @@ $border-width: 3px;
 
   &:hover {
     border-left: $border-width solid $white;
-  }
-
-  &.focused {
-    border: 1px solid $col-primary2;
-    border-left: $border-width solid $col-primary2;
   }
 }
 

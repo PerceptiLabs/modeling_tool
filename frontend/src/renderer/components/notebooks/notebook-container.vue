@@ -5,6 +5,8 @@
         v-for="cell in cells"
         :key="cell.layerId"
         :cell="cell"
+        :isFocused="focusedCellId === cell.layerId"
+        @click="onCellClick"
       />
     </div>
   </div>
@@ -28,10 +30,14 @@ export default {
   },
   data() {
     return {
-      cells: []
+      cells: [],
+      focusedCellId: null
     };
   },
   methods: {
+    onCellClick(payload) {
+      this.focusedCellId = payload;
+    },
     updateNotebook(){
       Promise.all([
           this.fetchNetworkCode(),
