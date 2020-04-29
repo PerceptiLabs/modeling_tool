@@ -41,7 +41,7 @@
               :scaleNet="scaleNet"
               :style="{transformOrigin: '0 0', transform: `scale(${scaleNet / 100})`}"
             )
-            // when select more then 2 network item it's display
+            // when select more then 2 network item its display
             div(:style="dragBoxHorizontalTopBorder()")
             div(:style="dragBoxHorizontalBottomBorder()")
             div(:style="dragBoxVerticalLeftBorder()")
@@ -55,7 +55,9 @@
           ref="saveNetworkPopup"
           :popup-settings="saveNetworkPopup"
           )
-
+        workspace-load-network(
+          v-if="showLoadSettingPopup"
+        )
 
       start-training-spinner(v-if="showTrainingSpinner")
       file-picker-popup(
