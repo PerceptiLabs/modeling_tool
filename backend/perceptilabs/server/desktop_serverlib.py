@@ -91,18 +91,9 @@ class Message:
         message = json_bytes
         return message
 
-    def _add_errors_and_warnings(self, content, errors, warnings):
-        errorList=[]
-        warningList=[]
-
-        while not errors.empty():
-            message=errors.get(timeout=0.05)
-            errorList.append(message)
-
-        while not warnings.empty():
-            message=warnings.get(timeout=0.05)
-            warningList.append(message)
-
+    def _add_errors_and_warnings(self, content, issue_handler):
+        errorList = issue_handler.pop_errors()
+        warningList = issue_handler.pop_warnings()
 
         if errorList:
             self._interface.close_core(self.request.get("reciever"))
@@ -122,9 +113,8 @@ class Message:
 
 
     def _create_response_json_content(self):
-        response, warnings, errors = self._interface.create_response(self.request)
-
-        content = self._add_errors_and_warnings(response, errors, warnings)
+        response, issue_handler = self._interface.create_response(self.request)
+        content = self._add_errors_and_warnings(response, issue_handler)
 
         if type(content) is not dict:
             content={"content":content}
@@ -174,11 +164,11 @@ class Message:
         self._write()
 
     def close(self):
-        log.info("closing connection to {}".format(self.addr))
+        log.debug("closing connection to {}".format(self.addr))
         try:
             self.selector.unregister(self.sock)
         except Exception as e:
-            log.errpr(
+            log.error(
                 f"error: selector.unregister() exception for",
                 f"{self.addr}: {repr(e)}",
             )
@@ -228,7 +218,7 @@ class Message:
             encoding = self.jsonheader["content-encoding"]
             self.request = self._json_decode(data, encoding)
 
-            log.info("received request {} from {}".format(pprint.pformat(self.request), self.addr))
+            log.debug("received request {} from {}".format(pprint.pformat(self.request), self.addr))
         else:
             # Binary or unknown content-type
             self.request = data

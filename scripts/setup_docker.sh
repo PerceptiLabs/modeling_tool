@@ -17,9 +17,9 @@ node -v
 echo "Installing general npm packages"
 cd ../frontend
 npm install
-echo "Installing browser packages"
-cd src
-npm install
-cd ../..
+# echo "Installing browser packages"
+# cd src
+# npm install
+# cd ../..
 
 

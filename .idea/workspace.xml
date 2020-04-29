@@ -1,20 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="ae4c30d3-78b4-43e9-92a3-25fa079cdaae" name="Default Changelist" comment="models view, work in progress.">
-      <change afterPath="$PROJECT_DIR$/frontend/src/renderer/components/header/header-profile.vue" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/renderer/pages/projects/components/collaborator-avatar.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/components/header/header-win.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/components/header/header-win.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/components/the-menu.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/components/the-menu.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/core/helpers.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/core/helpers.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/pages/layout/project-sidebar.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/pages/layout/project-sidebar.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/pages/projects/components/sort-by-button.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/pages/projects/components/sort-by-button.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/pages/projects/projects.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/pages/projects/projects.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/scss/base/_mixins.scss" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/scss/base/_mixins.scss" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/scss/base/_variables.scss" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/scss/base/_variables.scss" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/scss/common/_helpers.scss" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/scss/common/_helpers.scss" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/store/modules/globalView.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/store/modules/globalView.js" afterDir="false" />
+    <list default="true" id="ae4c30d3-78b4-43e9-92a3-25fa079cdaae" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/store/modules/mod_workspace.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/store/modules/mod_workspace.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -325,10 +313,11 @@
       <screen x="40" y="23" width="1640" height="1027" />
     </state>
     <state width="826" height="466" key="DebuggerActiveHint/1680.-550.1920.1057/-240.-1057.1920.1057/40.23.1640.1027@40.23.1640.1027" timestamp="1584434242647" />
-    <state x="41" y="45" width="1639" height="1005" key="DiffContextDialog" timestamp="1584720503371">
+    <state x="140" y="123" width="1440" height="827" key="DiffContextDialog" timestamp="1585767159436">
       <screen x="40" y="23" width="1640" height="1027" />
     </state>
     <state x="-134" y="-1057" width="1905" height="1057" maximized="true" key="DiffContextDialog/-134.-1057.1920.1057/40.23.1640.1027@40.23.1640.1027" timestamp="1584456668320" />
+    <state x="140" y="123" width="1440" height="827" key="DiffContextDialog/-240.-1057.1920.1057/1680.-418.1920.1057/40.23.1640.1027@40.23.1640.1027" timestamp="1585767159436" />
     <state x="183" y="23" width="1344" height="1027" key="DiffContextDialog/0.0.1680.1050@0.0.1680.1050" timestamp="1583940423313" />
     <state x="183" y="81" key="DiffContextDialog/0.0.1920.1032@0.0.1920.1032" timestamp="1583938148517" />
     <state x="187" y="17" width="1344" height="1027" key="DiffContextDialog/1680.-475.1920.1057/-240.-1057.1920.1057/40.0.1640.1050@40.0.1640.1050" timestamp="1584086125705" />
@@ -455,11 +444,12 @@
     <state x="429" y="31" width="1169" height="935" key="find.popup/0.0.1920.1032@0.0.1920.1032" timestamp="1583938148517" />
     <state x="398" y="135" width="1142" height="915" key="find.popup/1680.-475.1920.1057/-240.-1057.1920.1057/40.23.1640.1027@40.23.1640.1027" timestamp="1584111706506" />
     <state x="429" y="31" width="1169" height="935" key="find.popup/1680.-498.1920.1080/-240.-1080.1920.1080/0.0.1680.1050@0.0.1680.1050" timestamp="1584030709238" />
-    <state x="398" y="134" width="1142" height="915" key="find.popup/1680.-550.1920.1057/-240.-1057.1920.1057/40.23.1640.1027@40.23.1640.1027" timestamp="1584720274640" />
-    <state x="398" y="135" width="1142" height="915" key="find.popup/40.23.1640.1027@40.23.1640.1027" timestamp="1584640058114" />
-    <state x="604" y="256" key="git4idea.branch.GitSmartOperationDialog" timestamp="1584347997836">
+    <state x="398" y="135" width="1142" height="915" key="find.popup/1680.-550.1920.1057/-240.-1057.1920.1057/40.23.1640.1027@40.23.1640.1027" timestamp="1584439010104" />
+    <state x="398" y="135" width="1142" height="915" key="find.popup/40.23.1640.1027@40.23.1640.1027" timestamp="1584370269389" />
+    <state x="604" y="256" key="git4idea.branch.GitSmartOperationDialog" timestamp="1585767091179">
       <screen x="40" y="23" width="1640" height="1027" />
     </state>
+    <state x="604" y="256" key="git4idea.branch.GitSmartOperationDialog/-240.-1057.1920.1057/1680.-418.1920.1057/40.23.1640.1027@40.23.1640.1027" timestamp="1585767091179" />
     <state x="604" y="256" key="git4idea.branch.GitSmartOperationDialog/40.23.1640.1027@40.23.1640.1027" timestamp="1584347997836" />
     <state x="533" y="251" width="670" height="662" key="search.everywhere.popup" timestamp="1584717526299">
       <screen x="40" y="23" width="1640" height="1027" />

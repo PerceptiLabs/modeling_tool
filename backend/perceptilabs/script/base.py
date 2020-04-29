@@ -44,6 +44,7 @@ class CustomCodeGenerator(CodeGenerator):
 
     def _replace_ckpt_references(self,code):
         import re
+        
         codeString=code
         codeRows=re.split(';|\n',codeString)
         codeRows=list(filter(None,codeRows))
@@ -61,8 +62,7 @@ class CustomCodeGenerator(CodeGenerator):
         new_code_parts=[]
         for _codePart in self._code_parts:
             new_code_parts.append(CodePart(name=_codePart.name, code=self._replace_ckpt_references(_codePart.code)))
-        self._code_parts=new_code_parts
-        
+            self._code_parts=new_code_parts
 
     def get_code(self):    
         code = ''

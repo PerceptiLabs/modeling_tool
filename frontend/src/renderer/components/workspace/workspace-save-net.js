@@ -51,13 +51,16 @@ const workspaceSaveNet = {
     eventSaveNetwork() {
       const projectsList = this.getLocalUserInfo.projectsList;
       const network = this.currentNetwork;
+
       this.checkTrainedNetwork()
         .then((isTrained)=> {
-          if(!projectsList.length || findIndexId(projectsList, network) < 0) {
+//          if(!projectsList.length || findIndexId(projectsList, network) < 0) {
+          if(!network.networkRootFolder) {
             this.saveNetworkPopup.isSyncName = true;
             this.eventSaveNetworkAs(network.networkID, true)
             return
           }
+
           if(isTrained) {
             this.saveNetworkPopup.isFreezeInfo = true;
             this.eventSaveNetworkAs(network.networkID)
@@ -80,6 +83,7 @@ const workspaceSaveNet = {
       this.askSaveFilePopup()
         .then((answer)=> {
           if(answer) {
+            answer.projectPath += '/' + answer.projectName;
             this.saveNetwork(answer, netId, isSaveProjectPath);
           }
         })
@@ -99,6 +103,7 @@ const workspaceSaveNet = {
       const currentNet = this.currentNetwork;
       const newProjectId = netId || generateID();
       const pathSaveProject = netInfo.projectPath;
+
       let prepareNet = cloneNet(currentNet, newProjectId, netInfo);
       /*check Is Trained Net + do ScreenShot*/
       doScreenShot(networkField)
@@ -106,19 +111,29 @@ const workspaceSaveNet = {
           prepareNet.toLocal.image = img;
           if(netInfo.isSaveTrainedModel) {
             /*core save*/
+
             prepareNet.toLocal.isTrained = true;
             return this.saveTrainedNetwork({
               'Location': [pathSaveProject],
-              'frontendNetwork': prepareNet.toFile
+              'frontendNetwork': prepareNet.toFile,
+              'networkName': this.currentNetwork.networkName
             })
           }
           else {
-            /*app save*/
-            return projectPCSave(prepareNet.toFile)
+            // /*app save*/
+            // return projectPCSave(prepareNet.toFile)
+
+            const payload = {
+              path: prepareNet.toLocal.pathProject
+            };
+
+            return this.$store.dispatch('mod_api/API_saveJsonModel', payload);
+            
           }
         })
         .then(()=> {
           /*save project to project page*/
+
           saveProjectToLocalStore(prepareNet.toLocal, this);
           if(saveProjectPath) this.set_networkRootFolder(pathSaveProject);
           this.infoPopup('The file has been successfully saved');
@@ -181,6 +196,9 @@ const workspaceSaveNet = {
           if(key === 'networkElementList') toFile[key] = JSON.parse(cloneEl(net[key]));
           else toFile[key] = net[key];
         }
+
+        // console.log('toFile.networkMeta', toFile.networkMeta);
+
         if(idProject) toFile.networkID = idProject;
         toFile.networkName = newNetInfo.projectName;
         toFile.networkMeta = {};

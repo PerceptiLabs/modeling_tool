@@ -138,7 +138,9 @@ class CodeHqNew:
                                          pool=props["PoolBool"],
                                          pooling=props["Pooling"],
                                          pool_area=props["Pool_area"],
-                                         pool_stride=props["Pool_stride"])
+                                         pool_stride=props["Pool_stride"],
+                                         pool_padding=props["Pool_padding"])
+
             return code_gen
         elif type_ == 'DeepLearningDeconv':
             code_gen = DeconvCodeGenerator(layer_id=id_,
@@ -178,15 +180,15 @@ class CodeHqNew:
             return code_gen
             
         elif type_ == 'TrainNormal':
-            if 'Labels' in props:
+            if 'Labels' in props and props['Labels'] and content['Info']['backward_connections']:
                 target_layer_id = props['Labels']
                 target_layer = [x[1] for x in content['Info']['backward_connections'] if x[0] == target_layer_id][0]
+                if len(content['Con'])>1:
+                    output_layer = [x[1] for x in content['Info']['backward_connections'] if x[0] != target_layer_id][0]
+                else:
+                    output_layer = "'Output layer here'"
             else:    
                 target_layer = "'Target layer here'"
-
-            if len(content['Con'])>1:
-                output_layer = [x[1] for x in content['Info']['backward_connections'] if x[0] != target_layer_id][0]
-            else:
                 output_layer = "'Output layer here'"
 
             if len(content['Con']) > 2:
@@ -204,9 +206,10 @@ class CodeHqNew:
                                                 momentum=props['Momentum'], 
                                                 beta1=props['Beta_1'],
                                                 beta2=props['Beta_2'],
-                                                distributed=props['Distributed'],   # TODO: REMOVE THIS!
-                                                input_data_layer=props['InputDataId'],
-                                                target_data_layer=props['TargetDataId']) 
+                                                # distributed=props['Distributed'],
+                                                # input_data_layer=props['InputDataId'],
+                                                # target_data_layer=props['TargetDataId']
+                                                ) 
             return code_gen
 
         elif type_ == 'TrainLoss':

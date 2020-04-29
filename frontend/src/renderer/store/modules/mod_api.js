@@ -1,6 +1,6 @@
 import {coreRequest as coreRequestWeb, openWS}  from "@/core/apiWeb.js";
 import coreRequestElectron from "@/core/apiCore.js";
-import { deepCopy, parseJWT, isWeb }   from "@/core/helpers.js";
+import { deepCopy, parseJWT, isWeb, stringifyNetworkObjects }   from "@/core/helpers.js";
 import { pathSlash }  from "@/core/constants.js";
 import {isElectron} from "@/core/helpers";
 import { PROJECT_DEFAULT_FOLDER } from "../../core/constants";
@@ -378,6 +378,23 @@ const actions = {
       });
   },
 
+  //---------------
+  // NETWORK LOAD
+  //---------------
+  
+  API_loadNetwork({rootGetters}, path) {
+    const theData = {
+      reciever: "",
+      action: "getJsonModel",
+      value: path
+    }
+
+    return coreRequest(theData)
+      .then((data) => data)
+      .catch((err) => {
+        console.error('loading network error: ', err);
+      });
+  },
 
   //---------------
   //  NETWORK SAVE
@@ -420,11 +437,11 @@ const actions = {
       });
   },
 
-  API_saveTrainedNetwork({dispatch, getters, rootGetters}, {Location, frontendNetwork}) {
+  API_saveTrainedNetwork({dispatch, getters, rootGetters}, {Location, frontendNetwork, networkName}) {
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
       action: "SaveTrained",
-      value:  {Location, frontendNetwork}
+      value:  {Location, frontendNetwork, networkName}
     };
     //console.log('SaveTrained', theData);
     return coreRequest(theData)
@@ -467,6 +484,23 @@ const actions = {
       })
   },
 
+  API_saveJsonModel({rootGetters}, {path}) {
+    const networkJson = stringifyNetworkObjects(rootGetters['mod_workspace/GET_currentNetwork']);
+    const theData = {
+      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
+      action: 'saveJsonModel',
+      value:  {
+        json: networkJson,
+        path
+      }
+    };
+    
+    return coreRequest(theData)
+      .then((data)=> data)
+      .catch((err)=> {
+        console.error('saveJsonModel answer', err);
+      });
+  },
 
   //---------------
   //  ELEMENT SETTINGS

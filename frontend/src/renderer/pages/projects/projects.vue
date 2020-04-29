@@ -102,6 +102,11 @@
           :fileTypeFilter="[]"
           @confirm-selection="confirmFilePickerSelection"
           @close="clearPath")
+    //- file-picker-popup(
+    //-   v-if="showFilePickerPopup"
+    //-   popupTitle="Load Project Folder"
+    //-   :confirmCallback="confirmCallback"
+    //- )
 </template>s
 
 <script>
@@ -109,6 +114,7 @@
   import SortByButton from '@/pages/projects/components/sort-by-button.vue';
   import CollaboratorAvatar from '@/pages/projects/components/collaborator-avatar.vue'
   import FilePicker     from "@/components/different/file-picker.vue";
+  import FilePickerPopup        from "@/components/global-popups/file-picker-popup.vue";
 
   import { mapActions, mapMutations, mapState } from 'vuex';
   import {isWeb} from "@/core/helpers";
@@ -165,12 +171,75 @@
     beforeDestroy() {
       this.setPageTitleMutation('')
     },
+    components: {
+      FilePickerPopup
+    },
     computed: {
       ...mapState({
-        currentProjectId: state => state.mod_project.currentProject
+        currentProjectId: state => state.mod_project.currentProject,
+        appVersion:          state => state.globalView.appVersion,
+        hotKeyPressDelete:   state => state.mod_events.globalPressKey.del,
+        showFilePickerPopup: state => state.globalView.globalPopup.showFilePickerPopup
       }),
       workspaceContent() {
         return this.$store.state.mod_workspace.workspaceContent
+      },
+      filteredProjects() {
+        this.selectedProject = null;
+        return this.projects.filter((project)=> project.name.match(this.search))
+      }
+    },
+    watch: {
+      'localUserInfo.projectsList.length': {
+        handler() {
+          if(!this.localUserInfo) return;
+
+          let localProjectsList = deepCopy(this.localUserInfo.projectsList);
+          if (Array.isArray(localProjectsList)) {
+            localProjectsList.forEach((el) => {
+              el.notExist = false;
+              el.isChecked = false;
+
+              this.$store.dispatch('mod_api/API_loadNetwork', el.pathProject, {root: true})
+                .then((net) => {
+                  try {
+                    if(!(net.networkName
+                      && net.networkMeta
+                      && net.networkElementList)) {
+                        throw('err');
+                      }
+                  } catch(e) {
+                    throw('err');
+                  }
+                }).catch(err => {
+                  el.notExist = true
+                })
+            });
+            this.projects = localProjectsList;
+          }
+        },
+        immediate: true
+      },
+      hotKeyPressDelete() {
+        const indexCheckedProj = this.projects.findIndex((el)=> el.isChecked === true);
+        if(indexCheckedProj < 0) return;
+
+        const selectedProject = this.projects[indexCheckedProj];
+        //const isProjectNotExist = selectedProject.notExist;
+        const pathDelete = selectedProject.pathProject;
+
+        const newProjectsList = deepCopy(this.localUserInfo.projectsList);
+        newProjectsList.splice(indexCheckedProj, 1);
+        this.saveLocalUserInfo({key: 'projectsList', data: newProjectsList });
+
+        // folderPCDelete(pathDelete)
+        //   .then(()=> {
+        //     const newProjectsList = deepCopy(this.localUserInfo.projectsList);
+        //     newProjectsList.splice(indexCheckedProj, 1);
+        //     this.saveLocalUserInfo({key: 'projectsList', data: newProjectsList });
+        //     this.$nextTick(()=> this.showInfoPopup("The project has been successfully deleted"))
+        //   })
+        //   .catch ((err)=> {console.error(err)})
       }
     },
     methods: {
@@ -187,6 +256,16 @@
         // maybe should receive a id and search index by it
         this.set_currentNetwork(index);
         this.$router.push({name: 'app'});
+      },
+      loadFolderPath() {
+        this.$store.commit("globalView/set_filePickerPopup", true);
+      },
+      confirmCallback(el) {
+        this.openTemplate(el[0]);
+        this.$store.commit("globalView/HIDE_allGlobalPopups");
+      },
+      openTemplate(path) {
+        this.loadNetwork(path)
       },
       onSortByChanged(valueSelected) {
         let modelList = [...this.modelList];

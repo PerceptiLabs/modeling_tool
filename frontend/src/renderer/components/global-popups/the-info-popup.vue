@@ -18,7 +18,7 @@
                 | start it by entering "perceptilabs" in the installed environment.
               div
                 | For more information, visit &nbsp;
-                button.btn.btn--link.text-primary(target="_blank" href="https://perceptilabs.com") https://perceptilabs.com
+                a.btn.btn--link.text-primary(target="_blank" href="https://perceptilabs.com/docs/installation") https://perceptilabs.com/docs/installation
             ul.w-100(v-else)
               li(
                 v-for="(text, i) in popupText"

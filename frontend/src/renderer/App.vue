@@ -1,7 +1,7 @@
 <template lang="pug">
   #app
     header-win.app-header(
-      v-if="platform === 'win32' || isWeb"
+      v-if="platform === 'win32' || (showMenuBar && isWeb) "
       @app-closed="appClose"
       @app-minimized="appMinimize"
       @app-maximized="appMaximize"
@@ -17,13 +17,13 @@
       )
     router-view.app-page
     update-popup(v-if="isElectron")
-    the-info-popup(v-if="isShowPopup")
+    the-info-popup(v-if="showPopup")
     confirm-popup
     modal-pages-engine
 </template>
 
 <script>
-  import { isWeb, isElectron } from "@/core/helpers";
+  import { isWeb, isElectron, isOsMacintosh } from "@/core/helpers";
   let ipcRenderer = null;
   if(isElectron()) {
     const electron = require('electron');
@@ -67,7 +67,9 @@
       // @todo fetch models for project;
       if(isWeb()) {
         this.updateOnlineStatus();
+        this.SET_appVersion(process.env.PACKAGE_VERSION);
         this.$store.dispatch('mod_api/API_runServer', null, {root: true});
+        document.addEventListener('keydown', this.disableHotKeys);
       } else {
         this.appReady();
         this.updateOnlineStatus();
@@ -100,17 +102,23 @@
         ipcRenderer.on('show-restore-down-icon', (event, value)=> this.SET_appIsFullView(value));
 
         this.calcAppPath();
-        this.checkLocalToken();
-        this.$nextTick(()=> {
-          //if(this.userId === 'Guest') this.trackerInitUser(this.userId);
-
-          this.sendPathToAnalist(this.$route.fullPath);
-        })
       }
+      this.checkLocalToken();
+      this.$store.dispatch('mod_api/API_runServer', null, {root: true});
+      // this.$store.dispatch('mod_workspace/GET_workspacesFromLocalStorage');
+      Analytics.hubSpot.identifyUser(this.userEmail);
+      this.$nextTick(() =>{
+      //   if(this.userId === 'Guest') {
+      //     this.$store.dispatch('mod_tracker/TRACK_initMixPanelUser', this.userId);
+      //   }
+      //   //this.appReady();
+        this.sendPathToAnalist(this.$route.fullPath);
+      })
     },
     beforeDestroy() {
       window.removeEventListener('online',  this.updateOnlineStatus);
       window.removeEventListener('offline', this.updateOnlineStatus);
+      document.removeEventListener('keydown', this.disableHotKeys);
     },
     data() {
       return {
@@ -145,9 +153,18 @@
       corePopup() {
         return this.$store.state.globalView.globalPopup.coreNotFoundPopup
       },
-      isShowPopup() {
+      showPopup() {
         return this.errorPopup.length || this.infoPopup.length || this.corePopup;
       },
+      showMenuBar() {
+        const GET_userIsLogin = this.$store.getters['mod_user/GET_userIsLogin']
+
+        if (GET_userIsLogin && ['home', 'app', 'projects'].includes(this.$route.name)) { 
+          return true; 
+        }
+
+        return false;
+      }
     },
     watch: {
       '$route': {
@@ -163,10 +180,7 @@
 
           this.$store.dispatch('mod_tracker/TRACK_initMixPanelUser', newVal);
         }
-        if(this.isElectron) {
-          this.initUser()
-        }
-
+        this.initUser();
       }
     },
     methods: {
@@ -245,15 +259,29 @@
         this.SET_appPath(path);
       },
       checkLocalToken() {
-        if(localStorage.getItem('currentUser') === 'undefined') {
-          return;
-        }
         let localUserToken = JSON.parse(localStorage.getItem('currentUser'));
         if(localUserToken) {
           this.setUserToken(localUserToken);
-          if(this.$router.history.current.name === 'login') {
+          if(['home', 'login', 'register'].includes(this.$router.history.current.name)) {
             this.$router.replace({name: 'projects'});
           }
+        } else {
+          this.$router.push({name: 'register'}).catch(err => {});
+        }
+      },
+      disableHotKeys(event) {
+        const isHotkey = isOsMacintosh() ? event.metaKey : event.ctrlKey;
+        if (!isHotkey) { 
+          return; 
+        }
+
+        switch (event.code) {
+          case 'KeyS':
+          case 'KeyG':
+              event.preventDefault();
+              event.stopPropagation();
+              event.returnValue = false;
+              break;
         }
       },
       /*Header actions*/

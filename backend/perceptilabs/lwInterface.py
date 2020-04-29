@@ -23,6 +23,23 @@ class LW_interface_base(ABC):
             return ""
 
 
+class saveJsonModel(LW_interface_base):
+    def __init__(self, save_path, json_model):
+        self._save_path = save_path
+        self._json_model = json_model
+
+    def run(self):
+        import json
+        full_path = self._save_path
+
+        if not os.path.isdir(full_path):
+            os.mkdir(full_path)
+        
+        file_path = os.path.join(full_path, 'model.json')
+        with open(file_path, 'w') as outfile:
+            json.dump(json.loads(self._json_model), outfile)
+
+
 class getFolderContent(LW_interface_base):
     def __init__(self, current_path):
         self._current_path = current_path
@@ -101,6 +118,20 @@ class createFolder(LW_interface_base):
     def run(self):
         os.mkdir(os.path.join(self.folder_path, self.folder_name))
 
+class getJsonModel(LW_interface_base):
+    def __init__(self, json_path):
+        self._json_path = json_path
+    
+    def run(self):
+        if not os.path.exists(self._json_path):
+            return ""
+        
+        import json
+        with open(self._json_path, 'r') as f:
+            json_model = json.load(f)
+        return json_model
+
+
 class getDataMeta(LW_interface_base):
     def __init__(self, id_, lw_core, data_container):
         self._id = id_
@@ -117,6 +148,15 @@ class getDataMeta(LW_interface_base):
         }
         return content
 
+class getGraphOrder(LW_interface_base):
+    def __init__(self, jsonNetwork):
+        self.jsonNetwork = jsonNetwork
+
+    def run(self):
+        from perceptilabs.graph import Graph
+        graph = Graph(self.jsonNetwork)
+        graph_dict = graph.graphs
+        return list(graph_dict.keys())
 
 class getPartitionSummary(LW_interface_base):
     def __init__(self, id_, lw_core, data_container):
@@ -129,8 +169,43 @@ class getPartitionSummary(LW_interface_base):
         content = self._try_fetch(self.data_container[self._id], "_action_space")
         return content
 
+    
+class getCodeV2(LW_interface_base):
+    def __init__(self, id_, network):
+        self._id = id_
+        self._network = network
 
-class getCode(LW_interface_base):
+
+
+    def run(self):
+        from perceptilabs.core_new.graph import Node
+        from perceptilabs.core_new.layers.script import ScriptFactory
+        from perceptilabs.core_new.graph.utils import sanitize_layer_name
+
+        layer_spec = self._network[self._id].copy()
+        layer_type = layer_spec['Type']
+
+        #TODO: Remove this if-case when frontend is sending back correct file path on Windows
+        if layer_type == "DataData" and layer_spec['Properties'] is not None:
+            sources = layer_spec['Properties']['accessProperties']['Sources']
+            new_sources = []
+            for source in sources:
+                tmp = source
+                if tmp["path"]:
+                    tmp["path"] = tmp["path"].replace("\\","/")
+                new_sources.append(tmp)
+            layer_spec['Properties']['accessProperties']['Sources'] = new_sources
+
+        layer_id = sanitize_layer_name(layer_spec['Name'])
+        layer_instance = None
+        node = Node(layer_id, layer_type, layer_instance, layer_spec)
+        
+        script_factory = ScriptFactory()        
+        code = script_factory.render_layer_code(node.layer_id, node.layer_type, node.layer_spec, node.custom_code)
+        return {'Output': code}        
+
+        
+class getCodeV1(LW_interface_base):
     def __init__(self, id_, network):
         self._id = id_
         self._network = network
@@ -172,7 +247,7 @@ class getNetworkInputDim(LW_interface_base):
         for id_, value in self._network.items():
             content[id_]={}
 
-            con=value['backward_connections']
+            con=[con_id for con_id, con_name in value['backward_connections']]
 
             if len(con)==1 and con[0] in extras_dict:
                 content[id_].update({"inShape":str(extras_dict[con[0]]["outShape"])})
@@ -189,8 +264,8 @@ class getNetworkInputDim(LW_interface_base):
                 log.info("ErrorMessage: " + str(self.lw_core.error_handler[id_]))
 
                 content[id_]['Error'] = {
-                    'Message': self.lw_core.error_handler[id_].error_message,
-                    'Row': self.lw_core.error_handler[id_].error_line
+                    'Message': self.lw_core.error_handler[id_].message,
+                    'Row': str(self.lw_core.error_handler[id_].line_number)
                 }
             else:
                 content[id_]['Error'] = None
@@ -217,8 +292,8 @@ class getNetworkOutputDim(LW_interface_base):
                 log.info("ErrorMessage: " + str(self.lw_core.error_handler[Id]))
 
                 content[Id]['Error'] = {
-                    'Message': self.lw_core.error_handler[Id].error_message,
-                    'Row': self.lw_core.error_handler[Id].error_line
+                    'Message': self.lw_core.error_handler[Id].message,
+                    'Row': str(self.lw_core.error_handler[Id].line_number)
                 }
             else:
                 content[Id]['Error'] = None  
@@ -300,8 +375,8 @@ class getPreviewVariableList(LW_interface_base):
                 log.info("ErrorMessage: " + str(self.lw_core.error_handler[self._id]))
                 
                 content['Error'] = {
-                    'Message': self.lw_core.error_handler[self._id].error_message,
-                    'Row': self.lw_core.error_handler[self._id].error_line
+                    'Message': self.lw_core.error_handler[self._id].message,
+                    'Row': str(self.lw_core.error_handler[self._id].line_number)
                 }
         else:
             content = ""

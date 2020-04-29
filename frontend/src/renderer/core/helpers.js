@@ -178,6 +178,7 @@ const deepCloneNetwork = function (object) {
   );
 };
 
+
 const isLocalStorageAvailable = function () {
   try {
       var storage = window['localStorage'],
@@ -308,9 +309,11 @@ export {
   isLocalStorageAvailable,
   stringifyNetworkObjects,
   isOsWindows,
+  isDesktopApp,
   shouldHideSidebar,
   calculateSidebarScaleCoefficient,
   parseJWT,
+  isOsMacintosh,
   isElectron,
   isWeb,
   fixFilepathSeparator,

@@ -27,8 +27,8 @@
         file-picker(
           :filePickerType="filePickerType"
           :fileTypeFilter="validFileExtensions"
-          @confirm-selection="confirmFilePickerSelection"
-          @close="clearPath")
+          :confirmCallback="confirmFilePickerSelection"
+          :cancelCallback="clearPath")
 
         //-web-upload-file#tutorial_button-load.tutorial-relative(
           v-model="settings.accessProperties.PathFake"
@@ -307,7 +307,8 @@
 
           this.Mix_settingsData_getDataMeta(this.currentEl.layerId)
             .then((data) => {
-              if (data.Columns && data.Columns.length) this.createSelectArr(data.Columns);
+              //console.log(data);
+              if (data && data.Columns && data.Columns.length) this.createSelectArr(data.Columns);
             });
 
         }

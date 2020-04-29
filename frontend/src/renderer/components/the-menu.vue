@@ -48,10 +48,9 @@
 <script>
   import { mapGetters, mapMutations, mapActions } from 'vuex';
   import { baseUrlSite, MODAL_PAGE_PROJECT } from '@/core/constants.js';
-  import { goToLink }    from '@/core/helpers.js'
-  import {isElectron, isOsMacintosh } from "@/core/helpers";
+  import { isElectron, goToLink, isOsMacintosh, isDesktopApp } from '@/core/helpers.js'
+  
   let ipcRenderer = null;
-
   if(navigator.userAgent.toLowerCase().indexOf(' electron/') > -1) {
     const electron = require('electron');
     ipcRenderer = electron.ipcRenderer;
@@ -61,7 +60,6 @@ export default {
   mounted() {
     this.mainProcessListeners()
   },
-
   data() {
     return {
       dataKeymap: {},
@@ -85,9 +83,11 @@ export default {
       return this.$store.state.globalView.appIsOpen
     },
     isMac() {
-      return window.navigator.platform.indexOf('Mac') > -1;
+      return isOsMacintosh();
     },
-
+    isDesktop() {
+      return isDesktopApp();
+    },
     navMenu() {
       if (isElectron()) {
         return this.navMenuDesktop();
@@ -136,7 +136,9 @@ export default {
       appMinimize:      'mod_events/EVENT_appMinimize',
       appMaximize:      'mod_events/EVENT_appMaximize',
       openNetwork:      'mod_events/EVENT_openNetwork',
+      loadNetwork:      'mod_events/EVENT_loadNetwork',
       HCCopy:           'mod_events/EVENT_hotKeyCopy',
+      HCCut:           'mod_events/EVENT_hotKeyCut',
       HCPaste:          'mod_events/EVENT_hotKeyPaste',
       HCSelectAll:      'mod_workspace/SET_elementSelectAll',
       HCDeselectAll:    'mod_workspace/SET_elementUnselect',
@@ -275,6 +277,27 @@ export default {
         this.openNetwork();
       }
     },
+    openLoadModelPopup() {
+      if(this.isTutorialMode) {
+        this.hideTooltip();
+        this.popupConfirm(
+          {
+            text: 'Are you sure you want to end the tutorial?',
+            ok: () => {
+              this.offMainTutorial();
+              this.$store.dispatch('globalView/SET_filePickerPopup', {confirmCallback: this.onLoadNetworkConfirmed});
+            }
+          });
+      } else {
+        this.$store.dispatch('globalView/SET_filePickerPopup', {confirmCallback: this.onLoadNetworkConfirmed});
+      }
+    },
+    onLoadNetworkConfirmed(path) {
+      if (!path || path.length === 0) { return; }
+
+      this.$store.dispatch('globalView/SET_filePickerPopup', false);
+      this.loadNetwork(path[0]);
+    },
     saveModel() {
       this.saveNetwork();
       this.offMainTutorial();
@@ -334,7 +357,6 @@ export default {
           submenu: [
             {label: 'New',          accelerator: this.isMac ? 'meta+n' : 'ctrl+n',              enabled: this.isLogin,  active: this.addNewNetwork },
             {label: 'Open',         accelerator: this.isMac ? 'meta+o' : 'ctrl+o',              enabled: this.isLogin,  active: this.openModel },
-            {label: 'Manage Projects',    enabled: true,         active: this.setActivePage },
             {label: 'Save',         accelerator: this.isMac ? 'meta+s' : 'ctrl+s',              enabled: this.openApp,  active: this.saveModel },
             {label: 'Save as...',   accelerator: this.isMac ? 'meta+shift+s' : 'ctrl+shift+s',  enabled: this.openApp,  active: this.saveModelAs },
             {type: 'separator'},
@@ -358,7 +380,7 @@ export default {
             {label: 'Select all',   accelerator: this.isMac ? 'meta+a' : 'ctrl+a',              role: 'selectAll',      active: this.HCSelectAll },
             {label: 'Deselect all', accelerator: this.isMac ? 'meta+shift+a' : 'ctrl+shift+a',  enabled: this.openApp,  active: this.HCDeselectAll },
 
-          ] 
+          ]
         },
         {
           label: 'Settings', visible: true,
@@ -417,51 +439,37 @@ export default {
     },
     navMenuWeb() {
       return [
-        ...(this.isMac ? [{
+        {
             label: 'PerceptiLabs',
-            submenu: [
-              { role: 'about',      active: ()=>{}},
-              {label: 'Check for updates...', active: this.checkUpdate },
-              { type: 'separator'},
-              { role: 'services',   active: ()=>{}},
-              { type: 'separator'},
-              { role: 'hide',       active: ()=>{}},
-              { role: 'hideothers', active: ()=>{}},
-              { role: 'unhide',     active: ()=>{}},
-              { type: 'separator'},
-              {label: 'Quit PerceptiLabs', accelerator: 'meta+q', active: (e)=> this.appClose(e) }
-            ]
-          }] : []),
+            submenu: []
+        },
         {
           label: 'File', visible: true,
           submenu: [
-            {label: 'New',          accelerator: this.isMac ? 'meta+n' : 'ctrl+n',              enabled: this.isLogin,  active: this.addNewNetwork },
-            {label: 'Open',         accelerator: this.isMac ? 'meta+o' : 'ctrl+o',              enabled: this.isLogin,  active: this.openModel },
-            {label: 'Manage Projects',    enabled: true,         active: this.setActivePage },
-            {label: 'Save',         accelerator: this.isMac ? 'meta+s' : 'ctrl+s',              enabled: this.openApp,  active: this.saveModel },
-            {label: 'Save as...',   accelerator: this.isMac ? 'meta+shift+s' : 'ctrl+shift+s',  enabled: this.openApp,  active: this.saveModelAs },
+            {label: 'New',     active: this.addNewNetwork},
+            {label: 'Load',    active: this.openLoadModelPopup},
+            {label: 'Save',    active: this.saveModel,          enabled: this.openApp},
+            {label: 'SaveAs',  active: this.saveModelAs,        enabled: this.openApp},
+            {type: 'separator'},
+            {label: 'Log out', active: this.logOut,             enabled: this.isLogin},
           ]
         },
         {
           label: 'Edit', visible: true,
           submenu: [
-            {label: 'Undo',         accelerator: this.isMac ? 'meta+z' : 'ctrl+z',              role: 'undo',           active: this.toPrevStepHistory },
-            {label: 'Redo',         accelerator: this.isMac ? 'meta+shift+z' : 'ctrl+shift+z',  role: 'redo',           active: this.toNextStepHistory },
-            {label: 'Redo',         accelerator: this.isMac ? 'meta+y' : 'ctrl+y',              role: 'redo',           active: this.toNextStepHistory },
+            {label: 'Undo',         accelerator: this.isMac ? 'meta+z' : 'ctrl+z',              role: 'undo',       enabled: this.openApp,        active: this.toPrevStepHistory },
+            {label: 'Redo',         accelerator: this.isMac ? 'meta+shift+z' : 'ctrl+shift+z',  role: 'redo',       enabled: this.openApp,        active: this.toNextStepHistory },
+            {label: 'Redo',         accelerator: this.isMac ? 'meta+y' : 'ctrl+y',              role: 'redo',       enabled: this.openApp,        active: this.toNextStepHistory },
             {type:  'separator'},
-            {label: 'Copy',         accelerator: this.isMac ? 'meta+c' : 'ctrl+c',              role: 'copy',           active: this.HCCopy },
-            {label: 'Paste',        accelerator: this.isMac ? 'meta+v' : 'ctrl+v',              role: 'paste',          active: this.HCPaste },
-            {type:  'separator'},
-            {label: 'Select all',   accelerator: this.isMac ? 'meta+a' : 'ctrl+a',              role: 'selectAll',      active: this.HCSelectAll },
-            {label: 'Deselect all', accelerator: this.isMac ? 'meta+shift+a' : 'ctrl+shift+a',  enabled: this.openApp,  active: this.HCDeselectAll },
 
-          ]
-        },
-        {
-          label: 'Settings', visible: true,
-          submenu: [
-            {label: 'Edit profile',    enabled: false,         active: function() {} },
-            {label: 'History',         enabled: false,         active: function() {} },
+            {label: 'Cut',          accelerator: this.isMac ? 'meta+x' : 'ctrl+x',              role: 'cut',        enabled: this.openApp,        active: this.HCCut },
+            {label: 'Copy',         accelerator: this.isMac ? 'meta+c' : 'ctrl+c',              role: 'copy',       enabled: this.openApp,        active: this.HCCopy },
+            {label: 'Paste',        accelerator: this.isMac ? 'meta+v' : 'ctrl+v',              role: 'paste',      enabled: this.openApp,        active: this.HCPaste },
+
+            {type:  'separator'},
+            {label: 'Select all',   accelerator: this.isMac ? 'meta+a' : 'ctrl+a',              role: 'selectAll',  enabled: this.openApp,        active: this.HCSelectAll },
+            {label: 'Deselect all', accelerator: this.isMac ? 'meta+shift+a' : 'ctrl+shift+a',                      enabled: this.openApp,        active: this.HCDeselectAll },
+
           ]
         },
         {
@@ -470,7 +478,7 @@ export default {
           submenu: [
             {label: 'Help',                                                           active: this.goToHelpPageWeb },
             {label: 'About',                                                          active: this.goToAboutPageWeb },
-            {label: 'Tutorial mode', enabled: !this.isTutorialActive && this.isLogin, active: this.showTutorial },
+            {label: 'Tutorial mode', enabled: !this.isTutorialActive,                 active: this.showTutorial },
             {type: 'separator'},
             {label: `Version: ${this.appVersion}`, enabled: false,                    active: ()=>{} }
           ]
@@ -524,10 +532,8 @@ export default {
   .header-nav_item {
     color: $white;
     position: relative;
-    .is-electron & {
-      &:hover > .header-nav_sublist {
-        display: block;
-      } 
+    &:hover > .header-nav_sublist {
+      display: block;
     }
     .is-web & {
       &:hover > .header-nav_sublist {

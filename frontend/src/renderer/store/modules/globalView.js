@@ -1,5 +1,5 @@
 const namespaced = true;
-
+import { localStorageGridKey } from '@/core/constants.js';
 const state = {
   onlineStatus: true,
   hideLayers: true,
@@ -20,10 +20,12 @@ const state = {
     showWorkspaceBeforeImport: false,
     showConfirmPopup: false,
     coreNotFoundPopup: false,
+    showFilePickerPopup: false,
   },
   popupConfirmCancel: null,
   popupConfirmOk: null,
   pageTitle: '',
+  isGridEnabled: false,
 };
 const getters = {
   GET_appPath(state) {
@@ -77,6 +79,9 @@ const mutations = {
   coreNotFoundPopup(state, value) {
     state.globalPopup.coreNotFoundPopup = value;
   },
+  set_filePickerPopup(state, value) {
+    state.globalPopup.showFilePickerPopup = value;
+  },
   gp_confirmPopup(state, value) {
     state.globalPopup.showConfirmPopup = value.text;
     state.popupConfirmCancel = value.cancel;
@@ -98,6 +103,10 @@ const mutations = {
   clear_requestCounter(state) {
     state.requestCounter = 0
   },
+  setGridStateMutation(state, value) {
+    localStorage.setItem(localStorageGridKey, value);
+    state.isGridEnabled = value;
+  }
 };
 
 const actions = {
@@ -137,6 +146,9 @@ const actions = {
       clearTimeout(delayActionDispatch)
     }, 1000);
 
+  },
+  SET_filePickerPopup({commit}, value) {
+    commit('set_filePickerPopup', value);
   },
   GP_confirmPopup({commit}, value) {
     commit('gp_confirmPopup', value);

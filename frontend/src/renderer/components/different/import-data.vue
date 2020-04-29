@@ -30,6 +30,8 @@
 </template>
 
 <script>
+import { googleAnalytics } from '@/core/analytics';
+
 import BaseSwitcher     from "@/components/different/switcher.vue";
 import BaseAccordion    from "@/components/base/accordion.vue";
 import imageClassification    from '@/core/basic-template/image-classification.js'
@@ -89,6 +91,7 @@ export default {
   },
   methods: {
     loadTFFiles() {
+      googleAnalytics.trackCustomEvent('export-data');
       this.$store.commit('globalView/GP_showWorkspaceBeforeImport', true);
     },
     loadBasicTemplate() {

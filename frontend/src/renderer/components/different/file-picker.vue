@@ -2,20 +2,31 @@
   div
     .settings-layer_section
       .form_row
-        button.btn.btn--link(type="button" @click="onCancel")
+        button.btn.btn--link(
+          v-if="options.showBackButton"
+          type="button" 
+          @click="onCancel")
           i.icon.icon-backward
           span Back
       .search.search-input-box
         i.icon.icon-close(@click="clearSearchValue")
-        input.search-input(:class="{error: searchDirNotFound}" type="text" v-model="searchValue" @keyup.enter="searchPath")
-    .filepicker
-      .directory-breadcrumb
+        input.search-input(
+          :class="{error: searchDirNotFound}" 
+          type="text" 
+          v-model="searchValue" 
+          @keyup.enter="searchPath"
+          placeholder="Navigate to...")
+    .filepicker(ref="file-picker")
+      .directory-breadcrumb(ref="directory-breadcrumb")
+        .breadcrumb.home(@click="calcRootFolderPath")
+          img(src="/static/img/file-picker/home.svg" class="svg-icon")
+        .breadcrumb.ellipsis(v-if="currentPath.length > breadcrumbShowLastXPositions")
+          span ...
         .breadcrumb(
-          @click="calcBreadcrumbPath(pathIndex)"
           v-for="(pathName, pathIndex) in currentPath"
           v-if="pathIndex >= currentPath.length - breadcrumbShowLastXPositions"
           :key="pathIndex")
-          span {{ pathName }}
+          span.directory-crumb(@click="calcBreadcrumbPath(pathIndex)") {{ pathName }}
 
       .selectable-list
         .list-item(
@@ -37,8 +48,9 @@
           img(src="/static/img/file-picker/file.svg" class="svg-icon")
           span {{ fileName }}
 
+
       .button-group
-        span {{ buttonGroupMessage }}
+        span(v-if="options.showNumberSelectedFiles") {{ buttonGroupMessage }}
         button.btn.btn--primary.btn--disabled(type="button"
           @click="onCancel"
           ) Cancel
@@ -67,8 +79,23 @@ export default {
     },
     fileTypeFilter: {
       type: Array,
-      default: []
+      default: () => []
     },
+    confirmCallback: {
+      type: Function,
+      default: () => {}
+    },
+    cancelCallback: {
+      type: Function,
+      default: () => {}
+    },
+    options: {
+      type: Object,
+      default: () => ({
+        showBackButton: true,
+        showNumberSelectedFiles: true,
+      })
+    }
   },
   data() {
     return {
@@ -93,7 +120,6 @@ export default {
     }
     
     this.fetchPathInformation(path);
-    
   },
   methods: {
     calculateBreadcrumbsLength(path) {
@@ -112,17 +138,36 @@ export default {
       return (this.selectedFiles.includes(name)) || (this.selectedDirectories.includes(name));
     },
     calcBreadcrumbPath(pathIdx) {
-      let breadcrumbPath = this.osPathPrefix + this.currentPath.slice(0,pathIdx + 1).join('/') + this.osPathSuffix;
+
+      let breadcrumbPath = this.osPathPrefix + this.currentPath.slice(0,pathIdx + 1).join('/') + this.osPathSuffix;;
+      if (isOsWindows() && 
+        this.currentPath[pathIdx] && 
+        this.currentPath[pathIdx].charAt(this.currentPath[pathIdx].length - 1) === ':') {
+        // to handle click on paths such as C:
+        breadcrumbPath += '/';
+      }
+
       this.fetchPathInformation(breadcrumbPath);
     },
+    calcRootFolderPath() {
+      let folderPath = isOsWindows() ? '.' : this.osPathPrefix + this.osPathSuffix ;
+      this.fetchPathInformation(folderPath);
+    },
     calcFolderPath(dirName) {
-      let folderPath = this.osPathPrefix + this.currentPath.join('/') + '/' + dirName + this.osPathSuffix ;
+      let folderPath;
+
+      if (isOsWindows() && this.currentPath.length === 0) {
+        folderPath = dirName + this.osPathSuffix;
+      } else {
+        folderPath = this.osPathPrefix + this.currentPath.join('/') + '/' + dirName + this.osPathSuffix;
+      }
       this.fetchPathInformation(folderPath);
     },
     onDirectoryClick(dirName) {
       this.toggleSelectedDirectory(dirName);
     },
     onDirectoryDoubleClick(dirName) {
+      this.selectedDirectories = [];
       this.calcFolderPath(dirName);
     },
     onFileDoubleClick(fileName) {
@@ -179,8 +224,12 @@ export default {
             }
           }
           
-          
-          this.currentPath = jsonData.current_path.split('/').filter(el => el);
+          if (jsonData.current_path === '.') {
+            this.currentPath = [];
+          } else {
+            this.currentPath = jsonData.current_path.split('/').filter(el => el);
+          }
+
           this.directories = jsonData.dirs.filter(d => !d.startsWith('.')).sort();
           if (this.fileTypeFilter.length === 0) {
             this.files = jsonData.files;
@@ -198,19 +247,20 @@ export default {
         if (this.filePickerType === 'file') {
           emitPayload = this.selectedFiles.map(f => this.osPathPrefix + this.currentPath.join('/') + '/' + f);
         } else if (this.filePickerType === 'folder') {
-          if (!this.selectedDirectories) {
+          if (!this.selectedDirectories || this.selectedDirectories.length === 0) {
             // if not active directory select, take current
-            emitPayload = this.osPathPrefix + this.currentPath.join('/') + '/';
+            emitPayload = [this.osPathPrefix + this.currentPath.join('/') + this.osPathSuffix];
           } else {
-            emitPayload = this.selectedDirectories.map(f => this.osPathPrefix + this.currentPath.join('/') + '/' + f);
+            emitPayload = this.selectedDirectories.map(d => this.osPathPrefix + this.currentPath.join('/') + '/' + d + this.osPathSuffix);
           }
-          console.log('onConfirm emitPayload', emitPayload);
         }
 
-        this.$emit('confirm-selection', emitPayload);
+        this.$store.dispatch('globalView/SET_filePickerPopup', false);
+        this.confirmCallback(emitPayload);
     },
     onCancel() {
-        this.$emit('close');
+        this.$store.dispatch('globalView/SET_filePickerPopup', false);
+        this.cancelCallback();
     },
     clearSearchValue() {
       this.searchValue = '';
@@ -270,11 +320,36 @@ export default {
   border-bottom: 0.1rem solid $color-8;
 
   .breadcrumb {
-    cursor: pointer;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    min-width: 1rem;
+
+    margin: 0 0.2rem;
 
     & + .breadcrumb:before
     {
       content: '\00a0\00a0>\00a0\00a0';
+      pointer-events: none;
+    }
+
+    .directory-crumb {
+      cursor: pointer;
+    }
+
+    &.home {
+      cursor: pointer;
+    }
+
+    &.ellipsis {
+      cursor: default;
+    }
+
+    .svg-icon {
+      height: 1rem;
+      filter: brightness(0) invert(1);
     }
   }
 }
@@ -283,7 +358,7 @@ export default {
   display: flex;
   flex-direction: column;
   flex: auto;
-  overflow-y: scroll;
+  overflow-y: auto;
   padding: 0.3rem 0;
   background-color: $bg-workspace-2;
 
@@ -315,6 +390,22 @@ export default {
     }
   }
 
+}
+
+.filename-input {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+  border-top: 0.1rem solid $color-8;
+
+  * {
+    margin-left: 1rem;
+
+    &:last-child {
+      margin-right: 1rem;
+    }
+  }
 }
 
 .button-group {

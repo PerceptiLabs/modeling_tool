@@ -24,7 +24,7 @@ export default {
     if(!this.currentEl.layerCode) {
       const saveSettings = {
         'elId': this.currentEl.layerId,
-        'code': {Output: ''},
+        'code': {Output: null},
         'set': null,
         'tabName': 'Code'
       };

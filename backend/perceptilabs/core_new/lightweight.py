@@ -42,13 +42,13 @@ class LightweightCore(BaseCore):
     SKIP_LAYERS = ['TrainNormal', 'TrainReinforce']
     
     def __init__(self, codehq, graph_dict, data_container, session_history,
-                 module_provider, error_handler, layer_extras_reader, checkpointValues=None, network_cache=None):
+                 module_provider, error_handler, layer_extras_reader, checkpointValues=None, network_cache=None, core_mode='v1'):
         super().__init__(codehq, graph_dict, data_container,
                          session_history, module_provider, error_handler,
                          layer_extras_reader=layer_extras_reader, tf_eager=True,
                          skip_layers=self.SKIP_LAYERS,
                          checkpointValues=checkpointValues,
-                         network_cache=network_cache)
+                         network_cache=network_cache, core_mode=core_mode)
 
 
         
