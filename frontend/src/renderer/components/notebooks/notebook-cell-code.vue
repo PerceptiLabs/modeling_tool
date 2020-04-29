@@ -83,8 +83,11 @@ $cell-left-gutter: 6.6rem;
     .cell-input-code {
       flex-grow: 1;
       padding: 0.5rem 1rem 0.5rem 0;
-      background-color: #1e1e1e;
       border-radius: 2px;
+
+      /deep/ .CodeMirror {
+        background-color: $bg-workspace;
+      }
     }
   }
 
