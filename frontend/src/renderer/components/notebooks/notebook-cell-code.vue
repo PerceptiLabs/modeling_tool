@@ -66,7 +66,7 @@ $cell-left-gutter: 6.6rem;
   font-style: normal;
   font-weight: normal;
   font-size: 12px;
-  padding: 0.5rem;
+  padding: 0 0.5rem;
 
   .cell-input {
     display: flex;
@@ -87,7 +87,11 @@ $cell-left-gutter: 6.6rem;
 
       /deep/ .CodeMirror {
         background-color: $bg-workspace;
+        border: 1px solid $bg-toolbar;
+        box-sizing: border-box;
+        border-radius: 2px;
       }
+
     }
   }
 
