@@ -36,7 +36,14 @@
               @dblclick="onProjectSelectHandler(project)"
               @contextmenu.prevent.stop="openContext($event, project.project_id)"
             ) 
-              span.main-list-name.fz-16 {{project.name | trimText}}
+              input.rename-project-input(
+                type="text",
+                v-model="renameData.projectFieldValue"
+                v-show="renameData.projectId === project.project_id && renameData.isProjectFieldActive"
+                @keyup.enter="saveProjectName()"
+              
+              )
+              span(v-show="!(renameData.projectId === project.project_id && renameData.isProjectFieldActive)").main-list-name.fz-16 {{project.name | trimText}}
               span.main-list-date.fz-16 {{project.created.toString().substring(0, 16)}}
           
   
@@ -56,6 +63,11 @@ import { debug } from 'util';
         contextTargetProject: null,
         isContextOpened: false,
         projectContextStyles: {},
+        renameData: {
+          isProjectFieldActive: false,
+          projectFieldValue: '',
+          projectId: null,
+        }
       }
     },
     created() {
@@ -92,6 +104,7 @@ import { debug } from 'util';
         createLocalProjectFolder: 'mod_api/API_createFolder',
         API_getModelAction: 'mod_api/API_getModel',
         deleteProjectAction: 'mod_project/deleteProject',
+        updateProjectAction: 'mod_project/updateProject',
       }),
       onProjectSelectHandler(project) {
         const {project_id: projectId} = project;
@@ -155,13 +168,32 @@ import { debug } from 'util';
 
       },
       renameProject() {
+    
+        const { contextTargetProject } = this;
+        const theProject = this.projectsList.filter(project => project.project_id === contextTargetProject)[0];
 
+
+
+          this.renameData.isProjectFieldActive = true;
+          this.renameData.projectFieldValue = theProject.name;
+          this.renameData.projectId = theProject.project_id;
+        debugger;
       },
+      
       closeContext() {
         document.removeEventListener('click', this.closeContext);
         this.contextTargetProject = null;
         this.isContextOpened = false
       },
+      saveProjectName() {
+        const { projectId, projectFieldValue } = this.renameData;
+        this.updateProjectAction({projectId, name: projectFieldValue})
+          .then(() => {
+            this.renameData.isProjectFieldActive = false;
+          this.renameData.projectFieldValue = '';
+          this.renameData.projectId = null;
+          });
+      }
     },
     filters: {
       trimText (value) {
@@ -315,5 +347,8 @@ import { debug } from 'util';
       padding: 3px;
       line-height: 100%;
     }
+  }
+  .rename-project-input {
+    width: 260px;
   }
 </style>

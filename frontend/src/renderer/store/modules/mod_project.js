@@ -39,9 +39,9 @@ const actions = {
       })
   },
   updateProject(ctx, payload) {
-    return axios.put('http://localhost:8000/projects/', payload)
+    return axios.put(`http://localhost:8000/projects/${payload.projectId}/`, {name: payload.name})
       .then(res => {
-        // ctx.commit('createProject', res.data); 
+        ctx.dispatch('getProjects');
         return res.data;
       })
   },
