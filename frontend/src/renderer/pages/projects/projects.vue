@@ -403,7 +403,7 @@
       },
       confirmFilePickerSelection(selectedItems) {
         console.log(selectedItems);
-        debugger;
+        // debugger;
         this.clearPath();
       },
       clearPath(x){
