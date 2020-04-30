@@ -92,6 +92,7 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-end;
+    background-color: $bg-workspace;
   }
   .workspace_content {
     display: flex;
