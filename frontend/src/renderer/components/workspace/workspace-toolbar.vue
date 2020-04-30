@@ -398,7 +398,7 @@ export default {
       margin-left: .3571rem;
     }
     + .toolbar_list {
-      border-left: 1px solid $toolbar-border;
+      border-left: 1px solid $toolbar-separator-color;
     }
   }
   .btn--toolbar-home {
