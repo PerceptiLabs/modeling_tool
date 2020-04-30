@@ -4,8 +4,17 @@
   display: flex;
   align-items: center;
   padding-right: 0;
+
+  background-color: $bg-toolbar-2;
+  border: 1px solid rgba(97, 133, 238, 0.2);
+  border-radius: 2px 2px 0px 0px;
+
   &.workspace_tab--disable {
     pointer-events: none;
+  }
+
+  &.workspace_tab--active {
+    border-top: 2px solid $color-6;;
   }
 }
 .tab_close {
