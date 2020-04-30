@@ -1,8 +1,8 @@
 <template lang="pug">
   aside.page_toolbar(:class="{'tutorial-active': activeStepStoryboard === 4}")
-    .toggle-wrap(:class="{'hide-layers': !hideLayers}")
-      button.btn.btn--toolbar(type="button" @click="toggleLayers()")
-        i.icon.icon-hide-top
+    //- .toggle-wrap(:class="{'hide-layers': !hideLayers}")
+    //-   button.btn.btn--toolbar(type="button" @click="toggleLayers()")
+    //-     i.icon.icon-hide-top
 
     ul.toolbar_list
       li
@@ -361,7 +361,9 @@ export default {
     display: flex;
     align-items: center;
     padding: 5px .5em 5px 0;
-    background-color: $bg-toolbar;
+    background-color: $bg-toolbar-2;
+    border: 1px solid rgba(97, 133, 238, 0.2);
+    border-radius: 2px 2px 0px 0px;
     position: relative;
     grid-area: toolbar;
     z-index: 2;
