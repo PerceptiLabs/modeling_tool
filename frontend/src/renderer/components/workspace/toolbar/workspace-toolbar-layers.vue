@@ -238,12 +238,13 @@ export default {
   // }
 
   .toolbar_list {
-    z-index: 2;
+    z-index: 1;
     margin: 0;
     padding: 0;
     list-style: none;
     transition: transform $animation-speed $animation-speed;
     transform: translateY(0);
+
     .btn--toolbar,
     /deep/ .btn--layersbar {
       // box-shadow: $box-shad;
