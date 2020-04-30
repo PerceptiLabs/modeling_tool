@@ -3,6 +3,7 @@ import saveNet    from './workspace-save-net.js'
 import scaleNet   from './workspace-scale.js'
 import spinnerNet from './workspace-spinner.js'
 import helpersNet from './workspace-helpers.js'
+import Toolbar    from './workspace-toolbar.vue';
 import Analytics  from '@/core/analytics'
 
 import TextEditable           from '@/components/base/text-editable.vue'
@@ -21,6 +22,7 @@ export default {
   name: 'WorkspaceContent',
   mixins: [saveNet, scaleNet, spinnerNet, helpersNet],
   components: {
+    Toolbar,
     NetworkField, TextEditable,
     GeneralResult, SelectCoreSide,
     WorkspaceBeforeImport, WorkspaceSaveNetwork,

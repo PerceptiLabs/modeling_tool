@@ -2,6 +2,7 @@
   main.page_workspace
     .workspace_tabset
       include ./tabset/workspace-tabset.pug
+    toolbar
     .workspace_content.bookmark_content.js-workspace(
       ref="workspaceNet"
       :class="{'workspace-relative' : showTrainingSpinner}"
@@ -82,6 +83,8 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    width: 100%;
+    height: 100%;
   }
   .workspace_tabset {
     flex: 0 0 auto;
