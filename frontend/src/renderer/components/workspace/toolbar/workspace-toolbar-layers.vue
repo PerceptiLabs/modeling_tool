@@ -326,6 +326,20 @@ export default {
         margin-left: $indent;
       }
     }
+
+    &:after {
+      bottom: 100%;
+      left: 15%;
+      border: solid transparent;
+      content: " ";
+      height: 0;
+      width: 0;
+      position: absolute;
+      pointer-events: none;
+      border-bottom-color: $bg-workspace;
+      border-width: 0.75rem;
+      margin-left: -0.75rem;
+    }
     
   }
   ul.layer_child-list--training {
