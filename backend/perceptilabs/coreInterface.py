@@ -1354,7 +1354,7 @@ class coreLogic():
                 return output
 
             if view=="Generated_output":
-                generated_sample=self.getStatistics({"layerId":layerId,"variable":"gen_output_train","innervariable":""})
+                generated_sample=self.getStatistics({"layerId":layerId,"variable":"generated_image","innervariable":""})
 
                 dataObjectOutput = createDataObject(generated_sample)
             
@@ -1363,7 +1363,7 @@ class coreLogic():
                 return output
 
             if view=="Real_input":
-                real_sample=self.getStatistics({"layerId":layerId,"variable":"real_input_train","innervariable":""})
+                real_sample=self.getStatistics({"layerId":layerId,"variable":"real_image","innervariable":""})
 
                 dataObjectOutput = createDataObject(real_sample)
             
@@ -1371,20 +1371,11 @@ class coreLogic():
                 output = {"real_input": dataObjectOutput}
                 return output
             
-            if view=="Generator_distribution":
-                generator_distribution = self.getStatistics({"layerId":layerId,"variable":"generator_distribution","innervariable":""})
-
-                dataObjectOutput = createDataObject(generator_distribution)
+            if view=="Data_distribution":
+                data_distribution = self.getStatistics({"layerId":layerId,"variable":"data_distribution","innervariable":""})
+                dataObjectOutput = createDataObject(data_distribution)
     
-                output = {"generator_distribution": dataObjectOutput}
-                return output
-            
-            if view=="Real_distribution":
-                real_distribution = self.getStatistics({"layerId":layerId,"variable":"real_distribution","innervariable":""})
-
-                dataObjectOutput = createDataObject(real_distribution)
-
-                output = {"real_distribution": dataObjectOutput}
+                output = {"Data_distribution": dataObjectOutput}
                 return output
                   
         elif layerType=="TrainReinforce":
