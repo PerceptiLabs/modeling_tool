@@ -132,6 +132,7 @@
   }
   .the-network-field {
     grid-area: network-field;
+    background: linear-gradient(180deg, #363E51 0%, rgba(54, 62, 81, 0) 100%);
   }
   .network_info-section {
     display: flex;
