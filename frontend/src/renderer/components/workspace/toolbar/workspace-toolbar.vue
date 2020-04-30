@@ -1,17 +1,8 @@
 <template lang="pug">
   aside.page_toolbar(:class="{'tutorial-active': activeStepStoryboard === 4}")
-    //- .toggle-wrap(:class="{'hide-layers': !hideLayers}")
-    //-   button.btn.btn--toolbar(type="button" @click="toggleLayers()")
-    //-     i.icon.icon-hide-top
 
-    ul.toolbar_list
-      li
-        button.btn.btn--toolbar.btn--toolbar-home(
-          type="button"
-          @click="toHomePage"
-          v-tooltip:bottom="'Home page'"
-        )
-          i.icon.icon-home
+    toolbar-layers
+    
     ul.toolbar_list
       li
         button#tutorial_pointer.btn.btn--toolbar(type="button"
@@ -126,14 +117,16 @@
 </template>
 
 <script>
-import { googleAnalytics } from '@/core/analytics';
-import {trainingElements, deepLearnElements}  from '@/core/constants.js'
-import TutorialInstructions                   from '@/components/tutorial/tutorial-instructions.vue'
 import { mapGetters, mapActions, mapMutations } from 'vuex';
+import { googleAnalytics }                      from '@/core/analytics';
+import { trainingElements, deepLearnElements }  from '@/core/constants.js'
+
+import TutorialInstructions     from '@/components/tutorial/tutorial-instructions.vue'
+import ToolbarLayers            from '@/components/workspace/toolbar/workspace-toolbar-layers.vue'
 
 export default {
   name: 'WorkspaceToolbar',
-  components: { TutorialInstructions },
+  components: { TutorialInstructions, ToolbarLayers },
   data() {
     return {
       x: null,
@@ -356,7 +349,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  @import "../../scss/base";
+  @import "../../../scss/base";
   .page_toolbar {
     display: flex;
     align-items: center;
@@ -399,6 +392,10 @@ export default {
     }
     + .toolbar_list {
       border-left: 1px solid $toolbar-separator-color;
+    }
+
+    &:first-child {
+        margin-left: 2rem;
     }
   }
   .btn--toolbar-home {
