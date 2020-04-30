@@ -22,14 +22,6 @@
         .form_row(v-tooltip-interactive:right="interactiveInfo.costFunction")
           .form_label Loss function:
           #tutorial_cost-function.tutorial-relative.form_input(data-tutorial-hover-info)
-            base-radio(group-name="group" value-input="Cross_entropy" v-model="settings.Loss")
-              span Cross-Entropy
-            base-radio(group-name="group" value-input="Quadratic" v-model="settings.Loss")
-              span Quadratic
-            base-radio(group-name="group" value-input="W_cross_entropy" v-model="settings.Loss")
-              span Weighted Cross-Entropy
-            base-radio(group-name="group" value-input="Dice" v-model="settings.Loss")
-              span DICE
             base-radio(group-name="group" value-input="Regression" v-model="settings.Loss")
               span Regression
               //-Cross-Entropy
@@ -112,7 +104,7 @@ export default {
         Labels: '',
         Epochs: '10',
         N_class: '1',
-        Loss: "Quadratic", //#Cross_entropy, Quadratic, W_cross_entropy, Dice
+        Loss: "Regression", 
         Class_weights: '1',
         Learning_rate: "0.001",
         Optimizer: "ADAM", //#SGD, Momentum, ADAM, RMSprop
