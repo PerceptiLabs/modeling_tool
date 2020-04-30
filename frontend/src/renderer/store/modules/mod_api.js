@@ -471,11 +471,12 @@ const actions = {
         console.error('SaveModel', err);
       });
   },
-  API_getModel(ctx, {projectId, modelId}) {
+  API_getModel(ctx, path) {
     const theData = {
       action: 'getJsonModel',
-      value: `${PROJECT_DEFAULT_FOLDER}project_${projectId}/model_${modelId}/model.json`
+      value: path
     }
+    debugger;
     return coreRequest(theData)
       .then(res=> {
         return res;

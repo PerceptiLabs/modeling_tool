@@ -18,7 +18,7 @@ const mutations = {
   },
   createProject(state, payload) {
     state.projectsList.push(payload);
-  }
+  },
 };
 
 const actions = {
@@ -38,9 +38,15 @@ const actions = {
         return res.data;
       })
   },
+  updateProject(ctx, payload) {
+    return axios.put('http://localhost:8000/projects/', payload)
+      .then(res => {
+        // ctx.commit('createProject', res.data); 
+        return res.data;
+      })
+  },
   deleteProject(ctx, payload) {
-    // @todo 
-    return axios.delete(`http://localhost:8000/projects/${payload.projectId}`)
+    return axios.delete(`http://localhost:8000/projects/${payload.projectId}/`)
       .then(res => {
         crx.commit('removeProject', res.data.project_id);
       })
@@ -51,6 +57,14 @@ const actions = {
   createProjectModel(ctx, payload) {
     return axios.post('http://localhost:8000/models/', payload)
       .then(res => {
+        return res.data
+      })
+  },
+  deleteModel(ctx, payload) {
+    const { model_id, project } = payload;
+    return axios.delete(`http://localhost:8000/models/${model_id}/`)
+      .then(res => {
+        ctx.dispatch('getProjects');
         return res.data
       })
   }

@@ -2,7 +2,7 @@
   .project-wrapper
     .projectContext(v-if="isContextOpened" :style="projectContextStyles")
       button(@click="renameProject") Rename
-      button(@click="deleteProject") Delete
+      button(@click="deleteProject()") Delete
     .project-box
       .header Projects
       .content
@@ -91,6 +91,7 @@ import { debug } from 'util';
         createProject:    'mod_project/createProject',
         createLocalProjectFolder: 'mod_api/API_createFolder',
         API_getModelAction: 'mod_api/API_getModel',
+        deleteProjectAction: 'mod_project/deleteProject',
       }),
       onProjectSelectHandler(project) {
         const {project_id: projectId} = project;
@@ -140,6 +141,17 @@ import { debug } from 'util';
       },
       deleteProject() {
         const { contextTargetProject } = this;
+        const theProject = this.projectsList.filter(project => project.project_id === contextTargetProject)[0];
+        const theProjectModels = theProject.models;
+        
+        // debugger;
+        this.deleteProjectAction({ projectId: contextTargetProject })
+          .then(response => {
+            console.log(response);
+            debugger;
+          })
+          .catch(e => console.log(e));
+
 
       },
       renameProject() {

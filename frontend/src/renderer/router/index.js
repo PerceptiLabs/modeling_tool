@@ -6,7 +6,7 @@ import PageProjects from '@/pages/projects/projects.vue';
 
 import Analytics from '@/core/analytics';
 import {isWeb} from "@/core/helpers";
-
+import store from '@/store'
 Vue.use(Router);
 let routerOptions = {};
 let routesElectron = [];
@@ -27,6 +27,10 @@ const router = new Router({
 });
 
 router.beforeEach((to, from, next) => {
+  console.log(from);
+  if(from.name === "app") {
+    store.commit('mod_workspace/set_workspacesInLocalStorage');
+  }
   if(isWeb()) {
     Analytics.hubSpot.trackRouteChange(to);
     Analytics.googleAnalytics.trackRouteChange(to); 

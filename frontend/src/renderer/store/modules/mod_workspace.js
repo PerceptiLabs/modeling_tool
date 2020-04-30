@@ -39,7 +39,6 @@ const getters = {
     return !!state.workspaceContent.length
   },
   GET_currentNetwork(state, getters)  {
-    debugger;
     return getters.GET_networkIsNotEmpty
       ? state.workspaceContent[state.currentNetwork]
       : {networkID: '1'} //for the close ap when the empty workspace
@@ -389,6 +388,15 @@ const mutations = {
       const index = state.currentNetwork - 1;
       state.currentNetwork = index < 0 ? 0 : index
     }
+    const networkID = state.workspaceContent[index].networkID;
+    // localStorage.removeItem
+
+    let theNetworkIds = JSON.parse(localStorage.getItem('_network.ids'));
+    theNetworkIds = theNetworkIds.filter(id => parseInt(id) !== parseInt(networkID));
+    
+    localStorage.removeItem(`_network.${networkID}`);
+    localStorage.setItem('_network.ids', JSON.stringify(theNetworkIds));
+    
     state.workspaceContent.splice(index, 1);
   },
   //---------------
@@ -944,7 +952,6 @@ const mutations = {
   //  OTHER
   //---------------
   set_currentNetwork(state, tabIndex) {
-    debugger;
     state.currentNetwork = tabIndex;
   },
   ADD_dragElement(state, event) {
@@ -1023,7 +1030,9 @@ const actions = {
           commit('set_lastActiveTabInLocalStorage', state.workspaceContent[index - 1].networkID);
         }
       }
-  
+      const modelApiMeta = state.workspaceContent[index].apiMeta;
+      dispatch('mod_project/deleteModel', modelApiMeta, {root: true});
+      // call the delete model api
       commit('delete_network', index);
       commit('set_workspacesInLocalStorage');
     }

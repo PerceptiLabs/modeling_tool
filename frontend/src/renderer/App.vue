@@ -16,7 +16,7 @@
         @app-maximized="appMaximize"
       )
     router-view.app-page
-    update-popup(v-if="isElectron")
+    update-popup(v-if="isElectron") 
     the-info-popup(v-if="showPopup")
     confirm-popup
     modal-pages-engine
@@ -41,6 +41,7 @@
   import TheInfoPopup   from "@/components/global-popups/the-info-popup.vue";
   import ConfirmPopup   from "@/components/global-popups/confirm-popup.vue";
   import ModalPagesEngine from '@/components/modal-pages-engine';
+  import { MODAL_PAGE_PROJECT } from '@/core/constants.js';
 
   export default {
     name: 'TheApp',
@@ -60,8 +61,7 @@
         const targetProjectId = parseInt(localStorage.getItem('targetProject'));
         this.loadProjectFromLocalStorage(targetProjectId)
       } else {
-        alert('haven"t this proprety');
-        // should open modal for creating project
+        this.setActivePageAction(MODAL_PAGE_PROJECT);
       }
       
       // @todo fetch models for project;
@@ -211,6 +211,8 @@
 
         setUserToken:     'mod_user/SET_userToken',
         readUserInfo:     'mod_user/GET_LOCAL_userInfo',
+
+        setActivePageAction: 'modal_pages/setActivePageAction',
       }),
       updateOnlineStatus() {
         this.SET_onlineStatus(navigator.onLine);

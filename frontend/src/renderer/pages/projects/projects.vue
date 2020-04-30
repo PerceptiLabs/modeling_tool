@@ -1,18 +1,18 @@
 <template lang="pug">
   div
     project-sidebar
-    div.project-wrapper
+    div(v-show="!isCreateModelModalOpen").project-wrapper
       div.header-controls
         div.left-side
           span(
-            @click="loadModel()"
+            @click="openLoadModelPopup()"
             style="margin: 5px 20px 0 0; cursor: pointer"
             )
             img(src="../../../../static/img/project-page/import.svg")
           span.btn-round-icon(@click="toggleSelectedItems()")
             img(v-if="isAtLeastOneItemSelected()" src="../../../../static/img/project-page/minus.svg")
             img(v-if="!isAtLeastOneItemSelected()" src="../../../../static/img/project-page/checked.svg")
-          span.btn-round-icon(@click="handleAddNetwork" :class="{'high-lighted': isNewUser}")
+          span.btn-round-icon(@click="handleAddNetworkModal" :class="{'high-lighted': isNewUser}")
             img(src="../../../../static/img/project-page/plus.svg")
             div(v-if="isNewUser").create-first-model Create your first model
           div.search-input
@@ -94,44 +94,49 @@
               :list="[model.lastModified.user]"
             )
             | {{model.lastModified.date }}
-    
-    template(v-if="isImportModelsOpen")
-      .file-picker-wrapper
-        file-picker(
-          filePickerType="folder"
-          :fileTypeFilter="[]"
-          @confirm-selection="confirmFilePickerSelection"
-          @close="clearPath")
-    //- file-picker-popup(
-    //-   v-if="showFilePickerPopup"
-    //-   popupTitle="Load Project Folder"
-    //-   :confirmCallback="confirmCallback"
-    //- )
-</template>s
+    file-picker-popup(
+      v-if="showFilePickerPopup"
+      popupTitle="Load Project Folder"
+      :confirmCallback="onLoadNetworkConfirmed"
+    )
+    select-model-modal(
+      v-if="isCreateModelModalOpen"
+      @close="onCloseSelectModelModal"
+      @onChose="onTemplateChoseSelectModelModal"
+      )
+</template>
 
 <script>
-  import projectSidebar from '@/pages/layout/project-sidebar.vue';
+  import ProjectSidebar from '@/pages/layout/project-sidebar.vue';
   import SortByButton from '@/pages/projects/components/sort-by-button.vue';
   import CollaboratorAvatar from '@/pages/projects/components/collaborator-avatar.vue'
   import FilePicker     from "@/components/different/file-picker.vue";
   import FilePickerPopup        from "@/components/global-popups/file-picker-popup.vue";
+  import SelectModelModal from '@/pages/projects/components/select-model-modal.vue';
 
   import { mapActions, mapMutations, mapState } from 'vuex';
   import {isWeb} from "@/core/helpers";
   const mockModelList = [
-    {id: 1, dateCreated: new Date().setHours(15), dateLastOpened: new Date(), size: '10', name:'Placeholder 1', status: '75%', savedVersion: '-', sessionEndTime: 'Placeholder', collaborators: [{id: 1, name: 'Anton', img: null,}], lastModified: { user: {id: 1, name: 'Anton', img: null}, date: '19/02/20 13:00:00'}, isFavorite: true},
-    {id: 2, dateCreated: new Date().setHours(3), dateLastOpened: new Date(), size: '12', name:'Placeholder 4', status: '50%', savedVersion: '-', sessionEndTime: 'Placeholder', collaborators: [{id: 2, name: 'Robert', img: null,}], lastModified: { user: {id: 1, name: 'Anton', img: null}, date: '19/02/20 13:00:00'}, isFavorite: false},
-    {id: 3, dateCreated: new Date().setHours(15), dateLastOpened: new Date(), size: '320', name:'Placeholder 3', status: '45%', savedVersion: '-', sessionEndTime: 'Placeholder', collaborators: [{id: 3, name: 'David', img: null,}], lastModified: { user: {id: 1, name: 'Anton', img: null}, date: '19/02/20 13:00:00'}, isFavorite: false},
-    {id: 4, dateCreated: new Date().setHours(8), dateLastOpened: new Date(), size: '30', name:'Placeholder 2', status: '25%', savedVersion: '-', sessionEndTime: 'Placeholder', collaborators: [{id: 1, name: 'Anton', img: null,}, {id: 2, name: 'Robert', img: null,}], lastModified: { user: {id: 1, name: 'Anton', img: null}, date: '19/02/20 13:00:00'}, isFavorite: false},
-    {id: 5, dateCreated: new Date().setHours(4), dateLastOpened: new Date(), size: '205', name:'Placeholder 7', status: '65%', savedVersion: '-', sessionEndTime: 'Placeholder', collaborators: [{id: 1, name: 'Anton', img: null,}, {id: 2, name: 'Robert', img: null,}, {id: 3, name: 'David', img: null,}], lastModified: { user: {id: 1, name: 'Anton', img: null}, date: '19/02/20 13:00:00'}, isFavorite: false},
-    {id: 6, dateCreated: new Date().setHours(23), dateLastOpened: new Date(), size: '85', name:'Placeholder 6', status: '55%', savedVersion: '-', sessionEndTime: 'Placeholder', collaborators: [{id: 1, name: 'Anton', img: null,}, {id: 2, name: 'Robert', img: null,}, {id: 3, name: 'David', img: null,}], lastModified: { user: {id: 1, name: 'Anton', img: null}, date: '19/02/20 13:00:00'}, isFavorite: false},
-    {id: 7, dateCreated: new Date().setHours(6), dateLastOpened: new Date(), size: '120', name:'Placeholder 5', status: '95%', savedVersion: '-', sessionEndTime: 'Placeholder', collaborators: [{id: 1, name: 'Anton', img: null,}, {id: 2, name: 'Robert', img: null,}, {id: 3, name: 'David', img: null,}], lastModified: { user: {id: 1, name: 'Anton', img: null}, date: '19/02/20 13:00:00'}, isFavorite: false},
-    {id: 8, dateCreated: new Date().setHours(12), dateLastOpened: new Date(), size: '80', name:'Placeholder 8', status: '75%', savedVersion: '-', sessionEndTime: 'Placeholder', collaborators: [{id: 1, name: 'Anton', img: null,}, {id: 2, name: 'Robert', img: null,}, {id: 3, name: 'David', img: null,}], lastModified: { user: {id: 1, name: 'Anton', img: null}, date: '19/02/20 13:00:00'}, isFavorite: false},
+    // {id: 1, dateCreated: new Date().setHours(15), dateLastOpened: new Date(), size: '10', name:'Placeholder 1', status: '75%', savedVersion: '-', sessionEndTime: 'Placeholder', collaborators: [{id: 1, name: 'Anton', img: null,}], lastModified: { user: {id: 1, name: 'Anton', img: null}, date: '19/02/20 13:00:00'}, isFavorite: true},
+    // {id: 2, dateCreated: new Date().setHours(3), dateLastOpened: new Date(), size: '12', name:'Placeholder 4', status: '50%', savedVersion: '-', sessionEndTime: 'Placeholder', collaborators: [{id: 2, name: 'Robert', img: null,}], lastModified: { user: {id: 1, name: 'Anton', img: null}, date: '19/02/20 13:00:00'}, isFavorite: false},
+    // {id: 3, dateCreated: new Date().setHours(15), dateLastOpened: new Date(), size: '320', name:'Placeholder 3', status: '45%', savedVersion: '-', sessionEndTime: 'Placeholder', collaborators: [{id: 3, name: 'David', img: null,}], lastModified: { user: {id: 1, name: 'Anton', img: null}, date: '19/02/20 13:00:00'}, isFavorite: false},
+    // {id: 4, dateCreated: new Date().setHours(8), dateLastOpened: new Date(), size: '30', name:'Placeholder 2', status: '25%', savedVersion: '-', sessionEndTime: 'Placeholder', collaborators: [{id: 1, name: 'Anton', img: null,}, {id: 2, name: 'Robert', img: null,}], lastModified: { user: {id: 1, name: 'Anton', img: null}, date: '19/02/20 13:00:00'}, isFavorite: false},
+    // {id: 5, dateCreated: new Date().setHours(4), dateLastOpened: new Date(), size: '205', name:'Placeholder 7', status: '65%', savedVersion: '-', sessionEndTime: 'Placeholder', collaborators: [{id: 1, name: 'Anton', img: null,}, {id: 2, name: 'Robert', img: null,}, {id: 3, name: 'David', img: null,}], lastModified: { user: {id: 1, name: 'Anton', img: null}, date: '19/02/20 13:00:00'}, isFavorite: false},
+    // {id: 6, dateCreated: new Date().setHours(23), dateLastOpened: new Date(), size: '85', name:'Placeholder 6', status: '55%', savedVersion: '-', sessionEndTime: 'Placeholder', collaborators: [{id: 1, name: 'Anton', img: null,}, {id: 2, name: 'Robert', img: null,}, {id: 3, name: 'David', img: null,}], lastModified: { user: {id: 1, name: 'Anton', img: null}, date: '19/02/20 13:00:00'}, isFavorite: false},
+    // {id: 7, dateCreated: new Date().setHours(6), dateLastOpened: new Date(), size: '120', name:'Placeholder 5', status: '95%', savedVersion: '-', sessionEndTime: 'Placeholder', collaborators: [{id: 1, name: 'Anton', img: null,}, {id: 2, name: 'Robert', img: null,}, {id: 3, name: 'David', img: null,}], lastModified: { user: {id: 1, name: 'Anton', img: null}, date: '19/02/20 13:00:00'}, isFavorite: false},
+    // {id: 8, dateCreated: new Date().setHours(12), dateLastOpened: new Date(), size: '80', name:'Placeholder 8', status: '75%', savedVersion: '-', sessionEndTime: 'Placeholder', collaborators: [{id: 1, name: 'Anton', img: null,}, {id: 2, name: 'Robert', img: null,}, {id: 3, name: 'David', img: null,}], lastModified: { user: {id: 1, name: 'Anton', img: null}, date: '19/02/20 13:00:00'}, isFavorite: false},
   ];
   
   export default {
     name: "pageProjects",
-    components: {projectSidebar, SortByButton, CollaboratorAvatar, FilePicker},
+    components: {
+      ProjectSidebar,
+      SortByButton,
+      CollaboratorAvatar,
+      FilePicker,
+      FilePickerPopup,
+      SelectModelModal
+    },
     data: function () {
       return {
         isSelectedSortType: 0,
@@ -148,6 +153,7 @@
         modelList: mockModelList,
         selectedListIds: [],
         isImportModelsOpen: false,
+        isCreateModelModalOpen: false,
       }
     },                                                     
     watch: {
@@ -170,9 +176,6 @@
     },
     beforeDestroy() {
       this.setPageTitleMutation('')
-    },
-    components: {
-      FilePickerPopup
     },
     computed: {
       ...mapState({
@@ -244,10 +247,12 @@
     },
     methods: {
       ...mapActions({
-        loadNetwork:      'mod_events/EVENT_loadNetwork',
-        addNetwork:       'mod_workspace/ADD_network',
+        loadNetwork:        'mod_api/API_loadNetwork',
+        addNetwork:         'mod_workspace/ADD_network',
         set_currentNetwork: 'mod_workspace/SET_currentNetwork',
         createProjectModel: 'mod_project/createProjectModel',
+        API_getModel:       'mod_api/API_getModel',
+        setActivePageAction: 'modal_pages/setActivePageAction',
       }),
       ...mapMutations({
         setPageTitleMutation: 'globalView/setPageTitleMutation'
@@ -259,10 +264,6 @@
       },
       loadFolderPath() {
         this.$store.commit("globalView/set_filePickerPopup", true);
-      },
-      confirmCallback(el) {
-        this.openTemplate(el[0]);
-        this.$store.commit("globalView/HIDE_allGlobalPopups");
       },
       openTemplate(path) {
         this.loadNetwork(path)
@@ -387,17 +388,17 @@
         }).then(apiMeta => {
           this.addNetwork({apiMeta});
           //@todo save the network in project folder
-          //
           
         });
       },
-      loadModel() {
-        // 1. open file picker modal
-        this.isImportModelsOpen = true;
-        // 2. get path from file picker
-        // 3. send path to get model api
-        // 4. make post request to create model for project
-        
+      handleAddNetworkModal() {
+        // open modal
+        this.isCreateModelModalOpen = true;
+      },
+      onCloseSelectModelModal() {
+        this.isCreateModelModalOpen = false;
+      },
+      onTemplateChoseSelectModelModal() {
 
       },
       confirmFilePickerSelection(selectedItems) {
@@ -408,6 +409,31 @@
       clearPath(x){
         this.isImportModelsOpen = false;
         console.log(x);
+      },
+      openLoadModelPopup() {
+        this.$store.dispatch('globalView/SET_filePickerPopup', {confirmCallback: this.onLoadNetworkConfirmed});
+      },
+      onLoadNetworkConfirmed(path) {
+        if (!path || path.length === 0) { return; }
+        this.$store.dispatch('globalView/SET_filePickerPopup', false);
+        this.API_getModel(`${path[0]}/model.json`)
+          .then(model => {
+
+            if(model.hasOwnProperty('apiMeta')) {
+              delete model.apiMeta;
+            }
+            this.createProjectModel({
+              name: model.networkName,
+              project: this.currentProjectId,
+            }).then(apiMeta => {
+              this.addNetwork({network: model, apiMeta});
+            });
+          })
+          .catch(e => console.log(e));
+      },
+      confirmCallback(el) {
+        this.openTemplate(el[0]);
+        this.$store.commit("globalView/HIDE_allGlobalPopups");
       },
     }
   }
