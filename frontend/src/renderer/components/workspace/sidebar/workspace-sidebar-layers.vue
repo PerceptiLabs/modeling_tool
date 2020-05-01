@@ -1,5 +1,5 @@
 <template lang="pug">
-  aside.workspace_sidebar(:class="{'page_sidebar--hide': !hideSidebar, 'tutorial-active': activeStepStoryboard === 3}")
+  aside.workspace_sidebar(:class="{'tutorial-active': activeStepStoryboard === 3}")
     sidebar-layers
 
 </template>
@@ -45,12 +45,8 @@ export default {
   .workspace_sidebar {
     display: flex;
     flex-direction: column;
-    max-width: $w-sidebar;
-    grid-area: sidebar;
-    transition: max-width .3s;
-    &.page_sidebar--hide {
-      max-width: 0;
-    }
+    width: 20rem;
+    z-index: 2;
   }
 
 </style>
