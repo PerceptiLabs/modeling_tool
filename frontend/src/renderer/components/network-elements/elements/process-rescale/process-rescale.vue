@@ -10,11 +10,11 @@
 
 <script>
   import BaseNetEl    from '@/components/network-elements/net-base-element/net-base-element.vue';
-  import ViewEl       from './view-process-resize.vue';
-  import SettingsEl   from './set-process-resize';
+  import ViewEl       from './view-process-rescale.vue';
+  import SettingsEl   from './set-process-rescale';
 
   export default {
-    name: 'ProcessResize',
+    name: 'ProcessRescale',
     components: {
       BaseNetEl,
       ViewEl,

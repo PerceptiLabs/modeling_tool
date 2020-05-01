@@ -11,12 +11,12 @@
   import ChartSwitch      from "@/components/charts/chart-switch";
   import viewBoxMixin   from "@/core/mixins/net-element-viewBox.js";
   export default {
-    name: "ViewBoxProcessResize",
+    name: "ViewBoxProcessRescale",
     components: {ChartSwitch},
     mixins: [viewBoxMixin],
     methods: {
       getData() {
-        this.chartRequest(this.boxElementID, 'ProcessResize', '')
+        this.chartRequest(this.boxElementID, 'ProcessRescale', '')
       }
     }
   }

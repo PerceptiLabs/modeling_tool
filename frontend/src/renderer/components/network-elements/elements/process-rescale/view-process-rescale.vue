@@ -1,11 +1,11 @@
 <template lang="pug">
   .btn.btn--layersbar.net-element-process(:draggable="draggable"
-    data-component="ProcessResize"
-    data-layer="Resize"
+    data-component="ProcessRescale"
+    data-layer="Rescale"
     data-type="Other"
-    v-tooltip:right="'Resize'"
+    v-tooltip:right="'Rescale'"
     v-tooltip-interactive:right="interactiveInfo"
-    id="tutorial_process-resize"
+    id="tutorial_process-rescale"
     :style="layerStyles"
   )
     i.icon.icon-full-screen
@@ -15,13 +15,13 @@
 <script>
   import mixinSet from '@/core/mixins/net-element-view-layer.js';
 export default {
-  name: 'ViewProcessResize',
+  name: 'ViewProcessRescale',
   mixins: [mixinSet],
   data() {
     return {
       interactiveInfo: {
-        title: 'Process Resize',
-        text: 'Resize the data'
+        title: 'Process Rescale',
+        text: 'Rescale the data'
       }
     }
   }
