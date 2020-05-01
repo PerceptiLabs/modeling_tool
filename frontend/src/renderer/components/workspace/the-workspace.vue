@@ -140,6 +140,7 @@
   .layers-sidebar {
     position: fixed;
     right: 2rem;
+    transform: translateY(2rem);
   }
 
   .network_info-section {
