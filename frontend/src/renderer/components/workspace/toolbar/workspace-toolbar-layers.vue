@@ -292,7 +292,7 @@ export default {
     position: absolute;
     top: 0;
     // left: -$indent;
-    opacity: 1;
+    opacity: 0;
     visibility: hidden;
     margin: 0;
     padding: $indent;
