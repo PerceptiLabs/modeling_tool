@@ -18,6 +18,10 @@
           .form_label(v-tooltip-interactive:right="interactiveInfo.epochs") Epochs:
           #tutorial_epochs.form_input(data-tutorial-hover-info)
             input(type="number" v-model="settings.Epochs")
+        .form_row
+          .form_label Batch size:
+          .form_input
+            input(type="number" v-model="settings.Batch_size")
       .settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.costFunction")
           .form_label Loss function:
@@ -119,7 +123,8 @@ export default {
         Momentum: '0.9',
         Decay_steps: '100000',
         Decay_rate: '0.96',
-        Training_iters: "20000"
+        Training_iters: "20000",
+        Batch_size: '10'
       },
       interactiveInfo: {
         labels: {

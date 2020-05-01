@@ -32,6 +32,11 @@
             base-radio(group-name="group1" value-input="RMSprop" v-model="settings.Optimizer")
               span RMSprop
       .settings-layer_section
+        .form_row
+          .form_label History length:
+          .form_input
+            input(type="number" v-model="settings.History_length")
+      .settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.learningRate")
           .form_label Learning rate:
           .form_input
@@ -90,6 +95,7 @@ export default {
         Optimizer: 'SGD',
         Max_steps: '1000',
         Episodes: '20000',
+        History_length: '10',
       },
       interactiveInfo: {
         method: {
