@@ -47,6 +47,8 @@
             div(:style="dragBoxHorizontalBottomBorder()")
             div(:style="dragBoxVerticalLeftBorder()")
             div(:style="dragBoxVerticalRightBorder()")
+
+          sidebar-layers.layers-sidebar
         //-general-settings(v-if="showGlobalSet")
         general-result(v-if="showGlobalResult")
         select-core-side(v-if="showCoreSide")
@@ -135,6 +137,11 @@
     grid-area: network-field;
     background: linear-gradient(180deg, #363E51 0%, rgba(54, 62, 81, 0) 100%);
   }
+  .layers-sidebar {
+    position: fixed;
+    right: 2rem;
+  }
+
   .network_info-section {
     display: flex;
     flex-direction: column;

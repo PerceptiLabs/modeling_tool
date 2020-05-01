@@ -17,6 +17,7 @@ import TheTesting             from "@/components/statistics/the-testing.vue";
 import TheViewBox             from "@/components/statistics/the-view-box";
 import StartTrainingSpinner   from '@/components/different/start-training-spinner.vue'
 import TheMiniMap             from '@/components/different/the-mini-map.vue'
+import SidebarLayers          from '@/components/workspace/sidebar/workspace-sidebar-layers.vue'
 
 export default {
   name: 'WorkspaceContent',
@@ -27,7 +28,7 @@ export default {
     GeneralResult, SelectCoreSide,
     WorkspaceBeforeImport, WorkspaceSaveNetwork,
     TheTesting, TheViewBox, StartTrainingSpinner,
-    TheMiniMap, FilePickerPopup
+    TheMiniMap, FilePickerPopup, SidebarLayers
   },
   mounted() {
     console.log(this.$refs.networkField);
