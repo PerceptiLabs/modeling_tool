@@ -157,7 +157,8 @@ export default {
           },
           layerClass: 'net-element-train',
           iconClass: 'icon-training',
-          childListClass: 'layer_child-list--training',
+          // childListClass: 'layer_child-list--training',
+          childListClass: '',
           showEl: false,
           //networkElements: ['TrainNormal', 'TrainReinforce', 'TrainGenetic', 'TrainDynamic']
           networkElements: trainingElements,
@@ -218,6 +219,7 @@ export default {
 <style lang="scss" scoped>
   @import "../../../scss/base";
   $indent: 0.5rem;
+  $button-size: 2.5rem;
   // .page_layersbar {
   //   max-width: $w-layersbar;
   //   grid-area: layersbar;
@@ -248,8 +250,8 @@ export default {
     .btn--toolbar,
     /deep/ .btn--layersbar {
       // box-shadow: $box-shad;
-      height: 2.5rem;
-      width: 2.5rem;
+      height: $button-size;
+      width: $button-size;
       border: 0.5px solid $toolbar-button-border;
       color: $white;
 
@@ -289,7 +291,7 @@ export default {
     z-index: 1;
     position: absolute;
     top: 0;
-    left: -$indent;
+    // left: -$indent;
     opacity: 1;
     visibility: hidden;
     margin: 0;
@@ -330,7 +332,7 @@ export default {
 
     &:after {
       bottom: 100%;
-      left: 15%;
+      left: $button-size / 2;
       border: solid transparent;
       content: " ";
       height: 0;
