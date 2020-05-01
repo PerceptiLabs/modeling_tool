@@ -8,7 +8,7 @@
     id="tutorial_training-regression"
     :style="layerStyles"
   )
-    i.icon.icon-training
+    i.icon.icon-train-regression
 
 </template>
 
