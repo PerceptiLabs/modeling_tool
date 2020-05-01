@@ -61,31 +61,68 @@ const actions = {
   },
   EVENT_loadNetwork({dispatch, rootGetters}, pathProject) {
     const pathFile = projectPathModel(pathProject);
+
     const localUserInfo = rootGetters['mod_user/GET_LOCAL_userInfo'];
     let localProjectsList = localUserInfo ? localUserInfo.projectsList : [];
     let pathIndex;
+
     if(localProjectsList.length) {
-      pathIndex = localProjectsList.findIndex((proj)=> proj.pathModel === pathFile);
+      pathIndex = localProjectsList.findIndex((proj)=> proj.pathProject === pathProject);
     }
 
     dispatch('mod_api/API_loadNetwork', pathFile, {root: true})
       .then((net) => {
         //validate model
+        let isTrained = false;
+
         try {
           if(!(net.networkName
             && net.networkMeta
             && net.networkElementList)) {
               throw('err');
             }
+
+            for(let id in net.networkElementList) {
+              let element = net.networkElementList[id];
+              if (element.checkpoint.length > 0) {
+                isTrained = true;
+                break;
+              }
+            }
+
         } catch(e) {
-          dispatch('globalView/GP_infoPopup', 'The model is not valid', {root: true});
+          dispatch('globalView/GP_infoPopup', 'The model does not exist or the Kernel is not online.', {root: true});
           return
         }
 
         if(pathIndex > -1 && localProjectsList) {
           net.networkID = localProjectsList[pathIndex].id;
+          net.networkRootFolder = localProjectsList[pathIndex].pathProject;
+        } else {
+          net.networkRootFolder = pathProject;
         }
-        dispatch('mod_workspace/ADD_network', net, {root: true});
+
+        if(isTrained) {
+          dispatch('globalView/SET_loadSettingPopup', {
+            visible: 'true',
+            ok: (isLoadingTrainedModel) => {
+              if (isLoadingTrainedModel) {
+                dispatch('mod_workspace/ADD_network', net, {root: true});
+              } else {
+                for(let id in net.networkElementList) {
+                  let element = net.networkElementList[id];
+                  element.checkpoint = [];
+                }
+                console.log(net);
+                dispatch('mod_workspace/ADD_network', net, {root: true});
+              }
+            }
+          }, {root: true})
+        } 
+        else {
+          dispatch('mod_workspace/ADD_network', net, {root: true});
+        }
+
       }).catch(err => {
         console.log(err);
         dispatch('globalView/GP_infoPopup', 'Fetching went wrong', {root: true});
@@ -194,6 +231,8 @@ const actions = {
             clientWidth: el.layerMeta.position.left * 2,
           },
           layerSettings: el.layerSettings,
+          layerSettingsTabName: el.layerSettingsTabName,
+          layerCode: el.layerCode,
           offsetY: el.layerMeta.position.top * 2,
           offsetX: el.layerMeta.position.left * 2
         };
@@ -248,6 +287,8 @@ const actions = {
             clientWidth: el.layerMeta.position.left * 2,
           },
           layerSettings: el.layerSettings,
+          layerSettingsTabName: el.layerSettingsTabName,
+          layerCode: el.layerCode,
           offsetY: el.layerMeta.position.top * 2,
           offsetX: el.layerMeta.position.left * 2
         };
@@ -260,12 +301,14 @@ const actions = {
     }
   },
   EVENT_hotKeyPaste({rootState, rootGetters, dispatch, commit}) {
+    dispatch('mod_workspace-history/SET_isEnableHistory', false, {root: true});
     let buffer = rootState.mod_buffer.buffer;
     dispatch('mod_workspace/SET_elementUnselect', null, {root: true});
 
     if(rootGetters['mod_workspace/GET_enableHotKeyElement'] && buffer) {
-      buffer.forEach((el) => {
-        dispatch('mod_workspace/ADD_element', el, {root: true});
+      const setChangeToWorkspaceHistory = false;
+      buffer.forEach((event) => {
+        dispatch('mod_workspace/ADD_element', { event,  setChangeToWorkspaceHistory }, {root: true});
       });
       const netWorkList = rootGetters['mod_workspace/GET_currentNetwork'].networkElementList;
       const clipBoardNetWorkList = rootState.mod_buffer.clipBoardNetworkList;
@@ -308,6 +351,7 @@ const actions = {
       }
     }
     dispatch('mod_workspace/ADD_container', null, {root: true});
+    dispatch('mod_workspace-history/SET_isEnableHistory', true, {root: true});
   },
   SET_enableCustomHotKey({commit}, val) {
     commit('set_enableCustomHotKey', val)

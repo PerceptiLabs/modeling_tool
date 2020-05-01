@@ -70,10 +70,10 @@
                 separate-sign="%"
                 )
         .settings-layer_section.settings-layer_section--data
-          .form_row
-            .form_label Batch size:
-            .form_input
-              input(type="number" v-model="settings.accessProperties.Batch_size")
+          //- .form_row
+          //-   .form_label Batch size:
+          //-   .form_input
+          //-     input(type="number" v-model="settings.accessProperties.Batch_size")
           .form_row
             base-checkbox.bigest-text(v-model="settings.accessProperties.Shuffle_data") Shuffle
     template(slot="Code-content")
@@ -145,7 +145,7 @@
             Sources: [], //{type: 'file'/'directory', path: 'PATH'}
             PathFake: [],
             Partition_list: [],
-            Batch_size: 10,
+            // Batch_size: 10,
             Shuffle_data: true,
           }
         },

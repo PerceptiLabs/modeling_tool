@@ -44,7 +44,7 @@ def instantiate_layer_from_macro(j2_engine, macro_file, macro_name, macro_parame
     with NamedTemporaryFile('wt', delete=is_unix, suffix='.py') as f:
         f.write(code)
         f.flush()
-            
+
         spec = importlib.util.spec_from_file_location("my_module", f.name)        
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
@@ -58,17 +58,20 @@ def instantiate_layer_from_macro(j2_engine, macro_file, macro_name, macro_parame
     return instance    
     
 
-def create_layer(j2_engine, definition_table, layer_type, **macro_parameters):
+def create_layer(j2_engine, definition_table, top_level_imports, layer_type, **macro_parameters):
     layer_def = definition_table.get(layer_type)
 
     if 'layer_name' not in macro_parameters:
         macro_parameters['layer_name'] = layer_type
-    
+
+
+    import_statements = layer_def.import_statements + top_level_imports
+
     layer = instantiate_layer_from_macro(
         j2_engine,
         layer_def.template_file, layer_def.template_macro,
         macro_parameters,
-        layer_def.import_statements
+        import_statements
     )
     
     return layer

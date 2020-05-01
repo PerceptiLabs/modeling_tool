@@ -34,11 +34,12 @@
       v-if="itemData.componentName === 'LayerContainer'"
       )
       sidebar-layers-item(
-        v-for="(item, i) in itemData.containerLayersList"
-        :key="item.i"
-        :item-data="item"
-        :id="item.layerId"
+        v-for="(subItemId) in itemData.containerLayersList"
+        :key="network[subItemId].layerId"
+        :item-data="network[subItemId]"
+        :id="network[subItemId].layerId"
         )
+  
 
 
 </template>

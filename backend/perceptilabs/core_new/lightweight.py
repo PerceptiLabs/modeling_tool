@@ -39,7 +39,7 @@ LW_ACTIVE_HOOKS = {
 
 class LightweightCore(BaseCore):
     #MODE = 'headless'    
-    SKIP_LAYERS = ['TrainNormal', 'TrainReinforce']
+    SKIP_LAYERS = ['TrainNormal', 'TrainReinforce', 'TrainDetector']
     
     def __init__(self, codehq, graph_dict, data_container, session_history,
                  module_provider, error_handler, layer_extras_reader, checkpointValues=None, network_cache=None, core_mode='v1'):
