@@ -1,7 +1,7 @@
 <template lang="pug">
   section.sidebar_layers
     .layers_title.d-flex.sidebar_content-padding--small
-      i.icon.icon-burger.middle-text
+      //-i.icon.icon-burger.middle-text
       h3 Layers
     //-.layers_meta.sidebar-content
       .form_row
@@ -22,8 +22,6 @@
         ref="sidebarLayersItem"
         :item-data="item"
         )
-    // .form_row
-    //   base-checkbox.bigest-text(v-model="isGridEnabled") Grid
 
 
 
@@ -115,15 +113,20 @@ export default {
     flex-direction: column;
     flex-grow: 1;
     max-height: 50vh;
-    border-bottom: 1px solid $bg-toolbar;
     overflow: hidden;
+    background-color: $bg-toolbar;
+    box-sizing: border-box;
+    border: 1px solid $toolbar-separator-color;
+    border-radius: 2px;
   }
   .layers_title {
     align-items: center;
     flex: 0 0 auto;
     height: $h-sidebar-layers-item;
     h3 {
-      margin: 0 0 0 .5em;
+      font-size: 12px;
+      margin: 0;
+      color: $color-12;
     }
   }
   .layers_body {
