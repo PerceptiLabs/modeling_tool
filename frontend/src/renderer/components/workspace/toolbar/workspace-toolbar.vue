@@ -2,7 +2,7 @@
   aside.page_toolbar(:class="{'tutorial-active': activeStepStoryboard === 4}")
 
     toolbar-layers
-    
+
     ul.toolbar_list
       li
         button#tutorial_pointer.btn.btn--toolbar(type="button"
@@ -71,6 +71,12 @@
           @click="skipValid"
         )
           i.icon.icon-next
+    ul.toolbar_list
+      li
+        input
+    ul.toolbar_list
+      li
+        span Python 
     //ul.toolbar_list
       li
         button.btn.btn--toolbar(type="button"
@@ -94,16 +100,7 @@
         v-tooltip-interactive:bottom="interactiveInfo.interactiveDoc"
       )
         span Notebook
-        i.icon.icon-ellipse
-
-      button.btn.btn--dark.btn--toolbar-settings(
-        type="button"
-        :class="{'btn--tutorial-active': interactiveInfoStatus}"
-        @click="toggleInteractiveInfo"
-        v-tooltip-interactive:bottom="interactiveInfo.interactiveDoc"
-      )
-        span Help
-        i.icon.icon-ellipse
+        .ring-icon
 
       tutorial-instructions(
         ref="tutorialComponent"
@@ -113,7 +110,7 @@
           :class="{'btn--tutorial-active': isTutorialMode}"
         )
           span Tutorial
-          i.icon.icon-ellipse
+          .ring-icon
 </template>
 
 <script>
@@ -398,9 +395,6 @@ export default {
         margin-left: 2rem;
     }
   }
-  .btn--toolbar-home {
-    color: #7397fe;
-  }
   .run-button {
     color: $col-txt2;
     font-weight: 700;
@@ -408,7 +402,7 @@ export default {
     font-size: 1.3rem;
     padding: 0 .5rem;
     &:hover {
-      color: $col-primary;
+      color: $white;
     }
     span {
       margin-left: 0.2rem;
@@ -475,20 +469,27 @@ export default {
   }
   .btn--toolbar-settings {
     min-width: 0;
-    color: inherit;
+    color: $toolbar-button-border;
+    background: $bg-toolbar-2;
+
     padding-right: 1rem;
     padding-left: 1rem;
+    border: 1px solid #5E6F9F;
 
-    .icon {
-      margin-left: .7rem;
-    }
+    font-family: Nunito Sans;
+    font-style: normal;
+    font-weight: 600;
+    font-size: 12px;
+
   }
-  .btn--tutorial-active {
-    .icon {
-      color: $color-1;;
-    }
-  }
-  .btn-toolbar--home {
-    color: $color-5;
+
+  .ring-icon {
+    margin-left: .7rem;
+    font-size: 12px;
+
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    border: 2px solid $toolbar-button-border;
   }
 </style>
