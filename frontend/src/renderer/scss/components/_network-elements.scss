@@ -30,7 +30,7 @@ $layers-sidebar: (
 );
 @each $name, $color in $layers-sidebar {
   .net-color-#{$name} {
-    color: $color;
+    background: $color;
   }
 }
 
