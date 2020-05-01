@@ -73,7 +73,9 @@
           i.icon.icon-next
     ul.toolbar_list
       li
-        input
+        input.search-bar(
+          placeholder="Search operation"
+        )
     ul.toolbar_list
       li
         span Python 
@@ -111,15 +113,25 @@
         )
           span Tutorial
           .ring-icon
+
+      button.btn.btn--dark.btn--toolbar-settings(
+              type="button"
+              :class="{'tutorial-active': activeStepStoryboard === 5}"
+              @click="goToReport"
+            )
+
+        span Report
+        i.icon.icon-bug-report
 </template>
 
 <script>
 import { mapGetters, mapActions, mapMutations } from 'vuex';
 import { googleAnalytics }                      from '@/core/analytics';
-import { trainingElements, deepLearnElements }  from '@/core/constants.js'
+import { trainingElements, deepLearnElements }  from '@/core/constants.js';
+import { goToLink }                             from '@/core/helpers.js'
 
-import TutorialInstructions     from '@/components/tutorial/tutorial-instructions.vue'
-import ToolbarLayers            from '@/components/workspace/toolbar/workspace-toolbar-layers.vue'
+import TutorialInstructions     from '@/components/tutorial/tutorial-instructions.vue';
+import ToolbarLayers            from '@/components/workspace/toolbar/workspace-toolbar-layers.vue';
 
 export default {
   name: 'WorkspaceToolbar',
@@ -140,7 +152,8 @@ export default {
         blackBox: {title: 'BlackBox', text: `Load the data and let our algorithm </br> build a model for you and train it`},
         interactiveDoc: {title: 'Interactive documentation', text: `Use this to find out what all </br> different operations and functions do`},
         tutorial: {title: 'Tutorial', text: `Choose an interactive tutorial`}
-      }
+      },
+      reportLink: 'https://join.slack.com/t/perceptilabs-com/shared_invite/enQtODQ5NzAwNDkxOTExLWUxODAwZDk0MzA1MmM4OTViNWE4MmVjYjc2OTQwMTQ4N2NmM2ZlYmI5NjZjOWRiYjBkYjBjMTMzNjEyMDNiNDk'
     }
   },
   computed: {
@@ -340,6 +353,9 @@ export default {
       } else {
         this.$router.push({name: 'projects'});
       }
+    },
+    goToReport() {
+      goToLink(this.reportLink)
     }
   }
 }
@@ -350,7 +366,7 @@ export default {
   .page_toolbar {
     display: flex;
     align-items: center;
-    padding: 5px .5em 5px 0;
+    padding: 5px 2rem 5px 0;
     background-color: $bg-toolbar-2;
     border: 1px solid rgba(97, 133, 238, 0.2);
     border-radius: 2px 2px 0px 0px;
@@ -455,6 +471,11 @@ export default {
       margin-left: .4rem;
       margin-right: .4rem;
     }
+
+    > *:last-child {
+      margin-left: .4rem;
+      margin-right: 0;
+    }
   }
   #tutorial_pointer {
     position: relative;
@@ -480,6 +501,14 @@ export default {
     font-style: normal;
     font-weight: 600;
     font-size: 12px;
+  }
+
+  .search-bar {
+    background: #363E51;
+    border: 1px solid rgba(97, 133, 238, 0.2);
+    box-sizing: border-box;
+    border-radius: 2px;
+    width: 20rem;
 
   }
 
