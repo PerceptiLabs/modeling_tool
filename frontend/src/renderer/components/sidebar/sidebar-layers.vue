@@ -112,7 +112,7 @@ export default {
     display: flex;
     flex-direction: column;
     flex-grow: 1;
-    max-height: 50vh;
+    max-height: 80vh;
     overflow: hidden;
     background-color: $bg-toolbar;
     box-sizing: border-box;
