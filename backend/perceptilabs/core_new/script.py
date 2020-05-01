@@ -52,7 +52,7 @@ class ScriptBuilder:
     def build_to_file(self):
         pass
 
-    def build(self) -> str:
+    def build_imports(self) -> str:
         code = ''
 
         # --- Build preamble (imports, custom statements)
@@ -66,16 +66,13 @@ class ScriptBuilder:
         for stmt in self._statements:
             code += stmt
             code += '\n'
-        code += '\n'    
-        
-        # --- Add the layer functions.
-        for layer in self._layers:
-            code += layer.code
-            code += '\n'
-
-        # --- Add the execution sequence of the layers
         code += '\n'
-        #code += 'if __name__ == "__main__":\n' # not running from main if exec..
+
+        return code
+
+    def build_runscript(self) -> str:
+        code = ''
+        
         code += 'if True:\n'
         for layer in self._layers:
             code += '    # {}\n'.format(layer.layer_type)
@@ -88,9 +85,26 @@ class ScriptBuilder:
                 for input_layer in layer.input_layers:
                     code += '    X["%s"] = {"Y": Y_%s}\n' % (input_layer, input_layer)
 
-            code += '    Y_{layer_name} = func_{layer_name}("{layer_name}", X)\n'.format(layer_name=layer.name)                                                           
-            #code += '    import pdb; pdb.set_trace()\n'
-            code += '\n'            
+            code += '    Y_{layer_name} = func_{layer_name}("{layer_name}", X)\n'.format(layer_name=layer.name)             
+            code += '\n' 
+
+        return code
+
+    def build(self) -> str:
+        code = ''
+
+        code += self.build_imports()
+
+        # --- Add the layer functions.
+        for layer in self._layers:
+            code += layer.code
+            code += '\n'
+
+        # --- Add the execution sequence of the layers
+        code += '\n'
+        #code += 'if __name__ == "__main__":\n' # not running from main if exec..
+
+        code += self.build_runscript()           
             
         return code
     

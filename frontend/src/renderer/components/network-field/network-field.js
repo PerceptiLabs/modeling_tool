@@ -20,6 +20,7 @@ import TrainDynamic         from '@/components/network-elements/elements/train-d
 import TrainReinforce       from '@/components/network-elements/elements/train-reinforce/train-reinforce.vue'
 import TrainLoss            from '@/components/network-elements/elements/train-loss/train-loss.vue'
 import TrainOptimizer       from '@/components/network-elements/elements/train-optimizer/train-optimizer.vue'
+import TrainDetector       from '@/components/network-elements/elements/train-detector/train-detector.vue'
 
 import MathArgmax           from '@/components/network-elements/elements/math-argmax/math-argmax.vue'
 import MathMerge            from '@/components/network-elements/elements/math-merge/math-merge.vue'
@@ -46,7 +47,7 @@ export default {
     DataData, DataEnvironment, DataCloud,
     DeepLearningFC, DeepLearningConv, DeepLearningDeconv, DeepLearningRecurrent,
     ProcessCrop, ProcessEmbed, ProcessGrayscale, ProcessOneHot, ProcessReshape,
-    TrainNormal, TrainRegression, TrainGenetic, TrainDynamic, TrainReinforce, TrainLoss, TrainOptimizer,
+    TrainNormal, TrainRegression, TrainGenetic, TrainDynamic, TrainReinforce, TrainLoss, TrainOptimizer, TrainDetector,
     MathArgmax, MathMerge, MathSoftmax, MathSplit,
     ClassicMLDbscans, ClassicMLKMeans, ClassicMLKNN, ClassicMLRandomForest, ClassicMLSVM,
     LayerContainer, LayerCustom,
@@ -141,7 +142,7 @@ export default {
       this.calcSvgSize()
     },
     networkScale() {
-      this.calcSvgSize()
+      this.calcSvgSize(true)
     },
     eventCalcArrow() {
       //this.tutorialPointActivate({way: 'next', validation: this.tutorialActiveAction.id});
@@ -242,7 +243,7 @@ export default {
        offsetY: this.$refs.network.parentElement.offsetTop
       };
     },
-    calcSvgSize() {
+    calcSvgSize(isZoomed) {
       const parentWorkspace = this.$parent.$refs.container;
       let offsetHeight = parentWorkspace.offsetHeight;
       let offsetWidth = parentWorkspace.offsetWidth;
@@ -252,39 +253,13 @@ export default {
       const maxWidthPositions = Math.max(...positions.map(position => position.left)) + 60;
       const maxHeightPositions = Math.max(...positions.map(position => position.top)) + 60;
 
-      // increase/decrease height depend on scale/parentEl/netComponents 
-      if(maxHeightPositions < offsetHeight ) {
-        this.svgHeight = (offsetHeight / this.scaleNet) * 100 + 'px';
-        parentWorkspace.scrollTop = 0
-      } else {
-        let { svgHeight: prevSvgHeight } = this;
-        const newSvgHeight = (maxHeightPositions/ this.scaleNet) * 100 + 60
-        // if height boundaries decrease scroll this difference top
-        if(parseInt(prevSvgHeight.substring(0, prevSvgHeight.length - 2), 10) > newSvgHeight) {
-          parentWorkspace.scrollTop = parentWorkspace.scrollTop - (parseInt(prevSvgHeight.substring(0, prevSvgHeight.length - 2), 10) - newSvgHeight);
-        }
-        
-        this.svgHeight = newSvgHeight + 'px';
-      }
+      this.svgWidth = Math.max(offsetWidth, maxWidthPositions);
+      this.svgHeight = Math.max(offsetHeight, maxHeightPositions);
       
-      // increase/decrease width depend on scale/parentEl/netComponents 
-      if(maxWidthPositions < offsetWidth ) {
-        let { svgWidth: prevSvgWidth } = this;
-        let newSvgWidth = (offsetWidth / this.scaleNet) * 100;
-        this.svgWidth = newSvgWidth + 'px';
-        if(prevSvgWidth.substring(0, prevSvgWidth.length - 2) > newSvgWidth) {
-          parentWorkspace.scrollLeft = 0
-        }
-      } else {
-        let { svgWidth: prevSvgWidth } = this;
-        const newSvgWidth = (maxWidthPositions / this.scaleNet) * 100 + 60;
-        // if width boundaries decrease scroll this difference left
-        if(parseInt(prevSvgWidth.substring(0, prevSvgWidth.length - 2), 10) > newSvgWidth) {
-          parentWorkspace.scrollLeft = parentWorkspace.scrollLeft - (parseInt(prevSvgWidth.substring(0, prevSvgWidth.length - 2), 10) - newSvgWidth);
-        }
-        this.svgWidth = newSvgWidth + 'px';
+      if (isZoomed) {
+        parentWorkspace.scrollLeft = 0;
+        parentWorkspace.scrollTop = 0;
       }
-      
     },
 
     //-------------
@@ -598,16 +573,17 @@ export default {
       return (event.pageY - this.offset.offsetY + scrollPosition) / this.networkScale
     },
     getLastElementLegArrowData(arrow) {
-      const isLayerTypeContainer = arrow.l1.layerType === 'Сontainer';
+      const isLayerTypeContainer = arrow.l1.layerType === 'Container';
       let arrowLeg1 = arrow.l1;
       if(isLayerTypeContainer) {
         // find id
         let keysOfContainerLayersListFrom = Object.keys(arrow.l1.containerLayersList);
         let keysOfContainerLayersListTo = arrow.l2.connectionIn;
         const keyOfLastElementFromGroup = keysOfContainerLayersListFrom.filter(value => keysOfContainerLayersListTo.includes(value))[0];
-
-        let currentNetworkElementList = this.fullNetworkElementList;
-        arrowLeg1 = currentNetworkElementList[keyOfLastElementFromGroup];
+        if(keyOfLastElementFromGroup) {
+          let currentNetworkElementList = this.fullNetworkElementList;
+          arrowLeg1 = currentNetworkElementList[keyOfLastElementFromGroup]; 
+        }
       }
       return arrowLeg1;
     },
