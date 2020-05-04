@@ -1,6 +1,7 @@
 import {coreRequest as coreRequestWeb, openWS}  from "@/core/apiWeb.js";
 import coreRequestElectron from "@/core/apiCore.js";
 import { deepCopy, parseJWT, isWeb, stringifyNetworkObjects }   from "@/core/helpers.js";
+import { createNotebookJson }   from "@/core/helpers/notebook-helper.js";
 import { pathSlash }  from "@/core/constants.js";
 import {isElectron} from "@/core/helpers";
 
@@ -554,12 +555,70 @@ const actions = {
       }
     };
 
+    // console.log('getCode', theData);
     if(isWeb()) {
       dispatch('globalView/ShowCoreNotFoundPopup', null, { root: true });
     }
     return coreRequest(theData)
       .then((data)=> data)
       .catch((err)=> {
+        console.error(err);
+      });
+  },
+
+  API_getGraphOrder({ rootGetters }, jsonNetwork) {
+
+    const theData = {
+      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
+      action: 'getGraphOrder',
+      value: jsonNetwork
+    };
+
+    return coreRequest(theData)
+      .then((data)=> {
+        // console.log('API_getGraphOrder data', data);
+        return data;
+      })
+      .catch((err)=> {
+        // console.log('API_getGraphOrder error');
+        console.error(err);
+      });
+  },
+
+  API_getNotebookImports({ rootGetters }, jsonNetwork) {
+
+    const theData = {
+      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
+      action: 'getNotebookImports',
+      value: jsonNetwork
+    };
+
+    return coreRequest(theData)
+      .then((data)=> {
+        // console.log('API_getNotebookImports data', data);
+        return data;
+      })
+      .catch((err)=> {
+        // console.log('API_getNotebookImports error');
+        console.error(err);
+      });
+  },
+
+  API_getNotebookRunscript({ rootGetters }, jsonNetwork) {
+
+    const theData = {
+      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
+      action: 'getNotebookRunscript',
+      value: jsonNetwork
+    };
+
+    return coreRequest(theData)
+      .then((data)=> {
+        // console.log('API_getNotebookRunscript data', data);
+        return data;
+      })
+      .catch((err)=> {
+        // console.log('API_getNotebookRunscript error');
         console.error(err);
       });
   },
@@ -623,15 +682,14 @@ const actions = {
       });
   },
 
-  API_exportData({rootGetters, getters, dispatch}, settings) {
+  async API_exportData({rootGetters, getters, dispatch}, settings) {
+
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
       action: 'Export',
-      value: {
-        ...settings,
-        frontendNetwork: rootGetters['mod_workspace/GET_currentNetwork'].networkName
-      }
+      value: await makePayload.call(this, settings)
     };
+
     if(isWeb()) {
       dispatch('globalView/ShowCoreNotFoundPopup', null, { root: true });
     }
@@ -653,6 +711,25 @@ const actions = {
       .finally(()=> {
         dispatch('mod_tracker/EVENT_modelExport', trackerData, {root: true});
       })
+
+    async function makePayload(settings = null) {
+      if (!settings || settings.Type === 'TFModel') {
+        return ({
+          ...settings,
+          frontendNetwork: rootGetters['mod_workspace/GET_currentNetwork'].networkName
+        });
+      }
+  
+      if (settings.Type === 'ipynb') {
+        // current 'this' is the Vuex store object
+        const payload = await createNotebookJson(this);
+        return ({
+          ...settings,
+          frontendNetwork: rootGetters['mod_workspace/GET_currentNetwork'].networkName,
+          NotebookJson: payload
+        });
+      }
+    }
   },
   //---------------
   //  OTHER

@@ -25,7 +25,7 @@ from perceptilabs.core_new.cache2 import LightweightCache
 
         
 #LW interface
-from perceptilabs.lwInterface import getFolderContent, saveJsonModel, getJsonModel, getGraphOrder, getDataMeta, getPartitionSummary, getCodeV1, getCodeV2, getNetworkInputDim, getNetworkOutputDim, getPreviewSample, getPreviewVariableList, Parse
+from perceptilabs.lwInterface import getNotebookImports, getNotebookRunscript, getFolderContent, saveJsonModel, getJsonModel, getGraphOrder, getDataMeta, getDataMetaV2, getPartitionSummary, getCodeV1, getCodeV2, getNetworkInputDim, getNetworkOutputDim, getPreviewSample, getPreviewVariableList, Parse
 
 log = logging.getLogger(__name__)
 
@@ -88,7 +88,7 @@ class Interface():
         extras_reader = LayerExtrasReader()
         error_handler = LightweightErrorHandler()
         
-        lw_core = LightweightCoreAdapter(jsonNetwork, extras_reader, error_handler, self._core.issue_handler, self._lw_cache_v2)
+        lw_core = LightweightCoreAdapter(jsonNetwork, extras_reader, error_handler, self._core.issue_handler, self._lw_cache_v2, data_container)
         return lw_core, extras_reader, data_container
 
     def _create_lw_core_v1(self, reciever, jsonNetwork):                
@@ -208,10 +208,22 @@ class Interface():
 
             lw_core, extras_reader, data_container = self.create_lw_core(reciever, jsonNetwork)
 
-            return getDataMeta(id_=Id, 
-                            lw_core=lw_core, 
-                            data_container=data_container).run()
 
+            if self._core_mode == 'v1':
+                get_data_meta = getDataMeta(
+                    id_=Id, 
+                    lw_core=lw_core, 
+                    data_container=data_container
+                )
+            elif self._core_mode == 'v2':
+                get_data_meta = getDataMetaV2(
+                    id_=Id, 
+                    lw_core=lw_core, 
+                    extras_reader=extras_reader
+                )
+
+            return get_data_meta.run()
+                
         elif action == "getFolderContent":
             current_path = value
             return getFolderContent(current_path=current_path).run()
@@ -263,7 +275,6 @@ class Interface():
 
         elif action == "getNetworkOutputDim":
             jsonNetwork=value
-
             lw_core, extras_reader, data_container = self.create_lw_core(reciever, jsonNetwork)
 
             return getNetworkOutputDim(lw_core=lw_core, 
@@ -323,7 +334,15 @@ class Interface():
 
         elif action == "getGraphOrder":
             jsonNetwork = value
-            return getGraphOrder(jsonNetwork=jsonNetwork).run()         
+            return getGraphOrder(jsonNetwork=jsonNetwork).run()       
+
+        elif action == "getNotebookImports":
+            jsonNetwork = value
+            return getNotebookImports(jsonNetwork=jsonNetwork).run()          
+
+        elif action == "getNotebookRunscript":
+            jsonNetwork = value
+            return getNotebookRunscript(jsonNetwork=jsonNetwork).run()         
 
         elif action == "Close":
             self.shutDown()

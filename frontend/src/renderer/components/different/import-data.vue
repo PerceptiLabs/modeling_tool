@@ -30,6 +30,8 @@
 </template>
 
 <script>
+import cloneDeep from 'lodash.clonedeep';
+
 import { googleAnalytics } from '@/core/analytics';
 
 import BaseSwitcher     from "@/components/different/switcher.vue";
@@ -95,7 +97,7 @@ export default {
       this.$store.commit('globalView/GP_showWorkspaceBeforeImport', true);
     },
     loadBasicTemplate() {
-      this.$store.dispatch('mod_workspace/ADD_network', this.basicTemplate.currentNet.network)
+      this.$store.dispatch('mod_workspace/ADD_network', cloneDeep(this.basicTemplate.currentNet.network));
     }
   }
 }

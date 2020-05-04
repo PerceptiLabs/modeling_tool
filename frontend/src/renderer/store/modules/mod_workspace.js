@@ -495,7 +495,7 @@ const mutations = {
     newEl.layerMeta.position.left = (event.offsetX - left);
     let depth = checkPosition(newEl, elementList);
 
-    if(isCursorInsideWorkspace) {
+    if(isCursorInsideWorkspace && firstCopyPositionElement) {
       newEl.layerMeta.position.top =  (cursorPosition.y + newEl.layerMeta.position.top) - firstCopyPositionElement.top - duplicatePositionIndent;
       newEl.layerMeta.position.left =  (cursorPosition.x + newEl.layerMeta.position.left) - firstCopyPositionElement.left - duplicatePositionIndent;
     }
@@ -1483,8 +1483,8 @@ const createNetElement = function (event) {
     layerName: event.target.dataset.layer,
     layerType: event.target.dataset.type,
     layerSettings: event.layerSettings ? event.layerSettings : null,
-    layerSettingsTabName: undefined,
-    layerCode: '',
+    layerSettingsTabName: event.layerSettingsTabName || undefined,
+    layerCode: event.layerCode || null,
     layerCodeError: null,
     layerNone: false,
     layerMeta: {

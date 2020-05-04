@@ -1,5 +1,8 @@
-3# TODO: (1) create flask server for running in remote process. (2) dynamic imports (3) more descriptive errors.
+# TODO: (1) create flask server for running in remote process. (2) dynamic imports (3) more descriptive errors.
 
+import os
+import ast
+from abc import abstractmethod, ABC
 import traceback
 import logging
 import copy
@@ -12,10 +15,10 @@ import threading
 from collections import namedtuple
 import tensorflow as tf
 import numpy as np
-
+from tempfile import NamedTemporaryFile
 
 from perceptilabs.issues import UserlandError
-from perceptilabs.core_new.layers.definitions import resolve_checkpoint_path
+from perceptilabs.core_new.layers.definitions import resolve_checkpoint_path, TOP_LEVEL_IMPORTS, DEFINITION_TABLE
 from perceptilabs.core_new.layers import BaseLayer, DataLayer, InnerLayer, Tf1xLayer, TrainingLayer, ClassificationLayer
 from perceptilabs.core_new.graph.splitter import GraphSplitter
 from perceptilabs.core_new.graph.utils import get_json_net_topology
@@ -23,11 +26,11 @@ from perceptilabs.core_new.graph.builder import GraphBuilder, SnapshotBuilder
 from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP, REPLICATED_PROPERTIES_TABLE
 from perceptilabs.core_new.layers.script import ScriptFactory
 from perceptilabs.core_new.cache2 import LightweightCache
-
+from perceptilabs.core_new.graph.utils import sanitize_layer_name
 
 log = logging.getLogger(__name__)
 
-LayerInfo = namedtuple('LayerInfo', ['sample', 'out_shape', 'in_shape', 'variables', 'default_var'])
+LayerResults = namedtuple('LayerResults', ['sample', 'out_shape', 'variables', 'columns', 'code_error', 'instantiation_error', 'strategy_error'])
 
 
 def simplify_spec(func):
@@ -47,182 +50,247 @@ def exception_to_error(layer_id, layer_type, exception):
     line_no = int(tb_obj.lineno) if hasattr(tb_obj, 'lineno') else None
 
     message = ''
-    include_remainder = False
+    #include_following = False
     for counter, line in enumerate(tb_obj.format()):
-        if '<string>' in line:
-            include_remainder = True
-        if counter == 0 or include_remainder:
-            message += line
-            
+        #if '_call_with_frames_removed' in line:
+        #    include_following = True
+        #    continue
+        #if counter == 0 or include_following:
+        message += line
+
     error = UserlandError(layer_id, layer_type, line_no, message)
     return error
 
 
-class Tf1xStrategy:
-    def run(self, graph_spec, ordered_ids, layer_instances, layer_infos):
-        output_tensors, errors1 = self._get_output_tensors(graph_spec, ordered_ids, layer_instances, layer_infos)
-        results, errors2 = self._create_results(graph_spec, output_tensors, ordered_ids, layer_instances, layer_infos)        
-        return results, {**errors1, **errors2}
+class BaseStrategy(ABC):
+    @abstractmethod
+    def run(self, layer_id, layer_type, layer_class, input_results, layer_spec):
+        raise NotImplementedError
 
-    def _create_results(self, graph_spec, output_tensors, ordered_ids, layer_instances, layer_infos):
-        sess = tf.Session()
+    @staticmethod
+    def get_default(code_error=None, instantiation_error=None, strategy_error=None):
+        results = LayerResults(
+            sample=None,
+            out_shape=None,
+            variables={},
+            columns=[],
+            code_error=code_error,
+            instantiation_error=instantiation_error,
+            strategy_error=strategy_error
+        )                
+        return results
 
+    
+class DefaultStrategy(BaseStrategy):
+    def run(self, layer_id, layer_type, layer_class, input_results, layer_spec):    
+        return self.get_default()
+    
+    
+class Tf1xStrategy(BaseStrategy):
+    def run(self, layer_id, layer_type, layer_class, input_results, layer_spec):
+        with tf.Graph().as_default() as graph:
+            try:
+                layer_instance = layer_class()                
+            except Exception as e:
+                error = exception_to_error(layer_id, layer_type, e)
+                log.exception(f"Layer {layer_id} raised an error when instantiating layer class")
+                return self.get_default(strategy_error=error)                    
+            
+            input_tensors = {}
+            for key, value in input_results.items():
+                if value.sample is None:
+                    return self.get_default()                    
+
+                y_batch = np.array([value.sample])
+                input_tensors[key] = tf.constant(y_batch)
+
+            try:
+                output_tensor = layer_instance(*input_tensors.values())
+            except Exception as e:
+                error = exception_to_error(layer_id, layer_type, e)
+                log.exception(f"Layer {layer_id} raised an error in __call__")
+                return self.get_default(strategy_error=error)                    
+                
+            with tf.Session() as sess:
+                return self._run_internal(sess, layer_id, layer_type, layer_instance, output_tensor, input_tensors)
+
+    def _run_internal(self, sess, layer_id, layer_type, layer_instance, output_tensor, layer_spec):
         sess.run(tf.global_variables_initializer())
 
         if tf.version.VERSION.startswith('1.15'):
-            self._restore_checkpoint(graph_spec, sess)
+            self._restore_checkpoint(layer_spec, sess)
         else:
             log.warning(f"Checkpoint restore only works with TensorFlow 1.15. Current version is {tf.version.VERSION}")
+        try:
+            y_batch = sess.run(output_tensor)
+        except Exception as e:
+            error = exception_to_error(layer_id, layer_type, e)
+            log.exception(f"Layer {layer_id} raised an error on sess.run")            
+            return self.get_default(strategy_error=error)
+        
+        y = y_batch[0]
+        variables = layer_instance.variables.copy()
+
+        results = LayerResults(
+            sample=y,
+            out_shape=y.shape,
+            variables=variables,
+            columns=[],
+            code_error=None,
+            instantiation_error=None,
+            strategy_error=None            
+        )
+        return results
+        
+    def _restore_checkpoint(self, spec, sess):
+        if 'checkpoint' in spec:
+            from tensorflow.python.training.tracking.base import Trackable
             
-        outputs = sess.run(output_tensors)
-
-        errors = {}        
-        results = {}
-        for layer_id in ordered_ids:
-            # Find the default variable (the one that matches output tensor...)
-            default_var = None
-
-            if layer_id in layer_infos:
-                results[layer_id] = layer_infos[layer_id]
-            else:
+            export_directory = resolve_checkpoint_path(spec)
             
-                var_names = list(layer_instances[layer_id].variables.keys() if layer_instances[layer_id] is not None else [])
-                for var_name in var_names:
-                    if layer_instances[layer_id].variables[var_name] is output_tensors[layer_id]:
-                        default_var = var_name
-                        break                
-
-                output = outputs.get(layer_id, None)
-                results[layer_id] = LayerInfo(
-                    sample=output,
-                    out_shape=np.atleast_2d(output).shape[1:] if output is not None else None,
-                    in_shape=None,
-                    variables=var_names,
-                    default_var=default_var
-                )
-        return results, errors
-
-    def _restore_checkpoint(self, graph_spec, sess):
-        from tensorflow.python.training.tracking.base import Trackable
-
-        export_directory = None
-        for spec in graph_spec.values():
-            export_directory = resolve_checkpoint_path(spec)                    
-            
-        if export_directory is not None:
             trackable_variables = {}
             trackable_variables.update({x.name: x for x in tf.trainable_variables() if isinstance(x, Trackable)})
-            trackable_variables.update({k: v for k, v in locals().items() if isinstance(v, Trackable) and not isinstance(v, tf.python.data.ops.iterator_ops.Iterator)}) # TODO: Iterators based on 'stateful functions' cannot be serialized.
+            trackable_variables.update({k: v for k, v in locals().items() if isinstance(v, Trackable) and
+                                        not isinstance(v, tf.python.data.ops.iterator_ops.Iterator)}) # TODO: Iterators based on 'stateful functions' cannot be serialized.
+            
             checkpoint = tf.train.Checkpoint(**trackable_variables)
 
             path = tf.train.latest_checkpoint(export_directory)
             status = checkpoint.restore(path)
             status.run_restore_ops(session=sess)
 
-    def _add_output_tensors_from_instance(self, layer_id, layer_spec, layer, output_tensors, errors):
-        layer_type = layer_spec['Type']
-        if isinstance(layer, TrainingLayer):
-            pass
-        elif isinstance(layer, DataLayer):
-            try:
-                y = tf.constant(layer.sample)            
-                output_tensors[layer_id] = y
-            except Exception as e:
-                errors[layer_id] = exception_to_error(layer_id, layer_type, e)                    
-        elif isinstance(layer, InnerLayer):
-            bw_cons = [input_id for input_id, _ in layer_spec['backward_connections']]
             
-            args = {}
-            for input_id in bw_cons:
-                if input_id in output_tensors:
-                    args[input_id] = output_tensors[input_id]
+class DataStrategy(BaseStrategy):
+    def run(self, layer_id, layer_type, layer_class, input_results, layer_spec):
+        layer_instance = layer_class()
 
-            if len(args) == len(bw_cons):
-                try:
-                    y = layer(*args.values())
-                    output_tensors[layer_id] = y
-                except Exception as e:
-                    # 'userland runtime errors'
-                    errors[layer_id] = exception_to_error(layer_id, layer_type, e)
-            else:
-                log.debug(f'Layer {layer_id} expected inputs from layers {bw_cons}, got {list(args.keys())}. Skipping.')
+        columns = layer_instance.columns
+
+        try:
+            y = layer_instance.sample
+        except Exception as e:
+            y = None
+            shape = None
+            strategy_error = exception_to_error(layer_id, layer_type, e)
+            log.exception(f"Layer {layer_id} raised an error when calling sample property")                        
         else:
-            errors[layer_id] = 'unknown type ' + str(type(layer))
+            shape = np.atleast_1d(y).shape
+            strategy_error=None
 
-    
-    def _get_output_tensors(self, graph_spec, ordered_ids, layer_instances, layer_infos):
-        errors = {}
-        output_tensors = {}
-        for layer_id in ordered_ids:
-            if layer_id in layer_infos:
-                if layer_infos[layer_id].sample is None:
-                    continue
-                y = tf.constant(layer_infos[layer_id].sample)            
-                output_tensors[layer_id] = y
-            elif layer_id in layer_instances:
-                if layer_instances[layer_id] is None:
-                    continue                
-                self._add_output_tensors_from_instance(
-                    layer_id,
-                    graph_spec[layer_id],
-                    layer_instances[layer_id],
-                    output_tensors,
-                    errors
-                )
-        return output_tensors, errors
-    
+        variables = layer_instance.variables.copy()
+        
+        results = LayerResults(
+            sample=y,
+            out_shape=shape,
+            variables=variables,
+            columns=columns,
+            code_error=None,
+            instantiation_error=None,
+            strategy_error=strategy_error
+        )
+        return results
+
     
 class LightweightCore:
     def __init__(self, issue_handler=None, cache=None):
         self._issue_handler = issue_handler
         self._cache = cache
-
+        
     @simplify_spec
     def run(self, graph_spec):
         layer_ids, edges_by_id = get_json_net_topology(graph_spec)
 
-        # Split the graph (among other things, so we can handle 'incomplete' graphs)
+        # Split the graph (so we can handle 'incomplete' graphs, among other things)
         subgraph_topologies = GraphSplitter().split(layer_ids, edges_by_id)        
 
-        results = {}
-        instance_errors = {}
-        strategy_errors = {}
-        
+        results = {}        
         for layer_ids, edges_by_id in subgraph_topologies:
             subgraph_spec = {
                 id_: spec for id_, spec in graph_spec.items() if id_ in layer_ids
             }
 
             # TODO: it is likely that run_subgraph should run in a new process, e.g., to avoid mixing Tf1x and Tf2x.
-            _results, _instance_errors, _strategy_errors = self._run_subgraph(subgraph_spec, layer_ids, edges_by_id)
+            _results = self._run_subgraph(subgraph_spec, layer_ids, edges_by_id)
             results.update(_results)
-            instance_errors.update(_instance_errors)
-            strategy_errors.update(_strategy_errors)            
             
-        return results, instance_errors, strategy_errors
+        return results
+    
+    def _run_subgraph(self, subgraph_spec, _, edges_by_id):
+        code_map, code_errors = self._get_code_from_layers(subgraph_spec) # Other errors are fatal and should be raised
 
-    def _run_subgraph(self, subgraph_spec, layer_ids, edges_by_id):
+        _, edges_by_id = get_json_net_topology(subgraph_spec)        
+        cached_results = self._get_cached_results(code_map, subgraph_spec, edges_by_id)
+        ordered_ids = self._get_ordered_ids(subgraph_spec, edges_by_id)
+
+        assert len(ordered_ids) == len(subgraph_spec) == len(code_map) == len(code_errors)
+        
+        all_results = {}        
+        for layer_id in ordered_ids:
+            if layer_id in cached_results:
+                all_results[layer_id] = cached_results.get(layer_id)
+            else:
+                layer_results = self._compute_layer_results(
+                    layer_id, subgraph_spec[layer_id], code_map[layer_id],
+                    code_errors[layer_id], edges_by_id, all_results
+                )                
+                all_results[layer_id] = layer_results
+                self._cache_computed_results(layer_id, layer_results, code_map, edges_by_id)
+
+        assert len(all_results) == len(subgraph_spec)
+        return all_results
+
+    def _compute_layer_results(self, layer_id, layer_spec, code, code_error, edges_by_id, all_results):
+        if code is None:
+            return BaseStrategy.get_default(code_error=code_error)
+
+        layer_type = layer_spec['Type']
+        layer_name = layer_spec['Name']
+        layer_class, instantiation_error = self._get_layer_class(layer_id, layer_name, layer_type, code)
+        if layer_class is None:
+            return BaseStrategy.get_default(instantiation_error=instantiation_error)            
+        
+        input_results = {from_id: all_results[from_id] for (from_id, to_id) in edges_by_id if to_id == layer_id}
+
+        strategy = self._get_layer_strategy(layer_class)
+        results = strategy.run(layer_id, layer_type, layer_class, input_results, layer_spec)
+        return results
+
+    def _get_layer_strategy(self, layer_obj):
+        if issubclass(layer_obj, TrainingLayer):
+            strategy = DefaultStrategy()
+        elif issubclass(layer_obj, DataLayer):
+            strategy = DataStrategy()
+        elif issubclass(layer_obj, Tf1xLayer):
+            strategy = Tf1xStrategy()
+        else:
+            strategy = DefaultStrategy()
+        return strategy
+
+    def _cache_computed_results(self, layer_id, layer_results, code_map, edges_by_id):
+        if self._cache is not None:
+            self._cache.put(layer_id, layer_results, code_map, edges_by_id)
+
+    def _get_cached_results(self, code_map, graph_spec, edges_by_id):
+        if self._cache is None:
+            return {}
+
+        results = {}
+        for layer_id in graph_spec.keys():
+            cached_result = self._cache.get(layer_id, code_map, edges_by_id)
+            if cached_result is not None:
+                results[layer_id] = cached_result
+        return results
+        
+    def _get_ordered_ids(self, graph_spec, edges_by_id):
         graph = nx.DiGraph()
         graph.add_edges_from(edges_by_id)
-        graph.add_nodes_from(layer_ids)
+        graph.add_nodes_from(id_ for id_ in graph_spec.keys())
         
-        final_id = self._get_final_layer_id(subgraph_spec)
+        final_id = self._get_final_layer_id(graph_spec)
         bfs_tree = list(nx.bfs_tree(graph, final_id, reverse=True))
         ordered_ids = tuple(reversed(bfs_tree))
-
-        code_map, code_errors = self._get_code_from_layers(subgraph_spec)
-        _, edges_by_id = get_json_net_topology(subgraph_spec)
-        layer_instances, layer_infos, instance_errors = self._get_layer_instances_and_info(code_map, subgraph_spec, edges_by_id)
-                
-        strategy = self._get_subgraph_strategy(subgraph_spec)
-        results, strategy_errors = strategy.run(subgraph_spec, ordered_ids, layer_instances, layer_infos)
-
-        if self._cache is not None:
-            for layer_id, layer_info in results.items():
-                self._cache.put(layer_id, layer_info, code_map, edges_by_id)
-        
-        return results, instance_errors, strategy_errors
-
+        return ordered_ids
+    
     @simplify_spec
     def _get_final_layer_id(self, graph_spec):
         end_layers = []
@@ -232,129 +300,91 @@ class LightweightCore:
         assert len(end_layers) == 1
         return end_layers[0]
 
-    def _get_subgraph_strategy(self, subgraph_spec):
-        return Tf1xStrategy() # That's all for now...
-
     @simplify_spec
     def _get_code_from_layers(self, graph_spec):
         code_map, error_map = {}, {}        
         for layer_id, spec in graph_spec.items():
+            layer_name = spec['Name']
             code, error = self._get_layer_code(layer_id, spec)
             
-            code_map[layer_id] = code or ''
-            if error is not None:
-                error_map[layer_id] = error
+            code_map[layer_id] = code
+            error_map[layer_id] = error
 
         return code_map, error_map
 
-    def _get_layer_instances_and_info(self, code_map, graph_spec, edges_by_id):
-        instances, infos, errors = {}, {}, {}
-        for layer_id, code in code_map.items():
-            layer_type = graph_spec[layer_id]['Type']
-            
-            if code is None:
-                instances[layer_id] = None
-                log.debug(f"Code for layer {layer_id} [{layer_type}] was none. Skipping.")                            
-                continue
-
-            if self._cache is not None:
-                layer_info = self._cache.get(layer_id, code_map, edges_by_id)
-                if layer_info is not None:
-                    infos[layer_id] = layer_info
-                    log.debug(f"Using cached values for layer {layer_id} [{graph_spec[layer_id]['Type']}].")
-                    continue
-                
-            log.debug(f"Instantiating layer {layer_id} [{layer_type}]")
-            instance, error = self._get_layer_instance(layer_id, layer_type, code)
-            instances[layer_id] = instance
-
-            if instance is None:
-                log.debug(f"Couldn't instantiate {layer_id} [{layer_type}]")                        
-            
-            if error is not None:
-                errors[layer_id] = error
-                log.debug(f"Got userland error when trying to instantiate {layer_id} [{layer_type}]: {repr(error)}")                        
-
-            
-        return instances, infos, errors
 
     def _get_layer_code(self, layer_id, layer_spec):
-        # TODO: this should simply check that all the parameters are present in the spec. Until we have a stronger spec, try to render it and if it doesn't work return false
-        sf = ScriptFactory()                 
+        code = ''
+        sf = ScriptFactory()
+
+        # TODO: retrieve imports from script factory
+        top_level_imports = TOP_LEVEL_IMPORTS['standard_library'] + \
+                            TOP_LEVEL_IMPORTS['third_party'] + \
+                            TOP_LEVEL_IMPORTS['perceptilabs']
+
+        for stmt in top_level_imports:
+            code += stmt + '\n'
+
+        layer_def = DEFINITION_TABLE.get(layer_spec['Type'])
+        for stmt in layer_def.import_statements:
+            code += stmt + '\n'
+            
+        code += '\n'
+
+        layer_name_id = sanitize_layer_name(layer_spec['Name'])
         try:
             if layer_spec['Code'] is None or layer_spec['Code'] == '' or layer_spec['Code'].get('Output') is None:
-                code = sf.render_layer_code(layer_id, layer_spec['Type'], layer_spec)
+                code += sf.render_layer_code(layer_name_id, layer_spec['Type'], layer_spec)
             else:
-                code = layer_spec['Code'].get('Output')
-        except Exception as e:
-            return None, e
-        else:
-            return code, None    
-
-        
-    def _get_layer_instance(self, layer_id, layer_type, code):
-        import tensorflow as tf
-        import numpy as np
-        import dill
-        import os        
-        import pickle        
-        import zmq        
-        import sys
-        import json
-        import time        
-        import zlib
-        from queue import Queue                
-        import logging
-        import threading
-        from typing import Dict, Any, List, Tuple, Generator        
-        from flask import Flask, jsonify#, request
-        from tensorflow.python.training.tracking.base import Trackable
-        import flask
-
-        from perceptilabs.core_new.utils import Picklable
-        #from perceptilabs.core_new.communication.status import *        
-
-        from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP, REPLICATED_PROPERTIES_TABLE        
-        from perceptilabs.core_new.graph import Graph
-        from perceptilabs.core_new.graph.builder import GraphBuilder, SnapshotBuilder                
-        from perceptilabs.core_new.api.mapping import MapServer, ByteMap
-        from perceptilabs.core_new.serialization import can_serialize, serialize
-        
-        globs = globals()
-        globs.update(locals())
-        locs = {}
-
-        try:
-            exec(code, globs, locs) # TODO: catch errors here!
+                code += layer_spec['Code'].get('Output')
+            ast.parse(code)
         except SyntaxError as e:
-            error = exception_to_error(layer_id, layer_type, e)
-            return None, error
+            return None, exception_to_error(layer_id, layer_spec['Type'], e)
+            log.exception(f"Layer {layer_id} raised an error when getting layer code")                                
         except Exception as e:
-            error = exception_to_error(layer_id, layer_type, e)            
-            return None, error
-
-        if len(locs.values()) == 0:
+            log.warning(f"{str(e)}: couldn't get code for {layer_id}. Treating it as not fully specified")
+            if log.isEnabledFor(logging.DEBUG):
+                from perceptilabs.utils import stringify
+                log.warning("layer spec: \n" + stringify(layer_spec))
+                
             return None, None
-        
-        layer_class = list(locs.values())[0]
-        
-        try:
-            instance = layer_class()
-        except Exception as e:
-            # "userland runtime errors"
-            error = exception_to_error(layer_id, layer_type, e)                        
-            return None, error
-        
-        return instance, None
+        else:
+            return code, None
 
+    def _get_layer_class(self, layer_id, layer_name, layer_type, code):
+
+        is_unix = os.name != 'nt' # Windows has permission issues when deleting tempfiles
+        with NamedTemporaryFile('wt', delete=is_unix, suffix='.py') as f:
+            f.write(code)
+            f.flush()
+
+            spec = importlib.util.spec_from_file_location("my_module", f.name)        
+            module = importlib.util.module_from_spec(spec)
+            
+            try:
+                spec.loader.exec_module(module)
+            except Exception as e:
+                error = exception_to_error(layer_id, layer_type, e)
+                log.exception(f"Layer {layer_id} raised an error when executing module")                                        
+                return None, error
+
+            class_name = layer_type + sanitize_layer_name(layer_name)
+            class_object = getattr(module, class_name)
+        
+        if not is_unix:
+            os.remove(f.name)
+
+        return class_object, None
+        
 
 class LightweightCoreAdapter:
     """ Compability with v1 core """
-    def __init__(self, graph_dict, layer_extras_reader, error_handler, issue_handler, cache):
+    def __init__(self, graph_dict, layer_extras_reader, error_handler, issue_handler, cache, data_container):
         self._graph_dict = graph_dict
         self._error_handler = error_handler
         self._extras_reader = layer_extras_reader
         self._error_handler = error_handler
+        self._data_container = data_container
         
         self._core = LightweightCore(
             issue_handler=issue_handler,
@@ -363,28 +393,39 @@ class LightweightCoreAdapter:
 
     def run(self):
         graph_spec = copy.deepcopy(self._graph_dict)
-        results, instance_errors, strategy_errors = self._core.run(graph_spec)
+        results = self._core.run(graph_spec)
 
         extras_dict = {}
+        self._errors_dict = {}                    
         for layer_id, layer_info in results.items():
+            var_names = ['(sample)']            
+            self._data_container.store_value(layer_id, '(sample)', layer_info.sample)
+            for name, value in layer_info.variables.items():
+                var_names.append(name)
+                self._data_container.store_value(layer_id, name, value)
+                
+            default_var = '(sample)'
+            
             entry = {
-                'Sample': layer_info.sample,
+                'Sample': layer_info.sample.tolist() if layer_info.sample is not None else None,
                 'outShape': [] if layer_info.out_shape is None else list(layer_info.out_shape),
-                'inShape': [] if layer_info.in_shape is None else list(layer_info.in_shape),
-                'Variables': layer_info.variables,
-                'Default_var': layer_info.default_var
+                'inShape': [],
+                'Variables': var_names,
+                'Default_var': default_var,
+                'cols': layer_info.columns
             }
             extras_dict[layer_id] = entry
-            self._extras_reader.set_dict(extras_dict)
 
-        self._errors_dict = {}            
-        for layer_id, error in strategy_errors.items():
-            print(layer_id, graph_spec[layer_id]['Type'], error)                        
-            self._errors_dict[layer_id] = error
-        
-        for layer_id, error in instance_errors.items():
-            print(error)            
-            self._errors_dict[layer_id] = error            
+            if layer_info.strategy_error is not None:
+                self._errors_dict[layer_id] = layer_info.strategy_error
+                
+            if layer_info.instantiation_error is not None:
+                self._errors_dict[layer_id] = layer_info.instantiation_error
+                
+            if layer_info.code_error is not None:
+                self._errors_dict[layer_id] = layer_info.code_error
+            
+        self._extras_reader.set_dict(extras_dict)
 
     @property
     def error_handler(self):
@@ -422,16 +463,22 @@ if __name__ == "__main__":
     
     x = lw.run(dd)
 
-    t1 = time.time()
-    
-    y = lw.run(dd)    
-
-    t2 = time.time()
+    print('columns', x['1564399775664'].columns)
 
 
-    print('2nd, 1st',t2-t1, t1-t0)
-    
     import pdb; pdb.set_trace()
+    
+    #t1 = time.time()
+    
+    #y = lw.run(dd)    
+
+    #t2 = time.time()
+
+
+
+    
+    #print('2nd, 1st',t2-t1, t1-t0)
+    
         
             
 
