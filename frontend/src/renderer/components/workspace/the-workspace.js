@@ -31,8 +31,6 @@ export default {
     TheMiniMap, FilePickerPopup, SidebarLayers
   },
   mounted() {
-    console.log(this.$refs.networkField);
-    
     window.addEventListener('mousemove',  this.startCursorListener);
   },
   beforeDestroy() {
