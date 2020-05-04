@@ -157,7 +157,7 @@ DEFINITION_TABLE = {
         'tf1x.j2',
         'layer_tf1x_switch',
         {
-            'selected_layer': lambda specs: specs['Properties']['selected_layer'],
+            'selected_layer': lambda specs: sanitize_layer_name(specs['Properties']['selected_layer']),
         },
         import_statements=[
             'import tensorflow as tf',
@@ -339,8 +339,8 @@ DEFINITION_TABLE = {
         'layer_tf1x_gan',
         {   
             'batch_size': lambda specs: specs['Properties']['batch_size'],
-            'switch_layer': lambda specs: specs['Properties']['switch_layer'],
-            'real_layer': lambda specs: specs['Properties']['real_data_layer'],
+            'switch_layer': lambda specs: sanitize_layer_name(specs['Properties']['switch_layer']),
+            'real_layer': lambda specs: sanitize_layer_name(specs['Properties']['real_data_layer']),
             'n_epochs': lambda specs: specs['Properties']['Epochs'],
             'generator_optimizer': resolve_tf1x_optimizer,
             'discriminator_optimizer': resolve_tf1x_optimizer,

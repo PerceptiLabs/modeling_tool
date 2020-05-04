@@ -1,15 +1,14 @@
 {% macro run_normal(layer_name, switch_layer, real_layer, batch_size, n_epochs, class_weights, generator_optimizer, discriminator_optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory) %}
         self._status = 'initializing'
 
-        real_data_layer_id = '_Data_1' #'{{real_layer}}'
-        switch_layer_id =  '_Switch_1' #'{{switch_layer}}'    
+        real_data_layer_id = '{{real_layer}}' 
+        switch_layer_id =  '{{switch_layer}}' 
         
         for node in graph.data_nodes:
             if node.layer_id != real_data_layer_id and not node.is_training_node:
                 random_data_node = node
             elif node.layer_id == real_data_layer_id:
                 real_data_node = node
-
 
         training_node = graph.nodes[-1]
         switch_node = graph.get_node_by_id(switch_layer_id)
@@ -19,7 +18,7 @@
         
         self._switch_layer_id = switch_layer_id
         self._selected_layer_id = switch_node.layer._selected_layer_id
-        all_nodes = graph.get_nodes_inbetween(random_data_node, output_node)
+
         gen_nodes = graph.get_nodes_inbetween(random_data_node, switch_node)
         dis_nodes = graph.get_nodes_inbetween(switch_node, output_node)
         real_nodes = graph.get_nodes_inbetween(real_data_node, switch_node)
@@ -111,20 +110,22 @@
                 layer_output_tensors[node.layer_id] = y
             return layer_output_tensors
 
+        print([node.layer_id for node in gen_nodes])
         def build_gen_graph(random_tensor):
             switch_node.layer._selected_layer_id = gen_nodes[-2].layer_id
             layer_output_tensors = {
                 random_data_node.layer_id: random_tensor
             }
-
             for node in gen_nodes:
+                print(node.layer_id)
                 args = []
                 for input_node in graph.get_input_nodes(node):
                     if input_node in gen_nodes:
                         args.append(layer_output_tensors[input_node.layer_id])
-                    else:
+                    elif input_node == random_data_node:
                         args.append(layer_output_tensors[random_data_node.layer_id])
-                print(args)
+                    else:
+                        args.append(layer_output_tensors[gen_nodes[-2].layer_id])
                 y = node.layer_instance(*args)
                 layer_output_tensors[node.layer_id] = y
             return layer_output_tensors
