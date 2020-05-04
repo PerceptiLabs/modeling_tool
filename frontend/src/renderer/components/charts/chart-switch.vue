@@ -161,13 +161,14 @@
     width: 100%;
     height: 2.5rem;
     padding: 0 1rem 0 1rem;
-    background: rgba(97, 133, 238, 0.1);
+    background: #090f19;
     border-bottom: 1px solid $border-color;
   }
   .base-chart_main {
     position: relative;
     flex: 1 1 100%;
     min-height: 9rem;
+    background: #222939;
   }
   .chart-head_title {
     overflow: hidden;
