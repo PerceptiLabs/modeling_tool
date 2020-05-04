@@ -1005,7 +1005,7 @@ const actions = {
   //---------------
   //  NETWORK
   //---------------
-  ADD_network({commit, dispatch}, { network, apiMeta = {} }) {
+  ADD_network({commit, dispatch}, { network, apiMeta = {} } = {}) {
     if(isElectron()) {
       commit('add_network', { network, apiMeta, dispatch });
     } else {
