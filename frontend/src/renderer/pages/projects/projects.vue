@@ -9,14 +9,14 @@
             style="margin: 5px 20px 0 0; cursor: pointer"
             )
             img(src="../../../../static/img/project-page/import.svg")
-          span.btn-round-icon(@click="toggleSelectedItems()")
-            img(v-if="isAtLeastOneItemSelected()" src="../../../../static/img/project-page/minus.svg")
-            img(v-if="!isAtLeastOneItemSelected()" src="../../../../static/img/project-page/checked.svg")
-          span.btn-round-icon(@click="handleAddNetworkModal" :class="{'high-lighted': isNewUser}")
+          //- span.btn-round-icon(@click="toggleSelectedItems()")
+          //-   img(v-if="isAtLeastOneItemSelected()" src="../../../../static/img/project-page/minus.svg")
+          //-   img(v-if="!isAtLeastOneItemSelected()" src="../../../../static/img/project-page/checked.svg")
+          span.btn-round-icon.btn-rounded-new(@click="handleAddNetworkModal" :class="{'high-lighted': isNewUser}")
             img(src="../../../../static/img/project-page/plus.svg")
             div(v-if="isNewUser").create-first-model Create your first model
           div.search-input
-            img(src="../../../../static/img/project-page/search-input.svg")
+            img(src="../../../../static/img/search-models.svg")
             input(
               type="text"
               placeholder="Search"
@@ -54,18 +54,26 @@
               img(v-if="isItemSelected(model.networkID)" src="../../../../static/img/project-page/checked.svg")
             span.model-name(v-tooltip:bottom="'Click to view Model Card'" @click.stop="gotToNetworkView(index)") {{model.networkName}}
 
-            svg.is-favorite(v-if="model.isFavorite" @click.stop="setFavoriteValue(model.id, false)" width="21" height="19" viewBox="0 0 21 19" fill="none")
+            svg.is-favorite(v-if="model.isFavorite" @click.stop="setFavoriteValue(index, false)" width="21" height="19" viewBox="0 0 21 19" fill="none")
               path(d="M9.54894 0.927049C9.8483 0.0057385 11.1517 0.0057404 11.4511 0.927051L13.0819 5.9463C13.2158 6.35833 13.5997 6.63729 14.033 6.63729H19.3105C20.2792 6.63729 20.682 7.8769 19.8983 8.4463L15.6287 11.5484C15.2782 11.803 15.1315 12.2544 15.2654 12.6664L16.8963 17.6857C17.1956 18.607 16.1411 19.3731 15.3574 18.8037L11.0878 15.7016C10.7373 15.447 10.2627 15.447 9.91221 15.7016L5.64258 18.8037C4.85887 19.3731 3.80439 18.607 4.10374 17.6857L5.7346 12.6664C5.86847 12.2544 5.72181 11.803 5.37132 11.5484L1.10169 8.4463C0.317977 7.8769 0.720754 6.63729 1.68948 6.63729H6.96703C7.40026 6.63729 7.78421 6.35833 7.91809 5.9463L9.54894 0.927049Z" fill="#6185EE")
-            svg.is-not-favorite(v-if="!model.isFavorite" @click.stop="setFavoriteValue(model.id, true)" width='22' height='20' viewBox='0 0 22 20' fill='none' xmlns='http://www.w3.org/2000/svg')
-              path(d='M10.5245 1.08156C10.6741 0.620903 11.3259 0.620907 11.4755 1.08156L13.2186 6.4463C13.4195 7.06434 13.9954 7.48278 14.6452 7.48278H20.2861C20.7704 7.48278 20.9718 8.10258 20.5799 8.38729L16.0164 11.7029C15.4907 12.0848 15.2707 12.7619 15.4715 13.3799L17.2146 18.7447C17.3643 19.2053 16.8371 19.5884 16.4452 19.3037L11.8817 15.9881C11.3559 15.6061 10.6441 15.6061 10.1183 15.9881L5.5548 19.3037C5.16294 19.5884 4.6357 19.2053 4.78538 18.7447L6.52849 13.3799C6.7293 12.7619 6.50931 12.0848 5.98358 11.7029L1.42006 8.38729C1.0282 8.10259 1.22959 7.48278 1.71395 7.48278H7.35477C8.00461 7.48278 8.58055 7.06434 8.78136 6.4463L10.5245 1.08156Z' stroke='#E1E1E1')
+            svg.is-not-favorite(v-if="!model.isFavorite" @click.stop="setFavoriteValue(index, true)" width='22' height='20' viewBox='0 0 22 20' fill='none' xmlns='http://www.w3.org/2000/svg')
+              path(d='M10.5245 1.08156C10.6741 0.620903 11.3259 0.620907 11.4755 1.08156L13.2186 6.4463C13.4195 7.06434 13.9954 7.48278 14.6452 7.48278H20.2861C20.7704 7.48278 20.9718 8.10258 20.5799 8.38729L16.0164 11.7029C15.4907 12.0848 15.2707 12.7619 15.4715 13.3799L17.2146 18.7447C17.3643 19.2053 16.8371 19.5884 16.4452 19.3037L11.8817 15.9881C11.3559 15.6061 10.6441 15.6061 10.1183 15.9881L5.5548 19.3037C5.16294 19.5884 4.6357 19.2053 4.78538 18.7447L6.52849 13.3799C6.7293 12.7619 6.50931 12.0848 5.98358 11.7029L1.42006 8.38729C1.0282 8.10259 1.22959 7.48278 1.71395 7.48278H7.35477C8.00461 7.48278 8.58055 7.06434 8.78136 6.4463L10.5245 1.08156Z' stroke='#AEAEAE')
           div.column-2
             span(@click.stop="") {{model.networkMeta.coreStatus.Status}}
           div.column-3
-            span(@click.stop="") {{model.savedVersion}}
+            span(@click.stop="") -
           div.column-4
-            span(@click.stop="") {{model.sessionEndTime}}
-          div.column-5 -
-          div.column-6(@click.stop="") -
+            span(@click.stop="") Placeholder
+          div.column-5
+            collaborator-avatar(
+                @click.stop=""
+                :list="[{id: 1, name: 'Anton', img: null,}, {id: 2, name: 'Robert', img: null,}, {id: 3, name: 'David', img: null,}]"
+              )
+          div.column-6(@click.stop="")
+            collaborator-avatar(
+                :list="[{id: 1, name: 'Robert', img: null,}]"
+              )
+            | {{model.apiMeta.updated.substring(0, 10)}}
         
     file-picker-popup(
       v-if="showFilePickerPopup"
@@ -158,14 +166,14 @@
         showFilePickerPopup: state => state.globalView.globalPopup.showFilePickerPopup
       }),
       workspaceContent() {
-        return this.$store.state.mod_workspace.workspaceContent
+        return this.$store.state.mod_workspace.workspaceContent;
       },
       filteredProjects() {
         this.selectedProject = null;
         return this.projects.filter((project)=> project.name.match(this.search))
       }
     },
-    watch: {
+    watch: {     
       'localUserInfo.projectsList.length': {
         handler() {
           if(!this.localUserInfo) return;
@@ -227,6 +235,7 @@
         API_getModel:       'mod_api/API_getModel',
         setActivePageAction: 'modal_pages/setActivePageAction',
         delete_network : 'mod_workspace/DELETE_network',
+        UPDATE_MODE_ACTION : 'mod_workspace/UPDATE_MODE_ACTION',
       }),
       ...mapMutations({
         // setPageTitleMutation: 'globalView/setPageTitleMutation'
@@ -335,7 +344,19 @@
         this.modelList = newModelList;
         this.updateInitialModelListData();
       },
-      setFavoriteValue(itemId, value) {
+      setFavoriteValue(index, value) {
+        // let setIndex = [];
+        // this.workspaceContent = this.workspaceContent.map((network, index) =>  {
+          
+        // })
+
+        this.UPDATE_MODE_ACTION({index, field: 'isFavorite', value});
+
+        // removeIndexes.map((index) => {
+        // })
+        // udate model fild value
+
+
         let newModelList = [...this.modelList];
         newModelList = newModelList.map(item => {
           if (item.id === itemId) {
@@ -343,6 +364,7 @@
           }
           return item;
         })
+
       },
       isAllItemSelectedFavorite() {
         const selectedLength = this.selectedListIds.length;
@@ -427,15 +449,24 @@
   }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
+  * {
+    font-family: "Nunito Sans";
+  }
   .project-wrapper {
-    margin-left: 40px;
+    margin-left: 46px;
     background-color: #23252A;
     height: 100vh;
+    background: linear-gradient(180deg, #363E51 0%, rgba(54, 62, 81, 0) 100%);
+    border: 1px solid rgba(97, 133, 238, 0.4);
+    box-sizing: border-box;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.25);
+    padding-left: 10px;
+    padding-right: 19px;
   }
   .header-controls {
     padding: 7px 40px;
-    border-bottom: 1px solid #363E51;;
+    border-bottom: 1px solid #464D5F;;
     display: flex;
     .left-side {
       display: flex;
@@ -458,8 +489,8 @@
     input {
       padding-left: 44px;
       background-color: transparent;
-      border: 1px solid #363E51;
-      border-radius: 5px;
+      border: 1px solid #4D556A;
+      border-radius: 2px;
       height: 29px;
     }
   }
@@ -498,6 +529,9 @@
       position: relative;
       box-shadow: 0 0 10px #FFFFFF;
     }
+  }
+  .btn-rounded-new {
+    border-radius: 2px;
   }
   .pl-40 {
     padding-left: 40px;
@@ -566,21 +600,21 @@
       .is-favorite {
         cursor: pointer;
         position: absolute;
-        right: 20px;
+        left: 80px;
         top: 50%;
         transform: translateY(-50%);
       }
       .is-not-favorite {
         cursor: pointer;
-        opacity: 0;
+        // opacity: 0;
         position: absolute;
-        right: 20px;
+        left: 80px;
         top: 50%;
         transform: translateY(-50%);
         transition: 0.1s;
-        &:hover {
-          opacity: 1;
-        }
+        // &:hover {
+        //   opacity: 1;
+        // }
       }
       .model-name {
         cursor: pointer;
