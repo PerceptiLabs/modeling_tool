@@ -88,8 +88,6 @@
         tst_init = iterator.make_initializer(dataset_tst)        
         real_tensor , random_tensor = iterator.get_next()
 
-        print(real_tensor.get_shape())
-        print(random_tensor.get_shape())
         # Build the TensorFlow graph # TODO: perhaps this part can be delegated to the graph?
 
         def build_real_graph(real_tensor):
@@ -126,6 +124,7 @@
                         args.append(layer_output_tensors[input_node.layer_id])
                     else:
                         args.append(layer_output_tensors[random_data_node.layer_id])
+                print(args)
                 y = node.layer_instance(*args)
                 layer_output_tensors[node.layer_id] = y
             return layer_output_tensors
@@ -135,10 +134,8 @@
                 switch_node.layer_id: input_tensor
             }
             for node in dis_nodes:
-                print(node.layer_id)
                 args = []
                 for input_node in graph.get_input_nodes(node):
-                    print(input_node.layer_id)
                     args.append(layer_output_tensors[input_node.layer_id])
                     y = node.layer_instance(*args)
                 layer_output_tensors[node.layer_id] = y
@@ -150,14 +147,9 @@
         real_output_tensor = real_layer_output_tensors[switch_layer_id]
         gen_output_tensor = gen_layer_output_tensors[switch_layer_id]
         
-        print(real_layer_output_tensors)
-        print(gen_layer_output_tensors)
-        
         real_dis_layer_output_tensors = build_dis_graph(real_output_tensor)
         random_dis_layer_output_tensors = build_dis_graph(gen_output_tensor)
         
-        # print(real_dis_layer_output_tensors)
-        # print(random_dis_layer_output_tensors)
         
         real_dis_output_tensor = real_dis_layer_output_tensors[output_layer_id]
         random_dis_output_tensor = random_dis_layer_output_tensors[output_layer_id]
@@ -598,6 +590,11 @@ class {{layer_name}}(GANLayer):
         """Returns a single data sample"""        
         return np.empty(())
 
+    @property
+    def columns(self) -> List[str]: 
+        """Column names. Corresponds to each column in a sample """
+        return []
+    
     @property
     def size_training(self) -> int:
         """Returns the size of the training dataset"""                                    

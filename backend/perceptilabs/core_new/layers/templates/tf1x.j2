@@ -3,10 +3,10 @@ class {{layer_name}}(Tf1xLayer):
     def __init__(self):
         self._selected_layer_id = '{{selected_layer}}'
 
-    def __call__(self, x1, x2): #x: Dict[tf.Tensor]  TODO: change this when backend is updated
+    def __call__(self, x): #x: Dict[tf.Tensor]  TODO: change this when backend is updated
         """ Takes the outputs of all the incoming layers as input and returns the output of that layer."""
         
-        y = x1 #x[self._selected_layer_id]
+        y = x[0] #x[self._selected_layer_id]
         self._variables = {k: v for k, v in locals().items() if dill.pickles(v)}    
         return y
 

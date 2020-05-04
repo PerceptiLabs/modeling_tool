@@ -453,11 +453,12 @@ class GANLayerReplica(GANLayer):
                  status, layer_weights, layer_biases, layer_gradients, layer_outputs,
                  gen_layer_outputs, dis_layer_outputs,
                  batch_size, training_iteration, validation_iteration,
-                 testing_iteration, progress, epoch, export_modes):
+                 testing_iteration, progress, epoch, columns, export_modes):
 
         self._export_modes = export_modes
         self._epoch = epoch
         self._sample = sample
+        self._columns = columns
         self._size_training = size_training
         self._size_validation = size_validation        
         self._size_testing = size_testing
@@ -495,6 +496,10 @@ class GANLayerReplica(GANLayer):
     @property
     def sample(self):
         return self._sample 
+
+    @property
+    def columns(self):
+        return self._columns
 
     @property
     def size_training(self):
