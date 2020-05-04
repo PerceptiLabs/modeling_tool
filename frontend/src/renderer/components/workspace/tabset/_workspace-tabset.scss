@@ -1,14 +1,15 @@
 .workspace_tab {
-  min-width: 16.7143em;
+  min-width: 12rem;
   display: flex;
   align-items: center;
   padding-right: 0;
+  margin-right: 0.5rem;
 
   background-color: $bg-toolbar-2;
   border: 1px solid rgba(97, 133, 238, 0.2);
   border-top: 2px solid rgba(97, 133, 238, 0.2);
   border-radius: 2px 2px 0px 0px;
-
+  
   &.workspace_tab--disable {
     pointer-events: none;
   }
@@ -16,6 +17,14 @@
   &.workspace_tab--active {
     border-top: 2px solid $color-6;
   }
+
+  &.tab_statistics,
+  &.tab_testing {
+    padding: 0 2rem;
+    width: 12rem;
+    justify-content: space-around;
+  }
+
 }
 .tab_close {
   margin-right: 1.25rem;
@@ -30,19 +39,11 @@
   flex: 1;
 }
 .tab_statistics {
-  height: 100%;
-  padding: .25em 1.7em;
-  border-radius: 1rem 1rem 0 0;
   font-size: 1rem;
-  min-width: auto;
   .icon {
     font-size: 1.2em;
   }
   &.tab--testing {
-    border-left: 1px solid;
-    // margin-left: -1.25rem;
-    padding-left: .8em;
-    padding-right: .8em;
     &.active, &:hover {
       background: $color-10;
       color: $bg-toolbar;
