@@ -1,5 +1,7 @@
 <template lang="pug">
-  aside.workspace_sidebar(:class="{'tutorial-active': activeStepStoryboard === 3}")
+  aside.workspace_sidebar(
+    :class="{'tutorial-active': activeStepStoryboard === 3}"
+    v-if="!statisticsIsOpen && !testIsOpen")
     sidebar-layers
 
 </template>
