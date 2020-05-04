@@ -35,7 +35,7 @@ export default {
       let elList = this.currentNetworkList;
       this.inputLayers.push({
         text: elList[id].layerName,
-        value: elList[id].layerId,
+        value: elList[id].layerName,
         tutorialId: elList[id].tutorialId
       })
     });
