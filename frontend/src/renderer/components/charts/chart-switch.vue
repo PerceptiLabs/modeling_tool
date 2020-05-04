@@ -133,11 +133,17 @@
 
 <style lang="scss" scoped>
   @import "../../scss/base";
+
+  $border-color: rgba(97, 133, 238, 0.4);
+
   .base-chart {
     width: 100%;
     display: flex;
     overflow: hidden;
     flex-direction: column;
+    background: #212839;
+    border: 1px solid $border-color;
+
     &.full-view {
       position: absolute;
       top: 0;
@@ -154,8 +160,9 @@
     justify-content: space-between;
     width: 100%;
     height: 3rem;
-    padding: 0 1rem 0 2rem;
-    background: $bg-window;
+    padding: 0 1rem 0 1rem;
+    background: rgba(97, 133, 238, 0.1);
+    border-bottom: 1px solid $border-color;
   }
   .base-chart_main {
     position: relative;
@@ -166,6 +173,11 @@
     overflow: hidden;
     h5 {
       margin: 0;
+      font-family: Nunito Sans;
+      font-style: normal;
+      font-weight: 600;
+      font-size: 11px;
+      line-height: 15px;
     }
   }
   .base-chart_info {
