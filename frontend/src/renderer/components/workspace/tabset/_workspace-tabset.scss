@@ -40,7 +40,7 @@
   }
   &.tab--testing {
     border-left: 1px solid;
-    margin-left: -1.25rem;
+    // margin-left: -1.25rem;
     padding-left: .8em;
     padding-right: .8em;
     &.active, &:hover {
@@ -50,21 +50,3 @@
   }
 }
 
-
-.toggle-sidebar {
-  .btn--toolbar {
-    height: 1.9em;
-    width: 1.9em;
-    font-size: 1.5714rem;
-    background-color: $bg-toolbar;
-    border-radius: 0;
-  }
-  .icon {
-    @include multi-transition(transform)
-  }
-  &.hide-sidebar {
-    .btn--toolbar .icon{
-      transform: rotate(180deg);
-    }
-  }
-}
