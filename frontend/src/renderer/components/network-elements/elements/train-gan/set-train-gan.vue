@@ -120,7 +120,7 @@ export default {
     this.inputId.forEach((id)=> {
       this.inputLayers.push({
         text: elList[id].layerName,
-        value: elList[id].layerName,
+        value: elList[id].layerId,
         tutorialId: elList[id].tutorialId
       })
     });
@@ -135,7 +135,7 @@ export default {
       if(elList[key].layerType==="Other") {
         this.allSwitchLayers.push({
           text: elList[key].layerName,
-          value: elList[key].layerId,
+          value: elList[key].layerName,
           tutorialId: elList[key].tutorialId
         })
       }
