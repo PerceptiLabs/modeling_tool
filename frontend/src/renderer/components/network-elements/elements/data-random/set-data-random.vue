@@ -34,11 +34,6 @@
           .form_label Max:
           .form_input
             input(type="number" v-model="settings.max")
-      .settings-layer_section(style="position:relative")
-        .form_row
-          .form_label Batch Size:
-          .form_input
-            input(type="number" v-model="settings.batch_size")
       .settings-layer_section
         .form_row
           .form_label Shape:
@@ -71,7 +66,6 @@
           mean: '0.1',
           stddev: '0.5',
           min: '0.1',
-          batch_size: '3',
           max: '3.4',
           distribution: 'Normal',
           shape: '(1, 5, 7, 4, 7)',
