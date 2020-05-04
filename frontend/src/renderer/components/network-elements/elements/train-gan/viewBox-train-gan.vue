@@ -39,18 +39,21 @@
         :custom-color="colorListAccuracy"
       )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Images'")
-      chart-switch(
-        key="5"
-        chart-label="Real Inpput"
-        :chart-data="chartData.Images.Real_Input"
-        :custom-color="colorListAccuracy"
-      )
-      chart-switch(
-        key="6"
-        chart-label="Generated Output"
-        :chart-data="chartData.Images.Generated_Output"
-        :custom-color="colorListAccuracy"
-      )
+      .statistics-box_row
+        .statistics-box_col
+          chart-switch(
+            key="5"
+            chart-label="Real Inpput"
+            :chart-data="chartData.Images.Real_Input"
+            :custom-color="colorListAccuracy"
+          )
+        .statistics-box_col
+          chart-switch(
+            key="6"
+            chart-label="Generated Output"
+            :chart-data="chartData.Images.Generated_Output"
+            :custom-color="colorListAccuracy"
+          )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Data_distribution'")
       chart-switch(
         key="11"
