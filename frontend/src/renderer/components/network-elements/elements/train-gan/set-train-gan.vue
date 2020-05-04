@@ -5,14 +5,6 @@
     @press-confirm="confirmSettings"
   )
     template(slot="Settings-content")
-      // .settings-layer_section
-      //   .form_row(v-tooltip-interactive:right="interactiveInfo.labels")
-      //     .form_label Labels:
-      //     #tutorial_labels.form_input(data-tutorial-hover-info)
-      //       base-select(
-      //         v-model="settings.Labels"
-      //         :select-options="inputLayers"
-      //       )
       .settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.labels")
           .form_label Switch:
@@ -117,13 +109,6 @@ export default {
   mixins: [ mixinSet ],
   beforeMount() {
     let elList = this.currentNetworkList;
-    this.inputId.forEach((id)=> {
-      this.inputLayers.push({
-        text: elList[id].layerName,
-        value: elList[id].layerId,
-        tutorialId: elList[id].tutorialId
-      })
-    });
     for(let key in elList) {
       if(elList[key].layerType==="Data") {
         this.allRealDataLayers.push({
@@ -140,17 +125,14 @@ export default {
         })
       }
     }
-    if(!this.settings.Labels && this.inputLayers.length) this.settings.Labels = this.inputLayers[0].value.toString();
     if(!this.settings.switch_layer && this.allSwitchLayers.length) this.settings.switch_layer = this.allSwitchLayers[0].value.toString();
     if(!this.settings.real_data_layer && this.allRealDataLayers.length) this.settings.real_data_layer = this.allRealDataLayers[0].value.toString();
   },
   data() {
     return {
-      inputLayers: [],
       allSwitchLayers: [],
       allRealDataLayers: [],
       settings: {
-//        Labels: '',
         switch_layer: '',
         real_data_layer: '',
         Epochs: '10',
@@ -172,14 +154,6 @@ export default {
           title: 'Labels',
           text: 'Choose which input connection is represent the labels'
         },
-        // costFunction: {
-        //   title: 'Split on',
-        //   text: 'Choose in which position to split on at the chosen axis'
-        // },
-        // optimizer: {
-        //   title: 'Optimizer',
-        //   text: 'Choose which optimizer to use'
-        // },
         learningRate: {
           title: 'Learning rate',
           text: 'Set the learning rate'
@@ -191,13 +165,7 @@ export default {
     ...mapGetters({
       isTutorialMode:     'mod_tutorials/getIstutorialMode',
       currentNetworkList: 'mod_workspace/GET_currentNetworkElementList'
-    }),
-    inputId() {
-      return this.currentEl.connectionIn
-    },
-    notLabelsInput() {
-      return this.inputId.filter((id)=>id !== this.settings.Labels)
-    },
+    })
   },
   methods: {
     ...mapActions({
@@ -207,22 +175,6 @@ export default {
     saveSettings(tabName) {
       this.applySettings(tabName);
       this.$nextTick(()=> this.tutorialPointActivate({way: 'next', validation: 'tutorial_labels'}));
-    },
-  },
-  watch: {
-    'settings.Labels': {
-      handler(newValue) {
-        let label = this.inputLayers.filter((item)=> {
-          return item.value.toString() === newValue;
-        });
-        if(this.isTutorialMode && label[0].text !== 'OneHot_1') {
-          label = this.inputLayers.filter((item)=> {
-            return item.text === 'OneHot_1';
-          });
-            this.settings.Labels = label[0].value.toString();
-            this.popupInfo("Please set One Hot for Labels field when you in tutorial mode");
-        }
-      }
     },
   }
 }
