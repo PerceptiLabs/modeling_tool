@@ -141,7 +141,7 @@
     display: flex;
     overflow: hidden;
     flex-direction: column;
-    background: #212839;
+    background: $bg-workspace-3;
     border: 1px solid $border-color;
 
     &.full-view {
