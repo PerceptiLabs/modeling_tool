@@ -159,7 +159,7 @@
     flex: 0 0 auto;
     justify-content: space-between;
     width: 100%;
-    height: 3rem;
+    height: 2.5rem;
     padding: 0 1rem 0 1rem;
     background: rgba(97, 133, 238, 0.1);
     border-bottom: 1px solid $border-color;
@@ -189,5 +189,8 @@
     .full-view & {
       z-index: 3;
     }
+  }
+  .chart-head_meta i {
+    font-size: 1.3rem;
   }
 </style>
