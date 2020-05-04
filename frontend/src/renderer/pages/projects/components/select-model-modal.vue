@@ -36,7 +36,11 @@
                     button.action-button.create-btn.ml-5(
                         :class="{'is-disabled': isDisableCreateAction()}"
                         @click="createModel()"
-                    ) Create
+                    )
+                        svg.plus-icon(width='17' height='17' viewbox='0 0 17 17' fill='none' xmlns='http://www.w3.org/2000/svg')
+                            path(d='M11.7924 8.82157H8.96839V11.6386H8.0387V8.82157H5.22168V7.88489H8.0387V5.06787H8.96839V7.88489H11.7924V8.82157Z' fill='white')
+                            rect(x='0.5' y='0.5' width='16' height='16' rx='1.5' stroke='white')
+                        | Create
 </template>
 <script>
   import imageClassification    from '@/core/basic-template/image-classification.js'
@@ -347,5 +351,9 @@ export default {
             transform-origin: 50% 50%;
             transform: translate(-50%, -50%) rotate(-45deg);
         }
+    }
+    .plus-icon {
+        vertical-align: sub;
+        margin-right: 5px;
     }
 </style>

@@ -9,14 +9,14 @@
             style="margin: 5px 20px 0 0; cursor: pointer"
             )
             img(src="../../../../static/img/project-page/import.svg")
-          span.btn-round-icon(@click="toggleSelectedItems()")
-            img(v-if="isAtLeastOneItemSelected()" src="../../../../static/img/project-page/minus.svg")
-            img(v-if="!isAtLeastOneItemSelected()" src="../../../../static/img/project-page/checked.svg")
-          span.btn-round-icon(@click="handleAddNetworkModal" :class="{'high-lighted': isNewUser}")
+          //- span.btn-round-icon(@click="toggleSelectedItems()")
+          //-   img(v-if="isAtLeastOneItemSelected()" src="../../../../static/img/project-page/minus.svg")
+          //-   img(v-if="!isAtLeastOneItemSelected()" src="../../../../static/img/project-page/checked.svg")
+          span.btn-round-icon.btn-rounded-new(@click="handleAddNetworkModal" :class="{'high-lighted': isNewUser}")
             img(src="../../../../static/img/project-page/plus.svg")
             div(v-if="isNewUser").create-first-model Create your first model
           div.search-input
-            img(src="../../../../static/img/project-page/search-input.svg")
+            img(src="../../../../static/img/search-models.svg")
             input(
               type="text"
               placeholder="Search"
@@ -48,52 +48,33 @@
           div.column-4 Session End Time
           div.column-5 Collaborators
           div.column-6 Last Modified
-        div.models-list-row.model-list-item(v-for="(model, index) in workspaceContent"  @click="toggleItemSelection(model.id)" :key="model.networkID" :class="{'is-selected': isItemSelected(model.id)}")
+        div.models-list-row.model-list-item(v-for="(model, index) in workspaceContent"  @click="toggleItemSelection(model.networkID)" :key="model.networkID" :class="{'is-selected': isItemSelected(model.networkID)}")
           div.column-1
             span.btn-round-icon
-              img(v-if="isItemSelected(model.id)" src="../../../../static/img/project-page/checked.svg")
-            span.model-name(v-tooltip:bottom="'Click to view Model Card'" @click.stop="gotToNetworkView(index)") {{model.networkName}} | {{model.networkID}}
+              img(v-if="isItemSelected(model.networkID)" src="../../../../static/img/project-page/checked.svg")
+            span.model-name(v-tooltip:bottom="'Click to view Model Card'" @click.stop="gotToNetworkView(index)") {{model.networkName}}
 
-            svg.is-favorite(v-if="model.isFavorite" @click.stop="setFavoriteValue(model.id, false)" width="21" height="19" viewBox="0 0 21 19" fill="none")
+            svg.is-favorite(v-if="model.isFavorite" @click.stop="setFavoriteValue(index, false)" width="21" height="19" viewBox="0 0 21 19" fill="none")
               path(d="M9.54894 0.927049C9.8483 0.0057385 11.1517 0.0057404 11.4511 0.927051L13.0819 5.9463C13.2158 6.35833 13.5997 6.63729 14.033 6.63729H19.3105C20.2792 6.63729 20.682 7.8769 19.8983 8.4463L15.6287 11.5484C15.2782 11.803 15.1315 12.2544 15.2654 12.6664L16.8963 17.6857C17.1956 18.607 16.1411 19.3731 15.3574 18.8037L11.0878 15.7016C10.7373 15.447 10.2627 15.447 9.91221 15.7016L5.64258 18.8037C4.85887 19.3731 3.80439 18.607 4.10374 17.6857L5.7346 12.6664C5.86847 12.2544 5.72181 11.803 5.37132 11.5484L1.10169 8.4463C0.317977 7.8769 0.720754 6.63729 1.68948 6.63729H6.96703C7.40026 6.63729 7.78421 6.35833 7.91809 5.9463L9.54894 0.927049Z" fill="#6185EE")
-            svg.is-not-favorite(v-if="!model.isFavorite" @click.stop="setFavoriteValue(model.id, true)" width='22' height='20' viewBox='0 0 22 20' fill='none' xmlns='http://www.w3.org/2000/svg')
-              path(d='M10.5245 1.08156C10.6741 0.620903 11.3259 0.620907 11.4755 1.08156L13.2186 6.4463C13.4195 7.06434 13.9954 7.48278 14.6452 7.48278H20.2861C20.7704 7.48278 20.9718 8.10258 20.5799 8.38729L16.0164 11.7029C15.4907 12.0848 15.2707 12.7619 15.4715 13.3799L17.2146 18.7447C17.3643 19.2053 16.8371 19.5884 16.4452 19.3037L11.8817 15.9881C11.3559 15.6061 10.6441 15.6061 10.1183 15.9881L5.5548 19.3037C5.16294 19.5884 4.6357 19.2053 4.78538 18.7447L6.52849 13.3799C6.7293 12.7619 6.50931 12.0848 5.98358 11.7029L1.42006 8.38729C1.0282 8.10259 1.22959 7.48278 1.71395 7.48278H7.35477C8.00461 7.48278 8.58055 7.06434 8.78136 6.4463L10.5245 1.08156Z' stroke='#E1E1E1')
+            svg.is-not-favorite(v-if="!model.isFavorite" @click.stop="setFavoriteValue(index, true)" width='22' height='20' viewBox='0 0 22 20' fill='none' xmlns='http://www.w3.org/2000/svg')
+              path(d='M10.5245 1.08156C10.6741 0.620903 11.3259 0.620907 11.4755 1.08156L13.2186 6.4463C13.4195 7.06434 13.9954 7.48278 14.6452 7.48278H20.2861C20.7704 7.48278 20.9718 8.10258 20.5799 8.38729L16.0164 11.7029C15.4907 12.0848 15.2707 12.7619 15.4715 13.3799L17.2146 18.7447C17.3643 19.2053 16.8371 19.5884 16.4452 19.3037L11.8817 15.9881C11.3559 15.6061 10.6441 15.6061 10.1183 15.9881L5.5548 19.3037C5.16294 19.5884 4.6357 19.2053 4.78538 18.7447L6.52849 13.3799C6.7293 12.7619 6.50931 12.0848 5.98358 11.7029L1.42006 8.38729C1.0282 8.10259 1.22959 7.48278 1.71395 7.48278H7.35477C8.00461 7.48278 8.58055 7.06434 8.78136 6.4463L10.5245 1.08156Z' stroke='#AEAEAE')
           div.column-2
             span(@click.stop="") {{model.networkMeta.coreStatus.Status}}
           div.column-3
-            span(@click.stop="") {{model.savedVersion}}
+            span(@click.stop="") -
           div.column-4
-            span(@click.stop="") {{model.sessionEndTime}}
-          div.column-5 -
-          div.column-6(@click.stop="") -
-        
-        
-        div.models-list-row.model-list-item(v-for="model in modelList"  @click="toggleItemSelection(model.id)" :key="model.id" :class="{'is-selected': isItemSelected(model.id)}")
-          div.column-1
-            span.btn-round-icon
-              img(v-if="isItemSelected(model.id)" src="../../../../static/img/project-page/checked.svg")
-            span(v-tooltip:bottom="'Click to view Model Card'" @click.stop="") {{model.name}}
-            
-            svg.is-favorite(v-if="model.isFavorite" @click.stop="setFavoriteValue(model.id, false)" width="21" height="19" viewBox="0 0 21 19" fill="none")
-              path(d="M9.54894 0.927049C9.8483 0.0057385 11.1517 0.0057404 11.4511 0.927051L13.0819 5.9463C13.2158 6.35833 13.5997 6.63729 14.033 6.63729H19.3105C20.2792 6.63729 20.682 7.8769 19.8983 8.4463L15.6287 11.5484C15.2782 11.803 15.1315 12.2544 15.2654 12.6664L16.8963 17.6857C17.1956 18.607 16.1411 19.3731 15.3574 18.8037L11.0878 15.7016C10.7373 15.447 10.2627 15.447 9.91221 15.7016L5.64258 18.8037C4.85887 19.3731 3.80439 18.607 4.10374 17.6857L5.7346 12.6664C5.86847 12.2544 5.72181 11.803 5.37132 11.5484L1.10169 8.4463C0.317977 7.8769 0.720754 6.63729 1.68948 6.63729H6.96703C7.40026 6.63729 7.78421 6.35833 7.91809 5.9463L9.54894 0.927049Z" fill="#6185EE")
-            svg.is-not-favorite(v-if="!model.isFavorite" @click.stop="setFavoriteValue(model.id, true)" width='22' height='20' viewBox='0 0 22 20' fill='none' xmlns='http://www.w3.org/2000/svg')
-              path(d='M10.5245 1.08156C10.6741 0.620903 11.3259 0.620907 11.4755 1.08156L13.2186 6.4463C13.4195 7.06434 13.9954 7.48278 14.6452 7.48278H20.2861C20.7704 7.48278 20.9718 8.10258 20.5799 8.38729L16.0164 11.7029C15.4907 12.0848 15.2707 12.7619 15.4715 13.3799L17.2146 18.7447C17.3643 19.2053 16.8371 19.5884 16.4452 19.3037L11.8817 15.9881C11.3559 15.6061 10.6441 15.6061 10.1183 15.9881L5.5548 19.3037C5.16294 19.5884 4.6357 19.2053 4.78538 18.7447L6.52849 13.3799C6.7293 12.7619 6.50931 12.0848 5.98358 11.7029L1.42006 8.38729C1.0282 8.10259 1.22959 7.48278 1.71395 7.48278H7.35477C8.00461 7.48278 8.58055 7.06434 8.78136 6.4463L10.5245 1.08156Z' stroke='#E1E1E1')    
-          div.column-2 
-            span(@click.stop="") {{model.status}}
-          div.column-3
-            span(@click.stop="") {{model.savedVersion}}
-          div.column-4
-            span(@click.stop="") {{model.sessionEndTime}}
+            span(@click.stop="") Placeholder
           div.column-5
             collaborator-avatar(
-              @click.stop=""
-              :list="model.collaborators"
-            )
+                @click.stop=""
+                :list="[{id: 1, name: 'Anton', img: null,}, {id: 2, name: 'Robert', img: null,}, {id: 3, name: 'David', img: null,}]"
+              )
           div.column-6(@click.stop="")
             collaborator-avatar(
-              :list="[model.lastModified.user]"
-            )
-            | {{model.lastModified.date }}
+                :list="[{id: 1, name: 'Robert', img: null,}]"
+              )
+            | {{model.apiMeta.updated.substring(0, 10)}}
+        
     file-picker-popup(
       v-if="showFilePickerPopup"
       popupTitle="Load Project Folder"
@@ -169,13 +150,13 @@
       }
     },
     created() {
-      this.setPageTitleMutation('Project Name / Models');
+      // this.setPageTitleMutation('Project Name / Models');
       if(isWeb()) {
         // this.$store.dispatch('mod_workspace/GET_workspacesFromLocalStorage');
       }
     },
     beforeDestroy() {
-      this.setPageTitleMutation('')
+      // this.setPageTitleMutation('')
     },
     computed: {
       ...mapState({
@@ -185,14 +166,14 @@
         showFilePickerPopup: state => state.globalView.globalPopup.showFilePickerPopup
       }),
       workspaceContent() {
-        return this.$store.state.mod_workspace.workspaceContent
+        return this.$store.state.mod_workspace.workspaceContent;
       },
       filteredProjects() {
         this.selectedProject = null;
         return this.projects.filter((project)=> project.name.match(this.search))
       }
     },
-    watch: {
+    watch: {     
       'localUserInfo.projectsList.length': {
         handler() {
           if(!this.localUserInfo) return;
@@ -253,9 +234,11 @@
         createProjectModel: 'mod_project/createProjectModel',
         API_getModel:       'mod_api/API_getModel',
         setActivePageAction: 'modal_pages/setActivePageAction',
+        delete_network : 'mod_workspace/DELETE_network',
+        UPDATE_MODE_ACTION : 'mod_workspace/UPDATE_MODE_ACTION',
       }),
       ...mapMutations({
-        setPageTitleMutation: 'globalView/setPageTitleMutation'
+        // setPageTitleMutation: 'globalView/setPageTitleMutation'
       }),
       gotToNetworkView(index) {
         // maybe should receive a id and search index by it
@@ -296,12 +279,14 @@
         this.isSelectedSortType = valueSelected;
       },
       isItemSelected(itemId) {
+        itemId = parseInt(itemId);
         return this.selectedListIds.indexOf(itemId) !== -1;
       },
       isDisabledCompareBtn() {
         return this.selectedListIds.length < 2;
       },
       toggleItemSelection(modelId) {
+        modelId = parseInt(modelId);
         let itmPosition = this.selectedListIds.indexOf(modelId);
         if (itmPosition === -1) {
           this.selectedListIds = [...this.selectedListIds, modelId];
@@ -313,16 +298,29 @@
         return this.selectedListIds.length >= 1;
       },
       removeItems() {
-        let modelList = [...this.modelList];
-        let initialModelList = [...this.initialModelList];
+        let removeIndexes = [];
+        this.workspaceContent.map((network, index) =>  {
+          if(this.selectedListIds.indexOf(parseInt(network.networkID)) !== -1) {
+            removeIndexes.push(index);
+          }
+        })
+        removeIndexes.sort((a, b) => (b - a));
 
-        modelList = modelList.filter(item => this.selectedListIds.indexOf(item.id) === -1);
-        initialModelList = initialModelList.filter(item => this.selectedListIds.indexOf(item.id) === -1);
+        removeIndexes.map((index) => {
+          this.delete_network(index);
+        })
+        // get index
+        // this.delete_network(index);
+        // let modelList = [...this.modelList];
+        // let initialModelList = [...this.initialModelList];
 
-        this.modelList = modelList;
-        this.initialModelList = initialModelList;
+        // modelList = modelList.filter(item => this.selectedListIds.indexOf(item.id) === -1);
+        // initialModelList = initialModelList.filter(item => this.selectedListIds.indexOf(item.id) === -1);
 
-        this.selectedListIds = [];
+        // this.modelList = modelList;
+        // this.initialModelList = initialModelList;
+
+        // this.selectedListIds = [];
       },
       toggleFavoriteItems() {
         let newModelList = [...this.modelList];
@@ -346,7 +344,19 @@
         this.modelList = newModelList;
         this.updateInitialModelListData();
       },
-      setFavoriteValue(itemId, value) {
+      setFavoriteValue(index, value) {
+        // let setIndex = [];
+        // this.workspaceContent = this.workspaceContent.map((network, index) =>  {
+          
+        // })
+
+        this.UPDATE_MODE_ACTION({index, field: 'isFavorite', value});
+
+        // removeIndexes.map((index) => {
+        // })
+        // udate model fild value
+
+
         let newModelList = [...this.modelList];
         newModelList = newModelList.map(item => {
           if (item.id === itemId) {
@@ -354,6 +364,7 @@
           }
           return item;
         })
+
       },
       isAllItemSelectedFavorite() {
         const selectedLength = this.selectedListIds.length;
@@ -403,7 +414,6 @@
       },
       confirmFilePickerSelection(selectedItems) {
         console.log(selectedItems);
-        // debugger;
         this.clearPath();
       },
       clearPath(x){
@@ -439,15 +449,24 @@
   }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
+  * {
+    font-family: "Nunito Sans";
+  }
   .project-wrapper {
-    margin-left: 40px;
+    margin-left: 46px;
     background-color: #23252A;
     height: 100vh;
+    background: linear-gradient(180deg, #363E51 0%, rgba(54, 62, 81, 0) 100%);
+    border: 1px solid rgba(97, 133, 238, 0.4);
+    box-sizing: border-box;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.25);
+    padding-left: 10px;
+    padding-right: 19px;
   }
   .header-controls {
     padding: 7px 40px;
-    border-bottom: 1px solid #363E51;;
+    border-bottom: 1px solid #464D5F;;
     display: flex;
     .left-side {
       display: flex;
@@ -470,8 +489,8 @@
     input {
       padding-left: 44px;
       background-color: transparent;
-      border: 1px solid #363E51;
-      border-radius: 5px;
+      border: 1px solid #4D556A;
+      border-radius: 2px;
       height: 29px;
     }
   }
@@ -510,6 +529,9 @@
       position: relative;
       box-shadow: 0 0 10px #FFFFFF;
     }
+  }
+  .btn-rounded-new {
+    border-radius: 2px;
   }
   .pl-40 {
     padding-left: 40px;
@@ -578,21 +600,21 @@
       .is-favorite {
         cursor: pointer;
         position: absolute;
-        right: 20px;
+        left: 80px;
         top: 50%;
         transform: translateY(-50%);
       }
       .is-not-favorite {
         cursor: pointer;
-        opacity: 0;
+        // opacity: 0;
         position: absolute;
-        right: 20px;
+        left: 80px;
         top: 50%;
         transform: translateY(-50%);
         transition: 0.1s;
-        &:hover {
-          opacity: 1;
-        }
+        // &:hover {
+        //   opacity: 1;
+        // }
       }
       .model-name {
         cursor: pointer;

@@ -60,6 +60,14 @@
       if(localStorage.hasOwnProperty('targetProject')) {
         const targetProjectId = parseInt(localStorage.getItem('targetProject'));
         this.loadProjectFromLocalStorage(targetProjectId)
+        // get all project and set current one in page title
+        this.getProjects()
+          // .then(({data: { results: projects }}) => {
+          //   if(targetProjectId) {
+          //     const targetProject = projects.filter(project => project.project_id === targetProjectId)[0];
+          //     this.setPageTitleMutation(`${targetProject.name} / Models`);
+          //   }
+          // })
       } else {
         this.setActivePageAction(MODAL_PAGE_PROJECT);
       }
@@ -194,6 +202,7 @@
         SET_updateStatus:     'mod_autoUpdate/SET_updateStatus',
         SET_updateProgress:   'mod_autoUpdate/SET_updateProgress',
         loadProjectFromLocalStorage: 'mod_workspace/get_workspacesFromLocalStorage',
+        // setPageTitleMutation: 'globalView/setPageTitleMutation',
       }),
       ...mapActions({
         openErrorPopup:   'globalView/GP_infoPopup',
@@ -213,6 +222,7 @@
         readUserInfo:     'mod_user/GET_LOCAL_userInfo',
 
         setActivePageAction: 'modal_pages/setActivePageAction',
+        getProjects : 'mod_project/getProjects',
       }),
       updateOnlineStatus() {
         this.SET_onlineStatus(navigator.onLine);

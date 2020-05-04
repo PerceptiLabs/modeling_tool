@@ -523,6 +523,7 @@ export default {
     > .header-nav_item {
       font-size: 14px;
       color: $col-txt;
+      color: #CDD8F8;
       display: flex;
       align-items: center;
       &:hover {

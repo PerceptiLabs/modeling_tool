@@ -136,6 +136,10 @@ const getters = {
 };
 
 const mutations = {
+  update_model(state, {index, field, value}) {
+    Vue.set(state.workspaceContent[index], [field], value);
+
+  },
   add_model_from_local_data(state, model){
     state.workspaceContent.push(model);
   },
@@ -997,6 +1001,7 @@ const mutations = {
 };
 
 const actions = {
+  
   //---------------
   //  NETWORK
   //---------------
@@ -1237,6 +1242,10 @@ const actions = {
         commit('set_charts_doRequest', {getters});
         dispatch('mod_api/API_getStatus', null, {root: true});
       });
+  },
+  UPDATE_MODE_ACTION(ctx, {index, field, value}){
+    ctx.commit('update_model', {index, field, value});
+    ctx.commit('set_workspacesInLocalStorage');
   },
   //---------------
   //  NETWORK ELEMENTS

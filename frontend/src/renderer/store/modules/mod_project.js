@@ -25,7 +25,8 @@ const actions = {
   getProjects(ctx) {
     return axios.get('http://localhost:8000/projects')
       .then((res) => {
-        ctx.commit('setProjectList', res.data.results)
+        ctx.commit('setProjectList', res.data.results);
+        return res;
       })
       .catch((error)=> {
         console.error(error); 

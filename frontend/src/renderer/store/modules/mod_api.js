@@ -476,7 +476,6 @@ const actions = {
       action: 'getJsonModel',
       value: path
     }
-    // debugger;
     return coreRequest(theData)
       .then(res=> {
         return res;
