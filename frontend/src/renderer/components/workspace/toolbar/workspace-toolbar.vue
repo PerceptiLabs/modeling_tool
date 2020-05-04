@@ -1,5 +1,7 @@
 <template lang="pug">
-  aside.page_toolbar(:class="{'tutorial-active': activeStepStoryboard === 4}")
+  aside.page_toolbar(
+    :class="{'tutorial-active': activeStepStoryboard === 4}"
+    v-if="!statisticsIsOpen && !testIsOpen")
 
     toolbar-layers
 
@@ -165,6 +167,7 @@ export default {
       isTraining:           'mod_workspace/GET_networkIsTraining',
       statusNetworkCore:    'mod_workspace/GET_networkCoreStatus',
       statisticsIsOpen:     'mod_workspace/GET_statisticsIsOpen',
+      testIsOpen:           'mod_workspace/GET_testIsOpen',
       networkIsOpen:        'mod_workspace/GET_networkIsOpen',
       networkHistory:       'mod_workspace-history/GET_currentNetHistory',
     }),
