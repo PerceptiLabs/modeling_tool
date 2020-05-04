@@ -100,13 +100,10 @@ class Tf1xStrategy(BaseStrategy):
             for key, value in input_results.items():
                 if value.sample is None:
                     return self.get_default()                    
-
                 y_batch = np.array([value.sample])
                 input_tensors[key] = tf.constant(y_batch)
 
             try:
-                print(input_tensors.values())
-                print(layer_instance)
                 output_tensor = layer_instance(*input_tensors.values())
             except Exception as e:
                 error = exception_to_error(layer_id, layer_type, e)

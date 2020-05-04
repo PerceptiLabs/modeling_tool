@@ -145,6 +145,7 @@ DEFINITION_TABLE = {
         import_statements=[
             'from perceptilabs.core_new.layers.base import DataLayer',
             'from typing import Dict, Generator',
+            'import numpy as np',
             'import multiprocessing', 
             'import tensorflow as tf',                                    
             'from perceptilabs.core_new.utils import Picklable',

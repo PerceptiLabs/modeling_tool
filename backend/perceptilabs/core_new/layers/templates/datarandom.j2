@@ -1,14 +1,12 @@
 {% macro layer_datarandom(layer_name, distribution, shape, mean, stddev, minval, maxval, seed) %} 
+# import numpy as np
 class {{layer_name}}(DataLayer):
     """Class responsible for generating random noise"""    
     def __init__(self):
         self._variables = {}
-        # self._batch_size = {{batch_size}}
-        # self._mean = {{mean}}
-        # self._stddev = {{stddev}}
         self._distribution = '{{distribution}}'
-        # self._shape =  {{shape}} #[{{batch_size}}] +
-        self._variables = {k: v for k, v in locals().items() if dill.pickles(v)}
+        self._columns = []
+        self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
 
     @property
     def size_training(self) -> int:
@@ -36,7 +34,11 @@ class {{layer_name}}(DataLayer):
         sample = next(self.make_generator_training())
         return sample
 
-                    
+    @property
+    def columns(self) -> List[str]:
+        """Column names. Corresponds to each column in a sample """
+        return self._columns.copy()
+              
     def make_generator_training(self) -> Generator[np.ndarray, None, None]:
         """Returns a sample of random noise data."""                                        
         {% filter remove_lspaces(8) %}
