@@ -139,7 +139,8 @@ DEFINITION_TABLE = {
             'from typing import Dict, Generator',
             'import multiprocessing', 
             'import tensorflow as tf',
-            'import gym',                                    
+            'import gym',
+            'import numpy as np',                                    
             'from perceptilabs.core_new.utils import Picklable',
             'from perceptilabs.core_new.serialization import can_serialize, serialize'                    ]
     ),

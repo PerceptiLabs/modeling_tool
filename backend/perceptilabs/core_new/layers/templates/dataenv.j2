@@ -1,6 +1,4 @@
 {% macro layer_dataenvironment(layer_name, environment_name) %}
-import numpy as np
-import gym
 class {{layer_name}}(DataLayer):
     """Class responsible for running the gym environment."""    
     def __init__(self):
@@ -47,8 +45,6 @@ class {{layer_name}}(DataLayer):
     def make_generator_training(self) -> Generator[np.ndarray, None, None]:
         """Returns a sample from gym environment."""                                        
         def gen():
-            import gym
-            import numpy as np
             global env, state_
             env = gym.make(self._env_name)
             sample = env.reset()
@@ -60,7 +56,6 @@ class {{layer_name}}(DataLayer):
     def make_generator_testing(self) -> Generator[np.ndarray, None, None]:
         """Returns a sample from gym environment."""                                        
         def gen():
-            import gym
             global env, state_
             env = gym.make(self._env_name)
             sample = env.reset()
@@ -72,7 +67,6 @@ class {{layer_name}}(DataLayer):
     def make_generator_validation(self) -> Generator[np.ndarray, None, None]:
         """Returns a sample from gym environment."""                                        
         def gen():
-            import gym
             global env, state_
             env = gym.make(self._env_name)
             sample = env.reset()
