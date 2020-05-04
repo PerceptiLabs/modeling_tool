@@ -90,11 +90,15 @@
   }
   .workspace_tabset {
     flex: 0 0 auto;
-    padding-top: 1px;
+    padding-top: 0.5rem;
     display: flex;
     justify-content: space-between;
     align-items: flex-end;
     background-color: $bg-workspace;
+
+    .tab-group {
+      display: flex;
+    }
   }
   .workspace_content {
     display: flex;
@@ -136,6 +140,7 @@
   .the-network-field {
     grid-area: network-field;
     background: linear-gradient(180deg, #363E51 0%, rgba(54, 62, 81, 0) 100%);
+    border: 1px solid rgba(97, 133, 238, 0.4);
   }
   .layers-sidebar {
     position: fixed;
@@ -148,7 +153,10 @@
     flex-direction: column;
     overflow: hidden;
     background: $bg-workspace-3;
-    border: 1px solid rgba(97, 133, 238, 0.4);
+
+    > .info-section_head {
+      background: #090f19;
+    }
   }
   .info-section_main {
     display: block;
