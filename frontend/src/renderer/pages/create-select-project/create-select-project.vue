@@ -4,7 +4,7 @@
       button(@click="renameProject") Rename
       button(@click="deleteProject()") Delete
     .project-box
-      .header Projects
+      .header All projects
       .content
         .sidebar
           button.project-list-filter-button.is-active Local Projects
@@ -91,7 +91,7 @@ import { debug } from 'util';
     methods: {
       ...mapMutations({
         selectProject: 'mod_project/selectProject',
-        setPageTitleMutation: 'globalView/setPageTitleMutation',
+        // setPageTitleMutation: 'globalView/setPageTitleMutation',
         addModelFromLocalDataMutation: 'mod_workspace/add_model_from_local_data',
         loadProjectFromLocalStorage: 'mod_workspace/get_workspacesFromLocalStorage',
         set_currentNetwork : 'mod_workspace/set_currentNetwork',
@@ -111,7 +111,7 @@ import { debug } from 'util';
 
         this.selectProject(projectId);
         this.closePageAction();
-        this.setPageTitleMutation(`${project.name} / Models`);
+        // this.setPageTitleMutation(`${project.name} / Models`);
 
         this.loadProjectFromLocalStorage(projectId);
         this.set_currentNetwork(0);
@@ -161,7 +161,6 @@ import { debug } from 'util';
         this.deleteProjectAction({ projectId: contextTargetProject })
           .then(response => {
             console.log(response);
-            debugger;
           })
           .catch(e => console.log(e));
 
@@ -172,12 +171,9 @@ import { debug } from 'util';
         const { contextTargetProject } = this;
         const theProject = this.projectsList.filter(project => project.project_id === contextTargetProject)[0];
 
-
-
           this.renameData.isProjectFieldActive = true;
           this.renameData.projectFieldValue = theProject.name;
           this.renameData.projectId = theProject.project_id;
-        debugger;
       },
       
       closeContext() {
@@ -204,6 +200,9 @@ import { debug } from 'util';
 
 </script>
 <style lang="scss" scoped>
+  * {
+    font-family: "Nunito Sans";
+  }
   .projectContext {
     position: fixed;
     background: #1C1C1E;
@@ -214,7 +213,16 @@ import { debug } from 'util';
     flex-direction: column;
     z-index: 12;
     padding: 5px 8px;
+
+    background: #131B30;
+    border: 1px solid #363E51;
+    box-sizing: border-box;
+    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+    border-radius: 2px;
+
+
     button {
+      font-family: 'Nunito Sans';
       padding: 5px 8px;
       background: none;
       font-size: 16px;;
@@ -231,8 +239,10 @@ import { debug } from 'util';
   .project-box {
     min-width: 680px;
     min-height: 500px;
-    background: #1C1C1E;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+
+    background: linear-gradient(180deg, #363E51 0%, rgba(54, 62, 81, 0) 100%);
+    border: 1px solid rgba(97, 133, 238, 0.4);
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.25);
     border-radius: 2px;
   }
   .header {
@@ -243,16 +253,28 @@ import { debug } from 'util';
     font-size: 14px;
     line-height: 38px;
     text-align: center;
+
+    background: rgba(97, 133, 238, 0.2);
+    border: 1px solid rgba(97, 133, 238, 0.4);
+    border-radius: 2px 2px 0px 0px;
+    font-family: "Nunito Sans";
+    font-style: normal;
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 38px;
+
+    color: #B6C7FB;
   }
   .content {
     display: flex;
     padding: 23px 0;
+    
   }
   /* Sidebar */
   .sidebar {
     width: 30%;
     padding-left: 29px;
-    margin-right: 30px;
+    margin-right: 10px;
   }
   .create-new-button {
     margin-bottom: 30px;
@@ -268,6 +290,7 @@ import { debug } from 'util';
     }
   }
   .project-list-filter-button {
+    position: relative;
     padding-left: 15px;
     display: block;
     background-color: transparent;
@@ -275,13 +298,35 @@ import { debug } from 'util';
     font-size: 16px;
     height: 29px;
     margin-bottom: 16px;
+    font-family: 'Nunito Sans';
+    color: #E1E1E1;
     &.is-active {
-      border-left: 3px solid #fff;
+      color: #9BB2F6;
+      &::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 3px;
+        height: 24px;
+        border-radius: 3px;
+        background-color: #9BB2F6;
+      }
      }
   }
   /* main */
   .main {
     width: 70%;
+    position: relative;
+    &::after{
+      content: '';
+      position: absolute;
+      top: 0;
+      height: 100%;
+      width: 1px;
+      background-color: #363E51;
+      left: -23px;
+    }
   }
   .main-header {
     display: flex;
@@ -310,7 +355,9 @@ import { debug } from 'util';
       font-size: 16px;
     }
   }
-  
+  .main-list {
+    
+  }
   .main-list-header {
     display: flex;
     justify-content: space-between;
@@ -335,6 +382,10 @@ import { debug } from 'util';
     justify-content: space-between;
     padding: 14px 30px 14px 10px;
     border-bottom: 1px solid #363E51;
+    font-family: 'Nunito Sans';
+    &:hover {
+      background: rgba(97,133,238, 0.5);
+    }
   }
   .fz-16 {
     font-size: 16px;
@@ -343,7 +394,7 @@ import { debug } from 'util';
     background: none;
     &.rounded-border {
       border: 1px solid #fff;
-      border-radius: 50%;
+      border-radius: 2px;
       padding: 3px;
       line-height: 100%;
     }

@@ -62,12 +62,12 @@
         this.loadProjectFromLocalStorage(targetProjectId)
         // get all project and set current one in page title
         this.getProjects()
-          .then(({data: { results: projects }}) => {
-            if(targetProjectId) {
-              const targetProject = projects.filter(project => project.project_id === targetProjectId)[0];
-              this.setPageTitleMutation(`${targetProject.name} / Models`);
-            }
-          })
+          // .then(({data: { results: projects }}) => {
+          //   if(targetProjectId) {
+          //     const targetProject = projects.filter(project => project.project_id === targetProjectId)[0];
+          //     this.setPageTitleMutation(`${targetProject.name} / Models`);
+          //   }
+          // })
       } else {
         this.setActivePageAction(MODAL_PAGE_PROJECT);
       }
@@ -202,7 +202,7 @@
         SET_updateStatus:     'mod_autoUpdate/SET_updateStatus',
         SET_updateProgress:   'mod_autoUpdate/SET_updateProgress',
         loadProjectFromLocalStorage: 'mod_workspace/get_workspacesFromLocalStorage',
-        setPageTitleMutation: 'globalView/setPageTitleMutation',
+        // setPageTitleMutation: 'globalView/setPageTitleMutation',
       }),
       ...mapActions({
         openErrorPopup:   'globalView/GP_infoPopup',

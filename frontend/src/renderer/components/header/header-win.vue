@@ -6,7 +6,7 @@
         img(src="./../../../../static/img/project-page/logo.svg" alt="PerceptiLabs logo")
     the-menu
     
-    h4.page-title {{pageTitle}}
+    h4(v-if="projectName").page-title {{projectName}} / <span class="page-route-title">{{routeHeaderAlias}} </span>
     header-profile
     ul(v-if="!isWeb").app-header_actions
       button.btn.btn--app-minify(type="button" @click="appMinimize()").i.icon.icon-app-minimize
@@ -36,6 +36,26 @@ export default {
     },
     pageTitle() {
       return this.$store.state.globalView.pageTitle;
+    },
+    currentProject() {
+      return this.$store.state.mod_project.currentProject;
+    },
+    projectsList() {
+      return this.$store.state.mod_project.projectsList;
+    },
+    projectName() {
+      const { currentProject, projectsList } = this;
+      if(!currentProject) return '';
+      let project = projectsList.filter(project => project.project_id === currentProject)[0];
+      return project ? project.name : ''
+    },
+    routeHeaderAlias() {
+      let theName = '';
+      switch(this.$route.name) {
+        case 'projects': theName = 'ModelHub'; break;
+        case 'app': theName = 'Modeling Tool'; break;
+      }
+      return theName;
     }
   },
   methods: {
@@ -66,6 +86,10 @@ export default {
     height: $h-header-win;
     background: #363E50;
     font-family: sans-serif;
+    background: rgba(97, 133, 238, 0.2);
+    border: 1px solid rgba(97, 133, 238, 0.4);
+    box-sizing: border-box;
+    border-radius: 0px;
   }
   .d-none {
     display: none;
@@ -81,10 +105,19 @@ export default {
   .page-title {
     @include absolute-center();
     color: #C4C4C4;
+    font-family: 'Nunito Sans';
+    font-style: normal;
+    font-weight: normal;
     font-size: 16px;
+    line-height: 22px;
+    color: #CDD8F8;
     span {
-      color: #fff;
+      // color: #fff;
     }
+  }
+  .page-route-title {
+    color: #B6C7FB ;
+    font-weight: bold;
   }
 
   .app-header_actions {
