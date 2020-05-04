@@ -1360,23 +1360,18 @@ class coreLogic():
                                                    nameList=['Validation', 'Training'])
                 output = {"Current": dataObjectCurrent, "Total": dataObjectTotal}
                 return output
-
-            if view=="Generated_output":
+            if view == "Images":
                 generated_sample=self.getStatistics({"layerId":layerId,"variable":"generated_image","innervariable":""})
 
                 dataObjectOutput = createDataObject(generated_sample)
-            
-    
-                output = {"generated_output": dataObjectOutput}
-                return output
-
-            if view=="Real_input":
+                
                 real_sample=self.getStatistics({"layerId":layerId,"variable":"real_image","innervariable":""})
 
-                dataObjectOutput = createDataObject(real_sample)
+                dataObjectInput = createDataObject(real_sample)
             
     
-                output = {"real_input": dataObjectOutput}
+                output = { "Real_Input":dataObjectInput, "Generated_Output": dataObjectOutput}
+
                 return output
             
             if view=="Data_distribution":
