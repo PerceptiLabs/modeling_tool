@@ -454,6 +454,11 @@ class {{layer_name}}(RLLayer):
     def history_length(self) -> int:
         """ history length"""
         return self._history_length
+    
+    @property
+    def columns(self) -> List[str]: 
+        """Column names. Corresponds to each column in a sample """
+        return []
 
     @property
     def variables(self):

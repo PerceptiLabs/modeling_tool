@@ -449,7 +449,7 @@ class RLLayerReplica(RLLayer):
                  n_episodes, episode, gamma, replay_memory_size, transition, 
                  n_steps_max, step_counter, history_length, 
                  status, layer_weights, layer_biases, layer_gradients, layer_outputs,
-                 batch_size, progress, n_actions, export_modes):
+                 batch_size, progress, n_actions, export_modes, columns):
 
         self._export_modes = export_modes
         self._n_actions = n_actions
@@ -474,6 +474,7 @@ class RLLayerReplica(RLLayer):
         self._layer_outputs = layer_outputs
         self._batch_size = batch_size
         self._progress = progress
+        self._columns = columns
 
     @property
     def epoch(self):
@@ -526,6 +527,10 @@ class RLLayerReplica(RLLayer):
     @property
     def sample(self):
         return self._sample 
+    
+    @property
+    def columns(self):
+        return self._columns
 
     @property
     def size_training(self):

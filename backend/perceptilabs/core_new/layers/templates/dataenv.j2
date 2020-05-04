@@ -36,9 +36,9 @@ class {{layer_name}}(DataLayer):
         return sample
 
     @property
-    def columns(self) -> list[]:
-        """Returns a single data sample"""                    
-        return self._columns
+    def columns(self) -> List[str]:
+        """Column names. Corresponds to each column in a sample """
+        return self._columns.copy()
 
     def make_generator_training(self) -> Generator[np.ndarray, None, None]:
         """Returns a sample from gym environment."""                                        

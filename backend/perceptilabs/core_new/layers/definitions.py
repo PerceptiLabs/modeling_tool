@@ -342,7 +342,7 @@ DEFINITION_TABLE = {
             'from typing import Dict, List, Generator',
             'from perceptilabs.core_new.utils import Picklable, YieldLevel',
             'from perceptilabs.core_new.graph import Graph',
-            'from perceptilabs.core_new.layers.base import ObjectDetectionLayer, Tf1xLayer',
+            'from perceptilabs.core_new.layers.base import RLLayer, Tf1xLayer',
             'from perceptilabs.core_new.serialization import can_serialize, serialize',
             'from tensorflow.python.training.tracking.base import Trackable'            
         ]

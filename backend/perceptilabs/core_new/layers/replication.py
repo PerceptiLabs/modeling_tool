@@ -141,7 +141,8 @@ REPLICATED_PROPERTIES_TABLE = {
         ReplicatedProperty('layer_outputs', dict, lambda _: dict()),
         ReplicatedProperty('batch_size', int, -1),
         ReplicatedProperty('progress', (np.float32, float), -1),
-        ReplicatedProperty('export_modes', list, []),        
+        ReplicatedProperty('export_modes', list, []),
+        ReplicatedProperty('columns', list, []),
     ],
     DataLayer: [
         ReplicatedProperty('sample', ((np.float32, float), np.ndarray), lambda _: np.empty(())),
