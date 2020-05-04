@@ -29,8 +29,8 @@
             .main-actions 
                 div  
                     h4.presets-text Template presets
-                    h1.model-name-text Model Name
-                    input.model-title-input(type="text" v-model="modelName")
+                    .model-title-input-wrapper
+                        input.model-title-input(type="text" v-model="modelName")
                 .main-actions-buttons
                     button.action-button.mr-5(@click="closeModal()") Cancel
                     button.action-button.create-btn.ml-5(
@@ -250,20 +250,12 @@ export default {
         line-height: 16px;
         color: #9E9E9E;
     }
-    .model-name-text {
-        padding: 0 20px 14px;
-
-
-        font-family: Nunito Sans;
-        font-weight: bold;
-        font-size: 16px;
-        line-height: 22px;
-
-        color: #E1E1E1;
+   
+    .model-title-input-wrapper {
         border-bottom: 1px solid #4D556A;
     }
     .model-title-input {
-        margin: 20px;
+        margin: 10px 20px 23px;
         width: calc(100% - 40px);
         height: 40px;
         line-height: 40px;
@@ -271,6 +263,7 @@ export default {
         border: 1px solid #4D556A;
         box-sizing: border-box;
         border-radius: 2px;
+        border-bottom: 1px solid #4D556A;
     }
     .main-actions-buttons {
         margin-top: auto;

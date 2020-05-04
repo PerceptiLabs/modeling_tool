@@ -323,19 +323,20 @@
         // this.selectedListIds = [];
       },
       toggleFavoriteItems() {
-        let newModelList = [...this.modelList];
-
+        let newModelList = [...this.workspaceContent];
+        // todo
+        debugger;
         if (this.isAllItemSelectedFavorite()) {
-          newModelList = newModelList.map(item => {
-            if (this.selectedListIds.indexOf(item.id) !== -1) {
-              item.isFavorite = false;
+          newModelList = newModelList.map((item, index) => {
+            if (this.selectedListIds.indexOf(parseInt(item.networkID, 10)) !== -1) {
+              this.setFavoriteValue(index, false);
             }
             return item;
           })
         } else {
-          newModelList = newModelList.map(item => {
-            if (this.selectedListIds.indexOf(item.id) !== -1) {
-              item.isFavorite = true;
+          newModelList = newModelList.map((item, index) => {
+            if (this.selectedListIds.indexOf(parseInt(item.networkID, 10)) !== -1) {
+             this.setFavoriteValue(index, true);
             }
             return item;
           })
@@ -357,20 +358,21 @@
         // udate model fild value
 
 
-        let newModelList = [...this.modelList];
-        newModelList = newModelList.map(item => {
-          if (item.id === itemId) {
-            item.isFavorite = value;
-          }
-          return item;
-        })
+        // let newModelList = [...this.modelList];
+        // newModelList = newModelList.map(item => {
+        //   if (item.id === itemId) {
+        //     item.isFavorite = value;
+        //   }
+        //   return item;
+        // })
 
       },
       isAllItemSelectedFavorite() {
+
         const selectedLength = this.selectedListIds.length;
         if (selectedLength === 0) return false;
-        let newModelList = [...this.modelList];
-        let favoriteItemLength = newModelList.filter(item => this.selectedListIds.indexOf(item.id) !== -1 && item.isFavorite);
+        let newModelList = [...this.workspaceContent];
+        let favoriteItemLength = newModelList.filter(item => this.selectedListIds.indexOf(parseInt(item.networkID, 10)) !== -1 && item.isFavorite);
         return selectedLength === favoriteItemLength.length
       },
       toggleSelectedItems() {
