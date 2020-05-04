@@ -55,44 +55,6 @@ const ganTemplate = {
         ],
         "connectionArrow": []
       },
-      "1587407596237": {
-        "layerId": "1587407596237",
-        "copyId": null,
-        "copyContainerElement": null,
-        "layerName": "Data_1",
-        "layerType": "Data",
-        "layerSettings": null,
-        "layerCode": "",
-        "layerCodeError": null,
-        "layerNone": false,
-        "layerMeta": {
-          "isInvisible": false,
-          "isLock": false,
-          "isSelected": false,
-          "position": {
-            "top": 110,
-            "left": 130
-          },
-          "OutputDim": "",
-          "InputDim": "",
-          "layerContainerName": "",
-          "layerBgColor": "",
-          "containerDiff": {
-            "top": 0,
-            "left": 0
-          }
-        },
-        "checkpoint": [],
-        "endPoints": [],
-        "componentName": "DataData",
-        "connectionOut": [
-          "1587407603884"
-        ],
-        "connectionIn": [],
-        "connectionArrow": [
-          "1587407603884"
-        ]
-      },
       "1587407603884": {
         "layerId": "1587407603884",
         "copyId": null,
@@ -127,7 +89,7 @@ const ganTemplate = {
           "1587407608489"
         ],
         "connectionIn": [
-          "1587407596237"
+          "1588610019153"
         ],
         "connectionArrow": [
           "1587407608489"
@@ -204,54 +166,13 @@ const ganTemplate = {
         "endPoints": [],
         "componentName": "DeepLearningFC",
         "connectionOut": [
-          "1587407636553"
+          "1588610031578"
         ],
         "connectionIn": [
           "1587407608489"
         ],
         "connectionArrow": [
-          "1587407636553"
-        ]
-      },
-      "1587407636553": {
-        "layerId": "1587407636553",
-        "copyId": null,
-        "copyContainerElement": null,
-        "layerName": "Merge_1",
-        "layerType": "Other",
-        "layerSettings": null,
-        "layerCode": "",
-        "layerCodeError": null,
-        "layerNone": false,
-        "layerMeta": {
-          "isInvisible": false,
-          "isLock": false,
-          "isSelected": false,
-          "position": {
-            "top": 110,
-            "left": 500
-          },
-          "OutputDim": "",
-          "InputDim": "",
-          "layerContainerName": "",
-          "layerBgColor": "",
-          "containerDiff": {
-            "top": 0,
-            "left": 0
-          }
-        },
-        "checkpoint": [],
-        "endPoints": [],
-        "componentName": "MathMerge",
-        "connectionOut": [
-          "1587407673505"
-        ],
-        "connectionIn": [
-          "1587407616987",
-          "1587407659152"
-        ],
-        "connectionArrow": [
-          "1587407673505"
+          "1588610031578"
         ]
       },
       "1587407659152": {
@@ -285,11 +206,11 @@ const ganTemplate = {
         "endPoints": [],
         "componentName": "DataData",
         "connectionOut": [
-          "1587407636553"
+          "1588610031578"
         ],
         "connectionIn": [],
         "connectionArrow": [
-          "1587407636553"
+          "1588610031578"
         ]
       },
       "1587407673505": {
@@ -326,7 +247,7 @@ const ganTemplate = {
           "1587407677393"
         ],
         "connectionIn": [
-          "1587407636553"
+          "1588610031578"
         ],
         "connectionArrow": [
           "1587407677393"
@@ -410,6 +331,85 @@ const ganTemplate = {
         ],
         "connectionArrow": [
           "1587407567940"
+        ]
+      },
+      "1588610019153": {
+        "layerId": "1588610019153",
+        "copyId": null,
+        "copyContainerElement": null,
+        "layerName": "Random_1",
+        "layerType": "Data",
+        "layerSettings": null,
+        "layerCode": null,
+        "layerCodeError": null,
+        "layerNone": false,
+        "layerMeta": {
+          "isInvisible": false,
+          "isLock": false,
+          "isSelected": false,
+          "position": {
+            "top": 110,
+            "left": 130
+          },
+          "OutputDim": "",
+          "InputDim": "",
+          "layerContainerName": "",
+          "layerBgColor": "",
+          "containerDiff": {
+            "top": 0,
+            "left": 0
+          }
+        },
+        "checkpoint": [],
+        "endPoints": [],
+        "componentName": "DataRandom",
+        "connectionOut": [
+          "1587407603884"
+        ],
+        "connectionIn": [],
+        "connectionArrow": [
+          "1587407603884"
+        ]
+      },
+      "1588610031578": {
+        "layerId": "1588610031578",
+        "copyId": null,
+        "copyContainerElement": null,
+        "layerName": "Switch_1",
+        "layerType": "Other",
+        "layerSettings": null,
+        "layerCode": null,
+        "layerCodeError": null,
+        "layerNone": false,
+        "layerMeta": {
+          "isInvisible": false,
+          "isLock": false,
+          "isSelected": false,
+          "position": {
+            "top": 110,
+            "left": 500
+          },
+          "OutputDim": "",
+          "InputDim": "",
+          "layerContainerName": "",
+          "layerBgColor": "",
+          "containerDiff": {
+            "top": 0,
+            "left": 0
+          }
+        },
+        "checkpoint": [],
+        "endPoints": [],
+        "componentName": "MathSwitch",
+        "connectionOut": [
+          "1587407673505"
+        ],
+        "connectionIn": [
+          "1587407616987",
+          "1587407659152"
+        ],
+        "connectionArrow": [
+          "1587407673505"
         ]
       }
     },
