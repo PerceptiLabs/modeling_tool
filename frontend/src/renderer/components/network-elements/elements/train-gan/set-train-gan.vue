@@ -128,14 +128,14 @@ export default {
       if(elList[key].layerType==="Data") {
         this.allRealDataLayers.push({
           text: elList[key].layerName,
-          value: elList[key].layerName,
+          value: elList[key].layerId,
           tutorialId: elList[key].tutorialId
         })
       }
       if(elList[key].layerType==="Other") {
         this.allSwitchLayers.push({
           text: elList[key].layerName,
-          value: elList[key].layerName,
+          value: elList[key].layerId,
           tutorialId: elList[key].tutorialId
         })
       }
