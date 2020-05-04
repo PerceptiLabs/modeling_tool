@@ -49,6 +49,7 @@ class ScriptFactory:
         plabs_imports = set([
             'from perceptilabs.core_new.graph.builder import GraphBuilder, SnapshotBuilder',
             'from perceptilabs.core_new.communication import TrainingServer',
+            'from perceptilabs.messaging import MessageConsumer, MessageProducer',            
             'from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP, REPLICATED_PROPERTIES_TABLE'                    
         ])
         other_imports = set([
@@ -127,14 +128,20 @@ class ScriptFactory:
         code += "graph = graph_builder.build(layers, edges)\n\n"        
         return code
 
-
-    def _create_training_server_snippet(self, port1, port2, userland_timeout):
+    def _create_training_server_snippet(self, topic_generic, topic_snapshots, userland_timeout):
         code  = "snapshot_builder = SnapshotBuilder(\n"
         code += "    BASE_TO_REPLICA_MAP, \n"
         code += "    REPLICATED_PROPERTIES_TABLE\n"
-        code += ")\n"        
+        code += ")\n"
+        code += "\n"        
+        code += "topic_generic = {}\n".format(topic_generic)
+        code += "topic_snapshots = {}\n".format(topic_snapshots)
+        code += "producer_generic = MessageProducer(topic_generic)\n"
+        code += "producer_snapshots = MessageProducer(topic_snapshots)\n"
+        code += "consumer = MessageConsumer([topic_generic])\n"
+        code += "\n"
         code += "server = TrainingServer(\n"
-        code += "    {}, {},\n".format(port1, port2)
+        code += "    producer_generic, producer_snapshots, consumer,\n"
         code += "    graph,\n"
         code += "    snapshot_builder=snapshot_builder,\n"
         code += "    userland_timeout={},\n".format(userland_timeout)
@@ -157,7 +164,7 @@ class ScriptFactory:
         
         return code
 
-    def make(self, graph, session_id, port1, port2, userland_timeout=15):
+    def make(self, graph, session_id, topic_generic, topic_snapshots, userland_timeout=15):
         code  = self._create_imports_snippet(graph)
         code += self._create_logging_snippet()
         
@@ -167,7 +174,7 @@ class ScriptFactory:
         code += layers_code
 
         code += self._create_graph_snippet(graph)
-        code += self._create_training_server_snippet(port1, port2, userland_timeout)
+        code += self._create_training_server_snippet(topic_generic, topic_snapshots, userland_timeout)
         code += self._create_rest_server_snippet()
         code += self._create_main_block()
         return code, line_to_node_map

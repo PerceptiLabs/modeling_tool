@@ -1,3 +1,4 @@
+
 import os
 import sys
 import time
@@ -20,7 +21,6 @@ from queue import Queue
 
 from perceptilabs.issues import IssueHandler, UserlandError
 from perceptilabs.core_new.graph import Graph, JsonNetwork
-from perceptilabs.core_new.utils import find_free_port
 from perceptilabs.core_new.graph.builder import GraphBuilder
 from perceptilabs.core_new.layers import TrainingLayer
 from perceptilabs.core_new.layers.definitions import DEFINITION_TABLE
@@ -29,7 +29,7 @@ from perceptilabs.core_new.communication.status import *
 from perceptilabs.core_new.communication import TrainingClient, State
 from perceptilabs.core_new.layers.script import ScriptFactory
 from perceptilabs.core_new.communication.deployment import ThreadStrategy, DeploymentStrategy
-
+from perceptilabs.messaging import MessageConsumer, MessageProducer          
 
 log = logging.getLogger(__name__)
     
@@ -71,8 +71,11 @@ class Core:
         session_id = session_id or uuid.uuid4().hex
         log.info(f"Running core with session id {session_id}")        
         graph = self._graph_builder.build_from_spec(graph_spec)
-        port1, port2 = find_free_port(count=2)        
-        code, self._line_to_node_map = self._script_factory.make(graph, session_id, port1, port2, userland_timeout=self._userland_timeout)
+
+        topic_generic = f'generic-{session_id}'.encode()    
+        topic_snapshots = f'snapshots-{session_id}'.encode()    
+        
+        code, self._line_to_node_map = self._script_factory.make(graph, session_id, topic_generic, topic_snapshots, userland_timeout=self._userland_timeout)
 
         script_path = f'training_script.py'
         with open(script_path, 'wt') as f:
@@ -103,9 +106,12 @@ class Core:
             log.error('Training stopped because a training step too long!')
             self._is_running = False            
 
+        consumer = MessageConsumer([topic_generic, topic_snapshots])
+        producer = MessageProducer(topic_generic)
+        
         log.info("Creating training client")            
         client = self._client = TrainingClient(
-            port1, port2,
+            producer, consumer,
             graph_builder=self._graph_builder,
             on_receive_graph=self._on_receive_graph,
             on_userland_error=self._on_userland_error,

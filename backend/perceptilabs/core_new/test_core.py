@@ -19,6 +19,7 @@ from perceptilabs.core_new.graph import Graph
 from perceptilabs.core_new.layers import TrainingLayer
 from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP
 from perceptilabs.utils import wait_for_condition
+from perceptilabs.messaging import get_message_bus
 
 logging.basicConfig(stream=sys.stdout,
                     format='%(asctime)s - %(levelname)s - %(threadName)s - %(filename)s:%(lineno)d - %(message)s',
@@ -26,6 +27,14 @@ logging.basicConfig(stream=sys.stdout,
 
 
 log = logging.getLogger(__name__)
+
+
+@pytest.fixture(scope='module', autouse=True)
+def message_bus():
+    bus = get_message_bus()
+    bus.start()
+    yield
+    bus.stop()
 
 
 @pytest.fixture

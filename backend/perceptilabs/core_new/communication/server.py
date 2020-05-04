@@ -34,9 +34,9 @@ class TrainingServer:
         self._closing = False
         self._max_time_run = max_time_run
 
-    def run(self):
+    def run(self, auto_start=False):
         t0 = time.perf_counter()
-        update_client = self.run_stepwise()
+        update_client = self.run_stepwise(auto_start=auto_start)
         for counter, _ in enumerate(update_client):
             if counter % 100 == 0:
                 log.info(f"Running step {counter}")
@@ -47,7 +47,7 @@ class TrainingServer:
                 log.info(f"Exceeded run method max time. Leaving run loop {counter}")
                 break
 
-    def run_stepwise(self):
+    def run_stepwise(self, auto_start=False):
         self._consumer.start()                        
         self._producer_generic.start()
         self._producer_snapshots.start()
@@ -70,6 +70,9 @@ class TrainingServer:
         train_step_times = collections.deque(maxlen=1)        
         
         state.transition(State.READY)
+        if auto_start:
+            state.transition(State.TRAINING_RUNNING)            
+        
         log.info("Entering main-loop [TrainingServer]")
         t1 = t2 = 0
         counter = 0
@@ -88,7 +91,7 @@ class TrainingServer:
                 t2 = time.perf_counter()
                 state.transition(new_state)                
             elif state.value in State.idle_states:
-                if counter % 10 == 0:
+                if counter % 5 == 0:
                     log.info(f"In idle state '{state.value}'")                                
                 self._send_key_value('state', state.value)
                 time.sleep(1.0)
