@@ -13,6 +13,7 @@ from perceptilabs.core_new.serialization import serialize, deserialize
 from perceptilabs.core_new.communication import TrainingServer, TrainingClient, State
 from perceptilabs.core_new.communication.zmq import ZmqClient
 from perceptilabs.core_new.utils import find_free_port
+from perceptilabs.core_new.utils import YieldLevel
 
 log = logging.getLogger(__name__)
 
@@ -23,9 +24,9 @@ def session_id():
 
 
 @pytest.fixture(scope='function')
-def topic_kv(session_id):
-    topic_key_value = f'key_value-{session_id}'.encode()    
-    return topic_key_value
+def topic_gn(session_id):
+    topic_generic = f'generic-{session_id}'.encode()    
+    return topic_generic
 
 
 @pytest.fixture(scope='function')
@@ -43,30 +44,30 @@ def message_bus():
 
 
 @pytest.fixture
-def consumer(topic_kv, topic_sn):
-    consumer = MessageConsumer([topic_kv, topic_sn])
+def consumer(topic_gn, topic_sn):
+    consumer = MessageConsumer([topic_gn, topic_sn])
     consumer.start()
     yield consumer
     consumer.stop()
 
 @pytest.fixture
-def producer(topic_kv):
-    producer = MessageProducer(topic_kv)
+def producer(topic_gn):
+    producer = MessageProducer(topic_gn)
     producer.start()
     yield producer
     producer.stop()    
 
     
-def create_server(topic_kv, topic_sn, graph=None, snapshot_builder=None, userland_timeout=15):
-    server_producer_key_value = MessageProducer(topic_kv)
+def create_server(topic_gn, topic_sn, graph=None, snapshot_builder=None, userland_timeout=15):
+    server_producer_generic = MessageProducer(topic_gn)
     server_producer_snapshots = MessageProducer(topic_sn)
-    server_consumer = MessageConsumer([topic_kv])
+    server_consumer = MessageConsumer([topic_gn])
 
     graph = graph or MagicMock()
     snapshot_builder = snapshot_builder or MagicMock()
     
     server = TrainingServer(
-        server_producer_key_value, server_producer_snapshots, server_consumer,
+        server_producer_generic, server_producer_snapshots, server_consumer,
         graph,
         snapshot_builder=snapshot_builder,
         userland_timeout=userland_timeout,
@@ -75,8 +76,8 @@ def create_server(topic_kv, topic_sn, graph=None, snapshot_builder=None, userlan
     return server
 
 
-def test_sends_state_ready(topic_kv, topic_sn, consumer):
-    server = create_server(topic_kv, topic_sn)
+def test_sends_state_ready(topic_gn, topic_sn, consumer):
+    server = create_server(topic_gn, topic_sn)
     step = server.run_stepwise()
 
     try:
@@ -91,8 +92,8 @@ def test_sends_state_ready(topic_kv, topic_sn, consumer):
         server.shutdown()
 
     
-def test_can_stop_when_ready(topic_kv, topic_sn, consumer, producer):
-    server = create_server(topic_kv, topic_sn)
+def test_can_stop_when_ready(topic_gn, topic_sn, consumer, producer):
+    server = create_server(topic_gn, topic_sn)
     step = server.run_stepwise()
     try:
         step = server.run_stepwise()
@@ -117,11 +118,10 @@ def test_can_stop_when_ready(topic_kv, topic_sn, consumer, producer):
         server.shutdown()
 
 
-def test_can_start_when_ready(topic_kv, topic_sn, consumer, producer):
+def test_can_start_when_ready(topic_gn, topic_sn, consumer, producer):
     n_training_steps_taken = 0
     
     def run_graph():
-        print("HAAAA")
         nonlocal n_training_steps_taken
         while True:
             n_training_steps_taken += 1
@@ -131,7 +131,7 @@ def test_can_start_when_ready(topic_kv, topic_sn, consumer, producer):
     graph = MagicMock()
     graph.run.side_effect = run_graph
     
-    server = create_server(topic_kv, topic_sn, graph=graph)    
+    server = create_server(topic_gn, topic_sn, graph=graph)    
     try:
         step = server.run_stepwise()
         
@@ -158,7 +158,7 @@ def test_can_start_when_ready(topic_kv, topic_sn, consumer, producer):
         server.shutdown()
 
         
-def test_reaches_state_completed(topic_kv, topic_sn, consumer, producer):
+def test_reaches_state_completed(topic_gn, topic_sn, consumer, producer):
     n_training_steps_taken = 0
     
     def run_graph():
@@ -170,7 +170,7 @@ def test_reaches_state_completed(topic_kv, topic_sn, consumer, producer):
     graph = MagicMock()
     graph.run.side_effect = run_graph
 
-    server = create_server(topic_kv, topic_sn, graph=graph)        
+    server = create_server(topic_gn, topic_sn, graph=graph)        
     try:
         step = server.run_stepwise()
         
@@ -194,8 +194,54 @@ def test_reaches_state_completed(topic_kv, topic_sn, consumer, producer):
     finally:
         server.shutdown()
 
+
+def test_sends_one_snapshot_per_yield(topic_gn, topic_sn, consumer, producer):
+    n_training_steps_to_take = 3
+    n_snapshots_received = 0
+    
+    def run_graph():
+        nonlocal n_training_steps_to_take
+        for _ in range(n_training_steps_to_take):
+            yield YieldLevel.SNAPSHOT
+            
+    graph = MagicMock()
+    graph.run.side_effect = run_graph
+
+    snapshot_builder = MagicMock()
+    snapshot_builder.build.return_value = {'key': 'value'}
+    server = create_server(topic_gn, topic_sn, graph=graph, snapshot_builder=snapshot_builder)        
+    try:
+        step = server.run_stepwise()
         
-def test_userland_timeout_gives_timeout_state(topic_kv, topic_sn, consumer, producer):
+        def cond(_):
+            next(step)             
+            raw_messages = consumer.get_messages()
+            messages = [deserialize(m) for m in raw_messages]
+            return {'key': 'state', 'value': State.READY} in messages
+
+        assert loop_until_true(cond)
+        producer.send(serialize({'key': 'on_request_start', 'value': ''}))
+
+        def cond(_):
+            nonlocal n_snapshots_received
+            next(step) # Keep iterating.
+            raw_messages = consumer.get_messages()
+
+            messages = []
+            for raw_message in raw_messages:
+                message = deserialize(raw_message)
+                messages.append(message)
+                if message['key'] == 'graph':
+                    n_snapshots_received += 1
+            return {'key': 'state', 'value': State.TRAINING_COMPLETED} in messages            
+
+        assert loop_until_true(cond)
+        assert n_snapshots_received == n_training_steps_to_take
+    finally:
+        server.shutdown()
+
+        
+def test_userland_timeout_gives_timeout_state(topic_gn, topic_sn, consumer, producer):
     n_training_steps_taken = 0
     
     def run_graph():
@@ -209,7 +255,7 @@ def test_userland_timeout_gives_timeout_state(topic_kv, topic_sn, consumer, prod
     graph = MagicMock()
     graph.run.side_effect = run_graph
 
-    server = create_server(topic_kv, topic_sn, graph, userland_timeout=1)
+    server = create_server(topic_gn, topic_sn, graph, userland_timeout=1)
     try:
         step = server.run_stepwise()    
         
@@ -234,7 +280,7 @@ def test_userland_timeout_gives_timeout_state(topic_kv, topic_sn, consumer, prod
         server.shutdown()
 
 
-def test_userland_timeout_sends_timeout_message(topic_kv, topic_sn, consumer, producer):
+def test_userland_timeout_sends_timeout_message(topic_gn, topic_sn, consumer, producer):
     n_training_steps_taken = 0
     
     def run_graph():
@@ -248,7 +294,7 @@ def test_userland_timeout_sends_timeout_message(topic_kv, topic_sn, consumer, pr
     graph = MagicMock()
     graph.run.side_effect = run_graph
 
-    server = create_server(topic_kv, topic_sn, graph, userland_timeout=1)
+    server = create_server(topic_gn, topic_sn, graph, userland_timeout=1)
     try:
         step = server.run_stepwise()    
         
@@ -273,7 +319,7 @@ def test_userland_timeout_sends_timeout_message(topic_kv, topic_sn, consumer, pr
         server.shutdown()
         
         
-def test_userland_error_gives_error_state(topic_kv, topic_sn, consumer, producer):
+def test_userland_error_gives_error_state(topic_gn, topic_sn, consumer, producer):
     n_training_steps_taken = 0
     
     def run_graph():
@@ -287,7 +333,7 @@ def test_userland_error_gives_error_state(topic_kv, topic_sn, consumer, producer
     graph = MagicMock()
     graph.run.side_effect = run_graph
 
-    server = create_server(topic_kv, topic_sn, graph, userland_timeout=1)
+    server = create_server(topic_gn, topic_sn, graph, userland_timeout=1)
     try:
         step = server.run_stepwise()    
 
@@ -312,7 +358,7 @@ def test_userland_error_gives_error_state(topic_kv, topic_sn, consumer, producer
         server.shutdown()
 
 
-def test_userland_error_sends_error_message(topic_kv, topic_sn, consumer, producer):
+def test_userland_error_sends_error_message(topic_gn, topic_sn, consumer, producer):
     n_training_steps_taken = 0
     
     def run_graph():
@@ -326,7 +372,7 @@ def test_userland_error_sends_error_message(topic_kv, topic_sn, consumer, produc
     graph = MagicMock()
     graph.run.side_effect = run_graph
 
-    server = create_server(topic_kv, topic_sn, graph, userland_timeout=1)
+    server = create_server(topic_gn, topic_sn, graph, userland_timeout=1)
     try:
         step = server.run_stepwise()    
 
@@ -357,7 +403,7 @@ def test_userland_error_sends_error_message(topic_kv, topic_sn, consumer, produc
         server.shutdown()
         
 
-def test_can_pause(topic_kv, topic_sn, consumer, producer):
+def test_can_pause(topic_gn, topic_sn, consumer, producer):
     n_training_steps_taken = 0
     
     def run_graph():
@@ -370,7 +416,7 @@ def test_can_pause(topic_kv, topic_sn, consumer, producer):
     graph = MagicMock()
     graph.run.side_effect = run_graph
 
-    server = create_server(topic_kv, topic_sn, graph, userland_timeout=1)
+    server = create_server(topic_gn, topic_sn, graph, userland_timeout=1)
     try:
         step = server.run_stepwise()    
         
@@ -400,7 +446,7 @@ def test_can_pause(topic_kv, topic_sn, consumer, producer):
         server.shutdown()
 
         
-def test_can_resume_when_paused(topic_kv, topic_sn, consumer, producer):
+def test_can_resume_when_paused(topic_gn, topic_sn, consumer, producer):
     n_training_steps_taken = 0
     
     def run_graph():
@@ -413,7 +459,7 @@ def test_can_resume_when_paused(topic_kv, topic_sn, consumer, producer):
     graph = MagicMock()
     graph.run.side_effect = run_graph
 
-    server = create_server(topic_kv, topic_sn, graph, userland_timeout=1)
+    server = create_server(topic_gn, topic_sn, graph, userland_timeout=1)
     try:
         step = server.run_stepwise()    
         
@@ -460,10 +506,10 @@ def test_can_resume_when_paused(topic_kv, topic_sn, consumer, producer):
         server.shutdown()
         
     
-def test_calls_graph_stop_when_requested(topic_kv, topic_sn, consumer, producer):
+def test_calls_graph_stop_when_requested(topic_gn, topic_sn, consumer, producer):
     graph = MagicMock()
 
-    server = create_server(topic_kv, topic_sn, graph)
+    server = create_server(topic_gn, topic_sn, graph)
     try:
         step = server.run_stepwise()
         
@@ -487,10 +533,10 @@ def test_calls_graph_stop_when_requested(topic_kv, topic_sn, consumer, producer)
         server.shutdown()
 
 
-def test_calls_graph_export_when_requested(topic_kv, topic_sn, consumer, producer):
+def test_calls_graph_export_when_requested(topic_gn, topic_sn, consumer, producer):
     graph = MagicMock()
 
-    server = create_server(topic_kv, topic_sn, graph)
+    server = create_server(topic_gn, topic_sn, graph)
     try:
         step = server.run_stepwise()
         
@@ -517,10 +563,10 @@ def test_calls_graph_export_when_requested(topic_kv, topic_sn, consumer, produce
         server.shutdown()
 
 
-def test_calls_graph_headless_activate_when_requested(topic_kv, topic_sn, consumer, producer):
+def test_calls_graph_headless_activate_when_requested(topic_gn, topic_sn, consumer, producer):
     graph = MagicMock()
 
-    server = create_server(topic_kv, topic_sn, graph)
+    server = create_server(topic_gn, topic_sn, graph)
     try:
         step = server.run_stepwise()
         def cond(_):
@@ -555,10 +601,10 @@ def test_calls_graph_headless_activate_when_requested(topic_kv, topic_sn, consum
         server.shutdown()
 
 
-def test_calls_graph_headless_deactivate_when_requested(topic_kv, topic_sn, consumer, producer):
+def test_calls_graph_headless_deactivate_when_requested(topic_gn, topic_sn, consumer, producer):
     graph = MagicMock()
 
-    server = create_server(topic_kv, topic_sn, graph)
+    server = create_server(topic_gn, topic_sn, graph)
     try:
         step = server.run_stepwise()
         

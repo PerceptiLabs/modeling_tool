@@ -63,9 +63,9 @@ class TrainingClient:
             message = deserialize(raw_message)
             message_key = message['key']
             message_value = message['value']
-            self._process_incoming_message(message_key, message_value)
+            self._process_incoming_key_value(message_key, message_value)
 
-    def _process_incoming_message(self, key, value):
+    def _process_incoming_key_value(self, key, value):
         if key == 'state':
             self._training_state = value
         elif key == 'log-message':
@@ -93,7 +93,7 @@ class TrainingClient:
             self._producer.send(message)            
             
     def shutdown(self):
-        self._process_outgoing_messages(self._zmq)
+        self._process_outgoing_messages()
         self._producer.stop()
         self._consumer.stop()        
 

@@ -23,8 +23,8 @@ log = logging.getLogger(__name__)
         
 
 class TrainingServer:
-    def __init__(self, producer_key_value, producer_snapshots, consumer, graph, snapshot_builder=None, userland_timeout=15, ping_interval=3, max_time_run=None):
-        self._producer_key_value = producer_key_value
+    def __init__(self, producer_generic, producer_snapshots, consumer, graph, snapshot_builder=None, userland_timeout=15, ping_interval=3, max_time_run=None):
+        self._producer_generic = producer_generic
         self._producer_snapshots = producer_snapshots
         self._consumer = consumer
 
@@ -49,7 +49,7 @@ class TrainingServer:
 
     def run_stepwise(self):
         self._consumer.start()                        
-        self._producer_key_value.start()
+        self._producer_generic.start()
         self._producer_snapshots.start()
         
         def on_transition(new_state):
@@ -89,8 +89,7 @@ class TrainingServer:
                 state.transition(new_state)                
             elif state.value in State.idle_states:
                 if counter % 10 == 0:
-                    log.info(f"In idle state '{state.value}'")                
-                
+                    log.info(f"In idle state '{state.value}'")                                
                 self._send_key_value('state', state.value)
                 time.sleep(1.0)
             elif state.value not in State.exit_states:
@@ -111,7 +110,7 @@ class TrainingServer:
         return state.value
 
     def shutdown(self):
-        self._producer_key_value.stop()
+        self._producer_generic.stop()
         self._producer_snapshots.stop()
         self._consumer.stop()
 
@@ -237,12 +236,17 @@ class TrainingServer:
         else:
             state.transition(success_state)
         
-    def _send_key_value(self, key, value=None):
+    def _send_key_value(self, key, value=None, producer=None):
+        producer = producer or self._producer_generic
+        
         message_dict = {'key': key, 'value': value or ''}
         message = serialize(message_dict)
-        self._producer_key_value.send(message)
+        producer.send(message)
 
     def _send_graph(self, graph):
-        if self._snapshot_builder is not None:
+        if self._snapshot_builder is not None:            
             snapshot = self._snapshot_builder.build(graph)
-            self._producer_snapshots.send(snapshot)
+            self._send_key_value('graph', value=snapshot, producer=self._producer_snapshots)
+
+                
+        
