@@ -147,6 +147,8 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    background: $bg-workspace-3;
+    border: 1px solid rgba(97, 133, 238, 0.4);
   }
   .info-section_main {
     display: block;
