@@ -30,7 +30,7 @@
   import { mapActions, mapGetters } from 'vuex';
 
   export default {
-    name: 'SetProcessReshape',
+    name: 'SetProcessRescale',
     mixins: [mixinSet],
     mounted() {
       this.$store.dispatch('mod_api/API_getInputDim');
@@ -46,7 +46,6 @@
     methods: {
       saveSettings(tabName) {
         this.applySettings(tabName);
-        this.$nextTick(()=> this.tutorialPointActivate({way: 'next', validation: 'tutorial_input-reshape'}));
       },
     }
   }
