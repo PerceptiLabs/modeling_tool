@@ -779,6 +779,14 @@ class coreLogic():
             D=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})           
             dataObj = createDataObject([D[-1]])      
             return {"Data":dataObj}
+        elif layerType=="DataRandom":
+            D=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})           
+            dataObj = createDataObject([D[-1]])      
+            return {"Data":dataObj}
+        elif layerType=="MathSwitch":
+            D=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})           
+            dataObj = createDataObject([D[-1]])      
+            return {"Data":dataObj}
         elif layerType=="DeepLearningFC":
             if view=="Output":
                 D=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})[-1]

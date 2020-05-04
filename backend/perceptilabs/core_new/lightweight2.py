@@ -105,6 +105,8 @@ class Tf1xStrategy(BaseStrategy):
                 input_tensors[key] = tf.constant(y_batch)
 
             try:
+                print(input_tensors.values())
+                print(layer_instance)
                 output_tensor = layer_instance(*input_tensors.values())
             except Exception as e:
                 error = exception_to_error(layer_id, layer_type, e)
