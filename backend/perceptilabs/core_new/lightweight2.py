@@ -360,7 +360,7 @@ class LightweightCore:
 
             spec = importlib.util.spec_from_file_location("my_module", f.name)        
             module = importlib.util.module_from_spec(spec)
-            
+
             try:
                 spec.loader.exec_module(module)
             except Exception as e:
@@ -410,6 +410,7 @@ class LightweightCoreAdapter:
                 'Sample': layer_info.sample.tolist() if layer_info.sample is not None else None,
                 'outShape': [] if layer_info.out_shape is None else list(layer_info.out_shape),
                 'inShape': [],
+                'action_space': layer_info.variables.get('action_space',''),
                 'Variables': var_names,
                 'Default_var': default_var,
                 'cols': layer_info.columns
