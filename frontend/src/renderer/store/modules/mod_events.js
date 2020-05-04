@@ -73,12 +73,23 @@ const actions = {
     dispatch('mod_api/API_loadNetwork', pathFile, {root: true})
       .then((net) => {
         //validate model
+        let isTrained = false;
+
         try {
           if(!(net.networkName
             && net.networkMeta
             && net.networkElementList)) {
               throw('err');
             }
+
+            for(let id in net.networkElementList) {
+              let element = net.networkElementList[id];
+              if (element.checkpoint.length > 0) {
+                isTrained = true;
+                break;
+              }
+            }
+
         } catch(e) {
           dispatch('globalView/GP_infoPopup', 'The model does not exist or the Kernel is not online.', {root: true});
           return
@@ -90,7 +101,28 @@ const actions = {
         } else {
           net.networkRootFolder = pathProject;
         }
-        dispatch('mod_workspace/ADD_network', net, {root: true});
+
+        if(isTrained) {
+          dispatch('globalView/SET_loadSettingPopup', {
+            visible: 'true',
+            ok: (isLoadingTrainedModel) => {
+              if (isLoadingTrainedModel) {
+                dispatch('mod_workspace/ADD_network', net, {root: true});
+              } else {
+                for(let id in net.networkElementList) {
+                  let element = net.networkElementList[id];
+                  element.checkpoint = [];
+                }
+                console.log(net);
+                dispatch('mod_workspace/ADD_network', net, {root: true});
+              }
+            }
+          }, {root: true})
+        } 
+        else {
+          dispatch('mod_workspace/ADD_network', net, {root: true});
+        }
+
       }).catch(err => {
         console.log(err);
         dispatch('globalView/GP_infoPopup', 'Fetching went wrong', {root: true});
