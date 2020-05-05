@@ -135,7 +135,7 @@ REPLICATED_PROPERTIES_TABLE = {
         ReplicatedProperty('layer_biases', dict, lambda _: dict()),
         ReplicatedProperty('layer_outputs', dict, lambda _: dict()),
         ReplicatedProperty('gen_layer_outputs', dict, lambda _: dict()),
-        ReplicatedProperty('dis_layer_outputs', dict, lambda _: dict()),
+        ReplicatedProperty('real_layer_outputs', dict, lambda _: dict()),
         ReplicatedProperty('batch_size', int, -1),
         ReplicatedProperty('training_iteration', int, -1),
         ReplicatedProperty('validation_iteration', int, -1),        

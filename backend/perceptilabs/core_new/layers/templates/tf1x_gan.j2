@@ -719,13 +719,13 @@ class {{layer_name}}(GANLayer):
         return self._gen_layer_outputs
     
     @property
-    def dis_layer_outputs(self) -> Dict[str, Dict[str, Picklable]]:
+    def real_layer_outputs(self) -> Dict[str, Dict[str, Picklable]]:
         """The output values of each layer in the input Graph during the training (e.g., tf.Tensors evaluated for each iteration)
 
         Returns:
             A dictionary of nested dictionaries, where each key is a layer id. The nested dictionaries contain variable name and value pairs. The values must be picklable.
         """
-        return self._dis_layer_outputs
+        return self._real_layer_outputs
 
     @property
     def training_iteration(self) -> int:

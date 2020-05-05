@@ -618,7 +618,7 @@ class GANLayer(TrainingLayer):
 
     @property
     @abstractmethod   
-    def dis_layer_outputs(self) -> Dict[str, Dict[str, Picklable]]:
+    def real_layer_outputs(self) -> Dict[str, Dict[str, Picklable]]:
         """The output values of each layer in the input Graph during the training (e.g., tf.Tensors evaluated for each iteration)
 
         Returns:

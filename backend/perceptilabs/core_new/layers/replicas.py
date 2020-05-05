@@ -451,7 +451,7 @@ class GANLayerReplica(GANLayer):
                  gen_loss_training, gen_loss_testing, gen_loss_validation,
                  dis_loss_training, dis_loss_validation, dis_loss_testing,
                  status, layer_weights, layer_biases, layer_gradients, layer_outputs,
-                 gen_layer_outputs, dis_layer_outputs,
+                 gen_layer_outputs, real_layer_outputs,
                  batch_size, training_iteration, validation_iteration,
                  testing_iteration, progress, epoch, columns, export_modes):
 
@@ -477,7 +477,7 @@ class GANLayerReplica(GANLayer):
         self._layer_gradients = layer_gradients
         self._layer_outputs = layer_outputs
         self._gen_layer_outputs = gen_layer_outputs
-        self._dis_layer_outputs = dis_layer_outputs
+        self._real_layer_outputs = real_layer_outputs
 
         self._batch_size = batch_size
         self._training_iteration = training_iteration
@@ -574,8 +574,8 @@ class GANLayerReplica(GANLayer):
         return self._gen_layer_outputs
 
     @property
-    def dis_layer_outputs(self):
-        return self._dis_layer_outputs
+    def real_layer_outputs(self):
+        return self._real_layer_outputs
 
     def make_generator_training(self):
         raise NotReplicatedError

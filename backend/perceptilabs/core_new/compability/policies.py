@@ -810,7 +810,7 @@ def policy_gan(core, graphs, sanitized_to_name, sanitized_to_id, results):
             trn_layer = graph.active_training_node.layer
             switch_layer_id = trn_layer.get_switch_layer_id
             random_images = trn_node.layer.gen_layer_outputs.get(switch_layer_id)
-            real_images = trn_node.layer.dis_layer_outputs.get(switch_layer_id)
+            real_images = trn_node.layer.real_layer_outputs.get(switch_layer_id)
             if trn_layer.epoch == current_epoch and trn_layer.status == 'training':
                 gen_loss_trn_iter.append(trn_layer._gen_loss_training)
                 dis_loss_trn_iter.append(trn_layer._dis_loss_training)       
