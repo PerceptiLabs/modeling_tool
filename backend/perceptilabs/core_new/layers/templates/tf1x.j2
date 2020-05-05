@@ -5,8 +5,6 @@ class {{layer_name}}(Tf1xLayer):
 
     def __call__(self, x): #x: Dict[tf.Tensor]  TODO: change this when backend is updated
         """ Takes the outputs of all the incoming layers as input and returns the output of that layer."""
-        print(x.keys())
-        print(self._selected_layer_id)
         y = x[self._selected_layer_id]
         self._variables = {k: v for k, v in locals().items() if can_serialize(v)}    
         return y

@@ -146,9 +146,9 @@
                 layer_output_tensors[node.layer_id] = y
             return layer_output_tensors
 
-        real_layer_output_tensors = build_real_graph(real_tensor)
         gen_layer_output_tensors = build_gen_graph(random_tensor)
-
+        real_layer_output_tensors = build_real_graph(real_tensor)
+        
         real_output_tensor = real_layer_output_tensors[switch_layer_id]
         gen_output_tensor = gen_layer_output_tensors[switch_layer_id]
         
