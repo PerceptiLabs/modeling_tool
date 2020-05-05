@@ -54,7 +54,7 @@
       chart-switch(
         key="12"
         chart-label="R Squared data over all epochs"
-        :chart-data="chartData.AUC.Total"
+        :chart-data="chartData.R_Squared.Total"
         :custom-color="colorListAccuracy"
       )
 </template>
