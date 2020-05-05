@@ -882,6 +882,11 @@ class {{layer_name}}(ClassificationLayer):
         return np.empty(())
 
     @property
+    def columns(self) -> List[str]: 
+        """Column names. Corresponds to each column in a sample """
+        return []
+
+    @property
     def size_training(self) -> int:
         """Returns the size of the training dataset"""                                    
         return self._trn_sz_tot

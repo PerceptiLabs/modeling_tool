@@ -145,6 +145,7 @@ def graph_spec_binary_classification():
     f1.close()
     f2.close()
 
+    
 class FileCopier():
     def __init__(self, to_name):
         self.to_name = to_name
@@ -156,10 +157,8 @@ class FileCopier():
         copyfile(original_name, os.path.join('./training_scripts/',self.to_name))
         print("training_script has been saved")
 
-#Disabling these tests while intermittent failures are being worked on
-'''
-
 @pytest.mark.slow
+@pytest.mark.skip(reason="Until intermittent failures on Azure are fixed")
 def test_train_normal_converges(graph_spec_binary_classification):
     script_factory = ScriptFactory()
     file_copier = FileCopier('train_normal_training_script.py')
@@ -198,6 +197,7 @@ def test_train_normal_converges(graph_spec_binary_classification):
 
     
 @pytest.mark.slow
+@pytest.mark.skip(reason="Until intermittent failures on Azure are fixed")
 def test_train_normal_distributed_converges(graph_spec_binary_classification):
     script_factory = ScriptFactory()
     file_copier = FileCopier('train_normal_distr_training_script.py')
@@ -236,4 +236,3 @@ def test_train_normal_distributed_converges(graph_spec_binary_classification):
     
     assert np.mean(accuracy_list[-10:]) >= 0.75
 
-'''

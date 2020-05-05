@@ -796,6 +796,11 @@ class {{layer_name}}(ObjectDetectionLayer):
 
 
     @property
+    def columns(self) -> List[str]: 
+        """Column names. Corresponds to each column in a sample """
+        return []
+
+    @property
     def progress(self) -> float:
         """A number indicating the overall progress of the training
         
@@ -1115,10 +1120,8 @@ class {{layer_name}}(ObjectDetectionLayer):
                         layer_gradient_tensors[node.layer_id] = gradients
                         self._layer_gradients[node.layer_id] = {name: [] for name in node.layer.trainable_variables.keys()} # Initialize
 
-                trainable_vars = tf.trainable_variables()
-                # grads = tf.gradients(loss_tensor, trainable_vars)
                 grads_and_vars = optimizer.compute_gradients(loss_tensor)        
-                update_weights = optimizer.apply_gradients(zip(grads, trainable_vars), global_step=global_step)
+                update_weights = optimizer.apply_gradients(grads_and_vars, global_step=global_step)
 
                 
                 update_ops = [update_weights]

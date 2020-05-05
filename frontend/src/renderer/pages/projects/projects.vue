@@ -86,6 +86,10 @@
       @close="onCloseSelectModelModal"
       @onChose="onTemplateChoseSelectModelModal"
       )
+    workspace-load-network(
+      v-if="showLoadSettingPopup"
+    )
+
 </template>
 
 <script>
@@ -96,6 +100,7 @@
   import FilePickerPopup        from "@/components/global-popups/file-picker-popup.vue";
   import SelectModelModal from '@/pages/projects/components/select-model-modal.vue';
   import ModelStatus from '@/components/different/model-status.vue';
+  import WorkspaceLoadNetwork   from "@/components/global-popups/workspace-load-network.vue";
 
   import { mapActions, mapMutations, mapState } from 'vuex';
   import {isWeb} from "@/core/helpers";
@@ -122,6 +127,7 @@
       FilePickerPopup,
       SelectModelModal,
       ModelStatus,
+      WorkspaceLoadNetwork,
     },
     data: function () {
       return {
@@ -163,12 +169,14 @@
     beforeDestroy() {
       // this.setPageTitleMutation('')
     },
+  
     computed: {
       ...mapState({
         currentProjectId: state => state.mod_project.currentProject,
-        appVersion:          state => state.globalView.appVersion,
-        hotKeyPressDelete:   state => state.mod_events.globalPressKey.del,
-        showFilePickerPopup: state => state.globalView.globalPopup.showFilePickerPopup
+        showFilePickerPopup: state => state.globalView.globalPopup.showFilePickerPopup,
+        appVersion:           state => state.globalView.appVersion,
+        hotKeyPressDelete:    state => state.mod_events.globalPressKey.del,
+        showLoadSettingPopup: state => state.globalView.globalPopup.showLoadSettingPopup,
       }),
       workspaceContent() {
         return this.$store.state.mod_workspace.workspaceContent;

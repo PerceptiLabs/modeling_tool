@@ -152,6 +152,27 @@ class getDataMeta(LW_interface_base):
         }
         return content
 
+    
+class getDataMetaV2(LW_interface_base):
+    def __init__(self, id_, lw_core, extras_reader):
+        self._id = id_
+        self.lw_core = lw_core
+        self.extras_reader = extras_reader
+
+    def run(self):
+        # lw_core, _, data_container = self.lwObj.create_lw_core()
+        self.lw_core.run()
+        extras_dict = self.extras_reader.to_dict()
+        cols = extras_dict[self._id].get("cols", '')
+        action_space = extras_dict[self._id].get("action_space", '')
+        content = {
+            "Action_space": action_space,
+            "Dataset_size": "",
+            "Columns": cols
+        }
+        return content
+    
+    
 class getGraphOrder(LW_interface_base):
     def __init__(self, jsonNetwork):
         self.jsonNetwork = jsonNetwork
@@ -200,6 +221,18 @@ class getPartitionSummary(LW_interface_base):
     def run(self):
         self.lw_core.run()
         content = self._try_fetch(self.data_container[self._id], "_action_space")
+
+        if isinstance(content, dict):
+            if self._id in self.lw_core.error_handler:
+                log.info("ErrorMessage: " + str(self.lw_core.error_handler[self._id]))
+                
+                content[self._id]['Error'] = {
+                    'Message': self.lw_core.error_handler[self._id].message,
+                    'Row': str(self.lw_core.error_handler[self._id].line_number)
+                }
+            else:
+                content[self._id]['Error'] = None
+                
         return content
 
     
