@@ -47,6 +47,8 @@
   border-top: 1px solid $toolbar-separator-color;
   border-bottom: 0;
   border-radius: 2px 2px 0px 0px;
+  
+  cursor: pointer;
 
   &.workspace_tab--active_network {
     border-top: 2px solid $toolbar-separator-color;
