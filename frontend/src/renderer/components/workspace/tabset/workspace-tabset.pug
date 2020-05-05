@@ -47,6 +47,7 @@ ul.bookmark_tab-list
       @click="pauseTraining"
     )
       i.icon.icon-player-pause
+      
     li.bookmark_tab.workspace_tab.tab_icon(
       v-if="tab.networkMeta.openStatistics !== null"
       :class="{'workspace_tab--active': indexCurrentNetwork === i && tab.networkMeta.openStatistics, 'workspace_tab--disable': indexCurrentNetwork !== i && isTutorialMode}"
@@ -60,7 +61,7 @@ ul.bookmark_tab-list
       @click="openTest(i)"
     )
       span Test
-      
+
 .tab-arrow.right(
   v-show="tabArrows.show"
   :class="{'disabled': !tabArrows.isRightActive }"

@@ -73,11 +73,11 @@
           @click="skipValid"
         )
           i.icon.icon-next
-    ul.toolbar_list
-      li
-        input.search-bar(
-          placeholder="Search operation"
-        )
+    //- ul.toolbar_list
+    //-   li
+    //-     input.search-bar(
+    //-       placeholder="Search operation"
+    //-     )
     ul.toolbar_list
       li
         span TensorFlow 1.15 
