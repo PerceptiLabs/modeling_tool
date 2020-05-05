@@ -60,7 +60,7 @@
             svg.is-not-favorite(v-if="!model.isFavorite" @click.stop="setFavoriteValue(index, true)" width='22' height='20' viewBox='0 0 22 20' fill='none' xmlns='http://www.w3.org/2000/svg')
               path(d='M10.5245 1.08156C10.6741 0.620903 11.3259 0.620907 11.4755 1.08156L13.2186 6.4463C13.4195 7.06434 13.9954 7.48278 14.6452 7.48278H20.2861C20.7704 7.48278 20.9718 8.10258 20.5799 8.38729L16.0164 11.7029C15.4907 12.0848 15.2707 12.7619 15.4715 13.3799L17.2146 18.7447C17.3643 19.2053 16.8371 19.5884 16.4452 19.3037L11.8817 15.9881C11.3559 15.6061 10.6441 15.6061 10.1183 15.9881L5.5548 19.3037C5.16294 19.5884 4.6357 19.2053 4.78538 18.7447L6.52849 13.3799C6.7293 12.7619 6.50931 12.0848 5.98358 11.7029L1.42006 8.38729C1.0282 8.10259 1.22959 7.48278 1.71395 7.48278H7.35477C8.00461 7.48278 8.58055 7.06434 8.78136 6.4463L10.5245 1.08156Z' stroke='#AEAEAE')
           div.column-2
-            span(@click.stop="") {{model.networkMeta.coreStatus.Status}}
+            model-status
           div.column-3
             span(@click.stop="") -
           div.column-4
@@ -95,6 +95,7 @@
   import FilePicker     from "@/components/different/file-picker.vue";
   import FilePickerPopup        from "@/components/global-popups/file-picker-popup.vue";
   import SelectModelModal from '@/pages/projects/components/select-model-modal.vue';
+  import ModelStatus from '@/components/different/model-status.vue';
 
   import { mapActions, mapMutations, mapState } from 'vuex';
   import {isWeb} from "@/core/helpers";
@@ -117,7 +118,8 @@
       CollaboratorAvatar,
       FilePicker,
       FilePickerPopup,
-      SelectModelModal
+      SelectModelModal,
+      ModelStatus,
     },
     data: function () {
       return {
@@ -545,7 +547,7 @@
       padding-left: 135px;
     }
     .column-2 {
-      min-width: 130px; 
+      min-width: 200px; 
     }
     .column-3 {
       min-width: 200px;
