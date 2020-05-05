@@ -65,7 +65,7 @@ $cell-left-gutter: 6.6rem;
 
   .cell-input {
     display: flex;
-    background-color: $bg-workspace;
+    background-color: transparent;
 
     .cell-input-operation-count {
       flex-basis: $cell-left-gutter;
@@ -73,6 +73,8 @@ $cell-left-gutter: 6.6rem;
       padding-top: 0.9rem;
       padding-right: 1rem;
       text-align: right;
+      background-color: transparent;
+      color: $toolbar-button-border;
     }
 
     .cell-input-code {
@@ -84,11 +86,11 @@ $cell-left-gutter: 6.6rem;
       border-radius: 2px;
       
       &.focused {
-        border: 1px solid $white;
+        border: 1px solid $color-6;
       }
 
       /deep/ .CodeMirror {
-        background-color: $bg-workspace;
+        background-color: transparent;
       }
 
     }

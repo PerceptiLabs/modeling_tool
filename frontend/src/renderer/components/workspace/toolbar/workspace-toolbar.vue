@@ -99,8 +99,8 @@
       span.text-primary.middle-text(v-html="statusTrainingText")
       button.btn.btn--dark.btn--toolbar-settings(
         type="button"
-        :class="{'btn--tutorial-active': false}"
-        v-coming-soon="true"
+        :class="{'btn--tutorial-active': isNotebookMode}"
+        @click="switchNotebookMode"
         v-tooltip-interactive:bottom="interactiveInfo.interactiveDoc"
       )
         span Notebook
@@ -117,10 +117,10 @@
           .ring-icon
 
       button.btn.btn--dark.btn--toolbar-settings(
-              type="button"
-              :class="{'tutorial-active': activeStepStoryboard === 5}"
-              @click="goToReport"
-            )
+        type="button"
+        :class="{'tutorial-active': activeStepStoryboard === 5}"
+        @click="goToReport"
+      )
 
         span Report
         i.icon.icon-bug-report
@@ -170,6 +170,7 @@ export default {
       testIsOpen:           'mod_workspace/GET_testIsOpen',
       networkIsOpen:        'mod_workspace/GET_networkIsOpen',
       networkHistory:       'mod_workspace-history/GET_currentNetHistory',
+      isNotebookMode:       'mod_notebook/getNotebookMode',
     }),
     statusStartBtn() {
       return {
@@ -270,11 +271,15 @@ export default {
       offMainTutorial:      'mod_tutorials/offTutorial',
       hideTooltip:          'mod_tutorials/hideTooltip',
       set_netMode:          'mod_workspace/SET_netMode',
+      set_notebookMode:     'mod_notebook/SET_notebookMode',
       toPrevStepHistory:    'mod_workspace-history/TO_prevStepHistory',
       toNextStepHistory:    'mod_workspace-history/TO_nextStepHistory',
     }),
     switchTutorialMode() {
       this.$refs.tutorialComponent.switchTutorialMode()
+    },
+    switchNotebookMode() {
+      this.set_notebookMode();
     },
     onOffBtn() {
       if(this.isTraining) this.trainStop();

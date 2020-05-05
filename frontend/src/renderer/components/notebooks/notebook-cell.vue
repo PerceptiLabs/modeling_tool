@@ -52,7 +52,7 @@ $border-width: 3px;
 
   margin: 0 auto;
 
-  background-color: $bg-workspace;
+  background-color: transparent;
   color: $color-6;
 
   font-family: monospace;
@@ -61,7 +61,7 @@ $border-width: 3px;
   border-left: $border-width solid transparent;
 
   &:hover {
-    border-left: $border-width solid $white;
+    border-left: $border-width solid $color-6;
   }
 }
 

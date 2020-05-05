@@ -181,7 +181,7 @@ export default {
 }
 
 #notebook-container {
-  background-color: $bg-workspace;
+  background-color: linear-gradient(180deg, #363E51 0%, rgba(54, 62, 81, 0) 100%);
   padding: 5rem 0;
 
   width: 100%;
