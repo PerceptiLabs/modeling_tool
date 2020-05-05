@@ -1,14 +1,14 @@
 <template lang="pug">
     div
-      div(v-if="isComplete").d-flex.align-items-center
+      div(v-if="statusData.Status === 'Finished'").d-flex.align-items-center
         img(src="./../../../../static/img/model-status-complete.svg")
         span.training-complete-text Training Complete
       div(v-else)
-        .name Training
+        .name {{statusData.Status === 'Waiting' ? 'Untrained':   statusData.Status === 'Stop' ? 'Training' :  statusData.Status}}
         div.d-flex.align-items-center
           .train-progress-wrapper
-            .train-progress-bars(:style="getProgres()") 
-          .progres-in-percent 50%
+            .train-progress-bars(:style="progressStyle") 
+          .progres-in-percent {{ statusData.Status === 'Waiting' ? '' : `${parseInt(statusData.Progress * 100, 10)}%`}}
 
 
 </template>
@@ -16,22 +16,41 @@
 export default {
   name: 'ModelStatus',
   props: {
+    statusData: {
+      type: Object,
+      default: {},
+    },
     status: {
       type: Number,
       default: 0
     },
     isComplete: {
       type: Boolean,
-      default: true,
+      default: false,
     }
+  },
+  data: {
+    progressStyle: {},
+  },
+  watch: {
+    'statusData.Progress': function () {
+      this.getProgres();
+    }
+  },
+  created(){
+    this.getProgres();
   },
   methods: {
     getProgres() {
+      let progress = 0;
       const color = '#73FEBB';  // green - #73FEBB  orange - #4D556A  blue - #7397FE
       const svg = `<svg width="3" height="8" viewBox="0 0 1 8" xmlns="http://www.w3.org/2000/svg"><rect width="1" height="8" rx="0.5" fill="${color}"/></svg>`;
       const encodedSvg = `url(data:image/svg+xml;base64,${window.btoa(svg)}`
-      return {
-        width: '80px',
+      if(this.statusData.Status === 'Stop' || this.statusData.Status === 'Training' || this.statusData.Status === 'Validation') {
+        progress = parseInt(this.statusData.Progress * 100, 10);
+      }
+      this.progressStyle = {
+        width: `${progress}px` ,
         backgroundImage: encodedSvg,
       }
     }
