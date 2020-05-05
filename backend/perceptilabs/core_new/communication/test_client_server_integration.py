@@ -47,6 +47,7 @@ def consumer(topic_gn, topic_sn):
     yield consumer
     consumer.stop()
 
+    
 @pytest.fixture
 def producer(topic_gn):
     producer = MessageProducer(topic_gn)
@@ -142,14 +143,12 @@ def test_receives_status_paused_on_request(topic_gn, topic_sn):
         next(client_step)
         client.request_start()
         client.request_pause()
-        
+
         def cond(_):
             next(server_step)
             next(client_step)
             return client.training_state == State.TRAINING_PAUSED
-        assert loop_until_true(cond)
-
-        
+        assert loop_until_true(cond)        
     finally:
         server.shutdown()
         client.shutdown()

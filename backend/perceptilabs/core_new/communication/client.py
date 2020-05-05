@@ -45,15 +45,11 @@ class TrainingClient:
     def run_stepwise(self):
         self._consumer.start()
         self._producer.start()
-        
-        while True:
-            try:
-                self._process_incoming_messages()                            
-            except ConnectionLost:
-                log.error("No vital signs from training server..!")                            
-                if self._on_server_timeout:
-                    self._on_server_timeout()
-            
+
+        self._running = True
+        self._t_last_message = time.time()
+        while self._running:
+            self._process_incoming_messages()                            
             self._process_outgoing_messages()                    
             yield
 
@@ -65,6 +61,16 @@ class TrainingClient:
             message_value = message['value']
             self._process_incoming_key_value(message_key, message_value)
 
+        if len(raw_messages) > 0:
+            self._t_last_message = time.time()
+        elif time.time() - self._t_last_message > self._server_timeout:
+            if self._on_server_timeout:
+                self._on_server_timeout()
+                
+            log.error(f"No vital signs from the training server within the last {self._server_timeout} seconds.")
+            time.sleep(1.0)
+
+                
     def _process_incoming_key_value(self, key, value):
         if key == 'state':
             self._training_state = value
@@ -93,6 +99,7 @@ class TrainingClient:
             self._producer.send(message)            
             
     def shutdown(self):
+        self._running = False
         self._process_outgoing_messages()
         self._producer.stop()
         self._consumer.stop()        

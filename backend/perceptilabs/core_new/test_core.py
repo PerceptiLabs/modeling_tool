@@ -19,7 +19,7 @@ from perceptilabs.core_new.graph import Graph
 from perceptilabs.core_new.layers import TrainingLayer
 from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP
 from perceptilabs.utils import wait_for_condition
-from perceptilabs.messaging import get_message_bus
+from perceptilabs.messaging import get_message_bus, MessageConsumer, MessageProducer
 
 logging.basicConfig(stream=sys.stdout,
                     format='%(asctime)s - %(levelname)s - %(threadName)s - %(filename)s:%(lineno)d - %(message)s',
@@ -143,7 +143,7 @@ def graph_spec_binary_classification():
                 "Properties": {
                     "Labels": "5",
                     "Loss": "Quadratic",
-                    "Epochs": 75,
+                    "Epochs": 25,
                     "Class_weights": "1",  # TODO: what's this?
                     "Optimizer": "SGD",
                     "Beta_1": "0.9",
@@ -183,14 +183,14 @@ def run_core_until_convergence(graph_spec, metric_fn, max_attempts=10):
             script_factory
         )
         
-        core.run(graph_spec, auto_close=True)
-        graphs.extend(core.graphs)
-
-        if metric_fn(graphs):
-            passed = True
+        core.run(graph_spec, auto_close=False)
+        core.close(wait_for_deployment=True)                            
+        
+        graphs.extend(core.graphs)        
+        passed = metric_fn(graphs)
+        if passed:
             break
 
-    #core.close()
     return passed
     
 
@@ -247,10 +247,15 @@ def test_core_handles_userland_timeout():
     def run_deploy(path):
         nonlocal thread2
         def fn():
-            port1 = script_factory.make.call_args[0][2]
-            port2 = script_factory.make.call_args[0][3]
+            topic_generic = script_factory.make.call_args[0][2]
+            topic_snapshots = script_factory.make.call_args[0][3]
+
+            prod_generic = MessageProducer(topic_generic)
+            prod_snapshots = MessageProducer(topic_snapshots)
+            consumer = MessageConsumer([topic_generic])            
+
             training_server = TrainingServer(
-                port1, port2,
+                prod_generic, prod_snapshots, consumer,
                 graph,
                 snapshot_builder=MagicMock(),
                 userland_timeout=userland_timeout,
@@ -307,10 +312,14 @@ def test_core_handles_userland_error():
     def run_deploy(path):
         nonlocal thread2
         def fn():
-            port1 = script_factory.make.call_args[0][2]
-            port2 = script_factory.make.call_args[0][3]
+            topic_generic = script_factory.make.call_args[0][2]
+            topic_snapshots = script_factory.make.call_args[0][3]
+
+            prod_generic = MessageProducer(topic_generic)
+            prod_snapshots = MessageProducer(topic_snapshots)
+            consumer = MessageConsumer([topic_generic])            
             training_server = TrainingServer(
-                port1, port2,
+                prod_generic, prod_snapshots, consumer,                
                 graph,
                 snapshot_builder=MagicMock(),
                 max_time_run=120                
@@ -341,32 +350,36 @@ def test_core_handles_userland_error():
 
         
 def test_core_handles_training_server_timeout():
-    # No ping and stuck in userland means server will timeout
+    """Simulate a timeout by having a slow training loop"""
+    
     ping_interval = 100
     userland_timeout = 100
     server_timeout = 3
-    
     def run_graph():
-        for _ in range(2):
-            time.sleep(100) # A single iteration will take 100s
-            yield YieldLevel.DEFAULT
+        while True:
+            time.sleep(10)
+            yield
 
     graph_spec = MagicMock()
     graph = MagicMock()
     graph.run.side_effect = run_graph
     graph_builder = MagicMock()
     deployment_strategy = MagicMock()
-    issue_handler = MagicMock()
     script_factory = MagicMock()
     script_factory.make.return_value = ('', {})
-
+    issue_handler = MagicMock()
+    
     thread2 = None
     def run_deploy(path):
         def fn():
-            port1 = script_factory.make.call_args[0][2]
-            port2 = script_factory.make.call_args[0][3]
+            topic_generic = script_factory.make.call_args[0][2]
+            topic_snapshots = script_factory.make.call_args[0][3]
+
+            prod_generic = MessageProducer(topic_generic)
+            prod_snapshots = MessageProducer(topic_snapshots)
+            consumer = MessageConsumer([topic_generic])            
             training_server = TrainingServer(
-                port1, port2,
+                prod_generic, prod_snapshots, consumer,                
                 graph,
                 snapshot_builder=MagicMock(),
                 userland_timeout=userland_timeout,
@@ -387,7 +400,7 @@ def test_core_handles_training_server_timeout():
         deployment_strategy=deployment_strategy,
         userland_timeout=userland_timeout,
         server_timeout=server_timeout,
-        issue_handler=issue_handler    
+        issue_handler=issue_handler
     )
 
     thread1 = threading.Thread(target=core.run, args=(graph_spec,), daemon=True)
@@ -395,7 +408,7 @@ def test_core_handles_training_server_timeout():
     try:
         assert wait_for_condition(lambda _: core.is_running)
         assert wait_for_condition(lambda _: not core.is_running)
-        assert wait_for_condition(lambda _: issue_handler.put_error.call_count == 1)                
+        assert wait_for_condition(lambda _: issue_handler.put_error.call_count == 1)        
     finally:
         core.close(wait_for_deployment=True)
         thread1.join()
@@ -420,10 +433,14 @@ def test_pause_works(graph_spec_binary_classification):
     thread2 = None
     def run_deploy(path):
         def fn():
-            port1 = script_factory.make.call_args[0][2]
-            port2 = script_factory.make.call_args[0][3]
+            topic_generic = script_factory.make.call_args[0][2]
+            topic_snapshots = script_factory.make.call_args[0][3]
+
+            prod_generic = MessageProducer(topic_generic)
+            prod_snapshots = MessageProducer(topic_snapshots)
+            consumer = MessageConsumer([topic_generic])            
             training_server = TrainingServer(
-                port1, port2,
+                prod_generic, prod_snapshots, consumer,                
                 graph,
                 snapshot_builder=MagicMock(),
                 max_time_run=120                
@@ -473,10 +490,14 @@ def test_resume_works(graph_spec_binary_classification):
     thread2 = None
     def run_deploy(path):
         def fn():
-            port1 = script_factory.make.call_args[0][2]
-            port2 = script_factory.make.call_args[0][3]
+            topic_generic = script_factory.make.call_args[0][2]
+            topic_snapshots = script_factory.make.call_args[0][3]
+
+            prod_generic = MessageProducer(topic_generic)
+            prod_snapshots = MessageProducer(topic_snapshots)
+            consumer = MessageConsumer([topic_generic])            
             training_server = TrainingServer(
-                port1, port2,
+                prod_generic, prod_snapshots, consumer,                
                 graph,
                 snapshot_builder=MagicMock(),
                 max_time_run=120                

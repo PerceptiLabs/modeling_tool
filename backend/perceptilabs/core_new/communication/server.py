@@ -53,8 +53,8 @@ class TrainingServer:
         self._producer_snapshots.start()
         
         def on_transition(new_state):
-            log.info(f"Entered new state {new_state}")
             self._send_key_value('state', new_state)
+            log.info(f"Transitioned to state '{new_state}'")
             
         state = State(on_transition=on_transition)
         
@@ -82,19 +82,23 @@ class TrainingServer:
             state.transition(new_state)
             
             if state.value in State.running_states:
-                t1 = time.perf_counter()                
-                new_state = self._process_training(
+                t1 = time.perf_counter()
+
+                # Advance training by a single step
+                new_state = self._advance_training(
                     training_step,
                     training_sentinel,
                     task_executor
                 )
                 t2 = time.perf_counter()
-                state.transition(new_state)                
-            elif state.value in State.idle_states:
+                state.transition(new_state)
+                
+            elif state.value in State.idle_states:                
                 if counter % 5 == 0:
                     log.info(f"In idle state '{state.value}'")                                
                 self._send_key_value('state', state.value)
                 time.sleep(1.0)
+                
             elif state.value not in State.exit_states:
                 raise RuntimeError(f"Unexpected state: {state}")
             
@@ -117,7 +121,9 @@ class TrainingServer:
         self._producer_snapshots.stop()
         self._consumer.stop()
 
-    def _process_training(self, training_step, sentinel, task_executor):
+    def _advance_training(self, training_step, sentinel, task_executor):
+        """Take a training step, check for timeout or userland errors, send snapshot if possible"""
+        
         new_state = None
         try:
             training_step_result = task_executor.run(
