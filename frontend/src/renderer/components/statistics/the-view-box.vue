@@ -114,7 +114,6 @@ export default {
       pointActivate:    'mod_tutorials/pointActivate'
     }),
     setBtnList(objList) {
-      console.log('setBtnList', objList);
       this.btnList = objList;
     },
     setCurrentBtn(name) {
