@@ -12,8 +12,6 @@ from perceptilabs.core_new.core2 import Core
 from perceptilabs.core_new.layers import *
 from perceptilabs.core_new.layers.replicas import NotReplicatedError
 from perceptilabs.core_new.compability.policies import policy_classification, policy_object_detection
-
-
 log = logging.getLogger(__name__)
 
 
@@ -110,6 +108,8 @@ class CompabilityCore:
             core.unpause()
         elif command.type == 'stop':
             core.stop()
+        elif command.type == 'close':
+            core.close()
         elif command.type == 'headless' and command.parameters['on']:
             core.headlessOn()
         elif command.type == 'headless' and not command.parameters['on']:            

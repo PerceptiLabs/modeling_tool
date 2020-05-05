@@ -385,7 +385,7 @@ class coreLogic():
         else:
             self.commandQ.put(
                 CoreCommand(
-                    type='stop',
+                    type='close',
                     parameters=None,
                     allow_override=False
                 )
