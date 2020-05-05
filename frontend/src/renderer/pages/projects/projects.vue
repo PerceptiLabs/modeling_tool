@@ -70,11 +70,11 @@
           div.column-5
             collaborator-avatar(
                 @click.stop=""
-                :list="[{id: 1, name: user.firstName, img: null,}]"
+                :list="[{id: 1, name: user && user.firstName || '', img: null,}]"
               )
           div.column-6(@click.stop="")
             collaborator-avatar(
-                :list="[{id: 1, name: user.firstName, img: null,}]"
+                :list="[{id: 1, name: user && user.firstName || '', img: null,}]"
               )
             | {{model.apiMeta.updated.substring(0, 10)}}
         
