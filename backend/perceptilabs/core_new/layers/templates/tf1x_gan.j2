@@ -98,35 +98,39 @@
                 real_data_node.layer_id: real_tensor
             }
             for node in real_nodes:
-                args = []
-                for input_node in graph.get_input_nodes(node):
-                    if input_node in real_nodes:
+                if len(list(graph.get_input_nodes(node))) <= 1:
+                    args = []
+                    for input_node in graph.get_input_nodes(node):
                         args.append(layer_output_tensors[input_node.layer_id])
-                    elif input_node == real_data_node:
-                        args.append(layer_output_tensors[real_data_node.layer_id])
-                    else:
-                        args.append(layer_output_tensors[real_data_node.layer_id])
-                y = node.layer_instance(*args)
+                    y = node.layer_instance(*args)
+                elif len(list(graph.get_input_nodes(node))) > 1:
+                    args = {}
+                    for input_node in graph.get_input_nodes(node):
+                        if input_node in real_nodes:
+                            args[input_node.layer_id] = layer_output_tensors[input_node.layer_id]
+                        elif input_node == real_data_node:
+                            args[real_data_node.layer_id] = layer_output_tensors[real_data_node.layer_id]
+                    y = node.layer_instance(args)
                 layer_output_tensors[node.layer_id] = y
             return layer_output_tensors
 
-        print([node.layer_id for node in gen_nodes])
         def build_gen_graph(random_tensor):
             switch_node.layer._selected_layer_id = gen_nodes[-2].layer_id
             layer_output_tensors = {
                 random_data_node.layer_id: random_tensor
             }
             for node in gen_nodes:
-                print(node.layer_id)
-                args = []
-                for input_node in graph.get_input_nodes(node):
-                    if input_node in gen_nodes:
+                if len(list(graph.get_input_nodes(node))) <= 1:
+                    args = []
+                    for input_node in graph.get_input_nodes(node):
                         args.append(layer_output_tensors[input_node.layer_id])
-                    elif input_node == random_data_node:
-                        args.append(layer_output_tensors[random_data_node.layer_id])
-                    else:
-                        args.append(layer_output_tensors[gen_nodes[-2].layer_id])
-                y = node.layer_instance(*args)
+                    y = node.layer_instance(*args)
+                elif len(list(graph.get_input_nodes(node))) > 1:
+                    args = {}
+                    for input_node in graph.get_input_nodes(node):
+                        if input_node in gen_nodes:
+                            args[input_node.layer_id] = layer_output_tensors[input_node.layer_id]
+                    y = node.layer_instance(args)
                 layer_output_tensors[node.layer_id] = y
             return layer_output_tensors
         
@@ -307,10 +311,10 @@
             if not self._headless:
                 _, self._gen_loss_training, self._gen_layer_outputs,\
                      self._gen_layer_weights, self._gen_layer_biases, \
-                    self._gen_layer_gradients \
+                    self._gen_layer_gradients, self._real_layer_outputs \
                     = sess.run([
                         gen_update_weights, gen_loss_tensor, \
-                        gen_layer_output_tensors, gen_layer_weight_tensors, gen_layer_bias_tensors, gen_layer_gradient_tensors
+                        gen_layer_output_tensors, gen_layer_weight_tensors, gen_layer_bias_tensors, gen_layer_gradient_tensors, real_layer_output_tensors
                     ])
                 _, self._dis_loss_training, self._dis_layer_outputs,\
                      self._dis_layer_weights, self._dis_layer_biases, \
@@ -332,10 +336,10 @@
             if not self._headless:
                 self._gen_loss_validation, self._gen_layer_outputs,\
                      self._gen_layer_weights, self._gen_layer_biases, \
-                    self._gen_layer_gradients \
+                    self._gen_layer_gradients, self._real_layer_outputs \
                     = sess.run([
                         gen_loss_tensor, \
-                        gen_layer_output_tensors, gen_layer_weight_tensors, gen_layer_bias_tensors, gen_layer_gradient_tensors
+                        gen_layer_output_tensors, gen_layer_weight_tensors, gen_layer_bias_tensors, gen_layer_gradient_tensors, real_layer_output_tensors
                     ])
                 self._dis_loss_validation, self._dis_layer_outputs,\
                      self._dis_layer_weights, self._dis_layer_biases, \
@@ -357,10 +361,10 @@
             
         def test_step():
             self._gen_loss_testing, self._gen_layer_outputs,\
-                    self._gen_layer_weights, self._gen_layer_gradients \
+                    self._gen_layer_weights, self._gen_layer_gradients, self._real_layer_outputs \
                 = sess.run([
                     gen_loss_tensor, \
-                    gen_layer_output_tensors, gen_layer_weight_tensors, gen_layer_gradient_tensors
+                    gen_layer_output_tensors, gen_layer_weight_tensors, gen_layer_gradient_tensors, real_layer_output_tensors
                 ])
             self._dis_loss_testing, self._dis_layer_outputs,\
                     self._dis_layer_weights, self._dis_layer_gradients \
@@ -451,6 +455,7 @@ class {{layer_name}}(GANLayer):
         self._gen_variables = {}
         self._dis_variables = {}
 
+        self._real_layer_outputs = {}
         self._gen_layer_outputs = {}
         self._gen_layer_weights = {}
         self._gen_layer_biases = {}        
@@ -665,7 +670,9 @@ class {{layer_name}}(GANLayer):
 
         Returns:
             A dictionary of nested dictionaries, where each key is a layer id. The nested dictionaries contain weight name and value pairs. The values must be picklable.
-        """        
+        """      
+        self._layer_biases.update(self._gen_layer_weights)
+        self._layer_biases.update(self._dis_layer_weights)   
         return self._layer_weights
 
     @property
@@ -697,6 +704,7 @@ class {{layer_name}}(GANLayer):
         Returns:
             A dictionary of nested dictionaries, where each key is a layer id. The nested dictionaries contain variable name and value pairs. The values must be picklable.
         """
+        self._layer_outputs.update(self._real_layer_outputs)
         self._layer_outputs.update(self._gen_layer_outputs)
         self._layer_outputs.update(self._dis_layer_outputs)
         return self._layer_outputs
