@@ -99,7 +99,7 @@
       span.text-primary.middle-text(v-html="statusTrainingText")
       button.btn.btn--dark.btn--toolbar-settings(
         type="button"
-        :class="{'btn--tutorial-active': isNotebookMode}"
+        :class="{'active': isNotebookMode}"
         @click="switchNotebookMode"
         v-tooltip-interactive:bottom="interactiveInfo.interactiveDoc"
       )
@@ -111,7 +111,7 @@
         v-tooltip-interactive:bottom="interactiveInfo.tutorial")
         button.btn.btn--dark.btn--toolbar-settings(type="button"
           @click="switchTutorialMode"
-          :class="{'btn--tutorial-active': isTutorialMode}"
+          :class="{'active': isTutorialMode}"
         )
           span Tutorial
           .ring-icon
@@ -503,12 +503,33 @@ export default {
 
     padding-right: 1rem;
     padding-left: 1rem;
-    border: 1px solid #5E6F9F;
+    border: 1px solid $toolbar-separator-color;
 
     font-family: Nunito Sans;
     font-style: normal;
     font-weight: 600;
     font-size: 12px;
+
+
+    .ring-icon {
+      margin-left: .7rem;
+      font-size: 12px;
+
+      width: 1rem;
+      height: 1rem;
+      border-radius: 50%;
+      border: 2px solid $toolbar-button-border;
+    }
+
+    &.active {
+      color: $color-1;
+      border: 1px solid $color-1;
+
+      & > .ring-icon {
+        border: 2px solid $color-1;
+      }
+    }
+
   }
 
   .search-bar {
@@ -520,13 +541,5 @@ export default {
 
   }
 
-  .ring-icon {
-    margin-left: .7rem;
-    font-size: 12px;
-
-    width: 1rem;
-    height: 1rem;
-    border-radius: 50%;
-    border: 2px solid $toolbar-button-border;
-  }
+  
 </style>
