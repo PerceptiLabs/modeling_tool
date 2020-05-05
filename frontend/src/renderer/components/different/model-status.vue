@@ -4,7 +4,8 @@
         img(src="./../../../../static/img/model-status-complete.svg")
         span.training-complete-text Training Complete
       div(v-else)
-        .name {{statusData.Status === 'Waiting' || !!statusData ? 'Untrained':   statusData.Status === 'Stop' ? 'Training' :  statusData.Status}}
+        //- .name {{statusData.Status === 'Waiting' || !!statusData ? 'Untrained':   statusData.Status === 'Stop' ? 'Training' :  statusData.Status}}
+        .name {{statusData.Status ? statusData.Status === 'Stop' ? 'Stopped' : statusData.Status : 'Untrained'}}
         div.d-flex.align-items-center
           .train-progress-wrapper
             .train-progress-bars(:style="progressStyle") 
