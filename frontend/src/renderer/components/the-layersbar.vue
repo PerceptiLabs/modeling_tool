@@ -48,12 +48,14 @@
   import ProcessReshape       from '@/components/network-elements/elements/process-reshape/view-process-reshape.vue'
 
   import TrainNormal          from '@/components/network-elements/elements/train-normal/view-train-normal.vue'
+  import TrainRegression      from '@/components/network-elements/elements/train-regression/view-train-regression.vue'
   import TrainGenetic         from '@/components/network-elements/elements/train-genetic/view-train-genetic.vue'
   import TrainDynamic         from '@/components/network-elements/elements/train-dynamic/view-train-dynamic.vue'
   import TrainReinforce       from '@/components/network-elements/elements/train-reinforce/view-train-reinforce.vue'
   import TrainLoss            from '@/components/network-elements/elements/train-loss/view-train-loss.vue'
   import TrainOptimizer       from '@/components/network-elements/elements/train-optimizer/view-train-optimizer.vue'
   import TrainGan             from '@/components/network-elements/elements/train-gan/view-train-gan.vue'
+  import TrainDetector        from '@/components/network-elements/elements/train-detector/view-train-detector.vue'
 
   import MathArgmax           from '@/components/network-elements/elements/math-argmax/view-math-argmax.vue'
   import MathMerge            from '@/components/network-elements/elements/math-merge/view-math-merge.vue'
@@ -76,7 +78,7 @@ export default {
     DataData, DataEnvironment, DataCloud,
     DeepLearningFC, DeepLearningConv, DeepLearningDeconv, DeepLearningRecurrent,
     ProcessCrop, ProcessEmbed, ProcessGrayscale, ProcessOneHot, ProcessReshape,
-    TrainNormal, TrainGenetic, TrainDynamic, TrainReinforce, TrainLoss, TrainOptimizer, TrainGan,
+    TrainNormal, TrainRegression, TrainGenetic, TrainDynamic, TrainReinforce, TrainLoss, TrainOptimizer, TrainGan, TrainDetector,
     MathArgmax, MathMerge, MathSoftmax, MathSplit,
     ClassicMLDbscans, ClassicMLKMeans, ClassicMLKNN, ClassicMLRandomForest, ClassicMLSVM,
     LayerCustom

@@ -84,8 +84,8 @@ class LightweightCache:
 
     def get(self, layer_id, id_to_code, edges_by_id):
         key = self._compute_hash(layer_id, id_to_code, edges_by_id)
-        
-        if key in self._map:
+
+        if key is not None and key in self._map:
             entry = self._map[key]
             value = entry.value
 
@@ -101,11 +101,20 @@ class LightweightCache:
         graph.add_node(layer_id)
 
         ancestor_ids = nx.ancestors(graph, layer_id)
-        code = id_to_code[layer_id]
-        for ancestor_id in sorted(ancestor_ids):
-            code += id_to_code[ancestor_id]
+        full_code = id_to_code[layer_id]
 
-        md5 = hashlib.md5(code.encode('utf-8')).hexdigest()
+        if full_code is None:
+            return None            
+        
+        for ancestor_id in sorted(ancestor_ids):
+            code = id_to_code[ancestor_id]            
+            if code is None:
+                return None            
+            
+            full_code += code
+
+        encoded = full_code.encode('utf-8')
+        md5 = hashlib.md5(encoded).hexdigest()
         return md5
         
     def _insert_and_purge(self, key, value):

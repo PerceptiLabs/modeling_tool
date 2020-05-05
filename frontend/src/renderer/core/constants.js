@@ -1,6 +1,6 @@
 const isDevelopMode = process.env.NODE_ENV !== 'production';
 
-const trainingElements  = ['TrainLoss', 'TrainOptimizer', 'TrainNormal', 'TrainReinforce', 'TrainGan'
+const trainingElements  = ['TrainLoss', 'TrainOptimizer', 'TrainNormal', 'TrainRegression', 'TrainReinforce', 'TrainGan', 'TrainDetector'
   //'TrainGenetic',
   //'TrainDynamic'
 ];
