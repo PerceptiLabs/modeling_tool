@@ -80,7 +80,7 @@
         )
     ul.toolbar_list
       li
-        span Python 
+        span TensorFlow 1.15 
     //ul.toolbar_list
       li
         button.btn.btn--toolbar(type="button"
