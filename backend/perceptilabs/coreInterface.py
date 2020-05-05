@@ -810,7 +810,6 @@ class coreLogic():
             dataObj = createDataObject([D[-1]])      
             return {"Data":dataObj}
         elif layerType=="DeepLearningFC":
-            print("*****************************************************")
             if view=="Output":
                 D=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})[-1]
                 dataObject = createDataObject([D])                
@@ -966,14 +965,12 @@ class coreLogic():
             return {"Output":output}
 
         elif layerType=="TrainRegression":
-            log.debug("**********************************************************")
             if view=="Prediction":
                 #Make sure that all the inputs are sent to frontend!!!!!!!!!!!!!!!
                 inputs=[self.getStatistics({"layerId":i,"variable":"Y","innervariable":""})[-1] for i in self.graphObj.start_nodes]
                 D = [createDataObject([input_]) for input_ in inputs]
                 
                 X = self.getStatistics({"layerId": layerId, "variable":"X", "innervariable":""})
-                print(X)
 
                 if type(X) is dict and type(list(X.values())[0]) is dict and len(list(X.values()))==2:
 
@@ -1063,10 +1060,10 @@ class coreLogic():
                 r_sq_val=self.getStatistics({"layerId":layerId,"variable":"r_sq_val_iter","innervariable":""})
                 currentTraining=r_sq_train
 
-                if isinstance(loss_train,np.ndarray):
+                if isinstance(r_sq_train,np.ndarray):
                     currentValidation=np.concatenate((r_sq_train,np.asarray(r_sq_val)))
-                elif isinstance(loss_train,list):
-                    if isinstance(loss_val,list):
+                elif isinstance(r_sq_train,list):
+                    if isinstance(r_sq_val,list):
                         currentValidation=r_sq_train+r_sq_val
                     else:
                         currentValidation=r_sq_train+list(r_sq_val)
@@ -1085,7 +1082,6 @@ class coreLogic():
                 return output                   
 
         elif layerType=="TrainNormal":
-            print("**********************************************************")
             if view=="Prediction":
                 #Make sure that all the inputs are sent to frontend!!!!!!!!!!!!!!!
                 inputs=[self.getStatistics({"layerId":i,"variable":"Y","innervariable":""})[-1] for i in self.graphObj.start_nodes]
