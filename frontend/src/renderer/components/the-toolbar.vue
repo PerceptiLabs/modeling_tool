@@ -98,8 +98,8 @@
       span.text-primary.middle-text(v-html="statusTrainingText")
       button.btn.btn--dark.btn--toolbar-settings(
         type="button"
-        :class="{'btn--tutorial-active': false}"
-        v-coming-soon="true"
+        :class="{'btn--tutorial-active': isNotebookMode}"
+        @click="switchNotebookMode"
         v-tooltip-interactive:bottom="interactiveInfo.interactiveDoc"
       )
         span Notebook
@@ -158,6 +158,7 @@ export default {
       tutorialActiveAction: 'mod_tutorials/getActiveAction',
       interactiveInfoStatus:'mod_tutorials/getInteractiveInfo',
       isTutorialMode:       'mod_tutorials/getIstutorialMode',
+      isNotebookMode:       'mod_notebook/getNotebookMode',
       currentElList:        'mod_workspace/GET_currentNetworkElementList',
       isTraining:           'mod_workspace/GET_networkIsTraining',
       statusNetworkCore:    'mod_workspace/GET_networkCoreStatus',
@@ -263,12 +264,16 @@ export default {
       removeTooltip:        'mod_tutorials/removeTooltip',
       offMainTutorial:      'mod_tutorials/offTutorial',
       hideTooltip:          'mod_tutorials/hideTooltip',
+      set_notebookMode:     'mod_notebook/SET_notebookMode',
       set_netMode:          'mod_workspace/SET_netMode',
       toPrevStepHistory:    'mod_workspace-history/TO_prevStepHistory',
       toNextStepHistory:    'mod_workspace-history/TO_nextStepHistory',
     }),
     switchTutorialMode() {
       this.$refs.tutorialComponent.switchTutorialMode()
+    },
+    switchNotebookMode() {
+      this.set_notebookMode();
     },
     onOffBtn() {
       if(this.isTraining) this.trainStop();

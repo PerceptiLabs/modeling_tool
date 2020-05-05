@@ -7,6 +7,7 @@
       include ./tabset/workspace-tabset.pug
     toolbar
     .workspace_content.bookmark_content.js-workspace(
+      v-if="!isNotebookMode"  
       ref="workspaceNet"
       :class="{'workspace-relative' : showTrainingSpinner}"
       )
@@ -74,9 +75,11 @@
         :confirmCallback="showFilePickerPopup.confirmCallback || showFilePickerPopup")
       //- showFilePickerPopup container the callback function
 
-    .workspace_meta
+    .workspace_meta(
+      v-if="!isNotebookMode"  
+      )
       include ./meta/workspace-meta.pug
-
+    notebook(v-if="isNotebookMode")
 </template>
 
 <script src="./the-workspace.js"></script>

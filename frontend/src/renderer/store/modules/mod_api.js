@@ -603,12 +603,38 @@ const actions = {
     };
 
     // console.log('getCode', theData);
+    // console.log('getCode - payload', theData);
+    // console.log('getCode - layerId', layerId);
     if(isWeb()) {
       dispatch('globalView/ShowCoreNotFoundPopup', null, { root: true });
     }
     return coreRequest(theData)
-      .then((data)=> data)
+      .then((data)=> {
+        // console.log('getCode - response', data);
+        // console.log('getCode - layerId', layerId);
+        return data
+      })
       .catch((err)=> {
+        console.log('API_getCode error');
+        console.error(err);
+      });
+  },
+
+  API_getGraphOrder({ rootGetters }, jsonNetwork) {
+
+    const theData = {
+      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
+      action: 'getGraphOrder',
+      value: jsonNetwork
+    };
+
+    return coreRequest(theData)
+      .then((data)=> {
+        // console.log('API_getGraphOrder data', data);
+        return data;
+      })
+      .catch((err)=> {
+        // console.log('API_getGraphOrder error');
         console.error(err);
       });
   },

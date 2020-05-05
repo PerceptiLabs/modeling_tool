@@ -21,6 +21,7 @@ import TheViewBox             from "@/components/statistics/the-view-box";
 import StartTrainingSpinner   from '@/components/different/start-training-spinner.vue'
 import TheMiniMap             from '@/components/different/the-mini-map.vue'
 import SidebarLayers          from '@/components/workspace/sidebar/workspace-sidebar-layers.vue'
+import Notebook               from '@/components/notebooks/notebook-container.vue';
 
 export default {
   name: 'WorkspaceContent',
@@ -31,7 +32,7 @@ export default {
     GeneralResult, SelectCoreSide,
     WorkspaceBeforeImport, WorkspaceSaveNetwork, WorkspaceLoadNetwork,
     TheTesting, TheViewBox, StartTrainingSpinner,
-    TheMiniMap, FilePickerPopup, SidebarLayers
+    TheMiniMap, FilePickerPopup, SidebarLayers, Notebook
   },
   mounted() {
     window.addEventListener('resize', this.onResize);
@@ -72,6 +73,7 @@ export default {
       statisticsIsOpen:   'mod_workspace/GET_statisticsIsOpen',
 
       isTutorialMode:     'mod_tutorials/getIstutorialMode',
+      isNotebookMode:     'mod_notebook/getNotebookMode',
       tutorialActiveStep: 'mod_tutorials/getActiveStep',
     }),
     ...mapState({

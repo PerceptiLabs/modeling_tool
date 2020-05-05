@@ -178,7 +178,6 @@ const deepCloneNetwork = function (object) {
   );
 };
 
-
 const isLocalStorageAvailable = function () {
   try {
       var storage = window['localStorage'],
@@ -336,6 +335,8 @@ export {
   deepCloneNetwork,
   isLocalStorageAvailable,
   stringifyNetworkObjects,
+  fixFilepathSeparator,
+  promiseWithTimeout,
   isOsWindows,
   isDesktopApp,
   shouldHideSidebar,
@@ -344,7 +345,6 @@ export {
   isOsMacintosh,
   isElectron,
   isWeb,
-  fixFilepathSeparator,
   setAppTypeRootClasses,
   debounce,
   promiseWithTimeout

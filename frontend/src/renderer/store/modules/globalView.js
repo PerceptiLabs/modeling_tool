@@ -133,6 +133,8 @@ const actions = {
     commit('gp_ComingSoonPopup', true);
   },
   ShowCoreNotFoundPopup({ commit, rootState, dispatch }) {
+    // if (rootState.mod_api.statusLocalCore === 'online') { return; }
+
     // let isServerRequestDone = false;
     // dispatch('mod_api/checkCoreAvailability', null, { root: true })
     //   .then(() =>{
@@ -141,7 +143,7 @@ const actions = {
     //   .catch((e) =>{
     //     isServerRequestDone = true;
     //   });
-    //
+
     // const delayActionDispatch = setTimeout(() => {
     //   const coreIsOffline = rootState.mod_api.statusLocalCore === 'offline';
     //   //if server responds more then a second or currently is offline show the core offline modal
