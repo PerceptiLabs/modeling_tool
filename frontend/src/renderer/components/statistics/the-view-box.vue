@@ -31,6 +31,7 @@
   import TrainLoss        from '@/components/network-elements/elements/train-loss/viewBox-train-loss.vue'
   import TrainOptimizer   from '@/components/network-elements/elements/train-optimizer/viewBox-train-optimizer.vue'
   import TrainGan         from '@/components/network-elements/elements/train-gan/viewBox-train-gan.vue'
+  import TrainRegression         from '@/components/network-elements/elements/train-regression/viewBox-train-regression.vue'
   import TrainDetector    from '@/components/network-elements/elements/train-detector/viewBox-train-detector.vue'
 
   /*view box*/
@@ -58,7 +59,7 @@
 export default {
   name: "TheViewBox",
   components: {
-    TrainNormal, TrainGenetic, TrainDynamic, TrainReinforce, TrainLoss, TrainOptimizer, TrainGan, TrainDetector,
+    TrainNormal, TrainGenetic, TrainDynamic, TrainReinforce, TrainLoss, TrainOptimizer, TrainGan, TrainDetector, TrainRegression,
     ClassicMLDbscans, ClassicMLKMeans, ClassicMLKNN, ClassicMLRandomForest, ClassicMLSVM,
 
     DataData, DataEnvironment, DataCloud,
