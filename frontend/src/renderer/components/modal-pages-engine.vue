@@ -19,11 +19,20 @@
     name: 'ModalPagesEngine',
     components: {PageRestoreAccount, PageRegister, PageLogin, CreateSelectProject},
     created() {
-      let localUserToken = JSON.parse(localStorage.getItem('currentUser'));
-      
-      if(!localUserToken) {
+      try {
+        let localUserToken = JSON.parse(localStorage.getItem('currentUser'));
+        if(!localUserToken.accessToken) {
+          throw "haven't token";
+        }
+      } catch(e) {
         this.setActivePageAction(MODAL_PAGE_SIGN_UP)
-      }
+      };
+    
+      // let localUserToken = JSON.parse(localStorage.getItem('currentUser'));
+      
+      // if(!localUserToken) {
+      //   this.setActivePageAction(MODAL_PAGE_SIGN_UP)
+      // }
     },
     data: function() {
       return {

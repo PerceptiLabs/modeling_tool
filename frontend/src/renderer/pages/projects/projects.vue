@@ -70,11 +70,11 @@
           div.column-5
             collaborator-avatar(
                 @click.stop=""
-                :list="[{id: 1, name: 'Anton', img: null,}, {id: 2, name: 'Robert', img: null,}, {id: 3, name: 'David', img: null,}]"
+                :list="[{id: 1, name: user.firstName, img: null,}]"
               )
           div.column-6(@click.stop="")
             collaborator-avatar(
-                :list="[{id: 1, name: 'Robert', img: null,}]"
+                :list="[{id: 1, name: user.firstName, img: null,}]"
               )
             | {{model.apiMeta.updated.substring(0, 10)}}
         
@@ -104,7 +104,7 @@
   import ModelStatus from '@/components/different/model-status.vue';
   import WorkspaceLoadNetwork   from "@/components/global-popups/workspace-load-network.vue";
 
-  import { mapActions, mapMutations, mapState } from 'vuex';
+  import { mapActions, mapMutations, mapState, mapGetters } from 'vuex';
   import {isWeb} from "@/core/helpers";
   import cloneDeep from 'lodash.clonedeep';
   const mockModelList = [
@@ -173,6 +173,9 @@
     },
   
     computed: {
+      ...mapGetters({
+        user: 'mod_user/GET_userProfile'
+      }),
       ...mapState({
         currentProjectId: state => state.mod_project.currentProject,
         showFilePickerPopup: state => state.globalView.globalPopup.showFilePickerPopup,
