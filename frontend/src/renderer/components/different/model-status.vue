@@ -8,7 +8,7 @@
         div.d-flex.align-items-center
           .train-progress-wrapper
             .train-progress-bars(:style="progressStyle") 
-          .progres-in-percent {{ statusData.Status === 'Waiting' ? '' : `${parseInt(statusData.Progress * 100, 10)}%`}}
+          .progres-in-percent {{ statusData.Status === 'Waiting' ? '' : isNaN(parseInt(statusData.Progress * 100, 10)) ? '' : `${parseInt(statusData.Progress * 100, 10)}%`}}
 
 
 </template>
