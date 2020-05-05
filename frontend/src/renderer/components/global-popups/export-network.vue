@@ -27,6 +27,7 @@
 </template>
 
 <script>
+import { isWeb } from "@/core/helpers";
 import BaseGlobalPopup  from "@/components/global-popups/base-global-popup";
 
 export default {
@@ -62,13 +63,11 @@ export default {
           .catch((err)=> console.error(err) ) 
       }
     },
-    exportData() {
-      this.$store.dispatch('mod_api/API_exportData', this.settings);
-    },  
     closePopup() {
       this.$store.commit('globalView/HIDE_allGlobalPopups');
     },
     ok() {
+      this.$store.dispatch('mod_api/API_exportData', this.settings);
       this.closePopup();
     },
    }
