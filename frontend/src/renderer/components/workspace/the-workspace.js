@@ -190,7 +190,7 @@ export default {
       tutorialPointActivate:'mod_tutorials/pointActivate',
       offMainTutorial:      'mod_tutorials/offTutorial',
       pushSnapshotToHistory:'mod_workspace-history/PUSH_newSnapshot',
-      stopTraining:         'mod_api/API_stopTraining',
+      pauseTraining:        'mod_api/API_pauseTraining',
       skipValidTraining:    'mod_api/API_skipValidTraining',
     }),
     startCursorListener (event) {
@@ -277,10 +277,34 @@ export default {
       this.setNetworkNameAction(text);
       this.pushSnapshotToHistory(null)
     },
-    trainStart() {
-      let valid = this.validateNetwork();
-      if (!valid) return;
-      this.GP_showCoreSideSettings(true);
+    tabStartClick(index) {
+      if (this.indexCurrentNetwork !== index) {
+        this.set_currentNetwork(index);
+      }
+
+      this.$nextTick(() => {
+        let valid = this.validateNetwork();
+        if (!valid) return;
+        this.GP_showCoreSideSettings(true);
+      });
+    },
+    tabPauseClick(index) {
+      if (this.indexCurrentNetwork !== index) {
+        this.set_currentNetwork(index);
+      }
+
+      this.$nextTick(() => {
+        this.pauseTraining();
+      });
+    },
+    tabSkipClick(index) {
+      if (this.indexCurrentNetwork !== index) {
+        this.set_currentNetwork(index);
+      }
+
+      this.$nextTick(() => {
+        this.skipValidTraining();
+      });
     },
     validateNetwork() {
       let net;
