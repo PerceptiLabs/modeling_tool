@@ -35,7 +35,7 @@ log = logging.getLogger(__name__)
     
     
 class Core:
-    def __init__(self, graph_builder: GraphBuilder, script_factory: ScriptFactory, issue_handler: IssueHandler=None, server_timeout=20, userland_timeout=30, deployment_strategy=None, use_sentry=False):
+    def __init__(self, graph_builder: GraphBuilder, script_factory: ScriptFactory, issue_handler: IssueHandler=None, server_timeout=610, userland_timeout=600, deployment_strategy=None, use_sentry=False):
         self._graph_builder = graph_builder
         self._script_factory = script_factory
         self._graphs = collections.deque(maxlen=500)
