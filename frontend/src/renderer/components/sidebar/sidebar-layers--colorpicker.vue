@@ -86,6 +86,7 @@ export default {
         case 'TrainReinforce':
         case 'TrainLoss':
         case 'TrainOptimizer':
+        case 'TrainDetector':
           className = 'net-color-train';
           break;
         case 'MathArgmax':
