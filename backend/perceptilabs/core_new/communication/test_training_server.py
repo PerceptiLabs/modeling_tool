@@ -193,7 +193,7 @@ def test_reaches_state_completed(topic_gn, topic_sn, consumer, producer):
         assert n_training_steps_taken == 10
     finally:
         server.shutdown()
-
+        
 
 def test_sends_one_snapshot_per_yield(topic_gn, topic_sn, consumer, producer):
     n_training_steps_to_take = 3
@@ -563,6 +563,55 @@ def test_calls_graph_export_when_requested(topic_gn, topic_sn, consumer, produce
         server.shutdown()
 
 
+def test_calls_graph_export_when_requested_after_training_completed(topic_gn, topic_sn, consumer, producer):
+    n_training_steps_taken = 0
+    
+    def run_graph():
+        nonlocal n_training_steps_taken
+        for _ in range(10):
+            n_training_steps_taken += 1
+            yield
+            
+    graph = MagicMock()
+    graph.run.side_effect = run_graph
+
+    server = create_server(topic_gn, topic_sn, graph=graph)        
+    try:
+        step = server.run_stepwise()
+        
+        def cond(_):
+            next(step)             
+            raw_messages = consumer.get_messages()
+            messages = [deserialize(m) for m in raw_messages]
+            return {'key': 'state', 'value': State.READY} in messages
+
+        assert loop_until_true(cond)
+        producer.send(serialize({'key': 'on_request_start', 'value': ''}))
+
+        def cond(_):
+            next(step) # Keep iterating.
+            raw_messages = consumer.get_messages()
+            messages = [deserialize(m) for m in raw_messages]
+            return {'key': 'state', 'value': State.TRAINING_COMPLETED} in messages
+
+        assert loop_until_true(cond)
+
+        producer.send(serialize({'key': 'on_request_export', 'value': {'path': 'abc', 'mode': 'xyz'}}))
+        def cond(_):
+            next(step) # Keep iterating.
+            raw_messages = consumer.get_messages()
+            messages = [deserialize(m) for m in raw_messages]
+            return (
+                graph.on_export.call_count == 1 and
+                graph.on_export.call_args_list[0][0][0] == 'abc' and
+                graph.on_export.call_args_list[0][0][1] == 'xyz'
+            )
+
+        assert loop_until_true(cond)
+    finally:
+        server.shutdown()
+
+        
 def test_calls_graph_headless_activate_when_requested(topic_gn, topic_sn, consumer, producer):
     graph = MagicMock()
 

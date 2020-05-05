@@ -182,8 +182,8 @@ def run_core_until_convergence(graph_spec, metric_fn, max_attempts=10):
             script_factory
         )
         
-        core.run(graph_spec, auto_close=False)
-        core.close(wait_for_deployment=True)                            
+        core.run(graph_spec, auto_close=True)
+        #core.close(wait_for_deployment=True)                            
         
         graphs.extend(core.graphs)        
         passed = metric_fn(graphs)
@@ -458,7 +458,7 @@ def test_pause_works(graph_spec_binary_classification):
         deployment_strategy=deployment_strategy
     )
     
-    thread1 = threading.Thread(target=core.run, args=(graph_spec_binary_classification,), daemon=True)
+    thread1 = threading.Thread(target=core.run, args=(graph_spec_binary_classification,), kwargs={'auto_close': True}, daemon=True)
     thread1.start()
     try:
         assert wait_for_condition(lambda _: core.training_state == State.TRAINING_RUNNING) # Pausing in State.READY doesn't make sense (right now), so we have to wait... 
@@ -515,7 +515,7 @@ def test_resume_works(graph_spec_binary_classification):
         deployment_strategy=deployment_strategy
     )
     
-    thread1 = threading.Thread(target=core.run, args=(graph_spec_binary_classification,), daemon=True)
+    thread1 = threading.Thread(target=core.run, args=(graph_spec_binary_classification,), kwargs={'auto_close': True}, daemon=True)
     thread1.start()
     try:
         assert wait_for_condition(lambda _: core.training_state == State.TRAINING_RUNNING) # Pausing in State.READY doesn't make sense (right now), so we have to wait... 
@@ -532,3 +532,63 @@ def test_resume_works(graph_spec_binary_classification):
         core.close(wait_for_deployment=True)
         thread1.join()
         thread2.join()        
+
+'''
+def test_export_works(graph_spec_binary_classification):
+    
+    def run_graph():
+        for _ in range(5):
+            time.sleep(1.0)
+            yield YieldLevel.DEFAULT
+
+    graph_spec = MagicMock()
+    graph = MagicMock()
+    graph.run.side_effect = run_graph
+    graph_builder = MagicMock()
+
+    script_factory = MagicMock()
+    script_factory.make.return_value = ('', {})
+
+    thread2 = None
+    def run_deploy(path):
+        def fn():
+            topic_generic = script_factory.make.call_args[0][2]
+            topic_snapshots = script_factory.make.call_args[0][3]
+
+            prod_generic = MessageProducer(topic_generic)
+            prod_snapshots = MessageProducer(topic_snapshots)
+            consumer = MessageConsumer([topic_generic])            
+            training_server = TrainingServer(
+                prod_generic, prod_snapshots, consumer,                
+                graph,
+                snapshot_builder=MagicMock(),
+                max_time_run=120                
+            )
+            training_server.run()
+ä        nonlocal thread2
+        thread2 = threading.Thread(target=fn, daemon=True)
+        thread2.start()
+        
+    deployment_strategy = MagicMock()    
+    deployment_strategy.run.side_effect = run_deploy
+
+    core = Core(
+        graph_builder,
+        script_factory,
+        deployment_strategy=deployment_strategy
+    )
+    
+    thread1 = threading.Thread(target=core.run, args=(graph_spec_binary_classification,), kwargs={'auto_close': True}, daemon=True)
+    thread1.start()
+    try:
+        assert wait_for_condition(lambda _: core.training_state == State.TRAINING_RUNNING) # Pausing in State.READY doesn't make sense (right now), so we have to wait... 
+        assert wait_for_condition(lambda _: not core.is_paused)
+        
+        core.pause()
+        assert wait_for_condition(lambda _: core.is_paused)
+    finally:
+        core.close(wait_for_deployment=True)
+        thread1.join()
+        thread2.join()
+        
+'''

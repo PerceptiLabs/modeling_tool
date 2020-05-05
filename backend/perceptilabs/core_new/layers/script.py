@@ -226,12 +226,12 @@ class ScriptFactory:
         return code
 
     def _create_main_block(self):
-        code  = "def main():\n"
-        code += "    server.run()\n"
+        code  = "def main(auto_start=False):\n"
+        code += "    server.run(auto_start=auto_start)\n"
         code += "\n"
         code += "if __name__ == '__main__':\n"
         #code += "    wait = '--wait' in sys.argv\n"
-        code += "    main()\n"
+        code += "    main(auto_start=True)\n"
         
         return code
 

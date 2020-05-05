@@ -78,7 +78,7 @@ class TrainingServer:
         counter = 0
         while state.value not in State.exit_states:
             t0 = time.perf_counter()
-            new_state = self._process_messages(state)
+            new_state = self._process_messages(state, task_executor)
             t1 = time.perf_counter()            
             state.transition(new_state)
             t2 = time.perf_counter()            
@@ -122,16 +122,13 @@ class TrainingServer:
         
         new_state = None
         try:
-            training_step_result = task_executor.run(
-                training_step,
-                timeout=self._userland_timeout
-            )
+            training_step_result = task_executor.run(training_step, timeout=self._userland_timeout)
         except TaskTimeout as e:
             log.info("Training step timed out!")
             new_state = State.TRAINING_TIMEOUT
             self._send_userland_timeout()                    
         except TaskError as e:
-            log.info("Training step raised an error!")            
+            log.info("Training step raised an error: " + str(e.__cause__))            
             new_state = State.TRAINING_FAILED
             self._send_userland_error(e.__cause__)
         else:
@@ -150,16 +147,17 @@ class TrainingServer:
         data = {'exception': exception, 'traceback_frames': tb_frames}
         self._send_key_value('userland-error', data)                
         
-    def _process_messages(self, state):
+    def _process_messages(self, state, task_executor):
         messages = self._consumer.get_messages(per_message_timeout=0.001)
         for message in messages:
-            self._process_message(message, state)
+            self._process_message(message, state, task_executor)
 
-    def _process_message(self, raw_message, state):
+    def _process_message(self, raw_message, state, task_executor):
         message = deserialize(raw_message)
-        #print('TRN SRVR PROCESSING MESSAGE', message)
         message_key = message['key']
         message_value = message['value']
+        
+        #log.info(f"Received message '{message_key}'")
         
         new_state = None
         if message_key == 'on_request_start':
@@ -168,12 +166,14 @@ class TrainingServer:
             state.transition(State.CLOSING)
         elif message_key == 'on_request_stop':
             self._call_userland_method(
+                task_executor,
                 self._graph.on_stop,
                 state,
                 success_state=State.TRAINING_STOPPED
             )
         elif message_key == 'on_request_export':
             self._call_userland_method(
+                task_executor,                
                 self._graph.on_export,
                 state,
                 args=(message_value['path'], message_value['mode'])
@@ -181,12 +181,14 @@ class TrainingServer:
         elif message_key == 'on_request_headless_activate':
             if state.value == State.TRAINING_RUNNING:            
                 self._call_userland_method(
+                    task_executor,
                     self._graph.on_headless_activate,
                     state,
                     success_state=State.TRAINING_RUNNING_HEADLESS
                 )
             elif state.value == State.TRAINING_PAUSED:
                 self._call_userland_method(
+                    task_executor,
                     self._graph.on_headless_activate,
                     state,
                     success_state=State.TRAINING_PAUSED_HEADLESS
@@ -196,12 +198,14 @@ class TrainingServer:
         elif message_key == 'on_request_headless_deactivate':
             if state.value == State.TRAINING_RUNNING_HEADLESS:            
                 self._call_userland_method(
+                    task_executor,                    
                     self._graph.on_headless_deactivate,
                     state,
                     success_state=State.TRAINING_RUNNING
                 )
             elif state.value == State.TRAINING_PAUSED_HEADLESS:
                 self._call_userland_method(
+                    task_executor,                    
                     self._graph.on_headless_deactivate,
                     state,
                     success_state=State.TRAINING_PAUSED
@@ -229,15 +233,20 @@ class TrainingServer:
         
         return new_state
 
-    def _call_userland_method(self, method, state, args=None, kwargs=None, success_state=None):
+    def _call_userland_method(self, task_executor, method, state, args=None, kwargs=None, success_state=None):
         args = args or ()
         kwargs = kwargs or {}
         try:
-            method(*args, **kwargs)
-        except Exception as e:
-            log.exception('Error in userland method. Setting state to ' + str(State.TRAINING_FAILED))
-            self._send_userland_error(e.__cause__)            
-            state.transition(State.TRAINING_FAILED)                              
+            task_executor.run(method, args, kwargs)
+        except TaskTimeout as e:
+            log.info("Userland method timed out!")
+            self._send_userland_timeout()
+            state.transition(State.TRAINING_FAILED)            
+        except TaskError as e:
+            log.info("Userland method raised an error: " + str(e.__cause__))            
+            new_state = State.TRAINING_FAILED
+            self._send_userland_error(e.__cause__)
+            state.transition(State.TRAINING_FAILED)            
         else:
             state.transition(success_state)
         

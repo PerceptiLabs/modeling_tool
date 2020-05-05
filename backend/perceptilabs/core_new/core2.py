@@ -69,22 +69,26 @@ class Core:
 
     def _run_internal(self, graph_spec, session_id=None, on_iterate=None, auto_close=False):
         session_id = session_id or uuid.uuid4().hex
-        log.info(f"Running core with session id {session_id}")        
+        log.info(f"Entered 'run internal' for core with session id {session_id}")
+        
         graph = self._graph_builder.build_from_spec(graph_spec)
-
+        log.info(f"Built graph for session id {session_id}")        
+        
         topic_generic = f'generic-{session_id}'.encode()    
         topic_snapshots = f'snapshots-{session_id}'.encode()    
         
         code, self._line_to_node_map = self._script_factory.make(graph, session_id, topic_generic, topic_snapshots, userland_timeout=self._userland_timeout)
-
+        log.info(f"Generated code for session id {session_id}")        
+        
         script_path = f'training_script.py'
         with open(script_path, 'wt') as f:
             f.write(code)
             f.flush()
         #shutil.copy(script_path, 'training_script.py')            
 
-        log.info("Running deployment")
         self._deployment_strategy.run(script_path)
+        log.info(f"Ran deployment strategy {self._deployment_strategy} for session {session_id}")
+        
         #time.sleep(3) # Give TrainingServer some time to start.. 
 
         def on_server_timeout():
@@ -108,6 +112,7 @@ class Core:
 
         consumer = MessageConsumer([topic_generic, topic_snapshots])
         producer = MessageProducer(topic_generic)
+        log.info(f"Instantiated message producer/consumer pairs for topics {topic_generic} and {topic_snapshots} for session {session_id}")                
         
         log.info("Creating training client")            
         client = self._client = TrainingClient(
@@ -120,7 +125,8 @@ class Core:
             on_log_message=on_log_message,
             server_timeout=self._server_timeout
         )
-
+        log.info(f"Instantiated training client for session {session_id}")                
+        
         update_client = client.run_stepwise() # Establish connection and set up generator
         self._is_running = True
 
@@ -131,9 +137,11 @@ class Core:
                 log.info("Waiting for remote status != None")
             time.sleep(0.1)
             counter += 1
-
-        log.info("Requesting training start")
+        log.info(f"Received training state {client.training_state} for session {session_id}")                            
+            
         client.request_start()
+        log.info(f"Requested training start in for session {session_id}")
+        
         counter = 0
         while client.training_state == State.READY and self._is_running:
             next(update_client)             
@@ -141,6 +149,7 @@ class Core:
                 log.info("Waiting for remote status READY")
             time.sleep(0.1)
             counter += 1
+        log.info(f"Received training state {client.training_state} for session id {session_id}")                                        
 
         if client.training_state in State.active_states:
             log.info(f"Training running. State: {client.training_state}. Session id: {session_id}")
@@ -157,8 +166,8 @@ class Core:
             time.sleep(0.1)
             counter += 1
 
-        if self._is_running:
-            return
+        if not self._is_running:
+            return client.training_state
         
         if not auto_close:
             counter = 0
@@ -166,7 +175,7 @@ class Core:
                 next(update_client)                                     
                 if counter % 20 == 0:
                     log.info("Idle. Graph count: " + str(len(self._graphs)))                     
-                time.sleep(0.5)
+                time.sleep(1.0)
                 
         log.info("Exiting run internal with state " + str(client.training_state))
         return client.training_state
@@ -231,10 +240,6 @@ class Core:
                     log.info("Deployment did not shut down!")                                        
         self._is_running = False
 
-
-    #def stop(self):
-    #    if self._client is not None:
-    #        self._client.request_stop()        
         
     def pause(self):
         if self._client is not None:
@@ -260,11 +265,13 @@ class Core:
         if self._client is not None:            
             self._client.request_export(path, mode)
         else:
-            log.warning("Client is none. on_export not called!")
+            log.warning("Client is none. request_stop not called!")
 
     def stop(self):
         if self._client is not None:
             self._client.request_stop()
+        else:
+            log.warning("Client is none. request_stop not called!")
             
     @property
     def is_running(self):

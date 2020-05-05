@@ -54,7 +54,7 @@ class TrainingClient:
             yield
 
     def _process_incoming_messages(self):
-        raw_messages = self._consumer.get_messages()
+        raw_messages = self._consumer.get_messages(per_message_timeout=0.001)
         for raw_message in raw_messages:
             message = deserialize(raw_message)
             message_key = message['key']
@@ -68,7 +68,7 @@ class TrainingClient:
                 self._on_server_timeout()
                 
             log.error(f"No vital signs from the training server within the last {self._server_timeout} seconds.")
-            time.sleep(1.0)
+            time.sleep(0.1)
 
                 
     def _process_incoming_key_value(self, key, value):
@@ -95,7 +95,6 @@ class TrainingClient:
     def _process_outgoing_messages(self):
         while not self._out_queue.empty():
             message = self._out_queue.get()
-            #print("client send mesage", message)
             self._producer.send(message)            
             
     def shutdown(self):
