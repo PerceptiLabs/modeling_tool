@@ -1,6 +1,9 @@
 <template lang="pug">
   main.page_workspace
-    .workspace_tabset(ref="tabset")
+    .workspace_tabset(
+      ref="tabset"
+      v-show="!showTrainingSpinner"
+    )
       include ./tabset/workspace-tabset.pug
     toolbar
     .workspace_content.bookmark_content.js-workspace(
@@ -97,6 +100,7 @@
     justify-content: flex-start;
     align-items: flex-end;
     background-color: $bg-workspace;
+    border-bottom: 1px solid $toolbar-separator-color;
 
     .tab-group {
       display: flex;
