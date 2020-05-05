@@ -22,6 +22,7 @@ const state = {
     coreNotFoundPopup: false,
     showFilePickerPopup: false,
     showLoadSettingPopup: false,
+    showExportNetworkPopup: true
   },
   popupConfirmCancel: null,
   popupConfirmOk: null,

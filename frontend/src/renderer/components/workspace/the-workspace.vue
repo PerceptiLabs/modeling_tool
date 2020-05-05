@@ -65,6 +65,7 @@
         workspace-load-network(
           v-if="showLoadSettingPopup"
         )
+        export-network(v-if="showExportNetworkPopup")
 
       start-training-spinner(v-if="showTrainingSpinner")
       file-picker-popup(

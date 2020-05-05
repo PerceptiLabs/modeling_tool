@@ -15,6 +15,7 @@ import SelectCoreSide         from "@/components/global-popups/workspace-core-si
 import WorkspaceBeforeImport  from "@/components/global-popups/workspace-before-import";
 import WorkspaceSaveNetwork   from "@/components/global-popups/workspace-save-network.vue";
 import WorkspaceLoadNetwork   from "@/components/global-popups/workspace-load-network.vue";
+import ExportNetwork          from "@/components/global-popups/export-network.vue";
 import FilePickerPopup        from "@/components/global-popups/file-picker-popup.vue";
 import TheTesting             from "@/components/statistics/the-testing.vue";
 import TheViewBox             from "@/components/statistics/the-view-box";
@@ -30,7 +31,7 @@ export default {
     Toolbar,
     NetworkField, TextEditable,
     GeneralResult, SelectCoreSide,
-    WorkspaceBeforeImport, WorkspaceSaveNetwork, WorkspaceLoadNetwork,
+    WorkspaceBeforeImport, WorkspaceSaveNetwork, WorkspaceLoadNetwork, ExportNetwork,
     TheTesting, TheViewBox, StartTrainingSpinner,
     TheMiniMap, FilePickerPopup, SidebarLayers, Notebook
   },
@@ -89,6 +90,7 @@ export default {
       showCoreSide:               state => state.globalView.globalPopup.showCoreSideSettings,
       showFilePickerPopup:        state => state.globalView.globalPopup.showFilePickerPopup,
       showLoadSettingPopup:       state => state.globalView.globalPopup.showLoadSettingPopup,
+      showExportNetworkPopup:     state => state.globalView.globalPopup.showExportNetworkPopup,
     }),
 
     hasStatistics() {
