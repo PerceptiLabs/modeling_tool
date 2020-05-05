@@ -78,7 +78,7 @@ const mutations = {
     state.globalPopup.ComingSoonPopup = value
   },
   coreNotFoundPopup(state, value) {
-    state.globalPopup.coreNotFoundPopup = value;
+    // state.globalPopup.coreNotFoundPopup = value;
   },
   set_filePickerPopup(state, value) {
     state.globalPopup.showFilePickerPopup = value;
