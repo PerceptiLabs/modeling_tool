@@ -294,6 +294,9 @@ export default {
       this.saveNetworkAs();
       this.offMainTutorial();
     },
+    exportModel() {
+
+    },
     HC_delete() {
       if(!this.isTutorialMode) {
         this.$store.dispatch('mod_events/EVENT_pressHotKey', 'del')
@@ -435,10 +438,14 @@ export default {
           label: 'File', visible: true,
           submenu: [
             {label: 'New',     active: this.addNewNetwork},
+            {type: 'separator'},
             {label: 'Load',    active: this.openLoadModelPopup},
             {label: "Project", active: this.setActivePage},
+            {type: 'separator'},
             {label: 'Save',    active: this.saveModel,          enabled: this.openApp},
             {label: 'SaveAs',  active: this.saveModelAs,        enabled: this.openApp},
+            {type: 'separator'},
+            {label: 'Export',  active: this.exportModel,        enabled: this.openApp},
             {type: 'separator'},
             {label: 'Log out', active: this.logOut,             enabled: this.isLogin},
           ]
