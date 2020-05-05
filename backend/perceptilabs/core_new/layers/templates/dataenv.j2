@@ -1,0 +1,77 @@
+{% macro layer_dataenvironment(layer_name, environment_name) %}
+class {{layer_name}}(DataLayer):
+    """Class responsible for running the gym environment."""    
+    def __init__(self):
+        self._variables = {}
+        self._env_name = '{{environment_name}}'
+        self._env = gym.make(self._env_name)
+        self._columns = []
+        action_space = self._env.action_space.n
+        sample = next(self.make_generator_training())
+        self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
+        
+    
+    @property
+    def size_training(self) -> int:
+        """Returns the size of the training dataset"""                    
+        return 1
+
+    @property
+    def size_validation(self) -> int:
+        """Returns the size of the validation dataset"""
+        return 1
+
+    @property
+    def size_testing(self) -> int:
+        """Returns the size of the testing dataset"""                    
+        return 1
+
+    @property
+    def variables(self) -> Dict[str, Picklable]:
+        """Returns any variables that the layer should make available and that can be pickled."""
+        return self._variables
+
+    @property
+    def sample(self) -> np.ndarray:
+        """Returns a single data sample"""                    
+        sample = next(self.make_generator_training())
+        return sample
+
+    @property
+    def columns(self) -> List[str]:
+        """Column names. Corresponds to each column in a sample """
+        return self._columns.copy()
+
+    def make_generator_training(self) -> Generator[np.ndarray, None, None]:
+        """Returns a sample from gym environment."""                                        
+        def gen():
+            global env, state_
+            env = gym.make(self._env_name)
+            sample = env.reset()
+            state_ = np.float32(sample)
+            while True:
+                yield state_
+        return gen()
+
+    def make_generator_testing(self) -> Generator[np.ndarray, None, None]:
+        """Returns a sample from gym environment."""                                        
+        def gen():
+            global env, state_
+            env = gym.make(self._env_name)
+            sample = env.reset()
+            state_ = np.float32(sample)
+            while True:
+                yield state_
+        return gen()
+        
+    def make_generator_validation(self) -> Generator[np.ndarray, None, None]:
+        """Returns a sample from gym environment."""                                        
+        def gen():
+            global env, state_
+            env = gym.make(self._env_name)
+            sample = env.reset()
+            state_ = np.float32(sample)
+            while True:
+                yield state_
+        return gen()
+{% endmacro %}
