@@ -448,7 +448,7 @@ export default {
           submenu: [
             {label: 'New',     active: this.addNewNetwork},
             {label: 'Load',    active: this.openLoadModelPopup},
-            {label: "Project Setting", active: this.setActivePage},
+            {label: "Project", active: this.setActivePage},
             {label: 'Save',    active: this.saveModel,          enabled: this.openApp},
             {label: 'SaveAs',  active: this.saveModelAs,        enabled: this.openApp},
             {type: 'separator'},

@@ -28,7 +28,7 @@
     name: 'pageQuantum',
     components: { TheToolbar, TheLayersbar, TheSidebar, TheWorkspace, TheTutorialStoryboard },
     created() {
-      debugger;
+      // debugger;
       if(isWeb()) {
         this.$store.dispatch('mod_workspace/GET_workspacesFromLocalStorage')
           .then(_ => {

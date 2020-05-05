@@ -8,7 +8,7 @@
       .content
         .sidebar
           button.project-list-filter-button.is-active Local Projects
-          button.project-list-filter-button Cloud Projects
+          button.project-list-filter-button.is-disabled Cloud Projects
         .main
           .main-header
             button.btn-icon
@@ -16,7 +16,7 @@
             button.btn-icon.rounded-border(@click="createNewProject")
               img(src="../../../../static/img/plus.svg")
             div.search-input
-              img(src="../../../../static/img/search-input.svg")
+              img(src="../../../../static/img/search-models.svg")
               input(
                 type="text"
                 placeholder="Search"
@@ -339,6 +339,8 @@ import { debug } from 'util';
     /*width: 333px;*/
     width: auto;
     width: 55%;
+  
+    
     img {
       cursor: pointer;
       position: absolute;
@@ -349,10 +351,11 @@ import { debug } from 'util';
     input {
       padding-left: 44px;
       background-color: transparent;
-      border: 1px solid #363E51;
       border-radius: 5px;
       height: 29px;
       font-size: 16px;
+      border: 1px solid #4D556A;
+      border-radius: 2px;
     }
   }
   .main-list {
@@ -401,5 +404,9 @@ import { debug } from 'util';
   }
   .rename-project-input {
     width: 260px;
+  }
+  .is-disabled {
+    color: #818181;
+    cursor: default;
   }
 </style>
