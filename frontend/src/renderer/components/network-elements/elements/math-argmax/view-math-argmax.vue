@@ -3,7 +3,7 @@
   data-component="MathArgmax"
   data-layer="Argmax"
   data-type="Other"
-  v-tooltip:right="'Argmax'"
+  v-tooltip:bottom="'Argmax'"
   v-tooltip-interactive:right="interactiveInfo"
     :style="layerStyles"
   )

@@ -3,7 +3,7 @@
   data-component="ProcessEmbed"
   data-layer="Word Embedding"
   data-type="Other"
-  v-tooltip:right="'Word Embedding'"
+  v-tooltip:bottom="'Word Embedding'"
   v-tooltip-interactive:right="interactiveInfo"
     :style="layerStyles"
   )

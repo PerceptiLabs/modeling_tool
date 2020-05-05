@@ -3,7 +3,7 @@
   data-component="MathSoftmax"
   data-layer="Softmax"
   data-type="Other"
-  v-tooltip:right="'Softmax'"
+  v-tooltip:bottom="'Softmax'"
   v-tooltip-interactive:right="interactiveInfo"
     :style="layerStyles"
   )

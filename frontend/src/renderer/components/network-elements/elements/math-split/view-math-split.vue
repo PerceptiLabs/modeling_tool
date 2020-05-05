@@ -4,7 +4,7 @@
     data-component="MathSplit"
     data-layer="Split"
     data-type="Other"
-    v-tooltip:right="'Split'"
+    v-tooltip:bottom="'Split'"
     v-tooltip-interactive:right="interactiveInfo"
     :style="layerStyles"
   )
