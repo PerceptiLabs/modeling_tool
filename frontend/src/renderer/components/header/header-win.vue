@@ -86,7 +86,7 @@ export default {
     height: $h-header-win;
     background: #363E50;
     font-family: sans-serif;
-    background: rgba(97, 133, 238, 0.2);
+    background: #141c31;
     border: 1px solid rgba(97, 133, 238, 0.4);
     box-sizing: border-box;
     border-radius: 0px;
