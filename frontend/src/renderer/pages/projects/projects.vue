@@ -99,6 +99,7 @@
 
   import { mapActions, mapMutations, mapState } from 'vuex';
   import {isWeb} from "@/core/helpers";
+  import cloneDeep from 'lodash.clonedeep';
   const mockModelList = [
     // {id: 1, dateCreated: new Date().setHours(15), dateLastOpened: new Date(), size: '10', name:'Placeholder 1', status: '75%', savedVersion: '-', sessionEndTime: 'Placeholder', collaborators: [{id: 1, name: 'Anton', img: null,}], lastModified: { user: {id: 1, name: 'Anton', img: null}, date: '19/02/20 13:00:00'}, isFavorite: true},
     // {id: 2, dateCreated: new Date().setHours(3), dateLastOpened: new Date(), size: '12', name:'Placeholder 4', status: '50%', savedVersion: '-', sessionEndTime: 'Placeholder', collaborators: [{id: 2, name: 'Robert', img: null,}], lastModified: { user: {id: 1, name: 'Anton', img: null}, date: '19/02/20 13:00:00'}, isFavorite: false},
@@ -110,6 +111,7 @@
     // {id: 8, dateCreated: new Date().setHours(12), dateLastOpened: new Date(), size: '80', name:'Placeholder 8', status: '75%', savedVersion: '-', sessionEndTime: 'Placeholder', collaborators: [{id: 1, name: 'Anton', img: null,}, {id: 2, name: 'Robert', img: null,}, {id: 3, name: 'David', img: null,}], lastModified: { user: {id: 1, name: 'Anton', img: null}, date: '19/02/20 13:00:00'}, isFavorite: false},
   ];
   
+
   export default {
     name: "pageProjects",
     components: {
@@ -287,6 +289,9 @@
       },
       isDisabledCompareBtn() {
         return this.selectedListIds.length < 2;
+      },
+      openBasicTemplate(net) {
+        this.addNetwork(cloneDeep(net.network));
       },
       toggleItemSelection(modelId) {
         modelId = parseInt(modelId);

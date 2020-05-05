@@ -53,6 +53,11 @@ const getters = {
       ? state.workspaceContent[state.currentNetwork].networkElementList
       : null
   },
+  GET_currentNetworkElementListLength(state, getters) {
+    return getters.GET_currentNetworkElementList
+      ? getters.GET_currentNetworkElementList.length
+      : 0
+  },
   GET_networkCoreStatus(state, getters) {
     return getters.GET_networkIsNotEmpty
       ? getters.GET_currentNetwork.networkMeta.coreStatus.Status
@@ -498,7 +503,7 @@ const mutations = {
   SET_elementName(state, value) {
     currentElement(value.id).layerName = value.setValue
   },
-  add_element(state, {getters, dispatch, event}) {
+  add_element(state, {getters, dispatch, event, setChangeToWorkspaceHistory}) {
     let duplicatePositionIndent = 60;
     let cursorPosition = getters.GET_positionForCopyElement.cursor;
     let firstCopyPositionElement = getters.GET_positionForCopyElement.elementsPosition[0];
@@ -516,7 +521,7 @@ const mutations = {
     newEl.layerMeta.position.left = (event.offsetX - left);
     let depth = checkPosition(newEl, elementList);
 
-    if(isCursorInsideWorkspace) {
+    if(isCursorInsideWorkspace && firstCopyPositionElement) {
       newEl.layerMeta.position.top =  (cursorPosition.y + newEl.layerMeta.position.top) - firstCopyPositionElement.top - duplicatePositionIndent;
       newEl.layerMeta.position.left =  (cursorPosition.x + newEl.layerMeta.position.left) - firstCopyPositionElement.left - duplicatePositionIndent;
     }
@@ -531,6 +536,8 @@ const mutations = {
     if(!elementList || elementList.length === 0) state.workspaceContent[state.currentNetwork].networkElementList = {};
     Vue.set(state.workspaceContent[state.currentNetwork].networkElementList, newEl.layerId, newEl);
     state.dragElement = null;
+    
+    if(setChangeToWorkspaceHistory)
     dispatch('mod_workspace-history/PUSH_newSnapshot', null, {root: true});
 
     function checkPosition(el, list) {
@@ -559,7 +566,7 @@ const mutations = {
     let arrSelect = getters.GET_currentSelectedEl;
     if(!arrSelect.length) return;
     let arrSelectID = [];
-
+    const copyOfNetwork = {...getters.GET_currentNetworkElementList};
     let net = {...getters.GET_currentNetworkElementList};
     deleteElement(arrSelect);
     for(let el in net) {
@@ -579,19 +586,53 @@ const mutations = {
           element.layerNone = false;  // (close layersContainer) for remove elements from Layers
           delete element.containerLayersList[select.layerId];
           element.layerNone = true;
-          let isLastContainerElement = Object.keys(element.containerLayersList).length <= 1;
-          if (isLastContainerElement) delete net[el];
+          const layerListLength = Object.keys(element.containerLayersList).length;
+
+          if (layerListLength === 0) {
+            if(net[el] && net[el].parentContainerID) {
+              delete net[net[el].parentContainerID].containerLayersList[net[el].layerId]
+            };
+            delete net[el];
+          }
         });
       }
     }
+    for(let el in net) {
+      if(net[el].layerNone && net[el].containerLayersList) {
+        if(Object.keys(net[el].containerLayersList).length === 1) {
+          const elementKeyId = Object.keys(net[el].containerLayersList)[0];
+          if(net[el].parentContainerID) {
+            // is last item and parent component is container
+            if(net[net[el].parentContainerID]) {
+              delete net[net[el].parentContainerID].containerLayersList[net[el].layerId];
+              net[net[el].parentContainerID].containerLayersList[elementKeyId] = elementKeyId;
+              delete net[el];
+            } else {
+              // if parent container was deleted on this iteration
+              let parentId = copyOfNetwork[net[el].parentContainerID].parentContainerID;
+              delete net[parentId].containerLayersList[net[el].layerId];
+              net[parentId].containerLayersList[elementKeyId] = elementKeyId;
+              delete net[el];
+            }
+          } else {
+            // is last item and haven't parent container component
+            delete net[elementKeyId].parentContainerID;
+            delete net[el];
+          }
+        }
+      }
+    }
+    
+    
     state.workspaceContent[state.currentNetwork].networkElementList = net;
+    dispatch('SET_isOpenElement', false);
     dispatch('mod_events/EVENT_calcArray', null, {root: true});
     dispatch('mod_api/API_getOutputDim', null, {root: true});
 
     function deleteElement(list) {
       list.forEach((el)=> {
         if(el.componentName === 'LayerContainer') {
-          deleteElement(Object.values(el.containerLayersList))
+          deleteElement(Object.keys(el.containerLayersList).map(key => net[key]))
         }
         delete net[el.layerId];
         arrSelectID.push(el.layerId);
@@ -668,14 +709,37 @@ const mutations = {
         currentElement(layer).layerMeta.isSelected = false;
       }
     }
-    currentElement(value.id).layerMeta.isSelected = value.setValue;
+    let el = currentElement(value.id);
+    if(el) {
+      currentElement(value.id).layerMeta.isSelected = value.setValue; 
+    }
   },
   set_elementSelectAll(state, {getters}) {
+    
+    const net = getters.GET_currentNetworkElementList;
+
+    let netWorkIdToOmit = [];
+    omitIds(net);
+    
     for(let layer in getters.GET_currentNetworkElementList) {
-      currentElement(layer).layerMeta.isSelected = true;
+      if(netWorkIdToOmit.indexOf(layer) === -1) {
+        currentElement(layer).layerMeta.isSelected = true;    
+      }
+    }
+    
+    function omitIds(net) {
+      Object.values(net).map(netEl => {
+        if(netEl.layerType === 'Container' && !netEl.layerNone) {
+          netWorkIdToOmit = [...netWorkIdToOmit, ...Object.keys(netEl.containerLayersList)];
+        }
+        if(netEl.layerType === 'Container' && netEl.layerNone) {
+          netWorkIdToOmit = [...netWorkIdToOmit, netEl.layerId]
+        }
+      });
     }
   },
   set_elementMultiSelect(state, value) {
+    if(currentElement(value.id).layerNone === false) 
     currentElement(value.id).layerMeta.isSelected = value.setValue;
   },
   SET_elementLock(state, id) {
@@ -705,6 +769,10 @@ const mutations = {
       state.workspaceContent[state.currentNetwork].networkElementList[id].layerMeta.position.top += toTop;
       state.workspaceContent[state.currentNetwork].networkElementList[id].layerMeta.position.left += toLeft;
     });
+  },
+  change_singleElementPosition(state, {id, top, left}) {
+    state.workspaceContent[state.currentNetwork].networkElementList[id].layerMeta.position.top = top;
+    state.workspaceContent[state.currentNetwork].networkElementList[id].layerMeta.position.left = left;
   },
   set_elementInputDim(state, value) {
     for(let element in value) {
@@ -741,35 +809,56 @@ const mutations = {
       dispatch('SET_elementUnselect');
       return;
     }
+
+    // Check if the item is a part of the same container or outside any container
+    const selectedItemsParentContainerId = arrSelect.every(net => net.parentContainerID === arrSelect[0].parentContainerID);
+    // console.log(arrSelect.map(net => net.parentContainerID));
+    if(selectedItemsParentContainerId) {
+      if(arrSelect[0].parentContainerID !== undefined) {
+        if(Object.keys(elementList[arrSelect[0].parentContainerID].containerLayersList).length === arrSelect.length) {
+          dispatch('globalView/GP_infoPopup', 'All items inside a group can\'t be grouped', {root: true});
+          dispatch('SET_elementUnselect');
+          return;
+        }
+      }
+      
+    } else {
+      // Check if selected items are all items inside a group
+      dispatch('globalView/GP_infoPopup', 'Only items belonging to the container can be grouped', {root: true});
+      dispatch('SET_elementUnselect');
+      return;
+    }
+    
     /* END validations */
     let newContainer = createClearContainer(arrSelect);
-
     updateLayerName(newContainer, elementList, 1);
+    // creation of group inside another group
     if(parentContainerID) {
-      Vue.set(state.workspaceContent[state.currentNetwork].networkElementList[parentContainerID].containerLayersList, newContainer.layerId, newContainer);
+      Vue.set(state.workspaceContent[state.currentNetwork].networkElementList[parentContainerID].containerLayersList, newContainer.layerId, newContainer.layerId);
+      Vue.set(state.workspaceContent[state.currentNetwork].networkElementList, newContainer.layerId, newContainer);
+    } else {
       Vue.set(state.workspaceContent[state.currentNetwork].networkElementList, newContainer.layerId, newContainer);
     }
-    else {
-      Vue.set(state.workspaceContent[state.currentNetwork].networkElementList, newContainer.layerId, newContainer);
-    }
+    
     commit('close_container', {container: newContainer,  getters, dispatch});
     commit('set_elementUnselect', {getters});
 
     function createClearContainer(selectList) {
+      let parentContainerId = selectList[0].parentContainerID
       arrSelect.forEach(element => {
-        if(selectList[0].parentContainerID) {
-          const parentContainerLayerList = state.workspaceContent[state.currentNetwork].networkElementList[selectList[0].parentContainerID].containerLayersList;
-          for(const id in parentContainerLayerList) {
-            delete parentContainerLayerList[element.layerId]
-          }
+        // remove parentContainerId from selected elements
+        if(parentContainerId) {
+          delete state.workspaceContent[state.currentNetwork].networkElementList[parentContainerId].containerLayersList[element.layerId]
         }
+        // attach to new created Container
       });
+     
       let fakeEvent = {
         timeStamp: generateID(),
         target: {
           dataset: {
             layer: 'Layer Container',
-            type: 'Сontainer',
+            type: 'Container',
             component: 'LayerContainer',
           },
           clientHeight: 0,
@@ -779,21 +868,20 @@ const mutations = {
       let container = createNetElement(fakeEvent);
       container.containerLayersList = {};
       container.isShow = true;
-      if(selectList[0].parentContainerID) {
-        const last = selectList.length - 1;
-        if(selectList[last].componentName === 'LayerContainer') selectList.splice(last, 1);
-        container.parentContainerID = selectList[0].parentContainerID;
+      // add parentContainerID to new created container
+      if(parentContainerID) {
+        container.parentContainerID = parentContainerID
       }
       selectList.forEach((el)=>{
         el.parentContainerID = container.layerId;
-        container.containerLayersList[el.layerId] = el;
+        container.containerLayersList[el.layerId] = el.layerId;
       });
       return container
     }
   },
   close_container(state, {container, getters, dispatch}) {
     let network = getters.GET_currentNetworkElementList;
-    let layerCont = calcContainer(container, network);
+    let layerCont = calcContainer(network[container.layerId], network);
     saveDifferentPosition(layerCont);
 
     for(let idEl in layerCont.containerLayersList) {
@@ -809,11 +897,11 @@ const mutations = {
     function closeChildContainer(container) {
       const layerListKeys = Object.keys(container.containerLayersList);
       layerListKeys.forEach(id => {
-        const element = container.containerLayersList[id];
+        const element = network[id];
         if (element.componentName === 'LayerContainer') {
           element.isShow = false;
           for(let idEl in element.containerLayersList) {
-            const childElement = element.containerLayersList[idEl];
+            const childElement = network[idEl];
             childElement.layerNone = true;
             if(childElement.componentName === 'LayerContainer') {
               childElement.isShow = false;
@@ -825,7 +913,7 @@ const mutations = {
     }
 
     function calcContainer(container, net) {
-      let el = container;
+      let el = network[container.layerId];
       let listInside = el.containerLayersList;
       let allIdEl = [];
       let allIdOut = [];
@@ -834,7 +922,7 @@ const mutations = {
       let allLeft = [];
 
       for(let elID in listInside) {
-        let item = listInside[elID];
+        let item = network[elID];
         allIdEl.push(elID);
         allIdOut = [...allIdOut, ...new Set(item.connectionOut)];
         allIdIn  = [...allIdIn,  ...new Set(item.connectionIn)];
@@ -889,7 +977,7 @@ const mutations = {
       let containerTop = containerEl.layerMeta.position.top;
       let containerLeft = containerEl.layerMeta.position.left;
       for(let elID in listInside) {
-        let item = listInside[elID];
+        let item = network[elID];
         let itemTop = item.layerMeta.position.top;
         let itemLeft = item.layerMeta.position.left;
         item.layerMeta.containerDiff.top = itemTop - containerTop;
@@ -898,7 +986,7 @@ const mutations = {
     }
 
   },
-  open_container(state, {container, getters, dispatch}) {
+  open_container(state, {container, getters, dispatch, commit }) {
     let net = getters.GET_currentNetworkElementList;
     calcLayerPosition(container);
 
@@ -910,27 +998,30 @@ const mutations = {
     showChildContainer(container);
 
     dispatch('mod_events/EVENT_calcArray', null, {root: true});
-
+    dispatch('SET_isOpenElement', false);
     function showChildContainer(container) {
       const layerListKeys = Object.keys(container.containerLayersList);
       layerListKeys.forEach(id => {
-        const element = container.containerLayersList[id];
+        const element = net[id];
         if (element.componentName === 'LayerContainer') {
           element.isShow = true;
         }
       });
-    }
 
+    }
     function calcLayerPosition(containerEl) {
       let listInside = containerEl.containerLayersList;
       let containerTop = containerEl.layerMeta.position.top;
       let containerLeft = containerEl.layerMeta.position.left;
       for(let elID in listInside) {
-        let item = listInside[elID];
-        let diffTop = item.layerMeta.containerDiff.top;
-        let diffLeft = item.layerMeta.containerDiff.left;
-        item.layerMeta.position.top = diffTop + containerTop;
-        item.layerMeta.position.left = diffLeft + containerLeft;
+        let netEl = net[elID];
+        // let item = listInside[elID];
+        let diffTop = netEl.layerMeta.containerDiff.top;
+        let diffLeft = netEl.layerMeta.containerDiff.left;
+        // item.layerMeta.position.top = diffTop + containerTop;
+        netEl.layerMeta.position.top = diffTop + containerTop;
+        // item.layerMeta.position.left = diffLeft + containerLeft;
+        netEl.layerMeta.position.left = diffLeft + containerLeft;
       }
     }
   },
@@ -940,17 +1031,83 @@ const mutations = {
       : dispatch('OPEN_container', container);
     if(getters.GET_networkIsOpen) dispatch('SET_elementUnselect');
   },
-  ungroup_container(state, {dispatch, getters}) {
+  ungroup_container(state, {dispatch, getters, container: passedContainer}) {
     let net = {...getters.GET_currentNetworkElementList};
-    let container = getters.GET_currentSelectedEl[0];
-    dispatch('OPEN_container', container);
-    for(let idEl in net) {
+    let linkNet = getters.GET_currentNetworkElementList;
+    let selectedEl = getters.GET_currentSelectedEl[0];
+    let container = selectedEl || passedContainer;
+    if(!(container.layerType === 'Container')) {
+      alert('nui container');
+      return;
+    }
+    dispatch('SET_elementUnselect');
+    
+    const parentContainerId = net[container.layerId].parentContainerID;
+    const containerId = container.layerId;
+    
+    
+    let childContainersIds = []
+    let childElementsIds = [];
+    selectChildContainers({[container.layerId]: container.layerId});
+     function selectChildContainers (elements) {
+       for(let id in elements) {
+         let element = linkNet[id];
+         if(element.layerType === 'Container') {
+           selectChildContainers(element.containerLayersList)
+           childContainersIds.push(element.layerId)
+         } else {
+           childElementsIds.push(element.layerId)
+         }
+       }
+      }
+      
+    
+
+    if(parentContainerId) {
+      delete linkNet[container.parentContainerID].containerLayersList[container.layerId];
+    }
+    
+    for(let position in childContainersIds) {
+      dispatch('OPEN_container', linkNet[childContainersIds[position]]);
+    }
+    
+    
+    for(let position in childElementsIds) {
+      let el = linkNet[childElementsIds[position]];
+      if(parentContainerId) {
+        el.parentContainerID = parentContainerId;
+        linkNet[parentContainerId].containerLayersList[childElementsIds[position]] = childElementsIds[position];
+      } else {
+        delete el.parentContainerID 
+      }
+    }
+
+    
+    
+    for(let idEl in linkNet) {
       let el = net[idEl];
       el.connectionArrow = el.connectionArrow.filter((arrow)=> arrow !== container.layerId)
-      delete el.layerContainerID;
+      // delete el.layerContainerID;
     }
-    delete net[container.layerId];
-    state.workspaceContent[state.currentNetwork].networkElementList = net;
+
+    // for(let elId in container.containerLayersList) {
+    //   net[elId].parentContainerID = container.parentContainerID;
+    //   if(container.parentContainerID){
+    //     debugger;
+    //     net[container.parentContainerID].containerLayersList[elId] = elId;
+    //   }
+    // }
+    for(let position in childContainersIds) {
+      delete linkNet[childContainersIds[position]];
+    };
+
+    if(parentContainerId) {
+      dispatch('CLOSE_container', linkNet[container.parentContainerID]);
+      dispatch('OPEN_container', linkNet[container.parentContainerID]);
+    }
+    // state.workspaceContent[state.currentNetwork].networkElementList = linkNet;
+    let newMockNet = deepCloneNetwork(linkNet);
+    state.workspaceContent[state.currentNetwork].networkElementList = newMockNet;
   },
   //---------------
   //  OTHER
@@ -1016,31 +1173,38 @@ const actions = {
     }
   },
   DELETE_network({commit, dispatch}, index) {
-    if(isElectron()) {
-      const networkID = state.workspaceContent[index].networkID;
-      commit('delete_network', index);
-      dispatch('mod_api/API_closeSession', networkID, { root: true });
-    } else {
-      // API_closeSession stops the process in the core
-      const network = state.workspaceContent[index];
-      dispatch('mod_api/API_closeSession', network.networkID, { root: true });
-  
-      if (index === state.currentNetwork) {
-  
-        if (state.workspaceContent.length === 1) {
-          commit('set_lastActiveTabInLocalStorage', '');
-        } else if (index === 0) {
-          commit('set_lastActiveTabInLocalStorage', state.workspaceContent[index + 1].networkID);
-        } else {
-          commit('set_lastActiveTabInLocalStorage', state.workspaceContent[index - 1].networkID);
+    return new Promise(resolve => {
+       
+      if(isElectron()) {
+        const networkID = state.workspaceContent[index].networkID;
+        commit('delete_network', index);
+        dispatch('mod_api/API_closeSession', networkID, { root: true });
+      } else {
+        // API_closeSession stops the process in the core
+        const network = state.workspaceContent[index];
+        dispatch('mod_api/API_closeSession', network.networkID, { root: true });
+    
+        if (index === state.currentNetwork) {
+    
+          if (state.workspaceContent.length === 1) {
+            commit('set_lastActiveTabInLocalStorage', '');
+          } else if (index === 0) {
+            commit('set_lastActiveTabInLocalStorage', state.workspaceContent[index + 1].networkID);
+          } else {
+            commit('set_lastActiveTabInLocalStorage', state.workspaceContent[index - 1].networkID);
+          }
         }
+    
+        commit('delete_network', index);
+        commit('set_workspacesInLocalStorage');
       }
       const modelApiMeta = state.workspaceContent[index].apiMeta;
       dispatch('mod_project/deleteModel', modelApiMeta, {root: true});
       // call the delete model api
       commit('delete_network', index);
       commit('set_workspacesInLocalStorage');
-    }
+      resolve();
+    })
   },
 
   markAllUnselectedAction({commit}){
@@ -1253,8 +1417,8 @@ const actions = {
   SET_elementSettings({commit, dispatch}, settings) {
     commit('set_elementSettings', {dispatch, settings})
   },
-  ADD_element({commit, getters, dispatch}, event) {
-    commit('add_element', {getters, dispatch, event})
+  ADD_element({commit, getters, dispatch}, { event, setChangeToWorkspaceHistory = true }) {
+    commit('add_element', {getters, dispatch, event, setChangeToWorkspaceHistory})
   },
   DELETE_element({commit, getters, dispatch}) {
     if(getters.GET_networkIsOpen) {
@@ -1296,7 +1460,7 @@ const actions = {
     if(getters.GET_networkIsOpen) commit('add_container', {getters, commit, dispatch});
   },
   OPEN_container({commit, getters, dispatch}, container) {
-    commit('open_container', {container, getters, dispatch})
+    commit('open_container', {commit, container, getters, dispatch})
   },
   CLOSE_container({commit, getters, dispatch}, container) {
     commit('close_container', {container, getters, dispatch})
@@ -1305,7 +1469,7 @@ const actions = {
     commit('toggle_container', {val, container, dispatch, getters})
   },
   UNGROUP_container({commit, getters, dispatch}, container) {
-    if(getters.GET_networkIsOpen) commit('ungroup_container', {container, dispatch, getters})
+    if(getters.GET_networkIsOpen) commit('ungroup_container', {commit, container, dispatch, getters})
   },
   //---------------
   //  OTHER

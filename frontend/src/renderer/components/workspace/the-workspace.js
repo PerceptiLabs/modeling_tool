@@ -3,6 +3,7 @@ import saveNet    from './workspace-save-net.js'
 import scaleNet   from './workspace-scale.js'
 import spinnerNet from './workspace-spinner.js'
 import helpersNet from './workspace-helpers.js'
+import {debounce} from '@/core/helpers'
 import Analytics  from '@/core/analytics'
 
 import TextEditable           from '@/components/base/text-editable.vue'
@@ -28,16 +29,33 @@ export default {
     TheMiniMap, FilePickerPopup
   },
   mounted() {
-    console.log(this.$refs.networkField);
+    window.addEventListener('resize', this.onResize);
+    this.$refs.tabset.addEventListener('wheel', this.onTabScroll);
+
+    this.checkTabWidths();
+    this.$nextTick().then(x => {
+      this.scrollActiveTabIntoView();
+    });
     
     window.addEventListener('mousemove',  this.startCursorListener);
   },
   beforeDestroy() {
+    window.removeEventListener('resize', this.onResize);
+
+    if (!this.$refs.tabset) { return; }
+    this.$refs.tabset.removeEventListener('wheel', this.onTabScroll);
+
     window.removeEventListener('mousemove', this.startCursorListener);
   },
   data() {
     return {
       trainingWasPaused: false,
+      tabArrows: {
+        show: false,
+        isLeftActive: false,
+        isRightActive: false,
+      },
+      mouseDownIntervalTimer: null
     }
   },
   computed: {
@@ -54,6 +72,8 @@ export default {
       workspace:                  state => state.mod_workspace.workspaceContent,
       indexCurrentNetwork:        state => state.mod_workspace.currentNetwork,
       dragBoxContainer:           state => state.mod_workspace.dragBoxContainer,
+      isCursorInsideWorkspace:    state => state.mod_workspace.positionForCopyElement.cursorInsideWorkspace,
+      cursorPosition:             state => state.mod_workspace.positionForCopyElement.cursor,
       statisticsElSelected:       state => state.mod_statistics.selectedElArr,
       hideSidebar:                state => state.globalView.hideSidebar,
       showGlobalResult:           state => state.globalView.globalPopup.showNetResult,
@@ -89,13 +109,13 @@ export default {
   watch: {
     statusNetworkCore(newStatus) {
       // function for showing the global training results popup
-      
+
       if (this.statisticsIsOpen === null) {
         // added statisticsIsOpen null check
-        // it is possible that the status is 'Finished' and both 
+        // it is possible that the status is 'Finished' and both
         // testIsOpen and statisticsIsOpen to be null
-  
-        // this happens when the core is restarted and no longer has 
+
+        // this happens when the core is restarted and no longer has
         // any information about the stats, making training impossible
         return;
       }
@@ -120,7 +140,24 @@ export default {
           way: 'next',
           validation: newStatus[0].layerMeta.tutorialId
         });
-      } 
+      }
+    },
+    workspace(newVal) {
+      // handles add/delete networks
+      this.$nextTick()
+        .then(x => {
+          this.checkTabWidths();
+          return this.$nextTick();
+        })
+        .then(x => {
+          this.scrollActiveTabIntoView();
+        });
+    },
+    hideSidebar(newVal) {
+      const timer = setTimeout(() => {
+        this.checkTabWidths();
+        clearTimeout(timer);
+      }, 300); // transitionDuration of .page_sidebar element
     }
   },
   methods: {
@@ -149,15 +186,24 @@ export default {
     }),
     startCursorListener (event) {
       const borderline = 15;
-      this.set_cursorPosition({x: event.offsetX, y: event.offsetY});
-      this.set_cursorInsideWorkspace(true);
+      const { x: oldX, y: oldY } = this.cursorPosition;
+      const newX = event.offsetX - (event.offsetX % 10);
+      const newY = event.offsetY  - (event.offsetY % 10);
+      
+      if((oldX !== newX) || (oldY !== newY)) {
+        debounce(this.set_cursorPosition({x: newX, y: newY}), 60);
+      }
 
       if(event.offsetX <= borderline ||
           event.offsetY <= borderline ||
           event.offsetY >= event.target.clientHeight - borderline ||
           event.offsetX >= event.target.clientWidth - borderline)
       {
+        if(this.isCursorInsideWorkspace)
         this.set_cursorInsideWorkspace(false);
+      } else {
+        if(!this.isCursorInsideWorkspace)
+        this.set_cursorInsideWorkspace(true);
       }
     },
     toggleSidebar() {
@@ -176,7 +222,7 @@ export default {
       this.set_currentNetwork(index);
       this.set_elementUnselect();
 
-      // request charts if the page has been refreshed, and 
+      // request charts if the page has been refreshed, and
       // the requested tab not being the first
       this.set_chartRequests(this.workspace[index].networkID);
     },
@@ -187,12 +233,12 @@ export default {
             text: 'Are you sure you want to end the tutorial?',
             ok: () => {
               this.offMainTutorial();
-              this.delete_network(index)
+              this.delete_network(index);
             }
           });
       }
       else {
-        this.delete_network(index)
+        this.delete_network(index);
       }
     },
     openStatistics(i) {
@@ -221,6 +267,82 @@ export default {
     set_networkName(text) {
       this.setNetworkNameAction(text);
       this.pushSnapshotToHistory(null)
+    },
+    onTabScroll(event) {
+      event.preventDefault();
+      
+      if (!this.$refs.tablist) { return; }
+
+      const scrollFactor = 20;
+      const scrollDelta = event.deltaY > 0 ? scrollFactor : -1 * scrollFactor;
+      this.$refs.tablist.scrollLeft += scrollDelta | 0;
+
+      this.checkTabWidths();
+    },
+    onTabArrowMouseDown(value) {
+      // when the scroll buttons are pressed
+
+      if (!this.$refs.tablist) { return; }
+
+      const mouseDownInterval = 100; //ms
+
+      this.mouseDownIntervalTimer = setInterval(() => {
+        this.$refs.tablist.scrollLeft += value | 0;
+        this.checkTabWidths();
+      }, mouseDownInterval);
+    },
+    onTabArrowMouseUp() {
+      clearInterval(this.mouseDownIntervalTimer);
+    },
+    onResize() {
+      debounce(this.checkTabWidths(), 100);
+    },
+    checkTabWidths() {
+      if (!this.$refs.tablist) { return; }
+
+      // for rounding errors because of zoom levels
+      const pixelToleranceLimit = 1; 
+      // scrollWidth can be less than clientWidth!!
+      const scrollableDistance = Math.abs(this.$refs.tablist.scrollWidth - this.$refs.tablist.clientWidth);
+      const maxScrollWidth = 
+        scrollableDistance <= pixelToleranceLimit
+        ? Math.min(scrollableDistance, 0) // remove the tiny rounding difference 
+        : scrollableDistance;
+      
+      this.tabArrows.isLeftActive = (this.$refs.tablist.scrollLeft !== 0);
+      this.tabArrows.isRightActive = Math.abs(Math.floor(this.$refs.tablist.scrollLeft) - maxScrollWidth) > pixelToleranceLimit;      
+      this.tabArrows.show = this.tabArrows.isLeftActive || this.tabArrows.isRightActive;
+
+      if (this.tabArrows.show && this.$refs.sidebarToggle) {
+        this.$refs.sidebarToggle.style.marginLeft = 0;
+      } else {
+        this.$refs.sidebarToggle.style.marginLeft = 'auto';
+      }
+
+    },
+    scrollActiveTabIntoView() {
+
+      if (!this.$refs.tablist) { return; }
+
+      const activeNetworkTab = document.querySelector('.bookmark_tab.workspace_tab.bookmark_tab--active');
+
+      const tabArrow = document.querySelector('.tab-arrow');
+      const sidebarToggle = document.querySelector('.toggle-sidebar');
+  
+      // adding activeNetworkTab.clientWidth so the entire tab is visible
+      const widthNotVisible = 
+        (activeNetworkTab.offsetLeft + activeNetworkTab.clientWidth) // position to end of tab
+        + (tabArrow.clientWidth * 2) // size of arrow
+        + sidebarToggle.clientWidth // size of sidebar toggle
+        - this.$refs.tablist.clientWidth; // position of what's already in view
+
+      if (widthNotVisible > 0) {
+        this.$refs.tablist.scrollLeft += widthNotVisible;
+
+        this.tabArrows.isLeftActive = true;
+        this.tabArrows.isRightActive = false;
+      }
+      
     },
     dragBoxHorizontalTopBorder() {
       const { width, left, top,  isVisible } = this.dragBoxContainer;

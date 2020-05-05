@@ -162,7 +162,7 @@
         return this.$store.state.globalView.globalPopup.coreNotFoundPopup
       },
       showPopup() {
-        return this.errorPopup.length || this.infoPopup.length || this.corePopup;
+        return this.errorPopup.length || (this.infoPopup && this.infoPopup.length) || this.corePopup;
       },
       showMenuBar() {
         const GET_userIsLogin = this.$store.getters['mod_user/GET_userIsLogin']

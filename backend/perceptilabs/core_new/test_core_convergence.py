@@ -5,6 +5,8 @@ import logging
 import tempfile
 import numpy as np
 from queue import Queue
+from shutil import copyfile
+import os
 
 from perceptilabs.core_new.layers.script import ScriptFactory
 from perceptilabs.core_new.core2 import Core
@@ -143,15 +145,25 @@ def graph_spec_binary_classification():
     f1.close()
     f2.close()
 
+class FileCopier():
+    def __init__(self, to_name):
+        self.to_name = to_name
 
+    def copy_train_script(self, original_name):
+        if not os.path.isdir('./training_scripts'):
+            os.mkdir('./training_scripts')
+        
+        copyfile(original_name, os.path.join('./training_scripts/',self.to_name))
+        print("training_script has been saved")
+
+#Disabling these tests while intermittent failures are being worked on
 '''
-Disabling these tests while intermittent failures are being worked on
 
 @pytest.mark.slow
 def test_train_normal_converges(graph_spec_binary_classification):
-    
     script_factory = ScriptFactory()
-    deployment_pipe = InProcessDeploymentPipe(script_factory)
+    file_copier = FileCopier('train_normal_training_script.py')
+    deployment_pipe = InProcessDeploymentPipe(script_factory, file_copier.copy_train_script)
     #deployment_pipe = LocalEnvironmentPipe('/home/anton/Source/perceptilabs/backend/venv-user/bin/python', script_factory)    
 
     replica_by_name = {repl_cls.__name__: repl_cls for repl_cls in BASE_TO_REPLICA_MAP.values()}
@@ -184,12 +196,12 @@ def test_train_normal_converges(graph_spec_binary_classification):
     
     assert np.mean(accuracy_list[-10:]) >= 0.75
 
-
+    
 @pytest.mark.slow
 def test_train_normal_distributed_converges(graph_spec_binary_classification):
-    
     script_factory = ScriptFactory()
-    deployment_pipe = InProcessDeploymentPipe(script_factory)
+    file_copier = FileCopier('train_normal_distr_training_script.py')
+    deployment_pipe = InProcessDeploymentPipe(script_factory, file_copier.copy_train_script)
     #deployment_pipe = LocalEnvironmentPipe('/home/anton/Source/perceptilabs/backend/venv-user/bin/python', script_factory)    
 
     replica_by_name = {repl_cls.__name__: repl_cls for repl_cls in BASE_TO_REPLICA_MAP.values()}

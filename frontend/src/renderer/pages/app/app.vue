@@ -176,7 +176,7 @@
       dragDrop(event) {
         event.preventDefault();
         if(event.target.classList[0] === this.dragMeta.outClassName) {
-          this.ADD_element(event)
+          this.ADD_element({event})
         }
       },
       adjustDraggingForFireFox(event) {

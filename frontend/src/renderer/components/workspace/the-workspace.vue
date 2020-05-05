@@ -1,6 +1,6 @@
 <template lang="pug">
   main.page_workspace
-    .workspace_tabset
+    .workspace_tabset(ref="tabset")
       include ./tabset/workspace-tabset.pug
     .workspace_content.bookmark_content.js-workspace(
       ref="workspaceNet"
@@ -55,7 +55,7 @@
           ref="saveNetworkPopup"
           :popup-settings="saveNetworkPopup"
           )
-        
+
 
       start-training-spinner(v-if="showTrainingSpinner")
       file-picker-popup(
@@ -63,7 +63,7 @@
         :filePickerType="showFilePickerPopup.filePickerType"
         :fileTypeFilter="showFilePickerPopup.fileTypeFilter"
         :popupTitle="showFilePickerPopup.popupTitle"
-        :confirmCallback="showFilePickerPopup.confirmCallback || showFilePickerPopup") 
+        :confirmCallback="showFilePickerPopup.confirmCallback || showFilePickerPopup")
       //- showFilePickerPopup container the callback function
 
     .workspace_meta
@@ -87,7 +87,7 @@
     flex: 0 0 auto;
     padding-top: 1px;
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: flex-end;
   }
   .workspace_content {

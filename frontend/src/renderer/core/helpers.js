@@ -164,7 +164,7 @@ const goToLink = function (url) {
 };
 
 const deepCopy = function (object) {
-  return JSON.parse(JSON.stringify(object))
+  return {...object}
 };
 
 const deepCloneNetwork = function (object) {
@@ -289,6 +289,34 @@ const fixFilepathSeparator = function fileUrl(filepath) {
   return filepath.replace(/\\/g, '/');
 };
 
+const debounce = function(callback, waitInMs) {
+
+  let timerHandle;
+
+  return function() {
+    clearInterval(timerHandle);
+    timerHandle = setTimeout(() => {
+
+      callback.apply(this, arguments);
+
+    }, waitInMs);
+  }
+}
+
+
+const promiseWithTimeout = function (timeout, promise) {
+  const timeoutPromise = new Promise((resolve, reject) => {
+    const timerHandle = setTimeout(
+      () => resolve(),
+      timeout);
+  });
+  
+  return Promise.race([
+    promise,
+    timeoutPromise
+  ]);
+}
+
 export {
   openLoadDialog,
   openSaveDialog,
@@ -318,4 +346,6 @@ export {
   isWeb,
   fixFilepathSeparator,
   setAppTypeRootClasses,
+  debounce,
+  promiseWithTimeout
 }

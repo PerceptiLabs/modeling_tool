@@ -93,13 +93,16 @@ class Tf1xStrategy:
                         break                
 
                 output = outputs.get(layer_id, None)
+
                 results[layer_id] = LayerInfo(
                     sample=output,
-                    out_shape=np.atleast_2d(output).shape[1:] if output is not None else None,
+                    out_shape=np.atleast_1d(output[0]).shape if output is not None else None,
                     in_shape=None,
                     variables=var_names,
                     default_var=default_var
                 )
+
+        tf.reset_default_graph()
         return results, errors
 
     def _restore_checkpoint(self, graph_spec, sess):
@@ -125,13 +128,13 @@ class Tf1xStrategy:
             pass
         elif isinstance(layer, DataLayer):
             try:
-                y = tf.constant(layer.sample)            
+                y = tf.constant(np.array([layer.sample]))
                 output_tensors[layer_id] = y
             except Exception as e:
                 errors[layer_id] = exception_to_error(layer_id, layer_type, e)                    
         elif isinstance(layer, InnerLayer):
             bw_cons = [input_id for input_id, _ in layer_spec['backward_connections']]
-            
+
             args = {}
             for input_id in bw_cons:
                 if input_id in output_tensors:
@@ -143,6 +146,7 @@ class Tf1xStrategy:
                     output_tensors[layer_id] = y
                 except Exception as e:
                     # 'userland runtime errors'
+                    log.exception('Userland error')
                     errors[layer_id] = exception_to_error(layer_id, layer_type, e)
             else:
                 log.debug(f'Layer {layer_id} expected inputs from layers {bw_cons}, got {list(args.keys())}. Skipping.')
@@ -216,7 +220,6 @@ class LightweightCore:
                 
         strategy = self._get_subgraph_strategy(subgraph_spec)
         results, strategy_errors = strategy.run(subgraph_spec, ordered_ids, layer_instances, layer_infos)
-
         if self._cache is not None:
             for layer_id, layer_info in results.items():
                 self._cache.put(layer_id, layer_info, code_map, edges_by_id)
