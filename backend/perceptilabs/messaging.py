@@ -3,6 +3,7 @@ import time
 import logging
 import threading
 import collections
+import os
 from typing import List
 from abc import ABC, abstractmethod
 
@@ -38,13 +39,20 @@ class IpcAddressResolver:
 
     def get_downstream(self, binding_address=False):
         return 'ipc://downstream'
+
+
+def get_default_address_resolver():
+    if os.name == 'nt':
+        return TcpAddressResolver(PORT_PRODUCER, PORT_CONSUMER) 
+    else:
+        return IpcAddressResolver()
     
         
 class MessageBus:
     POLL_TIMEOUT = 1.0 # msec
     
     def __init__(self, address_resolver=None):
-        self._address_resolver = address_resolver or IpcAddressResolver()
+        self._address_resolver = address_resolver or get_default_address_resolver()
         
         self._running = threading.Event()
         self._ctx = zmq.Context.instance()
@@ -113,7 +121,7 @@ class MessageBus:
 
 class MessageProducer:
     def __init__(self, topic, address_resolver=None):
-        self._address_resolver = address_resolver or IpcAddressResolver()
+        self._address_resolver = address_resolver or get_default_address_resolver()
         
         ctx = zmq.Context.instance()
         self._zsock = ctx.socket(zmq.PUB)
@@ -135,7 +143,7 @@ class MessageProducer:
 
 class MessageConsumer:
     def __init__(self, topics, address_resolver=None):
-        self._address_resolver = address_resolver or IpcAddressResolver()
+        self._address_resolver = address_resolver or get_default_address_resolver()
         
         ctx = zmq.Context.instance()        
         self._zsock = ctx.socket(zmq.SUB)
