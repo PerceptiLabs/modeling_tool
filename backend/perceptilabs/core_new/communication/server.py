@@ -79,10 +79,12 @@ class TrainingServer:
         while state.value not in State.exit_states:
             t0 = time.perf_counter()
             new_state = self._process_messages(state)
+            t1 = time.perf_counter()            
             state.transition(new_state)
+            t2 = time.perf_counter()            
             
             if state.value in State.running_states:
-                t1 = time.perf_counter()
+                t3 = time.perf_counter()
 
                 # Advance training by a single step
                 new_state = self._advance_training(
@@ -90,7 +92,7 @@ class TrainingServer:
                     training_sentinel,
                     task_executor
                 )
-                t2 = time.perf_counter()
+                t4 = time.perf_counter()
                 state.transition(new_state)
                 
             elif state.value in State.idle_states:                
@@ -102,13 +104,7 @@ class TrainingServer:
             elif state.value not in State.exit_states:
                 raise RuntimeError(f"Unexpected state: {state}")
             
-            t3 = time.perf_counter()            
-            main_step_times.append(t3 - t0)
-            train_step_times.append(t2 - t1)
-
-            #import numpy as np
-            #print(np.average(main_step_times))
-            #print(np.average(train_step_times))
+            t5 = time.perf_counter()            
             counter += 1
             yield
 
@@ -155,7 +151,7 @@ class TrainingServer:
         self._send_key_value('userland-error', data)                
         
     def _process_messages(self, state):
-        messages = self._consumer.get_messages()
+        messages = self._consumer.get_messages(per_message_timeout=0.001)
         for message in messages:
             self._process_message(message, state)
 
