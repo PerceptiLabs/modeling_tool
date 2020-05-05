@@ -6,6 +6,7 @@ import helpersNet from './workspace-helpers.js'
 import Toolbar    from './toolbar/workspace-toolbar.vue';
 import {debounce} from '@/core/helpers'
 import Analytics  from '@/core/analytics'
+import { trainingElements, deepLearnElements }  from '@/core/constants.js';
 
 import TextEditable           from '@/components/base/text-editable.vue'
 import NetworkField           from '@/components/network-field/network-field.vue'
@@ -65,6 +66,7 @@ export default {
   computed: {
     ...mapGetters({
       currentSelectedEl:  'mod_workspace/GET_currentSelectedEl',
+      currentElList:      'mod_workspace/GET_currentNetworkElementList',
       testIsOpen:         'mod_workspace/GET_testIsOpen',
       statusNetworkCore:  'mod_workspace/GET_networkCoreStatus',
       statisticsIsOpen:   'mod_workspace/GET_statisticsIsOpen',
@@ -172,7 +174,7 @@ export default {
       set_cursorPosition:       'mod_workspace/SET_CopyCursorPosition',
       set_cursorInsideWorkspace:'mod_workspace/SET_cursorInsideWorkspace',
       set_hideSidebar:          'globalView/SET_hideSidebar',
-
+      GP_showCoreSideSettings:  'globalView/GP_showCoreSideSettings',
     }),
     ...mapActions({
       popupConfirm:         'globalView/GP_confirmPopup',
@@ -181,13 +183,15 @@ export default {
       set_openStatistics:   'mod_workspace/SET_openStatistics',
       set_openTest:         'mod_workspace/SET_openTest',
       set_elementUnselect:  'mod_workspace/SET_elementUnselect',
-      setNetworkNameAction:      'mod_workspace/SET_networkName',
+      setNetworkNameAction: 'mod_workspace/SET_networkName',
       set_currentNetwork:   'mod_workspace/SET_currentNetwork',
       event_startDoRequest: 'mod_workspace/EVENT_startDoRequest',
       set_chartRequests:    'mod_workspace/SET_chartsRequestsIfNeeded',
       tutorialPointActivate:'mod_tutorials/pointActivate',
       offMainTutorial:      'mod_tutorials/offTutorial',
       pushSnapshotToHistory:'mod_workspace-history/PUSH_newSnapshot',
+      stopTraining:         'mod_api/API_stopTraining',
+      skipValidTraining:    'mod_api/API_skipValidTraining',
     }),
     startCursorListener (event) {
       const borderline = 15;
@@ -272,6 +276,42 @@ export default {
     set_networkName(text) {
       this.setNetworkNameAction(text);
       this.pushSnapshotToHistory(null)
+    },
+    trainStart() {
+      let valid = this.validateNetwork();
+      if (!valid) return;
+      this.GP_showCoreSideSettings(true);
+    },
+    validateNetwork() {
+      let net;
+      if(this.currentElList) net = Object.values(this.currentElList);
+      else {
+        this.showInfoPopup('You cannot Run without a Data element and a Training element');
+        return false;
+      }
+
+      let typeData = net.find((element)=> element.layerType === 'Data');
+      if(typeData === undefined) {
+        this.showInfoPopup('Data element missing');
+        return false
+      }
+
+      let typeTraining = net.find((element)=> element.layerType === 'Training');
+      if(typeTraining === undefined) {
+        this.showInfoPopup('Classic Machine Learning or Training element missing');
+        return false
+      }
+      let trainingIncluded = net.find(element => trainingElements.includes(element.componentName));
+      let deepLearnIncluded = true;
+      if (trainingIncluded) {
+        deepLearnIncluded = net.find(element => deepLearnElements.includes(element.componentName));
+      }
+      if(deepLearnIncluded === undefined) {
+        this.showInfoPopup('If you use the Training elements, you must use the Deep Learn elements');
+        return false
+      }
+
+      return true;
     },
     onTabScroll(event) {
       event.preventDefault();
