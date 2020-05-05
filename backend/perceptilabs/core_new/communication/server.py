@@ -39,7 +39,7 @@ class TrainingServer:
         update_client = self.run_stepwise(auto_start=auto_start)
         for counter, _ in enumerate(update_client):
             if counter % 100 == 0:
-                log.info(f"Running step {counter}")
+                log.debug(f"Running step {counter}")
             if self._closing:
                 log.info(f"Server closing. Leaving run loop {counter}")
                 break
