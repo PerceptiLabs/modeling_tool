@@ -11,26 +11,35 @@
             )
         .statistics-box_col
           chart-switch(
-            key="8"
-            chart-label="Accuracy"
-            :chart-data="chartData.Prediction.Accuracy"
+            key="2"
+            chart-label="PvG"
+            :chart-data="chartData.Prediction.PvG"
             :custom-color="colorPie"
             )
       .statistics-box_row
         .statistics-box_col
-          chart-switch#tutorial_prediction-chart(
-            key="2"
-            chart-label="Prediction vs Ground truth"
-            :chart-data="chartData.Prediction.PvG"
-            :custom-color="colorList"
-            )
-        .statistics-box_col(v-if="!testIsOpen")
           chart-switch(
             key="3"
-            chart-label="Batch Average Prediction vs Ground truth"
+            chart-label="AveragePvT"
+            :chart-data="chartData.Prediction.AveragePvT"
+            :custom-color="colorList"
+            )
+        .statistics-box_col
+          chart-switch(
+            key="4"
+            chart-label="R_Squared"
+            :chart-data="chartData.Prediction.R_Squared"
+            :custom-color="colorList"
+            )
+      .statistics-box_row
+        .statistics-box_col
+          chart-switch(
+            key="5"
+            chart-label="AveragePvG"
             :chart-data="chartData.Prediction.AveragePvG"
             :custom-color="colorList"
             )
+
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Loss'")
       chart-switch(
         key="6"
@@ -46,13 +55,13 @@
       )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'R_Squared'")
       chart-switch(
-        key="11"
+        key="8"
         chart-label="R Squared data during one epoch"
         :chart-data="chartData.R_Squared.Current"
         :custom-color="colorListAccuracy"
       )
       chart-switch(
-        key="12"
+        key="9"
         chart-label="R Squared data over all epochs"
         :chart-data="chartData.R_Squared.Total"
         :custom-color="colorListAccuracy"
@@ -71,8 +80,8 @@
     data() {
       return {
         chartData: {
-          Prediction: { Input: null, PvG: null, AveragePvG: null, Accuracy: null, R_Squared: null, AveragePvT: null },
-          Loss:       { Current: null, Total: null },
+          Prediction:       { Input: null, PvG: null, AveragePvG: null, AveragePvT: null, R_Squared: null},
+          Loss:             { Current: null, Total: null },
           R_Squared:        { Current: null, Total: null }
         },
         btnList: {
@@ -101,12 +110,6 @@
         colorList: ['#6B8FF7', '#FECF73'],
         colorListAccuracy: ['#9173FF', '#6B8FF7'],
         colorPie: ['#6B8FF7', '#383F50'],
-        showRequestSpinner: {
-          Input: true,
-          PvG: true,
-          AveragePvG: true,
-          Accuracy: true
-        }
       }
     },
     watch: {
