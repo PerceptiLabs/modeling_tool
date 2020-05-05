@@ -783,10 +783,10 @@ class coreLogic():
             D=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})           
             dataObj = createDataObject([D[-1]])      
             return {"Data":dataObj}
-        elif layerType=="MathSwitch":
-            D=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})           
-            dataObj = createDataObject([D[-1]])      
-            return {"Data":dataObj}
+        # elif layerType=="MathSwitch":
+        #     D=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})           
+        #     dataObj = createDataObject([D[-1]])      
+        #     return {"Data":dataObj}
         elif layerType=="DeepLearningFC":
             if view=="Output":
                 D=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})[-1]
@@ -925,7 +925,7 @@ class coreLogic():
             #                                           {"color":"#6b8ff7"}])
             #     output = {"Gradients": dataObj}
                 # return output
-        elif layerType in ["MathMerge", "MathSoftmax", "MathArgmax", "ProcessOneHot", "ProcessCrop", "ProcessReshape"]:
+        elif layerType in ["MathMerge", "MathSoftmax", "MathArgmax", "MathSwitch", "ProcessOneHot", "ProcessCrop", "ProcessReshape"]:
             D=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})[-1]
             output = createDataObject([np.squeeze(D)])
             return {"Output":output}

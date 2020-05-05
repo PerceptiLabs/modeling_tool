@@ -773,7 +773,6 @@ def policy_gan(core, graphs, sanitized_to_name, sanitized_to_id, results):
         return real_means, real_stddevs, random_means, random_stddevs
     
     def images_distribution_plot(real_means, real_stddevs, random_means, random_stddevs):
-        import numpy as np
         import matplotlib
         matplotlib.use('Agg')
         import matplotlib.pyplot as plt
@@ -784,6 +783,7 @@ def policy_gan(core, graphs, sanitized_to_name, sanitized_to_id, results):
         fig.canvas.draw()
         data = np.fromstring(fig.canvas.tostring_rgb(), dtype=np.uint8, sep='')
         data = data.reshape(fig.canvas.get_width_height()[::-1] + (3,))
+        plt.close()
         return data
 
     def get_metrics(graphs, true_trn_id, results):
@@ -811,7 +811,6 @@ def policy_gan(core, graphs, sanitized_to_name, sanitized_to_id, results):
             switch_layer_id = trn_layer.get_switch_layer_id
             random_images = trn_node.layer.gen_layer_outputs.get(switch_layer_id)
             real_images = trn_node.layer.dis_layer_outputs.get(switch_layer_id)
-
             if trn_layer.epoch == current_epoch and trn_layer.status == 'training':
                 gen_loss_trn_iter.append(trn_layer._gen_loss_training)
                 dis_loss_trn_iter.append(trn_layer._dis_loss_training)       
