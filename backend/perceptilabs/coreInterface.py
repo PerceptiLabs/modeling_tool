@@ -1363,11 +1363,11 @@ class coreLogic():
             if view == "Images":
                 generated_sample=self.getStatistics({"layerId":layerId,"variable":"generated_image","innervariable":""})
 
-                dataObjectOutput = createDataObject(generated_sample)
+                dataObjectOutput = createDataObject([generated_sample])
                 
                 real_sample=self.getStatistics({"layerId":layerId,"variable":"real_image","innervariable":""})
 
-                dataObjectInput = createDataObject(real_sample)
+                dataObjectInput = createDataObject([real_sample])
             
     
                 output = { "Real_Input":dataObjectInput, "Generated_Output": dataObjectOutput}
@@ -1376,7 +1376,7 @@ class coreLogic():
             
             if view=="Data_distribution":
                 data_distribution = self.getStatistics({"layerId":layerId,"variable":"data_distribution","innervariable":""})
-                dataObjectOutput = createDataObject(data_distribution)
+                dataObjectOutput = createDataObject([data_distribution])
     
                 output = {"Data_distribution": dataObjectOutput}
                 return output
