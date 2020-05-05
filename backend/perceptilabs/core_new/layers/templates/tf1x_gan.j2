@@ -671,8 +671,8 @@ class {{layer_name}}(GANLayer):
         Returns:
             A dictionary of nested dictionaries, where each key is a layer id. The nested dictionaries contain weight name and value pairs. The values must be picklable.
         """      
-        self._layer_biases.update(self._gen_layer_weights)
-        self._layer_biases.update(self._dis_layer_weights)   
+        self._layer_weights.update(self._gen_layer_weights)
+        self._layer_weights.update(self._dis_layer_weights)   
         return self._layer_weights
 
     @property
