@@ -346,6 +346,5 @@ export {
   isElectron,
   isWeb,
   setAppTypeRootClasses,
-  debounce,
-  promiseWithTimeout
+  debounce
 }
