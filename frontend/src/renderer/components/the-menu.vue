@@ -295,7 +295,7 @@ export default {
       this.offMainTutorial();
     },
     exportModel() {
-
+      this.$store.dispatch('globalView/SET_exportNetworkPopup', true);
     },
     HC_delete() {
       if(!this.isTutorialMode) {
