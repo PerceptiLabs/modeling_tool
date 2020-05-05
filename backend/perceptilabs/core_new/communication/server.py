@@ -194,7 +194,7 @@ class TrainingServer:
                     success_state=State.TRAINING_PAUSED_HEADLESS
                 )
             else:
-                raise StateTransitionError()
+                raise StateTransitionError("Couldn't transition from {state.value}")
         elif message_key == 'on_request_headless_deactivate':
             if state.value == State.TRAINING_RUNNING_HEADLESS:            
                 self._call_userland_method(
@@ -211,21 +211,21 @@ class TrainingServer:
                     success_state=State.TRAINING_PAUSED
                 )
             else:
-                raise StateTransitionError()                
+                raise StateTransitionError("Couldn't transition from {state.value}")                
         elif message_key == 'on_request_pause':
             if state.value == State.TRAINING_RUNNING:
                 state.transition(State.TRAINING_PAUSED)
             elif state.value == State.TRAINING_RUNNING_HEADLESS:
                 state.transition(State.TRAINING_PAUSED_HEADLESS)
             else:
-                raise StateTransitionError()                
+                raise StateTransitionError("Couldn't transition from {state.value}")                
         elif message_key == 'on_request_resume':
             if state.value == State.TRAINING_PAUSED:            
                 state.transition(State.TRAINING_RUNNING)
             elif state.value == State.TRAINING_PAUSED_HEADLESS:            
                 state.transition(State.TRAINING_RUNNING_HEADLESS)
             else:
-                raise StateTransitionError()                
+                raise StateTransitionError("Couldn't transition from {state.value}")                                
         else:
             #raise RuntimeError(f"Unknown event key '{message_key}'")
             #log.warning(f"Unknown event key '{message_key}'")            
