@@ -29,7 +29,8 @@
           border: this.haveBorder ? '4px solid #23252A': 'none',
           left: `${(ix) * 13}px`,
           zIndex: totalCollaborators - ix,
-          backgroundColor: `#${colorIndex + (colorIndex*10) + (colorIndex*100)}`
+          // backgroundColor: `#${colorIndex + (colorIndex*10) + (colorIndex*100)}`,
+          backgroundColor: '#FE7373',
         };
       }
     }

@@ -1,3 +1,11 @@
+.tab-arrow(
+  v-show="tabArrows.show"
+  :class="{'disabled': !tabArrows.isLeftActive }"
+  @mousedown="onTabArrowMouseDown(-25)"
+  @mouseup="onTabArrowMouseUp"
+  @mouseout="onTabArrowMouseUp")
+  span &lt;
+
 ul.bookmark_tab-list
   .tab-group(
     v-for="(tab, i) in workspace"
@@ -5,8 +13,8 @@ ul.bookmark_tab-list
 
     li.bookmark_tab.workspace_tab(
       :class="{'workspace_tab--active': indexCurrentNetwork === i && !tab.networkMeta.openStatistics && !tab.networkMeta.openTest, 'workspace_tab--disable': indexCurrentNetwork !== i && isTutorialMode}"
-      @click="setTabNetwork(i)"
-    )
+      @click="setTabNetwork(i)")
+
       button.btn.btn--icon.tab_close(type="button"
         :disabled="workspace.length <= 1"
         @click.stop="deleteTabNetwork(i)"
@@ -31,8 +39,17 @@ ul.bookmark_tab-list
       @click="openTest(i)"
     )
       span Test
+.tab-arrow.right(
+  v-show="tabArrows.show"
+  :class="{'disabled': !tabArrows.isRightActive }"
+  @mousedown="onTabArrowMouseDown(25)"
+  @mouseup="onTabArrowMouseUp"
+  @mouseout="onTabArrowMouseUp")
+  span &gt;
 
 
-//- .toggle-sidebar(:class="{'hide-sidebar': !hideSidebar}")
+//- .toggle-sidebar(
+//-   :class="{'hide-sidebar': !hideSidebar}"
+//-   ref="sidebarToggle")
 //-   button.btn.btn--toolbar(type="button" @click="toggleSidebar()")
 //-     i.icon.icon-hide-right

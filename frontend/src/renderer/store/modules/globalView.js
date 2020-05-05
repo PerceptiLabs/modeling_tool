@@ -21,6 +21,7 @@ const state = {
     showConfirmPopup: false,
     coreNotFoundPopup: false,
     showFilePickerPopup: false,
+    showLoadSettingPopup: false,
   },
   popupConfirmCancel: null,
   popupConfirmOk: null,
@@ -82,6 +83,10 @@ const mutations = {
   set_filePickerPopup(state, value) {
     state.globalPopup.showFilePickerPopup = value;
   },
+  set_loadSettingPopup(state, value) {
+    state.globalPopup.showLoadSettingPopup = value.visible;
+    state.popupConfirmOk = value.ok;
+  },
   gp_confirmPopup(state, value) {
     state.globalPopup.showConfirmPopup = value.text;
     state.popupConfirmCancel = value.cancel;
@@ -128,27 +133,30 @@ const actions = {
     commit('gp_ComingSoonPopup', true);
   },
   ShowCoreNotFoundPopup({ commit, rootState, dispatch }) {
-    let isServerRequestDone = false;
-    dispatch('mod_api/checkCoreAvailability', null, { root: true })
-      .then(() =>{
-        isServerRequestDone = true;
-      })
-      .catch((e) =>{
-        isServerRequestDone = true;
-      });
-
-    const delayActionDispatch = setTimeout(() => {
-      const coreIsOffline = rootState.mod_api.statusLocalCore === 'offline';
-      //if server responds more then a second or currently is offline show the core offline modal
-      if(coreIsOffline || !isServerRequestDone) {
-        commit('coreNotFoundPopup', true);
-      }
-      clearTimeout(delayActionDispatch)
-    }, 1000);
+    // let isServerRequestDone = false;
+    // dispatch('mod_api/checkCoreAvailability', null, { root: true })
+    //   .then(() =>{
+    //     isServerRequestDone = true;
+    //   })
+    //   .catch((e) =>{
+    //     isServerRequestDone = true;
+    //   });
+    //
+    // const delayActionDispatch = setTimeout(() => {
+    //   const coreIsOffline = rootState.mod_api.statusLocalCore === 'offline';
+    //   //if server responds more then a second or currently is offline show the core offline modal
+    //   if(coreIsOffline || !isServerRequestDone) {
+    //     commit('coreNotFoundPopup', true);
+    //   }
+    //   clearTimeout(delayActionDispatch)
+    // }, 1000);
 
   },
   SET_filePickerPopup({commit}, value) {
     commit('set_filePickerPopup', value);
+  },
+  SET_loadSettingPopup({commit}, value) {
+    commit('set_loadSettingPopup', value);
   },
   GP_confirmPopup({commit}, value) {
     commit('gp_confirmPopup', value);

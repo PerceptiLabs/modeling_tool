@@ -23,6 +23,16 @@ jobs:
         bash -i test_ubuntu.sh
       displayName: 'Python tests'
 
+    - bash: |
+        cd $(System.DefaultWorkingDirectory)/backend
+        mkdir training_scripts
+        if [ $? -ne 0 ]; then exit 0; fi
+      displayName: 'Create test folder if it doesnt exist'
+
+    - publish: $(System.DefaultWorkingDirectory)/backend/training_scripts
+      artifact: linux_training_scripts
+      condition: always()
+
 
 
 ### TEST WINDOWS  ###
@@ -46,6 +56,17 @@ jobs:
         cd scripts/
         ./test_windows.bat
       displayName: 'Python tests'
+
+    - script: |
+        cd $(System.DefaultWorkingDirectory)/backend
+        mkdir training_scripts
+        IF %ERRORLEVEL% NEQ 0 (exit 0)
+      displayName: 'Create test folder if it doesnt exist'
+
+    - publish: $(System.DefaultWorkingDirectory)/backend/training_scripts
+      artifact: windows_training_scripts
+      condition: always()
+
 
 
 ### TEST OSX  ###
@@ -71,3 +92,13 @@ jobs:
         chmod 755 test_osx.sh
         ./test_osx.sh
       displayName: 'Python tests'
+
+    - bash: |
+        cd $(System.DefaultWorkingDirectory)/backend
+        mkdir training_scripts
+        if [ $? -ne 0 ]; then exit 0; fi
+      displayName: 'Create test folder if it doesnt exist'
+
+    - publish: $(System.DefaultWorkingDirectory)/backend/training_scripts
+      artifact: osx_training_scripts
+      condition: always()

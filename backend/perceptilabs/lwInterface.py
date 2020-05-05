@@ -5,8 +5,10 @@ import numpy as np
 import tensorflow as tf
 
 import logging
+import platform
 
 from perceptilabs.createDataObject import createDataObject
+from perceptilabs.core_new.core import Core
 
 
 log = logging.getLogger(__name__)
@@ -39,7 +41,6 @@ class saveJsonModel(LW_interface_base):
         with open(file_path, 'w') as outfile:
             json.dump(json.loads(self._json_model), outfile)
 
-
 class getFolderContent(LW_interface_base):
     def __init__(self, current_path):
         self._current_path = current_path
@@ -55,7 +56,7 @@ class getFolderContent(LW_interface_base):
                 self._current_path = os.path.abspath('')
 
         drives = []
-        if self._current_path == '.':
+        if self._current_path == '.' and platform.system() == 'Windows':            
             import win32api
             drives = win32api.GetLogicalDriveStrings()
             drives = drives.split('\000')[:-1]
@@ -65,6 +66,7 @@ class getFolderContent(LW_interface_base):
                 "current_path" : '',
                 "dirs" : '',
                 "files" :  '',
+                "platform": platform.system(),
             }
         
         if not drives:
@@ -72,12 +74,14 @@ class getFolderContent(LW_interface_base):
                 "current_path" : self._current_path.replace('\\','/'),
                 "dirs" : [x for x in os.listdir(self._current_path) if os.path.isdir(os.path.join(self._current_path,x))],
                 "files" :  [x for x in os.listdir(self._current_path) if os.path.isfile(os.path.join(self._current_path,x))],
+                "platform": platform.system(),
             }
         else:
             return {
                 "current_path" : self._current_path.replace('\\','/'),
                 "dirs" : drives,
                 "files" :  [],
+                "platform": platform.system(),
             }
 class getJsonModel(LW_interface_base):
     print('huiak')
@@ -148,6 +152,27 @@ class getDataMeta(LW_interface_base):
         }
         return content
 
+    
+class getDataMetaV2(LW_interface_base):
+    def __init__(self, id_, lw_core, extras_reader):
+        self._id = id_
+        self.lw_core = lw_core
+        self.extras_reader = extras_reader
+
+    def run(self):
+        # lw_core, _, data_container = self.lwObj.create_lw_core()
+        self.lw_core.run()
+        extras_dict = self.extras_reader.to_dict()
+        cols = extras_dict[self._id].get("cols", '')
+        action_space = extras_dict[self._id].get("action_space", '')
+        content = {
+            "Action_space": action_space,
+            "Dataset_size": "",
+            "Columns": cols
+        }
+        return content
+    
+    
 class getGraphOrder(LW_interface_base):
     def __init__(self, jsonNetwork):
         self.jsonNetwork = jsonNetwork
@@ -158,6 +183,35 @@ class getGraphOrder(LW_interface_base):
         graph_dict = graph.graphs
         return list(graph_dict.keys())
 
+class getNotebookRunscript(LW_interface_base):
+    def __init__(self, jsonNetwork):
+        self.jsonNetwork = jsonNetwork
+
+    def run(self):
+        from perceptilabs.core_new.layers.script import ScriptFactory
+        from perceptilabs.core_new.graph.builder import GraphBuilder
+        
+        script_factory = ScriptFactory()
+        graph_builder = GraphBuilder()
+        graph = graph_builder.build_from_spec(self.jsonNetwork)
+
+        return script_factory.get_runscript(graph)
+
+class getNotebookImports(LW_interface_base):
+    def __init__(self, jsonNetwork):
+        self.jsonNetwork = jsonNetwork
+
+    def run(self):
+        from perceptilabs.core_new.layers.script import ScriptFactory
+        from perceptilabs.core_new.graph.builder import GraphBuilder
+        
+        script_factory = ScriptFactory()
+        graph_builder = GraphBuilder()
+        graph = graph_builder.build_from_spec(self.jsonNetwork)
+
+        return script_factory.get_imports(graph)
+
+
 class getPartitionSummary(LW_interface_base):
     def __init__(self, id_, lw_core, data_container):
         self._id = id_
@@ -167,6 +221,18 @@ class getPartitionSummary(LW_interface_base):
     def run(self):
         self.lw_core.run()
         content = self._try_fetch(self.data_container[self._id], "_action_space")
+
+        if isinstance(content, dict):
+            if self._id in self.lw_core.error_handler:
+                log.info("ErrorMessage: " + str(self.lw_core.error_handler[self._id]))
+                
+                content[self._id]['Error'] = {
+                    'Message': self.lw_core.error_handler[self._id].message,
+                    'Row': str(self.lw_core.error_handler[self._id].line_number)
+                }
+            else:
+                content[self._id]['Error'] = None
+                
         return content
 
     

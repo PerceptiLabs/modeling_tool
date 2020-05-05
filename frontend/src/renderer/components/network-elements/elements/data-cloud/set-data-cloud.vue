@@ -114,7 +114,7 @@
             //Path: [],
             Sources: [], //{type: 'file'/'directory', path: 'PATH'}
             Partition_list: [],
-            Batch_size: 10,
+            // Batch_size: 10,
             Shuffle_data: true,
           },
           step: 'button' // authorization //settings

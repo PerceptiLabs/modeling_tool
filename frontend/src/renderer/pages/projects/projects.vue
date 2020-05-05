@@ -9,9 +9,6 @@
             style="margin: 5px 20px 0 0; cursor: pointer"
             )
             img(src="../../../../static/img/project-page/import.svg")
-          //- span.btn-round-icon(@click="toggleSelectedItems()")
-          //-   img(v-if="isAtLeastOneItemSelected()" src="../../../../static/img/project-page/minus.svg")
-          //-   img(v-if="!isAtLeastOneItemSelected()" src="../../../../static/img/project-page/checked.svg")
           span.btn-round-icon.btn-rounded-new(@click="handleAddNetworkModal" :class="{'high-lighted': isNewUser}")
             img(src="../../../../static/img/project-page/plus.svg")
             div(v-if="isNewUser").create-first-model Create your first model
@@ -31,18 +28,22 @@
               path(d="M9.54894 0.927049C9.8483 0.0057385 11.1517 0.0057404 11.4511 0.927051L13.0819 5.9463C13.2158 6.35833 13.5997 6.63729 14.033 6.63729H19.3105C20.2792 6.63729 20.682 7.8769 19.8983 8.4463L15.6287 11.5484C15.2782 11.803 15.1315 12.2544 15.2654 12.6664L16.8963 17.6857C17.1956 18.607 16.1411 19.3731 15.3574 18.8037L11.0878 15.7016C10.7373 15.447 10.2627 15.447 9.91221 15.7016L5.64258 18.8037C4.85887 19.3731 3.80439 18.607 4.10374 17.6857L5.7346 12.6664C5.86847 12.2544 5.72181 11.803 5.37132 11.5484L1.10169 8.4463C0.317977 7.8769 0.720754 6.63729 1.68948 6.63729H6.96703C7.40026 6.63729 7.78421 6.35833 7.91809 5.9463L9.54894 0.927049Z" fill="#6185EE")
           img.img-button(v-if="isAtLeastOneItemSelected()" @click="removeItems()" src="../../../../static/img/project-page/remove.svg")
           span.text-button(v-if="isAtLeastOneItemSelected()") Open
-          span.text-button(v-if="isAtLeastOneItemSelected()") BlackBox
-          span.text-button(v-if="isAtLeastOneItemSelected()") History
-          span.text-button(v-if="isAtLeastOneItemSelected()" :class="{'is-disable': isDisabledCompareBtn()}") Compare
-          sort-by-button(
-            :options="sortOptions"
-            :optionSelected="isSelectedSortType"
-            @onSelectHandler="onSortByChanged"
-          )
+          //- span.text-button(v-if="isAtLeastOneItemSelected()") BlackBox
+          span.text-button.is-disable(v-if="isAtLeastOneItemSelected()") History
+          //- span.text-button(v-if="isAtLeastOneItemSelected()" :class="{'is-disable': isDisabledCompareBtn()}") Compare
+          //- sort-by-button(
+          //-   :options="sortOptions"
+          //-   :optionSelected="isSelectedSortType"
+          //-   @onSelectHandler="onSortByChanged"
+          //- )
       // List
       div.models-list
         div.models-list-row.model-list-header
-          div.column-1 Name
+          div.column-1 
+            span.btn-round-icon(@click="toggleSelectedItems()")
+              //- img(v-if="isAtLeastOneItemSelected()" src="../../../../static/img/project-page/minus.svg")
+              img(v-if="isAtLeastOneItemSelected()" src="../../../../static/img/project-page/checked.svg")
+            | Name
           div.column-2 Status
           div.column-3 Saved Version
           div.column-4 Session End Time
@@ -59,19 +60,21 @@
             svg.is-not-favorite(v-if="!model.isFavorite" @click.stop="setFavoriteValue(index, true)" width='22' height='20' viewBox='0 0 22 20' fill='none' xmlns='http://www.w3.org/2000/svg')
               path(d='M10.5245 1.08156C10.6741 0.620903 11.3259 0.620907 11.4755 1.08156L13.2186 6.4463C13.4195 7.06434 13.9954 7.48278 14.6452 7.48278H20.2861C20.7704 7.48278 20.9718 8.10258 20.5799 8.38729L16.0164 11.7029C15.4907 12.0848 15.2707 12.7619 15.4715 13.3799L17.2146 18.7447C17.3643 19.2053 16.8371 19.5884 16.4452 19.3037L11.8817 15.9881C11.3559 15.6061 10.6441 15.6061 10.1183 15.9881L5.5548 19.3037C5.16294 19.5884 4.6357 19.2053 4.78538 18.7447L6.52849 13.3799C6.7293 12.7619 6.50931 12.0848 5.98358 11.7029L1.42006 8.38729C1.0282 8.10259 1.22959 7.48278 1.71395 7.48278H7.35477C8.00461 7.48278 8.58055 7.06434 8.78136 6.4463L10.5245 1.08156Z' stroke='#AEAEAE')
           div.column-2
-            span(@click.stop="") {{model.networkMeta.coreStatus.Status}}
+            model-status(
+              :statusData="model.networkMeta.coreStatus"
+            )
           div.column-3
             span(@click.stop="") -
           div.column-4
-            span(@click.stop="") Placeholder
+            span(@click.stop="") -
           div.column-5
             collaborator-avatar(
                 @click.stop=""
-                :list="[{id: 1, name: 'Anton', img: null,}, {id: 2, name: 'Robert', img: null,}, {id: 3, name: 'David', img: null,}]"
+                :list="[{id: 1, name: user && user.firstName || '', img: null,}]"
               )
           div.column-6(@click.stop="")
             collaborator-avatar(
-                :list="[{id: 1, name: 'Robert', img: null,}]"
+                :list="[{id: 1, name: user && user.firstName || '', img: null,}]"
               )
             | {{model.apiMeta.updated.substring(0, 10)}}
         
@@ -85,6 +88,10 @@
       @close="onCloseSelectModelModal"
       @onChose="onTemplateChoseSelectModelModal"
       )
+    workspace-load-network(
+      v-if="showLoadSettingPopup"
+    )
+
 </template>
 
 <script>
@@ -94,9 +101,12 @@
   import FilePicker     from "@/components/different/file-picker.vue";
   import FilePickerPopup        from "@/components/global-popups/file-picker-popup.vue";
   import SelectModelModal from '@/pages/projects/components/select-model-modal.vue';
+  import ModelStatus from '@/components/different/model-status.vue';
+  import WorkspaceLoadNetwork   from "@/components/global-popups/workspace-load-network.vue";
 
-  import { mapActions, mapMutations, mapState } from 'vuex';
+  import { mapActions, mapMutations, mapState, mapGetters } from 'vuex';
   import {isWeb} from "@/core/helpers";
+  import cloneDeep from 'lodash.clonedeep';
   const mockModelList = [
     // {id: 1, dateCreated: new Date().setHours(15), dateLastOpened: new Date(), size: '10', name:'Placeholder 1', status: '75%', savedVersion: '-', sessionEndTime: 'Placeholder', collaborators: [{id: 1, name: 'Anton', img: null,}], lastModified: { user: {id: 1, name: 'Anton', img: null}, date: '19/02/20 13:00:00'}, isFavorite: true},
     // {id: 2, dateCreated: new Date().setHours(3), dateLastOpened: new Date(), size: '12', name:'Placeholder 4', status: '50%', savedVersion: '-', sessionEndTime: 'Placeholder', collaborators: [{id: 2, name: 'Robert', img: null,}], lastModified: { user: {id: 1, name: 'Anton', img: null}, date: '19/02/20 13:00:00'}, isFavorite: false},
@@ -108,6 +118,7 @@
     // {id: 8, dateCreated: new Date().setHours(12), dateLastOpened: new Date(), size: '80', name:'Placeholder 8', status: '75%', savedVersion: '-', sessionEndTime: 'Placeholder', collaborators: [{id: 1, name: 'Anton', img: null,}, {id: 2, name: 'Robert', img: null,}, {id: 3, name: 'David', img: null,}], lastModified: { user: {id: 1, name: 'Anton', img: null}, date: '19/02/20 13:00:00'}, isFavorite: false},
   ];
   
+
   export default {
     name: "pageProjects",
     components: {
@@ -116,7 +127,9 @@
       CollaboratorAvatar,
       FilePicker,
       FilePickerPopup,
-      SelectModelModal
+      SelectModelModal,
+      ModelStatus,
+      WorkspaceLoadNetwork,
     },
     data: function () {
       return {
@@ -158,12 +171,17 @@
     beforeDestroy() {
       // this.setPageTitleMutation('')
     },
+  
     computed: {
+      ...mapGetters({
+        user: 'mod_user/GET_userProfile'
+      }),
       ...mapState({
         currentProjectId: state => state.mod_project.currentProject,
-        appVersion:          state => state.globalView.appVersion,
-        hotKeyPressDelete:   state => state.mod_events.globalPressKey.del,
-        showFilePickerPopup: state => state.globalView.globalPopup.showFilePickerPopup
+        showFilePickerPopup: state => state.globalView.globalPopup.showFilePickerPopup,
+        appVersion:           state => state.globalView.appVersion,
+        hotKeyPressDelete:    state => state.mod_events.globalPressKey.del,
+        showLoadSettingPopup: state => state.globalView.globalPopup.showLoadSettingPopup,
       }),
       workspaceContent() {
         return this.$store.state.mod_workspace.workspaceContent;
@@ -285,6 +303,9 @@
       isDisabledCompareBtn() {
         return this.selectedListIds.length < 2;
       },
+      openBasicTemplate(net) {
+        this.addNetwork(cloneDeep(net.network));
+      },
       toggleItemSelection(modelId) {
         modelId = parseInt(modelId);
         let itmPosition = this.selectedListIds.indexOf(modelId);
@@ -323,19 +344,18 @@
         // this.selectedListIds = [];
       },
       toggleFavoriteItems() {
-        let newModelList = [...this.modelList];
-
+        let newModelList = [...this.workspaceContent];
         if (this.isAllItemSelectedFavorite()) {
-          newModelList = newModelList.map(item => {
-            if (this.selectedListIds.indexOf(item.id) !== -1) {
-              item.isFavorite = false;
+          newModelList = newModelList.map((item, index) => {
+            if (this.selectedListIds.indexOf(parseInt(item.networkID, 10)) !== -1) {
+              this.setFavoriteValue(index, false);
             }
             return item;
           })
         } else {
-          newModelList = newModelList.map(item => {
-            if (this.selectedListIds.indexOf(item.id) !== -1) {
-              item.isFavorite = true;
+          newModelList = newModelList.map((item, index) => {
+            if (this.selectedListIds.indexOf(parseInt(item.networkID, 10)) !== -1) {
+             this.setFavoriteValue(index, true);
             }
             return item;
           })
@@ -357,28 +377,29 @@
         // udate model fild value
 
 
-        let newModelList = [...this.modelList];
-        newModelList = newModelList.map(item => {
-          if (item.id === itemId) {
-            item.isFavorite = value;
-          }
-          return item;
-        })
+        // let newModelList = [...this.modelList];
+        // newModelList = newModelList.map(item => {
+        //   if (item.id === itemId) {
+        //     item.isFavorite = value;
+        //   }
+        //   return item;
+        // })
 
       },
       isAllItemSelectedFavorite() {
+
         const selectedLength = this.selectedListIds.length;
         if (selectedLength === 0) return false;
-        let newModelList = [...this.modelList];
-        let favoriteItemLength = newModelList.filter(item => this.selectedListIds.indexOf(item.id) !== -1 && item.isFavorite);
+        let newModelList = [...this.workspaceContent];
+        let favoriteItemLength = newModelList.filter(item => this.selectedListIds.indexOf(parseInt(item.networkID, 10)) !== -1 && item.isFavorite);
         return selectedLength === favoriteItemLength.length
       },
       toggleSelectedItems() {
         if (this.isAtLeastOneItemSelected()) {
           this.selectedListIds = [];
         } else {
-          let newModelList = [...this.modelList];
-          this.selectedListIds = newModelList.map(item => item.id);
+          let newWorkspaceContent = [...this.workspaceContent];
+          this.selectedListIds = newWorkspaceContent.map(networkItem => parseInt(networkItem.networkID, 10));
         }
       },
       updateInitialModelListData() {
@@ -544,7 +565,7 @@
       padding-left: 135px;
     }
     .column-2 {
-      min-width: 130px; 
+      min-width: 200px; 
     }
     .column-3 {
       min-width: 200px;
@@ -566,6 +587,14 @@
     font-weight: bold;
     border-bottom: 1px solid #363E51;
     align-items: center;
+    .column-1 {
+      .btn-round-icon {
+        position: absolute;
+        left: 41px;
+        top: 50%;
+        transform: translateY(-50%)
+      }
+    }
   }
   .model-list-item {
     display: flex;

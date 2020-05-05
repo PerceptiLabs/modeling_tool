@@ -44,9 +44,9 @@
         .form_row(v-tooltip-interactive:right="interactiveInfo.zeroPadding")
           .form_label Zero-padding:
           #tutorial_zero-padding.form_input(data-tutorial-hover-info)
-            base-radio(group-name="group3" value-input="'SAME'"  v-model="settings.Padding")
+            base-radio(group-name="group3" value-input="SAME"  v-model="settings.Padding")
               span SAME
-            base-radio(group-name="group3" value-input="'VALID'"  v-model="settings.Padding")
+            base-radio(group-name="group3" value-input="VALID"  v-model="settings.Padding")
               span VALID
       .settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.activationFunction")
@@ -104,9 +104,9 @@
           .form_row(v-tooltip-interactive:right="interactiveInfo.ZeroPaddingPooling")
             .form_label Zero-padding for pooling:
             .form_input
-              base-radio(group-name="Pool_padding" value-input="'SAME'" v-model="settings.Pool_padding")
+              base-radio(group-name="Pool_padding" value-input="SAME" v-model="settings.Pool_padding")
                 span SAME
-              base-radio(group-name="Pool_padding" value-input="'VALID'" v-model="settings.Pool_padding")
+              base-radio(group-name="Pool_padding" value-input="VALID" v-model="settings.Pool_padding")
                 span VALID
 
     template(slot="Code-content")
@@ -134,7 +134,7 @@ export default {
         Conv_dim: "2D", //Automatic, 1D, 2D, 3D
         Patch_size: "3",
         Stride: "2",
-        Padding: "'SAME'", //'SAME', 'VALID'
+        Padding: "SAME", //'SAME', 'VALID'
         Feature_maps: "8",
         Activation_function: "Sigmoid", //Sigmoid, ReLU, Tanh, None
         Dropout: false, //True, False
@@ -142,7 +142,7 @@ export default {
         PoolBool: false, //True, False
         Pooling: "Max", //Max, Mean
         Pool_area: "2",
-        Pool_padding: "'SAME'", //'SAME', 'VALID'
+        Pool_padding: "SAME", //'SAME', 'VALID'
         Pool_stride: "2",
       },
       interactiveInfo: {

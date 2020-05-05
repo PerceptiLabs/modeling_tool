@@ -1,6 +1,6 @@
 <template lang="pug">
   main.page_workspace
-    .workspace_tabset
+    .workspace_tabset(ref="tabset")
       include ./tabset/workspace-tabset.pug
     toolbar
     .workspace_content.bookmark_content.js-workspace(
@@ -42,7 +42,7 @@
               :scaleNet="scaleNet"
               :style="{transformOrigin: '0 0', transform: `scale(${scaleNet / 100})`}"
             )
-            // when select more then 2 network item it's display
+            // when select more then 2 network item its display
             div(:style="dragBoxHorizontalTopBorder()")
             div(:style="dragBoxHorizontalBottomBorder()")
             div(:style="dragBoxVerticalLeftBorder()")
@@ -58,7 +58,9 @@
           ref="saveNetworkPopup"
           :popup-settings="saveNetworkPopup"
           )
-        
+        workspace-load-network(
+          v-if="showLoadSettingPopup"
+        )
 
       start-training-spinner(v-if="showTrainingSpinner")
       file-picker-popup(
@@ -66,7 +68,7 @@
         :filePickerType="showFilePickerPopup.filePickerType"
         :fileTypeFilter="showFilePickerPopup.fileTypeFilter"
         :popupTitle="showFilePickerPopup.popupTitle"
-        :confirmCallback="showFilePickerPopup.confirmCallback || showFilePickerPopup") 
+        :confirmCallback="showFilePickerPopup.confirmCallback || showFilePickerPopup")
       //- showFilePickerPopup container the callback function
 
     .workspace_meta
@@ -92,7 +94,7 @@
     flex: 0 0 auto;
     padding-top: 0.5rem;
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: flex-end;
     background-color: $bg-workspace;
 

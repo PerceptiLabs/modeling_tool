@@ -2,23 +2,23 @@
   div.profile-wrapper
     div.profile-item
       .profile-item-Avatar.with-border
-        | A
+        | {{user && user.firstName[0]}}
       .profile-item-drop-down
         button.bgc-transparent.ta-left.p-13
           .d-flex
             .profile-item-Avatar
-              | R
+              | {{user && user.firstName[0]}}
             div.ml-12
-              h3.white.fz-14.mb-0 Robert Lundberg
-              p.fz-12.mb-0 robert.l@perceptilabs.com
+              h3.white.fz-14.mb-0 {{user && user.firstName}} {{ user && user.lastName}}
+              p.fz-12.mb-0 {{user && user.email}}
         .profile-separator
-        button.bgc-transparent.ta-left.profile-item-wrapper(v-for="collaborator in collaboratorData")
-          .d-flex
-            .profile-item-Avatar
-              | {{collaborator.name[0]}}
-            div.ml-12
-              h3.white.fz-14.mb-0 {{collaborator.name}}
-              p.fz-12.mb-0 {{collaborator.email}}
+        //- button.bgc-transparent.ta-left.profile-item-wrapper(v-for="collaborator in collaboratorData")
+        //-   .d-flex
+        //-     .profile-item-Avatar
+        //-       | {{collaborator.name[0]}}
+        //-     div.ml-12
+        //-       h3.white.fz-14.mb-0 {{collaborator.name}}
+        //-       p.fz-12.mb-0 {{collaborator.email}}
         button.bgc-transparent.ta-left.add-more-collaborators.d-flex
           .circleButton
             img(src="../../../../static/img/project-page/plus.svg")
@@ -30,6 +30,7 @@
 </template>
 
 <script>
+  import { mapGet, mapGetters} from 'vuex';
 
   const collaboratorData = [
     {id: 1, name: 'Martin Isaksson', email: 'martin.i@perceptilabs.com'},
@@ -43,6 +44,11 @@
         collaboratorData: collaboratorData,
       }
     },
+    computed: {
+      ...mapGetters({
+        user: 'mod_user/GET_userProfile',
+      })
+    }
     
   }
 </script>

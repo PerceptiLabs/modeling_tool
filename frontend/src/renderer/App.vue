@@ -32,7 +32,7 @@
   }
   import Analytics from '@/core/analytics';
 
-  import { mapMutations, mapActions } from 'vuex';
+  import { mapMutations, mapActions, mapGetters } from 'vuex';
 
   import HeaderLinux    from '@/components/header/header-linux.vue';
   import HeaderWin      from '@/components/header/header-win.vue';
@@ -122,6 +122,7 @@
       //   //this.appReady();
         this.sendPathToAnalist(this.$route.fullPath);
       })
+      if(!this.user) this.cloud_userGetProfile();
     },
     beforeDestroy() {
       window.removeEventListener('online',  this.updateOnlineStatus);
@@ -136,6 +137,9 @@
       }
     },
     computed: {
+      ...mapGetters({
+        user: 'mod_user/GET_userProfile'
+      }),
       platform() {
         return this.$store.state.globalView.platform
       },
@@ -162,7 +166,7 @@
         return this.$store.state.globalView.globalPopup.coreNotFoundPopup
       },
       showPopup() {
-        return this.errorPopup.length || this.infoPopup.length || this.corePopup;
+        return this.errorPopup.length || (this.infoPopup && this.infoPopup.length) || this.corePopup;
       },
       showMenuBar() {
         const GET_userIsLogin = this.$store.getters['mod_user/GET_userIsLogin']
@@ -223,6 +227,7 @@
 
         setActivePageAction: 'modal_pages/setActivePageAction',
         getProjects : 'mod_project/getProjects',
+        cloud_userGetProfile:     'mod_apiCloud/CloudAPI_userGetProfile',
       }),
       updateOnlineStatus() {
         this.SET_onlineStatus(navigator.onLine);

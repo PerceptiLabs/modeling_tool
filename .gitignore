@@ -9,6 +9,8 @@ backend/venv-user/
 backend/dist/
 backend/deploy.py
 backend/*.log
+backend/training_script.py
+backend/training_scripts/*
 **/__pycache__/
 *.pyc
 *.py~
@@ -17,6 +19,7 @@ backend/*.log
 build/
 .vscode/
 backend/.vscode/
+backend/kernel.log
 #Frontend ignores
 frontend_out
 frontend/core/*

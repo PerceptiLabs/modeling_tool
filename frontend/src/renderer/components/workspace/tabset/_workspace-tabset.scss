@@ -1,7 +1,44 @@
+.tab-arrow {
+  display: flex;
+  justify-content: center;
+  height: 2.5rem;
+  font-size: 2rem;
+  cursor: pointer;
+
+  span {
+    display: flex;
+    align-items: center;
+    margin: 0.5rem;
+  }
+
+  &.disabled {
+    color: $disable-txt;
+    pointer-events: none;
+  }
+
+  &.right {
+    margin-left: auto;
+  }
+}
+
+.workspace_tab-list {
+  max-width: calc(100% - 3rem);
+  overflow-y: scroll;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;  /* Internet Explorer 10+ */
+}
+
+.workspace_tab-list::-webkit-scrollbar { /* WebKit */
+  width: 0;
+  height: 0;
+}
+
 .workspace_tab {
   min-width: 12rem;
   display: flex;
   align-items: center;
+
+  flex: 1 1 16rem;
   padding-right: 0;
   margin-right: 0.5rem;
 
@@ -26,6 +63,7 @@
   }
 
 }
+
 .tab_close {
   margin-right: 1.25rem;
   font-size: .5em;
@@ -37,6 +75,12 @@
 .tab_name {
   margin-right: 1rem;
   flex: 1;
+
+  width: 12rem;
+
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
 }
 .tab_statistics {
   font-size: 1rem;
@@ -51,3 +95,24 @@
   }
 }
 
+
+.toggle-sidebar {
+  z-index: 2;
+
+  margin-left: auto;
+  .btn--toolbar {
+    height: 1.9em;
+    width: 1.9em;
+    font-size: 1.5714rem;
+    background-color: $bg-toolbar;
+    border-radius: 0;
+  }
+  .icon {
+    @include multi-transition(transform)
+  }
+  &.hide-sidebar {
+    .btn--toolbar .icon{
+      transform: rotate(180deg);
+    }
+  }
+}
