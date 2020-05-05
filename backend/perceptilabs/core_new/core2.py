@@ -25,7 +25,6 @@ from perceptilabs.core_new.graph.builder import GraphBuilder
 from perceptilabs.core_new.layers import TrainingLayer
 from perceptilabs.core_new.layers.definitions import DEFINITION_TABLE
 from perceptilabs.core_new.api.mapping import ByteMap
-from perceptilabs.core_new.communication.status import *
 from perceptilabs.core_new.communication import TrainingClient, State
 from perceptilabs.core_new.layers.script import ScriptFactory
 from perceptilabs.core_new.communication.deployment import ThreadStrategy, DeploymentStrategy
