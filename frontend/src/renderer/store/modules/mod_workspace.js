@@ -1194,9 +1194,7 @@ const actions = {
             commit('set_lastActiveTabInLocalStorage', state.workspaceContent[index - 1].networkID);
           }
         }
-    
-        commit('delete_network', index);
-        commit('set_workspacesInLocalStorage');
+
       }
       const modelApiMeta = state.workspaceContent[index].apiMeta;
       dispatch('mod_project/deleteModel', modelApiMeta, {root: true});
