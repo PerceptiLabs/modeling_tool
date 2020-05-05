@@ -12,7 +12,7 @@ ul.bookmark_tab-list
     :key="i")
 
     li.bookmark_tab.workspace_tab(
-      :class="{'workspace_tab--active': indexCurrentNetwork === i && !tab.networkMeta.openStatistics && !tab.networkMeta.openTest, 'workspace_tab--disable': indexCurrentNetwork !== i && isTutorialMode}"
+      :class="{'workspace_tab--active': indexCurrentNetwork === i && !tab.networkMeta.openStatistics && !tab.networkMeta.openTest, 'workspace_tab--active_network': indexCurrentNetwork === i, 'workspace_tab--disable': indexCurrentNetwork !== i && isTutorialMode}"
       @click="setTabNetwork(i)")
 
       button.btn.btn--icon.tab_close(type="button"
@@ -27,18 +27,40 @@ ul.bookmark_tab-list
 
     li.bookmark_tab.workspace_tab.tab_statistics(
       v-if="tab.networkMeta.openStatistics !== null"
-      :class="{'workspace_tab--active': indexCurrentNetwork === i && tab.networkMeta.openStatistics, 'workspace_tab--disable': indexCurrentNetwork !== i && isTutorialMode}"
+      :class="{'workspace_tab--active': indexCurrentNetwork === i && tab.networkMeta.openStatistics, 'workspace_tab--active_network': indexCurrentNetwork === i, 'workspace_tab--disable': indexCurrentNetwork !== i && isTutorialMode}"
       @click="openStatistics(i)"
     )
       span Statistics
       i.icon(:class="{'icon-circle-o': trainingWaiting(i), 'icon-circle-o green-color-icon': trainingInProcess(i), 'icon-ellipse green-color-icon': trainingFinished(i) }")
     
+    li.bookmark_tab.workspace_tab.tab_icon(
+      v-if="tab.networkMeta.openStatistics !== null"
+      :class="{'workspace_tab--active': indexCurrentNetwork === i && tab.networkMeta.openStatistics, 'workspace_tab--disable': indexCurrentNetwork !== i && isTutorialMode}"
+      @click="trainStart"
+    )
+      i.icon.icon-player-play
+    
+      //- i.icon(:class="{'icon-circle-o': trainingWaiting(i), 'icon-circle-o green-color-icon': trainingInProcess(i), 'icon-ellipse green-color-icon': trainingFinished(i) }")
+    li.bookmark_tab.workspace_tab.tab_icon(
+      v-if="tab.networkMeta.openStatistics !== null"
+      :class="{'workspace_tab--active': indexCurrentNetwork === i && tab.networkMeta.openStatistics, 'workspace_tab--disable': indexCurrentNetwork !== i && isTutorialMode}"
+      @click="pauseTraining"
+    )
+      i.icon.icon-player-pause
+    li.bookmark_tab.workspace_tab.tab_icon(
+      v-if="tab.networkMeta.openStatistics !== null"
+      :class="{'workspace_tab--active': indexCurrentNetwork === i && tab.networkMeta.openStatistics, 'workspace_tab--disable': indexCurrentNetwork !== i && isTutorialMode}"
+      @click="skipValidTraining"
+    )
+      i.icon.icon-player-next
+            
     li.bookmark_tab.workspace_tab.tab_testing(
       v-if="tab.networkMeta.openTest !== null"
-      :class="{'workspace_tab--active': indexCurrentNetwork === i && tab.networkMeta.openTest, 'workspace_tab--disable': indexCurrentNetwork !== i && isTutorialMode}"
+      :class="{'workspace_tab--active': indexCurrentNetwork === i && tab.networkMeta.openTest, 'workspace_tab--active_network': indexCurrentNetwork === i, 'workspace_tab--disable': indexCurrentNetwork !== i && isTutorialMode}"
       @click="openTest(i)"
     )
       span Test
+      
 .tab-arrow.right(
   v-show="tabArrows.show"
   :class="{'disabled': !tabArrows.isRightActive }"
