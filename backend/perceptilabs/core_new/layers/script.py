@@ -11,7 +11,7 @@ from typing import Dict
 from perceptilabs.utils import add_line_numbering
 from perceptilabs.core_new.graph import Graph
 from perceptilabs.core_new.layers.templates import J2Engine
-from perceptilabs.core_new.layers.definitions import DEFINITION_TABLE, TEMPLATES_DIRECTORY
+from perceptilabs.core_new.layers.definitions import DEFINITION_TABLE, TEMPLATES_DIRECTORY, TOP_LEVEL_IMPORTS
 from perceptilabs.core_new.graph.utils import sanitize_layer_name
 
 # TODO: move this to a more suitable location? Deployment?
@@ -34,6 +34,15 @@ class FetchParameterError(ScriptBuildError):
     pass
 
 
+def is_syntax_ok(code):
+    try:
+        ast.parse(code)
+    except SyntaxError as e:
+        return False
+    else:
+        return True
+
+
 class ScriptFactory:
     def __init__(self, mode='default', max_time_run=None):
         # if legacy, simply reuse codehq
@@ -42,20 +51,27 @@ class ScriptFactory:
         templates_directory = pkg_resources.resource_filename('perceptilabs', TEMPLATES_DIRECTORY)
         self._engine = J2Engine(templates_directory)
         self._definition_table = DEFINITION_TABLE
-
+        self._top_level_imports = TOP_LEVEL_IMPORTS
         self._max_time_run = max_time_run
+        
+    def get_runscript(self, graph: Graph):
+        code  = self._create_graph_snippet(graph)
+        code += "\n"
+        code += "iterator = graph.training_nodes[0].layer_instance.run(graph)\n"
+        code += "result = None\n"
+        code += "sentinel = object()\n"        
+        code += "while result is not sentinel:\n"
+        code += "    result = next(iterator, sentinel)\n"        
+        return code
+
+    def get_imports(self, graph: Graph):
+        code = self._create_imports_snippet(graph)
+        code += self._create_logging_snippet()
+        return code
 
     def _create_imports_snippet(self, graph):
-        plabs_imports = set([
-            'from perceptilabs.core_new.graph.builder import GraphBuilder, SnapshotBuilder',
-            'from perceptilabs.core_new.communication import TrainingServer',
-            'from perceptilabs.messaging import MessageConsumer, MessageProducer',            
-            'from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP, REPLICATED_PROPERTIES_TABLE'                    
-        ])
-        other_imports = set([
-            'import sys',
-            'import logging'
-        ])
+        plabs_imports = set(self._top_level_imports['perceptilabs'])
+        other_imports = set(self._top_level_imports['standard_library'] + self._top_level_imports['third_party'])
         
         for node in graph.nodes:
             layer_def = self._definition_table.get(node.layer_type)
@@ -63,7 +79,9 @@ class ScriptFactory:
             for stmt in layer_def.import_statements:
                 if not is_syntax_ok(stmt):
                     raise ScriptBuildError(f"Invalid syntax for import statement '{stmt}' found in layer def for {node.layer_type}")
-                
+
+
+                # TODO: the import_statements property should do this distinction (and into third party as well to comply with pep8)
                 if 'perceptilabs' in stmt:
                     plabs_imports.add(stmt)
                 else:
@@ -80,6 +98,63 @@ class ScriptFactory:
         if len(code) > 0:
             code += '\n'
         return code
+
+    def _create_logging_snippet(self):
+        code  = "logging.basicConfig(\n"
+        code += "    stream=sys.stdout,\n"
+        code += "    format='%(asctime)s - %(levelname)s - %(message)s',\n"
+        code += "    level=logging.INFO\n"
+        code += ")\n"
+        code += "log = logging.getLogger(__name__)\n\n"
+        return code        
+    
+    def _create_layers_snippet(self, graph, offset=None):
+        code = ''
+        line_to_node_map = {} if offset is not None else None
+        
+        for node in graph.nodes:
+            layer_code = self.render_layer_code(
+                node.layer_id,
+                node.layer_type,
+                node.layer_spec,
+                node.custom_code
+            )
+            code += layer_code + '\n'
+            n_lines = len(layer_code.split('\n'))
+            
+            if offset is not None:
+                line_to_node_map.update({offset+line: (node, line) for line in range(n_lines)})
+                offset += n_lines
+
+        if len(code) > 0:
+            code += '\n'
+        return code, line_to_node_map
+
+    def _create_graph_snippet(self, graph):
+        code = "layers = {\n"
+        for node in graph.nodes:
+            layer_name = node.layer_type + node.layer_id
+            code += "    '" + node.layer_id + "': " + layer_name + "(),\n"
+        code += "}\n\n"
+
+        code += "edges = {\n"
+        for node in graph.nodes:
+            from_id = node.layer_id
+            for _, to_id in node.layer_spec['forward_connections']:
+                code += "    ('" + from_id + "', '" + sanitize_layer_name(to_id) + "'),\n"
+        code += "}\n\n"
+
+        code += "graph_builder = GraphBuilder()\n"
+        code += "graph = graph_builder.build(layers, edges)\n\n"        
+        return code
+
+    def _create_training_server_snippet(self, port1, port2, userland_timeout):
+        # TODO: ...        
+        return ""
+
+    def _create_rest_server_snippet(self):
+        # TODO: a rest endpoint that provides metrics by reading from the TrainingServer
+        return ""
 
     def _create_logging_snippet(self):
         code  = "logging.basicConfig(\n"
@@ -149,10 +224,6 @@ class ScriptFactory:
             code += "    max_time_run={},\n".format(self._max_time_run) # For debugging
         code += ")\n\n"
         return code
-
-    def _create_rest_server_snippet(self):
-        # TODO: a rest endpoint that provides metrics by reading from the TrainingServer
-        return ""
 
     def _create_main_block(self):
         code  = "def main():\n"
@@ -249,8 +320,34 @@ class ScriptFactory:
     
         
         
+if __name__ == "__main__":
+    from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP
+    from perceptilabs.core_new.graph.builder import GraphBuilder
+    from perceptilabs.core_new.graph import Graph
+    import json
+
+    with open('net.json_', 'r') as f:
+        graph_spec = json.load(f)
+    
+    script_factory = ScriptFactory()
+    graph_builder = GraphBuilder()    
+
+    graph = graph_builder.build_from_spec(graph_spec)
+
+    import_code = script_factory.get_imports(graph)
+    layer_code, _ = script_factory._create_layers_snippet(graph)    
+    run_code = script_factory.get_runscript(graph)    
+
+
+    code  = import_code
+    code += layer_code
+    code += run_code
+
+
+    with open('test_code.py', 'w') as f:
+        f.write(code)
         
-        
+    
     
 
     

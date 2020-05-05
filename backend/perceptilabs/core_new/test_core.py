@@ -72,7 +72,6 @@ def graph_spec_binary_classification():
                     "accessProperties": {
                         "Sources": [{"type": "file", "path": inputs_path}],
                         "Partition_list": [[70, 20, 10]],
-                        "Batch_size": 8,
                         "Shuffle_data": False,
                         "Columns": []                        
                     },
@@ -90,7 +89,6 @@ def graph_spec_binary_classification():
                     "accessProperties": {
                         "Sources": [{"type": "file", "path": labels_path}],
                         "Partition_list": [[70, 20, 10]],
-                        "Batch_size": 8,
                         "Shuffle_data": False,
                         "Columns": []
                     },
@@ -143,7 +141,7 @@ def graph_spec_binary_classification():
                 "Properties": {
                     "Labels": "5",
                     "Loss": "Quadratic",
-                    "Epochs": 25,
+                    "Epochs": 50,
                     "Class_weights": "1",  # TODO: what's this?
                     "Optimizer": "SGD",
                     "Beta_1": "0.9",
@@ -151,6 +149,7 @@ def graph_spec_binary_classification():
                     "Momentum": "0.9",
                     "Decay_steps": "100000",
                     "Decay_rate": "0.96",
+                    "Batch_size": 10,                    
                     "Learning_rate": "0.05",
                     "Distributed": False
                 },

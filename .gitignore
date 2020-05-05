@@ -10,7 +10,7 @@ backend/dist/
 backend/deploy.py
 backend/training_script.py
 backend/training_script.py
-backend/training_scripts/
+backend/training_scripts/*
 **/__pycache__/
 *.pyc
 *.py~

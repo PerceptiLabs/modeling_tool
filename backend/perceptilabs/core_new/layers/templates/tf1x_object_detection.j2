@@ -477,6 +477,11 @@ class {{layer_name}}(ObjectDetectionLayer):
 
         log.debug(f"Export called. Project path = {path}, mode = {mode}")
         pb_path = os.path.join(path, '1')
+
+        if os.path.exists(pb_path):
+            shutil.rmtree(pb_path)
+
+        os.makedirs(pb_path, exist_ok=True)
         
         # Export non-compressed model
         if mode in ['TFModel', 'TFModel+checkpoint']:
@@ -484,10 +489,12 @@ class {{layer_name}}(ObjectDetectionLayer):
 
         # Export compressed model
         if mode in ['TFLite', 'TFLite+checkpoint']:
+            frozen_path = os.path.join(pb_path, 'frozen_model.pb')
             converter = tf.lite.TFLiteConverter.from_session(self._sess, [self._input_tensor_export], [self._output_tensor_export])
             converter.post_training_quantize = True
             tflite_model = converter.convert()
-            open(pb_path, "wb").write(tflite_model)
+            with open(frozen_path, "wb") as f:
+                f.write(tflite_model)
 
         # Export checkpoint
         if mode in ['TFModel+checkpoint', 'TFLite+checkpoint']:
@@ -787,6 +794,11 @@ class {{layer_name}}(ObjectDetectionLayer):
 
         return images
 
+
+    @property
+    def columns(self) -> List[str]: 
+        """Column names. Corresponds to each column in a sample """
+        return []
 
     @property
     def progress(self) -> float:

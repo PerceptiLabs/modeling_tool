@@ -30,6 +30,11 @@ class DataLayer(BaseLayer):
     """ Base class for loading data. The data is accessed via the generators, one sample at a time, in a fixed sequence. ̈́
     Therefore, it is left up to the consuming layers (usually a training layer) to perform any shuffling. 
     """
+    @property
+    @abstractmethod
+    def columns(self) -> List[str]: 
+        """Column names. Corresponds to each column in a sample """
+        raise NotImplementedError
     
     @abstractmethod    
     def make_generator_training(self) -> Generator[np.ndarray, None, None]:
@@ -158,6 +163,12 @@ class TrainingLayer(DataLayer):
     #@abstractmethod
     #def run(self, graph: Graph):
     #    raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def columns(self) -> List[str]: 
+        """Column names. Corresponds to each column in a sample """
+        raise NotImplementedError
 
     @abstractmethod
     def on_stop(self) -> None:
@@ -416,7 +427,7 @@ class ObjectDetectionLayer(TrainingLayer):
             A dictionary of nested dictionaries, where each key is a layer id. The nested dictionaries contain gradient name and value pairs. The values must be picklable.
         """        
         raise NotImplementedError
-    
+
     @property
     @abstractmethod    
     def batch_size(self) -> int:
@@ -497,3 +508,6 @@ class ObjectDetectionLayer(TrainingLayer):
     def get_input_data_node(self):
         """ node corresponding to input tensor"""
         return self._input_data_node
+
+
+    

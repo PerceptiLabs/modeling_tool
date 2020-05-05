@@ -46,7 +46,6 @@ export default {
     }),
     networkElementList() {
       let currentNet = this.$store.getters['mod_workspace/GET_currentNetworkElementList'];
-      console.log(currentNet);
       var newNet = {...currentNet};
       // clearContainer(currentNet);
 

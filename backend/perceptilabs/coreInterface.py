@@ -184,11 +184,16 @@ class coreLogic():
         distributed = self.isDistributable(gpus)
         #distributed = True
 
+        use_cpus = True
+
         for _id, layer in network['Layers'].items():
             if layer['Type'] == 'DataData':
                 if layer['Properties'] and 'accessProperties' in layer['Properties']:
                     layer['Properties']['accessProperties']['Sources'][0]['path'] = layer['Properties']['accessProperties']['Sources'][0]['path'].replace('\\','/')
             if layer['Type'] == 'TrainNormal':
+                if not 'Use_CPUs' in layer['Properties']:
+                    layer['Properties']['Use_CPUs'] = use_cpus
+
                 layer['Properties']['Distributed'] = distributed
                 if distributed:
                     targets_id = layer['Properties']['Labels']
@@ -264,7 +269,7 @@ class coreLogic():
             )            
             
         if self.cThread is not None and self.cThread.isAlive():
-            self.Stop()
+            self.Close()
 
             while self.cThread.isAlive():
                 time.sleep(0.05)
@@ -367,6 +372,7 @@ class coreLogic():
             )        
         
     def Close(self):
+        self.Stop()
         if self.cThread and self.cThread.isAlive():
             self.cThread.kill()
         return {"content":"closed core %s" % str(self.networkName)}
@@ -399,23 +405,44 @@ class coreLogic():
     def isTrained(self):
         is_trained = (
             (self._core_mode == 'v1' and self.saver is not None) or
-            (self._core_mode == 'v2' and self.core is not None and len(self.core.core_v2.graphs) > 0)
+            (self._core_mode == 'v2' and self.core is not None and self.resultDict is not None)
         )
         return {"content": is_trained}
 
     def exportNetwork(self,value):
         log.debug(f"exportNetwork called. Value = {pprint.pformat(value)}")
+
+        # Keys in 'value' : 
+        # ['Location', 'Type', 'Compressed', 'frontendNetwork', 'NotebookJson']
+
+        if value["Type"] == 'ipynb':
+            return self.saveIpynbToDisk(value)
+
+        # For value["Type"] = 'TFModel'
         if self._core_mode == 'v1':
             return self.exportNetworkV1(value)
         else:
             return self.exportNetworkV2(value)            
 
+    def saveIpynbToDisk(self, value):
+        path = value.get('Location')
+        if path is None or not path:
+            return {"content": 'Location not specified'}
+        
+        notebook_json = value.get('NotebookJson')
+        if notebook_json is None or not notebook_json:
+            return {"content": 'Cannot export empty network'}
+
+        filepath = os.path.abspath(path + '/' + value.get("frontendNetwork") + '.ipynb')
+
+        with open(filepath, 'w') as json_file:
+            json.dump(notebook_json, json_file)
+        
+        return {"content":"Export success!\nSaved as:\n" + filepath}
+
     def exportNetworkV2(self, value):
-        path = os.path.join(value["Location"], value.get('frontendNetwork', self.networkName), '1')
+        path = os.path.join(value["Location"], value.get('frontendNetwork', self.networkName))
         path = os.path.abspath(path)
-            
-        if os.path.exists(path):
-            shutil.rmtree(path)
 
         mode = 'TFModel+checkpoint' # Default mode. # TODO: perhaps all export modes should be exposed to frontend?
         if value["Compressed"]:

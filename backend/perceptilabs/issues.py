@@ -92,6 +92,9 @@ class UserlandError:
         text += '\n' + self.message
         return text
 
+    def __repr__(self):
+        return self.format()
+
         
 if __name__ == "__main__":
     issues = IssueHandler()

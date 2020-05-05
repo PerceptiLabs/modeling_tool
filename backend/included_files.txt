@@ -73,6 +73,7 @@ perceptilabs/core_new/session.py
 perceptilabs/core_new/utils.py
 perceptilabs/core_new/core_distr.py
 perceptilabs/core_new/script_distr.py
+perceptilabs/core_new/serialization.py
 
 # perceptilabs/core_new/api/
 perceptilabs/core_new/api/__init__.py
@@ -91,10 +92,10 @@ perceptilabs/core_new/communication/deployment.py
 perceptilabs/core_new/communication/zmq.py
 perceptilabs/core_new/communication/task_executor.py
 
-# perceptilabs/core_new/compatability
-perceptilabs/core_new/compatability/__init__.py
-perceptilabs/core_new/compatability/base.py
-perceptilabs/core_new/compatability/policies.py
+# perceptilabs/core_new/compability
+perceptilabs/core_new/compability/__init__.py
+perceptilabs/core_new/compability/base.py
+perceptilabs/core_new/compability/policies.py
 
 # perceptilabs/core_new/data
 perceptilabs/core_new/data/__init__.py
