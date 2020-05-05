@@ -170,19 +170,7 @@ export default {
       }
     },
     addNewNetwork() {
-      if(this.isTutorialMode) {
-        this.hideTooltip();
-        this.popupConfirm(
-          {
-            text: 'Are you sure you want to end the tutorial?',
-            ok: () => {
-              this.offMainTutorial();
-              this.$store.dispatch('mod_workspace/ADD_network');
-            }
-          });
-      } else {
-        this.$store.dispatch('mod_workspace/ADD_network');
-      }
+      this.$router.push({name: 'projects'});
     },
     logOut() {
       if(this.isTutorialMode) {
