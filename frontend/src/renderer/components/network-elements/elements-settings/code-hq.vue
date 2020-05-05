@@ -241,6 +241,14 @@
     }
   }
 
+
+  .CodeMirror-gutters {
+    left: -38px !important;
+  }
+  .CodeMirror-gutter-wrapper {
+    left: -38px !important;
+  }
+
   // scroll bar style
 
   .CodeMirror-simplescroll-horizontal div, .CodeMirror-simplescroll-vertical div {
