@@ -58,6 +58,8 @@ class MessageBus:
         self._ctx = zmq.Context.instance()
 
     def _proxy(self):
+        print_throughput = False
+        
         zsock_sub = self._ctx.socket(zmq.SUB) # Subscribe to producers.
         zsock_sub.linger = 0
         zsock_sub.bind(self._address_resolver.get_upstream(binding_address=True)) 
@@ -85,7 +87,7 @@ class MessageBus:
 
 
             # Compute throughput
-            if counter % (1000 / self.POLL_TIMEOUT) == 0:
+            if print_throughput and counter % (1000 / self.POLL_TIMEOUT) == 0:
                 tot_sz = 0
                 t_wnd = 5 # seconds
                 i = 0
