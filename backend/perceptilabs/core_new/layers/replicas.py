@@ -207,7 +207,7 @@ class RegressionLayerReplica(RegressionLayer):
                  r_squared_training, r_squared_testing, r_squared_validation,
                  status, layer_weights, layer_biases, layer_gradients, layer_outputs,
                  batch_size, training_iteration, validation_iteration,
-                 testing_iteration, progress, epoch, export_modes):
+                 testing_iteration, progress, epoch, export_modes, columns):
 
         self._export_modes = export_modes
         self._epoch = epoch
@@ -229,6 +229,7 @@ class RegressionLayerReplica(RegressionLayer):
         self._r_squared_testing = r_squared_testing
         self._r_squared_validation = r_squared_validation 
         self._status = status
+        self._columns = columns 
 
         self._layer_weights = layer_weights
         self._layer_biases = layer_biases
@@ -240,6 +241,10 @@ class RegressionLayerReplica(RegressionLayer):
         self._validation_iteration = validation_iteration
         self._testing_iteration = testing_iteration
         self._progress = progress
+
+    @property
+    def columns(self):
+        return self._columns
 
     @property
     def epoch(self):

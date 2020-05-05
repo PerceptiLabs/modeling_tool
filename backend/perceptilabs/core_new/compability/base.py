@@ -140,7 +140,7 @@ class CompabilityCore:
         elif  isinstance(layer, ObjectDetectionLayer):
             result_dict = policy_object_detection(self._core, graphs, self._sanitized_to_name, self._sanitized_to_id, results)
         elif  isinstance(layer, RegressionLayer):
-            result_dict = policy_regression(self._core, graphs, self._sanitized_to_name, self._sanitized_to_id)
+            result_dict = policy_regression(self._core, graphs, self._sanitized_to_name, self._sanitized_to_id, results)
         return result_dict
 
     def _print_graph_debug_info(self, graphs):

@@ -132,7 +132,12 @@ class coreLogic():
 
             for id_, layer in graph_spec['Layers'].items():
                 if layer['Type'] == 'TrainNormal' and 'Distributed' not in layer['Properties']:
-                    layer['Properties']['Distributed'] = False 
+                    layer['Properties']['Distributed'] = False
+                if layer['Type'] == 'Regression' and 'Distributed' not in layer['Properties']:
+                    layer['Properties']['Distirbuted'] = False
+                # if layer['Type'] == 'RegressionLayer':
+                #     import pdb
+                #     pdb.set_trace()
             log.info("Creating deployment script...")            
             config = {'session_id': '1234567'}
             
@@ -206,10 +211,29 @@ class coreLogic():
                     labels_data_layer = backprop(targets_id)
                     layer['Properties']['InputDataId'] = input_data_layer
                     layer['Properties']['TargetDataId'] = labels_data_layer
+            
+            # TODO: Regression Distributed stuff
 
-                else:
-                    layer['Properties']['InputDataId'] = ''
-                    layer['Properties']['TargetDataId'] = ''
+            if layer['Type'] == 'Regression':
+                if not 'Use_CPUs' in layer['Properties']:
+                    layer['Properties']['Use_CPUs'] = use_cpus
+
+            #     layer['Properties']['Distributed'] = distributed
+            #     if distributed:
+            #         targets_id = layer['Properties']['Labels']
+
+            #         for id_, name in layer['backward_connections']:
+            #             if id_ != targets_id:
+            #                 outputs_id = id_
+                    
+            #         input_data_layer = backprop(outputs_id)
+            #         labels_data_layer = backprop(targets_id)
+            #         layer['Properties']['InputDataId'] = input_data_layer
+            #         layer['Properties']['TargetDataId'] = labels_data_layer
+
+            #     else:
+            #         layer['Properties']['InputDataId'] = ''
+            #         layer['Properties']['TargetDataId'] = ''
 
 
         self.graphObj = Graph(network['Layers'])
@@ -765,6 +789,12 @@ class coreLogic():
                 loss_val=self.getStatistics({"layerId":id_, "variable":"loss_validation_epoch","innervariable":""})
                 end_results.update({"acc_train":float(acc_train[-1]*100), "acc_val":float(acc_val[-1]*100), "loss_train":float(loss_train[-1]), "loss_val":float(loss_val[-1])})
 
+            if value["Info"]["Type"]=="Regression":
+                r_sq_train=self.getStatistics({"layerId":id_, "variable":"r_sq_training_epoch","innervariable":""})
+                r_sq_val=self.getStatistics({"layerId":id_, "variable":"r_sq_validation_epoch","innervariable":""})
+                loss_train=self.getStatistics({"layerId":id_, "variable":"loss_training_epoch","innervariable":""})
+                loss_val=self.getStatistics({"layerId":id_, "variable":"loss_validation_epoch","innervariable":""})
+                end_results.update({"r_sq_train":float(r_sq_train[-1]), "r_sq_val":float(r_sq_val[-1]), "loss_train":float(loss_train[-1]), "loss_val":float(loss_val[-1])})
         return end_results
 
     
@@ -933,6 +963,124 @@ class coreLogic():
             else:
                 output = createDataObject([D])
             return {"Output":output}
+
+        elif layerType=="TrainRegression":
+            if view=="Prediction":
+                #Make sure that all the inputs are sent to frontend!!!!!!!!!!!!!!!
+                inputs=[self.getStatistics({"layerId":i,"variable":"Y","innervariable":""})[-1] for i in self.graphObj.start_nodes]
+                D = [createDataObject([input_]) for input_ in inputs]
+                
+                X = self.getStatistics({"layerId": layerId, "variable":"X", "innervariable":""})
+
+                if type(X) is dict and type(list(X.values())[0]) is dict and len(list(X.values()))==2:
+
+                    input1_name, input2_name = X.keys()
+                    
+                    bw_cons = {name: id_ for id_, name in self.graphObj.graphs[layerId]['Info']['backward_connections']}                    
+                    input1_id = bw_cons[input1_name]
+                    input2_id = bw_cons[input2_name]
+
+                    if input1_id == self.graphObj.graphs[layerId]["Info"]["Properties"]["Labels"]:
+                        labels = X[input1_name]['Y']
+                        network_output = X[input2_name]['Y']
+                    else:
+                        network_output = X[input1_name]['Y']
+                        labels = X[input2_name]['Y']                        
+                        
+                    cType=self.getPlot(network_output[-1])
+                    if cType=="bar" or cType=="line" or cType=='scatter':
+                        PvG = createDataObject([network_output[-1], labels[-1]], nameList=['Prediction', 'True Output'])                        
+                        # average over samples
+                        network_average=np.average(network_output,axis=0)
+                        labels_average = np.average(labels, axis=0)
+                        APvT = createDataObject([network_average, labels_average], nameList=['Prediction', 'True Output'])
+                        
+                        # PIE
+                        r_sq_train=self.getStatistics({"layerId":layerId,"variable":"r_sq_train_iter","innervariable":""})
+                        r_sq_val=self.getStatistics({"layerId":layerId,"variable":"r_sq_val_iter","innervariable":""})
+
+                        if r_sq_val!=[]:
+                            r_sq=r_sq_val
+                        else:
+                            r_sq=r_sq_train
+
+                        try:
+                            last_r_sq=r_sq[-1]
+                        except:
+                            last_r_sq=r_sq
+
+                        r_sq_list = [[('R Squared', last_r_sq), ('Empty', (1-last_r_sq))]]
+                        R_Squared = createDataObject(r_sq_list, typeList=['pie'])
+                        returnDict={"Input":D[0],"PvG":PvG,"AveragePvT":APvT,"R Squared":R_Squared}
+
+
+                    elif cType=="grayscale" or cType=="RGB" or cType=="heatmap":
+                        pass
+
+                    else:
+                        chartType="line"
+                        if np.shape(X[-1])[0]<10:
+                            chartType="bar"
+
+                        APvGD=np.average(X,axis=0)
+                        PvG = createDataObject([X[-1]], typeList=[chartType])
+                        APvG = createDataObject([APvGD], typeList=[chartType])
+                        returnDict={"Input":D[0],"PvG":PvG,"AveragePvG":APvG}
+
+                    return returnDict
+
+                if view == "Loss":
+                    loss_train=self.getStatistics({"layerId":layerId,"variable":"loss_train_iter","innervariable":""})
+                    loss_val=self.getStatistics({"layerId":layerId,"variable":"loss_val_iter","innervariable":""})
+
+                    currentTraining=loss_train
+                    if isinstance(loss_train,np.ndarray):
+                        currentValidation=np.concatenate((loss_train,np.asarray(loss_val)))
+                    elif isinstance(loss_train,list):
+                        if isinstance(loss_val,list):
+                            currentValidation=loss_train+loss_val
+                        else:
+                            currentValidation=loss_train+list(loss_val)
+
+                    totalTraining=self.getStatistics({"layerId":layerId,"variable":"loss_training_epoch","innervariable":""})
+                    totalValidation=self.getStatistics({"layerId":layerId,"variable":"loss_validation_epoch","innervariable":""})
+
+                    dataObjectCurrent = createDataObject([currentValidation, currentTraining],
+                                                        typeList=['line', 'line'],
+                                                        nameList=['Validation', 'Training'])
+                
+                    dataObjectTotal = createDataObject([totalValidation, totalTraining],
+                                                    typeList=['line', 'line'],
+                                                    nameList=['Validation', 'Training'])
+                    output = {"Current": dataObjectCurrent, "Total": dataObjectTotal}
+                    return output
+
+                if view == "R Squared":
+                    r_sq_train=self.getStatistics({"layerId":layerId,"variable":"r_sq_train_iter","innervariable":""})
+                    r_sq_val=self.getStatistics({"layerId":layerId,"variable":"r_sq_val_iter","innervariable":""})
+                    currentTraining=r_sq_train
+
+                    if isinstance(loss_train,np.ndarray):
+                        currentValidation=np.concatenate((r_sq_train,np.asarray(r_sq_val)))
+                    elif isinstance(loss_train,list):
+                        if isinstance(loss_val,list):
+                            currentValidation=r_sq_train+r_sq_val
+                        else:
+                            currentValidation=r_sq_train+list(r_sq_val)
+
+                    totalTraining=self.getStatistics({"layerId":layerId,"variable":"r_sq_training_epoch","innervariable":""})
+                    totalValidation=self.getStatistics({"layerId":layerId,"variable":"r_sq_validation_epoch","innervariable":""})
+
+                    dataObjectCurrent = createDataObject([currentValidation, currentTraining],
+                                                        typeList=['line', 'line'],
+                                                        nameList=['Validation', 'Training'])
+                
+                    dataObjectTotal = createDataObject([totalValidation, totalTraining],
+                                                    typeList=['line', 'line'],
+                                                    nameList=['Validation', 'Training'])
+                    output = {"Current": dataObjectCurrent, "Total": dataObjectTotal}
+                    return output                   
+
         elif layerType=="TrainNormal":
             if view=="Prediction":
                 #Make sure that all the inputs are sent to frontend!!!!!!!!!!!!!!!

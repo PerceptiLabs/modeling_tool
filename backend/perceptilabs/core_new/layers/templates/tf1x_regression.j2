@@ -103,7 +103,7 @@
         loss_tensor = tf.reduce_mean(tf.abs(output_tensor - target_tensor))
         squared_error_tensor = tf.reduce_mean(tf.square(output_tensor - target_tensor))
 
-        squared_variance_tensor = tf.reduce_mean(tf.square(output_tensor - tf.reduce_mean(output_tensor)))
+        squared_variance_tensor = tf.reduce_mean(tf.square(target_tensor - tf.reduce_mean(target_tensor)))
         r_squared_tensor = 1 - (squared_error_tensor / squared_variance_tensor)
 
 
@@ -287,7 +287,7 @@
 
 
 ################################################### Main #####################################################
-{% macro layer_tf1x_regression(layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, decay_steps, learning_rate, decay_rate, momentum, beta1, beta2, distributed, export_directory) %}
+{% macro layer_tf1x_regression(layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, decay_steps, learning_rate, decay_rate, momentum, beta1, beta2, distributed, batch_size, export_directory) %}
 class {{layer_name}}(RegressionLayer):
     def __init__(self):
         self._n_epochs = {{n_epochs}}
@@ -440,6 +440,11 @@ class {{layer_name}}(RegressionLayer):
     def sample(self) -> np.ndarray:
         """Returns a single data sample"""        
         return np.empty(())
+
+    @property
+    def columns(self) -> List[str]: 
+        """Column names. Corresponds to each column in a sample """
+        return []
 
     @property
     def size_training(self) -> int:

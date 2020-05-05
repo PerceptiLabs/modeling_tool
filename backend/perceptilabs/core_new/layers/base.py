@@ -221,6 +221,12 @@ class TrainingLayer(DataLayer):
     
 class RegressionLayer(TrainingLayer):
     """A layer for training regression models."""
+    # @property
+    # @abstractmethod
+    # def columns(self) -> List[str]: 
+    #     """Column names. Corresponds to each column in a sample """
+    #     raise NotImplementedError
+
     @property
     @abstractmethod
     def loss_training(self) -> float:
@@ -275,6 +281,11 @@ class RegressionLayer(TrainingLayer):
         """Returns the squared variance of the validation phase"""
         raise NotImplementedError
 
+    @property
+    @abstractmethod
+    def batch_size(self) -> float:
+        """Returns the batch size"""
+        raise NotImplementedError
 
     @property
     @abstractmethod
@@ -313,26 +324,7 @@ class RegressionLayer(TrainingLayer):
             A dictionary of nested dictionaries, where each key is a layer id. The nested dictionaries contain weight name and value pairs. The values must be picklable.
         """        
         raise NotImplementedError
-    @property
-    @abstractmethod    
-    def layer_weights(self) -> Dict[str, Dict[str, Picklable]]:
-        """The weight values of each layer in the input Graph during the training.
 
-        Returns:
-            A dictionary of nested dictionaries, where each key is a layer id. The nested dictionaries contain weight name and value pairs. The values must be picklable.
-        """        
-        raise NotImplementedError
-
-    @property
-    @abstractmethod    
-    def layer_biases(self) -> Dict[str, Dict[str, Picklable]]:
-        """The bias values of each layer in the input Graph during the training.
-
-        Returns:
-            A dictionary of nested dictionaries, where each key is a layer id. The nested dictionaries contain weight name and value pairs. The values must be picklable.
-        """        
-        raise NotImplementedError
-    
     @property
     @abstractmethod    
     def layer_gradients(self) -> Dict[str, Dict[str, Picklable]]:

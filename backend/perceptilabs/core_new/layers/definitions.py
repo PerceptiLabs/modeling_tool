@@ -309,7 +309,7 @@ DEFINITION_TABLE = {
             'from tensorflow.python.training.tracking.base import Trackable'            
         ]
     ),
-    'Regression': LayerDef(
+    'TrainRegression': LayerDef(
         RegressionLayer,
         'tf1x_regression.j2',
         'layer_tf1x_regression',
@@ -327,6 +327,7 @@ DEFINITION_TABLE = {
             'beta1': lambda specs: specs['Properties']['Beta_1'],
             'beta2': lambda specs: specs['Properties']['Beta_2'],
             'distributed': lambda specs: specs['Properties'].get('Distributed', False),
+            'batch_size': 10,
             'export_directory': resolve_checkpoint_path            
         },
         import_statements=[
