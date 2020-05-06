@@ -130,7 +130,8 @@ export default {
 
     i {
       color: #B6C7FB;
-      height: 1rem;
+      height: 0.9rem;
+      font-size: 1rem;
     }
 
     & + .toolbar-button {
