@@ -20,7 +20,7 @@
         .statistics-box_col
           chart-switch(
             key="3"
-            chart-label="AveragePvT"
+            chart-label="Line of Best Fit"
             :chart-data="chartData.Prediction.AveragePvT"
             :custom-color="colorList"
             )
