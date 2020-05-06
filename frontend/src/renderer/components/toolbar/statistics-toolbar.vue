@@ -26,7 +26,7 @@
 
 import ModelStatus  from '@/components/different/model-status.vue';
 
-import { mapGetters, mapActions, mapMutations } from 'vuex';
+import { mapGetters, mapActions } from 'vuex';
 
 export default {
   name: 'StatisticsToolbar',
