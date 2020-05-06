@@ -1022,10 +1022,17 @@ class coreLogic():
                         bias = self.getStatistics({"layerId": output_id, "variable":"b", "innervariable":""})
 
                         line=np.arange(np.min(input_data),np.max(input_data))*output+bias
-                        APvT = createDataObject(np.asarray([line,[input_data,label_data]]), typeList=['line','scatter'])
-                        APvT = createDataObject(np.asarray(line), typeList=['line'])
+                        # APvT = createDataObject(np.asarray([line,[input_data,label_data]]), typeList=['line','scatter'])
+                        # APvT = createDataObject(np.asarray(line), typeList=['line'])
                         # APvT = createDataObject(np.asarray([input_data,label_data]), typeList=['scatter'])
-
+                        APvT = {
+                            "xAxis": {},
+                            "yAxis": {},
+                            "series": [{
+                                "data": np.asarray([input_data,label_data]).reshape(-1,2).tolist(),
+                                "type": 'scatter'
+                            }]
+                        }
                         print(APvT)
                         
                         # PIE
