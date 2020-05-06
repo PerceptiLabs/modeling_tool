@@ -3,7 +3,6 @@
     view-loading
     .login_main
       .d-flex.align-items-center.log-in-header
-        img(src="../../../static/img/perceptilabs-logo-icon.svg" alt="PerceptiLabs logo")
         img(src="./../../../static/img/perceptilabs-logo-icon.svg" alt="PerceptiLabs logo")
         h1(v-if="titlePage.length") {{ titlePage }}
       slot
