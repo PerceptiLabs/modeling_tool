@@ -34,13 +34,13 @@
 
   import { mapMutations, mapActions, mapGetters } from 'vuex';
 
-  import HeaderLinux    from '@/components/header/header-linux.vue';
-  import HeaderWin      from '@/components/header/header-win.vue';
-  import HeaderMac      from '@/components/header/header-mac.vue';
-  import UpdatePopup    from '@/components/global-popups/update-popup/update-popup.vue'
-  import TheInfoPopup   from "@/components/global-popups/the-info-popup.vue";
-  import ConfirmPopup   from "@/components/global-popups/confirm-popup.vue";
-  import ModalPagesEngine from '@/components/modal-pages-engine';
+  import HeaderLinux            from '@/components/header/header-linux.vue';
+  import HeaderWin              from '@/components/header/header-win.vue';
+  import HeaderMac              from '@/components/header/header-mac.vue';
+  import UpdatePopup            from '@/components/global-popups/update-popup/update-popup.vue'
+  import TheInfoPopup           from "@/components/global-popups/the-info-popup.vue";
+  import ConfirmPopup           from "@/components/global-popups/confirm-popup.vue";
+  import ModalPagesEngine       from '@/components/modal-pages-engine';
   import { MODAL_PAGE_PROJECT } from '@/core/constants.js';
 
   export default {
