@@ -1026,7 +1026,13 @@ class coreLogic():
                         maxval = np.max(input_data) if np.max(input_data)>0 else 0
                         # line=[[minval, minval*output+bias], [maxval, maxval*output+bias]]
                         x = np.asarray([minval, maxval]).reshape(1,-1)
-                        y = x*output+bias
+                        # import pdb; pdb.set_trace()
+                        if(len(output) > 0 and len(bias) > 0):
+                            y = x*output+bias
+                        elif len(output) > 0:
+                            y = x * output
+                        else:
+                            y = x
                         line = np.concatenate((x,y)).transpose().tolist()
                         
 
@@ -1060,7 +1066,7 @@ class coreLogic():
                             last_r_sq=r_sq
 
                         # r_sq_list = [[('R_Squared', last_r_sq), ('Empty', (1-last_r_sq))]]
-                        R_Squared = createDataObject([last_r_sq], typeList=['scatter'])
+                        R_Squared = createDataObject([last_r_sq], typeList=['bar'])
                         returnDict={"Input":D[0],"PvG":PvG,"AveragePvT":APvT,"R_Squared":R_Squared}
 
 
