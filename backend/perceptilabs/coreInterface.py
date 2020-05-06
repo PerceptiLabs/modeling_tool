@@ -1028,8 +1028,9 @@ class coreLogic():
                         x = np.asarray([minval, maxval]).reshape(1,-1)
                         y = x*output+bias
                         line = np.concatenate((x,y)).tolist()
-                        # line=np.arange(np.min(input_data),np.max(input_data))*output+bias
-                        # APvT = createDataObject(np.asarray([line,[input_data,label_data]]), typeList=['line','scatter'])
+                        
+                        line2=np.arange(np.min(input_data),np.max(input_data))*output+bias
+                        APvT1 = createDataObject(np.asarray([line2,[input_data,label_data]]), typeList=['line','scatter'])
                         # APvT = createDataObject(np.asarray(line), typeList=['line'])
                         
                         APvT = {
