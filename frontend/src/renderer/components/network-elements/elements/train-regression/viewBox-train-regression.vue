@@ -31,14 +31,6 @@
             :chart-data="chartData.Prediction.R_Squared"
             :custom-color="colorList"
             )
-      .statistics-box_row
-        .statistics-box_col
-          chart-switch(
-            key="5"
-            chart-label="AveragePvG"
-            :chart-data="chartData.Prediction.AveragePvG"
-            :custom-color="colorList"
-            )
 
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Loss'")
       chart-switch(
