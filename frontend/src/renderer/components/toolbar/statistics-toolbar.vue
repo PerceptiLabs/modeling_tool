@@ -2,13 +2,13 @@
   aside.page_toolbar(v-if="statisticsIsOpen")
     .toolbar-section
       ul.toolbar-button-group
-        li.toolbar-button(@click="tabStopClick")
+        li.toolbar-button(@click="onPauseClick")
           i.icon.icon-player-pause
 
-        li.toolbar-button(@click="tabStopClick")
+        li.toolbar-button(@click="onStopClick")
           i.icon.icon-stop2
 
-        li.toolbar-button(@click="tabStopClick")
+        li.toolbar-button(@click="onSkipClick")
 
           i.icon.icon-player-next
 
@@ -46,14 +46,6 @@ export default {
       networkHistory:       'mod_workspace-history/GET_currentNetHistory',
       isNotebookMode:       'mod_notebook/getNotebookMode',
     }),
-    statusStartBtn() {
-      return {
-        // 'bg-error':   this.statusTraining === 'training',
-        // 'bg-warning': this.statusTraining === 'pause',
-        // 'bg-success': this.statusTraining === 'finish',
-        //'bg-error': this.statusTraining === 'finish',
-      }
-    },
     statusTraining() {
       switch (this.statusNetworkCore) {
         case 'Training':
@@ -103,59 +95,20 @@ export default {
     statusLocalCore() {
       return this.$store.state.mod_api.statusLocalCore;
     },
-
-    tutorialRunButtonActive() {
-      return this.$store.state.mod_tutorials.runButtonsActive
-    },
-    activeStepStoryboard() {
-      return this.$store.state.mod_tutorials.activeStepStoryboard
-    },
-    confirmPopupAnswer() {
-      return this.$store.state.globalView.confirmPopupAnswer
-    },
-    isDisabledPrevStep() {
-      const history = this.networkHistory;
-      return !!history && history.historyStep === history.historyNet.length - 1
-    },
-    isDisabledNextStep() {
-      const history = this.networkHistory;
-      return !!history && history.historyStep === 0
-    }
-  },
-  watch: {
-    networkIsOpen(newVal) {
-      if(!newVal) this.set_netMode('edit');
-    }
   },
   methods: {
-    ...mapMutations({
-      setInteractiveInfo:     'mod_tutorials/SET_interactiveInfo',
-      set_showTrainingSpinner:'mod_workspace/SET_showStartTrainingSpinner',
-      set_hideLayers:         'globalView/SET_hideLayers',
-      GP_showCoreSideSettings:'globalView/GP_showCoreSideSettings',
-    }),
     ...mapActions({
-      popupConfirm:         'globalView/GP_confirmPopup',
-      showInfoPopup:        'globalView/GP_infoPopup',
       pauseTraining:        'mod_api/API_pauseTraining',
       stopTraining:         'mod_api/API_stopTraining',
       skipValidTraining:    'mod_api/API_skipValidTraining',
-      tutorialPointActivate:'mod_tutorials/pointActivate',
-      removeTooltip:        'mod_tutorials/removeTooltip',
-      offMainTutorial:      'mod_tutorials/offTutorial',
-      hideTooltip:          'mod_tutorials/hideTooltip',
-      set_netMode:          'mod_workspace/SET_netMode',
-      set_notebookMode:     'mod_notebook/SET_notebookMode',
-      toPrevStepHistory:    'mod_workspace-history/TO_prevStepHistory',
-      toNextStepHistory:    'mod_workspace-history/TO_nextStepHistory',
     }),
-    tabPauseClick() {
+    onPauseClick() {
       this.pauseTraining();
     },
-    tabStopClick() {
+    onStopClick() {
       this.stopTraining();
     },
-    tabSkipClick() {
+    onSkipClick() {
       this.skipValidTraining();
     },
   }
@@ -223,6 +176,7 @@ export default {
 
     & + .toolbar-button {
       margin-left: 0.5rem;
+      cursor: pointer;
     }
   }
 }
