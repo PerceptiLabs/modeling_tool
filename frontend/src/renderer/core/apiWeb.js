@@ -62,7 +62,7 @@ function coreRequest(data, path, no, name) {
     // timeStartSend = new Date();
 
   // console.log('process.env', process.env);
-
+  const initialSentData = data;
   return wsPathDefSingleton.getInstance()
     .then(core_url => {
       return new Promise((resolve, reject) => {
@@ -165,6 +165,13 @@ function coreRequest(data, path, no, name) {
               //console.log(stringData);
               let obgData = JSON.parse(stringData);
               if(obgData.errorMessage && obgData.errorMessage.length) {
+
+                if(initialSentData.action === "updateResults") {
+                  const modelId = parseInt(initialSentData.reciever);
+                  const errorMessage = obgData.errorMessage[0];
+                  store.dispatch('mod_workspace/set_NetworkCoreErrorAction', {errorMessage, modelId});
+                }
+
                 store.dispatch('globalView/GP_errorPopup', obgData.errorMessage);
                 store.dispatch('mod_tracker/EVENT_coreError', obgData.errorMessage);
                 store.dispatch('mod_workspace/EVENT_startDoRequest', false);

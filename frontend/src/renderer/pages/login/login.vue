@@ -74,6 +74,7 @@ export default {
     ...mapActions({
       setActivePageAction: 'modal_pages/setActivePageAction',
       closeActivePageAction: 'modal_pages/closePageAction',
+      cloud_userGetProfile:     'mod_apiCloud/CloudAPI_userGetProfile',
     }),
     togglePasswordVisibility(fieldName) {
       this.passwordVisibility[fieldName] = !this.passwordVisibility[fieldName];
@@ -110,6 +111,7 @@ export default {
               this.$store.dispatch('mod_api/API_setUserInCore');
             }
             
+            this.cloud_userGetProfile();
             this.setActivePageAction(MODAL_PAGE_PROJECT);
             this.$router.push({name: 'projects'});
           }
