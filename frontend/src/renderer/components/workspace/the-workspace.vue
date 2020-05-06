@@ -5,7 +5,9 @@
       v-show="!showTrainingSpinner"
     )
       include ./tabset/workspace-tabset.pug
-    toolbar
+    
+    component(:is="toolbarType")
+
     .workspace_content.bookmark_content.js-workspace(
       v-if="!isNotebookMode"  
       ref="workspaceNet"

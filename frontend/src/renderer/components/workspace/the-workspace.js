@@ -3,10 +3,12 @@ import saveNet    from './workspace-save-net.js'
 import scaleNet   from './workspace-scale.js'
 import spinnerNet from './workspace-spinner.js'
 import helpersNet from './workspace-helpers.js'
-import Toolbar    from './toolbar/workspace-toolbar.vue';
 import {debounce} from '@/core/helpers'
 import Analytics  from '@/core/analytics'
 import { trainingElements, deepLearnElements }  from '@/core/constants.js';
+
+import WorkspaceToolbar       from '../toolbar/workspace-toolbar.vue';
+import StatisticsToolbar      from '../toolbar/statistics-toolbar.vue';
 
 import TextEditable           from '@/components/base/text-editable.vue'
 import NetworkField           from '@/components/network-field/network-field.vue'
@@ -28,7 +30,7 @@ export default {
   name: 'WorkspaceContent',
   mixins: [saveNet, scaleNet, spinnerNet, helpersNet],
   components: {
-    Toolbar,
+    WorkspaceToolbar, StatisticsToolbar,
     NetworkField, TextEditable,
     GeneralResult, SelectCoreSide,
     WorkspaceBeforeImport, WorkspaceSaveNetwork, WorkspaceLoadNetwork, ExportNetwork,
@@ -115,6 +117,15 @@ export default {
     },
     tabSetClass() {
       return {'bookmark_tab--active': indexCurrentNetwork === i}
+    },
+    toolbarType() {
+
+      if (this.statisticsIsOpen) {
+        return 'StatisticsToolbar';
+      }
+
+      return 'WorkspaceToolbar';
+      
     }
   },
   watch: {

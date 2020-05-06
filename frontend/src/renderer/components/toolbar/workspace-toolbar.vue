@@ -133,7 +133,7 @@ import { trainingElements, deepLearnElements }  from '@/core/constants.js';
 import { goToLink }                             from '@/core/helpers.js'
 
 import TutorialInstructions     from '@/components/tutorial/tutorial-instructions.vue';
-import ToolbarLayers            from '@/components/workspace/toolbar/workspace-toolbar-layers.vue';
+import ToolbarLayers            from '@/components/toolbar/workspace-toolbar-layers.vue';
 
 export default {
   name: 'WorkspaceToolbar',
@@ -370,7 +370,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  @import "../../../scss/base";
+  @import "../../scss/base";
   .page_toolbar {
     display: flex;
     align-items: center;

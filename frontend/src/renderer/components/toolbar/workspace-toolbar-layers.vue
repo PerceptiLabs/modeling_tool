@@ -218,7 +218,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  @import "../../../scss/base";
+  @import "../../scss/base";
   $indent: 0.5rem;
   $button-size: 2.5rem;
   // .page_layersbar {
