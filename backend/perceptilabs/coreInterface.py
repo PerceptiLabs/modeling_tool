@@ -1021,16 +1021,33 @@ class coreLogic():
                         output = self.getStatistics({"layerId": output_id, "variable":"W", "innervariable":""})
                         bias = self.getStatistics({"layerId": output_id, "variable":"b", "innervariable":""})
 
-                        line=np.arange(np.min(input_data),np.max(input_data))*output+bias
-                        # APvT = createDataObject(np.asarray([line,[input_data,label_data]]), typeList=['line','scatter'])
-                        # APvT = createDataObject(np.asarray(line), typeList=['line'])
-                        # APvT = createDataObject(np.asarray([input_data,label_data]), typeList=['scatter'])
+                        # line=np.arange(np.min(input_data),np.max(input_data))*output+bias
+                        minval = np.min(input_data) if np.min(input_data)<0 else 0
+                        maxval = np.max(input_data) if np.max(input_data)>0 else 0
+                        # line=[[minval, minval*output+bias], [maxval, maxval*output+bias]]
+                        x = np.asarray([minval, maxval]).reshape(1,-1)
+                        y = x*output+bias
+                        line = np.concatenate((x,y)).tolist()
+                        # APvT = {
+                        #     "series": [{
+                        #         "data": np.asarray([input_data,label_data]).reshape(-1,2).tolist(),
+                        #         "type": 'scatter'
+                        #     }]
+                        # }
+                        # APvT = {
+                        #     "series": [{
+                        #         "data": line,
+                        #         "type": 'line'
+                        #     }]
+                        # }
                         APvT = {
-                            "xAxis": {},
-                            "yAxis": {},
                             "series": [{
                                 "data": np.asarray([input_data,label_data]).reshape(-1,2).tolist(),
                                 "type": 'scatter'
+                            },
+                            {
+                                "data": line,
+                                "type": 'line'
                             }]
                         }
                         print(APvT)
