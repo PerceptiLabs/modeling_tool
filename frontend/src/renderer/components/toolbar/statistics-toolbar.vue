@@ -13,7 +13,9 @@
           i.icon.icon-player-next
 
     .toolbar-section
-      span training
+      model-status(
+        :statusData="currentNetwork.networkMeta.coreStatus"
+      )
     .toolbar-section
       //- used for easily centering the training bar
       
@@ -21,30 +23,22 @@
 </template>
 
 <script>
+
+import ModelStatus  from '@/components/different/model-status.vue';
+
 import { mapGetters, mapActions, mapMutations } from 'vuex';
-import { googleAnalytics }                      from '@/core/analytics';
-import { trainingElements, deepLearnElements }  from '@/core/constants.js';
-import { goToLink }                             from '@/core/helpers.js'
 
 export default {
   name: 'StatisticsToolbar',
-  components: {},
+  components: { ModelStatus },
   data() {
     return {}
   },
   computed: {
     ...mapGetters({
-      tutorialActiveAction: 'mod_tutorials/getActiveAction',
-      interactiveInfoStatus:'mod_tutorials/getInteractiveInfo',
-      isTutorialMode:       'mod_tutorials/getIstutorialMode',
-      currentElList:        'mod_workspace/GET_currentNetworkElementList',
-      isTraining:           'mod_workspace/GET_networkIsTraining',
       statusNetworkCore:    'mod_workspace/GET_networkCoreStatus',
       statisticsIsOpen:     'mod_workspace/GET_statisticsIsOpen',
-      testIsOpen:           'mod_workspace/GET_testIsOpen',
-      networkIsOpen:        'mod_workspace/GET_networkIsOpen',
-      networkHistory:       'mod_workspace-history/GET_currentNetHistory',
-      isNotebookMode:       'mod_notebook/getNotebookMode',
+      currentNetwork:       'mod_workspace/GET_currentNetwork',
     }),
     statusTraining() {
       switch (this.statusNetworkCore) {
@@ -59,41 +53,6 @@ export default {
           return 'finish';
           break;
       }
-    },
-    statusTrainingText() {
-      switch (this.statusTraining) {
-        case 'training':
-          return '<i class="icon icon-repeat animation-loader"></i> Training';
-          break;
-        case 'pause':
-          return 'Training paused';
-          break;
-        case 'finish':
-          return 'Training completed';
-          break;
-      }
-    },
-    statusTestText() {
-      switch (this.statusTraining) {
-        case 'training':
-          return '<i class="icon icon-repeat animation-loader"></i> Test running';
-          break;
-        case 'pause':
-          return '<i class="icon icon-notification"></i> Test completed';
-          break;
-      }
-    },
-    hideLayers () {
-      return this.$store.state.globalView.hideLayers
-    },
-    currentNetMeta() {
-      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta
-    },
-    networkMode() {
-      return this.currentNetMeta.netMode
-    },
-    statusLocalCore() {
-      return this.$store.state.mod_api.statusLocalCore;
     },
   },
   methods: {
