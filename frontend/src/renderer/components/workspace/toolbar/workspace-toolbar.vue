@@ -174,9 +174,9 @@ export default {
     }),
     statusStartBtn() {
       return {
-        'bg-error':   this.statusTraining === 'training',
-        'bg-warning': this.statusTraining === 'pause',
-        'bg-success': this.statusTraining === 'finish',
+        // 'bg-error':   this.statusTraining === 'training',
+        // 'bg-warning': this.statusTraining === 'pause',
+        // 'bg-success': this.statusTraining === 'finish',
         //'bg-error': this.statusTraining === 'finish',
       }
     },
@@ -420,17 +420,25 @@ export default {
     }
   }
   .run-button {
-    color: $col-txt2;
-    font-weight: 700;
-    width: auto;
-    font-size: 1.3rem;
+
+    width: 5.5rem;
+    height: 2.5rem;
     padding: 0 .5rem;
+    background: #2E3A5A;
+    border: 1px solid #5E6F9F;
+
+    color: $toolbar-button-border;
+    margin-left: 0.2rem;
+    font-size: 1.2rem;
+    font-family: Nunito Sans;
+    font-style: normal;
+    font-weight: 600;
+    font-size: 12px;
+    line-height: 16px;
+
+
     &:hover {
       color: $white;
-    }
-    span {
-      margin-left: 0.2rem;
-      font-size: 1.2rem;
     }
   }
   .toolbar_list-arrow-wrap {
