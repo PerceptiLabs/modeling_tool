@@ -32,28 +32,7 @@ ul.bookmark_tab-list
     )
       span Statistics
       i.icon(:class="{'icon-circle-o': trainingWaiting(i), 'icon-circle-o green-color-icon': trainingInProcess(i), 'icon-ellipse green-color-icon': trainingFinished(i) }")
-    
-    li.bookmark_tab.workspace_tab.tab_icon(
-      v-if="tab.networkMeta.openStatistics !== null"
-      :class="{'workspace_tab--active': indexCurrentNetwork === i && tab.networkMeta.openStatistics, 'workspace_tab--disable': indexCurrentNetwork !== i && isTutorialMode}"
-      @click="tabPauseClick(i)"
-    )
-      i.icon.icon-player-pause
-
-    li.bookmark_tab.workspace_tab.tab_icon(
-      v-if="tab.networkMeta.openStatistics !== null"
-      :class="{'workspace_tab--active': indexCurrentNetwork === i && tab.networkMeta.openStatistics, 'workspace_tab--disable': indexCurrentNetwork !== i && isTutorialMode}"
-      @click="tabStopClick(i)"
-    )
-      i.icon.icon-stop2
-
-    li.bookmark_tab.workspace_tab.tab_icon(
-      v-if="tab.networkMeta.openStatistics !== null"
-      :class="{'workspace_tab--active': indexCurrentNetwork === i && tab.networkMeta.openStatistics, 'workspace_tab--disable': indexCurrentNetwork !== i && isTutorialMode}"
-      @click="tabSkipClick(i)"
-    )
-      i.icon.icon-player-next
-            
+      
     li.bookmark_tab.workspace_tab.tab_testing(
       v-if="tab.networkMeta.openTest !== null"
       :class="{'workspace_tab--active': indexCurrentNetwork === i && tab.networkMeta.openTest, 'workspace_tab--active_network': indexCurrentNetwork === i, 'workspace_tab--disable': indexCurrentNetwork !== i && isTutorialMode}"
