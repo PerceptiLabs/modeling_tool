@@ -62,6 +62,7 @@
           div.column-2
             model-status(
               :statusData="model.networkMeta.coreStatus"
+              :coreError="model.networkMeta.coreError"
             )
           div.column-3
             span(@click.stop="") -

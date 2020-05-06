@@ -460,8 +460,7 @@ const mutations = {
       getters.GET_currentNetwork.networkMeta.coreStatus.Status = value;
     }
   },
-  set_NetworkCoreError(state, {errorMessage, modelId}) {
-    console.log(state.workspaceContent);
+  set_NetworkCoreError(state, {errorMessage, modelId, commit}) {
     let workspaceIndex = null;
     state.workspaceContent.map((workspace, index) => {
       if(parseInt(workspace.networkID) === modelId)  {
@@ -469,11 +468,11 @@ const mutations = {
       }
     })
     if(workspaceIndex !== null) {
-      state.workspaceContent[workspaceIndex].networkMeta.coreStatus.Status =  'Error';
-      state.workspaceContent[workspaceIndex].networkMeta.coreStatus.errorMessage =  errorMessage;
+      state.workspaceContent[workspaceIndex].networkMeta.coreError = {};
+      state.workspaceContent[workspaceIndex].networkMeta.coreError.Status =  'Error';
+      state.workspaceContent[workspaceIndex].networkMeta.coreError.errorMessage =  errorMessage;
     }
-    console.log(state);
-    
+    commit('set_workspacesInLocalStorage');
   },
   set_statusNetworkCoreStatusProgressClear(state, {getters}) {
     if(getters.GET_currentNetwork.networkMeta.coreStatus.Status.Progress) {
@@ -1427,8 +1426,8 @@ const actions = {
     ctx.commit('set_workspacesInLocalStorage');
   },
   set_NetworkCoreErrorAction(ctx, {errorMessage, modelId}) {
-    ctx.commit('set_NetworkCoreError', {errorMessage, modelId});
-    ctx.commit('set_workspacesInLocalStorage');
+    ctx.commit('set_NetworkCoreError', {errorMessage, modelId, commit: ctx.commit});
+    
   },
   //---------------
   //  NETWORK ELEMENTS

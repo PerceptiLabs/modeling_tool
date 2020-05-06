@@ -4,13 +4,16 @@
         img(src="./../../../../static/img/model-status-complete.svg")
         span.training-complete-text Training Complete
       div(v-else)
-        //- .name {{statusData.Status === 'Waiting' || !!statusData ? 'Untrained':   statusData.Status === 'Stop' ? 'Training' :  statusData.Status}}
-        .name(:class="{'warn-color': this.statusData.Status === 'Error'}") {{statusData.Status ? statusData.Status === 'Stop' ? 'Stopped' : statusData.Status : 'Untrained'}}
+        
+        .name.warn-color(v-if="showError()") Error
+        .name(v-else :class="{'warn-color': showError()}") {{statusData.Status ? statusData.Status === 'Stop' ? 'Stopped' : statusData.Status : 'Untrained'}}
+        
         div.d-flex.align-items-center
           .train-progress-wrapper
             .train-progress-bars(:style="progressStyle") 
-          .progres-in-percent(v-if="!(this.statusData.Status === 'Error')") {{ statusData.Status === 'Waiting' ? '' : isNaN(parseInt(statusData.Progress * 100, 10)) ? '' : `${parseInt(statusData.Progress * 100, 10)}%`}}
-          div.svg-warrning-wrapper(v-else v-tooltip:right="statusData.errorMessage")
+          
+          .progres-in-percent(v-if="!showError()") {{ statusData.Status === 'Waiting' ? '' : isNaN(parseInt(statusData.Progress * 100, 10)) ? '' : `${parseInt(statusData.Progress * 100, 10)}%`}}
+          div.svg-warrning-wrapper(v-else v-tooltip:right="coreError.errorMessage")
             svg(width='12' height='12' viewbox='0 0 12 12' fill='none' xmlns='http://www.w3.org/2000/svg')
               circle(cx='6' cy='6' r='6' fill='#E48B23')
               g(filter='url(#filter0_d)')
@@ -39,9 +42,9 @@ export default {
       type: Number,
       default: 0
     },
-    isComplete: {
-      type: Boolean,
-      default: false,
+    coreError: {
+      type: Object,
+      default: {},
     }
   },
   data: {
@@ -54,13 +57,15 @@ export default {
   },
   created(){
     this.getProgres();
-    console.log(this.statusData)
   },
   methods: {
+    showError() {
+      return !!(this.coreError.hasOwnProperty('Status') || this.coreError.hasOwnProperty('errorMessage')) && Object.keys(this.statusData).length === 0;
+    },
     getProgres() {
       let progress = 0;
       let color = '#73FEBB';  // green - #73FEBB  orange - #E48B23  blue - #7397FE
-      if(this.statusData.Status === 'Error') {
+      if(this.showError()) {
         color = '#E48B23'
       }
       const svg = `<svg width="3" height="8" viewBox="0 0 1 8" xmlns="http://www.w3.org/2000/svg"><rect width="1" height="8" rx="0.5" fill="${color}"/></svg>`;
