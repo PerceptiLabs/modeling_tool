@@ -4,6 +4,7 @@
         real_data_layer_id = '{{real_layer}}' 
         switch_layer_id =  '{{switch_layer}}' 
         
+
         for node in graph.data_nodes:
             if node.layer_id != real_data_layer_id and not node.is_training_node:
                 random_data_node = node
@@ -22,11 +23,11 @@
         gen_nodes = graph.get_nodes_inbetween(random_data_node, switch_node)
         dis_nodes = graph.get_nodes_inbetween(switch_node, output_node)
         real_nodes = graph.get_nodes_inbetween(real_data_node, switch_node)
-        
 
         gen_layer_ids = [node.layer_id for node in gen_nodes]
         dis_layer_ids = [node.layer_id for node in dis_nodes]
 
+        self._gen_layer_ids = gen_layer_ids
         # random_data_path = graph._get_nodes_inbetween(random_data_node, training_node)
         # real_data_path = graph._get_nodes_inbetween(real_data_node, training_node)
 
@@ -154,7 +155,6 @@
         
         real_dis_layer_output_tensors = build_dis_graph(real_output_tensor)
         random_dis_layer_output_tensors = build_dis_graph(gen_output_tensor)
-        
         
         real_dis_output_tensor = real_dis_layer_output_tensors[output_layer_id]
         random_dis_output_tensor = random_dis_layer_output_tensors[output_layer_id]
@@ -704,8 +704,12 @@ class {{layer_name}}(GANLayer):
         Returns:
             A dictionary of nested dictionaries, where each key is a layer id. The nested dictionaries contain variable name and value pairs. The values must be picklable.
         """
-        self._layer_outputs.update(self._real_layer_outputs)
-        self._layer_outputs.update(self._gen_layer_outputs)
+        if self._selected_layer_id in self._gen_layer_ids:
+            self._layer_outputs.update(self._real_layer_outputs)
+            self._layer_outputs.update(self._gen_layer_outputs)
+        else:
+            self._layer_outputs.update(self._gen_layer_outputs)
+            self._layer_outputs.update(self._real_layer_outputs)
         self._layer_outputs.update(self._dis_layer_outputs)
         return self._layer_outputs
 
