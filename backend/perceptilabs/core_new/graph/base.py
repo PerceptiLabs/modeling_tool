@@ -7,6 +7,7 @@ from typing import Dict, List, Tuple
 from perceptilabs.script.base import CodeGenerator
 from perceptilabs.core_new.layers.base import BaseLayer, DataLayer, InnerLayer, TrainingLayer
 
+
 log = logging.getLogger(__name__)
 
 
@@ -187,6 +188,23 @@ class Graph:
 #        layers = {n.layer_id: node.layer.__class__() for n in self.nodes}
 #        new_graph = self._builder.build(layers, self._nx_graph.edges)
 #        return new_graph
+    def clone(self): 
+        from perceptilabs.core_new.graph.builder import GraphBuilder
+        layers = {}                                                                                                                                                                                         
+        for node in self.nodes:                                                                                                                                                                             
+            layer = node.layer.__class__()                                                                                                                                                                  
+            try:                                                                                                                                                                                            
+                # TODO: make this work properly in the InnerLayer constructor                                                                                                                               
+                layer._scope = layer._scope + '_copy'                                                                                                                                                       
+            except:  
+                pass
+            else:                                                                                                                                                                                       
+                log.warning(f"Overwrote protected field '_scope' in layer {node.layer_id}")                                                                                                                 
+            layers[node.layer_id] = layer                                                                                                                                                                   
+        builder = GraphBuilder()                                                                                                                                                                            
+        edges_by_id = [(a.layer_id, b.layer_id) for a, b in self._nx_graph.edges]                                                                                                                           
+        new_graph = builder.build_from_layers_and_edges(layers, edges_by_id)                                                                                                                                
+        return new_graph       
 
     
         

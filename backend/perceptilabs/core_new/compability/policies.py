@@ -268,7 +268,7 @@ def policy_classification(core, graphs, sanitized_to_name, sanitized_to_id, resu
         return result_dict
 
     else:
-        test_dicts = []
+        test_dicts = results.get('testDicts', []) # get existing
         for current_graph in test_graphs:
             trn_node = current_graph.active_training_node
             test_dict = {}
@@ -652,7 +652,7 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id, re
         return result_dict
 
     else:
-        test_dicts = []
+        test_dicts = results.get('testDicts', []) # get existing        
         for current_graph in test_graphs:
             trn_node = current_graph.active_training_node
             test_dict = {}
@@ -690,6 +690,204 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id, re
         }
 
 
+        return result_dict
+
+def policy_reinforce(core, graphs, sanitized_to_name, sanitized_to_id, results):
+    
+    def get_layer_inputs_and_outputs(graph, node, trn_node):
+        data = {}
+        data['Y'] = trn_node.layer.layer_outputs.get(node.layer_id) # OUTPUT: ndarrays of layer-speci
+        data['X'] = {} # This layer works with layer names...
+        for input_node in graph.get_input_nodes(node):
+            input_name = sanitized_to_name[input_node.layer_id]
+            input_value = trn_node.layer.layer_outputs.get(input_node.layer_id)
+            data['X'][input_name] = {'Y': input_value}
+        return data
+    
+    def get_layer_weights_and_biases(node, trn_node):
+        data = {}        
+        w = next(iter(trn_node.layer.layer_weights.get(node.layer_id, {}).values()), None) # Get the first set of weights, if any
+        if w is not None:
+            data['W'] = w
+
+        b = next(iter(trn_node.layer.layer_biases.get(node.layer_id, {}).values()), None)
+        if b is not None:
+            data['b'] = b
+        return data
+
+    def get_layer_gradients(layer_id, true_id, graphs, results):
+        data = {}
+        
+        if 'trainDict' in results:
+            min_list = results['trainDict'][true_id]['Gradient']['Min'] 
+            max_list = results['trainDict'][true_id]['Gradient']['Max']
+            avg_list = results['trainDict'][true_id]['Gradient']['Average']
+        else:
+            min_list = []
+            max_list = []
+            avg_list = []
+        
+        for graph in graphs:
+            gradient_dict = graph.active_training_node.layer.layer_gradients.get(layer_id, {})
+
+            # (1) compute the min, max and average for gradients w.r.t each tensor in a layer
+            # (2) compute min, max and average among the output of (1)
+            # is there a more meaningful way to do it?
+            layer_min_list, layer_max_list, layer_avg_list = [], [], []
+            for name, grad in gradient_dict.items():
+                grad = np.asarray(grad)
+                layer_min_list.append(np.min(grad))
+                layer_max_list.append(np.max(grad))
+                layer_avg_list.append(np.average(grad))
+
+            if len(gradient_dict) > 0:
+                min_list.append(np.min(layer_min_list))
+                max_list.append(np.max(layer_max_list))
+                avg_list.append(np.average(layer_avg_list))
+            
+
+        data['Gradient'] = {
+            'Min': min_list,
+            'Max': max_list,
+            'Average': avg_list
+        }
+        return data
+
+    def get_metrics(graphs, true_trn_id, results):
+        data = {}
+        # ---- Get the metrics for ongoing episode
+        current_episode = graphs[-1].active_training_node.layer.episode
+
+        if 'trainDict' in results:
+            loss_trn_iter = results['trainDict'][true_trn_id]["loss_train_iter"] 
+            reward_trn_iter = results['trainDict'][true_trn_id]["reward_train_iter"] 
+        else:
+            reward_trn_iter = []
+            loss_trn_iter = []
+    
+        for graph in graphs:
+            trn_layer = graph.active_training_node.layer
+            # data_node = graph.data_nodes[0]
+            state = trn_node.layer.transition['state_seq'][-1]
+            steps = trn_node.layer.step_counter
+            n_actions = trn_node.layer.n_actions
+            current_action = trn_node.layer.transition['action']
+            probs = trn_node.layer.transition['probs']
+            if n_actions != -1 and current_action != -1:
+                pred = np.zeros((n_actions,))
+                pred[int(current_action)] = 1
+            
+            if trn_layer.episode == current_episode and trn_layer.status == 'training':
+                reward_trn_iter.append(trn_layer.reward)
+                loss_trn_iter.append(trn_layer.loss_training)                                      
+
+        # ---- Get the metrics from the end of each episode
+
+        if 'trainDict' in results:
+            reward_trn_episode = results['trainDict'][true_trn_id]["reward_training_episode"]
+            loss_trn_episode = results['trainDict'][true_trn_id]["loss_training_episode"] 
+    
+        else:
+            reward_trn_episode = []
+            loss_trn_episode = []
+
+
+        idx = 1
+        while idx < len(graphs):
+            is_new_episode = graphs[idx].active_training_node.layer.episode != graphs[idx-1].active_training_node.layer.episode
+            #is_final_iteration = idx == len(graphs) - 1
+            is_final_iteration = False
+
+            if is_new_episode or is_final_iteration:
+                trn_layer = graphs[idx-1].active_training_node.layer                                                
+                reward_trn_episode.append(np.sum(reward_trn_iter))
+                loss_trn_episode.append(trn_layer.loss_training)
+
+            idx += 1
+
+        # ---- Update the dicts
+        data['reward_train_iter'] = reward_trn_iter
+        data['loss_train_iter'] = loss_trn_iter
+                
+        data['reward_training_episode'] = reward_trn_episode
+        data['loss_training_episode'] = loss_trn_episode
+        data['Steps'] = steps
+        data['state'] = state
+        data['probs'] = probs
+        data['pred'] = pred
+        return data
+
+    current_graph = graphs[-1]
+
+    test_graphs = []
+    for graph in graphs:
+        if graph.active_training_node.layer.status == 'testing':
+            test_graphs.append(graph)
+    
+    if len(test_graphs)==0:
+        trn_node = current_graph.active_training_node
+        train_dict = {}        
+
+        # ----- Get layer specific data.
+        for node in current_graph.nodes:
+            data = {}
+            true_id = sanitized_to_id[node.layer_id] # nodes use spec names for layer ids
+
+            if node.layer.variables is not None:
+                data.update(node.layer.variables)
+            data.update(get_layer_inputs_and_outputs(current_graph, node, trn_node))
+            data.update(get_layer_weights_and_biases(node, trn_node))
+            data.update(get_layer_gradients(node.layer_id, true_id, graphs, results))
+            train_dict[true_id] = data
+
+        # ----- Get data specific to the training layer.
+        data = {}        
+        true_trn_id = sanitized_to_id[trn_node.layer_id]
+        data.update(get_metrics(graphs, true_trn_id, results))
+        train_dict[true_trn_id].update(data)
+
+        # itr = 0
+        # max_itr = 0
+        epoch = 0
+        # max_epoch = -1
+        itr_trn = 0
+        max_itr_trn = -1
+        max_itr_val = -1
+        max_itr = -1
+
+        batch_size = trn_node.layer.batch_size
+        itr = trn_node.layer.step_counter
+        max_iter = trn_node.layer.n_steps_max
+        max_epoch = trn_node.layer.n_episodes
+
+                    
+        training_status = 'Waiting'
+        if trn_node.layer.status == 'created':
+            training_status = 'Waiting'
+        elif trn_node.layer.status in ['initializing', 'training']:
+            training_status = 'Training'
+        elif trn_node.layer.status == 'validation':
+            training_status = 'Validation'
+        elif trn_node.layer.status == 'finished':
+            training_status = 'Finished'
+
+        if core.is_paused:
+            status = 'Paused'
+        else:
+            status = 'Running'
+
+        result_dict = {
+            "iter": itr,
+            "maxIter": max_iter,
+            "epoch": epoch,
+            "maxEpochs": max_epoch,
+            "batch_size": batch_size,
+            "trainingIterations": trn_node.layer.step_counter,
+            "trainDict": train_dict,
+            "trainingStatus": training_status,  
+            "status": status,
+            "progress": trn_node.layer.progress
+        }
         return result_dict
 
 def policy_gan(core, graphs, sanitized_to_name, sanitized_to_id, results):

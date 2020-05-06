@@ -3,7 +3,7 @@ from typing import List, Callable
 
 
 
-from perceptilabs.core_new.layers import DataLayer, TrainingLayer, Tf1xLayer, ClassificationLayer, InnerLayer, ObjectDetectionLayer, GANLayer
+from perceptilabs.core_new.layers import DataLayer, TrainingLayer, Tf1xLayer, ClassificationLayer, InnerLayer, ObjectDetectionLayer, RLLayer, GANLayer
 
 
 class NotReplicatedError(Exception):
@@ -202,8 +202,6 @@ class ClassificationLayerReplica(ClassificationLayer):
     @property
     def export_modes(self):
         return self._export_modes
-
-
 
 
 class ObjectDetectionLayerReplica(ObjectDetectionLayer):
@@ -444,6 +442,169 @@ class ObjectDetectionLayerReplica(ObjectDetectionLayer):
     def get_input_data_node(self):
         return self._input_data_node
 
+class RLLayerReplica(RLLayer):
+    def __init__(self, sample, size_training, size_validation, size_testing, variables,
+                 reward, loss_training, loss_testing, loss_validation,
+                 n_episodes, episode, gamma, replay_memory_size, transition, 
+                 n_steps_max, step_counter, history_length, 
+                 status, layer_weights, layer_biases, layer_gradients, layer_outputs,
+                 batch_size, progress, n_actions, export_modes, columns):
+
+        self._export_modes = export_modes
+        self._n_actions = n_actions
+        self._episode = episode
+        self._n_episodes = n_episodes
+        self._reward = reward
+        self._gamma = gamma
+        self._replay_memory_size = replay_memory_size
+        self._transition = transition
+        self._n_steps_max = n_steps_max
+        self._step_counter = step_counter
+        self._history_length = history_length
+        self._sample = sample
+        self._variables = variables
+        self._loss_training = loss_training
+        self._loss_validation = loss_validation
+        self._loss_testing = loss_testing
+        self._status = status
+        self._layer_weights = layer_weights
+        self._layer_biases = layer_biases
+        self._layer_gradients = layer_gradients
+        self._layer_outputs = layer_outputs
+        self._batch_size = batch_size
+        self._progress = progress
+        self._columns = columns
+
+    @property
+    def epoch(self):
+        return self._epoch
+    
+    @property
+    def n_actions(self):
+        return self._n_actions
+
+    @property
+    def episode(self):
+        return self._episode
+
+    @property
+    def n_episodes(self):
+        return self._n_episodes
+    
+    @property
+    def reward(self):
+        return self._reward
+    
+    @property
+    def gamma(self):
+        return self._gamma
+    
+    @property
+    def replay_memory_size(self):
+        return self._replay_memory_size
+    
+    @property
+    def transition(self):
+        return self._transition
+    
+    @property
+    def n_steps_max(self):
+        return self._n_steps_max
+    
+    @property
+    def step_counter(self):
+        return self._step_counter
+    
+    @property
+    def history_length(self):
+        return self._history_length
+    
+    @property
+    def batch_size(self):
+        return self._batch_size
+    
+    @property
+    def sample(self):
+        return self._sample 
+    
+    @property
+    def columns(self):
+        return self._columns
+
+    @property
+    def size_training(self):
+        return self._size_training 
+
+    @property
+    def size_validation(self):
+        return self._size_validation
+
+    @property
+    def size_testing(self):
+        return self._size_testing 
+
+    @property        
+    def variables(self):
+        return self._variables 
+
+    @property
+    def loss_training(self):
+        return self._loss_training
+
+    @property
+    def loss_testing(self):
+        return self._loss_testing
+
+    @property
+    def loss_validation(self):
+        return self._loss_validation
+        
+    @property
+    def status(self):
+        return self._status
+
+    @property
+    def layer_weights(self):
+        return self._layer_weights
+    
+    @property
+    def layer_biases(self):
+        return self._layer_biases
+    
+    @property
+    def layer_gradients(self):
+        return self._layer_gradients
+
+    @property
+    def batch_size(self):
+        return self._batch_size
+
+    @property
+    def layer_outputs(self):
+        return self._layer_outputs
+
+    def make_generator_training(self):
+        raise NotReplicatedError
+
+    def make_generator_validation(self):
+        raise NotReplicatedError        
+
+    def make_generator_testing(self):
+        raise NotReplicatedError
+
+    def on_stop(self):
+        raise NotReplicatedError        
+    
+    def on_export(self, path):
+        raise NotReplicatedError
+
+    @property
+    def progress(self):
+        return self._progress
+
+    @property
+    def export_modes(self):
+        return self._export_modes
     
 class GANLayerReplica(GANLayer):
     def __init__(self, sample, size_training, size_validation, size_testing, variables,
@@ -612,6 +773,136 @@ class GANLayerReplica(GANLayer):
     def export_modes(self):
         return self._export_modes
 
+    @property
+    def epoch(self):
+        return self._epoch
+    
+    @property
+    def n_actions(self):
+        return self._n_actions
+
+    @property
+    def episode(self):
+        return self._episode
+
+    @property
+    def n_episodes(self):
+        return self._n_episodes
+    
+    @property
+    def reward(self):
+        return self._reward
+    
+    @property
+    def gamma(self):
+        return self._gamma
+    
+    @property
+    def replay_memory_size(self):
+        return self._replay_memory_size
+    
+    @property
+    def transition(self):
+        return self._transition
+    
+    @property
+    def n_steps_max(self):
+        return self._n_steps_max
+    
+    @property
+    def step_counter(self):
+        return self._step_counter
+    
+    @property
+    def history_length(self):
+        return self._history_length
+    
+    @property
+    def batch_size(self):
+        return self._batch_size
+    
+    @property
+    def sample(self):
+        return self._sample 
+    
+    @property
+    def columns(self):
+        return self._columns
+
+    @property
+    def size_training(self):
+        return self._size_training 
+
+    @property
+    def size_validation(self):
+        return self._size_validation
+
+    @property
+    def size_testing(self):
+        return self._size_testing 
+
+    @property        
+    def variables(self):
+        return self._variables 
+
+    @property
+    def loss_training(self):
+        return self._loss_training
+
+    @property
+    def loss_testing(self):
+        return self._loss_testing
+
+    @property
+    def loss_validation(self):
+        return self._loss_validation
+        
+    @property
+    def status(self):
+        return self._status
+
+    @property
+    def layer_weights(self):
+        return self._layer_weights
+    
+    @property
+    def layer_biases(self):
+        return self._layer_biases
+    
+    @property
+    def layer_gradients(self):
+        return self._layer_gradients
+
+    @property
+    def batch_size(self):
+        return self._batch_size
+
+    @property
+    def layer_outputs(self):
+        return self._layer_outputs
+
+    def make_generator_training(self):
+        raise NotReplicatedError
+
+    def make_generator_validation(self):
+        raise NotReplicatedError        
+
+    def make_generator_testing(self):
+        raise NotReplicatedError
+
+    def on_stop(self):
+        raise NotReplicatedError        
+    
+    def on_export(self, path):
+        raise NotReplicatedError
+
+    @property
+    def progress(self):
+        return self._progress
+
+    @property
+    def export_modes(self):
+        return self._export_modes
 
 class InnerLayerReplica(InnerLayer):
     def __init__(self, variables):

@@ -19,7 +19,7 @@ from tempfile import NamedTemporaryFile
 
 from perceptilabs.issues import UserlandError
 from perceptilabs.core_new.layers.definitions import resolve_checkpoint_path, TOP_LEVEL_IMPORTS, DEFINITION_TABLE
-from perceptilabs.core_new.layers import BaseLayer, DataLayer, InnerLayer, Tf1xLayer, TrainingLayer, ClassificationLayer
+from perceptilabs.core_new.layers import BaseLayer, DataLayer, InnerLayer, Tf1xLayer, TrainingLayer, ClassificationLayer, ObjectDetectionLayer, RLLayer
 from perceptilabs.core_new.graph.splitter import GraphSplitter
 from perceptilabs.core_new.graph.utils import get_json_net_topology
 from perceptilabs.core_new.graph.builder import GraphBuilder, SnapshotBuilder
@@ -438,7 +438,7 @@ class LightweightCore:
 
             spec = importlib.util.spec_from_file_location("my_module", f.name)        
             module = importlib.util.module_from_spec(spec)
-            
+
             try:
                 spec.loader.exec_module(module)
             except Exception as e:
@@ -488,6 +488,7 @@ class LightweightCoreAdapter:
                 'Sample': layer_info.sample.tolist() if layer_info.sample is not None else None,
                 'outShape': [] if layer_info.out_shape is None else list(layer_info.out_shape),
                 'inShape': [],
+                'action_space': layer_info.variables.get('action_space',''),
                 'Variables': var_names,
                 'Default_var': default_var,
                 'cols': layer_info.columns

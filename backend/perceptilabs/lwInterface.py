@@ -126,9 +126,9 @@ class getDataMetaV2(LW_interface_base):
         self.lw_core.run()
         extras_dict = self.extras_reader.to_dict()
         cols = extras_dict[self._id].get("cols", '')
-        
+        action_space = extras_dict[self._id].get("action_space", '')
         content = {
-            "Action_space": "",
+            "Action_space": action_space,
             "Dataset_size": "",
             "Columns": cols
         }
