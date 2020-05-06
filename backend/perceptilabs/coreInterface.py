@@ -1029,8 +1029,10 @@ class coreLogic():
                         # import pdb; pdb.set_trace()
                         if(len(output) > 0 and len(bias) > 0):
                             y = x*output+bias
-                        elif len(output) > 0:
+                        elif len(output) > 0 and len(bias) == 0:
                             y = x * output
+                        elif len(bias) > 0 and len(output) == 0:
+                            y = x + bias
                         else:
                             y = x
                         line = np.concatenate((x,y)).transpose().tolist()
