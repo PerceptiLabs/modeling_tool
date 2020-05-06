@@ -316,12 +316,12 @@
                         gen_update_weights, gen_loss_tensor, \
                         gen_layer_output_tensors, gen_layer_weight_tensors, gen_layer_bias_tensors, gen_layer_gradient_tensors, real_layer_output_tensors
                     ])
-                _, self._dis_loss_training, self._dis_layer_outputs,\
+                _, self._dis_loss_training, self._random_dis_layer_outputs, self._real_dis_layer_outputs,\
                      self._dis_layer_weights, self._dis_layer_biases, \
                     self._dis_layer_gradients \
                     = sess.run([
                         dis_update_weights, dis_loss_tensor, \
-                        random_dis_layer_output_tensors, dis_layer_weight_tensors, dis_layer_bias_tensors, dis_layer_gradient_tensors
+                        random_dis_layer_output_tensors, real_dis_layer_output_tensors, dis_layer_weight_tensors, dis_layer_bias_tensors, dis_layer_gradient_tensors
                     ])
             else:
                 _, self._gen_loss_training \
@@ -461,6 +461,8 @@ class {{layer_name}}(GANLayer):
         self._gen_layer_biases = {}        
         self._gen_layer_gradients = {}
 
+        self._random_dis_layer_outputs = {}
+        self._real_dis_layer_outputs = {}
         self._dis_layer_outputs = {}
         self._dis_layer_weights = {}
         self._dis_layer_biases = {}        
@@ -707,10 +709,11 @@ class {{layer_name}}(GANLayer):
         if self._selected_layer_id in self._gen_layer_ids:
             self._layer_outputs.update(self._real_layer_outputs)
             self._layer_outputs.update(self._gen_layer_outputs)
+            self._layer_outputs.update(self._random_dis_layer_outputs)
         else:
             self._layer_outputs.update(self._gen_layer_outputs)
             self._layer_outputs.update(self._real_layer_outputs)
-        self._layer_outputs.update(self._dis_layer_outputs)
+            self._layer_outputs.update(self._real_dis_layer_outputs)
         return self._layer_outputs
 
     @property
