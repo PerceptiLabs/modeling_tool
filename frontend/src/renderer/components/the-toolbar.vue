@@ -1,128 +1,133 @@
 <template lang="pug">
-  aside.page_toolbar(:class="{'tutorial-active': activeStepStoryboard === 4}")
-    .toggle-wrap(:class="{'hide-layers': !hideLayers}")
-      button.btn.btn--toolbar(type="button" @click="toggleLayers()")
-        i.icon.icon-hide-top
 
-    ul.toolbar_list
-      li
-        button.btn.btn--toolbar.btn--toolbar-home(
-          type="button"
-          @click="toHomePage"
-          v-tooltip:bottom="'Home page'"
-        )
-          i.icon.icon-home
-    ul.toolbar_list
-      li
-        button#tutorial_pointer.btn.btn--toolbar(type="button"
-          :disabled="!networkIsOpen"
-          :class="{'active': networkMode === 'edit'}"
-          v-tooltip:bottom="'Edit'"
-          v-tooltip-interactive:bottom-right="interactiveInfo.edit"
-          @click="setNetMode('edit', 'tutorial_pointer')"
-        )
-          i.icon.icon-select
+  //- ************************************************
+  //- *** Not used
+  //- ************************************************
 
-      li.toolbar_list-arrow-wrap(
-        :class="{'disable-hover': statisticsIsOpen}"
-      )
-        button#tutorial_list-arrow.btn.btn--toolbar(type="button"
-          :disabled="!networkIsOpen"
-          :class="{'active': networkMode === 'addArrow'}"
-          @click="setNetMode('addArrow', 'tutorial_list-arrow')"
-          v-tooltip:bottom="'Arrow'"
-          v-tooltip-interactive:bottom="interactiveInfo.arrow"
-        )
-          i.icon.icon-arrow-left
+  //- aside.page_toolbar(:class="{'tutorial-active': activeStepStoryboard === 4}")
+  //-   .toggle-wrap(:class="{'hide-layers': !hideLayers}")
+  //-     button.btn.btn--toolbar(type="button" @click="toggleLayers()")
+  //-       i.icon.icon-hide-top
 
-    ul.toolbar_list
-      li
-        button.btn.btn--toolbar(type="button"
-          @click="toPrevStepHistory"
-          :disabled="isDisabledPrevStep"
-          v-tooltip:bottom="'Prev step'"
-          v-tooltip-interactive:bottom="interactiveInfo.undo"
-        )
-          i.icon.icon-step-prev
-      li
-        button.btn.btn--toolbar(type="button"
-          @click="toNextStepHistory"
-          :disabled="isDisabledNextStep"
-          v-tooltip:bottom="'Next step'"
-          v-tooltip-interactive:bottom="interactiveInfo.redo"
-        )
-          i.icon.icon-step-next
-    ul.toolbar_list
-      li(:class="{'tutorial-active': activeStepStoryboard === 4}")
-        button#tutorial_run-training-button.btn.btn--toolbar.bg-primary.run-button(type="button"
-          :disabled="statusLocalCore === 'offline'"
-          :class="statusStartBtn"
-          v-tooltip:bottom="'Run/Stop'"
-          v-tooltip-interactive:bottom="interactiveInfo.runButton"
-          @click="onOffBtn"
-        )
-          i.icon.icon-on-off
-          span(v-html="statusTraining === 'training' || statusTraining === 'pause' ? 'Stop' : 'Run'")
-      li
-        button#tutorial_pause-training.btn.btn--toolbar.tutorial-relative(type="button"
-          :class="{'active': statusNetworkCore === 'Paused'}"
-          :disabled="!isTraining"
-          v-tooltip:bottom="'Pause'"
-          v-tooltip-interactive:bottom="interactiveInfo.pause"
-          @click="trainPause"
-        )
-          i.icon.icon-pause
-      li
-        button.btn.btn--toolbar(type="button"
-          :disabled="statusNetworkCore !== 'Validation'"
-          v-tooltip:bottom="'Skip'"
-          v-tooltip-interactive:bottom="interactiveInfo.skip"
-          @click="skipValid"
-        )
-          i.icon.icon-next
-    //ul.toolbar_list
-      li
-        button.btn.btn--toolbar(type="button"
-          v-tooltip:bottom="'Generate Hyperparameters'"
-          v-tooltip-interactive:bottom="interactiveInfo.hyperparameters"
-        )
-          i.icon.icon-params
-      li
-        button.btn.btn--toolbar(type="button"
-          v-tooltip:bottom="'BlackBox'"
-          v-tooltip-interactive:bottom="interactiveInfo.blackBox"
-        )
-          i.icon.icon-box
+  //-   ul.toolbar_list
+  //-     li
+  //-       button.btn.btn--toolbar.btn--toolbar-home(
+  //-         type="button"
+  //-         @click="toHomePage"
+  //-         v-tooltip:bottom="'Home page'"
+  //-       )
+  //-         i.icon.icon-home
+  //-   ul.toolbar_list
+  //-     li
+  //-       button#tutorial_pointer.btn.btn--toolbar(type="button"
+  //-         :disabled="!networkIsOpen"
+  //-         :class="{'active': networkMode === 'edit'}"
+  //-         v-tooltip:bottom="'Edit'"
+  //-         v-tooltip-interactive:bottom-right="interactiveInfo.edit"
+  //-         @click="setNetMode('edit', 'tutorial_pointer')"
+  //-       )
+  //-         i.icon.icon-select
 
-    .toolbar_settings
-      span.text-primary.middle-text(v-html="statusTrainingText")
-      button.btn.btn--dark.btn--toolbar-settings(
-        type="button"
-        :class="{'btn--tutorial-active': isNotebookMode}"
-        @click="switchNotebookMode"
-        v-tooltip-interactive:bottom="interactiveInfo.interactiveDoc"
-      )
-        span Notebook
-        i.icon.icon-ellipse
+  //-     li.toolbar_list-arrow-wrap(
+  //-       :class="{'disable-hover': statisticsIsOpen}"
+  //-     )
+  //-       button#tutorial_list-arrow.btn.btn--toolbar(type="button"
+  //-         :disabled="!networkIsOpen"
+  //-         :class="{'active': networkMode === 'addArrow'}"
+  //-         @click="setNetMode('addArrow', 'tutorial_list-arrow')"
+  //-         v-tooltip:bottom="'Arrow'"
+  //-         v-tooltip-interactive:bottom="interactiveInfo.arrow"
+  //-       )
+  //-         i.icon.icon-arrow-left
 
-      button.btn.btn--dark.btn--toolbar-settings(
-        type="button"
-        :class="{'btn--tutorial-active': interactiveInfoStatus}"
-        @click="toggleInteractiveInfo"
-        v-tooltip-interactive:bottom="interactiveInfo.interactiveDoc"
-      )
-        span Help
-        i.icon.icon-ellipse
+  //-   ul.toolbar_list
+  //-     li
+  //-       button.btn.btn--toolbar(type="button"
+  //-         @click="toPrevStepHistory"
+  //-         :disabled="isDisabledPrevStep"
+  //-         v-tooltip:bottom="'Prev step'"
+  //-         v-tooltip-interactive:bottom="interactiveInfo.undo"
+  //-       )
+  //-         i.icon.icon-step-prev
+  //-     li
+  //-       button.btn.btn--toolbar(type="button"
+  //-         @click="toNextStepHistory"
+  //-         :disabled="isDisabledNextStep"
+  //-         v-tooltip:bottom="'Next step'"
+  //-         v-tooltip-interactive:bottom="interactiveInfo.redo"
+  //-       )
+  //-         i.icon.icon-step-next
+  //-   ul.toolbar_list
+  //-     li(:class="{'tutorial-active': activeStepStoryboard === 4}")
+  //-       button#tutorial_run-training-button.btn.btn--toolbar.bg-primary.run-button(type="button"
+  //-         :disabled="statusLocalCore === 'offline'"
+  //-         :class="statusStartBtn"
+  //-         v-tooltip:bottom="'Run/Stop'"
+  //-         v-tooltip-interactive:bottom="interactiveInfo.runButton"
+  //-         @click="onOffBtn"
+  //-       )
+  //-         i.icon.icon-on-off
+  //-         span(v-html="statusTraining === 'training' || statusTraining === 'pause' ? 'Stop' : 'Run'")
+  //-     li
+  //-       button#tutorial_pause-training.btn.btn--toolbar.tutorial-relative(type="button"
+  //-         :class="{'active': statusNetworkCore === 'Paused'}"
+  //-         :disabled="!isTraining"
+  //-         v-tooltip:bottom="'Pause'"
+  //-         v-tooltip-interactive:bottom="interactiveInfo.pause"
+  //-         @click="trainPause"
+  //-       )
+  //-         i.icon.icon-pause
+  //-     li
+  //-       button.btn.btn--toolbar(type="button"
+  //-         :disabled="statusNetworkCore !== 'Validation'"
+  //-         v-tooltip:bottom="'Skip'"
+  //-         v-tooltip-interactive:bottom="interactiveInfo.skip"
+  //-         @click="skipValid"
+  //-       )
+  //-         i.icon.icon-next
+  //-   //ul.toolbar_list
+  //-     li
+  //-       button.btn.btn--toolbar(type="button"
+  //-         v-tooltip:bottom="'Generate Hyperparameters'"
+  //-         v-tooltip-interactive:bottom="interactiveInfo.hyperparameters"
+  //-       )
+  //-         i.icon.icon-params
+  //-     li
+  //-       button.btn.btn--toolbar(type="button"
+  //-         v-tooltip:bottom="'BlackBox'"
+  //-         v-tooltip-interactive:bottom="interactiveInfo.blackBox"
+  //-       )
+  //-         i.icon.icon-box
 
-      tutorial-instructions(
-        ref="tutorialComponent"
-        v-tooltip-interactive:bottom="interactiveInfo.tutorial")
-        button.btn.btn--dark.btn--toolbar-settings(type="button"
-          @click="switchTutorialMode"
-          :class="{'btn--tutorial-active': isTutorialMode}"
-        )
-          span Tutorial
-          i.icon.icon-ellipse
+  //-   .toolbar_settings
+  //-     span.text-primary.middle-text(v-html="statusTrainingText")
+  //-     button.btn.btn--dark.btn--toolbar-settings(
+  //-       type="button"
+  //-       :class="{'btn--tutorial-active': isNotebookMode}"
+  //-       @click="switchNotebookMode"
+  //-       v-tooltip-interactive:bottom="interactiveInfo.interactiveDoc"
+  //-     )
+  //-       span Notebook
+  //-       i.icon.icon-ellipse
+
+  //-     button.btn.btn--dark.btn--toolbar-settings(
+  //-       type="button"
+  //-       :class="{'btn--tutorial-active': interactiveInfoStatus}"
+  //-       @click="toggleInteractiveInfo"
+  //-       v-tooltip-interactive:bottom="interactiveInfo.interactiveDoc"
+  //-     )
+  //-       span Help
+  //-       i.icon.icon-ellipse
+
+  //-     tutorial-instructions(
+  //-       ref="tutorialComponent"
+  //-       v-tooltip-interactive:bottom="interactiveInfo.tutorial")
+  //-       button.btn.btn--dark.btn--toolbar-settings(type="button"
+  //-         @click="switchTutorialMode"
+  //-         :class="{'btn--tutorial-active': isTutorialMode}"
+  //-       )
+  //-         span Tutorial
+  //-         i.icon.icon-ellipse
 </template>
 
 <script>
