@@ -764,22 +764,22 @@ class coreLogic():
                 loss_train=self.getStatistics({"layerId":id_, "variable":"loss_training_epoch","innervariable":""})
                 loss_val=self.getStatistics({"layerId":id_, "variable":"loss_validation_epoch","innervariable":""})
                 end_results.update({"acc_train":float(acc_train[-1]*100), "acc_val":float(acc_val[-1]*100), "loss_train":float(loss_train[-1]), "loss_val":float(loss_val[-1])})
-        elif value["Info"]["Type"]=="TrainDetector":
-                acc_train=self.getStatistics({"layerId":id_, "variable":"acc_training_epoch","innervariable":""})
-                acc_val=self.getStatistics({"layerId":id_, "variable":"acc_validation_epoch","innervariable":""})
-                loss_train=self.getStatistics({"layerId":id_, "variable":"loss_training_epoch","innervariable":""})
-                loss_val=self.getStatistics({"layerId":id_, "variable":"loss_validation_epoch","innervariable":""})
-                end_results.update({"acc_train":float(acc_train[-1]*100), "acc_val":float(acc_val[-1]*100), "loss_train":float(loss_train[-1]), "loss_val":float(loss_val[-1])})
-        elif value["Info"]["Type"]=="TrainReinforce":
-                loss_train=self.getStatistics({"layerId":id_, "variable":"loss_training_episode","innervariable":""})
-                reward_train=self.getStatistics({"layerId":id_, "variable":"reward_training_episode","innervariable":""})
-                end_results.update({"loss_train":float(loss_train[-1]), "reward_train":float(reward_train[-1])})
-        elif value["Info"]["Type"]=="TrainGAN":
-                gen_loss_train=self.getStatistics({"layerId":id_, "variable":"gen_loss_training_epoch","innervariable":""})
-                gen_loss_val=self.getStatistics({"layerId":id_, "variable":"gen_loss_validation_epoch","innervariable":""})
-                dis_loss_train=self.getStatistics({"layerId":id_, "variable":"dis_loss_training_epoch","innervariable":""})
-                dis_loss_val=self.getStatistics({"layerId":id_, "variable":"dis_loss_validation_epoch","innervariable":""})
-                end_results.update({"gen_loss_train":float(gen_loss_train[-1]), "gen_loss_val":float(gen_loss_val[-1]), "dis_loss_train":float(dis_loss_train[-1]), "dis_loss_val":float(dis_loss_val[-1])})
+            elif value["Info"]["Type"]=="TrainDetector":
+                    acc_train=self.getStatistics({"layerId":id_, "variable":"acc_training_epoch","innervariable":""})
+                    acc_val=self.getStatistics({"layerId":id_, "variable":"acc_validation_epoch","innervariable":""})
+                    loss_train=self.getStatistics({"layerId":id_, "variable":"loss_training_epoch","innervariable":""})
+                    loss_val=self.getStatistics({"layerId":id_, "variable":"loss_validation_epoch","innervariable":""})
+                    end_results.update({"acc_train":float(acc_train[-1]*100), "acc_val":float(acc_val[-1]*100), "loss_train":float(loss_train[-1]), "loss_val":float(loss_val[-1])})
+            elif value["Info"]["Type"]=="TrainReinforce":
+                    loss_train=self.getStatistics({"layerId":id_, "variable":"loss_training_episode","innervariable":""})
+                    reward_train=self.getStatistics({"layerId":id_, "variable":"reward_training_episode","innervariable":""})
+                    end_results.update({"loss_train":float(loss_train[-1]), "reward_train":float(reward_train[-1])})
+            elif value["Info"]["Type"]=="TrainGAN":
+                    gen_loss_train=self.getStatistics({"layerId":id_, "variable":"gen_loss_training_epoch","innervariable":""})
+                    gen_loss_val=self.getStatistics({"layerId":id_, "variable":"gen_loss_validation_epoch","innervariable":""})
+                    dis_loss_train=self.getStatistics({"layerId":id_, "variable":"dis_loss_training_epoch","innervariable":""})
+                    dis_loss_val=self.getStatistics({"layerId":id_, "variable":"dis_loss_validation_epoch","innervariable":""})
+                    end_results.update({"gen_loss_train":float(gen_loss_train[-1]), "gen_loss_val":float(gen_loss_val[-1]), "dis_loss_train":float(dis_loss_train[-1]), "dis_loss_val":float(dis_loss_val[-1])})
         return end_results
 
     
