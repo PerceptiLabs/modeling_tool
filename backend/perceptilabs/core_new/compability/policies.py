@@ -92,6 +92,9 @@ def policy_regression(core, graphs, sanitized_to_name, sanitized_to_id, results)
             mse_val_iter = results['trainDict'][true_trn_id]["mse_validation_iter"] 
             sq_variance_val_iter = results['trainDict'][true_trn_id]["sq_variance_validation_iter"] 
 
+            # inputs = results['trainDict'][true_trn_id]["inputs"] 
+            # outputs = results['trainDict'][true_trn_id]["outputs"] 
+
         else:
             r_sq_trn_iter = []
             loss_trn_iter = []
@@ -102,6 +105,7 @@ def policy_regression(core, graphs, sanitized_to_name, sanitized_to_id, results)
             loss_val_iter = []
             mse_val_iter = []
             sq_variance_val_iter = []
+
 
         for graph in graphs:
             trn_layer = graph.active_training_node.layer
@@ -116,7 +120,10 @@ def policy_regression(core, graphs, sanitized_to_name, sanitized_to_id, results)
                 r_sq_val_iter.append(trn_layer.r_squared_validation)
                 loss_val_iter.append(trn_layer.loss_validation)   
                 mse_val_iter.append(trn_layer.squared_error_validation)              
-                sq_variance_val_iter.append(trn_layer.squared_variance_validation)                      
+                sq_variance_val_iter.append(trn_layer.squared_variance_validation) 
+
+            # inputs.append(trn_layer.inputs)
+            # outputs.append(trn_layer.outputs)                   
 
         # ---- Get the metrics from the end of each epoch
 

@@ -100,7 +100,8 @@
 
         # Calculate loss and other important metrics for RegressionLayer
 
-        loss_tensor = tf.reduce_mean(tf.abs(output_tensor - target_tensor))
+        # loss_tensor = tf.reduce_mean(tf.abs(output_tensor - target_tensor))
+        loss_tensor = tf.reduce_mean(tf.square(output_tensor - target_tensor))
         squared_error_tensor = tf.reduce_mean(tf.square(output_tensor - target_tensor))
 
         squared_variance_tensor = tf.reduce_mean(tf.square(target_tensor - tf.reduce_mean(target_tensor)))

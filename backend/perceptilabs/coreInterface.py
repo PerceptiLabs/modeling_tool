@@ -967,7 +967,7 @@ class coreLogic():
         elif layerType=="TrainRegression":
             if view=="Prediction":
                 #Make sure that all the inputs are sent to frontend!!!!!!!!!!!!!!!
-                inputs=[self.getStatistics({"layerId":i,"variable":"Y","innervariable":""})[-1] for i in self.graphObj.start_nodes]
+                inputs=[self.getStatistics({"layerId":i,"variable":"Y","innervariable":""}) for i in self.graphObj.start_nodes]
                 D = [createDataObject([input_]) for input_ in inputs]
                 
                 X = self.getStatistics({"layerId": layerId, "variable":"X", "innervariable":""})
@@ -981,19 +981,52 @@ class coreLogic():
                     input2_id = bw_cons[input2_name]
 
                     if input1_id == self.graphObj.graphs[layerId]["Info"]["Properties"]["Labels"]:
+                        output_id = input2_id
+                        label_id = input1_id
                         labels = X[input1_name]['Y']
                         network_output = X[input2_name]['Y']
+
+                        label_data = self.getStatistics({"layerId":input1_id,"variable":"Y","innervariable":""})
+                        input_data = self.getStatistics({"layerId":input2_id,"variable":"Y","innervariable":""})
                     else:
+                        output_id = input1_id  
+                        label_id = input2_id
                         network_output = X[input1_name]['Y']
-                        labels = X[input2_name]['Y']                        
-                        
+                        labels = X[input2_name]['Y']    
+
+                        label_data = self.getStatistics({"layerId":input2_id,"variable":"Y","innervariable":""})
+                        input_data = self.getStatistics({"layerId":input1_id,"variable":"Y","innervariable":""})     
+
+                    def backprop(layer_id):
+                        backward_connections = self.graphObj.graph[layer_id]['backward_connections']
+                        if backward_connections:
+                            id_, name = backward_connections[0]
+                            return backprop(id_)
+                        else:
+                            return layer_id
+                    
+                    input_data_layer = backprop(output_id)
+                    labels_data_layer = backprop(label_id)
+
+                    label_data = self.getStatistics({"layerId":labels_data_layer,"variable":"Y","innervariable":""})
+                    input_data = self.getStatistics({"layerId":input_data_layer,"variable":"Y","innervariable":""})
+
                     cType=self.getPlot(network_output[-1])
                     if cType=="bar" or cType=="line" or cType=='scatter':
                         PvG = createDataObject([network_output[-1], labels[-1]], nameList=['Prediction', 'True Output'])                        
                         # average over samples
-                        network_average=np.average(network_output,axis=0)
-                        labels_average = np.average(labels, axis=0)
-                        APvT = createDataObject([network_average, labels_average], nameList=['Prediction', 'True Output'])
+                        # network_average=np.average(network_output,axis=0)
+                        # labels_average = np.average(labels, axis=0)
+                        
+                        output = self.getStatistics({"layerId": output_id, "variable":"W", "innervariable":""})
+                        bias = self.getStatistics({"layerId": output_id, "variable":"b", "innervariable":""})
+
+                        line=np.arange(np.min(input_data),np.max(input_data))*output+bias
+                        APvT = createDataObject(np.asarray([line,[input_data,label_data]]), typeList=['line','scatter'])
+                        APvT = createDataObject(np.asarray(line), typeList=['line'])
+                        # APvT = createDataObject(np.asarray([input_data,label_data]), typeList=['scatter'])
+
+                        print(APvT)
                         
                         # PIE
                         r_sq_train=self.getStatistics({"layerId":layerId,"variable":"r_sq_train_iter","innervariable":""})
@@ -1009,8 +1042,8 @@ class coreLogic():
                         except:
                             last_r_sq=r_sq
 
-                        r_sq_list = [[('R_Squared', last_r_sq), ('Empty', (1-last_r_sq))]]
-                        R_Squared = createDataObject(r_sq_list, typeList=['pie'])
+                        # r_sq_list = [[('R_Squared', last_r_sq), ('Empty', (1-last_r_sq))]]
+                        R_Squared = createDataObject([last_r_sq], typeList=['scatter'])
                         returnDict={"Input":D[0],"PvG":PvG,"AveragePvT":APvT,"R_Squared":R_Squared}
 
 
