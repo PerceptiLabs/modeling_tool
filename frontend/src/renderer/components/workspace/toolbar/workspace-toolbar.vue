@@ -56,23 +56,23 @@
         )
           i.icon.icon-on-off
           span(v-html="statusTraining === 'training' || statusTraining === 'pause' ? 'Stop' : 'Run'")
-      li
-        button#tutorial_pause-training.btn.btn--toolbar.tutorial-relative(type="button"
-          :class="{'active': statusNetworkCore === 'Paused'}"
-          :disabled="!isTraining"
-          v-tooltip:bottom="'Pause'"
-          v-tooltip-interactive:bottom="interactiveInfo.pause"
-          @click="trainPause"
-        )
-          i.icon.icon-pause
-      li
-        button.btn.btn--toolbar(type="button"
-          :disabled="statusNetworkCore !== 'Validation'"
-          v-tooltip:bottom="'Skip'"
-          v-tooltip-interactive:bottom="interactiveInfo.skip"
-          @click="skipValid"
-        )
-          i.icon.icon-next
+      //- li
+      //-   button#tutorial_pause-training.btn.btn--toolbar.tutorial-relative(type="button"
+      //-     :class="{'active': statusNetworkCore === 'Paused'}"
+      //-     :disabled="!isTraining"
+      //-     v-tooltip:bottom="'Pause'"
+      //-     v-tooltip-interactive:bottom="interactiveInfo.pause"
+      //-     @click="trainPause"
+      //-   )
+      //-     i.icon.icon-pause
+      //- li
+      //-   button.btn.btn--toolbar(type="button"
+      //-     :disabled="statusNetworkCore !== 'Validation'"
+      //-     v-tooltip:bottom="'Skip'"
+      //-     v-tooltip-interactive:bottom="interactiveInfo.skip"
+      //-     @click="skipValid"
+      //-   )
+      //-     i.icon.icon-next
     //- ul.toolbar_list
     //-   li
     //-     input.search-bar(
