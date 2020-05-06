@@ -1029,11 +1029,8 @@ class coreLogic():
                         y = x*output+bias
                         line = np.concatenate((x,y)).tolist()
                         
-                        line2=np.arange(np.min(input_data),np.max(input_data))*output+bias
-                        APvT1 = createDataObject(np.asarray([line2,[input_data,label_data]]), typeList=['line','scatter'])
-                        # APvT = createDataObject(np.asarray(line), typeList=['line'])
-                        
                         APvT = {
+                            "xLength": float(maxval),
                             "series": [{
                                 "data": np.asarray([input_data,label_data]).reshape(-1,2).tolist(),
                                 "type": 'scatter'
@@ -1041,18 +1038,11 @@ class coreLogic():
                             {
                                 "data": line,
                                 "type": 'line'
-                            }]
+                            }
+                            ]
                         }
 
-                        APvT2 = createDataObject(np.asarray([input_data,label_data]), typeList=['scatter'])
-
-
-
-                        print(APvT1)
-                        print('---------------------------------')
                         print(APvT)
-                        print('---------------------------------')
-                        print(APvT2)
                         
                         # PIE
                         r_sq_train=self.getStatistics({"layerId":layerId,"variable":"r_sq_train_iter","innervariable":""})
