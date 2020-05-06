@@ -25,6 +25,10 @@ class State:
         TRAINING_COMPLETED,
         TRAINING_STOPPED
     )
+    done_states = (
+        TRAINING_COMPLETED,
+        TRAINING_STOPPED
+    )
     exit_states = (
         CLOSING,
         TRAINING_TIMEOUT,

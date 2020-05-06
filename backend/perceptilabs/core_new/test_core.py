@@ -339,8 +339,6 @@ def test_core_handles_userland_error():
     thread1 = threading.Thread(target=core.run, args=(graph_spec,), daemon=True)
     thread1.start()
     try:
-        assert wait_for_condition(lambda _: core.is_running)
-        assert wait_for_condition(lambda _: not core.is_running)
         assert wait_for_condition(lambda _: issue_handler.put_error.call_count == 1)
     finally:
         core.close(wait_for_deployment=True)
@@ -405,11 +403,8 @@ def test_core_handles_training_server_timeout():
     thread1 = threading.Thread(target=core.run, args=(graph_spec,), daemon=True)
     thread1.start()
     try:
-        assert wait_for_condition(lambda _: core.is_running)
-        assert wait_for_condition(lambda _: not core.is_running)
         assert wait_for_condition(lambda _: issue_handler.put_error.call_count == 1)        
     finally:
-        core.close(wait_for_deployment=True)
         thread1.join()
         thread2.join()        
 
@@ -461,13 +456,13 @@ def test_pause_works(graph_spec_binary_classification):
     thread1 = threading.Thread(target=core.run, args=(graph_spec_binary_classification,), kwargs={'auto_close': True}, daemon=True)
     thread1.start()
     try:
-        assert wait_for_condition(lambda _: core.training_state == State.TRAINING_RUNNING) # Pausing in State.READY doesn't make sense (right now), so we have to wait... 
+        assert wait_for_condition(lambda _: core.is_running) # Pausing in State.READY doesn't make sense (right now), so we have to wait... 
         assert wait_for_condition(lambda _: not core.is_paused)
         
         core.pause()
         assert wait_for_condition(lambda _: core.is_paused)
     finally:
-        core.close(wait_for_deployment=True)
+        core.request_close()
         thread1.join()
         thread2.join()
         
@@ -518,18 +513,23 @@ def test_resume_works(graph_spec_binary_classification):
     thread1 = threading.Thread(target=core.run, args=(graph_spec_binary_classification,), kwargs={'auto_close': True}, daemon=True)
     thread1.start()
     try:
-        assert wait_for_condition(lambda _: core.training_state == State.TRAINING_RUNNING) # Pausing in State.READY doesn't make sense (right now), so we have to wait... 
+        assert wait_for_condition(lambda _: core.is_running) # Pausing in State.READY doesn't make sense (right now), so we have to wait... 
         assert wait_for_condition(lambda _: not core.is_paused)
+        print("Is running")
         
         core.pause()
-        assert wait_for_condition(lambda _: core.is_running)
         assert wait_for_condition(lambda _: core.is_paused)
+        assert wait_for_condition(lambda _: not core.is_running)        
+        print("Is paused")
+
         
         core.unpause()
         assert wait_for_condition(lambda _: core.is_running)
         assert wait_for_condition(lambda _: not core.is_paused)
+        print("Is running again")
+        
     finally:
-        core.close(wait_for_deployment=True)
+        core.request_close()
         thread1.join()
         thread2.join()        
 

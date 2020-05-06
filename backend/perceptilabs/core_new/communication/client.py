@@ -27,7 +27,7 @@ log = logging.getLogger(__name__)
     
 
 class TrainingClient:
-    def __init__(self, producer, consumer, graph_builder=None, on_receive_graph=None, on_log_message=None, on_userland_error=None, on_userland_timeout=None, on_server_timeout=None, server_timeout=20):
+    def __init__(self, producer, consumer, graph_builder=None, on_state_changed=None, on_receive_graph=None, on_log_message=None, on_userland_error=None, on_userland_timeout=None, on_server_timeout=None, server_timeout=20):
         self._producer = producer
         self._consumer = consumer
         self._on_log_message = on_log_message
@@ -36,6 +36,7 @@ class TrainingClient:
         self._on_server_timeout = on_server_timeout
         self._server_timeout = server_timeout
         self._on_receive_graph = on_receive_graph
+        self._on_state_changed = on_state_changed
         self._graph_builder = graph_builder
         
         self._out_queue = queue.Queue()
@@ -64,16 +65,18 @@ class TrainingClient:
         if len(raw_messages) > 0:
             self._t_last_message = time.time()
         elif time.time() - self._t_last_message > self._server_timeout:
+            log.error(f"No vital signs from the training server within the last {self._server_timeout} seconds.")
             if self._on_server_timeout:
                 self._on_server_timeout()
-                
-            log.error(f"No vital signs from the training server within the last {self._server_timeout} seconds.")
+            
             time.sleep(0.1)
 
                 
     def _process_incoming_key_value(self, key, value):
         if key == 'state':
             self._training_state = value
+            if self._on_state_changed:
+                self._on_state_changed(value)
         elif key == 'log-message':
             if self._on_log_message:
                 self._on_log_message(value['message'])

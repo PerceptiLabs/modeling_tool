@@ -2,6 +2,7 @@
 import os
 import sys
 import time
+import enum
 import uuid
 import pprint
 import socket
@@ -19,6 +20,7 @@ from abc import ABC, abstractmethod
 from queue import Queue
 
 
+from perceptilabs.utils import deprecated
 from perceptilabs.issues import IssueHandler, UserlandError
 from perceptilabs.core_new.graph import Graph, JsonNetwork
 from perceptilabs.core_new.graph.builder import GraphBuilder
@@ -31,8 +33,18 @@ from perceptilabs.core_new.communication.deployment import ThreadStrategy, Deplo
 from perceptilabs.messaging import MessageConsumer, MessageProducer          
 
 log = logging.getLogger(__name__)
-    
-    
+
+
+class CoreState(enum.Enum):
+    INITIALIZING = 0
+    TRAINING = 1
+    IDLE = 2
+    SERVER_TIMEOUT = 3
+    USERLAND_TIMEOUT = 4
+    USERLAND_ERROR = 5
+    CLOSED = 6
+
+
 class Core:
     def __init__(self, graph_builder: GraphBuilder, script_factory: ScriptFactory, issue_handler: IssueHandler=None, server_timeout=610, userland_timeout=600, deployment_strategy=None, use_sentry=False):
         self._graph_builder = graph_builder
@@ -47,8 +59,11 @@ class Core:
         self._userland_timeout = userland_timeout
 
         self._client = None
-        self._is_running = False
+        self._closed_by_server = False
+        self._closed_by_force = False        
+
         
+    ''' 
     def run(self, graph_spec: JsonNetwork, session_id: str=None, on_iterate: List[Callable]=None, auto_close=False):
         on_iterate = on_iterate or []
         try:
@@ -64,8 +79,126 @@ class Core:
         finally:
             #log.info(f"Closing core with session id {session_id}")
             #self.close()                
-            pass        
+            pass
+    '''
 
+    def run(self, graph_spec: JsonNetwork, session_id: str=None, on_iterate: List[Callable]=None, auto_close=False):
+        step = self.run_stepwise(graph_spec, session_id=session_id, auto_close=auto_close)
+        for counter, _ in enumerate(step):
+            if counter % 100 == 0:
+                log.debug(f"Running step {counter}")
+        
+    def run_stepwise(self, graph_spec, session_id=None, auto_close=False):
+        session_id = session_id or uuid.uuid4().hex        
+        topic_generic = f'generic-{session_id}'.encode()    
+        topic_snapshots = f'snapshots-{session_id}'.encode()
+        
+        graph = self._graph_builder.build_from_spec(graph_spec)        
+        script_path = self._create_script(graph, session_id, topic_generic, topic_snapshots, userland_timeout=self._userland_timeout)
+        self._deployment_strategy.run(script_path)
+
+        consumer = MessageConsumer([topic_generic, topic_snapshots])
+        producer = MessageProducer(topic_generic)
+        log.info(f"Instantiated message producer/consumer pairs for topics {topic_generic} and {topic_snapshots} for session {session_id}")
+
+        self._client = TrainingClient(
+            producer, consumer,
+            graph_builder=self._graph_builder,
+            on_receive_graph=self._on_receive_graph,
+            on_userland_error=self._on_userland_error,
+            on_state_changed=self._on_training_state_changed,
+            on_server_timeout=self._on_server_timeout,
+            on_userland_timeout=self._on_userland_timeout,
+            on_log_message=self._on_log_message,
+            server_timeout=self._server_timeout
+        )
+        
+        client_step = self._client.run_stepwise()
+        yield from self._await_status_ready(client_step)
+        
+        self.request_start()        
+        yield from self._await_status_active(client_step)
+        yield from self._await_status_done(client_step)
+
+        if auto_close:
+            self.request_close()
+            log.info("Sent request for auto-close")
+            
+        yield from self._await_status_exit(client_step)
+
+    @property
+    def is_closed(self):
+        return self.is_closed_by_server or self.is_closed_by_force
+
+    @property
+    def is_closed_by_server(self):
+        return self._closed_by_server
+
+    @property
+    def is_closed_by_force(self):
+        return self._closed_by_force
+        
+    def _await_status_ready(self, client_step):
+        while self._client.training_state != State.READY and not self.is_closed:
+            next(client_step)
+            time.sleep(0.5)            
+            yield
+
+    def _await_status_active(self, client_step):            
+        while (self._client.training_state not in State.active_states) and not self.is_closed:
+            next(client_step)
+            time.sleep(0.5)            
+            yield
+
+    def _await_status_done(self, client_step):
+        while (self._client.training_state not in State.done_states) and not self.is_closed:
+            next(client_step)
+            time.sleep(1.0)            
+            yield
+
+    def _await_status_exit(self, client_step):
+        while (self._client.training_state not in State.exit_states) and not self.is_closed_by_force:
+            next(client_step)
+            time.sleep(1.0)            
+            yield
+
+    def _on_training_state_changed(self, new_state):
+        log.info(f"Training server entered state {new_state}")            
+        
+        if new_state in State.exit_states:
+            self._closed_by_server = True
+
+    def _on_userland_timeout(self):
+        if self._issue_handler is not None:
+            self._issue_handler.put_error('Training stopped because a training step too long!')
+        log.info('Training stopped because a training step too long!')
+
+    def _on_server_timeout(self):
+        if self._issue_handler is not None:
+            with self._issue_handler.create_issue('Training server timed out!') as issue:
+                self._issue_handler.put_error(issue.frontend_message)
+                log.error(issue.internal_message)
+        else:
+            log.error("Training server timed out!")
+
+        self.force_close(timeout=1)
+    
+    def _on_receive_graph(self, graph):
+        self._graphs.append(graph)
+        
+    def _on_log_message(self, message):
+        pass    
+
+    def _create_script(self, graph, session_id, topic_generic, topic_snapshots, userland_timeout):
+        code, self._line_to_node_map = self._script_factory.make(graph, session_id, topic_generic, topic_snapshots, userland_timeout=self._userland_timeout)
+        
+        script_path = f'training_script.py'
+        with open(script_path, 'wt') as f:
+            f.write(code)
+            f.flush()
+        return script_path
+
+    '''
     def _run_internal(self, graph_spec, session_id=None, on_iterate=None, auto_close=False):
         session_id = session_id or uuid.uuid4().hex
         log.info(f"Entered 'run internal' for core with session id {session_id}")
@@ -181,7 +314,7 @@ class Core:
     
     def _on_receive_graph(self, graph):
         self._graphs.append(graph)        
-
+    '''
     def _on_userland_error(self, exception, traceback_frames):
         message = ''
         collect = False
@@ -209,84 +342,107 @@ class Core:
                 scope.level = 'info'
                 sentry_sdk.capture_message(error.format())
 
-        log.info('Userland error:\n' + error.format())
+        log.info('Training stopped because of userland error:\n' + error.format())
         if self._issue_handler is not None:
             self._issue_handler.put_error(error.format())
-        self._is_running = False                
-        
+
     @property
     def graphs(self) -> List[Graph]:
         copy_graph = self._graphs.copy()
         self._graphs = []
         return copy_graph
 
-    def close(self, wait_for_deployment=False):
-        #if self._client is not None:
-        #    self._client.send_event('on_stop')
-        #    self._client.stop()
-        
-        if self._client is not None:
-            log.info(f"Sent close command to training server")
-            self._client.request_close()
-            self._client.shutdown()
-            self._client = None
+    def force_close(self, timeout=240):
+        self.request_close()
 
-            if wait_for_deployment:
-                log.info("Waiting for deployment to shutdown...")
-                if self._deployment_strategy.shutdown(timeout=240):
-                    log.info("Deployment shut down!")
-                else:
-                    log.info("Deployment did not shut down!")                                        
-        self._is_running = False
+        if not self._deployment_strategy.shutdown(timeout=timeout):
+            log.warning("Failed to shutdown deployment!")
 
+        self._closed_by_force = True
+        log.info("Force closed core")
+
+    def request_start(self):
+        self._client.request_start()
+
+    def request_close(self):
+        self._client.request_close()
         
-    def pause(self):
+    def request_pause(self):
         if self._client is not None:
             self._client.request_pause()
         else:
             log.warning("Requested pause but training client not set!!")
 
-    def unpause(self):
-        if self._client is not None:
-            self._client.request_resume()
+    def request_unpause(self):
+        self._client.request_resume()
     
-    def headlessOn(self):
-        if self._client is not None:
-            self._client.request_headless_activate()
+    def request_headless_activate(self):
+        self._client.request_headless_activate()
         
-    def headlessOff(self):
-        if self._client is not None:
-            self._client.request_headless_deactivate()
+    def request_headless_deactivate(self):
+        self._client.request_headless_deactivate()
 
-    def export(self, path: str, mode: str):
-        log.debug(f"Export path: {path}, mode: {mode}, client: {self._client}")
-        
-        if self._client is not None:            
-            self._client.request_export(path, mode)
-        else:
-            log.warning("Client is none. request_stop not called!")
+    def request_export(self, path: str, mode: str):
+        self._client.request_export(path, mode)
+        log.debug(f"Requested export with path: {path}, mode: {mode}")        
 
-    def stop(self):
-        if self._client is not None:
-            self._client.request_stop()
-        else:
-            log.warning("Client is none. request_stop not called!")
-            
-    @property
-    def is_running(self):
-        return self._is_running
+    def request_stop(self):
+        self._client.request_stop()
 
     @property
-    def is_paused(self):
-        return self._client is not None and self._client.training_state in State.paused_states
-            
+    def is_training_running(self):
+        if self._client is None:
+            return False
+        return self._client.training_state in State.running_states
+
+    @property
+    def is_training_paused(self):
+        if self._client is None:
+            return False
+        return self._client.training_state in State.paused_states        
+
     @property
     def training_state(self):
-        if self._client is not None:
-            return self._client.training_state
-        else:
-            return None
+        return self._client.training_state
+
+    @property
+    @deprecated
+    def is_paused(self):
+        return self.is_training_paused
+
+    @property
+    @deprecated
+    def is_running(self):
+        return self.is_training_running
+    
+    @deprecated
+    def close(self, wait_for_deployment=False):
+        timeout = None if wait_for_deployment else 1        
+        self.force_close(timeout=timeout)
         
+    @deprecated
+    def stop(self):
+        self.request_stop()
         
+    @deprecated
+    def export(self, path, mode):
+        self.request_export(path, mode)
+        
+    @deprecated
+    def pause(self):
+        self.request_pause()
+
+    @deprecated
+    def unpause(self):
+        self.request_unpause()
+
+    @deprecated
+    def headlessOff(self):
+        self.request_headless_deactivate()
+
+    @deprecated
+    def headlessOn(self):
+        self.request_headless_activate()        
+            
 
     
