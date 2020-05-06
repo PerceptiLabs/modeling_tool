@@ -195,6 +195,7 @@ export default {
       offMainTutorial:      'mod_tutorials/offTutorial',
       pushSnapshotToHistory:'mod_workspace-history/PUSH_newSnapshot',
       pauseTraining:        'mod_api/API_pauseTraining',
+      stopTraining:         'mod_api/API_stopTraining',
       skipValidTraining:    'mod_api/API_skipValidTraining',
     }),
     startCursorListener (event) {
@@ -281,17 +282,6 @@ export default {
       this.setNetworkNameAction(text);
       this.pushSnapshotToHistory(null)
     },
-    tabStartClick(index) {
-      if (this.indexCurrentNetwork !== index) {
-        this.set_currentNetwork(index);
-      }
-
-      this.$nextTick(() => {
-        let valid = this.validateNetwork();
-        if (!valid) return;
-        this.GP_showCoreSideSettings(true);
-      });
-    },
     tabPauseClick(index) {
       if (this.indexCurrentNetwork !== index) {
         this.set_currentNetwork(index);
@@ -299,6 +289,15 @@ export default {
 
       this.$nextTick(() => {
         this.pauseTraining();
+      });
+    },
+    tabStopClick(index) {
+      if (this.indexCurrentNetwork !== index) {
+        this.set_currentNetwork(index);
+      }
+
+      this.$nextTick(() => {
+        this.stopTraining();
       });
     },
     tabSkipClick(index) {
@@ -309,37 +308,6 @@ export default {
       this.$nextTick(() => {
         this.skipValidTraining();
       });
-    },
-    validateNetwork() {
-      let net;
-      if(this.currentElList) net = Object.values(this.currentElList);
-      else {
-        this.showInfoPopup('You cannot Run without a Data element and a Training element');
-        return false;
-      }
-
-      let typeData = net.find((element)=> element.layerType === 'Data');
-      if(typeData === undefined) {
-        this.showInfoPopup('Data element missing');
-        return false
-      }
-
-      let typeTraining = net.find((element)=> element.layerType === 'Training');
-      if(typeTraining === undefined) {
-        this.showInfoPopup('Classic Machine Learning or Training element missing');
-        return false
-      }
-      let trainingIncluded = net.find(element => trainingElements.includes(element.componentName));
-      let deepLearnIncluded = true;
-      if (trainingIncluded) {
-        deepLearnIncluded = net.find(element => deepLearnElements.includes(element.componentName));
-      }
-      if(deepLearnIncluded === undefined) {
-        this.showInfoPopup('If you use the Training elements, you must use the Deep Learn elements');
-        return false
-      }
-
-      return true;
     },
     onTabScroll(event) {
       event.preventDefault();

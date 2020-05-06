@@ -36,16 +36,16 @@ ul.bookmark_tab-list
     li.bookmark_tab.workspace_tab.tab_icon(
       v-if="tab.networkMeta.openStatistics !== null"
       :class="{'workspace_tab--active': indexCurrentNetwork === i && tab.networkMeta.openStatistics, 'workspace_tab--disable': indexCurrentNetwork !== i && isTutorialMode}"
-      @click="tabStartClick(i)"
-    )
-      i.icon.icon-player-play
-    
-    li.bookmark_tab.workspace_tab.tab_icon(
-      v-if="tab.networkMeta.openStatistics !== null"
-      :class="{'workspace_tab--active': indexCurrentNetwork === i && tab.networkMeta.openStatistics, 'workspace_tab--disable': indexCurrentNetwork !== i && isTutorialMode}"
       @click="tabPauseClick(i)"
     )
       i.icon.icon-player-pause
+
+    li.bookmark_tab.workspace_tab.tab_icon(
+      v-if="tab.networkMeta.openStatistics !== null"
+      :class="{'workspace_tab--active': indexCurrentNetwork === i && tab.networkMeta.openStatistics, 'workspace_tab--disable': indexCurrentNetwork !== i && isTutorialMode}"
+      @click="tabStopClick(i)"
+    )
+      i.icon.icon-stop2
 
     li.bookmark_tab.workspace_tab.tab_icon(
       v-if="tab.networkMeta.openStatistics !== null"
