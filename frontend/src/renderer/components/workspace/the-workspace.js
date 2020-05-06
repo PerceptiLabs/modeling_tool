@@ -205,9 +205,6 @@ export default {
       tutorialPointActivate:'mod_tutorials/pointActivate',
       offMainTutorial:      'mod_tutorials/offTutorial',
       pushSnapshotToHistory:'mod_workspace-history/PUSH_newSnapshot',
-      pauseTraining:        'mod_api/API_pauseTraining',
-      stopTraining:         'mod_api/API_stopTraining',
-      skipValidTraining:    'mod_api/API_skipValidTraining',
     }),
     startCursorListener (event) {
       const borderline = 15;
@@ -292,33 +289,6 @@ export default {
     set_networkName(text) {
       this.setNetworkNameAction(text);
       this.pushSnapshotToHistory(null)
-    },
-    tabPauseClick(index) {
-      if (this.indexCurrentNetwork !== index) {
-        this.set_currentNetwork(index);
-      }
-
-      this.$nextTick(() => {
-        this.pauseTraining();
-      });
-    },
-    tabStopClick(index) {
-      if (this.indexCurrentNetwork !== index) {
-        this.set_currentNetwork(index);
-      }
-
-      this.$nextTick(() => {
-        this.stopTraining();
-      });
-    },
-    tabSkipClick(index) {
-      if (this.indexCurrentNetwork !== index) {
-        this.set_currentNetwork(index);
-      }
-
-      this.$nextTick(() => {
-        this.skipValidTraining();
-      });
     },
     onTabScroll(event) {
       event.preventDefault();
