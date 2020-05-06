@@ -1028,18 +1028,6 @@ class coreLogic():
                         x = np.asarray([minval, maxval]).reshape(1,-1)
                         y = x*output+bias
                         line = np.concatenate((x,y)).tolist()
-                        # APvT = {
-                        #     "series": [{
-                        #         "data": np.asarray([input_data,label_data]).reshape(-1,2).tolist(),
-                        #         "type": 'scatter'
-                        #     }]
-                        # }
-                        # APvT = {
-                        #     "series": [{
-                        #         "data": line,
-                        #         "type": 'line'
-                        #     }]
-                        # }
                         APvT = {
                             "series": [{
                                 "data": np.asarray([input_data,label_data]).reshape(-1,2).tolist(),
