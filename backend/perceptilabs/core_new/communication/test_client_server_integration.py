@@ -196,7 +196,6 @@ def test_handles_received_graphs(topic_gn, topic_sn):
 
     def graph_run():
         while True:
-            print("YUELDING")
             yield YieldLevel.SNAPSHOT
 
     graph = MagicMock()
@@ -217,8 +216,6 @@ def test_handles_received_graphs(topic_gn, topic_sn):
             next(server_step)
             next(client_step)
 
-            print("CALLED!")
-            
             return (
                 graph_builder.build_from_snapshot.call_count == 1 and
                 graph_builder.build_from_snapshot.call_args[0][0] == snapshot and 
