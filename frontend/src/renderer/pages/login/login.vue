@@ -5,7 +5,7 @@
       img.site-logo(src="./../../../../static/img/perceptilabs-new-log.svg")
 
       .form_holder
-        input(type="email" placeholder="Email"
+        input.new-ui(type="email" placeholder="Email"
           v-model="userEmail"
           name="Email"
           v-validate="'required|email'"
@@ -13,7 +13,7 @@
         p.text-error(v-show="errors.has('Email')") {{ errors.first('Email') }}
       .form_holder
         .relative
-          input(
+          input.new-ui(
             :type="passwordVisibility.password ? 'text' : 'password'"
             placeholder="Password"
             v-model="userPass"
@@ -146,30 +146,30 @@ export default {
     display: block
   }
 
-  input[type=email], input[type=password], input[type=text] {
-    background: #383F50;
-    border: 1px solid #4B4D52;
-    box-sizing: border-box;
-    border-radius: 20px;
-    height: 40px;
-    padding-left: 20px;
-    padding-right: 20px;
+  // input[type=email], input[type=password], input[type=text] {
+  //   background: #383F50;
+  //   border: 1px solid #4B4D52;
+  //   box-sizing: border-box;
+  //   border-radius: 20px;
+  //   height: 40px;
+  //   padding-left: 20px;
+  //   padding-right: 20px;
 
-    font-family: Nunito Sans;
-    font-style: normal;
-    font-weight: 300;
-    font-size: 12px;
-    line-height: 16px;
+  //   font-family: Nunito Sans;
+  //   font-style: normal;
+  //   font-weight: 300;
+  //   font-size: 12px;
+  //   line-height: 16px;
 
-    color: #fff;
+  //   color: #fff;
 
-    &::placeholder {
-      color: #C4C4C4;
-    }
-    &:focus {
-      border: 1px solid #6185EE;
-    }
-  }
+  //   &::placeholder {
+  //     color: #C4C4C4;
+  //   }
+  //   &:focus {
+  //     border: 1px solid #6185EE;
+  //   }
+  // }
 
   .log-in-btn {
     background: #6185EE;
