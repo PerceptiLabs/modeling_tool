@@ -3,7 +3,7 @@
   text-decoration: none;
   border-radius: $bdrs;
   background-color: transparent;
-
+  
   span + .icon,
   .icon + span {
     margin-left: 0.5rem;
@@ -21,7 +21,7 @@
 .btn--primary {
   font-size: 1.2rem;
   font-weight: bold;
-  color: $col-txt2;
+  color: $white;
   //min-width: 9rem;
   //height: 3rem;
 
@@ -30,9 +30,15 @@
   padding: .5em;
   text-align: center;
   text-overflow: ellipsis;
-  background: $bg-grad-cyan;
+
+  background: $color-6;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-sizing: border-box;
+  border-radius: 2px;
+
   &.disable {
-    background: linear-gradient(#489671, #337a7f);
+    // background: linear-gradient(#489671, #337a7f);
+    opacity: 0.5;
   }
 }
 
@@ -208,7 +214,11 @@
 }
 
 .btn--disabled {
-  background: $bg-scroll;
+  // background: $bg-scroll;
+  background: rgba(97, 133, 238, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-sizing: border-box;
+  border-radius: 2px;
 }
 
 .green-color-icon{

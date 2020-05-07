@@ -101,10 +101,6 @@ export default {
   @import "../../../scss/base";
   .settings-layer_foot {
     justify-content: flex-end;
-    .btn {
-      height: auto;
-      min-width: 7rem;
-    }
     .btn + .btn {
       margin-left: .8rem;
     }
