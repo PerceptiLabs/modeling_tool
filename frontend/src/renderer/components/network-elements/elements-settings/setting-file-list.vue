@@ -98,6 +98,7 @@ export default {
   $file-list-indent: .5rem;
   .data-file-settings {
     width: 100%;
+    box-sizing: border-box;
     .btn--link {
       color: $color-5;
       text-decoration: underline;
@@ -107,23 +108,39 @@ export default {
     }
   }
   .file-settings_title {
-    font-size: 1.4rem;
+    
     margin-bottom: 1rem;
     .form_label {
-      font-size: inherit !important;
+      font-family: Nunito Sans;
+      font-style: normal;
+      font-weight: 600;
+      font-size: 1.2rem;
+      line-height: 1.6rem;
+      color: $white;
     }
     .form_input {
       display: flex;
-      justify-content: space-between;
-      padding: 0 1.5em 0 1rem;
+      justify-content: space-around;
+      padding-left: 0;
+      padding-right: 2rem;
+
+      font-family: Nunito Sans;
+      font-style: normal;
+      font-weight: 300;
+      font-size: 1.1rem;
+      line-height: 1.5rem;
+
+      color: $color-12;
     }
   }
   .file-settings_list {
     max-height: 20rem;
     overflow-y: auto;
-    background-color: $bg-input;
-    margin: 0 (-$file-list-indent) .5rem;
+    margin-bottom: .5rem;
     border-radius: $bdrs;
+
+    background: #363E51;
+    border: 1px solid $bg-toolbar-2;
   }
   .file-list_item {
     padding: $file-list-indent;
@@ -137,12 +154,19 @@ export default {
       align-items: center;
     }
     .btn--icon {
-      font-size: .75rem;
+      font-size: 1rem;
+      color: $toolbar-separator-color;
       margin-right: .5rem;
     }
   }
 
   .file-item_path {
+    font-family: Nunito Sans;
+    font-style: normal;
+    font-weight: 300;
+    font-size: 1.2rem;
+    line-height: 1.6rem;
+    color: $color-12;
     max-width: 10rem;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -157,5 +181,11 @@ export default {
     left: 0;
     right: 0;
     bottom: 0;
+  }
+
+  .file-list-item_settings {
+    /deep/ .triple-input_input {
+      background: #2D3754;
+    }
   }
 </style>
