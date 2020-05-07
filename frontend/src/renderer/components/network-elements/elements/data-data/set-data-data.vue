@@ -374,7 +374,15 @@
       width: 15.5rem;
       height: 3.4rem;
       padding: 0 1.5rem;
-      background-color: $bg-input;
+      background: rgba(97, 133, 238, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 2px;
+
+      font-family: Nunito Sans;
+      font-style: normal;
+      font-weight: 600;
+      font-size: 1.2rem;
+
       font-weight: 300;
       + .btn {
         margin-top: .8rem;
