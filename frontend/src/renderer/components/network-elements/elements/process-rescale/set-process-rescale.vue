@@ -39,7 +39,7 @@
     name: 'SetProcessRescale',
     mixins: [mixinSet],
     mounted() {
-      this.$store.dispatch('mod_api/API_getInputDim');
+      this.$store.dispatch('mod_api/API_getInputDim')
     },
     data() {
       return {
@@ -47,7 +47,8 @@
           width: 40,
           height: 30
         },
-        isLocked: false
+        isLocked: true,
+        ratio: 0.75
       }
     },
     methods: {
@@ -57,6 +58,23 @@
       toggleLock() {
         this.isLocked = !this.isLocked;
       }
+    },
+    watch: {
+      'settings.width': {
+        handler() {
+          if(this.isLocked) {
+            this.settings.height = this.settings.width * this.ratio;
+          }
+        }
+      },
+      'settings.height': {
+        handler() {
+          if(this.isLocked) {
+            this.settings.width = this.settings.height / this.ratio;
+          }
+        }
+      }
+
     }
   }
 </script>

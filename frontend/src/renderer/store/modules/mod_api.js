@@ -465,12 +465,13 @@ const actions = {
       action: "getNetworkInputDim",
       value: getters.GET_coreNetwork
     };
-    //console.log('getNetworkInputDim request', theData);
+    console.log('getNetworkInputDim request', theData);
     if(isWeb()) {
       dispatch('globalView/ShowCoreNotFoundPopup', null, { root: true });
     }
     return coreRequest(theData)
       .then((data)=> {
+        console.log(data);
         //console.log('getNetworkInputDim answer', data);
         if(data) return dispatch('mod_workspace/SET_elementInputDim', data, {root: true});
       })
