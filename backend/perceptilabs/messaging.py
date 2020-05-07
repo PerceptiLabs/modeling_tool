@@ -82,9 +82,8 @@ class MessageBus:
                 # Read from producers, forward to consumers.
                 topic, message = zsock_sub.recv_multipart()
                 zsock_pub.send_multipart([topic, message])
-
+                
                 deque.append((t, len(message)))
-
 
             # Compute throughput
             if print_throughput and counter % (1000 / self.POLL_TIMEOUT) == 0:

@@ -157,7 +157,7 @@ class TrainingServer:
         message_key = message['key']
         message_value = message['value']
         
-        #log.info(f"Received message '{message_key}'")
+        log.info(f"Received message '{message_key}'")
         
         new_state = None
         if message_key == 'on_request_start':

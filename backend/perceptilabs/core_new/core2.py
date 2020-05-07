@@ -162,10 +162,6 @@ class Core:
             time.sleep(1.0)            
             yield
 
-        print("AAA!")
-
-            
-
     def _on_training_state_changed(self, new_state):
         log.info(f"Training server entered state {new_state}")            
         
@@ -360,7 +356,7 @@ class Core:
         self.request_close()
 
         if not self._deployment_strategy.shutdown(timeout=timeout):
-            log.warning("Failed to shutdown deployment!")
+            log.warning(f"Deployment did not shut down within {timeout}s. Proceeding anyway!")
 
         self._closed_by_force = True
         log.info("Force closed core")
@@ -370,6 +366,7 @@ class Core:
 
     def request_close(self):
         self._client.request_close()
+        log.info("Requested close")
         
     def request_pause(self):
         if self._client is not None:
@@ -421,7 +418,7 @@ class Core:
     
     @deprecated
     def close(self, wait_for_deployment=False):
-        timeout = None if wait_for_deployment else 1        
+        timeout = None if wait_for_deployment else 1
         self.force_close(timeout=timeout)
         
     @deprecated

@@ -248,7 +248,7 @@ def policy_classification(core, graphs, sanitized_to_name, sanitized_to_id, resu
         elif trn_node.layer.status == 'finished':
             training_status = 'Finished'
 
-        if core.is_paused:
+        if core.is_training_paused:
             status = 'Paused'
         else:
             status = 'Running'
@@ -632,7 +632,7 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id, re
         elif trn_node.layer.status == 'finished':
             training_status = 'Finished'
 
-        if core.is_paused:
+        if core.is_training_paused:
             status = 'Paused'
         else:
             status = 'Running'
@@ -872,7 +872,7 @@ def policy_reinforce(core, graphs, sanitized_to_name, sanitized_to_id, results):
         elif trn_node.layer.status == 'finished':
             training_status = 'Finished'
 
-        if core.is_paused:
+        if core.is_training_paused:
             status = 'Paused'
         else:
             status = 'Running'

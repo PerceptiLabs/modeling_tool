@@ -372,7 +372,19 @@ class coreLogic():
             )        
         
     def Close(self):
-        self.Stop()
+        if self._core_mode == 'v1':
+            self.Stop()
+        else:
+            self.commandQ.put(
+                CoreCommand(
+                    type='close',
+                    parameters=None,
+                    allow_override=False
+                )
+            )
+            import time
+            time.sleep(1.5) # Give the Core some time to close the training server
+        
         if self.cThread and self.cThread.isAlive():
             self.cThread.kill()
         return {"content":"closed core %s" % str(self.networkName)}
@@ -385,12 +397,11 @@ class coreLogic():
         else:
             self.commandQ.put(
                 CoreCommand(
-                    type='close',
+                    type='stop',
                     parameters=None,
                     allow_override=False
                 )
             )
-            
         return {"content":"Stopping"}
 
     def checkCore(self):
