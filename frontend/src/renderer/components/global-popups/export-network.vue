@@ -14,7 +14,7 @@
               v-model="settings.Type"
               :select-options="selectOptions"
             )
-        .form_holder
+        .form_holder(v-if="settings.Type === 'TFModel'")
           base-checkbox(v-model="settings.Compressed") Compressed
 
     template(slot="action")
@@ -76,4 +76,13 @@ export default {
 
 <style lang="scss" scoped>
 
+.popup-button {
+  width: 9.5rem;
+  height: 3.5rem;
+  font-family: Nunito Sans;
+  font-style: normal;
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 22px;
+}
 </style>

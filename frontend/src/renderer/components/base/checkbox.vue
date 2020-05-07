@@ -69,8 +69,10 @@ export default {
       &:checked + .checkbox-fake {
         //background: $bg-grad-blue;
         //box-shadow: $icon-shad;
+        background: $color-6;
         .icon {
           opacity: 1;
+          color: $black;
         }
         /*<!--&.checkbox-fake&#45;&#45;icon {-->*/
         /*<!--  background: $bg-workspace;-->*/
@@ -78,10 +80,6 @@ export default {
         /*<!--    opacity: 1;-->*/
         /*<!--  }-->*/
         /*<!--}-->*/
-      }
-      &:focus + .checkbox-fake {
-        outline: 1px dotted $col-primary;
-        //box-shadow: 0 0 1px 1px $white;
       }
     }
     .checkbox-text {
@@ -92,11 +90,13 @@ export default {
     .checkbox-fake {
       position: relative;
       flex: 0 0 1.4em;
-      width: 1.4em;
-      height: 1.4em;
+      width: 1.3em;
+      height: 1.3em;
       cursor: pointer;
-      //background-color: $bg-input;
-      background-color: #6E778C;
+      background-color: $col-txt2;
+      border: 0;
+      border-radius: 2px;
+
       .icon {
         font-size: .9em;
         line-height: 1;

@@ -125,13 +125,13 @@ input[type='submit'] {
 }
 
 .form_label {
-	font-size: 1.4rem;
+	font-size: 1.2rem;
 }
 
 .form_holder {
 	display: block;
 	width: 100%;
-	margin-bottom: $form-indent;
+	margin-bottom: $form-indent * 2;
 	.form_label {
 		display: block;
 		margin-bottom: $form-indent/2;
@@ -158,6 +158,16 @@ input[type='submit'] {
 	//.form_label + .form_input {
 	//  //margin-left: 2rem;
 	//}
+	input {
+		background: #363E51;
+		border: 1px solid #4B4D52;
+		border-radius: 2px;
+		height: 3.5rem;
+
+		&:focus {
+			border: 1px solid $color-6;
+		}
+	}
 }
 
 .form_table {
