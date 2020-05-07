@@ -4,7 +4,6 @@ import time
 import pytest
 import logging
 import tempfile
-import threading
 import numpy as np
 from queue import Queue
 from unittest.mock import MagicMock
@@ -242,27 +241,26 @@ def test_core_handles_userland_timeout():
     script_factory = MagicMock()
     script_factory.make.return_value = ('', {})
 
-    thread2 = None
+
+    server_step = None
+    
     def run_deploy(path):
-        nonlocal thread2
-        def fn():
-            topic_generic = script_factory.make.call_args[0][2]
-            topic_snapshots = script_factory.make.call_args[0][3]
+        topic_generic = script_factory.make.call_args[0][2]
+        topic_snapshots = script_factory.make.call_args[0][3]
+        
+        prod_generic = MessageProducer(topic_generic)
+        prod_snapshots = MessageProducer(topic_snapshots)
+        consumer = MessageConsumer([topic_generic])            
 
-            prod_generic = MessageProducer(topic_generic)
-            prod_snapshots = MessageProducer(topic_snapshots)
-            consumer = MessageConsumer([topic_generic])            
-
-            training_server = TrainingServer(
-                prod_generic, prod_snapshots, consumer,
-                graph,
-                snapshot_builder=MagicMock(),
-                userland_timeout=userland_timeout,
-                max_time_run=120
-            )
-            training_server.run()
-        thread2 = threading.Thread(target=fn, daemon=True)
-        thread2.start()
+        training_server = TrainingServer(
+            prod_generic, prod_snapshots, consumer,
+            graph,
+            snapshot_builder=MagicMock(),
+            userland_timeout=userland_timeout,
+            max_time_run=120
+        )
+        nonlocal server_step        
+        server_step = training_server.run_stepwise()
     
     deployment_strategy.run.side_effect = run_deploy
     
@@ -274,18 +272,15 @@ def test_core_handles_userland_timeout():
         server_timeout=server_timeout,
         issue_handler=issue_handler
     )
+    core_step = core.run_stepwise(graph_spec)
 
-    thread1 = threading.Thread(target=core.run, args=(graph_spec,), daemon=True)
-    thread1.start()
-    try:
-        assert wait_for_condition(lambda _: core.is_running)
-        assert wait_for_condition(lambda _: not core.is_running)
-        assert wait_for_condition(lambda _: issue_handler.put_error.call_count == 1)        
-    finally:
-        core.close(wait_for_deployment=True)
-        thread1.join()
-        thread2.join()        
-
+    def cond(_):
+        next(core_step, None)
+        next(server_step, None)
+        return issue_handler.put_error.call_count == 1             
+    
+    assert wait_for_condition(cond)
+    
 
 def test_core_handles_userland_error():
     def run_graph():
@@ -307,25 +302,22 @@ def test_core_handles_userland_error():
     script_factory = MagicMock()
     script_factory.make.return_value = ('', line_to_node_map)
 
-    thread2 = None
+    server_step = None
     def run_deploy(path):
-        nonlocal thread2
-        def fn():
-            topic_generic = script_factory.make.call_args[0][2]
-            topic_snapshots = script_factory.make.call_args[0][3]
-
-            prod_generic = MessageProducer(topic_generic)
-            prod_snapshots = MessageProducer(topic_snapshots)
-            consumer = MessageConsumer([topic_generic])            
-            training_server = TrainingServer(
-                prod_generic, prod_snapshots, consumer,                
-                graph,
-                snapshot_builder=MagicMock(),
-                max_time_run=120                
-            )
-            training_server.run()
-        thread2 = threading.Thread(target=fn, daemon=True)
-        thread2.start()
+        topic_generic = script_factory.make.call_args[0][2]
+        topic_snapshots = script_factory.make.call_args[0][3]
+        
+        prod_generic = MessageProducer(topic_generic)
+        prod_snapshots = MessageProducer(topic_snapshots)
+        consumer = MessageConsumer([topic_generic])            
+        training_server = TrainingServer(
+            prod_generic, prod_snapshots, consumer,                
+            graph,
+            snapshot_builder=MagicMock(),
+            max_time_run=120                
+        )
+        nonlocal server_step
+        server_step = training_server.run_stepwise()
     
     deployment_strategy.run.side_effect = run_deploy
     
@@ -336,16 +328,14 @@ def test_core_handles_userland_error():
         issue_handler=issue_handler
     )
 
-    thread1 = threading.Thread(target=core.run, args=(graph_spec,), daemon=True)
-    thread1.start()
-    try:
-        assert wait_for_condition(lambda _: issue_handler.put_error.call_count == 1)
-    finally:
-        core.close(wait_for_deployment=True)
-        thread1.join()
-        thread2.join()        
+    core_step = core.run_stepwise(graph_spec)
 
-        
+    def cond(_):
+        next(core_step, None)
+        next(server_step, None)
+        return issue_handler.put_error.call_count == 1             
+
+    
 def test_core_handles_training_server_timeout():
     """Simulate a timeout by having a slow training loop"""
     
@@ -366,28 +356,24 @@ def test_core_handles_training_server_timeout():
     script_factory.make.return_value = ('', {})
     issue_handler = MagicMock()
     
-    thread2 = None
+    server_step = None
     def run_deploy(path):
-        def fn():
-            topic_generic = script_factory.make.call_args[0][2]
-            topic_snapshots = script_factory.make.call_args[0][3]
-
-            prod_generic = MessageProducer(topic_generic)
-            prod_snapshots = MessageProducer(topic_snapshots)
-            consumer = MessageConsumer([topic_generic])            
-            training_server = TrainingServer(
-                prod_generic, prod_snapshots, consumer,                
-                graph,
-                snapshot_builder=MagicMock(),
-                userland_timeout=userland_timeout,
-                ping_interval=ping_interval,
-                max_time_run=120                
-            )
-            training_server.run()
-            
-        nonlocal thread2            
-        thread2 = threading.Thread(target=fn, daemon=True)
-        thread2.start()
+        topic_generic = script_factory.make.call_args[0][2]
+        topic_snapshots = script_factory.make.call_args[0][3]
+        
+        prod_generic = MessageProducer(topic_generic)
+        prod_snapshots = MessageProducer(topic_snapshots)
+        consumer = MessageConsumer([topic_generic])            
+        training_server = TrainingServer(
+            prod_generic, prod_snapshots, consumer,                
+            graph,
+            snapshot_builder=MagicMock(),
+            userland_timeout=userland_timeout,
+            ping_interval=ping_interval,
+            max_time_run=120                
+        )
+        nonlocal server_step
+        server_step = training_server.run_stepwise()
             
     deployment_strategy.run.side_effect = run_deploy
     
@@ -400,13 +386,12 @@ def test_core_handles_training_server_timeout():
         issue_handler=issue_handler
     )
 
-    thread1 = threading.Thread(target=core.run, args=(graph_spec,), daemon=True)
-    thread1.start()
-    try:
-        assert wait_for_condition(lambda _: issue_handler.put_error.call_count == 1)        
-    finally:
-        thread1.join()
-        thread2.join()        
+    core_step = core.run_stepwise(graph_spec)
+
+    def cond(_):
+        next(core_step, None)
+        next(server_step, None)
+        return issue_handler.put_error.call_count == 1             
 
         
 def test_pause_works(graph_spec_binary_classification):
@@ -424,26 +409,24 @@ def test_pause_works(graph_spec_binary_classification):
     script_factory = MagicMock()
     script_factory.make.return_value = ('', {})
 
-    thread2 = None
-    def run_deploy(path):
-        def fn():
-            topic_generic = script_factory.make.call_args[0][2]
-            topic_snapshots = script_factory.make.call_args[0][3]
 
-            prod_generic = MessageProducer(topic_generic)
-            prod_snapshots = MessageProducer(topic_snapshots)
-            consumer = MessageConsumer([topic_generic])            
-            training_server = TrainingServer(
-                prod_generic, prod_snapshots, consumer,                
-                graph,
-                snapshot_builder=MagicMock(),
-                max_time_run=120                
-            )
-            training_server.run()
-        nonlocal thread2
-        thread2 = threading.Thread(target=fn, daemon=True)
-        thread2.start()
+    server_step = None
+    def run_deploy(path):
+        topic_generic = script_factory.make.call_args[0][2]
+        topic_snapshots = script_factory.make.call_args[0][3]
         
+        prod_generic = MessageProducer(topic_generic)
+        prod_snapshots = MessageProducer(topic_snapshots)
+        consumer = MessageConsumer([topic_generic])            
+        training_server = TrainingServer(
+            prod_generic, prod_snapshots, consumer,                
+            graph,
+            snapshot_builder=MagicMock(),
+            max_time_run=120                
+        )
+        nonlocal server_step
+        server_step = training_server.run_stepwise()
+
     deployment_strategy = MagicMock()    
     deployment_strategy.run.side_effect = run_deploy
 
@@ -452,22 +435,28 @@ def test_pause_works(graph_spec_binary_classification):
         script_factory,
         deployment_strategy=deployment_strategy
     )
+
+    core_step = core.run_stepwise(graph_spec)
+
+    def cond_training_is_running(_):
+        next(core_step, None)
+        next(server_step, None)
+        return core.is_training_running and not core.is_training_paused
     
-    thread1 = threading.Thread(target=core.run, args=(graph_spec_binary_classification,), kwargs={'auto_close': True}, daemon=True)
-    thread1.start()
-    try:
-        assert wait_for_condition(lambda _: core.is_running) # Pausing in State.READY doesn't make sense (right now), so we have to wait... 
-        assert wait_for_condition(lambda _: not core.is_paused)
-        
-        core.pause()
-        assert wait_for_condition(lambda _: core.is_paused)
-    finally:
-        core.request_close()
-        thread1.join()
-        thread2.join()
+    def cond_training_is_paused(_):
+        next(core_step, None)
+        next(server_step, None)
+        return core.is_training_paused and not core.is_training_running
+
+    
+    assert wait_for_condition(cond_training_is_running)
+
+    core.pause()    
+    assert wait_for_condition(cond_training_is_paused)    
         
         
 def test_resume_works(graph_spec_binary_classification):
+    
     def run_graph():
         for _ in range(100):
             time.sleep(1.0)
@@ -481,26 +470,24 @@ def test_resume_works(graph_spec_binary_classification):
     script_factory = MagicMock()
     script_factory.make.return_value = ('', {})
 
-    thread2 = None
-    def run_deploy(path):
-        def fn():
-            topic_generic = script_factory.make.call_args[0][2]
-            topic_snapshots = script_factory.make.call_args[0][3]
 
-            prod_generic = MessageProducer(topic_generic)
-            prod_snapshots = MessageProducer(topic_snapshots)
-            consumer = MessageConsumer([topic_generic])            
-            training_server = TrainingServer(
-                prod_generic, prod_snapshots, consumer,                
-                graph,
-                snapshot_builder=MagicMock(),
-                max_time_run=120                
-            )
-            training_server.run()
-        nonlocal thread2
-        thread2 = threading.Thread(target=fn, daemon=True)
-        thread2.start()
+    server_step = None
+    def run_deploy(path):
+        topic_generic = script_factory.make.call_args[0][2]
+        topic_snapshots = script_factory.make.call_args[0][3]
         
+        prod_generic = MessageProducer(topic_generic)
+        prod_snapshots = MessageProducer(topic_snapshots)
+        consumer = MessageConsumer([topic_generic])            
+        training_server = TrainingServer(
+            prod_generic, prod_snapshots, consumer,                
+            graph,
+            snapshot_builder=MagicMock(),
+            max_time_run=120                
+        )
+        nonlocal server_step
+        server_step = training_server.run_stepwise()
+
     deployment_strategy = MagicMock()    
     deployment_strategy.run.side_effect = run_deploy
 
@@ -509,86 +496,26 @@ def test_resume_works(graph_spec_binary_classification):
         script_factory,
         deployment_strategy=deployment_strategy
     )
+
+    core_step = core.run_stepwise(graph_spec)
+
+    def cond_training_is_running(_):
+        next(core_step, None)
+        next(server_step, None)
+        return core.is_training_running and not core.is_training_paused
     
-    thread1 = threading.Thread(target=core.run, args=(graph_spec_binary_classification,), kwargs={'auto_close': True}, daemon=True)
-    thread1.start()
-    try:
-        assert wait_for_condition(lambda _: core.is_running) # Pausing in State.READY doesn't make sense (right now), so we have to wait... 
-        assert wait_for_condition(lambda _: not core.is_paused)
-        print("Is running")
-        
-        core.pause()
-        assert wait_for_condition(lambda _: core.is_paused)
-        assert wait_for_condition(lambda _: not core.is_running)        
-        print("Is paused")
+    def cond_training_is_paused(_):
+        next(core_step, None)
+        next(server_step, None)
+        return core.is_training_paused and not core.is_training_running
 
-        
-        core.unpause()
-        assert wait_for_condition(lambda _: core.is_running)
-        assert wait_for_condition(lambda _: not core.is_paused)
-        print("Is running again")
-        
-    finally:
-        core.request_close()
-        thread1.join()
-        thread2.join()        
-
-'''
-def test_export_works(graph_spec_binary_classification):
     
-    def run_graph():
-        for _ in range(5):
-            time.sleep(1.0)
-            yield YieldLevel.DEFAULT
+    assert wait_for_condition(cond_training_is_running)
 
-    graph_spec = MagicMock()
-    graph = MagicMock()
-    graph.run.side_effect = run_graph
-    graph_builder = MagicMock()
+    core.pause()    
+    assert wait_for_condition(cond_training_is_paused)        
 
-    script_factory = MagicMock()
-    script_factory.make.return_value = ('', {})
+    core.unpause()    
+    assert wait_for_condition(cond_training_is_running)        
 
-    thread2 = None
-    def run_deploy(path):
-        def fn():
-            topic_generic = script_factory.make.call_args[0][2]
-            topic_snapshots = script_factory.make.call_args[0][3]
-
-            prod_generic = MessageProducer(topic_generic)
-            prod_snapshots = MessageProducer(topic_snapshots)
-            consumer = MessageConsumer([topic_generic])            
-            training_server = TrainingServer(
-                prod_generic, prod_snapshots, consumer,                
-                graph,
-                snapshot_builder=MagicMock(),
-                max_time_run=120                
-            )
-            training_server.run()
-ä        nonlocal thread2
-        thread2 = threading.Thread(target=fn, daemon=True)
-        thread2.start()
-        
-    deployment_strategy = MagicMock()    
-    deployment_strategy.run.side_effect = run_deploy
-
-    core = Core(
-        graph_builder,
-        script_factory,
-        deployment_strategy=deployment_strategy
-    )
     
-    thread1 = threading.Thread(target=core.run, args=(graph_spec_binary_classification,), kwargs={'auto_close': True}, daemon=True)
-    thread1.start()
-    try:
-        assert wait_for_condition(lambda _: core.training_state == State.TRAINING_RUNNING) # Pausing in State.READY doesn't make sense (right now), so we have to wait... 
-        assert wait_for_condition(lambda _: not core.is_paused)
-        
-        core.pause()
-        assert wait_for_condition(lambda _: core.is_paused)
-    finally:
-        core.close(wait_for_deployment=True)
-        thread1.join()
-        thread2.join()
-        
-'''

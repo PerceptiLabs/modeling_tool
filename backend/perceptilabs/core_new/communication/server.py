@@ -98,7 +98,7 @@ class TrainingServer:
             elif state.value in State.idle_states:                
                 if counter % 5 == 0:
                     log.info(f"In idle state '{state.value}'")                                
-                self._send_key_value('state', state.value)
+                #self._send_key_value('state', state.value)
                 time.sleep(1.0)
                 
             elif state.value not in State.exit_states:

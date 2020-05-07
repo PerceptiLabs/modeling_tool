@@ -162,6 +162,10 @@ class Core:
             time.sleep(1.0)            
             yield
 
+        print("AAA!")
+
+            
+
     def _on_training_state_changed(self, new_state):
         log.info(f"Training server entered state {new_state}")            
         
