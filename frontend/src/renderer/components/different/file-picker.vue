@@ -6,8 +6,7 @@
           v-if="options.showBackButton"
           type="button" 
           @click="onCancel")
-          i.icon.icon-backward
-          span Back
+          img(src="../../../../static/img/back.svg")
       .search.search-input-box
         i.icon.icon-close(@click="clearSearchValue")
         input.search-input(

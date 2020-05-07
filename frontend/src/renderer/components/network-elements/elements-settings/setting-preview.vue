@@ -3,8 +3,8 @@
     .settings-layer
       .form_row
         button.btn.btn--link(type="button" @click="toSettings")
-          i.icon.icon-backward
-          span Back
+          img(src="../../../../../static/img/back.svg")
+
       .form_row
         base-select(
           v-model="previewValue"

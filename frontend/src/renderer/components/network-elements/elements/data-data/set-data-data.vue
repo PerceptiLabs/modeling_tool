@@ -44,8 +44,7 @@
         .settings-layer_section
           .form_row
             button.btn.btn--link(type="button" @click="clearPath")
-              i.icon.icon-backward
-              span Back
+              img(src="../../../../../../static/img/back.svg")
           .form_row(v-if="dataColumns.length")
             base-select(
               v-model="dataColumnsSelected"
@@ -75,7 +74,7 @@
           //-   .form_input
           //-     input(type="number" v-model="settings.accessProperties.Batch_size")
           .form_row
-            base-checkbox.bigest-text(v-model="settings.accessProperties.Shuffle_data") Shuffle
+            base-checkbox.light-text(v-model="settings.accessProperties.Shuffle_data") Shuffle
     template(slot="Code-content")
       settings-code(
         :current-el="currentEl"
@@ -404,7 +403,11 @@
       //margin-left: 1em;
     }
   }
-  .settings-layer_section--data label.bigest-text {
-    font-size: 1.4rem
+  .settings-layer_section--data label.light-text {
+    font-family: Nunito Sans;
+    font-style: normal;
+    font-weight: 300;
+    font-size: 1.1rem;
+    line-height: 1.5rem;
   }
 </style>
