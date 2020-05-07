@@ -3,21 +3,20 @@
     div.wrapper
       form.left-wrapper(@keyup.enter="validateForm" )
         img.site-logo(src="./../../../../static/img/perceptilabs-new-log.svg")
-        div.d-flex
-          .form_holder.mr15
+        .form_holder
             input.new-ui(type="text" placeholder="First Name"
               v-model="user.firstName"
               name="First Name"
               v-validate="'required|alpha_spaces'"
               )
             p.text-error(v-show="errors.has('First Name')") {{ errors.first('First Name') }}
-          .form_holder
-            input.new-ui(type="text" placeholder="Last Name"
-              v-model="user.lastName"
-              name="Last Name"
-              v-validate="'required|alpha_spaces'"
-              )
-            p.text-error(v-show="errors.has('Last Name')") {{ errors.first('Last Name') }}
+        .form_holder
+          input.new-ui(type="text" placeholder="Last Name"
+            v-model="user.lastName"
+            name="Last Name"
+            v-validate="'required|alpha_spaces'"
+            )
+          p.text-error(v-show="errors.has('Last Name')") {{ errors.first('Last Name') }}
         .form_holder
           input.new-ui(type="email" placeholder="Email"
             v-model="user.email"
@@ -241,6 +240,7 @@ export default {
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.25);
     border-radius: 2px;
     padding: 0 100px 0 80px;
+    width: 480px;
   }
   .site-logo {
     margin-bottom: 40px;
@@ -355,6 +355,14 @@ export default {
     margin: 0;
     padding: 0;
     width: 480px;
+  }
+  .text-error {
+    margin-top: 4px;
+    padding-left: 20px;
+    padding-right: 20px;
+    font-size: 12px;
+    text-align: center;
+    margin-bottom: 0;
   }
   // if it should require to autofilled field should look the same as default input's
   /*input:-webkit-autofill,*/
