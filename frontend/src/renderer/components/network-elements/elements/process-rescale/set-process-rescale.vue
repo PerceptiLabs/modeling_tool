@@ -6,21 +6,21 @@
     @press-confirm="confirmSettings"
     )
     template(slot="Settings-content")
-      .settings-layer_section
+      .settings-layer_section.rescale
         .form_row
-          .form_label Rescale Width:
+          .form_label Width * Height:
           .form_input
             input(type="number" v-model="settings.width")
-          button.btn.btn--icon.visible-icon(
-            type="button"
-            :class="{'invisible-icon': isLocked}"
-            @click="toggleLock()"
-          )
-            i.icon.icon-lock
-        .form_row
-          .form_label Rescale Height:
           .form_input
             input(type="number" v-model="settings.height")
+        button.btn.btn--icon.visible-icon.rescale(
+          type="button"
+          :class="{'invisible-icon': isLocked}"
+          @click="toggleLock()"
+        )
+          i.icon.icon-lock
+        i.icon.multiple.icon-app-close
+
 
     template(slot="Code-content")
       settings-code(
@@ -64,10 +64,22 @@
 <style lang="scss">
   @import "../../../../scss/base";
   .visible-icon {
-    padding: 0 .9rem;
     &.invisible-icon {
       color: $disable-txt;
     }
   }
-
+  .settings-layer_section.rescale {
+    margin-top: 10px;
+    position: relative;
+  }
+  .btn--icon.rescale {
+    position: absolute;
+    top: 0;
+    right: 10px;
+  }
+  .multiple.icon-app-close {
+    position: absolute;
+    top: 20px;
+    right: 32%;
+  }
 </style>
