@@ -11,6 +11,12 @@
           .form_label Rescale Width:
           .form_input
             input(type="number" v-model="settings.width")
+          button.btn.btn--icon.visible-icon(
+            type="button"
+            :class="{'invisible-icon': isLocked}"
+            @click="toggleLock()"
+          )
+            i.icon.icon-lock
         .form_row
           .form_label Rescale Height:
           .form_input
@@ -41,12 +47,27 @@
           width: 40,
           height: 30
         },
+        isLocked: false
       }
     },
     methods: {
       saveSettings(tabName) {
         this.applySettings(tabName);
       },
+      toggleLock() {
+        this.isLocked = !this.isLocked;
+      }
     }
   }
 </script>
+
+<style lang="scss">
+  @import "../../../../scss/base";
+  .visible-icon {
+    padding: 0 .9rem;
+    &.invisible-icon {
+      color: $disable-txt;
+    }
+  }
+
+</style>
