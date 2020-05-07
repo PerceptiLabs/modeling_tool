@@ -1,8 +1,8 @@
 <template lang="pug">
   .data-file-settings
     .form_row.file-settings_title
-      .form_label Files
-      .form_input
+      .form_label.heavy-text Files
+      .form_input.light-text
         span Train
         span Validate
         span Test
@@ -14,7 +14,7 @@
         .form_row
           .form_label
             button.btn.btn--icon.icon.icon-app-close(type="button" @click="deleteItem(i)")
-            span.file-item_path {{ file.path }}
+            span.file-item_path.heavy-text {{ file.path }}
             spinner-upload-file.spinner-upload-file(v-if="loadingFlag")
           .form_input
             triple-input.file-list-item_settings(
@@ -25,7 +25,7 @@
               :validate-sum="100"
             )
 
-    button.btn.btn--link(type="button" @click="addFile") + Add {{ nameAddItem }}
+    button.btn.btn--link.light-text(type="button" @click="addFile") + Add {{ nameAddItem }}
 
 </template>
 
@@ -96,26 +96,40 @@ export default {
 <style lang="scss" scoped>
   @import "../../../scss/base";
   $file-list-indent: .5rem;
+
+  .heavy-text {      
+    font-family: Nunito Sans;
+    font-style: normal;
+    font-weight: 600;
+    font-size: 1.2rem;
+    line-height: 1.6rem;
+  }
+
+  .light-text {
+    font-family: Nunito Sans;
+    font-style: normal;
+    font-weight: 300;
+    font-size: 1.1rem;
+    line-height: 1.5rem;
+  }
+
   .data-file-settings {
     width: 100%;
     box-sizing: border-box;
     .btn--link {
-      color: $color-5;
-      text-decoration: underline;
+      color: $toolbar-button-border;
+      margin-left: 1rem;
+
       &:hover {
         text-decoration: none;
       }
     }
   }
-  .file-settings_title {
-    
+  .file-settings_title {   
     margin-bottom: 1rem;
+
     .form_label {
-      font-family: Nunito Sans;
-      font-style: normal;
-      font-weight: 600;
       font-size: 1.2rem;
-      line-height: 1.6rem;
       color: $white;
     }
     .form_input {
@@ -123,12 +137,6 @@ export default {
       justify-content: space-around;
       padding-left: 0;
       padding-right: 2rem;
-
-      font-family: Nunito Sans;
-      font-style: normal;
-      font-weight: 300;
-      font-size: 1.1rem;
-      line-height: 1.5rem;
 
       color: $color-12;
     }
@@ -161,11 +169,6 @@ export default {
   }
 
   .file-item_path {
-    font-family: Nunito Sans;
-    font-style: normal;
-    font-weight: 300;
-    font-size: 1.2rem;
-    line-height: 1.6rem;
     color: $color-12;
     max-width: 10rem;
     overflow: hidden;
