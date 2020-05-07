@@ -70,6 +70,7 @@ class State:
         (TRAINING_COMPLETED, CLOSING),
         (TRAINING_RUNNING, CLOSING),
         (TRAINING_PAUSED, CLOSING),
+        (TRAINING_STOPPED, CLOSING),        
         (TRAINING_RUNNING_HEADLESS, CLOSING),
         (TRAINING_PAUSED_HEADLESS, CLOSING),                                
         (TRAINING_TIMEOUT, CLOSING),
