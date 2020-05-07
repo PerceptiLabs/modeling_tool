@@ -382,8 +382,7 @@ class coreLogic():
                     allow_override=False
                 )
             )
-            import time
-            time.sleep(1.5) # Give the Core some time to close the training server
+            time.sleep(1.5) # Give the Core some time to close the training server before killing the thread...
         
         if self.cThread and self.cThread.isAlive():
             self.cThread.kill()
