@@ -103,8 +103,10 @@ class TrainingServer:
                 
             elif state.value not in State.exit_states:
                 raise RuntimeError(f"Unexpected state: {state}")
-            
-            t5 = time.perf_counter()            
+
+
+            t5 = time.perf_counter()
+            #print(t5-t0, t5-t4, t4-t3, t3-t2, t2-t1, t1-t0)
             counter += 1
             yield
 
@@ -117,12 +119,13 @@ class TrainingServer:
         self._producer_snapshots.stop()
         self._consumer.stop()
 
-    def _advance_training(self, training_step, sentinel, task_executor):
+    def _advance_training_with_timeout(self, training_step, sentinel, task_executor):
         """Take a training step, check for timeout or userland errors, send snapshot if possible"""
         
         new_state = None
         try:
             training_step_result = task_executor.run(training_step, timeout=self._userland_timeout)
+            training_step_result = training_step()
         except TaskTimeout as e:
             log.info("Training step timed out!")
             new_state = State.TRAINING_TIMEOUT
@@ -139,6 +142,24 @@ class TrainingServer:
         finally:
             return new_state
 
+    def _advance_training(self, training_step, sentinel, task_executor):
+        """Take a training step, check for userland errors, send snapshot if possible"""
+        
+        new_state = None
+        try:
+            training_step_result = training_step()
+        except Exception as e:
+            log.info("Training step raised an error: " + repr(e))            
+            new_state = State.TRAINING_FAILED
+            self._send_userland_error(e)
+        else:
+            if training_step_result is sentinel:
+                new_state = State.TRAINING_COMPLETED
+            elif training_step_result is YieldLevel.SNAPSHOT:
+                self._send_graph(self._graph)
+        finally:
+            return new_state        
+
     def _send_userland_timeout(self):
         self._send_key_value('userland-timeout')        
     
@@ -148,7 +169,7 @@ class TrainingServer:
         self._send_key_value('userland-error', data)                
         
     def _process_messages(self, state, task_executor):
-        messages = self._consumer.get_messages(per_message_timeout=0.001)
+        messages = self._consumer.get_messages(per_message_timeout=0.000001)
         for message in messages:
             self._process_message(message, state, task_executor)
 

@@ -222,7 +222,7 @@ def test_train_normal_distributed_converges(graph_spec_binary_classification, gr
     
     assert run_core_until_convergence(json_network, metric_fn)
 
-
+@pytest.mark.skip
 def test_core_handles_userland_timeout():
     userland_timeout = 3
     server_timeout = 10000    
