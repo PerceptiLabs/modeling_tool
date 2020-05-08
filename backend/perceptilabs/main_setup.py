@@ -2,7 +2,7 @@ import os
 
 import logging
 import sentry_sdk
-
+from sentry_sdk import utils
 
 import perceptilabs.utils as utils
 from perceptilabs.analytics.scraper import get_scraper

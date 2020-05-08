@@ -1,6 +1,8 @@
 import threading
 import traceback
 import sys
+import sentry_sdk
+from sentry_sdk import utils
 from sentry_sdk import capture_exception
 # from sentry_sdk import configure_scope
 import logging
@@ -40,10 +42,13 @@ class CoreThread(threading.Thread):
       except LayerSessionAbort:
          pass
       except Exception as e:
+         sentry_sdk.utils.MAX_STRING_LENGTH = 15000
+         sentry_sdk.capture_message(str(e))
+
          with self.issue_handler.create_issue('Unexpected exception in CoreThread', e) as issue:
             self.issue_handler.put_error(issue.frontend_message)
             log.error(issue.internal_message)
-         
+
    def globaltrace(self, frame, event, arg): 
       if event == 'call': 
          return self.localtrace 
