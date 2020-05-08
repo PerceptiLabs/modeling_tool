@@ -421,7 +421,6 @@ const mutations = {
     getters.GET_currentNetwork.networkMeta.netMode = value;
   },
   set_openStatistics(state, {dispatch, getters, value}) {
-    debugger;
     getters.GET_currentNetwork.networkMeta.openStatistics = value;
     let isTraining = getters.GET_networkIsTraining;
     if(isTraining) {
