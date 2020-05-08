@@ -214,7 +214,7 @@ class coreLogic():
             
             # TODO: Regression Distributed stuff
 
-            if layer['Type'] == 'Regression':
+            if layer['Type'] == 'TrainRegression':
                 if not 'Use_CPUs' in layer['Properties']:
                     layer['Properties']['Use_CPUs'] = use_cpus
 
@@ -789,11 +789,13 @@ class coreLogic():
                 loss_val=self.getStatistics({"layerId":id_, "variable":"loss_validation_epoch","innervariable":""})
                 end_results.update({"acc_train":float(acc_train[-1]*100), "acc_val":float(acc_val[-1]*100), "loss_train":float(loss_train[-1]), "loss_val":float(loss_val[-1])})
 
-            if value["Info"]["Type"]=="Regression":
-                r_sq_train=self.getStatistics({"layerId":id_, "variable":"r_sq_training_epoch","innervariable":""})
+            if value["Info"]["Type"]=="TrainRegression":
+                r_sq_train=self.getStatistics({"layerId":id_, "variable":"r_sq_train_epoch","innervariable":""})
                 r_sq_val=self.getStatistics({"layerId":id_, "variable":"r_sq_validation_epoch","innervariable":""})
-                loss_train=self.getStatistics({"layerId":id_, "variable":"loss_training_epoch","innervariable":""})
+                loss_train=self.getStatistics({"layerId":id_, "variable":"loss_train_epoch","innervariable":""})
                 loss_val=self.getStatistics({"layerId":id_, "variable":"loss_validation_epoch","innervariable":""})
+                # import pdb
+                # pdb.set_trace()
                 end_results.update({"r_sq_train":float(r_sq_train[-1]), "r_sq_val":float(r_sq_val[-1]), "loss_train":float(loss_train[-1]), "loss_val":float(loss_val[-1])})
         return end_results
 
@@ -1055,7 +1057,7 @@ class coreLogic():
                         
                         # PIE
                         r_sq_train=self.getStatistics({"layerId":layerId,"variable":"r_sq_train_iter","innervariable":""})
-                        r_sq_val=self.getStatistics({"layerId":layerId,"variable":"r_sq_val_iter","innervariable":""})
+                        r_sq_val=self.getStatistics({"layerId":layerId,"variable":"r_sq_validation_iter","innervariable":""})
 
                         if r_sq_val!=[]:
                             r_sq=r_sq_val
@@ -1089,7 +1091,7 @@ class coreLogic():
 
             if view == "Loss":
                 loss_train=self.getStatistics({"layerId":layerId,"variable":"loss_train_iter","innervariable":""})
-                loss_val=self.getStatistics({"layerId":layerId,"variable":"loss_val_iter","innervariable":""})
+                loss_val=self.getStatistics({"layerId":layerId,"variable":"loss_validation_iter","innervariable":""})
 
                 currentTraining=loss_train
                 if isinstance(loss_train,np.ndarray):
@@ -1115,7 +1117,7 @@ class coreLogic():
 
             if view == "R_Squared":
                 r_sq_train=self.getStatistics({"layerId":layerId,"variable":"r_sq_train_iter","innervariable":""})
-                r_sq_val=self.getStatistics({"layerId":layerId,"variable":"r_sq_val_iter","innervariable":""})
+                r_sq_val=self.getStatistics({"layerId":layerId,"variable":"r_sq_validation_iter","innervariable":""})
                 currentTraining=r_sq_train
 
                 if isinstance(r_sq_train,np.ndarray):
