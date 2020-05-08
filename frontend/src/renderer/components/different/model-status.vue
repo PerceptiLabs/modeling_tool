@@ -44,11 +44,13 @@ export default {
     },
     coreError: {
       type: Object,
-      default: {},
+      default: function() { return {}},
     }
   },
-  data: {
-    progressStyle: {},
+  data() {
+    return {
+      progressStyle: {},
+    }
   },
   watch: {
     'statusData.Progress': function () {
