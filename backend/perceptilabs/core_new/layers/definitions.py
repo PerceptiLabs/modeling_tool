@@ -240,7 +240,7 @@ DEFINITION_TABLE = {
         'tf1x.j2',
         'layer_tf1x_deconv',
         {
-            'deconv_dim': lambda specs: specs['Properties']['Deconv_dim'],
+            'conv_dim': lambda specs: specs['Properties']['Deconv_dim'],
             'patch_size': lambda specs: specs['Properties']['Patch_size'],
             'stride': lambda specs: specs['Properties']['Stride'],
             'feature_maps': lambda specs: specs['Properties']['Feature_maps'],
@@ -266,7 +266,7 @@ DEFINITION_TABLE = {
             'neurons': lambda specs: specs['Properties']['Neurons'],
             'version': lambda specs: specs['Properties']['Version'],
             'time_steps': lambda specs: specs['Properties']['Time_steps'],
-            'return_sequence': lambda specs: specs['Properties']['Return_sequence'],
+            'return_sequences': lambda specs: specs['Properties']['Return_sequence'],
             'dropout': lambda specs: specs['Properties']['Dropout'],
             'keep_prob': lambda specs: specs['Properties']['Keep_prob']
         },
