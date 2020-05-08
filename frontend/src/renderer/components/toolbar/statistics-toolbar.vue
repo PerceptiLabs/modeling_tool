@@ -128,6 +128,8 @@ export default {
     justify-content: center;
     align-items: center;
 
+    cursor: pointer;
+
     i {
       color: #B6C7FB;
       height: 0.9rem;
@@ -136,7 +138,6 @@ export default {
 
     & + .toolbar-button {
       margin-left: 0.5rem;
-      cursor: pointer;
     }
   }
 }
