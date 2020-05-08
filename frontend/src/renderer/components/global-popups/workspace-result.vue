@@ -2,27 +2,28 @@
   .popup-global
     .popup-global_overlay(@click="closePopup()")
     section.popup
-      .popup_tab-set
-        .popup_header.disable
-          h3 Result
-      .popup_body
-        .settings-layer_section
-          .body_results-info
-            .results-info--validation
-              p Training
-              span Training Accuracy: {{ popupInfo.acc_train | round(2)}}%
-              span Training Loss: {{ popupInfo.loss_train | round(2)}}
-            .results-info--validation
-              p Validation
-              span Validation Accuracy: {{ popupInfo.acc_val | round(2)}}%
-              span Validation Loss: {{ popupInfo.loss_val | round(2)}}
+      .popup-background
+        .popup_tab-set
+          .popup_header.disable
+            h3 Result
+        .popup_body
+          .settings-layer_section
+            .body_results-info
+              .results-info--validation
+                p Training
+                span Training Accuracy: {{ popupInfo.acc_train | round(2)}}%
+                span Training Loss: {{ popupInfo.loss_train | round(2)}}
+              .results-info--validation
+                p Validation
+                span Validation Accuracy: {{ popupInfo.acc_val | round(2)}}%
+                span Validation Loss: {{ popupInfo.loss_val | round(2)}}
 
-      .popup_foot
-        //-button.btn.btn--primary(type="button"
-          @click="closePopup()") Cancel
-        button.btn.btn--primary.tutorial-relative(type="button"
-          id="tutorial_run-test-button"
-          @click="runTest") Run test
+        .popup_foot
+          //-button.btn.btn--primary(type="button"
+            @click="closePopup()") Cancel
+          button.btn.btn--primary.tutorial-relative(type="button"
+            id="tutorial_run-test-button"
+            @click="runTest") Run test
 </template>
 
 <script>
