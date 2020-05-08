@@ -40,7 +40,7 @@
       div.models-list
         div.models-list-row.model-list-header
           div.column-1 
-            span.btn-round-icon(@click="toggleSelectedItems()")
+            span.btn-round-icon.check-model-button(@click="toggleSelectedItems()")
               //- img(v-if="isAtLeastOneItemSelected()" src="../../../../static/img/project-page/minus.svg")
               img(v-if="isAtLeastOneItemSelected()" src="../../../../static/img/project-page/checked.svg")
             | Name
@@ -51,7 +51,7 @@
           div.column-6 Last Modified
         div.models-list-row.model-list-item(v-for="(model, index) in workspaceContent"  @click="toggleItemSelection(model.networkID)" :key="model.networkID" :class="{'is-selected': isItemSelected(model.networkID)}")
           div.column-1
-            span.btn-round-icon
+            span.btn-round-icon.check-model-button
               img(v-if="isItemSelected(model.networkID)" src="../../../../static/img/project-page/checked.svg")
             span.model-name(v-tooltip:bottom="'Click to view Model Card'" @click.stop="gotToNetworkView(index)") {{model.networkName}}
 
@@ -704,5 +704,28 @@
     background-color: #4D556A;
     min-width: 29rem;
     box-shadow: 0 0 6px rgba(0, 0, 0, 0.7);
+  }
+  .check-model-button {
+    position: relative;
+    &:before {
+      content: '';
+      position: absolute;
+      width: 0px;
+      height: 0px;
+      transition: 0.1s;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      border: 0 solid rgba(196, 196, 196, 0.3);
+      box-sizing: content-box;
+    }
+    &:hover {
+      &:before {
+        width: 0px;
+        height: 0px;
+        border: 20px solid rgba(196, 196, 196, 0.3);
+      }
+    }
   }
 </style>
