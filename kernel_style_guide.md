@@ -27,7 +27,6 @@ def square_root(n):
     Raises:
         TypeError: if n is not a number.
         ValueError: if n is negative.
-
     """
 ``` 
 
