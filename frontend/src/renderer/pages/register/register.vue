@@ -92,7 +92,7 @@
               ) Sign up
         .form_holder.fz-12.text-center
           span Already a user? 
-          button.btn.btn--link.blue-link(@click="setActivePageAction(MODAL_PAGE_SIGN_IN)") Log in here
+          a.btn.btn--link.blue-link(@click="setActivePageAction(MODAL_PAGE_SIGN_IN)") Log in here
     
       div.description-box.d-flex.flex-column.justify-content-center
         .video-box-wrapper

@@ -76,6 +76,7 @@ export default {
   methods: {
     ...mapActions({
       setActivePageAction: 'modal_pages/setActivePageAction',
+      closePageAction: 'modal_pages/closePageAction',
       closeActivePageAction: 'modal_pages/closePageAction',
       cloud_userGetProfile:     'mod_apiCloud/CloudAPI_userGetProfile',
     }),
@@ -115,7 +116,14 @@ export default {
             }
             
             this.cloud_userGetProfile();
-            this.setActivePageAction(MODAL_PAGE_PROJECT);
+            // call this if haven't project setted in local storage
+            const hasProjectSelected = localStorage.hasOwnProperty('targetProject');
+            if(!hasProjectSelected) {
+              this.setActivePageAction(MODAL_PAGE_PROJECT);
+            } else {
+              this.closePageAction();
+            }
+            if(this.$router.name !== 'projects')
             this.$router.push({name: 'projects'});
           }
         })
