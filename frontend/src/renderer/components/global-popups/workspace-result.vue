@@ -10,11 +10,11 @@
           .body_results-info
             .results-info--validation
               p Training
-              span Training Accuracy: {{ popupInfo.acc_train | round(2)}}%
+              span Training Accuracy: {{ trainingAccuracy | round(2)}}%
               span Training Loss: {{ popupInfo.loss_train | round(2)}}
             .results-info--validation
               p Validation
-              span Validation Accuracy: {{ popupInfo.acc_val | round(2)}}%
+              span Validation Accuracy: {{ validationAccuracy | round(2)}}%
               span Validation Loss: {{ popupInfo.loss_val | round(2)}}
 
       .popup_foot
@@ -40,8 +40,10 @@ export default {
     return {
       popupInfo: {
         acc_train: 0,
+        r_sq_train: 0,
         loss_train: 0,
         acc_val: 0,
+        r_sq_val: 0,
         loss_val: 0,
       }
     }
@@ -60,6 +62,14 @@ export default {
     closePopup() {
       this.$store.commit('globalView/HIDE_allGlobalPopups');
       this.$store.dispatch('mod_workspace/SET_netMode', 'edit');
+    }
+  },
+  computed: {
+    trainingAccuracy() {
+      return this.popupInfo.acc_train || this.popupInfo.r_sq_train || 0;
+    },
+    validationAccuracy() {
+      return this.popupInfo.acc_val || this.popupInfo.r_sq_val || 0;
     }
   }
 }
