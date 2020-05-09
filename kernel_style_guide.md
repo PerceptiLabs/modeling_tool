@@ -52,7 +52,7 @@ def complex(real, imag=0.0):
     return magic(r=real, i=imag)
 
 # Correct:
-def complex(sep: AnyStr = None): 
+def complex(real: float, imag: float = 0.0): 
     return magic(r=real, i=imag)
 ```
 
