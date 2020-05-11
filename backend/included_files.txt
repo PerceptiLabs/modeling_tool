@@ -27,7 +27,6 @@ perceptilabs/utils.py
 perceptilabs/processes.py
 perceptilabs/license_checker.py
 perceptilabs/issues.py
-perceptilabs/messaging.py
 
 # perceptilabs/server
 perceptilabs/server/__init__.py
@@ -85,13 +84,8 @@ perceptilabs/core_new/api/legacy.py
 
 # perceptilabs/core_new/communication
 perceptilabs/core_new/communication/__init__.py
-perceptilabs/core_new/communication/client.py
-perceptilabs/core_new/communication/server.py
-perceptilabs/core_new/communication/state.py
-perceptilabs/core_new/communication/utils.py
-perceptilabs/core_new/communication/deployment.py
-perceptilabs/core_new/communication/zmq.py
-perceptilabs/core_new/communication/task_executor.py
+perceptilabs/core_new/communication/base.py
+perceptilabs/core_new/communication/status.py
 
 # perceptilabs/core_new/compability
 perceptilabs/core_new/compability/__init__.py
@@ -102,6 +96,10 @@ perceptilabs/core_new/compability/policies.py
 perceptilabs/core_new/data/__init__.py
 perceptilabs/core_new/data/base.py
 perceptilabs/core_new/data/policies.py
+
+# perceptilabs/core_new/deployment/
+perceptilabs/core_new/deployment/__init__.py
+perceptilabs/core_new/deployment/base.py
 
 # perceptilabs/core_new/graph/
 perceptilabs/core_new/graph/__init__.py
