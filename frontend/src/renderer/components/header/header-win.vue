@@ -20,7 +20,7 @@
   import TheMenu from '@/components/the-menu.vue'
   import {isWeb} from "@/core/helpers";
   import HeaderProfile from "@/components/header/header-profile";
-
+  import { mapGetters } from 'vuex';
 
 export default {
   name: "HeaderWin",
@@ -31,6 +31,9 @@ export default {
     }
   },
   computed: {
+    ...mapGetters({
+      currentModel: 'mod_workspace/GET_currentNetwork',
+    }),
     showRestoreIcon() {
       return this.$store.state.globalView.appIsFullView
     },
@@ -53,7 +56,13 @@ export default {
       let theName = '';
       switch(this.$route.name) {
         case 'projects': theName = 'ModelHub'; break;
-        case 'app': theName = 'Modeling Tool'; break;
+        case 'app':  {
+          if(this.currentModel.networkMeta.openStatistics) {
+            theName = 'Statistics View';
+          } else {
+            theName = 'Modeling Tool';
+          }
+        } break;
       }
       return theName;
     }
