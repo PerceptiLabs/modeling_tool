@@ -3,7 +3,7 @@ from tensorflow.python.eager.context import context, EAGER_MODE, GRAPH_MODE
 from enum import Enum
 
 class YieldLevel(Enum):
-    #STOP = 0
+    STOP = 0
     DEFAULT = 1
     SNAPSHOT = 2
     
@@ -67,25 +67,3 @@ class LoopHook:
 
         if self._on_destroy:
             self._on_destroy()
-
-
-def find_free_port(count=1):
-    """Find free port(s) and then close. WARNING: this approach is subject to race conditions!"""
-    import socket
-
-    sockets = []
-    for _ in range(count):
-        s = socket.socket()
-        s.bind(('', 0)) # Bind to a free port
-        sockets.append(s)
-        
-    ports = []
-    for s in sockets:
-        ports.append(s.getsockname()[1])
-        s.close()
-        
-    if len(ports) == 1:
-        return ports[0]
-    else:
-        return tuple(ports)    
-            

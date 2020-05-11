@@ -249,6 +249,7 @@ class coreLogic():
         elif self._core_mode == 'v2':
             from perceptilabs.core_new.compability import CompabilityCore
             from perceptilabs.core_new.graph.builder import GraphBuilder
+            from perceptilabs.core_new.deployment import InProcessDeploymentPipe, LocalEnvironmentPipe
             from perceptilabs.core_new.layers.script import ScriptFactory
 
             from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP                
@@ -257,12 +258,14 @@ class coreLogic():
             graph_builder = GraphBuilder(replica_by_name)
             
             script_factory = ScriptFactory()
+            deployment_pipe = InProcessDeploymentPipe(script_factory)
+
             
             self.core = CompabilityCore(
                 self.commandQ,
                 self.resultQ,
                 graph_builder,
-                script_factory,
+                deployment_pipe,
                 network,
                 threaded=True,
                 issue_handler=self.issue_handler
@@ -372,18 +375,7 @@ class coreLogic():
             )        
         
     def Close(self):
-        if self._core_mode == 'v1':
-            self.Stop()
-        else:
-            self.commandQ.put(
-                CoreCommand(
-                    type='close',
-                    parameters=None,
-                    allow_override=False
-                )
-            )
-            time.sleep(1.5) # Give the Core some time to close the training server before killing the thread...
-        
+        self.Stop()
         if self.cThread and self.cThread.isAlive():
             self.cThread.kill()
         return {"content":"closed core %s" % str(self.networkName)}
@@ -401,6 +393,7 @@ class coreLogic():
                     allow_override=False
                 )
             )
+            
         return {"content":"Stopping"}
 
     def checkCore(self):
