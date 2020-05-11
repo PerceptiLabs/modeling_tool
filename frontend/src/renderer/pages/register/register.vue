@@ -224,6 +224,7 @@ export default {
     height: 592px;
     // background: #272C37;
     backdrop-filter: blur(20px);
+    overflow-y: auto;
     display: flex;
     position: fixed;
     top: 50%;
@@ -247,7 +248,7 @@ export default {
   }
   .description-box {
     width: 57%;
-    margin-right: 70px;
+    // margin-right: 70px;
     background-image: url(./../../../../static/img/video-bg.jpg);
     display: flex;
     flex-direction: column;

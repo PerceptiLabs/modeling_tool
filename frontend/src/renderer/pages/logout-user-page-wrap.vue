@@ -55,6 +55,7 @@ export default {
     min-height: 100vh;
     background: #272C37;
     backdrop-filter: blur(20px);
+    overflow-y: auto;
     overflow-y: auto !important;
   }
 
