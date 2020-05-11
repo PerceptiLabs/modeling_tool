@@ -62,6 +62,9 @@ export default {
     closePopup() {
       this.$store.commit('globalView/HIDE_allGlobalPopups');
       this.$store.dispatch('mod_workspace/SET_netMode', 'edit');
+    },
+    toFixedWithMaxDigits(value, maxDigits) {
+      return value.toFixed(maxDigits).replace('.00', '');
     }
   },
   computed: {
