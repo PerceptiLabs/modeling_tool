@@ -10,11 +10,11 @@
           .body_results-info
             .results-info--validation
               p Training
-              span Training Accuracy: {{ trainingAccuracy | round(2)}}%
+              span {{ trainingTargetMetric }}
               span Training Loss: {{ popupInfo.loss_train | round(2)}}
             .results-info--validation
               p Validation
-              span Validation Accuracy: {{ validationAccuracy | round(2)}}%
+              span {{ validationTargetMetric }}
               span Validation Loss: {{ popupInfo.loss_val | round(2)}}
 
       .popup_foot
@@ -65,12 +65,30 @@ export default {
     }
   },
   computed: {
-    trainingAccuracy() {
-      return this.popupInfo.acc_train || this.popupInfo.r_sq_train || 0;
+    trainingTargetMetric() {
+
+      if (this.popupInfo.acc_train) {
+        return `Training Accuracy: ${ this.popupInfo.acc_train.toFixed(2).replace('.00', '') }%`;
+      }
+      
+      if (this.popupInfo.r_sq_train) {
+        return `Training R Squared:  ${ this.popupInfo.r_sq_train.toFixed(2).replace('.00', '') }%`;
+      }
+
+      return '';
     },
-    validationAccuracy() {
-      return this.popupInfo.acc_val || this.popupInfo.r_sq_val || 0;
-    }
+    validationTargetMetric() {
+
+      if (this.popupInfo.acc_val) {
+        return `Validation Accuracy: ${ this.popupInfo.acc_val.toFixed(2).replace('.00', '') }%`;
+      }
+      
+      if (this.popupInfo.r_sq_val) {
+        return `Validation R Squared:  ${ this.popupInfo.r_sq_val.toFixed(2).replace('.00', '') }%`;
+      }
+
+      return '';
+    },
   }
 }
 </script>
