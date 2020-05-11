@@ -3,7 +3,7 @@
   data-component="MathMerge"
   data-layer="Merge"
   data-type="Other"
-  v-tooltip:right="'Merge'"
+  v-tooltip:bottom="'Merge'"
   v-tooltip-interactive:right="interactiveInfo"
     :style="layerStyles"
   )

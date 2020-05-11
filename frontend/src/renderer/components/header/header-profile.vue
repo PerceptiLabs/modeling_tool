@@ -1,0 +1,172 @@
+<template lang="pug">
+  div.profile-wrapper
+    div.profile-item
+      .profile-item-Avatar.with-border
+        | {{user && user.firstName[0]}}
+      .profile-item-drop-down
+        button.bgc-transparent.ta-left.p-13
+          .d-flex
+            .profile-item-Avatar
+              | {{user && user.firstName[0]}}
+            div.ml-12
+              h3.white.fz-14.mb-0 {{user && user.firstName}} {{ user && user.lastName}}
+              p.fz-12.mb-0 {{user && user.email}}
+        .profile-separator
+        //- button.bgc-transparent.ta-left.profile-item-wrapper(v-for="collaborator in collaboratorData")
+        //-   .d-flex
+        //-     .profile-item-Avatar
+        //-       | {{collaborator.name[0]}}
+        //-     div.ml-12
+        //-       h3.white.fz-14.mb-0 {{collaborator.name}}
+        //-       p.fz-12.mb-0 {{collaborator.email}}
+        button.bgc-transparent.ta-left.add-more-collaborators.d-flex
+          .circleButton
+            img(src="../../../../static/img/project-page/plus.svg")
+          h3.fz-14 Add another account
+        .profile-separator
+
+        button.sign-out-all
+          | Sign out all accounts
+</template>
+
+<script>
+  import { mapGet, mapGetters} from 'vuex';
+
+  const collaboratorData = [
+    {id: 1, name: 'Martin Isaksson', email: 'martin.i@perceptilabs.com'},
+    {id: 2, name: 'Anton Bourosu', email: 'anton.b@perceptilabs.com'},
+  ];
+  
+  export default {
+    name: "HeaderProfile",
+    data: function() {
+      return {
+        collaboratorData: collaboratorData,
+      }
+    },
+    computed: {
+      ...mapGetters({
+        user: 'mod_user/GET_userProfile',
+      })
+    }
+    
+  }
+</script>
+
+<style lang="scss" scoped>
+  @import "../../scss/base";
+  .profile-wrapper {
+    position: absolute;
+    right: 40px;
+  }
+  .profile-item {
+    position: relative;
+    &:hover {
+      .profile-item-drop-down {
+        display: block;
+      }
+    }
+    &:hover {
+      .with-border {
+        width: 28px;
+        height: 28px;
+        border: 4px solid #23252A;
+      }
+    }
+  }
+  .profile-item-drop-down {
+    display: none;
+    right: 0;
+    top: 26px;
+    position: absolute;
+    background: #363E51;
+    border: 1px solid #363E51;
+    box-sizing: border-box;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    border-radius: 2px;
+    min-width: 230px;
+  }
+  .profile-item-Avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    box-sizing: border-box;
+    background-color: #FE7373;
+    text-align: center;
+    line-height: 19px;
+    text-transform: uppercase;
+    font-size: 14px;
+    color: #fff;
+    border: 4px solid #363E50;
+    /*&.with-border {*/
+    /*  &:hover {*/
+    /*    width: 28px;*/
+    /*    height: 28px;*/
+    /*    border: 4px solid #23252A; */
+    /*  }*/
+    /*}*/
+  }
+  .profile-item-wrapper {
+    padding: 13px 13px 0;
+  }
+  .p-13 {
+    padding: 13px;
+  }
+  .profile-separator {
+    height: 1px;
+    background-color: #23252A;
+    display: block;
+  }
+  .ml-12 {
+    margin-left: 12px;
+  }
+  .fz-14 {
+    font-size: 14px;
+  }
+  .fz-12 {
+    font-size: 12px;
+  }
+  .white {
+    color: #fff;
+  }
+  .mb-0 {
+    margin-bottom: 0;
+  }
+  .bgc-transparent {
+    background-color: transparent;
+  }
+  .ta-left {
+    text-align: left;
+  }
+  .sign-out-all {
+    display: block;
+    margin: 13px 23px 15px;
+    width: calc(100% - 46px);
+    padding: 10px 20px;
+    border: 1px solid #000;
+    border-radius: 2px;
+    text-align: center;
+    color: #fff;
+    font-size: 14px;
+    background-color: transparent;
+  }
+  .add-more-collaborators {
+    margin-top: 10px;
+    margin-bottom: 14px;
+    h3 {
+      margin-top: 2px;
+      margin-left: 12px;
+      margin-bottom: 0;
+      
+    }
+  }
+  .circleButton {
+    width: 20px;
+    height: 20px;
+    margin-left: 8px;
+    border: 1px solid #fff;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 17px;
+  }
+</style>

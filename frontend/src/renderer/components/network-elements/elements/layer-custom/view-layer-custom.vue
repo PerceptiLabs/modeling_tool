@@ -3,7 +3,7 @@
   data-component="LayerCustom"
   data-layer="Layer Custom"
   data-type="Other"
-  v-tooltip:right="'Custom'"
+  v-tooltip:bottom="'Custom'"
   v-tooltip-interactive:right="interactiveInfo"
     :style="layerStyles"
   )

@@ -6,8 +6,7 @@
           v-if="options.showBackButton"
           type="button" 
           @click="onCancel")
-          i.icon.icon-backward
-          span Back
+          img(src="../../../../static/img/back.svg")
       .search.search-input-box
         i.icon.icon-close(@click="clearSearchValue")
         input.search-input(
@@ -477,16 +476,22 @@ export default {
   height: 20px;
   padding-left: 9px;
   padding-right: 15px;
-  font-size: 12px;
-  color: #E1E1E1;
   border: 1px solid #5C6680;
-  background: #4D556A;
+  background: #363E51;
+  color: #B6C7FB;
   border-radius: 5px;
+
+  font-family: Nunito Sans;
+  font-style: normal;
+  font-weight: 300;
+  font-size: 11px;
+  line-height: 15px;
+
+  &:focus {
+    border: 1px solid $color-6;
+  }
 }
 .search-input.error {
   border: 1px solid red;
-}
-.search-input:focus {
-  background: #4D556A;
 }
 </style>
