@@ -1,6 +1,12 @@
 import {mapActions} from "vuex";
 
 const workspaceScale = {
+  data() {
+    return {
+      tempZoomValue: 100, // used for intermediate calculations
+      scalingSteps: [25, 33, 50, 67, 75, 80, 90, 100, 110, 120, 133, 150, 170, 200] // must be sorted
+    }
+  },
   computed: {
     scaleNet: {
       get: function () {
@@ -8,7 +14,9 @@ const workspaceScale = {
         return Math.round(zoom);
       },
       set: function (newValue) {
-        this.set_statusNetworkZoom(newValue/100);
+        // used to store what gets typed in
+        // actual system-wide zoom level gets updated on blur
+        this.tempZoomValue = newValue; 
       }
     },
   },
@@ -39,13 +47,45 @@ const workspaceScale = {
       }
     },
     decScale() {
-      if (this.scaleNet <= 30) this.scaleNet = 30;
-      else this.scaleNet = this.scaleNet - 5
+      const nextSmallest = this.scalingSteps.reduce((prev, curr) => {
+        return (this.scaleNet <= curr) ? prev : curr;
+      });
+
+      this.set_statusNetworkZoom(nextSmallest/100);
     },
     incScale () {
-      if (this.scaleNet > 95) this.scaleNet = 100;
-      else this.scaleNet = this.scaleNet + 5
+      const nextLargest = this.scalingSteps.reduce((prev, curr) => {
+        return (this.scaleNet < prev) ? prev : curr;
+      });
+
+      this.set_statusNetworkZoom(nextLargest/100);
+    },   
+    filterNonNumber: function(event) {
+      event = event || window.event;
+      const charCode = event.which || event.keyCode;
+
+      if (charCode === 13) {
+        event.currentTarget.blur();
+        return true;
+      }
+      else if (charCode < 48 || charCode > 57) {
+        event.preventDefault();
+      } else {
+        return true;
+      }
     },
+    onZoomInputBlur() {
+      const smallestVal = this.scalingSteps[0];
+      const largestVal = this.scalingSteps[this.scalingSteps.length - 1];
+
+      let numberToUse = 0;
+
+      if (this.tempZoomValue < smallestVal) { numberToUse = smallestVal; }
+      else if (this.tempZoomValue > largestVal) { numberToUse = largestVal; }
+      else { numberToUse = this.tempZoomValue; }
+
+      this.set_statusNetworkZoom(numberToUse/100);
+    }
   }
 };
 

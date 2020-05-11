@@ -30,6 +30,11 @@ class DataLayer(BaseLayer):
     """ Base class for loading data. The data is accessed via the generators, one sample at a time, in a fixed sequence. ̈́
     Therefore, it is left up to the consuming layers (usually a training layer) to perform any shuffling. 
     """
+    @property
+    @abstractmethod
+    def columns(self) -> List[str]: 
+        """Column names. Corresponds to each column in a sample """
+        raise NotImplementedError
     
     @abstractmethod    
     def make_generator_training(self) -> Generator[np.ndarray, None, None]:
@@ -158,6 +163,12 @@ class TrainingLayer(DataLayer):
     #@abstractmethod
     #def run(self, graph: Graph):
     #    raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def columns(self) -> List[str]: 
+        """Column names. Corresponds to each column in a sample """
+        raise NotImplementedError
 
     @abstractmethod
     def on_stop(self) -> None:
@@ -304,3 +315,321 @@ class ClassificationLayer(TrainingLayer):
     def testing_iteration(self) -> int:
         """The current testing iteration"""                
         return self._testing_iteration
+
+
+
+class ObjectDetectionLayer(TrainingLayer):
+    """A layer for training classifiers."""
+    
+    @property
+    @abstractmethod
+    def accuracy_training(self) -> float:
+        """Returns the current classification accuracy of the training phase"""
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def accuracy_validation(self) -> float:
+        """Returns the current classification accuracy of the validation phase"""        
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def accuracy_testing(self) -> float:
+        """Returns the current classification accuracy of the testing phase"""                
+        raise NotImplementedError
+    
+    @property
+    def image_accuracy(self) -> float:
+        return self._image_accuracy
+
+    @property
+    @abstractmethod
+    def loss_bbox_training(self) -> float:
+        """Returns the current loss of the training phase"""        
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def loss_bbox_validation(self) -> float:
+        """Returns the current loss of the validation phase"""                
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def loss_bbox_testing(self) -> float:
+        """Returns the current loss of the testing phase"""                        
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def loss_classification_training(self) -> float:
+        """Returns the current loss of the training phase"""        
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def loss_classification_validation(self) -> float:
+        """Returns the current loss of the validation phase"""                
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def loss_classification_testing(self) -> float:
+        """Returns the current loss of the testing phase"""                        
+        raise NotImplementedError
+
+
+    @property
+    @abstractmethod
+    def loss_training(self) -> float:
+        """Returns the current loss of the training phase"""        
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def loss_validation(self) -> float:
+        """Returns the current loss of the validation phase"""                
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def loss_testing(self) -> float:
+        """Returns the current loss of the testing phase"""                        
+        raise NotImplementedError
+
+    @property
+    @abstractmethod    
+    def layer_weights(self) -> Dict[str, Dict[str, Picklable]]:
+        """The weight values of each layer in the input Graph during the training.
+
+        Returns:
+            A dictionary of nested dictionaries, where each key is a layer id. The nested dictionaries contain weight name and value pairs. The values must be picklable.
+        """        
+        raise NotImplementedError
+
+    @property
+    @abstractmethod    
+    def layer_biases(self) -> Dict[str, Dict[str, Picklable]]:
+        """The bias values of each layer in the input Graph during the training.
+
+        Returns:
+            A dictionary of nested dictionaries, where each key is a layer id. The nested dictionaries contain weight name and value pairs. The values must be picklable.
+        """        
+        raise NotImplementedError
+    
+    @property
+    @abstractmethod    
+    def layer_gradients(self) -> Dict[str, Dict[str, Picklable]]:
+        """The gradients with respect to the loss of all trainable variables of each layer in the input Graph.
+
+        Returns:
+            A dictionary of nested dictionaries, where each key is a layer id. The nested dictionaries contain gradient name and value pairs. The values must be picklable.
+        """        
+        raise NotImplementedError
+
+    @property
+    @abstractmethod    
+    def batch_size(self) -> int:
+        """Size of the current training batch """
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def epoch(self) -> int:
+        """The current epoch"""
+        raise NotImplementedError
+    
+    @property
+    @abstractmethod
+    def grid_size(self) -> int:
+        """ size of the grid """
+        return self._grid_size
+    
+    @property
+    def classes(self) -> List[str]:
+        """classes in the dataset"""
+        return self._classes
+
+    @property
+    @abstractmethod
+    def num_class(self) -> int:
+        """ number of classes in the dataset"""
+        return self._num_class
+
+    @property 
+    @abstractmethod  
+    def num_box(self) -> int:
+        """ number of boxes per grid"""
+        return self._num_box 
+
+    @property
+    @abstractmethod
+    def lambdacoord(self) -> float:
+        return self._lambdacoord
+        
+    @property
+    @abstractmethod
+    def lambdanoobj(self) -> float:  
+        return self._lambdanoobj
+
+    @property
+    def training_iteration(self) -> int:
+        """The current training iteration"""
+        return self._training_iteration
+
+    @property
+    def validation_iteration(self) -> int:
+        """The current validation iteration"""        
+        return self._validation_iteration
+
+    @property
+    def testing_iteration(self) -> int:
+        """The current testing iteration"""                
+        return self._testing_iteration
+
+    @property
+    def get_predicted_normalized_boxes(self) -> np.ndarray:
+        """ """
+        return self._predicted_normalized_box
+
+    @property
+    def get_predicted_classes(self) -> np.ndarray:
+        """ """
+        return self._predicted_class
+
+    @property
+    def get_predicted_objects(self) -> np.ndarray:
+        """ """
+        return self._predicted_object
+
+
+    @property
+    def get_input_data_node(self):
+        """ node corresponding to input tensor"""
+        return self._input_data_node
+
+
+class RLLayer(TrainingLayer):
+    
+    @property
+    @abstractmethod    
+    def batch_size(self) -> int:
+        """Size of the current training batch """
+        raise NotImplementedError
+
+
+    @property
+    @abstractmethod
+    def episode(self) -> int:
+        """The current episode"""        
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def n_episodes(self) -> int:
+        """number of episodes"""        
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def gamma(self) -> float:
+        """ gamma """
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def replay_memory_size(self) -> int:
+        """ replay memory size """
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def transition(self) -> Dict[str, Picklable]:
+        """ replay memory """
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def n_actions(self) -> int:
+        """ _n actions """
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def n_steps_max(self) -> int:
+        """ _n_steps_max """
+        raise NotImplementedError
+    
+    @property
+    @abstractmethod
+    def step_counter(self) -> int:
+        """  step counter """
+        raise NotImplementedError
+    
+    @property
+    @abstractmethod
+    def history_length(self) -> int:
+        """ history length"""
+        raise NotImplementedError
+    
+    @property
+    @abstractmethod
+    def reward(self) -> float:
+        """ returns reward during one iteration"""
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def loss_training(self) -> float:
+        """Returns the current loss of the training phase"""                
+        raise NotImplementedError        
+
+    @property
+    @abstractmethod
+    def loss_validation(self) -> float:
+        """Returns the current loss of the validation phase"""                        
+        raise NotImplementedError        
+
+    @property
+    @abstractmethod
+    def loss_testing(self) -> float:
+        """Returns the current loss of the testing phase"""                
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def layer_weights(self) -> Dict[str, Dict[str, Picklable]]:
+        """The weight values of each layer in the input Graph during the training.
+
+        Returns:
+            A dictionary of nested dictionaries, where each key is a layer id. The nested dictionaries contain weight name and value pairs. The values must be picklable.
+        """        
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def layer_biases(self) -> Dict[str, Dict[str, Picklable]]:
+        """The bias values of each layer in the input Graph during the training.
+        Returns:
+            A dictionary of nested dictionaries, where each key is a layer id. The nested dictionaries contain weight name and value pairs. The values must be picklable.
+        """      
+        raise NotImplementedError
+    
+    @property
+    @abstractmethod
+    def layer_gradients(self) -> Dict[str, Dict[str, Picklable]]:
+        """The gradients with respect to the loss of all trainable variables of each layer in the input Graph.
+        Returns:
+            A dictionary of nested dictionaries, where each key is a layer id. The nested dictionaries contain gradient name and value pairs. The values must be picklable.
+        """        
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def layer_outputs(self) -> Dict[str, Dict[str, Picklable]]:
+        """The output values of each layer in the input Graph during the training (e.g., tf.Tensors evaluated for each iteration)
+        Returns:
+            A dictionary of nested dictionaries, where each key is a layer id. The nested dictionaries contain variable name and value pairs. The values must be picklable.
+        """
+        raise NotImplementedError

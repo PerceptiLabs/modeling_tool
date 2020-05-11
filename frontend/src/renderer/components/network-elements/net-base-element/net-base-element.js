@@ -43,6 +43,8 @@ export default {
     this.$refs.rootBaseElement.removeEventListener('touchstart', this.Mix_paintArrow_arrowEndPaint, true);
     /*clickOutsideAction*/
     document.removeEventListener('mousedown', this.mousedownOutside);
+    document.removeEventListener('click', this.hideAllWindow, true);
+    document.removeEventListener('contextmenu', this.hideAllWindow, true);
   },
   data() {
     return {
@@ -98,14 +100,33 @@ export default {
       }
     },
     styleElWindow() {
-      let style = {zoom: `${(100 / (this.wsZoom * 100)) * 100}%`};
-      let offsetWin = this.openWinPosition.offset;
-      if(offsetWin !== 0) {
-        this.openWinPosition.top
-          ? style.bottom = `-${offsetWin}px`
-          : style.top = `-${offsetWin}px`
+      let scale = `scale(${(100 / (this.wsZoom * 100)) })`;
+
+      const transformOrigin = []
+      if (this.openWinPosition.top) {
+        transformOrigin.push('bottom');
+      } else {
+        transformOrigin.push('top');
       }
-      return style
+
+      if (this.openWinPosition.left) {
+        transformOrigin.push('right');
+      } else {
+        transformOrigin.push('left');
+      }
+
+      const transformOriginString = transformOrigin.join(' ');
+
+      let style = {
+        'transform': `${scale}`,
+        'transform-origin': transformOriginString,
+        '-moz-transform': `${scale}`,
+        '-moz-transform-origin': transformOriginString,
+        '-webkit-transform': `${scale}`,
+        '-webkit-transform-origin': transformOriginString,
+      };
+
+      return style;
     },
   },
   watch: {
@@ -205,20 +226,21 @@ export default {
       if(!this.isTutorialMode && !this.settingsIsOpen) {
         this.hideAllWindow();
         if(!this.currentSelectedEl.length) {
-          this.setFocusEl(event);
+          this.elementSelect({id: this.currentId, setValue: true })
         }
         //this.calcWindowPosition();
         if(this.networkMode === 'edit' && this.editIsOpen) {
           this.setElementInfoOpen(true);
           this.contextIsOpen = true;
+          document.addEventListener('click', this.hideAllWindow, true);
+          document.addEventListener('contextmenu', this.hideAllWindow, true);
         }
       }
     },
     calcWindowPosition(el) {
       let windowWs = document.querySelector('.js-info-section_main');
-      let windowWsWidth = windowWs.clientWidth/this.wsZoom;
-      let windowWsHeight = windowWs.clientHeight/this.wsZoom;
-      let elementSettingsHeight = this.$refs.elementSettings.clientHeight/this.wsZoom;
+      let windowWsWidth = windowWs.clientWidth /this.wsZoom;
+      let windowWsHeight = windowWs.clientHeight /this.wsZoom;
       let layerHeight = this.$refs.rootBaseElement.clientHeight;
       let layerTop = this.dataEl.layerMeta.position.top;
       let winCenterWidth = windowWs.scrollLeft + (windowWsWidth - layerHeight)/2;
@@ -230,17 +252,6 @@ export default {
       winCenterHeight < layerTop
         ? this.openWinPosition.top = true
         : this.openWinPosition.top = false;
-
-      if(this.openWinPosition.top) {
-        if(layerTop < elementSettingsHeight) {
-          this.openWinPosition.offset = (elementSettingsHeight - layerTop - layerHeight + 10)*this.wsZoom
-        }
-      }
-      else {
-        if((windowWsHeight - layerTop) < elementSettingsHeight) {
-          this.openWinPosition.offset = (elementSettingsHeight - (windowWsHeight - layerTop) + 10)*this.wsZoom
-        }
-      }
     },
     setFocusEl(ev) {
       // ev.ctrlKey
@@ -263,6 +274,8 @@ export default {
         top: false,
         offset: 0
       }
+      document.removeEventListener('click', this.hideAllWindow, true);
+      document.removeEventListener('contextmenu', this.hideAllWindow, true);
     },
     deselect() {
       if(!this.isTutorialMode) this.hideAllWindow();

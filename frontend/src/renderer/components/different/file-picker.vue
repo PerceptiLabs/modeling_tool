@@ -11,19 +11,24 @@
       .search.search-input-box
         i.icon.icon-close(@click="clearSearchValue")
         input.search-input(
+          ref="navigate-to-search-input"
           :class="{error: searchDirNotFound}" 
           type="text" 
           v-model="searchValue" 
           @keyup.enter="searchPath"
+          @click="onNavigateToClick"
           placeholder="Navigate to...")
-    .filepicker
-      .directory-breadcrumb
+    .filepicker(ref="file-picker")
+      .directory-breadcrumb(ref="directory-breadcrumb")
+        .breadcrumb.home(@click="calcRootFolderPath")
+          img(src="/static/img/file-picker/home.svg" class="svg-icon")
+        .breadcrumb.ellipsis(v-if="currentPath.length > breadcrumbShowLastXPositions")
+          span ...
         .breadcrumb(
-          @click="calcBreadcrumbPath(pathIndex)"
           v-for="(pathName, pathIndex) in currentPath"
           v-if="pathIndex >= currentPath.length - breadcrumbShowLastXPositions"
           :key="pathIndex")
-          span {{ pathName }}
+          span.directory-crumb(@click="calcBreadcrumbPath(pathIndex)") {{ pathName }}
 
       .selectable-list
         .list-item(
@@ -60,7 +65,6 @@
 
 <script>
 import { coreRequest } from '@/core/apiWeb.js';
-import { isOsWindows } from '@/core/helpers.js';
 import { filePickerStorageKey } from '@/core/constants.js';
 import { mapGetters } from "vuex";
 
@@ -102,12 +106,13 @@ export default {
       files: [],
       selectedFiles: [],
       selectedDirectories: [],
-      osPathPrefix: isOsWindows() ? '' : '/',
-      osPathSuffix: isOsWindows() && this.filePickerType === 'folder' ? '/' : '', // on windows folder should end with `/`
+      osPathPrefix: this.isOsWindows ? '' : '/',
+      osPathSuffix: this.isOsWindows && this.filePickerType === 'folder' ? '/' : '', // on windows folder should end with `/`
       clickTimer: null,
       searchValue: '',
       searchDirNotFound: false,
       breadcrumbShowLastXPositions: 5,
+      isOsWindows: false
     }
   },
   mounted() {
@@ -115,11 +120,26 @@ export default {
     if(localStorage.hasOwnProperty(filePickerStorageKey) && !this.isTutorialMode) {
       path = localStorage.getItem(filePickerStorageKey);
     }
-    
-    this.fetchPathInformation(path);
-    
+    this.fetchPathInformation(path)
+          .then(response => {
+            if (response == false) {
+              this.fetchPathInformation('');
+            }
+          });
   },
   methods: {
+    onNavigateToClick() {
+      if (this.$refs['navigate-to-search-input']) {
+        this.$refs['navigate-to-search-input'].focus();
+      }
+    },
+    setOsSpecifics(platform) {
+      if (!platform) { return; }
+
+      this.isOsWindows = platform.toLowerCase().includes('windows');
+      this.osPathPrefix = this.isOsWindows ? '' : '/';
+      this.osPathSuffix = this.isOsWindows && this.filePickerType === 'folder' ? '/' : ''; // on windows folder should end with `/`
+    },
     calculateBreadcrumbsLength(path) {
       const reducer = (accumulator, currentValue, index) => {
         const nextValue = accumulator + currentValue;
@@ -136,11 +156,29 @@ export default {
       return (this.selectedFiles.includes(name)) || (this.selectedDirectories.includes(name));
     },
     calcBreadcrumbPath(pathIdx) {
-      let breadcrumbPath = this.osPathPrefix + this.currentPath.slice(0,pathIdx + 1).join('/') + this.osPathSuffix;
+
+      let breadcrumbPath = this.osPathPrefix + this.currentPath.slice(0,pathIdx + 1).join('/') + this.osPathSuffix;;
+      if (this.isOsWindows && 
+        this.currentPath[pathIdx] && 
+        this.currentPath[pathIdx].charAt(this.currentPath[pathIdx].length - 1) === ':') {
+        // to handle click on paths such as C:
+        breadcrumbPath += '/';
+      }
+
       this.fetchPathInformation(breadcrumbPath);
     },
+    calcRootFolderPath() {
+      let folderPath = this.isOsWindows ? '.' : this.osPathPrefix + this.osPathSuffix ;
+      this.fetchPathInformation(folderPath);
+    },
     calcFolderPath(dirName) {
-      let folderPath = this.osPathPrefix + this.currentPath.join('/') + '/' + dirName + this.osPathSuffix ;
+      let folderPath;
+
+      if (this.isOsWindows && this.currentPath.length === 0) {
+        folderPath = dirName + this.osPathSuffix;
+      } else {
+        folderPath = this.osPathPrefix + this.currentPath.join('/') + '/' + dirName + this.osPathSuffix;
+      }
       this.fetchPathInformation(folderPath);
     },
     onDirectoryClick(dirName) {
@@ -177,7 +215,7 @@ export default {
       this.selectedDirectories = [];
       this.selectedDirectories.push(dirName);
     },
-    fetchPathInformation(path, isSearching = false) {
+    async fetchPathInformation(path, isSearching = false) {
       this.selectedFiles = [];
       let theData = {
           reciever: '0',
@@ -187,35 +225,44 @@ export default {
 
       this.$store.dispatch('globalView/ShowCoreNotFoundPopup', null, { root: true });
 
-      coreRequest(theData)
-      .then(jsonData => {
-          const pathNotFound = jsonData.current_path === "";
-          if(isSearching && pathNotFound) {
-            this.searchDirNotFound = true;
-            return 0;
-          } else {
-            this.searchDirNotFound = false;
+      try {
+        const jsonData = await coreRequest(theData);
+        
+        this.setOsSpecifics(jsonData.platform);
+
+        const pathNotFound = jsonData.current_path === "";
+        if(isSearching && pathNotFound) {
+          this.searchDirNotFound = true;
+          return 0;
+        } else {
+          this.searchDirNotFound = false;
+        }
+        
+        if(!pathNotFound) {
+          this.calculateBreadcrumbsLength(jsonData.current_path);
+          if(!this.isTutorialMode) {
+            localStorage.setItem(filePickerStorageKey, jsonData.current_path);
           }
-          
-          if(!pathNotFound) {
-            this.calculateBreadcrumbsLength(jsonData.current_path);
-            if(!this.isTutorialMode) {
-              localStorage.setItem(filePickerStorageKey, jsonData.current_path);
-            }
-          }
-          
-          
+        }
+        
+        if (jsonData.current_path === '.') {
+          this.currentPath = [];
+        } else {
           this.currentPath = jsonData.current_path.split('/').filter(el => el);
-          this.directories = jsonData.dirs.filter(d => !d.startsWith('.')).sort();
-          if (this.fileTypeFilter.length === 0) {
-            this.files = jsonData.files;
-          } else {
-            this.files = jsonData.files.filter(f => {
-              let ext = f.replace(/.*\./, '').toLowerCase();
-              return ~this.fileTypeFilter.indexOf(ext);
-            })
-          }
-      });
+        }
+
+        this.directories = jsonData.dirs.filter(d => !d.startsWith('.')).sort();
+        if (this.fileTypeFilter.length === 0) {
+          this.files = jsonData.files;
+        } else {
+          this.files = jsonData.files.filter(f => {
+            let ext = f.replace(/.*\./, '').toLowerCase();
+            return ~this.fileTypeFilter.indexOf(ext);
+          })
+        }
+      } catch(e) {
+        return false;
+      } 
     },
     onConfirm() {
         let emitPayload;
@@ -296,11 +343,36 @@ export default {
   border-bottom: 0.1rem solid $color-8;
 
   .breadcrumb {
-    cursor: pointer;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    min-width: 1rem;
+
+    margin: 0 0.2rem;
 
     & + .breadcrumb:before
     {
       content: '\00a0\00a0>\00a0\00a0';
+      pointer-events: none;
+    }
+
+    .directory-crumb {
+      cursor: pointer;
+    }
+
+    &.home {
+      cursor: pointer;
+    }
+
+    &.ellipsis {
+      cursor: default;
+    }
+
+    .svg-icon {
+      height: 1rem;
+      filter: brightness(0) invert(1);
     }
   }
 }
@@ -309,7 +381,7 @@ export default {
   display: flex;
   flex-direction: column;
   flex: auto;
-  overflow-y: scroll;
+  overflow-y: auto;
   padding: 0.3rem 0;
   background-color: $bg-workspace-2;
 

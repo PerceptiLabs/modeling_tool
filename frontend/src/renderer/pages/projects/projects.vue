@@ -16,16 +16,23 @@
       popupTitle="Load Project Folder"
       :confirmCallback="confirmCallback"
     )
+    workspace-load-network(
+      v-if="showLoadSettingPopup"
+    )
+
 </template>
 <script>
   import {filePCRead, folderPCDelete, deepCopy, projectPathModel}  from '@/core/helpers.js'
   import {mapState, mapGetters, mapMutations, mapActions} from 'vuex';
   import FilePickerPopup        from "@/components/global-popups/file-picker-popup.vue";
+  import WorkspaceLoadNetwork   from "@/components/global-popups/workspace-load-network.vue";
 
   import imageClassification    from '@/core/basic-template/image-classification.js'
   import reinforcementLearning  from '@/core/basic-template/reinforcement-learning.js'
   import timeseriesRegression   from '@/core/basic-template/timeseries-regression.js'
   import {isWeb} from "@/core/helpers";
+
+  import cloneDeep from 'lodash.clonedeep';
 
   export default {
     name: 'PageProjects',
@@ -64,7 +71,7 @@
       }
     },
     components: {
-      FilePickerPopup
+      FilePickerPopup, WorkspaceLoadNetwork
     },
     computed: {
       ...mapGetters({
@@ -72,9 +79,10 @@
         localUserInfo:      'mod_user/GET_LOCAL_userInfo'
       }),
       ...mapState({
-        appVersion:          state => state.globalView.appVersion,
-        hotKeyPressDelete:   state => state.mod_events.globalPressKey.del,
-        showFilePickerPopup: state => state.globalView.globalPopup.showFilePickerPopup
+        appVersion:           state => state.globalView.appVersion,
+        hotKeyPressDelete:    state => state.mod_events.globalPressKey.del,
+        showFilePickerPopup:  state => state.globalView.globalPopup.showFilePickerPopup,
+        showLoadSettingPopup: state => state.globalView.globalPopup.showLoadSettingPopup
       }),
       filteredProjects() {
         this.selectedProject = null;
@@ -91,9 +99,19 @@
             localProjectsList.forEach((el) => {
               el.notExist = false;
               el.isChecked = false;
-              filePCRead(projectPathModel(el.pathProject))
-                .then(() => { })
-                .catch((err) => {
+
+              this.$store.dispatch('mod_api/API_loadNetwork', el.pathProject, {root: true})
+                .then((net) => {
+                  try {
+                    if(!(net.networkName
+                      && net.networkMeta
+                      && net.networkElementList)) {
+                        throw('err');
+                      }
+                  } catch(e) {
+                    throw('err');
+                  }
+                }).catch(err => {
                   el.notExist = true
                 })
             });
@@ -109,14 +127,19 @@
         const selectedProject = this.projects[indexCheckedProj];
         //const isProjectNotExist = selectedProject.notExist;
         const pathDelete = selectedProject.pathProject;
-        folderPCDelete(pathDelete)
-          .then(()=> {
-            const newProjectsList = deepCopy(this.localUserInfo.projectsList);
-            newProjectsList.splice(indexCheckedProj, 1);
-            this.saveLocalUserInfo({key: 'projectsList', data: newProjectsList });
-            this.$nextTick(()=> this.showInfoPopup("The project has been successfully deleted"))
-          })
-          .catch ((err)=> {console.error(err)})
+
+        const newProjectsList = deepCopy(this.localUserInfo.projectsList);
+        newProjectsList.splice(indexCheckedProj, 1);
+        this.saveLocalUserInfo({key: 'projectsList', data: newProjectsList });
+
+        // folderPCDelete(pathDelete)
+        //   .then(()=> {
+        //     const newProjectsList = deepCopy(this.localUserInfo.projectsList);
+        //     newProjectsList.splice(indexCheckedProj, 1);
+        //     this.saveLocalUserInfo({key: 'projectsList', data: newProjectsList });
+        //     this.$nextTick(()=> this.showInfoPopup("The project has been successfully deleted"))
+        //   })
+        //   .catch ((err)=> {console.error(err)})
       }
     },
     methods: {
@@ -152,7 +175,7 @@
         this.addNetwork()
       },
       openBasicTemplate(net) {
-        this.addNetwork(net.network)
+        this.addNetwork(cloneDeep(net.network));
       },
       openLastWS() {
         this.restore_network(this.localUserInfo.workspace);
