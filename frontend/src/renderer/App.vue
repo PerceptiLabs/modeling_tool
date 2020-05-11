@@ -69,6 +69,7 @@
           //   }
           // })
       } else {
+        if(localStorage.hasOwnProperty('currentUser'))
         this.setActivePageAction(MODAL_PAGE_PROJECT);
       }
       

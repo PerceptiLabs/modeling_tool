@@ -71,7 +71,6 @@ import { debug } from 'util';
       }
     },
     created() {
-      // this.setActivePageAction()
       this.getProjects();
     },
     beforeDestroy() {
@@ -91,7 +90,6 @@ import { debug } from 'util';
     methods: {
       ...mapMutations({
         selectProject: 'mod_project/selectProject',
-        // setPageTitleMutation: 'globalView/setPageTitleMutation',
         addModelFromLocalDataMutation: 'mod_workspace/add_model_from_local_data',
         loadProjectFromLocalStorage: 'mod_workspace/get_workspacesFromLocalStorage',
         set_currentNetwork : 'mod_workspace/set_currentNetwork',

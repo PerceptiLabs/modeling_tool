@@ -1,10 +1,11 @@
 <template lang="pug">
-  logout-user-page-wrap(
-    title-page="Log in"
-  )
-    form.login_form(@keyup.enter="validateForm")
+  div.wrapper
+    view-loading
+    form(@keyup.enter="validateForm")
+      img.site-logo(src="./../../../../static/img/perceptilabs-new-log.svg")
+
       .form_holder
-        input(type="email" placeholder="Email"
+        input.new-ui(type="email" placeholder="Email"
           v-model="userEmail"
           name="Email"
           v-validate="'required|email'"
@@ -12,7 +13,7 @@
         p.text-error(v-show="errors.has('Email')") {{ errors.first('Email') }}
       .form_holder
         .relative
-          input(
+          input.new-ui(
             :type="passwordVisibility.password ? 'text' : 'password'"
             placeholder="Password"
             v-model="userPass"
@@ -25,19 +26,20 @@
             @click="togglePasswordVisibility('password')"
           )
         p.text-error(v-show="errors.has('Password')") {{ errors.first('Password') }}
-        .forgot-password-box
-          a.btn.btn--link-without-underline(
-            :href="`${baseUrlSite}/restore-account`"
-            @click.prevent="setActivePageAction(MODAL_PAGE_RESTORE_ACCOUNT)"
-          ) Forgot password?
-        base-checkbox.remember-me(v-model="saveToken")
-          span.fz-16 Remember me
-    .form_holder.login-form_actions
+        div.remember-and-forgot-section
+          base-checkbox(:isNewUi="true").remember-me(v-model="saveToken")
+            span.fz-12 Remember me
+          .forgot-password-box
+            a.btn.btn--link-without-underline.fz-12(
+              :href="`${baseUrlSite}/restore-account`"
+              @click.prevent="setActivePageAction(MODAL_PAGE_RESTORE_ACCOUNT)"
+            ) Forgot password?
+    .form_holder
       .form_row
         button.btn.btn--dark-blue-rev.log-in-btn(type="button" @click="validateForm" :disabled="isLoading") Log in
-    .form_holder.fz-16.italic.text-left
+    .form_holder.fz-12.text-center
       span Don't have an account? 
-      button.btn.btn--link(@click="setActivePageAction(MODAL_PAGE_SIGN_UP)" type="submit") Register here
+      button.btn.btn--link(@click="setActivePageAction(MODAL_PAGE_SIGN_UP)" type="submit") Sign up here
 </template>
 
 <script>
@@ -48,9 +50,10 @@
   import LogoutUserPageWrap from '@/pages/logout-user-page-wrap.vue'
   import {mapActions} from "vuex";
   import {MODAL_PAGE_SIGN_UP, MODAL_PAGE_RESTORE_ACCOUNT, MODAL_PAGE_PROJECT} from "@/core/constants";
+  import ViewLoading from '@/components/different/view-loading.vue'
 export default {
   name: 'PageLogin',
-  components: { LogoutUserPageWrap },
+  components: { LogoutUserPageWrap, ViewLoading },
   data() {
     return {
       userEmail: '',
@@ -73,7 +76,9 @@ export default {
   methods: {
     ...mapActions({
       setActivePageAction: 'modal_pages/setActivePageAction',
+      closePageAction: 'modal_pages/closePageAction',
       closeActivePageAction: 'modal_pages/closePageAction',
+      cloud_userGetProfile:     'mod_apiCloud/CloudAPI_userGetProfile',
     }),
     togglePasswordVisibility(fieldName) {
       this.passwordVisibility[fieldName] = !this.passwordVisibility[fieldName];
@@ -110,7 +115,15 @@ export default {
               this.$store.dispatch('mod_api/API_setUserInCore');
             }
             
-            this.setActivePageAction(MODAL_PAGE_PROJECT);
+            this.cloud_userGetProfile();
+            // call this if haven't project setted in local storage
+            const hasProjectSelected = localStorage.hasOwnProperty('targetProject');
+            if(!hasProjectSelected) {
+              this.setActivePageAction(MODAL_PAGE_PROJECT);
+            } else {
+              this.closePageAction();
+            }
+            if(this.$router.name !== 'projects')
             this.$router.push({name: 'projects'});
           }
         })
@@ -121,22 +134,87 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
-  .forgot-password-box{
-    margin-top: 1rem;
-    text-align: left;
+  * {
+    font-family: "Nunito Sans"
   }
-  .login_form {
-    padding-top: 30px;
+  .wrapper {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(-45deg, #383F50 0%, #23252A 100%);
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.25);
+    border-radius: 2px;
+    width: 687px;
+    padding: 100px 195px 115px;
   }
-  .remember-me {
-    float: left;
-    color: #fff;
-    .checkbox-text {
-      font-size: 16px !important; 
+
+  .site-logo {
+    margin: 0 auto 40px;
+    display: block
+  }
+
+  // input[type=email], input[type=password], input[type=text] {
+  //   background: #383F50;
+  //   border: 1px solid #4B4D52;
+  //   box-sizing: border-box;
+  //   border-radius: 20px;
+  //   height: 40px;
+  //   padding-left: 20px;
+  //   padding-right: 20px;
+
+  //   font-family: Nunito Sans;
+  //   font-style: normal;
+  //   font-weight: 300;
+  //   font-size: 12px;
+  //   line-height: 16px;
+
+  //   color: #fff;
+
+  //   &::placeholder {
+  //     color: #C4C4C4;
+  //   }
+  //   &:focus {
+  //     border: 1px solid #6185EE;
+  //   }
+  // }
+
+  .log-in-btn {
+    background: #6185EE;
+    border-radius: 20px;
+    &:hover {
+      color: #fff;
     }
   }
+
+  .text-error {
+    margin-top: 4px;
+    padding-left: 20px;
+    padding-right: 20px;
+    font-size: 12px;
+    text-align: center;
+  }
+
+  .remember-and-forgot-section {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 15px;
+    margin-top: 10px;
+    margin-bottom: 24px;
+  }
+  .forgot-password-box{
+    // margin-top: 1rem;
+    a {
+      color: #9BB2F6;
+    }
+  }
+  .custom-checkbox .checkbox-fake {
+    flex: 0 0 13px;
+    width: 13px;
+    height: 13px;
+  }
   .remember-me {
-    margin-top: 15px;
+    color: #fff;
   }
   .fz-16 {
     font-size: 16px;
@@ -145,13 +223,13 @@ export default {
     width: 100%;
     height: 35px;
     font-weight: bold;
-    font-size: 16px;
+    font-size: 14px;
   }
   .italic {
     font-style: italic;
   }
   .btn--link {
-    color: #6E92FA;
+    color: #9BB2F6;
     &:hover {
       text-decoration: underline;
     }
@@ -168,6 +246,10 @@ export default {
     right: 10px;
     top: 50%;
     transform: translateY(-50%);
+  }
+
+  .fz-12 {
+    font-size: 12px;
   }
 </style>
 

@@ -1,5 +1,5 @@
 <template lang="pug">
-  label.custom-checkbox
+  label.custom-checkbox(:class="{'v-2': isNewUi}")
     .checkbox-text(v-if="labelPosition==='left'")
       slot
     input(type="checkbox"
@@ -31,7 +31,11 @@ export default {
     iconTheme: {
       type: Boolean,
       default: false
-    }
+    },
+    isNewUi: {
+      type: Boolean,
+      default: false,
+    },
   },
   mounted () {
     this.valueInput = this.value;
@@ -54,7 +58,7 @@ export default {
 <style lang="scss" scoped>
   @import "../../scss/base";
   .custom-checkbox {
-  font-size: 1.2rem;
+    font-size: 1.2rem;
     position: relative;
     display: inline-flex;
     align-items: center;
@@ -128,6 +132,16 @@ export default {
       position: absolute;
       top: 100%;
       left: 0;
+    }
+
+    &.v-2 {
+      .checkbox-fake {
+        flex: 0 0 13px;
+        width: 13px;
+        height: 13px;
+        background: #383F50;
+        border-radius: 2px;
+      }
     }
   }
 </style>

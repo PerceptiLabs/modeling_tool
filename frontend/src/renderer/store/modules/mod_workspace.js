@@ -460,6 +460,20 @@ const mutations = {
       getters.GET_currentNetwork.networkMeta.coreStatus.Status = value;
     }
   },
+  set_NetworkCoreError(state, {errorMessage, modelId, commit}) {
+    let workspaceIndex = null;
+    state.workspaceContent.map((workspace, index) => {
+      if(parseInt(workspace.networkID) === modelId)  {
+        workspaceIndex = index;
+      }
+    })
+    if(workspaceIndex !== null) {
+      state.workspaceContent[workspaceIndex].networkMeta.coreError = {};
+      state.workspaceContent[workspaceIndex].networkMeta.coreError.Status =  'Error';
+      state.workspaceContent[workspaceIndex].networkMeta.coreError.errorMessage =  errorMessage;
+    }
+    commit('set_workspacesInLocalStorage');
+  },
   set_statusNetworkCoreStatusProgressClear(state, {getters}) {
     if(getters.GET_currentNetwork.networkMeta.coreStatus.Status.Progress) {
       getters.GET_currentNetwork.networkMeta.coreStatus.Status.Progress = 0;
@@ -1408,6 +1422,10 @@ const actions = {
   UPDATE_MODE_ACTION(ctx, {index, field, value}){
     ctx.commit('update_model', {index, field, value});
     ctx.commit('set_workspacesInLocalStorage');
+  },
+  set_NetworkCoreErrorAction(ctx, {errorMessage, modelId}) {
+    ctx.commit('set_NetworkCoreError', {errorMessage, modelId, commit: ctx.commit});
+    
   },
   //---------------
   //  NETWORK ELEMENTS
