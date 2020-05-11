@@ -31,8 +31,11 @@ def setup_sentry(user=None, commit_id=None):
 
     with sentry_sdk.configure_scope() as scope:
         scope.set_tag('error-type', 'internal-error')
+        sentry_sdk.utils.MAX_STRING_LENGTH = 5000
+
         if user:
             scope.user = {"email" : user}
+        
 
 
 def setup_scraper():

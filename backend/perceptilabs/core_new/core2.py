@@ -139,7 +139,6 @@ class Core:
             with sentry_sdk.push_scope() as scope:
                 scope.set_tag('error-type', 'userland-error')
                 scope.level = 'info'
-                sentry_sdk.utils.MAX_STRING_LENGTH = 15000
                 sentry_sdk.capture_message(userland_error.format())
             
             log.info('Userland error:\n' + userland_error.format())
