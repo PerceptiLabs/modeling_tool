@@ -94,6 +94,8 @@ TOP_LEVEL_IMPORTS = {
     ],
     'perceptilabs': [
         'from perceptilabs.core_new.graph.builder import GraphBuilder, SnapshotBuilder',
+        'from perceptilabs.core_new.communication import TrainingServer',
+        'from perceptilabs.messaging import MessageConsumer, MessageProducer',                    
         'from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP, REPLICATED_PROPERTIES_TABLE'                    
     ]
 }
@@ -173,6 +175,22 @@ DEFINITION_TABLE = {
             'from perceptilabs.core_new.serialization import can_serialize, serialize'            
         ]
     ),
+    'ProcessImageReshape': LayerDef(
+        Tf1xLayer,
+        'tf1x.j2',
+        'layer_tf1x_image_reshape',        
+        {
+            'shape': lambda specs: specs['Properties']['Shape']
+        },
+        import_statements=[
+            'import tensorflow as tf',
+            'import numpy as np',
+            'from typing import Dict',
+            'from perceptilabs.core_new.utils import Picklable',
+            'from perceptilabs.core_new.layers.base import Tf1xLayer',
+            'from perceptilabs.core_new.serialization import can_serialize, serialize'            
+        ]
+    ),
     'ProcessOneHot': LayerDef(
         Tf1xLayer,
         'tf1x.j2',
@@ -224,7 +242,7 @@ DEFINITION_TABLE = {
             'pooling': lambda specs: specs['Properties']['Pooling'],
             'pool_padding': lambda specs: specs['Properties']['Pool_padding'],
             'pool_area': lambda specs: specs['Properties']['Pool_area'],
-            'pool_stride': lambda specs: specs['Properties']['Pool_stride'],            
+            'pool_stride': lambda specs: specs['Properties']['Pool_stride']        
         },
         import_statements=[
             'import tensorflow as tf',
@@ -233,6 +251,50 @@ DEFINITION_TABLE = {
             'from perceptilabs.core_new.utils import Picklable',
             'from perceptilabs.core_new.layers.base import Tf1xLayer',
             'from perceptilabs.core_new.serialization import can_serialize, serialize'            
+        ]
+    ),
+    'DeepLearningDeconv': LayerDef(
+        Tf1xLayer,
+        'tf1x.j2',
+        'layer_tf1x_deconv',
+        {
+            'conv_dim': lambda specs: specs['Properties']['Deconv_dim'],
+            'patch_size': lambda specs: specs['Properties']['Patch_size'],
+            'stride': lambda specs: specs['Properties']['Stride'],
+            'feature_maps': lambda specs: specs['Properties']['Feature_maps'],
+            'padding': lambda specs: specs['Properties']['Padding'],
+            'activation': resolve_tf1x_activation_name,
+            'dropout': lambda specs: specs['Properties']['Dropout'],
+            'keep_prob': lambda specs: specs['Properties']['Keep_prob']
+        },
+        import_statements=[
+            'import tensorflow as tf',
+            'import numpy as np',
+            'from typing import Dict',
+            'from perceptilabs.core_new.utils import Picklable',
+            'from perceptilabs.core_new.layers.base import Tf1xLayer',
+            'from perceptilabs.core_new.serialization import can_serialize, serialize'
+        ]
+    ),
+    'DeepLearningRecurrent': LayerDef(
+        Tf1xLayer,
+        'tf1x.j2',
+        'layer_tf1x_recurrent',
+        {
+            'neurons': lambda specs: specs['Properties']['Neurons'],
+            'version': lambda specs: specs['Properties']['Version'],
+            'time_steps': lambda specs: specs['Properties']['Time_steps'],
+            'return_sequences': lambda specs: specs['Properties']['Return_sequence'],
+            'dropout': lambda specs: specs['Properties']['Dropout'],
+            'keep_prob': lambda specs: specs['Properties']['Keep_prob']
+        },
+        import_statements=[
+            'import tensorflow as tf',
+            'import numpy as np',            
+            'from typing import Dict',
+            'from perceptilabs.core_new.utils import Picklable',
+            'from perceptilabs.core_new.layers.base import Tf1xLayer',
+            'from perceptilabs.core_new.serialization import can_serialize, serialize'
         ]
     ),
     'TrainNormal': LayerDef(
