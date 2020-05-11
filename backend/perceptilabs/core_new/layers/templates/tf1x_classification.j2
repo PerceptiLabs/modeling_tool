@@ -9,11 +9,6 @@
         assert len(label_data_nodes) == 1
         input_data_node = input_data_nodes[0]
         label_data_node = label_data_nodes[0]
-
-        input_data_neurons = input_data_node.layer_spec['Properties']['Neurons']
-        label_data_num_classes = label_data_node.layer_spec['Properties']['N_class']
-
-        assert input_data_node == label_data_num_classes
         
         self._trn_sz_tot = input_data_node.layer.size_training
         self._val_sz_tot = input_data_node.layer.size_validation
