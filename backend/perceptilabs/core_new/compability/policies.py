@@ -268,7 +268,7 @@ def policy_classification(core, graphs, sanitized_to_name, sanitized_to_id, resu
         return result_dict
 
     else:
-        test_dicts = []
+        test_dicts = results.get('testDicts', []) # get existing
         for current_graph in test_graphs:
             trn_node = current_graph.active_training_node
             test_dict = {}
@@ -652,7 +652,7 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id, re
         return result_dict
 
     else:
-        test_dicts = []
+        test_dicts = results.get('testDicts', []) # get existing        
         for current_graph in test_graphs:
             trn_node = current_graph.active_training_node
             test_dict = {}
