@@ -3,7 +3,7 @@
     data-component="DataEnvironment"
     data-layer="Environment"
     data-type="Data"
-    v-tooltip:right="'Environment'"
+    v-tooltip:bottom="'Environment'"
     v-tooltip-interactive:right="interactiveInfo"
     :style="layerStyles"
   )

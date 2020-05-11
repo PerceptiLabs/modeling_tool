@@ -4,7 +4,7 @@
     data-component="DataCloud"
     data-layer="Cloud"
     data-type="Data"
-    v-tooltip:right="'Cloud'"
+    v-tooltip:bottom="'Cloud'"
     v-tooltip-interactive:right="interactiveInfo"
     id="tutorial_data-data"
     :style="layerStyles"

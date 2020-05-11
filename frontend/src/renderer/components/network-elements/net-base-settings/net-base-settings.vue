@@ -1,47 +1,48 @@
 <template lang="pug">
   .popup
-    ul.popup_tab-set
-      template(v-if="tabSelected !== 'Preview'")
-        button.popup_header(
-          v-for="(tab, i) in tabSet"
-          :key="tab.i"
-          :class="{'disable': tabSelected != tab}"
-          :disabled="tab === 'Code' && isTutorial || disableSettings"
-          @click="setTab(tab)"
-        )
-          h4(v-html="tab")
-          i.icon.icon-code-error(
-            v-if="tab === 'Code' && currentEl.layerCodeError"
+    .popup-background
+      ul.popup_tab-set
+        template(v-if="tabSelected !== 'Preview'")
+          button.popup_header(
+            v-for="(tab, i) in tabSet"
+            :key="tab.i"
+            :class="{'disable': tabSelected != tab}"
+            :disabled="tab === 'Code' && isTutorial || disableSettings"
+            @click="setTab(tab)"
           )
-      .popup_header.disable(v-else)
-        h4 Preview
-    .popup_tab-body
-      .popup_body.active(
-        v-for="(tabContent, i) in tabSet"
-        :key="tabContent.i"
-        v-if="tabSelected === tabContent"
-        )
-        .settings-layer
-          slot(:name="tabContent+'-content'")
-        #js-hide-btn.settings-layer_foot
-          slot(v-if="showControls" :name="tabContent+'-action'")
-            button.btn.btn--primary.btn--disabled(type="button"
-              @click="hideAllWindow"
-              :disabled="isTutorial"
-            ) Cancel
-            button.btn.btn--primary(type="button"
-              @click="applySettings(tabContent)"
-              :id="idSetBtn"
-            ) Apply
-            //-button.btn.btn--dark-blue-rev(type="button"
-              v-if="showUpdateCode"
-              @click="updateCode"
-              ) Update code
-      .popup_body.active(v-if="tabSelected === 'Preview'")
-        settings-preview(
-          :current-el="currentEl"
-          @to-settings="toSettings"
+            h4(v-html="tab")
+            i.icon.icon-code-error(
+              v-if="tab === 'Code' && currentEl.layerCodeError"
+            )
+        .popup_header.disable(v-else)
+          h4 Preview
+      .popup_tab-body
+        .popup_body.active(
+          v-for="(tabContent, i) in tabSet"
+          :key="tabContent.i"
+          v-if="tabSelected === tabContent"
           )
+          .settings-layer
+            slot(:name="tabContent+'-content'")
+          #js-hide-btn.settings-layer_foot
+            slot(v-if="showControls" :name="tabContent+'-action'")
+              button.btn.btn--primary.btn--disabled(type="button"
+                @click="hideAllWindow"
+                :disabled="isTutorial"
+              ) Cancel
+              button.btn.btn--primary(type="button"
+                @click="applySettings(tabContent)"
+                :id="idSetBtn"
+              ) Apply
+              //-button.btn.btn--dark-blue-rev(type="button"
+                v-if="showUpdateCode"
+                @click="updateCode"
+                ) Update code
+        .popup_body.active(v-if="tabSelected === 'Preview'")
+          settings-preview(
+            :current-el="currentEl"
+            @to-settings="toSettings"
+            )
 
 
 </template>

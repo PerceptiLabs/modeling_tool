@@ -24,12 +24,14 @@
           p.big-text Please check your email!
 
       .form_holder
-        router-link.btn.btn--link(:to="{name: 'login'}") Login
+        button.btn.btn--link(@click="setActivePageAction(MODAL_PAGE_SIGN_IN)") Login
 
 </template>
 
 <script>
   import LogoutUserPageWrap from '@/pages/logout-user-page-wrap.vue'
+  import {mapActions} from "vuex";
+  import {MODAL_PAGE_SIGN_IN} from "@/core/constants";
 
 export default {
   name: 'PageRestoreAccount',
@@ -40,6 +42,7 @@ export default {
         email: '',
       },
       success: true,
+      MODAL_PAGE_SIGN_IN,
     }
   },
   computed: {
@@ -48,6 +51,9 @@ export default {
     },
   },
   methods: {
+    ...mapActions({
+      setActivePageAction: 'modal_pages/setActivePageAction',
+    }),
     validateForm() {
       this.$validator.validateAll()
         .then((result) => {
@@ -65,7 +71,9 @@ export default {
 
       this.$store.dispatch('mod_apiCloud/CloudAPI_userForgotPassword', this.user.email)
         .then((response)=> {
-          this.success = false;
+          if(!!response) {
+            this.success = false;
+          }
           //this.$router.replace('/login')
         })
         .catch((err)=> {

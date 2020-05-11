@@ -3,7 +3,7 @@
     data-component="TrainDynamic"
     data-layer="Dynamic Routing"
     data-type="Training"
-    v-tooltip:right="'Dynamic Routing'"
+    v-tooltip:bottom="'Dynamic Routing'"
     v-tooltip-interactive:right="interactiveInfo"
     :style="layerStyles"
   )

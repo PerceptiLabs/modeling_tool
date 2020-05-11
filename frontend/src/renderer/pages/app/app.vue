@@ -1,13 +1,16 @@
 <template lang="pug">
-  .page(
-    v-if="showPage"
-    ref="layersbar"
-    )
-    the-workspace
-    the-toolbar
-    the-layersbar
-    the-sidebar
-    the-tutorial-storyboard(v-if="isShowTutorial")
+
+  //- .page(
+  //-   v-if="showPage"
+  //-   ref="layersbar"
+  //-   )
+  .page(ref="layersbar")
+    project-sidebar
+    the-workspace.workspace
+    //- the-toolbar
+    //- the-layersbar
+    //- the-sidebar
+    //- the-tutorial-storyboard(v-if="isShowTutorial")
 
 </template>
 
@@ -16,6 +19,7 @@
   import { throttleEv } from '@/core/helpers.js'
   import { localStorageGridKey } from '@/core/constants.js'
 
+  import ProjectSidebar     from '@/pages/layout/project-sidebar.vue';
   import TheToolbar         from '@/components/the-toolbar.vue'
   import TheLayersbar       from '@/components/the-layersbar.vue'
   import TheSidebar         from '@/components/the-sidebar.vue'
@@ -26,17 +30,18 @@
 
   export default {
     name: 'pageQuantum',
-    components: { TheToolbar, TheLayersbar, TheSidebar, TheWorkspace, TheTutorialStoryboard },
+    components: { ProjectSidebar, TheToolbar, TheLayersbar, TheSidebar, TheWorkspace, TheTutorialStoryboard },
     created() {
+      // debugger;
       if(isWeb()) {
         this.$store.dispatch('mod_workspace/GET_workspacesFromLocalStorage')
           .then(_ => {
-            if(!this.workspaceContent.length) { this.ADD_network(); }
+            // if(!this.workspaceContent.length) { this.ADD_network(); }
 
             // request charts if the page has been refreshed, and
             // the current tab is the first one
 
-            this.SET_chartRequests(this.workspaceContent[0].networkID);
+            // this.SET_chartRequests(this.workspaceContent[0].networkID);
           });
       } else {
         if(!this.workspaceContent.length) this.ADD_network();
@@ -191,11 +196,12 @@
 <style lang="scss" scoped>
   @import "../../scss/base";
   .page {
-    display: grid;
     background-color: $bg-window;
-    grid-template-areas:  'toolbar   toolbar    sidebar'
-                          'layersbar  workspace sidebar';
-    grid-template-rows: auto 1fr;
-    grid-template-columns: auto 1fr auto;
+
+    display: flex;
+    
+    /deep/ .wrapper {
+      position: static;
+    }
   }
 </style>

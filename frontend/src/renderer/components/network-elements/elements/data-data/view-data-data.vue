@@ -3,7 +3,7 @@
     data-component="DataData"
     data-layer="Data"
     data-type="Data"
-    v-tooltip:right="'Data'"
+    v-tooltip:bottom="'Data'"
     v-tooltip-interactive:right="interactiveInfo"
     id="tutorial_data-data"
     :style="layerStyles"

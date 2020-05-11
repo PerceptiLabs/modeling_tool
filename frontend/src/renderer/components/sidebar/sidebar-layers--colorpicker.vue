@@ -1,11 +1,17 @@
 <template lang="pug">
   .layer-colorpicker.js-clickout
-    button.btn.btn--icon.layer-item--btn-action(type="button"
+    //- button.btn.btn--icon.layer-item--btn-action(type="button"
+    //-   :class="layerItemColor"
+    //-   :style="iconColor"
+    //-   @click="toggleColorpicker($event)"
+    //-   )
+      //- i.icon.icon-ellipse
+      //- .layer-item-color-block
+    .layer-item-color-block(type="button"
       :class="layerItemColor"
       :style="iconColor"
       @click="toggleColorpicker($event)"
       )
-      i.icon.icon-ellipse
     .layer-colorpicker_wrap(v-if="showColorpicker")
       .form_row
         base-checkbox(v-model="applyColor")
@@ -51,7 +57,7 @@ export default {
   computed: {
     iconColor() {
       return this.applyColor
-        ? {'color': this.layerColor.hex}
+        ? {'background-color': this.layerColor.hex}
         : ''
     },
     layerItemColor() {
@@ -78,6 +84,9 @@ export default {
         case 'TrainGenetic':
         case 'TrainDynamic':
         case 'TrainReinforce':
+        case 'TrainLoss':
+        case 'TrainOptimizer':
+        case 'TrainDetector':
           className = 'net-color-train';
           break;
         case 'MathArgmax':
@@ -137,5 +146,10 @@ export default {
     position: absolute;
     z-index: 2;
     top: 100%;
+  }
+  .layer-item-color-block {
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
   }
 </style>

@@ -3,7 +3,7 @@
     data-component="DeepLearningConv"
     data-layer="Convolution"
     data-type="Other"
-    v-tooltip:right="'Convolution'"
+    v-tooltip:bottom="'Convolution'"
     v-tooltip-interactive:right="interactiveInfo"
     id="tutorial_convolution"
     :style="layerStyles"
