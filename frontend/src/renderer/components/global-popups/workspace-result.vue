@@ -71,26 +71,26 @@ export default {
     trainingTargetMetric() {
 
       if (this.popupInfo.acc_train) {
-        return `Training Accuracy: ${ this.popupInfo.acc_train.toFixed(2).replace('.00', '') }%`;
+        return `Training Accuracy: ${ this.toFixedWithMaxDigits(this.popupInfo.acc_train, 2) }%`;
       }
       
       if (this.popupInfo.r_sq_train) {
-        return `Training R Squared:  ${ this.popupInfo.r_sq_train.toFixed(2).replace('.00', '') }%`;
+        return `Training R Squared:  ${ this.toFixedWithMaxDigits(this.popupInfo.r_sq_train / 100, 2) }`;
       }
 
-      return '';
+      return `Training Accuracy: 0%`;
     },
     validationTargetMetric() {
 
       if (this.popupInfo.acc_val) {
-        return `Validation Accuracy: ${ this.popupInfo.acc_val.toFixed(2).replace('.00', '') }%`;
+        return `Validation Accuracy: ${ this.toFixedWithMaxDigits(this.popupInfo.acc_val, 2) }%`;
       }
       
       if (this.popupInfo.r_sq_val) {
-        return `Validation R Squared:  ${ this.popupInfo.r_sq_val.toFixed(2).replace('.00', '') }%`;
+        return `Validation R Squared:  ${ this.toFixedWithMaxDigits(this.popupInfo.r_sq_val / 100, 2) }`;
       }
 
-      return '';
+      return `Validation Accuracy: 0%`;
     },
   }
 }
