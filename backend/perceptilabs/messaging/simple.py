@@ -3,7 +3,6 @@ from queue import Queue, Empty
 from perceptilabs.messaging import MessageBus, MessageProducer, MessageConsumer, ConsumerProducerFactory
 
 
-
 class SimpleMessageProducer(MessageProducer):
     def __init__(self, topic, queues):
         self._topic = topic
@@ -36,7 +35,6 @@ class SimpleMessageConsumer(MessageConsumer):
             else:
                 if topic in self._topics:
                     messages.append(message)
-            
         return messages
 
     def start(self):
@@ -46,16 +44,18 @@ class SimpleMessageConsumer(MessageConsumer):
         pass
 
 
-class SimpleConsumerProducerFactory(ConsumerProducerFactory):
-    def __init__(self):
-        self._consumer_queues = []
+_consumer_queues = []
     
+class SimpleConsumerProducerFactory(ConsumerProducerFactory):
     def make_producer(self, topic, address_resolver=None):
-        return SimpleMessageProducer(topic, self._consumer_queues)
+        global _consumer_queues
+        return SimpleMessageProducer(topic, _consumer_queues)
 
     def make_consumer(self, topics, address_resolver=None):
         queue = Queue()
-        self._consumer_queues.append(queue)
+
+        global _consumer_queues
+        _consumer_queues.append(queue)
         return SimpleMessageConsumer(topics, queue)
         
 

@@ -99,8 +99,8 @@ class Core:
         script_path = self._create_script(graph, session_id, topic_generic, topic_snapshots, userland_timeout=self._userland_timeout)
         self._deployment_strategy.run(script_path)
 
+        producer = self._consumer_producer_factory.make_producer(topic_generic)        
         consumer = self._consumer_producer_factory.make_consumer([topic_generic, topic_snapshots])
-        producer = self._consumer_producer_factory.make_producer(topic_generic)
         log.info(f"Instantiated message producer/consumer pairs for topics {topic_generic} and {topic_snapshots} for session {session_id}")
 
         self._client = TrainingClient(
