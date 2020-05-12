@@ -30,7 +30,8 @@ from perceptilabs.core_new.api.mapping import ByteMap
 from perceptilabs.core_new.communication import TrainingClient, State
 from perceptilabs.core_new.layers.script import ScriptFactory
 from perceptilabs.core_new.communication.deployment import ThreadStrategy, DeploymentStrategy
-from perceptilabs.messaging.zmq import ZmqMessageConsumer, ZmqMessageProducer          
+from perceptilabs.messaging.zmq import ZmqMessageConsumer, ZmqMessageProducer
+from perceptilabs.messaging import ConsumerProducerFactory
 
 log = logging.getLogger(__name__)
 
@@ -46,9 +47,10 @@ class CoreState(enum.Enum):
 
 
 class Core:
-    def __init__(self, graph_builder: GraphBuilder, script_factory: ScriptFactory, issue_handler: IssueHandler=None, server_timeout=610, userland_timeout=600, deployment_strategy=None, use_sentry=False):
+    def __init__(self, graph_builder: GraphBuilder, script_factory: ScriptFactory, consumer_producer_factory: ConsumerProducerFactory, issue_handler: IssueHandler=None, server_timeout=610, userland_timeout=600, deployment_strategy=None, use_sentry=False):
         self._graph_builder = graph_builder
         self._script_factory = script_factory
+        self._consumer_producer_factory = consumer_producer_factory
         self._graphs = collections.deque(maxlen=500)
         self._issue_handler = issue_handler
         self._use_sentry = use_sentry
@@ -97,8 +99,8 @@ class Core:
         script_path = self._create_script(graph, session_id, topic_generic, topic_snapshots, userland_timeout=self._userland_timeout)
         self._deployment_strategy.run(script_path)
 
-        consumer = ZmqMessageConsumer([topic_generic, topic_snapshots])
-        producer = ZmqMessageProducer(topic_generic)
+        consumer = self._consumer_producer_factory.make_consumer([topic_generic, topic_snapshots])
+        producer = self._consumer_producer_factory.make_producer(topic_generic)
         log.info(f"Instantiated message producer/consumer pairs for topics {topic_generic} and {topic_snapshots} for session {session_id}")
 
         self._client = TrainingClient(

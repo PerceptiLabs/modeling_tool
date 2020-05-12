@@ -8,7 +8,7 @@ from typing import List
 from abc import ABC, abstractmethod
 
 
-from perceptilabs.messaging import MessageBus, MessageProducer, MessageConsumer
+from perceptilabs.messaging import MessageBus, MessageProducer, MessageConsumer, ConsumerProducerFactory
 
 
 log = logging.getLogger(__name__)
@@ -178,8 +178,16 @@ class ZmqMessageConsumer(MessageConsumer):
             print("MessageConsumer " + repr(e))            
         finally:
             return messages
-            
 
+
+class ZmqConsumerProducerFactory(ConsumerProducerFactory):
+    def make_producer(self, topic, address_resolver=None):
+        return ZmqMessageProducer(topic, address_resolver=address_resolver)
+
+    def make_producer(self, topics, address_resolver=None):
+        return ZmqMessageProducer(topic, address_resolver=address_resolver)        
+
+    
 _event_bus = None
 
 def get_message_bus():
