@@ -45,6 +45,13 @@ perceptilabs/analytics/__init__.py
 perceptilabs/analytics/handlers.py
 perceptilabs/analytics/scraper.py
 
+# perceptilabs/core_new/api
+perceptilabs/core_new/api/__init__.py
+perceptilabs/core_new/api/base.py
+perceptilabs/core_new/api/legacy.py
+perceptilabs/core_new/api/logging.py
+perceptilabs/core_new/api/mapping.py
+
 # perceptilabs/code_generator
 perceptilabs/code_generator/__init__.py
 perceptilabs/code_generator/base.py
