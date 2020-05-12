@@ -1,3 +1,20 @@
+import warnings
+import functools
+
+def deprecated(func):
+    """This is a decorator which can be used to mark functions
+    as deprecated. It will result in a warning being emitted
+    when the function is used."""
+    @functools.wraps(func)
+    def new_func(*args, **kwargs):
+        warnings.simplefilter('always', DeprecationWarning)  # turn off filter
+        warnings.warn("Call to deprecated function {}.".format(func.__name__),
+                      category=DeprecationWarning,
+                      stacklevel=2)
+        warnings.simplefilter('default', DeprecationWarning)  # reset filter
+        return func(*args, **kwargs)
+    return new_func
+
 def line_nums(text):
     lines = text.split('\n')
     max_numbering_length = len(str(len(lines) + 1))
@@ -117,8 +134,8 @@ def frontend_watcher(process_id, sleep_period=1, grace_period=15, log=None):
 def sanitize_path(path):
     path = path.replace('\\', '/')
     return path
-        
 
+    
 if __name__ == "__main__":
     import numpy as np
     obj = {
@@ -130,3 +147,19 @@ if __name__ == "__main__":
     }    
     x = stringify(obj)
     print(x)
+
+
+def loop_until_true(condition, timeout=20.0):
+    import time
+    t1 = t0 = time.time()
+    while t1 - t0 < timeout:
+        if condition(0):
+            return True
+        time.sleep(0.3)
+        t1 = time.time()
+    return False
+        
+    
+def wait_for_condition(condition, timeout=20.0):
+    return loop_until_true(condition, timeout)
+
