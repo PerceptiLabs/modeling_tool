@@ -103,20 +103,23 @@
         loss_tensor = (tf.reduce_mean(tf.abs(output_tensor - target_tensor)))
         reg_error_tensor = tf.reduce_sum((output_tensor - target_tensor)) 
         squared_error_tensor = (tf.reduce_sum(tf.square(output_tensor - target_tensor)))
-        size_tensor = tf.constant( float(self._trn_sz_tot  + self._val_sz_tot + self._tst_sz_tot) )
-        r_mse = tf.sqrt(squared_error_tensor) 
-        std_dev = tf.math.reduce_std(target_tensor)
+        # size_tensor = tf.constant( float(self._trn_sz_tot  + self._val_sz_tot + self._tst_sz_tot) )
+        
+        # r_mse = tf.sqrt(squared_error_tensor) 
+        # std_dev = tf.math.reduce_std(target_tensor)
         
         batch_mean_tensor = tf.reduce_mean(target_tensor)
-        combined_mean = tf.constant(0.0,  shape = (batch_mean_tensor.get_shape()))
+        running_sum = tf.constant(0.0)
+        y_bar_tensor = tf.constant(1.0)
+        
+        running_count = tf.constant(0.0)
+        size_tensor = tf.constant(0.0,  shape = (batch_mean_tensor.get_shape()))
 
-        batch_sum_tensor = tf.reduce_sum(target_tensor)
-        combined_sum = tf.constant(0.0,  shape = (batch_sum_tensor.get_shape()))
+        running_sum += tf.reduce_sum(target_tensor)
+        running_count += self._batch_size
+        y_bar_tensor = y_bar_tensor * ((running_sum - self._batch_size) / self._batch_size) + batch_mean_tensor
 
-        combined_mean += (batch_mean_tensor / 10.0)
-        combined_sum += batch_sum_tensor
 
-        y_bar_tensor = combined_mean / combined_sum
 
         squared_variance_tensor = tf.reduce_sum(tf.square(target_tensor - y_bar_tensor))
         r_squared_tensor = 1 - (tf.truediv(squared_error_tensor,squared_variance_tensor))
@@ -305,7 +308,7 @@
 class {{layer_name}}(RegressionLayer):
     def __init__(self):
         self._n_epochs = {{n_epochs}}
-        self._batch_size = 10 # TODO: {{batch_size}}?
+        self._batch_size = {{batch_size}} # TODO: {{batch_size}}?
 
         self._stopped = False
         self._paused = False
