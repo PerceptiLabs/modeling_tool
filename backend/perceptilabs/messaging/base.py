@@ -40,8 +40,10 @@ class MessageConsumer(ABC):
     
     
 class MessagingFactory(ABC):
+    @abstractmethod
     def make_producer(self, topic, address_resolver=None):
         raise NotImplementedError
 
-    def make_producer(self, topics, address_resolver=None):
+    @abstractmethod    
+    def make_consumer(self, topics, address_resolver=None):
         raise NotImplementedError        

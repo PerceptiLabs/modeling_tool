@@ -184,7 +184,7 @@ class ZmqMessagingFactory(MessagingFactory):
     def make_producer(self, topic, address_resolver=None):
         return ZmqMessageProducer(topic, address_resolver=address_resolver)
 
-    def make_producer(self, topics, address_resolver=None):
+    def make_consumer(self, topics, address_resolver=None):
         return ZmqMessageConsumer(topics, address_resolver=address_resolver)        
 
     
@@ -205,10 +205,13 @@ if __name__ == "__main__":
     bus.start()
     time.sleep(1)
 
-    c = ZmqMessageConsumer([b'some-topic'])
+
+    factory = ZmqMessagingFactory()
+
+    c = factory.make_consumer([b'some-topic'])
     c.start()
     
-    p = ZmqMessageProducer(b'some-topic')
+    p = factory.make_producer(b'some-topic')
     p.start()
     p.send(b'hello')
 
