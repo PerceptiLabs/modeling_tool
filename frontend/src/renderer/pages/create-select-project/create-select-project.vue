@@ -32,7 +32,7 @@
               .list-name-name Name
               .list-last-opened Last Opened
             div.main-list-item(
-              v-for="project in projectsList.filter(pr => pr.name.indexOf(searchValue) !== -1)" 
+              v-for="project in projectsList" 
               @dblclick="onProjectSelectHandler(project)"
               @contextmenu.prevent.stop="openContext($event, project.project_id)"
             ) 
