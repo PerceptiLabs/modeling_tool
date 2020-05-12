@@ -5,7 +5,7 @@ import pytest
 import logging
 from unittest.mock import MagicMock
 
-from perceptilabs.messaging.zmq import get_message_bus, ZmqMessageConsumer, ZmqMessageProducer
+from perceptilabs.messaging.simple import SimpleMessageConsumer, SimpleMessageProducer, SimpleConsumerProducerFactory
 from perceptilabs.utils import loop_until_true
 from perceptilabs.core_new.utils import find_free_port
 from perceptilabs.core_new.utils import YieldLevel
@@ -32,16 +32,13 @@ def topic_sn(session_id):
     return topic_snapshots
 
 
-@pytest.fixture(scope='module', autouse=True)
-def message_bus():
-    bus = get_message_bus()
-    bus.start()
-    yield
-    bus.stop()
+@pytest.fixture(scope='module')
+def factory():
+    return SimpleConsumerProducerFactory()
 
 
 @pytest.fixture
-def consumer(topic_gn, topic_sn):
+def consumer(factory, topic_gn, topic_sn):
     consumer = ZmqMessageConsumer([topic_gn, topic_sn])
     consumer.start()
     yield consumer
@@ -49,17 +46,17 @@ def consumer(topic_gn, topic_sn):
 
     
 @pytest.fixture
-def producer(topic_gn):
+def producer(factory, topic_gn):
     producer = ZmqMessageProducer(topic_gn)
     producer.start()
     yield producer
     producer.stop()    
 
     
-def create_server(topic_gn, topic_sn, graph=None, snapshot_builder=None, userland_timeout=15):
-    server_producer_generic = ZmqMessageProducer(topic_gn)
-    server_producer_snapshots = ZmqMessageProducer(topic_sn)
-    server_consumer = ZmqMessageConsumer([topic_gn])
+def create_server(factory, topic_gn, topic_sn, graph=None, snapshot_builder=None, userland_timeout=15):
+    server_producer_generic = factory.make_producer(topic_gn)
+    server_producer_snapshots = factory.make_producer(topic_sn)
+    server_consumer = factory.make_consumer([topic_gn])
 
     graph = graph or MagicMock()
     snapshot_builder = snapshot_builder or MagicMock()
@@ -74,9 +71,9 @@ def create_server(topic_gn, topic_sn, graph=None, snapshot_builder=None, userlan
     return server
 
 
-def create_client(topic_gn, topic_sn, graph_builder=None, on_receive_graph=None, on_log_message=None, on_userland_error=None, on_userland_timeout=None, on_server_timeout=None, server_timeout=60):
-    consumer = ZmqMessageConsumer([topic_gn, topic_sn])
-    producer = ZmqMessageProducer(topic_gn)
+def create_client(factory, topic_gn, topic_sn, graph_builder=None, on_receive_graph=None, on_log_message=None, on_userland_error=None, on_userland_timeout=None, on_server_timeout=None, server_timeout=60):
+    consumer = factory.make_consumer([topic_gn, topic_sn])
+    producer = factory.make_producer(topic_gn)
     
     client = TrainingClient(
         producer, consumer,
@@ -91,9 +88,9 @@ def create_client(topic_gn, topic_sn, graph_builder=None, on_receive_graph=None,
     return client
 
     
-def test_receives_status_ready(topic_gn, topic_sn):
-    server = create_server(topic_gn, topic_sn)
-    client = create_client(topic_gn, topic_sn)
+def test_receives_status_ready(factory, topic_gn, topic_sn):
+    server = create_server(factory, topic_gn, topic_sn)
+    client = create_client(factory, topic_gn, topic_sn)
     
     try:
         server_step = server.run_stepwise()
@@ -109,9 +106,9 @@ def test_receives_status_ready(topic_gn, topic_sn):
         client.shutdown()
 
 
-def test_receives_status_running_on_request_start(topic_gn, topic_sn):
-    server = create_server(topic_gn, topic_sn)
-    client = create_client(topic_gn, topic_sn)
+def test_receives_status_running_on_request_start(factory, topic_gn, topic_sn):
+    server = create_server(factory, topic_gn, topic_sn)
+    client = create_client(factory, topic_gn, topic_sn)
     try:
         server_step = server.run_stepwise()
         client_step = client.run_stepwise()
@@ -131,9 +128,9 @@ def test_receives_status_running_on_request_start(topic_gn, topic_sn):
         client.shutdown()
 
         
-def test_receives_status_paused_on_request(topic_gn, topic_sn):
-    server = create_server(topic_gn, topic_sn)
-    client = create_client(topic_gn, topic_sn)    
+def test_receives_status_paused_on_request(factory, topic_gn, topic_sn):
+    server = create_server(factory, topic_gn, topic_sn)
+    client = create_client(factory, topic_gn, topic_sn)    
     try:
         server_step = server.run_stepwise()
         client_step = client.run_stepwise()
@@ -154,9 +151,9 @@ def test_receives_status_paused_on_request(topic_gn, topic_sn):
         client.shutdown()
         
 
-def test_can_resume_when_paused(topic_gn, topic_sn):
-    server = create_server(topic_gn, topic_sn)
-    client = create_client(topic_gn, topic_sn)        
+def test_can_resume_when_paused(factory, topic_gn, topic_sn):
+    server = create_server(factory, topic_gn, topic_sn)
+    client = create_client(factory, topic_gn, topic_sn)        
     try:
         server_step = server.run_stepwise()
         client_step = client.run_stepwise()
@@ -186,7 +183,7 @@ def test_can_resume_when_paused(topic_gn, topic_sn):
         client.shutdown()        
 
 
-def test_handles_received_graphs(topic_gn, topic_sn):
+def test_handles_received_graphs(factory, topic_gn, topic_sn):
     snapshot = {'foo': 'bar'}
     snapshot_builder = MagicMock()
     snapshot_builder.build.return_value = snapshot
@@ -201,8 +198,8 @@ def test_handles_received_graphs(topic_gn, topic_sn):
     graph = MagicMock()
     graph.run = graph_run
 
-    server = create_server(topic_gn, topic_sn, graph=graph, snapshot_builder=snapshot_builder)
-    client = create_client(topic_gn, topic_sn, graph_builder=graph_builder, on_receive_graph=on_receive_graph)    
+    server = create_server(factory, topic_gn, topic_sn, graph=graph, snapshot_builder=snapshot_builder)
+    client = create_client(factory, topic_gn, topic_sn, graph_builder=graph_builder, on_receive_graph=on_receive_graph)    
     try:
         server_step = server.run_stepwise()
         client_step = client.run_stepwise()
