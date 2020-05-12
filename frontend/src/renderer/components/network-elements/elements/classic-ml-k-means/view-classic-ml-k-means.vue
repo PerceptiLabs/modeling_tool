@@ -4,7 +4,7 @@
     data-component="ClassicMLKMeans"
     data-layer="K-Means Clustering"
     data-type="Training"
-    v-tooltip:bottom="'K-Means Clustering'"
+    v-tooltip:networkElement="'K-Means Clustering'"
     v-tooltip-interactive:right="interactiveInfo.MLKmeans"
     :style="layerStyles"
   )
