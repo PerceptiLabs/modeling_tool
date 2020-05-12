@@ -33,9 +33,11 @@ def topic_sn(session_id):
     topic_snapshots = f'snapshots-{session_id}'.encode()
     return topic_snapshots
 
+
 @pytest.fixture(scope='module')
 def messaging_factory():
     return SimpleMessagingFactory()
+
 
 @pytest.fixture
 def consumer(topic_gn, topic_sn, messaging_factory):
@@ -44,6 +46,7 @@ def consumer(topic_gn, topic_sn, messaging_factory):
     yield consumer
     consumer.stop()
 
+    
 @pytest.fixture
 def producer(topic_gn, messaging_factory):
     producer = messaging_factory.make_producer(topic_gn)

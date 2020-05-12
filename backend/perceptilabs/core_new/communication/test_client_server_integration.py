@@ -36,22 +36,6 @@ def topic_sn(session_id):
 def messaging_factory():
     return SimpleMessagingFactory()
 
-
-@pytest.fixture
-def consumer(messaging_factory, topic_gn, topic_sn):
-    consumer = ZmqMessageConsumer([topic_gn, topic_sn])
-    consumer.start()
-    yield consumer
-    consumer.stop()
-
-    
-@pytest.fixture
-def producer(messaging_factory, topic_gn):
-    producer = ZmqMessageProducer(topic_gn)
-    producer.start()
-    yield producer
-    producer.stop()    
-
     
 def create_server(messaging_factory, topic_gn, topic_sn, graph=None, snapshot_builder=None, userland_timeout=15):
     server_producer_generic = messaging_factory.make_producer(topic_gn)
