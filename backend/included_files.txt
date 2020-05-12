@@ -81,13 +81,6 @@ perceptilabs/core_new/core_distr.py
 perceptilabs/core_new/script_distr.py
 perceptilabs/core_new/serialization.py
 
-# perceptilabs/core_new/api/
-perceptilabs/core_new/api/__init__.py
-perceptilabs/core_new/api/base.py
-perceptilabs/core_new/api/logging.py
-perceptilabs/core_new/api/mapping.py
-perceptilabs/core_new/api/legacy.py
-
 # perceptilabs/core_new/communication
 perceptilabs/core_new/communication/__init__.py
 perceptilabs/core_new/communication/client.py
