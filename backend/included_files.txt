@@ -27,7 +27,11 @@ perceptilabs/utils.py
 perceptilabs/processes.py
 perceptilabs/license_checker.py
 perceptilabs/issues.py
-perceptilabs/messaging.py
+
+# perceptilabs/messaging
+perceptilabs/messaging/base.py
+perceptilabs/messaging/zmq.py
+perceptilabs/messaging/__init__.py
 
 # perceptilabs/server
 perceptilabs/server/__init__.py

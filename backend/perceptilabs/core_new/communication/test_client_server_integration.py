@@ -5,7 +5,7 @@ import pytest
 import logging
 from unittest.mock import MagicMock
 
-from perceptilabs.messaging import get_message_bus, MessageConsumer, MessageProducer
+from perceptilabs.messaging.zmq import get_message_bus, ZmqMessageConsumer, ZmqMessageProducer
 from perceptilabs.utils import loop_until_true
 from perceptilabs.core_new.utils import find_free_port
 from perceptilabs.core_new.utils import YieldLevel
@@ -42,7 +42,7 @@ def message_bus():
 
 @pytest.fixture
 def consumer(topic_gn, topic_sn):
-    consumer = MessageConsumer([topic_gn, topic_sn])
+    consumer = ZmqMessageConsumer([topic_gn, topic_sn])
     consumer.start()
     yield consumer
     consumer.stop()
@@ -50,16 +50,16 @@ def consumer(topic_gn, topic_sn):
     
 @pytest.fixture
 def producer(topic_gn):
-    producer = MessageProducer(topic_gn)
+    producer = ZmqMessageProducer(topic_gn)
     producer.start()
     yield producer
     producer.stop()    
 
     
 def create_server(topic_gn, topic_sn, graph=None, snapshot_builder=None, userland_timeout=15):
-    server_producer_generic = MessageProducer(topic_gn)
-    server_producer_snapshots = MessageProducer(topic_sn)
-    server_consumer = MessageConsumer([topic_gn])
+    server_producer_generic = ZmqMessageProducer(topic_gn)
+    server_producer_snapshots = ZmqMessageProducer(topic_sn)
+    server_consumer = ZmqMessageConsumer([topic_gn])
 
     graph = graph or MagicMock()
     snapshot_builder = snapshot_builder or MagicMock()
@@ -75,8 +75,8 @@ def create_server(topic_gn, topic_sn, graph=None, snapshot_builder=None, userlan
 
 
 def create_client(topic_gn, topic_sn, graph_builder=None, on_receive_graph=None, on_log_message=None, on_userland_error=None, on_userland_timeout=None, on_server_timeout=None, server_timeout=60):
-    consumer = MessageConsumer([topic_gn, topic_sn])
-    producer = MessageProducer(topic_gn)
+    consumer = ZmqMessageConsumer([topic_gn, topic_sn])
+    producer = ZmqMessageProducer(topic_gn)
     
     client = TrainingClient(
         producer, consumer,

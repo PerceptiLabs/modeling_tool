@@ -30,7 +30,7 @@ from perceptilabs.core_new.api.mapping import ByteMap
 from perceptilabs.core_new.communication import TrainingClient, State
 from perceptilabs.core_new.layers.script import ScriptFactory
 from perceptilabs.core_new.communication.deployment import ThreadStrategy, DeploymentStrategy
-from perceptilabs.messaging import MessageConsumer, MessageProducer          
+from perceptilabs.messaging.zmq import ZmqMessageConsumer, ZmqMessageProducer          
 
 log = logging.getLogger(__name__)
 
@@ -97,8 +97,8 @@ class Core:
         script_path = self._create_script(graph, session_id, topic_generic, topic_snapshots, userland_timeout=self._userland_timeout)
         self._deployment_strategy.run(script_path)
 
-        consumer = MessageConsumer([topic_generic, topic_snapshots])
-        producer = MessageProducer(topic_generic)
+        consumer = ZmqMessageConsumer([topic_generic, topic_snapshots])
+        producer = ZmqMessageProducer(topic_generic)
         log.info(f"Instantiated message producer/consumer pairs for topics {topic_generic} and {topic_snapshots} for session {session_id}")
 
         self._client = TrainingClient(
@@ -242,8 +242,8 @@ class Core:
             log.error('Training stopped because a training step too long!')
             self._is_running = False            
 
-        consumer = MessageConsumer([topic_generic, topic_snapshots])
-        producer = MessageProducer(topic_generic)
+        consumer = ZmqMessageConsumer([topic_generic, topic_snapshots])
+        producer = ZmqMessageProducer(topic_generic)
         log.info(f"Instantiated message producer/consumer pairs for topics {topic_generic} and {topic_snapshots} for session {session_id}")                
         
         log.info("Creating training client")            

@@ -18,7 +18,7 @@ from perceptilabs.core_new.graph import Graph
 from perceptilabs.core_new.layers import TrainingLayer
 from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP
 from perceptilabs.utils import wait_for_condition
-from perceptilabs.messaging import get_message_bus, MessageConsumer, MessageProducer
+from perceptilabs.messaging.zmq import get_message_bus, ZmqMessageConsumer, ZmqMessageProducer
 
 logging.basicConfig(stream=sys.stdout,
                     format='%(asctime)s - %(levelname)s - %(threadName)s - %(filename)s:%(lineno)d - %(message)s',
@@ -248,9 +248,9 @@ def test_core_handles_userland_timeout():
         topic_generic = script_factory.make.call_args[0][2]
         topic_snapshots = script_factory.make.call_args[0][3]
         
-        prod_generic = MessageProducer(topic_generic)
-        prod_snapshots = MessageProducer(topic_snapshots)
-        consumer = MessageConsumer([topic_generic])            
+        prod_generic = ZmqMessageProducer(topic_generic)
+        prod_snapshots = ZmqMessageProducer(topic_snapshots)
+        consumer = ZmqMessageConsumer([topic_generic])            
 
         training_server = TrainingServer(
             prod_generic, prod_snapshots, consumer,
@@ -307,9 +307,9 @@ def test_core_handles_userland_error():
         topic_generic = script_factory.make.call_args[0][2]
         topic_snapshots = script_factory.make.call_args[0][3]
         
-        prod_generic = MessageProducer(topic_generic)
-        prod_snapshots = MessageProducer(topic_snapshots)
-        consumer = MessageConsumer([topic_generic])            
+        prod_generic = ZmqMessageProducer(topic_generic)
+        prod_snapshots = ZmqMessageProducer(topic_snapshots)
+        consumer = ZmqMessageConsumer([topic_generic])            
         training_server = TrainingServer(
             prod_generic, prod_snapshots, consumer,                
             graph,
@@ -361,9 +361,9 @@ def test_core_handles_training_server_timeout():
         topic_generic = script_factory.make.call_args[0][2]
         topic_snapshots = script_factory.make.call_args[0][3]
         
-        prod_generic = MessageProducer(topic_generic)
-        prod_snapshots = MessageProducer(topic_snapshots)
-        consumer = MessageConsumer([topic_generic])            
+        prod_generic = ZmqMessageProducer(topic_generic)
+        prod_snapshots = ZmqMessageProducer(topic_snapshots)
+        consumer = ZmqMessageConsumer([topic_generic])            
         training_server = TrainingServer(
             prod_generic, prod_snapshots, consumer,                
             graph,
@@ -415,9 +415,9 @@ def test_pause_works(graph_spec_binary_classification):
         topic_generic = script_factory.make.call_args[0][2]
         topic_snapshots = script_factory.make.call_args[0][3]
         
-        prod_generic = MessageProducer(topic_generic)
-        prod_snapshots = MessageProducer(topic_snapshots)
-        consumer = MessageConsumer([topic_generic])            
+        prod_generic = ZmqMessageProducer(topic_generic)
+        prod_snapshots = ZmqMessageProducer(topic_snapshots)
+        consumer = ZmqMessageConsumer([topic_generic])            
         training_server = TrainingServer(
             prod_generic, prod_snapshots, consumer,                
             graph,
@@ -476,9 +476,9 @@ def test_resume_works(graph_spec_binary_classification):
         topic_generic = script_factory.make.call_args[0][2]
         topic_snapshots = script_factory.make.call_args[0][3]
         
-        prod_generic = MessageProducer(topic_generic)
-        prod_snapshots = MessageProducer(topic_snapshots)
-        consumer = MessageConsumer([topic_generic])            
+        prod_generic = ZmqMessageProducer(topic_generic)
+        prod_snapshots = ZmqMessageProducer(topic_snapshots)
+        consumer = ZmqMessageConsumer([topic_generic])            
         training_server = TrainingServer(
             prod_generic, prod_snapshots, consumer,                
             graph,

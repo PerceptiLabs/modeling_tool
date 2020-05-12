@@ -211,9 +211,9 @@ class ScriptFactory:
         code += "\n"        
         code += "topic_generic = {}\n".format(topic_generic)
         code += "topic_snapshots = {}\n".format(topic_snapshots)
-        code += "producer_generic = MessageProducer(topic_generic)\n"
-        code += "producer_snapshots = MessageProducer(topic_snapshots)\n"
-        code += "consumer = MessageConsumer([topic_generic])\n"
+        code += "producer_generic = ZmqMessageProducer(topic_generic)\n"
+        code += "producer_snapshots = ZmqMessageProducer(topic_snapshots)\n"
+        code += "consumer = ZmqMessageConsumer([topic_generic])\n"
         code += "\n"
         code += "server = TrainingServer(\n"
         code += "    producer_generic, producer_snapshots, consumer,\n"
