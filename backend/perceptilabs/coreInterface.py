@@ -794,9 +794,7 @@ class coreLogic():
                 r_sq_val=self.getStatistics({"layerId":id_, "variable":"r_sq_validation_epoch","innervariable":""})
                 loss_train=self.getStatistics({"layerId":id_, "variable":"loss_train_epoch","innervariable":""})
                 loss_val=self.getStatistics({"layerId":id_, "variable":"loss_validation_epoch","innervariable":""})
-                # import pdb
-                # pdb.set_trace()
-                end_results.update({"r_sq_train":float(r_sq_train[-1]), "r_sq_val":float(r_sq_val[-1]), "loss_train":float(loss_train[-1]), "loss_val":float(loss_val[-1])})
+                end_results.update({"r_sq_train":float(r_sq_train[-1]) * 100, "r_sq_val":float(r_sq_val[-1]) * 100, "loss_train":float(loss_train[-1]), "loss_val":float(loss_val[-1])})
         return end_results
 
     
