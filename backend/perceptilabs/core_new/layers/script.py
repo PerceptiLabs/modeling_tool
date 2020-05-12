@@ -214,9 +214,9 @@ class ScriptFactory:
         code += "topic_snapshots = {}\n".format(topic_snapshots)
 
         if self._simple_message_bus:
-            code += "factory = SimpleConsumerProducerFactory()\n"            
+            code += "factory = SimpleMessagingFactory()\n"            
         else:
-            code += "factory = ZmqConsumerProducerFactory()\n"
+            code += "factory = ZmqMessagingFactory()\n"
             
         code += "producer_generic = factory.make_producer(topic_generic)\n"
         code += "producer_snapshots = factory.make_producer(topic_snapshots)\n"

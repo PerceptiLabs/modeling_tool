@@ -1,6 +1,6 @@
 from queue import Queue, Empty
 
-from perceptilabs.messaging import MessageBus, MessageProducer, MessageConsumer, ConsumerProducerFactory
+from perceptilabs.messaging import MessageBus, MessageProducer, MessageConsumer, MessagingFactory
 
 
 class SimpleMessageProducer(MessageProducer):
@@ -46,7 +46,7 @@ class SimpleMessageConsumer(MessageConsumer):
 
 _consumer_queues = []
     
-class SimpleConsumerProducerFactory(ConsumerProducerFactory):
+class SimpleMessagingFactory(MessagingFactory):
     def make_producer(self, topic, address_resolver=None):
         global _consumer_queues
         return SimpleMessageProducer(topic, _consumer_queues)

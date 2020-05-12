@@ -1,1 +1,3 @@
-from perceptilabs.messaging.base import MessageBus, MessageProducer, MessageConsumer, ConsumerProducerFactory
+from perceptilabs.messaging.base import MessageBus, MessageProducer, MessageConsumer, MessagingFactory
+from perceptilabs.messaging.simple import SimpleMessagingFactory
+from perceptilabs.messaging.zmq import ZmqMessagingFactory

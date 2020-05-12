@@ -18,7 +18,7 @@ from perceptilabs.core_new.graph import Graph
 from perceptilabs.core_new.layers import TrainingLayer
 from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP
 from perceptilabs.utils import wait_for_condition
-from perceptilabs.messaging.simple import SimpleMessageConsumer, SimpleMessageProducer, SimpleConsumerProducerFactory
+from perceptilabs.messaging.simple import SimpleMessageConsumer, SimpleMessageProducer, SimpleMessagingFactory
 
 
 logging.basicConfig(stream=sys.stdout,
@@ -36,8 +36,8 @@ def graph_builder():
 
 
 @pytest.fixture(scope='module')
-def consprod_factory():
-    return SimpleConsumerProducerFactory()
+def messaging_factory():
+    return SimpleMessagingFactory()
     
     
 @pytest.fixture(scope='function')
@@ -163,7 +163,7 @@ def graph_spec_binary_classification():
     f2.close()
 
 
-def run_core_until_convergence(consprod_factory, graph_spec, metric_fn, max_attempts=10):
+def run_core_until_convergence(messaging_factory, graph_spec, metric_fn, max_attempts=10):
     passed = False
     graphs = []
     for attempt in range(max_attempts):
@@ -176,7 +176,7 @@ def run_core_until_convergence(consprod_factory, graph_spec, metric_fn, max_atte
         core = Core(
             graph_builder,
             script_factory,
-            consprod_factory
+            messaging_factory
         )
         
         core.run(graph_spec, auto_close=True)
@@ -191,7 +191,7 @@ def run_core_until_convergence(consprod_factory, graph_spec, metric_fn, max_atte
     
 
 @pytest.mark.slow
-def test_train_normal_converges(consprod_factory, graph_spec_binary_classification, graph_builder):
+def test_train_normal_converges(messaging_factory, graph_spec_binary_classification, graph_builder):
     
     def metric_fn(graphs):
         if len(graphs) > 10:
@@ -201,11 +201,11 @@ def test_train_normal_converges(consprod_factory, graph_spec_binary_classificati
         else:
             return False
     
-    assert run_core_until_convergence(consprod_factory, graph_spec_binary_classification, metric_fn)
+    assert run_core_until_convergence(messaging_factory, graph_spec_binary_classification, metric_fn)
 
     
 @pytest.mark.slow
-def test_train_normal_distributed_converges(consprod_factory, graph_spec_binary_classification, graph_builder):
+def test_train_normal_distributed_converges(messaging_factory, graph_spec_binary_classification, graph_builder):
     json_network = graph_spec_binary_classification
     json_network['Layers']['6']['Properties']['Distributed'] = True
 
@@ -218,10 +218,10 @@ def test_train_normal_distributed_converges(consprod_factory, graph_spec_binary_
         else:
             return False
     
-    assert run_core_until_convergence(consprod_factory, json_network, metric_fn)
+    assert run_core_until_convergence(messaging_factory, json_network, metric_fn)
 
 @pytest.mark.skip
-def test_core_handles_userland_timeout(consprod_factory):
+def test_core_handles_userland_timeout(messaging_factory):
     userland_timeout = 3
     server_timeout = 10000    
 
@@ -246,9 +246,9 @@ def test_core_handles_userland_timeout(consprod_factory):
         topic_generic = script_factory.make.call_args[0][2]
         topic_snapshots = script_factory.make.call_args[0][3]
         
-        prod_generic = consprod_factory.make_producer(topic_generic)
-        prod_snapshots = consprod_factory.make_producer(topic_snapshots)
-        consumer = consprod_factory.make_consumer([topic_generic])            
+        prod_generic = messaging_factory.make_producer(topic_generic)
+        prod_snapshots = messaging_factory.make_producer(topic_snapshots)
+        consumer = messaging_factory.make_consumer([topic_generic])            
 
         training_server = TrainingServer(
             prod_generic, prod_snapshots, consumer,
@@ -280,7 +280,7 @@ def test_core_handles_userland_timeout(consprod_factory):
     assert wait_for_condition(cond)
     
 
-def test_core_handles_userland_error(consprod_factory):
+def test_core_handles_userland_error(messaging_factory):
     def run_graph():
         for i in range(3):
             time.sleep(0.1)
@@ -305,9 +305,9 @@ def test_core_handles_userland_error(consprod_factory):
         topic_generic = script_factory.make.call_args[0][2]
         topic_snapshots = script_factory.make.call_args[0][3]
         
-        prod_generic = consprod_factory.make_producer(topic_generic)
-        prod_snapshots = consprod_factory.make_producer(topic_snapshots)
-        consumer = consprod_factory.make_consumer([topic_generic])            
+        prod_generic = messaging_factory.make_producer(topic_generic)
+        prod_snapshots = messaging_factory.make_producer(topic_snapshots)
+        consumer = messaging_factory.make_consumer([topic_generic])            
         training_server = TrainingServer(
             prod_generic, prod_snapshots, consumer,                
             graph,
@@ -322,7 +322,7 @@ def test_core_handles_userland_error(consprod_factory):
     core = Core(
         graph_builder,
         script_factory,
-        consprod_factory,
+        messaging_factory,
         deployment_strategy=deployment_strategy,
         issue_handler=issue_handler
     )
@@ -335,7 +335,7 @@ def test_core_handles_userland_error(consprod_factory):
         return issue_handler.put_error.call_count == 1             
 
     
-def test_core_handles_training_server_timeout(consprod_factory):
+def test_core_handles_training_server_timeout(messaging_factory):
     """Simulate a timeout by having a slow training loop"""
     
     ping_interval = 100
@@ -360,9 +360,9 @@ def test_core_handles_training_server_timeout(consprod_factory):
         topic_generic = script_factory.make.call_args[0][2]
         topic_snapshots = script_factory.make.call_args[0][3]
         
-        prod_generic = consprod_factory.make_producer(topic_generic)
-        prod_snapshots = consprod_factory.make_producer(topic_snapshots)
-        consumer = consprod_factory.make_consumer([topic_generic])            
+        prod_generic = messaging_factory.make_producer(topic_generic)
+        prod_snapshots = messaging_factory.make_producer(topic_snapshots)
+        consumer = messaging_factory.make_consumer([topic_generic])            
         training_server = TrainingServer(
             prod_generic, prod_snapshots, consumer,                
             graph,
@@ -379,7 +379,7 @@ def test_core_handles_training_server_timeout(consprod_factory):
     core = Core(
         graph_builder,
         script_factory,
-        consprod_factory,        
+        messaging_factory,        
         deployment_strategy=deployment_strategy,
         userland_timeout=userland_timeout,
         server_timeout=server_timeout,
@@ -394,7 +394,7 @@ def test_core_handles_training_server_timeout(consprod_factory):
         return issue_handler.put_error.call_count == 1             
 
         
-def test_pause_works(graph_spec_binary_classification, consprod_factory):
+def test_pause_works(graph_spec_binary_classification, messaging_factory):
     
     def run_graph():
         for _ in range(100):
@@ -415,9 +415,9 @@ def test_pause_works(graph_spec_binary_classification, consprod_factory):
         topic_generic = script_factory.make.call_args[0][2]
         topic_snapshots = script_factory.make.call_args[0][3]
         
-        prod_generic = consprod_factory.make_producer(topic_generic)
-        prod_snapshots = consprod_factory.make_producer(topic_snapshots)
-        consumer = consprod_factory.make_consumer([topic_generic])            
+        prod_generic = messaging_factory.make_producer(topic_generic)
+        prod_snapshots = messaging_factory.make_producer(topic_snapshots)
+        consumer = messaging_factory.make_consumer([topic_generic])            
         training_server = TrainingServer(
             prod_generic, prod_snapshots, consumer,                
             graph,
@@ -433,7 +433,7 @@ def test_pause_works(graph_spec_binary_classification, consprod_factory):
     core = Core(
         graph_builder,
         script_factory,
-        consprod_factory,        
+        messaging_factory,        
         deployment_strategy=deployment_strategy
     )
 
@@ -456,7 +456,7 @@ def test_pause_works(graph_spec_binary_classification, consprod_factory):
     assert wait_for_condition(cond_training_is_paused)    
         
         
-def test_resume_works(graph_spec_binary_classification, consprod_factory):
+def test_resume_works(graph_spec_binary_classification, messaging_factory):
     
     def run_graph():
         for _ in range(100):
@@ -477,9 +477,9 @@ def test_resume_works(graph_spec_binary_classification, consprod_factory):
         topic_generic = script_factory.make.call_args[0][2]
         topic_snapshots = script_factory.make.call_args[0][3]
         
-        prod_generic = consprod_factory.make_producer(topic_generic)
-        prod_snapshots = consprod_factory.make_producer(topic_snapshots)
-        consumer = consprod_factory.make_consumer([topic_generic])            
+        prod_generic = messaging_factory.make_producer(topic_generic)
+        prod_snapshots = messaging_factory.make_producer(topic_snapshots)
+        consumer = messaging_factory.make_consumer([topic_generic])            
         training_server = TrainingServer(
             prod_generic, prod_snapshots, consumer,                
             graph,
@@ -495,7 +495,7 @@ def test_resume_works(graph_spec_binary_classification, consprod_factory):
     core = Core(
         graph_builder,
         script_factory,
-        consprod_factory,        
+        messaging_factory,        
         deployment_strategy=deployment_strategy
     )
 

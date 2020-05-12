@@ -248,7 +248,7 @@ class coreLogic():
                                             error_handler, session_proc_handler, checkpointValues)
         elif self._core_mode == 'v2':
             from perceptilabs.core_new.compability import CompabilityCore
-            from perceptilabs.messaging.zmq import ZmqConsumerProducerFactory            
+            from perceptilabs.messaging.zmq import ZmqMessagingFactory            
             from perceptilabs.core_new.graph.builder import GraphBuilder
             from perceptilabs.core_new.layers.script import ScriptFactory
 
@@ -258,13 +258,14 @@ class coreLogic():
             graph_builder = GraphBuilder(replica_by_name)
             
             script_factory = ScriptFactory()
-            consumer_procuer_factory = ZmqConsumerProducerFactory()
+            messaging_factory = ZmqMessagingFactory()
             
             self.core = CompabilityCore(
                 self.commandQ,
                 self.resultQ,
                 graph_builder,
                 script_factory,
+                messaging_factory,
                 network,
                 threaded=True,
                 issue_handler=self.issue_handler

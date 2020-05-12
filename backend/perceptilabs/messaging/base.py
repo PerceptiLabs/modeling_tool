@@ -39,7 +39,7 @@ class MessageConsumer(ABC):
         raise NotImplementedError        
     
     
-class ConsumerProducerFactory(ABC):
+class MessagingFactory(ABC):
     def make_producer(self, topic, address_resolver=None):
         raise NotImplementedError
 
