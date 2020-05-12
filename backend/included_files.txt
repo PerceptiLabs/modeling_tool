@@ -30,7 +30,7 @@ perceptilabs/issues.py
 
 # perceptilabs/messaging
 perceptilabs/messaging/base.py
-perceptilabs/messaging/zmq.py
+perceptilabs/messaging/zmq_wrapper.py
 perceptilabs/messaging/simple.py
 perceptilabs/messaging/__init__.py
 

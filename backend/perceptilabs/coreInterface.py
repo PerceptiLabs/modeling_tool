@@ -248,7 +248,7 @@ class coreLogic():
                                             error_handler, session_proc_handler, checkpointValues)
         elif self._core_mode == 'v2':
             from perceptilabs.core_new.compability import CompabilityCore
-            from perceptilabs.messaging.zmq import ZmqMessagingFactory            
+            from perceptilabs.messaging.zmq_wrapper import ZmqMessagingFactory            
             from perceptilabs.core_new.graph.builder import GraphBuilder
             from perceptilabs.core_new.layers.script import ScriptFactory
 

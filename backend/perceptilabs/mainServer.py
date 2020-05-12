@@ -6,7 +6,7 @@ import threading
 import pkg_resources
 
 
-from perceptilabs.messaging.zmq import get_message_bus
+from perceptilabs.messaging.zmq_wrapper import get_message_bus
 
 def get_input_args():
     parser = argparse.ArgumentParser()
