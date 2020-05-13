@@ -119,7 +119,7 @@
         # running_count += self._batch_size
         # y_bar_tensor = y_bar_tensor * ((running_sum - self._batch_size) / self._batch_size) + batch_mean_tensor
         y_bar_numerator = tf.constant(0.0)
-        y_bar_numerator += self._batch_size * (tf.reduce_mean(loss_tensor))
+        y_bar_numerator += self._batch_size * (tf.reduce_mean(target_tensor))
 
         y_bar_denominator = tf.constant(0.0)
         y_bar_denominator += self._batch_size
@@ -129,7 +129,7 @@
 
 
         squared_variance_tensor = tf.reduce_sum(tf.square(target_tensor - y_bar_tensor))
-        r_squared_tensor = 1 - (tf.truediv(squared_error_tensor,squared_variance_tensor))
+        r_squared_tensor = 1 - (tf.truediv(squared_variance_tensor,squared_error_tensor))
 
         global_step = None
         {% filter remove_lspaces(8) %}        
