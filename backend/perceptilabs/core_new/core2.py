@@ -316,13 +316,11 @@ class Core:
         self._graphs.append(graph)        
     '''
     def _on_userland_error(self, exception, traceback_frames):
-        import pdb
         message = ''
         collect = False
         last_node = None
         last_lineno = None
 
-        #pdb.set_trace()
         for frame in traceback_frames:
             node, true_lineno = self._line_to_node_map.get(frame.lineno, (None, None))
             
@@ -342,16 +340,17 @@ class Core:
                 message += f'File "{frame.filename}", line {frame.lineno}, in {frame.name}\n' + \
                            f'  {frame.line}\n'
         
-        #pdb.set_trace()
-        error = UserlandError(last_node.layer_id, last_node.layer_type, last_lineno, message)
+        if last_node:
+            error = UserlandError(last_node.layer_id, last_node.layer_type, last_lineno, message)
+        else:
+            error = UserlandError(node.layer_id, node.layer_type, frame.lineno, message)
 
-        #if self._use_sentry:
-        #    with sentry_sdk.push_scope() as scope:
-        #        scope.set_tag('error-type', 'userland-error')
-        #        scope.level = 'info'
-        #        sentry_sdk.capture_message(error.format())
+        if self._use_sentry:
+            with sentry_sdk.push_scope() as scope:
+                scope.set_tag('error-type', 'userland-error')
+                scope.level = 'info'
+                sentry_sdk.capture_message(error.format())
 
-        #pdb.set_trace()
         log.info('Training stopped because of userland error:\n' + error.format())
         if self._issue_handler is not None:
             self._issue_handler.put_error(error.format())
