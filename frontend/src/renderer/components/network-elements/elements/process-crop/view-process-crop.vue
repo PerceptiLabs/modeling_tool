@@ -4,7 +4,7 @@
     data-component="ProcessCrop"
     data-layer="Crop"
     data-type="Other"
-    v-tooltip:bottom="'Crop'"
+    v-tooltip:networkElement="'Crop'"
     v-tooltip-interactive:right="interactiveInfo"
     :style="layerStyles"
   )

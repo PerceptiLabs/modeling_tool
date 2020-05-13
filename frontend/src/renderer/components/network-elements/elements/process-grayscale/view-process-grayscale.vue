@@ -3,7 +3,7 @@
     data-component="ProcessGrayscale"
     data-layer="Grayscale"
     data-type="Other"
-    v-tooltip:bottom="'Grayscale'"
+    v-tooltip:networkElement="'Grayscale'"
     v-tooltip-interactive:right="interactiveInfo"
     :style="layerStyles"
   )
