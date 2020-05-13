@@ -108,16 +108,23 @@
         # r_mse = tf.sqrt(squared_error_tensor) 
         # std_dev = tf.math.reduce_std(target_tensor)
         
-        batch_mean_tensor = tf.reduce_mean(target_tensor)
-        running_sum = tf.constant(0.0)
-        y_bar_tensor = tf.constant(1.0)
+        # batch_mean_tensor = tf.reduce_mean(target_tensor)
+        # running_sum = tf.constant(0.0)
+        # y_bar_tensor = tf.constant(1.0)
         
-        running_count = tf.constant(0.0)
-        size_tensor = tf.constant(0.0,  shape = (batch_mean_tensor.get_shape()))
+        # running_count = tf.constant(0.0)
+        # size_tensor = tf.constant(0.0,  shape = (batch_mean_tensor.get_shape()))
 
-        running_sum += tf.reduce_sum(target_tensor)
-        running_count += self._batch_size
-        y_bar_tensor = y_bar_tensor * ((running_sum - self._batch_size) / self._batch_size) + batch_mean_tensor
+        # running_sum += tf.reduce_sum(target_tensor)
+        # running_count += self._batch_size
+        # y_bar_tensor = y_bar_tensor * ((running_sum - self._batch_size) / self._batch_size) + batch_mean_tensor
+        y_bar_numerator = tf.constant(0.0)
+        y_bar_numerator += self._batch_size * (tf.reduce_mean(loss_tensor))
+
+        y_bar_denominator = tf.constant(0.0)
+        y_bar_denominator += self._batch_size
+
+        y_bar_tensor = y_bar_numerator / y_bar_denominator
 
 
 
