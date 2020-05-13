@@ -1,12 +1,12 @@
 <template lang="pug">
   section.network_info-section.tutorial-relative
-    .info-section_head(v-show="!testIsOpen")
-      h3 {{ sectionTitle }}
-      view-box-btn-list(
-        v-if="btnList"
-        :tab-set="btnList"
-        @set-current-btn="setCurrentBtn"
-        )
+    //- .info-section_head(v-show="!testIsOpen")
+    //-   h3 {{ sectionTitle }}
+    view-box-btn-list(
+      v-if="btnList"
+      :tab-set="btnList"
+      @set-current-btn="setCurrentBtn"
+      )
 
     .info-section_main(v-if="elData !== null")
       component(
@@ -130,13 +130,13 @@ export default {
 <style lang="scss">
   @import "../../scss/base";
   .open-statistic .the-view-box .info-section_main {
-    border-left: 2px solid $bg-window;
+    padding-left: 0;
   }
   /*statistics*/
   .open-test .the-statistics .info-section_main {
-    border-left: 2px solid $bg-window;
+    // border-left: 2px solid $bg-window;
   }
   .info-section_head {
-    border-top: 1px solid $color-5;
+  //   border-top: 1px solid $color-5;
   }
 </style>

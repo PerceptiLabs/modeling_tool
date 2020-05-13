@@ -8,6 +8,9 @@ from typing import List
 from abc import ABC, abstractmethod
 
 
+from perceptilabs.messaging import MessageBus, MessageProducer, MessageConsumer, MessagingFactory
+
+
 log = logging.getLogger(__name__)
 
 
@@ -48,7 +51,7 @@ def get_default_address_resolver():
         return IpcAddressResolver()
     
         
-class MessageBus:
+class ZmqMessageBus(MessageBus):
     POLL_TIMEOUT = 1.0 # msec
     
     def __init__(self, address_resolver=None):
@@ -120,7 +123,7 @@ class MessageBus:
             self._proxy_thread.join()
 
 
-class MessageProducer:
+class ZmqMessageProducer(MessageProducer):
     def __init__(self, topic, address_resolver=None):
         self._address_resolver = address_resolver or get_default_address_resolver()
         
@@ -142,7 +145,7 @@ class MessageProducer:
             print("MessageProducer " + repr(e))
             
 
-class MessageConsumer:
+class ZmqMessageConsumer(MessageConsumer):
     def __init__(self, topics, address_resolver=None):
         self._address_resolver = address_resolver or get_default_address_resolver()
         
@@ -175,14 +178,22 @@ class MessageConsumer:
             print("MessageConsumer " + repr(e))            
         finally:
             return messages
-            
 
+
+class ZmqMessagingFactory(MessagingFactory):
+    def make_producer(self, topic, address_resolver=None):
+        return ZmqMessageProducer(topic, address_resolver=address_resolver)
+
+    def make_consumer(self, topics, address_resolver=None):
+        return ZmqMessageConsumer(topics, address_resolver=address_resolver)        
+
+    
 _event_bus = None
 
 def get_message_bus():
     global _event_bus
     if _event_bus is None:
-        _event_bus = MessageBus()
+        _event_bus = ZmqMessageBus()
     return _event_bus
     
 
@@ -194,10 +205,13 @@ if __name__ == "__main__":
     bus.start()
     time.sleep(1)
 
-    c = MessageConsumer([b'some-topic'])
+
+    factory = ZmqMessagingFactory()
+
+    c = factory.make_consumer([b'some-topic'])
     c.start()
     
-    p = MessageProducer(b'some-topic')
+    p = factory.make_producer(b'some-topic')
     p.start()
     p.send(b'hello')
 

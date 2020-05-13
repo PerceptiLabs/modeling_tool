@@ -3,7 +3,7 @@
     data-component="TrainNormal"
     data-layer="Normal"
     data-type="Training"
-    v-tooltip:right="'Normal'"
+    v-tooltip:networkElement="'Normal'"
     v-tooltip-interactive:right="interactiveInfo"
     id="tutorial_training-normal"
     :style="layerStyles"

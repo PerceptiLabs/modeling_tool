@@ -4,6 +4,7 @@ import { deepCopy, parseJWT, isWeb, stringifyNetworkObjects }   from "@/core/hel
 import { createNotebookJson }   from "@/core/helpers/notebook-helper.js";
 import { pathSlash }  from "@/core/constants.js";
 import {isElectron} from "@/core/helpers";
+import { PROJECT_DEFAULT_FOLDER } from "../../core/constants";
 
 let coreRequest = null;
 let ipcRenderer = null;
@@ -399,7 +400,19 @@ const actions = {
   //---------------
   //  NETWORK SAVE
   //---------------
+  API_loadNetwork(ctx, path) {
+    const theData = {
+      reciever: "",
+      action: "getJsonModel",
+      value: path
+    }
 
+    return coreRequest(theData)
+      .then((data) => data)
+      .catch((err) => {
+        console.error('loading network error: ', err);
+      });
+  },
   API_checkNetworkRunning({rootGetters}, receiver) {
     const theData = {
       reciever: receiver,
@@ -438,6 +451,40 @@ const actions = {
         console.error('SaveTrained answer', err);
       });
   },
+  API_saveModel({dispatch, getters, rootGetters}, {model}) {
+    // location shoul be getted from default location of project
+    // /model_${model.apiMeta.model_id}
+    const save_path = `${PROJECT_DEFAULT_FOLDER}project_${model.apiMeta.project}/model_${model.apiMeta.model_id}`;
+    
+    const theData = {
+      action: "saveJsonModel",
+      value:  {
+        reciever: model,
+        path: save_path,
+        json: JSON.stringify(model),
+      }
+    };
+    return coreRequest(theData)
+      .then((data)=> {
+        return data;
+      })
+      .catch((err)=> {
+        console.error('SaveModel', err);
+      });
+  },
+  API_getModel(ctx, path) {
+    const theData = {
+      action: 'getJsonModel',
+      value: path
+    }
+    return coreRequest(theData)
+      .then(res=> {
+        return res;
+      }).catch(e => {
+        console.log(e);
+      })
+  },
+
   API_saveJsonModel({rootGetters}, {path}) {
     const networkJson = stringifyNetworkObjects(rootGetters['mod_workspace/GET_currentNetwork']);
     const theData = {
@@ -556,12 +603,38 @@ const actions = {
     };
 
     // console.log('getCode', theData);
+    // console.log('getCode - payload', theData);
+    // console.log('getCode - layerId', layerId);
     if(isWeb()) {
       dispatch('globalView/ShowCoreNotFoundPopup', null, { root: true });
     }
     return coreRequest(theData)
-      .then((data)=> data)
+      .then((data)=> {
+        // console.log('getCode - response', data);
+        // console.log('getCode - layerId', layerId);
+        return data
+      })
       .catch((err)=> {
+        console.log('API_getCode error');
+        console.error(err);
+      });
+  },
+
+  API_getGraphOrder({ rootGetters }, jsonNetwork) {
+
+    const theData = {
+      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
+      action: 'getGraphOrder',
+      value: jsonNetwork
+    };
+
+    return coreRequest(theData)
+      .then((data)=> {
+        // console.log('API_getGraphOrder data', data);
+        return data;
+      })
+      .catch((err)=> {
+        // console.log('API_getGraphOrder error');
         console.error(err);
       });
   },
@@ -799,7 +872,24 @@ const actions = {
         console.error(err);
       });
   },
+  API_createFolder(ctx, folder_name) {
+    const theData = {
+      receiver: '',
+      action: 'createFolder',
+      value: {
+        "folder_path": '/Users/antonbourosu/proj/',
+        "folder_name": folder_name
+      },
+    }
 
+    return coreRequest(theData)
+      .then(res => {
+        return res;
+      })
+      .catch(err => {
+        console.error(err);
+      });
+  }
 };
 
 export default {

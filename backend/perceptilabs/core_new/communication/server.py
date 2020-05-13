@@ -119,6 +119,24 @@ class TrainingServer:
         self._producer_snapshots.stop()
         self._consumer.stop()
 
+    def _advance_training(self, training_step, sentinel, task_executor):
+        """Take a training step, check for userland errors, send snapshot if possible"""
+        
+        new_state = None
+        try:
+            training_step_result = training_step()
+        except Exception as e:
+            log.info("Training step raised an error: " + repr(e))            
+            new_state = State.TRAINING_FAILED
+            self._send_userland_error(e)
+        else:
+            if training_step_result is sentinel:
+                new_state = State.TRAINING_COMPLETED
+            elif training_step_result is YieldLevel.SNAPSHOT:
+                self._send_graph(self._graph)
+        finally:
+            return new_state        
+
     def _advance_training_with_timeout(self, training_step, sentinel, task_executor):
         """Take a training step, check for timeout or userland errors, send snapshot if possible"""
         
@@ -141,24 +159,6 @@ class TrainingServer:
                 self._send_graph(self._graph)
         finally:
             return new_state
-
-    def _advance_training(self, training_step, sentinel, task_executor):
-        """Take a training step, check for userland errors, send snapshot if possible"""
-        
-        new_state = None
-        try:
-            training_step_result = training_step()
-        except Exception as e:
-            log.info("Training step raised an error: " + repr(e))            
-            new_state = State.TRAINING_FAILED
-            self._send_userland_error(e)
-        else:
-            if training_step_result is sentinel:
-                new_state = State.TRAINING_COMPLETED
-            elif training_step_result is YieldLevel.SNAPSHOT:
-                self._send_graph(self._graph)
-        finally:
-            return new_state        
 
     def _send_userland_timeout(self):
         self._send_key_value('userland-timeout')        
@@ -258,6 +258,19 @@ class TrainingServer:
         args = args or ()
         kwargs = kwargs or {}
         try:
+            method(*args, **kwargs)
+        except Exception as e:
+            log.info("Userland method raised an error: " + repr(e))            
+            new_state = State.TRAINING_FAILED
+            self._send_userland_error(e)
+            state.transition(State.TRAINING_FAILED)            
+        else:
+            state.transition(success_state)
+
+    def _call_userland_method_with_timeout(self, task_executor, method, state, args=None, kwargs=None, success_state=None):
+        args = args or ()
+        kwargs = kwargs or {}
+        try:
             task_executor.run(method, args, kwargs)
         except TaskTimeout as e:
             log.info("Userland method timed out!")
@@ -270,7 +283,7 @@ class TrainingServer:
             state.transition(State.TRAINING_FAILED)            
         else:
             state.transition(success_state)
-        
+            
     def _send_key_value(self, key, value=None, producer=None):
         producer = producer or self._producer_generic
         

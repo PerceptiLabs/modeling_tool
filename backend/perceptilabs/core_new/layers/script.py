@@ -44,10 +44,11 @@ def is_syntax_ok(code):
 
 
 class ScriptFactory:
-    def __init__(self, mode='default', max_time_run=None):
+    def __init__(self, mode='default', max_time_run=None, simple_message_bus=False):
         # if legacy, simply reuse codehq
         # if modern, use modern when possible if not try to wrap hq layers
-
+        self._simple_message_bus = simple_message_bus
+        
         templates_directory = pkg_resources.resource_filename('perceptilabs', TEMPLATES_DIRECTORY)
         self._engine = J2Engine(templates_directory)
         self._definition_table = DEFINITION_TABLE
@@ -211,9 +212,16 @@ class ScriptFactory:
         code += "\n"        
         code += "topic_generic = {}\n".format(topic_generic)
         code += "topic_snapshots = {}\n".format(topic_snapshots)
-        code += "producer_generic = MessageProducer(topic_generic)\n"
-        code += "producer_snapshots = MessageProducer(topic_snapshots)\n"
-        code += "consumer = MessageConsumer([topic_generic])\n"
+
+        if self._simple_message_bus:
+            code += "factory = SimpleMessagingFactory()\n"            
+        else:
+            code += "factory = ZmqMessagingFactory()\n"
+            
+        code += "producer_generic = factory.make_producer(topic_generic)\n"
+        code += "producer_snapshots = factory.make_producer(topic_snapshots)\n"
+        code += "consumer = factory.make_consumer([topic_generic])\n"
+            
         code += "\n"
         code += "server = TrainingServer(\n"
         code += "    producer_generic, producer_snapshots, consumer,\n"

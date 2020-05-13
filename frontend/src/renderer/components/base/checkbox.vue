@@ -1,5 +1,5 @@
 <template lang="pug">
-  label.custom-checkbox
+  label.custom-checkbox(:class="{'v-2': isNewUi}")
     .checkbox-text(v-if="labelPosition==='left'")
       slot
     input(type="checkbox"
@@ -31,7 +31,11 @@ export default {
     iconTheme: {
       type: Boolean,
       default: false
-    }
+    },
+    isNewUi: {
+      type: Boolean,
+      default: false,
+    },
   },
   mounted () {
     this.valueInput = this.value;
@@ -54,7 +58,7 @@ export default {
 <style lang="scss" scoped>
   @import "../../scss/base";
   .custom-checkbox {
-  font-size: 1.2rem;
+    font-size: 1.2rem;
     position: relative;
     display: inline-flex;
     align-items: center;
@@ -69,8 +73,10 @@ export default {
       &:checked + .checkbox-fake {
         //background: $bg-grad-blue;
         //box-shadow: $icon-shad;
+        background: $color-6;
         .icon {
           opacity: 1;
+          color: $black;
         }
         /*<!--&.checkbox-fake&#45;&#45;icon {-->*/
         /*<!--  background: $bg-workspace;-->*/
@@ -78,10 +84,6 @@ export default {
         /*<!--    opacity: 1;-->*/
         /*<!--  }-->*/
         /*<!--}-->*/
-      }
-      &:focus + .checkbox-fake {
-        outline: 1px dotted $col-primary;
-        //box-shadow: 0 0 1px 1px $white;
       }
     }
     .checkbox-text {
@@ -92,11 +94,13 @@ export default {
     .checkbox-fake {
       position: relative;
       flex: 0 0 1.4em;
-      width: 1.4em;
-      height: 1.4em;
+      width: 1.3em;
+      height: 1.3em;
       cursor: pointer;
-      //background-color: $bg-input;
-      background-color: #6E778C;
+      background-color: $col-txt2;
+      border: 0;
+      border-radius: 2px;
+
       .icon {
         font-size: .9em;
         line-height: 1;
@@ -128,6 +132,16 @@ export default {
       position: absolute;
       top: 100%;
       left: 0;
+    }
+
+    &.v-2 {
+      .checkbox-fake {
+        flex: 0 0 13px;
+        width: 13px;
+        height: 13px;
+        background: #383F50;
+        border-radius: 2px;
+      }
     }
   }
 </style>

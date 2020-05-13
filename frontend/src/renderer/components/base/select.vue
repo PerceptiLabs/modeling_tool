@@ -4,7 +4,7 @@
       :class="{'open-list': isOpenList, 'text-placeholder': !value.length}"
       @click="openList"
       )
-      span {{ labelText }}
+      span.thin-font {{ labelText }}
       i.icon.icon-shevron.icon--open
 
     perfect-scrollbar(tag="ul").custom-select_option-list.action-list(
@@ -33,7 +33,7 @@
               v-for="(subOption, index) in option.sublist"
               :key="index"
             )
-              label.action-list_btn
+              label.action-list_btn.thin-font
                 input.action-list_input(
                   :type="typeSelectList"
                   :name="uniqName"
@@ -168,6 +168,15 @@ export default {
 
 <style lang="scss" scoped>
   @import "../../scss/base";
+
+  .thin-font {
+    font-family: Nunito Sans;
+    font-style: normal;
+    font-weight: 300;
+    font-size: 12px;
+    line-height: 1.6rem;
+  }
+
   .custom-select {
     width: 100%;
     position: relative;
@@ -178,9 +187,12 @@ export default {
     align-items: center;
     cursor: default;
     text-align: left;
+    background: #363E51;
+    height: 3.5rem; 
+    border: 1px solid #363E51;
+
     span {
       flex: 1 1 100%;
-      line-height: 1.25;
       white-space: nowrap;
       text-overflow: ellipsis;
       overflow: hidden;
@@ -188,7 +200,14 @@ export default {
     .icon--open {
       flex: 0 0 auto;
     }
+
+    &:focus {
+      border: 1px solid rgb(149, 152, 161);
+    }
+
     &.open-list {
+      border: 1px solid $color-6;
+
       .icon--open {
         transform: rotate(-180deg);
       }
@@ -205,19 +224,31 @@ export default {
     left: 0;
     max-height: 13.5rem;
     overflow: auto;
+    background-color: #363E51;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    border-style: solid;
+    border-color: $color-6;
+    border-width: 0 1px 1px 1px;
   }
   .custom-select_separator {
     border-top: 1px solid;
   }
-  .custom-select_option {
-    cursor: default;
-    &:first-child {
-      border-radius: $bdrs $bdrs 0 0;
+  .custom-select_option {    
+    cursor: default;  
+
+    label {
+      height: 3rem;
     }
-    &:last-child {
+
+    &:first {
+      border-radius: 0;
+    }
+    &:last-of-type {
       border-radius: 0 0 $bdrs $bdrs;
     }
   }
+
   .action-list_btn {
     position: relative;
     justify-content: flex-start;
@@ -225,6 +256,7 @@ export default {
       margin-left: auto;
     }
   }
+
   .action-list_input {
     position: absolute;
     left: -9999px;
@@ -235,7 +267,7 @@ export default {
     &:checked ~ .action-list_bg {
       position: absolute;
       z-index: -1;
-      background-color: #6E778C;
+      background: rgba(97, 133, 238, 0.5);
       left: 0;
       right: 0;
       top: 0;

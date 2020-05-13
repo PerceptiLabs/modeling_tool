@@ -13,6 +13,7 @@ import tempfile
 import threading
 import subprocess
 import sentry_sdk
+from sentry_sdk import utils
 import collections
 import multiprocessing
 from typing import Dict, List, Callable
@@ -30,7 +31,7 @@ from perceptilabs.core_new.api.mapping import ByteMap
 from perceptilabs.core_new.communication import TrainingClient, State
 from perceptilabs.core_new.layers.script import ScriptFactory
 from perceptilabs.core_new.communication.deployment import ThreadStrategy, DeploymentStrategy
-from perceptilabs.messaging import MessageConsumer, MessageProducer          
+from perceptilabs.messaging import MessagingFactory
 
 log = logging.getLogger(__name__)
 
@@ -46,9 +47,10 @@ class CoreState(enum.Enum):
 
 
 class Core:
-    def __init__(self, graph_builder: GraphBuilder, script_factory: ScriptFactory, issue_handler: IssueHandler=None, server_timeout=610, userland_timeout=600, deployment_strategy=None, use_sentry=False):
+    def __init__(self, graph_builder: GraphBuilder, script_factory: ScriptFactory, messaging_factory: MessagingFactory, issue_handler: IssueHandler=None, server_timeout=610, userland_timeout=600, deployment_strategy=None, use_sentry=False):
         self._graph_builder = graph_builder
         self._script_factory = script_factory
+        self._messaging_factory = messaging_factory
         self._graphs = collections.deque(maxlen=500)
         self._issue_handler = issue_handler
         self._use_sentry = use_sentry
@@ -63,25 +65,6 @@ class Core:
         self._closed_by_force = False        
 
         
-    ''' 
-    def run(self, graph_spec: JsonNetwork, session_id: str=None, on_iterate: List[Callable]=None, auto_close=False):
-        on_iterate = on_iterate or []
-        try:
-            self._run_internal(
-                graph_spec,
-                session_id=session_id,
-                on_iterate=on_iterate,
-                auto_close=auto_close
-            )
-        except Exception as e:
-            log.exception("Exception in core.run")
-            raise
-        finally:
-            #log.info(f"Closing core with session id {session_id}")
-            #self.close()                
-            pass
-    '''
-
     def run(self, graph_spec: JsonNetwork, session_id: str=None, on_iterate: List[Callable]=None, auto_close=False):
         step = self.run_stepwise(graph_spec, session_id=session_id, auto_close=auto_close)
         for counter, _ in enumerate(step):
@@ -97,8 +80,8 @@ class Core:
         script_path = self._create_script(graph, session_id, topic_generic, topic_snapshots, userland_timeout=self._userland_timeout)
         self._deployment_strategy.run(script_path)
 
-        consumer = MessageConsumer([topic_generic, topic_snapshots])
-        producer = MessageProducer(topic_generic)
+        producer = self._messaging_factory.make_producer(topic_generic)        
+        consumer = self._messaging_factory.make_consumer([topic_generic, topic_snapshots])
         log.info(f"Instantiated message producer/consumer pairs for topics {topic_generic} and {topic_snapshots} for session {session_id}")
 
         self._client = TrainingClient(
@@ -242,8 +225,8 @@ class Core:
             log.error('Training stopped because a training step too long!')
             self._is_running = False            
 
-        consumer = MessageConsumer([topic_generic, topic_snapshots])
-        producer = MessageProducer(topic_generic)
+        consumer = ZmqMessageConsumer([topic_generic, topic_snapshots])
+        producer = ZmqMessageProducer(topic_generic)
         log.info(f"Instantiated message producer/consumer pairs for topics {topic_generic} and {topic_snapshots} for session {session_id}")                
         
         log.info("Creating training client")            

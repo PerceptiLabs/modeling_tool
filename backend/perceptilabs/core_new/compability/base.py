@@ -22,11 +22,12 @@ PROCESS_RESULTS_DELAY = 0.1
 
 
 class CompabilityCore:
-    def __init__(self, command_queue, result_queue, graph_builder, script_factory, graph_spec, threaded=False, issue_handler=None):
+    def __init__(self, command_queue, result_queue, graph_builder, script_factory, messaging_factory, graph_spec, threaded=False, issue_handler=None):
         self._command_queue = command_queue
         self._result_queue = result_queue
         self._graph_builder = graph_builder
         self._script_factory = script_factory
+        self._messaging_factory = messaging_factory        
         self._graph_spec = copy.deepcopy(graph_spec)
         self._issue_handler = issue_handler
 
@@ -78,7 +79,7 @@ class CompabilityCore:
                 self._result_queue.put(copy.deepcopy(self.results))
             
         set_tensorflow_mode('graph')
-        core = Core(self._graph_builder, self._script_factory, self._issue_handler, use_sentry=True)
+        core = Core(self._graph_builder, self._script_factory, self._messaging_factory, self._issue_handler, use_sentry=True)
         self._core = core
         
         if self._threaded:

@@ -2,7 +2,7 @@ import os
 
 import logging
 import sentry_sdk
-
+from sentry_sdk import utils
 
 import perceptilabs.utils as utils
 from perceptilabs.analytics.scraper import get_scraper
@@ -31,10 +31,11 @@ def setup_sentry(user=None, commit_id=None):
 
     with sentry_sdk.configure_scope() as scope:
         scope.set_tag('error-type', 'internal-error')
+        sentry_sdk.utils.MAX_STRING_LENGTH = 8192
+
         if user:
             scope.user = {"email" : user}
-
-
+        
 def setup_scraper():
     data_uploaders = [
         AzureUploader(AZURE_ACCOUNT_NAME_EU, AZURE_ACCOUNT_KEY_EU, AZURE_CONTAINER_EU),
