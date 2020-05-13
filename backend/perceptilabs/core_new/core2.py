@@ -13,6 +13,7 @@ import tempfile
 import threading
 import subprocess
 import sentry_sdk
+from sentry_sdk import utils
 import collections
 import multiprocessing
 from typing import Dict, List, Callable
