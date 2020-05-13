@@ -103,23 +103,9 @@
         loss_tensor = (tf.reduce_mean(tf.abs(output_tensor - target_tensor)))
         reg_error_tensor = tf.reduce_sum((output_tensor - target_tensor)) 
         squared_error_tensor = (tf.reduce_sum(tf.square(output_tensor - target_tensor)))
-        # size_tensor = tf.constant( float(self._trn_sz_tot  + self._val_sz_tot + self._tst_sz_tot) )
-        
-        # r_mse = tf.sqrt(squared_error_tensor) 
-        # std_dev = tf.math.reduce_std(target_tensor)
-        
-        # batch_mean_tensor = tf.reduce_mean(target_tensor)
-        # running_sum = tf.constant(0.0)
-        # y_bar_tensor = tf.constant(1.0)
-        
-        # running_count = tf.constant(0.0)
-        # size_tensor = tf.constant(0.0,  shape = (batch_mean_tensor.get_shape()))
 
-        # running_sum += tf.reduce_sum(target_tensor)
-        # running_count += self._batch_size
-        # y_bar_tensor = y_bar_tensor * ((running_sum - self._batch_size) / self._batch_size) + batch_mean_tensor
         y_bar_numerator = tf.constant(0.0)
-        y_bar_numerator += self._batch_size * (tf.reduce_mean(target_tensor))
+        y_bar_numerator += tf.reduce_sum(target_tensor)
 
         y_bar_denominator = tf.constant(0.0)
         y_bar_denominator += self._batch_size
@@ -545,17 +531,17 @@ class {{layer_name}}(RegressionLayer):
 
     @property
     def r_squared_training(self) -> float:
-        """Returns the current R^2 of the training phase"""
+        """Returns the current R^2 estimate of the training phase"""
         return self._r_squared_training
 
     @property
     def r_squared_testing(self) -> float:
-        """Returns the current R^2 of the testing phase""" 
+        """Returns the current R^2 estimate of the testing phase""" 
         return self._r_squared_testing
 
     @property
     def r_squared_validation(self) -> float:
-        """Returns the current R^2 of the validation phase"""
+        """Returns the current R^2 estimate of the validation phase"""
         return self._r_squared_validation
 
     @property
