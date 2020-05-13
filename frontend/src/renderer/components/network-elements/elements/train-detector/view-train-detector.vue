@@ -3,7 +3,7 @@
     data-component="TrainDetector"
     data-layer="Detector"
     data-type="Training"
-    v-tooltip:bottom="'Detector'"
+    v-tooltip:networkElement="'Detector'"
     v-tooltip-interactive:right="interactiveInfo"
     id="tutorial_training-detector"
     :style="layerStyles"

@@ -3,7 +3,7 @@
     data-component="TrainOptimizer"
     data-layer="Optimizer"
     data-type="Training"
-    v-tooltip:bottom="'Optimizer'"
+    v-tooltip:networkElement="'Optimizer'"
     v-tooltip-interactive:right="interactiveInfo"
     :style="layerStyles"
   )

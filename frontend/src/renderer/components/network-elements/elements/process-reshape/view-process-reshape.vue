@@ -3,7 +3,7 @@
     data-component="ProcessReshape"
     data-layer="Reshape"
     data-type="Other"
-    v-tooltip:bottom="'Reshape'"
+    v-tooltip:networkElement="'Reshape'"
     v-tooltip-interactive:right="interactiveInfo"
     id="tutorial_process-reshape"
     :style="layerStyles"

@@ -4,7 +4,7 @@
     data-component="ClassicMLSVM"
     data-layer="Support Vector Machine"
     data-type="Training"
-    v-tooltip:bottom="'Support Vector Machine'"
+    v-tooltip:networkElement="'Support Vector Machine'"
     v-tooltip-interactive:right="interactiveInfo.MLSvm"
     :style="layerStyles"
   )

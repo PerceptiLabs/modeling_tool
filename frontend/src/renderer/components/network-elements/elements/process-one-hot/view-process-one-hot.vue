@@ -3,7 +3,7 @@
   data-component="ProcessOneHot"
   data-layer="OneHot"
   data-type="Other"
-  v-tooltip:bottom="'One Hot'"
+  v-tooltip:networkElement="'One Hot'"
   v-tooltip-interactive:right="interactiveInfo"
   id="tutorial_one-hot"
     :style="layerStyles"
