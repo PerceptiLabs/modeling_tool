@@ -94,6 +94,8 @@ TOP_LEVEL_IMPORTS = {
     ],
     'perceptilabs': [
         'from perceptilabs.core_new.graph.builder import GraphBuilder, SnapshotBuilder',
+        'from perceptilabs.core_new.communication import TrainingServer',
+        'from perceptilabs.messaging import ZmqMessagingFactory, SimpleMessagingFactory',
         'from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP, REPLICATED_PROPERTIES_TABLE'                    
     ]
 }
