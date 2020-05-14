@@ -13,6 +13,7 @@ import logging
 import skimage
 import GPUtil
 import collections
+import math
 
 from perceptilabs.networkExporter import exportNetwork
 from perceptilabs.networkSaver import saveNetwork
@@ -577,7 +578,7 @@ class coreLogic():
     def get_gpu(self):
         try:
             gpus = GPUtil.getGPUs()
-            loadList = [gpu.load*100 for gpu in gpus]
+            loadList = [gpu.load*100 if not math.isnan(gpu.load) else 0 for gpu in gpus]
         except:
             loadList = None
         if loadList:
