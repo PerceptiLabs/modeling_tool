@@ -293,7 +293,6 @@ class LightweightCore:
     def _run_subgraph(self, subgraph_spec, _, edges_by_id):
         code_map, code_errors = self._get_code_from_layers(subgraph_spec) # Other errors are fatal and should be raised
         self._layer_ids_to_names = {id_ : subgraph_spec[id_]['Name'] for id_ in subgraph_spec}
-        self._training_layer = 
         _, edges_by_id = get_json_net_topology(subgraph_spec)        
         cached_results = self._get_cached_results(code_map, subgraph_spec, edges_by_id)
         ordered_ids = self._get_ordered_ids(subgraph_spec, edges_by_id)
