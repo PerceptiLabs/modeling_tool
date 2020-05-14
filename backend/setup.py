@@ -77,7 +77,7 @@ setup(
         'sentry-sdk >= 0.10.2',
         'boto >= 2.49.0',
         'boto3 >= 1.9.233',
-        'azure-storage >= 0.36.0',
+        'azure-storage == 0.36.0',
         'astor >= 0.8.0',
         'cffi >= 1.13.2',
         'cryptography >= 2.8',

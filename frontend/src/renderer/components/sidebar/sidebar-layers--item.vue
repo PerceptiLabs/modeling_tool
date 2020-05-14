@@ -18,12 +18,12 @@
           :text-title="itemData.layerName"
           @change-title="editElName"
           )
-      .layer-item_right-sidebar
-        button.btn.btn--icon.visible-icon.visible-icon--lock( type="button"
-          :class="{'invisible-icon': !itemData.layerMeta.isLock}"
-          @click="toggleLock()"
-        )
-          i.icon.icon-lock
+      //- .layer-item_right-sidebar
+      //-   button.btn.btn--icon.visible-icon.visible-icon--lock( type="button"
+      //-     :class="{'invisible-icon': !itemData.layerMeta.isLock}"
+      //-     @click="toggleLock()"
+      //-   )
+      //-     i.icon.icon-lock
         //-button.btn.btn--icon.visible-icon.visible-icon--visiblity( type="button"
           /:class="{'invisible-icon': itemData.layerMeta.isInvisible}"
           /@click="toggleVisible(itemIndex)"
@@ -142,6 +142,11 @@ export default {
 <style lang="scss">
   @import "../../scss/base";
   @import "../../scss/components/color-picker";
+
+  // .layer-item-wrap {
+  //   box-sizing: border-box;
+  // }
+
   .layer-item {
     position: relative;
     display: flex;
@@ -150,12 +155,14 @@ export default {
     padding-right: $h-sidebar-layers-indent;
     padding-left: $h-sidebar-layers-indent;
     border: 1px solid transparent;
-    border-bottom: 1px solid $bg-toolbar;
+    border-top: 1px solid #363E51;
+    padding-left: 1.5rem;
+    box-sizing: border-box;
     &:hover {
       color: white;
     }
     &.selected {
-      background-color: #697187;
+      border: 1px solid #6185EE;
     }
     .icon {
       display: block;
@@ -172,7 +179,6 @@ export default {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: .5em;
   }
   .layer-item-left_btn-folder {
     .icon-shevron-right {
@@ -189,7 +195,7 @@ export default {
     overflow: hidden;
   }
   .layer-item_title {
-    padding-left: .5rem;
+    padding-left: 1rem;
   }
   .layer-item_right-sidebar {
     flex: 0 0 auto;

@@ -1,8 +1,8 @@
 <template lang="pug">
   .data-file-settings
     .form_row.file-settings_title
-      .form_label Files
-      .form_input
+      .form_label.heavy-text Files
+      .form_input.light-text
         span Train
         span Validate
         span Test
@@ -14,7 +14,7 @@
         .form_row
           .form_label
             button.btn.btn--icon.icon.icon-app-close(type="button" @click="deleteItem(i)")
-            span.file-item_path {{ file.path }}
+            span.file-item_path.heavy-text {{ file.path }}
             spinner-upload-file.spinner-upload-file(v-if="loadingFlag")
           .form_input
             triple-input.file-list-item_settings(
@@ -25,7 +25,7 @@
               :validate-sum="100"
             )
 
-    button.btn.btn--link(type="button" @click="addFile") + Add {{ nameAddItem }}
+    button.btn.btn--link.light-text(type="button" @click="addFile") + Add {{ nameAddItem }}
 
 </template>
 
@@ -96,34 +96,59 @@ export default {
 <style lang="scss" scoped>
   @import "../../../scss/base";
   $file-list-indent: .5rem;
+
+  .heavy-text {      
+    font-family: Nunito Sans;
+    font-style: normal;
+    font-weight: 600;
+    font-size: 1.2rem;
+    line-height: 1.6rem;
+  }
+
+  .light-text {
+    font-family: Nunito Sans;
+    font-style: normal;
+    font-weight: 300;
+    font-size: 1.1rem;
+    line-height: 1.5rem;
+  }
+
   .data-file-settings {
     width: 100%;
+    box-sizing: border-box;
     .btn--link {
-      color: $color-5;
-      text-decoration: underline;
+      color: $toolbar-button-border;
+      margin-left: 1rem;
+
       &:hover {
         text-decoration: none;
       }
     }
   }
-  .file-settings_title {
-    font-size: 1.4rem;
+  .file-settings_title {   
     margin-bottom: 1rem;
+
     .form_label {
-      font-size: inherit !important;
+      font-size: 1.2rem;
+      color: $white;
     }
     .form_input {
       display: flex;
-      justify-content: space-between;
-      padding: 0 1.5em 0 1rem;
+      justify-content: space-around;
+      padding-left: 0;
+      padding-right: 2rem;
+
+      color: $color-12;
     }
   }
   .file-settings_list {
     max-height: 20rem;
     overflow-y: auto;
-    background-color: $bg-input;
-    margin: 0 (-$file-list-indent) .5rem;
+    margin-bottom: .5rem;
     border-radius: $bdrs;
+
+    background: #363E51;
+    border: 1px solid $bg-toolbar-2;
   }
   .file-list_item {
     padding: $file-list-indent;
@@ -137,12 +162,14 @@ export default {
       align-items: center;
     }
     .btn--icon {
-      font-size: .75rem;
+      font-size: 1rem;
+      color: $toolbar-separator-color;
       margin-right: .5rem;
     }
   }
 
   .file-item_path {
+    color: $color-12;
     max-width: 10rem;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -157,5 +184,11 @@ export default {
     left: 0;
     right: 0;
     bottom: 0;
+  }
+
+  .file-list-item_settings {
+    /deep/ .triple-input_input {
+      background: #2D3754;
+    }
   }
 </style>

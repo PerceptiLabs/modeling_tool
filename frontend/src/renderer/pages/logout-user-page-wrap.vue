@@ -50,8 +50,12 @@ export default {
     flex-direction: column;
     justify-content: center;
     padding: 3rem;
+    /*background: #272C37;*/
+    /*backdrop-filter: blur(20px);*/
+    min-height: 100vh;
     background: #272C37;
     backdrop-filter: blur(20px);
+    overflow-y: auto;
     overflow-y: auto !important;
   }
 
@@ -62,7 +66,8 @@ export default {
 
   .login_main {
     position: relative;
-    width: 49rem;
+    /*width: 49rem ;*/
+    width: 400px;
     border-radius: 2*$bdrs;
     padding: 4.6rem;
     text-align: center;

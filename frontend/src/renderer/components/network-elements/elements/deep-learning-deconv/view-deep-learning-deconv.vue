@@ -3,7 +3,7 @@
     data-component="DeepLearningDeconv"
     data-layer="Deconvolution"
     data-type="Other"
-    v-tooltip:right="'Deconvolution'"
+    v-tooltip:networkElement="'Deconvolution'"
     v-tooltip-interactive:right="interactiveInfo"
     :style="layerStyles"
   )

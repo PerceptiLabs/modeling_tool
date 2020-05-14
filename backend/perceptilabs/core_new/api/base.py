@@ -1,6 +1,6 @@
 from typing import Any, Tuple
 from enum import Enum
-import dill
+import pickle
 
 from perceptilabs.core_new.api.mapping import ByteMap, EventBus
 
@@ -15,11 +15,11 @@ class StateApi:
     )
     
     def set(self, key: str, value: Any) -> None:
-        self._byte_map[key.encode()] = dill.dumps(value)
+        self._byte_map[key.encode()] = pickle.dumps(value)
         
     def get(self, key: str) -> Any:
         value_bytes = self._byte_map.get(key.encode())
-        return dill.loads(value_bytes)
+        return pickle.loads(value_bytes)
         
     def remove(self, key: str) -> None:
         del self._byte_map[key.encode()]

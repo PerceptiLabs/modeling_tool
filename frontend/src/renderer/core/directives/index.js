@@ -50,10 +50,15 @@ function insertTooltipInfo(event) {
   }
 }
 function insertStandardTooltip(event) {
+  let openTooltipDelay = 500;
+
+  if(event.target.tooltipStandardBinding.arg === 'networkElement')
+  openTooltipDelay = 0;
+
   if(!store.getters['mod_tutorials/getInteractiveInfo']) {
     delayTimer = setTimeout(() => {
       event.target.appendChild(createStandardTooltip(event.target, event.target.tooltipStandardBinding));
-    }, 500);
+    }, openTooltipDelay);
   }
 }
 

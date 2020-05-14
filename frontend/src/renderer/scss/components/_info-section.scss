@@ -10,10 +10,18 @@
   flex: 0 0 auto;
   justify-content: space-between;
   padding: .3rem 1rem;
-  background: $bg-toolbar;
-  min-height: 3.5rem;
+  background: $bg-workspace-3;
+  border-top: 1px solid rgba(97, 133, 238, 0.4);
+  border-bottom: 1px solid rgba(97, 133, 238, 0.4);
+
+  min-height: 2.5rem;
   h3 {
     margin: 0;
+    font-family: Nunito Sans;
+    font-style: normal;
+    font-weight: 600;
+    font-size: 11px;
+    line-height: 15px;
   }
 }
 .info-section_title {

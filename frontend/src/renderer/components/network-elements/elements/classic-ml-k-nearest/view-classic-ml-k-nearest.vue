@@ -4,7 +4,7 @@
     data-component="ClassicMLKNN"
     data-layer="K Nearest Neighbor"
     data-type="Training"
-    v-tooltip:right="'K Nearest Neighbor'"
+    v-tooltip:networkElement="'K Nearest Neighbor'"
     v-tooltip-interactive:right="interactiveInfo.MLKnn"
     :style="layerStyles"
   )
