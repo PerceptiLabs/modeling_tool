@@ -638,37 +638,37 @@ class GANLayer(TrainingLayer):
     
     @property
     @abstractmethod
-    def gen_loss_training(self) -> float:
+    def generator_loss_training(self) -> float:
         """Returns the current loss of the training phase"""        
         raise NotImplementedError
 
     @property
     @abstractmethod
-    def gen_loss_validation(self) -> float:
+    def generator_loss_validation(self) -> float:
         """Returns the current loss of the validation phase"""                
         raise NotImplementedError
 
     @property
     @abstractmethod
-    def gen_loss_testing(self) -> float:
+    def generator_loss_testing(self) -> float:
         """Returns the current loss of the testing phase"""                        
         raise NotImplementedError
 
     @property
     @abstractmethod
-    def dis_loss_training(self) -> float:
+    def discriminator_loss_training(self) -> float:
         """Returns the current loss of the training phase"""        
         raise NotImplementedError
 
     @property
     @abstractmethod
-    def dis_loss_validation(self) -> float:
+    def discriminator_loss_validation(self) -> float:
         """Returns the current loss of the validation phase"""                
         raise NotImplementedError
 
     @property
     @abstractmethod
-    def dis_loss_testing(self) -> float:
+    def discriminator_loss_testing(self) -> float:
         """Returns the current loss of the testing phase"""                        
         raise NotImplementedError
 
@@ -731,7 +731,7 @@ class GANLayer(TrainingLayer):
 
     @property
     @abstractmethod   
-    def gen_layer_outputs(self) -> Dict[str, Dict[str, Picklable]]:
+    def generator_layer_outputs(self) -> Dict[str, Dict[str, Picklable]]:
         """The output values of each layer in the input Graph during the training (e.g., tf.Tensors evaluated for each iteration)
 
         Returns:

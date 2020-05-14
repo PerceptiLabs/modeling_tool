@@ -1007,14 +1007,14 @@ def policy_gan(core, graphs, sanitized_to_name, sanitized_to_id, results):
         for graph in graphs:
             trn_layer = graph.active_training_node.layer
             switch_layer_id = trn_layer.get_switch_layer_id
-            random_images = trn_node.layer.gen_layer_outputs.get(switch_layer_id)
+            random_images = trn_node.layer.generator_layer_outputs.get(switch_layer_id)
             real_images = trn_node.layer.real_layer_outputs.get(switch_layer_id)
             if trn_layer.epoch == current_epoch and trn_layer.status == 'training':
-                gen_loss_trn_iter.append(trn_layer._gen_loss_training)
-                dis_loss_trn_iter.append(trn_layer._dis_loss_training)       
+                gen_loss_trn_iter.append(trn_layer.generator_loss_training)
+                dis_loss_trn_iter.append(trn_layer.discriminator_loss_training)       
             if trn_layer.epoch == current_epoch and trn_layer.status == 'validation':
-                gen_loss_val_iter.append(trn_layer.gen_loss_validation)
-                dis_loss_val_iter.append(trn_layer.dis_loss_validation)   
+                gen_loss_val_iter.append(trn_layer.generator_loss_validation)
+                dis_loss_val_iter.append(trn_layer.discriminator_loss_validation)   
         
         real_means, real_stddevs, random_means, random_stddevs = get_distributions(real_images, random_images, true_trn_id, results)
 
@@ -1042,11 +1042,11 @@ def policy_gan(core, graphs, sanitized_to_name, sanitized_to_id, results):
 
             if is_new_epoch or is_final_iteration:
                 trn_layer = graphs[idx-1].active_training_node.layer                                                
-                gen_loss_trn_epoch.append(trn_layer.gen_loss_training)
-                dis_loss_trn_epoch.append(trn_layer.dis_loss_training)
+                gen_loss_trn_epoch.append(trn_layer.generator_loss_training)
+                dis_loss_trn_epoch.append(trn_layer.discriminator_loss_training)
 
-                gen_loss_val_epoch.append(trn_layer.gen_loss_validation)
-                dis_loss_val_epoch.append(trn_layer.dis_loss_validation)
+                gen_loss_val_epoch.append(trn_layer.generator_loss_validation)
+                dis_loss_val_epoch.append(trn_layer.discriminator_loss_validation)
             idx += 1
         
         # ---- Update the dicts

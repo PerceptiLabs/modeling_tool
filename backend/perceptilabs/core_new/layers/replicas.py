@@ -609,10 +609,10 @@ class RLLayerReplica(RLLayer):
 class GANLayerReplica(GANLayer):
     def __init__(self, sample, size_training, size_validation, size_testing, variables,
                  get_switch_layer_id,
-                 gen_loss_training, gen_loss_testing, gen_loss_validation,
-                 dis_loss_training, dis_loss_validation, dis_loss_testing,
+                 generator_loss_training, generator_loss_testing, generator_loss_validation,
+                 discriminator_loss_training, discriminator_loss_validation, discriminator_loss_testing,
                  status, layer_weights, layer_biases, layer_gradients, layer_outputs,
-                 gen_layer_outputs, real_layer_outputs,
+                 generator_layer_outputs, real_layer_outputs,
                  batch_size, training_iteration, validation_iteration,
                  testing_iteration, progress, epoch, columns, export_modes):
 
@@ -625,19 +625,19 @@ class GANLayerReplica(GANLayer):
         self._size_testing = size_testing
         self._variables = variables
         self._switch_layer_id = get_switch_layer_id
-        self._gen_loss_training = gen_loss_training
-        self._gen_loss_validation = gen_loss_validation
-        self._gen_loss_testing = gen_loss_testing
-        self._dis_loss_training = dis_loss_training
-        self._dis_loss_validation = dis_loss_validation
-        self._dis_loss_testing = dis_loss_testing
+        self._generator_loss_training = generator_loss_training
+        self._generator_loss_validation = generator_loss_validation
+        self._generator_loss_testing = generator_loss_testing
+        self._discriminator_loss_training = discriminator_loss_training
+        self._discriminator_loss_validation = discriminator_loss_validation
+        self._discriminator_loss_testing = discriminator_loss_testing
         self._status = status
 
         self._layer_weights = layer_weights
         self._layer_biases = layer_biases
         self._layer_gradients = layer_gradients
         self._layer_outputs = layer_outputs
-        self._gen_layer_outputs = gen_layer_outputs
+        self._generator_layer_outputs = generator_layer_outputs
         self._real_layer_outputs = real_layer_outputs
 
         self._batch_size = batch_size
@@ -683,28 +683,28 @@ class GANLayerReplica(GANLayer):
         return self._switch_layer_id
 
     @property
-    def gen_loss_training(self):
-        return self._gen_loss_training
+    def generator_loss_training(self):
+        return self._generator_loss_training
 
     @property
-    def gen_loss_testing(self):
-        return self._gen_loss_testing
+    def generator_loss_testing(self):
+        return self._generator_loss_testing
 
     @property
-    def gen_loss_validation(self):
-        return self._gen_loss_validation
+    def generator_loss_validation(self):
+        return self._generator_loss_validation
 
     @property
-    def dis_loss_training(self):
-        return self._dis_loss_training
+    def discriminator_loss_training(self):
+        return self._discriminator_loss_training
 
     @property
-    def dis_loss_testing(self):
-        return self._dis_loss_testing
+    def discriminator_loss_testing(self):
+        return self._discriminator_loss_testing
 
     @property
-    def dis_loss_validation(self):
-        return self._dis_loss_validation
+    def discriminator_loss_validation(self):
+        return self._discriminator_loss_validation
         
     @property
     def status(self):
@@ -731,8 +731,8 @@ class GANLayerReplica(GANLayer):
         return self._layer_outputs
 
     @property
-    def gen_layer_outputs(self):
-        return self._gen_layer_outputs
+    def generator_layer_outputs(self):
+        return self._generator_layer_outputs
 
     @property
     def real_layer_outputs(self):

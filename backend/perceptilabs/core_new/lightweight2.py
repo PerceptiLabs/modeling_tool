@@ -292,7 +292,8 @@ class LightweightCore:
     
     def _run_subgraph(self, subgraph_spec, _, edges_by_id):
         code_map, code_errors = self._get_code_from_layers(subgraph_spec) # Other errors are fatal and should be raised
-        layer_ids_to_names = {id_ : subgraph_spec[id_]['Name'] for id_ in subgraph_spec}
+        self._layer_ids_to_names = {id_ : subgraph_spec[id_]['Name'] for id_ in subgraph_spec}
+        self._training_layer = 
         _, edges_by_id = get_json_net_topology(subgraph_spec)        
         cached_results = self._get_cached_results(code_map, subgraph_spec, edges_by_id)
         ordered_ids = self._get_ordered_ids(subgraph_spec, edges_by_id)
@@ -306,15 +307,15 @@ class LightweightCore:
             else:
                 layer_results = self._compute_layer_results(
                     layer_id, subgraph_spec[layer_id], code_map[layer_id],
-                    code_errors[layer_id], edges_by_id, layer_ids_to_names, all_results
+                    code_errors[layer_id], edges_by_id, all_results
                 )                
                 all_results[layer_id] = layer_results
-                self._cache_computed_results(layer_id, layer_results, code_map, edges_by_id, )
+                self._cache_computed_results(layer_id, layer_results, code_map, edges_by_id)
 
         assert len(all_results) == len(subgraph_spec)
         return all_results
 
-    def _compute_layer_results(self, layer_id, layer_spec, code, code_error, edges_by_id, layer_ids_to_names, all_results):
+    def _compute_layer_results(self, layer_id, layer_spec, code, code_error, edges_by_id, all_results):
         if code is None:
             return BaseStrategy.get_default(code_error=code_error)
 
@@ -328,7 +329,9 @@ class LightweightCore:
 
         strategy = self._get_layer_strategy(layer_class)
         if isinstance(strategy, Tf1xTempStrategy):
-            results = strategy.run(layer_id, layer_type, layer_class, input_results, layer_spec, layer_ids_to_names)
+            results = strategy.run(layer_id, layer_type, layer_class, input_results, layer_spec, self._layer_ids_to_names)
+        elif isinstance(strategy, Tf1xStrategy):
+            results = strategy.run(layer_id, layer_type, layer_class, input_results, layer_spec)
         else:
             results = strategy.run(layer_id, layer_type, layer_class, input_results, layer_spec)
         return results
@@ -338,7 +341,7 @@ class LightweightCore:
             strategy = DefaultStrategy()
         elif issubclass(layer_obj, DataLayer):
             strategy = DataStrategy()
-        elif issubclass(layer_obj, Tf1xLayer):
+        elif issubclass(layer_obj, Tf1xLayer): 
             strategy = Tf1xTempStrategy()
         else:
             strategy = DefaultStrategy()
