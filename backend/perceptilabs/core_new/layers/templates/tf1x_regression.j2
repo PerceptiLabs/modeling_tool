@@ -559,6 +559,7 @@ class {{layer_name}}(RegressionLayer):
         The mean of true output values is not precomputed due to potential memory limitations, 
         but is iterated on as we're going through the dataset. As we approach the end of the 
         data, the mean of the true output approaches its actual value.
+        
         """
         return self._r_squared_testing
 

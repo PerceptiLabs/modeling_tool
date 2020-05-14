@@ -40,7 +40,7 @@ def layer_fc(j2_engine):
         DEFINITION_TABLE, TOP_LEVEL_IMPORTS_FLAT,
         layer_type='DeepLearningFC',
         # top_level_imports=TOP_LEVEL_IMPORTS_FLAT[0],
-        n_neurons=3,
+        n_neurons=1,
         activation='',
         dropout=False
     )
@@ -48,12 +48,7 @@ def layer_fc(j2_engine):
 
 @pytest.fixture(scope='function')
 def layer_inputs(j2_engine, tmpdir_del):
-    mat_inputs = np.array(
-        [
-            [0.1, 0.2, 0.3, 1.0],        
-    
-        ]*200
-    )
+    mat_inputs = np.arange(100)
     inputs_path = fix_path(os.path.join(tmpdir_del, 'inputs.npy'))
     np.save(inputs_path, mat_inputs)
     imports = []
@@ -72,11 +67,8 @@ def layer_inputs(j2_engine, tmpdir_del):
 
 @pytest.fixture(scope='function')
 def layer_targets(j2_engine, tmpdir_del):
-    mat_targets = np.array(
-        [
-            [1, 0, 0],        
-        ]*200
-    )
+    delta = np.random.uniform(0,10, size=(100,))
+    mat_targets = 0.4 * np.arange(100) + delta
     targets_path = fix_path(os.path.join(tmpdir_del, 'targets.npy'))
     np.save(targets_path, mat_targets)
 
@@ -192,7 +184,7 @@ def test_initial_weights_differ(j2_engine, tmpdir_del, layer_inputs, layer_targe
         DEFINITION_TABLE,
         layer_type='DeepLearningFC',
         top_level_imports=TOP_LEVEL_IMPORTS_FLAT,
-        n_neurons=3,
+        n_neurons=1,
         activation='',
         dropout=False, keep_prob=1.0
     )
@@ -212,7 +204,7 @@ def test_initial_weights_differ(j2_engine, tmpdir_del, layer_inputs, layer_targe
         DEFINITION_TABLE,
         top_level_imports=TOP_LEVEL_IMPORTS_FLAT,
         layer_type='DeepLearningFC',
-        n_neurons=3,
+        n_neurons=1,
         activation='',
         dropout=False, keep_prob=1.0
     )
@@ -235,7 +227,7 @@ def test_load_checkpoint(j2_engine, tmpdir_del, layer_inputs, layer_targets):
         DEFINITION_TABLE,
         top_level_imports=TOP_LEVEL_IMPORTS_FLAT,
         layer_type='DeepLearningFC',
-        n_neurons=3,
+        n_neurons=1,
         activation='',
         dropout=False, keep_prob=1.0
     )
@@ -257,7 +249,7 @@ def test_load_checkpoint(j2_engine, tmpdir_del, layer_inputs, layer_targets):
         DEFINITION_TABLE,
         top_level_imports=TOP_LEVEL_IMPORTS_FLAT,
         layer_type='DeepLearningFC',
-        n_neurons=3,
+        n_neurons=1,
         activation='',
         dropout=False, keep_prob=1.0
     )
