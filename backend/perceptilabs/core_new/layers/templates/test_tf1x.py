@@ -50,6 +50,22 @@ def test_reshape_27x1_to_3x3x3(j2_engine, sess):
     y = layer(x)
     assert y.shape == (1, 3, 3, 3)
 
+def test_image_reshape_10x1_to_256x256(j2_engine, sess):
+    layer = create_layer(j2_engine, DEFINITION_TABLE, TOP_LEVEL_IMPORTS_FLAT, 'ProcessImageReshape', 
+                        shape=[256,256])
+    x = tf.constant(np.random.random((1,10,1)))
+
+    y = layer(x)
+    assert y.shape == (256,256,1)
+
+def test_image_reshape_300x1_to_16x16(j2_engine, sess):
+    layer = create_layer(j2_engine, DEFINITION_TABLE, TOP_LEVEL_IMPORTS_FLAT, 'ProcessImageReshape', 
+                        shape=[16,16])
+    x = tf.constant(np.random.random((1,300,1)))
+
+    y = layer(x)
+    assert y.shape == (16,16,1)
+
     
 def test_fully_connected_1x1_should_be_normal_multiplication(j2_engine, sess):
     layer = create_layer(j2_engine,

@@ -3,7 +3,7 @@
     data-component="TrainGan"
     data-layer="GAN"
     data-type="Training"
-    v-tooltip:right="'GAN'"
+    v-tooltip:networkElement="'GAN'"
     v-tooltip-interactive:right="interactiveInfo"
     id="tutorial_training-gan"
     :style="layerStyles"

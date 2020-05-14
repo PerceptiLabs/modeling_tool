@@ -175,6 +175,21 @@ class Graph:
     def active_training_node(self):
         return self.nodes[-1] # TODO : adapt this for split graph
 
+    def run(self):
+        yield from self.active_training_node.layer.run(self)
+
+    def on_stop(self):
+        self.active_training_node.layer.on_stop()        
+        
+    def on_export(self, path, mode):
+        self.active_training_node.layer.on_export(path, mode)        
+
+    def on_headless_activate(self):
+        self.active_training_node.layer.on_headless_activate()        
+
+    def on_headless_deactivate(self):
+        self.active_training_node.layer.on_headless_deactivate()        
+        
     @property
     def edges(self):
         return self._nx_graph.edges    
@@ -190,21 +205,24 @@ class Graph:
 #        return new_graph
     def clone(self): 
         from perceptilabs.core_new.graph.builder import GraphBuilder
-        layers = {}                                                                                                                                                                                         
-        for node in self.nodes:                                                                                                                                                                             
-            layer = node.layer.__class__()                                                                                                                                                                  
-            try:                                                                                                                                                                                            
-                # TODO: make this work properly in the InnerLayer constructor                                                                                                                               
-                layer._scope = layer._scope + '_copy'                                                                                                                                                       
-            except:  
+        layers = {}
+        
+        for node in self.nodes:
+            layer = node.layer.__class__()        
+            try:
+                # TODO: make this work properly in the InnerLayer constructor
+                layer._scope = layer._scope + '_copy'
+            except:
                 pass
             else:                                                                                                                                                                                       
-                log.warning(f"Overwrote protected field '_scope' in layer {node.layer_id}")                                                                                                                 
-            layers[node.layer_id] = layer                                                                                                                                                                   
-        builder = GraphBuilder()                                                                                                                                                                            
-        edges_by_id = [(a.layer_id, b.layer_id) for a, b in self._nx_graph.edges]                                                                                                                           
-        new_graph = builder.build_from_layers_and_edges(layers, edges_by_id)                                                                                                                                
+                log.warning(f"Overwrote protected field '_scope' in layer {node.layer_id}")
+            layers[node.layer_id] = layer
+            
+        builder = GraphBuilder()
+        edges_by_id = [(a.layer_id, b.layer_id) for a, b in self._nx_graph.edges]
+        new_graph = builder.build_from_layers_and_edges(layers, edges_by_id)
         return new_graph       
+
 
     
         

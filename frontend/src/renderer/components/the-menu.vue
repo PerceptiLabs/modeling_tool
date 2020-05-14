@@ -1,6 +1,6 @@
 <template lang="pug">
   nav.app-header_nav(
-    :class="{'app-header--hidden': isMac && isDesktop}"
+    :class="{'app-header--hidden': isMac && isElectron}"
     v-hotkey="keymap"
     )
     ul.header-nav
@@ -47,7 +47,7 @@
 
 <script>
   import { mapGetters, mapMutations, mapActions } from 'vuex';
-  import { baseUrlSite } from '@/core/constants.js';
+  import { baseUrlSite, MODAL_PAGE_PROJECT } from '@/core/constants.js';
   import { isElectron, goToLink, isOsMacintosh, isDesktopApp } from '@/core/helpers.js'
   
   let ipcRenderer = null;
@@ -62,7 +62,8 @@ export default {
   },
   data() {
     return {
-      dataKeymap: {}
+      dataKeymap: {},
+      isElectron: isElectron(),
     }
   },
   computed: {
@@ -88,7 +89,7 @@ export default {
       return isDesktopApp();
     },
     navMenu() {
-      if (isDesktopApp()) {
+      if (isElectron()) {
         return this.navMenuDesktop();
       } else {
         return this.navMenuWeb();
@@ -143,6 +144,7 @@ export default {
       HCDeselectAll:    'mod_workspace/SET_elementUnselect',
       toPrevStepHistoryMutation:'mod_workspace-history/TO_prevStepHistory',
       toNextStepHistoryMutation:'mod_workspace-history/TO_nextStepHistory',
+      setActivePageAction: 'modal_pages/setActivePageAction',
     }),
     goToLink,
     mainProcessListeners(isRemove) {
@@ -168,19 +170,7 @@ export default {
       }
     },
     addNewNetwork() {
-      if(this.isTutorialMode) {
-        this.hideTooltip();
-        this.popupConfirm(
-          {
-            text: 'Are you sure you want to end the tutorial?',
-            ok: () => {
-              this.offMainTutorial();
-              this.$store.dispatch('mod_workspace/ADD_network');
-            }
-          });
-      } else {
-        this.$store.dispatch('mod_workspace/ADD_network');
-      }
+      this.$router.push({name: 'projects'});
     },
     logOut() {
       if(this.isTutorialMode) {
@@ -304,6 +294,9 @@ export default {
       this.saveNetworkAs();
       this.offMainTutorial();
     },
+    exportModel() {
+      this.$store.dispatch('globalView/SET_exportNetworkPopup', true);
+    },
     HC_delete() {
       if(!this.isTutorialMode) {
         this.$store.dispatch('mod_events/EVENT_pressHotKey', 'del')
@@ -329,6 +322,9 @@ export default {
       if(!this.isDisabledNextStep) {
         this.toNextStepHistoryMutation()
       }
+    },
+    setActivePage() {
+      this.setActivePageAction(MODAL_PAGE_PROJECT);
     },
     navMenuDesktop() {
       return [
@@ -442,9 +438,14 @@ export default {
           label: 'File', visible: true,
           submenu: [
             {label: 'New',     active: this.addNewNetwork},
+            {type: 'separator'},
             {label: 'Load',    active: this.openLoadModelPopup},
+            {label: "Project", active: this.setActivePage},
+            {type: 'separator'},
             {label: 'Save',    active: this.saveModel,          enabled: this.openApp},
             {label: 'SaveAs',  active: this.saveModelAs,        enabled: this.openApp},
+            {type: 'separator'},
+            {label: 'Export',  active: this.exportModel,        enabled: this.openApp},
             {type: 'separator'},
             {label: 'Log out', active: this.logOut,             enabled: this.isLogin},
           ]
@@ -517,6 +518,7 @@ export default {
     > .header-nav_item {
       font-size: 14px;
       color: $col-txt;
+      color: #CDD8F8;
       display: flex;
       align-items: center;
       &:hover {
@@ -529,6 +531,11 @@ export default {
     position: relative;
     &:hover > .header-nav_sublist {
       display: block;
+    }
+    .is-web & {
+      &:hover > .header-nav_sublist {
+        display: block;
+      }
     }
   }
   .header-nav_btn {

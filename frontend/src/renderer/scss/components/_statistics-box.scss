@@ -23,8 +23,5 @@
 
 	grid-auto-flow: row;
 	grid-auto-rows: 1fr;
-	grid-auto-columns: 1fr;
-	 + .statistics-box_col {
-		border-left: 2px solid $bg-window;
-	}
+	grid-auto-columns: 1fr;	
 }

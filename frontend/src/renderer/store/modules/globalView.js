@@ -22,19 +22,23 @@ const state = {
     coreNotFoundPopup: false,
     showFilePickerPopup: false,
     showLoadSettingPopup: false,
+    showExportNetworkPopup: false
   },
   popupConfirmCancel: null,
   popupConfirmOk: null,
+  pageTitle: '',
   isGridEnabled: false,
 };
 const getters = {
   GET_appPath(state) {
     return state.appPath
   },
-
 };
 
 const mutations = {
+  setPageTitleMutation(state, value) {
+    state.pageTitle = value;
+  },
   set_onlineStatus (state, value) {
     state.onlineStatus = value
   },
@@ -75,7 +79,7 @@ const mutations = {
     state.globalPopup.ComingSoonPopup = value
   },
   coreNotFoundPopup(state, value) {
-    state.globalPopup.coreNotFoundPopup = value;
+    // state.globalPopup.coreNotFoundPopup = value;
   },
   set_filePickerPopup(state, value) {
     state.globalPopup.showFilePickerPopup = value;
@@ -83,6 +87,9 @@ const mutations = {
   set_loadSettingPopup(state, value) {
     state.globalPopup.showLoadSettingPopup = value.visible;
     state.popupConfirmOk = value.ok;
+  },
+  set_exportNetworkPopup(state, value) {
+    state.globalPopup.showExportNetworkPopup = value;
   },
   gp_confirmPopup(state, value) {
     state.globalPopup.showConfirmPopup = value.text;
@@ -130,6 +137,8 @@ const actions = {
     commit('gp_ComingSoonPopup', true);
   },
   ShowCoreNotFoundPopup({ commit, rootState, dispatch }) {
+    // if (rootState.mod_api.statusLocalCore === 'online') { return; }
+
     // let isServerRequestDone = false;
     // dispatch('mod_api/checkCoreAvailability', null, { root: true })
     //   .then(() =>{
@@ -138,7 +147,7 @@ const actions = {
     //   .catch((e) =>{
     //     isServerRequestDone = true;
     //   });
-    //
+
     // const delayActionDispatch = setTimeout(() => {
     //   const coreIsOffline = rootState.mod_api.statusLocalCore === 'offline';
     //   //if server responds more then a second or currently is offline show the core offline modal
@@ -154,6 +163,9 @@ const actions = {
   },
   SET_loadSettingPopup({commit}, value) {
     commit('set_loadSettingPopup', value);
+  },
+  SET_exportNetworkPopup({commit}, value) {
+    commit('set_exportNetworkPopup', value);
   },
   GP_confirmPopup({commit}, value) {
     commit('gp_confirmPopup', value);
