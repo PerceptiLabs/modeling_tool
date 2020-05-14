@@ -378,7 +378,7 @@ class LightweightCore:
         
 
 class LightweightCoreAdapter:
-    """ Compability with v1 core """
+    """ Compatibility with v1 core """
     def __init__(self, graph_dict, layer_extras_reader, error_handler, issue_handler, cache, data_container):
         self._graph_dict = graph_dict
         self._error_handler = error_handler
@@ -431,7 +431,7 @@ class LightweightCoreAdapter:
     @property
     def error_handler(self):
 
-        class CompabilityErrorHandler:
+        class CompatibilityErrorHandler:
             def __init__(self, errors_dict):
                 self._dict = errors_dict
                 
@@ -444,7 +444,7 @@ class LightweightCoreAdapter:
             def __getitem__(self, id_):
                 return self._dict[id_]
         
-        error_handler = CompabilityErrorHandler(self._errors_dict)        
+        error_handler = CompatibilityErrorHandler(self._errors_dict)        
         return error_handler
             
 
