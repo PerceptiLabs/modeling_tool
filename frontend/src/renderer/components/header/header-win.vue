@@ -49,11 +49,8 @@ export default {
     projectName() {
       const { currentProject, projectsList } = this;
       if(!currentProject) return '';
-      debugger;
-      if(projectsList.hasOwnProperty(currentProject)) {
-        return projectsList[currentProject].name;
-      }
-      return '';
+      let project = projectsList.filter(project => project.project_id === currentProject)[0];
+      return project ? project.name : ''
     },
     routeHeaderAlias() {
       let theName = '';
