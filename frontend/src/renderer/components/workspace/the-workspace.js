@@ -5,6 +5,10 @@ import spinnerNet from './workspace-spinner.js'
 import helpersNet from './workspace-helpers.js'
 import {debounce} from '@/core/helpers'
 import Analytics  from '@/core/analytics'
+import { trainingElements, deepLearnElements }  from '@/core/constants.js';
+
+import WorkspaceToolbar       from '../toolbar/workspace-toolbar.vue';
+import StatisticsToolbar      from '../toolbar/statistics-toolbar.vue';
 
 import TextEditable           from '@/components/base/text-editable.vue'
 import NetworkField           from '@/components/network-field/network-field.vue'
@@ -13,21 +17,25 @@ import SelectCoreSide         from "@/components/global-popups/workspace-core-si
 import WorkspaceBeforeImport  from "@/components/global-popups/workspace-before-import";
 import WorkspaceSaveNetwork   from "@/components/global-popups/workspace-save-network.vue";
 import WorkspaceLoadNetwork   from "@/components/global-popups/workspace-load-network.vue";
+import ExportNetwork          from "@/components/global-popups/export-network.vue";
 import FilePickerPopup        from "@/components/global-popups/file-picker-popup.vue";
 import TheTesting             from "@/components/statistics/the-testing.vue";
 import TheViewBox             from "@/components/statistics/the-view-box";
 import StartTrainingSpinner   from '@/components/different/start-training-spinner.vue'
 import TheMiniMap             from '@/components/different/the-mini-map.vue'
+import SidebarLayers          from '@/components/workspace/sidebar/workspace-sidebar-layers.vue'
+import Notebook               from '@/components/notebooks/notebook-container.vue';
 
 export default {
   name: 'WorkspaceContent',
   mixins: [saveNet, scaleNet, spinnerNet, helpersNet],
   components: {
+    WorkspaceToolbar, StatisticsToolbar,
     NetworkField, TextEditable,
     GeneralResult, SelectCoreSide,
-    WorkspaceBeforeImport, WorkspaceSaveNetwork, WorkspaceLoadNetwork,
+    WorkspaceBeforeImport, WorkspaceSaveNetwork, WorkspaceLoadNetwork, ExportNetwork,
     TheTesting, TheViewBox, StartTrainingSpinner,
-    TheMiniMap, FilePickerPopup
+    TheMiniMap, FilePickerPopup, SidebarLayers, Notebook
   },
   mounted() {
     window.addEventListener('resize', this.onResize);
@@ -62,11 +70,13 @@ export default {
   computed: {
     ...mapGetters({
       currentSelectedEl:  'mod_workspace/GET_currentSelectedEl',
+      currentElList:      'mod_workspace/GET_currentNetworkElementList',
       testIsOpen:         'mod_workspace/GET_testIsOpen',
       statusNetworkCore:  'mod_workspace/GET_networkCoreStatus',
       statisticsIsOpen:   'mod_workspace/GET_statisticsIsOpen',
 
       isTutorialMode:     'mod_tutorials/getIstutorialMode',
+      isNotebookMode:     'mod_notebook/getNotebookMode',
       tutorialActiveStep: 'mod_tutorials/getActiveStep',
     }),
     ...mapState({
@@ -82,6 +92,7 @@ export default {
       showCoreSide:               state => state.globalView.globalPopup.showCoreSideSettings,
       showFilePickerPopup:        state => state.globalView.globalPopup.showFilePickerPopup,
       showLoadSettingPopup:       state => state.globalView.globalPopup.showLoadSettingPopup,
+      showExportNetworkPopup:     state => state.globalView.globalPopup.showExportNetworkPopup,
     }),
 
     hasStatistics() {
@@ -106,6 +117,15 @@ export default {
     },
     tabSetClass() {
       return {'bookmark_tab--active': indexCurrentNetwork === i}
+    },
+    toolbarType() {
+
+      if (this.statisticsIsOpen) {
+        return 'StatisticsToolbar';
+      }
+
+      return 'WorkspaceToolbar';
+      
     }
   },
   watch: {
@@ -169,7 +189,7 @@ export default {
       set_cursorPosition:       'mod_workspace/SET_CopyCursorPosition',
       set_cursorInsideWorkspace:'mod_workspace/SET_cursorInsideWorkspace',
       set_hideSidebar:          'globalView/SET_hideSidebar',
-
+      GP_showCoreSideSettings:  'globalView/GP_showCoreSideSettings',
     }),
     ...mapActions({
       popupConfirm:         'globalView/GP_confirmPopup',
@@ -178,7 +198,7 @@ export default {
       set_openStatistics:   'mod_workspace/SET_openStatistics',
       set_openTest:         'mod_workspace/SET_openTest',
       set_elementUnselect:  'mod_workspace/SET_elementUnselect',
-      setNetworkNameAction:      'mod_workspace/SET_networkName',
+      setNetworkNameAction: 'mod_workspace/SET_networkName',
       set_currentNetwork:   'mod_workspace/SET_currentNetwork',
       event_startDoRequest: 'mod_workspace/EVENT_startDoRequest',
       set_chartRequests:    'mod_workspace/SET_chartsRequestsIfNeeded',

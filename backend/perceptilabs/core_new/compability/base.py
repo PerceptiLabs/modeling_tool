@@ -23,11 +23,12 @@ PROCESS_RESULTS_DELAY = 0.1
 
 
 class CompabilityCore:
-    def __init__(self, command_queue, result_queue, graph_builder, deployment_pipe, graph_spec, threaded=False, issue_handler=None):
+    def __init__(self, command_queue, result_queue, graph_builder, script_factory, messaging_factory, graph_spec, threaded=False, issue_handler=None):
         self._command_queue = command_queue
         self._result_queue = result_queue
         self._graph_builder = graph_builder
-        self._deployment_pipe = deployment_pipe
+        self._script_factory = script_factory
+        self._messaging_factory = messaging_factory        
         self._graph_spec = copy.deepcopy(graph_spec)
         self._issue_handler = issue_handler
 
@@ -80,7 +81,7 @@ class CompabilityCore:
                 self._result_queue.put(copy.deepcopy(self.results))
             
         set_tensorflow_mode('graph')
-        core = Core(self._graph_builder, self._deployment_pipe, self._issue_handler)
+        core = Core(self._graph_builder, self._script_factory, self._messaging_factory, self._issue_handler, use_sentry=True)
         self._core = core
         
         if self._threaded:
@@ -112,6 +113,8 @@ class CompabilityCore:
             core.unpause()
         elif command.type == 'stop':
             core.stop()
+        elif command.type == 'close':
+            core.close()
         elif command.type == 'headless' and command.parameters['on']:
             core.headlessOn()
         elif command.type == 'headless' and not command.parameters['on']:            
@@ -199,7 +202,6 @@ if __name__ == "__main__":
     import queue
     from perceptilabs.core_new.compability import CompabilityCore
     from perceptilabs.core_new.graph.builder import GraphBuilder
-    from perceptilabs.core_new.deployment import InProcessDeploymentPipe, LocalEnvironmentPipe
     from perceptilabs.core_new.layers.script import ScriptFactory
     from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP    
 
@@ -212,8 +214,6 @@ if __name__ == "__main__":
 
 
     script_factory = ScriptFactory()
-    deployment_pipe = InProcessDeploymentPipe(script_factory)
-    #deployment_pipe = LocalEnvironmentPipe('/home/anton/Source/perceptilabs/backend/venv-user/bin/python', script_factory) # TODO: 
     
     replica_by_name = {repl_cls.__name__: repl_cls for repl_cls in BASE_TO_REPLICA_MAP.values()}    
     graph_builder = GraphBuilder(replica_by_name)                
@@ -221,6 +221,6 @@ if __name__ == "__main__":
     commandQ=queue.Queue()
     resultQ=queue.Queue()
     
-    core = CompabilityCore(commandQ, resultQ, graph_builder, deployment_pipe, network, threaded=False)
+    core = CompabilityCore(commandQ, resultQ, graph_builder, script_factory, network, threaded=False)
     core.run()
         

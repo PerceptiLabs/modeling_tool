@@ -2,35 +2,36 @@
   .popup-global
     .popup-global_overlay(@click="closePopup()")
     section.popup
-      ul.popup_tab-set
-        button.popup_header(
-        v-for="(tab, i) in tabs"
-        :key="tab.i"
-        v-coming-soon="tabSelected != i"
-        @click="setTab(i)"
-        :class="{'disable': tabSelected != i}"
-        
-        )
-          h3(v-html="tab")
-      .popup_tab-body
-        .popup_body(
-          :class="{'active': tabSelected == 0}"
-        )
-          .settings-layer_section.text-center
-            p.big-text Start training
-          .settings-layer_foot
-            button.btn.btn--primary.btn--disabled(type="button"
-              @click="closePopup()"
-              ) Cancel
-            button#tutorial_start-training.btn.btn--primary(type="button"
-              v-tooltip-interactive:right="interactiveInfo.start"
-              @click="startTraining()"
-              ) Start
-        .popup_body(
-          :class="{'active': tabSelected == 1}"
-        )
-          .settings-layer_section.text-center
-            p.big-text this functionality is in development
+      .popup-background
+        ul.popup_tab-set
+          button.popup_header(
+          v-for="(tab, i) in tabs"
+          :key="tab.i"
+          v-coming-soon="tabSelected != i"
+          @click="setTab(i)"
+          :class="{'disable': tabSelected != i}"
+          
+          )
+            h3(v-html="tab")
+        .popup_tab-body
+          .popup_body(
+            :class="{'active': tabSelected == 0}"
+          )
+            .settings-layer_section.text-center
+              p.big-text Start training
+            .settings-layer_foot
+              button.btn.btn--primary.btn--disabled(type="button"
+                @click="closePopup()"
+                ) Cancel
+              button#tutorial_start-training.btn.btn--primary(type="button"
+                v-tooltip-interactive:right="interactiveInfo.start"
+                @click="startTraining()"
+                ) Start
+          .popup_body(
+            :class="{'active': tabSelected == 1}"
+          )
+            .settings-layer_section.text-center
+              p.big-text this functionality is in development
 
 </template>
 

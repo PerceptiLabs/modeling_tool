@@ -1,9 +1,7 @@
-import dill
 import pickle
 
 def can_serialize(object_):
     try:
-        #return dill.pickles(object_)
         pickle.dumps(object_)
     except:
         return False
