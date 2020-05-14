@@ -188,15 +188,27 @@ import { debug } from 'util';
         const theProject = this.projectsList.filter(project => project.project_id === contextTargetProject)[0];
         const theProjectModels = theProject.models;
         if(!!theProjectModels.length) {
-          this.$store.dispatch('globalView/GP_infoPopup', "Only project without modules can be deleted");
-          return;
-        }
+          this.$store.dispatch('globalView/GP_confirmPopup', {
+            text: 'There are still models inside this project, are you sure you want to delete the project and all its containing models?',
+            ok: () => {
 
-        this.deleteProjectAction({ projectId: contextTargetProject })
-          .then(response => {
-            console.log(response);
-          })
+              let deleteModelsPromises = theProjectModels.map(model_id => this.$store.dispatch('mod_project/deleteModel', { model_id }));
+              
+              Promise.all(deleteModelsPromises)
+                .then(()=> {
+                   this.deleteProjectAction({ projectId: contextTargetProject })
+                    .catch(e => console.log(e));
+                })
+                .catch(e => console.log(e));
+             
+            },
+            cancel: () => { this.closePageAction() },
+            })
+          return;
+        } else {
+          this.deleteProjectAction({ projectId: contextTargetProject })
           .catch(e => console.log(e));
+        }
 
 
       },
