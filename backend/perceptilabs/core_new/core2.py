@@ -299,7 +299,7 @@ class Core:
         self._graphs.append(graph)        
     '''
     def _on_userland_error(self, exception, traceback_frames):
-        message = ''
+        message = str(exception) +'\n'
         collect = False
         last_node = None
         last_lineno = None
