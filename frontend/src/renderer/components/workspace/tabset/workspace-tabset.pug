@@ -5,34 +5,41 @@
   @mouseup="onTabArrowMouseUp"
   @mouseout="onTabArrowMouseUp")
   span &lt;
-ul.bookmark_tab-list.workspace_tab-list(ref="tablist")
-  li.bookmark_tab.workspace_tab(
-  v-for="(tab, i) in workspace"
-  :key="i"
-  :class="{'bookmark_tab--active': indexCurrentNetwork === i, 'workspace_tab--disable': indexCurrentNetwork !== i && isTutorialMode}"
-  @click="setTabNetwork(i)"
-  )
-    button.btn.btn--icon.tab_close(type="button"
-      :disabled="workspace.length <= 1"
-      @click.stop="deleteTabNetwork(i)"
-    )
-      i.icon.icon-close
-    text-editable.tab_name(
-      :text-title="tab.networkName"
-      @change-title="set_networkName"
+
+ul.bookmark_tab-list
+  .tab-group(
+    v-for="(tab, i) in workspace"
+    :key="i")
+
+    li.bookmark_tab.workspace_tab(
+      :class="{'workspace_tab--active': indexCurrentNetwork === i && !tab.networkMeta.openStatistics && !tab.networkMeta.openTest, 'workspace_tab--active_network': indexCurrentNetwork === i, 'workspace_tab--disable': indexCurrentNetwork !== i && isTutorialMode}"
+      @click="setTabNetwork(i)")
+
+      button.btn.btn--icon.tab_close(type="button"
+        :disabled="workspace.length <= 1"
+        @click.stop="deleteTabNetwork(i)"
       )
-    button.btn.btn--tabs.tab_statistics#tutorial_statistic-tab(type="button"
+        i.icon.icon-close
+      text-editable.tab_name(
+        :text-title="tab.networkName"
+        @change-title="set_networkName"
+        )
+
+    li.bookmark_tab.workspace_tab.tab_statistics(
       v-if="tab.networkMeta.openStatistics !== null"
-      @click.stop="openStatistics(i)"
-      :class="{'active': tab.networkMeta.openStatistics && indexCurrentNetwork === i}")
+      :class="{'workspace_tab--active': indexCurrentNetwork === i && tab.networkMeta.openStatistics, 'workspace_tab--active_network': indexCurrentNetwork === i, 'workspace_tab--disable': indexCurrentNetwork !== i && isTutorialMode}"
+      @click="openStatistics(i)"
+    )
       span Statistics
       i.icon(:class="{'icon-circle-o': trainingWaiting(i), 'icon-circle-o green-color-icon': trainingInProcess(i), 'icon-ellipse green-color-icon': trainingFinished(i) }")
-    button.btn.btn--tabs.tab_statistics.tab--testing(type="button"
+      
+    li.bookmark_tab.workspace_tab.tab_testing(
       v-if="tab.networkMeta.openTest !== null"
-      :class="{'active': tab.networkMeta.openTest && indexCurrentNetwork === i}"
-      @click.stop="openTest(i)"
-      )
+      :class="{'workspace_tab--active': indexCurrentNetwork === i && tab.networkMeta.openTest, 'workspace_tab--active_network': indexCurrentNetwork === i, 'workspace_tab--disable': indexCurrentNetwork !== i && isTutorialMode}"
+      @click="openTest(i)"
+    )
       span Test
+
 .tab-arrow.right(
   v-show="tabArrows.show"
   :class="{'disabled': !tabArrows.isRightActive }"
@@ -41,8 +48,9 @@ ul.bookmark_tab-list.workspace_tab-list(ref="tablist")
   @mouseout="onTabArrowMouseUp")
   span &gt;
 
-.toggle-sidebar(
-  :class="{'hide-sidebar': !hideSidebar}"
-  ref="sidebarToggle")
-  button.btn.btn--toolbar(type="button" @click="toggleSidebar()")
-    i.icon.icon-hide-right
+
+//- .toggle-sidebar(
+//-   :class="{'hide-sidebar': !hideSidebar}"
+//-   ref="sidebarToggle")
+//-   button.btn.btn--toolbar(type="button" @click="toggleSidebar()")
+//-     i.icon.icon-hide-right

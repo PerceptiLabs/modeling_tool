@@ -1,12 +1,12 @@
 <template lang="pug">
   section.network_info-section.tutorial-relative
-    .info-section_head(v-show="!testIsOpen")
-      h3 {{ sectionTitle }}
-      view-box-btn-list(
-        v-if="btnList"
-        :tab-set="btnList"
-        @set-current-btn="setCurrentBtn"
-        )
+    //- .info-section_head(v-show="!testIsOpen")
+    //-   h3 {{ sectionTitle }}
+    view-box-btn-list(
+      v-if="btnList"
+      :tab-set="btnList"
+      @set-current-btn="setCurrentBtn"
+      )
 
     .info-section_main(v-if="elData !== null")
       component(
@@ -31,6 +31,7 @@
   import TrainLoss        from '@/components/network-elements/elements/train-loss/viewBox-train-loss.vue'
   import TrainOptimizer   from '@/components/network-elements/elements/train-optimizer/viewBox-train-optimizer.vue'
   import TrainGan         from '@/components/network-elements/elements/train-gan/viewBox-train-gan.vue'
+  import TrainRegression         from '@/components/network-elements/elements/train-regression/viewBox-train-regression.vue'
   import TrainDetector    from '@/components/network-elements/elements/train-detector/viewBox-train-detector.vue'
 
   /*view box*/
@@ -46,6 +47,7 @@
   import ProcessGrayscale from '@/components/network-elements/elements/process-grayscale/viewBox-process-grayscale.vue'
   import ProcessOneHot    from '@/components/network-elements/elements/process-one-hot/viewBox-process-one-hot.vue'
   import ProcessReshape   from '@/components/network-elements/elements/process-reshape/viewBox-process-reshape.vue'
+  import ProcessRescale   from '@/components/network-elements/elements/process-rescale/viewBox-process-rescale.vue'
   import MathArgmax   from '@/components/network-elements/elements/math-argmax/viewBox-math-argmax.vue'
   import MathMerge    from '@/components/network-elements/elements/math-merge/viewBox-math-merge.vue'
   import MathSoftmax  from '@/components/network-elements/elements/math-softmax/viewBox-math-softmax.vue'
@@ -58,12 +60,12 @@
 export default {
   name: "TheViewBox",
   components: {
-    TrainNormal, TrainGenetic, TrainDynamic, TrainReinforce, TrainLoss, TrainOptimizer, TrainGan, TrainDetector,
+    TrainNormal, TrainGenetic, TrainDynamic, TrainReinforce, TrainLoss, TrainOptimizer, TrainGan, TrainDetector, TrainRegression,
     ClassicMLDbscans, ClassicMLKMeans, ClassicMLKNN, ClassicMLRandomForest, ClassicMLSVM,
 
     DataData, DataEnvironment, DataCloud,
     DeepLearningFC, DeepLearningConv, DeepLearningDeconv, DeepLearningRecurrent,
-    ProcessCrop, ProcessEmbed, ProcessGrayscale, ProcessOneHot, ProcessReshape,
+    ProcessCrop, ProcessEmbed, ProcessGrayscale, ProcessOneHot, ProcessReshape, ProcessRescale,
     MathArgmax, MathMerge, MathSoftmax, MathSplit,
     ViewBoxBtnList
   },
@@ -130,13 +132,13 @@ export default {
 <style lang="scss">
   @import "../../scss/base";
   .open-statistic .the-view-box .info-section_main {
-    border-left: 2px solid $bg-window;
+    padding-left: 0;
   }
   /*statistics*/
   .open-test .the-statistics .info-section_main {
-    border-left: 2px solid $bg-window;
+    // border-left: 2px solid $bg-window;
   }
   .info-section_head {
-    border-top: 1px solid $color-5;
+  //   border-top: 1px solid $color-5;
   }
 </style>

@@ -28,8 +28,7 @@
         .settings-layer_section
           .form_row
             button.btn.btn--link(type="button" @click="clearPath")
-              i.icon.icon-backward
-              span Back
+              img(src="../../../../../../static/img/back.svg")
         .settings-layer_section.settings-layer_section--data
           .form_row
             settings-file-list(
