@@ -25,7 +25,7 @@ from perceptilabs.core_new.cache2 import LightweightCache
 
         
 #LW interface
-from perceptilabs.lwInterface import getNotebookImports, getNotebookRunscript, getFolderContent, saveJsonModel, getJsonModel, getGraphOrder, getDataMeta, getDataMetaV2, getPartitionSummary, getCodeV1, getCodeV2, getNetworkInputDim, getNetworkOutputDim, getPreviewSample, getPreviewVariableList, Parse
+from perceptilabs.lwInterface import getNotebookImports, getNotebookRunscript, getFolderContent, createFolder, saveJsonModel, getJsonModel, getGraphOrder, getDataMeta, getDataMetaV2, getPartitionSummary, getCodeV1, getCodeV2, getNetworkInputDim, getNetworkOutputDim, getPreviewSample, getPreviewVariableList, Parse
 
 log = logging.getLogger(__name__)
 
@@ -237,6 +237,11 @@ class Interface():
             json_model = value["json"]
             return saveJsonModel(save_path=save_path, json_model=json_model).run()
 
+        elif action == "createFolder":
+            folder_path = value['folder_path']
+            folder_name = value['folder_name']
+            return createFolder(folder_path=folder_path, folder_name=folder_name).run()
+
         elif action == "getPartitionSummary":
             Id=value["Id"]
             jsonNetwork=value["Network"]
@@ -306,6 +311,15 @@ class Interface():
                                         network=jsonNetwork, 
                                         lw_core=lw_core, 
                                         extras_reader=extras_reader).run()
+        elif action == "getJsonModel":
+            print(value)
+            json_path = value
+            return getJsonModel(json_path=json_path).run()
+
+        elif action == "saveJsonModel":
+            save_path = value["path"]
+            json_model = value["json"]
+            return saveJsonModel(save_path=save_path, json_model=json_model).run()
 
         elif action == "Parse":
             if value["Pb"]:

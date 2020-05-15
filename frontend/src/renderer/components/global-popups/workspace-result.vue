@@ -2,27 +2,28 @@
   .popup-global
     .popup-global_overlay(@click="closePopup()")
     section.popup
-      .popup_tab-set
-        .popup_header.disable
-          h3 Result
-      .popup_body
-        .settings-layer_section
-          .body_results-info
-            .results-info--validation
-              p Training
-              span Training Accuracy: {{ popupInfo.acc_train | round(2)}}%
-              span Training Loss: {{ popupInfo.loss_train | round(2)}}
-            .results-info--validation
-              p Validation
-              span Validation Accuracy: {{ popupInfo.acc_val | round(2)}}%
-              span Validation Loss: {{ popupInfo.loss_val | round(2)}}
+      .popup-background
+        .popup_tab-set
+          .popup_header.disable
+            h3 Result
+        .popup_body
+          .settings-layer_section
+            .body_results-info
+              .results-info--validation
+                p Training
+                span Training Accuracy: {{ popupInfo.acc_train | round(2)}}%
+                span Training Loss: {{ popupInfo.loss_train | round(2)}}
+              .results-info--validation
+                p Validation
+                span Validation Accuracy: {{ popupInfo.acc_val | round(2)}}%
+                span Validation Loss: {{ popupInfo.loss_val | round(2)}}
 
-      .popup_foot
-        //-button.btn.btn--primary(type="button"
-          @click="closePopup()") Cancel
-        button.btn.btn--primary.tutorial-relative(type="button"
-          id="tutorial_run-test-button"
-          @click="runTest") Run test
+        .popup_foot
+          //-button.btn.btn--primary(type="button"
+            @click="closePopup()") Cancel
+          button.btn.btn--primary.tutorial-relative(type="button"
+            id="tutorial_run-test-button"
+            @click="runTest") Run test
 </template>
 
 <script>
@@ -40,8 +41,10 @@ export default {
     return {
       popupInfo: {
         acc_train: 0,
+        r_sq_train: 0,
         loss_train: 0,
         acc_val: 0,
+        r_sq_val: 0,
         loss_val: 0,
       }
     }
@@ -60,7 +63,36 @@ export default {
     closePopup() {
       this.$store.commit('globalView/HIDE_allGlobalPopups');
       this.$store.dispatch('mod_workspace/SET_netMode', 'edit');
+    },
+    toFixedWithMaxDigits(value, maxDigits) {
+      return value.toFixed(maxDigits).replace('.00', '');
     }
+  },
+  computed: {
+    trainingTargetMetric() {
+
+      if (this.popupInfo.acc_train) {
+        return `Training Accuracy: ${ this.toFixedWithMaxDigits(this.popupInfo.acc_train, 2) }%`;
+      }
+      
+      if (this.popupInfo.r_sq_train) {
+        return `Training R Squared:  ${ this.toFixedWithMaxDigits(this.popupInfo.r_sq_train / 100, 2) }`;
+      }
+
+      return `Training Accuracy: 0%`;
+    },
+    validationTargetMetric() {
+
+      if (this.popupInfo.acc_val) {
+        return `Validation Accuracy: ${ this.toFixedWithMaxDigits(this.popupInfo.acc_val, 2) }%`;
+      }
+      
+      if (this.popupInfo.r_sq_val) {
+        return `Validation R Squared:  ${ this.toFixedWithMaxDigits(this.popupInfo.r_sq_val / 100, 2) }`;
+      }
+
+      return `Validation Accuracy: 0%`;
+    },
   }
 }
 </script>

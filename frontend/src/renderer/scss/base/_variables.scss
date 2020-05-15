@@ -33,11 +33,16 @@ $disable-txt: #8B8B9C;
 $bg-window: #383F50;
 $bg-workspace: #23252A; //checkbox
 $bg-workspace-2: #3C3C4C;
+$bg-workspace-3: #212839; // new background for components in stats window
 $bg-toolbar: #4D556A;
+$bg-toolbar-2: #3F4C70;
 
-$bg-scroll: #989FB0;
+// $bg-scroll: #989FB0;
+$bg-scroll: #6E778C;
 $bg-input: #5B657B;
 $toolbar-border: #333343;
+$toolbar-separator-color: #5E6F9F;
+$toolbar-button-border: #B6C7FB;
 
 $login-blue: #6E92FA;
 
@@ -53,6 +58,8 @@ $color-8:  #5D698D;
 $color-9:  #515972;
 $color-10: #6CF4D1;
 $color-11: #282d39;
+
+$color-12: #C4C4C4;
 
 $bg-grad-cyan: linear-gradient($color-1, $color-2);
 $bg-grad-blue: linear-gradient($color-5, $color-6);
@@ -80,7 +87,7 @@ $input-holder-margin: .75rem;
 /*----- Global layout -----*/
 $vert-indent: 20px;
 $form-indent: 1rem;
-$bdrs: .5rem;
+$bdrs: .2rem;
 $w-layersbar: 7.1rem; //80px
 
 $h-sidebar-layers-item: 3.357rem; //33px
@@ -88,7 +95,7 @@ $h-sidebar-layers-indent: 1rem; //14px
 $sidebar-first-tab-indent: 1.5rem; //14px
 $w-sidebar: 30rem; //300px
 $h-toolbar: 4rem; //56px
-$h-header-win: 30px;
+$h-header-win: 38px;
 $h-header-mac: 22px;
 $h-header-linux: 51px;
 

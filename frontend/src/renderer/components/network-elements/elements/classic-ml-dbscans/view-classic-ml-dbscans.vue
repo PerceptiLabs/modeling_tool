@@ -4,7 +4,7 @@
     data-component="ClassicMLDbscans"
     data-layer="DBSCAN"
     data-type="Training"
-    v-tooltip:right="'DBSCAN'"
+    v-tooltip:networkElement="'DBSCAN'"
     v-tooltip-interactive:right="interactiveInfo.MLDbscan"
     :style="layerStyles"
   )

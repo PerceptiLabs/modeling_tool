@@ -3,7 +3,7 @@
     data-component="TrainLoss"
     data-layer="Loss"
     data-type="Training"
-    v-tooltip:right="'Loss'"
+    v-tooltip:networkElement="'Loss'"
     v-tooltip-interactive:right="interactiveInfo"
     :style="layerStyles"
   )

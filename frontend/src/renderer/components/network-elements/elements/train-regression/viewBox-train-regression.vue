@@ -11,39 +11,27 @@
             )
         .statistics-box_col
           chart-switch(
-            key="8"
-            chart-label="Accuracy"
-            :chart-data="chartData.Prediction.Accuracy"
+            key="2"
+            chart-label="PvG"
+            :chart-data="chartData.Prediction.PvG"
             :custom-color="colorPie"
             )
       .statistics-box_row
         .statistics-box_col
-          chart-switch#tutorial_prediction-chart(
-            key="2"
-            chart-label="Prediction vs Ground truth"
-            :chart-data="chartData.Prediction.PvG"
-            :custom-color="colorList"
-            )
-        .statistics-box_col(v-if="!testIsOpen")
           chart-switch(
             key="3"
-            chart-label="Batch Average Prediction vs Ground truth"
-            :chart-data="chartData.Prediction.AveragePvG"
+            chart-label="Line of Best Fit"
+            :chart-data="chartData.Prediction.AveragePvT"
             :custom-color="colorList"
             )
-    .statistics-box_main.statistics-box_col(v-if="currentTab === 'Accuracy'")
-      chart-switch(
-        key="4"
-        chart-label="Accuracy during one epoch"
-        :chart-data="chartData.Accuracy.Current"
-        :custom-color="colorListAccuracy"
-      )
-      chart-switch(
-        key="5"
-        chart-label="Accuracy over all epochs"
-        :chart-data="chartData.Accuracy.Total"
-        :custom-color="colorListAccuracy"
-      )
+        .statistics-box_col
+          chart-switch(
+            key="4"
+            chart-label="R_Squared"
+            :chart-data="chartData.Prediction.R_Squared"
+            :custom-color="colorList"
+            )
+
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Loss'")
       chart-switch(
         key="6"
@@ -57,30 +45,17 @@
         :chart-data="chartData.Loss.Total"
         :custom-color="colorListAccuracy"
       )
-    .statistics-box_main.statistics-box_col(v-if="currentTab === 'F1'")
+    .statistics-box_main.statistics-box_col(v-if="currentTab === 'R_Squared'")
+      chart-switch(
+        key="8"
+        chart-label="R Squared data during one epoch"
+        :chart-data="chartData.R_Squared.Current"
+        :custom-color="colorListAccuracy"
+      )
       chart-switch(
         key="9"
-        chart-label="F1 during one epoch"
-        :chart-data="chartData.F1.Current"
-        :custom-color="colorListAccuracy"
-      )
-      chart-switch(
-        key="10"
-        chart-label="F1 over all epochs"
-        :chart-data="chartData.F1.Total"
-        :custom-color="colorListAccuracy"
-      )
-    .statistics-box_main.statistics-box_col(v-if="currentTab === 'AUC'")
-      chart-switch(
-        key="11"
-        chart-label="AUC during one epoch"
-        :chart-data="chartData.AUC.Current"
-        :custom-color="colorListAccuracy"
-      )
-      chart-switch(
-        key="12"
-        chart-label="AUC over all epochs"
-        :chart-data="chartData.AUC.Total"
+        chart-label="R Squared data over all epochs"
+        :chart-data="chartData.R_Squared.Total"
         :custom-color="colorListAccuracy"
       )
 </template>
@@ -97,25 +72,16 @@
     data() {
       return {
         chartData: {
-          Prediction: { Input: null, PvG: null, AveragePvG: null, Accuracy: null },
-          Accuracy:   { Current: null, Total: null },
-          Loss:       { Current: null, Total: null },
-          F1:         { Current: null, Total: null },
-          AUC:        { Current: null, Total: null }
+          Prediction:       { Input: null, PvG: null, AveragePvG: null, AveragePvT: null, R_Squared: null},
+          Loss:             { Current: null, Total: null },
+          R_Squared:        { Current: null, Total: null }
         },
         btnList: {
           'Prediction': {
             btnId: 'tutorial_prediction-tab',
             btnInteractiveInfo: {
               title: 'Prediction',
-              text: 'View the input, current accuracy and <br/> output prediction vs ground truth/labels'
-            }
-          },
-          'Accuracy': {
-            btnId: 'tutorial_accuracy-tab',
-            btnInteractiveInfo: {
-              title: 'Accuracy',
-              text: 'View the accuracy.'
+              text: 'View prediction data'
             }
           },
           'Loss': {
@@ -125,30 +91,17 @@
               text: 'View the loss.'
             }
           },
-          'F1': {
-            btnId: 'tutorial_f1-tab',
+          'R_Squared': {
+            btnId: 'tutorial_r_squared-tab',
             btnInteractiveInfo: {
-              title: 'F1',
-              text: 'View the F1 score.'
-            }
-          },
-          'AUC': {
-            btnId: 'tutorial_auc-tab',
-            btnInteractiveInfo: {
-              title: 'AUC',
-              text: 'View the AUC.'
+              title: 'R Squared',
+              text: 'View the R Squared data.'
             }
           },
         },
         colorList: ['#6B8FF7', '#FECF73'],
         colorListAccuracy: ['#9173FF', '#6B8FF7'],
         colorPie: ['#6B8FF7', '#383F50'],
-        showRequestSpinner: {
-          Input: true,
-          PvG: true,
-          AveragePvG: true,
-          Accuracy: true
-        }
       }
     },
     watch: {
@@ -162,17 +115,11 @@
           case 'Prediction':
             this.chartRequest(this.statElementID, 'TrainRegression', 'Prediction');
             break;
-          case 'Accuracy':
-            this.chartRequest(this.statElementID, 'TrainRegression', 'Accuracy');
-            break;
           case 'Loss':
             this.chartRequest(this.statElementID, 'TrainRegression', 'Loss');
             break;
-          case 'F1':
-            this.chartRequest(this.statElementID, 'TrainRegression', 'F1');
-            break;
-          case 'AUC':
-            this.chartRequest(this.statElementID, 'TrainRegression', 'AUC');
+          case 'R_Squared':
+            this.chartRequest(this.statElementID, 'TrainRegression', 'R_Squared');
             break;
         }
       }

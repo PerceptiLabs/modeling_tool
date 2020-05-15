@@ -3,8 +3,8 @@
     .settings-layer
       .form_row
         button.btn.btn--link(type="button" @click="toSettings")
-          i.icon.icon-backward
-          span Back
+          img(src="../../../../../static/img/back.svg")
+
       .form_row
         base-select(
           v-model="previewValue"
@@ -101,10 +101,6 @@ export default {
   @import "../../../scss/base";
   .settings-layer_foot {
     justify-content: flex-end;
-    .btn {
-      height: auto;
-      min-width: 7rem;
-    }
     .btn + .btn {
       margin-left: .8rem;
     }

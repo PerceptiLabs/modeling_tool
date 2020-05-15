@@ -7,7 +7,7 @@ import shutil
 
 from perceptilabs.core_new.layers.templates.base import J2Engine
 from perceptilabs.core_new.layers.templates.utils import instantiate_layer_from_macro, create_layer
-from perceptilabs.core_new.layers.definitions import TEMPLATES_DIRECTORY, DEFINITION_TABLE
+from perceptilabs.core_new.layers.definitions import TEMPLATES_DIRECTORY, DEFINITION_TABLE, TOP_LEVEL_IMPORTS, TOP_LEVEL_IMPORTS_FLAT
 from perceptilabs.core_new.graph.builder import GraphBuilder
 
 
@@ -37,9 +37,10 @@ def tmpdir_del(tmpdir):
 def layer_fc(j2_engine):
     layer_fc_ = create_layer(
         j2_engine,
-        DEFINITION_TABLE,
-        'DeepLearningFC',
-        n_neurons=3,
+        DEFINITION_TABLE, TOP_LEVEL_IMPORTS_FLAT,
+        layer_type='DeepLearningFC',
+        # top_level_imports=TOP_LEVEL_IMPORTS_FLAT[0],
+        n_neurons=1,
         activation='',
         dropout=False
     )
@@ -47,19 +48,16 @@ def layer_fc(j2_engine):
 
 @pytest.fixture(scope='function')
 def layer_inputs(j2_engine, tmpdir_del):
-    mat_inputs = np.array(
-        [
-            [0.1, 0.2, 0.3, 1.0],        
-    
-        ]*200
-    )
+    mat_inputs = np.arange(100)
     inputs_path = fix_path(os.path.join(tmpdir_del, 'inputs.npy'))
     np.save(inputs_path, mat_inputs)
-
+    imports = []
+    imports.append(TOP_LEVEL_IMPORTS_FLAT)
     layer_inputs_ = create_layer(
-        j2_engine, DEFINITION_TABLE,
-        'DataData',
-        sources=[{'type': 'file', 'path': inputs_path}],
+        j2_engine, DEFINITION_TABLE,TOP_LEVEL_IMPORTS_FLAT,
+        layer_type='DataData',
+
+        sources=[{'type': 'file', 'ext':'.npy', 'path': inputs_path}],
         partitions=[(100, 0, 0)],
     )
 
@@ -69,18 +67,15 @@ def layer_inputs(j2_engine, tmpdir_del):
 
 @pytest.fixture(scope='function')
 def layer_targets(j2_engine, tmpdir_del):
-    mat_targets = np.array(
-        [
-            [1, 0, 0],        
-        ]*200
-    )
+    delta = np.random.uniform(0,10, size=(100,))
+    mat_targets = 0.4 * np.arange(100) + delta
     targets_path = fix_path(os.path.join(tmpdir_del, 'targets.npy'))
     np.save(targets_path, mat_targets)
 
     layer_targets_ = create_layer(
-        j2_engine, DEFINITION_TABLE,
-        'DataData',
-        sources=[{'type': 'file', 'path': targets_path}],
+        j2_engine, DEFINITION_TABLE,TOP_LEVEL_IMPORTS_FLAT,
+        layer_type='DataData',
+        sources=[{'type': 'file', 'ext':'.npy',  'path': targets_path}],
         partitions=[(100, 0, 0)],
     )
 
@@ -89,14 +84,16 @@ def layer_targets(j2_engine, tmpdir_del):
 
 
 def make_graph(j2_engine, tmpdir_del, layer_inputs, layer_targets, layer_fc, export_dir=None, distributed=False, learning_rate=0.3, n_epochs=200):
+    imports = []
+    imports.append(TOP_LEVEL_IMPORTS_FLAT)
     layer_training = create_layer(
         j2_engine,
-        DEFINITION_TABLE,
-        'Regression',
+        DEFINITION_TABLE,TOP_LEVEL_IMPORTS_FLAT,
+        layer_type='TrainRegression',
         output_layer='layer_fc',
+        # top_level_imports=TOP_LEVEL_IMPORTS_FLAT,
         target_layer='layer_targets',
         n_epochs=n_epochs,
-
         #TODO: The loss function doesn't do anything. You can put any string and the code will work. Should be fixed
         loss_function='Mean Absolute Error',
         class_weights='1',
@@ -106,6 +103,7 @@ def make_graph(j2_engine, tmpdir_del, layer_inputs, layer_targets, layer_fc, exp
         decay_rate=0.96,
         momentum=0.9,
         beta1=0.9,
+        batch_size=10,
         distributed=distributed,
         export_directory=export_dir
     )
@@ -150,8 +148,6 @@ def test_convergence(j2_engine, tmpdir_del, layer_inputs, layer_targets, layer_f
         # If the loss is not going down, then we are not converging, so return false!
         if len(loss_list) > 100:
             if((np.mean(np.diff(loss_list) < 0))) and (r_squared_list[-1] > 0 and r_squared_list[-1] <= 1):
-                import pdb
-                pdb.set_trace()
                 converged = True
             else:
                 converged = False
@@ -186,8 +182,9 @@ def test_initial_weights_differ(j2_engine, tmpdir_del, layer_inputs, layer_targe
     fc1 = create_layer(
         j2_engine,
         DEFINITION_TABLE,
-        'DeepLearningFC',
-        n_neurons=3,
+        layer_type='DeepLearningFC',
+        top_level_imports=TOP_LEVEL_IMPORTS_FLAT,
+        n_neurons=1,
         activation='',
         dropout=False, keep_prob=1.0
     )
@@ -205,8 +202,9 @@ def test_initial_weights_differ(j2_engine, tmpdir_del, layer_inputs, layer_targe
     fc2 = create_layer(
         j2_engine,
         DEFINITION_TABLE,
-        'DeepLearningFC',
-        n_neurons=3,
+        top_level_imports=TOP_LEVEL_IMPORTS_FLAT,
+        layer_type='DeepLearningFC',
+        n_neurons=1,
         activation='',
         dropout=False, keep_prob=1.0
     )
@@ -227,8 +225,9 @@ def test_load_checkpoint(j2_engine, tmpdir_del, layer_inputs, layer_targets):
     fc1 = create_layer(
         j2_engine,
         DEFINITION_TABLE,
-        'DeepLearningFC',
-        n_neurons=3,
+        top_level_imports=TOP_LEVEL_IMPORTS_FLAT,
+        layer_type='DeepLearningFC',
+        n_neurons=1,
         activation='',
         dropout=False, keep_prob=1.0
     )
@@ -248,8 +247,9 @@ def test_load_checkpoint(j2_engine, tmpdir_del, layer_inputs, layer_targets):
     fc2 = create_layer(
         j2_engine,
         DEFINITION_TABLE,
-        'DeepLearningFC',
-        n_neurons=3,
+        top_level_imports=TOP_LEVEL_IMPORTS_FLAT,
+        layer_type='DeepLearningFC',
+        n_neurons=1,
         activation='',
         dropout=False, keep_prob=1.0
     )

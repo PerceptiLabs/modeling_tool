@@ -16,9 +16,10 @@
         @app-maximized="appMaximize"
       )
     router-view.app-page
-    update-popup(v-if="isElectron")
+    update-popup(v-if="isElectron") 
     the-info-popup(v-if="showPopup")
     confirm-popup
+    modal-pages-engine
 </template>
 
 <script>
@@ -31,18 +32,21 @@
   }
   import Analytics from '@/core/analytics';
 
-  import { mapMutations, mapActions } from 'vuex';
+  import { mapMutations, mapActions, mapGetters } from 'vuex';
 
-  import HeaderLinux    from '@/components/header/header-linux.vue';
-  import HeaderWin      from '@/components/header/header-win.vue';
-  import HeaderMac      from '@/components/header/header-mac.vue';
-  import UpdatePopup    from '@/components/global-popups/update-popup/update-popup.vue'
-  import TheInfoPopup   from "@/components/global-popups/the-info-popup.vue";
-  import ConfirmPopup   from "@/components/global-popups/confirm-popup.vue";
+  import HeaderLinux            from '@/components/header/header-linux.vue';
+  import HeaderWin              from '@/components/header/header-win.vue';
+  import HeaderMac              from '@/components/header/header-mac.vue';
+  import UpdatePopup            from '@/components/global-popups/update-popup/update-popup.vue'
+  import TheInfoPopup           from "@/components/global-popups/the-info-popup.vue";
+  import ConfirmPopup           from "@/components/global-popups/confirm-popup.vue";
+  import ModalPagesEngine       from '@/components/modal-pages-engine';
+  import { MODAL_PAGE_PROJECT } from '@/core/constants.js';
 
   export default {
     name: 'TheApp',
     components: {
+      ModalPagesEngine,
       HeaderLinux, HeaderWin, HeaderMac,
       UpdatePopup, TheInfoPopup, ConfirmPopup
     },
@@ -53,6 +57,23 @@
       this.readUserInfo();
     },
     mounted() {
+      if(localStorage.hasOwnProperty('targetProject')) {
+        const targetProjectId = parseInt(localStorage.getItem('targetProject'));
+        this.loadProjectFromLocalStorage(targetProjectId)
+        // get all project and set current one in page title
+        this.getProjects()
+          // .then(({data: { results: projects }}) => {
+          //   if(targetProjectId) {
+          //     const targetProject = projects.filter(project => project.project_id === targetProjectId)[0];
+          //     this.setPageTitleMutation(`${targetProject.name} / Models`);
+          //   }
+          // })
+      } else {
+        if(localStorage.hasOwnProperty('currentUser'))
+        this.setActivePageAction(MODAL_PAGE_PROJECT);
+      }
+      
+      // @todo fetch models for project;
       if(isWeb()) {
         this.updateOnlineStatus();
         this.SET_appVersion(process.env.PACKAGE_VERSION);
@@ -102,6 +123,7 @@
       //   //this.appReady();
         this.sendPathToAnalist(this.$route.fullPath);
       })
+      if(!this.user) this.cloud_userGetProfile();
     },
     beforeDestroy() {
       window.removeEventListener('online',  this.updateOnlineStatus);
@@ -116,6 +138,9 @@
       }
     },
     computed: {
+      ...mapGetters({
+        user: 'mod_user/GET_userProfile'
+      }),
       platform() {
         return this.$store.state.globalView.platform
       },
@@ -181,6 +206,8 @@
         SET_showPopupUpdates: 'mod_autoUpdate/SET_showPopupUpdates',
         SET_updateStatus:     'mod_autoUpdate/SET_updateStatus',
         SET_updateProgress:   'mod_autoUpdate/SET_updateProgress',
+        loadProjectFromLocalStorage: 'mod_workspace/get_workspacesFromLocalStorage',
+        // setPageTitleMutation: 'globalView/setPageTitleMutation',
       }),
       ...mapActions({
         openErrorPopup:   'globalView/GP_infoPopup',
@@ -198,6 +225,10 @@
 
         setUserToken:     'mod_user/SET_userToken',
         readUserInfo:     'mod_user/GET_LOCAL_userInfo',
+
+        setActivePageAction: 'modal_pages/setActivePageAction',
+        getProjects : 'mod_project/getProjects',
+        cloud_userGetProfile:     'mod_apiCloud/CloudAPI_userGetProfile',
       }),
       updateOnlineStatus() {
         this.SET_onlineStatus(navigator.onLine);
@@ -304,7 +335,7 @@
   }
   .app-header {
     position: relative;
-    z-index: 100;
+    z-index: 12;
     grid-area: header;
     -webkit-app-region: drag;
     .btn {

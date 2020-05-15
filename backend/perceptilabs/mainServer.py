@@ -6,6 +6,8 @@ import threading
 import pkg_resources
 
 
+from perceptilabs.messaging.zmq_wrapper import get_message_bus
+
 def get_input_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('-f','--frontend-pid', default=None, type=int,
@@ -50,10 +52,10 @@ def setup_logger(log_level, core_mode):
     logging.basicConfig(
         format='%(asctime)s - %(levelname)s - %(threadName)s - %(filename)s:%(lineno)d - %(message)s',
         level=logging.getLevelName(log_level),
-        handlers=[
-            logging.FileHandler("kernel.log"),
-            logging.StreamHandler()
-        ]
+        # handlers=[
+        #     logging.FileHandler("kernel.log"),
+        #     logging.StreamHandler()
+        # ]
     )
 
     
@@ -82,7 +84,8 @@ def main():
     setup_sentry(args.user, commit_id)
     log.info("Reporting errors with commit id: " + str(commit_id))
 
-
+    message_bus = get_message_bus()
+    message_bus.start()
     
     cores=dict()
     dataDict=dict()
@@ -97,12 +100,15 @@ def main():
     if args.error:
         raise Exception("Test error")
 
+    print("PerceptiLabs is ready...")
+
     server = Server(scraper, data_bundle)
     if args.platform == 'desktop':
         server.serve_desktop(core_interface, args.instantly_kill)
     elif args.platform == 'browser':
         server.serve_web(core_interface, args.instantly_kill)
 
+    message_bus.stop()
 
 if __name__ == "__main__":
     main()

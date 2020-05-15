@@ -1,12 +1,12 @@
 <template lang="pug">
   section.network_info-section.tutorial-relative
-    .info-section_head(v-show="!testIsOpen")
-      h3 {{ sectionTitle }}
-      view-box-btn-list(
-        v-if="btnList"
-        :tab-set="btnList"
-        @set-current-btn="setCurrentBtn"
-        )
+    //- .info-section_head(v-show="!testIsOpen")
+    //-   h3 {{ sectionTitle }}
+    view-box-btn-list(
+      v-if="btnList"
+      :tab-set="btnList"
+      @set-current-btn="setCurrentBtn"
+      )
 
     .info-section_main(v-if="elData !== null")
       component(
@@ -31,6 +31,7 @@
   import TrainLoss        from '@/components/network-elements/elements/train-loss/viewBox-train-loss.vue'
   import TrainOptimizer   from '@/components/network-elements/elements/train-optimizer/viewBox-train-optimizer.vue'
   import TrainGan         from '@/components/network-elements/elements/train-gan/viewBox-train-gan.vue'
+  import TrainRegression         from '@/components/network-elements/elements/train-regression/viewBox-train-regression.vue'
   import TrainDetector    from '@/components/network-elements/elements/train-detector/viewBox-train-detector.vue'
 
   /*view box*/
@@ -59,7 +60,7 @@
 export default {
   name: "TheViewBox",
   components: {
-    TrainNormal, TrainGenetic, TrainDynamic, TrainReinforce, TrainLoss, TrainOptimizer, TrainGan, TrainDetector,
+    TrainNormal, TrainGenetic, TrainDynamic, TrainReinforce, TrainLoss, TrainOptimizer, TrainGan, TrainDetector, TrainRegression,
     ClassicMLDbscans, ClassicMLKMeans, ClassicMLKNN, ClassicMLRandomForest, ClassicMLSVM,
 
     DataData, DataEnvironment, DataCloud,
@@ -131,13 +132,13 @@ export default {
 <style lang="scss">
   @import "../../scss/base";
   .open-statistic .the-view-box .info-section_main {
-    border-left: 2px solid $bg-window;
+    padding-left: 0;
   }
   /*statistics*/
   .open-test .the-statistics .info-section_main {
-    border-left: 2px solid $bg-window;
+    // border-left: 2px solid $bg-window;
   }
   .info-section_head {
-    border-top: 1px solid $color-5;
+  //   border-top: 1px solid $color-5;
   }
 </style>

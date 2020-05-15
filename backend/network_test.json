@@ -47,7 +47,7 @@
             "checkpoint": [],
             "endPoints": [],
             "Properties": {
-                "Neurons": "10",
+                "Neurons": "1",
                 "Activation_function": "",
                 "Dropout": false,
                 "Keep_prob": "1"
@@ -110,7 +110,7 @@
 
         "1564399790363": {
             "Name": "Reg_1",
-            "Type": "Regression",
+            "Type": "TrainRegression",
             "checkpoint": [],
             "endPoints": [],
             "Properties": {

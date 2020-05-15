@@ -94,6 +94,8 @@ TOP_LEVEL_IMPORTS = {
     ],
     'perceptilabs': [
         'from perceptilabs.core_new.graph.builder import GraphBuilder, SnapshotBuilder',
+        'from perceptilabs.core_new.communication import TrainingServer',
+        'from perceptilabs.messaging import ZmqMessagingFactory, SimpleMessagingFactory',
         'from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP, REPLICATED_PROPERTIES_TABLE'                    
     ]
 }
@@ -124,6 +126,23 @@ DEFINITION_TABLE = {
             'import skimage.io',            
             'import pandas as pd',
             'import dask.dataframe as dd',                                    
+            'from perceptilabs.core_new.utils import Picklable',
+            'from perceptilabs.core_new.serialization import can_serialize, serialize'                    ]
+    ),
+    'DataEnvironment': LayerDef(
+        DataLayer,
+        'dataenv.j2',
+        'layer_dataenvironment',
+        {   
+            'environment_name': lambda specs: specs['Properties']['accessProperties']['Atari'] + '-v0',
+        },
+        import_statements=[
+            'from perceptilabs.core_new.layers.base import DataLayer',
+            'from typing import Dict, Generator',
+            'import multiprocessing', 
+            'import tensorflow as tf',
+            'import gym',
+            'import numpy as np',                                    
             'from perceptilabs.core_new.utils import Picklable',
             'from perceptilabs.core_new.serialization import can_serialize, serialize'                    ]
     ),
@@ -223,7 +242,7 @@ DEFINITION_TABLE = {
             'pooling': lambda specs: specs['Properties']['Pooling'],
             'pool_padding': lambda specs: specs['Properties']['Pool_padding'],
             'pool_area': lambda specs: specs['Properties']['Pool_area'],
-            'pool_stride': lambda specs: specs['Properties']['Pool_stride'],            
+            'pool_stride': lambda specs: specs['Properties']['Pool_stride']        
         },
         import_statements=[
             'import tensorflow as tf',
@@ -232,6 +251,50 @@ DEFINITION_TABLE = {
             'from perceptilabs.core_new.utils import Picklable',
             'from perceptilabs.core_new.layers.base import Tf1xLayer',
             'from perceptilabs.core_new.serialization import can_serialize, serialize'            
+        ]
+    ),
+    'DeepLearningDeconv': LayerDef(
+        Tf1xLayer,
+        'tf1x.j2',
+        'layer_tf1x_deconv',
+        {
+            'conv_dim': lambda specs: specs['Properties']['Deconv_dim'],
+            'patch_size': lambda specs: specs['Properties']['Patch_size'],
+            'stride': lambda specs: specs['Properties']['Stride'],
+            'feature_maps': lambda specs: specs['Properties']['Feature_maps'],
+            'padding': lambda specs: specs['Properties']['Padding'],
+            'activation': resolve_tf1x_activation_name,
+            'dropout': lambda specs: specs['Properties']['Dropout'],
+            'keep_prob': lambda specs: specs['Properties']['Keep_prob']
+        },
+        import_statements=[
+            'import tensorflow as tf',
+            'import numpy as np',
+            'from typing import Dict',
+            'from perceptilabs.core_new.utils import Picklable',
+            'from perceptilabs.core_new.layers.base import Tf1xLayer',
+            'from perceptilabs.core_new.serialization import can_serialize, serialize'
+        ]
+    ),
+    'DeepLearningRecurrent': LayerDef(
+        Tf1xLayer,
+        'tf1x.j2',
+        'layer_tf1x_recurrent',
+        {
+            'neurons': lambda specs: specs['Properties']['Neurons'],
+            'version': lambda specs: specs['Properties']['Version'],
+            'time_steps': lambda specs: specs['Properties']['Time_steps'],
+            'return_sequences': lambda specs: specs['Properties']['Return_sequence'],
+            'dropout': lambda specs: specs['Properties']['Dropout'],
+            'keep_prob': lambda specs: specs['Properties']['Keep_prob']
+        },
+        import_statements=[
+            'import tensorflow as tf',
+            'import numpy as np',            
+            'from typing import Dict',
+            'from perceptilabs.core_new.utils import Picklable',
+            'from perceptilabs.core_new.layers.base import Tf1xLayer',
+            'from perceptilabs.core_new.serialization import can_serialize, serialize'
         ]
     ),
     'TrainNormal': LayerDef(
@@ -309,7 +372,7 @@ DEFINITION_TABLE = {
             'from tensorflow.python.training.tracking.base import Trackable'            
         ]
     ),
-    'Regression': LayerDef(
+    'TrainRegression': LayerDef(
         RegressionLayer,
         'tf1x_regression.j2',
         'layer_tf1x_regression',
@@ -327,17 +390,56 @@ DEFINITION_TABLE = {
             'beta1': lambda specs: specs['Properties']['Beta_1'],
             'beta2': lambda specs: specs['Properties']['Beta_2'],
             'distributed': lambda specs: specs['Properties'].get('Distributed', False),
-            'export_directory': resolve_checkpoint_path            
+            'batch_size': lambda specs: specs['Properties']['batch_size'],
+            'export_directory': resolve_checkpoint_path
         },
         import_statements=[
             'import tensorflow as tf',
             'import numpy as np',
             'import time',
-            'import os',
             'from typing import Dict, List, Generator',
             'from perceptilabs.core_new.utils import Picklable, YieldLevel',
             'from perceptilabs.core_new.graph import Graph',
             'from perceptilabs.core_new.layers.base import RegressionLayer, Tf1xLayer',
+            'from perceptilabs.core_new.serialization import can_serialize, serialize',
+            'from tensorflow.python.training.tracking.base import Trackable'   
+        ]
+    ),            
+    'TrainReinforce': LayerDef(
+       RLLayer,
+        'tf1x_rl.j2',
+        'layer_tf1x_rl',
+        {
+            'history_length': lambda specs: specs['Properties']['History_length'],
+            'n_episodes': lambda specs: specs['Properties']['Episodes'],
+            'optimizer': resolve_tf1x_optimizer,
+            'learning_rate': lambda specs: specs['Properties']['Learning_rate'],
+            'distributed': lambda specs: specs['Properties'].get('Distributed', False),
+            'export_directory': resolve_checkpoint_path,
+            'batch_size':  lambda specs: specs['Properties']['Batch_size'],
+            'n_steps_max': lambda specs: specs['Properties']['Max_steps'],
+            'update_frequency': 4,
+            'initial_exploration': 0.9,
+            'discount_factor': 0.99,
+            'replay_memory_size': 300000,
+            'final_exploration': 0.1,
+            'final_exporation_frame': 500,
+            'target_network_update_frequency': 100
+
+        },
+        import_statements=[
+            'import tensorflow as tf',
+            'import numpy as np',
+            'import time',
+            'import gym',
+            'import copy',
+            'import itertools',
+            'import os',
+            'import shutil',
+            'from typing import Dict, List, Generator',
+            'from perceptilabs.core_new.utils import Picklable, YieldLevel',
+            'from perceptilabs.core_new.graph import Graph',
+            'from perceptilabs.core_new.layers.base import RLLayer, Tf1xLayer',
             'from perceptilabs.core_new.serialization import can_serialize, serialize',
             'from tensorflow.python.training.tracking.base import Trackable'            
         ]

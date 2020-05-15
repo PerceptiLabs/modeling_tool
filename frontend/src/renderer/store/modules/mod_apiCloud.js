@@ -1,5 +1,5 @@
 import {requestCloudApi}  from '@/core/apiCloud.js'
-
+import { MODAL_PAGE_SIGN_UP } from '@/core/constants.js'
 const namespaced = true;
 const state = {};
 const getters = {};
@@ -60,7 +60,12 @@ const actions = {
         dispatch('mod_user/SET_userProfile', profile, {root: true});
         return true
       })
-      .catch((error)=> console.log('CloudAPI_userGetProfile', error) )
+      .catch((error)=>  {
+        if (error.response.status === 401) {
+          localStorage.removeItem('currentUser');
+          dispatch('modal_pages/setActivePageAction', MODAL_PAGE_SIGN_UP , {root: true})
+        }
+      } )
   },
   CloudAPI_userForgotPassword({dispatch}, email) {
     return requestCloudApi('post', 'Customer/ForgotPassword', `'${email}'`)

@@ -1,8 +1,15 @@
 <template lang="pug">
   main.page_workspace
-    .workspace_tabset(ref="tabset")
+    .workspace_tabset(
+      ref="tabset"
+      v-show="!showTrainingSpinner"
+    )
       include ./tabset/workspace-tabset.pug
+    
+    component(:is="toolbarType")
+
     .workspace_content.bookmark_content.js-workspace(
+      v-if="!isNotebookMode"  
       ref="workspaceNet"
       :class="{'workspace-relative' : showTrainingSpinner}"
       )
@@ -46,6 +53,8 @@
             div(:style="dragBoxHorizontalBottomBorder()")
             div(:style="dragBoxVerticalLeftBorder()")
             div(:style="dragBoxVerticalRightBorder()")
+
+          sidebar-layers.layers-sidebar
         //-general-settings(v-if="showGlobalSet")
         general-result(v-if="showGlobalResult")
         select-core-side(v-if="showCoreSide")
@@ -58,6 +67,7 @@
         workspace-load-network(
           v-if="showLoadSettingPopup"
         )
+        export-network(v-if="showExportNetworkPopup")
 
       start-training-spinner(v-if="showTrainingSpinner")
       file-picker-popup(
@@ -68,9 +78,11 @@
         :confirmCallback="showFilePickerPopup.confirmCallback || showFilePickerPopup")
       //- showFilePickerPopup container the callback function
 
-    .workspace_meta
+    .workspace_meta(
+      v-if="!isNotebookMode"  
+      )
       include ./meta/workspace-meta.pug
-
+    notebook(v-if="isNotebookMode")
 </template>
 
 <script src="./the-workspace.js"></script>
@@ -84,13 +96,21 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    width: 100%;
+    height: 100%;
   }
   .workspace_tabset {
     flex: 0 0 auto;
-    padding-top: 1px;
+    padding-top: 0.5rem;
     display: flex;
     justify-content: flex-start;
     align-items: flex-end;
+    background-color: $bg-workspace;
+    border-bottom: 1px solid $toolbar-separator-color;
+
+    .tab-group {
+      display: flex;
+    }
   }
   .workspace_content {
     display: flex;
@@ -131,11 +151,24 @@
   }
   .the-network-field {
     grid-area: network-field;
+    background: linear-gradient(180deg, #363E51 0%, rgba(54, 62, 81, 0) 100%);
+    border: 1px solid rgba(97, 133, 238, 0.4);
   }
+  .layers-sidebar {
+    position: fixed;
+    right: 2rem;
+    transform: translateY(2rem);
+  }
+
   .network_info-section {
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    background: $bg-workspace-3;
+
+    > .info-section_head {
+      background: #090f19;
+    }
   }
   .info-section_main {
     display: block;

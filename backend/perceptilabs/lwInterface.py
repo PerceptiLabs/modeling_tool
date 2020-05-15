@@ -83,6 +83,43 @@ class getFolderContent(LW_interface_base):
                 "files" :  [],
                 "platform": platform.system(),
             }
+class getJsonModel(LW_interface_base):
+    def __init__(self, json_path):
+        self._json_path = json_path
+    
+    def run(self):
+        if not os.path.exists(self._json_path):
+            return ""
+        
+        import json
+        with open(self._json_path, 'r') as f:
+            json_model = json.load(f)
+        return json_model
+
+class saveJsonModel(LW_interface_base):
+    def __init__(self, save_path, json_model):
+        self._save_path = save_path
+        self._json_model = json_model
+        print(json_model)
+    def run(self):
+        import json
+        full_path = self._save_path
+
+        if not os.path.isdir(full_path):
+            os.mkdir(full_path)
+        
+        file_path = os.path.join(full_path, 'model.json')
+        with open(file_path, 'w') as outfile:
+            json.dump(json.loads(self._json_model), outfile)
+
+
+class createFolder(LW_interface_base):
+    def __init__(self, folder_path, folder_name):
+        self.folder_path = folder_path
+        self.folder_name = folder_name
+
+    def run(self):
+        os.mkdir(os.path.join(self.folder_path, self.folder_name))
 
 class getJsonModel(LW_interface_base):
     def __init__(self, json_path):
@@ -126,9 +163,9 @@ class getDataMetaV2(LW_interface_base):
         self.lw_core.run()
         extras_dict = self.extras_reader.to_dict()
         cols = extras_dict[self._id].get("cols", '')
-        
+        action_space = extras_dict[self._id].get("action_space", '')
         content = {
-            "Action_space": "",
+            "Action_space": action_space,
             "Dataset_size": "",
             "Columns": cols
         }
