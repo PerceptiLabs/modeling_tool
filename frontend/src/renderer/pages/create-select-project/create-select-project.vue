@@ -202,7 +202,6 @@ import { debug } from 'util';
                 .catch(e => console.log(e));
              
             },
-            cancel: () => { this.closePageAction() },
             })
           return;
         } else {
