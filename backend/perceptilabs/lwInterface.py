@@ -84,7 +84,6 @@ class getFolderContent(LW_interface_base):
                 "platform": platform.system(),
             }
 class getJsonModel(LW_interface_base):
-    print('huiak')
     def __init__(self, json_path):
         self._json_path = json_path
     
