@@ -15,4 +15,4 @@ class ModelSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = Model
-        fields = ["model_id", "project", "name", "created", "updated"]
+        fields = ["model_id", "project", "name", "created", "updated", "saved_by"]
