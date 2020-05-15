@@ -100,6 +100,8 @@ def main():
     if args.error:
         raise Exception("Test error")
 
+    print("PerceptiLabs is ready...")
+
     server = Server(scraper, data_bundle)
     if args.platform == 'desktop':
         server.serve_desktop(core_interface, args.instantly_kill)
