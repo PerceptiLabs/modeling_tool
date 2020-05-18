@@ -5,8 +5,8 @@
       .setting-tabs-wrapper
         ul.tab-list
           li.tab-item.active Profile
-          li.tab-item Account
-          li.tab-item Teams
+          li.tab-item.tab-item-disabled Account
+          li.tab-item.tab-item-disabled Teams
       .setting-content
         setting-profile
         
@@ -60,7 +60,9 @@ export default {
     }
   }
 }
-
+.tab-item-disabled {
+  cursor: default;
+}
 .setting-content {
   margin-left: 45px;
   margin-right: 45px;
