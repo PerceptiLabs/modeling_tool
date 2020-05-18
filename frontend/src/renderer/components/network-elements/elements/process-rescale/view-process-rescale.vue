@@ -3,7 +3,7 @@
     data-component="ProcessRescale"
     data-layer="Rescale"
     data-type="Other"
-    v-tooltip:right="'Rescale'"
+    v-tooltip:networkElement="'Rescale'"
     v-tooltip-interactive:right="interactiveInfo"
     id="tutorial_process-rescale"
     :style="layerStyles"
