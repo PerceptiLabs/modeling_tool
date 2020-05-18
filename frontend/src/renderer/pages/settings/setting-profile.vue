@@ -24,7 +24,7 @@
         .input-wrapper
           label Email
           .form_row
-            input(@input="editEmail" name="new email" readonly v-validate="'required|email'"  type="text" :value="user.email" )
+            input.email-disabled(@input="editEmail" name="new email" disabled readonly v-validate="'required|email'"  type="text" :value="user.email" )
           p.text-error(
               v-show="errors.has('formEmail.new email')") {{ errors.first('formEmail.new email') }}    
       .input-wrapper
@@ -191,9 +191,9 @@ export default {
       this.setUserInfo(newInfo);
     },
     editEmail(e) {
-     let newInfo = deepCopy(this.user);
-      newInfo.email = e.target.value;
-      this.setUserInfo(newInfo);
+    //  let newInfo = deepCopy(this.user);
+    //   newInfo.email = e.target.value;
+    //   this.setUserInfo(newInfo);
     },
     validateForm(scope) {
       return this.$validator.validateAll(scope)
@@ -288,4 +288,8 @@ export default {
     background: #6185EE;
   }
 }
+.email-disabled {
+    background: #4B4D52;
+    opacity: 0.7;
+  }
 </style>
