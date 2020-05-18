@@ -78,6 +78,7 @@ export default {
         case 'ProcessGrayscale':
         case 'ProcessOneHot':
         case 'ProcessReshape':
+        case 'ProcessRescale':
           className = 'net-color-process';
           break;
         case 'TrainNormal':
