@@ -3,29 +3,41 @@
     .contnet-caption Review your personal information here
     .profile-box
       .profile-preview {{user && user.firstName[0]}}
+      form(
+        data-vv-scope="userNames"
+      )
+        .input-wrapper
+          label(for="name") First Name
+          .form_row
+            input(id="name" name="firstName" v-validate="'required|min:3'" type="text" @input="editFirstName" :value="user.firstName" )
+          p.text-error(
+              v-show="errors.has('userNames.firstName')") {{ errors.first('userNames.firstName') }}   
+        .input-wrapper
+          label(for="last_name") Last Name
+          .form_row
+            input(id="last_name" name="lastName" v-validate="'required|min:3'" type="text" @input="editLastName" :value="user.lastName")
+          p.text-error(
+              v-show="errors.has('userNames.lastName')") {{ errors.first('userNames.lastName') }}   
+      form(
+        data-vv-scope="formEmail"
+      )
+        .input-wrapper
+          label Email
+          .form_row
+            input(@input="editEmail" name="new email" readonly v-validate="'required|email'"  type="text" :value="user.email" )
+          p.text-error(
+              v-show="errors.has('formEmail.new email')") {{ errors.first('formEmail.new email') }}    
       .input-wrapper
-        label(for="name") First Name
-        .form_row
-          input(id="name" type="text" :value="user.firstName")
-      .input-wrapper
-        label(for="name") Last Name
-        .form_row
-          input(id="name" type="text" :value="user.lastName")
-      .input-wrapper
-        label(for="email") Email
-        .form_row
-          input(id="email" type="text" :value="user.email")
-      .input-wrapper
-        label(for="email") Password
+        label() Password
         p.password-star ***************
         button.change-password-btn(
           @click="handleDisplayPasswordModal(true)"
         ) Change pasword
 
       .change-password-actions
-        button.change-password-modal-btn.blue() Save
+        button.change-password-modal-btn.blue(@click="handleSaveProfile") Save
         button.change-password-modal-btn(@click="resetChangedValues") Cancel
-
+  
     div(v-if="isChangePasswordOpened")
       div.popup-new-ui 
         div.popup-new-ui-header Change password
@@ -71,12 +83,17 @@
 </template>
 <script>
 import { mapGetters, mapActions } from 'vuex';
-
+import { deepCopy } from "@/core/helpers.js";
 export default {
   name: 'SettingProfile',
   data() {
     return {
       isChangePasswordOpened: false,
+      userData: {
+        firstName: '',
+        lastName: '',
+        email: '',
+      },
       password: {
         oldPassword: '',
         newPassword: '',
@@ -88,6 +105,9 @@ export default {
     ...mapGetters({
       user: 'mod_user/GET_userProfile',
     })
+  },
+  beforeDestroy() {
+     document.removeEventListener('click', this.closePasswordModal, true)
   },
   methods: {
     ...mapActions({
@@ -101,10 +121,31 @@ export default {
       cloud_userChangePassword: 'mod_apiCloud/CloudAPI_userChangePassword',
     }),
     handleDisplayPasswordModal(value) {
+      if(!value) {
+      this.$validator.pause();
+        document.removeEventListener('click', this.closePasswordModal, true)
+      }
+      else {
+        this.$validator.resume();
+        document.addEventListener('click', this.closePasswordModal, true)
+      }
       this.isChangePasswordOpened = value;
     },
+    closePasswordModal(e) {
+      const classArray = [
+        e.target.parentElement.className,
+        e.target.parentElement.parentElement.className,
+        e.target.parentElement.parentElement.parentElement.className,
+        e.target.parentElement.parentElement.parentElement.parentElement.className,
+        e.target.parentElement.parentElement.parentElement.parentElement.parentElement.className,
+      ]
+      if(classArray.indexOf('popup-new-ui') === -1) {
+        this.handleDisplayPasswordModal(false);
+      }
+    },
+    
     resetChangedValues() {
-
+      this.cloud_userGetProfile();
     },
     handleSavePassword() {
       this.validateForm('formPassword')
@@ -112,8 +153,12 @@ export default {
           if(isValid) {
             return this.cloud_userChangePassword(this.password)
           }
+          return isValid
         })
-        .then((res)=> {
+        .then((isValid)=> {
+          if(!isValid)
+          return;
+
           this.password.oldPassword = '';
           this.password.newPassword = '';
           this.password.newPasswordConfirmation = '';
@@ -121,6 +166,34 @@ export default {
           this.showInfoPopup('A new password has been changed');
           return 'A new password has been changed'
         })
+    },
+    handleSaveProfile(){
+      this.validateForm('userNames')
+        .then(isValid => {
+          if(isValid) {
+            this.cloud_userSetProfile(this.user)
+              .then(res => {
+                this.showInfoPopup('User names has been changed');
+              })
+          }
+        });
+
+      
+    },
+    editFirstName(e) {
+      let newInfo = deepCopy(this.user);
+      newInfo.firstName = e.target.value;
+      this.setUserInfo(newInfo);
+    },
+    editLastName(e) {
+      let newInfo = deepCopy(this.user);
+      newInfo.lastName = e.target.value;
+      this.setUserInfo(newInfo);
+    },
+    editEmail(e) {
+     let newInfo = deepCopy(this.user);
+      newInfo.email = e.target.value;
+      this.setUserInfo(newInfo);
     },
     validateForm(scope) {
       return this.$validator.validateAll(scope)
