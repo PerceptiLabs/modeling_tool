@@ -1,1 +1,0 @@
-api: ./manage.py runserver
