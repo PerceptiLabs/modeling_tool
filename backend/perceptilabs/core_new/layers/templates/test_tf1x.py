@@ -51,16 +51,16 @@ def test_reshape_27x1_to_3x3x3(j2_engine, sess):
     assert y.shape == (1, 3, 3, 3)
 
 def test_image_reshape_10x1_to_256x256(j2_engine, sess):
-    layer = create_layer(j2_engine, DEFINITION_TABLE, TOP_LEVEL_IMPORTS_FLAT,  layer_type='ProcessImageReshape', 
-                        shape=[256,256])
+    layer = create_layer(j2_engine, DEFINITION_TABLE, TOP_LEVEL_IMPORTS_FLAT,  layer_type='ProcessRescale', 
+                        width = 256, height = 256)
     x = tf.constant(np.random.random((1,10,1)))
 
     y = layer(x)
     assert y.shape == (256,256,1)
 
 def test_image_reshape_300x1_to_16x16(j2_engine, sess):
-    layer = create_layer(j2_engine, DEFINITION_TABLE, TOP_LEVEL_IMPORTS_FLAT,  layer_type='ProcessImageReshape', 
-                        shape=[16,16])
+    layer = create_layer(j2_engine, DEFINITION_TABLE, TOP_LEVEL_IMPORTS_FLAT,  layer_type='ProcessRescale', 
+                        width = 16, height = 16)
     x = tf.constant(np.random.random((1,300,1)))
 
     y = layer(x)

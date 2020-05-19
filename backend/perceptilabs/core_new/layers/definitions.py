@@ -175,12 +175,13 @@ DEFINITION_TABLE = {
             'from perceptilabs.core_new.serialization import can_serialize, serialize'            
         ]
     ),
-    'ProcessImageReshape': LayerDef(
+    'ProcessRescale': LayerDef(
         Tf1xLayer,
         'tf1x.j2',
         'layer_tf1x_image_reshape',        
         {
-            'shape': lambda specs: specs['Properties']['Shape']
+            'width': lambda specs: specs['Properties']['width'],
+            'height': lambda specs: specs['Properties']['height']
         },
         import_statements=[
             'import tensorflow as tf',
