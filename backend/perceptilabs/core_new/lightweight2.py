@@ -88,7 +88,10 @@ class DefaultStrategy(BaseStrategy):
 
 
 class Tf1xTempStrategy(BaseStrategy):
-    def run(self, layer_id, layer_type, layer_class, input_results, layer_spec, layer_ids_to_names):
+    def __init__(self, layer_ids_to_names):
+        self._layer_ids_to_names = layer_ids_to_names
+    
+    def run(self, layer_id, layer_type, layer_class, input_results, layer_spec):
         with tf.Graph().as_default() as graph:
             try:
                 layer_instance = layer_class()                
@@ -102,7 +105,7 @@ class Tf1xTempStrategy(BaseStrategy):
                 if value.sample is None:
                     return self.get_default()                    
                 y_batch = np.array([value.sample])
-                input_tensors[sanitize_layer_name(layer_ids_to_names[key])] = tf.constant(y_batch)
+                input_tensors[sanitize_layer_name(self._layer_ids_to_names[key])] = tf.constant(y_batch)
 
             try:
                 if len(input_tensors) <= 1:
@@ -328,7 +331,7 @@ class LightweightCore:
 
         strategy = self._get_layer_strategy(layer_class)
         if isinstance(strategy, Tf1xTempStrategy):
-            results = strategy.run(layer_id, layer_type, layer_class, input_results, layer_spec, self._layer_ids_to_names)
+            results = strategy.run(layer_id, layer_type, layer_class, input_results, layer_spec)
         elif isinstance(strategy, Tf1xStrategy):
             results = strategy.run(layer_id, layer_type, layer_class, input_results, layer_spec)
         else:
@@ -341,7 +344,7 @@ class LightweightCore:
         elif issubclass(layer_obj, DataLayer):
             strategy = DataStrategy()
         elif issubclass(layer_obj, Tf1xLayer): 
-            strategy = Tf1xTempStrategy()
+            strategy = Tf1xTempStrategy(self._layer_ids_to_names)
         else:
             strategy = DefaultStrategy()
         return strategy
