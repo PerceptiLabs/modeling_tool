@@ -1,0 +1,99 @@
+{% macro layer_datarandom(layer_name, distribution, shape, mean, stddev, minval, maxval, seed) %} 
+# import numpy as np
+class {{layer_name}}(DataLayer):
+    """Class responsible for generating random noise"""    
+    def __init__(self):
+        self._variables = {}
+        self._distribution = '{{distribution}}'
+        self._columns = []
+        self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
+
+    @property
+    def size_training(self) -> int:
+        """Returns the size of the training dataset"""                    
+        return 1
+
+    @property
+    def size_validation(self) -> int:
+        """Returns the size of the validation dataset"""
+        return 1
+
+    @property
+    def size_testing(self) -> int:
+        """Returns the size of the testing dataset"""                    
+        return 1
+
+    @property
+    def variables(self) -> Dict[str, Picklable]:
+        """Returns any variables that the layer should make available and that can be pickled."""
+        return self._variables
+
+    @property
+    def sample(self) -> np.ndarray:
+        """Returns a single data sample"""                    
+        sample = next(self.make_generator_training())
+        return sample
+
+    @property
+    def columns(self) -> List[str]:
+        """Column names. Corresponds to each column in a sample """
+        return self._columns.copy()
+              
+    def make_generator_training(self) -> Generator[np.ndarray, None, None]:
+        """Returns a sample of random noise data."""                                        
+        {% filter remove_lspaces(8) %}
+            {% if distribution == 'Normal' %}
+                def gen():
+                    np.random.seed(1234)
+                    while True:
+                        sample = np.random.normal({{mean}}, {{stddev}}, {{shape}})
+                        yield np.float32(sample)
+            {% elif distribution == 'Uniform' %}
+                def gen():
+                    np.random.seed(1234)
+                    while True:
+                        sample = np.random.uniform({{minval}}, {{maxval}}, {{shape}})
+                        yield np.float32(sample)
+            {% endif %}
+        {% endfilter %}
+        return gen()
+    
+    def make_generator_testing(self) -> Generator[np.ndarray, None, None]:
+        """Returns a sample of random noise data."""                                        
+        {% filter remove_lspaces(8) %}
+            {% if distribution == 'Normal' %}
+                def gen():
+                    np.random.seed(2350)
+                    while True:
+                        sample = np.random.normal({{mean}}, {{stddev}}, {{shape}})
+                        yield np.float32(sample)
+            {% elif distribution == 'Uniform' %}
+                def gen():
+                    np.random.seed(2350)
+                    while True:
+                        sample = np.random.uniform({{minval}}, {{maxval}}, {{shape}})
+                        yield np.float32(sample)
+            {% endif %}
+        {% endfilter %}
+        return gen()    
+        
+    def make_generator_validation(self) -> Generator[np.ndarray, None, None]:
+        """Returns a sample of random noise data."""                                        
+        {% filter remove_lspaces(8) %}
+            {% if distribution == 'Normal' %}
+                def gen():
+                    np.random.seed(2020)
+                    while True:
+                        sample = np.random.normal({{mean}}, {{stddev}}, {{shape}})
+                        yield np.float32(sample)
+            {% elif distribution == 'Uniform' %}
+                def gen():
+                    np.random.seed(2020)
+                    while True:
+                        sample = np.random.uniform({{minval}}, {{maxval}}, {{shape}})
+                        yield np.float32(sample)
+            {% endif %}
+        {% endfilter %}
+        return gen()   
+{% endmacro %}
+

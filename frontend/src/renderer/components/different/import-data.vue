@@ -39,6 +39,7 @@ import BaseAccordion    from "@/components/base/accordion.vue";
 import imageClassification    from '@/core/basic-template/image-classification.js'
 import reinforcementLearning  from '@/core/basic-template/reinforcement-learning.js'
 import timeseriesRegression   from '@/core/basic-template/timeseries-regression.js'
+import ganTemplate            from '@/core/basic-template/gan-template.js'
 
 export default {
   name: "ImportData",
@@ -78,6 +79,12 @@ export default {
             value: 'reinforcementLearning',
             template: reinforcementLearning
           },
+          {
+            text: 'GAN Template',
+            imgPath: './static/img/project-page/reinforcement-learning.svg',
+            value: 'ganTemplate',
+            template: ganTemplate
+          }
         ],
       }
     }

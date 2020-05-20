@@ -194,6 +194,15 @@ class Graph:
     def edges(self):
         return self._nx_graph.edges    
     
+    def get_nodes_inbetween(self, source, target):
+        paths_between_generator = nx.all_simple_paths(self._nx_graph, source, target)
+        nodes_between_list = [node for path in paths_between_generator for node in path]
+        return nodes_between_list[1:]
+
+#    def clone(self):
+#        layers = {n.layer_id: node.layer.__class__() for n in self.nodes}
+#        new_graph = self._builder.build(layers, self._nx_graph.edges)
+#        return new_graph
     def clone(self): 
         from perceptilabs.core_new.graph.builder import GraphBuilder
         layers = {}

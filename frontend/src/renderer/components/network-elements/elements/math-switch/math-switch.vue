@@ -5,15 +5,16 @@
     view-el(:current-el="elementData")
     template(slot="settings")
       settings-el(:current-el="elementData")
+
 </template>
 
 <script>
   import BaseNetEl    from '@/components/network-elements/net-base-element/net-base-element.vue';
-  import ViewEl       from './view-train-gan.vue';
-  import SettingsEl   from './set-train-gan';
+  import ViewEl       from './view-math-switch.vue';
+  import SettingsEl   from './set-math-switch';
 
   export default {
-    name: 'TrainGan',
+    name: 'MathSwitch',
     components: {
       BaseNetEl,
       ViewEl,

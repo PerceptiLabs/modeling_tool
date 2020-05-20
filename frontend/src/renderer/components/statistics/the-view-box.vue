@@ -36,6 +36,7 @@
 
   /*view box*/
   import DataData         from '@/components/network-elements/elements/data-data/viewBox-data-data.vue'
+  import DataRandom         from '@/components/network-elements/elements/data-random/viewBox-data-random.vue'
   import DataEnvironment  from '@/components/network-elements/elements/data-environment/viewBox-data-environment.vue'
   import DataCloud        from '@/components/network-elements/elements/data-cloud/viewBox-data-cloud.vue'
   import DeepLearningFC        from '@/components/network-elements/elements/deep-learning-fc/viewBox-deep-learning-fc.vue'
@@ -49,6 +50,7 @@
   import ProcessReshape   from '@/components/network-elements/elements/process-reshape/viewBox-process-reshape.vue'
   import MathArgmax   from '@/components/network-elements/elements/math-argmax/viewBox-math-argmax.vue'
   import MathMerge    from '@/components/network-elements/elements/math-merge/viewBox-math-merge.vue'
+  import MathSwitch    from '@/components/network-elements/elements/math-switch/viewBox-math-switch.vue'
   import MathSoftmax  from '@/components/network-elements/elements/math-softmax/viewBox-math-softmax.vue'
   import MathSplit    from '@/components/network-elements/elements/math-split/viewBox-math-split.vue'
 
@@ -62,10 +64,10 @@ export default {
     TrainNormal, TrainGenetic, TrainDynamic, TrainReinforce, TrainLoss, TrainOptimizer, TrainGan, TrainDetector, TrainRegression,
     ClassicMLDbscans, ClassicMLKMeans, ClassicMLKNN, ClassicMLRandomForest, ClassicMLSVM,
 
-    DataData, DataEnvironment, DataCloud,
+    DataData, DataEnvironment, DataCloud, DataRandom,
     DeepLearningFC, DeepLearningConv, DeepLearningDeconv, DeepLearningRecurrent,
     ProcessCrop, ProcessEmbed, ProcessGrayscale, ProcessOneHot, ProcessReshape,
-    MathArgmax, MathMerge, MathSoftmax, MathSplit,
+    MathArgmax, MathMerge, MathSoftmax, MathSplit, MathSwitch,
     ViewBoxBtnList
   },
   props: {
