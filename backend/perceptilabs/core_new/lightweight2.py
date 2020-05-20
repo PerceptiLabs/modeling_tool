@@ -330,12 +330,7 @@ class LightweightCore:
         input_results = {from_id: all_results[from_id] for (from_id, to_id) in edges_by_id if to_id == layer_id}
 
         strategy = self._get_layer_strategy(layer_class)
-        if isinstance(strategy, Tf1xTempStrategy):
-            results = strategy.run(layer_id, layer_type, layer_class, input_results, layer_spec)
-        elif isinstance(strategy, Tf1xStrategy):
-            results = strategy.run(layer_id, layer_type, layer_class, input_results, layer_spec)
-        else:
-            results = strategy.run(layer_id, layer_type, layer_class, input_results, layer_spec)
+        results = strategy.run(layer_id, layer_type, layer_class, input_results, layer_spec)
         return results
 
     def _get_layer_strategy(self, layer_obj):
