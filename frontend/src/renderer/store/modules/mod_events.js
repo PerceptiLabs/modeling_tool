@@ -8,7 +8,7 @@ import {
   shouldHideSidebar,
   calculateSidebarScaleCoefficient
 } from "@/core/helpers";
-import { pathSlash } from "@/core/constants";
+import { MODAL_PAGE_SIGN_UP , pathSlash} from "@/core/constants";
 
 let ipcRenderer = null;
 
@@ -149,7 +149,8 @@ const actions = {
     dispatch('mod_user/RESET_userToken', null, {root: true});
     dispatch('mod_workspace/RESET_network', null, {root: true});
     dispatch('mod_tutorials/offTutorial', null, {root: true});
-    router.replace({name: 'login'});
+    router.replace({name: 'projects'});
+    dispatch('modal_pages/setActivePageAction', MODAL_PAGE_SIGN_UP, {root: true});
   },
   EVENT_appClose({dispatch, rootState, rootGetters}, event) {
     if(isWeb()) {

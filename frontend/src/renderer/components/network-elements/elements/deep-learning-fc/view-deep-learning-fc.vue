@@ -3,7 +3,7 @@
   data-component="DeepLearningFC"
   data-layer="Fully Connected"
   data-type="Other"
-  v-tooltip:right="'Fully Connected'"
+  v-tooltip:networkElement="'Fully Connected'"
   v-tooltip-interactive:right="interactiveInfo"
   id="tutorial_fully-connected"
     :style="layerStyles"

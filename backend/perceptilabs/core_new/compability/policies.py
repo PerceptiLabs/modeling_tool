@@ -11,6 +11,325 @@
 import numpy as np
 import cv2
 
+def policy_regression(core, graphs, sanitized_to_name, sanitized_to_id, results):
+
+
+    def get_layer_inputs_and_outputs(graph, node, trn_node):
+        data = {}
+        data['Y'] = trn_node.layer.layer_outputs.get(node.layer_id) # OUTPUT: ndarrays of layer-speci
+        data['X'] = {} # This layer works with layer names...
+        for input_node in graph.get_input_nodes(node):
+            input_name = sanitized_to_name[input_node.layer_id]
+            input_value = trn_node.layer.layer_outputs.get(input_node.layer_id)
+            data['X'][input_name] = {'Y': input_value}
+        return data
+    
+    def get_layer_weights_and_biases(node, trn_node):
+        data = {}        
+        w = next(iter(trn_node.layer.layer_weights.get(node.layer_id, {}).values()), None) # Get the first set of weights, if any
+        if w is not None:
+            data['W'] = w
+
+        b = next(iter(trn_node.layer.layer_biases.get(node.layer_id, {}).values()), None)
+        if b is not None:
+            data['b'] = b
+        return data
+
+    def get_layer_gradients(layer_id, true_id, graphs, results):
+        data = {}
+        
+        if 'trainDict' in results:
+            min_list = results['trainDict'][true_id]['Gradient']['Min'] 
+            max_list = results['trainDict'][true_id]['Gradient']['Max']
+            avg_list = results['trainDict'][true_id]['Gradient']['Average']
+        else:
+            min_list = []
+            max_list = []
+            avg_list = []
+        
+        for graph in graphs:
+            gradient_dict = graph.active_training_node.layer.layer_gradients.get(layer_id, {})
+
+            # (1) compute the min, max and average for gradients w.r.t each tensor in a layer
+            # (2) compute min, max and average among the output of (1)
+            # is there a more meaningful way to do it?
+            layer_min_list, layer_max_list, layer_avg_list = [], [], []
+            for name, grad in gradient_dict.items():
+                grad = np.asarray(grad)
+                layer_min_list.append(np.min(grad))
+                layer_max_list.append(np.max(grad))
+                layer_avg_list.append(np.average(grad))
+
+            if len(gradient_dict) > 0:
+                min_list.append(np.min(layer_min_list))
+                max_list.append(np.max(layer_max_list))
+                avg_list.append(np.average(layer_avg_list))
+            
+
+        data['Gradient'] = {
+            'Min': min_list,
+            'Max': max_list,
+            'Average': avg_list
+        }
+        return data
+
+    def get_metrics(graphs, true_trn_id, results):
+        data = {}
+        x = np.random.random((60,)) # TODO: these are temporary whiel figuring out F1 and AUC
+        y = np.random.random((10,))
+
+        # ---- Get the metrics for ongoing epoch
+        current_epoch = graphs[-1].active_training_node.layer.epoch
+
+        if 'trainDict' in results:
+            r_sq_trn_iter = results['trainDict'][true_trn_id]["r_sq_train_iter"] 
+            loss_trn_iter = results['trainDict'][true_trn_id]["loss_train_iter"] 
+            mse_trn_iter = results['trainDict'][true_trn_id]["mse_train_iter"] 
+            sq_variance_trn_iter = results['trainDict'][true_trn_id]["sq_variance_train_iter"] 
+
+            r_sq_val_iter = results['trainDict'][true_trn_id]["r_sq_validation_iter"] 
+            loss_val_iter = results['trainDict'][true_trn_id]["loss_validation_iter"] 
+            mse_val_iter = results['trainDict'][true_trn_id]["mse_validation_iter"] 
+            sq_variance_val_iter = results['trainDict'][true_trn_id]["sq_variance_validation_iter"] 
+
+            # inputs = results['trainDict'][true_trn_id]["inputs"] 
+            # outputs = results['trainDict'][true_trn_id]["outputs"] 
+
+        else:
+            r_sq_trn_iter = []
+            loss_trn_iter = []
+            mse_trn_iter = []
+            sq_variance_trn_iter = [] 
+
+            r_sq_val_iter = [] 
+            loss_val_iter = []
+            mse_val_iter = []
+            sq_variance_val_iter = []
+
+
+        for graph in graphs:
+            trn_layer = graph.active_training_node.layer
+            if trn_layer.epoch == current_epoch and trn_layer.status == 'training':
+                r_sq_trn_iter.append(trn_layer.r_squared_training)
+                loss_trn_iter.append(trn_layer.loss_training)   
+                mse_trn_iter.append(trn_layer.squared_error_training)              
+                sq_variance_trn_iter.append(trn_layer.squared_variance_training) 
+             
+
+            if trn_layer.epoch == current_epoch and trn_layer.status == 'validation':
+                r_sq_val_iter.append(trn_layer.r_squared_validation)
+                loss_val_iter.append(trn_layer.loss_validation)   
+                mse_val_iter.append(trn_layer.squared_error_validation)              
+                sq_variance_val_iter.append(trn_layer.squared_variance_validation) 
+
+            # inputs.append(trn_layer.inputs)
+            # outputs.append(trn_layer.outputs)                   
+
+        # ---- Get the metrics from the end of each epoch
+
+
+        if 'trainDict' in results:
+            r_sq_trn_epoch = results['trainDict'][true_trn_id]["r_sq_train_epoch"] 
+            loss_trn_epoch = results['trainDict'][true_trn_id]["loss_train_epoch"] 
+            mse_trn_epoch = results['trainDict'][true_trn_id]["mse_train_epoch"] 
+            sq_variance_trn_epoch = results['trainDict'][true_trn_id]["sq_variance_train_epoch"] 
+
+            r_sq_val_epoch = results['trainDict'][true_trn_id]["r_sq_validation_epoch"] 
+            loss_val_epoch = results['trainDict'][true_trn_id]["loss_validation_epoch"] 
+            mse_val_epoch = results['trainDict'][true_trn_id]["mse_validation_epoch"] 
+            sq_variance_val_epoch = results['trainDict'][true_trn_id]["sq_variance_validation_epoch"] 
+
+        else:
+            r_sq_trn_epoch = []
+            loss_trn_epoch = []
+            mse_trn_epoch = []
+            sq_variance_trn_epoch = [] 
+
+            r_sq_val_epoch = [] 
+            loss_val_epoch = []
+            mse_val_epoch = []
+            sq_variance_val_epoch = []
+
+        idx = 1
+        while idx < len(graphs):
+
+            is_new_epoch = graphs[idx].active_training_node.layer.epoch != graphs[idx-1].active_training_node.layer.epoch
+            #is_final_iteration = idx == len(graphs) - 1
+            is_final_iteration = False
+
+            if is_new_epoch or is_final_iteration:
+                trn_layer = graphs[idx-1].active_training_node.layer                                                
+                loss_trn_epoch.append(trn_layer.loss_training)
+                r_sq_trn_epoch.append(trn_layer.r_squared_training)
+                mse_trn_epoch.append(trn_layer.squared_error_training)
+                sq_variance_trn_epoch.append(trn_layer.squared_variance_training)
+                # TODO: f1 and auc train
+                
+                loss_val_epoch.append(trn_layer.loss_validation)
+                r_sq_val_epoch.append(trn_layer.r_squared_validation)
+                mse_val_epoch.append(trn_layer.squared_error_validation)
+                sq_variance_val_epoch.append(trn_layer.squared_variance_validation)
+                # TODO: f1 and auc val
+            idx += 1
+
+        # ---- Update the dicts
+        data['loss_train_iter'] = loss_trn_iter
+        data['r_sq_train_iter'] = r_sq_trn_iter
+        data['mse_train_iter'] = mse_trn_iter
+        data['sq_variance_train_iter'] = sq_variance_trn_iter
+        
+        data['loss_validation_iter'] = loss_val_iter
+        data['r_sq_validation_iter'] = r_sq_val_iter
+        data['mse_validation_iter'] = mse_val_iter
+        data['sq_variance_validation_iter'] = sq_variance_val_iter       
+                
+        data['loss_train_epoch'] = loss_trn_epoch
+        data['r_sq_train_epoch'] = r_sq_trn_epoch
+        data['mse_train_epoch'] = mse_trn_epoch
+        data['sq_variance_train_epoch'] = sq_variance_trn_epoch
+        
+        data['loss_validation_epoch'] = loss_val_epoch
+        data['r_sq_validation_epoch'] = r_sq_val_epoch
+        data['mse_validation_epoch'] = mse_val_epoch
+        data['sq_variance_validation_epoch'] = sq_variance_val_epoch        
+
+        return data
+
+    current_graph = graphs[-1]
+
+    test_graphs = []
+    for graph in graphs:
+        if graph.active_training_node.layer.status == 'testing':
+            test_graphs.append(graph)
+    
+    if len(test_graphs)==0:
+        trn_node = current_graph.active_training_node
+        train_dict = {}        
+
+        # ----- Get layer specific data.
+        for node in current_graph.nodes:
+            data = {}
+            true_id = sanitized_to_id[node.layer_id] # nodes use spec names for layer ids
+
+            if node.layer.variables is not None:
+                data.update(node.layer.variables)
+            data.update(get_layer_inputs_and_outputs(current_graph, node, trn_node))
+            data.update(get_layer_weights_and_biases(node, trn_node))
+            data.update(get_layer_gradients(node.layer_id, true_id, graphs, results))
+            train_dict[true_id] = data
+
+        # ----- Get data specific to the training layer.
+        data = {}        
+        true_trn_id = sanitized_to_id[trn_node.layer_id]
+        data.update(get_metrics(graphs, true_trn_id, results))
+        train_dict[true_trn_id].update(data)
+
+        itr = 0
+        max_itr = 0
+        epoch = 0
+        max_epoch = -1
+        itr_trn = 0
+        max_itr_trn = -1
+        max_itr_val = -1
+        max_itr = -1
+
+        batch_size = trn_node.layer.batch_size
+        if trn_node.layer.size_training and trn_node.layer.size_validation and batch_size:
+            max_itr_trn = np.ceil(trn_node.layer.size_training/batch_size)
+            max_itr_val = np.ceil(trn_node.layer.size_validation/batch_size)
+            max_itr = max_itr_trn + max_itr_val
+
+        if trn_node.layer.training_iteration is not None and trn_node.layer.validation_iteration is not None:
+            itr = trn_node.layer.training_iteration + trn_node.layer.validation_iteration
+        else:
+            itr = 0
+                    
+        training_status = 'Waiting'
+        if trn_node.layer.status == 'created':
+            training_status = 'Waiting'
+        elif trn_node.layer.status in ['initializing', 'training']:
+            training_status = 'Training'
+        elif trn_node.layer.status == 'validation':
+            training_status = 'Validation'
+        elif trn_node.layer.status == 'finished':
+            training_status = 'Finished'
+
+        if core.is_paused:
+            status = 'Paused'
+        else:
+            status = 'Running'
+
+        result_dict = {
+            "iter": itr,
+            "maxIter": max_itr,
+            "epoch": epoch,
+            "maxEpochs": max_epoch,
+            "batch_size": batch_size,
+            "trainingIterations": trn_node.layer.training_iteration,
+            "trainDict": train_dict,
+            "trainingStatus": training_status,  
+            "status": status,
+            "progress": trn_node.layer.progress
+        }
+
+        # import pdb
+        # pdb.set_trace()
+        return result_dict
+
+    else:
+        test_dicts = []
+        for current_graph in test_graphs:
+            trn_node = current_graph.active_training_node
+            test_dict = {}
+            for node in current_graph.nodes:
+                data = {}
+                true_id = sanitized_to_id[node.layer_id] # nodes use spec names for layer ids
+                data.update(get_layer_inputs_and_outputs(current_graph, node, trn_node))
+                test_dict[true_id] = data
+            
+            training_status = 'Finished'
+            status='Running'
+            test_status='Waiting'
+
+            # if trn_node.layer.size_testing and trn_node.layer.batch_size:
+            max_itr_tst = trn_node.layer.size_testing
+
+            true_id = sanitized_to_id[trn_node.layer_id]            
+
+                    
+            test_dict[true_id]['loss_validation_epoch'] = 0
+            test_dict[true_id]['mse_validation_epoch'] = 0
+            test_dict[true_id]['r_sq_validation_epoch'] = 0
+            test_dict[true_id]['sq_variance_validation_epoch'] = 0
+
+            test_dict[true_id]['loss_train_epoch'] = 0
+            test_dict[true_id]['mse_train_epoch'] = 0
+            test_dict[true_id]['r_sq_train_epoch'] = 0
+            test_dict[true_id]['sq_variance_train_epoch'] = 0
+                    
+            test_dict[true_id]['loss_validation_iter'] = 0
+            test_dict[true_id]['mse_validation_iter'] = 0
+            test_dict[true_id]['r_sq_validation_iter'] = 0
+            test_dict[true_id]['sq_variance_validation_iter'] = 0
+
+            test_dict[true_id]['loss_train_iter'] = 0
+            test_dict[true_id]['mse_train_iter'] = 0
+            test_dict[true_id]['r_sq_train_iter'] = 0
+            test_dict[true_id]['sq_variance_train_iter'] = 0
+
+            test_dicts.append(test_dict)
+
+        result_dict = {
+            "maxTestIter": max_itr_tst,
+            "testDicts": test_dicts,
+            "trainingStatus": training_status,
+            "testStatus": test_status,           
+            "status": status
+        }
+
+
+        return result_dict
+
 def policy_classification(core, graphs, sanitized_to_name, sanitized_to_id, results):
 
 
@@ -151,6 +470,7 @@ def policy_classification(core, graphs, sanitized_to_name, sanitized_to_id, resu
 
         idx = 1
         while idx < len(graphs):
+
             is_new_epoch = graphs[idx].active_training_node.layer.epoch != graphs[idx-1].active_training_node.layer.epoch
             #is_final_iteration = idx == len(graphs) - 1
             is_final_iteration = False
@@ -248,7 +568,7 @@ def policy_classification(core, graphs, sanitized_to_name, sanitized_to_id, resu
         elif trn_node.layer.status == 'finished':
             training_status = 'Finished'
 
-        if core.is_paused:
+        if core.is_training_paused:
             status = 'Paused'
         else:
             status = 'Running'
@@ -632,7 +952,7 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id, re
         elif trn_node.layer.status == 'finished':
             training_status = 'Finished'
 
-        if core.is_paused:
+        if core.is_training_paused:
             status = 'Paused'
         else:
             status = 'Running'
@@ -652,7 +972,7 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id, re
         return result_dict
 
     else:
-        test_dicts = results.get('testDicts', []) # get existing        
+        test_dicts = results.get('testDicts', []) # get existing
         for current_graph in test_graphs:
             trn_node = current_graph.active_training_node
             test_dict = {}
@@ -872,7 +1192,7 @@ def policy_reinforce(core, graphs, sanitized_to_name, sanitized_to_id, results):
         elif trn_node.layer.status == 'finished':
             training_status = 'Finished'
 
-        if core.is_paused:
+        if core.is_training_paused:
             status = 'Paused'
         else:
             status = 'Running'

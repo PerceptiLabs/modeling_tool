@@ -24,7 +24,7 @@ export default {
   }
   .loading-status_box{
     background: $col-txt2;
-    width: 49rem;
+    width: 100%;
     border-radius: 20px;
     position: relative;
     height: 0.4rem;

@@ -16,6 +16,9 @@ $triangleWith: 10px;
 		&.tooltip--bottom {
 			transform: translate(-50%, 0%) rotateY(0deg);
 		}
+		&.tooltip--networkElement {
+			transform: translate(-50%, 0%) rotateY(0deg);
+		}
 	}
 }
 
@@ -67,6 +70,25 @@ $triangleWith: 10px;
 		box-shadow: -1px -1px 1px rgba(#000, .5);
 	}
 }
+
+.tooltip--networkElement {
+	top: 100%;
+	left: 50%;
+	margin-top: $margin-tooltip;
+	transform: translate(-50%, 0%) rotateY(90deg);
+	background: #1C1C1E;
+	border: 0.5px solid #363E51;
+	box-sizing: border-box;
+	box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+	border-radius: 2px;
+	color: #C4C4C4;
+	font-family: 'Nunito Sans';
+	font-size: 10px;
+	&:before {
+		content: none;
+	}
+}
+
 
 .tooltip-tutorial {
   font-size: 1.4rem;

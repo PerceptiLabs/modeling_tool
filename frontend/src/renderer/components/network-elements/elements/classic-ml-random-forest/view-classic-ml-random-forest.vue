@@ -4,7 +4,7 @@
     data-component="ClassicMLRandomForest"
     data-layer="Random Forest"
     data-type="Training"
-    v-tooltip:right="'Random Forest'"
+    v-tooltip:networkElement="'Random Forest'"
     v-tooltip-interactive:right="interactiveInfo.MLRandomForest"
     :style="layerStyles"
   )

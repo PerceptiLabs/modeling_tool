@@ -3,7 +3,7 @@
     data-component="TrainReinforce"
     data-layer="Reinforcement Learning"
     data-type="Training"
-    v-tooltip:right="'Reinforcement Learning'"
+    v-tooltip:networkElement="'Reinforcement Learning'"
     v-tooltip-interactive:right="interactiveInfo"
     :style="layerStyles"
   )

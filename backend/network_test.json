@@ -1,0 +1,145 @@
+{
+    "Layers": {
+        "1564399775664": {
+            "Name": "Data_1",
+            "Type": "DataData",
+            "checkpoint": [],
+            "endPoints": [],
+            "Properties": {
+                "Type": "Data",
+                "testInfoIsInput": true,
+                "accessProperties": {
+                    "Columns": "",
+                    "Dataset_size": "",
+                    "Category": "Local",
+                    "Type": "Data",
+                    "Sources": [
+                        {
+                            "type": "file",
+                            "path": "/Users/adilsalhotra/Developer/PerceptiLabs/backend/perceptilabs/tutorial_data/linreg_inputs.npy"
+                        }
+                    ],
+                    "PathFake": [],
+                    "Partition_list": [
+                        [
+                            70,
+                            20,
+                            10
+                        ]
+                    ],
+                    "Batch_size": 10,
+                    "Shuffle_data": true,
+                    "Action_space": ""
+                }
+            },
+            "Code": null,
+            "backward_connections": [],
+            "forward_connections": [
+                [
+                    "1564399782856",
+                    "Fully Connected_1"
+                ]
+            ]
+        },
+        "1564399782856": {
+            "Name": "Fully Connected_1",
+            "Type": "DeepLearningFC",
+            "checkpoint": [],
+            "endPoints": [],
+            "Properties": {
+                "Neurons": "1",
+                "Activation_function": "",
+                "Dropout": false,
+                "Keep_prob": "1"
+            },
+            "Code": null,
+            "backward_connections": [
+                [
+                    "1564399775664",
+                    "Data_1"
+                ]
+            ],
+            "forward_connections": [
+                [
+                    "1564399790363",
+                    "Reg_1"
+                ]
+            ]
+        },
+        "1564399786876": {
+            "Name": "Data_2",
+            "Type": "DataData",
+            "checkpoint": [],
+            "endPoints": [],
+            "Properties": {
+                "Type": "Data",
+                "testInfoIsInput": true,
+                "accessProperties": {
+                    "Columns": "",
+                    "Dataset_size": "",
+                    "Category": "Local",
+                    "Type": "Data",
+                    "Sources": [
+                        {
+                            "type": "file",
+                            "path": "/Users/adilsalhotra/Developer/PerceptiLabs/backend/perceptilabs/tutorial_data/linreg_outputs.npy"
+                        }
+                    ],
+                    "PathFake": [],
+                    "Partition_list": [
+                        [
+                            70,
+                            20,
+                            10
+                        ]
+                    ],
+                    "Batch_size": 10,
+                    "Shuffle_data": true,
+                    "Action_space": ""
+                }
+            },
+            "Code": null,
+            "backward_connections": [],
+            "forward_connections": [
+                [
+                    "1564399790363",
+                    "Reg_1"
+                ]
+            ]
+        },
+
+        "1564399790363": {
+            "Name": "Reg_1",
+            "Type": "TrainRegression",
+            "checkpoint": [],
+            "endPoints": [],
+            "Properties": {
+                "Labels": "1564399786876",
+                "Epochs": "200",
+                "N_class": "1",
+                "Loss": "Mean Absolute Error",
+                "Class_weights": "1",
+                "Learning_rate": "0.001",
+                "Optimizer": "SGD",
+                "Beta_1": "0.9",
+                "Beta_2": "0.999",
+                "Momentum": "0.9",
+                "Decay_steps": "100000",
+                "Decay_rate": "0.96",
+                "Training_iters": "20000"
+            },
+            "Code": null,
+            "backward_connections": [
+                [
+                    "1564399782856",
+                    "Fully Connected_1"
+                ],
+                [
+                    "1564399786876",
+                    "Data_2"
+                ]
+            ],
+            "forward_connections": []
+        }
+    }
+}

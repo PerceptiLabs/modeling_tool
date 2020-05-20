@@ -34,20 +34,53 @@
 }
 
 .workspace_tab {
+  min-width: 12rem;
   display: flex;
   align-items: center;
 
   flex: 1 1 16rem;
   padding-right: 0;
-  margin-left: 1rem;
+  margin-right: 0.5rem;
 
-  &.bookmark_tab {
-    margin-right: 0;
+  background-color: transparent;
+  border: 1px solid $toolbar-separator-color;
+  border-top: 1px solid $toolbar-separator-color;
+  border-bottom: 0;
+  border-radius: 2px 2px 0px 0px;
+  
+  cursor: pointer;
+
+  &.workspace_tab--active_network {
+    border-top: 2px solid $toolbar-separator-color;
   }
 
   &.workspace_tab--disable {
     pointer-events: none;
   }
+
+  &.workspace_tab--active {
+    border-top: 2px solid $color-6;
+    background-color: $bg-toolbar-2;
+  }
+
+  &.tab_statistics,
+  &.tab_testing {
+    padding: 0 2rem;
+    width: 12rem;
+    display: flex;
+    justify-content: space-around;
+  }
+
+  &.tab_icon {
+    display: flex;
+    justify-content: center;
+    padding: 0;
+    min-width: 0;
+    width: 1rem;
+    border-top: 1px solid $toolbar-separator-color;
+    background-color: transparent;
+  }
+
 }
 
 .tab_close {
@@ -69,20 +102,11 @@
   white-space: nowrap;
 }
 .tab_statistics {
-  height: 100%;
-  padding: .25em 1.7em;
-  border-radius: 1rem 1rem 0 0;
   font-size: 1rem;
-  min-width: auto;
   .icon {
     font-size: 1.2em;
   }
   &.tab--testing {
-    border-left: 1px solid;
-    margin-left: -1.25rem;
-    padding-left: .8em;
-    padding-right: .8em;
-    margin-right: 0;
     &.active, &:hover {
       background: $color-10;
       color: $bg-toolbar;
