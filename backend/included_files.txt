@@ -98,10 +98,10 @@ perceptilabs/core_new/communication/deployment.py
 perceptilabs/core_new/communication/zmq.py
 perceptilabs/core_new/communication/task_executor.py
 
-# perceptilabs/core_new/compability
-perceptilabs/core_new/compability/__init__.py
-perceptilabs/core_new/compability/base.py
-perceptilabs/core_new/compability/policies.py
+# perceptilabs/core_new/compatibility
+perceptilabs/core_new/compatibility/__init__.py
+perceptilabs/core_new/compatibility/base.py
+perceptilabs/core_new/compatibility/policies.py
 
 # perceptilabs/core_new/data
 perceptilabs/core_new/data/__init__.py

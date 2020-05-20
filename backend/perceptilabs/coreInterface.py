@@ -272,7 +272,7 @@ class coreLogic():
                 self.core = DistributedCore(CodeHq, graph_dict, data_container, session_history, module_provider,
                                             error_handler, session_proc_handler, checkpointValues)
         elif self._core_mode == 'v2':
-            from perceptilabs.core_new.compability import CompabilityCore
+            from perceptilabs.core_new.compatibility import CompatibilityCore
             from perceptilabs.messaging.zmq_wrapper import ZmqMessagingFactory            
             from perceptilabs.core_new.graph.builder import GraphBuilder
             from perceptilabs.core_new.layers.script import ScriptFactory
@@ -285,7 +285,7 @@ class coreLogic():
             script_factory = ScriptFactory()
             messaging_factory = ZmqMessagingFactory()
             
-            self.core = CompabilityCore(
+            self.core = CompatibilityCore(
                 self.commandQ,
                 self.resultQ,
                 graph_builder,

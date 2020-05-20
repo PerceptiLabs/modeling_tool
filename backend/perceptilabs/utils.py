@@ -25,7 +25,7 @@ def line_nums(text):
     return new_text
 
 
-add_line_numbering = lambda x: line_nums(x) # backwards compability
+add_line_numbering = lambda x: line_nums(x) # backwards compatibility
 
 
 def dump_system_info(path):
