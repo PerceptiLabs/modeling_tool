@@ -456,10 +456,10 @@ DEFINITION_TABLE = {
             'import numpy as np',
             'import time',
             'import os',
-            'from typing import Dict, List, Generator',
+            'from typing import Dict, List, Generator, Any',
             'from perceptilabs.core_new.utils import Picklable, YieldLevel',
             'from perceptilabs.core_new.graph import Graph',
-            'from perceptilabs.core_new.layers.base import ClassificationLayer, Tf1xLayer',
+            'from perceptilabs.core_new.layers.base import ClassificationLayer, Tf1xLayer, InnerLayer',
             'from perceptilabs.core_new.serialization import can_serialize, serialize',
             'from tensorflow.python.training.tracking.base import Trackable'            
         ]
