@@ -303,7 +303,6 @@ class ScriptFactory:
         
     def _fetch_parameters(self, layer_spec, macro_parameters):
         results = {}
-        
         for key, value in macro_parameters.items():
             if key == 'layer_name':
                 # Reserved. Always present.

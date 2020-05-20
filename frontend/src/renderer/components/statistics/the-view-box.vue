@@ -48,6 +48,7 @@
   import ProcessGrayscale from '@/components/network-elements/elements/process-grayscale/viewBox-process-grayscale.vue'
   import ProcessOneHot    from '@/components/network-elements/elements/process-one-hot/viewBox-process-one-hot.vue'
   import ProcessReshape   from '@/components/network-elements/elements/process-reshape/viewBox-process-reshape.vue'
+  import ProcessRescale   from '@/components/network-elements/elements/process-rescale/viewBox-process-rescale.vue'
   import MathArgmax   from '@/components/network-elements/elements/math-argmax/viewBox-math-argmax.vue'
   import MathMerge    from '@/components/network-elements/elements/math-merge/viewBox-math-merge.vue'
   import MathSwitch    from '@/components/network-elements/elements/math-switch/viewBox-math-switch.vue'
@@ -66,7 +67,7 @@ export default {
 
     DataData, DataEnvironment, DataCloud, DataRandom,
     DeepLearningFC, DeepLearningConv, DeepLearningDeconv, DeepLearningRecurrent,
-    ProcessCrop, ProcessEmbed, ProcessGrayscale, ProcessOneHot, ProcessReshape,
+    ProcessCrop, ProcessEmbed, ProcessGrayscale, ProcessOneHot, ProcessReshape, ProcessRescale,
     MathArgmax, MathMerge, MathSoftmax, MathSplit, MathSwitch,
     ViewBoxBtnList
   },

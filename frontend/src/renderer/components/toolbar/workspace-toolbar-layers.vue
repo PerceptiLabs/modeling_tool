@@ -56,6 +56,7 @@
   import ProcessGrayscale     from '@/components/network-elements/elements/process-grayscale/view-process-grayscale.vue'
   import ProcessOneHot        from '@/components/network-elements/elements/process-one-hot/view-process-one-hot.vue'
   import ProcessReshape       from '@/components/network-elements/elements/process-reshape/view-process-reshape.vue'
+  import ProcessRescale       from '@/components/network-elements/elements/process-rescale/view-process-rescale.vue'
 
   import TrainNormal          from '@/components/network-elements/elements/train-normal/view-train-normal.vue'
   import TrainGenetic         from '@/components/network-elements/elements/train-genetic/view-train-genetic.vue'
@@ -86,7 +87,7 @@ export default {
   components: {
     DataData, DataEnvironment, DataCloud,
     DeepLearningFC, DeepLearningConv, DeepLearningDeconv, DeepLearningRecurrent,
-    ProcessCrop, ProcessEmbed, ProcessGrayscale, ProcessOneHot, ProcessReshape,
+    ProcessCrop, ProcessEmbed, ProcessGrayscale, ProcessOneHot, ProcessReshape, ProcessRescale,
     TrainNormal, TrainGenetic, TrainDynamic, TrainReinforce, TrainLoss, TrainOptimizer, TrainGan, TrainDetector,
     MathArgmax, MathMerge, MathSoftmax, MathSplit,
     ClassicMLDbscans, ClassicMLKMeans, ClassicMLKNN, ClassicMLRandomForest, ClassicMLSVM,
@@ -119,7 +120,7 @@ export default {
           iconClass: 'icon-settings',
           childListClass: '',
           showEl: false,
-          networkElements: ['process-reshape', 'process-embed', 'process-grayscale', 'ProcessOneHot', 'process-crop'],
+          networkElements: ['process-reshape', 'process-embed', 'process-grayscale', 'ProcessOneHot', 'process-crop', 'process-rescale'],
           id:'tutorial_processing'
           //networkElements: ['process-reshape', 'process-embed', 'process-grayscale', 'process-hot']
         },

@@ -981,7 +981,8 @@ class coreLogic():
             #                                           {"color":"#6b8ff7"}])
             #     output = {"Gradients": dataObj}
                 # return output
-        elif layerType in ["MathMerge", "MathSoftmax", "MathArgmax", "MathSwitch", "ProcessOneHot", "ProcessCrop", "ProcessReshape"]:
+
+        elif layerType in ["MathMerge", "MathSoftmax", "MathArgmax", "MathSwitch", "ProcessOneHot", "ProcessCrop", "ProcessReshape", "ProcessRescale"]:
             D=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})[-1]
             output = createDataObject([np.squeeze(D)])
             return {"Output":output}

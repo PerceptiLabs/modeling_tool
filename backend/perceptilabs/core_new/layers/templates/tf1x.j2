@@ -151,11 +151,11 @@ class {{layer_name}}(Tf1xLayer):
         return {}        
 {% endmacro %}
 
-{% macro layer_tf1x_image_reshape(layer_name, shape) %}
+{% macro layer_tf1x_image_reshape(layer_name, width, height) %}
 class {{layer_name}}(Tf1xLayer):
     def __call__(self, x: tf.Tensor) -> tf.Tensor:
         """Takes an image and reshapes it."""
-        y = tf.image.resize(x, {{shape}}, method=tf.image.ResizeMethod.NEAREST_NEIGHBOR, preserve_aspect_ratio=False)
+        y = tf.image.resize(x, [{{height}}, {{width}}], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR, preserve_aspect_ratio=False)
 
         return y
 
