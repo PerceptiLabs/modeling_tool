@@ -799,7 +799,22 @@ class coreLogic():
                 loss_train=self.getStatistics({"layerId":id_, "variable":"loss_training_epoch","innervariable":""})
                 loss_val=self.getStatistics({"layerId":id_, "variable":"loss_validation_epoch","innervariable":""})
                 end_results.update({"acc_train":float(acc_train[-1]*100), "acc_val":float(acc_val[-1]*100), "loss_train":float(loss_train[-1]), "loss_val":float(loss_val[-1])})
-
+            elif value["Info"]["Type"]=="TrainDetector":
+                acc_train=self.getStatistics({"layerId":id_, "variable":"acc_training_epoch","innervariable":""})
+                acc_val=self.getStatistics({"layerId":id_, "variable":"acc_validation_epoch","innervariable":""})
+                loss_train=self.getStatistics({"layerId":id_, "variable":"loss_training_epoch","innervariable":""})
+                loss_val=self.getStatistics({"layerId":id_, "variable":"loss_validation_epoch","innervariable":""})
+                end_results.update({"acc_train":float(acc_train[-1]*100), "acc_val":float(acc_val[-1]*100), "loss_train":float(loss_train[-1]), "loss_val":float(loss_val[-1])})
+            elif value["Info"]["Type"]=="TrainReinforce":
+                loss_train=self.getStatistics({"layerId":id_, "variable":"loss_training_episode","innervariable":""})
+                reward_train=self.getStatistics({"layerId":id_, "variable":"reward_training_episode","innervariable":""})
+                end_results.update({"loss_train":float(loss_train[-1]), "reward_train":float(reward_train[-1])})
+            elif value["Info"]["Type"]=="TrainGAN":
+                gen_loss_train=self.getStatistics({"layerId":id_, "variable":"gen_loss_training_epoch","innervariable":""})
+                gen_loss_val=self.getStatistics({"layerId":id_, "variable":"gen_loss_validation_epoch","innervariable":""})
+                dis_loss_train=self.getStatistics({"layerId":id_, "variable":"dis_loss_training_epoch","innervariable":""})
+                dis_loss_val=self.getStatistics({"layerId":id_, "variable":"dis_loss_validation_epoch","innervariable":""})
+                end_results.update({"gen_loss_train":float(gen_loss_train[-1]), "gen_loss_val":float(gen_loss_val[-1]), "dis_loss_train":float(dis_loss_train[-1]), "dis_loss_val":float(dis_loss_val[-1])})
             if value["Info"]["Type"]=="TrainRegression":
                 r_sq_train=self.getStatistics({"layerId":id_, "variable":"r_sq_train_epoch","innervariable":""})
                 r_sq_val=self.getStatistics({"layerId":id_, "variable":"r_sq_validation_epoch","innervariable":""})
@@ -820,6 +835,14 @@ class coreLogic():
             D=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})           
             dataObj = createDataObject([D[-1]])      
             return {"Data":dataObj}
+        elif layerType=="DataRandom":
+            D=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})           
+            dataObj = createDataObject([D[-1]])      
+            return {"Data":dataObj}
+        # elif layerType=="MathSwitch":
+        #     D=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})           
+        #     dataObj = createDataObject([D[-1]])      
+        #     return {"Data":dataObj}
         elif layerType=="DeepLearningFC":
             if view=="Output":
                 D=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})[-1]
@@ -958,7 +981,7 @@ class coreLogic():
             #                                           {"color":"#6b8ff7"}])
             #     output = {"Gradients": dataObj}
                 # return output
-        elif layerType in ["MathMerge", "MathSoftmax", "MathArgmax", "ProcessOneHot", "ProcessCrop", "ProcessReshape"]:
+        elif layerType in ["MathMerge", "MathSoftmax", "MathArgmax", "MathSwitch", "ProcessOneHot", "ProcessCrop", "ProcessReshape"]:
             D=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})[-1]
             output = createDataObject([np.squeeze(D)])
             return {"Output":output}
@@ -1569,39 +1592,25 @@ class coreLogic():
                                                    nameList=['Validation', 'Training'])
                 output = {"Current": dataObjectCurrent, "Total": dataObjectTotal}
                 return output
+            if view == "Images":
+                generated_sample=self.getStatistics({"layerId":layerId,"variable":"generated_image","innervariable":""})
 
-            if view=="Generated_output":
-                generated_sample=self.getStatistics({"layerId":layerId,"variable":"gen_output_train","innervariable":""})
+                dataObjectOutput = createDataObject([generated_sample])
+                
+                real_sample=self.getStatistics({"layerId":layerId,"variable":"real_image","innervariable":""})
 
-                dataObjectOutput = createDataObject(generated_sample)
+                dataObjectInput = createDataObject([real_sample])
             
     
-                output = {"generated_output": dataObjectOutput}
+                output = { "Real_Input":dataObjectInput, "Generated_Output": dataObjectOutput}
+
                 return output
-
-            if view=="Real_input":
-                real_sample=self.getStatistics({"layerId":layerId,"variable":"real_input_train","innervariable":""})
-
-                dataObjectOutput = createDataObject(real_sample)
             
+            if view=="Data_distribution":
+                data_distribution = self.getStatistics({"layerId":layerId,"variable":"data_distribution","innervariable":""})
+                dataObjectOutput = createDataObject([data_distribution])
     
-                output = {"real_input": dataObjectOutput}
-                return output
-            
-            if view=="Generator_distribution":
-                generator_distribution = self.getStatistics({"layerId":layerId,"variable":"generator_distribution","innervariable":""})
-
-                dataObjectOutput = createDataObject(generator_distribution)
-    
-                output = {"generator_distribution": dataObjectOutput}
-                return output
-            
-            if view=="Real_distribution":
-                real_distribution = self.getStatistics({"layerId":layerId,"variable":"real_distribution","innervariable":""})
-
-                dataObjectOutput = createDataObject(real_distribution)
-
-                output = {"real_distribution": dataObjectOutput}
+                output = {"Data_distribution": dataObjectOutput}
                 return output
                   
         elif layerType=="TrainReinforce":

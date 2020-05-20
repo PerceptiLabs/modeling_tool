@@ -34,6 +34,7 @@
 
   import DataData             from '@/components/network-elements/elements/data-data/view-data-data.vue'
   import DataEnvironment      from '@/components/network-elements/elements/data-environment/view-data-environment.vue'
+  import DataRandom      from '@/components/network-elements/elements/data-random/view-data-random.vue'
   import DataCloud            from '@/components/network-elements/elements/data-cloud/view-data-cloud.vue'
 
   import DeepLearningFC       from '@/components/network-elements/elements/deep-learning-fc/view-deep-learning-fc.vue'
@@ -58,6 +59,7 @@
   import TrainDetector        from '@/components/network-elements/elements/train-detector/view-train-detector.vue'
 
   import MathArgmax           from '@/components/network-elements/elements/math-argmax/view-math-argmax.vue'
+  import MathSwitch           from '@/components/network-elements/elements/math-switch/view-math-switch.vue'
   import MathMerge            from '@/components/network-elements/elements/math-merge/view-math-merge.vue'
   import MathSoftmax          from '@/components/network-elements/elements/math-softmax/view-math-softmax.vue'
   import MathSplit            from '@/components/network-elements/elements/math-split/view-math-split.vue'
@@ -75,11 +77,11 @@ export default {
   name: 'TheLayersbar',
   mixins: [clickOutside],
   components: {
-    DataData, DataEnvironment, DataCloud,
+    DataData, DataEnvironment, DataCloud, DataRandom,
     DeepLearningFC, DeepLearningConv, DeepLearningDeconv, DeepLearningRecurrent,
     ProcessCrop, ProcessEmbed, ProcessGrayscale, ProcessOneHot, ProcessReshape,
     TrainNormal, TrainRegression, TrainGenetic, TrainDynamic, TrainReinforce, TrainLoss, TrainOptimizer, TrainGan, TrainDetector,
-    MathArgmax, MathMerge, MathSoftmax, MathSplit,
+    MathArgmax, MathMerge, MathSoftmax, MathSplit, MathSwitch,
     ClassicMLDbscans, ClassicMLKMeans, ClassicMLKNN, ClassicMLRandomForest, ClassicMLSVM,
     LayerCustom
   },
@@ -96,7 +98,7 @@ export default {
           iconClass: 'icon-data',
           childListClass: '',
           showEl: false,
-          networkElements: ['DataData', 'DataEnvironment', 'DataCloud'],
+          networkElements: ['DataData', 'DataEnvironment', 'DataRandom', 'DataCloud'],
           id:'tutorial_data'
           //networkElements: ['DataData']
         },
@@ -138,7 +140,7 @@ export default {
           iconClass: 'icon-calc',
           childListClass: '',
           showEl: false,
-          networkElements: ['MathArgmax', 'MathMerge', 'MathSplit', 'MathSoftmax'],
+          networkElements: ['MathArgmax', 'MathMerge', 'MathSplit', 'MathSoftmax', 'MathSwitch'],
           id:'tutorial_mathematics'
         },
         {

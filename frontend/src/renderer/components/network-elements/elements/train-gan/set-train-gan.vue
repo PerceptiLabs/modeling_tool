@@ -7,36 +7,44 @@
     template(slot="Settings-content")
       .settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.labels")
-          .form_label Labels:
+          .form_label Switch:
           #tutorial_labels.form_input(data-tutorial-hover-info)
             base-select(
-              v-model="settings.Labels"
-              :select-options="inputLayers"
+              v-model="settings.switch_layer"
+              :select-options="allSwitchLayers"
+            )
+      .settings-layer_section
+        .form_row(v-tooltip-interactive:right="interactiveInfo.labels")
+          .form_label Real Data:
+          #tutorial_labels.form_input(data-tutorial-hover-info)
+            base-select(
+              v-model="settings.real_data_layer"
+              :select-options="allRealDataLayers"
             )
       .settings-layer_section
         .form_row
           .form_label Epochs:
           .form_input
             input(type="number" v-model="settings.Epochs")
-      .settings-layer_section
-        .form_row(v-tooltip-interactive:right="interactiveInfo.costFunction")
-          .form_label Cost function:
-          #tutorial_cost-function.tutorial-relative.form_input(data-tutorial-hover-info)
-            base-radio(group-name="group" value-input="Cross_entropy" v-model="settings.Loss")
-              span Cross-Entropy
-            base-radio(group-name="group" value-input="Quadratic" v-model="settings.Loss")
-              span Quadratic
-            base-radio(group-name="group" value-input="W_cross_entropy" v-model="settings.Loss")
-              span Weighted Cross-Entropy
-            base-radio(group-name="group" value-input="Dice" v-model="settings.Loss")
-              span DICE
-            base-radio(group-name="group" value-input="Regression" v-model="settings.Loss")
-              span Regression
-              //-Cross-Entropy
-        .form_row(v-if="settings.Loss === 'W_cross_entropy'")
-          .form_label Class weights:
-          .form_input
-            input(type="number" v-model="settings.Class_weights")
+      // .settings-layer_section
+      //   .form_row(v-tooltip-interactive:right="interactiveInfo.costFunction")
+      //     .form_label Cost function:
+      //     #tutorial_cost-function.tutorial-relative.form_input(data-tutorial-hover-info)
+      //       base-radio(group-name="group" value-input="Cross_entropy" v-model="settings.Loss")
+      //         span Cross-Entropy
+      //       base-radio(group-name="group" value-input="Quadratic" v-model="settings.Loss")
+      //         span Quadratic
+      //       base-radio(group-name="group" value-input="W_cross_entropy" v-model="settings.Loss")
+      //         span Weighted Cross-Entropy
+      //       base-radio(group-name="group" value-input="Dice" v-model="settings.Loss")
+      //         span DICE
+      //       base-radio(group-name="group" value-input="Regression" v-model="settings.Loss")
+      //         span Regression
+      //         //-Cross-Entropy
+      //   .form_row(v-if="settings.Loss === 'W_cross_entropy'")
+      //     .form_label Class weights:
+      //     .form_input
+      //       input(type="number" v-model="settings.Class_weights")
       .settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.optimizer")
           .form_label Optimizer:
@@ -77,6 +85,11 @@
           .form_label Learning rate:
           #tutorial_learning_rate.form_input(data-tutorial-hover-info)
             input(type="number" v-model="settings.Learning_rate")
+      .settings-layer_section
+        .form_row
+          .form_label Batch Size:
+          .form_input
+            input(type="number" v-model="settings.batch_size")
 
     template(slot="Code-content")
       settings-code(
@@ -95,26 +108,39 @@ export default {
   name: 'SetTrainGan',
   mixins: [ mixinSet ],
   beforeMount() {
-    this.inputId.forEach((id)=> {
-      let elList = this.currentNetworkList;
-      this.inputLayers.push({
-        text: elList[id].layerName,
-        value: elList[id].layerId,
-        tutorialId: elList[id].tutorialId
-      })
-    });
-    if(!this.settings.Labels && this.inputLayers.length) this.settings.Labels = this.inputLayers[0].value.toString();
+    let elList = this.currentNetworkList;
+    for(let key in elList) {
+      if(elList[key].layerType==="Data") {
+        this.allRealDataLayers.push({
+          text: elList[key].layerName,
+          value: elList[key].layerName,
+          tutorialId: elList[key].tutorialId
+        })
+      }
+      if(elList[key].layerType==="Other") {
+        this.allSwitchLayers.push({
+          text: elList[key].layerName,
+          value: elList[key].layerName,
+          tutorialId: elList[key].tutorialId
+        })
+      }
+    }
+    if(!this.settings.switch_layer && this.allSwitchLayers.length) this.settings.switch_layer = this.allSwitchLayers[0].value.toString();
+    if(!this.settings.real_data_layer && this.allRealDataLayers.length) this.settings.real_data_layer = this.allRealDataLayers[0].value.toString();
   },
   data() {
     return {
-      inputLayers: [],
+      allSwitchLayers: [],
+      allRealDataLayers: [],
       settings: {
-        Labels: '',
+        switch_layer: '',
+        real_data_layer: '',
         Epochs: '10',
         N_class: '1',
         Loss: "Quadratic", //#Cross_entropy, Quadratic, W_cross_entropy, Dice
         Class_weights: '1',
         Learning_rate: "0.001",
+        batch_size: '3',
         Optimizer: "ADAM", //#SGD, Momentum, ADAM, RMSprop
         Beta_1: '0.9',
         Beta_2: '0.999',
@@ -128,14 +154,6 @@ export default {
           title: 'Labels',
           text: 'Choose which input connection is represent the labels'
         },
-        // costFunction: {
-        //   title: 'Split on',
-        //   text: 'Choose in which position to split on at the chosen axis'
-        // },
-        // optimizer: {
-        //   title: 'Optimizer',
-        //   text: 'Choose which optimizer to use'
-        // },
         learningRate: {
           title: 'Learning rate',
           text: 'Set the learning rate'
@@ -147,13 +165,7 @@ export default {
     ...mapGetters({
       isTutorialMode:     'mod_tutorials/getIstutorialMode',
       currentNetworkList: 'mod_workspace/GET_currentNetworkElementList'
-    }),
-    inputId() {
-      return this.currentEl.connectionIn
-    },
-    notLabelsInput() {
-      return this.inputId.filter((id)=>id !== this.settings.Labels)
-    },
+    })
   },
   methods: {
     ...mapActions({
@@ -163,22 +175,6 @@ export default {
     saveSettings(tabName) {
       this.applySettings(tabName);
       this.$nextTick(()=> this.tutorialPointActivate({way: 'next', validation: 'tutorial_labels'}));
-    },
-  },
-  watch: {
-    'settings.Labels': {
-      handler(newValue) {
-        let label = this.inputLayers.filter((item)=> {
-          return item.value.toString() === newValue;
-        });
-        if(this.isTutorialMode && label[0].text !== 'OneHot_1') {
-          label = this.inputLayers.filter((item)=> {
-            return item.text === 'OneHot_1';
-          });
-            this.settings.Labels = label[0].value.toString();
-            this.popupInfo("Please set One Hot for Labels field when you in tutorial mode");
-        }
-      }
     },
   }
 }

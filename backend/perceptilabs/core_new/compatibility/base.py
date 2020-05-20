@@ -11,7 +11,7 @@ from perceptilabs.core_new.graph.utils import sanitize_layer_name
 from perceptilabs.core_new.core2 import Core
 from perceptilabs.core_new.layers import *
 from perceptilabs.core_new.layers.replicas import NotReplicatedError
-from perceptilabs.core_new.compatibility.policies import policy_classification, policy_regression, policy_object_detection, policy_reinforce
+from perceptilabs.core_new.compatibility.policies import policy_classification, policy_regression, policy_object_detection, policy_gan, policy_reinforce
 
 
 log = logging.getLogger(__name__)
@@ -142,6 +142,8 @@ class CompatibilityCore:
             result_dict = policy_classification(self._core, graphs, self._sanitized_to_name, self._sanitized_to_id, results)
         elif  isinstance(layer, ObjectDetectionLayer):
             result_dict = policy_object_detection(self._core, graphs, self._sanitized_to_name, self._sanitized_to_id, results)
+        elif  isinstance(layer, GANLayer):
+            result_dict = policy_gan(self._core, graphs, self._sanitized_to_name, self._sanitized_to_id, results)
         elif  isinstance(layer, RegressionLayer):
             result_dict = policy_regression(self._core, graphs, self._sanitized_to_name, self._sanitized_to_id, results)
         elif  isinstance(layer, RLLayer):
