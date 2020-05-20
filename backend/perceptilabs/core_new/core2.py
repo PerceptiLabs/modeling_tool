@@ -299,8 +299,11 @@ class Core:
         self._graphs.append(graph)        
     '''
     def _on_userland_error(self, exception, traceback_frames):
-        message = ''
+        message = str(exception) +'\n\n'
         collect = False
+        last_node = None
+        last_lineno = None
+
         for frame in traceback_frames:
             node, true_lineno = self._line_to_node_map.get(frame.lineno, (None, None))
             
@@ -310,14 +313,20 @@ class Core:
                 continue
                 
             if frame.filename == 'training_script.py' and node is not None:
+                last_node = node
+                last_lineno = true_lineno
+
                 message += f'File "{frame.filename}", line {frame.lineno}, in {frame.name}, ' + \
                            f'origin {node.layer_id}:{true_lineno} [{node.layer_type}]\n' +\
                            f'  {frame.line}\n'
             else:
                 message += f'File "{frame.filename}", line {frame.lineno}, in {frame.name}\n' + \
                            f'  {frame.line}\n'
-                    
-        error = UserlandError(node.layer_id, node.layer_type, frame.lineno, message)
+        
+        if last_node:
+            error = UserlandError(last_node.layer_id, last_node.layer_type, last_lineno, message)
+        else:
+            error = UserlandError(node.layer_id, node.layer_type, frame.lineno, message)
 
         if self._use_sentry:
             with sentry_sdk.push_scope() as scope:
