@@ -1,4 +1,3 @@
-
 {% macro layer_tf1x_grayscale(layer_name) %}
 class {{layer_name}}(Tf1xLayer):
     def __call__(self, x: tf.Tensor) -> tf.Tensor:
@@ -322,17 +321,12 @@ class {{layer_name}}(Tf1xLayer):
         self._merge_dim = {{merge_dim}}
         self._merget_order = {{merge_order}}
 
-    def __call__(self, x) -> tf.Tensor:
+    def __call__(self, x: Dict[str, tf.Tensor]) -> tf.Tensor:
         """ Takes two tensors as input and merges them accordingly. """
+        y = None
         {% filter remove_lspaces(8) %}
             {% if type_ == 'Concat' %}
-                if self._merge_order is None :
-                    self._merge_order = list(x.values())
-                for i in range(0, len(self._merge_order), 2):
-                    if not y:
-                        y = list(x.values())[i]
-                   y = tf.concat([y, list(x.values())[i]], self._merge_dim)
-
+                y = tf.concat(list(x.values()), self._merge_dim)
             {% elif type_ == 'Add' %}
                 for i in range(0, len(list(x.values())), 2):
                     if not y:
