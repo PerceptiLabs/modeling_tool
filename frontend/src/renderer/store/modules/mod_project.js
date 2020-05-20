@@ -31,7 +31,7 @@ const actions = {
       .catch((error)=> {
         console.error(error); 
       })
-  },
+    },
   createProject(ctx, payload) {
     return axios.post('http://localhost:8000/projects/', payload)
       .then(res => {
@@ -49,11 +49,12 @@ const actions = {
   deleteProject(ctx, payload) {
     return axios.delete(`http://localhost:8000/projects/${payload.projectId}/`)
       .then(res => {
-        crx.commit('removeProject', res.data.project_id);
+        ctx.dispatch('getProjects');
+        // crx.commit('removeProject', res.data.project_id);
       })
   },
   getModel(ctx, modelId) {
-    return axios.get(`http://localhost:8000/projects/${modelId}/`)
+    return axios.get(`http://localhost:8000/models/${modelId}/`)
       .then(res => res.data)
       .catch(console.error)
   },

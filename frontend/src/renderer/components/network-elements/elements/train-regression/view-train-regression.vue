@@ -1,27 +1,27 @@
 <template lang="pug">
   .btn.btn--layersbar.net-element-train(:draggable="draggable"
-    data-component="TrainNormal"
-    data-layer="Normal"
+    data-component="TrainRegression"
+    data-layer="Regression"
     data-type="Training"
-    v-tooltip:networkElement="'Normal'"
+    v-tooltip:right="'Regression'"
     v-tooltip-interactive:right="interactiveInfo"
-    id="tutorial_training-normal"
+    id="tutorial_training-regression"
     :style="layerStyles"
   )
-    i.icon.icon-training
+    i.icon.icon-train-regression
 
 </template>
 
 <script>
   import mixinSet from '@/core/mixins/net-element-view-layer.js';
 export default {
-  name: 'ViewTrainNormal',
+  name: 'ViewTrainRegression',
   mixins: [mixinSet],
   data() {
     return {
       interactiveInfo: {
-        title: 'Image Classification',
-        text: 'Normal supervised learning layer'
+        title: 'Train Regression',
+        text: 'Regression supervised learning layer'
       }
     }
   }

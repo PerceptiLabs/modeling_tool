@@ -18,22 +18,17 @@
           .form_label(v-tooltip-interactive:right="interactiveInfo.epochs") Epochs:
           #tutorial_epochs.form_input(data-tutorial-hover-info)
             input(type="number" v-model="settings.Epochs")
+      .settings-layer_section
         .form_row
-          .form_label Batch size:
+          .form_label Batch Size: 
           .form_input
-            input(type="number" v-model="settings.Batch_size")
+            input(type="number" v-model="settings.batch_size")
       .settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.costFunction")
           .form_label Loss function:
           #tutorial_cost-function.tutorial-relative.form_input(data-tutorial-hover-info)
-            base-radio(group-name="group" value-input="Cross_entropy" v-model="settings.Loss")
-              span Cross-Entropy
-            base-radio(group-name="group" value-input="Quadratic" v-model="settings.Loss")
-              span Quadratic
-            base-radio(group-name="group" value-input="W_cross_entropy" v-model="settings.Loss")
-              span Weighted Cross-Entropy
-            base-radio(group-name="group" value-input="Dice" v-model="settings.Loss")
-              span DICE
+            base-radio(group-name="group" value-input="Regression" v-model="settings.Loss")
+              span Regression
               //-Cross-Entropy
         .form_row(v-if="settings.Loss === 'W_cross_entropy'")
           .form_label Class weights:
@@ -94,7 +89,7 @@ import mixinSet from '@/core/mixins/net-element-settings.js';
 import { mapGetters, mapActions } from 'vuex';
 
 export default {
-  name: 'SetTrainNormal',
+  name: 'SetTrainRegression',
   mixins: [ mixinSet ],
   beforeMount() {
     this.inputId.forEach((id)=> {
@@ -114,7 +109,7 @@ export default {
         Labels: '',
         Epochs: '10',
         N_class: '1',
-        Loss: "Quadratic", //#Cross_entropy, Quadratic, W_cross_entropy, Dice
+        Loss: "Regression", 
         Class_weights: '1',
         Learning_rate: "0.001",
         Optimizer: "ADAM", //#SGD, Momentum, ADAM, RMSprop
@@ -123,8 +118,8 @@ export default {
         Momentum: '0.9',
         Decay_steps: '100000',
         Decay_rate: '0.96',
-        Training_iters: "20000",
-        Batch_size: '10'
+        batch_size: 3,
+        Training_iters: "20000"
       },
       interactiveInfo: {
         labels: {

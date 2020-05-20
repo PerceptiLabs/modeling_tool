@@ -56,6 +56,7 @@ export default {
       let theName = '';
       switch(this.$route.name) {
         case 'projects': theName = 'ModelHub'; break;
+        case 'settings': theName = 'Settings'; break;
         case 'app':  {
           if(this.currentModel.networkMeta.openStatistics) {
             theName = 'Statistics View';

@@ -52,10 +52,10 @@ def setup_logger(log_level, core_mode):
     logging.basicConfig(
         format='%(asctime)s - %(levelname)s - %(threadName)s - %(filename)s:%(lineno)d - %(message)s',
         level=logging.getLevelName(log_level),
-        handlers=[
-            logging.FileHandler("kernel.log"),
-            logging.StreamHandler()
-        ]
+        # handlers=[
+        #     logging.FileHandler("kernel.log"),
+        #     logging.StreamHandler()
+        # ]
     )
 
     
@@ -99,6 +99,8 @@ def main():
 
     if args.error:
         raise Exception("Test error")
+
+    print("PerceptiLabs is ready...")
 
     server = Server(scraper, data_bundle)
     if args.platform == 'desktop':
