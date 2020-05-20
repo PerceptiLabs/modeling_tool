@@ -37,7 +37,6 @@
     .net-element_window(
       v-if="settingsIsOpen"
       :class="classElWindow"
-      :style="styleElWindow"
       ref="elementSettings"
       )
       slot(name="settings")

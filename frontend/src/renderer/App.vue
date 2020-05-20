@@ -172,7 +172,7 @@
       showMenuBar() {
         const GET_userIsLogin = this.$store.getters['mod_user/GET_userIsLogin']
 
-        if (GET_userIsLogin && ['home', 'app', 'projects'].includes(this.$route.name)) { 
+        if (GET_userIsLogin && ['home', 'app', 'projects', 'settings'].includes(this.$route.name)) { 
           return true; 
         }
 

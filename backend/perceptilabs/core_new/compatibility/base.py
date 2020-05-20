@@ -11,8 +11,7 @@ from perceptilabs.core_new.graph.utils import sanitize_layer_name
 from perceptilabs.core_new.core2 import Core
 from perceptilabs.core_new.layers import *
 from perceptilabs.core_new.layers.replicas import NotReplicatedError
-from perceptilabs.core_new.compability.policies import policy_classification, policy_regression, policy_object_detection, policy_reinforce
-
+from perceptilabs.core_new.compatibility.policies import policy_classification, policy_regression, policy_object_detection, policy_gan, policy_reinforce
 
 
 log = logging.getLogger(__name__)
@@ -22,7 +21,7 @@ PROCESS_COMMANDS_DELAY = 0.3
 PROCESS_RESULTS_DELAY = 0.1
 
 
-class CompabilityCore:
+class CompatibilityCore:
     def __init__(self, command_queue, result_queue, graph_builder, script_factory, messaging_factory, graph_spec, threaded=False, issue_handler=None):
         self._command_queue = command_queue
         self._result_queue = result_queue
@@ -143,6 +142,8 @@ class CompabilityCore:
             result_dict = policy_classification(self._core, graphs, self._sanitized_to_name, self._sanitized_to_id, results)
         elif  isinstance(layer, ObjectDetectionLayer):
             result_dict = policy_object_detection(self._core, graphs, self._sanitized_to_name, self._sanitized_to_id, results)
+        elif  isinstance(layer, GANLayer):
+            result_dict = policy_gan(self._core, graphs, self._sanitized_to_name, self._sanitized_to_id, results)
         elif  isinstance(layer, RegressionLayer):
             result_dict = policy_regression(self._core, graphs, self._sanitized_to_name, self._sanitized_to_id, results)
         elif  isinstance(layer, RLLayer):
@@ -200,7 +201,7 @@ if __name__ == "__main__":
                         level=logging.DEBUG)    
     import json
     import queue
-    from perceptilabs.core_new.compability import CompabilityCore
+    from perceptilabs.core_new.compatibility import CompatibilityCore
     from perceptilabs.core_new.graph.builder import GraphBuilder
     from perceptilabs.core_new.layers.script import ScriptFactory
     from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP    
@@ -221,6 +222,6 @@ if __name__ == "__main__":
     commandQ=queue.Queue()
     resultQ=queue.Queue()
     
-    core = CompabilityCore(commandQ, resultQ, graph_builder, script_factory, network, threaded=False)
+    core = CompatibilityCore(commandQ, resultQ, graph_builder, script_factory, network, threaded=False)
     core.run()
         

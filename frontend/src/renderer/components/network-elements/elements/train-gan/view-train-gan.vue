@@ -1,6 +1,5 @@
 <template lang="pug">
-  .btn.btn--layersbar.net-element-train(:draggable="false" :disabled="true"
-    v-coming-soon="true"
+  .btn.btn--layersbar.net-element-train(:draggable="draggable"
     data-component="TrainGan"
     data-layer="GAN"
     data-type="Training"

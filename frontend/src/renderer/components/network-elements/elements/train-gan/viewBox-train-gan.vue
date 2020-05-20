@@ -12,86 +12,53 @@
         /:class="{'active': currentTab === tab.name}"
         /:id="tab.id"
         ) {{ tab.name }}
-    .statistics-box_main.statistics-box_col(v-if="currentTab === 'Prediction'")
-      .statistics-box_row(v-if="!testIsOpen")
-        .statistics-box_col
-          chart-switch(
-            key="1"
-            chart-label="Input"
-            :chart-data="chartData.Prediction.Input"
-            )
-        .statistics-box_col
-          chart-switch(
-            key="8"
-            chart-label="Accuracy"
-            :chart-data="chartData.Prediction.Accuracy"
-            :custom-color="colorPie"
-            )
-      .statistics-box_row
-        .statistics-box_col
-          chart-switch#tutorial_prediction-chart(
-            key="2"
-            chart-label="Prediction vs Ground truth"
-            :chart-data="chartData.Prediction.PvG"
-            :custom-color="colorList"
-            )
-        .statistics-box_col(v-if="!testIsOpen")
-          chart-switch(
-            key="3"
-            chart-label="Batch Average Prediction vs Ground truth"
-            :chart-data="chartData.Prediction.AveragePvG"
-            :custom-color="colorList"
-            )
-    .statistics-box_main.statistics-box_col(v-if="currentTab === 'Accuracy'")
+    .statistics-box_main.statistics-box_col(v-if="currentTab === 'Generator_Loss'")
+      chart-switch(
+        key="1"
+        chart-label="Generator loss during one epoch"
+        :chart-data="chartData.Generator_Loss.Current"
+        :custom-color="colorListAccuracy"
+      )
+      chart-switch(
+        key="2"
+        chart-label="Generator loss over all epochs"
+        :chart-data="chartData.Generator_Loss.Total"
+        :custom-color="colorListAccuracy"
+      )
+    .statistics-box_main.statistics-box_col(v-if="currentTab === 'Discriminator_Loss'")
+      chart-switch(
+        key="3"
+        chart-label="Discriminator loss during one epoch"
+        :chart-data="chartData.Discriminator_Loss.Current"
+        :custom-color="colorListAccuracy"
+      )
       chart-switch(
         key="4"
-        chart-label="Accuracy during one epoch"
-        :chart-data="chartData.Accuracy.Current"
+        chart-label="Discriminator loss over all epochs"
+        :chart-data="chartData.Discriminator_Loss.Total"
         :custom-color="colorListAccuracy"
       )
-      chart-switch(
-        key="5"
-        chart-label="Accuracy over all epochs"
-        :chart-data="chartData.Accuracy.Total"
-        :custom-color="colorListAccuracy"
-      )
-    .statistics-box_main.statistics-box_col(v-if="currentTab === 'Loss'")
-      chart-switch(
-        key="6"
-        chart-label="Loss during one epoch"
-        :chart-data="chartData.Loss.Current"
-        :custom-color="colorListAccuracy"
-      )
-      chart-switch(
-        key="7"
-        chart-label="Loss over all epochs"
-        :chart-data="chartData.Loss.Total"
-        :custom-color="colorListAccuracy"
-      )
-    .statistics-box_main.statistics-box_col(v-if="currentTab === 'F1'")
-      chart-switch(
-        key="9"
-        chart-label="F1 during one epoch"
-        :chart-data="chartData.F1.Current"
-        :custom-color="colorListAccuracy"
-      )
-      chart-switch(
-        key="10"
-        chart-label="F1 over all epochs"
-        :chart-data="chartData.F1.Total"
-        :custom-color="colorListAccuracy"
-      )
-    .statistics-box_main.statistics-box_col(v-if="currentTab === 'AUC'")
+    .statistics-box_main.statistics-box_col(v-if="currentTab === 'Images'")
+      .statistics-box_row
+        .statistics-box_col
+          chart-switch(
+            key="5"
+            chart-label="Real Inpput"
+            :chart-data="chartData.Images.Real_Input"
+            :custom-color="colorListAccuracy"
+          )
+        .statistics-box_col
+          chart-switch(
+            key="6"
+            chart-label="Generated Output"
+            :chart-data="chartData.Images.Generated_Output"
+            :custom-color="colorListAccuracy"
+          )
+    .statistics-box_main.statistics-box_col(v-if="currentTab === 'Data_distribution'")
       chart-switch(
         key="11"
-        chart-label="AUC during one epoch"
-        :chart-data="chartData.AUC.Current"
-        :custom-color="colorListAccuracy"
-      )
-      chart-switch(
-        key="12"
-        chart-label="AUC over all epochs"
-        :chart-data="chartData.AUC.Total"
+        chart-label="Data distribution"
+        :chart-data="chartData.Data_distribution.Data_distribution"
         :custom-color="colorListAccuracy"
       )
 </template>
@@ -108,107 +75,70 @@
     data() {
       return {
         chartData: {
-          Prediction: { Input: null, PvG: null, AveragePvG: null, Accuracy: null },
-          Accuracy:   { Current: null, Total: null },
-          Loss:       { Current: null, Total: null },
-          F1:         { Current: null, Total: null },
-          AUC:        { Current: null, Total: null }
+          Generator_Loss:           { Current: null, Total: null },
+          Discriminator_Loss:       { Current: null, Total: null },
+          Images:                   { Real_Input: null, Generated_Output: null },
+          Data_distribution:        { Data_distribution: null }
         },
         btnList: {
-          'Prediction': {
-            btnId: 'tutorial_prediction-tab',
+          'Generator_Loss': {
+            btnId: 'tutorial_generator_loss-tab',
             btnInteractiveInfo: {
-              title: 'Prediction',
-              text: 'View the input, current accuracy and <br/> output prediction vs ground truth/labels'
+              title: 'Generator Loss',
+              text: 'View the Generator Loss Data'
             }
           },
-          'Accuracy': {
-            btnId: 'tutorial_accuracy-tab',
+          'Discriminator_Loss': {
+            btnId: 'tutorial_discriminator_loss-tab',
             btnInteractiveInfo: {
-              title: 'Accuracy',
-              text: 'View the accuracy.'
+              title: 'Discriminator Loss',
+              text: 'View the Discriminator Loss Data.'
             }
           },
-          'Loss': {
-            btnId: 'tutorial_loss-tab',
+          'Images': {
+            btnId: 'tutorial_images-tab',
             btnInteractiveInfo: {
-              title: 'Loss',
-              text: 'View the loss.'
+              title: 'Images',
+              text: 'View the images.'
             }
           },
-          'F1': {
-            btnId: 'tutorial_f1-tab',
+          'Data_distribution': {
+            btnId: 'tutorial_data_distribution-tab',
             btnInteractiveInfo: {
-              title: 'F1',
-              text: 'View the F1 score.'
-            }
-          },
-          'AUC': {
-            btnId: 'tutorial_auc-tab',
-            btnInteractiveInfo: {
-              title: 'AUC',
-              text: 'View the AUC.'
+              title: 'Data distribution',
+              text: 'View the Data distribution.'
             }
           },
         },
         colorList: ['#6B8FF7', '#FECF73'],
         colorListAccuracy: ['#9173FF', '#6B8FF7'],
         colorPie: ['#6B8FF7', '#383F50'],
-        showRequestSpinner: {
-          Input: true,
-          PvG: true,
-          AveragePvG: true,
-          Accuracy: true
-        }
       }
     },
     watch: {
       testIsOpen(newVal) {
-        newVal ? this.setTab('Prediction') : null
+        newVal ? this.setTab('Generator_Loss') : null
       }
     },
     methods: {
 
       getData() {
         switch (this.currentTab) {
-          case 'Prediction':
-            this.chartRequest(this.statElementID, 'TrainNormal', 'Prediction');
+          case 'Generator_Loss':
+            this.chartRequest(this.statElementID, 'TrainGan', 'Generator_Loss');
             break;
-          case 'Accuracy':
-            this.chartRequest(this.statElementID, 'TrainNormal', 'Accuracy');
+          case 'Discriminator_Loss':
+            this.chartRequest(this.statElementID, 'TrainGan', 'Discriminator_Loss');
             break;
-          case 'Loss':
-            this.chartRequest(this.statElementID, 'TrainNormal', 'Loss');
+          case 'Images':
+            this.chartRequest(this.statElementID, 'TrainGan', 'Images');
             break;
-          case 'F1':
-            this.chartRequest(this.statElementID, 'TrainNormal', 'F1');
-            break;
-          case 'AUC':
-            this.chartRequest(this.statElementID, 'TrainNormal', 'AUC');
+          case 'Data_distribution':
+            this.chartRequest(this.statElementID, 'TrainGan', 'Data_distribution');
             break;
         }
       }
     },
-    // watch: {
-    //   currentTab(newTab) {
-    //     switch (newTab) {
-    //       case 'Prediction':
-    //         this.chartRequest(this.statElementID, 'TrainNormal', 'Prediction');
-    //         break;
-    //       case 'Accuracy':
-    //         this.chartRequest(this.statElementID, 'TrainNormal', 'Accuracy');
-    //         break;
-    //       case 'Loss':
-    //         this.chartRequest(this.statElementID, 'TrainNormal', 'Loss');
-    //         break;
-    //       case 'F1':
-    //         this.chartRequest(this.statElementID, 'TrainNormal', 'F1');
-    //         break;
-    //       case 'AUC':
-    //         this.chartRequest(this.statElementID, 'TrainNormal', 'AUC');
-    //         break;
-    //     }
-    //   }
-    // }
+
   }
 </script>

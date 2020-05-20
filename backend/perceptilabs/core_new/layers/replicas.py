@@ -2,7 +2,7 @@ import tensorflow as tf
 from typing import List, Callable
 
 
-from perceptilabs.core_new.layers import DataLayer, TrainingLayer, Tf1xLayer, ClassificationLayer, InnerLayer, RegressionLayer, ObjectDetectionLayer, RLLayer
+from perceptilabs.core_new.layers import DataLayer, TrainingLayer, Tf1xLayer, ClassificationLayer, InnerLayer, RegressionLayer, ObjectDetectionLayer, RLLayer, GANLayer
 
 
 
@@ -615,7 +615,6 @@ class ObjectDetectionLayerReplica(ObjectDetectionLayer):
     def get_input_data_node(self):
         return self._input_data_node
 
-    
 class RLLayerReplica(RLLayer):
     def __init__(self, sample, size_training, size_validation, size_testing, variables,
                  reward, loss_training, loss_testing, loss_validation,
@@ -648,6 +647,304 @@ class RLLayerReplica(RLLayer):
         self._batch_size = batch_size
         self._progress = progress
         self._columns = columns
+
+    @property
+    def epoch(self):
+        return self._epoch
+    
+    @property
+    def n_actions(self):
+        return self._n_actions
+
+    @property
+    def episode(self):
+        return self._episode
+
+    @property
+    def n_episodes(self):
+        return self._n_episodes
+    
+    @property
+    def reward(self):
+        return self._reward
+    
+    @property
+    def gamma(self):
+        return self._gamma
+    
+    @property
+    def replay_memory_size(self):
+        return self._replay_memory_size
+    
+    @property
+    def transition(self):
+        return self._transition
+    
+    @property
+    def n_steps_max(self):
+        return self._n_steps_max
+    
+    @property
+    def step_counter(self):
+        return self._step_counter
+    
+    @property
+    def history_length(self):
+        return self._history_length
+    
+    @property
+    def batch_size(self):
+        return self._batch_size
+    
+    @property
+    def sample(self):
+        return self._sample 
+    
+    @property
+    def columns(self):
+        return self._columns
+
+    @property
+    def size_training(self):
+        return self._size_training 
+
+    @property
+    def size_validation(self):
+        return self._size_validation
+
+    @property
+    def size_testing(self):
+        return self._size_testing 
+
+    @property        
+    def variables(self):
+        return self._variables 
+
+    @property
+    def loss_training(self):
+        return self._loss_training
+
+    @property
+    def loss_testing(self):
+        return self._loss_testing
+
+    @property
+    def loss_validation(self):
+        return self._loss_validation
+        
+    @property
+    def status(self):
+        return self._status
+
+    @property
+    def layer_weights(self):
+        return self._layer_weights
+    
+    @property
+    def layer_biases(self):
+        return self._layer_biases
+    
+    @property
+    def layer_gradients(self):
+        return self._layer_gradients
+
+    @property
+    def batch_size(self):
+        return self._batch_size
+
+    @property
+    def layer_outputs(self):
+        return self._layer_outputs
+
+    def make_generator_training(self):
+        raise NotReplicatedError
+
+    def make_generator_validation(self):
+        raise NotReplicatedError        
+
+    def make_generator_testing(self):
+        raise NotReplicatedError
+
+    def on_stop(self):
+        raise NotReplicatedError        
+    
+    def on_export(self, path):
+        raise NotReplicatedError
+
+    @property
+    def progress(self):
+        return self._progress
+
+    @property
+    def export_modes(self):
+        return self._export_modes
+    
+class GANLayerReplica(GANLayer):
+    def __init__(self, sample, size_training, size_validation, size_testing, variables,
+                 get_switch_layer_id,
+                 generator_loss_training, generator_loss_testing, generator_loss_validation,
+                 discriminator_loss_training, discriminator_loss_validation, discriminator_loss_testing,
+                 status, layer_weights, layer_biases, layer_gradients, layer_outputs,
+                 generator_layer_outputs, real_layer_outputs,
+                 batch_size, training_iteration, validation_iteration,
+                 testing_iteration, progress, epoch, columns, export_modes):
+
+        self._export_modes = export_modes
+        self._epoch = epoch
+        self._sample = sample
+        self._columns = columns
+        self._size_training = size_training
+        self._size_validation = size_validation        
+        self._size_testing = size_testing
+        self._variables = variables
+        self._switch_layer_id = get_switch_layer_id
+        self._generator_loss_training = generator_loss_training
+        self._generator_loss_validation = generator_loss_validation
+        self._generator_loss_testing = generator_loss_testing
+        self._discriminator_loss_training = discriminator_loss_training
+        self._discriminator_loss_validation = discriminator_loss_validation
+        self._discriminator_loss_testing = discriminator_loss_testing
+        self._status = status
+
+        self._layer_weights = layer_weights
+        self._layer_biases = layer_biases
+        self._layer_gradients = layer_gradients
+        self._layer_outputs = layer_outputs
+        self._generator_layer_outputs = generator_layer_outputs
+        self._real_layer_outputs = real_layer_outputs
+
+        self._batch_size = batch_size
+        self._training_iteration = training_iteration
+        self._validation_iteration = validation_iteration
+        self._testing_iteration = testing_iteration
+        self._progress = progress
+
+    @property
+    def epoch(self):
+        return self._epoch
+    
+    @property
+    def batch_size(self):
+        return self._batch_size
+    
+    @property
+    def sample(self):
+        return self._sample 
+
+    @property
+    def columns(self):
+        return self._columns
+
+    @property
+    def size_training(self):
+        return self._size_training 
+
+    @property
+    def size_validation(self):
+        return self._size_validation
+
+    @property
+    def size_testing(self):
+        return self._size_testing 
+
+    @property        
+    def variables(self):
+        return self._variables 
+
+    @property
+    def get_switch_layer_id(self):
+        return self._switch_layer_id
+
+    @property
+    def generator_loss_training(self):
+        return self._generator_loss_training
+
+    @property
+    def generator_loss_testing(self):
+        return self._generator_loss_testing
+
+    @property
+    def generator_loss_validation(self):
+        return self._generator_loss_validation
+
+    @property
+    def discriminator_loss_training(self):
+        return self._discriminator_loss_training
+
+    @property
+    def discriminator_loss_testing(self):
+        return self._discriminator_loss_testing
+
+    @property
+    def discriminator_loss_validation(self):
+        return self._discriminator_loss_validation
+        
+    @property
+    def status(self):
+        return self._status
+
+    @property
+    def layer_weights(self):
+        return self._layer_weights
+    
+    @property
+    def layer_biases(self):
+        return self._layer_biases
+    
+    @property
+    def layer_gradients(self):
+        return self._layer_gradients
+
+    @property
+    def batch_size(self):
+        return self._batch_size
+
+    @property
+    def layer_outputs(self):
+        return self._layer_outputs
+
+    @property
+    def generator_layer_outputs(self):
+        return self._generator_layer_outputs
+
+    @property
+    def real_layer_outputs(self):
+        return self._real_layer_outputs
+
+    def make_generator_training(self):
+        raise NotReplicatedError
+
+    def make_generator_validation(self):
+        raise NotReplicatedError        
+
+    def make_generator_testing(self):
+        raise NotReplicatedError
+
+    def on_stop(self):
+        raise NotReplicatedError        
+    
+    def on_export(self, path):
+        raise NotReplicatedError
+    
+    @property
+    def training_iteration(self):
+        return self._training_iteration
+
+    @property
+    def validation_iteration(self):
+        return self._validation_iteration
+
+    @property
+    def testing_iteration(self):
+        return self._testing_iteration
+
+    @property
+    def progress(self):
+        return self._progress
+
+    @property
+    def export_modes(self):
+        return self._export_modes
 
     @property
     def epoch(self):

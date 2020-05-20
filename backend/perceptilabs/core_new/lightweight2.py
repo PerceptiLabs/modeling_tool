@@ -85,7 +85,86 @@ class DefaultStrategy(BaseStrategy):
     def run(self, layer_id, layer_type, layer_class, input_results, layer_spec):    
         return self.get_default()
     
+
+
+class Tf1xTempStrategy(BaseStrategy):
+    def __init__(self, layer_ids_to_names):
+        self._layer_ids_to_names = layer_ids_to_names
     
+    def run(self, layer_id, layer_type, layer_class, input_results, layer_spec):
+        with tf.Graph().as_default() as graph:
+            try:
+                layer_instance = layer_class()                
+            except Exception as e:
+                error = exception_to_error(layer_id, layer_type, e)
+                log.exception(f"Layer {layer_id} raised an error when instantiating layer class")
+                return self.get_default(strategy_error=error)                    
+            
+            input_tensors = {}
+            for key, value in input_results.items():
+                if value.sample is None:
+                    return self.get_default()                    
+                y_batch = np.array([value.sample])
+                input_tensors[sanitize_layer_name(self._layer_ids_to_names[key])] = tf.constant(y_batch)
+
+            try:
+                if len(input_tensors) <= 1:
+                    output_tensor = layer_instance(*input_tensors.values())
+                elif len(input_tensors) > 1:
+                    output_tensor = layer_instance(input_tensors)
+            except Exception as e:
+                error = exception_to_error(layer_id, layer_type, e)
+                log.exception(f"Layer {layer_id} raised an error in __call__")
+                return self.get_default(strategy_error=error)                    
+                
+            with tf.Session() as sess:
+                return self._run_internal(sess, layer_id, layer_type, layer_instance, output_tensor, input_tensors)
+
+    def _run_internal(self, sess, layer_id, layer_type, layer_instance, output_tensor, layer_spec):
+        sess.run(tf.global_variables_initializer())
+
+        if tf.version.VERSION.startswith('1.15'):
+            self._restore_checkpoint(layer_spec, sess)
+        else:
+            log.warning(f"Checkpoint restore only works with TensorFlow 1.15. Current version is {tf.version.VERSION}")
+        try:
+            y_batch = sess.run(output_tensor)
+        except Exception as e:
+            error = exception_to_error(layer_id, layer_type, e)
+            log.exception(f"Layer {layer_id} raised an error on sess.run")            
+            return self.get_default(strategy_error=error)
+        
+        y = y_batch[0]
+        variables = layer_instance.variables.copy()
+
+        results = LayerResults(
+            sample=y,
+            out_shape=y.shape,
+            variables=variables,
+            columns=[],
+            code_error=None,
+            instantiation_error=None,
+            strategy_error=None            
+        )
+        return results
+        
+    def _restore_checkpoint(self, spec, sess):
+        if 'checkpoint' in spec:
+            from tensorflow.python.training.tracking.base import Trackable
+            
+            export_directory = resolve_checkpoint_path(spec)
+            
+            trackable_variables = {}
+            trackable_variables.update({x.name: x for x in tf.trainable_variables() if isinstance(x, Trackable)})
+            trackable_variables.update({k: v for k, v in locals().items() if isinstance(v, Trackable) and
+                                        not isinstance(v, tf.python.data.ops.iterator_ops.Iterator)}) # TODO: Iterators based on 'stateful functions' cannot be serialized.
+            
+            checkpoint = tf.train.Checkpoint(**trackable_variables)
+
+            path = tf.train.latest_checkpoint(export_directory)
+            status = checkpoint.restore(path)
+            status.run_restore_ops(session=sess)
+
 class Tf1xStrategy(BaseStrategy):
     def run(self, layer_id, layer_type, layer_class, input_results, layer_spec):
         with tf.Graph().as_default() as graph:
@@ -100,7 +179,6 @@ class Tf1xStrategy(BaseStrategy):
             for key, value in input_results.items():
                 if value.sample is None:
                     return self.get_default()                    
-
                 y_batch = np.array([value.sample])
                 input_tensors[key] = tf.constant(y_batch)
 
@@ -217,7 +295,7 @@ class LightweightCore:
     
     def _run_subgraph(self, subgraph_spec, _, edges_by_id):
         code_map, code_errors = self._get_code_from_layers(subgraph_spec) # Other errors are fatal and should be raised
-
+        self._layer_ids_to_names = {id_ : subgraph_spec[id_]['Name'] for id_ in subgraph_spec}
         _, edges_by_id = get_json_net_topology(subgraph_spec)        
         cached_results = self._get_cached_results(code_map, subgraph_spec, edges_by_id)
         ordered_ids = self._get_ordered_ids(subgraph_spec, edges_by_id)
@@ -260,8 +338,8 @@ class LightweightCore:
             strategy = DefaultStrategy()
         elif issubclass(layer_obj, DataLayer):
             strategy = DataStrategy()
-        elif issubclass(layer_obj, Tf1xLayer):
-            strategy = Tf1xStrategy()
+        elif issubclass(layer_obj, Tf1xLayer): 
+            strategy = Tf1xTempStrategy(self._layer_ids_to_names)
         else:
             strategy = DefaultStrategy()
         return strategy
@@ -378,7 +456,7 @@ class LightweightCore:
         
 
 class LightweightCoreAdapter:
-    """ Compability with v1 core """
+    """ Compatibility with v1 core """
     def __init__(self, graph_dict, layer_extras_reader, error_handler, issue_handler, cache, data_container):
         self._graph_dict = graph_dict
         self._error_handler = error_handler
@@ -431,7 +509,7 @@ class LightweightCoreAdapter:
     @property
     def error_handler(self):
 
-        class CompabilityErrorHandler:
+        class CompatibilityErrorHandler:
             def __init__(self, errors_dict):
                 self._dict = errors_dict
                 
@@ -444,7 +522,7 @@ class LightweightCoreAdapter:
             def __getitem__(self, id_):
                 return self._dict[id_]
         
-        error_handler = CompabilityErrorHandler(self._errors_dict)        
+        error_handler = CompatibilityErrorHandler(self._errors_dict)        
         return error_handler
             
 
