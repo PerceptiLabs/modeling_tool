@@ -3,7 +3,7 @@
     .projectContext(v-if="isContextOpened" :style="projectContextStyles")
       button(@click="renameProject") Rename
       button(@click="deleteProject()") Delete
-    .project-box
+    .project-box(v-if="!isProjectNameModalOpen")
       .header All projects
       .content
         .sidebar
@@ -13,7 +13,7 @@
           .main-header
             button.btn-icon
               img(src="../../../../static/img/project-page/import.svg")
-            button.btn-icon.rounded-border(@click="createNewProject")
+            button.btn-icon.rounded-border(@click="openProjectNameModal")
               img(src="../../../../static/img/plus.svg")
             div.search-input
               img(src="../../../../static/img/search-models.svg")
@@ -32,7 +32,7 @@
               .list-name-name Name
               .list-last-opened Last Opened
             div.main-list-item(
-              v-for="project in projectsList.filter(pr => pr.name.indexOf(searchValue) !== -1)" 
+             v-for="project in projectsList.filter(pr => pr.name.indexOf(searchValue) !== -1)" 
               @dblclick="onProjectSelectHandler(project)"
               @contextmenu.prevent.stop="openContext($event, project.project_id)"
             ) 
@@ -46,7 +46,26 @@
               span(v-show="!(renameData.projectId === project.project_id && renameData.isProjectFieldActive)").main-list-name.fz-16 {{project.name | trimText}}
               span.main-list-date.fz-16 {{project.created.toString().substring(0, 16)}}
           
-  
+    .project-box.set-project-name(
+      v-if="isProjectNameModalOpen"
+    )
+      .header Set Project Name
+      .content
+        .set-project-text-label Project name
+        input.set-project-text-input(
+          type="text"
+          v-model="newProjectName"
+          @keyup.enter="createNewProject"
+          )
+        div.project-name-action-wrapper
+          button.project-name-btn.create(
+            :class="{'disabled': newProjectName === ''}"
+            @click="createNewProject"
+          ) Create Project
+          button.project-name-btn.cancel(
+            @click="closeProjectNameModal"
+          ) Cancel
+
 </template>
 <script>
   import { mapActions, mapMutations } from "vuex";
@@ -63,6 +82,8 @@ import { debug } from 'util';
         contextTargetProject: null,
         isContextOpened: false,
         projectContextStyles: {},
+        isProjectNameModalOpen: false,
+        newProjectName: '',
         renameData: {
           isProjectFieldActive: false,
           projectFieldValue: '',
@@ -128,9 +149,20 @@ import { debug } from 'util';
 
         this.$router.push({name: 'projects'})
       },
-      createNewProject() {
+      openProjectNameModal() {
+        this.isProjectNameModalOpen = true;
+      },
+       closeProjectNameModal() {
+        this.isProjectNameModalOpen = false;
+        this.newProjectName = '';
+      },
+      createNewProject(projectName) {
+        if(this.newProjectName === '') {
+          return;
+        }
+
        let payload = {
-         name: 'New project ' + Date.now().toString(),
+         name: this.newProjectName,
        };
       
        this.createProject(payload)
@@ -139,6 +171,7 @@ import { debug } from 'util';
           const projectName = `project_${res.project_id}`; 
           // this.createLocalProjectFolder(projectName);
         })
+        this.isProjectNameModalOpen = false;
       },
       openContext(e, projectId) {
         const { pageX, pageY } = e;
@@ -154,13 +187,27 @@ import { debug } from 'util';
         const { contextTargetProject } = this;
         const theProject = this.projectsList.filter(project => project.project_id === contextTargetProject)[0];
         const theProjectModels = theProject.models;
-        
-        // debugger;
-        this.deleteProjectAction({ projectId: contextTargetProject })
-          .then(response => {
-            console.log(response);
-          })
+        if(!!theProjectModels.length) {
+          this.$store.dispatch('globalView/GP_confirmPopup', {
+            text: 'There are still models inside this project, are you sure you want to delete the project and all its containing models?',
+            ok: () => {
+
+              let deleteModelsPromises = theProjectModels.map(model_id => this.$store.dispatch('mod_project/deleteModel', { model_id }));
+              
+              Promise.all(deleteModelsPromises)
+                .then(()=> {
+                   this.deleteProjectAction({ projectId: contextTargetProject })
+                    .catch(e => console.log(e));
+                })
+                .catch(e => console.log(e));
+             
+            },
+            })
+          return;
+        } else {
+          this.deleteProjectAction({ projectId: contextTargetProject })
           .catch(e => console.log(e));
+        }
 
 
       },
@@ -242,12 +289,20 @@ import { debug } from 'util';
     border: 1px solid rgba(97, 133, 238, 0.4);
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.25);
     border-radius: 2px;
+    &.set-project-name {
+      min-width: 320px;
+      min-height: 100px;
+      .content {
+        display: block;
+        padding: 20px;
+      }
+    }
   }
   .header {
     background: #363E50;
     border-radius: 2px 2px 0 0;
     height: 38px;
-    width: 687px;
+    width: 100%;
     font-size: 14px;
     line-height: 38px;
     text-align: center;
@@ -406,5 +461,52 @@ import { debug } from 'util';
   .is-disabled {
     color: #818181;
     cursor: default;
+  }
+  .set-project-text-label {
+    font-family: Nunito Sans;
+    font-weight: 300;
+    font-size: 12px;
+    line-height: 16px;
+    color: #9E9E9E;
+    margin-bottom: 16px;
+  }
+  .set-project-text-input {
+    width: 100%;
+    height: 35px;
+    border: 1px solid #4D556A;
+    background: transparent;
+    box-sizing: border-box;
+    border-radius: 2px;
+    font-family: Nunito Sans;
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 19px;
+    color: #FFFFFF;
+  }
+  .project-name-action-wrapper {
+    display: flex;
+    flex-direction: row-reverse;
+    margin-top: 20px;
+  }
+  .project-name-btn {
+    height: 32px;
+    background: rgba(97, 133, 238, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-sizing: border-box;
+    border-radius: 2px;
+
+    font-family: Nunito Sans;
+    font-style: normal;
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 19px;
+    color: #FFFFFF;
+    &.disabled {
+      opacity: 0.5;
+    }
+    &.create {
+      margin-left: 10px;
+      background: #6185EE;
+    }
   }
 </style>

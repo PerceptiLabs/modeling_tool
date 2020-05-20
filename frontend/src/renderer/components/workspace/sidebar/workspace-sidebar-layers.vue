@@ -51,4 +51,10 @@ export default {
     z-index: 2;
   }
 
+  .network.network--show-code {
+    .workspace_sidebar {
+      display: none;
+    }
+  }
+
 </style>

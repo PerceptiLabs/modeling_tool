@@ -412,6 +412,39 @@ DEFINITION_TABLE = {
             'from tensorflow.python.training.tracking.base import Trackable'            
         ]
     ),
+    'TrainRegression': LayerDef(
+        RegressionLayer,
+        'tf1x_regression.j2',
+        'layer_tf1x_regression',
+        {
+            'output_layer': lambda specs: [sanitize_layer_name(x) for true_id, x in specs['backward_connections'] if true_id != specs['Properties']['Labels']][0],
+            'target_layer': lambda specs: [sanitize_layer_name(x) for true_id, x in specs['backward_connections'] if true_id == specs['Properties']['Labels']][0],
+            'n_epochs': lambda specs: specs['Properties']['Epochs'],
+            'loss_function': lambda specs: specs['Properties']['Loss'],
+            'class_weights': lambda specs: specs['Properties']['Class_weights'],
+            'optimizer': resolve_tf1x_optimizer,
+            'learning_rate': lambda specs: specs['Properties']['Learning_rate'],
+            'decay_steps': lambda specs: specs['Properties']['Decay_steps'],
+            'decay_rate': lambda specs: specs['Properties']['Decay_rate'],
+            'momentum': lambda specs: specs['Properties']['Momentum'], 
+            'beta1': lambda specs: specs['Properties']['Beta_1'],
+            'beta2': lambda specs: specs['Properties']['Beta_2'],
+            'distributed': lambda specs: specs['Properties'].get('Distributed', False),
+            'batch_size': lambda specs: specs['Properties']['batch_size'],
+            'export_directory': resolve_checkpoint_path
+        },
+        import_statements=[
+            'import tensorflow as tf',
+            'import numpy as np',
+            'import time',
+            'from typing import Dict, List, Generator',
+            'from perceptilabs.core_new.utils import Picklable, YieldLevel',
+            'from perceptilabs.core_new.graph import Graph',
+            'from perceptilabs.core_new.layers.base import RegressionLayer, Tf1xLayer',
+            'from perceptilabs.core_new.serialization import can_serialize, serialize',
+            'from tensorflow.python.training.tracking.base import Trackable'   
+        ]
+    ),            
     'TrainReinforce': LayerDef(
        RLLayer,
         'tf1x_rl.j2',
@@ -432,6 +465,7 @@ DEFINITION_TABLE = {
             'final_exploration': 0.1,
             'final_exporation_frame': 500,
             'target_network_update_frequency': 100
+
         },
         import_statements=[
             'import tensorflow as tf',
@@ -495,10 +529,10 @@ DEFINITION_TABLE = {
             'import numpy as np',
             'import time',
             'import os',
-            'from typing import Dict, List, Generator',
+            'from typing import Dict, List, Generator, Any',
             'from perceptilabs.core_new.utils import Picklable, YieldLevel',
             'from perceptilabs.core_new.graph import Graph',
-            'from perceptilabs.core_new.layers.base import ClassificationLayer, Tf1xLayer',
+            'from perceptilabs.core_new.layers.base import ClassificationLayer, Tf1xLayer, InnerLayer',
             'from perceptilabs.core_new.serialization import can_serialize, serialize',
             'from tensorflow.python.training.tracking.base import Trackable'            
         ]

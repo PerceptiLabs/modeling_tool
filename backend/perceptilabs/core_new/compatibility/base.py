@@ -11,7 +11,7 @@ from perceptilabs.core_new.graph.utils import sanitize_layer_name
 from perceptilabs.core_new.core2 import Core
 from perceptilabs.core_new.layers import *
 from perceptilabs.core_new.layers.replicas import NotReplicatedError
-from perceptilabs.core_new.compatibility.policies import policy_classification, policy_object_detection, policy_gan, policy_reinforce
+from perceptilabs.core_new.compatibility.policies import policy_classification, policy_regression, policy_object_detection, policy_gan, policy_reinforce
 
 
 log = logging.getLogger(__name__)
@@ -45,11 +45,11 @@ class CompatibilityCore:
         
     def run(self):
         self._running = True
-        
+
         def do_process_commands(counter, core): 
             commands = {}
             count = {}
-            
+
             while not self._command_queue.empty():
                 command = self._command_queue.get()
 
@@ -71,6 +71,7 @@ class CompatibilityCore:
                 self._send_command(core, command)
             
         def do_process_results(counter, core):
+
             graphs = core.graphs
 
             if len(graphs) > 0:
@@ -122,7 +123,6 @@ class CompatibilityCore:
             
     def _get_results_dict(self, graphs, results):
         self._print_graph_debug_info(graphs)
-        
         result_dict = {}        
         try:
             result_dict = self._get_results_dict_internal(graphs, results)
@@ -144,6 +144,8 @@ class CompatibilityCore:
             result_dict = policy_object_detection(self._core, graphs, self._sanitized_to_name, self._sanitized_to_id, results)
         elif  isinstance(layer, GANLayer):
             result_dict = policy_gan(self._core, graphs, self._sanitized_to_name, self._sanitized_to_id, results)
+        elif  isinstance(layer, RegressionLayer):
+            result_dict = policy_regression(self._core, graphs, self._sanitized_to_name, self._sanitized_to_id, results)
         elif  isinstance(layer, RLLayer):
             result_dict = policy_reinforce(self._core, graphs, self._sanitized_to_name, self._sanitized_to_id, results)
         return result_dict
@@ -155,6 +157,7 @@ class CompatibilityCore:
         if len(graphs) == 0:
             log.debug("No graphs available")
             return
+
         graph = graphs[-1]
 
         text = ""
@@ -203,13 +206,13 @@ if __name__ == "__main__":
     from perceptilabs.core_new.layers.script import ScriptFactory
     from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP    
 
-    with open('net.json_', 'r') as f:
+    with open('network_test.json', 'r') as f:
         network = json.load(f)
 
         for _id, layer in network['Layers'].items():
-            if layer['Type'] == 'TrainNormal':
+            if layer['Type'] == 'TrainNormal' or layer['Type'] == 'Regression':
                 layer['Properties']['Distributed'] = False
-        
+
 
     script_factory = ScriptFactory()
     
