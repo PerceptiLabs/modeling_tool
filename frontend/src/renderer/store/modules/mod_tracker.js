@@ -57,6 +57,9 @@ const actions = {
     mixPanel.track('App Close');
   },
   /* Model */
+  EVENT_modelCreation({}, modelType) {
+    mixPanel.track('Model Creation', {'Type': modelType});
+  },
   EVENT_modelSave({}, model) {
     mixPanel.track('Model Save', model);
   },

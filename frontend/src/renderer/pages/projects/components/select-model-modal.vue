@@ -97,25 +97,31 @@ export default {
             const { chosenTemplate, modelName, basicTemplates } = this;
             if((chosenTemplate === null) || !modelName)  return
             
+            let modelType;
+
             if(chosenTemplate === -1) { // empty template
                 this.createProjectModel({
                     name: modelName,
                     project: this.currentProjectId,
                 }).then(apiMeta => {
-                this.addNetwork({ apiMeta });
+                    this.addNetwork({ apiMeta });
                 });
+                modelType = 'Custom';
             } else {
                 let template = basicTemplates[chosenTemplate].template.network;
                 template.networkName = modelName;
 
                 this.createProjectModel({
-                name: template.networkName,
-                project: this.currentProjectId,
+                    name: template.networkName,
+                    project: this.currentProjectId,
                 }).then(apiMeta => {
-                this.addNetwork({network: template, apiMeta});
+                    this.addNetwork({network: template, apiMeta});
                 });
+                modelType = basicTemplates[chosenTemplate].title;
             }
             
+            this.$store.dispatch('mod_tracker/EVENT_modelCreation', modelType, {root: true});
+
 
             this.closeModal();
 
