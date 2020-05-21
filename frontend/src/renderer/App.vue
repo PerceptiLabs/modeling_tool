@@ -190,10 +190,12 @@
       userId(newVal) {
         if(this.isWeb) {
           Analytics.googleAnalytics.trackUserId(this.$store.getters['mod_user/GET_userID']);
-
-          this.$store.dispatch('mod_tracker/TRACK_initMixPanelUser', newVal);
         }
-        this.initUser();
+        if(this.userId !== 'Guest') {
+          this.trackerCreateUser(this.userEmail);
+          this.trackerUpdateUser(this.userEmail);
+          this.trackerInitUser(this.userId);
+        }
       }
     },
     methods: {
@@ -232,15 +234,6 @@
       }),
       updateOnlineStatus() {
         this.SET_onlineStatus(navigator.onLine);
-      },
-      initUser() {
-        this.trackerInitUser(this.userId)
-          .then(()=> {
-            if(this.userId !== 'Guest') {
-              this.trackerCreateUser(this.userEmail);
-              this.trackerUpdateUser(this.userEmail);
-            }
-          })
       },
       sendPathToAnalist(path) {
         if(process.env.NODE_ENV === 'production') {

@@ -38,7 +38,10 @@ const netElementSettings = {
         tabName
       };
       this.$store.dispatch('mod_workspace/SET_elementSettings', deepCopy(saveSettings));
-      this.$store.dispatch('mod_tracker/EVENT_applyLayerSettings', tabName, {root: true});
+      this.$store.dispatch('mod_tracker/EVENT_applyLayerSettings', {
+        componentName: this.currentEl.componentName, 
+        tabName
+      }, {root: true});
     },
     confirmSettings() {
       this.hideAllWindow();
