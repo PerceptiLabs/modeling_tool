@@ -48,7 +48,7 @@
   import timeseriesRegression   from '@/core/basic-template/timeseries-regression.js'
     import { mapActions, mapState } from 'vuex';
 export default {
-    name: 'SelectModeModal',
+    name: 'SelectModelModal',
     data: function() {
         return {
         basicTemplates: [
