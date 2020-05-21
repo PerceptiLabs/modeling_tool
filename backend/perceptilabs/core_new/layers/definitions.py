@@ -33,6 +33,14 @@ class LayerDef:
         self.macro_parameters = macro_parameters
         self.import_statements = import_statements or []
 
+
+def resolve_merge_dim(specs):
+    merge_dim = specs['Properties'].get('Merge_dim')
+    if merge_dim == '':
+        return None
+    else:
+        return int(merge_dim)
+    
         
 def resolve_checkpoint_path(specs):
     import platform
@@ -185,6 +193,23 @@ DEFINITION_TABLE = {
             'import numpy as np',                                    
             'from perceptilabs.core_new.utils import Picklable',
             'from perceptilabs.core_new.serialization import can_serialize, serialize'                    ]
+    ),
+    'MathMerge' : LayerDef(
+        Tf1xLayer,
+        'tf1x.j2',
+        'layer_tf1x_merge',
+        {
+            'type_': lambda specs: specs['Properties']['Type'],
+            'merge_dim': resolve_merge_dim,
+            'merge_order': None
+        },
+        import_statements=[
+            'import tensorflow as tf',
+            'from typing import Dict',
+            'from perceptilabs.core_new.utils import Picklable',
+            'from perceptilabs.core_new.layers.base import Tf1xLayer',
+            'from perceptilabs.core_new.serialization import can_serialize, serialize'            
+        ]
     ),
     'ProcessGrayscale' : LayerDef(
         Tf1xLayer,
