@@ -45,6 +45,7 @@
   import DataData             from '@/components/network-elements/elements/data-data/view-data-data.vue'
   import DataEnvironment      from '@/components/network-elements/elements/data-environment/view-data-environment.vue'
   import DataCloud            from '@/components/network-elements/elements/data-cloud/view-data-cloud.vue'
+  import DataRandom            from '@/components/network-elements/elements/data-random/view-data-random.vue'
 
   import DeepLearningFC       from '@/components/network-elements/elements/deep-learning-fc/view-deep-learning-fc.vue'
   import DeepLearningConv     from '@/components/network-elements/elements/deep-learning-conv/view-deep-learning-conv.vue'
@@ -85,7 +86,7 @@ export default {
   name: 'TheLayersbar',
   mixins: [clickOutside],
   components: {
-    DataData, DataEnvironment, DataCloud,
+    DataData, DataEnvironment, DataCloud, DataRandom,
     DeepLearningFC, DeepLearningConv, DeepLearningDeconv, DeepLearningRecurrent,
     ProcessCrop, ProcessEmbed, ProcessGrayscale, ProcessOneHot, ProcessReshape, ProcessRescale,
     TrainNormal, TrainGenetic, TrainDynamic, TrainReinforce, TrainLoss, TrainOptimizer, TrainGan, TrainDetector,
@@ -106,7 +107,7 @@ export default {
           iconClass: 'icon-data',
           childListClass: '',
           showEl: false,
-          networkElements: ['DataData', 'DataEnvironment', 'DataCloud'],
+          networkElements: ['DataData', 'DataEnvironment', 'DataCloud', 'DataRandom'],
           id:'tutorial_data'
           //networkElements: ['DataData']
         },
