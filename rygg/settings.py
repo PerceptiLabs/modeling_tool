@@ -30,7 +30,7 @@ SECRET_KEY = '-nj5*1agd@#(1*gcm2kd2q!*ui!kg2*yew=ata$n!sj-nnl&a7'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]']
 
 APPEND_SLASH=True
 
