@@ -61,7 +61,18 @@ const actions = {
     mixPanel.track('Model Save', model);
   },
   EVENT_modelExport({}, data) {
-    mixPanel.track('Model Export', data);
+
+    const payload = {};
+
+    if (data.settings.Type == 'TFModel' && data.settings.Compressed) {
+      payload['Type'] = 'tensorflow-compressed';
+    } else if (data.settings.Type == 'TFModel' && !data.settings.Compressed) {
+      payload['Type'] = 'tensorflow';
+    } else if (data.settings.Type == 'ipynb') {
+      payload['Type'] = 'notebook';
+    }
+
+    mixPanel.track('Model Export', payload);
   },
   /* Training */
   EVENT_trainingStart({}, data) {
