@@ -41,6 +41,12 @@ const actions = {
       "$last_login": new Date(),
     });
   },
+  TRACK_userLogin(ctx, email) {
+    mixPanel.track('User login', {'Email': email});
+  },
+  TRACK_userRegistration(ctx, email) {
+    mixPanel.track('User registration', {'Email': email});
+  },
   /* APP */
   EVENT_appStart({rootState}) {
     mixPanel.track('App Start', {
@@ -51,11 +57,25 @@ const actions = {
     mixPanel.track('App Close');
   },
   /* Model */
+  EVENT_modelCreation({}, modelType) {
+    mixPanel.track('Model Creation', {'Type': modelType});
+  },
   EVENT_modelSave({}, model) {
     mixPanel.track('Model Save', model);
   },
   EVENT_modelExport({}, data) {
-    mixPanel.track('Model Export', data);
+
+    const payload = {};
+
+    if (data.settings.Type == 'TFModel' && data.settings.Compressed) {
+      payload['Type'] = 'tensorflow-compressed';
+    } else if (data.settings.Type == 'TFModel' && !data.settings.Compressed) {
+      payload['Type'] = 'tensorflow';
+    } else if (data.settings.Type == 'ipynb') {
+      payload['Type'] = 'notebook';
+    }
+
+    mixPanel.track('Model Export', payload);
   },
   /* Training */
   EVENT_trainingStart({}, data) {
@@ -86,8 +106,11 @@ const actions = {
     mixPanel.track('Test Move', {direction});
   },
   /* Layer Settings */
-  EVENT_applyLayerSettings({}, data) {
-    mixPanel.track('Apply Layer Settings', {'Tab name': data});
+  EVENT_applyLayerSettings({}, {componentName, tabName}) {
+    mixPanel.track('Apply Layer Settings', {
+      'Component name': componentName, 
+      'Tab name': tabName
+    });
   },
   /* Tutorial Mode */
   EVENT_tutorialModeStart() {

@@ -96,7 +96,6 @@ export default {
       });
     },
     requestLoginUser() {
-      googleAnalytics.trackCustomEvent('login');
       this.$store.commit('mod_login/SET_showLoader', true);
       let dataParams = {
         "Email": this.userEmail,
@@ -114,7 +113,10 @@ export default {
             if(isWeb()) {
               this.$store.dispatch('mod_api/API_setUserInCore');
             }
-            
+              
+            this.$store.dispatch('mod_tracker/TRACK_userLogin', this.userEmail);
+            googleAnalytics.trackCustomEvent('login');
+
             this.cloud_userGetProfile();
             // call this if haven't project setted in local storage
             const hasProjectSelected = localStorage.hasOwnProperty('targetProject');

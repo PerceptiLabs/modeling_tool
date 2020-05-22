@@ -179,6 +179,8 @@ export default {
       googleAnalytics.trackCustomEvent('register');
       this.$store.commit('mod_login/SET_showLoader', true);
 
+      this.$store.dispatch('mod_tracker/TRACK_userRegistration', this.user.email);
+
       this.$store.dispatch('mod_apiCloud/CloudAPI_userCreate', this.user)
         .then((response)=> {
           Analytics.hubSpot.trackUserRegistration({
