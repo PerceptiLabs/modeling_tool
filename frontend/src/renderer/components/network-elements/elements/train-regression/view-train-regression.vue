@@ -3,7 +3,7 @@
     data-component="TrainRegression"
     data-layer="Regression"
     data-type="Training"
-    v-tooltip:right="'Regression'"
+    v-tooltip:networkElement="'Regression'"
     v-tooltip-interactive:right="interactiveInfo"
     id="tutorial_training-regression"
     :style="layerStyles"

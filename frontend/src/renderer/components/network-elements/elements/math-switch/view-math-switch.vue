@@ -3,7 +3,7 @@
   data-component="MathSwitch"
   data-layer="Switch"
   data-type="Other"
-  v-tooltip:right="'Switch'"
+  v-tooltip:networkElement="'Switch'"
   v-tooltip-interactive:right="interactiveInfo"
     :style="layerStyles"
   )

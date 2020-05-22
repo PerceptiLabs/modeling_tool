@@ -3,7 +3,7 @@
     data-component="DataRandom"
     data-layer="Random"
     data-type="Data"
-    v-tooltip:right="'Random'"
+    v-tooltip:networkElement="'Random'"
     v-tooltip-interactive:right="interactiveInfo"
     :style="layerStyles"
   )
