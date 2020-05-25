@@ -608,10 +608,10 @@ class {{layer_name}}(Tf1xLayer):
             {% filter remove_lspaces(8) %}
                 {% if conv_dim == '2D' %}
                     shape = [
-                    self._patch_size,
-                    self._patch_size,
-                    x.get_shape().as_list()[-1],
-                    self._feature_maps
+                        self._patch_size,
+                        self._patch_size,
+                        self._feature_maps,
+                        x.get_shape().as_list()[-1]
                     ]
                     initial = tf.random.truncated_normal(
                         shape,
