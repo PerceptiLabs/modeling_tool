@@ -43,90 +43,96 @@
                         | Create
 </template>
 <script>
-  import imageClassification    from '@/core/basic-template/image-classification.js'
-  import reinforcementLearning  from '@/core/basic-template/reinforcement-learning.js'
-  import timeseriesRegression   from '@/core/basic-template/timeseries-regression.js'
-    import { mapActions, mapState } from 'vuex';
+import imageClassification      from '@/core/basic-template/image-classification.js';
+import reinforcementLearning    from '@/core/basic-template/reinforcement-learning.js';
+import timeseriesRegression     from '@/core/basic-template/timeseries-regression.js';
+import linearRegression         from '@/core/basic-template/timeseries-regression.js';
+
+import { mapActions, mapState } from 'vuex';
 export default {
-    name: 'SelectModelModal',
-    data: function() {
-        return {
-        basicTemplates: [
-          {
-            title: 'Image Classification',
-            imgPath: './static/img/project-page/image-classification.svg',
-            template: imageClassification
-          },
-          {
-            title: 'Timeseries Regression',
-            imgPath: './static/img/project-page/time-series-regression.svg',
-            template: timeseriesRegression
-          },
-          {
-            title: 'Reinforcement Learning',
-            imgPath: './static/img/project-page/reinforcement-learning.svg',
-            template: reinforcementLearning
-          },
-        ],
-        chosenTemplate: null,
-        modelName: ''
+  name: 'SelectModelModal',
+  data: function() {
+    return {
+      basicTemplates: [
+        {
+          title: 'Image Classification',
+          imgPath: './static/img/project-page/image-classification.svg',
+          template: imageClassification
+        },
+        {
+          title: 'Timeseries Regression',
+          imgPath: './static/img/project-page/time-series-regression.svg',
+          template: timeseriesRegression
+        },
+        {
+          title: 'Reinforcement Learning',
+          imgPath: './static/img/project-page/reinforcement-learning.svg',
+          template: reinforcementLearning
+        },
+        {
+          title: 'Linear Regression',
+          imgPath: './static/img/project-page/reinforcement-learning.svg',
+          template: linearRegression
+        },
+      ],
+      chosenTemplate: null,
+      modelName: ''
     }
+  },
+  computed: {
+    ...mapState({
+      currentProjectId: state => state.mod_project.currentProject,  
+    })
+  },
+  methods: {
+    ...mapActions({
+      createProjectModel: 'mod_project/createProjectModel',
+      addNetwork: 'mod_workspace/ADD_network',
+    }),
+    closeModal() {
+      this.$emit('close');
     },
-    computed: {
-        ...mapState({
-          currentProjectId: state => state.mod_project.currentProject,  
-        })
+    choseTemplate(index) {
+      this.chosenTemplate = index;
     },
-    methods: {
-        ...mapActions({
-            createProjectModel: 'mod_project/createProjectModel',
-            addNetwork: 'mod_workspace/ADD_network',
-        }),
-        closeModal() {
-            this.$emit('close');
-        },
-        choseTemplate(index) {
-            console.log(this.modelName);
-            this.chosenTemplate = index;
-        },
-        isDisableCreateAction () {
-            const { chosenTemplate, modelName, basicTemplates } = this;
-            return ((chosenTemplate === null) || !modelName);
-        },
-        createModel() {
-            const { chosenTemplate, modelName, basicTemplates } = this;
-            if((chosenTemplate === null) || !modelName)  return
-            
-            let modelType;
-
-            if(chosenTemplate === -1) { // empty template
-                this.createProjectModel({
-                    name: modelName,
-                    project: this.currentProjectId,
-                }).then(apiMeta => {
-                    this.addNetwork({ apiMeta });
-                });
-                modelType = 'Custom';
-            } else {
-                let template = basicTemplates[chosenTemplate].template.network;
-                template.networkName = modelName;
-
-                this.createProjectModel({
-                    name: template.networkName,
-                    project: this.currentProjectId,
-                }).then(apiMeta => {
-                    this.addNetwork({network: template, apiMeta});
-                });
-                modelType = basicTemplates[chosenTemplate].title;
-            }
-            
-            this.$store.dispatch('mod_tracker/EVENT_modelCreation', modelType, {root: true});
-
-
-            this.closeModal();
-
-        }
+    isDisableCreateAction () {
+      const { chosenTemplate, modelName, basicTemplates } = this;
+      return ((chosenTemplate === null) || !modelName);
     },
+    createModel() {
+      const { chosenTemplate, modelName, basicTemplates } = this;
+      if((chosenTemplate === null) || !modelName)  return
+      
+      let modelType;
+
+      if(chosenTemplate === -1) { // empty template
+        this.createProjectModel({
+          name: modelName,
+          project: this.currentProjectId,
+        }).then(apiMeta => {
+          this.addNetwork({ apiMeta });
+        });
+        modelType = 'Custom';
+      } else {
+        let template = basicTemplates[chosenTemplate].template.network;
+        template.networkName = modelName;
+
+        this.createProjectModel({
+          name: template.networkName,
+          project: this.currentProjectId,
+        }).then(apiMeta => {
+          this.addNetwork({network: template, apiMeta});
+        });
+        modelType = basicTemplates[chosenTemplate].title;
+      }
+      
+      this.$store.dispatch('mod_tracker/EVENT_modelCreation', modelType, {root: true});
+
+
+      this.closeModal();
+
+    }
+  },
 }
 </script>
 <style lang="scss" scoped>
