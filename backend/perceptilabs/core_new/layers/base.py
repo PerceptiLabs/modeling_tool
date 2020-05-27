@@ -25,11 +25,19 @@ class BaseLayer(ABC):
         """
         raise NotImplementedError
     
-    
 class DataLayer(BaseLayer):
-    """ Base class for loading data. The data is accessed via the generators, one sample at a time, in a fixed sequence. ̈́
+    """ Base class for any data layer. Different data layers required are built using DataLayer as the base class. Edit this description"""
+    @property
+    @abstractmethod        
+    def sample(self) -> np.ndarray:
+        """Returns a single data sample"""
+        raise NotImplementedError
+
+class DataSupervised(DataLayer):
+    """ Base class for loading data for supervised models. The data is accessed via the generators, one sample at a time, in a fixed sequence. ̈́
     Therefore, it is left up to the consuming layers (usually a training layer) to perform any shuffling. 
     """
+
     @property
     @abstractmethod
     def columns(self) -> List[str]: 
@@ -52,12 +60,6 @@ class DataLayer(BaseLayer):
         raise NotImplementedError
 
     @property
-    @abstractmethod        
-    def sample(self) -> np.ndarray:
-        """Returns a single data sample"""
-        raise NotImplementedError
-
-    @property
     @abstractmethod
     def size_training(self) -> int:
         """Returns the size of the training dataset"""                            
@@ -75,9 +77,37 @@ class DataLayer(BaseLayer):
         """Returns the size of the testing dataset"""                                            
         raise NotImplementedError
 
+class DataRandom(DataSupervised):
+    """ Base class for generating random data for algorithms like GAN. The data is accessed via the generators, one sample at a time, in a fixed sequence."""
+
+    pass
+
+class DataReinforce(DataLayer):
+    """ Base class for loading enviroments for Reinforcement Learning. The data is accessed via the generator, one step at a time. """
+
+    @abstractmethod    
+    def make_generator(self) -> Generator[np.ndarray, None, None]:
+        """Returns a generator yielding single samples of data."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def reset_environment(self, generator):
+        """ Resets the current environment. """
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def action_space(self) -> int:
+        """ Returns the action space of the environment. """
+        raise NotImplementedError
+
+    @abstractmethod
+    def take_action(self, generator, action):
+        """ Takes the generator and the action as inputs and returns the new state info of the environment after taking the action."""
+        raise NotImplementedError
 
 class InnerLayer(BaseLayer):
-    """Base class for any layer that is not a DataLayer or TrainingLayer. These layers typically transform the data somehow."""
+    """Base class for any layer that is not a DataLayer or Training Layer. These layers typically transform the data somehow."""
     @abstractmethod
     def __call__(self, x: ...) -> Any:
         """ Returns a transformed version of the input data.
@@ -89,7 +119,6 @@ class InnerLayer(BaseLayer):
             The transformed input data.
         """
         raise NotImplementedError
-
     
 class Tf1xLayer(InnerLayer):
     """Wrapper for TensorFlow 1.x layers. These layers take tf.Tensor(s) as input and return a new tf.Tensor."""
@@ -149,27 +178,8 @@ class Tf1xLayer(InnerLayer):
             A dictionary with tensor names for keys and tensors for values.
         """        
         raise NotImplementedError
-        
-    
+
 class TrainingLayer(DataLayer):
-    """Base class for training layers. When run, a training layer will receive a PerceptiLabs 'Graph' object as input. 
-    It is up to the implementation to execute all the contents of the graph and returning the values.
-
-    Training layers are also data layers. This enables chaining of several subgraphs, where the training layers are run in sequence. 
-    A later training layer would treat an earlier training layer as a data layer. 
-    """
-    
-    #@property
-    #@abstractmethod
-    #def run(self, graph: Graph):
-    #    raise NotImplementedError
-
-    @property
-    @abstractmethod
-    def columns(self) -> List[str]: 
-        """Column names. Corresponds to each column in a sample """
-        raise NotImplementedError
-
     @abstractmethod
     def on_stop(self) -> None:
         """Called when the stop button is clicked in the frontend. 
@@ -218,8 +228,55 @@ class TrainingLayer(DataLayer):
     def export_modes(self) -> List[str]:
         """Returns the possible modes of exporting a model."""
         raise NotImplementedError
+
+class TrainingSupervised(TrainingLayer, DataSupervised):
+    """Base class for supervised training layers. When run, a training layer will receive a PerceptiLabs 'Graph' object as input. 
+    It is up to the implementation to execute all the contents of the graph and returning the values.
+
+    Training layers are also data layers. This enables chaining of several subgraphs, where the training layers are run in sequence. 
+    A later training layer would treat an earlier training layer as a data layer. 
+    """
+    #@property
+    #@abstractmethod
+    #def run(self, graph: Graph):
+    #    raise NotImplementedError
+
+    def __init__(self):
+        super().__init__()
+
+    @property
+    @abstractmethod
+    def columns(self) -> List[str]: 
+        """Column names. Corresponds to each column in a sample """
+        raise NotImplementedError
     
-class RegressionLayer(TrainingLayer):
+class TrainingRandom(TrainingLayer, DataRandom):
+    """Base class for training layers that depend on mainly Random Data component like GAN for example. When run, a training layer will receive a PerceptiLabs 'Graph' object as input. 
+    It is up to the implementation to execute all the contents of the graph and returning the values.
+
+    Training layers are also data layers. This enables chaining of several subgraphs, where the training layers are run in sequence. 
+    A later training layer would treat an earlier training layer as a data layer. 
+    """
+    def __init__(self):
+        super().__init__()
+
+    @property
+    @abstractmethod
+    def columns(self) -> List[str]: 
+        """Column names. Corresponds to each column in a sample """
+        raise NotImplementedError
+
+class TrainingReinforce(TrainingLayer, DataReinforce):
+    """Base class for Reinforcement learning training layers. When run, a training layer will receive a PerceptiLabs 'Graph' object as input. 
+    It is up to the implementation to execute all the contents of the graph and returning the values.
+
+    Training layers are also data layers. This enables chaining of several subgraphs, where the training layers are run in sequence. 
+    A later training layer would treat an earlier training layer as a data layer. 
+    """
+    def __init__(self):
+        super().__init__()
+    
+class RegressionLayer(TrainingSupervised):
     """A layer for training regression models."""
     # @property
     # @abstractmethod
@@ -365,7 +422,7 @@ class RegressionLayer(TrainingLayer):
         """The current testing iteration"""                
         return self._testing_iteration
     
-class ClassificationLayer(TrainingLayer):
+class ClassificationLayer(TrainingSupervised):
     """A layer for training classifiers."""
     
     @property
@@ -461,9 +518,7 @@ class ClassificationLayer(TrainingLayer):
         """The current testing iteration"""                
         return self._testing_iteration
 
-
-
-class ObjectDetectionLayer(TrainingLayer):
+class ObjectDetectionLayer(TrainingSupervised):
     """A layer for training classifiers."""
     
     @property
@@ -654,7 +709,7 @@ class ObjectDetectionLayer(TrainingLayer):
         """ node corresponding to input tensor"""
         return self._input_data_node
 
-class RLLayer(TrainingLayer):
+class RLLayer(TrainingReinforce):
     
     @property
     @abstractmethod    
@@ -778,7 +833,7 @@ class RLLayer(TrainingLayer):
         """
         raise NotImplementedError
 
-class GANLayer(TrainingLayer):
+class GANLayer(TrainingRandom):
     """A layer for training GANs"""
     
     @property

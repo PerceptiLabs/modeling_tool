@@ -5,7 +5,7 @@ from typing import Dict, List, Tuple
 
 
 from perceptilabs.script.base import CodeGenerator
-from perceptilabs.core_new.layers.base import BaseLayer, DataLayer, InnerLayer, TrainingLayer
+from perceptilabs.core_new.layers.base import BaseLayer, DataLayer,  DataSupervised, DataRandom, DataReinforce, InnerLayer, TrainingLayer, TrainingSupervised, TrainingRandom, TrainingReinforce
 
 
 log = logging.getLogger(__name__)

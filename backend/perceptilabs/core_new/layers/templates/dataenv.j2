@@ -1,30 +1,14 @@
 {% macro layer_dataenvironment(layer_name, environment_name) %}
-class {{layer_name}}(DataLayer):
+class {{layer_name}}(DataReinforce):
     """Class responsible for running the gym environment."""    
     def __init__(self):
         self._variables = {}
         self._env_name = '{{environment_name}}'
         self._env = gym.make(self._env_name)
-        self._columns = []
+        sample = self._env.reset()
         action_space = self._env.action_space.n
-        sample = next(self.make_generator_training())
-        self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
         
-    
-    @property
-    def size_training(self) -> int:
-        """Returns the size of the training dataset"""                    
-        return 1
-
-    @property
-    def size_validation(self) -> int:
-        """Returns the size of the validation dataset"""
-        return 1
-
-    @property
-    def size_testing(self) -> int:
-        """Returns the size of the testing dataset"""                    
-        return 1
+        self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
 
     @property
     def variables(self) -> Dict[str, Picklable]:
@@ -33,45 +17,52 @@ class {{layer_name}}(DataLayer):
 
     @property
     def sample(self) -> np.ndarray:
-        """Returns a single data sample"""                    
-        sample = next(self.make_generator_training())
-        return sample
+        """Returns the new state of the environment after taking a random step"""                    
+        gen = (self.make_generator())
+        next(gen)
+        sample = gen.send(None)
+        state = sample[0]
+        return state
 
     @property
-    def columns(self) -> List[str]:
-        """Column names. Corresponds to each column in a sample """
-        return self._columns.copy()
-
-    def make_generator_training(self) -> Generator[np.ndarray, None, None]:
-        """Returns a sample from gym environment."""                                        
-        def gen():
-            global env, state_
-            env = gym.make(self._env_name)
-            sample = env.reset()
-            state_ = np.float32(sample)
-            while True:
-                yield state_
-        return gen()
-
-    def make_generator_testing(self) -> Generator[np.ndarray, None, None]:
-        """Returns a sample from gym environment."""                                        
-        def gen():
-            global env, state_
-            env = gym.make(self._env_name)
-            sample = env.reset()
-            state_ = np.float32(sample)
-            while True:
-                yield state_
-        return gen()
+    def action_space(self) -> List[int]:
+        """ Returns the action space of the environment"""
+        n_actions = self._env.action_space.n
+        return list(range(0,n_actions))
         
-    def make_generator_validation(self) -> Generator[np.ndarray, None, None]:
+
+    def make_generator(self) -> Generator[np.ndarray, None, None]:
         """Returns a sample from gym environment."""                                        
         def gen():
-            global env, state_
             env = gym.make(self._env_name)
-            sample = env.reset()
-            state_ = np.float32(sample)
+            start_state = env.reset()
             while True:
-                yield state_
+                action = yield
+                if not action:
+                    action = env.action_space.sample()
+                    [new_state, reward, done, info] = self._env.step(action)
+                    state_info = [new_state, reward, done, info]
+                elif action == 'reset':
+                    start_state = env.reset()
+                    state_info = start_state
+                else:
+                    [new_state, reward, done, info] = env.step(action)
+                    state_info = [new_state, reward, done, info]
+                yield state_info
         return gen()
+
+    def reset_environment(self, generator) -> np.ndarray:
+        """ resets the environment"""
+        state = generator.send('reset')
+        next(generator)
+        return state
+
+    def take_action(self, generator, action) -> List:
+        """ takes a step in the current environment given action and returns the new state information"""
+        if action not in self.action_space:
+            raise ValueError("Invalid action: valid actions are {}.".format(self.action_space))
+        new_state_info = generator.send(action)
+        next(generator)
+        return new_state_info
+
 {% endmacro %}

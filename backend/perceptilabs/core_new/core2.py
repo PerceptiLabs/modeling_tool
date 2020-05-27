@@ -25,7 +25,7 @@ from perceptilabs.utils import deprecated
 from perceptilabs.issues import IssueHandler, UserlandError
 from perceptilabs.core_new.graph import Graph, JsonNetwork
 from perceptilabs.core_new.graph.builder import GraphBuilder
-from perceptilabs.core_new.layers import TrainingLayer
+from perceptilabs.core_new.layers import TrainingSupervised, TrainingReinforce, TrainingRandom
 from perceptilabs.core_new.layers.definitions import DEFINITION_TABLE
 from perceptilabs.core_new.api.mapping import ByteMap
 from perceptilabs.core_new.communication import TrainingClient, State

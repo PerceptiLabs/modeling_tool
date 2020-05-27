@@ -19,7 +19,7 @@ from tempfile import NamedTemporaryFile
 
 from perceptilabs.issues import UserlandError
 from perceptilabs.core_new.layers.definitions import resolve_checkpoint_path, TOP_LEVEL_IMPORTS, DEFINITION_TABLE
-from perceptilabs.core_new.layers import BaseLayer, DataLayer, InnerLayer, Tf1xLayer, TrainingLayer, ClassificationLayer, ObjectDetectionLayer, RLLayer
+from perceptilabs.core_new.layers import BaseLayer, DataLayer, DataReinforce, DataSupervised, DataRandom, InnerLayer, Tf1xLayer, TrainingRandom, TrainingSupervised, TrainingReinforce, TrainingLayer, ClassificationLayer, ObjectDetectionLayer, RLLayer
 from perceptilabs.core_new.graph.splitter import GraphSplitter
 from perceptilabs.core_new.graph.utils import get_json_net_topology
 from perceptilabs.core_new.graph.builder import GraphBuilder, SnapshotBuilder
@@ -238,10 +238,9 @@ class Tf1xStrategy(BaseStrategy):
             status.run_restore_ops(session=sess)
 
             
-class DataStrategy(BaseStrategy):
+class DataSupervisedStrategy(BaseStrategy):
     def run(self, layer_id, layer_type, layer_class, input_results, layer_spec):
         layer_instance = layer_class()
-
         columns = layer_instance.columns
 
         try:
@@ -268,6 +267,32 @@ class DataStrategy(BaseStrategy):
         )
         return results
 
+class DataReinforceStrategy(BaseStrategy):
+    def run(self, layer_id, layer_type, layer_class, input_results, layer_spec):
+        layer_instance = layer_class()
+        try:
+            y = layer_instance.sample
+        except Exception as e:
+            y = None
+            shape = None
+            strategy_error = exception_to_error(layer_id, layer_type, e)
+            log.exception(f"Layer {layer_id} raised an error when calling sample property")                        
+        else:
+            shape = np.atleast_1d(y).shape
+            strategy_error=None
+
+        variables = layer_instance.variables.copy()
+        
+        results = LayerResults(
+            sample=y,
+            out_shape=shape,
+            variables=variables,
+            columns = [],
+            code_error=None,
+            instantiation_error=None,
+            strategy_error=strategy_error
+        )
+        return results
     
 class LightweightCore:
     def __init__(self, issue_handler=None, cache=None):
@@ -336,8 +361,10 @@ class LightweightCore:
     def _get_layer_strategy(self, layer_obj):
         if issubclass(layer_obj, TrainingLayer):
             strategy = DefaultStrategy()
-        elif issubclass(layer_obj, DataLayer):
-            strategy = DataStrategy()
+        elif issubclass(layer_obj, DataSupervised):
+            strategy = DataSupervisedStrategy()
+        elif issubclass(layer_obj, DataReinforce):
+            strategy = DataReinforceStrategy()
         elif issubclass(layer_obj, Tf1xLayer): 
             strategy = Tf1xTempStrategy(self._layer_ids_to_names)
         else:
@@ -483,7 +510,6 @@ class LightweightCoreAdapter:
                 self._data_container.store_value(layer_id, name, value)
                 
             default_var = '(sample)'
-            
             entry = {
                 'Sample': layer_info.sample.tolist() if layer_info.sample is not None else None,
                 'outShape': [] if layer_info.out_shape is None else list(layer_info.out_shape),

@@ -6,7 +6,7 @@ import numpy as np
 import tensorflow as tf
 
 
-from code.layer import InnerLayer, TrainingLayer, DataLayer, Tf1xLayer
+from code.layer import InnerLayer, TrainingSupervised, DataSupervised, Tf1xLayer
 from core_new.graph import Graph, Node
 from core_new.api.logging import CoreHandler
 from core_new.api.mapping import ByteMap, EventBus
@@ -25,7 +25,7 @@ log = logging.getLogger(__name__)
 log.addHandler(CoreHandler(event_bus))
 
 
-class RandomDataLayer1(DataLayer):
+class RandomDataLayer1(DataSupervised):
     def __init__(self):
         self._data = np.random.random((100, 784))
 
@@ -59,7 +59,7 @@ class RandomDataLayer1(DataLayer):
         yield from self._data[90:]    
 
 
-class RandomDataLayer2(DataLayer):
+class RandomDataLayer2(DataSupervised):
     def __init__(self):
         self._data = np.random.randint(0, 10, (100,))
 
@@ -136,7 +136,7 @@ class OneHot4(Tf1xLayer):
         return []
 
     
-class TrainNormalLayer(TrainingLayer):
+class TrainNormalLayer(TrainingSupervised):
     def __init__(self, output_layer: InnerLayer, target_layer: InnerLayer):
         """ Generated according to layer properties [true for all layers] """
         self._training_status = 'created'        
@@ -369,12 +369,12 @@ if __name__ == "__main__":
             # TODO: this switch should be dynamically generated depending on which layers are present. Consider using decorators for specification? or just take all properties?
             # Perhaps it only makes sense to support our base layers, and custom layers are gonna have to rely on 'variables', etc. They don't have UI support anyway.
             layer = node.layer
-            if isinstance(layer, DataLayer):
+            if isinstance(layer, DataSupervised):
                 state_mapping['size_training'] = layer.size_training
                 state_mapping['sample'] = layer.sample
             elif isinstance(node.layer, Tf1xLayer):
                 pass
-            elif isinstance(layer, TrainingLayer):
+            elif isinstance(layer, TrainingSupervised):
                 pass
 
     

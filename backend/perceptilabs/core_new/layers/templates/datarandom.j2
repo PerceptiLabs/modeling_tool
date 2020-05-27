@@ -1,6 +1,6 @@
 {% macro layer_datarandom(layer_name, distribution, shape, mean, stddev, minval, maxval, seed) %} 
 # import numpy as np
-class {{layer_name}}(DataLayer):
+class {{layer_name}}(DataRandom):
     """Class responsible for generating random noise"""    
     def __init__(self):
         self._variables = {}

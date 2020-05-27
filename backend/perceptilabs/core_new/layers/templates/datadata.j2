@@ -1,7 +1,7 @@
 {% from 'file_utils.j2' import load_npy, load_csv, load_img_dir %}
 
 {% macro layer_datadata(layer_name, sources, partitions, shuffle, selected_columns, seed, lazy, shuffle_buffer_size) %}
-class {{layer_name}}(DataLayer):
+class {{layer_name}}(DataSupervised):
     """Class responsible for loading data from files (e.g., numpy, csv, etc)."""    
     def __init__(self):
         self._variables = {}

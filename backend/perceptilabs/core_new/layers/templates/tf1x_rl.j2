@@ -1,4 +1,4 @@
-{% macro run_normal(graph, layer_name, layer_pairs, n_episodes, batch_size, learning_rate, discount_factor, replay_memory_size, initial_exploration, final_exploration, final_exporation_frame, update_frequency, target_network_update_frequency, n_steps_max, optimizer, export_directory) %}
+{% macro run_normal(graph, layer_name, layer_pairs, n_episodes, batch_size, learning_rate, discount_factor, replay_memory_size, initial_exploration, final_exploration, final_exporation_frame, update_frequency, target_network_update_frequency, n_s_max, optimizer, export_directory) %}
         self._status = 'initializing'
 
         def get_rl_graph(graph):
@@ -39,10 +39,11 @@
 
 
         input_data_node = graph.data_nodes[0]
-        global env, state_
-        state_ = next(input_data_node.layer_instance.make_generator_training())
-        n_actions = env.action_space.n
-        self._n_actions = n_actions
+        generator = input_data_node.layer_instance.make_generator()
+        generator.send(None)
+        state_ = input_data_node.layer_instance.reset_environment(generator)
+        self._actions = input_data_node.layer_instance.action_space
+        self._n_actions = len(self._actions)
         # create state tensor
         state_tensor = tf.placeholder(tf.float32, shape=(None, ) + state_.shape[:-1] + (state_.shape[-1]*self._history_length, ))
 
@@ -76,7 +77,7 @@
         input_shape = state_tensor.get_shape().as_list()[1:]
         y_tensor = tf.placeholder(tf.float32, [None, 1])
         a_tensor = tf.placeholder(tf.uint8, [None, 1])
-        a_one_hot = tf.one_hot(a_tensor, n_actions, dtype=tf.float32)
+        a_one_hot = tf.one_hot(a_tensor, self._n_actions, dtype=tf.float32)
         a_one_hot = a_one_hot[:, -1, :]
         q_performed = tf.reduce_sum(tf.multiply(Q_online_tensor , a_one_hot), axis=1, keep_dims=True)
         loss_tensor = tf.reduce_mean(tf.square(y_tensor - q_performed))
@@ -190,7 +191,7 @@
         while self._episode < self._n_episodes and not self._stopped:
             t0 = time.perf_counter()
             self._status = 'training'
-            state_ = env.reset()
+            state_ = input_data_node.layer_instance.reset_environment(generator)
             state_seq = [state_]*self._history_length
             self._step_counter = 0
             done = False
@@ -200,13 +201,13 @@
 
                     explore = np.random.random() < epsilon(self._episode) or iterations < self._replay_start_size
                     if explore:
-                        action = env.action_space.sample()
-                        probs = [1/env.action_space.n for i in range(env.action_space.n)]
+                        action = np.random.randint(0, self._n_actions)
+                        probs = [1/self._n_actions for i in range(self._n_actions)]
                     else:
                         Q = Q_online_tensor.eval(session=sess, feed_dict={state_tensor: [np.concatenate(state_seq,-1)]}).squeeze()
                         action = np.argmax(Q)
                         probs = [i/np.sum(Q) for i in Q]
-                    new_state, reward, done, info = env.step(action)
+                    new_state, reward, done, info = input_data_node.layer_instance.take_action(generator, action)
                     new_state_seq = state_seq[1:] + [new_state]
                     self._reward = reward
 
@@ -238,8 +239,6 @@
                                 y_batch[i] += self._gamma*np.amax(Q)
                             a_batch[i] = t['action']
                             X_batch[i] = np.concatenate(t['state_seq'],-1)
-                        
-                        # state_ = np.atleast_2d(X_batch)[-1,:,:,:3] #to show the same frame in the frontend
                         
                         feed_dict = {
                          state_tensor: np.atleast_2d(X_batch),
@@ -454,11 +453,6 @@ class {{layer_name}}(RLLayer):
     def history_length(self) -> int:
         """ history length"""
         return self._history_length
-    
-    @property
-    def columns(self) -> List[str]: 
-        """Column names. Corresponds to each column in a sample """
-        return []
 
     @property
     def variables(self):
@@ -475,20 +469,10 @@ class {{layer_name}}(RLLayer):
         return np.empty(())
 
     @property
-    def size_training(self) -> int:
-        """Returns the size of the training dataset"""                                    
-        return 1
+    def action_space(self) -> List[int]:
+        """ Returns the action space of the environment used for training the model"""
+        return self._actions
 
-    @property
-    def size_validation(self) -> int:
-        """Returns the size of the validation dataset"""                                            
-        return 1
-
-    @property
-    def size_testing(self) -> int:
-        """Returns the size of the testing dataset"""
-        return 1
-    
     @property
     def n_actions(self) -> float:
         """ returns reward during one iteration"""
@@ -513,6 +497,20 @@ class {{layer_name}}(RLLayer):
     def loss_testing(self) -> float:
         """Returns the current loss of the testing phase"""                
         return self._loss_testing
+
+
+    def make_generator(self) -> Generator[np.ndarray, None, None]:
+        """Returns a generator yielding single samples of training data. In the case of a training layer, this typically yields the model output."""        
+        # Simply call sess.run on the output & target tensors :)  #TODO: how to make generators generic? We have two datasets here, but not all datasets will be labeled. Distinguish between supervised/unsupervised data layers and instead REQUIRE pairs of data layers for supervised?
+        yield from []
+
+    def reset_environment(self, generator) -> np.ndarray:
+        """  Returns the state of the environment after being reset"""
+        return generator.send('reset')
+
+    def take_action(self, generator, action) -> List:
+        """ Takes the given action in the environment and returns the new state info. """
+        return generator.send(action)
 
     @property
     def layer_weights(self) -> Dict[str, Dict[str, Picklable]]:
@@ -568,18 +566,5 @@ class {{layer_name}}(RLLayer):
         
         progress = min(iteration/(n_iterations_total - 1), 1.0) 
         return progress
-    
-    def make_generator_training(self) -> Generator[np.ndarray, None, None]:
-        """Returns a generator yielding single samples of training data."""        
         
-        yield from []
-        
-    def make_generator_validation(self) -> Generator[np.ndarray, None, None]:
-        """Returns a generator yielding single samples of validation data."""                
-        yield from []
-        
-    def make_generator_testing(self) -> Generator[np.ndarray, None, None]:
-        """Returns a generator yielding single samples of testing data."""                        
-        yield from []
-
 {% endmacro %}

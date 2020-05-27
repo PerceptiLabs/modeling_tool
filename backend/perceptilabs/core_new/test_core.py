@@ -15,7 +15,7 @@ from perceptilabs.core_new.layers.script import ScriptFactory
 from perceptilabs.core_new.core2 import Core
 from perceptilabs.core_new.graph.builder import GraphBuilder
 from perceptilabs.core_new.graph import Graph
-from perceptilabs.core_new.layers import TrainingLayer
+from perceptilabs.core_new.layers import TrainingSupervised, TrainingReinforce, TrainingRandom
 from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP
 from perceptilabs.utils import wait_for_condition
 from perceptilabs.messaging.simple import SimpleMessageConsumer, SimpleMessageProducer, SimpleMessagingFactory

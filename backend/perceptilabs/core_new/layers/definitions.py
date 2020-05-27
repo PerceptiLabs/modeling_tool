@@ -114,7 +114,7 @@ TOP_LEVEL_IMPORTS_FLAT = TOP_LEVEL_IMPORTS['standard_library'] + \
 
 DEFINITION_TABLE = {
     'DataData': LayerDef(
-        DataLayer,
+        DataSupervised,
         'datadata.j2',
         'layer_datadata',
         {
@@ -127,7 +127,7 @@ DEFINITION_TABLE = {
             'shuffle_buffer_size': None,
         },
         import_statements=[
-            'from perceptilabs.core_new.layers.base import DataLayer',
+            'from perceptilabs.core_new.layers.base import DataSupervised',
             'from typing import Dict, Generator',
             'import multiprocessing', 
             'import numpy as np',
@@ -139,7 +139,7 @@ DEFINITION_TABLE = {
         ]
     ),
     'DataRandom': LayerDef(
-        DataLayer,
+        DataRandom,
         'datarandom.j2',
         'layer_datarandom',
         {   
@@ -153,7 +153,7 @@ DEFINITION_TABLE = {
             'seed': 0,
         },
         import_statements=[
-            'from perceptilabs.core_new.layers.base import DataLayer',
+            'from perceptilabs.core_new.layers.base import DataRandom',
             'from typing import Dict, Generator',
             'import numpy as np',
             'import multiprocessing', 
@@ -178,14 +178,14 @@ DEFINITION_TABLE = {
         ]
     ),
     'DataEnvironment': LayerDef(
-        DataLayer,
+        DataReinforce,
         'dataenv.j2',
         'layer_dataenvironment',
         {   
             'environment_name': lambda specs: specs['Properties']['accessProperties']['Atari'] + '-v0',
         },
         import_statements=[
-            'from perceptilabs.core_new.layers.base import DataLayer',
+            'from perceptilabs.core_new.layers.base import DataReinforce',
             'from typing import Dict, Generator',
             'import multiprocessing', 
             'import tensorflow as tf',

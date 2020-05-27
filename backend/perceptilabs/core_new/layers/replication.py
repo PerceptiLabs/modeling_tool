@@ -23,6 +23,9 @@ BASE_TO_REPLICA_MAP = {
     RegressionLayer: RegressionLayerReplica,  
     RLLayer: RLLayerReplica, 
     GANLayer: GANLayerReplica,
+    DataRandom: DataRandomReplica,
+    DataSupervised: DataSupervisedReplica,
+    DataReinforce: DataReinforceReplica,
     DataLayer: DataLayerReplica,
     Tf1xLayer: Tf1xLayerReplica,
     InnerLayer: InnerLayerReplica,        
@@ -151,10 +154,8 @@ REPLICATED_PROPERTIES_TABLE = {
     ],
     RLLayer: [
         ReplicatedProperty('sample', (np.float32, np.ndarray), lambda _: np.empty(())),
-        ReplicatedProperty('size_training', int, -1),
-        ReplicatedProperty('size_validation', int, -1),
-        ReplicatedProperty('size_testing', int, -1),
         ReplicatedProperty('reward',(np.float32, float), -1),
+        ReplicatedProperty('action_space', list, []),
         ReplicatedProperty('n_actions', int, -1),
         ReplicatedProperty('n_episodes', int, -1),
         ReplicatedProperty('episode', int, -1),
@@ -176,7 +177,6 @@ REPLICATED_PROPERTIES_TABLE = {
         ReplicatedProperty('batch_size', int, -1),
         ReplicatedProperty('progress', (np.float32, float), -1),
         ReplicatedProperty('export_modes', list, []),
-        ReplicatedProperty('columns', list, []),
     ],
     GANLayer: [
         ReplicatedProperty('sample', (np.float32, np.ndarray), lambda _: np.empty(())),
@@ -207,12 +207,29 @@ REPLICATED_PROPERTIES_TABLE = {
         ReplicatedProperty('export_modes', list, []),
         ReplicatedProperty('columns', list, []),        
     ],
-    DataLayer: [
+    DataRandom: [
         ReplicatedProperty('sample', ((np.float32, float), np.ndarray), lambda _: np.empty(())),
         ReplicatedProperty('columns', list, []),        
         ReplicatedProperty('size_training', int, -1),
         ReplicatedProperty('size_validation', int, -1),
         ReplicatedProperty('size_testing', int, -1),
+        ReplicatedProperty('variables', dict, lambda _: dict())
+    ],
+    DataSupervised: [
+        ReplicatedProperty('sample', ((np.float32, float), np.ndarray), lambda _: np.empty(())),
+        ReplicatedProperty('columns', list, []),        
+        ReplicatedProperty('size_training', int, -1),
+        ReplicatedProperty('size_validation', int, -1),
+        ReplicatedProperty('size_testing', int, -1),
+        ReplicatedProperty('variables', dict, lambda _: dict())
+    ],
+    DataReinforce: [
+        ReplicatedProperty('sample', ((np.float32, float), np.ndarray), lambda _: np.empty(())),
+        ReplicatedProperty('action_space', list, []),        
+        ReplicatedProperty('variables', dict, lambda _: dict())
+    ],
+    DataLayer: [
+        ReplicatedProperty('sample', ((np.float32, float), np.ndarray), lambda _: np.empty(())),
         ReplicatedProperty('variables', dict, lambda _: dict())
     ],
     Tf1xLayer: [
