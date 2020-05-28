@@ -74,7 +74,9 @@ setup(
     description="",
     long_description="",
     install_requires=[
-        'tensorflow-gpu == 1.15',
+        'tensorflow == 1.15; platform_system == "Darwin"',
+        'tensorflow-gpu == 1.15; platform_system == "Linux"',
+        'tensorflow-gpu == 1.15; platform_system == "Windows"',                
         'numpy >= 1.16.4',
         'fsspec >= 0.6.0',
         'pandas >= 0.25.0',
