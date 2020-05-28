@@ -5,7 +5,10 @@ import threading
 import subprocess
 
 
-log = logging.getLogger(__name__)
+from perceptilabs.logconf import APPLICATION_LOGGER
+
+
+logger = logging.getLogger(APPLICATION_LOGGER)
 
 
 class DeploymentStrategy(ABC):

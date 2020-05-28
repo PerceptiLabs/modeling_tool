@@ -1,0 +1,173 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "$id": "graph_spec.json",
+    "type": "object",
+    "required": [
+	"nodes",
+	"edges"
+    ],    
+    "properties": {
+	"nodes": {
+	    "type": "array",
+	    "items": {
+		"anyOf": [
+		    {"$ref": "#/definitions/layer_datadata"},
+		    {"$ref": "#/definitions/layer_tf1x_reshape"},
+		    {"$ref": "#/definitions/layer_tf1x_one_hot"},
+		    {"$ref": "#/definitions/layer_tf1x_conv"},
+		    {"$ref": "#/definitions/layer_tf1x_fully_connected"},
+		    {"$ref": "#/definitions/layer_tf1x_grayscale"},		    		    
+		    {"$ref": "#/definitions/layer_tf1x_classification"}		    
+		]
+	    }
+	},
+	"edges": {
+	    "description": "An array of nested arrays. The nested arrays must contain two strings of layer ids",
+	    "type": "array",
+	    "items": {
+		"type": "array",
+		"items": {"type": "string"},
+		"minItems": 2,
+		"maxItems": 2		
+	    }
+	}	
+    },
+    "definitions": {
+	"layer_datadata": {
+	    "required": ["id", "type"],
+	    "properties": {
+		"type": {"const": "layer_datadata"},
+		"id": {"type": "string"},
+		"name": {"type": "string"},
+		"code": {"type": "string"},						
+		"selected_columns": {"type": "array", "items": {"type": "string"}},
+		"sources": {
+		    "type": "array",
+		    "items": {
+			"type": "object",
+			"properties": {
+			    "path": {"type": "string"},
+			    "partition": {
+				"type": "array",
+				"items": {"type": "number"},
+				"minItems": 3,
+				"maxItems": 3
+			    }
+			}
+		    }
+		}
+	    }
+	},
+	"layer_tf1x_reshape": {
+	    "required": ["id", "type"],
+	    "properties": {
+		"type": {"const": "layer_tf1x_reshape"},
+		"id": {"type": "string"},
+		"name": {"type": "string"},
+		"code": {"type": "string", "default": null},				
+		"shape": {
+		    "type": "array",
+		    "items": {"type": "number"},
+		    "minItems": 3,
+		    "maxItems": 3
+		},
+		"permutation": {
+		    "type": "array",
+		    "items": {"type": "number"},
+		    "minItems": 3,
+		    "maxItems": 3
+		}		
+	    }
+	},
+	"layer_tf1x_one_hot": {
+	    "required": ["id", "type"],
+	    "properties": {
+		"type": {"const": "layer_tf1x_one_hot"},
+		"id": {"type": "string"},
+		"name": {"type": "string"},
+		"n_classes": {"type": "number"},		
+		"code": {"type": "string", "default": null}
+	    }
+	},
+	"layer_tf1x_grayscale": {
+	    "required": ["id", "type"],	    
+	    "properties": {
+		"type": {"const": "layer_tf1x_grayscale"},
+		"id": {"type": "string"},
+		"name": {"type": "string"},
+		"code": {"type": "string", "default": null}
+	    }
+	},
+	"layer_tf1x_classification": {
+	    "required": ["id", "type"],
+	    "properties": {
+		"type": {"const": "layer_tf1x_classification"},
+		"id": {"type": "string"},
+		"name": {"type": "string"},
+		"code": {"type": "string", "default": null},
+		"output_layer_id": {"type": "string"},
+		"target_layer_id": {"type": "string"},
+		"n_epochs": {"type": "number"},
+		"loss": {"type": "string", "enum": ["rms"]},
+		"optimizer": {"type": "string", "enum": ["sgd", "momentum", "adam", "adagrad", "rmsprop"]},
+		"learning_rate": {"type": "number"},
+		"distributed": {"type": "bool"}
+	    }
+	},
+	"layer_tf1x_fully_connected": {
+	    "required": ["id", "type"],
+	    "properties": {
+		"type": {"const": "layer_tf1x_fully_connected"},
+		"id": {"type": "string"},
+		"name": {"type": "string"},
+		"code": {"type": "string", "default": null},		
+		"n_neurons": {"type": "number"},
+		"activation": {
+		    "type": "string",
+		    "enum": [null, "sigmoid", "relu", "tanh"]
+		},
+		"dropout": {
+		    "type": "object",
+		    "required": ["keep_prob"],
+		    "properties": {
+			"keep_prob": {"type": "number"}
+		    }		    
+		}
+	    }
+	},
+	"layer_tf1x_conv": {
+	    "required": ["id", "type"],
+	    "properties": {
+		"type": {"const": "layer_tf1x_conv"},
+		"id": {"type": "string"},
+		"name": {"type": "string"},
+		"code": {"type": "string", "default": null},
+		"n_neurons": {"type": "number"},
+		"activation": {
+		    "type": "string",
+		    "enum": [null, "sigmoid", "relu", "tanh"]
+		},
+		"patch_size": {"type": "number"},
+		"feature_maps": {"type": "number"},
+		"padding": {"type": "string", "enum": ["SAME", "VALID"]},
+
+		"dropout": {
+		    "type": "object",
+		    "required": ["keep_prob"],
+		    "properties": {
+			"keep_prob": {"type": "number"}
+		    }		    
+		},
+		"pooling": {
+		    "type": "object",
+		    "required": ["size", "strides", "padding"],
+		    "properties": {
+			"size": {"type": "number"},
+			"strides": {"type": "number"},			
+			"padding": {"type": "string", "enum": ["SAME", "VALID"]}
+		    }		    
+		}
+	    }
+	}
+    }    
+}

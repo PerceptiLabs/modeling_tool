@@ -9,10 +9,11 @@ from perceptilabs.code_generator import CustomCodeGenerator, CodePart
 from perceptilabs.code_generator.datadata import DataDataCodeGenerator
 from perceptilabs.code_generator.dataenv import DataEnvironmentCodeGenerator
 from perceptilabs.script.generators import DataDataCodeGenerator2
+from perceptilabs.logconf import APPLICATION_LOGGER
 
 from perceptilabs.code_generator.tensorflow import FullyConnectedCodeGenerator, ConvCodeGenerator, DeconvCodeGenerator, RecurrentCodeGenerator, CropCodeGenerator, WordEmbeddingCodeGenerator, GrayscaleCodeGenerator, OneHotCodeGenerator, ReshapeCodeGenerator, ArgmaxCodeGenerator, MergeCodeGenerator, SoftmaxCodeGenerator, TrainNormalCodeGenerator, TrainLossCodeGenerator, TrainOptimizerCodeGenerator, TrainReinforceCodeGenerator, LayerPair
 
-log = logging.getLogger(__name__)
+logger = logging.getLogger(APPLICATION_LOGGER)
 
 
 def should_use_lazy(sources):
@@ -27,17 +28,17 @@ def should_use_lazy(sources):
                 estimator = get_csv_ram_estimator()
                 est_sz += estimator(path)
             else:
-                log.warning("csv ram estimator instance not available")
+                logger.warning("csv ram estimator instance not available")
                 est_sz += 2*os.path.getsize(path) # 2 to give an arbitrary safety margin           
         else:
             est_sz += 2*os.path.getsize(path) # 2 to give an arbitrary safety margin
 
     files = [s['path'] for s in sources]
     total_ram = psutil.virtual_memory().total    
-    log.info(f"Estimated size of data files {files} is {est_sz/10**6} MB. Total memory: {total_ram/10**6} MB")
+    logger.info(f"Estimated size of data files {files} is {est_sz/10**6} MB. Total memory: {total_ram/10**6} MB")
 
     if total_ram * MAX_RAM_RATE < est_sz:
-        log.warning(f"Estimated size exceeds maximum allowed ram ({100*MAX_RAM_RATE}% of total ram). Setting lazy data handling to true.")
+        logger.warning(f"Estimated size exceeds maximum allowed ram ({100*MAX_RAM_RATE}% of total ram). Setting lazy data handling to true.")
         return True
     else:
         return False
@@ -49,7 +50,7 @@ class CodeHqNew:
         try:
             return cls._get_code_generator(id_, content)
         except:
-            log.exception("Error in code hq. id = {} and content = {}".format(id_, content))
+            logger.exception("Error in code hq. id = {} and content = {}".format(id_, content))
             raise        
 
     @classmethod
@@ -85,7 +86,7 @@ class CodeHqNew:
                 return True
             
             if any(data_source_requires_legacy(s) for s in sources):
-                log.warning(
+                logger.warning(
                     "One or more sources require legacy DataDataCodeGenerator." 
                     "Sources are " + pprint.pformat(sources)
                 )
@@ -192,7 +193,7 @@ class CodeHqNew:
                 output_layer = "'Output layer here'"
 
             if len(content['Con']) > 2:
-                log.warning("More than 2 input layers not supported to training layer! Will treat {} as network output layer.".format(output_layer))
+                logger.warning("More than 2 input layers not supported to training layer! Will treat {} as network output layer.".format(output_layer))
 
             code_gen = TrainNormalCodeGenerator(output_layer=output_layer,
                                                 target_layer=target_layer,
@@ -265,7 +266,7 @@ class CodeHqNew:
         elif type_ == 'MathSplit':
             raise NotImplementedError("Math split not implemented")
         else:
-            log.error("Unrecognized layer. Type {}: {}".format(type_, pprint.pformat(content)))
+            logger.error("Unrecognized layer. Type {}: {}".format(type_, pprint.pformat(content)))
             return None
 
 

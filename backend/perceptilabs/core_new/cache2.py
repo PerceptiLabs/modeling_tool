@@ -1,8 +1,11 @@
 import logging
+import logging
 import hashlib
 import numpy as np
 import networkx as nx
 from collections import namedtuple
+
+from perceptilabs.logconf import APPLICATION_LOGGER
 
 
 #def print_order(l, d):
@@ -17,7 +20,8 @@ from collections import namedtuple
 #    print('-- -- --')
 
 
-log = logging.getLogger(__name__)
+
+logger = logging.getLogger(APPLICATION_LOGGER)
 
 
 class ListEntry:

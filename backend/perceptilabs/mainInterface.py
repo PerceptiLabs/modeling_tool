@@ -1,3 +1,4 @@
+import logging
 import sys
 import os
 import logging
@@ -20,14 +21,16 @@ from perceptilabs.modules import ModuleProvider
 from perceptilabs.core_new.cache import get_cache
 from perceptilabs.core_new.networkCache import NetworkCache
 from perceptilabs.codehq import CodeHqNew as CodeHq
+from perceptilabs.logconf import APPLICATION_LOGGER, set_user_email
 from perceptilabs.core_new.lightweight2 import LightweightCoreAdapter
 from perceptilabs.core_new.cache2 import LightweightCache
+import perceptilabs.logconf
 
-        
+
 #LW interface
 from perceptilabs.lwInterface import getNotebookImports, getNotebookRunscript, getFolderContent, createFolder, saveJsonModel, getJsonModel, getGraphOrder, getDataMeta, getDataMetaV2, getPartitionSummary, getCodeV1, getCodeV2, getNetworkInputDim, getNetworkOutputDim, getPreviewSample, getPreviewVariableList, Parse
 
-log = logging.getLogger(__name__)
+logger = logging.getLogger(APPLICATION_LOGGER)
 
 
 LW_CACHE_MAX_ITEMS = 25 # Only for '--core-mode v2'
@@ -99,7 +102,7 @@ class Interface():
             for layer_id in self._lwDict[reciever].get_layers():
                 if layer_id not in jsonNetwork:
                     deleteList.append(layer_id)
-            log.info("Deleting these layers: " + str(deleteList))
+            logger.info("Deleting these layers: " + str(deleteList))
             for layer_id in deleteList:
                 self._lwDict[reciever].remove_layer(layer_id)
 
@@ -114,7 +117,7 @@ class Interface():
                 ckpt_path = info['checkpoint'][1]
                 if '//' in ckpt_path:
                     new_ckpt_path = os.path.sep+ckpt_path.split(2*os.path.sep)[1] # Sometimes frontend repeats the directory path. /<dir-path>//<dir-path>/model.ckpt-1
-                    log.warning(
+                    logger.warning(
                         f"Splitting malformed checkpoint path: '{ckpt_path}'. "
                         f"New path: '{new_ckpt_path}'"
                     )
@@ -122,8 +125,9 @@ class Interface():
                     
                 self._add_to_checkpointDict(info)
 
-        if log.isEnabledFor(logging.DEBUG):
-            log.debug("create_lw_core: checkpoint dict: \n" + stringify(self._checkpointDict))
+        if logger.isEnabledFor(logging.DEBUG):
+            from perceptilabs.utils import stringify
+            logger.debug("create_lw_core: checkpoint dict: \n" + stringify(self._checkpointDict))
 
         data_container = DataContainer()
         extras_reader = LayerExtrasReader()
@@ -166,8 +170,8 @@ class Interface():
         action = request.get('action')
         value = request.get('value')
 
-        if log.isEnabledFor(logging.DEBUG):
-            log.debug("creating response for action: {}. \nFull request:\n{}".format(
+        if logger.isEnabledFor(logging.DEBUG):
+            logger.debug("creating response for action: {}. \nFull request:\n{}".format(
                 action,
                 pprint.pformat(request, depth=3)
             ))
@@ -185,10 +189,10 @@ class Interface():
         #    with self._core.issue_handler.create_issue('Error in create_response', e) as issue:
         #        self._core.issue_handler.put_error(issue.frontend_message)
         #        response = {'content': issue.frontend_message}                
-        #        log.error(issue.internal_message)
+        #        logger.error(issue.internal_message)
 
-        if log.isEnabledFor(logging.DEBUG):
-            log.debug("created response for action: {}. \nFull request:\n{}\nResponse:\n{}".format(
+        if logger.isEnabledFor(logging.DEBUG):
+            logger.debug("created response for action: {}. \nFull request:\n{}\nResponse:\n{}".format(
                 action,
                 pprint.pformat(request, depth=3),
                 stringify(response)
@@ -478,8 +482,10 @@ class Interface():
             user = value
             with configure_scope() as scope:
                 scope.user = {"email" : user}
-                log.info("User has been set to %s" %str(value))
 
+            perceptilabs.logconf.set_user_email(user)
+            logger.info("User has been set to %s" %str(value))
+            
             return "User has been set to " + value
 
         else:

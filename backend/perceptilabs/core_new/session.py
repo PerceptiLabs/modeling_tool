@@ -3,11 +3,11 @@ import copy
 import logging
 import functools
 
-from perceptilabs.core_new.api.legacy import ApiCallbackHandler, Api
-from perceptilabs.analytics.scraper import get_scraper
+from perceptilabs.logconf import APPLICATION_LOGGER
 
-log = logging.getLogger(__name__)
-scraper = get_scraper()
+
+logger = logging.getLogger(APPLICATION_LOGGER)
+
 
 class LayerSessionStop(Exception):
     """ Used to break out of userland code when stop is pressed in the UI """
@@ -37,7 +37,7 @@ class LayerIo:
         return copy.copy(self._locals)
 
 
-class LayerSession(ApiCallbackHandler):
+class LayerSession():
     PAUSE_TIME = 0.3
     
     def __init__(self, layer_id, layer_type, code, global_vars=None, local_vars=None,
@@ -56,14 +56,14 @@ class LayerSession(ApiCallbackHandler):
         self._outputs = None
 
         self._process_handler = process_handler
-        self._api = Api(self)
+        self._api = None
 
     def run(self):
         global_vars, local_vars = self._get_input_vars(insert_api=True)
 
-        if log.isEnabledFor(logging.DEBUG):
+        if logger.isEnabledFor(logging.DEBUG):
             from perceptilabs.utils import line_nums
-            log.debug(f'Layer session {self._layer_id} executing code: \n' + line_nums(self._code))
+            logger.debug(f'Layer session {self._layer_id} executing code: \n' + line_nums(self._code))
 
         try:
             exec(self._code, global_vars, local_vars)
@@ -98,7 +98,7 @@ class LayerSession(ApiCallbackHandler):
         local_vars = self._inputs.locals
 
         if insert_api and 'api' in global_vars and global_vars['api'] is not self._api:
-            log.warning("Overwriting existing, non-identical, api in globals")
+            logger.warning("Overwriting existing, non-identical, api in globals")
         if insert_api:
             global_vars['api'] = self._api
 
@@ -127,7 +127,6 @@ class LayerSession(ApiCallbackHandler):
         if self._data_container is not None:
             self._data_container.store_value_in_root("saver", (sess, saver))
 
-    @scraper.monitor(tag='session_on_render')
     def on_render(self, dashboard=None):
         if self._process_handler is None:
             return
@@ -137,7 +136,7 @@ class LayerSession(ApiCallbackHandler):
             self._process_handler.on_process(self, dashboard)            
             
         if self._stopped:
-            log.info("Core has been stopped")
+            logger.info("Core has been stopped")
             raise LayerSessionStop
 
         self._process_handler.on_process(self, dashboard)

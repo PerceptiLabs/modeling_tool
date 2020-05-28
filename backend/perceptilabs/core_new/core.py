@@ -1,3 +1,4 @@
+import logging
 import re
 import sys
 import copy
@@ -20,11 +21,13 @@ from perceptilabs.core_new.errors import LayerSessionAbort
 from perceptilabs.core_new.history import SessionHistory, HistoryInputException
 from perceptilabs.core_new.session import LayerSession, LayerSessionStop, LayerIo
 from perceptilabs.core_new.data.policies import TrainValDataPolicy, TestDataPolicy, TrainReinforceDataPolicy
-from perceptilabs.analytics.scraper import get_scraper
 from perceptilabs.utils import stringify, line_nums
+from perceptilabs.logconf import APPLICATION_LOGGER, DATA_LOGGER
 
-log = logging.getLogger(__name__)
-scraper = get_scraper()
+
+
+logger = logging.getLogger(APPLICATION_LOGGER)
+data_logger = logging.getLogger(DATA_LOGGER)
 
 
 def v2_insert_checkpoint_values(layer_id, layer_name, layer_type, code, values):
@@ -66,11 +69,11 @@ def v2_insert_checkpoint_values(layer_id, layer_name, layer_type, code, values):
 
     new_code = re.sub(pattern, repl_fn, code)
 
-    log.info(f'Inserted {len(restored_vars)} checkpoint values into layer {layer_id} [{layer_type}].')
+    logger.info(f'Inserted {len(restored_vars)} checkpoint values into layer {layer_id} [{layer_type}].')
     if len(ignored_vars) > 0 and n_matches > 0:
-        log.warning(f'Ignored {len(ignored_vars)} TensorFlow variable creations!')
-    if log.isEnabledFor(logging.DEBUG):
-        log.debug(
+        logger.warning(f'Ignored {len(ignored_vars)} TensorFlow variable creations!')
+    if logger.isEnabledFor(logging.DEBUG):
+        logger.debug(
             f"Restored checkpoint values = {', '.join(restored_vars)}, ignored = {', '.join(ignored_vars)}\n"
             f"Original code: \n{line_nums(code)}\n"
             f"New code: \n{line_nums(new_code)}\n"
@@ -79,34 +82,257 @@ def v2_insert_checkpoint_values(layer_id, layer_name, layer_type, code, values):
     return new_code
 
 
+def make_graph_spec_conform_to_schema(graph_spec):
+    #graph_spec = graph_spec['Layers'] # REMOVE    
+
+    edges = []
+    nodes = []
+    for from_id, layer_spec in graph_spec.items():
+        # Nodes. For now, we don't include any detailed parameters...
+        layer_spec = layer_spec['Info']
+        
+        from perceptilabs.core_new.layers.definitions import DEFINITION_TABLE        
+        def_ = DEFINITION_TABLE.get(layer_spec['Type'])        
+        node = {
+            'type': def_.template_macro,
+            'id': from_id,
+        }
+        nodes.append(node)
+        
+        # Edges
+        fwd_cons = [layer_id for layer_id, _ in layer_spec['forward_connections']]
+        for to_id in fwd_cons:
+            edges.append([from_id, to_id])
+
+    return {
+        'nodes': nodes,
+        'edges': edges
+    }
+
+
+def collect_start_data(graph_dict, data_container, training_sess_id):
+    """ quick fix for creating 'training_started' event """
+
+    if not all(layer_id in data_container for layer_id in graph_dict.keys()):
+        # We'll use this to signify that the training has actually started
+        return False    
+    
+    import functools
+    import operator
+
+    formatted_graph = make_graph_spec_conform_to_schema(graph_dict)
+    
+    n_params = 0
+    for layer_id in graph_dict.keys():
+        layer_dict = data_container[layer_id]
+
+        if 'W' in layer_dict:
+            n_params += functools.reduce(operator.mul, layer_dict['W'].shape.as_list())
+        if 'b' in layer_dict:
+            n_params += functools.reduce(operator.mul, layer_dict['b'].shape.as_list())
+
+    data_logger.info(
+        "training_started",
+        training_session_id = training_sess_id,        
+        graph_spec=formatted_graph,
+        n_parameters=n_params
+    )    
+    return True
+
+
+import time
+import psutil
+
+
+class Reservoir:
+    def __init__(self, max_items=10):
+        self._data = []
+        self._max_items = max_items
+        self._counter = 0
+        
+    def try_sample(self, x):
+        if len(self._data) < self._max_items:
+            self._data.append(x)
+        else:
+            idx = np.random.randint(0, self._counter + 1)
+            if idx < self._max_items: # Replace
+                self._data[idx] = x        
+        self._counter += 1
+
+    def __repr__(self):
+        return repr(self._data)
+
+    @property
+    def data(self):
+        return self._data.copy()
+        
+
+class EndedDataCollector:
+    def __init__(self, training_sess_id):
+        self._training_sess_id = training_sess_id
+        self._t_on_process = []
+        self._memory_on_process = []
+
+        self._data_outputs = {}
+        self._data_shapes = {}
+        self._data_columns = {}        
+        self._data_sizes = {}
+        self._data_paths = {}
+        
+    def on_process(self, graph_dict, data_container, results_dict):
+        self._graph_dict = graph_dict
+        self._data_container = data_container
+        self._t_on_process.append(time.time())
+        self._memory_on_process.append((psutil.virtual_memory(), psutil.swap_memory()))
+
+        for layer_id in graph_dict.keys():
+            if graph_dict[layer_id]['Info']['Type'] == 'DataData':
+
+                if not 'trainDict' in results_dict:
+                    continue
+
+                layer_results = results_dict['trainDict'][layer_id].copy()
+
+                y = layer_results['Y'][0]
+                if layer_id not in self._data_shapes:
+                    self._data_shapes[layer_id] = y.shape
+
+                if y.ndim > 0:
+                    y = y.reshape(y.shape[0], -1).squeeze() # Flatten if necessary.
+                    
+                if layer_id not in self._data_outputs:
+                    self._data_outputs[layer_id] = Reservoir(max_items=100)
+                self._data_outputs[layer_id].try_sample(y)                    
+                
+                if layer_id not in self._data_sizes:
+                    self._data_sizes[layer_id] = {
+                        'trn_size': data_container[layer_id].get('trn_sz_tot', -1),
+                        'val_size': data_container[layer_id].get('val_sz_tot', -1),
+                        'tst_size': data_container[layer_id].get('tst_sz_tot', -1)
+                    }
+
+                if layer_id not in self._data_paths:
+                    self._data_paths[layer_id] = []
+                    for s in graph_dict[layer_id]['Info']['Properties']['accessProperties']['Sources']:
+                        self._data_paths[layer_id].append(s['path'])
+
+                if layer_id not in self._data_columns:
+                    self._data_columns[layer_id] = data_container[layer_id].get('cols', []).copy()                    
+    def start(self):
+        self._t_start = time.time()
+    
+    def finish(self):
+        if len(self._t_on_process) == 0:
+            return
+
+        import functools
+        import operator
+        
+        n_params = 0
+        for layer_id in self._graph_dict.keys():
+            layer_dict = self._data_container[layer_id]
+            
+            if 'W' in layer_dict:
+                n_params += functools.reduce(operator.mul, layer_dict['W'].shape.as_list())
+            if 'b' in layer_dict:
+                n_params += functools.reduce(operator.mul, layer_dict['b'].shape.as_list())
+        
+
+        formatted_graph = make_graph_spec_conform_to_schema(self._graph_dict)        
+        import numpy as np
+        t_stop = time.time()
+        t_duration = t_stop - self._t_start
+        t_processing = np.subtract(self._t_on_process + [t_stop], [self._t_start] + self._t_on_process).tolist()
+        data_meta_list = []
+        for layer_id in self._data_outputs.keys():
+            y_samples = np.array(self._data_outputs[layer_id].data)
+
+            #axis = tuple(range(1, y_samples.ndim)) # compute metrics for each sample in this "batch"
+
+            data_meta = {
+                'layer_id': layer_id,
+                'training_set_size': self._data_sizes[layer_id].get('trn_size', -1),
+                'validation_set_size': self._data_sizes[layer_id].get('val_size', -1),
+                'testing_set_size': self._data_sizes[layer_id].get('tst_size', -1),
+                'example_mean': y_samples.mean(),
+                'example_max': y_samples.max().tolist(),
+                'example_min': y_samples.min().tolist(),
+                'example_std': y_samples.std().tolist(),
+                'example_shape': list(self._data_shapes[layer_id])
+            }
+            data_meta_list.append(data_meta)
+
+        memory_on_process = self._memory_on_process[::20]
+        t_processing = t_processing[::20]
+        data_logger.info(
+            "training_ended",
+            training_session_id = self._training_sess_id,                    
+            time_total=t_duration,
+            time_processing=t_processing,
+            memory={
+                'physical_total': memory_on_process[0][0].total,
+                'physical_available': [x[0].available for x in memory_on_process],
+                'swap_total': memory_on_process[0][1].total,
+                'swap_free': [x[1].free for x in memory_on_process]
+            },
+            data_meta=data_meta_list,
+            graph_spec=formatted_graph,
+            n_parameters=n_params            
+        )
+
+
 class SessionProcessHandler:
-    def __init__(self, graph_dict, data_container, command_queue, result_queue):  # mode
+    def __init__(self, graph_dict, data_container, command_queue, result_queue, training_sess_id):  # mode
         self._graph = graph_dict
         self._data_container = data_container
         self._command_queue = command_queue
         self._result_queue = result_queue
+        self._on_process_counter = 0
+
+        self._training_sess_id = training_sess_id
+        self._has_collected_start_data = False
+
+        self._ended_data_collector = EndedDataCollector(training_sess_id)
+
+    def on_start(self):
+        self._ended_data_collector.start()
+    
+    def on_finish(self):
+        try:
+            self._ended_data_collector.finish()
+        except:
+            logger.exception("logging 'on_training_ended' event failed!")
         
     def on_process(self, session, dashboard):
         """ Called in response to 'api.ui.render' calls in the layer code """
         self._handle_commands(session)
         self._send_results(session, dashboard)
-        
+
+        try:
+            if not self._has_collected_start_data:
+                self._has_collected_start_data = collect_start_data(self._graph, self._data_container, self._training_sess_id)
+        except:
+            logger.exception("logging 'on_training_started' event failed!")
+
+            
     def _send_results(self, session, dashboard):
         data_policy = self._get_data_policy(session, dashboard)
         results_dict = data_policy.get_results()
+
+        self._ended_data_collector.on_process(self._graph, self._data_container, results_dict)            
         
         self._result_queue.put(results_dict)
         # self._data_container.reset()
         
-        #log.debug("Pushed results onto queue: " + pprint.pformat(results_dict, depth=4))
-        #if log.isEnabledFor(logging.DEBUG): # TODO: remove this when done
+        #logger.debug("Pushed results onto queue: " + pprint.pformat(results_dict, depth=4))
+        #if logger.isEnabledFor(logging.DEBUG): # TODO: remove this when done
             #remapped_dict = boltons.iterutils.remap(results_dict, lambda p, k, v: str(type(v)))
-            #log.debug("Pushed results onto queue: " + pprint.pformat(remapped_dict, depth=10))
+            #logger.debug("Pushed results onto queue: " + pprint.pformat(remapped_dict, depth=10))
         
     def _handle_commands(self, session):
         while not self._command_queue.empty():
             command = self._command_queue.get()
-            log.info("Received command '{}'".format(command))
+            logger.info("Received command '{}'".format(command))
             
             if command == 'pause':
                 session.pause()
@@ -124,7 +350,7 @@ class SessionProcessHandler:
                 session.skip = True
                 
             else:
-                log.warning("Unknown command: '{}'".format(command))        
+                logger.warning("Unknown command: '{}'".format(command))        
 
     def _get_data_policy(self, session, dashboard):
         data_dict = self._data_container.to_dict()
@@ -138,7 +364,6 @@ class SessionProcessHandler:
 
     
 class BaseCore:    
-    @scraper.monitor(tag='core_init')
     def __init__(self, codehq, graph_dict, data_container, session_history, module_provider, error_handler, session_process_handler=None,
                  layer_extras_reader=None, skip_layers=None, tf_eager=False, checkpointValues=None, network_cache=None, core_mode='v1'): 
         self._graph = graph_dict
@@ -165,34 +390,39 @@ class BaseCore:
             layer_type = content["Info"]["Type"]
 
             if self._should_skip_layer(layer_id, content):
-                log.debug("Skipping layer {} [{}]".format(layer_id, layer_type))
+                logger.debug("Skipping layer {} [{}]".format(layer_id, layer_type))
                 continue
 
             if self._network_cache is not None:
                 if layer_id in self._network_cache and not self._network_cache.needs_update(layer_id, content):
-                    log.info("Using cached layer for layer " +layer_type)
+                    logger.info("Using cached layer for layer " +layer_type)
                     self._use_cached_layer(layer_id, self._network_cache[layer_id])
                     continue
 
-            log.info("Preparing layer session for {} [{}]".format(layer_id, layer_type))
+            logger.info("Preparing layer session for {} [{}]".format(layer_id, layer_type))
             t_start = time.perf_counter()
 
+            if self._session_process_handler:
+                self._session_process_handler.on_start()            
             try:
                 self._run_layer(layer_id, content)
             except LayerSessionStop:
-                log.info("Stop requested during session {}".format(layer_id))                
+                logger.info("Stop requested during session {}".format(layer_id))                
                 break
             except LayerSessionAbort:
-                log.info("Error handler aborted session {}".format(layer_id))
+                logger.info("Error handler aborted session {}".format(layer_id))
                 break
             except Exception:
-                log.exception("Exception in %s" % layer_id)
+                logger.exception("Exception in %s" % layer_id)
                 raise
             finally:
-                log.info("Running layer {} [{}] took {} seconds".format(
+                logger.info("Running layer {} [{}] took {} seconds".format(
                     layer_id, layer_type,
                     time.perf_counter() - t_start
                 ))
+                if self._session_process_handler:
+                    self._session_process_handler.on_finish()                        
+                
             
 
     def _run_layer(self, id_, content):    
@@ -200,9 +430,9 @@ class BaseCore:
         code_gen = self._codehq.get_code_generator(id_, content)
         
 
-        log.info(repr(code_gen))        
-        if log.isEnabledFor(logging.DEBUG):        
-            log.debug(pprint.pprint(code_gen.get_code()))
+        logger.info(repr(code_gen))        
+        if logger.isEnabledFor(logging.DEBUG):        
+            logger.debug(pprint.pprint(code_gen.get_code()))
 
 
         #import pdb; pdb.set_trace()
@@ -213,7 +443,7 @@ class BaseCore:
         except HistoryInputException:
             if self._layer_extras_reader is not None:
                 self._layer_extras_reader.set_empty(id_)
-                log.exception("HistoryInputException for layer %s" % content['Info']['Type'])
+                logger.exception("HistoryInputException for layer %s" % content['Info']['Type'])
                 return
             else:
                 raise
@@ -234,9 +464,9 @@ class BaseCore:
                 (content['Info'].get('Code') != '' or (isinstance(content['Info']['Code'], dict) and content['Info']['Code'].get('Output') is not None))
         ):
             warning_message = "Custom code not supported in lightweight core for core mode == 'v2'. Replacing generated code with identity (Y = X['Y'])"
-            if log.isEnabledFor(logging.DEBUG):
+            if logger.isEnabledFor(logging.DEBUG):
                 warning_message += "\nOriginal code:\n" + line_nums(code)
-            log.warning(warning_message)
+            logger.warning(warning_message)
 
             code = "Y = X['Y']\n"
             
@@ -251,15 +481,18 @@ class BaseCore:
                                data_container=self._data_container,
                                process_handler=self._session_process_handler,
                                cache=self._session_history.cache)   
-        
+
+
+
         try:
             session.run()
         except LayerSessionStop:
-            log.debug("Raised LayerSessionStop!")
+            logger.debug("Raised LayerSessionStop!")
             raise # Not an error. Re-raise.
         except Exception as e:
-            log.debug("Exception when running session: " + str(e) + " will be handled by error handler " + str(self._error_handler))
+            logger.exception("Exception when running session: " + str(e) + " will be handled by error handler " + str(self._error_handler))
             self._error_handler.handle_run_error(session, e)
+            
         # else:
         #     _save_cache=True
 
@@ -271,7 +504,7 @@ class BaseCore:
         if self._network_cache is not None:
             self._network_cache.update(id_, clean_content, session, self._error_handler[id_] if id_ in self._error_handler.to_dict() else None)
             
-        log.debug("Done running layer {}".format(id_))#. Locals:  {}".format(id_, session.outputs.locals))
+        logger.debug("Done running layer {}".format(id_))#. Locals:  {}".format(id_, session.outputs.locals))
 
     def _use_cached_layer(self, id_, saved_layer):
         if saved_layer.error:
@@ -301,7 +534,7 @@ class BaseCore:
         globals_.update(outputs.globals) # Other global variables
         globals_.update(self._module_provider.modules) 
 
-        # if log.isEnabledFor(logging.DEBUG): # TODO: remove this when done
+        # if logger.isEnabledFor(logging.DEBUG): # TODO: remove this when done
         #     from code_generator.tensorflow import DummyEnv
         #     globals_['DummyEnv'] = DummyEnv
         
@@ -319,16 +552,16 @@ class BaseCore:
             self._layer_extras_reader.clear()            
 
     def _print_basic_info(self):
-        log.info("Running core [{}]".format(self.__class__.__name__))
+        logger.info("Running core [{}]".format(self.__class__.__name__))
         
         layer_repr = [id_ + ' [' + cont["Info"]["Type"]+']' for id_, cont in self._graph.items()]
-        log.info("Layers will be executed in the following order: "+ ", ".join(layer_repr))
+        logger.info("Layers will be executed in the following order: "+ ", ".join(layer_repr))
         
         if len(self._module_provider.hooks) > 0:
             targets = [x for x in self._module_provider.hooks.keys()]
-            log.info("Module hooks installed are: {}".format(", ".join(targets)))
+            logger.info("Module hooks installed are: {}".format(", ".join(targets)))
         else:
-            log.info("No module hooks installed")
+            logger.info("No module hooks installed")
 
     def _should_skip_layer(self, layer_id, content):
         layer_type = content["Info"]["Type"]        
@@ -341,17 +574,17 @@ class BaseCore:
 
 
         #if content['Info'].get('Code') is not None and self._core_mode == 'v2':
-        #    log.warning(f'Cannot run custom code in core_v2. Skipping layer {layer_id} [{layer_type}]')
+        #    logger.warning(f'Cannot run custom code in core_v2. Skipping layer {layer_id} [{layer_type}]')
         #    return True
             
         # if "Code" in content["Info"] and content["Info"]["Code"]:
-        #     log.info("Layer {} [{}] has custom code. Skipping.".format(layer_id, layer_type))        
+        #     logger.info("Layer {} [{}] has custom code. Skipping.".format(layer_id, layer_type))        
            
         #     return True
 
 
         if layer_type in self._skip_layers:
-            log.info("Layer {} [{}] in skip list. Skipping.".format(layer_id, layer_type))
+            logger.info("Layer {} [{}] in skip list. Skipping.".format(layer_id, layer_type))
             return True
         
         return False
@@ -370,103 +603,9 @@ class Core(BaseCore):
 
         
 if __name__ == "__main__":
-    logging.basicConfig(stream=sys.stdout,
-                        format='%(asctime)s - %(levelname)s - %(threadName)s - %(filename)s:%(lineno)d - %(message)s',
-                        level=logging.INFO)
 
-    import json
-    import queue
-    import os
-    os.environ['KMP_DUPLICATE_LIB_OK']='True'
-    p1 = '/Users/mukund/Desktop/PerceptiLabs/backend/net.json'
-    if os.path.exists(p1):
-        path = p1
-    else:
-        path = 'net.json'
-        
-    path = '/Users/mukund/Desktop/templates/Image Classification/model.json'
-    with open(path, 'r') as f:
-        json_network = json.load(f)
+    with open('net.json_') as f:
+        import json
+        x = json.load(f)
 
-    graph = Graph(json_network["Layers"])
-
-    from codehq import CodeHqNew as CodeHq
-
-    #for id_, content in graph.graphs.items():
-    #    code_gen = CodeHq.get_code_generator(id_, content)
-
-
-    #gp = GraphPropagator(graph.graphs, CodeHq)
-    #output = gp.propagate()
-
-
-    
-    #import pdb; pdb.set_trace()
-
-    
-    cq = queue.Queue()
-    rq = queue.Queue()
-
-    # def f(queue, delay, command):
-    #     time.sleep(delay)
-    #     queue.put(command)
-
-    import time
-    import threading
-    #threading.Thread(target=f, args=(cq, 4, 'pause')).start()
-    #threading.Thread(target=f, args=(cq, 5, 'run')).start()    
-    #threading.Thread(target=f, args=(cq, 8, 'stop')).start()        
-
-
-    # from core_new.lightweight import LightweightCore, placeholder_hook_1
-    
-    # module_provider = ModuleProvider()
-    # module_provider.load('tensorflow', as_name='tf')
-    # module_provider.load('numpy', as_name='np')
-
-    # module_provider.install_hook('tf.placeholder', placeholder_hook_1, include_vars=True)
-
-
-    graph_dict = graph.graphs
-    data_container = DataContainer()
-    
-    # session_history = SessionHistory()
-    # extras_reader = LayerExtrasReader()
-
-    # lw_core = LightweightCore(CodeHq, graph_dict, data_container, 
-    #                           session_history, module_provider, extras_reader)    
-    # lw_core.run()
-    # print(extras_reader.to_dict())
-
-    # from newPropegateNetwork import newPropegateNetwork
-    # newPropegateNetwork(json_network["Layers"])
-
-
-    # def result_reader(q):
-    #     # read and print whatever comes onto results queue
-    #     while True:
-    #         while not q.empty():
-    #             res = q.get()
-    #             import pprint
-                
-    #             print("RESULTS:" + pprint.pformat(res, depth=2))
-    #         import time
-    #         time.sleep(0.5)
-        
-    # threading.Thread(target=result_reader, args=(rq,)).start()            
-
-    # # import pdb; pdb.set_trace()
-    session_history = SessionHistory() 
-   
-    module_provider = ModuleProvider()
-    module_provider.load('tensorflow', as_name='tf')
-    module_provider.load('numpy', as_name='np')
-
-    from core_new.errors import CoreErrorHandler
-    import queue
-    errorQueue=queue.Queue()
-    error_handler = CoreErrorHandler(errorQueue)
-   
-    sph = SessionProcessHandler(graph_dict, data_container, cq, rq)    
-    core = Core(CodeHq, graph_dict, data_container, session_history, module_provider, error_handler, sph)
-    threading.Thread(target=core.run).start()
+        make_graph_spec_conform_to_schema(x)

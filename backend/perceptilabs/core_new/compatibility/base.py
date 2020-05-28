@@ -1,3 +1,4 @@
+import logging
 import copy
 import time
 import pprint
@@ -14,7 +15,9 @@ from perceptilabs.core_new.layers.replicas import NotReplicatedError
 from perceptilabs.core_new.compatibility.policies import policy_classification, policy_regression, policy_object_detection, policy_gan, policy_reinforce
 
 
-log = logging.getLogger(__name__)
+from perceptilabs.logconf import APPLICATION_LOGGER
+
+logger = logging.getLogger(APPLICATION_LOGGER)
 
 
 PROCESS_COMMANDS_DELAY = 0.3
@@ -65,9 +68,9 @@ class CompatibilityCore:
 
             for command_id, command in commands.items():
                 if command.allow_override and count[command.type] > 1:
-                    log.debug(f'Processing command {command_id}: {command}. Overriding {count[command.type]-1} previous commands of the same type.') # TODO: log.debug instead
+                    logger.debug(f'Processing command {command_id}: {command}. Overriding {count[command.type]-1} previous commands of the same type.') # TODO: logger.debug instead
                 else:
-                    log.debug(f'Processing command {command_id}: {command}.') # TODO: log.debug instead
+                    logger.debug(f'Processing command {command_id}: {command}.') # TODO: logger.debug instead
                 self._send_command(core, command)
             
         def do_process_results(counter, core):
@@ -75,7 +78,7 @@ class CompatibilityCore:
             graphs = core.graphs
 
             if len(graphs) > 0:
-                log.debug(f"Processing {len(graphs)} graph snapshots")
+                logger.debug(f"Processing {len(graphs)} graph snapshots")
                 self.results = self._get_results_dict(graphs, self.results)
                 self._result_queue.put(copy.deepcopy(self.results))
             
@@ -127,14 +130,14 @@ class CompatibilityCore:
         try:
             result_dict = self._get_results_dict_internal(graphs, results)
         except:
-            log.exception('Error when getting results dict')
+            logger.exception('Error when getting results dict')
         finally:
             self._print_result_dict_debug_info(result_dict)
             return result_dict                
     
     def _get_results_dict_internal(self, graphs, results):
         if not graphs:
-            log.debug("graph is None, returning empty results")
+            logger.debug("graph is None, returning empty results")
             return {}
         # TODO: if isinstance(training_layer, Classification) etc
         layer = graphs[-1].active_training_node.layer
@@ -151,11 +154,11 @@ class CompatibilityCore:
         return result_dict
 
     def _print_graph_debug_info(self, graphs):
-        if not log.isEnabledFor(logging.DEBUG):
+        if not logger.isEnabledFor(logging.DEBUG):
             return
 
         if len(graphs) == 0:
-            log.debug("No graphs available")
+            logger.debug("No graphs available")
             return
 
         graph = graphs[-1]
@@ -184,13 +187,13 @@ class CompatibilityCore:
                         text += f"    {name}: {value_str}\n"                        
             text += '\n'
 
-        log.debug(text)
+        logger.debug(text)
 
     def _print_result_dict_debug_info(self, result_dict):
-        if log.isEnabledFor(logging.DEBUG):
+        if logger.isEnabledFor(logging.DEBUG):
             from perceptilabs.utils import stringify
             text = stringify(result_dict, indent=4, sort=True)
-            log.debug("result_dict: \n" + text)
+            logger.debug("result_dict: \n" + text)
         
 
 

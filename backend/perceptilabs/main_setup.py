@@ -5,11 +5,9 @@ import sentry_sdk
 from sentry_sdk import utils
 
 import perceptilabs.utils as utils
-from perceptilabs.analytics.scraper import get_scraper
-from perceptilabs.databundle import DataBundle, AzureUploader, AZURE_ACCOUNT_NAME_EU, AZURE_ACCOUNT_KEY_EU, AZURE_CONTAINER_EU, AZURE_ACCOUNT_NAME_US, AZURE_ACCOUNT_KEY_US, AZURE_CONTAINER_US
+from perceptilabs.logconf import APPLICATION_LOGGER
 
-log = logging.getLogger(__name__)
-scraper = get_scraper()
+logger = logging.getLogger(APPLICATION_LOGGER)
 
 def setup_sentry(user=None, commit_id=None):
     def strip_unimportant_errors(event, hint):
@@ -35,17 +33,3 @@ def setup_sentry(user=None, commit_id=None):
 
         if user:
             scope.user = {"email" : user}
-        
-def setup_scraper():
-    data_uploaders = [
-        AzureUploader(AZURE_ACCOUNT_NAME_EU, AZURE_ACCOUNT_KEY_EU, AZURE_CONTAINER_EU),
-        AzureUploader(AZURE_ACCOUNT_NAME_US, AZURE_ACCOUNT_KEY_US, AZURE_CONTAINER_US)        
-    ]                               
-    data_bundle = DataBundle(data_uploaders)
-    utils.dump_system_info(os.path.join(data_bundle.path, 'system_info.json'))
-    utils.dump_build_info(os.path.join(data_bundle.path, 'build_info.json'))    
-
-    scraper.start()
-    scraper.set_output_directory(data_bundle.path)
-
-    return data_bundle

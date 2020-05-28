@@ -1,4 +1,3 @@
-
 import os
 import sys
 import time
@@ -27,34 +26,144 @@ from perceptilabs.core_new.graph import Graph, JsonNetwork
 from perceptilabs.core_new.graph.builder import GraphBuilder
 from perceptilabs.core_new.layers import TrainingSupervised, TrainingReinforce, TrainingRandom
 from perceptilabs.core_new.layers.definitions import DEFINITION_TABLE
-from perceptilabs.core_new.api.mapping import ByteMap
 from perceptilabs.core_new.communication import TrainingClient, State
 from perceptilabs.core_new.layers.script import ScriptFactory
 from perceptilabs.core_new.communication.deployment import ThreadStrategy, DeploymentStrategy
 from perceptilabs.messaging import MessagingFactory
+from perceptilabs.logconf import APPLICATION_LOGGER, DATA_LOGGER
 
-log = logging.getLogger(__name__)
+
+logger = logging.getLogger(APPLICATION_LOGGER)
+data_logger = logging.getLogger(DATA_LOGGER)
 
 
-class CoreState(enum.Enum):
-    INITIALIZING = 0
-    TRAINING = 1
-    IDLE = 2
-    SERVER_TIMEOUT = 3
-    USERLAND_TIMEOUT = 4
-    USERLAND_ERROR = 5
-    CLOSED = 6
+
+def make_graph_spec_conform_to_schema(graph_spec):
+    graph_spec = graph_spec['Layers'] 
+
+    edges = []
+    nodes = []
+    for from_id, layer_spec in graph_spec.items():
+        # Nodes. For now, we don't include any detailed parameters...
+        #layer_spec = layer_spec['Info']
+        
+        from perceptilabs.core_new.layers.definitions import DEFINITION_TABLE        
+        def_ = DEFINITION_TABLE.get(layer_spec['Type'])        
+        node = {
+            'type': def_.template_macro,
+            'id': from_id,
+        }
+        nodes.append(node)
+        
+        # Edges
+        fwd_cons = [layer_id for layer_id, _ in layer_spec['forward_connections']]
+        for to_id in fwd_cons:
+            edges.append([from_id, to_id])
+
+    return {
+        'nodes': nodes,
+        'edges': edges
+    }
+
+
+def collect_start_metrics(graph_spec, graph, training_sess_id):
+    """ quick-fix for collecting start metrics. update when newer version of core is merged"""
+    import numpy as np
+
+    n_params = 0
+    # TODO: training layer parameter called n_parameters for proper generalization...
+    for weights_dict in graph.active_training_node.layer.layer_weights.values():
+        for w in weights_dict.values():
+            n_params += np.prod(w.shape)
+
+    for biases_dict in graph.active_training_node.layer.layer_biases.values():
+        for b in biases_dict.values():
+            n_params += np.prod(b.shape)
+
+    formatted_graph = make_graph_spec_conform_to_schema(graph_spec)            
+
+    data_logger.info(
+        "training_started",
+        extra={
+            'namespace': dict(
+                training_session_id=training_sess_id,        
+                graph_spec=formatted_graph,
+                n_parameters=int(n_params)
+            )
+        }
+    )
+    
+
+
+def collect_end_metrics(graph_spec, graph, training_sess_id, session_info):
+    """ quick-fix for collecting start metrics. update when newer version of core is merged"""
+    import numpy as np
+
+    n_params = 0
+    # TODO: training layer parameter called n_parameters for proper generalization...
+    for weights_dict in graph.active_training_node.layer.layer_weights.values():
+        for w in weights_dict.values():
+            n_params += np.prod(w.shape)
+
+    for biases_dict in graph.active_training_node.layer.layer_biases.values():
+        for b in biases_dict.values():
+            n_params += np.prod(b.shape)
+
+    formatted_graph = make_graph_spec_conform_to_schema(graph_spec)
+    
+    data_meta_list = []
+    for node in graph.data_nodes:
+        data_meta = {
+            'layer_id': node.layer_id,
+        }
+        # TODO: remove hasattr when changes to DataLayer have been merged
+        if node is not None and hasattr(node.layer, 'size_training'):
+            data_meta.update({
+                'training_set_size': int(node.layer.size_training),
+                'validation_set_size': int(node.layer.size_validation),
+                'testing_set_size': int(node.layer.size_testing)
+            })
+        data_meta_list.append(data_meta)
+
+    data_logger.info(
+        "training_ended",
+        extra={
+            'namespace': dict(
+                training_session_id=training_sess_id,        
+                graph_spec=formatted_graph,
+                n_parameters=int(n_params),
+                time_total=session_info['time_total'],
+                cycle_state_initial=session_info['cycle_state_initial'],
+                cycle_state_final=session_info['cycle_state_final'],
+                cycle_time_process_messages=session_info['cycle_time_process_messages'],
+                cycle_time_training_step=session_info['cycle_time_training_step'],
+                cycle_time_send_snapshot=session_info['cycle_time_send_snapshot'],
+                cycle_time_total=session_info['cycle_time_total'],
+                mem_phys_total=session_info['mem_phys_total'],
+                cycle_mem_phys_available=session_info['cycle_mem_phys_available'],
+                mem_swap_total=session_info['mem_swap_total'],
+                cycle_mem_swap_free=session_info['cycle_mem_swap_free'],
+                data_meta=data_meta_list
+            )
+        }
+    )
 
 
 class Core:
-    def __init__(self, graph_builder: GraphBuilder, script_factory: ScriptFactory, messaging_factory: MessagingFactory, issue_handler: IssueHandler=None, server_timeout=610, userland_timeout=600, deployment_strategy=None, use_sentry=False):
+    def __init__(self, graph_builder: GraphBuilder, script_factory: ScriptFactory, messaging_factory: MessagingFactory, issue_handler: IssueHandler=None, server_timeout=610, userland_timeout=600, deployment_strategy=None, use_sentry=False, samplers=None):
         self._graph_builder = graph_builder
         self._script_factory = script_factory
         self._messaging_factory = messaging_factory
         self._graphs = collections.deque(maxlen=500)
+        self._last_graph = None
+        self._graph_spec = None
         self._issue_handler = issue_handler
         self._use_sentry = use_sentry
+        self._samplers = samplers or []
 
+        #from perceptilabs.insights.dataset import DatasetDistribution
+        #self._dataset_distr = DatasetDistribution()
+        
         self._deployment_strategy = deployment_strategy or ThreadStrategy()
 
         self._server_timeout = server_timeout
@@ -62,17 +171,18 @@ class Core:
 
         self._client = None
         self._closed_by_server = False
-        self._closed_by_force = False        
-
+        self._closed_by_force = False
+        self._collected_start_metrics = False
         
-    def run(self, graph_spec: JsonNetwork, session_id: str=None, on_iterate: List[Callable]=None, auto_close=False):
+    def run(self, graph_spec: Dict, session_id: str=None, on_iterate: List[Callable]=None, auto_close=False):
+        self._graph_spec = graph_spec
         step = self.run_stepwise(graph_spec, session_id=session_id, auto_close=auto_close)
         for counter, _ in enumerate(step):
             if counter % 100 == 0:
-                log.debug(f"Running step {counter}")
+                logger.debug(f"Running step {counter}")
         
     def run_stepwise(self, graph_spec, session_id=None, auto_close=False):
-        session_id = session_id or uuid.uuid4().hex        
+        self._session_id = session_id = session_id or uuid.uuid4().hex        
         topic_generic = f'generic-{session_id}'.encode()    
         topic_snapshots = f'snapshots-{session_id}'.encode()
         
@@ -82,7 +192,7 @@ class Core:
 
         producer = self._messaging_factory.make_producer(topic_generic)        
         consumer = self._messaging_factory.make_consumer([topic_generic, topic_snapshots])
-        log.info(f"Instantiated message producer/consumer pairs for topics {topic_generic} and {topic_snapshots} for session {session_id}")
+        logger.info(f"Instantiated message producer/consumer pairs for topics {topic_generic} and {topic_snapshots} for session {session_id}")
 
         self._client = TrainingClient(
             producer, consumer,
@@ -90,6 +200,7 @@ class Core:
             on_receive_graph=self._on_receive_graph,
             on_userland_error=self._on_userland_error,
             on_state_changed=self._on_training_state_changed,
+            on_training_ended=self._on_training_ended,            
             on_server_timeout=self._on_server_timeout,
             on_userland_timeout=self._on_userland_timeout,
             on_log_message=self._on_log_message,
@@ -101,11 +212,13 @@ class Core:
         
         self.request_start()        
         yield from self._await_status_active(client_step)
+        self._time_started = time.time()
+        
         yield from self._await_status_done(client_step)
 
         if auto_close:
             self.request_close()
-            log.info("Sent request for auto-close")
+            logger.info("Sent request for auto-close")
             
         yield from self._await_status_exit(client_step)
 
@@ -146,28 +259,40 @@ class Core:
             yield
 
     def _on_training_state_changed(self, new_state):
-        log.info(f"Training server entered state {new_state}")            
+        logger.info(f"Training server entered state {new_state}")
         
-        if new_state in State.exit_states:
-            self._closed_by_server = True
-
     def _on_userland_timeout(self):
         if self._issue_handler is not None:
             self._issue_handler.put_error('Training stopped because a training step too long!')
-        log.info('Training stopped because a training step too long!')
+        logger.info('Training stopped because a training step too long!')
 
     def _on_server_timeout(self):
         if self._issue_handler is not None:
             with self._issue_handler.create_issue('Training server timed out!') as issue:
                 self._issue_handler.put_error(issue.frontend_message)
-                log.error(issue.internal_message)
+                logger.error(issue.internal_message)
         else:
-            log.error("Training server timed out!")
+            logger.error("Training server timed out!")
 
         self.force_close(timeout=1)
     
     def _on_receive_graph(self, graph):
         self._graphs.append(graph)
+        
+        self._last_graph = graph
+
+        #if self._dataset_distr is not None:
+        #    data_node_ids = [n.layer_id for n in graph.data_nodes if n != graph.active_training_node]
+        #    batches = {id_: graph.active_training_node.layer.layer_outputs[id_] for id_ in data_node_ids}
+        #    self._dataset_distr.draw_sample(batches)
+        
+        if not self._collected_start_metrics and self._last_graph is not None:
+            collect_start_metrics(self._graph_spec, self._last_graph, self._session_id)        
+            self._collected_start_metrics = True        
+
+    def _on_training_ended(self, session_info):
+        collect_end_metrics(self._graph_spec, self._last_graph, self._session_id, session_info)
+        self._time_ended = time.time()
         
     def _on_log_message(self, message):
         pass    
@@ -181,123 +306,6 @@ class Core:
             f.flush()
         return script_path
 
-    '''
-    def _run_internal(self, graph_spec, session_id=None, on_iterate=None, auto_close=False):
-        session_id = session_id or uuid.uuid4().hex
-        log.info(f"Entered 'run internal' for core with session id {session_id}")
-        
-        graph = self._graph_builder.build_from_spec(graph_spec)
-        log.info(f"Built graph for session id {session_id}")        
-        
-        topic_generic = f'generic-{session_id}'.encode()    
-        topic_snapshots = f'snapshots-{session_id}'.encode()    
-        
-        code, self._line_to_node_map = self._script_factory.make(graph, session_id, topic_generic, topic_snapshots, userland_timeout=self._userland_timeout)
-        log.info(f"Generated code for session id {session_id}")        
-        
-        script_path = f'training_script.py'
-        with open(script_path, 'wt') as f:
-            f.write(code)
-            f.flush()
-        #shutil.copy(script_path, 'training_script.py')            
-
-        self._deployment_strategy.run(script_path)
-        log.info(f"Ran deployment strategy {self._deployment_strategy} for session {session_id}")
-        
-        #time.sleep(3) # Give TrainingServer some time to start.. 
-
-        def on_server_timeout():
-            if self._issue_handler is not None:
-                with self._issue_handler.create_issue('Training server timed out! Shutting down core') as issue:
-                    self._issue_handler.put_error(issue.frontend_message)
-                    log.error(issue.internal_message)
-            else:
-                log.error("Training server timed out! Shutting down core")
-            self._is_running = False
-            
-                
-        def on_log_message(message):
-            log.info("Userland: " + message)
-
-        def on_userland_timeout():
-            if self._issue_handler is not None:
-                self._issue_handler.put_error('Training stopped because a training step too long!')
-            log.error('Training stopped because a training step too long!')
-            self._is_running = False            
-
-        consumer = ZmqMessageConsumer([topic_generic, topic_snapshots])
-        producer = ZmqMessageProducer(topic_generic)
-        log.info(f"Instantiated message producer/consumer pairs for topics {topic_generic} and {topic_snapshots} for session {session_id}")                
-        
-        log.info("Creating training client")            
-        client = self._client = TrainingClient(
-            producer, consumer,
-            graph_builder=self._graph_builder,
-            on_receive_graph=self._on_receive_graph,
-            on_userland_error=self._on_userland_error,
-            on_server_timeout=on_server_timeout,
-            on_userland_timeout=on_userland_timeout,
-            on_log_message=on_log_message,
-            server_timeout=self._server_timeout
-        )
-        log.info(f"Instantiated training client for session {session_id}")                
-        
-        update_client = client.run_stepwise() # Establish connection and set up generator
-        self._is_running = True
-
-        counter = 0        
-        while client.training_state == None and self._is_running:
-            next(update_client) 
-            if counter % 100 == 0:
-                log.info("Waiting for remote status != None")
-            time.sleep(0.1)
-            counter += 1
-        log.info(f"Received training state {client.training_state} for session {session_id}")                            
-            
-        client.request_start()
-        log.info(f"Requested training start in for session {session_id}")
-        
-        counter = 0
-        while client.training_state == State.READY and self._is_running:
-            next(update_client)             
-            if counter % 100 == 0:
-                log.info("Waiting for remote status READY")
-            time.sleep(0.1)
-            counter += 1
-        log.info(f"Received training state {client.training_state} for session id {session_id}")                                        
-
-        if client.training_state in State.active_states:
-            log.info(f"Training running. State: {client.training_state}. Session id: {session_id}")
-        else:
-            raise RuntimeError(f"Expected an active state, got {client.training_state}!")
-
-        self._is_running = True
-        counter = 0
-        while client.training_state in State.active_states and self._is_running:
-            next(update_client)                         
-            
-            if counter % 30 == 0:
-                log.info(f"Training state: {client.training_state}. Graph count: {len(self._graphs)}")                         
-            time.sleep(0.1)
-            counter += 1
-
-        if not self._is_running:
-            return client.training_state
-        
-        if not auto_close:
-            counter = 0
-            while client.training_state in State.idle_states and self._is_running:
-                next(update_client)                                     
-                if counter % 20 == 0:
-                    log.info("Idle. Graph count: " + str(len(self._graphs)))                     
-                time.sleep(1.0)
-                
-        log.info("Exiting run internal with state " + str(client.training_state))
-        return client.training_state
-    
-    def _on_receive_graph(self, graph):
-        self._graphs.append(graph)        
-    '''
     def _on_userland_error(self, exception, traceback_frames):
         message = str(exception) +'\n\n'
         collect = False
@@ -334,7 +342,7 @@ class Core:
                 scope.level = 'info'
                 sentry_sdk.capture_message(error.format())
 
-        log.info('Training stopped because of userland error:\n' + error.format())
+        logger.info('Training stopped because of userland error:\n' + error.format())
         if self._issue_handler is not None:
             self._issue_handler.put_error(error.format())
 
@@ -348,23 +356,23 @@ class Core:
         self.request_close()
 
         if not self._deployment_strategy.shutdown(timeout=timeout):
-            log.warning(f"Deployment did not shut down within {timeout}s. Proceeding anyway!")
+            logger.warning(f"Deployment did not shut down within {timeout}s. Proceeding anyway!")
 
         self._closed_by_force = True
-        log.info("Force closed core")
+        logger.info("Force closed core")
 
     def request_start(self):
         self._client.request_start()
 
     def request_close(self):
         self._client.request_close()
-        log.info("Requested close")
+        logger.info("Requested close")
         
     def request_pause(self):
         if self._client is not None:
             self._client.request_pause()
         else:
-            log.warning("Requested pause but training client not set!!")
+            logger.warning("Requested pause but training client not set!!")
 
     def request_unpause(self):
         self._client.request_resume()
@@ -377,7 +385,7 @@ class Core:
 
     def request_export(self, path: str, mode: str):
         self._client.request_export(path, mode)
-        log.debug(f"Requested export with path: {path}, mode: {mode}")        
+        logger.debug(f"Requested export with path: {path}, mode: {mode}")        
 
     def request_stop(self):
         self._client.request_stop()
@@ -397,6 +405,19 @@ class Core:
     @property
     def training_state(self):
         return self._client.training_state
+
+    @property
+    def training_ended_time(self):
+        return self._time_ended
+
+    @property
+    def training_duration(self):
+        if self._time_started is None:
+            return None
+        if self._time_ended is None:
+            return time.time() - self._time_started
+        else:
+            return self._time_ended - self._time_started
 
     @property
     @deprecated
@@ -439,3 +460,5 @@ class Core:
             
 
     
+
+        

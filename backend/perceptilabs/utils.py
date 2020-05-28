@@ -106,7 +106,7 @@ def stringify(obj, max_len=70, new_lines=False, indent=0, sort=False):
     return text
 
 
-def frontend_watcher(process_id, sleep_period=1, grace_period=15, log=None):
+def frontend_watcher(process_id, sleep_period=1, grace_period=15, logger=None):
     """Monitor the existence of frontend process. If the monitored process does not exist, shut down
 
     For a discussion on the intricacies this topic:
@@ -117,15 +117,15 @@ def frontend_watcher(process_id, sleep_period=1, grace_period=15, log=None):
     
     while True:
         if not psutil.pid_exists(process_id):
-            if log:
-                log.warning(
+            if logger:
+                logger.warning(
                     f"Frontend process [{process_id}] not found. "
                     f"This process will self terminate in {grace_period} seconds"
                 )
             time.sleep(grace_period) # Give a grace period of N seconds before the process self terminates.
 
-            if log:
-                log.warning(f"Frontend process [{process_id}] not found. Terminating this process.")
+            if logger:
+                logger.warning(f"Frontend process [{process_id}] not found. Terminating this process.")
             os.kill(os.getpid(), 9)
 
         time.sleep(sleep_period)

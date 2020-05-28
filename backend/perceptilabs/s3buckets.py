@@ -1,14 +1,18 @@
+import logging
 import os
 import boto3
 import tempfile
 
-import logging
-log = logging.getLogger(__name__)
+from perceptilabs.logconf import APPLICATION_LOGGER
+
+
+logger = logging.getLogger(APPLICATION_LOGGER)
+
 
 class S3BucketAdapter:
     def __init__(self, bucket: str, region_name=None,
                  aws_access_key_id: str=None, aws_secret_access_key: str=None):
-        log.warning("No AWS access credentials provided. This may lead to system wide credentials being used")
+        logger.warning("No AWS access credentials provided. This may lead to system wide credentials being used")
         
         self._bucket = bucket
         self._temp_files = []

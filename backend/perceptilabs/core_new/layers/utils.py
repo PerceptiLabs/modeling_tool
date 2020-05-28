@@ -1,6 +1,7 @@
 import logging
+from perceptilabs.logconf import APPLICATION_LOGGER
 
-log = logging.getLogger(__name__)
+logger = logging.getLogger(APPLICATION_LOGGER)
 
 
 def resolve_tf1x_activation_name(specs):
@@ -16,7 +17,7 @@ def resolve_tf1x_activation_name(specs):
     func_name = table.get(activation)
     if activation not in table:
         layer_id = '<not implemented>'
-        log.warning(f"layer {layer_id} specified activation {activation}, but it was not found in tf1x activations table. No activation will be used for this layer")
+        logger.warning(f"layer {layer_id} specified activation {activation}, but it was not found in tf1x activations table. No activation will be used for this layer")
 
     return func_name
 

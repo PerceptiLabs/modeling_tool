@@ -1,3 +1,4 @@
+import logging
 import sys
 import selectors
 import json
@@ -10,9 +11,12 @@ import time
 from sentry_sdk import configure_scope
 
 import pprint
-import logging
 
-log = logging.getLogger(__name__)
+from perceptilabs.logconf import APPLICATION_LOGGER
+
+
+logger = logging.getLogger(APPLICATION_LOGGER)
+
 
 class Message:
     def __init__(self, selector, sock, addr, interface):
@@ -61,7 +65,7 @@ class Message:
                 sent = self.sock.send(self._send_buffer)
             except BlockingIOError as e:
                 # Resource temporarily unavailable (errno EWOULDBLOCK)
-                log.error("Resource temporarily unavailable")
+                logger.error("Resource temporarily unavailable")
                 pass
             else:
                 self._send_buffer = self._send_buffer[sent:]
@@ -164,11 +168,11 @@ class Message:
         self._write()
 
     def close(self):
-        log.debug("closing connection to {}".format(self.addr))
+        logger.debug("closing connection to {}".format(self.addr))
         try:
             self.selector.unregister(self.sock)
         except Exception as e:
-            log.error(
+            logger.error(
                 f"error: selector.unregister() exception for",
                 f"{self.addr}: {repr(e)}",
             )
@@ -176,7 +180,7 @@ class Message:
         try:
             self.sock.close()
         except OSError as e:
-            log.error(
+            logger.error(
                 f"error: socket.close() exception for",
                 f"{self.addr}: {repr(e)}",
             )
@@ -218,11 +222,11 @@ class Message:
             encoding = self.jsonheader["content-encoding"]
             self.request = self._json_decode(data, encoding)
 
-            log.debug("received request {} from {}".format(pprint.pformat(self.request), self.addr))
+            logger.debug("received request {} from {}".format(pprint.pformat(self.request), self.addr))
         else:
             # Binary or unknown content-type
             self.request = data
-            log.error(
+            logger.error(
                 f'received {self.jsonheader["content-type"]} request from',
                 self.addr,
             )

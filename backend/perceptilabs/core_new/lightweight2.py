@@ -27,8 +27,11 @@ from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP, REPLIC
 from perceptilabs.core_new.layers.script import ScriptFactory
 from perceptilabs.core_new.cache2 import LightweightCache
 from perceptilabs.core_new.graph.utils import sanitize_layer_name
+from perceptilabs.logconf import APPLICATION_LOGGER
 
-log = logging.getLogger(__name__)
+
+logger = logging.getLogger(APPLICATION_LOGGER)
+
 
 LayerResults = namedtuple('LayerResults', ['sample', 'out_shape', 'variables', 'columns', 'code_error', 'instantiation_error', 'strategy_error'])
 
@@ -97,7 +100,7 @@ class Tf1xTempStrategy(BaseStrategy):
                 layer_instance = layer_class()                
             except Exception as e:
                 error = exception_to_error(layer_id, layer_type, e)
-                log.exception(f"Layer {layer_id} raised an error when instantiating layer class")
+                logger.exception(f"Layer {layer_id} raised an error when instantiating layer class")
                 return self.get_default(strategy_error=error)                    
             
             input_tensors = {}
@@ -114,7 +117,7 @@ class Tf1xTempStrategy(BaseStrategy):
                     output_tensor = layer_instance(input_tensors)
             except Exception as e:
                 error = exception_to_error(layer_id, layer_type, e)
-                log.exception(f"Layer {layer_id} raised an error in __call__")
+                logger.exception(f"Layer {layer_id} raised an error in __call__")
                 return self.get_default(strategy_error=error)                    
                 
             with tf.Session() as sess:
@@ -126,12 +129,12 @@ class Tf1xTempStrategy(BaseStrategy):
         if tf.version.VERSION.startswith('1.15'):
             self._restore_checkpoint(layer_spec, sess)
         else:
-            log.warning(f"Checkpoint restore only works with TensorFlow 1.15. Current version is {tf.version.VERSION}")
+            logger.warning(f"Checkpoint restore only works with TensorFlow 1.15. Current version is {tf.version.VERSION}")
         try:
             y_batch = sess.run(output_tensor)
         except Exception as e:
             error = exception_to_error(layer_id, layer_type, e)
-            log.exception(f"Layer {layer_id} raised an error on sess.run")            
+            logger.exception(f"Layer {layer_id} raised an error on sess.run")            
             return self.get_default(strategy_error=error)
         
         y = y_batch[0]
@@ -172,7 +175,7 @@ class Tf1xStrategy(BaseStrategy):
                 layer_instance = layer_class()                
             except Exception as e:
                 error = exception_to_error(layer_id, layer_type, e)
-                log.exception(f"Layer {layer_id} raised an error when instantiating layer class")
+                logger.exception(f"Layer {layer_id} raised an error when instantiating layer class")
                 return self.get_default(strategy_error=error)                    
             
             input_tensors = {}
@@ -186,7 +189,7 @@ class Tf1xStrategy(BaseStrategy):
                 output_tensor = layer_instance(*input_tensors.values())
             except Exception as e:
                 error = exception_to_error(layer_id, layer_type, e)
-                log.exception(f"Layer {layer_id} raised an error in __call__")
+                logger.exception(f"Layer {layer_id} raised an error in __call__")
                 return self.get_default(strategy_error=error)                    
                 
             with tf.Session() as sess:
@@ -198,12 +201,12 @@ class Tf1xStrategy(BaseStrategy):
         if tf.version.VERSION.startswith('1.15'):
             self._restore_checkpoint(layer_spec, sess)
         else:
-            log.warning(f"Checkpoint restore only works with TensorFlow 1.15. Current version is {tf.version.VERSION}")
+            logger.warning(f"Checkpoint restore only works with TensorFlow 1.15. Current version is {tf.version.VERSION}")
         try:
             y_batch = sess.run(output_tensor)
         except Exception as e:
             error = exception_to_error(layer_id, layer_type, e)
-            log.exception(f"Layer {layer_id} raised an error on sess.run")            
+            logger.exception(f"Layer {layer_id} raised an error on sess.run")            
             return self.get_default(strategy_error=error)
         
         y = y_batch[0]
@@ -223,7 +226,6 @@ class Tf1xStrategy(BaseStrategy):
     def _restore_checkpoint(self, spec, sess):
         if 'checkpoint' in spec:
             from tensorflow.python.training.tracking.base import Trackable
-            
             export_directory = resolve_checkpoint_path(spec)
             
             trackable_variables = {}
@@ -249,7 +251,7 @@ class DataSupervisedStrategy(BaseStrategy):
             y = None
             shape = None
             strategy_error = exception_to_error(layer_id, layer_type, e)
-            log.exception(f"Layer {layer_id} raised an error when calling sample property")                        
+            logger.exception(f"Layer {layer_id} raised an error when calling sample property")                        
         else:
             shape = np.atleast_1d(y).shape
             strategy_error=None
@@ -276,7 +278,7 @@ class DataReinforceStrategy(BaseStrategy):
             y = None
             shape = None
             strategy_error = exception_to_error(layer_id, layer_type, e)
-            log.exception(f"Layer {layer_id} raised an error when calling sample property")                        
+            logger.exception(f"Layer {layer_id} raised an error when calling sample property")                        
         else:
             shape = np.atleast_1d(y).shape
             strategy_error=None
@@ -426,7 +428,7 @@ class LightweightCore:
         top_level_imports = TOP_LEVEL_IMPORTS['standard_library'] + \
                             TOP_LEVEL_IMPORTS['third_party'] + \
                             TOP_LEVEL_IMPORTS['perceptilabs']
-
+        
         for stmt in top_level_imports:
             code += stmt + '\n'
 
@@ -445,12 +447,12 @@ class LightweightCore:
             ast.parse(code)
         except SyntaxError as e:
             return None, exception_to_error(layer_id, layer_spec['Type'], e)
-            log.exception(f"Layer {layer_id} raised an error when getting layer code")                                
+            logger.exception(f"Layer {layer_id} raised an error when getting layer code")                                
         except Exception as e:
-            log.warning(f"{str(e)}: couldn't get code for {layer_id}. Treating it as not fully specified")
-            if log.isEnabledFor(logging.DEBUG):
+            logger.warning(f"{str(e)}: couldn't get code for {layer_id}. Treating it as not fully specified")
+            if logger.isEnabledFor(logging.DEBUG):
                 from perceptilabs.utils import stringify
-                log.warning("layer spec: \n" + stringify(layer_spec))
+                logger.warning("layer spec: \n" + stringify(layer_spec))
                 
             return None, None
         else:
@@ -470,7 +472,7 @@ class LightweightCore:
                 spec.loader.exec_module(module)
             except Exception as e:
                 error = exception_to_error(layer_id, layer_type, e)
-                log.exception(f"Layer {layer_id} raised an error when executing module")                                        
+                logger.exception(f"Layer {layer_id} raised an error when executing module")                                        
                 return None, error
 
             class_name = layer_type + sanitize_layer_name(layer_name)

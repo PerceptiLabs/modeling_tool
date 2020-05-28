@@ -13,10 +13,12 @@ from perceptilabs.core_new.graph import Graph
 from perceptilabs.core_new.layers.templates import J2Engine
 from perceptilabs.core_new.layers.definitions import DEFINITION_TABLE, TEMPLATES_DIRECTORY, TOP_LEVEL_IMPORTS
 from perceptilabs.core_new.graph.utils import sanitize_layer_name
+from perceptilabs.logconf import APPLICATION_LOGGER
+
 
 # TODO: move this to a more suitable location? Deployment?
 
-log = logging.getLogger(__name__)
+logger = logging.getLogger(APPLICATION_LOGGER)
 
 
 class ScriptBuildError(Exception):
@@ -280,7 +282,7 @@ class ScriptFactory:
         template  = "{% from '" + def_.template_file + "' import " + def_.template_macro + " %}\n"
         template += "{{ " + def_.template_macro + "(" + arg_str + ")}}"
 
-        log.debug(
+        logger.debug(
             f"Created macro loader for layer {layer_id} [{layer_type}]:\n"
             f"---------\n"            
             f"{add_line_numbering(template)}\n"
@@ -292,7 +294,7 @@ class ScriptFactory:
             code = self._engine.render_string(template)
         except:
             file_contents = open(os.path.join(self._engine.templates_directory, def_.template_file)).read()            
-            log.exception(f"Error when rendering jinja macro {def_.template_file}:{def_.template_macro}. Contents :\n" + add_line_numbering(file_contents))
+            logger.exception(f"Error when rendering jinja macro {def_.template_file}:{def_.template_macro}. Contents :\n" + add_line_numbering(file_contents))
             raise
 
 

@@ -2,8 +2,11 @@ import jinja2
 import logging
 
 from perceptilabs.utils import add_line_numbering
+from perceptilabs.logconf import APPLICATION_LOGGER
 
-log = logging.getLogger(__name__)
+
+logger = logging.getLogger(APPLICATION_LOGGER)
+
 
 
 def log_rendering_errors(func):
@@ -11,7 +14,7 @@ def log_rendering_errors(func):
         try:
             return func(*args, **kwargs)
         except jinja2.TemplateSyntaxError as e:
-            log.error(
+            logger.error(
                 f"{str(e)} when rendering jinja template. "
                 f"{e.filename}:{e.lineno} '{e.message}'. "
             )
@@ -71,7 +74,7 @@ class J2Engine:
         text = self._jenv.get_template(path).render(**kwargs)
 
         if self._verbose:
-            log.info(add_line_numbering(text))
+            logger.info(add_line_numbering(text))
 
         return text
     
@@ -80,7 +83,7 @@ class J2Engine:
         text = self._jenv.from_string(code).render(**kwargs)
         
         if self._verbose:
-            log.info(add_line_numbering(text))
+            logger.info(add_line_numbering(text))
         
         return text
 

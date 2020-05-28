@@ -1,3 +1,4 @@
+import logging
 from cryptography.fernet import Fernet
 import sys
 import os
@@ -6,7 +7,9 @@ import json
 from datetime import datetime
 import dateutil.parser
 
-log = logging.getLogger(__name__)
+from perceptilabs.logconf import APPLICATION_LOGGER
+
+logger = logging.getLogger(APPLICATION_LOGGER)
 
 
 pl_key = "eZkaBCdeBg87CQyy6MI6WR0hpgL7-jT30tjM7T-nRZA=".encode("ascii")
@@ -19,13 +22,13 @@ def decrypt(ciphertext):
 
 def get_name(override=""):
     license_name = os.environ.get("LICENSE_NAME", override) or ""
-    log.debug(f"LICENSE_NAME: {license_name}")
+    logger.debug(f"LICENSE_NAME: {license_name}")
     return license_name
 
 
 def get_value(override=""):
     license_value = os.environ.get("LICENSE_VALUE", override) or ""
-    log.debug(f"LICENSE_VALUE: {license_value}")
+    logger.debug(f"LICENSE_VALUE: {license_value}")
     return license_value.encode("ascii")
 
 
@@ -38,16 +41,16 @@ class LicenseV2:
             clear = decrypt(license_value).decode("ascii")
             parts = clear.split("|")
             if len(parts) < 2 or not parts[0] == license_name:
-                log.warning("License doesn't check out.")
+                logger.warning("License doesn't check out.")
                 return {}
             json_str = parts[1]
-            log.info(f"License checks out: {json_str}")
+            logger.info(f"License checks out: {json_str}")
             return json.loads(json_str, encoding="ascii")
         except:
             return {}
 
     def gpu_limit(self):
-        log.debug(f"capabilities: {self.hash}")
+        logger.debug(f"capabilities: {self.hash}")
         return self.hash.get("gpu_limit", 0)
 
     def core_limit(self):

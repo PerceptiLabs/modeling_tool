@@ -15,10 +15,10 @@ import GPUtil
 import collections
 import math
 
+
+from perceptilabs.logconf import APPLICATION_LOGGER
 from perceptilabs.networkExporter import exportNetwork
 from perceptilabs.networkSaver import saveNetwork
-
-
 from perceptilabs.issues import IssueHandler
 from perceptilabs.modules import ModuleProvider
 from perceptilabs.core_new.core import *
@@ -26,15 +26,13 @@ from perceptilabs.core_new.data import DataContainer
 from perceptilabs.core_new.cache import get_cache
 from perceptilabs.core_new.errors import CoreErrorHandler
 from perceptilabs.core_new.history import SessionHistory
-from perceptilabs.analytics.scraper import get_scraper
 from perceptilabs.CoreThread import CoreThread
 from perceptilabs.createDataObject import createDataObject
 from perceptilabs.core_new.core_distr import DistributedCore
 
 from perceptilabs.license_checker import LicenseV2
 
-log = logging.getLogger(__name__)
-scraper = get_scraper()
+logger = logging.getLogger(APPLICATION_LOGGER)
 
 
 CoreCommand = collections.namedtuple('CoreCommand', ['type', 'parameters', 'allow_override'])
@@ -42,7 +40,7 @@ CoreCommand = collections.namedtuple('CoreCommand', ['type', 'parameters', 'allo
 
 class coreLogic():
     def __init__(self,networkName, core_mode='v1'):
-        log.info(f"Created coreLogic for network '{networkName}' with core mode '{core_mode}'")
+        logger.info(f"Created coreLogic for network '{networkName}' with core mode '{core_mode}'")
 
         assert core_mode in ['v1', 'v2']
         self._core_mode = core_mode
@@ -84,14 +82,14 @@ class coreLogic():
         self.savedResultsDict={}
 
     def _logAndWarningQueue(self, msg):
-        log.warning(msg)
+        logger.warning(msg)
         self.issue_handler.put_warning(msg)        
         
     def gpu_list(self):
         try:
             gpus = GPUtil.getGPUs()
         except:
-            log.error("No compatible nvidia GPU drivers available. Defaulting to 0 GPUs")
+            logger.error("No compatible nvidia GPU drivers available. Defaulting to 0 GPUs")
             gpus = []
 
         if self.plLicense.is_expired():
@@ -135,11 +133,11 @@ class coreLogic():
                 if layer['Type'] == 'TrainNormal' and 'Distributed' not in layer['Properties']:
                     layer['Properties']['Distributed'] = False
                 if layer['Type'] == 'Regression' and 'Distributed' not in layer['Properties']:
-                    layer['Properties']['Distirbuted'] = False
+                    layer['Properties']['Distributed'] = False
                 # if layer['Type'] == 'RegressionLayer':
                 #     import pdb
                 #     pdb.set_trace()
-            log.info("Creating deployment script...")            
+            logger.info("Creating deployment script...")            
             config = {'session_id': '1234567'}
             
             from perceptilabs.core_new.graph.builder import GraphBuilder
@@ -154,23 +152,23 @@ class coreLogic():
             code = script_factory.make(graph, config)
             with open(target_file, 'w') as f:
                 f.write(code)
-            log.info("wrote deployment script to disk...")                            
+            logger.info("wrote deployment script to disk...")                            
         except:
-            log.exception("Failed creating deployment script...")
+            logger.exception("Failed creating deployment script...")
 
     def startCore(self,network, checkpointValues):
         #Start the backendthread and give it the network
 
         self.setupLogic()
         self.network=network
-        log.debug('printing network .......\n')
+        logger.debug('printing network .......\n')
 
-        if log.isEnabledFor(logging.DEBUG):        
+        if logger.isEnabledFor(logging.DEBUG):        
             import json
             with open('net.json_', 'w') as f:
                 json.dump(network, f, indent=4) 
 
-        if log.isEnabledFor(logging.DEBUG):        
+        if logger.isEnabledFor(logging.DEBUG):        
             import json
             with open('net.json_', 'w') as f:
                 json.dump(network, f, indent=4)
@@ -256,7 +254,9 @@ class coreLogic():
 
         cache = get_cache()
         session_history = SessionHistory(cache)
-        session_proc_handler = SessionProcessHandler(graph_dict, data_container, self.commandQ, self.resultQ)
+        import uuid
+        training_sess_id = uuid.uuid4().hex
+        session_proc_handler = SessionProcessHandler(graph_dict, data_container, self.commandQ, self.resultQ, training_sess_id)
 
 
         #self._dump_deployment_script('deploy.py', network) 
@@ -304,7 +304,7 @@ class coreLogic():
 
                 
             try:
-                log.debug("Starting core..." + repr(self.core))                
+                logger.debug("Starting core..." + repr(self.core))                
                 self.cThread=CoreThread(self.core.run, self.issue_handler)
                 self.cThread.daemon = True
                 self.cThread.start_with_traces()
@@ -313,10 +313,10 @@ class coreLogic():
                 message = "Could not boot up the new thread to run the computations on because of: " + str(e)
                 with self.issue_handler.create_issue(message, e) as issue:
                     self._issue_handler.put_error(issue.frontend_message)
-                    log.error(issue.internal_message)
+                    logger.error(issue.internal_message)
         else:
             try:
-                log.debug("Starting core..." + repr(self.core))                                
+                logger.debug("Starting core..." + repr(self.core))                                
                 self.cThread=CoreThread(self.core.run, self.issue_handler)
                 self.cThread.daemon = True
                 self.cThread.start_with_traces()
@@ -325,7 +325,7 @@ class coreLogic():
                 message = "Could not boot up the new thread to run the computations on because of: " + str(e)
                 with self.issue_handler.create_issue(message, e) as issue:
                     self.issue_handler.put_error(issue.frontend_message)
-                    log.error(issue.internal_message)
+                    logger.error(issue.internal_message)
                 
         self.status="Running"
             
@@ -448,7 +448,7 @@ class coreLogic():
         return {"content": is_trained}
 
     def exportNetwork(self,value):
-        log.debug(f"exportNetwork called. Value = {pprint.pformat(value)}")
+        logger.debug(f"exportNetwork called. Value = {pprint.pformat(value)}")
 
         # Keys in 'value' : 
         # ['Location', 'Type', 'Compressed', 'frontendNetwork', 'NotebookJson']
@@ -516,7 +516,7 @@ class coreLogic():
             message = "Export failed with this error: " + str(e)
             with self.issue_handler.create_issue(message, e) as issue:
                 self.issue_handler.put_warning(issue.frontend_message)
-                log.warning(issue.internal_message)
+                logger.warning(issue.internal_message)
                 return {"content": self.issue_handler.frontend_message}
 
     def saveNetwork(self, value):
@@ -572,12 +572,12 @@ class coreLogic():
             message = "Save failed with this error: " + str(e)
             with self.issue_handler.create_issue(message, e) as issue:
                 self.issue_handler.put_error(issue.frontend_message)
-                log.error(issue.internal_message)
+                logger.error(issue.internal_message)
                 return {"content": issue.frontend_message}
 
     def skipValidation(self):
         self.commandQ.put("skip")
-        log.warning('skipValidation called... incompatible with core v2')
+        logger.warning('skipValidation called... incompatible with core v2')
         #Check if validation was skipped or not before returning message
         return {"content":"skipped validation"}
 
@@ -596,7 +596,6 @@ class coreLogic():
     def get_cpu_and_mem(self):
         cpu = psutil.cpu_percent()
         mem = dict(psutil.virtual_memory()._asdict())["percent"]
-        scraper.submit('cpu_and_mem', {'cpu': cpu, 'mem': mem})
         return cpu, mem
 
     def get_gpu(self):
@@ -722,7 +721,7 @@ class coreLogic():
             count += 1
 
         if count > 0:
-            log.debug(f"Got {count} items from resultQ. len(tmp) == {len(tmp)}")        
+            logger.debug(f"Got {count} items from resultQ. len(tmp) == {len(tmp)}")        
             
         if tmp:
             self.savedResultsDict.update(tmp)
@@ -748,9 +747,9 @@ class coreLogic():
             self.resultDict=self.savedResultsDict["trainDict"]
         except KeyError:
             message = "Error in getTrainingStatistics."
-            if log.isEnabledFor(logging.DEBUG):
+            if logger.isEnabledFor(logging.DEBUG):
                 message += " savedResultsDict: " + pprint.pformat(self.savedResultsDict)
-            log.exception(message)
+            logger.exception(message)
             return {}
 
 
@@ -759,9 +758,9 @@ class coreLogic():
             return layer_statistics
         except:
             message = f"Error in getTrainingStatistics. layer_id = {layer_id}, layer_type = {layer_type}, view = {view}."
-            if log.isEnabledFor(logging.DEBUG):
+            if logger.isEnabledFor(logging.DEBUG):
                 message += " savedResultsDict: " + pprint.pformat(self.savedResultsDict)
-            log.exception(message)
+            logger.exception(message)
 
 
     def getTestingStatistics(self,value):
@@ -774,10 +773,10 @@ class coreLogic():
             self.resultDict=self.testList[self.testIter]
         except IndexError:
             #TODO: There should never be able to be an index error here.
-            log.exception("Error in getTestingStatistics")
+            logger.exception("Error in getTestingStatistics")
             return {}
         except KeyError:
-            log.exception("Error in getTestingStatistics")            
+            logger.exception("Error in getTestingStatistics")
             return {}
 
         try:
@@ -785,9 +784,9 @@ class coreLogic():
             return layer_statistics
         except:
             message = f"Error in getTestingStatistics. layer_id = {layer_id}, layer_type = {layer_type}, view = {view}."            
-            if log.isEnabledFor(logging.DEBUG):
+            if logger.isEnabledFor(logging.DEBUG):
                 message += " savedResultsDict: " + pprint.pformat(self.savedResultsDict)
-            log.exception(message)
+            logger.exception(message)
 
     def getEndResults(self):
         #TODO: Show in frontend results for each end layer, not just for one.
@@ -825,7 +824,7 @@ class coreLogic():
 
     
     def getLayerStatistics(self, layerId, layerType, view):
-        log.debug("getLayerStatistics for layer '{}' with type '{}' and view: '{}'".format(layerId, layerType, view))
+        logger.debug("getLayerStatistics for layer '{}' with type '{}' and view: '{}'".format(layerId, layerType, view))
         
         if layerType=="DataEnvironment":
             state = self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})[-1,:,:,:3]
@@ -1202,7 +1201,7 @@ class coreLogic():
                         input_id = next((bw_con_id for bw_con_id, bw_con_name in backward_cons if bw_con_name == input_name), None)
 
                         if input_id is None:
-                            log.error("
+                            logger.error("
                         
                         if input_id == labels_id
 
@@ -1215,10 +1214,10 @@ class coreLogic():
                             else:
                                 Network_output=value['Y']
                         except:
-                            log.exception("Error when matching training layer inputs to assigned labels")
-                            if log.isEnabledFor(logging.DEBUG):
+                            logger.exception("Error when matching training layer inputs to assigned labels")
+                            if logger.isEnabledFor(logging.DEBUG):
                                 
-                                log.debug(
+                                logger.debug(
                                     f'X = {pprint.pformat(X))}'
                                     f'key = {key}'                                    
                                     f'backward_connections = {self.graphObj.graphs[layerId]["Info"]["backward_connections"]}'
@@ -1700,10 +1699,12 @@ class coreLogic():
         layerId=statSpec["layerId"]
         variable=statSpec["variable"]
         innervariable=statSpec["innervariable"]
-        log.debug("getStatistics for layer {}, variable {}, innervariable {}".format(layerId,
-                                                                                     variable,
-                                                                                     innervariable))
-        
+        logger.debug("getStatistics for layer {}, variable {}, innervariable {}".format(
+            layerId,
+            variable,
+            innervariable
+        ))
+
         if self.resultDict is not None:
             # print("All keys available: ",str(list(self.resultDict.keys())))
             if innervariable!="":
@@ -1711,14 +1712,14 @@ class coreLogic():
                     result=self.resultDict[layerId][variable][innervariable]
                 except:
                     try:
-                        log.debug("FieldError, only keys available are: "+str(list(self.resultDict[layerId][variable].keys()))+" |||| Expected: "+str(innervariable))
+                        logger.debug("FieldError, only keys available are: "+str(list(self.resultDict[layerId][variable].keys()))+" |||| Expected: "+str(innervariable))
                         self._logAndWarningQueue("FieldError, only keys available are: "+str(list(self.resultDict[layerId][variable].keys()))+" |||| Expected: "+str(innervariable))
                     except:
                         try:
-                            log.debug("FieldError, only keys available are: "+str(list(self.resultDict[layerId].keys()))+" |||| Expected: " + str(variable))
+                            logger.debug("FieldError, only keys available are: "+str(list(self.resultDict[layerId].keys()))+" |||| Expected: " + str(variable))
                             self._logAndWarningQueue("FieldError, only keys available are: "+str(list(self.resultDict[layerId].keys()))+" |||| Expected: " + str(variable))
                         except:
-                            log.debug("FieldError, only keys available are: "+str(list(self.resultDict.keys()))+" |||| Expected: " + str(layerId))
+                            logger.debug("FieldError, only keys available are: "+str(list(self.resultDict.keys()))+" |||| Expected: " + str(layerId))
                             self._logAndWarningQueue("FieldError, only keys available are: "+str(list(self.resultDict.keys()))+" |||| Expected: " + str(layerId))
 
                     result=[]
@@ -1727,25 +1728,25 @@ class coreLogic():
                     result=self.resultDict[layerId][variable]
                 except:
                     try:
-                        log.debug("FieldError, only keys available are: "+str(list(self.resultDict[layerId].keys()))+" |||| Expected: " + str(variable))
+                        logger.debug("FieldError, only keys available are: "+str(list(self.resultDict[layerId].keys()))+" |||| Expected: " + str(variable))
                         self._logAndWarningQueue("FieldError, only keys available are: "+str(list(self.resultDict[layerId].keys()))+" |||| Expected: " + str(variable))
                     except:
-                        log.debug("FieldError, only keys available are: "+str(list(self.resultDict.keys()))+" |||| Expected: " + str(layerId))
+                        logger.debug("FieldError, only keys available are: "+str(list(self.resultDict.keys()))+" |||| Expected: " + str(layerId))
                         self._logAndWarningQueue("FieldError, only keys available are: "+str(list(self.resultDict.keys()))+" |||| Expected: " + str(layerId))
                     result=[]
             else:
                 try:
                     result=self.resultDict[layerId]
                 except:
-                    log.debug("FieldError, only keys available are: "+str(list(self.resultDict.keys()))+" |||| Expected: " + str(layerId))
+                    logger.debug("FieldError, only keys available are: "+str(list(self.resultDict.keys()))+" |||| Expected: " + str(layerId))
                     self._logAndWarningQueue("FieldError, only keys available are: "+str(list(self.resultDict.keys()))+" |||| Expected: " + str(layerId))
                     result=[]
         else:
-            log.debug("ResultDict is empty :'(")
+            logger.debug("ResultDict is empty :'(")
             self._logAndWarningQueue("There are no results to fetch")
             result=[]
 
-        if log.isEnabledFor(logging.DEBUG):
+        if logger.isEnabledFor(logging.DEBUG):
             self._get_statistics_debug_info(layerId, variable, innervariable, result)
             
         if type(result).__name__!='dict':
@@ -1774,7 +1775,7 @@ class coreLogic():
         else:
             message += f"output: {type(result)}"
             
-        log.debug(message)
+        logger.debug(message)
         
 
     # def subsample(self,sample):

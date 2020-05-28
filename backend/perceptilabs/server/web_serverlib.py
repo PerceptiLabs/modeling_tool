@@ -4,11 +4,13 @@ import json
 import struct
 import io
 import os
-
-import pprint
 import logging
+import pprint
+from perceptilabs.logconf import APPLICATION_LOGGER
 
-log = logging.getLogger(__name__)
+
+logger = logging.getLogger(APPLICATION_LOGGER)
+
 
 class Message:
     def __init__(self, interface):
@@ -65,7 +67,7 @@ class Message:
         else:
             # Binary or unknown content-type
             self.request = data
-            log.info("received" + str(self.jsonheader["content-type"]) + " request from")
+            logger.info("received" + str(self.jsonheader["content-type"]) + " request from")
 
     def _add_errors_and_warnings(self, content, issue_handler):
         errorList = issue_handler.pop_errors()

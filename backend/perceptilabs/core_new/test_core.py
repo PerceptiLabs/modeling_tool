@@ -181,7 +181,6 @@ def run_core_until_convergence(messaging_factory, graph_spec, metric_fn, max_att
         
         core.run(graph_spec, auto_close=True)
         #core.close(wait_for_deployment=True)                            
-        
         graphs.extend(core.graphs)        
         passed = metric_fn(graphs)
         if passed:
@@ -208,6 +207,8 @@ def test_train_normal_converges(messaging_factory, graph_spec_binary_classificat
 def test_train_normal_distributed_converges(messaging_factory, graph_spec_binary_classification, graph_builder):
     json_network = graph_spec_binary_classification
     json_network['Layers']['6']['Properties']['Distributed'] = True
+    json_network['Layers']['6']['Properties']['Learning_rate'] = 0.1
+    json_network['Layers']['6']['Properties']['Batch_size'] = 20
 
 
     def metric_fn(graphs):

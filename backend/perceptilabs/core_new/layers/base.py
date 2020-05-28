@@ -109,7 +109,7 @@ class DataReinforce(DataLayer):
 class InnerLayer(BaseLayer):
     """Base class for any layer that is not a DataLayer or Training Layer. These layers typically transform the data somehow."""
     @abstractmethod
-    def __call__(self, x: ...) -> Any:
+    def __call__(self, x) -> Any:
         """ Returns a transformed version of the input data.
 
         Args:

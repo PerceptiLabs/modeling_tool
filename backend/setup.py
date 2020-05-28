@@ -48,10 +48,24 @@ class build_py(_build_py):
 # with open('../../backend/requirements.txt') as f:
 #     for line in f:
 #         install_requires.append(line)
+
+
+def read(rel_path):
+    here = os.path.abspath(os.path.dirname(__file__))
+    with open(os.path.join(here, rel_path), 'r') as fp:
+        return fp.read()
+
+def get_version(rel_path):
+    for line in read(rel_path).splitlines():
+        if line.startswith('__version__'):
+            delim = '"' if '"' in line else "'"
+            return line.split(delim)[1]
+    else:
+        raise RuntimeError("Unable to find version string.")
                                     
 setup(
     name='perceptilabs',
-    version='0.1.1',
+    version=get_version("perceptilabs/__init__.py"),
     license='Custom Proprietary License',
     packages=find_packages(),
     author = 'PerceptiLabs',
@@ -86,6 +100,8 @@ setup(
         'scikit-learn >= 0.22.1',
         'flask >= 1.1.1',
         'Pillow==7.0.0',
+        'jsonschema==3.2.0',
+        'structlog==20.1.0',        
         'zmq',
         'websockets==8.1'
     ],
@@ -98,6 +114,7 @@ setup(
             '*.json',
             'insights/csv_ram_estimator/*.csv',
             'script/templates/*.j2',
+            'dataschema/*.json',            
             'core_new/layers/templates/*.j2',
             'tutorial_data/mnist_input.npy',
             'tutorial_data/mnist_labels.npy'

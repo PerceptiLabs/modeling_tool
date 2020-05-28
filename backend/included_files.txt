@@ -5,6 +5,8 @@ main.py
 perceptilabs/__init__.py
 perceptilabs/__main__.py
 perceptilabs/mainServer.py
+perceptilabs/azure.py
+perceptilabs/logconf.py
 perceptilabs/main_setup.py
 perceptilabs/codehq.py
 perceptilabs/mainInterface.py
@@ -12,7 +14,6 @@ perceptilabs/coreInterface.py
 perceptilabs/lwInterface.py
 perceptilabs/CoreThread.py
 perceptilabs/createDataObject.py
-perceptilabs/databundle.py
 perceptilabs/extractVariables.py
 perceptilabs/funclib.py
 perceptilabs/functionParser.py
@@ -39,18 +40,6 @@ perceptilabs/server/__init__.py
 perceptilabs/server/appServer.py
 perceptilabs/server/desktop_serverlib.py
 perceptilabs/server/web_serverlib.py
-
-# perceptilabs/analytics
-perceptilabs/analytics/__init__.py
-perceptilabs/analytics/handlers.py
-perceptilabs/analytics/scraper.py
-
-# perceptilabs/core_new/api
-perceptilabs/core_new/api/__init__.py
-perceptilabs/core_new/api/base.py
-perceptilabs/core_new/api/legacy.py
-perceptilabs/core_new/api/logging.py
-perceptilabs/core_new/api/mapping.py
 
 # perceptilabs/code_generator
 perceptilabs/code_generator/__init__.py
@@ -132,9 +121,16 @@ perceptilabs/core_new/layers/templates/file_utils.j2
 perceptilabs/core_new/layers/templates/tf1x.j2
 perceptilabs/core_new/layers/templates/tf1x_classification.j2
 
-# perceptilabs/insights/csv_ram_estimator
+# perceptilabs/insights/csv_ram_estimator/
 perceptilabs/insights/__init__.py
 perceptilabs/insights/csv_ram_estimator/__init__.py
 perceptilabs/insights/csv_ram_estimator/base.py
 perceptilabs/insights/csv_ram_estimator/model_and_meta.pkl
+perceptilabs/insights/dataset.py
 
+# perceptilabs/dataschema/
+perceptilabs/dataschema/master.json
+perceptilabs/dataschema/kernel_started.json
+perceptilabs/dataschema/training_started.json
+perceptilabs/dataschema/training_ended.json
+perceptilabs/dataschema/graph_spec.json

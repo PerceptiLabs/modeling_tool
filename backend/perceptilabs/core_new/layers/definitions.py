@@ -6,9 +6,10 @@ import os
 from perceptilabs.core_new.layers import *
 from perceptilabs.core_new.layers.utils import *
 from perceptilabs.core_new.graph.utils import sanitize_layer_name
+from perceptilabs.logconf import APPLICATION_LOGGER
 
 
-log = logging.getLogger(__name__)
+logger = logging.getLogger(APPLICATION_LOGGER)
 
 
 TEMPLATES_DIRECTORY = 'core_new/layers/templates/' # Relative to the package root directory
@@ -53,7 +54,7 @@ def resolve_checkpoint_path(specs):
             new_ckpt_path = ckpt_path.split('//')[1]
         else:
             new_ckpt_path = os.path.sep+ckpt_path.split(2*os.path.sep)[1] # Sometimes frontend repeats the directory path. /<dir-path>//<dir-path>/model.ckpt-1
-        log.warning(
+        logger.warning(
             f"Splitting malformed checkpoint path: '{ckpt_path}'. "
             f"New path: '{new_ckpt_path}'"
         )

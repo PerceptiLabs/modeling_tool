@@ -4,11 +4,12 @@ import networkx as nx
 from typing import Dict, List, Tuple
 
 
+from perceptilabs.logconf import APPLICATION_LOGGER
 from perceptilabs.script.base import CodeGenerator
 from perceptilabs.core_new.layers.base import BaseLayer, DataLayer,  DataSupervised, DataRandom, DataReinforce, InnerLayer, TrainingLayer, TrainingSupervised, TrainingRandom, TrainingReinforce
 
 
-log = logging.getLogger(__name__)
+logger = logging.getLogger(APPLICATION_LOGGER)
 
 
 class JsonNetwork(Dict):
@@ -215,7 +216,7 @@ class Graph:
             except:
                 pass
             else:                                                                                                                                                                                       
-                log.warning(f"Overwrote protected field '_scope' in layer {node.layer_id}")
+                logger.warning(f"Overwrote protected field '_scope' in layer {node.layer_id}")
             layers[node.layer_id] = layer
             
         builder = GraphBuilder()

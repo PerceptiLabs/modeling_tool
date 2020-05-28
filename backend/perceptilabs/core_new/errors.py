@@ -1,3 +1,4 @@
+import logging
 from queue import Queue
 import logging
 import traceback
@@ -9,8 +10,9 @@ import copy
 
 from perceptilabs.issues import UserlandError
 from perceptilabs.core_new.session import LayerSession
+from perceptilabs.logconf import APPLICATION_LOGGER
 
-log = logging.getLogger(__name__)
+logger = logging.getLogger(APPLICATION_LOGGER)
 
 
 class LayerSessionAbort(Exception):
@@ -30,7 +32,7 @@ class LayerErrorHandler(ABC):
     # def _store_error(self, layer_id, short_descr, long_descr, line_number):
     #     error = ErrorDescription(short_descr, long_descr, line_number)
     #     self._errors[layer_id] = error
-    #     log.info("Handled error in layer {}. Description: \n{}".format(layer_id, error.long_descr))
+    #     logger.info("Handled error in layer {}. Description: \n{}".format(layer_id, error.long_descr))
 
     def _get_error_line(self, exception: Exception):
         tb_list=traceback.extract_tb(exception.__traceback__)
@@ -53,7 +55,7 @@ class LayerErrorHandler(ABC):
         message += "%s\n" % code
         message += "\n"
         message += "".join(traceback.format_tb(exception.__traceback__))
-        log.info(message)
+        logger.info(message)
 
     def reset(self):
         pass

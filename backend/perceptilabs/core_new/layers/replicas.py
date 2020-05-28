@@ -1038,7 +1038,7 @@ class InnerLayerReplica(InnerLayer):
     def variables(self):
         return self._variables
 
-    def __call__(self, x: ...):
+    def __call__(self, x):
         raise NotReplicatedError        
     
     

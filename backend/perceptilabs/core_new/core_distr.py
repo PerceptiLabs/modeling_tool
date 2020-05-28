@@ -1,3 +1,4 @@
+import logging
 import sys
 import copy
 import pprint
@@ -11,7 +12,6 @@ import gym
 
 from perceptilabs.graph import Graph
 from perceptilabs.modules import ModuleProvider
-from perceptilabs.core_new.api.legacy import Api, DataApi, UiApi
 from perceptilabs.core_new.data import DataContainer
 from perceptilabs.core_new.core import Core
 from perceptilabs.core_new.utils import set_tensorflow_mode
@@ -21,10 +21,10 @@ from perceptilabs.core_new.errors import LayerSessionAbort
 from perceptilabs.core_new.history import SessionHistory, HistoryInputException
 from perceptilabs.core_new.session import LayerSession, LayerSessionStop, LayerIo
 from perceptilabs.core_new.data.policies import TrainValDataPolicy, TestDataPolicy, TrainReinforceDataPolicy
-from perceptilabs.analytics.scraper import get_scraper
+from perceptilabs.logconf import APPLICATION_LOGGER
 
-log = logging.getLogger(__name__)
-scraper = get_scraper()
+
+logger = logging.getLogger(APPLICATION_LOGGER)
 
 class DistributedCore(Core):
 
@@ -45,7 +45,7 @@ class DistributedCore(Core):
 
 
             code_gen = self._codehq.get_code_generator(layer_id, content)            
-            log.debug(repr(code_gen))
+            logger.debug(repr(code_gen))
 
             sb.layer(f"{layer_id}",
                      code_gen.get_code(),

@@ -1,17 +1,17 @@
 from abc import ABC, abstractmethod
 import os
-
+import logging
 import numpy as np
 import tensorflow as tf
 
-import logging
+from perceptilabs.logconf import APPLICATION_LOGGER
 import platform
 
 from perceptilabs.createDataObject import createDataObject
 from perceptilabs.core_new.core import Core
 
+logger = logging.getLogger(APPLICATION_LOGGER)
 
-log = logging.getLogger(__name__)
 
 class LW_interface_base(ABC):
     @abstractmethod
@@ -223,7 +223,7 @@ class getPartitionSummary(LW_interface_base):
 
         if isinstance(content, dict):
             if self._id in self.lw_core.error_handler:
-                log.info("ErrorMessage: " + str(self.lw_core.error_handler[self._id]))
+                logger.info("ErrorMessage: " + str(self.lw_core.error_handler[self._id]))
                 
                 content[self._id]['Error'] = {
                     'Message': self.lw_core.error_handler[self._id].message,
@@ -326,7 +326,7 @@ class getNetworkInputDim(LW_interface_base):
                 content[id_].update({"inShape":str(tmp).replace("'","")})
 
             if id_ in self.lw_core.error_handler:
-                log.info("ErrorMessage: " + str(self.lw_core.error_handler[id_]))
+                logger.info("ErrorMessage: " + str(self.lw_core.error_handler[id_]))
 
                 content[id_]['Error'] = {
                     'Message': self.lw_core.error_handler[id_].message,
@@ -354,7 +354,7 @@ class getNetworkOutputDim(LW_interface_base):
             content[Id].update({"Dim": str(value["outShape"]).replace("[","").replace("]","").replace(", ","x")})
 
             if Id in self.lw_core.error_handler:
-                log.info("ErrorMessage: " + str(self.lw_core.error_handler[Id]))
+                logger.info("ErrorMessage: " + str(self.lw_core.error_handler[Id]))
 
                 content[Id]['Error'] = {
                     'Message': self.lw_core.error_handler[Id].message,
@@ -437,7 +437,7 @@ class getPreviewVariableList(LW_interface_base):
             }
 
             if self._id in self.lw_core.error_handler:
-                log.info("ErrorMessage: " + str(self.lw_core.error_handler[self._id]))
+                logger.info("ErrorMessage: " + str(self.lw_core.error_handler[self._id]))
                 
                 content['Error'] = {
                     'Message': self.lw_core.error_handler[self._id].message,
