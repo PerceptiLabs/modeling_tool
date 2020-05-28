@@ -7,7 +7,7 @@ import logging
 from perceptilabs.core_new.layers.definitions import DEFINITION_TABLE
 from perceptilabs.core_new.layers import *
 from perceptilabs.core_new.layers.replicas import *
-from perceptilabs.core_new.graph.base import Graph, JsonNetwork, Node
+from perceptilabs.core_new.graph.base import Graph, Node
 from perceptilabs.core_new.graph.utils import sanitize_layer_name
 from perceptilabs.logconf import APPLICATION_LOGGER
 

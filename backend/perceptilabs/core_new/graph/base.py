@@ -12,10 +12,6 @@ from perceptilabs.core_new.layers.base import BaseLayer, DataLayer,  DataSupervi
 logger = logging.getLogger(APPLICATION_LOGGER)
 
 
-class JsonNetwork(Dict):
-    pass
-
-
 class Node:
     def __init__(self, layer_id, layer_type, layer_instance, layer_spec=None):
         self._layer_id = layer_id

@@ -22,7 +22,7 @@ from queue import Queue
 
 from perceptilabs.utils import deprecated
 from perceptilabs.issues import IssueHandler, UserlandError
-from perceptilabs.core_new.graph import Graph, JsonNetwork
+from perceptilabs.core_new.graph import Graph
 from perceptilabs.core_new.graph.builder import GraphBuilder
 from perceptilabs.core_new.layers import TrainingSupervised, TrainingReinforce, TrainingRandom
 from perceptilabs.core_new.layers.definitions import DEFINITION_TABLE
@@ -174,7 +174,7 @@ class Core:
         self._closed_by_force = False
         self._collected_start_metrics = False
         
-    def run(self, graph_spec: Dict, session_id: str=None, on_iterate: List[Callable]=None, auto_close=False):
+    def run(self, graph_spec, session_id: str=None, on_iterate: List[Callable]=None, auto_close=False):
         self._graph_spec = graph_spec
         step = self.run_stepwise(graph_spec, session_id=session_id, auto_close=auto_close)
         for counter, _ in enumerate(step):
