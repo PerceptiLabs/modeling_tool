@@ -111,8 +111,18 @@ class {{layer_name}}(Tf1xLayer):
 class {{layer_name}}(Tf1xLayer):
     def __call__(self, x: tf.Tensor) -> tf.Tensor:
         """ Takes a tensor as input and reshapes it."""
-        y = tf.reshape(x, [x.get_shape().as_list()[0] if x.get_shape().as_list()[0] is not None else -1] + {{shape}})
-        y = tf.transpose(y, perm=[0] + [i+1 for i in {{permutation}}])
+        shp = {{shape}}
+        perm = {{permutation}}
+        
+        shp = [i for i in shp if i != 0]
+        if(len(shp) != len(perm)):
+            perm = []
+            for i in range(len(shp)):
+                perm.append(i)
+            
+        y = tf.reshape(x, [x.get_shape().as_list()[0] if x.get_shape().as_list()[0] is not None else -1] + shp)
+        y = tf.transpose(y, perm=[0] + [i+1 for i in perm])
+        
         return y
 
     @property
