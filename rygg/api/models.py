@@ -19,3 +19,4 @@ class Model(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     saved_by = models.CharField(max_length=100, blank=True)
+    saved_version_location = models.CharField(max_length=100, blank=True)
