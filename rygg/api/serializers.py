@@ -7,12 +7,11 @@ class ProjectSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = Project
-        fields = ["project_id", "name", "created", "updated", "models"]
-
+        fields = ["project_id", "name", "default_directory", "created", "updated", "models"]
 
 class ModelSerializer(serializers.HyperlinkedModelSerializer):
     project = serializers.PrimaryKeyRelatedField(queryset=Project.objects.all())
 
     class Meta:
         model = Model
-        fields = ["model_id", "project", "name", "created", "updated", "saved_by"]
+        fields = ["model_id", "project", "name", "created", "updated", "saved_by", "location"]
