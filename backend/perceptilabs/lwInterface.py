@@ -32,7 +32,7 @@ class saveJsonModel(LW_interface_base):
 
     def run(self):
         import json
-        full_path = self._save_path
+        full_path = os.path.expanduser(self._save_path)
 
         if not os.path.isdir(full_path):
             os.mkdir(full_path)
@@ -85,7 +85,7 @@ class getFolderContent(LW_interface_base):
             }
 class getJsonModel(LW_interface_base):
     def __init__(self, json_path):
-        self._json_path = json_path
+        self._json_path = os.path.expanduser(json_path)
     
     def run(self):
         if not os.path.exists(self._json_path):
@@ -103,7 +103,7 @@ class saveJsonModel(LW_interface_base):
         print(json_model)
     def run(self):
         import json
-        full_path = self._save_path
+        full_path = os.path.expanduser(self._save_path)
 
         if not os.path.isdir(full_path):
             os.mkdir(full_path)
@@ -114,16 +114,48 @@ class saveJsonModel(LW_interface_base):
 
 
 class createFolder(LW_interface_base):
-    def __init__(self, folder_path, folder_name):
+    def __init__(self, folder_path):
         self.folder_path = folder_path
-        self.folder_name = folder_name
 
     def run(self):
-        os.mkdir(os.path.join(self.folder_path, self.folder_name))
+        try:
+            import platform
+
+            if platform.system() == 'Windows':
+                resolved_path = self.resolveWindowsPath(self.folder_path)
+                expanded_path = os.path.normpath(resolved_path)
+                
+            else:
+                expanded_path = os.path.expanduser(self.folder_path)
+
+            os.makedirs(expanded_path, exist_ok=True)
+            return expanded_path 
+
+        except:
+            return ''
+    
+    def resolveWindowsPath(self, inputPath):
+        if '~/Documents' in inputPath:
+            # get My Documents regardless of localization
+            import ctypes.wintypes
+            
+            buf= ctypes.create_unicode_buffer(ctypes.wintypes.MAX_PATH)
+            _ = ctypes.windll.shell32.SHGetFolderPathW(0, 5, 0, 5, buf)
+
+            return inputPath.replace('~/Documents', buf.value)
+        
+        elif '~/' in inputPath:
+            return os.path.expanduser(inputPath)
+
+        else:
+            return inputPath
+
+    
+
 
 class getJsonModel(LW_interface_base):
     def __init__(self, json_path):
-        self._json_path = json_path
+        self._json_path = os.path.expanduser(json_path)
     
     def run(self):
         if not os.path.exists(self._json_path):

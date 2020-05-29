@@ -3,17 +3,19 @@
   .popup-global(ref="popup-container")
     .popup-global_overlay(@click="closePopup()")
     section.popup(ref="popup")
-      .popup_tab-set
-        .popup_header
-          h3 {{ popupTitle }}
-      .popup_body
-        file-picker(
-            :filePickerType="filePickerType"
-            :fileTypeFilter="fileTypeFilter"
-            :options="filePickerOptions"
-            :confirmCallback="confirmCallback"
-            :cancelCallback="closePopup")
-        
+      .popup-background
+        .popup_tab-set
+          .popup_header
+            h3 {{ popupTitle }}
+        .popup_body
+          file-picker(
+              :filePickerType="filePickerType"
+              :fileTypeFilter="fileTypeFilter"
+              :options="filePickerOptions"
+              :startupFolder="startupFolder"
+              :confirmCallback="confirmCallback"
+              :cancelCallback="closePopup")
+          
 </template>
 
 <script>
@@ -37,6 +39,14 @@ export default {
       type: Function,
       default: () => {}
     },
+    cancelCallback: {
+      type: Function,
+      default: null
+    },
+    startupFolder: {
+      type: String,
+      default: ''
+    },
     popupTitle: {
       type: String,
       default: "Select a folder"
@@ -53,7 +63,11 @@ export default {
   },
   methods: {
     closePopup() {
-      this.$store.commit('globalView/HIDE_allGlobalPopups');
+      if (!this.cancelCallback || typeof this.cancelCallback !== 'function') {
+        this.$store.commit('globalView/HIDE_allGlobalPopups');
+      } else {
+        this.cancelCallback();
+      }
     },
   },
   mounted() {

@@ -1,6 +1,7 @@
 #Backend ignores
 backend/*.pyc
 backend/*.pyo
+backend/**/model.json
 backend/net.json
 backend/net.json_
 backend/venv/
@@ -36,6 +37,9 @@ frontend/npm-debug.log.*
 frontend/thumbs.db
 frontend/src/dist/
 frontend/src/node_modules/
+frontend/cypress/fixtures/*.json
+frontend/cypress/screenshots/**/*.png
+frontend/cypress/videos/**/*.mp4
 !frontend/.gitkeep
 .idea
 .idea/*

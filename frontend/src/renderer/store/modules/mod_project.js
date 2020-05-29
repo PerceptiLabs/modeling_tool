@@ -8,6 +8,18 @@ const state = {
   projectsList: [],
 };
 
+const getters = {
+  GET_project(state, getters, rootState, rootGetters) {
+    return state.projectsList.filter(project => (project.project_id === state.currentProject))[0];
+  },
+  GET_projectPath(state, getters) {
+    return getters['GET_project'].default_directory;
+  },
+  GET_projectModelIds(state){
+   return state.projectsList.filter(project => (project.project_id === state.currentProject))[0].models;
+  },
+}
+
 const mutations = {
   setProjectList(state, payload){
     state.projectsList = payload;
@@ -19,6 +31,11 @@ const mutations = {
   createProject(state, payload) {
     state.projectsList.push(payload);
   },
+  removeProjectIdInLocalStorage(start, projectId) {
+    if (localStorage.getItem('targetProject') == projectId) {
+      localStorage.removeItem('targetProject');
+    }
+  }
 };
 
 const actions = {
@@ -40,7 +57,8 @@ const actions = {
       })
   },
   updateProject(ctx, payload) {
-    return axios.put(`http://localhost:8000/projects/${payload.projectId}/`, {name: payload.name})
+    const {projectId, ...postData} = payload;
+    return axios.patch(`http://localhost:8000/projects/${projectId}/`, postData)
       .then(res => {
         ctx.dispatch('getProjects');
         return res.data;
@@ -49,14 +67,25 @@ const actions = {
   deleteProject(ctx, payload) {
     return axios.delete(`http://localhost:8000/projects/${payload.projectId}/`)
       .then(res => {
+        ctx.commit('removeProjectIdInLocalStorage', payload.projectId);
         ctx.dispatch('getProjects');
-        // crx.commit('removeProject', res.data.project_id);
-      })
+      })  
+      .catch(e => console.log(e));
   },
   getModel(ctx, modelId) {
     return axios.get(`http://localhost:8000/models/${modelId}/`)
       .then(res => res.data)
       .catch(console.error)
+  },
+  async getProjectModels({getters, dispatch}){
+    const projectModesIds = getters['GET_projectModelIds'];
+    let projectModesPromises = projectModesIds.map(modelId => dispatch('getModel', modelId))
+    const models = await Promise.all(projectModesPromises);
+    return models;
+  },
+  updateModel(ctx, payload) {
+    const { modelId, ...body } = payload;
+    return axios.put(`http://localhost:8000/models/${modelId}/`, body)
   },
   createProjectModel(ctx, payload) {
     return axios.post('http://localhost:8000/models/', payload)
@@ -76,6 +105,7 @@ const actions = {
 
 export default {
   namespaced,
+  getters,
   state,
   mutations,
   actions

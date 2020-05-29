@@ -454,7 +454,7 @@ const actions = {
   API_saveModel({dispatch, getters, rootGetters}, {model}) {
     // location shoul be getted from default location of project
     // /model_${model.apiMeta.model_id}
-    const save_path = `${PROJECT_DEFAULT_FOLDER}project_${model.apiMeta.project}/model_${model.apiMeta.model_id}`;
+    const save_path = `${model.apiMeta.location}`;
     
     const theData = {
       action: "saveJsonModel",
@@ -873,16 +873,17 @@ const actions = {
         console.error(err);
       });
   },
-  API_createFolder(ctx, folder_name) {
+  API_createFolder(ctx, {folder_path}) {
+    if (!folder_path) { return; }
+
     const theData = {
       receiver: '',
       action: 'createFolder',
       value: {
-        "folder_path": '/Users/antonbourosu/proj/',
-        "folder_name": folder_name
+        "folder_path": folder_path
       },
     }
-
+    
     return coreRequest(theData)
       .then(res => {
         return res;
@@ -890,6 +891,18 @@ const actions = {
       .catch(err => {
         console.error(err);
       });
+  },
+  API_isDirExist (ctx, path) {
+    const theData = {
+      receiver: '',
+      action: 'isDirExist',
+      value: {
+        path
+      }
+    };
+    return coreRequest(theData)
+      .then(res => res)
+      .catch(e => console.error(e));
   }
 };
 

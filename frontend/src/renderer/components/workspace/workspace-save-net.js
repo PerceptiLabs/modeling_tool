@@ -2,7 +2,7 @@ import html2canvas  from 'html2canvas';
 import canvg        from 'canvg'
 import { projectPCSave, generateID, loadPathFolder, deepCopy }  from "@/core/helpers.js";
 import { pathSlash }  from "@/core/constants.js";
-import {mapActions, mapGetters} from "vuex";
+import { mapGetters, mapMutations, mapActions } from "vuex";
 
 const workspaceSaveNet = {
   created() {
@@ -37,8 +37,11 @@ const workspaceSaveNet = {
     },
   },
   methods: {
+    ...mapMutations({
+      setUnsavedChanges:    'mod_workspace-changes/set_hasUnsavedChanges',
+    }),
     ...mapActions({
-      infoPopup: 'globalView/GP_infoPopup',
+      infoPopup:            'globalView/GP_infoPopup',
       set_networkRootFolder:'mod_workspace/SET_networkRootFolder',
       checkTrainedNetwork:  'mod_api/API_checkTrainedNetwork',
       saveTrainedNetwork:   'mod_api/API_saveTrainedNetwork',
@@ -49,17 +52,17 @@ const workspaceSaveNet = {
       this.saveNetworkPopup = {...this.saveNetworkPopupDefault}
     },
     eventSaveNetwork() {
-      const projectsList = this.getLocalUserInfo.projectsList;
+      // const projectsList = this.getLocalUserInfo.projectsList;
       const network = this.currentNetwork;
 
       this.checkTrainedNetwork()
         .then((isTrained)=> {
 //          if(!projectsList.length || findIndexId(projectsList, network) < 0) {
-          if(!network.networkRootFolder) {
-            this.saveNetworkPopup.isSyncName = true;
-            this.eventSaveNetworkAs(network.networkID, true)
-            return
-          }
+          // if(!network.networkRootFolder) {
+          //   this.saveNetworkPopup.isSyncName = true;
+          //   this.eventSaveNetworkAs(network.networkID, true)
+          //   return
+          // }
 
           if(isTrained) {
             this.saveNetworkPopup.isFreezeInfo = true;
@@ -69,7 +72,7 @@ const workspaceSaveNet = {
             const settings = {
               isSaveTrainedModel: false,
               projectName: network.networkName,
-              projectPath: network.networkRootFolder
+              projectPath: network.apiMeta.location
             };
             this.saveNetwork(settings, network.networkID)
           }
@@ -80,6 +83,7 @@ const workspaceSaveNet = {
       }
     },
     eventSaveNetworkAs(netId, isSaveProjectPath) {
+      this.saveNetworkPopup.show = true;
       this.askSaveFilePopup()
         .then((answer)=> {
           if(answer) {
@@ -101,6 +105,7 @@ const workspaceSaveNet = {
 
       const currentNet = this.currentNetwork;
       const newProjectId = netId || generateID();
+      // debugger;
       const pathSaveProject = netInfo.projectPath;
 
       let prepareNet = cloneNet(currentNet, newProjectId, netInfo);
@@ -124,18 +129,33 @@ const workspaceSaveNet = {
             const payload = {
               path: prepareNet.toLocal.pathProject
             };
-
             return this.$store.dispatch('mod_api/API_saveJsonModel', payload);
             
           }
         })
         .then(()=> {
           /*save project to project page*/
+          if(prepareNet.toFile.apiMeta.location !== prepareNet.toLocal.pathProject) {
+            let newModelPath = prepareNet.toLocal.pathProject;
+            const modelUdateBody = {
+              modelId: prepareNet.toFile.apiMeta.model_id,
+              project: prepareNet.toFile.apiMeta.project,
+              name: prepareNet.toLocal.name,
+              location: newModelPath,
+            };
+            this.$store.dispatch('mod_workspace/SET_networkLocation', newModelPath); // change new location in vuex
+            this.$store.dispatch('mod_project/updateModel', modelUdateBody); // change new location in api
+          }
+          
 
           saveProjectToLocalStore(prepareNet.toLocal, this);
           if(saveProjectPath) this.set_networkRootFolder(pathSaveProject);
           this.infoPopup('The file has been successfully saved');
           this.trackerModelSave(prepareNet.toFile);
+          this.setUnsavedChanges({
+            networkId: netId, 
+            value: false
+          });
         })
         .catch((error) => {})
         .finally(()=> {

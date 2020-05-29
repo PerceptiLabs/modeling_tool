@@ -36,6 +36,7 @@
       if(isWeb()) {
         this.$store.dispatch('mod_workspace/GET_workspacesFromLocalStorage')
           .then(_ => {
+            this.$store.commit('mod_workspace/get_lastActiveTabFromLocalStorage');
             // if(!this.workspaceContent.length) { this.ADD_network(); }
 
             // request charts if the page has been refreshed, and

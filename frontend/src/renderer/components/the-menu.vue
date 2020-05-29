@@ -46,7 +46,7 @@
 </template>
 
 <script>
-  import { mapGetters, mapMutations, mapActions } from 'vuex';
+  import { mapGetters, mapMutations, mapActions, mapState } from 'vuex';
   import { baseUrlSite, MODAL_PAGE_PROJECT } from '@/core/constants.js';
   import { isElectron, goToLink, isOsMacintosh, isDesktopApp } from '@/core/helpers.js'
   
@@ -68,10 +68,13 @@ export default {
   },
   computed: {
     ...mapGetters({
-      isTutorialMode: 'mod_tutorials/getIstutorialMode',
-      isStoryBoard:   'mod_tutorials/getIsTutorialStoryBoard',
-      isLogin:        'mod_user/GET_userIsLogin',
-      networkHistory: 'mod_workspace-history/GET_currentNetHistory',
+      isTutorialMode:         'mod_tutorials/getIstutorialMode',
+      isStoryBoard:           'mod_tutorials/getIsTutorialStoryBoard',
+      isLogin:                'mod_user/GET_userIsLogin',
+      networkHistory:         'mod_workspace-history/GET_currentNetHistory',
+    }),
+    ...mapState({
+      currentProjectId:     state => state.mod_project.currentProject,
     }),
     appVersion() {
       return this.$store.state.globalView.appVersion
@@ -284,7 +287,25 @@ export default {
       if (!path || path.length === 0) { return; }
 
       this.$store.dispatch('globalView/SET_filePickerPopup', false);
-      this.loadNetwork(path[0]);
+      
+      this.$store.dispatch('mod_events/EVENT_loadNetwork', path[0]);
+      // this.$store.dispatch('mod_api/API_getModel',`${path[0]}/model.json`)
+      //   .then(model => {
+      //     if(model.hasOwnProperty('apiMeta')) {
+      //       const { location } = model.apiMeta;
+      //       delete model.apiMeta;
+      //     }
+      //     this.$store.dispatch('mod_project/createProjectModel',{
+      //       name: model.networkName,
+      //       project: this.currentProjectId,
+      //       location: path[0],
+      //     }).then(apiMeta => {
+      //       this.$store.dispatch('mod_workspace/ADD_network', {network: model, apiMeta});
+      //     });
+      //   })
+      //   .catch(e => console.log(e));
+
+      // this.loadNetwork(path[0]);
     },
     saveModel() {
       this.saveNetwork();
@@ -439,11 +460,11 @@ export default {
           submenu: [
             {label: 'New',     active: this.addNewNetwork},
             {type: 'separator'},
-            {label: 'Load',    active: this.openLoadModelPopup},
+            {label: 'Import Model',    active: this.openLoadModelPopup},
             {label: "Project", active: this.setActivePage},
             {type: 'separator'},
-            {label: 'Save',    active: this.saveModel,          enabled: this.openApp},
-            {label: 'SaveAs',  active: this.saveModelAs,        enabled: this.openApp},
+            {label: 'Save',         accelerator: this.isMac ? 'meta+s' : 'ctrl+s',              enabled: this.openApp,  active: this.saveModel },
+            {label: 'Save as',   accelerator: this.isMac ? 'meta+shift+s' : 'ctrl+shift+s',  enabled: this.openApp,  active: this.saveModelAs },
             {type: 'separator'},
             {label: 'Export',  active: this.exportModel,        enabled: this.openApp},
             {type: 'separator'},

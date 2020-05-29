@@ -65,7 +65,7 @@
           :popup-settings="saveNetworkPopup"
           )
         workspace-load-network(
-          v-if="showLoadSettingPopup"
+          v-if="showLoadSettingPopup" 
         )
         export-network(v-if="showExportNetworkPopup")
 

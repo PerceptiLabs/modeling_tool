@@ -58,7 +58,9 @@ export default {
         case 'projects': theName = 'ModelHub'; break;
         case 'settings': theName = 'Settings'; break;
         case 'app':  {
-          if(this.currentModel.networkMeta.openStatistics) {
+          if(this.currentModel && 
+            this.currentModel.networkMeta && 
+            this.currentModel.networkMeta.openStatistics) {
             theName = 'Statistics View';
           } else {
             theName = 'Modeling Tool';

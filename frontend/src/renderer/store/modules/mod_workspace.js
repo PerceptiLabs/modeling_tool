@@ -145,6 +145,12 @@ const mutations = {
     Vue.set(state.workspaceContent[index], [field], value);
 
   },
+  replace_network_element_list(state, { newNetworkElementList, getters }) {
+    getters.GET_currentNetwork.networkElementList = newNetworkElementList;
+  },
+  set_model_location(state, { getters, location }) {
+    getters.GET_currentNetwork.apiMeta.location = location;
+  },
   add_model_from_local_data(state, model){
     state.workspaceContent.push(model);
   },
@@ -216,18 +222,16 @@ const mutations = {
         // this value is used to determine if a new setInterval call should be made
         network.networkMeta.chartsRequest.timerID = null;
 
-        if(network.apiMeta && currentProject === network.apiMeta.project)  {
-          newWorkspaceContent.push(network);
-        }
-        
+        newWorkspaceContent.push(network);
+
       }
-      state.workspaceContent = newWorkspaceContent;
     }
+    state.workspaceContent = newWorkspaceContent.sort((a,b) => a.networkID < b.networkID);
   },
   set_lastActiveTabInLocalStorage(state, networkID) {
-    // if (!isLocalStorageAvailable()) { return; }
+    if (!isLocalStorageAvailable()) { return; }
 
-    // localStorage.setItem('_network.meta', JSON.stringify({ 'lastActiveNetworkID': networkID }));
+    localStorage.setItem('_network.meta', JSON.stringify({ 'lastActiveNetworkID': networkID }));
 
   },
   get_lastActiveTabFromLocalStorage(state) {
@@ -242,6 +246,11 @@ const mutations = {
       state.currentNetwork = index;
     }
   },
+  clear_networkIdsInLocalStorage(state, networkID) {
+    if (!isLocalStorageAvailable()) { return; }
+    
+    localStorage.removeItem('_network.ids', []);
+  },
   //---------------
   //  NETWORK
   //---------------
@@ -251,7 +260,7 @@ const mutations = {
   set_networkRootFolder(state, {getters, value}) {
     getters.GET_currentNetwork.networkRootFolder = value
   },
-  add_network (state, { network , apiMeta, dispatch }) {
+  add_network (state, { network , apiMeta, dispatch, focusOnNetwork }) {
     let workspace = state.workspaceContent;
     let newNetwork = {};
     //-- DEFAULT DATA
@@ -259,7 +268,7 @@ const mutations = {
       networkName: 'New_Model',
       networkID: '',
       networkMeta: {},
-      networkElementList: [],
+      networkElementList: {},
       networkRootFolder: ''
     };
     const defaultMeta = {
@@ -305,7 +314,7 @@ const mutations = {
 
     //-- Open last Network
     //-- Go to app page
-    if(router.history.current.name !== 'app') {
+    if(router.history.current.name !== 'app' && focusOnNetwork === true ) {
       router.replace({name: 'app'});
     }
 
@@ -316,7 +325,7 @@ const mutations = {
       return indexId; 
     }
     function createPositionElements(list) {
-      if(!list || list.length === 0 || Object.values(list)[0].layerMeta.position.top !== null) {
+      if(!list || Object.keys(list).length === 0 || Object.values(list)[0].layerMeta.position.top !== null) {
         return;
       }
       else {
@@ -1176,11 +1185,14 @@ const actions = {
   //---------------
   //  NETWORK
   //---------------
-  ADD_network({commit, dispatch}, { network, apiMeta = {} } = {}) {
+  ReplaceNetworkElementList({commit, getters}, newNetworkElementList){
+    commit('replace_network_element_list', {newNetworkElementList, getters});
+  },
+  ADD_network({commit, dispatch}, { network, apiMeta = {}, focusOnNetwork = true } = {}) {
     if(isElectron()) {
-      commit('add_network', { network, apiMeta, dispatch });
+      commit('add_network', { network, apiMeta, dispatch, focusOnNetwork });
     } else {
-      commit('add_network', { network, apiMeta, dispatch });
+      commit('add_network', { network, apiMeta, dispatch, focusOnNetwork });
       const lastNetworkID = state.workspaceContent[state.currentNetwork].networkID;
       commit('set_lastActiveTabInLocalStorage', lastNetworkID);
       commit('set_workspacesInLocalStorage'); 
@@ -1344,6 +1356,9 @@ const actions = {
   SET_networkName({commit, getters}, value) {
     commit('set_networkName', {getters, value})
   },
+  SET_networkLocation({commit, getters}, value) {
+    commit('set_model_location', { location: value, getters })
+  },
   SET_networkRootFolder({commit, getters}, value) {
     commit('set_networkRootFolder', {getters, value})
   },
@@ -1435,18 +1450,34 @@ const actions = {
   },
   ADD_element({commit, getters, dispatch}, { event, setChangeToWorkspaceHistory = true }) {
     commit('add_element', {getters, dispatch, event, setChangeToWorkspaceHistory})
+    commit('mod_workspace-changes/set_hasUnsavedChanges', {
+      networkId: getters.GET_currentNetworkId,
+      value: true
+    }, {root: true});
   },
   DELETE_element({commit, getters, dispatch}) {
     if(getters.GET_networkIsOpen) {
       commit('delete_element', {getters, dispatch});
       dispatch('mod_api/API_getOutputDim', null, {root: true});
     }
+    commit('mod_workspace-changes/set_hasUnsavedChanges', {
+      networkId: getters.GET_currentNetworkId,
+      value: true
+    }, {root: true});
   },
   ADD_arrow({commit, getters, dispatch}, stopID) {
     commit('add_arrow', {dispatch, stopID})
+    commit('mod_workspace-changes/set_hasUnsavedChanges', {
+      networkId: getters.GET_currentNetworkId,
+      value: true
+    }, {root: true});
   },
   DELETE_arrow({commit, getters, dispatch}, arrow) {
     commit('delete_arrow', {dispatch, arrow})
+    commit('mod_workspace-changes/set_hasUnsavedChanges', {
+      networkId: getters.GET_currentNetworkId,
+      value: true
+    }, {root: true});
   },
   SET_elementUnselect({commit, getters}) {
     commit('set_elementUnselect', {getters})
@@ -1468,6 +1499,10 @@ const actions = {
   },
   CHANGE_elementPosition({commit, getters}, value) {
     commit('change_elementPosition', {value, getters})
+    commit('mod_workspace-changes/set_hasUnsavedChanges', {
+      networkId: getters.GET_currentNetworkId,
+      value: true
+    }, {root: true});
   },
   //---------------
   //  NETWORK CONTAINER

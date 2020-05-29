@@ -53,7 +53,7 @@
           div.column-1
             span.btn-round-icon.check-model-button
               img(v-if="isItemSelected(model.networkID)" src="../../../../static/img/project-page/checked.svg")
-            span.model-name(v-tooltip:bottom="'Click to view Model Card'" @click.stop="gotToNetworkView(index)") {{model.networkName}}
+            span.model-name(v-tooltip:bottom="'Click to view Model Card'" @click.stop="gotToNetworkView(model.networkID)") {{model.networkName}}
 
             svg.is-favorite(v-if="model.isFavorite" @click.stop="setFavoriteValue(index, false)" width="21" height="19" viewBox="0 0 21 19" fill="none")
               path(d="M9.54894 0.927049C9.8483 0.0057385 11.1517 0.0057404 11.4511 0.927051L13.0819 5.9463C13.2158 6.35833 13.5997 6.63729 14.033 6.63729H19.3105C20.2792 6.63729 20.682 7.8769 19.8983 8.4463L15.6287 11.5484C15.2782 11.803 15.1315 12.2544 15.2654 12.6664L16.8963 17.6857C17.1956 18.607 16.1411 19.3731 15.3574 18.8037L11.0878 15.7016C10.7373 15.447 10.2627 15.447 9.91221 15.7016L5.64258 18.8037C4.85887 19.3731 3.80439 18.607 4.10374 17.6857L5.7346 12.6664C5.86847 12.2544 5.72181 11.803 5.37132 11.5484L1.10169 8.4463C0.317977 7.8769 0.720754 6.63729 1.68948 6.63729H6.96703C7.40026 6.63729 7.78421 6.35833 7.91809 5.9463L9.54894 0.927049Z" fill="#6185EE")
@@ -77,13 +77,44 @@
             collaborator-avatar(
                 :list="[{id: 1, name: user && user.firstName || '', img: null,}]"
               )
-            | {{model.apiMeta.updated.substring(0, 10)}}
+            | {{ (model && model.apiMeta && model.apiMeta.updated) ? model.apiMeta.updated.substring(0, 10) : ''}}
         
+        
+        div.models-list-row.model-list-item(v-for="(model, index) in unparsedModels"  :key="model.id" :class="{'is-selected': isItemSelected(model.networkID)}")
+          div.column-1
+            //- span.btn-round-icon.check-model-button
+              //- img(v-if="isItemSelected(model.networkID)" src="../../../../static/img/project-page/checked.svg")
+            span.model-name {{model.name}}
+
+          div.column-2 Deleted
+           
+          div.column-3
+            span(@click.stop="") -
+          div.column-4
+            span(@click.stop="") -
+          div.column-5
+            collaborator-avatar(
+                @click.stop=""
+                :list="[{id: 1, name: user && user.firstName || '', img: null,}]"
+              )
+          div.column-6(@click.stop="")
+            collaborator-avatar(
+                :list="[{id: 1, name: user && user.firstName || '', img: null,}]"
+              )
+            | {{ (model && model && model.updated) ? model.updated.substring(0, 10) : ''}}
+
+
     file-picker-popup(
       v-if="showFilePickerPopup"
-      popupTitle="Load Project Folder"
+      popupTitle="Load Network Folder"
       :confirmCallback="onLoadNetworkConfirmed"
     )
+    file-picker-popup(
+      v-if="showFilePickerPopup"
+      :filePickerType="showFilePickerPopup.filePickerType"
+      :fileTypeFilter="showFilePickerPopup.fileTypeFilter"
+      :popupTitle="showFilePickerPopup.popupTitle"
+      :confirmCallback="showFilePickerPopup.confirmCallback || showFilePickerPopup")
     select-model-modal(
       v-if="isCreateModelModalOpen"
       @close="onCloseSelectModelModal"
@@ -106,7 +137,7 @@
   import WorkspaceLoadNetwork   from "@/components/global-popups/workspace-load-network.vue";
 
   import { mapActions, mapMutations, mapState, mapGetters } from 'vuex';
-  import {isWeb} from "@/core/helpers";
+  import { isWeb, stringifyNetworkObjects } from "@/core/helpers";
   import cloneDeep from 'lodash.clonedeep';
   const mockModelList = [
     // {id: 1, dateCreated: new Date().setHours(15), dateLastOpened: new Date(), size: '10', name:'Placeholder 1', status: '75%', savedVersion: '-', sessionEndTime: 'Placeholder', collaborators: [{id: 1, name: 'Anton', img: null,}], lastModified: { user: {id: 1, name: 'Anton', img: null}, date: '19/02/20 13:00:00'}, isFavorite: true},
@@ -146,40 +177,26 @@
         ],
         initialModelList: mockModelList,
         modelList: mockModelList,
+        unparsedModels: [],
         selectedListIds: [],
         isImportModelsOpen: false,
         isCreateModelModalOpen: false,
       }
-    },                                                     
-    watch: {
-      searchValue: function (newValue) {
-        console.log({newValue})
-        let initialModelList = [...this.initialModelList];
-        initialModelList = initialModelList.filter(model => model.name.toLocaleLowerCase().indexOf(newValue.toLowerCase()) !== -1);
-        let initialModelListIds = initialModelList.map(model => model.id);
-        this.selectedListIds = this.selectedListIds.filter(id => initialModelListIds.indexOf(id) !== -1);
-        
-        this.modelList = initialModelList;
-        this.onSortByChanged(this.isSelectedSortType);
-      }
     },
     created() {
-      // this.setPageTitleMutation('Project Name / Models');
       if(isWeb()) {
-        // this.$store.dispatch('mod_workspace/GET_workspacesFromLocalStorage');
+        this.getProjects();
       }
     },
-    beforeDestroy() {
-      // this.setPageTitleMutation('')
-    },
-  
     computed: {
       ...mapGetters({
-        user: 'mod_user/GET_userProfile'
+        user:                 'mod_user/GET_userProfile',
+        currentProject:       'mod_project/GET_project',
+        networksWithChanges:  'mod_workspace-changes/get_networksWithChanges'
       }),
       ...mapState({
-        currentProjectId: state => state.mod_project.currentProject,
-        showFilePickerPopup: state => state.globalView.globalPopup.showFilePickerPopup,
+        currentProjectId:     state => state.mod_project.currentProject,
+        showFilePickerPopup:  state => state.globalView.globalPopup.showFilePickerPopup,
         appVersion:           state => state.globalView.appVersion,
         hotKeyPressDelete:    state => state.mod_events.globalPressKey.del,
         showLoadSettingPopup: state => state.globalView.globalPopup.showLoadSettingPopup,
@@ -192,38 +209,32 @@
         return this.projects.filter((project)=> project.name.match(this.search))
       }
     },
-    watch: {     
-      'localUserInfo.projectsList.length': {
-        handler() {
-          if(!this.localUserInfo) return;
-
-          let localProjectsList = deepCopy(this.localUserInfo.projectsList);
-          if (Array.isArray(localProjectsList)) {
-            localProjectsList.forEach((el) => {
-              el.notExist = false;
-              el.isChecked = false;
-
-              this.$store.dispatch('mod_api/API_loadNetwork', el.pathProject, {root: true})
-                .then((net) => {
-                  try {
-                    if(!(net.networkName
-                      && net.networkMeta
-                      && net.networkElementList)) {
-                        throw('err');
-                      }
-                  } catch(e) {
-                    throw('err');
-                  }
-                }).catch(err => {
-                  el.notExist = true
-                })
-            });
-            this.projects = localProjectsList;
+    watch: {
+      searchValue: function (newValue) {
+        console.log({newValue})
+        let initialModelList = [...this.initialModelList];
+        initialModelList = initialModelList.filter(model => model.name.toLocaleLowerCase().indexOf(newValue.toLowerCase()) !== -1);
+        let initialModelListIds = initialModelList.map(model => model.id);
+        this.selectedListIds = this.selectedListIds.filter(id => initialModelListIds.indexOf(id) !== -1);
+        
+        this.modelList = initialModelList;
+        this.onSortByChanged(this.isSelectedSortType);
+      },
+      currentProject: {
+        immediate: true,
+        handler(newVal, oldVal) {
+          // don't reload if there are any changes
+          // happens when going to project view for modeling view
+          // (clicking of PerceptiLabs icon)
+          if (!this.networksWithChanges.length) {
+            this.reset_network();
+            this.fetchNetworkMetas(newVal);
           }
-        },
-        immediate: true
+        }
       },
       hotKeyPressDelete() {
+        if (!this.projects) { return; }
+
         const indexCheckedProj = this.projects.findIndex((el)=> el.isChecked === true);
         if(indexCheckedProj < 0) return;
 
@@ -234,40 +245,38 @@
         const newProjectsList = deepCopy(this.localUserInfo.projectsList);
         newProjectsList.splice(indexCheckedProj, 1);
         this.saveLocalUserInfo({key: 'projectsList', data: newProjectsList });
-
-        // folderPCDelete(pathDelete)
-        //   .then(()=> {
-        //     const newProjectsList = deepCopy(this.localUserInfo.projectsList);
-        //     newProjectsList.splice(indexCheckedProj, 1);
-        //     this.saveLocalUserInfo({key: 'projectsList', data: newProjectsList });
-        //     this.$nextTick(()=> this.showInfoPopup("The project has been successfully deleted"))
-        //   })
-        //   .catch ((err)=> {console.error(err)})
       }
     },
     methods: {
-      ...mapActions({
-        loadNetwork:        'mod_api/API_loadNetwork',
-        addNetwork:         'mod_workspace/ADD_network',
-        set_currentNetwork: 'mod_workspace/SET_currentNetwork',
-        createProjectModel: 'mod_project/createProjectModel',
-        API_getModel:       'mod_api/API_getModel',
-        setActivePageAction: 'modal_pages/setActivePageAction',
-        delete_network : 'mod_workspace/DELETE_network',
-        UPDATE_MODE_ACTION : 'mod_workspace/UPDATE_MODE_ACTION',
-        SET_openStatistics : 'mod_workspace/SET_openStatistics',
-        SET_openTest : 'mod_workspace/SET_openTest',
+      ...mapActions({ 
+        loadNetwork:          'mod_api/API_loadNetwork',
+        addNetwork:           'mod_workspace/ADD_network',
+        set_currentNetwork:   'mod_workspace/SET_currentNetwork',
+        getProjects:          'mod_project/getProjects',
+        createProjectModel:   'mod_project/createProjectModel',
+        getModelMeta:         'mod_project/getModel',
+        API_getModel:         'mod_api/API_getModel',
+        setActivePageAction:  'modal_pages/setActivePageAction',
+        delete_network:       'mod_workspace/DELETE_network',
+        reset_network:        'mod_workspace/RESET_network',
+        UPDATE_MODE_ACTION:   'mod_workspace/UPDATE_MODE_ACTION',
+        SET_openStatistics:   'mod_workspace/SET_openStatistics',
+        SET_openTest:         'mod_workspace/SET_openTest',
       }),
       ...mapMutations({
         // setPageTitleMutation: 'globalView/setPageTitleMutation'
+        clearNetworkIdsInLocalStorage:  'mod_workspace/clear_networkIdsInLocalStorage',
+        setWorkspacesInLocalStorage:    'mod_workspace/set_workspacesInLocalStorage'
       }),
-      gotToNetworkView(index) {
+      gotToNetworkView(networkID) {
         // maybe should receive a id and search index by it
-        this.set_currentNetwork(index);
+        const index = this.workspaceContent.findIndex(wc => wc.networkID == networkID);
+
+        this.set_currentNetwork(index > 0 ? index : 0);
         this.$router.push({name: 'app'})
           .then(() => {
-            this.SET_openStatistics(false);
-            this.SET_openTest(false);
+            // this.SET_openStatistics(false);
+            // this.SET_openTest(false);
           });
       },
       loadFolderPath() {
@@ -337,18 +346,6 @@
         removeIndexes.map((index) => {
           this.delete_network(index);
         })
-        // get index
-        // this.delete_network(index);
-        // let modelList = [...this.modelList];
-        // let initialModelList = [...this.initialModelList];
-
-        // modelList = modelList.filter(item => this.selectedListIds.indexOf(item.id) === -1);
-        // initialModelList = initialModelList.filter(item => this.selectedListIds.indexOf(item.id) === -1);
-
-        // this.modelList = modelList;
-        // this.initialModelList = initialModelList;
-
-        // this.selectedListIds = [];
       },
       toggleFavoriteItems() {
         let newModelList = [...this.workspaceContent];
@@ -372,26 +369,7 @@
         this.updateInitialModelListData();
       },
       setFavoriteValue(index, value) {
-        // let setIndex = [];
-        // this.workspaceContent = this.workspaceContent.map((network, index) =>  {
-          
-        // })
-
         this.UPDATE_MODE_ACTION({index, field: 'isFavorite', value});
-
-        // removeIndexes.map((index) => {
-        // })
-        // udate model fild value
-
-
-        // let newModelList = [...this.modelList];
-        // newModelList = newModelList.map(item => {
-        //   if (item.id === itemId) {
-        //     item.isFavorite = value;
-        //   }
-        //   return item;
-        // })
-
       },
       isAllItemSelectedFavorite() {
 
@@ -420,15 +398,51 @@
         this.initialModelList = initialModelList;
 
       },
-      handleAddNetwork() {
-        this.createProjectModel({
-          name: 'New_Model',
-          project: this.currentProjectId,
-        }).then(apiMeta => {
-          this.addNetwork({apiMeta});
-          //@todo save the network in project folder
-          
-        });
+      fetchNetworkMetas(currentProject) {
+        if (!currentProject || !currentProject.models) { return; }
+
+        const promiseArray = 
+          currentProject.models
+            .map(x => this.getModelMeta(x));
+
+        Promise.all(promiseArray)
+          .then(metas => {
+            this.fetchAllNetworkJsons(metas);
+            this.fetchUnparsedModels(metas);
+          });
+      },
+      fetchAllNetworkJsons(modelMetas) {
+        if (!modelMetas) { return; }
+
+        const promiseArray = 
+          modelMetas
+            .filter(x => x.location)
+            .map(x => this.API_getModel(x.location + '/model.json'));
+        
+        Promise.all(promiseArray)
+          .then(models => {
+            this.addNetworksToWorkspace(models);
+          });
+      },
+      async fetchUnparsedModels(modelMetas){
+        let unparsedModels = [];
+
+        for(const model of modelMetas){
+          const modelJson = await this.API_getModel(model.location + '/model.json');
+          if(modelJson === "") {
+            unparsedModels.push(model);
+          }
+        } 
+        this.unparsedModels = unparsedModels;
+      },
+      addNetworksToWorkspace(models) {
+        const filteredModels = models.filter(m => m);
+        for(const model of filteredModels) {
+          this.addNetwork({network: model, apiMeta: model.apiMeta, focusOnNetwork: false});
+        }
+
+        this.clearNetworkIdsInLocalStorage();
+        this.setWorkspacesInLocalStorage();
       },
       handleAddNetworkModal() {
         // open modal
@@ -441,12 +455,10 @@
 
       },
       confirmFilePickerSelection(selectedItems) {
-        console.log(selectedItems);
         this.clearPath();
       },
       clearPath(x){
         this.isImportModelsOpen = false;
-        console.log(x);
       },
       openLoadModelPopup() {
         this.$store.dispatch('globalView/SET_filePickerPopup', {confirmCallback: this.onLoadNetworkConfirmed});
@@ -454,20 +466,25 @@
       onLoadNetworkConfirmed(path) {
         if (!path || path.length === 0) { return; }
         this.$store.dispatch('globalView/SET_filePickerPopup', false);
-        this.API_getModel(`${path[0]}/model.json`)
-          .then(model => {
 
-            if(model.hasOwnProperty('apiMeta')) {
-              delete model.apiMeta;
-            }
-            this.createProjectModel({
-              name: model.networkName,
-              project: this.currentProjectId,
-            }).then(apiMeta => {
-              this.addNetwork({network: model, apiMeta});
-            });
-          })
-          .catch(e => console.log(e));
+        this.$store.dispatch('mod_events/EVENT_loadNetwork', path[0]);
+
+        // this.API_getModel(`${path[0]}/model.json`)
+        //   .then(model => {
+
+        //     if(model.hasOwnProperty('apiMeta')) {
+        //       const { location } = model.apiMeta;
+        //       delete model.apiMeta;
+        //     }
+        //     this.createProjectModel({
+        //       name: model.networkName,
+        //       project: this.currentProjectId,
+        //       location: path[0],
+        //     }).then(apiMeta => {
+        //       this.addNetwork({network: model, apiMeta});
+        //     });
+        //   })
+        //   .catch(e => console.log(e));
       },
       confirmCallback(el) {
         this.openTemplate(el[0]);

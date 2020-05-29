@@ -235,6 +235,10 @@ class Interface():
         elif action == "getJsonModel":
             json_path = value
             return getJsonModel(json_path=json_path).run()
+        
+        elif action == "isDirExist":
+            path_to_folder = value["path"]
+            return os.path.isdir(path_to_folder)
 
         elif action == "saveJsonModel":
             save_path = value["path"]
@@ -243,8 +247,7 @@ class Interface():
 
         elif action == "createFolder":
             folder_path = value['folder_path']
-            folder_name = value['folder_name']
-            return createFolder(folder_path=folder_path, folder_name=folder_name).run()
+            return createFolder(folder_path=folder_path).run()
 
         elif action == "getPartitionSummary":
             Id=value["Id"]

@@ -14,7 +14,7 @@
 	align-items: center;
 	justify-content: center;
 	height: 4rem;
-	background: #141c31;
+	background: rgba(97, 133, 238, 0.2);
 	border: 1px solid rgba(97, 133, 238, 0.4);
 	// &.disable {
 	// 	color: $disable-txt;
@@ -95,7 +95,7 @@
 /*--- GLOBAL ---*/
 .popup-global {
 	position: fixed;
-	z-index: 12;
+	z-index: 13;
 	top: 0;
 	right: 0;
 	bottom: 0;

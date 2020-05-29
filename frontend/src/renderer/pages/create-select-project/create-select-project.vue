@@ -32,8 +32,8 @@
               .list-name-name Name
               .list-last-opened Last Opened
             div.main-list-item(
-             v-for="project in projectsList.filter(pr => pr.name.indexOf(searchValue) !== -1)" 
-              @dblclick="onProjectSelectHandler(project)"
+              v-for="project in projectsList.filter(pr => pr.name.indexOf(searchValue) !== -1)" 
+              @dblclick="onProjectSelect(project)"
               @contextmenu.prevent.stop="openContext($event, project.project_id)"
             ) 
               input.rename-project-input(
@@ -44,8 +44,14 @@
               
               )
               span(v-show="!(renameData.projectId === project.project_id && renameData.isProjectFieldActive)").main-list-name.fz-16 {{project.name | trimText}}
-              span.main-list-date.fz-16 {{project.created.toString().substring(0, 16)}}
-          
+              span.main-list-date.fz-16 {{project.created.toString().substring(0, 16).replace("T", " ")}}
+    
+    file-picker-popup(
+      v-if="showFilePickerPopup"
+      popupTitle="Choose default directory for project"
+      :confirmCallback="setNewProjectPath"
+      :cancelCallback="closePopup"
+    )
     .project-box.set-project-name(
       v-if="isProjectNameModalOpen"
     )
@@ -57,9 +63,16 @@
           v-model="newProjectName"
           @keyup.enter="createNewProject"
           )
+        .set-project-text-label Project directory
+        input.set-project-text-input(
+          readonly
+          type="text"
+          v-model="newProjectLocation"
+          @click="openProjectPathFilePicker"
+          )
         div.project-name-action-wrapper
           button.project-name-btn.create(
-            :class="{'disabled': newProjectName === ''}"
+            :class="{'disabled': !newProjectName || !newProjectLocation}"
             @click="createNewProject"
           ) Create Project
           button.project-name-btn.cancel(
@@ -68,14 +81,15 @@
 
 </template>
 <script>
-  import { mapActions, mapMutations } from "vuex";
+  import { mapState, mapGetters, mapActions, mapMutations } from "vuex";
   import SortByButton from "@/components/sort-by-button";
-  import { generateID } from "@/core/helpers";
-import { debug } from 'util';
+  import FilePickerPopup        from "@/components/global-popups/file-picker-popup.vue";
+  import { generateID, getDefaultProjectPathForOs } from "@/core/helpers";
+  import { debug } from 'util';
 
   export default {
     name: 'CreateSelectProject',
-    components: {SortByButton},
+    components: { SortByButton, FilePickerPopup },
     data() {
       return {
         searchValue: '',
@@ -84,18 +98,23 @@ import { debug } from 'util';
         projectContextStyles: {},
         isProjectNameModalOpen: false,
         newProjectName: '',
+        newProjectLocation: '',
         renameData: {
           isProjectFieldActive: false,
           projectFieldValue: '',
           projectId: null,
-        }
+        },
+        showFilePickerPopup: false
       }
     },
     created() {
       this.getProjects();
+
+      // document.addEventListener('keydown', this.onKeyDown);
     },
     beforeDestroy() {
       document.removeEventListener('click', this.closeContext);
+      // document.removeEventListener('keydown', this.onKeyDown);
     },
     computed:{
       isOpen() {
@@ -106,72 +125,108 @@ import { debug } from 'util';
       },
       projectsList() {
         return this.$store.state.mod_project.projectsList;
-      }
+      },
+      ...mapGetters({
+        networksWithChanges:          'mod_workspace-changes/get_networksWithChanges'
+      })
     },
     methods: {
       ...mapMutations({
-        selectProject: 'mod_project/selectProject',
+        selectProject:                 'mod_project/selectProject',
         addModelFromLocalDataMutation: 'mod_workspace/add_model_from_local_data',
-        loadProjectFromLocalStorage: 'mod_workspace/get_workspacesFromLocalStorage',
-        set_currentNetwork : 'mod_workspace/set_currentNetwork',
+        clear_networkChanges:          'mod_workspace-changes/clear_networkChanges'
       }),
       ...mapActions({
-        setActivePageAction: 'modal_pages/setActivePageAction',
-        closePageAction: 'modal_pages/closePageAction',
-        getProjects:    'mod_project/getProjects',
-        createProject:    'mod_project/createProject',
+        showInfoPopup:            'globalView/GP_infoPopup',
+        popupConfirm:             'globalView/GP_confirmPopup',
+        setActivePageAction:      'modal_pages/setActivePageAction',
+        closePageAction:          'modal_pages/closePageAction',
+        getProjects:              'mod_project/getProjects',
+        createProject:            'mod_project/createProject',
         createLocalProjectFolder: 'mod_api/API_createFolder',
-        API_getModelAction: 'mod_api/API_getModel',
-        deleteProjectAction: 'mod_project/deleteProject',
-        updateProjectAction: 'mod_project/updateProject',
+        API_getModelAction:       'mod_api/API_getModel',
+        deleteProjectAction:      'mod_project/deleteProject',
+        updateProjectAction:      'mod_project/updateProject',
       }),
-      onProjectSelectHandler(project) {
+      onProjectSelect(project) {
         const {project_id: projectId} = project;
+        if (this.networksWithChanges.length > 0) {
+          this.popupConfirm(
+          {
+            text: 'There are unsaved networks, are you sure you want to change projects?',
+            cancel: () => {
+              this.closePageAction();
+            },
+            ok: () => {
+              this.clear_networkChanges();
+              
+              this.goToProject(projectId);
+            }
+          }); 
+        } else {
+          this.goToProject(projectId);
+        }
 
+      },
+      goToProject(projectId) {
         this.selectProject(projectId);
         this.closePageAction();
-        // this.setPageTitleMutation(`${project.name} / Models`);
 
-        this.loadProjectFromLocalStorage(projectId);
-        this.set_currentNetwork(0);
-        // project.models.map(modelId => {
-          
-        //   // @todo extract models from local storage
-        //   // make mutation for set the models in store
-          
-        //   this.API_getModelAction({modelId, projectId})
-        //     .then(model => {
-        //       this.addModelFromLocalDataMutation(model)
-        //     }).catch(e => {
-        //       console.log(e);
-        //     })
-        // })
-
-        this.$router.push({name: 'projects'})
+        // load models and set them in the workspace from:
+        // 1. model's "location" property
+        // 2. <project path>/<model name>.json
+        
+        this.$router.push({name: 'projects'}).catch(error => {});
       },
       openProjectNameModal() {
         this.isProjectNameModalOpen = true;
       },
-       closeProjectNameModal() {
+      closeProjectNameModal() {
         this.isProjectNameModalOpen = false;
         this.newProjectName = '';
       },
-      createNewProject(projectName) {
-        if(this.newProjectName === '') {
+      openProjectPathFilePicker() {
+        this.showFilePickerPopup = true;
+      },
+      setNewProjectPath(filepath) {
+        this.newProjectLocation = filepath && filepath[0] ? filepath[0] : ''
+        this.closePopup();
+      },
+      createNewProject() {
+        if(!this.newProjectName || !this.newProjectLocation) {
           return;
         }
 
-       let payload = {
-         name: this.newProjectName,
-       };
-      
-       this.createProject(payload)
-        .then(res => {
-          this.onProjectSelectHandler(res);
-          const projectName = `project_${res.project_id}`; 
-          // this.createLocalProjectFolder(projectName);
+        let createProjectFolderReq = {
+          folder_path: this.newProjectLocation + '/' + this.newProjectName
+        };
+
+        this.createLocalProjectFolder(createProjectFolderReq)
+        .then(createFolderRes => {
+          if (createFolderRes !== '') {
+            let createProjectReq = {
+              name: this.newProjectName,
+              default_directory: createFolderRes
+            };
+
+            return this.createProject(createProjectReq);
+          } else {
+            this.showInfoPopup('A problem occurred when creating the project directory');
+            throw new Error('Problem creating project directory');
+          }
         })
-        this.isProjectNameModalOpen = false;
+        .then(createProjectRes => {
+          this.getProjects();
+          this.onProjectSelect(createProjectRes);
+          const projectName = `project_${createProjectRes.project_id}`; 
+          this.newProjectName = '';
+        })
+        .catch(error => {
+          // console.error(error);
+        })
+        .finally(_ =>{
+          this.isProjectNameModalOpen = false;
+        });
       },
       openContext(e, projectId) {
         const { pageX, pageY } = e;
@@ -202,14 +257,12 @@ import { debug } from 'util';
                 .catch(e => console.log(e));
              
             },
-            })
+          })
           return;
         } else {
           this.deleteProjectAction({ projectId: contextTargetProject })
           .catch(e => console.log(e));
         }
-
-
       },
       renameProject() {
     
@@ -219,8 +272,7 @@ import { debug } from 'util';
           this.renameData.isProjectFieldActive = true;
           this.renameData.projectFieldValue = theProject.name;
           this.renameData.projectId = theProject.project_id;
-      },
-      
+      },      
       closeContext() {
         document.removeEventListener('click', this.closeContext);
         this.contextTargetProject = null;
@@ -234,7 +286,10 @@ import { debug } from 'util';
           this.renameData.projectFieldValue = '';
           this.renameData.projectId = null;
           });
-      }
+      },
+      closePopup() {
+        this.showFilePickerPopup = false;
+      },
     },
     filters: {
       trimText (value) {
@@ -468,7 +523,7 @@ import { debug } from 'util';
     font-size: 12px;
     line-height: 16px;
     color: #9E9E9E;
-    margin-bottom: 16px;
+    margin-bottom: 1rem;
   }
   .set-project-text-input {
     width: 100%;
@@ -482,6 +537,10 @@ import { debug } from 'util';
     font-size: 14px;
     line-height: 19px;
     color: #FFFFFF;
+
+    + .set-project-text-label {
+      margin-top: 2rem;
+    }    
   }
   .project-name-action-wrapper {
     display: flex;

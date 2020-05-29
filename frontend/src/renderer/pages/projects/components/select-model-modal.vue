@@ -31,6 +31,9 @@
                     h4.presets-text Template presets
                     .model-title-input-wrapper
                         input.model-title-input(type="text" v-model="modelName")
+                    h4.presets-text Model Path
+                    .model-title-input-wrapper
+                        input.model-title-input(type="text" v-model="modelPath" @click="openFilePicker")
                 .main-actions-buttons
                     button.action-button.mr-5(@click="closeModal()") Cancel
                     button.action-button.create-btn.ml-5(
@@ -41,14 +44,26 @@
                             path(d='M11.7924 8.82157H8.96839V11.6386H8.0387V8.82157H5.22168V7.88489H8.0387V5.06787H8.96839V7.88489H11.7924V8.82157Z' fill='white')
                             rect(x='0.5' y='0.5' width='16' height='16' rx='1.5' stroke='white')
                         | Create
+        file-picker-popup(
+            v-if="showFilePickerPopup"
+            popupTitle="Choose Model path"
+            :startupFolder="this.modelPath"
+            :confirmCallback="updateModelPath"
+            :cancelCallback="closePopup"
+        )
 </template>
 <script>
-  import imageClassification    from '@/core/basic-template/image-classification.js'
-  import reinforcementLearning  from '@/core/basic-template/reinforcement-learning.js'
-  import timeseriesRegression   from '@/core/basic-template/timeseries-regression.js'
-    import { mapActions, mapState } from 'vuex';
+    import imageClassification    from '@/core/basic-template/image-classification.js'
+    import reinforcementLearning  from '@/core/basic-template/reinforcement-learning.js'
+    import timeseriesRegression   from '@/core/basic-template/timeseries-regression.js'
+    import FilePickerPopup        from "@/components/global-popups/file-picker-popup.vue";
+    
+    import { mapActions, mapState, mapGetters } from 'vuex';
+    import { generateID } from '@/core/helpers';
+    import cloneDeep from 'lodash.clonedeep';
 export default {
     name: 'SelectModelModal',
+    components: { FilePickerPopup },
     data: function() {
         return {
         basicTemplates: [
@@ -69,63 +84,103 @@ export default {
           },
         ],
         chosenTemplate: null,
-        modelName: ''
+        modelName: '',
+        modelPath: '',
+        showFilePickerPopup: false,
     }
     },
     computed: {
         ...mapState({
           currentProjectId: state => state.mod_project.currentProject,  
+        }),
+        ...mapGetters({
+            currentProject: 'mod_project/GET_project',
+            projectPath: 'mod_project/GET_projectPath'
         })
+    },
+    mounted() {
+        this.modelPath = this.projectPath;
     },
     methods: {
         ...mapActions({
-            createProjectModel: 'mod_project/createProjectModel',
-            addNetwork: 'mod_workspace/ADD_network',
+            addNetwork:                 'mod_workspace/ADD_network',
+            createProjectModel:         'mod_project/createProjectModel',
+            getModelMeta:               'mod_project/getModel',
+            showErrorPopup:             'globalView/GP_errorPopup',
+            isDirExists:                'mod_api/API_isDirExist',
         }),
         closeModal() {
             this.$emit('close');
         },
         choseTemplate(index) {
-            console.log(this.modelName);
             this.chosenTemplate = index;
         },
-        isDisableCreateAction () {
+        isDisableCreateAction() {
             const { chosenTemplate, modelName, basicTemplates } = this;
             return ((chosenTemplate === null) || !modelName);
         },
-        createModel() {
+        async createModel() {
             const { chosenTemplate, modelName, basicTemplates } = this;
             if((chosenTemplate === null) || !modelName)  return
+
+
+            // check if models name already exists
+            const promiseArray = 
+                this.currentProject.models
+                    .map(x => this.getModelMeta(x));
+            const modelMeta = await Promise.all(promiseArray);
+            const modelNames = modelMeta.map(x => x.name);
+            if(modelNames.indexOf(modelName) !== -1) {
+                this.showErrorPopup(`The name of model "${modelName}" already exists.`);
+                return;
+            }
             
+            const dirAlreadyExist = await this.isDirExists(`${this.modelPath}/${modelName}`);
+            if(dirAlreadyExist) {
+                this.showErrorPopup(`The "${modelName}" folder already exists in "${this.modelPath}" location.`);
+                return;
+            }
+
             let modelType;
 
-            if(chosenTemplate === -1) { // empty template
-                this.createProjectModel({
-                    name: modelName,
-                    project: this.currentProjectId,
-                }).then(apiMeta => {
+            this.createProjectModel({
+                name: modelName,
+                project: this.currentProjectId,
+                location: `${this.modelPath}/${modelName}`,
+            }).then(apiMeta => {
+                if(chosenTemplate === -1) {
                     this.addNetwork({ apiMeta });
-                });
-                modelType = 'Custom';
-            } else {
-                let template = basicTemplates[chosenTemplate].template.network;
-                template.networkName = modelName;
+                    modelType = 'Custom';
 
-                this.createProjectModel({
-                    name: template.networkName,
-                    project: this.currentProjectId,
-                }).then(apiMeta => {
+                } else {
+                    let template = cloneDeep(basicTemplates[chosenTemplate].template.network);
+                    template.networkName = modelName;
+                    template.networkID = apiMeta.model_id;
                     this.addNetwork({network: template, apiMeta});
-                });
-                modelType = basicTemplates[chosenTemplate].title;
-            }
+                    
+                    modelType = basicTemplates[chosenTemplate].title;
+                }
+            });
             
             this.$store.dispatch('mod_tracker/EVENT_modelCreation', modelType, {root: true});
 
-
             this.closeModal();
 
-        }
+        },
+        openFilePicker() {
+            this.showFilePickerPopup = true;
+        },
+        setPath(data) {
+            console.log(data);
+            debugger;
+        },
+        closePopup() {
+            this.showFilePickerPopup = false;
+        },
+        updateModelPath(filepath) {
+            this.modelPath = filepath && filepath[0] ? filepath[0] : '';
+            this.showFilePickerPopup = false;
+         }
     },
 }
 </script>

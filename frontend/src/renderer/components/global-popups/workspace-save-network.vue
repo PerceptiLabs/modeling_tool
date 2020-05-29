@@ -53,8 +53,16 @@ export default {
   created() {
     this.settings.projectName = this.currentNetwork.networkName;
     if(this.popupSettings.isFreezeInfo) {
-      this.settings.projectPath = this.currentNetwork.networkRootFolder;
+      // this.settings.projectPath = this.currentNetwork.networkRootFolder;
+      let location = this.currentNetwork.apiMeta.location;
+      const modelNameStartIndex = location.lastIndexOf('/');
+      location = location.substring(0, modelNameStartIndex);
+      this.settings.projectPath = location;
     }
+    let location = this.currentNetwork.apiMeta.location;
+      const modelNameStartIndex = location.lastIndexOf('/');
+      location = location.substring(0, modelNameStartIndex);
+      this.settings.projectPath = location;
     this.$store.dispatch('mod_api/API_checkTrainedNetwork')
       .then((isTrained)=> {
         this.settings.isSaveTrainedModel = isTrained;
