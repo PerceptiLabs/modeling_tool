@@ -317,15 +317,17 @@ class LightweightCore:
             # TODO: it is likely that run_subgraph should run in a new process, e.g., to avoid mixing Tf1x and Tf2x.
             _results = self._run_subgraph(subgraph_spec, layer_ids, edges_by_id)
             results.update(_results)
-            
+
         return results
     
     def _run_subgraph(self, subgraph_spec, _, edges_by_id):
-        code_map, code_errors = self._get_code_from_layers(subgraph_spec) # Other errors are fatal and should be raised
-        self._layer_ids_to_names = {id_ : subgraph_spec[id_]['Name'] for id_ in subgraph_spec}
-        _, edges_by_id = get_json_net_topology(subgraph_spec)        
-        cached_results = self._get_cached_results(code_map, subgraph_spec, edges_by_id)
         ordered_ids = self._get_ordered_ids(subgraph_spec, edges_by_id)
+        self._layer_ids_to_names = {id_ : subgraph_spec[id_]['Name'] for id_ in subgraph_spec}
+        _, edges_by_id = get_json_net_topology(subgraph_spec)
+        properties_map = {layer_id:json.dumps(subgraph_spec[layer_id]['Properties']) for layer_id in subgraph_spec.keys()}
+        cached_results = self._get_cached_results(properties_map, subgraph_spec, edges_by_id)
+        self._cached_layer_ids = cached_results.keys()
+        code_map, code_errors = self._get_code_from_layers(subgraph_spec) # Other errors are fatal and should be raised
 
         assert len(ordered_ids) == len(subgraph_spec) == len(code_map) == len(code_errors)
         
@@ -339,7 +341,7 @@ class LightweightCore:
                     code_errors[layer_id], edges_by_id, all_results
                 )                
                 all_results[layer_id] = layer_results
-                self._cache_computed_results(layer_id, layer_results, code_map, edges_by_id)
+                self._cache_computed_results(layer_id, layer_results, properties_map, edges_by_id)
 
         assert len(all_results) == len(subgraph_spec)
         return all_results
@@ -377,13 +379,13 @@ class LightweightCore:
         if self._cache is not None:
             self._cache.put(layer_id, layer_results, code_map, edges_by_id)
 
-    def _get_cached_results(self, code_map, graph_spec, edges_by_id):
+    def _get_cached_results(self, properties_map, graph_spec, edges_by_id):
         if self._cache is None:
             return {}
 
         results = {}
         for layer_id in graph_spec.keys():
-            cached_result = self._cache.get(layer_id, code_map, edges_by_id)
+            cached_result = self._cache.get(layer_id, properties_map, edges_by_id)
             if cached_result is not None:
                 results[layer_id] = cached_result
         return results
@@ -411,11 +413,15 @@ class LightweightCore:
     def _get_code_from_layers(self, graph_spec):
         code_map, error_map = {}, {}        
         for layer_id, spec in graph_spec.items():
-            layer_name = spec['Name']
-            code, error = self._get_layer_code(layer_id, spec)
-            
-            code_map[layer_id] = code
-            error_map[layer_id] = error
+            # layer_name = spec['Name']
+            if layer_id not in self._cached_layer_ids:
+                code, error = self._get_layer_code(layer_id, spec)
+                
+                code_map[layer_id] = code
+                error_map[layer_id] = error
+            else:
+                code_map[layer_id] = ''
+                error_map[layer_id] = ''
 
         return code_map, error_map
 
@@ -428,7 +434,7 @@ class LightweightCore:
         top_level_imports = TOP_LEVEL_IMPORTS['standard_library'] + \
                             TOP_LEVEL_IMPORTS['third_party'] + \
                             TOP_LEVEL_IMPORTS['perceptilabs']
-        
+
         for stmt in top_level_imports:
             code += stmt + '\n'
 
