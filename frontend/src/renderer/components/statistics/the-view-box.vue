@@ -4,6 +4,7 @@
     //-   h3 {{ sectionTitle }}
     view-box-btn-list(
       v-if="btnList"
+      v-show="!testIsOpen"
       :tab-set="btnList"
       @set-current-btn="setCurrentBtn"
       )
