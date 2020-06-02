@@ -13,7 +13,7 @@
             .train-progress-bars(:style="progressStyle") 
           
           .progres-in-percent(v-if="!showError()") {{ statusData.Status === 'Waiting' ? '' : isNaN(parseInt(statusData.Progress * 100, 10)) ? '' : `${parseInt(statusData.Progress * 100, 10)}%`}}
-          div.svg-warrning-wrapper(v-else v-tooltip:right="coreError.errorMessage")
+          div.svg-warrning-wrapper(v-else v-tooltip:right-wrap-text="coreError.errorMessage")
             svg(width='12' height='12' viewbox='0 0 12 12' fill='none' xmlns='http://www.w3.org/2000/svg')
               circle(cx='6' cy='6' r='6' fill='#E48B23')
               g(filter='url(#filter0_d)')
@@ -72,7 +72,7 @@ export default {
       }
       const svg = `<svg width="3" height="8" viewBox="0 0 1 8" xmlns="http://www.w3.org/2000/svg"><rect width="1" height="8" rx="0.5" fill="${color}"/></svg>`;
       const encodedSvg = `url(data:image/svg+xml;base64,${window.btoa(svg)}`
-      if(this.statusData.Status === 'Stop' || this.statusData.Status === 'Training' || this.statusData.Status === 'Validation') {
+      if(this.statusData.Status === 'Stop' || this.statusData.Status === 'Training' || this.statusData.Status === 'Validation' || this.statusData.Status === 'Paused') {
         progress = parseInt(this.statusData.Progress * 100, 10);
       }
       this.progressStyle = {

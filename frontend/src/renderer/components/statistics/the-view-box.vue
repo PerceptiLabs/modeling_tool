@@ -7,7 +7,7 @@
       :tab-set="btnList"
       @set-current-btn="setCurrentBtn"
       )
-
+    
     .info-section_main(v-if="elData !== null")
       component(
         :is="elData.componentName"

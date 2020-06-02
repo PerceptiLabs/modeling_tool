@@ -110,6 +110,7 @@
 
     .tab-group {
       display: flex;
+      margin-right: 10px;
     }
   }
   .workspace_content {
@@ -177,7 +178,8 @@
   .workspace_meta {
     position: relative; //for minimap
     flex: 0 0 auto;
-    background-color: $bg-workspace-2;
+    background-color: #23252A;
+    
     display: flex;
     justify-content: space-between;
     padding: .5rem;

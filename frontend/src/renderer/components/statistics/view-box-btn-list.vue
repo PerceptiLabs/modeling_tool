@@ -71,12 +71,23 @@ export default {
     flex: 1;
     color: inherit;
     min-width: 11.6rem;
-    background: linear-gradient(270deg, #5C6680 0%, #5D698D 100%);
+    // background: linear-gradient(270deg, #5C6680 0%, #5D698D 100%);
+    background: transparent;
+    font-family: Nunito Sans;
+    font-weight: 600;
+    font-size: 12px;
+    color: #B6C7FB;
+    border-radius: 2px 2px 0px 0px;
+    border: 1px solid #5E6F9F;
+    margin-top: 4px;
+    margin-bottom: -1px;
     &:hover,
     &.active {
       color: $white;
       background: $bg-grad-blue;
+      background: #6185EE;
       box-shadow: $icon-shad;
+      border-color: #6185EE;
     }
   }
 </style>

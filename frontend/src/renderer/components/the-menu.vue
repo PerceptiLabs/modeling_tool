@@ -460,10 +460,10 @@ export default {
         {
           label: 'File', visible: true,
           submenu: [
-            {label: 'New',     active: this.addNewNetwork},
+            // {label: 'New',     active: this.addNewNetwork},
             {type: 'separator'},
             {label: 'Import Model',    active: this.openLoadModelPopup},
-            {label: "Project", active: this.setActivePage},
+            {label: "View Projects", active: this.setActivePage},
             {type: 'separator'},
             {label: 'Save',         accelerator: this.isMac ? 'meta+s' : 'ctrl+s',              enabled: this.openApp,  active: this.saveModel },
             {label: 'Save as',   accelerator: this.isMac ? 'meta+shift+s' : 'ctrl+shift+s',  enabled: this.openApp,  active: this.saveModelAs },

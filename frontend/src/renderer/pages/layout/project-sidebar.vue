@@ -11,7 +11,7 @@
       svg(xmlns='http://www.w3.org/2000/svg' width='21' height='12' viewbox='0 0 21 12' fill='none')
         path(fill-rule='evenodd' clip-rule='evenodd' d='M9.04773 0H19.0478C19.6001 0 20.0478 0.447715 20.0478 1V3.79031C20.0478 4.3426 19.6001 4.79031 19.0478 4.79031H9.04773C8.49544 4.79031 8.04773 4.3426 8.04773 3.79031V3.61304H3.73244C3.38663 4.21084 2.74028 4.61304 2 4.61304C0.89543 4.61304 0 3.71761 0 2.61304C0 1.50847 0.89543 0.613037 2 0.613037C2.74028 0.613037 3.38663 1.01524 3.73244 1.61304H8.04773V1C8.04773 0.447715 8.49544 0 9.04773 0ZM3.73244 10.613H8H8.04773V10.976C8.04773 11.5283 8.49544 11.976 9.04773 11.976H19.0478C19.6001 11.976 20.0478 11.5283 20.0478 10.976V8.18567C20.0478 7.63338 19.6001 7.18567 19.0478 7.18567H9.04773C8.49544 7.18567 8.04773 7.63338 8.04773 8.18567V8.61304H8H3.73244C3.38663 8.01524 2.74028 7.61304 2 7.61304C0.89543 7.61304 0 8.50847 0 9.61304C0 10.7176 0.89543 11.613 2 11.613C2.74028 11.613 3.38663 11.2108 3.73244 10.613Z' fill='#C4C4C4')
     div.nav-link(
-      :class="{'is-active': this.$route.name === 'app' && !statisticsIsOpen}"
+      :class="{'is-active': this.$route.name === 'app' && !statisticsIsOpen, 'disabled': !networkIsNotEmpty}"
       @click="toModelingTool()")
       svg(xmlns='http://www.w3.org/2000/svg' width='20' height='21' viewbox='0 0 20 21' fill='none')
         path(d='M20 7.65595V13.2904C20 13.8065 19.5699 14.2366 19.0538 14.2366H13.4194C12.9033 14.1936 12.4731 13.7635 12.4731 13.2473V7.65595C12.4731 7.13982 12.9033 6.70972 13.4194 6.70972H19.0538C19.5699 6.70972 20 7.13982 20 7.65595Z' fill='#C4C4C4')
@@ -19,7 +19,7 @@
         path(d='M16.258 2.79565H7.2688V4.51608C7.2688 4.5591 7.2688 4.64512 7.2688 4.68813H15.3118V10.4516C15.3118 10.9677 15.7419 11.3978 16.258 11.3978C16.7742 11.3978 17.2043 10.9677 17.2043 10.4516V3.74189C17.1613 3.22576 16.7742 2.79565 16.258 2.79565Z' fill='#C4C4C4')
         path(d='M6.53763 7.44086H0.903226C0.387097 7.44086 0 7.05376 0 6.53763V0.903226C0 0.387097 0.387097 0 0.903226 0H6.53763C7.05376 0 7.44086 0.387097 7.44086 0.903226V6.53763C7.44086 7.05376 7.05376 7.44086 6.53763 7.44086ZM0.903226 0.860215C0.860215 0.860215 0.860215 0.860215 0.860215 0.903226V6.53763C0.860215 6.58065 0.860215 6.58065 0.903226 6.58065H6.53763C6.58065 6.58065 6.58065 6.58065 6.58065 6.53763V0.903226C6.58065 0.860215 6.58065 0.860215 6.53763 0.860215H0.903226Z' fill='#C4C4C4')
         path(d='M6.53763 20.5163H0.903226C0.387097 20.5163 0 20.1292 0 19.6131V13.9787C0 13.4625 0.387097 13.0754 0.903226 13.0754H6.53763C7.05376 13.0754 7.44086 13.4625 7.44086 13.9787V19.6131C7.44086 20.1292 7.05376 20.5163 6.53763 20.5163ZM0.903226 13.9357C0.860215 13.9357 0.860215 13.9357 0.860215 13.9787V19.6131C0.860215 19.6561 0.860215 19.6561 0.903226 19.6561H6.53763C6.58065 19.6561 6.58065 19.6561 6.58065 19.6131V13.9787C6.58065 13.9357 6.58065 13.9357 6.53763 13.9357H0.903226Z' fill='#C4C4C4')
-    div.nav-link(:class="{'disabled': !haveAtLeastOneItemStatistic, 'is-active': statisticsIsOpen && this.$route.name === 'app'}"
+    div.nav-link(:class="{'disabled': (this.$route.name === 'projects' && !haveAtLeastOneItemStatistic) || (this.$route.name === 'app' && currnetNetwork.networkMeta.openStatistics === null) , 'is-active': statisticsIsOpen && this.$route.name === 'app'}"
       @click="toModelStatistic()"
       )
       svg(xmlns='http://www.w3.org/2000/svg' width='20' height='24' viewbox='0 0 20 24' fill='none')
@@ -56,6 +56,8 @@
       }),
       ...mapGetters({
         statisticsIsOpen:     'mod_workspace/GET_statisticsIsOpen',
+        currnetNetwork:     'mod_workspace/GET_currentNetwork',
+        networkIsNotEmpty:  'mod_workspace/GET_networkIsNotEmpty',
       })
     },
     watch: {
@@ -82,9 +84,16 @@
             }
         })
       },
+      isModelPageAndNetworkHasStatistic() {
+        return this.$route.name === 'app' && this.currnetNetwork.networkMeta.openStatistics !== null
+      },
       toModelStatistic() {
+        //$route.name === 'app' && currnetNetwork.networkMeta.openStatistics !== null
         if(this.$route.name === 'app') {
-          this.SET_openStatistics(true);
+          // networkMeta.openStatistics !== null
+          if(this.isModelPageAndNetworkHasStatistic()) {
+            this.SET_openStatistics(true);
+          }
         } else {
           const { statisticItemIndex } = this;
           if(statisticItemIndex !== null) {
@@ -100,7 +109,9 @@
       },
       toModelingTool() {
         if(this.$route.name === 'app') {
-          this.SET_openStatistics(false);
+          if (this.currnetNetwork.networkMeta.openStatistics !== null) {
+            this.SET_openStatistics(false);
+          }
         } else {
           this.SET_currentNetwork(0);
           this.$router.push({name: 'app'})

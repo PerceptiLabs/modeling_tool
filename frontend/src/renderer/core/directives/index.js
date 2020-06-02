@@ -108,6 +108,10 @@ function sideCalculate(element, tooltip, side) {
       tooltip.style.top = (elCoord.top + elCoord.height / 2) * zoom +'px';
       tooltip.style.left = (elCoord.left + elCoord.width + tooltipArrow) * zoom + 'px';
       break;
+    case 'right-wrap-text':
+      tooltip.style.top = (elCoord.top + elCoord.height / 2) * zoom +'px';
+      tooltip.style.left = (elCoord.left + elCoord.width + tooltipArrow) * zoom + 'px';
+      break;
     case 'left':
       tooltip.style.top = (elCoord.top + elCoord.height / 2) * zoom +'px';
       tooltip.style.left = (elCoord.left - tooltipArrow) * zoom + 'px';

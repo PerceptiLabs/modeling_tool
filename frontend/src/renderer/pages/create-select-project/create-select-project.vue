@@ -1,5 +1,5 @@
 <template lang="pug">
-  .project-wrapper
+  .project-wrapper#pr-wrapper(@click="onProjectWrapperClick($event)")
     .projectContext(v-if="isContextOpened" :style="projectContextStyles")
       button(@click="renameProject") Rename
       button(@click="deleteProject()") Delete
@@ -85,7 +85,6 @@
   import SortByButton from "@/components/sort-by-button";
   import FilePickerPopup        from "@/components/global-popups/file-picker-popup.vue";
   import { generateID, getDefaultProjectPathForOs } from "@/core/helpers";
-  import { debug } from 'util';
 
   export default {
     name: 'CreateSelectProject',
@@ -109,8 +108,7 @@
     },
     created() {
       this.getProjects();
-
-      // document.addEventListener('keydown', this.onKeyDown);
+      document.addEventListener('keyup', this.closeModalByEvent);
     },
     beforeDestroy() {
       document.removeEventListener('click', this.closeContext);
@@ -148,6 +146,20 @@
         deleteProjectAction:      'mod_project/deleteProject',
         updateProjectAction:      'mod_project/updateProject',
       }),
+      onProjectWrapperClick(e){
+        const hasTargetProject = localStorage.hasOwnProperty('targetProject');
+        if(e.target.id === 'pr-wrapper' && hasTargetProject) {
+          this.closePageAction();
+        }
+      },
+      closeModalByEvent(e){
+        const hasTargetProject = localStorage.hasOwnProperty('targetProject');
+        const isEscKey = e.keyCode === 27;
+        if(hasTargetProject && isEscKey) {
+          this.closePageAction();
+          document.removeEventListener('keyup', this.closeModalByEvent);
+        }
+      },
       onProjectSelect(project) {
         const {project_id: projectId} = project;
         if (this.networksWithChanges.length > 0) {

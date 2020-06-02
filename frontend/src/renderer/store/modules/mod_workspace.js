@@ -145,6 +145,9 @@ const mutations = {
     Vue.set(state.workspaceContent[index], [field], value);
 
   },
+  set_model_saved_version_location(state, { getters, saved_version_location }) {
+    getters.GET_currentNetwork.apiMeta.saved_version_location = saved_version_location;
+  },
   replace_network_element_list(state, { newNetworkElementList, getters }) {
     getters.GET_currentNetwork.networkElementList = newNetworkElementList;
   },
@@ -166,7 +169,6 @@ const mutations = {
   //---------------
   set_workspacesInLocalStorage(state) {
     if (!isLocalStorageAvailable()) { return; }
-
     try {
       let networkIDs = JSON.parse(localStorage.getItem('_network.ids')) || [];
       state.workspaceContent.forEach(network => {
@@ -1353,7 +1355,14 @@ const actions = {
     commit('set_currentNetwork', index);
     commit('set_lastActiveTabInLocalStorage', state.workspaceContent[index].networkID);
   },
-  SET_networkName({commit, getters}, value) {
+  SET_networkName({commit, getters, dispatch}, value) {
+    let currentNetwork = getters.GET_currentNetwork.apiMeta;
+    currentNetwork.name = value;
+    delete currentNetwork.saved_by;
+    delete currentNetwork.saved_version_location;
+    delete currentNetwork.created;
+    delete currentNetwork.updated;
+    dispatch("mod_project/updateModel", currentNetwork, {root: true});
     commit('set_networkName', {getters, value})
   },
   SET_networkLocation({commit, getters}, value) {
@@ -1441,6 +1450,9 @@ const actions = {
   set_NetworkCoreErrorAction(ctx, {errorMessage, modelId}) {
     ctx.commit('set_NetworkCoreError', {errorMessage, modelId, commit: ctx.commit});
     
+  },
+  SET_model_saved_version_location({commit, getters}, saved_version_location) {
+    commit('set_model_saved_version_location', { saved_version_location, getters })
   },
   //---------------
   //  NETWORK ELEMENTS

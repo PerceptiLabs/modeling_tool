@@ -774,6 +774,14 @@ const actions = {
     };
     coreRequest(theData)
       .then((data)=> {
+        const thePath = data.substring(data.indexOf('/'));
+        const { apiMeta } = rootGetters['mod_workspace/GET_currentNetwork'];
+        dispatch('mod_workspace/SET_model_saved_version_location', thePath, {root: true});
+        dispatch('mod_project/updateModel', {
+          ...apiMeta,
+          saved_version_location: thePath
+        }, {root: true});
+        
         dispatch('globalView/GP_infoPopup', data, {root: true});
         trackerData.result = 'success';
       })

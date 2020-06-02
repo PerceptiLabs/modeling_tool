@@ -13,6 +13,9 @@ $triangleWith: 10px;
 		&.tooltip--right {
 			transform: translateY(-50%) rotateY(0deg);
 		}
+		&.tooltip--right-wrap-text {
+			transform: translateY(-50%) rotateY(0deg);
+		}
 		&.tooltip--bottom {
 			transform: translate(-50%, 0%) rotateY(0deg);
 		}
@@ -86,6 +89,21 @@ $triangleWith: 10px;
 	font-size: 10px;
 	&:before {
 		content: none;
+	}
+}
+.tooltip--right-wrap-text {
+	white-space: pre-wrap;
+	max-width: 380px;
+	top: 50%;
+	left: 100%;
+	margin-left: $margin-tooltip;
+	transform: translateY(-50%) rotateX(90deg);
+
+	&:before {
+		top: 50%;
+		right: 100%;
+		transform: translate(50%,-50%) rotate(45deg);
+		background: linear-gradient(45deg, $popper-background-color 50%, rgba($popper-background-color,0) 58%);
 	}
 }
 

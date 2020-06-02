@@ -352,6 +352,7 @@ export default {
     text-align: center;
   }
   .blue-link {
+    cursor: pointer;
     color: #9BB2F6;
   }
   .video {

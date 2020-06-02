@@ -323,4 +323,4 @@ const imageClassification = {
   }
 };
 
-export default imageClassification
+export default imageClassification;

@@ -1,5 +1,8 @@
 <template lang="pug">
   div
+    .modelContext(v-if="isContextOpened" :style="modelContextStyles")
+      button(@click="handleContextOpenModel()") Open
+      button(@click="handleContextRemoveModel()") Delete
     project-sidebar
     div(v-show="!isCreateModelModalOpen").project-wrapper
       div.header-controls
@@ -12,13 +15,13 @@
           span.btn-round-icon.btn-rounded-new(@click="handleAddNetworkModal" :class="{'high-lighted': isNewUser}")
             img(src="../../../../static/img/project-page/plus.svg")
             div(v-if="isNewUser").create-first-model Create your first model
-          div.search-input
-            img(src="../../../../static/img/search-models.svg")
-            input(
-              type="text"
-              placeholder="Search"
-              v-model="searchValue"
-            )
+          //- div.search-input
+          //-   img(src="../../../../static/img/search-models.svg")
+          //-   input(
+          //-     type="text"
+          //-     placeholder="Search"
+          //-     v-model="searchValue"
+          //-   )
         div.right-side
           span.img-button.pt-4(v-if="isAtLeastOneItemSelected()" @click="toggleFavoriteItems()")
             svg.fav-icon-action(v-if="!isAllItemSelectedFavorite()" width='22' height='20' viewBox='0 0 22 20' fill='none' xmlns='http://www.w3.org/2000/svg')
@@ -49,7 +52,12 @@
           div.column-4 Session End Time
           div.column-5 Collaborators
           div.column-6 Last Modified
-        div.models-list-row.model-list-item(v-for="(model, index) in workspaceContent"  @click="toggleItemSelection(model.networkID)" :key="model.networkID" :class="{'is-selected': isItemSelected(model.networkID)}")
+        div.models-list-row.model-list-item(
+          v-for="(model, index) in workspaceContent"
+          @click="toggleItemSelection(model.networkID)"
+          @contextmenu.stop.prevent="openContext($event, index)"
+          :key="model.networkID"
+          :class="{'is-selected': isItemSelected(model.networkID)}")
           div.column-1
             span.btn-round-icon.check-model-button
               img(v-if="isItemSelected(model.networkID)" src="../../../../static/img/project-page/checked.svg")
@@ -65,7 +73,8 @@
               :coreError="model.networkMeta.coreError"
             )
           div.column-3
-            span(@click.stop="") -
+            span(v-if="!!model.apiMeta.saved_version_location" @click.stop="" v-tooltip:right="model.apiMeta.saved_version_location") Exported
+            span(v-else @click.stop="") Not Exported
           div.column-4
             span(@click.stop="") -
           div.column-5
@@ -181,6 +190,9 @@
         selectedListIds: [],
         isImportModelsOpen: false,
         isCreateModelModalOpen: false,
+        contextModelIndex: null,
+        isContextOpened: false,
+        modelContextStyles: {},
       }
     },
     created() {
@@ -248,20 +260,21 @@
       }
     },
     methods: {
-      ...mapActions({ 
-        loadNetwork:          'mod_api/API_loadNetwork',
-        addNetwork:           'mod_workspace/ADD_network',
-        set_currentNetwork:   'mod_workspace/SET_currentNetwork',
+      ...mapActions({
+        showInfoPopup:       'globalView/GP_infoPopup',
+        loadNetwork:         'mod_api/API_loadNetwork',
+        addNetwork:          'mod_workspace/ADD_network',
+        set_currentNetwork:  'mod_workspace/SET_currentNetwork',
+        createProjectModel:  'mod_project/createProjectModel',
+        API_getModel:        'mod_api/API_getModel',
+        setActivePageAction: 'modal_pages/setActivePageAction',
+        delete_network :     'mod_workspace/DELETE_network',
+        UPDATE_MODE_ACTION : 'mod_workspace/UPDATE_MODE_ACTION',
+        SET_openStatistics : 'mod_workspace/SET_openStatistics',
+        SET_openTest :       'mod_workspace/SET_openTest',
         getProjects:          'mod_project/getProjects',
-        createProjectModel:   'mod_project/createProjectModel',
         getModelMeta:         'mod_project/getModel',
-        API_getModel:         'mod_api/API_getModel',
-        setActivePageAction:  'modal_pages/setActivePageAction',
-        delete_network:       'mod_workspace/DELETE_network',
         reset_network:        'mod_workspace/RESET_network',
-        UPDATE_MODE_ACTION:   'mod_workspace/UPDATE_MODE_ACTION',
-        SET_openStatistics:   'mod_workspace/SET_openStatistics',
-        SET_openTest:         'mod_workspace/SET_openTest',
       }),
       ...mapMutations({
         // setPageTitleMutation: 'globalView/setPageTitleMutation'
@@ -271,7 +284,6 @@
       gotToNetworkView(networkID) {
         // maybe should receive a id and search index by it
         const index = this.workspaceContent.findIndex(wc => wc.networkID == networkID);
-
         this.set_currentNetwork(index > 0 ? index : 0);
         this.$router.push({name: 'app'})
           .then(() => {
@@ -421,7 +433,7 @@
         
         Promise.all(promiseArray)
           .then(models => {
-            this.addNetworksToWorkspace(models);
+            this.addNetworksToWorkspace(models, modelMetas);
           });
       },
       async fetchUnparsedModels(modelMetas){
@@ -435,9 +447,14 @@
         } 
         this.unparsedModels = unparsedModels;
       },
-      addNetworksToWorkspace(models) {
+      addNetworksToWorkspace(models, modelsApiData) {
         const filteredModels = models.filter(m => m);
-        for(const model of filteredModels) {
+        for(const [index, model] of filteredModels.entries()) {
+          if(modelsApiData[index].model_id !== model.networkID) {
+            model.networkID = modelsApiData[index].model_id;
+            model.apiMeta = modelsApiData[index];
+          }
+
           this.addNetwork({network: model, apiMeta: model.apiMeta, focusOnNetwork: false});
         }
 
@@ -492,6 +509,7 @@
       },
       handleStatisticClick(index, e, model) {
         const { networkMeta: { openStatistics } } = model;
+
         if (typeof openStatistics === 'boolean') {
           this.SET_openStatistics(true);
           this.set_currentNetwork(index);
@@ -500,8 +518,33 @@
               this.SET_openStatistics(true);
               this.SET_openTest(false);
             });
+        } else {
+          this.showInfoPopup("There are still haven't statistic, you should run this model first.");
         }
       },
+      openContext(e, modelIndex) {
+        const { pageX, pageY } = e;
+        this.modelContextStyles = {
+          top: pageY + 'px',
+          left: pageX + 'px',
+        };
+        this.isContextOpened = true;
+        this.contextModelIndex = modelIndex;
+        document.addEventListener('click', this.closeContext);
+      },
+      closeContext() {
+        document.removeEventListener('click', this.closeContext);
+        this.contextModelIndex = null;
+        this.isContextOpened = false
+      },
+      handleContextOpenModel() {
+        this.gotToNetworkView(this.contextModelIndex);
+        this.closeContext();
+      },
+      handleContextRemoveModel() {
+        this.delete_network(this.contextModelIndex);
+        this.closeContext();
+      }
     }
   }
 </script>
@@ -602,6 +645,7 @@
     }
     .column-2 {
       min-width: 200px; 
+      cursor: pointer;
     }
     .column-3 {
       min-width: 200px;
@@ -761,6 +805,32 @@
         height: 0px;
         border: 20px solid rgba(196, 196, 196, 0.3);
       }
+    }
+  }
+  .modelContext {
+    position: fixed;
+    background: #1C1C1E;
+    border: 1px solid #363E51;
+    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+    border-radius: 2px;
+    display: flex;
+    flex-direction: column;
+    z-index: 12;
+    padding: 5px 8px;
+
+    background: #131B30;
+    border: 1px solid #363E51;
+    box-sizing: border-box;
+    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+    border-radius: 2px;
+
+
+    button {
+      font-family: 'Nunito Sans';
+      padding: 5px 8px;
+      background: none;
+      font-size: 16px;;
+      text-align: left;
     }
   }
 </style>

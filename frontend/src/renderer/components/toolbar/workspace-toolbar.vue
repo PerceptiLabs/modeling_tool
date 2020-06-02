@@ -48,7 +48,6 @@
     ul.toolbar_list
       li(:class="{'tutorial-active': activeStepStoryboard === 4}")
         button#tutorial_run-training-button.btn.btn--toolbar.bg-primary.run-button(type="button"
-          :disabled="statusLocalCore === 'offline'"
           :class="statusStartBtn"
           v-tooltip:bottom="'Run/Stop'"
           v-tooltip-interactive:bottom="interactiveInfo.runButton"
@@ -81,6 +80,10 @@
     ul.toolbar_list
       li
         span TensorFlow 1.15 
+    ul.toolbar_list
+      li
+        span Python 3
+        span.python-status(:class="{'connected': statusLocalCore === 'online', 'disconnected': statusLocalCore === 'offline'}")
     //ul.toolbar_list
       li
         button.btn.btn--toolbar(type="button"
@@ -282,9 +285,18 @@ export default {
       this.set_notebookMode();
     },
     onOffBtn() {
-      if(this.isTraining) this.trainStop();
-      else this.trainStart();
-      this.$nextTick(()=> this.tutorialPointActivate({way:'next', validation: 'tutorial_run-training-button'}))
+      if (this.statusLocalCore === 'online') {
+        if(this.isTraining)  {
+          this.trainStop();
+        } else {
+          this.trainStart();
+        }
+
+        this.$nextTick(()=> this.tutorialPointActivate({way:'next', validation: 'tutorial_run-training-button'}))
+      } else {
+        this.showInfoPopup('Kernel is not connected');
+      }
+    
     },
     trainStart() {
       googleAnalytics.trackCustomEvent('start-training');
@@ -548,6 +560,20 @@ export default {
     width: 20rem;
 
   }
-
+  .python-status {
+    display: inline-block;
+    margin-left: .7rem;
+    font-size: 12px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    vertical-align: baseline;
+    &.connected {
+      background-color: #73FEBB;
+    }
+    &.disconnected {
+     background-color: #FE7373;
+    }
+  }
   
 </style>

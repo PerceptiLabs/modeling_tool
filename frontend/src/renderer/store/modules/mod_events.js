@@ -177,6 +177,7 @@ const actions = {
   },
   EVENT_logOut({dispatch}, isSendLogout = true) {
     if(isSendLogout) dispatch('mod_apiCloud/CloudAPI_userLogout', null, {root: true});
+    localStorage.removeItem('targetProject');
     localStorage.removeItem('currentUser');
     dispatch('mod_user/RESET_userToken', null, {root: true});
     dispatch('mod_workspace/RESET_network', null, {root: true});

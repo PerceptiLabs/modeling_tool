@@ -93,6 +93,10 @@ const actions = {
         return res.data
       })
   },
+  updateModel(ctx, payload) {
+    const { model_id, ...payloadData } = payload
+    return axios.put(`http://localhost:8000/models/${model_id}/`, payloadData)
+  },
   deleteModel(ctx, payload) {
     const { model_id, project } = payload;
     return axios.delete(`http://localhost:8000/models/${model_id}/`)

@@ -19,18 +19,18 @@
         //-     div.ml-12
         //-       h3.white.fz-14.mb-0 {{collaborator.name}}
         //-       p.fz-12.mb-0 {{collaborator.email}}
-        button.bgc-transparent.ta-left.add-more-collaborators.d-flex
-          .circleButton
-            img(src="../../../../static/img/project-page/plus.svg")
-          h3.fz-14 Add another account
-        .profile-separator
+        //- button.bgc-transparent.ta-left.add-more-collaborators.d-flex
+        //-   .circleButton
+        //-     img(src="../../../../static/img/project-page/plus.svg")
+        //-   h3.fz-14 Add another account
+        //- .profile-separator
 
-        button.sign-out-all
-          | Sign out all accounts
+        button.sign-out-all(@click="logOut")
+          | Sign out
 </template>
 
 <script>
-  import { mapGet, mapGetters} from 'vuex';
+  import { mapGet, mapGetters, mapActions} from 'vuex';
 
   const collaboratorData = [
     {id: 1, name: 'Martin Isaksson', email: 'martin.i@perceptilabs.com'},
@@ -47,9 +47,33 @@
     computed: {
       ...mapGetters({
         user: 'mod_user/GET_userProfile',
+        isTutorialMode: 'mod_tutorials/getIstutorialMode',
       })
-    }
-    
+    },
+    methods: {
+      ...mapActions({
+        hideTooltip:      'mod_tutorials/hideTooltip',
+        popupConfirm:     'globalView/GP_confirmPopup',
+        offMainTutorial:  'mod_tutorials/offTutorial',
+      }),
+      logOut() {
+        
+         if(this.isTutorialMode) {
+          this.hideTooltip();
+          this.popupConfirm(
+            {
+              text: 'Are you sure you want to end the tutorial?',
+              ok: () => {
+                this.offMainTutorial();
+                this.$store.dispatch('mod_events/EVENT_logOut');
+              }
+            });
+        } else {
+          this.$store.dispatch('mod_events/EVENT_logOut');
+        }
+
+      }
+    },
   }
 </script>
 

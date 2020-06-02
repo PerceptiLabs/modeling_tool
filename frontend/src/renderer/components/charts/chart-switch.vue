@@ -179,6 +179,7 @@
       font-weight: 600;
       font-size: 11px;
       line-height: 15px;
+      color: #B6C7FB;
     }
   }
   .base-chart_info {
@@ -193,5 +194,8 @@
   }
   .chart-head_meta i {
     font-size: 1.3rem;
+  }
+  .icon-full-screen-graph {
+    color: #B6C7FB;
   }
 </style>

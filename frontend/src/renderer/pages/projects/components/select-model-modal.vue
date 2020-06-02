@@ -7,33 +7,34 @@
             .main-templates
                 .main-templates-header
                     h3 Templates
-                    div.search-tempalte
-                        img(src="./../../../../../static/img/search-models.svg")
-                        input(type='text' placeholder="Search")
+                    //- div.search-tempalte
+                    //-     img(src="./../../../../../static/img/search-models.svg")
+                    //-     input(type='text' placeholder="Search")
                 .main-templates-items
                     .template-item(
                             :class="{'is-selected': (chosenTemplate === -1)}"
                             @click="choseTemplate(-1)"
                         )
                             div.template-image
-                            span.template-name Custom
+                            span.template-name Empty
                     .template-item(
                         v-for="(temp, i) in basicTemplates"
                         :class="{'is-selected': (chosenTemplate === i)}"
                         @click="choseTemplate(i)"
                     )
                         div.template-image
-                            img(:src="temp.imgPath" alt="classification")
+                            img(v-if="temp.imgPath" :src="temp.imgPath" alt="classification")
                         span.template-name {{ temp.title }}
                     
             .main-actions 
                 div  
-                    h4.presets-text Template presets
+                    h4.presets-text Name:
                     .model-title-input-wrapper
                         input.model-title-input(type="text" v-model="modelName")
                     h4.presets-text Model Path
                     .model-title-input-wrapper
                         input.model-title-input(type="text" v-model="modelPath" @click="openFilePicker")
+                    p.template-description(v-if="chosenTemplate !== null") {{basicTemplates[chosenTemplate] &&basicTemplates[chosenTemplate].description}}
                 .main-actions-buttons
                     button.action-button.mr-5(@click="closeModal()") Cancel
                     button.action-button.create-btn.ml-5(
@@ -56,8 +57,10 @@
     import imageClassification    from '@/core/basic-template/image-classification.js'
     import reinforcementLearning  from '@/core/basic-template/reinforcement-learning.js'
     import timeseriesRegression   from '@/core/basic-template/timeseries-regression.js'
+    import objectDetection        from '@/core/basic-template/object-detection.js'
+    import ganTemplate            from '@/core/basic-template/gan-template.js'
     import FilePickerPopup        from "@/components/global-popups/file-picker-popup.vue";
-    
+
     import { mapActions, mapState, mapGetters } from 'vuex';
     import { generateID } from '@/core/helpers';
     import cloneDeep from 'lodash.clonedeep';
@@ -70,21 +73,37 @@ export default {
           {
             title: 'Image Classification',
             imgPath: './static/img/project-page/image-classification.svg',
-            template: imageClassification
+            template: imageClassification,
+            description: 'This is a simple image classification template, perfect for datasets such as Mnist. The standard dataset included with this template is a Mnist dataset where the input is an array of 784 grayscale pixel values and there are 10 unique label values (integers 0-9). The model consists of a reshaping component, a convolutional layer as well as a fully connected output layer with 10 neurons. Because of the reshaping component it requries the input data to be 784 or a form thereof (28x28 for example). The labels have to be an integer ranging from 0 to 9 to be compatable with the one hot encoding being applied to the labels.'
           },
           {
             title: 'Timeseries Regression',
             imgPath: './static/img/project-page/time-series-regression.svg',
-            template: timeseriesRegression
+            template: timeseriesRegression,
+            description: `This is a template for linear regression, where it tries to create a line of best fit for the datapoints you load. The standard dataset is a one dimensional input value and one dimensional labels. The input data can be multidimensional, but our visualizations only allow for one dimensional data at the moment. The labels data can only be one dimensional as they represent the value of the input data. The model is built as a single fully connected layer with one neuron as output.`
           },
           {
             title: 'Reinforcement Learning',
             imgPath: './static/img/project-page/reinforcement-learning.svg',
-            template: reinforcementLearning
+            template: reinforcementLearning,
+            description: `The is a template for Reinforcement Learning consisting of one grayscale component, one convolutional layer and one fully connected layer as output. This template uses Q learning on Atari Gym games, where it is set up to play breakout. To play another game, make sure that you change the neurons from the fully connected layer to match the number of possible actions in the actionspace, which you can see in the Environment component.`
+          },
+           {
+            title: 'Object Detection',
+            imgPath: '',
+            template: objectDetection,
+            description: `This is a template of the Object Detection model YOLO. It trains on a custom built dataset containing different shapes as standard. Since it consists of only convolutional layers, any input data will work to train on, just make sure that the label data matches the input data properly.`
+          },
+          {
+            title: 'GAN',
+            imgPath: '',
+            template: ganTemplate,
+            description: `This is a template for a Generative Adversarial Network (GAN) where it trains on the Mnist data as a standard. The model consists of a generative network and a discriminative network, as well as a switch layer layer which switches between the generated image and real image.`
           },
         ],
         chosenTemplate: null,
         modelName: '',
+        description: '',
         modelPath: '',
         showFilePickerPopup: false,
     }
@@ -218,14 +237,14 @@ export default {
         
     }
     .main-templates {
-        width: 71%;
+        width: 610px;
         padding-bottom: 120px;
 
         background: linear-gradient(180deg, #363E51 0%, rgba(54, 62, 81, 0) 100%);
         border: 1px solid rgba(97, 133, 238, 0.4);
         box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.25);
         border-radius: 0;
-        min-height: 480px;
+        min-height: 520px;
         // border-right-width: 0;
         border-bottom-left-radius: 2px;
     }
@@ -267,7 +286,7 @@ export default {
         margin-top: 33px;
         display: flex;
         flex-wrap: wrap;
-        justify-content: space-between;
+        justify-content: start;
     
     }
     .template-item {
@@ -279,6 +298,7 @@ export default {
         border-radius: 2px;
         height: 120px;
         margin-bottom: 10px;
+        margin-right: 7px;
         width: calc(100% * (1/4) - 7.5px);
         border: 3px solid transparent;
         &:hover {
@@ -292,7 +312,7 @@ export default {
     .main-actions {
         display: flex;
         flex-direction: column;
-        width: 29%;
+        width: 300px;
 
         background: #363E51;
         border: 1px solid rgba(97, 133, 238, 0.4);
@@ -302,7 +322,7 @@ export default {
     }
 
     .presets-text {
-        padding: 30px 20px 0;
+        padding: 20px 20px 0;
 
         font-family: Nunito Sans;
         font-style: normal;
@@ -313,10 +333,10 @@ export default {
     }
    
     .model-title-input-wrapper {
-        border-bottom: 1px solid #4D556A;
+        // border-bottom: 1px solid #4D556A;
     }
     .model-title-input {
-        margin: 10px 20px 23px;
+        margin: 0px 20px 0px;
         width: calc(100% - 40px);
         height: 40px;
         line-height: 40px;
@@ -409,5 +429,14 @@ export default {
     .plus-icon {
         vertical-align: sub;
         margin-right: 5px;
+    }
+    .template-description {
+        padding: 30px 20px 0;
+        font-family: Nunito Sans;
+        font-style: normal;
+        font-weight: 300;
+        font-size: 12px;
+        line-height: 16px;
+        color: #9E9E9E;
     }
 </style>
