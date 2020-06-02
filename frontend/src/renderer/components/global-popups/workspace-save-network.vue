@@ -5,7 +5,7 @@
     template(slot="Choose what to save-content")
       .settings-layer_section(v-if="!popupSettings.isFreezeInfo")
         .form_row
-          .form_label Project name:
+          .form_label Model name:
           .form_input
             input(type="text"
               v-model="settings.projectName"
@@ -13,7 +13,7 @@
             )
       .settings-layer_section(v-if="!popupSettings.isFreezeInfo")
         .form_row
-          .form_label Project path:
+          .form_label Model path:
           .form_input
             input.ellipsis(type="text"
               v-model="settings.projectPath"

@@ -173,7 +173,9 @@ export default {
       }
     },
     addNewNetwork() {
-      this.$router.push({name: 'projects'});
+      if (this.$route.name !== 'projects') {
+        this.$router.push({name: 'projects'});
+      } 
     },
     logOut() {
       if(this.isTutorialMode) {

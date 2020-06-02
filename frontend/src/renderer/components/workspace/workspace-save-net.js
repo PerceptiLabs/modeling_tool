@@ -96,7 +96,7 @@ const workspaceSaveNet = {
       this.saveNetworkPopup.show = true;
       return this.$nextTick()
         .then(()=>     this.$refs.saveNetworkPopup[0].openPopup())
-        .catch((err)=> this.infoPopup('Project not saved'))
+        .catch((err)=> this.infoPopup('Model not saved'))
         .finally(()=>  this.refreshSavePopup())
     },
     saveNetwork(netInfo, netId, saveProjectPath) {
@@ -150,7 +150,6 @@ const workspaceSaveNet = {
 
           saveProjectToLocalStore(prepareNet.toLocal, this);
           if(saveProjectPath) this.set_networkRootFolder(pathSaveProject);
-          this.infoPopup('The file has been successfully saved');
           this.trackerModelSave(prepareNet.toFile);
           this.setUnsavedChanges({
             networkId: netId, 

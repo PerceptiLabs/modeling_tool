@@ -93,7 +93,7 @@
     box-sizing: border-box;
     background-color: #FE7373;
     text-align: center;
-    line-height: 19px;
+    line-height: 20px;
     text-transform: uppercase;
     font-size: 14px;
     color: #fff;
