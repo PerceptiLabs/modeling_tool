@@ -38,7 +38,7 @@
         :chart-data="chartData.Discriminator_Loss.Total"
         :custom-color="colorListAccuracy"
       )
-    .statistics-box_main.statistics-box_col(v-if="currentTab === 'Images'")
+    .statistics-box_main.statistics-box_col(v-if="currentTab === 'Samples'")
       .statistics-box_row
         .statistics-box_col
           chart-switch(
@@ -95,11 +95,11 @@
               text: 'View the Discriminator Loss Data.'
             }
           },
-          'Images': {
-            btnId: 'tutorial_images-tab',
+          'Samples': {
+            btnId: 'tutorial_samples-tab',
             btnInteractiveInfo: {
-              title: 'Images',
-              text: 'View the images.'
+              title: 'Samples',
+              text: 'View the samples.'
             }
           },
           'Data_distribution': {
@@ -130,7 +130,7 @@
           case 'Discriminator_Loss':
             this.chartRequest(this.statElementID, 'TrainGan', 'Discriminator_Loss');
             break;
-          case 'Images':
+          case 'Samples':
             this.chartRequest(this.statElementID, 'TrainGan', 'Images');
             break;
           case 'Data_distribution':
