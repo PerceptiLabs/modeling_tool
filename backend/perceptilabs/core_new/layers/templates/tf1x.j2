@@ -743,7 +743,7 @@ class {{layer_name}}(Tf1xLayer):
             return {b.name: b}
 {% endmacro %}
 
-{% macro layer_tf1x_recurrent(layer_name, version, time_steps, neurons, return_sequences, dropout, keep_prop) %}
+{% macro layer_tf1x_recurrent(layer_name, version, time_steps, neurons, return_sequences, dropout, keep_prob) %}
 class {{layer_name}}(Tf1xLayer):
     def __init__(self):
         self._scope = '{{layer_name}}'
