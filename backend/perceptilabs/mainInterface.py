@@ -318,15 +318,6 @@ class Interface():
                                         network=jsonNetwork, 
                                         lw_core=lw_core, 
                                         extras_reader=extras_reader).run()
-        elif action == "getJsonModel":
-            print(value)
-            json_path = value
-            return getJsonModel(json_path=json_path).run()
-
-        elif action == "saveJsonModel":
-            save_path = value["path"]
-            json_model = value["json"]
-            return saveJsonModel(save_path=save_path, json_model=json_model).run()
 
         elif action == "Parse":
             if value["Pb"]:
