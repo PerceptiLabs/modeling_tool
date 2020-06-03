@@ -21,6 +21,7 @@ build/
 .vscode/
 backend/.vscode/
 backend/kernel.log
+backend/data.log
 #Frontend ignores
 frontend_out
 frontend/core/*
