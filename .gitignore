@@ -5,7 +5,8 @@ backend/**/model.json
 backend/net.json
 backend/net.json_
 backend/venv/
-backend/.venv/
+.venv/
+.python-version
 backend/venv-user/
 backend/dist/
 backend/deploy.py
@@ -49,5 +50,7 @@ frontend/cypress/videos/**/*.mp4
 .vscode/*
 app.log
 backend.log
+kernel.log
 log.txt
 .DS_Store
+backend/perceptilabs/insights/csv_ram_estimator/model_and_meta.pkl

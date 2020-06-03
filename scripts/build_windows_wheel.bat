@@ -1,43 +1,37 @@
-cd ..
+
+REM this depends on pwd being in the scripts directory
+SET projectroot=%~dp0..
+SET backend=%projectroot%\backend
+SET wheelfiles=%projectroot%\wheelfiles
+SET build=%projectroot%\build
+SET tmp=%build%\tmp
+set rygg=%projectroot%\rygg
+ECHO Project root: %projectroot%
 
 echo "Training models"
-cd backend/perceptilabs/insights/csv_ram_estimator/
-python train_model.py data_1579288530.csv
-
-cd ../../../../
+pushd %backend%\perceptilabs\insights\csv_ram_estimator
+python train_model.py data_1579288530.csv || ( exit /b 1 )
+popd
 
 rmdir /s /q build
-mkdir build
-cd build
-
-mkdir backend_tmp
-mkdir backend_out
-
-cd backend_tmp
+mkdir %tmp%
 
 echo "Copying files"
-call SET fromfolder=../../backend
-FOR /F %%a IN (../../backend/included_files.txt) DO echo F|xcopy /h/y /z/i /k /f "%fromfolder%/%%a" "%%a"
-cp ..\..\backend\perceptilabs\app_variables.json ./perceptilabs/
+FOR /F %%a IN (%projectroot%\scripts\included_files_common.txt) DO echo F&xcopy /h/y /z/i /k /f "%projectroot%/%%a" "%tmp%\%%a"
+copy %backend%\perceptilabs\app_variables.json %tmp%\backend\perceptilabs\ || ( exit /b 1 )
 
-call cp ../../backend/setup.py .
-call cp ../../backend/setup.cfg .
-call cp "../../Docker/Core/licenses/PerceptiLabs EULA.txt" .
-cd perceptilabs
-mkdir tutorial_data
-cd ..
-call cp ../../backend/perceptilabs/tutorial_data/* ./perceptilabs/tutorial_data/
+copy %wheelfiles%\setup.py %tmp% || ( exit /b 1 )
+copy %backend%\requirements_wheel_backend.txt %tmp% || ( exit /b 1 )
+copy %wheelfiles%\setup.cfg %tmp% || ( exit /b 1 )
+copy %wheelfiles%\setup.py %tmp% || ( exit /b 1 )
+copy "%projectroot%\licenses\PerceptiLabs EULA.txt" %tmp% || ( exit /b 1 )
+dir %tmp% || ( exit /b 1 )
 
-python setup.py build_ext bdist_wheel
+copy %backend%\perceptilabs\tutorial_data %tmp%\backend\perceptilabs\ || ( exit /b 1 )
 
-cd ..\backend_out
-xcopy ..\backend_tmp\dist . /sy 
+pushd %tmp%\backend
+python setup.py build_ext bdist_wheel || ( exit /b 1 )
+popd
 
-REM pip install perceptilabs --find-links .
-REM IF %ERRORLEVEL% NEQ 0 (
-REM   exit 1
-REM )
-REM python -c "import perceptilabs"
-REM IF %ERRORLEVEL% NEQ 0 (
-REM   exit 1
-REM )
+mkdir %out%
+xcopy %tmp%\dist %out% /sy  || ( exit /b 1 )

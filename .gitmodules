@@ -1,0 +1,3 @@
+[submodule "rygg"]
+	path = rygg
+	url = https://PerceptiLabs@dev.azure.com/PerceptiLabs/PerceptiLabs/_git/rygg

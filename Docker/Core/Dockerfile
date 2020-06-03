@@ -33,7 +33,6 @@ RUN source scl_source enable rh-python36 && \
     pip install --no-cache-dir -r requirements.txt
     # pip install --no-cache-dir dask[array] --upgrade && \
     # pip install --no-cache-dir  --upgrade dask
-    
 
 USER 1001
 
@@ -43,38 +42,3 @@ ENTRYPOINT [ "/usr/bin/entrypoint.sh" ]
 
 CMD ["python3.6", "-u", "main.py", "-p=browser"]
 
-
-
-####################################################################
-
-# FROM nvcr.io/nvidia/cuda:10.1-cudnn7-devel-ubi8
-
-# LABEL name="PerceptiLabs-Modelling-Backend" \
-#       vendor="PerceptiLabs" \
-#       version="1.0" \
-#       release="1" \
-#       summary="This is the free version of the backend of our modelling platform v1." \
-#       description="This will build a server for you which will act as a backend for our modelling platform. It listens to port 5000 to communicate with the frontend."
-
-# COPY licenses /licenses
-
-# #python3-libs?
-
-# USER 0
-# RUN yum -y --nodocs update && \
-#     yum -y --nodocs install ncurses-devel python36 python3-pip  python36-devel && \
-#     yum clean all
-
-# ADD --chown=1001 . /opt/app-root/src
-
-# WORKDIR /opt/app-root/src
-
-# RUN python3.6 -m pip install --upgrade pip && \
-#     pip3 install --upgrade setuptools && \
-#     pip3 install --no-cache-dir -r requirements.txt
-
-# USER 1001
-
-# EXPOSE 5000
-
-# CMD ["python3.6", "-u", "webServer.py"]

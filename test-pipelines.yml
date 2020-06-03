@@ -8,66 +8,48 @@ jobs:
    pool:
        vmImage: "ubuntu-16.04"
    steps:
-    - task: UsePythonVersion@0
-      inputs: 
-        versionSpec: '3.6'
-        architecture: 'x64'
-        addToPath: true
-    - bash: |
-        cd scripts/
-        bash -i tests_setup_ubuntu.sh
-      displayName: 'Environment setup'
+    - checkout: self
+      clean: true
+      submodules: recursive
+      persistCredentials: true
 
-    - bash: |
-        cd scripts/
-        bash -i test_ubuntu.sh
-      displayName: 'Python tests'
-
-    - bash: |
-        cd $(System.DefaultWorkingDirectory)/backend
-        mkdir training_scripts
-        if [ $? -ne 0 ]; then exit 0; fi
-      displayName: 'Create test folder if it doesnt exist'
-
-    - publish: $(System.DefaultWorkingDirectory)/backend/training_scripts
-      artifact: linux_training_scripts
-      condition: always()
-
-
-
-### TEST WINDOWS  ###
-
- - job: test_windows
-   pool:
-       vmImage: "vs2017-win2016"
-   steps:
     - task: UsePythonVersion@0
       inputs: 
         versionSpec: '3.6'
         architecture: 'x64'
         addToPath: true
 
-    - script: |
+    - bash: |
         cd scripts/
-        ./tests_setup_windows.bat
-      displayName: 'Environment setup'
-
-    - script: |
-        cd scripts/
-        ./test_windows.bat
+        bash -i build_posix.bash test
       displayName: 'Python tests'
 
-    - script: |
-        cd $(System.DefaultWorkingDirectory)/backend
-        mkdir training_scripts
-        IF %ERRORLEVEL% NEQ 0 (exit 0)
-      displayName: 'Create test folder if it doesnt exist'
-
-    - publish: $(System.DefaultWorkingDirectory)/backend/training_scripts
-      artifact: windows_training_scripts
-      condition: always()
-
-
+# ### TEST WINDOWS  ###
+#
+#  - job: test_windows
+#    pool:
+#        vmImage: "vs2017-win2016"
+#    steps:
+#     - checkout: self
+#       clean: true
+#       submodules: recursive
+#       persistCredentials: true
+#
+#     - task: UsePythonVersion@0
+#       inputs: 
+#         versionSpec: '3.6'
+#         architecture: 'x64'
+#         addToPath: true
+#
+#     - script: |
+#         cd scripts/
+#         ./tests_setup_windows.bat
+#       displayName: 'Environment setup'
+#
+#     - script: |
+#         cd scripts/
+#         ./test_windows.bat
+#       displayName: 'Python tests'
 
 ### TEST OSX  ###
 
@@ -75,6 +57,11 @@ jobs:
    pool:
        vmImage: "macOS-10.14"
    steps:
+    - checkout: self
+      clean: true
+      submodules: recursive
+      persistCredentials: true
+
     - task: UsePythonVersion@0
       inputs: 
         versionSpec: '3.6'
@@ -83,22 +70,6 @@ jobs:
 
     - bash: |
         cd scripts/
-        chmod 755 tests_setup_osx.sh
-        ./tests_setup_osx.sh
-      displayName: 'Environment setup'
-
-    - bash: |
-        cd scripts/
-        chmod 755 test_osx.sh
-        ./test_osx.sh
+        chmod 755 build_posix.bash
+        ./build_posix.bash test
       displayName: 'Python tests'
-
-    - bash: |
-        cd $(System.DefaultWorkingDirectory)/backend
-        mkdir training_scripts
-        if [ $? -ne 0 ]; then exit 0; fi
-      displayName: 'Create test folder if it doesnt exist'
-
-    - publish: $(System.DefaultWorkingDirectory)/backend/training_scripts
-      artifact: osx_training_scripts
-      condition: always()
