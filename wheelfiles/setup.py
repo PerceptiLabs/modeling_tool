@@ -20,6 +20,7 @@ REQUIREMENTS_FILENAMES = [
 ROOTS = [
         "perceptilabs",
         "rygg",
+        "static_file_server"
         ]
 
 def relative_file(thisfile, name):
@@ -106,7 +107,27 @@ setup(
             "tutorial_data/mnist_labels.npy",
         ],
         # TODO: add migrations programmatically
-        "rygg": ["api/migrations/0001_initial.py"],
+        "rygg": [
+            "api/migrations/*.py",
+        ],
+        "static_file_server": [
+            "dist/index.html",
+            "dist/static/*",
+            "dist/static/fonts/*.woff",
+            "dist/static/fonts/*.woff2",
+            "dist/static/img/*.svg",
+            "dist/static/img/*.png",
+            "dist/static/img/file-picker/*.svg",
+            "dist/static/img/inputs/*.png",
+            "dist/static/img/project-page/*.svg",
+            "dist/static/img/tutorial/*.png",
+            "dist/static/img/tutorial/*.svg",
+            "dist/static/js/*.js",
+            "dist/static/media/*.mp4",
+            "dist/static/styles/*.css",
+            "dist/static/videos/*.mp4",
+            "dist/static/webworkers/*.js",
+        ]
     },
     ext_modules=cythonize(get_all_cy_extensions()),
     cmdclass={"build_py": build_py},

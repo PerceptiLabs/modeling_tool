@@ -105,7 +105,7 @@ const webpackConfig = merge(baseWebpackConfig, {
     new MiniCssExtractPlugin({
 			// Options similar to the same options in webpackOptions.output
 			// both options are optional
-			filename: devMode ? '[name].css' : '[name].[hash].css',
+			filename: devMode ? '[name].css' : utils.assetsPath('styles/[name].[hash].css'),
 			// chunkFilename: devMode ? '[id].css' : '[id].[hash].css',
 		}),
 

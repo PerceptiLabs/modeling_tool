@@ -84,13 +84,13 @@ assert_python_version(){
   py_ver=$(python --version 2>&1)
   echo ${py_ver} | grep -q "3\(\.[0-9]\+\)\+" || {
     echo "Wrong python version (${py_ver}). Have you set up your virtualenv?";
-      exit 1
-    }
+    exit 1
+  }
 
   echo $(pip --version) | grep -q "3\.[67]" || {
     echo "Wrong pip version ($(pip --version)). Have you set up your virtualenv?";
-      exit 1
-    }
+    exit 1
+  }
 }
 
 print_environment(){
@@ -122,6 +122,7 @@ clean_build_dirs(){
 assemble_build_dirs_common(){
   echo "======================================================="
   echo -n "Copying files into ${BUILD_TMP} ... "
+
   mkdir -p ${BUILD_TMP}
   rsync --archive ${PROJECT_ROOT} --files-from=${SCRIPTS}/included_files_common.txt ${BUILD_TMP} || { exit 1; }
   rsync --archive ${PROJECT_ROOT} --files-from=${SCRIPTS}/included_files_${BUILD_TYPE}.txt ${BUILD_TMP} || { exit 1; }
@@ -136,6 +137,21 @@ assemble_build_dirs_common(){
   echo done
 }
 
+assemble_build_dirs_frontend(){
+  echo "======================================================="
+  echo -n "Copying frontend files into ${BUILD_TMP} ... "
+  rsync --archive ${PROJECT_ROOT} --recursive --files-from=${SCRIPTS}/included_files_frontend.txt ${BUILD_TMP} || { exit 1; }
+
+  mv ${BUILD_TMP}/frontend/static_file_server/static_file_server ${BUILD_TMP}/static_file_server
+
+  mkdir ${BUILD_TMP}/static_file_server/dist
+  cp -r ${BUILD_TMP}/frontend/src/dist/* ${BUILD_TMP}/static_file_server/dist
+  
+  rm -r ${BUILD_TMP}/frontend/*
+  rmdir ${BUILD_TMP}/frontend
+
+  echo done
+}
 
 build_wheel(){
 
@@ -195,8 +211,8 @@ assemble_core_docker(){
 maybe_build_core_docker(){
   test -z "${DO_DOCKER_BUILD}" && {
     echo "You can now run docker build";
-      return 0;
-    }
+    return 0;
+  }
 
   pushd_q ${BUILD_TMP}
   docker build . --tag=core_quickcheck
@@ -206,19 +222,21 @@ maybe_build_core_docker(){
 }
 
 assemble_frontend_docker(){
-
-  echo "----- Building frontend -----"
-  frontend_root=${PROJECT_ROOT}/frontend
   frontend_tmp=${BUILD_DIR}/frontend_out
 
-  pushd_q ${frontend_root}
-  npm run build-render || { exit 1; }
-  popd_q
-
-  cp -r ${frontend_root}/src/dist/* $frontend_tmp
+  cp -r ${FRONTEND_SRC_ROOT}/src/dist/* $frontend_tmp
 
   ls -l -a ${PROJECT_ROOT}/Docker/Frontend
   cp -r ${PROJECT_ROOT}/Docker/Frontend/. $frontend_tmp
+}
+
+build_frontend(){
+  echo "======================================================="
+  echo -n "Building frontend"
+
+  pushd_q ${FRONTEND_SRC_ROOT}
+  npm run build-render || { exit 1; }
+  popd_q
 }
 
 set_up_for_tests(){
@@ -264,7 +282,9 @@ case "$1" in
     print_environment
     train_models
     clean_build_dirs
+    build_frontend
     assemble_build_dirs_common
+    assemble_build_dirs_frontend
     build_wheel
     ;;
   docker)
@@ -272,6 +292,7 @@ case "$1" in
     print_environment
     train_models
     clean_build_dirs
+    build_frontend
     assemble_build_dirs_common
     assemble_core_docker
     maybe_build_core_docker

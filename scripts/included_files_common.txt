@@ -5,8 +5,7 @@ rygg/rygg/__init__.py
 rygg/rygg/api/__init__.py
 rygg/rygg/api/admin.py
 rygg/rygg/api/apps.py
-rygg/rygg/api/migrations/0001_initial.py
-rygg/rygg/api/migrations/__init__.py
+rygg/rygg/api/migrations/
 rygg/rygg/api/models.py
 rygg/rygg/api/serializers.py
 rygg/rygg/api/tests.py
