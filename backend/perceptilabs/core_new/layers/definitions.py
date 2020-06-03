@@ -150,8 +150,9 @@ DEFINITION_TABLE = {
             'stddev': lambda specs: specs['Properties']['stddev'],
             'minval': lambda specs: specs['Properties']['min'],
             'maxval': lambda specs: specs['Properties']['max'],
-            # 'batch_size': lambda specs: specs['Properties']['accessProperties']['Batch_size'],
-            'seed': 0,
+            'seed_training': lambda specs: specs['Properties'].get('Training_Seed', None),
+            'seed_testing': lambda specs: specs['Properties'].get('Testing_Seed', 1234),
+            'seed_validation': lambda specs: specs['Properties'].get('Validation_Seed', 5678)
         },
         import_statements=[
             'from perceptilabs.core_new.layers.base import DataRandom',
