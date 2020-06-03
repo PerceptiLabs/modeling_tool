@@ -168,7 +168,14 @@ export default {
                 location: `${this.modelPath}/${modelName}`,
             }).then(apiMeta => {
                 if(chosenTemplate === -1) {
-                    this.addNetwork({ apiMeta });
+                    const defaultNetwork = {
+                        networkName: modelName,
+                        networkID: apiMeta.model_id,
+                        networkMeta: {},
+                        networkElementList: {},
+                        networkRootFolder: ''
+                    };
+                    this.addNetwork({ network: defaultNetwork,  apiMeta });
                     modelType = 'Custom';
 
                 } else {
