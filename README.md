@@ -30,6 +30,10 @@ DJANGO_DATABASE='postgres' ./manage.py runserver
 ```
 
 # Play with the API
+```
+export OAUTHLIB_INSECURE_TRANSPORT=1
+```
+To allow Oauth over insecure HTTP
 Go to http://localhost:8000
 
 # Running Integration Tests

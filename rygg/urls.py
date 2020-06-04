@@ -18,12 +18,16 @@ Including another URLconf
 from django.urls import include, path
 from rest_framework import routers
 from rygg.api import views
+from .views import redirect_login, callback, protected, start_logout
 
 router = routers.DefaultRouter()
 router.register(r"projects", views.ProjectViewSet)
 router.register(r"models", views.ModelViewSet)
 
 urlpatterns = [
-    path("", include(router.urls)),
-    path("api-auth/", include("rest_framework.urls", namespace="rest_framework")),
+    path('logout/', start_logout, name="logout"),
+    path('login/', redirect_login, name="login"),
+    path('callback/', callback, name="callback"),
+    path('', protected),
+    path("api/", (include(router.urls))),
 ]
