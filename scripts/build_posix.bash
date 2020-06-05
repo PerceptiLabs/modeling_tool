@@ -153,17 +153,29 @@ assemble_build_dirs_frontend(){
   echo done
 }
 
+set_wheel_version(){
+  # for nightly builds, add the date string to the version
+  version=$(cat ${PROJECT_ROOT}/wheelfiles/version)
+  test "${BUILD_REASON}" = "Schedule" && version=${version}.${BUILD_NUM}
+  echo "version: ${version}"
+  ${SED} -i "s/^__version__ *=.*/__version__=\"$version\"/g" ${BUILD_TMP}/perceptilabs/__init__.py
+  ${SED} -i "s/^VERSION_STRING.*/VERSION_STRING=\"$version\"/g" ${BUILD_TMP}/setup.py
+  echo "Set wheel version: ${version}"
+}
+
+set_wheel_extension(){
+  # for nightly builds, rename the package
+  if [ "${BUILD_REASON}" = "Schedule" ]; then
+    ${SED}  -i 's/^PACKAGE_NAME *= *"\(.*\)"$/PACKAGE_NAME="\1-nightly"/g' ${BUILD_TMP}/setup.py
+  fi
+}
+
 build_wheel(){
 
   echo "======================================================="
   for file in linreg_inputs linreg_outputs linreg_outputs_test mnist_input mnist_labels; do
     cp ${BACKEND_SRC_ROOT}/perceptilabs/tutorial_data/${file}.npy ${BUILD_TMP}/perceptilabs
   done
-
-  version=$(cat ${PROJECT_ROOT}/wheelfiles/version)
-  echo "version: ${version}"
-  ${SED} -i "s/^__version__ *=.*/__version__=\"$version\"/g" ${BUILD_TMP}/perceptilabs/__init__.py
-  ${SED} -i "s/^VERSION_STRING.*/VERSION_STRING=\"$version\"/g" ${BUILD_TMP}/setup.py
 
   echo "Listing files to be included in build (contents of 'tmp/')"
   tree ${BUILD_TMP}
@@ -276,6 +288,7 @@ run_pytest_tests(){
 }
 
 assert_python_version
+
 case "$1" in
   wheel)
     set_up
@@ -285,6 +298,8 @@ case "$1" in
     build_frontend
     assemble_build_dirs_common
     assemble_build_dirs_frontend
+    set_wheel_version
+    set_wheel_extension
     build_wheel
     ;;
   docker)

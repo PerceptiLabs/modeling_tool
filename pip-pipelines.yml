@@ -1,47 +1,44 @@
 trigger:
-- none
-#  - master
-#  - stage
+- dev
+
+schedules:
+  - cron: "0 1 * * *"
+    displayName: Every nigt at 1AM
+    branches:
+      include:
+        - dev
 
 variables:
+  BUILD_REASON: $(Build.Reason)
   BuildVariables.CommitId : $(Build.SourceVersion)
+  BUILD_NUM: $(Build.BuildNumber)
+  PYPI_REPO: testpypi
 
 jobs:
-### BUILD UBUNTU ###
-  - job: build_ubuntu_py36
+  - job: buildwheel
+
+    strategy:
+      matrix:
+        linux_py3.6:
+          artifact: linux_3.6_wheel
+          image: 'ubuntu-16.04'
+          pyver: '3.6'
+        linux_py3.7:
+          artifact: linux_3.7_wheel
+          image: 'ubuntu-16.04'
+          pyver: '3.7'
+        osx_py3.6:
+          artifact: osx_3.6_wheel
+          image: 'macOS-10.14'
+          pyver: '3.6'
+        osx_py3.7:
+          artifact: osx_3.7_wheel
+          image: 'macOS-10.14'
+          pyver: '3.7'
+
     pool:
-        vmImage: "ubuntu-16.04"
-    steps:
+        vmImage: $(image)
 
-    - checkout: self
-      clean: true
-      submodules: recursive
-      persistCredentials: true
-
-    - task: FileTransform@2
-      inputs:
-        folderPath: '$(System.DefaultWorkingDirectory)/'
-        xmlTransformationRules:
-        jsonTargetFiles: '**/app_variables.json'
-
-    - task: UsePythonVersion@0
-      inputs:
-        versionSpec: '3.6'
-        architecture: 'x64'
-        addToPath: true
-
-    - bash: |
-        cd scripts/
-        bash -i build_posix.bash wheel
-      displayName: 'Build'
-
-    - publish: $(Build.Repository.LocalPath)/build/out/
-      artifact: linux_3.6_wheel
-
-
-  - job: build_ubuntu_py37
-    pool:
-        vmImage: "ubuntu-16.04"
     steps:
     - checkout: self
       clean: true
@@ -56,17 +53,56 @@ jobs:
 
     - task: UsePythonVersion@0
       inputs:
-        versionSpec: '3.7'
+        versionSpec: $(pyver)
         architecture: 'x64'
         addToPath: true
 
     - bash: |
         cd scripts/
-        bash -i build_posix.bash wheel
+        chmod 755 build_posix.bash
+        ./build_posix.bash wheel
       displayName: 'Build'
 
     - publish: $(Build.Repository.LocalPath)/build/out/
-      artifact: linux_3.7_wheel
+      artifact: $(artifact)
+
+  - job: pushwheel
+    dependsOn:
+      - buildwheel
+    condition: and(
+                succeeded(),
+                or(
+                  eq(variables['FORCE_PUBLISH'], 'true'),
+                  eq(variables['Build.Reason'], 'Schedule')))
+    pool:
+      vmImage: 'ubuntu-16.04'
+    steps:
+      - task: UsePythonVersion@0
+        inputs:
+          versionSpec: '3.x'
+          addToPath: true
+          architecture: 'x64'
+
+      - task: DownloadPipelineArtifact@2
+        inputs:
+          buildType: 'current'
+          itemPattern: '**/*.whl'
+          targetPath: '$(Pipeline.Workspace)'
+
+      - script: |
+          ls -al
+          mkdir topush
+          mv **/*.whl topush
+          cd topush
+          rename 's/linux_x86_64/manylinux1_x86_64/' *.whl
+          pip install --upgrade pip
+          pip install twine
+          python -m twine upload --non-interactive -u __token__ --repository ${PYPI_REPO} *
+        env:
+          TWINE_PASSWORD: $(TWINE_PASSWORD_SECRET)
+        workingDirectory: '$(Pipeline.Workspace)'
+        displayName: Gather And Push Artifacts to PyPI
+        failOnStderr: true
 
 
 # ### BUILD WINDOWS ###
@@ -133,71 +169,3 @@ jobs:
   #
   #   - publish: $(Build.Repository.LocalPath)/build/out/
   #     artifact: windows_3.7_wheel
-
-
-
-### BUILD OSX ###
-  - job: build_osx_py36
-    pool:
-        vmImage: "macOS-10.14"
-    variables:
-      - group: OSX-build
-    steps:
-    - checkout: self
-      clean: true
-      submodules: recursive
-      persistCredentials: true
-
-    - task: FileTransform@2
-      inputs:
-        folderPath: '$(System.DefaultWorkingDirectory)/'
-        xmlTransformationRules:
-        jsonTargetFiles: '**/app_variables.json'
-
-    - task: UsePythonVersion@0
-      inputs:
-        versionSpec: '3.6'
-        architecture: 'x64'
-        addToPath: true
-
-    - bash: |
-        cd scripts/
-        chmod 755 build_posix.bash
-        ./build_posix.bash wheel
-      displayName: 'Build'
-
-    - publish: $(Build.Repository.LocalPath)/build/out/
-      artifact: osx_3.6_wheel
-
-
-  - job: build_osx_py37
-    pool:
-        vmImage: "macOS-10.14"
-    variables:
-    - group: OSX-build
-    steps:
-    - checkout: self
-      clean: true
-      submodules: recursive
-      persistCredentials: true
-
-    - task: FileTransform@2
-      inputs:
-        folderPath: '$(System.DefaultWorkingDirectory)/'
-        xmlTransformationRules:
-        jsonTargetFiles: '**/app_variables.json'
-
-    - task: UsePythonVersion@0
-      inputs:
-        versionSpec: '3.7'
-        architecture: 'x64'
-        addToPath: true
-
-    - bash: |
-        cd scripts/
-        chmod 755 build_posix.bash
-        ./build_posix.bash wheel
-      displayName: 'Build'
-
-    - publish: $(Build.Repository.LocalPath)/build/out/
-      artifact: osx_3.7_wheel

@@ -9,8 +9,9 @@ from setuptools.command.build_py import build_py as _build_py
 from setuptools.command.install import install
 from subprocess import check_call
 
-# Don't rename. This will be automatically set by build scripts
+# Don't rename these variables. They will be set automatically by build scripts
 VERSION_STRING="development"
+PACKAGE_NAME="perceptilabs"
 
 REQUIREMENTS_FILENAMES = [
     "requirements_wheel_backend.txt",
@@ -82,7 +83,7 @@ class build_py(_build_py):
         return kept_modules
 
 setup(
-    name="perceptilabs",
+    name=PACKAGE_NAME,
     version=VERSION_STRING,
     license="Custom Proprietary License",
     packages=find_packages(),
