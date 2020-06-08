@@ -380,58 +380,58 @@ export default {
     },
     dragBoxHorizontalTopBorder() {
       const { width, left, top,  isVisible } = this.dragBoxContainer;
-      const scaleCoefficient = this.scaleNet / 100;
+      
       return {
         zIndex: 2,
         display: isVisible ? 'block' : 'none',
-        width: width * scaleCoefficient + 'px',
+        width: width + 'px',
         height: 1 + 'px',
         position: 'absolute',
-        top: top * scaleCoefficient  + 'px',
-        left: left * scaleCoefficient + 'px',
+        top: top + 'px',
+        left: left + 'px',
         borderTop: '1px dashed #22DDE5'
       }
     },
     dragBoxHorizontalBottomBorder() {
       const { width, height, left, top,  isVisible } = this.dragBoxContainer;
-      const scaleCoefficient = this.scaleNet / 100;
+
       return {
         zIndex: 2,
         display: isVisible ? 'block' : 'none',
-        width: width * scaleCoefficient + 'px',
+        width: width + 'px',
         height: 1 + 'px',
         position: 'absolute',
-        top: (top + height) * scaleCoefficient  + 'px',
-        left: left * scaleCoefficient + 'px',
+        top: (top + height)  + 'px',
+        left: left + 'px',
         borderTop: '1px dashed #22DDE5'
       }
     },
 
     dragBoxVerticalLeftBorder() {
       const { width, height, left, top,  isVisible } = this.dragBoxContainer;
-      const scaleCoefficient = this.scaleNet / 100;
+
       return {
         zIndex: 2,
         display: isVisible ? 'block' : 'none',
         width: 1 + 'px',
-        height: height * scaleCoefficient + 'px',
+        height: height + 'px',
         position: 'absolute',
-        top: top * scaleCoefficient  + 'px',
-        left: left * scaleCoefficient + 'px',
+        top: top + 'px',
+        left: left + 'px',
         borderLeft: '1px dashed #22DDE5'
       }
     },
     dragBoxVerticalRightBorder() {
       const { width, height, left, top,  isVisible } = this.dragBoxContainer;
-      const scaleCoefficient = this.scaleNet / 100;
+
       return {
         zIndex: 2,
         display: isVisible ? 'block' : 'none',
         width: 1 + 'px',
-        height: height * scaleCoefficient + 'px',
+        height: height + 'px',
         position: 'absolute',
-        top: top * scaleCoefficient  + 'px',
-        left: (left + width) * scaleCoefficient + 'px',
+        top: top + 'px',
+        left: (left + width) + 'px',
         borderRight: '1px dashed #22DDE5'
       }
     },

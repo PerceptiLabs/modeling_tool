@@ -799,6 +799,10 @@ const mutations = {
     state.workspaceContent[state.currentNetwork].networkElementList[id].layerMeta.position.top = top;
     state.workspaceContent[state.currentNetwork].networkElementList[id].layerMeta.position.left = left;
   },
+  change_groupContainerDiff(state, {id, top, left}) {
+    state.workspaceContent[state.currentNetwork].networkElementList[id].layerMeta.containerDiff.top = top;
+    state.workspaceContent[state.currentNetwork].networkElementList[id].layerMeta.containerDiff.left = left;
+  },
   set_elementInputDim(state, value) {
     for(let element in value) {
       currentElement(element).layerMeta.InputDim = value[element].inShape;

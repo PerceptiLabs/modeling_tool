@@ -98,36 +98,7 @@ export default {
         'net-element_window--left': this.openWinPosition.left,
         'net-element_window--top': this.openWinPosition.top
       }
-    },
-    styleElWindow() {
-      let scale = `scale(${(100 / (this.wsZoom * 100)) })`;
-
-      const transformOrigin = []
-      if (this.openWinPosition.top) {
-        transformOrigin.push('bottom');
-      } else {
-        transformOrigin.push('top');
-      }
-
-      if (this.openWinPosition.left) {
-        transformOrigin.push('right');
-      } else {
-        transformOrigin.push('left');
-      }
-
-      const transformOriginString = transformOrigin.join(' ');
-
-      let style = {
-        'transform': `${scale}`,
-        'transform-origin': transformOriginString,
-        '-moz-transform': `${scale}`,
-        '-moz-transform-origin': transformOriginString,
-        '-webkit-transform': `${scale}`,
-        '-webkit-transform-origin': transformOriginString,
-      };
-
-      return style;
-    },
+    }
   },
   watch: {
     isSelectedEl(newVal) {

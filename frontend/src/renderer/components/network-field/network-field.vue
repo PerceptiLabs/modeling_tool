@@ -53,7 +53,7 @@
           @blur="blurArrow"
           :marker-end="arrowMarkerStyle(arrow)"
           :d="arrow.positionArrow.path.arrow"
-          style="stroke: #22DDE5; strokeWidth: 3; fill: transparent"
+          :style="arrowStyle"
           )
           //inline styles need for sreenshot
 

@@ -134,20 +134,34 @@ export default {
     preArrow() {
       return this.$store.state.mod_workspace.preArrow;
     },
+    arrowStyle() {
+      let width = `${this.networkScale  * 2}`;
+
+      let style = {
+        'strokeWidth': width,
+      };
+
+      return style;
+    },
     styleSvgArrow() {
       const size = {
         width: this.svgWidth,
         height: this.svgHeight,
+        zIndex: 1
       };
       return size
     },
+    scaledLayerSize() {
+      return this.layerSize * this.networkScale;
+    }
   },
   watch: {
     statisticsIsOpen() {
       this.calcSvgSize()
     },
-    networkScale() {
-      this.calcSvgSize(true)
+    networkScale(currentZoom, oldZoom) {
+      this.positionZoomChange(currentZoom, oldZoom);
+      this.calcSvgSize(true);
     },
     eventCalcArrow() {
       //this.tutorialPointActivate({way: 'next', validation: this.tutorialActiveAction.id});
@@ -163,6 +177,10 @@ export default {
     },
   },
   methods: {
+    ...mapMutations({
+      change_singleElementPosition: 'mod_workspace/change_singleElementPosition',
+      change_groupContainerDiff: 'mod_workspace/change_groupContainerDiff',
+    }),
     ...mapActions({
       tutorialPointActivate:   'mod_tutorials/pointActivate',
       SET_elementNetworkField: 'mod_workspaceHelpers/SET_elementNetworkField',
@@ -204,8 +222,8 @@ export default {
     mouseUpMultiSelect() {
       const xStart = this.multiSelect.x;
       const yStart = this.multiSelect.y;
-      const xStop = xStart + this.multiSelect.width - this.layerSize;
-      const yStop = yStart + this.multiSelect.height - this.layerSize;
+      const xStop = xStart + this.multiSelect.width - this.scaledLayerSize;
+      const yStop = yStart + this.multiSelect.height - this.scaledLayerSize;
 
       for (var el in this.networkElementList) {
         const element = this.networkElementList[el];
@@ -248,20 +266,45 @@ export default {
        offsetY: this.$refs.network.parentElement.offsetTop
       };
     },
+    positionZoomChange(newScale, oldScale) {
+      for (var el in this.fullNetworkElementList) {
+        const element = this.fullNetworkElementList[el];
+        const x0 = element.layerMeta.position.left;
+        const y0 = element.layerMeta.position.top;
+
+        this.change_singleElementPosition({
+          id: el,
+          top: y0 / oldScale * newScale,
+          left: x0 / oldScale * newScale
+        })
+
+        if (element.layerMeta.containerDiff) {
+          const preTop = element.layerMeta.containerDiff.top;
+          const preLeft = element.layerMeta.containerDiff.left;
+          this.change_groupContainerDiff({
+            id: el,
+            top: preTop / oldScale * newScale,
+            left: preLeft / oldScale * newScale
+          })
+        }
+      }
+    },
     calcSvgSize(isZoomed) {
       const parentWorkspace = this.$parent.$refs.container;
       let offsetHeight = parentWorkspace.offsetHeight;
       let offsetWidth = parentWorkspace.offsetWidth;
+      const gapSize = 60;
       
       // calculate max boundaries for network elements
       const positions = Object.values(this.networkElementList).map(item => item.layerMeta.position);
-      const maxWidthPositions = Math.max(...positions.map(position => position.left)) + 60;
-      const maxHeightPositions = Math.max(...positions.map(position => position.top)) + 60;
+      const maxWidthPositions = Math.max(...positions.map(position => position.left)) + this.layerSize * this.networkScale + gapSize;
+      const maxHeightPositions = Math.max(...positions.map(position => position.top)) + this.layerSize * this.networkScale + gapSize;
 
       this.svgWidth = Math.max(offsetWidth, maxWidthPositions);
       this.svgHeight = Math.max(offsetHeight, maxHeightPositions);
-      
+
       if (isZoomed) {
+        this.drawArrows();
         parentWorkspace.scrollLeft = 0;
         parentWorkspace.scrollTop = 0;
       }
@@ -325,7 +368,7 @@ export default {
       }
 
       this.calcSvgSize();
-      const sizeEl = this.layerSize;
+      const sizeEl = this.layerSize * this.networkScale;
       const connectList = [];
       const net = this.networkElementList;
 
@@ -571,11 +614,11 @@ export default {
     },
     findXPosition(event) {
       const scrollPosition = document.querySelector('.js-info-section_main').scrollLeft;
-      return (event.pageX - this.offset.offsetX + scrollPosition) / this.networkScale
+      return (event.pageX - this.offset.offsetX + scrollPosition)
     },
     findYPosition(event) {
       const scrollPosition = document.querySelector('.js-info-section_main').scrollTop;
-      return (event.pageY - this.offset.offsetY + scrollPosition) / this.networkScale
+      return (event.pageY - this.offset.offsetY + scrollPosition)
     },
     getLastElementLegArrowData(arrow) {
       const isLayerTypeContainer = arrow.l1.layerType === 'Container';

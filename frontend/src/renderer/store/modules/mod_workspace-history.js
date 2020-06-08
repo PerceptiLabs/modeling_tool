@@ -33,17 +33,31 @@ const mutations = {
     state.isEnableHistory = value;
   },
   to_prevStepHistory(state, {currentID, dispatch}) {
+    console.log("PREV");
     let historyCurrNet = state.history[currentID];
     if(historyCurrNet.historyStep < historyCurrNet.historyNet.length - 1) {
       const numStep = ++state.history[currentID].historyStep;
+
+      // console.log(historyCurrNet.historyNet[numStep].networkElementList[`1564399775664`].layerMeta.position.left, 
+      //       historyCurrNet.historyNet[numStep].networkElementList[`1564399775664`].layerMeta.position.top
+      // );
+      
+      // dispatch('mod_workspace/SET_statusNetworkZoom', historyCurrNet.historyNet[numStep].networkScale, {root: true});
       dispatch('mod_workspace/SET_historyStep', deepCloneNetwork(historyCurrNet.historyNet[numStep]), {root: true});
       dispatch('mod_events/EVENT_calcArray', null, {root: true});
     }
   },
   to_nextStepHistory(state, {currentID, dispatch}) {
+    console.log("NEXT");
     let historyCurrNet = state.history[currentID];
     if(historyCurrNet.historyStep) {
       const numStep = --state.history[currentID].historyStep;
+
+      // console.log(historyCurrNet.historyNet[numStep].networkElementList[`1564399775664`].layerMeta.position.left, 
+      //   historyCurrNet.historyNet[numStep].networkElementList[`1564399775664`].layerMeta.position.top
+      // );
+
+      // dispatch('mod_workspace/SET_statusNetworkZoom', historyCurrNet.historyNet[numStep].networkScale, {root: true});
       dispatch('mod_workspace/SET_historyStep', deepCloneNetwork(historyCurrNet.historyNet[numStep]), {root: true});
       dispatch('mod_events/EVENT_calcArray', null, {root: true});
     }
@@ -64,6 +78,7 @@ const actions = {
     const newSnapshot = {
       networkName: currentNet.networkName,
       networkElementList: deepCloneNetwork(currentNet.networkElementList),
+      networkScale: rootGetters['mod_workspace/GET_currentNetwork'].networkMeta.zoom
     };
 
     if(!historyNet) { dispatch('UPDATE_networkList') }
@@ -92,6 +107,7 @@ const actions = {
         historyNet: [{
           networkName: JSON.parse(JSON.stringify(net.networkName)),
           networkElementList: deepCloneNetwork(net.networkElementList),
+          networkScale: rootGetters['mod_workspace/GET_currentNetwork'].networkMeta.zoom
         }],
       }
     }

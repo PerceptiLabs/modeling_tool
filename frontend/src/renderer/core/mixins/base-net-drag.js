@@ -47,7 +47,7 @@ const baseNetDrag = {
       return {width, height, top: Math.min(...topValues), left: Math.min(...leftValues)};
     },
     applyCoefficientScale(num) {
-      return (num /  (this.networkScale * 100)) * 100;
+      return num;
     },
     move(ev) {
       if (!this.bodyDrag) return;
@@ -158,8 +158,8 @@ const baseNetDrag = {
 
       const stickStartPos = this.stickStartPos;
       const delta = {
-        x: (stickStartPos.mouseX - (ev.pageX || ev.touches[0].pageX)) / this.networkScale,
-        y: (stickStartPos.mouseY - (ev.pageY || ev.touches[0].pageY)) / this.networkScale
+        x: (stickStartPos.mouseX - (ev.pageX || ev.touches[0].pageX)), 
+        y: (stickStartPos.mouseY - (ev.pageY || ev.touches[0].pageY)) 
       };
       const top = calcLayerPosition(stickStartPos.top - delta.y);
       const left = calcLayerPosition(stickStartPos.left - delta.x);
@@ -202,7 +202,13 @@ const baseNetDrag = {
       }
     },
     style() {
+      let scale = `scale(${this.networkScale})`;
+
       return {
+       'z-index': 1,
+       'transform': scale,
+       'transform-origin': 'left top',
+
         top: this.top + 'px',
         left: this.left + 'px',
       }
