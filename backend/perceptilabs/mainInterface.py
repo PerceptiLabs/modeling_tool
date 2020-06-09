@@ -79,7 +79,7 @@ class Interface():
             self._checkpointDict[content["checkpoint"][-1]]=ckptObj.getVariablesAndConstants()
             ckptObj.close()
 
-    def _create_lw_core(self, reciever, jsonNetwork):
+    def create_lw_core(self, reciever, jsonNetwork):
         data_container = DataContainer()
         extras_reader = LayerExtrasReader()
         error_handler = LightweightErrorHandler()
