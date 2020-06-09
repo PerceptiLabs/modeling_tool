@@ -324,7 +324,7 @@ class LightweightCore:
         ordered_ids = self._get_ordered_ids(subgraph_spec, edges_by_id)
         self._layer_ids_to_names = {id_ : subgraph_spec[id_]['Name'] for id_ in subgraph_spec}
         _, edges_by_id = get_json_net_topology(subgraph_spec)
-        properties_map = {layer_id:json.dumps(subgraph_spec[layer_id]['Properties']) for layer_id in subgraph_spec.keys()}
+        properties_map = {layer_id:json.dumps(subgraph_spec[layer_id]) for layer_id in subgraph_spec.keys()}
         cached_results = self._get_cached_results(properties_map, subgraph_spec, edges_by_id)
         self._cached_layer_ids = cached_results.keys()
         code_map, code_errors = self._get_code_from_layers(subgraph_spec) # Other errors are fatal and should be raised

@@ -350,13 +350,13 @@
                     ])
             else:
                 self._generator_loss_validation \
-                    = sess.run([
+                    = sess.run(
                         generator_loss_tensor
-                    ])
+                    )
                 self.__discriminator_loss_validation \
-                    = sess.run([
+                    = sess.run(
                         discriminator_loss_tensor
-                    ])
+                    )
 
             
         def test_step():
