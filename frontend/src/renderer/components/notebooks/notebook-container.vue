@@ -31,7 +31,8 @@ export default {
   data() {
     return {
       cells: [],
-      focusedCellId: null
+      focusedCellId: null,
+      fetchedCode: {}
     };
   },
   methods: {
@@ -45,51 +46,14 @@ export default {
         ])
         .then(([networkCodes, networkCodeOrder]) => {
 
-          // console.log('notebookJson', notebookJson);
-          // console.log('networkCode', networkCodes);
-          // console.log('networkCodeOrder', networkCodeOrder);
-
-          const validNetworkCodes = networkCodes.filter(nc => nc);
-          const sortedCode = this.sortNetworkCode(validNetworkCodes, networkCodeOrder);
+          // using "this.fetchedCode" instead of "networkCodes" because when
+          // toggling the Notebook button quickly and many times, "networkCodes"
+          // can return "undefined".
+          const fetchedCodes = Object.values(this.fetchedCode).map(v =>  v);
+          const sortedCode = this.sortNetworkCode(fetchedCodes, networkCodeOrder);
 
           this.cells = sortedCode;
         });
-    },
-    getDefaultNotebookJson() {
-      const defaultJson = {
-        "cells": [
-          {
-          "cell_type": "code",
-          "execution_count": null,
-          "metadata": {},
-          "outputs": [],
-          "source": []
-          }
-        ],
-        "metadata": {
-          "kernelspec": {
-          "display_name": "Python 3",
-          "language": "python",
-          "name": "python3"
-          },
-          "language_info": {
-          "codemirror_mode": {
-            "name": "ipython",
-            "version": 3
-          },
-          "file_extension": ".py",
-          "mimetype": "text/x-python",
-          "name": "python",
-          "nbconvert_exporter": "python",
-          "pygments_lexer": "ipython3",
-          "version": "3.6.2"
-          }
-        },
-        "nbformat": 4,
-        "nbformat_minor": 4
-      };
-      
-      return JSON.parse(JSON.stringify(defaultJson));
     },
     fetchNetworkCode() {
       if (!this.currentNetwork || !this.currentNetwork.networkElementList) {
@@ -100,8 +64,9 @@ export default {
 
       const networkElements = Object.entries(this.currentNetwork.networkElementList);
       for (let networkElement of networkElements) {
-        const promise = addIdToLayerCode.call(this, networkElement);
-        fetchCodePromises.push(promiseWithTimeout(400, promise));
+        const promise = promiseWithTimeout(400, addIdToLayerCode.call(this, networkElement));
+        
+        fetchCodePromises.push(promise);
       }
 
       return Promise.all(fetchCodePromises).then(code => {
@@ -123,7 +88,11 @@ export default {
           .dispatch("mod_api/API_getCode", payload)
           .then(result => {
             result.layerId = networkInformation.layerId;
-            return result;
+            this.$set(this.fetchedCode, result.layerId, result)
+
+            // don't really need to return any results
+            // the results we want are set in "this.fetchedCode"
+            return result; 
           });
       }
     },
@@ -152,7 +121,8 @@ export default {
     currentNetwork: {
       immediate: true,
       handler(newValue) {
-          this.updateNotebook();
+        this.fetchedCode = {};
+        this.updateNotebook();
       }
     }
   },
