@@ -28,7 +28,6 @@ from perceptilabs.core_new.errors import CoreErrorHandler
 from perceptilabs.core_new.history import SessionHistory
 from perceptilabs.CoreThread import CoreThread
 from perceptilabs.createDataObject import createDataObject
-from perceptilabs.core_new.core_distr import DistributedCore
 
 from perceptilabs.license_checker import LicenseV2
 
@@ -121,41 +120,6 @@ class coreLogic():
 
         return True
 
-    def _dump_deployment_script(self, target_file, graph_spec):
-        """
-            Export code to a file. Support is limited to image classification example
-            and the code will differ from the code visible in the frontend.
-        """
-        try:
-            graph_spec = copy.deepcopy(graph_spec)
-
-            for id_, layer in graph_spec['Layers'].items():
-                if layer['Type'] == 'TrainNormal' and 'Distributed' not in layer['Properties']:
-                    layer['Properties']['Distributed'] = False
-                if layer['Type'] == 'Regression' and 'Distributed' not in layer['Properties']:
-                    layer['Properties']['Distributed'] = False
-                # if layer['Type'] == 'RegressionLayer':
-                #     import pdb
-                #     pdb.set_trace()
-            logger.info("Creating deployment script...")            
-            config = {'session_id': '1234567'}
-            
-            from perceptilabs.core_new.graph.builder import GraphBuilder
-            from perceptilabs.script.factory import ScriptFactory
-            from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP                
-
-            replica_by_name = {repl_cls.__name__: repl_cls for repl_cls in BASE_TO_REPLICA_MAP.values()}                
-            graph_builder = GraphBuilder(replica_by_name)
-            graph = graph_builder.build_from_spec(graph_spec)
-            
-            script_factory = ScriptFactory()        
-            code = script_factory.make(graph, config)
-            with open(target_file, 'w') as f:
-                f.write(code)
-            logger.info("wrote deployment script to disk...")                            
-        except:
-            logger.exception("Failed creating deployment script...")
-
     def startCore(self,network, checkpointValues):
         #Start the backendthread and give it the network
 
@@ -238,7 +202,7 @@ class coreLogic():
         self.graphObj = Graph(network['Layers'])
         graph_dict=self.graphObj.graphs
 
-        from perceptilabs.codehq import CodeHqNew as CodeHq
+        #from perceptilabs.codehq import CodeHqNew as CodeHq
         error_handler = CoreErrorHandler(self.issue_handler)
 
         module_provider = ModuleProvider()
@@ -259,18 +223,8 @@ class coreLogic():
         session_proc_handler = SessionProcessHandler(graph_dict, data_container, self.commandQ, self.resultQ, training_sess_id)
 
 
-        #self._dump_deployment_script('deploy.py', network) 
-        
-
-
         if self._core_mode == 'v1':
-            if not distributed:
-                self.core = Core(CodeHq, graph_dict, data_container, session_history, module_provider,
-                                error_handler, session_proc_handler, checkpointValues)
-            else:
-                from perceptilabs.core_new.core_distr import DistributedCore
-                self.core = DistributedCore(CodeHq, graph_dict, data_container, session_history, module_provider,
-                                            error_handler, session_proc_handler, checkpointValues)
+            raise NotImplementedError
         elif self._core_mode == 'v2':
             from perceptilabs.core_new.compatibility import CompatibilityCore
             from perceptilabs.messaging.zmq_wrapper import ZmqMessagingFactory            

@@ -22,7 +22,6 @@ backend/perceptilabs/mainServer.py
 backend/perceptilabs/azure.py
 backend/perceptilabs/logconf.py
 backend/perceptilabs/main_setup.py
-backend/perceptilabs/codehq.py
 backend/perceptilabs/mainInterface.py
 backend/perceptilabs/coreInterface.py
 backend/perceptilabs/lwInterface.py
@@ -54,24 +53,6 @@ backend/perceptilabs/server/__init__.py
 backend/perceptilabs/server/appServer.py
 backend/perceptilabs/server/desktop_serverlib.py
 backend/perceptilabs/server/web_serverlib.py
-
-# backend/perceptilabs/code_generator
-backend/perceptilabs/code_generator/__init__.py
-backend/perceptilabs/code_generator/base.py
-backend/perceptilabs/code_generator/datadata.py
-backend/perceptilabs/code_generator/dataenv.py
-backend/perceptilabs/code_generator/tensorflow.py
-
-# backend/perceptilabs/script
-backend/perceptilabs/script/__init__.py
-backend/perceptilabs/script/generators.py
-backend/perceptilabs/script/utils.py
-backend/perceptilabs/script/base.py
-
-# backend/perceptilabs/script/templates/
-backend/perceptilabs/script/templates/datadata.j2
-backend/perceptilabs/script/templates/file_utils.j2
-backend/perceptilabs/script/templates/train_normal_distr.j2
 
 # backend/perceptilabs/core_new
 backend/perceptilabs/core_new/__init__.py

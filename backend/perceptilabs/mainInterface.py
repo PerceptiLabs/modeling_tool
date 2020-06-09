@@ -20,7 +20,6 @@ from perceptilabs.core_new.lightweight import LightweightCore, LW_ACTIVE_HOOKS
 from perceptilabs.modules import ModuleProvider
 from perceptilabs.core_new.cache import get_cache
 from perceptilabs.core_new.networkCache import NetworkCache
-from perceptilabs.codehq import CodeHqNew as CodeHq
 from perceptilabs.logconf import APPLICATION_LOGGER, set_user_email
 from perceptilabs.core_new.lightweight2 import LightweightCoreAdapter
 from perceptilabs.core_new.cache2 import LightweightCache
@@ -80,89 +79,12 @@ class Interface():
             self._checkpointDict[content["checkpoint"][-1]]=ckptObj.getVariablesAndConstants()
             ckptObj.close()
 
-    def create_lw_core(self, reciever, jsonNetwork):
-        if self._core_mode == 'v1':
-            return self._create_lw_core_v1(reciever, jsonNetwork)
-        else:
-            return self._create_lw_core_v2(reciever, jsonNetwork)
-
-    def _create_lw_core_v2(self, reciever, jsonNetwork):
+    def _create_lw_core(self, reciever, jsonNetwork):
         data_container = DataContainer()
         extras_reader = LayerExtrasReader()
         error_handler = LightweightErrorHandler()
         
         lw_core = LightweightCoreAdapter(jsonNetwork, extras_reader, error_handler, self._core.issue_handler, self._lw_cache_v2, data_container)
-        return lw_core, extras_reader, data_container
-
-    def _create_lw_core_v1(self, reciever, jsonNetwork):                
-        if reciever not in self._lwDict:
-            self._lwDict[reciever]=NetworkCache()
-        else:
-            deleteList=[]
-            for layer_id in self._lwDict[reciever].get_layers():
-                if layer_id not in jsonNetwork:
-                    deleteList.append(layer_id)
-            logger.info("Deleting these layers: " + str(deleteList))
-            for layer_id in deleteList:
-                self._lwDict[reciever].remove_layer(layer_id)
-
-        graph = Graph(jsonNetwork)
-        
-        graph_dict = graph.graphs
-
-        for value in graph_dict.values():
-            if "checkpoint" in value["Info"] and value["Info"]["checkpoint"]:
-                info = value["Info"].copy()
-
-                ckpt_path = info['checkpoint'][1]
-                if '//' in ckpt_path:
-                    new_ckpt_path = os.path.sep+ckpt_path.split(2*os.path.sep)[1] # Sometimes frontend repeats the directory path. /<dir-path>//<dir-path>/model.ckpt-1
-                    logger.warning(
-                        f"Splitting malformed checkpoint path: '{ckpt_path}'. "
-                        f"New path: '{new_ckpt_path}'"
-                    )
-                    info['checkpoint'][1] = new_ckpt_path
-                    
-                self._add_to_checkpointDict(info)
-
-        if logger.isEnabledFor(logging.DEBUG):
-            from perceptilabs.utils import stringify
-            logger.debug("create_lw_core: checkpoint dict: \n" + stringify(self._checkpointDict))
-
-        data_container = DataContainer()
-        extras_reader = LayerExtrasReader()
-
-        module_provider = ModuleProvider()
-        module_provider.load('tensorflow', as_name='tf')
-        module_provider.load('numpy', as_name='np')
-        module_provider.load('pandas', as_name='pd')             
-        module_provider.load('gym')
-        module_provider.load('json')  
-        module_provider.load('os')   
-        module_provider.load('skimage')         
-        module_provider.load('dask.array', as_name='da')
-        module_provider.load('dask.dataframe', as_name='dd')                  
-        
-        for hook_target, hook_func in LW_ACTIVE_HOOKS.items():
-            module_provider.install_hook(hook_target, hook_func)
-
-        error_handler = LightweightErrorHandler()
-        
-        global session_history_lw
-        cache = get_cache()
-        session_history_lw = SessionHistory(cache) # TODO: don't use global!!!!
-
-
-        lw_core = LightweightCore(
-            CodeHq, graph_dict,
-            data_container, session_history_lw,
-            module_provider, error_handler,
-            extras_reader, checkpointValues=self._checkpointDict.copy(),
-            network_cache=self._lwDict[reciever],
-            core_mode=self._core_mode
-        )
-
-        
         return lw_core, extras_reader, data_container
 
     def create_response(self, request):

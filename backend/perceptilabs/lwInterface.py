@@ -290,9 +290,7 @@ class getCodeV1(LW_interface_base):
                                   
                                   }
 
-        from perceptilabs.codehq import CodeHqNew as CodeHq
-
-        content = {"Output": CodeHq.get_code_generator(self._id,layerInfo).get_code()}
+        content = {}
         return content
 
 class getNetworkInputDim(LW_interface_base):

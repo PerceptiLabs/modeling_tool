@@ -28,17 +28,16 @@ def create_macro_loader(macro_file, macro_name, macro_parameters):
     return template
 
 
-def instantiate_layer_from_macro(j2_engine, macro_file, macro_name, macro_parameters, import_statements=None):
-    assert 'layer_name' in macro_parameters
-    
+def render_and_execute_macro(j2_engine, macro_file, macro_name, macro_parameters, import_statements=None):
     template = create_macro_loader(macro_file, macro_name, macro_parameters)
 
     code = 'import logging\n'
     if import_statements:
         code += '\n'.join(import_statements or [])
-        code += '\n\n'        
+        code += '\n\n'
+    code += 'log = logging.getLogger(__name__)\n\n'        
     code += j2_engine.render_string(template)
-    code += 'log = logging.getLogger(__name__)\n\n'
+
     
     is_unix = os.name != 'nt' # Windows has permission issues when deleting tempfiles
     with NamedTemporaryFile('wt', delete=is_unix, suffix='.py') as f:
@@ -48,12 +47,20 @@ def instantiate_layer_from_macro(j2_engine, macro_file, macro_name, macro_parame
         spec = importlib.util.spec_from_file_location("my_module", f.name)        
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
-
-        class_object = getattr(module, macro_parameters['layer_name'])
-        instance = class_object()
-
+        
     if not is_unix:
         os.remove(f.name)
+
+    return module, code
+
+
+def instantiate_layer_from_macro(j2_engine, macro_file, macro_name, macro_parameters, import_statements=None):
+    assert 'layer_name' in macro_parameters
+    
+    module, _ = render_and_execute_macro(j2_engine, macro_file, macro_name, macro_parameters, import_statements)
+    
+    class_object = getattr(module, macro_parameters['layer_name'])
+    instance = class_object()
 
     return instance    
     
