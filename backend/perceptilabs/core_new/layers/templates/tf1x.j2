@@ -1,12 +1,16 @@
+{% from 'tf1x_utils.j2' import batch_normal %}
+
 {% macro layer_tf1x_switch(layer_name, selected_layer) %}
 class {{layer_name}}(Tf1xLayer):
     def __init__(self):
         self._selected_layer_id = '{{selected_layer}}'
 
-    def __call__(self, x): #x: Dict[tf.Tensor]  TODO: change this when backend is updated
+    def __call__(self, x, is_training: tf.Tensor = None): #x: Dict[tf.Tensor]  TODO: change this when backend is updated
         """ Takes the outputs of all the incoming layers as input and returns the output of that layer."""
         y = x[self._selected_layer_id]
         self._variables = {k: v for k, v in locals().items() if can_serialize(v)}    
+        self.y = y
+
         return y
 
     @property
@@ -27,6 +31,14 @@ class {{layer_name}}(Tf1xLayer):
             A dictionary with tensor names for keys and tensors for values.
         """
         return {}
+
+    def get_sample(self, sess=None) -> np.ndarray:
+        """Returns a single data sample"""
+        if sess is not None:
+            y = sess.run(self.y)
+            return y[0]
+        else:
+            return None
 
     @property
     def weights(self) -> Dict[str, tf.Tensor]:
@@ -50,7 +62,7 @@ class {{layer_name}}(Tf1xLayer):
 
 {% macro layer_tf1x_grayscale(layer_name) %}
 class {{layer_name}}(Tf1xLayer):
-    def __call__(self, x: tf.Tensor) -> tf.Tensor:
+    def __call__(self, x: tf.Tensor, is_training: tf.Tensor = None) -> tf.Tensor:
         """ Takes a tensor as input and changes it to grayscale."""
         channels = x.get_shape().as_list()[-1]
         if channels % 3 == 0:
@@ -65,6 +77,8 @@ class {{layer_name}}(Tf1xLayer):
         else:
             y = x
         self._variables = {k: v for k, v in locals().items() if can_serialize(v)}    
+        self.y = y
+
         return y
 
     @property
@@ -85,6 +99,14 @@ class {{layer_name}}(Tf1xLayer):
             A dictionary with tensor names for keys and tensors for values.
         """
         return {}
+
+    def get_sample(self, sess=None) -> np.ndarray:
+        """Returns a single data sample"""
+        if sess is not None:
+            y = sess.run(self.y)
+            return y[0]
+        else:
+            return None
 
     @property
     def weights(self) -> Dict[str, tf.Tensor]:
@@ -109,7 +131,7 @@ class {{layer_name}}(Tf1xLayer):
 
 {% macro layer_tf1x_reshape(layer_name, shape, permutation) %}
 class {{layer_name}}(Tf1xLayer):
-    def __call__(self, x: tf.Tensor) -> tf.Tensor:
+    def __call__(self, x: tf.Tensor, is_training: tf.Tensor = None) -> tf.Tensor:
         """ Takes a tensor as input and reshapes it."""
         shp = {{shape}}
         perm = {{permutation}}
@@ -123,6 +145,7 @@ class {{layer_name}}(Tf1xLayer):
         y = tf.reshape(x, [x.get_shape().as_list()[0] if x.get_shape().as_list()[0] is not None else -1] + shp)
         y = tf.transpose(y, perm=[0] + [i+1 for i in perm])
         
+        self.y = y
         return y
 
     @property
@@ -142,6 +165,14 @@ class {{layer_name}}(Tf1xLayer):
             A dictionary with tensor names for keys and tensors for values.
         """
         return {}
+    
+    def get_sample(self, sess=None) -> np.ndarray:
+        """Returns a single data sample"""
+        if sess is not None:
+            y = sess.run(self.y)
+            return y[0]
+        else:
+            return None
 
     @property
     def weights(self) -> Dict[str, tf.Tensor]:
@@ -164,9 +195,10 @@ class {{layer_name}}(Tf1xLayer):
 
 {% macro layer_tf1x_image_reshape(layer_name, width, height) %}
 class {{layer_name}}(Tf1xLayer):
-    def __call__(self, x: tf.Tensor) -> tf.Tensor:
+    def __call__(self, x: tf.Tensor, is_training: tf.Tensor = None) -> tf.Tensor:
         """Takes an image and reshapes it."""
         y = tf.image.resize(x, [{{height}}, {{width}}], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR, preserve_aspect_ratio=False)
+        self.y = y
 
         return y
 
@@ -187,6 +219,14 @@ class {{layer_name}}(Tf1xLayer):
             A dictionary with tensor names for keys and tensors for values.
         """
         return {}
+
+    def get_sample(self, sess=None) -> np.ndarray:
+        """Returns a single data sample"""
+        if sess is not None:
+            y = sess.run(self.y)
+            return y[0]
+        else:
+            return None
 
     @property
     def weights(self) -> Dict[str, tf.Tensor]:
@@ -210,8 +250,10 @@ class {{layer_name}}(Tf1xLayer):
 
 {% macro layer_tf1x_one_hot(layer_name, n_classes) %}
 class {{layer_name}}(Tf1xLayer):
-    def __call__(self, x):
-        y = tf.one_hot(tf.cast(x, dtype=tf.int32), {{n_classes}})        
+    def __call__(self, x, is_training: tf.Tensor = None):
+        y = tf.one_hot(tf.cast(x, dtype=tf.int32), {{n_classes}})       
+        self.y = y
+
         return y
 
     @property
@@ -231,6 +273,14 @@ class {{layer_name}}(Tf1xLayer):
             A dictionary with tensor names for keys and tensors for values.
         """
         return {}
+    
+    def get_sample(self, sess=None) -> np.ndarray:
+        """Returns a single data sample"""
+        if sess is not None:
+            y = sess.run(self.y)
+            return y[0]
+        else:
+            return None
 
     @property
     def weights(self) -> Dict[str, tf.Tensor]:
@@ -252,34 +302,54 @@ class {{layer_name}}(Tf1xLayer):
 {% endmacro %}
 
 
-{% macro layer_tf1x_fully_connected(layer_name, n_neurons, activation, dropout, keep_prob) %}
+{% macro layer_tf1x_fully_connected(layer_name, n_neurons, activation, dropout, keep_prob, batch_norm) %}
 class {{layer_name}}(Tf1xLayer):
     def __init__(self):
         self._scope = '{{layer_name}}'
         self._n_neurons = {{n_neurons}}
         self._variables = {}
+        self._lw_variables = {}
         
-    def __call__(self, x: tf.Tensor):
+    def __call__(self, x: tf.Tensor, is_training: tf.Tensor = None):
         """ Takes a tensor as input and feeds it forward through a layer of neurons, returning a newtensor."""        
         n_neurons = {{n_neurons}}
         n_inputs = np.prod(x.get_shape().as_list()[1:], dtype=np.int32)
+        b_norm = {{batch_norm}}
+        y_before = None
+        y = None
 
         with tf.compat.v1.variable_scope(self._scope, reuse=tf.compat.v1.AUTO_REUSE):        
             initial = tf.random.truncated_normal((n_inputs, self._n_neurons), stddev=0.1)
             W = tf.compat.v1.get_variable('W', initializer=initial)
-            
+
             initial = tf.constant(0.1, shape=[self._n_neurons])
             b = tf.compat.v1.get_variable('b', initializer=initial)
             flat_node = tf.cast(tf.reshape(x, [-1, n_inputs]), dtype=tf.float32)
             y = tf.matmul(flat_node, W) + b
+            
+            {{ batch_normal(batch_norm, y, is_training) | indent(width=12)}}
 
             {% filter remove_lspaces(8) %}
                 {% if activation is not none %}
                     y = {{activation}}(y)
                 {% endif %}
             {% endfilter %}
+            {% filter remove_lspaces(8) %}
+                {% if batch_norm %}
+                    y_before = {{activation}}(y_before)
+                {% endif %}
+            {% endfilter %}
+
+            {% filter remove_lspaces(8) %}
+                {% if dropout %}
+                    y = tf.nn.dropout(y, rate = 1 - {{keep_prob}})
+                {% endif %}
+            {% endfilter %}
             
-        self._variables = {k: v for k, v in locals().items() if can_serialize(v)}            
+        self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
+        self._lw_variables['y_before'] = y_before
+        self._lw_variables['y'] = y
+
         return y
 
     @property
@@ -301,6 +371,20 @@ class {{layer_name}}(Tf1xLayer):
         variables = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope=self._scope)
         variables = {v.name: v for v in variables}
         return variables
+
+    def get_sample(self, sess=None) -> np.ndarray:
+        """Returns a single data sample"""
+        if sess is not None:
+            y_before = self._lw_variables.get('y_before')
+
+            if y_before is not None:
+                y = sess.run(y_before)
+            else:
+                y = sess.run(self._lw_variables['y'])
+            
+            return y[0]
+        else:
+            return None
 
     @property
     def weights(self):
@@ -333,7 +417,7 @@ class {{layer_name}}(Tf1xLayer):
         self._merge_dim = {{merge_dim}}
         self._merget_order = {{merge_order}}
 
-    def __call__(self, x: Dict[str, tf.Tensor]) -> tf.Tensor:
+    def __call__(self, x: Dict[str, tf.Tensor], is_training: tf.Tensor = None) -> tf.Tensor:
         """ Takes two tensors as input and merges them accordingly. """
         y = None
         {% filter remove_lspaces(8) %}
@@ -363,7 +447,10 @@ class {{layer_name}}(Tf1xLayer):
                     y = tf.divide(list(x.values())[i], y)
             {% endif %}
         {% endfilter %}
+
         self._variables = {k: v for k, v in locals().items() if can_serialize(v)}    
+        self.y = y
+
         return y
 
     @property
@@ -384,6 +471,14 @@ class {{layer_name}}(Tf1xLayer):
             A dictionary with tensor names for keys and tensors for values.
         """
         return {}
+
+    def get_sample(self, sess=None) -> np.ndarray:
+        """Returns a single data sample"""
+        if sess is not None:
+            y = sess.run(self.y)
+            return y[0]
+        else:
+            return None
 
     @property
     def weights(self) -> Dict[str, tf.Tensor]:
@@ -406,14 +501,17 @@ class {{layer_name}}(Tf1xLayer):
 
 {% macro layer_tf1x_word_embedding(layer_name) %}
 class {{layer_name}}(Tf1xLayer):
-    def __call__(self, x: tf.Tensor) -> tf.Tensor:
+    def __call__(self, x: tf.Tensor, is_training: tf.Tensor = None) -> tf.Tensor:
         """ Takes a tensor as input and creates word embedding."""
         words = tf.string_split(x)
         vocab_size = words.get_shape().as_list()[0]
         embed_size=10
         embedding = tf.Variable(tf.random_uniform((vocab_size, embed_size), -1, 1))
         y = tf.nn.embedding_lookup(embedding, x)
+
         self._variables = {k: v for k, v in locals().items() if can_serialize(v)}    
+        self.y = y
+
         return y
 
     @property
@@ -435,6 +533,14 @@ class {{layer_name}}(Tf1xLayer):
         """
         return {}
 
+    def get_sample(self, sess=None) -> np.ndarray:
+        """Returns a single data sample"""
+        if sess is not None:
+            y = sess.run(self.y)
+            return y[0]
+        else:
+            return None
+            
     @property
     def weights(self) -> Dict[str, tf.Tensor]:
         """Any weight tensors belonging to this layer that should be rendered in the frontend.
@@ -456,7 +562,7 @@ class {{layer_name}}(Tf1xLayer):
 
 
 
-{% macro layer_tf1x_conv(layer_name, conv_dim, patch_size, feature_maps, stride, padding, dropout, keep_prob, activation, pool, pooling, pool_padding, pool_area, pool_stride) %}
+{% macro layer_tf1x_conv(layer_name, conv_dim, patch_size, feature_maps, stride, padding, dropout, keep_prob, activation, pool, pooling, pool_padding, pool_area, pool_stride, batch_norm) %}
 class {{layer_name}}(Tf1xLayer):
     def __init__(self):
         self._scope = '{{layer_name}}'        
@@ -467,17 +573,22 @@ class {{layer_name}}(Tf1xLayer):
         self._stride = {{stride}}
         self._keep_prob = {{keep_prob}}
         self._variables = {}
+        self._lw_variables = {}
         
-    def __call__(self, x):
-        """ Takes a tensor as input and feeds it forward through a convolutional layer, returning a newtensor."""                
+    def __call__(self, x, is_training: tf.Tensor = None):
+        """ Takes a tensor as input and feeds it forward through a convolutional layer, returning a newtensor."""
+        b_norm = {{batch_norm}}
+        y_before = None
+        y = None
+
         with tf.compat.v1.variable_scope(self._scope, reuse=tf.compat.v1.AUTO_REUSE):
             {% filter remove_lspaces(8) %}
                 {% if conv_dim == '2D' %}
                     shape = [
-                    self._patch_size,
-                    self._patch_size,
-                    x.get_shape().as_list()[-1],
-                    self._feature_maps
+                        self._patch_size,
+                        self._patch_size,
+                        x.get_shape().as_list()[-1],
+                        self._feature_maps
                     ]
                     #initial = tf.random.truncated_normal(
                     #    shape,
@@ -490,9 +601,9 @@ class {{layer_name}}(Tf1xLayer):
                     y = tf.add(tf.nn.conv2d(x, W, strides=[1, self._stride, self._stride, 1], padding=self._padding), b)
                 {% elif conv_dim == '1D' %}
                     shape = [
-                    self._patch_size,
-                    x.get_shape().as_list()[-1],
-                    self._feature_maps
+                        self._patch_size,
+                        x.get_shape().as_list()[-1],
+                        self._feature_maps
                     ]
                     initial = tf.random.truncated_normal(
                         shape,
@@ -505,11 +616,11 @@ class {{layer_name}}(Tf1xLayer):
                     y = tf.nn.conv1d(x, W, strides=[1, self._stride, 1], padding=self._padding)+b
                 {% elif conv_dim == '3D' %}
                     shape = [
-                    self._patch_size,
-                    self._patch_size,
-                    self._patch_size,
-                    x.get_shape().as_list()[-1],
-                    self._feature_maps
+                        self._patch_size,
+                        self._patch_size,
+                        self._patch_size,
+                        x.get_shape().as_list()[-1],
+                        self._feature_maps
                     ]
                     initial = tf.random.truncated_normal(
                         shape,
@@ -534,9 +645,17 @@ class {{layer_name}}(Tf1xLayer):
                     y = tf.nn.conv2d(x, W, strides=[1]+ [self._stride]*dim +[1], padding=self._padding) + b
                 {% endif %}
             {% endfilter %}
+
+            {{ batch_normal(batch_norm, y, is_training) | indent(width=12)}}
+
             {% filter remove_lspaces(8) %}
                 {% if activation is not none %}
                     y = {{activation}}(y)
+                {% endif %}
+            {% endfilter %}
+            {% filter remove_lspaces(8) %}
+                {% if batch_norm %}
+                    y_before = {{activation}}(y_before)
                 {% endif %}
             {% endfilter %}
             {% filter remove_lspaces(8) %}
@@ -554,7 +673,11 @@ class {{layer_name}}(Tf1xLayer):
                     y = tf.nn.avg_pool(y, ksize={{pool_area}}, strides={{pool_stride}}, padding={{pool_padding}})
                 {% endif %}
             {% endfilter %}
+        
         self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
+        self._lw_variables['y_before'] = y_before
+        self._lw_variables['y'] = y
+
         return y
 
     @property
@@ -576,6 +699,20 @@ class {{layer_name}}(Tf1xLayer):
         variables = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope=self._scope)
         variables = {v.name: v for v in variables}
         return variables        
+
+    def get_sample(self, sess=None) -> np.ndarray:
+        """Returns a single data sample"""
+        if sess is not None:
+            y_before = self._lw_variables.get('y_before')
+
+            if y_before is not None:
+                y = sess.run(y_before)
+            else:
+                y = sess.run(self._lw_variables['y'])
+            
+            return y[0]
+        else:
+            return None
 
     @property
     def weights(self):
@@ -600,7 +737,7 @@ class {{layer_name}}(Tf1xLayer):
             return {b.name: b}
 {% endmacro %}
 
-{% macro layer_tf1x_deconv(layer_name, conv_dim, patch_size, feature_maps, stride, padding, dropout, keep_prob, activation) %}
+{% macro layer_tf1x_deconv(layer_name, deconv_dim, patch_size, feature_maps, stride, padding, dropout, keep_prob, activation, batch_norm) %}
 class {{layer_name}}(Tf1xLayer):
     def __init__(self):
         self._scope = '{{layer_name}}'        
@@ -609,14 +746,19 @@ class {{layer_name}}(Tf1xLayer):
         self._padding = '{{padding}}'
         self._stride = {{stride}}
         self._keep_prob = {{keep_prob}}
+        self._dropout = {{dropout}}
         self._variables = {}
+        self._lw_variables = {}
         
-    def __call__(self, x):
+    def __call__(self, x, is_training: tf.Tensor = None):
         """ Takes a tensor as input and feeds it forward through a deconvolutional layer, returning a newtensor."""                
-        
+        b_norm = {{batch_norm}}
+        y_before = None
+        y = None
+
         with tf.compat.v1.variable_scope(self._scope, reuse=tf.compat.v1.AUTO_REUSE):
             {% filter remove_lspaces(8) %}
-                {% if conv_dim == '2D' %}
+                {% if deconv_dim == '2D' %}
                     shape = [
                         self._patch_size,
                         self._patch_size,
@@ -634,11 +776,11 @@ class {{layer_name}}(Tf1xLayer):
                     output_shape = tf.stack([x.get_shape().as_list()[0]] + [node_shape*self._stride for node_shape in  x.get_shape().as_list()[1:-1]] + [self._feature_maps])   
                     y = tf.nn.conv2d_transpose(x, W, output_shape, strides=[1, self._stride, self._stride, 1], padding=self._padding)
 
-                {% elif conv_dim == '1D' %}
+                {% elif deconv_dim == '1D' %}
                     shape = [
-                    self._patch_size,
-                    x.get_shape().as_list()[-1],
-                    self._feature_maps
+                        self._patch_size,
+                        x.get_shape().as_list()[-1],
+                        self._feature_maps
                     ]
                     initial = tf.random.truncated_normal(
                         shape,
@@ -652,13 +794,13 @@ class {{layer_name}}(Tf1xLayer):
 
                     y = tf.nn.conv1d_transpose(x, W, output_shape, strides=[1, self._stride, 1], padding=self._padding)
 
-                {% elif conv_dim == '3D' %}
+                {% elif deconv_dim == '3D' %}
                     shape = [
-                    self._patch_size,
-                    self._patch_size,
-                    self._patch_size,
-                    x.get_shape().as_list()[-1],
-                    self._feature_maps
+                        self._patch_size,
+                        self._patch_size,
+                        self._patch_size,
+                        x.get_shape().as_list()[-1],
+                        self._feature_maps
                     ]
                     initial = tf.random.truncated_normal(
                         shape,
@@ -671,7 +813,7 @@ class {{layer_name}}(Tf1xLayer):
                     output_shape = tf.stack([x.get_shape().as_list()[0]] + [node_shape*self._stride for node_shape in  x.get_shape().as_list()[1:-1]] + [self._feature_maps])   
                     y = tf.nn.conv3d_transpose(x, W, output_shape, strides=[1, self._stride, self._stride, self._stride, 1], padding=self._padding)
 
-                {% elif conv_dim == 'Automatic' %}
+                {% elif deconv_dim == 'Automatic' %}
                     dim = len(x.get_shape().as_list())-1
                     shape = [self._patch_size]*dim + [x.get_shape().as_list()[-1], self._feature_maps]
                     initial = tf.random.truncated_normal(
@@ -687,6 +829,9 @@ class {{layer_name}}(Tf1xLayer):
 
                 {% endif %}
             {% endfilter %}
+
+            {{ batch_normal(batch_norm, y, is_training) | indent(width=12)}}
+
             {% filter remove_lspaces(8) %}
                 {% if dropout %}
                     y = tf.nn.dropout(y,self._keep_prob)
@@ -696,8 +841,23 @@ class {{layer_name}}(Tf1xLayer):
                     y = {{activation}}(y)
                 {% endif %}
             {% endfilter %}
+            {% filter remove_lspaces(12) %}
+                {% if batch_norm %}
+                    {% if dropout %}
+                        y_before = tf.nn.dropout(y_before,self._keep_prob)
+                    {% endif %}
+                    
+                    {% if activation is not none %}
+                        y_before = y_before + b
+                        y_before = {{activation}}(y_before)
+                    {% endif %}
+                {% endif %}
+            {% endfilter %}
             
         self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
+        self._lw_variables['y_before'] = y_before
+        self._lw_variables['y'] = y
+
         return y
 
     @property
@@ -719,6 +879,20 @@ class {{layer_name}}(Tf1xLayer):
         variables = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope=self._scope)
         variables = {v.name: v for v in variables}
         return variables        
+
+    def get_sample(self, sess=None) -> np.ndarray:
+        """Returns a single data sample"""
+        if sess is not None:
+            y_before = self._lw_variables.get('y_before')
+
+            if y_before is not None:
+                y = sess.run(y_before)
+            else:
+                y = sess.run(self._lw_variables['y'])
+            
+            return y[0]
+        else:
+            return None
 
     @property
     def weights(self):
@@ -743,34 +917,41 @@ class {{layer_name}}(Tf1xLayer):
             return {b.name: b}
 {% endmacro %}
 
-{% macro layer_tf1x_recurrent(layer_name, version, time_steps, neurons, return_sequences, dropout, keep_prob) %}
+{% macro layer_tf1x_recurrent(layer_name, version, time_steps, neurons, return_sequence, dropout, keep_prob) %}
 class {{layer_name}}(Tf1xLayer):
     def __init__(self):
         self._scope = '{{layer_name}}'
         self._variables = {}
         self._neurons = {{neurons}}
-    def __call__(self, x: tf.Tensor):
+        self._lw_variables = {}
+
+    def __call__(self, x: tf.Tensor, is_training: tf.Tensor = None):
         """ Takes a tensor as input and feeds it forward through a recurrent layer, returning a newtensor."""        
+        y_before = None
+        y = None
 
         with tf.compat.v1.variable_scope(self._scope, reuse=tf.compat.v1.AUTO_REUSE):     
             {% filter remove_lspaces(8) %}   
                 {% if version == 'LSTM' %}
                     cell = tf.nn.rnn_cell.LSTMCell(self._neurons, state_is_tuple=True, name=self._scope)
                 {% elif version == 'GRU' %}
-                    cell = tf.nn.rnn_cell.GRUCell(self._neurons, state_is_tuple=True, name=self._scope)
+                    cell = tf.nn.rnn_cell.GRUCell(self._neurons, name=self._scope)
                 {% elif version == 'RNN' %}
-                    cell = tf.nn.rnn_cell.RNNCell(self._neurons, state_is_tuple=True, name=self._scope)
+                    cell = tf.nn.rnn_cell.BasicRNNCell(self._neurons, name=self._scope)
                 {% endif %}
             {% endfilter %}
+            
             {% filter remove_lspaces(8) %}
                 {% if dropout %}
                     cell = tf.nn.rnn_cell.DropoutWrapper(cell, output_keep_prob = self._keep_prob)
                 {% endif %}
             {% endfilter %}
+
             node = x
             rnn_outputs, final_state = tf.nn.dynamic_rnn(cell, node, dtype=node.dtype)
+
             {% filter remove_lspaces(8) %}
-                {% if return_sequences %}
+                {% if return_sequence %}
                     y = rnn_outputs
                 {% else %}
                     y = rnn_outputs[:, -1]
@@ -778,6 +959,9 @@ class {{layer_name}}(Tf1xLayer):
             {% endfilter %}
             
         self._variables = {k: v for k, v in locals().items() if can_serialize(v)}            
+        self._lw_variables['y_before'] = y_before
+        self._lw_variables['y'] = y
+
         return y
 
     @property
@@ -799,6 +983,20 @@ class {{layer_name}}(Tf1xLayer):
         variables = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope=self._scope)
         variables = {v.name: v for v in variables}
         return variables
+
+    def get_sample(self, sess=None) -> np.ndarray:
+        """Returns a single data sample"""
+        if sess is not None:
+            y_before = self._lw_variables.get('y_before')
+
+            if y_before is not None:
+                y = sess.run(y_before)
+            else:
+                y = sess.run(self._lw_variables['y'])
+            
+            return y[0]
+        else:
+            return None
 
     @property
     def weights(self):

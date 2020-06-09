@@ -74,6 +74,14 @@
           .form_input
             input(type="number" v-model="settings.Keep_prob")
       .settings-layer_section
+        .form_row(v-tooltip-interactive:right="interactiveInfo.batchNormalization")
+          .form_label Batch Normalization:
+          .form_input
+            base-radio(group-name="group4" :value-input="true" v-model="settings.Batch_norm")
+              span Yes
+            base-radio(group-name="group4" :value-input="false" v-model="settings.Batch_norm")
+              span No
+      .settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.pooling")
           .form_label Pooling:
           #tutorial_pooling.form_input(data-tutorial-hover-info)
@@ -139,11 +147,12 @@ export default {
         Activation_function: "Sigmoid", //Sigmoid, ReLU, Tanh, None
         Dropout: false, //True, False
         Keep_prob: '1',
+        Batch_norm: false,
         PoolBool: false, //True, False
         Pooling: "Max", //Max, Mean
         Pool_area: "2",
         Pool_padding: "SAME", //'SAME', 'VALID'
-        Pool_stride: "2",
+        Pool_stride: "2"
       },
       interactiveInfo: {
         dimension: {
@@ -174,6 +183,10 @@ export default {
           title: 'Dropout',
           text: 'Choose if dropout should be used or not'
         },
+        batchNormalization: {
+            title: 'Batch Normalization',
+            text: 'Choose if batch normalization should be used or not'
+        },
         pooling: {
           title: 'Pooling',
           text: 'Choose if dropout should be used or not'
@@ -193,7 +206,7 @@ export default {
         ZeroPaddingPooling: {
           title: 'Zero-padding',
           text: 'Zero-padding for pooling'
-        },
+        }
       },
     }
   },

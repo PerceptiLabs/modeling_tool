@@ -37,6 +37,14 @@
           .form_label Keep probability:
           .form_input
             input(type="number" v-model="settings.Keep_prob")
+      .settings-layer_section
+        .form_row(v-tooltip-interactive:right="interactiveInfo.batchNormalization")
+          .form_label Batch Normalization:
+          .form_input
+            base-radio(group-name="group4" :value-input="true" v-model="settings.Batch_norm")
+              span Yes
+            base-radio(group-name="group4" :value-input="false" v-model="settings.Batch_norm")
+              span No
     template(slot="Code-content")
       settings-code(
         :current-el="currentEl"
@@ -63,6 +71,7 @@
           Activation_function: "Sigmoid",
           Dropout: false,
           Keep_prob: '1',
+          Batch_norm: false,
         },
         interactiveInfo: {
           neurons: {
@@ -76,6 +85,10 @@
           dropout: {
             title: 'Dropout',
             text: 'Choose if dropout should be used or not'
+          },
+          batchNormalization: {
+            title: 'Batch Normalization',
+            text: 'Choose if batch normalization should be used or not'
           }
         },
       }

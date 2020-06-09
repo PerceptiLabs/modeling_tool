@@ -1,0 +1,8 @@
+{% macro batch_normal(batch_norm, y, is_training) %}
+{% filter remove_lspaces(8) %}
+    {% if batch_norm %}
+        y_before = y
+        y = tf.compat.v1.layers.batch_normalization(y, training=(is_training or True))
+    {% endif %}
+{% endfilter %}
+{% endmacro %}

@@ -131,15 +131,13 @@ class Tf1xTempStrategy(BaseStrategy):
         else:
             logger.warning(f"Checkpoint restore only works with TensorFlow 1.15. Current version is {tf.version.VERSION}")
         try:
-            y_batch = sess.run(output_tensor)
+            variables = layer_instance.variables.copy()
+            y = layer_instance.get_sample(sess=sess)
         except Exception as e:
             error = exception_to_error(layer_id, layer_type, e)
             logger.exception(f"Layer {layer_id} raised an error on sess.run")            
             return self.get_default(strategy_error=error)
         
-        y = y_batch[0]
-        variables = layer_instance.variables.copy()
-
         results = LayerResults(
             sample=y,
             out_shape=y.shape,
@@ -203,15 +201,13 @@ class Tf1xStrategy(BaseStrategy):
         else:
             logger.warning(f"Checkpoint restore only works with TensorFlow 1.15. Current version is {tf.version.VERSION}")
         try:
-            y_batch = sess.run(output_tensor)
+            variables = layer_instance.variables.copy()
+            y = layer_instance.get_sample(sess=sess)
         except Exception as e:
             error = exception_to_error(layer_id, layer_type, e)
             logger.exception(f"Layer {layer_id} raised an error on sess.run")            
             return self.get_default(strategy_error=error)
         
-        y = y_batch[0]
-        variables = layer_instance.variables.copy()
-
         results = LayerResults(
             sample=y,
             out_shape=y.shape,
@@ -300,7 +296,7 @@ class LightweightCore:
     def __init__(self, issue_handler=None, cache=None):
         self._issue_handler = issue_handler
         self._cache = cache
-        
+    
     @simplify_spec
     def run(self, graph_spec):
         layer_ids, edges_by_id = get_json_net_topology(graph_spec)
@@ -452,8 +448,8 @@ class LightweightCore:
                 code += layer_spec['Code'].get('Output')
             ast.parse(code)
         except SyntaxError as e:
-            return None, exception_to_error(layer_id, layer_spec['Type'], e)
-            logger.exception(f"Layer {layer_id} raised an error when getting layer code")                                
+            logger.exception(f"Layer {layer_id} raised an error when getting layer code") 
+            return None, exception_to_error(layer_id, layer_spec['Type'], e)                                
         except Exception as e:
             logger.warning(f"{str(e)}: couldn't get code for {layer_id}. Treating it as not fully specified")
             if logger.isEnabledFor(logging.DEBUG):

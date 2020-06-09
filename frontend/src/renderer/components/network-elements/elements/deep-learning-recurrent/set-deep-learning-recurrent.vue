@@ -33,7 +33,7 @@
             input(type="number" v-model="settings.Time_steps")
 
       .settings-layer_section
-        .form_row
+        .form_row(v-tooltip-interactive:right='interactiveInfo.returnSequence')
           .form_label Return sequence:
           .form_input
             base-radio(group-name="probability" :value-input="true"  v-model="settings.Return_sequence")
@@ -88,7 +88,7 @@ export default {
       settings: {
         Neurons: "10",
         Version: "LSTM", //#LSTM, GRU, RNN
-        Time_steps: "2",
+        Time_steps: "1",
         Dropout: false, //True, False
         Return_sequence: false, //True, False
         Keep_prob: "1"
@@ -97,6 +97,10 @@ export default {
         neurons: {
           title: 'Neurons',
           text: 'Set how many neurons to use.'
+        },
+        returnSequence: {
+          title: 'Return sequence',
+          text: 'Select if return sequence should be used'
         },
         recurrentAlternative: {
           title: 'Recurrent alternative',

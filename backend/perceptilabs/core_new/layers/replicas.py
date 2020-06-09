@@ -1053,7 +1053,10 @@ class Tf1xLayerReplica(Tf1xLayer):
     @property        
     def trainable_variables(self):
         raise NotReplicatedError        
-
+    
+    def get_sample(self, sess=None):
+        raise NotReplicatedError
+    
     @property        
     def weights(self):
         raise NotReplicatedError        

@@ -42,7 +42,9 @@ def layer_fc(j2_engine):
         # top_level_imports=TOP_LEVEL_IMPORTS_FLAT[0],
         n_neurons=1,
         activation='',
-        dropout=False
+        dropout=False,
+        keep_prob=1.0,
+        batch_norm=False
     )
     yield layer_fc_
 
@@ -186,7 +188,8 @@ def test_initial_weights_differ(j2_engine, tmpdir_del, layer_inputs, layer_targe
         top_level_imports=TOP_LEVEL_IMPORTS_FLAT,
         n_neurons=1,
         activation='',
-        dropout=False, keep_prob=1.0
+        dropout=False, keep_prob=1.0,
+        batch_norm=False
     )
     
     graph1 = make_graph(j2_engine, tmpdir_del, layer_inputs, layer_targets, fc1)
@@ -206,7 +209,8 @@ def test_initial_weights_differ(j2_engine, tmpdir_del, layer_inputs, layer_targe
         layer_type='DeepLearningFC',
         n_neurons=1,
         activation='',
-        dropout=False, keep_prob=1.0
+        dropout=False, keep_prob=1.0,
+        batch_norm=False
     )
     graph2 = make_graph(j2_engine, tmpdir_del, layer_inputs, layer_targets, fc2) 
     
@@ -229,7 +233,8 @@ def test_load_checkpoint(j2_engine, tmpdir_del, layer_inputs, layer_targets):
         layer_type='DeepLearningFC',
         n_neurons=1,
         activation='',
-        dropout=False, keep_prob=1.0
+        dropout=False, keep_prob=1.0,
+        batch_norm=False
     )
     
     graph1 = make_graph(j2_engine, tmpdir_del, layer_inputs, layer_targets, fc1)
@@ -251,7 +256,8 @@ def test_load_checkpoint(j2_engine, tmpdir_del, layer_inputs, layer_targets):
         layer_type='DeepLearningFC',
         n_neurons=1,
         activation='',
-        dropout=False, keep_prob=1.0
+        dropout=False, keep_prob=1.0,
+        batch_norm=False
     )
     graph2 = make_graph(j2_engine, tmpdir_del, layer_inputs, layer_targets, fc2, export_dir=str(tmpdir_del), learning_rate=0.0) 
     

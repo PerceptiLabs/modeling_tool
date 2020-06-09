@@ -114,6 +114,7 @@ backend/perceptilabs/core_new/layers/templates/base.py
 backend/perceptilabs/core_new/layers/templates/datadata.j2
 backend/perceptilabs/core_new/layers/templates/file_utils.j2
 backend/perceptilabs/core_new/layers/templates/tf1x.j2
+backend/perceptilabs/core_new/layers/templates/tf1x_utils.j2
 backend/perceptilabs/core_new/layers/templates/tf1x_classification.j2
 
 # backend/perceptilabs/insights/csv_ram_estimator/

@@ -238,8 +238,6 @@ class getCodeV2(LW_interface_base):
         self._id = id_
         self._network = network
 
-
-
     def run(self):
         from perceptilabs.core_new.graph import Node
         from perceptilabs.core_new.layers.script import ScriptFactory

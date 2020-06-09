@@ -105,6 +105,7 @@ const imageClassification = {
           "Feature_maps": "8",
           "Activation_function": "Sigmoid",
           "Dropout": false,
+          "Batch_norm": false,
           "Keep_prob": "1",
           "PoolBool": false,
           "Pooling": "Max",
@@ -154,7 +155,8 @@ const imageClassification = {
           "Neurons": "10",
           "Activation_function": "Sigmoid",
           "Dropout": false,
-          "Keep_prob": "1"
+          "Keep_prob": "1",
+          "Batch_norm": false
         },
         "layerCode": null,
         "layerCodeError": null,

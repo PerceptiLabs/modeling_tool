@@ -61,10 +61,20 @@
         dataset_tst = dataset_tst.batch(1)                
 
         # Make initializers
+        with tf.variable_scope('{{layer_name}}/train', reuse=tf.AUTO_REUSE):
+            is_training = tf.get_variable(name="is_train", dtype=tf.bool, initializer=False)
+
         iterator = tf.data.Iterator.from_structure(dataset_trn.output_types, dataset_trn.output_shapes)
+
         trn_init = iterator.make_initializer(dataset_trn)
+        trn_init = tf.group([trn_init, is_training.assign(True if self._batch_size > 1 else False)])
+        
         val_init = iterator.make_initializer(dataset_val)
+        val_init = tf.group([val_init, is_training.assign(False)])
+
         tst_init = iterator.make_initializer(dataset_tst)        
+        tst_init = tf.group([tst_init, is_training.assign(False)])
+
         input_tensor, label_tensor = iterator.get_next()
 
         # Build the TensorFlow graph # TODO: perhaps this part can be delegated to the graph?
@@ -79,6 +89,8 @@
                 args = []
                 for input_node in graph.get_input_nodes(node):
                     args.append(layer_output_tensors[input_node.layer_id])
+                    args.append(is_training)
+
                     y = node.layer_instance(*args)
                 layer_output_tensors[node.layer_id] = y
 
@@ -88,6 +100,8 @@
         layer_output_tensors = build_graph(input_tensor, label_tensor)
         output_tensor = layer_output_tensors[output_layer_id]
         target_tensor = layer_output_tensors[target_layer_id]
+        
+        update_ops = tf.compat.v1.get_collection(tf.GraphKeys.UPDATE_OPS)
         
         # Create an exportable version of the TensorFlow graph
         self._input_tensor_export = tf.placeholder(shape=dataset_trn.output_shapes[0], dtype=dataset_trn.output_types[0])
@@ -173,9 +187,9 @@
         # grads = tf.gradients(loss_tensor, trainable_vars)
         # update_weights = optimizer.apply_gradients(zip(grads, trainable_vars), global_step=global_step)        
         
-        grads_and_vars = optimizer.compute_gradients(loss_tensor)
-        update_weights = optimizer.apply_gradients(grads_and_vars, global_step=global_step)
-        
+        update_weights = optimizer.minimize(loss_tensor, global_step=global_step)
+        update_weights = tf.group([update_weights, update_ops])
+
         config = tf.ConfigProto()
         config.gpu_options.allow_growth = True
         sess = tf.Session(config=config)

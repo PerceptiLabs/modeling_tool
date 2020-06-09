@@ -179,6 +179,13 @@ class Tf1xLayer(InnerLayer):
         """        
         raise NotImplementedError
 
+    @abstractmethod        
+    def get_sample(self, sess=None) -> np.ndarray:
+        """Returns a single data sample"""
+        raise NotImplementedError
+        
+    
+
 class TrainingLayer(DataLayer):
     @abstractmethod
     def on_stop(self) -> None:
