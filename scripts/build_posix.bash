@@ -158,6 +158,9 @@ set_wheel_version(){
   version=$(cat ${PROJECT_ROOT}/wheelfiles/version)
   test "${BUILD_REASON}" = "Schedule" && version=${version}.${BUILD_NUM}
   echo "version: ${version}"
+  if [ ! -z "${PACKAGE_VERSION_OVERRIDE}" ]; then
+    version="${PACKAGE_VERSION_OVERRIDE}"
+  fi
   ${SED} -i "s/^__version__ *=.*/__version__=\"$version\"/g" ${BUILD_TMP}/perceptilabs/__init__.py
   ${SED} -i "s/^VERSION_STRING.*/VERSION_STRING=\"$version\"/g" ${BUILD_TMP}/setup.py
   echo "Set wheel version: ${version}"
@@ -167,6 +170,11 @@ set_wheel_extension(){
   # for nightly builds, rename the package
   if [ "${BUILD_REASON}" = "Schedule" ]; then
     ${SED}  -i 's/^PACKAGE_NAME *= *"\(.*\)"$/PACKAGE_NAME="\1-nightly"/g' ${BUILD_TMP}/setup.py
+  fi
+
+  # If we've forced the package name, then just put that in there.
+  if [ ! -z "${PACKAGE_NAME_OVERRIDE}" ]; then
+    ${SED}  -i "s/^PACKAGE_NAME *=.*$/PACKAGE_NAME='${PACKAGE_NAME_OVERRIDE}'/g" ${BUILD_TMP}/setup.py
   fi
 }
 
