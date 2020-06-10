@@ -88,9 +88,15 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': DB_LOCATION,
+    },
+    'postgres': {
+        'NAME': 'postgres',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
     }
 }
 
+default_database = os.environ.get('DJANGO_DATABASE', 'default')
+DATABASES['default'] = DATABASES[default_database]
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators

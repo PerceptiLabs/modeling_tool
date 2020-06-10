@@ -10,7 +10,7 @@ This is the PerceptiLabs API server.
 
 2. Install the dependencies:
     ```
-    pip install --upgrate pip setuptools
+    pip install --upgrade pip setuptools
     pip install -r requirements.txt
     ```
 
@@ -22,6 +22,11 @@ This is the PerceptiLabs API server.
 # Run the server
 ```
 ./manage.py runserver
+```
+
+# Run the server with env variable
+```
+DJANGO_DATABASE='postgres' ./manage.py runserver
 ```
 
 # Play with the API
