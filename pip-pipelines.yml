@@ -1,12 +1,5 @@
 trigger:
-- dev
-
-schedules:
-  - cron: "0 1 * * *"
-    displayName: Every nigt at 1AM
-    branches:
-      include:
-        - dev
+- none
 
 variables:
   BUILD_REASON: $(Build.Reason)
