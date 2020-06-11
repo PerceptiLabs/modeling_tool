@@ -32,8 +32,8 @@ RUN pip install -r requirements.txt
 
 # Running following command after docker Run
 
-# CMD python manage.py makemigrations
-# CMD python manage.py migrate --database                 //Commented it not sure we need to run migrate for external database
+CMD python manage.py makemigrations
+CMD python manage.py migrate --database=${DB}
 
 CMD DJANGO_DATABASE=${DB} ./manage.py runserver 0.0.0.0:8000
 
