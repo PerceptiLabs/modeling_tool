@@ -5,7 +5,7 @@ variables:
   BUILD_REASON: $(Build.Reason)
   BuildVariables.CommitId : $(Build.SourceVersion)
   BUILD_NUM: $(Build.BuildNumber)
-  PYPI_REPO: testpypi
+  PYPI_REPO: pypi
 
 jobs:
   - job: buildwheel
