@@ -90,12 +90,16 @@ DATABASES = {
         'NAME': DB_LOCATION,
     },
     'postgres': {
-        'NAME': 'postgres',
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASS'),
+        'HOST': os.getenv('DB_HOST'),
+        'PORT': os.getenv('DB_PORT'),
     }
 }
 
-default_database = os.environ.get('DJANGO_DATABASE', 'default')
+default_database = os.getenv('DJANGO_DATABASE', 'default')
 DATABASES['default'] = DATABASES[default_database]
 
 # Password validation
