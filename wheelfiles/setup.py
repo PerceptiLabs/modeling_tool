@@ -104,8 +104,7 @@ setup(
             "script/templates/*.j2",
             'dataschema/*.json',
             "core_new/layers/templates/*.j2",
-            "tutorial_data/mnist_input.npy",
-            "tutorial_data/mnist_labels.npy",
+            "*.npy",
         ],
         # TODO: add migrations programmatically
         "rygg": [
