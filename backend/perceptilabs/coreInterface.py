@@ -1381,7 +1381,7 @@ class coreLogic():
 
                 # Confidence of the boxes in sample
                 confidence_scores = self.getStatistics({"layerId":layerId,"variable":"confidence_scores","innervariable":""})
-                Confidence = createDataObject([confidence_scores])
+                Confidence = createDataObject([confidence_scores], typeList=['bar'])
                 
                 # PIE
                 acc=self.getStatistics({"layerId":layerId,"variable":"image_accuracy","innervariable":""})[0]

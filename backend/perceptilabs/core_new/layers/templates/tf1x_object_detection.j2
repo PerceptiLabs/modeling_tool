@@ -164,7 +164,6 @@
             
             predicted_object = output[..., :self._num_box]
             
-            
             predict_box_offset = tf.reshape(output[...,self._num_box:5*self._num_box], (-1, self._grid_size, self._grid_size, self._num_box, 4))
             
             
@@ -218,11 +217,14 @@
 
             loss = 0.5*class_loss + object_loss + 0.1*noobject_loss + 10*box_loss
 
-            # accuracy
-            correct_predictions =  tf.equal(tf.argmax(predicted_class, axis =3), tf.argmax(true_class, axis = 3) )
+            ## accuracy
+            correct_predictions = tf.equal(tf.argmax(predicted_class, axis =3), tf.argmax(true_class, axis = 3) )
+            iou_scores = tf.reduce_max(predict_iou, 3)  
+            correct_classification = tf.equal(tf.cast(correct_predictions, tf.float32), tf.cast(iou_scores, tf.float32))
+            image_accuracy =  tf.reduce_mean(tf.cast(correct_classification, tf.float32), axis = [1,2])[-1]
+            total_accuracy =tf.reduce_mean(tf.cast(correct_classification, tf.float32))
+            # tp
 
-            image_accuracy =  tf.reduce_mean(tf.cast(correct_predictions, tf.float32), axis = [1,2])[-1]
-            total_accuracy =tf.reduce_mean(tf.cast(correct_predictions, tf.float32))
             return loss, class_loss, box_loss, predicted_object, predicted_class, predicted_normalized_box, image_accuracy, total_accuracy
 
         loss_tensor, classification_loss_tensor, bbox_loss_tensor, predicted_object, predicted_class, predicted_normalized_box, image_accuracy_tensor, accuracy_tensor = loss_fn(output_tensor, target_tensor)
@@ -335,14 +337,12 @@
             
         def test_step():
             self._batch_size = 1
-            self._predicted_object, self._predicted_class, self._predicted_normalized_box, self._classification_loss_testing, self._bbox_loss_testing, self._loss_testing, self._accuracy_testing, \
-                self._image_accuracy, self._layer_outputs, self._layer_weights, self._layer_gradients \
+            self._predicted_object, self._predicted_class, self._predicted_normalized_box, self._accuracy_testing, \
+                self._image_accuracy, self._layer_outputs \
                 = sess.run([
-                    predicted_object, predicted_class, predicted_normalized_box, classification_loss_tensor, bbox_loss_tensor, loss_tensor, accuracy_tensor,
-                    image_accuracy_tensor, layer_output_tensors, layer_weight_tensors, layer_gradient_tensors
+                    predicted_object, predicted_class, predicted_normalized_box, accuracy_tensor,
+                    image_accuracy_tensor, layer_output_tensors
                 ])
-            #accuracy_list.append(acc)
-            #loss_list.append(loss)
 
         self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
 
@@ -350,7 +350,6 @@
         
         # Training loop
         self._epoch = 0
-        print(self._epoch)
         while self._epoch < self._n_epochs and not self._stopped:
             t0 = time.perf_counter()
             self._training_iteration = 0
@@ -1079,9 +1078,10 @@ class {{layer_name}}(ObjectDetectionLayer):
                 loss = 0.5*class_loss + object_loss + 0.1*noobject_loss + 10*box_loss
 
                 # accuracy
-                correct_predictions =  tf.equal(tf.argmax(predicted_class, axis =3), tf.argmax(true_class, axis = 3) )
-
-                image_accuracy =  tf.reduce_mean(tf.cast(correct_predictions, tf.float32), axis = [1,2])[-1]
+                correct_predictions = tf.equal(tf.argmax(predicted_class, axis =3), tf.argmax(true_class, axis = 3) )
+                iou_scores = tf.reduce_max(predict_iou, 3)  
+                correct_classification = tf.equal(tf.cast(correct_predictions, tf.float32), tf.cast(iou_scores, tf.float32))
+                image_accuracy =  tf.reduce_mean(tf.cast(correct_classification, tf.float32), axis = [1,2])[-1]
                 total_accuracy =tf.reduce_mean(tf.cast(correct_predictions, tf.float32))
                 return loss, class_loss, box_loss, predicted_object, predicted_class, predicted_normalized_box, image_accuracy, total_accuracy
 

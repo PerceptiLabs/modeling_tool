@@ -88,7 +88,8 @@
         }
       },
       headerOff() {
-        return this.$store.getters['mod_workspace/GET_testIsOpen'] || this.disableHeader;
+        return this.disableHeader;
+//        return this.$store.getters['mod_workspace/GET_testIsOpen'] || this.disableHeader;
       },
       statusNetworkCore() {//mod_workspace/GET_networkCoreStatus
         return this.$store.getters['mod_workspace/GET_networkCoreStatus'];

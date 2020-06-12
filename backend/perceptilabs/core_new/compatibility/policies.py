@@ -756,11 +756,11 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id, re
             h = int(result[i][4] / 2)
             cv2.rectangle(img, (x - w, y - h), (x + w, y + h), (231, 76, 60), 2)
             cv2.rectangle(img, (x - w, y - h - 20),
-                        (x -w + 50, y - h), (46, 204, 113), -1)
+                        (x -w + 100, y - h), (46, 204, 113), -1)
             cv2.putText(
-                img, '{} : {:.2f}'.format(result[i][0] ,result[i][5]),
+                img, ' Class: {}, Conf: {}'.format(result[i][0] ,i),
                 (x - w + 5, y - h - 7), cv2.FONT_HERSHEY_SIMPLEX, 0.3,
-                (0, 0, 0), 1, cv2.LINE_AA)
+                (0, 3, 0), 1, cv2.LINE_AA)
         return img, class_probs_filtered
 
     def get_metrics(graphs, true_trn_id, results):
@@ -975,13 +975,20 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id, re
         test_dicts = results.get('testDicts', []) # get existing
         for current_graph in test_graphs:
             trn_node = current_graph.active_training_node
+            trn_layer = current_graph.active_training_node.layer
+            input_data_layer = trn_layer.get_input_data_node
+            input_images = trn_node.layer.layer_outputs.get(input_data_layer)
+            predicted_objects = trn_layer.get_predicted_objects
+            predicted_classes = trn_layer.get_predicted_classes
+            predicted_normalized_boxes = trn_layer.get_predicted_normalized_boxes
+
             test_dict = {}
             for node in current_graph.nodes:
                 data = {}
                 true_id = sanitized_to_id[node.layer_id] # nodes use spec names for layer ids
                 data.update(get_layer_inputs_and_outputs(current_graph, node, trn_node))
                 test_dict[true_id] = data
-
+            
             training_status = 'Finished'
             status='Running'
             test_status='Waiting'
@@ -990,14 +997,34 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id, re
             max_itr_tst = trn_node.layer.size_testing
 
             true_id = sanitized_to_id[trn_node.layer_id]            
-            test_dict[true_id]['acc_training_epoch'] = 0
-
-
-            test_dict[true_id]['acc_validation_epoch'] = 0
-
-            test_dict[true_id]['acc_train_iter'] = 0
+            
+            bbox_image, confidence_scores = plot_bounding_boxes(input_images[-1], predicted_objects, predicted_classes, predicted_normalized_boxes)
 
             test_dict[true_id]['acc_val_iter'] = 0
+            test_dict[true_id]['loss_train_iter'] = 0
+            test_dict[true_id]['classification_loss_train_iter'] = 0
+            test_dict[true_id]['bboxes_loss_train_iter'] = 0
+            test_dict[true_id]['acc_train_iter'] = 0
+
+            test_dict[true_id]['image_accuracy'] = [0.0]
+
+            test_dict[true_id]['acc_val_iter'] = 0
+            test_dict[true_id]['loss_val_iter'] = 0
+            test_dict[true_id]['classification_loss_val_iter'] = 0
+            test_dict[true_id]['bboxes_loss_val_iter'] = 0     
+                    
+            test_dict[true_id]['acc_training_epoch'] = 0
+            test_dict[true_id]['loss_training_epoch'] = 0
+            test_dict[true_id]['classification_loss_training_epoch'] = 0
+            test_dict[true_id]['bboxes_loss_training_epoch'] = 0
+            
+            test_dict[true_id]['acc_validation_epoch'] = 0
+            test_dict[true_id]['loss_validation_epoch'] = 0
+            test_dict[true_id]['classification_loss_validation_epoch'] = 0
+            test_dict[true_id]['bboxes_loss_validation_epoch'] = 0      
+
+            test_dict[true_id]['confidence_scores'] = confidence_scores
+            test_dict[true_id]['image_bboxes'] =  bbox_image
 
             test_dicts.append(test_dict)
 
