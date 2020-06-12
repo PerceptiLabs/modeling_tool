@@ -196,10 +196,6 @@ export default {
         openFilePicker() {
             this.showFilePickerPopup = true;
         },
-        setPath(data) {
-            console.log(data);
-            debugger;
-        },
         closePopup() {
             this.showFilePickerPopup = false;
         },

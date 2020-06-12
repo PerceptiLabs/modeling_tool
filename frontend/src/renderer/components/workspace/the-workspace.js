@@ -99,6 +99,10 @@ export default {
     hasStatistics() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkStatistics;
     },
+    isStatistiOrTestOpened() {
+      const currentItemNetwork = this.$store.getters['mod_workspace/GET_currentNetwork'];
+      return currentItemNetwork.networkMeta.openStatistics === true || currentItemNetwork.networkMeta.openTest === true;
+    },
     networkMode() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.netMode
     },
@@ -276,12 +280,14 @@ export default {
       }
     },
     openStatistics(i) {
+      this.$store.commit('mod_workspace/setViewType', 'statistic');
       this.setTabNetwork(i);
       this.$nextTick(()=>{
         this.set_openStatistics(true);
       })
     },
     openTest(i) {
+      this.$store.commit('mod_workspace/setViewType', 'test');
       this.setTabNetwork(i);
       this.$nextTick(()=>{
         this.set_openTest(true);

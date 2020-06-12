@@ -239,8 +239,10 @@
           // happens when going to project view for modeling view
           // (clicking of PerceptiLabs icon)
           if (!this.networksWithChanges.length) {
-            this.reset_network();
-            this.fetchNetworkMetas(newVal);
+            if(newVal) {
+              this.reset_network();
+              this.fetchNetworkMetas(newVal);
+            }
           }
         }
       },
@@ -285,11 +287,10 @@
         // maybe should receive a id and search index by it
         const index = this.workspaceContent.findIndex(wc => wc.networkID == networkID);
         this.set_currentNetwork(index > 0 ? index : 0);
-        this.$router.push({name: 'app'})
-          .then(() => {
-            // this.SET_openStatistics(false);
-            // this.SET_openTest(false);
-          });
+        if(index !== -1) {
+          this.$store.commit("mod_workspace/setViewType", 'model')
+          this.$router.push({name: 'app'});
+        }
       },
       loadFolderPath() {
         this.$store.commit("globalView/set_filePickerPopup", true);
@@ -411,6 +412,8 @@
 
       },
       fetchNetworkMetas(currentProject) {
+        console.log(currentProject)
+        console.log('asass')
         if (!currentProject || !currentProject.models) { return; }
 
         const promiseArray = 
@@ -434,6 +437,12 @@
         Promise.all(promiseArray)
           .then(models => {
             this.addNetworksToWorkspace(models, modelMetas);
+            for(const model of models) {
+              this.$store.dispatch('mod_api/API_getModelStatus', model.networkID ) 
+            }
+          })
+          .then(() => {
+            this.$store.dispatch('mod_workspace/GET_workspace_statistics');
           });
       },
       async fetchUnparsedModels(modelMetas){
@@ -511,12 +520,10 @@
         const { networkMeta: { openStatistics } } = model;
 
         if (typeof openStatistics === 'boolean') {
-          this.SET_openStatistics(true);
-          this.set_currentNetwork(index);
-          this.$router.push({name: 'app'})
+          this.$store.commit("mod_workspace/setViewType", 'statistic');
+          this.$router.push({name: 'app'}) 
             .then(() => {
-              this.SET_openStatistics(true);
-              this.SET_openTest(false);
+              this.set_currentNetwork(index);
             });
         } else {
           this.showInfoPopup("There are still haven't statistic, you should run this model first.");

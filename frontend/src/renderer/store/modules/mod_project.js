@@ -13,7 +13,7 @@ const getters = {
     return state.projectsList.filter(project => (project.project_id === state.currentProject))[0];
   },
   GET_projectPath(state, getters) {
-    return getters['GET_project'].default_directory;
+    return getters['GET_project'] && getters['GET_project'].default_directory || '';
   },
   GET_projectModelIds(state){
    return state.projectsList.filter(project => (project.project_id === state.currentProject))[0].models;

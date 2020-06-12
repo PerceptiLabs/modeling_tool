@@ -31,12 +31,19 @@
   export default {
     name: 'pageQuantum',
     components: { ProjectSidebar, TheToolbar, TheLayersbar, TheSidebar, TheWorkspace, TheTutorialStoryboard },
+     beforeRouteEnter(to, from, next) {
+        next((vm) => {
+            vm.from = from;
+        });
+    },
     created() {
       // debugger;
       if(isWeb()) {
         this.$store.dispatch('mod_workspace/GET_workspacesFromLocalStorage')
           .then(_ => {
-            this.$store.commit('mod_workspace/get_lastActiveTabFromLocalStorage');
+            if(this.from.name === null) {
+              this.$store.commit('mod_workspace/get_lastActiveTabFromLocalStorage');
+            }
             // if(!this.workspaceContent.length) { this.ADD_network(); }
 
             // request charts if the page has been refreshed, and
@@ -82,7 +89,8 @@
           dragged: null,
           outClassName: 'svg-arrow',
         },
-        resizeEv: throttleEv(this.eventResize)
+        resizeEv: throttleEv(this.eventResize),
+        from: null,
       }
     },
     computed: {

@@ -834,6 +834,29 @@ const actions = {
         commit('SET_statusLocalCore', 'offline')
       });
   },
+  API_getModelStatus({rootGetters, dispatch, commit}, modelId) {
+    const theData = {
+      reciever: modelId,
+      // action: rootGetters['mod_workspace/GET_testIsOpen'] ? 'getTestStatus' :'getStatus',
+      // @todo ask about this twho types getTestStatus && getStatus, difference between them.
+      action: 'getStatus',
+      value: ''
+    };
+    coreRequest(theData)
+      .then((data)=> {
+        console.log('API_getModelStatus answer', data);
+        dispatch('mod_workspace/SET_statusNetworkCoreDinamically', {
+          ...data,
+          modelId: modelId,
+        }, {root: true})
+      })
+      .catch((err)=> {
+        if(err.toString() !== "Error: connect ECONNREFUSED 127.0.0.1:5000") {
+          console.error(err);
+        }
+        commit('SET_statusLocalCore', 'offline')
+      });
+  },
 
   API_setHeadless({dispatch, rootState, rootGetters}, value) {
     const theData = {
