@@ -209,7 +209,7 @@ class coreLogic():
         module_provider.load('tensorflow', as_name='tf')
         module_provider.load('numpy', as_name='np')
         module_provider.load('pandas', as_name='pd')
-        module_provider.load('gym')
+        # module_provider.load('gym')
         module_provider.load('json')       
         module_provider.load('os')  
         module_provider.load('skimage')

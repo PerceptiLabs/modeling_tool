@@ -10,7 +10,7 @@ import traceback
 import tensorflow as tf
 import pandas as pd
 from collections import namedtuple
-import gym
+# import gym
 
 from perceptilabs.graph import Graph
 from perceptilabs.modules import ModuleProvider
