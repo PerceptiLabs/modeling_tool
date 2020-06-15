@@ -450,10 +450,16 @@ const mutations = {
   set_openStatistics(state, {dispatch, getters, value}) {
     getters.GET_currentNetwork.networkMeta.openStatistics = value;
     let isTraining = getters.GET_networkIsTraining;
+
     if(isTraining) {
-      value
-        ? dispatch('mod_api/API_setHeadless', false, {root: true})
-        : dispatch('mod_api/API_setHeadless', true, {root: true})
+      if (value) {
+        dispatch('mod_api/API_setHeadless', true, {root: true})
+          .then(_ => {
+            dispatch('mod_api/API_setHeadless', false, {root: true})
+          });
+      } else {
+        dispatch('mod_api/API_setHeadless', true, {root: true});
+      }
     }
     if(value && getters.GET_testIsOpen !== null) {
       getters.GET_currentNetwork.networkMeta.openTest = false;
