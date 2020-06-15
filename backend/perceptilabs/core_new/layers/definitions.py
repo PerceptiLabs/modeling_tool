@@ -288,7 +288,7 @@ DEFINITION_TABLE = {
             'activation': resolve_tf1x_activation_name,
             'dropout': lambda specs: specs['Properties']['Dropout'],
             'keep_prob': lambda specs: specs['Properties']['Keep_prob'],
-            'batch_norm': lambda specs: specs['Properties']['Batch_norm']
+            'batch_norm': lambda specs: specs['Properties'].get('Batch_norm', False)
         },
         import_statements=[
             'import tensorflow as tf',
@@ -317,7 +317,7 @@ DEFINITION_TABLE = {
             'pool_padding': lambda specs: specs['Properties']['Pool_padding'],
             'pool_area': lambda specs: specs['Properties']['Pool_area'],
             'pool_stride': lambda specs: specs['Properties']['Pool_stride'],
-            'batch_norm': lambda specs: specs['Properties']['Batch_norm']        
+            'batch_norm': lambda specs: specs['Properties'].get('Batch_norm', False)
         },
         import_statements=[
             'import tensorflow as tf',
@@ -341,7 +341,7 @@ DEFINITION_TABLE = {
             'activation': resolve_tf1x_activation_name,
             'dropout': lambda specs: specs['Properties']['Dropout'],
             'keep_prob': lambda specs: specs['Properties']['Keep_prob'],
-            'batch_norm': lambda specs: specs['Properties']['Batch_norm']
+            'batch_norm': lambda specs: specs['Properties']('Batch_norm', False)
         },
         import_statements=[
             'import tensorflow as tf',
