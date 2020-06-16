@@ -15,15 +15,15 @@
                             :class="{'is-selected': (chosenTemplate === -1)}"
                             @click="choseTemplate(-1)"
                         )
-                            div.template-image
+                            //- div.template-image
                             span.template-name Empty
                     .template-item(
                         v-for="(temp, i) in basicTemplates"
                         :class="{'is-selected': (chosenTemplate === i)}"
                         @click="choseTemplate(i)"
                     )
-                        div.template-image
-                            img(v-if="temp.imgPath" :src="temp.imgPath" alt="classification")
+                        //- div.template-image(v-if="temp.imgPath")
+                            img(:src="temp.imgPath" alt="classification")
                         span.template-name {{ temp.title }}
                     
             .main-actions 
@@ -394,7 +394,7 @@ export default {
     .template-name {
         font-family: Nunito Sans;
         font-weight: 300;
-        font-size: 12px;
+        font-size: 18px;
         line-height: 16px;
         color: #C4C4C4;
         text-align: center;
