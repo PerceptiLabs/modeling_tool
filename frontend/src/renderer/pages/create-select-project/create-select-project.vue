@@ -11,9 +11,9 @@
           button.project-list-filter-button.is-disabled Cloud Projects
         .main
           .main-header
-            button.btn-icon
+            button.btn-icon(v-tooltip:bottom="'Import Project'")
               img(src="../../../../static/img/project-page/import.svg")
-            button.btn-icon.rounded-border(@click="openProjectNameModal")
+            button.btn-icon.rounded-border(@click="openProjectNameModal" v-tooltip:bottom="'New Project'")
               img(src="../../../../static/img/plus.svg")
             div.search-input
               img(src="../../../../static/img/search-models.svg")
