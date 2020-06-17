@@ -626,11 +626,11 @@ class coreLogic():
         return self.playing
 
     def increaseStep(self):
-        while self.testIter<self.maxTestIter:
+        while self.testIter<self.maxTestIter-1:
             if not self.playing:
                 return
             self.testIter+=1
-            time.sleep(0.5)
+            time.sleep(2.0)
         self.playing=False
         return
 
