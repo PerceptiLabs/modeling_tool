@@ -11,7 +11,10 @@
           button.project-list-filter-button.is-disabled Cloud Projects
         .main
           .main-header
-            button.btn-icon(v-tooltip:bottom="'Import Project'")
+            button.btn-icon(
+              @click="openProjectImport"
+              v-tooltip:bottom="'Import Project'"
+              )
               img(src="../../../../static/img/project-page/import.svg")
             button.btn-icon.rounded-border(@click="openProjectNameModal" v-tooltip:bottom="'New Project'")
               img(src="../../../../static/img/plus.svg")
@@ -52,6 +55,12 @@
       :confirmCallback="setNewProjectPath"
       :cancelCallback="closePopup"
     )
+    file-picker-popup(
+      v-if="isProjecImportModalOpen"
+      popupTitle="Choose project to import"
+      :confirmCallback="handleProjectImportConfirm"
+      :cancelCallback="closeProjectImport"
+    )
     .project-box.set-project-name(
       v-if="isProjectNameModalOpen"
     )
@@ -85,6 +94,8 @@
   import SortByButton from "@/components/sort-by-button";
   import FilePickerPopup        from "@/components/global-popups/file-picker-popup.vue";
   import { generateID, getDefaultProjectPathForOs } from "@/core/helpers";
+  import { coreRequest } from '@/core/apiWeb.js';
+  import cloneDeep from 'lodash.clonedeep';
 
   export default {
     name: 'CreateSelectProject',
@@ -103,7 +114,8 @@
           projectFieldValue: '',
           projectId: null,
         },
-        showFilePickerPopup: false
+        showFilePickerPopup: false,
+        isProjecImportModalOpen: false,
       }
     },
     created() {
@@ -125,14 +137,17 @@
         return this.$store.state.mod_project.projectsList;
       },
       ...mapGetters({
-        networksWithChanges:          'mod_workspace-changes/get_networksWithChanges'
+        networksWithChanges:          'mod_workspace-changes/get_networksWithChanges',
+        GET_isProjectWithThisDirectoryExist:          'mod_project/GET_isProjectWithThisDirectoryExist'
       })
     },
     methods: {
       ...mapMutations({
         selectProject:                 'mod_project/selectProject',
         addModelFromLocalDataMutation: 'mod_workspace/add_model_from_local_data',
-        clear_networkChanges:          'mod_workspace-changes/clear_networkChanges'
+        clear_networkChanges:          'mod_workspace-changes/clear_networkChanges',
+        clearNetworkIdsInLocalStorage: 'mod_workspace/clear_networkIdsInLocalStorage',
+        setWorkspacesInLocalStorage:   'mod_workspace/set_workspacesInLocalStorage',
       }),
       ...mapActions({
         showInfoPopup:            'globalView/GP_infoPopup',
@@ -145,6 +160,9 @@
         API_getModelAction:       'mod_api/API_getModel',
         deleteProjectAction:      'mod_project/deleteProject',
         updateProjectAction:      'mod_project/updateProject',
+        createProjectModel:       'mod_project/createProjectModel',
+        addNetwork:               'mod_workspace/ADD_network',
+        resetNetwork:             'mod_workspace/RESET_network',
       }),
       onProjectWrapperClick(e){
         const hasTargetProject = localStorage.hasOwnProperty('targetProject');
@@ -187,8 +205,7 @@
         // load models and set them in the workspace from:
         // 1. model's "location" property
         // 2. <project path>/<model name>.json
-        
-        this.$router.push({name: 'projects'}).catch(error => {});
+        // this.$router.push({name: 'projects'}).catch(_ => this.$router.go());
       },
       openProjectNameModal() {
         this.isProjectNameModalOpen = true;
@@ -302,6 +319,100 @@
       closePopup() {
         this.showFilePickerPopup = false;
       },
+      openProjectImport() {
+        this.isProjecImportModalOpen = true;
+      },
+      closeProjectImport() {
+        this.isProjecImportModalOpen = false;
+      },
+      async handleProjectImportConfirm (filepath) {
+        const processedFilePath = filepath && filepath[0] ? filepath[0] : ''
+
+        let projectName = '';
+        if(processedFilePath[processedFilePath.length -1] === '/') {
+          const trimedPath = processedFilePath.substring(0, processedFilePath.length - 1);
+          projectName = trimedPath.substring(trimedPath.lastIndexOf('/') + 1);
+        } else {
+          projectName = processedFilePath.substring(processedFilePath.lastIndexOf('/') + 1);
+        }
+        
+        const createProjectReq = {
+          name: projectName,
+          default_directory: processedFilePath
+        };
+
+        if(this.GET_isProjectWithThisDirectoryExist(processedFilePath)) {
+          this.closeProjectImport();
+          this.showInfoPopup('This project already exist');
+          return;
+        }
+
+
+      this.selectedFiles = [];
+      let theData = {
+          reciever: '0',
+          action: 'getFolderContent',
+          value: processedFilePath
+      };
+
+      try {
+        const { dirs, current_path} = await coreRequest(theData);
+        const haveDirectories = dirs.length > 0;
+        if(!haveDirectories) {
+          // cerate project only with that dir
+          const createdProject = await this.createProject(createProjectReq);
+          this.goToProject(createdProject.project_id);
+
+        } else {
+        
+          const createdProject = await this.createProject(createProjectReq);
+          
+          const modelPaths = dirs.map(dirPath => current_path + '/' + dirPath);
+         
+          const promiseArray = 
+            modelPaths.map(modelPath => this.$store.dispatch('mod_api/API_getModel', modelPath + '/model.json'));
+          
+          let localModelsData = await Promise.all(promiseArray);
+          localModelsData = localModelsData.filter(model => model);
+          const atLeastOneFolderHaveModelsJsonFile = localModelsData.length !== 0;
+          if(atLeastOneFolderHaveModelsJsonFile) {
+            this.clearNetworkIdsInLocalStorage();
+            this.resetNetwork();
+            let modelCreationPromises = [];
+            for(let index in localModelsData) {
+              const loadedModel = localModelsData[index];
+              modelCreationPromises.push(this.createProjectModel({
+                name: loadedModel.networkName,
+                project: createdProject.project_id,
+                location: loadedModel.apiMeta.location,
+              }))
+            }
+
+
+            const modelCreatinResponses = await Promise.all(modelCreationPromises);
+
+            for(let index in modelCreatinResponses) {
+              const apiMeta = modelCreatinResponses[index];
+              const modelJson = localModelsData[index];
+
+              let template = cloneDeep(modelJson);
+              template.networkName = modelJson.networkName;
+              template.networkID = apiMeta.model_id;
+              delete template.apiMeta;
+              await this.addNetwork({network: template, apiMeta: apiMeta, focusOnNetwork: false});
+            }
+          }
+          await this.$store.dispatch('mod_project/getProjects');
+          this.clear_networkChanges();
+          this.goToProject(createdProject.project_id);
+          
+        }
+        
+       
+      } catch(e) {
+        return false;
+      } 
+      }
     },
     filters: {
       trimText (value) {

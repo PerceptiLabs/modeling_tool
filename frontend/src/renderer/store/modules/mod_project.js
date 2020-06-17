@@ -18,6 +18,13 @@ const getters = {
   GET_projectModelIds(state){
    return state.projectsList.filter(project => (project.project_id === state.currentProject))[0].models;
   },
+  GET_isProjectWithThisDirectoryExist: (state) => (default_directory) => {
+    const projectDirectoryesList = state.projectsList.map(pr => pr.default_directory);
+    const projectExists = projectDirectoryesList.indexOf(default_directory) !== -1;
+
+    return projectExists;
+  }
+
 }
 
 const mutations = {

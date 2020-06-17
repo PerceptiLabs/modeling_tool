@@ -244,6 +244,7 @@
           // don't reload if there are any changes
           // happens when going to project view for modeling view
           // (clicking of PerceptiLabs icon)
+          console.log(this.networksWithChanges);
           if (!this.networksWithChanges.length) {
             if(newVal) {
               this.reset_network();
