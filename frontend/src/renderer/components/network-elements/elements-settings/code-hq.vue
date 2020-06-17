@@ -50,6 +50,7 @@
       globalOptions:    {type: Object,   default: () => ({})},
       globalEvents:     {type: Array,    default: () => ([])},
       maxWidth:         {type: String,   default: '' },
+      readOnly:         {type: Boolean,  default: false },
 
       errorRow: {type: [Number, String] }
     },
@@ -91,7 +92,8 @@
           line: true,
           // mode: 'text/x-python',
           theme: "monokai",
-          scrollbarStyle: 'overlay'
+          scrollbarStyle: 'overlay',
+          readOnly: false
         }
       }
     },
@@ -126,6 +128,7 @@
         this.options.mode = this.mode;
         this.options.lineNumbers = this.lineNumbers;
         this.options.styleActiveLine = this.styleActiveLine;
+        this.options.readOnly = this.readOnly;
 
         const cmOptions = Object.assign({}, this.globalOptions, this.options);
         if (this.merge) {
