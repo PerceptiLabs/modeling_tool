@@ -175,5 +175,10 @@ export default {
     padding: 1rem;
     overflow: scroll;
     height: 100%;
+    line-height: 1.6;
+    
+    .text-warning {
+      user-select: text;
+    }
   }
 </style>
