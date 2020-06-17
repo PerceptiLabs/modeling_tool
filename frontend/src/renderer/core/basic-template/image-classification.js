@@ -4,15 +4,54 @@ const imageClassification = {
     "networkName": "Image Classification",
     "networkID": "",
     "networkSettings": null,
-    "networkMeta": {},
+    "networkMeta": {
+      "openStatistics": null,
+      "openTest": null,
+      "zoom": 1,
+      "netMode": "edit",
+      "coreStatus": {
+        "Status": "Waiting"
+      },
+      "chartsRequest": {
+        "timerID": null,
+        "waitGlobalEvent": false,
+        "doRequest": 0,
+        "showCharts": 0
+      }
+    },
     "networkRootFolder": '',
     "networkElementList": {
       "1564399775664": {
         "layerId": "1564399775664",
         "layerName": "Data_1",
         "layerType": "Data",
-        "layerSettings": null,
-        "layerCode": "",
+        "layerSettings": {
+          "Type": "Data",
+          "testInfoIsInput": true,
+          "accessProperties": {
+            "Columns": [],
+            "Dataset_size": "",
+            "Category": "Local",
+            "Type": "Data",
+            "Sources": [
+              {
+                "type": "file",
+                "path": "mnist_input.npy"
+              }
+            ],
+            "PathFake": [],
+            "Partition_list": [
+              [
+                70,
+                20,
+                10
+              ]
+            ],
+            "Shuffle_data": true,
+            "Action_space": ""
+          }
+        },
+        "layerCode": null,
         "layerCodeError": null,
         "layerNone": false,
         "layerMeta": {
@@ -23,7 +62,7 @@ const imageClassification = {
             "top": 160,
             "left": 200
           },
-          "OutputDim": "",
+          "OutputDim": "784",
           "InputDim": "[]",
           "layerContainerName": "",
           "layerBgColor": "",
@@ -41,7 +80,8 @@ const imageClassification = {
         "connectionIn": [],
         "connectionArrow": [
           "1564399777283"
-        ]
+        ],
+        "layerSettingsTabName": "Computer"
       },
       "1564399777283": {
         "layerId": "1564399777283",
@@ -70,7 +110,7 @@ const imageClassification = {
             "top": 160,
             "left": 330
           },
-          "OutputDim": "",
+          "OutputDim": "28x28x1",
           "InputDim": "[]",
           "layerContainerName": "",
           "layerBgColor": "",
@@ -124,7 +164,7 @@ const imageClassification = {
             "top": 160,
             "left": 470
           },
-          "OutputDim": "",
+          "OutputDim": "14x14x8",
           "InputDim": "[]",
           "layerContainerName": "",
           "layerBgColor": "",
@@ -169,7 +209,7 @@ const imageClassification = {
             "top": 160,
             "left": 610
           },
-          "OutputDim": "",
+          "OutputDim": "10",
           "InputDim": "[]",
           "layerContainerName": "",
           "layerBgColor": "",
@@ -196,19 +236,44 @@ const imageClassification = {
         "layerId": "1564399786876",
         "layerName": "Data_2",
         "layerType": "Data",
-        "layerSettings": null,
-        "layerCode": "",
+        "layerSettings": {
+          "Type": "Data",
+          "testInfoIsInput": true,
+          "accessProperties": {
+            "Columns": [],
+            "Dataset_size": "",
+            "Category": "Local",
+            "Type": "Data",
+            "Sources": [
+              {
+                "type": "file",
+                "path": "mnist_labels.npy"
+              }
+            ],
+            "PathFake": [],
+            "Partition_list": [
+              [
+                70,
+                20,
+                10
+              ]
+            ],
+            "Shuffle_data": true,
+            "Action_space": ""
+          }
+        },
+        "layerCode": null,
         "layerCodeError": null,
         "layerNone": false,
         "layerMeta": {
           "isInvisible": false,
           "isLock": false,
-          "isSelected": false,
+          "isSelected": true,
           "position": {
             "top": 340,
             "left": 200
           },
-          "OutputDim": "",
+          "OutputDim": "1",
           "InputDim": "[]",
           "layerContainerName": "",
           "layerBgColor": "",
@@ -226,7 +291,8 @@ const imageClassification = {
         "connectionIn": [],
         "connectionArrow": [
           "1564399788744"
-        ]
+        ],
+        "layerSettingsTabName": "Computer"
       },
       "1564399788744": {
         "layerId": "1564399788744",
@@ -246,7 +312,7 @@ const imageClassification = {
             "top": 340,
             "left": 390
           },
-          "OutputDim": "",
+          "OutputDim": "10",
           "InputDim": "[]",
           "layerContainerName": "",
           "layerBgColor": "",
@@ -287,8 +353,7 @@ const imageClassification = {
           "Momentum": "0.9",
           "Decay_steps": "100000",
           "Decay_rate": "0.96",
-          "Training_iters": "20000",
-          "Batch_size": '10'
+          "Training_iters": "20000"
         },
         "layerCode": null,
         "layerCodeError": null,

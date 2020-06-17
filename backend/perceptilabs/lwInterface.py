@@ -41,6 +41,10 @@ class saveJsonModel(LW_interface_base):
         with open(file_path, 'w') as outfile:
             json.dump(json.loads(self._json_model), outfile)
 
+class getRootFolder(LW_interface_base):
+    def run(self):
+        return os.path.dirname(os.path.abspath(__file__))
+
 class getFolderContent(LW_interface_base):
     def __init__(self, current_path):
         self._current_path = current_path

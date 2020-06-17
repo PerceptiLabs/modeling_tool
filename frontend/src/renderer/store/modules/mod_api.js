@@ -397,6 +397,20 @@ const actions = {
       });
   },
 
+  API_getRootFolder() {
+    const theData = {
+      reciever: '',
+      action: 'getRootFolder',
+      value: ''
+    }
+
+    return coreRequest(theData)
+      .then((data)=> data)
+      .catch((err)=> {
+        console.error(err);
+      })
+  },
+
   //---------------
   //  NETWORK SAVE
   //---------------

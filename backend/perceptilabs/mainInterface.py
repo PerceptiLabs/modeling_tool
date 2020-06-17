@@ -27,7 +27,7 @@ import perceptilabs.logconf
 
 
 #LW interface
-from perceptilabs.lwInterface import getNotebookImports, getNotebookRunscript, getFolderContent, createFolder, saveJsonModel, getJsonModel, getGraphOrder, getDataMeta, getDataMetaV2, getPartitionSummary, getCodeV1, getCodeV2, getNetworkInputDim, getNetworkOutputDim, getPreviewSample, getPreviewVariableList, Parse
+from perceptilabs.lwInterface import getRootFolder, getNotebookImports, getNotebookRunscript, getFolderContent, createFolder, saveJsonModel, getJsonModel, getGraphOrder, getDataMeta, getDataMetaV2, getPartitionSummary, getCodeV1, getCodeV2, getNetworkInputDim, getNetworkOutputDim, getPreviewSample, getPreviewVariableList, Parse
 
 logger = logging.getLogger(APPLICATION_LOGGER)
 
@@ -161,6 +161,9 @@ class Interface():
         elif action == "isDirExist":
             path_to_folder = value["path"]
             return os.path.isdir(path_to_folder)
+
+        elif action == "getRootFolder":
+            return getRootFolder().run()
 
         elif action == "saveJsonModel":
             save_path = value["path"]

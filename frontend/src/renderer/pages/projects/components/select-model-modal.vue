@@ -56,7 +56,7 @@
 <script>
     import imageClassification    from '@/core/basic-template/image-classification.js'
     import reinforcementLearning  from '@/core/basic-template/reinforcement-learning.js'
-    import timeseriesRegression   from '@/core/basic-template/timeseries-regression.js'
+    import linearRegression   from '@/core/basic-template/linear-regression.js'
     import objectDetection        from '@/core/basic-template/object-detection.js'
     import ganTemplate            from '@/core/basic-template/gan-template.js'
     import FilePickerPopup        from "@/components/global-popups/file-picker-popup.vue";
@@ -77,9 +77,9 @@ export default {
             description: 'This is a simple image classification template, perfect for datasets such as Mnist. The standard dataset included with this template is a Mnist dataset where the input is an array of 784 grayscale pixel values and there are 10 unique label values (integers 0-9). The model consists of a reshaping component, a convolutional layer as well as a fully connected output layer with 10 neurons. Because of the reshaping component it requries the input data to be 784 or a form thereof (28x28 for example). The labels have to be an integer ranging from 0 to 9 to be compatable with the one hot encoding being applied to the labels.'
           },
           {
-            title: 'Timeseries Regression',
+            title: 'Linear Regression',
             imgPath: './static/img/project-page/time-series-regression.svg',
-            template: timeseriesRegression,
+            template: linearRegression,
             description: `This is a template for linear regression, where it tries to create a line of best fit for the datapoints you load. The standard dataset is a one dimensional input value and one dimensional labels. The input data can be multidimensional, but our visualizations only allow for one dimensional data at the moment. The labels data can only be one dimensional as they represent the value of the input data. The model is built as a single fully connected layer with one neuron as output.`
           },
           {
@@ -127,6 +127,7 @@ export default {
             getModelMeta:               'mod_project/getModel',
             showErrorPopup:             'globalView/GP_errorPopup',
             isDirExists:                'mod_api/API_isDirExist',
+            API_getRootFolder:           'mod_api/API_getRootFolder'
         }),
         closeModal() {
             this.$emit('close');
@@ -148,6 +149,7 @@ export default {
                 this.currentProject.models
                     .map(x => this.getModelMeta(x));
             const modelMeta = await Promise.all(promiseArray);
+            const rootPath = await this.API_getRootFolder();
             const modelNames = modelMeta.map(x => x.name);
             if(modelNames.indexOf(modelName) !== -1) {
                 this.showErrorPopup(`The name of model "${modelName}" already exists.`);
@@ -180,6 +182,11 @@ export default {
 
                 } else {
                     let template = cloneDeep(basicTemplates[chosenTemplate].template.network);
+                    
+                    const newRootPath = rootPath.replace(/\\/g, "/");
+
+                    this.convertToAbsolutePath(template.networkElementList, newRootPath);
+
                     template.networkName = modelName;
                     template.networkID = apiMeta.model_id;
                     this.addNetwork({network: template, apiMeta});
@@ -202,7 +209,20 @@ export default {
         updateModelPath(filepath) {
             this.modelPath = filepath && filepath[0] ? filepath[0] : '';
             this.showFilePickerPopup = false;
-         }
+        },
+        convertToAbsolutePath(elementList, rootPath) {
+            const suffix = "/";
+
+            for(var el in elementList) {
+                if (elementList[el].layerSettings.Type === "Data") {
+                    if (elementList[el].layerSettings.accessProperties.Sources.length) {
+                        elementList[el].layerSettings.accessProperties.Sources.forEach(item => {
+                            item.path = rootPath + suffix + 'tutorial_data' + suffix + item.path;
+                        });
+                    }
+                }
+            }
+        }
     },
 }
 </script>
