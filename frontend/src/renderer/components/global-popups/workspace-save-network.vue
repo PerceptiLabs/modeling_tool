@@ -8,16 +8,16 @@
           .form_label Model name:
           .form_input
             input(type="text"
-              v-model="settings.projectName"
-              :class="{'bg-error': !settings.projectName}"
+              v-model="settings.networkName"
+              :class="{'bg-error': !settings.networkName}"
             )
       .settings-layer_section(v-if="!popupSettings.isFreezeInfo")
         .form_row
           .form_label Model path:
           .form_input
             input.ellipsis(type="text"
-              v-model="settings.projectPath"
-              :class="{'bg-error': !settings.projectPath}"
+              v-model="settings.networkPath"
+              :class="{'bg-error': !settings.networkPath}"
               @click="openFilePicker"
             )
       .settings-layer_section
@@ -33,7 +33,7 @@
       button.btn.btn--primary.btn--disabled(type="button"
         @click="closePopup") Cancel
       button.btn.btn--primary(type="button"
-        :disabled="!settings.projectPath.length"
+        :disabled="!settings.networkPath.length"
         @click="answerPopup") Continue
 
 
@@ -51,18 +51,18 @@ export default {
     popupSettings: {type: Object},
   },
   created() {
-    this.settings.projectName = this.currentNetwork.networkName;
+    this.settings.networkName = this.currentNetwork.networkName;
     if(this.popupSettings.isFreezeInfo) {
-      // this.settings.projectPath = this.currentNetwork.networkRootFolder;
+      // this.settings.networkPath = this.currentNetwork.networkRootFolder;
       let location = this.currentNetwork.apiMeta.location;
       const modelNameStartIndex = location.lastIndexOf('/');
       location = location.substring(0, modelNameStartIndex);
-      this.settings.projectPath = location;
+      this.settings.networkPath = location;
     }
     let location = this.currentNetwork.apiMeta.location;
       const modelNameStartIndex = location.lastIndexOf('/');
       location = location.substring(0, modelNameStartIndex);
-      this.settings.projectPath = location;
+      this.settings.networkPath = location;
     this.$store.dispatch('mod_api/API_checkTrainedNetwork')
       .then((isTrained)=> {
         this.settings.isSaveTrainedModel = isTrained;
@@ -73,8 +73,8 @@ export default {
     return {
       popupTitle: ['Choose what to save'],
       settings: {
-        projectName: '',
-        projectPath: '',
+        networkName: '',
+        networkPath: '',
         isSaveTrainedModel: true,
       },
       existTrained: false,
@@ -87,11 +87,11 @@ export default {
       return this.$store.getters['mod_workspace/GET_currentNetwork']
     },
     isEmptyPath() {
-      return !!this.settings.projectPath.length
+      return !!this.settings.networkPath.length
     }
   },
   watch: {
-    'settings.projectName': {
+    'settings.networkName': {
       handler(newVal) {
         if(this.popupSettings.isSyncName)
         this.$store.dispatch('mod_workspace/SET_networkName', newVal)
@@ -110,7 +110,7 @@ export default {
     },
     answerPopup() {
       if(!this.popupSettings.isFreezeInfo) {
-        this.settings.projectPath = this.settings.projectPath + pathSlash + this.settings.projectName;
+        this.settings.networkPath = this.settings.networkPath + pathSlash + this.settings.networkName;
       }
       this.promiseOk(this.settings);
     },
@@ -127,9 +127,9 @@ export default {
     // },
     setPath(path) {
       if (path && path.length > 0) { 
-        this.settings.projectPath = path[0];
+        this.settings.networkPath = path[0];
       } else {
-        this.settings.projectPath = '';
+        this.settings.networkPath = '';
       }
     },
     openFilePicker() {

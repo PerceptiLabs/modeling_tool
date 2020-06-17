@@ -260,7 +260,6 @@
         if(indexCheckedProj < 0) return;
 
         const selectedProject = this.projects[indexCheckedProj];
-        //const isProjectNotExist = selectedProject.notExist;
         const pathDelete = selectedProject.pathProject;
 
         const newProjectsList = deepCopy(this.localUserInfo.projectsList);
@@ -471,6 +470,12 @@
             model.apiMeta = modelsApiData[index];
           }
 
+          const matchingApiData = modelsApiData.find(mad => mad.model_id === model.networkID);
+          if (matchingApiData) {
+            model.networkName = matchingApiData.name;
+            model.networkRootFolder = matchingApiData.location;
+          }
+          
           this.addNetwork({network: model, apiMeta: model.apiMeta, focusOnNetwork: false});
         }
 

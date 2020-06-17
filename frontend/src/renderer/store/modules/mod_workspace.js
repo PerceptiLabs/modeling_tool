@@ -195,7 +195,7 @@ const mutations = {
       });
       networkIDs = networkIDs.filter(onlyUnique);
 
-      localStorage.setItem('_network.ids', JSON.stringify(networkIDs.sort()));
+      localStorage.setItem('_network.ids', JSON.stringify(networkIDs.sort((a,b) => a - b)));
     } catch (error) {
       // console.error('Error persisting networks to localStorage', error);
     }
@@ -213,7 +213,7 @@ const mutations = {
         key.startsWith('_network.') &&
         key !== '_network.ids'&&
         key !== '_network.meta')
-        .sort();
+      .sort((a,b) => parseInt(a.replace('_network.', '')) - parseInt(b.replace('_network.', '')));
 
     for(const key of keys) {
       const networkID = key.replace('_network.', '');
@@ -255,11 +255,11 @@ const mutations = {
   },
   get_lastActiveTabFromLocalStorage(state) {
     // function for remembering the last active tab
-    const activeNetworkIDs = JSON.parse(localStorage.getItem('_network.ids')) || [];
     const networkMeta = JSON.parse(localStorage.getItem('_network.meta')) || {};
 
     const currentNetworkID = networkMeta.lastActiveNetworkID;
-    const index = activeNetworkIDs.sort((a,b) => a - b ).findIndex((el) => el === currentNetworkID);
+    const index = state.workspaceContent.findIndex((el) => el.networkID === currentNetworkID);
+
     if (index > 0) {
       state.currentNetwork = index;
     }
@@ -1227,7 +1227,10 @@ const actions = {
     } else {
       commit('add_network', { network, apiMeta, dispatch, focusOnNetwork });
       const lastNetworkID = state.workspaceContent[state.currentNetwork].networkID;
-      commit('set_lastActiveTabInLocalStorage', lastNetworkID);
+      
+      if (focusOnNetwork) {
+        commit('set_lastActiveTabInLocalStorage', lastNetworkID);
+      }
       commit('set_workspacesInLocalStorage'); 
     }
   },
@@ -1405,14 +1408,14 @@ const actions = {
     return Promise.resolve();
   },
   SET_networkName({commit, getters, dispatch}, value) {
-    let currentNetwork = getters.GET_currentNetwork.apiMeta;
+    commit('set_networkName', {getters, value})
+    let currentNetwork = JSON.parse(JSON.stringify(getters.GET_currentNetwork.apiMeta));
     currentNetwork.name = value;
     delete currentNetwork.saved_by;
     delete currentNetwork.saved_version_location;
     delete currentNetwork.created;
     delete currentNetwork.updated;
     dispatch("mod_project/updateModel", currentNetwork, {root: true});
-    commit('set_networkName', {getters, value})
   },
   SET_networkLocation({commit, getters}, value) {
     commit('set_model_location', { location: value, getters })

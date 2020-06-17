@@ -71,8 +71,8 @@ const workspaceSaveNet = {
           else {
             const settings = {
               isSaveTrainedModel: false,
-              projectName: network.networkName,
-              projectPath: network.apiMeta.location
+              networkName: network.networkName,
+              networkPath: network.apiMeta.location
             };
             this.saveNetwork(settings, network.networkID)
           }
@@ -106,7 +106,7 @@ const workspaceSaveNet = {
       const currentNet = this.currentNetwork;
       const newProjectId = netId || generateID();
       // debugger;
-      const pathSaveProject = netInfo.projectPath;
+      const pathSaveProject = netInfo.networkPath;
 
       let prepareNet = cloneNet(currentNet, newProjectId, netInfo);
       /*check Is Trained Net + do ScreenShot*/
@@ -135,19 +135,12 @@ const workspaceSaveNet = {
         })
         .then(()=> {
           /*save project to project page*/
-          if(prepareNet.toFile.apiMeta.location !== prepareNet.toLocal.pathProject) {
-            let newModelPath = prepareNet.toLocal.pathProject;
-            const modelUdateBody = {
-              modelId: prepareNet.toFile.apiMeta.model_id,
-              project: prepareNet.toFile.apiMeta.project,
-              name: prepareNet.toLocal.name,
-              location: newModelPath,
-            };
-            this.$store.dispatch('mod_workspace/SET_networkLocation', newModelPath); // change new location in vuex
-            this.$store.dispatch('mod_project/updateModel', modelUdateBody); // change new location in api
+          if(prepareNet.toFile.apiMeta.location !== prepareNet.toLocal.pathProject || 
+            prepareNet.toFile.apiMeta.name !== prepareNet.toLocal.name) {
+            this.$store.dispatch('mod_workspace/SET_networkLocation', prepareNet.toLocal.pathProject); // change new location in vuex
+            this.$store.dispatch('mod_workspace/SET_networkName', prepareNet.toLocal.name); // change new location in vuex
           }
           
-
           saveProjectToLocalStore(prepareNet.toLocal, this);
           if(saveProjectPath) this.set_networkRootFolder(pathSaveProject);
           this.trackerModelSave(prepareNet.toFile);
@@ -217,9 +210,9 @@ const workspaceSaveNet = {
         // console.log('toFile.networkMeta', toFile.networkMeta);
 
         if(idProject) toFile.networkID = idProject;
-        toFile.networkName = newNetInfo.projectName;
+        toFile.networkName = newNetInfo.networkName;
         toFile.networkMeta = {};
-        toFile.networkRootFolder = newNetInfo.projectPath;
+        toFile.networkRootFolder = newNetInfo.networkPath;
         //create project
         const time = new Date();
         const timeOptions = {
@@ -233,9 +226,9 @@ const workspaceSaveNet = {
         const toLocal = {
           time: time.toLocaleString("ru", timeOptions),
           image: null,
-          name: newNetInfo.projectName,
+          name: newNetInfo.networkName,
           id: idProject,
-          pathProject: newNetInfo.projectPath,
+          pathProject: newNetInfo.networkPath,
           isTrained: false,
           isCloud: false,
         };

@@ -90,10 +90,6 @@ const actions = {
     const models = await Promise.all(projectModesPromises);
     return models;
   },
-  updateModel(ctx, payload) {
-    const { modelId, ...body } = payload;
-    return axios.put(`http://localhost:8000/models/${modelId}/`, body)
-  },
   createProjectModel(ctx, payload) {
     return axios.post('http://localhost:8000/models/', payload)
       .then(res => {
