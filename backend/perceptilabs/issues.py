@@ -31,12 +31,14 @@ class Issue:
         module = inspect.getmodule(frame[0])
         location = f'{module.__name__}:{caller.lineno}'
         
-        self.frontend_message = f"Internal error in {location}. This will be reported as a bug."
+        self.frontend_message = f"Internal error in {location}: " + self._message
         self.internal_message = self._message + f" (issue origin: {location})"
         
         if self._exception:
             self.internal_message += "\n" + traceback_from_exception(self._exception)
-            
+            self.frontend_message += "\n" + traceback_from_exception(self._exception)            
+
+        self.frontend_message += "\n\nThis will be reported as a bug."            
         return self
     
     def __exit__(self, type, value, tb):

@@ -32,8 +32,13 @@ def is_syntax_ok(code):
     else:
         return True
 
+    
 class FetchParameterError(ScriptBuildError):
-    pass
+    def __init__(self, layer_id, layer_name, layer_type, parameter):
+        self.parameter = parameter
+        self.layer_id = layer_id
+        self.layer_name = layer_name
+        self.layer_type = layer_type
 
 
 def is_syntax_ok(code):
@@ -275,7 +280,7 @@ class ScriptFactory:
             raise ScriptBuildError(f"No layer definition found for layer of type '{layer_type}'")
         layer_name = layer_type + layer_id
 
-        kwargs = self._fetch_parameters(layer_spec, def_.macro_parameters)
+        kwargs = self._fetch_parameters(layer_id, layer_name, layer_spec, def_.macro_parameters)
         kwargs['layer_name'] = "'" + layer_name + "'"
         arg_str = ', '.join(f"{k}={v}" for k, v in kwargs.items())
         
@@ -303,7 +308,7 @@ class ScriptFactory:
         
         return code    
         
-    def _fetch_parameters(self, layer_spec, macro_parameters):
+    def _fetch_parameters(self, layer_id, layer_name, layer_spec, macro_parameters):
         results = {}
         for key, value in macro_parameters.items():
             if key == 'layer_name':
@@ -314,7 +319,8 @@ class ScriptFactory:
                 try:
                     value = value(layer_spec)
                 except Exception as e:
-                    raise FetchParameterError(f"Failed to fetch parameter '{key}'") from e
+                    layer_type = layer_spec['Type']
+                    raise FetchParameterError(layer_id, layer_name, layer_type, key) from e
             value = copy.deepcopy(value)
             
             if isinstance(value, str):

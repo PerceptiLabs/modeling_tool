@@ -334,8 +334,9 @@ def test_core_handles_userland_error(messaging_factory):
     def cond(_):
         next(core_step, None)
         next(server_step, None)
-        return issue_handler.put_error.call_count == 1             
-
+        return issue_handler.put_error.call_count == 1
+    
+    assert wait_for_condition(cond)    
     
 def test_core_handles_training_server_timeout(messaging_factory):
     """Simulate a timeout by having a slow training loop"""
@@ -394,8 +395,7 @@ def test_core_handles_training_server_timeout(messaging_factory):
         next(core_step, None)
         next(server_step, None)
         return issue_handler.put_error.call_count == 1             
-
-        
+    
 def test_pause_works(graph_spec_binary_classification, messaging_factory):
     
     def run_graph():

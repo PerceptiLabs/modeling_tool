@@ -10,6 +10,7 @@ import logging
 import requests
 import tempfile
 import threading
+import traceback
 import subprocess
 import sentry_sdk
 from sentry_sdk import utils
@@ -24,10 +25,11 @@ from perceptilabs.utils import deprecated
 from perceptilabs.issues import IssueHandler, UserlandError
 from perceptilabs.core_new.graph import Graph
 from perceptilabs.core_new.graph.builder import GraphBuilder
+from perceptilabs.core_new.utils import TracebackFrame
 from perceptilabs.core_new.layers import TrainingSupervised, TrainingReinforce, TrainingRandom
 from perceptilabs.core_new.layers.definitions import DEFINITION_TABLE
 from perceptilabs.core_new.communication import TrainingClient, State
-from perceptilabs.core_new.layers.script import ScriptFactory
+from perceptilabs.core_new.layers.script import ScriptFactory, FetchParameterError
 from perceptilabs.core_new.communication.deployment import ThreadStrategy, DeploymentStrategy
 from perceptilabs.messaging import MessagingFactory
 from perceptilabs.logconf import APPLICATION_LOGGER, DATA_LOGGER
@@ -188,8 +190,12 @@ class Core:
         
         graph = self._graph_builder.build_from_spec(graph_spec)        
         script_path = self._create_script(graph, session_id, topic_generic, topic_snapshots, userland_timeout=self._userland_timeout)
-        self._deployment_strategy.run(script_path)
 
+        try:
+            self._deployment_strategy.run(script_path)
+        except SyntaxError as e:
+            self._handle_syntax_error(e)
+            
         producer = self._messaging_factory.make_producer(topic_generic)        
         consumer = self._messaging_factory.make_consumer([topic_generic, topic_snapshots])
         logger.info(f"Instantiated message producer/consumer pairs for topics {topic_generic} and {topic_snapshots} for session {session_id}")
@@ -221,6 +227,37 @@ class Core:
             logger.info("Sent request for auto-close")
             
         yield from self._await_status_exit(client_step)
+
+    def _handle_syntax_error(self, exception):
+        node, true_lineno = self._line_to_node_map.get(exception.lineno, (None, None))
+        
+        message = f'SyntaxError:\n\n' + \
+                  f'File "{exception.filename}", line {exception.lineno}, offset {exception.offset}\n' + \
+                  f'origin {node.layer_id}, line {true_lineno} [{node.layer_type}]\n' +\
+                  f'  {exception.text}\n'
+        error = UserlandError(node.layer_id, node.layer_type, exception.lineno, message)
+        self._handle_userland_error(error)
+
+
+    def _handle_name_error(self, exception):
+        message = f'SyntaxError:\n\n' + \
+                  f'File "{exception.filename}"\n' + \
+                  f'origin {node.layer_id}, line {true_lineno} [{node.layer_type}]\n' +\
+                  f'  {exception.text}\n'
+        error = UserlandError(node.layer_id, node.layer_type, exception.lineno, message)
+        self._handle_userland_error(error)
+
+        
+    def _handle_userland_error(self, error):
+        if self._use_sentry:
+            with sentry_sdk.push_scope() as scope:
+                scope.set_tag('error-type', 'userland-error')
+                scope.level = 'info'
+                sentry_sdk.capture_message(error.format())
+
+        logger.info('Training stopped because of userland error:\n' + error.format())
+        if self._issue_handler is not None:
+            self._issue_handler.put_error(error.format())
 
     @property
     def is_closed(self):
@@ -291,15 +328,26 @@ class Core:
             self._collected_start_metrics = True        
 
     def _on_training_ended(self, session_info):
-        collect_end_metrics(self._graph_spec, self._last_graph, self._session_id, session_info)
+        if self._graph_spec is not None:
+            collect_end_metrics(self._graph_spec, self._last_graph, self._session_id, session_info)
         self._time_ended = time.time()
         
     def _on_log_message(self, message):
         pass    
 
     def _create_script(self, graph, session_id, topic_generic, topic_snapshots, userland_timeout):
-        code, self._line_to_node_map = self._script_factory.make(graph, session_id, topic_generic, topic_snapshots, userland_timeout=self._userland_timeout)
-        
+
+        try:
+            code, self._line_to_node_map = self._script_factory.make(graph, session_id, topic_generic, topic_snapshots, userland_timeout=self._userland_timeout)
+        except FetchParameterError as e:
+             error = UserlandError(
+                 e.layer_id, e.layer_type,
+                 line_number=None,
+                 message=f"Couldn't fetch parameter '{e.parameter}'. Verify that the layer has been applied.",
+                 code=None
+             )
+             self._handle_userland_error(error)             
+             
         script_path = f'training_script.py'
         with open(script_path, 'wt') as f:
             f.write(code)
@@ -325,7 +373,7 @@ class Core:
                 last_lineno = true_lineno
 
                 message += f'File "{frame.filename}", line {frame.lineno}, in {frame.name}, ' + \
-                           f'origin {node.layer_id}:{true_lineno} [{node.layer_type}]\n' +\
+                           f'origin {node.layer_id}, line {true_lineno} [{node.layer_type}]\n' +\
                            f'  {frame.line}\n'
             else:
                 message += f'File "{frame.filename}", line {frame.lineno}, in {frame.name}\n' + \
@@ -336,16 +384,8 @@ class Core:
         else:
             error = UserlandError(node.layer_id, node.layer_type, frame.lineno, message)
 
-        if self._use_sentry:
-            with sentry_sdk.push_scope() as scope:
-                scope.set_tag('error-type', 'userland-error')
-                scope.level = 'info'
-                sentry_sdk.capture_message(error.format())
-
-        logger.info('Training stopped because of userland error:\n' + error.format())
-        if self._issue_handler is not None:
-            self._issue_handler.put_error(error.format())
-
+        self._handle_userland_error(error)
+        
     @property
     def graphs(self) -> List[Graph]:
         copy_graph = self._graphs.copy()

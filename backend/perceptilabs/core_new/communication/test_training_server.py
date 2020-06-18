@@ -392,7 +392,7 @@ def test_userland_error_sends_error_message(messaging_factory, topic_gn, topic_s
             for m in messages:
                 key = m.get('key')
                 val = m.get('value')
-                if key == 'userland-error' and isinstance(val['exception'], IndexError):
+                if key == 'userland-error' and val['exception'].startswith('IndexError'):
                     return True
             return False
 

@@ -15,13 +15,16 @@ from queue import Queue
 
 
 from perceptilabs.logconf import APPLICATION_LOGGER
-from perceptilabs.core_new.utils import YieldLevel
+from perceptilabs.core_new.utils import YieldLevel, TracebackFrame
 from perceptilabs.core_new.serialization import serialize, can_serialize, deserialize
 from perceptilabs.core_new.communication.state import State, StateTransitionError
 from perceptilabs.core_new.communication.task_executor import TaskExecutor, TaskError, TaskTimeout
 
 
 logger = logging.getLogger(APPLICATION_LOGGER)
+
+
+
 
 
 class TrainingServer:
@@ -178,8 +181,11 @@ class TrainingServer:
         self._send_key_value('userland-timeout')        
     
     def _send_userland_error(self, exception):
-        tb_frames = traceback.extract_tb(exception.__traceback__)
-        data = {'exception': exception, 'traceback_frames': tb_frames}
+        tb_frames = [
+            TracebackFrame(frame.lineno, frame.name, frame.filename, frame.line)
+            for frame in traceback.extract_tb(exception.__traceback__)
+        ]
+        data = {'exception': repr(exception), 'traceback_frames': tb_frames}
         self._send_key_value('userland-error', data)
 
     def _send_training_ended(self, session_info):

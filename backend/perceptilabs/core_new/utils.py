@@ -1,6 +1,9 @@
 import tensorflow as tf
 from tensorflow.python.eager.context import context, EAGER_MODE, GRAPH_MODE
 from enum import Enum
+import collections
+
+TracebackFrame = collections.namedtuple('TracebackFrame', ['lineno', 'name', 'filename', 'line'])
 
 class YieldLevel(Enum):
     #STOP = 0
@@ -89,3 +92,5 @@ def find_free_port(count=1):
     else:
         return tuple(ports)    
             
+
+

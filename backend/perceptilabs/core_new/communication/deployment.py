@@ -36,6 +36,19 @@ class SubprocessStrategy(DeploymentStrategy):
     def shutdown(self, timeout=None):
         raise NotImplementedError
 
+
+class PropagatingThread(threading.Thread):
+    def run(self):
+        self.exc = None
+        try:
+            self.ret = self._target(*self._args, **self._kwargs)
+        except (NameError, SyntaxError, FileNotFoundError) as e:
+            self.exc = e
+
+    def maybe_raise_exc(self):
+        if self.exc:
+            raise self.exc
+
         
 class ThreadStrategy(DeploymentStrategy):
     @staticmethod
@@ -48,10 +61,15 @@ class ThreadStrategy(DeploymentStrategy):
             module.main()
     
     def run(self, path):
-        self._thread = threading.Thread(target=self._fn_start, args=(path,), daemon=True)
+        self._thread = PropagatingThread(target=self._fn_start, args=(path,), daemon=True)
         self._thread.start()
-    
+
+        # Try to join to catch any early exceptions
+        self._thread.join(timeout=1)
+        if not self._thread.is_alive():
+            self._thread.maybe_raise_exc()
+
     def shutdown(self, timeout=None):
         self._thread.join(timeout=timeout)
-
         return not self._thread.is_alive() # If thread is dead, success
+
