@@ -33,6 +33,7 @@ from perceptilabs.logconf import APPLICATION_LOGGER
 logger = logging.getLogger(APPLICATION_LOGGER)
 
 
+
 LayerResults = namedtuple('LayerResults', ['sample', 'out_shape', 'variables', 'columns', 'code_error', 'instantiation_error', 'strategy_error'])
 
 
@@ -120,7 +121,7 @@ class Tf1xTempStrategy(BaseStrategy):
                 logger.exception(f"Layer {layer_id} raised an error in __call__")
                 return self.get_default(strategy_error=error)                    
                 
-            with tf.Session() as sess:
+            with tf.Session(config=tf.ConfigProto(device_count={'GPU': 0})) as sess:
                 return self._run_internal(sess, layer_id, layer_type, layer_instance, output_tensor, input_tensors)
 
     def _run_internal(self, sess, layer_id, layer_type, layer_instance, output_tensor, layer_spec):
@@ -190,7 +191,7 @@ class Tf1xStrategy(BaseStrategy):
                 logger.exception(f"Layer {layer_id} raised an error in __call__")
                 return self.get_default(strategy_error=error)                    
                 
-            with tf.Session() as sess:
+            with tf.Session(config=tf.ConfigProto(device_count={'GPU': 0})) as sess:
                 return self._run_internal(sess, layer_id, layer_type, layer_instance, output_tensor, input_tensors)
 
     def _run_internal(self, sess, layer_id, layer_type, layer_instance, output_tensor, layer_spec):
