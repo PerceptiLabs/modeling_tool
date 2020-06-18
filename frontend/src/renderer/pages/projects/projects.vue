@@ -270,6 +270,7 @@
     methods: {
       ...mapActions({
         showInfoPopup:       'globalView/GP_infoPopup',
+        popupConfirm:        'globalView/GP_confirmPopup',
         loadNetwork:         'mod_api/API_loadNetwork',
         addNetwork:          'mod_workspace/ADD_network',
         set_currentNetwork:  'mod_workspace/SET_currentNetwork',
@@ -354,17 +355,28 @@
         return this.selectedListIds.length >= 1;
       },
       removeItems() {
-        let removeIndexes = [];
-        this.workspaceContent.map((network, index) =>  {
-          if(this.selectedListIds.indexOf(parseInt(network.networkID)) !== -1) {
-            removeIndexes.push(index);
-          }
-        })
-        removeIndexes.sort((a, b) => (b - a));
+        const removeModelText = 
+          this.selectedListIds && this.selectedListIds.length > 1 ?
+          'Are you sure you want to delete the selected models?' :
+          'Are you sure you want to delete the selected model?';
 
-        removeIndexes.map((index) => {
-          this.delete_network(index);
-        })
+        this.popupConfirm(
+          {
+            text: removeModelText,
+            ok: () => {
+              let removeIndexes = [];
+              this.workspaceContent.map((network, index) =>  {
+                if(this.selectedListIds.indexOf(parseInt(network.networkID)) !== -1) {
+                  removeIndexes.push(index);
+                }
+              })
+              removeIndexes.sort((a, b) => (b - a));
+
+              removeIndexes.map((index) => {
+                this.delete_network(index);
+              });
+            }
+          });
       },
       toggleFavoriteItems() {
         let newModelList = [...this.workspaceContent];
@@ -561,7 +573,7 @@
         this.closeContext();
       },
       handleContextRemoveModel() {
-        this.delete_network(this.contextModelIndex);
+        this.removeItems();
         this.closeContext();
       }
     }
