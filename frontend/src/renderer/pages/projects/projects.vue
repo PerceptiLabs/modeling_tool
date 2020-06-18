@@ -569,7 +569,7 @@
         this.isContextOpened = false
       },
       handleContextOpenModel() {
-        this.gotToNetworkView(this.contextModelIndex);
+        this.gotToNetworkView(this.workspaceContent[this.contextModelIndex].networkID);
         this.closeContext();
       },
       handleContextRemoveModel() {
