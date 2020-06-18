@@ -427,7 +427,7 @@ export default {
           submenu: [
             {label: 'Help',          enabled: false,                                  active: this.goToHelpPageDesktop },
             {label: 'About',                                                          active: this.goToAboutPageDesktop },
-            {label: 'Tutorial mode', enabled: !this.isTutorialActive && this.isLogin, active: this.showTutorial },
+            // {label: 'Tutorial mode', enabled: !this.isTutorialActive && this.isLogin, active: this.showTutorial },
             ...(this.isMac
               ? []
               : [{label: 'Check for updates',                                         active: this.checkUpdate }]
@@ -495,7 +495,7 @@ export default {
           submenu: [
             {label: 'Help',                                                           active: this.goToHelpPageWeb },
             {label: 'About',                                                          active: this.goToAboutPageWeb },
-            {label: 'Tutorial mode', enabled: !this.isTutorialActive,                 active: this.showTutorial },
+            // {label: 'Tutorial mode', enabled: !this.isTutorialActive,                 active: this.showTutorial },
             {type: 'separator'},
             {label: `Version: ${this.appVersion}`, enabled: false,                    active: ()=>{} }
           ]

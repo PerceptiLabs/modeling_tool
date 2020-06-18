@@ -63,15 +63,19 @@
 export default {
   name: "TheViewBox",
   components: {
-    TrainNormal, TrainGenetic, TrainDynamic, TrainReinforce, TrainLoss, TrainOptimizer, TrainGan, TrainDetector, TrainRegression,
-    ClassicMLDbscans, ClassicMLKMeans, ClassicMLKNN, ClassicMLRandomForest, ClassicMLSVM,
-
-    DataData, DataEnvironment, DataCloud, DataRandom,
+    DataData, DataEnvironment, DataRandom,
+    // DataCloud,
     DeepLearningFC, DeepLearningConv, DeepLearningDeconv, DeepLearningRecurrent,
-    ProcessCrop, ProcessEmbed, ProcessGrayscale, ProcessOneHot, ProcessReshape, ProcessRescale,
-    MathArgmax, MathMerge, MathSoftmax, MathSplit, MathSwitch,
-    ViewBoxBtnList
-  },
+    ProcessEmbed, ProcessGrayscale, ProcessOneHot, ProcessReshape, ProcessRescale,
+    // ProcessCrop,
+    TrainNormal, TrainRegression, TrainGenetic, TrainDynamic, TrainReinforce, TrainDetector, TrainGan,
+    // TrainLoss, TrainOptimizer, 
+    MathArgmax, MathMerge, MathSoftmax, MathSwitch,
+    // MathSplit,
+
+    // ClassicMLDbscans, ClassicMLKMeans, ClassicMLKNN, ClassicMLRandomForest, ClassicMLSVM,
+  ViewBoxBtnList
+},
   props: {
     sectionTitle: {type: String},
     elData: {

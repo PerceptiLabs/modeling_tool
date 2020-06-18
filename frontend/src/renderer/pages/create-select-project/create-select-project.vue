@@ -8,7 +8,7 @@
       .content
         .sidebar
           button.project-list-filter-button.is-active Local Projects
-          button.project-list-filter-button.is-disabled Cloud Projects
+          //- button.project-list-filter-button.is-disabled Cloud Projects
         .main
           .main-header
             button.btn-icon(
@@ -25,11 +25,11 @@
                 placeholder="Search"
                 v-model="searchValue"
               )
-            div
-              sort-by-button(
-                :options="[{name: 'Test', value: 1}]"
-                :option-selected="0"
-              )
+            //- div
+              //- sort-by-button(
+              //-   :options="[{name: 'Test', value: 1}]"
+              //-   :option-selected="0"
+              //- )
           .main-list
             .main-list-header
               .list-name-name Name
@@ -569,7 +569,8 @@
     position: relative;
     /*width: 333px;*/
     width: auto;
-    width: 55%;
+    width: 75%;
+    margin-right: 30px;
   
     
     img {

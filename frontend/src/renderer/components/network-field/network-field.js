@@ -48,13 +48,17 @@ import { deepCopy } from "@/core/helpers.js";
 export default {
   name: 'NetworkField',
   components: {
-    DataData, DataEnvironment, DataCloud, DataRandom,
+    DataData, DataEnvironment, DataRandom,
+    // DataCloud,
     DeepLearningFC, DeepLearningConv, DeepLearningDeconv, DeepLearningRecurrent,
-    ProcessCrop, ProcessEmbed, ProcessGrayscale, ProcessOneHot, ProcessReshape, ProcessRescale,
-    TrainNormal, TrainRegression, TrainGenetic, TrainDynamic, TrainReinforce, TrainLoss, TrainOptimizer, TrainDetector, TrainGan,
-    MathArgmax, MathMerge, MathSoftmax, MathSplit, MathSwitch,
+    ProcessEmbed, ProcessGrayscale, ProcessOneHot, ProcessReshape, ProcessRescale,
+    // ProcessCrop,
+    TrainNormal, TrainRegression, TrainGenetic, TrainDynamic, TrainReinforce, TrainDetector, TrainGan,
+    // TrainLoss, TrainOptimizer, 
+    MathArgmax, MathMerge, MathSoftmax, MathSwitch,
+    // MathSplit,
 
-    ClassicMLDbscans, ClassicMLKMeans, ClassicMLKNN, ClassicMLRandomForest, ClassicMLSVM,
+    // ClassicMLDbscans, ClassicMLKMeans, ClassicMLKNN, ClassicMLRandomForest, ClassicMLSVM,
     LayerContainer, LayerCustom,
     SettingsArrow
   },

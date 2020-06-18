@@ -1,8 +1,10 @@
 const isDevelopMode = process.env.NODE_ENV !== 'production';
 
-const trainingElements  = ['TrainLoss', 'TrainOptimizer', 'TrainNormal', 'TrainRegression', 'TrainReinforce', 'TrainGan', 'TrainDetector'
+const trainingElements  = ['TrainNormal', 'TrainRegression', 'TrainReinforce', 'TrainGan', 'TrainDetector'
   //'TrainGenetic',
-  //'TrainDynamic'
+  //'TrainDynamic',
+  //'TrainLoss', 
+  //'TrainOptimizer', 
 ];
 const deepLearnElements = ['DeepLearningFC', 'DeepLearningConv', 'DeepLearningDeconv', 'DeepLearningRecurrent'];
 

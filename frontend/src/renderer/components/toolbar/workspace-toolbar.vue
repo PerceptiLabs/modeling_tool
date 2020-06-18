@@ -109,15 +109,15 @@
         span Notebook
         .ring-icon
 
-      tutorial-instructions(
-        ref="tutorialComponent"
-        v-tooltip-interactive:bottom="interactiveInfo.tutorial")
-        button.btn.btn--dark.btn--toolbar-settings(type="button"
-          @click="switchTutorialMode"
-          :class="{'active': isTutorialMode}"
-        )
-          span Tutorial
-          .ring-icon
+      //- tutorial-instructions(
+      //-   ref="tutorialComponent"
+      //-   v-tooltip-interactive:bottom="interactiveInfo.tutorial")
+      //-   button.btn.btn--dark.btn--toolbar-settings(type="button"
+      //-     @click="switchTutorialMode"
+      //-     :class="{'active': isTutorialMode}"
+      //-   )
+      //-     span Tutorial
+      //-     .ring-icon
 
       button.btn.btn--dark.btn--toolbar-settings(
         type="button"
@@ -135,12 +135,14 @@ import { googleAnalytics }                      from '@/core/analytics';
 import { trainingElements, deepLearnElements }  from '@/core/constants.js';
 import { goToLink }                             from '@/core/helpers.js'
 
-import TutorialInstructions     from '@/components/tutorial/tutorial-instructions.vue';
+// import TutorialInstructions     from '@/components/tutorial/tutorial-instructions.vue';
 import ToolbarLayers            from '@/components/toolbar/workspace-toolbar-layers.vue';
 
 export default {
   name: 'WorkspaceToolbar',
-  components: { TutorialInstructions, ToolbarLayers },
+  components: { ToolbarLayers
+  //TutorialInstructions, 
+   },
   data() {
     return {
       x: null,
