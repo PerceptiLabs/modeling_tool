@@ -385,8 +385,7 @@ export default {
           label: 'Edit', visible: true,
           submenu: [
             {label: 'Undo',         accelerator: this.isMac ? 'meta+z' : 'ctrl+z',              role: 'undo',           active: this.toPrevStepHistory },
-            {label: 'Redo',         accelerator: this.isMac ? 'meta+shift+z' : 'ctrl+shift+z',  role: 'redo',           active: this.toNextStepHistory },
-            {label: 'Redo',         accelerator: this.isMac ? 'meta+y' : 'ctrl+y',              role: 'redo',           active: this.toNextStepHistory },
+            {label: 'Redo',         accelerator: this.isMac ? 'meta+shift+z' : 'ctrl+y',  role: 'redo',           active: this.toNextStepHistory },
             {type:  'separator'},
             {label: 'Copy',         accelerator: this.isMac ? 'meta+c' : 'ctrl+c',              role: 'copy',           active: this.HCCopy },
             {label: 'Paste',        accelerator: this.isMac ? 'meta+v' : 'ctrl+v',              role: 'paste',          active: this.HCPaste },
@@ -477,8 +476,7 @@ export default {
           label: 'Edit', visible: true,
           submenu: [
             {label: 'Undo',         accelerator: this.isMac ? 'meta+z' : 'ctrl+z',              role: 'undo',       enabled: this.openApp,        active: this.toPrevStepHistory },
-            {label: 'Redo',         accelerator: this.isMac ? 'meta+shift+z' : 'ctrl+shift+z',  role: 'redo',       enabled: this.openApp,        active: this.toNextStepHistory },
-            {label: 'Redo',         accelerator: this.isMac ? 'meta+y' : 'ctrl+y',              role: 'redo',       enabled: this.openApp,        active: this.toNextStepHistory },
+            {label: 'Redo',         accelerator: this.isMac ? 'meta+shift+z' : 'ctrl+y',  role: 'redo',       enabled: this.openApp,        active: this.toNextStepHistory },
             {type:  'separator'},
 
             {label: 'Cut',          accelerator: this.isMac ? 'meta+x' : 'ctrl+x',              role: 'cut',        enabled: this.openApp,        active: this.HCCut },
