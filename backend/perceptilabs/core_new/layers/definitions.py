@@ -431,6 +431,8 @@ DEFINITION_TABLE = {
             'distributed': lambda specs: specs['Properties'].get('Distributed', False),
             'export_directory': resolve_checkpoint_path,
             'batch_size': lambda specs: specs['Properties']['batch_size'],
+            'lambdaclass': lambda specs: specs['Properties']['lambda_class'],
+            'lambdanoobj': lambda specs: specs['Properties']['lambda_noobj']
         },
         import_statements=[
             'import tensorflow as tf',

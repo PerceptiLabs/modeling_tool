@@ -461,7 +461,7 @@ class ObjectDetectionLayerReplica(ObjectDetectionLayer):
                  loss_training, loss_testing, loss_validation, loss_classification_training, 
                  loss_classification_validation, loss_classification_testing, 
                  loss_bbox_training, loss_bbox_validation, loss_bbox_testing, 
-                 grid_size, classes, num_box, num_class, lambdacoord, lambdanoobj,
+                 grid_size, classes, num_box, num_class, lambdaclass, lambdanoobj,
                  get_predicted_normalized_boxes, get_predicted_classes, get_predicted_objects,
                  status, layer_weights, layer_biases, layer_gradients, layer_outputs,
                  batch_size, training_iteration, validation_iteration,
@@ -493,7 +493,7 @@ class ObjectDetectionLayerReplica(ObjectDetectionLayer):
         self._classes = classes
         self._num_box = num_box 
         self._num_class = num_class
-        self._lambdacoord = lambdacoord
+        self._lambdaclass = lambdaclass
         self._lambdanoobj = lambdanoobj
 
         self._input_data_node = get_input_data_node
@@ -539,8 +539,8 @@ class ObjectDetectionLayerReplica(ObjectDetectionLayer):
         return self._num_box 
 
     @property
-    def lambdacoord(self) -> float:
-        return self._lambdacoord
+    def lambdaclass(self) -> float:
+        return self._lambdaclass
         
     @property
     def lambdanoobj(self) -> float:  

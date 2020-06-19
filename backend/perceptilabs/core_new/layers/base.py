@@ -672,8 +672,8 @@ class ObjectDetectionLayer(TrainingSupervised):
 
     @property
     @abstractmethod
-    def lambdacoord(self) -> float:
-        return self._lambdacoord
+    def lambdaclass(self) -> float:
+        return self._lambdaclass
         
     @property
     @abstractmethod

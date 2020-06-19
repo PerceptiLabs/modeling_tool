@@ -104,7 +104,7 @@ REPLICATED_PROPERTIES_TABLE = {
         ReplicatedProperty('num_class', int, 3),
         ReplicatedProperty('num_box', int, 2),
         ReplicatedProperty('classes', list, []),
-        ReplicatedProperty('lambdacoord', (np.float32, float), 5),
+        ReplicatedProperty('lambdaclass', (np.float32, float), 0.5),
         ReplicatedProperty('lambdanoobj', (np.float32, float), 0.5),
         ReplicatedProperty('get_input_data_node', str,''),
         ReplicatedProperty('status', str, '<none>'),

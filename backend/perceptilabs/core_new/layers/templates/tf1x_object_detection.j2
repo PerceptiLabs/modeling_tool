@@ -1,4 +1,4 @@
-{% macro run_normal(graph, layer_name, output_layer, target_layer, n_epochs, num_box, grid_size, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory, batch_size) %}
+{% macro run_normal(graph, layer_name, output_layer, target_layer, n_epochs, num_box, grid_size, lambdaclass, lambdanoobj, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory, batch_size) %}
         self._status = 'initializing'
 
         self._grid_size = {{grid_size}}
@@ -9,8 +9,8 @@
         w_img = 224
         h_img = 224
 
-        self._lambdacoord = 5.0
-        self._lambdanoobj = 0.5
+        self._lambdaclass = {{lambdaclass}}
+        self._lambdanoobj = {{lambdanoobj}}
         
         self._batch_size = {{batch_size}}
         # we need classes
@@ -215,8 +215,7 @@
             box_loss = tf.reduce_mean(tf.reduce_sum(tf.square(box_delta), axis=[1,2,3]))
             
 
-            loss = 0.5*class_loss + object_loss + 0.1*noobject_loss + 10*box_loss
-
+            loss = self._lambdaclass*class_loss + object_loss + self._lambdanoobj*noobject_loss + 10*box_loss
             ## accuracy
             correct_predictions = tf.equal(tf.argmax(predicted_class, axis =3), tf.argmax(true_class, axis = 3) )
             iou_scores = tf.reduce_max(predict_iou, 3)  
@@ -403,7 +402,7 @@
 
 
 ################################################### Main #####################################################
-{% macro layer_tf1x_object_detection(layer_name, output_layer, target_layer, n_epochs, num_box, grid_size, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory, batch_size) %} #
+{% macro layer_tf1x_object_detection(layer_name, output_layer, target_layer, n_epochs, num_box, grid_size, lambdaclass, lambdanoobj, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory, batch_size) %} #
 import itertools
 import cv2
 import copy
@@ -463,7 +462,7 @@ class {{layer_name}}(ObjectDetectionLayer):
             graph: A PerceptiLabs Graph object containing references to all layers objects included in the model produced by this training layer.
         """   
         {% if not distributed -%}
-            {{ run_normal(graph, layer_name, output_layer, target_layer, n_epochs, num_box, grid_size, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory, batch_size) }}
+            {{ run_normal(graph, layer_name, output_layer, target_layer, n_epochs, num_box, grid_size, lambdaclass, lambdanoobj, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory, batch_size) }}
         {% endif %}            
 
     def on_export(self, path: str, mode: str) -> None:
@@ -573,8 +572,8 @@ class {{layer_name}}(ObjectDetectionLayer):
         return self._num_box 
 
     @property
-    def lambdacoord(self):
-        return self._lambdacoord
+    def lambdaclass(self):
+        return self._lambdaclass
         
     @property
     def lambdanoobj(self):  
@@ -1075,7 +1074,7 @@ class {{layer_name}}(ObjectDetectionLayer):
                 box_loss = tf.reduce_mean(tf.reduce_sum(tf.square(box_delta), axis=[1,2,3]))
                 
 
-                loss = 0.5*class_loss + object_loss + 0.1*noobject_loss + 10*box_loss
+                loss = self._lambdaclass*class_loss + object_loss + self._lambdanoobj*noobject_loss + 10*box_loss
 
                 # accuracy
                 correct_predictions = tf.equal(tf.argmax(predicted_class, axis =3), tf.argmax(true_class, axis = 3) )
