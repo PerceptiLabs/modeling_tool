@@ -109,7 +109,12 @@
             | {{ (model && model.apiMeta && model.apiMeta.updated) ? model.apiMeta.updated.substring(0, 10) : ''}}
         
         
-        div.models-list-row.model-list-item(v-for="(model, index) in unparsedModels"  :key="model.id" :class="{'is-selected': isItemSelected(model.networkID)}")
+        div.models-list-row.model-list-item(
+          v-for="(model, index) in unparsedModels"
+          :key="model.id"
+          :class="{'is-selected': isItemSelected(model.networkID)}"
+          @click="onClickDeletedModel(model, index)"
+          )
           div.column-1
             //- span.btn-round-icon.check-model-button
               //- img(v-if="isItemSelected(model.networkID)" src="../../../../static/img/project-page/checked.svg")
@@ -247,7 +252,6 @@
     },
     watch: {
       searchValue: function (newValue) {
-        console.log({newValue})
         let initialModelList = [...this.initialModelList];
         initialModelList = initialModelList.filter(model => model.name.toLocaleLowerCase().indexOf(newValue.toLowerCase()) !== -1);
         let initialModelListIds = initialModelList.map(model => model.id);
@@ -287,6 +291,7 @@
     },
     methods: {
       ...mapActions({
+        popupConfirm:        'globalView/GP_confirmPopup',
         showInfoPopup:       'globalView/GP_infoPopup',
         popupConfirm:        'globalView/GP_confirmPopup',
         loadNetwork:         'mod_api/API_loadNetwork',
@@ -597,6 +602,17 @@
       handleContextRemoveModel() {
         this.removeItems();
         this.closeContext();
+      },
+      onClickDeletedModel(model, index) {
+        this.popupConfirm({
+            text: `Are you sure you want to remove ${model.name} from ModelHub since it no longer is connected to Project?`,
+            ok: () => {
+              this.$store.dispatch('mod_project/deleteModel', model)
+                .then((serverResponse) => {
+                  this.unparsedModels.splice(index, 1);
+              })
+            }
+          })
       },
 
       // Rename Module
