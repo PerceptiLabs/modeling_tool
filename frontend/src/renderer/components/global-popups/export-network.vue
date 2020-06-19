@@ -14,6 +14,10 @@
               v-model="settings.Type"
               :select-options="selectOptions"
             )
+        .form_holder(v-if="settings.Type === 'ipynb'")
+          .form_label Name:
+          .form_row
+            input.form_input(type="text" v-model="settings.name")
         .form_holder(v-if="settings.Type === 'TFModel'")
           base-checkbox(v-model="settings.Compressed") Compressed
 
@@ -44,8 +48,12 @@ export default {
         Location: '',
         Type: 'TFModel',
         Compressed: false,
+        name: '',
       }
     }
+  },
+  mounted() {
+    this.settings.name = this.$store.getters['mod_workspace/GET_currentNetwork'].networkName;
   },
   methods: {
     setExportPath(value) {
@@ -66,9 +74,29 @@ export default {
     closePopup() {
       this.$store.commit('globalView/HIDE_allGlobalPopups');
     },
-    ok() {
-      this.$store.dispatch('mod_api/API_exportData', this.settings);
-      this.closePopup();
+    async ok() {
+      if(this.settings.Location !== '') {
+        const fileName = this.settings.Location + `/${this.settings.name}.ipynb`;
+        const isFolderAlreadyExist = await this.$store.dispatch('mod_api/API_isFileExist', fileName);
+       
+       if(isFolderAlreadyExist) {
+          this.$store.dispatch('globalView/GP_confirmPopup', {
+            text: 'File already exist, are you sure want to overwrite it?',
+            ok: () => {
+              exportData.call(this, this.settings)
+            }
+          })
+        } else {
+          exportData.call(this, this.settings)
+        }
+      } else {
+        exportData.call(this, this.settings)
+      }
+
+      function exportData(settings = null) {
+        this.$store.dispatch('mod_api/API_exportData', this.settings);
+        this.closePopup();
+      }
     },
    }
 }

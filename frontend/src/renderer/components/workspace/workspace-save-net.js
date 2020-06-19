@@ -85,9 +85,20 @@ const workspaceSaveNet = {
     eventSaveNetworkAs(netId, isSaveProjectPath) {
       this.saveNetworkPopup.show = true;
       this.askSaveFilePopup()
-        .then((answer)=> {
+        .then(async (answer)=> {
           if(answer) {
-            this.saveNetwork(answer, netId, isSaveProjectPath);
+            const isFolderAlreadyExist = await this.$store.dispatch('mod_api/API_isDirExist', answer.networkPath);
+            
+            if(isFolderAlreadyExist) {
+              this.$store.dispatch('globalView/GP_confirmPopup', {
+                text: 'Folder exist, are you sure want to overwrite it?',
+                ok: () => {
+                  this.saveNetwork(answer, netId, isSaveProjectPath);
+                }
+              })
+            } else {
+              this.saveNetwork(answer, netId, isSaveProjectPath);
+            }
           }
         })
         .catch((err)=> console.log(err))

@@ -162,6 +162,10 @@ class Interface():
             path_to_folder = value["path"]
             return os.path.isdir(path_to_folder)
 
+        elif action == 'isFileExist':
+            path_to_file = value['path']
+            return os.path.isfile(path_to_file)
+
         elif action == "getRootFolder":
             return getRootFolder().run()
 

@@ -821,7 +821,7 @@ const actions = {
         const payload = await createNotebookJson(this);
         return ({
           ...settings,
-          frontendNetwork: rootGetters['mod_workspace/GET_currentNetwork'].networkName,
+          frontendNetwork: settings.name,
           NotebookJson: payload
         });
       }
@@ -941,6 +941,18 @@ const actions = {
     const theData = {
       receiver: '',
       action: 'isDirExist',
+      value: {
+        path
+      }
+    };
+    return coreRequest(theData)
+      .then(res => res)
+      .catch(e => console.error(e));
+  },
+  API_isFileExist (ctx, path) {
+    const theData = {
+      receiver: '',
+      action: 'isFileExist',
       value: {
         path
       }
