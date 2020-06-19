@@ -145,21 +145,22 @@ const actions = {
 
         }
 
-
+        dispatch('mod_project/getProjects', null , {root: true});
       }).catch(err => {
         console.log(err);
         dispatch('globalView/GP_infoPopup', 'Fetching went wrong', {root: true});
-        return
+        return;
       });
-      function createProjectAndAddNetworkFn (mod, projectId) {
-        dispatch('mod_project/createProjectModel', {
-          name: mod.networkName,
-          project: projectId,
-          location: pathFile.substring(0, pathFile.lastIndexOf('/')),
-        }, {root: true}).then(apiMeta => {
-          dispatch('mod_workspace/ADD_network', {network: mod, apiMeta}, {root: true});
-        });
-      }
+
+    function createProjectAndAddNetworkFn (mod, projectId) {
+      dispatch('mod_project/createProjectModel', {
+        name: mod.networkName,
+        project: projectId,
+        location: pathFile.substring(0, pathFile.lastIndexOf('/')),
+      }, {root: true}).then(apiMeta => {
+        dispatch('mod_workspace/ADD_network', {network: mod, apiMeta}, {root: true});
+      });
+    }
   },
   EVENT_openNetwork({dispatch}) {
     const opt = {

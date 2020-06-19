@@ -8,9 +8,8 @@
     div(v-show="!isCreateModelModalOpen").project-wrapper
       div.header-controls
         div.left-side
-          span(
+          span.import-button-container(
             @click="openLoadModelPopup()"
-            style="margin: 5px 20px 0 0; cursor: pointer"
             v-tooltip:bottom="'Import Modal'"
             )
             img(src="../../../../static/img/project-page/import.svg")
@@ -224,11 +223,6 @@
         renameValue: null,
       }
     },
-    created() {
-      if(isWeb()) {
-        this.getProjects();
-      }
-    },
     computed: {
       ...mapGetters({
         user:                 'mod_user/GET_userProfile',
@@ -263,15 +257,24 @@
       currentProject: {
         immediate: true,
         handler(newVal, oldVal) {
-          // don't reload if there are any changes
-          // happens when going to project view for modeling view
-          // (clicking of PerceptiLabs icon)
-          console.log(this.networksWithChanges);
           if (!this.networksWithChanges.length) {
-            if(newVal) {
+            if(!isSameProject(newVal,oldVal)) {
               this.reset_network();
               this.fetchNetworkMetas(newVal);
             }
+          }
+
+          function isSameProject(project1, project2) {
+            if (!project1 && !project2) { return false; }
+            if (project1 && !project2) { return false; }
+            if (!project1 && project2) { return false; }
+            if (project1.name !== project2.name)  { return false; }
+            if (project1.models.length !== project2.models.length)  { return false; }
+            if (
+              project1.models.every(p1 => !project2.models.includes(p1)) ||
+              project2.models.every(p2 => !project1.models.includes(p2)))  { return false; }
+
+            return true;
           }
         }
       },
@@ -456,8 +459,6 @@
 
       },
       fetchNetworkMetas(currentProject) {
-        console.log(currentProject)
-        console.log('asass')
         if (!currentProject || !currentProject.models) { return; }
 
         const promiseArray = 
@@ -665,6 +666,17 @@
     display: flex;
     .left-side {
       display: flex;
+
+      padding-top: 0.5rem;
+      padding-bottom: 0.5rem;
+
+      .import-button-container {
+        display: flex;
+        justify-content: center;
+
+        margin-right: 2rem;
+        cursor: pointer;
+      }
     }
     .right-side {
       margin-left: auto;

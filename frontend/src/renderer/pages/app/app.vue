@@ -125,11 +125,12 @@
     },
     methods: {
       ...mapMutations({
-        setShowStoryboard:            'mod_tutorials/SET_showTutorialStoryBoard',
-        set_appIsOpen:                'globalView/SET_appIsOpen',
-        add_dragElement:              'mod_workspace/ADD_dragElement',
-        set_workspacesInLocalStorage: 'mod_workspace/set_workspacesInLocalStorage',
-        setGridValue: 'globalView/setGridStateMutation',
+        setShowStoryboard:                  'mod_tutorials/SET_showTutorialStoryBoard',
+        set_appIsOpen:                      'globalView/SET_appIsOpen',
+        setGridValue:                       'globalView/setGridStateMutation',
+        add_dragElement:                    'mod_workspace/ADD_dragElement',
+        set_workspacesInLocalStorage:       'mod_workspace/set_workspacesInLocalStorage',
+        set_workspaceChangesInLocalStorage: 'mod_workspace-changes/set_workspaceChangesInLocalStorage',
       }),
       ...mapActions({
         tutorialPointActivate:'mod_tutorials/pointActivate',
@@ -147,6 +148,7 @@
         this.$refs.layersbar.removeEventListener("dragstart", this.dragStart, false);
       },
       saveWorkspaces() {
+        this.set_workspaceChangesInLocalStorage();
         this.set_workspacesInLocalStorage();
       },
       offDragListener() {

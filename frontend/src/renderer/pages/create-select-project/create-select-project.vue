@@ -119,7 +119,6 @@
       }
     },
     created() {
-      this.getProjects();
       document.addEventListener('keyup', this.closeModalByEvent);
     },
     beforeDestroy() {
@@ -137,7 +136,7 @@
         return this.$store.state.mod_project.projectsList;
       },
       ...mapGetters({
-        networksWithChanges:          'mod_workspace-changes/get_networksWithChanges',
+        networksWithChanges:  'mod_workspace-changes/get_networksWithChanges',
         GET_isProjectWithThisDirectoryExist:          'mod_project/GET_isProjectWithThisDirectoryExist'
       })
     },
@@ -145,7 +144,6 @@
       ...mapMutations({
         selectProject:                 'mod_project/selectProject',
         addModelFromLocalDataMutation: 'mod_workspace/add_model_from_local_data',
-        clear_networkChanges:          'mod_workspace-changes/clear_networkChanges',
         clearNetworkIdsInLocalStorage: 'mod_workspace/clear_networkIdsInLocalStorage',
         setWorkspacesInLocalStorage:   'mod_workspace/set_workspacesInLocalStorage',
       }),
@@ -163,6 +161,7 @@
         createProjectModel:       'mod_project/createProjectModel',
         addNetwork:               'mod_workspace/ADD_network',
         resetNetwork:             'mod_workspace/RESET_network',
+        clearNetworkChanges:      'mod_workspace-changes/clearNetworkChanges',
       }),
       onProjectWrapperClick(e){
         const hasTargetProject = localStorage.hasOwnProperty('targetProject');
@@ -188,7 +187,7 @@
               this.closePageAction();
             },
             ok: () => {
-              this.clear_networkChanges();
+              this.clearNetworkChanges();
               
               this.goToProject(projectId);
             }
@@ -205,7 +204,7 @@
         // load models and set them in the workspace from:
         // 1. model's "location" property
         // 2. <project path>/<model name>.json
-        // this.$router.push({name: 'projects'}).catch(_ => this.$router.go());
+        this.$router.push({name: 'projects'}).catch(_ => this.$router.go());
       },
       openProjectNameModal() {
         this.isProjectNameModalOpen = true;
@@ -348,70 +347,72 @@
         }
 
 
-      this.selectedFiles = [];
-      let theData = {
-          reciever: '0',
-          action: 'getFolderContent',
-          value: processedFilePath
-      };
+        this.selectedFiles = [];
+        let theData = {
+            reciever: '0',
+            action: 'getFolderContent',
+            value: processedFilePath
+        };
 
-      try {
-        const { dirs, current_path} = await coreRequest(theData);
-        const haveDirectories = dirs.length > 0;
-        if(!haveDirectories) {
-          // cerate project only with that dir
-          const createdProject = await this.createProject(createProjectReq);
-          this.goToProject(createdProject.project_id);
+        try {
+          const { dirs, current_path} = await coreRequest(theData);
+          const haveDirectories = dirs.length > 0;
+          if(!haveDirectories) {
+            // cerate project only with that dir
+            const createdProject = await this.createProject(createProjectReq);
+            this.selectProject(createdProject.project_id);
+            this.closePageAction();
 
-        } else {
-        
-          const createdProject = await this.createProject(createProjectReq);
+          } else {
           
-          const modelPaths = dirs.map(dirPath => current_path + '/' + dirPath);
-         
-          const promiseArray = 
-            modelPaths.map(modelPath => this.$store.dispatch('mod_api/API_getModel', modelPath + '/model.json'));
+            const createdProject = await this.createProject(createProjectReq);
+            
+            const modelPaths = dirs.map(dirPath => current_path + '/' + dirPath);
           
-          let localModelsData = await Promise.all(promiseArray);
-          localModelsData = localModelsData.filter(model => model);
-          const atLeastOneFolderHaveModelsJsonFile = localModelsData.length !== 0;
-          if(atLeastOneFolderHaveModelsJsonFile) {
-            this.clearNetworkIdsInLocalStorage();
-            this.resetNetwork();
-            let modelCreationPromises = [];
-            for(let index in localModelsData) {
-              const loadedModel = localModelsData[index];
-              modelCreationPromises.push(this.createProjectModel({
-                name: loadedModel.networkName,
-                project: createdProject.project_id,
-                location: loadedModel.apiMeta.location,
-              }))
+            const promiseArray = 
+              modelPaths.map(modelPath => this.$store.dispatch('mod_api/API_getModel', modelPath + '/model.json'));
+            
+            let localModelsData = await Promise.all(promiseArray);
+            localModelsData = localModelsData.filter(model => model);
+            const atLeastOneFolderHaveModelsJsonFile = localModelsData.length !== 0;
+            if(atLeastOneFolderHaveModelsJsonFile) {
+              this.clearNetworkIdsInLocalStorage();
+              this.resetNetwork();
+              let modelCreationPromises = [];
+              for(let index in localModelsData) {
+                const loadedModel = localModelsData[index];
+                modelCreationPromises.push(this.createProjectModel({
+                  name: loadedModel.networkName,
+                  project: createdProject.project_id,
+                  location: loadedModel.apiMeta.location,
+                }))
+              }
+
+
+              const modelCreatinResponses = await Promise.all(modelCreationPromises);
+
+              for(let index in modelCreatinResponses) {
+                const apiMeta = modelCreatinResponses[index];
+                const modelJson = localModelsData[index];
+
+                let template = cloneDeep(modelJson);
+                template.networkName = modelJson.networkName;
+                template.networkID = apiMeta.model_id;
+                delete template.apiMeta;
+                await this.addNetwork({network: template, apiMeta: apiMeta, focusOnNetwork: false});
+              }
             }
-
-
-            const modelCreatinResponses = await Promise.all(modelCreationPromises);
-
-            for(let index in modelCreatinResponses) {
-              const apiMeta = modelCreatinResponses[index];
-              const modelJson = localModelsData[index];
-
-              let template = cloneDeep(modelJson);
-              template.networkName = modelJson.networkName;
-              template.networkID = apiMeta.model_id;
-              delete template.apiMeta;
-              await this.addNetwork({network: template, apiMeta: apiMeta, focusOnNetwork: false});
-            }
+            await this.$store.dispatch('mod_project/getProjects');
+            this.clear_networkChanges();
+            this.selectProject(createdProject.project_id);
+            this.closePageAction();
+            
           }
-          await this.$store.dispatch('mod_project/getProjects');
-          this.clear_networkChanges();
-          this.goToProject(createdProject.project_id);
           
-        }
         
-       
-      } catch(e) {
-        return false;
-      } 
+        } catch(e) {
+          return false;
+        } 
       }
     },
     filters: {

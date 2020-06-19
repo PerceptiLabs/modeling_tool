@@ -37,9 +37,6 @@ const workspaceSaveNet = {
     },
   },
   methods: {
-    ...mapMutations({
-      setUnsavedChanges:    'mod_workspace-changes/set_hasUnsavedChanges',
-    }),
     ...mapActions({
       infoPopup:            'globalView/GP_infoPopup',
       set_networkRootFolder:'mod_workspace/SET_networkRootFolder',
@@ -47,6 +44,7 @@ const workspaceSaveNet = {
       saveTrainedNetwork:   'mod_api/API_saveTrainedNetwork',
       trackerModelSave:     'mod_tracker/EVENT_modelSave',
       saveLocalUserInfo:    'mod_user/UPDATE_LOCAL_userInfo',
+      updateUnsavedChanges: 'mod_workspace-changes/updateUnsavedChanges',
     }),
     refreshSavePopup() {
       this.saveNetworkPopup = {...this.saveNetworkPopupDefault}
@@ -152,13 +150,13 @@ const workspaceSaveNet = {
             this.$store.dispatch('mod_workspace/SET_networkName', prepareNet.toLocal.name); // change new location in vuex
           }
           
-          saveProjectToLocalStore(prepareNet.toLocal, this);
           if(saveProjectPath) this.set_networkRootFolder(pathSaveProject);
           this.trackerModelSave(prepareNet.toFile);
-          this.setUnsavedChanges({
+          this.updateUnsavedChanges({
             networkId: netId, 
             value: false
           });
+          saveProjectToLocalStore(prepareNet.toLocal, this);
         })
         .catch((error) => {})
         .finally(()=> {

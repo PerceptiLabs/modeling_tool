@@ -59,6 +59,7 @@
     mounted() {
       if(localStorage.hasOwnProperty('targetProject')) {
         const targetProjectId = parseInt(localStorage.getItem('targetProject'));
+        this.$store.commit('mod_workspace-changes/get_workspaceChangesInLocalStorage')
         this.loadProjectFromLocalStorage(targetProjectId)
         // get all project and set current one in page title
         this.getProjects()

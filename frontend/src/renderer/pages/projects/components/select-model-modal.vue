@@ -125,9 +125,10 @@ export default {
             addNetwork:                 'mod_workspace/ADD_network',
             createProjectModel:         'mod_project/createProjectModel',
             getModelMeta:               'mod_project/getModel',
+            getProjects:                'mod_project/getProjects',
             showErrorPopup:             'globalView/GP_errorPopup',
             isDirExists:                'mod_api/API_isDirExist',
-            API_getRootFolder:           'mod_api/API_getRootFolder'
+            API_getRootFolder:          'mod_api/API_getRootFolder'
         }),
         closeModal() {
             this.$emit('close');
@@ -194,7 +195,8 @@ export default {
                     modelType = basicTemplates[chosenTemplate].title;
                 }
             });
-            
+
+            this.getProjects();
             this.$store.dispatch('mod_tracker/EVENT_modelCreation', modelType, {root: true});
 
             this.closeModal();

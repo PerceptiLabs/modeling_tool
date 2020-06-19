@@ -858,7 +858,6 @@ const actions = {
     };
     coreRequest(theData)
       .then((data)=> {
-        console.log('API_getModelStatus answer', data);
         dispatch('mod_workspace/SET_statusNetworkCoreDinamically', {
           ...data,
           modelId: modelId,

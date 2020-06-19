@@ -211,8 +211,9 @@ const mutations = {
     const keys = Object.keys(localStorage)
       .filter(key =>
         key.startsWith('_network.') &&
-        key !== '_network.ids'&&
-        key !== '_network.meta')
+        key !== '_network.ids' &&
+        key !== '_network.meta' &&
+        key !== '_network.changes')
       .sort((a,b) => parseInt(a.replace('_network.', '')) - parseInt(b.replace('_network.', '')));
 
     for(const key of keys) {
@@ -1518,7 +1519,7 @@ const actions = {
   },
   ADD_element({commit, getters, dispatch}, { event, setChangeToWorkspaceHistory = true }) {
     commit('add_element', {getters, dispatch, event, setChangeToWorkspaceHistory})
-    commit('mod_workspace-changes/set_hasUnsavedChanges', {
+    dispatch('mod_workspace-changes/updateUnsavedChanges', {
       networkId: getters.GET_currentNetworkId,
       value: true
     }, {root: true});
@@ -1528,21 +1529,21 @@ const actions = {
       commit('delete_element', {getters, dispatch});
       dispatch('mod_api/API_getOutputDim', null, {root: true});
     }
-    commit('mod_workspace-changes/set_hasUnsavedChanges', {
+    dispatch('mod_workspace-changes/updateUnsavedChanges', {
       networkId: getters.GET_currentNetworkId,
       value: true
     }, {root: true});
   },
   ADD_arrow({commit, getters, dispatch}, stopID) {
     commit('add_arrow', {dispatch, stopID})
-    commit('mod_workspace-changes/set_hasUnsavedChanges', {
+    dispatch('mod_workspace-changes/updateUnsavedChanges', {
       networkId: getters.GET_currentNetworkId,
       value: true
     }, {root: true});
   },
   DELETE_arrow({commit, getters, dispatch}, arrow) {
     commit('delete_arrow', {dispatch, arrow})
-    commit('mod_workspace-changes/set_hasUnsavedChanges', {
+    dispatch('mod_workspace-changes/updateUnsavedChanges', {
       networkId: getters.GET_currentNetworkId,
       value: true
     }, {root: true});
@@ -1565,9 +1566,9 @@ const actions = {
   SET_elementOutputDim({commit, getters}, value) {
     commit('set_elementOutputDim', {getters, value})
   },
-  CHANGE_elementPosition({commit, getters}, value) {
+  CHANGE_elementPosition({commit, getters, dispatch}, value) {
     commit('change_elementPosition', {value, getters})
-    commit('mod_workspace-changes/set_hasUnsavedChanges', {
+    dispatch('mod_workspace-changes/updateUnsavedChanges', {
       networkId: getters.GET_currentNetworkId,
       value: true
     }, {root: true});
