@@ -1,3 +1,0 @@
-frontend/src/dist/
-
-frontend/static_file_server/

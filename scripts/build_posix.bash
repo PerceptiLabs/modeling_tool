@@ -49,18 +49,6 @@ maybe_set_up_linux(){
   sudo apt-get install -y nodejs || { exit 1; }
 }
 
-maybe_set_up_osx(){
-  test "${OS}" = "osx" || return 0
-
-  echo "Updating Homebrew..."
-  brew update --verbose
-  brew install rename tree gnu-sed
-
-  echo "Installing node..."
-  brew install node
-  brew link --overwrite node # To replace old symbolic links
-}
-
 set_up(){
   maybe_set_up_linux
   maybe_set_up_osx
@@ -203,31 +191,6 @@ build_wheel(){
   python -c "import perceptilabs" || { exit 1; }
 }
 
-assemble_core_docker(){
-  cp ${PROJECT_ROOT}/Docker/Core/setup.py ${BUILD_TMP}
-
-  mv ${BUILD_TMP}/Per
-
-  mv ${BUILD_TMP}/main.py ${BUILD_TMP}/main.pyx
-  find ${BUILD_TMP}/perceptilabs -name "__init__.py" -exec rename -v 's/\.py$/\.pyx/i' {} \;
-
-  # --- do the compilation
-  echo "C compiling"
-  pushd_q ${BUILD_TMP}
-  python setup.py build_ext --inplace --user || { exit 1; }
-  popd_q
-
-  # Remove files so that they won't be copied to the container
-  echo "Cleaning up after the compilation"
-  find ${BUILD_TMP}/perceptilabs -type f -name '*.c' -exec rm '{}' +
-  find ${BUILD_TMP}/perceptilabs -type f -name '*.py' -exec rm '{}' +
-  rm -r ${BUILD_TMP}/build
-  mv ${BUILD_TMP}/main.pyx ${BUILD_TMP}/main.py
-  find ${BUILD_TMP}/perceptilabs -name "__init__.pyx" -exec rename -v 's/\.pyx$/\.py/i' {} \;
-
-  cp -r ${PROJECT_ROOT}/Docker/Core/* ${BUILD_TMP}
-}
-
 maybe_build_core_docker(){
   test -z "${DO_DOCKER_BUILD}" && {
     echo "You can now run docker build";
@@ -266,8 +229,6 @@ set_up_for_tests(){
 }
 
 run_lint_test(){
-  cp ${SCRIPTS}/test_cython.py ${BUILD_TMP}
-
   echo "running pylint"
   pushd_q ${PROJECT_ROOT}
   python ${SCRIPTS}/test_pylint.py ${SCRIPTS}/included_files_common.txt || { exit 1; }

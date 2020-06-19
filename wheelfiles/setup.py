@@ -18,11 +18,12 @@ REQUIREMENTS_FILENAMES = [
     "requirements_wheel_rygg.txt",
 ]
 
-ROOTS = [
-        "perceptilabs",
-        "rygg",
-        "static_file_server"
-        ]
+# don't compile perceptilabs_runner
+CYTHON_ROOTS = [
+    "perceptilabs",
+    "rygg",
+    "static_file_server",
+]
 
 def relative_file(thisfile, name):
     dirname = pathlib.Path(thisfile).parent.absolute()
@@ -46,7 +47,8 @@ def is_special(path):
 
 
 def is_migration(path):
-    return re.match(".*\/\d{4}_.*.py", path) is not None
+    MIGRATION_PATTERN = "\\b\d{4}_.*.py$"
+    return re.search(MIGRATION_PATTERN, path) is not None
 
 
 def make_extension(path):
@@ -64,8 +66,7 @@ def get_modules_to_cythonize(root):
 
 
 def get_all_modules_to_cythonize():
-    return [module for root in ROOTS for module in get_modules_to_cythonize(root)]
-
+    return [module for root in CYTHON_ROOTS for module in get_modules_to_cythonize(root)]
 
 def get_all_cy_extensions():
     return [make_extension(module) for module in get_all_modules_to_cythonize()]
@@ -79,7 +80,6 @@ class build_py(_build_py):
         for pkg, mod, file_ in modules:
             if file_.endswith("__init__.py") or file_.endswith("__main__.py"):
                 kept_modules.append((pkg, mod, file_))
-
         return kept_modules
 
 setup(
@@ -102,14 +102,11 @@ setup(
             "*.json",
             "insights/csv_ram_estimator/*.csv",
             "script/templates/*.j2",
-            'dataschema/*.json',
+            "dataschema/*.json",
             "core_new/layers/templates/*.j2",
-            "*.npy",
+            "tutorial_data/*.npy",
         ],
-        # TODO: add migrations programmatically
-        "rygg": [
-            "api/migrations/*.py",
-        ],
+        "rygg": ["api/migrations/*.py",],
         "static_file_server": [
             "dist/index.html",
             "dist/static/*",
@@ -127,9 +124,12 @@ setup(
             "dist/static/styles/*.css",
             "dist/static/videos/*.mp4",
             "dist/static/webworkers/*.js",
-        ]
+        ],
+        "perceptilabs_runner": ["perceptilabs_runner.py"],
     },
-    ext_modules=cythonize(get_all_cy_extensions()),
+    ext_modules=cythonize(
+        get_all_cy_extensions(), compiler_directives={"language_level": 3}
+    ),
     cmdclass={"build_py": build_py},
-    scripts=["perceptilabs_runner.py"],
+    scripts=[],
 )

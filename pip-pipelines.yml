@@ -28,6 +28,14 @@ jobs:
           artifact: osx_3.7_wheel
           image: 'macOS-10.14'
           pyver: '3.7'
+        win_py3.6:
+          artifact: windows_3.6_wheel
+          image: "vs2017-win2016"
+          pyver: '3.6'
+        win_py3.7:
+          artifact: windows_3.7_wheel
+          image: "vs2017-win2016"
+          pyver: '3.7'
 
     pool:
         vmImage: $(image)
@@ -52,8 +60,7 @@ jobs:
 
     - bash: |
         cd scripts/
-        chmod 755 build_posix.bash
-        ./build_posix.bash wheel
+        python build.py wheel
       displayName: 'Build'
 
     - publish: $(Build.Repository.LocalPath)/build/out/
@@ -97,68 +104,3 @@ jobs:
         displayName: Gather And Push Artifacts to PyPI
         failOnStderr: true
 
-
-# ### BUILD WINDOWS ###
-  #
-  # - job: build_windows_py36
-  #   pool:
-  #       vmImage: "vs2017-win2016"
-  #   variables:
-  #     - group: Windows-build
-  #   steps:
-  #   - task: FileTransform@2
-  #     inputs:
-  #       folderPath: '$(System.DefaultWorkingDirectory)/'
-  #       xmlTransformationRules:
-  #       jsonTargetFiles: '**/app_variables.json'
-  #
-  #   - task: UsePythonVersion@0
-  #     inputs:
-  #       versionSpec: '3.6'
-  #       architecture: 'x64'
-  #       addToPath: true
-  #
-  #   - script: |
-  #       cd scripts/
-  #       ./setup_windows.bat
-  #     displayName: 'Environment setup'
-  #
-  #   - script: |
-  #       cd scripts/
-  #       ./build_windows_wheel.bat
-  #     displayName: 'Build'
-  #
-  #   - publish: $(Build.Repository.LocalPath)/build/out/
-  #     artifact: windows_3.6_wheel
-  #
-  #
-  # - job: build_windows_py37
-  #   pool:
-  #       vmImage: "vs2017-win2016"
-  #   variables:
-  #   - group: Windows-build
-  #   steps:
-  #   - task: FileTransform@2
-  #     inputs:
-  #       folderPath: '$(System.DefaultWorkingDirectory)/'
-  #       xmlTransformationRules:
-  #       jsonTargetFiles: '**/app_variables.json'
-  #
-  #   - task: UsePythonVersion@0
-  #     inputs:
-  #       versionSpec: '3.7'
-  #       architecture: 'x64'
-  #       addToPath: true
-  #
-  #   - script: |
-  #       cd scripts/
-  #       ./setup_windows.bat
-  #     displayName: 'Environment setup'
-  #
-  #   - script: |
-  #       cd scripts/
-  #       ./build_windows_wheel.bat
-  #     displayName: 'Build'
-  #
-  #   - publish: $(Build.Repository.LocalPath)/build/out/
-  #     artifact: windows_3.7_wheel

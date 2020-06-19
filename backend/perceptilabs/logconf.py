@@ -10,13 +10,13 @@ import perceptilabs
 
 
 APPLICATION_LOGGER = 'perceptilabs.applogger'
-APPLICATION_LOG_FILE = 'kernel.log'
+APPLICATION_LOG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)),'kernel.log')
 APPLICATION_LOG_FORMAT = '%(asctime)s - %(levelname)s - %(threadName)s - %(filename)s:%(lineno)d - %(message)s'
 APPLICATION_LOG_LEVEL = logging.INFO
 
 
 DATA_LOGGER = 'perceptilabs.datalogger'
-DATA_LOG_FILE = 'data.log'
+DATA_LOG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)),'data.log')
 
 
 def setup_application_logger():
@@ -126,7 +126,7 @@ def upload_logs(session_id):
         zip_full_path = zip_path_no_ext + '.zip'
 
         shutil.make_archive(zip_path_no_ext, 'zip', root_dir=directory_path)
-        shutil.copyfile(zip_full_path, 'bundle.zip') # TODO: only in debug mode??
+        shutil.copyfile(zip_full_path, os.path.join(os.path.dirname(os.path.abspath(__file__)),'bundle.zip')) # TODO: only in debug mode??
 
         for uploader in data_uploaders:
             uploader.upload(zip_full_path)

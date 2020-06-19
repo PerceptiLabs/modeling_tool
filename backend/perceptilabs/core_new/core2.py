@@ -240,6 +240,8 @@ class Core:
 
 
     def _handle_name_error(self, exception):
+        node, true_lineno = self._line_to_node_map.get(exception.lineno, (None, None))
+        
         message = f'SyntaxError:\n\n' + \
                   f'File "{exception.filename}"\n' + \
                   f'origin {node.layer_id}, line {true_lineno} [{node.layer_type}]\n' +\

@@ -1,11 +1,14 @@
 licenses/PerceptiLabs EULA.txt
 
+perceptilabs_runner/__init__.py
+perceptilabs_runner/perceptilabs_runner.py
+
 rygg/requirements_wheel_rygg.txt
 rygg/rygg/__init__.py
 rygg/rygg/api/__init__.py
 rygg/rygg/api/admin.py
 rygg/rygg/api/apps.py
-rygg/rygg/api/migrations/
+rygg/rygg/api/migrations
 rygg/rygg/api/models.py
 rygg/rygg/api/serializers.py
 rygg/rygg/api/tests.py
