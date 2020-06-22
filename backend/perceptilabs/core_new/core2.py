@@ -175,6 +175,12 @@ class Core:
         self._closed_by_server = False
         self._closed_by_force = False
         self._collected_start_metrics = False
+
+
+        self._time_paused = 0
+        self._paused_time_stamp = None
+        self._time_started = None
+        self._time_ended = None
         
     def run(self, graph_spec, session_id: str=None, on_iterate: List[Callable]=None, auto_close=False):
         self._graph_spec = graph_spec
@@ -333,7 +339,9 @@ class Core:
         if self._graph_spec is not None:
             collect_end_metrics(self._graph_spec, self._last_graph, self._session_id, session_info)
         self._time_ended = time.time()
-        
+        if self._paused_time_stamp is not None:
+            self._time_paused += self._time_ended - self._paused_time_stamp
+            self._paused_time_stamp = None
     def _on_log_message(self, message):
         pass    
 
@@ -413,11 +421,14 @@ class Core:
     def request_pause(self):
         if self._client is not None:
             self._client.request_pause()
+            self._paused_time_stamp = time.time()
         else:
             logger.warning("Requested pause but training client not set!!")
 
     def request_unpause(self):
         self._client.request_resume()
+        self._time_paused += time.time() - self._paused_time_stamp
+        self._paused_time_stamp = None
     
     def request_headless_activate(self):
         self._client.request_headless_activate()
@@ -456,10 +467,15 @@ class Core:
     def training_duration(self):
         if self._time_started is None:
             return None
-        if self._time_ended is None:
-            return time.time() - self._time_started
         else:
-            return self._time_ended - self._time_started
+            if self._paused_time_stamp is None:
+                if self._time_ended is None:
+                    return time.time() - self._time_started - self._time_paused
+                else:
+                    return self._time_ended - self._time_started - self._time_paused
+            else:
+                return self._paused_time_stamp - self._time_started - self._time_paused
+
 
     @property
     @deprecated

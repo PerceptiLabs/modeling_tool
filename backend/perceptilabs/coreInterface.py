@@ -583,7 +583,8 @@ class coreLogic():
                     "Progress": progress,
                     "CPU": cpu,
                     "GPU": gpu,
-                    "Memory": mem
+                    "Memory": mem,
+                    "Training_Duration": self.savedResultsDict["training_duration"]
                 }
                 return result
             else:

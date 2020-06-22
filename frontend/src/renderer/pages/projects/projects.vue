@@ -55,7 +55,7 @@
             | Name
           div.column-2 Status
           div.column-3 Saved Version
-          div.column-4 Session End Time
+          div.column-4 Training Time
           div.column-5 Collaborators
           div.column-6 Last Modified
         div.models-list-row.model-list-item(
@@ -95,7 +95,7 @@
             span(v-if="!!model.apiMeta.saved_version_location" @click.stop="" v-tooltip:right="model.apiMeta.saved_version_location") Exported
             span(v-else @click.stop="") Not Exported
           div.column-4
-            span(@click.stop="") -
+            span(@click.stop="") {{ model && model.networkMeta && model.networkMeta.coreStatus && model.networkMeta.coreStatus.Training_Duration ? model.networkMeta.coreStatus.Training_Duration.toFixed(2) + 's' : '-' }}
           div.column-5
             collaborator-avatar(
                 @click.stop=""

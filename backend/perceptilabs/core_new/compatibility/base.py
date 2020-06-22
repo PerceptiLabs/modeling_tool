@@ -80,6 +80,7 @@ class CompatibilityCore:
             if len(graphs) > 0:
                 logger.debug(f"Processing {len(graphs)} graph snapshots")
                 self.results = self._get_results_dict(graphs, self.results)
+                self.results['training_duration'] = core.training_duration
                 self._result_queue.put(copy.deepcopy(self.results))
             
         set_tensorflow_mode('graph')
