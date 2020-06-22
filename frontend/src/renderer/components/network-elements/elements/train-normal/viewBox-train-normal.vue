@@ -87,7 +87,7 @@
 <script>
   import ChartSwitch      from "@/components/charts/chart-switch";
   import viewBoxMixin   from "@/core/mixins/net-element-viewBox.js";
-
+  import { mapActions } from 'vuex';
 
   export default {
     name: "ViewBoxTrainNormal",
@@ -151,11 +151,19 @@
       }
     },
     watch: {
-      // testIsOpen(newVal) {
-      //   newVal ? this.setTab('Prediction') : null
-      // }
+      testIsOpen(newVal) {
+        newVal ? this.setTab('Prediction') : null
+      }
     },
     methods: {
+      ...mapActions({
+        tutorialPointActivate:    'mod_tutorials/pointActivate',
+      }),
+      setTab(name, id) {
+        this.currentTab = name;
+        this.setTabAction();
+        this.tutorialPointActivate({way: 'next', validation: id})
+      },
       getData() {
         switch (this.currentTab) {
           case 'Prediction':
