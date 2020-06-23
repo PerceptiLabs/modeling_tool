@@ -114,11 +114,18 @@ backend/perceptilabs/core_new/layers/utils.py
 # backend/perceptilabs/core_new/layers/templates/
 backend/perceptilabs/core_new/layers/templates/__init__.py
 backend/perceptilabs/core_new/layers/templates/base.py
+backend/perceptilabs/core_new/layers/templates/custom.j2
 backend/perceptilabs/core_new/layers/templates/datadata.j2
+backend/perceptilabs/core_new/layers/templates/dataenv.j2
+backend/perceptilabs/core_new/layers/templates/datarandom.j2
 backend/perceptilabs/core_new/layers/templates/file_utils.j2
 backend/perceptilabs/core_new/layers/templates/tf1x.j2
-backend/perceptilabs/core_new/layers/templates/tf1x_utils.j2
 backend/perceptilabs/core_new/layers/templates/tf1x_classification.j2
+backend/perceptilabs/core_new/layers/templates/tf1x_gan.j2
+backend/perceptilabs/core_new/layers/templates/tf1x_object_detection.j2
+backend/perceptilabs/core_new/layers/templates/tf1x_regression.j2
+backend/perceptilabs/core_new/layers/templates/tf1x_utils.j2
+backend/perceptilabs/core_new/layers/templates/utils.py
 
 # backend/perceptilabs/insights/csv_ram_estimator/
 backend/perceptilabs/insights/__init__.py
