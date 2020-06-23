@@ -109,6 +109,7 @@ const workspaceSaveNet = {
         .finally(()=>  this.refreshSavePopup())
     },
     saveNetwork(netInfo, netId, saveProjectPath) {
+      
       const networkField = this.$refs.networkField[0].$refs.network;
       networkField.style.filter = 'blur(5px)';
 
@@ -129,7 +130,7 @@ const workspaceSaveNet = {
               'Location': [pathSaveProject],
               'frontendNetwork': prepareNet.toFile,
               'networkName': this.currentNetwork.networkName
-            })
+            }).catch(() => Promise.reject())
           }
           else {
             // /*app save*/
@@ -138,7 +139,8 @@ const workspaceSaveNet = {
             const payload = {
               path: prepareNet.toLocal.pathProject
             };
-            return this.$store.dispatch('mod_api/API_saveJsonModel', payload);
+            return this.$store.dispatch('mod_api/API_saveJsonModel', payload)
+              .catch(() => Promise.reject());
             
           }
         })
@@ -158,7 +160,9 @@ const workspaceSaveNet = {
           });
           saveProjectToLocalStore(prepareNet.toLocal, this);
         })
-        .catch((error) => {})
+        .catch((error) => {
+          this.$store.dispatch('globalView/GP_errorPopup','Kernel is not connected');
+        })
         .finally(()=> {
           networkField.style.filter = '';
         });

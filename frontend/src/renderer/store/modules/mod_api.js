@@ -110,10 +110,10 @@ const actions = {
           }
         });
   },
-  coreStatusWatcher({dispatch}) {
+  coreStatusWatcher({dispatch}) {  
     setInterval(() => {
-      dispatch('checkCoreAvailability')
-    }, 2000)
+    dispatch('checkCoreAvailability')
+  }, 2000)
   },
   API_runServer({state, dispatch, commit, rootGetters}) {
     let timer;
@@ -463,6 +463,7 @@ const actions = {
       .then((data)=> data)
       .catch((err)=> {
         console.error('SaveTrained answer', err);
+        return Promise.reject();
       });
   },
   API_saveModel({dispatch, getters, rootGetters}, {model}) {
@@ -514,6 +515,7 @@ const actions = {
       .then((data)=> data)
       .catch((err)=> {
         console.error('saveJsonModel answer', err);
+        return Promise.reject();
       });
   },
 
@@ -801,7 +803,10 @@ const actions = {
       })
       .catch((err)=> {
         console.error(err);
-        dispatch('globalView/GP_errorPopup', err, {root: true});
+        if(settings.Type !== 'ipynb') {
+          dispatch('globalView/GP_errorPopup', 'Kernel is not connected', {root: true});
+        }
+        // dispatch('globalView/GP_errorPopup', err, {root: true});
         trackerData.result = 'error';
       })
       .finally(()=> {
@@ -818,12 +823,17 @@ const actions = {
   
       if (settings.Type === 'ipynb') {
         // current 'this' is the Vuex store object
-        const payload = await createNotebookJson(this);
-        return ({
-          ...settings,
-          frontendNetwork: settings.name,
-          NotebookJson: payload
-        });
+        try {
+          const payload = await createNotebookJson(this);
+          return ({
+            ...settings,
+            frontendNetwork: settings.name,
+            NotebookJson: payload
+          });
+        } 
+        catch(err) {
+          dispatch('globalView/GP_errorPopup', 'Kernel is not connected', {root: true});
+        }
       }
     }
   },
