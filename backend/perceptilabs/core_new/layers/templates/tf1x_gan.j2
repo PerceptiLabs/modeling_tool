@@ -52,12 +52,12 @@
         # Make validation set
         dataset_val = tf.data.Dataset.zip((
             tf.data.Dataset.from_generator(
-                real_data_node.layer_instance.make_generator_training,
+                real_data_node.layer_instance.make_generator_validation,
                 output_shapes=real_data_node.layer_instance.sample.shape,
                 output_types=np.float32                
             ),
             tf.data.Dataset.from_generator(
-                random_data_node.layer_instance.make_generator_training,
+                random_data_node.layer_instance.make_generator_validation,
                 output_shapes=random_data_node.layer_instance.sample.shape,
                 output_types=np.float32
             )
@@ -66,12 +66,12 @@
         # Make testing set
         dataset_tst = tf.data.Dataset.zip((
             tf.data.Dataset.from_generator(
-                real_data_node.layer_instance.make_generator_training,
+                real_data_node.layer_instance.make_generator_testing,
                 output_shapes=real_data_node.layer_instance.sample.shape,
                 output_types=np.float32                
             ),
             tf.data.Dataset.from_generator(
-                random_data_node.layer_instance.make_generator_training,
+                random_data_node.layer_instance.make_generator_testing,
                 output_shapes=random_data_node.layer_instance.sample.shape,
                 output_types=np.float32
             )
@@ -756,6 +756,6 @@ class {{layer_name}}(GANLayer):
         iteration = self.epoch * n_iterations_per_epoch + \
                     self.training_iteration + self.validation_iteration
         
-        progress = min(iteration/(n_iterations_total - 1), 1.0) 
+        progress = min(iteration/(n_iterations_total - 1), 1.0)
         return progress
 {% endmacro %}
