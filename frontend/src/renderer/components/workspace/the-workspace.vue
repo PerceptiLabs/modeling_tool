@@ -9,7 +9,7 @@
     component(:is="toolbarType")
 
     .workspace_content.bookmark_content.js-workspace(
-      v-if="!isNotebookMode"  
+      v-show="!isNotebookMode"  
       ref="workspaceNet"
       :class="{'workspace-relative' : showTrainingSpinner}"
       )
@@ -58,30 +58,31 @@
         general-result(v-if="showGlobalResult")
         select-core-side(v-if="showCoreSide")
         workspace-before-import(v-if="showWorkspaceBeforeImport")
-        workspace-save-network(
-          v-if="saveNetworkPopup.show"
-          ref="saveNetworkPopup"
-          :popup-settings="saveNetworkPopup"
-          )
         workspace-load-network(
           v-if="showLoadSettingPopup" 
         )
-        export-network(v-if="showExportNetworkPopup")
 
       start-training-spinner(v-if="showTrainingSpinner")
-      file-picker-popup(
-        v-if="showFilePickerPopup"
-        :filePickerType="showFilePickerPopup.filePickerType"
-        :fileTypeFilter="showFilePickerPopup.fileTypeFilter"
-        :popupTitle="showFilePickerPopup.popupTitle"
-        :confirmCallback="showFilePickerPopup.confirmCallback || showFilePickerPopup")
-      //- showFilePickerPopup container the callback function
 
     .workspace_meta(
       v-if="!isNotebookMode"  
       )
       include ./meta/workspace-meta.pug
     notebook(v-if="isNotebookMode")
+
+    workspace-save-network(
+      v-if="showSaveNetworkPopup"
+      ref="saveNetworkPopup"
+      :popup-settings="saveNetworkPopup"
+      )
+    export-network(v-if="showExportNetworkPopup")
+    file-picker-popup(
+      v-if="showFilePickerPopup"
+      :filePickerType="showFilePickerPopup.filePickerType"
+      :fileTypeFilter="showFilePickerPopup.fileTypeFilter"
+      :popupTitle="showFilePickerPopup.popupTitle"
+      :confirmCallback="showFilePickerPopup.confirmCallback || showFilePickerPopup")
+      //- showFilePickerPopup container the callback function
 </template>
 
 <script src="./the-workspace.js"></script>

@@ -72,6 +72,7 @@ export default {
       isStoryBoard:           'mod_tutorials/getIsTutorialStoryBoard',
       isLogin:                'mod_user/GET_userIsLogin',
       networkHistory:         'mod_workspace-history/GET_currentNetHistory',
+      isNotebookMode:         'mod_notebook/getNotebookMode',
     }),
     ...mapState({
       currentProjectId:     state => state.mod_project.currentProject,
@@ -464,8 +465,8 @@ export default {
             {label: 'Import Model',    active: this.openLoadModelPopup},
             {label: "View Projects", active: this.setActivePage},
             {type: 'separator'},
-            {label: 'Save',         accelerator: this.isMac ? 'meta+s' : 'ctrl+s',              enabled: this.openApp,  active: this.saveModel },
-            {label: 'Save as',   accelerator: this.isMac ? 'meta+shift+s' : 'ctrl+shift+s',  enabled: this.openApp,  active: this.saveModelAs },
+            {label: 'Save',         accelerator: this.isMac ? 'meta+s' : 'ctrl+s',              enabled: this.openApp && !this.isNotebookMode,  active: this.saveModel },
+            {label: 'Save as',   accelerator: this.isMac ? 'meta+shift+s' : 'ctrl+shift+s',     enabled: this.openApp && !this.isNotebookMode,  active: this.saveModelAs },
             {type: 'separator'},
             {label: 'Export',  active: this.exportModel,        enabled: this.openApp},
             {type: 'separator'},

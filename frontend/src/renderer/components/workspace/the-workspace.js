@@ -93,6 +93,7 @@ export default {
       showCoreSide:               state => state.globalView.globalPopup.showCoreSideSettings,
       showFilePickerPopup:        state => state.globalView.globalPopup.showFilePickerPopup,
       showLoadSettingPopup:       state => state.globalView.globalPopup.showLoadSettingPopup,
+      showSaveNetworkPopup:       state => state.globalView.globalPopup.showSaveNetworkPopup,
       showExportNetworkPopup:     state => state.globalView.globalPopup.showExportNetworkPopup,
     }),
 

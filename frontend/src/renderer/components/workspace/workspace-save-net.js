@@ -81,7 +81,7 @@ const workspaceSaveNet = {
       }
     },
     eventSaveNetworkAs(netId, isSaveProjectPath) {
-      this.saveNetworkPopup.show = true;
+      this.$store.dispatch('globalView/SET_saveNetworkPopup', true);
       this.askSaveFilePopup()
         .then(async (answer)=> {
           if(answer) {
@@ -102,11 +102,14 @@ const workspaceSaveNet = {
         .catch((err)=> console.log(err))
     },
     askSaveFilePopup() {
-      this.saveNetworkPopup.show = true;
+      this.$store.dispatch('globalView/SET_saveNetworkPopup', true);
       return this.$nextTick()
-        .then(()=>     this.$refs.saveNetworkPopup[0].openPopup())
+        .then(()=>     this.$refs.saveNetworkPopup.openPopup())
         .catch((err)=> this.infoPopup('Model not saved'))
-        .finally(()=>  this.refreshSavePopup())
+        .finally(()=> {
+          this.refreshSavePopup();
+          this.$store.dispatch('globalView/SET_saveNetworkPopup', false);
+        });
     },
     saveNetwork(netInfo, netId, saveProjectPath) {
       
@@ -185,6 +188,7 @@ const workspaceSaveNet = {
             .then((canvas)=> {
               resolve(canvas.toDataURL());
             })
+            .catch(error => { resolve() })
             .finally(()=> {
               svg.style.display = '';
               arrowsCanvas.remove();

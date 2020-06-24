@@ -22,6 +22,7 @@ const state = {
     coreNotFoundPopup: false,
     showFilePickerPopup: false,
     showLoadSettingPopup: false,
+    showSaveNetworkPopup: false,
     showExportNetworkPopup: false
   },
   popupConfirmCancel: null,
@@ -87,6 +88,9 @@ const mutations = {
   set_loadSettingPopup(state, value) {
     state.globalPopup.showLoadSettingPopup = value.visible;
     state.popupConfirmOk = value.ok;
+  },
+  set_saveNetworkPopup(state, value) {
+    state.globalPopup.showSaveNetworkPopup = value;
   },
   set_exportNetworkPopup(state, value) {
     state.globalPopup.showExportNetworkPopup = value;
@@ -163,6 +167,9 @@ const actions = {
   },
   SET_loadSettingPopup({commit}, value) {
     commit('set_loadSettingPopup', value);
+  },
+  SET_saveNetworkPopup({commit}, value) {
+    commit('set_saveNetworkPopup', value);
   },
   SET_exportNetworkPopup({commit}, value) {
     commit('set_exportNetworkPopup', value);
