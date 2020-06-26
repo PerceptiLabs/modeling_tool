@@ -64,6 +64,7 @@ export default {
       let className = '';
       switch (this.currentLayer.componentName) {
         case 'DataData':
+        case 'DataRandom':
         case 'DataEnvironment':
           className = 'net-color-data';
           break;
@@ -88,9 +89,12 @@ export default {
         case 'TrainLoss':
         case 'TrainOptimizer':
         case 'TrainDetector':
+        case 'TrainGan':
+        case 'TrainRegression':
           className = 'net-color-train';
           break;
         case 'MathArgmax':
+        case 'MathSwitch':
         case 'MathMerge':
         case 'MathSplit':
         case 'MathSoftmax':
@@ -105,6 +109,9 @@ export default {
           break;
         case 'LayerContainer':
           className = 'net-color-layercontainer';
+          break;
+        case 'LayerCustom':
+          className = 'net-color-custom';
           break;
       }
       return [className];

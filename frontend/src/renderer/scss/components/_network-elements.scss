@@ -25,7 +25,7 @@ $layers-sidebar: (
   'train': $color-2,
   'math': #6167ee,
   'learn-class': #b061ee,
-  'custom': #4a5367,
+  'custom': #3a4357,
   'layercontainer': #9af142,
 );
 @each $name, $color in $layers-sidebar {
