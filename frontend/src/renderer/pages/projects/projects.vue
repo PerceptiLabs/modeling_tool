@@ -10,7 +10,7 @@
         div.left-side
           span.import-button-container(
             @click="openLoadModelPopup()"
-            v-tooltip:bottom="'Import Modal'"
+            v-tooltip:bottom="'Import Model'"
             )
             img(src="../../../../static/img/project-page/import.svg")
           span.btn-round-icon.btn-rounded-new(
@@ -54,7 +54,7 @@
               img(v-if="isAtLeastOneItemSelected()" src="../../../../static/img/project-page/checked.svg")
             | Name
           div.column-2 Status
-          div.column-3 Saved Version
+          div.column-3 Exported
           div.column-4 Training Time
           div.column-5 Collaborators
           div.column-6 Last Modified
@@ -71,7 +71,7 @@
             .editable-field
               span.model-name(
                 v-if="!isRenamingItem(index)" 
-                v-tooltip:bottom="'Click to view Model Card'" 
+                v-tooltip:bottom="'Click to open Model'" 
                 @click.stop="gotToNetworkView(model.networkID)"
               ) {{model.networkName}}
               input.rename-control(
@@ -577,7 +577,7 @@
               this.set_currentNetwork(index);
             });
         } else {
-          this.showInfoPopup("There are still haven't statistic, you should run this model first.");
+          this.showInfoPopup("The model does not have any statistics, you should run this model first");
         }
       },
       openContext(e, modelIndex) {
