@@ -6,6 +6,7 @@ const namespaced = true;
 const state = {
   currentProject: parseInt(localStorage.getItem('targetProject')) || null, // maybe we should copy all project object instead id and did modification in this one in case it wouldn't save changes.
   projectsList: [],
+  isDefaultProjectMode: false
 };
 
 const getters = {
@@ -23,8 +24,10 @@ const getters = {
     const projectExists = projectDirectoryesList.indexOf(default_directory) !== -1;
 
     return projectExists;
+  },
+  GET_isDefaultProjectMode(state) {
+    return state.isDefaultProjectMode;
   }
-
 }
 
 const mutations = {
@@ -38,10 +41,16 @@ const mutations = {
   createProject(state, payload) {
     state.projectsList.push(payload);
   },
-  removeProjectIdInLocalStorage(start, projectId) {
+  removeProjectIdInLocalStorage(state, projectId) {
     if (localStorage.getItem('targetProject') == projectId) {
       localStorage.removeItem('targetProject');
     }
+  },
+  setIsDefaultProjectMode(state) {
+    let envValue = process.env.FORCE_DEFAULT_PROJECT;
+    if (typeof envValue === 'undefined' || envValue === null) { return; }
+
+    state.isDefaultProjectMode = envValue === 'true';
   }
 };
 
@@ -107,7 +116,41 @@ const actions = {
         ctx.dispatch('getProjects');
         return res.data
       })
-  }
+  },
+  getDefaultModeProject(ctx) {
+        
+    return ctx.dispatch('getProjects')
+      .then(({data: { results: projects }}) => {
+
+        const defaultProject = projects.find(p => p.name === 'Default');
+        if (!defaultProject) {
+          // create project called "Default" if it doesn't exist
+          return ctx.dispatch('prepareDefaultProjectDirectory');
+        }
+        
+        return defaultProject;    
+      })
+      .then(defaultProjectMeta => {
+        ctx.commit('selectProject', defaultProjectMeta.project_id);
+      });
+  },
+  prepareDefaultProjectDirectory(ctx) {
+    
+    return ctx.dispatch('mod_api/API_createFolder', { folder_path: '~/Documents/Perceptilabs/Default' }, {root: true})
+      .then(createFolderRes => {
+        if (!createFolderRes) { throw new Error('Problem creating project directory'); }
+
+        let createProjectReq = {
+          name: 'Default',
+          default_directory: createFolderRes
+        };
+        return ctx.dispatch('createProject', createProjectReq);
+      })
+      .then(createProjectRes => createProjectRes)
+      .catch(error => {
+        console.error(error)
+      });
+  },
 };
 
 export default {

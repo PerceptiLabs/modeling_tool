@@ -72,6 +72,7 @@ export default {
       isStoryBoard:           'mod_tutorials/getIsTutorialStoryBoard',
       isLogin:                'mod_user/GET_userIsLogin',
       networkHistory:         'mod_workspace-history/GET_currentNetHistory',
+      isDefaultProjectMode:   'mod_project/GET_isDefaultProjectMode',
       isNotebookMode:         'mod_notebook/getNotebookMode',
     }),
     ...mapState({
@@ -463,7 +464,11 @@ export default {
             // {label: 'New',     active: this.addNewNetwork},
             {type: 'separator'},
             {label: 'Import Model',    active: this.openLoadModelPopup},
-            {label: "View Projects", active: this.setActivePage},
+            ...(this.isDefaultProjectMode ?
+              [] :
+              [{label: "View Projects", active: this.setActivePage},]
+            ),
+            // {label: "View Projects", active: this.setActivePage},
             {type: 'separator'},
             {label: 'Save',         accelerator: this.isMac ? 'meta+s' : 'ctrl+s',              enabled: this.openApp && !this.isNotebookMode,  active: this.saveModel },
             {label: 'Save as',   accelerator: this.isMac ? 'meta+shift+s' : 'ctrl+shift+s',     enabled: this.openApp && !this.isNotebookMode,  active: this.saveModelAs },

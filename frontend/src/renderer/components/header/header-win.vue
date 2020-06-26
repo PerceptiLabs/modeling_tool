@@ -55,6 +55,7 @@ export default {
     routeHeaderAlias() {
       let theName = '';
       switch(this.$route.name) {
+        case 'main-page': theName = 'ModelHub'; break;
         case 'projects': theName = 'ModelHub'; break;
         case 'settings': theName = 'Settings'; break;
         case 'app':  {

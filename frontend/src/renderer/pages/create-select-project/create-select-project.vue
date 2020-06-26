@@ -146,6 +146,7 @@
         addModelFromLocalDataMutation: 'mod_workspace/add_model_from_local_data',
         clearNetworkIdsInLocalStorage: 'mod_workspace/clear_networkIdsInLocalStorage',
         setWorkspacesInLocalStorage:   'mod_workspace/set_workspacesInLocalStorage',
+        deleteNetworkById:             'mod_workspace/delete_networkById',
       }),
       ...mapActions({
         showInfoPopup:            'globalView/GP_infoPopup',
@@ -244,7 +245,6 @@
           }
         })
         .then(createProjectRes => {
-          this.getProjects();
           this.onProjectSelect(createProjectRes);
           const projectName = `project_${createProjectRes.project_id}`; 
           this.newProjectName = '';
@@ -253,6 +253,8 @@
           // console.error(error);
         })
         .finally(_ =>{
+          localStorage.removeItem('_network.ids');
+          localStorage.removeItem('_network.meta');
           this.isProjectNameModalOpen = false;
         });
       },
@@ -275,15 +277,22 @@
             text: 'There are still models inside this project, are you sure you want to delete the project and all its containing models?',
             ok: () => {
 
-              let deleteModelsPromises = theProjectModels.map(model_id => this.$store.dispatch('mod_project/deleteModel', { model_id }));
-              
+              const deleteModelsPromises = theProjectModels.map(model_id => {
+                  this.$store.dispatch('mod_project/deleteModel', { model_id });
+                  this.$store.dispatch('mod_api/API_closeSession', model_id, { root: true });
+              });
+
               Promise.all(deleteModelsPromises)
                 .then(()=> {
-                   this.deleteProjectAction({ projectId: contextTargetProject })
-                    .catch(e => console.log(e));
+                   return this.deleteProjectAction({ projectId: contextTargetProject });
                 })
-                .catch(e => console.log(e));
-             
+                .catch(e => console.log(e))
+                .finally(_ => {
+                  for(const id of theProjectModels) {
+                    this.deleteNetworkById(id);
+                  }
+                  this.getProjects();
+                })             
             },
           })
           return;

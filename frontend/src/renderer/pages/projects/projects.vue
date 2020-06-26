@@ -227,6 +227,7 @@
       ...mapGetters({
         user:                 'mod_user/GET_userProfile',
         currentProject:       'mod_project/GET_project',
+        isDefaultProjectMode: 'mod_project/GET_isDefaultProjectMode',
         networksWithChanges:  'mod_workspace-changes/get_networksWithChanges'
       }),
       ...mapState({
@@ -239,10 +240,6 @@
       workspaceContent() {
         return this.$store.state.mod_workspace.workspaceContent;
       },
-      filteredProjects() {
-        this.selectedProject = null;
-        return this.projects.filter((project)=> project.name.match(this.search))
-      }
     },
     watch: {
       searchValue: function (newValue) {
@@ -257,7 +254,10 @@
       currentProject: {
         immediate: true,
         handler(newVal, oldVal) {
+
           if (!this.networksWithChanges.length) {
+            if (this.isDefaultProjectMode && (!newVal || !newVal.name || newVal.name !== 'Default')) { return; }
+            // using this function because the watcher can be aggressive with changes
             if(!isSameProject(newVal,oldVal)) {
               this.reset_network();
               this.fetchNetworkMetas(newVal);
@@ -307,7 +307,6 @@
         UPDATE_MODE_ACTION : 'mod_workspace/UPDATE_MODE_ACTION',
         SET_openStatistics : 'mod_workspace/SET_openStatistics',
         SET_openTest :       'mod_workspace/SET_openTest',
-        getProjects:          'mod_project/getProjects',
         getModelMeta:         'mod_project/getModel',
         reset_network:        'mod_workspace/RESET_network',
 
@@ -459,7 +458,7 @@
 
       },
       fetchNetworkMetas(currentProject) {
-        if (!currentProject || !currentProject.models) { return; }
+        if (!currentProject || !currentProject.models || !currentProject.models.length) { return; }
 
         const promiseArray = 
           currentProject.models

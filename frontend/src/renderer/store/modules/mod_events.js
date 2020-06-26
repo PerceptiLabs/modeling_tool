@@ -183,7 +183,7 @@ const actions = {
     dispatch('mod_user/RESET_userToken', null, {root: true});
     dispatch('mod_workspace/RESET_network', null, {root: true});
     dispatch('mod_tutorials/offTutorial', null, {root: true});
-    router.replace({name: 'projects'});
+    router.replace({name: 'projects'}).catch(err => err);
     dispatch('modal_pages/setActivePageAction', MODAL_PAGE_SIGN_UP, {root: true});
   },
   EVENT_appClose({dispatch, rootState, rootGetters}, event) {

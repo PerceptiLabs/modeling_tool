@@ -175,6 +175,7 @@ const mutations = {
     state.workspaceContent.push(model);
   },
   reset_network(state) {
+    localStorage.setItem('_network.ids', JSON.stringify([]));
     state.workspaceContent = []
   },
   RESTORE_network(state, val) {
@@ -435,6 +436,28 @@ const mutations = {
     localStorage.setItem('_network.ids', JSON.stringify(theNetworkIds));
     
     state.workspaceContent.splice(index, 1);
+  },
+  delete_networkById(state, networkID) {
+
+    const networkIndex = state.workspaceContent.findIndex(w => w.networkID == networkID);
+
+    let theNetworkIds = JSON.parse(localStorage.getItem('_network.ids') || '[]');
+    theNetworkIds = theNetworkIds.filter(id => parseInt(id) !== parseInt(networkID));
+    
+    localStorage.removeItem(`_network.${networkID}`);
+    localStorage.setItem('_network.ids', JSON.stringify(theNetworkIds));
+    
+    const lastActiveId = localStorage.getItem('_network.meta');
+    if (lastActiveId) {
+      const lastActiveIdJson = JSON.parse(lastActiveId);
+      if (lastActiveIdJson.lastActiveNetworkID === networkID) {
+        localStorage.removeItem('_network.meta');
+      }
+    }
+
+    if (~networkIndex) {
+      state.workspaceContent.splice(networkIndex, 1);
+    }
   },
   //---------------
   //  LOADER FOR TRAINING

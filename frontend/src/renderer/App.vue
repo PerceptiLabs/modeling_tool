@@ -40,7 +40,7 @@
   import UpdatePopup            from '@/components/global-popups/update-popup/update-popup.vue'
   import TheInfoPopup           from "@/components/global-popups/the-info-popup.vue";
   import ConfirmPopup           from "@/components/global-popups/confirm-popup.vue";
-  import ModalPagesEngine       from '@/components/modal-pages-engine';
+  import ModalPagesEngine       from '@/components/modal-pages-engine.vue';
   import { MODAL_PAGE_PROJECT } from '@/core/constants.js';
 
   export default {
@@ -55,23 +55,27 @@
       window.addEventListener('offline', this.updateOnlineStatus);
       this.trackerInit();
       this.readUserInfo();
+      this.$store.commit('mod_project/setIsDefaultProjectMode');
     },
-    mounted() {
-      if(localStorage.hasOwnProperty('targetProject')) {
+    mounted() {      
+      if (this.isDefaultProjectMode) { 
+        // in the free version, the user is locked to a single project
+        this.getDefaultModeProject();
+      }
+      else if(localStorage.hasOwnProperty('targetProject')) {
         const targetProjectId = parseInt(localStorage.getItem('targetProject'));
         this.$store.commit('mod_workspace-changes/get_workspaceChangesInLocalStorage')
-        this.loadProjectFromLocalStorage(targetProjectId)
-        // get all project and set current one in page title
-        this.getProjects()
-          // .then(({data: { results: projects }}) => {
-          //   if(targetProjectId) {
-          //     const targetProject = projects.filter(project => project.project_id === targetProjectId)[0];
-          //     this.setPageTitleMutation(`${targetProject.name} / Models`);
-          //   }
-          // })
+        this.loadProjectFromLocalStorage(targetProjectId);
+        
+        this.getProjects();
       } else {
-        if(localStorage.hasOwnProperty('currentUser'))
-        this.setActivePageAction(MODAL_PAGE_PROJECT);
+        
+        // this section is executed on a fresh start
+        
+        this.getProjects();
+        if(localStorage.hasOwnProperty('currentUser')) {
+          this.setActivePageAction(MODAL_PAGE_PROJECT);
+        }
       }
       
       // @todo fetch models for project;
@@ -116,6 +120,7 @@
       this.checkLocalToken();
       this.$store.dispatch('mod_api/API_runServer', null, {root: true});
       // this.$store.dispatch('mod_workspace/GET_workspacesFromLocalStorage');
+            
       Analytics.hubSpot.identifyUser(this.userEmail);
       this.$nextTick(() =>{
       //   if(this.userId === 'Guest') {
@@ -140,7 +145,8 @@
     },
     computed: {
       ...mapGetters({
-        user: 'mod_user/GET_userProfile'
+        user:                   'mod_user/GET_userProfile',
+        isDefaultProjectMode:   'mod_project/GET_isDefaultProjectMode'
       }),
       platform() {
         return this.$store.state.globalView.platform
@@ -213,25 +219,31 @@
         // setPageTitleMutation: 'globalView/setPageTitleMutation',
       }),
       ...mapActions({
-        openErrorPopup:   'globalView/GP_infoPopup',
-        SET_onlineStatus: 'globalView/SET_onlineStatus',
+        openErrorPopup:         'globalView/GP_infoPopup',
+        SET_onlineStatus:       'globalView/SET_onlineStatus',
 
-        trackerInit:      'mod_tracker/TRACK_initMixPanel',
-        trackerInitUser:  'mod_tracker/TRACK_initMixPanelUser',
-        trackerCreateUser:'mod_tracker/TRACK_createUser',
-        trackerUpdateUser:'mod_tracker/TRACK_updateUser',
-        trackerAppStart:  'mod_tracker/EVENT_appStart',
+        trackerInit:            'mod_tracker/TRACK_initMixPanel',
+        trackerInitUser:        'mod_tracker/TRACK_initMixPanelUser',
+        trackerCreateUser:      'mod_tracker/TRACK_createUser',
+        trackerUpdateUser:      'mod_tracker/TRACK_updateUser',
+        trackerAppStart:        'mod_tracker/EVENT_appStart',
 
-        eventAppClose:    'mod_events/EVENT_appClose',
-        eventAppMinimize: 'mod_events/EVENT_appMinimize',
-        eventAppMaximize: 'mod_events/EVENT_appMaximize',
+        eventAppClose:          'mod_events/EVENT_appClose',
+        eventAppMinimize:       'mod_events/EVENT_appMinimize',
+        eventAppMaximize:       'mod_events/EVENT_appMaximize',
 
-        setUserToken:     'mod_user/SET_userToken',
-        readUserInfo:     'mod_user/GET_LOCAL_userInfo',
+        setUserToken:           'mod_user/SET_userToken',
+        readUserInfo:           'mod_user/GET_LOCAL_userInfo',
 
-        setActivePageAction: 'modal_pages/setActivePageAction',
-        getProjects : 'mod_project/getProjects',
-        cloud_userGetProfile:     'mod_apiCloud/CloudAPI_userGetProfile',
+        setActivePageAction:    'modal_pages/setActivePageAction',
+
+        getProjects :           'mod_project/getProjects',
+        createProject:          'mod_project/createProject',
+        getDefaultModeProject:  'mod_project/getDefaultModeProject',
+        
+        createFolder:           'mod_api/API_createFolder',
+
+        cloud_userGetProfile:   'mod_apiCloud/CloudAPI_userGetProfile',
       }),
       updateOnlineStatus() {
         this.SET_onlineStatus(navigator.onLine);
