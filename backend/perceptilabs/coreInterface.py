@@ -121,10 +121,12 @@ class coreLogic():
         return True
 
     def startCore(self,network, checkpointValues):
-        #Start the backendthread and give it the network
-
-        self.setupLogic()
         self.network=network
+        self.graphObj = Graph(network['Layers'])
+
+        self.Close()
+        self.setupLogic()
+        
         logger.debug('printing network .......\n')
 
         if logger.isEnabledFor(logging.DEBUG):        
@@ -136,8 +138,6 @@ class coreLogic():
             import json
             with open('net.json_', 'w') as f:
                 json.dump(network, f, indent=4)
-            
-        data_container = DataContainer()
 
         def backprop(layer_id):
             backward_connections = network['Layers'][layer_id]['backward_connections']
@@ -147,10 +147,9 @@ class coreLogic():
             else:
                 return layer_id
 
-        #TODO: Replace len(gpus) with a frontend choice of how many GPUs (if any) they want to use
+
         gpus = self.gpu_list()
         distributed = self.isDistributable(gpus)
-        #distributed = True
 
         use_cpus = True
 
@@ -174,53 +173,7 @@ class coreLogic():
                     labels_data_layer = backprop(targets_id)
                     layer['Properties']['InputDataId'] = input_data_layer
                     layer['Properties']['TargetDataId'] = labels_data_layer
-            
-            # TODO: Regression Distributed stuff
-
-            if layer['Type'] == 'TrainRegression':
-                if not 'Use_CPUs' in layer['Properties']:
-                    layer['Properties']['Use_CPUs'] = use_cpus
-
-            #     layer['Properties']['Distributed'] = distributed
-            #     if distributed:
-            #         targets_id = layer['Properties']['Labels']
-
-            #         for id_, name in layer['backward_connections']:
-            #             if id_ != targets_id:
-            #                 outputs_id = id_
-                    
-            #         input_data_layer = backprop(outputs_id)
-            #         labels_data_layer = backprop(targets_id)
-            #         layer['Properties']['InputDataId'] = input_data_layer
-            #         layer['Properties']['TargetDataId'] = labels_data_layer
-
-            #     else:
-            #         layer['Properties']['InputDataId'] = ''
-            #         layer['Properties']['TargetDataId'] = ''
-
-
-        self.graphObj = Graph(network['Layers'])
-        graph_dict=self.graphObj.graphs
-
-        #from perceptilabs.codehq import CodeHqNew as CodeHq
-        error_handler = CoreErrorHandler(self.issue_handler)
-
-        module_provider = ModuleProvider()
-        module_provider.load('tensorflow', as_name='tf')
-        module_provider.load('numpy', as_name='np')
-        module_provider.load('pandas', as_name='pd')
-        # module_provider.load('gym')
-        module_provider.load('json')       
-        module_provider.load('os')  
-        module_provider.load('skimage')
-        module_provider.load('dask.array', as_name='da')
-        module_provider.load('dask.dataframe', as_name='dd')                  
-
-        cache = get_cache()
-        session_history = SessionHistory(cache)
-        import uuid
-        training_sess_id = uuid.uuid4().hex
-        session_proc_handler = SessionProcessHandler(graph_dict, data_container, self.commandQ, self.resultQ, training_sess_id)
+     
 
 
         if self._core_mode == 'v1':
@@ -250,36 +203,17 @@ class coreLogic():
                 issue_handler=self.issue_handler
             )            
             
-        if self.cThread is not None and self.cThread.isAlive():
-            self.Close()
-
-            while self.cThread.isAlive():
-                time.sleep(0.05)
-
-                
-            try:
-                logger.debug("Starting core..." + repr(self.core))                
-                self.cThread=CoreThread(self.core.run, self.issue_handler)
-                self.cThread.daemon = True
-                self.cThread.start_with_traces()
-                # self.cThread.start()
-            except Exception as e:
-                message = "Could not boot up the new thread to run the computations on because of: " + str(e)
-                with self.issue_handler.create_issue(message, e) as issue:
-                    self._issue_handler.put_error(issue.frontend_message)
-                    logger.error(issue.internal_message)
-        else:
-            try:
-                logger.debug("Starting core..." + repr(self.core))                                
-                self.cThread=CoreThread(self.core.run, self.issue_handler)
-                self.cThread.daemon = True
-                self.cThread.start_with_traces()
-                # self.cThread.start()
-            except Exception as e:
-                message = "Could not boot up the new thread to run the computations on because of: " + str(e)
-                with self.issue_handler.create_issue(message, e) as issue:
-                    self.issue_handler.put_error(issue.frontend_message)
-                    logger.error(issue.internal_message)
+        try:
+            logger.debug("Starting core..." + repr(self.core))                                
+            self.cThread=CoreThread(self.core.run, self.issue_handler)
+            self.cThread.daemon = True
+            self.cThread.start_with_traces()
+            # self.cThread.start()
+        except Exception as e:
+            message = "Could not boot up the new thread to run the computations on because of: " + str(e)
+            with self.issue_handler.create_issue(message, e) as issue:
+                self.issue_handler.put_error(issue.frontend_message)
+                logger.error(issue.internal_message)
                 
         self.status="Running"
             
