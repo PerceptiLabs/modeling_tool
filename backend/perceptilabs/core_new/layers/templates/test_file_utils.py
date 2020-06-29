@@ -3,7 +3,6 @@ import numpy as np
 import pandas as pd
 import tempfile
 import skimage
-from skimage import io
 import os
 import pkg_resources
 
@@ -20,16 +19,6 @@ def npy_3000x784():
         np.save(f.name, mat)
         yield f.name
         f.close()
-
-@pytest.fixture(scope='module', autouse=True)
-def npy_directory_3000x784():
-    with tempfile.TemporaryDirectory() as f:
-        dir_path = f
-        for i in range(3):
-            file_path = os.path.join(dir_path, f'{i}.npy')
-            np.save(file_path, np.random.random((3000,784)))
-             
-        yield dir_path
 
         
 @pytest.fixture(scope='module', autouse=True)        
@@ -73,17 +62,7 @@ def npy_ordered():
         yield f.name
         f.close()
 
-@pytest.fixture(scope='module', autouse=True)
-def npy_directory_ordered():
-    with tempfile.TemporaryDirectory() as f:
-        dir_path = f
-        for i in range(3):
-            file_path = os.path.join(dir_path, f'{i}.npy')
-            mat = np.atleast_2d(np.arange(3000)).reshape(3000, 1)
-            np.save(file_path, mat)
-        yield dir_path
-
-
+        
 @pytest.fixture(scope='module', autouse=True)
 def csv_ordered():
     np.random.seed(789)    
@@ -113,12 +92,10 @@ def run_macro():
     other_imports = [
         'import numpy as np',
         'import pandas as pd',
-        'import dask',
         'import dask.array as da',
         'import dask.dataframe as dd',
         'import os',
         'import skimage',
-        'import functools',
         'import multiprocessing'
     ]
                  
@@ -141,30 +118,24 @@ def test_npy_sample_shape_ok(run_macro, npy_3000x784):
     shape = next(module.generator_123(0, 3000)).shape    
     assert shape == (784,)
 
-def test_npy_dir_lazy_sample_shape_ok(run_macro, npy_directory_3000x784):
-    module,_ = run_macro('load_npy_directory', macro_parameters={ 'path':npy_directory_3000x784, 'tag':'123', 'lazy': True})
-
-    shape = next(module.generator_123(0, 3000)).shape
-    assert shape == (784,)
     
 def test_csv_sample_shape_ok(run_macro, csv_3000x784):
     module, _ = run_macro('load_csv', macro_parameters={'path': csv_3000x784, 'tag': '123', 'lazy': False})
 
     shape = next(module.generator_123(0, 3000)).shape
     assert shape == (784,)
+
     
 def test_csv_lazy_sample_shape_ok(run_macro, csv_3000x784):
     module, _ = run_macro('load_csv', macro_parameters={'path': csv_3000x784, 'tag': '123', 'lazy': True})
     shape = next(module.generator_123(0, 3000)).shape
     assert shape == (784,)
-  
+
+    
 def test_npy_dataset_size_ok(run_macro, npy_3000x784):
     module, _ = run_macro('load_npy', macro_parameters={'path': npy_3000x784, 'tag': '123'})
     assert module.size_123 == 3000
 
-def test_npy_dir_lazy_dataset_size_ok(run_macro, npy_directory_3000x784):
-    module, _ = run_macro('load_npy_directory', macro_parameters={'path': npy_directory_3000x784, 'tag': '123', 'lazy': True})
-    assert module.size_123 == 9000
     
 def test_csv_dataset_size_ok(run_macro, csv_3000x784):
     module, _ = run_macro('load_csv', macro_parameters={'path': csv_3000x784, 'tag': '123', 'lazy': False})
@@ -174,30 +145,31 @@ def test_npy_slice_generator(run_macro, npy_ordered):
     module, _ = run_macro('load_npy', macro_parameters={'path': npy_ordered, 'tag': '123'})
     x = next(module.generator_123(1000, 3000))
     assert x == 1000
+
     
-def test_npy_dir_lazy_slice_generator(run_macro, npy_directory_ordered):
-    module, _ = run_macro('load_npy_directory', macro_parameters={'path': npy_directory_ordered, 'tag': '123', 'lazy': True})
+def test_npy_slice_generator(run_macro, npy_ordered):
+    module, _ = run_macro('load_npy', macro_parameters={'path': npy_ordered, 'tag': '123'})
     x = next(module.generator_123(1000, 3000))
     assert x == 1000
-  
+
+    
 def test_csv_slice_generator(run_macro, csv_ordered):
     module, _ = run_macro('load_csv', macro_parameters={'path': csv_ordered, 'tag': '123'})
     x = next(module.generator_123(1000, 3000))
     assert x == 1000
 
+    
 def test_csv_lazy_slice_generator(run_macro, csv_ordered):
     module, _ = run_macro('load_csv', macro_parameters={'path': csv_ordered, 'tag': '123', 'lazy': True})
     x = next(module.generator_123(1000, 3000))
     assert x == 1000
-   
+
+    
 def test_npy_all_data(run_macro, npy_3000x784):
     module, _ = run_macro('load_npy', macro_parameters={'path': npy_3000x784, 'tag': '123'})
     assert len(list(module.generator_123(0, 3000))) == 3000
 
-def test_npy_dir_lazy_all_data(run_macro, npy_directory_3000x784):
-    module, _ = run_macro('load_npy_directory', macro_parameters={'path': npy_directory_3000x784, 'tag': '123', 'lazy': True})
-    assert len(list(module.generator_123(0, 3000))) == 3000
-   
+    
 def test_csv_all_data(run_macro, csv_3000x784):
     module, _ = run_macro('load_csv', macro_parameters={'path': csv_3000x784, 'tag': '123', 'lazy': False})
     assert len(list(module.generator_123(0, 3000))) == 3000

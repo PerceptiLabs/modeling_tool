@@ -55,6 +55,7 @@
                 output_types=np.float32
             )
         ))
+        
         dataset_trn = dataset_trn.batch(self._batch_size)
         dataset_val = dataset_val.batch(self._batch_size)
         dataset_tst = dataset_tst.batch(1)                
@@ -247,6 +248,8 @@
                     loss_tensor, accuracy_tensor,
                     layer_output_tensors, layer_weight_tensors, layer_gradient_tensors
                 ])
+            #accuracy_list.append(acc)
+            #loss_list.append(loss)
 
         self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
 
@@ -269,7 +272,7 @@
                 pass
 
             self._status = 'validation'
-            sess.run(val_init)
+            sess.run(val_init)            
             try:
                 while not self._stopped:
                     validation_step()

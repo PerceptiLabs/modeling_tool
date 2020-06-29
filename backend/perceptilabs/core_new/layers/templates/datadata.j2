@@ -1,4 +1,4 @@
-{% from 'file_utils.j2' import load_npy, load_npy_directory, load_csv, load_img_dir %}
+{% from 'file_utils.j2' import load_npy, load_csv, load_img_dir %}
 
 {% macro layer_datadata(layer_name, sources, partitions, shuffle, selected_columns, seed, lazy, shuffle_buffer_size) %}
 class {{layer_name}}(DataSupervised):
@@ -24,8 +24,6 @@ class {{layer_name}}(DataSupervised):
                 {% filter remove_lspaces(8) %}
                     {% if source['type'] == 'file' and source['ext'] in ['.npy', '.npz'] %}
                         {{ load_npy(source['path'], tag) | indent(width=24)}}
-                    {% elif source['type'] == 'directory' and source['ext'] in ['.npy', '.npz'] %}
-                        {{ load_npy_directory(source['path'], tag, lazy=True) | indent(width=24)}}
                     {% elif source['type'] == 'file' and source['ext'] in ['.csv', '.txt'] %}
                         {{ load_csv(source['path'], tag, lazy, selected_columns) | indent(width=24)}}
                     {% elif source['type'] == 'directory' and source['ext'] in ['.jpg', '.png', '.jpeg', '.tif', '.tiff'] %}
@@ -51,10 +49,12 @@ class {{layer_name}}(DataSupervised):
                 val_gens_args_{{layer_name}}.append((generator_{{tag}}, trn_sz, trn_sz+val_sz))
                 tst_gens_args_{{layer_name}}.append((generator_{{tag}}, trn_sz+val_sz, trn_sz+val_sz+tst_sz))
             {% endfor %}
-        {% endfilter %}          
+        {% endfilter %}
+                    
         self._trn_gens_args = trn_gens_args_{{layer_name}}
         self._val_gens_args = val_gens_args_{{layer_name}}                                        
         self._tst_gens_args = tst_gens_args_{{layer_name}}
+                    
         self._trn_sz_tot = trn_sz_tot
         self._val_sz_tot = val_sz_tot
         self._tst_sz_tot = tst_sz_tot
@@ -111,7 +111,7 @@ class {{layer_name}}(DataSupervised):
         return gen()
 
     def make_generator_testing(self) -> Generator[np.ndarray, None, None]:
-        """Returns a generator yielding single samples of testing data."""                              
+        """Returns a generator yielding single samples of testing data."""                            
         def gen():
             for fn, lo, hi in self._tst_gens_args:
                 for x in fn(lo, hi):
