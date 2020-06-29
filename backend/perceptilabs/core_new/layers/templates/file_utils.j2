@@ -1,14 +1,53 @@
-{% macro load_npy(path, tag) %}
-    {% filter remove_lspaces(8) %}
+{% macro load_npy(path, tag, lazy=False) -%}
+{% filter remove_lspaces(8) %}
+    {% if lazy %}
+        raise NotImplementedError("Lazy loading of numpy files must be done in chunks. Try loading a directory of numpy files!")
+    {% else %}
         global matrix_{{tag}}
         matrix_{{tag}} = np.load("{{path}}", mmap_mode='r+').astype(np.float32)
+        matrix = matrix_{{tag}}
+        
         size_{{tag}} = len(matrix_{{tag}})
 
         def generator_{{tag}}(idx_lo, idx_hi):
             global matrix_{{tag}}
             yield from matrix_{{tag}}[idx_lo:idx_hi].squeeze()
-    {% endfilter %}
+    {% endif %}
+{% endfilter %}
 {% endmacro %}
+
+{% macro load_npy_directory(path, tag, lazy=False) -%}
+{% filter remove_lspaces(8) %}
+    {% if lazy %}
+        npy_read = dask.delayed(np.load)
+        global matrix_{{tag}}
+        matrix_{{tag}} = []
+        file_paths = sorted([os.path.join("{{path}}", n) for n in os.listdir("{{path}}")])
+
+        # Load all files in the path with .npy/.npz extension into a list
+        for file_path in file_paths:
+            file_load = npy_read(file_path)
+            file_shape = np.load(file_path, mmap_mode='r+').shape
+            matrix_{{tag}}.append(da.from_delayed(file_load, shape=file_shape, dtype=float))
+        
+        size_{{tag}} = file_shape[0] * len(matrix_{{tag}})
+        def generator_{{tag}}(idx_lo, idx_hi):
+            global matrix_{{tag}}
+            
+            # Concatenate all numpy arrays into a matrix the size of the dataset
+            matrix = da.concatenate(matrix_{{tag}})
+            matrix = matrix.rechunk("64MiB")
+            
+            # Bring only the values we need into memory and yield them
+            for block in matrix.blocks:
+                yield from block[idx_lo:idx_hi].astype(np.float32).compute()
+    {% else %}
+        raise NotImplementedError("Non-lazy loading of numpy file directories not implemented yet!")
+    {% endif %}
+ 
+{% endfilter %}
+{% endmacro %}
+
 
 {% macro load_csv(path, tag, lazy=False, selected_columns=none, blocksize='64MB') -%}
 {% filter remove_lspaces(8) %}

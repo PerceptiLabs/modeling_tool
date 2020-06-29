@@ -587,7 +587,7 @@ if __name__ == "__main__":
 
 
     
-    #print('2nd, 1st',t2-t1, t1-t0)
+
     
         
             

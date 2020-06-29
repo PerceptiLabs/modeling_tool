@@ -132,9 +132,13 @@ DEFINITION_TABLE = {
             'from typing import Dict, Generator',
             'import multiprocessing', 
             'import numpy as np',
-            'import skimage.io',            
+            'import skimage',
+            'from skimage import io',            
             'import pandas as pd',
-            'import dask.dataframe as dd',                                    
+            'import functools',
+            'import dask',
+            'import dask.dataframe as dd',
+            'import dask.array as da',                                    
             'from perceptilabs.core_new.utils import Picklable',
             'from perceptilabs.core_new.serialization import can_serialize, serialize'                    
         ]
