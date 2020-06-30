@@ -9,7 +9,8 @@ Vue.directive('tooltip', {
     el.addEventListener('mouseenter', insertStandardTooltip);
     el.addEventListener('mouseleave', removeStandardTooltip);
   },
-  componentUpdated: function (el) {
+  componentUpdated: function (el, binding) {
+    el.tooltipStandardBinding = binding;
     if (!el.classList.contains('tooltip-wrap')) {
       el.classList.add('tooltip-wrap');
     }

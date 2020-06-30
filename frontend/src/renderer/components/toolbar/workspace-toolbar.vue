@@ -83,7 +83,10 @@
     ul.toolbar_list
       li
         span Python 3
-        span.python-status(:class="{'connected': statusLocalCore === 'online', 'disconnected': statusLocalCore === 'offline'}")
+        span.btn.python-status(
+          :class="{'connected': statusLocalCore === 'online', 'disconnected': statusLocalCore === 'offline'}"
+          v-tooltip:bottom="kernelLabel"
+        )
     //ul.toolbar_list
       li
         button.btn.btn--toolbar(type="button"
@@ -183,6 +186,13 @@ export default {
         // 'bg-warning': this.statusTraining === 'pause',
         // 'bg-success': this.statusTraining === 'finish',
         //'bg-error': this.statusTraining === 'finish',
+      }
+    },
+    kernelLabel() {
+      if(this.statusLocalCore !== "online") {
+        return "Kenerl is not connected";
+      } else {
+        return "Kenerl is connected";
       }
     },
     statusTraining() {
