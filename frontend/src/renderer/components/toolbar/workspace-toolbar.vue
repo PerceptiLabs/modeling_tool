@@ -85,7 +85,7 @@
         span Python 3
         span.btn.python-status(
           :class="{'connected': statusLocalCore === 'online', 'disconnected': statusLocalCore === 'offline'}"
-          v-tooltip:bottom="kernelLabel"
+          v-tooltip:networkElement="kernelLabel"
         )
     //ul.toolbar_list
       li
