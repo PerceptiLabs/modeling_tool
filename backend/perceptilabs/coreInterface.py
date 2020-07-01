@@ -180,7 +180,8 @@ class coreLogic():
             raise NotImplementedError
         elif self._core_mode == 'v2':
             from perceptilabs.core_new.compatibility import CompatibilityCore
-            from perceptilabs.messaging.zmq_wrapper import ZmqMessagingFactory            
+            from perceptilabs.messaging.zmq_wrapper import ZmqMessagingFactory  
+            from perceptilabs.messaging.simple import SimpleMessagingFactory          
             from perceptilabs.core_new.graph.builder import GraphBuilder
             from perceptilabs.core_new.layers.script import ScriptFactory
 
@@ -189,8 +190,8 @@ class coreLogic():
             replica_by_name = {repl_cls.__name__: repl_cls for repl_cls in BASE_TO_REPLICA_MAP.values()}                
             graph_builder = GraphBuilder(replica_by_name)
             
-            script_factory = ScriptFactory()
-            messaging_factory = ZmqMessagingFactory()
+            script_factory = ScriptFactory(simple_message_bus=True)
+            messaging_factory = SimpleMessagingFactory()#ZmqMessagingFactory()
             
             self.core = CompatibilityCore(
                 self.commandQ,
