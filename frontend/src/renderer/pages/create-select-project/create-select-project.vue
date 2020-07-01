@@ -144,8 +144,6 @@
       ...mapMutations({
         selectProject:                 'mod_project/selectProject',
         addModelFromLocalDataMutation: 'mod_workspace/add_model_from_local_data',
-        clearNetworkIdsInLocalStorage: 'mod_workspace/clear_networkIdsInLocalStorage',
-        setWorkspacesInLocalStorage:   'mod_workspace/set_workspacesInLocalStorage',
         deleteNetworkById:             'mod_workspace/delete_networkById',
       }),
       ...mapActions({
@@ -163,6 +161,9 @@
         addNetwork:               'mod_workspace/ADD_network',
         resetNetwork:             'mod_workspace/RESET_network',
         clearNetworkChanges:      'mod_workspace-changes/clearNetworkChanges',
+        loadWorkspaces:           'mod_webstorage/loadWorkspaces',
+        deleteAllIds:             'mod_webstorage/deleteAllIds'
+        
       }),
       onProjectWrapperClick(e){
         const hasTargetProject = localStorage.hasOwnProperty('targetProject');
@@ -190,7 +191,10 @@
             ok: () => {
               this.clearNetworkChanges();
               
-              this.goToProject(projectId);
+              this.loadWorkspaces()
+                .then(_ => {
+                  this.goToProject(projectId);
+                }); 
             }
           }); 
         } else {
@@ -199,13 +203,19 @@
 
       },
       goToProject(projectId) {
+        // Setting the projectId to something nonsensical so the watcher 
+        // can be triggered. This is because everything is now done in the 
+        // project components now. 
+        this.selectProject(-1);
         this.selectProject(projectId);
         this.closePageAction();
 
         // load models and set them in the workspace from:
         // 1. model's "location" property
         // 2. <project path>/<model name>.json
-        this.$router.push({name: 'projects'}).catch(_ => this.$router.go());
+        if (this.$route.name !== 'projects') {
+          this.$router.push({name: 'projects'});
+        }
       },
       openProjectNameModal() {
         this.isProjectNameModalOpen = true;
@@ -245,6 +255,7 @@
           }
         })
         .then(createProjectRes => {
+          this.getProjects();
           this.onProjectSelect(createProjectRes);
           const projectName = `project_${createProjectRes.project_id}`; 
           this.newProjectName = '';
@@ -253,8 +264,6 @@
           // console.error(error);
         })
         .finally(_ =>{
-          localStorage.removeItem('_network.ids');
-          localStorage.removeItem('_network.meta');
           this.isProjectNameModalOpen = false;
         });
       },
@@ -373,7 +382,7 @@
             this.closePageAction();
 
           } else {
-          
+                      
             const createdProject = await this.createProject(createProjectReq);
             
             const modelPaths = dirs.map(dirPath => current_path + '/' + dirPath);
@@ -385,7 +394,7 @@
             localModelsData = localModelsData.filter(model => model);
             const atLeastOneFolderHaveModelsJsonFile = localModelsData.length !== 0;
             if(atLeastOneFolderHaveModelsJsonFile) {
-              this.clearNetworkIdsInLocalStorage();
+              this.deleteAllIds();
               this.resetNetwork();
               let modelCreationPromises = [];
               for(let index in localModelsData) {
@@ -399,7 +408,7 @@
 
 
               const modelCreatinResponses = await Promise.all(modelCreationPromises);
-
+              
               for(let index in modelCreatinResponses) {
                 const apiMeta = modelCreatinResponses[index];
                 const modelJson = localModelsData[index];
@@ -412,7 +421,7 @@
               }
             }
             await this.$store.dispatch('mod_project/getProjects');
-            this.clear_networkChanges();
+            this.clearNetworkChanges();
             this.selectProject(createdProject.project_id);
             this.closePageAction();
             

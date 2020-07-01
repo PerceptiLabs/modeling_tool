@@ -127,8 +127,9 @@ export default {
             this.setDefaultProjectAction();
             this.setNormalAction();
             
-            if(this.$route.name !== 'projects')
-            this.$router.push({name: 'projects'});
+            if(this.$route.name !== 'projects') {
+              this.$router.push({name: 'projects'});
+            }
           }
         })
         .catch((error)=> {console.log(error)})

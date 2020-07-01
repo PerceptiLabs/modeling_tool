@@ -55,6 +55,13 @@
       window.addEventListener('offline', this.updateOnlineStatus);
       this.trackerInit();
       this.readUserInfo();
+      
+      // from webstorage
+      this.loadWorkspacesFromWebStorage()
+        .then(_ => {
+          this.$store.commit('mod_workspace/get_lastActiveTabFromLocalStorage');
+        });
+        
       this.$store.commit('mod_project/setIsDefaultProjectMode');
     },
     mounted() {      
@@ -65,19 +72,23 @@
       else if(localStorage.hasOwnProperty('targetProject')) {
         const targetProjectId = parseInt(localStorage.getItem('targetProject'));
         this.$store.commit('mod_workspace-changes/get_workspaceChangesInLocalStorage')
-        this.loadProjectFromLocalStorage(targetProjectId);
+
+        // this.loadProjectFromLocalStorage(targetProjectId)
         
         this.getProjects();
+          // .then(({data: { results: projects }}) => {
+          //   if(targetProjectId) {
+          //     const targetProject = projects.filter(project => project.project_id === targetProjectId)[0];
+          //     this.setPageTitleMutation(`${targetProject.name} / Models`);
+          //   }
+          // })
       } else {
-        
-        // this section is executed on a fresh start
-        
         this.getProjects();
         if(localStorage.hasOwnProperty('currentUser')) {
           this.setActivePageAction(MODAL_PAGE_PROJECT);
         }
       }
-      
+
       // @todo fetch models for project;
       if(isWeb()) {
         this.updateOnlineStatus();
@@ -215,7 +226,7 @@
         SET_showPopupUpdates: 'mod_autoUpdate/SET_showPopupUpdates',
         SET_updateStatus:     'mod_autoUpdate/SET_updateStatus',
         SET_updateProgress:   'mod_autoUpdate/SET_updateProgress',
-        loadProjectFromLocalStorage: 'mod_workspace/get_workspacesFromLocalStorage',
+        // loadProjectFromLocalStorage: 'mod_workspace/get_workspacesFromLocalStorage',
         // setPageTitleMutation: 'globalView/setPageTitleMutation',
       }),
       ...mapActions({
@@ -244,6 +255,9 @@
         createFolder:           'mod_api/API_createFolder',
 
         cloud_userGetProfile:   'mod_apiCloud/CloudAPI_userGetProfile',
+        
+        loadWorkspacesFromWebStorage:   'mod_webstorage/loadWorkspaces',
+
       }),
       updateOnlineStatus() {
         this.SET_onlineStatus(navigator.onLine);
@@ -286,12 +300,12 @@
         let localUserToken = JSON.parse(localStorage.getItem('currentUser'));
         if(localUserToken) {
           this.setUserToken(localUserToken);
-          if(['home', 'login', 'register'].includes(this.$router.history.current.name)) {
+          if(['main-page', 'settings'].includes(this.$router.history.current.name)) {
             this.$router.replace({name: 'projects'});
           }
         } else {
-          this.$router.push({name: 'register'}).catch(err => {});
-        }
+          this.$router.push({name: 'main-page'}).catch(err => {});
+        }    
       },
       disableHotKeys(event) {
         const isHotkey = isOsMacintosh() ? event.metaKey : event.ctrlKey;

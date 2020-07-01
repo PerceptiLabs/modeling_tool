@@ -468,7 +468,6 @@ export default {
               [] :
               [{label: "View Projects", active: this.setActivePage},]
             ),
-            // {label: "View Projects", active: this.setActivePage},
             {type: 'separator'},
             {label: 'Save',         accelerator: this.isMac ? 'meta+s' : 'ctrl+s',              enabled: this.openApp && !this.isNotebookMode,  active: this.saveModel },
             {label: 'Save as',   accelerator: this.isMac ? 'meta+shift+s' : 'ctrl+shift+s',     enabled: this.openApp && !this.isNotebookMode,  active: this.saveModelAs },

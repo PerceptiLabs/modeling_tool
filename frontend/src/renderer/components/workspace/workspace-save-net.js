@@ -148,6 +148,9 @@ const workspaceSaveNet = {
           }
         })
         .then(()=> {
+          // Update the model in the webstorage too.
+          this.$store.dispatch('mod_webstorage/saveNetwork', currentNet, {root: true});
+
           /*save project to project page*/
           if(prepareNet.toFile.apiMeta.location !== prepareNet.toLocal.pathProject || 
             prepareNet.toFile.apiMeta.name !== prepareNet.toLocal.name) {

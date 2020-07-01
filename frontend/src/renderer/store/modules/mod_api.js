@@ -476,7 +476,7 @@ const actions = {
       value:  {
         reciever: model,
         path: save_path,
-        json: JSON.stringify(model),
+        json: stringifyNetworkObjects(model),
       }
     };
     return coreRequest(theData)

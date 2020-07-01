@@ -29,9 +29,12 @@ const router = new Router({
 });
 
 router.beforeEach((to, from, next) => {
-  if(from.name === "app") {
-    store.commit('mod_workspace/set_workspacesInLocalStorage');
-  }
+  // if(from.name === "app") {
+  //   // store.commit('mod_workspace/set_workspacesInLocalStorage');
+
+    // console.log('router.beforeEach - updateWorkspaces');
+    // store.dispatch('mod_webstorage/updateWorkspaces', null, { root: true });
+  // }
   if(isWeb()) {
     Analytics.hubSpot.trackRouteChange(to);
     Analytics.googleAnalytics.trackRouteChange(to); 

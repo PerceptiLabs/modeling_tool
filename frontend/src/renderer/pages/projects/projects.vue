@@ -260,6 +260,7 @@
             // using this function because the watcher can be aggressive with changes
             if(!isSameProject(newVal,oldVal)) {
               this.reset_network();
+              this.deleteAllIds();
               this.fetchNetworkMetas(newVal);
             }
           }
@@ -296,7 +297,6 @@
       ...mapActions({
         popupConfirm:        'globalView/GP_confirmPopup',
         showInfoPopup:       'globalView/GP_infoPopup',
-        popupConfirm:        'globalView/GP_confirmPopup',
         loadNetwork:         'mod_api/API_loadNetwork',
         addNetwork:          'mod_workspace/ADD_network',
         set_currentNetwork:  'mod_workspace/SET_currentNetwork',
@@ -307,23 +307,19 @@
         UPDATE_MODE_ACTION : 'mod_workspace/UPDATE_MODE_ACTION',
         SET_openStatistics : 'mod_workspace/SET_openStatistics',
         SET_openTest :       'mod_workspace/SET_openTest',
-        getModelMeta:         'mod_project/getModel',
-        reset_network:        'mod_workspace/RESET_network',
+        getModelMeta:        'mod_project/getModel',
+        reset_network:       'mod_workspace/RESET_network',
 
-        setNetworkNameAction:       'mod_workspace/SET_networkName',
-      }),
-      ...mapMutations({
-        // setPageTitleMutation: 'globalView/setPageTitleMutation'
-        clearNetworkIdsInLocalStorage:  'mod_workspace/clear_networkIdsInLocalStorage',
-        setWorkspacesInLocalStorage:    'mod_workspace/set_workspacesInLocalStorage',
-
+        setNetworkNameAction:'mod_workspace/SET_networkName',
+        updateWorkspaces:    'mod_webstorage/updateWorkspaces',
+        deleteAllIds:        'mod_webstorage/deleteAllIds',        
       }),
       gotToNetworkView(networkID) {
         // maybe should receive a id and search index by it
         const index = this.workspaceContent.findIndex(wc => wc.networkID == networkID);
         this.set_currentNetwork(index > 0 ? index : 0);
         if(index !== -1) {
-          this.$store.commit("mod_workspace/setViewType", 'model')
+          this.$store.commit("mod_workspace/setViewType", 'model');
           this.$router.push({name: 'app'});
         }
       },
@@ -367,9 +363,6 @@
       isDisabledCompareBtn() {
         return this.selectedListIds.length < 2;
       },
-      openBasicTemplate(net) {
-        this.addNetwork(cloneDeep(net.network));
-      },
       toggleItemSelection(modelId) {
         modelId = parseInt(modelId);
         let itmPosition = this.selectedListIds.indexOf(modelId);
@@ -403,6 +396,8 @@
               removeIndexes.map((index) => {
                 this.delete_network(index);
               });
+
+              this.selectedListIds = [];
             }
           });
       },
@@ -517,8 +512,7 @@
           this.addNetwork({network: model, apiMeta: model.apiMeta, focusOnNetwork: false});
         }
 
-        this.clearNetworkIdsInLocalStorage();
-        this.setWorkspacesInLocalStorage();
+        this.updateWorkspaces();
       },
       handleAddNetworkModal() {
         // open modal
@@ -634,7 +628,7 @@
         if (this.renameIndex !== null) {
           this.set_currentNetwork(this.renameIndex);
           this.setNetworkNameAction(this.renameValue);
-          this.setWorkspacesInLocalStorage();
+          this.updateWorkspaces();
         }
         this.renameIndex = null;
         this.renameValue = null;

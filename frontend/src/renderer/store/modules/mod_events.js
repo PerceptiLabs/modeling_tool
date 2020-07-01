@@ -176,15 +176,23 @@ const actions = {
   EVENT_saveNetworkAs({commit}) {
     commit('set_saveNetworkAs');
   },
-  EVENT_logOut({dispatch}, isSendLogout = true) {
+  EVENT_logOut({commit, dispatch}, isSendLogout = true) {
     if(isSendLogout) dispatch('mod_apiCloud/CloudAPI_userLogout', null, {root: true});
+  
+    // setting to -1 and then removing because the project.vue component isn't recreated here
+    // this means that selecting the same project won't make it fetch models
+    commit('mod_project/selectProject', -1, {root: true});
     localStorage.removeItem('targetProject');
     localStorage.removeItem('currentUser');
     dispatch('mod_user/RESET_userToken', null, {root: true});
     dispatch('mod_workspace/RESET_network', null, {root: true});
     dispatch('mod_tutorials/offTutorial', null, {root: true});
-    router.replace({name: 'projects'}).catch(err => err);
+    dispatch('mod_workspace-changes/clearNetworkChanges', null, {root: true});
     dispatch('modal_pages/setActivePageAction', MODAL_PAGE_SIGN_UP, {root: true});
+    dispatch('mod_webstorage/cleanup', null, {root: true});
+
+    router.replace({name: 'projects'})
+      .catch(e => {/*console.error('Error during logout', e)*/});
   },
   EVENT_appClose({dispatch, rootState, rootGetters}, event) {
     if(isWeb()) {
