@@ -25,6 +25,7 @@ import StartTrainingSpinner   from '@/components/different/start-training-spinne
 import TheMiniMap             from '@/components/different/the-mini-map.vue'
 import SidebarLayers          from '@/components/workspace/sidebar/workspace-sidebar-layers.vue'
 import Notebook               from '@/components/notebooks/notebook-container.vue';
+import SelectModelModal       from '@/pages/projects/components/select-model-modal.vue';
 
 export default {
   name: 'WorkspaceContent',
@@ -35,7 +36,7 @@ export default {
     GeneralResult, SelectCoreSide,
     WorkspaceBeforeImport, WorkspaceSaveNetwork, WorkspaceLoadNetwork, ExportNetwork,
     TheTesting, TheViewBox, StartTrainingSpinner,
-    TheMiniMap, FilePickerPopup, SidebarLayers, Notebook
+    TheMiniMap, FilePickerPopup, SidebarLayers, Notebook, SelectModelModal
   },
   mounted() {
     window.addEventListener('resize', this.onResize);
@@ -64,7 +65,8 @@ export default {
         isLeftActive: false,
         isRightActive: false,
       },
-      mouseDownIntervalTimer: null
+      mouseDownIntervalTimer: null,
+      isCreateModelModalOpen: false
     }
   },
   computed: {
@@ -81,6 +83,7 @@ export default {
       tutorialActiveStep: 'mod_tutorials/getActiveStep',
     }),
     ...mapState({
+      showNewModelPopup:          state => state.globalView.globalPopup.showNewModelPopup,
       workspace:                  state => state.mod_workspace.workspaceContent,
       indexCurrentNetwork:        state => state.mod_workspace.currentNetwork,
       dragBoxContainer:           state => state.mod_workspace.dragBoxContainer,
@@ -210,7 +213,11 @@ export default {
       tutorialPointActivate:'mod_tutorials/pointActivate',
       offMainTutorial:      'mod_tutorials/offTutorial',
       pushSnapshotToHistory:'mod_workspace-history/PUSH_newSnapshot',
+      popupNewModel:        'globalView/SET_newModelPopup',
     }),
+    onCloseSelectModelModal() {
+      this.popupNewModel(false);
+    },
     startCursorListener (event) {
       const borderline = 15;
       const { x: oldX, y: oldY } = this.cursorPosition;

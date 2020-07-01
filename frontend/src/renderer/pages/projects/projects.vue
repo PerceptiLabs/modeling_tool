@@ -5,7 +5,7 @@
       button(@click="handleContextRenameModel()") Rename
       button(@click="handleContextRemoveModel()") Delete
     project-sidebar
-    div(v-show="!isCreateModelModalOpen").project-wrapper
+    div(v-show="!showNewModelPopup").project-wrapper
       div.header-controls
         div.left-side
           span.import-button-container(
@@ -149,7 +149,7 @@
       :popupTitle="showFilePickerPopup.popupTitle"
       :confirmCallback="showFilePickerPopup.confirmCallback || showFilePickerPopup")
     select-model-modal(
-      v-if="isCreateModelModalOpen"
+      v-if="showNewModelPopup"
       @close="onCloseSelectModelModal"
       @onChose="onTemplateChoseSelectModelModal"
       )
@@ -213,7 +213,6 @@
         unparsedModels: [],
         selectedListIds: [],
         isImportModelsOpen: false,
-        isCreateModelModalOpen: false,
         contextModelIndex: null,
         isContextOpened: false,
         modelContextStyles: {},
@@ -234,6 +233,7 @@
         currentProjectId:     state => state.mod_project.currentProject,
         showFilePickerPopup:  state => state.globalView.globalPopup.showFilePickerPopup,
         appVersion:           state => state.globalView.appVersion,
+        showNewModelPopup:    state => state.globalView.globalPopup.showNewModelPopup,
         hotKeyPressDelete:    state => state.mod_events.globalPressKey.del,
         showLoadSettingPopup: state => state.globalView.globalPopup.showLoadSettingPopup,
       }),
@@ -296,6 +296,7 @@
     methods: {
       ...mapActions({
         popupConfirm:        'globalView/GP_confirmPopup',
+        popupNewModel:       'globalView/SET_newModelPopup',
         showInfoPopup:       'globalView/GP_infoPopup',
         loadNetwork:         'mod_api/API_loadNetwork',
         addNetwork:          'mod_workspace/ADD_network',
@@ -516,10 +517,10 @@
       },
       handleAddNetworkModal() {
         // open modal
-        this.isCreateModelModalOpen = true;
+        this.popupNewModel(true);
       },
       onCloseSelectModelModal() {
-        this.isCreateModelModalOpen = false;
+        this.popupNewModel(false);
       },
       onTemplateChoseSelectModelModal() {
 

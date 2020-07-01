@@ -135,6 +135,7 @@ export default {
     ...mapActions({
       infoPopup:        'globalView/GP_infoPopup',
       popupConfirm:     'globalView/GP_confirmPopup',
+      popupNewModel:    'globalView/SET_newModelPopup',
       offMainTutorial:  'mod_tutorials/offTutorial',
       hideTooltip:      'mod_tutorials/hideTooltip',
       appClose:         'mod_events/EVENT_appClose',
@@ -271,6 +272,9 @@ export default {
       } else {
         this.openNetwork();
       }
+    },
+    newModel() {
+      this.popupNewModel(true);
     },
     openLoadModelPopup() {
       if(this.isTutorialMode) {
@@ -461,7 +465,7 @@ export default {
         {
           label: 'File', visible: true,
           submenu: [
-            // {label: 'New',     active: this.addNewNetwork},
+            {label: 'New',     active: this.newModel},
             {type: 'separator'},
             {label: 'Import Model',    active: this.openLoadModelPopup},
             ...(this.isDefaultProjectMode ?

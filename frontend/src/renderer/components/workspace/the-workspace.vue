@@ -83,6 +83,16 @@
       :popupTitle="showFilePickerPopup.popupTitle"
       :confirmCallback="showFilePickerPopup.confirmCallback || showFilePickerPopup")
       //- showFilePickerPopup container the callback function
+
+    .select-modal-wrapper(
+      v-if="showNewModelPopup"
+      )
+      select-model-modal(
+        class="select-model-modal"
+        v-if="showNewModelPopup"
+        @close="onCloseSelectModelModal"
+        )
+
 </template>
 
 <script src="./the-workspace.js"></script>
@@ -91,7 +101,16 @@
   @import "../../scss/base";
   @import "./tabset/workspace-tabset";
   @import "./meta/workspace-meta";
-
+  .select-modal-wrapper {
+    position: absolute;
+    width: calc(100% - 50px);
+    height: calc(100% - 40px);
+    background: rgba(33, 40, 57, 0.9);
+    z-index: 99;
+  }
+  .select-model-modal {
+    z-index: 100;
+  }
   .page_workspace {
     display: flex;
     flex-direction: column;
