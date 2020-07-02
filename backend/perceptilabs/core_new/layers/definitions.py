@@ -7,7 +7,7 @@ from perceptilabs.core_new.layers import *
 from perceptilabs.core_new.layers.utils import *
 from perceptilabs.core_new.graph.utils import sanitize_layer_name
 from perceptilabs.logconf import APPLICATION_LOGGER
-
+from perceptilabs.core_new.utils import get_correct_path
 
 logger = logging.getLogger(APPLICATION_LOGGER)
 
@@ -78,12 +78,11 @@ def resolve_custom_code(specs):
 
 def update_sources_with_file_exts(specs):
     sources = specs['Properties']['accessProperties']['Sources']
-    exts = []
     for source in sources:
         if source['type'] == 'file':
-            ext = os.path.splitext(source['path'])[1]
+            ext = os.path.splitext(get_correct_path(source['path']))[1]
         elif source['type'] == 'directory':
-            path = source['path']
+            path = get_correct_path(source['path'])
             src_exts = [os.path.splitext(x)[1] for x in os.listdir(path)]
             ext = max(set(src_exts), key=src_exts.count) # Most frequent
         else:
@@ -136,7 +135,7 @@ DEFINITION_TABLE = {
             'import pandas as pd',
             'import dask.dataframe as dd',                                    
             'from perceptilabs.core_new.utils import Picklable',
-            'from perceptilabs.core_new.serialization import can_serialize, serialize'                    
+            'from perceptilabs.core_new.serialization import can_serialize, serialize'
         ]
     ),
     'DataRandom': LayerDef(
