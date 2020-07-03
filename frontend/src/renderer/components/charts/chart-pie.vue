@@ -19,7 +19,8 @@
           toolbox: {
             feature: {
               saveAsImage: {
-                title: 'Save'
+                title: 'Save',
+                show: false
               },
             }
           },

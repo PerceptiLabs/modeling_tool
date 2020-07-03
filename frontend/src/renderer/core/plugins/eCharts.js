@@ -24,7 +24,7 @@ ECharts.registerTheme('quantum', {
     "#ca8622",
     "#c4ccd3"
   ],
-  "backgroundColor": "#23252a",
+  "backgroundColor": "#212839",
   "textStyle": {},
   "title": {
     "textStyle": {

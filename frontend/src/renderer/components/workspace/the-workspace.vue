@@ -11,7 +11,7 @@
     .workspace_content.bookmark_content.js-workspace(
       v-show="!isNotebookMode"  
       ref="workspaceNet"
-      :class="{'workspace-relative' : showTrainingSpinner}"
+      :class="{'workspace-relative' : showTrainingSpinner, 'open-statistics': statisticsIsOpen}"
       )
       .network(
         v-if="indexCurrentNetwork === i"
@@ -136,6 +136,20 @@
     display: flex;
     flex: 1 1 100%;
     overflow: hidden;
+
+    &.open-statistics {
+      margin-top: -22px;
+      z-index: 3;      
+      background: transparent;
+
+      &.workspace-relative {
+        z-index: 1;
+      }
+
+      .network_info-section.tutorial-relative.the-statistics {
+        background: transparent;
+      }
+    }
   }
   .network {
     width: 100%;

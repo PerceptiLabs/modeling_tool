@@ -13,8 +13,11 @@
         )
           i.icon.icon-full-screen-graph
     .base-chart_main
+      a.btn.save(type="button" ref="download" text="save" @click="saveChart")
+        i.icon.icon-download
       chart-spinner(v-if="showRequestSpinner")
       component(
+        ref="chartArea"
         v-if="imgType.length"
         :is="componentName"
         :chart-label="chartLabel"
@@ -124,6 +127,17 @@
       },
     },
     methods: {
+      saveChart() {
+        const component = this.$refs['chartArea'].$el
+        const canvas = component.querySelector('canvas');
+        const url = canvas.toDataURL("image/png")
+
+        const link = document.createElement('a')
+        link.href = url
+        link.setAttribute('download', 'Export.png') //or any other extension
+        document.body.appendChild(link)
+        link.click()
+      },
       toggleFullView() {
         this.fullView = !this.fullView;
         //this.$nextTick(() => this.$refs.chart.resize());
@@ -134,6 +148,27 @@
 
 <style lang="scss" scoped>
   @import "../../scss/base";
+  .btn.save {
+    width: 21px;
+    height: 21px;   
+    position: absolute;
+    background: #2E3A5A;
+    border-radius: 2px;
+    border: 1px solid #5E6F9F;
+    color: $toolbar-button-border;
+    right: 7px;
+    bottom: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+  }
+
+  .popup {
+    .btn.save {
+      display: none;
+    }
+  }
 
   $border-color: rgba(97, 133, 238, 0.4);
 
@@ -162,14 +197,40 @@
     width: 100%;
     height: 2.5rem;
     padding: 0 1rem 0 1rem;
-    background: #090f19;
+    border: 1px solid rgba(97, 133, 238, 0.4);
+    border-radius: 2px 2px 0px 0px;
+    
+    background: #3F4C70;
     border-bottom: 1px solid $border-color;
   }
+  section:not(#tutorial_statistics) {
+    :not(ul + .info-section_main) {
+      .base-chart_head {
+        background: #090f19;
+        border-radius: 0px 0px 0px 0px;
+      }
+    }
+
+    ul + .info-section_main {
+      .base-chart_head {
+        background: #3F4C70;
+        border-radius: 0px 0px 0px 0px;
+      }
+    }
+  }
+  #tutorial_statistics {
+    .info-section_main {
+      .base-chart_head {
+        background: #090f19;
+        border-radius: 0px 0px 0px 0px;
+      }
+    }
+  } 
   .base-chart_main {
     position: relative;
     flex: 1 1 100%;
     min-height: 9rem;
-    background: #222939;
+    background: #212839;
   }
   .chart-head_title {
     overflow: hidden;
