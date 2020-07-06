@@ -148,33 +148,3 @@ REST_FRAMEWORK = {
 
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_CREDENTIALS = False
-
-AUTHENTICATION_BACKENDS = [
-    'rygg.authentication.KeycloakBackend',
-]
-LOGIN_URL = 'login'
-# Keycloak settings - 
-#       client id: name of client
-#       client serect key: in credential of client(change access type of client to confidential)
-#       need to make this dynamic working on it using ansible 
-
-KEYCLOAK_CLIENT_ID = 'rygg'
-KEYCLOAK_CLIENT_SECRET = '34afd124-1733-4db8-9a63-1f9d8cceb026' 
-KEYCLOAK_AUTHORIZE_URL = 'http://localhost:8080/auth/realms/master/protocol/openid-connect/auth'
-KEYCLOAK_TOKEN_URL = 'http://localhost:8080/auth/realms/master/protocol/openid-connect/token'
-KEYCLOAK_USERINFO_URL = 'http://localhost:8080/auth/realms/master/protocol/openid-connect/userinfo'
-
-LOGGING = {
-    'version': 1,
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-        },
-    },
-    'loggers': {
-        'rygg': {
-            'handlers': ['console'],
-            'level': 'DEBUG' if DEBUG else 'ERROR'
-        },
-    },
-}
