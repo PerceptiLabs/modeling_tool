@@ -28,7 +28,6 @@ os.makedirs(db_dir, exist_ok=True)
 SECRET_KEY = '-nj5*1agd@#(1*gcm2kd2q!*ui!kg2*yew=ata$n!sj-nnl&a7'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]']
 
@@ -159,7 +158,7 @@ LOGGING = {
     'loggers': {
         'rygg': {
             'handlers': ['console'],
-            'level': 'DEBUG' if DEBUG else 'ERROR'
+            'level': os.getenv('RYGG_LOG_LEVEL', 'WARNING')
         },
     },
 }
