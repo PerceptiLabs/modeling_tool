@@ -24,5 +24,5 @@ router.register(r"projects", views.ProjectViewSet)
 router.register(r"models", views.ModelViewSet)
 
 urlpatterns = [
-    path("", (include(router.urls)))
+    path("api/", (include(router.urls)))
 ]

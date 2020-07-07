@@ -148,3 +148,18 @@ REST_FRAMEWORK = {
 
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_CREDENTIALS = False
+
+LOGGING = {
+    'version': 1,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'rygg': {
+            'handlers': ['console'],
+            'level': 'DEBUG' if DEBUG else 'ERROR'
+        },
+    },
+}
