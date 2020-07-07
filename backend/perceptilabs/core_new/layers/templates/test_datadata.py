@@ -4,6 +4,7 @@ import pandas as pd
 import tempfile
 import os
 import skimage
+from skimage import io
 import pkg_resources
 
 

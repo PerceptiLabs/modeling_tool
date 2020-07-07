@@ -6,3 +6,29 @@
     {% endif %}
 {% endfilter %}
 {% endmacro %}
+
+{% macro session(sess, use_gpu=True) %}
+config = tf.ConfigProto()
+{% filter remove_lspaces(8) %} 
+    {% if use_gpu %}
+        config.gpu_options.allow_growth = True    
+    {% else %}
+        config.gpu_options.allow_growth = False
+    {% endif %}
+{% endfilter %}
+sess = tf.Session(config=config)
+{% endmacro %}
+
+{% macro session_distributed(sess, n_devices, use_gpu=True) %}
+{% filter remove_lspaces(4) %} 
+    {% if not use_gpu %}
+        n_devices = 2
+        config = tf.ConfigProto(device_count={"CPU": n_devices, "GPU": 0}, gpu_options={"allow_growth": True}, inter_op_parallelism_threads=n_devices, intra_op_parallelism_threads=1)
+    {% else %}
+        n_devices = len(GPUtil.getGPUs())
+        config = tf.ConfigProto(gpu_options={"allow_growth": True}, log_device_placement=True, allow_soft_placement=True)
+    {% endif %}
+{% endfilter %}
+    sess = tf.Session(config=config)# since we use keras metrics
+    tf.keras.backend.set_session(sess) # since we use keras metrics
+{% endmacro %}
