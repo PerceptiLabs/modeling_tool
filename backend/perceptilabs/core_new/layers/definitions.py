@@ -129,7 +129,9 @@ DEFINITION_TABLE = {
         import_statements=[
             'from perceptilabs.core_new.layers.base import DataSupervised',
             'from typing import Dict, Generator',
-            'import multiprocessing', 
+            'import multiprocessing',
+            'import dask',
+            'import dask.array as da', 
             'import numpy as np',
             'import skimage.io',            
             'import pandas as pd',
