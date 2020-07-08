@@ -5,7 +5,6 @@ import datetime
 import pkg_resources
 import jsonschema
 
-
 import perceptilabs
 
 
@@ -91,11 +90,17 @@ def setup_data_logger():
     
     stream_handler = logging.StreamHandler()        
     stream_handler.setFormatter(formatter)
+
+    from perceptilabs.azure import AzureHandler
+    azure_handler = AzureHandler.get_default()
+    azure_handler.setFormatter(formatter)
     
     logger = logging.getLogger(DATA_LOGGER)
     logger.setLevel(logging.INFO)
     logger.addHandler(file_handler)
     #logger.addHandler(stream_handler)
+    logger.addHandler(azure_handler)
+
 
     
 def upload_logs(session_id):
