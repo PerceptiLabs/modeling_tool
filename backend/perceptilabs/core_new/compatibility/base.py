@@ -79,9 +79,12 @@ class CompatibilityCore:
 
             if len(graphs) > 0:
                 logger.debug(f"Processing {len(graphs)} graph snapshots")
-                self.results = self._get_results_dict(graphs, self.results)
-                self.results['training_duration'] = core.training_duration
-                self._result_queue.put(copy.deepcopy(self.results))
+                self.results = self._get_results_dicts(graphs, self.results)
+                for result_dict in self.results:
+                    result_dict['training_duration'] = core.training_duration
+                    self._result_queue.put(copy.deepcopy(result_dict))
+                if self.results:
+                    self.results = self.results[-1]
             
         set_tensorflow_mode('graph')
         core = Core(self._graph_builder, self._script_factory, self._messaging_factory, self._issue_handler, use_sentry=True)
@@ -125,34 +128,34 @@ class CompatibilityCore:
         elif command.type == 'export':
             core.export(command.parameters['path'], command.parameters['mode'])            
             
-    def _get_results_dict(self, graphs, results):
+    def _get_results_dicts(self, graphs, results):
         self._print_graph_debug_info(graphs)
-        result_dict = {}        
+        result_dicts = [{}]        
         try:
-            result_dict = self._get_results_dict_internal(graphs, results)
+            result_dicts = self._get_results_dicts_internal(graphs, results)
         except:
             logger.exception('Error when getting results dict')
         finally:
-            self._print_result_dict_debug_info(result_dict)
-            return result_dict                
+            for result_dict in result_dicts:
+                self._print_result_dict_debug_info(result_dict)
+            return result_dicts                
     
-    def _get_results_dict_internal(self, graphs, results):
+    def _get_results_dicts_internal(self, graphs, results):
         if not graphs:
             logger.debug("graph is None, returning empty results")
-            return {}
-        # TODO: if isinstance(training_layer, Classification) etc
+            return [{}]
         layer = graphs[-1].active_training_node.layer
         if isinstance(layer, ClassificationLayer):
-            result_dict = policy_classification(self._core, graphs, self._sanitized_to_name, self._sanitized_to_id, results)
+            result_dicts = policy_classification(self._core, graphs, self._sanitized_to_name, self._sanitized_to_id, results)
         elif  isinstance(layer, ObjectDetectionLayer):
-            result_dict = policy_object_detection(self._core, graphs, self._sanitized_to_name, self._sanitized_to_id, results)
+            result_dicts = policy_object_detection(self._core, graphs, self._sanitized_to_name, self._sanitized_to_id, results)
         elif  isinstance(layer, GANLayer):
-            result_dict = policy_gan(self._core, graphs, self._sanitized_to_name, self._sanitized_to_id, results)
+            result_dicts = policy_gan(self._core, graphs, self._sanitized_to_name, self._sanitized_to_id, results)
         elif  isinstance(layer, RegressionLayer):
-            result_dict = policy_regression(self._core, graphs, self._sanitized_to_name, self._sanitized_to_id, results)
+            result_dicts = policy_regression(self._core, graphs, self._sanitized_to_name, self._sanitized_to_id, results)
         elif  isinstance(layer, RLLayer):
-            result_dict = policy_reinforce(self._core, graphs, self._sanitized_to_name, self._sanitized_to_id, results)
-        return result_dict
+            result_dicts = policy_reinforce(self._core, graphs, self._sanitized_to_name, self._sanitized_to_id, results)
+        return result_dicts
 
     def _print_graph_debug_info(self, graphs):
         if not logger.isEnabledFor(logging.DEBUG):

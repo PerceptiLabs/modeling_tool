@@ -196,13 +196,16 @@ def policy_regression(core, graphs, sanitized_to_name, sanitized_to_id, results)
         return data
 
     current_graph = graphs[-1]
-
+    results_list = []
     test_graphs = []
+    train_graphs = None
     for graph in graphs:
         if graph.active_training_node.layer.status == 'testing':
             test_graphs.append(graph)
+        else:
+            train_graphs = True
     
-    if len(test_graphs)==0:
+    if train_graphs:
         trn_node = current_graph.active_training_node
         train_dict = {}        
 
@@ -272,11 +275,9 @@ def policy_regression(core, graphs, sanitized_to_name, sanitized_to_id, results)
             "progress": trn_node.layer.progress
         }
 
-        # import pdb
-        # pdb.set_trace()
-        return result_dict
+        results_list.append(result_dict)
 
-    else:
+    if len(test_graphs) > 0:
         test_dicts = []
         for current_graph in test_graphs:
             trn_node = current_graph.active_training_node
@@ -327,8 +328,9 @@ def policy_regression(core, graphs, sanitized_to_name, sanitized_to_id, results)
             "status": status
         }
 
-
-        return result_dict
+        results_list.append(result_dict)
+    
+    return results_list
 
 def policy_classification(core, graphs, sanitized_to_name, sanitized_to_id, results):
     
@@ -510,13 +512,16 @@ def policy_classification(core, graphs, sanitized_to_name, sanitized_to_id, resu
         return data
 
     current_graph = graphs[-1]
-
+    results_list = []
     test_graphs = []
+    train_graphs = None
     for graph in graphs:
         if graph.active_training_node.layer.status == 'testing':
             test_graphs.append(graph)
+        else:
+            train_graphs = True
     
-    if len(test_graphs)==0:
+    if train_graphs:
         trn_node = current_graph.active_training_node
         train_dict = {}        
 
@@ -585,9 +590,9 @@ def policy_classification(core, graphs, sanitized_to_name, sanitized_to_id, resu
             "status": status,
             "progress": trn_node.layer.progress
         }
-        return result_dict
+        results_list.append(result_dict)
 
-    else:
+    if len(test_graphs) > 0:
         test_dicts = results.get('testDicts', []) # get existing
         for current_graph in test_graphs:
             trn_node = current_graph.active_training_node
@@ -631,9 +636,9 @@ def policy_classification(core, graphs, sanitized_to_name, sanitized_to_id, resu
             "testStatus": test_status,           
             "status": status
         }
+        results_list.append(result_dict)
 
-
-        return result_dict
+    return results_list
 
 def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id, results):
     
@@ -894,13 +899,16 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id, re
         return data
 
     current_graph = graphs[-1]
-
+    results_list = []
     test_graphs = []
+    train_graphs = None
     for graph in graphs:
         if graph.active_training_node.layer.status == 'testing':
             test_graphs.append(graph)
+        else:
+            train_graphs = True
     
-    if len(test_graphs)==0:
+    if train_graphs:
         trn_node = current_graph.active_training_node
         train_dict = {}        
 
@@ -969,9 +977,9 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id, re
             "status": status,
             "progress": trn_node.layer.progress
         }
-        return result_dict
+        results_list.append(result_dict)
 
-    else:
+    if len(test_graphs) > 0:
         test_dicts = results.get('testDicts', []) # get existing
         for current_graph in test_graphs:
             trn_node = current_graph.active_training_node
@@ -1036,8 +1044,9 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id, re
             "status": status
         }
 
-
-        return result_dict
+        results_list.append(result_dict)
+    
+    return results_list
 
 def policy_reinforce(core, graphs, sanitized_to_name, sanitized_to_id, results):
     
@@ -1165,13 +1174,16 @@ def policy_reinforce(core, graphs, sanitized_to_name, sanitized_to_id, results):
         return data
 
     current_graph = graphs[-1]
-
+    results_list = []
     test_graphs = []
+    train_graphs = None
     for graph in graphs:
         if graph.active_training_node.layer.status == 'testing':
             test_graphs.append(graph)
+        else:
+            train_graphs = True
     
-    if len(test_graphs)==0:
+    if train_graphs:
         trn_node = current_graph.active_training_node
         train_dict = {}        
 
@@ -1235,7 +1247,9 @@ def policy_reinforce(core, graphs, sanitized_to_name, sanitized_to_id, results):
             "status": status,
             "progress": trn_node.layer.progress
         }
-        return result_dict
+        results_list.append(result_dict)
+
+    return results_list
 
 def policy_gan(core, graphs, sanitized_to_name, sanitized_to_id, results):
     
@@ -1423,13 +1437,16 @@ def policy_gan(core, graphs, sanitized_to_name, sanitized_to_id, results):
         return data
 
     current_graph = graphs[-1]
-
+    results_list = []
     test_graphs = []
+    train_graphs = None
     for graph in graphs:
         if graph.active_training_node.layer.status == 'testing':
             test_graphs.append(graph)
+        else:
+            train_graphs = True
     
-    if len(test_graphs)==0:
+    if train_graphs:
         trn_node = current_graph.active_training_node
         train_dict = {}        
 
@@ -1498,9 +1515,9 @@ def policy_gan(core, graphs, sanitized_to_name, sanitized_to_id, results):
             "status": status,
             "progress": trn_node.layer.progress
         }
-        return result_dict
+        results_list.append(result_dict)
 
-    else:
+    if len(test_graphs) > 0:
         test_dicts = []
         for current_graph in test_graphs:
             trn_node = current_graph.active_training_node
@@ -1529,5 +1546,6 @@ def policy_gan(core, graphs, sanitized_to_name, sanitized_to_id, results):
             "testStatus": test_status,           
             "status": status
         }
-        return result_dict
+        results_list.append(result_dict)
     
+    return results_list

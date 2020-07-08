@@ -1024,7 +1024,7 @@ class coreLogic():
                     else:
                         currentValidation=loss_train+list(loss_val)
 
-                totalTraining=self.getStatistics({"layerId":layerId,"variable":"loss_training_epoch","innervariable":""})
+                totalTraining=self.getStatistics({"layerId":layerId,"variable":"loss_train_epoch","innervariable":""})
                 totalValidation=self.getStatistics({"layerId":layerId,"variable":"loss_validation_epoch","innervariable":""})
 
                 dataObjectCurrent = createDataObject([currentValidation, currentTraining],
