@@ -57,13 +57,14 @@ export default {
 <style lang="scss" scoped>
   @import "../../scss/base";
   .statistics-box_tabset {
+    position: absolute;
+    top: 45px;
+    right: 11px;
     display: flex;
     flex-wrap: nowrap;
     flex: 0 0 auto;
     justify-content: flex-end;
     background-color: transparent;
-    border: 1px solid rgba(97, 133, 238, 0.2);
-    border-top-width: 0;
 
     h5 {
       display: none;

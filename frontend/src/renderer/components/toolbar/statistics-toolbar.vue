@@ -95,7 +95,7 @@ export default {
   position: relative;
   grid-area: toolbar;
   z-index: 2;
-  height: $h-toolbar;
+  max-height: $h-toolbar;
 }
 
 .toolbar-section  {

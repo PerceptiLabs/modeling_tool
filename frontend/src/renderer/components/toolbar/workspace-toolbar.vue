@@ -405,7 +405,7 @@ export default {
     position: relative;
     grid-area: toolbar;
     z-index: 2;
-    height: $h-toolbar;
+    max-height: $h-toolbar;
   }
   .toggle-wrap {
     width: $w-layersbar * .87;

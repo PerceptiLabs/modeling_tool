@@ -1,5 +1,5 @@
 <template lang="pug">
-  section.network_info-section.tutorial-relative
+  section.network_info-section
     //- .info-section_head(v-show="!testIsOpen")
     //-   h3 {{ sectionTitle }}
     view-box-btn-list(

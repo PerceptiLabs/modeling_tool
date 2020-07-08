@@ -112,6 +112,7 @@
     z-index: 100;
   }
   .page_workspace {
+    position: relative;
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -138,7 +139,6 @@
     overflow: hidden;
 
     &.open-statistics {
-      margin-top: -22px;
       z-index: 3;      
       background: transparent;
 
