@@ -26,7 +26,8 @@ const namespaced = true;
 
 const state = {
   statusLocalCore: 'offline', //online
-  corePid: 0
+  corePid: 0,
+  headlessState: [],
 };
 
 const getters = {
@@ -71,6 +72,13 @@ const getters = {
 
     }
     return layers
+  },
+  get_headlessState: (state) => (networkId) => {
+    const headlessState = state.headlessState.find(hs => hs.id === networkId);
+    
+    if (!headlessState) { return; }
+
+    return headlessState.isHeadless;
   }
 };
 
@@ -81,6 +89,18 @@ const mutations = {
   set_corePid(state, value) {
     state.corePid = value
   },
+  set_headlessState(state, { id, value }) {
+    const headlessState = state.headlessState.find(hs => hs.id === id);
+
+    if (!headlessState) {
+      state.headlessState.push({
+        id: id,
+        isHeadless: value
+      });
+    } else {
+      headlessState.isHeadless = value;
+    }
+  }
 };
 
 const actions = {
@@ -879,7 +899,26 @@ const actions = {
       });
   },
 
-  API_setHeadless({dispatch, rootState, rootGetters}, value) {
+  API_setHeadless({commit, getters, rootGetters}, value) {
+    // Checking headless state and only sending if:
+    // - different or
+    // - never sent before
+    
+    // This is because the Kernel can current not handle a request
+    // that sets the same state (i.e. true -> true).
+
+    const networkHeadlessState = getters.get_headlessState(rootGetters['mod_workspace/GET_currentNetworkId']);
+    
+    commit('set_headlessState', {
+      id: rootGetters['mod_workspace/GET_currentNetworkId'],
+      value: value
+    });
+
+    // if the value is the same, don't send it
+    if (networkHeadlessState === value) {
+      return Promise.resolve();
+    }
+
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
       action: 'headless',
