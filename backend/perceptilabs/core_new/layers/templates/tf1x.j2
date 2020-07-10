@@ -613,7 +613,7 @@ class {{layer_name}}(Tf1xLayer):
                     
                     initial = tf.constant(0.1, shape=[self._feature_maps])
                     b = tf.compat.v1.get_variable('b', initializer=initial)
-                    y = tf.nn.conv1d(x, W, strides=[1, self._stride, 1], padding=self._padding)+b
+                    y = tf.nn.conv1d(x, W, stride=[1, self._stride, 1], padding=self._padding)+b
                 {% elif conv_dim == '3D' %}
                     shape = [
                         self._patch_size,
@@ -663,9 +663,15 @@ class {{layer_name}}(Tf1xLayer):
                     y = tf.nn.dropout(y,self._keep_prob)
                 {% endif %}
             {% endfilter %}
-            {% filter remove_lspaces(8) %}
+            {% filter remove_lspaces(12) %}
                 {% if pool and pooling == "Max" %}
-                    y = tf.nn.max_pool(y, ksize=[1, {{pool_area}}, {{pool_area}}, 1], strides=[1, {{pool_stride}}, {{pool_stride}}, 1], padding='{{pool_padding}}')
+                    {% if conv_dim == '1D' %}
+                        y = tf.nn.max_pool1d(y, ksize=[1, {{pool_area}}, 1], strides=[1, {{pool_stride}}, 1], padding='{{pool_padding}}')
+                    {% elif conv_dim == '2D' %}
+                        y = tf.nn.max_pool(y, ksize=[1, {{pool_area}}, {{pool_area}}, 1], strides=[1, {{pool_stride}}, {{pool_stride}}, 1], padding='{{pool_padding}}')
+                    {% elif conv_dim == '3d' %}
+                        y = tf.nn.max_pool3d(y, ksize=[1, {{pool_area}}, {{pool_area}}, {{pool_area}}, 1], strides=[1, {{pool_stride}}, {{pool_stride}}, {{pool_stride}}, 1], padding='{{pool_padding}}')
+                    {% endif %}
                 {% endif %}
             {% endfilter %}
             {% filter remove_lspaces(8) %}
