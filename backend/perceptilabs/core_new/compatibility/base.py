@@ -8,6 +8,7 @@ import numpy as np
 
 
 from perceptilabs.core_new.utils import set_tensorflow_mode
+from perceptilabs.messaging import MessagingFactory, ZmqMessagingFactory, SimpleMessagingFactory
 from perceptilabs.core_new.graph.utils import sanitize_layer_name
 from perceptilabs.core_new.core2 import Core
 from perceptilabs.core_new.layers import *
@@ -213,7 +214,7 @@ if __name__ == "__main__":
     from perceptilabs.core_new.layers.script import ScriptFactory
     from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP    
 
-    with open('network_test.json', 'r') as f:
+    with open('network.json', 'r') as f:
         network = json.load(f)
 
         for _id, layer in network['Layers'].items():
@@ -221,7 +222,8 @@ if __name__ == "__main__":
                 layer['Properties']['Distributed'] = False
 
 
-    script_factory = ScriptFactory()
+    script_factory = ScriptFactory(simple_message_bus=True)
+    messaging_factory = SimpleMessagingFactory()
     
     replica_by_name = {repl_cls.__name__: repl_cls for repl_cls in BASE_TO_REPLICA_MAP.values()}    
     graph_builder = GraphBuilder(replica_by_name)                
@@ -229,6 +231,6 @@ if __name__ == "__main__":
     commandQ=queue.Queue()
     resultQ=queue.Queue()
     
-    core = CompatibilityCore(commandQ, resultQ, graph_builder, script_factory, network, threaded=False)
+    core = CompatibilityCore(commandQ, resultQ, graph_builder, script_factory, messaging_factory, network, threaded=False)
     core.run()
         

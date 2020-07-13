@@ -10,6 +10,8 @@ def resolve_tf1x_activation_name(specs):
         '': None,
         'Sigmoid': 'tf.compat.v1.sigmoid',
         'ReLU': 'tf.compat.v1.nn.relu',
+        'LeakyReLU': 'tf.compat.v1.nn.leaky_relu',
+        'Softmax': 'tf.compat.v1.nn.softmax',
         'Tanh': 'tf.compat.v1.tanh'
     }
 

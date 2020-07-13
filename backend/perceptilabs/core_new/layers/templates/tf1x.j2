@@ -923,27 +923,30 @@ class {{layer_name}}(Tf1xLayer):
             return {b.name: b}
 {% endmacro %}
 
-{% macro layer_tf1x_recurrent(layer_name, version, time_steps, neurons, return_sequence, dropout, keep_prob) %}
+{% macro layer_tf1x_recurrent(layer_name, version, time_steps, neurons, return_sequence, dropout, activation, keep_prob) %}
 class {{layer_name}}(Tf1xLayer):
     def __init__(self):
         self._scope = '{{layer_name}}'
         self._variables = {}
         self._neurons = {{neurons}}
         self._lw_variables = {}
+        self._weights = None
+        self._biases = None
 
     def __call__(self, x: tf.Tensor, is_training: tf.Tensor = None):
         """ Takes a tensor as input and feeds it forward through a recurrent layer, returning a newtensor."""        
         y_before = None
         y = None
+        activation = {{activation}}
 
-        with tf.compat.v1.variable_scope(self._scope, reuse=tf.compat.v1.AUTO_REUSE):     
+        with tf.compat.v1.variable_scope(self._scope, reuse=tf.compat.v1.AUTO_REUSE):   
             {% filter remove_lspaces(8) %}   
                 {% if version == 'LSTM' %}
-                    cell = tf.nn.rnn_cell.LSTMCell(self._neurons, state_is_tuple=True, name=self._scope)
+                    cell = tf.nn.rnn_cell.LSTMCell(self._neurons, activation=activation, state_is_tuple=True, name=self._scope)
                 {% elif version == 'GRU' %}
-                    cell = tf.nn.rnn_cell.GRUCell(self._neurons, name=self._scope)
+                    cell = tf.nn.rnn_cell.GRUCell(self._neurons, activation=activation, name=self._scope)
                 {% elif version == 'RNN' %}
-                    cell = tf.nn.rnn_cell.BasicRNNCell(self._neurons, name=self._scope)
+                    cell = tf.nn.rnn_cell.BasicRNNCell(self._neurons, activation=activation, name=self._scope)
                 {% endif %}
             {% endfilter %}
             
@@ -963,8 +966,15 @@ class {{layer_name}}(Tf1xLayer):
                     y = rnn_outputs[:, -1]
                 {% endif %}
             {% endfilter %}
+        
+        for var in tf.trainable_variables(scope=self._scope):
+            if "kernel" in var.name:
+                self._weights = var
+            if "bias" in var.name:
+                self._biases = var
+
             
-        self._variables = {k: v for k, v in locals().items() if can_serialize(v)}            
+        self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
         self._lw_variables['y_before'] = y_before
         self._lw_variables['y'] = y
 
@@ -1010,10 +1020,9 @@ class {{layer_name}}(Tf1xLayer):
 
         Return:
             A dictionary with tensor names for keys and tensors for values.
-        """        
-        with tf.compat.v1.variable_scope(self._scope, reuse=tf.compat.v1.AUTO_REUSE):
-            w = tf.compat.v1.get_variable('W')
-            return {w.name: w}
+        """
+        w = self._weights
+        return {w.name: w}
 
     @property
     def biases(self):
@@ -1021,9 +1030,8 @@ class {{layer_name}}(Tf1xLayer):
 
         Return:
             A dictionary with tensor names for keys and tensors for values.
-        """        
-        with tf.compat.v1.variable_scope(self._scope, reuse=tf.compat.v1.AUTO_REUSE):
-            b = tf.compat.v1.get_variable('b')
-            return {b.name: b}
+        """
+        b = self._biases
+        return {b.name: b}
     
 {% endmacro %}

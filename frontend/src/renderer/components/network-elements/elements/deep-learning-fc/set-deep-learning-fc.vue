@@ -23,6 +23,10 @@
               span ReLU
             base-radio(group-name="group1" value-input="Tanh"  v-model="settings.Activation_function")
               span Tanh
+            base-radio(group-name="group1" value-input="Softmax"  v-model="settings.Activation_function")
+              span Softmax
+            base-radio(group-name="group1" value-input="LeakyReLU"  v-model="settings.Activation_function")
+              span LeakyReLU              
       .settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.dropout")
           .form_label Dropout:

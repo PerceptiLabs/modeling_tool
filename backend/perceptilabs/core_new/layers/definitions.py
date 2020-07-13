@@ -364,6 +364,7 @@ DEFINITION_TABLE = {
             'time_steps': lambda specs: specs['Properties']['Time_steps'],
             'return_sequence': lambda specs: specs['Properties']['Return_sequence'],
             'dropout': lambda specs: specs['Properties']['Dropout'],
+            'activation': resolve_tf1x_activation_name,
             'keep_prob': lambda specs: specs['Properties']['Keep_prob']
         },
         import_statements=[
@@ -502,6 +503,7 @@ DEFINITION_TABLE = {
             'initial_exploration': 0.9,
             'discount_factor': 0.99,
             'replay_memory_size': 300000,
+            'activation': resolve_tf1x_activation_name,
             'final_exploration': 0.1,
             'final_exporation_frame': 500,
             'target_network_update_frequency': 100
