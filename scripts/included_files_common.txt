@@ -57,6 +57,10 @@ backend/perceptilabs/server/appServer.py
 backend/perceptilabs/server/desktop_serverlib.py
 backend/perceptilabs/server/web_serverlib.py
 
+# backend/perceptilabs/api
+backend/perceptilabs/api/experiment.py
+backend/perceptilabs/api/data_container.py
+
 # backend/perceptilabs/core_new
 backend/perceptilabs/core_new/__init__.py
 backend/perceptilabs/core_new/cache.py

@@ -1,0 +1,62 @@
+import tensorflow as tf
+import numpy as np
+import pytest
+import random
+
+from perceptilabs.core_new.serialization import serialize, can_serialize, deserialize
+from perceptilabs.api.data_container import DataContainer
+
+@pytest.fixture
+def datacontainer():
+    dc = DataContainer()
+
+    return dc
+
+def test_data_container_hyperparameters(datacontainer):
+    # Initialize hyperparameters to feed into DataContainer
+    hyper_params = {
+        'learning_rate': 0.01,
+        'batch_size': 10,
+        'steps': 10
+    }
+
+    raw_message = {
+        'experiment_name': 'Test1',
+        'category': 'Hyperparameters',
+        'hyper_params': hyper_params
+    }
+
+    message = serialize(raw_message)
+    datacontainer.process_message(message)
+
+    # Grab stored hyperparameters out of DataContainer and assert
+    assert datacontainer.get_hyperparameter('Test1', 'learning_rate') == 0.01
+    assert datacontainer.get_hyperparameter('Test1', 'batch_size') == 10
+    assert datacontainer.get_hyperparameter('Test1', 'steps') == 10
+    assert set(datacontainer.get_hyperparameter_names('Test1')) == set(['learning_rate', 'batch_size', 'steps'])
+
+def test_data_container_metric(datacontainer):
+    # Initialize metrics to feed into DataContainer
+    train_loss = []
+
+    for i in range(5):
+        train_loss.append(np.random.uniform(0,1))
+        raw_message = {
+            'experiment_name': 'Test2',
+            'category': 'Metrics',
+            'name': 'Train Loss',
+            'metric': train_loss[i*2],
+            'step': i*2
+        }
+        train_loss.append(np.nan)
+
+        message = serialize(raw_message)
+        datacontainer.process_message(message)
+
+    # Grab stored metric out of DataContainer and assert
+    assert len(datacontainer.get_metric('Test2', 'Train Loss', start=0)) == 9
+    assert len(datacontainer.get_metric('Test2', 'Train Loss', start=1, end=5)) == 5
+    assert len(datacontainer.get_metric('Test2', 'Train Loss', end=-2)) == 2
+
+    assert np.isclose(datacontainer.get_metric('Test2', 'Train Loss', start=0), train_loss[:-1], equal_nan=True).all()
+    assert np.isclose(datacontainer.get_metric('Test2', 'Train Loss', end=-5), train_loss[-6:-1], equal_nan=True).all()
