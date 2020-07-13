@@ -14,8 +14,15 @@
 
   //the-mini-map
 
-.workspace_meta-action
+.workspace_meta-action.d-flex
+  button.btn.btn--color.hardware-trigger(type="button" 
+    :class="{clicked: showResourceView!=0}"
+    @click="setResourceView(1)"
+    ) Hardware
+
   //-button.btn.btn--color.btn--color__purpur(type="button" disabled="disabled"
     v-if="statisticsIsOpen && statusNetworkCore == 'Finished'"
     @click="saveNetwork"
     ) Extract Data
+
+

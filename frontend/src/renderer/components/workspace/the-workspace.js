@@ -25,6 +25,7 @@ import StartTrainingSpinner   from '@/components/different/start-training-spinne
 import TheMiniMap             from '@/components/different/the-mini-map.vue'
 import SidebarLayers          from '@/components/workspace/sidebar/workspace-sidebar-layers.vue'
 import Notebook               from '@/components/notebooks/notebook-container.vue';
+import ResourceMonitor        from "@/components/charts/resource-monitor.vue";
 import SelectModelModal       from '@/pages/projects/components/select-model-modal.vue';
 
 export default {
@@ -36,7 +37,7 @@ export default {
     GeneralResult, SelectCoreSide,
     WorkspaceBeforeImport, WorkspaceSaveNetwork, WorkspaceLoadNetwork, ExportNetwork,
     TheTesting, TheViewBox, StartTrainingSpinner,
-    TheMiniMap, FilePickerPopup, SidebarLayers, Notebook, SelectModelModal
+    TheMiniMap, FilePickerPopup, SidebarLayers, Notebook, ResourceMonitor, SelectModelModal
   },
   mounted() {
     window.addEventListener('resize', this.onResize);
@@ -66,6 +67,13 @@ export default {
         isRightActive: false,
       },
       mouseDownIntervalTimer: null,
+      showResourceView: 0,
+      currentData: {
+        Progress: 0,
+        Memory: 0,
+        CPU: 0
+      },
+      buffer: {},
       isCreateModelModalOpen: false
     }
   },
@@ -135,7 +143,17 @@ export default {
 
       return 'WorkspaceToolbar';
       
-    }
+    },
+
+    statusNetworkInfo() {
+      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.coreStatus
+    },
+    doShowCharts() {
+      return this.$store.getters['mod_workspace/GET_networkShowCharts']
+    },
+    isNeedWait() {
+      return this.$store.getters['mod_workspace/GET_networkWaitGlobalEvent']
+    },
   },
   watch: {
     statusNetworkCore(newStatus) {
@@ -189,6 +207,16 @@ export default {
         this.checkTabWidths();
         clearTimeout(timer);
       }, 300); // transitionDuration of .page_sidebar element
+    },
+    statusNetworkInfo(newVal) {
+      this.isNeedWait
+        ? this.buffer = newVal
+        : this.currentData = newVal
+    },
+    doShowCharts() {
+      this.isNeedWait
+        ? this.currentData = this.buffer
+        : null
     }
   },
   methods: {
@@ -238,6 +266,13 @@ export default {
       } else {
         if(!this.isCursorInsideWorkspace)
         this.set_cursorInsideWorkspace(true);
+      }
+    },
+    setResourceView(value) {
+      if (this.showResourceView == 1 && value == 1) {
+        this.showResourceView = 0;
+      } else {
+        this.showResourceView = value;
       }
     },
     toggleSidebar() {

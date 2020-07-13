@@ -63,6 +63,36 @@
         )
 
       start-training-spinner(v-if="showTrainingSpinner")
+      file-picker-popup(
+        v-if="showFilePickerPopup"
+        :filePickerType="showFilePickerPopup.filePickerType"
+        :fileTypeFilter="showFilePickerPopup.fileTypeFilter"
+        :popupTitle="showFilePickerPopup.popupTitle"
+        :confirmCallback="showFilePickerPopup.confirmCallback || showFilePickerPopup")
+      //- showFilePickerPopup container the callback function
+    .hardware-metrics(
+      v-show="showResourceView!=0"
+      ) 
+      .header
+        h4 RAM/CPU/GPU
+        i.icon.icon-app-minimize.btn.btn--icon(type="button"
+          @click="setResourceView(0)"
+        ) 
+      .resource-wrapper
+        resource-monitor(
+          :monitor-value="currentData"
+          v-show="showResourceView>0"
+        )
+      .labels
+        .row_item
+          .ticker.red
+          span RAM
+        .row_item
+          .ticker.yellow
+          span CPU
+        .row_item
+          .ticker.green
+          span GPU
 
     .workspace_meta(
       v-if="!isNotebookMode"  
@@ -101,6 +131,7 @@
   @import "../../scss/base";
   @import "./tabset/workspace-tabset";
   @import "./meta/workspace-meta";
+  
   .select-modal-wrapper {
     position: absolute;
     width: calc(100% - 50px);
@@ -219,5 +250,94 @@
   }
   .workspace-relative {
     position: relative;
+  }
+  .hardware-trigger {
+    width: 70px;
+    height: 19px;
+    border: 0.5px solid #5E6F9F;
+    box-sizing: border-box;
+    border-radius: 1px;
+    background: transparent;
+    color: #B6C7FB;
+
+    &.clicked {
+      background: #131B30;
+    }
+
+  }
+  .hardware-metrics {
+    z-index: 10;
+    border-radius: 2px;
+    border: 1px solid #5E6F9F;
+    width: 374px;
+    height: 200px;
+    background: #222939;
+    position: absolute;
+    bottom: 31px;
+    right: 2px;
+
+    .resource-wrapper {
+      position: absolute;
+      top: 35px;
+      left: 5px;
+      right: 5px;
+      z-index: 10;
+      width: 300px;
+      height: calc(100% - 45px);
+    }
+
+    .labels {
+      position: absolute;
+      right: 15px;
+      top: 42px;
+      
+      .row_item {
+        display: flex;
+        margin-bottom: 10px;
+        align-items: center;
+      }
+
+      .ticker {
+        width: 15px;
+        height: 4px;
+        border-radius: 2px;
+        margin-right: 8px;
+
+        &.red {
+          background: #FE7373;
+        }
+        &.yellow{
+          background: #F7D081
+        }
+        &.green{
+          background: #73FEBB
+        }
+      }
+    }
+
+    .header {
+      color: #B6C7FB;
+      background: #090f19;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #5E6F9F;
+      width: 100%;
+      height: 25px;
+      padding: 0px 7px;
+      margin: 0;
+
+      h4 {
+        margin: 0;
+      }
+
+      i {
+        font-size: 7px;
+        
+        &:hover {
+          cursor: pointer;
+        }
+      }
+    }
   }
 </style>
