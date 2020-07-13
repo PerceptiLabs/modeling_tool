@@ -40,7 +40,7 @@
       )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Samples'")
       .statistics-box_row
-        .statistics-box_col
+        .statistics-box_col(v-if="!testIsOpen")
           chart-switch(
             key="5"
             chart-label="Real Inpput"
@@ -66,7 +66,7 @@
 <script>
   import ChartSwitch      from "@/components/charts/chart-switch";
   import viewBoxMixin   from "@/core/mixins/net-element-viewBox.js";
-
+  import { mapActions } from 'vuex';
 
   export default {
     name: "ViewBoxTrainGan",
@@ -117,11 +117,18 @@
     },
     watch: {
       testIsOpen(newVal) {
-        newVal ? this.setTab('Generator_Loss') : null
+        newVal ? this.setTab('Samples') : null
       }
     },
     methods: {
-
+      ...mapActions({
+        tutorialPointActivate:    'mod_tutorials/pointActivate',
+      }),
+      setTab(name, id) {
+        this.currentTab = name;
+        this.setTabAction();
+        this.tutorialPointActivate({way: 'next', validation: id})
+      },
       getData() {
         switch (this.currentTab) {
           case 'Generator_Loss':

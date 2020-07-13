@@ -1527,6 +1527,14 @@ def policy_gan(core, graphs, sanitized_to_name, sanitized_to_id, results):
                 true_id = sanitized_to_id[node.layer_id] # nodes use spec names for layer ids
                 data.update(get_layer_inputs_and_outputs(current_graph, node, trn_node))
                 test_dict[true_id] = data
+            
+            data = {}        
+            true_trn_id = sanitized_to_id[trn_node.layer_id]
+            trn_layer = trn_node.layer
+            switch_layer_id = trn_layer.get_switch_layer_id
+            data['generated_image'] = trn_layer.generator_layer_outputs.get(switch_layer_id)[-1]
+            data['real_image'] = trn_layer.real_layer_outputs.get(switch_layer_id)[-1]
+            test_dict[true_trn_id].update(data)
 
             training_status = 'Finished'
             status='Running'
