@@ -56,9 +56,10 @@ export default {
 
 <style lang="scss" scoped>
   @import "../../scss/base";
+
   .statistics-box_tabset {
-    // position: absolute;
-    // top: 85px;
+    position: absolute;
+    top: 47px;
     z-index:10;
     right: 11px;
     display: flex;
@@ -75,6 +76,7 @@ export default {
   .workspace-relative .statistics-box_tabset {
     display: none;
   }
+
   #tutorial_view-box {
     .statistics-box_tabset {
       position: static;
