@@ -1,5 +1,7 @@
 <template lang="pug">
-  main.page_workspace
+  main.page_workspace(
+    :class="{'open-statistics': statisticsIsOpen}"
+  )
     .workspace_tabset(
       ref="tabset"
       v-show="!showTrainingSpinner"
@@ -143,12 +145,15 @@
     z-index: 100;
   }
   .page_workspace {
-    // position: relative;
     display: flex;
     flex-direction: column;
     overflow: hidden;
     width: 100%;
     height: 100%;
+
+    &.open-statistics {
+      position: relative;
+    }
   }
   .workspace_tabset {
     flex: 0 0 auto;

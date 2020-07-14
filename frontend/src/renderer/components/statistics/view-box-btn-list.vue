@@ -57,8 +57,9 @@ export default {
 <style lang="scss" scoped>
   @import "../../scss/base";
   .statistics-box_tabset {
-    // position: absolute;
-    // top: 85px;
+    position: absolute;
+    top: 47px;
+    z-index:10;
     right: 11px;
     display: flex;
     flex-wrap: nowrap;
@@ -71,8 +72,12 @@ export default {
     }
   }
 
-  .network_info-section.tutorial-relative.the-view-box {
+  .workspace-relative .statistics-box_tabset {
+    display: none;
+  }
+  #tutorial_view-box {
     .statistics-box_tabset {
+      position: static;
       background-color: #090f19;
       border-top: 2px solid rgba(97, 133, 238, 0.4);
       border-bottom: 1px solid rgba(97, 133, 238, 0.4);
