@@ -48,7 +48,6 @@
     ul.toolbar_list
       li(:class="{'tutorial-active': activeStepStoryboard === 4}")
         button#tutorial_run-training-button.btn.btn--toolbar.bg-primary.run-button(type="button"
-          :disabled="statusLocalCore === 'offline'"
           :class="statusStartBtn"
           v-tooltip:bottom="'Run/Stop'"
           v-tooltip-interactive:bottom="interactiveInfo.runButton"
@@ -81,6 +80,13 @@
     ul.toolbar_list
       li
         span TensorFlow 1.15 
+    ul.toolbar_list
+      li
+        span Python 3
+        span.btn.python-status(
+          :class="{'connected': statusLocalCore === 'online', 'disconnected': statusLocalCore === 'offline'}"
+          v-tooltip:networkElement="kernelLabel"
+        )
     //ul.toolbar_list
       li
         button.btn.btn--toolbar(type="button"
@@ -106,15 +112,15 @@
         span Notebook
         .ring-icon
 
-      tutorial-instructions(
-        ref="tutorialComponent"
-        v-tooltip-interactive:bottom="interactiveInfo.tutorial")
-        button.btn.btn--dark.btn--toolbar-settings(type="button"
-          @click="switchTutorialMode"
-          :class="{'active': isTutorialMode}"
-        )
-          span Tutorial
-          .ring-icon
+      //- tutorial-instructions(
+      //-   ref="tutorialComponent"
+      //-   v-tooltip-interactive:bottom="interactiveInfo.tutorial")
+      //-   button.btn.btn--dark.btn--toolbar-settings(type="button"
+      //-     @click="switchTutorialMode"
+      //-     :class="{'active': isTutorialMode}"
+      //-   )
+      //-     span Tutorial
+      //-     .ring-icon
 
       button.btn.btn--dark.btn--toolbar-settings(
         type="button"
@@ -132,12 +138,14 @@ import { googleAnalytics }                      from '@/core/analytics';
 import { trainingElements, deepLearnElements }  from '@/core/constants.js';
 import { goToLink }                             from '@/core/helpers.js'
 
-import TutorialInstructions     from '@/components/tutorial/tutorial-instructions.vue';
+// import TutorialInstructions     from '@/components/tutorial/tutorial-instructions.vue';
 import ToolbarLayers            from '@/components/toolbar/workspace-toolbar-layers.vue';
 
 export default {
   name: 'WorkspaceToolbar',
-  components: { TutorialInstructions, ToolbarLayers },
+  components: { ToolbarLayers
+  //TutorialInstructions, 
+   },
   data() {
     return {
       x: null,
@@ -178,6 +186,13 @@ export default {
         // 'bg-warning': this.statusTraining === 'pause',
         // 'bg-success': this.statusTraining === 'finish',
         //'bg-error': this.statusTraining === 'finish',
+      }
+    },
+    kernelLabel() {
+      if(this.statusLocalCore !== "online") {
+        return "Kenerl is not connected";
+      } else {
+        return "Kenerl is connected";
       }
     },
     statusTraining() {
@@ -282,9 +297,18 @@ export default {
       this.set_notebookMode();
     },
     onOffBtn() {
-      if(this.isTraining) this.trainStop();
-      else this.trainStart();
-      this.$nextTick(()=> this.tutorialPointActivate({way:'next', validation: 'tutorial_run-training-button'}))
+      if (this.statusLocalCore === 'online') {
+        if(this.isTraining)  {
+          this.trainStop();
+        } else {
+          this.trainStart();
+        }
+
+        this.$nextTick(()=> this.tutorialPointActivate({way:'next', validation: 'tutorial_run-training-button'}))
+      } else {
+        this.showInfoPopup('Kernel is not connected');
+      }
+    
     },
     trainStart() {
       googleAnalytics.trackCustomEvent('start-training');
@@ -296,7 +320,7 @@ export default {
       this.stopTraining();
       
       this.$store.dispatch('mod_tracker/EVENT_trainingCompleted');
-      Analytics.googleAnalytics.trackCustomEvent('training-completed');
+      googleAnalytics.trackCustomEvent('training-completed');
     },
     trainPause() {
       this.pauseTraining();
@@ -381,7 +405,7 @@ export default {
     position: relative;
     grid-area: toolbar;
     z-index: 2;
-    height: $h-toolbar;
+    max-height: $h-toolbar;
   }
   .toggle-wrap {
     width: $w-layersbar * .87;
@@ -548,6 +572,20 @@ export default {
     width: 20rem;
 
   }
-
+  .python-status {
+    display: inline-block;
+    margin-left: .7rem;
+    font-size: 12px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    vertical-align: baseline;
+    &.connected {
+      background-color: #73FEBB;
+    }
+    &.disconnected {
+     background-color: #FE7373;
+    }
+  }
   
 </style>

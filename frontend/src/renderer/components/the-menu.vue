@@ -46,7 +46,7 @@
 </template>
 
 <script>
-  import { mapGetters, mapMutations, mapActions } from 'vuex';
+  import { mapGetters, mapMutations, mapActions, mapState } from 'vuex';
   import { baseUrlSite, MODAL_PAGE_PROJECT } from '@/core/constants.js';
   import { isElectron, goToLink, isOsMacintosh, isDesktopApp } from '@/core/helpers.js'
   
@@ -68,10 +68,15 @@ export default {
   },
   computed: {
     ...mapGetters({
-      isTutorialMode: 'mod_tutorials/getIstutorialMode',
-      isStoryBoard:   'mod_tutorials/getIsTutorialStoryBoard',
-      isLogin:        'mod_user/GET_userIsLogin',
-      networkHistory: 'mod_workspace-history/GET_currentNetHistory',
+      isTutorialMode:         'mod_tutorials/getIstutorialMode',
+      isStoryBoard:           'mod_tutorials/getIsTutorialStoryBoard',
+      isLogin:                'mod_user/GET_userIsLogin',
+      networkHistory:         'mod_workspace-history/GET_currentNetHistory',
+      isDefaultProjectMode:   'mod_project/GET_isDefaultProjectMode',
+      isNotebookMode:         'mod_notebook/getNotebookMode',
+    }),
+    ...mapState({
+      currentProjectId:     state => state.mod_project.currentProject,
     }),
     appVersion() {
       return this.$store.state.globalView.appVersion
@@ -130,6 +135,7 @@ export default {
     ...mapActions({
       infoPopup:        'globalView/GP_infoPopup',
       popupConfirm:     'globalView/GP_confirmPopup',
+      popupNewModel:    'globalView/SET_newModelPopup',
       offMainTutorial:  'mod_tutorials/offTutorial',
       hideTooltip:      'mod_tutorials/hideTooltip',
       appClose:         'mod_events/EVENT_appClose',
@@ -170,7 +176,9 @@ export default {
       }
     },
     addNewNetwork() {
-      this.$router.push({name: 'projects'});
+      if (this.$route.name !== 'projects') {
+        this.$router.push({name: 'projects'});
+      } 
     },
     logOut() {
       if(this.isTutorialMode) {
@@ -265,6 +273,9 @@ export default {
         this.openNetwork();
       }
     },
+    newModel() {
+      this.popupNewModel(true);
+    },
     openLoadModelPopup() {
       if(this.isTutorialMode) {
         this.hideTooltip();
@@ -284,7 +295,25 @@ export default {
       if (!path || path.length === 0) { return; }
 
       this.$store.dispatch('globalView/SET_filePickerPopup', false);
-      this.loadNetwork(path[0]);
+      
+      this.$store.dispatch('mod_events/EVENT_loadNetwork', path[0]);
+      // this.$store.dispatch('mod_api/API_getModel',`${path[0]}/model.json`)
+      //   .then(model => {
+      //     if(model.hasOwnProperty('apiMeta')) {
+      //       const { location } = model.apiMeta;
+      //       delete model.apiMeta;
+      //     }
+      //     this.$store.dispatch('mod_project/createProjectModel',{
+      //       name: model.networkName,
+      //       project: this.currentProjectId,
+      //       location: path[0],
+      //     }).then(apiMeta => {
+      //       this.$store.dispatch('mod_workspace/ADD_network', {network: model, apiMeta});
+      //     });
+      //   })
+      //   .catch(e => console.log(e));
+
+      // this.loadNetwork(path[0]);
     },
     saveModel() {
       this.saveNetwork();
@@ -362,8 +391,7 @@ export default {
           label: 'Edit', visible: true,
           submenu: [
             {label: 'Undo',         accelerator: this.isMac ? 'meta+z' : 'ctrl+z',              role: 'undo',           active: this.toPrevStepHistory },
-            {label: 'Redo',         accelerator: this.isMac ? 'meta+shift+z' : 'ctrl+shift+z',  role: 'redo',           active: this.toNextStepHistory },
-            {label: 'Redo',         accelerator: this.isMac ? 'meta+y' : 'ctrl+y',              role: 'redo',           active: this.toNextStepHistory },
+            {label: 'Redo',         accelerator: this.isMac ? 'meta+shift+z' : 'ctrl+y',  role: 'redo',           active: this.toNextStepHistory },
             {type:  'separator'},
             {label: 'Copy',         accelerator: this.isMac ? 'meta+c' : 'ctrl+c',              role: 'copy',           active: this.HCCopy },
             {label: 'Paste',        accelerator: this.isMac ? 'meta+v' : 'ctrl+v',              role: 'paste',          active: this.HCPaste },
@@ -405,7 +433,7 @@ export default {
           submenu: [
             {label: 'Help',          enabled: false,                                  active: this.goToHelpPageDesktop },
             {label: 'About',                                                          active: this.goToAboutPageDesktop },
-            {label: 'Tutorial mode', enabled: !this.isTutorialActive && this.isLogin, active: this.showTutorial },
+            // {label: 'Tutorial mode', enabled: !this.isTutorialActive && this.isLogin, active: this.showTutorial },
             ...(this.isMac
               ? []
               : [{label: 'Check for updates',                                         active: this.checkUpdate }]
@@ -437,13 +465,16 @@ export default {
         {
           label: 'File', visible: true,
           submenu: [
-            {label: 'New',     active: this.addNewNetwork},
+            {label: 'New',     active: this.newModel},
             {type: 'separator'},
-            {label: 'Load',    active: this.openLoadModelPopup},
-            {label: "Project", active: this.setActivePage},
+            {label: 'Import Model',    active: this.openLoadModelPopup},
+            ...(this.isDefaultProjectMode ?
+              [] :
+              [{label: "View Projects", active: this.setActivePage},]
+            ),
             {type: 'separator'},
-            {label: 'Save',    active: this.saveModel,          enabled: this.openApp},
-            {label: 'SaveAs',  active: this.saveModelAs,        enabled: this.openApp},
+            {label: 'Save',         accelerator: this.isMac ? 'meta+s' : 'ctrl+s',              enabled: this.openApp && !this.isNotebookMode,  active: this.saveModel },
+            {label: 'Save as',   accelerator: this.isMac ? 'meta+shift+s' : 'ctrl+shift+s',     enabled: this.openApp && !this.isNotebookMode,  active: this.saveModelAs },
             {type: 'separator'},
             {label: 'Export',  active: this.exportModel,        enabled: this.openApp},
             {type: 'separator'},
@@ -454,8 +485,7 @@ export default {
           label: 'Edit', visible: true,
           submenu: [
             {label: 'Undo',         accelerator: this.isMac ? 'meta+z' : 'ctrl+z',              role: 'undo',       enabled: this.openApp,        active: this.toPrevStepHistory },
-            {label: 'Redo',         accelerator: this.isMac ? 'meta+shift+z' : 'ctrl+shift+z',  role: 'redo',       enabled: this.openApp,        active: this.toNextStepHistory },
-            {label: 'Redo',         accelerator: this.isMac ? 'meta+y' : 'ctrl+y',              role: 'redo',       enabled: this.openApp,        active: this.toNextStepHistory },
+            {label: 'Redo',         accelerator: this.isMac ? 'meta+shift+z' : 'ctrl+y',  role: 'redo',       enabled: this.openApp,        active: this.toNextStepHistory },
             {type:  'separator'},
 
             {label: 'Cut',          accelerator: this.isMac ? 'meta+x' : 'ctrl+x',              role: 'cut',        enabled: this.openApp,        active: this.HCCut },
@@ -474,7 +504,7 @@ export default {
           submenu: [
             {label: 'Help',                                                           active: this.goToHelpPageWeb },
             {label: 'About',                                                          active: this.goToAboutPageWeb },
-            {label: 'Tutorial mode', enabled: !this.isTutorialActive,                 active: this.showTutorial },
+            // {label: 'Tutorial mode', enabled: !this.isTutorialActive,                 active: this.showTutorial },
             {type: 'separator'},
             {label: `Version: ${this.appVersion}`, enabled: false,                    active: ()=>{} }
           ]

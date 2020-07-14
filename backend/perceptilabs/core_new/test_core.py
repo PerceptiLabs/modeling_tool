@@ -113,7 +113,8 @@ def graph_spec_binary_classification():
                     "Neurons": str(n_classes),
                     "Activation_function" : "Sigmoid",
                     "Dropout": False,
-                    "Keep_prob": "1"
+                    "Keep_prob": "1",
+                    "Batch_norm": False
                 },
                 "backward_connections": [["3", "reshape"]],
                 "forward_connections": [["6", "training"]],
@@ -181,7 +182,6 @@ def run_core_until_convergence(messaging_factory, graph_spec, metric_fn, max_att
         
         core.run(graph_spec, auto_close=True)
         #core.close(wait_for_deployment=True)                            
-        
         graphs.extend(core.graphs)        
         passed = metric_fn(graphs)
         if passed:
@@ -208,6 +208,8 @@ def test_train_normal_converges(messaging_factory, graph_spec_binary_classificat
 def test_train_normal_distributed_converges(messaging_factory, graph_spec_binary_classification, graph_builder):
     json_network = graph_spec_binary_classification
     json_network['Layers']['6']['Properties']['Distributed'] = True
+    json_network['Layers']['6']['Properties']['Learning_rate'] = 0.1
+    json_network['Layers']['6']['Properties']['Batch_size'] = 20
 
 
     def metric_fn(graphs):
@@ -332,8 +334,9 @@ def test_core_handles_userland_error(messaging_factory):
     def cond(_):
         next(core_step, None)
         next(server_step, None)
-        return issue_handler.put_error.call_count == 1             
-
+        return issue_handler.put_error.call_count == 1
+    
+    assert wait_for_condition(cond)    
     
 def test_core_handles_training_server_timeout(messaging_factory):
     """Simulate a timeout by having a slow training loop"""
@@ -392,8 +395,7 @@ def test_core_handles_training_server_timeout(messaging_factory):
         next(core_step, None)
         next(server_step, None)
         return issue_handler.put_error.call_count == 1             
-
-        
+    
 def test_pause_works(graph_spec_binary_classification, messaging_factory):
     
     def run_graph():

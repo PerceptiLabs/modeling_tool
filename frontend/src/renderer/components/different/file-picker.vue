@@ -95,7 +95,11 @@ export default {
         showBackButton: true,
         showNumberSelectedFiles: true,
       })
-    }
+    },
+    startupFolder: {
+      type: String,
+      default: ''
+    },
   },
   data() {
     return {
@@ -116,9 +120,14 @@ export default {
   },
   mounted() {
     let path = '';
-    if(localStorage.hasOwnProperty(filePickerStorageKey) && !this.isTutorialMode) {
+    
+    if (this.startupFolder) {
+      path = this.startupFolder;
+    }
+    else if(localStorage.hasOwnProperty(filePickerStorageKey) && !this.isTutorialMode) {
       path = localStorage.getItem(filePickerStorageKey);
     }
+    
     this.fetchPathInformation(path)
           .then(response => {
             if (response == false) {

@@ -3,6 +3,9 @@ const baseNetPaintArrows = {
     activeAction() {
       return this.$store.getters['mod_tutorials/getActiveAction']
     },
+    wsZoom() {
+      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.zoom;
+    },
     // Mix_paintArrow_startDrawArrow() {
     //   return this.$store.state.mod_workspace.startArrowID
     // },
@@ -22,7 +25,7 @@ const baseNetPaintArrows = {
       ev.preventDefault();
       ev.stopPropagation();
       let el = this.dataEl;
-      let layerSize = this.$parent.$parent.layerSize;
+      let layerSize = this.$parent.$parent.layerSize * this.wsZoom;
 
       this.$parent.$parent.addArrowListener();
       this.$store.commit('mod_workspace/SET_startArrowID', el.layerId);

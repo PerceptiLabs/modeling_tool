@@ -1,5 +1,5 @@
 <template lang="pug">
-  .project-wrapper
+  .project-wrapper#pr-wrapper(@click="onProjectWrapperClick($event)")
     .projectContext(v-if="isContextOpened" :style="projectContextStyles")
       button(@click="renameProject") Rename
       button(@click="deleteProject()") Delete
@@ -8,12 +8,15 @@
       .content
         .sidebar
           button.project-list-filter-button.is-active Local Projects
-          button.project-list-filter-button.is-disabled Cloud Projects
+          //- button.project-list-filter-button.is-disabled Cloud Projects
         .main
           .main-header
-            button.btn-icon
+            button.btn-icon(
+              @click="openProjectImport"
+              v-tooltip:bottom="'Import Project'"
+              )
               img(src="../../../../static/img/project-page/import.svg")
-            button.btn-icon.rounded-border(@click="openProjectNameModal")
+            button.btn-icon.rounded-border(@click="openProjectNameModal" v-tooltip:bottom="'New Project'")
               img(src="../../../../static/img/plus.svg")
             div.search-input
               img(src="../../../../static/img/search-models.svg")
@@ -22,18 +25,18 @@
                 placeholder="Search"
                 v-model="searchValue"
               )
-            div
-              sort-by-button(
-                :options="[{name: 'Test', value: 1}]"
-                :option-selected="0"
-              )
+            //- div
+              //- sort-by-button(
+              //-   :options="[{name: 'Test', value: 1}]"
+              //-   :option-selected="0"
+              //- )
           .main-list
             .main-list-header
               .list-name-name Name
               .list-last-opened Last Opened
             div.main-list-item(
-             v-for="project in projectsList.filter(pr => pr.name.indexOf(searchValue) !== -1)" 
-              @dblclick="onProjectSelectHandler(project)"
+              v-for="project in projectsList.filter(pr => pr.name.indexOf(searchValue) !== -1)" 
+              @dblclick="onProjectSelect(project)"
               @contextmenu.prevent.stop="openContext($event, project.project_id)"
             ) 
               input.rename-project-input(
@@ -44,8 +47,20 @@
               
               )
               span(v-show="!(renameData.projectId === project.project_id && renameData.isProjectFieldActive)").main-list-name.fz-16 {{project.name | trimText}}
-              span.main-list-date.fz-16 {{project.created.toString().substring(0, 16)}}
-          
+              span.main-list-date.fz-16 {{project.created.toString().substring(0, 16).replace("T", " ")}}
+    
+    file-picker-popup(
+      v-if="showFilePickerPopup"
+      popupTitle="Choose default directory for project"
+      :confirmCallback="setNewProjectPath"
+      :cancelCallback="closePopup"
+    )
+    file-picker-popup(
+      v-if="isProjecImportModalOpen"
+      popupTitle="Choose project to import"
+      :confirmCallback="handleProjectImportConfirm"
+      :cancelCallback="closeProjectImport"
+    )
     .project-box.set-project-name(
       v-if="isProjectNameModalOpen"
     )
@@ -57,9 +72,16 @@
           v-model="newProjectName"
           @keyup.enter="createNewProject"
           )
+        .set-project-text-label Project directory
+        input.set-project-text-input(
+          readonly
+          type="text"
+          v-model="newProjectLocation"
+          @click="openProjectPathFilePicker"
+          )
         div.project-name-action-wrapper
           button.project-name-btn.create(
-            :class="{'disabled': newProjectName === ''}"
+            :class="{'disabled': !newProjectName || !newProjectLocation}"
             @click="createNewProject"
           ) Create Project
           button.project-name-btn.cancel(
@@ -68,14 +90,16 @@
 
 </template>
 <script>
-  import { mapActions, mapMutations } from "vuex";
+  import { mapState, mapGetters, mapActions, mapMutations } from "vuex";
   import SortByButton from "@/components/sort-by-button";
-  import { generateID } from "@/core/helpers";
-import { debug } from 'util';
+  import FilePickerPopup        from "@/components/global-popups/file-picker-popup.vue";
+  import { generateID, getDefaultProjectPathForOs } from "@/core/helpers";
+  import { coreRequest } from '@/core/apiWeb.js';
+  import cloneDeep from 'lodash.clonedeep';
 
   export default {
     name: 'CreateSelectProject',
-    components: {SortByButton},
+    components: { SortByButton, FilePickerPopup },
     data() {
       return {
         searchValue: '',
@@ -84,18 +108,22 @@ import { debug } from 'util';
         projectContextStyles: {},
         isProjectNameModalOpen: false,
         newProjectName: '',
+        newProjectLocation: '',
         renameData: {
           isProjectFieldActive: false,
           projectFieldValue: '',
           projectId: null,
-        }
+        },
+        showFilePickerPopup: false,
+        isProjecImportModalOpen: false,
       }
     },
     created() {
-      this.getProjects();
+      document.addEventListener('keyup', this.closeModalByEvent);
     },
     beforeDestroy() {
       document.removeEventListener('click', this.closeContext);
+      // document.removeEventListener('keydown', this.onKeyDown);
     },
     computed:{
       isOpen() {
@@ -106,72 +134,138 @@ import { debug } from 'util';
       },
       projectsList() {
         return this.$store.state.mod_project.projectsList;
-      }
+      },
+      ...mapGetters({
+        networksWithChanges:  'mod_workspace-changes/get_networksWithChanges',
+        GET_isProjectWithThisDirectoryExist:          'mod_project/GET_isProjectWithThisDirectoryExist'
+      })
     },
     methods: {
       ...mapMutations({
-        selectProject: 'mod_project/selectProject',
+        selectProject:                 'mod_project/selectProject',
         addModelFromLocalDataMutation: 'mod_workspace/add_model_from_local_data',
-        loadProjectFromLocalStorage: 'mod_workspace/get_workspacesFromLocalStorage',
-        set_currentNetwork : 'mod_workspace/set_currentNetwork',
+        deleteNetworkById:             'mod_workspace/delete_networkById',
       }),
       ...mapActions({
-        setActivePageAction: 'modal_pages/setActivePageAction',
-        closePageAction: 'modal_pages/closePageAction',
-        getProjects:    'mod_project/getProjects',
-        createProject:    'mod_project/createProject',
+        showInfoPopup:            'globalView/GP_infoPopup',
+        popupConfirm:             'globalView/GP_confirmPopup',
+        setActivePageAction:      'modal_pages/setActivePageAction',
+        closePageAction:          'modal_pages/closePageAction',
+        getProjects:              'mod_project/getProjects',
+        createProject:            'mod_project/createProject',
         createLocalProjectFolder: 'mod_api/API_createFolder',
-        API_getModelAction: 'mod_api/API_getModel',
-        deleteProjectAction: 'mod_project/deleteProject',
-        updateProjectAction: 'mod_project/updateProject',
+        API_getModelAction:       'mod_api/API_getModel',
+        deleteProjectAction:      'mod_project/deleteProject',
+        updateProjectAction:      'mod_project/updateProject',
+        createProjectModel:       'mod_project/createProjectModel',
+        addNetwork:               'mod_workspace/ADD_network',
+        resetNetwork:             'mod_workspace/RESET_network',
+        clearNetworkChanges:      'mod_workspace-changes/clearNetworkChanges',
+        loadWorkspaces:           'mod_webstorage/loadWorkspaces',
+        deleteAllIds:             'mod_webstorage/deleteAllIds'
+        
       }),
-      onProjectSelectHandler(project) {
+      onProjectWrapperClick(e){
+        const hasTargetProject = localStorage.hasOwnProperty('targetProject');
+        if(e.target.id === 'pr-wrapper' && hasTargetProject) {
+          this.closePageAction();
+        }
+      },
+      closeModalByEvent(e){
+        const hasTargetProject = localStorage.hasOwnProperty('targetProject');
+        const isEscKey = e.keyCode === 27;
+        if(hasTargetProject && isEscKey) {
+          this.closePageAction();
+          document.removeEventListener('keyup', this.closeModalByEvent);
+        }
+      },
+      onProjectSelect(project) {
         const {project_id: projectId} = project;
+        if (this.networksWithChanges.length > 0) {
+          this.popupConfirm(
+          {
+            text: 'There are unsaved networks, are you sure you want to change projects?',
+            cancel: () => {
+              this.closePageAction();
+            },
+            ok: () => {
+              this.clearNetworkChanges();
+              
+              this.loadWorkspaces()
+                .then(_ => {
+                  this.goToProject(projectId);
+                }); 
+            }
+          }); 
+        } else {
+          this.goToProject(projectId);
+        }
 
+      },
+      goToProject(projectId) {
+        // Setting the projectId to something nonsensical so the watcher 
+        // can be triggered. This is because everything is now done in the 
+        // project components now. 
+        this.selectProject(-1);
         this.selectProject(projectId);
         this.closePageAction();
-        // this.setPageTitleMutation(`${project.name} / Models`);
 
-        this.loadProjectFromLocalStorage(projectId);
-        this.set_currentNetwork(0);
-        // project.models.map(modelId => {
-          
-        //   // @todo extract models from local storage
-        //   // make mutation for set the models in store
-          
-        //   this.API_getModelAction({modelId, projectId})
-        //     .then(model => {
-        //       this.addModelFromLocalDataMutation(model)
-        //     }).catch(e => {
-        //       console.log(e);
-        //     })
-        // })
-
-        this.$router.push({name: 'projects'})
+        // load models and set them in the workspace from:
+        // 1. model's "location" property
+        // 2. <project path>/<model name>.json
+        if (this.$route.name !== 'projects') {
+          this.$router.push({name: 'projects'});
+        }
       },
       openProjectNameModal() {
         this.isProjectNameModalOpen = true;
       },
-       closeProjectNameModal() {
+      closeProjectNameModal() {
         this.isProjectNameModalOpen = false;
         this.newProjectName = '';
       },
-      createNewProject(projectName) {
-        if(this.newProjectName === '') {
+      openProjectPathFilePicker() {
+        this.showFilePickerPopup = true;
+      },
+      setNewProjectPath(filepath) {
+        this.newProjectLocation = filepath && filepath[0] ? filepath[0] : ''
+        this.closePopup();
+      },
+      createNewProject() {
+        if(!this.newProjectName || !this.newProjectLocation) {
           return;
         }
 
-       let payload = {
-         name: this.newProjectName,
-       };
-      
-       this.createProject(payload)
-        .then(res => {
-          this.onProjectSelectHandler(res);
-          const projectName = `project_${res.project_id}`; 
-          // this.createLocalProjectFolder(projectName);
+        let createProjectFolderReq = {
+          folder_path: this.newProjectLocation + '/' + this.newProjectName
+        };
+
+        this.createLocalProjectFolder(createProjectFolderReq)
+        .then(createFolderRes => {
+          if (createFolderRes !== '') {
+            let createProjectReq = {
+              name: this.newProjectName,
+              default_directory: createFolderRes
+            };
+
+            return this.createProject(createProjectReq);
+          } else {
+            this.showInfoPopup('A problem occurred when creating the project directory');
+            throw new Error('Problem creating project directory');
+          }
         })
-        this.isProjectNameModalOpen = false;
+        .then(createProjectRes => {
+          this.getProjects();
+          this.onProjectSelect(createProjectRes);
+          const projectName = `project_${createProjectRes.project_id}`; 
+          this.newProjectName = '';
+        })
+        .catch(error => {
+          // console.error(error);
+        })
+        .finally(_ =>{
+          this.isProjectNameModalOpen = false;
+        });
       },
       openContext(e, projectId) {
         const { pageX, pageY } = e;
@@ -192,24 +286,29 @@ import { debug } from 'util';
             text: 'There are still models inside this project, are you sure you want to delete the project and all its containing models?',
             ok: () => {
 
-              let deleteModelsPromises = theProjectModels.map(model_id => this.$store.dispatch('mod_project/deleteModel', { model_id }));
-              
+              const deleteModelsPromises = theProjectModels.map(model_id => {
+                  this.$store.dispatch('mod_project/deleteModel', { model_id });
+                  this.$store.dispatch('mod_api/API_closeSession', model_id, { root: true });
+              });
+
               Promise.all(deleteModelsPromises)
                 .then(()=> {
-                   this.deleteProjectAction({ projectId: contextTargetProject })
-                    .catch(e => console.log(e));
+                   return this.deleteProjectAction({ projectId: contextTargetProject });
                 })
-                .catch(e => console.log(e));
-             
+                .catch(e => console.log(e))
+                .finally(_ => {
+                  for(const id of theProjectModels) {
+                    this.deleteNetworkById(id);
+                  }
+                  this.getProjects();
+                })             
             },
-            })
+          })
           return;
         } else {
           this.deleteProjectAction({ projectId: contextTargetProject })
           .catch(e => console.log(e));
         }
-
-
       },
       renameProject() {
     
@@ -219,8 +318,7 @@ import { debug } from 'util';
           this.renameData.isProjectFieldActive = true;
           this.renameData.projectFieldValue = theProject.name;
           this.renameData.projectId = theProject.project_id;
-      },
-      
+      },      
       closeContext() {
         document.removeEventListener('click', this.closeContext);
         this.contextTargetProject = null;
@@ -234,6 +332,105 @@ import { debug } from 'util';
           this.renameData.projectFieldValue = '';
           this.renameData.projectId = null;
           });
+      },
+      closePopup() {
+        this.showFilePickerPopup = false;
+      },
+      openProjectImport() {
+        this.isProjecImportModalOpen = true;
+      },
+      closeProjectImport() {
+        this.isProjecImportModalOpen = false;
+      },
+      async handleProjectImportConfirm (filepath) {
+        const processedFilePath = filepath && filepath[0] ? filepath[0] : ''
+
+        let projectName = '';
+        if(processedFilePath[processedFilePath.length -1] === '/') {
+          const trimedPath = processedFilePath.substring(0, processedFilePath.length - 1);
+          projectName = trimedPath.substring(trimedPath.lastIndexOf('/') + 1);
+        } else {
+          projectName = processedFilePath.substring(processedFilePath.lastIndexOf('/') + 1);
+        }
+        
+        const createProjectReq = {
+          name: projectName,
+          default_directory: processedFilePath
+        };
+
+        if(this.GET_isProjectWithThisDirectoryExist(processedFilePath)) {
+          this.closeProjectImport();
+          this.showInfoPopup('This project already exist');
+          return;
+        }
+
+
+        this.selectedFiles = [];
+        let theData = {
+            reciever: '0',
+            action: 'getFolderContent',
+            value: processedFilePath
+        };
+
+        try {
+          const { dirs, current_path} = await coreRequest(theData);
+          const haveDirectories = dirs.length > 0;
+          if(!haveDirectories) {
+            // cerate project only with that dir
+            const createdProject = await this.createProject(createProjectReq);
+            this.selectProject(createdProject.project_id);
+            this.closePageAction();
+
+          } else {
+                      
+            const createdProject = await this.createProject(createProjectReq);
+            
+            const modelPaths = dirs.map(dirPath => current_path + '/' + dirPath);
+          
+            const promiseArray = 
+              modelPaths.map(modelPath => this.$store.dispatch('mod_api/API_getModel', modelPath + '/model.json'));
+            
+            let localModelsData = await Promise.all(promiseArray);
+            localModelsData = localModelsData.filter(model => model);
+            const atLeastOneFolderHaveModelsJsonFile = localModelsData.length !== 0;
+            if(atLeastOneFolderHaveModelsJsonFile) {
+              this.deleteAllIds();
+              this.resetNetwork();
+              let modelCreationPromises = [];
+              for(let index in localModelsData) {
+                const loadedModel = localModelsData[index];
+                modelCreationPromises.push(this.createProjectModel({
+                  name: loadedModel.networkName,
+                  project: createdProject.project_id,
+                  location: loadedModel.apiMeta.location,
+                }))
+              }
+
+
+              const modelCreatinResponses = await Promise.all(modelCreationPromises);
+              
+              for(let index in modelCreatinResponses) {
+                const apiMeta = modelCreatinResponses[index];
+                const modelJson = localModelsData[index];
+
+                let template = cloneDeep(modelJson);
+                template.networkName = modelJson.networkName;
+                template.networkID = apiMeta.model_id;
+                delete template.apiMeta;
+                await this.addNetwork({network: template, apiMeta: apiMeta, focusOnNetwork: false});
+              }
+            }
+            await this.$store.dispatch('mod_project/getProjects');
+            this.clearNetworkChanges();
+            this.selectProject(createdProject.project_id);
+            this.closePageAction();
+            
+          }
+          
+        
+        } catch(e) {
+          return false;
+        } 
       }
     },
     filters: {
@@ -391,7 +588,8 @@ import { debug } from 'util';
     position: relative;
     /*width: 333px;*/
     width: auto;
-    width: 55%;
+    width: 75%;
+    margin-right: 30px;
   
     
     img {
@@ -468,7 +666,7 @@ import { debug } from 'util';
     font-size: 12px;
     line-height: 16px;
     color: #9E9E9E;
-    margin-bottom: 16px;
+    margin-bottom: 1rem;
   }
   .set-project-text-input {
     width: 100%;
@@ -482,6 +680,10 @@ import { debug } from 'util';
     font-size: 14px;
     line-height: 19px;
     color: #FFFFFF;
+
+    + .set-project-text-label {
+      margin-top: 2rem;
+    }    
   }
   .project-name-action-wrapper {
     display: flex;

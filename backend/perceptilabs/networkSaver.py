@@ -2,7 +2,6 @@ import re
 import json
 
 from perceptilabs.functionParser import explain
-from perceptilabs.codehq import CodeHqNew as CodeHq
 
 def getVariableLibrary(variable):
     try:
@@ -46,7 +45,8 @@ def createNewLayerCode(id_,layer,variables):
         Con=layer['Con']
         backward_connections = layer["Info"]['backward_connections']
         content={"Info":{"Type":Type, "Id": id_, "Properties": Properties, "backward_connections": backward_connections}, "Con":Con}
-        tabs=CodeHq.get_code_generator(id_,content).get_code()
+        #tabs=CodeHq.get_code_generator(id_,content).get_code()
+        tabs = '' 
         if type(tabs) is not dict:
             tabs={"Output":tabs} 
 

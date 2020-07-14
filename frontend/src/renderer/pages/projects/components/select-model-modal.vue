@@ -7,30 +7,34 @@
             .main-templates
                 .main-templates-header
                     h3 Templates
-                    div.search-tempalte
-                        img(src="./../../../../../static/img/search-models.svg")
-                        input(type='text' placeholder="Search")
+                    //- div.search-tempalte
+                    //-     img(src="./../../../../../static/img/search-models.svg")
+                    //-     input(type='text' placeholder="Search")
                 .main-templates-items
                     .template-item(
                             :class="{'is-selected': (chosenTemplate === -1)}"
                             @click="choseTemplate(-1)"
                         )
-                            div.template-image
-                            span.template-name Custom
+                            //- div.template-image
+                            span.template-name Empty
                     .template-item(
                         v-for="(temp, i) in basicTemplates"
                         :class="{'is-selected': (chosenTemplate === i)}"
                         @click="choseTemplate(i)"
                     )
-                        div.template-image
+                        //- div.template-image(v-if="temp.imgPath")
                             img(:src="temp.imgPath" alt="classification")
                         span.template-name {{ temp.title }}
                     
             .main-actions 
                 div  
-                    h4.presets-text Template presets
+                    h4.presets-text Name:
                     .model-title-input-wrapper
                         input.model-title-input(type="text" v-model="modelName")
+                    h4.presets-text Model Path
+                    .model-title-input-wrapper
+                        input.model-title-input(type="text" v-model="modelPath" @click="openFilePicker")
+                    p.template-description(v-if="chosenTemplate !== null") {{basicTemplates[chosenTemplate] &&basicTemplates[chosenTemplate].description}}
                 .main-actions-buttons
                     button.action-button.mr-5(@click="closeModal()") Cancel
                     button.action-button.create-btn.ml-5(
@@ -41,98 +45,187 @@
                             path(d='M11.7924 8.82157H8.96839V11.6386H8.0387V8.82157H5.22168V7.88489H8.0387V5.06787H8.96839V7.88489H11.7924V8.82157Z' fill='white')
                             rect(x='0.5' y='0.5' width='16' height='16' rx='1.5' stroke='white')
                         | Create
+        file-picker-popup(
+            v-if="showFilePickerPopup"
+            popupTitle="Choose Model path"
+            :startupFolder="this.modelPath"
+            :confirmCallback="updateModelPath"
+            :cancelCallback="closePopup"
+        )
 </template>
 <script>
-import imageClassification      from '@/core/basic-template/image-classification.js';
-import reinforcementLearning    from '@/core/basic-template/reinforcement-learning.js';
-import timeseriesRegression     from '@/core/basic-template/timeseries-regression.js';
-import linearRegression         from '@/core/basic-template/timeseries-regression.js';
+    import imageClassification    from '@/core/basic-template/image-classification.js'
+    import reinforcementLearning  from '@/core/basic-template/reinforcement-learning.js'
+    import linearRegression   from '@/core/basic-template/linear-regression.js'
+    import objectDetection        from '@/core/basic-template/object-detection.js'
+    import ganTemplate            from '@/core/basic-template/gan-template.js'
+    import FilePickerPopup        from "@/components/global-popups/file-picker-popup.vue";
 
-import { mapActions, mapState } from 'vuex';
+    import { mapActions, mapState, mapGetters } from 'vuex';
+    import { generateID } from '@/core/helpers';
+    import cloneDeep from 'lodash.clonedeep';
 export default {
-  name: 'SelectModelModal',
-  data: function() {
-    return {
-      basicTemplates: [
-        {
-          title: 'Image Classification',
-          imgPath: './static/img/project-page/image-classification.svg',
-          template: imageClassification
-        },
-        {
-          title: 'Timeseries Regression',
-          imgPath: './static/img/project-page/time-series-regression.svg',
-          template: timeseriesRegression
-        },
-        {
-          title: 'Reinforcement Learning',
-          imgPath: './static/img/project-page/reinforcement-learning.svg',
-          template: reinforcementLearning
-        },
-        {
-          title: 'Linear Regression',
-          imgPath: './static/img/project-page/reinforcement-learning.svg',
-          template: linearRegression
-        },
-      ],
-      chosenTemplate: null,
-      modelName: ''
+    name: 'SelectModelModal',
+    components: { FilePickerPopup },
+    data: function() {
+        return {
+        basicTemplates: [
+          {
+            title: 'Image Classification',
+            imgPath: './static/img/project-page/image-classification.svg',
+            template: imageClassification,
+            description: 'This is a simple image classification template, perfect for datasets such as Mnist. The standard dataset included with this template is a Mnist dataset where the input is an array of 784 grayscale pixel values and there are 10 unique label values (integers 0-9). The model consists of a reshaping component, a convolutional layer as well as a fully connected output layer with 10 neurons. Because of the reshaping component it requries the input data to be 784 or a form thereof (28x28 for example). The labels have to be an integer ranging from 0 to 9 to be compatable with the one hot encoding being applied to the labels.'
+          },
+          {
+            title: 'Linear Regression',
+            imgPath: './static/img/project-page/time-series-regression.svg',
+            template: linearRegression,
+            description: `This is a template for linear regression, where it tries to create a line of best fit for the datapoints you load. The standard dataset is a one dimensional input value and one dimensional labels. The input data can be multidimensional, but our visualizations only allow for one dimensional data at the moment. The labels data can only be one dimensional as they represent the value of the input data. The model is built as a single fully connected layer with one neuron as output.`
+          },
+          {
+            title: 'Reinforcement Learning',
+            imgPath: './static/img/project-page/reinforcement-learning.svg',
+            template: reinforcementLearning,
+            description: `The is a template for Reinforcement Learning consisting of one grayscale component, one convolutional layer and one fully connected layer as output. This template uses Q learning on Atari Gym games, where it is set up to play breakout. To play another game, make sure that you change the neurons from the fully connected layer to match the number of possible actions in the actionspace, which you can see in the Environment component.`
+          },
+           {
+            title: 'Object Detection',
+            imgPath: '',
+            template: objectDetection,
+            description: `This is a template of the Object Detection model YOLO. It trains on a custom built dataset containing different shapes as standard. Since it consists of only convolutional layers, any input data will work to train on, just make sure that the label data matches the input data properly.`
+          },
+          {
+            title: 'GAN',
+            imgPath: '',
+            template: ganTemplate,
+            description: `This is a template for a Generative Adversarial Network (GAN) where it trains on the Mnist data as a standard. The model consists of a generative network and a discriminative network, as well as a switch layer layer which switches between the generated image and real image.`
+          },
+        ],
+        chosenTemplate: null,
+        modelName: '',
+        description: '',
+        modelPath: '',
+        showFilePickerPopup: false,
     }
-  },
-  computed: {
-    ...mapState({
-      currentProjectId: state => state.mod_project.currentProject,  
-    })
-  },
-  methods: {
-    ...mapActions({
-      createProjectModel: 'mod_project/createProjectModel',
-      addNetwork: 'mod_workspace/ADD_network',
-    }),
-    closeModal() {
-      this.$emit('close');
     },
-    choseTemplate(index) {
-      this.chosenTemplate = index;
+    computed: {
+        ...mapState({
+          currentProjectId: state => state.mod_project.currentProject,  
+        }),
+        ...mapGetters({
+            currentProject: 'mod_project/GET_project',
+            projectPath: 'mod_project/GET_projectPath'
+        })
     },
-    isDisableCreateAction () {
-      const { chosenTemplate, modelName, basicTemplates } = this;
-      return ((chosenTemplate === null) || !modelName);
+    mounted() {
+        this.modelPath = this.projectPath;
     },
-    createModel() {
-      const { chosenTemplate, modelName, basicTemplates } = this;
-      if((chosenTemplate === null) || !modelName)  return
-      
-      let modelType;
+    methods: {
+        ...mapActions({
+            addNetwork:                 'mod_workspace/ADD_network',
+            createProjectModel:         'mod_project/createProjectModel',
+            getModelMeta:               'mod_project/getModel',
+            getProjects:                'mod_project/getProjects',
+            showErrorPopup:             'globalView/GP_errorPopup',
+            isDirExists:                'mod_api/API_isDirExist',
+            API_getRootFolder:          'mod_api/API_getRootFolder'
+        }),
+        closeModal() {
+            this.$emit('close');
+        },
+        choseTemplate(index) {
+            this.chosenTemplate = index;
+        },
+        isDisableCreateAction() {
+            const { chosenTemplate, modelName, basicTemplates } = this;
+            return ((chosenTemplate === null) || !modelName);
+        },
+        async createModel() {
+            const { chosenTemplate, modelName, basicTemplates } = this;
+            if((chosenTemplate === null) || !modelName)  return
 
-      if(chosenTemplate === -1) { // empty template
-        this.createProjectModel({
-          name: modelName,
-          project: this.currentProjectId,
-        }).then(apiMeta => {
-          this.addNetwork({ apiMeta });
-        });
-        modelType = 'Custom';
-      } else {
-        let template = basicTemplates[chosenTemplate].template.network;
-        template.networkName = modelName;
 
-        this.createProjectModel({
-          name: template.networkName,
-          project: this.currentProjectId,
-        }).then(apiMeta => {
-          this.addNetwork({network: template, apiMeta});
-        });
-        modelType = basicTemplates[chosenTemplate].title;
-      }
-      
-      this.$store.dispatch('mod_tracker/EVENT_modelCreation', modelType, {root: true});
+            // check if models name already exists
+            const promiseArray = 
+                this.currentProject.models
+                    .map(x => this.getModelMeta(x));
+            const modelMeta = await Promise.all(promiseArray);
+            const rootPath = await this.API_getRootFolder();
+            const modelNames = modelMeta.map(x => x.name);
+            if(modelNames.indexOf(modelName) !== -1) {
+                this.showErrorPopup(`The name of model "${modelName}" already exists.`);
+                return;
+            }
+            
+            const dirAlreadyExist = await this.isDirExists(`${this.modelPath}/${modelName}`);
+            if(dirAlreadyExist) {
+                this.showErrorPopup(`The "${modelName}" folder already exists in "${this.modelPath}" location.`);
+                return;
+            }
 
+            let modelType;
+
+            this.createProjectModel({
+                name: modelName,
+                project: this.currentProjectId,
+                location: `${this.modelPath}/${modelName}`,
+            }).then(apiMeta => {
+                if(chosenTemplate === -1) {
+                    const defaultNetwork = {
+                        networkName: modelName,
+                        networkID: apiMeta.model_id,
+                        networkMeta: {},
+                        networkElementList: {},
+                        networkRootFolder: ''
+                    };
+                    this.addNetwork({ network: defaultNetwork,  apiMeta });
+                    modelType = 'Custom';
+
+                } else {
+                    let template = cloneDeep(basicTemplates[chosenTemplate].template.network);
+                    
+                    const newRootPath = rootPath.replace(/\\/g, "/");
+
+                    this.convertToAbsolutePath(template.networkElementList, newRootPath);
+
+                    template.networkName = modelName;
+                    template.networkID = apiMeta.model_id;
+                    this.addNetwork({network: template, apiMeta});
+                    
+                    modelType = basicTemplates[chosenTemplate].title;
+                }
+            });
+
+            this.getProjects();
+            this.$store.dispatch('mod_tracker/EVENT_modelCreation', modelType, {root: true});
 
       this.closeModal();
 
-    }
-  },
+        },
+        openFilePicker() {
+            this.showFilePickerPopup = true;
+        },
+        closePopup() {
+            this.showFilePickerPopup = false;
+        },
+        updateModelPath(filepath) {
+            this.modelPath = filepath && filepath[0] ? filepath[0] : '';
+            this.showFilePickerPopup = false;
+        },
+        convertToAbsolutePath(elementList, rootPath) {
+            const suffix = "/";
+
+            for(var el in elementList) {
+                if (elementList[el].layerSettings.Type === "Data") {
+                    if (elementList[el].layerSettings.accessProperties.Sources.length) {
+                        elementList[el].layerSettings.accessProperties.Sources.forEach(item => {
+                            item.path = rootPath + suffix + 'tutorial_data' + suffix + item.path;
+                        });
+                    }
+                }
+            }
+        }
+    },
 }
 </script>
 <style lang="scss" scoped>
@@ -169,14 +262,14 @@ export default {
         
     }
     .main-templates {
-        width: 71%;
+        width: 610px;
         padding-bottom: 120px;
 
         background: linear-gradient(180deg, #363E51 0%, rgba(54, 62, 81, 0) 100%);
         border: 1px solid rgba(97, 133, 238, 0.4);
         box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.25);
         border-radius: 0;
-        min-height: 480px;
+        min-height: 520px;
         // border-right-width: 0;
         border-bottom-left-radius: 2px;
     }
@@ -218,7 +311,7 @@ export default {
         margin-top: 33px;
         display: flex;
         flex-wrap: wrap;
-        justify-content: space-between;
+        justify-content: start;
     
     }
     .template-item {
@@ -230,6 +323,7 @@ export default {
         border-radius: 2px;
         height: 120px;
         margin-bottom: 10px;
+        margin-right: 7px;
         width: calc(100% * (1/4) - 7.5px);
         border: 3px solid transparent;
         &:hover {
@@ -243,7 +337,7 @@ export default {
     .main-actions {
         display: flex;
         flex-direction: column;
-        width: 29%;
+        width: 300px;
 
         background: #363E51;
         border: 1px solid rgba(97, 133, 238, 0.4);
@@ -253,7 +347,7 @@ export default {
     }
 
     .presets-text {
-        padding: 30px 20px 0;
+        padding: 20px 20px 0;
 
         font-family: Nunito Sans;
         font-style: normal;
@@ -264,10 +358,10 @@ export default {
     }
    
     .model-title-input-wrapper {
-        border-bottom: 1px solid #4D556A;
+        // border-bottom: 1px solid #4D556A;
     }
     .model-title-input {
-        margin: 10px 20px 23px;
+        margin: 0px 20px 0px;
         width: calc(100% - 40px);
         height: 40px;
         line-height: 40px;
@@ -322,7 +416,7 @@ export default {
     .template-name {
         font-family: Nunito Sans;
         font-weight: 300;
-        font-size: 12px;
+        font-size: 18px;
         line-height: 16px;
         color: #C4C4C4;
         text-align: center;
@@ -360,5 +454,14 @@ export default {
     .plus-icon {
         vertical-align: sub;
         margin-right: 5px;
+    }
+    .template-description {
+        padding: 30px 20px 0;
+        font-family: Nunito Sans;
+        font-style: normal;
+        font-weight: 300;
+        font-size: 12px;
+        line-height: 16px;
+        color: #9E9E9E;
     }
 </style>

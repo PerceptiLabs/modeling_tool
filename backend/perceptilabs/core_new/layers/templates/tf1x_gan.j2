@@ -1,3 +1,5 @@
+{% from 'tf1x_utils.j2' import session %}
+
 {% macro run_normal(layer_name, switch_layer, real_layer, batch_size, n_epochs, class_weights, generator_optimizer, discriminator_optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory) %}
         self._status = 'initializing'
 
@@ -52,12 +54,12 @@
         # Make validation set
         dataset_val = tf.data.Dataset.zip((
             tf.data.Dataset.from_generator(
-                real_data_node.layer_instance.make_generator_training,
+                real_data_node.layer_instance.make_generator_validation,
                 output_shapes=real_data_node.layer_instance.sample.shape,
                 output_types=np.float32                
             ),
             tf.data.Dataset.from_generator(
-                random_data_node.layer_instance.make_generator_training,
+                random_data_node.layer_instance.make_generator_validation,
                 output_shapes=random_data_node.layer_instance.sample.shape,
                 output_types=np.float32
             )
@@ -66,12 +68,12 @@
         # Make testing set
         dataset_tst = tf.data.Dataset.zip((
             tf.data.Dataset.from_generator(
-                real_data_node.layer_instance.make_generator_training,
+                real_data_node.layer_instance.make_generator_testing,
                 output_shapes=real_data_node.layer_instance.sample.shape,
                 output_types=np.float32                
             ),
             tf.data.Dataset.from_generator(
-                random_data_node.layer_instance.make_generator_training,
+                random_data_node.layer_instance.make_generator_testing,
                 output_shapes=random_data_node.layer_instance.sample.shape,
                 output_types=np.float32
             )
@@ -288,11 +290,10 @@
         generator_update_weights = generator_optimizer.minimize(generator_loss_tensor, var_list = generator_vars, global_step=global_step) 
              
 
-        config = tf.ConfigProto()
-        config.gpu_options.allow_growth = True
-        sess = tf.Session(config=config)
+        sess = None
+        {{session(sess, use_gpu=True) | indent(width=8)}}      
         self._sess = sess
-
+        
         trackable_variables = {}
         trackable_variables.update({x.name: x for x in tf.trainable_variables() if isinstance(x, Trackable)})
         trackable_variables.update({k: v for k, v in locals().items() if isinstance(v, Trackable) and not isinstance(v, tf.python.data.ops.iterator_ops.Iterator)}) # TODO: Iterators based on 'stateful functions' cannot be serialized.
@@ -310,69 +311,61 @@
         def train_step():
             if not self._headless:
                 _, self._generator_loss_training, self._generator_layer_outputs,\
-                     self._generator_layer_weights, self._generator_layer_biases, \
-                    self._generator_layer_gradients, self._real_layer_outputs \
-                    = sess.run([
-                        generator_update_weights, generator_loss_tensor, \
-                        generator_layer_output_tensors, generator_layer_weight_tensors, generator_layer_bias_tensors, generator_layer_gradient_tensors, real_layer_output_tensors
-                    ])
+                    self._generator_layer_weights, self._generator_layer_biases, \
+                    self._generator_layer_gradients, self._real_layer_outputs, \
                 _, self._discriminator_loss_training, self._random_discriminator_layer_outputs, self._real_discriminator_layer_outputs,\
-                     self._discriminator_layer_weights, self._discriminator_layer_biases, \
+                    self._discriminator_layer_weights, self._discriminator_layer_biases, \
                     self._discriminator_layer_gradients \
                     = sess.run([
-                        discriminator_update_weights, discriminator_loss_tensor, \
-                        random_discriminator_layer_output_tensors, real_discriminator_layer_output_tensors, discriminator_layer_weight_tensors, discriminator_layer_bias_tensors, discriminator_layer_gradient_tensors
+                        generator_update_weights, generator_loss_tensor, generator_layer_output_tensors, \
+                        generator_layer_weight_tensors, generator_layer_bias_tensors, generator_layer_gradient_tensors, real_layer_output_tensors, \
+                        discriminator_update_weights, discriminator_loss_tensor, random_discriminator_layer_output_tensors, \
+                        real_discriminator_layer_output_tensors, discriminator_layer_weight_tensors, discriminator_layer_bias_tensors, discriminator_layer_gradient_tensors
                     ])
+                
             else:
-                _, self._generator_loss_training \
+                _, self._generator_loss_training, \
+                    _, self.__discriminator_loss_training \
                     = sess.run([
-                        generator_update_weights, generator_loss_tensor
+                        generator_update_weights, generator_loss_tensor, \
+                            discriminator_update_weights, discriminator_loss_tensor
                     ])
-                _, self.__discriminator_loss_training \
-                    = sess.run([
-                        discriminator_update_weights, discriminator_loss_tensor
-                    ])
+
         def validation_step():
             if not self._headless:
                 self._generator_loss_validation, self._generator_layer_outputs,\
-                     self._generator_layer_weights, self._generator_layer_biases, \
-                    self._generator_layer_gradients, self._real_layer_outputs \
-                    = sess.run([
-                        generator_loss_tensor, \
-                        generator_layer_output_tensors, generator_layer_weight_tensors, generator_layer_bias_tensors, generator_layer_gradient_tensors, real_layer_output_tensors
-                    ])
-                self._discriminator_loss_validation, self._discriminator_layer_outputs,\
-                     self._discriminator_layer_weights, self._discriminator_layer_biases, \
+                    self._generator_layer_weights, self._generator_layer_biases, \
+                    self._generator_layer_gradients, self._real_layer_outputs, \
+                    self._discriminator_loss_validation, self._discriminator_layer_outputs,\
+                    self._discriminator_layer_weights, self._discriminator_layer_biases, \
                     self._discriminator_layer_gradients \
                     = sess.run([
-                        discriminator_loss_tensor, \
-                        random_discriminator_layer_output_tensors, discriminator_layer_weight_tensors, discriminator_layer_bias_tensors, discriminator_layer_gradient_tensors
-                    ])
-            else:
-                self._generator_loss_validation \
-                    = sess.run([
-                        generator_loss_tensor
-                    ])
-                self.__discriminator_loss_validation \
-                    = sess.run([
-                        discriminator_loss_tensor
+                        generator_loss_tensor, generator_layer_output_tensors, generator_layer_weight_tensors, \
+                        generator_layer_bias_tensors, generator_layer_gradient_tensors, real_layer_output_tensors, \
+                        discriminator_loss_tensor, random_discriminator_layer_output_tensors, discriminator_layer_weight_tensors, \
+                        discriminator_layer_bias_tensors, discriminator_layer_gradient_tensors
                     ])
 
-            
+            else:
+                self._generator_loss_validation, \
+                    self.__discriminator_loss_validation \
+                    = sess.run(
+                        generator_loss_tensor, \
+                        discriminator_loss_tensor
+                    )
+
         def test_step():
             self._generator_loss_testing, self._generator_layer_outputs,\
-                    self._generator_layer_weights, self._generator_layer_gradients, self._real_layer_outputs \
+                self._generator_layer_weights, self._generator_layer_gradients, self._real_layer_outputs, \
+                self._discriminator_loss_testing, self._discriminator_layer_outputs,\
+                self._discriminator_layer_weights, self._discriminator_layer_gradients \
                 = sess.run([
-                    generator_loss_tensor, \
-                    generator_layer_output_tensors, generator_layer_weight_tensors, generator_layer_gradient_tensors, real_layer_output_tensors
+                    generator_loss_tensor, generator_layer_output_tensors, \
+                    generator_layer_weight_tensors, generator_layer_gradient_tensors, real_layer_output_tensors, \
+                    discriminator_loss_tensor, random_discriminator_layer_output_tensors, \
+                    discriminator_layer_weight_tensors, discriminator_layer_gradient_tensors
                 ])
-            self._discriminator_loss_testing, self._discriminator_layer_outputs,\
-                    self._discriminator_layer_weights, self._discriminator_layer_gradients \
-                = sess.run([
-                    discriminator_loss_tensor, \
-                    random_discriminator_layer_output_tensors, discriminator_layer_weight_tensors, discriminator_layer_gradient_tensors
-                ])
-            
+
         self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
 
         log.info("Entering training loop")
@@ -764,6 +757,6 @@ class {{layer_name}}(GANLayer):
         iteration = self.epoch * n_iterations_per_epoch + \
                     self.training_iteration + self.validation_iteration
         
-        progress = min(iteration/(n_iterations_total - 1), 1.0) 
+        progress = min(iteration/(n_iterations_total - 1), 1.0)
         return progress
 {% endmacro %}

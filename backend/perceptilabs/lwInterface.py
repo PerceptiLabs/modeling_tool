@@ -1,17 +1,17 @@
 from abc import ABC, abstractmethod
 import os
-
+import logging
 import numpy as np
 import tensorflow as tf
 
-import logging
+from perceptilabs.logconf import APPLICATION_LOGGER
 import platform
 
 from perceptilabs.createDataObject import createDataObject
 from perceptilabs.core_new.core import Core
 
+logger = logging.getLogger(APPLICATION_LOGGER)
 
-log = logging.getLogger(__name__)
 
 class LW_interface_base(ABC):
     @abstractmethod
@@ -32,7 +32,7 @@ class saveJsonModel(LW_interface_base):
 
     def run(self):
         import json
-        full_path = self._save_path
+        full_path = os.path.expanduser(self._save_path)
 
         if not os.path.isdir(full_path):
             os.mkdir(full_path)
@@ -40,6 +40,10 @@ class saveJsonModel(LW_interface_base):
         file_path = os.path.join(full_path, 'model.json')
         with open(file_path, 'w') as outfile:
             json.dump(json.loads(self._json_model), outfile)
+
+class getRootFolder(LW_interface_base):
+    def run(self):
+        return os.path.dirname(os.path.abspath(__file__))
 
 class getFolderContent(LW_interface_base):
     def __init__(self, current_path):
@@ -85,7 +89,7 @@ class getFolderContent(LW_interface_base):
             }
 class getJsonModel(LW_interface_base):
     def __init__(self, json_path):
-        self._json_path = json_path
+        self._json_path = os.path.expanduser(json_path)
     
     def run(self):
         if not os.path.exists(self._json_path):
@@ -95,45 +99,43 @@ class getJsonModel(LW_interface_base):
         with open(self._json_path, 'r') as f:
             json_model = json.load(f)
         return json_model
-
-class saveJsonModel(LW_interface_base):
-    def __init__(self, save_path, json_model):
-        self._save_path = save_path
-        self._json_model = json_model
-        print(json_model)
-    def run(self):
-        import json
-        full_path = self._save_path
-
-        if not os.path.isdir(full_path):
-            os.mkdir(full_path)
-        
-        file_path = os.path.join(full_path, 'model.json')
-        with open(file_path, 'w') as outfile:
-            json.dump(json.loads(self._json_model), outfile)
-
 
 class createFolder(LW_interface_base):
-    def __init__(self, folder_path, folder_name):
+    def __init__(self, folder_path):
         self.folder_path = folder_path
-        self.folder_name = folder_name
 
     def run(self):
-        os.mkdir(os.path.join(self.folder_path, self.folder_name))
+        try:
+            import platform
 
-class getJsonModel(LW_interface_base):
-    def __init__(self, json_path):
-        self._json_path = json_path
+            if platform.system() == 'Windows':
+                resolved_path = self.resolveWindowsPath(self.folder_path)
+                expanded_path = os.path.normpath(resolved_path)
+                
+            else:
+                expanded_path = os.path.expanduser(self.folder_path)
+
+            os.makedirs(expanded_path, exist_ok=True)
+            return expanded_path 
+
+        except:
+            return ''
     
-    def run(self):
-        if not os.path.exists(self._json_path):
-            return ""
-        
-        import json
-        with open(self._json_path, 'r') as f:
-            json_model = json.load(f)
-        return json_model
+    def resolveWindowsPath(self, inputPath):
+        if '~/Documents' in inputPath:
+            # get My Documents regardless of localization
+            import ctypes.wintypes
+            
+            buf= ctypes.create_unicode_buffer(ctypes.wintypes.MAX_PATH)
+            _ = ctypes.windll.shell32.SHGetFolderPathW(0, 5, 0, 5, buf)
 
+            return inputPath.replace('~/Documents', buf.value)
+        
+        elif '~/' in inputPath:
+            return os.path.expanduser(inputPath)
+
+        else:
+            return inputPath
 
 class getDataMeta(LW_interface_base):
     def __init__(self, id_, lw_core, data_container):
@@ -223,7 +225,7 @@ class getPartitionSummary(LW_interface_base):
 
         if isinstance(content, dict):
             if self._id in self.lw_core.error_handler:
-                log.info("ErrorMessage: " + str(self.lw_core.error_handler[self._id]))
+                logger.info("ErrorMessage: " + str(self.lw_core.error_handler[self._id]))
                 
                 content[self._id]['Error'] = {
                     'Message': self.lw_core.error_handler[self._id].message,
@@ -239,8 +241,6 @@ class getCodeV2(LW_interface_base):
     def __init__(self, id_, network):
         self._id = id_
         self._network = network
-
-
 
     def run(self):
         from perceptilabs.core_new.graph import Node
@@ -292,9 +292,7 @@ class getCodeV1(LW_interface_base):
                                   
                                   }
 
-        from perceptilabs.codehq import CodeHqNew as CodeHq
-
-        content = {"Output": CodeHq.get_code_generator(self._id,layerInfo).get_code()}
+        content = {}
         return content
 
 class getNetworkInputDim(LW_interface_base):
@@ -326,7 +324,7 @@ class getNetworkInputDim(LW_interface_base):
                 content[id_].update({"inShape":str(tmp).replace("'","")})
 
             if id_ in self.lw_core.error_handler:
-                log.info("ErrorMessage: " + str(self.lw_core.error_handler[id_]))
+                logger.info("ErrorMessage: " + str(self.lw_core.error_handler[id_]))
 
                 content[id_]['Error'] = {
                     'Message': self.lw_core.error_handler[id_].message,
@@ -354,7 +352,7 @@ class getNetworkOutputDim(LW_interface_base):
             content[Id].update({"Dim": str(value["outShape"]).replace("[","").replace("]","").replace(", ","x")})
 
             if Id in self.lw_core.error_handler:
-                log.info("ErrorMessage: " + str(self.lw_core.error_handler[Id]))
+                logger.info("ErrorMessage: " + str(self.lw_core.error_handler[Id]))
 
                 content[Id]['Error'] = {
                     'Message': self.lw_core.error_handler[Id].message,
@@ -437,7 +435,7 @@ class getPreviewVariableList(LW_interface_base):
             }
 
             if self._id in self.lw_core.error_handler:
-                log.info("ErrorMessage: " + str(self.lw_core.error_handler[self._id]))
+                logger.info("ErrorMessage: " + str(self.lw_core.error_handler[self._id]))
                 
                 content['Error'] = {
                     'Message': self.lw_core.error_handler[self._id].message,

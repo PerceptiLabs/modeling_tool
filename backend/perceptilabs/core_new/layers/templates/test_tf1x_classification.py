@@ -89,7 +89,8 @@ def layer_fc(j2_engine):
         'DeepLearningFC',
         n_neurons=3,
         activation='tf.compat.v1.sigmoid',
-        dropout=False, keep_prob=1.0
+        dropout=False, keep_prob=1.0,
+        batch_norm=False
     )
     yield layer_fc_
 
@@ -240,7 +241,8 @@ def test_initial_weights_differ(j2_engine, tmpdir_del, layer_inputs, layer_targe
         'DeepLearningFC',
         n_neurons=3,
         activation='tf.compat.v1.sigmoid',
-        dropout=False, keep_prob=1.0
+        dropout=False, keep_prob=1.0,
+        batch_norm=False
     )
     
     graph1 = make_graph(j2_engine, tmpdir_del, layer_inputs, layer_targets, fc1)
@@ -259,7 +261,8 @@ def test_initial_weights_differ(j2_engine, tmpdir_del, layer_inputs, layer_targe
         'DeepLearningFC',
         n_neurons=3,
         activation='tf.compat.v1.sigmoid',
-        dropout=False, keep_prob=1.0
+        dropout=False, keep_prob=1.0,
+        batch_norm=False
     )
     graph2 = make_graph(j2_engine, tmpdir_del, layer_inputs, layer_targets, fc2) 
     
@@ -280,7 +283,8 @@ def test_initial_weights_differ_distributed(j2_engine, tmpdir_del, layer_inputs,
         'DeepLearningFC',
         n_neurons=3,
         activation='tf.compat.v1.sigmoid',
-        dropout=False, keep_prob=1.0
+        dropout=False, keep_prob=1.0,
+        batch_norm=False
     )
     
     graph1 = make_graph(j2_engine, tmpdir_del, layer_inputs, layer_targets, fc1, distributed=True)
@@ -299,7 +303,8 @@ def test_initial_weights_differ_distributed(j2_engine, tmpdir_del, layer_inputs,
         'DeepLearningFC',
         n_neurons=3,
         activation='tf.compat.v1.sigmoid',
-        dropout=False, keep_prob=1.0
+        dropout=False, keep_prob=1.0,
+        batch_norm=False
     )
     graph2 = make_graph(j2_engine, tmpdir_del, layer_inputs, layer_targets, fc2, distributed=True) 
     
@@ -322,7 +327,8 @@ def test_load_checkpoint(j2_engine, tmpdir_del, layer_inputs, layer_targets):
         'DeepLearningFC',
         n_neurons=3,
         activation='tf.compat.v1.sigmoid',
-        dropout=False, keep_prob=1.0
+        dropout=False, keep_prob=1.0,
+        batch_norm=False
     )
     
     graph1 = make_graph(j2_engine, tmpdir_del, layer_inputs, layer_targets, fc1)
@@ -343,7 +349,8 @@ def test_load_checkpoint(j2_engine, tmpdir_del, layer_inputs, layer_targets):
         'DeepLearningFC',
         n_neurons=3,
         activation='tf.compat.v1.sigmoid',
-        dropout=False, keep_prob=1.0
+        dropout=False, keep_prob=1.0,
+        batch_norm=False
     )
     graph2 = make_graph(j2_engine, tmpdir_del, layer_inputs, layer_targets, fc2, export_dir=str(tmpdir_del), learning_rate=0.0) 
     
@@ -351,7 +358,6 @@ def test_load_checkpoint(j2_engine, tmpdir_del, layer_inputs, layer_targets):
     iterator = tl2.run(graph2) 
     next(iterator) # Since learning rate is zero, the training step will NOT change the weights. Thus they should remain equal to the checkpoint values.
 
-    # TODO: set learning rate to zero in the second graph to verify that weights are identical.    
     w2 = next(iter(tl2.layer_weights['layer_fc'].values()))
 
     assert np.all(w1 == w2)
@@ -365,7 +371,8 @@ def test_load_checkpoint_distributed(j2_engine, tmpdir_del, layer_inputs, layer_
         'DeepLearningFC',
         n_neurons=3,
         activation='tf.compat.v1.sigmoid',
-        dropout=False, keep_prob=1.0
+        dropout=False, keep_prob=1.0,
+        batch_norm=False
     )
     
     graph1 = make_graph(j2_engine, tmpdir_del, layer_inputs, layer_targets, fc1, distributed=True, n_epochs=5)
@@ -389,7 +396,8 @@ def test_load_checkpoint_distributed(j2_engine, tmpdir_del, layer_inputs, layer_
         'DeepLearningFC',
         n_neurons=3,
         activation='tf.compat.v1.sigmoid',
-        dropout=False, keep_prob=1.0
+        dropout=False, keep_prob=1.0,
+        batch_norm=False
     )
     
     graph2 = make_graph(j2_engine, tmpdir_del, layer_inputs, layer_targets, fc2, distributed=True, export_dir=str(tmpdir_del), learning_rate=0.0) 

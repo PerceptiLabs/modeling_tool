@@ -14,7 +14,7 @@ import collections
 from queue import Queue
 
 
-
+from perceptilabs.logconf import APPLICATION_LOGGER
 from perceptilabs.core_new.utils import YieldLevel
 from perceptilabs.core_new.serialization import serialize, can_serialize, deserialize
 from perceptilabs.core_new.communication.zmq import ZmqClient, ZmqServer, ConnectionLost
@@ -22,11 +22,11 @@ from perceptilabs.core_new.communication.state import State, StateTransitionErro
 from perceptilabs.core_new.communication.task_executor import TaskExecutor, TaskError, TaskTimeout
 
 
-log = logging.getLogger(__name__)
+logger = logging.getLogger(APPLICATION_LOGGER)
     
 
 class TrainingClient:
-    def __init__(self, producer, consumer, graph_builder=None, on_state_changed=None, on_receive_graph=None, on_log_message=None, on_userland_error=None, on_userland_timeout=None, on_server_timeout=None, server_timeout=20):
+    def __init__(self, producer, consumer, graph_builder=None, on_state_changed=None, on_receive_graph=None, on_log_message=None, on_userland_error=None, on_userland_timeout=None, on_server_timeout=None, server_timeout=20, on_training_ended=None):
         self._producer = producer
         self._consumer = consumer
         self._on_log_message = on_log_message
@@ -36,6 +36,7 @@ class TrainingClient:
         self._server_timeout = server_timeout
         self._on_receive_graph = on_receive_graph
         self._on_state_changed = on_state_changed
+        self._on_training_ended = on_training_ended
         self._graph_builder = graph_builder
         
         self._out_queue = queue.Queue()
@@ -64,7 +65,7 @@ class TrainingClient:
         if len(raw_messages) > 0:
             self._t_last_message = time.time()
         elif time.time() - self._t_last_message > self._server_timeout:
-            log.error(f"No vital signs from the training server within the last {self._server_timeout} seconds.")
+            logger.error(f"No vital signs from the training server within the last {self._server_timeout} seconds.")
             if self._on_server_timeout:
                 self._on_server_timeout()
             
@@ -76,15 +77,18 @@ class TrainingClient:
             self._training_state = value
             if self._on_state_changed:
                 self._on_state_changed(value)
+        if key == 'training-ended':
+            if self._on_training_ended:
+                self._on_training_ended(value)
         elif key == 'log-message':
             if self._on_log_message:
                 self._on_log_message(value['message'])
         elif key == 'userland-timeout':
-            log.info("Userland timeout")
+            logger.info("Userland timeout")
             if self._on_userland_timeout:
                 self._on_userland_timeout()
         elif key == 'userland-error':
-            log.info("Userland error " + repr(value['exception']))            
+            logger.info("Userland error " + repr(value['exception']))            
             if self._on_userland_error:
                 self._on_userland_error(value['exception'], value['traceback_frames'])
         elif key == 'graph':
@@ -92,7 +96,7 @@ class TrainingClient:
                 graph = self._graph_builder.build_from_snapshot(value)                
                 self._on_receive_graph(graph)
         else:
-            log.warning(f"Unknown message key {key} [TrainingClient]")
+            logger.warning(f"Unknown message key {key} [TrainingClient]")
 
     def _process_outgoing_messages(self):
         while not self._out_queue.empty():

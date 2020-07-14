@@ -23,8 +23,16 @@ img {
 
 		-webkit-user-drag: none;
 		        user-drag: none;
-		-webkit-touch-callout: none;
-	}
+    -webkit-touch-callout: none;
+
+    input {
+      -webkit-user-select: text;
+      -moz-user-select: text;
+      -ms-user-select: text;
+      user-select: text;
+    }
+  }
+
 	&:active,
 	&:focus {
 		outline: none;

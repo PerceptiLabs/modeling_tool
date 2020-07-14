@@ -59,9 +59,8 @@ const actions = {
   EVENT_calcArray({commit}) {
     commit('set_calcArray')
   },
-  EVENT_loadNetwork({dispatch, rootGetters}, pathProject) {
+  EVENT_loadNetwork({dispatch, rootGetters, rootState}, pathProject) {
     const pathFile = projectPathModel(pathProject);
-
     const localUserInfo = rootGetters['mod_user/GET_LOCAL_userInfo'];
     let localProjectsList = localUserInfo ? localUserInfo.projectsList : [];
     let pathIndex;
@@ -71,63 +70,97 @@ const actions = {
     }
 
     dispatch('mod_api/API_loadNetwork', pathFile, {root: true})
-      .then((net) => {
+      .then(async (model) => {
         //validate model
         let isTrained = false;
-
-        try {
-          if(!(net.networkName
-            && net.networkMeta
-            && net.networkElementList)) {
-              throw('err');
-            }
-
-            for(let id in net.networkElementList) {
-              let element = net.networkElementList[id];
-              if (element.checkpoint.length > 0) {
-                isTrained = true;
-                break;
-              }
-            }
-
-        } catch(e) {
-          dispatch('globalView/GP_infoPopup', 'The model does not exist or the Kernel is not online.', {root: true});
-          return
+        let currentNetworkId = rootGetters['mod_workspace/GET_currentNetworkId'];
+        
+        const projectModels = await dispatch('mod_project/getProjectModels', null, { root: true});
+        const projectModelsPaths = projectModels.map(model => model.location);
+        
+        // checking and break if model location already exist in current project
+        if(projectModelsPaths.indexOf(model.apiMeta.location) !== -1 && !(currentNetworkId === model.networkID)) {
+          dispatch('globalView/GP_errorPopup', `Chosen model is already in project`, {root: true});
+          return;
         }
-
-        if(pathIndex > -1 && localProjectsList) {
-          net.networkID = localProjectsList[pathIndex].id;
-          net.networkRootFolder = localProjectsList[pathIndex].pathProject;
+        
+        // Loaded model are the same with current model
+        if(currentNetworkId === model.networkID) {
+          dispatch('mod_workspace/ReplaceNetworkElementList', model.networkElementList, {root: true});
+          dispatch('EVENT_calcArray', null); // for arrow update
         } else {
-          net.networkRootFolder = pathProject;
-        }
-
-        if(isTrained) {
-          dispatch('globalView/SET_loadSettingPopup', {
-            visible: 'true',
-            ok: (isLoadingTrainedModel) => {
-              if (isLoadingTrainedModel) {
-                dispatch('mod_workspace/ADD_network', net, {root: true});
-              } else {
-                for(let id in net.networkElementList) {
-                  let element = net.networkElementList[id];
-                  element.checkpoint = [];
-                }
-                console.log(net);
-                dispatch('mod_workspace/ADD_network', net, {root: true});
+          
+          if(model.hasOwnProperty('apiMeta')) {
+            delete model.apiMeta;
+          }
+          delete model.networkID;
+  
+  
+          try {
+            if(!(model.networkName
+              && model.networkMeta
+              && model.networkElementList)) {
+                throw('err');
               }
-            }
-          }, {root: true})
-        } 
-        else {
-          dispatch('mod_workspace/ADD_network', net, {root: true});
+  
+              for(let id in model.networkElementList) {
+                let element = model.networkElementList[id];
+                if (element.checkpoint.length > 0) {
+                  isTrained = true;
+                  break;
+                }
+              }
+  
+          } catch(e) {
+            dispatch('globalView/GP_infoPopup', 'The model does not exist or the Kernel is not online.', {root: true});
+            return
+          }
+  
+          if(pathIndex > -1 && localProjectsList) {
+            model.networkID = localProjectsList[pathIndex].id;
+            model.networkRootFolder = localProjectsList[pathIndex].pathProject;
+          } else {
+            model.networkRootFolder = pathProject;
+          }
+          
+          if(isTrained) {
+            dispatch('globalView/SET_loadSettingPopup', {
+              visible: 'true',
+              ok: (isLoadingTrainedModel) => {
+                if (isLoadingTrainedModel) {
+                  createProjectAndAddNetworkFn(model, rootState.mod_project.currentProject);
+                } else {
+                  for(let id in model.networkElementList) {
+                    let element = model.networkElementList[id];
+                    element.checkpoint = [];
+                  }
+                  createProjectAndAddNetworkFn(model, rootState.mod_project.currentProject);
+                }
+              }
+            }, {root: true})
+          } 
+          else {
+            createProjectAndAddNetworkFn(model, rootState.mod_project.currentProject);
+          }
+
         }
 
+        dispatch('mod_project/getProjects', null , {root: true});
       }).catch(err => {
         console.log(err);
         dispatch('globalView/GP_infoPopup', 'Fetching went wrong', {root: true});
-        return
+        return;
       });
+
+    function createProjectAndAddNetworkFn (mod, projectId) {
+      dispatch('mod_project/createProjectModel', {
+        name: mod.networkName,
+        project: projectId,
+        location: pathFile.substring(0, pathFile.lastIndexOf('/')),
+      }, {root: true}).then(apiMeta => {
+        dispatch('mod_workspace/ADD_network', {network: mod, apiMeta}, {root: true});
+      });
+    }
   },
   EVENT_openNetwork({dispatch}) {
     const opt = {
@@ -143,14 +176,23 @@ const actions = {
   EVENT_saveNetworkAs({commit}) {
     commit('set_saveNetworkAs');
   },
-  EVENT_logOut({dispatch}, isSendLogout = true) {
+  EVENT_logOut({commit, dispatch}, isSendLogout = true) {
     if(isSendLogout) dispatch('mod_apiCloud/CloudAPI_userLogout', null, {root: true});
+  
+    // setting to -1 and then removing because the project.vue component isn't recreated here
+    // this means that selecting the same project won't make it fetch models
+    commit('mod_project/selectProject', -1, {root: true});
+    localStorage.removeItem('targetProject');
     localStorage.removeItem('currentUser');
     dispatch('mod_user/RESET_userToken', null, {root: true});
     dispatch('mod_workspace/RESET_network', null, {root: true});
     dispatch('mod_tutorials/offTutorial', null, {root: true});
-    router.replace({name: 'projects'});
+    dispatch('mod_workspace-changes/clearNetworkChanges', null, {root: true});
     dispatch('modal_pages/setActivePageAction', MODAL_PAGE_SIGN_UP, {root: true});
+    dispatch('mod_webstorage/cleanup', null, {root: true});
+
+    router.replace({name: 'projects'})
+      .catch(e => {/*console.error('Error during logout', e)*/});
   },
   EVENT_appClose({dispatch, rootState, rootGetters}, event) {
     if(isWeb()) {

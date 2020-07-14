@@ -1,4 +1,4 @@
-$popper-background-color: rgba(#4d556a, .9);
+$popper-background-color: #2E3A5A;
 $tutorial-tooltip-bg: #3BC5FF;
 $arrow-size: 1rem;
 $margin-tooltip: .65rem;
@@ -11,13 +11,16 @@ $triangleWith: 10px;
 			display: none;
 		}
 		&.tooltip--right {
-			transform: translateY(-50%) rotateY(0deg);
+			transform: translateY(-50%);
+		}
+		&.tooltip--right-wrap-text {
+			transform: translateY(-50%);
 		}
 		&.tooltip--bottom {
-			transform: translate(-50%, 0%) rotateY(0deg);
+			transform: translate(-50%, 0%);
 		}
 		&.tooltip--networkElement {
-			transform: translate(-50%, 0%) rotateY(0deg);
+			transform: translate(-50%, 0%);
 		}
 	}
 }
@@ -76,16 +79,28 @@ $triangleWith: 10px;
 	left: 50%;
 	margin-top: $margin-tooltip;
 	transform: translate(-50%, 0%) rotateY(90deg);
-	background: #1C1C1E;
-	border: 0.5px solid #363E51;
-	box-sizing: border-box;
-	box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
-	border-radius: 2px;
-	color: #C4C4C4;
-	font-family: 'Nunito Sans';
-	font-size: 10px;
+	box-shadow: 0 -1px 1px rgba(#000, .5);
 	&:before {
-		content: none;
+		bottom: 100%;
+		left: 50%;
+		transform: translate(-50%, 50%) rotate(45deg);
+		background: linear-gradient(135deg, $popper-background-color 50%, rgba($popper-background-color,0) 58%);
+		box-shadow: -1px -1px 1px rgba(#000, .5);
+	}
+}
+.tooltip--right-wrap-text {
+	white-space: pre-wrap;
+	max-width: 380px;
+	top: 50%;
+	left: 100%;
+	margin-left: $margin-tooltip;
+	transform: translateY(-50%) rotateX(90deg);
+
+	&:before {
+		top: 50%;
+		right: 100%;
+		transform: translate(50%,-50%) rotate(45deg);
+		background: linear-gradient(45deg, $popper-background-color 50%, rgba($popper-background-color,0) 58%);
 	}
 }
 
@@ -154,6 +169,15 @@ $triangleWith: 10px;
 	}
 }
 .tooltip-tutorial--bottom {
+	transform: translate(-50%, 0);
+  &:before {
+    bottom: 100%;
+    left: 50%;
+    transform: translate(-50%, 50%) rotate(45deg);
+    background:$tutorial-tooltip-bg;
+  }
+}
+.tooltip-tutorial--networkElement {
 	transform: translate(-50%, 0);
   &:before {
     bottom: 100%;

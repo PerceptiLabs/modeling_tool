@@ -1,7 +1,7 @@
 <template lang="pug">
   .statistics-box
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Prediction'")
-      .statistics-box_row(v-if="!testIsOpen")
+      .statistics-box_row
         .statistics-box_col
           chart-switch(
             key="1"
@@ -9,14 +9,14 @@
             :chart-data="chartData.Prediction.Bboxes"
             )
         .statistics-box_col
-          .statistics-box_row
+          .statistics-box_row(v-if="!testIsOpen")
             chart-switch#tutorial_prediction-chart(
               key="2"
               chart-label="Accuracy"
               :chart-data="chartData.Prediction.Accuracy"
               :custom-color="colorPie"
               )
-          .statistics-box_row(v-if="!testIsOpen")
+          .statistics-box_row
             chart-switch(
               key="3"
               chart-label="Confidence"

@@ -1,5 +1,6 @@
 <template lang="pug">
   ul.statistics-box_tabset
+    h5 View Box
     li.statistics-box_tab(
       v-for="(tabINfo, name, i) in tabSet"
       :key="name"
@@ -55,28 +56,76 @@ export default {
 
 <style lang="scss" scoped>
   @import "../../scss/base";
+
   .statistics-box_tabset {
+    position: absolute;
+    top: 47px;
+    z-index:10;
+    right: 11px;
     display: flex;
     flex-wrap: nowrap;
     flex: 0 0 auto;
     justify-content: flex-end;
+    background-color: transparent;
+
+    h5 {
+      display: none;
+    }
+  }
+
+  .workspace-relative .statistics-box_tabset {
+    display: none;
+  }
+
+  #tutorial_view-box {
+    .statistics-box_tabset {
+      position: static;
+      background-color: #090f19;
+      border-top: 2px solid rgba(97, 133, 238, 0.4);
+      border-bottom: 1px solid rgba(97, 133, 238, 0.4);
+      min-height: 2.5rem;
+
+      h5 {
+        display: block;
+        font-size: 11px;
+        padding-left: 1rem;
+        margin-right: auto;
+        margin-top: 5px;
+        margin-bottom: 0px;
+        font-family: Nunito Sans;
+        font-style: normal;
+        font-weight: 600;
+      }
+    }
   }
   .statistics-box_tab {
     display: flex;
     + .statistics-box_tab {
-      padding-left: .8rem;
+      padding-left: .1rem;
     }
   }
   .statistics-box_btn {
     flex: 1;
     color: inherit;
     min-width: 11.6rem;
-    background: linear-gradient(270deg, #5C6680 0%, #5D698D 100%);
+    background: transparent;
+    font-family: Nunito Sans;
+    font-weight: 600;
+    font-size: 12px;
+    background: #090f19;
+    border: 2px solid rgba(97, 133, 238, 0.4);
+    border-bottom-width: 0px;
+    border-radius: 7px 7px 0px 0px;
+    padding-top: 3px;
+    padding-bottom: 3px;
+
     &:hover,
     &.active {
       color: $white;
       background: $bg-grad-blue;
+      background: #6185EE;
       box-shadow: $icon-shad;
+      border-color: #6185EE;
     }
   }
 </style>

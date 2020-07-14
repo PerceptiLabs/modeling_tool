@@ -27,8 +27,12 @@ from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP, REPLIC
 from perceptilabs.core_new.layers.script import ScriptFactory
 from perceptilabs.core_new.cache2 import LightweightCache
 from perceptilabs.core_new.graph.utils import sanitize_layer_name
+from perceptilabs.logconf import APPLICATION_LOGGER
 
-log = logging.getLogger(__name__)
+
+logger = logging.getLogger(APPLICATION_LOGGER)
+
+
 
 LayerResults = namedtuple('LayerResults', ['sample', 'out_shape', 'variables', 'columns', 'code_error', 'instantiation_error', 'strategy_error'])
 
@@ -97,7 +101,7 @@ class Tf1xTempStrategy(BaseStrategy):
                 layer_instance = layer_class()                
             except Exception as e:
                 error = exception_to_error(layer_id, layer_type, e)
-                log.exception(f"Layer {layer_id} raised an error when instantiating layer class")
+                logger.exception(f"Layer {layer_id} raised an error when instantiating layer class")
                 return self.get_default(strategy_error=error)                    
             
             input_tensors = {}
@@ -114,10 +118,10 @@ class Tf1xTempStrategy(BaseStrategy):
                     output_tensor = layer_instance(input_tensors)
             except Exception as e:
                 error = exception_to_error(layer_id, layer_type, e)
-                log.exception(f"Layer {layer_id} raised an error in __call__")
+                logger.exception(f"Layer {layer_id} raised an error in __call__")
                 return self.get_default(strategy_error=error)                    
                 
-            with tf.Session() as sess:
+            with tf.Session(config=tf.ConfigProto(device_count={'GPU': 0})) as sess:
                 return self._run_internal(sess, layer_id, layer_type, layer_instance, output_tensor, input_tensors)
 
     def _run_internal(self, sess, layer_id, layer_type, layer_instance, output_tensor, layer_spec):
@@ -126,17 +130,15 @@ class Tf1xTempStrategy(BaseStrategy):
         if tf.version.VERSION.startswith('1.15'):
             self._restore_checkpoint(layer_spec, sess)
         else:
-            log.warning(f"Checkpoint restore only works with TensorFlow 1.15. Current version is {tf.version.VERSION}")
+            logger.warning(f"Checkpoint restore only works with TensorFlow 1.15. Current version is {tf.version.VERSION}")
         try:
-            y_batch = sess.run(output_tensor)
+            variables = layer_instance.variables.copy()
+            y = layer_instance.get_sample(sess=sess)
         except Exception as e:
             error = exception_to_error(layer_id, layer_type, e)
-            log.exception(f"Layer {layer_id} raised an error on sess.run")            
+            logger.exception(f"Layer {layer_id} raised an error on sess.run")            
             return self.get_default(strategy_error=error)
         
-        y = y_batch[0]
-        variables = layer_instance.variables.copy()
-
         results = LayerResults(
             sample=y,
             out_shape=y.shape,
@@ -172,7 +174,7 @@ class Tf1xStrategy(BaseStrategy):
                 layer_instance = layer_class()                
             except Exception as e:
                 error = exception_to_error(layer_id, layer_type, e)
-                log.exception(f"Layer {layer_id} raised an error when instantiating layer class")
+                logger.exception(f"Layer {layer_id} raised an error when instantiating layer class")
                 return self.get_default(strategy_error=error)                    
             
             input_tensors = {}
@@ -186,10 +188,10 @@ class Tf1xStrategy(BaseStrategy):
                 output_tensor = layer_instance(*input_tensors.values())
             except Exception as e:
                 error = exception_to_error(layer_id, layer_type, e)
-                log.exception(f"Layer {layer_id} raised an error in __call__")
+                logger.exception(f"Layer {layer_id} raised an error in __call__")
                 return self.get_default(strategy_error=error)                    
                 
-            with tf.Session() as sess:
+            with tf.Session(config=tf.ConfigProto(device_count={'GPU': 0})) as sess:
                 return self._run_internal(sess, layer_id, layer_type, layer_instance, output_tensor, input_tensors)
 
     def _run_internal(self, sess, layer_id, layer_type, layer_instance, output_tensor, layer_spec):
@@ -198,17 +200,15 @@ class Tf1xStrategy(BaseStrategy):
         if tf.version.VERSION.startswith('1.15'):
             self._restore_checkpoint(layer_spec, sess)
         else:
-            log.warning(f"Checkpoint restore only works with TensorFlow 1.15. Current version is {tf.version.VERSION}")
+            logger.warning(f"Checkpoint restore only works with TensorFlow 1.15. Current version is {tf.version.VERSION}")
         try:
-            y_batch = sess.run(output_tensor)
+            variables = layer_instance.variables.copy()
+            y = layer_instance.get_sample(sess=sess)
         except Exception as e:
             error = exception_to_error(layer_id, layer_type, e)
-            log.exception(f"Layer {layer_id} raised an error on sess.run")            
+            logger.exception(f"Layer {layer_id} raised an error on sess.run")            
             return self.get_default(strategy_error=error)
         
-        y = y_batch[0]
-        variables = layer_instance.variables.copy()
-
         results = LayerResults(
             sample=y,
             out_shape=y.shape,
@@ -223,7 +223,6 @@ class Tf1xStrategy(BaseStrategy):
     def _restore_checkpoint(self, spec, sess):
         if 'checkpoint' in spec:
             from tensorflow.python.training.tracking.base import Trackable
-            
             export_directory = resolve_checkpoint_path(spec)
             
             trackable_variables = {}
@@ -249,7 +248,7 @@ class DataSupervisedStrategy(BaseStrategy):
             y = None
             shape = None
             strategy_error = exception_to_error(layer_id, layer_type, e)
-            log.exception(f"Layer {layer_id} raised an error when calling sample property")                        
+            logger.exception(f"Layer {layer_id} raised an error when calling sample property")                        
         else:
             shape = np.atleast_1d(y).shape
             strategy_error=None
@@ -276,7 +275,7 @@ class DataReinforceStrategy(BaseStrategy):
             y = None
             shape = None
             strategy_error = exception_to_error(layer_id, layer_type, e)
-            log.exception(f"Layer {layer_id} raised an error when calling sample property")                        
+            logger.exception(f"Layer {layer_id} raised an error when calling sample property")                        
         else:
             shape = np.atleast_1d(y).shape
             strategy_error=None
@@ -298,7 +297,7 @@ class LightweightCore:
     def __init__(self, issue_handler=None, cache=None):
         self._issue_handler = issue_handler
         self._cache = cache
-        
+    
     @simplify_spec
     def run(self, graph_spec):
         layer_ids, edges_by_id = get_json_net_topology(graph_spec)
@@ -315,15 +314,17 @@ class LightweightCore:
             # TODO: it is likely that run_subgraph should run in a new process, e.g., to avoid mixing Tf1x and Tf2x.
             _results = self._run_subgraph(subgraph_spec, layer_ids, edges_by_id)
             results.update(_results)
-            
+
         return results
     
     def _run_subgraph(self, subgraph_spec, _, edges_by_id):
-        code_map, code_errors = self._get_code_from_layers(subgraph_spec) # Other errors are fatal and should be raised
-        self._layer_ids_to_names = {id_ : subgraph_spec[id_]['Name'] for id_ in subgraph_spec}
-        _, edges_by_id = get_json_net_topology(subgraph_spec)        
-        cached_results = self._get_cached_results(code_map, subgraph_spec, edges_by_id)
         ordered_ids = self._get_ordered_ids(subgraph_spec, edges_by_id)
+        self._layer_ids_to_names = {id_ : subgraph_spec[id_]['Name'] for id_ in subgraph_spec}
+        _, edges_by_id = get_json_net_topology(subgraph_spec)
+        properties_map = {layer_id:json.dumps(subgraph_spec[layer_id]) for layer_id in subgraph_spec.keys()}
+        cached_results = self._get_cached_results(properties_map, subgraph_spec, edges_by_id)
+        self._cached_layer_ids = cached_results.keys()
+        code_map, code_errors = self._get_code_from_layers(subgraph_spec) # Other errors are fatal and should be raised
 
         assert len(ordered_ids) == len(subgraph_spec) == len(code_map) == len(code_errors)
         
@@ -337,7 +338,7 @@ class LightweightCore:
                     code_errors[layer_id], edges_by_id, all_results
                 )                
                 all_results[layer_id] = layer_results
-                self._cache_computed_results(layer_id, layer_results, code_map, edges_by_id)
+                self._cache_computed_results(layer_id, layer_results, properties_map, edges_by_id)
 
         assert len(all_results) == len(subgraph_spec)
         return all_results
@@ -375,13 +376,13 @@ class LightweightCore:
         if self._cache is not None:
             self._cache.put(layer_id, layer_results, code_map, edges_by_id)
 
-    def _get_cached_results(self, code_map, graph_spec, edges_by_id):
+    def _get_cached_results(self, properties_map, graph_spec, edges_by_id):
         if self._cache is None:
             return {}
 
         results = {}
         for layer_id in graph_spec.keys():
-            cached_result = self._cache.get(layer_id, code_map, edges_by_id)
+            cached_result = self._cache.get(layer_id, properties_map, edges_by_id)
             if cached_result is not None:
                 results[layer_id] = cached_result
         return results
@@ -409,11 +410,15 @@ class LightweightCore:
     def _get_code_from_layers(self, graph_spec):
         code_map, error_map = {}, {}        
         for layer_id, spec in graph_spec.items():
-            layer_name = spec['Name']
-            code, error = self._get_layer_code(layer_id, spec)
-            
-            code_map[layer_id] = code
-            error_map[layer_id] = error
+            # layer_name = spec['Name']
+            if layer_id not in self._cached_layer_ids:
+                code, error = self._get_layer_code(layer_id, spec)
+                
+                code_map[layer_id] = code
+                error_map[layer_id] = error
+            else:
+                code_map[layer_id] = ''
+                error_map[layer_id] = ''
 
         return code_map, error_map
 
@@ -444,13 +449,13 @@ class LightweightCore:
                 code += layer_spec['Code'].get('Output')
             ast.parse(code)
         except SyntaxError as e:
-            return None, exception_to_error(layer_id, layer_spec['Type'], e)
-            log.exception(f"Layer {layer_id} raised an error when getting layer code")                                
+            logger.exception(f"Layer {layer_id} raised an error when getting layer code") 
+            return None, exception_to_error(layer_id, layer_spec['Type'], e)                                
         except Exception as e:
-            log.warning(f"{str(e)}: couldn't get code for {layer_id}. Treating it as not fully specified")
-            if log.isEnabledFor(logging.DEBUG):
+            logger.warning(f"{str(e)}: couldn't get code for {layer_id}. Treating it as not fully specified")
+            if logger.isEnabledFor(logging.DEBUG):
                 from perceptilabs.utils import stringify
-                log.warning("layer spec: \n" + stringify(layer_spec))
+                logger.warning("layer spec: \n" + stringify(layer_spec))
                 
             return None, None
         else:
@@ -470,7 +475,7 @@ class LightweightCore:
                 spec.loader.exec_module(module)
             except Exception as e:
                 error = exception_to_error(layer_id, layer_type, e)
-                log.exception(f"Layer {layer_id} raised an error when executing module")                                        
+                logger.exception(f"Layer {layer_id} raised an error when executing module")                                        
                 return None, error
 
             class_name = layer_type + sanitize_layer_name(layer_name)

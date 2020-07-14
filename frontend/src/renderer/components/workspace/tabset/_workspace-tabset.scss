@@ -51,7 +51,8 @@
   cursor: pointer;
 
   &.workspace_tab--active_network {
-    border-top: 2px solid $toolbar-separator-color;
+    border-top: 2px solid $color-6;
+    border-color: $color-6;
   }
 
   &.workspace_tab--disable {
@@ -66,7 +67,7 @@
   &.tab_statistics,
   &.tab_testing {
     padding: 0 2rem;
-    width: 12rem;
+    // width: 12rem;
     display: flex;
     justify-content: space-around;
   }

@@ -109,7 +109,7 @@ class DataReinforce(DataLayer):
 class InnerLayer(BaseLayer):
     """Base class for any layer that is not a DataLayer or Training Layer. These layers typically transform the data somehow."""
     @abstractmethod
-    def __call__(self, x: ...) -> Any:
+    def __call__(self, x) -> Any:
         """ Returns a transformed version of the input data.
 
         Args:
@@ -178,6 +178,13 @@ class Tf1xLayer(InnerLayer):
             A dictionary with tensor names for keys and tensors for values.
         """        
         raise NotImplementedError
+
+    @abstractmethod        
+    def get_sample(self, sess=None) -> np.ndarray:
+        """Returns a single data sample"""
+        raise NotImplementedError
+        
+    
 
 class TrainingLayer(DataLayer):
     @abstractmethod
@@ -665,8 +672,8 @@ class ObjectDetectionLayer(TrainingSupervised):
 
     @property
     @abstractmethod
-    def lambdacoord(self) -> float:
-        return self._lambdacoord
+    def lambdaclass(self) -> float:
+        return self._lambdaclass
         
     @property
     @abstractmethod

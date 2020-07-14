@@ -1,13 +1,14 @@
 <template lang="pug">
-  section.network_info-section.tutorial-relative
+  section.network_info-section
     //- .info-section_head(v-show="!testIsOpen")
     //-   h3 {{ sectionTitle }}
     view-box-btn-list(
       v-if="btnList"
+      v-show="!testIsOpen"
       :tab-set="btnList"
       @set-current-btn="setCurrentBtn"
       )
-
+    
     .info-section_main(v-if="elData !== null")
       component(
         :is="elData.componentName"
@@ -62,15 +63,19 @@
 export default {
   name: "TheViewBox",
   components: {
-    TrainNormal, TrainGenetic, TrainDynamic, TrainReinforce, TrainLoss, TrainOptimizer, TrainGan, TrainDetector, TrainRegression,
-    ClassicMLDbscans, ClassicMLKMeans, ClassicMLKNN, ClassicMLRandomForest, ClassicMLSVM,
-
-    DataData, DataEnvironment, DataCloud, DataRandom,
+    DataData, DataEnvironment, DataRandom,
+    // DataCloud,
     DeepLearningFC, DeepLearningConv, DeepLearningDeconv, DeepLearningRecurrent,
-    ProcessCrop, ProcessEmbed, ProcessGrayscale, ProcessOneHot, ProcessReshape, ProcessRescale,
-    MathArgmax, MathMerge, MathSoftmax, MathSplit, MathSwitch,
-    ViewBoxBtnList
-  },
+    ProcessEmbed, ProcessGrayscale, ProcessOneHot, ProcessReshape, ProcessRescale,
+    // ProcessCrop,
+    TrainNormal, TrainRegression, TrainGenetic, TrainDynamic, TrainReinforce, TrainDetector, TrainGan,
+    // TrainLoss, TrainOptimizer, 
+    MathArgmax, MathMerge, MathSoftmax, MathSwitch,
+    // MathSplit,
+
+    // ClassicMLDbscans, ClassicMLKMeans, ClassicMLKNN, ClassicMLRandomForest, ClassicMLSVM,
+  ViewBoxBtnList
+},
   props: {
     sectionTitle: {type: String},
     elData: {

@@ -1,12 +1,15 @@
+import logging
 import sys
 import json
+import uuid
 import logging
 import argparse
 import threading
 import pkg_resources
 
-
+import perceptilabs.logconf
 from perceptilabs.messaging.zmq_wrapper import get_message_bus
+
 
 def get_input_args():
     parser = argparse.ArgumentParser()
@@ -28,53 +31,59 @@ def get_input_args():
     return args
 
 
-def setup_logger(log_level, core_mode):
-    """ Sets up logging for the application.
-
-    In other modules, simply call log = logging.getLogger(__name__) after importing logging. 
-    In production, set the logging level to something higher (e.g., ERROR). 
-
-    Levels:
-        DEBUG: Detailed information, for diagnosing problems. 
-        INFO: Confirm things are working as expected. 
-        WARNING: Something unexpected happened, or indicative of some problem. But the software is still working as expected. 
-        ERROR: More serious problem, the software is not able to perform some function. 
-        CRITICAL: A serious error, the program itself may be unable to continue running. 
-    """
-
-    if log_level is None and core_mode == 'v1':
-        log_level = 'WARNING'
-    elif log_level is None:
-        log_level = 'INFO'            
+def on_kernel_started(commit_id, data_logger):
+    import pkg_resources
+    import platform
+    import psutil
+    import time
     
-    FORMAT = '%(asctime)s - %(levelname)s - %(threadName)s - %(filename)s:%(lineno)d - %(message)s'
-    FILE_NAME = 'backend.log'
-    logging.basicConfig(
-        format='%(asctime)s - %(levelname)s - %(threadName)s - %(filename)s:%(lineno)d - %(message)s',
-        level=logging.getLevelName(log_level),
-        # handlers=[
-        #     logging.FileHandler("kernel.log"),
-        #     logging.StreamHandler()
-        # ]
+    data_logger.info(
+        'kernel_started',
+        extra={
+            'namespace': dict(
+                cpu_count=psutil.cpu_count(),
+                platform={
+                    'platform': platform.platform(),
+                    'system': platform.system(),
+                    'release': platform.release(),
+                    'version': platform.version(),
+                    'processor': platform.processor()
+                },
+                memory={
+                    'phys_total': psutil.virtual_memory().total, # Deceptive naming, but OK according to docs: https://psutil.readthedocs.io/en/latest/
+                    'phys_available': psutil.virtual_memory().available,
+                    'swap_total': psutil.swap_memory().total,             
+                    'swap_free': psutil.swap_memory().free
+                },
+                python={
+                    'version': platform.python_version(),
+                    'packages': [p.project_name + ' ' + p.version for p in pkg_resources.working_set]
+                }
+            )
+        }
     )
 
-    
 def main():
     args = get_input_args()
-
-    setup_logger(args.log_level, args.core_mode)
-    log = logging.getLogger(__name__)
+    session_id = uuid.uuid4().hex
+    
+    perceptilabs.logconf.setup_application_logger()
+    perceptilabs.logconf.setup_data_logger()
+    perceptilabs.logconf.set_session_id(session_id)
+    
+    logger = logging.getLogger(perceptilabs.logconf.APPLICATION_LOGGER)
+    data_logger = logging.getLogger(perceptilabs.logconf.DATA_LOGGER)
 
     from perceptilabs.mainInterface import Interface
     from perceptilabs.server.appServer import Server
     from perceptilabs.utils import frontend_watcher
-    from perceptilabs.main_setup import setup_scraper, setup_sentry, scraper
+    from perceptilabs.main_setup import setup_sentry
 
     if args.frontend_pid is not None:
-        log.info(f"Frontend process id = {args.frontend_pid} specified. Backend will self terminate if frontend is shutdown unexpectedly.")        
-        threading.Thread(target=frontend_watcher, args=(args.frontend_pid,), kwargs={'log': log}, daemon=True).start()
+        logger.info(f"Frontend process id = {args.frontend_pid} specified. Backend will self terminate if frontend is shutdown unexpectedly.")        
+        threading.Thread(target=frontend_watcher, args=(args.frontend_pid,), kwargs={'logger': logger}, daemon=True).start()
     else:
-        log.warning("No frontend process id specified. Backend will not self terminate if frontend is shutdown unexpectedly.")
+        logger.warning("No frontend process id specified. Backend will not self terminate if frontend is shutdown unexpectedly.")
     
     with open(pkg_resources.resource_filename('perceptilabs', 'app_variables.json'), 'r') as f:
         app_variables = json.load(f)
@@ -82,7 +91,14 @@ def main():
     commit_id = app_variables["BuildVariables"]["CommitId"]
 
     setup_sentry(args.user, commit_id)
-    log.info("Reporting errors with commit id: " + str(commit_id))
+    logger.info("Reporting errors with commit id: " + str(commit_id))
+
+    try:
+        on_kernel_started(commit_id, data_logger)
+    except:
+        logger.exception("logging 'on_kernel_started' event failed!")
+
+    logger.info("Reporting errors with commit id: " + str(commit_id))
 
     message_bus = get_message_bus()
     message_bus.start()
@@ -94,21 +110,22 @@ def main():
     
     core_interface = Interface(cores, dataDict, checkpointDict, lwDict, args.core_mode)
 
-    data_bundle = setup_scraper()
-
-
     if args.error:
         raise Exception("Test error")
 
     print("PerceptiLabs is ready...")
 
-    server = Server(scraper, data_bundle)
-    if args.platform == 'desktop':
-        server.serve_desktop(core_interface, args.instantly_kill)
-    elif args.platform == 'browser':
-        server.serve_web(core_interface, args.instantly_kill)
-
-    message_bus.stop()
+    try:
+        server = Server()
+        if args.platform == 'desktop':
+            server.serve_desktop(core_interface, args.instantly_kill)
+        elif args.platform == 'browser':
+            server.serve_web(core_interface, args.instantly_kill)
+        message_bus.stop()            
+    except Exception as e:
+        logger.exception("Exception in server")
+    finally:
+        perceptilabs.logconf.upload_logs(session_id)
 
 if __name__ == "__main__":
     main()

@@ -1,6 +1,11 @@
 import tensorflow as tf
 from tensorflow.python.eager.context import context, EAGER_MODE, GRAPH_MODE
 from enum import Enum
+import collections
+import platform
+import ntpath, posixpath
+
+TracebackFrame = collections.namedtuple('TracebackFrame', ['lineno', 'name', 'filename', 'line'])
 
 class YieldLevel(Enum):
     #STOP = 0
@@ -88,4 +93,13 @@ def find_free_port(count=1):
         return ports[0]
     else:
         return tuple(ports)    
-            
+        
+
+
+def get_correct_path(path):
+    current_platform = platform.system()
+    if current_platform == 'Windows':
+        new_path = path.replace(posixpath.sep, ntpath.sep)
+    elif current_platform == 'Linux' or current_platform == 'Darwin':
+        new_path = path.replace(ntpath.sep, posixpath.sep)
+    return new_path

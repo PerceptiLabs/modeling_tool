@@ -73,7 +73,8 @@ def test_fully_connected_1x1_should_be_normal_multiplication(j2_engine, sess):
                          layer_type='DeepLearningFC',
                          n_neurons=1,
                          activation='tf.compat.v1.sigmoid',
-                         dropout=False, keep_prob=1.0)
+                         dropout=False, keep_prob=1.0,
+                         batch_norm=False)
 
     x = 32*np.ones((1, 1))
     y = layer(tf.constant(x))
@@ -100,6 +101,7 @@ def test_conv2d_1x1_should_be_sum(j2_engine, sess):
         activation=None,
         dropout=False,
         keep_prob=1,
+        batch_norm=False,
         pool=False,
         pooling=None,
         pool_area=None,

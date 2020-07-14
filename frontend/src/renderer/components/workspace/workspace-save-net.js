@@ -2,7 +2,7 @@ import html2canvas  from 'html2canvas';
 import canvg        from 'canvg'
 import { projectPCSave, generateID, loadPathFolder, deepCopy }  from "@/core/helpers.js";
 import { pathSlash }  from "@/core/constants.js";
-import {mapActions, mapGetters} from "vuex";
+import { mapGetters, mapMutations, mapActions } from "vuex";
 
 const workspaceSaveNet = {
   created() {
@@ -38,28 +38,29 @@ const workspaceSaveNet = {
   },
   methods: {
     ...mapActions({
-      infoPopup: 'globalView/GP_infoPopup',
+      infoPopup:            'globalView/GP_infoPopup',
       set_networkRootFolder:'mod_workspace/SET_networkRootFolder',
       checkTrainedNetwork:  'mod_api/API_checkTrainedNetwork',
       saveTrainedNetwork:   'mod_api/API_saveTrainedNetwork',
       trackerModelSave:     'mod_tracker/EVENT_modelSave',
       saveLocalUserInfo:    'mod_user/UPDATE_LOCAL_userInfo',
+      updateUnsavedChanges: 'mod_workspace-changes/updateUnsavedChanges',
     }),
     refreshSavePopup() {
       this.saveNetworkPopup = {...this.saveNetworkPopupDefault}
     },
     eventSaveNetwork() {
-      const projectsList = this.getLocalUserInfo.projectsList;
+      // const projectsList = this.getLocalUserInfo.projectsList;
       const network = this.currentNetwork;
 
       this.checkTrainedNetwork()
         .then((isTrained)=> {
 //          if(!projectsList.length || findIndexId(projectsList, network) < 0) {
-          if(!network.networkRootFolder) {
-            this.saveNetworkPopup.isSyncName = true;
-            this.eventSaveNetworkAs(network.networkID, true)
-            return
-          }
+          // if(!network.networkRootFolder) {
+          //   this.saveNetworkPopup.isSyncName = true;
+          //   this.eventSaveNetworkAs(network.networkID, true)
+          //   return
+          // }
 
           if(isTrained) {
             this.saveNetworkPopup.isFreezeInfo = true;
@@ -68,8 +69,8 @@ const workspaceSaveNet = {
           else {
             const settings = {
               isSaveTrainedModel: false,
-              projectName: network.networkName,
-              projectPath: network.networkRootFolder
+              networkName: network.networkName,
+              networkPath: network.apiMeta.location
             };
             this.saveNetwork(settings, network.networkID)
           }
@@ -80,28 +81,45 @@ const workspaceSaveNet = {
       }
     },
     eventSaveNetworkAs(netId, isSaveProjectPath) {
+      this.$store.dispatch('globalView/SET_saveNetworkPopup', true);
       this.askSaveFilePopup()
-        .then((answer)=> {
+        .then(async (answer)=> {
           if(answer) {
-            this.saveNetwork(answer, netId, isSaveProjectPath);
+            const isFolderAlreadyExist = await this.$store.dispatch('mod_api/API_isDirExist', answer.networkPath);
+            
+            if(isFolderAlreadyExist) {
+              this.$store.dispatch('globalView/GP_confirmPopup', {
+                text: 'Folder exist, are you sure want to overwrite it?',
+                ok: () => {
+                  this.saveNetwork(answer, netId, isSaveProjectPath);
+                }
+              })
+            } else {
+              this.saveNetwork(answer, netId, isSaveProjectPath);
+            }
           }
         })
         .catch((err)=> console.log(err))
     },
     askSaveFilePopup() {
-      this.saveNetworkPopup.show = true;
+      this.$store.dispatch('globalView/SET_saveNetworkPopup', true);
       return this.$nextTick()
-        .then(()=>     this.$refs.saveNetworkPopup[0].openPopup())
-        .catch((err)=> this.infoPopup('Project not saved'))
-        .finally(()=>  this.refreshSavePopup())
+        .then(()=>     this.$refs.saveNetworkPopup.openPopup())
+        .catch((err)=> this.infoPopup('Model not saved'))
+        .finally(()=> {
+          this.refreshSavePopup();
+          this.$store.dispatch('globalView/SET_saveNetworkPopup', false);
+        });
     },
     saveNetwork(netInfo, netId, saveProjectPath) {
+      
       const networkField = this.$refs.networkField[0].$refs.network;
       networkField.style.filter = 'blur(5px)';
 
       const currentNet = this.currentNetwork;
       const newProjectId = netId || generateID();
-      const pathSaveProject = netInfo.projectPath;
+      // debugger;
+      const pathSaveProject = netInfo.networkPath;
 
       let prepareNet = cloneNet(currentNet, newProjectId, netInfo);
       /*check Is Trained Net + do ScreenShot*/
@@ -115,7 +133,7 @@ const workspaceSaveNet = {
               'Location': [pathSaveProject],
               'frontendNetwork': prepareNet.toFile,
               'networkName': this.currentNetwork.networkName
-            })
+            }).catch(() => Promise.reject())
           }
           else {
             // /*app save*/
@@ -124,20 +142,33 @@ const workspaceSaveNet = {
             const payload = {
               path: prepareNet.toLocal.pathProject
             };
-
-            return this.$store.dispatch('mod_api/API_saveJsonModel', payload);
+            return this.$store.dispatch('mod_api/API_saveJsonModel', payload)
+              .catch(() => Promise.reject());
             
           }
         })
         .then(()=> {
-          /*save project to project page*/
+          // Update the model in the webstorage too.
+          this.$store.dispatch('mod_webstorage/saveNetwork', currentNet, {root: true});
 
-          saveProjectToLocalStore(prepareNet.toLocal, this);
+          /*save project to project page*/
+          if(prepareNet.toFile.apiMeta.location !== prepareNet.toLocal.pathProject || 
+            prepareNet.toFile.apiMeta.name !== prepareNet.toLocal.name) {
+            this.$store.dispatch('mod_workspace/SET_networkLocation', prepareNet.toLocal.pathProject); // change new location in vuex
+            this.$store.dispatch('mod_workspace/SET_networkName', prepareNet.toLocal.name); // change new location in vuex
+          }
+          
           if(saveProjectPath) this.set_networkRootFolder(pathSaveProject);
-          this.infoPopup('The file has been successfully saved');
           this.trackerModelSave(prepareNet.toFile);
+          this.updateUnsavedChanges({
+            networkId: netId, 
+            value: false
+          });
+          saveProjectToLocalStore(prepareNet.toLocal, this);
         })
-        .catch((error) => {})
+        .catch((error) => {
+          this.$store.dispatch('globalView/GP_errorPopup','Kernel is not connected');
+        })
         .finally(()=> {
           networkField.style.filter = '';
         });
@@ -160,6 +191,7 @@ const workspaceSaveNet = {
             .then((canvas)=> {
               resolve(canvas.toDataURL());
             })
+            .catch(error => { resolve() })
             .finally(()=> {
               svg.style.display = '';
               arrowsCanvas.remove();
@@ -198,9 +230,9 @@ const workspaceSaveNet = {
         // console.log('toFile.networkMeta', toFile.networkMeta);
 
         if(idProject) toFile.networkID = idProject;
-        toFile.networkName = newNetInfo.projectName;
+        toFile.networkName = newNetInfo.networkName;
         toFile.networkMeta = {};
-        toFile.networkRootFolder = newNetInfo.projectPath;
+        toFile.networkRootFolder = newNetInfo.networkPath;
         //create project
         const time = new Date();
         const timeOptions = {
@@ -214,9 +246,9 @@ const workspaceSaveNet = {
         const toLocal = {
           time: time.toLocaleString("ru", timeOptions),
           image: null,
-          name: newNetInfo.projectName,
+          name: newNetInfo.networkName,
           id: idProject,
-          pathProject: newNetInfo.projectPath,
+          pathProject: newNetInfo.networkPath,
           isTrained: false,
           isCloud: false,
         };

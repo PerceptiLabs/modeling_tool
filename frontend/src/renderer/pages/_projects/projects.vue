@@ -19,13 +19,14 @@
 
   import imageClassification    from '@/core/basic-template/image-classification.js'
   import reinforcementLearning  from '@/core/basic-template/reinforcement-learning.js'
-  import timeseriesRegression   from '@/core/basic-template/timeseries-regression.js'
+  import linearRegression   from '@/core/basic-template/linear-regression.js'
   import {isWeb} from "@/core/helpers";
 
   export default {
     name: 'PageProjects',
     created() {
       if(isWeb()) {
+        this.$store.commit('mod_workspace-changes/get_workspaceChangesInLocalStorage')
         this.$store.dispatch('mod_workspace/GET_workspacesFromLocalStorage');
       }
     },
@@ -47,7 +48,7 @@
           {
             title: 'Timeseries Regression',
             imgPath: './static/img/project-page/time-series-regression.svg',
-            template: timeseriesRegression
+            template: linearRegression
           },
           {
             title: 'Reinforcement Learning',

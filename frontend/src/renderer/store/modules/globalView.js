@@ -22,7 +22,9 @@ const state = {
     coreNotFoundPopup: false,
     showFilePickerPopup: false,
     showLoadSettingPopup: false,
-    showExportNetworkPopup: false
+    showSaveNetworkPopup: false,
+    showExportNetworkPopup: false,
+    showNewModelPopup: false,
   },
   popupConfirmCancel: null,
   popupConfirmOk: null,
@@ -87,6 +89,12 @@ const mutations = {
   set_loadSettingPopup(state, value) {
     state.globalPopup.showLoadSettingPopup = value.visible;
     state.popupConfirmOk = value.ok;
+  },
+  set_saveNetworkPopup(state, value) {
+    state.globalPopup.showSaveNetworkPopup = value;
+  },
+  set_newModelPopup(state, value) {
+    state.globalPopup.showNewModelPopup = value;
   },
   set_exportNetworkPopup(state, value) {
     state.globalPopup.showExportNetworkPopup = value;
@@ -163,6 +171,12 @@ const actions = {
   },
   SET_loadSettingPopup({commit}, value) {
     commit('set_loadSettingPopup', value);
+  },
+  SET_saveNetworkPopup({commit}, value) {
+    commit('set_saveNetworkPopup', value);
+  },
+  SET_newModelPopup({commit}, value) {
+    commit('set_newModelPopup', value);
   },
   SET_exportNetworkPopup({commit}, value) {
     commit('set_exportNetworkPopup', value);

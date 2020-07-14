@@ -6,7 +6,29 @@ const namespaced = true;
 const state = {
   currentProject: parseInt(localStorage.getItem('targetProject')) || null, // maybe we should copy all project object instead id and did modification in this one in case it wouldn't save changes.
   projectsList: [],
+  isDefaultProjectMode: false
 };
+
+const getters = {
+  GET_project(state, getters, rootState, rootGetters) {
+    return state.projectsList.filter(project => (project.project_id === state.currentProject))[0];
+  },
+  GET_projectPath(state, getters) {
+    return getters['GET_project'] && getters['GET_project'].default_directory || '';
+  },
+  GET_projectModelIds(state){
+   return state.projectsList.filter(project => (project.project_id === state.currentProject))[0].models;
+  },
+  GET_isProjectWithThisDirectoryExist: (state) => (default_directory) => {
+    const projectDirectoryesList = state.projectsList.map(pr => pr.default_directory);
+    const projectExists = projectDirectoryesList.indexOf(default_directory) !== -1;
+
+    return projectExists;
+  },
+  GET_isDefaultProjectMode(state) {
+    return state.isDefaultProjectMode;
+  }
+}
 
 const mutations = {
   setProjectList(state, payload){
@@ -19,6 +41,17 @@ const mutations = {
   createProject(state, payload) {
     state.projectsList.push(payload);
   },
+  removeProjectIdInLocalStorage(state, projectId) {
+    if (localStorage.getItem('targetProject') == projectId) {
+      localStorage.removeItem('targetProject');
+    }
+  },
+  setIsDefaultProjectMode(state) {
+    let envValue = process.env.FORCE_DEFAULT_PROJECT;
+    if (typeof envValue === 'undefined' || envValue === null) { return; }
+
+    state.isDefaultProjectMode = envValue === 'true';
+  }
 };
 
 const actions = {
@@ -40,7 +73,8 @@ const actions = {
       })
   },
   updateProject(ctx, payload) {
-    return axios.put(`http://localhost:8000/projects/${payload.projectId}/`, {name: payload.name})
+    const {projectId, ...postData} = payload;
+    return axios.patch(`http://localhost:8000/projects/${projectId}/`, postData)
       .then(res => {
         ctx.dispatch('getProjects');
         return res.data;
@@ -49,20 +83,31 @@ const actions = {
   deleteProject(ctx, payload) {
     return axios.delete(`http://localhost:8000/projects/${payload.projectId}/`)
       .then(res => {
+        ctx.commit('removeProjectIdInLocalStorage', payload.projectId);
         ctx.dispatch('getProjects');
-        // crx.commit('removeProject', res.data.project_id);
-      })
+      })  
+      .catch(e => console.log(e));
   },
   getModel(ctx, modelId) {
     return axios.get(`http://localhost:8000/models/${modelId}/`)
       .then(res => res.data)
       .catch(console.error)
   },
+  async getProjectModels({getters, dispatch}){
+    const projectModesIds = getters['GET_projectModelIds'];
+    let projectModesPromises = projectModesIds.map(modelId => dispatch('getModel', modelId))
+    const models = await Promise.all(projectModesPromises);
+    return models;
+  },
   createProjectModel(ctx, payload) {
     return axios.post('http://localhost:8000/models/', payload)
       .then(res => {
         return res.data
       })
+  },
+  updateModel(ctx, payload) {
+    const { model_id, ...payloadData } = payload
+    return axios.put(`http://localhost:8000/models/${model_id}/`, payloadData)
   },
   deleteModel(ctx, payload) {
     const { model_id, project } = payload;
@@ -71,11 +116,46 @@ const actions = {
         ctx.dispatch('getProjects');
         return res.data
       })
-  }
+  },
+  getDefaultModeProject(ctx) {
+        
+    return ctx.dispatch('getProjects')
+      .then(({data: { results: projects }}) => {
+
+        const defaultProject = projects.find(p => p.name === 'Default');
+        if (!defaultProject) {
+          // create project called "Default" if it doesn't exist
+          return ctx.dispatch('prepareDefaultProjectDirectory');
+        }
+        
+        return defaultProject;    
+      })
+      .then(defaultProjectMeta => {
+        ctx.commit('selectProject', defaultProjectMeta.project_id);
+      });
+  },
+  prepareDefaultProjectDirectory(ctx) {
+    
+    return ctx.dispatch('mod_api/API_createFolder', { folder_path: '~/Documents/Perceptilabs/Default' }, {root: true})
+      .then(createFolderRes => {
+        if (!createFolderRes) { throw new Error('Problem creating project directory'); }
+
+        let createProjectReq = {
+          name: 'Default',
+          default_directory: createFolderRes
+        };
+        return ctx.dispatch('createProject', createProjectReq);
+      })
+      .then(createProjectRes => createProjectRes)
+      .catch(error => {
+        console.error(error)
+      });
+  },
 };
 
 export default {
   namespaced,
+  getters,
   state,
   mutations,
   actions

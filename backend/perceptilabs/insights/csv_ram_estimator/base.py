@@ -1,3 +1,4 @@
+import logging
 import numpy as np
 import pandas as pd
 import logging
@@ -5,7 +6,9 @@ import pickle
 import os
 
 
-log = logging.getLogger(__name__)
+from perceptilabs.logconf import APPLICATION_LOGGER
+
+logger = logging.getLogger(APPLICATION_LOGGER)
 
 
 _ESTIMATOR = None
@@ -39,7 +42,7 @@ class CsvRamEstimator:
                 unseen[dtype] += 1
 
         for dtype, count in unseen.items():
-            log.warning(f"File '{csv_path}' contains {count} columns of unseen dtype '{dtype}'")
+            logger.warning(f"File '{csv_path}' contains {count} columns of unseen dtype '{dtype}'")
 
         y = self._model.predict(x)
         est_sz = round(y.squeeze().tolist())
@@ -61,10 +64,10 @@ def get_instance():
             rmse_train = mam['rmse_train']
             rmse_test = mam['rmse_test']
 
-            log.info(f"Loading csv ram estimator with rMSE train: {rmse_train} and rMSE test: {rmse_test} from {MODEL_AND_META_PATH}. Seen dtypes are {dtypes}")
+            logger.info(f"Loading csv ram estimator with rMSE train: {rmse_train} and rMSE test: {rmse_test} from {MODEL_AND_META_PATH}. Seen dtypes are {dtypes}")
             _ESTIMATOR = CsvRamEstimator(model, dtypes)
     except:
-        log.exception(f"Failed loading csv ram estimator from {MODEL_AND_META_PATH}")
+        logger.exception(f"Failed loading csv ram estimator from {MODEL_AND_META_PATH}")
 
     return _ESTIMATOR
 

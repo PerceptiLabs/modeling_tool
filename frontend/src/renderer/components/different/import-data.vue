@@ -38,7 +38,7 @@ import BaseSwitcher     from "@/components/different/switcher.vue";
 import BaseAccordion    from "@/components/base/accordion.vue";
 import imageClassification    from '@/core/basic-template/image-classification.js'
 import reinforcementLearning  from '@/core/basic-template/reinforcement-learning.js'
-import timeseriesRegression   from '@/core/basic-template/timeseries-regression.js'
+import linearRegression   from '@/core/basic-template/linear-regression.js'
 import ganTemplate            from '@/core/basic-template/gan-template.js'
 
 export default {
@@ -70,8 +70,8 @@ export default {
           {
             text: 'Timeseries Regression',
             imgPath: './static/img/project-page/time-series-regression.svg',
-            value: 'timeseriesRegression',
-            template: timeseriesRegression
+            value: 'linearRegression',
+            template: linearRegression
           },
           {
             text: 'Reinforcement Learning',

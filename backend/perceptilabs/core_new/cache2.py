@@ -1,8 +1,11 @@
 import logging
+import logging
 import hashlib
 import numpy as np
 import networkx as nx
 from collections import namedtuple
+
+from perceptilabs.logconf import APPLICATION_LOGGER
 
 
 #def print_order(l, d):
@@ -17,7 +20,8 @@ from collections import namedtuple
 #    print('-- -- --')
 
 
-log = logging.getLogger(__name__)
+
+logger = logging.getLogger(APPLICATION_LOGGER)
 
 
 class ListEntry:
@@ -78,12 +82,12 @@ class LightweightCache:
         self._list = DoublyLinkedList()
         self._max_size = max_size
 
-    def put(self, layer_id, value, id_to_code, edges_by_id):
-        key = self._compute_hash(layer_id, id_to_code, edges_by_id)
+    def put(self, layer_id, value, id_to_properties, edges_by_id):
+        key = self._compute_hash(layer_id, id_to_properties, edges_by_id)
         self._insert_and_purge(key, value)
 
-    def get(self, layer_id, id_to_code, edges_by_id):
-        key = self._compute_hash(layer_id, id_to_code, edges_by_id)
+    def get(self, layer_id, id_to_properties, edges_by_id):
+        key = self._compute_hash(layer_id, id_to_properties, edges_by_id)
 
         if key is not None and key in self._map:
             entry = self._map[key]
@@ -95,25 +99,25 @@ class LightweightCache:
         else:
             return None
         
-    def _compute_hash(self, layer_id, id_to_code, edges_by_id):
+    def _compute_hash(self, layer_id, id_to_properties, edges_by_id):
         graph = nx.DiGraph()
         graph.add_edges_from(edges_by_id)
         graph.add_node(layer_id)
 
         ancestor_ids = nx.ancestors(graph, layer_id)
-        full_code = id_to_code[layer_id]
+        full_properties = id_to_properties[layer_id]
 
-        if full_code is None:
+        if full_properties is None:
             return None            
         
         for ancestor_id in sorted(ancestor_ids):
-            code = id_to_code[ancestor_id]            
-            if code is None:
+            properties = id_to_properties[ancestor_id]            
+            if properties is None:
                 return None            
             
-            full_code += code
+            full_properties += properties
 
-        encoded = full_code.encode('utf-8')
+        encoded = full_properties.encode('utf-8')
         md5 = hashlib.md5(encoded).hexdigest()
         return md5
         

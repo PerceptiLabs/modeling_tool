@@ -1,11 +1,14 @@
 #Backend ignores
 backend/*.pyc
 backend/*.pyo
+backend/**/model.json
 backend/net.json
 backend/net.json_
 backend/venv/
-backend/.venv/
+.venv/
+.python-version
 backend/venv-user/
+backend/data.log
 backend/dist/
 backend/deploy.py
 backend/training_script.py
@@ -20,6 +23,7 @@ build/
 .vscode/
 backend/.vscode/
 backend/kernel.log
+backend/data.log
 #Frontend ignores
 frontend_out
 frontend/core/*
@@ -36,7 +40,11 @@ frontend/npm-debug.log.*
 frontend/thumbs.db
 frontend/src/dist/
 frontend/src/node_modules/
+frontend/cypress/fixtures/*.json
+frontend/cypress/screenshots/**/*.png
+frontend/cypress/videos/**/*.mp4
 !frontend/.gitkeep
+**/data.log
 .idea
 .idea/*
 .idea/workspace.xml
@@ -44,5 +52,7 @@ frontend/src/node_modules/
 .vscode/*
 app.log
 backend.log
+kernel.log
 log.txt
 .DS_Store
+backend/perceptilabs/insights/csv_ram_estimator/model_and_meta.pkl

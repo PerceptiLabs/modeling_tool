@@ -8,10 +8,11 @@ from typing import List
 from abc import ABC, abstractmethod
 
 
+from perceptilabs.logconf import APPLICATION_LOGGER
 from perceptilabs.messaging import MessageBus, MessageProducer, MessageConsumer, MessagingFactory
 
 
-log = logging.getLogger(__name__)
+logger = logging.getLogger(APPLICATION_LOGGER)
 
 
 PORT_PRODUCER = 5566 # Producer facing port.  
@@ -103,7 +104,7 @@ class ZmqMessageBus(MessageBus):
                         i += 1
 
                 throughput = tot_sz / t_wnd / 1000
-                log.info(f"Proxy throughput: {throughput} kb/s")                
+                logger.info(f"Proxy throughput: {throughput} kb/s")                
             counter += 1
             
                 

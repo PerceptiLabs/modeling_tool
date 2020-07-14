@@ -78,12 +78,17 @@ export default {
   name: 'TheLayersbar',
   mixins: [clickOutside],
   components: {
-    DataData, DataEnvironment, DataCloud, DataRandom,
+    DataData, DataEnvironment, DataRandom,
+    // DataCloud,
     DeepLearningFC, DeepLearningConv, DeepLearningDeconv, DeepLearningRecurrent,
-    ProcessCrop, ProcessEmbed, ProcessGrayscale, ProcessOneHot, ProcessReshape, ProcessRescale,
-    TrainNormal, TrainRegression, TrainGenetic, TrainDynamic, TrainReinforce, TrainLoss, TrainOptimizer, TrainGan, TrainDetector,
-    MathArgmax, MathMerge, MathSoftmax, MathSplit, MathSwitch,
-    ClassicMLDbscans, ClassicMLKMeans, ClassicMLKNN, ClassicMLRandomForest, ClassicMLSVM,
+    ProcessEmbed, ProcessGrayscale, ProcessOneHot, ProcessReshape, ProcessRescale,
+    // ProcessCrop,
+    TrainNormal, TrainRegression, TrainGenetic, TrainDynamic, TrainReinforce, TrainDetector, TrainGan,
+    // TrainLoss, TrainOptimizer, 
+    MathArgmax, MathMerge, MathSoftmax, MathSwitch,
+    // MathSplit,
+
+    // ClassicMLDbscans, ClassicMLKMeans, ClassicMLKNN, ClassicMLRandomForest, ClassicMLSVM,
     LayerCustom
   },
   data() {
@@ -158,19 +163,19 @@ export default {
           networkElements: trainingElements,
           id:'tutorial_training'
         },
-        {
-          tooltip: 'Classic Machine Learning',
-          tooltip_interactive: {
-            title: 'Classic Machine Learning',
-            text: 'Classic machine learning components'
-          },
-          layerClass: 'net-element-learn-class',
-          iconClass: 'icon-mind',
-          childListClass: '',
-          showEl: false,
-          networkElements: ['ClassicMLDbscans', 'ClassicMLKMeans', 'ClassicMLKNN', 'ClassicMLRandomForest', 'ClassicMLSVM'],
-          id:'tutorial_classic-machine-learning'
-        }
+        // {
+        //   tooltip: 'Classic Machine Learning',
+        //   tooltip_interactive: {
+        //     title: 'Classic Machine Learning',
+        //     text: 'Classic machine learning components'
+        //   },
+        //   layerClass: 'net-element-learn-class',
+        //   iconClass: 'icon-mind',
+        //   childListClass: '',
+        //   showEl: false,
+        //   networkElements: ['ClassicMLDbscans', 'ClassicMLKMeans', 'ClassicMLKNN', 'ClassicMLRandomForest', 'ClassicMLSVM'],
+        //   id:'tutorial_classic-machine-learning'
+        // }
       ],
     }
   },

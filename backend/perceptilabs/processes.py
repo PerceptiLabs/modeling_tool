@@ -1,3 +1,5 @@
+# DEPRECATED?
+
 import os
 import time
 import psutil
@@ -7,7 +9,9 @@ import logging
 import threading
 
 
-log = logging.getLogger(__name__)
+from perceptilabs.logconf import APPLICATION_LOGGER
+
+logger = logging.getLogger(APPLICATION_LOGGER)
 
 
 class ProcessDependencyWatcher(threading.Thread):
@@ -20,15 +24,15 @@ class ProcessDependencyWatcher(threading.Thread):
         
     def run(self):
         if self._pid is None:
-            log.warning("Monitored process id is None. No monitoring will take place.")
+            logger.warning("Monitored process id is None. No monitoring will take place.")
             return
 
         while True:
             if not psutil.pid_exists(self._pid):
-                log.warning("Monitored process {} not found. This process will self terminate in {} seconds".format(self._pid, self._grace_period))                
+                logger.warning("Monitored process {} not found. This process will self terminate in {} seconds".format(self._pid, self._grace_period))                
                 time.sleep(self._grace_period) # Give a grace period of N seconds before the process self terminates.
                 
-                log.warning("Monitored process {} not found. Terminating this process.".format(self._pid))
+                logger.warning("Monitored process {} not found. Terminating this process.".format(self._pid))
                 os.kill(os.getpid(), 9)
 
             time.sleep(self._sleep_period)

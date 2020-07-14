@@ -1,3 +1,4 @@
+import logging
 import copy
 from typing import Dict, Tuple, Set
 from abc import ABC, abstractmethod
@@ -6,11 +7,12 @@ import logging
 from perceptilabs.core_new.layers.definitions import DEFINITION_TABLE
 from perceptilabs.core_new.layers import *
 from perceptilabs.core_new.layers.replicas import *
-from perceptilabs.core_new.graph.base import Graph, JsonNetwork, Node
+from perceptilabs.core_new.graph.base import Graph, Node
 from perceptilabs.core_new.graph.utils import sanitize_layer_name
+from perceptilabs.logconf import APPLICATION_LOGGER
 
 
-log = logging.getLogger(__name__)
+logger = logging.getLogger(APPLICATION_LOGGER)
 
 
 class GraphBuilder:
@@ -163,7 +165,7 @@ class SnapshotBuilder:
 
         if not hasattr(node.layer, repl_prop.name):
             value = repl_prop.default(None) if callable(repl_prop.default) else repl_prop.default
-            log.warning(f'Layer {node.layer_id} [{type(node.layer)}] missing attribute "{repl_prop.name}". Using default: {value}.')
+            logger.warning(f'Layer {node.layer_id} [{type(node.layer)}] missing attribute "{repl_prop.name}". Using default: {value}.')
             
         value = getattr(node.layer, repl_prop.name)
         if repl_prop.type is not None:
@@ -171,7 +173,7 @@ class SnapshotBuilder:
 
             if not valid_type:
                 default_value = repl_prop.default(None) if callable(repl_prop.default) else repl_prop.default                
-                log.warning(
+                logger.warning(
                     f'Layer {node.layer_id} [{type(node.layer)}] attribute "{repl_prop.name}" expected type(s) {repl_prop.type}, '
                     f'got {type(value)}. Using default: {default_value} [{type(default_value)}].'
                 )

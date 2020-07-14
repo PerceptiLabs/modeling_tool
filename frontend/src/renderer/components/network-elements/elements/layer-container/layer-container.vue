@@ -11,7 +11,9 @@
       .layer-container_box(
         :style="containerStyle"
         )
-        h4.layer-container_title {{ elementData.layerName }}
+        h4.layer-container_title(
+          :style="zoomingStyle"
+        ) {{ elementData.layerName }}
         button.layer-container_btn-open.btn.btn--link.icon.icon-layer-settings(
           type="button"
           @click.stop="toggleContainer(true)"
@@ -20,7 +22,6 @@
         .net-element_window.net-element_context-menu(
           v-if="contextIsOpen"
           :class="classElWindow"
-          :style="styleElWindow"
         )
           context-menu(
             :data-el="elementData"
@@ -69,6 +70,19 @@
       }
     },
     computed: {
+      networkScale() {
+        return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.zoom
+      },
+      zoomingStyle() {
+        let scale = `scale(${this.networkScale})`;
+        
+        let style = {
+          'transform': scale,
+          'transform-origin': 'right bottom'
+        };
+
+        return style;
+      },
       containerStyle() {
         let arrTop = [];
         let arrLeft = [];
@@ -90,8 +104,9 @@
         if(containerHaveOpenSubContainer)
           padding += 30;
 
-        const widthEl = widthElement;
-       
+        const widthEl = widthElement * this.networkScale;
+        padding *= this.networkScale;
+
         return {
           // zIndex: containerZIndex,
           left: minLeft - padding + 'px',
@@ -130,17 +145,7 @@
           'net-element_window--left': this.openWinPosition.left,
           'net-element_window--top': this.openWinPosition.top
         }
-      },
-      styleElWindow() {
-        let style = {zoom: `${(100 / (this.wsZoom * 100)) * 100}%`};
-        let offsetWin = this.openWinPosition.offset;
-        if(offsetWin !== 0) {
-          this.openWinPosition.top
-            ? style.bottom = `-${offsetWin}px`
-            : style.top = `-${offsetWin}px`
-        }
-        return style
-      },
+      }
     },
     methods: {
       ...mapActions({
@@ -176,7 +181,7 @@
   .layer-container_title {
     position: absolute;
     bottom: 100%;
-    right: 1rem;
+    right: 0;
     margin-bottom: 1rem;
     background-color: rgba($bg-workspace, .5);
     transform: translate3d(0,0,0);

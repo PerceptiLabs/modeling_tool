@@ -7,7 +7,7 @@
 </template>
 
 <script>
-  const xAxisMax = 14;
+  const xAxisMax = 8;
   export default {
     name: "ResourceMonitor",
     props: {
@@ -23,14 +23,20 @@
       return {
         requestsNum: 0,
         optionChart: {
+          color: ['#FE7373', '#F7D081', '#73FEBB'],
+          backgroundColor: "#222939",
           grid: { top: '10', bottom: '10', right: '10', left: '35' },
           dataZoom: [{ type: 'slider', show: false, realtime: true, startValue: 0, endValue: xAxisMax }],
           xAxis: {
-            data: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14],
+            data: [0,1,2,3,4,5,6,7,8],
             axisLabel: { show: false },
           },
           yAxis: { type: 'value', min: 0, max: 100 },
-          series: [{ type: 'line', data: [], symbolSize: 0 }]
+          series: [{ type: 'line', data: [], symbolSize: 0 },
+                   { type: 'line', data: [], symbolSize: 0 },
+                   { type: 'line', data: [], symbolSize: 0 }
+          
+          ]
         },
       }
     },
@@ -43,8 +49,14 @@
           this.optionChart.dataZoom[0].endValue = lastX;
           this.optionChart.dataZoom[0].startValue = lastX - xAxisMax;
         };
-        const nextVal = newVal[this.monitorValueKey] || 22;
-        this.optionChart.series[0].data.push(nextVal);
+        const nextVal1 = newVal['Memory'] || 22;
+        const nextVal2 = newVal['CPU'] || 22;
+        const nextVal3 = newVal['GPU'] || 22;
+
+        this.optionChart.series[0].data.push(nextVal1);
+        this.optionChart.series[1].data.push(nextVal2);
+        this.optionChart.series[2].data.push(nextVal3);
+
         this.requestsNum++;
       }
     }

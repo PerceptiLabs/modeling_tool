@@ -25,6 +25,8 @@ import StartTrainingSpinner   from '@/components/different/start-training-spinne
 import TheMiniMap             from '@/components/different/the-mini-map.vue'
 import SidebarLayers          from '@/components/workspace/sidebar/workspace-sidebar-layers.vue'
 import Notebook               from '@/components/notebooks/notebook-container.vue';
+import ResourceMonitor        from "@/components/charts/resource-monitor.vue";
+import SelectModelModal       from '@/pages/projects/components/select-model-modal.vue';
 
 export default {
   name: 'WorkspaceContent',
@@ -35,7 +37,7 @@ export default {
     GeneralResult, SelectCoreSide,
     WorkspaceBeforeImport, WorkspaceSaveNetwork, WorkspaceLoadNetwork, ExportNetwork,
     TheTesting, TheViewBox, StartTrainingSpinner,
-    TheMiniMap, FilePickerPopup, SidebarLayers, Notebook
+    TheMiniMap, FilePickerPopup, SidebarLayers, Notebook, ResourceMonitor, SelectModelModal
   },
   mounted() {
     window.addEventListener('resize', this.onResize);
@@ -64,7 +66,15 @@ export default {
         isLeftActive: false,
         isRightActive: false,
       },
-      mouseDownIntervalTimer: null
+      mouseDownIntervalTimer: null,
+      showResourceView: 0,
+      currentData: {
+        Progress: 0,
+        Memory: 0,
+        CPU: 0
+      },
+      buffer: {},
+      isCreateModelModalOpen: false
     }
   },
   computed: {
@@ -74,12 +84,14 @@ export default {
       testIsOpen:         'mod_workspace/GET_testIsOpen',
       statusNetworkCore:  'mod_workspace/GET_networkCoreStatus',
       statisticsIsOpen:   'mod_workspace/GET_statisticsIsOpen',
+      hasUnsavedChanges:  'mod_workspace-changes/get_hasUnsavedChanges',         
 
       isTutorialMode:     'mod_tutorials/getIstutorialMode',
       isNotebookMode:     'mod_notebook/getNotebookMode',
       tutorialActiveStep: 'mod_tutorials/getActiveStep',
     }),
     ...mapState({
+      showNewModelPopup:          state => state.globalView.globalPopup.showNewModelPopup,
       workspace:                  state => state.mod_workspace.workspaceContent,
       indexCurrentNetwork:        state => state.mod_workspace.currentNetwork,
       dragBoxContainer:           state => state.mod_workspace.dragBoxContainer,
@@ -92,11 +104,16 @@ export default {
       showCoreSide:               state => state.globalView.globalPopup.showCoreSideSettings,
       showFilePickerPopup:        state => state.globalView.globalPopup.showFilePickerPopup,
       showLoadSettingPopup:       state => state.globalView.globalPopup.showLoadSettingPopup,
+      showSaveNetworkPopup:       state => state.globalView.globalPopup.showSaveNetworkPopup,
       showExportNetworkPopup:     state => state.globalView.globalPopup.showExportNetworkPopup,
     }),
 
     hasStatistics() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkStatistics;
+    },
+    isStatistiOrTestOpened() {
+      const currentItemNetwork = this.$store.getters['mod_workspace/GET_currentNetwork'];
+      return currentItemNetwork.networkMeta.openStatistics === true || currentItemNetwork.networkMeta.openTest === true;
     },
     networkMode() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.netMode
@@ -126,7 +143,17 @@ export default {
 
       return 'WorkspaceToolbar';
       
-    }
+    },
+
+    statusNetworkInfo() {
+      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.coreStatus
+    },
+    doShowCharts() {
+      return this.$store.getters['mod_workspace/GET_networkShowCharts']
+    },
+    isNeedWait() {
+      return this.$store.getters['mod_workspace/GET_networkWaitGlobalEvent']
+    },
   },
   watch: {
     statusNetworkCore(newStatus) {
@@ -180,12 +207,21 @@ export default {
         this.checkTabWidths();
         clearTimeout(timer);
       }, 300); // transitionDuration of .page_sidebar element
+    },
+    statusNetworkInfo(newVal) {
+      this.isNeedWait
+        ? this.buffer = newVal
+        : this.currentData = newVal
+    },
+    doShowCharts() {
+      this.isNeedWait
+        ? this.currentData = this.buffer
+        : null
     }
   },
   methods: {
     ...mapMutations({
       set_showTrainingSpinner:  'mod_workspace/SET_showStartTrainingSpinner',
-      set_currentNetwork:       'mod_workspace/SET_currentNetwork',
       set_cursorPosition:       'mod_workspace/SET_CopyCursorPosition',
       set_cursorInsideWorkspace:'mod_workspace/SET_cursorInsideWorkspace',
       set_hideSidebar:          'globalView/SET_hideSidebar',
@@ -205,7 +241,11 @@ export default {
       tutorialPointActivate:'mod_tutorials/pointActivate',
       offMainTutorial:      'mod_tutorials/offTutorial',
       pushSnapshotToHistory:'mod_workspace-history/PUSH_newSnapshot',
+      popupNewModel:        'globalView/SET_newModelPopup',
     }),
+    onCloseSelectModelModal() {
+      this.popupNewModel(false);
+    },
     startCursorListener (event) {
       const borderline = 15;
       const { x: oldX, y: oldY } = this.cursorPosition;
@@ -226,6 +266,13 @@ export default {
       } else {
         if(!this.isCursorInsideWorkspace)
         this.set_cursorInsideWorkspace(true);
+      }
+    },
+    setResourceView(value) {
+      if (this.showResourceView == 1 && value == 1) {
+        this.showResourceView = 0;
+      } else {
+        this.showResourceView = value;
       }
     },
     toggleSidebar() {
@@ -260,16 +307,30 @@ export default {
           });
       }
       else {
-        this.delete_network(index);
+        let hasUnsavedChanges = this.hasUnsavedChanges(this.workspace[index].networkID);
+        if (hasUnsavedChanges) {
+          this.popupConfirm(
+            {
+              text: `Network ${this.workspace[index].networkName} has unsaved changes`,
+              cancel: () => { return; },
+              ok: () => {
+                this.delete_network(index);
+              }
+            });
+        } else {
+          this.delete_network(index);
+        }
       }
     },
     openStatistics(i) {
+      this.$store.commit('mod_workspace/setViewType', 'statistic');
       this.setTabNetwork(i);
       this.$nextTick(()=>{
         this.set_openStatistics(true);
       })
     },
     openTest(i) {
+      this.$store.commit('mod_workspace/setViewType', 'test');
       this.setTabNetwork(i);
       this.$nextTick(()=>{
         this.set_openTest(true);
@@ -368,58 +429,58 @@ export default {
     },
     dragBoxHorizontalTopBorder() {
       const { width, left, top,  isVisible } = this.dragBoxContainer;
-      const scaleCoefficient = this.scaleNet / 100;
+      
       return {
         zIndex: 2,
         display: isVisible ? 'block' : 'none',
-        width: width * scaleCoefficient + 'px',
+        width: width + 'px',
         height: 1 + 'px',
         position: 'absolute',
-        top: top * scaleCoefficient  + 'px',
-        left: left * scaleCoefficient + 'px',
+        top: top + 'px',
+        left: left + 'px',
         borderTop: '1px dashed #22DDE5'
       }
     },
     dragBoxHorizontalBottomBorder() {
       const { width, height, left, top,  isVisible } = this.dragBoxContainer;
-      const scaleCoefficient = this.scaleNet / 100;
+
       return {
         zIndex: 2,
         display: isVisible ? 'block' : 'none',
-        width: width * scaleCoefficient + 'px',
+        width: width + 'px',
         height: 1 + 'px',
         position: 'absolute',
-        top: (top + height) * scaleCoefficient  + 'px',
-        left: left * scaleCoefficient + 'px',
+        top: (top + height)  + 'px',
+        left: left + 'px',
         borderTop: '1px dashed #22DDE5'
       }
     },
 
     dragBoxVerticalLeftBorder() {
       const { width, height, left, top,  isVisible } = this.dragBoxContainer;
-      const scaleCoefficient = this.scaleNet / 100;
+
       return {
         zIndex: 2,
         display: isVisible ? 'block' : 'none',
         width: 1 + 'px',
-        height: height * scaleCoefficient + 'px',
+        height: height + 'px',
         position: 'absolute',
-        top: top * scaleCoefficient  + 'px',
-        left: left * scaleCoefficient + 'px',
+        top: top + 'px',
+        left: left + 'px',
         borderLeft: '1px dashed #22DDE5'
       }
     },
     dragBoxVerticalRightBorder() {
       const { width, height, left, top,  isVisible } = this.dragBoxContainer;
-      const scaleCoefficient = this.scaleNet / 100;
+
       return {
         zIndex: 2,
         display: isVisible ? 'block' : 'none',
         width: 1 + 'px',
-        height: height * scaleCoefficient + 'px',
+        height: height + 'px',
         position: 'absolute',
-        top: top * scaleCoefficient  + 'px',
-        left: (left + width) * scaleCoefficient + 'px',
+        top: top + 'px',
+        left: (left + width) + 'px',
         borderRight: '1px dashed #22DDE5'
       }
     },

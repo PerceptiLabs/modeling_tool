@@ -1,3 +1,5 @@
+{% from 'tf1x_utils.j2' import session, session_distributed %}
+
 {% macro run_normal(graph, layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, batch_size, export_directory) %}
         self._status = 'initializing'
         output_layer_id = '{{output_layer}}'
@@ -61,10 +63,20 @@
         dataset_tst = dataset_tst.batch(1)                
 
         # Make initializers
+        with tf.variable_scope('{{layer_name}}/train', reuse=tf.AUTO_REUSE):
+            is_training = tf.get_variable(name="is_train", dtype=tf.bool, initializer=False)
+
         iterator = tf.data.Iterator.from_structure(dataset_trn.output_types, dataset_trn.output_shapes)
+
         trn_init = iterator.make_initializer(dataset_trn)
+        trn_init = tf.group([trn_init, is_training.assign(True if self._batch_size > 1 else False)])
+        
         val_init = iterator.make_initializer(dataset_val)
+        val_init = tf.group([val_init, is_training.assign(False)])
+
         tst_init = iterator.make_initializer(dataset_tst)        
+        tst_init = tf.group([tst_init, is_training.assign(False)])
+
         input_tensor, label_tensor = iterator.get_next()
 
         # Build the TensorFlow graph # TODO: perhaps this part can be delegated to the graph?
@@ -79,6 +91,8 @@
                 args = []
                 for input_node in graph.get_input_nodes(node):
                     args.append(layer_output_tensors[input_node.layer_id])
+                    args.append(is_training)
+
                     y = node.layer_instance(*args)
                 layer_output_tensors[node.layer_id] = y
 
@@ -89,14 +103,39 @@
         output_tensor = layer_output_tensors[output_layer_id]
         target_tensor = layer_output_tensors[target_layer_id]
         
+        update_ops = tf.compat.v1.get_collection(tf.GraphKeys.UPDATE_OPS)
+        
         # Create an exportable version of the TensorFlow graph
         self._input_tensor_export = tf.placeholder(shape=dataset_trn.output_shapes[0], dtype=dataset_trn.output_types[0])
         self._output_tensor_export = build_graph(
             self._input_tensor_export,
             tf.placeholder(shape=dataset_trn.output_shapes[1], dtype=dataset_trn.output_types[1])
         )[output_layer_id]
+        
+        # Defining loss function
+        {% filter remove_lspaces(8) %}
+            {% if loss_function == 'Cross_entropy' %}
+                n_classes = output_tensor.get_shape().as_list()[-1]
+                flat_pred = tf.reshape(output_tensor, [-1, n_classes])
+                flat_labels = tf.reshape(target_tensor, [-1, n_classes])
+                loss_tensor = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=flat_labels, logits=flat_pred))
+            {% elif loss_function == 'Quadratic' %}
+                loss_tensor = tf.reduce_mean(tf.square(output_tensor - target_tensor))
+            {% elif loss_function == 'W_cross_entropy' %}
+                n_classes = output_tensor.get_shape().as_list()[-1]
+                flat_pred = tf.reshape(output_tensor, [-1, n_classes])
+                flat_labels = tf.reshape(target_tensor, [-1, n_classes])
+                loss_tensor =  tf.reduce_mean(tf.nn.weighted_cross_entropy_with_logits(flat_labels, flat_pred, {{class_weights}}))
+            {% elif loss_function == 'Dice' %}
+                eps = 1e-5
+                intersection = tf.reduce_sum(tf.multiply(output_tensor, target_tensor))
+                union = eps + tf.reduce_sum(tf.multiply(output_tensor, output_tensor)) + tf.reduce_sum(tf.multiply(target_tensor, target_tensor))
+                cost_tmp = (2 * intersection/union)
+                cost_clip = tf.clip_by_value(cost_tmp, eps, 1.0-eps)
+                loss_tensor = 1 - cost_clip
+            {% endif %}
+        {% endfilter %}
 
-        loss_tensor = tf.reduce_mean(tf.square(output_tensor - target_tensor))
         correct_predictions = tf.equal(tf.argmax(output_tensor, -1), tf.argmax(target_tensor, -1))
         accuracy_tensor = tf.reduce_mean(tf.cast(correct_predictions, tf.float32))
 
@@ -150,13 +189,14 @@
         # grads = tf.gradients(loss_tensor, trainable_vars)
         # update_weights = optimizer.apply_gradients(zip(grads, trainable_vars), global_step=global_step)        
         
-        grads_and_vars = optimizer.compute_gradients(loss_tensor)
-        update_weights = optimizer.apply_gradients(grads_and_vars, global_step=global_step)
-        
-        config = tf.ConfigProto()
-        config.gpu_options.allow_growth = True
-        sess = tf.Session(config=config)
+        update_weights = optimizer.minimize(loss_tensor, global_step=global_step)
+        update_weights = tf.group([update_weights, update_ops])
+
+
+        sess = None
+        {{session(sess, use_gpu=True) | indent(width=8)}}        
         self._sess = sess
+        
 
         trackable_variables = {}
         trackable_variables.update({x.name: x for x in tf.trainable_variables() if isinstance(x, Trackable)})
@@ -278,6 +318,7 @@
         self_layer_name = '{{layer_name}}' # this is passed as input
         output_layer_id = '{{output_layer}}'
         target_layer_id = '{{target_layer}}'
+        loss_func = '{{loss_function}}'
         input_data_nodes = graph.get_direct_data_nodes(output_layer_id)
         label_data_nodes = graph.get_direct_data_nodes(target_layer_id)
 
@@ -290,28 +331,15 @@
         self._val_sz_tot = input_data_node.layer.size_validation
         self._tst_sz_tot = input_data_node.layer.size_testing
 
-
+        n_devices = None
         if {{use_cpus}}:
-            # Set Devices and Distribution Strategy
-            n_devices = 4
-            config = tf.ConfigProto(device_count={"CPU": n_devices, "GPU": 0},
-                                gpu_options={"allow_growth": True},
-                                inter_op_parallelism_threads=n_devices,
-                                intra_op_parallelism_threads=1)
-
-            sess = tf.Session(config=config)
-            tf.keras.backend.set_session(sess) # since we use keras metrics
+            {{session_distributed(sess, n_devices, use_gpu=False) | indent(width=8)}}
             self._sess = sess
 
             strategy = tf.distribute.MirroredStrategy(devices=[f'/CPU:{i}' for i in range(n_devices)]) # TODO: not needed under real circumstances, should default to all.
         else:
             # Set Devices and Distribution Strategy
-            n_devices = len(GPUtil.getGPUs())
-
-            config = tf.ConfigProto(gpu_options={"allow_growth": True}, log_device_placement=True, allow_soft_placement=True)
-
-            sess = tf.Session(config=config)
-            tf.keras.backend.set_session(sess) # since we use keras metrics
+            {{session_distributed(sess, n_devices, use_gpu=True) | indent(width=8)}}
             self._sess = sess
 
             strategy = tf.distribute.MirroredStrategy(devices=[f'/GPU:{i}' for i in range(n_devices)]) # TODO: not needed under real circumstances, should default to all.
@@ -476,7 +504,23 @@
                 output_tensor = layer_output_tensors[output_layer_id]
                 target_tensor = layer_output_tensors[target_layer_id]
 
-                loss_tensor = tf.reduce_sum(tf.square(output_tensor - target_tensor)) / GLOBAL_BATCH_SIZE
+                # Defining loss function
+                {% filter remove_lspaces(8) %}
+                    {% if loss_function == 'Cross_entropy' %}
+                        n_classes = output_tensor.get_shape().as_list()[-1]
+                        flat_pred = tf.reshape(output_tensor, [-1, n_classes])
+                        flat_labels = tf.reshape(target_tensor, [-1, n_classes])
+                        loss_tensor = tf.reduce_sum(tf.nn.softmax_cross_entropy_with_logits(labels=flat_labels, logits=flat_pred)) / GLOBAL_BATCH_SIZE
+                    {% elif loss_function == 'Quadratic' %}
+                        loss_tensor = tf.reduce_sum(tf.square(output_tensor - target_tensor)) / GLOBAL_BATCH_SIZE
+                    {% elif loss_function == 'W_cross_entropy' %}
+                        n_classes = output_tensor.get_shape().as_list()[-1]
+                        flat_pred = tf.reshape(output_tensor, [-1, n_classes])
+                        flat_labels = tf.reshape(target_tensor, [-1, n_classes])
+                        loss_tensor =  tf.reduce_sum(tf.nn.weighted_cross_entropy_with_logits(flat_labels, flat_pred, {{class_weights}})) / GLOBAL_BATCH_SIZE
+                    {% endif %}
+                {% endfilter %}
+
                 correct_predictions = tf.equal(tf.argmax(output_tensor,-1), tf.argmax(target_tensor,-1))
                 accuracy_tensor = tf.reduce_mean(tf.cast(correct_predictions, tf.float32))
 
@@ -532,7 +576,23 @@
                 output_tensor = layer_output_tensors[output_layer_id]
                 target_tensor = layer_output_tensors[target_layer_id]
 
-                loss_tensor = tf.reduce_sum(tf.square(output_tensor - target_tensor)) / GLOBAL_BATCH_SIZE
+                # Defining loss function
+                {% filter remove_lspaces(8) %}
+                    {% if loss_function == 'Cross_entropy' %}
+                        n_classes = output_tensor.get_shape().as_list()[-1]
+                        flat_pred = tf.reshape(output_tensor, [-1, n_classes])
+                        flat_labels = tf.reshape(target_tensor, [-1, n_classes])
+                        loss_tensor = tf.reduce_sum(tf.nn.softmax_cross_entropy_with_logits(labels=flat_labels, logits=flat_pred)) / GLOBAL_BATCH_SIZE
+                    {% elif loss_function == 'Quadratic' %}
+                        loss_tensor = tf.reduce_sum(tf.square(output_tensor - target_tensor)) / GLOBAL_BATCH_SIZE
+                    {% elif loss_function == 'W_cross_entropy' %}
+                        n_classes = output_tensor.get_shape().as_list()[-1]
+                        flat_pred = tf.reshape(output_tensor, [-1, n_classes])
+                        flat_labels = tf.reshape(target_tensor, [-1, n_classes])
+                        loss_tensor =  tf.reduce_sum(tf.nn.weighted_cross_entropy_with_logits(flat_labels, flat_pred, {{class_weights}})) / GLOBAL_BATCH_SIZE
+                    {% endif %}
+                {% endfilter %}
+                
                 correct_predictions = tf.equal(tf.argmax(output_tensor,-1), tf.argmax(target_tensor,-1))
                 accuracy_tensor = tf.reduce_mean(tf.cast(correct_predictions, tf.float32))
 

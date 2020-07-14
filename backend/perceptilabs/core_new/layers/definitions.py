@@ -6,9 +6,10 @@ import os
 from perceptilabs.core_new.layers import *
 from perceptilabs.core_new.layers.utils import *
 from perceptilabs.core_new.graph.utils import sanitize_layer_name
+from perceptilabs.logconf import APPLICATION_LOGGER
+from perceptilabs.core_new.utils import get_correct_path
 
-
-log = logging.getLogger(__name__)
+logger = logging.getLogger(APPLICATION_LOGGER)
 
 
 TEMPLATES_DIRECTORY = 'core_new/layers/templates/' # Relative to the package root directory
@@ -53,7 +54,7 @@ def resolve_checkpoint_path(specs):
             new_ckpt_path = ckpt_path.split('//')[1]
         else:
             new_ckpt_path = os.path.sep+ckpt_path.split(2*os.path.sep)[1] # Sometimes frontend repeats the directory path. /<dir-path>//<dir-path>/model.ckpt-1
-        log.warning(
+        logger.warning(
             f"Splitting malformed checkpoint path: '{ckpt_path}'. "
             f"New path: '{new_ckpt_path}'"
         )
@@ -77,12 +78,11 @@ def resolve_custom_code(specs):
 
 def update_sources_with_file_exts(specs):
     sources = specs['Properties']['accessProperties']['Sources']
-    exts = []
     for source in sources:
         if source['type'] == 'file':
-            ext = os.path.splitext(source['path'])[1]
+            ext = os.path.splitext(get_correct_path(source['path']))[1]
         elif source['type'] == 'directory':
-            path = source['path']
+            path = get_correct_path(source['path'])
             src_exts = [os.path.splitext(x)[1] for x in os.listdir(path)]
             ext = max(set(src_exts), key=src_exts.count) # Most frequent
         else:
@@ -129,13 +129,16 @@ DEFINITION_TABLE = {
         import_statements=[
             'from perceptilabs.core_new.layers.base import DataSupervised',
             'from typing import Dict, Generator',
-            'import multiprocessing', 
+            'import multiprocessing',
+            'import dask',
+            'import dask.array as da', 
             'import numpy as np',
-            'import skimage.io',            
+            'import skimage',
+            'from skimage import io',            
             'import pandas as pd',
             'import dask.dataframe as dd',                                    
             'from perceptilabs.core_new.utils import Picklable',
-            'from perceptilabs.core_new.serialization import can_serialize, serialize'                    
+            'from perceptilabs.core_new.serialization import can_serialize, serialize'
         ]
     ),
     'DataRandom': LayerDef(
@@ -149,8 +152,9 @@ DEFINITION_TABLE = {
             'stddev': lambda specs: specs['Properties']['stddev'],
             'minval': lambda specs: specs['Properties']['min'],
             'maxval': lambda specs: specs['Properties']['max'],
-            # 'batch_size': lambda specs: specs['Properties']['accessProperties']['Batch_size'],
-            'seed': 0,
+            'seed_training': lambda specs: specs['Properties'].get('Training_Seed', None),
+            'seed_testing': lambda specs: specs['Properties'].get('Testing_Seed', 1234),
+            'seed_validation': lambda specs: specs['Properties'].get('Validation_Seed', 5678)
         },
         import_statements=[
             'from perceptilabs.core_new.layers.base import DataRandom',
@@ -171,6 +175,7 @@ DEFINITION_TABLE = {
         },
         import_statements=[
             'import tensorflow as tf',
+            'import numpy as np',
             'from typing import Dict',
             'from perceptilabs.core_new.utils import Picklable',
             'from perceptilabs.core_new.layers.base import Tf1xLayer',
@@ -205,6 +210,7 @@ DEFINITION_TABLE = {
         },
         import_statements=[
             'import tensorflow as tf',
+            'import numpy as np',
             'from typing import Dict',
             'from perceptilabs.core_new.utils import Picklable',
             'from perceptilabs.core_new.layers.base import Tf1xLayer',
@@ -218,6 +224,7 @@ DEFINITION_TABLE = {
         {},
         import_statements=[
             'import tensorflow as tf',
+            'import numpy as np',
             'from typing import Dict',
             'from perceptilabs.core_new.utils import Picklable',
             'from perceptilabs.core_new.layers.base import Tf1xLayer',
@@ -234,6 +241,7 @@ DEFINITION_TABLE = {
         },
         import_statements=[
             'import tensorflow as tf',
+            'import numpy as np',
             'from typing import Dict',
             'from perceptilabs.core_new.utils import Picklable',
             'from perceptilabs.core_new.layers.base import Tf1xLayer',
@@ -266,6 +274,7 @@ DEFINITION_TABLE = {
         },
         import_statements=[
             'import tensorflow as tf',
+            'import numpy as np',
             'from typing import Dict',
             'from perceptilabs.core_new.utils import Picklable',
             'from perceptilabs.core_new.layers.base import Tf1xLayer',
@@ -280,7 +289,8 @@ DEFINITION_TABLE = {
             'n_neurons': lambda specs: specs['Properties']['Neurons'],
             'activation': resolve_tf1x_activation_name,
             'dropout': lambda specs: specs['Properties']['Dropout'],
-            'keep_prob': lambda specs: specs['Properties']['Keep_prob']
+            'keep_prob': lambda specs: specs['Properties']['Keep_prob'],
+            'batch_norm': lambda specs: specs['Properties'].get('Batch_norm', False)
         },
         import_statements=[
             'import tensorflow as tf',
@@ -308,7 +318,8 @@ DEFINITION_TABLE = {
             'pooling': lambda specs: specs['Properties']['Pooling'],
             'pool_padding': lambda specs: specs['Properties']['Pool_padding'],
             'pool_area': lambda specs: specs['Properties']['Pool_area'],
-            'pool_stride': lambda specs: specs['Properties']['Pool_stride']        
+            'pool_stride': lambda specs: specs['Properties']['Pool_stride'],
+            'batch_norm': lambda specs: specs['Properties'].get('Batch_norm', False)
         },
         import_statements=[
             'import tensorflow as tf',
@@ -324,14 +335,15 @@ DEFINITION_TABLE = {
         'tf1x.j2',
         'layer_tf1x_deconv',
         {
-            'conv_dim': lambda specs: specs['Properties']['Deconv_dim'],
+            'deconv_dim': lambda specs: specs['Properties']['Deconv_dim'],
             'patch_size': lambda specs: specs['Properties']['Patch_size'],
             'stride': lambda specs: specs['Properties']['Stride'],
             'feature_maps': lambda specs: specs['Properties']['Feature_maps'],
             'padding': lambda specs: specs['Properties']['Padding'],
             'activation': resolve_tf1x_activation_name,
             'dropout': lambda specs: specs['Properties']['Dropout'],
-            'keep_prob': lambda specs: specs['Properties']['Keep_prob']
+            'keep_prob': lambda specs: specs['Properties']['Keep_prob'],
+            'batch_norm': lambda specs: specs['Properties']('Batch_norm', False)
         },
         import_statements=[
             'import tensorflow as tf',
@@ -350,8 +362,9 @@ DEFINITION_TABLE = {
             'neurons': lambda specs: specs['Properties']['Neurons'],
             'version': lambda specs: specs['Properties']['Version'],
             'time_steps': lambda specs: specs['Properties']['Time_steps'],
-            'return_sequences': lambda specs: specs['Properties']['Return_sequence'],
+            'return_sequence': lambda specs: specs['Properties']['Return_sequence'],
             'dropout': lambda specs: specs['Properties']['Dropout'],
+            'activation': resolve_tf1x_activation_name,
             'keep_prob': lambda specs: specs['Properties']['Keep_prob']
         },
         import_statements=[
@@ -383,7 +396,7 @@ DEFINITION_TABLE = {
             'beta2': lambda specs: specs['Properties']['Beta_2'],
             'distributed': lambda specs: specs['Properties'].get('Distributed', False),
             'export_directory': resolve_checkpoint_path,
-            'use_cpus': lambda specs: specs['Properties'].get('Use_CPUs', True),            
+            'use_cpus': lambda specs: specs['Properties'].get('Use_CPUs', True)            
         },
         import_statements=[
             'import tensorflow as tf',
@@ -421,6 +434,8 @@ DEFINITION_TABLE = {
             'distributed': lambda specs: specs['Properties'].get('Distributed', False),
             'export_directory': resolve_checkpoint_path,
             'batch_size': lambda specs: specs['Properties']['batch_size'],
+            'lambdaclass': lambda specs: specs['Properties']['lambda_class'],
+            'lambdanoobj': lambda specs: specs['Properties']['lambda_noobj']
         },
         import_statements=[
             'import tensorflow as tf',

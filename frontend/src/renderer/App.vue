@@ -40,7 +40,7 @@
   import UpdatePopup            from '@/components/global-popups/update-popup/update-popup.vue'
   import TheInfoPopup           from "@/components/global-popups/the-info-popup.vue";
   import ConfirmPopup           from "@/components/global-popups/confirm-popup.vue";
-  import ModalPagesEngine       from '@/components/modal-pages-engine';
+  import ModalPagesEngine       from '@/components/modal-pages-engine.vue';
   import { MODAL_PAGE_PROJECT } from '@/core/constants.js';
 
   export default {
@@ -55,13 +55,27 @@
       window.addEventListener('offline', this.updateOnlineStatus);
       this.trackerInit();
       this.readUserInfo();
+      
+      // from webstorage
+      this.loadWorkspacesFromWebStorage()
+        .then(_ => {
+          this.$store.commit('mod_workspace/get_lastActiveTabFromLocalStorage');
+        });
+        
+      this.$store.commit('mod_project/setIsDefaultProjectMode');
     },
-    mounted() {
-      if(localStorage.hasOwnProperty('targetProject')) {
+    mounted() {      
+      if (this.isDefaultProjectMode) { 
+        // in the free version, the user is locked to a single project
+        this.getDefaultModeProject();
+      }
+      else if(localStorage.hasOwnProperty('targetProject')) {
         const targetProjectId = parseInt(localStorage.getItem('targetProject'));
-        this.loadProjectFromLocalStorage(targetProjectId)
-        // get all project and set current one in page title
-        this.getProjects()
+        this.$store.commit('mod_workspace-changes/get_workspaceChangesInLocalStorage')
+
+        // this.loadProjectFromLocalStorage(targetProjectId)
+        
+        this.getProjects();
           // .then(({data: { results: projects }}) => {
           //   if(targetProjectId) {
           //     const targetProject = projects.filter(project => project.project_id === targetProjectId)[0];
@@ -69,10 +83,12 @@
           //   }
           // })
       } else {
-        if(localStorage.hasOwnProperty('currentUser'))
-        this.setActivePageAction(MODAL_PAGE_PROJECT);
+        this.getProjects();
+        if(localStorage.hasOwnProperty('currentUser')) {
+          this.setActivePageAction(MODAL_PAGE_PROJECT);
+        }
       }
-      
+
       // @todo fetch models for project;
       if(isWeb()) {
         this.updateOnlineStatus();
@@ -115,6 +131,7 @@
       this.checkLocalToken();
       this.$store.dispatch('mod_api/API_runServer', null, {root: true});
       // this.$store.dispatch('mod_workspace/GET_workspacesFromLocalStorage');
+            
       Analytics.hubSpot.identifyUser(this.userEmail);
       this.$nextTick(() =>{
       //   if(this.userId === 'Guest') {
@@ -139,7 +156,8 @@
     },
     computed: {
       ...mapGetters({
-        user: 'mod_user/GET_userProfile'
+        user:                   'mod_user/GET_userProfile',
+        isDefaultProjectMode:   'mod_project/GET_isDefaultProjectMode'
       }),
       platform() {
         return this.$store.state.globalView.platform
@@ -172,7 +190,7 @@
       showMenuBar() {
         const GET_userIsLogin = this.$store.getters['mod_user/GET_userIsLogin']
 
-        if (GET_userIsLogin && ['home', 'app', 'projects', 'settings'].includes(this.$route.name)) { 
+        if (GET_userIsLogin && ['home', 'app', 'projects', 'main-page', 'settings'].includes(this.$route.name)) { 
           return true; 
         }
 
@@ -208,29 +226,38 @@
         SET_showPopupUpdates: 'mod_autoUpdate/SET_showPopupUpdates',
         SET_updateStatus:     'mod_autoUpdate/SET_updateStatus',
         SET_updateProgress:   'mod_autoUpdate/SET_updateProgress',
-        loadProjectFromLocalStorage: 'mod_workspace/get_workspacesFromLocalStorage',
+        // loadProjectFromLocalStorage: 'mod_workspace/get_workspacesFromLocalStorage',
         // setPageTitleMutation: 'globalView/setPageTitleMutation',
       }),
       ...mapActions({
-        openErrorPopup:   'globalView/GP_infoPopup',
-        SET_onlineStatus: 'globalView/SET_onlineStatus',
+        openErrorPopup:         'globalView/GP_infoPopup',
+        SET_onlineStatus:       'globalView/SET_onlineStatus',
 
-        trackerInit:      'mod_tracker/TRACK_initMixPanel',
-        trackerInitUser:  'mod_tracker/TRACK_initMixPanelUser',
-        trackerCreateUser:'mod_tracker/TRACK_createUser',
-        trackerUpdateUser:'mod_tracker/TRACK_updateUser',
-        trackerAppStart:  'mod_tracker/EVENT_appStart',
+        trackerInit:            'mod_tracker/TRACK_initMixPanel',
+        trackerInitUser:        'mod_tracker/TRACK_initMixPanelUser',
+        trackerCreateUser:      'mod_tracker/TRACK_createUser',
+        trackerUpdateUser:      'mod_tracker/TRACK_updateUser',
+        trackerAppStart:        'mod_tracker/EVENT_appStart',
 
-        eventAppClose:    'mod_events/EVENT_appClose',
-        eventAppMinimize: 'mod_events/EVENT_appMinimize',
-        eventAppMaximize: 'mod_events/EVENT_appMaximize',
+        eventAppClose:          'mod_events/EVENT_appClose',
+        eventAppMinimize:       'mod_events/EVENT_appMinimize',
+        eventAppMaximize:       'mod_events/EVENT_appMaximize',
 
-        setUserToken:     'mod_user/SET_userToken',
-        readUserInfo:     'mod_user/GET_LOCAL_userInfo',
+        setUserToken:           'mod_user/SET_userToken',
+        readUserInfo:           'mod_user/GET_LOCAL_userInfo',
 
-        setActivePageAction: 'modal_pages/setActivePageAction',
-        getProjects : 'mod_project/getProjects',
-        cloud_userGetProfile:     'mod_apiCloud/CloudAPI_userGetProfile',
+        setActivePageAction:    'modal_pages/setActivePageAction',
+
+        getProjects :           'mod_project/getProjects',
+        createProject:          'mod_project/createProject',
+        getDefaultModeProject:  'mod_project/getDefaultModeProject',
+        
+        createFolder:           'mod_api/API_createFolder',
+
+        cloud_userGetProfile:   'mod_apiCloud/CloudAPI_userGetProfile',
+        
+        loadWorkspacesFromWebStorage:   'mod_webstorage/loadWorkspaces',
+
       }),
       updateOnlineStatus() {
         this.SET_onlineStatus(navigator.onLine);
@@ -273,12 +300,12 @@
         let localUserToken = JSON.parse(localStorage.getItem('currentUser'));
         if(localUserToken) {
           this.setUserToken(localUserToken);
-          if(['home', 'login', 'register'].includes(this.$router.history.current.name)) {
+          if(['main-page', 'settings'].includes(this.$router.history.current.name)) {
             this.$router.replace({name: 'projects'});
           }
         } else {
-          this.$router.push({name: 'register'}).catch(err => {});
-        }
+          this.$router.push({name: 'main-page'}).catch(err => {});
+        }    
       },
       disableHotKeys(event) {
         const isHotkey = isOsMacintosh() ? event.metaKey : event.ctrlKey;

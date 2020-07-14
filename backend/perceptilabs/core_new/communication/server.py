@@ -4,6 +4,7 @@ import json
 import time
 import queue
 import ctypes
+import psutil
 import urllib
 import logging
 import requests
@@ -13,14 +14,18 @@ from queue import Queue
 
 
 
-from perceptilabs.core_new.utils import YieldLevel
+from perceptilabs.logconf import APPLICATION_LOGGER
+from perceptilabs.core_new.utils import YieldLevel, TracebackFrame
 from perceptilabs.core_new.serialization import serialize, can_serialize, deserialize
 from perceptilabs.core_new.communication.state import State, StateTransitionError
 from perceptilabs.core_new.communication.task_executor import TaskExecutor, TaskError, TaskTimeout
 
 
-log = logging.getLogger(__name__)
-        
+logger = logging.getLogger(APPLICATION_LOGGER)
+
+
+
+
 
 class TrainingServer:
     def __init__(self, producer_generic, producer_snapshots, consumer, graph, snapshot_builder=None, userland_timeout=15, ping_interval=3, max_time_run=None):
@@ -39,12 +44,12 @@ class TrainingServer:
         update_client = self.run_stepwise(auto_start=auto_start)
         for counter, _ in enumerate(update_client):
             if counter % 100 == 0:
-                log.debug(f"Running step {counter}")
+                logger.debug(f"Running step {counter}")
             if self._closing:
-                log.info(f"Server closing. Leaving run loop {counter}")
+                logger.info(f"Server closing. Leaving run loop {counter}")
                 break
             if self._max_time_run is not None and time.perf_counter() - t0 >= self._max_time_run:
-                log.info(f"Exceeded run method max time. Leaving run loop {counter}")
+                logger.info(f"Exceeded run method max time. Leaving run loop {counter}")
                 break
 
     def run_stepwise(self, auto_start=False):
@@ -52,11 +57,7 @@ class TrainingServer:
         self._producer_generic.start()
         self._producer_snapshots.start()
         
-        def on_transition(new_state):
-            self._send_key_value('state', new_state)
-            log.info(f"Transitioned to state '{new_state}'")
-            
-        state = State(on_transition=on_transition)
+        state = State(on_transition=self._on_state_transition)
         
         training_iterator = self._graph.run()
         training_sentinel = object()
@@ -73,40 +74,75 @@ class TrainingServer:
         if auto_start:
             state.transition(State.TRAINING_RUNNING)            
         
-        log.info("Entering main-loop [TrainingServer]")
-        t1 = t2 = 0
+        logger.info("Entering main-loop [TrainingServer]")
         counter = 0
+        t_start = time.perf_counter()
+        sent_training_ended = False
+        session_info = collections.defaultdict(list)
+        
         while state.value not in State.exit_states:
+            initial_state = state.value
+            t_training_step = t_send_snapshot = t_process_messages = 0 # Defaults
+            
             t0 = time.perf_counter()
             new_state = self._process_messages(state, task_executor)
-            t1 = time.perf_counter()            
-            state.transition(new_state)
-            t2 = time.perf_counter()            
+            t_process_messages = time.perf_counter() - t0
             
+            state.transition(new_state)
             if state.value in State.running_states:
-                t3 = time.perf_counter()
+                new_state = None
+                try:
+                    t = time.perf_counter()
+                    training_step_result = training_step()
+                except Exception as e:
+                    t_training_step = time.perf_counter() - t
+                    logger.info("Training step raised an error: " + repr(e))            
+                    new_state = State.TRAINING_FAILED
+                    self._send_userland_error(e)
+                else: 
+                    t_training_step = time.perf_counter() - t
+                    if training_step_result is training_sentinel:
+                        new_state = State.TRAINING_COMPLETED
+                    elif training_step_result is YieldLevel.SNAPSHOT:
+                        t = time.perf_counter()
+                        self._send_graph(self._graph)
+                        t_send_snapshot = time.perf_counter() - t
 
-                # Advance training by a single step
-                new_state = self._advance_training(
-                    training_step,
-                    training_sentinel,
-                    task_executor
-                )
                 t4 = time.perf_counter()
                 state.transition(new_state)
                 
             elif state.value in State.idle_states:                
                 if counter % 5 == 0:
-                    log.info(f"In idle state '{state.value}'")                                
+                    #logger.info(f"In idle state '{state.value}'")                                
                     self._send_key_value('state', state.value)
                 time.sleep(1.0)
                 
             elif state.value not in State.exit_states:
                 raise RuntimeError(f"Unexpected state: {state}")
 
+            virtual_memory = psutil.virtual_memory()
+            swap_memory = psutil.swap_memory()
+            t_cycle = time.perf_counter() - t0
 
-            t5 = time.perf_counter()
-            #print(t5-t0, t5-t4, t4-t3, t3-t2, t2-t1, t1-t0)
+
+            n_decimals = 6 #microseconds precision         
+            session_info['cycle_state_initial'].append(initial_state)
+            session_info['cycle_state_final'].append(state.value)
+            session_info['cycle_time_process_messages'].append(round(t_process_messages, n_decimals))
+            session_info['cycle_time_training_step'].append(round(t_training_step, n_decimals))
+            session_info['cycle_time_send_snapshot'].append(round(t_send_snapshot, n_decimals))
+            session_info['cycle_time_total'].append(round(t_cycle, n_decimals))
+            session_info['cycle_mem_phys_available'].append(int(virtual_memory.available))
+            session_info['cycle_mem_swap_free'].append(int(swap_memory.free))
+            
+            if not sent_training_ended and state.value in State.ended_states:
+                t_total = time.perf_counter() - t_start
+                session_info = dict(session_info)
+                session_info['time_total'] = t_total
+                session_info['mem_phys_total'] = int(virtual_memory.total)
+                session_info['mem_swap_total'] = int(swap_memory.total)                
+                self._send_training_ended(session_info)
+                sent_training_ended = True
             counter += 1
             yield
 
@@ -119,14 +155,14 @@ class TrainingServer:
         self._producer_snapshots.stop()
         self._consumer.stop()
 
-    def _advance_training(self, training_step, sentinel, task_executor):
+    def _advance_training(self, training_step, sentinel):
         """Take a training step, check for userland errors, send snapshot if possible"""
         
         new_state = None
         try:
             training_step_result = training_step()
         except Exception as e:
-            log.info("Training step raised an error: " + repr(e))            
+            logger.info("Training step raised an error: " + repr(e))            
             new_state = State.TRAINING_FAILED
             self._send_userland_error(e)
         else:
@@ -137,36 +173,24 @@ class TrainingServer:
         finally:
             return new_state        
 
-    def _advance_training_with_timeout(self, training_step, sentinel, task_executor):
-        """Take a training step, check for timeout or userland errors, send snapshot if possible"""
-        
-        new_state = None
-        try:
-            training_step_result = task_executor.run(training_step, timeout=self._userland_timeout)
-            training_step_result = training_step()
-        except TaskTimeout as e:
-            log.info("Training step timed out!")
-            new_state = State.TRAINING_TIMEOUT
-            self._send_userland_timeout()                    
-        except TaskError as e:
-            log.info("Training step raised an error: " + str(e.__cause__))            
-            new_state = State.TRAINING_FAILED
-            self._send_userland_error(e.__cause__)
-        else:
-            if training_step_result is sentinel:
-                new_state = State.TRAINING_COMPLETED
-            elif training_step_result is YieldLevel.SNAPSHOT:
-                self._send_graph(self._graph)
-        finally:
-            return new_state
+    def _on_state_transition(self, new_state):
+        self._send_key_value('state', new_state)
+        logger.info(f"Transitioned to state '{new_state}'")
 
     def _send_userland_timeout(self):
         self._send_key_value('userland-timeout')        
     
     def _send_userland_error(self, exception):
-        tb_frames = traceback.extract_tb(exception.__traceback__)
-        data = {'exception': exception, 'traceback_frames': tb_frames}
-        self._send_key_value('userland-error', data)                
+        tb_frames = [
+            TracebackFrame(frame.lineno, frame.name, frame.filename, frame.line)
+            for frame in traceback.extract_tb(exception.__traceback__)
+        ]
+        data = {'exception': repr(exception), 'traceback_frames': tb_frames}
+        self._send_key_value('userland-error', data)
+
+    def _send_training_ended(self, session_info):
+        self._closed_by_server = True        
+        self._send_key_value('training-ended', session_info)       
         
     def _process_messages(self, state, task_executor):
         messages = self._consumer.get_messages(per_message_timeout=0.000001)
@@ -178,7 +202,7 @@ class TrainingServer:
         message_key = message['key']
         message_value = message['value']
         
-        log.info(f"Received message '{message_key}'")
+        #logger.info(f"Received message '{message_key}'")
         
         new_state = None
         if message_key == 'on_request_start':
@@ -249,7 +273,7 @@ class TrainingServer:
                 raise StateTransitionError("Couldn't transition from {state.value}")                                
         else:
             #raise RuntimeError(f"Unknown event key '{message_key}'")
-            #log.warning(f"Unknown event key '{message_key}'")            
+            #logger.warning(f"Unknown event key '{message_key}'")            
             pass # TODO: hmm, snapshots will go here too.... Block them in ZMQ server somehow?
         
         return new_state
@@ -260,7 +284,7 @@ class TrainingServer:
         try:
             method(*args, **kwargs)
         except Exception as e:
-            log.info("Userland method raised an error: " + repr(e))            
+            logger.info("Userland method raised an error: " + repr(e))            
             new_state = State.TRAINING_FAILED
             self._send_userland_error(e)
             state.transition(State.TRAINING_FAILED)            
@@ -273,11 +297,11 @@ class TrainingServer:
         try:
             task_executor.run(method, args, kwargs)
         except TaskTimeout as e:
-            log.info("Userland method timed out!")
+            logger.info("Userland method timed out!")
             self._send_userland_timeout()
             state.transition(State.TRAINING_FAILED)            
         except TaskError as e:
-            log.info("Userland method raised an error: " + str(e.__cause__))            
+            logger.info("Userland method raised an error: " + str(e.__cause__))            
             new_state = State.TRAINING_FAILED
             self._send_userland_error(e.__cause__)
             state.transition(State.TRAINING_FAILED)            

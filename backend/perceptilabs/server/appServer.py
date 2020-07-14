@@ -1,15 +1,15 @@
+import logging
 import os
 import sys
 import shutil
 import logging
 
-log = logging.getLogger(__name__)
+from perceptilabs.logconf import APPLICATION_LOGGER
+
+logger = logging.getLogger(APPLICATION_LOGGER)
+
 
 class Server():
-    def __init__(self, scraper, data_bundle):
-        self.scraper = scraper
-        self.data_bundle = data_bundle
-
     def serve_desktop(self, interface, instantly_kill=False): 
         import selectors
         import socket
@@ -19,7 +19,7 @@ class Server():
 
         def accept_wrapper(sock):
             conn, addr = sock.accept()  # Should be ready to read
-            log.debug("accepted connection from {}".format(addr))
+            logger.debug("accepted connection from {}".format(addr))
             conn.setblocking(False)
             message = Message(sel, conn, addr, interface)
             sel.register(conn, selectors.EVENT_READ, data=message)
@@ -32,10 +32,10 @@ class Server():
         try:
             lsock.bind((host, port))
         except OSError as e:
-            log.exception(e)
+            logger.exception(e)
             return 0
         lsock.listen()
-        log.info("listening on {}:{}".format(host, port))
+        logger.info("listening on {}:{}".format(host, port))
         lsock.setblocking(False)
         sel.register(lsock, selectors.EVENT_READ, data=None)
             
@@ -52,29 +52,16 @@ class Server():
                         try:
                             message.process_events(mask)
                         except Exception:
-                            log.exception("Main error")
+                            logger.exception("Main error")
                             message.close()
         except KeyboardInterrupt:
-            log.info("caught keyboard interrupt, exiting")
+            logger.info("caught keyboard interrupt, exiting")
         except SystemExit:
-            log.info("closing application")
+            logger.info("closing application")
         finally:
-            log.info("Closing selector")        
+            logger.info("Closing selector")        
             sel.close()
-            log.info("All closed")        
-
-            log.info("Stopping scraper")
-            self.scraper.stop()
-            
-            if not instantly_kill:
-                log.info("Copying logfile to data bundle.")
-                try:
-                    shutil.copyfile('backend.log', os.path.join(self.data_bundle.path, 'backend.log'))
-                except:
-                    pass
-                
-                log.info("Uploading data bundle...")
-                self.data_bundle.upload_and_clear()
+            logger.info("All closed")        
 
     def serve_web(self, interface, instantly_kill=False): 
         import websockets
@@ -85,7 +72,7 @@ class Server():
         port=5000
         interface=Message(interface)
         start_server = websockets.serve(interface.interface, path, port)
-        log.info("Trying to listen to: " + str(path) + " " + str(port))
+        logger.info("Trying to listen to: " + str(path) + " " + str(port))
         connected=False
         while not connected:
             try:
@@ -93,25 +80,12 @@ class Server():
                     break
                 asyncio.get_event_loop().run_until_complete(start_server)
                 asyncio.get_event_loop().run_forever()
-                log.info("Connected")
+                logger.info("Connected")
                 connected=True
             except KeyboardInterrupt:
                 break
             except:
                 connected=False
-
-        log.info("Stopping scraper")
-        self.scraper.stop()
-        
-        if not instantly_kill:
-            log.info("Copying logfile to data bundle.")
-            try:
-                shutil.copyfile('backend.log', os.path.join(self.data_bundle.path, 'backend.log'))
-            except:
-                pass
-            
-            log.info("Uploading data bundle...")
-            self.data_bundle.upload_and_clear()
 
     def serve_azure(self, interface, instantly_kill=False):
         pass

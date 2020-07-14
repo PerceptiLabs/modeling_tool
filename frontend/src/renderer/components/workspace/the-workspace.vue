@@ -1,5 +1,7 @@
 <template lang="pug">
-  main.page_workspace
+  main.page_workspace(
+    :class="{'open-statistics': statisticsIsOpen}"
+  )
     .workspace_tabset(
       ref="tabset"
       v-show="!showTrainingSpinner"
@@ -9,9 +11,9 @@
     component(:is="toolbarType")
 
     .workspace_content.bookmark_content.js-workspace(
-      v-if="!isNotebookMode"  
+      v-show="!isNotebookMode"  
       ref="workspaceNet"
-      :class="{'workspace-relative' : showTrainingSpinner}"
+      :class="{'workspace-relative' : showTrainingSpinner, 'open-statistics': statisticsIsOpen}"
       )
       .network(
         v-if="indexCurrentNetwork === i"
@@ -46,7 +48,6 @@
               ref="networkField"
               :key="i"
               :scaleNet="scaleNet"
-              :style="{transformOrigin: '0 0', transform: `scale(${scaleNet / 100})`}"
             )
             // when select more then 2 network item its display
             div(:style="dragBoxHorizontalTopBorder()")
@@ -59,15 +60,9 @@
         general-result(v-if="showGlobalResult")
         select-core-side(v-if="showCoreSide")
         workspace-before-import(v-if="showWorkspaceBeforeImport")
-        workspace-save-network(
-          v-if="saveNetworkPopup.show"
-          ref="saveNetworkPopup"
-          :popup-settings="saveNetworkPopup"
-          )
         workspace-load-network(
-          v-if="showLoadSettingPopup"
+          v-if="showLoadSettingPopup" 
         )
-        export-network(v-if="showExportNetworkPopup")
 
       start-training-spinner(v-if="showTrainingSpinner")
       file-picker-popup(
@@ -77,12 +72,59 @@
         :popupTitle="showFilePickerPopup.popupTitle"
         :confirmCallback="showFilePickerPopup.confirmCallback || showFilePickerPopup")
       //- showFilePickerPopup container the callback function
+    .hardware-metrics(
+      v-show="showResourceView!=0"
+      ) 
+      .header
+        h4 RAM/CPU/GPU
+        i.icon.icon-app-minimize.btn.btn--icon(type="button"
+          @click="setResourceView(0)"
+        ) 
+      .resource-wrapper
+        resource-monitor(
+          :monitor-value="currentData"
+          v-show="showResourceView>0"
+        )
+      .labels
+        .row_item
+          .ticker.red
+          span RAM
+        .row_item
+          .ticker.yellow
+          span CPU
+        .row_item
+          .ticker.green
+          span GPU
 
     .workspace_meta(
       v-if="!isNotebookMode"  
       )
       include ./meta/workspace-meta.pug
     notebook(v-if="isNotebookMode")
+
+    workspace-save-network(
+      v-if="showSaveNetworkPopup"
+      ref="saveNetworkPopup"
+      :popup-settings="saveNetworkPopup"
+      )
+    export-network(v-if="showExportNetworkPopup")
+    file-picker-popup(
+      v-if="showFilePickerPopup"
+      :filePickerType="showFilePickerPopup.filePickerType"
+      :fileTypeFilter="showFilePickerPopup.fileTypeFilter"
+      :popupTitle="showFilePickerPopup.popupTitle"
+      :confirmCallback="showFilePickerPopup.confirmCallback || showFilePickerPopup")
+      //- showFilePickerPopup container the callback function
+
+    .select-modal-wrapper(
+      v-if="showNewModelPopup"
+      )
+      select-model-modal(
+        class="select-model-modal"
+        v-if="showNewModelPopup"
+        @close="onCloseSelectModelModal"
+        )
+
 </template>
 
 <script src="./the-workspace.js"></script>
@@ -91,13 +133,27 @@
   @import "../../scss/base";
   @import "./tabset/workspace-tabset";
   @import "./meta/workspace-meta";
-
+  
+  .select-modal-wrapper {
+    position: absolute;
+    width: calc(100% - 50px);
+    height: calc(100% - 40px);
+    background: rgba(33, 40, 57, 0.9);
+    z-index: 99;
+  }
+  .select-model-modal {
+    z-index: 100;
+  }
   .page_workspace {
     display: flex;
     flex-direction: column;
     overflow: hidden;
     width: 100%;
     height: 100%;
+
+    &.open-statistics {
+      position: relative;
+    }
   }
   .workspace_tabset {
     flex: 0 0 auto;
@@ -110,12 +166,26 @@
 
     .tab-group {
       display: flex;
+      margin-right: 10px;
     }
   }
   .workspace_content {
     display: flex;
     flex: 1 1 100%;
     overflow: hidden;
+
+    &.open-statistics {
+      z-index: 3;      
+      background: transparent;
+
+      &.workspace-relative {
+        z-index: 1;
+      }
+
+      .network_info-section.tutorial-relative.the-statistics {
+        background: transparent;
+      }
+    }
   }
   .network {
     width: 100%;
@@ -177,12 +247,102 @@
   .workspace_meta {
     position: relative; //for minimap
     flex: 0 0 auto;
-    background-color: $bg-workspace-2;
+    background-color: #23252A;
+    
     display: flex;
     justify-content: space-between;
     padding: .5rem;
   }
   .workspace-relative {
     position: relative;
+  }
+  .hardware-trigger {
+    width: 70px;
+    height: 19px;
+    border: 0.5px solid #5E6F9F;
+    box-sizing: border-box;
+    border-radius: 1px;
+    background: transparent;
+    color: #B6C7FB;
+
+    &.clicked {
+      background: #131B30;
+    }
+
+  }
+  .hardware-metrics {
+    z-index: 10;
+    border-radius: 2px;
+    border: 1px solid #5E6F9F;
+    width: 374px;
+    height: 200px;
+    background: #222939;
+    position: absolute;
+    bottom: 31px;
+    right: 2px;
+
+    .resource-wrapper {
+      position: absolute;
+      top: 35px;
+      left: 5px;
+      right: 5px;
+      z-index: 10;
+      width: 300px;
+      height: calc(100% - 45px);
+    }
+
+    .labels {
+      position: absolute;
+      right: 15px;
+      top: 42px;
+      
+      .row_item {
+        display: flex;
+        margin-bottom: 10px;
+        align-items: center;
+      }
+
+      .ticker {
+        width: 15px;
+        height: 4px;
+        border-radius: 2px;
+        margin-right: 8px;
+
+        &.red {
+          background: #FE7373;
+        }
+        &.yellow{
+          background: #F7D081
+        }
+        &.green{
+          background: #73FEBB
+        }
+      }
+    }
+
+    .header {
+      color: #B6C7FB;
+      background: #090f19;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #5E6F9F;
+      width: 100%;
+      height: 25px;
+      padding: 0px 7px;
+      margin: 0;
+
+      h4 {
+        margin: 0;
+      }
+
+      i {
+        font-size: 7px;
+        
+        &:hover {
+          cursor: pointer;
+        }
+      }
+    }
   }
 </style>

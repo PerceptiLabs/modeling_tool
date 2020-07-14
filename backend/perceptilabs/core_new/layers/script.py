@@ -13,10 +13,12 @@ from perceptilabs.core_new.graph import Graph
 from perceptilabs.core_new.layers.templates import J2Engine
 from perceptilabs.core_new.layers.definitions import DEFINITION_TABLE, TEMPLATES_DIRECTORY, TOP_LEVEL_IMPORTS
 from perceptilabs.core_new.graph.utils import sanitize_layer_name
+from perceptilabs.logconf import APPLICATION_LOGGER
+
 
 # TODO: move this to a more suitable location? Deployment?
 
-log = logging.getLogger(__name__)
+logger = logging.getLogger(APPLICATION_LOGGER)
 
 
 class ScriptBuildError(Exception):
@@ -30,8 +32,13 @@ def is_syntax_ok(code):
     else:
         return True
 
+    
 class FetchParameterError(ScriptBuildError):
-    pass
+    def __init__(self, layer_id, layer_name, layer_type, parameter):
+        self.parameter = parameter
+        self.layer_id = layer_id
+        self.layer_name = layer_name
+        self.layer_type = layer_type
 
 
 def is_syntax_ok(code):
@@ -273,14 +280,14 @@ class ScriptFactory:
             raise ScriptBuildError(f"No layer definition found for layer of type '{layer_type}'")
         layer_name = layer_type + layer_id
 
-        kwargs = self._fetch_parameters(layer_spec, def_.macro_parameters)
+        kwargs = self._fetch_parameters(layer_id, layer_name, layer_spec, def_.macro_parameters)
         kwargs['layer_name'] = "'" + layer_name + "'"
         arg_str = ', '.join(f"{k}={v}" for k, v in kwargs.items())
         
         template  = "{% from '" + def_.template_file + "' import " + def_.template_macro + " %}\n"
         template += "{{ " + def_.template_macro + "(" + arg_str + ")}}"
 
-        log.debug(
+        logger.debug(
             f"Created macro loader for layer {layer_id} [{layer_type}]:\n"
             f"---------\n"            
             f"{add_line_numbering(template)}\n"
@@ -292,7 +299,7 @@ class ScriptFactory:
             code = self._engine.render_string(template)
         except:
             file_contents = open(os.path.join(self._engine.templates_directory, def_.template_file)).read()            
-            log.exception(f"Error when rendering jinja macro {def_.template_file}:{def_.template_macro}. Contents :\n" + add_line_numbering(file_contents))
+            logger.exception(f"Error when rendering jinja macro {def_.template_file}:{def_.template_macro}. Contents :\n" + add_line_numbering(file_contents))
             raise
 
 
@@ -301,7 +308,7 @@ class ScriptFactory:
         
         return code    
         
-    def _fetch_parameters(self, layer_spec, macro_parameters):
+    def _fetch_parameters(self, layer_id, layer_name, layer_spec, macro_parameters):
         results = {}
         for key, value in macro_parameters.items():
             if key == 'layer_name':
@@ -312,7 +319,8 @@ class ScriptFactory:
                 try:
                     value = value(layer_spec)
                 except Exception as e:
-                    raise FetchParameterError(f"Failed to fetch parameter '{key}'") from e
+                    layer_type = layer_spec['Type']
+                    raise FetchParameterError(layer_id, layer_name, layer_type, key) from e
             value = copy.deepcopy(value)
             
             if isinstance(value, str):

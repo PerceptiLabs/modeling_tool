@@ -3,9 +3,13 @@ from collections import namedtuple
 import copy
 import gc
 
+from perceptilabs.logconf import APPLICATION_LOGGER
+
 CacheEntry = namedtuple('CacheEntry', ['hash', 'session', 'error'])
 
-log = logging.getLogger(__name__)
+logger = logging.getLogger(APPLICATION_LOGGER)
+
+
 
 class NetworkCache():
     def __init__(self):
@@ -43,7 +47,7 @@ class NetworkCache():
             if con in self._dict:
                 hash_+=self._dict[con].hash
             else:
-                log.warning("Layer %s has no hash code and will be skipped in the caching for now"%str(con))
+                logger.warning("Layer %s has no hash code and will be skipped in the caching for now"%str(con))
         return hash_
 
     def needs_update(self, id_, content):
@@ -51,11 +55,11 @@ class NetworkCache():
 
     def update(self, id_, content, session, error):
         if id_ in self._dict:
-            log.info("Updating layer " + str(id_))  
+            logger.info("Updating layer " + str(id_))  
             self.remove_layer(id_)       
         hash_ = self._calculate_hash(id_, content)
         entry = CacheEntry(hash = hash_, session = session, error = error)
         self._dict[id_] = entry
-        log.info("Cached layers: " + str(self._dict.keys()))
+        logger.info("Cached layers: " + str(self._dict.keys()))
 
     

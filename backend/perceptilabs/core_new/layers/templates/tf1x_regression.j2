@@ -1,3 +1,5 @@
+{% from 'tf1x_utils.j2' import session %}
+
 {% macro run_normal(graph, layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory) %}
         self._status = 'initializing'
 
@@ -165,11 +167,10 @@
 
         trainable_vars = tf.trainable_variables() # TODO: safer to get from nodes. Especially with split graph in mind.
         grads = tf.gradients(loss_tensor, trainable_vars)
-        update_weights = optimizer.apply_gradients(zip(grads, trainable_vars), global_step=global_step)        
-
-        config = tf.ConfigProto()
-        config.gpu_options.allow_growth = True
-        sess = tf.Session(config=config)
+        update_weights = optimizer.apply_gradients(zip(grads, trainable_vars), global_step=global_step)
+                
+        sess = None
+        {{session(sess, use_gpu=True) | indent(width=8)}}     
         self._sess = sess
 
         trackable_variables = {}

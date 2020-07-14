@@ -88,12 +88,17 @@ export default {
   name: 'TheLayersbar',
   mixins: [clickOutside],
   components: {
-    DataData, DataEnvironment, DataCloud, DataRandom,
+    DataData, DataEnvironment, DataRandom,
+    // DataCloud,
     DeepLearningFC, DeepLearningConv, DeepLearningDeconv, DeepLearningRecurrent,
-    ProcessCrop, ProcessEmbed, ProcessGrayscale, ProcessOneHot, ProcessReshape, ProcessRescale,
-    TrainNormal, TrainRegression, TrainGenetic, TrainDynamic, TrainReinforce, TrainLoss, TrainOptimizer, TrainGan, TrainDetector,
-    MathArgmax, MathMerge, MathSoftmax, MathSplit, MathSwitch,
-    ClassicMLDbscans, ClassicMLKMeans, ClassicMLKNN, ClassicMLRandomForest, ClassicMLSVM,
+    ProcessEmbed, ProcessGrayscale, ProcessOneHot, ProcessReshape, ProcessRescale,
+    // ProcessCrop,
+    TrainNormal, TrainRegression, TrainGenetic, TrainDynamic, TrainReinforce, TrainDetector, TrainGan,
+    // TrainLoss, TrainOptimizer, 
+    MathArgmax, MathMerge, MathSoftmax, MathSwitch,
+    // MathSplit,
+
+    // ClassicMLDbscans, ClassicMLKMeans, ClassicMLKNN, ClassicMLRandomForest, ClassicMLSVM,
     LayerCustom
   },
   data() {
@@ -109,7 +114,9 @@ export default {
           iconClass: 'icon-data',
           childListClass: '',
           showEl: false,
-          networkElements: ['DataData', 'DataEnvironment', 'DataCloud', 'DataRandom'],
+          networkElements: ['DataData', 'DataEnvironment', 'DataRandom',
+          //'DataCloud',
+          ],
           id:'tutorial_data'
           //networkElements: ['DataData']
         },
@@ -123,7 +130,9 @@ export default {
           iconClass: 'icon-settings',
           childListClass: '',
           showEl: false,
-          networkElements: ['process-reshape', 'process-embed', 'process-grayscale', 'ProcessOneHot', 'process-crop', 'process-rescale'],
+          networkElements: ['process-reshape', 'process-embed', 'process-grayscale', 'ProcessOneHot', 'process-rescale',
+          //'process-crop',
+          ],
           id:'tutorial_processing'
           //networkElements: ['process-reshape', 'process-embed', 'process-grayscale', 'process-hot']
         },
@@ -151,7 +160,9 @@ export default {
           iconClass: 'icon-calc',
           childListClass: '',
           showEl: false,
-          networkElements: ['MathArgmax', 'MathMerge', 'MathSwitch', 'MathSplit', 'MathSoftmax'],
+          networkElements: ['MathArgmax', 'MathMerge', 'MathSwitch', 'MathSoftmax'
+          //'MathSplit',
+          ],
           id:'tutorial_mathematics'
         },
         {
@@ -169,19 +180,19 @@ export default {
           networkElements: trainingElements,
           id:'tutorial_training'
         },
-        {
-          tooltip: 'Classic Machine Learning',
-          tooltip_interactive: {
-            title: 'Classic Machine Learning',
-            text: 'Classic machine learning components'
-          },
-          layerClass: 'net-element-learn-class',
-          iconClass: 'icon-mind',
-          childListClass: '',
-          showEl: false,
-          networkElements: ['ClassicMLDbscans', 'ClassicMLKMeans', 'ClassicMLKNN', 'ClassicMLRandomForest', 'ClassicMLSVM'],
-          id:'tutorial_classic-machine-learning'
-        }
+        // {
+        //   tooltip: 'Classic Machine Learning',
+        //   tooltip_interactive: {
+        //     title: 'Classic Machine Learning',
+        //     text: 'Classic machine learning components'
+        //   },
+        //   layerClass: 'net-element-learn-class',
+        //   iconClass: 'icon-mind',
+        //   childListClass: '',
+        //   showEl: false,
+        //   networkElements: ['ClassicMLDbscans', 'ClassicMLKMeans', 'ClassicMLKNN', 'ClassicMLRandomForest', 'ClassicMLSVM'],
+        //   id:'tutorial_classic-machine-learning'
+        // }
       ],
     }
   },

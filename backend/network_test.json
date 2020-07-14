@@ -48,7 +48,8 @@
             "endPoints": [],
             "Properties": {
                 "Neurons": "1",
-                "Activation_function": "",
+                "Activation_function": "Softmax",
+                "batch_norm":"False",
                 "Dropout": false,
                 "Keep_prob": "1"
             },
@@ -121,6 +122,7 @@
                 "Class_weights": "1",
                 "Learning_rate": "0.001",
                 "Optimizer": "SGD",
+                "batch_size":10,
                 "Beta_1": "0.9",
                 "Beta_2": "0.999",
                 "Momentum": "0.9",

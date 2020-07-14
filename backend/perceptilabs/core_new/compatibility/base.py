@@ -1,3 +1,4 @@
+import logging
 import copy
 import time
 import pprint
@@ -7,6 +8,7 @@ import numpy as np
 
 
 from perceptilabs.core_new.utils import set_tensorflow_mode
+from perceptilabs.messaging import MessagingFactory, ZmqMessagingFactory, SimpleMessagingFactory
 from perceptilabs.core_new.graph.utils import sanitize_layer_name
 from perceptilabs.core_new.core2 import Core
 from perceptilabs.core_new.layers import *
@@ -14,7 +16,9 @@ from perceptilabs.core_new.layers.replicas import NotReplicatedError
 from perceptilabs.core_new.compatibility.policies import policy_classification, policy_regression, policy_object_detection, policy_gan, policy_reinforce
 
 
-log = logging.getLogger(__name__)
+from perceptilabs.logconf import APPLICATION_LOGGER
+
+logger = logging.getLogger(APPLICATION_LOGGER)
 
 
 PROCESS_COMMANDS_DELAY = 0.3
@@ -65,9 +69,9 @@ class CompatibilityCore:
 
             for command_id, command in commands.items():
                 if command.allow_override and count[command.type] > 1:
-                    log.debug(f'Processing command {command_id}: {command}. Overriding {count[command.type]-1} previous commands of the same type.') # TODO: log.debug instead
+                    logger.debug(f'Processing command {command_id}: {command}. Overriding {count[command.type]-1} previous commands of the same type.') # TODO: logger.debug instead
                 else:
-                    log.debug(f'Processing command {command_id}: {command}.') # TODO: log.debug instead
+                    logger.debug(f'Processing command {command_id}: {command}.') # TODO: logger.debug instead
                 self._send_command(core, command)
             
         def do_process_results(counter, core):
@@ -75,9 +79,13 @@ class CompatibilityCore:
             graphs = core.graphs
 
             if len(graphs) > 0:
-                log.debug(f"Processing {len(graphs)} graph snapshots")
-                self.results = self._get_results_dict(graphs, self.results)
-                self._result_queue.put(copy.deepcopy(self.results))
+                logger.debug(f"Processing {len(graphs)} graph snapshots")
+                self.results = self._get_results_dicts(graphs, self.results)
+                for result_dict in self.results:
+                    result_dict['training_duration'] = core.training_duration
+                    self._result_queue.put(copy.deepcopy(result_dict))
+                if self.results:
+                    self.results = self.results[-1]
             
         set_tensorflow_mode('graph')
         core = Core(self._graph_builder, self._script_factory, self._messaging_factory, self._issue_handler, use_sentry=True)
@@ -121,41 +129,41 @@ class CompatibilityCore:
         elif command.type == 'export':
             core.export(command.parameters['path'], command.parameters['mode'])            
             
-    def _get_results_dict(self, graphs, results):
+    def _get_results_dicts(self, graphs, results):
         self._print_graph_debug_info(graphs)
-        result_dict = {}        
+        result_dicts = [{}]        
         try:
-            result_dict = self._get_results_dict_internal(graphs, results)
+            result_dicts = self._get_results_dicts_internal(graphs, results)
         except:
-            log.exception('Error when getting results dict')
+            logger.exception('Error when getting results dict')
         finally:
-            self._print_result_dict_debug_info(result_dict)
-            return result_dict                
+            for result_dict in result_dicts:
+                self._print_result_dict_debug_info(result_dict)
+            return result_dicts                
     
-    def _get_results_dict_internal(self, graphs, results):
+    def _get_results_dicts_internal(self, graphs, results):
         if not graphs:
-            log.debug("graph is None, returning empty results")
-            return {}
-        # TODO: if isinstance(training_layer, Classification) etc
+            logger.debug("graph is None, returning empty results")
+            return [{}]
         layer = graphs[-1].active_training_node.layer
         if isinstance(layer, ClassificationLayer):
-            result_dict = policy_classification(self._core, graphs, self._sanitized_to_name, self._sanitized_to_id, results)
+            result_dicts = policy_classification(self._core, graphs, self._sanitized_to_name, self._sanitized_to_id, results)
         elif  isinstance(layer, ObjectDetectionLayer):
-            result_dict = policy_object_detection(self._core, graphs, self._sanitized_to_name, self._sanitized_to_id, results)
+            result_dicts = policy_object_detection(self._core, graphs, self._sanitized_to_name, self._sanitized_to_id, results)
         elif  isinstance(layer, GANLayer):
-            result_dict = policy_gan(self._core, graphs, self._sanitized_to_name, self._sanitized_to_id, results)
+            result_dicts = policy_gan(self._core, graphs, self._sanitized_to_name, self._sanitized_to_id, results)
         elif  isinstance(layer, RegressionLayer):
-            result_dict = policy_regression(self._core, graphs, self._sanitized_to_name, self._sanitized_to_id, results)
+            result_dicts = policy_regression(self._core, graphs, self._sanitized_to_name, self._sanitized_to_id, results)
         elif  isinstance(layer, RLLayer):
-            result_dict = policy_reinforce(self._core, graphs, self._sanitized_to_name, self._sanitized_to_id, results)
-        return result_dict
+            result_dicts = policy_reinforce(self._core, graphs, self._sanitized_to_name, self._sanitized_to_id, results)
+        return result_dicts
 
     def _print_graph_debug_info(self, graphs):
-        if not log.isEnabledFor(logging.DEBUG):
+        if not logger.isEnabledFor(logging.DEBUG):
             return
 
         if len(graphs) == 0:
-            log.debug("No graphs available")
+            logger.debug("No graphs available")
             return
 
         graph = graphs[-1]
@@ -184,13 +192,13 @@ class CompatibilityCore:
                         text += f"    {name}: {value_str}\n"                        
             text += '\n'
 
-        log.debug(text)
+        logger.debug(text)
 
     def _print_result_dict_debug_info(self, result_dict):
-        if log.isEnabledFor(logging.DEBUG):
+        if logger.isEnabledFor(logging.DEBUG):
             from perceptilabs.utils import stringify
             text = stringify(result_dict, indent=4, sort=True)
-            log.debug("result_dict: \n" + text)
+            logger.debug("result_dict: \n" + text)
         
 
 
@@ -206,7 +214,7 @@ if __name__ == "__main__":
     from perceptilabs.core_new.layers.script import ScriptFactory
     from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP    
 
-    with open('network_test.json', 'r') as f:
+    with open('network.json', 'r') as f:
         network = json.load(f)
 
         for _id, layer in network['Layers'].items():
@@ -214,7 +222,8 @@ if __name__ == "__main__":
                 layer['Properties']['Distributed'] = False
 
 
-    script_factory = ScriptFactory()
+    script_factory = ScriptFactory(simple_message_bus=True)
+    messaging_factory = SimpleMessagingFactory()
     
     replica_by_name = {repl_cls.__name__: repl_cls for repl_cls in BASE_TO_REPLICA_MAP.values()}    
     graph_builder = GraphBuilder(replica_by_name)                
@@ -222,6 +231,6 @@ if __name__ == "__main__":
     commandQ=queue.Queue()
     resultQ=queue.Queue()
     
-    core = CompatibilityCore(commandQ, resultQ, graph_builder, script_factory, network, threaded=False)
+    core = CompatibilityCore(commandQ, resultQ, graph_builder, script_factory, messaging_factory, network, threaded=False)
     core.run()
         

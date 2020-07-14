@@ -3,6 +3,7 @@ numpy==1.16.4
 fsspec==0.6.0
 pandas==0.25.0
 dask[array]==2.6.0
+dask[dataframe]==2.6.0
 websockets==8.1
 psutil==5.6.3
 scikit-image==0.15.0
@@ -22,5 +23,7 @@ pycparser==2.19
 six==1.14.0
 scikit-learn==0.22.1
 dill==0.3.1.1
+jsonschema==3.2.0
 Flask==1.1.1
+pyzmq==18.1.1
 Pillow==7.0.0

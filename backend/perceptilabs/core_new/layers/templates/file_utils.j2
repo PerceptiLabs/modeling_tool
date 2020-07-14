@@ -3,11 +3,47 @@
         global matrix_{{tag}}
         matrix_{{tag}} = np.load("{{path}}", mmap_mode='r+').astype(np.float32)
         size_{{tag}} = len(matrix_{{tag}})
-
         def generator_{{tag}}(idx_lo, idx_hi):
             global matrix_{{tag}}
             yield from matrix_{{tag}}[idx_lo:idx_hi].squeeze()
     {% endfilter %}
+{% endmacro %}
+
+{% macro load_npy_directory(path, tag, lazy=True) -%}
+{% filter remove_lspaces(8) %}
+    {% if lazy %}
+        npy_read = dask.delayed(np.load)
+        matrix_{{tag}} = []
+        file_paths = sorted([os.path.join("{{path}}", n) for n in os.listdir("{{path}}")])
+
+        # Load all files in the path with .npy/.npz extension into a list
+        for file_path in file_paths:
+            file_load = npy_read(file_path)
+            file_shape = np.load(file_path, mmap_mode='r+').shape
+            matrix_{{tag}}.append(da.from_delayed(file_load, shape=file_shape, dtype=float))
+        
+        size_{{tag}} = file_shape[0] * len(matrix_{{tag}})
+        matrix = da.concatenate(matrix_{{tag}})
+
+        matrix_rechunked = matrix.rechunk('128MB')
+            
+        def generator_{{tag}}(idx_lo, idx_hi):                                                                                                                                                                                                                                                                                                                        
+            # Calculate which partitions to use and which indices within them.                                                                                                                              
+            divs = [0] + np.cumsum(matrix_rechunked.chunks[0]).tolist()                                                                                                                                     
+            sub_divs = []                                                                                                                                                                                   
+            for p in range(len(divs)-1):                                                                                                                                                                    
+                div_idx_lo = max(divs[p], idx_lo)                                                                                                                                                           
+                div_idx_hi = min(divs[p+1]+1, idx_hi)                                                                                                                                                       
+                if div_idx_lo < div_idx_hi:                                                                                                                                                                 
+                    sub_divs.append((p, div_idx_lo, div_idx_hi))                                                                                                                                                                                                                                                                                                           
+            # Bring only the values we need into memory and yield them                                                                                                                                      
+            for p, div_lo, div_hi in sub_divs:                                                                                                                                                              
+                matrix = matrix_rechunked.blocks[p][div_lo-divs[p]:div_hi-divs[p]].astype(np.float32).compute()                                                                                             
+                yield from matrix                                                                                                                                                                            
+    {% else %}
+        raise NotImplementedError("Non-lazy loading of numpy file directories not implemented yet!")
+    {% endif %}
+{% endfilter %}
 {% endmacro %}
 
 {% macro load_csv(path, tag, lazy=False, selected_columns=none, blocksize='64MB') -%}

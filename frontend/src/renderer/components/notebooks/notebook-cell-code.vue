@@ -9,7 +9,8 @@
         :lineNumbers="false"
         :styleActiveLine="false"
         :mode="codeMirrorMode" 
-        :maxWidth="'100%'" />
+        :maxWidth="'100%'"
+        :readOnly=true />
     </div>
     
     <div 

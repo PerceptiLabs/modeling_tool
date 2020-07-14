@@ -38,9 +38,9 @@
         :chart-data="chartData.Discriminator_Loss.Total"
         :custom-color="colorListAccuracy"
       )
-    .statistics-box_main.statistics-box_col(v-if="currentTab === 'Images'")
+    .statistics-box_main.statistics-box_col(v-if="currentTab === 'Samples'")
       .statistics-box_row
-        .statistics-box_col
+        .statistics-box_col(v-if="!testIsOpen")
           chart-switch(
             key="5"
             chart-label="Real Inpput"
@@ -66,7 +66,7 @@
 <script>
   import ChartSwitch      from "@/components/charts/chart-switch";
   import viewBoxMixin   from "@/core/mixins/net-element-viewBox.js";
-
+  import { mapActions } from 'vuex';
 
   export default {
     name: "ViewBoxTrainGan",
@@ -95,11 +95,11 @@
               text: 'View the Discriminator Loss Data.'
             }
           },
-          'Images': {
-            btnId: 'tutorial_images-tab',
+          'Samples': {
+            btnId: 'tutorial_samples-tab',
             btnInteractiveInfo: {
-              title: 'Images',
-              text: 'View the images.'
+              title: 'Samples',
+              text: 'View the samples.'
             }
           },
           'Data_distribution': {
@@ -117,11 +117,18 @@
     },
     watch: {
       testIsOpen(newVal) {
-        newVal ? this.setTab('Generator_Loss') : null
+        newVal ? this.setTab('Samples') : null
       }
     },
     methods: {
-
+      ...mapActions({
+        tutorialPointActivate:    'mod_tutorials/pointActivate',
+      }),
+      setTab(name, id) {
+        this.currentTab = name;
+        this.setTabAction();
+        this.tutorialPointActivate({way: 'next', validation: id})
+      },
       getData() {
         switch (this.currentTab) {
           case 'Generator_Loss':
@@ -130,7 +137,7 @@
           case 'Discriminator_Loss':
             this.chartRequest(this.statElementID, 'TrainGan', 'Discriminator_Loss');
             break;
-          case 'Images':
+          case 'Samples':
             this.chartRequest(this.statElementID, 'TrainGan', 'Images');
             break;
           case 'Data_distribution':

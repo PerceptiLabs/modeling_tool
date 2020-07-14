@@ -104,6 +104,14 @@ const folderPCDelete = function (path) {
   });
 };
 
+const getDefaultProjectPathForOs = function() {
+  if (isOsWindows()) {
+    return '~/Documents/PerceptiLabs'; //the path to MyDocuments is resolved in Kernel
+  } else if (isOsMacintosh() || isOsLinux()) {
+    return '~/Documents/PerceptiLabs';
+  } 
+}
+
 /*encryption */
 const encryptionData = function (data) {
   return JSON.stringify(data).split('').reverse().join('');
@@ -228,6 +236,11 @@ const isOsMacintosh = () => {
   return window.navigator.platform.indexOf('Mac') > -1
 };
 
+const isOsLinux = () => {
+  return /Linux/.test(window.navigator.platform);
+  
+};
+
 const isDesktopApp = () => {
   const userAgent = window.navigator.userAgent.toLowerCase();
   return (userAgent.indexOf(' electron/') > -1);
@@ -325,6 +338,7 @@ export {
   projectPCSave,
   projectPathModel,
   folderPCDelete,
+  getDefaultProjectPathForOs,
   encryptionData,
   decryptionData,
   generateID,

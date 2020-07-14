@@ -43,6 +43,7 @@ class State:
         TRAINING_PAUSED_HEADLESS
     )
     active_states = running_states + paused_states
+    ended_states = done_states + exit_states
 
     
     allowed_transitions = (

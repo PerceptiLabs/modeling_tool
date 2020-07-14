@@ -1,5 +1,9 @@
 <template lang="pug">
   aside.page_toolbar(v-if="statisticsIsOpen")
+    button.back-to-model-btn(@click="handleBackToModel")
+      svg(width='12' height='11' viewbox='0 0 12 11' fill='none' xmlns='http://www.w3.org/2000/svg')
+        path(d='M11 5.29545L1 5.29545M1 5.29545L5.58333 10M1 5.29545L5.58333 1' stroke='#B6C7FB' stroke-linecap='round' stroke-linejoin='round')
+      | Back to model
     .toolbar-section
       ul.toolbar-button-group
         li.toolbar-button(@click="onPauseClick")
@@ -60,6 +64,7 @@ export default {
       pauseTraining:        'mod_api/API_pauseTraining',
       stopTraining:         'mod_api/API_stopTraining',
       skipValidTraining:    'mod_api/API_skipValidTraining',
+      SET_openStatistics:   'mod_workspace/SET_openStatistics',
     }),
     onPauseClick() {
       this.pauseTraining();
@@ -70,6 +75,9 @@ export default {
     onSkipClick() {
       this.skipValidTraining();
     },
+    handleBackToModel() {
+      this.SET_openStatistics(false);
+    }
   }
 }
 </script>
@@ -87,7 +95,7 @@ export default {
   position: relative;
   grid-area: toolbar;
   z-index: 2;
-  height: $h-toolbar;
+  max-height: $h-toolbar;
 }
 
 .toolbar-section  {
@@ -118,8 +126,8 @@ export default {
   display: flex;
 
   .toolbar-button {
-    height: 2.1rem;
-    width: 2.1rem;
+    height: 2.5rem;
+    width: 2.5rem;
     border: 1px solid #5E6F9F;
     box-sizing: border-box;
     border-radius: 2px;
@@ -139,6 +147,33 @@ export default {
     & + .toolbar-button {
       margin-left: 0.5rem;
     }
+  }
+}
+.back-to-model-btn {
+  position: relative;
+  margin-left: 8px;
+  // margin-right: 20px;
+  height:  25px;
+  background: transparent;
+  border: 1px solid #5E6F9F;
+  border-radius: 2px;
+  font-family: Nunito Sans;
+  font-size: 11px;
+  line-height: 15px;
+  color: #B6C7FB;
+  svg{
+    vertical-align: middle;
+    margin-right: 7px;
+  }
+  &::after {
+    content: '';
+    position: absolute;
+    width: 1px;
+    height: 18px;
+    background-color: #5E6F9F;
+    top: 50%;
+    transform: translateY(-50%);
+    right: -12px;
   }
 }
 </style>

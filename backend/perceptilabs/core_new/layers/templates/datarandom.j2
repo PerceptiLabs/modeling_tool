@@ -1,4 +1,4 @@
-{% macro layer_datarandom(layer_name, distribution, shape, mean, stddev, minval, maxval, seed) %} 
+{% macro layer_datarandom(layer_name, distribution, shape, mean, stddev, minval, maxval, seed_training, seed_validation, seed_testing) %} 
 # import numpy as np
 class {{layer_name}}(DataRandom):
     """Class responsible for generating random noise"""    
@@ -44,15 +44,15 @@ class {{layer_name}}(DataRandom):
         {% filter remove_lspaces(8) %}
             {% if distribution == 'Normal' %}
                 def gen():
-                    np.random.seed(1234)
+                    rdn_state = np.random.RandomState({{seed_training}})
                     while True:
-                        sample = np.random.normal({{mean}}, {{stddev}}, {{shape}})
+                        sample = rdn_state.normal({{mean}}, {{stddev}}, {{shape}})
                         yield np.float32(sample)
             {% elif distribution == 'Uniform' %}
                 def gen():
-                    np.random.seed(1234)
+                    rdn_state = np.random.RandomState({{seed_training}})
                     while True:
-                        sample = np.random.uniform({{minval}}, {{maxval}}, {{shape}})
+                        sample = rdn_state.uniform({{minval}}, {{maxval}}, {{shape}})
                         yield np.float32(sample)
             {% endif %}
         {% endfilter %}
@@ -63,15 +63,15 @@ class {{layer_name}}(DataRandom):
         {% filter remove_lspaces(8) %}
             {% if distribution == 'Normal' %}
                 def gen():
-                    np.random.seed(2350)
+                    rdn_state = np.random.RandomState({{seed_testing}})
                     while True:
-                        sample = np.random.normal({{mean}}, {{stddev}}, {{shape}})
+                        sample = rdn_state.normal({{mean}}, {{stddev}}, {{shape}})
                         yield np.float32(sample)
             {% elif distribution == 'Uniform' %}
                 def gen():
-                    np.random.seed(2350)
+                    rdn_state = np.random.RandomState({{seed_testing}})
                     while True:
-                        sample = np.random.uniform({{minval}}, {{maxval}}, {{shape}})
+                        sample = rdn_state.uniform({{minval}}, {{maxval}}, {{shape}})
                         yield np.float32(sample)
             {% endif %}
         {% endfilter %}
@@ -82,15 +82,15 @@ class {{layer_name}}(DataRandom):
         {% filter remove_lspaces(8) %}
             {% if distribution == 'Normal' %}
                 def gen():
-                    np.random.seed(2020)
+                    rdn_state = np.random.RandomState({{seed_validation}})
                     while True:
-                        sample = np.random.normal({{mean}}, {{stddev}}, {{shape}})
+                        sample = rdn_state.normal({{mean}}, {{stddev}}, {{shape}})
                         yield np.float32(sample)
             {% elif distribution == 'Uniform' %}
                 def gen():
-                    np.random.seed(2020)
+                    rdn_state = np.random.RandomState({{seed_validation}})
                     while True:
-                        sample = np.random.uniform({{minval}}, {{maxval}}, {{shape}})
+                        sample = rdn_state.uniform({{minval}}, {{maxval}}, {{shape}})
                         yield np.float32(sample)
             {% endif %}
         {% endfilter %}

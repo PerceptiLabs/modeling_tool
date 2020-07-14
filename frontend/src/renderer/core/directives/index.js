@@ -9,6 +9,12 @@ Vue.directive('tooltip', {
     el.addEventListener('mouseenter', insertStandardTooltip);
     el.addEventListener('mouseleave', removeStandardTooltip);
   },
+  componentUpdated: function (el, binding) {
+    el.tooltipStandardBinding = binding;
+    if (!el.classList.contains('tooltip-wrap')) {
+      el.classList.add('tooltip-wrap');
+    }
+  },
   unbind: function (el) {
     el.removeEventListener('mouseenter', insertStandardTooltip);
     el.removeEventListener('mouseleave', removeStandardTooltip);
@@ -105,6 +111,10 @@ function sideCalculate(element, tooltip, side) {
 
   switch (side.arg) {
     case 'right':
+      tooltip.style.top = (elCoord.top + elCoord.height / 2) * zoom +'px';
+      tooltip.style.left = (elCoord.left + elCoord.width + tooltipArrow) * zoom + 'px';
+      break;
+    case 'right-wrap-text':
       tooltip.style.top = (elCoord.top + elCoord.height / 2) * zoom +'px';
       tooltip.style.left = (elCoord.left + elCoord.width + tooltipArrow) * zoom + 'px';
       break;

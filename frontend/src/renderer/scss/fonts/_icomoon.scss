@@ -374,7 +374,9 @@ $folder: 'icomoon';
 .icon-switch:before {
   content: "\e972";
 }
-
+.icon-download:before {
+  content: "\e974" ;
+}
 .icon-code-error {
   vertical-align: middle;
   &:before {

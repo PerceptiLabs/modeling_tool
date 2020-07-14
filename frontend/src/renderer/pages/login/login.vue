@@ -48,8 +48,8 @@
   import { goToLink, encryptionData, isWeb }       from '@/core/helpers.js'
   
   import LogoutUserPageWrap from '@/pages/logout-user-page-wrap.vue'
-  import {mapActions} from "vuex";
-  import {MODAL_PAGE_SIGN_UP, MODAL_PAGE_RESTORE_ACCOUNT, MODAL_PAGE_PROJECT} from "@/core/constants";
+  import { mapGetters, mapActions } from "vuex";
+  import { MODAL_PAGE_SIGN_UP, MODAL_PAGE_RESTORE_ACCOUNT, MODAL_PAGE_PROJECT } from "@/core/constants";
   import ViewLoading from '@/components/different/view-loading.vue'
 export default {
   name: 'PageLogin',
@@ -69,16 +69,20 @@ export default {
     }
   },
   computed: {
+    ...mapGetters({
+      isDefaultProjectMode:   'mod_project/GET_isDefaultProjectMode',
+    }),
     isLoading() {
       return this.$store.state.mod_login.showLoader
     },
   },
-  methods: {
+  methods: {    
     ...mapActions({
-      setActivePageAction: 'modal_pages/setActivePageAction',
-      closePageAction: 'modal_pages/closePageAction',
-      closeActivePageAction: 'modal_pages/closePageAction',
-      cloud_userGetProfile:     'mod_apiCloud/CloudAPI_userGetProfile',
+      setActivePageAction:    'modal_pages/setActivePageAction',
+      closePageAction:        'modal_pages/closePageAction',
+      closeActivePageAction:  'modal_pages/closePageAction',
+      cloud_userGetProfile:   'mod_apiCloud/CloudAPI_userGetProfile',
+      getDefaultModeProject:  'mod_project/getDefaultModeProject',
     }),
     togglePasswordVisibility(fieldName) {
       this.passwordVisibility[fieldName] = !this.passwordVisibility[fieldName];
@@ -118,20 +122,43 @@ export default {
             googleAnalytics.trackCustomEvent('login');
 
             this.cloud_userGetProfile();
-            // call this if haven't project setted in local storage
-            const hasProjectSelected = localStorage.hasOwnProperty('targetProject');
-            if(!hasProjectSelected) {
-              this.setActivePageAction(MODAL_PAGE_PROJECT);
-            } else {
-              this.closePageAction();
+            
+            // these two functions determine what happens in the different modes
+            this.setDefaultProjectAction();
+            this.setNormalAction();
+            
+            if(this.$route.name !== 'projects') {
+              this.$router.push({name: 'projects'});
             }
-            if(this.$router.name !== 'projects')
-            this.$router.push({name: 'projects'});
           }
         })
         .catch((error)=> {console.log(error)})
         .finally(()=>    {this.$store.commit('mod_login/SET_showLoader', false)});
     },
+    setNormalAction() {
+      if (this.isDefaultProjectMode) { return; }
+
+      // call this if haven't project setted in local storage
+      const hasProjectSelected = localStorage.hasOwnProperty('targetProject');
+
+      if(!hasProjectSelected) {
+        this.setActivePageAction(MODAL_PAGE_PROJECT);
+      } else {
+        this.closePageAction();
+      }
+    },
+    setDefaultProjectAction() {
+      if (!this.isDefaultProjectMode) { return; }
+
+      // would normally not need this function
+      // this is being run when all the projects are deleted:
+      // - after the application is loaded, and
+      // - not page refresh is done.
+
+      // this same function is found in created() function in App.vue
+      this.getDefaultModeProject();
+      this.closePageAction();
+    }
   }
 }
 </script>

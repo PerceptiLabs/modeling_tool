@@ -26,7 +26,8 @@ const namespaced = true;
 
 const state = {
   statusLocalCore: 'offline', //online
-  corePid: 0
+  corePid: 0,
+  headlessState: [],
 };
 
 const getters = {
@@ -71,6 +72,13 @@ const getters = {
 
     }
     return layers
+  },
+  get_headlessState: (state) => (networkId) => {
+    const headlessState = state.headlessState.find(hs => hs.id === networkId);
+    
+    if (!headlessState) { return; }
+
+    return headlessState.isHeadless;
   }
 };
 
@@ -81,6 +89,18 @@ const mutations = {
   set_corePid(state, value) {
     state.corePid = value
   },
+  set_headlessState(state, { id, value }) {
+    const headlessState = state.headlessState.find(hs => hs.id === id);
+
+    if (!headlessState) {
+      state.headlessState.push({
+        id: id,
+        isHeadless: value
+      });
+    } else {
+      headlessState.isHeadless = value;
+    }
+  }
 };
 
 const actions = {
@@ -110,10 +130,10 @@ const actions = {
           }
         });
   },
-  coreStatusWatcher({dispatch}) {
+  coreStatusWatcher({dispatch}) {  
     setInterval(() => {
-      dispatch('checkCoreAvailability')
-    }, 2000)
+    dispatch('checkCoreAvailability')
+  }, 2000)
   },
   API_runServer({state, dispatch, commit, rootGetters}) {
     let timer;
@@ -397,6 +417,20 @@ const actions = {
       });
   },
 
+  API_getRootFolder() {
+    const theData = {
+      reciever: '',
+      action: 'getRootFolder',
+      value: ''
+    }
+
+    return coreRequest(theData)
+      .then((data)=> data)
+      .catch((err)=> {
+        console.error(err);
+      })
+  },
+
   //---------------
   //  NETWORK SAVE
   //---------------
@@ -449,19 +483,20 @@ const actions = {
       .then((data)=> data)
       .catch((err)=> {
         console.error('SaveTrained answer', err);
+        return Promise.reject();
       });
   },
   API_saveModel({dispatch, getters, rootGetters}, {model}) {
     // location shoul be getted from default location of project
     // /model_${model.apiMeta.model_id}
-    const save_path = `${PROJECT_DEFAULT_FOLDER}project_${model.apiMeta.project}/model_${model.apiMeta.model_id}`;
+    const save_path = `${model.apiMeta.location}`;
     
     const theData = {
       action: "saveJsonModel",
       value:  {
         reciever: model,
         path: save_path,
-        json: JSON.stringify(model),
+        json: stringifyNetworkObjects(model),
       }
     };
     return coreRequest(theData)
@@ -500,6 +535,7 @@ const actions = {
       .then((data)=> data)
       .catch((err)=> {
         console.error('saveJsonModel answer', err);
+        return Promise.reject();
       });
   },
 
@@ -512,14 +548,12 @@ const actions = {
       action: "getNetworkInputDim",
       value: getters.GET_coreNetwork
     };
-    console.log('getNetworkInputDim request', theData);
+
     if(isWeb()) {
       dispatch('globalView/ShowCoreNotFoundPopup', null, { root: true });
     }
     return coreRequest(theData)
       .then((data)=> {
-        console.log(data);
-        //console.log('getNetworkInputDim answer', data);
         if(data) return dispatch('mod_workspace/SET_elementInputDim', data, {root: true});
       })
       .catch((err)=> {
@@ -774,12 +808,23 @@ const actions = {
     };
     coreRequest(theData)
       .then((data)=> {
+        const thePath = data.substring(data.indexOf('/'));
+        const { apiMeta } = rootGetters['mod_workspace/GET_currentNetwork'];
+        dispatch('mod_workspace/SET_model_saved_version_location', thePath, {root: true});
+        dispatch('mod_project/updateModel', {
+          ...apiMeta,
+          saved_version_location: thePath
+        }, {root: true});
+        
         dispatch('globalView/GP_infoPopup', data, {root: true});
         trackerData.result = 'success';
       })
       .catch((err)=> {
         console.error(err);
-        dispatch('globalView/GP_errorPopup', err, {root: true});
+        if(settings.Type !== 'ipynb') {
+          dispatch('globalView/GP_errorPopup', 'Kernel is not connected', {root: true});
+        }
+        // dispatch('globalView/GP_errorPopup', err, {root: true});
         trackerData.result = 'error';
       })
       .finally(()=> {
@@ -796,12 +841,17 @@ const actions = {
   
       if (settings.Type === 'ipynb') {
         // current 'this' is the Vuex store object
-        const payload = await createNotebookJson(this);
-        return ({
-          ...settings,
-          frontendNetwork: rootGetters['mod_workspace/GET_currentNetwork'].networkName,
-          NotebookJson: payload
-        });
+        try {
+          const payload = await createNotebookJson(this);
+          return ({
+            ...settings,
+            frontendNetwork: settings.name,
+            NotebookJson: payload
+          });
+        } 
+        catch(err) {
+          dispatch('globalView/GP_errorPopup', 'Kernel is not connected', {root: true});
+        }
       }
     }
   },
@@ -826,8 +876,49 @@ const actions = {
         commit('SET_statusLocalCore', 'offline')
       });
   },
+  API_getModelStatus({rootGetters, dispatch, commit}, modelId) {
+    const theData = {
+      reciever: modelId,
+      // action: rootGetters['mod_workspace/GET_testIsOpen'] ? 'getTestStatus' :'getStatus',
+      // @todo ask about this twho types getTestStatus && getStatus, difference between them.
+      action: 'getStatus',
+      value: ''
+    };
+    coreRequest(theData)
+      .then((data)=> {
+        dispatch('mod_workspace/SET_statusNetworkCoreDinamically', {
+          ...data,
+          modelId: modelId,
+        }, {root: true})
+      })
+      .catch((err)=> {
+        if(err.toString() !== "Error: connect ECONNREFUSED 127.0.0.1:5000") {
+          console.error(err);
+        }
+        commit('SET_statusLocalCore', 'offline')
+      });
+  },
 
-  API_setHeadless({dispatch, rootState, rootGetters}, value) {
+  API_setHeadless({commit, getters, rootGetters}, value) {
+    // Checking headless state and only sending if:
+    // - different or
+    // - never sent before
+    
+    // This is because the Kernel can current not handle a request
+    // that sets the same state (i.e. true -> true).
+
+    const networkHeadlessState = getters.get_headlessState(rootGetters['mod_workspace/GET_currentNetworkId']);
+    
+    commit('set_headlessState', {
+      id: rootGetters['mod_workspace/GET_currentNetworkId'],
+      value: value
+    });
+
+    // if the value is the same, don't send it
+    if (networkHeadlessState === value) {
+      return Promise.resolve();
+    }
+
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
       action: 'headless',
@@ -873,16 +964,17 @@ const actions = {
         console.error(err);
       });
   },
-  API_createFolder(ctx, folder_name) {
+  API_createFolder(ctx, {folder_path}) {
+    if (!folder_path) { return; }
+
     const theData = {
       receiver: '',
       action: 'createFolder',
       value: {
-        "folder_path": '/Users/antonbourosu/proj/',
-        "folder_name": folder_name
+        "folder_path": folder_path
       },
     }
-
+    
     return coreRequest(theData)
       .then(res => {
         return res;
@@ -890,6 +982,30 @@ const actions = {
       .catch(err => {
         console.error(err);
       });
+  },
+  API_isDirExist (ctx, path) {
+    const theData = {
+      receiver: '',
+      action: 'isDirExist',
+      value: {
+        path
+      }
+    };
+    return coreRequest(theData)
+      .then(res => res)
+      .catch(e => console.error(e));
+  },
+  API_isFileExist (ctx, path) {
+    const theData = {
+      receiver: '',
+      action: 'isFileExist',
+      value: {
+        path
+      }
+    };
+    return coreRequest(theData)
+      .then(res => res)
+      .catch(e => console.error(e));
   }
 };
 

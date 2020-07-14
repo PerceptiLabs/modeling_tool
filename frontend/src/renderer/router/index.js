@@ -19,7 +19,7 @@ const router = new Router({
   ...routerOptions,
   routes: [
     ...routesElectron,
-    {path: '/',             name: 'projects',    component: PageProjects},
+    {path: '/',             name: 'main-page',    component: PageProjects},
     {path: '/app',          name: 'app',      component: PageApp},
     // {path: '/restore-account',     name: 'restore-account', component: PageRestoreAccount},
     {path: '/projects',     name: 'projects', component: PageProjects },
@@ -29,10 +29,12 @@ const router = new Router({
 });
 
 router.beforeEach((to, from, next) => {
-  console.log(from);
-  if(from.name === "app") {
-    store.commit('mod_workspace/set_workspacesInLocalStorage');
-  }
+  // if(from.name === "app") {
+  //   // store.commit('mod_workspace/set_workspacesInLocalStorage');
+
+    // console.log('router.beforeEach - updateWorkspaces');
+    // store.dispatch('mod_webstorage/updateWorkspaces', null, { root: true });
+  // }
   if(isWeb()) {
     Analytics.hubSpot.trackRouteChange(to);
     Analytics.googleAnalytics.trackRouteChange(to); 

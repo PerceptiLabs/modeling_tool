@@ -169,10 +169,10 @@ function coreRequest(data, path, no, name) {
                 if(initialSentData.action === "updateResults") {
                   const modelId = parseInt(initialSentData.reciever);
                   let errorMessage = obgData.errorMessage[0];
-                  let startPosition =  errorMessage.indexOf(' This will be reported as a bug.');
-                  if(startPosition !== -1) {
-                    errorMessage = errorMessage.substring(0, startPosition)
-                  }
+                  // let startPosition =  errorMessage.indexOf(' This will be reported as a bug.');
+                  // if(startPosition !== -1) {
+                  //   errorMessage = errorMessage.substring(0, startPosition)
+                  // }
                   store.dispatch('mod_workspace/set_NetworkCoreErrorAction', {errorMessage, modelId});
                 }
 

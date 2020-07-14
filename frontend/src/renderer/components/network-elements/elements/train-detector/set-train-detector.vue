@@ -40,16 +40,16 @@
             input(type="number" v-model="settings.threshold")
       .settings-layer_section
         .form_row
-          .form_label(v-tooltip-interactive:right="interactiveInfo.lambda_coord") λ
-            sub coord:
-          #tutorial_lambda_coord.form_input(data-tutorial-hover-info)
-            input(type="number" v-model="settings.lambda_coord")
+          .form_label(v-tooltip-interactive:right="interactiveInfo.lambda_class") λ
+            sub classification:
+          #tutorial_lambda_class.form_input(data-tutorial-hover-info)
+            input(type="number" v-model="settings.lambda_class")
       .settings-layer_section
         .form_row
-          .form_label(v-tooltip-interactive:right="interactiveInfo.lambda_no_obj") λ
+          .form_label(v-tooltip-interactive:right="interactiveInfo.lambda_noobj") λ
             sub non object:
-          #tutorial_lambda_no_obj.form_input(data-tutorial-hover-info)
-            input(type="number" v-model="settings.lambda_no_obj")
+          #tutorial_lambda_noobj.form_input(data-tutorial-hover-info)
+            input(type="number" v-model="settings.lambda_noobj")
       .settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.optimizer")
           .form_label Optimizer:
@@ -128,8 +128,8 @@ export default {
         batch_size: '3',
         num_box: '2',
         threshold: '0.8',
-        lambda_coord: '5',
-        lambda_no_obj: '0.7',
+        lambda_class: '0.5',
+        lambda_noobj: '0.1',
         N_class: '1',
         Loss: "Quadratic", //#Cross_entropy, Quadratic, W_cross_entropy, Dice
         Class_weights: '1',
@@ -167,11 +167,11 @@ export default {
           title: 'Threshold',
           text: 'Input the threshold'
         },
-        lambda_coord: {
+        lambda_class: {
           title: 'Lambda Coord',
           text: 'Input the Lambda Coord'
         },
-        lambda_no_obj: {
+        lambda_noobj: {
           title: 'Lambda No Obj',
           text: 'Input the Lambda No Obj'
         },

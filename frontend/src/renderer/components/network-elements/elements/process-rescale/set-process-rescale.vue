@@ -10,12 +10,12 @@
         .form_row
           .form_label Width * Height:
           .form_input
-            input(type="number" v-model="settings.width")
+            input(type="number" v-model="settings.width" @keyup="changeWidth")
           .form_input
-            input(type="number" v-model="settings.height")
+            input(type="number" v-model="settings.height"  @keyup="changeHeight")
         button.btn.btn--icon.visible-icon.rescale(
           type="button"
-          :class="{'invisible-icon': isLocked}"
+          :class="{'invisible-icon': !isLocked}"
           @click="toggleLock()"
         )
           i.icon.icon-lock
@@ -39,7 +39,16 @@
     name: 'SetProcessRescale',
     mixins: [mixinSet],
     mounted() {
-      this.$store.dispatch('mod_api/API_getInputDim')
+      this.$store.dispatch('mod_api/API_getInputDim');
+      if(this.currentEl.layerMeta.InputDim) {
+        const dimention = this.currentEl.layerMeta.InputDim.split(",");
+        const width = parseInt(dimention[0].slice(1));
+        const height = parseInt(dimention[1].slice(1));
+
+        this.ratio = height / width;
+        this.settings.width = width;
+        this.settings.height = height;
+      }
     },
     data() {
       return {
@@ -52,29 +61,22 @@
       }
     },
     methods: {
+      changeWidth() {
+        if(this.isLocked) {
+          this.settings.height = parseInt(this.settings.width * this.ratio);
+        }
+      },
+      changeHeight() {
+        if(this.isLocked) {
+          this.settings.width = parseInt(this.settings.height / this.ratio);
+        }
+      },
       saveSettings(tabName) {
         this.applySettings(tabName);
       },
       toggleLock() {
         this.isLocked = !this.isLocked;
       }
-    },
-    watch: {
-      'settings.width': {
-        handler() {
-          if(this.isLocked) {
-            this.settings.height = this.settings.width * this.ratio;
-          }
-        }
-      },
-      'settings.height': {
-        handler() {
-          if(this.isLocked) {
-            this.settings.width = this.settings.height / this.ratio;
-          }
-        }
-      }
-
     }
   }
 </script>

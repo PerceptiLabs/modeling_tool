@@ -31,18 +31,27 @@
   export default {
     name: 'pageQuantum',
     components: { ProjectSidebar, TheToolbar, TheLayersbar, TheSidebar, TheWorkspace, TheTutorialStoryboard },
+     beforeRouteEnter(to, from, next) {
+        next((vm) => {
+            vm.from = from;
+        });
+    },
     created() {
-      // debugger;
       if(isWeb()) {
-        this.$store.dispatch('mod_workspace/GET_workspacesFromLocalStorage')
-          .then(_ => {
-            // if(!this.workspaceContent.length) { this.ADD_network(); }
+        // this.$store.dispatch('mod_webstorage/loadWorkspaces')
+        //   .then(_ => {
+        //     if(this.from.name === null) {
+        //       this.$store.commit('mod_workspace/get_lastActiveTabFromLocalStorage');
+        //     }
+        //     if(!this.workspaceContent.length) { 
+        //       this.$router.push({'name': 'projects'});
+        //     }
 
-            // request charts if the page has been refreshed, and
-            // the current tab is the first one
+        //     // request charts if the page has been refreshed, and
+        //     // the current tab is the first one
 
-            // this.SET_chartRequests(this.workspaceContent[0].networkID);
-          });
+        //     // this.SET_chartRequests(this.workspaceContent[0].networkID);
+        //   });
       } else {
         if(!this.workspaceContent.length) this.ADD_network();
         this.DELETE_userWorkspace();
@@ -53,7 +62,7 @@
       this.set_appIsOpen(true);
       window.addEventListener("resize",  this.resizeEv, false);
       if(isWeb()) {
-        window.addEventListener('beforeunload', this.saveWorkspaces);
+        window.addEventListener('beforeunload', this.beforeUnload);
       }
       this.$nextTick(()=> {
         this.addDragListeners();
@@ -69,7 +78,7 @@
     beforeDestroy() {
       window.removeEventListener("resize", this.resizeEv, false);
       if(isWeb()) {
-        window.removeEventListener('beforeunload', this.saveWorkspaces);
+        window.removeEventListener('beforeunload', this.beforeUnload);
       }
       this.removeDragListeners();
       this.set_appIsOpen(false);
@@ -81,7 +90,8 @@
           dragged: null,
           outClassName: 'svg-arrow',
         },
-        resizeEv: throttleEv(this.eventResize)
+        resizeEv: throttleEv(this.eventResize),
+        from: null,
       }
     },
     computed: {
@@ -116,11 +126,11 @@
     },
     methods: {
       ...mapMutations({
-        setShowStoryboard:            'mod_tutorials/SET_showTutorialStoryBoard',
-        set_appIsOpen:                'globalView/SET_appIsOpen',
-        add_dragElement:              'mod_workspace/ADD_dragElement',
-        set_workspacesInLocalStorage: 'mod_workspace/set_workspacesInLocalStorage',
-        setGridValue: 'globalView/setGridStateMutation',
+        setShowStoryboard:                  'mod_tutorials/SET_showTutorialStoryBoard',
+        set_appIsOpen:                      'globalView/SET_appIsOpen',
+        setGridValue:                       'globalView/setGridStateMutation',
+        add_dragElement:                    'mod_workspace/ADD_dragElement',
+        set_workspaceChangesInLocalStorage: 'mod_workspace-changes/set_workspaceChangesInLocalStorage',
       }),
       ...mapActions({
         tutorialPointActivate:'mod_tutorials/pointActivate',
@@ -129,7 +139,8 @@
         ADD_element:          'mod_workspace/ADD_element',
         SET_chartRequests:    'mod_workspace/SET_chartsRequestsIfNeeded',
         DELETE_userWorkspace: 'mod_user/DELETE_userWorkspace',
-        setSidebarStateAction: 'globalView/hideSidebarAction',
+        setSidebarStateAction:'globalView/hideSidebarAction',
+        updateWorkspaces:     'mod_webstorage/updateWorkspaces',
       }),
       addDragListeners() {
         this.$refs.layersbar.addEventListener("dragstart", this.dragStart, false);
@@ -137,8 +148,8 @@
       removeDragListeners() {
         this.$refs.layersbar.removeEventListener("dragstart", this.dragStart, false);
       },
-      saveWorkspaces() {
-        this.set_workspacesInLocalStorage();
+      beforeUnload() {
+        this.set_workspaceChangesInLocalStorage();
       },
       offDragListener() {
         this.$refs.layersbar.removeEventListener("dragend", this.dragEnd, false);

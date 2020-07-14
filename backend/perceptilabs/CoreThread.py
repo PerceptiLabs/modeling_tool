@@ -1,3 +1,4 @@
+import logging
 import threading
 import traceback
 import sys
@@ -5,13 +6,15 @@ import sentry_sdk
 from sentry_sdk import utils
 from sentry_sdk import capture_exception
 # from sentry_sdk import configure_scope
-import logging
+from perceptilabs.logconf import APPLICATION_LOGGER
 
 
 from perceptilabs.core_new.history import HistoryInputException
 from perceptilabs.core_new.errors import LayerSessionAbort
 
-log = logging.getLogger(__name__)
+
+logger = logging.getLogger(APPLICATION_LOGGER)
+
 
 class CoreThread(threading.Thread):
    def __init__(self, func, issue_handler):
@@ -44,9 +47,9 @@ class CoreThread(threading.Thread):
       except Exception as e:
          with self.issue_handler.create_issue('Unexpected exception in CoreThread', e) as issue:
             self.issue_handler.put_error(issue.frontend_message)
-            log.error(issue.internal_message)
+            logger.error(issue.internal_message)
             sentry_sdk.capture_message(str(e))
-
+            
    def globaltrace(self, frame, event, arg): 
       if event == 'call': 
          return self.localtrace 

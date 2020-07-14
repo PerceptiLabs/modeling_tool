@@ -162,7 +162,8 @@ export const createNotebookJson = async (storeReference) => {
     const notebookJson = notebookJsonBuilderV4.build(sortedCode);
 
     return notebookJson;
-  });
+  })
+  .catch(() => Promise.reject());
 
 }
 

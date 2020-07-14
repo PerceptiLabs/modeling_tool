@@ -32,12 +32,7 @@ steps:
 
 - bash: |
     cd scripts/
-    bash -i setup_docker.sh
-  displayName: 'Environment setup'
-
-- bash: |
-    cd scripts/
-    bash -i build_docker.sh
+    bash -i build_posix.bash docker
   displayName: 'Build'
 
 - task: Docker@2
@@ -45,7 +40,7 @@ steps:
     containerRegistry: 'perceptilabs'
     repository: 'core'
     command: 'buildAndPush'
-    Dockerfile: 'build/backend_out/Dockerfile'
+    Dockerfile: 'build/out/Dockerfile'
 
 - task: Docker@2
   inputs:

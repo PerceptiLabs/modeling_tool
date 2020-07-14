@@ -18,6 +18,11 @@
             base-radio(group-name="group" value-input="3D" v-model="settings.Deconv_dim")
               span 3D
       .settings-layer_section
+        .form_row(v-tooltip-interactive:right="interactiveInfo.patchSize")
+          .form_label Patch size:
+          .form_input
+            input( type="text" v-model="settings.Patch_size")
+      .settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.stride")
           .form_label Stride:
           .form_input
@@ -32,9 +37,9 @@
         .form_row(v-tooltip-interactive:right="interactiveInfo.zeroPadding")
           .form_label Zero-padding:
           .form_input
-            base-radio(group-name="group3" value-input="'SAME'"  v-model="settings.Padding")
+            base-radio(group-name="group3" value-input="SAME"  v-model="settings.Padding")
               span SAME
-            base-radio(group-name="group3" value-input="'VALID'"  v-model="settings.Padding")
+            base-radio(group-name="group3" value-input="VALID"  v-model="settings.Padding")
               span VALID
       .settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.activationFunction")
@@ -48,7 +53,10 @@
               span ReLU
             base-radio(group-name="group1" value-input="Tanh"  v-model="settings.Activation_function")
               span Tanh
-
+            base-radio(group-name="group1" value-input="Softmax"  v-model="settings.Activation_function")
+              span Softmax
+            base-radio(group-name="group1" value-input="LeakyReLU"  v-model="settings.Activation_function")
+              span LeakyReLU
       .settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.dropout")
           .form_label Dropout:
@@ -63,6 +71,15 @@
           .form_label Keep probability:
           .form_input
             input(type="number" v-model="settings.Keep_prob")
+
+      .settings-layer_section
+        .form_row(v-tooltip-interactive:right="interactiveInfo.batchNormalization")
+          .form_label Batch Normalization:
+          .form_input
+            base-radio(group-name="group4" :value-input="true" v-model="settings.Batch_norm")
+              span Yes
+            base-radio(group-name="group4" :value-input="false" v-model="settings.Batch_norm")
+              span No
 
     template(slot="Code-content")
       settings-code(
@@ -83,17 +100,23 @@ export default {
     return {
       settings: {
         Deconv_dim: "2D", //Automatic, 1D, 2D, 3D
+        Patch_size: "3",
         Stride: "2",
-        Padding: "'SAME'", //'SAME', 'VALID'
+        Padding: "SAME", //'SAME', 'VALID'
         Feature_maps: "8",
         Activation_function: "Sigmoid", //Sigmoid, ReLU, Tanh, None
         Dropout: false, //True, False
-        Keep_prob: '1'
+        Keep_prob: '1',
+        Batch_norm: false
       },
       interactiveInfo: {
         dimension: {
           title: 'Dimension',
           text: 'Choose which type of convolutional </br> operation to use'
+        },
+        patchSize: {
+          title: 'Patch Size',
+          text: 'Set the patch size'
         },
         stride: {
           title: 'Stride',
@@ -114,6 +137,10 @@ export default {
         dropout: {
           title: 'Dropout',
           text: 'Choose if dropout should </br> be used or not'
+        },
+        batchNormalization: {
+            title: 'Batch Normalization',
+            text: 'Choose if batch normalization should be used or not'
         }
       },
     }

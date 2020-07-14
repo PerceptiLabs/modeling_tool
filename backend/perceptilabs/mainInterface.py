@@ -1,3 +1,4 @@
+import logging
 import sys
 import os
 import logging
@@ -19,15 +20,16 @@ from perceptilabs.core_new.lightweight import LightweightCore, LW_ACTIVE_HOOKS
 from perceptilabs.modules import ModuleProvider
 from perceptilabs.core_new.cache import get_cache
 from perceptilabs.core_new.networkCache import NetworkCache
-from perceptilabs.codehq import CodeHqNew as CodeHq
+from perceptilabs.logconf import APPLICATION_LOGGER, set_user_email
 from perceptilabs.core_new.lightweight2 import LightweightCoreAdapter
 from perceptilabs.core_new.cache2 import LightweightCache
+import perceptilabs.logconf
 
-        
+
 #LW interface
-from perceptilabs.lwInterface import getNotebookImports, getNotebookRunscript, getFolderContent, createFolder, saveJsonModel, getJsonModel, getGraphOrder, getDataMeta, getDataMetaV2, getPartitionSummary, getCodeV1, getCodeV2, getNetworkInputDim, getNetworkOutputDim, getPreviewSample, getPreviewVariableList, Parse
+from perceptilabs.lwInterface import getRootFolder, getNotebookImports, getNotebookRunscript, getFolderContent, createFolder, saveJsonModel, getJsonModel, getGraphOrder, getDataMeta, getDataMetaV2, getPartitionSummary, getCodeV1, getCodeV2, getNetworkInputDim, getNetworkOutputDim, getPreviewSample, getPreviewVariableList, Parse
 
-log = logging.getLogger(__name__)
+logger = logging.getLogger(APPLICATION_LOGGER)
 
 
 LW_CACHE_MAX_ITEMS = 25 # Only for '--core-mode v2'
@@ -78,12 +80,6 @@ class Interface():
             ckptObj.close()
 
     def create_lw_core(self, reciever, jsonNetwork):
-        if self._core_mode == 'v1':
-            return self._create_lw_core_v1(reciever, jsonNetwork)
-        else:
-            return self._create_lw_core_v2(reciever, jsonNetwork)
-
-    def _create_lw_core_v2(self, reciever, jsonNetwork):
         data_container = DataContainer()
         extras_reader = LayerExtrasReader()
         error_handler = LightweightErrorHandler()
@@ -91,83 +87,13 @@ class Interface():
         lw_core = LightweightCoreAdapter(jsonNetwork, extras_reader, error_handler, self._core.issue_handler, self._lw_cache_v2, data_container)
         return lw_core, extras_reader, data_container
 
-    def _create_lw_core_v1(self, reciever, jsonNetwork):                
-        if reciever not in self._lwDict:
-            self._lwDict[reciever]=NetworkCache()
-        else:
-            deleteList=[]
-            for layer_id in self._lwDict[reciever].get_layers():
-                if layer_id not in jsonNetwork:
-                    deleteList.append(layer_id)
-            log.info("Deleting these layers: " + str(deleteList))
-            for layer_id in deleteList:
-                self._lwDict[reciever].remove_layer(layer_id)
-
-        graph = Graph(jsonNetwork)
-        
-        graph_dict = graph.graphs
-
-        for value in graph_dict.values():
-            if "checkpoint" in value["Info"] and value["Info"]["checkpoint"]:
-                info = value["Info"].copy()
-
-                ckpt_path = info['checkpoint'][1]
-                if '//' in ckpt_path:
-                    new_ckpt_path = os.path.sep+ckpt_path.split(2*os.path.sep)[1] # Sometimes frontend repeats the directory path. /<dir-path>//<dir-path>/model.ckpt-1
-                    log.warning(
-                        f"Splitting malformed checkpoint path: '{ckpt_path}'. "
-                        f"New path: '{new_ckpt_path}'"
-                    )
-                    info['checkpoint'][1] = new_ckpt_path
-                    
-                self._add_to_checkpointDict(info)
-
-        if log.isEnabledFor(logging.DEBUG):
-            log.debug("create_lw_core: checkpoint dict: \n" + stringify(self._checkpointDict))
-
-        data_container = DataContainer()
-        extras_reader = LayerExtrasReader()
-
-        module_provider = ModuleProvider()
-        module_provider.load('tensorflow', as_name='tf')
-        module_provider.load('numpy', as_name='np')
-        module_provider.load('pandas', as_name='pd')             
-        module_provider.load('gym')
-        module_provider.load('json')  
-        module_provider.load('os')   
-        module_provider.load('skimage')         
-        module_provider.load('dask.array', as_name='da')
-        module_provider.load('dask.dataframe', as_name='dd')                  
-        
-        for hook_target, hook_func in LW_ACTIVE_HOOKS.items():
-            module_provider.install_hook(hook_target, hook_func)
-
-        error_handler = LightweightErrorHandler()
-        
-        global session_history_lw
-        cache = get_cache()
-        session_history_lw = SessionHistory(cache) # TODO: don't use global!!!!
-
-
-        lw_core = LightweightCore(
-            CodeHq, graph_dict,
-            data_container, session_history_lw,
-            module_provider, error_handler,
-            extras_reader, checkpointValues=self._checkpointDict.copy(),
-            network_cache=self._lwDict[reciever],
-            core_mode=self._core_mode
-        )
-
-        
-        return lw_core, extras_reader, data_container
-
     def create_response(self, request):
         reciever = request.get('reciever')
         action = request.get('action')
         value = request.get('value')
 
-        if log.isEnabledFor(logging.DEBUG):
-            log.debug("creating response for action: {}. \nFull request:\n{}".format(
+        if logger.isEnabledFor(logging.DEBUG):
+            logger.debug("creating response for action: {}. \nFull request:\n{}".format(
                 action,
                 pprint.pformat(request, depth=3)
             ))
@@ -185,10 +111,10 @@ class Interface():
         #    with self._core.issue_handler.create_issue('Error in create_response', e) as issue:
         #        self._core.issue_handler.put_error(issue.frontend_message)
         #        response = {'content': issue.frontend_message}                
-        #        log.error(issue.internal_message)
+        #        logger.error(issue.internal_message)
 
-        if log.isEnabledFor(logging.DEBUG):
-            log.debug("created response for action: {}. \nFull request:\n{}\nResponse:\n{}".format(
+        if logger.isEnabledFor(logging.DEBUG):
+            logger.debug("created response for action: {}. \nFull request:\n{}\nResponse:\n{}".format(
                 action,
                 pprint.pformat(request, depth=3),
                 stringify(response)
@@ -231,6 +157,17 @@ class Interface():
         elif action == "getJsonModel":
             json_path = value
             return getJsonModel(json_path=json_path).run()
+        
+        elif action == "isDirExist":
+            path_to_folder = value["path"]
+            return os.path.isdir(path_to_folder)
+
+        elif action == 'isFileExist':
+            path_to_file = value['path']
+            return os.path.isfile(path_to_file)
+
+        elif action == "getRootFolder":
+            return getRootFolder().run()
 
         elif action == "saveJsonModel":
             save_path = value["path"]
@@ -239,8 +176,7 @@ class Interface():
 
         elif action == "createFolder":
             folder_path = value['folder_path']
-            folder_name = value['folder_name']
-            return createFolder(folder_path=folder_path, folder_name=folder_name).run()
+            return createFolder(folder_path=folder_path).run()
 
         elif action == "getPartitionSummary":
             Id=value["Id"]
@@ -311,15 +247,6 @@ class Interface():
                                         network=jsonNetwork, 
                                         lw_core=lw_core, 
                                         extras_reader=extras_reader).run()
-        elif action == "getJsonModel":
-            print(value)
-            json_path = value
-            return getJsonModel(json_path=json_path).run()
-
-        elif action == "saveJsonModel":
-            save_path = value["path"]
-            json_model = value["json"]
-            return saveJsonModel(save_path=save_path, json_model=json_model).run()
 
         elif action == "Parse":
             if value["Pb"]:
@@ -478,8 +405,10 @@ class Interface():
             user = value
             with configure_scope() as scope:
                 scope.user = {"email" : user}
-                log.info("User has been set to %s" %str(value))
 
+            perceptilabs.logconf.set_user_email(user)
+            logger.info("User has been set to %s" %str(value))
+            
             return "User has been set to " + value
 
         else:

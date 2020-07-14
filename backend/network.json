@@ -81,15 +81,15 @@
                 "Conv_dim": "2D",
                 "Patch_size": "3",
                 "Stride": "2",
-                "Padding": "'SAME'",
+                "Padding": "SAME",
                 "Feature_maps": "8",
-                "Activation_function": "Sigmoid",
-                "Dropout": false,
+                "Activation_function": "Softmax",
+                "Dropout": "False",
                 "Keep_prob": "1",
-                "PoolBool": false,
+                "PoolBool": "False",
                 "Pooling": "Max",
                 "Pool_area": "2",
-                "Pool_padding": "'SAME'",
+                "Pool_padding": "SAME",
                 "Pool_stride": "2"
             },
             "Code": null,
@@ -113,9 +113,10 @@
             "endPoints": [],
             "Properties": {
                 "Neurons": "10",
-                "Activation_function": "Sigmoid",
+                "Activation_function": "LeakyReLU",
                 "Dropout": false,
-                "Keep_prob": "1"
+                "Keep_prob": "1",
+                "batch_norm": "False"
             },
             "Code": null,
             "backward_connections": [
@@ -212,7 +213,8 @@
                 "Momentum": "0.9",
                 "Decay_steps": "100000",
                 "Decay_rate": "0.96",
-                "Training_iters": "20000"
+                "Training_iters": "20000",
+                "Batch_size": "10"
             },
             "Code": null,
             "backward_connections": [
