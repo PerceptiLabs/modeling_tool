@@ -57,8 +57,8 @@ export default {
 <style lang="scss" scoped>
   @import "../../scss/base";
   .statistics-box_tabset {
-    position: absolute;
-    top: 47px;
+    // position: absolute;
+    // top: 85px;
     z-index:10;
     right: 11px;
     display: flex;
