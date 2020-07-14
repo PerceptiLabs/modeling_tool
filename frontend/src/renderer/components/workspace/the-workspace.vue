@@ -143,7 +143,7 @@
     z-index: 100;
   }
   .page_workspace {
-    position: relative;
+    // position: relative;
     display: flex;
     flex-direction: column;
     overflow: hidden;

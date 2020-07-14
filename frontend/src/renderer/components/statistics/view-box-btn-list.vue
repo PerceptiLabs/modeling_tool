@@ -58,7 +58,7 @@ export default {
   @import "../../scss/base";
   .statistics-box_tabset {
     position: absolute;
-    top: 45px;
+    top: 85px;
     right: 11px;
     display: flex;
     flex-wrap: nowrap;
