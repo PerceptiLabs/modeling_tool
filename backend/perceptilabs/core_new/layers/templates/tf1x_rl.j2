@@ -3,29 +3,6 @@
 {% macro run_normal(graph, layer_name, layer_pairs, n_episodes, batch_size, learning_rate, discount_factor, replay_memory_size, initial_exploration, final_exploration, final_exporation_frame, update_frequency, target_network_update_frequency, n_s_max, optimizer, export_directory) %}
         self._status = 'initializing'
 
-        def get_rl_graph(graph):
-            import copy
-            new_nodes = []
-            new_edges = []
-            node_pairs = {}
-            target_nodes = graph.inner_nodes
-            for node in graph.inner_nodes:
-                new_node = copy.deepcopy(node)
-                new_node._layer_id = new_node._layer_id + '_copy'
-                new_nodes.append(new_node)
-                node_pairs[node] = new_node
-            for edge in graph.edges():
-                if edge[0] in graph.inner_nodes and edge[1] in graph.inner_nodes:
-                    new_edge = [node_pairs[edge[0]], node_pairs[edge[1]]]
-                elif edge[0] in graph.inner_nodes and edge[1] not in graph.inner_nodes:
-                    new_edge = [node_pairs[edge[0]], edge[1]]
-                elif edge[0] not in graph.inner_nodes and edge[1] in graph.inner_nodes:
-                    new_edge = [edge[0], node_pairs[edge[1]]]
-                new_edges.append(new_edge)
-            graph._nx_graph.add_nodes_from(new_nodes)
-            graph._nx_graph.add_edges_from(new_edges)
-            return graph, new_nodes, target_nodes, node_pairs
-
 
         copied_graph = graph.clone()
         target_nodes = copied_graph.inner_nodes

@@ -6,7 +6,7 @@ import pprint
 from sentry_sdk import configure_scope
 from perceptilabs.extractVariables import extractCheckpointInfo
 from perceptilabs.s3buckets import S3BucketAdapter
-
+import time
 #core interface
 from perceptilabs.coreInterface import coreLogic
 
@@ -408,6 +408,7 @@ class Interface():
             return response
 
         elif action == "getEndResults":
+            # time.sleep(3)
             response = self._core.getEndResults()
             return response
 

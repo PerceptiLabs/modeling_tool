@@ -8,15 +8,13 @@
             h3 Result
         .popup_body
           .settings-layer_section
-            .body_results-info
-              .results-info--validation
-                p Training
-                span Training Accuracy: {{ popupInfo.acc_train | round(2)}}%
-                span Training Loss: {{ popupInfo.loss_train | round(2)}}
-              .results-info--validation
-                p Validation
-                span Validation Accuracy: {{ popupInfo.acc_val | round(2)}}%
-                span Validation Loss: {{ popupInfo.loss_val | round(2)}}
+            .body_results-info.d-flex
+              .column-item(v-for="(columData, index) in popupInfo")
+                p.header {{Object.keys(columData)[0]}}
+                .lists(v-for="lists in columData")
+                  .list-item.d-flex(v-for="(list, index) in lists")
+                    p(style="margin-right: 3px") {{index}}:  
+                    p {{list.toFixed(2)}}
 
         .popup_foot
           //-button.btn.btn--primary(type="button"
@@ -33,19 +31,15 @@ export default {
   mounted() {
     this.$store.dispatch('mod_api/API_getResultInfo')
       .then((data)=> {
+        console.log(data);
         this.popupInfo = {...data};
+        console.log(this.popupInfo);
       });
     this.tutorialPointActivate({way: 'next', validation: 'tutorial_statistic-tab'})
   },
   data() {
     return {
       popupInfo: {
-        acc_train: 0,
-        r_sq_train: 0,
-        loss_train: 0,
-        acc_val: 0,
-        r_sq_val: 0,
-        loss_val: 0,
       }
     }
   },
@@ -104,6 +98,17 @@ export default {
     display: flex;
     margin-bottom: 2rem;
     line-height: 1.6;
+
+    .column-item {
+      width: 200px;
+
+      .header {
+        margin-top: 20px;
+        margin-bottom: 25px;
+        font-weight: 500;
+        font-size: 1.3rem
+      }
+    }
     span {
       display: block;
     }
