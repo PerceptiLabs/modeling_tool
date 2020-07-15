@@ -105,7 +105,7 @@
             collaborator-avatar(
                 :list="[{id: 1, name: user && user.firstName || '', img: null,}]"
               )
-            | {{ (model && model.apiMeta && model.apiMeta.updated) ? model.apiMeta.updated.substring(0, 10) : ''}}
+            | {{ (model && model.apiMeta && model.apiMeta.updated) ? formatDate(model.apiMeta.updated)  : ''}}
         
         
         div.models-list-row.model-list-item(
@@ -134,7 +134,7 @@
             collaborator-avatar(
                 :list="[{id: 1, name: user && user.firstName || '', img: null,}]"
               )
-            | {{ (model && model && model.updated) ? model.updated.substring(0, 10) : ''}}
+            | {{ (model && model && model.updated) ? formatDate(model.updated) : ''}}
 
 
     file-picker-popup(
@@ -499,17 +499,18 @@
       addNetworksToWorkspace(models, modelsApiData) {
         const filteredModels = models.filter(m => m);
         for(const [index, model] of filteredModels.entries()) {
-          if(modelsApiData[index].model_id !== model.networkID) {
-            model.networkID = modelsApiData[index].model_id;
-            model.apiMeta = modelsApiData[index];
-          }
+          // if(modelsApiData[index].model_id !== model.networkID) {
+          //   model.networkID = modelsApiData[index].model_id;
+          //   model.apiMeta = modelsApiData[index];
+          // }
+          // update apiMeta wiht rygg meta.
+           model.apiMeta = modelsApiData[index];
 
           const matchingApiData = modelsApiData.find(mad => mad.model_id === model.networkID);
           if (matchingApiData) {
             model.networkName = matchingApiData.name;
             model.networkRootFolder = matchingApiData.location;
           }
-          
           this.addNetwork({network: model, apiMeta: model.apiMeta, focusOnNetwork: false});
         }
 
@@ -634,6 +635,19 @@
         this.renameIndex = null;
         this.renameValue = null;
       },
+      formatDate (dateString) {
+        if(!dateString) { return ''; }
+        let date = new Date(dateString);
+        let day = date.getDate().toString();
+        day = day.length > 1 ? day : `0${day}`
+        let month = date.getMonth() + 1;
+        month = month.length > 1 ? month : `0${month}`
+        const year = date.getFullYear().toString().substring(2);
+        const hour = date.getHours();
+        const minutes = date.getMinutes();
+        const seconds = date.getSeconds();
+        return `${day}/${month}/${year} ${hour}:${minutes}:${seconds}`;
+      }
     }
   }
 </script>
