@@ -138,7 +138,7 @@ class coreLogic():
             import json
             with open('net.json_', 'w') as f:
                 json.dump(network, f, indent=4)
-
+                
         def backprop(layer_id):
             backward_connections = network['Layers'][layer_id]['backward_connections']
             if backward_connections:

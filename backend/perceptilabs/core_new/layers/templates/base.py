@@ -14,6 +14,7 @@ def log_rendering_errors(func):
         try:
             return func(*args, **kwargs)
         except jinja2.TemplateSyntaxError as e:
+            logger.error(add_line_numbering(e.source))
             logger.error(
                 f"{str(e)} when rendering jinja template. "
                 f"{e.filename}:{e.lineno} '{e.message}'. "

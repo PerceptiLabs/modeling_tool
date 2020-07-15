@@ -7,6 +7,11 @@ import logging
 
 log = logging.getLogger(__name__)
 
+@pytest.fixture(scope='session', autouse=True)
+def disable_gpu():
+    os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+    yield
+
 
 @pytest.fixture(scope='function', autouse=True)
 def print_name_and_memory():

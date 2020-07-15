@@ -234,11 +234,8 @@ DEFINITION_TABLE = {
     'ProcessReshape': LayerDef(
         Tf1xLayer,
         'tf1x.j2',
-        'layer_tf1x_reshape',        
-        {
-            'shape': lambda specs: specs['Properties']['Shape'],
-            'permutation': lambda specs: specs['Properties']['Permutation']
-        },
+        'layer_tf1x_reshape',
+        macro_parameters=None,
         import_statements=[
             'import tensorflow as tf',
             'import numpy as np',

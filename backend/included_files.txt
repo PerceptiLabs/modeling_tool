@@ -17,7 +17,6 @@ perceptilabs/createDataObject.py
 perceptilabs/extractVariables.py
 perceptilabs/funclib.py
 perceptilabs/functionParser.py
-perceptilabs/graph.py
 perceptilabs/lw_graph.py
 perceptilabs/modules.py
 perceptilabs/networkExporter.py
@@ -41,12 +40,40 @@ perceptilabs/server/appServer.py
 perceptilabs/server/desktop_serverlib.py
 perceptilabs/server/web_serverlib.py
 
+# perceptilabs/tasks
+perceptilabs/tasks/executor.py
+perceptilabs/tasks/utils.py
+
 # perceptilabs/code_generator
 perceptilabs/code_generator/__init__.py
 perceptilabs/code_generator/base.py
 perceptilabs/code_generator/datadata.py
 perceptilabs/code_generator/dataenv.py
 perceptilabs/code_generator/tensorflow.py
+
+# perceptilabs/autosettings
+perceptilabs/autosettings/__init__.py
+perceptilabs/autosettings/base.py
+perceptilabs/autosettings/rules.py
+perceptilabs/autosettings/utils.py
+
+# perceptilabs/graph
+perceptilabs/graph/__init__.py
+perceptilabs/graph/legacy_graph.py
+
+# perceptilabs/graph/spec
+perceptilabs/graph/spec/__init__.py
+perceptilabs/graph/spec/base.py
+
+# perceptilabs/graph/spec/layers
+perceptilabs/graph/spec/layers/__init__.py
+perceptilabs/graph/spec/layers/base.py
+perceptilabs/graph/spec/layers/datadata.py
+perceptilabs/graph/spec/layers/deeplearningfc.py
+perceptilabs/graph/spec/layers/deeplearningconv.py
+perceptilabs/graph/spec/layers/processreshape.py
+perceptilabs/graph/spec/layers/processonehot.py
+perceptilabs/graph/spec/layers/trainclassification.py
 
 # perceptilabs/script
 perceptilabs/script/__init__.py
@@ -85,7 +112,6 @@ perceptilabs/core_new/communication/state.py
 perceptilabs/core_new/communication/utils.py
 perceptilabs/core_new/communication/deployment.py
 perceptilabs/core_new/communication/zmq.py
-perceptilabs/core_new/communication/task_executor.py
 
 # perceptilabs/core_new/compatibility
 perceptilabs/core_new/compatibility/__init__.py

@@ -129,12 +129,12 @@ class {{layer_name}}(Tf1xLayer):
   
 
 
-{% macro layer_tf1x_reshape(layer_name, shape, permutation) %}
+{% macro layer_tf1x_reshape(layer_name, layer_spec) %}
 class {{layer_name}}(Tf1xLayer):
     def __call__(self, x: tf.Tensor, is_training: tf.Tensor = None) -> tf.Tensor:
         """ Takes a tensor as input and reshapes it."""
-        shp = {{shape}}
-        perm = {{permutation}}
+        shp = list({{layer_spec.shape}})
+        perm = list({{layer_spec.permutation}})
         
         shp = [i for i in shp if i != 0]
         if(len(shp) != len(perm)):
@@ -144,7 +144,6 @@ class {{layer_name}}(Tf1xLayer):
             
         y = tf.reshape(x, [x.get_shape().as_list()[0] if x.get_shape().as_list()[0] is not None else -1] + shp)
         y = tf.transpose(y, perm=[0] + [i+1 for i in perm])
-        
         self.y = y
         return y
 

@@ -1,8 +1,13 @@
 import os
 import copy
 import importlib
+import pkg_resources
 from tempfile import NamedTemporaryFile
-    
+
+from perceptilabs.utils import add_line_numbering
+from perceptilabs.graph.spec.layers import get_layer_builder
+from perceptilabs.core_new.layers.definitions import TEMPLATES_DIRECTORY
+
 _RENDER_MACRO_TEMPLATE = \
 """
 {{% from "{macro_file}" import {macro_name} %}}
@@ -82,7 +87,107 @@ def create_layer(j2_engine, definition_table, top_level_imports, layer_type, **m
     )
     
     return layer
+
+
+
+class MyLoader:
+    """ Data package module loader. Executes package import code and adds the package to the
+    module cache.
+    """
+    def __init__(self, source_code):
+        self._source_bytes = source_code.encode()
+
+    @classmethod
+    def create_module(cls, spec):  
+        return None
+
+    def exec_module(self, module):
+        file_name = '<rendered-code>'
+        code_obj = compile(self._source_bytes, file_name, 'exec', dont_inherit=True, optimize=2)
+        exec(code_obj, module.__dict__)
+
+
+def render_macro(engine, macro_path, macro_name, macro_parameters=None, renderer_kwargs=None, import_statements=None):
+    renderer_kwargs = renderer_kwargs or {}
+
+    if not os.path.isfile(macro_path):
+        templates_directory = pkg_resources.resource_filename('perceptilabs', TEMPLATES_DIRECTORY)
+        _macro_path = os.path.join(templates_directory, macro_path)
+
+        if os.path.isfile(_macro_path):
+            macro_path = _macro_path
+        else:
+            raise ValueError(f"Couldn't locate macro {macro_path}. Used directory '.' and '{templates_directory}'")        
+
     
+    template = "import logging\n"
+
+    if import_statements:
+        template += "\n".join(import_statements or [])
+        template += "\n\n"
+
+    template += "log = logging.getLogger(__name__)\n"
+    template += "\n"
+
+    with open(macro_path, 'r') as f:
+        template += f.read()
+        template += "\n\n"
+
+    macro_parameters = macro_parameters or {}
+    arg_str = ', '.join(f"{arg_name}={arg_value}" for arg_name, arg_value in macro_parameters.items())        
+    template += "{{" + f"{macro_name}({arg_str})" + "}}\n"
+
+    code = engine.render_string(template, **renderer_kwargs)
+    return code
+
+
+def import_code(code):
+    loader = MyLoader(code)
+    spec = importlib.machinery.ModuleSpec("my_module", loader)
+    module = importlib.util.module_from_spec(spec)
+    try:        
+        spec.loader.exec_module(module)        
+    except:
+        print(add_line_numbering(code))
+        raise
+    return module
+
+
+def run_and_get_layer_macro(j2_engine, definition_table, macro_path, macro_name, layer_type, parameters, import_statements):
+    layer_def = definition_table.get(layer_type)    
+    import_statements = layer_def.import_statements + import_statements
+    
+    builder = get_layer_builder(layer_type)
+    
+    # Default parameters
+    builder.set_parameter('id', layer_type)
+    builder.set_parameter('name', layer_type)    
+    builder.set_parameter('type', layer_type)
+    builder.set_parameter('code', None)
+    builder.set_parameter('visited', False)
+    builder.set_parameter('end_points', [])
+    builder.set_parameter('checkpoint_path', None)
+    builder.set_parameter('backward_connections', ())
+    builder.set_parameter('forward_connections', ())                            
+
+    # Set parameters
+    for key, value in parameters.items():
+        builder.set_parameter(key, value)
+    layer_spec = builder.build()
+    
+    code = render_macro(
+        j2_engine,
+        macro_path,
+        macro_name,
+        macro_parameters={'layer_name': f"'{layer_spec.name}'", 'layer_spec': 'spec_obj'},
+        renderer_kwargs={'spec_obj': layer_spec},
+        import_statements=import_statements
+    )
+    module = import_code(code)
+
+    class_object = getattr(module, layer_spec.name)
+    instance = class_object()
+    return instance
 
 
 if __name__ == "__main__":

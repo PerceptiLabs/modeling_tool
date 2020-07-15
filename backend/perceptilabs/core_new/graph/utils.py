@@ -19,7 +19,9 @@ def breadth_first_sort(graph, start_nodes):
 
 
 def sanitize_layer_name(name):
+    from perceptilabs.graph.spec.layers.base import sanitize_name
     name = name.replace(' ', '_')
+    
     name = '_' + name
     return name
 

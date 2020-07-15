@@ -67,7 +67,7 @@ def main():
     args = get_input_args()
     session_id = uuid.uuid4().hex
     
-    perceptilabs.logconf.setup_application_logger()
+    perceptilabs.logconf.setup_application_logger(log_level=args.log_level)
     perceptilabs.logconf.setup_data_logger()
     perceptilabs.logconf.set_session_id(session_id)
     

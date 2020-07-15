@@ -24,6 +24,7 @@ from perceptilabs.logconf import APPLICATION_LOGGER, set_user_email
 from perceptilabs.core_new.lightweight2 import LightweightCoreAdapter
 from perceptilabs.core_new.cache2 import LightweightCache
 import perceptilabs.logconf
+import perceptilabs.autosettings.utils as autosettings_utils
 
 
 #LW interface
@@ -44,8 +45,8 @@ class Interface():
         self._core_mode = core_mode
         assert core_mode in ['v1', 'v2']
 
-        if core_mode == 'v2':
-            self._lw_cache_v2 = LightweightCache(max_size=LW_CACHE_MAX_ITEMS)        
+        self._lw_cache_v2 = LightweightCache(max_size=LW_CACHE_MAX_ITEMS)
+        self._settings_engine = None
 
     def _addCore(self, reciever):
         core=coreLogic(reciever, self._core_mode)
@@ -55,6 +56,8 @@ class Interface():
         if reciever not in self._cores:
             self._addCore(reciever)
         self._core = self._cores[reciever]
+
+        self._settings_engine = autosettings_utils.setup_engine(self._lw_cache_v2)
 
     def shutDown(self):
         for c in self._cores.values():
@@ -149,6 +152,17 @@ class Interface():
                 )
 
             return get_data_meta.run()
+
+        elif action == "getSettingsRecommendation":
+            json_network = value["Network"]
+
+            if self._settings_engine is not None:
+                new_json_network = autosettings_utils.get_recommendation(json_network, self._settings_engine)
+            else:
+                new_json_network = {}
+                logger.warning("Settings engine is not set. Cannot make recommendations")
+                
+            return new_json_network
                 
         elif action == "getFolderContent":
             current_path = value
@@ -283,7 +297,7 @@ class Interface():
 
         elif action == "getNotebookRunscript":
             jsonNetwork = value
-            return getNotebookRunscript(jsonNetwork=jsonNetwork).run()         
+            return getNotebookRunscript(jsonNetwork=jsonNetwork).run()
 
         elif action == "Close":
             self.shutDown()

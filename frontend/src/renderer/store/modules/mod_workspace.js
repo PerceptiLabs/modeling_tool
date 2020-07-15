@@ -725,10 +725,10 @@ const mutations = {
 
   /*-- NETWORK ELEMENTS SETTINGS --*/
   set_elementSettings(state, {dispatch, settings}) {
-    //console.log('set_elementSettings', settings);
     currentElement(settings.elId).layerSettings = settings.set;
     currentElement(settings.elId).layerCode = settings.code;
     currentElement(settings.elId).layerSettingsTabName = settings.tabName;
+    currentElement(settings.elId).visited = settings.visited;
     dispatch('mod_workspace-history/PUSH_newSnapshot', null, {root: true});
   },
 
@@ -1650,5 +1650,6 @@ const createNetElement = function (event) {
     connectionOut: [],
     connectionIn: [],
     connectionArrow: [],
+    visited: false,
   };
 };
