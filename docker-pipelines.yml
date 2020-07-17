@@ -1,50 +1,53 @@
-# ASP.NET Core
-# Build and test ASP.NET Core projects targeting .NET Core.
-# Add steps that run tests, create a NuGet package, deploy, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
-
-
 trigger:
-# - web-dev
 - none
 
 variables:
+  # CommitId is passed in to the app_variables.json file
   BuildVariables.CommitId : $(Build.SourceVersion)
 
-pool:
-  vmImage: 'ubuntu-16.04'
+jobs:
+  - job: dockerbuild
+    strategy:
+      matrix:
+        kernel:
+          target: kernel
+          repository: kernel
+        frontend:
+          target: frontend
+          repository: frontend
+        rygg:
+          target: rygg
+          repository: rygg
+    pool:
+      vmImage: 'ubuntu-16.04'
 
-steps:
-- checkout: self
-  fetchDepth: 1
-  
-- task: FileTransform@2
-  inputs:
-    folderPath: '$(System.DefaultWorkingDirectory)/'
-    xmlTransformationRules: 
-    jsonTargetFiles: '**/app_variables.json'
+    steps:
+    - checkout: self
+      clean: true
+      submodules: recursive
+      persistCredentials: true
 
-- task: UsePythonVersion@0
-  inputs: 
-    versionSpec: '3.6'
-    architecture: 'x64'
-    addToPath: true
+    - task: FileTransform@2
+      inputs:
+        folderPath: '$(System.DefaultWorkingDirectory)/'
+        xmlTransformationRules: 
+        jsonTargetFiles: '**/app_variables.json'
 
-- bash: |
-    cd scripts/
-    bash -i build_posix.bash docker
-  displayName: 'Build'
+    - task: UsePythonVersion@0
+      inputs: 
+        versionSpec: '3.6'
+        architecture: 'x64'
+        addToPath: true
 
-- task: Docker@2
-  inputs:
-    containerRegistry: 'perceptilabs'
-    repository: 'core'
-    command: 'buildAndPush'
-    Dockerfile: 'build/out/Dockerfile'
+    - bash: |
+        cd scripts/
+        python build.py docker $(target)
+      displayName: 'Assemble'
 
-- task: Docker@2
-  inputs:
-    containerRegistry: 'perceptilabs'
-    repository: 'frontend'
-    command: 'buildAndPush'
-    Dockerfile: 'build/frontend_out/Dockerfile'
+    - task: Docker@2
+      inputs:
+        containerRegistry: 'perceptilabs'
+        repository: $(repository)
+        command: 'buildAndPush'
+        Dockerfile: 'build/docker/$(target)/Dockerfile'
+

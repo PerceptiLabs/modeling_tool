@@ -6,6 +6,7 @@ backend/net.json
 backend/net.json_
 backend/venv/
 .venv/
+.env
 .python-version
 backend/venv-user/
 backend/data.log

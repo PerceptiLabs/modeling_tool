@@ -31,7 +31,6 @@ def run_timed(func, t_queued, *args, **kwargs):
     elapsed = time.perf_counter() - t_started
     return result, queued, elapsed
 
-
 class AggregationEngine:
     def __init__(self, executor: Executor, data_container: DataContainer, aggregates: Dict[str, Aggregate] = None): 
         self._executor = executor

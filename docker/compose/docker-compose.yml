@@ -1,0 +1,42 @@
+version: '3.4'
+
+services:
+  db:
+    image: postgres:12
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_DB: rygg
+      POSTGRES_USER: rygg
+      POSTGRES_PASSWORD: rygg
+
+  rygg:
+    image: perceptilabs.azurecr.io/rygg:2658
+    # image: rygg_dev
+    environment:
+      DJANGO_DATABASE: postgres
+      DB_NAME: rygg
+      DB_HOST: db
+      DB_USER: rygg
+      DB_PASS: rygg
+    ports:
+      - 8000:8000
+    depends_on:
+      - db
+
+  frontend:
+    image: perceptilabs.azurecr.io/frontend:2658
+    # image: frontend_dev
+    ports:
+      - 8080:8080
+    depends_on:
+      - rygg
+      - kernel
+
+  kernel:
+    image: perceptilabs.azurecr.io/kernel:2658
+    # image: kernel_dev
+    volumes:
+      - .:/plabs
+    ports:
+      - 5000:5000
