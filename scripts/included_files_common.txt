@@ -33,7 +33,6 @@ backend/perceptilabs/createDataObject.py
 backend/perceptilabs/extractVariables.py
 backend/perceptilabs/funclib.py
 backend/perceptilabs/functionParser.py
-backend/perceptilabs/graph.py
 backend/perceptilabs/lw_graph.py
 backend/perceptilabs/modules.py
 backend/perceptilabs/networkExporter.py
@@ -50,6 +49,30 @@ backend/perceptilabs/messaging/base.py
 backend/perceptilabs/messaging/zmq_wrapper.py
 backend/perceptilabs/messaging/simple.py
 backend/perceptilabs/messaging/__init__.py
+
+# perceptilabs/autosettings
+backend/perceptilabs/autosettings/__init__.py
+backend/perceptilabs/autosettings/base.py
+backend/perceptilabs/autosettings/rules.py
+backend/perceptilabs/autosettings/utils.py
+
+# perceptilabs/graph
+backend/perceptilabs/graph/__init__.py
+backend/perceptilabs/graph/legacy_graph.py
+
+# perceptilabs/graph/spec
+backend/perceptilabs/graph/spec/__init__.py
+backend/perceptilabs/graph/spec/base.py
+
+# perceptilabs/graph/spec/layers
+backend/perceptilabs/graph/spec/layers/__init__.py
+backend/perceptilabs/graph/spec/layers/base.py
+backend/perceptilabs/graph/spec/layers/datadata.py
+backend/perceptilabs/graph/spec/layers/deeplearningfc.py
+backend/perceptilabs/graph/spec/layers/deeplearningconv.py
+backend/perceptilabs/graph/spec/layers/processreshape.py
+backend/perceptilabs/graph/spec/layers/processonehot.py
+backend/perceptilabs/graph/spec/layers/trainclassification.py
 
 # backend/perceptilabs/server
 backend/perceptilabs/server/__init__.py
