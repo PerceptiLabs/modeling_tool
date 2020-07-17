@@ -99,7 +99,7 @@ class DataFormatter(logging.Formatter):
         return text
 
 
-def setup_data_logger():
+def setup_data_logger(is_dev=True):
     formatter = DataFormatter()
     
     file_handler = logging.FileHandler(DATA_LOG_FILE, mode='w')
@@ -116,7 +116,9 @@ def setup_data_logger():
     logger.setLevel(logging.INFO)
     logger.addHandler(file_handler)
     #logger.addHandler(stream_handler)
-    logger.addHandler(azure_handler)
+    
+    if not is_dev:
+        logger.addHandler(azure_handler)
 
 
     
