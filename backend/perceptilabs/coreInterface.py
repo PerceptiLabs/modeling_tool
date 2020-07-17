@@ -54,6 +54,7 @@ class coreLogic():
         self.plLicense = LicenseV2()
         
         self._save_counter = 0
+        self._aggregation_futures = []
 
     def setupLogic(self):
         #self.warningQueue=queue.Queue()
@@ -582,6 +583,35 @@ class coreLogic():
 
         return {"content": "Play started"}
 
+    def scheduleAggregations(self, engine, requests):
+        """ Schedules a batch of metric aggregations """
+        future = engine.request_batch(requests)
+        self._aggregation_futures.append(future)
+
+        def prune_futures(future):
+            """ Retain only the most recently completed future (and not-yet-completed futures) """
+            while len(self._aggregation_futures) >= 2 and self._aggregation_futures[1].done():
+                del self._aggregation_futures[0]
+                
+        future.add_done_callback(prune_futures)
+        
+    def getAggregationResults(self, result_names):
+        """ Retrieve results of scheduled aggregations """
+
+        if len(self._aggregation_futures) == 0:
+            return {}
+
+        future = self._aggregation_futures[0]        
+        if not future.done():
+            return {}
+        
+        retrieved = {}
+        results, _, _ = future.result()
+        for result_name in result_names:
+            value, _, _ = results.get(result_name, (None, None, None))
+            retrieved[result_name] = value
+        return retrieved
+    
     def updateResults(self):
         
         # if not self.resultQ.empty():

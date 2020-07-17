@@ -82,7 +82,6 @@ class SettingsEngine:
                 current_graph_dict = current_graph_spec.to_dict()
                 current_graph_dict[current_layer_spec.id] = standard_builder.to_dict(current_layer_spec)
                 current_graph_spec = GraphSpec.from_dict(current_graph_dict)
-                
         return new_specs
             
                 

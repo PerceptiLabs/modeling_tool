@@ -4,12 +4,15 @@ import os
 import logging
 import pprint
 from sentry_sdk import configure_scope
+from concurrent.futures import ThreadPoolExecutor
+import time
+
 from perceptilabs.extractVariables import extractCheckpointInfo
 from perceptilabs.s3buckets import S3BucketAdapter
-import time
-#core interface
+from perceptilabs.aggregation import AggregationRequest, AggregationEngine
 from perceptilabs.coreInterface import coreLogic
-
+from perceptilabs.extractVariables import extractCheckpointInfo
+from perceptilabs.s3buckets import S3BucketAdapter
 from perceptilabs.utils import stringify
 from perceptilabs.graph import Graph
 from perceptilabs.core_new.core import DataContainer
@@ -34,6 +37,7 @@ logger = logging.getLogger(APPLICATION_LOGGER)
 
 
 LW_CACHE_MAX_ITEMS = 25 # Only for '--core-mode v2'
+AGGREGATION_ENGINE_MAX_WORKERS = 2
 
 
 class Interface():
@@ -47,7 +51,25 @@ class Interface():
 
         self._lw_cache_v2 = LightweightCache(max_size=LW_CACHE_MAX_ITEMS)
         self._settings_engine = None
-
+        self._aggregation_engine = self._setup_aggregation_engine()
+        
+    def _setup_aggregation_engine(self):
+        
+        class DummyContainer():
+            def get_metric(self, experiment_name, metric_name, start, end):
+                if isinstance(start, int) and isinstance(end, int) and end - start > 0:
+                    return (None,) * (end - start)
+                else:
+                    return (None,)                
+        data_container = DummyContainer()
+        
+        agg_engine = AggregationEngine(
+            ThreadPoolExecutor(max_workers=AGGREGATION_ENGINE_MAX_WORKERS),
+            data_container,
+            aggregates={}
+        )
+        return agg_engine
+    
     def _addCore(self, reciever):
         core=coreLogic(reciever, self._core_mode)
         self._cores[reciever] = core
@@ -426,5 +448,24 @@ class Interface():
             
             return "User has been set to " + value
 
+        elif action == "scheduleAggregations":
+            requests = [
+                AggregationRequest(
+                    result_name=raw_request['result_name'],
+                    aggregate_name=raw_request['aggregate_name'],
+                    experiment_name=raw_request['experiment_name'],
+                    metric_names=raw_request['metric_names'],
+                    start=raw_request['start'],
+                    end=raw_request['end'],
+                    aggregate_kwargs=raw_request['aggregate_kwargs']
+                )
+                for raw_request in value
+            ]
+            response = self._core.scheduleAggregations(self._aggregation_engine, requests)
+            return response
+        elif action == "getAggregationResults":
+            result_names = value
+            response = self._core.getAggregationResults(result_names)
+            return response
         else:
             raise LookupError(f"The requested action '{action}' does not exist")

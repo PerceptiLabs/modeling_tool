@@ -167,3 +167,8 @@ backend/perceptilabs/dataschema/kernel_started.json
 backend/perceptilabs/dataschema/training_started.json
 backend/perceptilabs/dataschema/training_ended.json
 backend/perceptilabs/dataschema/graph_spec.json
+
+# backend/perceptilabs/aggregation/
+backend/perceptilabs/aggregation/__init__.py
+backend/perceptilabs/aggregation/base.py
+backend/perceptilabs/aggregation/aggregates.py
