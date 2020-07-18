@@ -3,11 +3,11 @@
   data-component="MathArgmax"
   data-layer="Argmax"
   data-type="Other"
-  v-tooltip:networkElement="'Argmax'"
   v-tooltip-interactive:right="interactiveInfo"
     :style="layerStyles"
   )
     i.icon.icon-l-calc-argmax
+    .layerTitle(v-if="showTitle") {{ displayTitle }}
 
 </template>
 
@@ -21,7 +21,8 @@ export default {
       interactiveInfo: {
         title: 'Math Argmax',
         text: 'Argmax layer'
-      }
+      },
+      displayTitle: 'Argmax'
     }
   }
 }

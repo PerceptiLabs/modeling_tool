@@ -3,12 +3,12 @@
     data-component="DeepLearningConv"
     data-layer="Convolution"
     data-type="Other"
-    v-tooltip:networkElement="'Convolution'"
     v-tooltip-interactive:right="interactiveInfo"
     id="tutorial_convolution"
     :style="layerStyles"
   )
     i.icon.icon-round-out
+    .layerTitle(v-if="showTitle") {{ displayTitle }}
 
 </template>
 
@@ -22,7 +22,8 @@ export default {
       interactiveInfo: {
         title: 'Deep Learning Conv',
         text: 'Convolutional layer'
-      }
+      },
+      displayTitle: 'Convolution'
     }
   }
 }

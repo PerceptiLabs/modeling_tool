@@ -4,11 +4,11 @@
     data-component="MathSplit"
     data-layer="Split"
     data-type="Other"
-    v-tooltip:networkElement="'Split'"
     v-tooltip-interactive:right="interactiveInfo"
     :style="layerStyles"
   )
     i.icon.icon-road-split
+    .layerTitle(v-if="showTitle") {{ displayTitle }}
 
 </template>
 
@@ -22,7 +22,8 @@ export default {
       interactiveInfo: {
         title: 'Math Split',
         text: 'Split layer'
-      }
+      },
+      displayTitle: 'Split'
     }
   }
 }

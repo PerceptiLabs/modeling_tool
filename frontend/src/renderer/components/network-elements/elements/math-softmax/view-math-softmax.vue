@@ -3,11 +3,11 @@
   data-component="MathSoftmax"
   data-layer="Softmax"
   data-type="Other"
-  v-tooltip:networkElement="'Softmax'"
   v-tooltip-interactive:right="interactiveInfo"
     :style="layerStyles"
   )
     i.icon.icon-calc-softmax
+    .layerTitle(v-if="showTitle") {{ displayTitle }}
 
 </template>
 
@@ -21,7 +21,8 @@ export default {
       interactiveInfo: {
         title: 'Math Softmax',
         text: 'Softmax layer'
-      }
+      },
+      displayTitle: 'Softmax'
     }
   }
 }

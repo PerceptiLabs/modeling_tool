@@ -3,12 +3,12 @@
     data-component="TrainRegression"
     data-layer="Regression"
     data-type="Training"
-    v-tooltip:networkElement="'Regression'"
     v-tooltip-interactive:right="interactiveInfo"
     id="tutorial_training-regression"
     :style="layerStyles"
   )
     i.icon.icon-train-regression
+    .layerTitle(v-if="showTitle") {{ displayTitle }}
 
 </template>
 
@@ -22,7 +22,8 @@ export default {
       interactiveInfo: {
         title: 'Train Regression',
         text: 'Regression supervised learning layer'
-      }
+      },
+      displayTitle: 'Regression'
     }
   }
 }

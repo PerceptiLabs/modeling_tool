@@ -3,12 +3,12 @@
     data-component="TrainNormal"
     data-layer="Normal"
     data-type="Training"
-    v-tooltip:networkElement="'Classification'"
     v-tooltip-interactive:right="interactiveInfo"
     id="tutorial_training-normal"
     :style="layerStyles"
   )
     i.icon.icon-training
+    .layerTitle(v-if="showTitle") {{ displayTitle }}
 
 </template>
 
@@ -22,7 +22,8 @@ export default {
       interactiveInfo: {
         title: 'Image Classification',
         text: 'Normal supervised learning layer'
-      }
+      },
+      displayTitle: 'Normal'
     }
   }
 }

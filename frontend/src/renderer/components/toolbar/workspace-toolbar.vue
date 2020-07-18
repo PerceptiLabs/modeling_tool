@@ -1,135 +1,137 @@
 <template lang="pug">
-  aside.page_toolbar(
-    :class="{'tutorial-active': activeStepStoryboard === 4}"
-    v-if="!statisticsIsOpen && !testIsOpen")
+  aside
+    .main_toolbar(
+      :class="{'tutorial-active': activeStepStoryboard === 4}"
+      v-if="!statisticsIsOpen && !testIsOpen")
 
-    toolbar-layers
+      ul.toolbar_list
+        li
+          button#tutorial_pointer.btn.btn--toolbar(type="button"
+            :disabled="!networkIsOpen"
+            :class="{'active': networkMode === 'edit'}"
+            v-tooltip:bottom="'Edit'"
+            v-tooltip-interactive:bottom-right="interactiveInfo.edit"
+            @click="setNetMode('edit', 'tutorial_pointer')"
+          )
+            i.icon.icon-select
 
-    ul.toolbar_list
-      li
-        button#tutorial_pointer.btn.btn--toolbar(type="button"
-          :disabled="!networkIsOpen"
-          :class="{'active': networkMode === 'edit'}"
-          v-tooltip:bottom="'Edit'"
-          v-tooltip-interactive:bottom-right="interactiveInfo.edit"
-          @click="setNetMode('edit', 'tutorial_pointer')"
+        li.toolbar_list-arrow-wrap(
+          :class="{'disable-hover': statisticsIsOpen}"
         )
-          i.icon.icon-select
+          button#tutorial_list-arrow.btn.btn--toolbar(type="button"
+            :disabled="!networkIsOpen"
+            :class="{'active': networkMode === 'addArrow'}"
+            @click="setNetMode('addArrow', 'tutorial_list-arrow')"
+            v-tooltip:bottom="'Arrow'"
+            v-tooltip-interactive:bottom="interactiveInfo.arrow"
+          )
+            i.icon.icon-arrow-left
 
-      li.toolbar_list-arrow-wrap(
-        :class="{'disable-hover': statisticsIsOpen}"
-      )
-        button#tutorial_list-arrow.btn.btn--toolbar(type="button"
-          :disabled="!networkIsOpen"
-          :class="{'active': networkMode === 'addArrow'}"
-          @click="setNetMode('addArrow', 'tutorial_list-arrow')"
-          v-tooltip:bottom="'Arrow'"
-          v-tooltip-interactive:bottom="interactiveInfo.arrow"
-        )
-          i.icon.icon-arrow-left
+      ul.toolbar_list
+        li
+          button.btn.btn--toolbar(type="button"
+            @click="toPrevStepHistory"
+            :disabled="isDisabledPrevStep"
+            v-tooltip:bottom="'Prev step'"
+            v-tooltip-interactive:bottom="interactiveInfo.undo"
+          )
+            i.icon.icon-step-prev
+        li
+          button.btn.btn--toolbar(type="button"
+            @click="toNextStepHistory"
+            :disabled="isDisabledNextStep"
+            v-tooltip:bottom="'Next step'"
+            v-tooltip-interactive:bottom="interactiveInfo.redo"
+          )
+            i.icon.icon-step-next
+      ul.toolbar_list
+        li(:class="{'tutorial-active': activeStepStoryboard === 4}")
+          button#tutorial_run-training-button.btn.btn--toolbar.bg-primary.run-button(type="button"
+            :class="statusStartBtn"
+            v-tooltip:bottom="'Run/Stop'"
+            v-tooltip-interactive:bottom="interactiveInfo.runButton"
+            @click="onOffBtn"
+          )
+            i.icon.icon-on-off
+            span(v-html="statusTraining === 'training' || statusTraining === 'pause' ? 'Stop' : 'Run'")
+        //- li
+        //-   button#tutorial_pause-training.btn.btn--toolbar.tutorial-relative(type="button"
+        //-     :class="{'active': statusNetworkCore === 'Paused'}"
+        //-     :disabled="!isTraining"
+        //-     v-tooltip:bottom="'Pause'"
+        //-     v-tooltip-interactive:bottom="interactiveInfo.pause"
+        //-     @click="trainPause"
+        //-   )
+        //-     i.icon.icon-pause
+        //- li
+        //-   button.btn.btn--toolbar(type="button"
+        //-     :disabled="statusNetworkCore !== 'Validation'"
+        //-     v-tooltip:bottom="'Skip'"
+        //-     v-tooltip-interactive:bottom="interactiveInfo.skip"
+        //-     @click="skipValid"
+        //-   )
+        //-     i.icon.icon-next
+      //- ul.toolbar_list
+      //-   li
+      //-     input.search-bar(
+      //-       placeholder="Search operation"
+      //-     )
+      ul.toolbar_list
+        li
+          span TensorFlow 1.15 
+      ul.toolbar_list
+        li
+          span Python 3
+          span.btn.python-status(
+            :class="{'connected': statusLocalCore === 'online', 'disconnected': statusLocalCore === 'offline'}"
+            v-tooltip:networkElement="kernelLabel"
+          )
+      //ul.toolbar_list
+        li
+          button.btn.btn--toolbar(type="button"
+            v-tooltip:bottom="'Generate Hyperparameters'"
+            v-tooltip-interactive:bottom="interactiveInfo.hyperparameters"
+          )
+            i.icon.icon-params
+        li
+          button.btn.btn--toolbar(type="button"
+            v-tooltip:bottom="'BlackBox'"
+            v-tooltip-interactive:bottom="interactiveInfo.blackBox"
+          )
+            i.icon.icon-box
 
-    ul.toolbar_list
-      li
-        button.btn.btn--toolbar(type="button"
-          @click="toPrevStepHistory"
-          :disabled="isDisabledPrevStep"
-          v-tooltip:bottom="'Prev step'"
-          v-tooltip-interactive:bottom="interactiveInfo.undo"
+      .toolbar_settings
+        span.text-primary.middle-text(v-html="statusTrainingText")
+        button.btn.btn--dark.btn--toolbar-settings(
+          type="button"
+          :class="{'active': isNotebookMode}"
+          @click="switchNotebookMode"
+          v-tooltip-interactive:bottom="interactiveInfo.interactiveDoc"
         )
-          i.icon.icon-step-prev
-      li
-        button.btn.btn--toolbar(type="button"
-          @click="toNextStepHistory"
-          :disabled="isDisabledNextStep"
-          v-tooltip:bottom="'Next step'"
-          v-tooltip-interactive:bottom="interactiveInfo.redo"
-        )
-          i.icon.icon-step-next
-    ul.toolbar_list
-      li(:class="{'tutorial-active': activeStepStoryboard === 4}")
-        button#tutorial_run-training-button.btn.btn--toolbar.bg-primary.run-button(type="button"
-          :class="statusStartBtn"
-          v-tooltip:bottom="'Run/Stop'"
-          v-tooltip-interactive:bottom="interactiveInfo.runButton"
-          @click="onOffBtn"
-        )
-          i.icon.icon-on-off
-          span(v-html="statusTraining === 'training' || statusTraining === 'pause' ? 'Stop' : 'Run'")
-      //- li
-      //-   button#tutorial_pause-training.btn.btn--toolbar.tutorial-relative(type="button"
-      //-     :class="{'active': statusNetworkCore === 'Paused'}"
-      //-     :disabled="!isTraining"
-      //-     v-tooltip:bottom="'Pause'"
-      //-     v-tooltip-interactive:bottom="interactiveInfo.pause"
-      //-     @click="trainPause"
-      //-   )
-      //-     i.icon.icon-pause
-      //- li
-      //-   button.btn.btn--toolbar(type="button"
-      //-     :disabled="statusNetworkCore !== 'Validation'"
-      //-     v-tooltip:bottom="'Skip'"
-      //-     v-tooltip-interactive:bottom="interactiveInfo.skip"
-      //-     @click="skipValid"
-      //-   )
-      //-     i.icon.icon-next
-    //- ul.toolbar_list
-    //-   li
-    //-     input.search-bar(
-    //-       placeholder="Search operation"
-    //-     )
-    ul.toolbar_list
-      li
-        span TensorFlow 1.15 
-    ul.toolbar_list
-      li
-        span Python 3
-        span.btn.python-status(
-          :class="{'connected': statusLocalCore === 'online', 'disconnected': statusLocalCore === 'offline'}"
-          v-tooltip:networkElement="kernelLabel"
-        )
-    //ul.toolbar_list
-      li
-        button.btn.btn--toolbar(type="button"
-          v-tooltip:bottom="'Generate Hyperparameters'"
-          v-tooltip-interactive:bottom="interactiveInfo.hyperparameters"
-        )
-          i.icon.icon-params
-      li
-        button.btn.btn--toolbar(type="button"
-          v-tooltip:bottom="'BlackBox'"
-          v-tooltip-interactive:bottom="interactiveInfo.blackBox"
-        )
-          i.icon.icon-box
+          span Notebook
+          .ring-icon
 
-    .toolbar_settings
-      span.text-primary.middle-text(v-html="statusTrainingText")
-      button.btn.btn--dark.btn--toolbar-settings(
-        type="button"
-        :class="{'active': isNotebookMode}"
-        @click="switchNotebookMode"
-        v-tooltip-interactive:bottom="interactiveInfo.interactiveDoc"
-      )
-        span Notebook
-        .ring-icon
+        //- tutorial-instructions(
+        //-   ref="tutorialComponent"
+        //-   v-tooltip-interactive:bottom="interactiveInfo.tutorial")
+        //-   button.btn.btn--dark.btn--toolbar-settings(type="button"
+        //-     @click="switchTutorialMode"
+        //-     :class="{'active': isTutorialMode}"
+        //-   )
+        //-     span Tutorial
+        //-     .ring-icon
 
-      //- tutorial-instructions(
-      //-   ref="tutorialComponent"
-      //-   v-tooltip-interactive:bottom="interactiveInfo.tutorial")
-      //-   button.btn.btn--dark.btn--toolbar-settings(type="button"
-      //-     @click="switchTutorialMode"
-      //-     :class="{'active': isTutorialMode}"
-      //-   )
-      //-     span Tutorial
-      //-     .ring-icon
+        button.btn.btn--dark.btn--toolbar-settings(
+          type="button"
+          :class="{'tutorial-active': activeStepStoryboard === 5}"
+          @click="goToReport"
+        )
 
-      button.btn.btn--dark.btn--toolbar-settings(
-        type="button"
-        :class="{'tutorial-active': activeStepStoryboard === 5}"
-        @click="goToReport"
-      )
+          span Report
+          i.icon.icon-bug-report
 
-        span Report
-        i.icon.icon-bug-report
+    .layers-toolbar(v-if="!statisticsIsOpen && !testIsOpen")
+      layers-toolbar
 </template>
 
 <script>
@@ -138,14 +140,11 @@ import { googleAnalytics }                      from '@/core/analytics';
 import { trainingElements, deepLearnElements }  from '@/core/constants.js';
 import { goToLink }                             from '@/core/helpers.js'
 
-// import TutorialInstructions     from '@/components/tutorial/tutorial-instructions.vue';
-import ToolbarLayers            from '@/components/toolbar/workspace-toolbar-layers.vue';
+import LayersToolbar            from '@/components/toolbar/workspace-toolbar-layers.vue';
 
 export default {
   name: 'WorkspaceToolbar',
-  components: { ToolbarLayers
-  //TutorialInstructions, 
-   },
+  components: { LayersToolbar },
   data() {
     return {
       x: null,
@@ -395,7 +394,7 @@ export default {
 
 <style lang="scss" scoped>
   @import "../../scss/base";
-  .page_toolbar {
+  .main_toolbar {
     display: flex;
     align-items: center;
     padding: 5px 2rem 5px 0;
@@ -440,7 +439,8 @@ export default {
     }
 
     &:first-child {
-        margin-left: 2rem;
+      margin-left: 2rem;
+      padding-left: 0;
     }
   }
   .run-button {

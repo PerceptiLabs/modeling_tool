@@ -552,8 +552,8 @@ const mutations = {
     let elementList = getters.GET_currentNetworkElementList;
 
     newEl.layerMeta.tutorialId = getters.GET_tutorialActiveId;
-    newEl.layerMeta.position.top = (event.offsetY - top);
-    newEl.layerMeta.position.left = (event.offsetX - left);
+    newEl.layerMeta.position.top = event.offsetY;
+    newEl.layerMeta.position.left = event.offsetX;
     let depth = checkPosition(newEl, elementList);
 
     if(isCursorInsideWorkspace && firstCopyPositionElement) {

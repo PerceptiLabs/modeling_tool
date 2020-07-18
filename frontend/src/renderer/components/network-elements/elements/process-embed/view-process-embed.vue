@@ -3,11 +3,11 @@
   data-component="ProcessEmbed"
   data-layer="Word Embedding"
   data-type="Other"
-  v-tooltip:networkElement="'Word Embedding'"
   v-tooltip-interactive:right="interactiveInfo"
     :style="layerStyles"
   )
     i.icon.icon-put-in-button
+    .layerTitle(v-if="showTitle") {{ displayTitle }}
 
 </template>
 
@@ -21,7 +21,8 @@ export default {
       interactiveInfo: {
         title: 'Process WordEmbedding',
         text: 'Use word embedding'
-      }
+      },
+      displayTitle: 'Embedding'
     }
   }
 }

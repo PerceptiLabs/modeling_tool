@@ -3,11 +3,12 @@
     data-component="DataRandom"
     data-layer="Random"
     data-type="Data"
-    v-tooltip:networkElement="'Random'"
     v-tooltip-interactive:right="interactiveInfo"
     :style="layerStyles"
   )
     i.icon.icon-random-data
+    .layerTitle(v-if="showTitle") {{ displayTitle }}
+
 
 </template>
 
@@ -21,7 +22,8 @@ export default {
       interactiveInfo: {
         title: 'Data Random',
         text: 'Read an Random either </br> from Gym or Unity'
-      }
+      },
+      displayTitle: 'Random'
     }
   }
 }

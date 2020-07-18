@@ -3,12 +3,12 @@
     data-component="TrainGan"
     data-layer="GAN"
     data-type="Training"
-    v-tooltip:networkElement="'GAN'"
     v-tooltip-interactive:right="interactiveInfo"
     id="tutorial_training-gan"
     :style="layerStyles"
   )
     i.icon.icon-train-gan
+    .layerTitle(v-if="showTitle") {{ displayTitle }}
 
 </template>
 
@@ -22,7 +22,8 @@ export default {
       interactiveInfo: {
         title: 'Train GAN',
         text: ''
-      }
+      },
+      displayTitle: 'GAN'
     }
   }
 }

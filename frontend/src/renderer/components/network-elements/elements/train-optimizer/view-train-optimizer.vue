@@ -3,11 +3,11 @@
     data-component="TrainOptimizer"
     data-layer="Optimizer"
     data-type="Training"
-    v-tooltip:networkElement="'Optimizer'"
     v-tooltip-interactive:right="interactiveInfo"
     :style="layerStyles"
   )
     i.icon.icon-train-optimaze
+    .layerTitle(v-if="showTitle") {{ displayTitle }}
 
 </template>
 
@@ -21,7 +21,8 @@ export default {
       interactiveInfo: {
         title: 'Train Optimizer',
         text: 'Normal supervised learning layer'
-      }
+      },
+      displayTitle: 'Optimizer'
     }
   }
 }

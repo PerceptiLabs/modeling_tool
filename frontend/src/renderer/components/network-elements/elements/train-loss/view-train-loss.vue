@@ -3,11 +3,11 @@
     data-component="TrainLoss"
     data-layer="Loss"
     data-type="Training"
-    v-tooltip:networkElement="'Loss'"
     v-tooltip-interactive:right="interactiveInfo"
     :style="layerStyles"
   )
     i.icon.icon-train-loss
+    .layerTitle(v-if="showTitle") {{ displayTitle }}
 
 </template>
 
@@ -21,7 +21,8 @@ export default {
       interactiveInfo: {
         title: 'Train Loss',
         text: 'Normal supervised learning layer'
-      }
+      },
+      displayTitle: 'Loss'
     }
   }
 }

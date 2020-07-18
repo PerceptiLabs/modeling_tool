@@ -3,11 +3,11 @@
   data-component="LayerCustom"
   data-layer="Layer Custom"
   data-type="Other"
-  v-tooltip:networkElement="'Custom'"
   v-tooltip-interactive:right="interactiveInfo"
     :style="layerStyles"
   )
     i.icon.icon-custom
+    .layerTitle(v-if="showTitle") {{ displayTitle }}
 
 </template>
 
@@ -21,7 +21,8 @@ export default {
       interactiveInfo: {
         title: 'Custom',
         text: 'Custom layer'
-      }
+      },
+      displayTitle: 'Custom'
     }
   }
 }

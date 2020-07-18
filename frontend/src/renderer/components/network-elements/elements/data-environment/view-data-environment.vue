@@ -3,11 +3,11 @@
     data-component="DataEnvironment"
     data-layer="Environment"
     data-type="Data"
-    v-tooltip:networkElement="'Environment'"
     v-tooltip-interactive:right="interactiveInfo"
     :style="layerStyles"
   )
     i.icon.icon-map
+    .layerTitle(v-if="showTitle") {{ displayTitle }}   
 
 </template>
 
@@ -21,7 +21,8 @@ export default {
       interactiveInfo: {
         title: 'Data Environment',
         text: 'Read an environment either </br> from Gym or Unity'
-      }
+      },
+      displayTitle: 'Environment'
     }
   }
 }

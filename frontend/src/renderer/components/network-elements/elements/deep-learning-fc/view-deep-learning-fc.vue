@@ -3,12 +3,12 @@
   data-component="DeepLearningFC"
   data-layer="Fully Connected"
   data-type="Other"
-  v-tooltip:networkElement="'Fully Connected'"
   v-tooltip-interactive:right="interactiveInfo"
   id="tutorial_fully-connected"
     :style="layerStyles"
   )
     i.icon.icon-round
+    .layerTitle(v-if="showTitle") {{ displayTitle }}
 
 </template>
 
@@ -22,7 +22,8 @@ export default {
       interactiveInfo: {
         title: 'Deep Learning FC',
         text: 'Fully Connected layer'
-      }
+      },
+      displayTitle: 'Fully connected'
     }
   }
 }

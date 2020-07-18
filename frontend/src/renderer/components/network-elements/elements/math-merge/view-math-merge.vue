@@ -3,11 +3,11 @@
   data-component="MathMerge"
   data-layer="Merge"
   data-type="Other"
-  v-tooltip:networkElement="'Merge'"
   v-tooltip-interactive:right="interactiveInfo"
     :style="layerStyles"
   )
     i.icon.icon-road-concat
+    .layerTitle(v-if="showTitle") {{ displayTitle }}
 
 </template>
 
@@ -21,7 +21,8 @@ export default {
       interactiveInfo: {
         title: 'Math Merge',
         text: 'Merge layer.'
-      }
+      },
+      displayTitle: 'Merge'
     }
   }
 }

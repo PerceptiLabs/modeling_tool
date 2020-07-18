@@ -3,11 +3,11 @@
     data-component="DeepLearningRecurrent"
     data-layer="Recurrent"
     data-type="Other"
-    v-tooltip:networkElement="'Recurrent'"
     v-tooltip-interactive:right="interactiveInfo"
     :style="layerStyles"
   )
     i.icon.icon-round-left
+    .layerTitle(v-if="showTitle") {{ displayTitle }}
 
 </template>
 
@@ -21,7 +21,8 @@ export default {
       interactiveInfo: {
         title: 'Deep Learning Recurrent',
         text: 'Recurrent layer'
-      }
+      },
+      displayTitle: 'Recurrent'
     }
   }
 }

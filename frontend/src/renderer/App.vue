@@ -94,6 +94,7 @@
         this.updateOnlineStatus();
         this.SET_appVersion(process.env.PACKAGE_VERSION);
         this.$store.dispatch('mod_api/API_runServer', null, {root: true});
+        document.body.style.overflow = 'hidden';
         document.addEventListener('keydown', this.disableHotKeys);
       } else {
         this.appReady();

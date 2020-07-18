@@ -3,11 +3,11 @@
     data-component="TrainDynamic"
     data-layer="Dynamic Routing"
     data-type="Training"
-    v-tooltip:networkElement="'Dynamic Routing'"
     v-tooltip-interactive:right="interactiveInfo"
     :style="layerStyles"
   )
     i.icon.icon-learning-dynamic
+    .layerTitle(v-if="showTitle") {{ displayTitle }}
 
 </template>
 
@@ -21,7 +21,8 @@ export default {
       interactiveInfo: {
         title: 'Train Dynamic',
         text: 'Dynamic routing layer'
-      }
+      },
+      displayTitle: 'Dynamic'
     }
   }
 }

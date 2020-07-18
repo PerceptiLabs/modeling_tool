@@ -3,12 +3,12 @@
     data-component="TrainDetector"
     data-layer="Detector"
     data-type="Training"
-    v-tooltip:networkElement="'Object Detection'"
     v-tooltip-interactive:right="interactiveInfo"
     id="tutorial_training-detector"
     :style="layerStyles"
   )
     i.icon.icon-training-detector
+    .layerTitle(v-if="showTitle") {{ displayTitle }}
 
 </template>
 
@@ -22,7 +22,8 @@ export default {
       interactiveInfo: {
         title: 'Train Detector',
         text: 'Detector supervised learning layer'
-      }
+      },
+      displayTitle: 'Detector'
     }
   }
 }

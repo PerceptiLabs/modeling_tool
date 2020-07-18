@@ -3,11 +3,11 @@
     data-component="DeepLearningDeconv"
     data-layer="Deconvolution"
     data-type="Other"
-    v-tooltip:networkElement="'Deconvolution'"
     v-tooltip-interactive:right="interactiveInfo"
     :style="layerStyles"
   )
     i.icon.icon-round-in
+    .layerTitle(v-if="showTitle") {{ displayTitle }}
 
 </template>
 
@@ -21,7 +21,8 @@ export default {
       interactiveInfo: {
         title: 'Deep Learning Deconv',
         text: 'Deconvolutional layer'
-      }
+      },
+      displayTitle: 'Deconvolution'
     }
   }
 }
