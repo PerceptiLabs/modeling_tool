@@ -1,7 +1,7 @@
 from rest_framework import viewsets
 from rest_framework import permissions
-from rygg.api.models import Project, Model
-from rygg.api.serializers import ProjectSerializer, ModelSerializer
+from rygg.api.models import Project, Model, Notebook
+from rygg.api.serializers import ProjectSerializer, ModelSerializer, NotebookSerializer
 
 
 class ProjectViewSet(viewsets.ModelViewSet):
@@ -12,3 +12,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
 class ModelViewSet(viewsets.ModelViewSet):
     queryset = Model.objects.all()
     serializer_class = ModelSerializer
+
+class NotebookViewSet(viewsets.ModelViewSet):
+    queryset = Notebook.objects.all()
+    serializer_class = NotebookSerializer
