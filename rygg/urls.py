@@ -22,6 +22,7 @@ from rygg.api import views
 router = routers.DefaultRouter()
 router.register(r"projects", views.ProjectViewSet)
 router.register(r"models", views.ModelViewSet)
+router.register(r"notebooks", views.NotebookViewSet)
 
 urlpatterns = [
     path("", (include(router.urls)))
