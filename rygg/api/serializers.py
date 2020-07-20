@@ -11,7 +11,6 @@ class NotebookSerializer(serializers.HyperlinkedModelSerializer):
         fields = ["notebook_id", "project", "name", "created", "updated", "location"]
 
     def create(self, validated_data):
-        # print('***', validated_data)
 
         request = self.context.get('request', {})
         location = request.data.get('location', '')
@@ -26,7 +25,7 @@ class NotebookSerializer(serializers.HyperlinkedModelSerializer):
         return notebook
 
     def update(self, instance, validated_data):
-
+        
         request = self.context.get('request', {})
         location = request.data.get('location', '')
 
@@ -36,11 +35,11 @@ class NotebookSerializer(serializers.HyperlinkedModelSerializer):
             filelink.resource_locator = location
             filelink.save()
 
+        instance.name = validated_data.get('name', instance.name)
         instance.save()
         return instance
 
     def get_location(self, obj):
-        print('obj.filelink', obj.filelink.resource_locator)
         return obj.filelink.resource_locator
 
 
