@@ -47,12 +47,26 @@ def make_model(project, name):
 def delete_model(model_id):
     rest.delete(f"/models/{model_id}/")
 
+def make_notebook(project, name):
+    resp = rest.post("/notebooks/",
+            name=name,
+            project=project)
+    notebook_id = resp["notebook_id"]
+    print(f"made notebook #{notebook_id} in project #{project}")
+    return notebook_id
+
+def delete_notebook(notebook_id):
+    rest.delete(f"/notebooks/{notebook_id}/")
+
+
 rest.check()
 project_id = make_project("test project")
 proj = get_project(project_id)
 test_update(proj)
 model_id = make_model(project_id, "lala")
 delete_model(model_id)
+notebook_id = make_notebook(project_id, "notebook1")
+delete_notebook(notebook_id)
 delete_project(project_id)
 
 print("Success!!")
