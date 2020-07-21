@@ -110,14 +110,14 @@ export default {
   beforeMount() {
     let elList = this.currentNetworkList;
     for(let key in elList) {
-      if(elList[key].layerType==="Data") {
+      if(elList[key].layerType === "Data") {
         this.allRealDataLayers.push({
           text: elList[key].layerName,
           value: elList[key].layerName,
           tutorialId: elList[key].tutorialId
         })
       }
-      if(elList[key].layerType==="Other") {
+      if(elList[key].layerType === "Other" && elList[key].componentName === 'MathSwitch') {
         this.allSwitchLayers.push({
           text: elList[key].layerName,
           value: elList[key].layerName,
