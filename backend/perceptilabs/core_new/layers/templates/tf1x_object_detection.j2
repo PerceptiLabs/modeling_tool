@@ -378,7 +378,10 @@
                 f"loss training, validation: {self.loss_training:.6f}, {self.loss_validation:.6f} - "
                 f"acc. training, validation: {self.accuracy_training:.6f}, {self.accuracy_validation:.6f}"
             )
-            log.info(f"Epoch duration: {round(time.perf_counter() - t0, 3)} s")            
+            log.info(f"Epoch duration: {round(time.perf_counter() - t0, 3)} s")
+
+            if self._stop_condition == "TargetAccuracy" and self._accuracy_training * 100 >= self._target_acc:
+                break             
             self._epoch += 1
 
         self._variables = {k: v for k, v in locals().items() if can_serialize(v)}            
@@ -403,7 +406,7 @@
 
 
 ################################################### Main #####################################################
-{% macro layer_tf1x_object_detection(layer_name, output_layer, target_layer, n_epochs, num_box, grid_size, lambdaclass, lambdanoobj, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory, batch_size) %} #
+{% macro layer_tf1x_object_detection(layer_name, output_layer, target_layer, n_epochs, target_acc, stop_condition, num_box, grid_size, lambdaclass, lambdanoobj, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory, batch_size) %} #
 import itertools
 import cv2
 import copy
@@ -411,6 +414,9 @@ class {{layer_name}}(ObjectDetectionLayer):
     def __init__(self):
         self._n_epochs = {{n_epochs}}
         self._batch_size = {{batch_size}}
+
+        self._target_acc = {{target_acc}}
+        self._stop_condition = '{{stop_condition}}'
 
         self._stopped = False
         self._paused = False

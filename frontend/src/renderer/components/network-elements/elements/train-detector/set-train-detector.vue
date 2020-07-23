@@ -90,6 +90,20 @@
           .form_label Learning rate:
           #tutorial_learning_rate.form_input(data-tutorial-hover-info)
             input(type="number" v-model="settings.Learning_rate")
+      .settings-layer_section
+        .form_row
+          .form_label Additional Stop Condition:
+          #tutorial_stop-condition.tutorial-relative.form_input(data-tutorial-hover-info)
+            base-radio(group-name="group2" value-input="Epochs" v-model="settings.Stop_condition")
+              span None
+            base-radio(group-name="group2" value-input="TargetAccuracy" v-model="settings.Stop_condition")
+              span Target Accuracy
+        template(v-if="settings.Stop_condition === 'TargetAccuracy'")
+          .form_row
+            .form_label Target Accuracy for Stop Condition:
+            .form_input
+              input(type="number" v-model="settings.Stop_Target_Accuracy") 
+              span %
 
     template(slot="Code-content")
       settings-code(
@@ -132,6 +146,8 @@ export default {
         lambda_noobj: '0.1',
         N_class: '1',
         Loss: "Quadratic", //#Cross_entropy, Quadratic, W_cross_entropy, Dice
+        Stop_condition: "Epochs",
+        Stop_Target_Accuracy: 0,
         Class_weights: '1',
         Learning_rate: "0.001",
         Optimizer: "ADAM", //#SGD, Momentum, ADAM, RMSprop

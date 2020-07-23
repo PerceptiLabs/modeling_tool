@@ -148,7 +148,10 @@ def graph_spec_binary_classification():
                     "Decay_rate": "0.96",
                     "Batch_size": 10,                    
                     "Learning_rate": "0.05",
-                    "Distributed": False
+                    "Distributed": False,
+                    "Stop_Iteration":0,
+                    "Stop_Target_Accuracy":80,
+                    "Stop_condition":"Epochs"
                 },
                 "backward_connections": [["4", "fc"], ["5", "one_hot"]],
                 "forward_connections": [],

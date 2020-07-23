@@ -74,7 +74,6 @@
           .form_label Learning rate:
           #tutorial_learning_rate.form_input(data-tutorial-hover-info)
             input(type="number" v-model="settings.Learning_rate")
-
     template(slot="Code-content")
       settings-code(
         :current-el="currentEl"

@@ -114,7 +114,9 @@ def make_graph(j2_engine, tmpdir_del, layer_inputs, layer_targets, layer_fc, exp
         batch_size = 10,
         distributed=distributed,
         export_directory=export_dir,
-        use_cpus=True
+        use_cpus=True,
+        target_acc=80,
+        stop_condition='Epochs'
     )
     
     layers = {
