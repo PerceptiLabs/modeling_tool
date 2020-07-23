@@ -74,7 +74,6 @@ export const hubSpot = (function() {
           },
         ],
         "context": {
-          "hutk": hubspotutkValue, // include this parameter and set it to the hubspotutk cookie value to enable cookie tracking on your submission
           "pageUri": "perceptilabs.com/register",
           "pageName": "User registration"
         },
@@ -96,9 +95,7 @@ export const hubSpot = (function() {
       
       const url = 'https://api.hsforms.com/submissions/v3/integration/submit/7122301/d3fd6e39-4be1-4316-b93b-af60978f2337';
       return axios.post(url, payload)
-        .then(response => {
-            
-        })
+        .then(response => {})
         .catch(error => {
           console.error('Error tracking user registration', error);
         });
