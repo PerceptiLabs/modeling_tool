@@ -393,7 +393,7 @@ DEFINITION_TABLE = {
             'beta2': lambda specs: specs['Properties']['Beta_2'],
             'distributed': lambda specs: specs['Properties'].get('Distributed', False),
             'export_directory': resolve_checkpoint_path,
-            'use_cpus': lambda specs: specs['Properties'].get('Use_CPUs', True),
+            'use_cpu': lambda specs: specs['Properties'].get('Use_CPU', True),
             'stop_condition': resolve_tf1x_stop_cond           
         },
         import_statements=[
@@ -434,6 +434,7 @@ DEFINITION_TABLE = {
             'batch_size': lambda specs: specs['Properties']['batch_size'],
             'lambdaclass': lambda specs: specs['Properties']['lambda_class'],
             'lambdanoobj': lambda specs: specs['Properties']['lambda_noobj'],
+            'use_cpu': lambda specs: specs['Properties'].get('Use_CPU', True),
             'target_acc': lambda specs: specs['Properties'].get('Stop_Target_Accuracy', None),
             'stop_condition': resolve_tf1x_stop_cond
         },
@@ -473,6 +474,7 @@ DEFINITION_TABLE = {
             'distributed': lambda specs: specs['Properties'].get('Distributed', False),
             'batch_size': lambda specs: specs['Properties']['batch_size'],
             'export_directory': resolve_checkpoint_path,
+            'use_cpu': lambda specs: specs['Properties'].get('Use_CPU', True)
         },
         import_statements=[
             'import tensorflow as tf',
@@ -505,7 +507,8 @@ DEFINITION_TABLE = {
             'replay_memory_size': 300000,
             'final_exploration': 0.1,
             'final_exporation_frame': 500,
-            'target_network_update_frequency': 100
+            'target_network_update_frequency': 100,
+            'use_cpu': lambda specs: specs['Properties'].get('Use_CPU', True)
 
         },
         import_statements=[
@@ -543,6 +546,7 @@ DEFINITION_TABLE = {
             'beta1': lambda specs: specs['Properties']['Beta_1'],
             'beta2': lambda specs: specs['Properties']['Beta_2'],
             'distributed': lambda specs: specs['Properties'].get('Distributed', False),
+            'use_cpu': lambda specs: specs['Properties'].get('Use_CPU', True),   
             'export_directory': resolve_checkpoint_path,
             'target_acc': lambda specs: specs['Properties'].get('Stop_Target_Accuracy', None),
             'stop_condition': resolve_tf1x_stop_cond            

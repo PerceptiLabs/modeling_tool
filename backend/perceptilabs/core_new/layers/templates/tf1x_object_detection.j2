@@ -1,6 +1,6 @@
 {% from 'tf1x_utils.j2' import session %}
 
-{% macro run_normal(graph, layer_name, output_layer, target_layer, n_epochs, num_box, grid_size, lambdaclass, lambdanoobj, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory, batch_size) %}
+{% macro run_normal(graph, layer_name, output_layer, target_layer, n_epochs, num_box, grid_size, lambdaclass, lambdanoobj, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory, batch_size, use_cpu) %}
         self._status = 'initializing'
 
         self._grid_size = {{grid_size}}
@@ -285,7 +285,7 @@
         # update_weights = optimizer.minimize(loss_tensor, global_step=global_step)
 
         sess = None
-        {{session(sess, use_gpu=True) | indent(width=8)}}         
+        {{session(sess, use_gpu=not use_cpu) | indent(width=8)}}         
         self._sess = sess
 
         trackable_variables = {}
@@ -406,7 +406,7 @@
 
 
 ################################################### Main #####################################################
-{% macro layer_tf1x_object_detection(layer_name, output_layer, target_layer, n_epochs, target_acc, stop_condition, num_box, grid_size, lambdaclass, lambdanoobj, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory, batch_size) %} #
+{% macro layer_tf1x_object_detection(layer_name, output_layer, target_layer, n_epochs, target_acc, stop_condition, num_box, grid_size, lambdaclass, lambdanoobj, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory, batch_size, use_cpu) %} #
 import itertools
 import cv2
 import copy
@@ -469,7 +469,7 @@ class {{layer_name}}(ObjectDetectionLayer):
             graph: A PerceptiLabs Graph object containing references to all layers objects included in the model produced by this training layer.
         """   
         {% if not distributed -%}
-            {{ run_normal(graph, layer_name, output_layer, target_layer, n_epochs, num_box, grid_size, lambdaclass, lambdanoobj, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory, batch_size) }}
+            {{ run_normal(graph, layer_name, output_layer, target_layer, n_epochs, num_box, grid_size, lambdaclass, lambdanoobj, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory, batch_size, use_cpu) }}
         {% endif %}            
 
     def on_export(self, path: str, mode: str) -> None:

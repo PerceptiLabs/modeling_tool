@@ -1,6 +1,6 @@
 {% from 'tf1x_utils.j2' import session %}
 
-{% macro run_normal(layer_name, switch_layer, real_layer, batch_size, n_epochs, class_weights, generator_optimizer, discriminator_optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory) %}
+{% macro run_normal(layer_name, switch_layer, real_layer, batch_size, n_epochs, class_weights, generator_optimizer, discriminator_optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory, use_cpu) %}
         self._status = 'initializing'
 
         real_data_layer_id = '{{real_layer}}' 
@@ -291,7 +291,7 @@
              
 
         sess = None
-        {{session(sess, use_gpu=True) | indent(width=8)}}      
+        {{session(sess, use_gpu=not use_cpu) | indent(width=8)}}      
         self._sess = sess
         
         trackable_variables = {}
@@ -426,7 +426,7 @@
 {% endmacro %}
 
 ################################################### Main #####################################################
-{% macro layer_tf1x_gan(layer_name, switch_layer, real_layer, batch_size, n_epochs, target_acc, stop_condition, class_weights, generator_optimizer, discriminator_optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory) %}
+{% macro layer_tf1x_gan(layer_name, switch_layer, real_layer, batch_size, n_epochs, target_acc, stop_condition, class_weights, generator_optimizer, discriminator_optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory, use_cpu) %}
 class {{layer_name}}(GANLayer):
 
     def __init__(self):
@@ -493,7 +493,7 @@ class {{layer_name}}(GANLayer):
             graph: A PerceptiLabs Graph object containing references to all layers objects included in the model produced by this training layer.
         """   
         {% if not distributed -%}
-            {{ run_normal(layer_name, switch_layer, real_layer, batch_size, n_epochs, class_weights, generator_optimizer, discriminator_optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory) }}
+            {{ run_normal(layer_name, switch_layer, real_layer, batch_size, n_epochs, class_weights, generator_optimizer, discriminator_optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory, use_cpu) }}
         {% endif %}                
 
     def on_export(self, path: str, mode: str) -> None:

@@ -151,6 +151,7 @@ backend/perceptilabs/core_new/layers/templates/tf1x_classification.j2
 backend/perceptilabs/core_new/layers/templates/tf1x_gan.j2
 backend/perceptilabs/core_new/layers/templates/tf1x_object_detection.j2
 backend/perceptilabs/core_new/layers/templates/tf1x_regression.j2
+backend/perceptilabs/core_new/layers/templates/tf1x_rl.j2
 backend/perceptilabs/core_new/layers/templates/tf1x_utils.j2
 backend/perceptilabs/core_new/layers/templates/utils.py
 

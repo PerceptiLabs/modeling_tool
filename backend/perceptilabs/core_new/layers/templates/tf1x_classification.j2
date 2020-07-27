@@ -1,6 +1,6 @@
 {% from 'tf1x_utils.j2' import session, session_distributed %}
 
-{% macro run_normal(graph, layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, batch_size, export_directory) %}
+{% macro run_normal(graph, layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, batch_size, export_directory, use_cpu) %}
         self._status = 'initializing'
         output_layer_id = '{{output_layer}}'
         target_layer_id = '{{target_layer}}'
@@ -192,9 +192,8 @@
         update_weights = optimizer.minimize(loss_tensor, global_step=global_step)
         update_weights = tf.group([update_weights, update_ops])
 
-
         sess = None
-        {{session(sess, use_gpu=True) | indent(width=8)}}        
+        {{session(sess, use_gpu=not use_cpu) | indent(width=8)}}        
         self._sess = sess
         
 
@@ -316,7 +315,7 @@
 {% endmacro %}
 
 #################################################### Distributed Training #################################################
-{% macro run_distributed(graph, layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, batch_size, export_directory, use_cpus) %}
+{% macro run_distributed(graph, layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, batch_size, export_directory, use_cpu) %}
         INCLUDE_KERAS_METRICS = False
 
         self_layer_name = '{{layer_name}}' # this is passed as input
@@ -336,7 +335,7 @@
         self._tst_sz_tot = input_data_node.layer.size_testing
 
         n_devices = None
-        if {{use_cpus}}:
+        if {{use_cpu}}:
             {{session_distributed(sess, n_devices, use_gpu=False) | indent(width=8)}}
             self._sess = sess
 
@@ -794,7 +793,7 @@
 
 
 ################################################### Main #####################################################
-{% macro layer_tf1x_classification(layer_name, output_layer, target_layer, n_epochs, stop_condition, target_acc, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, batch_size, export_directory, use_cpus) %}
+{% macro layer_tf1x_classification(layer_name, output_layer, target_layer, n_epochs, stop_condition, target_acc, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, batch_size, export_directory, use_cpu) %}
 class {{layer_name}}(ClassificationLayer):
 
     def __init__(self):
@@ -839,9 +838,9 @@ class {{layer_name}}(ClassificationLayer):
             graph: A PerceptiLabs Graph object containing references to all layers objects included in the model produced by this training layer.
         """   
         {% if distributed -%}
-            {{ run_distributed(graph, layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, batch_size, export_directory, use_cpus) }}
+            {{ run_distributed(graph, layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, batch_size, export_directory, use_cpu) }}
         {% else -%}
-            {{ run_normal(graph, layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, batch_size, export_directory) }}
+            {{ run_normal(graph, layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, batch_size, export_directory, use_cpu) }}
         {% endif %}                
 
     def on_export(self, path: str, mode: str) -> None:

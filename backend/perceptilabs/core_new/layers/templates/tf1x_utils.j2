@@ -8,12 +8,11 @@
 {% endmacro %}
 
 {% macro session(sess, use_gpu=True) %}
-config = tf.ConfigProto()
 {% filter remove_lspaces(8) %} 
     {% if use_gpu %}
-        config.gpu_options.allow_growth = True    
+        config = tf.ConfigProto(gpu_options={"allow_growth": True})
     {% else %}
-        config.gpu_options.allow_growth = False
+        config = tf.ConfigProto(device_count={"GPU": 0})
     {% endif %}
 {% endfilter %}
 sess = tf.Session(config=config)

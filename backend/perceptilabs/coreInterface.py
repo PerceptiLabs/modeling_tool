@@ -152,16 +152,18 @@ class coreLogic():
         gpus = self.gpu_list()
         distributed = self.isDistributable(gpus)
 
-        use_cpus = True
+        use_cpu_only = True
 
         for _id, layer in network['Layers'].items():
             if layer['Type'] == 'DataData':
                 if layer['Properties'] and 'accessProperties' in layer['Properties']:
                     layer['Properties']['accessProperties']['Sources'][0]['path'] = layer['Properties']['accessProperties']['Sources'][0]['path'].replace('\\','/')
-            if layer['Type'] == 'TrainNormal':
-                if not 'Use_CPUs' in layer['Properties']:
-                    layer['Properties']['Use_CPUs'] = use_cpus
+            
+            if 'Train' in layer['Type']:
+                if not 'Use_CPU' in layer['Properties']:
+                    layer['Properties']['Use_CPU'] = use_cpu_only
 
+            if layer['Type'] == 'TrainNormal':
                 layer['Properties']['Distributed'] = distributed
                 if distributed:
                     targets_id = layer['Properties']['Labels']
