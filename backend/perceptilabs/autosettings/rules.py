@@ -25,6 +25,7 @@ class DeepLearningFcOutputShapeFromLabels(InferenceRule):
             return False, []
 
         self._labels_id = successors[0].layer_true
+
         layer_spec_true = graph_spec.nodes_by_id[self._labels_id]
         return True, [layer_spec_true]
 
@@ -35,6 +36,7 @@ class DeepLearningFcOutputShapeFromLabels(InferenceRule):
         self._labels_shape = lw_results[self._labels_id].out_shape
         if len(self._labels_shape) > 1:
             return False
+
         return True
 
     def apply(self, graph_spec: GraphSpec, layer_spec: LayerSpec, builder: LayerSpecBuilder, lw_results: Dict[str, LayerResults]) -> None:
@@ -63,7 +65,6 @@ class DeepLearningConvDoubleFeatureMaps(InferenceRule):
 
         if predecessors[0].type != 'DeepLearningConv':
             return False, []
-        
         self._prev_conv_id = predecessors[0].id        
         return True, [predecessors[0]]
 
@@ -79,7 +80,6 @@ class DeepLearningConvDoubleFeatureMaps(InferenceRule):
         
         #import pdb; pdb.set_trace()
         builder.set_parameter('feature_maps', 2*prev_conv.feature_maps)
-
         
 class DataDataShouldUseLazy(InferenceRule):
     MAX_RAM_USAGE = 0.3 # Fraction of total memory that can be used for the datasets. If exceeded, toggle lazy
@@ -136,6 +136,7 @@ class ProcessReshape1DFromPrimeFactors(InferenceRule):
             return False
 
         input_shape = lw_results[self._input_layer_id].out_shape
+
         if len(input_shape) != 1:
             return False
 

@@ -85,15 +85,8 @@ class GraphSpec(ABC):
         edges = [(graph.nodes_by_id[id1], graph.nodes_by_id[id2]) for id1, id2 in graph.edges]
         return GraphSpec(list(graph.nodes), list(graph.edges))
         
-    
-        
-
-            
-            
-        
 
         
-
 
 if __name__ == "__main__":
 

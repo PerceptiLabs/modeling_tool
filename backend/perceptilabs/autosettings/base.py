@@ -42,6 +42,7 @@ class SettingsEngine:
         skip_ids = []
         for id in graph_spec.nodes:
             spec = graph_spec.nodes_by_id[id]
+
             if spec.visited:
                 skip_ids.append(spec.id)                
                 logger.warning(f"Skipping settings recommendations for layer {spec.id} because it has been modified by the user")
@@ -96,6 +97,7 @@ class SettingsEngine:
         nx_graph.add_edges_from(graph_spec.edges)
 
         rule_instances = collections.defaultdict(list)        
+
         for id in graph_spec.nodes:
             if id in skip_ids:
                 continue

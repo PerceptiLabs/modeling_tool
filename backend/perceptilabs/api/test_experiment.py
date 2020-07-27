@@ -24,8 +24,8 @@ def consumer(message_factory):
 def test_experiment_log_metric(producer, consumer):
     # Declare experiment
     experiment_name = 'Test-1'
-    train_loss_input = list(np.random.rand(1, 5))
-    test_loss_input = list(np.random.rand(1, 1))
+    train_loss_input = np.random.normal(size=5)
+    test_loss_input = np.random.normal(size=1)
 
     ex = Experiment(experiment_name=experiment_name, producer=producer)
 

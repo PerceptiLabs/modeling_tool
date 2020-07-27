@@ -3,10 +3,12 @@ import sys
 import os
 import logging
 import pprint
+import time
+import threading
 from sentry_sdk import configure_scope
 from concurrent.futures import ThreadPoolExecutor
-import time
 
+#core interface
 from perceptilabs.extractVariables import extractCheckpointInfo
 from perceptilabs.s3buckets import S3BucketAdapter
 from perceptilabs.aggregation import AggregationRequest, AggregationEngine
@@ -26,6 +28,10 @@ from perceptilabs.core_new.networkCache import NetworkCache
 from perceptilabs.logconf import APPLICATION_LOGGER, set_user_email
 from perceptilabs.core_new.lightweight2 import LightweightCoreAdapter
 from perceptilabs.core_new.cache2 import LightweightCache
+from perceptilabs.messaging.zmq_wrapper import ZmqMessagingFactory, ZmqMessageConsumer
+from perceptilabs.api.data_container import DataContainer as Exp_DataContainer
+from perceptilabs.messaging import MessageConsumer, MessagingFactory
+
 import perceptilabs.logconf
 import perceptilabs.autosettings.utils as autosettings_utils
 
@@ -41,7 +47,7 @@ AGGREGATION_ENGINE_MAX_WORKERS = 2
 
 
 class Interface():
-    def __init__(self, cores, dataDict, checkpointDict, lwDict, core_mode):
+    def __init__(self, cores, dataDict, checkpointDict, lwDict, core_mode, message_factory=None):
         self._cores=cores
         self._dataDict=dataDict
         self._checkpointDict=checkpointDict
@@ -51,18 +57,37 @@ class Interface():
 
         self._lw_cache_v2 = LightweightCache(max_size=LW_CACHE_MAX_ITEMS)
         self._settings_engine = None
-        self._aggregation_engine = self._setup_aggregation_engine()
+
+        self._data_container = Exp_DataContainer()
+        self._aggregation_engine = self._setup_aggregation_engine(self._data_container)
+        self._start_experiment_thread(message_factory)
+    
+    def _setup_consumer(self, message_factory: MessagingFactory = None) -> MessageConsumer:
+        '''Creates consumer for incoming experiment data
         
-    def _setup_aggregation_engine(self):
+        Returns:
+            consumer: Consumer object to consume experiment data
+        '''
+        if message_factory:
+            topic_data = 'generic-experiment'
+            consumer = message_factory.make_consumer([topic_data])
+
+            return consumer
+        else:
+            topic_data = f'generic-experiment'.encode()
+            zmq_consumer = ZmqMessagingFactory().make_consumer([topic_data])
+
+            return zmq_consumer
+
+    def _setup_aggregation_engine(self, data_container: Exp_DataContainer) -> AggregationEngine:
+        '''Creates Aggregations Engine
         
-        class DummyContainer():
-            def get_metric(self, experiment_name, metric_name, start, end):
-                if isinstance(start, int) and isinstance(end, int) and end - start > 0:
-                    return (None,) * (end - start)
-                else:
-                    return (None,)                
-        data_container = DummyContainer()
+        Args:
+            data_container: DataContainer object that stores experiment data
         
+        Returns:
+            agg_engine: AggregationEngine class to query data
+        '''
         agg_engine = AggregationEngine(
             ThreadPoolExecutor(max_workers=AGGREGATION_ENGINE_MAX_WORKERS),
             data_container,
@@ -70,6 +95,29 @@ class Interface():
         )
         return agg_engine
     
+    def _start_experiment_thread(self, message_factory: MessagingFactory):
+        '''Creates a thread to continuously get data from experiment API
+        
+        Args:
+            consumer: A MessageConsumer object to be created
+        '''
+        def _get_experiment_data():
+            '''Creates consumer object and gets experiment data from consumer object'''
+            self._dc_consumer = self._setup_consumer(message_factory=message_factory)
+            self._dc_consumer.start()
+
+            while True:
+                raw_messages = self._dc_consumer.get_messages()
+
+                for raw_message in raw_messages:
+                    self._data_container.process_message(raw_message)
+                
+                time.sleep(2)
+
+        t = threading.Thread(target=_get_experiment_data)
+        t.daemon = True
+        t.start()
+
     def _addCore(self, reciever):
         core=coreLogic(reciever, self._core_mode)
         self._cores[reciever] = core
@@ -463,9 +511,11 @@ class Interface():
             ]
             response = self._core.scheduleAggregations(self._aggregation_engine, requests)
             return response
+
         elif action == "getAggregationResults":
             result_names = value
             response = self._core.getAggregationResults(result_names)
             return response
+
         else:
             raise LookupError(f"The requested action '{action}' does not exist")

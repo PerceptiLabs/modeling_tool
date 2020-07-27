@@ -22,12 +22,15 @@ from perceptilabs.networkSaver import saveNetwork
 from perceptilabs.issues import IssueHandler
 from perceptilabs.modules import ModuleProvider
 from perceptilabs.core_new.core import *
-from perceptilabs.core_new.data import DataContainer
+from perceptilabs.api.data_container import DataContainer
 from perceptilabs.core_new.cache import get_cache
 from perceptilabs.core_new.errors import CoreErrorHandler
 from perceptilabs.core_new.history import SessionHistory
 from perceptilabs.CoreThread import CoreThread
 from perceptilabs.createDataObject import createDataObject
+from perceptilabs.messaging import MessageProducer
+from perceptilabs.aggregation import AggregationRequest, AggregationEngine
+from typing import List
 
 from perceptilabs.license_checker import LicenseV2
 
@@ -584,9 +587,14 @@ class coreLogic():
             self.playCounter.start()
 
         return {"content": "Play started"}
-
-    def scheduleAggregations(self, engine, requests):
-        """ Schedules a batch of metric aggregations """
+        
+    def scheduleAggregations(self, engine: AggregationEngine, requests: List[AggregationRequest]):
+        """ Schedules a batch of metric aggregations 
+        
+        Args:
+            engine: Aggregation Engine to computate
+            requests: A list of AggregationRequests to computate
+        """
         future = engine.request_batch(requests)
         self._aggregation_futures.append(future)
 
@@ -597,16 +605,22 @@ class coreLogic():
                 
         future.add_done_callback(prune_futures)
         
-    def getAggregationResults(self, result_names):
-        """ Retrieve results of scheduled aggregations """
-
+    def getAggregationResults(self, result_names: list) -> dict:
+        """ Retrieve results of scheduled aggregations 
+        
+        Args:
+            result_names: names of the results to get from Aggregation Engine once computation is finished
+        
+        Returns:
+            retrieved: a dictionary of by result_names queried
+        """
         if len(self._aggregation_futures) == 0:
             return {}
 
         future = self._aggregation_futures[0]        
         if not future.done():
             return {}
-        
+
         retrieved = {}
         results, _, _ = future.result()
         for result_name in result_names:

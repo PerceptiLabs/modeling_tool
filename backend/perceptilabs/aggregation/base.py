@@ -5,23 +5,22 @@ from typing import List, Tuple, Dict, Any
 from concurrent.futures import Future, Executor
 
 
-
-class Aggregate(ABC):
-    @abstractmethod
-    def _run_internal(self):
-        raise NotImplementedError
-
-    def run(self):
-        try:
-            result = self._run_internal()
-        except:
-            return None
-        else:
-            return result
-
+from perceptilabs.api.data_container import DataContainer
+from perceptilabs.aggregation.aggregates import AverageAggregate, MaxAggregate, MinAggregate, SubtractAggregate, EpochFinalValue, Identity, Transpose
+from perceptilabs.aggregation.aggregates import Aggregate
     
 AggregationRequest = namedtuple('AggregationRequest', ['result_name', 'aggregate_name', 'experiment_name', 'metric_names', 'start', 'end', 'aggregate_kwargs'])
 
+DEFAULT_AGGREGATES = {
+    'average': AverageAggregate,
+    'max': MaxAggregate,
+    'min': MinAggregate,
+    'subtract': SubtractAggregate,
+    'epoch-final-value': EpochFinalValue,
+    'identity': Identity,
+    'transpose': Transpose
+    #'process_weights': None
+}
 
 def run_timed(func, t_queued, *args, **kwargs):
     t_started = time.perf_counter()
@@ -34,10 +33,10 @@ def run_timed(func, t_queued, *args, **kwargs):
 
 
 class AggregationEngine:
-    def __init__(self, executor: Executor, data_container: 'DataContainer', aggregates: Dict[str, Aggregate] = None): 
+    def __init__(self, executor: Executor, data_container: DataContainer, aggregates: Dict[str, Aggregate] = None): 
         self._executor = executor
         self._data_container = data_container
-        self._aggregates = aggregates.copy() if aggregates is not None else DEFAULT_AGGREGATES
+        self._aggregates = aggregates.copy() if aggregates else DEFAULT_AGGREGATES
 
     @property
     def aggregates(self) -> List[str]:
@@ -71,7 +70,11 @@ class AggregationEngine:
             for metric_name in metric_names            
         ]
         aggregate_kwargs = aggregate_kwargs or {}
-        aggregate = self._aggregates[aggregate_name](*aggregate_args, **aggregate_kwargs)
+
+        if self._aggregates[aggregate_name].num_inputs >= 2:
+            aggregate = self._aggregates[aggregate_name](*aggregate_args, **aggregate_kwargs)
+        else:
+            aggregate = self._aggregates[aggregate_name](aggregate_args, **aggregate_kwargs)
 
         future = self._executor.submit(run_timed, aggregate.run, t_queued)
         # TODO(anton.k): add callback for logging aggregate running times

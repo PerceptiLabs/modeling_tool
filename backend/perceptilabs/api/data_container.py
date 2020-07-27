@@ -76,7 +76,7 @@ class DataContainer:
                     df_item = pd.DataFrame(item)
 
                     self.experiments[experiment_name]['Metrics'][name] = pd.concat([df, df_item], ignore_index=True)
-                    self._clean_df_mem([df, df_item])
+                    self._clean_mem([df, df_item])
                 else:
                     df = self.experiments[experiment_name]['Metrics'][name]
                     step_list = set(df['Step'].tolist())
@@ -90,7 +90,7 @@ class DataContainer:
                     df_item = pd.DataFrame(item)
 
                     self.experiments[experiment_name]['Metrics'][name] = pd.concat([df, df_item], ignore_index=True)
-                    self._clean_df_mem([df, df_item])
+                    self._clean_mem([df, df_item])
             elif message['category'] == 'Hyperparameters':
                 hyper_params = message['hyper_params']
 
@@ -133,7 +133,40 @@ class DataContainer:
 
         return hyper_param_val
 
-    def get_metric(self, experiment_name: str, metric_name: str, start: int = 0, end: int = None) -> list:
+    def get_hyperparameters(self, experiment_name: str) -> dict:
+        '''Gets all hyperparameters in the given experiment
+        
+        Args:
+            experiment_name: name of the given experiment
+        
+        Returns:
+            hyper_params: dictionary of all hyperparameters in the given experiment
+        '''
+        if experiment_name not in self.experiments:
+            raise ValueError("Experiment: {0} does not exist".format(experiment_name))
+
+        hyper_params = self.experiments[experiment_name]['Hyperparameters']
+
+        return hyper_params
+
+
+    def get_metric_names(self, experiment_name: str) -> List[str]:
+        '''Gets all metric names in the given experiment
+        
+        Args:
+            experiment_name: name of the experiment to get data from
+        
+        Returns:
+            metric_names: name of all the metrics in the given experiment
+        '''
+        if experiment_name not in self.experiments:
+            raise ValueError("Experiment: {0} does not exist".format(experiment_name))
+
+        metric_names = self.experiments[experiment_name]['Metrics'].keys()
+
+        return metric_names
+
+    def get_metric(self, experiment_name: str, metric_name: str, start: int = 0, end: int = None) -> List[np.ndarray]:
         '''Gets metric from given experiment name and grabs data based on step range. If end
         is none, then mark end as end of list.
 
@@ -144,7 +177,7 @@ class DataContainer:
             end: ending step
 
         Returns:
-            metrics: list of metrics sorted by step range (inclusive)
+            metrics: list of metrics (np.ndarray) sorted by step range (inclusive)
         '''
         if experiment_name not in self.experiments:
             raise ValueError("Experiment: {0} does not exist".format(experiment_name))
@@ -163,18 +196,36 @@ class DataContainer:
             end = max(set(metrics['Step'].tolist()))
 
         if end < 0:
-            metrics = metrics.sort_values(['Step'], ascending=[True])[metric_name].tolist()[end:]
+            metrics = metrics.sort_values(['Step'], ascending=[True])[metric_name][end:].to_numpy()
+
+            if len(metrics) < abs(end):
+                full_metrics = np.empty(abs(end))
+                full_metrics.fill(np.nan)
+
+                full_metrics[:len(metrics)] = metrics
+                metrics = full_metrics
+
+                self._clean_mem([full_metrics])
         else:
             metrics = metrics.loc[metrics['Step'].between(start, end, inclusive=True)]
-            metrics = metrics.sort_values(['Step'], ascending=[True])[metric_name].tolist()
+            metrics = metrics.sort_values(['Step'], ascending=[True])[metric_name].to_numpy()
+
+            if len(metrics) < (end - start + 1):
+                full_metrics = np.empty((end - start + 1))
+                full_metrics.fill(np.nan)
+
+                full_metrics[:len(metrics)] = metrics
+                metrics = full_metrics
+
+                self._clean_mem([full_metrics])
 
         return metrics
 
-    def _clean_df_mem(self, del_list: list):
+    def _clean_mem(self, del_list: list):
         '''Deletes and cleans up memory space
 
         Args:
-            del_list: list of dataframes to be deleted
+            del_list: list of objects to be deleted
         '''
         del del_list
 
@@ -201,6 +252,6 @@ class DataContainer:
             df_vals = pd.DataFrame(vals_into_df, columns=[metric_name, 'Step'])
             df = pd.concat([df, df_vals], ignore_index=True)
 
-            self._clean_df_mem([df_vals])
+            self._clean_mem([df_vals])
 
         return df
