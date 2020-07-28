@@ -23,7 +23,6 @@ def resolve_tf1x_activation_name(specs):
 
     return func_name
 
-
 def resolve_tf1x_optimizer(specs):
     table = {
         'SGD': 'tf.compat.v1.train.GradientDescentOptimizer',
@@ -39,3 +38,15 @@ def resolve_tf1x_optimizer(specs):
         raise NotImplementedError(f"Optimizer {optimizer} is not yet implemented")        
 
     return optimizer_class
+
+def resolve_tf1x_stop_cond(specs):
+    table = ["Epochs", "TargetAccuracy"]
+
+    stop_cond = specs['Properties']['Stop_condition']
+    if stop_cond not in table:
+        raise NotImplementedError(f"Stop condition {stop_cond} is not yet implemented")
+
+
+    stop_condition = [x for x in table if x == stop_cond][0]
+    
+    return stop_condition

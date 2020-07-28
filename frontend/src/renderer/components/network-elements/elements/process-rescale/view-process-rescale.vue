@@ -3,12 +3,12 @@
     data-component="ProcessRescale"
     data-layer="Rescale"
     data-type="Other"
-    v-tooltip:networkElement="'Rescale'"
     v-tooltip-interactive:right="interactiveInfo"
     id="tutorial_process-rescale"
     :style="layerStyles"
   )
     i.icon.icon-full-screen
+    .layerTitle(v-if="showTitle") {{ displayTitle }}
 
 </template>
 
@@ -22,7 +22,8 @@ export default {
       interactiveInfo: {
         title: 'Process Rescale',
         text: 'Rescale the data'
-      }
+      },
+      displayTitle: 'Rescale'
     }
   }
 }

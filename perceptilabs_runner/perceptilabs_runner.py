@@ -61,7 +61,7 @@ def check_for_atari():
         return
 
     print(f"{bcolors.WARNING}PerceptiLabs:{bcolors.ENDC} Your environment does not have atari_py installed, so some functionality may not be available")
-    print(f"{bcolors.WARNING}PerceptiLabs:{bcolors.ENDC} To install it, please follow the directions at https://github.com/Kojoley/atari-py")
+    print(f"{bcolors.WARNING}PerceptiLabs:{bcolors.ENDC} To install it, please follow the directions at https://github.com/Kojoley/atari-py and then install gym through 'pip install gym[atari]'")
 
     # give the user a chance to read the message
     time.sleep(1)

@@ -215,7 +215,7 @@ const linearRegression = {
           "Decay_steps": "100000",
           "Decay_rate": "0.96",
           "batch_size": "10",
-          "Training_iters": "20000"
+          "Training_iters": "20000",
         },
         "layerSettingsTabName": "Settings",
         "layerCode": null,

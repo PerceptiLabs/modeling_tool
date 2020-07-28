@@ -23,9 +23,9 @@ def policy_regression(core, graphs, sanitized_to_name, sanitized_to_id, results)
             input_value = trn_node.layer.layer_outputs.get(input_node.layer_id)
             data['X'][input_name] = {'Y': input_value}
         return data
-    
+
     def get_layer_weights_and_biases(node, trn_node):
-        data = {}        
+        data = {}
         w = next(iter(trn_node.layer.layer_weights.get(node.layer_id, {}).values()), None) # Get the first set of weights, if any
         if w is not None:
             data['W'] = w
@@ -46,7 +46,7 @@ def policy_regression(core, graphs, sanitized_to_name, sanitized_to_id, results)
             min_list = []
             max_list = []
             avg_list = []
-        
+
         for graph in graphs:
             gradient_dict = graph.active_training_node.layer.layer_gradients.get(layer_id, {})
 
@@ -64,7 +64,7 @@ def policy_regression(core, graphs, sanitized_to_name, sanitized_to_id, results)
                 min_list.append(np.min(layer_min_list))
                 max_list.append(np.max(layer_max_list))
                 avg_list.append(np.average(layer_avg_list))
-            
+
 
         data['Gradient'] = {
             'Min': min_list,
@@ -82,26 +82,26 @@ def policy_regression(core, graphs, sanitized_to_name, sanitized_to_id, results)
         current_epoch = graphs[-1].active_training_node.layer.epoch
 
         if 'trainDict' in results:
-            r_sq_trn_iter = results['trainDict'][true_trn_id]["r_sq_train_iter"] 
-            loss_trn_iter = results['trainDict'][true_trn_id]["loss_train_iter"] 
-            mse_trn_iter = results['trainDict'][true_trn_id]["mse_train_iter"] 
-            sq_variance_trn_iter = results['trainDict'][true_trn_id]["sq_variance_train_iter"] 
+            r_sq_trn_iter = results['trainDict'][true_trn_id]["r_sq_train_iter"]
+            loss_trn_iter = results['trainDict'][true_trn_id]["loss_train_iter"]
+            mse_trn_iter = results['trainDict'][true_trn_id]["mse_train_iter"]
+            sq_variance_trn_iter = results['trainDict'][true_trn_id]["sq_variance_train_iter"]
 
-            r_sq_val_iter = results['trainDict'][true_trn_id]["r_sq_validation_iter"] 
-            loss_val_iter = results['trainDict'][true_trn_id]["loss_validation_iter"] 
-            mse_val_iter = results['trainDict'][true_trn_id]["mse_validation_iter"] 
-            sq_variance_val_iter = results['trainDict'][true_trn_id]["sq_variance_validation_iter"] 
+            r_sq_val_iter = results['trainDict'][true_trn_id]["r_sq_validation_iter"]
+            loss_val_iter = results['trainDict'][true_trn_id]["loss_validation_iter"]
+            mse_val_iter = results['trainDict'][true_trn_id]["mse_validation_iter"]
+            sq_variance_val_iter = results['trainDict'][true_trn_id]["sq_variance_validation_iter"]
 
-            # inputs = results['trainDict'][true_trn_id]["inputs"] 
-            # outputs = results['trainDict'][true_trn_id]["outputs"] 
+            # inputs = results['trainDict'][true_trn_id]["inputs"]
+            # outputs = results['trainDict'][true_trn_id]["outputs"]
 
         else:
             r_sq_trn_iter = []
             loss_trn_iter = []
             mse_trn_iter = []
-            sq_variance_trn_iter = [] 
+            sq_variance_trn_iter = []
 
-            r_sq_val_iter = [] 
+            r_sq_val_iter = []
             loss_val_iter = []
             mse_val_iter = []
             sq_variance_val_iter = []
@@ -111,16 +111,16 @@ def policy_regression(core, graphs, sanitized_to_name, sanitized_to_id, results)
             trn_layer = graph.active_training_node.layer
             if trn_layer.epoch == current_epoch and trn_layer.status == 'training':
                 r_sq_trn_iter.append(trn_layer.r_squared_training)
-                loss_trn_iter.append(trn_layer.loss_training)   
-                mse_trn_iter.append(trn_layer.squared_error_training)              
-                sq_variance_trn_iter.append(trn_layer.squared_variance_training) 
-             
+                loss_trn_iter.append(trn_layer.loss_training)
+                mse_trn_iter.append(trn_layer.squared_error_training)
+                sq_variance_trn_iter.append(trn_layer.squared_variance_training)
+
 
             if trn_layer.epoch == current_epoch and trn_layer.status == 'validation':
                 r_sq_val_iter.append(trn_layer.r_squared_validation)
-                loss_val_iter.append(trn_layer.loss_validation)   
-                mse_val_iter.append(trn_layer.squared_error_validation)              
-                sq_variance_val_iter.append(trn_layer.squared_variance_validation) 
+                loss_val_iter.append(trn_layer.loss_validation)
+                mse_val_iter.append(trn_layer.squared_error_validation)
+                sq_variance_val_iter.append(trn_layer.squared_variance_validation)
 
             # inputs.append(trn_layer.inputs)
             # outputs.append(trn_layer.outputs)                   
@@ -143,33 +143,34 @@ def policy_regression(core, graphs, sanitized_to_name, sanitized_to_id, results)
             r_sq_trn_epoch = []
             loss_trn_epoch = []
             mse_trn_epoch = []
-            sq_variance_trn_epoch = [] 
+            sq_variance_trn_epoch = []
 
-            r_sq_val_epoch = [] 
+            r_sq_val_epoch = []
             loss_val_epoch = []
             mse_val_epoch = []
             sq_variance_val_epoch = []
 
-        idx = 1
+        idx = 0
+
         while idx < len(graphs):
+            trn_layer = graphs[idx].active_training_node.layer
 
-            is_new_epoch = graphs[idx].active_training_node.layer.epoch != graphs[idx-1].active_training_node.layer.epoch
-            #is_final_iteration = idx == len(graphs) - 1
-            is_final_iteration = False
-
-            if is_new_epoch or is_final_iteration:
-                trn_layer = graphs[idx-1].active_training_node.layer                                                
+            is_final_training_iteration = (trn_layer.training_iteration == np.ceil(trn_layer.size_training / trn_layer.batch_size) - 1)
+            
+            if is_final_training_iteration and trn_layer.status == 'training':
                 loss_trn_epoch.append(trn_layer.loss_training)
                 r_sq_trn_epoch.append(trn_layer.r_squared_training)
                 mse_trn_epoch.append(trn_layer.squared_error_training)
                 sq_variance_trn_epoch.append(trn_layer.squared_variance_training)
-                # TODO: f1 and auc train
-                
+
+            is_final_validation_iteration = (trn_layer.validation_iteration == np.ceil(trn_layer.size_validation / trn_layer.batch_size) - 1)
+            
+            if is_final_validation_iteration and trn_layer.status == 'validation':
                 loss_val_epoch.append(trn_layer.loss_validation)
                 r_sq_val_epoch.append(trn_layer.r_squared_validation)
                 mse_val_epoch.append(trn_layer.squared_error_validation)
                 sq_variance_val_epoch.append(trn_layer.squared_variance_validation)
-                # TODO: f1 and auc val
+            
             idx += 1
 
         # ---- Update the dicts
@@ -177,17 +178,17 @@ def policy_regression(core, graphs, sanitized_to_name, sanitized_to_id, results)
         data['r_sq_train_iter'] = r_sq_trn_iter
         data['mse_train_iter'] = mse_trn_iter
         data['sq_variance_train_iter'] = sq_variance_trn_iter
-        
+
         data['loss_validation_iter'] = loss_val_iter
         data['r_sq_validation_iter'] = r_sq_val_iter
         data['mse_validation_iter'] = mse_val_iter
-        data['sq_variance_validation_iter'] = sq_variance_val_iter       
-                
+        data['sq_variance_validation_iter'] = sq_variance_val_iter
+
         data['loss_train_epoch'] = loss_trn_epoch
         data['r_sq_train_epoch'] = r_sq_trn_epoch
         data['mse_train_epoch'] = mse_trn_epoch
         data['sq_variance_train_epoch'] = sq_variance_trn_epoch
-        
+
         data['loss_validation_epoch'] = loss_val_epoch
         data['r_sq_validation_epoch'] = r_sq_val_epoch
         data['mse_validation_epoch'] = mse_val_epoch
@@ -204,10 +205,10 @@ def policy_regression(core, graphs, sanitized_to_name, sanitized_to_id, results)
             test_graphs.append(graph)
         else:
             train_graphs = True
-    
+
     if train_graphs:
         trn_node = current_graph.active_training_node
-        train_dict = {}        
+        train_dict = {}
 
         # ----- Get layer specific data.
         for node in current_graph.nodes:
@@ -222,7 +223,7 @@ def policy_regression(core, graphs, sanitized_to_name, sanitized_to_id, results)
             train_dict[true_id] = data
 
         # ----- Get data specific to the training layer.
-        data = {}        
+        data = {}
         true_trn_id = sanitized_to_id[trn_node.layer_id]
         data.update(get_metrics(graphs, true_trn_id, results))
         train_dict[true_trn_id].update(data)
@@ -246,7 +247,7 @@ def policy_regression(core, graphs, sanitized_to_name, sanitized_to_id, results)
             itr = trn_node.layer.training_iteration + trn_node.layer.validation_iteration
         else:
             itr = 0
-                    
+
         training_status = 'Waiting'
         if trn_node.layer.status == 'created':
             training_status = 'Waiting'
@@ -270,7 +271,7 @@ def policy_regression(core, graphs, sanitized_to_name, sanitized_to_id, results)
             "batch_size": batch_size,
             "trainingIterations": trn_node.layer.training_iteration,
             "trainDict": train_dict,
-            "trainingStatus": training_status,  
+            "trainingStatus": training_status,
             "status": status,
             "progress": trn_node.layer.progress
         }
@@ -287,7 +288,7 @@ def policy_regression(core, graphs, sanitized_to_name, sanitized_to_id, results)
                 true_id = sanitized_to_id[node.layer_id] # nodes use spec names for layer ids
                 data.update(get_layer_inputs_and_outputs(current_graph, node, trn_node))
                 test_dict[true_id] = data
-            
+
             training_status = 'Finished'
             status='Running'
             test_status='Waiting'
@@ -295,9 +296,9 @@ def policy_regression(core, graphs, sanitized_to_name, sanitized_to_id, results)
             # if trn_node.layer.size_testing and trn_node.layer.batch_size:
             max_itr_tst = trn_node.layer.size_testing
 
-            true_id = sanitized_to_id[trn_node.layer_id]            
+            true_id = sanitized_to_id[trn_node.layer_id]
 
-                    
+
             test_dict[true_id]['loss_validation_epoch'] = 0
             test_dict[true_id]['mse_validation_epoch'] = 0
             test_dict[true_id]['r_sq_validation_epoch'] = 0
@@ -307,7 +308,7 @@ def policy_regression(core, graphs, sanitized_to_name, sanitized_to_id, results)
             test_dict[true_id]['mse_train_epoch'] = 0
             test_dict[true_id]['r_sq_train_epoch'] = 0
             test_dict[true_id]['sq_variance_train_epoch'] = 0
-                    
+
             test_dict[true_id]['loss_validation_iter'] = 0
             test_dict[true_id]['mse_validation_iter'] = 0
             test_dict[true_id]['r_sq_validation_iter'] = 0
@@ -324,7 +325,7 @@ def policy_regression(core, graphs, sanitized_to_name, sanitized_to_id, results)
             "maxTestIter": max_itr_tst,
             "testDicts": test_dicts,
             "trainingStatus": training_status,
-            "testStatus": test_status,           
+            "testStatus": test_status,
             "status": status
         }
 
@@ -333,7 +334,7 @@ def policy_regression(core, graphs, sanitized_to_name, sanitized_to_id, results)
     return results_list
 
 def policy_classification(core, graphs, sanitized_to_name, sanitized_to_id, results):
-    
+
 
     def get_layer_inputs_and_outputs(graph, node, trn_node):
         data = {}
@@ -344,9 +345,9 @@ def policy_classification(core, graphs, sanitized_to_name, sanitized_to_id, resu
             input_value = trn_node.layer.layer_outputs.get(input_node.layer_id)
             data['X'][input_name] = {'Y': input_value}
         return data
-    
+
     def get_layer_weights_and_biases(node, trn_node):
-        data = {}        
+        data = {}
         w = next(iter(trn_node.layer.layer_weights.get(node.layer_id, {}).values()), None) # Get the first set of weights, if any
         if w is not None:
             data['W'] = w
@@ -358,16 +359,16 @@ def policy_classification(core, graphs, sanitized_to_name, sanitized_to_id, resu
 
     def get_layer_gradients(layer_id, true_id, graphs, results):
         data = {}
-        
+
         if 'trainDict' in results:
-            min_list = results['trainDict'][true_id]['Gradient']['Min'] 
+            min_list = results['trainDict'][true_id]['Gradient']['Min']
             max_list = results['trainDict'][true_id]['Gradient']['Max']
             avg_list = results['trainDict'][true_id]['Gradient']['Average']
         else:
             min_list = []
             max_list = []
             avg_list = []
-        
+
         for graph in graphs:
             gradient_dict = graph.active_training_node.layer.layer_gradients.get(layer_id, {})
 
@@ -385,7 +386,7 @@ def policy_classification(core, graphs, sanitized_to_name, sanitized_to_id, resu
                 min_list.append(np.min(layer_min_list))
                 max_list.append(np.max(layer_max_list))
                 avg_list.append(np.average(layer_avg_list))
-            
+
 
         data['Gradient'] = {
             'Min': min_list,
@@ -403,22 +404,22 @@ def policy_classification(core, graphs, sanitized_to_name, sanitized_to_id, resu
         current_epoch = graphs[-1].active_training_node.layer.epoch
 
         if 'trainDict' in results:
-            acc_trn_iter = results['trainDict'][true_trn_id]["acc_train_iter"] 
-            loss_trn_iter = results['trainDict'][true_trn_id]["loss_train_iter"] 
-            f1_trn_iter = results['trainDict'][true_trn_id]["f1_train_iter"] 
-            auc_trn_iter = results['trainDict'][true_trn_id]["auc_train_iter"] 
+            acc_trn_iter = results['trainDict'][true_trn_id]["acc_train_iter"]
+            loss_trn_iter = results['trainDict'][true_trn_id]["loss_train_iter"]
+            f1_trn_iter = results['trainDict'][true_trn_id]["f1_train_iter"]
+            auc_trn_iter = results['trainDict'][true_trn_id]["auc_train_iter"]
 
-            acc_val_iter = results['trainDict'][true_trn_id]["acc_val_iter"] 
-            loss_val_iter = results['trainDict'][true_trn_id]["loss_val_iter"] 
-            f1_val_iter = results['trainDict'][true_trn_id]["f1_val_iter"] 
-            auc_val_iter = results['trainDict'][true_trn_id]["auc_val_iter"] 
+            acc_val_iter = results['trainDict'][true_trn_id]["acc_val_iter"]
+            loss_val_iter = results['trainDict'][true_trn_id]["loss_val_iter"]
+            f1_val_iter = results['trainDict'][true_trn_id]["f1_val_iter"]
+            auc_val_iter = results['trainDict'][true_trn_id]["auc_val_iter"]
 
         else:
             acc_trn_iter = []
             loss_trn_iter = []
             f1_trn_iter = x
             auc_trn_iter = x
-            
+
             acc_val_iter = []
             loss_val_iter = []
             f1_val_iter = x
@@ -428,37 +429,28 @@ def policy_classification(core, graphs, sanitized_to_name, sanitized_to_id, resu
             trn_layer = graph.active_training_node.layer
             if trn_layer.epoch == current_epoch and trn_layer.status == 'training':
                 acc_trn_iter.append(trn_layer.accuracy_training)
-                loss_trn_iter.append(trn_layer.loss_training)                
+                loss_trn_iter.append(trn_layer.loss_training)
                 #f1_trn_iter.append(trn_layer.f1_score_training) # TODO: fix these two
-                #auc_trn_iter.append(trn_layer.auc_training)                
+                #auc_trn_iter.append(trn_layer.auc_training)
 
             if trn_layer.epoch == current_epoch and trn_layer.status == 'validation':
                 acc_val_iter.append(trn_layer.accuracy_validation)
-                loss_val_iter.append(trn_layer.loss_validation)                
+                loss_val_iter.append(trn_layer.loss_validation)
                 #f1_val_iter.append(trn_layer.f1_score_validation) # TODO: fix these two
-                #auc_val_iter.append(trn_layer.auc_validation)                
+                #auc_val_iter.append(trn_layer.auc_validation)
 
         # ---- Get the metrics from the end of each epoch
-        acc_trn_epoch = []
-        loss_trn_epoch = []
-        f1_trn_epoch = x
-        auc_trn_epoch = x
-        
-        acc_val_epoch = []
-        loss_val_epoch = []
-        f1_val_epoch = x
-        auc_val_epoch = x
 
         if 'trainDict' in results:
             acc_trn_epoch = results['trainDict'][true_trn_id]["acc_training_epoch"]
-            loss_trn_epoch = results['trainDict'][true_trn_id]["loss_training_epoch"] 
-            f1_trn_epoch = results['trainDict'][true_trn_id]["f1_training_epoch"] 
-            auc_trn_epoch = results['trainDict'][true_trn_id]["auc_training_epoch"] 
+            loss_trn_epoch = results['trainDict'][true_trn_id]["loss_training_epoch"]
+            f1_trn_epoch = results['trainDict'][true_trn_id]["f1_training_epoch"]
+            auc_trn_epoch = results['trainDict'][true_trn_id]["auc_training_epoch"]
 
-            acc_val_epoch = results['trainDict'][true_trn_id]["acc_validation_epoch"] 
-            loss_val_epoch = results['trainDict'][true_trn_id]["loss_validation_epoch"] 
-            f1_val_epoch = results['trainDict'][true_trn_id]["f1_validation_epoch"] 
-            auc_val_epoch = results['trainDict'][true_trn_id]["auc_validation_epoch"] 
+            acc_val_epoch = results['trainDict'][true_trn_id]["acc_validation_epoch"]
+            loss_val_epoch = results['trainDict'][true_trn_id]["loss_validation_epoch"]
+            f1_val_epoch = results['trainDict'][true_trn_id]["f1_validation_epoch"]
+            auc_val_epoch = results['trainDict'][true_trn_id]["auc_validation_epoch"]
         else:
             acc_trn_epoch = []
             loss_trn_epoch = []
@@ -470,19 +462,21 @@ def policy_classification(core, graphs, sanitized_to_name, sanitized_to_id, resu
             f1_val_epoch = x
             auc_val_epoch = x
 
-        idx = 1
+        idx = 0
+
         while idx < len(graphs):
+            trn_layer = graphs[idx].active_training_node.layer
 
-            is_new_epoch = graphs[idx].active_training_node.layer.epoch != graphs[idx-1].active_training_node.layer.epoch
-            #is_final_iteration = idx == len(graphs) - 1
-            is_final_iteration = False
-
-            if is_new_epoch or is_final_iteration:
-                trn_layer = graphs[idx-1].active_training_node.layer                                                
+            is_final_training_iteration = (trn_layer.training_iteration == np.ceil(trn_layer.size_training / trn_layer.batch_size) - 1)
+            
+            if is_final_training_iteration and trn_layer.status == 'training':
                 acc_trn_epoch.append(trn_layer.accuracy_training)
                 loss_trn_epoch.append(trn_layer.loss_training)
                 # TODO: f1 and auc train
-                
+            
+            is_final_validation_iteration = (trn_layer.validation_iteration == np.ceil(trn_layer.size_validation / trn_layer.batch_size) - 1)
+            
+            if is_final_validation_iteration and trn_layer.status == 'validation':
                 acc_val_epoch.append(trn_layer.accuracy_validation)
                 loss_val_epoch.append(trn_layer.loss_validation)
                 # TODO: f1 and auc val
@@ -493,21 +487,21 @@ def policy_classification(core, graphs, sanitized_to_name, sanitized_to_id, resu
         data['loss_train_iter'] = loss_trn_iter
         data['f1_train_iter'] = f1_trn_iter
         data['auc_train_iter'] = auc_trn_iter
-        
+
         data['acc_val_iter'] = acc_val_iter
         data['loss_val_iter'] = loss_val_iter
         data['f1_val_iter'] = f1_val_iter
-        data['auc_val_iter'] = auc_val_iter        
-                
+        data['auc_val_iter'] = auc_val_iter
+
         data['acc_training_epoch'] = acc_trn_epoch
         data['loss_training_epoch'] = loss_trn_epoch
         data['f1_training_epoch'] = f1_trn_epoch
         data['auc_training_epoch'] = auc_trn_epoch
-        
+
         data['acc_validation_epoch'] = acc_val_epoch
         data['loss_validation_epoch'] = loss_val_epoch
         data['f1_validation_epoch'] = f1_val_epoch
-        data['auc_validation_epoch'] = auc_val_epoch        
+        data['auc_validation_epoch'] = auc_val_epoch
 
         return data
 
@@ -520,10 +514,10 @@ def policy_classification(core, graphs, sanitized_to_name, sanitized_to_id, resu
             test_graphs.append(graph)
         else:
             train_graphs = True
-    
+
     if train_graphs:
         trn_node = current_graph.active_training_node
-        train_dict = {}        
+        train_dict = {}
 
         # ----- Get layer specific data.
         for node in current_graph.nodes:
@@ -538,7 +532,7 @@ def policy_classification(core, graphs, sanitized_to_name, sanitized_to_id, resu
             train_dict[true_id] = data
 
         # ----- Get data specific to the training layer.
-        data = {}        
+        data = {}
         true_trn_id = sanitized_to_id[trn_node.layer_id]
         data.update(get_metrics(graphs, true_trn_id, results))
         train_dict[true_trn_id].update(data)
@@ -562,7 +556,7 @@ def policy_classification(core, graphs, sanitized_to_name, sanitized_to_id, resu
             itr = trn_node.layer.training_iteration + trn_node.layer.validation_iteration
         else:
             itr = 0
-                    
+
         training_status = 'Waiting'
         if trn_node.layer.status == 'created':
             training_status = 'Waiting'
@@ -586,7 +580,7 @@ def policy_classification(core, graphs, sanitized_to_name, sanitized_to_id, resu
             "batch_size": batch_size,
             "trainingIterations": trn_node.layer.training_iteration,
             "trainDict": train_dict,
-            "trainingStatus": training_status,  
+            "trainingStatus": training_status,
             "status": status,
             "progress": trn_node.layer.progress
         }
@@ -602,7 +596,7 @@ def policy_classification(core, graphs, sanitized_to_name, sanitized_to_id, resu
                 true_id = sanitized_to_id[node.layer_id] # nodes use spec names for layer ids
                 data.update(get_layer_inputs_and_outputs(current_graph, node, trn_node))
                 test_dict[true_id] = data
-            
+
             training_status = 'Finished'
             status='Running'
             test_status='Waiting'
@@ -610,11 +604,11 @@ def policy_classification(core, graphs, sanitized_to_name, sanitized_to_id, resu
             # if trn_node.layer.size_testing and trn_node.layer.batch_size:
             max_itr_tst = trn_node.layer.size_testing
 
-            true_id = sanitized_to_id[trn_node.layer_id]            
+            true_id = sanitized_to_id[trn_node.layer_id]
             test_dict[true_id]['acc_training_epoch'] = 0
             test_dict[true_id]['f1_training_epoch'] = 0
             test_dict[true_id]['auc_training_epoch'] = 0
-                    
+
             test_dict[true_id]['acc_validation_epoch'] = 0
             test_dict[true_id]['f1_validation_epoch'] = 0
             test_dict[true_id]['auc_validation_epoch'] = 0
@@ -622,7 +616,7 @@ def policy_classification(core, graphs, sanitized_to_name, sanitized_to_id, resu
             test_dict[true_id]['acc_train_iter'] = 0
             test_dict[true_id]['f1_train_iter'] = 0
             test_dict[true_id]['auc_train_iter'] = 0
-                    
+
             test_dict[true_id]['acc_val_iter'] = 0
             test_dict[true_id]['f1_val_iter'] = 0
             test_dict[true_id]['auc_val_iter'] = 0
@@ -633,7 +627,7 @@ def policy_classification(core, graphs, sanitized_to_name, sanitized_to_id, resu
             "maxTestIter": max_itr_tst,
             "testDicts": test_dicts,
             "trainingStatus": training_status,
-            "testStatus": test_status,           
+            "testStatus": test_status,
             "status": status
         }
         results_list.append(result_dict)
@@ -641,7 +635,7 @@ def policy_classification(core, graphs, sanitized_to_name, sanitized_to_id, resu
     return results_list
 
 def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id, results):
-    
+
     def get_layer_inputs_and_outputs(graph, node, trn_node):
         data = {}
         data['Y'] = trn_node.layer.layer_outputs.get(node.layer_id) # OUTPUT: ndarrays of layer-speci
@@ -651,9 +645,9 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id, re
             input_value = trn_node.layer.layer_outputs.get(input_node.layer_id)
             data['X'][input_name] = {'Y': input_value}
         return data
-    
+
     def get_layer_weights_and_biases(node, trn_node):
-        data = {}        
+        data = {}
         w = next(iter(trn_node.layer.layer_weights.get(node.layer_id, {}).values()), None) # Get the first set of weights, if any
         if w is not None:
             data['W'] = w
@@ -665,16 +659,16 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id, re
 
     def get_layer_gradients(layer_id, true_id, graphs, results):
         data = {}
-        
+
         if 'trainDict' in results:
-            min_list = results['trainDict'][true_id]['Gradient']['Min'] 
+            min_list = results['trainDict'][true_id]['Gradient']['Min']
             max_list = results['trainDict'][true_id]['Gradient']['Max']
             avg_list = results['trainDict'][true_id]['Gradient']['Average']
         else:
             min_list = []
             max_list = []
             avg_list = []
-        
+
         for graph in graphs:
             gradient_dict = graph.active_training_node.layer.layer_gradients.get(layer_id, {})
 
@@ -692,7 +686,7 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id, re
                 min_list.append(np.min(layer_min_list))
                 max_list.append(np.max(layer_max_list))
                 avg_list.append(np.average(layer_avg_list))
-            
+
 
         data['Gradient'] = {
             'Min': min_list,
@@ -702,7 +696,7 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id, re
         return data
 
     def iou(box1, box2):
-     
+
         tb = min(box1[0] + 0.5 * box1[2], box2[0] + 0.5 * box2[2]) - \
             max(box1[0] - 0.5 * box1[2], box2[0] - 0.5 * box2[2])
         lr = min(box1[1] + 0.5 * box1[3], box2[1] + 0.5 * box2[3]) - \
@@ -716,12 +710,12 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id, re
         predicted_object = np.expand_dims(predicted_object, axis=-1)
         predicted_class = np.expand_dims(predicted_class, axis=-2)
         class_probs = predicted_object*predicted_class
-        
+
         filter_mat_probs = np.array(class_probs >= 0.2, dtype='bool')
         filter_mat_boxes = np.nonzero(filter_mat_probs)
         boxes_filtered = predicted_box[filter_mat_boxes[0], filter_mat_boxes[1], filter_mat_boxes[2]]
         class_probs_filtered = class_probs[filter_mat_probs]
-        
+
         classes_num_filtered = np.argmax(
             filter_mat_probs, axis=3)[
             filter_mat_boxes[0], filter_mat_boxes[1], filter_mat_boxes[2]]
@@ -737,7 +731,7 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id, re
             for j in range(i + 1, len(boxes_filtered)):
                 if iou(boxes_filtered[i], boxes_filtered[j]) > 0.5:
                     class_probs_filtered[j] = 0.0
-                    
+
         filter_iou = np.array(class_probs_filtered > 0.0, dtype='bool')
         boxes_filtered = boxes_filtered[filter_iou]
         class_probs_filtered = class_probs_filtered[filter_iou]
@@ -752,7 +746,7 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id, re
                 boxes_filtered[i][2],
                 boxes_filtered[i][3],
                 class_probs_filtered[i]])
-        
+
         img = np.pad(input_image, [(50,50), (50,50), (0,0)], mode='constant', constant_values=255)
         for i in range(len(result)):
             x = int(result[i][1])+50
@@ -775,22 +769,22 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id, re
         current_epoch = graphs[-1].active_training_node.layer.epoch
 
         if 'trainDict' in results:
-            acc_trn_iter = results['trainDict'][true_trn_id]["acc_train_iter"] 
-            loss_trn_iter = results['trainDict'][true_trn_id]["loss_train_iter"] 
-            classification_loss_trn_iter = results['trainDict'][true_trn_id]["classification_loss_train_iter"] 
-            bbox_loss_trn_iter = results['trainDict'][true_trn_id]["bboxes_loss_train_iter"] 
-            
-            acc_val_iter = results['trainDict'][true_trn_id]["acc_val_iter"] 
-            loss_val_iter = results['trainDict'][true_trn_id]["loss_val_iter"] 
-            classification_loss_val_iter = results['trainDict'][true_trn_id]["classification_loss_val_iter"] 
-            bbox_loss_val_iter = results['trainDict'][true_trn_id]["bboxes_loss_val_iter"] 
+            acc_trn_iter = results['trainDict'][true_trn_id]["acc_train_iter"]
+            loss_trn_iter = results['trainDict'][true_trn_id]["loss_train_iter"]
+            classification_loss_trn_iter = results['trainDict'][true_trn_id]["classification_loss_train_iter"]
+            bbox_loss_trn_iter = results['trainDict'][true_trn_id]["bboxes_loss_train_iter"]
+
+            acc_val_iter = results['trainDict'][true_trn_id]["acc_val_iter"]
+            loss_val_iter = results['trainDict'][true_trn_id]["loss_val_iter"]
+            classification_loss_val_iter = results['trainDict'][true_trn_id]["classification_loss_val_iter"]
+            bbox_loss_val_iter = results['trainDict'][true_trn_id]["bboxes_loss_val_iter"]
 
         else:
             acc_trn_iter = []
             loss_trn_iter = []
             classification_loss_trn_iter =[]
             bbox_loss_trn_iter = []
-            
+
             acc_val_iter = []
             loss_val_iter = []
             classification_loss_val_iter = []
@@ -799,7 +793,6 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id, re
         predicted_objects = 0.
         predicted_classes = 0.
         predicted_normalized_boxes = 0.
-        # confidence_scores = []
         image_accuracy = []
 
         for graph in graphs:
@@ -807,36 +800,36 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id, re
             input_data_layer = trn_layer.get_input_data_node
             input_images = trn_node.layer.layer_outputs.get(input_data_layer)
 
-            if trn_layer.epoch == current_epoch and trn_layer.status == 'training':
+            if trn_layer.status == 'training':
                 acc_trn_iter.append(trn_layer.accuracy_training)
-                loss_trn_iter.append(trn_layer.loss_training)                
+                loss_trn_iter.append(trn_layer.loss_training)
                 classification_loss_trn_iter.append(trn_layer.loss_classification_training)
-                bbox_loss_trn_iter.append(trn_layer.loss_bbox_training)       
+                bbox_loss_trn_iter.append(trn_layer.loss_bbox_training)
                 predicted_objects = trn_layer.get_predicted_objects
                 predicted_classes = trn_layer.get_predicted_classes
                 predicted_normalized_boxes = trn_layer.get_predicted_normalized_boxes
                 image_accuracy.append(trn_layer.image_accuracy)
-            if trn_layer.epoch == current_epoch and trn_layer.status == 'validation':
+            if trn_layer.status == 'validation':
                 acc_val_iter.append(trn_layer.accuracy_validation)
-                loss_val_iter.append(trn_layer.loss_validation)                
+                loss_val_iter.append(trn_layer.loss_validation)
                 classification_loss_val_iter.append(trn_layer.loss_classification_validation)
-                bbox_loss_val_iter.append(trn_layer.loss_bbox_validation)   
+                bbox_loss_val_iter.append(trn_layer.loss_bbox_validation)
                 predicted_objects = trn_layer.get_predicted_objects
                 predicted_classes = trn_layer.get_predicted_classes
                 predicted_normalized_boxes = trn_layer.get_predicted_normalized_boxes
                 image_accuracy.append(trn_layer.image_accuracy)
-        
+
         # ---- Get the metrics from the end of each epoch
         if 'trainDict' in results:
             acc_trn_epoch = results['trainDict'][true_trn_id]["acc_training_epoch"]
-            loss_trn_epoch = results['trainDict'][true_trn_id]["loss_training_epoch"] 
-            classification_loss_trn_epoch = results['trainDict'][true_trn_id]["classification_loss_training_epoch"] 
-            bbox_loss_trn_epoch = results['trainDict'][true_trn_id]["bboxes_loss_training_epoch"] 
-            
-            acc_val_epoch = results['trainDict'][true_trn_id]["acc_validation_epoch"] 
-            loss_val_epoch = results['trainDict'][true_trn_id]["loss_validation_epoch"] 
-            classification_loss_val_epoch = results['trainDict'][true_trn_id]["classification_loss_validation_epoch"] 
-            bbox_loss_val_epoch = results['trainDict'][true_trn_id]["bboxes_loss_validation_epoch"] 
+            loss_trn_epoch = results['trainDict'][true_trn_id]["loss_training_epoch"]
+            classification_loss_trn_epoch = results['trainDict'][true_trn_id]["classification_loss_training_epoch"]
+            bbox_loss_trn_epoch = results['trainDict'][true_trn_id]["bboxes_loss_training_epoch"]
+
+            acc_val_epoch = results['trainDict'][true_trn_id]["acc_validation_epoch"]
+            loss_val_epoch = results['trainDict'][true_trn_id]["loss_validation_epoch"]
+            classification_loss_val_epoch = results['trainDict'][true_trn_id]["classification_loss_validation_epoch"]
+            bbox_loss_val_epoch = results['trainDict'][true_trn_id]["bboxes_loss_validation_epoch"]
         else:
             acc_trn_epoch = []
             loss_trn_epoch = []
@@ -847,30 +840,34 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id, re
             loss_val_epoch = []
             classification_loss_val_epoch = []
             bbox_loss_val_epoch = []
-        
-        idx = 1
-        while idx < len(graphs):
-            is_new_epoch = graphs[idx].active_training_node.layer.epoch != graphs[idx-1].active_training_node.layer.epoch
-            #is_final_iteration = idx == len(graphs) - 1
-            is_final_iteration = False
 
-            if is_new_epoch or is_final_iteration:
-                trn_layer = graphs[idx-1].active_training_node.layer                                                
+        idx = 0
+
+        while idx < len(graphs):
+            trn_layer = graphs[idx].active_training_node.layer
+
+            is_final_training_iteration = (trn_layer.training_iteration == np.ceil(trn_layer.size_training / trn_layer.batch_size) - 1)
+            
+            if is_final_training_iteration and trn_layer.status == 'training':
                 acc_trn_epoch.append(trn_layer.accuracy_training)
                 loss_trn_epoch.append(trn_layer.loss_training)
                 classification_loss_trn_epoch.append(trn_layer.loss_classification_training)
-                bbox_loss_trn_epoch.append(trn_layer.loss_bbox_training)       
-                
+                bbox_loss_trn_epoch.append(trn_layer.loss_bbox_training)
+            
+            is_final_validation_iteration = (trn_layer.validation_iteration == np.ceil(trn_layer.size_validation / trn_layer.batch_size) - 1)
+            
+            if is_final_validation_iteration and trn_layer.status == 'validation':
                 acc_val_epoch.append(trn_layer.accuracy_validation)
                 loss_val_epoch.append(trn_layer.loss_validation)
                 classification_loss_val_epoch.append(trn_layer.loss_classification_validation)
                 bbox_loss_val_epoch.append(trn_layer.loss_bbox_validation)
+
             idx += 1
 
         bbox_image, confidence_scores = plot_bounding_boxes(input_images[-1], predicted_objects, predicted_classes, predicted_normalized_boxes)
-        
+
         # ---- Update the dicts
-        
+
         data['loss_train_iter'] = loss_trn_iter
         data['classification_loss_train_iter'] = classification_loss_trn_iter
         data['bboxes_loss_train_iter'] = bbox_loss_trn_iter
@@ -881,21 +878,20 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id, re
         data['acc_val_iter'] = acc_val_iter
         data['loss_val_iter'] = loss_val_iter
         data['classification_loss_val_iter'] = classification_loss_val_iter
-        data['bboxes_loss_val_iter'] = bbox_loss_val_iter     
-                
+        data['bboxes_loss_val_iter'] = bbox_loss_val_iter
+
         data['acc_training_epoch'] = acc_trn_epoch
         data['loss_training_epoch'] = loss_trn_epoch
         data['classification_loss_training_epoch'] = classification_loss_trn_epoch
         data['bboxes_loss_training_epoch'] = bbox_loss_trn_epoch
-        
+
         data['acc_validation_epoch'] = acc_val_epoch
         data['loss_validation_epoch'] = loss_val_epoch
         data['classification_loss_validation_epoch'] = classification_loss_val_epoch
-        data['bboxes_loss_validation_epoch'] = bbox_loss_val_epoch      
+        data['bboxes_loss_validation_epoch'] = bbox_loss_val_epoch
 
         data['confidence_scores'] = confidence_scores
         data['image_bboxes'] =  bbox_image
-        
         return data
 
     current_graph = graphs[-1]
@@ -907,10 +903,11 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id, re
             test_graphs.append(graph)
         else:
             train_graphs = True
+            
     
     if train_graphs:
         trn_node = current_graph.active_training_node
-        train_dict = {}        
+        train_dict = {}
 
         # ----- Get layer specific data.
         for node in current_graph.nodes:
@@ -925,7 +922,7 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id, re
             train_dict[true_id] = data
 
         # ----- Get data specific to the training layer.
-        data = {}        
+        data = {}
         true_trn_id = sanitized_to_id[trn_node.layer_id]
         data.update(get_metrics(graphs, true_trn_id, results))
         train_dict[true_trn_id].update(data)
@@ -949,7 +946,7 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id, re
             itr = trn_node.layer.training_iteration + trn_node.layer.validation_iteration
         else:
             itr = 0
-                    
+
         training_status = 'Waiting'
         if trn_node.layer.status == 'created':
             training_status = 'Waiting'
@@ -973,7 +970,7 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id, re
             "batch_size": batch_size,
             "trainingIterations": trn_node.layer.training_iteration,
             "trainDict": train_dict,
-            "trainingStatus": training_status,  
+            "trainingStatus": training_status,
             "status": status,
             "progress": trn_node.layer.progress
         }
@@ -996,7 +993,7 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id, re
                 true_id = sanitized_to_id[node.layer_id] # nodes use spec names for layer ids
                 data.update(get_layer_inputs_and_outputs(current_graph, node, trn_node))
                 test_dict[true_id] = data
-            
+
             training_status = 'Finished'
             status='Running'
             test_status='Waiting'
@@ -1004,8 +1001,8 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id, re
             # if trn_node.layer.size_testing and trn_node.layer.batch_size:
             max_itr_tst = trn_node.layer.size_testing
 
-            true_id = sanitized_to_id[trn_node.layer_id]            
-            
+            true_id = sanitized_to_id[trn_node.layer_id]
+
             bbox_image, confidence_scores = plot_bounding_boxes(input_images[-1], predicted_objects, predicted_classes, predicted_normalized_boxes)
 
             test_dict[true_id]['acc_val_iter'] = 0
@@ -1019,17 +1016,17 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id, re
             test_dict[true_id]['acc_val_iter'] = 0
             test_dict[true_id]['loss_val_iter'] = 0
             test_dict[true_id]['classification_loss_val_iter'] = 0
-            test_dict[true_id]['bboxes_loss_val_iter'] = 0     
-                    
+            test_dict[true_id]['bboxes_loss_val_iter'] = 0
+
             test_dict[true_id]['acc_training_epoch'] = 0
             test_dict[true_id]['loss_training_epoch'] = 0
             test_dict[true_id]['classification_loss_training_epoch'] = 0
             test_dict[true_id]['bboxes_loss_training_epoch'] = 0
-            
+
             test_dict[true_id]['acc_validation_epoch'] = 0
             test_dict[true_id]['loss_validation_epoch'] = 0
             test_dict[true_id]['classification_loss_validation_epoch'] = 0
-            test_dict[true_id]['bboxes_loss_validation_epoch'] = 0      
+            test_dict[true_id]['bboxes_loss_validation_epoch'] = 0
 
             test_dict[true_id]['confidence_scores'] = confidence_scores
             test_dict[true_id]['image_bboxes'] =  bbox_image
@@ -1040,7 +1037,7 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id, re
             "maxTestIter": max_itr_tst,
             "testDicts": test_dicts,
             "trainingStatus": training_status,
-            "testStatus": test_status,           
+            "testStatus": test_status,
             "status": status
         }
 
@@ -1049,7 +1046,7 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id, re
     return results_list
 
 def policy_reinforce(core, graphs, sanitized_to_name, sanitized_to_id, results):
-    
+
     def get_layer_inputs_and_outputs(graph, node, trn_node):
         data = {}
         data['Y'] = trn_node.layer.layer_outputs.get(node.layer_id) # OUTPUT: ndarrays of layer-speci
@@ -1059,9 +1056,9 @@ def policy_reinforce(core, graphs, sanitized_to_name, sanitized_to_id, results):
             input_value = trn_node.layer.layer_outputs.get(input_node.layer_id)
             data['X'][input_name] = {'Y': input_value}
         return data
-    
+
     def get_layer_weights_and_biases(node, trn_node):
-        data = {}        
+        data = {}
         w = next(iter(trn_node.layer.layer_weights.get(node.layer_id, {}).values()), None) # Get the first set of weights, if any
         if w is not None:
             data['W'] = w
@@ -1073,16 +1070,16 @@ def policy_reinforce(core, graphs, sanitized_to_name, sanitized_to_id, results):
 
     def get_layer_gradients(layer_id, true_id, graphs, results):
         data = {}
-        
+
         if 'trainDict' in results:
-            min_list = results['trainDict'][true_id]['Gradient']['Min'] 
+            min_list = results['trainDict'][true_id]['Gradient']['Min']
             max_list = results['trainDict'][true_id]['Gradient']['Max']
             avg_list = results['trainDict'][true_id]['Gradient']['Average']
         else:
             min_list = []
             max_list = []
             avg_list = []
-        
+
         for graph in graphs:
             gradient_dict = graph.active_training_node.layer.layer_gradients.get(layer_id, {})
 
@@ -1100,7 +1097,7 @@ def policy_reinforce(core, graphs, sanitized_to_name, sanitized_to_id, results):
                 min_list.append(np.min(layer_min_list))
                 max_list.append(np.max(layer_max_list))
                 avg_list.append(np.average(layer_avg_list))
-            
+
 
         data['Gradient'] = {
             'Min': min_list,
@@ -1115,12 +1112,12 @@ def policy_reinforce(core, graphs, sanitized_to_name, sanitized_to_id, results):
         current_episode = graphs[-1].active_training_node.layer.episode
 
         if 'trainDict' in results:
-            loss_trn_iter = results['trainDict'][true_trn_id]["loss_train_iter"] 
-            reward_trn_iter = results['trainDict'][true_trn_id]["reward_train_iter"] 
+            loss_trn_iter = results['trainDict'][true_trn_id]["loss_train_iter"]
+            reward_trn_iter = results['trainDict'][true_trn_id]["reward_train_iter"]
         else:
             reward_trn_iter = []
             loss_trn_iter = []
-    
+
         for graph in graphs:
             trn_layer = graph.active_training_node.layer
             # data_node = graph.data_nodes[0]
@@ -1132,30 +1129,29 @@ def policy_reinforce(core, graphs, sanitized_to_name, sanitized_to_id, results):
             if n_actions != -1 and current_action != -1:
                 pred = np.zeros((n_actions,))
                 pred[int(current_action)] = 1
-            
+
             if trn_layer.episode == current_episode and trn_layer.status == 'training':
                 reward_trn_iter.append(trn_layer.reward)
-                loss_trn_iter.append(trn_layer.loss_training)                                      
+                loss_trn_iter.append(trn_layer.loss_training)
 
         # ---- Get the metrics from the end of each episode
 
         if 'trainDict' in results:
             reward_trn_episode = results['trainDict'][true_trn_id]["reward_training_episode"]
-            loss_trn_episode = results['trainDict'][true_trn_id]["loss_training_episode"] 
-    
+            loss_trn_episode = results['trainDict'][true_trn_id]["loss_training_episode"]
+
         else:
             reward_trn_episode = []
             loss_trn_episode = []
 
 
-        idx = 1
-        while idx < len(graphs):
-            is_new_episode = graphs[idx].active_training_node.layer.episode != graphs[idx-1].active_training_node.layer.episode
-            #is_final_iteration = idx == len(graphs) - 1
-            is_final_iteration = False
+        idx = 0
 
-            if is_new_episode or is_final_iteration:
-                trn_layer = graphs[idx-1].active_training_node.layer                                                
+        while idx < len(graphs):
+            is_final_iteration = graphs[idx].active_training_node.layer.step_counter == graphs[idx].active_training_node.layer.n_steps_max - 1
+
+            if is_final_iteration or graphs[idx].active_training_node.layer.transition['done'] :
+                trn_layer = graphs[idx].active_training_node.layer
                 reward_trn_episode.append(np.sum(reward_trn_iter))
                 loss_trn_episode.append(trn_layer.loss_training)
 
@@ -1164,7 +1160,7 @@ def policy_reinforce(core, graphs, sanitized_to_name, sanitized_to_id, results):
         # ---- Update the dicts
         data['reward_train_iter'] = reward_trn_iter
         data['loss_train_iter'] = loss_trn_iter
-                
+
         data['reward_training_episode'] = reward_trn_episode
         data['loss_training_episode'] = loss_trn_episode
         data['Steps'] = steps
@@ -1182,10 +1178,11 @@ def policy_reinforce(core, graphs, sanitized_to_name, sanitized_to_id, results):
             test_graphs.append(graph)
         else:
             train_graphs = True
+            
     
     if train_graphs:
         trn_node = current_graph.active_training_node
-        train_dict = {}        
+        train_dict = {}
 
         # ----- Get layer specific data.
         for node in current_graph.nodes:
@@ -1200,7 +1197,7 @@ def policy_reinforce(core, graphs, sanitized_to_name, sanitized_to_id, results):
             train_dict[true_id] = data
 
         # ----- Get data specific to the training layer.
-        data = {}        
+        data = {}
         true_trn_id = sanitized_to_id[trn_node.layer_id]
         data.update(get_metrics(graphs, true_trn_id, results))
         train_dict[true_trn_id].update(data)
@@ -1219,7 +1216,7 @@ def policy_reinforce(core, graphs, sanitized_to_name, sanitized_to_id, results):
         max_iter = trn_node.layer.n_steps_max
         max_epoch = trn_node.layer.n_episodes
 
-                    
+
         training_status = 'Waiting'
         if trn_node.layer.status == 'created':
             training_status = 'Waiting'
@@ -1243,7 +1240,7 @@ def policy_reinforce(core, graphs, sanitized_to_name, sanitized_to_id, results):
             "batch_size": batch_size,
             "trainingIterations": trn_node.layer.step_counter,
             "trainDict": train_dict,
-            "trainingStatus": training_status,  
+            "trainingStatus": training_status,
             "status": status,
             "progress": trn_node.layer.progress
         }
@@ -1252,7 +1249,7 @@ def policy_reinforce(core, graphs, sanitized_to_name, sanitized_to_id, results):
     return results_list
 
 def policy_gan(core, graphs, sanitized_to_name, sanitized_to_id, results):
-    
+
     def get_layer_inputs_and_outputs(graph, node, trn_node):
         data = {}
         data['Y'] = trn_node.layer.layer_outputs.get(node.layer_id) # OUTPUT: ndarrays of layer-speci
@@ -1262,9 +1259,9 @@ def policy_gan(core, graphs, sanitized_to_name, sanitized_to_id, results):
             input_value = trn_node.layer.layer_outputs.get(input_node.layer_id)
             data['X'][input_name] = {'Y': input_value}
         return data
-    
+
     def get_layer_weights_and_biases(node, trn_node):
-        data = {}        
+        data = {}
         w = next(iter(trn_node.layer.layer_weights.get(node.layer_id, {}).values()), None) # Get the first set of weights, if any
         if w is not None:
             data['W'] = w
@@ -1276,16 +1273,16 @@ def policy_gan(core, graphs, sanitized_to_name, sanitized_to_id, results):
 
     def get_layer_gradients(layer_id, true_id, graphs, results):
         data = {}
-        
+
         if 'trainDict' in results:
-            min_list = results['trainDict'][true_id]['Gradient']['Min'] 
+            min_list = results['trainDict'][true_id]['Gradient']['Min']
             max_list = results['trainDict'][true_id]['Gradient']['Max']
             avg_list = results['trainDict'][true_id]['Gradient']['Average']
         else:
             min_list = []
             max_list = []
             avg_list = []
-        
+
         for graph in graphs:
             gradient_dict = graph.active_training_node.layer.layer_gradients.get(layer_id, {})
 
@@ -1303,7 +1300,7 @@ def policy_gan(core, graphs, sanitized_to_name, sanitized_to_id, results):
                 min_list.append(np.min(layer_min_list))
                 max_list.append(np.max(layer_max_list))
                 avg_list.append(np.average(layer_avg_list))
-            
+
 
         data['Gradient'] = {
             'Min': min_list,
@@ -1314,10 +1311,10 @@ def policy_gan(core, graphs, sanitized_to_name, sanitized_to_id, results):
 
     def get_distributions(real_images, random_images, true_trn_id, results):
         if 'trainDict' in results:
-            real_means = results['trainDict'][true_trn_id]["real_means"] 
-            real_stddevs = results['trainDict'][true_trn_id]["real_stddevs"] 
-            random_means = results['trainDict'][true_trn_id]["random_means"] 
-            random_stddevs = results['trainDict'][true_trn_id]["random_stddevs"] 
+            real_means = results['trainDict'][true_trn_id]["real_means"]
+            real_stddevs = results['trainDict'][true_trn_id]["real_stddevs"]
+            random_means = results['trainDict'][true_trn_id]["random_means"]
+            random_stddevs = results['trainDict'][true_trn_id]["random_stddevs"]
         else:
             real_means = []
             real_stddevs = []
@@ -1330,7 +1327,7 @@ def policy_gan(core, graphs, sanitized_to_name, sanitized_to_id, results):
             random_means.append(np.mean(random_images[i]))
             random_stddevs.append(np.std(random_images[i]))
         return real_means, real_stddevs, random_means, random_stddevs
-    
+
     def images_distribution_plot(real_means, real_stddevs, random_means, random_stddevs):
         import matplotlib
         matplotlib.use('Agg')
@@ -1352,16 +1349,16 @@ def policy_gan(core, graphs, sanitized_to_name, sanitized_to_id, results):
         current_epoch = graphs[-1].active_training_node.layer.epoch
 
         if 'trainDict' in results:
-            gen_loss_trn_iter = results['trainDict'][true_trn_id]["gen_loss_train_iter"] 
-            dis_loss_trn_iter = results['trainDict'][true_trn_id]["dis_loss_train_iter"] 
-            
-            gen_loss_val_iter = results['trainDict'][true_trn_id]["gen_loss_val_iter"] 
-            dis_loss_val_iter = results['trainDict'][true_trn_id]["dis_loss_val_iter"] 
+            gen_loss_trn_iter = results['trainDict'][true_trn_id]["gen_loss_train_iter"]
+            dis_loss_trn_iter = results['trainDict'][true_trn_id]["dis_loss_train_iter"]
+
+            gen_loss_val_iter = results['trainDict'][true_trn_id]["gen_loss_val_iter"]
+            dis_loss_val_iter = results['trainDict'][true_trn_id]["dis_loss_val_iter"]
 
         else:
             gen_loss_trn_iter =[]
             dis_loss_trn_iter = []
-            
+
             gen_loss_val_iter = []
             dis_loss_val_iter = []
 
@@ -1372,57 +1369,60 @@ def policy_gan(core, graphs, sanitized_to_name, sanitized_to_id, results):
             real_images = trn_node.layer.real_layer_outputs.get(switch_layer_id)
             if trn_layer.epoch == current_epoch and trn_layer.status == 'training':
                 gen_loss_trn_iter.append(trn_layer.generator_loss_training)
-                dis_loss_trn_iter.append(trn_layer.discriminator_loss_training)       
+                dis_loss_trn_iter.append(trn_layer.discriminator_loss_training)
             if trn_layer.epoch == current_epoch and trn_layer.status == 'validation':
                 gen_loss_val_iter.append(trn_layer.generator_loss_validation)
-                dis_loss_val_iter.append(trn_layer.discriminator_loss_validation)   
-        
+                dis_loss_val_iter.append(trn_layer.discriminator_loss_validation)
+
         real_means, real_stddevs, random_means, random_stddevs = get_distributions(real_images, random_images, true_trn_id, results)
 
         data_distribution = images_distribution_plot(real_means, real_stddevs, random_means, random_stddevs)
 
         # ---- Get the metrics from the end of each epoch
         if 'trainDict' in results:
-            gen_loss_trn_epoch = results['trainDict'][true_trn_id]["gen_loss_training_epoch"] 
-            dis_loss_trn_epoch = results['trainDict'][true_trn_id]["dis_loss_training_epoch"] 
-            
-            gen_loss_val_epoch = results['trainDict'][true_trn_id]["gen_loss_validation_epoch"] 
-            dis_loss_val_epoch = results['trainDict'][true_trn_id]["dis_loss_validation_epoch"] 
+            gen_loss_trn_epoch = results['trainDict'][true_trn_id]["gen_loss_training_epoch"]
+            dis_loss_trn_epoch = results['trainDict'][true_trn_id]["dis_loss_training_epoch"]
+
+            gen_loss_val_epoch = results['trainDict'][true_trn_id]["gen_loss_validation_epoch"]
+            dis_loss_val_epoch = results['trainDict'][true_trn_id]["dis_loss_validation_epoch"]
         else:
             gen_loss_trn_epoch = []
             dis_loss_trn_epoch = []
 
             gen_loss_val_epoch = []
             dis_loss_val_epoch = []
-        
-        idx = 1
-        while idx < len(graphs):
-            is_new_epoch = graphs[idx].active_training_node.layer.epoch != graphs[idx-1].active_training_node.layer.epoch
-            #is_final_iteration = idx == len(graphs) - 1
-            is_final_iteration = False
 
-            if is_new_epoch or is_final_iteration:
-                trn_layer = graphs[idx-1].active_training_node.layer                                                
+        idx = 0
+
+        while idx < len(graphs):
+            trn_layer = graphs[idx].active_training_node.layer
+
+            is_final_training_iteration = (trn_layer.training_iteration == np.ceil(trn_layer.size_training / trn_layer.batch_size) - 1)
+            
+            if is_final_training_iteration and trn_layer.status == 'training':
                 gen_loss_trn_epoch.append(trn_layer.generator_loss_training)
                 dis_loss_trn_epoch.append(trn_layer.discriminator_loss_training)
-
+                    
+            is_final_validation_iteration = (trn_layer.validation_iteration == np.ceil(trn_layer.size_validation / trn_layer.batch_size) - 1)
+            
+            if is_final_validation_iteration and trn_layer.status == 'validation':
                 gen_loss_val_epoch.append(trn_layer.generator_loss_validation)
                 dis_loss_val_epoch.append(trn_layer.discriminator_loss_validation)
             idx += 1
-        
+
         # ---- Update the dicts
-        
+
         data['gen_loss_train_iter'] = gen_loss_trn_iter
         data['dis_loss_train_iter'] = dis_loss_trn_iter
 
         data['gen_loss_val_iter'] = gen_loss_val_iter
-        data['dis_loss_val_iter'] = dis_loss_val_iter     
-                
+        data['dis_loss_val_iter'] = dis_loss_val_iter
+
         data['gen_loss_training_epoch'] = gen_loss_trn_epoch
         data['dis_loss_training_epoch'] = dis_loss_trn_epoch
-        
+
         data['gen_loss_validation_epoch'] = gen_loss_val_epoch
-        data['dis_loss_validation_epoch'] = dis_loss_val_epoch      
+        data['dis_loss_validation_epoch'] = dis_loss_val_epoch
 
         data['real_means'] = real_means
         data['real_stddevs'] = real_stddevs
@@ -1431,7 +1431,7 @@ def policy_gan(core, graphs, sanitized_to_name, sanitized_to_id, results):
 
         data['generated_image'] = random_images[-1]
         data['real_image'] = real_images[-1]
-        
+
         data['data_distribution'] = data_distribution
 
         return data
@@ -1444,11 +1444,12 @@ def policy_gan(core, graphs, sanitized_to_name, sanitized_to_id, results):
         if graph.active_training_node.layer.status == 'testing':
             test_graphs.append(graph)
         else:
-            train_graphs = True
+            train_graphs = True 
+             
     
     if train_graphs:
         trn_node = current_graph.active_training_node
-        train_dict = {}        
+        train_dict = {}
 
         # ----- Get layer specific data.
         for node in current_graph.nodes:
@@ -1463,7 +1464,7 @@ def policy_gan(core, graphs, sanitized_to_name, sanitized_to_id, results):
             train_dict[true_id] = data
 
         # ----- Get data specific to the training layer.
-        data = {}        
+        data = {}
         true_trn_id = sanitized_to_id[trn_node.layer_id]
         data.update(get_metrics(graphs, true_trn_id, results))
         train_dict[true_trn_id].update(data)
@@ -1487,7 +1488,7 @@ def policy_gan(core, graphs, sanitized_to_name, sanitized_to_id, results):
             itr = trn_node.layer.training_iteration + trn_node.layer.validation_iteration
         else:
             itr = 0
-                    
+
         training_status = 'Waiting'
         if trn_node.layer.status == 'created':
             training_status = 'Waiting'
@@ -1511,7 +1512,7 @@ def policy_gan(core, graphs, sanitized_to_name, sanitized_to_id, results):
             "batch_size": batch_size,
             "trainingIterations": trn_node.layer.training_iteration,
             "trainDict": train_dict,
-            "trainingStatus": training_status,  
+            "trainingStatus": training_status,
             "status": status,
             "progress": trn_node.layer.progress
         }
@@ -1543,7 +1544,7 @@ def policy_gan(core, graphs, sanitized_to_name, sanitized_to_id, results):
             # if trn_node.layer.size_testing and trn_node.layer.batch_size:
             max_itr_tst = trn_node.layer.size_testing
 
-            true_id = sanitized_to_id[trn_node.layer_id]            
+            true_id = sanitized_to_id[trn_node.layer_id]
 
             test_dicts.append(test_dict)
 
@@ -1551,7 +1552,7 @@ def policy_gan(core, graphs, sanitized_to_name, sanitized_to_id, results):
             "maxTestIter": max_itr_tst,
             "testDicts": test_dicts,
             "trainingStatus": training_status,
-            "testStatus": test_status,           
+            "testStatus": test_status,
             "status": status
         }
         results_list.append(result_dict)

@@ -3,12 +3,12 @@
     data-component="ProcessReshape"
     data-layer="Reshape"
     data-type="Other"
-    v-tooltip:networkElement="'Reshape'"
     v-tooltip-interactive:right="interactiveInfo"
     id="tutorial_process-reshape"
     :style="layerStyles"
   )
     i.icon.icon-full-screen
+    .layerTitle(v-if="showTitle") {{ displayTitle }}
 
 </template>
 
@@ -22,7 +22,8 @@ export default {
       interactiveInfo: {
         title: 'Process Reshape',
         text: 'Reshape the data'
-      }
+      },
+      displayTitle: 'Reshape'
     }
   }
 }

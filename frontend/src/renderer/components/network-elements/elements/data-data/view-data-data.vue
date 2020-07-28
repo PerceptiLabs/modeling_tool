@@ -3,12 +3,12 @@
     data-component="DataData"
     data-layer="Data"
     data-type="Data"
-    v-tooltip:networkElement="'Data'"
     v-tooltip-interactive:right="interactiveInfo"
     id="tutorial_data-data"
     :style="layerStyles"
   )
     i.icon.icon-data
+    .layerTitle(v-if="showTitle") {{ displayTitle }}
 
 </template>
 
@@ -22,7 +22,8 @@ export default {
       interactiveInfo: {
         title: 'Data',
         text: 'Read local data or data from a server'
-      }
+      },
+      displayTitle: 'Data'
     }
   }
 }

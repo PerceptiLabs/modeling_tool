@@ -36,7 +36,6 @@ router.beforeEach((to, from, next) => {
     // store.dispatch('mod_webstorage/updateWorkspaces', null, { root: true });
   // }
   if(isWeb()) {
-    Analytics.hubSpot.trackRouteChange(to);
     Analytics.googleAnalytics.trackRouteChange(to); 
   }
   next();

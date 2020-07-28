@@ -1,6 +1,6 @@
 {% from 'tf1x_utils.j2' import session %}
 
-{% macro run_normal(layer_name, switch_layer, real_layer, batch_size, n_epochs, class_weights, generator_optimizer, discriminator_optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory) %}
+{% macro run_normal(layer_name, switch_layer, real_layer, batch_size, n_epochs, class_weights, generator_optimizer, discriminator_optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory, use_cpu) %}
         self._status = 'initializing'
 
         real_data_layer_id = '{{real_layer}}' 
@@ -291,7 +291,7 @@
              
 
         sess = None
-        {{session(sess, use_gpu=True) | indent(width=8)}}      
+        {{session(sess, use_gpu=not use_cpu) | indent(width=8)}}      
         self._sess = sess
         
         trackable_variables = {}
@@ -400,7 +400,9 @@
                 f"generator loss training, validation: {self.generator_loss_training:.6f}, {self.generator_loss_validation:.6f} - "
                 f"discriminator loss training, validation: {self.discriminator_loss_training:.6f}, {self.discriminator_loss_validation:.6f} - "
             )
-            log.info(f"Epoch duration: {round(time.perf_counter() - t0, 3)} s")            
+            log.info(f"Epoch duration: {round(time.perf_counter() - t0, 3)} s")  
+            if self._stop_condition == "TargetAccuracy" and self._accuracy_training * 100 >= self._target_acc:
+                break          
             self._epoch += 1
 
         self._variables = {k: v for k, v in locals().items() if can_serialize(v)}            
@@ -424,12 +426,15 @@
 {% endmacro %}
 
 ################################################### Main #####################################################
-{% macro layer_tf1x_gan(layer_name, switch_layer, real_layer, batch_size, n_epochs, class_weights, generator_optimizer, discriminator_optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory) %}
+{% macro layer_tf1x_gan(layer_name, switch_layer, real_layer, batch_size, n_epochs, target_acc, stop_condition, class_weights, generator_optimizer, discriminator_optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory, use_cpu) %}
 class {{layer_name}}(GANLayer):
 
     def __init__(self):
         self._n_epochs = {{n_epochs}}
         self._batch_size = {{batch_size}}
+
+        self._target_acc = {{target_acc}}
+        self._stop_condition = '{{stop_condition}}'
 
         self._stopped = False
         self._paused = False
@@ -488,7 +493,7 @@ class {{layer_name}}(GANLayer):
             graph: A PerceptiLabs Graph object containing references to all layers objects included in the model produced by this training layer.
         """   
         {% if not distributed -%}
-            {{ run_normal(layer_name, switch_layer, real_layer, batch_size, n_epochs, class_weights, generator_optimizer, discriminator_optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory) }}
+            {{ run_normal(layer_name, switch_layer, real_layer, batch_size, n_epochs, class_weights, generator_optimizer, discriminator_optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory, use_cpu) }}
         {% endif %}                
 
     def on_export(self, path: str, mode: str) -> None:

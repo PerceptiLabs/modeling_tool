@@ -67,7 +67,8 @@ const getters = {
         Properties: el.layerSettings,
         Code: el.layerCode,
         backward_connections: namesConnectionIn,
-        forward_connections: namesConnectionOut
+        forward_connections: namesConnectionOut,
+        visited: el.visited
       };
 
     }
@@ -249,7 +250,41 @@ const actions = {
       .catch((err)=> { console.error(err) });
   },
 
+  //---------------
+  //  NETWORK SETTING UPDATING
+  //---------------
+  API_updateNetworkSetting({getters, dispatch}, layerId) {
+    const theData = {
+      action: 'getSettingsRecommendation',
+      value: {
+        Id: layerId,
+        Network: getters.GET_coreNetwork,
+      }
+    };
+    console.log("input param");
+    console.log("id", layerId);
+    console.log("Network", getters.GET_coreNetwork)
 
+    coreRequest(theData)
+      .then((data)=> {
+        console.log("From backend", data);
+
+        if (data) {
+          for (var el in data) {
+            const saveSettings = {
+              'elId': el,
+              'set': data[el].Properties,
+              'code': data[el].Code
+            };
+            
+            dispatch('mod_workspace/SET_elementSettings', deepCopy(saveSettings), {root: true});      
+          }
+        }
+      })
+      .catch((err)=> {
+        console.log("Calling getSettingsRecommendation", err)
+      })
+  },
   //---------------
   //  NETWORK TRAINING
   //---------------

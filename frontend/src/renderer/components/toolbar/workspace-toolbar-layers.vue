@@ -1,44 +1,43 @@
 <template lang="pug">
-  ul.toolbar_list
-    li.layer(
-      v-for="(layer, i) in layersbarList"
-      :key="i"
+  .layers-list-container
+    .layer-list(
+      v-for="(layer, idx) in layersbarList"
+      :key="idx"
+      :style="{ 'border-color': layer.color }"
+      @click.stop="toggleElList(idx)"
+      @focusout="handleFocusOut"
+      tabindex="0"
     )
-      button.btn.btn--toolbar.js-clickout.tooltip-wrap(type="button"
-        v-tooltip-interactive:right="layer.tooltip_interactive"
-        @click.stop="toggleElList(i, $event, layer.id, layer.dynamic_id)"
-        :class="[layer.layerClass, {'active': layer.showEl}]"
-        :id="layer.id"
+
+      .layer-list-header(
+        :class="[{'active': layer.showEl}]"
       )
         i.icon(:class="layer.iconClass")
-        
-      ul.layer_child-list#tutorial_layer_child-list(
-        :class="layer.childListClass"
-        v-if="layer.networkElements"
-      )
-        .layer_child-list-text {{ layer.tooltip }}
-        .layer_child-list-item
-          li(
-            v-for="(element, i) in layer.networkElements"
-            :key="i"
-          )
-            component(:is="element" :draggable="true")
-    li.layer
-      layer-custom(:draggable="true")
-      //- .btn.btn--toolbar.net-element-custom(:draggable="true"
-      //- data-component="LayerCustom"
-      //- data-layer="Layer Custom"
-      //- data-type="Other"
-      //- v-tooltip:right="'Custom'"
-      //- v-tooltip-interactive:right="interactiveInfo"
-      //-   :style="layerStyles"
-      //- )
-      //-   i.icon.icon-custom
+        .layer-list-header-label {{ layer.tooltip }}
 
+      ul.layer_child-list(
+        v-if="layer.networkElements"
+        :class="layer.childListClass"
+      )
+        li.layer_child-list-item(
+          v-for="(element, i) in layer.networkElements"
+          :key="i"
+          @mouseenter="mouseOver(element)"
+          @mouseleave="mouseOut"
+          @click="onLayerClick($event, element)"
+          :style="[calcLayerItemStyle(element, layer.color)]"
+          ref="referenceMenuItem"
+        )
+          component(:is="element" :draggable="true" :showTitle="true" :ref="`layer-${element}`")
+
+    .single-layer-category(
+      @click="onLayerClick($event, 'custom')"
+    )
+      layer-custom(:draggable="true" :showTitle="true" ref="layer-custom")
+    
 </template>
 
 <script>
-  import clickOutside from '@/core/mixins/click-outside.js'
   import {trainingElements, deepLearnElements}  from '@/core/constants.js'
   import { mapActions }       from 'vuex';
 
@@ -86,23 +85,19 @@
 
 export default {
   name: 'TheLayersbar',
-  mixins: [clickOutside],
   components: {
     DataData, DataEnvironment, DataRandom,
-    // DataCloud,
     DeepLearningFC, DeepLearningConv, DeepLearningDeconv, DeepLearningRecurrent,
     ProcessEmbed, ProcessGrayscale, ProcessOneHot, ProcessReshape, ProcessRescale,
-    // ProcessCrop,
     TrainNormal, TrainRegression, TrainGenetic, TrainDynamic, TrainReinforce, TrainDetector, TrainGan,
-    // TrainLoss, TrainOptimizer, 
     MathArgmax, MathMerge, MathSoftmax, MathSwitch,
-    // MathSplit,
-
-    // ClassicMLDbscans, ClassicMLKMeans, ClassicMLKNN, ClassicMLRandomForest, ClassicMLSVM,
     LayerCustom
   },
   data() {
     return {
+      hoveredElement: '',
+      clickedElementName: null,
+      clonedElement: null,
       layersbarList: [
         {
           tooltip: 'Data',
@@ -114,11 +109,9 @@ export default {
           iconClass: 'icon-data',
           childListClass: '',
           showEl: false,
-          networkElements: ['DataData', 'DataEnvironment', 'DataRandom',
-          //'DataCloud',
-          ],
-          id:'tutorial_data'
-          //networkElements: ['DataData']
+          networkElements: ['DataData', 'DataEnvironment', 'DataRandom'],
+          id:'tutorial_data',
+          color: 'rgba(97, 133, 238, 0.7)'
         },
         {
           tooltip: 'Processing',
@@ -130,11 +123,9 @@ export default {
           iconClass: 'icon-settings',
           childListClass: '',
           showEl: false,
-          networkElements: ['process-reshape', 'process-embed', 'process-grayscale', 'ProcessOneHot', 'process-rescale',
-          //'process-crop',
-          ],
-          id:'tutorial_processing'
-          //networkElements: ['process-reshape', 'process-embed', 'process-grayscale', 'process-hot']
+          networkElements: ['process-reshape', 'process-embed', 'process-grayscale', 'ProcessOneHot', 'process-rescale'],
+          id:'tutorial_processing',
+          color: 'rgba(253, 205, 114, 0.7)'
         },
         {
           tooltip: 'Deep Learning',
@@ -146,9 +137,9 @@ export default {
           iconClass: 'icon-network',
           childListClass: '',
           showEl: false,
-          //networkElements: ['LearnDeepConnect', 'LearnDeepConvolut', 'LearnDeepDeconvolut', 'LearnDeepRecurrent']
           networkElements: deepLearnElements,
-          id:'tutorial_deep-learning'
+          id:'tutorial_deep-learning',
+          color: 'rgba(241, 100, 100, 0.7)'
         },
         {
           tooltip: 'Mathematics',
@@ -160,10 +151,9 @@ export default {
           iconClass: 'icon-calc',
           childListClass: '',
           showEl: false,
-          networkElements: ['MathArgmax', 'MathMerge', 'MathSwitch', 'MathSoftmax'
-          //'MathSplit',
-          ],
-          id:'tutorial_mathematics'
+          networkElements: ['MathArgmax', 'MathMerge', 'MathSwitch', 'MathSoftmax'],
+          id:'tutorial_mathematics',
+          color: 'rgba(0, 123, 239, 0.7)'
         },
         {
           tooltip: 'Training',
@@ -173,60 +163,154 @@ export default {
           },
           layerClass: 'net-element-train',
           iconClass: 'icon-training',
-          // childListClass: 'layer_child-list--training',
           childListClass: '',
           showEl: false,
-          //networkElements: ['TrainNormal', 'TrainReinforce', 'TrainGenetic', 'TrainDynamic']
           networkElements: trainingElements,
-          id:'tutorial_training'
+          id:'tutorial_training',
+          color: 'rgba(115, 254, 187, 0.7)'
         },
-        // {
-        //   tooltip: 'Classic Machine Learning',
-        //   tooltip_interactive: {
-        //     title: 'Classic Machine Learning',
-        //     text: 'Classic machine learning components'
-        //   },
-        //   layerClass: 'net-element-learn-class',
-        //   iconClass: 'icon-mind',
-        //   childListClass: '',
-        //   showEl: false,
-        //   networkElements: ['ClassicMLDbscans', 'ClassicMLKMeans', 'ClassicMLKNN', 'ClassicMLRandomForest', 'ClassicMLSVM'],
-        //   id:'tutorial_classic-machine-learning'
-        // }
       ],
-    }
-  },
-  computed: {
-    hideLayers () {
-      return this.$store.state.globalView.hideLayers
-    },
-    activeStepStoryboard() {
-      return this.$store.state.mod_tutorials.activeStepStoryboard
     }
   },
   methods: {
     ...mapActions({
       tutorialPointActivate:    'mod_tutorials/pointActivate',
     }),
-    toggleElList(index, ev, tutorial_id) {
-      this.tutorialPointActivate({way:'next', validation: tutorial_id});
-      if (this.layersbarList[index].showEl) {
-        this.layersbarList[index].showEl = false;
-        document.removeEventListener('click', this.clickOutside);
+    toggleElList(idx) {
+      
+      if (this.layersbarList[idx].showEl) {
+        this.layersbarList[idx].showEl = false;
       }
       else {
-        this.clickOutsideAction();
-        this.layersbarList[index].showEl = true;
-        this.ClickElementTracking = ev.target.closest('.js-clickout');
-        document.addEventListener('click', this.clickOutside);
+        this.layersbarList[idx].showEl = true;
       }
     },
-    //btn btn--layersbar layer_parent js-clickout tooltip-wrap net-element-data
-    //btn btn--layersbar                          tooltip-wrap net-element-data
-    clickOutsideAction() {
+    handleFocusOut() {
       this.layersbarList.forEach((item)=> {
         item.showEl = false
       });
+    },
+    mouseOver(elementName) {
+      this.hoveredElement = elementName;
+    },
+    mouseOut() {
+      this.hoveredElement = '';
+    },
+    calcLayerItemStyle(elementName, backgroundColor){
+      const bgc = this.hoveredElement === elementName ? backgroundColor : '#23252A';
+
+      return ({
+        'background-color': bgc
+      });
+    },
+    onLayerClick(event, elementName) {
+      // This function handles the magic of cloning and setting up event listeners
+      if (this.clickedElementName) {  return; }
+      
+      this.cloneElement(elementName);
+      this.setClonedElementStyle();
+      this.setupClickDropFunctionality();
+    },
+    startComponentPositionUpdates(event) {
+      const x = event.clientX + (document.documentElement.scrollLeft ? document.documentElement.scrollLeft : document.body.scrollLeft);
+	    const y = event.clientY + (document.documentElement.scrollTop ? document.documentElement.scrollTop : document.body.scrollTop);
+      
+      const halfHeight = this.clonedElement.style.height.replace('px', '') / 2;
+      const halfWidth = this.clonedElement.style.width.replace('px', '') / 2;
+      
+      this.clonedElement.style.left = (x - halfWidth) + 'px';
+      this.clonedElement.style.top = (y - halfHeight) + 'px';
+    },
+    handleCancelEvents(event) {
+      event.preventDefault();
+      this.cleanupClickDropFunctionality();
+    },
+    stopComponentPositionUpdates(event) {
+      const svg = document.querySelector('.svg-arrow');
+      const {top, right, bottom, left} = svg.getBoundingClientRect();
+
+      // This check is to make sure that the position of click is within the network field
+      if (left <= event.x && 
+          event.x <= right &&
+          top <= event.y && 
+          event.y <= bottom) {
+        
+        let fakeEvent = {
+          target: {
+            dataset: {
+              layer: this.clonedElement.dataset.layer,
+              type: this.clonedElement.dataset.type,
+              component: this.clonedElement.dataset.component,
+            },
+            clientHeight: 0,
+            clientWidth: 0
+          },
+          offsetX: event.x - left,
+          offsetY: event.y - top
+        };
+
+        this.$store.dispatch('mod_workspace/ADD_element', { event: fakeEvent });
+
+        this.cleanupClickDropFunctionality();
+      }
+    },
+    cloneElement(elementName) {
+      this.clickedElementName = `layer-${elementName}`;
+
+      // The refs will be an array because of the v-for
+      // Normal layers will evaluate to true; 'custom' will eval to false
+      if (Array.isArray(this.$refs[this.clickedElementName])) {
+        this.clonedElement = this.$refs[this.clickedElementName][0].$el.cloneNode(true);
+      } else {
+        this.clonedElement = this.$refs[this.clickedElementName].$el.cloneNode(true);
+      }
+    },
+    setClonedElementStyle() {
+        const referenceItem = this.$refs['referenceMenuItem'][0];
+
+        this.clonedElement.classList.add('layer_child-list-item');
+        this.clonedElement.style.height = referenceItem.offsetHeight + 'px';
+        this.clonedElement.style.width = referenceItem.offsetWidth + 'px';
+        this.clonedElement.style.background = 'transparent';
+        this.clonedElement.style.zIndex = 10;
+        this.clonedElement.style.position = 'absolute';
+        this.clonedElement.style.cursor = "initial";
+
+        const iconElement = this.clonedElement.childNodes[0];
+        const labelElement = this.clonedElement.childNodes[1];
+
+        iconElement.style.fontSize = '1.3rem';
+        labelElement.style.marginLeft = '1rem';
+        labelElement.style.fontFamily = 'Nunito Sans';
+        labelElement.style.fontStyle = 'normal';
+        labelElement.style.fontWeight = 600;
+        labelElement.style.fontSize = '1.2rem';
+        labelElement.style.lineHeight = '1.6rem';
+    },
+    handleEscKeypress(event) {
+      if (this.clickedElementName &&
+          event.key === "Escape") {
+          
+        event.stopPropagation();
+        this.cleanupClickDropFunctionality();
+      }
+    },
+    setupClickDropFunctionality() {
+      document.body.appendChild(this.clonedElement);
+      document.addEventListener('mousemove', this.startComponentPositionUpdates);
+      document.addEventListener('click', this.stopComponentPositionUpdates);
+      document.addEventListener('contextmenu', this.handleCancelEvents);
+      document.addEventListener('keyup', this.handleEscKeypress);
+    },
+    cleanupClickDropFunctionality() {
+      document.removeEventListener('mousemove', this.startComponentPositionUpdates);
+      document.removeEventListener('click', this.stopComponentPositionUpdates);
+      document.removeEventListener('contextmenu', this.handleEscKeypress);
+      document.removeEventListener('keyup', this.handleEscKeypress);
+
+      document.body.removeChild(this.clonedElement);
+      this.clickedElementName = null;
+      this.clonedElement = null;
     }
   },
 }
@@ -235,47 +319,37 @@ export default {
 <style lang="scss" scoped>
   @import "../../scss/base";
   $indent: 0.5rem;
-  $button-size: 2.5rem;
-  // .page_layersbar {
-  //   max-width: $w-layersbar;
-  //   grid-area: layersbar;
-  //   transition: max-width $animation-speed;
-  //   border-right: 1px solid $bg-workspace;
-  //   z-index: 1;
-  //   &.page_layersbar--hide {
-  //     transition: max-width $animation-speed $animation-speed;
-  //     max-width: 0;
-  //     .layersbar-list {
-  //       transition: transform $animation-speed;
-  //       transform: translateY(-120%);
-  //     }
-  //   }
-  // }
-  // .toolbar_list {
-  //   padding-left: 0;
-  // }
+  $icon-size: 1.3rem;
+  $toolbar-size: 2.6rem;
 
-  .toolbar_list {
-    z-index: 1;
+  .layers-list-container {
+    display: flex;
+    justify-content: space-evenly;
+    height: $toolbar-size;
+    width: 100%;
     margin: 0;
     padding: 0;
     list-style: none;
     transition: transform $animation-speed $animation-speed;
     transform: translateY(0);
 
-    .btn--toolbar,
-    /deep/ .btn--layersbar {
-      // box-shadow: $box-shad;
-      height: $button-size;
-      width: $button-size;
-      border: 0.5px solid $toolbar-button-border;
-      color: $white;
-
-      .icon {
-        font-size: 1.375rem
-      }
-    }
+    position: relative;
+    z-index: 10;
   }
+
+  .layer-list {
+    height: 100%;
+    width: 100%;
+
+    box-sizing: border-box;
+    background: #23252A;
+    border-width: 1px;
+    border-bottom-width: 3px;
+    border-style: solid;
+    border-color: rgba(77, 85, 106, 0.8);
+    border-radius: 0px;
+  }
+
   .layer {
     position: relative;
 
@@ -284,88 +358,134 @@ export default {
     }
   }
 
-  .layer_parent {
-    position: relative;
-    z-index: 1;
-    &:after {
-      content: '\e922';
-      font-family: 'icomoon' !important;
-      font-size: 1.1em;
-      .is-web & {
-        font-size: calc(var(--sidebar-scale-coefficient) * 1.1em);
-      }
-      line-height: 1;
-      position: absolute;
-      right: 1px;
-      bottom: 1px;
+  .layer-list-header {
+    height: 100%;
+    width: 100%;
+    
+    display: flex;  
+    justify-content: center;
+    align-items: center;
+
+    box-sizing: border-box;
+
+    cursor: pointer;
+
+    * + * {
+      margin-left: 1rem;
+    }
+
+    .icon {
+      font-size: 1.3rem
+    }
+
+    .layer-list-header-label {
+      font-family: Nunito Sans;
+      font-style: normal;
+      font-weight: 600;
+      font-size: 1.2rem;
+      line-height: 1.6rem;
+
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
   }
+
   ul.layer_child-list {
     @include multi-transition (transform, opacity, visibility);
-    // display: flex;
-    // flex-direction: row;
-    z-index: 1;
-    position: absolute;
-    top: 0;
-    // left: -$indent;
+    position: relative;
+    top: 2px;
     opacity: 0;
     visibility: hidden;
-    margin: 0;
-    padding: $indent;
-    border-radius: 2px;
-    //transform: translateX(-100%);
 
-    background-color: $bg-workspace;
-    padding: $indent;
+    box-sizing: border-box;
+    border: 1px solid #3F4C70;
+    border-radius: 0px 0px 2px 2px;
+    
+    width: inherit; 
 
-    .layer_child-list-text {
-      padding-bottom: $indent;
-    }
+    background: #23252A;
 
     .layer_child-list-item {
+      
       display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+
+      height: $toolbar-size;
+      width: 100%; 
+
+      position: relative;
+      z-index: 10;
+
+      pointer-events: auto;
+
+      /deep/ .btn {
+        height: 100%;
+        width: 100%;
+
+        border: 0;
+        background: transparent;
+
+        cursor: pointer;
+
+        * + * {
+          margin-left: 1rem;
+        }
+
+        i {
+          font-size: $icon-size;
+        }
+
+        .layerTitle {
+          white-space: pre;
+        }
+      }
+
     }
 
-    // @media (max-height: 1000px) {
-    //   .layer:nth-child(n+5) & {
-    //     top: auto;
-    //     bottom: -$indent;
-    //     &.layer_child-list--training {
-    //       bottom: -135px;
-    //     }
-    //   }
-    // }
     .active + & {
       visibility: visible;
       opacity: 1;
-      transform: translateY(75%);
-    }
-    /deep/ li {
-      + li {
-        margin-left: $indent;
-      }
-    }
-
-    &:after {
-      bottom: 100%;
-      left: $button-size / 2;
-      border: solid transparent;
-      content: " ";
-      height: 0;
-      width: 0;
-      position: absolute;
-      pointer-events: none;
-      border-bottom-color: $bg-workspace;
-      border-width: 0.75rem;
-      margin-left: -0.75rem;
-    }
-    
+    } 
   }
-  ul.layer_child-list--training {
-    top: -137px;
-    > li:nth-child(2) {
-      border-bottom: 2px solid $bg-scroll;
-      padding-bottom: $indent;
+
+  .single-layer-category {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    border-width: 1px;
+    border-bottom-width: 3px;
+    border-style: solid;
+    border-color: rgba(77, 85, 106, 0.8);
+    box-sizing: border-box;
+    
+    height: $toolbar-size;
+    width: 100%; 
+
+    /deep/ .btn.btn--layersbar.net-element-custom {
+      height: 100%;
+      width: 100%;
+
+      font-family: Nunito Sans;
+      font-style: normal;
+      font-weight: 600;
+      font-size: 1.2rem;
+      line-height: 1.6rem;
+
+      background: transparent;
+
+      cursor: pointer;
+
+      * + * {
+        margin-left: 1rem;
+      }
+
+      i {
+        font-size: $icon-size;
+      }
     }
   }
 </style>

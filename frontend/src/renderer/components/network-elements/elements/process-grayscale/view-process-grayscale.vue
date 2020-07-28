@@ -3,11 +3,11 @@
     data-component="ProcessGrayscale"
     data-layer="Grayscale"
     data-type="Other"
-    v-tooltip:networkElement="'Grayscale'"
     v-tooltip-interactive:right="interactiveInfo"
     :style="layerStyles"
   )
     i.icon.icon-sieve
+    .layerTitle(v-if="showTitle") {{ displayTitle }}
 
 </template>
 
@@ -21,7 +21,8 @@ export default {
       interactiveInfo: {
         title: 'Process Grayscale',
         text: 'Convert data to grayscale'
-      }
+      },
+      displayTitle: 'Grayscale'
     }
   }
 }

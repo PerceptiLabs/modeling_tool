@@ -1,5 +1,8 @@
 import warnings
 import functools
+from concurrent.futures import Future, Executor
+from threading import Lock
+
 
 def deprecated(func):
     """This is a decorator which can be used to mark functions
@@ -163,3 +166,27 @@ def loop_until_true(condition, timeout=20.0):
 def wait_for_condition(condition, timeout=20.0):
     return loop_until_true(condition, timeout)
 
+class DummyExecutor(Executor):
+
+    def __init__(self):
+        self._shutdown = False
+        self._shutdownLock = Lock()
+
+    def submit(self, fn, *args, **kwargs):
+        with self._shutdownLock:
+            if self._shutdown:
+                raise RuntimeError('cannot schedule new futures after shutdown')
+
+            f = Future()
+            try:
+                result = fn(*args, **kwargs)
+            except BaseException as e:
+                f.set_exception(e)
+            else:
+                f.set_result(result)
+
+            return f
+
+    def shutdown(self, wait=True):
+        with self._shutdownLock:
+            self._shutdown = True

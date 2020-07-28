@@ -150,6 +150,8 @@ const workspaceSaveNet = {
         .then(()=> {
           // Update the model in the webstorage too.
           this.$store.dispatch('mod_webstorage/saveNetwork', currentNet, {root: true});
+          // update model updated in rygg
+          this.$store.dispatch('mod_project/patchModel', { model_id: currentNet.apiMeta.model_id, updated: new Date()});
 
           /*save project to project page*/
           if(prepareNet.toFile.apiMeta.location !== prepareNet.toLocal.pathProject || 

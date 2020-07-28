@@ -3,12 +3,12 @@
   data-component="ProcessOneHot"
   data-layer="OneHot"
   data-type="Other"
-  v-tooltip:networkElement="'One Hot'"
   v-tooltip-interactive:right="interactiveInfo"
   id="tutorial_one-hot"
     :style="layerStyles"
   )
     i.icon.icon-one-hot
+    .layerTitle(v-if="showTitle") {{ displayTitle }}
 
 </template>
 
@@ -22,7 +22,8 @@ export default {
       interactiveInfo: {
         title: 'Process OneHot',
         text: 'Use one hot encoding'
-      }
+      },
+      displayTitle: 'OneHot'
     }
   }
 }

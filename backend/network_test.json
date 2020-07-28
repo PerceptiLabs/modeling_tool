@@ -122,13 +122,16 @@
                 "Class_weights": "1",
                 "Learning_rate": "0.001",
                 "Optimizer": "SGD",
-                "batch_size":10,
+                "batch_size":"10",
                 "Beta_1": "0.9",
                 "Beta_2": "0.999",
                 "Momentum": "0.9",
                 "Decay_steps": "100000",
                 "Decay_rate": "0.96",
-                "Training_iters": "20000"
+                "Training_iters": "20000",
+                "Target_r_squared":"0.7",
+                "Iterations":"20000",
+                "Stop_condition":"TargetRSquared"
             },
             "Code": null,
             "backward_connections": [

@@ -75,7 +75,6 @@ def resolve_custom_code(specs):
     code = specs['Code']['Output']
     return code
 
-
 def update_sources_with_file_exts(specs):
     sources = specs['Properties']['accessProperties']['Sources']
     for source in sources:
@@ -234,11 +233,8 @@ DEFINITION_TABLE = {
     'ProcessReshape': LayerDef(
         Tf1xLayer,
         'tf1x.j2',
-        'layer_tf1x_reshape',        
-        {
-            'shape': lambda specs: specs['Properties']['Shape'],
-            'permutation': lambda specs: specs['Properties']['Permutation']
-        },
+        'layer_tf1x_reshape',
+        macro_parameters=None,
         import_statements=[
             'import tensorflow as tf',
             'import numpy as np',
@@ -385,6 +381,7 @@ DEFINITION_TABLE = {
             'target_layer': lambda specs: [sanitize_layer_name(x) for true_id, x in specs['backward_connections'] if true_id == specs['Properties']['Labels']][0],
             'n_epochs': lambda specs: specs['Properties']['Epochs'],
             'batch_size': lambda specs: specs['Properties']['Batch_size'],
+            'target_acc': lambda specs: specs['Properties'].get('Stop_Target_Accuracy', None),
             'loss_function': lambda specs: specs['Properties']['Loss'],
             'class_weights': lambda specs: specs['Properties']['Class_weights'],
             'optimizer': resolve_tf1x_optimizer,
@@ -396,7 +393,8 @@ DEFINITION_TABLE = {
             'beta2': lambda specs: specs['Properties']['Beta_2'],
             'distributed': lambda specs: specs['Properties'].get('Distributed', False),
             'export_directory': resolve_checkpoint_path,
-            'use_cpus': lambda specs: specs['Properties'].get('Use_CPUs', True)            
+            'use_cpu': lambda specs: specs['Properties'].get('Use_CPU', True),
+            'stop_condition': resolve_tf1x_stop_cond           
         },
         import_statements=[
             'import tensorflow as tf',
@@ -435,7 +433,10 @@ DEFINITION_TABLE = {
             'export_directory': resolve_checkpoint_path,
             'batch_size': lambda specs: specs['Properties']['batch_size'],
             'lambdaclass': lambda specs: specs['Properties']['lambda_class'],
-            'lambdanoobj': lambda specs: specs['Properties']['lambda_noobj']
+            'lambdanoobj': lambda specs: specs['Properties']['lambda_noobj'],
+            'use_cpu': lambda specs: specs['Properties'].get('Use_CPU', True),
+            'target_acc': lambda specs: specs['Properties'].get('Stop_Target_Accuracy', None),
+            'stop_condition': resolve_tf1x_stop_cond
         },
         import_statements=[
             'import tensorflow as tf',
@@ -472,7 +473,8 @@ DEFINITION_TABLE = {
             'beta2': lambda specs: specs['Properties']['Beta_2'],
             'distributed': lambda specs: specs['Properties'].get('Distributed', False),
             'batch_size': lambda specs: specs['Properties']['batch_size'],
-            'export_directory': resolve_checkpoint_path
+            'export_directory': resolve_checkpoint_path,
+            'use_cpu': lambda specs: specs['Properties'].get('Use_CPU', True)
         },
         import_statements=[
             'import tensorflow as tf',
@@ -505,7 +507,8 @@ DEFINITION_TABLE = {
             'replay_memory_size': 300000,
             'final_exploration': 0.1,
             'final_exporation_frame': 500,
-            'target_network_update_frequency': 100
+            'target_network_update_frequency': 100,
+            'use_cpu': lambda specs: specs['Properties'].get('Use_CPU', True)
 
         },
         import_statements=[
@@ -543,7 +546,10 @@ DEFINITION_TABLE = {
             'beta1': lambda specs: specs['Properties']['Beta_1'],
             'beta2': lambda specs: specs['Properties']['Beta_2'],
             'distributed': lambda specs: specs['Properties'].get('Distributed', False),
-            'export_directory': resolve_checkpoint_path            
+            'use_cpu': lambda specs: specs['Properties'].get('Use_CPU', True),   
+            'export_directory': resolve_checkpoint_path,
+            'target_acc': lambda specs: specs['Properties'].get('Stop_Target_Accuracy', None),
+            'stop_condition': resolve_tf1x_stop_cond            
         },
         import_statements=[
             'import tensorflow as tf',

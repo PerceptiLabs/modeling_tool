@@ -22,12 +22,15 @@ from perceptilabs.networkSaver import saveNetwork
 from perceptilabs.issues import IssueHandler
 from perceptilabs.modules import ModuleProvider
 from perceptilabs.core_new.core import *
-from perceptilabs.core_new.data import DataContainer
+from perceptilabs.api.data_container import DataContainer
 from perceptilabs.core_new.cache import get_cache
 from perceptilabs.core_new.errors import CoreErrorHandler
 from perceptilabs.core_new.history import SessionHistory
 from perceptilabs.CoreThread import CoreThread
 from perceptilabs.createDataObject import createDataObject
+from perceptilabs.messaging import MessageProducer
+from perceptilabs.aggregation import AggregationRequest, AggregationEngine
+from typing import List
 
 from perceptilabs.license_checker import LicenseV2
 
@@ -54,6 +57,7 @@ class coreLogic():
         self.plLicense = LicenseV2()
         
         self._save_counter = 0
+        self._aggregation_futures = []
 
     def setupLogic(self):
         #self.warningQueue=queue.Queue()
@@ -138,7 +142,7 @@ class coreLogic():
             import json
             with open('net.json_', 'w') as f:
                 json.dump(network, f, indent=4)
-
+                
         def backprop(layer_id):
             backward_connections = network['Layers'][layer_id]['backward_connections']
             if backward_connections:
@@ -151,16 +155,18 @@ class coreLogic():
         gpus = self.gpu_list()
         distributed = self.isDistributable(gpus)
 
-        use_cpus = True
+        use_cpu_only = True
 
         for _id, layer in network['Layers'].items():
             if layer['Type'] == 'DataData':
                 if layer['Properties'] and 'accessProperties' in layer['Properties']:
                     layer['Properties']['accessProperties']['Sources'][0]['path'] = layer['Properties']['accessProperties']['Sources'][0]['path'].replace('\\','/')
-            if layer['Type'] == 'TrainNormal':
-                if not 'Use_CPUs' in layer['Properties']:
-                    layer['Properties']['Use_CPUs'] = use_cpus
+            
+            if 'Train' in layer['Type']:
+                if not 'Use_CPU' in layer['Properties']:
+                    layer['Properties']['Use_CPU'] = use_cpu_only
 
+            if layer['Type'] == 'TrainNormal':
                 layer['Properties']['Distributed'] = distributed
                 if distributed:
                     targets_id = layer['Properties']['Labels']
@@ -581,7 +587,47 @@ class coreLogic():
             self.playCounter.start()
 
         return {"content": "Play started"}
+        
+    def scheduleAggregations(self, engine: AggregationEngine, requests: List[AggregationRequest]):
+        """ Schedules a batch of metric aggregations 
+        
+        Args:
+            engine: Aggregation Engine to computate
+            requests: A list of AggregationRequests to computate
+        """
+        future = engine.request_batch(requests)
+        self._aggregation_futures.append(future)
 
+        def prune_futures(future):
+            """ Retain only the most recently completed future (and not-yet-completed futures) """
+            while len(self._aggregation_futures) >= 2 and self._aggregation_futures[1].done():
+                del self._aggregation_futures[0]
+                
+        future.add_done_callback(prune_futures)
+        
+    def getAggregationResults(self, result_names: list) -> dict:
+        """ Retrieve results of scheduled aggregations 
+        
+        Args:
+            result_names: names of the results to get from Aggregation Engine once computation is finished
+        
+        Returns:
+            retrieved: a dictionary of by result_names queried
+        """
+        if len(self._aggregation_futures) == 0:
+            return {}
+
+        future = self._aggregation_futures[0]        
+        if not future.done():
+            return {}
+
+        retrieved = {}
+        results, _, _ = future.result()
+        for result_name in result_names:
+            value, _, _ = results.get(result_name, (None, None, None))
+            retrieved[result_name] = value
+        return retrieved
+    
     def updateResults(self):
         
         # if not self.resultQ.empty():
@@ -687,29 +733,29 @@ class coreLogic():
                 acc_val=self.getStatistics({"layerId":id_, "variable":"acc_validation_epoch","innervariable":""})
                 loss_train=self.getStatistics({"layerId":id_, "variable":"loss_training_epoch","innervariable":""})
                 loss_val=self.getStatistics({"layerId":id_, "variable":"loss_validation_epoch","innervariable":""})
-                end_results.update({"acc_train":float(acc_train[-1]*100), "acc_val":float(acc_val[-1]*100), "loss_train":float(loss_train[-1]), "loss_val":float(loss_val[-1])})
+                end_results.update({1:{"Training": {"Accuracy Training":float(acc_train[-1]*100), "Loss Training":float(loss_train[-1])}}, 2:{"Validation": {"Accuracy Validation":float(acc_val[-1]*100), "Loss Validation":float(loss_val[-1])}}})
             elif value["Info"]["Type"]=="TrainDetector":
                 acc_train=self.getStatistics({"layerId":id_, "variable":"acc_training_epoch","innervariable":""})
                 acc_val=self.getStatistics({"layerId":id_, "variable":"acc_validation_epoch","innervariable":""})
                 loss_train=self.getStatistics({"layerId":id_, "variable":"loss_training_epoch","innervariable":""})
                 loss_val=self.getStatistics({"layerId":id_, "variable":"loss_validation_epoch","innervariable":""})
-                end_results.update({"acc_train":float(acc_train[-1]*100), "acc_val":float(acc_val[-1]*100), "loss_train":float(loss_train[-1]), "loss_val":float(loss_val[-1])})
+                end_results.update({1:{"Training": {"Accuracy Training":float(acc_train[-1]*100), "Loss Training":float(loss_train[-1])}}, 2:{"Validation": {"Accuracy Validation":float(acc_val[-1]*100), "Loss Validation":float(loss_val[-1])}}})
             elif value["Info"]["Type"]=="TrainReinforce":
                 loss_train=self.getStatistics({"layerId":id_, "variable":"loss_training_episode","innervariable":""})
                 reward_train=self.getStatistics({"layerId":id_, "variable":"reward_training_episode","innervariable":""})
-                end_results.update({"loss_train":float(loss_train[-1]), "reward_train":float(reward_train[-1])})
-            elif value["Info"]["Type"]=="TrainGAN":
+                end_results.update({1:{"Training": {"loss_train":float(loss_train[-1]), "reward_train":float(reward_train[-1])}}})
+            elif value["Info"]["Type"]=="TrainGan":
                 gen_loss_train=self.getStatistics({"layerId":id_, "variable":"gen_loss_training_epoch","innervariable":""})
                 gen_loss_val=self.getStatistics({"layerId":id_, "variable":"gen_loss_validation_epoch","innervariable":""})
                 dis_loss_train=self.getStatistics({"layerId":id_, "variable":"dis_loss_training_epoch","innervariable":""})
                 dis_loss_val=self.getStatistics({"layerId":id_, "variable":"dis_loss_validation_epoch","innervariable":""})
-                end_results.update({"gen_loss_train":float(gen_loss_train[-1]), "gen_loss_val":float(gen_loss_val[-1]), "dis_loss_train":float(dis_loss_train[-1]), "dis_loss_val":float(dis_loss_val[-1])})
-            if value["Info"]["Type"]=="TrainRegression":
+                end_results.update({1:{"Training":{"Generator Loss Training":float(gen_loss_train[-1]), "Discriminator Loss Training":float(dis_loss_train[-1])}}, 2:{"Validation":{"Generator Loss Validation":float(gen_loss_val[-1]), "Discriminator Loss Validation":float(dis_loss_val[-1])}}})
+            elif value["Info"]["Type"]=="TrainRegression":
                 r_sq_train=self.getStatistics({"layerId":id_, "variable":"r_sq_train_epoch","innervariable":""})
                 r_sq_val=self.getStatistics({"layerId":id_, "variable":"r_sq_validation_epoch","innervariable":""})
                 loss_train=self.getStatistics({"layerId":id_, "variable":"loss_train_epoch","innervariable":""})
                 loss_val=self.getStatistics({"layerId":id_, "variable":"loss_validation_epoch","innervariable":""})
-                end_results.update({"r_sq_train":float(r_sq_train[-1]) * 100, "r_sq_val":float(r_sq_val[-1]) * 100, "loss_train":float(loss_train[-1]), "loss_val":float(loss_val[-1])})
+                end_results.update({1: {"Training": {"R Squared Training":float(r_sq_train[-1]) * 100, "Loss Training":float(loss_train[-1])}}, 2: {"Validation":{"R Squared Validation":float(r_sq_val[-1]) * 100, "Loss Validation":float(loss_val[-1])}}})
         return end_results
 
     

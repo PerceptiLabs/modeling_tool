@@ -214,7 +214,10 @@
                 "Decay_steps": "100000",
                 "Decay_rate": "0.96",
                 "Training_iters": "20000",
-                "Batch_size": "10"
+                "Batch_size": "10",
+                "Stop_Iteration":"200",
+                "Stop_Target_Accuracy":"80",
+                "Stop_condition":"TargetAccuracy"
             },
             "Code": null,
             "backward_connections": [

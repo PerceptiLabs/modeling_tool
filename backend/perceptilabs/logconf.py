@@ -10,7 +10,7 @@ import perceptilabs
 
 APPLICATION_LOGGER = 'perceptilabs.applogger'
 APPLICATION_LOG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)),'kernel.log')
-APPLICATION_LOG_FORMAT = '%(asctime)s - %(levelname)s - %(threadName)s - %(filename)s:%(lineno)d - %(message)s'
+APPLICATION_LOG_FORMAT = '%(asctime)s - %(levelname)s - %(package)s:%(lineno)d - %(message)s'
 APPLICATION_LOG_LEVEL = logging.INFO
 
 
@@ -18,7 +18,23 @@ DATA_LOGGER = 'perceptilabs.datalogger'
 DATA_LOG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)),'data.log')
 
 
-def setup_application_logger():
+class PackageFilter(logging.Filter):
+    def filter(self, record):
+        plabs_path = pkg_resources.resource_filename('perceptilabs', '')
+
+        if record.pathname.startswith(plabs_path) and record.pathname.endswith('.py'):
+            package_name = 'perceptilabs' + record.pathname[len(plabs_path):-3].replace('/', '.')
+            record.package = package_name
+        else:
+            record.package = record.filename
+            
+        return True    
+
+
+def setup_application_logger(log_level=None):
+    if log_level is not None:
+        log_level = logging.getLevelName(log_level)
+    
     formatter = logging.Formatter(APPLICATION_LOG_FORMAT)
     
     file_handler = logging.FileHandler(APPLICATION_LOG_FILE, mode='w')
@@ -28,9 +44,10 @@ def setup_application_logger():
     stream_handler.setFormatter(formatter)
     
     logger = logging.getLogger(APPLICATION_LOGGER)
-    logger.setLevel(APPLICATION_LOG_LEVEL)
+    logger.setLevel(log_level or APPLICATION_LOG_LEVEL)
     logger.addHandler(file_handler)
     logger.addHandler(stream_handler)
+    logger.addFilter(PackageFilter())
 
 
 _global_context = {
@@ -82,7 +99,7 @@ class DataFormatter(logging.Formatter):
         return text
 
 
-def setup_data_logger():
+def setup_data_logger(is_dev=True):
     formatter = DataFormatter()
     
     file_handler = logging.FileHandler(DATA_LOG_FILE, mode='w')
@@ -99,7 +116,9 @@ def setup_data_logger():
     logger.setLevel(logging.INFO)
     logger.addHandler(file_handler)
     #logger.addHandler(stream_handler)
-    logger.addHandler(azure_handler)
+    
+    if not is_dev:
+        logger.addHandler(azure_handler)
 
 
     

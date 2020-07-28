@@ -66,9 +66,14 @@ def on_kernel_started(commit_id, data_logger):
 def main():
     args = get_input_args()
     session_id = uuid.uuid4().hex
+
+    with open(pkg_resources.resource_filename('perceptilabs', 'app_variables.json'), 'r') as f:
+        app_variables = json.load(f)
+
+    commit_id = app_variables["BuildVariables"]["CommitId"]
     
-    perceptilabs.logconf.setup_application_logger()
-    perceptilabs.logconf.setup_data_logger()
+    perceptilabs.logconf.setup_application_logger(log_level=args.log_level)
+    perceptilabs.logconf.setup_data_logger(is_dev=(commit_id == "Dev"))
     perceptilabs.logconf.set_session_id(session_id)
     
     logger = logging.getLogger(perceptilabs.logconf.APPLICATION_LOGGER)
@@ -85,10 +90,6 @@ def main():
     else:
         logger.warning("No frontend process id specified. Backend will not self terminate if frontend is shutdown unexpectedly.")
     
-    with open(pkg_resources.resource_filename('perceptilabs', 'app_variables.json'), 'r') as f:
-        app_variables = json.load(f)
-
-    commit_id = app_variables["BuildVariables"]["CommitId"]
 
     setup_sentry(args.user, commit_id)
     logger.info("Reporting errors with commit id: " + str(commit_id))

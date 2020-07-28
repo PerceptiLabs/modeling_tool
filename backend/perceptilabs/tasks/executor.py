@@ -4,7 +4,7 @@ import queue
 import threading
 
 
-from perceptilabs.core_new.communication.utils import KillableThread
+from perceptilabs.tasks.utils import TaskThread
 
 class TaskError(Exception):
     pass
@@ -22,7 +22,7 @@ class TaskExecutor:
         self._result_queue = queue.Queue()
 
         self._stopped = threading.Event()
-        self._worker_thread = KillableThread(target=self._worker, daemon=True)
+        self._worker_thread = TaskThread(target=self._worker, daemon=True)
         self._worker_thread.start()
 
     def shutdown(self, kill=False):

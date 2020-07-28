@@ -6,6 +6,10 @@ const netElementViewLayer = {
     },
     currentEl: {
       type: Object,
+    },
+    showTitle: {
+      type: Boolean,
+      default: false
     }
   },
   computed: {

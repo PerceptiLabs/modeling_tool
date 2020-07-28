@@ -94,6 +94,7 @@
         this.updateOnlineStatus();
         this.SET_appVersion(process.env.PACKAGE_VERSION);
         this.$store.dispatch('mod_api/API_runServer', null, {root: true});
+        document.body.style.overflow = 'hidden';
         document.addEventListener('keydown', this.disableHotKeys);
       } else {
         this.appReady();
@@ -132,7 +133,6 @@
       this.$store.dispatch('mod_api/API_runServer', null, {root: true});
       // this.$store.dispatch('mod_workspace/GET_workspacesFromLocalStorage');
             
-      Analytics.hubSpot.identifyUser(this.userEmail);
       this.$nextTick(() =>{
       //   if(this.userId === 'Guest') {
       //     this.$store.dispatch('mod_tracker/TRACK_initMixPanelUser', this.userId);

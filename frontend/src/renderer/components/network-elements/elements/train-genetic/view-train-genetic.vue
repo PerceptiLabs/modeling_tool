@@ -3,11 +3,11 @@
   data-component="TrainGenetic"
   data-layer="Genetic Algorithm"
   data-type="Training"
-  v-tooltip:networkElement="'Genetic Algorithm'"
   v-tooltip-interactive:right="interactiveInfo"
     :style="layerStyles"
   )
     i.icon.icon-learning-genetic
+    .layerTitle(v-if="showTitle") {{ displayTitle }}
 
 </template>
 
@@ -21,7 +21,8 @@ export default {
       interactiveInfo: {
         title: 'Train GA',
         text: 'Genetic algorithm layer'
-      }
+      },
+      displayTitle: 'GA'
     }
   }
 }

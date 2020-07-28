@@ -2,7 +2,7 @@ import pytest
 import time
 
 
-from perceptilabs.core_new.communication.task_executor import TaskExecutor, TaskError, TaskTimeout
+from perceptilabs.tasks.executor import TaskExecutor, TaskError, TaskTimeout
 
 
 @pytest.fixture(scope='function')

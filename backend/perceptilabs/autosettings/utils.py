@@ -1,0 +1,54 @@
+import logging
+import copy
+
+from perceptilabs.autosettings import DEFAULT_RULES, SettingsEngine
+from perceptilabs.graph.spec import GraphSpec
+from perceptilabs.graph.spec.layers import get_layer_builder, DummySpec
+from perceptilabs.core_new.lightweight2 import LightweightCore
+from perceptilabs.logconf import APPLICATION_LOGGER
+
+
+logger = logging.getLogger(APPLICATION_LOGGER)
+
+
+def setup_engine(lightweight_cache):
+    lw_core = LightweightCore(issue_handler=None, cache=lightweight_cache)
+    settings_engine = SettingsEngine(DEFAULT_RULES, lw_core=lw_core)
+    return settings_engine
+
+
+def get_recommendation(json_network, settings_engine):
+    graph_spec = GraphSpec.from_dict(json_network)
+
+    new_layer_specs = settings_engine.run(graph_spec, graph_spec_tmp=json_network)
+    
+    new_json_network = {}
+    for layer_id, layer_spec in new_layer_specs.items():
+        builder = get_layer_builder(layer_spec.type)
+        new_json_network[layer_id] = builder.to_dict(layer_spec)
+        
+    return new_json_network
+
+
+if __name__ == "__main__":
+
+    engine = setup_engine(None)
+
+    import json
+    with open('net.json_', 'r') as f:
+        json_network = json.load(f)['Layers']
+        
+    rec = get_recommendation(json_network, engine)
+    #rec = get_recommendation(json_network, ['1588690292610'], engine)    
+
+    import pprint
+
+
+
+    print("original")
+    pprint.pprint(json_network)
+    print("recommended")    
+    pprint.pprint(rec)
+    
+    import pdb; pdb.set_trace()
+    

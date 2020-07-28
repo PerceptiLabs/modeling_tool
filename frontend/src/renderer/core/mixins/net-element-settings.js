@@ -35,6 +35,7 @@ const netElementSettings = {
         'elId': this.currentEl.layerId,
         'code': this.coreCode ? deepCopy(this.coreCode) : null,
         'set': this.settings,
+        'visited': true,
         tabName
       };
       this.$store.dispatch('mod_workspace/SET_elementSettings', deepCopy(saveSettings));
@@ -42,6 +43,7 @@ const netElementSettings = {
         componentName: this.currentEl.componentName, 
         tabName
       }, {root: true});
+      this.$store.dispatch('mod_api/API_updateNetworkSetting', this.currentEl.layerId);
     },
     confirmSettings() {
       this.hideAllWindow();

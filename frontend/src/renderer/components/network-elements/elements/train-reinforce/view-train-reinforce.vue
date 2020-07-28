@@ -3,11 +3,11 @@
     data-component="TrainReinforce"
     data-layer="Reinforcement Learning"
     data-type="Training"
-    v-tooltip:networkElement="'Reinforcement Learning'"
     v-tooltip-interactive:right="interactiveInfo"
     :style="layerStyles"
   )
     i.icon.icon-train-reinforce
+    .layerTitle(v-if="showTitle") {{ displayTitle }}
 
 </template>
 
@@ -21,7 +21,8 @@ export default {
       interactiveInfo: {
         title: 'Train Reinforce',
         text: 'Reinforcement learning layer.'
-      }
+      },
+      displayTitle: 'Reinforce'
     }
   }
 }

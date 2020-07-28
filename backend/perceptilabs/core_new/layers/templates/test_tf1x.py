@@ -4,8 +4,9 @@ import pkg_resources
 import pytest
 
 
+import perceptilabs.core_new.layers.templates.utils as utils
 from perceptilabs.core_new.layers.templates.base import J2Engine
-from perceptilabs.core_new.layers.templates.utils import instantiate_layer_from_macro, create_layer
+from perceptilabs.core_new.layers.templates.utils import instantiate_layer_from_macro, create_layer, render_macro
 from perceptilabs.core_new.layers.definitions import TEMPLATES_DIRECTORY, DEFINITION_TABLE, TOP_LEVEL_IMPORTS, TOP_LEVEL_IMPORTS_FLAT
 
 @pytest.fixture(autouse=True)
@@ -35,8 +36,13 @@ def test_grayscale_8x8x3_to_8x8x1(j2_engine, sess):
 
 
 def test_reshape_9x1_to_3x3(j2_engine, sess):
-    layer = create_layer(j2_engine, DEFINITION_TABLE, TOP_LEVEL_IMPORTS_FLAT,  layer_type='ProcessReshape',
-                         shape=[3, 3], permutation=[0, 1]) 
+    layer = utils.run_and_get_layer_macro(
+        j2_engine, DEFINITION_TABLE,
+        'tf1x.j2', 'layer_tf1x_reshape',
+        'ProcessReshape',
+        {'shape': (3, 3), 'permutation': (0, 1)},
+        import_statements=TOP_LEVEL_IMPORTS_FLAT
+    )
     
     x = tf.constant(np.random.random((1, 9, 1)))
     y = layer(x)
@@ -44,8 +50,14 @@ def test_reshape_9x1_to_3x3(j2_engine, sess):
 
     
 def test_reshape_27x1_to_3x3x3(j2_engine, sess):
-    layer = create_layer(j2_engine, DEFINITION_TABLE, TOP_LEVEL_IMPORTS_FLAT,  layer_type='ProcessReshape', shape=[3, 3, 3], permutation=[0, 1, 2]) 
-    
+    layer = utils.run_and_get_layer_macro(
+        j2_engine, DEFINITION_TABLE,
+        'tf1x.j2', 'layer_tf1x_reshape',
+        'ProcessReshape',
+        {'shape': (3, 3, 3), 'permutation': (0, 1, 2)},
+        import_statements=TOP_LEVEL_IMPORTS_FLAT
+    )
+
     x = tf.constant(np.random.random((1, 27, 1)))
     y = layer(x)
     assert y.shape == (1, 3, 3, 3)

@@ -353,7 +353,9 @@ const imageClassification = {
           "Momentum": "0.9",
           "Decay_steps": "100000",
           "Decay_rate": "0.96",
-          "Training_iters": "20000"
+          "Training_iters": "20000",
+          "Stop_condition": "Epochs",
+          "Stop_Target_Accuracy": 0,
         },
         "layerCode": null,
         "layerCodeError": null,

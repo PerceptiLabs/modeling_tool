@@ -1,6 +1,6 @@
 {% from 'tf1x_utils.j2' import session %}
 
-{% macro run_normal(graph, layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory) %}
+{% macro run_normal(graph, layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory, use_cpu) %}
         self._status = 'initializing'
 
         output_layer_id = '{{output_layer}}'
@@ -170,7 +170,7 @@
         update_weights = optimizer.apply_gradients(zip(grads, trainable_vars), global_step=global_step)
                 
         sess = None
-        {{session(sess, use_gpu=True) | indent(width=8)}}     
+        {{session(sess, use_gpu=not use_cpu) | indent(width=8)}}     
         self._sess = sess
 
         trackable_variables = {}
@@ -275,6 +275,7 @@
             log.info(f"Epoch duration: {round(time.perf_counter() - t0, 3)} s")            
             self._epoch += 1
 
+
         self._variables = {k: v for k, v in locals().items() if can_serialize(v)}            
         yield YieldLevel.DEFAULT            
         
@@ -298,7 +299,7 @@
 
 
 ################################################### Main #####################################################
-{% macro layer_tf1x_regression(layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, decay_steps, learning_rate, decay_rate, momentum, beta1, beta2, distributed, batch_size, export_directory) %}
+{% macro layer_tf1x_regression(layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, decay_steps, learning_rate, decay_rate, momentum, beta1, beta2, distributed, batch_size, export_directory, use_cpu) %}
 class {{layer_name}}(RegressionLayer):
     def __init__(self):
         self._n_epochs = {{n_epochs}}
@@ -351,7 +352,7 @@ class {{layer_name}}(RegressionLayer):
         {% if distributed -%}
             {{ run_distributed(graph, layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory) }}
         {% else -%}
-            {{ run_normal(graph, layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory) }}
+            {{ run_normal(graph, layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory, use_cpu) }}
         {% endif %}                
 
     def on_export(self, path: str, mode: str) -> None:

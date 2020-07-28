@@ -4,11 +4,11 @@
     data-component="ProcessCrop"
     data-layer="Crop"
     data-type="Other"
-    v-tooltip:networkElement="'Crop'"
     v-tooltip-interactive:right="interactiveInfo"
     :style="layerStyles"
   )
     i.icon.icon-crop-symbol
+    .layerTitle(v-if="showTitle") {{ displayTitle }}
 
 </template>
 
@@ -22,7 +22,8 @@ export default {
       interactiveInfo: {
         title: 'Process Crop',
         text: 'Crop input data'
-      }
+      },
+      displayTitle: 'Crop'
     }
   }
 }

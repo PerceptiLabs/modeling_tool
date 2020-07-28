@@ -101,7 +101,7 @@ class Tf1xTempStrategy(BaseStrategy):
                 layer_instance = layer_class()                
             except Exception as e:
                 error = exception_to_error(layer_id, layer_type, e)
-                logger.exception(f"Layer {layer_id} raised an error when instantiating layer class")
+                logger.debug(f"Layer {layer_id} raised an error when instantiating layer class")
                 return self.get_default(strategy_error=error)                    
             
             input_tensors = {}
@@ -118,7 +118,7 @@ class Tf1xTempStrategy(BaseStrategy):
                     output_tensor = layer_instance(input_tensors)
             except Exception as e:
                 error = exception_to_error(layer_id, layer_type, e)
-                logger.exception(f"Layer {layer_id} raised an error in __call__")
+                logger.debug(f"Layer {layer_id} raised an error in __call__")
                 return self.get_default(strategy_error=error)                    
                 
             with tf.Session(config=tf.ConfigProto(device_count={'GPU': 0})) as sess:
@@ -136,7 +136,7 @@ class Tf1xTempStrategy(BaseStrategy):
             y = layer_instance.get_sample(sess=sess)
         except Exception as e:
             error = exception_to_error(layer_id, layer_type, e)
-            logger.exception(f"Layer {layer_id} raised an error on sess.run")            
+            logger.debug(f"Layer {layer_id} raised an error on sess.run")            
             return self.get_default(strategy_error=error)
         
         results = LayerResults(
@@ -174,7 +174,7 @@ class Tf1xStrategy(BaseStrategy):
                 layer_instance = layer_class()                
             except Exception as e:
                 error = exception_to_error(layer_id, layer_type, e)
-                logger.exception(f"Layer {layer_id} raised an error when instantiating layer class")
+                logger.debug(f"Layer {layer_id} raised an error when instantiating layer class")
                 return self.get_default(strategy_error=error)                    
             
             input_tensors = {}
@@ -188,7 +188,7 @@ class Tf1xStrategy(BaseStrategy):
                 output_tensor = layer_instance(*input_tensors.values())
             except Exception as e:
                 error = exception_to_error(layer_id, layer_type, e)
-                logger.exception(f"Layer {layer_id} raised an error in __call__")
+                logger.debug(f"Layer {layer_id} raised an error in __call__")
                 return self.get_default(strategy_error=error)                    
                 
             with tf.Session(config=tf.ConfigProto(device_count={'GPU': 0})) as sess:
@@ -206,7 +206,7 @@ class Tf1xStrategy(BaseStrategy):
             y = layer_instance.get_sample(sess=sess)
         except Exception as e:
             error = exception_to_error(layer_id, layer_type, e)
-            logger.exception(f"Layer {layer_id} raised an error on sess.run")            
+            logger.debug(f"Layer {layer_id} raised an error on sess.run")            
             return self.get_default(strategy_error=error)
         
         results = LayerResults(
@@ -248,7 +248,7 @@ class DataSupervisedStrategy(BaseStrategy):
             y = None
             shape = None
             strategy_error = exception_to_error(layer_id, layer_type, e)
-            logger.exception(f"Layer {layer_id} raised an error when calling sample property")                        
+            logger.debug(f"Layer {layer_id} raised an error when calling sample property")                        
         else:
             shape = np.atleast_1d(y).shape
             strategy_error=None
@@ -275,7 +275,7 @@ class DataReinforceStrategy(BaseStrategy):
             y = None
             shape = None
             strategy_error = exception_to_error(layer_id, layer_type, e)
-            logger.exception(f"Layer {layer_id} raised an error when calling sample property")                        
+            logger.debug(f"Layer {layer_id} raised an error when calling sample property")                        
         else:
             shape = np.atleast_1d(y).shape
             strategy_error=None
@@ -452,7 +452,7 @@ class LightweightCore:
             logger.exception(f"Layer {layer_id} raised an error when getting layer code") 
             return None, exception_to_error(layer_id, layer_spec['Type'], e)                                
         except Exception as e:
-            logger.warning(f"{str(e)}: couldn't get code for {layer_id}. Treating it as not fully specified")
+            logger.warning(f"{repr(e)}: couldn't get code for {layer_id}. Treating it as not fully specified")
             if logger.isEnabledFor(logging.DEBUG):
                 from perceptilabs.utils import stringify
                 logger.warning("layer spec: \n" + stringify(layer_spec))
@@ -475,7 +475,7 @@ class LightweightCore:
                 spec.loader.exec_module(module)
             except Exception as e:
                 error = exception_to_error(layer_id, layer_type, e)
-                logger.exception(f"Layer {layer_id} raised an error when executing module")                                        
+                logger.debug(f"Layer {layer_id} raised an error when executing module")                                        
                 return None, error
 
             class_name = layer_type + sanitize_layer_name(layer_name)
