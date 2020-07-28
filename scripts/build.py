@@ -1,5 +1,7 @@
+from distutils.dir_util import copy_tree
+from distutils.file_util import copy_file
 from enum import Enum, auto
-from shutil import copyfile, rmtree
+from shutil import rmtree
 from subprocess import Popen, PIPE, CalledProcessError
 import contextlib
 import glob
@@ -84,6 +86,35 @@ def rm_rf(dirname):
     if os.path.exists(dirname):
         rmtree(dirname)
 
+
+def copy_files(src_root, dest_root, list_path=None):
+    if list_path:
+        with open(list_path) as f:
+            lines = [
+                l.strip()
+                for l in f.readlines()
+                if not bool(re.match("^ *$", l)) and not bool(re.match("^ *#", l))
+            ]
+
+            for l in lines:
+                src = os.path.join(src_root, l)
+                dest = os.path.join(dest_root, l)
+                print(f"{src} -> {dest}")
+
+                if os.path.isfile(src):
+                    dirname = os.path.dirname(dest)
+                    mkdir_p(dirname)
+                    copy_file(src, dest, update=True)
+                elif os.path.isdir(src):
+                    dirname = os.path.dirname(dest)
+                    copy_tree(src, dest, update=True)
+                else:
+                    print(f"Skipping non-file: {src}")
+                    continue
+    elif os.path.isfile(src_root):
+        copy_file(src_root, dest_root, update=True)
+    elif os.path.isdir(src_root):
+        copytree(src_root, dest_root)
 
 def run_checked_arr(arr):
     with Popen(arr, stdout=PIPE, bufsize=1, universal_newlines=True) as p:
@@ -179,7 +210,7 @@ def install_prereqs():
     run_checked("python -m pip install --upgrade pip setuptools wheel")
 
     if OS == Os.WIN:
-        run_unchecked('pip install "gym[atari]"')
+        run_unchecked('pip install gym[atari]')
         run_unchecked("pip install -U git+https://github.com/Kojoley/atari-py.git")
 
     run_unchecked("pip install -r ../backend/requirements_build.txt")
@@ -259,8 +290,8 @@ def assemble_build_dirs_frontend():
     print("=======================================================")
     print(f"Copying frontend files into {BUILD_TMP}/static_file_server ... ")
 
-    rsync_rvd(f"{FRONTEND_SRC_ROOT}/static_file_server/static_file_server" , f"{BUILD_TMP}")
-    rsync_rvd(f"{FRONTEND_SRC_ROOT}/src/dist", f"{BUILD_TMP}/static_file_server")
+    copy_tree(f"{FRONTEND_SRC_ROOT}/static_file_server/static_file_server" , f"{BUILD_TMP}/static_file_server", update=True)
+    copy_tree(f"{FRONTEND_SRC_ROOT}/src/dist", f"{BUILD_TMP}/static_file_server/dist", update=True)
 
 
 def build_wheel():
@@ -327,12 +358,6 @@ def print_environment():
     print("Pip list:")
     run_checked("pip list")
 
-def rsync_rvd(src, dest):
-    run_checked(f"rsync --recursive --verbose --delete {src} {dest}")
-
-def rsync_rvdf(file_list, src, dest):
-    run_checked(f"rsync --archive --recursive --verbose --delete --files-from={file_list} {src} {dest}")
-
 def wheel():
     assert_python_version()
     install_prereqs()
@@ -341,18 +366,18 @@ def wheel():
     mkdir_p(BUILD_TMP)
     assemble_build_dirs_frontend()
     train_models()
-    rsync_rvd(f"{PROJECT_ROOT}/licenses/", f"{BUILD_TMP}/licenses/")
-    rsync_rvdf(f"{PROJECT_ROOT}/backend/included_files.txt", f"{PROJECT_ROOT}/backend", BUILD_TMP)
-    copyfile(f"{PROJECT_ROOT}/backend/requirements.txt", f"{BUILD_TMP}/requirements_wheel_backend.txt")
-    rsync_rvdf(f"{PROJECT_ROOT}/rygg/included_files.txt", f"{PROJECT_ROOT}/rygg", BUILD_TMP)
-    copyfile(f"{PROJECT_ROOT}/rygg/requirements.txt", f"{BUILD_TMP}/requirements_wheel_rygg.txt")
-    rsync_rvdf(f"{PROJECT_ROOT}/perceptilabs_runner/included_files.txt", f"{PROJECT_ROOT}/perceptilabs_runner", f"{BUILD_TMP}/perceptilabs_runner/")
+    copy_tree(f"{PROJECT_ROOT}/licenses/", f"{BUILD_TMP}/licenses/", update=True)
+    copy_files(f"{PROJECT_ROOT}/backend", BUILD_TMP, list_path= f"{PROJECT_ROOT}/backend/included_files.txt")
+    copy_files(f"{PROJECT_ROOT}/rygg", BUILD_TMP,  list_path=f"{PROJECT_ROOT}/rygg/included_files.txt")
+    copy_files(f"{PROJECT_ROOT}/perceptilabs_runner", f"{BUILD_TMP}/perceptilabs_runner/",  list_path=f"{PROJECT_ROOT}/perceptilabs_runner/included_files.txt")
+    copy_file(f"{PROJECT_ROOT}/backend/requirements.txt", f"{BUILD_TMP}/requirements_wheel_backend.txt", update=True)
+    copy_file(f"{PROJECT_ROOT}/rygg/requirements.txt", f"{BUILD_TMP}/requirements_wheel_rygg.txt", update=True)
 
     for f in ["setup.cfg", "setup.py"]:
-        copyfile(f"{WHEELFILES_DIR}/{f}", f"{BUILD_TMP}/{f}")
+        copy_file(f"{WHEELFILES_DIR}/{f}", f"{BUILD_TMP}/{f}", update=True)
 
     with included_files_common() as inc:
-        copyfile(inc, f"{BUILD_TMP}/included_files.txt")
+        copy_file(inc, f"{BUILD_TMP}/included_files.txt", update=True)
 
     version = calc_version()
     set_wheel_version(version)
@@ -370,9 +395,9 @@ def test():
     train_models()
 
     mkdir_p(BUILD_TMP)
-    rsync_rvdf(f"{PROJECT_ROOT}/backend/included_files.txt", f"{PROJECT_ROOT}/backend", BUILD_TMP)
-    rsync_rvdf(f"{PROJECT_ROOT}/rygg/included_files.txt", f"{PROJECT_ROOT}/rygg", BUILD_TMP)
-    rsync_rvdf(f"{PROJECT_ROOT}/perceptilabs_runner/included_files.txt", f"{PROJECT_ROOT}/perceptilabs_runner", f"{BUILD_TMP}/perceptilabs_runner/")
+    copy_files(f"{PROJECT_ROOT}/backend", BUILD_TMP, list_path= f"{PROJECT_ROOT}/backend/included_files.txt")
+    copy_files(f"{PROJECT_ROOT}/rygg", BUILD_TMP,  list_path=f"{PROJECT_ROOT}/rygg/included_files.txt")
+    copy_files(f"{PROJECT_ROOT}/perceptilabs_runner", f"{BUILD_TMP}/perceptilabs_runner/",  list_path=f"{PROJECT_ROOT}/perceptilabs_runner/included_files.txt")
     run_lint_test()
     run_cython_test()
     run_pytest_tests()
@@ -399,11 +424,11 @@ class DockerBuilder():
         build_rygg()
 
     def _assemble_kernel_docker(versionString):
-        rsync_rvd(f"{BACKEND_SRC}/", f"{BUILD_DOCKER_KERNEL}")
-        rsync_rvd(f"{PROJECT_ROOT}/licenses/", f"{BUILD_DOCKER_KERNEL}/licenses/")
+        copy_tree(f"{BACKEND_SRC}/", f"{BUILD_DOCKER_KERNEL}", update=True)
+        copy_tree(f"{PROJECT_ROOT}/licenses/", f"{BUILD_DOCKER_KERNEL}/licenses/", update=True)
         FILES_FROM_DOCKER_DIR = "setup.py entrypoint.sh Dockerfile".split()
         for from_docker in FILES_FROM_DOCKER_DIR:
-            copyfile( f"{PROJECT_ROOT}/docker/kernel/{from_docker}", f"{BUILD_DOCKER_KERNEL}/{from_docker}")
+            copy_file( f"{PROJECT_ROOT}/docker/kernel/{from_docker}", f"{BUILD_DOCKER_KERNEL}/{from_docker}", update=True)
 
         set_dockerfile_version_label(BUILD_DOCKER_KERNEL, versionString)
         set_perceptilabs_inner_version(BUILD_DOCKER_KERNEL, versionString)
@@ -411,20 +436,20 @@ class DockerBuilder():
 
 
     def _assemble_frontend_docker(versionString):
-        rsync_rvd(f"{FRONTEND_SRC_ROOT}/", BUILD_DOCKER_FRONTEND)
-        rsync_rvd(f"{PROJECT_ROOT}/licenses/", f"{BUILD_DOCKER_FRONTEND}/licenses/")
+        copy_tree(f"{FRONTEND_SRC_ROOT}/", BUILD_DOCKER_FRONTEND, update=True)
+        copy_tree(f"{PROJECT_ROOT}/licenses/", f"{BUILD_DOCKER_FRONTEND}/licenses/", update=True)
 
         FILES_FROM_DOCKER_DIR = "Dockerfile http.conf run-httpd.sh".split()
         for from_docker in FILES_FROM_DOCKER_DIR:
-            copyfile(f"{PROJECT_ROOT}/docker/Frontend/{from_docker}", f"{BUILD_DOCKER_FRONTEND}/{from_docker}")
+            copy_file(f"{PROJECT_ROOT}/docker/Frontend/{from_docker}", f"{BUILD_DOCKER_FRONTEND}/{from_docker}", update=True)
 
         set_dockerfile_version_label(BUILD_DOCKER_FRONTEND, versionString)
         #TODO: set version in package.json
 
 
     def _assemble_rygg_docker(versionString):
-        rsync_rvd(f"{RYGG_DIR}/", f"{BUILD_DOCKER_RYGG}")
-        rsync_rvd(f"{PROJECT_ROOT}/licenses/", f"{BUILD_DOCKER_RYGG}/licenses/")
+        copy_tree(f"{RYGG_DIR}/", f"{BUILD_DOCKER_RYGG}", update=True)
+        copy_tree(f"{PROJECT_ROOT}/licenses/", f"{BUILD_DOCKER_RYGG}/licenses/", update=True)
         set_dockerfile_version_label(BUILD_DOCKER_RYGG, versionString)
 
 
