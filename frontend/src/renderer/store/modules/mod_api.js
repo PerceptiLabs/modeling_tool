@@ -1030,6 +1030,20 @@ const actions = {
       .then(res => res)
       .catch(e => console.error(e));
   },
+  API_resolveDir (ctx, path) {
+    // resolves ~ for windows
+    // expands to the full path for POSIX
+    const theData = {
+      receiver: '',
+      action: 'resolveDir',
+      value: {
+        path
+      }
+    };
+    return coreRequest(theData)
+      .then(res => res)
+      .catch(e => console.error(e));
+  },
   API_isFileExist (ctx, path) {
     const theData = {
       receiver: '',
@@ -1038,6 +1052,19 @@ const actions = {
         path
       }
     };
+    return coreRequest(theData)
+      .then(res => res)
+      .catch(e => console.error(e));
+  },
+  API_getFolderContent (ctx, path) {
+    // resolves ~ for windows
+    // expands to the full path for POSIX
+    const theData = {
+      receiver: '',
+      action: 'getFolderContent',
+      value: path
+    };
+
     return coreRequest(theData)
       .then(res => res)
       .catch(e => console.error(e));

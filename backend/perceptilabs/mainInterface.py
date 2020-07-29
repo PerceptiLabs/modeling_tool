@@ -37,7 +37,7 @@ import perceptilabs.autosettings.utils as autosettings_utils
 
 
 #LW interface
-from perceptilabs.lwInterface import getRootFolder, getNotebookImports, getNotebookRunscript, getFolderContent, createFolder, saveJsonModel, getJsonModel, getGraphOrder, getDataMeta, getDataMetaV2, getPartitionSummary, getCodeV1, getCodeV2, getNetworkInputDim, getNetworkOutputDim, getPreviewSample, getPreviewVariableList, Parse
+from perceptilabs.lwInterface import getRootFolder, getNotebookImports, getNotebookRunscript, getFolderContent, createFolder, saveJsonModel, getJsonModel, getGraphOrder, getDataMeta, getDataMetaV2, getPartitionSummary, getCodeV1, getCodeV2, getNetworkInputDim, getNetworkOutputDim, getPreviewSample, getPreviewVariableList, Parse, resolveDir
 
 logger = logging.getLogger(APPLICATION_LOGGER)
 
@@ -246,6 +246,10 @@ class Interface():
             path_to_folder = value["path"]
             return os.path.isdir(path_to_folder)
 
+        elif action == "resolveDir":
+            path_to_folder = value["path"]
+            return resolveDir(path=path_to_folder).run()
+            
         elif action == 'isFileExist':
             path_to_file = value['path']
             return os.path.isfile(path_to_file)
