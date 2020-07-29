@@ -228,7 +228,7 @@ export default {
             this.getProjects();
             this.$store.dispatch('mod_tracker/EVENT_modelCreation', modelType, {root: true});
 
-            this.closeModal();
+      this.closeModal();
 
         },
         openFilePicker() {

@@ -426,7 +426,7 @@ def test_columns_ok_when_some_columns_are_strings(graph_spec_binary_classificati
     results = lw_core.run(graph_spec_binary_classification_with_strings)
 
     assert "ValueError" in results['1'].strategy_error.message # make sure the layer failed in part    
-    assert results['1'].columns == [f'col_{x}' for x in range(784)]
+    assert results['1'].columns == [f'col_{x}' for x in range(len(results['1'].columns))]
 
 
 def test_variables_are_present(graph_spec_binary_classification):
