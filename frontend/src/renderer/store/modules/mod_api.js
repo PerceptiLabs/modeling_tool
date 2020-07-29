@@ -902,7 +902,7 @@ const actions = {
     coreRequest(theData)
       .then((data)=> {
         //console.log('API_getStatus answer', data);
-        dispatch('mod_workspace/SET_statusNetworkCore', data, {root: true})
+        dispatch('mod_workspace/SET_statusNetworkCore', {...rootGetters['mod_workspace/GET_currentNetwork'].networkMeta.coreStatus, ...data}, {root: true})
       })
       .catch((err)=> {
         if(err.toString() !== "Error: connect ECONNREFUSED 127.0.0.1:5000") {
