@@ -174,9 +174,10 @@ def generate_included_files_common():
 @contextlib.contextmanager
 def included_files_common():
     lines = [l+'\n' for l in generate_included_files_common()]
-    with tempfile.NamedTemporaryFile(mode="w") as tmp:
+    with tempfile.NamedTemporaryFile(mode="w", delete=False) as tmp:
         tmp.writelines(lines)
         tmp.flush()
+        tmp.close()
         yield tmp.name
 
 def assert_python_version():

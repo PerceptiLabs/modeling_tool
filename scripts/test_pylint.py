@@ -11,7 +11,7 @@ filename = args[0]
 if not os.path.exists(filename):
     raise Exception(f"Files list '{filename}' doesn't exist")
 
-with open(filename) as f:
+with open(filename, mode="r") as f:
     for line in f:
         if "#" not in line and line.strip():
             print("Checking %s" % line.strip())
