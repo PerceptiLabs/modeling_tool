@@ -1,13 +1,15 @@
-import contextlib
+from distutils.dir_util import copy_tree
+from distutils.file_util import copy_file
 from enum import Enum, auto
+from shutil import rmtree
+from subprocess import Popen, PIPE, CalledProcessError
+import contextlib
 import glob
 import os
-import subprocess
-from subprocess import Popen, PIPE, CalledProcessError
-import sys
 import re
-from shutil import copyfile, rmtree, copytree
-
+import subprocess
+import sys
+import tempfile
 
 class Os(Enum):
     LINUX = auto()
@@ -41,6 +43,11 @@ WHEELFILES_DIR = os.path.join(PROJECT_ROOT, "wheelfiles")
 BUILD_DIR = os.path.join(PROJECT_ROOT, "build")
 BUILD_TMP = os.path.join(BUILD_DIR, "tmp")
 BUILD_OUT = os.path.join(BUILD_DIR, "out")
+
+BUILD_DOCKER = os.path.join(BUILD_DIR, "docker")
+BUILD_DOCKER_FRONTEND = os.path.join(BUILD_DOCKER, "frontend")
+BUILD_DOCKER_RYGG = os.path.join(BUILD_DOCKER, "rygg")
+BUILD_DOCKER_KERNEL = os.path.join(BUILD_DOCKER, "kernel")
 
 build_reason = os.environ.get("BUILD_REASON")
 build_num = os.environ.get("BUILD_NUM")
@@ -80,6 +87,35 @@ def rm_rf(dirname):
         rmtree(dirname)
 
 
+def copy_files(src_root, dest_root, list_path=None):
+    if list_path:
+        with open(list_path) as f:
+            lines = [
+                l.strip()
+                for l in f.readlines()
+                if not bool(re.match("^ *$", l)) and not bool(re.match("^ *#", l))
+            ]
+
+            for l in lines:
+                src = os.path.join(src_root, l)
+                dest = os.path.join(dest_root, l)
+                print(f"{src} -> {dest}")
+
+                if os.path.isfile(src):
+                    dirname = os.path.dirname(dest)
+                    mkdir_p(dirname)
+                    copy_file(src, dest, update=True)
+                elif os.path.isdir(src):
+                    dirname = os.path.dirname(dest)
+                    copy_tree(src, dest, update=True)
+                else:
+                    print(f"Skipping non-file: {src}")
+                    continue
+    elif os.path.isfile(src_root):
+        copy_file(src_root, dest_root, update=True)
+    elif os.path.isdir(src_root):
+        copytree(src_root, dest_root)
+
 def run_checked_arr(arr):
     with Popen(arr, stdout=PIPE, bufsize=1, universal_newlines=True) as p:
         for line in p.stdout:
@@ -87,6 +123,7 @@ def run_checked_arr(arr):
 
     if p.returncode != 0:
         raise CalledProcessError(p.returncode, p.args)
+
 
 def run_checked(cmd):
     print(f"$ {cmd}")
@@ -122,31 +159,26 @@ def mkdir_p(dirname):
                 raise
 
 
-def copy_files(src_root, dest_root, list_path):
-    with open(list_path) as f:
-        lines = [
-            l.strip()
-            for l in f.readlines()
-            if not bool(re.match("^ *$", l)) and not bool(re.match("^ *#", l))
-        ]
-
-        for l in lines:
-            src = os.path.join(src_root, l)
-            dest = os.path.join(dest_root, l)
-            print(f"{src} -> {dest}")
-
-            if os.path.isfile(src):
-                dirname = os.path.dirname(dest)
-                mkdir_p(dirname)
-                copyfile(src, dest)
-            elif os.path.isdir(src):
-                dirname = os.path.dirname(dest)
-                mkdir_p(dirname)
-                copytree(src, dest)
-            else:
-                print(f"Skipping non-file: {src}")
+def generate_included_files_common():
+    projects = "perceptilabs_runner rygg backend".split()
+    for p in projects:
+        for line in all_lines(f"{PROJECT_ROOT}/{p}/included_files.txt"):
+            stripped = line.strip()
+            if len(stripped) == 0:
+                continue
+            if stripped.startswith("#"):
                 continue
 
+            yield f"{p}/{stripped}"
+
+@contextlib.contextmanager
+def included_files_common():
+    lines = [l+'\n' for l in generate_included_files_common()]
+    with tempfile.NamedTemporaryFile(mode="w", delete=False) as tmp:
+        tmp.writelines(lines)
+        tmp.flush()
+        tmp.close()
+        yield tmp.name
 
 def assert_python_version():
 
@@ -162,10 +194,7 @@ def assert_python_version():
 
 
 def train_models():
-    training_dir = os.path.join(
-        BACKEND_SRC, "perceptilabs", "insights", "csv_ram_estimator"
-    )
-    with pushd(training_dir):
+    with pushd(f"{BACKEND_SRC}/perceptilabs/insights/csv_ram_estimator"):
         run_checked("python train_model.py data_1579288530.csv")
 
 
@@ -179,13 +208,21 @@ def install_prereqs():
     else:
         raise Exception(f"Integration error: OS={OS}")
 
+    run_checked("python -m pip install --upgrade pip setuptools wheel")
+
+    if OS == Os.WIN:
+        run_unchecked('pip install gym[atari]')
+        run_unchecked("pip install -U git+https://github.com/Kojoley/atari-py.git")
+
+    run_unchecked("pip install -r ../backend/requirements_build.txt")
 
 def calc_version():
-    override = os.environ.get("PACKAGE_VERSION_OVERRIDE")
+    # TODO: this variable from the pipeline shouldn't be buried so deep in the codebase
+    override = os.environ.get("VERSION_OVERRIDE")
     if bool(override):
         return override
 
-    with open(os.path.join(WHEELFILES_DIR, "version"), "r") as f:
+    with open(os.path.join(PROJECT_ROOT, "version"), "r") as f:
         version = f.read().strip()
     # TODO: don't build knowledge of nightly builds into this script. Instead, build it into the pipeline
     if build_reason == "Schedule":
@@ -194,13 +231,25 @@ def calc_version():
     return version
 
 
-def set_wheel_version(version_string):
-    print(f"setting wheel version to {version_string}")
-    init_py = os.path.join(BUILD_TMP, "perceptilabs", "__init__.py")
-    sed_i(init_py, "^__version__ *=.*", f"__version__='{version_string}'")
+def set_perceptilabs_inner_version(rootDir, versionString):
+    init_py = os.path.join(rootDir, "perceptilabs", "__init__.py")
+    sed_i(init_py, "^__version__ *=.*", f"__version__='{versionString}'")
 
-    setup_py = os.path.join(BUILD_TMP, "setup.py")
-    sed_i(setup_py, "^VERSION_STRING *=.*$", f"VERSION_STRING='{version_string}'")
+
+def set_setup_version(rootDir, versionString):
+    setup_py = os.path.join(rootDir, "setup.py")
+    sed_i(setup_py, "^VERSION_STRING *=.*$", f"VERSION_STRING='{versionString}'")
+
+
+def set_wheel_version(versionString):
+    print(f"setting wheel version to {versionString}")
+    set_perceptilabs_inner_version(BUILD_TMP, versionString)
+    set_setup_version(BUILD_TMP, versionString)
+
+
+def set_dockerfile_version_label(rootDir, versionString):
+    dockerfile = f"{rootDir}/Dockerfile"
+    sed_i(dockerfile, "version *=\".*\"", f"version=\"{versionString}\"")
 
 
 def get_wheel_name():
@@ -218,22 +267,7 @@ def get_wheel_name():
 
 
 def set_wheel_name(package_name):
-    sed_i(f"{BUILD_TMP}/setup.py", "^PACKAGE_NAME *=.*$", f"PACKAGE_NAME='{package_name}'")
-
-
-# pull a directory under BUILD_TMP up a level
-def hoist_directory(dirname):
-    full_path = os.path.join(BUILD_TMP, dirname)
-    if not os.path.exists(full_path):
-        return
-    to_remove = os.path.join(BUILD_TMP, "todo_remove")
-    os.rename(full_path, to_remove)
-    globname = os.path.join(to_remove, "*")
-    for to_move in glob.glob(globname):
-        dest = os.path.join(BUILD_TMP, os.path.basename(to_move))
-        print(f"Moving {to_move} -> {dest}")
-        os.rename(to_move, dest)
-    rmtree(to_remove)
+    sed_i( f"{BUILD_TMP}/setup.py", "^PACKAGE_NAME *=.*$", f"PACKAGE_NAME='{package_name}'")
 
 
 # PATH isn't obeyed correctly on windows
@@ -246,47 +280,22 @@ def npm_cmd():
             return f"{d}/npm.cmd"
 
 
-def build_frontend():
+def assemble_build_dirs_frontend():
+
     print("=======================================================")
     print("Building frontend")
     with pushd(FRONTEND_SRC_ROOT):
         run_checked(f"{npm_cmd()} install")
         run_checked(f"{npm_cmd()} run build-render")
 
-
-def assemble_build_dirs_common(build_type):
-    rm_rf(BUILD_DIR)
-    copy_files(PROJECT_ROOT, BUILD_TMP, f"{SCRIPTS_DIR}/included_files_common.txt")
-    copy_files(
-        PROJECT_ROOT, BUILD_TMP, f"{SCRIPTS_DIR}/included_files_{build_type}.txt"
-    )
-    print("hoisting dirs")
-    hoist_directory("wheelfiles")
-    hoist_directory("rygg")
-    hoist_directory("backend")
-
-
-def assemble_build_dirs_frontend():
     print("=======================================================")
     print(f"Copying frontend files into {BUILD_TMP}/static_file_server ... ")
 
-    copytree(
-        f"{FRONTEND_SRC_ROOT}/static_file_server/static_file_server",
-        f"{BUILD_TMP}/static_file_server",
-    )
-    copytree(f"{FRONTEND_SRC_ROOT}/src/dist", f"{BUILD_TMP}/static_file_server/dist")
+    copy_tree(f"{FRONTEND_SRC_ROOT}/static_file_server/static_file_server" , f"{BUILD_TMP}/static_file_server", update=True)
+    copy_tree(f"{FRONTEND_SRC_ROOT}/src/dist", f"{BUILD_TMP}/static_file_server/dist", update=True)
 
 
 def build_wheel():
-
-    print("=======================================================")
-    print("Adding tutorial data to the output")
-    # tutorial_files = "linreg_inputs linreg_outputs linreg_outputs_test mnist_input mnist_labels".split()
-    # for filename in tutorial_files:
-    copytree(
-        f"{BACKEND_SRC}/perceptilabs/tutorial_data",
-        f"{BUILD_TMP}/perceptilabs/tutorial_data",
-    )
 
     print("=======================================================")
     print("Building the kernel")
@@ -294,6 +303,7 @@ def build_wheel():
         run_checked("python setup.py build_ext bdist_wheel")
 
     # ----- Set up the output ----
+    rm_rf(BUILD_OUT)
     os.rename(f"{BUILD_TMP}/dist", BUILD_OUT)
 
 
@@ -306,24 +316,11 @@ def test_wheel():
     run_checked_arr(["python", "-c", "import perceptilabs"])
 
 
-def set_up_for_tests():
-    print("Installing dependencies")
-    run_checked("python -m pip install --upgrade pip setuptools")
-
-    if OS == Os.WIN:
-        run_unchecked('pip install "gym[atari]"')
-        run_unchecked("pip install -r ../backend/requirements_windows.txt")
-        run_unchecked("pip install pylint==2.4.3")
-        run_unchecked("pip install pytest==5.3.1")
-    else:
-        run_checked(f"pip install -r {BACKEND_SRC}/requirements_posix_testing.txt")
-
-
 def run_lint_test():
     print("running pylint")
-    script = f"{SCRIPTS_DIR}/test_pylint.py"
-    with pushd(PROJECT_ROOT):
-        run_checked(f"python {script} {SCRIPTS_DIR}/included_files_common.txt")
+    with included_files_common() as ifc:
+        with pushd(PROJECT_ROOT):
+            run_checked(f"python {SCRIPTS_DIR}/test_pylint.py {ifc}")
 
 
 def run_cython_test():
@@ -362,62 +359,27 @@ def print_environment():
     print("Pip list:")
     run_checked("pip list")
 
-
-def assemble_core_docker():
-    copyfile(f"{PROJECT_ROOT}/Docker/Core/setup.py", f"{BUILD_TMP}/setup.py")
-    # os.rename(f"{BUILD_TMP}/main.py", f"{BUILD_TMP}/main.pyx")
-    for filename in glob.glob(f"{BUILD_TMP}/perceptilabs/**/__init__.py"):
-        os.rename(filename, filename + "x")
-
-    # --- do the compilation
-    print("C compiling")
-    with pushd(BUILD_TMP):
-        run_checked("python setup.py build_ext --inplace --user")
-
-    # Remove files so that they won't be copied to the container
-    print("Cleaning up after the compilation")
-    for filename in glob.glob(f"{BUILD_TMP}/perceptilabs/**/*.c"):
-        os.remove(filename)
-    for filename in glob.glob(f"{BUILD_TMP}/perceptilabs/**/*.py"):
-        os.remove(filename)
-    rmtree(f"{BUILD_TMP}/build")
-    os.rename(f"{BUILD_TMP}/main.pyx", f"{BUILD_TMP}/main.py")
-    for filename in glob.glob(f"{BUILD_TMP}/perceptilabs/**/__init__.pyx"):
-        os.rename(filename, filename[0:-1])
-
-    # Get the Docker-specific files in place for the docker build
-    for filename in glob.glob(f"{PROJECT_ROOT}/Docker/Core/*"):
-        copyfile(filename, f"{BUILD_TMP}/{filename}")
-
-
-def maybe_build_core_docker():
-    if not bool(os.environ.get("DO_DOCKER_BUILD")):
-        print("You can now run docker build")
-        return
-
-    with pushd(BUILD_TMP):
-        run_checked("docker build . --tag=core_quickcheck")
-    run_checked("docker run -p 5000:5000 core_quickcheck")
-
-
-def assemble_frontend_docker():
-    frontend_tmp = os.path.join(BUILD_DIR, "frontend_out")
-    for filename in glob.glob(f"{FRONTEND_SRC_ROOT}/src/dist/*"):
-        copyfile(filename, f"{frontend_tmp}/{filename}")
-
-    run_checked(f"ls -l -a {PROJECT_ROOT}/Docker/Frontend")
-    for filename in glob.glob(f"{PROJECT_ROOT}/Docker/Frontend/*"):
-        copyfile(filename, f"{frontend_tmp}/{filename}")
-
-
 def wheel():
     assert_python_version()
     install_prereqs()
     print_environment()
-    train_models()
-    build_frontend()
-    assemble_build_dirs_common("wheel")
+
+    mkdir_p(BUILD_TMP)
     assemble_build_dirs_frontend()
+    train_models()
+    copy_tree(f"{PROJECT_ROOT}/licenses/", f"{BUILD_TMP}/licenses/", update=True)
+    copy_files(f"{PROJECT_ROOT}/backend", BUILD_TMP, list_path= f"{PROJECT_ROOT}/backend/included_files.txt")
+    copy_files(f"{PROJECT_ROOT}/rygg", BUILD_TMP,  list_path=f"{PROJECT_ROOT}/rygg/included_files.txt")
+    copy_files(f"{PROJECT_ROOT}/perceptilabs_runner", f"{BUILD_TMP}/perceptilabs_runner/",  list_path=f"{PROJECT_ROOT}/perceptilabs_runner/included_files.txt")
+    copy_file(f"{PROJECT_ROOT}/backend/requirements.txt", f"{BUILD_TMP}/requirements_wheel_backend.txt", update=True)
+    copy_file(f"{PROJECT_ROOT}/rygg/requirements.txt", f"{BUILD_TMP}/requirements_wheel_rygg.txt", update=True)
+
+    for f in ["setup.cfg", "setup.py"]:
+        copy_file(f"{WHEELFILES_DIR}/{f}", f"{BUILD_TMP}/{f}", update=True)
+
+    with included_files_common() as inc:
+        copy_file(inc, f"{BUILD_TMP}/included_files.txt", update=True)
+
     version = calc_version()
     set_wheel_version(version)
     name = get_wheel_name()
@@ -429,42 +391,119 @@ def wheel():
 def test():
     assert_python_version()
     install_prereqs()
-    set_up_for_tests()
     print_environment()
+
     train_models()
-    assemble_build_dirs_common("test")
+
+    mkdir_p(BUILD_TMP)
+    copy_files(f"{PROJECT_ROOT}/backend", BUILD_TMP, list_path= f"{PROJECT_ROOT}/backend/included_files.txt")
+    copy_files(f"{PROJECT_ROOT}/rygg", BUILD_TMP,  list_path=f"{PROJECT_ROOT}/rygg/included_files.txt")
+    copy_files(f"{PROJECT_ROOT}/perceptilabs_runner", f"{BUILD_TMP}/perceptilabs_runner/",  list_path=f"{PROJECT_ROOT}/perceptilabs_runner/included_files.txt")
     run_lint_test()
     run_cython_test()
     run_pytest_tests()
 
+class DockerBuilder():
+    def assembleKernel():
+        mkdir_p(BUILD_DOCKER)
+        versionString = calc_version()
+        DockerBuilder._assemble_kernel_docker(versionString)
 
-def docker():
-    assert_python_version()
-    install_prereqs()
-    print_environment()
-    train_models()
-    build_frontend()
-    assemble_build_dirs_common("docker")
-    assemble_core_docker()
-    maybe_build_core_docker()
-    assemble_frontend_docker()
+    def assembleFrontend():
+        mkdir_p(BUILD_DOCKER)
+        versionString = calc_version()
+        DockerBuilder._assemble_frontend_docker(versionString)
 
+    def assembleRygg():
+        mkdir_p(BUILD_DOCKER)
+        versionString = calc_version()
+        DockerBuilder._assemble_rygg_docker(versionString)
+
+    def build():
+        build_kernel()
+        build_frontend()
+        build_rygg()
+
+    def _assemble_kernel_docker(versionString):
+        copy_tree(f"{BACKEND_SRC}/", f"{BUILD_DOCKER_KERNEL}", update=True)
+        copy_tree(f"{PROJECT_ROOT}/licenses/", f"{BUILD_DOCKER_KERNEL}/licenses/", update=True)
+        FILES_FROM_DOCKER_DIR = "setup.py entrypoint.sh Dockerfile".split()
+        for from_docker in FILES_FROM_DOCKER_DIR:
+            copy_file( f"{PROJECT_ROOT}/docker/kernel/{from_docker}", f"{BUILD_DOCKER_KERNEL}/{from_docker}", update=True)
+
+        set_dockerfile_version_label(BUILD_DOCKER_KERNEL, versionString)
+        set_perceptilabs_inner_version(BUILD_DOCKER_KERNEL, versionString)
+        set_setup_version(BUILD_DOCKER_KERNEL, versionString)
+
+
+    def _assemble_frontend_docker(versionString):
+        copy_tree(f"{FRONTEND_SRC_ROOT}/", BUILD_DOCKER_FRONTEND, update=True)
+        copy_tree(f"{PROJECT_ROOT}/licenses/", f"{BUILD_DOCKER_FRONTEND}/licenses/", update=True)
+
+        FILES_FROM_DOCKER_DIR = "Dockerfile http.conf run-httpd.sh".split()
+        for from_docker in FILES_FROM_DOCKER_DIR:
+            copy_file(f"{PROJECT_ROOT}/docker/Frontend/{from_docker}", f"{BUILD_DOCKER_FRONTEND}/{from_docker}", update=True)
+
+        set_dockerfile_version_label(BUILD_DOCKER_FRONTEND, versionString)
+        #TODO: set version in package.json
+
+
+    def _assemble_rygg_docker(versionString):
+        copy_tree(f"{RYGG_DIR}/", f"{BUILD_DOCKER_RYGG}", update=True)
+        copy_tree(f"{PROJECT_ROOT}/licenses/", f"{BUILD_DOCKER_RYGG}/licenses/", update=True)
+        set_dockerfile_version_label(BUILD_DOCKER_RYGG, versionString)
+
+
+    def build_kernel():
+        with pushd(BUILD_DOCKER_KERNEL):
+            run_checked("docker build . --tag=kernel_dev")
+        # TODO: run a sanity check on the kernel
+
+    def build_frontend():
+        with pushd(BUILD_DOCKER_FRONTEND):
+            run_checked("docker build . --tag=frontend_dev")
+        # TODO: run a sanity check on the frontend
+
+    def build_rygg():
+        with pushd(BUILD_DOCKER_RYGG):
+            run_checked("docker build . --tag=rygg_dev")
+        # TODO: get rygg to build with obfuscation like the kernel does
+        # TODO: run a sanity check on rygg
+
+
+def clean():
+    rm_rf(BUILD_DIR)
 
 if __name__ == "__main__":
-    USAGE = f"USAGE: {__file__} (wheel|test|docker)"
-    print(f"project root: {PROJECT_ROOT}")
+    USAGE = f"USAGE: {__file__} (clean|wheel|test|docker (kernel|frontend|rygg))"
 
     if len(sys.argv) < 2:
         print(USAGE)
         sys.exit(1)
 
-    build_type = sys.argv[-1]
-    if build_type == "wheel":
+    build_type = sys.argv[1]
+    if build_type == "clean":
+        clean()
+    elif build_type == "wheel":
         wheel()
     elif build_type == "test":
         test()
     elif build_type == "docker":
-        docker()
+        if len(sys.argv) < 3:
+            print(USAGE)
+            sys.exit(1)
+        dockertype = sys.argv[2]
+        if dockertype == "kernel":
+            DockerBuilder.assembleKernel()
+        elif dockertype == "frontend":
+            DockerBuilder.assembleFrontend()
+        elif dockertype == "rygg":
+            DockerBuilder.assembleRygg()
+        else:
+            print(f"Invalid docker type: {dockertype}")
+            print(USAGE)
+            sys.exit(1)
+        print(f"\nTo run the docker build. cd into build/docker/{dockertype} and run `docker build .`")
     else:
         print(f"Invalid build type: {build_type}")
         print(USAGE)

@@ -137,6 +137,42 @@ class createFolder(LW_interface_base):
         else:
             return inputPath
 
+
+class resolveDir(LW_interface_base):
+    def __init__(self, path):
+        self.path = path
+
+    def run(self):
+        try:
+            import platform
+
+            if platform.system() == 'Windows':
+                resolved_path = self.resolveWindowsPath(self.path)
+                expanded_path = os.path.normpath(resolved_path)               
+            else:
+                expanded_path = os.path.expanduser(self.path)
+                
+            return expanded_path
+
+        except Exception as e:
+            return ''
+    
+    def resolveWindowsPath(self, inputPath):
+        if '~/Documents' in inputPath:
+            # get My Documents regardless of localization
+            import ctypes.wintypes
+            
+            buf= ctypes.create_unicode_buffer(ctypes.wintypes.MAX_PATH)
+            _ = ctypes.windll.shell32.SHGetFolderPathW(0, 5, 0, 5, buf)
+
+            return inputPath.replace('~/Documents', buf.value)
+        
+        elif '~/' in inputPath:
+            return os.path.expanduser(inputPath)
+
+        else:
+            return inputPath
+
 class getDataMeta(LW_interface_base):
     def __init__(self, id_, lw_core, data_container):
         self._id = id_

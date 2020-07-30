@@ -156,7 +156,7 @@ TYPE_TO_SPEC_FUNC = {TYPE_BAR: bar,
 
 def getType(dataVec):
     dataVec = np.asarray(dataVec)
-    
+
     type_ = None
     shape = dataVec.shape
     dims = len(shape)
@@ -180,8 +180,6 @@ def getType(dataVec):
         return TYPE_HEATMAP        
     else:
         return TYPE_SCATTER   
-
-    return type_
 
 def createDataObject(dataList,typeList=None,styleList=None,nameList=None,subSampleSize=500):
     # return {}

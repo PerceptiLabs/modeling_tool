@@ -1,6 +1,7 @@
 import sys
 import pickle
 import numpy as np
+import os
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
@@ -8,8 +9,13 @@ from sklearn.metrics import mean_squared_error
 from pprint import pprint
 
 COLUMNS = ['sz_disk']#, 'int64', 'float64', 'object']
+OUTPUT_FILE = './model_and_meta.pkl'
 
 path = sys.argv[1]
+
+if os.path.exists(OUTPUT_FILE):
+    sys.exit(0)
+
 df = pd.read_csv(path)
 
 X = np.atleast_2d(df[COLUMNS].values).reshape(-1, len(COLUMNS))
@@ -53,7 +59,7 @@ model_and_meta = {
 
 pprint(model_and_meta)
 
-with open('./model_and_meta.pkl', 'wb') as f:
+with open(OUTPUT_FILE, 'wb') as f:
     pickle.dump(model_and_meta, f, protocol=2)
 
 raise SystemExit

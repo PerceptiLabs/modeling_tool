@@ -9,12 +9,13 @@ from setuptools.command.build_py import build_py as _build_py
 from setuptools.command.install import install
 from subprocess import check_call
 
-REQUIREMENTS_FILENAMES = [
-    "requirements_wheel_docker.txt",
-]
+# Don't rename these variables. They will be set automatically by build scripts
+VERSION_STRING="development"
+PACKAGE_NAME="perceptilabs"
 
-ROOTS = [
-        "perceptilabs",
+# don't compile perceptilabs_runner
+CYTHON_ROOTS = [
+    "perceptilabs",
 ]
 
 def relative_file(thisfile, name):
@@ -25,25 +26,18 @@ def relative_file(thisfile, name):
     return requirements_path
 
 
-def get_requirements(thisfile):
-    requirements = [
-        l.strip()
-        for name in REQUIREMENTS_FILENAMES
-        for l in open(relative_file(thisfile, name))
-    ]
-    return list(requirements)
-
-
 def is_special(path):
     return path.endswith("__init__.py") or path.endswith("__main__.py")
+
+
 def is_migration(path):
-    return re.match(".*\/\d{4}_.*.py", path) is not None
+    MIGRATION_PATTERN = "\\b\d{4}_.*.py$"
+    return re.search(MIGRATION_PATTERN, path) is not None
 
 
 def make_extension(path):
     module = path.replace(os.path.sep, ".")[:-3]
     return Extension(module, [path])
-
 
 
 def get_modules_to_cythonize(root):
@@ -56,8 +50,7 @@ def get_modules_to_cythonize(root):
 
 
 def get_all_modules_to_cythonize():
-    return [module for root in ROOTS for module in get_modules_to_cythonize(root)]
-
+    return [module for root in CYTHON_ROOTS for module in get_modules_to_cythonize(root)]
 
 def get_all_cy_extensions():
     return [make_extension(module) for module in get_all_modules_to_cythonize()]
@@ -71,13 +64,11 @@ class build_py(_build_py):
         for pkg, mod, file_ in modules:
             if file_.endswith("__init__.py") or file_.endswith("__main__.py"):
                 kept_modules.append((pkg, mod, file_))
-
         return kept_modules
 
-
 setup(
-    name="perceptilabs",
-    version="0.1.1",
+    name=PACKAGE_NAME,
+    version=VERSION_STRING,
     license="Custom Proprietary License",
     packages=find_packages(),
     author="PerceptiLabs",
@@ -85,21 +76,20 @@ setup(
     url="https://perceptilabs.com",
     description="",
     long_description="",
-    install_requires=get_requirements(__file__),
-    dependency_links=[
-        'git+https://github.com/Kojoley/atari-py.git; platform_system == "Windows"',
-    ],
     python_requires=">=3.6,<3.8",
     package_data={
         "perceptilabs": [
             "*.json",
             "insights/csv_ram_estimator/*.csv",
             "script/templates/*.j2",
+            "dataschema/*.json",
             "core_new/layers/templates/*.j2",
-            "tutorial_data/mnist_input.npy",
-            "tutorial_data/mnist_labels.npy",
+            "tutorial_data/*.npy",
         ],
     },
-    ext_modules=cythonize(cy_extensions),
-    cmdclass={"build_py": build_py,},
+    ext_modules=cythonize(
+        get_all_cy_extensions(), compiler_directives={"language_level": 3}
+    ),
+    cmdclass={"build_py": build_py},
+    scripts=[],
 )

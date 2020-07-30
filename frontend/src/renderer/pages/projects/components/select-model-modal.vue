@@ -30,7 +30,7 @@
                 div  
                     h4.presets-text Name:
                     .model-title-input-wrapper
-                        input.model-title-input(type="text" v-model="modelName")
+                        input.model-title-input(type="text" v-model="modelName" @keyup="onModelNameKeyup")
                     h4.presets-text Model Path
                     .model-title-input-wrapper
                         input.model-title-input(type="text" v-model="modelPath" @click="openFilePicker")
@@ -69,44 +69,45 @@ export default {
     components: { FilePickerPopup },
     data: function() {
         return {
-        basicTemplates: [
-          {
-            title: 'Image Classification',
-            imgPath: './static/img/project-page/image-classification.svg',
-            template: imageClassification,
-            description: 'This is a simple image classification template, perfect for datasets such as Mnist. The standard dataset included with this template is a Mnist dataset where the input is an array of 784 grayscale pixel values and there are 10 unique label values (integers 0-9). The model consists of a reshaping component, a convolutional layer as well as a fully connected output layer with 10 neurons. Because of the reshaping component it requries the input data to be 784 or a form thereof (28x28 for example). The labels have to be an integer ranging from 0 to 9 to be compatable with the one hot encoding being applied to the labels.'
-          },
-          {
-            title: 'Linear Regression',
-            imgPath: './static/img/project-page/time-series-regression.svg',
-            template: linearRegression,
-            description: `This is a template for linear regression, where it tries to create a line of best fit for the datapoints you load. The standard dataset is a one dimensional input value and one dimensional labels. The input data can be multidimensional, but our visualizations only allow for one dimensional data at the moment. The labels data can only be one dimensional as they represent the value of the input data. The model is built as a single fully connected layer with one neuron as output.`
-          },
-          {
-            title: 'Reinforcement Learning',
-            imgPath: './static/img/project-page/reinforcement-learning.svg',
-            template: reinforcementLearning,
-            description: `The is a template for Reinforcement Learning consisting of one grayscale component, one convolutional layer and one fully connected layer as output. This template uses Q learning on Atari Gym games, where it is set up to play breakout. To play another game, make sure that you change the neurons from the fully connected layer to match the number of possible actions in the actionspace, which you can see in the Environment component.`
-          },
-           {
-            title: 'Object Detection',
-            imgPath: '',
-            template: objectDetection,
-            description: `This is a template of the Object Detection model YOLO. It trains on a custom built dataset containing different shapes as standard. Since it consists of only convolutional layers, any input data will work to train on, just make sure that the label data matches the input data properly.`
-          },
-          {
-            title: 'GAN',
-            imgPath: '',
-            template: ganTemplate,
-            description: `This is a template for a Generative Adversarial Network (GAN) where it trains on the Mnist data as a standard. The model consists of a generative network and a discriminative network, as well as a switch layer layer which switches between the generated image and real image.`
-          },
-        ],
-        chosenTemplate: null,
-        modelName: '',
-        description: '',
-        modelPath: '',
-        showFilePickerPopup: false,
-    }
+            basicTemplates: [
+            {
+                title: 'Image Classification',
+                imgPath: './static/img/project-page/image-classification.svg',
+                template: imageClassification,
+                description: 'This is a simple image classification template, perfect for datasets such as Mnist. The standard dataset included with this template is a Mnist dataset where the input is an array of 784 grayscale pixel values and there are 10 unique label values (integers 0-9). The model consists of a reshaping component, a convolutional layer as well as a fully connected output layer with 10 neurons. Because of the reshaping component it requries the input data to be 784 or a form thereof (28x28 for example). The labels have to be an integer ranging from 0 to 9 to be compatable with the one hot encoding being applied to the labels.'
+            },
+            {
+                title: 'Linear Regression',
+                imgPath: './static/img/project-page/time-series-regression.svg',
+                template: linearRegression,
+                description: `This is a template for linear regression, where it tries to create a line of best fit for the datapoints you load. The standard dataset is a one dimensional input value and one dimensional labels. The input data can be multidimensional, but our visualizations only allow for one dimensional data at the moment. The labels data can only be one dimensional as they represent the value of the input data. The model is built as a single fully connected layer with one neuron as output.`
+            },
+            {
+                title: 'Reinforcement Learning',
+                imgPath: './static/img/project-page/reinforcement-learning.svg',
+                template: reinforcementLearning,
+                description: `The is a template for Reinforcement Learning consisting of one grayscale component, one convolutional layer and one fully connected layer as output. This template uses Q learning on Atari Gym games, where it is set up to play breakout. To play another game, make sure that you change the neurons from the fully connected layer to match the number of possible actions in the actionspace, which you can see in the Environment component.`
+            },
+            {
+                title: 'Object Detection',
+                imgPath: '',
+                template: objectDetection,
+                description: `This is a template of the Object Detection model YOLO. It trains on a custom built dataset containing different shapes as standard. Since it consists of only convolutional layers, any input data will work to train on, just make sure that the label data matches the input data properly.`
+            },
+            {
+                title: 'GAN',
+                imgPath: '',
+                template: ganTemplate,
+                description: `This is a template for a Generative Adversarial Network (GAN) where it trains on the Mnist data as a standard. The model consists of a generative network and a discriminative network, as well as a switch layer layer which switches between the generated image and real image.`
+            },
+            ],
+            chosenTemplate: null,
+            modelName: '',
+            description: '',
+            modelPath: '',
+            showFilePickerPopup: false,
+            hasChangedModelName: false
+        }
     },
     computed: {
         ...mapState({
@@ -128,6 +129,8 @@ export default {
             getProjects:                'mod_project/getProjects',
             showErrorPopup:             'globalView/GP_errorPopup',
             isDirExists:                'mod_api/API_isDirExist',
+            resolveDir:                 'mod_api/API_resolveDir',
+            getFolderContent:           'mod_api/API_getFolderContent',
             API_getRootFolder:          'mod_api/API_getRootFolder'
         }),
         closeModal() {
@@ -135,6 +138,32 @@ export default {
         },
         choseTemplate(index) {
             this.chosenTemplate = index;
+            this.autoPopulateName();
+        },
+        async autoPopulateName() {
+            if (this.modelName && this.hasChangedModelName) { return; }
+            if (!this.modelPath) { return; }
+
+            const resolvedDir = await this.resolveDir(this.modelPath);
+            const dirContents = await this.getFolderContent(resolvedDir);
+            
+            let namePrefix = '';
+            if (this.chosenTemplate >= 0 &&
+                this.chosenTemplate <= this.basicTemplates.length - 1) {
+                namePrefix = this.basicTemplates[this.chosenTemplate].title
+                    .replace(' ', '');
+            } else {
+                namePrefix = 'Model';
+            }
+             
+            const highestSuffix = dirContents.dirs
+                .filter(d => d.startsWith(namePrefix))
+                .map(d => d.replace(`${namePrefix} `, ''))
+                .map(d => parseInt(d))
+                .filter(suffixNum => !isNaN(suffixNum))
+                .reduce((max, curr) => Math.max(max, curr), 0);
+
+            this.modelName = `${namePrefix} ${highestSuffix + 1}`
         },
         isDisableCreateAction() {
             const { chosenTemplate, modelName, basicTemplates } = this;
@@ -223,6 +252,13 @@ export default {
                         });
                     }
                 }
+            }
+        },
+        onModelNameKeyup() {
+            if (this.modelName === '') {
+                this.hasChangedModelName = false;
+            } else {
+                this.hasChangedModelName = true;
             }
         }
     },

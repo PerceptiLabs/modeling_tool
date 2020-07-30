@@ -239,22 +239,22 @@ class Tf1xStrategy(BaseStrategy):
             
 class DataSupervisedStrategy(BaseStrategy):
     def run(self, layer_id, layer_type, layer_class, input_results, layer_spec):
-        layer_instance = layer_class()
-        columns = layer_instance.columns
-
         try:
+            layer_instance = layer_class()
+            columns = layer_instance.columns
             y = layer_instance.sample
+            variables = layer_instance.variables.copy()
         except Exception as e:
             y = None
             shape = None
+            variables = {}
+            columns = []
             strategy_error = exception_to_error(layer_id, layer_type, e)
             logger.debug(f"Layer {layer_id} raised an error when calling sample property")                        
         else:
             shape = np.atleast_1d(y).shape
             strategy_error=None
 
-        variables = layer_instance.variables.copy()
-        
         results = LayerResults(
             sample=y,
             out_shape=shape,

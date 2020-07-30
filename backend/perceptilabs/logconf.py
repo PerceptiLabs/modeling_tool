@@ -30,22 +30,31 @@ class PackageFilter(logging.Filter):
             
         return True    
 
+def is_docker():
+    try:
+        return os.path.isfile("/.dockerenv")
+    except:
+        return False
+
+def should_log_to_file():
+    return not is_docker()
 
 def setup_application_logger(log_level=None):
     if log_level is not None:
         log_level = logging.getLevelName(log_level)
     
-    formatter = logging.Formatter(APPLICATION_LOG_FORMAT)
-    
-    file_handler = logging.FileHandler(APPLICATION_LOG_FILE, mode='w')
-    file_handler.setFormatter(formatter)
-    
-    stream_handler = logging.StreamHandler()        
-    stream_handler.setFormatter(formatter)
-    
     logger = logging.getLogger(APPLICATION_LOGGER)
     logger.setLevel(log_level or APPLICATION_LOG_LEVEL)
-    logger.addHandler(file_handler)
+
+    formatter = logging.Formatter(APPLICATION_LOG_FORMAT)
+
+    if should_log_to_file():
+        file_handler = logging.FileHandler(APPLICATION_LOG_FILE, mode='w')
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
+
+    stream_handler = logging.StreamHandler()
+    stream_handler.setFormatter(formatter)
     logger.addHandler(stream_handler)
     logger.addFilter(PackageFilter())
 
@@ -60,11 +69,11 @@ def set_session_id(session_id):
     global _global_context
     _global_context['session_id'] = session_id
 
-    
+
 def set_user_email(email):
     global _global_context
     _global_context['user_email'] = email
-    
+
 
 
 class DataFormatter(logging.Formatter):
@@ -89,39 +98,39 @@ class DataFormatter(logging.Formatter):
 
         try:
             self.validator.validate(dict_)
-            text = json.dumps(dict_)            
+            text = json.dumps(dict_)
         except Exception as e:
             import pprint
             pprint.pprint(dict_)
             logging.getLogger(APPLICATION_LOGGER).exception(f'Data log formatter failed for event {record.msg}')
-            text = ''        
+            text = ''
 
         return text
 
 
 def setup_data_logger(is_dev=True):
-    formatter = DataFormatter()
-    
-    file_handler = logging.FileHandler(DATA_LOG_FILE, mode='w')
-    file_handler.setFormatter(formatter)
-    
-    stream_handler = logging.StreamHandler()        
-    stream_handler.setFormatter(formatter)
-
-    from perceptilabs.azure import AzureHandler
-    azure_handler = AzureHandler.get_default()
-    azure_handler.setFormatter(formatter)
-    
     logger = logging.getLogger(DATA_LOGGER)
     logger.setLevel(logging.INFO)
-    logger.addHandler(file_handler)
-    #logger.addHandler(stream_handler)
+
+    formatter = DataFormatter()
+
+    if should_log_to_file():
+        file_handler = logging.FileHandler(DATA_LOG_FILE, mode='w')
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
+
+    stream_handler = logging.StreamHandler()
+    stream_handler.setFormatter(formatter)
+    logger.addHandler(stream_handler)
+    from perceptilabs.azure import AzureHandler
+    azure_handler = AzureHandler.get_default()
+    azure_handler.setFormatter(formatter)    
     
     if not is_dev:
         logger.addHandler(azure_handler)
 
 
-    
+
 def upload_logs(session_id):
     import os
     import time
@@ -132,20 +141,20 @@ def upload_logs(session_id):
     logger = logging.getLogger(APPLICATION_LOGGER)
 
     from perceptilabs.azure import AzureUploader, AZURE_ACCOUNT_NAME_EU, AZURE_ACCOUNT_KEY_EU, AZURE_CONTAINER_EU, AZURE_ACCOUNT_NAME_US, AZURE_ACCOUNT_KEY_US, AZURE_CONTAINER_US
-    
+
     data_uploaders = [
         AzureUploader(AZURE_ACCOUNT_NAME_EU, AZURE_ACCOUNT_KEY_EU, AZURE_CONTAINER_EU),
-        AzureUploader(AZURE_ACCOUNT_NAME_US, AZURE_ACCOUNT_KEY_US, AZURE_CONTAINER_US)        
+        AzureUploader(AZURE_ACCOUNT_NAME_US, AZURE_ACCOUNT_KEY_US, AZURE_CONTAINER_US)
     ]
 
     try:
         directory_path = tempfile.mkdtemp(prefix='perceptilabs_logs_')
         archives_path = tempfile.mkdtemp(prefix='perceptilabs_archives_')
-        
+
         shutil.copy(APPLICATION_LOG_FILE, os.path.join(directory_path, APPLICATION_LOG_FILE))
         shutil.copy(DATA_LOG_FILE, os.path.join(directory_path, DATA_LOG_FILE))
 
-        zip_name = "logs_{}_{}".format(int(time.time()), session_id)        
+        zip_name = "logs_{}_{}".format(int(time.time()), session_id)
         zip_path_no_ext = os.path.join(archives_path, zip_name)
         zip_full_path = zip_path_no_ext + '.zip'
 
@@ -154,10 +163,10 @@ def upload_logs(session_id):
 
         for uploader in data_uploaders:
             uploader.upload(zip_full_path)
-            logger.info(f"Ran uploader {uploader}. File path: {zip_full_path}")        
+            logger.info(f"Ran uploader {uploader}. File path: {zip_full_path}")
     finally:
         if os.path.exists(directory_path):
             shutil.rmtree(directory_path)
         if os.path.exists(archives_path):
-            shutil.rmtree(archives_path)    
+            shutil.rmtree(archives_path)
 

@@ -38,6 +38,9 @@ from perceptilabs.logconf import APPLICATION_LOGGER, DATA_LOGGER
 logger = logging.getLogger(APPLICATION_LOGGER)
 data_logger = logging.getLogger(DATA_LOGGER)
 
+# TODO: this is a hack that's the first step toward weaning the kernel off of local files
+# it really should be using the output from tempfile.TemporaryFile()
+training_script_name = tempfile.mkstemp(suffix=".py")[1]
 
 
 def make_graph_spec_conform_to_schema(graph_spec):
@@ -358,11 +361,10 @@ class Core:
              )
              self._handle_userland_error(error)             
              
-        script_path = f'training_script.py'
-        with open(script_path, 'wt') as f:
+        with open(training_script_name, 'wt') as f:
             f.write(code)
             f.flush()
-        return script_path
+        return training_script_name
 
     def _on_userland_error(self, exception, traceback_frames):
         message = str(exception) +'\n\n'
@@ -373,12 +375,12 @@ class Core:
         for frame in traceback_frames:
             node, true_lineno = self._line_to_node_map.get(frame.lineno, (None, None))
             
-            if not collect and frame.filename == 'training_script.py':
+            if not collect and frame.filename == training_script_name:
                 collect = True
             if not collect:
                 continue
                 
-            if frame.filename == 'training_script.py' and node is not None:
+            if frame.filename == training_script_name and node is not None:
                 last_node = node
                 last_lineno = true_lineno
 
