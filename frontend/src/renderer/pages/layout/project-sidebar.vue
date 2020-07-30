@@ -190,7 +190,10 @@
           if(statisticItemIndex !== null) {
             this.$store.commit("mod_workspace/setViewType", 'statistic');
             this.SET_currentNetwork(statisticItemIndex)
-              .then(() => this.$router.push({name: 'app'}));
+              .then(() => {
+                this.$router.push({name: 'app'});
+                this.SET_openStatistics(true);
+              });
             
           }
         }
@@ -221,6 +224,11 @@
         } else {
           this.$store.commit("mod_workspace/setViewType", 'model');
           this.SET_currentNetwork(0);
+          if (this.isOnStatisticsView()) {
+            this.SET_openStatistics(false);
+          } else if (this.isOnTestView()) {
+            this.SET_openTest(false);
+          }
           this.$router.push({name: 'app'});
         }
       },
@@ -239,6 +247,7 @@
             this.SET_currentNetwork(this.testItemIndex)
               .then(_ => {
                 this.$router.push({name: 'app'});
+                this.SET_openTest(true);
               });
           }
         }
