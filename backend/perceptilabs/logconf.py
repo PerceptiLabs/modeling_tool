@@ -7,7 +7,6 @@ import jsonschema
 
 import perceptilabs
 
-
 APPLICATION_LOGGER = 'perceptilabs.applogger'
 APPLICATION_LOG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)),'kernel.log')
 APPLICATION_LOG_FORMAT = '%(asctime)s - %(levelname)s - %(package)s:%(lineno)d - %(message)s'

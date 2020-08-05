@@ -77,3 +77,26 @@ def test_data_container_metric(datacontainer):
     assert np.isclose(datacontainer.get_metric('Test2', 'Train Loss', end=-5), train_loss[-6:-1], equal_nan=True).all()
     assert np.isclose(datacontainer.get_metric('Test2', 'Test Loss', start = 0, end=9), test_loss, equal_nan=True).all()
     assert np.isclose(datacontainer.get_metric('Test2', 'Test Loss', end=-5), test_loss[:5], equal_nan=True).all()
+
+def test_data_container_reset(datacontainer):
+    train_loss = np.random.normal(size=5)
+    test_loss = np.empty(5)
+    test_loss.fill(np.nan)
+    test_loss[0] = np.random.uniform(0, 1)
+
+    # Send data
+    for i in range(5):
+        r_message = raw_message('Test3', 'Train Loss', train_loss[i], i)
+
+        message = serialize(r_message)
+        datacontainer.process_message(message)
+
+    r_message = raw_message('Test3', 'Test Loss', test_loss[0], 0)
+    message = serialize(r_message)
+    datacontainer.process_message(message)
+
+    # Delete experiment
+    datacontainer._delete_experiment('Test3')
+    experiment_names = datacontainer.get_experiment_names()
+    
+    assert 'Test3' not in experiment_names

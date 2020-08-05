@@ -146,6 +146,7 @@ perceptilabs/dataschema/kernel_started.json
 perceptilabs/dataschema/training_started.json
 perceptilabs/dataschema/training_ended.json
 perceptilabs/dataschema/graph_spec.json
+perceptilabs/dataschema/dc_memory_used.json
 
 # backend/perceptilabs/aggregation/
 perceptilabs/aggregation/__init__.py

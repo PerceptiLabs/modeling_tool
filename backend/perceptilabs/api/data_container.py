@@ -1,17 +1,26 @@
 import logging
 import pandas as pd
 import numpy as np
+import psutil
 from typing import List
 
 from perceptilabs.core_new.serialization import serialize, can_serialize, deserialize
-from perceptilabs.logconf import APPLICATION_LOGGER
+from perceptilabs.logconf import APPLICATION_LOGGER, DATA_LOGGER
+from perceptilabs.utils import get_object_size
 
 logger = logging.getLogger(APPLICATION_LOGGER)
+data_logger = logging.getLogger(DATA_LOGGER)
 
 class DataContainer:
     def __init__(self):
-        '''Initializes data_container'''
+        '''Initializes data_container to store experiments. Datacontainer will also track
+        internal memory usage along with a max threshold'''
         self.experiments = {}
+        self.obj_ids = set()
+        self.memory_usage = 0
+
+        # Utilizing a max threshold of 25% of total memory for DataContainer
+        self.MAX_THRESHOLD = (psutil.virtual_memory().total/1e6) * 0.25
 
     def get_experiment(self, experiment_name: str) -> dict:
         '''Gets the saved experiment based on name of experiment
@@ -28,22 +37,27 @@ class DataContainer:
         return self.experiments[experiment_name]
 
     def get_experiment_names(self) -> List[str]:
-        '''Gets all the name of the experiments being saved
+        '''Gets the name of all the experiments being saved
 
         Returns:
             names: a list of experiment names
         '''
-        names = self.experiments.keys()
+        names = list(self.experiments.keys())
 
         return names
 
     def process_message(self, raw_message: dict):
-        ''''''
+        '''Processes incoming messages to be stored. Data will be stored
+        into correct experiment_name, then by category.
+        
+        Args:
+            raw_message: a dictionary containing message to be processe
+        '''
         self._process_incoming_message(raw_message)
 
     def _process_incoming_message(self, raw_message: dict):
-        '''Processes incoming message to be stored. Data will be stored
-        into correct experiment_name, then by category.
+        '''Processes incoming message to be stored. Adds data into correct experiment and
+        logs amount of memory used by data.
 
         Args:
             raw_message: a dictionary containing message to be processed
@@ -60,6 +74,9 @@ class DataContainer:
                     'Metrics': {}
                 }
 
+                self._track_memory(experiment_name)
+                self._track_memory(self.experiments[experiment_name])
+
             if message['category'] == 'Metrics':
                 name = message['name']
                 metric = message['metric']
@@ -67,6 +84,9 @@ class DataContainer:
 
                 if name not in self.experiments[experiment_name]['Metrics']:
                     self.experiments[experiment_name]['Metrics'][name] = pd.DataFrame(columns=(name, 'Step'))
+
+                    self._track_memory(name)
+                    self._track_memory(self.experiments[experiment_name]['Metrics'][name])
 
                 if step is not None:
                     df = self.experiments[experiment_name]['Metrics'][name]
@@ -76,6 +96,7 @@ class DataContainer:
                     df_item = pd.DataFrame(item)
 
                     self.experiments[experiment_name]['Metrics'][name] = pd.concat([df, df_item], ignore_index=True)
+                    self._track_memory(item)
                     self._clean_mem([df, df_item])
                 else:
                     df = self.experiments[experiment_name]['Metrics'][name]
@@ -90,12 +111,17 @@ class DataContainer:
                     df_item = pd.DataFrame(item)
 
                     self.experiments[experiment_name]['Metrics'][name] = pd.concat([df, df_item], ignore_index=True)
-                    self._clean_mem([df, df_item])
+                    self._track_memory(item)
+                    self._clean_mem([df, df_item, step_list])
             elif message['category'] == 'Hyperparameters':
                 hyper_params = message['hyper_params']
 
                 for hyper_param, value in hyper_params.items():
                     self.experiments[experiment_name]['Hyperparameters'][hyper_param] = value
+                
+                self._track_memory(hyper_params)
+            
+            self._check_memory()
 
     def get_hyperparameter_names(self, experiment_name: str) -> List[str]:
         '''Gets hyperparameters names returned as list
@@ -109,7 +135,7 @@ class DataContainer:
         if experiment_name not in self.experiments:
             raise ValueError("Experiment: {0} does not exist".format(experiment_name))
 
-        hyperparameters_names = self.experiments[experiment_name]['Hyperparameters'].keys()
+        hyperparameters_names = list(self.experiments[experiment_name]['Hyperparameters'].keys())
 
         return hyperparameters_names
 
@@ -162,7 +188,7 @@ class DataContainer:
         if experiment_name not in self.experiments:
             raise ValueError("Experiment: {0} does not exist".format(experiment_name))
 
-        metric_names = self.experiments[experiment_name]['Metrics'].keys()
+        metric_names = list(self.experiments[experiment_name]['Metrics'].keys())
 
         return metric_names
 
@@ -255,3 +281,61 @@ class DataContainer:
             self._clean_mem([df_vals])
 
         return df
+    
+    def _track_memory(self, data_obj: any):
+        '''Gets the current memory usage of data object and adds it to running total'''
+        self.memory_usage += get_object_size(data_obj, self.obj_ids)
+    
+    def _check_memory(self):
+        '''Checks the current memory usage of DataContainer. Log correct levels (info, warning) depending
+        on how much memory is currently used.
+
+        WARNING will display once memory crosses max threshold
+        INFO will display once memory crosses 75% of max threshold
+        '''
+        memory_data = psutil.virtual_memory()
+        phys_total = memory_data.total
+        phys_available = memory_data.available
+
+        if self.memory_usage/1e6 >= self.MAX_THRESHOLD:
+            data_logger.warning(
+                "dc_memory_used",
+                phys_total=phys_total,
+                phys_available=phys_available,
+                dc_memory_usage=self.memory_usage,
+                dc_total_memory=self.MAX_THRESHOLD
+            )
+
+        elif self.memory_usage/1e6 >= self.MAX_THRESHOLD * 0.75:
+            data_logger.info(
+                "dc_memory_used",
+                phys_total=phys_total,
+                phys_available=phys_available,
+                dc_memory_usage=self.memory_usage,
+                dc_total_memory=self.MAX_THRESHOLD
+            )
+    
+    def _delete_experiment(self, experiment_name: str):
+        '''Removes experiment from datacontainer and cleans up memory usage
+        
+        Args:
+            experiment_name: name of experiment to delete
+        '''
+        if experiment_name not in self.experiments:
+            raise ValueError("Experiment: {0} does not exist".format(experiment_name))
+        
+        _ids = set()
+        memory_used = get_object_size(self.experiments[experiment_name], _ids)
+
+        self.obj_ids = self.obj_ids.difference(_ids)
+        self.memory_usage -= memory_used
+
+        del self.experiments[experiment_name]
+
+    def _delete_all_experiments(self):
+        '''Removes all experiment from datacontainer and resets memory usage'''
+        del self.experiments, self.obj_ids, self.memory_usage
+
+        self.experiments = {}
+        self.obj_ids = set()
+        self.memory_usage = get_object_size(self.experiments, self.obj_ids)
