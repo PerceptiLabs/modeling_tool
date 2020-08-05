@@ -3,9 +3,9 @@
         global matrix_{{tag}}
         matrix_{{tag}} = np.load("{{path}}", mmap_mode='r+').astype(np.float32)
         size_{{tag}} = len(matrix_{{tag}})
-        matrix = matrix_{{tag}}
         def generator_{{tag}}(idx_lo, idx_hi):
-            yield from matrix[idx_lo:idx_hi].squeeze()
+            global matrix_{{tag}}
+            yield from matrix_{{tag}}[idx_lo:idx_hi].squeeze()
     {% endfilter %}
 {% endmacro %}
 
@@ -73,31 +73,25 @@
                 df_{{tag}} = df_{{tag}}.iloc[:, {{selected_columns}}]
             {% endif %}
         {% endfilter %}
-        df = df_{{tag}}
         def generator_{{tag}}(idx_lo, idx_hi):
-            yield from df.astype(np.float32).iloc[idx_lo:idx_hi].values.squeeze()
+            global df_{{tag}}
+            yield from df_{{tag}}.astype(np.float32).iloc[idx_lo:idx_hi].values.squeeze()
     {% endif %}
 {% endfilter %}
 {%- endmacro %}
 
-{% macro load_img_dir(path, tag, lazy=False) -%}
+{% macro load_img_dir(path, tag, extension, lazy=False) -%}
 {% filter remove_lspaces(8) %}
     {% if lazy %}
-        file_paths = sorted([os.path.join("{{path}}", n) for n in os.listdir("{{path}}")])
-        size_{{tag}} = len(file_paths)
+        regex = "*" + "{{extension}}"
+        file_path = os.path.join("{{path}}", regex)
         global matrices_{{tag}}
-        matrices_{{tag}} = []
 
-        for file_path in file_paths:
-            import dask_image.imread
-            import ntpath
-            # Ignore .DS_Store file on macOS if it isn't hidden
-            if not ntpath.basename(file_path).startswith('.'): 
-                mtx = dask_image.imread.imread(file_path)
-                matrices_{{tag}}.append(mtx)
-
-        matrix = da.concatenate(matrices_{{tag}}).rechunk('128MB')
-
+        import dask_image.imread
+        import ntpath
+        matrices_{{tag}} = dask_image.imread.imread(file_path)
+        size_{{tag}} = len(matrices_{{tag}})
+        matrix = matrices_{{tag}}.rechunk('64MB')
         {{generator_lazy_array(matrix, tag, idx_lo, idx_hi) | indent(width=8)}} 
     {% else %}
         file_paths = sorted([os.path.join("{{path}}", n) for n in os.listdir("{{path}}")])
@@ -110,10 +104,8 @@
             matrix = skimage.io.imread(file_path).astype(np.float32)
             matrices_{{tag}}.append(matrix)
 
-        matrices = np.array(matrices_{{tag}}).squeeze()
-
         def generator_{{tag}}(idx_lo, idx_hi):
-            yield from matrices[idx_lo:idx_hi].squeeze()
+            yield from np.array(matrices_{{tag}})[idx_lo:idx_hi].squeeze()
     {% endif %}
 {% endfilter %}
 {%- endmacro %}
@@ -129,8 +121,8 @@
             if div_idx_lo < div_idx_hi:                                                                                                                                                                 
                 sub_divs.append((p, div_idx_lo, div_idx_hi))                                                                                                                                                                                                                                                                                                           
         # Bring only the values we need into memory and yield them                                                                                                                                      
-        for p, div_lo, div_hi in sub_divs:                                                                                                                                                              
-            matrix_computed = matrix.blocks[p][div_lo-divs[p]:div_hi-divs[p]].astype(np.float32).compute()                                                                                           
+        for p, div_lo, div_hi in sub_divs:                                                                                                                                                          
+            matrix_computed = matrix.blocks[p][div_lo-divs[p]:div_hi-divs[p]].astype(np.float32).compute()                                                                                      
             yield from matrix_computed
 {%- endmacro %}
 

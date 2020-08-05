@@ -856,6 +856,8 @@ class {{layer_name}}(ClassificationLayer):
 
         if os.path.exists(pb_path):
             shutil.rmtree(pb_path)
+        
+        time.sleep(.0000000000000001) #Force your computer to do a clock cycle to avoid Windows permission exception
 
         os.makedirs(pb_path, exist_ok=True)
         
