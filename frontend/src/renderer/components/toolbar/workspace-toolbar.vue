@@ -399,8 +399,8 @@ export default {
     align-items: center;
     padding: 5px 2rem 5px 0;
     background-color: $bg-toolbar-2;
-    border: 1px solid rgba(97, 133, 238, 0.2);
-    border-radius: 2px 2px 0px 0px;
+    border: 1px solid rgba(97, 133, 238, 0.4);
+    border-radius: 0px;
     position: relative;
     grid-area: toolbar;
     z-index: 2;
