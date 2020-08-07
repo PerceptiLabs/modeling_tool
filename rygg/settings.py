@@ -162,3 +162,7 @@ LOGGING = {
         },
     },
 }
+
+# Github
+GITHUB_API_KEY = os.environ.get('GITHUB_API_KEY', '')
+GITHUB_API_ENDPOINT = os.environ.get('GITHUB_API_ENDPOINT', '')

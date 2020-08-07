@@ -23,7 +23,8 @@ router = routers.DefaultRouter()
 router.register(r"projects", views.ProjectViewSet)
 router.register(r"models", views.ModelViewSet)
 router.register(r"notebooks", views.NotebookViewSet)
+router.register(r"issues", views.IssuesViewSet, basename='Issues')
 
 urlpatterns = [
-    path("", (include(router.urls)))
+    path("", (include(router.urls))),
 ]

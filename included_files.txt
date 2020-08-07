@@ -5,6 +5,7 @@ rygg/api/apps.py
 rygg/api/migrations
 rygg/api/models.py
 rygg/api/serializers.py
+rygg/api/services.py
 rygg/api/tests.py
 rygg/api/views.py
 rygg/asgi.py
