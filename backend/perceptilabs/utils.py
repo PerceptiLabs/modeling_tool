@@ -184,7 +184,7 @@ class DummyExecutor(Executor):
             self._shutdown = True
 
             
-def get_object_size(data_obj: any, obj_ids: Set[int]) -> int:
+def get_object_size(data_obj, obj_ids: Set[int]) -> int:
     '''Recursively gets an objects total size in bytes
     
     Args:
