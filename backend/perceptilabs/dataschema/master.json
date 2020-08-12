@@ -44,7 +44,8 @@
         },
 	"kernel_started": {"$ref": "kernel_started.json"},
 	"training_started": {"$ref": "training_started.json"},
-	"training_ended": {"$ref": "training_ended.json"}	
+    "training_ended": {"$ref": "training_ended.json"},
+    "dc_memory_used": {"$ref": "dc_memory_used.json"}
     }
 }
 

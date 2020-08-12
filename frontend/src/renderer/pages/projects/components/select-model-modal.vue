@@ -120,6 +120,10 @@ export default {
     },
     mounted() {
         this.modelPath = this.projectPath;
+        document.addEventListener('keyup', this.handleKeyup);
+    },
+    beforeDestory() {
+        document.removeEventListener('keyup', this.handleKeyup);
     },
     methods: {
         ...mapActions({
@@ -252,6 +256,17 @@ export default {
                         });
                     }
                 }
+            }
+        },
+        handleKeyup(event) {
+            if (event.key === "Escape") {
+                event.stopPropagation();
+                this.closeModal();
+            } else if (event.key === "Enter" && !this.isDisableCreateAction()) {
+                event.stopPropagation();
+                this.createModel();
+                this.chosenTemplate = null;
+                this.modelName = '';
             }
         },
         onModelNameKeyup() {

@@ -284,6 +284,9 @@
     border: 1px solid rgba(97, 133, 238, 0.5);
     box-sizing: border-box;
     border-radius: 2px;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+
     &.is-active-stroke {
       border-left-width:  5px;
       border-color: #6185EE;

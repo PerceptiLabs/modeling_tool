@@ -4,6 +4,11 @@ from concurrent.futures import Future, Executor
 from threading import Lock
 
 
+import numpy as np
+import pandas as pd
+from sys import getsizeof
+from typing import Set
+
 def deprecated(func):
     """This is a decorator which can be used to mark functions
     as deprecated. It will result in a warning being emitted
@@ -138,19 +143,6 @@ def sanitize_path(path):
     path = path.replace('\\', '/')
     return path
 
-    
-if __name__ == "__main__":
-    import numpy as np
-    obj = {
-        'hello': '123456',
-        'hehe': {
-            'bla': [213,]*10,
-            'zzz': np.random.random((25, 323))
-        }
-    }    
-    x = stringify(obj)
-    print(x)
-
 
 def loop_until_true(condition, timeout=20.0):
     import time
@@ -190,3 +182,55 @@ class DummyExecutor(Executor):
     def shutdown(self, wait=True):
         with self._shutdownLock:
             self._shutdown = True
+
+            
+def get_object_size(data_obj, obj_ids: Set[int]) -> int:
+    '''Recursively gets an objects total size in bytes
+    
+    Args:
+        obj: Object to get total size of
+    
+    Returns:
+        total_size: Size of object in bytes
+    '''
+    if data_obj is None:
+        return 0
+        
+    if id(data_obj) in obj_ids:
+        return 0
+
+    obj_ids.add(id(data_obj))
+
+    if isinstance(data_obj, (str, int, float, complex, bool)):
+        data_obj_size = getsizeof(data_obj)
+        return data_obj_size
+
+    elif isinstance(data_obj, (list, set, range)):
+        data_obj_size = getsizeof(data_obj)
+        return data_obj_size + sum([get_object_size(data, obj_ids) for data in data_obj])
+
+    elif isinstance(data_obj, np.ndarray):
+        return getsizeof(data_obj)
+
+    elif isinstance(data_obj, pd.DataFrame):
+        return data_obj.memory_usage(index=True, deep=True).sum()
+
+    elif isinstance(data_obj, dict):
+        data_obj_size = getsizeof(data_obj)
+        return data_obj_size + sum([get_object_size(key, obj_ids) + get_object_size(val, obj_ids) for key, val in data_obj.items()])
+    
+    else:
+        return 0
+    
+    
+if __name__ == "__main__":
+    import numpy as np
+    obj = {
+        'hello': '123456',
+        'hehe': {
+            'bla': [213,]*10,
+            'zzz': np.random.random((25, 323))
+        }
+    }    
+    x = stringify(obj)
+    print(x)
