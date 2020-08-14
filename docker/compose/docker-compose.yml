@@ -11,7 +11,7 @@ services:
       POSTGRES_PASSWORD: rygg
 
   rygg:
-    image: perceptilabs.azurecr.io/rygg:2658
+    image: perceptilabs.azurecr.io/rygg:latest
     # image: rygg_dev
     environment:
       DJANGO_DATABASE: postgres
@@ -25,7 +25,7 @@ services:
       - db
 
   frontend:
-    image: perceptilabs.azurecr.io/frontend:2658
+    image: perceptilabs.azurecr.io/frontend:latest
     # image: frontend_dev
     ports:
       - 8080:8080
@@ -34,7 +34,7 @@ services:
       - kernel
 
   kernel:
-    image: perceptilabs.azurecr.io/kernel:2658
+    image: perceptilabs.azurecr.io/kernel:latest
     # image: kernel_dev
     volumes:
       - .:/plabs

@@ -15,6 +15,7 @@ ADD included_files.txt requirements.txt requirements_build.txt ./
 ADD perceptilabs ./perceptilabs
 
 RUN pip install --upgrade pip setuptools && \
+    pip install -r requirements.txt && \
     pip install -r requirements_build.txt
 
 # Train the ram estimator
@@ -23,7 +24,7 @@ RUN python train_model.py data_1579288530.csv
 
 WORKDIR /out
 # Set up the out dir for the build
-ADD main.py setup.py ./
+ADD main.py setup.py setup.cfg package_data.json VERSION cython_roots.txt requirements.txt ./
 RUN rsync -a /src --files-from=/src/included_files.txt . && \
     mv main.py main.pyx && \
     find . -name "__init__.py" -exec mv '{}' '{}x' \; && \

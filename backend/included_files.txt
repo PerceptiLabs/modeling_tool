@@ -146,7 +146,6 @@ perceptilabs/core_new/communication/state.py
 perceptilabs/core_new/communication/utils.py
 perceptilabs/core_new/communication/deployment.py
 perceptilabs/core_new/communication/zmq.py
-perceptilabs/core_new/communication/task_executor.py
 
 # perceptilabs/core_new/compatibility
 perceptilabs/core_new/compatibility/__init__.py
@@ -158,7 +157,6 @@ perceptilabs/core_new/graph/__init__.py
 perceptilabs/core_new/graph/base.py
 perceptilabs/core_new/graph/builder.py
 perceptilabs/core_new/graph/utils.py
-perceptilabs/core_new/graph/splitter.py
 
 # perceptilabs/core_new/layers/
 perceptilabs/core_new/layers/__init__.py
@@ -166,7 +164,6 @@ perceptilabs/core_new/layers/base.py
 perceptilabs/core_new/layers/definitions.py
 perceptilabs/core_new/layers/replicas.py
 perceptilabs/core_new/layers/replication.py
-perceptilabs/core_new/layers/script.py
 perceptilabs/core_new/layers/utils.py
 
 # perceptilabs/core_new/layers/templates/
