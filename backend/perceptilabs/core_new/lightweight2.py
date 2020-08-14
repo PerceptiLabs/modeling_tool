@@ -112,10 +112,11 @@ class Tf1xTempStrategy(BaseStrategy):
                 input_tensors[sanitize_layer_name(self._layer_ids_to_names[key])] = tf.constant(y_batch)
 
             try:
-                if len(input_tensors) <= 1:
-                    output_tensor = layer_instance(*input_tensors.values())
-                elif len(input_tensors) > 1:
-                    output_tensor = layer_instance(input_tensors)
+                # if len(input_tensors) <= 1:
+                output_tensor = layer_instance(*input_tensors.values())
+                # elif len(input_tensors) > 1:
+                # print(input_tensors)
+                # output_tensor = layer_instance(*input_tensors)
             except Exception as e:
                 error = exception_to_error(layer_id, layer_type, e)
                 logger.debug(f"Layer {layer_id} raised an error in __call__")
@@ -392,9 +393,10 @@ class LightweightCore:
         graph.add_edges_from(edges_by_id)
         graph.add_nodes_from(id_ for id_ in graph_spec.keys())
         
-        final_id = self._get_final_layer_id(graph_spec)
-        bfs_tree = list(nx.bfs_tree(graph, final_id, reverse=True))
-        ordered_ids = tuple(reversed(bfs_tree))
+        ordered_ids = list(nx.algorithms.dag.topological_sort(graph))
+        # final_id = self._get_final_layer_id(graph_spec)
+        # bfs_tree = list(nx.bfs_tree(graph, final_id, reverse=True))
+        # ordered_ids = tuple(reversed(bfs_tree))
         return ordered_ids
     
     @simplify_spec
@@ -452,7 +454,7 @@ class LightweightCore:
             logger.exception(f"Layer {layer_id} raised an error when getting layer code") 
             return None, exception_to_error(layer_id, layer_spec['Type'], e)                                
         except Exception as e:
-            logger.warning(f"{repr(e)}: couldn't get code for {layer_id}. Treating it as not fully specified")
+            logger.warning(f"{type(e).__name__}: {str(e)} | couldn't get code for {layer_id}. Treating it as not fully specified")
             if logger.isEnabledFor(logging.DEBUG):
                 from perceptilabs.utils import stringify
                 logger.warning("layer spec: \n" + stringify(layer_spec))

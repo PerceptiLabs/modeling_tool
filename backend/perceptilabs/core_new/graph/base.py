@@ -72,10 +72,10 @@ class Graph:
         if len(end_nodes) > 1:
             raise RuntimeError("Not supported. More than one _isolated_ subgraph detected!")
         
-        self._end_node = end_nodes[0]
-
-        bfs_tree = list(nx.bfs_tree(self._nx_graph, self._end_node, reverse=True))
-        self._ordered_nodes = tuple(reversed(bfs_tree))
+        # self._end_node = end_nodes[0]
+        # bfs_tree = list(nx.bfs_tree(self._nx_graph, self._end_node, reverse=True))
+        # self._ordered_nodes = tuple(reversed(bfs_tree))
+        self._ordered_nodes = list(nx.algorithms.dag.topological_sort(self._nx_graph))
 
     def _find_subgraphs(self, nx_graph, start_node, searched):
         searched.add(start_node)

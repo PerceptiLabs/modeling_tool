@@ -416,18 +416,14 @@ class {{layer_name}}(Tf1xLayer):
         self._merge_dim = {{merge_dim}}
         self._merget_order = {{merge_order}}
 
-    def __call__(self, x: Dict[str, tf.Tensor], is_training: tf.Tensor = None) -> tf.Tensor:
+    def __call__(self, x1, x2, is_training: tf.Tensor = None) -> tf.Tensor:
         """ Takes two tensors as input and merges them accordingly. """
         y = None
         {% filter remove_lspaces(8) %}
             {% if type_ == 'Concat' %}
-                y = tf.concat(list(x.values()), self._merge_dim)
+                y = tf.concat([x1, x2], self._merge_dim)
             {% elif type_ == 'Add' %}
-                for i in range(0, len(list(x.values())), 2):
-                    if not y:
-                        y = list(x.values())[i]
-                    Y = tf.add(list(x.values())[i], y)
-                
+                y = x1 + x2                
             {% elif type_ == 'Sub' %}
                 for i in range(0, len(list(x.values())), 2):
                     if not y:

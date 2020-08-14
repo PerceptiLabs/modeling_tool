@@ -91,9 +91,8 @@
                 args = []
                 for input_node in graph.get_input_nodes(node):
                     args.append(layer_output_tensors[input_node.layer_id])
-                    args.append(is_training)
 
-                    y = node.layer_instance(*args)
+                y = node.layer_instance(*args)
                 layer_output_tensors[node.layer_id] = y
 
 
