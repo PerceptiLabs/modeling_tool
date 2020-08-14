@@ -377,6 +377,24 @@ $folder: 'icomoon';
 .icon-download:before {
   content: "\e974" ;
 }
+.icon-data-group:before {
+  content: "\e97a";
+}
+.icon-custom:before {
+  content: "\e975";
+}
+.icon-deep-learning-group:before {
+  content: "\e978";
+}
+.icon-train-group:before {
+  content: "\e976";
+}
+.icon-processing-group:before {
+  content: "\e979";
+}
+.icon-math-group:before {
+  content: "\e977";
+}
 .icon-code-error {
   vertical-align: middle;
   &:before {

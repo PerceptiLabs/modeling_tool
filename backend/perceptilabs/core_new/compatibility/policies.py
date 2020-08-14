@@ -11,16 +11,22 @@
 import numpy as np
 import cv2
 
-def policy_regression(core, graphs, sanitized_to_name, sanitized_to_id, results):
 
+def dict_first_value(dict_):
+    if dict_ is None:
+        return None
+    return dict_.get('output', None)
+
+    
+def policy_regression(core, graphs, sanitized_to_name, sanitized_to_id, results):
 
     def get_layer_inputs_and_outputs(graph, node, trn_node):
         data = {}
-        data['Y'] = trn_node.layer.layer_outputs.get(node.layer_id) # OUTPUT: ndarrays of layer-speci
+        data['Y'] = dict_first_value(trn_node.layer.layer_outputs.get(node.layer_id)) # OUTPUT: ndarrays of layer-speci
         data['X'] = {} # This layer works with layer names...
         for input_node in graph.get_input_nodes(node):
             input_name = sanitized_to_name[input_node.layer_id]
-            input_value = trn_node.layer.layer_outputs.get(input_node.layer_id)
+            input_value = dict_first_value(trn_node.layer.layer_outputs.get(input_node.layer_id))
             data['X'][input_name] = {'Y': input_value}
         return data
 
@@ -338,11 +344,11 @@ def policy_classification(core, graphs, sanitized_to_name, sanitized_to_id, resu
 
     def get_layer_inputs_and_outputs(graph, node, trn_node):
         data = {}
-        data['Y'] = trn_node.layer.layer_outputs.get(node.layer_id) # OUTPUT: ndarrays of layer-speci
+        data['Y'] = dict_first_value(trn_node.layer.layer_outputs.get(node.layer_id)) # OUTPUT: ndarrays of layer-speci
         data['X'] = {} # This layer works with layer names...
         for input_node in graph.get_input_nodes(node):
             input_name = sanitized_to_name[input_node.layer_id]
-            input_value = trn_node.layer.layer_outputs.get(input_node.layer_id)
+            input_value = dict_first_value(trn_node.layer.layer_outputs.get(input_node.layer_id))
             data['X'][input_name] = {'Y': input_value}
         return data
 
@@ -638,14 +644,14 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id, re
 
     def get_layer_inputs_and_outputs(graph, node, trn_node):
         data = {}
-        data['Y'] = trn_node.layer.layer_outputs.get(node.layer_id) # OUTPUT: ndarrays of layer-speci
+        data['Y'] = dict_first_value(trn_node.layer.layer_outputs.get(node.layer_id)) # OUTPUT: ndarrays of layer-speci
         data['X'] = {} # This layer works with layer names...
         for input_node in graph.get_input_nodes(node):
             input_name = sanitized_to_name[input_node.layer_id]
-            input_value = trn_node.layer.layer_outputs.get(input_node.layer_id)
+            input_value = dict_first_value(trn_node.layer.layer_outputs.get(input_node.layer_id))
             data['X'][input_name] = {'Y': input_value}
         return data
-
+    
     def get_layer_weights_and_biases(node, trn_node):
         data = {}
         w = next(iter(trn_node.layer.layer_weights.get(node.layer_id, {}).values()), None) # Get the first set of weights, if any
@@ -864,7 +870,7 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id, re
 
             idx += 1
 
-        bbox_image, confidence_scores = plot_bounding_boxes(input_images[-1], predicted_objects, predicted_classes, predicted_normalized_boxes)
+        bbox_image, confidence_scores = plot_bounding_boxes(dict_first_value(input_images)[-1], predicted_objects, predicted_classes, predicted_normalized_boxes)
 
         # ---- Update the dicts
 
@@ -1049,11 +1055,11 @@ def policy_reinforce(core, graphs, sanitized_to_name, sanitized_to_id, results):
 
     def get_layer_inputs_and_outputs(graph, node, trn_node):
         data = {}
-        data['Y'] = trn_node.layer.layer_outputs.get(node.layer_id) # OUTPUT: ndarrays of layer-speci
+        data['Y'] = dict_first_value(trn_node.layer.layer_outputs.get(node.layer_id)) # OUTPUT: ndarrays of layer-speci
         data['X'] = {} # This layer works with layer names...
         for input_node in graph.get_input_nodes(node):
             input_name = sanitized_to_name[input_node.layer_id]
-            input_value = trn_node.layer.layer_outputs.get(input_node.layer_id)
+            input_value = dict_first_value(trn_node.layer.layer_outputs.get(input_node.layer_id))
             data['X'][input_name] = {'Y': input_value}
         return data
 
@@ -1252,11 +1258,11 @@ def policy_gan(core, graphs, sanitized_to_name, sanitized_to_id, results):
 
     def get_layer_inputs_and_outputs(graph, node, trn_node):
         data = {}
-        data['Y'] = trn_node.layer.layer_outputs.get(node.layer_id) # OUTPUT: ndarrays of layer-speci
+        data['Y'] = dict_first_value(trn_node.layer.layer_outputs.get(node.layer_id)) # OUTPUT: ndarrays of layer-speci
         data['X'] = {} # This layer works with layer names...
         for input_node in graph.get_input_nodes(node):
             input_name = sanitized_to_name[input_node.layer_id]
-            input_value = trn_node.layer.layer_outputs.get(input_node.layer_id)
+            input_value = dict_first_value(trn_node.layer.layer_outputs.get(input_node.layer_id))
             data['X'][input_name] = {'Y': input_value}
         return data
 
@@ -1320,12 +1326,11 @@ def policy_gan(core, graphs, sanitized_to_name, sanitized_to_id, results):
             real_stddevs = []
             random_means = []
             random_stddevs = []
-
-        for i in range(real_images.shape[0]):
-            real_means.append(np.mean(real_images[i]))
-            real_stddevs.append(np.std(real_images[i]))
-            random_means.append(np.mean(random_images[i]))
-            random_stddevs.append(np.std(random_images[i]))
+        for i in range(real_images.get('output').shape[0]):
+            real_means.append(np.mean(real_images.get('output')[i]))
+            real_stddevs.append(np.std(real_images.get('output')[i]))
+            random_means.append(np.mean(real_images.get('output')[i]))
+            random_stddevs.append(np.std(real_images.get('output')[i]))
         return real_means, real_stddevs, random_means, random_stddevs
 
     def images_distribution_plot(real_means, real_stddevs, random_means, random_stddevs):
@@ -1428,9 +1433,9 @@ def policy_gan(core, graphs, sanitized_to_name, sanitized_to_id, results):
         data['real_stddevs'] = real_stddevs
         data['random_means'] = random_means
         data['random_stddevs'] = random_stddevs
-
-        data['generated_image'] = random_images[-1]
-        data['real_image'] = real_images[-1]
+        
+        data['generated_image'] = random_images.get('output')[-1]
+        data['real_image'] = real_images.get('output')[-1]
 
         data['data_distribution'] = data_distribution
 

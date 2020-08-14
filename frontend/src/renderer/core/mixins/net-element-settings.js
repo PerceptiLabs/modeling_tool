@@ -1,7 +1,7 @@
 import SettingsCode     from '@/components/network-elements/elements-settings/setting-code.vue';
 import NetBaseSettings  from '@/components/network-elements/net-base-settings/net-base-settings.vue';
 import { deepCopy }     from "@/core/helpers.js";
-
+import isEqual from 'lodash.isequal';
 const netElementSettings = {
   props: {
     currentEl: {
@@ -10,13 +10,28 @@ const netElementSettings = {
   },
   components: { SettingsCode, NetBaseSettings },
   beforeMount() {
+    this.isSettedFromCore = true;
     if(this.currentEl.layerSettings) this.settings = deepCopy(this.currentEl.layerSettings);
+
   },
   data() {
     return {
+      isSettedFromCore: false,
       settings: {},
       coreCode: null
     }
+  },
+  watch: {
+    'settings': {
+      handler(prev, next) {
+        if(this.isSettedFromCore) {
+          this.isSettedFromCore = false;
+        } else {
+          this.saveSettings("Settings");
+        }
+      },
+      deep: true,
+    },
   },
   computed: {
     userMode() {
@@ -27,23 +42,41 @@ const netElementSettings = {
     },
   },
   methods: {
+    saveSettingsToStore(tabName) {
+      const saveSettings = {
+        'elId': this.currentEl.layerId,
+        'code': this.coreCode ? deepCopy(this.coreCode) : null,
+        'set': this.settings,
+        'visited': this.currentEl.visited,
+        tabName
+      };
+      this.$store.dispatch('mod_workspace/SET_elementSettings', deepCopy(saveSettings));
+    },
     saveSettings(tabName) {
       this.applySettings(tabName);
     },
     applySettings(tabName) {
       const saveSettings = {
         'elId': this.currentEl.layerId,
-        'code': this.coreCode ? deepCopy(this.coreCode) : null,
+        'code': this.currentEl.layerCode,
         'set': this.settings,
         'visited': true,
         tabName
       };
       this.$store.dispatch('mod_workspace/SET_elementSettings', deepCopy(saveSettings));
+      this.$store.dispatch('mod_api/API_getBatchPreviewSampleForElementDescendants', this.currentEl.layerId);
+      // this.$store.dispatch('mod_api/API_getPreviewSample',  {layerId: this.currentEl.layerId, varData: 'output'}).then((data)=> {
+      //   this.$store.dispatch('mod_workspace/SET_NeteworkChartData', { 
+      //     layerId: this.currentEl.layerId,
+      //     payload: data,
+      //   });
+      //   this.$store.dispatch('mod_events/EVENT_calcArray');
+      // });
       this.$store.dispatch('mod_tracker/EVENT_applyLayerSettings', {
         componentName: this.currentEl.componentName, 
         tabName
       }, {root: true});
-      this.$store.dispatch('mod_api/API_updateNetworkSetting', this.currentEl.layerId);
+      // this.$store.dispatch('mod_api/API_updateNetworkSetting', this.currentEl.layerId);
     },
     confirmSettings() {
       this.hideAllWindow();

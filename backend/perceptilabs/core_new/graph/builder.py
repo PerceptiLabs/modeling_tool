@@ -22,8 +22,8 @@ class GraphBuilder:
     def build(self, layer_map: Dict[str, BaseLayer], edges_by_id: Set[Tuple[str, str]]):
         # TODO: remove this method?
         return self.build_from_layers_and_edges(layer_map, edges_by_id)
-    
-    def build_from_layers_and_edges(self, layer_map: Dict[str, BaseLayer], edges_by_id: Set[Tuple[str, str]]):        
+
+    def build_from_layers_and_edges(self, layer_map: Dict[str, BaseLayer], edges_by_id: Set[Tuple[str, str]], connections=None):            
         nodes = {}
         for layer_id, layer_instance in layer_map.items():
             node = Node(layer_id, None, layer_instance, None)
@@ -35,7 +35,7 @@ class GraphBuilder:
             to_node = nodes[edge_by_id[1]]
             edges.append((from_node, to_node))
             
-        graph = Graph(list(nodes.values()), edges)
+        graph = Graph(list(nodes.values()), edges, connections=connections)
         return graph
 
     def build_from_snapshot(self, snapshot):
@@ -64,7 +64,7 @@ class GraphBuilder:
         replica = replica_class(**kwargs)
         return replica
     
-    def build_from_spec(self, graph_spec): 
+    def build_from_spec(self, graph_spec):
         graph_spec = graph_spec['Layers'] # TODO: remove!
         
         nodes = {}
@@ -90,16 +90,20 @@ class GraphBuilder:
             node = Node(layer_id, layer_type, layer_instance, layer_spec)
             nodes[layer_id] = node
 
-        edges = set()
-        for layer_spec in graph_spec.values():
-            from_id = sanitize_layer_name(layer_spec['Name'])
-            fwd_cons = [sanitize_layer_name(layer_id)
-                        for _, layer_id in layer_spec['forward_connections']]
 
-            from_node = nodes[from_id]
-            for to_id in fwd_cons:
-                to_node = nodes[to_id]
-                edges.add((from_node, to_node))
+        true_id_to_name = {
+            true_id: sanitize_layer_name(layer_spec['Name']) 
+            for true_id, layer_spec in graph_spec.items()
+        }
+        
+        edges = set()
+        for src_true_id, layer_spec in graph_spec.items():
+            src_node = nodes[true_id_to_name[src_true_id]]
+            
+            for conn_spec in layer_spec['forward_connections']:
+                dst_true_id = conn_spec['dst_id']
+                dst_node = nodes[true_id_to_name[dst_true_id]]
+                edges.add((src_node, dst_node))
 
         graph = Graph(list(nodes.values()), list(edges))
         return graph

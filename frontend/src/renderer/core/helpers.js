@@ -329,6 +329,116 @@ const promiseWithTimeout = function (timeout, promise) {
   ]);
 }
 
+const layerBgColor = function (componentName) {
+  let className = '';
+  switch (componentName) {
+    case 'DataData':
+    case 'DataEnvironment':
+      className = 'net-color-data';
+      break;
+    case 'DeepLearningFC':
+    case 'DeepLearningConv':
+    case 'DeepLearningDeconv':
+    case 'DeepLearningRecurrent':
+      className = 'net-color-learn-deep';
+      break;
+    case 'ProcessCrop':
+    case 'ProcessEmbed':
+    case 'ProcessGrayscale':
+    case 'ProcessOneHot':
+    case 'ProcessReshape':
+    case 'ProcessRescale':
+      className = 'net-color-process';
+      break;
+    case 'TrainNormal':
+    case 'TrainGenetic':
+    case 'TrainDynamic':
+    case 'TrainReinforce':
+    case 'TrainLoss':
+    case 'TrainOptimizer':
+    case 'TrainDetector':
+      className = 'net-color-train';
+      break;
+    case 'MathArgmax':
+    case 'MathMerge':
+    case 'MathSplit':
+    case 'MathSoftmax':
+      className = 'net-color-math';
+      break;
+    case 'ClassicMLDbscans':
+    case 'ClassicMLKMeans':
+    case 'ClassicMLKNN':
+    case 'ClassicMLRandomForest':
+    case 'ClassicMLSVM':
+      className = 'net-color-learn-class';
+      break;
+    case 'LayerContainer':
+      className = 'net-color-layercontainer';
+      break;
+  }
+  return [className];
+}
+
+const layerBgColorTransparent = function (componentName) {
+  let className = '';
+  switch (componentName) {
+    case 'DataData':
+    case 'DataEnvironment':
+      className = 'net-element-data';
+      break;
+    case 'DeepLearningFC':
+    case 'DeepLearningConv':
+    case 'DeepLearningDeconv':
+    case 'DeepLearningRecurrent':
+      className = 'net-element-learn-deep';
+      break;
+    case 'ProcessCrop':
+    case 'ProcessEmbed':
+    case 'ProcessGrayscale':
+    case 'ProcessOneHot':
+    case 'ProcessReshape':
+    case 'ProcessRescale':
+      className = 'net-element-process';
+      break;
+    case 'TrainNormal':
+    case 'TrainGenetic':
+    case 'TrainDynamic':
+    case 'TrainReinforce':
+    case 'TrainLoss':
+    case 'TrainOptimizer':
+    case 'TrainDetector':
+      className = 'net-element-train';
+      break;
+    case 'MathArgmax':
+    case 'MathMerge':
+    case 'MathSplit':
+    case 'MathSoftmax':
+      className = 'net-element-math';
+      break;
+    case 'ClassicMLDbscans':
+    case 'ClassicMLKMeans':
+    case 'ClassicMLKNN':
+    case 'ClassicMLRandomForest':
+    case 'ClassicMLSVM':
+      className = 'net-element-learn-class';
+      break;
+    case 'LayerContainer':
+      className = 'net-element-layercontainer';
+      break;
+  }
+  return [className];
+}
+
+const hashObject = function(inputObject) {
+  const concatValues = Object.values(inputObject)
+  .map(eo => eo.toString())
+  .join('');
+
+  return hashString(concatValues || '');
+}
+
+const hashString = s => s.split('').reduce((a,b) => (((a << 5) - a) + b.charCodeAt(0))|0, 0);
+
 export {
   openLoadDialog,
   openSaveDialog,
@@ -360,5 +470,9 @@ export {
   isElectron,
   isWeb,
   setAppTypeRootClasses,
-  debounce
+  debounce,
+  layerBgColor,
+  layerBgColorTransparent,
+  hashObject,
+  hashString
 }

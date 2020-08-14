@@ -1,91 +1,87 @@
 <template lang="pug">
-  net-base-settings(
-    :tab-set="dynamicTabs"
-    :current-el="currentEl"
-    :showControls="!showFilePicker"
-    id-set-btn="tutorial_button-apply"
-    @press-apply="saveSettings($event)"
-  )
-    template(slot="Computer-content")
-      .settings-layer_section.section-data-select(v-if="!settings.accessProperties.Sources.length && !showFilePicker" id="tutorial_button-load")
-        button.btn.tutorial-relative(type="button"
-          @click="openFilePicker('file')"
-          v-tooltip-interactive:right="interactiveInfo.file"
-          v-if="!showFilePicker"
+  div
+    .settings-layer_section.section-data-select(v-if="!settings.accessProperties.Sources.length && !showFilePicker" id="tutorial_button-load")
+      button.btn.tutorial-relative(type="button"
+        @click="openFilePicker('file')"
+        v-tooltip-interactive:right="interactiveInfo.file"
+        v-if="!showFilePicker"
+        )
+          i.icon.icon-open-file
+          span Choose files
+
+      button.btn.tutorial-relative(type="button"
+        @click="openFilePicker('folder')"
+        v-tooltip-interactive:bottom="interactiveInfo.folder"
+        )
+          i.icon.icon-open-folder
+          span Choose folders
+
+    template(v-else-if="showFilePicker")
+      file-picker-popup(
+        :filePickerType="filePickerType"
+        :fileTypeFilter="validFileExtensions"
+        :confirmCallback="confirmFilePickerSelection"
+        :cancelCallback="clearPath")
+
+      //-web-upload-file#tutorial_button-load.tutorial-relative(
+        v-model="settings.accessProperties.PathFake"
+        /:input-disabled="disabledBtn"
+        /:input-multiple="true"
+        /:showPath="false"
+        )
+        .btn.tutorial-relative
+          i.icon.icon-open-file
+          span Choose files
+
+    template(v-else)
+      .settings-layer_section
+        .form_row
+          button.btn.btn--link(type="button" @click="clearPath")
+            img(src="../../../../../../static/img/back.svg")
+        .form_row(v-if="dataColumns.length")
+          base-select(
+            v-model="dataColumnsSelected"
+            :select-options="dataColumns"
+            :select-multiple="true"
           )
-            i.icon.icon-open-file
-            span Choose files
-
-        button.btn.tutorial-relative(type="button"
-          @click="openFilePicker('folder')"
-          v-tooltip-interactive:bottom="interactiveInfo.folder"
-          )
-            i.icon.icon-open-folder
-            span Choose folders
-
-      template(v-else-if="showFilePicker")
-        file-picker(
-          :filePickerType="filePickerType"
-          :fileTypeFilter="validFileExtensions"
-          :confirmCallback="confirmFilePickerSelection"
-          :cancelCallback="clearPath")
-
-        //-web-upload-file#tutorial_button-load.tutorial-relative(
-          v-model="settings.accessProperties.PathFake"
-          /:input-disabled="disabledBtn"
-          /:input-multiple="true"
-          /:showPath="false"
-          )
-          .btn.tutorial-relative
-            i.icon.icon-open-file
-            span Choose files
-
-      template(v-else)
-        .settings-layer_section
-          .form_row
-            button.btn.btn--link(type="button" @click="clearPath")
-              img(src="../../../../../../static/img/back.svg")
-          .form_row(v-if="dataColumns.length")
-            base-select(
-              v-model="dataColumnsSelected"
-              :select-options="dataColumns"
-              :select-multiple="true"
+      .settings-layer_section.settings-layer_section--data
+        .form_row
+          settings-file-list(
+            v-model="fileList"
+            :name-add-item="typeOpened"
+            @partition-list="setPartitionList"
+            @add-file="addFiles"
+            @handle-focus="setIsSettingInputFocused(true)"
+            @handle-blur="setIsSettingInputFocused(false)"
             )
-        .settings-layer_section.settings-layer_section--data
-          .form_row
-            settings-file-list(
-              v-model="fileList"
-              :name-add-item="typeOpened"
-              @partition-list="setPartitionList"
-              @add-file="addFiles"
+          //
+        .form_row(v-if="settings.accessProperties.Sources.length > 1")
+          .form_label Summary:
+          .form_input
+            triple-input.file-list-item_settings(
+              v-model="Mix_settingsData_Partition_summary"
+              :disable-edit="true"
+              separate-sign="%"
+
               )
-            //
-          .form_row(v-if="settings.accessProperties.Sources.length > 1")
-            .form_label Summary:
-            .form_input
-              triple-input.file-list-item_settings(
-                v-model="Mix_settingsData_Partition_summary"
-                :disable-edit="true"
-                separate-sign="%"
-                )
-        .settings-layer_section.settings-layer_section--data
-          //- .form_row
-          //-   .form_label Batch size:
-          //-   .form_input
-          //-     input(type="number" v-model="settings.accessProperties.Batch_size")
-          .form_row
-            base-checkbox.light-text(v-model="settings.accessProperties.Shuffle_data") Shuffle
-    template(slot="Code-content")
-      settings-code(
-        :current-el="currentEl"
-        :el-settings="settings"
-        v-model="coreCode"
-      )
-    template(slot="Computer-action")
+      .settings-layer_section.settings-layer_section--data
+        //- .form_row
+        //-   .form_label Batch size:
+        //-   .form_input
+        //-     input(type="number" v-model="settings.accessProperties.Batch_size")
+        .form_row
+          base-checkbox.light-text(v-model="settings.accessProperties.Shuffle_data") Shuffle
+    //- template(slot="Code-content")
+    //-   settings-code(
+    //-     :current-el="currentEl"
+    //-     :el-settings="settings"
+    //-     v-model="coreCode"
+    //-   )
+    //- template(slot="Computer-action")
 
     //-template(slot="Cloud-action")
       span
-    template(slot="Code-action")
+    //- template(slot="Code-action")
 
 
 </template>
@@ -93,6 +89,7 @@
 <script>
   import mixinSet       from '@/core/mixins/net-element-settings.js';
   import mixinData      from '@/core/mixins/net-element-settings-data.js';
+  import mixinFocus     from '@/core/mixins/net-element-settings-input-focus.js';
 
   import SettingsCloud  from '@/components/network-elements/elements-settings/setting-clouds.vue';
   import SettingsFileList  from '@/components/network-elements/elements-settings/setting-file-list.vue';
@@ -100,18 +97,22 @@
   import TripleInput    from "@/components/base/triple-input";
   import WebUploadFile  from "@/components/web/upload-file.vue";
   import FilePicker     from "@/components/different/file-picker.vue";
+  import FilePickerPopup        from "@/components/global-popups/file-picker-popup.vue";
 
   import {openLoadDialog, loadPathFolder} from '@/core/helpers.js'
   import {mapActions, mapGetters}     from 'vuex';
 
   export default {
     name: 'SetDataData',
-    mixins: [mixinSet, mixinData],
-    components: {ChartSwitch, SettingsCloud, TripleInput, SettingsFileList, WebUploadFile, FilePicker },
+    mixins: [mixinSet, mixinData, mixinFocus],
+    components: {ChartSwitch, SettingsCloud, TripleInput, SettingsFileList, WebUploadFile, FilePicker, FilePickerPopup },
     mounted() {
       if(this.settings.accessProperties.Columns.length) {
         this.dataColumnsSelected = this.settings.accessProperties.Columns;
       }
+
+      this.saveSettingsToStore("Computer");
+      // this.saveSettings("Computer");
     },
     data() {
       return {
@@ -219,6 +220,10 @@
       fileList: {
         handler(newVal) {
           this.Mix_settingsData_getPartitionSummary(this.currentEl.layerId);
+
+          // for saving data on removing the file from list
+          this.saveSettings("Computer");
+          
         },
         deep: true,
         //immediate: true
@@ -288,9 +293,11 @@
           this.settings.accessProperties.Sources = this.Mix_settingsData_prepareSources([... new Set(allPath)], type)
         }
         else this.settings.accessProperties.Sources = this.Mix_settingsData_prepareSources(pathArr, type);
-        //this.getSettingsInfo();
+        // this.getSettingsInfo();
 
         this.filePickerAppendingItems = false;
+        // the save should go here
+        this.saveSettings('Computer');
       },
       clearPath() {
         this.showFilePicker = false;
@@ -351,6 +358,7 @@
           this.saveLoadFile(selectedItems, 'directory', this.filePickerAppendingItems)
         }
 
+        
       }
     }
   }

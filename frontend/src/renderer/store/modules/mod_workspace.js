@@ -33,6 +33,8 @@ const state = {
     width: 0,
     height: 0,
   },
+  isSettingInputFocused: false, // is chenghed when focus/blur on sidebar setting input (it's made for preventing component remove when press backspace in input)
+  isSettingPreviewVisible: true,
   defaultModelTemplate: {
     networkName: '',
     networkID: '',
@@ -73,10 +75,23 @@ const getters = {
       ? state.workspaceContent[state.currentNetwork].networkID
       : 0
   },
+  GET_networkElementById: state => layerId => {
+    return state.workspaceContent[state.currentNetwork].networkElementList[layerId];
+  },
+  GET_networkElementConnectionInChartData: state => layerId => {
+    let connnectionInData = [];
+    state.workspaceContent[state.currentNetwork].networkElementList[layerId].connectionIn.forEach(connectionInLayerId => {
+      let chartData = state.workspaceContent[state.currentNetwork].networkElementList[connectionInLayerId].chartData;
+      chartData = chartData && chartData.series && chartData.series[0].data || '';
+      connnectionInData.push(chartData) ;
+    })
+    return connnectionInData;
+  },
+  // connectionIn
   GET_currentNetworkElementList(state, getters) {
     return getters.GET_networkIsNotEmpty
       ? state.workspaceContent[state.currentNetwork].networkElementList
-      : null
+      : [];
   },
   GET_currentNetworkElementListLength(state, getters) {
     return getters.GET_currentNetworkElementList
@@ -162,10 +177,37 @@ const getters = {
   },
   GET_cursorInsideWorkspace(state) {
     return state.positionForCopyElement.cursorInsideWorkspace;
-  }
+  },
+  GET_selectedElement(state, getters){
+    const networkList = getters.GET_currentNetworkElementList;
+
+    if(networkList === null) {
+      return null;
+    }
+    const focusedElement = Object.values(networkList).filter(el => el.layerMeta.isSelected)
+    if (focusedElement.length === 0 || focusedElement.length > 1 ) {
+      return null;
+    }
+    return focusedElement[0];
+  },
+  GET_descendentsIds: (state, getters, rootState, rootGetters) => (pivotLayer, withPivot) => {
+    return rootGetters['mod_api/GET_descendentsIds'](pivotLayer, withPivot);
+  },
 };
 
 const mutations = {
+  toggleSettingPreviewVisibility() {
+    state.isSettingPreviewVisible = !state.isSettingPreviewVisible;
+  },
+  SET_previewVariable(state, payload){
+    currentElement(payload.layerId).previewVarible = payload.previewVarialbeName
+  },
+  SET_previewVariableList(state, payload){
+    currentElement(payload.layerId).previewVariableList = payload.previewVariableList
+  },
+  update_model(state, {index, field, value}) {
+    Vue.set(state.workspaceContent[index], [field], value);
+  },
   setViewType(state, value) {
     const possibleValues = ['model', 'statistic', 'test'];
     const isValidValue = possibleValues.includes(value);
@@ -180,11 +222,29 @@ const mutations = {
       Vue.set(state.workspaceContent[modelIndex].networkMeta, key, value)
     }
   },
-  update_model(state, {index, field, value}) {
-    Vue.set(state.workspaceContent[index], [field], value);
-  },
   set_model_saved_version_location(state, { getters, saved_version_location }) {
     getters.GET_currentNetwork.apiMeta.saved_version_location = saved_version_location;
+  },
+  cleanupUnnecessaryArrowsMutation(state, { getters }){
+    const networkList = getters.GET_currentNetworkElementList;
+
+  },
+  updateForwardBackwardConnectionsMutation(state, {payload,  getters}) {
+    const networkList = getters.GET_currentNetworkElementList
+    Object.keys(payload).map(key => {
+      const elId = key;
+      Vue.set(networkList[elId],"forward_connections", payload[elId].forward_connections);
+      Vue.set(networkList[elId],"backward_connections", payload[elId].backward_connections);
+    })
+  },
+  toggleSettingPreviewVisibility() {
+    state.isSettingPreviewVisible = !state.isSettingPreviewVisible;
+  },
+  setIsSettingInputFocused(state, value) {
+    state.isSettingInputFocused = value;
+  },
+  update_model(state, {index, field, value}) {
+    Vue.set(state.workspaceContent[index], [field], value);
   },
   set_model_saved_version_location(state, { getters, saved_version_location }) {
     getters.GET_currentNetwork.apiMeta.saved_version_location = saved_version_location;
@@ -208,7 +268,63 @@ const mutations = {
   //---------------
   //  LOCALSTORAGE
   //---------------
+  set_workspacesInLocalStorage(state) {
+    if (!isLocalStorageAvailable()) { return; }
+    try {
+      let networkIDs = JSON.parse(localStorage.getItem('_network.ids')) || [];
+      state.workspaceContent.forEach(network => {
+        networkIDs.push(network.networkID);
 
+        localStorage.setItem(`_network.${network.networkID}`, stringifyNetworkObjects(network));
+      });
+      networkIDs = networkIDs.filter(onlyUnique);
+
+      localStorage.setItem('_network.ids', JSON.stringify(networkIDs.sort()));
+    } catch (error) {
+      // console.error('Error persisting networks to localStorage', error);
+    }
+    function onlyUnique(value, index, self) { 
+      return self.indexOf(value) === index;
+  }
+  },
+  get_workspacesFromLocalStorage(state, currentProject) {
+    // this function is invoked when the pageQuantum (workspace) component is created
+    // the networks that were saved in the localStorage are hydrated
+    let newWorkspaceContent = [];
+    const activeNetworkIDs = localStorage.getItem('_network.ids') || [];
+    const keys = Object.keys(localStorage)
+      .filter(key =>
+        key.startsWith('_network.') &&
+        key !== '_network.ids'&&
+        key !== '_network.meta')
+        .sort();
+
+    for(const key of keys) {
+      const networkID = key.replace('_network.', '');
+      // state.workspaceContent = [];
+      // _network.<networkID> entries in localStorage are only cleared on load
+      if (!activeNetworkIDs.includes(networkID)) {
+        localStorage.removeItem(key);
+        continue;
+      }
+
+      const networkIsLoaded = state.workspaceContent
+        .some(networkInWorkspace => networkInWorkspace.networkID === networkID)
+
+      if (true) {
+        const network = JSON.parse(localStorage.getItem(key));
+
+        // remove focus from previous focused network elements
+
+        if(network.networkElementList)
+        Object.keys(network.networkElementList).map(elKey => {
+          // console.log(network.networkElementList[elKey]);
+          // debugger;
+          network.networkElementList[elKey].layerMeta.isSelected = false;
+        });
+      }
+    }
+  },
   set_lastActiveTabInLocalStorage(state, networkID) {
     if (!isLocalStorageAvailable()) { return; }
 
@@ -292,7 +408,7 @@ const mutations = {
     }
 
     dispatch('mod_api/API_saveModel', {model: newNetwork}, {root: true});
-
+    dispatch('mod_events/EVENT_IOGenerateAction', null, {root: true});
     function findNetId(newNet, netList) {
       let indexId = netList.findIndex((el)=> el.networkID === newNet.networkID);
       return indexId; 
@@ -570,10 +686,14 @@ const mutations = {
 
     if(!elementList || elementList.length === 0) state.workspaceContent[state.currentNetwork].networkElementList = {};
     Vue.set(state.workspaceContent[state.currentNetwork].networkElementList, newEl.layerId, newEl);
+  
+    dispatch('SET_elementSelect', { id: newEl.layerId, resetOther: true, setValue: true});
     state.dragElement = null;
     
     if(setChangeToWorkspaceHistory)
-    dispatch('mod_workspace-history/PUSH_newSnapshot', null, {root: true});
+      dispatch('mod_workspace-history/PUSH_newSnapshot', null, {root: true});
+    
+    dispatch('mod_api/API_getBatchPreviewSample', null, {root: true})
 
     function checkPosition(el, list) {
       let depth = 0;
@@ -598,12 +718,35 @@ const mutations = {
     }
   },
   delete_element(state, {getters, dispatch}) {
+  
     let arrSelect = getters.GET_currentSelectedEl;
     if(!arrSelect.length) return;
     let arrSelectID = [];
+
     const copyOfNetwork = {...getters.GET_currentNetworkElementList};
     let net = {...getters.GET_currentNetworkElementList};
+
     deleteElement(arrSelect);
+
+    let descendantsIds = []
+    for(let ix in arrSelectID) {
+      const id = arrSelectID[ix];
+      console.log(net);
+      descendantsIds = [...descendantsIds, ...getters.GET_descendentsIds(copyOfNetwork[id], false)]
+    }
+    descendantsIds = Array.from(new Set(descendantsIds));
+    descendantsIds = descendantsIds.filter((item) => {
+      return !arrSelectID.includes(item); 
+    })
+    let getBatchPreviewPayload = {};
+    for(let ix in net)  {
+      const el = net[ix];
+      // getBatchPreviewPayload[ix] = null;
+      if(descendantsIds.indexOf(el.layerId) !== -1) {
+        getBatchPreviewPayload[ix] = el.previewVarialbeName;
+      }
+    }
+
     for(let el in net) {
       let element = net[el];
       element.connectionOut = element.connectionOut.filter((connect)=>{
@@ -661,47 +804,85 @@ const mutations = {
     
     state.workspaceContent[state.currentNetwork].networkElementList = net;
     dispatch('SET_isOpenElement', false);
+    dispatch('mod_events/EVENT_IOGenerateAction', null, {root: true})
+    .then(() => {
+      dispatch('mod_api/API_getBatchPreviewSample', getBatchPreviewPayload, {root: true})
+      // dispatch('mod_api/API_getOutputDim', null, { root: true });
+    });
     dispatch('mod_events/EVENT_calcArray', null, {root: true});
-    dispatch('mod_api/API_getOutputDim', null, {root: true});
-
+    // dispatch('mod_api/API_getOutputDim', null, {root: true});
     function deleteElement(list) {
       list.forEach((el)=> {
         if(el.componentName === 'LayerContainer') {
           deleteElement(Object.keys(el.containerLayersList).map(key => net[key]))
         }
+       
+        if(net[el.layerId].hasOwnProperty('outputs')){
+          let outputs = net[el.layerId].outputs;
+          Object.keys(outputs).map(outputId => {
+            for(let id in net) {
+              let el = net[id];
+              let elInputs = el.inputs;
+              Object.keys(elInputs).map(inputId => {
+                const input = elInputs[inputId];
+                if(input.reference_var_id  === outputId) {
+                  input.reference_var_id = null;
+                  input.reference_layer_id = null;
+                }
+              }) 
+            }
+          })
+        }
+
         delete net[el.layerId];
         arrSelectID.push(el.layerId);
       });
     }
   },
   add_arrow(state, {dispatch, stopID}) {
-    let startID = state.startArrowID;
-    if(stopID === startID) return;
 
-    let findArrow = currentElement(startID).connectionOut.findIndex((element)=> element === stopID );
-    if(findArrow !== -1) {
-      dispatch('globalView/GP_infoPopup', 'Connection already exists!', {root: true});
-      return
-    }
-    if(currentElement(startID).componentName === 'LayerContainer'
-      || currentElement(stopID).componentName === 'LayerContainer'
-    ) {
-      dispatch('globalView/GP_infoPopup', 'Cannot create connection to Layer Container!', {root: true});
-      return
+    const startObject = state.startArrowID;    // outputDotId | outputLayerId | layerId
+    const endObject = stopID;                  // inputDotId | inputLayerId | layerId
+
+
+    if(startObject.layerId === endObject.layerId) return;
+
+    const startEl = currentElement(startObject.layerId);
+    const endEl = currentElement(endObject.layerId);
+
+
+    // check if already have connection
+    if(endEl.inputs[endObject.inputDotId].reference_layer_id !== null) {
+      dispatch('globalView/GP_infoPopup', 'Input already have connection!', {root: true});
+      return;
     }
 
-    currentElement(startID).connectionOut.push(stopID.toString()); //ID.toString need for the core
-    currentElement(startID).connectionArrow.push(stopID.toString());
-    currentElement(stopID).connectionIn.push(startID.toString());
+    endEl.inputs[endObject.inputDotId].reference_var_id = startObject.outputDotId
+    endEl.inputs[endObject.inputDotId].reference_layer_id = startObject.layerId
+
+
+    // let findArrow = currentElement(startID).connectionOut.findIndex((element)=> element === stopID );
+    // if(findArrow !== -1) {
+    //   dispatch('globalView/GP_infoPopup', 'Connection already exists!', {root: true});
+    //   return
+    // }
+    // if(currentElement(startID).componentName === 'LayerContainer'
+    //   || currentElement(stopID).componentName === 'LayerContainer'
+    // ) {
+    //   dispatch('globalView/GP_infoPopup', 'Cannot create connection to Layer Container!', {root: true});
+    //   return
+    // }
+
+    // currentElement(startID).connectionOut.push(stopID.toString()); //ID.toString need for the core
+    // currentElement(startID).connectionArrow.push(stopID.toString());
+    // currentElement(stopID).connectionIn.push(startID.toString());
     state.startArrowID = null;
+    dispatch('mod_events/EVENT_IOGenerateAction', null, {root: true})
     dispatch('mod_events/EVENT_calcArray', null, {root: true})
   },
   delete_arrow(state,{dispatch, arrow}) {
-    let startID = arrow.startID;
-    let stopID = arrow.stopID;
-    let elStart = currentElement(startID);
-    let elStop = currentElement(stopID);
-
+    let elStart = currentElement(arrow.startIds.layer);
+    let elStop = currentElement(arrow.stopIds.layer);
     if(elStart.componentName === 'LayerContainer'
       || elStop.componentName === 'LayerContainer'
     ) {
@@ -709,13 +890,15 @@ const mutations = {
       return
     }
 
-    let newConnectionOut = currentElement(startID).connectionOut.filter((item)=> item !== stopID);
-    let newConnectionArrow = currentElement(startID).connectionArrow.filter((item)=> item !== stopID);
-    let newConnectionIn = currentElement(stopID).connectionIn.filter((item)=> item !== startID);
+    // let newConnectionOut = currentElement(startID).connectionOut.filter((item)=> item !== stopID);
+    // let newConnectionArrow = currentElement(startID).connectionArrow.filter((item)=> item !== stopID);
+    // let newConnectionIn = currentElement(stopID).connectionIn.filter((item)=> item !== startID);
 
-    currentElement(startID).connectionOut = newConnectionOut;
-    currentElement(startID).connectionArrow = newConnectionArrow;
-    currentElement(stopID).connectionIn = newConnectionIn;
+    // currentElement(startID).connectionOut = newConnectionOut;
+    // currentElement(startID).connectionArrow = newConnectionArrow;
+    elStop.inputs[arrow.stopIds.variable].reference_layer_id = null;
+    elStop.inputs[arrow.stopIds.variable].reference_var_id = null;
+    dispatch('mod_events/EVENT_IOGenerateAction', null, {root: true})
     dispatch('mod_events/EVENT_calcArray', null, {root: true})
   },
   DELETE_copyProperty(state, id) {
@@ -1164,6 +1347,7 @@ const mutations = {
     state.preArrow.start = value;
     state.preArrow.stop = value;
     state.preArrow.show = true;
+    console.log(value);
   },
   SET_preArrowStop (state, value) {
     state.preArrow.stop = value
@@ -1193,11 +1377,122 @@ const mutations = {
       ...state.dragBoxContainer,
       ...value
     }
-  }
+  },
+  SET_NeteworkChartDataMutation(state, { layerId, payload }) {
+    // debugger;
+    const el = state.workspaceContent[state.currentNetwork].networkElementList[layerId];
+    if(el && el.hasOwnProperty('chartData')) {
+      state.workspaceContent[state.currentNetwork].networkElementList[layerId]['chartData'] = payload;
+    } else {
+      state.workspaceContent[state.currentNetwork].networkElementList[layerId] = {
+        ...state.workspaceContent[state.currentNetwork].networkElementList[layerId],
+        chartData: {},
+      };
+      Vue.set(state.workspaceContent[state.currentNetwork].networkElementList[layerId], 'chartData', payload);
+    }
+  },
+  //---------------
+  // INPUT / OUTPUT variables handlers
+  //---------------
+  SET_outputVariableMutation(state, { ctx, payload }) {
+    let el = currentElement(payload.layerId).outputs[payload.outputVariableId]
+    el.reference_var = payload.variableName;
+    el.name = payload.variableName;
+    ctx.dispatch('mod_events/EVENT_IOGenerateAction', null, {root: true});
+  },
+  ADD_outputVariableMutation(state, payload) {
+    let el = currentElement(payload.layerId)
+    Vue.set(el.outputs, generateID(), {
+      reference_var: 'output',
+      name: 'output'
+    });
+  },
+  DELETE_outputVariableMutation(state, {payload, getters, dispatch }) {
+    let el = currentElement(payload.layerId);
+    let net = getters.GET_currentNetworkElementList;
+
+    for(let elId in net) {
+      let el = net[elId];
+      let inputs = el.inputs;
+
+      for(let inputId in inputs) {
+        const reference_var_id = inputs[inputId].reference_var_id;
+        if(reference_var_id === payload.outputVariableId) {
+          inputs[inputId].reference_var_id = null;
+          inputs[inputId].reference_layer_id = null;
+        }
+      }
+
+    }
+    dispatch('mod_events/EVENT_calcArray', null, { root: true });
+    dispatch('mod_events/EVENT_IOGenerateAction', null, {root: true});
+    Vue.delete(el.outputs, [payload.outputVariableId]);
+  },
+
+  EDIT_inputVariableValue(state, { payload, dispatch }) {
+    let el = currentElement(payload.layerId).inputs[payload.inputVariableId];
+    el.name = payload.value;
+    dispatch('mod_events/EVENT_IOGenerateAction', null, {root: true});
+  },
+  ADD_inputVariableMutation(state, payload) {
+    let el = currentElement(payload.layerId)
+    Vue.set(el.inputs, generateID(), {
+      name: "input",
+      reference_var_id: null,
+      reference_layer_id: null,
+    });
+  },
+  DELETE_inputVariableMutation(state, {payload, dispatch }) {
+    let el = currentElement(payload.layerId);
+    dispatch('mod_events/EVENT_calcArray', null, { root: true });
+    dispatch('mod_events/EVENT_IOGenerateAction', null, {root: true});
+    Vue.delete(el.inputs, [payload.inputVariableId]);
+  },
 };
 
+
+
 const actions = {
+  EDIT_inputVariableValueAction({dispatch, commit}, payload) {
+    commit('EDIT_inputVariableValue', { payload, dispatch });
+  },
+  DELETE_outputVariableAction({getters, commit, dispatch }, payload) {
+    let net = getters.GET_currentNetworkElementList;
+
+    let layerIdsWithReferene = [];
+
+    for(let elId in net) {
+      let el = net[elId];
+      let inputs = el.inputs;
+
+      for(let inputId in inputs) {
+        const reference_var_id = inputs[inputId].reference_var_id;
+        if(reference_var_id === payload.outputVariableId) {
+          layerIdsWithReferene.push(elId);
+        }
+      }
+    }
+
+    commit('DELETE_outputVariableMutation', { payload, getters, dispatch });
+
   
+    // if(layerIdsWithReferene.length > 0) {
+    //     for(let ix in layerIdsWithReferene) {
+    //       debugger;
+    //         dispatch('mod_api/API_getBatchPreviewSampleForElementDescendants_test', layerIdsWithReferene[ix], { root: true });
+    //     }
+    //   }
+    return layerIdsWithReferene;
+  },
+  DELETE_inputVariableAction({ dispatch, commit }, payload) {
+    commit('DELETE_inputVariableMutation', { payload, dispatch });
+  },
+  cleanupUnnecessaryArrowsAction({getters}){
+    commit('cleanupUnnecessaryArrowsMutation', {getters})
+  },
+  updateForwardBackwardConnectionsAction({commit, getters}, payload){
+    commit('updateForwardBackwardConnectionsMutation', {getters, payload})
+  },
   //---------------
   //  NETWORK
   //---------------
@@ -1503,7 +1798,7 @@ const actions = {
   DELETE_element({commit, getters, dispatch}) {
     if(getters.GET_networkIsOpen) {
       commit('delete_element', {getters, dispatch});
-      dispatch('mod_api/API_getOutputDim', null, {root: true});
+      // dispatch('mod_api/API_getOutputDim', null, {root: true});
     }
     
     dispatch('mod_webstorage/saveNetwork', getters.GET_currentNetwork, {root: true});
@@ -1523,7 +1818,6 @@ const actions = {
   },
   DELETE_arrow({commit, getters, dispatch}, arrow) {
     commit('delete_arrow', {dispatch, arrow})
-
     dispatch('mod_webstorage/saveNetwork', getters.GET_currentNetwork, {root: true});
     dispatch('mod_workspace-changes/updateUnsavedChanges', {
       networkId: getters.GET_currentNetworkId,
@@ -1583,6 +1877,17 @@ const actions = {
   SET_historyStep({commit, dispatch}, value) {
     commit('set_historyStep', {value, dispatch});
   },
+  SET_NeteworkChartData({ commit }, {layerId, payload}) {
+    commit('SET_NeteworkChartDataMutation', {layerId, payload});
+  },
+
+  //---------------
+  // INPUT / OUTPUT variables handlers
+  //---------------
+  SET_outputVariableAction(ctx, payload) {
+    ctx.commit('SET_previewVariable', { previewVarialbeName: payload.variableName, layerId: payload.layerId});
+    ctx.commit('SET_outputVariableMutation', {ctx, payload});
+  }
 };
 
 export default {
@@ -1644,6 +1949,7 @@ const createNetElement = function (event) {
         left: 0,
       }
     },
+    chartData: {},
     checkpoint: [],
     endPoints: [],
     componentName: event.target.dataset.component,
@@ -1651,5 +1957,101 @@ const createNetElement = function (event) {
     connectionIn: [],
     connectionArrow: [],
     visited: false,
+    inputs: getComponentInputs(event.target.dataset.component),
+    outputs: getComponentOutputs(event.target.dataset.component),
+    forward_connections: [],
+    backward_connections: [],
+    previewVariable: 'output',
+    previewVariableList: [],
   };
 };
+
+const componentsInputs = {
+  DataData: [],
+  DataEnvironment: [],
+  DataRandom: [],
+  
+  ProcessReshape: ['input'],
+  ProcessGrayscale: ['input'],
+  ProcessOneHot: ['input'],
+  ProcessRescale: ['input'],
+
+  DeepLearningFC: ['input'],
+  DeepLearningConv: ['input'],
+  DeepLearningDeconv: ['input'],
+  DeepLearningRecurrent: ['input'],
+
+  MathArgmax: ['input'],
+  MathMerge: ['input1', 'input2'],
+  MathSwitch: ['input1', 'input2'],
+  MathSoftmax: ['input'],
+
+  TrainNormal: ['predictions', 'labels'],
+  TrainRegression: ['predictions', 'labels'],
+  TrainReinforce: ['action'],
+  TrainGan: ['input'],
+  TrainDetector: ['predictions', 'labels'],
+  LayerCustom: ['input']
+};
+
+
+const componentsOutputs = {
+  DataData: ['output'],
+  DataEnvironment: ['output'],
+  DataRandom: ['output'],
+  
+  ProcessReshape: ['output'],
+  ProcessGrayscale: ['output'],
+  ProcessOneHot: ['output'],
+  ProcessRescale: ['output'],
+
+  DeepLearningFC: ['output'],
+  DeepLearningConv: ['output'],
+  DeepLearningDeconv: ['output'],
+  DeepLearningRecurrent: ['output'],
+
+  MathArgmax: ['output'],
+  MathMerge: ['output'],
+  MathSwitch: ['output'],
+  MathSoftmax: ['output'],
+  LayerCustom: ['output'],
+
+  TrainNormal: [],
+  TrainRegression: [],
+  TrainReinforce: [],
+  TrainGan: [],
+  TrainDetector: [],
+};
+
+
+const getComponentInputs = (componentName) => {
+  let inputs = {};
+  const inputVariableArray = componentsInputs[componentName];
+  if(inputVariableArray && inputVariableArray.length > 0) {
+    inputVariableArray.map(inputName => {
+      let input = {
+        name: inputName,
+        reference_var_id: null,
+        reference_layer_id: null,
+        isDefault: true
+      }
+      inputs[performance.now()] = input;
+    })
+  }
+  return inputs;
+  
+}
+const getComponentOutputs = (componentName) => {
+  let outputs = {};
+  const outputVariableArray = componentsOutputs[componentName];
+  if(outputVariableArray && outputVariableArray.length > 0) {
+    outputVariableArray.map(outputName => {
+      let output = {
+        name: outputName,
+        reference_var: outputName,
+      }
+      outputs[performance.now()] = output;
+    })
+  }
+  return outputs;
+}

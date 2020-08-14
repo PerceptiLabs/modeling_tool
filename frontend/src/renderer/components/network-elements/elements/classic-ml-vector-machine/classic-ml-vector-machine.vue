@@ -2,9 +2,8 @@
   base-net-el(
     :data-el="elementData"
   )
-    view-el(:current-el="elementData")
-    template(slot="settings")
-      settings-el(:current-el="elementData")
+    view-el(:current-el="elementData" :withLayerTypeText="withLayerTypeText")
+    
 
 </template>
 
@@ -17,7 +16,8 @@
     name: 'ClassicMLSVM',
     components: { BaseNetEl, ViewEl, SettingsEl },
     props: {
-      elementData: Object
+      elementData: Object,
+     withLayerTypeText: Boolean,
     },
   }
 </script>

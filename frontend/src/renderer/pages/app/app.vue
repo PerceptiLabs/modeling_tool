@@ -9,7 +9,7 @@
     the-workspace.workspace
     //- the-toolbar
     //- the-layersbar
-    //- the-sidebar
+    the-sidebar
     //- the-tutorial-storyboard(v-if="isShowTutorial")
 
 </template>
@@ -88,7 +88,7 @@
         showPage: false,
         dragMeta: {
           dragged: null,
-          outClassName: 'svg-arrow',
+          outClassName: 'network-field',
         },
         resizeEv: throttleEv(this.eventResize),
         from: null,

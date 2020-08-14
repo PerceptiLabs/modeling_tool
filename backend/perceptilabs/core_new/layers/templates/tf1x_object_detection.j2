@@ -1,24 +1,25 @@
 {% from 'tf1x_utils.j2' import session %}
 
-{% macro run_normal(graph, layer_name, output_layer, target_layer, n_epochs, num_box, grid_size, lambdaclass, lambdanoobj, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory, batch_size, use_cpu) %}
+{% macro run_normal(layer_spec, graph_spec) %}
         self._status = 'initializing'
 
-        self._grid_size = {{grid_size}}
+        self._grid_size = {{layer_spec.grid_size}}
         self._classes = ['rectangle','triangle','circle']
         self._num_class = len(self._classes)
-        self._num_box = {{num_box}} #number of boxes per cell
+        self._num_box = {{layer_spec.num_box}} #number of boxes per cell
         
         w_img = 224
         h_img = 224
 
-        self._lambdaclass = {{lambdaclass}}
-        self._lambdanoobj = {{lambdanoobj}}
+        self._lambdaclass = {{layer_spec.lambdaclass}}
+        self._lambdanoobj = {{layer_spec.lambdanoobj}}
         
-        self._batch_size = {{batch_size}}
+        self._batch_size = {{layer_spec.batch_size}}
         # we need classes
+
+        output_layer_id = "{{graph_spec.nodes_by_id[layer_spec.connection_predictions.src_id].sanitized_name}}"
+        target_layer_id = "{{graph_spec.nodes_by_id[layer_spec.connection_labels.src_id].sanitized_name}}"
         
-        output_layer_id = '{{output_layer}}'
-        target_layer_id = '{{target_layer}}'
         input_data_nodes = graph.get_direct_data_nodes(output_layer_id)
         label_data_nodes = graph.get_direct_data_nodes(target_layer_id)
         assert len(input_data_nodes) == 1
@@ -32,17 +33,20 @@
         self._val_sz_tot = input_data_node.layer.size_validation
         self._tst_sz_tot = input_data_node.layer.size_testing
 
-        # Make training set
+        input_sample = input_data_node.layer_instance.sample
+        label_sample = label_data_node.layer_instance.sample        
+
+        
         dataset_trn = tf.data.Dataset.zip((
             tf.data.Dataset.from_generator(
                 input_data_node.layer_instance.make_generator_training,
-                output_shapes=input_data_node.layer_instance.sample.shape,
-                output_types=np.float32                
+                output_shapes={k: v.shape for k, v in input_sample.items()},
+                output_types={k: v.dtype for k, v in input_sample.items()}
             ),
             tf.data.Dataset.from_generator(
                 label_data_node.layer_instance.make_generator_training,
-                output_shapes=label_data_node.layer_instance.sample.shape,
-                output_types=np.float32
+                output_shapes={k: v.shape for k, v in label_sample.items()},
+                output_types={k: v.dtype for k, v in label_sample.items()}
             )
         ))
 
@@ -50,13 +54,13 @@
         dataset_val = tf.data.Dataset.zip((
             tf.data.Dataset.from_generator(
                 input_data_node.layer_instance.make_generator_validation,
-                output_shapes=input_data_node.layer_instance.sample.shape,
-                output_types=np.float32                
+                output_shapes={k: v.shape for k, v in input_sample.items()},
+                output_types={k: v.dtype for k, v in input_sample.items()}
             ),
             tf.data.Dataset.from_generator(
                 label_data_node.layer_instance.make_generator_validation,
-                output_shapes=label_data_node.layer_instance.sample.shape,
-                output_types=np.float32
+                output_shapes={k: v.shape for k, v in label_sample.items()},
+                output_types={k: v.dtype for k, v in label_sample.items()}
             )
         ))
 
@@ -64,21 +68,23 @@
         dataset_tst = tf.data.Dataset.zip((
             tf.data.Dataset.from_generator(
                 input_data_node.layer_instance.make_generator_testing,
-                output_shapes=input_data_node.layer_instance.sample.shape,
-                output_types=np.float32                
+                output_shapes={k: v.shape for k, v in input_sample.items()},
+                output_types={k: v.dtype for k, v in input_sample.items()}
             ),
             tf.data.Dataset.from_generator(
                 label_data_node.layer_instance.make_generator_testing,
-                output_shapes=label_data_node.layer_instance.sample.shape,
-                output_types=np.float32
+                output_shapes={k: v.shape for k, v in label_sample.items()},
+                output_types={k: v.dtype for k, v in label_sample.items()}
             )
         ))
-
         dataset_trn = dataset_trn.batch(self._batch_size)
         dataset_val = dataset_val.batch(self._batch_size)
         dataset_tst = dataset_tst.batch(1)                
 
         # Make initializers
+        with tf.variable_scope('{{layer_spec.sanitized_name}}/train', reuse=tf.AUTO_REUSE):
+            is_training = tf.get_variable(name="is_train", dtype=tf.bool, initializer=False)
+        
         iterator = tf.data.Iterator.from_structure(dataset_trn.output_types, dataset_trn.output_shapes)
         trn_init = iterator.make_initializer(dataset_trn)
         val_init = iterator.make_initializer(dataset_val)
@@ -93,25 +99,47 @@
                 label_data_node.layer_id: label_tensor
             }
 
-            for node in graph.inner_nodes:
-                args = []
-                for input_node in graph.get_input_nodes(node):
-                    args.append(layer_output_tensors[input_node.layer_id])
-                    y = node.layer_instance(*args)
-                layer_output_tensors[node.layer_id] = y
-
+            for dst_node in graph.inner_nodes:
+                inputs = {
+                    dst_var: layer_output_tensors[src_node.layer_id][src_var]
+                    for src_node, src_var, dst_var in graph.get_input_connections(dst_node)
+                }
+                y = dst_node.layer_instance(
+                    inputs,
+                    is_training=is_training
+                )
+                layer_output_tensors[dst_node.layer_id] = y
 
             return layer_output_tensors
         
         layer_output_tensors = build_graph(input_tensor, label_tensor)
-        output_tensor = layer_output_tensors[output_layer_id]
-        target_tensor = layer_output_tensors[target_layer_id]
+        # TODO(anton.k): temporary solution before refactor
+        
+        output_tensor = None
+        target_tensor = None
+        
+        for src_node, src_var, dst_var in graph.get_input_connections(graph.active_training_node):
+            if dst_var == 'predictions':
+                output_tensor = layer_output_tensors[output_layer_id][src_var]
+                output_var_name = src_var
+            if dst_var == 'labels':
+                target_tensor = layer_output_tensors[target_layer_id][src_var]
+        # ----
+        
         
         # Create an exportable version of the TensorFlow graph
-        self._input_tensor_export = tf.placeholder(shape=dataset_trn.output_shapes[0], dtype=dataset_trn.output_types[0])
+
+        self._input_tensor_export = {
+            key: tf.placeholder(shape=shape, dtype=type_)
+            for (key, shape), (_, type_) in zip(dataset_trn.output_shapes[0].items(), dataset_trn.output_types[0].items())            
+        }
+
         self._output_tensor_export = build_graph(
             self._input_tensor_export,
-            tf.placeholder(shape=dataset_trn.output_shapes[1], dtype=dataset_trn.output_types[1])
+            {                                                                                                                                                                       
+                key: tf.placeholder(shape=shape, dtype=type_)
+                for (key, shape), (_, type_) in zip(dataset_trn.output_shapes[1].items(), dataset_trn.output_types[1].items())
+            }             
         )[output_layer_id]
 
         # loss function here
@@ -232,27 +260,27 @@
         
         #training
         global_step = None
-        {% filter remove_lspaces(8) %}        
-            {% if optimizer == 'tf.compat.v1.train.GradientDescentOptimizer' %}
-                optimizer = tf.compat.v1.train.GradientDescentOptimizer(learning_rate={{learning_rate}})
-            {% elif optimizer == 'tf.compat.v1.train.MomentumOptimizer' %}
+        {% filter remove_lspaces(8) %}
+            {% if layer_spec.optimizer == 'SGD' %}
+                optimizer = tf.compat.v1.train.GradientDescentOptimizer(learning_rate={{layer_spec.learning_rate}})
+            {% elif layer_spec.optimizer == 'Momentum' %}
                 global_step = tf.Variable(0)
                 learning_rate_momentum = tf.train.exponential_decay(
-                    learning_rate={{learning_rate}},
+                    learning_rate={{layer_spec.learning_rate}},
                     global_step=global_step,
-                    decay_steps={{decay_steps}},
-                    decay_rate={{decay_rate}},
+                    decay_steps={{layer_spec.decay_steps}},
+                    decay_rate={{layer_spec.decay_rate}},
                     staircase=True
                 )
-                optimizer = tf.train.MomentumOptimizer(learning_rate=learning_rate_momentum, momentum={{momentum}})
-            {% elif optimizer == 'tf.compat.v1.train.AdamOptimizer' %}
-                optimizer = tf.train.AdamOptimizer(learning_rate={{learning_rate}}, beta1={{beta1}}, beta2={{beta2}})
-            {% elif optimizer == 'tf.compat.v1.train.AdagradOptimizer' %}
-                optimizer = tf.compat.v1.train.AdagradOptimizer(learning_rate={{learning_rate}})            
-            {% elif optimizer == 'tf.compat.v1.train.RmsPropOptimizer' %}
-                optimizer = tf.compat.v1.train.RMSPropOptimizer(learning_rate={{learning_rate}})                        
+                optimizer = tf.train.MomentumOptimizer(learning_rate=learning_rate_momentum, momentum={{layer_spec.momentum}})
+            {% elif layer_spec.optimizer == 'ADAM' %}
+                optimizer = tf.train.AdamOptimizer(learning_rate={{layer_spec.learning_rate}}, beta1={{layer_spec.beta1}}, beta2={{layer_spec.beta2}})
+            {% elif layer_spec.optimizer == 'adagrad' %}
+                optimizer = tf.compat.v1.train.AdagradOptimizer(learning_rate={{layer_spec.learning_rate}})            
+            {% elif layer_spec.optimizer == 'RMSprop' %}
+                optimizer = tf.compat.v1.train.RMSPropOptimizer(learning_rate={{layer_spec.learning_rate}})                        
             {% else %}
-                raise NotImplementedError('Optimizer {{optimizer}} not supported yet')
+                raise NotImplementedError('Optimizer {{layer_spec.optimizer}} not supported yet')
             {% endif %}
         {% endfilter %}
 
@@ -285,7 +313,7 @@
         # update_weights = optimizer.minimize(loss_tensor, global_step=global_step)
 
         sess = None
-        {{session(sess, use_gpu=not use_cpu) | indent(width=8)}}         
+        {{session(sess, use_gpu=not layer_spec.use_cpu) | indent(width=8)}}         
         self._sess = sess
 
         trackable_variables = {}
@@ -295,15 +323,14 @@
         sess.run(tf.global_variables_initializer())
         
         {% filter remove_lspaces(8) %}
-            {% if export_directory is not none %}        
-                path = tf.train.latest_checkpoint('{{export_directory}}')
+            {% if layer_spec.checkpoint_path is not none %}        
+                path = tf.train.latest_checkpoint('{{layer_spec.checkpoint_path}}')
                 status = self._checkpoint.restore(path)
                 status.assert_consumed().run_restore_ops(session=self._sess)
             {% endif %}
         {% endfilter %}                    
         
         def train_step():
-            self._batch_size = {{batch_size}}
             if not self._headless:
                 _, self._predicted_object, self._predicted_class, self._predicted_normalized_box, self._classification_loss_training, self._bbox_loss_training, self._loss_training, self._accuracy_training, \
                     self._image_accuracy, self._layer_outputs, self._layer_weights, self._layer_biases, \
@@ -319,7 +346,6 @@
                         update_weights, classification_loss_tensor, bbox_loss_tensor, loss_tensor, accuracy_tensor
                     ])
         def validation_step():
-            self._batch_size = {{batch_size}}
             if not self._headless:
                 self._predicted_object, self._predicted_class, self._predicted_normalized_box, self._classification_loss_validation, self._bbox_loss_validation, self._loss_validation, self._accuracy_validation, \
                     self._image_accuracy, self._layer_outputs, self._layer_weights, self._layer_biases, \
@@ -406,17 +432,17 @@
 
 
 ################################################### Main #####################################################
-{% macro layer_tf1x_object_detection(layer_name, output_layer, target_layer, n_epochs, target_acc, stop_condition, num_box, grid_size, lambdaclass, lambdanoobj, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory, batch_size, use_cpu) %} #
+{% macro layer_tf1x_object_detection(layer_spec, graph_spec) %} #
 import itertools
 import cv2
 import copy
-class {{layer_name}}(ObjectDetectionLayer):
+class {{layer_spec.sanitized_name}}(ObjectDetectionLayer):
     def __init__(self):
-        self._n_epochs = {{n_epochs}}
-        self._batch_size = {{batch_size}}
+        self._n_epochs = {{layer_spec.n_epochs}}
+        self._batch_size = {{layer_spec.batch_size}}
 
-        self._target_acc = {{target_acc}}
-        self._stop_condition = '{{stop_condition}}'
+        self._target_acc = {{layer_spec.target_acc}}
+        self._stop_condition = '{{layer_spec.stop_condition}}'
 
         self._stopped = False
         self._paused = False
@@ -468,8 +494,8 @@ class {{layer_name}}(ObjectDetectionLayer):
         Args:
             graph: A PerceptiLabs Graph object containing references to all layers objects included in the model produced by this training layer.
         """   
-        {% if not distributed -%}
-            {{ run_normal(graph, layer_name, output_layer, target_layer, n_epochs, num_box, grid_size, lambdaclass, lambdanoobj, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory, batch_size, use_cpu) }}
+        {% if not layer_spec.distributed -%}
+            {{ run_normal(layer_spec, graph_spec) }}
         {% endif %}            
 
     def on_export(self, path: str, mode: str) -> None:
@@ -504,7 +530,7 @@ class {{layer_name}}(ObjectDetectionLayer):
         # Export checkpoint
         if mode in ['TFModel+checkpoint', 'TFLite+checkpoint']:
             {% filter remove_lspaces(8) %}
-                {% if distributed %}
+                {% if layer_spec.distributed %}
                     self._saver.save(self._sess, os.path.join(path, 'model.ckpt'), global_step=0)
                 {% else %}
                     self._checkpoint.save(file_prefix=os.path.join(path, 'model.ckpt'), session=self._sess)
@@ -825,7 +851,7 @@ class {{layer_name}}(ObjectDetectionLayer):
 
 
 #################################################### Distributed Training #################################################
-{% macro run_distributed(graph, layer_name, output_layer, target_layer, n_epochs, num_box, grid_size, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory) %}
+{% macro run_distributed(layer_spec, graph_spec) %}
         INCLUDE_KERAS_METRICS = False
 
         self_layer_name = '{{layer_name}}' # this is passed as input

@@ -12,22 +12,26 @@ perceptilabs/createDataObject.py
 perceptilabs/extractVariables.py
 perceptilabs/funclib.py
 perceptilabs/functionParser.py
-perceptilabs/lw_graph.py
-perceptilabs/modules.py
 perceptilabs/networkExporter.py
 perceptilabs/networkSaver.py
 perceptilabs/parse_pb.py
 perceptilabs/s3buckets.py
 perceptilabs/utils.py
-perceptilabs/processes.py
 perceptilabs/license_checker.py
 perceptilabs/issues.py
+perceptilabs/script.py
 
-# backend/perceptilabs/messaging
+# perceptilabs/messaging
 perceptilabs/messaging/base.py
 perceptilabs/messaging/zmq_wrapper.py
 perceptilabs/messaging/simple.py
 perceptilabs/messaging/__init__.py
+
+# perceptilabs/server
+perceptilabs/server/__init__.py
+perceptilabs/server/appServer.py
+perceptilabs/server/desktop_serverlib.py
+perceptilabs/server/web_serverlib.py
 
 # perceptilabs/autosettings
 perceptilabs/autosettings/__init__.py
@@ -37,51 +41,104 @@ perceptilabs/autosettings/utils.py
 
 # perceptilabs/graph
 perceptilabs/graph/__init__.py
-perceptilabs/graph/legacy_graph.py
+perceptilabs/graph/splitter.py
+perceptilabs/graph/spec.py
 
-# perceptilabs/graph/spec
-perceptilabs/graph/spec/__init__.py
-perceptilabs/graph/spec/base.py
+# perceptilabs/layers
+perceptilabs/layers/__init__.py
+perceptilabs/layers/utils.py
+perceptilabs/layers/helper.py
+perceptilabs/layers/specbase.py
+perceptilabs/layers/specutils.py
+perceptilabs/layers/definitions.py
 
-# perceptilabs/graph/spec/layers
-perceptilabs/graph/spec/layers/__init__.py
-perceptilabs/graph/spec/layers/base.py
-perceptilabs/graph/spec/layers/datadata.py
-perceptilabs/graph/spec/layers/deeplearningfc.py
-perceptilabs/graph/spec/layers/deeplearningconv.py
-perceptilabs/graph/spec/layers/processreshape.py
-perceptilabs/graph/spec/layers/processonehot.py
-perceptilabs/graph/spec/layers/trainclassification.py
+# perceptilabs/layers/datadata
+perceptilabs/layers/datadata/spec.py
+perceptilabs/layers/datadata/imports.json
 
-# backend/perceptilabs/server
-perceptilabs/server/__init__.py
-perceptilabs/server/appServer.py
-perceptilabs/server/desktop_serverlib.py
-perceptilabs/server/web_serverlib.py
+# perceptilabs/layers/dataenvironment
+perceptilabs/layers/dataenvironment/spec.py
+perceptilabs/layers/dataenvironment/imports.json
 
-# backend/perceptilabs/api
-perceptilabs/api/experiment.py
-perceptilabs/api/data_container.py
+# perceptilabs/layers/datarandom
+perceptilabs/layers/datarandom/spec.py
+perceptilabs/layers/datarandom/imports.json
 
-# backend/perceptilabs/core_new
+# perceptilabs/layers/deeplearningfc
+perceptilabs/layers/deeplearningfc/spec.py
+perceptilabs/layers/deeplearningfc/imports.json
+
+# perceptilabs/layers/deeplearningconv
+perceptilabs/layers/deeplearningconv/spec.py
+perceptilabs/layers/deeplearningconv/imports.json
+
+# perceptilabs/layers/deeplearningdeconv
+perceptilabs/layers/deeplearningdeconv/spec.py
+perceptilabs/layers/deeplearningdeconv/imports.json
+
+# perceptilabs/layers/deeplearningrecurrent
+perceptilabs/layers/deeplearningrecurrent/spec.py
+perceptilabs/layers/deeplearningrecurrent/imports.json
+
+# perceptilabs/layers/processreshape
+perceptilabs/layers/processreshape/spec.py
+perceptilabs/layers/processreshape/imports.json
+
+# perceptilabs/layers/processrescale
+perceptilabs/layers/processrescale/spec.py
+perceptilabs/layers/processrescale/imports.json
+
+# perceptilabs/layers/processonehot
+perceptilabs/layers/processonehot/spec.py
+perceptilabs/layers/processonehot/imports.json
+
+# perceptilabs/layers/processgrayscale
+perceptilabs/layers/processgrayscale/spec.py
+perceptilabs/layers/processgrayscale/imports.json
+
+# perceptilabs/layers/mathswitch
+perceptilabs/layers/mathswitch/spec.py
+perceptilabs/layers/mathswitch/imports.json
+
+# perceptilabs/layers/mathmerge
+perceptilabs/layers/mathmerge/spec.py
+perceptilabs/layers/mathmerge/imports.json
+
+# perceptilabs/layers/layercustom
+perceptilabs/layers/layercustom/spec.py
+perceptilabs/layers/layercustom/imports.json
+
+# perceptilabs/layers/trainclassification
+perceptilabs/layers/trainclassification/spec.py
+perceptilabs/layers/trainclassification/imports.json
+
+# perceptilabs/layers/trainobjectdetection
+perceptilabs/layers/trainobjectdetection/spec.py
+perceptilabs/layers/trainobjectdetection/imports.json
+
+# perceptilabs/layers/traingan
+perceptilabs/layers/traingan/spec.py
+perceptilabs/layers/traingan/imports.json
+
+# perceptilabs/layers/trainreinforce
+perceptilabs/layers/trainreinforce/spec.py
+perceptilabs/layers/trainreinforce/imports.json
+
+# perceptilabs/layers/trainregression
+perceptilabs/layers/trainregression/spec.py
+perceptilabs/layers/trainregression/imports.json
+
+# perceptilabs/core_new
 perceptilabs/core_new/__init__.py
-perceptilabs/core_new/cache.py
-perceptilabs/core_new/core.py
 perceptilabs/core_new/core2.py
 perceptilabs/core_new/errors.py
 perceptilabs/core_new/extras.py
-perceptilabs/core_new/history.py
-perceptilabs/core_new/lightweight.py
 perceptilabs/core_new/lightweight2.py
 perceptilabs/core_new/cache2.py
-perceptilabs/core_new/networkCache.py
-perceptilabs/core_new/session.py
 perceptilabs/core_new/utils.py
-perceptilabs/core_new/core_distr.py
-perceptilabs/core_new/script_distr.py
 perceptilabs/core_new/serialization.py
 
-# backend/perceptilabs/core_new/communication
+# perceptilabs/core_new/communication
 perceptilabs/core_new/communication/__init__.py
 perceptilabs/core_new/communication/client.py
 perceptilabs/core_new/communication/server.py
@@ -89,25 +146,21 @@ perceptilabs/core_new/communication/state.py
 perceptilabs/core_new/communication/utils.py
 perceptilabs/core_new/communication/deployment.py
 perceptilabs/core_new/communication/zmq.py
+perceptilabs/core_new/communication/task_executor.py
 
-# backend/perceptilabs/core_new/compatibility
+# perceptilabs/core_new/compatibility
 perceptilabs/core_new/compatibility/__init__.py
 perceptilabs/core_new/compatibility/base.py
 perceptilabs/core_new/compatibility/policies.py
 
-# backend/perceptilabs/core_new/data
-perceptilabs/core_new/data/__init__.py
-perceptilabs/core_new/data/base.py
-perceptilabs/core_new/data/policies.py
-
-# backend/perceptilabs/core_new/graph/
+# perceptilabs/core_new/graph/
 perceptilabs/core_new/graph/__init__.py
 perceptilabs/core_new/graph/base.py
 perceptilabs/core_new/graph/builder.py
 perceptilabs/core_new/graph/utils.py
 perceptilabs/core_new/graph/splitter.py
 
-# backend/perceptilabs/core_new/layers/
+# perceptilabs/core_new/layers/
 perceptilabs/core_new/layers/__init__.py
 perceptilabs/core_new/layers/base.py
 perceptilabs/core_new/layers/definitions.py
@@ -116,7 +169,7 @@ perceptilabs/core_new/layers/replication.py
 perceptilabs/core_new/layers/script.py
 perceptilabs/core_new/layers/utils.py
 
-# backend/perceptilabs/core_new/layers/templates/
+# perceptilabs/core_new/layers/templates/
 perceptilabs/core_new/layers/templates/__init__.py
 perceptilabs/core_new/layers/templates/base.py
 perceptilabs/core_new/layers/templates/custom.j2
@@ -127,20 +180,20 @@ perceptilabs/core_new/layers/templates/file_utils.j2
 perceptilabs/core_new/layers/templates/tf1x.j2
 perceptilabs/core_new/layers/templates/tf1x_classification.j2
 perceptilabs/core_new/layers/templates/tf1x_gan.j2
+perceptilabs/core_new/layers/templates/tf1x_rl.j2
 perceptilabs/core_new/layers/templates/tf1x_object_detection.j2
 perceptilabs/core_new/layers/templates/tf1x_regression.j2
 perceptilabs/core_new/layers/templates/tf1x_utils.j2
 perceptilabs/core_new/layers/templates/utils.py
-perceptilabs/core_new/layers/templates/tf1x_rl.j2
 
-# backend/perceptilabs/insights/csv_ram_estimator/
+# perceptilabs/insights/csv_ram_estimator/
 perceptilabs/insights/__init__.py
 perceptilabs/insights/csv_ram_estimator/__init__.py
 perceptilabs/insights/csv_ram_estimator/base.py
 perceptilabs/insights/dataset.py
 perceptilabs/insights/csv_ram_estimator/model_and_meta.pkl
 
-# backend/perceptilabs/dataschema/
+# perceptilabs/dataschema/
 perceptilabs/dataschema/master.json
 perceptilabs/dataschema/kernel_started.json
 perceptilabs/dataschema/training_started.json
@@ -152,5 +205,9 @@ perceptilabs/dataschema/dc_memory_used.json
 perceptilabs/aggregation/__init__.py
 perceptilabs/aggregation/base.py
 perceptilabs/aggregation/aggregates.py
+
+# backend/perceptilabs/api/
+perceptilabs/api/data_container.py
+perceptilabs/api/experiment.py
 
 perceptilabs/tutorial_data/

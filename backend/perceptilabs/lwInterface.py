@@ -3,12 +3,13 @@ import os
 import logging
 import numpy as np
 import tensorflow as tf
-
-from perceptilabs.logconf import APPLICATION_LOGGER
 import platform
 
+from perceptilabs.script import ScriptFactory
+from perceptilabs.logconf import APPLICATION_LOGGER
+from perceptilabs.graph.spec import GraphSpec
 from perceptilabs.createDataObject import createDataObject
-from perceptilabs.core_new.core import Core
+
 
 logger = logging.getLogger(APPLICATION_LOGGER)
 
@@ -215,38 +216,29 @@ class getGraphOrder(LW_interface_base):
         self.jsonNetwork = jsonNetwork
 
     def run(self):
-        from perceptilabs.graph import Graph
-        graph = Graph(self.jsonNetwork)
-        graph_dict = graph.graphs
-        return list(graph_dict.keys())
+        graph_spec = GraphSpec.from_dict(self.jsonNetwork)
+        ordered_ids = graph_spec.get_ordered_ids()
+        return list(ordered_ids)
 
+    
 class getNotebookRunscript(LW_interface_base):
     def __init__(self, jsonNetwork):
         self.jsonNetwork = jsonNetwork
 
     def run(self):
-        from perceptilabs.core_new.layers.script import ScriptFactory
-        from perceptilabs.core_new.graph.builder import GraphBuilder
-        
+        graph_spec = GraphSpec.from_dict(self.jsonNetwork)
         script_factory = ScriptFactory()
-        graph_builder = GraphBuilder()
-        graph = graph_builder.build_from_spec(self.jsonNetwork)
+        return script_factory.get_runscript(graph_spec)
 
-        return script_factory.get_runscript(graph)
-
+    
 class getNotebookImports(LW_interface_base):
     def __init__(self, jsonNetwork):
         self.jsonNetwork = jsonNetwork
 
     def run(self):
-        from perceptilabs.core_new.layers.script import ScriptFactory
-        from perceptilabs.core_new.graph.builder import GraphBuilder
-        
+        graph_spec = GraphSpec.from_dict(self.jsonNetwork)
         script_factory = ScriptFactory()
-        graph_builder = GraphBuilder()
-        graph = graph_builder.build_from_spec(self.jsonNetwork)
-
-        return script_factory.get_imports(graph)
+        return script_factory.get_imports(graph_spec)
 
 
 class getPartitionSummary(LW_interface_base):
@@ -273,63 +265,21 @@ class getPartitionSummary(LW_interface_base):
         return content
 
     
-class getCodeV2(LW_interface_base):
-    def __init__(self, id_, network):
+class getCode(LW_interface_base):
+    def __init__(self, id_, graph_spec):
         self._id = id_
-        self._network = network
+        self._graph_spec = graph_spec
 
     def run(self):
-        from perceptilabs.core_new.graph import Node
-        from perceptilabs.core_new.layers.script import ScriptFactory
-        from perceptilabs.core_new.graph.utils import sanitize_layer_name
-
-        layer_spec = self._network[self._id].copy()
-        layer_type = layer_spec['Type']
-
-        #TODO: Remove this if-case when frontend is sending back correct file path on Windows
-        if layer_type == "DataData" and layer_spec['Properties'] is not None:
-            sources = layer_spec['Properties']['accessProperties']['Sources']
-            new_sources = []
-            for source in sources:
-                tmp = source
-                if tmp["path"]:
-                    tmp["path"] = tmp["path"].replace("\\","/")
-                new_sources.append(tmp)
-            layer_spec['Properties']['accessProperties']['Sources'] = new_sources
-
-        layer_id = sanitize_layer_name(layer_spec['Name'])
-        layer_instance = None
-        node = Node(layer_id, layer_type, layer_instance, layer_spec)
+        layer_spec = self._graph_spec.nodes_by_id[self._id]
+        script_factory = ScriptFactory()
         
-        script_factory = ScriptFactory()        
-        code = script_factory.render_layer_code(node.layer_id, node.layer_type, node.layer_spec, node.custom_code)
+        code = script_factory.render_layer_code(
+                layer_spec,
+                macro_kwargs={'layer_spec': layer_spec, 'graph_spec': self._graph_spec}
+        )
         return {'Output': code}        
 
-        
-class getCodeV1(LW_interface_base):
-    def __init__(self, id_, network):
-        self._id = id_
-        self._network = network
-
-    def run(self):
-        if self._network[self._id]["Type"] == "TrainReinforce":
-            from perceptilabs.graph import Graph
-            graph = Graph(self._network)
-            graph_dict = graph.graphs
-            layerInfo = graph_dict[self._id]
-        else:
-            layerInfo = {"Info": {
-                                  "Type": self._network[self._id]["Type"], "Id": self._id,
-                                  "Properties": self._network[self._id]['Properties'],
-                                  "backward_connections": self._network[self._id]["backward_connections"],
-                                  "forward_connections": self._network[self._id]["forward_connections"]
-                                  },
-                                  "Con": self._network[self._id]["backward_connections"],
-                                  
-                                  }
-
-        content = {}
-        return content
 
 class getNetworkInputDim(LW_interface_base):
     def __init__(self, network, lw_core, extras_reader):
@@ -346,7 +296,7 @@ class getNetworkInputDim(LW_interface_base):
         for id_, value in self._network.items():
             content[id_]={}
 
-            con=[con_id for con_id, con_name in value['backward_connections']]
+            con=[conn_spec['src_id'] for conn_spec in value['backward_connections']]
 
             if len(con)==1 and con[0] in extras_dict:
                 content[id_].update({"inShape":str(extras_dict[con[0]]["outShape"])})
@@ -396,15 +346,13 @@ class getNetworkOutputDim(LW_interface_base):
                 }
             else:
                 content[Id]['Error'] = None  
-
         return content           
 
 class getPreviewSample(LW_interface_base):
-    def __init__(self, id_, lw_core, extras_reader, data_container, variable=None):
-        self._id = id_
-        self.lw_core = lw_core
-        self.extras_reader = extras_reader
-        self.data_container = data_container
+    def __init__(self, layer_id, lw_core, graph_spec, variable):
+        self._layer_id = layer_id
+        self._lw_core = lw_core
+        self._graph_spec = graph_spec
         self._variable = variable
 
     def _is_jsonable(self, x):
@@ -423,26 +371,17 @@ class getPreviewSample(LW_interface_base):
             else:
                 return self._reduceTo2d(data[...,-1])
     
-    def run(self):                                
-        self.lw_core.run()
-        
-        sample=""
-        if self._variable:
-            dataContainerDict=self.data_container.to_dict()
-            if self._id in dataContainerDict:
-                sample = dataContainerDict[self._id][self._variable]
-        else:
-            extrasDict=self.extras_reader.to_dict()
-            if self._id in extrasDict:
-                sample = extrasDict[self._id]["Sample"]
+    def run(self):
+        results = self._lw_core.run(self._graph_spec)
 
+        if self._variable in ['sample', '(sample)']:
+            return 'output'
 
-        if isinstance(sample,tf.Variable):
-            sample=sample.numpy()
-
-        if len(np.shape(sample))>1:
-            sample=np.squeeze(sample)
-
+        try:
+            sample = results[self._layer_id].sample[self._variable]
+        except:
+            print(results[self._layer_id].sample.keys())            
+            raise
         
         dataObject=createDataObject([self._reduceTo2d(np.asarray(sample))])
         
@@ -453,34 +392,76 @@ class getPreviewSample(LW_interface_base):
 
         return content
 
+class getPreviewBatchSample(LW_interface_base):
+    def __init__(self, lw_core, graph_spec, json_network):
+        self._lw_core = lw_core
+        self._graph_spec = graph_spec
+        self._json_network = json_network
+
+    def _is_jsonable(self, x):
+        import json
+
+        try:
+            json.dumps(x)
+            return True
+        except (TypeError, OverflowError):
+            return False
+
+    def _reduceTo2d(self, data):
+            data_shape=np.shape(np.squeeze(data))
+            if len(data_shape)<=2 or (len(data_shape)==3 and (data_shape[-1]==3 or data_shape[-1]==1)):
+                return data
+            else:
+                return self._reduceTo2d(data[...,-1])
+    
+    def run(self):                                
+        results = self._lw_core.run(self._graph_spec)
+        returnJson = {}
+        for id_, data in results.items():               
+            if 'getPreview' in self._json_network[id_] and self._json_network[id_]['getPreview']:
+                if 'previewVariable' in self._json_network[id_]:
+                    try:
+                        sample = data.sample[self._json_network[id_]['previewVariable']]
+                        dataObject = createDataObject([self._reduceTo2d(np.asarray(sample))])
+                        if self._is_jsonable(dataObject):
+                            returnJson[id_] = dataObject
+                        else:
+                            returnJson[id_] = None
+                    except:
+                        returnJson[id_] = None             
+                else:
+                    returnJson[id_] = None
+            else:
+                continue
+        return returnJson
+
 class getPreviewVariableList(LW_interface_base):
-    def __init__(self, id_, network, lw_core, extras_reader):
-        self._id = id_
-        self._network = network
-        self.lw_core = lw_core
-        self.extras_reader = extras_reader
+    def __init__(self, layer_id, lw_core, graph_spec):
+        self._layer_id = layer_id
+        self._lw_core = lw_core
+        self._graph_spec = graph_spec
 
-    def run(self):                                            
-        self.lw_core.run()
+    def run(self):
+
+        results = self._lw_core.run(self._graph_spec)
+        layer_info = results[self._layer_id]
         
-        extrasDict=self.extras_reader.to_dict()
-        if self._id in extrasDict:
-            content = {
-                "VariableList": extrasDict[self._id]["Variables"],
-                "VariableName": extrasDict[self._id]["Default_var"],
+        sample = layer_info.sample
+        error = layer_info.strategy_error or layer_info.instantiation_error or layer_info.code_error
+
+
+        content = {
+            "VariableList": list(sample.keys()),
+            "VariableName": "output"
+        }
+
+        if error is not None:
+            content['Error'] = {
+                'Message': error.message,
+                'Row': str(error.line_number)
             }
-
-            if self._id in self.lw_core.error_handler:
-                logger.info("ErrorMessage: " + str(self.lw_core.error_handler[self._id]))
-                
-                content['Error'] = {
-                    'Message': self.lw_core.error_handler[self._id].message,
-                    'Row': str(self.lw_core.error_handler[self._id].line_number)
-                }
-        else:
-            content = ""
-
         return content
+    
 
 class Parse(LW_interface_base):
     def __init__(self, pb, checkpointDict, checkpoint=None, make_trainable=True, end_points="", containerize=False):

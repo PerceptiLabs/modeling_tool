@@ -5,7 +5,7 @@ import { createNotebookJson }   from "@/core/helpers/notebook-helper.js";
 import { pathSlash }  from "@/core/constants.js";
 import {isElectron} from "@/core/helpers";
 import { PROJECT_DEFAULT_FOLDER } from "../../core/constants";
-
+import cloneDeep from 'lodash.clonedeep';
 let coreRequest = null;
 let ipcRenderer = null;
 let spawn = null;
@@ -31,6 +31,9 @@ const state = {
 };
 
 const getters = {
+  GET_coreNetworkElementList(state, getters, rootState, rootGetters) {
+    return rootGetters['mod_workspace/GET_currentNetworkElementList'];
+  },
   GET_coreNetwork(state, getters, rootState, rootGetters) {
     const network = rootGetters['mod_workspace/GET_currentNetwork'];
     let layers = {};
@@ -45,18 +48,18 @@ const getters = {
         checkpointPath[1] = rootPath + pathSlash + filePath;
       }
 
-      const namesConnectionOut = [];
-      const namesConnectionIn = [];
+      // const namesConnectionOut = [];
+      // const namesConnectionIn = [];
 
-      el.connectionOut.forEach(id => {
-        const name =  network.networkElementList[id].layerName;
-        namesConnectionOut.push([id, name])
-      });
+      // el.connectionOut.forEach(id => {
+      //   const name =  network.networkElementList[id].layerName;
+      //   namesConnectionOut.push([id, name])
+      // });
 
-      el.connectionIn.forEach(id => {
-        const name =  network.networkElementList[id].layerName;
-        namesConnectionIn.push([id, name])
-      });
+      // el.connectionIn.forEach(id => {
+      //   const name =  network.networkElementList[id].layerName;
+      //   namesConnectionIn.push([id, name])
+      // });
 
       /*prepare elements*/
       layers[el.layerId] = {
@@ -66,9 +69,10 @@ const getters = {
         endPoints: el.endPoints,
         Properties: el.layerSettings,
         Code: el.layerCode,
-        backward_connections: namesConnectionIn,
-        forward_connections: namesConnectionOut,
-        visited: el.visited
+        backward_connections: el.backward_connections,
+        forward_connections: el.forward_connections,
+        visited: el.visited,
+        previewVariable: el.previewVariable
       };
 
     }
@@ -80,7 +84,27 @@ const getters = {
     if (!headlessState) { return; }
 
     return headlessState.isHeadless;
-  }
+  },
+  // maybe another flag for within or not alayerId
+  GET_descendentsIds: (state, getters) => (pivotLayer, withPivot = true) => { 
+    const networkList = getters.GET_coreNetworkElementList;
+    let listIds = getDescendants(pivotLayer, []);
+    if(withPivot) {
+      listIds.push(pivotLayer.layerId);
+    }
+    return listIds;
+    function getDescendants(networkElement, dataIds){
+      if(networkElement.forward_connections.length === 0) {
+        return dataIds;
+      }
+      for(let index in networkElement.forward_connections) {
+        const layerId = networkElement.forward_connections[index].dst_id;
+        dataIds.push(layerId);
+        getDescendants(networkList[layerId], dataIds);
+      }
+      return dataIds;
+    }
+  },
 };
 
 const mutations = {
@@ -253,38 +277,35 @@ const actions = {
   //---------------
   //  NETWORK SETTING UPDATING
   //---------------
-  API_updateNetworkSetting({getters, dispatch}, layerId) {
-    const theData = {
-      action: 'getSettingsRecommendation',
-      value: {
-        Id: layerId,
-        Network: getters.GET_coreNetwork,
-      }
-    };
-    console.log("input param");
-    console.log("id", layerId);
-    console.log("Network", getters.GET_coreNetwork)
+  // API_updateNetworkSetting({getters, dispatch}, layerId) {
+  //   const theData = {
+  //     action: 'getSettingsRecommendation',
+  //     value: {
+  //       Id: layerId,
+  //       Network: getters.GET_coreNetwork,
+  //     }
+  //   };
 
-    coreRequest(theData)
-      .then((data)=> {
-        console.log("From backend", data);
 
-        if (data) {
-          for (var el in data) {
-            const saveSettings = {
-              'elId': el,
-              'set': data[el].Properties,
-              'code': data[el].Code
-            };
+  //   coreRequest(theData)
+  //     .then((data)=> {
+  //       console.warn(data);
+  //       if (data) {
+  //         for (var el in data) {
+  //           const saveSettings = {
+  //             'elId': el,
+  //             'set': data[el].Properties,
+  //             'code': data[el].Code
+  //           };
             
-            dispatch('mod_workspace/SET_elementSettings', deepCopy(saveSettings), {root: true});      
-          }
-        }
-      })
-      .catch((err)=> {
-        console.log("Calling getSettingsRecommendation", err)
-      })
-  },
+  //           dispatch('mod_workspace/SET_elementSettings', deepCopy(saveSettings), {root: true});      
+  //         }
+  //       }
+  //     })
+  //     .catch((err)=> {
+  //       console.log("Calling getSettingsRecommendation", err)
+  //     })
+  // },
   //---------------
   //  NETWORK TRAINING
   //---------------
@@ -598,24 +619,31 @@ const actions = {
   },
 
   API_getOutputDim({dispatch, getters, rootGetters}) {
-    const theData = {
-      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
-      action: "getNetworkOutputDim",
-      value: getters.GET_coreNetwork
-    };
-    if(isWeb()) {
-      dispatch('globalView/ShowCoreNotFoundPopup', null, { root: true });
-    }
-    //console.log('API_getOutputDim');
-    return coreRequest(theData)
-      .then((data)=> {
-        //console.log('API_getOutputDim answer', data);
-        if(data) dispatch('mod_workspace/SET_elementOutputDim', data, {root: true});
-        return true;
-      })
-      .catch((err)=> {
-        console.error(err);
-      });
+    // const theData = {
+    //   reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
+    //   action: "getNetworkOutputDim",
+    //   value: getters.GET_coreNetwork
+    // };
+    // if(isWeb()) {
+    //   dispatch('globalView/ShowCoreNotFoundPopup', null, { root: true });
+    // }
+    // //console.log('API_getOutputDim');
+    // // @todo -- this request are not longer used instead is used  ->>>> mod_api/API_getBatchPreviewSample
+    // return coreRequest(theData)
+    //   .then((data)=> {
+    //     //console.log('API_getOutputDim answer', data);
+    //     if(data){
+    //       dispatch('mod_workspace/SET_elementOutputDim', data, {root: true});
+    //       dispatch('mod_workspace-notifications/setNotifications', {
+    //         networkId:rootGetters['mod_workspace/GET_currentNetworkId'],
+    //         kernelResponses: data
+    //       }, {root: true});
+    //     }
+    //     return true;
+    //   })
+    //   .catch((err)=> {
+    //     console.error(err);
+    //   });
   },
 
   API_getPreviewSample({dispatch, getters, rootGetters}, {layerId, varData}) {
@@ -628,10 +656,9 @@ const actions = {
         Variable: varData
       }
     };
-    //console.log('getPreviewSample', theData);
+    // console.log('getPreviewSample', theData);
     return coreRequest(theData)
       .then((data)=> {
-        //console.log('getPreviewSample answer', data);
         return data
       })
       .catch((err)=> {
@@ -648,10 +675,9 @@ const actions = {
         Network: getters.GET_coreNetwork
       }
     };
-    //console.log('getPreviewVariableList', theData);
+    // console.log('getPreviewVariableList Request', theData);
     return coreRequest(theData)
       .then((data)=> {
-        //console.log('getPreviewVariableList answer', data);
         return data
       })
       .catch((err)=> {
@@ -1055,6 +1081,140 @@ const actions = {
     return coreRequest(theData)
       .then(res => res)
       .catch(e => console.error(e));
+  },
+  // @param {object} payload | { networkId: variableName } 
+  API_getBatchPreviewSample({ getters, dispatch, rootGetters }, payload) {
+    const networkList = getters.GET_coreNetworkElementList;
+    let net = cloneDeep(getters.GET_coreNetwork);
+    for(let elId in payload) {
+      net[elId]['getPreview'] = payload[elId] !== undefined;
+    }
+    const theData = {
+      receiver: '',
+      action: 'getNetworkData',
+      value: {
+        Network:  net,
+      }
+    };
+
+    return coreRequest(theData)
+      .then(res => {
+        // console.log(
+        //   theData,
+        //   res
+        // );
+        if(Object.keys(res.newNetwork).length > 0) {
+          for( let ix in res.newNetwork) {
+            const currentEl = networkList[ix];
+            const saveSettings = {
+              'elId': ix,
+              'set': res.newNetwork[ix].Properties,
+              'code': res.newNetwork[ix].Code,
+              tabName: currentEl.layerSettingsTabName,
+              visited: false,
+            };
+            dispatch('mod_workspace/SET_elementSettings', deepCopy(saveSettings), {root: true});
+          }
+        }
+        if(res.outputDims) {
+          dispatch('mod_workspace/SET_elementOutputDim', res.outputDims, {root: true});
+          dispatch('mod_workspace-notifications/setNotifications', {
+            networkId: rootGetters['mod_workspace/GET_currentNetworkId'],
+            kernelResponses: res.outputDims
+          }, {root: true});
+        } 
+
+        if(Object.keys(res.previews).length > 0) {
+          Object.keys(res.previews).map(previewKey => {
+            dispatch('mod_workspace/SET_NeteworkChartData', {
+              layerId: previewKey,
+              payload: res.previews[previewKey],
+            }, {root: true});
+          })
+        }
+      
+        return res;
+
+      })
+      .catch(e => {
+        console.error(e)
+      });
+  },
+  API_getBatchPreviewSampleForElementDescendants({ getters, dispatch, rootGetters }, layerId) {
+    const networkList = getters.GET_coreNetworkElementList;
+    const pivotLayer = networkList[layerId];
+    let descendants = getDescendants(pivotLayer, []);
+    let net = cloneDeep(getters.GET_coreNetwork);
+    
+    function getDescendants(networkElement, dataIds){
+      if(networkElement.forward_connections.length === 0) {
+        return dataIds;
+      }
+      for(let index in networkElement.forward_connections) {
+        const layerId = networkElement.forward_connections[index].dst_id;
+        dataIds.push(layerId);
+        getDescendants(networkList[layerId], dataIds);
+      }
+      return dataIds;
+    }
+
+    descendants.push(layerId); 
+
+    for(let ix in net) {
+      let el = net[ix];
+      if(descendants.indexOf(ix) !== -1) {
+        net[ix]['getPreview'] = true;
+      } else {
+        net[ix]['getPreview'] = false;
+      }
+    }
+    
+    const theData = {
+      receiver: '',
+      action: 'getNetworkData',
+      value: {
+        Network:  net,
+      }
+    };
+    return coreRequest(theData)
+      .then(res => {
+        
+        if(res.outputDims) {
+          dispatch('mod_workspace/SET_elementOutputDim', res.outputDims, {root: true});
+          dispatch('mod_workspace-notifications/setNotifications', {
+            networkId: rootGetters['mod_workspace/GET_currentNetworkId'],
+            kernelResponses: res.outputDims
+          }, {root: true});
+        } 
+
+        if(Object.keys(res.newNetwork).length > 0) {
+          for( let ix in res.newNetwork) {
+            const currentEl = networkList[ix];
+            const saveSettings = {
+              'elId': ix,
+              'set': res.newNetwork[ix].Properties,
+              'code': res.newNetwork[ix].Code,
+              tabName: currentEl.layerSettingsTabName,
+              visited: false,
+            };
+            
+            dispatch('mod_workspace/SET_elementSettings', deepCopy(saveSettings), {root: true});
+          }
+        }
+
+        if(Object.keys(res.previews).length > 0) {
+          Object.keys(res.previews).map(previewKey => {
+            dispatch('mod_workspace/SET_NeteworkChartData', {
+              layerId: previewKey,
+              payload: res.previews[previewKey],
+            }, {root: true});
+          })
+        }
+        return res;
+      })
+      .catch(e => {
+        console.error(e)
+      });
   },
   API_getFolderContent (ctx, path) {
     // resolves ~ for windows

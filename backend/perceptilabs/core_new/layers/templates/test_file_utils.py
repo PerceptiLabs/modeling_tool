@@ -18,7 +18,7 @@ def npy_3000x784():
     with tempfile.NamedTemporaryFile(mode='w', suffix='.npy', delete=False) as f:
         mat = np.random.random((3000, 784))
         np.save(f.name, mat)
-        yield f.name
+        yield f.name.replace(os.sep, '/')
         f.close()
 
 @pytest.fixture(scope='module', autouse=True)
@@ -29,7 +29,7 @@ def npy_directory_3000x784():
             file_path = os.path.join(dir_path, f'{i}.npy')
             np.save(file_path, np.random.random((3000,784)))
              
-        yield dir_path
+        yield dir_path.replace(os.sep, '/')
 
         
 @pytest.fixture(scope='module', autouse=True)        
@@ -39,7 +39,7 @@ def csv_3000x784():
         mat = np.random.random((3000, 784))
         df = pd.DataFrame.from_records(mat, columns=[str(x) for x in range(784)])
         df.to_csv(f.name, index=False)
-        yield f.name
+        yield f.name.replace(os.sep, '/')
         f.close()
 
         
@@ -49,7 +49,7 @@ def npy_30x784():
     with tempfile.NamedTemporaryFile(mode='w', suffix='.npy', delete=False) as f:
         mat = np.random.random((30, 784))
         np.save(f.name, mat)
-        yield f.name
+        yield f.name.replace(os.sep, '/')
         f.close()
 
         
@@ -60,7 +60,7 @@ def csv_30x784():
         mat = np.random.random((30, 784))
         df = pd.DataFrame.from_records(mat, columns=[str(x) for x in range(784)])
         df.to_csv(f.name, index=False)
-        yield f.name
+        yield f.name.replace(os.sep, '/')
         f.close()
 
         
@@ -70,7 +70,7 @@ def npy_ordered():
     with tempfile.NamedTemporaryFile(mode='w', suffix='.npy', delete=False) as f:
         mat = np.atleast_2d(np.arange(3000)).reshape(3000, 1)
         np.save(f.name, mat)
-        yield f.name
+        yield f.name.replace(os.sep, '/')
         f.close()
 
 @pytest.fixture(scope='module', autouse=True)
@@ -81,7 +81,7 @@ def npy_directory_ordered():
             file_path = os.path.join(dir_path, f'{i}.npy')
             mat = np.atleast_2d(np.arange(3000)).reshape(3000, 1)
             np.save(file_path, mat)
-        yield dir_path
+        yield dir_path.replace(os.sep, '/')
 
 
 @pytest.fixture(scope='module', autouse=True)
@@ -91,7 +91,7 @@ def csv_ordered():
         mat = np.atleast_2d(np.arange(3000)).reshape(3000, 1)        
         df = pd.DataFrame.from_records(mat, columns=['1'])
         df.to_csv(f.name, index=False)
-        yield f.name
+        yield f.name.replace(os.sep, '/')
         f.close()
 
         
@@ -102,7 +102,7 @@ def img_5x32x32x3():
             path = os.path.join(dir_path, str(i)+'.png')            
             matrix = (np.ones((32, 32, 3))*0.1*i).astype(np.float32)
             skimage.io.imsave(path, matrix)
-        yield dir_path
+        yield dir_path.replace(os.sep, '/')
 
 
 @pytest.fixture(scope='module')

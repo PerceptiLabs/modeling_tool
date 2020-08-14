@@ -55,7 +55,14 @@
             div(:style="dragBoxVerticalLeftBorder()")
             div(:style="dragBoxVerticalRightBorder()")
 
-          sidebar-layers.layers-sidebar
+          //- sidebar-layers.layers-sidebar
+        code-window(
+          v-if="showCodeWindow"
+          :networkId="currentNetworkId"
+        )
+        notifications-window(
+          v-if="showNotificationWindow"
+        )
         //-general-settings(v-if="showGlobalSet")
         general-result(v-if="showGlobalResult")
         select-core-side(v-if="showCoreSide")
@@ -63,6 +70,8 @@
         workspace-load-network(
           v-if="showLoadSettingPopup" 
         )
+
+        the-toaster(:style="toasterRightPosition")
 
       start-training-spinner(v-if="showTrainingSpinner")
       file-picker-popup(
@@ -188,6 +197,7 @@
     }
   }
   .network {
+    position: relative;
     width: 100%;
     display: grid;
     grid-template-areas:  'network-field   network-field'
@@ -252,6 +262,40 @@
     display: flex;
     justify-content: space-between;
     padding: .5rem;
+
+    .workspace_meta-action {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+
+      button {
+        background-color: #23252A;
+        color: white;
+      }
+
+      .workspace-notifications {
+        display: flex;
+        align-items: center;
+
+        margin-right: 1rem;
+
+        svg {
+          height: 1rem;
+          width: 1rem;
+
+          &.has-error
+          {
+            fill:#FE7373; ;
+          }
+
+          &.no-error
+          {
+            fill:#73FEBB ;
+          }
+        }
+      }
+    }
+  
   }
   .workspace-relative {
     position: relative;
@@ -344,5 +388,9 @@
         }
       }
     }
+  }
+
+  .statistics-tabs {
+    margin-left: auto;
   }
 </style>

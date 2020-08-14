@@ -24,25 +24,49 @@ const baseNetPaintArrows = {
     Mix_paintArrow_arrowStartPaint(ev) {
       ev.preventDefault();
       ev.stopPropagation();
+      const { outputDotId,outputLayerId } = ev.target.dataset;
       let el = this.dataEl;
-      let layerSize = this.$parent.$parent.layerSize * this.wsZoom;
+      let currentTargerStartElement = document.querySelector(`[layer-id="${outputLayerId}"]`);
+      let theDot = document.querySelector(`[data-output-dot-id="${outputDotId}"][data-output-layer-id="${outputLayerId}"]`);
+
+      const { x: layerWidth, y: layerHeight } = currentTargerStartElement.getBoundingClientRect();
+      const { x: dotWidth, y: dotHeight } = theDot.getBoundingClientRect();
+      const dotPositionWidth = (dotWidth - layerWidth);
+      const dotPositionHeight = (dotHeight  - layerHeight) 
+
 
       this.$parent.$parent.addArrowListener();
-      this.$store.commit('mod_workspace/SET_startArrowID', el.layerId);
+      //  the start id should be setted as varid and layerid;
+      // this.$store.commit('mod_workspace/SET_startArrowID', el.layerId);
+      this.$store.commit('mod_workspace/SET_startArrowID', {
+        outputDotId,
+        outputLayerId,
+        layerId: this.dataEl.layerId,
+      });
+      this.$store.dispatch('mod_workspace/SET_elementUnselect');
       this.$store.commit('mod_workspace/SET_preArrowStart', {
-        y: el.layerMeta.position.top + layerSize/2,
-        x: el.layerMeta.position.left + layerSize/2
+        y: (el.layerMeta.position.top + dotPositionHeight) + 3,
+        x: (el.layerMeta.position.left + dotPositionWidth) + 3
       });
     },
     Mix_paintArrow_arrowEndPaint(ev) {
-      console.log("This is the event");
       ev.preventDefault();
       //ev.stopPropagation();
+      const { inputDotId, inputLayerId } = ev.target.dataset;
+      if(!inputDotId || !inputLayerId) {
+        return;
+      }
       this.$parent.$parent.removeArrowListener();
-      this.$store.dispatch('mod_workspace/ADD_arrow', this.dataEl.layerId);
+      this.$store.dispatch('mod_workspace/ADD_arrow', {
+        inputDotId,
+        inputLayerId,
+        layerId: this.dataEl.layerId,
+      }).then(() => {
+        this.$store.dispatch('mod_api/API_getBatchPreviewSampleForElementDescendants', this.dataEl.layerId);
+      });
       this.$store.commit('mod_workspace/CLEAR_preArrow');
       this.$store.dispatch('mod_tutorials/pointActivate', {way: 'next', validation: this.activeAction.id});
-      this.$store.dispatch('mod_api/API_updateNetworkSetting', this.dataEl.layerId);
+      // this.$store.dispatch('mod_api/API_updateNetworkSetting', this.dataEl.layerId);
     }
   }
 }

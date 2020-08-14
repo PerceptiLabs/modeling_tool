@@ -29,6 +29,15 @@ class PackageFilter(logging.Filter):
             
         return True    
 
+class QueuingHandler(logging.Handler):
+
+    def __init__(self, *args, message_queue, **kwargs):
+        logging.Handler.__init__(self, *args, **kwargs)
+        self.message_queue = message_queue
+
+    def emit(self, record):
+        self.message_queue.put(self.format(record).rstrip('\n'))
+
 def is_docker():
     try:
         return os.path.isfile("/.dockerenv")

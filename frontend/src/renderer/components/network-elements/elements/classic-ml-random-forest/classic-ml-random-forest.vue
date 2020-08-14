@@ -2,26 +2,24 @@
   base-net-el(
     :data-el="elementData"
   )
-    view-el(:current-el="elementData")
-    template(slot="settings")
-      settings-el(:current-el="elementData")
+    view-el(:current-el="elementData" :withLayerTypeText="withLayerTypeText")
 
 </template>
 
 <script>
   import BaseNetEl    from '@/components/network-elements/net-base-element/net-base-element.vue';
   import ViewEl       from './view-classic-ml-random-forest.vue';
-  import SettingsEl   from './set-classic-ml-random-forest.vue';
+  
 
   export default {
     name: 'ClassicMLRandomForest',
     components: {
       BaseNetEl,
-      ViewEl,
-      SettingsEl
+      ViewEl
     },
     props: {
-      elementData: Object
+      elementData: Object,
+     withLayerTypeText: Boolean,
     },
   }
 </script>

@@ -21,6 +21,7 @@ from abc import ABC, abstractmethod
 from queue import Queue
 
 
+from perceptilabs.graph.spec import GraphSpec
 from perceptilabs.utils import deprecated
 from perceptilabs.issues import IssueHandler, UserlandError
 from perceptilabs.core_new.graph import Graph
@@ -29,7 +30,7 @@ from perceptilabs.core_new.utils import TracebackFrame
 from perceptilabs.core_new.layers import TrainingSupervised, TrainingReinforce, TrainingRandom
 from perceptilabs.core_new.layers.definitions import DEFINITION_TABLE
 from perceptilabs.core_new.communication import TrainingClient, State
-from perceptilabs.core_new.layers.script import ScriptFactory, FetchParameterError
+from perceptilabs.script import ScriptFactory, FetchParameterError
 from perceptilabs.core_new.communication.deployment import ThreadStrategy, DeploymentStrategy
 from perceptilabs.messaging import MessagingFactory
 from perceptilabs.logconf import APPLICATION_LOGGER, DATA_LOGGER
@@ -44,7 +45,8 @@ training_script_name = tempfile.mkstemp(suffix=".py")[1]
 
 
 def make_graph_spec_conform_to_schema(graph_spec):
-    graph_spec = graph_spec['Layers'] 
+    if 'Layers' in graph_spec:
+        graph_spec = graph_spec['Layers'] 
 
     edges = []
     nodes = []
@@ -61,7 +63,7 @@ def make_graph_spec_conform_to_schema(graph_spec):
         nodes.append(node)
         
         # Edges
-        fwd_cons = [layer_id for layer_id, _ in layer_spec['forward_connections']]
+        fwd_cons = [x['dst_id'] for x in layer_spec['forward_connections']]
         for to_id in fwd_cons:
             edges.append([from_id, to_id])
 
@@ -185,20 +187,25 @@ class Core:
         self._time_started = None
         self._time_ended = None
         
-    def run(self, graph_spec, session_id: str=None, on_iterate: List[Callable]=None, auto_close=False):
+    def run(self, graph_spec: GraphSpec, session_id: str=None, on_iterate: List[Callable]=None, auto_close=False):
+        on_iterate = on_iterate or []
         self._graph_spec = graph_spec
         step = self.run_stepwise(graph_spec, session_id=session_id, auto_close=auto_close)
         for counter, _ in enumerate(step):
             if counter % 100 == 0:
                 logger.debug(f"Running step {counter}")
+
+            for f in on_iterate:
+                f(counter, self)
+                    
         
     def run_stepwise(self, graph_spec, session_id=None, auto_close=False):
         self._session_id = session_id = session_id or uuid.uuid4().hex        
         topic_generic = f'generic-{session_id}'.encode()    
         topic_snapshots = f'snapshots-{session_id}'.encode()
         
-        graph = self._graph_builder.build_from_spec(graph_spec)        
-        script_path = self._create_script(graph, session_id, topic_generic, topic_snapshots, userland_timeout=self._userland_timeout)
+        #graph = self._graph_builder.build_from_spec(graph_spec)        
+        script_path = self._create_script(graph_spec, session_id, topic_generic, topic_snapshots, userland_timeout=self._userland_timeout)
 
         try:
             self._deployment_strategy.run(script_path)
@@ -242,9 +249,9 @@ class Core:
         
         message = f'SyntaxError:\n\n' + \
                   f'File "{exception.filename}", line {exception.lineno}, offset {exception.offset}\n' + \
-                  f'origin {node.layer_id}, line {true_lineno} [{node.layer_type}]\n' +\
+                  f'origin {node.id_}, line {true_lineno} [{node.type_}]\n' +\
                   f'  {exception.text}\n'
-        error = UserlandError(node.layer_id, node.layer_type, exception.lineno, message)
+        error = UserlandError(node.id_, node.type_, exception.lineno, message)
         self._handle_userland_error(error)
 
 
@@ -253,9 +260,9 @@ class Core:
         
         message = f'SyntaxError:\n\n' + \
                   f'File "{exception.filename}"\n' + \
-                  f'origin {node.layer_id}, line {true_lineno} [{node.layer_type}]\n' +\
+                  f'origin {node.id_}, line {true_lineno} [{node.type_}]\n' +\
                   f'  {exception.text}\n'
-        error = UserlandError(node.layer_id, node.layer_type, exception.lineno, message)
+        error = UserlandError(node.id_, node.type_, exception.lineno, message)
         self._handle_userland_error(error)
 
         
@@ -297,7 +304,7 @@ class Core:
     def _await_status_done(self, client_step):
         while (self._client.training_state not in State.done_states) and not self.is_closed:
             next(client_step)
-            time.sleep(1.0)            
+            time.sleep(1.0)
             yield
 
     def _await_status_exit(self, client_step):
@@ -326,21 +333,15 @@ class Core:
     
     def _on_receive_graph(self, graph):
         self._graphs.append(graph)
-        
         self._last_graph = graph
 
-        #if self._dataset_distr is not None:
-        #    data_node_ids = [n.layer_id for n in graph.data_nodes if n != graph.active_training_node]
-        #    batches = {id_: graph.active_training_node.layer.layer_outputs[id_] for id_ in data_node_ids}
-        #    self._dataset_distr.draw_sample(batches)
-        
         if not self._collected_start_metrics and self._last_graph is not None:
-            collect_start_metrics(self._graph_spec, self._last_graph, self._session_id)        
+            collect_start_metrics(self._graph_spec.to_dict(), self._last_graph, self._session_id)        
             self._collected_start_metrics = True        
 
     def _on_training_ended(self, session_info):
         if self._graph_spec is not None:
-            collect_end_metrics(self._graph_spec, self._last_graph, self._session_id, session_info)
+            collect_end_metrics(self._graph_spec.to_dict(), self._last_graph, self._session_id, session_info)
         self._time_ended = time.time()
         if self._paused_time_stamp is not None:
             self._time_paused += self._time_ended - self._paused_time_stamp
@@ -348,10 +349,9 @@ class Core:
     def _on_log_message(self, message):
         pass    
 
-    def _create_script(self, graph, session_id, topic_generic, topic_snapshots, userland_timeout):
-
+    def _create_script(self, graph_spec, session_id, topic_generic, topic_snapshots, userland_timeout):
         try:
-            code, self._line_to_node_map = self._script_factory.make(graph, session_id, topic_generic, topic_snapshots, userland_timeout=self._userland_timeout)
+            code, self._line_to_node_map = self._script_factory.make(graph_spec, session_id, topic_generic, topic_snapshots, userland_timeout=self._userland_timeout)
         except FetchParameterError as e:
              error = UserlandError(
                  e.layer_id, e.layer_type,
@@ -385,16 +385,16 @@ class Core:
                 last_lineno = true_lineno
 
                 message += f'File "{frame.filename}", line {frame.lineno}, in {frame.name}, ' + \
-                           f'origin {node.layer_id}, line {true_lineno} [{node.layer_type}]\n' +\
+                           f'origin {node.id_}, line {true_lineno} [{node.type_}]\n' +\
                            f'  {frame.line}\n'
             else:
                 message += f'File "{frame.filename}", line {frame.lineno}, in {frame.name}\n' + \
                            f'  {frame.line}\n'
         
         if last_node:
-            error = UserlandError(last_node.layer_id, last_node.layer_type, last_lineno, message)
+            error = UserlandError(last_node.id_, last_node.type_, last_lineno, message)
         else:
-            error = UserlandError(node.layer_id, node.layer_type, frame.lineno, message)
+            error = UserlandError(node.id_, node.type_, frame.lineno, message)
 
         self._handle_userland_error(error)
         

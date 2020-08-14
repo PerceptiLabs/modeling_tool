@@ -1,45 +1,44 @@
 <template lang="pug">
-  net-base-settings(
-    :current-el="currentEl"
-    id-set-btn="tutorial_button-apply"
-    @press-apply="saveSettings($event)"
-    @press-confirm="confirmSettings"
+  .settings-layer_section.rescale
+    .form_row
+      .form_label Width * Height:
+      .form_input
+        input(
+          type="number"
+          v-model="settings.width"
+          @focus="setIsSettingInputFocused(true)"
+          @blur="setIsSettingInputFocused(false)"
+          @keyup="changeWidth"
+          )
+      .form_input
+        input(
+          type="number" 
+          v-model="settings.height"
+          @focus="setIsSettingInputFocused(true)"
+          @blur="setIsSettingInputFocused(false)"
+          @keyup="changeHeight"
+          )
+    button.btn.btn--icon.visible-icon.rescale(
+      type="button"
+      :class="{'invisible-icon': isLocked}"
+      @click="toggleLock()"
     )
-    template(slot="Settings-content")
-      .settings-layer_section.rescale
-        .form_row
-          .form_label Width * Height:
-          .form_input
-            input(type="number" v-model="settings.width" @keyup="changeWidth")
-          .form_input
-            input(type="number" v-model="settings.height"  @keyup="changeHeight")
-        button.btn.btn--icon.visible-icon.rescale(
-          type="button"
-          :class="{'invisible-icon': !isLocked}"
-          @click="toggleLock()"
-        )
-          i.icon.icon-lock
-        i.icon.multiple.icon-app-close
-
-
-    template(slot="Code-content")
-      settings-code(
-        :current-el="currentEl"
-        :el-settings="settings"
-        v-model="coreCode"
-      )
-
+      i.icon.icon-lock
+    i.icon.multiple.icon-app-close
+    
 </template>
 
 <script>
   import mixinSet       from '@/core/mixins/net-element-settings.js';
+  import mixinFocus     from '@/core/mixins/net-element-settings-input-focus.js';
   import { mapActions, mapGetters } from 'vuex';
 
   export default {
     name: 'SetProcessRescale',
-    mixins: [mixinSet],
+    mixins: [mixinSet, mixinFocus],
     mounted() {
       this.$store.dispatch('mod_api/API_getInputDim');
+      this.saveSettingsToStore("Settings");
       if(this.currentEl.layerMeta.InputDim) {
         const dimention = this.currentEl.layerMeta.InputDim.split(",");
         const width = parseInt(dimention[0].slice(1));
@@ -77,6 +76,23 @@
       toggleLock() {
         this.isLocked = !this.isLocked;
       }
+    },
+    watch: {
+      'settings.width': {
+        handler() {
+          if(this.isLocked) {
+            this.settings.height = this.settings.width * this.ratio;
+          }
+        }
+      },
+      'settings.height': {
+        handler() {
+          if(this.isLocked) {
+            this.settings.width = this.settings.height / this.ratio;
+          }
+        }
+      }
+
     }
   }
 </script>

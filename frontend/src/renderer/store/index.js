@@ -3,11 +3,12 @@ import Vuex from 'vuex'
 
 import modules from './modules'
 import wsHistory from './plugins/workspace-history'
+import wsForwardBackwardConnections from './plugins/workspace-forward-backward-connection'
 
 Vue.use(Vuex);
 
 export default new Vuex.Store({
   strict: process.env.NODE_ENV !== 'production',
   modules,
-  plugins: [wsHistory]
+  plugins: [wsHistory, wsForwardBackwardConnections]
 })

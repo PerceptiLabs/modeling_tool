@@ -1,45 +1,108 @@
 <template lang="pug">
-  net-base-settings(
-    :current-el="currentEl"
-    @press-apply="saveSettings($event)"
-    @press-confirm="confirmSettings"
-  )
-    template(slot="Settings-content")
-      .settings-layer_section
-        .form_row(v-tooltip-interactive:right="interactiveInfo.labels")
-          .form_label Labels:
-          #tutorial_labels.form_input(data-tutorial-hover-info)
-            base-select(
-              v-model="settings.Labels"
-              :select-options="inputLayers"
-            )
-      .settings-layer_section
+  div
+    .settings-layer_section
+      .form_row
+        .form_label(v-tooltip-interactive:right="interactiveInfo.epochs") Epochs:
+        #tutorial_epochs.form_input(data-tutorial-hover-info)
+          input(
+            type="number"
+            v-model="settings.Epochs"
+            @focus="setIsSettingInputFocused(true)"
+            @blur="setIsSettingInputFocused(false)")
+      .form_row
+        .form_label Batch size:
+        .form_input
+          input(
+            type="number"
+            v-model="settings.Batch_size"
+            @focus="setIsSettingInputFocused(true)"
+            @blur="setIsSettingInputFocused(false)")
+    .settings-layer_section
+      .form_row(v-tooltip-interactive:right="interactiveInfo.costFunction")
+        .form_label Loss function:
+        #tutorial_cost-function.tutorial-relative.form_input(data-tutorial-hover-info)
+          base-radio(group-name="group" value-input="Cross_entropy" v-model="settings.Loss")
+            span Cross-Entropy
+          base-radio(group-name="group" value-input="Quadratic" v-model="settings.Loss")
+            span Quadratic
+          base-radio(group-name="group" value-input="W_cross_entropy" v-model="settings.Loss")
+            span Weighted Cross-Entropy
+          base-radio(group-name="group" value-input="Dice" v-model="settings.Loss")
+            span DICE
+            //-Cross-Entropy
+      .form_row(v-if="settings.Loss === 'W_cross_entropy'")
+        .form_label Class weights:
+        .form_input
+          input(
+            type="number"
+            v-model="settings.Class_weights"
+            @focus="setIsSettingInputFocused(true)"
+            @blur="setIsSettingInputFocused(false)")
+    .settings-layer_section
+      .form_row(v-tooltip-interactive:right="interactiveInfo.optimizer")
+        .form_label Optimizer:
+        #tutorial_optimizer.form_input(data-tutorial-hover-info)
+          base-radio(group-name="group1" value-input="ADAM" v-model="settings.Optimizer")
+            span ADAM
+          base-radio(group-name="group1" value-input="SGD" v-model="settings.Optimizer")
+            span SGD
+          base-radio(group-name="group1" value-input="Momentum" v-model="settings.Optimizer")
+            span Momentum
+          base-radio(group-name="group1" value-input="RMSprop" v-model="settings.Optimizer")
+            span RMSprop
+
+      template(v-if="settings.Optimizer === 'ADAM'")
         .form_row
-          .form_label(v-tooltip-interactive:right="interactiveInfo.epochs") Epochs:
-          #tutorial_epochs.form_input(data-tutorial-hover-info)
-            input(type="number" v-model="settings.Epochs")
+          .form_label Beta 1:
+          .form_input
+            input(
+              type="number"
+              v-model="settings.Beta_1"
+              @focus="setIsSettingInputFocused(true)"
+              @blur="setIsSettingInputFocused(false)")
         .form_row
-          .form_label Batch size:
+          .form_label Beta 2:
           .form_input
-            input(type="number" v-model="settings.Batch_size")
-      .settings-layer_section
-        .form_row(v-tooltip-interactive:right="interactiveInfo.costFunction")
-          .form_label Loss function:
-          #tutorial_cost-function.tutorial-relative.form_input(data-tutorial-hover-info)
-            base-radio(group-name="group" value-input="Cross_entropy" v-model="settings.Loss")
-              span Cross-Entropy
-            base-radio(group-name="group" value-input="Quadratic" v-model="settings.Loss")
-              span Quadratic
-            base-radio(group-name="group" value-input="W_cross_entropy" v-model="settings.Loss")
-              span Weighted Cross-Entropy
-            base-radio(group-name="group" value-input="Dice" v-model="settings.Loss")
-              span DICE
-              //-Cross-Entropy
-        .form_row(v-if="settings.Loss === 'W_cross_entropy'")
-          .form_label Class weights:
+            input(
+              type="number"
+              v-model="settings.Beta_2"
+              @focus="setIsSettingInputFocused(true)"
+              @blur="setIsSettingInputFocused(false)")
+      template(v-if="settings.Optimizer === 'Momentum'")
+        .form_row
+          .form_label Momentum:
           .form_input
-            input(type="number" v-model="settings.Class_weights")
-      .settings-layer_section
+            input(
+              type="number"
+              v-model="settings.Momentum"
+              @focus="setIsSettingInputFocused(true)"
+              @blur="setIsSettingInputFocused(false)")
+        .form_row
+          .form_label Decay rate:
+          .form_input
+            input(
+              type="number"
+              v-model="settings.Decay_rate"
+              @focus="setIsSettingInputFocused(true)"
+              @blur="setIsSettingInputFocused(false)")
+        .form_row
+          .form_label Decay steps:
+          .form_input
+            input(
+              type="number"
+              v-model="settings.Decay_steps"
+              @focus="setIsSettingInputFocused(true)"
+              @blur="setIsSettingInputFocused(false)")
+    .settings-layer_section
+      .form_row(v-tooltip-interactive:right="interactiveInfo.learningRate")
+        .form_label Learning rate:
+        #tutorial_learning_rate.form_input(data-tutorial-hover-info)
+          input(
+            type="number"
+            v-model="settings.Learning_rate"
+            @focus="setIsSettingInputFocused(true)"
+            @blur="setIsSettingInputFocused(false)")
+    .settings-layer_section
         .form_row
           .form_label Additional Stop Condition:
           #tutorial_stop-condition.tutorial-relative.form_input(data-tutorial-hover-info)
@@ -51,67 +114,30 @@
           .form_row
             .form_label Target Accuracy for Stop Condition:
             .form_input
-              input(type="number" v-model="settings.Stop_Target_Accuracy")
+              input(
+                type="number"
+                v-model="settings.Stop_Target_Accuracy"
+                @focus="setIsSettingInputFocused(true)"
+                @blur="setIsSettingInputFocused(false)")
               span %
-              
 
-      .settings-layer_section
-        .form_row(v-tooltip-interactive:right="interactiveInfo.optimizer")
-          .form_label Optimizer:
-          #tutorial_optimizer.form_input(data-tutorial-hover-info)
-            base-radio(group-name="group1" value-input="ADAM" v-model="settings.Optimizer")
-              span ADAM
-            base-radio(group-name="group1" value-input="SGD" v-model="settings.Optimizer")
-              span SGD
-            base-radio(group-name="group1" value-input="Momentum" v-model="settings.Optimizer")
-              span Momentum
-            base-radio(group-name="group1" value-input="RMSprop" v-model="settings.Optimizer")
-              span RMSprop
-
-        template(v-if="settings.Optimizer === 'ADAM'")
-          .form_row
-            .form_label Beta 1:
-            .form_input
-              input(type="number" v-model="settings.Beta_1")
-          .form_row
-            .form_label Beta 2:
-            .form_input
-              input(type="number" v-model="settings.Beta_2")
-        template(v-if="settings.Optimizer === 'Momentum'")
-          .form_row
-            .form_label Momentum:
-            .form_input
-              input(type="number" v-model="settings.Momentum")
-          .form_row
-            .form_label Decay rate:
-            .form_input
-              input(type="number" v-model="settings.Decay_rate")
-          .form_row
-            .form_label Decay steps:
-            .form_input
-              input(type="number" v-model="settings.Decay_steps")
-      .settings-layer_section
-        .form_row(v-tooltip-interactive:right="interactiveInfo.learningRate")
-          .form_label Learning rate:
-          #tutorial_learning_rate.form_input(data-tutorial-hover-info)
-            input(type="number" v-model="settings.Learning_rate")
-
-    template(slot="Code-content")
-      settings-code(
-        :current-el="currentEl"
-        :el-settings="settings"
-        v-model="coreCode"
-      )
+    //- template(slot="Code-content")
+    //-   settings-code(
+    //-     :current-el="currentEl"
+    //-     :el-settings="settings"
+    //-     v-model="coreCode"
+    //-   )
 
 </template>
 
 <script>
 import mixinSet from '@/core/mixins/net-element-settings.js';
+import mixinFocus     from '@/core/mixins/net-element-settings-input-focus.js';
 import { mapGetters, mapActions } from 'vuex';
 
 export default {
   name: 'SetTrainNormal',
-  mixins: [ mixinSet ],
+  mixins: [ mixinSet, mixinFocus ],
   beforeMount() {
     this.inputId.forEach((id)=> {
       let elList = this.currentNetworkList;
@@ -167,6 +193,9 @@ export default {
         }
       }
     }
+  },
+  mounted() {
+    this.saveSettingsToStore("Settings");
   },
   computed: {
     ...mapGetters({

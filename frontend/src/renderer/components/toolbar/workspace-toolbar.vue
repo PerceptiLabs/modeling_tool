@@ -129,7 +129,7 @@
 
           span Report
           i.icon.icon-bug-report
-
+      sidebar-toggle-button
     .layers-toolbar(v-if="!statisticsIsOpen && !testIsOpen")
       layers-toolbar
 </template>
@@ -141,10 +141,10 @@ import { trainingElements, deepLearnElements }  from '@/core/constants.js';
 import { goToLink }                             from '@/core/helpers.js'
 
 import LayersToolbar            from '@/components/toolbar/workspace-toolbar-layers.vue';
-
+import SidebarToggleButton            from '@/components/toolbar/sidebar-toggle-button.vue';
 export default {
   name: 'WorkspaceToolbar',
-  components: { LayersToolbar },
+  components: { LayersToolbar, SidebarToggleButton },
   data() {
     return {
       x: null,
@@ -397,14 +397,14 @@ export default {
   .main_toolbar {
     display: flex;
     align-items: center;
-    padding: 5px 2rem 5px 0;
+    padding: 5px 29px 5px 0;
     background-color: $bg-toolbar-2;
     border: 1px solid rgba(97, 133, 238, 0.4);
     border-radius: 0px;
     position: relative;
     grid-area: toolbar;
-    z-index: 2;
-    max-height: $h-toolbar;
+    z-index: 7;
+    height: $h-toolbar;
   }
   .toggle-wrap {
     width: $w-layersbar * .87;

@@ -39,11 +39,24 @@ const baseNetDrag = {
     },
     getDragBoxSize() {
       const selectedItems = {...this.selectedItems()};
-      const selectedItemsPositions = Object.values(selectedItems).map(el => el.layerMeta.position);
+      const selectedItemsPositions = Object.values(selectedItems).map(el => {
+        const workspaceElement = document.querySelector(`[layer-id="${el.layerId}"]`);
+        const width = workspaceElement.offsetWidth * this.networkScale;
+        const height = workspaceElement.offsetHeight * this.networkScale;
+        let result = {
+          ...el.layerMeta.position,
+          right: width + el.layerMeta.position.left,
+          bottom: height + el.layerMeta.position.top,
+        }
+        return result
+      });
       const topValues = selectedItemsPositions.map(x => x.top);
       const leftValues = selectedItemsPositions.map(x => x.left);
-      const width = Math.max(...leftValues) - Math.min(...leftValues) + 60;
-      const height = Math.max(...topValues) - Math.min(...topValues) + 60;
+      const rightValues = selectedItemsPositions.map(x => x.right);
+      const bottomValues = selectedItemsPositions.map(x => x.bottom);
+
+      const width = Math.max(...rightValues) - Math.min(...leftValues);
+      const height = Math.max(...bottomValues) - Math.min(...topValues);
       return {width, height, top: Math.min(...topValues), left: Math.min(...leftValues)};
     },
     applyCoefficientScale(num) {

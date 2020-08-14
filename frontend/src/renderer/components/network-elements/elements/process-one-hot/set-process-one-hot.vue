@@ -1,32 +1,25 @@
 <template lang="pug">
-  net-base-settings(
-    :current-el="currentEl"
-    @press-apply="saveSettings($event)"
-    @press-confirm="confirmSettings"
-  )
-    template(slot="Settings-content")
-      .settings-layer_section
-        .form_row(v-tooltip-interactive:right="interactiveInfo")
-          .form_label Number of classes:
-          #tutorial_number-of-classes.form_input.tutorial-relative
-            input(type="text" v-model="settings.N_class")
-
-    template(slot="Code-content")
-      settings-code(
-        :current-el="currentEl"
-        :el-settings="settings"
-        v-model="coreCode"
-      )
+  .settings-layer_section
+    .form_row(v-tooltip-interactive:right="interactiveInfo")
+      .form_label Number of classes:
+      #tutorial_number-of-classes.form_input.tutorial-relative
+        input(
+          type="text"
+          v-model="settings.N_class"
+          @focus="setIsSettingInputFocused(true)"
+          @blur="setIsSettingInputFocused(false)"
+          )
 
 </template>
 
 <script>
 import mixinSet       from '@/core/mixins/net-element-settings.js';
+import mixinFocus     from '@/core/mixins/net-element-settings-input-focus.js';
 import {mapGetters, mapActions } from 'vuex';
 
 export default {
   name: 'SetProcessOneHot',
-  mixins: [mixinSet],
+  mixins: [mixinSet, mixinFocus],
   data() {
     return {
       settings: {
@@ -37,6 +30,9 @@ export default {
         text: 'Set the number of classes in the data'
       }
     }
+  },
+  mounted() {
+    this.saveSettingsToStore("Settings");
   },
   watch: {
     'settings.N_class': {

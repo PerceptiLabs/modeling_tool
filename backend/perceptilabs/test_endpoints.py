@@ -1,7 +1,9 @@
+import pytest
 import tempfile
 import numpy as np
 
 from perceptilabs.mainInterface import Interface
+import perceptilabs.utils as utils
 
 def create_json_network():
     n_classes = 10
@@ -16,7 +18,8 @@ def create_json_network():
     np.save(f2.name, mat)
     
     inputs_path = f1.name.replace("\\","/")
-    labels_path = f2.name.replace("\\","/")  
+    labels_path = f2.name.replace("\\","/")
+
     json_network = {
         "1": {
             "Name": "data_inputs",
@@ -25,14 +28,21 @@ def create_json_network():
                 "accessProperties": {
                     "Sources": [{"type": "file", "path": inputs_path}],
                     "Partition_list": [[70, 20, 10]],
-                    "Batch_size": 8,
                     "Shuffle_data": False,
                     "Columns": []                        
                 },
             },
             "backward_connections": [],
-            "forward_connections": [["3", "reshape"]],
-            "Code": ""
+            "forward_connections": [
+                {
+                    "src_var": "output",
+                    "dst_id": "3",
+                    "dst_name": "reshape",
+                    "dst_var": "input"
+                }
+            ],
+            "Code": None,
+            "checkpoint": []
         },
         "2": {
             "Name": "data_labels",
@@ -42,14 +52,21 @@ def create_json_network():
                 "accessProperties": {
                     "Sources": [{"type": "file", "path": labels_path}],
                     "Partition_list": [[70, 20, 10]],
-                    "Batch_size": 8,
                     "Shuffle_data": False,
                     "Columns": []
                 },
             },
             "backward_connections": [],
-            "forward_connections": [["5", "one_hot"]],
-            "Code": ""
+            "forward_connections": [
+                {
+                    "src_var": "output",
+                    "dst_id": "5",
+                    "dst_name": "one_hot",                        
+                    "dst_var": "input"
+                }
+            ],
+            "Code": None,
+            "checkpoint": []
         },
         "3": {
             "Name": "reshape",
@@ -58,9 +75,24 @@ def create_json_network():
                 "Shape": [28, 28, 1],
                 "Permutation": [0, 1, 2]
             },
-            "backward_connections": [["1", "data_inputs"]],
-            "forward_connections": [["4", "fc"]],
-            "Code": ""
+            "backward_connections": [
+                {
+                    "src_id": "1",
+                    "src_name": "data_inputs",                        
+                    "src_var": "output",
+                    "dst_var": "input"
+                }
+            ],
+            "forward_connections": [
+                {
+                    "src_var": "output",
+                    "dst_id": "4",
+                    "dst_name": "fc",                                                
+                    "dst_var": "input"
+                }
+            ],
+            "Code": None,
+            "checkpoint": []
         },
         "4": {
             "Name": "fc",
@@ -69,11 +101,27 @@ def create_json_network():
                 "Neurons": str(n_classes),
                 "Activation_function" : "Sigmoid",
                 "Dropout": False,
-                "Keep_prob": "1"
+                "Keep_prob": "1",
+                "Batch_norm": False
             },
-            "backward_connections": [["3", "reshape"]],
-            "forward_connections": [["6", "training"]],
-            "Code": ""
+            "backward_connections": [
+                {
+                    "src_id": "3",
+                    "src_name": "reshape",                                                
+                    "src_var": "output",
+                    "dst_var": "input"
+                }
+            ],
+            "forward_connections": [
+                {
+                    "src_var": "output",
+                    "dst_id": "6",
+                    "dst_name": "training",
+                    "dst_var": "predictions"
+                }
+            ],
+            "Code": None,
+            "checkpoint": []
         },
         "5": {
             "Name": "one_hot",
@@ -81,9 +129,24 @@ def create_json_network():
             "Properties": {
                 "N_class": n_classes
             },
-            "backward_connections": [["2", "data_labels"]],
-            "forward_connections": [["6", "training"]],
-            "Code": ""
+            "backward_connections": [
+                {
+                    "src_id": "2",
+                    "src_name": "data_labels",
+                    "src_var": "output",
+                    "dst_var": "input"
+                }
+            ],
+            "forward_connections": [
+                {
+                    "src_var": "output",
+                    "dst_id": "6",
+                    "dst_name": "training",                        
+                    "dst_var": "labels"
+                }
+            ],
+            "Code": None,
+            "checkpoint": []
         },
         "6": {
             "Name": "training",
@@ -91,7 +154,7 @@ def create_json_network():
             "Properties": {
                 "Labels": "5",
                 "Loss": "Quadratic",
-                "Epochs": 100,
+                "Epochs": 50,
                 "Class_weights": "1",  # TODO: what's this?
                 "Optimizer": "SGD",
                 "Beta_1": "0.9",
@@ -99,17 +162,32 @@ def create_json_network():
                 "Momentum": "0.9",
                 "Decay_steps": "100000",
                 "Decay_rate": "0.96",
-                "Learning_rate": "0.5",
-                "Distributed": False
+                "Batch_size": 10,                    
+                "Learning_rate": "0.05",
+                "Distributed": False,
+                "Stop_condition": "Epochs"
             },
-            "backward_connections": [["4", "fc"], ["5", "one_hot"]],
-            "forward_connections": [],
-            "Code": ""
+            "backward_connections": [
+                {
+                    "src_id": "4",
+                    "src_name": "fc",                        
+                    "src_var": "output",
+                    "dst_var": "predictions"
+                },
+                {
+                    "src_id": "5",
+                    "src_name": "one_hot",                        
+                    "src_var": "output",
+                    "dst_var": "labels"
+                }
+            ],
+            "forward_connections": [],                
+            "Code": None,
+            "checkpoint": []
         }
-
     }
 
-    return json_network
+    return utils.patch_net_connections(json_network)
 
 def create_request(reciever, action, value):
     return {"reciever": reciever, "action":action, "value":value}
@@ -120,7 +198,7 @@ def send_request(request):
     checkpointDict=dict()
     lwDict=dict()
 
-    core_interface = Interface(cores, dataDict, checkpointDict, lwDict, core_mode='v1')
+    core_interface = Interface(cores, dataDict, checkpointDict, lwDict, core_mode='v2')
 
     return core_interface.create_response(request)
 
@@ -129,10 +207,28 @@ def test_getGraphOrder():
     action = "getGraphOrder"
     value = create_json_network()
 
+
     request = create_request(reciever, action, value)
     
     response, issue_handler = send_request(request)
     
     assert len(issue_handler.pop_warnings()) == 0
     assert len(issue_handler.pop_errors()) == 0
-    assert response == ['1','2','3','5','4','6']
+    assert (
+        response == ['1','3','4','2','5','6'] or
+        response == ['2', '5', '1', '3', '4', '6']
+    )
+
+
+@pytest.mark.skip    
+def test_start():
+    reciever = 0000
+    action = "Start"
+    value = create_json_network()
+
+
+    request = create_request(reciever, action, value)
+    
+    response, issue_handler = send_request(request)
+    
+    import pdb; pdb.set_trace()

@@ -1,25 +1,20 @@
 <template lang="pug">
-  net-base-settings(
-    :current-el="currentEl"
-    @press-apply="saveSettings($event)"
-    @press-confirm="confirmSettings"
-  )
-    template(slot="Settings-content")
-      .settings-layer_section
-        .form_row(v-tooltip-interactive:right="interactiveInfo.selected_layer")
-          .form_label Selected Layer:
-          #tutorial_selected_layer.form_input(data-tutorial-hover-info)
-            base-select(
-              v-model="settings.selected_layer"
-              :select-options="inputLayers"
-            )
+  div
+    .settings-layer_section
+      // .form_row(v-tooltip-interactive:right="interactiveInfo.selected_layer")
+      //   .form_label Selected Layer:
+      //   #tutorial_selected_layer.form_input(data-tutorial-hover-info)
+      //     base-select(
+      //       v-model="settings.selected_layer"
+      //       :select-options="inputLayers"
+      //     )
 
-    template(slot="Code-content")
-      settings-code(
-        :current-el="currentEl"
-        :el-settings="settings"
-        v-model="coreCode"
-      )
+    //- template(slot="Code-content")
+    //-   settings-code(
+    //-     :current-el="currentEl"
+    //-     :el-settings="settings"
+    //-     v-model="coreCode"
+    //-   )
 
 </template>
 
@@ -62,6 +57,9 @@ export default {
         },
       }
     }
-  }
+  },
+  mounted() {
+    this.saveSettingsToStore("Settings");
+  },
 }
 </script>

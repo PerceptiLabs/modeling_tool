@@ -1,92 +1,103 @@
 <template lang="pug">
-  net-base-settings(
-    :current-el="currentEl"
-    @press-apply="saveSettings($event)"
-    @press-confirm="confirmSettings"
-  )
-    template(slot="Settings-content")
-      .settings-layer_section
-        .form_row(v-tooltip-interactive:right="interactiveInfo.dimension")
-          .form_label Dimension:
-          .form_input
-            base-radio(group-name="group" value-input="Automatic" v-model="settings.Deconv_dim")
-              span Automatic
-            base-radio(group-name="group" value-input="1D" v-model="settings.Deconv_dim")
-              span 1D
-            base-radio(group-name="group" value-input="2D" v-model="settings.Deconv_dim")
-              span 2D
-            base-radio(group-name="group" value-input="3D" v-model="settings.Deconv_dim")
-              span 3D
-      .settings-layer_section
-        .form_row(v-tooltip-interactive:right="interactiveInfo.patchSize")
-          .form_label Patch size:
-          .form_input
-            input( type="text" v-model="settings.Patch_size")
-      .settings-layer_section
-        .form_row(v-tooltip-interactive:right="interactiveInfo.stride")
-          .form_label Stride:
-          .form_input
-            input(type="text" v-model="settings.Stride")
-      .settings-layer_section
-        .form_row(v-tooltip-interactive:right="interactiveInfo.featureMaps")
-          .form_label Feature maps:
-          .form_input
-            input(type="text" v-model="settings.Feature_maps")
+  div
+    .settings-layer_section
+      .form_row(v-tooltip-interactive:right="interactiveInfo.dimension")
+        .form_label Dimension:
+        .form_input
+          base-radio(group-name="group" value-input="Automatic" v-model="settings.Deconv_dim")
+            span Automatic
+          base-radio(group-name="group" value-input="1D" v-model="settings.Deconv_dim")
+            span 1D
+          base-radio(group-name="group" value-input="2D" v-model="settings.Deconv_dim")
+            span 2D
+          base-radio(group-name="group" value-input="3D" v-model="settings.Deconv_dim")
+            span 3D
+    .settings-layer_section
+      .form_row(v-tooltip-interactive:right="interactiveInfo.patchSize")
+        .form_label Patch size:
+        .form_input
+          input(
+            type="text"
+            v-model="settings.Patch_size"
+            @focus="setIsSettingInputFocused(true)"
+            @blur="setIsSettingInputFocused(false)")
+    .settings-layer_section
+      .form_row(v-tooltip-interactive:right="interactiveInfo.stride")
+        .form_label Stride:
+        .form_input
+          input(
+            type="text"
+            v-model="settings.Stride"
+            @focus="setIsSettingInputFocused(true)"
+            @blur="setIsSettingInputFocused(false)")
+    .settings-layer_section
+      .form_row(v-tooltip-interactive:right="interactiveInfo.featureMaps")
+        .form_label Feature maps:
+        .form_input
+          input(
+            type="text"
+            v-model="settings.Feature_maps"
+            @focus="setIsSettingInputFocused(true)"
+            @blur="setIsSettingInputFocused(false)")
 
-      .settings-layer_section
-        .form_row(v-tooltip-interactive:right="interactiveInfo.zeroPadding")
-          .form_label Zero-padding:
-          .form_input
-            base-radio(group-name="group3" value-input="SAME"  v-model="settings.Padding")
-              span SAME
-            base-radio(group-name="group3" value-input="VALID"  v-model="settings.Padding")
-              span VALID
-      .settings-layer_section
-        .form_row(v-tooltip-interactive:right="interactiveInfo.activationFunction")
-          .form_label Activation function:
-          .form_input
-            base-radio(group-name="group1" value-input="None"  v-model="settings.Activation_function")
-              span None
-            base-radio(group-name="group1" value-input="Sigmoid"  v-model="settings.Activation_function")
-              span Sigmoid
-            base-radio(group-name="group1" value-input="ReLU"  v-model="settings.Activation_function")
-              span ReLU
-            base-radio(group-name="group1" value-input="Tanh"  v-model="settings.Activation_function")
-              span Tanh
-            base-radio(group-name="group1" value-input="Softmax"  v-model="settings.Activation_function")
-              span Softmax
-            base-radio(group-name="group1" value-input="LeakyReLU"  v-model="settings.Activation_function")
-              span LeakyReLU
-      .settings-layer_section
-        .form_row(v-tooltip-interactive:right="interactiveInfo.dropout")
-          .form_label Dropout:
-          .form_input
-            base-radio(group-name="group5" :value-input="true" v-model="settings.Dropout")
-              span Yes
-            base-radio(group-name="group5" :value-input="false" v-model="settings.Dropout")
-              span No
+    .settings-layer_section
+      .form_row(v-tooltip-interactive:right="interactiveInfo.zeroPadding")
+        .form_label Zero-padding:
+        .form_input
+          base-radio(group-name="group3" value-input="SAME"  v-model="settings.Padding")
+            span SAME
+          base-radio(group-name="group3" value-input="VALID"  v-model="settings.Padding")
+            span VALID
+    .settings-layer_section
+      .form_row(v-tooltip-interactive:right="interactiveInfo.activationFunction")
+        .form_label Activation function:
+        .form_input
+          base-radio(group-name="group1" value-input="None"  v-model="settings.Activation_function")
+            span None
+          base-radio(group-name="group1" value-input="Sigmoid"  v-model="settings.Activation_function")
+            span Sigmoid
+          base-radio(group-name="group1" value-input="ReLU"  v-model="settings.Activation_function")
+            span ReLU
+          base-radio(group-name="group1" value-input="Tanh"  v-model="settings.Activation_function")
+            span Tanh
+          base-radio(group-name="group1" value-input="Softmax"  v-model="settings.Activation_function")
+            span Softmax
+          base-radio(group-name="group1" value-input="LeakyReLU"  v-model="settings.Activation_function")
+            span LeakyReLU
+    .settings-layer_section
+      .form_row(v-tooltip-interactive:right="interactiveInfo.dropout")
+        .form_label Dropout:
+        .form_input
+          base-radio(group-name="group5" :value-input="true" v-model="settings.Dropout")
+            span Yes
+          base-radio(group-name="group5" :value-input="false" v-model="settings.Dropout")
+            span No
+    .settings-layer_section(v-if="settings.Dropout")
+      .form_row(v-tooltip-interactive:right="interactiveInfo.pooling")
+        .form_label Keep probability:
+        .form_input
+          input(
+            type="number" 
+            v-model="settings.Keep_prob"
+            @focus="setIsSettingInputFocused(true)"
+            @blur="setIsSettingInputFocused(false)"
+          )
 
-      .settings-layer_section(v-if="settings.Dropout")
-        .form_row(v-tooltip-interactive:right="interactiveInfo.pooling")
-          .form_label Keep probability:
-          .form_input
-            input(type="number" v-model="settings.Keep_prob")
+    .settings-layer_section
+      .form_row(v-tooltip-interactive:right="interactiveInfo.batchNormalization")
+        .form_label Batch Normalization:
+        .form_input
+          base-radio(group-name="group4" :value-input="true" v-model="settings.Batch_norm")
+            span Yes
+          base-radio(group-name="group4" :value-input="false" v-model="settings.Batch_norm")
+            span No
 
-      .settings-layer_section
-        .form_row(v-tooltip-interactive:right="interactiveInfo.batchNormalization")
-          .form_label Batch Normalization:
-          .form_input
-            base-radio(group-name="group4" :value-input="true" v-model="settings.Batch_norm")
-              span Yes
-            base-radio(group-name="group4" :value-input="false" v-model="settings.Batch_norm")
-              span No
-
-    template(slot="Code-content")
-      settings-code(
-        :current-el="currentEl"
-        :el-settings="settings"
-        v-model="coreCode"
-      )
+    //- template(slot="Code-content")
+    //-   settings-code(
+    //-     :current-el="currentEl"
+    //-     :el-settings="settings"
+    //-     v-model="coreCode"
+    //-   )
 
 </template>
 
@@ -145,5 +156,14 @@ export default {
       },
     }
   },
+  mounted() {
+    this.saveSettingsToStore("Settings");
+  },
+
+  methods: {
+    setIsSettingInputFocused(value) {
+      this.$store.commit("mod_workspace/setIsSettingInputFocused", value);
+    },
+  }
 }
 </script>

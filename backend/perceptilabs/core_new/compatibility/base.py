@@ -35,8 +35,8 @@ class CompatibilityCore:
         self._graph_spec = copy.deepcopy(graph_spec)
         self._issue_handler = issue_handler
 
-        self._sanitized_to_id = {sanitize_layer_name(spec['Name']): id_ for id_, spec in graph_spec['Layers'].items()}
-        self._sanitized_to_name = {sanitize_layer_name(spec['Name']): spec['Name'] for spec in graph_spec['Layers'].values()}        
+        self._sanitized_to_id = {spec.sanitized_name: spec.id_ for spec in graph_spec.nodes}
+        self._sanitized_to_name = {spec.sanitized_name: spec.name for spec in graph_spec.nodes}        
 
         self._threaded = threaded
         self._running = False
@@ -203,34 +203,44 @@ class CompatibilityCore:
 
 
 if __name__ == "__main__":
+
     import sys
     logging.basicConfig(stream=sys.stdout,
                         format='%(asctime)s - %(levelname)s - %(threadName)s - %(filename)s:%(lineno)d - %(message)s',
-                        level=logging.DEBUG)    
+                        level=logging.DEBUG)
+    
     import json
     import queue
     from perceptilabs.core_new.compatibility import CompatibilityCore
     from perceptilabs.core_new.graph.builder import GraphBuilder
-    from perceptilabs.core_new.layers.script import ScriptFactory
+    from perceptilabs.script import ScriptFactory
     from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP    
-
-    with open('network.json', 'r') as f:
+    from perceptilabs.graph.spec import GraphSpec
+    from perceptilabs.utils  import patch_net_connections
+    from perceptilabs.messaging import MessagingFactory, ZmqMessagingFactory, SimpleMessagingFactory
+    
+    with open('net.json', 'r') as f:
         network = json.load(f)
-
+        
         for _id, layer in network['Layers'].items():
             if layer['Type'] == 'TrainNormal' or layer['Type'] == 'Regression':
                 layer['Properties']['Distributed'] = False
 
-
+        network = network['Layers']
+               
     script_factory = ScriptFactory(simple_message_bus=True)
     messaging_factory = SimpleMessagingFactory()
     
     replica_by_name = {repl_cls.__name__: repl_cls for repl_cls in BASE_TO_REPLICA_MAP.values()}    
     graph_builder = GraphBuilder(replica_by_name)                
-
+    
     commandQ=queue.Queue()
     resultQ=queue.Queue()
+
+    network = patch_net_connections(network)
+    graph_spec = GraphSpec.from_dict(network)            
+
+    import pdb; pdb.set_trace()
     
-    core = CompatibilityCore(commandQ, resultQ, graph_builder, script_factory, messaging_factory, network, threaded=False)
-    core.run()
-        
+    core = CompatibilityCore(commandQ, resultQ, graph_builder, script_factory, messaging_factory, graph_spec, threaded=False)
+    core.run()    

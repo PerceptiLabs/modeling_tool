@@ -3,17 +3,16 @@
     //- .info-section_head(v-show="!testIsOpen")
     //-   h3 {{ sectionTitle }}
     view-box-btn-list(
-      v-if="btnList"
+      v-if="layerMetrics && layerType !== 'Training'"
       v-show="!testIsOpen"
-      :tab-set="btnList"
-      @set-current-btn="setCurrentBtn"
+      :layerType="'ViewBox'"
       )
     
     .info-section_main(v-if="elData !== null")
       component(
         :is="elData.componentName"
         :element-data="elData.viewBox"
-        :current-tab="currentBtn"
+        :current-tab="selectedMetric"
         @btn-list="setBtnList"
         )
 </template>
@@ -55,6 +54,7 @@
   import MathSwitch    from '@/components/network-elements/elements/math-switch/viewBox-math-switch.vue'
   import MathSoftmax  from '@/components/network-elements/elements/math-softmax/viewBox-math-softmax.vue'
   import MathSplit    from '@/components/network-elements/elements/math-split/viewBox-math-split.vue'
+  import LayerCustom          from '@/components/network-elements/elements/layer-custom/layer-custom.vue'
 
   import ViewBoxBtnList from '@/components/statistics/view-box-btn-list.vue'
 
@@ -87,8 +87,6 @@ export default {
   },
   data() {
     return {
-      currentBtn: '',
-      btnList: null,
       /*
       * btnList model
       *
@@ -109,9 +107,15 @@ export default {
   },
   computed: {
     ...mapGetters({
-      activePoint:   'mod_tutorials/getActivePoint',
-      testIsOpen:   'mod_workspace/GET_testIsOpen'
+      activePoint:    'mod_tutorials/getActivePoint',
+      testIsOpen:     'mod_workspace/GET_testIsOpen',
     }),
+    layerType() {
+      return this.elData.layerType;      
+    },
+    selectedMetric() {
+      return this.$store.getters['mod_statistics/getSelectedMetric'](this.layerType);
+    }
   },
   watch: {
     'elData.componentName': {
@@ -123,14 +127,14 @@ export default {
       pointActivate:    'mod_tutorials/pointActivate'
     }),
     setBtnList(objList) {
-      this.btnList = objList;
-    },
-    setCurrentBtn(name) {
-      this.currentBtn = name;
+      this.$store.commit('mod_statistics/setLayerMetrics', { layerType: this.layerType, layerMetrics: objList });
+      this.$store.commit('mod_statistics/setDefaultMetric', this.layerType);
     },
     resetBtnInfo() {
-      this.currentBtn = '';
-      this.btnList = null
+      this.$store.commit('mod_statistics/setLayerMetrics', { layerType: this.layerType, layerMetrics: '' });
+    },
+    layerMetrics() {
+      return this.$store.getters['mod_statistics/getLayerMetrics'](this.layerType);
     }
   }
 }

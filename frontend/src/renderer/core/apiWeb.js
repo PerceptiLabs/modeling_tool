@@ -187,6 +187,8 @@ function coreRequest(data, path, no, name) {
               //console.log('answer core data ', obgData);
               // let stopRequest = new Date();
               // calcTime(stopRequest, timeStartAnswer, 'transmitting', name);
+              // if(initialSentData.action !== 'checkCore' && process.env.NODE_ENV !== 'production')
+              // console.log('[CORE_REQ]:' + initialSentData.action, JSON.parse(JSON.stringify(initialSentData)), JSON.parse(JSON.stringify(obgData.content)));
               resolve(obgData.content);
             }
             //websocket.close();

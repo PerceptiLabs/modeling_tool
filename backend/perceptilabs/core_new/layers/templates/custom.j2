@@ -1,15 +1,15 @@
-{% macro layer_custom_inner(layer_name, code) %}
-class {{layer_name}}(InnerLayer):
-    def __call__(self, x: ...) -> Any:
+{% macro layer_custom_inner(layer_spec, graph_spec=None) %}
+class {{layer_spec.sanitized_name}}(InnerLayer):
+    def __call__(self, inputs: Dict[str, tf.Tensor]) -> Dict[str, tf.Tensor]:
         """ Returns a transformed version of the input data.
 
         Args:
-            x: some form of input (e.g., a tf.Tensor).
+            inputs: a dict of inputs (e.g., a tf.Tensor).
 
         Returns:
-            The transformed input data.
+            The transformed input data in a dict.
         """
-        return x
+        return inputs
 
     @property
     def variables(self) -> Dict[str, Picklable]:

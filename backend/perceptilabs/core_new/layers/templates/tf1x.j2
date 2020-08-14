@@ -1,17 +1,21 @@
-{% from 'tf1x_utils.j2' import batch_normal %}
+{% from 'tf1x_utils.j2' import batch_normal, activation_function, activation_name %}
 
-{% macro layer_tf1x_switch(layer_name, selected_layer) %}
-class {{layer_name}}(Tf1xLayer):
+{% macro layer_tf1x_switch(layer_spec, graph_spec=None) %}
+class {{layer_spec.sanitized_name}}(Tf1xLayer):
     def __init__(self):
-        self._selected_layer_id = '{{selected_layer}}'
-
-    def __call__(self, x, is_training: tf.Tensor = None): #x: Dict[tf.Tensor]  TODO: change this when backend is updated
+        self._selected_layer_name = '{{layer_spec.selected_layer_id}}' 
+        self._selected_var_name = '{{layer_spec.selected_var_name}}'
+        
+    def __call__(self, inputs: Dict[str, tf.Tensor], is_training: tf.Tensor = None) -> Dict[str, tf.Tensor]:
         """ Takes the outputs of all the incoming layers as input and returns the output of that layer."""
-        y = x[self._selected_layer_id]
+
+        y = inputs[self._selected_var_name]
+        
         self._variables = {k: v for k, v in locals().items() if can_serialize(v)}    
         self.y = y
 
-        return y
+        self._outputs = {'output': y}
+        return self._outputs
 
     @property
     def variables(self) -> Dict[str, Picklable]:
@@ -35,8 +39,11 @@ class {{layer_name}}(Tf1xLayer):
     def get_sample(self, sess=None) -> np.ndarray:
         """Returns a single data sample"""
         if sess is not None:
-            y = sess.run(self.y)
-            return y[0]
+            outputs = sess.run(self._outputs)
+            return {
+                key: value[0] if len(value) > 0 else value
+                for key, value in outputs.items()
+            }
         else:
             return None
 
@@ -60,10 +67,11 @@ class {{layer_name}}(Tf1xLayer):
 {% endmacro %}
 
 
-{% macro layer_tf1x_grayscale(layer_name) %}
-class {{layer_name}}(Tf1xLayer):
-    def __call__(self, x: tf.Tensor, is_training: tf.Tensor = None) -> tf.Tensor:
+{% macro layer_tf1x_grayscale(layer_spec, graph_spec=None) %}
+class {{layer_spec.sanitized_name}}(Tf1xLayer):
+    def __call__(self, inputs: Dict[str, tf.Tensor], is_training: tf.Tensor = None) -> Dict[str, tf.Tensor]:
         """ Takes a tensor as input and changes it to grayscale."""
+        x = inputs['input']
         channels = x.get_shape().as_list()[-1]
         if channels % 3 == 0:
             if channels > 3:
@@ -79,7 +87,8 @@ class {{layer_name}}(Tf1xLayer):
         self._variables = {k: v for k, v in locals().items() if can_serialize(v)}    
         self.y = y
 
-        return y
+        self._outputs = {'output': y}
+        return self._outputs
 
     @property
     def variables(self) -> Dict[str, Picklable]:
@@ -103,11 +112,14 @@ class {{layer_name}}(Tf1xLayer):
     def get_sample(self, sess=None) -> np.ndarray:
         """Returns a single data sample"""
         if sess is not None:
-            y = sess.run(self.y)
-            return y[0]
+            outputs = sess.run(self._outputs)
+            return {
+                key: value[0] if len(value) > 0 else value
+                for key, value in outputs.items()
+            }
         else:
             return None
-
+        
     @property
     def weights(self) -> Dict[str, tf.Tensor]:
         """Any weight tensors belonging to this layer that should be rendered in the frontend.
@@ -128,24 +140,28 @@ class {{layer_name}}(Tf1xLayer):
 {% endmacro %}
   
 
-
-{% macro layer_tf1x_reshape(layer_name, layer_spec) %}
-class {{layer_name}}(Tf1xLayer):
-    def __call__(self, x: tf.Tensor, is_training: tf.Tensor = None) -> tf.Tensor:
+{% macro layer_tf1x_reshape(layer_spec, graph_spec=None) %}
+class {{layer_spec.sanitized_name}}(Tf1xLayer):
+    def __call__(self, inputs: Dict[str, tf.Tensor], is_training: tf.Tensor = None) -> Dict[str, tf.Tensor]:
         """ Takes a tensor as input and reshapes it."""
-        shp = list({{layer_spec.shape}})
-        perm = list({{layer_spec.permutation}})
+        shape = list({{layer_spec.shape}})
+        permutation = list({{layer_spec.permutation}})
         
-        shp = [i for i in shp if i != 0]
-        if(len(shp) != len(perm)):
-            perm = []
-            for i in range(len(shp)):
-                perm.append(i)
-            
-        y = tf.reshape(x, [x.get_shape().as_list()[0] if x.get_shape().as_list()[0] is not None else -1] + shp)
-        y = tf.transpose(y, perm=[0] + [i+1 for i in perm])
-        self.y = y
-        return y
+        shape = [i for i in shape if i != 0]
+        if(len(shape) != len(permutation)):
+            permutation = []
+            for i in range(len(shape)):
+                permutation.append(i)
+
+        x = inputs['input']
+        input_shape = x.get_shape().as_list() 
+        new_shape = [input_shape[0] if input_shape[0] is not None else -1] + shape
+        
+        y = tf.reshape(x, new_shape)
+        y = tf.transpose(y, perm=[0] + [i+1 for i in permutation])
+
+        self._outputs = {'output': y}
+        return self._outputs
 
     @property
     def variables(self) -> Dict[str, Picklable]:
@@ -165,11 +181,14 @@ class {{layer_name}}(Tf1xLayer):
         """
         return {}
     
-    def get_sample(self, sess=None) -> np.ndarray:
+    def get_sample(self, sess=None) -> np.ndarray:        
         """Returns a single data sample"""
         if sess is not None:
-            y = sess.run(self.y)
-            return y[0]
+            outputs = sess.run(self._outputs)
+            return {
+                key: value[0] if len(value) > 0 else value
+                for key, value in outputs.items()
+            }
         else:
             return None
 
@@ -192,14 +211,14 @@ class {{layer_name}}(Tf1xLayer):
         return {}        
 {% endmacro %}
 
-{% macro layer_tf1x_image_reshape(layer_name, width, height) %}
-class {{layer_name}}(Tf1xLayer):
-    def __call__(self, x: tf.Tensor, is_training: tf.Tensor = None) -> tf.Tensor:
+{% macro layer_tf1x_image_reshape(layer_spec, graph_spec=None) %}
+class {{layer_spec.sanitized_name}}(Tf1xLayer):
+    def __call__(self, inputs: Dict[str, tf.Tensor], is_training: tf.Tensor = None) -> Dict[str, tf.Tensor]:
         """Takes an image and reshapes it."""
-        y = tf.image.resize(x, [{{height}}, {{width}}], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR, preserve_aspect_ratio=False)
-        self.y = y
-
-        return y
+        x = inputs['input']
+        y = tf.image.resize(x, [{{layer_spec.height}}, {{layer_spec.width}}], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR, preserve_aspect_ratio=False)
+        self._outputs = {'output': y}
+        return self._outputs
 
     @property
     def variables(self) -> Dict[str, Picklable]:
@@ -219,11 +238,14 @@ class {{layer_name}}(Tf1xLayer):
         """
         return {}
 
-    def get_sample(self, sess=None) -> np.ndarray:
+    def get_sample(self, sess=None) -> np.ndarray:        
         """Returns a single data sample"""
         if sess is not None:
-            y = sess.run(self.y)
-            return y[0]
+            outputs = sess.run(self._outputs)
+            return {
+                key: value[0] if len(value) > 0 else value
+                for key, value in outputs.items()
+            }
         else:
             return None
 
@@ -247,13 +269,14 @@ class {{layer_name}}(Tf1xLayer):
 {% endmacro %}
 
 
-{% macro layer_tf1x_one_hot(layer_name, n_classes) %}
-class {{layer_name}}(Tf1xLayer):
-    def __call__(self, x, is_training: tf.Tensor = None):
-        y = tf.one_hot(tf.cast(x, dtype=tf.int32), {{n_classes}})       
-        self.y = y
+{% macro layer_tf1x_one_hot(layer_spec, graph_spec) %}
+class {{layer_spec.sanitized_name}}(Tf1xLayer):
+    def __call__(self, inputs: Dict[str, tf.Tensor] , is_training: tf.Tensor = None) -> Dict[str, tf.Tensor]:
+        x = inputs['input']
+        y = tf.one_hot(tf.cast(x, dtype=tf.int32), {{layer_spec.n_classes}})       
+        self._outputs = {'output': y}
+        return self._outputs
 
-        return y
 
     @property
     def variables(self) -> Dict[str, Picklable]:
@@ -276,8 +299,11 @@ class {{layer_name}}(Tf1xLayer):
     def get_sample(self, sess=None) -> np.ndarray:
         """Returns a single data sample"""
         if sess is not None:
-            y = sess.run(self.y)
-            return y[0]
+            outputs = sess.run(self._outputs)
+            return {
+                key: value[0] if len(value) > 0 else value
+                for key, value in outputs.items()
+            }
         else:
             return None
 
@@ -301,19 +327,19 @@ class {{layer_name}}(Tf1xLayer):
 {% endmacro %}
 
 
-{% macro layer_tf1x_fully_connected(layer_name, n_neurons, activation, dropout, keep_prob, batch_norm) %}
-class {{layer_name}}(Tf1xLayer):
+{% macro layer_tf1x_fully_connected(layer_spec, graph_spec) %}
+class {{layer_spec.sanitized_name}}(Tf1xLayer):
     def __init__(self):
-        self._scope = '{{layer_name}}'
-        self._n_neurons = {{n_neurons}}
+        self._scope = '{{layer_spec.sanitized_name}}'
+        self._n_neurons = {{layer_spec.n_neurons}}
         self._variables = {}
         self._lw_variables = {}
         
-    def __call__(self, x: tf.Tensor, is_training: tf.Tensor = None):
-        """ Takes a tensor as input and feeds it forward through a layer of neurons, returning a newtensor."""        
-        n_neurons = {{n_neurons}}
+    def __call__(self, inputs: Dict[str, tf.Tensor], is_training: tf.Tensor = None) -> Dict[str, tf.Tensor]:
+        """ Takes a tensor as input and feeds it forward through a layer of neurons, returning a newtensor."""
+        x = inputs['input']
         n_inputs = np.prod(x.get_shape().as_list()[1:], dtype=np.int32)
-        b_norm = {{batch_norm}}
+        b_norm = {{layer_spec.batch_norm}}
         y_before = None
         y = None
 
@@ -326,22 +352,22 @@ class {{layer_name}}(Tf1xLayer):
             flat_node = tf.cast(tf.reshape(x, [-1, n_inputs]), dtype=tf.float32)
             y = tf.matmul(flat_node, W) + b
             
-            {{ batch_normal(batch_norm, y, is_training) | indent(width=12)}}
+            {{ batch_normal(layer_spec.batch_norm, y, is_training) | indent(width=12)}}
 
             {% filter remove_lspaces(8) %}
-                {% if activation is not none %}
-                    y = {{activation}}(y)
+                {% if layer_spec.activation is not none %}
+                    {{ activation_function(layer_spec.activation, 'y') }}                
                 {% endif %}
             {% endfilter %}
             {% filter remove_lspaces(8) %}
-                {% if batch_norm %}
-                    y_before = {{activation}}(y_before)
+                {% if layer_spec.batch_norm %}
+                    {{ activation_function(layer_spec.activation, 'y_before') }}
                 {% endif %}
             {% endfilter %}
 
             {% filter remove_lspaces(8) %}
-                {% if dropout %}
-                    y = tf.nn.dropout(y, rate = 1 - {{keep_prob}})
+                {% if layer_spec.dropout %}
+                    y = tf.nn.dropout(y, rate = 1 - {{layer_spec.keep_prob}})
                 {% endif %}
             {% endfilter %}
             
@@ -349,7 +375,22 @@ class {{layer_name}}(Tf1xLayer):
         self._lw_variables['y_before'] = y_before
         self._lw_variables['y'] = y
 
-        return y
+        self._sample = {
+            'output': y_before,
+            'initial': initial,
+            'W': W,
+            'b': b,
+            'flat_node': flat_node
+        }
+        
+        self._outputs = {
+            'output': y,
+            'initial': initial,
+            'W': W,
+            'b': b,
+            'flat_node': flat_node
+        }
+        return self._outputs
 
     @property
     def variables(self):
@@ -374,14 +415,17 @@ class {{layer_name}}(Tf1xLayer):
     def get_sample(self, sess=None) -> np.ndarray:
         """Returns a single data sample"""
         if sess is not None:
-            y_before = self._lw_variables.get('y_before')
 
-            if y_before is not None:
-                y = sess.run(y_before)
+            # TODO: this if-statement should probably be jinja and based on presence of batch norm
+            if self._sample['output'] is None:
+                outputs = sess.run(self._outputs)
             else:
-                y = sess.run(self._lw_variables['y'])
-            
-            return y[0]
+                outputs = sess.run(self._sample)
+                
+            return {
+                key: value[0] if len(value) > 0 else value
+                for key, value in outputs.items()
+            }
         else:
             return None
 
@@ -409,37 +453,34 @@ class {{layer_name}}(Tf1xLayer):
 {% endmacro %}
 
 
-{% macro layer_tf1x_merge(layer_name, type_, merge_dim, merge_order) %}
-class {{layer_name}}(Tf1xLayer):
+{% macro layer_tf1x_merge(layer_spec, graph_spec=None) %}
+class {{layer_spec.sanitized_name}}(Tf1xLayer):
 
     def __init__(self):
-        self._merge_dim = {{merge_dim}}
-        self._merget_order = {{merge_order}}
+        self._merge_dim = {{layer_spec.merge_dim}}
 
-    def __call__(self, x: Dict[str, tf.Tensor], is_training: tf.Tensor = None) -> tf.Tensor:
+    def __call__(self, inputs: Dict[str, tf.Tensor], is_training: tf.Tensor = None) -> Dict[str, tf.Tensor]:
         """ Takes two tensors as input and merges them accordingly. """
         y = None
         {% filter remove_lspaces(8) %}
-            {% if type_ == 'Concat' %}
-                y = tf.concat(list(x.values()), self._merge_dim)
-            {% elif type_ == 'Add' %}
-                for i in range(0, len(list(x.values())), 2):
-                    if not y:
-                        y = list(x.values())[i]
-                    Y = tf.add(list(x.values())[i], y)
-                
-            {% elif type_ == 'Sub' %}
+            {% if layer_spec.merge_type == 'Concat' %}
+                y = tf.concat(list(inputs.values()), self._merge_dim)
+            {% elif layer_spec.merge_type == 'Add' %}
+                y = tf.constant(0)
+                for x in inputs.values():
+                    y = tf.add(y, x)
+            {% elif layer_spec.merge_type == 'Sub' %}
                 for i in range(0, len(list(x.values())), 2):
                     if not y:
                         y = list(x.values())[i]
                     y = tf.subtract(list(x.values())[i], y)
                        
-            {% elif type_ == 'Multi' %}
+            {% elif layer_spec.merge_type == 'Multi' %}
                 for i in range(0, len(list(x.values())), 2):
                     if not y:
                         y = list(x.values())[i]
                     y = tf.multiply(list(x.values())[i], y)    
-            {% elif type_ == 'Div' %}
+            {% elif layer_spec.merge_type == 'Div' %}
                 for i in range(0, len(list(x.values())), 2):
                     if not y:
                         y = list(x.values())[i]
@@ -450,7 +491,7 @@ class {{layer_name}}(Tf1xLayer):
         self._variables = {k: v for k, v in locals().items() if can_serialize(v)}    
         self.y = y
 
-        return y
+        return {'output': y}
 
     @property
     def variables(self) -> Dict[str, Picklable]:
@@ -557,32 +598,32 @@ class {{layer_name}}(Tf1xLayer):
             A dictionary with tensor names for keys and tensors for values.
         """        
         return {}        
-{% endmacro %}\
+{% endmacro %}
 
 
-
-{% macro layer_tf1x_conv(layer_name, conv_dim, patch_size, feature_maps, stride, padding, dropout, keep_prob, activation, pool, pooling, pool_padding, pool_area, pool_stride, batch_norm) %}
-class {{layer_name}}(Tf1xLayer):
+{% macro layer_tf1x_conv(layer_spec, graph_spec) %}
+class {{layer_spec.sanitized_name}}(Tf1xLayer):
     def __init__(self):
-        self._scope = '{{layer_name}}'        
+        self._scope = '{{layer_spec.sanitized_name}}'        
         # TODO: implement support for 1d and 3d conv, dropout, funcs, pooling, etc
-        self._patch_size = {{patch_size}}
-        self._feature_maps = {{feature_maps}}
-        self._padding = '{{padding}}'
-        self._stride = {{stride}}
-        self._keep_prob = {{keep_prob}}
+        self._patch_size = {{layer_spec.patch_size}}
+        self._feature_maps = {{layer_spec.feature_maps}}
+        self._padding = '{{layer_spec.padding}}'
+        self._stride = {{layer_spec.stride}}
+        self._keep_prob = {{layer_spec.keep_prob}}
         self._variables = {}
         self._lw_variables = {}
         
-    def __call__(self, x, is_training: tf.Tensor = None):
+    def __call__(self, inputs: Dict[str, tf.Tensor], is_training: tf.Tensor = None) -> Dict[str, tf.Tensor]:
         """ Takes a tensor as input and feeds it forward through a convolutional layer, returning a newtensor."""
-        b_norm = {{batch_norm}}
+        x = inputs['input']        
+        b_norm = {{layer_spec.batch_norm}}
         y_before = None
         y = None
 
         with tf.compat.v1.variable_scope(self._scope, reuse=tf.compat.v1.AUTO_REUSE):
             {% filter remove_lspaces(8) %}
-                {% if conv_dim == '2D' %}
+                {% if layer_spec.conv_dim == '2D' %}
                     shape = [
                         self._patch_size,
                         self._patch_size,
@@ -598,7 +639,7 @@ class {{layer_name}}(Tf1xLayer):
                     #initial = tf.constant(0., shape=[self._feature_maps])
                     b = tf.compat.v1.get_variable('b', shape=[self._feature_maps], initializer=tf.zeros_initializer())
                     y = tf.add(tf.nn.conv2d(x, W, strides=[1, self._stride, self._stride, 1], padding=self._padding), b)
-                {% elif conv_dim == '1D' %}
+                {% elif layer_spec.conv_dim == '1D' %}
                     shape = [
                         self._patch_size,
                         x.get_shape().as_list()[-1],
@@ -613,7 +654,7 @@ class {{layer_name}}(Tf1xLayer):
                     initial = tf.constant(0., shape=[self._feature_maps])
                     b = tf.compat.v1.get_variable('b', initializer=initial)
                     y = tf.nn.conv1d(x, W, stride=[1, self._stride, 1], padding=self._padding)+b
-                {% elif conv_dim == '3D' %}
+                {% elif layer_spec.conv_dim == '3D' %}
                     shape = [
                         self._patch_size,
                         self._patch_size,
@@ -630,7 +671,7 @@ class {{layer_name}}(Tf1xLayer):
                     initial = tf.constant(0., shape=[self._feature_maps])
                     b = tf.compat.v1.get_variable('b', initializer=initial)
                     y = tf.nn.conv3d(x, W, strides=[1, self._stride, self._stride, self._stride, 1], padding=self._padding)+b
-                {% elif conv_dim == 'Automatic' %}
+                {% elif layer_spec.conv_dim == 'Automatic' %}
                     dim = len(x.get_shape().as_list())-1
                     shape = [self._patch_size]*dim + [x.get_shape().as_list()[-1], self._feature_maps]
                     initial = tf.random.truncated_normal(
@@ -645,37 +686,37 @@ class {{layer_name}}(Tf1xLayer):
                 {% endif %}
             {% endfilter %}
 
-            {{ batch_normal(batch_norm, y, is_training) | indent(width=12)}}
+            {{ batch_normal(layer_spec.batch_norm, y, is_training) | indent(width=12)}}
 
             {% filter remove_lspaces(8) %}
                 {% if activation is not none %}
-                    y = {{activation}}(y)
+                    {{ activation_function(layer_spec.activation, 'y') }}                
                 {% endif %}
             {% endfilter %}
             {% filter remove_lspaces(8) %}
-                {% if batch_norm %}
-                    y_before = {{activation}}(y_before)
+                {% if layer_spec.batch_norm %}
+                    {{ activation_function(layer_spec.activation, 'y_before') }}
                 {% endif %}
             {% endfilter %}
             {% filter remove_lspaces(8) %}
-                {% if dropout %}
-                    y = tf.nn.dropout(y,self._keep_prob)
+                {% if layer_spec.dropout %}
+                    y = tf.nn.dropout(y, self._keep_prob)
                 {% endif %}
             {% endfilter %}
             {% filter remove_lspaces(12) %}
-                {% if pool and pooling == "Max" %}
+                {% if layer_spec.pool and layer_spec.pooling == "Max" %}
                     {% if conv_dim == '1D' %}
-                        y = tf.nn.max_pool1d(y, ksize=[1, {{pool_area}}, 1], strides=[1, {{pool_stride}}, 1], padding='{{pool_padding}}')
+                        y = tf.nn.max_pool1d(y, ksize=[1, {{layer_spec.pool_area}}, 1], strides=[1, {{layer_spec.pool_stride}}, 1], padding='{{layer_spec.pool_padding}}')
                     {% elif conv_dim == '2D' %}
-                        y = tf.nn.max_pool(y, ksize=[1, {{pool_area}}, {{pool_area}}, 1], strides=[1, {{pool_stride}}, {{pool_stride}}, 1], padding='{{pool_padding}}')
+                        y = tf.nn.max_pool(y, ksize=[1, {{layer_spec.pool_area}}, {{layer_spec.pool_area}}, 1], strides=[1, {{layer_spec.pool_stride}}, {{layer_spec.pool_stride}}, 1], padding='{{layer_spec.pool_padding}}')
                     {% elif conv_dim == '3d' %}
-                        y = tf.nn.max_pool3d(y, ksize=[1, {{pool_area}}, {{pool_area}}, {{pool_area}}, 1], strides=[1, {{pool_stride}}, {{pool_stride}}, {{pool_stride}}, 1], padding='{{pool_padding}}')
+                        y = tf.nn.max_pool3d(y, ksize=[1, {{layer_spec.pool_area}}, {{layer_spec.pool_area}}, {{layer_spec.pool_area}}, 1], strides=[1, {{layer_spec.pool_stride}}, {{layer_spec.pool_stride}}, {{layer_spec.pool_stride}}, 1], padding='{{layer_spec.pool_padding}}')
                     {% endif %}
                 {% endif %}
             {% endfilter %}
             {% filter remove_lspaces(8) %}
-                {% if pool and pooling == "Mean" %}
-                    y = tf.nn.avg_pool(y, ksize={{pool_area}}, strides={{pool_stride}}, padding={{pool_padding}})
+                {% if layer_spec.pool and layer_spec.pooling == "Mean" %}
+                    y = tf.nn.avg_pool(y, ksize={{layer_spec.pool_area}}, strides={{layer_spec.pool_stride}}, padding={{layer_spec.pool_padding}})
                 {% endif %}
             {% endfilter %}
         
@@ -683,7 +724,19 @@ class {{layer_name}}(Tf1xLayer):
         self._lw_variables['y_before'] = y_before
         self._lw_variables['y'] = y
 
-        return y
+
+        self._sample = {
+            'output': y_before,
+            'W': W,
+            'b': b,
+        }
+        
+        self._outputs = {
+            'output': y,
+            'W': W,
+            'b': b,
+        }
+        return self._outputs
 
     @property
     def variables(self):
@@ -708,14 +761,17 @@ class {{layer_name}}(Tf1xLayer):
     def get_sample(self, sess=None) -> np.ndarray:
         """Returns a single data sample"""
         if sess is not None:
-            y_before = self._lw_variables.get('y_before')
 
-            if y_before is not None:
-                y = sess.run(y_before)
+            # TODO: this if-statement should probably be jinja and based on presence of batch norm
+            if self._sample['output'] is None:
+                outputs = sess.run(self._outputs)
             else:
-                y = sess.run(self._lw_variables['y'])
-            
-            return y[0]
+                outputs = sess.run(self._sample)
+                
+            return {
+                key: value[0] if len(value) > 0 else value
+                for key, value in outputs.items()
+            }
         else:
             return None
 
@@ -742,28 +798,29 @@ class {{layer_name}}(Tf1xLayer):
             return {b.name: b}
 {% endmacro %}
 
-{% macro layer_tf1x_deconv(layer_name, deconv_dim, patch_size, feature_maps, stride, padding, dropout, keep_prob, activation, batch_norm) %}
-class {{layer_name}}(Tf1xLayer):
+{% macro layer_tf1x_deconv(layer_spec, graph_spec=None) %}
+class {{layer_spec.sanitized_name}}(Tf1xLayer):
     def __init__(self):
-        self._scope = '{{layer_name}}'        
-        self._patch_size = {{patch_size}}
-        self._feature_maps = {{feature_maps}}
-        self._padding = '{{padding}}'
-        self._stride = {{stride}}
-        self._keep_prob = {{keep_prob}}
-        self._dropout = {{dropout}}
+        self._scope = '{{layer_spec.sanitized_name}}'        
+        self._patch_size = {{layer_spec.patch_size}}
+        self._feature_maps = {{layer_spec.feature_maps}}
+        self._padding = '{{layer_spec.padding}}'
+        self._stride = {{layer_spec.stride}}
+        self._keep_prob = {{layer_spec.keep_prob}}
+        self._dropout = {{layer_spec.dropout}}
         self._variables = {}
         self._lw_variables = {}
         
-    def __call__(self, x, is_training: tf.Tensor = None):
-        """ Takes a tensor as input and feeds it forward through a deconvolutional layer, returning a newtensor."""                
-        b_norm = {{batch_norm}}
+    def __call__(self, inputs: Dict[str, tf.Tensor], is_training: tf.Tensor = None):
+        """ Takes a tensor as input and feeds it forward through a deconvolutional layer, returning a newtensor."""
+        x = inputs['input']                
+        b_norm = {{layer_spec.batch_norm}}
         y_before = None
         y = None
 
         with tf.compat.v1.variable_scope(self._scope, reuse=tf.compat.v1.AUTO_REUSE):
             {% filter remove_lspaces(8) %}
-                {% if deconv_dim == '2D' %}
+                {% if layer_spec.deconv_dim == '2D' %}
                     shape = [
                         self._patch_size,
                         self._patch_size,
@@ -778,10 +835,11 @@ class {{layer_name}}(Tf1xLayer):
                     
                     initial = tf.constant(0., shape=[self._feature_maps])
                     b = tf.compat.v1.get_variable('b', initializer=initial)
-                    output_shape = tf.stack([x.get_shape().as_list()[0]] + [node_shape*self._stride for node_shape in  x.get_shape().as_list()[1:-1]] + [self._feature_maps])   
+                    output_shape = tf.stack([x.get_shape().as_list()[0]] + [node_shape*self._stride for node_shape in  x.get_shape().as_list()[1:-1]] + [self._feature_maps])
+
                     y = tf.nn.conv2d_transpose(x, W, output_shape, strides=[1, self._stride, self._stride, 1], padding=self._padding)
 
-                {% elif deconv_dim == '1D' %}
+                {% elif layer_spec.deconv_dim == '1D' %}
                     shape = [
                         self._patch_size,
                         x.get_shape().as_list()[-1],
@@ -799,7 +857,7 @@ class {{layer_name}}(Tf1xLayer):
 
                     y = tf.nn.conv1d_transpose(x, W, output_shape, strides=[1, self._stride, 1], padding=self._padding)
 
-                {% elif deconv_dim == '3D' %}
+                {% elif layer_spec.deconv_dim == '3D' %}
                     shape = [
                         self._patch_size,
                         self._patch_size,
@@ -818,7 +876,7 @@ class {{layer_name}}(Tf1xLayer):
                     output_shape = tf.stack([x.get_shape().as_list()[0]] + [node_shape*self._stride for node_shape in  x.get_shape().as_list()[1:-1]] + [self._feature_maps])   
                     y = tf.nn.conv3d_transpose(x, W, output_shape, strides=[1, self._stride, self._stride, self._stride, 1], padding=self._padding)
 
-                {% elif deconv_dim == 'Automatic' %}
+                {% elif layer_spec.deconv_dim == 'Automatic' %}
                     dim = len(x.get_shape().as_list())-1
                     shape = [self._patch_size]*dim + [x.get_shape().as_list()[-1], self._feature_maps]
                     initial = tf.random.truncated_normal(
@@ -835,26 +893,26 @@ class {{layer_name}}(Tf1xLayer):
                 {% endif %}
             {% endfilter %}
 
-            {{ batch_normal(batch_norm, y, is_training) | indent(width=12)}}
+            {{ batch_normal(layer_spec.batch_norm, y, is_training) | indent(width=12)}}
 
             {% filter remove_lspaces(8) %}
-                {% if dropout %}
+                {% if layer_spec.dropout %}
                     y = tf.nn.dropout(y,self._keep_prob)
                 {% endif %}
-                {% if activation is not none %}
+                {% if layer_spec.activation is not none %}
                     y = y + b
-                    y = {{activation}}(y)
+                    {{ activation_function(layer_spec.activation, 'y') }}
                 {% endif %}
             {% endfilter %}
             {% filter remove_lspaces(12) %}
-                {% if batch_norm %}
-                    {% if dropout %}
-                        y_before = tf.nn.dropout(y_before,self._keep_prob)
+                {% if layer_spec.batch_norm %}
+                    {% if layer_spec.dropout %}
+                        y_before = tf.nn.dropout(y_before, self._keep_prob)
                     {% endif %}
                     
-                    {% if activation is not none %}
+                    {% if layer_spec.activation is not none %}
                         y_before = y_before + b
-                        y_before = {{activation}}(y_before)
+                        {{ activation_function(layer_spec.activation, 'y_before') }}
                     {% endif %}
                 {% endif %}
             {% endfilter %}
@@ -863,7 +921,18 @@ class {{layer_name}}(Tf1xLayer):
         self._lw_variables['y_before'] = y_before
         self._lw_variables['y'] = y
 
-        return y
+        self._sample = {
+            'output': y_before,
+            'W': W,
+            'b': b,
+        }
+        
+        self._outputs = {
+            'output': y,
+            'W': W,
+            'b': b,
+        }
+        return self._outputs
 
     @property
     def variables(self):
@@ -888,14 +957,17 @@ class {{layer_name}}(Tf1xLayer):
     def get_sample(self, sess=None) -> np.ndarray:
         """Returns a single data sample"""
         if sess is not None:
-            y_before = self._lw_variables.get('y_before')
 
-            if y_before is not None:
-                y = sess.run(y_before)
+            # TODO: this if-statement should probably be jinja and based on presence of batch norm
+            if self._sample['output'] is None:
+                outputs = sess.run(self._outputs)
             else:
-                y = sess.run(self._lw_variables['y'])
-            
-            return y[0]
+                outputs = sess.run(self._sample)
+                
+            return {
+                key: value[0] if len(value) > 0 else value
+                for key, value in outputs.items()
+            }
         else:
             return None
 
@@ -922,44 +994,43 @@ class {{layer_name}}(Tf1xLayer):
             return {b.name: b}
 {% endmacro %}
 
-{% macro layer_tf1x_recurrent(layer_name, version, time_steps, neurons, return_sequence, dropout, activation, keep_prob) %}
-class {{layer_name}}(Tf1xLayer):
+{% macro layer_tf1x_recurrent(layer_spec, graph_spec=None) %}
+class {{layer_spec.sanitized_name}}(Tf1xLayer):
     def __init__(self):
-        self._scope = '{{layer_name}}'
+        self._scope = '{{layer_spec.sanitized_name}}'
         self._variables = {}
-        self._neurons = {{neurons}}
+        self._neurons = {{layer_spec.n_neurons}}
         self._lw_variables = {}
         self._weights = None
         self._biases = None
 
-    def __call__(self, x: tf.Tensor, is_training: tf.Tensor = None):
+    def __call__(self, inputs: Dict[str, tf.Tensor], is_training: tf.Tensor = None):
         """ Takes a tensor as input and feeds it forward through a recurrent layer, returning a newtensor."""        
         y_before = None
         y = None
-        activation = {{activation}}
 
         with tf.compat.v1.variable_scope(self._scope, reuse=tf.compat.v1.AUTO_REUSE):   
             {% filter remove_lspaces(8) %}   
-                {% if version == 'LSTM' %}
-                    cell = tf.nn.rnn_cell.LSTMCell(self._neurons, activation=activation, state_is_tuple=True, name=self._scope)
-                {% elif version == 'GRU' %}
-                    cell = tf.nn.rnn_cell.GRUCell(self._neurons, activation=activation, name=self._scope)
-                {% elif version == 'RNN' %}
-                    cell = tf.nn.rnn_cell.BasicRNNCell(self._neurons, activation=activation, name=self._scope)
+                {% if layer_spec.version == 'LSTM' %}
+                    cell = tf.nn.rnn_cell.LSTMCell(self._neurons, activation={{activation_name(layer_spec.activation)}}, state_is_tuple=True, name=self._scope)
+                {% elif layer_spec.version == 'GRU' %}
+                    cell = tf.nn.rnn_cell.GRUCell(self._neurons, activation={{activation_name(layer_spec.activation)}}, name=self._scope)
+                {% elif layer_spec.version == 'RNN' %}
+                    cell = tf.nn.rnn_cell.BasicRNNCell(self._neurons, activation={{activation_name(layer_spec.activation)}}, name=self._scope)
                 {% endif %}
             {% endfilter %}
             
             {% filter remove_lspaces(8) %}
-                {% if dropout %}
-                    cell = tf.nn.rnn_cell.DropoutWrapper(cell, output_keep_prob = self._keep_prob)
+                {% if layer_spec.dropout %}
+                    cell = tf.nn.rnn_cell.DropoutWrapper(cell, output_keep_prob=self._keep_prob)
                 {% endif %}
             {% endfilter %}
 
-            node = x
+            node = inputs['input']
             rnn_outputs, final_state = tf.nn.dynamic_rnn(cell, node, dtype=node.dtype)
 
             {% filter remove_lspaces(8) %}
-                {% if return_sequence %}
+                {% if layer_spec.return_sequence %}
                     y = rnn_outputs
                 {% else %}
                     y = rnn_outputs[:, -1]
@@ -977,7 +1048,7 @@ class {{layer_name}}(Tf1xLayer):
         self._lw_variables['y_before'] = y_before
         self._lw_variables['y'] = y
 
-        return y
+        return {'output': y}
 
     @property
     def variables(self):

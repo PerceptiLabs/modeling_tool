@@ -83,7 +83,19 @@ input[type='number'] {
   &::-webkit-inner-spin-button {
     -webkit-appearance: none;
     margin: 0;
-  }
+	}
+	.sidebar-setting-content & {
+		height: 17px;
+		width: 70px;
+		font-family: Nunito Sans;
+		font-style: normal;
+		font-weight: 300;
+		font-size: 11px;
+		line-height: 15px;
+		color: #FFFFFF;
+		background: rgba(54, 62, 81, 0.4);
+		border: 0.5px solid #3F4C70;
+	}
 }
 
 
@@ -189,7 +201,18 @@ input[type='submit'] {
 		border: 1px solid #4B4D52;
 		border-radius: 2px;
 		height: 3.5rem;
-
+		.sidebar-setting-content & {
+			height: 17px;
+			width: 70px;
+			font-family: Nunito Sans;
+			font-style: normal;
+			font-weight: 300;
+			font-size: 11px;
+			line-height: 15px;
+			color: #FFFFFF;
+			background: rgba(54, 62, 81, 0.4);
+			border: 0.5px solid #3F4C70;
+		}
 		&:focus {
 			border: 1px solid $color-6;
 		}

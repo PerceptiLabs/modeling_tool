@@ -22,7 +22,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 2;
+    z-index: 10;
   }
 
   .wrapper-training-loader_spinner  {

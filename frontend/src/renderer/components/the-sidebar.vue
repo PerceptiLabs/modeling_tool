@@ -1,44 +1,45 @@
 <template lang="pug">
   aside.page_sidebar(:class="{'page_sidebar--hide': !hideSidebar, 'tutorial-active': activeStepStoryboard === 3}")
-    ul.sidebar_tabset
-      li(v-for="(tab, i) in tabset"
-        :key="i"
-      )
-        button.btn(type="button"
-          :class="{'active': i === tabSelected}"
-          @click="selectTab(i)"
-          v-tooltip-interactive:bottom="tab.tooltipInfo"
-        ) {{tab.name}}
-
-    .sidebar_tab(v-if="tabSelected === 0")
+    //- ul.sidebar_tabset
+    //-   li(v-for="(tab, i) in tabset"
+    //-     :key="i"
+    //-   )
+    //-     button.btn(type="button"
+    //-       :class="{'active': i === tabSelected}"
+    //-       @click="selectTab(i)"
+    //-       v-tooltip-interactive:bottom="tab.tooltipInfo"
+    //-     ) {{tab.name}}
+    .sidebar-top-empty-space
+    .sidebar_tab
       sidebar-layers(:class="showTraining ? 'training' : ''")
       sidebar-training(v-if="ifTraining" v-show="showTraining")
-    .sidebar_tab(v-if="tabSelected === 1")
-      user-profile
-    .sidebar_tab(v-if="tabSelected === 2")
-      import-data
-    .sidebar_tab(v-if="tabSelected === 3")
-      export-data
+      sidebar-settings  
+    //- .sidebar_tab(v-if="tabSelected === 1")
+    //-   user-profile
+    //- .sidebar_tab(v-if="tabSelected === 2")
+    //-   import-data
+    //- .sidebar_tab(v-if="tabSelected === 3")
+    //-   export-data
 
-    sidebar-share
-
+    //- sidebar-share
+    
 </template>
 
 <script>
   import SidebarLayers    from '@/components/sidebar/sidebar-layers.vue'
-  import SidebarComments  from '@/components/sidebar/sidebar-comments.vue'
-  import SidebarShare     from '@/components/sidebar/sidebar-share.vue'
   import SidebarTraining  from "@/components/sidebar/sidebar-training";
-  import ExportData       from "@/components/different/export-data.vue";
-  import ImportData       from "@/components/different/import-data.vue";
-  import UserProfile       from "@/components/different/user-profile.vue";
-  import { mapGetters } from 'vuex';
+  import SidebarSettings  from '@/components/sidebar/sidebar-settings.vue'
+  // import SidebarComments  from '@/components/sidebar/sidebar-comments.vue'
+  // import SidebarShare     from '@/components/sidebar/sidebar-share.vue'
+  // import ExportData       from "@/components/different/export-data.vue";
+  // import ImportData       from "@/components/different/import-data.vue";
+  // import UserProfile       from "@/components/different/user-profile.vue";
+  import { mapGetters, mapActions } from 'vuex';
 
 export default {
   name: 'TheSidebar',
   components: {
-    SidebarTraining, SidebarLayers, SidebarComments, SidebarShare,
-    ExportData, ImportData, UserProfile
+    SidebarTraining, SidebarLayers, SidebarSettings
   },
   data() {
     return {
@@ -95,8 +96,14 @@ export default {
     }
   },
   methods: {
+    ...mapActions({
+      setSidebarStateAction: 'globalView/hideSidebarAction',
+    }),
     selectTab(i) {
       this.tabSelected = i
+    },
+    toggleSidebar(){
+      this.setSidebarStateAction(false);
     }
   }
 }
@@ -104,6 +111,11 @@ export default {
 
 <style lang="scss" scoped>
   @import "../scss/base";
+  .sidebar-top-empty-space {
+    height: 31px;
+    width: 100%;
+    background-color: #23252A;
+  }
   .page_sidebar {
     display: flex;
     flex-direction: column;

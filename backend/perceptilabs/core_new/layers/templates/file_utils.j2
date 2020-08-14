@@ -57,7 +57,7 @@
 
         {% filter remove_lspaces(8) %}
             {% if selected_columns is not none %}
-                df_{{tag}} = df_{{tag}}.iloc[:, {{selected_columns}}]
+                df_{{tag}} = df_{{tag}}.iloc[:, list({{selected_columns}})]
             {% endif %}
         {% endfilter %}        
         df = df_{{tag}}
@@ -70,7 +70,7 @@
 
         {% filter remove_lspaces(8) %}
             {% if selected_columns is not none and selected_columns|length > 0 %}
-                df_{{tag}} = df_{{tag}}.iloc[:, {{selected_columns}}]
+                df_{{tag}} = df_{{tag}}.iloc[:, list({{selected_columns}})]
             {% endif %}
         {% endfilter %}
         def generator_{{tag}}(idx_lo, idx_hi):

@@ -1,9 +1,11 @@
 {% from 'tf1x_utils.j2' import session, session_distributed %}
 
-{% macro run_normal(graph, layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, batch_size, export_directory, use_cpu) %}
+{% macro run_normal(layer_spec, graph_spec) %}
         self._status = 'initializing'
-        output_layer_id = '{{output_layer}}'
-        target_layer_id = '{{target_layer}}'
+        
+        output_layer_id = "{{graph_spec.nodes_by_id[layer_spec.connection_predictions.src_id].sanitized_name}}"
+        target_layer_id = "{{graph_spec.nodes_by_id[layer_spec.connection_labels.src_id].sanitized_name}}"                 
+        
         input_data_nodes = graph.get_direct_data_nodes(output_layer_id)
         label_data_nodes = graph.get_direct_data_nodes(target_layer_id)
 
@@ -16,17 +18,20 @@
         self._val_sz_tot = input_data_node.layer.size_validation
         self._tst_sz_tot = input_data_node.layer.size_testing
 
+        input_sample = input_data_node.layer_instance.sample
+        label_sample = label_data_node.layer_instance.sample        
+        
         # Make training set
         dataset_trn = tf.data.Dataset.zip((
             tf.data.Dataset.from_generator(
                 input_data_node.layer_instance.make_generator_training,
-                output_shapes=input_data_node.layer_instance.sample.shape,
-                output_types=np.float32                
+                output_shapes={k: v.shape for k, v in input_sample.items()},
+                output_types={k: v.dtype for k, v in input_sample.items()}
             ),
             tf.data.Dataset.from_generator(
                 label_data_node.layer_instance.make_generator_training,
-                output_shapes=label_data_node.layer_instance.sample.shape,
-                output_types=np.float32
+                output_shapes={k: v.shape for k, v in label_sample.items()},
+                output_types={k: v.dtype for k, v in label_sample.items()}
             )
         ))
 
@@ -34,13 +39,13 @@
         dataset_val = tf.data.Dataset.zip((
             tf.data.Dataset.from_generator(
                 input_data_node.layer_instance.make_generator_validation,
-                output_shapes=input_data_node.layer_instance.sample.shape,
-                output_types=np.float32                
+                output_shapes={k: v.shape for k, v in input_sample.items()},
+                output_types={k: v.dtype for k, v in input_sample.items()}
             ),
             tf.data.Dataset.from_generator(
                 label_data_node.layer_instance.make_generator_validation,
-                output_shapes=label_data_node.layer_instance.sample.shape,
-                output_types=np.float32
+                output_shapes={k: v.shape for k, v in label_sample.items()},
+                output_types={k: v.dtype for k, v in label_sample.items()}
             )
         ))
 
@@ -48,13 +53,13 @@
         dataset_tst = tf.data.Dataset.zip((
             tf.data.Dataset.from_generator(
                 input_data_node.layer_instance.make_generator_testing,
-                output_shapes=input_data_node.layer_instance.sample.shape,
-                output_types=np.float32                
+                output_shapes={k: v.shape for k, v in input_sample.items()},
+                output_types={k: v.dtype for k, v in input_sample.items()}
             ),
             tf.data.Dataset.from_generator(
                 label_data_node.layer_instance.make_generator_testing,
-                output_shapes=label_data_node.layer_instance.sample.shape,
-                output_types=np.float32
+                output_shapes={k: v.shape for k, v in label_sample.items()},
+                output_types={k: v.dtype for k, v in label_sample.items()}
             )
         ))
         
@@ -63,7 +68,7 @@
         dataset_tst = dataset_tst.batch(1)                
 
         # Make initializers
-        with tf.variable_scope('{{layer_name}}/train', reuse=tf.AUTO_REUSE):
+        with tf.variable_scope('{{layer_spec.sanitized_name}}/train', reuse=tf.AUTO_REUSE):
             is_training = tf.get_variable(name="is_train", dtype=tf.bool, initializer=False)
 
         iterator = tf.data.Iterator.from_structure(dataset_trn.output_types, dataset_trn.output_shapes)
@@ -87,52 +92,75 @@
                 label_data_node.layer_id: label_tensor
             }
 
-            for node in graph.inner_nodes:
-                args = []
-                for input_node in graph.get_input_nodes(node):
-                    args.append(layer_output_tensors[input_node.layer_id])
-                    args.append(is_training)
-
-                    y = node.layer_instance(*args)
-                layer_output_tensors[node.layer_id] = y
-
+            for dst_node in graph.inner_nodes:
+                inputs = {
+                    dst_var: layer_output_tensors[src_node.layer_id][src_var]
+                    for src_node, src_var, dst_var in graph.get_input_connections(dst_node)
+                }
+                y = dst_node.layer_instance(
+                    inputs,
+                    is_training=is_training
+                )
+                layer_output_tensors[dst_node.layer_id] = y
 
             return layer_output_tensors
 
         layer_output_tensors = build_graph(input_tensor, label_tensor)
-        output_tensor = layer_output_tensors[output_layer_id]
-        target_tensor = layer_output_tensors[target_layer_id]
+
+        # TODO(anton.k): temporary solution before refactor
+        
+        output_tensor = None
+        target_tensor = None
+        
+        for src_node, src_var, dst_var in graph.get_input_connections(graph.active_training_node):
+            if dst_var == 'predictions':
+                output_tensor = layer_output_tensors[output_layer_id][src_var]
+                output_var_name = src_var
+            if dst_var == 'labels':
+                target_tensor = layer_output_tensors[target_layer_id][src_var]
+                
+        # ----
         
         update_ops = tf.compat.v1.get_collection(tf.GraphKeys.UPDATE_OPS)
         
         # Create an exportable version of the TensorFlow graph
-        self._input_tensor_export = tf.placeholder(shape=dataset_trn.output_shapes[0], dtype=dataset_trn.output_types[0])
+
+        self._input_tensor_export = {
+            key: tf.placeholder(shape=shape, dtype=type_)
+            for (key, shape), (_, type_) in zip(dataset_trn.output_shapes[0].items(), dataset_trn.output_types[0].items())            
+        }
+
         self._output_tensor_export = build_graph(
             self._input_tensor_export,
-            tf.placeholder(shape=dataset_trn.output_shapes[1], dtype=dataset_trn.output_types[1])
+            {                                                                                                                                                                       
+                key: tf.placeholder(shape=shape, dtype=type_)
+                for (key, shape), (_, type_) in zip(dataset_trn.output_shapes[1].items(), dataset_trn.output_types[1].items())
+            }             
         )[output_layer_id]
         
         # Defining loss function
         {% filter remove_lspaces(8) %}
-            {% if loss_function == 'Cross_entropy' %}
+            {% if layer_spec.loss_function == 'Cross_entropy' %}
                 n_classes = output_tensor.get_shape().as_list()[-1]
                 flat_pred = tf.reshape(output_tensor, [-1, n_classes])
                 flat_labels = tf.reshape(target_tensor, [-1, n_classes])
                 loss_tensor = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=flat_labels, logits=flat_pred))
-            {% elif loss_function == 'Quadratic' %}
+            {% elif layer_spec.loss_function == 'Quadratic' %}
                 loss_tensor = tf.reduce_mean(tf.square(output_tensor - target_tensor))
-            {% elif loss_function == 'W_cross_entropy' %}
+            {% elif layer_spec.loss_function == 'W_cross_entropy' %}
                 n_classes = output_tensor.get_shape().as_list()[-1]
                 flat_pred = tf.reshape(output_tensor, [-1, n_classes])
                 flat_labels = tf.reshape(target_tensor, [-1, n_classes])
-                loss_tensor =  tf.reduce_mean(tf.nn.weighted_cross_entropy_with_logits(flat_labels, flat_pred, {{class_weights}}))
-            {% elif loss_function == 'Dice' %}
+                loss_tensor =  tf.reduce_mean(tf.nn.weighted_cross_entropy_with_logits(flat_labels, flat_pred, {{layer_spec.class_weights}}))
+            {% elif layer_spec.loss_function == 'Dice' %}
                 eps = 1e-5
                 intersection = tf.reduce_sum(tf.multiply(output_tensor, target_tensor))
                 union = eps + tf.reduce_sum(tf.multiply(output_tensor, output_tensor)) + tf.reduce_sum(tf.multiply(target_tensor, target_tensor))
                 cost_tmp = (2 * intersection/union)
                 cost_clip = tf.clip_by_value(cost_tmp, eps, 1.0-eps)
                 loss_tensor = 1 - cost_clip
+            {% else %}
+                raise NotImplementedError('Loss function {{layer_spec.loss_function}} not supported')
             {% endif %}
         {% endfilter %}
 
@@ -141,26 +169,26 @@
 
         global_step = None
         {% filter remove_lspaces(8) %}        
-            {% if optimizer == 'tf.compat.v1.train.GradientDescentOptimizer' %}
-                optimizer = tf.compat.v1.train.GradientDescentOptimizer(learning_rate={{learning_rate}})
-            {% elif optimizer == 'tf.compat.v1.train.MomentumOptimizer' %}
+            {% if layer_spec.optimizer == 'SGD' %}
+                optimizer = tf.compat.v1.train.GradientDescentOptimizer(learning_rate={{layer_spec.learning_rate}})
+            {% elif layer_spec.optimizer == 'Momentum' %}
                 global_step = tf.Variable(0)
                 learning_rate_momentum = tf.train.exponential_decay(
-                    learning_rate={{learning_rate}},
+                    learning_rate={{layer_spec.learning_rate}},
                     global_step=global_step,
-                    decay_steps={{decay_steps}},
-                    decay_rate={{decay_rate}},
+                    decay_steps={{layer_spec.decay_steps}},
+                    decay_rate={{layer_spec.decay_rate}},
                     staircase=True
                 )
-                optimizer = tf.train.MomentumOptimizer(learning_rate=learning_rate_momentum, momentum={{momentum}})
-            {% elif optimizer == 'tf.compat.v1.train.AdamOptimizer' %}
-                optimizer = tf.train.AdamOptimizer(learning_rate={{learning_rate}}, beta1={{beta1}}, beta2={{beta2}})
-            {% elif optimizer == 'tf.compat.v1.train.AdagradOptimizer' %}
-                optimizer = tf.compat.v1.train.AdagradOptimizer(learning_rate={{learning_rate}})            
-            {% elif optimizer == 'tf.compat.v1.train.RmsPropOptimizer' %}
-                optimizer = tf.compat.v1.train.RMSPropOptimizer(learning_rate={{learning_rate}})                        
+                optimizer = tf.train.MomentumOptimizer(learning_rate=learning_rate_momentum, momentum={{layer_spec.momentum}})
+            {% elif layer_spec.optimizer == 'ADAM' %}
+                optimizer = tf.train.AdamOptimizer(learning_rate={{layer_spec.learning_rate}}, beta1={{layer_spec.beta1}}, beta2={{layer_spec.beta2}})
+            {% elif layer_spec.optimizer == 'adagrad' %}
+                optimizer = tf.compat.v1.train.AdagradOptimizer(learning_rate={{layer_spec.learning_rate}})            
+            {% elif layer_spec.optimizer == 'RMSprop' %}
+                optimizer = tf.compat.v1.train.RMSPropOptimizer(learning_rate={{layer_spec.learning_rate}})                        
             {% else %}
-                raise NotImplementedError('Optimizer {{optimizer}} not supported yet')
+                raise NotImplementedError('Optimizer {{layer_spec.optimizer}} not supported yet')
             {% endif %}
         {% endfilter %}
 
@@ -188,12 +216,11 @@
         # trainable_vars = tf.trainable_variables() # TODO: safer to get from nodes. Especially with split graph in mind.
         # grads = tf.gradients(loss_tensor, trainable_vars)
         # update_weights = optimizer.apply_gradients(zip(grads, trainable_vars), global_step=global_step)        
-        
         update_weights = optimizer.minimize(loss_tensor, global_step=global_step)
         update_weights = tf.group([update_weights, update_ops])
 
         sess = None
-        {{session(sess, use_gpu=not use_cpu) | indent(width=8)}}        
+        {{session(sess, use_gpu=not layer_spec.use_cpu) | indent(width=8)}}        
         self._sess = sess
         
 
@@ -203,12 +230,12 @@
         self._checkpoint = tf.train.Checkpoint(**trackable_variables)
 
         sess.run(tf.global_variables_initializer())
-        
         {% filter remove_lspaces(8) %}
-            {% if export_directory is not none %}        
-                path = tf.train.latest_checkpoint('{{export_directory}}')
+            {% if layer_spec.checkpoint_path is not none %}
+                checkpoint_directory = '{{layer_spec.checkpoint_path}}'
+                path = tf.train.latest_checkpoint(checkpoint_directory)
                 status = self._checkpoint.restore(path)
-                status.assert_consumed().run_restore_ops(session=self._sess)
+                status.run_restore_ops(session=self._sess)
             {% endif %}
         {% endfilter %}                    
 
@@ -309,19 +336,20 @@
         except tf.errors.OutOfRangeError:
             pass
 
+        sess.close()
         self._status = 'finished'
         self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
         yield YieldLevel.DEFAULT
 {% endmacro %}
 
 #################################################### Distributed Training #################################################
-{% macro run_distributed(graph, layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, batch_size, export_directory, use_cpu) %}
+{% macro run_distributed(layer_spec, graph_spec) %}                    
         INCLUDE_KERAS_METRICS = False
 
-        self_layer_name = '{{layer_name}}' # this is passed as input
-        output_layer_id = '{{output_layer}}'
-        target_layer_id = '{{target_layer}}'
-        loss_func = '{{loss_function}}'
+
+        output_layer_id = "{{graph_spec.nodes_by_id[layer_spec.connection_predictions.src_id].sanitized_name}}"
+        target_layer_id = "{{graph_spec.nodes_by_id[layer_spec.connection_labels.src_id].sanitized_name}}"               
+        loss_func = '{{layer_spec.loss_function}}'
         input_data_nodes = graph.get_direct_data_nodes(output_layer_id)
         label_data_nodes = graph.get_direct_data_nodes(target_layer_id)
 
@@ -335,7 +363,7 @@
         self._tst_sz_tot = input_data_node.layer.size_testing
 
         n_devices = None
-        if {{use_cpu}}:
+        if {{layer_spec.use_cpu}}:
             {{session_distributed(sess, n_devices, use_gpu=False) | indent(width=8)}}
             self._sess = sess
 
@@ -350,17 +378,21 @@
         BATCH_SIZE_PER_REPLICA = self._batch_size # TODO: should this be batch_size divided by n_devices or not?
         GLOBAL_BATCH_SIZE = BATCH_SIZE_PER_REPLICA * n_devices
 
+
+        input_sample = input_data_node.layer_instance.sample
+        label_sample = label_data_node.layer_instance.sample        
+        
         # Make training set
         dataset_trn = tf.data.Dataset.zip((
             tf.data.Dataset.from_generator(
                 input_data_node.layer_instance.make_generator_training,
-                output_shapes=input_data_node.layer_instance.sample.shape,
-                output_types=np.float32                
+                output_shapes={k: v.shape for k, v in input_sample.items()},
+                output_types={k: v.dtype for k, v in input_sample.items()}
             ),
             tf.data.Dataset.from_generator(
                 label_data_node.layer_instance.make_generator_training,
-                output_shapes=label_data_node.layer_instance.sample.shape,
-                output_types=np.float32
+                output_shapes={k: v.shape for k, v in label_sample.items()},
+                output_types={k: v.dtype for k, v in label_sample.items()}
             )
         ))
 
@@ -368,13 +400,13 @@
         dataset_val = tf.data.Dataset.zip((
             tf.data.Dataset.from_generator(
                 input_data_node.layer_instance.make_generator_validation,
-                output_shapes=input_data_node.layer_instance.sample.shape,
-                output_types=np.float32                
+                output_shapes={k: v.shape for k, v in input_sample.items()},
+                output_types={k: v.dtype for k, v in input_sample.items()}
             ),
             tf.data.Dataset.from_generator(
                 label_data_node.layer_instance.make_generator_validation,
-                output_shapes=label_data_node.layer_instance.sample.shape,
-                output_types=np.float32
+                output_shapes={k: v.shape for k, v in label_sample.items()},
+                output_types={k: v.dtype for k, v in label_sample.items()}
             )
         ))
 
@@ -382,16 +414,16 @@
         dataset_tst = tf.data.Dataset.zip((
             tf.data.Dataset.from_generator(
                 input_data_node.layer_instance.make_generator_testing,
-                output_shapes=input_data_node.layer_instance.sample.shape,
-                output_types=np.float32                
+                output_shapes={k: v.shape for k, v in input_sample.items()},
+                output_types={k: v.dtype for k, v in input_sample.items()}
             ),
             tf.data.Dataset.from_generator(
                 label_data_node.layer_instance.make_generator_testing,
-                output_shapes=label_data_node.layer_instance.sample.shape,
-                output_types=np.float32
+                output_shapes={k: v.shape for k, v in label_sample.items()},
+                output_types={k: v.dtype for k, v in label_sample.items()}
             )
         ))
-
+        
         train_dataset = dataset_trn.batch(GLOBAL_BATCH_SIZE)
         validation_dataset = dataset_val.batch(GLOBAL_BATCH_SIZE)
         test_dataset = dataset_tst.batch(1) # Since the batch size for test is 1, it does not make sense to divide the batch over several replicas. Do testing as usual.
@@ -399,6 +431,10 @@
         # NOTE: A key difference for distributed: we have one _iterator_ per dataset, as opposed to one _initializer_ per dataset in the normal case.
         # This means that we have to create a different version of all metrics (accuracy, f1, auc, etc), the gradients and more importantly: 'all tensors'.
 
+        with tf.variable_scope('{{layer_spec.sanitized_name}}/train', reuse=tf.AUTO_REUSE):
+            is_training = tf.get_variable(name="is_train", dtype=tf.bool, initializer=False)
+
+        
         with strategy.scope():
             train_iterator = strategy.make_dataset_iterator(train_dataset)
             validation_iterator = strategy.make_dataset_iterator(validation_dataset)
@@ -406,35 +442,27 @@
         test_iterator = tf.data.Iterator.from_structure(test_dataset.output_types, test_dataset.output_shapes)
         test_iterator_init = test_iterator.make_initializer(test_dataset)
 
-        def create_model():
-            # The tensors generated by distributed iterators are only accessible locally from each replica. Therefore,
-            # each replica must create its own version of the model. This has the following two consequences:
-            #
-            #     * all tensorflow variables/operations must be executed on device, once per replica => the wrapped layers are further wrapped as a Model.
-            #     * we must keep track of the created variables, so that the validation steps can reuse the trained variables => we use get_variable instead of tf.Variable, with a var-scope for each layer.
-            #     * we will have several instances/copies of non-trainable/non-tensorflow variables. => Each layer wrapper tracks the number of times it's been created, or they would overwrite eachother.
-            
-            class Model:
-                def __init__(self):
-                    pass
-                
-                def __call__(self, x, y):
-                    layer_output_tensors = {
-                        input_data_node.layer_id: x,
-                        label_data_node.layer_id: y
-                    }
+        def build_graph(input_tensor, label_tensor):
+            layer_output_tensors = {
+                input_data_node.layer_id: input_tensor,
+                label_data_node.layer_id: label_tensor
+            }
 
-                    for node in graph.inner_nodes:
-                        args = []
-                        for input_node in graph.get_input_nodes(node):
-                            args.append(layer_output_tensors[input_node.layer_id])
-                        y = node.layer_instance(*args)
-                        layer_output_tensors[node.layer_id] = y
+            for dst_node in graph.inner_nodes:
+                inputs = {
+                    dst_var: layer_output_tensors[src_node.layer_id][src_var]
+                    for src_node, src_var, dst_var in graph.get_input_connections(dst_node)
+                }
+                y = dst_node.layer_instance(
+                    inputs,
+                    is_training=is_training
+                )
+                layer_output_tensors[dst_node.layer_id] = y
 
-                    return layer_output_tensors 
-            
-            return Model()
+            return layer_output_tensors
 
+
+        
         with strategy.scope():
 
             if INCLUDE_KERAS_METRICS:
@@ -471,56 +499,66 @@
                 auc_val_tensor = auc_val.result()
                 
                 
-            model = create_model()
+            #model = create_model()
             
             train_iterator_init = train_iterator.initialize()
             validation_iterator_init = validation_iterator.initialize()
 
             global_step = None
             {% filter remove_lspaces(8) %}        
-                {% if optimizer == 'tf.compat.v1.train.GradientDescentOptimizer' %}
-                    optimizer = tf.compat.v1.train.GradientDescentOptimizer(learning_rate={{learning_rate}}*n_devices)
-                {% elif optimizer == 'tf.compat.v1.train.MomentumOptimizer' %}
+                {% if layer_spec.optimizer == 'SGD' %}
+                    optimizer = tf.compat.v1.train.GradientDescentOptimizer(learning_rate={{layer_spec.learning_rate}}*n_devices)
+                {% elif layer_spec.optimizer == 'Momentum' %}
                     global_step = tf.Variable(0)
                     learning_rate_momentum = tf.train.exponential_decay(
-                        learning_rate={{learning_rate}}*n_devices,
+                        learning_rate={{layer_spec.learning_rate}}*n_devices,
                         global_step=global_step,
-                        decay_steps={{decay_steps}},
-                        decay_rate={{decay_rate}},
+                        decay_steps={{layer_spec.decay_steps}},
+                        decay_rate={{layer_spec.decay_rate}},
                         staircase=True
                     )
-                    optimizer = tf.train.MomentumOptimizer(learning_rate=learning_rate_momentum, momentum={{momentum}})
-                {% elif optimizer == 'tf.compat.v1.train.AdamOptimizer' %}
-                    optimizer = tf.train.AdamOptimizer(learning_rate={{learning_rate}}*n_devices, beta1={{beta1}}, beta2={{beta2}})
-                {% elif optimizer == 'tf.compat.v1.train.AdagradOptimizer' %}
-                    optimizer = tf.compat.v1.train.AdagradOptimizer(learning_rate={{learning_rate}}*n_devices)            
-                {% elif optimizer == 'tf.compat.v1.train.RmsPropOptimizer' %}
-                    optimizer = tf.compat.v1.train.RMSPropOptimizer(learning_rate={{learning_rate}}*n_devices)                        
+                    optimizer = tf.train.MomentumOptimizer(learning_rate=learning_rate_momentum, momentum={{layer_spec.momentum}})
+                {% elif layer_spec.optimizer == 'ADAM' %}
+                    optimizer = tf.train.AdamOptimizer(learning_rate={{layer_spec.learning_rate}}*n_devices, beta1={{layer_spec.beta1}}, beta2={{layer_spec.beta2}})
+                {% elif layer_spec.optimizer == 'adagrad' %}
+                    optimizer = tf.compat.v1.train.AdagradOptimizer(learning_rate={{layer_spec.learning_rate}}*n_devices)            
+                {% elif layer_spec.optimizer == 'RMSprop' %}
+                    optimizer = tf.compat.v1.train.RMSPropOptimizer(learning_rate={{layer_spec.learning_rate}}*n_devices)                        
                 {% else %}
-                    raise NotImplementedError('Optimizer {{optimizer}} not supported yet')
+                    raise NotImplementedError('Optimizer {{layer_spec.optimizer}} not supported yet')
                 {% endif %}
             {% endfilter %}
             
             def train_step(inputs):
                 x, y = inputs
-                layer_output_tensors = model(x, y)
-                output_tensor = layer_output_tensors[output_layer_id]
-                target_tensor = layer_output_tensors[target_layer_id]
+                layer_output_tensors = build_graph(x, y)
+
+                # TODO(anton.k): temporary solution before refactor
+                output_tensor = None
+                target_tensor = None
+        
+                for src_node, src_var, dst_var in graph.get_input_connections(graph.active_training_node):
+                    if dst_var == 'predictions':
+                        output_tensor = layer_output_tensors[output_layer_id][src_var]
+                        output_var_name = src_var
+                    if dst_var == 'labels':
+                        target_tensor = layer_output_tensors[target_layer_id][src_var]
+                # ----
 
                 # Defining loss function
                 {% filter remove_lspaces(8) %}
-                    {% if loss_function == 'Cross_entropy' %}
+                    {% if layer_spec.loss_function == 'Cross_entropy' %}
                         n_classes = output_tensor.get_shape().as_list()[-1]
                         flat_pred = tf.reshape(output_tensor, [-1, n_classes])
                         flat_labels = tf.reshape(target_tensor, [-1, n_classes])
                         loss_tensor = tf.reduce_sum(tf.nn.softmax_cross_entropy_with_logits(labels=flat_labels, logits=flat_pred)) / GLOBAL_BATCH_SIZE
-                    {% elif loss_function == 'Quadratic' %}
+                    {% elif layer_spec.loss_function == 'Quadratic' %}
                         loss_tensor = tf.reduce_sum(tf.square(output_tensor - target_tensor)) / GLOBAL_BATCH_SIZE
-                    {% elif loss_function == 'W_cross_entropy' %}
+                    {% elif layer_spec.loss_function == 'W_cross_entropy' %}
                         n_classes = output_tensor.get_shape().as_list()[-1]
                         flat_pred = tf.reshape(output_tensor, [-1, n_classes])
                         flat_labels = tf.reshape(target_tensor, [-1, n_classes])
-                        loss_tensor =  tf.reduce_sum(tf.nn.weighted_cross_entropy_with_logits(flat_labels, flat_pred, {{class_weights}})) / GLOBAL_BATCH_SIZE
+                        loss_tensor =  tf.reduce_sum(tf.nn.weighted_cross_entropy_with_logits(flat_labels, flat_pred, {{layer_spec.class_weights}})) / GLOBAL_BATCH_SIZE
                     {% endif %}
                 {% endfilter %}
 
@@ -575,24 +613,33 @@
 
             def validation_step(inputs):
                 x, y = inputs
-                layer_output_tensors = model(x, y)
-                output_tensor = layer_output_tensors[output_layer_id]
-                target_tensor = layer_output_tensors[target_layer_id]
+                layer_output_tensors = build_graph(x, y)
+                # TODO(anton.k): temporary solution before refactor
+                output_tensor = None
+                target_tensor = None
+        
+                for src_node, src_var, dst_var in graph.get_input_connections(graph.active_training_node):
+                    if dst_var == 'predictions':
+                        output_tensor = layer_output_tensors[output_layer_id][src_var]
+                        output_var_name = src_var
+                    if dst_var == 'labels':
+                        target_tensor = layer_output_tensors[target_layer_id][src_var]
+                # ----
 
                 # Defining loss function
                 {% filter remove_lspaces(8) %}
-                    {% if loss_function == 'Cross_entropy' %}
+                    {% if layer_spec.loss_function == 'Cross_entropy' %}
                         n_classes = output_tensor.get_shape().as_list()[-1]
                         flat_pred = tf.reshape(output_tensor, [-1, n_classes])
                         flat_labels = tf.reshape(target_tensor, [-1, n_classes])
                         loss_tensor = tf.reduce_sum(tf.nn.softmax_cross_entropy_with_logits(labels=flat_labels, logits=flat_pred)) / GLOBAL_BATCH_SIZE
-                    {% elif loss_function == 'Quadratic' %}
+                    {% elif layer_spec.loss_function == 'Quadratic' %}
                         loss_tensor = tf.reduce_sum(tf.square(output_tensor - target_tensor)) / GLOBAL_BATCH_SIZE
-                    {% elif loss_function == 'W_cross_entropy' %}
+                    {% elif layer_spec.loss_function == 'W_cross_entropy' %}
                         n_classes = output_tensor.get_shape().as_list()[-1]
                         flat_pred = tf.reshape(output_tensor, [-1, n_classes])
                         flat_labels = tf.reshape(target_tensor, [-1, n_classes])
-                        loss_tensor =  tf.reduce_sum(tf.nn.weighted_cross_entropy_with_logits(flat_labels, flat_pred, {{class_weights}})) / GLOBAL_BATCH_SIZE
+                        loss_tensor =  tf.reduce_sum(tf.nn.weighted_cross_entropy_with_logits(flat_labels, flat_pred, {{layer_spec.class_weights}})) / GLOBAL_BATCH_SIZE
                     {% endif %}
                 {% endfilter %}
                 
@@ -637,7 +684,6 @@
                     
                     return add_identity(loss_tensor), add_identity(accuracy_tensor), add_identity(layer_output_tensors), add_identity(layer_weight_tensors), add_identity(layer_bias_tensors), add_identity(layer_gradient_tensors)
 
-
             if n_devices > 1:
                 def reduce_per_replica(nested_dict):
                     for variable, node in nested_dict.items():
@@ -681,11 +727,17 @@
                 layer_biases_val = reduce_per_replica(layer_biases_val)
 
                 # Create an exportable version of the TensorFlow graph
-                self._input_tensor_export = tf.placeholder(shape=[None] + dataset_trn.output_shapes[0].as_list(), dtype=dataset_trn.output_types[0])
-                
-                self._output_tensor_export = model(
+                self._input_tensor_export = {
+                    key: tf.placeholder(shape=[None]+shape, dtype=type_)
+                    for (key, shape), (_, type_) in zip(dataset_trn.output_shapes[0].items(), dataset_trn.output_types[0].items())            
+                }
+
+                self._output_tensor_export = build_graph(
                     self._input_tensor_export,
-                    tf.placeholder(shape=[None] + dataset_trn.output_shapes[1].as_list(), dtype=dataset_trn.output_types[1])
+                    {                                                                                                                                                                       
+                        key: tf.placeholder(shape=[None]+shape, dtype=type_)
+                        for (key, shape), (_, type_) in zip(dataset_trn.output_shapes[1].items(), dataset_trn.output_types[1].items())
+                    }             
                 )[output_layer_id]
             else:
                 #dist_loss, dist_grads_train, dist_locals = strategy.experimental_run(train_step, train_iterator)
@@ -716,8 +768,8 @@
 
             # Restore from checkpoint if specified
             {% filter remove_lspaces(8) %}
-                {% if export_directory is not none %}
-                    path = tf.train.latest_checkpoint('{{export_directory}}')
+                {% if layer_spec.checkpoint_path is not none %}
+                    path = tf.train.latest_checkpoint('{{layer_spec.checkpoint_path}}')
                     self._saver.restore(sess, path)
                 {% endif %}
             {% endfilter %}
@@ -786,6 +838,7 @@
             except tf.errors.OutOfRangeError:
                 pass
 
+            sess.close()
             self._status = 'finished'
             self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
             yield YieldLevel.DEFAULT
@@ -793,14 +846,14 @@
 
 
 ################################################### Main #####################################################
-{% macro layer_tf1x_classification(layer_name, output_layer, target_layer, n_epochs, stop_condition, target_acc, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, batch_size, export_directory, use_cpu) %}
-class {{layer_name}}(ClassificationLayer):
+{% macro layer_tf1x_classification(layer_spec, graph_spec) %}                    
+class {{layer_spec.sanitized_name}}(ClassificationLayer):
 
     def __init__(self):
-        self._n_epochs = {{n_epochs}}
-        self._batch_size = {{batch_size}}
-        self._target_acc = {{target_acc}}
-        self._stop_condition = '{{stop_condition}}'
+        self._n_epochs = {{layer_spec.n_epochs}}
+        self._batch_size = {{layer_spec.batch_size}}
+        self._target_acc = {{layer_spec.target_acc}}
+        self._stop_condition = '{{layer_spec.stop_condition}}'
 
         self._stopped = False
         self._paused = False
@@ -837,10 +890,10 @@ class {{layer_name}}(ClassificationLayer):
         Args:
             graph: A PerceptiLabs Graph object containing references to all layers objects included in the model produced by this training layer.
         """   
-        {% if distributed -%}
-            {{ run_distributed(graph, layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, batch_size, export_directory, use_cpu) }}
+        {% if layer_spec.distributed -%}
+            {{ run_distributed(layer_spec, graph_spec) }}
         {% else -%}
-            {{ run_normal(graph, layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, batch_size, export_directory, use_cpu) }}
+            {{ run_normal(layer_spec, graph_spec) }}
         {% endif %}                
 
     def on_export(self, path: str, mode: str) -> None:
@@ -853,7 +906,6 @@ class {{layer_name}}(ClassificationLayer):
 
         log.debug(f"Export called. Project path = {path}, mode = {mode}")
         pb_path = os.path.join(path, '1')
-
         if os.path.exists(pb_path):
             shutil.rmtree(pb_path)
         
@@ -863,12 +915,12 @@ class {{layer_name}}(ClassificationLayer):
         
         # Export non-compressed model
         if mode in ['TFModel', 'TFModel+checkpoint']:
-            tf.compat.v1.saved_model.simple_save(self._sess, pb_path, inputs={'input': self._input_tensor_export}, outputs={'output': self._output_tensor_export})
+            tf.compat.v1.saved_model.simple_save(self._sess, pb_path, inputs=self._input_tensor_export, outputs=self._output_tensor_export)
 
         # Export compressed model
         if mode in ['TFLite', 'TFLite+checkpoint']:
             frozen_path = os.path.join(pb_path, 'frozen_model.pb')
-            converter = tf.lite.TFLiteConverter.from_session(self._sess, [self._input_tensor_export], [self._output_tensor_export])
+            converter = tf.lite.TFLiteConverter.from_session(self._sess, list(self._input_tensor_export.values()), list(self._output_tensor_export.values()))
             converter.post_training_quantize = True
             tflite_model = converter.convert()
             with open(frozen_path, "wb") as f:
@@ -877,7 +929,7 @@ class {{layer_name}}(ClassificationLayer):
         # Export checkpoint
         if mode in ['TFModel+checkpoint', 'TFLite+checkpoint']:
             {% filter remove_lspaces(8) %}
-                {% if distributed %}
+                {% if layer_spec.distributed %}
                     self._saver.save(self._sess, os.path.join(path, 'model.ckpt'), global_step=0)
                 {% else %}
                     self._checkpoint.save(file_prefix=os.path.join(path, 'model.ckpt'), session=self._sess)
@@ -948,7 +1000,7 @@ class {{layer_name}}(ClassificationLayer):
     @property
     def sample(self) -> np.ndarray:
         """Returns a single data sample"""        
-        return np.empty(())
+        return dict()
 
     @property
     def columns(self) -> List[str]: 

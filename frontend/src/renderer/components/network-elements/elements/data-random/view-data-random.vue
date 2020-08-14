@@ -7,16 +7,28 @@
     :style="layerStyles"
   )
     i.icon.icon-random-data
+    text-editable.layer-type(
+      v-if="withLayerTypeText"
+      :text-title="currentEl.layerName"
+      @change-title="editElName"
+      :styleType="['network-view']"
+      )
     .layerTitle(v-if="showTitle") {{ displayTitle }}
 
 
 </template>
 
 <script>
-  import mixinSet from '@/core/mixins/net-element-view-layer.js';
+import mixinSet from "@/core/mixins/net-element-view-layer.js";
+import TextEditable       from '@/components/base/text-editable.vue';
+import mixinFocus     from '@/core/mixins/net-element-settings-input-focus.js';
 export default {
-  name: 'ViewDataRandom',
-  mixins: [mixinSet],
+  name: "ViewDataRandom",
+  mixins: [mixinSet, mixinFocus],
+  components: { TextEditable },
+  props: {
+    withLayerTypeText: Boolean
+  },
   data() {
     return {
       interactiveInfo: {
@@ -26,5 +38,5 @@ export default {
       displayTitle: 'Random'
     }
   }
-}
+};
 </script>

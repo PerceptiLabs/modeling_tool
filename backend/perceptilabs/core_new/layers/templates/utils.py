@@ -5,7 +5,7 @@ import pkg_resources
 from tempfile import NamedTemporaryFile
 
 from perceptilabs.utils import add_line_numbering
-from perceptilabs.graph.spec.layers import get_layer_builder
+from perceptilabs.layers import get_layer_builder
 from perceptilabs.core_new.layers.definitions import TEMPLATES_DIRECTORY
 
 _RENDER_MACRO_TEMPLATE = \

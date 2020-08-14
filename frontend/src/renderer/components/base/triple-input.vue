@@ -6,6 +6,8 @@
       name="field1"
       :class="{'bg-error': errors.has('field1') || isNotValidateSum}"
       v-validate="{required: true, between: [validateMin, validateMax]}"
+      @focus="$emit('handle-focus')"
+      @blur="$emit('handle-blur')"
     )
     //-p.text-error(
       v-show="errors.has('field1')"
@@ -17,6 +19,8 @@
       name="field2"
       :class="{'bg-error': errors.has('field2') || isNotValidateSum}"
       v-validate="{required: true, between: [validateMin, validateMax]}"
+      @focus="$emit('handle-focus')"
+      @blur="$emit('handle-blur')"
     )
     span.triple-input_separate {{ separateSign || 'X' }}
     input.triple-input_input(type="number"
@@ -25,6 +29,8 @@
       name="field3"
       :class="{'bg-error': errors.has('field3') || isNotValidateSum}"
       v-validate="{required: true, between: [validateMin, validateMax]}"
+      @focus="$emit('handle-focus')"
+      @blur="$emit('handle-blur')"
     )
     span.triple-input_separate(v-if="separateSign") {{ separateSign }}
 </template>

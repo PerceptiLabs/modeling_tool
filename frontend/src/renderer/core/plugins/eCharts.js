@@ -8,8 +8,8 @@ ECharts.registerTheme('quantum', {
   grid: {
     top: '20',
     bottom: '30',
-    right: '30',
-    left: '50',
+    right: '10',
+    left: '30',
   },
   "color": [
     "#6b8ff7",

@@ -1,9 +1,9 @@
-{% macro layer_dataenvironment(layer_name, environment_name) %}
-class {{layer_name}}(DataReinforce):
+{% macro layer_dataenvironment(layer_spec, graph_spec=None) %}
+class {{layer_spec.sanitized_name}}(DataReinforce):
     """Class responsible for running the gym environment."""    
     def __init__(self):
         self._variables = {}
-        self._env_name = '{{environment_name}}'
+        self._env_name = '{{layer_spec.environment_name}}'
         self._env = gym.make(self._env_name)
         sample = self._env.reset()
         action_space = self._env.action_space.n
@@ -21,8 +21,7 @@ class {{layer_name}}(DataReinforce):
         gen = (self.make_generator())
         next(gen)
         sample = gen.send(None)
-        state = sample[0]
-        return state
+        return sample
 
     @property
     def action_space(self) -> List[int]:
@@ -40,14 +39,13 @@ class {{layer_name}}(DataReinforce):
                 action = yield
                 if not action:
                     action = env.action_space.sample()
-                    [new_state, reward, done, info] = self._env.step(action)
-                    state_info = [new_state, reward, done, info]
+                    [new_state, reward, done, info] = env.step(action)
                 elif action == 'reset':
-                    start_state = env.reset()
-                    state_info = start_state
+                    new_state, reward, done, info = env.reset(), None, False, {}
                 else:
                     [new_state, reward, done, info] = env.step(action)
-                    state_info = [new_state, reward, done, info]
+                    
+                state_info = {'output': new_state, 'reward': reward, 'done': done, 'info': info}
                 yield state_info
         return gen()
 
