@@ -77,6 +77,7 @@ export default {
     }),
     ...mapState({
       currentProjectId:     state => state.mod_project.currentProject,
+      isSettingInputFocused:     state => state.mod_workspace.isSettingInputFocused,
     }),
     appVersion() {
       return this.$store.state.globalView.appVersion
@@ -146,12 +147,17 @@ export default {
       HCCopy:           'mod_events/EVENT_hotKeyCopy',
       HCCut:           'mod_events/EVENT_hotKeyCut',
       HCPaste:          'mod_events/EVENT_hotKeyPaste',
-      HCSelectAll:      'mod_workspace/SET_elementSelectAll',
+      HCSelectAllAction:      'mod_workspace/SET_elementSelectAll',
       HCDeselectAll:    'mod_workspace/SET_elementUnselect',
       toPrevStepHistoryMutation:'mod_workspace-history/TO_prevStepHistory',
       toNextStepHistoryMutation:'mod_workspace-history/TO_nextStepHistory',
       setActivePageAction: 'modal_pages/setActivePageAction',
     }),
+    HCSelectAll() {
+      if(!this.isSettingInputFocused) {
+        this.HCSelectAllAction()
+      }
+    },
     goToLink,
     mainProcessListeners(isRemove) {
       this.navMenu.forEach((item) => {

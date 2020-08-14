@@ -1,0 +1,152 @@
+from collections import namedtuple
+
+
+LayerMeta = namedtuple(
+    'LayerMeta', [
+        'spec_class',
+        'imports_path',
+        'macro_path',        
+        'macro_name'
+    ]
+)
+
+
+from perceptilabs.layers.datadata.spec import DataDataSpec
+from perceptilabs.layers.dataenvironment.spec import DataEnvironmentSpec
+from perceptilabs.layers.datarandom.spec import DataRandomSpec
+from perceptilabs.layers.deeplearningfc.spec import DeepLearningFcSpec
+from perceptilabs.layers.deeplearningconv.spec import DeepLearningConvSpec
+from perceptilabs.layers.deeplearningdeconv.spec import DeepLearningDeconvSpec
+from perceptilabs.layers.deeplearningrecurrent.spec import DeepLearningRecurrentSpec
+from perceptilabs.layers.processonehot.spec import ProcessOneHotSpec
+from perceptilabs.layers.processreshape.spec import ProcessReshapeSpec
+from perceptilabs.layers.processrescale.spec import ProcessRescaleSpec
+from perceptilabs.layers.processgrayscale.spec import ProcessGrayscaleSpec
+from perceptilabs.layers.mathswitch.spec import MathSwitchSpec
+from perceptilabs.layers.mathmerge.spec import MathMergeSpec
+from perceptilabs.layers.layercustom.spec import LayerCustomSpec
+from perceptilabs.layers.trainclassification.spec import TrainClassificationSpec
+from perceptilabs.layers.trainregression.spec import TrainRegressionSpec
+from perceptilabs.layers.trainreinforce.spec import TrainReinforceSpec
+from perceptilabs.layers.trainobjectdetection.spec import TrainObjectDetectionSpec
+from perceptilabs.layers.traingan.spec import TrainGanSpec
+
+
+DEFINITION_TABLE = {
+    'DataData': LayerMeta(
+        DataDataSpec,
+        'layers/datadata/imports.json',
+        'core_new/layers/templates/datadata.j2',        
+        'layer_datadata'
+    ),
+    'DataEnvironment': LayerMeta(
+        DataEnvironmentSpec,
+        'layers/dataenvironment/imports.json',
+        'core_new/layers/templates/dataenv.j2',        
+        'layer_dataenvironment'
+    ),
+    'DataRandom': LayerMeta(
+        DataRandomSpec,
+        'layers/datarandom/imports.json',
+        'core_new/layers/templates/datarandom.j2',        
+        'layer_datarandom'
+    ),
+    'DeepLearningFC': LayerMeta(
+        DeepLearningFcSpec,
+        'layers/deeplearningfc/imports.json',
+        'core_new/layers/templates/tf1x.j2',        
+        'layer_tf1x_fully_connected'
+    ),
+    'DeepLearningConv': LayerMeta(
+        DeepLearningConvSpec,
+        'layers/deeplearningconv/imports.json',
+        'core_new/layers/templates/tf1x.j2',        
+        'layer_tf1x_conv'
+    ),
+    'DeepLearningDeconv': LayerMeta(
+        DeepLearningDeconvSpec,
+        'layers/deeplearningdeconv/imports.json',
+        'core_new/layers/templates/tf1x.j2',        
+        'layer_tf1x_deconv'
+    ),
+    'DeepLearningRecurrent': LayerMeta(
+        DeepLearningRecurrentSpec,
+        'layers/deeplearningrecurrent/imports.json',
+        'core_new/layers/templates/tf1x.j2',        
+        'layer_tf1x_recurrent'
+    ),
+    'ProcessOneHot': LayerMeta(
+        ProcessOneHotSpec,
+        'layers/processonehot/imports.json',
+        'core_new/layers/templates/tf1x.j2',        
+        'layer_tf1x_one_hot'
+    ),
+    'ProcessReshape': LayerMeta(
+        ProcessReshapeSpec,
+        'layers/processreshape/imports.json',
+        'core_new/layers/templates/tf1x.j2',        
+        'layer_tf1x_reshape'
+    ),
+    'ProcessRescale': LayerMeta(
+        ProcessRescaleSpec,
+        'layers/processrescale/imports.json',
+        'core_new/layers/templates/tf1x.j2',        
+        'layer_tf1x_image_reshape'
+    ),
+    'ProcessGrayscale': LayerMeta(
+        ProcessGrayscaleSpec,
+        'layers/processreshape/imports.json',
+        'core_new/layers/templates/tf1x.j2',        
+        'layer_tf1x_grayscale'
+    ),
+    'MathSwitch': LayerMeta(
+        MathSwitchSpec,
+        'layers/mathswitch/imports.json',
+        'core_new/layers/templates/tf1x.j2',        
+        'layer_tf1x_switch'
+    ),
+    'MathMerge': LayerMeta(
+        MathMergeSpec,
+        'layers/mathmerge/imports.json',
+        'core_new/layers/templates/tf1x.j2',        
+        'layer_tf1x_merge'
+    ),
+    'LayerCustom': LayerMeta(
+        LayerCustomSpec,
+        'layers/layercustom/imports.json',
+        'core_new/layers/templates/custom.j2',        
+        'layer_custom_inner'
+    ),
+    'TrainNormal': LayerMeta(
+        TrainClassificationSpec,
+        'layers/trainclassification/imports.json',
+        'core_new/layers/templates/tf1x_classification.j2',        
+        'layer_tf1x_classification'
+    ),
+    'TrainRegression': LayerMeta(
+        TrainRegressionSpec,
+        'layers/trainregression/imports.json',
+        'core_new/layers/templates/tf1x_regression.j2',        
+        'layer_tf1x_regression'
+    ),        
+    'TrainReinforce': LayerMeta(
+        TrainReinforceSpec,
+        'layers/trainreinforce/imports.json',
+        'core_new/layers/templates/tf1x_rl.j2',        
+        'layer_tf1x_rl'
+    ),
+    'TrainDetector': LayerMeta(
+        TrainObjectDetectionSpec,
+        'layers/trainobjectdetection/imports.json',
+        'core_new/layers/templates/tf1x_object_detection.j2',        
+        'layer_tf1x_object_detection'
+    ),
+    'TrainGan': LayerMeta(
+        TrainGanSpec,
+        'layers/traingan/imports.json',
+        'core_new/layers/templates/tf1x_gan.j2',        
+        'layer_tf1x_gan'
+    )        
+    
+}
+

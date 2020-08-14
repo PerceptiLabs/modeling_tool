@@ -10,6 +10,8 @@
         v-model.number="value1"
         :class="{'bg-error': errors.has('field1') || isNotValidateSum}"
         v-validate="{required: true, between: [validateMin, validateMax]}"
+        @focus="$emit('handle-focus')"
+        @blur="$emit('handle-blur')"
       )
     //-p.text-error(
       v-show="errors.has('field1')"
@@ -24,6 +26,8 @@
         v-model.number="value2"
         :class="{'bg-error': errors.has('field2') || isNotValidateSum || (value2 > 0 && value1 === 0)}"
         v-validate="{required: true, between: [validateMin, validateMax]}"
+        @focus="$emit('handle-focus')"
+        @blur="$emit('handle-blur')"
       )
     button.triple-input_separate.btn(type="button" @click="swap23")
       <>
@@ -35,6 +39,8 @@
         v-model.number="value3"
         :class="{'bg-error': errors.has('field3') || isNotValidateSum || (value3 > 0 && (value2 === 0 || value1 === 0))}"
         v-validate="{required: true, between: [validateMin, validateMax]}"
+        @focus="$emit('handle-focus')"
+        @blur="$emit('handle-blur')"
       )
     button.triple-input_separate.btn(type="button" @click="swap13") >
       //i.icon.icon-swap-horiz

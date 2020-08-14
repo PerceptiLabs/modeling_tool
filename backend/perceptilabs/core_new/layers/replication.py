@@ -52,7 +52,7 @@ class ReplicatedProperty:
 WARNING: MUST HAVE SUBCLASSES APPEARING FIRST"""
 REPLICATED_PROPERTIES_TABLE = {
     ClassificationLayer: [
-        ReplicatedProperty('sample', (np.float32, np.ndarray), lambda _: np.empty(())),
+        ReplicatedProperty('sample', dict, lambda _: dict()),
         ReplicatedProperty('size_training', int, -1),
         ReplicatedProperty('size_validation', int, -1),
         ReplicatedProperty('size_testing', int, -1),
@@ -78,7 +78,7 @@ REPLICATED_PROPERTIES_TABLE = {
         ReplicatedProperty('columns', list, []),                
     ],
     ObjectDetectionLayer: [
-        ReplicatedProperty('sample', (np.float32, np.ndarray), lambda _: np.empty(())),
+        ReplicatedProperty('sample', dict, lambda _: dict),                                        
         ReplicatedProperty('size_training', int, -1),
         ReplicatedProperty('size_validation', int, -1),
         ReplicatedProperty('size_testing', int, -1),
@@ -135,7 +135,7 @@ REPLICATED_PROPERTIES_TABLE = {
         ReplicatedProperty('layer_gradients', dict, lambda _: dict()),
         ReplicatedProperty('training_iteration', int, -1),
         ReplicatedProperty('validation_iteration', int, -1),
-        ReplicatedProperty('sample', (np.float32, np.ndarray), lambda _: np.empty(())),
+        ReplicatedProperty('sample', dict, lambda _: dict),                                
         ReplicatedProperty('size_training', int, -1),
         ReplicatedProperty('size_validation', int, -1),
         ReplicatedProperty('size_testing', int, -1), 
@@ -153,7 +153,7 @@ REPLICATED_PROPERTIES_TABLE = {
         ReplicatedProperty('variables', dict, lambda _: dict()),   
     ],
     RLLayer: [
-        ReplicatedProperty('sample', (np.float32, np.ndarray), lambda _: np.empty(())),
+        ReplicatedProperty('sample', dict, lambda _: dict()),
         ReplicatedProperty('reward',(np.float32, float), -1),
         ReplicatedProperty('action_space', list, []),
         ReplicatedProperty('n_actions', int, -1),
@@ -179,7 +179,7 @@ REPLICATED_PROPERTIES_TABLE = {
         ReplicatedProperty('export_modes', list, []),
     ],
     GANLayer: [
-        ReplicatedProperty('sample', (np.float32, np.ndarray), lambda _: np.empty(())),
+        ReplicatedProperty('sample', dict, lambda _: dict),                        
         ReplicatedProperty('size_training', int, -1),
         ReplicatedProperty('size_validation', int, -1),
         ReplicatedProperty('size_testing', int, -1),
@@ -208,7 +208,7 @@ REPLICATED_PROPERTIES_TABLE = {
         ReplicatedProperty('columns', list, []),        
     ],
     DataRandom: [
-        ReplicatedProperty('sample', ((np.float32, float), np.ndarray), lambda _: np.empty(())),
+        ReplicatedProperty('sample', dict, lambda _: dict),                
         ReplicatedProperty('columns', list, []),        
         ReplicatedProperty('size_training', int, -1),
         ReplicatedProperty('size_validation', int, -1),
@@ -216,7 +216,7 @@ REPLICATED_PROPERTIES_TABLE = {
         ReplicatedProperty('variables', dict, lambda _: dict())
     ],
     DataSupervised: [
-        ReplicatedProperty('sample', ((np.float32, float), np.ndarray), lambda _: np.empty(())),
+        ReplicatedProperty('sample', dict, lambda _: dict()),        
         ReplicatedProperty('columns', list, []),        
         ReplicatedProperty('size_training', int, -1),
         ReplicatedProperty('size_validation', int, -1),
@@ -224,12 +224,12 @@ REPLICATED_PROPERTIES_TABLE = {
         ReplicatedProperty('variables', dict, lambda _: dict())
     ],
     DataReinforce: [
-        ReplicatedProperty('sample', ((np.float32, float), np.ndarray), lambda _: np.empty(())),
+        ReplicatedProperty('sample', dict, lambda _: dict),
         ReplicatedProperty('action_space', list, []),        
         ReplicatedProperty('variables', dict, lambda _: dict())
     ],
     DataLayer: [
-        ReplicatedProperty('sample', ((np.float32, float), np.ndarray), lambda _: np.empty(())),
+        ReplicatedProperty('sample', dict, lambda _: dict),        
         ReplicatedProperty('variables', dict, lambda _: dict())
     ],
     Tf1xLayer: [

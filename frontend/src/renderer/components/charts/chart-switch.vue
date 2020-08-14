@@ -65,7 +65,13 @@
       },
     },
     mounted() {
-
+      if(this.chartData) {
+        this.imgType = this.chartData.series[0].type;
+        this.imgData = this.chartData;
+        if(this.showRequestSpinner) {
+          setTimeout(()=>{this.showRequestSpinner = false}, 300)
+        }
+      }
     },
     data() {
       return {
@@ -178,7 +184,7 @@
     overflow: hidden;
     flex-direction: column;
     background: $bg-workspace-3;
-    border: 1px solid $border-color;
+    // border: 1px solid $border-color;
 
     &.full-view {
       position: absolute;

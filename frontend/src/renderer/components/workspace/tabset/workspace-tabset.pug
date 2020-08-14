@@ -19,49 +19,59 @@ ul.bookmark_tab-list
       v-if="!isStatistiOrTestOpened"
       )
       
-      button.btn.btn--icon.tab_close(type="button"
-        :disabled="workspace.length <= 1"
-        @click.stop="deleteTabNetwork(i)"
-      )
-        i.icon.icon-close
       text-editable.tab_name(
         :text-title="tab.networkName"
         @change-title="set_networkName"
         )
+      
+      button.btn.btn--icon.tab_close(type="button"
+        :disabled="workspace.length <= 1"
+        @click.stop="deleteTabNetwork(i)"
+        @mouseout="$event.target.classList.remove('hover')"
+        @mouseover="$event.target.classList.add('hover')"
+      )
+        i.icon.icon-close
+        .unsaved-changes-indicator(v-show="hasUnsavedChanges(tab.networkID)")
     
     li.bookmark_tab.workspace_tab(
       v-if="tab.networkMeta.openStatistics !== null && isStatistiOrTestOpened && statisticsIsOpen"
       :class="{'workspace_tab--active': indexCurrentNetwork === i && tab.networkMeta.openStatistics, 'workspace_tab--active_network': indexCurrentNetwork === i, 'workspace_tab--disable': indexCurrentNetwork !== i && isTutorialMode}"
       @click="openStatistics(i)"
     )
-      button.btn.btn--icon.tab_close(type="button"
-        :disabled="workspace.length <= 1"
-        @click.stop="deleteTabNetwork(i)"
-      )
-        i.icon.icon-close
+
       text-editable.tab_name(
         :text-title="tab.networkName"
         @change-title="set_networkName"
         )
+
+      button.btn.btn--icon.tab_close(type="button"
+        :disabled="workspace.length <= 1"
+        @click.stop="deleteTabNetwork(i)"
+        @mouseout="$event.target.classList.remove('hover')"
+        @mouseover="$event.target.classList.add('hover')"
+      )
+        i.icon.icon-close
+        .unsaved-changes-indicator(v-show="hasUnsavedChanges(tab.networkID)")
       //- i.icon(:class="{'icon-circle-o': trainingWaiting(i), 'icon-circle-o green-color-icon': trainingInProcess(i), 'icon-ellipse green-color-icon': trainingFinished(i) }")
-    
-    
-    
+       
     
     li.bookmark_tab.workspace_tab(
       v-if="isStatistiOrTestOpened && tab.networkMeta.coreStatus.Status === 'Finished' && testIsOpen"
       :class="{'workspace_tab--active': indexCurrentNetwork === i && tab.networkMeta.openTest, 'workspace_tab--active_network': indexCurrentNetwork === i, 'workspace_tab--disable': indexCurrentNetwork !== i && isTutorialMode}"
       @click="openTest(i)"
     )
-      button.btn.btn--icon.tab_close(type="button"
-        :disabled="workspace.length <= 1"
-        @click.stop="deleteTabNetwork(i)"
-      )
-        i.icon.icon-close
       text-editable.tab_name(
         :text-title="tab.networkName"
         @change-title="set_networkName"
         )
+      button.btn.btn--icon.tab_close(type="button"
+        :disabled="workspace.length <= 1"
+        @click.stop="deleteTabNetwork(i)"
+        @mouseout="$event.target.classList.remove('hover')"
+        @mouseover="$event.target.classList.add('hover')"
+      )
+        i.icon.icon-close
+        .unsaved-changes-indicator(v-show="hasUnsavedChanges(tab.networkID)")
 
 .tab-arrow.right(
   v-show="tabArrows.show"
@@ -71,6 +81,9 @@ ul.bookmark_tab-list
   @mouseout="onTabArrowMouseUp")
   span &gt;
 
+view-box-btn-list.statistics-tabs(
+  v-if="statisticsIsOpen && !testIsOpen"
+  :layerType="'Training'")
 
 //- .toggle-sidebar(
 //-   :class="{'hide-sidebar': !hideSidebar}"

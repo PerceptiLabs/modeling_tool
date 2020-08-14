@@ -134,7 +134,7 @@ class Tf1xLayer(InnerLayer):
 
     @overload
     @abstractmethod
-    def __call__(self, x: tf.Tensor) -> tf.Tensor:
+    def __call__(self, inputs: Dict[str, tf.Tensor]) -> Dict[str, tf.Tensor]:
         """ Returns a transformed version of the input tensor.
 
         Args:
@@ -143,20 +143,6 @@ class Tf1xLayer(InnerLayer):
         Returns:
             The transformed input data as a tf.Tensor.
         """
-        raise NotImplementedError
-
-    @overload
-    @abstractmethod
-    def __call__(self, x: List[tf.Tensor]) -> tf.Tensor:
-        """ Returns a transformed version of the input tensors.
-
-        Args:
-            x: a list of tf.Tensors.
-
-        Returns:
-            The transformed input data as a tf.Tensor.
-        """
-        
         raise NotImplementedError
 
     @property

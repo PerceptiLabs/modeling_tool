@@ -1,10 +1,10 @@
-{% macro layer_datarandom(layer_name, distribution, shape, mean, stddev, minval, maxval, seed_training, seed_validation, seed_testing) %} 
+{% macro layer_datarandom(layer_spec, graph_spec=None) %} 
 # import numpy as np
-class {{layer_name}}(DataRandom):
+class {{layer_spec.sanitized_name}}(DataRandom):
     """Class responsible for generating random noise"""    
     def __init__(self):
         self._variables = {}
-        self._distribution = '{{distribution}}'
+        self._distribution = '{{layer_spec.distribution}}'
         self._columns = []
         self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
 
@@ -42,18 +42,18 @@ class {{layer_name}}(DataRandom):
     def make_generator_training(self) -> Generator[np.ndarray, None, None]:
         """Returns a sample of random noise data."""                                        
         {% filter remove_lspaces(8) %}
-            {% if distribution == 'Normal' %}
+            {% if layer_spec.distribution == 'Normal' %}
                 def gen():
-                    rdn_state = np.random.RandomState({{seed_training}})
+                    rdn_state = np.random.RandomState({{layer_spec.seed_training}})
                     while True:
-                        sample = rdn_state.normal({{mean}}, {{stddev}}, {{shape}})
-                        yield np.float32(sample)
-            {% elif distribution == 'Uniform' %}
+                        sample = rdn_state.normal({{layer_spec.mean}}, {{layer_spec.stddev}}, {{layer_spec.shape}})
+                        yield {'output': np.float32(sample)}
+            {% elif layer_spec.distribution == 'Uniform' %}
                 def gen():
-                    rdn_state = np.random.RandomState({{seed_training}})
+                    rdn_state = np.random.RandomState({{layer_spec.seed_training}})
                     while True:
-                        sample = rdn_state.uniform({{minval}}, {{maxval}}, {{shape}})
-                        yield np.float32(sample)
+                        sample = rdn_state.uniform({{layer_spec.minval}}, {{layer_spec.maxval}}, {{layer_spec.shape}})
+                        yield {'output': np.float32(sample)}
             {% endif %}
         {% endfilter %}
         return gen()
@@ -61,18 +61,18 @@ class {{layer_name}}(DataRandom):
     def make_generator_testing(self) -> Generator[np.ndarray, None, None]:
         """Returns a sample of random noise data."""                                        
         {% filter remove_lspaces(8) %}
-            {% if distribution == 'Normal' %}
+            {% if layer_spec.distribution == 'Normal' %}
                 def gen():
-                    rdn_state = np.random.RandomState({{seed_testing}})
+                    rdn_state = np.random.RandomState({{layer_spec.seed_testing}})
                     while True:
-                        sample = rdn_state.normal({{mean}}, {{stddev}}, {{shape}})
-                        yield np.float32(sample)
+                        sample = rdn_state.normal({{layer_spec.mean}}, {{layer_spec.stddev}}, {{layer_spec.shape}})
+                        yield {'output': np.float32(sample)}
             {% elif distribution == 'Uniform' %}
                 def gen():
-                    rdn_state = np.random.RandomState({{seed_testing}})
+                    rdn_state = np.random.RandomState({{layer_spec.seed_testing}})
                     while True:
-                        sample = rdn_state.uniform({{minval}}, {{maxval}}, {{shape}})
-                        yield np.float32(sample)
+                        sample = rdn_state.uniform({{layer_spec.minval}}, {{layer_spec.maxval}}, {{layer_spec.shape}})
+                        yield {'output': np.float32(sample)}
             {% endif %}
         {% endfilter %}
         return gen()    
@@ -80,18 +80,18 @@ class {{layer_name}}(DataRandom):
     def make_generator_validation(self) -> Generator[np.ndarray, None, None]:
         """Returns a sample of random noise data."""                                        
         {% filter remove_lspaces(8) %}
-            {% if distribution == 'Normal' %}
+            {% if layer_spec.distribution == 'Normal' %}
                 def gen():
-                    rdn_state = np.random.RandomState({{seed_validation}})
+                    rdn_state = np.random.RandomState({{layer_spec.seed_validation}})
                     while True:
-                        sample = rdn_state.normal({{mean}}, {{stddev}}, {{shape}})
-                        yield np.float32(sample)
+                        sample = rdn_state.normal({{layer_spec.mean}}, {{layer_spec.stddev}}, {{layer_spec.shape}})
+                        yield {'output': np.float32(sample)}
             {% elif distribution == 'Uniform' %}
                 def gen():
-                    rdn_state = np.random.RandomState({{seed_validation}})
+                    rdn_state = np.random.RandomState({{layer_spec.seed_validation}})
                     while True:
-                        sample = rdn_state.uniform({{minval}}, {{maxval}}, {{shape}})
-                        yield np.float32(sample)
+                        sample = rdn_state.uniform({{layer_spec.minval}}, {{layer_spec.maxval}}, {{layer_spec.shape}})
+                        yield {'output': np.float32(sample)}
             {% endif %}
         {% endfilter %}
         return gen()   

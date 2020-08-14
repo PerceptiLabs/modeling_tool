@@ -23,6 +23,8 @@
               :validate-min="1"
               :validate-max="98"
               :validate-sum="100"
+              @handle-focus="$emit('handle-focus')"
+              @handle-blur="$emit('handle-blur')"
             )
 
     button.btn.btn--link.light-text(type="button" @click="addFile") + Add {{ nameAddItem }}

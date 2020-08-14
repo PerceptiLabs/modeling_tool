@@ -4,9 +4,12 @@ import queue
 import inspect
 import traceback
 import sentry_sdk
+import logging
 
 from perceptilabs.utils import add_line_numbering
+from perceptilabs.logconf import APPLICATION_LOGGER, APPLICATION_LOG_FORMAT, APPLICATION_LOG_LEVEL, QueuingHandler
 
+ISSUE_LOG_FORMAT = '%(asctime)s:%(lineno)d - %(message)s'
 
 def traceback_from_exception(exception):
     tb_obj = traceback.TracebackException(
@@ -49,6 +52,14 @@ class IssueHandler:
     def __init__(self):
         self._errors = queue.Queue()        
         self._warnings = queue.Queue()
+        self._info = queue.Queue()
+        self._logs = queue.Queue()
+
+        logger = logging.getLogger(APPLICATION_LOGGER)
+        handler = QueuingHandler(message_queue=self._logs, level=APPLICATION_LOG_LEVEL)
+        formatter = logging.Formatter(ISSUE_LOG_FORMAT)
+        handler.setFormatter(formatter)
+        logger.addHandler(handler)
 
     @staticmethod
     def create_issue(message, exception=None):
@@ -60,6 +71,9 @@ class IssueHandler:
     def put_warning(self, message):
         self._warnings.put(message)
 
+    def put_info(self, message):
+        self._info.put(message)
+    
     def _pop_messages(self, queue):
         message_list = []
         while not queue.empty():
@@ -73,7 +87,12 @@ class IssueHandler:
     def pop_warnings(self):
         return self._pop_messages(self._warnings)    
 
-        
+    def pop_info(self):
+        return self._pop_messages(self._info)
+
+    def pop_logs(self):
+        return self._pop_messages(self._logs)
+
 class UserlandError:
     def __init__(self, layer_id, layer_type, line_number, message, code=None):
         self.layer_id = layer_id

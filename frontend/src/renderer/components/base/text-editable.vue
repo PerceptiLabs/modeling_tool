@@ -1,8 +1,9 @@
 <template lang="pug">
   .editable-field(
     @dblclick="openEditMode"
+    :class="styleType"
     )
-    span.editable-field_title {{ inputText }}
+    span.editable-field_title(:class="{textBackground: editMode}" ) {{ inputText }}
     .editable-field_input-wrap
       input.editable-field_input(type="text"
         v-show="editMode"
@@ -15,8 +16,12 @@
 </template>
 
 <script>
+
+  import mixinFocus     from '@/core/mixins/net-element-settings-input-focus.js';
+
 export default {
   name: "TextEditable",
+  mixins: [mixinFocus],
   data() {
     return {
       editMode: false,
@@ -27,6 +32,12 @@ export default {
     textTitle: {
       type: String,
       default: ''
+    },
+    styleType: {
+      type: Array,
+      default: function () {
+        return [];
+      }
     }
   },
   computed: {
@@ -44,6 +55,7 @@ export default {
   },
   methods: {
     openEditMode() {
+      this.setIsSettingInputFocused(true);
       this.$store.dispatch('mod_events/SET_enableCustomHotKey', false);
       this.editMode = true;
       setTimeout( ()=> {
@@ -53,6 +65,7 @@ export default {
     },
     closeEditMode() {
       this.editMode = false;
+      this.setIsSettingInputFocused(false);
       if(!this.inputText) this.inputText = this.textTitle;
       this.$emit('change-title', this.inputText);
       this.$store.dispatch('mod_events/SET_enableCustomHotKey', true);
@@ -68,6 +81,14 @@ export default {
     cursor: pointer;
     min-width: 2em;
     min-height: 1em;
+    &.network-view {
+      input {
+        background: transparent;
+      }
+      .textBackground {
+        color: transparent;
+      }
+    }
   }
 
   .editable-field_input-wrap {
@@ -82,4 +103,6 @@ export default {
       padding: .25rem .5rem;
     }
   }
+  
+  
 </style>

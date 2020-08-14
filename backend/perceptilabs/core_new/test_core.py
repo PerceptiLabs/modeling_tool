@@ -9,9 +9,10 @@ from queue import Queue
 from unittest.mock import MagicMock
 
 
+from perceptilabs.graph.spec import GraphSpec
 from perceptilabs.core_new.utils import YieldLevel
 from perceptilabs.core_new.communication import TrainingServer, State
-from perceptilabs.core_new.layers.script import ScriptFactory
+from perceptilabs.script import ScriptFactory
 from perceptilabs.core_new.core2 import Core
 from perceptilabs.core_new.graph.builder import GraphBuilder
 from perceptilabs.core_new.graph import Graph
@@ -58,6 +59,21 @@ def graph_spec_binary_classification():
 
     #inputs_path = "/home/anton/Data/mnist_split/mnist_input.npy"
     #labels_path = "/home/anton/Data/mnist_split/mnist_labels.npy"
+
+
+    """
+    from perceptilabs.layers import get_layer_builder
+    from perceptilabs.layers.datadata import DataDataSpec, DataDataBuilder
+
+
+    source = DataDataSpec.Source(type='file', path=inputs_path, ext='.npy', split=[70, 20, 10])
+    data_inputs = DataDataBuilder().from_kwargs(
+        id='1',
+        name='data_inputs',
+        type='DataData',
+        sources=(source,)
+    ).build()
+    """
     
     json_network = {
         "Layers": {
@@ -73,7 +89,14 @@ def graph_spec_binary_classification():
                     },
                 },
                 "backward_connections": [],
-                "forward_connections": [["3", "reshape"]],
+                "forward_connections": [
+                    {
+                        "src_var": "output",
+                        "dst_id": "3",
+                        "dst_name": "reshape",
+                        "dst_var": "input"
+                    }
+                ],
                 "Code": None,
                 "checkpoint": []
             },
@@ -90,7 +113,14 @@ def graph_spec_binary_classification():
                     },
                 },
                 "backward_connections": [],
-                "forward_connections": [["5", "one_hot"]],
+                "forward_connections": [
+                    {
+                        "src_var": "output",
+                        "dst_id": "5",
+                        "dst_name": "one_hot",                        
+                        "dst_var": "input"
+                    }
+                ],
                 "Code": None,
                 "checkpoint": []
             },
@@ -101,8 +131,22 @@ def graph_spec_binary_classification():
                     "Shape": [28, 28, 1],
                     "Permutation": [0, 1, 2]
                 },
-                "backward_connections": [["1", "data_inputs"]],
-                "forward_connections": [["4", "fc"]],
+                "backward_connections": [
+                    {
+                        "src_id": "1",
+                        "src_name": "data_inputs",                        
+                        "src_var": "output",
+                        "dst_var": "input"
+                    }
+                ],
+                "forward_connections": [
+                    {
+                        "src_var": "output",
+                        "dst_id": "4",
+                        "dst_name": "fc",                                                
+                        "dst_var": "input"
+                    }
+                ],
                 "Code": None,
                 "checkpoint": []
             },
@@ -113,11 +157,25 @@ def graph_spec_binary_classification():
                     "Neurons": str(n_classes),
                     "Activation_function" : "Sigmoid",
                     "Dropout": False,
-                    "Keep_prob": "1",
+                    "Keep_prob": "0.0",
                     "Batch_norm": False
                 },
-                "backward_connections": [["3", "reshape"]],
-                "forward_connections": [["6", "training"]],
+                "backward_connections": [
+                    {
+                        "src_id": "3",
+                        "src_name": "reshape",                                                
+                        "src_var": "output",
+                        "dst_var": "input"
+                    }
+                ],
+                "forward_connections": [
+                    {
+                        "src_var": "output",
+                        "dst_id": "6",
+                        "dst_name": "training",
+                        "dst_var": "predictions"
+                    }
+                ],
                 "Code": None,
                 "checkpoint": []
             },
@@ -127,8 +185,22 @@ def graph_spec_binary_classification():
                 "Properties": {
                     "N_class": n_classes
                 },
-                "backward_connections": [["2", "data_labels"]],
-                "forward_connections": [["6", "training"]],
+                "backward_connections": [
+                    {
+                        "src_id": "2",
+                        "src_name": "data_labels",
+                        "src_var": "output",
+                        "dst_var": "input"
+                    }
+                ],
+                "forward_connections": [
+                    {
+                        "src_var": "output",
+                        "dst_id": "6",
+                        "dst_name": "training",                        
+                        "dst_var": "labels"
+                    }
+                ],
                 "Code": None,
                 "checkpoint": []
             },
@@ -153,8 +225,21 @@ def graph_spec_binary_classification():
                     "Stop_Target_Accuracy":80,
                     "Stop_condition":"Epochs"
                 },
-                "backward_connections": [["4", "fc"], ["5", "one_hot"]],
-                "forward_connections": [],
+                "backward_connections": [
+                    {
+                        "src_id": "4",
+                        "src_name": "fc",                        
+                        "src_var": "output",
+                        "dst_var": "predictions"
+                    },
+                    {
+                        "src_id": "5",
+                        "src_name": "one_hot",                        
+                        "src_var": "output",
+                        "dst_var": "labels"
+                    }
+                ],
+                "forward_connections": [],                
                 "Code": None,
                 "checkpoint": []
             }
@@ -167,11 +252,13 @@ def graph_spec_binary_classification():
     f2.close()
 
 
-def run_core_until_convergence(messaging_factory, graph_spec, metric_fn, max_attempts=10):
+def run_core_until_convergence(messaging_factory, graph_spec_json, metric_fn, max_attempts=10):
     passed = False
     graphs = []
     for attempt in range(max_attempts):
         print(f"Beginning attempt {attempt}")
+
+
         script_factory = ScriptFactory(max_time_run=180, simple_message_bus=True)
 
         replica_by_name = {repl_cls.__name__: repl_cls for repl_cls in BASE_TO_REPLICA_MAP.values()}
@@ -182,6 +269,8 @@ def run_core_until_convergence(messaging_factory, graph_spec, metric_fn, max_att
             script_factory,
             messaging_factory
         )
+
+        graph_spec = GraphSpec.from_dict(graph_spec_json)
         
         core.run(graph_spec, auto_close=True)
         #core.close(wait_for_deployment=True)                            
@@ -225,6 +314,7 @@ def test_train_normal_distributed_converges(messaging_factory, graph_spec_binary
     
     assert run_core_until_convergence(messaging_factory, json_network, metric_fn)
 
+    
 @pytest.mark.skip
 def test_core_handles_userland_timeout(messaging_factory):
     userland_timeout = 3

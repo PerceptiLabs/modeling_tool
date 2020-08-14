@@ -2,15 +2,15 @@
   ul.statistics-box_tabset
     h5 View Box
     li.statistics-box_tab(
-      v-for="(tabINfo, name, i) in tabSet"
+      v-for="(tabInfo, name, i) in tabSet"
       :key="name"
     )
       button.btn.btn--tabs.statistics-box_btn.tutorial-relative(type="button"
-        v-if="tabINfo"
-        @click="setCurrentTab(name, tabINfo.btnId)"
-        v-tooltip-interactive:bottom="tabINfo.btnInteractiveInfo"
-        :class="[currentTab === name ?  'active' : '', tabINfo.btnClass]"
-        :id="tabINfo.btnId"
+        v-if="tabInfo"
+        @click="setCurrentTab(name, tabInfo.btnId)"
+        v-tooltip-interactive:bottom="tabInfo.btnInteractiveInfo"
+        :class="[currentTab === name ?  'active' : '', tabInfo.btnClass]"
+        :id="tabInfo.btnId"
       ) {{ name }}
 
       button.btn.btn--tabs.statistics-box_btn(type="button"
@@ -21,24 +21,25 @@
 </template>
 
 <script>
-  import { mapActions } from 'vuex';
+import { mapActions } from 'vuex';
+
 export default {
   name: "ViewBoxBtnList",
   props: {
-    tabSet: { type: Object }
-  },
+    layerType: { type: String }
+  }, 
   activated() {
     console.log('activate');
   },
   mounted() {
-    if(this.tabSet) {
-      const tabSetKeys = Object.keys(this.tabSet);
-      this.setCurrentTab(tabSetKeys[0]);
-    }
+    // if(this.tabSet) {
+    //   const tabSetKeys = Object.keys(this.tabSet);
+    //   this.setCurrentTab(tabSetKeys[0]);
+    // }
   },
   data() {
     return {
-      currentTab: '',
+      // currentTab: '',
     }
   },
   methods: {
@@ -46,9 +47,18 @@ export default {
       tutorialPointActivate:    'mod_tutorials/pointActivate',
     }),
     setCurrentTab(tab, id) {
-      this.currentTab = tab;
-      this.$emit('set-current-btn', tab);
-      if(id) this.tutorialPointActivate({way: 'next', validation: id})
+      // this.currentTab = tab;
+      // this.$emit('set-current-btn', tab);
+      // if(id) this.tutorialPointActivate({way: 'next', validation: id})
+      this.$store.commit('mod_statistics/setSelectedMetric', { layerType: this.layerType, selectedMetric: tab });
+    }
+  },
+  computed: {
+    currentTab() {
+      return this.$store.getters['mod_statistics/getSelectedMetric'](this.layerType);
+    },
+    tabSet() {
+      return this.$store.getters['mod_statistics/getLayerMetrics'](this.layerType);
     }
   }
 }
@@ -59,7 +69,6 @@ export default {
 
   .statistics-box_tabset {
     position: absolute;
-    top: 47px;
     z-index:10;
     right: 11px;
     display: flex;

@@ -72,7 +72,7 @@ class Message:
     def _add_errors_and_warnings(self, content, issue_handler):
         errorList = issue_handler.pop_errors()
         warningList = issue_handler.pop_warnings()
-
+        logList = issue_handler.pop_logs()
         if errorList:
             self._interface.close_core(self.request.get("reciever"))
             if not content:
@@ -86,7 +86,11 @@ class Message:
                 content["warningMessage"]=warningList
             except:
                 content={"content":content, "warningMessage":warningList}
-        
+        if logList:
+            try:
+                content["consoleLogs"]=logList
+            except:
+                content={"content":content, "consoleLogs":logList}
         return content
 
     async def interface(self, websocket, path):

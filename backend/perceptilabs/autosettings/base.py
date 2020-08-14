@@ -6,7 +6,8 @@ import networkx as nx
 
 from perceptilabs.graph.spec import GraphSpec
 from perceptilabs.core_new.lightweight2 import LayerResults
-from perceptilabs.graph.spec.layers import LayerSpec, LayerSpecBuilder, DummyBuilder, get_layer_builder, DummySpec
+from perceptilabs.layers.specbase import LayerSpec, DummySpec
+from perceptilabs.layers.utils import get_layer_definition
 from perceptilabs.logconf import APPLICATION_LOGGER
 
 logger = logging.getLogger(APPLICATION_LOGGER)
@@ -24,7 +25,7 @@ class InferenceRule(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def apply(self, graph_spec: GraphSpec, layer_spec: LayerSpec, builder: LayerSpecBuilder, lw_results: Dict[str, LayerResults]) -> None:
+    def apply(self, graph_spec: GraphSpec, layer_spec: LayerSpec, lw_results: Dict[str, LayerResults]) -> LayerSpec:
         """ A new layer will be created based on the builder configuration """
         raise NotImplementedError
 
@@ -34,22 +35,16 @@ class SettingsEngine:
         self._rule_classes = inference_rules
         self._lw_core = lw_core
 
-    def run(self, graph_spec: GraphSpec, graph_spec_tmp=None):
-        # TODO(anton.k): remove the graph_spec_tmp dependency once the lightweight core has been refactored
-        #if graph_spec_tmp and self._lw_core:
-        #    lw_results = self._lw_core.run(graph_spec_tmp)
-
+    def run(self, graph_spec: GraphSpec):
         skip_ids = []
-        for id in graph_spec.nodes:
-            spec = graph_spec.nodes_by_id[id]
-
+        for spec in graph_spec.nodes_by_id.values():
             if spec.visited:
-                skip_ids.append(spec.id)                
-                logger.warning(f"Skipping settings recommendations for layer {spec.id} because it has been modified by the user")
+                skip_ids.append(spec.id_)                
+                logger.warning(f"Skipping settings recommendations for layer {spec.id_} because it has been modified by the user")
                 
             if isinstance(spec, DummySpec):
-                skip_ids.append(spec.id)
-                logger.warning(f"Cannot make settings recommendation for layer {spec.id}: no spec object/builder found for type '{spec.type}'")
+                skip_ids.append(spec.id_)
+                logger.warning(f"Cannot make settings recommendation for layer {spec.id_}: no spec object/builder found for type '{spec.type_}'")
 
         rules = [rc() for rc in self._rule_classes]
         ordered_ids, rule_instances = self._get_ordered_layers(graph_spec, rules, skip_ids)
@@ -60,28 +55,25 @@ class SettingsEngine:
         current_graph_spec = graph_spec
         for layer_id in ordered_ids:
             original_layer_spec = current_graph_spec.nodes_by_id[layer_id]
-            standard_builder = get_layer_builder(original_layer_spec.type)
-
+            spec_class = get_layer_definition(original_layer_spec.type_).spec_class
+        
             if self._lw_core:
-                current_graph_dict = current_graph_spec.to_dict()
-                lw_results = self._lw_core.run(current_graph_dict)
-                
+                lw_results = self._lw_core.run(current_graph_spec)
+
             # Apply all topologically valid rules in order
             current_layer_spec = original_layer_spec
-            for rule in rule_instances[original_layer_spec.id]:
+            for rule in rule_instances[original_layer_spec.id_]:
 
                 if rule.is_applicable(current_graph_spec, current_layer_spec, lw_results):
-                    builder = standard_builder.from_existing(current_layer_spec)
-                    rule.apply(current_graph_spec, current_layer_spec, builder, lw_results)
+                    current_layer_spec = rule.apply(current_graph_spec, current_layer_spec, lw_results)
                     logger.info(f"Autosettings: applied rule {rule.__class__.__name__} to {current_layer_spec}")
-                    current_layer_spec = builder.build()
                     
             if current_layer_spec != original_layer_spec:
-                new_specs[current_layer_spec.id] = current_layer_spec
+                new_specs[current_layer_spec.id_] = current_layer_spec
 
                 # Build a new graph spec
                 current_graph_dict = current_graph_spec.to_dict()
-                current_graph_dict[current_layer_spec.id] = standard_builder.to_dict(current_layer_spec)
+                current_graph_dict[current_layer_spec.id_] = current_layer_spec.to_dict()
                 current_graph_spec = GraphSpec.from_dict(current_graph_dict)
         return new_specs
             
@@ -93,23 +85,24 @@ class SettingsEngine:
         to incorporate dependencies on the settings of other layers
         """
         nx_graph = nx.DiGraph()
-        nx_graph.add_nodes_from(graph_spec.nodes)
+        nx_graph.add_nodes_from(graph_spec.node_ids)
         nx_graph.add_edges_from(graph_spec.edges)
 
         rule_instances = collections.defaultdict(list)        
-
-        for id in graph_spec.nodes:
-            if id in skip_ids:
+        for id_ in graph_spec.node_ids:
+            if id_ in skip_ids:
                 continue
 
-            layer_spec = graph_spec.nodes_by_id[id]
+            layer_spec = graph_spec.nodes_by_id[id_]
             for rule_class in self._rule_classes:
                 rule = rule_class()
                 is_valid, dependencies = rule.is_topologically_valid(graph_spec, layer_spec)
 
                 if is_valid:
-                    nx_graph.add_edges_from([(dep.id, layer_spec.id) for dep in dependencies])
-                    rule_instances[layer_spec.id].append(rule)
+                    nx_graph.add_edges_from(
+                        [(dependency.id_, layer_spec.id_) for dependency in dependencies]
+                    )
+                    rule_instances[layer_spec.id_].append(rule)
                     
         DEBUG = False
         if DEBUG:

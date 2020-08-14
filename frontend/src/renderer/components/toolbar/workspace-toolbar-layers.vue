@@ -3,7 +3,7 @@
     .layer-list(
       v-for="(layer, idx) in layersbarList"
       :key="idx"
-      :style="{ 'border-color': layer.color }"
+      :style="{ 'border-color': layer.borderColor, 'border-bottom-color': layer.bottomColor }"
       @click.stop="toggleElList(idx)"
       @focusout="handleFocusOut"
       tabindex="0"
@@ -106,12 +106,14 @@ export default {
             text: 'Choose between reading from </br> a source or an environment'
           },
           layerClass: 'net-element-data',
-          iconClass: 'icon-data',
+          iconClass: 'icon-data-group',
           childListClass: '',
           showEl: false,
           networkElements: ['DataData', 'DataEnvironment', 'DataRandom'],
           id:'tutorial_data',
-          color: 'rgba(97, 133, 238, 0.7)'
+          color: 'rgba(97, 133, 238, 0.7)',
+          borderColor: 'rgba(97, 133, 238, 0.2)',
+          bottomColor: 'rgba(97, 133, 238, 0.4)',
         },
         {
           tooltip: 'Processing',
@@ -120,12 +122,14 @@ export default {
             text: 'Process and transform the data.'
           },
           layerClass: 'net-element-process',
-          iconClass: 'icon-settings',
+          iconClass: 'icon-processing-group',
           childListClass: '',
           showEl: false,
           networkElements: ['process-reshape', 'process-embed', 'process-grayscale', 'ProcessOneHot', 'process-rescale'],
           id:'tutorial_processing',
-          color: 'rgba(253, 205, 114, 0.7)'
+          color: 'rgba(253, 205, 114, 0.7)',
+          borderColor: 'rgba(253, 205, 114, 0.2)',
+          bottomColor: 'rgba(253, 205, 114, 0.4)'
         },
         {
           tooltip: 'Deep Learning',
@@ -134,12 +138,14 @@ export default {
             text: 'Deep learning components'
           },
           layerClass: 'net-element-learn-deep',
-          iconClass: 'icon-network',
+          iconClass: 'icon-deep-learning-group',
           childListClass: '',
           showEl: false,
           networkElements: deepLearnElements,
           id:'tutorial_deep-learning',
-          color: 'rgba(241, 100, 100, 0.7)'
+          color: 'rgba(241, 100, 100, 0.7)',
+          borderColor: 'rgba(241, 100, 100, 0.2)',
+          bottomColor: 'rgba(241, 100, 100, 0.4)'
         },
         {
           tooltip: 'Mathematics',
@@ -148,12 +154,14 @@ export default {
             text: 'Mathematical components'
           },
           layerClass: 'net-element-math',
-          iconClass: 'icon-calc',
+          iconClass: 'icon-math-group',
           childListClass: '',
           showEl: false,
           networkElements: ['MathArgmax', 'MathMerge', 'MathSwitch', 'MathSoftmax'],
           id:'tutorial_mathematics',
-          color: 'rgba(0, 123, 239, 0.7)'
+          color: 'rgba(0, 123, 239, 0.7)',
+          borderColor: 'rgba(0, 123, 239, 0.2)',
+          bottomColor: 'rgba(0, 123, 239, 0.4)'
         },
         {
           tooltip: 'Training',
@@ -162,12 +170,14 @@ export default {
             text: 'Training components'
           },
           layerClass: 'net-element-train',
-          iconClass: 'icon-training',
+          iconClass: 'icon-train-group',
           childListClass: '',
           showEl: false,
           networkElements: trainingElements,
           id:'tutorial_training',
-          color: 'rgba(115, 254, 187, 0.7)'
+          color: 'rgba(115, 254, 187, 0.7)',
+          borderColor: 'rgba(115, 254, 187, 0.2)',
+          bottomColor: 'rgba(115, 254, 187, 0.4)'
         },
       ],
     }
@@ -275,16 +285,17 @@ export default {
         this.clonedElement.style.zIndex = 10;
         this.clonedElement.style.position = 'absolute';
         this.clonedElement.style.cursor = "initial";
+        this.clonedElement.style.border = "0";
 
         const iconElement = this.clonedElement.childNodes[0];
-        const labelElement = this.clonedElement.childNodes[1];
+        const labelElement = this.clonedElement.childNodes[2];
 
         iconElement.style.fontSize = '1.3rem';
         labelElement.style.marginLeft = '1rem';
         labelElement.style.fontFamily = 'Nunito Sans';
         labelElement.style.fontStyle = 'normal';
         labelElement.style.fontWeight = 600;
-        labelElement.style.fontSize = '1.2rem';
+        labelElement.style.fontSize = '1.1rem';
         labelElement.style.lineHeight = '1.6rem';
     },
     handleEscKeypress(event) {
@@ -321,6 +332,7 @@ export default {
   $indent: 0.5rem;
   $icon-size: 1.3rem;
   $toolbar-size: 2.6rem;
+  $button-size: 2.5rem;
 
   .layers-list-container {
     display: flex;
@@ -431,11 +443,12 @@ export default {
         cursor: pointer;
 
         * + * {
-          margin-left: 1rem;
+//          margin-left: 1rem;
         }
 
         i {
           font-size: $icon-size;
+          display: none;
         }
 
         .layerTitle {
@@ -456,10 +469,12 @@ export default {
     justify-content: center;
     align-items: center;
 
+    background: #23252A;
     border-width: 1px;
     border-bottom-width: 3px;
     border-style: solid;
-    border-color: rgba(77, 85, 106, 0.8);
+    border-color: rgba(77, 85, 106, 0.2);
+    border-bottom-color: rgba(77, 85, 106, 0.8);
     box-sizing: border-box;
     
     height: $toolbar-size;
@@ -474,6 +489,8 @@ export default {
       font-weight: 600;
       font-size: 1.2rem;
       line-height: 1.6rem;
+
+      border: 0;
 
       background: transparent;
 

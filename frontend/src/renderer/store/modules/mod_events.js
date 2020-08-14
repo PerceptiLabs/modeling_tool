@@ -27,6 +27,10 @@ const state = {
   saveNetwork: 0,
   saveNetworkAs: 0,
   eventResize: 0,
+  // is used for calculate from input/output of network component the backward and forward connections
+  // is should be incrementd when
+  // arrow is created/deleted, element/s is deleted.
+  eventIOGenerate: 0,
   globalPressKey: {
     del: 0,
     esc: 0
@@ -35,6 +39,9 @@ const state = {
 };
 
 const mutations = {
+  set_eventIOGenerate(state){
+    state.eventIOGenerate++;
+  },
   set_calcArray(state) {
     state.calcArray++
   },
@@ -54,8 +61,10 @@ const mutations = {
     state.isEnableCustomHotKey = value
   },
 };
-
 const actions = {
+  EVENT_IOGenerateAction(ctx){
+    ctx.commit('set_eventIOGenerate');
+  },
   EVENT_calcArray({commit}) {
     commit('set_calcArray')
   },

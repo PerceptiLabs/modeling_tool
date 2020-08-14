@@ -13,8 +13,6 @@ from perceptilabs.messaging.zmq_wrapper import get_message_bus
 
 def get_input_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-f','--frontend-pid', default=None, type=int,
-                        help='Frontend process id.')
     parser.add_argument('-l','--log-level', default=None, type=str, choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
                         help='Log level name.')
     parser.add_argument('-m','--core-mode', default='v2', type=str, choices=['v1', 'v2'],
@@ -81,15 +79,7 @@ def main():
 
     from perceptilabs.mainInterface import Interface
     from perceptilabs.server.appServer import Server
-    from perceptilabs.utils import frontend_watcher
     from perceptilabs.main_setup import setup_sentry
-
-    if args.frontend_pid is not None:
-        logger.info(f"Frontend process id = {args.frontend_pid} specified. Backend will self terminate if frontend is shutdown unexpectedly.")        
-        threading.Thread(target=frontend_watcher, args=(args.frontend_pid,), kwargs={'logger': logger}, daemon=True).start()
-    else:
-        logger.warning("No frontend process id specified. Backend will not self terminate if frontend is shutdown unexpectedly.")
-    
 
     setup_sentry(args.user, commit_id)
     logger.info("Reporting errors with commit id: " + str(commit_id))

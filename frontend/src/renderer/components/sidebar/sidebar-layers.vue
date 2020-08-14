@@ -2,7 +2,7 @@
   section.sidebar_layers
     .layers_title.d-flex.sidebar_content-padding--small
       //-i.icon.icon-burger.middle-text
-      h3 Layers
+      h3 Components
     //-.layers_meta.sidebar-content
       .form_row
         .input-wrap_icon
@@ -133,9 +133,10 @@ export default {
     display: flex;
     flex-direction: column;
     flex-grow: 1;
-    max-height: 80vh;
+    max-height: 35vh;
     overflow: hidden;
-    background-color: $bg-toolbar;
+    // background-color: $bg-toolbar;
+    background-color: #23252A;
     box-sizing: border-box;
     border: 1px solid $toolbar-separator-color;
     border-radius: 2px;
@@ -144,6 +145,7 @@ export default {
     }    
   }
   .layers_title {
+    background-color: #363E51;
     align-items: center;
     flex: 0 0 auto;
     height: $h-sidebar-layers-item;
@@ -151,6 +153,13 @@ export default {
       font-size: 12px;
       margin: 0;
       color: $color-12;
+
+      font-family: Nunito Sans;
+      font-style: normal;
+      font-weight: normal;
+      font-size: 12px;
+      line-height: 16px;
+      color: #B6C7FB;
     }
   }
   .layers_body {

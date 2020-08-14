@@ -64,8 +64,11 @@ export default {
   },
   mounted() {
     this.drawArrows();
-    //console.log(this.$refs.network);
-    //this.SET_elementNetworkField({...this.$refs.network})
+    this.$store.dispatch('mod_events/EVENT_IOGenerateAction', null, {root: true})
+      .then(() => {
+        // this.$store.dispatch('mod_api/API_getOutputDim');
+        this.getAllPreviews();
+      });
   },
   beforeDestroy() {
     this.removeArrowListener();
@@ -135,6 +138,9 @@ export default {
     eventCalcArrow() {
       return this.$store.state.mod_events.calcArray
     },
+    // eventIOGenerate() {
+    //   return this.$store.state.mod_events.eventIOGenerate
+    // },
     preArrow() {
       return this.$store.state.mod_workspace.preArrow;
     },
@@ -151,13 +157,13 @@ export default {
       const size = {
         width: this.svgWidth,
         height: this.svgHeight,
-        zIndex: 1
+        zIndex: 6,
       };
       return size
     },
     scaledLayerSize() {
       return this.layerSize * this.networkScale;
-    }
+    },
   },
   watch: {
     statisticsIsOpen() {
@@ -166,6 +172,7 @@ export default {
     networkScale(currentZoom, oldZoom) {
       this.positionZoomChange(currentZoom, oldZoom);
       this.calcSvgSize(true);
+      setTimeout(()=> this.createArrowList(), 0)
     },
     eventCalcArrow() {
       //this.tutorialPointActivate({way: 'next', validation: this.tutorialActiveAction.id});
@@ -176,9 +183,13 @@ export default {
     },
     '$store.state.mod_events.eventResize': {
       handler() {
-        this.calcSvgSize()
+        this.calcSvgSize();
       }
     },
+
+    // eventIOGenerate() {
+    //   this.generateForwardAndBackwardConnections();
+    // }
   },
   methods: {
     ...mapMutations({
@@ -190,14 +201,24 @@ export default {
       SET_elementNetworkField: 'mod_workspaceHelpers/SET_elementNetworkField',
       markAllUnselectedAction: 'mod_workspace/markAllUnselectedAction',
     }),
+    getElSize(layerId) {
+      const el = document.querySelector(`[layer-id="${layerId}"]`);
+      const width = el.offsetWidth * this.networkScale;
+      const height = el.offsetHeight * this.networkScale;
+      return {
+        width,
+        height
+      }
+     },
     refNetworkMouseDown(ev) {
-      if(ev.target.nodeName === 'svg' && !(ev.shiftKey || ev.metaKey || ev.ctrlKey)) {
+      console.log(ev.target.className);
+      if(ev.target.className === 'network-field' && !(ev.shiftKey || ev.metaKey || ev.ctrlKey)) {
         this.markAllUnselectedAction();
       }
       const isLeftBtn = ev.buttons === 1;
       const isEditMode = this.networkMode === 'edit';
       const isOpenNet = this.canEditLayers;
-      const targetEl = ev.target.nodeName === 'svg';
+      const targetEl = ev.target.className === 'network-field';
 
       if(isLeftBtn && isEditMode && isOpenNet && targetEl) {
         this.calcOffset();
@@ -224,15 +245,18 @@ export default {
       if(yStart > yPosition) this.multiSelect.y = yPosition;
     },
     mouseUpMultiSelect() {
+    
       const xStart = this.multiSelect.x;
       const yStart = this.multiSelect.y;
-      const xStop = xStart + this.multiSelect.width - this.scaledLayerSize;
-      const yStop = yStart + this.multiSelect.height - this.scaledLayerSize;
-
+    
+      // this.getElScaledSize();
       for (var el in this.networkElementList) {
         const element = this.networkElementList[el];
         const x = element.layerMeta.position.left;
         const y = element.layerMeta.position.top;
+        const elSize = this.getElSize(el);
+        const xStop = xStart + this.multiSelect.width - elSize.width;
+        const yStop = yStart + this.multiSelect.height - elSize.height;
         if(x > xStart
           && x < xStop
           && y > yStart
@@ -266,8 +290,8 @@ export default {
     // },
     calcOffset() {
       this.offset = {
-       offsetX: this.$refs.network.parentElement.offsetLeft,
-       offsetY: this.$refs.network.parentElement.offsetTop
+       offsetX: this.$refs.network.parentElement.parentElement.parentElement.offsetLeft,
+       offsetY: this.$refs.network.parentElement.parentElement.parentElement.offsetTop
       };
     },
     positionZoomChange(newScale, oldScale) {
@@ -319,13 +343,16 @@ export default {
     //--------------
     deleteArrow() {
       if(!this.canEditLayers || !this.currentFocusedArrow) return;
-
       let focusArray = this.currentFocusedArrow;
+      const arrowData = this.currentFocusedArrowData;
       let connection = {
-        startID: focusArray.dataset.startid,
-        stopID: focusArray.dataset.stopid,
+        startIds: arrowData.startIds,
+        stopIds: arrowData.stopIds,
       };
-      this.$store.dispatch('mod_workspace/DELETE_arrow', connection);
+      this.$store.dispatch('mod_workspace/DELETE_arrow', connection)
+        .then(() => {
+          this.$store.dispatch('mod_api/API_getBatchPreviewSampleForElementDescendants', connection.stopIds.layer);
+        });
       this.$store.dispatch('mod_api/API_getOutputDim');
       focusArray.blur();
       this.clearArrowFocus();
@@ -352,6 +379,7 @@ export default {
       document.addEventListener('mouseup', this.removeArrowListener);
     },
     arrowMovePaint(ev) {
+      // 4
       this.$store.commit('mod_tutorials/SET_isDottedArrow', false);
       ev.preventDefault();
       ev.stopPropagation();
@@ -361,6 +389,7 @@ export default {
       });
     },
     removeArrowListener() {
+      // 5
       this.$store.commit('mod_workspace/CLEAR_preArrow');
       this.$refs.network.removeEventListener('mousemove', this.arrowMovePaint);
       document.removeEventListener('mouseup', this.removeArrowListener)
@@ -376,45 +405,122 @@ export default {
       const connectList = [];
       const net = this.networkElementList;
 
-      findPerspectiveSide();
-      calcCorrectPosition();
+      findPerspectiveSide(this.networkScale);
+      // calcCorrectPosition(this.networkScale);
       this.arrowsList = connectList;
 
-      function findPerspectiveSide() {
-        for (let elId in net) {
+      function findPerspectiveSide(zoom) {
+        const validConnectionIds = [];
+
+         for (let elId in net) {
           net[elId].calcAnchor = { top: [], right: [], bottom: [], left: []};
         };
+        for (let elId in net) {
+          const el = net[elId];
 
-        for (let item in net) {
-          const itemEl = net[item];
-          if(itemEl.connectionArrow.length === 0) continue;
-          for (var numEl in itemEl.connectionArrow) {
-            let outEl = itemEl.connectionArrow[numEl];
-            let newArrow = {
-              l1: itemEl,
-              l2: net[outEl],
-              correctPosition: {
-                start: { x: 0, y: 0 },
-                stop:  { x: 0, y: 0 },
-              }
-            };
-            if(!newArrow.l1 || !newArrow.l2 || newArrow.l1.layerNone || newArrow.l2.layerNone) continue;
-            Object.defineProperty(newArrow, 'positionArrow', {
-              get() {
-                const x1 = this.l1.layerMeta.position.left + this.correctPosition.start.x;
-                const y1 = this.l1.layerMeta.position.top + this.correctPosition.start.y;
-                const x2 = this.l2.layerMeta.position.left + this.correctPosition.stop.x;
-                const y2 = this.l2.layerMeta.position.top + this.correctPosition.stop.y;
-                const path = calcArrowPath(x1, y1, x2, y2, this);
-                return {path}
-              },
-              enumerable: true,
-              configurable: false
-            });
-            findSideMinLength(newArrow.l1, newArrow.l2, newArrow);
-            connectList.push(newArrow);
-          }
+          // Data* layers have no inputs
+          if (!el.inputs) { return; }
+
+          Object.keys(el.inputs).map(keyId => {
+            if(el.inputs[keyId].reference_var_id !== null) {
+              let newArrow = {
+                l1: net[el.inputs[keyId].reference_layer_id],
+                l2: net[elId],
+                correctPosition: {
+                  start: { x: 0, y: 0 },
+                  stop:  { x: 0, y: 0 },
+                },
+                startIds: {
+                  layer: el.inputs[keyId].reference_layer_id,
+                  variable: el.inputs[keyId].reference_var_id,
+                },
+                stopIds: {
+                  layer: elId,
+                  variable: keyId
+                }
+              };
+              Object.defineProperty(newArrow, 'positionArrow', {
+                get() {
+                  
+                  // get start dot position
+                  let startElement = document.querySelector(`[layer-id="${newArrow.startIds.layer}"]`);
+                  let startDot = document.querySelector(`[data-output-dot-id="${newArrow.startIds.variable}"][data-output-layer-id="${newArrow.startIds.layer}"]`);
+                  const { x: startLayerX, y: startLayerY } = startElement.getBoundingClientRect();
+                  const { x: startDotX, y: startDotY } = startDot.getBoundingClientRect();
+                  const startDotPositionWidth = (startDotX - startLayerX);
+                  const StartDotPositionHeight = (startDotY  - startLayerY) ;
+
+                  //get stop dot position
+                  let stopElement = document.querySelector(`[layer-id="${newArrow.stopIds.layer}"]`);
+                  let stopDot = document.querySelector(`[data-input-dot-id="${newArrow.stopIds.variable}"][data-input-layer-id="${newArrow.stopIds.layer}"]`);
+                  const { x: stopLayerX, y: stopLayerY } = stopElement.getBoundingClientRect();
+                  const { x: stopDotX, y: stopDotY } = stopDot.getBoundingClientRect();
+                  const stopDotPositionWidth = (stopDotX - stopLayerX);
+                  const stopDotPositionHeight = (stopDotY  - stopLayerY) ;
+
+                  const x1 = this.l1.layerMeta.position.left + startDotPositionWidth + (3 * zoom);
+                  const y1 = this.l1.layerMeta.position.top + StartDotPositionHeight + (3 * zoom);
+                  const x2 = this.l2.layerMeta.position.left + stopDotPositionWidth + (3 * zoom);
+                  const y2 = this.l2.layerMeta.position.top + stopDotPositionHeight + (3 * zoom);
+                  const path = calcArrowPath(x1, y1, x2, y2, this);
+                  return {path}
+                },
+                enumerable: true,
+                configurable: false
+              });
+              findSideMinLength(newArrow.l1, newArrow.l2, newArrow);
+              connectList.push(newArrow);
+            }
+          })
+
         };
+      
+        
+
+
+
+        // for (let elId in net) {
+        //   net[elId].calcAnchor = { top: [], right: [], bottom: [], left: []};
+        // };
+
+        // for (let item in net) {
+        //   const itemEl = net[item];
+        //   if(itemEl.connectionArrow.length === 0) continue;
+        //   for (var numEl in itemEl.connectionArrow) {
+        //     let outEl = itemEl.connectionArrow[numEl];
+        //     let newArrow = {
+        //       l1: itemEl,
+        //       l2: net[outEl],
+        //       correctPosition: {
+        //         start: { x: 0, y: 0 },
+        //         stop:  { x: 0, y: 0 },
+        //       }
+        //     };
+        //     if(!newArrow.l1 || !newArrow.l2 || newArrow.l1.layerNone || newArrow.l2.layerNone) continue;
+        //     Object.defineProperty(newArrow, 'positionArrow', {
+        //       get() {
+        //         // const x1 = this.l1.layerMeta.position.left + this.correctPosition.start.x;
+        //         // const y1 = this.l1.layerMeta.position.top + this.correctPosition.start.y;
+        //         // const x2 = this.l2.layerMeta.position.left + this.correctPosition.stop.x;
+        //         // const y2 = this.l2.layerMeta.position.top + this.correctPosition.stop.y;
+        //         const x1 = this.l1.layerMeta.position.left + this.correctPosition.start.x;
+        //         const y1 = this.l1.layerMeta.position.top + this.correctPosition.start.y;
+        //         const x2 = this.l2.layerMeta.position.left + this.correctPosition.stop.x;
+        //         const y2 = this.l2.layerMeta.position.top + this.correctPosition.stop.y;
+        //         const path = calcArrowPath(x1, y1, x2, y2, this);
+        //         return {path}
+        //       },
+        //       enumerable: true,
+        //       configurable: false
+        //     });
+        //     findSideMinLength(newArrow.l1, newArrow.l2, newArrow);
+        //     connectList.push(newArrow);
+        //   }
+        //   connectList.push(validConnectionInd[0])
+        //   console.log(connectList);
+        //   console.log(validConnectionInd);
+        // debugger;
+        // };
       }
       function findSideMinLength(l1, l2, currentEl) {
         let position = '';
@@ -520,57 +626,70 @@ export default {
       function lengthLine(l1, l2) {
         return Math.round(Math.abs(Math.sqrt(Math.pow((l2.x-l1.x), 2) + Math.pow((l2.y - l1.y), 2))));
       }
-      function calcCorrectPosition() {
-        connectList.forEach((itemEl, itemIndex, itemArr)=> {
-          let currentLeftStart = itemEl.l2.layerMeta.position.left;
-          let currentTopStart = itemEl.l2.layerMeta.position.top;
-          let currentLeftEnd = itemEl.l1.layerMeta.position.left;
-          let currentTopEnd = itemEl.l1.layerMeta.position.top;
-          let indexSidePositionStart = '';
-          let indexSidePositionEnd = '';
-          let sideStartLength = itemEl.l1.calcAnchor[itemEl.sideStart].length;
-          let sideEndLength = itemEl.l2.calcAnchor[itemEl.sideEnd].length;
+      // function calcCorrectPosition(zoom) {
+        // console.log(connectList);
+        // connectList.forEach((itemEl, itemIndex, itemArr)=> {
+          // let currentLeftStart = itemEl.l2.layerMeta.position.left;
+          // let currentTopStart = itemEl.l2.layerMeta.position.top;
+          // let currentLeftEnd = itemEl.l1.layerMeta.position.left;
+          // let currentTopEnd = itemEl.l1.layerMeta.position.top;
+          // let indexSidePositionStart = '';
+          // let indexSidePositionEnd = '';
+          // let sideStartLength = itemEl.l1.calcAnchor[itemEl.sideStart].length;
+          // let sideEndLength = itemEl.l2.calcAnchor[itemEl.sideEnd].length;
+
+          // let currentTargerStartElement = document.querySelectorAll(`[layer-id="${itemEl.l1.layerId }"]`)[0];
+          // let currentTargerEndElement = document.querySelectorAll(`[layer-id="${itemEl.l2.layerId }"]`)[0];
 
           //calc start
-          if(itemEl.sideStart === 'left' || itemEl.sideStart === 'right') {
-            let sortVertSideStart = itemEl.l1.calcAnchor[itemEl.sideStart].sort(function(a, b) {
-              return a.layerMeta.position.top - b.layerMeta.position.top;
-            });
-            indexSidePositionStart = sortVertSideStart.findIndex((element, index, array)=> {
-              return element.layerMeta.position.top == currentTopStart;
-            });
-          }
-          else {
+          // if(itemEl.sideStart === 'left' || itemEl.sideStart === 'right') {
+          //   let sortVertSideStart = itemEl.l1.calcAnchor[itemEl.sideStart].sort(function(a, b) {
+          //     return a.layerMeta.position.top - b.layerMeta.position.top;
+          //   });
+          //   indexSidePositionStart = sortVertSideStart.findIndex((element, index, array)=> {
+          //     return element.layerMeta.position.top == currentTopStart;
+          //   });
+          // }
+          // else {
 
-            let sortGorSideStart = itemEl.l1.calcAnchor[itemEl.sideStart].sort(function(a, b) {
-              return a.layerMeta.position.left - b.layerMeta.position.left;
-            });
-            indexSidePositionStart = sortGorSideStart.findIndex((element, index, array)=> {
-              return element.layerMeta.position.left == currentLeftStart;
-            });
-          }
-          itemEl.correctPosition.start = calcValuePosition(itemEl.sideStart, sideStartLength, indexSidePositionStart);
+          //   let sortGorSideStart = itemEl.l1.calcAnchor[itemEl.sideStart].sort(function(a, b) {
+          //     return a.layerMeta.position.left - b.layerMeta.position.left;
+          //   });
+          //   indexSidePositionStart = sortGorSideStart.findIndex((element, index, array)=> {
+          //     return element.layerMeta.position.left == currentLeftStart;
+          //   });
+          // }
+          // itemEl.correctPosition.start = calcValuePosition(itemEl.sideStart, sideStartLength, indexSidePositionStart);
+          // itemEl.correctPosition.start = {
+          //   x: (currentTargerStartElement.offsetWidth * zoom)- (11.5 * zoom),
+          //   y: (currentTargerStartElement.offsetHeight * zoom) - (14.5 * zoom),
+          // }
           //calc END
-          if(itemEl.sideEnd === 'left' || itemEl.sideEnd === 'right') {
-            let sortVertSideEnd = itemEl.l2.calcAnchor[itemEl.sideEnd].sort(function(a, b) {
-              return a.layerMeta.position.top - b.layerMeta.position.top;
-            });
-            indexSidePositionEnd = sortVertSideEnd.findIndex((element, index, array)=> {
-              return element.layerMeta.position.top == currentTopEnd;
-            });
-          }
-          else {
-            let sortGorSideEnd = itemEl.l2.calcAnchor[itemEl.sideEnd].sort(function(a, b) {
-              return a.layerMeta.position.left - b.layerMeta.position.left;
-            });
-            indexSidePositionEnd = sortGorSideEnd.findIndex((element, index, array)=> {
-              return element.layerMeta.position.left == currentLeftEnd;
-            });
-          }
-          itemEl.correctPosition.stop = calcValuePosition(itemEl.sideEnd, sideEndLength, indexSidePositionEnd);
-        })
+          // if(itemEl.sideEnd === 'left' || itemEl.sideEnd === 'right') {
+          //   let sortVertSideEnd = itemEl.l2.calcAnchor[itemEl.sideEnd].sort(function(a, b) {
+          //     return a.layerMeta.position.top - b.layerMeta.position.top;
+          //   });
+          //   indexSidePositionEnd = sortVertSideEnd.findIndex((element, index, array)=> {
+          //     return element.layerMeta.position.top == currentTopEnd;
+          //   });
+          // }
+          // else {
+          //   let sortGorSideEnd = itemEl.l2.calcAnchor[itemEl.sideEnd].sort(function(a, b) {
+          //     return a.layerMeta.position.left - b.layerMeta.position.left;
+          //   });
+          //   indexSidePositionEnd = sortGorSideEnd.findIndex((element, index, array)=> {
+          //     return element.layerMeta.position.left == currentLeftEnd;
+          //   });
+          // }
+          // itemEl.correctPosition.stop = calcValuePosition(itemEl.sideEnd, sideEndLength, indexSidePositionEnd);
+        
+          // itemEl.correctPosition.stop = {
+          //   x: 11.5 * zoom,
+          //   y: (currentTargerEndElement.offsetHeight * zoom) - (14.5 * zoom)
+          // }
+        // })
 
-      }
+      // }
       function calcValuePosition(side, lengthSide, indexSide) {
         switch(side) {
           case 'top':
@@ -662,5 +781,105 @@ export default {
         ? 'url(#svg-arrow_triangle-empty)'
         : 'url(#svg-arrow_triangle)';
     },
+    // cleanInputsAndOutputs() {
+    //   let connections = {};
+    //   let inputs = {};
+    //   let outputs = {};
+    //   let metworkListIds = [];
+    //   let inputIds = [];
+    //   let outputIds = [];
+
+    //   Object.keys(this.fullNetworkElementList).map(networkId => {
+    //     const el = this.fullNetworkElementList[networkId];
+    //     inputs = {
+    //       ...inputs,
+    //       ...el.inputs,
+    //     };
+    //     outputs = {
+    //       ...outputs,
+    //       ...el.outputs,
+    //     }
+    //   });
+
+    //   inputIds = Object.keys(inputs).map(key => key);
+    //   outputIds = Object.keys(outputs).map(key => key);
+
+    //   Object.keys(this.fullNetworkElementList).map(networkId => {
+    //     metworkListIds.push(networkId);
+    //   });
+    //   Object.keys(this.fullNetworkElementList).map(networkId => {
+    //     connections[networkId] = {
+    //       inputs: {},
+    //       outputs: {},
+    //     };
+    //   });
+    // },
+    // generateForwardAndBackwardConnections() {
+      // let connections = {};
+      // let inputs = {};
+      // let outputs = {};
+      // let inputIds = [];
+      // let outputIds = [];
+
+      // Object.keys(this.fullNetworkElementList).map(networkId => {
+      //   const el = this.fullNetworkElementList[networkId];
+      //   inputs = {
+      //     ...inputs,
+      //     ...el.inputs,
+      //   };
+      //   outputs = {
+      //     ...outputs,
+      //     ...el.outputs,
+      //   }
+      // });
+
+      // inputIds = Object.keys(inputs).map(key => key);
+      // outputIds = Object.keys(outputs).map(key => key);
+
+      // Object.keys(this.fullNetworkElementList).map(networkId => {
+      //   connections[networkId] = {
+      //     forward_connections: [],
+      //     backward_connections: [],
+      //   };
+      // })
+
+      // Object.keys(this.fullNetworkElementList).map(networkId => {
+      //   const el = this.fullNetworkElementList[networkId];
+      //   const elInputs = el.inputs;
+      //   Object.keys(elInputs).map(inputId => {
+      //     let input = elInputs[inputId];
+      //     if(input.reference_var_id !== null) {
+
+      //       if(outputIds.indexOf(input.reference_var_id) !== -1) {
+      //         // output of reference element
+      //         let forward_connections_obj = {
+      //           src_var: outputs[input.reference_var_id].name,
+      //           dst_id: networkId,
+      //           dst_var: input.name
+      //         };
+      //         // input
+      //         let backward_connections_obj = {
+      //           src_id: input.reference_layer_id,
+      //           src_var: outputs[input.reference_var_id].name,
+      //           dst_var: input.name,
+      //         };
+      //         connections[networkId].backward_connections.push(backward_connections_obj);
+      //         connections[input.reference_layer_id].forward_connections.push(forward_connections_obj);
+      //       }
+      //     }
+      //   })
+      // });
+
+
+      // this.$store.dispatch('mod_workspace/updateForwardBackwardConnectionsAction', connections)
+    // },
+    getAllPreviews() {
+      let payload = {};
+      for(let id in this.fullNetworkElementList) {
+        const el = this.fullNetworkElementList[id];
+        payload[id] = el.previewVarialbeName;
+      }
+      this.$store.dispatch('mod_api/API_getBatchPreviewSample', payload);
+    }
   }
 }

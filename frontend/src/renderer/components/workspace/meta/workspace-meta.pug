@@ -14,6 +14,26 @@
 
   //the-mini-map
 
+.workspace_meta-action
+
+  button(
+    @click="addErrorNotification"
+  ) Add error
+  button(
+    @click="addWarningNotification"
+  ) Add warning
+
+  .workspace-notifications
+    button(
+      @click="notificationWindowStateHanlder(!showNotificationWindow)"
+    ) {{ workspaceErrors }} errors
+    svg.has-error(v-if="workspaceErrors > 0" width="10" height="9" viewBox="0 0 10 9" fill="none" xmlns="http://www.w3.org/2000/svg")
+      ellipse(cx="5.48426" cy="4.5" rx="4.50379" ry="4.5" fill="#FE7373")
+      path(d="M4.72977 0.94L6.26977 0.95L5.87977 5.88H5.11977L4.72977 0.94ZM6.19977 6.62V8H4.79977V6.62H6.19977Z" fill="#23252A")
+    svg.no-error(v-else width="10" height="9" viewBox="0 0 10 9" fill="none" xmlns="http://www.w3.org/2000/svg")
+      ellipse(cx="5.48523" cy="4.5" rx="4.50379" ry="4.5" fill="#73FEBB")
+      path(fill-rule="evenodd" clip-rule="evenodd" d="M8.59204 3.00676L4.39496 7.61966L2.48145 5.22977L3.36066 4.52699L4.44967 5.8871L7.75891 2.25L8.59204 3.00676Z" fill="#23252A")
+      
 .workspace_meta-action.d-flex
   button.btn.btn--color.hardware-trigger(type="button" 
     :class="{clicked: showResourceView!=0}"

@@ -1,3 +1,4 @@
+import copy
 import warnings
 import functools
 from concurrent.futures import Future, Executor
@@ -158,6 +159,64 @@ def loop_until_true(condition, timeout=20.0):
 def wait_for_condition(condition, timeout=20.0):
     return loop_until_true(condition, timeout)
 
+
+def get_start_nodes(graph):
+    start_nodes = []
+    for id_, content in graph.items():
+        if not content["backward_connections"]:
+            start_nodes.append(id_)
+        return start_nodes
+
+
+def patch_net_connections(original_network):
+    """ Converts forward/backward connection layers to comply with new standard """
+    if True:
+        return original_network
+    
+    new_network = copy.deepcopy(original_network) # defensive copy
+    for layer_id, layer_dict in new_network.items():
+        bw_cons = layer_dict['backward_connections']
+        fw_cons = layer_dict['forward_connections']
+        
+        if (len(bw_cons) > 0 and isinstance(bw_cons[0], dict)) or (len(fw_cons) > 0 and isinstance(fw_cons[0], dict)):
+            # new-style json network, return
+            return original_network
+
+        layer_dict['backward_connections'] = [
+            {'src_id': src_id, 'src_var': 'output', 'dst_var': 'input'}
+            for src_id, src_name in bw_cons
+        ]
+        layer_dict['forward_connections'] = [
+            {'dst_id': dst_id, 'src_var': 'output', 'dst_var': 'input'}                
+            for dst_id, dst_name in fw_cons
+        ]
+        new_network[layer_id] = layer_dict
+
+
+    # ----
+    for layer_id, layer_dict in new_network.items():
+        bw_cons = layer_dict['backward_connections']
+        fw_cons = layer_dict['forward_connections']
+        
+
+        if layer_dict['Type'] == 'TrainNormal':
+            for idx, conn_spec in enumerate(bw_cons):
+                src_id = conn_spec['src_id']
+                dst_id = layer_id
+                if src_id == layer_dict['Properties']['Labels']:
+                    new_network[dst_id]['backward_connections'][idx]['dst_var'] = 'labels'
+                    new_network[src_id]['forward_connections'][0]['dst_var'] = 'labels'
+                    
+                else:
+                    new_network[dst_id]['backward_connections'][idx]['dst_var'] = 'predictions'                    
+                    new_network[src_id]['forward_connections'][0]['dst_var'] = 'predictions'
+
+                
+            new_network[layer_id] = layer_dict
+
+    return new_network
+
+
 class DummyExecutor(Executor):
 
     def __init__(self):
@@ -206,8 +265,10 @@ def get_object_size(data_obj, obj_ids: Set[int]) -> int:
         return data_obj_size
 
     elif isinstance(data_obj, (list, set, range)):
-        data_obj_size = getsizeof(data_obj)
-        return data_obj_size + sum([get_object_size(data, obj_ids) for data in data_obj])
+        return 0
+        #TODO: This crashes in Cython, fix before releasing data container
+        # data_obj_size = getsizeof(data_obj)
+        # return data_obj_size + sum([get_object_size(data, obj_ids) for data in data_obj])
 
     elif isinstance(data_obj, np.ndarray):
         return getsizeof(data_obj)

@@ -23,7 +23,8 @@
 <script>
   import { Slider } from 'vue-color'
   import clickOutside       from '@/core/mixins/click-outside.js'
-
+  import { layerBgColor }       from '@/core/helpers.js'
+  
 export default {
   name: 'SidebarLayersColorPicker',
   mixins: [clickOutside],
@@ -61,61 +62,8 @@ export default {
         : ''
     },
     layerItemColor() {
-      let className = '';
-      switch (this.currentLayer.componentName) {
-        case 'DataData':
-        case 'DataRandom':
-        case 'DataEnvironment':
-          className = 'net-color-data';
-          break;
-        case 'DeepLearningFC':
-        case 'DeepLearningConv':
-        case 'DeepLearningDeconv':
-        case 'DeepLearningRecurrent':
-          className = 'net-color-learn-deep';
-          break;
-        case 'ProcessCrop':
-        case 'ProcessEmbed':
-        case 'ProcessGrayscale':
-        case 'ProcessOneHot':
-        case 'ProcessReshape':
-        case 'ProcessRescale':
-          className = 'net-color-process';
-          break;
-        case 'TrainNormal':
-        case 'TrainGenetic':
-        case 'TrainDynamic':
-        case 'TrainReinforce':
-        case 'TrainLoss':
-        case 'TrainOptimizer':
-        case 'TrainDetector':
-        case 'TrainGan':
-        case 'TrainRegression':
-          className = 'net-color-train';
-          break;
-        case 'MathArgmax':
-        case 'MathSwitch':
-        case 'MathMerge':
-        case 'MathSplit':
-        case 'MathSoftmax':
-          className = 'net-color-math';
-          break;
-        case 'ClassicMLDbscans':
-        case 'ClassicMLKMeans':
-        case 'ClassicMLKNN':
-        case 'ClassicMLRandomForest':
-        case 'ClassicMLSVM':
-          className = 'net-color-learn-class';
-          break;
-        case 'LayerContainer':
-          className = 'net-color-layercontainer';
-          break;
-        case 'LayerCustom':
-          className = 'net-color-custom';
-          break;
-      }
-      return [className];
-    }
+      return layerBgColor(this.currentLayer.componentName)
+    },
   },
   watch: {
     iconColor(newVal) {

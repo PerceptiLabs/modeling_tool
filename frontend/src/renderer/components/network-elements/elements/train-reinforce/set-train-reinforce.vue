@@ -1,91 +1,107 @@
 <template lang="pug">
-  net-base-settings(
-    :current-el="currentEl"
-    @press-apply="saveSettings($event)"
-    @press-confirm="confirmSettings"
-  )
-    template(slot="Settings-content")
-      .settings-layer_section
-        .form_row(v-tooltip-interactive:right="interactiveInfo.method")
-          .form_label Method:
+  div
+    .settings-layer_section
+      .form_row(v-tooltip-interactive:right="interactiveInfo.method")
+        .form_label Method:
+        .form_input
+          base-radio(group-name="group" value-input="Q_learning" v-model="settings.ReinforceType")
+            span Q-learning
+          base-radio(group-name="group" value-input="Policy_learning" v-model="settings.ReinforceType")
+            span Policy-learning
+          base-radio(group-name="group" value-input="A3C" v-model="settings.ReinforceType")
+            span A3C
+          base-radio(group-name="group" value-input="A2C" v-model="settings.ReinforceType")
+            span A2C
+          base-radio(group-name="group" value-input="PPO" v-model="settings.ReinforceType")
+            span PPO
+    .settings-layer_section
+      .form_row(v-tooltip-interactive:right="interactiveInfo.optimizer")
+        .form_label Optimizer:
+        .form_input
+          base-radio(group-name="group1" value-input="SGD" v-model="settings.Optimizer")
+            span SGD
+          base-radio(group-name="group1" value-input="Adam" v-model="settings.Optimizer")
+            span Adam
+          base-radio(group-name="group1" value-input="Momentum" v-model="settings.Optimizer")
+            span Momentum
+          base-radio(group-name="group1" value-input="RMSprop" v-model="settings.Optimizer")
+            span RMSprop
+    .settings-layer_section
+      .form_row
+        .form_label History length:
+        .form_input
+          input(
+            type="number"
+            v-model="settings.History_length"
+            @focus="setIsSettingInputFocused(true)"
+            @blur="setIsSettingInputFocused(false)")
+    .settings-layer_section
+      .form_row
+        .form_label Batch size:
+        .form_input
+          input(
+            type="number"
+            v-model="settings.Batch_size"
+            @focus="setIsSettingInputFocused(true)"
+            @blur="setIsSettingInputFocused(false)")
+    .settings-layer_section
+      .form_row(v-tooltip-interactive:right="interactiveInfo.learningRate")
+        .form_label Learning rate:
+        .form_input
+          input(
+            type="text"
+            v-model="settings.Learning_rate"
+            @focus="setIsSettingInputFocused(true)"
+            @blur="setIsSettingInputFocused(false)")
+    .settings-layer_section
+      .form_row(v-tooltip-interactive:right="interactiveInfo.learningRate")
+        .form_label Max steps:
+        .form_input
+            input(
+              type="text"
+              v-model="settings.Max_steps"
+              @focus="setIsSettingInputFocused(true)"
+              @blur="setIsSettingInputFocused(false)")
+    .settings-layer_section
+      .form_row(v-tooltip-interactive:right="interactiveInfo.learningRate")
+          .form_label Episodes:
           .form_input
-            base-radio(group-name="group" value-input="Q_learning" v-model="settings.ReinforceType")
-              span Q-learning
-            base-radio(group-name="group" value-input="Policy_learning" v-model="settings.ReinforceType")
-              span Policy-learning
-            base-radio(group-name="group" value-input="A3C" v-model="settings.ReinforceType")
-              span A3C
-            base-radio(group-name="group" value-input="A2C" v-model="settings.ReinforceType")
-              span A2C
-            base-radio(group-name="group" value-input="PPO" v-model="settings.ReinforceType")
-              span PPO
-      .settings-layer_section
-        .form_row(v-tooltip-interactive:right="interactiveInfo.optimizer")
-          .form_label Optimizer:
-          .form_input
-            base-radio(group-name="group1" value-input="SGD" v-model="settings.Optimizer")
-              span SGD
-            base-radio(group-name="group1" value-input="Adam" v-model="settings.Optimizer")
-              span Adam
-            base-radio(group-name="group1" value-input="Momentum" v-model="settings.Optimizer")
-              span Momentum
-            base-radio(group-name="group1" value-input="RMSprop" v-model="settings.Optimizer")
-              span RMSprop
-      .settings-layer_section
-        .form_row
-          .form_label History length:
-          .form_input
-            input(type="number" v-model="settings.History_length")
-      .settings-layer_section
-        .form_row
-          .form_label Batch size:
-          .form_input
-            input(type="number" v-model="settings.Batch_size")
-      .settings-layer_section
-        .form_row(v-tooltip-interactive:right="interactiveInfo.learningRate")
-          .form_label Learning rate:
-          .form_input
-            input(type="text" v-model="settings.Learning_rate")
-      .settings-layer_section
-        .form_row(v-tooltip-interactive:right="interactiveInfo.learningRate")
-          .form_label Max steps:
-          .form_input
-             input(type="text" v-model="settings.Max_steps")
-      .settings-layer_section
-        .form_row(v-tooltip-interactive:right="interactiveInfo.learningRate")
-           .form_label Episodes:
-           .form_input
-             input(type="text" v-model="settings.Episodes")
-      //-.settings-layer_section
-        .form_row
-          .form_label Regularization:
-          .form_input
-            input(type="text" disabled="disabled")
-      //-.settings-layer_section
-        .form_row
-          .form_label Gradient clipping:
-          .form_input
-            base-checkbox(valueInput="Pooling" v-model="settings.pooling")
-      //-.settings-layer_section
-        .form_row
-          .form_label Clip at:
-          .form_input
-            input(type="number" disabled="disabled")
-    template(slot="Code-content")
-      settings-code(
-        :current-el="currentEl"
-        :el-settings="settings"
-        v-model="coreCode"
-      )
+            input(
+              type="text"
+              v-model="settings.Episodes"
+              @focus="setIsSettingInputFocused(true)"
+              @blur="setIsSettingInputFocused(false)")
+    //-.settings-layer_section
+      .form_row
+        .form_label Regularization:
+        .form_input
+          input(type="text" disabled="disabled")
+    //-.settings-layer_section
+      .form_row
+        .form_label Gradient clipping:
+        .form_input
+          base-checkbox(valueInput="Pooling" v-model="settings.pooling")
+    //-.settings-layer_section
+      .form_row
+        .form_label Clip at:
+        .form_input
+          input(type="number" disabled="disabled")
+    //- template(slot="Code-content")
+    //-   settings-code(
+    //-     :current-el="currentEl"
+    //-     :el-settings="settings"
+    //-     v-model="coreCode"
+    //-   )
 
 </template>
 
 <script>
 import mixinSet       from '@/core/mixins/net-element-settings.js';
+import mixinFocus     from '@/core/mixins/net-element-settings-input-focus.js';
 
 export default {
   name: 'SetTrainReinforce',
-  mixins: [mixinSet],
+  mixins: [mixinSet, mixinFocus],
   data() {
     return {
       settings: {
@@ -118,6 +134,9 @@ export default {
         }
       }
     }
-  }
+  },
+  mounted() {
+    this.saveSettingsToStore("Settings");
+  },
 }
 </script>

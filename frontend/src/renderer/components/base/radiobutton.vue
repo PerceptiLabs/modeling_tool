@@ -55,6 +55,10 @@ export default {
     align-items: center;
     padding: .5em 1em .5em 0;
 
+    .sidebar-setting-content & {
+      font-size: 11px;
+    }
+
     input[type='radio'] {
       position: absolute;
       left: -9999px;
@@ -63,26 +67,26 @@ export default {
       height: 1px;
       &:checked {
         + .radio-fake {
-          background: $bg-grad-blue;
-          box-shadow: $icon-shad;
+          background: #fff;
+          border: 1px solid #4D556A;
         }
         ~ .radio-text {
-          color: $col-txt;
+          color: #fff;
         }
       }
     }
     .radio-fake {
       position: relative;
-      flex: 0 0 .6em;
-      width: .6em;
-      height: .6em;
+      flex: 0 0 7px;
+      width: 7px;
+      height: 7px;
       cursor: pointer;
       border-radius: 50%;
-      background-color: $disable-txt;
+      background-color: #4D556A;
     }
     .radio-text {
       font-size: inherit;
-      color: $disable-txt;
+      color: #C4C4C4;
       margin-left: .75em;
     }
   }

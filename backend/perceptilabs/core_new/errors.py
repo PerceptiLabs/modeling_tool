@@ -9,18 +9,15 @@ import copy
 
 
 from perceptilabs.issues import UserlandError
-from perceptilabs.core_new.session import LayerSession
 from perceptilabs.logconf import APPLICATION_LOGGER
 
 logger = logging.getLogger(APPLICATION_LOGGER)
 
 
-class LayerSessionAbort(Exception):
-    pass
 
 class LayerErrorHandler(ABC):
     @abstractmethod
-    def handle_run_error(self, session: LayerSession, exception: Exception):
+    def handle_run_error(self, session, exception: Exception):
         raise NotImplementedError
 
     def _format_code(self, code: str, error_line: int=None):
@@ -43,7 +40,7 @@ class LayerErrorHandler(ABC):
 
         return line_number
 
-    def _log_error(self, session: LayerSession, exception: Exception, error_line: int=None):
+    def _log_error(self, session, exception: Exception, error_line: int=None):
         code_lines = session.code.split('\n')
         code_lines = ["  %d %s" % (i, l) for i, l in enumerate(code_lines, 1)]
 
@@ -70,13 +67,13 @@ class LightweightErrorHandler(LayerErrorHandler):
     def reset(self):
         self._dict = {}
     
-    def handle_run_error(self, session: LayerSession, exception: Exception):
+    def handle_run_error(self, session, exception: Exception):
         if isinstance(exception, SyntaxError):
             self._handle_syntax_error(session, exception)
         else:
             self._handle_other_errors(session, exception)
 
-    def _handle_syntax_error(self, session: LayerSession, exception: Exception):
+    def _handle_syntax_error(self, session, exception: Exception):
         tbObj = traceback.TracebackException(exception.__class__,
                                              exception,
                                              exception.__traceback__)
@@ -92,7 +89,7 @@ class LightweightErrorHandler(LayerErrorHandler):
         )
         self._log_error(session, exception, int(tbObj.lineno))
         
-    def _handle_other_errors(self, session: LayerSession, exception: Exception):                    
+    def _handle_other_errors(self, session, exception: Exception):                    
         error_class = exception.__class__.__name__
         line_number = self._get_error_line(exception)
         descr = "%s at line %d: %s" % (error_class, line_number, exception)
@@ -122,16 +119,16 @@ class CoreErrorHandler(LayerErrorHandler):
     def __init__(self, issue_handler):
         self._issue_handler = issue_handler
     
-    def handle_run_error(self, session: LayerSession, exception: Exception):
+    def handle_run_error(self, session, exception: Exception):
         line_number = self._get_error_line(exception)
 
         self._log_error(session, exception, line_number)
         self._put_message_on_queue(session, exception)
         # sentry_sdk.capture_exception(exception)
 
-        raise LayerSessionAbort() 
+        raise RuntimeError() 
     
-    def _put_message_on_queue(self, session: LayerSession, exception: Exception):
+    def _put_message_on_queue(self, session, exception: Exception):
         tb_obj = traceback.TracebackException(exception.__class__,
                                               exception,
                                               exception.__traceback__)

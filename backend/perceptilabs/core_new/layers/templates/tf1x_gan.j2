@@ -1,11 +1,9 @@
 {% from 'tf1x_utils.j2' import session %}
 
-{% macro run_normal(layer_name, switch_layer, real_layer, batch_size, n_epochs, class_weights, generator_optimizer, discriminator_optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory, use_cpu) %}
+{% macro run_normal(layer_spec, graph_spec) %}
         self._status = 'initializing'
-
-        real_data_layer_id = '{{real_layer}}' 
-        switch_layer_id =  '{{switch_layer}}' 
-        
+        real_data_layer_id = "{{graph_spec.nodes_by_name.get(layer_spec.real_layer_name).sanitized_name}}"
+        switch_layer_id =  "{{graph_spec.nodes_by_name.get(layer_spec.switch_layer_name).sanitized_name}}"
 
         for node in graph.data_nodes:
             if node.layer_id != real_data_layer_id and not node.is_training_node:
@@ -18,10 +16,9 @@
         
         output_node = [node for node in graph.get_input_nodes(training_node)][0]
         output_layer_id = output_node.layer_id
-        
         self._switch_layer_id = switch_layer_id
-        self._selected_layer_id = switch_node.layer._selected_layer_id
-
+        self._selected_layer_id = "{{graph_spec.nodes_by_name.get(layer_spec.switch_layer_name).selected_layer_id}}"
+        
         generator_nodes = graph.get_nodes_inbetween(random_data_node, switch_node)
         discriminator_nodes = graph.get_nodes_inbetween(switch_node, output_node)
         real_nodes = graph.get_nodes_inbetween(real_data_node, switch_node)
@@ -30,24 +27,24 @@
         discriminator_layer_ids = [node.layer_id for node in discriminator_nodes]
 
         self._generator_layer_ids = generator_layer_ids
-        {# random_data_path = graph._get_nodes_inbetween(random_data_node, training_node) #}
-        {# real_data_path = graph._get_nodes_inbetween(real_data_node, training_node) #}
 
         self._trn_sz_tot = real_data_node.layer.size_training
         self._val_sz_tot = real_data_node.layer.size_validation
         self._tst_sz_tot = real_data_node.layer.size_testing
 
+        real_data_sample = real_data_node.layer_instance.sample
+        random_data_sample = random_data_node.layer_instance.sample 
         # Make training set
         dataset_trn = tf.data.Dataset.zip((
             tf.data.Dataset.from_generator(
                 real_data_node.layer_instance.make_generator_training,
-                output_shapes=real_data_node.layer_instance.sample.shape,
-                output_types=np.float32                
+                output_shapes={k: v.shape for k, v in real_data_sample.items()},
+                output_types={k: v.dtype for k, v in real_data_sample.items()}                
             ),
             tf.data.Dataset.from_generator(
                 random_data_node.layer_instance.make_generator_training,
-                output_shapes=random_data_node.layer_instance.sample.shape,
-                output_types=np.float32
+                output_shapes={k: v.shape for k, v in random_data_sample.items()},
+                output_types={k: v.dtype for k, v in random_data_sample.items()}
             )
         ))
 
@@ -55,13 +52,13 @@
         dataset_val = tf.data.Dataset.zip((
             tf.data.Dataset.from_generator(
                 real_data_node.layer_instance.make_generator_validation,
-                output_shapes=real_data_node.layer_instance.sample.shape,
-                output_types=np.float32                
+                output_shapes={k: v.shape for k, v in real_data_sample.items()},
+                output_types={k: v.dtype for k, v in real_data_sample.items()}                
             ),
             tf.data.Dataset.from_generator(
                 random_data_node.layer_instance.make_generator_validation,
-                output_shapes=random_data_node.layer_instance.sample.shape,
-                output_types=np.float32
+                output_shapes={k: v.shape for k, v in random_data_sample.items()},
+                output_types={k: v.dtype for k, v in random_data_sample.items()}
             )
         ))
 
@@ -69,13 +66,13 @@
         dataset_tst = tf.data.Dataset.zip((
             tf.data.Dataset.from_generator(
                 real_data_node.layer_instance.make_generator_testing,
-                output_shapes=real_data_node.layer_instance.sample.shape,
-                output_types=np.float32                
+                output_shapes={k: v.shape for k, v in real_data_sample.items()},
+                output_types={k: v.dtype for k, v in real_data_sample.items()}             
             ),
             tf.data.Dataset.from_generator(
                 random_data_node.layer_instance.make_generator_testing,
-                output_shapes=random_data_node.layer_instance.sample.shape,
-                output_types=np.float32
+                output_shapes={k: v.shape for k, v in random_data_sample.items()},
+                output_types={k: v.dtype for k, v in random_data_sample.items()}
             )
         ))
 
@@ -90,63 +87,111 @@
         tst_init = iterator.make_initializer(dataset_tst)        
         real_tensor , random_tensor = iterator.get_next()
 
-        # Build the TensorFlow graph # TODO: perhaps this part can be delegated to the graph?
+        
 
+        # Build the TensorFlow graph # TODO: perhaps this part can be delegated to the graph?
         def build_real_graph(real_tensor):
             if len(real_nodes) > 1:
                 switch_node.layer._selected_layer_id = real_nodes[-2].layer_id
+                switch_node.layer._selected_var_name = [dst_var for src_node, src_var, dst_var in graph.get_input_connections(switch_node) if src_node.layer_id == switch_node.layer._selected_layer_id][0]
             else:
                 switch_node.layer._selected_layer_id = real_data_node.layer_id
+                switch_node.layer._selected_var_name = [dst_var for src_node, src_var, dst_var in graph.get_input_connections(switch_node) if src_node.layer_id == switch_node.layer._selected_layer_id][0]
+
+            _random_data_node=random_data_node
+
             layer_output_tensors = {
                 real_data_node.layer_id: real_tensor
             }
-            for node in real_nodes:
-                if len(list(graph.get_input_nodes(node))) <= 1:
-                    args = []
-                    for input_node in graph.get_input_nodes(node):
-                        args.append(layer_output_tensors[input_node.layer_id])
-                    y = node.layer_instance(*args)
-                elif len(list(graph.get_input_nodes(node))) > 1:
-                    args = {}
-                    for input_node in graph.get_input_nodes(node):
-                        if input_node in real_nodes:
-                            args[input_node.layer_id] = layer_output_tensors[input_node.layer_id]
-                        elif input_node == real_data_node:
-                            args[real_data_node.layer_id] = layer_output_tensors[real_data_node.layer_id]
-                    y = node.layer_instance(args)
-                layer_output_tensors[node.layer_id] = y
+
+            for dst_node in real_nodes:
+                inputs = {
+                    dst_var: layer_output_tensors[src_node.layer_id][src_var]
+                    for src_node, src_var, dst_var in graph.get_input_connections(dst_node)
+                    if src_node not in generator_nodes + [_random_data_node]
+                }
+                y = dst_node.layer_instance(
+                    inputs
+                )
+                layer_output_tensors[dst_node.layer_id] = y
+
+
+
+            # for node in real_nodes:
+            #     if len(list(graph.get_input_nodes(node))) <= 1:
+            #         args = []
+            #         for input_node in graph.get_input_nodes(node):
+            #             args.append(layer_output_tensors[input_node.layer_id])
+            #         y = node.layer_instance(*args)
+            #     elif len(list(graph.get_input_nodes(node))) > 1:
+            #         args = {}
+            #         for input_node in graph.get_input_nodes(node):
+            #             if input_node in real_nodes:
+            #                 args[input_node.layer_id] = layer_output_tensors[input_node.layer_id]
+            #             elif input_node == real_data_node:
+            #                 args[real_data_node.layer_id] = layer_output_tensors[real_data_node.layer_id]
+            #         y = node.layer_instance(args)
+            #     layer_output_tensors[node.layer_id] = y
             return layer_output_tensors
 
         def build_generator_graph(random_tensor):
             switch_node.layer._selected_layer_id = generator_nodes[-2].layer_id
+            switch_node.layer._selected_var_name = [dst_var for src_node, src_var, dst_var in graph.get_input_connections(switch_node) if src_node.layer_id == switch_node.layer._selected_layer_id][0]
+            _real_data_node = real_data_node
+
             layer_output_tensors = {
                 random_data_node.layer_id: random_tensor
             }
-            for node in generator_nodes:
-                if len(list(graph.get_input_nodes(node))) <= 1:
-                    args = []
-                    for input_node in graph.get_input_nodes(node):
-                        args.append(layer_output_tensors[input_node.layer_id])
-                    y = node.layer_instance(*args)
-                elif len(list(graph.get_input_nodes(node))) > 1:
-                    args = {}
-                    for input_node in graph.get_input_nodes(node):
-                        if input_node in generator_nodes:
-                            args[input_node.layer_id] = layer_output_tensors[input_node.layer_id]
-                    y = node.layer_instance(args)
-                layer_output_tensors[node.layer_id] = y
+
+            for dst_node in generator_nodes:
+                inputs = {
+                    dst_var: layer_output_tensors[src_node.layer_id][src_var]
+                    for src_node, src_var, dst_var in graph.get_input_connections(dst_node) 
+                    if src_node not in real_nodes+[_real_data_node]
+                }
+                y = dst_node.layer_instance(
+                    inputs
+                )
+                layer_output_tensors[dst_node.layer_id] = y
+
+
+
+            # for node in generator_nodes:
+            #     if len(list(graph.get_input_nodes(node))) <= 1:
+            #         args = []
+            #         for input_node in graph.get_input_nodes(node):
+            #             args.append(layer_output_tensors[input_node.layer_id])
+            #         y = node.layer_instance(*args)
+            #     elif len(list(graph.get_input_nodes(node))) > 1:
+            #         args = {}
+            #         for input_node in graph.get_input_nodes(node):
+            #             if input_node in generator_nodes:
+            #                 args[input_node.layer_id] = layer_output_tensors[input_node.layer_id]
+            #         y = node.layer_instance(args)
+            #     layer_output_tensors[node.layer_id] = y
             return layer_output_tensors
         
         def build_discriminator_graph(input_tensor):
             layer_output_tensors = {
                 switch_node.layer_id: input_tensor
             }
-            for node in discriminator_nodes:
-                args = []
-                for input_node in graph.get_input_nodes(node):
-                    args.append(layer_output_tensors[input_node.layer_id])
-                    y = node.layer_instance(*args)
-                layer_output_tensors[node.layer_id] = y
+            for dst_node in discriminator_nodes:
+                inputs = {
+                    dst_var: layer_output_tensors[src_node.layer_id][src_var]
+                    for src_node, src_var, dst_var in graph.get_input_connections(dst_node)
+                }
+                y = dst_node.layer_instance(
+                    inputs
+                )
+                layer_output_tensors[dst_node.layer_id] = y
+
+
+            # for node in discriminator_nodes:
+            #     args = []
+            #     for input_node in graph.get_input_nodes(node):
+            #         args.append(layer_output_tensors[input_node.layer_id])
+            #         y = node.layer_instance(*args)
+            #     layer_output_tensors[node.layer_id] = y
             return layer_output_tensors
 
         generator_layer_output_tensors = build_generator_graph(random_tensor)
@@ -158,15 +203,27 @@
         real_discriminator_layer_output_tensors = build_discriminator_graph(real_output_tensor)
         random_discriminator_layer_output_tensors = build_discriminator_graph(generator_output_tensor)
         
-        real_discriminator_output_tensor = real_discriminator_layer_output_tensors[output_layer_id]
-        random_discriminator_output_tensor = random_discriminator_layer_output_tensors[output_layer_id]
+        # real_discriminator_outputs = real_discriminator_layer_output_tensors[output_layer_id]
+        # random_discriminator_outputs = random_discriminator_layer_output_tensors[output_layer_id]
         
         # Create an exportable version of the TensorFlow graph
         
-        self._real_tensor_export = tf.placeholder(shape=dataset_trn.output_shapes[0], dtype=dataset_trn.output_types[0])
-        self._random_tensor_export = tf.placeholder(shape=dataset_trn.output_shapes[1], dtype=dataset_trn.output_types[1])
-        self._generator_output_tensor_export = build_generator_graph(self._random_tensor_export)[switch_layer_id]
+        # self._real_tensor_export = tf.placeholder(shape=dataset_trn.output_shapes[0], dtype=dataset_trn.output_types[0])
+        # self._random_tensor_export = tf.placeholder(shape=dataset_trn.output_shapes[1], dtype=dataset_trn.output_types[1])
+
+        self._real_tensor_export= {
+            key: tf.placeholder(shape=shape, dtype=type_)
+            for (key, shape), (_, type_) in zip(dataset_trn.output_shapes[0].items(), dataset_trn.output_types[0].items())            
+        }
+        self._random_tensor_export= {
+            key: tf.placeholder(shape=shape, dtype=type_)
+            for (key, shape), (_, type_) in zip(dataset_trn.output_shapes[1].items(), dataset_trn.output_types[1].items())            
+        }
+        
+
         self._real_output_tensor_export = build_real_graph(self._real_tensor_export)[switch_layer_id]
+        self._generator_output_tensor_export = build_generator_graph(self._random_tensor_export)[switch_layer_id]
+
         self._discriminator_real_output_tensor_export = build_discriminator_graph(self._real_output_tensor_export)[output_layer_id]
         self._discriminator_random_output_tensor_export = build_discriminator_graph(self._generator_output_tensor_export)[output_layer_id]
         
@@ -174,6 +231,14 @@
 
         def loss_func(logits_in,labels_in):
             return tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=logits_in,labels=labels_in))
+
+        real_discriminator_output_tensor = None
+        random_discriminator_output_tensor = None
+        
+        for src_node, src_var, dst_var in graph.get_input_connections(graph.active_training_node):
+            if dst_var == 'input':
+                real_discriminator_output_tensor = real_discriminator_layer_output_tensors[output_layer_id][src_var]
+                random_discriminator_output_tensor = random_discriminator_layer_output_tensors[output_layer_id][src_var]
         
         discriminator_real_loss=loss_func(real_discriminator_output_tensor,tf.ones_like(real_discriminator_output_tensor)*0.9) 
         discriminator_random_loss=loss_func(random_discriminator_output_tensor,tf.zeros_like(random_discriminator_output_tensor))
@@ -183,50 +248,50 @@
 
         global_step = None
         {% filter remove_lspaces(8) %}        
-            {% if generator_optimizer == 'tf.compat.v1.train.GradientDescentOptimizer' %}
-                generator_optimizer = tf.compat.v1.train.GradientDescentOptimizer(learning_rate={{learning_rate}})
-            {% elif generator_optimizer == 'tf.compat.v1.train.MomentumOptimizer' %}
+            {% if layer_spec.generator_optimizer == 'SGD' or layer_spec.discriminator_optimizer == 'tf.compat.v1.train.GradientDescentOptimizer' %}
+                generator_optimizer = tf.compat.v1.train.GradientDescentOptimizer(learning_rate={{layer_spec.learning_rate}})
+            {% elif layer_spec.generator_optimizer == 'Momentum' or layer_spec.generator_optimizer == 'tf.compat.v1.train.MomentumOptimizer' %}
                 global_step = tf.Variable(0)
                 learning_rate_momentum = tf.train.exponential_decay(
-                    learning_rate={{learning_rate}},
+                    learning_rate={{layer_spec.learning_rate}},
                     global_step=global_step,
-                    decay_steps={{decay_steps}},
-                    decay_rate={{decay_rate}},
+                    decay_steps={{layer_spec.decay_steps}},
+                    decay_rate={{layer_spec.decay_rate}},
                     staircase=True
                 )
-                generator_optimizer = tf.train.MomentumOptimizer(learning_rate=learning_rate_momentum, momentum={{momentum}})
-            {% elif generator_optimizer == 'tf.compat.v1.train.AdamOptimizer' %}
-                generator_optimizer = tf.train.AdamOptimizer(learning_rate={{learning_rate}}, beta1={{beta1}}, beta2={{beta2}})
-            {% elif generator_optimizer == 'tf.compat.v1.train.AdagradOptimizer' %}
-                generator_optimizer = tf.compat.v1.train.AdagradOptimizer(learning_rate={{learning_rate}})            
-            {% elif generator_optimizer == 'tf.compat.v1.train.RmsPropOptimizer' %}
-                generator_optimizer = tf.compat.v1.train.RMSPropOptimizer(learning_rate={{learning_rate}})                        
+                generator_optimizer = tf.train.MomentumOptimizer(learning_rate=learning_rate_momentum, momentum={{layer_spec.momentum}})
+            {% elif layer_spec.generator_optimizer == 'ADAM' or layer_spec.generator_optimizer == 'tf.compat.v1.train.AdamOptimizer' %}
+                generator_optimizer = tf.train.AdamOptimizer(learning_rate={{layer_spec.learning_rate}}, beta1={{layer_spec.beta1}}, beta2={{layer_spec.beta2}})
+            {% elif layer_spec.generator_optimizer == 'ADAGrade' or layer_spec.generator_optimizer == 'tf.compat.v1.train.AdagradOptimizer' %}
+                generator_optimizer = tf.compat.v1.train.AdagradOptimizer(learning_rate={{layer_spec.learning_rate}})            
+            {% elif layer_spec.generator_optimizer == 'RMSProp' or layer_spec.generator_optimizer == 'tf.compat.v1.train.RmsPropOptimizer' %}
+                generator_optimizer = tf.compat.v1.train.RMSPropOptimizer(learning_rate={{layer_spec.learning_rate}})                        
             {% else %}
-                raise NotImplementedError('Optimizer {{generator_optimizer}} not supported yet')
+                raise NotImplementedError('Optimizer {{layer_spec.generator_optimizer}} not supported yet')
             {% endif %}
         {% endfilter %}
 
         {% filter remove_lspaces(8) %}        
-            {% if discriminator_optimizer == 'tf.compat.v1.train.GradientDescentOptimizer' %}
-                discriminator_optimizer = tf.compat.v1.train.GradientDescentOptimizer(learning_rate={{learning_rate}})
-            {% elif discriminator_optimizer == 'tf.compat.v1.train.MomentumOptimizer' %}
+            {% if layer_spec.discriminator_optimizer == 'SGD' or layer_spec.discriminator_optimizer == 'tf.compat.v1.train.GradientDescentOptimizer'  %}
+                discriminator_optimizer = tf.compat.v1.train.GradientDescentOptimizer(learning_rate={{layer_spec.learning_rate}})
+            {% elif layer_spec.generator_optimizer == 'Momentum' or layer_spec.discriminator_optimizer == 'tf.compat.v1.train.MomentumOptimizer' %}
                 global_step = tf.Variable(0)
                 learning_rate_momentum = tf.train.exponential_decay(
-                    learning_rate={{learning_rate}},
+                    learning_rate={{layer_spec.learning_rate}},
                     global_step=global_step,
-                    decay_steps={{decay_steps}},
-                    decay_rate={{decay_rate}},
+                    decay_steps={{layer_spec.decay_steps}},
+                    decay_rate={{layer_spec.decay_rate}},
                     staircase=True
                 )
-                discriminator_optimizer = tf.train.MomentumOptimizer(learning_rate=learning_rate_momentum, momentum={{momentum}})
-            {% elif discriminator_optimizer == 'tf.compat.v1.train.AdamOptimizer' %}
-                discriminator_optimizer = tf.train.AdamOptimizer(learning_rate={{learning_rate}}, beta1={{beta1}}, beta2={{beta2}})
-            {% elif discriminator_optimizer == 'tf.compat.v1.train.AdagradOptimizer' %}
-                discriminator_optimizer = tf.compat.v1.train.AdagradOptimizer(learning_rate={{learning_rate}})            
-            {% elif discriminator_optimizer == 'tf.compat.v1.train.RmsPropOptimizer' %}
-                discriminator_optimizer = tf.compat.v1.train.RMSPropOptimizer(learning_rate={{learning_rate}})                        
+                discriminator_optimizer = tf.train.MomentumOptimizer(learning_rate=learning_rate_momentum, momentum={{layer_spec.momentum}})
+            {% elif layer_spec.generator_optimizer == 'ADAM' or layer_spec.discriminator_optimizer == 'tf.compat.v1.train.AdamOptimizer' %}
+                discriminator_optimizer = tf.train.AdamOptimizer(learning_rate={{layer_spec.learning_rate}}, beta1={{layer_spec.beta1}}, beta2={{layer_spec.beta2}})
+            {% elif layer_spec.generator_optimizer == 'ADAGrade' or layer_spec.discriminator_optimizer == 'tf.compat.v1.train.AdagradOptimizer' %}
+                discriminator_optimizer = tf.compat.v1.train.AdagradOptimizer(learning_rate={{layer_spec.learning_rate}})            
+            {% elif layer_spec.generator_optimizer == 'RMSProp' or layer_spec.discriminator_optimizer == 'tf.compat.v1.train.RmsPropOptimizer' %}
+                discriminator_optimizer = tf.compat.v1.train.RMSPropOptimizer(learning_rate={{layer_spec.learning_rate}})                        
             {% else %}
-                raise NotImplementedError('Optimizer {{discriminator_optimizer}} not supported yet')
+                raise NotImplementedError('Optimizer {{layer_spec.discriminator_optimizer}} not supported yet')
             {% endif %}
         {% endfilter %}
 
@@ -291,7 +356,7 @@
              
 
         sess = None
-        {{session(sess, use_gpu=not use_cpu) | indent(width=8)}}      
+        {{session(sess, use_gpu=not layer_spec.use_cpu) | indent(width=8)}}      
         self._sess = sess
         
         trackable_variables = {}
@@ -301,8 +366,8 @@
         sess.run(tf.global_variables_initializer())
         
         {% filter remove_lspaces(8) %}
-            {% if export_directory is not none %}        
-                path = tf.train.latest_checkpoint('{{export_directory}}')
+            {% if layer_spec.checkpoint_path is not none %}        
+                path = tf.train.latest_checkpoint('{{layer_spec.checkpoint_path}}')
                 status = self._checkpoint.restore(path)
                 status.assert_consumed().run_restore_ops(session=self._sess)
             {% endif %}
@@ -426,16 +491,15 @@
 {% endmacro %}
 
 ################################################### Main #####################################################
-{% macro layer_tf1x_gan(layer_name, switch_layer, real_layer, batch_size, n_epochs, target_acc, stop_condition, class_weights, generator_optimizer, discriminator_optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory, use_cpu) %}
-class {{layer_name}}(GANLayer):
+{% macro layer_tf1x_gan(layer_spec, graph_spec) %}
+class {{layer_spec.sanitized_name}}(GANLayer):
 
     def __init__(self):
-        self._n_epochs = {{n_epochs}}
-        self._batch_size = {{batch_size}}
+        self._n_epochs = {{layer_spec.n_epochs}}
+        self._batch_size = {{layer_spec.batch_size}}
 
-        self._target_acc = {{target_acc}}
-        self._stop_condition = '{{stop_condition}}'
-
+        self._target_acc = {{layer_spec.target_acc}}
+        self._stop_condition = '{{layer_spec.stop_condition}}'
         self._stopped = False
         self._paused = False
         self._headless = False
@@ -492,8 +556,8 @@ class {{layer_name}}(GANLayer):
         Args:
             graph: A PerceptiLabs Graph object containing references to all layers objects included in the model produced by this training layer.
         """   
-        {% if not distributed -%}
-            {{ run_normal(layer_name, switch_layer, real_layer, batch_size, n_epochs, class_weights, generator_optimizer, discriminator_optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory, use_cpu) }}
+        {% if not layer_spec.distributed -%}
+            {{ run_normal(layer_spec, graph_spec) }}
         {% endif %}                
 
     def on_export(self, path: str, mode: str) -> None:
@@ -506,24 +570,30 @@ class {{layer_name}}(GANLayer):
 
         log.debug(f"Export called. Project path = {path}, mode = {mode}")
         pb_path = os.path.join(path, '1')
+        if os.path.exists(pb_path):
+            shutil.rmtree(pb_path)
+
+        os.makedirs(pb_path, exist_ok=True)
         
         # Export non-compressed model
         if mode in ['TFModel', 'TFModel+checkpoint']:
             tf.compat.v1.saved_model.simple_save(self._sess, pb_path, \
-            inputs={'real_input': self._real_tensor_export, 'random_input': self._random_tensor_export}, \
-            outputs={'real_output': self._discriminator_real_output_tensor_export, 'random_output': self._discriminator_random_output_tensor_export })
+            inputs={'real_input': self._real_tensor_export['output'], 'random_input': self._random_tensor_export['output']}, \
+            outputs={'real_output': self._discriminator_real_output_tensor_export['output'], 'random_output': self._discriminator_random_output_tensor_export['output'] })
 
         # Export compressed model
         if mode in ['TFLite', 'TFLite+checkpoint']:
-            converter = tf.lite.TFLiteConverter.from_session(self._sess, [self._real_tensor_export, self._random_tensor_export], [self._discriminator_real_output_tensor_export, self._discriminator_random_output_tensor_export])
+            frozen_path = os.path.join(pb_path, 'frozen_model.pb')
+            converter = tf.lite.TFLiteConverter.from_session(self._sess, [self._real_tensor_export['output'], self._random_tensor_export['output']], [self._discriminator_real_output_tensor_export['output'], self._discriminator_random_output_tensor_export['output']])
             converter.post_training_quantize = True
             tflite_model = converter.convert()
-            open(pb_path, "wb").write(tflite_model)
+            with open(frozen_path, "wb") as f:
+                f.write(tflite_model)
 
         # Export checkpoint
         if mode in ['TFModel+checkpoint', 'TFLite+checkpoint']:
             {% filter remove_lspaces(8) %}
-                {% if distributed %}
+                {% if layer_spec.distributed %}
                     self._saver.save(self._sess, os.path.join(path, 'model.ckpt'), global_step=0)
                 {% else %}
                     self._checkpoint.save(file_prefix=os.path.join(path, 'model.ckpt'), session=self._sess)
@@ -594,7 +664,7 @@ class {{layer_name}}(GANLayer):
     @property
     def sample(self) -> np.ndarray:
         """Returns a single data sample"""        
-        return np.empty(())
+        return dict()
 
     @property
     def columns(self) -> List[str]: 

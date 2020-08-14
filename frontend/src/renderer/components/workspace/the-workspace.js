@@ -23,10 +23,15 @@ import TheTesting             from "@/components/statistics/the-testing.vue";
 import TheViewBox             from "@/components/statistics/the-view-box";
 import StartTrainingSpinner   from '@/components/different/start-training-spinner.vue'
 import TheMiniMap             from '@/components/different/the-mini-map.vue'
-import SidebarLayers          from '@/components/workspace/sidebar/workspace-sidebar-layers.vue'
+import TheToaster             from '@/components/different/the-toaster.vue'
+// import SidebarLayers          from '@/components/workspace/sidebar/workspace-sidebar-layers.vue'
+import TheSidebar             from '@/components/the-sidebar.vue'
 import Notebook               from '@/components/notebooks/notebook-container.vue';
+import CodeWindow             from '@/components/workspace/code-window/workspace-code-window.vue';
+import NotificationsWindow    from '@/components/workspace/notifications-window/workspace-notifications-window.vue';
 import ResourceMonitor        from "@/components/charts/resource-monitor.vue";
 import SelectModelModal       from '@/pages/projects/components/select-model-modal.vue';
+import ViewBoxBtnList from '@/components/statistics/view-box-btn-list.vue'
 
 export default {
   name: 'WorkspaceContent',
@@ -37,7 +42,10 @@ export default {
     GeneralResult, SelectCoreSide,
     WorkspaceBeforeImport, WorkspaceSaveNetwork, WorkspaceLoadNetwork, ExportNetwork,
     TheTesting, TheViewBox, StartTrainingSpinner,
-    TheMiniMap, FilePickerPopup, SidebarLayers, Notebook, ResourceMonitor, SelectModelModal
+    TheToaster, TheMiniMap, FilePickerPopup, Notebook, TheSidebar,
+    CodeWindow, NotificationsWindow,
+    Notebook, ResourceMonitor, SelectModelModal,
+    ViewBoxBtnList
   },
   mounted() {
     window.addEventListener('resize', this.onResize);
@@ -84,7 +92,7 @@ export default {
       testIsOpen:         'mod_workspace/GET_testIsOpen',
       statusNetworkCore:  'mod_workspace/GET_networkCoreStatus',
       statisticsIsOpen:   'mod_workspace/GET_statisticsIsOpen',
-      hasUnsavedChanges:  'mod_workspace-changes/get_hasUnsavedChanges',         
+      hasUnsavedChanges:  'mod_workspace-changes/get_hasUnsavedChanges',
 
       isTutorialMode:     'mod_tutorials/getIstutorialMode',
       isNotebookMode:     'mod_notebook/getNotebookMode',
@@ -140,9 +148,33 @@ export default {
       if (this.statisticsIsOpen) {
         return 'StatisticsToolbar';
       }
+      return 'WorkspaceToolbar';  
+    },
+    currentNetworkId() {
+      return this.$store.getters['mod_workspace/GET_currentNetworkId'];
+    },
+    showCodeWindow() {
+      return this.$store.getters['mod_workspace-code-editor/getCodeWindowState'](this.workspace[this.indexCurrentNetwork].networkID);
+    },
+    showNotificationWindow() {
+      return this.$store.getters['mod_workspace-notifications/getNotificationWindowState'](this.workspace[this.indexCurrentNetwork].networkID);
+    },
+    workspaceErrors() {
+      return this.$store.getters['mod_workspace-notifications/getErrors'](this.currentNetworkId).length;
+    },
+    toasterRightPosition() {
 
-      return 'WorkspaceToolbar';
+      let rightValueRm = 1;
+
+      if (this.$store.state.globalView.hideSidebar) {
+        rightValueRm += 25; // hardcoded in the-sidebar.vue file
+      }
+
+      if (this.showNotificationWindow) {
+        rightValueRm += 70; // hardcoded in the workspace-code-window.vue file
+      }
       
+      return { right: `${rightValueRm}rem`};
     },
 
     statusNetworkInfo() {
@@ -226,6 +258,9 @@ export default {
       set_cursorInsideWorkspace:'mod_workspace/SET_cursorInsideWorkspace',
       set_hideSidebar:          'globalView/SET_hideSidebar',
       GP_showCoreSideSettings:  'globalView/GP_showCoreSideSettings',
+
+      setSelectedMetric:        'mod_statistics/setSelectedMetric',
+      setLayerMetrics:          'mod_statistics/setLayerMetrics',
     }),
     ...mapActions({
       popupConfirm:         'globalView/GP_confirmPopup',
@@ -241,6 +276,7 @@ export default {
       tutorialPointActivate:'mod_tutorials/pointActivate',
       offMainTutorial:      'mod_tutorials/offTutorial',
       pushSnapshotToHistory:'mod_workspace-history/PUSH_newSnapshot',
+      setNotificationWindowState: 'mod_workspace-notifications/setNotificationWindowState',
       popupNewModel:        'globalView/SET_newModelPopup',
     }),
     onCloseSelectModelModal() {
@@ -278,6 +314,12 @@ export default {
     toggleSidebar() {
       this.set_hideSidebar(!this.hideSidebar)
     },
+    hasUnsavedChanges(networkId) {
+      if (!networkId) { return false; }
+
+      return this.$store.getters['mod_workspace-changes/get_hasUnsavedChanges'](networkId);
+
+    },
     // resize(newRect, i) {
     //   //console.log(newRect);
     //   //console.log(i);
@@ -294,6 +336,8 @@ export default {
       // request charts if the page has been refreshed, and
       // the requested tab not being the first
       this.set_chartRequests(this.workspace[index].networkID);
+
+      this.notificationWindowStateHanlder(false);
     },
     deleteTabNetwork(index) {
       if(this.isTutorialMode) {
@@ -321,6 +365,12 @@ export default {
           this.delete_network(index);
         }
       }
+    },
+    notificationWindowStateHanlder(value = false) {
+      this.setNotificationWindowState({
+        networkId: this.workspace[this.indexCurrentNetwork].networkID,
+        value: value
+      });
     },
     openStatistics(i) {
       this.$store.commit('mod_workspace/setViewType', 'statistic');
@@ -484,5 +534,15 @@ export default {
         borderRight: '1px dashed #22DDE5'
       }
     },
+    addErrorNotification() {
+      // used for test purposes 
+      const networkId = this.workspace[this.indexCurrentNetwork].networkID;
+      this.$store.dispatch('mod_workspace-notifications/addError', { networkId });
+    },
+    addWarningNotification() {
+      // used for test purposes 
+      const networkId = this.workspace[this.indexCurrentNetwork].networkID;
+      this.$store.dispatch('mod_workspace-notifications/addWarning', { networkId });
+    }
   }
 }

@@ -34,6 +34,7 @@ class J2Engine:
         )
         self._jenv.globals.update({
             'zip': zip,
+            'enumerate': enumerate,            
             'len': len,
             'range': range,
             'round̈́': round,

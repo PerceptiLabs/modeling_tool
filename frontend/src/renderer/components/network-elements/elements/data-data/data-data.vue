@@ -1,8 +1,6 @@
 <template lang="pug">
   base-net-el(:dataEl="elementData")
-    view-el(:current-el="elementData")
-    template(slot="settings")
-      settings-el(:current-el="elementData")
+    view-el(:current-el="elementData" :withLayerTypeText="withLayerTypeText")
 
 </template>
 
@@ -20,13 +18,15 @@
   }
   export default {
     name: 'DataData',
+
     components: {
       BaseNetEl,
       ViewEl,
       SettingsEl
     },
     props: {
-      elementData: Object
+      elementData: Object,
+      withLayerTypeText: Boolean,
     },
   }
 </script>

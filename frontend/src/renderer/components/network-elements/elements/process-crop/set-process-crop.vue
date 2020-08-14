@@ -1,31 +1,25 @@
 <template lang="pug">
-  net-base-settings(
-    :current-el="currentEl"
-    @press-apply="saveSettings($event)"
-    @press-confirm="confirmSettings"
-  )
-    template(slot="Settings-content")
-      .settings-layer_section.text-center.crop-box
-        vue-cropper(
-          ref="cropper"
-          :img="crop"
-          :outputSize="1"
-          outputType="png"
-          :autoCrop="true"
-          :info="true"
-          :full="false"
-          :canMove="true"
-          :canMoveBox="true"
-          :fixedBox="false"
-          :original="false"
-        )
+  .settings-layer_section.text-center.crop-box
+    vue-cropper(
+      ref="cropper"
+      :img="crop"
+      :outputSize="1"
+      outputType="png"
+      :autoCrop="true"
+      :info="true"
+      :full="false"
+      :canMove="true"
+      :canMoveBox="true"
+      :fixedBox="false"
+      :original="false"
+    )
 
-    template(slot="Code-content")
-      settings-code(
-        :current-el="currentEl"
-        :el-settings="settings"
-        v-model="coreCode"
-      )
+    //- template(slot="Code-content")
+    //-   settings-code(
+    //-     :current-el="currentEl"
+    //-     :el-settings="settings"
+    //-     v-model="coreCode"
+    //-   )
 
 </template>
 

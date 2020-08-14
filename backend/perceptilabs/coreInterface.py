@@ -15,17 +15,13 @@ import GPUtil
 import collections
 import math
 
-
 from perceptilabs.logconf import APPLICATION_LOGGER
 from perceptilabs.networkExporter import exportNetwork
 from perceptilabs.networkSaver import saveNetwork
 from perceptilabs.issues import IssueHandler
-from perceptilabs.modules import ModuleProvider
-from perceptilabs.core_new.core import *
+import perceptilabs.utils as utils
 from perceptilabs.api.data_container import DataContainer
-from perceptilabs.core_new.cache import get_cache
 from perceptilabs.core_new.errors import CoreErrorHandler
-from perceptilabs.core_new.history import SessionHistory
 from perceptilabs.CoreThread import CoreThread
 from perceptilabs.createDataObject import createDataObject
 from perceptilabs.messaging import MessageProducer
@@ -41,7 +37,7 @@ CoreCommand = collections.namedtuple('CoreCommand', ['type', 'parameters', 'allo
 
 
 class coreLogic():
-    def __init__(self,networkName, core_mode='v1'):
+    def __init__(self,networkName, core_mode='v2'):
         logger.info(f"Created coreLogic for network '{networkName}' with core mode '{core_mode}'")
 
         assert core_mode in ['v1', 'v2']
@@ -50,7 +46,6 @@ class coreLogic():
         self.networkName=networkName
         self.cThread=None
         self.status="Created"
-        self.network=None
         self.resultDict=None
 
         self.setupLogic()
@@ -124,9 +119,8 @@ class coreLogic():
 
         return True
 
-    def startCore(self,network, checkpointValues):
-        self.network=network
-        self.graphObj = Graph(network['Layers'])
+    def startCore(self, graph_spec, checkpointValues):
+        self.graph_spec = graph_spec
 
         self.Close()
         self.setupLogic()
@@ -136,12 +130,12 @@ class coreLogic():
         if logger.isEnabledFor(logging.DEBUG):        
             import json
             with open('net.json_', 'w') as f:
-                json.dump(network, f, indent=4) 
+                json.dump(graph_spec.to_dict(), f, indent=4) 
 
         if logger.isEnabledFor(logging.DEBUG):        
             import json
             with open('net.json_', 'w') as f:
-                json.dump(network, f, indent=4)
+                json.dump(graph_spec.to_dict(), f, indent=4)
                 
         def backprop(layer_id):
             backward_connections = network['Layers'][layer_id]['backward_connections']
@@ -157,30 +151,17 @@ class coreLogic():
 
         use_cpu_only = True
 
-        for _id, layer in network['Layers'].items():
-            if layer['Type'] == 'DataData':
-                if layer['Properties'] and 'accessProperties' in layer['Properties']:
-                    layer['Properties']['accessProperties']['Sources'][0]['path'] = layer['Properties']['accessProperties']['Sources'][0]['path'].replace('\\','/')
-            
+        # ----- 
+        network = graph_spec.to_dict()
+        for _id, layer in network.items():
             if 'Train' in layer['Type']:
                 if not 'Use_CPU' in layer['Properties']:
                     layer['Properties']['Use_CPU'] = use_cpu_only
 
             if layer['Type'] == 'TrainNormal':
                 layer['Properties']['Distributed'] = distributed
-                if distributed:
-                    targets_id = layer['Properties']['Labels']
-
-                    for id_, name in layer['backward_connections']:
-                        if id_ != targets_id:
-                            outputs_id = id_
-                    
-                    input_data_layer = backprop(outputs_id)
-                    labels_data_layer = backprop(targets_id)
-                    layer['Properties']['InputDataId'] = input_data_layer
-                    layer['Properties']['TargetDataId'] = labels_data_layer
-     
-
+        graph_spec = graph_spec.from_dict(network)
+        # -----
 
         if self._core_mode == 'v1':
             raise NotImplementedError
@@ -189,7 +170,7 @@ class coreLogic():
             from perceptilabs.messaging.zmq_wrapper import ZmqMessagingFactory  
             from perceptilabs.messaging.simple import SimpleMessagingFactory          
             from perceptilabs.core_new.graph.builder import GraphBuilder
-            from perceptilabs.core_new.layers.script import ScriptFactory
+            from perceptilabs.script import ScriptFactory
 
             from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP                
 
@@ -205,7 +186,7 @@ class coreLogic():
                 graph_builder,
                 script_factory,
                 messaging_factory,
-                network,
+                graph_spec,
                 threaded=True,
                 issue_handler=self.issue_handler
             )            
@@ -415,12 +396,6 @@ class coreLogic():
                 return {"content": self.issue_handler.frontend_message}
 
     def saveNetwork(self, value):
-        if self._core_mode == 'v1':
-            return self.saveNetworkV1(value)
-        else:
-            return self.saveNetworkV2(value)            
-
-    def saveNetworkV2(self, value):
         """ Saves json network to disk and exports tensorflow model+checkpoints. """
         self._save_counter += 1
         path = os.path.abspath(value["Location"][0])
@@ -443,32 +418,6 @@ class coreLogic():
             
         return {"content": f"Saving to: {path}"}            
         
-    def saveNetworkV1(self, value):
-        if self.saver is None:
-            self._logAndWarningQueue("Save failed.\nMake sure you have started running the network before you try to Export it.")
-            return {"content":"Save Failed.\nNo trained weights to Export."}
-        try:
-            if "all_tensors" not in self.saver:
-                raise Exception("'all_tensors' was not found so the Saver could not create any references to the exported checkpoints.\nTry adding 'api.data.store(all_tensors=api.data.get_tensors())' to your Training Layer.")
-            elif self.saver["all_tensors"]==[]:
-                raise Exception("'all_tensors' was found but contained no variables.")
-            exporter = exportNetwork(self.saver)
-            path=os.path.abspath(value["Location"][0])
-            frontendNetwork=value["frontendNetwork"]
-            if not os.path.exists(path):   
-                os.mkdir(path)
-            checkpoint=[None, os.path.relpath(exporter.asTfModel(path,self.epoch),path)]
-
-            newPath=os.path.abspath(path+"/"+"model.json")
-            saveNetwork(newPath, self.saver["all_tensors"], self.graphObj, frontendNetwork, checkpoint)
-
-            return {"content":"Save succeeded!"}
-        except Exception as e:
-            message = "Save failed with this error: " + str(e)
-            with self.issue_handler.create_issue(message, e) as issue:
-                self.issue_handler.put_error(issue.frontend_message)
-                logger.error(issue.internal_message)
-                return {"content": issue.frontend_message}
 
     def skipValidation(self):
         self.commandQ.put("skip")
@@ -727,30 +676,30 @@ class coreLogic():
     def getEndResults(self):
         #TODO: Show in frontend results for each end layer, not just for one.
         end_results={}
-        for id_, value in self.graphObj.graphs.items():
-            if value["Info"]["Type"]=="TrainNormal":
+        for id_, layer_spec in self.graph_spec.items():
+            if layer_spec.type_ == "TrainNormal":
                 acc_train=self.getStatistics({"layerId":id_, "variable":"acc_training_epoch","innervariable":""})
                 acc_val=self.getStatistics({"layerId":id_, "variable":"acc_validation_epoch","innervariable":""})
                 loss_train=self.getStatistics({"layerId":id_, "variable":"loss_training_epoch","innervariable":""})
                 loss_val=self.getStatistics({"layerId":id_, "variable":"loss_validation_epoch","innervariable":""})
                 end_results.update({1:{"Training": {"Accuracy Training":float(acc_train[-1]*100), "Loss Training":float(loss_train[-1])}}, 2:{"Validation": {"Accuracy Validation":float(acc_val[-1]*100), "Loss Validation":float(loss_val[-1])}}})
-            elif value["Info"]["Type"]=="TrainDetector":
+            elif layer_spec.type_ == "TrainDetector":
                 acc_train=self.getStatistics({"layerId":id_, "variable":"acc_training_epoch","innervariable":""})
                 acc_val=self.getStatistics({"layerId":id_, "variable":"acc_validation_epoch","innervariable":""})
                 loss_train=self.getStatistics({"layerId":id_, "variable":"loss_training_epoch","innervariable":""})
                 loss_val=self.getStatistics({"layerId":id_, "variable":"loss_validation_epoch","innervariable":""})
                 end_results.update({1:{"Training": {"Accuracy Training":float(acc_train[-1]*100), "Loss Training":float(loss_train[-1])}}, 2:{"Validation": {"Accuracy Validation":float(acc_val[-1]*100), "Loss Validation":float(loss_val[-1])}}})
-            elif value["Info"]["Type"]=="TrainReinforce":
+            elif layer_spec.type_ == "TrainReinforce":
                 loss_train=self.getStatistics({"layerId":id_, "variable":"loss_training_episode","innervariable":""})
                 reward_train=self.getStatistics({"layerId":id_, "variable":"reward_training_episode","innervariable":""})
                 end_results.update({1:{"Training": {"loss_train":float(loss_train[-1]), "reward_train":float(reward_train[-1])}}})
-            elif value["Info"]["Type"]=="TrainGan":
+            elif layer_spec.type_ == "TrainGan":
                 gen_loss_train=self.getStatistics({"layerId":id_, "variable":"gen_loss_training_epoch","innervariable":""})
                 gen_loss_val=self.getStatistics({"layerId":id_, "variable":"gen_loss_validation_epoch","innervariable":""})
                 dis_loss_train=self.getStatistics({"layerId":id_, "variable":"dis_loss_training_epoch","innervariable":""})
                 dis_loss_val=self.getStatistics({"layerId":id_, "variable":"dis_loss_validation_epoch","innervariable":""})
                 end_results.update({1:{"Training":{"Generator Loss Training":float(gen_loss_train[-1]), "Discriminator Loss Training":float(dis_loss_train[-1])}}, 2:{"Validation":{"Generator Loss Validation":float(gen_loss_val[-1]), "Discriminator Loss Validation":float(dis_loss_val[-1])}}})
-            elif value["Info"]["Type"]=="TrainRegression":
+            elif layer_spec.type_ == "TrainRegression":
                 r_sq_train=self.getStatistics({"layerId":id_, "variable":"r_sq_train_epoch","innervariable":""})
                 r_sq_val=self.getStatistics({"layerId":id_, "variable":"r_sq_validation_epoch","innervariable":""})
                 loss_train=self.getStatistics({"layerId":id_, "variable":"loss_train_epoch","innervariable":""})
@@ -937,49 +886,29 @@ class coreLogic():
         elif layerType=="TrainRegression":
             if view=="Prediction":
                 #Make sure that all the inputs are sent to frontend!!!!!!!!!!!!!!!
-                inputs=[self.getStatistics({"layerId":i,"variable":"Y","innervariable":""}) for i in self.graphObj.start_nodes]
+                inputs=[self.getStatistics({"layerId": node.id_,"variable":"Y","innervariable":""}) for node in self.graph_spec.get_start_nodes()]
                 D = [createDataObject([input_]) for input_ in inputs]
                 
                 X = self.getStatistics({"layerId": layerId, "variable":"X", "innervariable":""})
 
                 if type(X) is dict and type(list(X.values())[0]) is dict and len(list(X.values()))==2:
-
                     input1_name, input2_name = X.keys()
+
+                    labels_spec = self.graph_spec[self.graph_spec[layerId].connection_labels.src_id]
+                    preds_spec = self.graph_spec[self.graph_spec[layerId].connection_predictions.src_id]
+
+                    network_output = X[labels_spec.name]['Y']
+                    labels = X[labels_spec.name]['Y']
+
+                    output_id = preds_spec.id_
+                    labels_id = labels_spec.id_
                     
-                    bw_cons = {name: id_ for id_, name in self.graphObj.graphs[layerId]['Info']['backward_connections']}                    
-                    input1_id = bw_cons[input1_name]
-                    input2_id = bw_cons[input2_name]
+                    labels_data_id = self.graph_spec.get_origin(labels_spec)[0].id_
+                    input_data_id = self.graph_spec.get_origin(preds_spec)[0].id_
+                        
+                    label_data = self.getStatistics({"layerId": labels_data_id, "variable":"Y", "innervariable":""})
+                    input_data = self.getStatistics({"layerId": input_data_id, "variable":"Y", "innervariable":""})
 
-                    if input1_id == self.graphObj.graphs[layerId]["Info"]["Properties"]["Labels"]:
-                        output_id = input2_id
-                        label_id = input1_id
-                        labels = X[input1_name]['Y']
-                        network_output = X[input2_name]['Y']
-
-                        label_data = self.getStatistics({"layerId":input1_id,"variable":"Y","innervariable":""})
-                        input_data = self.getStatistics({"layerId":input2_id,"variable":"Y","innervariable":""})
-                    else:
-                        output_id = input1_id  
-                        label_id = input2_id
-                        network_output = X[input1_name]['Y']
-                        labels = X[input2_name]['Y']    
-
-                        label_data = self.getStatistics({"layerId":input2_id,"variable":"Y","innervariable":""})
-                        input_data = self.getStatistics({"layerId":input1_id,"variable":"Y","innervariable":""})     
-
-                    def backprop(layer_id):
-                        backward_connections = self.graphObj.graph[layer_id]['backward_connections']
-                        if backward_connections:
-                            id_, name = backward_connections[0]
-                            return backprop(id_)
-                        else:
-                            return layer_id
-                    
-                    input_data_layer = backprop(output_id)
-                    labels_data_layer = backprop(label_id)
-
-                    label_data = self.getStatistics({"layerId":labels_data_layer,"variable":"Y","innervariable":""})
-                    input_data = self.getStatistics({"layerId":input_data_layer,"variable":"Y","innervariable":""})
 
                     cType=self.getPlot(network_output[-1])
                     if cType=="bar" or cType=="line" or cType=='scatter':
@@ -1112,53 +1041,34 @@ class coreLogic():
         elif layerType=="TrainNormal":
             if view=="Prediction":
                 #Make sure that all the inputs are sent to frontend!!!!!!!!!!!!!!!
-                inputs=[self.getStatistics({"layerId":i,"variable":"Y","innervariable":""})[-1] for i in self.graphObj.start_nodes]
+                inputs=[self.getStatistics({"layerId": node.id_,"variable":"Y","innervariable":""})[-1] for node in self.graph_spec.get_start_nodes()]
                 D = [createDataObject([input_]) for input_ in inputs]
                 
                 X = self.getStatistics({"layerId": layerId, "variable":"X", "innervariable":""})
 
                 if type(X) is dict and type(list(X.values())[0]) is dict and len(list(X.values()))==2:
-
                     input1_name, input2_name = X.keys()
+
+                    labels_id = self.graph_spec[self.graph_spec[layerId].connection_labels.src_id].name
+                    preds_id = self.graph_spec[self.graph_spec[layerId].connection_predictions.src_id].name
+
+                    network_output = X[preds_id]['Y']
+                    labels = X[labels_id]['Y']                    
                     
-                    bw_cons = {name: id_ for id_, name in self.graphObj.graphs[layerId]['Info']['backward_connections']}                    
+                    
+                    '''
+                    bw_cons = {name: id_ for id_, name in self.graphObj[layerId]['backward_connections']}                    
                     input1_id = bw_cons[input1_name]
                     input2_id = bw_cons[input2_name]
 
-                    if input1_id == self.graphObj.graphs[layerId]["Info"]["Properties"]["Labels"]:
+                    if input1_id == self.graphObj[layerId]["Properties"]["Labels"]:
                         labels = X[input1_name]['Y']
                         network_output = X[input2_name]['Y']
                     else:
                         network_output = X[input1_name]['Y']
                         labels = X[input2_name]['Y']                        
-                    
                     '''
-                    for input_name, input_value in X.items():
-                        input_id = next((bw_con_id for bw_con_id, bw_con_name in backward_cons if bw_con_name == input_name), None)
-
-                        if input_id is None:
-                            logger.error("
-                        
-                        if input_id == labels_id
-
                     
-                    for key, value in X.items():
-                        try:
-                            key_id = [x[0] for x in self.graphObj.graphs[layerId]['Info']['backward_connections'] if x[1] == key][0]
-                            if key_id == self.graphObj.graphs[layerId]["Info"]["Properties"]["Labels"]:
-                                Labels=value['Y']
-                            else:
-                                Network_output=value['Y']
-                        except:
-                            logger.exception("Error when matching training layer inputs to assigned labels")
-                            if logger.isEnabledFor(logging.DEBUG):
-                                
-                                logger.debug(
-                                    f'X = {pprint.pformat(X))}'
-                                    f'key = {key}'                                    
-                                    f'backward_connections = {self.graphObj.graphs[layerId]["Info"]["backward_connections"]}'
-                    '''
-                        
                     cType=self.getPlot(network_output[-1])
                     if cType=="bar" or cType=="line" or cType=='scatter':
                         PvG = createDataObject([network_output[-1], labels[-1]], nameList=['Prediction', 'Ground Truth'])                        
@@ -1630,7 +1540,8 @@ class coreLogic():
     #             yield (key, value)
 
     def getStatistics(self,statSpec):
-        #print(sess.run([outputVariables["6"]["accuracy"]],feed_dict=dict(zip(keys, values))))
+        if self.resultDict is not None:
+            logger.debug(f"ResultDict has entries for layers {list(self.resultDict.keys())}")
 
         layerId=statSpec["layerId"]
         variable=statSpec["variable"]
@@ -1641,58 +1552,29 @@ class coreLogic():
             innervariable
         ))
 
-        if self.resultDict is not None:
-            # print("All keys available: ",str(list(self.resultDict.keys())))
-            if innervariable!="":
-                try:
-                    result=self.resultDict[layerId][variable][innervariable]
-                except:
-                    try:
-                        logger.debug("FieldError, only keys available are: "+str(list(self.resultDict[layerId][variable].keys()))+" |||| Expected: "+str(innervariable))
-                        self._logAndWarningQueue("FieldError, only keys available are: "+str(list(self.resultDict[layerId][variable].keys()))+" |||| Expected: "+str(innervariable))
-                    except:
-                        try:
-                            logger.debug("FieldError, only keys available are: "+str(list(self.resultDict[layerId].keys()))+" |||| Expected: " + str(variable))
-                            self._logAndWarningQueue("FieldError, only keys available are: "+str(list(self.resultDict[layerId].keys()))+" |||| Expected: " + str(variable))
-                        except:
-                            logger.debug("FieldError, only keys available are: "+str(list(self.resultDict.keys()))+" |||| Expected: " + str(layerId))
-                            self._logAndWarningQueue("FieldError, only keys available are: "+str(list(self.resultDict.keys()))+" |||| Expected: " + str(layerId))
-
-                    result=[]
-            elif variable!="":
-                try:
-                    result=self.resultDict[layerId][variable]
-                except:
-                    try:
-                        logger.debug("FieldError, only keys available are: "+str(list(self.resultDict[layerId].keys()))+" |||| Expected: " + str(variable))
-                        self._logAndWarningQueue("FieldError, only keys available are: "+str(list(self.resultDict[layerId].keys()))+" |||| Expected: " + str(variable))
-                    except:
-                        logger.debug("FieldError, only keys available are: "+str(list(self.resultDict.keys()))+" |||| Expected: " + str(layerId))
-                        self._logAndWarningQueue("FieldError, only keys available are: "+str(list(self.resultDict.keys()))+" |||| Expected: " + str(layerId))
-                    result=[]
-            else:
-                try:
-                    result=self.resultDict[layerId]
-                except:
-                    logger.debug("FieldError, only keys available are: "+str(list(self.resultDict.keys()))+" |||| Expected: " + str(layerId))
-                    self._logAndWarningQueue("FieldError, only keys available are: "+str(list(self.resultDict.keys()))+" |||| Expected: " + str(layerId))
-                    result=[]
+        if self.resultDict is None:
+            return np.array([])            
+        elif layerId != "" and variable != "" and innervariable != "":
+            result = self.resultDict.get(layerId, {}).get(variable, {}).get(innervariable, [])
+            if not isinstance(result, dict):
+                result = np.asarray(result)
+            return result
+        elif layerId != "" and variable != "":
+            result = self.resultDict.get(layerId, {}).get(variable, [])
+            if not isinstance(result, dict):
+                result = np.asarray(result)
+            return result
+        elif layerId != "":
+            result = self.resultDict.get(layerId, [])
+            if not isinstance(result, dict):
+                result = np.asarray(result)
+            return result
         else:
-            logger.debug("ResultDict is empty :'(")
-            self._logAndWarningQueue("There are no results to fetch")
-            result=[]
-
-        if logger.isEnabledFor(logging.DEBUG):
-            self._get_statistics_debug_info(layerId, variable, innervariable, result)
-            
-        if type(result).__name__!='dict':
-            result=np.asarray(result)
-
-        return result
+            return np.array([])        
 
     def _get_statistics_debug_info(self, layer_id, variable, innervariable, result):
-        layer_type = self.graphObj.graphs[layer_id]["Info"]["Type"]            
-        layer_name = self.graphObj.graphs[layer_id]["Info"]["Name"]
+        layer_type = self.graph_spec[layer_id].type_
+        layer_name = self.graph_spec[layer_id].name
         
         message = f"getStatistics called with:\n" \
                   f"    layerId       = '{layer_id}' [{layer_name}: {layer_type}]\n"\
@@ -1712,71 +1594,3 @@ class coreLogic():
             message += f"output: {type(result)}"
             
         logger.debug(message)
-        
-
-    # def subsample(self,sample):
-    #     endSize=500
-    #     if len(sample.shape)==1:
-    #         length=sample.size
-    #         if length>endSize:
-    #             lenRatio=length/endSize
-    #         else:
-    #             lenRatio=1
-    #         result=sample[::int(lenRatio)]
-
-    #     elif len(sample.shape)>=2:
-    #         height,width=sample.shape[0:2]
-    #         if height>endSize or width>endSize:
-    #             if height>width:
-    #                 heightRatio=widthRatio=height/endSize
-    #             else:
-    #                 heightRatio=widthRatio=width/endSize
-    #         else:
-    #             heightRatio=widthRatio=1
-    #         result=sample[::int(np.ceil(heightRatio)),::int(np.ceil(widthRatio))]
-    #     else:
-    #         result=sample
-
-    #     return result
-
-    # def rgb2gray(rgb):
-    #     return np.dot(rgb[...,:3], [0.299, 0.587, 0.114])
-
-    # def convertToList(self,npy):
-    #     if len(npy.shape)==0:
-    #         if isinstance(npy, np.integer):
-    #             npy=[int(npy)]
-    #         elif isinstance(npy, np.floating):
-    #             npy=[float(npy)]
-    #     elif len(npy.shape)==1:
-    #         # npy=list(npy)
-    #         npy=npy.tolist()
-    #     elif len(npy.shape)>1:
-    #         npy=npy.tolist()
-    #     return npy
-
-    # def grayscale2RGBa(self,data):
-    #     data=np.squeeze(data)
-    #     (w,h)=np.shape(data)
-    #     newData=np.empty((w, h, 4))
-        
-    #     if data.max()!=0:
-    #         normalizedData=np.around((data/data.max())*255)
-    #     else:
-    #         normalizedData=data
-    #     newData[:, :, 0] = normalizedData
-    #     newData[:, :, 1] = newData[:, :, 2] = newData[:, :, 0]
-    #     newData[:,:,3]=255
-    #     flatData=np.reshape(newData,-1)
-
-    #     return flatData
-
-    # def RGB2RGBa(self,data):
-    #     data=np.squeeze(data)
-    #     (w,h,d)=np.shape(data)
-    #     newData=np.empty((w, h, 4))
-    #     normalizedData=np.around((data/data.max(0).max(0))*255)
-    #     newData[:, :, 0:3] = normalizedData
-    #     newData[:,:,3]=255
-    #     flatData=np.reshape(newData,-1)
-    #     return flatData

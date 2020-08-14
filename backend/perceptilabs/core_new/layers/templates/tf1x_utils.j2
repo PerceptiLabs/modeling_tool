@@ -1,3 +1,35 @@
+{% macro activation_name(name, var_name) %}
+{% filter remove_lspaces(8) %}
+    {% if name == 'Sigmoid' %}
+        tf.compat.v1.sigmoid
+    {% elif name == 'ReLU' %}
+        tf.compat.v1.nn.relu
+    {% elif name == 'Tanh' %}
+        tf.compat.v1.tanh
+    {% elif name == 'LeakyReLU' %}
+        tf.compat.v1.nn.leaky_relu
+    {% elif name == 'Softmax' %}
+        tf.compat.v1.nn.softmax
+    {% endif %}
+{% endfilter %}
+{% endmacro %}
+
+{% macro activation_function(name, var_name) %}
+{% filter remove_lspaces(8) %}
+    {% if name == 'Sigmoid' %}
+        {{var_name}} = tf.compat.v1.sigmoid({{var_name}})
+    {% elif name == 'ReLU' %}
+        {{var_name}} = tf.compat.v1.nn.relu({{var_name}})
+    {% elif name == 'Tanh' %}
+        {{var_name}} = tf.compat.v1.tanh({{var_name}})
+    {% elif name == 'LeakyReLU' %}
+        {{var_name}} = tf.compat.v1.nn.leaky_relu({{var_name}})
+    {% elif name == 'Softmax' %}
+        {{var_name}} = tf.compat.v1.nn.softmax({{var_name}})
+    {% endif %}
+{% endfilter %}
+{% endmacro %}
+
 {% macro batch_normal(batch_norm, y, is_training) %}
 {% filter remove_lspaces(8) %}
     {% if batch_norm %}
@@ -20,12 +52,12 @@ sess = tf.Session(config=config)
 
 {% macro session_distributed(sess, n_devices, use_gpu=True) %}
 {% filter remove_lspaces(4) %} 
-    {% if not use_gpu %}
-        n_devices = 2
-        config = tf.ConfigProto(device_count={"CPU": n_devices, "GPU": 0}, gpu_options={"allow_growth": True}, inter_op_parallelism_threads=n_devices, intra_op_parallelism_threads=1)
-    {% else %}
+    {% if use_gpu %}
         n_devices = len(GPUtil.getGPUs())
         config = tf.ConfigProto(gpu_options={"allow_growth": True}, log_device_placement=True, allow_soft_placement=True)
+    {% else %}
+        n_devices = 2
+        config = tf.ConfigProto(device_count={"CPU": n_devices, "GPU": 0}, gpu_options={"allow_growth": True}, inter_op_parallelism_threads=n_devices, intra_op_parallelism_threads=1)
     {% endif %}
 {% endfilter %}
     sess = tf.Session(config=config)# since we use keras metrics

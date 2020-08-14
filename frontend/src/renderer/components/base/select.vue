@@ -191,6 +191,24 @@ export default {
     height: 3.5rem; 
     border: 1px solid #363E51;
 
+    .sidebar-setting-content & {
+      background: transparent;
+      height: 17px;
+      border: none;
+      color: #C4C4C4;
+    }
+
+    .network-component-footer-wrapper & {
+      height: 17px;
+      width: 55px;
+      margin-left: 40px;
+      background: #131B30;
+      border: 1px solid rgba(97, 133, 238, 0.4);
+      border-radius: 1px;
+      font-size: 10px;
+    }
+
+
     span {
       flex: 1 1 100%;
       white-space: nowrap;

@@ -1,3 +1,5 @@
+import Vue    from 'vue'
+
 const namespaced = true;
 
 const state = {
@@ -6,7 +8,32 @@ const state = {
     viewBox: null,
     piePercents: null
   },
+  statisticsTabs: {
+    layerMetrics: {},
+    selectedMetric: ''
+  },
+  viewBoxTabs: {
+    layerMetrics: {},
+    selectedMetric: ''
+  },
 };
+
+const getters = {
+  getSelectedMetric: (state) => (layerType) => {
+    if (layerType === 'Training') {
+      return state.statisticsTabs.selectedMetric;  
+    } else {
+      return state.viewBoxTabs.selectedMetric;
+    }
+  },
+  getLayerMetrics: (state) => (layerType) => {
+    if (layerType === 'Training') {
+      return state.statisticsTabs.layerMetrics;  
+    } else {
+      return state.viewBoxTabs.layerMetrics;
+    }
+  },
+}
 
 const mutations = {
   SET_selectedElArr (state, value) {
@@ -31,6 +58,48 @@ const mutations = {
       elArr.viewBox.layerMeta.isSelected = true;
     }
   },
+  setDefaultMetric(state, layerType) {
+    let tabs = '';
+
+    if (layerType === 'Training') {
+      tabs = state.statisticsTabs;
+    } else {
+      tabs = state.viewBoxTabs;
+    }
+
+    const layerMetricsKeys = Object.keys(tabs.layerMetrics);
+    
+    if (layerMetricsKeys) {
+      Vue.set(tabs, 'selectedMetric', Object.keys(tabs.layerMetrics)[0]);
+    } else {
+      Vue.set(tabs, 'selectedMetric', '');
+    }
+  },
+  setSelectedMetric(state, { layerType, selectedMetric }) {
+    let tabs = '';
+
+    if (layerType === 'Training') {
+      tabs = state.statisticsTabs;
+    } else {
+      tabs = state.viewBoxTabs;
+    }
+
+    const layerMetricsKeys = Object.keys(tabs.layerMetrics);
+    if (layerMetricsKeys.includes(selectedMetric)) {
+      Vue.set(tabs, 'selectedMetric', selectedMetric);
+    } else if (layerMetricsKeys) {
+      Vue.set(tabs, 'selectedMetric', Object.keys(tabs.layerMetrics)[0]);
+    } else {
+      Vue.set(tabs, 'selectedMetric', '');
+    }
+  },
+  setLayerMetrics(state, { layerType, layerMetrics }) {
+    if (layerType === 'Training') {
+      Vue.set(state.statisticsTabs, 'layerMetrics', layerMetrics || {});
+    } else {
+      Vue.set(state.viewBoxTabs, 'layerMetrics', layerMetrics || {});
+    }   
+  }
 };
 
 const actions = {
@@ -59,6 +128,7 @@ const actions = {
 export default {
   namespaced,
   state,
+  getters,
   mutations,
   actions
 }

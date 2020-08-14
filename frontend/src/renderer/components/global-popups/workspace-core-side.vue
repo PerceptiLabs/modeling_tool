@@ -64,10 +64,11 @@ export default {
       set_showTrainingSpinner:  'mod_workspace/SET_showStartTrainingSpinner'
     }),
     ...mapActions({
-      pointActivate:      'mod_tutorials/pointActivate',
-      API_startTraining:  'mod_api/API_startTraining',
-      SET_openStatistics: 'mod_workspace/SET_openStatistics',
-      SET_openTest:       'mod_workspace/SET_openTest',
+      setSidebarStateAction:  'globalView/hideSidebarAction',
+      pointActivate:          'mod_tutorials/pointActivate',
+      API_startTraining:      'mod_api/API_startTraining',
+      SET_openStatistics:     'mod_workspace/SET_openStatistics',
+      SET_openTest:           'mod_workspace/SET_openTest',
     }),
     setTab(i) {
       this.tabSelected = i;
@@ -79,6 +80,7 @@ export default {
       this.SET_openTest(null);
       if(this.isTutorialMode) this.tutorialNextActiveStep('next');
       this.set_showTrainingSpinner(true);
+      this.setSidebarStateAction(false);
     },
   }
 }

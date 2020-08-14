@@ -17,12 +17,6 @@ def setup_sentry(user=None, commit_id=None):
             if hint['log_record'].msg in log_ignores:
                 return None
 
-        if 'exc_info' in hint:
-            from core_new.history import HistoryInputException
-            exc_type, exc_value, tb = hint['exc_info']
-            if isinstance(exc_value, HistoryInputException):
-                return None
-                
         return event
 
     sentry_sdk.init("https://9b884d2181284443b90c21db68add4d7@sentry.io/1512385", before_send=strip_unimportant_errors, release=str(commit_id))

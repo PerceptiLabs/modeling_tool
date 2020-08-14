@@ -105,6 +105,7 @@ setup(
             "dataschema/*.json",
             "core_new/layers/templates/*.j2",
             "tutorial_data/*.npy",
+            "layers/**/*.json",            
         ],
         "rygg": ["api/migrations/*.py",],
         "static_file_server": [

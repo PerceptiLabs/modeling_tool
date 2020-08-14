@@ -50,7 +50,7 @@ class TrainingClient:
         self._t_last_message = time.time()
         while self._running:
             self._process_incoming_messages()                            
-            self._process_outgoing_messages()                    
+            self._process_outgoing_messages()
             yield
 
     def _process_incoming_messages(self):

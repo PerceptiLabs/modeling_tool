@@ -6,7 +6,7 @@ import numpy as np
 
 from perceptilabs.core_new.lightweight2 import LightweightCore
 from perceptilabs.utils import sanitize_path
-
+from perceptilabs.graph.spec import GraphSpec
 
 @pytest.fixture(scope='function')
 def graph_spec_binary_classification():
@@ -32,7 +32,8 @@ def graph_spec_binary_classification():
     #inputs_path = "/home/anton/Data/mnist_split/mnist_input.npy"
     #labels_path = "/home/anton/Data/mnist_split/mnist_labels.npy"
     
-    json_network = {
+    
+    graph_spec_json = {
         "Layers": {
             "1": {
                 "Name": "data_inputs",
@@ -41,13 +42,19 @@ def graph_spec_binary_classification():
                     "accessProperties": {
                         "Sources": [{"type": "file", "path": inputs_path}],
                         "Partition_list": [[70, 20, 10]],
-                        "Batch_size": 8,
                         "Shuffle_data": False,
                         "Columns": []                        
                     },
                 },
                 "backward_connections": [],
-                "forward_connections": [["3", "reshape"]],
+                "forward_connections": [
+                    {
+                        "src_var": "output",
+                        "dst_id": "3",
+                        "dst_name": "reshape",
+                        "dst_var": "input"
+                    }
+                ],
                 "Code": None,
                 "checkpoint": []
             },
@@ -59,13 +66,19 @@ def graph_spec_binary_classification():
                     "accessProperties": {
                         "Sources": [{"type": "file", "path": labels_path}],
                         "Partition_list": [[70, 20, 10]],
-                        "Batch_size": 8,
                         "Shuffle_data": False,
                         "Columns": []
                     },
                 },
                 "backward_connections": [],
-                "forward_connections": [["5", "one_hot"]],
+                "forward_connections": [
+                    {
+                        "src_var": "output",
+                        "dst_id": "5",
+                        "dst_name": "one_hot",                        
+                        "dst_var": "input"
+                    }
+                ],
                 "Code": None,
                 "checkpoint": []
             },
@@ -76,8 +89,22 @@ def graph_spec_binary_classification():
                     "Shape": [28, 28, 1],
                     "Permutation": [0, 1, 2]
                 },
-                "backward_connections": [["1", "data_inputs"]],
-                "forward_connections": [["4", "fc"]],
+                "backward_connections": [
+                    {
+                        "src_id": "1",
+                        "src_name": "data_inputs",                        
+                        "src_var": "output",
+                        "dst_var": "input"
+                    }
+                ],
+                "forward_connections": [
+                    {
+                        "src_var": "output",
+                        "dst_id": "4",
+                        "dst_name": "fc",                                                
+                        "dst_var": "input"
+                    }
+                ],
                 "Code": None,
                 "checkpoint": []
             },
@@ -91,8 +118,22 @@ def graph_spec_binary_classification():
                     "Keep_prob": "1",
                     "Batch_norm": False
                 },
-                "backward_connections": [["3", "reshape"]],
-                "forward_connections": [["6", "training"]],
+                "backward_connections": [
+                    {
+                        "src_id": "3",
+                        "src_name": "reshape",                                                
+                        "src_var": "output",
+                        "dst_var": "input"
+                    }
+                ],
+                "forward_connections": [
+                    {
+                        "src_var": "output",
+                        "dst_id": "6",
+                        "dst_name": "training",
+                        "dst_var": "predictions"
+                    }
+                ],
                 "Code": None,
                 "checkpoint": []
             },
@@ -102,8 +143,22 @@ def graph_spec_binary_classification():
                 "Properties": {
                     "N_class": n_classes
                 },
-                "backward_connections": [["2", "data_labels"]],
-                "forward_connections": [["6", "training"]],
+                "backward_connections": [
+                    {
+                        "src_id": "2",
+                        "src_name": "data_labels",
+                        "src_var": "output",
+                        "dst_var": "input"
+                    }
+                ],
+                "forward_connections": [
+                    {
+                        "src_var": "output",
+                        "dst_id": "6",
+                        "dst_name": "training",                        
+                        "dst_var": "labels"
+                    }
+                ],
                 "Code": None,
                 "checkpoint": []
             },
@@ -113,31 +168,821 @@ def graph_spec_binary_classification():
                 "Properties": {
                     "Labels": "5",
                     "Loss": "Quadratic",
-                    "Epochs": 200,
+                    "Epochs": 50,
                     "Class_weights": "1",  # TODO: what's this?
                     "Optimizer": "SGD",
                     "Beta_1": "0.9",
                     "Beta_2": "0.999",
                     "Momentum": "0.9",
-                    "Batch_size": 8,                    
                     "Decay_steps": "100000",
                     "Decay_rate": "0.96",
+                    "Batch_size": 10,                    
                     "Learning_rate": "0.05",
-                    "Distributed": False
+                    "Distributed": False,
+                    "Stop_condition": "Epochs"
                 },
-                "backward_connections": [["4", "fc"], ["5", "one_hot"]],
-                "forward_connections": [],
+                "backward_connections": [
+                    {
+                        "src_id": "4",
+                        "src_name": "fc",                        
+                        "src_var": "output",
+                        "dst_var": "predictions"
+                    },
+                    {
+                        "src_id": "5",
+                        "src_name": "one_hot",                        
+                        "src_var": "output",
+                        "dst_var": "labels"
+                    }
+                ],
+                "forward_connections": [],                
                 "Code": None,
                 "checkpoint": []
             }
         }
     }
 
-    yield json_network
+
+    graph_spec = GraphSpec.from_dict(graph_spec_json)
+    yield graph_spec
 
     f1.close()
     f2.close()
 
+
+@pytest.fixture(scope='function')
+def graph_spec_partial():
+    n_classes = 10
+    n_samples = 30
+
+    #f1 = tempfile.NamedTemporaryFile(mode='w', suffix='.npy', delete=False)
+    #mat = np.random.random((n_samples, 28*28*1))
+    #np.save(f1.name, mat)
+
+    f1 = tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False)
+    mat = np.random.random((n_samples, 784))
+    df = pd.DataFrame.from_records(mat, columns=['col_'+str(x) for x in range(784)])
+    df.to_csv(f1.name, index=False)
+
+    f2 = tempfile.NamedTemporaryFile(mode='w', suffix='.npy', delete=False)
+    mat = np.random.randint(0, n_classes, (n_samples,))
+    np.save(f2.name, mat)
+    
+    inputs_path = sanitize_path(f1.name)
+    labels_path = sanitize_path(f2.name)
+
+    #inputs_path = "/home/anton/Data/mnist_split/mnist_input.npy"
+    #labels_path = "/home/anton/Data/mnist_split/mnist_labels.npy"
+    
+    
+    graph_spec_json = {
+        "Layers": {
+            "1": {
+                "Name": "data_inputs",
+                "Type": "DataData",
+                "Properties": {
+                    "accessProperties": {
+                        "Sources": [{"type": "file", "path": inputs_path}],
+                        "Partition_list": [[70, 20, 10]],
+                        "Shuffle_data": False,
+                        "Columns": []                        
+                    },
+                },
+                "backward_connections": [],
+                "forward_connections": [
+                    {
+                        "src_var": "output",
+                        "dst_id": "3",
+                        "dst_name": "reshape",
+                        "dst_var": "input"
+                    }
+                ],
+                "Code": None,
+                "checkpoint": []
+            },
+            "3": {
+                "Name": "reshape",
+                "Type": "ProcessReshape",                
+                "Properties": {
+                    "Shape": [28, 28, 1],
+                    "Permutation": [0, 1, 2]
+                },
+                "backward_connections": [
+                    {
+                        "src_id": "1",
+                        "src_name": "data_inputs",                        
+                        "src_var": "output",
+                        "dst_var": "input"
+                    }
+                ],
+                "forward_connections": [
+                    {
+                        "src_var": "output",
+                        "dst_id": "4",
+                        "dst_name": "fc",                                                
+                        "dst_var": "input"
+                    }
+                ],
+                "Code": None,
+                "checkpoint": []
+            },
+            "4": {
+                "Name": "fc",
+                "Type": "DeepLearningFC",                
+                "Properties": {
+                    "Neurons": str(n_classes),
+                    "Activation_function" : "Sigmoid",
+                    "Dropout": False,
+                    "Keep_prob": "1",
+                    "Batch_norm": False
+                },
+                "backward_connections": [
+                    {
+                        "src_id": "3",
+                        "src_name": "reshape",                                                
+                        "src_var": "output",
+                        "dst_var": "input"
+                    }
+                ],
+                "forward_connections": [
+                    {
+                        "src_var": "output",
+                        "dst_id": "6",
+                        "dst_name": "training",
+                        "dst_var": "predictions"
+                    }
+                ],
+                "Code": None,
+                "checkpoint": []
+            },
+            "5": {
+                "Name": "one_hot",
+                "Type": "ProcessOneHot",
+                "Properties": {
+                    "N_class": n_classes
+                },
+                "backward_connections": [],
+                "forward_connections": [
+                    {
+                        "src_var": "output",
+                        "dst_id": "6",
+                        "dst_name": "training",                        
+                        "dst_var": "labels"
+                    }
+                ],
+                "Code": None,
+                "checkpoint": []
+            },
+            "6": {
+                "Name": "training",
+                "Type": "TrainNormal",
+                "Properties": {
+                    "Labels": "5",
+                    "Loss": "Quadratic",
+                    "Epochs": 50,
+                    "Class_weights": "1",  # TODO: what's this?
+                    "Optimizer": "SGD",
+                    "Beta_1": "0.9",
+                    "Beta_2": "0.999",
+                    "Momentum": "0.9",
+                    "Decay_steps": "100000",
+                    "Decay_rate": "0.96",
+                    "Batch_size": 10,                    
+                    "Learning_rate": "0.05",
+                    "Distributed": False,
+                    "Stop_condition": "Epochs"
+                },
+                "backward_connections": [
+                    {
+                        "src_id": "4",
+                        "src_name": "fc",                        
+                        "src_var": "output",
+                        "dst_var": "predictions"
+                    },
+                    {
+                        "src_id": "5",
+                        "src_name": "one_hot",                        
+                        "src_var": "output",
+                        "dst_var": "labels"
+                    }
+                ],
+                "forward_connections": [],                
+                "Code": None,
+                "checkpoint": []
+            }
+        }
+    }
+
+
+    graph_spec = GraphSpec.from_dict(graph_spec_json)
+    yield graph_spec
+
+    f1.close()
+    f2.close()
+
+@pytest.fixture(scope='function')
+def graph_spec_syntax_error():
+    n_classes = 10
+    n_samples = 30
+
+    #f1 = tempfile.NamedTemporaryFile(mode='w', suffix='.npy', delete=False)
+    #mat = np.random.random((n_samples, 28*28*1))
+    #np.save(f1.name, mat)
+
+    f1 = tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False)
+    mat = np.random.random((n_samples, 784))
+    df = pd.DataFrame.from_records(mat, columns=['col_'+str(x) for x in range(784)])
+    df.to_csv(f1.name, index=False)
+
+    f2 = tempfile.NamedTemporaryFile(mode='w', suffix='.npy', delete=False)
+    mat = np.random.randint(0, n_classes, (n_samples,))
+    np.save(f2.name, mat)
+    
+    inputs_path = sanitize_path(f1.name)
+    labels_path = sanitize_path(f2.name)
+
+    #inputs_path = "/home/anton/Data/mnist_split/mnist_input.npy"
+    #labels_path = "/home/anton/Data/mnist_split/mnist_labels.npy"
+    
+    
+    graph_spec_json = {
+        "Layers": {
+            "1": {
+                "Name": "data_inputs",
+                "Type": "DataData",
+                "Properties": {
+                    "accessProperties": {
+                        "Sources": [{"type": "file", "path": inputs_path}],
+                        "Partition_list": [[70, 20, 10]],
+                        "Shuffle_data": False,
+                        "Columns": []                        
+                    },
+                },
+                "backward_connections": [],
+                "forward_connections": [
+                    {
+                        "src_var": "output",
+                        "dst_id": "3",
+                        "dst_name": "reshape",
+                        "dst_var": "input"
+                    }
+                ],
+                "Code": None,
+                "checkpoint": []
+            },
+            "2": {
+                "Name": "data_labels",
+                "Type": "DataData",
+                "Properties": {
+                    "Type": "DataData",
+                    "accessProperties": {
+                        "Sources": [{"type": "file", "path": labels_path}],
+                        "Partition_list": [[70, 20, 10]],
+                        "Shuffle_data": False,
+                        "Columns": []
+                    },
+                },
+                "backward_connections": [],
+                "forward_connections": [
+                    {
+                        "src_var": "output",
+                        "dst_id": "5",
+                        "dst_name": "one_hot",                        
+                        "dst_var": "input"
+                    }
+                ],
+                "Code": None,
+                "checkpoint": []
+            },
+            "3": {
+                "Name": "reshape",
+                "Type": "ProcessReshape",                
+                "Properties": {
+                    "Shape": [28, 28, 1],
+                    "Permutation": [0, 1, 2]
+                },
+                "backward_connections": [
+                    {
+                        "src_id": "1",
+                        "src_name": "data_inputs",                        
+                        "src_var": "output",
+                        "dst_var": "input"
+                    }
+                ],
+                "forward_connections": [
+                    {
+                        "src_var": "output",
+                        "dst_id": "4",
+                        "dst_name": "fc",                                                
+                        "dst_var": "input"
+                    }
+                ],
+                "Code": {"Output": "print('hello')\n!!!"},
+                "checkpoint": []
+            },
+            "4": {
+                "Name": "fc",
+                "Type": "DeepLearningFC",                
+                "Properties": {
+                    "Neurons": str(n_classes),
+                    "Activation_function" : "Sigmoid",
+                    "Dropout": False,
+                    "Keep_prob": "1",
+                    "Batch_norm": False
+                },
+                "backward_connections": [
+                    {
+                        "src_id": "3",
+                        "src_name": "reshape",                                                
+                        "src_var": "output",
+                        "dst_var": "input"
+                    }
+                ],
+                "forward_connections": [
+                    {
+                        "src_var": "output",
+                        "dst_id": "6",
+                        "dst_name": "training",
+                        "dst_var": "predictions"
+                    }
+                ],
+                "Code": None,
+                "checkpoint": []
+            },
+            "5": {
+                "Name": "one_hot",
+                "Type": "ProcessOneHot",
+                "Properties": {
+                    "N_class": n_classes
+                },
+                "backward_connections": [
+                    {
+                        "src_id": "2",
+                        "src_name": "data_labels",
+                        "src_var": "output",
+                        "dst_var": "input"
+                    }
+                ],
+                "forward_connections": [
+                    {
+                        "src_var": "output",
+                        "dst_id": "6",
+                        "dst_name": "training",                        
+                        "dst_var": "labels"
+                    }
+                ],
+                "Code": None,
+                "checkpoint": []
+            },
+            "6": {
+                "Name": "training",
+                "Type": "TrainNormal",
+                "Properties": {
+                    "Labels": "5",
+                    "Loss": "Quadratic",
+                    "Epochs": 50,
+                    "Class_weights": "1",  # TODO: what's this?
+                    "Optimizer": "SGD",
+                    "Beta_1": "0.9",
+                    "Beta_2": "0.999",
+                    "Momentum": "0.9",
+                    "Decay_steps": "100000",
+                    "Decay_rate": "0.96",
+                    "Batch_size": 10,                    
+                    "Learning_rate": "0.05",
+                    "Distributed": False,
+                    "Stop_condition": "Epochs"
+                },
+                "backward_connections": [
+                    {
+                        "src_id": "4",
+                        "src_name": "fc",                        
+                        "src_var": "output",
+                        "dst_var": "predictions"
+                    },
+                    {
+                        "src_id": "5",
+                        "src_name": "one_hot",                        
+                        "src_var": "output",
+                        "dst_var": "labels"
+                    }
+                ],
+                "forward_connections": [],                
+                "Code": None,
+                "checkpoint": []
+            }
+        }
+    }
+
+
+    graph_spec = GraphSpec.from_dict(graph_spec_json)
+    yield graph_spec
+
+    f1.close()
+    f2.close()
+    
+@pytest.fixture(scope='function')
+def graph_spec_runtime_error():
+    n_classes = 10
+    n_samples = 30
+
+    #f1 = tempfile.NamedTemporaryFile(mode='w', suffix='.npy', delete=False)
+    #mat = np.random.random((n_samples, 28*28*1))
+    #np.save(f1.name, mat)
+
+    f1 = tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False)
+    mat = np.random.random((n_samples, 784))
+    df = pd.DataFrame.from_records(mat, columns=['col_'+str(x) for x in range(784)])
+    df.to_csv(f1.name, index=False)
+
+    f2 = tempfile.NamedTemporaryFile(mode='w', suffix='.npy', delete=False)
+    mat = np.random.randint(0, n_classes, (n_samples,))
+    np.save(f2.name, mat)
+    
+    inputs_path = sanitize_path(f1.name)
+    labels_path = sanitize_path(f2.name)
+
+    #inputs_path = "/home/anton/Data/mnist_split/mnist_input.npy"
+    #labels_path = "/home/anton/Data/mnist_split/mnist_labels.npy"
+    
+    
+    graph_spec_json = {
+        "Layers": {
+            "1": {
+                "Name": "data_inputs",
+                "Type": "DataData",
+                "Properties": {
+                    "accessProperties": {
+                        "Sources": [{"type": "file", "path": inputs_path}],
+                        "Partition_list": [[70, 20, 10]],
+                        "Shuffle_data": False,
+                        "Columns": []                        
+                    },
+                },
+                "backward_connections": [],
+                "forward_connections": [
+                    {
+                        "src_var": "output",
+                        "dst_id": "3",
+                        "dst_name": "reshape",
+                        "dst_var": "input"
+                    }
+                ],
+                "Code": None,
+                "checkpoint": []
+            },
+            "2": {
+                "Name": "data_labels",
+                "Type": "DataData",
+                "Properties": {
+                    "Type": "DataData",
+                    "accessProperties": {
+                        "Sources": [{"type": "file", "path": labels_path}],
+                        "Partition_list": [[70, 20, 10]],
+                        "Shuffle_data": False,
+                        "Columns": []
+                    },
+                },
+                "backward_connections": [],
+                "forward_connections": [
+                    {
+                        "src_var": "output",
+                        "dst_id": "5",
+                        "dst_name": "one_hot",                        
+                        "dst_var": "input"
+                    }
+                ],
+                "Code": None,
+                "checkpoint": []
+            },
+            "3": {
+                "Name": "reshape",
+                "Type": "ProcessReshape",                
+                "Properties": {
+                    "Shape": [28, 28, 1],
+                    "Permutation": [0, 1, 2]
+                },
+                "backward_connections": [
+                    {
+                        "src_id": "1",
+                        "src_name": "data_inputs",                        
+                        "src_var": "output",
+                        "dst_var": "input"
+                    }
+                ],
+                "forward_connections": [
+                    {
+                        "src_var": "output",
+                        "dst_id": "4",
+                        "dst_name": "fc",                                                
+                        "dst_var": "input"
+                    }
+                ],
+                "Code": {"Output": "print('hello')\n1/0"},
+                "checkpoint": []
+            },
+            "4": {
+                "Name": "fc",
+                "Type": "DeepLearningFC",                
+                "Properties": {
+                    "Neurons": str(n_classes),
+                    "Activation_function" : "Sigmoid",
+                    "Dropout": False,
+                    "Keep_prob": "1",
+                    "Batch_norm": False
+                },
+                "backward_connections": [
+                    {
+                        "src_id": "3",
+                        "src_name": "reshape",                                                
+                        "src_var": "output",
+                        "dst_var": "input"
+                    }
+                ],
+                "forward_connections": [
+                    {
+                        "src_var": "output",
+                        "dst_id": "6",
+                        "dst_name": "training",
+                        "dst_var": "predictions"
+                    }
+                ],
+                "Code": None,
+                "checkpoint": []
+            },
+            "5": {
+                "Name": "one_hot",
+                "Type": "ProcessOneHot",
+                "Properties": {
+                    "N_class": n_classes
+                },
+                "backward_connections": [
+                    {
+                        "src_id": "2",
+                        "src_name": "data_labels",
+                        "src_var": "output",
+                        "dst_var": "input"
+                    }
+                ],
+                "forward_connections": [
+                    {
+                        "src_var": "output",
+                        "dst_id": "6",
+                        "dst_name": "training",                        
+                        "dst_var": "labels"
+                    }
+                ],
+                "Code": None,
+                "checkpoint": []
+            },
+            "6": {
+                "Name": "training",
+                "Type": "TrainNormal",
+                "Properties": {
+                    "Labels": "5",
+                    "Loss": "Quadratic",
+                    "Epochs": 50,
+                    "Class_weights": "1",  # TODO: what's this?
+                    "Optimizer": "SGD",
+                    "Beta_1": "0.9",
+                    "Beta_2": "0.999",
+                    "Momentum": "0.9",
+                    "Decay_steps": "100000",
+                    "Decay_rate": "0.96",
+                    "Batch_size": 10,                    
+                    "Learning_rate": "0.05",
+                    "Distributed": False,
+                    "Stop_condition": "Epochs"
+                },
+                "backward_connections": [
+                    {
+                        "src_id": "4",
+                        "src_name": "fc",                        
+                        "src_var": "output",
+                        "dst_var": "predictions"
+                    },
+                    {
+                        "src_id": "5",
+                        "src_name": "one_hot",                        
+                        "src_var": "output",
+                        "dst_var": "labels"
+                    }
+                ],
+                "forward_connections": [],                
+                "Code": None,
+                "checkpoint": []
+            }
+        }
+    }
+
+
+    graph_spec = GraphSpec.from_dict(graph_spec_json)
+    yield graph_spec
+
+    f1.close()
+    f2.close()
+    
+@pytest.fixture(scope='function')
+def graph_spec_runtime_error_training():
+    n_classes = 10
+    n_samples = 30
+
+    #f1 = tempfile.NamedTemporaryFile(mode='w', suffix='.npy', delete=False)
+    #mat = np.random.random((n_samples, 28*28*1))
+    #np.save(f1.name, mat)
+
+    f1 = tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False)
+    mat = np.random.random((n_samples, 784))
+    df = pd.DataFrame.from_records(mat, columns=['col_'+str(x) for x in range(784)])
+    df.to_csv(f1.name, index=False)
+
+    f2 = tempfile.NamedTemporaryFile(mode='w', suffix='.npy', delete=False)
+    mat = np.random.randint(0, n_classes, (n_samples,))
+    np.save(f2.name, mat)
+    
+    inputs_path = sanitize_path(f1.name)
+    labels_path = sanitize_path(f2.name)
+
+    #inputs_path = "/home/anton/Data/mnist_split/mnist_input.npy"
+    #labels_path = "/home/anton/Data/mnist_split/mnist_labels.npy"
+    
+    
+    graph_spec_json = {
+        "Layers": {
+            "1": {
+                "Name": "data_inputs",
+                "Type": "DataData",
+                "Properties": {
+                    "accessProperties": {
+                        "Sources": [{"type": "file", "path": inputs_path}],
+                        "Partition_list": [[70, 20, 10]],
+                        "Shuffle_data": False,
+                        "Columns": []                        
+                    },
+                },
+                "backward_connections": [],
+                "forward_connections": [
+                    {
+                        "src_var": "output",
+                        "dst_id": "3",
+                        "dst_name": "reshape",
+                        "dst_var": "input"
+                    }
+                ],
+                "Code": None,
+                "checkpoint": []
+            },
+            "2": {
+                "Name": "data_labels",
+                "Type": "DataData",
+                "Properties": {
+                    "Type": "DataData",
+                    "accessProperties": {
+                        "Sources": [{"type": "file", "path": labels_path}],
+                        "Partition_list": [[70, 20, 10]],
+                        "Shuffle_data": False,
+                        "Columns": []
+                    },
+                },
+                "backward_connections": [],
+                "forward_connections": [
+                    {
+                        "src_var": "output",
+                        "dst_id": "5",
+                        "dst_name": "one_hot",                        
+                        "dst_var": "input"
+                    }
+                ],
+                "Code": None,
+                "checkpoint": []
+            },
+            "3": {
+                "Name": "reshape",
+                "Type": "ProcessReshape",                
+                "Properties": {
+                    "Shape": [28, 28, 1],
+                    "Permutation": [0, 1, 2]
+                },
+                "backward_connections": [
+                    {
+                        "src_id": "1",
+                        "src_name": "data_inputs",                        
+                        "src_var": "output",
+                        "dst_var": "input"
+                    }
+                ],
+                "forward_connections": [
+                    {
+                        "src_var": "output",
+                        "dst_id": "4",
+                        "dst_name": "fc",                                                
+                        "dst_var": "input"
+                    }
+                ],
+                "Code": None,
+                "checkpoint": []
+            },
+            "4": {
+                "Name": "fc",
+                "Type": "DeepLearningFC",                
+                "Properties": {
+                    "Neurons": str(n_classes),
+                    "Activation_function" : "Sigmoid",
+                    "Dropout": False,
+                    "Keep_prob": "1",
+                    "Batch_norm": False
+                },
+                "backward_connections": [
+                    {
+                        "src_id": "3",
+                        "src_name": "reshape",                                                
+                        "src_var": "output",
+                        "dst_var": "input"
+                    }
+                ],
+                "forward_connections": [
+                    {
+                        "src_var": "output",
+                        "dst_id": "6",
+                        "dst_name": "training",
+                        "dst_var": "predictions"
+                    }
+                ],
+                "Code": None,
+                "checkpoint": []
+            },
+            "5": {
+                "Name": "one_hot",
+                "Type": "ProcessOneHot",
+                "Properties": {
+                    "N_class": n_classes
+                },
+                "backward_connections": [
+                    {
+                        "src_id": "2",
+                        "src_name": "data_labels",
+                        "src_var": "output",
+                        "dst_var": "input"
+                    }
+                ],
+                "forward_connections": [
+                    {
+                        "src_var": "output",
+                        "dst_id": "6",
+                        "dst_name": "training",                        
+                        "dst_var": "labels"
+                    }
+                ],
+                "Code": None,
+                "checkpoint": []
+            },
+            "6": {
+                "Name": "training",
+                "Type": "TrainNormal",
+                "Properties": {
+                    "Labels": "5",
+                    "Loss": "Quadratic",
+                    "Epochs": 50,
+                    "Class_weights": "1",  # TODO: what's this?
+                    "Optimizer": "SGD",
+                    "Beta_1": "0.9",
+                    "Beta_2": "0.999",
+                    "Momentum": "0.9",
+                    "Decay_steps": "100000",
+                    "Decay_rate": "0.96",
+                    "Batch_size": 10,                    
+                    "Learning_rate": "0.05",
+                    "Distributed": False,
+                    "Stop_condition": "Epochs"
+                },
+                "backward_connections": [
+                    {
+                        "src_id": "4",
+                        "src_name": "fc",                        
+                        "src_var": "output",
+                        "dst_var": "predictions"
+                    },
+                    {
+                        "src_id": "5",
+                        "src_name": "one_hot",                        
+                        "src_var": "output",
+                        "dst_var": "labels"
+                    }
+                ],
+                "forward_connections": [],                
+                "Code": {"Output": "print('hello')\n1/0"},
+                "checkpoint": []
+            }
+        }
+    }
+
+
+    graph_spec = GraphSpec.from_dict(graph_spec_json)
+    yield graph_spec
+
+    f1.close()
+    f2.close()
+    
 
 @pytest.fixture(scope='function')
 def graph_spec_binary_classification_with_strings():
@@ -167,7 +1012,7 @@ def graph_spec_binary_classification_with_strings():
     #inputs_path = "/home/anton/Data/mnist_split/mnist_input.npy"
     #labels_path = "/home/anton/Data/mnist_split/mnist_labels.npy"
     
-    json_network = {
+    graph_spec_json = {
         "Layers": {
             "1": {
                 "Name": "data_inputs",
@@ -182,7 +1027,14 @@ def graph_spec_binary_classification_with_strings():
                     },
                 },
                 "backward_connections": [],
-                "forward_connections": [["3", "reshape"]],
+                "forward_connections": [
+                    {
+                        "src_var": "output",
+                        "dst_id": "3",
+                        "dst_name": "reshape",
+                        "dst_var": "input"
+                    }
+                ],
                 "Code": None,
                 "checkpoint": []
             },
@@ -200,7 +1052,14 @@ def graph_spec_binary_classification_with_strings():
                     },
                 },
                 "backward_connections": [],
-                "forward_connections": [["5", "one_hot"]],
+                "forward_connections": [
+                    {
+                        "src_var": "output",
+                        "dst_id": "5",
+                        "dst_name": "one_hot",                        
+                        "dst_var": "input"
+                    }
+                ],
                 "Code": None,
                 "checkpoint": []
             },
@@ -211,8 +1070,22 @@ def graph_spec_binary_classification_with_strings():
                     "Shape": [28, 28, 1],
                     "Permutation": [0, 1, 2]
                 },
-                "backward_connections": [["1", "data_inputs"]],
-                "forward_connections": [["4", "fc"]],
+                "backward_connections": [
+                    {
+                        "src_id": "1",
+                        "src_name": "data_inputs",                        
+                        "src_var": "output",
+                        "dst_var": "input"
+                    }
+                ],
+                "forward_connections": [
+                    {
+                        "src_var": "output",
+                        "dst_id": "4",
+                        "dst_name": "fc",                                                
+                        "dst_var": "input"
+                    }
+                ],
                 "Code": None,
                 "checkpoint": []
             },
@@ -226,8 +1099,22 @@ def graph_spec_binary_classification_with_strings():
                     "Keep_prob": "1",
                     "Batch_norm": False
                 },
-                "backward_connections": [["3", "reshape"]],
-                "forward_connections": [["6", "training"]],
+                "backward_connections": [
+                    {
+                        "src_id": "3",
+                        "src_name": "reshape",                                                
+                        "src_var": "output",
+                        "dst_var": "input"
+                    }
+                ],
+                "forward_connections": [
+                    {
+                        "src_var": "output",
+                        "dst_id": "6",
+                        "dst_name": "training",
+                        "dst_var": "predictions"
+                    }
+                ],
                 "Code": None,
                 "checkpoint": []
             },
@@ -237,8 +1124,22 @@ def graph_spec_binary_classification_with_strings():
                 "Properties": {
                     "N_class": n_classes
                 },
-                "backward_connections": [["2", "data_labels"]],
-                "forward_connections": [["6", "training"]],
+                "backward_connections": [
+                    {
+                        "src_id": "2",
+                        "src_name": "data_labels",
+                        "src_var": "output",
+                        "dst_var": "input"
+                    }
+                ],
+                "forward_connections": [
+                    {
+                        "src_var": "output",
+                        "dst_id": "6",
+                        "dst_name": "training",                        
+                        "dst_var": "labels"
+                    }
+                ],
                 "Code": None,
                 "checkpoint": []
             },
@@ -256,18 +1157,34 @@ def graph_spec_binary_classification_with_strings():
                     "Momentum": "0.9",
                     "Decay_steps": "100000",
                     "Decay_rate": "0.96",
+                    "Batch_size": 10,                    
                     "Learning_rate": "0.05",
-                    "Distributed": False
+                    "Distributed": False,
+                    "Stop_condition": "Epochs"
                 },
-                "backward_connections": [["4", "fc"], ["5", "one_hot"]],
-                "forward_connections": [],
+                "backward_connections": [
+                    {
+                        "src_id": "4",
+                        "src_name": "fc",                        
+                        "src_var": "output",
+                        "dst_var": "predictions"
+                    },
+                    {
+                        "src_id": "5",
+                        "src_name": "one_hot",                        
+                        "src_var": "output",
+                        "dst_var": "labels"
+                    }
+                ],
+                "forward_connections": [],                
                 "Code": None,
                 "checkpoint": []
             }
         }
     }
 
-    yield json_network
+    graph_spec = GraphSpec.from_dict(graph_spec_json)
+    yield graph_spec
 
     f1.close()
     f2.close()
@@ -293,7 +1210,7 @@ def graph_spec_binary_classification_3d():
     #inputs_path = "/home/anton/Data/mnist_split/mnist_input.npy"
     #labels_path = "/home/anton/Data/mnist_split/mnist_labels.npy"
     
-    json_network = {
+    graph_spec_json = {
         "Layers": {
             "1": {
                 "Name": "data_inputs",
@@ -308,7 +1225,14 @@ def graph_spec_binary_classification_3d():
                     },
                 },
                 "backward_connections": [],
-                "forward_connections": [["3", "reshape"]],
+                "forward_connections": [
+                    {
+                        "src_var": "output",
+                        "dst_id": "3",
+                        "dst_name": "reshape",
+                        "dst_var": "input"
+                    }
+                ],
                 "Code": None,
                 "checkpoint": []
             },
@@ -326,7 +1250,14 @@ def graph_spec_binary_classification_3d():
                     },
                 },
                 "backward_connections": [],
-                "forward_connections": [["5", "one_hot"]],
+                "forward_connections": [
+                    {
+                        "src_var": "output",
+                        "dst_id": "5",
+                        "dst_name": "one_hot",                        
+                        "dst_var": "input"
+                    }
+                ],
                 "Code": None,
                 "checkpoint": []
             },
@@ -337,8 +1268,22 @@ def graph_spec_binary_classification_3d():
                     "Shape": [2352, 1, 1],
                     "Permutation": [0, 1, 2]
                 },
-                "backward_connections": [["1", "data_inputs"]],
-                "forward_connections": [["4", "fc"]],
+                "backward_connections": [
+                    {
+                        "src_id": "1",
+                        "src_name": "data_inputs",                        
+                        "src_var": "output",
+                        "dst_var": "input"
+                    }
+                ],
+                "forward_connections": [
+                    {
+                        "src_var": "output",
+                        "dst_id": "4",
+                        "dst_name": "fc",                                                
+                        "dst_var": "input"
+                    }
+                ],
                 "Code": None,
                 "checkpoint": []
             },
@@ -352,8 +1297,22 @@ def graph_spec_binary_classification_3d():
                     "Keep_prob": "1",
                     "Batch_norm": False
                 },
-                "backward_connections": [["3", "reshape"]],
-                "forward_connections": [["6", "training"]],
+                "backward_connections": [
+                    {
+                        "src_id": "3",
+                        "src_name": "reshape",                                                
+                        "src_var": "output",
+                        "dst_var": "input"
+                    }
+                ],
+                "forward_connections": [
+                    {
+                        "src_var": "output",
+                        "dst_id": "6",
+                        "dst_name": "training",
+                        "dst_var": "predictions"
+                    }
+                ],
                 "Code": None,
                 "checkpoint": []
             },
@@ -363,8 +1322,22 @@ def graph_spec_binary_classification_3d():
                 "Properties": {
                     "N_class": n_classes
                 },
-                "backward_connections": [["2", "data_labels"]],
-                "forward_connections": [["6", "training"]],
+                "backward_connections": [
+                    {
+                        "src_id": "2",
+                        "src_name": "data_labels",
+                        "src_var": "output",
+                        "dst_var": "input"
+                    }
+                ],
+                "forward_connections": [
+                    {
+                        "src_var": "output",
+                        "dst_id": "6",
+                        "dst_name": "training",                        
+                        "dst_var": "labels"
+                    }
+                ],
                 "Code": None,
                 "checkpoint": []
             },
@@ -382,18 +1355,35 @@ def graph_spec_binary_classification_3d():
                     "Momentum": "0.9",
                     "Decay_steps": "100000",
                     "Decay_rate": "0.96",
+                    "Batch_size": 10,                    
                     "Learning_rate": "0.05",
-                    "Distributed": False
+                    "Distributed": False,
+                    "Stop_condition": "Epochs"
                 },
-                "backward_connections": [["4", "fc"], ["5", "one_hot"]],
-                "forward_connections": [],
+                "backward_connections": [
+                    {
+                        "src_id": "4",
+                        "src_name": "fc",                        
+                        "src_var": "output",
+                        "dst_var": "predictions"
+                    },
+                    {
+                        "src_id": "5",
+                        "src_name": "one_hot",                        
+                        "src_var": "output",
+                        "dst_var": "labels"
+                    }
+                ],
+                "forward_connections": [],                
                 "Code": None,
                 "checkpoint": []
             }
         }
     }
 
-    yield json_network
+    graph_spec = GraphSpec.from_dict(graph_spec_json)
+    yield graph_spec
+
 
     f1.close()
     f2.close()
@@ -406,12 +1396,12 @@ def test_out_shapes_ok_basic(graph_spec_binary_classification):
     lw_core = LightweightCore()
     results = lw_core.run(graph_spec_binary_classification)
  
-    assert results['1'].out_shape == (784,) # Datadata inputs
-    assert results['2'].out_shape == (1,) # Datadata labels
-    assert results['3'].out_shape == (28, 28, 1) # Reshape
-    assert results['4'].out_shape == (10,) # FC
-    assert results['5'].out_shape == (10,) # One hot
-    assert results['6'].out_shape is None
+    assert results['1'].out_shape['output'] == (784,) # Datadata inputs
+    assert results['2'].out_shape['output'] == (1,) # Datadata labels
+    assert results['3'].out_shape['output'] == (28, 28, 1) # Reshape
+    assert results['4'].out_shape['output'] == (10,) # FC
+    assert results['5'].out_shape['output'] == (10,) # One hot
+    assert results['6'].out_shape == {}
 
 
 def test_columns_ok_lw(graph_spec_binary_classification):
@@ -442,89 +1432,67 @@ def test_out_shapes_ok_for_3d_samples(graph_spec_binary_classification_3d):
     lw_core = LightweightCore()
     results = lw_core.run(graph_spec_binary_classification_3d)
  
-    assert results['1'].out_shape == (28, 28, 3) # Datadata inputs
-    assert results['2'].out_shape == (1,) # Datadata labels
-    assert results['3'].out_shape == (2352, 1, 1) # Reshape
-    assert results['4'].out_shape == (10,) # FC
-    assert results['5'].out_shape == (10,) # One hot
-    assert results['6'].out_shape is None
+    assert results['1'].out_shape['output'] == (28, 28, 3) # Datadata inputs
+    assert results['2'].out_shape['output'] == (1,) # Datadata labels
+    assert results['3'].out_shape['output'] == (2352, 1, 1) # Reshape
+    assert results['4'].out_shape['output'] == (10,) # FC
+    assert results['5'].out_shape['output'] == (10,) # One hot
+    assert results['6'].out_shape == {} # Train normal
 
 
-def test_out_shapes_ok_partial_graph(graph_spec_binary_classification):
-    del graph_spec_binary_classification['Layers']['2']['Properties']['accessProperties']
-    
+def test_out_shapes_ok_partial_graph(graph_spec_partial):
     lw_core = LightweightCore()
-    results = lw_core.run(graph_spec_binary_classification)
+    results = lw_core.run(graph_spec_partial)
  
-    assert results['1'].out_shape == (784,) # Datadata inputs
-    assert results['2'].out_shape == None # Datadata labels
-    assert results['3'].out_shape == (28, 28, 1) # Reshape
-    assert results['4'].out_shape == (10,) # FC
-    assert results['5'].out_shape == None # One hot
-    assert results['6'].out_shape is None
+    assert results['1'].out_shape['output'] == (784,) # Datadata inputs
+    assert '2' not in results # Datadata labels
+    assert results['3'].out_shape['output'] == (28, 28, 1) # Reshape
+    assert results['4'].out_shape['output'] == (10,) # FC
+    assert results['5'].out_shape == {} # One hot
+    assert results['6'].out_shape == {} # Train normal
     
 
-def test_out_shapes_ok_with_syntax_error(graph_spec_binary_classification):
-    code  = "print('hello')\n"
-    code += "!!!" # Bad syntax
-    graph_spec_binary_classification['Layers']['3']['Code'] = {"Output": code}
-    
+def test_out_shapes_ok_with_syntax_error(graph_spec_syntax_error):
     lw_core = LightweightCore()
-    results = lw_core.run(graph_spec_binary_classification)
+    results = lw_core.run(graph_spec_syntax_error)
  
-    assert results['1'].out_shape == (784,) # Datadata inputs
-    assert results['2'].out_shape == (1,) # Datadata labels
-    assert results['3'].out_shape == None # Reshape
-    assert results['4'].out_shape == None # FC
-    assert results['5'].out_shape == (10,) # One hot
-    assert results['6'].out_shape is None
+    assert results['1'].out_shape['output'] == (784,) # Datadata inputs
+    assert results['2'].out_shape['output'] == (1,) # Datadata labels
+    assert results['3'].out_shape == {} # Reshape
+    assert results['4'].out_shape == {} # FC
+    assert results['5'].out_shape['output'] == (10,) # One hot
+    assert results['6'].out_shape == {} # Train normal
 
 
-def test_errors_ok_with_syntax_error(graph_spec_binary_classification):
-    code  = "print('hello')\n"
-    code += "!!!" # Bad syntax
-    graph_spec_binary_classification['Layers']['3']['Code'] = {"Output": code}
-    
+def test_errors_ok_with_syntax_error(graph_spec_syntax_error):
     lw_core = LightweightCore()
-    results = lw_core.run(graph_spec_binary_classification)
+    results = lw_core.run(graph_spec_syntax_error)
 
     assert "SyntaxError" in results['3'].code_error.message
 
 
-def test_out_shapes_ok_with_runtime_error(graph_spec_binary_classification):
-    code  = "print('hello')\n"
-    code += "1/0" # Will generate runtime error
-    graph_spec_binary_classification['Layers']['3']['Code'] = {"Output": code}
-    
+def test_out_shapes_ok_with_runtime_error(graph_spec_runtime_error):
     lw_core = LightweightCore()
-    results = lw_core.run(graph_spec_binary_classification)
+    results = lw_core.run(graph_spec_runtime_error)
  
-    assert results['1'].out_shape == (784,) # Datadata inputs
-    assert results['2'].out_shape == (1,) # Datadata labels
-    assert results['3'].out_shape == None # Reshape
-    assert results['4'].out_shape == None # FC
-    assert results['5'].out_shape == (10,) # One hot
-    assert results['6'].out_shape is None
+    assert results['1'].out_shape['output'] == (784,) # Datadata inputs
+    assert results['2'].out_shape['output'] == (1,) # Datadata labels
+    assert results['3'].out_shape == {} # Reshape
+    assert results['4'].out_shape == {} # FC
+    assert results['5'].out_shape['output'] == (10,) # One hot
+    assert results['6'].out_shape == {}
     
 
-def test_errors_ok_with_runtime_error(graph_spec_binary_classification):
-    code  = "print('hello')\n"
-    code += "1/0" # Will generate runtime error
-    graph_spec_binary_classification['Layers']['3']['Code'] = {"Output": code}
-    
+def test_errors_ok_with_runtime_error(graph_spec_runtime_error):
     lw_core = LightweightCore()
-    results = lw_core.run(graph_spec_binary_classification)
+    results = lw_core.run(graph_spec_runtime_error)
 
     assert "ZeroDivisionError" in results['3'].instantiation_error.message    
 
     
-def test_errors_detected_in_training_layer(graph_spec_binary_classification):
-    code  = "print('hello')\n"
-    code += "1/0" # Will generate runtime error
-    graph_spec_binary_classification['Layers']['6']['Code'] = {"Output": code}
-    
+def test_errors_detected_in_training_layer(graph_spec_runtime_error_training):
     lw_core = LightweightCore()
-    results = lw_core.run(graph_spec_binary_classification)
+    results = lw_core.run(graph_spec_runtime_error_training)
 
     assert "ZeroDivisionError" in results['6'].instantiation_error.message        
 

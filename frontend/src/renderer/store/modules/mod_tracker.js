@@ -1,5 +1,6 @@
 import mixPanel from 'mixpanel-browser'
-import {isElectron} from "@/core/helpers";
+import { isElectron } from "@/core/helpers";
+import { isDevelopMode } from "@/core/constants";
 
 const mixPanelDesktopToken = 'ff98c9e22047d4a1eef9146339e038ee';
 const mixPanelWebToken = '1480b2244fdd4d821227a29e2637f922';
@@ -20,7 +21,10 @@ const mutations = {
 
 const actions = {
   TRACK_initMixPanel() {
-    if (isElectron()) {
+    if (isDevelopMode) {
+      mixPanel.init(mixPanelWebToken);
+      mixPanel.opt_out_tracking();
+    } else if (isElectron()) {
       mixPanel.init(mixPanelDesktopToken);
     } else {
       mixPanel.init(mixPanelWebToken);

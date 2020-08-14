@@ -59,11 +59,12 @@ class Node:
     
 
 class Graph:
-    def __init__(self, nodes: List[Node], edges: List[Tuple[Node, Node]]=None):
+    def __init__(self, nodes: List[Node], edges: List[Tuple[Node, Node]]=None, connections=None):
         for n1, n2 in edges:
             assert n1 in nodes
             assert n2 in nodes        
-        
+
+        self._connections = connections or {}
         self._nx_graph = nx.DiGraph()
         self._nx_graph.add_nodes_from(nodes)
         self._nx_graph.add_edges_from(edges or [])
@@ -138,6 +139,17 @@ class Graph:
         input_nodes = self._nx_graph.predecessors(node)
         return input_nodes
 
+    def get_input_connections(self, dst_node):
+        result = []
+        for src_node in self.get_input_nodes(dst_node):
+            key = src_node.layer_id + ':' + dst_node.layer_id # layer id is the 'sanitized name'
+            conns = self._connections.get(key, [])
+
+            for src_var, dst_var in conns:
+                result.append((src_node, src_var, dst_var))
+                
+        return result    
+
     def get_direct_data_nodes(self, layer_id: str):
         """ Select data layers that are immediately connected to the layer """
         target_node = self.get_node_by_id(layer_id)
@@ -195,10 +207,6 @@ class Graph:
         nodes_between_list = [node for path in paths_between_generator for node in path]
         return nodes_between_list[1:]
 
-#    def clone(self):
-#        layers = {n.layer_id: node.layer.__class__() for n in self.nodes}
-#        new_graph = self._builder.build(layers, self._nx_graph.edges)
-#        return new_graph
     def clone(self): 
         from perceptilabs.core_new.graph.builder import GraphBuilder
         layers = {}
@@ -216,99 +224,5 @@ class Graph:
             
         builder = GraphBuilder()
         edges_by_id = [(a.layer_id, b.layer_id) for a, b in self._nx_graph.edges]
-        new_graph = builder.build_from_layers_and_edges(layers, edges_by_id)
+        new_graph = builder.build_from_layers_and_edges(layers, edges_by_id, connections=self._connections)
         return new_graph       
-
-
-    
-        
-"""
-
-class Node:
-    def __init__(self, layer_id: str, layer: BaseLayer, layer_spec: Dict):
-        self._layer_id = layer_id
-        self._layer = layer
-        self._spec = layer_spec
-
-    @property
-    def layer_id(self):
-        return self._layer_id
-    
-    @property
-    def layer(self):
-        return self._layer
-        
-    @property
-    def input_ids(self):
-        ids = self._spec['backward_connections'].copy()
-        return ids
-
-    @property
-    def layer_spec(self):
-        return copy.deepcopy(self._spec)
-""" 
-'''        
-
-class Graph:
-    def __init__(self, nodes: Dict[str, Node]):
-        self._nodes = nodes
-        
-    @classmethod
-    def from_json(self):
-        pass
-
-    def get_data_dependencies(self, layer: BaseLayer):
-        data_layers = []        
-        node = self._nodes[layer]
-        for input_id in node.inputs_ids:
-            input_layer = self._nodes[input_id]            
-            if isinstance(input_layer, DataLayer):
-                data_layers.append(input_layer)
-            data_layers.extend(self.get_data_dependencies(input_layer))
-        return data_layers
-
-    @property
-    def inner_nodes(self):
-        inner = {layer: node for layer, node in self._nodes.items() if isinstance(layer, InnerLayer)}
-        return inner
-
-    @property
-    def nodes(self):
-        return self._nodes.values()
-
-    @property
-    def active_training_layer(self):
-        active_training_layers = [tl for tl in self.training_layers if tl.is_active]
-        if len(active_training_layers) > 0:
-            return active_training_layers[-1]
-        else:
-            return None        
-    
-    @property
-    def active_subgraph(self):
-        active_subgraphs = [s for s in self.subgraphs if s.training_layer.is_active]
-        if len(active_subgraphs) > 0:
-            return active_subgraphs[-1]
-        else:
-            return None        
-
-    @property
-    def training_layer(self):
-        self.training_layers[-1]
-
-
-    @property
-    def training_layers(self):
-        layers = [n.layer for n in self._nodes.values()]        
-        print(self, 'layers',layers)
-        print(self, 'types',[type(x) for x in layers])        
-        layers = [n.layer for n in self._nodes.values() if isinstance(n.layer, TrainingLayer)]
-        return layers
-    
-    @property
-    def subgraphs(self):
-        # TODO: implement properly. For now, subgraphs are not supported.
-        return [self]
-
-    
-'''

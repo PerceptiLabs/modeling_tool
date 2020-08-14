@@ -1,30 +1,25 @@
 <template lang="pug">
-  net-base-settings(
-    :current-el="currentEl"
-    @press-apply="saveSettings($event)"
-    @press-confirm="confirmSettings"
-  )
-    template(slot="Settings-content")
-      .settings-layer_section
-        .form_row(v-tooltip-interactive:right="interactiveInfo.chooseAxis")
-          .form_label Choose dimension:
-          .form_input
-            triple-input(v-model="settings.dimension")
-      .settings-layer_section
-        .form_row(v-tooltip-interactive:right="interactiveInfo.splitOn")
-          .form_label Split on:
-          .form_input
-            .form_holder
-              base-range(
-                v-model="settings.val"
-              )
-            input(type="number" v-model="settings.val")
-    template(slot="Code-content")
-      settings-code(
-        :current-el="currentEl"
-        :el-settings="settings"
-        v-model="coreCode"
-      )
+  div
+    .settings-layer_section
+      .form_row(v-tooltip-interactive:right="interactiveInfo.chooseAxis")
+        .form_label Choose dimension:
+        .form_input
+          triple-input(v-model="settings.dimension")
+    .settings-layer_section
+      .form_row(v-tooltip-interactive:right="interactiveInfo.splitOn")
+        .form_label Split on:
+        .form_input
+          .form_holder
+            base-range(
+              v-model="settings.val"
+            )
+          input(type="number" v-model="settings.val")
+    //- template(slot="Code-content")
+    //-   settings-code(
+    //-     :current-el="currentEl"
+    //-     :el-settings="settings"
+    //-     v-model="coreCode"
+    //-   )
 
 </template>
 

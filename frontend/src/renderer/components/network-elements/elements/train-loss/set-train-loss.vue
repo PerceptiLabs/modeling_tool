@@ -1,52 +1,53 @@
 <template lang="pug">
-  net-base-settings(
-    :current-el="currentEl"
-    @press-apply="saveSettings($event)"
-    @press-confirm="confirmSettings"
-  )
-    template(slot="Settings-content")
-      .settings-layer_section
-        .form_row(v-tooltip-interactive:right="interactiveInfo.labels")
-          .form_label Labels:
-          #tutorial_labels.form_input(data-tutorial-hover-info)
-            base-select(
-              v-model="settings.Labels"
-              :select-options="inputLayers"
-            )
-      .settings-layer_section
-        .form_row(v-tooltip-interactive:right="interactiveInfo.costFunction")
-          .form_label Loss function:
-          #tutorial_cost-function.tutorial-relative.form_input(data-tutorial-hover-info)
-            base-radio(group-name="group" value-input="Cross_entropy" v-model="settings.Loss")
-              span Cross-Entropy
-            base-radio(group-name="group" value-input="Quadratic" v-model="settings.Loss")
-              span Quadratic
-            base-radio(group-name="group" value-input="W_cross_entropy" v-model="settings.Loss")
-              span Weighted Cross-Entropy
-            base-radio(group-name="group" value-input="Dice" v-model="settings.Loss")
-              span DICE
-              //-Cross-Entropy
-        .form_row(v-if="settings.Loss === 'W_cross_entropy'")
-          .form_label Class weights:
-          .form_input
-            input(type="number" v-model="settings.Class_weights")
+  div
+    .settings-layer_section
+      .form_row(v-tooltip-interactive:right="interactiveInfo.labels")
+        .form_label Labels:
+        #tutorial_labels.form_input(data-tutorial-hover-info)
+          base-select(
+            v-model="settings.Labels"
+            :select-options="inputLayers"
+          )
+    .settings-layer_section
+      .form_row(v-tooltip-interactive:right="interactiveInfo.costFunction")
+        .form_label Loss function:
+        #tutorial_cost-function.tutorial-relative.form_input(data-tutorial-hover-info)
+          base-radio(group-name="group" value-input="Cross_entropy" v-model="settings.Loss")
+            span Cross-Entropy
+          base-radio(group-name="group" value-input="Quadratic" v-model="settings.Loss")
+            span Quadratic
+          base-radio(group-name="group" value-input="W_cross_entropy" v-model="settings.Loss")
+            span Weighted Cross-Entropy
+          base-radio(group-name="group" value-input="Dice" v-model="settings.Loss")
+            span DICE
+            //-Cross-Entropy
+      .form_row(v-if="settings.Loss === 'W_cross_entropy'")
+        .form_label Class weights:
+        .form_input
+          input(
+            type="number"
+            v-model="settings.Class_weights"
+            @focus="setIsSettingInputFocused(true)"
+            @blur="setIsSettingInputFocused(false)"
+          )
 
-    template(slot="Code-content")
-      settings-code(
-        :current-el="currentEl"
-        :el-settings="settings"
-        v-model="coreCode"
-      )
+    //- template(slot="Code-content")
+    //-   settings-code(
+    //-     :current-el="currentEl"
+    //-     :el-settings="settings"
+    //-     v-model="coreCode"
+    //-   )
 
 </template>
 
 <script>
 import mixinSet from '@/core/mixins/net-element-settings.js';
+import mixinFocus     from '@/core/mixins/net-element-settings-input-focus.js';
 import { mapGetters, mapActions } from 'vuex';
 
 export default {
   name: 'SetTrainLoss',
-  mixins: [ mixinSet ],
+  mixins: [ mixinSet, mixinFocus ],
   beforeMount() {
     this.inputId.forEach((id)=> {
       let elList = this.currentNetworkList;

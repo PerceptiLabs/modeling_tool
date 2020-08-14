@@ -1,126 +1,181 @@
 <template lang="pug">
-  net-base-settings(
-    :current-el="currentEl"
-    @press-apply="saveSettings($event)"
-    @press-confirm="confirmSettings"
-  )
-    template(slot="Settings-content")
-      .settings-layer_section
-        .form_row(v-tooltip-interactive:right="interactiveInfo.labels")
-          .form_label Labels:
-          #tutorial_labels.form_input(data-tutorial-hover-info)
-            base-select(
-              v-model="settings.Labels"
-              :select-options="inputLayers"
-            )
-      .settings-layer_section
+  div
+    .settings-layer_section
+      .form_row
+        .form_label(v-tooltip-interactive:right="interactiveInfo.epochs") Epochs:
+        #tutorial_epochs.form_input(data-tutorial-hover-info)
+          input(
+            type="number" 
+            v-model="settings.Epochs"
+            @focus="setIsSettingInputFocused(true)"
+            @blur="setIsSettingInputFocused(false)")
+    .settings-layer_section
+      .form_row
+        .form_label(v-tooltip-interactive:right="interactiveInfo.grid_size") Grid Size:
+        #tutorial_grid_size.form_input(data-tutorial-hover-info)
+          input(
+            type="number"
+            v-model="settings.grid_size"
+            @focus="setIsSettingInputFocused(true)"
+            @blur="setIsSettingInputFocused(false)")
+    .settings-layer_section
+      .form_row
+        .form_label(v-tooltip-interactive:right="interactiveInfo.batch_size") Batch Size:
+        #tutorial_batch_size.form_input(data-tutorial-hover-info)
+          input(
+            type="number"
+            v-model="settings.batch_size"
+            @focus="setIsSettingInputFocused(true)"
+            @blur="setIsSettingInputFocused(false)")
+    .settings-layer_section
+      .form_row
+        .form_label(v-tooltip-interactive:right="interactiveInfo.num_box") Number of Boxes:
+        #tutorial_num_box.form_input(data-tutorial-hover-info)
+          input(
+            type="number"
+            v-model="settings.num_box"
+            @focus="setIsSettingInputFocused(true)"
+            @blur="setIsSettingInputFocused(false)")
+    .settings-layer_section
+      .form_row
+        .form_label(v-tooltip-interactive:right="interactiveInfo.threshold") Threshold:
+        #tutorial_threshold.form_input(data-tutorial-hover-info)
+          input(
+            type="number"
+            v-model="settings.threshold"
+            @focus="setIsSettingInputFocused(true)"
+            @blur="setIsSettingInputFocused(false)")
+    .settings-layer_section
+      .form_row
+        .form_label(v-tooltip-interactive:right="interactiveInfo.lambda_class") λ
+          sub classification:
+        #tutorial_lambda_class.form_input(data-tutorial-hover-info)
+          input(type="number" v-model="settings.lambda_class")
+    .settings-layer_section
+      .form_row
+        .form_label(v-tooltip-interactive:right="interactiveInfo.lambda_noobj") λ
+          sub non object:
+        #tutorial_lambda_noobj.form_input(data-tutorial-hover-info)
+          input(type="number" v-model="settings.lambda_noobj")
+    .settings-layer_section
+      .form_row(v-tooltip-interactive:right="interactiveInfo.optimizer")
+        .form_label Optimizer:
+        #tutorial_optimizer.form_input(data-tutorial-hover-info)
+          base-radio(group-name="group1" value-input="ADAM" v-model="settings.Optimizer")
+            span ADAM
+          base-radio(group-name="group1" value-input="SGD" v-model="settings.Optimizer")
+            span SGD
+          base-radio(group-name="group1" value-input="Momentum" v-model="settings.Optimizer")
+            span Momentum
+          base-radio(group-name="group1" value-input="RMSprop" v-model="settings.Optimizer")
+            span RMSprop
+
+      template(v-if="settings.Optimizer === 'ADAM'")
         .form_row
-          .form_label(v-tooltip-interactive:right="interactiveInfo.epochs") Epochs:
-          #tutorial_epochs.form_input(data-tutorial-hover-info)
-            input(type="number" v-model="settings.Epochs")
-      .settings-layer_section
+          .form_label Beta 1:
+          .form_input
+            input(
+              type="number"
+              v-model="settings.Beta_1"
+              @focus="setIsSettingInputFocused(true)"
+              @blur="setIsSettingInputFocused(false)")
         .form_row
-          .form_label(v-tooltip-interactive:right="interactiveInfo.grid_size") Grid Size:
-          #tutorial_grid_size.form_input(data-tutorial-hover-info)
-            input(type="number" v-model="settings.grid_size")
-      .settings-layer_section
+          .form_label Beta 2:
+          .form_input
+            input(
+              type="number"
+              v-model="settings.Beta_2"
+              @focus="setIsSettingInputFocused(true)"
+              @blur="setIsSettingInputFocused(false)")
+      template(v-if="settings.Optimizer === 'Momentum'")
         .form_row
-          .form_label(v-tooltip-interactive:right="interactiveInfo.batch_size") Batch Size:
-          #tutorial_batch_size.form_input(data-tutorial-hover-info)
-            input(type="number" v-model="settings.batch_size")
-      .settings-layer_section
-        .form_row
-          .form_label(v-tooltip-interactive:right="interactiveInfo.num_box") Number of Boxes:
-          #tutorial_num_box.form_input(data-tutorial-hover-info)
-            input(type="number" v-model="settings.num_box")
-      .settings-layer_section
-        .form_row
-          .form_label(v-tooltip-interactive:right="interactiveInfo.threshold") Threshold:
-          #tutorial_threshold.form_input(data-tutorial-hover-info)
-            input(type="number" v-model="settings.threshold")
-      .settings-layer_section
+          .form_label Momentum:
+          .form_input
+            input(
+              type="number"
+              v-model="settings.Momentum"
+              @focus="setIsSettingInputFocused(true)"
+              @blur="setIsSettingInputFocused(false)")
         .form_row
           .form_label(v-tooltip-interactive:right="interactiveInfo.lambda_class") λ
             sub classification:
           #tutorial_lambda_class.form_input(data-tutorial-hover-info)
-            input(type="number" v-model="settings.lambda_class")
+            input(
+              type="number"
+              v-model="settings.lambda_class"
+              @focus="setIsSettingInputFocused(true)"
+              @blur="setIsSettingInputFocused(false)")
       .settings-layer_section
         .form_row
           .form_label(v-tooltip-interactive:right="interactiveInfo.lambda_noobj") λ
             sub non object:
           #tutorial_lambda_noobj.form_input(data-tutorial-hover-info)
-            input(type="number" v-model="settings.lambda_noobj")
-      .settings-layer_section
-        .form_row(v-tooltip-interactive:right="interactiveInfo.optimizer")
-          .form_label Optimizer:
-          #tutorial_optimizer.form_input(data-tutorial-hover-info)
-            base-radio(group-name="group1" value-input="ADAM" v-model="settings.Optimizer")
-              span ADAM
-            base-radio(group-name="group1" value-input="SGD" v-model="settings.Optimizer")
-              span SGD
-            base-radio(group-name="group1" value-input="Momentum" v-model="settings.Optimizer")
-              span Momentum
-            base-radio(group-name="group1" value-input="RMSprop" v-model="settings.Optimizer")
-              span RMSprop
-
-        template(v-if="settings.Optimizer === 'ADAM'")
-          .form_row
-            .form_label Beta 1:
-            .form_input
-              input(type="number" v-model="settings.Beta_1")
-          .form_row
-            .form_label Beta 2:
-            .form_input
-              input(type="number" v-model="settings.Beta_2")
-        template(v-if="settings.Optimizer === 'Momentum'")
-          .form_row
-            .form_label Momentum:
-            .form_input
-              input(type="number" v-model="settings.Momentum")
-          .form_row
-            .form_label Decay rate:
-            .form_input
-              input(type="number" v-model="settings.Decay_rate")
-          .form_row
-            .form_label Decay steps:
-            .form_input
-              input(type="number" v-model="settings.Decay_steps")
-      .settings-layer_section
-        .form_row(v-tooltip-interactive:right="interactiveInfo.learningRate")
-          .form_label Learning rate:
-          #tutorial_learning_rate.form_input(data-tutorial-hover-info)
-            input(type="number" v-model="settings.Learning_rate")
-      .settings-layer_section
+            input(
+              type="number"
+              v-model="settings.lambda_noobj"
+              @focus="setIsSettingInputFocused(true)"
+              @blur="setIsSettingInputFocused(false)")
+ 
+          .form_label Decay rate:
+          .form_input
+            input(
+              type="number"
+              v-model="settings.Decay_rate"
+              @focus="setIsSettingInputFocused(true)"
+              @blur="setIsSettingInputFocused(false)")
         .form_row
-          .form_label Additional Stop Condition:
-          #tutorial_stop-condition.tutorial-relative.form_input(data-tutorial-hover-info)
-            base-radio(group-name="group2" value-input="Epochs" v-model="settings.Stop_condition")
-              span None
-            base-radio(group-name="group2" value-input="TargetAccuracy" v-model="settings.Stop_condition")
-              span Target Accuracy
-        template(v-if="settings.Stop_condition === 'TargetAccuracy'")
-          .form_row
-            .form_label Target Accuracy for Stop Condition:
-            .form_input
-              input(type="number" v-model="settings.Stop_Target_Accuracy") 
-              span %
+          .form_label Decay steps:
+          .form_input
+            input(
+              type="number"
+              v-model="settings.Decay_steps"
+              @focus="setIsSettingInputFocused(true)"
+              @blur="setIsSettingInputFocused(false)")
+    .settings-layer_section
+      .form_row(v-tooltip-interactive:right="interactiveInfo.learningRate")
+        .form_label Learning rate:
+        #tutorial_learning_rate.form_input(data-tutorial-hover-info)
+          input(
+            type="number"
+            v-model="settings.Learning_rate"
+            @focus="setIsSettingInputFocused(true)"
+            @blur="setIsSettingInputFocused(false)")
+    .settings-layer_section
+      .form_row
+        .form_label Additional Stop Condition:
+        #tutorial_stop-condition.tutorial-relative.form_input(data-tutorial-hover-info)
+          base-radio(group-name="group2" value-input="Epochs" v-model="settings.Stop_condition")
+            span None
+          base-radio(group-name="group2" value-input="TargetAccuracy" v-model="settings.Stop_condition")
+            span Target Accuracy
+      template(v-if="settings.Stop_condition === 'TargetAccuracy'")
+        .form_row
+          .form_label Target Accuracy for Stop Condition:
+          .form_input
+            input(
+              type="number"
+              v-model="settings.Stop_Target_Accuracy"
+              @focus="setIsSettingInputFocused(true)"
+              @blur="setIsSettingInputFocused(false)") 
+            span %
 
-    template(slot="Code-content")
-      settings-code(
-        :current-el="currentEl"
-        :el-settings="settings"
-        v-model="coreCode"
-      )
+    //- template(slot="Code-content")
+    //-   settings-code(
+    //-     :current-el="currentEl"
+    //-     :el-settings="settings"
+    //-     v-model="coreCode"
+    //-   )
 
 </template>
 
 <script>
 import mixinSet from '@/core/mixins/net-element-settings.js';
+import mixinFocus     from '@/core/mixins/net-element-settings-input-focus.js';
 import { mapGetters, mapActions } from 'vuex';
 
 export default {
   name: 'SetTrainDetector',
-  mixins: [ mixinSet ],
+  mixins: [ mixinSet, mixinFocus ],
   beforeMount() {
     this.inputId.forEach((id)=> {
       let elList = this.currentNetworkList;
@@ -201,6 +256,9 @@ export default {
         }
       }
     }
+  },
+  mounted() {
+    this.saveSettingsToStore("Settings");
   },
   computed: {
     ...mapGetters({

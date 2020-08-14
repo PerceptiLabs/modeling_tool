@@ -7,15 +7,23 @@ import skimage
 from skimage import io
 import pkg_resources
 
-
+from perceptilabs.script import ScriptFactory
 from perceptilabs.core_new.layers.templates.base import J2Engine
 from perceptilabs.core_new.layers.templates.utils import instantiate_layer_from_macro, create_layer
 from perceptilabs.core_new.layers.definitions import TEMPLATES_DIRECTORY, DEFINITION_TABLE, TOP_LEVEL_IMPORTS_FLAT
+
+from perceptilabs.layers.helper import LayerHelper
+from perceptilabs.layers.datadata.spec import DataDataSpec, DataSource
+
 
 
 def fix_path(x):
     return x.replace('\\', '/')
 
+
+@pytest.fixture(scope='module')
+def script_factory():
+    return ScriptFactory()
 
 @pytest.fixture(scope='module')
 def j2_engine():
@@ -96,262 +104,250 @@ def img_5x32x32x3():
         yield fix_path(dir_path)
 
         
-def test_npy_shape_1d_ok(j2_engine, npy_30x784):
-    sources = [{'type': 'file', 'path': npy_30x784, 'ext': '.npy'}]
-    partitions = [(70, 20, 10)]
-
-    layer = create_layer(
-        j2_engine, DEFINITION_TABLE, TOP_LEVEL_IMPORTS_FLAT, 
-        'DataData',
-        sources=sources,
-        partitions=partitions,
-        selected_columns=None,        
+def test_npy_shape_1d_ok(script_factory, npy_30x784):
+    layer_spec = DataDataSpec(
+        id_='123', name='layer123', type_='DataData', 
+        sources=(DataSource(type_='file', path=npy_30x784, ext='.npy', split=(70, 20, 10)),)
     )
 
-    assert layer.sample.shape == (784,)
+    helper = LayerHelper(script_factory, layer_spec)
+    layer = helper.get_instance()
+
+    assert layer.sample['output'].shape == (784,)
 
 
-def test_npy_shape_2d_ok(j2_engine, npy_30x28x28):
-    sources = [{'type': 'file', 'path': npy_30x28x28, 'ext': '.npy'}]
-    partitions = [(70, 20, 10)]
-
-    layer = create_layer(
-        j2_engine, DEFINITION_TABLE, TOP_LEVEL_IMPORTS_FLAT, 
-        'DataData',
-        sources=sources,
-        partitions=partitions,
-        selected_columns=None,        
+def test_npy_shape_2d_ok(script_factory, npy_30x28x28):
+    layer_spec = DataDataSpec(
+        id_='123', name='layer123', type_='DataData', 
+        sources=(DataSource(type_='file', path=npy_30x28x28, ext='.npy', split=(70, 20, 10)),)
     )
 
-    assert layer.sample.shape == (28, 28)
+    helper = LayerHelper(script_factory, layer_spec)
+    layer = helper.get_instance()
+
+    assert layer.sample['output'].shape == (28, 28)
     
 
-def test_npy_shape_3d_ok(j2_engine, npy_30x28x28x3):
-    sources = [{'type': 'file', 'path': npy_30x28x28x3, 'ext': '.npy'}]
-    partitions = [(70, 20, 10)]
-
-    layer = create_layer(
-        j2_engine, DEFINITION_TABLE, TOP_LEVEL_IMPORTS_FLAT, 
-        'DataData',
-        sources=sources,
-        partitions=partitions,
-        selected_columns=None,        
+def test_npy_shape_3d_ok(script_factory, npy_30x28x28x3):
+    layer_spec = DataDataSpec(
+        id_='123', name='layer123', type_='DataData', 
+        sources=(DataSource(type_='file', path=npy_30x28x28x3, ext='.npy', split=(70, 20, 10)),)
     )
+    helper = LayerHelper(script_factory, layer_spec)
+    layer = helper.get_instance()
+    assert layer.sample['output'].shape == (28, 28, 3)
 
-    assert layer.sample.shape == (28, 28, 3)
 
-
-def test_csv_shape_ok(j2_engine, csv_30x784):
+def test_csv_shape_ok(script_factory, csv_30x784):
     sources = [{'type': 'file', 'path': csv_30x784, 'ext': '.csv'}]
-    partitions = [(70, 20, 10)]
 
-    layer = create_layer(
-        j2_engine, DEFINITION_TABLE, TOP_LEVEL_IMPORTS_FLAT, 
-        'DataData',
-        sources=sources,
-        partitions=partitions,
-        selected_columns=None,
-        lazy=False
+    layer_spec = DataDataSpec(
+        id_='123', name='layer123', type_='DataData', 
+        sources=(DataSource(type_='file', path=csv_30x784, ext='.csv', split=(70, 20, 10)),)
     )
 
-    assert layer.sample.shape == (784,)
+    helper = LayerHelper(script_factory, layer_spec)
+    layer = helper.get_instance()
+
+    assert layer.sample['output'].shape == (784,)
+
     
-
-def test_csv_columns_ok(j2_engine, csv_30x784):
+def test_csv_columns_ok(script_factory, csv_30x784):
     sources = [{'type': 'file', 'path': csv_30x784, 'ext': '.csv'}]
-    partitions = [(70, 20, 10)]
 
-    layer = create_layer(
-        j2_engine, DEFINITION_TABLE, TOP_LEVEL_IMPORTS_FLAT,
-        'DataData',
-        sources=sources,
-        partitions=partitions,
-        selected_columns=None,
-        lazy=False
+    layer_spec = DataDataSpec(
+        id_='123', name='layer123', type_='DataData', 
+        sources=(DataSource(type_='file', path=csv_30x784, ext='.csv', split=(70, 20, 10)),)
     )
+
+    helper = LayerHelper(script_factory, layer_spec)
+    layer = helper.get_instance()
 
     expected_columns = ['col_' + str(x) for x in range(784)]
     assert layer.columns == expected_columns
 
     
-def test_csv_columns_ok_lazy(j2_engine, csv_30x784):
+def test_csv_columns_ok_lazy(script_factory, csv_30x784):
     sources = [{'type': 'file', 'path': csv_30x784, 'ext': '.csv'}]
-    partitions = [(70, 20, 10)]
 
-    layer = create_layer(
-        j2_engine, DEFINITION_TABLE, TOP_LEVEL_IMPORTS_FLAT,
-        'DataData',
-        sources=sources,
-        partitions=partitions,
-        selected_columns=None,
+    layer_spec = DataDataSpec(
+        id_='123', name='layer123', type_='DataData', 
+        sources=(DataSource(type_='file', path=csv_30x784, ext='.csv', split=(70, 20, 10)),),
         lazy=True
     )
+
+    helper = LayerHelper(script_factory, layer_spec)
+    layer = helper.get_instance()
 
     expected_columns = ['col_' + str(x) for x in range(784)]
     assert layer.columns == expected_columns
 
 
-def test_csv_columns_ok_when_selected(j2_engine, csv_30x784):
+def test_csv_columns_ok_when_selected(script_factory, csv_30x784):
     sources = [{'type': 'file', 'path': csv_30x784, 'ext': '.csv'}]
-    partitions = [(70, 20, 10)]
 
-    layer = create_layer(
-        j2_engine, DEFINITION_TABLE, TOP_LEVEL_IMPORTS_FLAT,
-        'DataData',
-        sources=sources,
-        partitions=partitions,
-        selected_columns=[0, 1],
-        lazy=False
+    layer_spec = DataDataSpec(
+        id_='123', name='layer123', type_='DataData', 
+        sources=(DataSource(type_='file', path=csv_30x784, ext='.csv', split=(70, 20, 10)),),
+        selected_columns=(0, 1)
     )
 
-    assert layer.sample.shape == (2,)
+    helper = LayerHelper(script_factory, layer_spec)
+    layer = helper.get_instance()
+
+    expected_columns = ['col_' + str(x) for x in range(784)]
+    assert layer.sample['output'].shape == (2,)    
 
 
-def test_csv_columns_ok_when_selected_lazy(j2_engine, csv_30x784):
+def test_csv_columns_ok_when_selected_lazy(script_factory, csv_30x784):
     sources = [{'type': 'file', 'path': csv_30x784, 'ext': '.csv'}]
-    partitions = [(70, 20, 10)]
 
-    layer = create_layer(
-        j2_engine, DEFINITION_TABLE, TOP_LEVEL_IMPORTS_FLAT,
-        'DataData',
-        sources=sources,
-        partitions=partitions,
-        selected_columns=[0, 1],
+    layer_spec = DataDataSpec(
+        id_='123', name='layer123', type_='DataData', 
+        sources=(DataSource(type_='file', path=csv_30x784, ext='.csv', split=(70, 20, 10)),),
+        selected_columns=(0, 1),
         lazy=True
     )
 
-    assert layer.sample.shape == (2,)
+    helper = LayerHelper(script_factory, layer_spec)
+    layer = helper.get_instance()
+
+    expected_columns = ['col_' + str(x) for x in range(784)]
+    assert layer.sample['output'].shape == (2,)    
 
     
-def test_npy_shape_1d_ok_lazy(j2_engine, npy_30x784):
-    sources = [{'type': 'file', 'path': npy_30x784, 'ext': '.npy'}]
-    partitions = [(70, 20, 10)]
-
-    layer = create_layer(
-        j2_engine, DEFINITION_TABLE, TOP_LEVEL_IMPORTS_FLAT, 
-        'DataData',
-        sources=sources,
-        partitions=partitions,
-        selected_columns=None,        
+def test_npy_shape_1d_ok_lazy(script_factory, npy_30x784):
+    layer_spec = DataDataSpec(
+        id_='123', name='layer123', type_='DataData', 
+        sources=(DataSource(type_='file', path=npy_30x784, ext='.npy', split=(70, 20, 10)),),
         lazy=True
     )
 
-    assert layer.sample.shape == (784,)
+    helper = LayerHelper(script_factory, layer_spec)
+    layer = helper.get_instance()
+
+    assert layer.sample['output'].shape == (784,)
 
 
-def test_npy_shape_2d_ok_lazy(j2_engine, npy_30x28x28):
-    sources = [{'type': 'file', 'path': npy_30x28x28, 'ext': '.npy'}]
-    partitions = [(70, 20, 10)]
-
-    layer = create_layer(
-        j2_engine, DEFINITION_TABLE, TOP_LEVEL_IMPORTS_FLAT, 
-        'DataData',
-        sources=sources,
-        partitions=partitions,
-        selected_columns=None,        
+def test_npy_shape_2d_ok_lazy(script_factory, npy_30x28x28):
+    layer_spec = DataDataSpec(
+        id_='123', name='layer123', type_='DataData', 
+        sources=(DataSource(type_='file', path=npy_30x28x28, ext='.npy', split=(70, 20, 10)),),
         lazy=True
     )
 
-    assert layer.sample.shape == (28, 28)
+    helper = LayerHelper(script_factory, layer_spec)
+    layer = helper.get_instance()
+
+    assert layer.sample['output'].shape == (28, 28)
     
 
-def test_npy_shape_3d_ok_lazy(j2_engine, npy_30x28x28x3):
-    sources = [{'type': 'file', 'path': npy_30x28x28x3, 'ext': '.npy'}]
-    partitions = [(70, 20, 10)]
-    
-    layer = create_layer(
-        j2_engine, DEFINITION_TABLE, TOP_LEVEL_IMPORTS_FLAT, 
-        'DataData',
-        sources=sources,
-        partitions=partitions,
-        selected_columns=None,        
+def test_npy_shape_3d_ok_lazy(script_factory, npy_30x28x28x3):
+    layer_spec = DataDataSpec(
+        id_='123', name='layer123', type_='DataData', 
+        sources=(DataSource(type_='file', path=npy_30x28x28x3, ext='.npy', split=(70, 20, 10)),),
         lazy=True
     )
+    helper = LayerHelper(script_factory, layer_spec)
+    layer = helper.get_instance()
+    assert layer.sample['output'].shape == (28, 28, 3)
 
-    assert layer.sample.shape == (28, 28, 3)
 
 
-def test_csv_shape_ok_lazy(j2_engine, csv_30x784):
+def test_csv_shape_ok_lazy(script_factory, csv_30x784):
     sources = [{'type': 'file', 'path': csv_30x784, 'ext': '.csv'}]
-    partitions = [(70, 20, 10)]
 
-    layer = create_layer(
-        j2_engine, DEFINITION_TABLE, TOP_LEVEL_IMPORTS_FLAT, 
-        'DataData',
-        sources=sources,
-        partitions=partitions,
-        selected_columns=None,
-        lazy=True        
+    layer_spec = DataDataSpec(
+        id_='123', name='layer123', type_='DataData', 
+        sources=(DataSource(type_='file', path=csv_30x784, ext='.csv', split=(70, 20, 10)),),
+        lazy=True
     )
 
-    assert layer.sample.shape == (784,)
+    helper = LayerHelper(script_factory, layer_spec)
+    layer = helper.get_instance()
+
+    assert layer.sample['output'].shape == (784,)
 
 
-def test_npy_samples_appear_in_order(j2_engine, npy_30x784):
-    sources = [{'type': 'file', 'path': npy_30x784, 'ext': '.npy'}]
-    partitions = [(70, 20, 10)]
-
-    layer = create_layer(
-        j2_engine, DEFINITION_TABLE, TOP_LEVEL_IMPORTS_FLAT, 
-        'DataData',
-        sources=sources,
-        partitions=partitions,
-        selected_columns=None,
-        lazy=False
+def test_npy_samples_appear_in_order(script_factory, npy_30x784):
+    layer_spec = DataDataSpec(
+        id_='123', name='layer123', type_='DataData', 
+        sources=(DataSource(type_='file', path=npy_30x784, ext='.npy', split=(70, 20, 10)),)
     )
+    helper = LayerHelper(script_factory, layer_spec)
+    layer = helper.get_instance()
 
-    x_trn = np.array(list(layer.make_generator_training()))
-    x_val = np.array(list(layer.make_generator_validation()))
-    x_tst = np.array(list(layer.make_generator_testing()))    
+    x_trn = np.array([
+        x['output']
+        for x in layer.make_generator_training()
+    ])
+    x_val = np.array([
+        x['output']
+        for x in layer.make_generator_validation()
+    ])
+    x_tst = np.array([
+        x['output']
+        for x in layer.make_generator_testing()
+    ])
     x = np.vstack([x_trn, x_val, x_tst]) 
+
 
     x_ = np.load(npy_30x784).astype(np.float32)
     assert np.all(x == x_)
 
 
-def test_csv_samples_appear_in_order(j2_engine, csv_30x784):
-    sources = [{'type': 'file', 'path': csv_30x784, 'ext': '.csv'}]
-    partitions = [(70, 20, 10)]
-
-    layer = create_layer(
-        j2_engine, DEFINITION_TABLE, TOP_LEVEL_IMPORTS_FLAT, 
-        'DataData',
-        sources=sources,
-        partitions=partitions,
-        selected_columns=None,
-        lazy=False
+def test_csv_samples_appear_in_order(script_factory, csv_30x784):
+    layer_spec = DataDataSpec(
+        id_='123', name='layer123', type_='DataData', 
+        sources=(DataSource(type_='file', path=csv_30x784, ext='.csv', split=(70, 20, 10)),)
     )
+    helper = LayerHelper(script_factory, layer_spec)
+    layer = helper.get_instance()
 
-    x_trn = np.array(list(layer.make_generator_training()))
-    x_val = np.array(list(layer.make_generator_validation()))
-    x_tst = np.array(list(layer.make_generator_testing()))    
+    x_trn = np.array([
+        x['output']
+        for x in layer.make_generator_training()
+    ])
+    x_val = np.array([
+        x['output']
+        for x in layer.make_generator_validation()
+    ])
+    x_tst = np.array([
+        x['output']
+        for x in layer.make_generator_testing()
+    ])
     x = np.vstack([x_trn, x_val, x_tst]) 
 
-    x_ = np.loadtxt(csv_30x784, delimiter=',', skiprows=1).astype(np.float32)        
+    x_ = np.loadtxt(csv_30x784, delimiter=',', skiprows=1).astype(np.float32)  
     assert np.all(x == x_)
     
 
-def test_npy_and_csv_samples_appear_interleaved(j2_engine, npy_30x784, csv_30x784):
-    sources = [
-        {'type': 'file', 'path': npy_30x784, 'ext': '.npy'},
-        {'type': 'file', 'path': csv_30x784, 'ext': '.csv'},        
-    ]
-    partitions = [(70, 20, 10), (70, 20, 10)]
-        
-    layer = create_layer(
-        j2_engine, DEFINITION_TABLE, TOP_LEVEL_IMPORTS_FLAT, 
-        'DataData',
-        sources=sources,
-        partitions=partitions,
-        selected_columns=None,
-        lazy=False
+def test_npy_and_csv_samples_appear_interleaved(script_factory, npy_30x784, csv_30x784):
+    layer_spec = DataDataSpec(
+        id_='123', name='layer123', type_='DataData', 
+        sources=(
+            DataSource(type_='file', path=npy_30x784, ext='.npy', split=(70, 20, 10)),
+            DataSource(type_='file', path=csv_30x784, ext='.csv', split=(70, 20, 10)),            
+        )
     )
+    helper = LayerHelper(script_factory, layer_spec)
+    layer = helper.get_instance()
 
-    x_trn = np.array(list(layer.make_generator_training()))
-    x_val = np.array(list(layer.make_generator_validation()))
-    x_tst = np.array(list(layer.make_generator_testing()))    
+    x_trn = np.array([
+        x['output']
+        for x in layer.make_generator_training()
+    ])
+    x_val = np.array([
+        x['output']
+        for x in layer.make_generator_validation()
+    ])
+    x_tst = np.array([
+        x['output']
+        for x in layer.make_generator_testing()
+    ])
     x = np.vstack([x_trn, x_val, x_tst]) 
 
+    
     mat1 = np.load(npy_30x784).astype(np.float32)
     mat2 = np.loadtxt(csv_30x784, delimiter=',', skiprows=1).astype(np.float32)    
 
@@ -365,71 +361,88 @@ def test_npy_and_csv_samples_appear_interleaved(j2_engine, npy_30x784, csv_30x78
     assert np.all(x_tst[3:6] == mat2[27:30])    
 
     
-def test_npy_samples_appear_in_order_lazy(j2_engine, npy_30x784):
-    sources = [{'type': 'file', 'path': npy_30x784, 'ext': '.npy'}]
-    partitions = [(70, 20, 10)]
-
-    layer = create_layer(
-        j2_engine, DEFINITION_TABLE, TOP_LEVEL_IMPORTS_FLAT, 
-        'DataData',
-        sources=sources,
-        partitions=partitions,
-        selected_columns=None,
+def test_npy_samples_appear_in_order_lazy(script_factory, npy_30x784):
+    layer_spec = DataDataSpec(
+        id_='123', name='layer123', type_='DataData', 
+        sources=(DataSource(type_='file', path=npy_30x784, ext='.npy', split=(70, 20, 10)),),
         lazy=True
     )
+    helper = LayerHelper(script_factory, layer_spec)
+    layer = helper.get_instance()
 
-    x_trn = np.array(list(layer.make_generator_training()))
-    x_val = np.array(list(layer.make_generator_validation()))
-    x_tst = np.array(list(layer.make_generator_testing()))    
+    x_trn = np.array([
+        x['output']
+        for x in layer.make_generator_training()
+    ])
+    x_val = np.array([
+        x['output']
+        for x in layer.make_generator_validation()
+    ])
+    x_tst = np.array([
+        x['output']
+        for x in layer.make_generator_testing()
+    ])
     x = np.vstack([x_trn, x_val, x_tst]) 
+
 
     x_ = np.load(npy_30x784).astype(np.float32)
     assert np.all(x == x_)
 
-
-def test_csv_samples_appear_in_order_lazy(j2_engine, csv_30x784):
-    sources = [{'type': 'file', 'path': csv_30x784, 'ext': '.csv'}]
-    partitions = [(70, 20, 10)]
-
-    layer = create_layer(
-        j2_engine, DEFINITION_TABLE, TOP_LEVEL_IMPORTS_FLAT, 
-        'DataData',
-        sources=sources,
-        partitions=partitions,
-        selected_columns=None,
+    
+def test_csv_samples_appear_in_order_lazy(script_factory, csv_30x784):
+    layer_spec = DataDataSpec(
+        id_='123', name='layer123', type_='DataData', 
+        sources=(DataSource(type_='file', path=csv_30x784, ext='.csv', split=(70, 20, 10)),),
         lazy=True
     )
+    helper = LayerHelper(script_factory, layer_spec)
+    layer = helper.get_instance()
 
-    x_trn = np.array(list(layer.make_generator_training()))
-    x_val = np.array(list(layer.make_generator_validation()))
-    x_tst = np.array(list(layer.make_generator_testing()))    
+    x_trn = np.array([
+        x['output']
+        for x in layer.make_generator_training()
+    ])
+    x_val = np.array([
+        x['output']
+        for x in layer.make_generator_validation()
+    ])
+    x_tst = np.array([
+        x['output']
+        for x in layer.make_generator_testing()
+    ])
     x = np.vstack([x_trn, x_val, x_tst]) 
 
-    x_ = np.loadtxt(csv_30x784, delimiter=',', skiprows=1).astype(np.float32)        
+    x_ = np.loadtxt(csv_30x784, delimiter=',', skiprows=1).astype(np.float32)      
     assert np.all(x == x_)
     
 
-def test_npy_and_csv_samples_appear_interleaved_lazy(j2_engine, npy_30x784, csv_30x784):
-    sources = [
-        {'type': 'file', 'path': npy_30x784, 'ext': '.npy'},
-        {'type': 'file', 'path': csv_30x784, 'ext': '.csv'},        
-    ]
-    partitions = [(70, 20, 10), (70, 20, 10)]
-
-    layer = create_layer(
-        j2_engine, DEFINITION_TABLE, TOP_LEVEL_IMPORTS_FLAT, 
-        'DataData',
-        sources=sources,
-        partitions=partitions,
-        selected_columns=None,
+def test_npy_and_csv_samples_appear_interleaved_lazy(script_factory, npy_30x784, csv_30x784):
+    layer_spec = DataDataSpec(
+        id_='123', name='layer123', type_='DataData', 
+        sources=(
+            DataSource(type_='file', path=npy_30x784, ext='.npy', split=(70, 20, 10)),
+            DataSource(type_='file', path=csv_30x784, ext='.csv', split=(70, 20, 10)),            
+        ),
         lazy=True
     )
+    helper = LayerHelper(script_factory, layer_spec)
+    layer = helper.get_instance()
 
-    x_trn = np.array(list(layer.make_generator_training()))
-    x_val = np.array(list(layer.make_generator_validation()))
-    x_tst = np.array(list(layer.make_generator_testing()))    
+    x_trn = np.array([
+        x['output']
+        for x in layer.make_generator_training()
+    ])
+    x_val = np.array([
+        x['output']
+        for x in layer.make_generator_validation()
+    ])
+    x_tst = np.array([
+        x['output']
+        for x in layer.make_generator_testing()
+    ])
     x = np.vstack([x_trn, x_val, x_tst]) 
 
+    
     mat1 = np.load(npy_30x784).astype(np.float32)
     mat2 = np.loadtxt(csv_30x784, delimiter=',', skiprows=1).astype(np.float32)    
 
@@ -441,4 +454,3 @@ def test_npy_and_csv_samples_appear_interleaved_lazy(j2_engine, npy_30x784, csv_
 
     assert np.all(x_tst[0:3] == mat1[27:30])
     assert np.all(x_tst[3:6] == mat2[27:30])    
-    

@@ -71,8 +71,7 @@
       }
       else if(localStorage.hasOwnProperty('targetProject')) {
         const targetProjectId = parseInt(localStorage.getItem('targetProject'));
-        this.$store.commit('mod_workspace-changes/get_workspaceChangesInLocalStorage')
-
+        
         // this.loadProjectFromLocalStorage(targetProjectId)
         
         this.getProjects();
@@ -88,6 +87,7 @@
           this.setActivePageAction(MODAL_PAGE_PROJECT);
         }
       }
+      this.$store.commit('mod_workspace-changes/get_workspaceChangesInLocalStorage');
 
       // @todo fetch models for project;
       if(isWeb()) {
@@ -141,6 +141,10 @@
         this.sendPathToAnalist(this.$route.fullPath);
       })
       if(!this.user) this.cloud_userGetProfile();
+
+      setTimeout(() => {
+        this.$store.dispatch('mod_api/API_getOutputDim');
+      }, 1000);
     },
     beforeDestroy() {
       window.removeEventListener('online',  this.updateOnlineStatus);

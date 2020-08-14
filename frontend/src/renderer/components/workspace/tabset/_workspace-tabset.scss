@@ -85,18 +85,27 @@
 }
 
 .tab_close {
+  position: relative;
+
   margin-right: 1.25rem;
   font-size: .5em;
   color: $bg-scroll;
   &:disabled {
     opacity: 0;
   }
+
+  & > * {
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
 }
+
 .tab_name {
   margin-right: 1rem;
   flex: 1;
 
-  width: 12rem;
+  width: 10rem;
 
   text-overflow: ellipsis;
   overflow: hidden;
@@ -115,6 +124,22 @@
   }
 }
 
+.unsaved-changes-indicator {
+  height: 0.8rem;
+  width: 0.8rem;
+
+  border-radius: 50%;
+  background-color: #E1E1E1;
+
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
+  &.hover {
+    opacity: 0;
+    transition: ease-out 0.7;
+  }
+}
 
 .toggle-sidebar {
   z-index: 2;

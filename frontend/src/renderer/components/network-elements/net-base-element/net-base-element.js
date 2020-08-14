@@ -3,12 +3,14 @@ import ContextMenu        from '@/components/network-elements/net-context-menu/n
 import baseNetDrag        from '@/core/mixins/base-net-drag.js';
 import baseNetPaintArrows from '@/core/mixins/base-net-paint-arrows.js';
 import mousedownOutside   from '@/core/mixins/mousedown-outside.js'
+import SettingsPreview  from "@/components/network-elements/elements-settings/setting-preview.vue";
+
 import {mapGetters, mapActions}       from 'vuex';
 
 export default {
   name: 'NetBaseElement',
   mixins: [baseNetDrag, baseNetPaintArrows, mousedownOutside],
-  components: { ContextMenu },
+  components: { ContextMenu, SettingsPreview },
   props: {
     layerContainer: {
       type: Boolean,
@@ -98,6 +100,12 @@ export default {
         'net-element_window--left': this.openWinPosition.left,
         'net-element_window--top': this.openWinPosition.top
       }
+    },
+    isCodeWindowFocused() {
+      return this.$store.state['mod_workspace-code-editor'].isInFocus;
+    },
+    isSettingInputFocused() {
+      return this.$store.state.mod_workspace.isSettingInputFocused;
     }
   },
   watch: {
@@ -114,7 +122,8 @@ export default {
     '$store.state.mod_events.globalPressKey.del': {
       handler() {
         if(this.editIsOpen
-          && !this.settingsIsOpen
+          && !this.isCodeWindowFocused
+          && !this.isSettingInputFocused
           && this.isSelectedEl
         ) {
           this.elementDelete();
@@ -133,8 +142,8 @@ export default {
       elementSelect:            'mod_workspace/SET_elementSelect'
     }),
     startArrowPaint(ev) {
-      document.addEventListener('mouseup', this.toEditMode);
-      this.setNetMode('addArrow');
+      document.addEventListener('mouseup', this.toEditMode); // back to edit mode
+      this.setNetMode('addArrow'); 
       this.Mix_paintArrow_arrowStartPaint(ev);
     },
     toEditMode() {
@@ -143,7 +152,9 @@ export default {
     },
     switchMousedownEvent(ev) {
       if (this.isLock) return;
-      if(this.networkMode === 'addArrow') this.Mix_paintArrow_arrowStartPaint(ev);
+      // if(this.networkMode === 'addArrow') {
+      //   this.Mix_paintArrow_arrowStartPaint(ev)
+      // };
       if(this.networkMode === 'edit'
         && this.editIsOpen
         && ev.button === 0

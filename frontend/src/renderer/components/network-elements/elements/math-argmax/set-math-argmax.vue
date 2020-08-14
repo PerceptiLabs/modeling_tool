@@ -1,31 +1,31 @@
 <template lang="pug">
-  net-base-settings(
-    :current-el="currentEl"
-    @press-apply="saveSettings($event)"
-    @press-confirm="confirmSettings"
-  )
-    template(slot="Settings-content")
-      .settings-layer_section
-        .form_row(v-tooltip-interactive:right="interactiveInfo.dimension")
-          .form_label Dimension:
-          .form_input
-            input(type="text" v-model="settings.Dim")
-    template(slot="Code-content")
-      settings-code(
-        :current-el="currentEl"
-        :el-settings="settings"
-        v-model="coreCode"
-      )
+  div
+    .settings-layer_section
+      .form_row(v-tooltip-interactive:right="interactiveInfo.dimension")
+        .form_label Dimension:
+        .form_input
+          input(
+            type="text"
+            v-model="settings.Dim"
+            @focus="setIsSettingInputFocused(true)"
+            @blur="setIsSettingInputFocused(false)")
+    //- template(slot="Code-content")
+    //-   settings-code(
+    //-     :current-el="currentEl"
+    //-     :el-settings="settings"
+    //-     v-model="coreCode"
+    //-   )
 
 </template>
 
 <script>
 import mixinSet       from '@/core/mixins/net-element-settings.js';
+import mixinFocus     from '@/core/mixins/net-element-settings-input-focus.js';
 import TripleInput    from "@/components/base/triple-input";
 
 export default {
   name: 'SetMathArgmax',
-  mixins: [mixinSet],
+  mixins: [mixinSet, mixinFocus],
   components: { TripleInput },
   data() {
     return {
@@ -39,6 +39,9 @@ export default {
         }
       }
     }
-  }
+  },
+  mounted() {
+    this.saveSettingsToStore("Settings");
+  },
 }
 </script>

@@ -112,7 +112,6 @@ const workspaceSaveNet = {
         });
     },
     saveNetwork(netInfo, netId, saveProjectPath) {
-      
       const networkField = this.$refs.networkField[0].$refs.network;
       networkField.style.filter = 'blur(5px)';
 
@@ -177,27 +176,31 @@ const workspaceSaveNet = {
 
       function doScreenShot(networkFieldEl) {
         return new Promise((resolve, reject)=> {
-          const svg = document.querySelector('.svg-arrow');
-          const arrowsCanvas = document.createElement('canvas');
-          arrowsCanvas.style.position = 'absolute';
-          arrowsCanvas.style.zIndex = '0';
-          networkFieldEl.appendChild(arrowsCanvas);
-          canvg(arrowsCanvas, svg.outerHTML, {});
-          svg.style.display = 'none';
-
-          const options = {
-            scale: 1,
-            backgroundColor: 'null',
-          };
-          return html2canvas(networkFieldEl, options)
-            .then((canvas)=> {
-              resolve(canvas.toDataURL());
-            })
-            .catch(error => { resolve() })
-            .finally(()=> {
-              svg.style.display = '';
-              arrowsCanvas.remove();
-            })
+          try {
+            const svg = document.querySelector('.svg-arrow');
+            const arrowsCanvas = document.createElement('canvas');
+            arrowsCanvas.style.position = 'absolute';
+            arrowsCanvas.style.zIndex = '0';
+            networkFieldEl.appendChild(arrowsCanvas);
+//            canvg(arrowsCanvas, svg.outerHTML, {});
+            svg.style.display = 'none';
+  
+            const options = {
+              scale: 1,
+              backgroundColor: 'null',
+            };
+            return html2canvas(networkFieldEl, options)
+              .then((canvas)=> {
+                resolve(canvas.toDataURL());
+              })
+              .catch(error => { resolve() })
+              .finally(()=> {
+                svg.style.display = '';
+                arrowsCanvas.remove();
+              })
+          } catch(e) {
+          }
+          
 
         })
       }

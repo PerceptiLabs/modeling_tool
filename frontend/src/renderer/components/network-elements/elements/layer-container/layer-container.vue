@@ -6,7 +6,7 @@
       :layer-container="true"
       @open-container="toggleContainer(false)"
     )
-      view-el(:current-el="elementData")
+      view-el(:current-el="elementData" :withLayerTypeText="withLayerTypeText")
     template(v-else)
       .layer-container_box(
         :style="containerStyle"
@@ -47,7 +47,8 @@
     name: 'LayerContainer',
     components: { BaseNetEl, ViewEl, ContextMenu },
     props: {
-      elementData: Object
+      elementData: Object,
+     withLayerTypeText: Boolean,
     },
     destroyed() {
       document.removeEventListener('click', this.closeContext, true);

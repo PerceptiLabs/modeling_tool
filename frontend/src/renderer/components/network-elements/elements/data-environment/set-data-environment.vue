@@ -1,38 +1,26 @@
 <template lang="pug">
-  net-base-settings(
-    :tab-set="tabs"
-    :current-el="currentEl"
-    @press-apply="saveSettings($event)"
-    @press-confirm="confirmSettings"
-  )
-    template(slot="Gym-content")
-      .settings-layer_section(style="position:relative")
-        .form_row
-          base-select(
-            v-model="settings.accessProperties.Atari"
-            :select-options="selectOptions"
-            v-tooltip-interactive:right="interactiveInfo.selectGame"
-          )
-        .action_space(v-if="Mix_settingsData_actionSpace")
-          span Action space:
-          span {{Mix_settingsData_actionSpace}}
-
-        set-data-environment-gym-img(
-          :layer-settings="settings"
-          :layer-id="currentEl.layerId"
-          @apply-settings="applySettings"
+  div
+    .settings-layer_section(style="position:relative")
+      .form_row
+        base-select(
+          v-model="settings.accessProperties.Atari"
+          :select-options="selectOptions"
+          v-tooltip-interactive:right="interactiveInfo.selectGame"
         )
-        //- .form_row
-        //-   .form_label History length:
-        //-   .form_input
-        //-     input(type="number" v-model="settings.accessProperties.History_length")
+      .action_space(v-if="Mix_settingsData_actionSpace")
+        span Action space:
+        span {{Mix_settingsData_actionSpace}}
 
-    template(slot="Code-content")
-      settings-code(
-        :current-el="currentEl"
-        :el-settings="settings"
-        v-model="coreCode"
+      set-data-environment-gym-img(
+        :layer-settings="settings"
+        :layer-id="currentEl.layerId"
+        @apply-settings="applySettings"
       )
+      //- .form_row
+      //-   .form_label History length:
+      //-   .form_input
+      //-     input(type="number" v-model="settings.accessProperties.History_length")
+
     //-template(slot="<i class='icon icon-search'></i> Unity-content")
       .settings-layer_section
         .form_row

@@ -115,8 +115,7 @@ export const googleAnalytics = (function() {
 
     publicMethods.setup = function() {
         const gaId = process.env.GOOGLE_ANALYTICS_ID;
-        // if (!gaId || isDevelopMode) { return; }
-    
+        if (!gaId || isDevelopMode) { return; }    
         
         addTag('js', new Date());
         addTag('config', gaId);

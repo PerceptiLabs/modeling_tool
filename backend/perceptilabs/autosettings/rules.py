@@ -5,41 +5,41 @@ import numpy as np
 
 from perceptilabs.autosettings import InferenceRule
 from perceptilabs.graph.spec import GraphSpec
-from perceptilabs.graph.spec.layers import LayerSpec, LayerSpecBuilder, get_layer_builder
+from perceptilabs.layers.specbase import LayerSpec
+from perceptilabs.layers.utils import get_layer_builder
 from perceptilabs.core_new.lightweight2 import LayerResults
 
 
 class DeepLearningFcOutputShapeFromLabels(InferenceRule):
     def is_topologically_valid(self, graph_spec, layer_spec):
-        if layer_spec.type != 'DeepLearningFC':
+        if layer_spec.type_ != 'DeepLearningFC':
             return False, []
 
         successors = graph_spec.get_successors(layer_spec)
         if len(successors) != 1:
             return False, []
 
-        if successors[0].type != 'TrainNormal':
+        if successors[0].type_ != 'TrainNormal':
             return False, []
 
-        if successors[0].layer_true is None:
+        if successors[0].connection_labels is None:
             return False, []
 
-        self._labels_id = successors[0].layer_true
-
-        layer_spec_true = graph_spec.nodes_by_id[self._labels_id]
+        self._labels_conn = successors[0].connection_labels
+        layer_spec_true = graph_spec.nodes_by_id[self._labels_conn.src_id]
         return True, [layer_spec_true]
 
     def is_applicable(self, graph_spec: GraphSpec, layer_spec: LayerSpec, lw_results: Dict[str, LayerResults]) -> bool:
-        if not hasattr(self, '_labels_id'):
+        if not hasattr(self, '_labels_conn'):
             return False
 
-        self._labels_shape = lw_results[self._labels_id].out_shape
+        self._labels_shape = lw_results[self._labels_conn.src_id].out_shape[self._labels_conn.src_var]
         if len(self._labels_shape) > 1:
             return False
 
         return True
 
-    def apply(self, graph_spec: GraphSpec, layer_spec: LayerSpec, builder: LayerSpecBuilder, lw_results: Dict[str, LayerResults]) -> None:
+    def apply(self, graph_spec: GraphSpec, layer_spec: LayerSpec, lw_results: Dict[str, LayerResults]) -> LayerSpec:
         """ A new layer will be created based on the builder configuration """
 
         if len(self._labels_shape) == 0:
@@ -48,50 +48,47 @@ class DeepLearningFcOutputShapeFromLabels(InferenceRule):
             n_classes = self._labels_shape[0]
         else:
             raise RuntimeError        
-        
-        builder.set_parameter('n_neurons', n_classes)
+        return layer_spec.clone(modified_params={'n_neurons': n_classes})
 
-
+    
 class DeepLearningConvDoubleFeatureMaps(InferenceRule):
     # Double the number of feature maps if the successor is also a conv layer..
 
     def is_topologically_valid(self, graph_spec: GraphSpec, layer_spec: LayerSpec):    
-        if layer_spec.type != 'DeepLearningConv':
+        if layer_spec.type_ != 'DeepLearningConv':
             return False, []
         
         predecessors = graph_spec.get_predecessors(layer_spec)
         if len(predecessors) != 1:
             return False, []
 
-        if predecessors[0].type != 'DeepLearningConv':
+        if predecessors[0].type_ != 'DeepLearningConv':
             return False, []
-        self._prev_conv_id = predecessors[0].id        
+        
+        self._prev_conv_id = predecessors[0].id_        
         return True, [predecessors[0]]
 
     def is_applicable(self, graph_spec: GraphSpec, layer_spec: LayerSpec, lw_results: Dict[str, LayerResults]) -> bool:
         return hasattr(self, '_prev_conv_id')
     
-    def apply(self, graph_spec: GraphSpec, layer_spec: LayerSpec, builder: LayerSpecBuilder, lw_results: Dict[str, LayerResults]) -> None:
+    def apply(self, graph_spec: GraphSpec, layer_spec: LayerSpec, lw_results: Dict[str, LayerResults]) -> LayerSpec:
         """ A new layer will be created based on the builder configuration """
 
         prev_conv = graph_spec.nodes_by_id[self._prev_conv_id]
-        print('prev feature maps', prev_conv.feature_maps)
+        return layer_spec.clone(modified_params={'feature_maps': 2*prev_conv.feature_maps})        
 
-        
-        #import pdb; pdb.set_trace()
-        builder.set_parameter('feature_maps', 2*prev_conv.feature_maps)
         
 class DataDataShouldUseLazy(InferenceRule):
     MAX_RAM_USAGE = 0.3 # Fraction of total memory that can be used for the datasets. If exceeded, toggle lazy
 
     def is_topologically_valid(self, graph_spec: GraphSpec, layer_spec: LayerSpec):
-        return layer_spec.type == 'DataData', []
+        return layer_spec.type_ == 'DataData', []
         
     def is_applicable(self, graph_spec: GraphSpec, layer_spec: LayerSpec, lw_results: Dict[str, LayerResults]) -> bool:
-        if layer_spec.type != 'DataData':
+        if layer_spec.type_ != 'DataData':
             return False
 
-        if any(s.type != 'file' for s in layer_spec.sources):
+        if any(s.type_ != 'file' for s in layer_spec.sources):
             return False        
 
         est_ram_size = sum(self._estimate_ram_size(s.path) for s in layer_spec.sources)
@@ -109,9 +106,9 @@ class DataDataShouldUseLazy(InferenceRule):
 
         return estimator(path)
 
-    def apply(self, graph_spec: GraphSpec, layer_spec: LayerSpec, builder: LayerSpecBuilder, lw_results: Dict[str, LayerResults]) -> None:
+    def apply(self, graph_spec: GraphSpec, layer_spec: LayerSpec, lw_results: Dict[str, LayerResults]) -> LayerSpec:
         """ A new layer will be created based on the builder configuration """        
-        builder.set_parameter('lazy', True)
+        return layer_spec.clone(modified_params={'lazy': True})        
         
         
 class ProcessReshape1DFromPrimeFactors(InferenceRule):
@@ -119,7 +116,7 @@ class ProcessReshape1DFromPrimeFactors(InferenceRule):
     MAX_LENGTH = 5000 # For large vectors the current implementation is slow.
 
     def is_topologically_valid(self, graph_spec: GraphSpec, layer_spec: LayerSpec):    
-        if layer_spec.type != 'ProcessReshape':
+        if layer_spec.type_ != 'ProcessReshape':
             return False, []
 
         predecessors = graph_spec.get_predecessors(layer_spec)
@@ -127,7 +124,7 @@ class ProcessReshape1DFromPrimeFactors(InferenceRule):
             return False, []
 
         input_layer = predecessors[0]
-        self._input_layer_id = input_layer.id
+        self._input_layer_id = input_layer.id_
         return True, [input_layer]
         
     def is_applicable(self, graph_spec: GraphSpec, layer_spec: LayerSpec, lw_results: Dict[str, LayerResults]) -> bool:
@@ -140,7 +137,7 @@ class ProcessReshape1DFromPrimeFactors(InferenceRule):
         if len(input_shape) != 1:
             return False
 
-        input_length = input_shape[0]
+        input_length = input_shape.get('output', [-1])[0]
         if input_length > self.MAX_LENGTH:
             return False
 
@@ -150,7 +147,7 @@ class ProcessReshape1DFromPrimeFactors(InferenceRule):
         
         return True
 
-    def apply(self, graph_spec: GraphSpec, layer_spec: LayerSpec, builder: LayerSpecBuilder, lw_results: Dict[str, LayerResults]) -> None:
+    def apply(self, graph_spec: GraphSpec, layer_spec: LayerSpec, lw_results: Dict[str, LayerResults]) -> LayerSpec:
         """ A new layer will be created based on the builder configuration """
         factorizations = [f if len(f) == 3 else f + [1] for f in self._factorizations] # Make them 3D
 
@@ -160,7 +157,7 @@ class ProcessReshape1DFromPrimeFactors(InferenceRule):
             reverse=True
         )
         new_shape = tuple(scored_shapes[0][0]) # Select the one with the highest score
-        builder.set_parameter('shape', new_shape)    
+        return layer_spec.clone(modified_params={'shape': new_shape})                
 
     def _compute_shape_score(self, shape):
         """ A set of simple rules to determine which of the shapes are best """

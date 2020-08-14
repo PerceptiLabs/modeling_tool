@@ -27,7 +27,7 @@
     created() {
       if(isWeb()) {
         this.$store.commit('mod_workspace-changes/get_workspaceChangesInLocalStorage')
-        this.$store.dispatch('mod_workspace/GET_workspacesFromLocalStorage');
+        //this.$store.dispatch('mod_workspace/GET_workspacesFromLocalStorage');
       }
     },
     mounted() {

@@ -1,9 +1,7 @@
 {% from 'tf1x_utils.j2' import session %}
 
-{% macro run_normal(graph, layer_name, layer_pairs, n_episodes, batch_size, learning_rate, discount_factor, replay_memory_size, initial_exploration, final_exploration, final_exporation_frame, update_frequency, target_network_update_frequency, n_s_max, optimizer, export_directory, use_cpu) %}
+{% macro run_normal(layer_spec, graph_spec) %}
         self._status = 'initializing'
-
-
         copied_graph = graph.clone()
         target_nodes = copied_graph.inner_nodes
         online_nodes = graph.inner_nodes
@@ -16,39 +14,60 @@
         online_output_layer_id = output_layer_id
         target_output_layer_id = output_layer_id
 
-
         input_data_node = graph.data_nodes[0]
         generator = input_data_node.layer_instance.make_generator()
         generator.send(None)
         state_ = input_data_node.layer_instance.reset_environment(generator)
+
         self._actions = input_data_node.layer_instance.action_space
         self._n_actions = len(self._actions)
         # create state tensor
-        state_tensor = tf.placeholder(tf.float32, shape=(None, ) + state_.shape[:-1] + (state_.shape[-1]*self._history_length, ))
+        state_tensor = tf.placeholder(tf.float32, shape=(None,) + state_['output'].shape[:-1] + (state_['output'].shape[-1]*self._history_length, ))
 
-        # Build the TensorFlow graph 
-        def build_graph(state_tensor, graph, nodes):
+        # Make initializers
+        with tf.variable_scope('{{layer_spec.sanitized_name}}/train', reuse=tf.AUTO_REUSE):
+            is_training = tf.get_variable(name="is_train", dtype=tf.bool, initializer=False)
+        
+        # Build the TensorFlow graph
+        def build_graph(state_tensor, graph):
             layer_output_tensors = {
-                input_data_node.layer_id: state_tensor,
+                input_data_node.layer_id: {'output': state_tensor},
             }
-            for node in graph.inner_nodes:
-                args = []
-                for input_node in graph.get_input_nodes(node):
-                    args.append(layer_output_tensors[input_node.layer_id])
-                    y = node.layer_instance(*args)
-                layer_output_tensors[node.layer_id] = y
+
+            for dst_node in graph.inner_nodes:
+                inputs = {
+                    dst_var: layer_output_tensors[src_node.layer_id][src_var]
+                    for src_node, src_var, dst_var in graph.get_input_connections(dst_node)
+                }
+                y = dst_node.layer_instance(
+                    inputs,
+                    is_training=is_training
+                )
+                layer_output_tensors[dst_node.layer_id] = y
+
             return layer_output_tensors
 
-        online_layer_output_tensors = build_graph(state_tensor, graph, online_nodes)
-        target_layer_output_tensors = build_graph(state_tensor, copied_graph, target_nodes)
+        online_layer_output_tensors = build_graph(state_tensor, graph)
+        target_layer_output_tensors = build_graph(state_tensor, copied_graph)
 
-        Q_online_tensor = online_layer_output_tensors[online_output_layer_id]
-        Q_target_tensor = target_layer_output_tensors[target_output_layer_id]
+
+        Q_online_tensor = None
+        Q_target_tensor = None
+        
+        for src_node, src_var, dst_var in graph.get_input_connections(graph.active_training_node):
+            if dst_var == 'action':
+                Q_online_tensor = online_layer_output_tensors[online_output_layer_id][src_var]
+                Q_target_tensor = target_layer_output_tensors[target_output_layer_id][src_var]
+                src_var_name = src_var
+                
+        if Q_online_tensor is None or Q_target_tensor is None:
+            raise RuntimeError("Failed finding input layer!")
+
         
         # Exploration/exploitation tradeoff
         def epsilon(episode):
             eps = 1/np.sqrt(self._initial_exploration + episode)
-            eps = self._final_exploration**(episode/self._final_exporation_frame)
+            eps = self._final_exploration**(episode/self._final_exploration_frame)
             eps = max(0.1, eps)
             return eps
         
@@ -62,25 +81,22 @@
         loss_tensor = tf.reduce_mean(tf.square(y_tensor - q_performed))
          
 
-        
-
         # Create an exportable version of the TensorFlow graph
         self._input_tensor_export = tf.placeholder(shape=state_tensor.get_shape(), dtype=tf.float32)
         self._output_tensor_export = build_graph(
-            self._input_tensor_export, graph, online_nodes)[online_output_layer_id]
+            self._input_tensor_export, graph)[online_output_layer_id]
 
         global_step = None
-        {% filter remove_lspaces(8) %}        
-            {% if optimizer == 'tf.compat.v1.train.GradientDescentOptimizer' %}
-                optimizer = tf.compat.v1.train.GradientDescentOptimizer(learning_rate={{learning_rate}})
-            {% elif optimizer == 'tf.compat.v1.train.AdamOptimizer' %}
-                optimizer = tf.train.AdamOptimizer(learning_rate={{learning_rate}}, beta1={{beta1}}, beta2={{beta2}})
-            {% elif optimizer == 'tf.compat.v1.train.AdagradOptimizer' %}
-                optimizer = tf.compat.v1.train.AdagradOptimizer(learning_rate={{learning_rate}})            
-            {% elif optimizer == 'tf.compat.v1.train.RmsPropOptimizer' %}
-                optimizer = tf.compat.v1.train.RMSPropOptimizer(learning_rate={{learning_rate}})                        
-            {% else %}
-                raise NotImplementedError('Optimizer {{optimizer}} not supported yet')
+        {% filter remove_lspaces(8) %}
+            {% if layer_spec.optimizer == 'SGD' %}
+                optimizer = tf.compat.v1.train.GradientDescentOptimizer(learning_rate={{layer_spec.learning_rate}})
+            {% elif layer_spec.optimizer == 'ADAM' %}
+                optimizer = tf.train.AdamOptimizer(learning_rate={{layer_spec.learning_rate}}, beta1={{layer_spec.beta1}}, beta2={{layer_spec.beta2}})
+            {% elif layer_spec.optimizer == 'adagrad' %}
+                optimizer = tf.compat.v1.train.AdagradOptimizer(learning_rate={{layer_spec.learning_rate}})            
+            {% elif layer_spec.optimizer == 'RMSprop' %}
+                optimizer = tf.compat.v1.train.RMSPropOptimizer(learning_rate={{layer_spec.learning_rate}})                        
+                raise NotImplementedError('Optimizer {{layer_spec.optimizer}} not supported yet')
             {% endif %}
         {% endfilter %}
 
@@ -139,7 +155,7 @@
 
 
         sess = None
-        {{session(sess, use_gpu=not use_cpu) | indent(width=8)}}        
+        {{session(sess, use_gpu=not layer_spec.use_cpu) | indent(width=8)}}        
         self._sess = sess
 
         trackable_variables = {}
@@ -149,8 +165,8 @@
         sess.run(tf.global_variables_initializer())
         
         {% filter remove_lspaces(8) %}
-            {% if export_directory is not none %}        
-                path = tf.train.latest_checkpoint('{{export_directory}}')
+            {% if layer_spec.checkpoint_path is not none %}        
+                path = tf.train.latest_checkpoint('{{layer_spec.checkpoint_path}}')
                 status = self._checkpoint.restore(path)
                 status.assert_consumed().run_restore_ops(session=self._sess)
             {% endif %}
@@ -170,7 +186,7 @@
             t0 = time.perf_counter()
             self._status = 'training'
             state_ = input_data_node.layer_instance.reset_environment(generator)
-            state_seq = [state_]*self._history_length
+            state_seq = [state_['output']]*self._history_length
             self._step_counter = 0
             done = False
             self._reward = 0
@@ -185,7 +201,8 @@
                         Q = Q_online_tensor.eval(session=sess, feed_dict={state_tensor: [np.concatenate(state_seq,-1)]}).squeeze()
                         action = np.argmax(Q)
                         probs = [i/np.sum(Q) for i in Q]
-                    new_state, reward, done, info = input_data_node.layer_instance.take_action(generator, action)
+                    state_info = input_data_node.layer_instance.take_action(generator, action)
+                    new_state, reward, done, info = state_info['output'], state_info['reward'], state_info['done'], state_info['info']
                     new_state_seq = state_seq[1:] + [new_state]
                     self._reward = reward
 
@@ -198,12 +215,14 @@
                         'probs':probs
                         }
                     self._replay_memory.append(transition)
+                                        
                     if len(self._replay_memory) > self._replay_memory_size:
                         self._replay_memory.pop(0)
 
                     state_seq = new_state_seq
-
+                    
                     if iterations % 4 == 0 and iterations > self._replay_start_size:
+                        
                         batch_transitions = np.random.choice(self._replay_memory, self._batch_size)
                         y_batch = np.zeros((self._batch_size, 1))
                         a_batch = np.zeros((self._batch_size, 1))
@@ -234,9 +253,11 @@
                     if iterations % 100 == 0:
                         copy_weights(sess)
                     state_ = new_state
-                    
+
                     yield YieldLevel.SNAPSHOT
                     self._step_counter += 1
+
+                    
                     iterations += 1
 
             except tf.errors.OutOfRangeError:
@@ -254,26 +275,26 @@
 {% endmacro %}
 
 ################################################### Main #####################################################
-{% macro layer_tf1x_rl(layer_name, n_episodes, batch_size, learning_rate, discount_factor, replay_memory_size, initial_exploration, final_exploration, final_exporation_frame, update_frequency, target_network_update_frequency, n_steps_max, history_length, optimizer, distributed, export_directory, use_cpu) %}
-class {{layer_name}}(RLLayer):
+{% macro layer_tf1x_rl(layer_spec, graph_spec) %}
+class {{layer_spec.sanitized_name}}(RLLayer):
 
     def __init__(self):
 
-        self._batch_size = {{batch_size}}
-        self._n_episodes = {{n_episodes}}
-        self._history_length = {{history_length}}
-        self._gamma = {{discount_factor}}
+        self._batch_size = {{layer_spec.batch_size}}
+        self._n_episodes = {{layer_spec.n_episodes}}
+        self._history_length = {{layer_spec.history_length}}
+        self._gamma = {{layer_spec.discount_factor}}
 
         self._replay_start_size = 2*self._batch_size
-        self._replay_memory_size = {{replay_memory_size}}
+        self._replay_memory_size = {{layer_spec.replay_memory_size}}
 
-        self._initial_exploration ={{initial_exploration}}
-        self._final_exploration = {{final_exploration}}
-        self._final_exporation_frame = {{final_exporation_frame}}
+        self._initial_exploration = {{layer_spec.initial_exploration}}
+        self._final_exploration = {{layer_spec.final_exploration}}
+        self._final_exploration_frame = {{layer_spec.final_exploration_frame}}
 
-        self._update_frequency = {{update_frequency}}
-        self._copy_weights_frequency = {{target_network_update_frequency}}
-        self._n_steps_max = {{n_steps_max}}
+        self._update_frequency = {{layer_spec.update_frequency}}
+        self._copy_weights_frequency = {{layer_spec.target_network_update_frequency}}
+        self._n_steps_max = {{layer_spec.n_steps_max}}
 
         self._stopped = False
         self._paused = False
@@ -309,8 +330,8 @@ class {{layer_name}}(RLLayer):
         Args:
             graph: A PerceptiLabs Graph object containing references to all layers objects included in the model produced by this training layer.
         """   
-        {% if not distributed -%}
-            {{ run_normal(graph, layer_name, layer_pairs, n_episodes, batch_size, learning_rate, discount_factor, replay_memory_size, initial_exploration, final_exploration, final_exporation_frame, update_frequency, target_network_update_frequency, n_steps_max, optimizer, export_directory, use_cpu) }}
+        {% if not layer_spec.distributed -%}
+            {{ run_normal(layer_spec, graph_spec) }}
         {% endif %}                
 
     def on_export(self, path: str, mode: str) -> None:
@@ -338,7 +359,7 @@ class {{layer_name}}(RLLayer):
         # Export checkpoint
         if mode in ['TFModel+checkpoint', 'TFLite+checkpoint']:
             {% filter remove_lspaces(8) %}
-                {% if distributed %}
+                {% if layer_spec.distributed %}
                     self._saver.save(self._sess, os.path.join(path, 'model.ckpt'), global_step=0)
                 {% else %}
                     self._checkpoint.save(file_prefix=os.path.join(path, 'model.ckpt'), session=self._sess)
@@ -444,7 +465,7 @@ class {{layer_name}}(RLLayer):
     @property
     def sample(self) -> np.ndarray:
         """Returns a single data sample"""        
-        return np.empty(())
+        return {}
 
     @property
     def action_space(self) -> List[int]:
