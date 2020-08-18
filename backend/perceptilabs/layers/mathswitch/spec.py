@@ -7,7 +7,6 @@ class MathSwitchSpec(LayerSpec):
     type_: str = 'MathSwitch'
     selected_layer_id: Union[str, None] = None 
     selected_var_name: Union[str, None] = None
-
     @classmethod
     def _from_dict_internal(cls, id_: str, dict_: Dict[str, Any], params: Dict[str, Any]) -> LayerSpec:
 

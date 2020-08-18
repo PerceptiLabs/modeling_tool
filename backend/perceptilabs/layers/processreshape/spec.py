@@ -7,7 +7,6 @@ class ProcessReshapeSpec(LayerSpec):
     type_: str = 'ProcessReshape'
     shape: Tuple[int, ...] = ()
     permutation: Tuple[int, ...] = ()
-
     @classmethod
     def _from_dict_internal(cls, id_: str, dict_: Dict[str, Any], params: Dict[str, Any]) -> LayerSpec:
         if 'Properties' in dict_ and dict_['Properties'] is not None:

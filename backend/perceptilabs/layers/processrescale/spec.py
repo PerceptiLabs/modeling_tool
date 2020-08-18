@@ -7,7 +7,6 @@ class ProcessRescaleSpec(LayerSpec):
     type_: str = 'ProcessRescale'
     width: int = 25
     height: int = 25
-
     @classmethod
     def _from_dict_internal(cls, id_: str, dict_: Dict[str, Any], params: Dict[str, Any]) -> LayerSpec:
         if 'Properties' in dict_ and dict_['Properties'] is not None:

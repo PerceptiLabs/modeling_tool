@@ -5,7 +5,6 @@ from perceptilabs.layers.specbase import LayerSpec
 
 class LayerCustomSpec(LayerSpec):
     type_: str = 'LayerCustom'
-
     @property
     def code(self):
         return self.custom_code

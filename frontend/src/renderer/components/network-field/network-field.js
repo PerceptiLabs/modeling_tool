@@ -349,6 +349,12 @@ export default {
         startIds: arrowData.startIds,
         stopIds: arrowData.stopIds,
       };
+
+      let startDot = document.querySelector(`[data-output-circle-dot-id="${arrowData.startIds.variable}"][data-output-layer-id="${arrowData.startIds.layer}"]`);
+      startDot.classList.remove("connect");
+      let stopDot = document.querySelector(`[data-input-circle-dot-id="${arrowData.stopIds.variable}"][data-input-layer-id="${arrowData.stopIds.layer}"]`);
+      stopDot.classList.remove("connect");
+
       this.$store.dispatch('mod_workspace/DELETE_arrow', connection)
         .then(() => {
           this.$store.dispatch('mod_api/API_getBatchPreviewSampleForElementDescendants', connection.stopIds.layer);
@@ -444,7 +450,9 @@ export default {
                   
                   // get start dot position
                   let startElement = document.querySelector(`[layer-id="${newArrow.startIds.layer}"]`);
-                  let startDot = document.querySelector(`[data-output-dot-id="${newArrow.startIds.variable}"][data-output-layer-id="${newArrow.startIds.layer}"]`);
+                  let startDot = document.querySelector(`[data-output-circle-dot-id="${newArrow.startIds.variable}"][data-output-layer-id="${newArrow.startIds.layer}"]`);
+                  startDot.classList.add("connect");
+
                   const { x: startLayerX, y: startLayerY } = startElement.getBoundingClientRect();
                   const { x: startDotX, y: startDotY } = startDot.getBoundingClientRect();
                   const startDotPositionWidth = (startDotX - startLayerX);
@@ -452,17 +460,22 @@ export default {
 
                   //get stop dot position
                   let stopElement = document.querySelector(`[layer-id="${newArrow.stopIds.layer}"]`);
-                  let stopDot = document.querySelector(`[data-input-dot-id="${newArrow.stopIds.variable}"][data-input-layer-id="${newArrow.stopIds.layer}"]`);
+                  let stopDot = document.querySelector(`[data-input-circle-dot-id="${newArrow.stopIds.variable}"][data-input-layer-id="${newArrow.stopIds.layer}"]`);
+                  stopDot.classList.add("connect");
+                  
                   const { x: stopLayerX, y: stopLayerY } = stopElement.getBoundingClientRect();
                   const { x: stopDotX, y: stopDotY } = stopDot.getBoundingClientRect();
+
                   const stopDotPositionWidth = (stopDotX - stopLayerX);
-                  const stopDotPositionHeight = (stopDotY  - stopLayerY) ;
+                  const stopDotPositionHeight = (stopDotY  - stopLayerY);
 
                   const x1 = this.l1.layerMeta.position.left + startDotPositionWidth + (3 * zoom);
                   const y1 = this.l1.layerMeta.position.top + StartDotPositionHeight + (3 * zoom);
                   const x2 = this.l2.layerMeta.position.left + stopDotPositionWidth + (3 * zoom);
                   const y2 = this.l2.layerMeta.position.top + stopDotPositionHeight + (3 * zoom);
+
                   const path = calcArrowPath(x1, y1, x2, y2, this);
+                  
                   return {path}
                 },
                 enumerable: true,
