@@ -42,7 +42,7 @@ class AggregationEngine:
         """ List of available aggregates """
         return list(self._aggregates.keys())
     
-    def request(self, aggregate_name: str, experiment_name: str, metric_names: List[str], start: int, end: int, aggregate_kwargs: Dict[str, Any] = None) -> Future:
+    def request(self, aggregate_name: str, experiment_name: str, metric_names: List[str], start: int, end: int = None, aggregate_kwargs: Dict[str, Any] = None) -> Future:
         """ Performs an aggregation on a set of metrices.         
 
         Args:

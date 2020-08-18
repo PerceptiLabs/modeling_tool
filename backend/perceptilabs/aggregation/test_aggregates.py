@@ -31,37 +31,73 @@ def engine(data_container):
     yield engine
 
 
-def test_average_basic(data_container, engine):
+def test_average_1d_metric(data_container, engine):
     data_container.get_metric.return_value = np.array([x for x in range(100)])
-    expected = np.nanmean([data_container.get_metric()], axis=1)
+    expected = np.nanmean([data_container.get_metric()], axis=0)
 
-    future = engine.request('average', 'exp123', ['metric1'], 0, 100)
+    future = engine.request('average', 'exp123', ['metric1'], 0)
     actual, _, _ = future.result()
 
-    assert actual == expected
+    assert np.isclose(actual, expected, equal_nan=True).all()
+    assert expected.shape == actual.shape
 
 
-def test_max_basic(data_container, engine):
+def test_average_nd_metric(data_container, engine):
+    data_container.get_metric.return_value = np.random.rand(5,3,3)
+    expected = np.nanmean([data_container.get_metric()], axis=0)
+
+    future = engine.request('average', 'exp123', ['metric1'], 0)
+    actual, _, _ = future.result()
+
+    assert np.isclose(actual, expected, equal_nan=True).all()
+    assert expected.shape == actual.shape
+
+
+def test_max_1d_metric(data_container, engine):
     data_container.get_metric.return_value = np.array([x if x % 2 == 0 else np.nan for x in range(100)])
-    expected = np.nanmax([data_container.get_metric()], axis=1)
+    expected = np.nanmax([data_container.get_metric()], axis=0)
 
-    future = engine.request('max', 'exp123', ['metric1'], 0, 100)
+    future = engine.request('max', 'exp123', ['metric1'], 0)
     actual, _, _ = future.result()
 
-    assert actual == expected
+    assert np.isclose(actual, expected, equal_nan=True).all()
+    assert expected.shape == actual.shape
 
 
-def test_min_basic(data_container, engine):
+def test_max_nd_metric(data_container, engine):
+    data_container.get_metric.return_value = np.random.rand(5,3,3)
+    expected = np.nanmax([data_container.get_metric()], axis=0)
+
+    future = engine.request('max', 'exp123', ['metric1'], 0)
+    actual, _, _ = future.result()
+
+    assert np.isclose(actual, expected, equal_nan=True).all()
+    assert expected.shape == actual.shape
+
+
+def test_min_1d_metric(data_container, engine):
     data_container.get_metric.return_value = np.array([x if x % 2 == 0 else np.nan for x in range(100)])
-    expected = np.nanmin([data_container.get_metric()], axis=1)
+    expected = np.nanmin([data_container.get_metric()], axis=0)
 
-    future = engine.request('min', 'exp123', ['metric1'], 0, 100)
+    future = engine.request('min', 'exp123', ['metric1'], 0)
     actual, _, _ = future.result()
 
-    assert actual == expected
+    assert np.isclose(actual, expected, equal_nan=True).all()
+    assert expected.shape == actual.shape
 
 
-def test_subtract_basic(data_container, engine):
+def test_min_nd_metric(data_container, engine):
+    data_container.get_metric.return_value = np.random.rand(5,3,3)
+    expected = np.nanmin([data_container.get_metric()], axis=0)
+
+    future = engine.request('min', 'exp123', ['metric1'], 0)
+    actual, _, _ = future.result()
+
+    assert np.isclose(actual, expected, equal_nan=True).all()
+    assert expected.shape == actual.shape
+
+
+def test_subtract_1d_metric(data_container, engine):
     N = 100
     
     def get_metric(experiment_name, metric_name, start, end):
@@ -74,12 +110,30 @@ def test_subtract_basic(data_container, engine):
     data_container.get_metric.side_effect = get_metric
     expected = np.ones((N, ))
     
-    future = engine.request('subtract', 'exp123', ['metric1', 'metric2'], 0, N)
+    future = engine.request('subtract', 'exp123', ['metric1', 'metric2'], 0)
     actual, _, _ = future.result()
 
     assert np.all(actual == expected)
+    assert expected.shape == actual.shape
+
+
+def test_subtract_nd_metric(data_container, engine):
+    def get_metric(experiment_name, metric_name, start, end):
+        if metric_name == 'metric1':
+            return np.arange(45).reshape((5,3,3)) + 1
+        else:
+            return np.arange(45).reshape((5,3,3))
     
+    data_container.get_metric.side_effect = get_metric
+    expected = np.ones((5,3,3))
+
+    future = engine.request('subtract', 'exp123', ['metric1', 'metric2'], 0)
+    actual, _, _ = future.result()
+
+    assert np.all(actual == expected)
+    assert expected.shape == actual.shape
     
+
 def test_epoch_final_value(data_container, engine):
     
     def get_metric(experiment_name, metric_name, start, end):
@@ -90,35 +144,55 @@ def test_epoch_final_value(data_container, engine):
     
     data_container.get_metric.side_effect = get_metric
 
-    future = engine.request('epoch-final-value', 'exp123', ['accuracy', 'epoch'], 0, 9)
+    future = engine.request('epoch-final-value', 'exp123', ['accuracy', 'epoch'], 0)
     actual, _, _ = future.result()
     expected = np.array([2, 4, 7])
 
     assert np.all(actual == expected)
+    assert expected.shape == actual.shape
 
 
-def test_identity_basic(data_container, engine):
+def test_identity_1d_metric(data_container, engine):
     data_container.get_metric.return_value = np.array([x if x % 2 == 0 else np.nan for x in range(100)])
-    expected = data_container.get_metric()
+    expected = np.array([data_container.get_metric()])
 
-    future = engine.request('identity', 'exp123', ['metric1'], 0, 99)
+    future = engine.request('identity', 'exp123', ['metric1'], 0)
     actual, _, _ = future.result()
 
     assert np.isclose(actual, expected, equal_nan=True).all()
+    assert expected.shape == actual.shape
 
-def test_transpose_basic(data_container, engine):
-    data_container.get_metric.return_value = np.array([[1,2,3], [4,5,6]])
+
+def test_identity_nd_metric(data_container, engine):
+    data_container.get_metric.return_value = np.random.rand(5,3,3)
+    expected = np.array([data_container.get_metric()])
+
+    future = engine.request('identity', 'exp123', ['metric1'], 0)
+    actual, _, _ = future.result()
+
+    assert np.isclose(actual, expected, equal_nan=True).all()
+    assert expected.shape == actual.shape
+
+
+def test_transpose_1d_metric(data_container, engine):
+    data_container.get_metric.return_value = np.array([1,2,3])
     matrix = np.array([data_container.get_metric()])
-    expected = matrix.transpose(0, 2, 1) 
+    expected = matrix.transpose(1, 0) 
 
-    future = engine.request('transpose', 'exp123', ['metric1'], 0, 100)
+    future = engine.request('transpose', 'exp123', ['metric1'], 0)
     actual, _, _ = future.result()
 
     assert np.isclose(actual, expected).all()
     assert expected.shape == actual.shape
     
-    
 
-    
-    
-    
+def test_transpose_nd_metric(data_container, engine):
+    data_container.get_metric.return_value = np.random.rand(5,3,3)
+    matrix = np.array([data_container.get_metric()])
+    expected = matrix.transpose(0, 1, 3, 2)
+
+    future = engine.request('transpose', 'exp123', ['metric1'], 0)
+    actual, _, _ = future.result()
+
+    assert np.isclose(actual, expected).all()
+    assert expected.shape == actual.shape

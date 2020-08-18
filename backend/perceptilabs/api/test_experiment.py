@@ -75,3 +75,28 @@ def test_experiment_log_hyperparameters(producer, consumer):
     assert message['hyper_params']['learning_rate'] == hyper_params['learning_rate']
     assert message['hyper_params']['batch_size'] == hyper_params['batch_size']
     assert message['hyper_params']['steps'] == hyper_params['steps']
+
+def test_experiment_log_ndarray_metrics(producer, consumer):
+    # Declare experiment
+    experiment_name = 'Test-3'
+    gradient = np.array([[1,2,3], [4,5,6]])
+    bias = np.array([[2,4,6], [4,6,8]])
+
+    # Send data
+    ex = Experiment(experiment_name=experiment_name, producer=producer)
+    ex.log_metric('Gradient', gradient, 0)
+    ex.log_metric('Bias', bias, 0)
+
+    # Receive data and assert
+    raw_message = consumer.get_messages()
+    message_grad = deserialize(raw_message[0])
+    message_bias = deserialize(raw_message[1])
+
+    assert message_grad['experiment_name'] == experiment_name
+    assert message_bias['experiment_name'] == experiment_name
+
+    assert message_grad['name'] == 'Gradient'
+    assert message_bias['name'] == 'Bias'
+
+    assert np.isclose(gradient, message_grad['metric']).all()
+    assert np.isclose(bias, message_bias['metric']).all()

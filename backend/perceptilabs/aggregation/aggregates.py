@@ -28,7 +28,7 @@ class AverageAggregate(Aggregate):
         self._window_size = window_size
         
     def _run_internal(self):
-        value = np.nanmean(self._data, axis=1)
+        value = np.nanmean(self._data, axis=0)
         return value
 
     
@@ -39,7 +39,7 @@ class MaxAggregate(Aggregate):
         self._data = data
         
     def _run_internal(self):
-        value = np.nanmax(self._data, axis=1)
+        value = np.nanmax(self._data, axis=0)
         return value
 
     
@@ -50,7 +50,7 @@ class MinAggregate(Aggregate):
         self._data = data
         
     def _run_internal(self):
-        value = np.nanmin(self._data, axis=1)
+        value = np.nanmin(self._data, axis=0)
         return value
         
     
@@ -62,7 +62,7 @@ class SubtractAggregate(Aggregate):
         self._x2 = x2
         
     def _run_internal(self):
-        value = np.subtract(self._x1, self._x2).tolist()
+        value = np.subtract(self._x1, self._x2)
         return value
 
     
@@ -76,7 +76,7 @@ class EpochFinalValue(Aggregate):
     def _run_internal(self):
         end_of_epoch = self._epochs[:-1] != self._epochs[1:]
         end_of_epoch = np.hstack((end_of_epoch, np.array([True]))) # Include last iteration
-        values = self._series[np.where(end_of_epoch)].tolist()
+        values = self._series[np.where(end_of_epoch)]
         return values
 
 
@@ -87,7 +87,7 @@ class Identity(Aggregate):
         self._x = x
         
     def _run_internal(self):
-        return self._x
+        return np.array(self._x)
 
     
 class ProcessWeights(Aggregate):

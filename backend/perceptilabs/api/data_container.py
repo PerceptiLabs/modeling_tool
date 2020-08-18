@@ -97,7 +97,7 @@ class DataContainer:
 
                     self.experiments[experiment_name]['Metrics'][name] = pd.concat([df, df_item], ignore_index=True)
                     self._track_memory(item)
-                    self._clean_mem([df, df_item])
+                    self._clean_mem([df, df_item, metric])
                 else:
                     df = self.experiments[experiment_name]['Metrics'][name]
                     step_list = set(df['Step'].tolist())
@@ -112,7 +112,7 @@ class DataContainer:
 
                     self.experiments[experiment_name]['Metrics'][name] = pd.concat([df, df_item], ignore_index=True)
                     self._track_memory(item)
-                    self._clean_mem([df, df_item, step_list])
+                    self._clean_mem([df, df_item, step_list, metric])
             elif message['category'] == 'Hyperparameters':
                 hyper_params = message['hyper_params']
 
@@ -222,7 +222,8 @@ class DataContainer:
             end = max(set(metrics['Step'].tolist()))
 
         if end < 0:
-            metrics = metrics.sort_values(['Step'], ascending=[True])[metric_name][end:].to_numpy()
+            metrics = metrics.sort_values(['Step'], ascending=[True])[metric_name][end:]
+            metrics = np.array(metrics.values.tolist())
 
             if len(metrics) < abs(end):
                 full_metrics = np.empty(abs(end))
@@ -234,7 +235,8 @@ class DataContainer:
                 self._clean_mem([full_metrics])
         else:
             metrics = metrics.loc[metrics['Step'].between(start, end, inclusive=True)]
-            metrics = metrics.sort_values(['Step'], ascending=[True])[metric_name].to_numpy()
+            metrics = metrics.sort_values(['Step'], ascending=[True])[metric_name]
+            metrics = np.array(metrics.values.tolist())
 
             if len(metrics) < (end - start + 1):
                 full_metrics = np.empty((end - start + 1))
@@ -300,19 +302,27 @@ class DataContainer:
         if self.memory_usage/1e6 >= self.MAX_THRESHOLD:
             data_logger.warning(
                 "dc_memory_used",
-                phys_total=phys_total,
-                phys_available=phys_available,
-                dc_memory_usage=self.memory_usage,
-                dc_total_memory=self.MAX_THRESHOLD
+                extra={
+                    'namespace': dict(
+                        phys_total=phys_total,
+                        phys_available=phys_available,
+                        dc_memory_usage=self.memory_usage,
+                        dc_total_memory=self.MAX_THRESHOLD
+                    )
+                }
             )
 
         elif self.memory_usage/1e6 >= self.MAX_THRESHOLD * 0.75:
             data_logger.info(
                 "dc_memory_used",
-                phys_total=phys_total,
-                phys_available=phys_available,
-                dc_memory_usage=self.memory_usage,
-                dc_total_memory=self.MAX_THRESHOLD
+                extra={
+                    'namespace': dict(
+                        phys_total=phys_total,
+                        phys_available=phys_available,
+                        dc_memory_usage=self.memory_usage,
+                        dc_total_memory=self.MAX_THRESHOLD
+                    )
+                }
             )
     
     def _delete_experiment(self, experiment_name: str):
