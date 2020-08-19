@@ -577,12 +577,25 @@ const actions = {
   },
 
   API_saveJsonModel({rootGetters}, {path}) {
-    const networkJson = stringifyNetworkObjects(rootGetters['mod_workspace/GET_currentNetwork']);
+    const networkJson = cloneDeep(rootGetters['mod_workspace/GET_currentNetwork']);
+    const healthNetworkElementList = {};
+    Object.keys(networkJson.networkElementList).map(key => {
+      const el = networkJson.networkElementList[key];
+      healthNetworkElementList[key] = {
+        ...el,
+        chartData: {}
+      }
+    })
+
+    const healthNetworkJson = {
+      ...networkJson,
+      networkElementList: healthNetworkElementList
+    }
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
       action: 'saveJsonModel',
       value:  {
-        json: networkJson,
+        json: stringifyNetworkObjects(healthNetworkJson),
         path
       }
     };
