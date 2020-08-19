@@ -1136,7 +1136,7 @@ const actions = {
             kernelResponses: res.outputDims
           }, {root: true});
         } 
-
+        
         if(Object.keys(res.previews).length > 0) {
           Object.keys(res.previews).map(previewKey => {
             dispatch('mod_workspace/SET_NeteworkChartData', {

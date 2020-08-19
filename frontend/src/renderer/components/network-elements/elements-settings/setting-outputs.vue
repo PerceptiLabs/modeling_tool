@@ -172,7 +172,7 @@ export default {
         .then((data)=> {
           this.$store.commit('mod_workspace/SET_previewVariable', {
             layerId: this.element.layerId,
-            previewVarialbeName: data.VariableName,
+            previewVariableName: data.VariableName,
           });
           this.$store.commit('mod_workspace/SET_previewVariableList', {
             layerId: this.element.layerId,

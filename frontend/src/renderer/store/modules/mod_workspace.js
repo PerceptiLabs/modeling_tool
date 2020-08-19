@@ -200,7 +200,7 @@ const mutations = {
     state.isSettingPreviewVisible = !state.isSettingPreviewVisible;
   },
   SET_previewVariable(state, payload){
-    currentElement(payload.layerId).previewVarible = payload.previewVarialbeName
+    currentElement(payload.layerId).previewVarible = payload.previewVariableName
   },
   SET_previewVariableList(state, payload){
     currentElement(payload.layerId).previewVariableList = payload.previewVariableList
@@ -739,11 +739,11 @@ const mutations = {
       return !arrSelectID.includes(item); 
     })
     let getBatchPreviewPayload = {};
-    for(let ix in net)  {
-      const el = net[ix];
+    for(let index in net)  {
+      const el = net[index];
       // getBatchPreviewPayload[ix] = null;
       if(descendantsIds.indexOf(el.layerId) !== -1) {
-        getBatchPreviewPayload[ix] = el.previewVarialbeName;
+        getBatchPreviewPayload[index] = el.previewVariable;
       }
     }
 
@@ -1887,7 +1887,7 @@ const actions = {
   // INPUT / OUTPUT variables handlers
   //---------------
   SET_outputVariableAction(ctx, payload) {
-    ctx.commit('SET_previewVariable', { previewVarialbeName: payload.variableName, layerId: payload.layerId});
+    ctx.commit('SET_previewVariable', { previewVariableName: payload.variableName, layerId: payload.layerId});
     ctx.commit('SET_outputVariableMutation', {ctx, payload});
   }
 };

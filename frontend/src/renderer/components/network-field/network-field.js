@@ -890,7 +890,7 @@ export default {
       let payload = {};
       for(let id in this.fullNetworkElementList) {
         const el = this.fullNetworkElementList[id];
-        payload[id] = el.previewVarialbeName;
+        payload[id] = el.previewVariable;
       }
       this.$store.dispatch('mod_api/API_getBatchPreviewSample', payload);
     }
