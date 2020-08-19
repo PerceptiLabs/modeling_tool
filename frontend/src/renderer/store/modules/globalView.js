@@ -25,6 +25,7 @@ const state = {
     showSaveNetworkPopup: false,
     showExportNetworkPopup: false,
     showNewModelPopup: false,
+    showCreateIssuesPopup: false
   },
   popupConfirmCancel: null,
   popupConfirmOk: null,
@@ -98,6 +99,9 @@ const mutations = {
   },
   set_exportNetworkPopup(state, value) {
     state.globalPopup.showExportNetworkPopup = value;
+  },
+  set_createIssuesPopup(state, value) {
+    state.globalPopup.showCreateIssuesPopup = value;
   },
   gp_confirmPopup(state, value) {
     state.globalPopup.showConfirmPopup = value.text;
@@ -181,6 +185,9 @@ const actions = {
   SET_exportNetworkPopup({commit}, value) {
     commit('set_exportNetworkPopup', value);
   },
+  SET_createIssuesPopup({commit}, value) {
+    commit('set_createIssuesPopup', value);
+  },  
   GP_confirmPopup({commit}, value) {
     commit('gp_confirmPopup', value);
   },

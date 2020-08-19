@@ -92,7 +92,6 @@ export default {
       testIsOpen:         'mod_workspace/GET_testIsOpen',
       statusNetworkCore:  'mod_workspace/GET_networkCoreStatus',
       statisticsIsOpen:   'mod_workspace/GET_statisticsIsOpen',
-      hasUnsavedChanges:  'mod_workspace-changes/get_hasUnsavedChanges',
 
       isTutorialMode:     'mod_tutorials/getIstutorialMode',
       isNotebookMode:     'mod_notebook/getNotebookMode',
