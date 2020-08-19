@@ -1,6 +1,7 @@
 import {calcLayerPosition} from '@/core/helpers.js'
 import { workspaceGrid, shadowBoxDragIfMoreThenElementsSelected}   from '@/core/constants.js'
 import {mapActions, mapGetters, mapMutations} from "vuex";
+import {debounce, throttleEv} from '@/core/helpers'
 
 const baseNetDrag = {
   // props: {
@@ -10,6 +11,7 @@ const baseNetDrag = {
     return {
       left: this.x,
       top: this.y,
+      throttleMove: throttleEv(this.move, 33),
     }
   },
 
@@ -71,7 +73,9 @@ const baseNetDrag = {
     },
 
     up(ev) {
-      if (this.bodyDrag) this.bodyUp(ev)
+      if (this.bodyDrag) {
+        this.bodyUp(ev)
+      }
     },
     bodyDown(ev) {
       if(!this.isCurrentItemSelected(this.dataEl.layerId)) {
@@ -87,10 +91,10 @@ const baseNetDrag = {
         return;
       }
 
-      this.$parent.$parent.$el.addEventListener('mousemove', this.move);
+      this.$parent.$parent.$el.addEventListener('mousemove', this.throttleMove);
       document.addEventListener('mouseup', this.up);
 
-      this.$parent.$parent.$el.addEventListener('touchmove', this.move, true);
+      this.$parent.$parent.$el.addEventListener('touchmove', this.throttleMove, true);
       document.addEventListener('touchend touchcancel', this.up, true);
       document.addEventListener('touchstart', this.up, true);
 
@@ -158,12 +162,14 @@ const baseNetDrag = {
       this.$store.dispatch('mod_workspace/CHANGE_elementPosition', this.rect);
       this.$parent.$parent.createArrowList();
 
-      this.$parent.$parent.$el.removeEventListener('mousemove', this.move);
-      this.$parent.$parent.$el.removeEventListener('touchmove', this.move, true);
+      this.$parent.$parent.$el.removeEventListener('mousemove', this.throttleMove);
+      this.$parent.$parent.$el.removeEventListener('touchmove', this.throttleMove, true);
       document.removeEventListener('mouseup', this.up);
       document.removeEventListener('touchend touchcancel', this.up, true);
       document.removeEventListener('touchstart', this.up, true);
       
+      this.$store.dispatch('mod_workspace/afterNetworkElementIsDragged');
+
       this.$store.dispatch('mod_workspace-history/PUSH_newSnapshot', null, {root: true});
     },
     updateItems(ev) {
@@ -176,7 +182,6 @@ const baseNetDrag = {
       };
       const top = calcLayerPosition(stickStartPos.top - delta.y);
       const left = calcLayerPosition(stickStartPos.left - delta.x);
-
       if((this.top !== top) || (this.left !== left)) {
         this.top = (top < 0) ? 0 : top;
         this.left = (left < 0) ? 0 : left;

@@ -1844,6 +1844,8 @@ const actions = {
   },
   CHANGE_elementPosition({commit, getters, dispatch}, value) {
     commit('change_elementPosition', {value, getters})
+  },
+  afterNetworkElementIsDragged({ dispatch, getters }) {
     dispatch('mod_webstorage/saveNetwork', getters.GET_currentNetwork, {root: true});
     dispatch('mod_workspace-changes/updateUnsavedChanges', {
       networkId: getters.GET_currentNetworkId,
