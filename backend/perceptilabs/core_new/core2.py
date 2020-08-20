@@ -39,10 +39,8 @@ from perceptilabs.logconf import APPLICATION_LOGGER, DATA_LOGGER
 logger = logging.getLogger(APPLICATION_LOGGER)
 data_logger = logging.getLogger(DATA_LOGGER)
 
-# TODO: this is a hack that's the first step toward weaning the kernel off of local files
-# it really should be using the output from tempfile.TemporaryFile()
-training_script_name = tempfile.mkstemp(suffix=".py")[1]
-
+# Train from a file named training_file.py and keep it in the temp directory unless we're in development mode
+training_script_name = "training_script.py" if os.getenv("PL_DEV") else f"{tempfile.gettempdir()}/training_script.py"
 
 def make_graph_spec_conform_to_schema(graph_spec):
     if 'Layers' in graph_spec:
