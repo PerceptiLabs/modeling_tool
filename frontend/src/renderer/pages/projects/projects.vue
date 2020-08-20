@@ -34,11 +34,13 @@
 
           //-   svg(v-if="isAllItemSelectedFavorite()" width="21" height="19" viewBox="0 0 21 19" fill="none")
           //-     path(d="M9.54894 0.927049C9.8483 0.0057385 11.1517 0.0057404 11.4511 0.927051L13.0819 5.9463C13.2158 6.35833 13.5997 6.63729 14.033 6.63729H19.3105C20.2792 6.63729 20.682 7.8769 19.8983 8.4463L15.6287 11.5484C15.2782 11.803 15.1315 12.2544 15.2654 12.6664L16.8963 17.6857C17.1956 18.607 16.1411 19.3731 15.3574 18.8037L11.0878 15.7016C10.7373 15.447 10.2627 15.447 9.91221 15.7016L5.64258 18.8037C4.85887 19.3731 3.80439 18.607 4.10374 17.6857L5.7346 12.6664C5.86847 12.2544 5.72181 11.803 5.37132 11.5484L1.10169 8.4463C0.317977 7.8769 0.720754 6.63729 1.68948 6.63729H6.96703C7.40026 6.63729 7.78421 6.35833 7.91809 5.9463L9.54894 0.927049Z" fill="#6185EE")
-          span.img-button.pt-4(v-if="isAtLeastOneItemSelected()" @click="removeItems()" v-tooltip:bottom="'Delete'")
+          span.img-button.pt-4(:class="{ 'disabledIconButton': !isAtLeastOneItemSelected() }" @click="removeItems()" v-tooltip:bottom="'Delete'")
             img(src="../../../../static/img/project-page/remove.svg")
-          span.text-button(v-if="isAtLeastOneItemSelected()" v-tooltip:bottom="'Open'") Open
+          span.text-button(
+            :class="{ 'is-disable': !isAtLeastOneItemSelected() }"
+            v-tooltip:bottom="'Open'") Open
           //- span.text-button(v-if="isAtLeastOneItemSelected()") BlackBox
-          span.text-button.is-disable(v-if="isAtLeastOneItemSelected()") History
+          span.text-button.is-disable() History
           //- span.text-button(v-if="isAtLeastOneItemSelected()" :class="{'is-disable': isDisabledCompareBtn()}") Compare
           //- sort-by-button(
           //-   :options="sortOptions"
@@ -728,6 +730,7 @@
     line-height: 23px;
     &.is-disable {
       color: #818181;
+      cursor: default;
     }
     &:hover {
       background: #383F50;
@@ -736,6 +739,10 @@
   .img-button {
     cursor: pointer;
     margin: 0 10px 0 25px;
+    &.disabledIconButton {
+      opacity: 0.4;
+      cursor: default;
+    }
   }
   .btn-round-icon {
     cursor: pointer;
@@ -987,7 +994,10 @@
       text-align: left;
     }
   }
-
+  .isTextButtonDisabled {
+    cursor: default;
+    opacity: 0.4;
+  }
   // rename model
   .rename-control {
   }
