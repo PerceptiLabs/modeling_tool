@@ -41,7 +41,7 @@
         
 </template>
 <script>
-import { mapActions } from 'vuex';
+import { mapActions, mapGetters } from 'vuex';
 import baseNetPaintArrows from '@/core/mixins/base-net-paint-arrows.js';
 export default {
   name: 'SettingOutputs',
@@ -64,6 +64,11 @@ export default {
       default: () => [],
       type: Array,
     }
+  },
+  computed: {
+    ...mapGetters({
+      currentNetwork: 'mod_workspace/GET_currentNetwork',
+    })
   },
   methods: {
     ...mapActions({
@@ -154,9 +159,12 @@ export default {
         layerId: this.element.layerId,
         outputVariableId: this.variableListId,
         variableName: variableName,
-      })
+      });
+
       this.$store.dispatch('mod_api/API_getBatchPreviewSampleForElementDescendants', this.element.layerId);
       this.closeVariableList();
+      // save output variable to indexDB
+      this.$store.dispatch('mod_webstorage/saveNetwork', this.currentNetwork, {root: true});
     },
     startPreviewArrow(ev) {
       this.$parent.$parent.startArrowPaint(ev);
@@ -170,10 +178,10 @@ export default {
     getVariableList() {
       this.$store.dispatch('mod_api/API_getPreviewVariableList', this.element.layerId)
         .then((data)=> {
-          this.$store.commit('mod_workspace/SET_previewVariable', {
-            layerId: this.element.layerId,
-            previewVariableName: data.VariableName,
-          });
+          // this.$store.commit('mod_workspace/SET_previewVariable', {
+          //   layerId: this.element.layerId,
+          //   previewVarialbeName: data.VariableName,
+          // });
           this.$store.commit('mod_workspace/SET_previewVariableList', {
             layerId: this.element.layerId,
             previewVariableList: data.VariableList,

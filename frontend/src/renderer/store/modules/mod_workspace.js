@@ -200,7 +200,7 @@ const mutations = {
     state.isSettingPreviewVisible = !state.isSettingPreviewVisible;
   },
   SET_previewVariable(state, payload){
-    currentElement(payload.layerId).previewVarible = payload.previewVariableName
+    currentElement(payload.layerId).previewVariable = payload.previewVarialbeName
   },
   SET_previewVariableList(state, payload){
     currentElement(payload.layerId).previewVariableList = payload.previewVariableList
