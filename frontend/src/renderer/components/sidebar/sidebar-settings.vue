@@ -3,8 +3,7 @@
     .sidebat-setting-head
       .sidebat-setting-head-name Settings
       button.sidebat-setting-head-open-code(@click="onOpenCodeButtonClick()") Open code
-    .sidebar-setting-content
-      //- h1 {{selectedEl && selectedEl.componentName}}
+    perfect-scrollbar.sidebar-setting-content
       component.setting-values-wrapper(v-if="selectedEl !== null" :key="selectedEl.layerId" v-bind:is="selectedEl.componentName" :currentEl="selectedEl" ref="componentSettings")
       sidebar-setting-preview.setting-chart-wrapper(
         v-if="selectedEl !== null"
