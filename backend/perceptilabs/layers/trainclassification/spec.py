@@ -26,17 +26,17 @@ class TrainClassificationSpec(LayerSpec):
     @classmethod
     def _from_dict_internal(cls, id_: str, dict_: Dict[str, Any], params: Dict[str, Any]) -> LayerSpec:
         if 'Properties' in dict_ and dict_['Properties'] is not None:
-            params['learning_rate'] = float(dict_['Properties']['Learning_rate'])        
-            params['decay_rate'] = float(dict_['Properties']['Decay_rate'])
-            params['decay_steps'] = int(dict_['Properties']['Decay_steps'])
-            params['momentum'] = float(dict_['Properties']['Momentum'])
-            params['beta2'] = float(dict_['Properties']['Beta_2'])
-            params['beta1'] = float(dict_['Properties']['Beta_1'])
-            params['optimizer'] = str(dict_['Properties']['Optimizer'])
-            params['n_epochs'] = int(dict_['Properties']['Epochs'])
-            params['batch_size'] = int(dict_['Properties']['Batch_size'])        
-            params['class_weights'] = str(dict_['Properties']['Class_weights'])
-            params['loss_function'] = str(dict_['Properties']['Loss'])            
+            params['learning_rate'] = dict_['Properties']['Learning_rate']        
+            params['decay_rate'] = dict_['Properties']['Decay_rate']
+            params['decay_steps'] = dict_['Properties']['Decay_steps']
+            params['momentum'] = dict_['Properties']['Momentum']
+            params['beta2'] = dict_['Properties']['Beta_2']
+            params['beta1'] = dict_['Properties']['Beta_1']
+            params['optimizer'] = dict_['Properties']['Optimizer']
+            params['n_epochs'] = dict_['Properties']['Epochs']
+            params['batch_size'] = dict_['Properties']['Batch_size']
+            params['class_weights'] = dict_['Properties']['Class_weights']
+            params['loss_function'] = dict_['Properties']['Loss']
             params['distributed'] = False
             params['use_cpu'] = dict_['Properties'].get('Use_CPU', True)
             params['target_acc'] = dict_['Properties'].get('Stop_Target_Accuracy', None)

@@ -63,16 +63,56 @@ class GraphSpec(ABC):
         return self.nodes_by_id[key]
 
     def get_successors(self, layer_spec: LayerSpec):
+        """ Get all nodes directly connected from layer_spec """                
         return [self.__getitem__(id_) for id_ in self._nx_graph.successors(layer_spec.id_)]
                 
     def get_predecessors(self, layer_spec: LayerSpec):
+        """ Get all nodes directly connected to layer_spec """        
         return [self.__getitem__(id_) for id_ in self._nx_graph.predecessors(layer_spec.id_)]
+
+    def get_ancestors(self, layer_spec: LayerSpec):
+        """ Get all nodes with a path to layer_spec """
+        return [
+            self.__getitem__(id_)
+            for id_ in nx.algorithms.dag.ancestors(self._nx_graph, layer_spec.id_)
+        ]
+    
+    def compute_field_hash(self, layer_spec, include_ancestors=True):
+        """ Computes a hash based on the fields (and maybe ancestors) of the layer
+        
+        Args:
+            include_ancestors: compute the hashes of the ancestors as well
+        """
+        included_specs = [layer_spec] # The layer itself
+
+        if include_ancestors:
+            included_specs += self.get_ancestors(layer_spec)
+
+        if logger.isEnabledFor(logging.DEBUG):            
+            logger.debug(f"Computing field hash of layer {layer_spec.id_} [{layer_spec.type_}] based on layers {[x.id_ for x in included_specs]}")        
+
+        total_hash = hash(tuple([s.compute_field_hash()**2 for s in included_specs]))
+        return total_hash
+
 
     def get_ordered_ids(self):
         """ Returns the layers in terms of execution order """
         topological_tree = list(nx.topological_sort(self._nx_graph))
         ordered_ids = tuple(topological_tree)
         return ordered_ids
+
+    def get_ordered_nodes(self):
+        return [self.nodes_by_id[id_] for id_ in self.get_ordered_ids()]
+
+    def __eq__(self, other):
+        if type(self) != type(other):
+            return False
+
+        for node1, node2 in zip(self.get_ordered_nodes(), other.get_ordered_nodes()):
+            if node1 != node2:
+                return False
+            
+        return True
 
     def get_origin(self, layer_spec: LayerSpec):
         """ Return the 'start nodes' connected to this layer (possibly including the layer itself) """
@@ -81,7 +121,7 @@ class GraphSpec(ABC):
         else:
             original_ancestors = [
                 ancestor_spec
-                for ancestor_spec in self.get_predecessors(layer_spec)
+                for ancestor_spec in self.get_ancestors(layer_spec)
                 if len(ancestor_spec.backward_connections) == 0
             ]
             return original_ancestors

@@ -93,9 +93,6 @@ class DefaultStrategy(BaseStrategy):
     
 
 class Tf1xStrategy(BaseStrategy):
-    def __init__(self, layer_ids_to_names):
-        self._layer_ids_to_names = layer_ids_to_names
-    
     def run(self, layer_spec, layer_class, input_results):
         with tf.Graph().as_default() as graph:
             try:
@@ -260,37 +257,43 @@ class LightweightCore:
     
     def _run_subgraph(self, subgraph_spec):
         ordered_ids = subgraph_spec.get_ordered_ids()
-        
-        self._layer_ids_to_names = {node.id_ : node.name for node in subgraph_spec.nodes}
-        
-        edges_by_id = subgraph_spec.edges_by_id
-        subgraph_spec_dict = subgraph_spec.to_dict()
-        properties_map = {layer_id: json.dumps(subgraph_spec_dict[layer_id]) for layer_id in subgraph_spec_dict.keys()}
-        cached_results = self._get_cached_results(properties_map, subgraph_spec, edges_by_id)
-        self._cached_layer_ids = cached_results.keys()
-        code_map, code_errors = self._get_code_from_layers(subgraph_spec) # Other errors are fatal and should be raised
 
-        assert len(ordered_ids) == len(subgraph_spec) == len(code_map) == len(code_errors)
-        
         all_results = {}        
         for layer_id in ordered_ids:
+            t0 = time.perf_counter()            
+            layer_result = None            
             layer_spec = subgraph_spec[layer_id]
-            logger.info(f"Getting results for layer {layer_spec}")
-            
-            if layer_id in cached_results:
-                all_results[layer_id] = cached_results.get(layer_id)
-            else:
-                layer_results = self._compute_layer_results(
-                    layer_id, subgraph_spec, layer_spec, code_map[layer_id],
-                    code_errors[layer_id], edges_by_id, all_results
-                )                
-                all_results[layer_id] = layer_results
-                self._cache_computed_results(layer_id, layer_results, properties_map, edges_by_id)
 
+            # Maybe get result from cache
+            if self._cache is not None:
+                layer_hash = subgraph_spec.compute_field_hash(layer_spec, include_ancestors=True)
+                logger.debug(f"Computed hash for layer {layer_spec.id_} [{layer_spec.type_}]. Hash: {layer_hash}")
+                    
+                if layer_hash in self._cache:
+                    layer_result = self._cache.get(layer_hash)
+                    logger.debug(f"Retrieved cached results for layer {layer_spec.id_} [{layer_spec.type_}]. Hash: {layer_hash}")
+                
+            # If no cached result
+            if layer_result is None:
+                code, code_error = self._get_layer_code(layer_id, layer_spec, subgraph_spec)
+                
+                layer_result = self._compute_layer_results(
+                    layer_id, subgraph_spec, layer_spec, code,
+                    code_error, all_results
+                )
+                logger.debug(f"Computed results for layer {layer_spec.id_} [{layer_spec.type_}]")
+                
+                # Maybe insert into cache
+                if self._cache is not None:                
+                    self._cache.put(layer_hash, layer_result)
+                    logger.debug(f"Cached computed results for layer {layer_spec.id_} [{layer_spec.type_}]. Hash: {layer_hash}")
+                    
+            all_results[layer_id] = layer_result                
+            
         assert len(all_results) == len(subgraph_spec)
         return all_results
 
-    def _compute_layer_results(self, layer_id, graph_spec, layer_spec, code, code_error, edges_by_id, all_results):
+    def _compute_layer_results(self, layer_id, graph_spec, layer_spec, code, code_error, all_results):
         if code is None:
             return BaseStrategy.get_default(code_error=code_error)
 
@@ -309,7 +312,7 @@ class LightweightCore:
         
         input_results = {
             from_id: all_results[from_id]
-            for (from_id, to_id) in edges_by_id if to_id == layer_spec.id_
+            for (from_id, to_id) in graph_spec.edges_by_id if to_id == layer_spec.id_
         }
         strategy = self._get_layer_strategy(layer_class)
         try:
@@ -327,39 +330,10 @@ class LightweightCore:
         elif issubclass(layer_obj, DataReinforce):
             strategy = DataReinforceStrategy()
         elif issubclass(layer_obj, Tf1xLayer): 
-            strategy = Tf1xStrategy(self._layer_ids_to_names)
+            strategy = Tf1xStrategy()
         else:
             strategy = DefaultStrategy()
         return strategy
-
-    def _cache_computed_results(self, layer_id, layer_results, code_map, edges_by_id):
-        if self._cache is not None:
-            self._cache.put(layer_id, layer_results, code_map, edges_by_id)
-
-    def _get_cached_results(self, properties_map, graph_spec, edges_by_id):
-        if self._cache is None:
-            return {}
-
-        results = {}
-        for layer_id in graph_spec.layer_ids:
-            cached_result = self._cache.get(layer_id, properties_map, edges_by_id)
-            if cached_result is not None:
-                results[layer_id] = cached_result
-        return results
-        
-    def _get_code_from_layers(self, graph_spec):
-        code_map, error_map = {}, {}        
-        for layer_id, layer_spec in graph_spec.nodes_by_id.items():
-            if layer_id not in self._cached_layer_ids:
-                code, error = self._get_layer_code(layer_id, layer_spec, graph_spec)
-
-                code_map[layer_id] = code
-                error_map[layer_id] = error
-            else:
-                code_map[layer_id] = ''
-                error_map[layer_id] = ''
-
-        return code_map, error_map
 
     def _get_layer_code(self, layer_id, layer_spec, graph_spec):
         layer_helper = LayerHelper(self._script_factory, layer_spec, graph_spec)

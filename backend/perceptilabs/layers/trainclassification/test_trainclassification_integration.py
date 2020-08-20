@@ -448,3 +448,10 @@ def test_load_checkpoint_distributed(script_factory, temp_path):
 
     assert np.all(w1 == w2)
 
+
+def test_can_convert_to_dict_and_back(graph_spec):
+    dict_ = graph_spec.to_dict()
+    new_spec = GraphSpec.from_dict(dict_)
+
+    assert new_spec == graph_spec
+    

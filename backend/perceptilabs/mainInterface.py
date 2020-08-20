@@ -35,8 +35,12 @@ from perceptilabs.lwInterface import getRootFolder, getNotebookImports, getNoteb
 logger = logging.getLogger(APPLICATION_LOGGER)
 
 
-LW_CACHE_MAX_ITEMS = 25 # Only for '--core-mode v2'
+USE_AUTO_SETTINGS = True
+USE_LW_CACHING = True
+LW_CACHE_MAX_ITEMS = 25 
 AGGREGATION_ENGINE_MAX_WORKERS = 2
+
+
 
 
 def load_network(json_network, as_spec=False, layers_only=True):
@@ -49,9 +53,9 @@ def load_network(json_network, as_spec=False, layers_only=True):
     if as_spec:
         network = GraphSpec.from_dict(network)
 
-    DEBUG = True
-    if DEBUG:
-        pprint.pprint(network)
+    if logger.isEnabledFor(logging.DEBUG):
+        logger.debug("loading json network:" + pprint.pformat(network))
+
     return network
 
 
@@ -62,7 +66,7 @@ class Interface():
         self._checkpointDict=checkpointDict
         self._lwDict=lwDict
         self._core_mode = 'v2'
-        self._lw_cache_v2 = LightweightCache(max_size=LW_CACHE_MAX_ITEMS)
+        self._lw_cache_v2 = LightweightCache(max_size=LW_CACHE_MAX_ITEMS) if USE_LW_CACHING else None
         self._settings_engine = None
 
         self._data_container = Exp_DataContainer()
@@ -134,7 +138,8 @@ class Interface():
             self._addCore(reciever)
         self._core = self._cores[reciever]
 
-        self._settings_engine = autosettings_utils.setup_engine(self._lw_cache_v2)
+        if USE_AUTO_SETTINGS:
+            self._settings_engine = autosettings_utils.setup_engine(self._lw_cache_v2)
 
     def shutDown(self):
         for c in self._cores.values():
@@ -212,7 +217,7 @@ class Interface():
                 stringify(response)
             ))
 
-                
+
         return response, self._core.issue_handler
 
     def _create_response(self, reciever, action, value):
@@ -251,8 +256,6 @@ class Interface():
                 new_json_network = {}
                 logger.warning("Settings engine is not set. Cannot make recommendations")
 
-            #from perceptilabs.utils import stringify
-            #print('new net after autosettings', stringify(new_json_network))
             return new_json_network
                 
         elif action == "getFolderContent":
@@ -337,7 +340,7 @@ class Interface():
 
         elif action == "getNetworkData":
             json_network = load_network(value["Network"])
-            
+
             if self._settings_engine is not None:
                 new_json_network = autosettings_utils.get_recommendation(json_network, self._settings_engine)
             else:
