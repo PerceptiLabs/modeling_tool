@@ -17,7 +17,7 @@ const baseUrlCloud  = 'https://perceptilabsamerica.azurewebsites.net/api/';
 const baseUrlSite   = 'https://perceptilabs.com';
 
 const widthElement = 60;
-const workspaceGrid = 10;
+const workspaceGrid = 20;
 export const shadowBoxDragIfMoreThenElementsSelected = 3;
 const pathSlash = process.platform === 'win32' ? '\\' : '/';
 
