@@ -2030,14 +2030,14 @@ const getComponentInputs = (componentName) => {
   let inputs = {};
   const inputVariableArray = componentsInputs[componentName];
   if(inputVariableArray && inputVariableArray.length > 0) {
-    inputVariableArray.map(inputName => {
+    inputVariableArray.map((inputName, index) => {
       let input = {
         name: inputName,
         reference_var_id: null,
         reference_layer_id: null,
         isDefault: true
       }
-      inputs[performance.now()] = input;
+      inputs[Date.now().toString() + index] = input;
     })
   }
   return inputs;
@@ -2047,12 +2047,12 @@ const getComponentOutputs = (componentName) => {
   let outputs = {};
   const outputVariableArray = componentsOutputs[componentName];
   if(outputVariableArray && outputVariableArray.length > 0) {
-    outputVariableArray.map(outputName => {
+    outputVariableArray.map((outputName, index) => {
       let output = {
         name: outputName,
         reference_var: outputName,
       }
-      outputs[performance.now()] = output;
+      outputs[[Date.now().toString() + index]] = output;
     })
   }
   return outputs;
