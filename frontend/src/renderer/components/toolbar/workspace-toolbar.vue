@@ -104,6 +104,14 @@
         span.text-primary.middle-text(v-html="statusTrainingText")
         button.btn.btn--dark.btn--toolbar-settings(
           type="button"
+          :class="{'active': showModelPreviews}"
+          @click="toggleModelPreviews"
+          v-tooltip-interactive:bottom="interactiveInfo.interactiveDoc"
+        )
+          span Preview
+          .ring-icon
+        button.btn.btn--dark.btn--toolbar-settings(
+          type="button"
           :class="{'active': isNotebookMode}"
           @click="switchNotebookMode"
           v-tooltip-interactive:bottom="interactiveInfo.interactiveDoc"
@@ -256,6 +264,9 @@ export default {
     },
     showCreateIssuesPopup() {
       return this.$store.state.globalView.globalPopup.showCreateIssuesPopup;
+    },
+    showModelPreviews() {
+      return this.$store.state.mod_workspace.showModelPreviews;
     }
   },
   watch: {
@@ -380,8 +391,11 @@ export default {
       } else {
         this.$router.push({name: 'projects'});
       }
+    },
+    toggleModelPreviews() {
+      this.$store.dispatch('mod_workspace/TOGGLE_showModelPreviews');
     }
-  }
+  },
 }
 </script>
 

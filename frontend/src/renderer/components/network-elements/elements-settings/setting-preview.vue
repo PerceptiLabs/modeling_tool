@@ -56,10 +56,14 @@ export default {
     isNotOnStatisitcOrTestPage() {
       return !(this.testIsOpen === true || this.statisticsIsOpen === true);
     },
+    showModelPreviews() {
+      return this.$store.state.mod_workspace.showModelPreviews;
+    },
     shouldShowPreview() {
       return (this.storeCurrentElement.chartData && this.storeCurrentElement.chartData.series && this.storeCurrentElement.chartData.series[0].data !== '')
-      && this.isNotOnStatisitcOrTestPage;
-    }
+      && this.isNotOnStatisitcOrTestPage
+      && this.showModelPreviews;
+    },
   },
   methods: {
     ...mapActions({

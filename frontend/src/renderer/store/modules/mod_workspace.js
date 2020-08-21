@@ -1,5 +1,5 @@
 import { generateID, calcLayerPosition, deepCloneNetwork, isLocalStorageAvailable, stringifyNetworkObjects }  from "@/core/helpers.js";
-import { widthElement, LOCAL_STORAGE_WORKSPACE_VIEW_TYPE_KEY } from '@/core/constants.js'
+import { widthElement, LOCAL_STORAGE_WORKSPACE_VIEW_TYPE_KEY, LOCAL_STORAGE_WORKSPACE_SHOW_MODEL_PREVIEWS } from '@/core/constants.js'
 import idb  from "@/core/helpers/idb-helper.js";
 import Vue    from 'vue'
 import router from '@/router'
@@ -57,6 +57,7 @@ const state = {
     }
   },
   viewType: localStorage.getItem(LOCAL_STORAGE_WORKSPACE_VIEW_TYPE_KEY) || 'model', // [model,statistic,test]
+  showModelPreviews: localStorage.hasOwnProperty(LOCAL_STORAGE_WORKSPACE_SHOW_MODEL_PREVIEWS) ? localStorage.getItem(LOCAL_STORAGE_WORKSPACE_SHOW_MODEL_PREVIEWS) === 'true' : true,
 };
 
 const getters = {
@@ -1448,6 +1449,10 @@ const mutations = {
     dispatch('mod_events/EVENT_IOGenerateAction', null, {root: true});
     Vue.delete(el.inputs, [payload.inputVariableId]);
   },
+  toggle_showModelPreviewsMutation(state, payload) {
+    localStorage.setItem(LOCAL_STORAGE_WORKSPACE_SHOW_MODEL_PREVIEWS, payload);
+    state.showModelPreviews = payload;
+  },
 };
 
 
@@ -1889,6 +1894,9 @@ const actions = {
   SET_outputVariableAction(ctx, payload) {
     ctx.commit('SET_previewVariable', { previewVariableName: payload.variableName, layerId: payload.layerId});
     ctx.commit('SET_outputVariableMutation', {ctx, payload});
+  },
+  TOGGLE_showModelPreviews(ctx) {
+    ctx.commit('toggle_showModelPreviewsMutation', !ctx.state.showModelPreviews)
   }
 };
 
