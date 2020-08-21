@@ -27,4 +27,6 @@ router.register(r"issues", views.IssuesViewSet, basename='Issues')
 
 urlpatterns = [
     path("", (include(router.urls))),
+    path(r"app/version/", views.get_version),
+    path(r"app/updates_available/", views.get_updates_available),
 ]
