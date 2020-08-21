@@ -1,19 +1,30 @@
 <template lang="pug">
   header.app-header
-    .app-header_logo
-      a(@click="toProjectPage")
-        //-img(src="./../../../../static/img/PerceptiLabs_Logo-web-white_beta-01.svg" alt="PerceptiLabs logo")
-        img(src="./../../../../static/img/project-page/logo.svg" alt="PerceptiLabs logo")
-    the-menu
+    .app-header-section.app-header-left
+      .app-header_logo
+        a(@click="toProjectPage")
+          //-img(src="./../../../../static/img/PerceptiLabs_Logo-web-white_beta-01.svg" alt="PerceptiLabs logo")
+          img(src="./../../../../static/img/project-page/logo.svg" alt="PerceptiLabs logo")
+      the-menu
     
-    h4(v-if="projectName").page-title {{projectName}} / <span class="page-route-title">{{routeHeaderAlias}} </span>
-    header-profile
-    ul(v-if="!isWeb").app-header_actions
-      button.btn.btn--app-minify(type="button" @click="appMinimize()").i.icon.icon-app-minimize
-      button.btn.btn--app-full(type="button"
-        @click="appMaximize"
-        :class="{'icon-app-restore-down': showRestoreIcon, 'icon-app-resize': !showRestoreIcon}").i.icon
-      button.btn.btn--app-close(type="button" @click="appClose()").i.icon.icon-app-close
+    .app-header-section.app-header-mid
+      h4(v-if="projectName").page-title {{projectName}} / <span class="page-route-title">{{routeHeaderAlias}} </span>
+
+    .app-header-section.app-header-right
+      button.btn.btn--dark.btn--toolbar-settings(
+          type="button"
+          @click="goToReport"
+        )
+
+        span Report
+        i.icon.icon-bug-report
+      header-profile
+      ul(v-if="!isWeb").app-header_actions
+        button.btn.btn--app-minify(type="button" @click="appMinimize()").i.icon.icon-app-minimize
+        button.btn.btn--app-full(type="button"
+          @click="appMaximize"
+          :class="{'icon-app-restore-down': showRestoreIcon, 'icon-app-resize': !showRestoreIcon}").i.icon
+        button.btn.btn--app-close(type="button" @click="appClose()").i.icon.icon-app-close
 </template>
 
 <script>
@@ -85,6 +96,9 @@ export default {
       if(this.$route.name === 'app') {
         this.$router.push({name: 'projects'})
       }
+    },
+    goToReport() {
+      this.$store.dispatch('globalView/SET_createIssuesPopup', true);
     }
   }
 }
@@ -95,7 +109,6 @@ export default {
   .app-header {
     position: relative;
     display: flex;
-    align-items: center;
     height: $h-header-win;
     background: #363E50;
     font-family: sans-serif;
@@ -104,6 +117,27 @@ export default {
     box-sizing: border-box;
     border-radius: 0px;
   }
+
+  .app-header-section {
+    display: flex;
+    flex: 1 1 100%;
+    align-items: center;
+
+    &.app-header-right {
+      > *:first-child {
+        margin-left: auto;
+      }
+
+      > *:last-child {
+        margin-right: 4rem;
+      }
+
+      * + * {
+        margin-left: 1rem;
+      }
+    }
+  }
+
   .d-none {
     display: none;
   }
@@ -153,5 +187,30 @@ export default {
         background: #e94040;
       }
     }
+  }
+
+  .btn--toolbar-settings {
+    min-width: 0;
+    color: $toolbar-button-border;
+    background: #141c31;
+
+    padding-right: 1rem;
+    padding-left: 1rem;
+    border: 1px solid $toolbar-separator-color;
+
+    font-family: Nunito Sans;
+    font-style: normal;
+    font-weight: 600;
+    font-size: 12px;
+
+    &.active {
+      color: $color-1;
+      border: 1px solid $color-1;
+
+      & > .ring-icon {
+        border: 2px solid $color-1;
+      }
+    }
+
   }
 </style>

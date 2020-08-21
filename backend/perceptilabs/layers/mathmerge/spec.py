@@ -7,7 +7,6 @@ class MathMergeSpec(LayerSpec):
     type_: str = 'MathMerge'
     merge_type: Union[str, None] = None
     merge_dim: Union[int, None] = None    
-
     @classmethod
     def _from_dict_internal(cls, id_: str, dict_: Dict[str, Any], params: Dict[str, Any]) -> LayerSpec:
         params['merge_type'] = dict_['Properties']['Type']

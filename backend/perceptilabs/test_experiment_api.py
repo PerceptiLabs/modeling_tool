@@ -163,7 +163,7 @@ def test_get_aggregations_results_basic(core_interface, experiment):
     test_loss_input.fill(np.nan)
     test_loss_input[0] = np.random.normal(size=1)
 
-    expected = np.nanmean([train_loss_input, test_loss_input], axis=1)
+    expected = np.nanmean([train_loss_input, test_loss_input], axis=0)
 
     # Send data
     for index, loss in enumerate(train_loss_input):
@@ -189,9 +189,9 @@ def test_get_aggregations_results_extensive(core_interface, experiment):
     test_loss_input.fill(np.nan)
     test_loss_input[0] = np.random.normal(size=1)
     
-    expected_mean = np.nanmean([train_loss_input, test_loss_input], axis=1)
-    expected_max = np.nanmax([train_loss_input, test_loss_input], axis=1)
-    expected_min = np.nanmin([train_loss_input, test_loss_input], axis=1)
+    expected_mean = np.nanmean([train_loss_input, test_loss_input], axis=0)
+    expected_max = np.nanmax([train_loss_input, test_loss_input], axis=0)
+    expected_min = np.nanmin([train_loss_input, test_loss_input], axis=0)
 
     # Send data
     for index, loss in enumerate(train_loss_input):

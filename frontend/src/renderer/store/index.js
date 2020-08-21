@@ -8,7 +8,7 @@ import wsForwardBackwardConnections from './plugins/workspace-forward-backward-c
 Vue.use(Vuex);
 
 export default new Vuex.Store({
-  strict: process.env.NODE_ENV !== 'production',
+  strict: false,
   modules,
   plugins: [wsHistory, wsForwardBackwardConnections]
 })

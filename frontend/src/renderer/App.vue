@@ -19,11 +19,14 @@
     update-popup(v-if="isElectron") 
     the-info-popup(v-if="showPopup")
     confirm-popup
+    create-issue-popup(v-if="showCreateIssuesPopup")
     modal-pages-engine
 </template>
 
 <script>
   import { isWeb, isElectron, isOsMacintosh } from "@/core/helpers";
+  import CreateIssuePopup         from '@/components/global-popups/create-issues-popup.vue';
+
   let ipcRenderer = null;
   if(isElectron()) {
     const electron = require('electron');
@@ -48,7 +51,7 @@
     components: {
       ModalPagesEngine,
       HeaderLinux, HeaderWin, HeaderMac,
-      UpdatePopup, TheInfoPopup, ConfirmPopup
+      UpdatePopup, TheInfoPopup, ConfirmPopup, CreateIssuePopup
     },
     created() {
       window.addEventListener('online',  this.updateOnlineStatus);
@@ -199,6 +202,9 @@
         }
 
         return false;
+      },
+      showCreateIssuesPopup() {
+        return this.$store.state.globalView.globalPopup.showCreateIssuesPopup;
       }
     },
     watch: {

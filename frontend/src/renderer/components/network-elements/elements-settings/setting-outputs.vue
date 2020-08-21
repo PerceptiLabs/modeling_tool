@@ -6,12 +6,21 @@
       @click.stop.prevent="openVariablesList(outputId)"
       :data-output-id="outputId"
     ) {{output.name}}
+      div.circle-dot(
+        :data-output-circle-dot-id="outputId"
+        :data-output-layer-id="element.layerId"
+      )
+        .icon.icon-left-arrow-dot-line(
+          :class="{'hover': hoverHandle === true}"
+        )      
       div.output-dot(
         :data-output-dot-id="outputId"
         :data-output-layer-id="element.layerId"
         @mousedown.stop.prevent="startPreviewArrow"
+        @mouseover="handlehover"
+        @mouseleave="handleleave"
       )
-      
+
       div.variable-list(
         v-if="isVarableListOpen && outputId === variableListId"
       )
@@ -32,7 +41,7 @@
         
 </template>
 <script>
-import { mapActions } from 'vuex';
+import { mapActions, mapGetters } from 'vuex';
 import baseNetPaintArrows from '@/core/mixins/base-net-paint-arrows.js';
 export default {
   name: 'SettingOutputs',
@@ -43,6 +52,7 @@ export default {
       variableListId: null,
       isContextOpen: false,
       contextOpenedId: null,
+      hoverHandle: false,
     }
   },
   props: {
@@ -54,6 +64,11 @@ export default {
       default: () => [],
       type: Array,
     }
+  },
+  computed: {
+    ...mapGetters({
+      currentNetwork: 'mod_workspace/GET_currentNetwork',
+    })
   },
   methods: {
     ...mapActions({
@@ -144,20 +159,29 @@ export default {
         layerId: this.element.layerId,
         outputVariableId: this.variableListId,
         variableName: variableName,
-      })
+      });
+
       this.$store.dispatch('mod_api/API_getBatchPreviewSampleForElementDescendants', this.element.layerId);
       this.closeVariableList();
+      // save output variable to indexDB
+      this.$store.dispatch('mod_webstorage/saveNetwork', this.currentNetwork, {root: true});
     },
     startPreviewArrow(ev) {
       this.$parent.$parent.startArrowPaint(ev);
     },
+    handlehover() {
+      this.hoverHandle=true;
+    },
+    handleleave() {
+      this.hoverHandle=false;
+    },
     getVariableList() {
       this.$store.dispatch('mod_api/API_getPreviewVariableList', this.element.layerId)
         .then((data)=> {
-          this.$store.commit('mod_workspace/SET_previewVariable', {
-            layerId: this.element.layerId,
-            previewVarialbeName: data.VariableName,
-          });
+          // this.$store.commit('mod_workspace/SET_previewVariable', {
+          //   layerId: this.element.layerId,
+          //   previewVarialbeName: data.VariableName,
+          // });
           this.$store.commit('mod_workspace/SET_previewVariableList', {
             layerId: this.element.layerId,
             previewVariableList: data.VariableList,
@@ -181,15 +205,59 @@ export default {
 }
 .output-dot {
   position: absolute;
-  right: -15px;
+  right: -20px;
   top: 50%;
   transform: translateY(-50%);
-  width: 7px;
-  height: 7px;
-  background-color: #22DDE5;
-  border: 1px solid #fff;
+  width: 20px;
+  height: 20px;
+  background-color: transparent;
   border-radius: 50%;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+  }
+
 }
+
+.circle-dot {
+  width: 5px;
+  height: 5px;
+  border: 1px solid white;
+  border-radius: 50%;
+  position: absolute;
+  right: -13px;
+  top: 50%;
+  transform: translateY(-50%);
+
+  &.connect {
+    background: #B6C7FB;
+  }
+}
+
+.icon-left-arrow-dot-line {
+  position: absolute;
+  top: -2.5px;
+  left: 1px;
+  display: none;
+  animation: slide1 1s ease-in-out infinite;
+
+  &.hover {
+    display: block;
+    color: #B6C7FB;
+  }
+}
+
+@keyframes slide1 {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+
+  50% {
+    transform: translate(4px, 0);
+  }
+}
+
 .output-context {
   position: absolute;
   z-index: 200;

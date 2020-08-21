@@ -1,5 +1,5 @@
 import { generateID, calcLayerPosition, deepCloneNetwork, isLocalStorageAvailable, stringifyNetworkObjects }  from "@/core/helpers.js";
-import { widthElement, LOCAL_STORAGE_WORKSPACE_VIEW_TYPE_KEY } from '@/core/constants.js'
+import { widthElement, LOCAL_STORAGE_WORKSPACE_VIEW_TYPE_KEY, LOCAL_STORAGE_WORKSPACE_SHOW_MODEL_PREVIEWS } from '@/core/constants.js'
 import idb  from "@/core/helpers/idb-helper.js";
 import Vue    from 'vue'
 import router from '@/router'
@@ -57,6 +57,7 @@ const state = {
     }
   },
   viewType: localStorage.getItem(LOCAL_STORAGE_WORKSPACE_VIEW_TYPE_KEY) || 'model', // [model,statistic,test]
+  showModelPreviews: localStorage.hasOwnProperty(LOCAL_STORAGE_WORKSPACE_SHOW_MODEL_PREVIEWS) ? localStorage.getItem(LOCAL_STORAGE_WORKSPACE_SHOW_MODEL_PREVIEWS) === 'true' : true,
 };
 
 const getters = {
@@ -200,7 +201,7 @@ const mutations = {
     state.isSettingPreviewVisible = !state.isSettingPreviewVisible;
   },
   SET_previewVariable(state, payload){
-    currentElement(payload.layerId).previewVarible = payload.previewVarialbeName
+    currentElement(payload.layerId).previewVariable = payload.previewVarialbeName
   },
   SET_previewVariableList(state, payload){
     currentElement(payload.layerId).previewVariableList = payload.previewVariableList
@@ -739,11 +740,11 @@ const mutations = {
       return !arrSelectID.includes(item); 
     })
     let getBatchPreviewPayload = {};
-    for(let ix in net)  {
-      const el = net[ix];
+    for(let index in net)  {
+      const el = net[index];
       // getBatchPreviewPayload[ix] = null;
       if(descendantsIds.indexOf(el.layerId) !== -1) {
-        getBatchPreviewPayload[ix] = el.previewVarialbeName;
+        getBatchPreviewPayload[index] = el.previewVariable;
       }
     }
 
@@ -1448,6 +1449,10 @@ const mutations = {
     dispatch('mod_events/EVENT_IOGenerateAction', null, {root: true});
     Vue.delete(el.inputs, [payload.inputVariableId]);
   },
+  toggle_showModelPreviewsMutation(state, payload) {
+    localStorage.setItem(LOCAL_STORAGE_WORKSPACE_SHOW_MODEL_PREVIEWS, payload);
+    state.showModelPreviews = payload;
+  },
 };
 
 
@@ -1844,6 +1849,8 @@ const actions = {
   },
   CHANGE_elementPosition({commit, getters, dispatch}, value) {
     commit('change_elementPosition', {value, getters})
+  },
+  afterNetworkElementIsDragged({ dispatch, getters }) {
     dispatch('mod_webstorage/saveNetwork', getters.GET_currentNetwork, {root: true});
     dispatch('mod_workspace-changes/updateUnsavedChanges', {
       networkId: getters.GET_currentNetworkId,
@@ -1885,8 +1892,11 @@ const actions = {
   // INPUT / OUTPUT variables handlers
   //---------------
   SET_outputVariableAction(ctx, payload) {
-    ctx.commit('SET_previewVariable', { previewVarialbeName: payload.variableName, layerId: payload.layerId});
+    ctx.commit('SET_previewVariable', { previewVariableName: payload.variableName, layerId: payload.layerId});
     ctx.commit('SET_outputVariableMutation', {ctx, payload});
+  },
+  TOGGLE_showModelPreviews(ctx) {
+    ctx.commit('toggle_showModelPreviewsMutation', !ctx.state.showModelPreviews)
   }
 };
 
@@ -2028,14 +2038,14 @@ const getComponentInputs = (componentName) => {
   let inputs = {};
   const inputVariableArray = componentsInputs[componentName];
   if(inputVariableArray && inputVariableArray.length > 0) {
-    inputVariableArray.map(inputName => {
+    inputVariableArray.map((inputName, index) => {
       let input = {
         name: inputName,
         reference_var_id: null,
         reference_layer_id: null,
         isDefault: true
       }
-      inputs[performance.now()] = input;
+      inputs[Date.now().toString() + index] = input;
     })
   }
   return inputs;
@@ -2045,12 +2055,12 @@ const getComponentOutputs = (componentName) => {
   let outputs = {};
   const outputVariableArray = componentsOutputs[componentName];
   if(outputVariableArray && outputVariableArray.length > 0) {
-    outputVariableArray.map(outputName => {
+    outputVariableArray.map((outputName, index) => {
       let output = {
         name: outputName,
         reference_var: outputName,
       }
-      outputs[performance.now()] = output;
+      outputs[[Date.now().toString() + index]] = output;
     })
   }
   return outputs;

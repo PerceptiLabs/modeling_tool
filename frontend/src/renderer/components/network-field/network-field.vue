@@ -13,21 +13,21 @@
           path(d='M 60 0 L 0 0 0 60' fill='none' stroke='gray' stroke-width='1')
       rect(width='100%' height='100%' fill='url(#grid)')
     svg.svg-arrow(:style="styleSvgArrow" style="pointer-events: none")
-      //- defs
-      //-   marker#svg-arrow_triangle(
-      //-       refX="3" refY="2"
-      //-       markerWidth="9"
-      //-       markerHeight="9"
-      //-       orient="auto"
-      //-     )
-      //-     polyline(points="0,0 0,4 3.5,2")
-      //-   marker#svg-arrow_triangle-empty(
-      //-       refX="3" refY="2"
-      //-       markerWidth="9"
-      //-       markerHeight="9"
-      //-       orient="auto"
-      //-     )
-      //-     polyline(points="0,0 0,4 3.5,2")
+      defs
+        marker#svg-arrow_triangle(
+            refX="3" refY="2"
+            markerWidth="9"
+            markerHeight="9"
+            orient="auto"
+          )
+          polyline(points="0,0 0,4 3.5,2")
+        marker#svg-arrow_triangle-empty(
+            refX="3" refY="2"
+            markerWidth="9"
+            markerHeight="9"
+            orient="auto"
+          )
+          polyline(points="0,0 0,4 3.5,2")
 
           //-marker#svg-arrow_start.svg-arrow_marker(
             viewBox="0 0 28 16"
@@ -51,7 +51,6 @@
           :data-stopid="arrow.l2.layerId"
           @click="focusArrow($event, arrow)"
           @blur="blurArrow"
-          :marker-end="arrowMarkerStyle(arrow)"
           :d="arrow.positionArrow.path.arrow"
           :style="arrowStyle"
           style="pointer-events: all"
@@ -105,7 +104,7 @@
     height: 100%;
     z-index: 2;
     marker {
-      fill: $col-primary;
+      fill: $arrow-color;
       stroke-width: 0;
     }
     marker#svg-arrow_triangle-empty {
@@ -113,7 +112,7 @@
       stroke-width: 0;
     }
     marker#svg-arrow_triangle {
-      fill: $col-primary;
+      fill: $arrow-color;
       stroke-width: 0;
     }
     marker.svg-arrow_marker_line--empty {
@@ -129,7 +128,7 @@
     }
   }
   .svg-arrow_line {
-    stroke: $col-primary; //inline styles for the canvas plagin
+    stroke: $arrow-color; //inline styles for the canvas plagin
     stroke-width: 3;
     fill: transparent;
     &.is-focused {

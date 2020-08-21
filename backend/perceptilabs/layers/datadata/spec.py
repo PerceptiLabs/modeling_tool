@@ -4,6 +4,8 @@ from typing import Tuple, Dict, Any, List, Union
 from pydantic import BaseModel, validator
 
 from perceptilabs.layers.specbase import LayerSpec, MyBaseModel
+from perceptilabs.layers.utils import try_cast
+
 
 
 class DataSource(MyBaseModel):
@@ -15,6 +17,9 @@ class DataSource(MyBaseModel):
     @validator('path', allow_reuse=True, check_fields=False)
     def remove_path_backslashes(cls, path):
         return path.replace('\\', '/')
+
+    def __hash__(self):
+        return hash(self.type_ + self.path + self.ext + str(self.split))    
     
 
 class DataDataSpec(LayerSpec):
@@ -27,7 +32,8 @@ class DataDataSpec(LayerSpec):
     @classmethod
     def _from_dict_internal(cls, id_: str, dict_: Dict[str, Any], params: Dict[str, Any]) -> LayerSpec:
         if 'Properties' in dict_ and dict_['Properties'] is not None:
-            params['selected_columns'] = tuple(dict_['Properties']['accessProperties']['Columns'])
+
+            params['selected_columns'] = try_cast(dict_['Properties']['accessProperties']['Columns'], tuple)
             params['sources'] = tuple(cls._parse_sources(dict_))
             params['lazy'] = False
             params['shuffle'] = dict_['Properties']['accessProperties']['Shuffle_data']

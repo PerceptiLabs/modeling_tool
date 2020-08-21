@@ -23,6 +23,7 @@ def raw_message(exp_name, name, metric, step):
     
     return r_message
 
+
 def test_data_container_hyperparameters(datacontainer):
     # Initialize hyperparameters to feed into DataContainer
     hyper_params = {
@@ -45,6 +46,7 @@ def test_data_container_hyperparameters(datacontainer):
     assert datacontainer.get_hyperparameter('Test1', 'batch_size') == 10
     assert datacontainer.get_hyperparameter('Test1', 'steps') == 10
     assert set(datacontainer.get_hyperparameter_names('Test1')) == set(['learning_rate', 'batch_size', 'steps'])
+
 
 def test_data_container_metric(datacontainer):
     # Initialize metrics to feed into DataContainer
@@ -78,6 +80,35 @@ def test_data_container_metric(datacontainer):
     assert np.isclose(datacontainer.get_metric('Test2', 'Test Loss', start = 0, end=9), test_loss, equal_nan=True).all()
     assert np.isclose(datacontainer.get_metric('Test2', 'Test Loss', end=-5), test_loss[:5], equal_nan=True).all()
 
+
+def test_data_container_ndarray_metrics(datacontainer):
+    # Initialize ndarray metrics
+    weights = np.random.rand(5, 10, 10)
+    biases = np.random.rand(5, 10)
+
+    # Send Data
+    for index, bias in enumerate(biases):
+        r_message = raw_message('Test3', 'Deep_Learning_Layer/Bias', bias, index)
+        message = serialize(r_message)
+        datacontainer.process_message(message)
+    
+    for index, weight in enumerate(weights):
+        r_message = raw_message('Test3', 'Deep_Learning_Layer/Weights', weight, index)
+        message = serialize(r_message)
+        datacontainer.process_message(message)
+    
+    # Grab Data and assert
+    assert len(datacontainer.get_metric('Test3', 'Deep_Learning_Layer/Bias', start=0)) == 5
+    assert len(datacontainer.get_metric('Test3', 'Deep_Learning_Layer/Weights', start=0)) == 5
+    assert len(datacontainer.get_metric('Test3', 'Deep_Learning_Layer/Bias', end=-2)) == 2
+    assert len(datacontainer.get_metric('Test3', 'Deep_Learning_Layer/Weights', end=-2)) == 2
+
+    assert np.isclose(datacontainer.get_metric('Test3', 'Deep_Learning_Layer/Bias', start=0), biases, equal_nan=True).all()
+    assert np.isclose(datacontainer.get_metric('Test3', 'Deep_Learning_Layer/Bias', end=-3), biases[-3:], equal_nan=True).all()
+    assert np.isclose(datacontainer.get_metric('Test3', 'Deep_Learning_Layer/Weights', start=0), weights, equal_nan=True).all()
+    assert np.isclose(datacontainer.get_metric('Test3', 'Deep_Learning_Layer/Weights', end=-3), weights[-3:], equal_nan=True).all()
+
+    
 def test_data_container_reset(datacontainer):
     train_loss = np.random.normal(size=5)
     test_loss = np.empty(5)

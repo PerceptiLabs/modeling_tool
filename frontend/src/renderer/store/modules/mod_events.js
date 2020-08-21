@@ -86,7 +86,7 @@ const actions = {
         
         const projectModels = await dispatch('mod_project/getProjectModels', null, { root: true});
         const projectModelsPaths = projectModels.map(model => model.location);
-        
+
         // checking and break if model location already exist in current project
         if(projectModelsPaths.indexOf(model.apiMeta.location) !== -1 && !(currentNetworkId === model.networkID)) {
           dispatch('globalView/GP_errorPopup', `Chosen model is already in project`, {root: true});

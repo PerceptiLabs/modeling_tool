@@ -1,5 +1,5 @@
 import logging
-import logging
+from typing import Any
 import hashlib
 import numpy as np
 import networkx as nx
@@ -29,7 +29,7 @@ class ListEntry:
         self.key = key
         self.value = value
         self.prev = None
-        self.next = None
+        self.next_ = None
         
 
 class DoublyLinkedList:
@@ -39,7 +39,7 @@ class DoublyLinkedList:
 
     def push(self, key, value):
         entry = ListEntry(key, value)        
-        entry.next = self.head
+        entry.next_ = self.head
         
         if self.head is not None:
             self.head.prev = entry
@@ -53,20 +53,20 @@ class DoublyLinkedList:
         dropped = self.tail
         if self.tail.prev is not None:
             self.tail = dropped.prev
-            self.tail.next = None
+            self.tail.next_ = None
         return dropped
             
     def move_up(self, entry):
         prev = entry.prev
-        next = entry.next
+        next_ = entry.next_
 
         if prev is not None:
-            prev.next = next
-        if next is not None:
-            next.prev = prev
+            prev.next_ = next_
+        if next_ is not None:
+            next_.prev = prev
 
         if entry is self.head:
-            self.head = next
+            self.head = next_
         if entry is self.tail:
             self.tail = prev
             
@@ -82,13 +82,24 @@ class LightweightCache:
         self._list = DoublyLinkedList()
         self._max_size = max_size
 
-    def put(self, layer_id, value, id_to_properties, edges_by_id):
-        key = self._compute_hash(layer_id, id_to_properties, edges_by_id)
-        self._insert_and_purge(key, value)
+    def put(self, key, value):
+        """ Inserts a key/value pair into the cache
 
-    def get(self, layer_id, id_to_properties, edges_by_id):
-        key = self._compute_hash(layer_id, id_to_properties, edges_by_id)
+        Args:
+            key: a unique key. Typically the hash of a layer spec and its dependencies.
+            value: the value associated with the key.
+        """
+        self._insert_and_maybe_purge(key, value)
 
+    def get(self, key):
+        """ Tries to retrieve the value of key from the cache
+
+        Args:
+            key: a unique key. Typically the hash of a layer spec and its dependencies.
+
+        Returns:
+            A value if key is present. Otherwise, returns None
+        """
         if key is not None and key in self._map:
             entry = self._map[key]
             value = entry.value
@@ -98,30 +109,11 @@ class LightweightCache:
             return value
         else:
             return None
-        
-    def _compute_hash(self, layer_id, id_to_properties, edges_by_id):
-        graph = nx.DiGraph()
-        graph.add_edges_from(edges_by_id)
-        graph.add_node(layer_id)
 
-        ancestor_ids = nx.ancestors(graph, layer_id)
-        full_properties = id_to_properties[layer_id]
-
-        if full_properties is None:
-            return None            
+    def __contains__(self, key):
+        return key is not None and key in self._map
         
-        for ancestor_id in sorted(ancestor_ids):
-            properties = id_to_properties[ancestor_id]            
-            if properties is None:
-                return None            
-            
-            full_properties += properties
-
-        encoded = full_properties.encode('utf-8')
-        md5 = hashlib.md5(encoded).hexdigest()
-        return md5
-        
-    def _insert_and_purge(self, key, value):
+    def _insert_and_maybe_purge(self, key, value):
         if key in self._map:
             entry = self._map[key]
             new_entry = self._list.move_up(entry)

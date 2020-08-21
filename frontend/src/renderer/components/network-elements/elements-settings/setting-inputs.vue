@@ -14,12 +14,14 @@
         v-model="inputValue"
         @keyup.enter="saveInputName()"
       )
-
+      div.circle-dot(
+        :data-input-circle-dot-id="inputId"
+        :data-input-layer-id="element.layerId"
+      )
       div.input-dot(
         :data-input-dot-id="inputId"
         :data-input-layer-id="element.layerId"
       )
-
       div.input-context(
         v-if="isContextOpen && inputId === contextOpenedId"
       )
@@ -139,14 +141,31 @@ export default {
 }
 .input-dot {
   position: absolute;
-  left: -10px;
+  left: -21px;
   top: 50%;
   transform: translateY(-50%);
-  width: 7px;
-  height: 7px;
-  background-color: #22DDE5;
-  border: 1px solid #fff;
+  width: 20px;
+  height: 20px;
+  background-color: transparent;
   border-radius: 50%;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.3)
+  }
+}
+.circle-dot {
+  width: 5px;
+  height: 5px;
+  border: 1px solid white;
+  border-radius: 50%;
+  position: absolute;
+  left: -13px;
+  top: 50%;
+  transform: translateY(-50%);
+
+  &.connect {
+    background: #B6C7FB;
+  }
 }
 .setting-input-edit {
   height: 17px;

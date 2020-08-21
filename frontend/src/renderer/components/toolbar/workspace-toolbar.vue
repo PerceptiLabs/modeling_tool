@@ -104,6 +104,14 @@
         span.text-primary.middle-text(v-html="statusTrainingText")
         button.btn.btn--dark.btn--toolbar-settings(
           type="button"
+          :class="{'active': showModelPreviews}"
+          @click="toggleModelPreviews"
+          v-tooltip-interactive:bottom="interactiveInfo.interactiveDoc"
+        )
+          span Preview
+          .ring-icon
+        button.btn.btn--dark.btn--toolbar-settings(
+          type="button"
           :class="{'active': isNotebookMode}"
           @click="switchNotebookMode"
           v-tooltip-interactive:bottom="interactiveInfo.interactiveDoc"
@@ -121,15 +129,7 @@
         //-     span Tutorial
         //-     .ring-icon
 
-        button.btn.btn--dark.btn--toolbar-settings(
-          type="button"
-          :class="{'tutorial-active': activeStepStoryboard === 5}"
-          @click="goToReport"
-        )
-
-          span Report
-          i.icon.icon-bug-report
-      sidebar-toggle-button
+        sidebar-toggle-button
     .layers-toolbar(v-if="!statisticsIsOpen && !testIsOpen")
       layers-toolbar
 </template>
@@ -141,7 +141,8 @@ import { trainingElements, deepLearnElements }  from '@/core/constants.js';
 import { goToLink }                             from '@/core/helpers.js'
 
 import LayersToolbar            from '@/components/toolbar/workspace-toolbar-layers.vue';
-import SidebarToggleButton            from '@/components/toolbar/sidebar-toggle-button.vue';
+import SidebarToggleButton      from '@/components/toolbar/sidebar-toggle-button.vue';
+
 export default {
   name: 'WorkspaceToolbar',
   components: { LayersToolbar, SidebarToggleButton },
@@ -260,6 +261,12 @@ export default {
     isDisabledNextStep() {
       const history = this.networkHistory;
       return !!history && history.historyStep === 0
+    },
+    showCreateIssuesPopup() {
+      return this.$store.state.globalView.globalPopup.showCreateIssuesPopup;
+    },
+    showModelPreviews() {
+      return this.$store.state.mod_workspace.showModelPreviews;
     }
   },
   watch: {
@@ -385,10 +392,10 @@ export default {
         this.$router.push({name: 'projects'});
       }
     },
-    goToReport() {
-      goToLink(this.reportLink)
+    toggleModelPreviews() {
+      this.$store.dispatch('mod_workspace/TOGGLE_showModelPreviews');
     }
-  }
+  },
 }
 </script>
 

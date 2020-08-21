@@ -8,6 +8,7 @@
         :element="storeCurrentElement"
         :outputsVariables="storeCurrentElement.previewVariableList"
       )
+
     chart-switch.data-settings_chart(
       v-if="shouldShowPreview"
       :disable-header="true"
@@ -40,6 +41,8 @@ export default {
   computed: {
     ...mapGetters({
         isTutorialMode:       'mod_tutorials/getIstutorialMode',
+        testIsOpen:         'mod_workspace/GET_testIsOpen',
+        statisticsIsOpen:   'mod_workspace/GET_statisticsIsOpen',
     }),
     layerId() {
       return this.currentEl.layerId
@@ -50,9 +53,17 @@ export default {
     eLConnectionInElementChartData() {
       return this.$store.getters['mod_workspace/GET_networkElementConnectionInChartData'](this.layerId);
     },
+    isNotOnStatisitcOrTestPage() {
+      return !(this.testIsOpen === true || this.statisticsIsOpen === true);
+    },
+    showModelPreviews() {
+      return this.$store.state.mod_workspace.showModelPreviews;
+    },
     shouldShowPreview() {
-      return this.storeCurrentElement.chartData && this.storeCurrentElement.chartData.series && this.storeCurrentElement.chartData.series[0].data !== ''
-    }
+      return (this.storeCurrentElement.chartData && this.storeCurrentElement.chartData.series && this.storeCurrentElement.chartData.series[0].data !== '')
+      && this.isNotOnStatisitcOrTestPage
+      && this.showModelPreviews;
+    },
   },
   methods: {
     ...mapActions({
@@ -86,7 +97,7 @@ export default {
         .then((data)=> {
           this.$store.commit('mod_workspace/SET_previewVariable', {
             layerId: this.layerId,
-            previewVarialbeName: data.VariableName,
+            previewVariableName: data.VariableName,
           });
           this.$store.commit('mod_workspace/SET_previewVariableList', {
             layerId: this.layerId,

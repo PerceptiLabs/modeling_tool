@@ -116,8 +116,9 @@ def copy_files(src_root, dest_root, list_path=None):
     elif os.path.isdir(src_root):
         copytree(src_root, dest_root)
 
-def run_checked_arr(arr):
-    with Popen(arr, stdout=PIPE, bufsize=1, universal_newlines=True) as p:
+def run_checked_arr(arr, env=None):
+    inner={} if not env else {"env":{**env, **os.environ}}
+    with Popen(arr, stdout=PIPE, bufsize=1, universal_newlines=True, **inner) as p:
         for line in p.stdout:
             print(line, end="")  # process line here
 
@@ -125,10 +126,10 @@ def run_checked_arr(arr):
         raise CalledProcessError(p.returncode, p.args)
 
 
-def run_checked(cmd):
+def run_checked(cmd, env=None):
     print(f"$ {cmd}")
     as_arr = cmd.split()
-    run_checked_arr(as_arr)
+    run_checked_arr(as_arr, env=env)
 
 
 def run_unchecked(cmd):
@@ -214,19 +215,23 @@ def install_prereqs():
         run_unchecked('pip install gym[atari]')
         run_unchecked("pip install -U git+https://github.com/Kojoley/atari-py.git")
 
-    run_unchecked("pip install -r ../backend/requirements_build.txt")
+    run_checked(f"pip install -r {BACKEND_SRC}/requirements.txt")
+    run_checked(f"pip install -r {RYGG_DIR}/requirements.txt")
+    run_unchecked("pip install -r requirements_build.txt")
 
+# Pull from the VERSION file with optional overrides in VERSION_OVERRIDE and VERSION_EXTENSION
 def calc_version():
-    # TODO: this variable from the pipeline shouldn't be buried so deep in the codebase
     override = os.environ.get("VERSION_OVERRIDE")
     if bool(override):
         return override
 
-    with open(os.path.join(PROJECT_ROOT, "version"), "r") as f:
+    with open(os.path.join(PROJECT_ROOT, "VERSION"), "r") as f:
         version = f.read().strip()
-    # TODO: don't build knowledge of nightly builds into this script. Instead, build it into the pipeline
-    if build_reason == "Schedule":
-        version = f"{version}.{build_num}"
+
+    extension = os.environ.get("VERSION_EXTENSION")
+    if bool(extension):
+        version = f"{version}.{extension}"
+
     print(f"version: {version}")
     return version
 
@@ -236,38 +241,43 @@ def set_perceptilabs_inner_version(rootDir, versionString):
     sed_i(init_py, "^__version__ *=.*", f"__version__='{versionString}'")
 
 
-def set_setup_version(rootDir, versionString):
-    setup_py = os.path.join(rootDir, "setup.py")
-    sed_i(setup_py, "^VERSION_STRING *=.*$", f"VERSION_STRING='{versionString}'")
+def set_rygg_inner_version(rootDir, versionString):
+    init_py = os.path.join(rootDir, "rygg", "__init__.py")
+    sed_i(init_py, "^__version__ *=.*", f"__version__='{versionString}'")
 
+
+def write_version_file(rootDir, versionString):
+    with open(f"{rootDir}/VERSION", "w") as f:
+        f.write(versionString)
 
 def set_wheel_version(versionString):
     print(f"setting wheel version to {versionString}")
+    write_version_file(BUILD_TMP, versionString)
     set_perceptilabs_inner_version(BUILD_TMP, versionString)
-    set_setup_version(BUILD_TMP, versionString)
+    set_rygg_inner_version(BUILD_TMP, versionString)
 
+# update the version field in the package.json file
+def set_frontend_version(package_json_file, versionString):
+    import json
 
-def set_dockerfile_version_label(rootDir, versionString):
-    dockerfile = f"{rootDir}/Dockerfile"
-    sed_i(dockerfile, "version *=\".*\"", f"version=\"{versionString}\"")
+    with open(package_json_file, "r") as f:
+        as_dict = json.load(f)
+
+    as_dict["version"] = versionString
+
+    with open(package_json_file, "w") as f:
+        json.dump(as_dict, f, indent=2)
 
 
 def get_wheel_name():
-    override = os.environ.get("PACKAGE_NAME_OVERRIDE")
-    if bool(override):
-        return override
-
-    # TODO: don't build knowledge of nightly builds into this script. Instead, build it into the pipeline
-    # for nightly builds, rename the package
-    reason = os.environ.get("BUILD_REASON")
-    if reason == "Schedule":
-        return "perceptilabs-nightly"
-    else:
-        return "perceptilabs"
+    return os.environ.get("PACKAGE_NAME_OVERRIDE") or "perceptilabs"
 
 
 def set_wheel_name(package_name):
-    sed_i( f"{BUILD_TMP}/setup.py", "^PACKAGE_NAME *=.*$", f"PACKAGE_NAME='{package_name}'")
+    print(f"Settings wheel name to {package_name}")
+    # unlike the version metadata, setuptools doesn't support loading from an external file
+    # ... so we hack the config directly
+    sed_i(f"{BUILD_TMP}/setup.cfg", "^name *=.*$", f"name={package_name}")
 
 
 # PATH isn't obeyed correctly on windows
@@ -280,10 +290,11 @@ def npm_cmd():
             return f"{d}/npm.cmd"
 
 
-def assemble_build_dirs_frontend():
+def assemble_build_dirs_frontend(versionString):
 
     print("=======================================================")
     print("Building frontend")
+    set_frontend_version(f"{FRONTEND_SRC_ROOT}/package.json", versionString)
     with pushd(FRONTEND_SRC_ROOT):
         run_checked(f"{npm_cmd()} install")
         run_checked(f"{npm_cmd()} run build-render")
@@ -326,20 +337,13 @@ def run_lint_test():
 def run_cython_test():
     print("Running cython tests")
     with pushd(BUILD_TMP):
-        script = f"{SCRIPTS_DIR}/test_cython.py"
-        # TODO: this fails. Do we keep it?
-        run(f"python {script}")
+        run_checked("python setup.py test_cythonize")
 
 
 def run_pytest_tests():
     print("Running python tests")
-    cmd = "python -m pytest --capture=no"
     with pushd(BACKEND_SRC):
-        # TODO: Windows tests fail. Get them working again
-        if OS == Os.WIN:
-            run_unchecked(cmd)
-        else:
-            run_checked(cmd)
+        run_checked("python -m pytest")
 
 
 def which_cmd():
@@ -359,28 +363,60 @@ def print_environment():
     print("Pip list:")
     run_checked("pip list")
 
+def assemble_package_datas(sources, dest):
+    import json
+    def load_json(filename):
+        print(filename)
+        with open(filename, "r") as f:
+            return json.load(f)
+
+    def dump_json(d, filename):
+        with open(filename, "w") as f:
+            json.dump(d, f, indent=2)
+
+    def merge_dicts(dicts):
+        ret = {}
+        for d in dicts:
+            ret = {**ret, **d}
+        return ret;
+
+    source_files = [f"{PROJECT_ROOT}/{s}/package_data.json" for s in sources]
+    dicts = [load_json(f) for f in source_files]
+    joined = merge_dicts(dicts)
+    print(joined)
+    dump_json(joined, dest)
+    pass
+
+def combine_files(sources, dest):
+    with open(dest, "w") as dest_f:
+        for source in sources:
+            with open(source, "r") as source_f:
+                lines = source_f.readlines()
+                dest_f.writelines(lines)
+
 def wheel():
     assert_python_version()
     install_prereqs()
     print_environment()
+    version = calc_version()
 
     mkdir_p(BUILD_TMP)
-    assemble_build_dirs_frontend()
+    # assemble_build_dirs_frontend(version)
     train_models()
     copy_tree(f"{PROJECT_ROOT}/licenses/", f"{BUILD_TMP}/licenses/", update=True)
     copy_files(f"{PROJECT_ROOT}/backend", BUILD_TMP, list_path= f"{PROJECT_ROOT}/backend/included_files.txt")
     copy_files(f"{PROJECT_ROOT}/rygg", BUILD_TMP,  list_path=f"{PROJECT_ROOT}/rygg/included_files.txt")
     copy_files(f"{PROJECT_ROOT}/perceptilabs_runner", f"{BUILD_TMP}/perceptilabs_runner/",  list_path=f"{PROJECT_ROOT}/perceptilabs_runner/included_files.txt")
-    copy_file(f"{PROJECT_ROOT}/backend/requirements.txt", f"{BUILD_TMP}/requirements_wheel_backend.txt", update=True)
-    copy_file(f"{PROJECT_ROOT}/rygg/requirements.txt", f"{BUILD_TMP}/requirements_wheel_rygg.txt", update=True)
-
-    for f in ["setup.cfg", "setup.py"]:
-        copy_file(f"{WHEELFILES_DIR}/{f}", f"{BUILD_TMP}/{f}", update=True)
-
+    copy_file(f"{WHEELFILES_DIR}/setup.cfg", f"{BUILD_TMP}/setup.cfg", update=True)
+    combine_files([ f"{PROJECT_ROOT}/backend/requirements.txt", f"{PROJECT_ROOT}/rygg/requirements.txt"], f"{BUILD_TMP}/requirements.txt")
+    copy_file(f"{SCRIPTS_DIR}/setup.py", f"{BUILD_TMP}/setup.py", update=True)
+    assemble_package_datas(
+            ["backend", "rygg", "frontend", "perceptilabs_runner"],
+           f"{BUILD_TMP}/package_data.json")
+    write_all_lines(f"{BUILD_TMP}/cython_roots.txt", ["perceptilabs\n", "rygg\n", "static_file_server\n"])
     with included_files_common() as inc:
         copy_file(inc, f"{BUILD_TMP}/included_files.txt", update=True)
 
-    version = calc_version()
     set_wheel_version(version)
     name = get_wheel_name()
     set_wheel_name(name)
@@ -399,6 +435,9 @@ def test():
     copy_files(f"{PROJECT_ROOT}/backend", BUILD_TMP, list_path= f"{PROJECT_ROOT}/backend/included_files.txt")
     copy_files(f"{PROJECT_ROOT}/rygg", BUILD_TMP,  list_path=f"{PROJECT_ROOT}/rygg/included_files.txt")
     copy_files(f"{PROJECT_ROOT}/perceptilabs_runner", f"{BUILD_TMP}/perceptilabs_runner/",  list_path=f"{PROJECT_ROOT}/perceptilabs_runner/included_files.txt")
+    combine_files([ f"{PROJECT_ROOT}/backend/requirements.txt", f"{PROJECT_ROOT}/rygg/requirements.txt"], f"{BUILD_TMP}/requirements.txt")
+    copy_file(f"{SCRIPTS_DIR}/setup.py", f"{BUILD_TMP}/setup.py", update=True)
+    write_all_lines(f"{BUILD_TMP}/cython_roots.txt", ["perceptilabs\n", "rygg\n", "static_file_server\n"])
     run_lint_test()
     run_cython_test()
     run_pytest_tests()
@@ -424,34 +463,49 @@ class DockerBuilder():
         build_frontend()
         build_rygg()
 
+    def _set_dockerfile_version_label(rootDir, versionString):
+        dockerfile = f"{rootDir}/Dockerfile"
+        sed_i(dockerfile, "version *=\".*\"", f"version=\"{versionString}\"")
+
     def _assemble_kernel_docker(versionString):
         copy_tree(f"{BACKEND_SRC}/", f"{BUILD_DOCKER_KERNEL}", update=True)
         copy_tree(f"{PROJECT_ROOT}/licenses/", f"{BUILD_DOCKER_KERNEL}/licenses/", update=True)
-        FILES_FROM_DOCKER_DIR = "setup.py entrypoint.sh Dockerfile".split()
+        copy_file(f"{SCRIPTS_DIR}/setup.py", f"{BUILD_DOCKER_KERNEL}/setup.py", update=True)
+        copy_file(f"{SCRIPTS_DIR}/requirements_build.txt", f"{BUILD_DOCKER_KERNEL}/requirements_build.txt", update=True)
+        FILES_FROM_DOCKER_DIR = "setup.cfg entrypoint.sh Dockerfile".split()
         for from_docker in FILES_FROM_DOCKER_DIR:
             copy_file( f"{PROJECT_ROOT}/docker/kernel/{from_docker}", f"{BUILD_DOCKER_KERNEL}/{from_docker}", update=True)
+        write_all_lines(f"{BUILD_DOCKER_KERNEL}/cython_roots.txt", ["perceptilabs\n"])
 
-        set_dockerfile_version_label(BUILD_DOCKER_KERNEL, versionString)
+        DockerBuilder._set_dockerfile_version_label(BUILD_DOCKER_KERNEL, versionString)
         set_perceptilabs_inner_version(BUILD_DOCKER_KERNEL, versionString)
-        set_setup_version(BUILD_DOCKER_KERNEL, versionString)
+        write_version_file(BUILD_DOCKER_KERNEL, versionString)
 
 
     def _assemble_frontend_docker(versionString):
         copy_tree(f"{FRONTEND_SRC_ROOT}/", BUILD_DOCKER_FRONTEND, update=True)
+        rm_rf(f"{BUILD_DOCKER_FRONTEND}/node_modules")
         copy_tree(f"{PROJECT_ROOT}/licenses/", f"{BUILD_DOCKER_FRONTEND}/licenses/", update=True)
 
         FILES_FROM_DOCKER_DIR = "Dockerfile http.conf run-httpd.sh".split()
         for from_docker in FILES_FROM_DOCKER_DIR:
             copy_file(f"{PROJECT_ROOT}/docker/Frontend/{from_docker}", f"{BUILD_DOCKER_FRONTEND}/{from_docker}", update=True)
 
-        set_dockerfile_version_label(BUILD_DOCKER_FRONTEND, versionString)
-        #TODO: set version in package.json
+        #TODO: this is a terrible hack to turn off autosuggest for docker
+        # the real fix is tracked in bug 895 and story 896
+        cfgfile = f"{BUILD_DOCKER_FRONTEND}/src/config/prod.env.js"
+        sed_i(cfgfile, ".*FORCE_DEFAULT_PROJECT:.*", f"FORCE_DEFAULT_PROJECT: '\"false\"'")
+        sed_i(cfgfile, ".*FORCE_DEFAULT_PROJECT:.*,", f"FORCE_DEFAULT_PROJECT: '\"false\"',")
+
+        DockerBuilder._set_dockerfile_version_label(BUILD_DOCKER_FRONTEND, versionString)
+        set_frontend_version(f"{BUILD_DOCKER_FRONTEND}/package.json", versionString)
 
 
     def _assemble_rygg_docker(versionString):
         copy_tree(f"{RYGG_DIR}/", f"{BUILD_DOCKER_RYGG}", update=True)
         copy_tree(f"{PROJECT_ROOT}/licenses/", f"{BUILD_DOCKER_RYGG}/licenses/", update=True)
-        set_dockerfile_version_label(BUILD_DOCKER_RYGG, versionString)
+        set_rygg_inner_version(BUILD_DOCKER_RYGG, versionString)
+        DockerBuilder._set_dockerfile_version_label(BUILD_DOCKER_RYGG, versionString)
 
 
     def build_kernel():

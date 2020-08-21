@@ -137,12 +137,12 @@ const workspaceSaveNet = {
           else {
             // /*app save*/
             // return projectPCSave(prepareNet.toFile)
-
+            
             const payload = {
               path: prepareNet.toLocal.pathProject
             };
             return this.$store.dispatch('mod_api/API_saveJsonModel', payload)
-              .catch(() => Promise.reject());
+              .catch((e) => Promise.reject(e));
             
           }
         })
@@ -158,7 +158,6 @@ const workspaceSaveNet = {
             this.$store.dispatch('mod_workspace/SET_networkLocation', prepareNet.toLocal.pathProject); // change new location in vuex
             this.$store.dispatch('mod_workspace/SET_networkName', prepareNet.toLocal.name); // change new location in vuex
           }
-          
           if(saveProjectPath) this.set_networkRootFolder(pathSaveProject);
           this.trackerModelSave(prepareNet.toFile);
           this.updateUnsavedChanges({

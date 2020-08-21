@@ -27,7 +27,7 @@ const baseNetPaintArrows = {
       const { outputDotId,outputLayerId } = ev.target.dataset;
       let el = this.dataEl;
       let currentTargerStartElement = document.querySelector(`[layer-id="${outputLayerId}"]`);
-      let theDot = document.querySelector(`[data-output-dot-id="${outputDotId}"][data-output-layer-id="${outputLayerId}"]`);
+      let theDot = document.querySelector(`[data-output-circle-dot-id="${outputDotId}"][data-output-layer-id="${outputLayerId}"]`);
 
       const { x: layerWidth, y: layerHeight } = currentTargerStartElement.getBoundingClientRect();
       const { x: dotWidth, y: dotHeight } = theDot.getBoundingClientRect();

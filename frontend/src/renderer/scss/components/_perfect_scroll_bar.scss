@@ -1,7 +1,7 @@
 .ps__rail-x {
   display: block !important;
   opacity: 1 !important;
-  z-index: 1 !important;
+  z-index: 6 !important;
   background: transparent;
   transition: background-color .2s linear, opacity .2s linear;
   -webkit-transition: background-color .2s linear, opacity .2s linear;
@@ -14,7 +14,7 @@
 .ps__rail-y {
   display: block !important;
   opacity: 1 !important;
-  z-index: 1 !important;
+  z-index: 6 !important;
   background: transparent;
   transition: background-color .2s linear, opacity .2s linear;
   -webkit-transition: background-color .2s linear, opacity .2s linear;

@@ -25,6 +25,9 @@
             button.btn.btn--primary(type="button"
               @click="closePopup()") Cancel
 
+        .popup_after-footer
+          slot(name="after-footer")
+
 </template>
 
 <script>

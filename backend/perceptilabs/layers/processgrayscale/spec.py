@@ -5,7 +5,6 @@ from perceptilabs.layers.specbase import LayerSpec
 
 class ProcessGrayscaleSpec(LayerSpec):
     type_: str = 'ProcessGrayscale'
-
     @classmethod
     def _from_dict_internal(cls, id_: str, dict_: Dict[str, Any], params: Dict[str, Any]) -> LayerSpec:
         return cls(**params)

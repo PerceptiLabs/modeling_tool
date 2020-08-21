@@ -21,7 +21,6 @@ class TrainReinforceSpec(LayerSpec):
     final_exploration_frame: int = 500
     target_network_update_frequency: int = 100
     use_cpu: bool = False
-
     @classmethod
     def _from_dict_internal(cls, id_: str, dict_: Dict[str, Any], params: Dict[str, Any]) -> LayerSpec:
         if 'Properties' in dict_ and dict_['Properties'] is not None:

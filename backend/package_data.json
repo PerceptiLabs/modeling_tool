@@ -1,0 +1,11 @@
+{
+  "perceptilabs": [
+    "*.json",
+    "insights/csv_ram_estimator/*.csv",
+    "script/templates/*.j2",
+    "dataschema/*.json",
+    "core_new/layers/templates/*.j2",
+    "layers/**/*.json",
+    "tutorial_data/*.npy"
+  ]
+}

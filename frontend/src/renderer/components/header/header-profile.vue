@@ -79,10 +79,6 @@
 
 <style lang="scss" scoped>
   @import "../../scss/base";
-  .profile-wrapper {
-    position: absolute;
-    right: 40px;
-  }
   .profile-item {
     position: relative;
     &:hover {

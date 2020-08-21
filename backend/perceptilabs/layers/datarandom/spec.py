@@ -15,7 +15,6 @@ class DataRandomSpec(LayerSpec):
     seed_training: int = 1111
     seed_validation: int = 1234
     seed_testing: int = 5678
-
     @classmethod
     def _from_dict_internal(cls, id_: str, dict_: Dict[str, Any], params: Dict[str, Any]) -> LayerSpec:
         params['shape'] = make_tuple(dict_['Properties']['shape']) if type(dict_['Properties']['shape']) is str else dict_['Properties']['shape']

@@ -6,7 +6,6 @@ from perceptilabs.layers.specbase import LayerSpec
 class DataEnvironmentSpec(LayerSpec):
     type_: str = 'DataEnvironment'
     environment_name: Union[str] = 'Breakout-v0'
-
     @classmethod
     def _from_dict_internal(cls, id_: str, dict_: Dict[str, Any], params: Dict[str, Any]) -> LayerSpec:
         params['environment_name'] = dict_['Properties']['accessProperties']['Atari'] + '-v0'

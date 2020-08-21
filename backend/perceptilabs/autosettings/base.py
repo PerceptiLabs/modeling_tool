@@ -63,11 +63,8 @@ class SettingsEngine:
             # Apply all topologically valid rules in order
             current_layer_spec = original_layer_spec
             for rule in rule_instances[original_layer_spec.id_]:
-
-                if rule.is_applicable(current_graph_spec, current_layer_spec, lw_results):
-                    current_layer_spec = rule.apply(current_graph_spec, current_layer_spec, lw_results)
-                    logger.info(f"Autosettings: applied rule {rule.__class__.__name__} to {current_layer_spec}")
-                    
+                current_layer_spec = self._maybe_apply_rule(rule, current_graph_spec, current_layer_spec, lw_results)
+                
             if current_layer_spec != original_layer_spec:
                 new_specs[current_layer_spec.id_] = current_layer_spec
 
@@ -75,7 +72,21 @@ class SettingsEngine:
                 current_graph_dict = current_graph_spec.to_dict()
                 current_graph_dict[current_layer_spec.id_] = current_layer_spec.to_dict()
                 current_graph_spec = GraphSpec.from_dict(current_graph_dict)
+                
+                
         return new_specs
+
+    def _maybe_apply_rule(self, rule, current_graph_spec, current_layer_spec, lw_results):
+        new_layer_spec = current_layer_spec # Default
+        try:
+            if rule.is_applicable(current_graph_spec, current_layer_spec, lw_results):
+                new_layer_spec = rule.apply(current_graph_spec, current_layer_spec, lw_results)
+                logger.info(f"Autosettings: applied rule {rule.__class__.__name__} to {current_layer_spec}")                
+        except:
+            logger.exception(f"Autosettings: rule {rule.__class__.__name__} crashed unexpectedly when applied to layer {current_layer_spec.id_} [{current_layer_spec.type_}]")
+        finally:
+            return new_layer_spec
+                                        
             
                 
     def _get_ordered_layers(self, graph_spec, rules, skip_ids):

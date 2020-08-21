@@ -41,6 +41,16 @@ jobs:
         vmImage: $(image)
 
     steps:
+    - script: |
+        echo Setting PACKAGE_NAME_OVERRIDE to pl-nightly
+        echo "##vso[task.setvariable variable=PACKAGE_NAME_OVERRIDE;]pl-nightly"
+
+        echo Setting VERSION_EXTENSION
+        echo "##vso[task.setvariable variable=VERSION_EXTENSION;]pl-nightly"
+      condition: eq(variables['Build.Reason'], 'Schedule')
+    - script: |
+        echo Package name is now $(PACKAGE_NAME_OVERRIDE)
+
     - checkout: self
       clean: true
       submodules: recursive
