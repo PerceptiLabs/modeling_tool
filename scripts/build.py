@@ -241,6 +241,11 @@ def set_perceptilabs_inner_version(rootDir, versionString):
     sed_i(init_py, "^__version__ *=.*", f"__version__='{versionString}'")
 
 
+def set_rygg_inner_version(rootDir, versionString):
+    init_py = os.path.join(rootDir, "rygg", "__init__.py")
+    sed_i(init_py, "^__version__ *=.*", f"__version__='{versionString}'")
+
+
 def write_version_file(rootDir, versionString):
     with open(f"{rootDir}/VERSION", "w") as f:
         f.write(versionString)
@@ -249,6 +254,7 @@ def set_wheel_version(versionString):
     print(f"setting wheel version to {versionString}")
     write_version_file(BUILD_TMP, versionString)
     set_perceptilabs_inner_version(BUILD_TMP, versionString)
+    set_rygg_inner_version(BUILD_TMP, versionString)
 
 # update the version field in the package.json file
 def set_frontend_version(package_json_file, versionString):
@@ -498,6 +504,7 @@ class DockerBuilder():
     def _assemble_rygg_docker(versionString):
         copy_tree(f"{RYGG_DIR}/", f"{BUILD_DOCKER_RYGG}", update=True)
         copy_tree(f"{PROJECT_ROOT}/licenses/", f"{BUILD_DOCKER_RYGG}/licenses/", update=True)
+        set_rygg_inner_version(BUILD_DOCKER_RYGG, versionString)
         DockerBuilder._set_dockerfile_version_label(BUILD_DOCKER_RYGG, versionString)
 
 
