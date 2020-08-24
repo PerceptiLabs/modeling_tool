@@ -1,6 +1,7 @@
 rygg/__init__.py
 rygg/api/__init__.py
 rygg/api/admin.py
+rygg/api/app.py
 rygg/api/apps.py
 rygg/api/migrations
 rygg/api/models.py
