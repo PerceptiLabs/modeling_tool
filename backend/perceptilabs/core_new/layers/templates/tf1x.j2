@@ -461,37 +461,25 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
 
     def __call__(self, inputs: Dict[str, tf.Tensor], is_training: tf.Tensor = None) -> Dict[str, tf.Tensor]:
         """ Takes two tensors as input and merges them accordingly. """
-        y = None
         {% filter remove_lspaces(8) %}
             {% if layer_spec.merge_type == 'Concat' %}
-                y = tf.concat(list(inputs.values()), self._merge_dim)
+                y = tf.concat([inputs['input1'],inputs['input2']], self._merge_dim)
             {% elif layer_spec.merge_type == 'Add' %}
-                y = tf.constant(0)
-                for x in inputs.values():
-                    y = tf.add(y, x)
+                y = inputs['input1']+inputs['input2']
             {% elif layer_spec.merge_type == 'Sub' %}
-                for i in range(0, len(list(x.values())), 2):
-                    if not y:
-                        y = list(x.values())[i]
-                    y = tf.subtract(list(x.values())[i], y)
-                       
+                y = inputs['input1']-inputs['input2']
             {% elif layer_spec.merge_type == 'Multi' %}
-                for i in range(0, len(list(x.values())), 2):
-                    if not y:
-                        y = list(x.values())[i]
-                    y = tf.multiply(list(x.values())[i], y)    
+                y = inputs['input1']*inputs['input2']
             {% elif layer_spec.merge_type == 'Div' %}
-                for i in range(0, len(list(x.values())), 2):
-                    if not y:
-                        y = list(x.values())[i]
-                    y = tf.divide(list(x.values())[i], y)
+                y = inputs['input1']/inputs['input2']
             {% endif %}
         {% endfilter %}
 
         self._variables = {k: v for k, v in locals().items() if can_serialize(v)}    
-        self.y = y
 
-        return {'output': y}
+        self._outputs = {'output': y}
+
+        return self._outputs
 
     @property
     def variables(self) -> Dict[str, Picklable]:
@@ -515,10 +503,14 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
     def get_sample(self, sess=None) -> np.ndarray:
         """Returns a single data sample"""
         if sess is not None:
-            y = sess.run(self.y)
-            return y[0]
+            outputs = sess.run(self._outputs)
+            return {
+                key: value[0] if len(value) > 0 else value
+                for key, value in outputs.items()
+            }
         else:
             return None
+        return {}
 
     @property
     def weights(self) -> Dict[str, tf.Tensor]:
