@@ -119,7 +119,10 @@ export default {
     isDisabledNextStep() {
       const history = this.networkHistory;
       return !!history && history.historyStep === 0
-    }
+    },
+    hasNetworkWithUnsavedChanges() {
+      return this.$store.getters['mod_workspace-changes/get_networksWithChanges'].length > 0;      
+    },
   },
   watch: {
     navMenu(newMenu) {
@@ -197,7 +200,15 @@ export default {
               this.$store.dispatch('mod_events/EVENT_logOut');
             }
           });
-      } else {
+      } else if (this.hasNetworkWithUnsavedChanges) {
+        this.popupConfirm(
+          {
+            text: 'You still have unsaved models.\nAre you sure you want to log out?',
+            ok: () => {
+              this.$store.dispatch('mod_events/EVENT_logOut');
+            }
+          });
+      } else{
         this.$store.dispatch('mod_events/EVENT_logOut');
       }
     },
