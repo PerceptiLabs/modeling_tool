@@ -114,24 +114,22 @@ class LayerSpec(ABC, MyBaseModel):
            ignore_forward_connections: if true, skip forward connections.
            prefer_custom_code: if true, the hash will be based on that only. 
         """
-
         if prefer_custom_code and self.custom_code is not None:
             return hash(self.custom_code)
         else:
             field_hashes = 0
             for field_name in self.fields.keys():
-                if ignore_id_and_name and field_name in ['id_', 'name']:
+                if ignore_id_and_name and field_name in ['id_', 'name', 'visited']:
                     continue
                 if ignore_forward_connections and field_name == 'forward_connections':
                     continue
 
                 field_value = getattr(self, field_name)
                 try:
-                    field_hashes += hash(field_value)
+                    field_hashes += hash(field_name+str(hash(field_value)))
                 except TypeError:
                     logger.exception(f"Failed hashing field {field_name} with type {field_value}")
-                    raise
-                    
+                    raise     
             return hash(field_hashes)
         
     @classmethod
