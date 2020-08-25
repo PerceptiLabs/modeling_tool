@@ -9,6 +9,7 @@ import pkg_resources
 
 import perceptilabs.logconf
 from perceptilabs.messaging.zmq_wrapper import get_message_bus
+from perceptilabs.issues import IssueHandler
 
 
 def get_input_args():
@@ -64,6 +65,7 @@ def on_kernel_started(commit_id, data_logger):
 def main():
     args = get_input_args()
     session_id = uuid.uuid4().hex
+    issue_handler = IssueHandler()
 
     with open(pkg_resources.resource_filename('perceptilabs', 'app_variables.json'), 'r') as f:
         app_variables = json.load(f)
@@ -73,7 +75,8 @@ def main():
     perceptilabs.logconf.setup_application_logger(log_level=args.log_level)
     perceptilabs.logconf.setup_data_logger(is_dev=(commit_id == "Dev"))
     perceptilabs.logconf.set_session_id(session_id)
-    
+    perceptilabs.logconf.set_console_logger(queue = issue_handler._logs)
+
     logger = logging.getLogger(perceptilabs.logconf.APPLICATION_LOGGER)
     data_logger = logging.getLogger(perceptilabs.logconf.DATA_LOGGER)
 
@@ -99,7 +102,7 @@ def main():
     checkpointDict=dict()
     lwDict=dict()
     
-    core_interface = Interface(cores, dataDict, checkpointDict, lwDict, args.core_mode)
+    core_interface = Interface(cores, dataDict, checkpointDict, lwDict, issue_handler, args.core_mode)
 
     if args.error:
         raise Exception("Test error")

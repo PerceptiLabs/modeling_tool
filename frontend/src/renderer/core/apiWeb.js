@@ -184,6 +184,12 @@ function coreRequest(data, path, no, name) {
                 store.commit('mod_workspace/SET_showStartTrainingSpinner', false);
               }
 
+              if (obgData.consoleLogs) {
+                store.dispatch('mod_logs/addLogsForNetwork', {
+                  networkId: store.getters['mod_workspace/GET_currentNetworkId'],
+                  logs: obgData.consoleLogs
+                });
+              }
               //console.log('answer core data ', obgData);
               // let stopRequest = new Date();
               // calcTime(stopRequest, timeStartAnswer, 'transmitting', name);

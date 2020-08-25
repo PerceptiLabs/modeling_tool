@@ -28,7 +28,7 @@ import TheToaster             from '@/components/different/the-toaster.vue'
 import TheSidebar             from '@/components/the-sidebar.vue'
 import Notebook               from '@/components/notebooks/notebook-container.vue';
 import CodeWindow             from '@/components/workspace/code-window/workspace-code-window.vue';
-import NotificationsWindow    from '@/components/workspace/notifications-window/workspace-notifications-window.vue';
+import InformationPanel       from '@/components/workspace/information-panel/information-panel.vue';
 import ResourceMonitor        from "@/components/charts/resource-monitor.vue";
 import SelectModelModal       from '@/pages/projects/components/select-model-modal.vue';
 import ViewBoxBtnList from '@/components/statistics/view-box-btn-list.vue'
@@ -43,9 +43,10 @@ export default {
     WorkspaceBeforeImport, WorkspaceSaveNetwork, WorkspaceLoadNetwork, ExportNetwork,
     TheTesting, TheViewBox, StartTrainingSpinner,
     TheToaster, TheMiniMap, FilePickerPopup, Notebook, TheSidebar,
-    CodeWindow, NotificationsWindow,
+    CodeWindow, InformationPanel,
     Notebook, ResourceMonitor, SelectModelModal,
     ViewBoxBtnList
+    
   },
   mounted() {
     window.addEventListener('resize', this.onResize);
