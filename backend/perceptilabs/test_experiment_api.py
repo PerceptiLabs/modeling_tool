@@ -11,6 +11,7 @@ from perceptilabs.coreInterface import coreLogic
 from perceptilabs.core_new.serialization import serialize, can_serialize, deserialize
 from perceptilabs.messaging.simple import SimpleMessagingFactory
 from perceptilabs.messaging import MessageProducer, MessageConsumer, MessagingFactory
+from perceptilabs.issues import IssueHandler
 
 import perceptilabs.aggregation.aggregates as aggs
 
@@ -35,8 +36,8 @@ def core_interface(message_factory):
     dataDict=dict()
     checkpointDict=dict()
     lwDict=dict()
-
-    core_interface = Interface(cores, dataDict, checkpointDict, lwDict, core_mode='v2', message_factory=message_factory)
+    issue_handler = IssueHandler()
+    core_interface = Interface(cores, dataDict, checkpointDict, lwDict, issue_handler, core_mode='v2', message_factory=message_factory)
 
     return core_interface
 

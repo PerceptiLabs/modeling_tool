@@ -15,7 +15,9 @@
         @app-minimized="appMinimize"
         @app-maximized="appMaximize"
       )
-    router-view.app-page
+    div.d-flex.app-page
+      project-sidebar
+      router-view.flex-1
     update-popup(v-if="isElectron") 
     the-info-popup(v-if="showPopup")
     confirm-popup
@@ -36,7 +38,7 @@
   import Analytics from '@/core/analytics';
 
   import { mapMutations, mapActions, mapGetters } from 'vuex';
-
+  import ProjectSidebar         from '@/pages/layout/project-sidebar.vue';
   import HeaderLinux            from '@/components/header/header-linux.vue';
   import HeaderWin              from '@/components/header/header-win.vue';
   import HeaderMac              from '@/components/header/header-mac.vue';
@@ -49,6 +51,7 @@
   export default {
     name: 'TheApp',
     components: {
+      ProjectSidebar,
       ModalPagesEngine,
       HeaderLinux, HeaderWin, HeaderMac,
       UpdatePopup, TheInfoPopup, ConfirmPopup, CreateIssuePopup
@@ -76,7 +79,6 @@
         const targetProjectId = parseInt(localStorage.getItem('targetProject'));
         
         // this.loadProjectFromLocalStorage(targetProjectId)
-        
         this.getProjects();
           // .then(({data: { results: projects }}) => {
           //   if(targetProjectId) {
@@ -164,7 +166,9 @@
     computed: {
       ...mapGetters({
         user:                   'mod_user/GET_userProfile',
-        isDefaultProjectMode:   'mod_project/GET_isDefaultProjectMode'
+        isDefaultProjectMode:   'mod_project/GET_isDefaultProjectMode',
+        currentProject:         'mod_project/GET_project',
+        networksWithChanges:    'mod_workspace-changes/get_networksWithChanges',
       }),
       platform() {
         return this.$store.state.globalView.platform
@@ -224,7 +228,35 @@
           this.trackerUpdateUser(this.userEmail);
           this.trackerInitUser(this.userId);
         }
-      }
+      },
+
+      currentProject: {
+        immediate: true,
+        handler(newVal, oldVal) {
+          if (!this.networksWithChanges.length) {
+            if (this.isDefaultProjectMode && (!newVal || !newVal.name || newVal.name !== 'Default')) { return; }
+            // using this function because the watcher can be aggressive with changes
+            if(!isSameProject(newVal,oldVal)) {
+              this.reset_network();
+              this.deleteAllIds();
+              this.fetchNetworkMetas(newVal);
+            }
+          }
+
+          function isSameProject(project1, project2) {
+            if (!project1 && !project2) { return true; }
+            if (project1 && !project2) { return false; }
+            if (!project1 && project2) { return false; }
+            if (project1.name !== project2.name)  { return false; }
+            if (project1.models.length !== project2.models.length)  { return false; }
+            if (
+              project1.models.every(p1 => !project2.models.includes(p1)) ||
+              project2.models.every(p2 => !project1.models.includes(p2)))  { return false; }
+
+            return true;
+          }
+        }
+      },
     },
     methods: {
       ...mapMutations({
@@ -261,12 +293,22 @@
         getProjects :           'mod_project/getProjects',
         createProject:          'mod_project/createProject',
         getDefaultModeProject:  'mod_project/getDefaultModeProject',
+        getModelMeta:           'mod_project/getModel',
         
         createFolder:           'mod_api/API_createFolder',
+        API_getModel:           'mod_api/API_getModel',
+        API_getModelStatus:     'mod_api/API_getModelStatus',
 
         cloud_userGetProfile:   'mod_apiCloud/CloudAPI_userGetProfile',
         
         loadWorkspacesFromWebStorage:   'mod_webstorage/loadWorkspaces',
+
+        reset_network:          'mod_workspace/RESET_network',
+        addNetwork:             'mod_workspace/ADD_network',
+        setUnparsedModels:      'mod_workspace/SET_unparsedModels',
+
+        deleteAllIds:        'mod_webstorage/deleteAllIds',        
+        updateWorkspaces:    'mod_webstorage/updateWorkspaces',
 
       }),
       updateOnlineStatus() {
@@ -348,6 +390,78 @@
           this.eventAppMaximize();
         }
       },
+
+      fetchNetworkMetas(currentProject) {
+        console.log(currentProject);
+        if (!currentProject || !currentProject.models || !currentProject.models.length) { return; }
+
+        console.log(currentProject.models);
+
+        const promiseArray = 
+          currentProject.models
+            .map(x => this.getModelMeta(x));
+
+        Promise.all(promiseArray)
+          .then(metas => {
+            console.log('metas', metas);
+            this.fetchAllNetworkJsons(metas);
+            this.fetchUnparsedModels(metas);
+          });
+      },
+      fetchAllNetworkJsons(modelMetas) {
+
+        console.log(modelMetas);
+        if (!modelMetas) { return; }
+
+        const promiseArray = 
+          modelMetas
+            .filter(x => x.location)
+            .map(x => this.API_getModel(x.location + '/model.json'));
+        
+        Promise.all(promiseArray)
+          .then(models => {
+            this.addNetworksToWorkspace(models, modelMetas);
+            models.forEach(model => {
+              this.API_getModelStatus(model.networkID);
+            });
+          })
+          .then(() => {
+            this.$store.dispatch('mod_workspace/GET_workspace_statistics');
+          });
+      },
+      async fetchUnparsedModels(modelMetas){
+        let unparsedModels = [];
+
+        modelMetas.forEach(async (model) => {
+          const modelJson = await this.API_getModel(model.location + '/model.json');
+          if(modelJson === "") {
+            unparsedModels.push(model);
+          }
+        });
+
+        this.setUnparsedModels({unparsedModels});
+      },
+      addNetworksToWorkspace(models, modelsApiData) {
+        console.log('addNetworkToworkspace', models, modelsApiData);
+        const filteredModels = models.filter(m => m);
+        for(const [index, model] of filteredModels.entries()) {
+          // if(modelsApiData[index].model_id !== model.networkID) {
+          //   model.networkID = modelsApiData[index].model_id;
+          //   model.apiMeta = modelsApiData[index];
+          // }
+          // update apiMeta wiht rygg meta.
+           model.apiMeta = modelsApiData[index];
+
+          const matchingApiData = modelsApiData.find(mad => mad.model_id === model.networkID);
+          if (matchingApiData) {
+            model.networkName = matchingApiData.name;
+            model.networkRootFolder = matchingApiData.location;
+          }
+          this.addNetwork({network: model, apiMeta: model.apiMeta, focusOnNetwork: false});
+        }
+
+        this.updateWorkspaces();
+      },
     },
   }
 </script>
@@ -375,5 +489,9 @@
   .app-page {
     grid-area: page;
     overflow: hidden;
+  }
+  
+  .flex-1 {
+    flex: 1;
   }
 </style>

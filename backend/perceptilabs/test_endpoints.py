@@ -4,6 +4,7 @@ import numpy as np
 
 from perceptilabs.mainInterface import Interface
 import perceptilabs.utils as utils
+from perceptilabs.issues import IssueHandler
 
 def create_json_network():
     n_classes = 10
@@ -197,8 +198,8 @@ def send_request(request):
     dataDict=dict()
     checkpointDict=dict()
     lwDict=dict()
-
-    core_interface = Interface(cores, dataDict, checkpointDict, lwDict, core_mode='v2')
+    issue_handler = IssueHandler()
+    core_interface = Interface(cores, dataDict, checkpointDict, lwDict, issue_handler, core_mode='v2')
 
     return core_interface.create_response(request)
 

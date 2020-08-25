@@ -60,7 +60,10 @@
           v-if="showCodeWindow"
           :networkId="currentNetworkId"
         )
-        notifications-window(
+        //- notifications-window(
+        //-   v-if="showNotificationWindow"
+        //- )
+        information-panel(
           v-if="showNotificationWindow"
         )
         //-general-settings(v-if="showGlobalSet")

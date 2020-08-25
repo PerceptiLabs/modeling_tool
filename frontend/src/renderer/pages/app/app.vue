@@ -5,7 +5,6 @@
   //-   ref="layersbar"
   //-   )
   .page(ref="layersbar")
-    project-sidebar
     the-workspace.workspace
     //- the-toolbar
     //- the-layersbar
@@ -19,7 +18,6 @@
   import { throttleEv } from '@/core/helpers.js'
   import { localStorageGridKey } from '@/core/constants.js'
 
-  import ProjectSidebar     from '@/pages/layout/project-sidebar.vue';
   import TheToolbar         from '@/components/the-toolbar.vue'
   import TheLayersbar       from '@/components/the-layersbar.vue'
   import TheSidebar         from '@/components/the-sidebar.vue'
@@ -30,7 +28,7 @@
 
   export default {
     name: 'pageQuantum',
-    components: { ProjectSidebar, TheToolbar, TheLayersbar, TheSidebar, TheWorkspace, TheTutorialStoryboard },
+    components: { TheToolbar, TheLayersbar, TheSidebar, TheWorkspace, TheTutorialStoryboard },
      beforeRouteEnter(to, from, next) {
         next((vm) => {
             vm.from = from;

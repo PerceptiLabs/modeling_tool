@@ -7,7 +7,8 @@ import SettingPage from '@/pages/settings/setting-page.vue';
 
 import Analytics from '@/core/analytics';
 import {isWeb} from "@/core/helpers";
-import store from '@/store'
+import store from '@/store';
+
 Vue.use(Router);
 let routerOptions = {};
 let routesElectron = [];
@@ -20,11 +21,11 @@ const router = new Router({
   routes: [
     ...routesElectron,
     {path: '/',             name: 'main-page',    component: PageProjects},
-    {path: '/app',          name: 'app',      component: PageApp},
-    // {path: '/restore-account',     name: 'restore-account', component: PageRestoreAccount},
-    {path: '/projects',     name: 'projects', component: PageProjects },
-    {path: '/settings',     name: 'settings', component: SettingPage },
+    {path: '/app',          name: 'app',          component: PageApp},
+    {path: '/projects',     name: 'projects',     component: PageProjects },
+    {path: '/settings',     name: 'settings',     component: SettingPage },
     {path: '*', redirect: '/'}
+    // {path: '/restore-account',     name: 'restore-account', component: PageRestoreAccount},
   ],
 });
 

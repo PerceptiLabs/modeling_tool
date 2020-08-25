@@ -18,7 +18,6 @@ import math
 from perceptilabs.logconf import APPLICATION_LOGGER
 from perceptilabs.networkExporter import exportNetwork
 from perceptilabs.networkSaver import saveNetwork
-from perceptilabs.issues import IssueHandler
 import perceptilabs.utils as utils
 from perceptilabs.api.data_container import DataContainer
 from perceptilabs.core_new.errors import CoreErrorHandler
@@ -37,7 +36,7 @@ CoreCommand = collections.namedtuple('CoreCommand', ['type', 'parameters', 'allo
 
 
 class coreLogic():
-    def __init__(self,networkName, core_mode='v2'):
+    def __init__(self,networkName, issue_handler, core_mode='v2'):
         logger.info(f"Created coreLogic for network '{networkName}' with core mode '{core_mode}'")
 
         assert core_mode in ['v1', 'v2']
@@ -54,9 +53,10 @@ class coreLogic():
         self._save_counter = 0
         self._aggregation_futures = []
 
+        self.issue_handler = issue_handler
+
     def setupLogic(self):
         #self.warningQueue=queue.Queue()
-        self.issue_handler = IssueHandler()
         
         self.commandQ=queue.Queue()
         # self.resultQ=queue.LifoQueue()

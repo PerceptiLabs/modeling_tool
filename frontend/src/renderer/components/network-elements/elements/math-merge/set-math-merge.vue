@@ -46,7 +46,7 @@ export default {
     return {
       settings: {
         Type: "Add", //#Add, Sub, Multi, Div, Concat
-        Merge_dim: ''
+        Merge_dim: '-1'
       },
       interactiveInfo: {
         operation: {

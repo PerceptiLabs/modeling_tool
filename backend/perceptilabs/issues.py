@@ -7,7 +7,6 @@ import sentry_sdk
 import logging
 
 from perceptilabs.utils import add_line_numbering
-from perceptilabs.logconf import APPLICATION_LOGGER, APPLICATION_LOG_FORMAT, APPLICATION_LOG_LEVEL, QueuingHandler
 
 ISSUE_LOG_FORMAT = '%(asctime)s:%(lineno)d - %(message)s'
 
@@ -54,12 +53,6 @@ class IssueHandler:
         self._warnings = queue.Queue()
         self._info = queue.Queue()
         self._logs = queue.Queue()
-
-        logger = logging.getLogger(APPLICATION_LOGGER)
-        handler = QueuingHandler(message_queue=self._logs, level=APPLICATION_LOG_LEVEL)
-        formatter = logging.Formatter(ISSUE_LOG_FORMAT)
-        handler.setFormatter(formatter)
-        logger.addHandler(handler)
 
     @staticmethod
     def create_issue(message, exception=None):

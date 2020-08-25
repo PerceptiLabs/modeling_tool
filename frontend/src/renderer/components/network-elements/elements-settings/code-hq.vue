@@ -147,6 +147,14 @@
           }
         });
 
+        this.cminstance.on('keydown', (cm, event) => {
+          if (event.code === 'KeyS' && (event.ctrlKey || event.metaKey)) {
+            event.preventDefault();
+            event.stopPropagation();
+            this.$emit('save-shortcut', this.content);
+          }
+        });
+
         const tmpEvents = {};
         const allEvents = [
           'scroll', 'changes', 'beforeChange', 'cursorActivity', 'keyHandled', 'inputRead', 'electricInput',

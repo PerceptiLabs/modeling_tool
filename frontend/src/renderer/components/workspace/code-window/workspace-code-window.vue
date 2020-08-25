@@ -10,7 +10,9 @@
         :class="headerStyle"
       )
         div
-        div {{ this.currentEl.layerName }}
+        div 
+          span {{ this.currentEl.layerName }}
+          span(v-if="hasUnsavedCodeChanges") *
         div
           svg.close-window(
             @click="beforeCloseWindowCheck"
@@ -36,9 +38,16 @@
         @input="onContentChange"
         @focus="onFocus('mirror')"
         @blur="onBlur('mirror')"
+        @save-shortcut="onSaveShortcut"
         )
 
       .code-window-footer
+        .save-indicator(
+          v-if="showSaveIndicator"
+        )
+          svg.checkmark(width="11" height="10" viewBox="0 0 11 10" fill="none" xmlns="http://www.w3.org/2000/svg")
+            path(d="M1 4.80952L4.11538 9L10 1" stroke="#73FEBB" stroke-linecap="round" stroke-linejoin="round")
+          span All changes saved
         button.revert-btn(
           @click="beforeCloseWindowCheck"
         ) Cancel
@@ -69,6 +78,8 @@ export default {
       fullView: false,
       layerCode: '',
       isLoading: false,
+      showSaveIndicator: false,
+      hasUnsavedCodeChanges: false
     }
   },
   computed: {
@@ -161,16 +172,29 @@ export default {
       this.$store.dispatch('mod_workspace-code-editor/closeEditor', { networkId: this.networkId });
     },
     onContentChange(content) {
+      this.showSaveIndicator = false;
+
       if (this.layerCode !== content) {
         this.$store.commit('mod_workspace-code-editor/setHasUnsavedChanges', { 
           networkId: this.networkId, 
           hasUnsavedChanges: true 
         });
+
+        this.hasUnsavedCodeChanges = true;
       }
       
       this.layerCode = content;
     },
     onSaveClick() {
+      this.onSave();
+    },
+    onSaveShortcut() {
+      this.onSave();
+    },
+    onSave() {
+      this.showSaveIndicator = true;
+      this.hasUnsavedCodeChanges = false;
+
       const saveSettings = {
         'elId': this.currentEl.layerId,
         'code': { Output: this.layerCode },
@@ -183,8 +207,16 @@ export default {
         hasUnsavedChanges: false 
       });
       this.$store.dispatch('mod_workspace/SET_elementSettings', deepCopy(saveSettings));
-      this.$store.dispatch('mod_api/API_getOutputDim');
       this.$store.dispatch('mod_webstorage/saveNetwork', this.currentNetwork, {root: true});
+      
+      // calculating all preview vars here, can potentially refactor here:
+      const fullNetworkElementList = this.$store.getters['mod_workspace/GET_currentNetworkElementList'];
+      let payload = {};
+      for(let id in fullNetworkElementList) {
+        payload[id] = fullNetworkElementList[id].previewVariable;
+      }
+
+      this.$store.dispatch('mod_api/API_getBatchPreviewSample', payload, {root: true})
     },
     onFocus(source) {
       this.$store.commit('mod_workspace-code-editor/setIsInFocusState', true); 
@@ -295,7 +327,7 @@ export default {
 
   .code-window-footer {
     display: flex;
-    justify-content: flex-end;
+    justify-content: flex-start;
     align-items: center;
     height: $code-window-footer-height;
     margin-top: auto;
@@ -308,6 +340,22 @@ export default {
       border: 1px solid #444C62;
       box-sizing: border-box;
       border-radius: 2px;
+    }
+    .save-indicator {
+      background: #131B30;
+      border: 0.5px solid rgba(94, 111, 159, 0.5);
+      box-sizing: border-box;
+      border-radius: 1px;
+
+      margin-left: 1rem;
+      padding: 0.3rem 1rem;
+
+      > * + * {
+        margin-left: 1rem;
+      }
+    }
+    .revert-btn {
+      margin-left: auto;
     }
     .save-btn {
       background: #6185EE;

@@ -357,52 +357,109 @@ const actions = {
     let buffer = rootState.mod_buffer.buffer;
     dispatch('mod_workspace/SET_elementUnselect', null, {root: true});
 
-    if(rootGetters['mod_workspace/GET_enableHotKeyElement'] && buffer) {
-      const setChangeToWorkspaceHistory = false;
-      buffer.forEach((event) => {
-        dispatch('mod_workspace/ADD_element', { event,  setChangeToWorkspaceHistory }, {root: true});
-      });
-      const netWorkList = rootGetters['mod_workspace/GET_currentNetwork'].networkElementList;
-      const clipBoardNetWorkList = rootState.mod_buffer.clipBoardNetworkList;
+    if(!rootGetters['mod_workspace/GET_enableHotKeyElement'] || 
+      !buffer || 
+      buffer.length === 0) { return };
 
-      for(let elementId in netWorkList) {
-        const layerId = netWorkList[elementId].layerId;
-        const sourceId = netWorkList[elementId].copyId;
-        const isContainerElement = netWorkList[elementId].copyContainerElement;
+    const oldElementIds = Object.keys(rootGetters['mod_workspace/GET_currentNetwork'].networkElementList);
 
-        if (sourceId && clipBoardNetWorkList[sourceId]) {
-          if(isContainerElement) {
-            dispatch('mod_workspace/SET_elementMultiSelect', {id: netWorkList[elementId].layerId, setValue: true}, {root: true});
-          }
-          clipBoardNetWorkList[sourceId].connectionOut.forEach(id => {
-            if(!netWorkList[sourceId] && netWorkList[id]) {
-              commit('mod_workspace/SET_startArrowID', layerId, {root: true});
-              dispatch('mod_workspace/ADD_arrow', netWorkList[id].layerId, {root: true});
-            }
-            for(let property in netWorkList) {
-              if(Number(netWorkList[property].copyId) === Number(id)) {
-                commit('mod_workspace/SET_startArrowID', layerId, {root: true});
-                dispatch('mod_workspace/ADD_arrow', netWorkList[property].layerId, {root: true});
-              }
-            }
-          })
-          clipBoardNetWorkList[sourceId].connectionIn.forEach(id => {
-            if(!netWorkList[sourceId] && netWorkList[id]) {
-              commit('mod_workspace/SET_startArrowID', netWorkList[id].layerId, {root: true});
-              dispatch('mod_workspace/ADD_arrow', layerId, {root: true});
-            }
-            for(let property in netWorkList) {
-              if(Number(netWorkList[property].copyId) === Number(id)) {
-                commit('mod_workspace/SET_startArrowID', layerId, {root: true});
-                dispatch('mod_workspace/ADD_arrow', netWorkList[property].layerId, {root: true});
-              }
-            }
-          })
-        }
-        commit('mod_workspace/DELETE_copyProperty', layerId, {root: true});
+    const addElementPromises = buffer.map(b => {
+      dispatch('mod_workspace/ADD_element', { 
+        event: b,  
+        setChangeToWorkspaceHistory: false 
+      }, {root: true})
+    })
+
+    Promise.all(addElementPromises)
+      .then(result => {
+
+      const networkList = rootGetters['mod_workspace/GET_currentNetwork'].networkElementList;
+      const clipBoardNetworkList = rootState.mod_buffer.clipBoardNetworkList;
+
+      // make a mapping of the old element ids to the new so we don't have to loop through 
+      const newElementIds = Object.keys(networkList).filter(nId => !oldElementIds.includes(nId));
+      const oldToNewElementIdMapping = {};
+      for(let elementId of newElementIds) {
+        oldToNewElementIdMapping[networkList[elementId].copyId] = elementId;
       }
-    }
-    dispatch('mod_workspace/ADD_container', null, {root: true});
+
+      for(let elementId of newElementIds) {
+        const sourceId = networkList[elementId].copyId;
+        const isContainerElement = networkList[elementId].copyContainerElement;
+        
+        if (!sourceId || !clipBoardNetworkList[sourceId]) { continue; }
+
+        if(isContainerElement) {
+          dispatch('mod_workspace/SET_elementMultiSelect', {id: networkList[elementId].layerId, setValue: true}, {root: true});
+        }
+        
+        if (!networkList[sourceId].inputs) { continue; }
+
+        for (const inputItem of Object.entries(networkList[sourceId].inputs)) {
+          
+          const oldDestName = inputItem[1].name;
+          const oldSourceLayerId = inputItem[1].reference_layer_id;
+          const oldSourceVarId = inputItem[1].reference_var_id;
+          
+          // if no connection
+          if (!oldSourceLayerId || !oldSourceVarId) { continue; }
+
+          // true when the connections are not part of what's being copied
+          if (!networkList[oldToNewElementIdMapping[oldSourceLayerId]]) { continue; }
+
+          // TODO: can perhaps match oldSourceLayerId to the buffer...
+          // continue if not included
+
+          // getting information on where the arrow starts
+          const newElementInputs = networkList[oldToNewElementIdMapping[sourceId]].inputs;
+          let newDestVarId = '';
+          for(const i of Object.entries(newElementInputs)) {
+            if (i[1].name === oldDestName) {
+              newDestVarId = i[0];
+            }
+          }
+
+          // getting information on where the arrow ends
+          const oldElementOutputs = networkList[oldSourceLayerId].outputs;            
+          let oldSourceVarName = '';
+          for(const i of Object.entries(oldElementOutputs)) {
+            if (i[0] === oldSourceVarId) {
+              oldSourceVarName = i[1].name;
+            }
+          }
+
+          const newElementOutputs = networkList[oldToNewElementIdMapping[oldSourceLayerId]].outputs;  
+          let newSourceVarId = '';
+          for(const i of Object.entries(newElementOutputs)) {
+            if (i[1].name === oldSourceVarName) {
+              newSourceVarId = i[0];
+            }
+          }
+
+          commit('mod_workspace/SET_startArrowID', {
+            outputDotId: newSourceVarId,
+            outputLayerId: oldToNewElementIdMapping[oldSourceLayerId],
+            layerId: oldToNewElementIdMapping[oldSourceLayerId],
+          }, {root: true});
+
+          dispatch('mod_workspace/ADD_arrow', {
+            inputDotId: newDestVarId,
+            inputLayerId: elementId,
+            layerId: elementId,
+          }, {root: true})
+          // .then(() => {
+          //   this.$store.dispatch('mod_api/API_getBatchPreviewSampleForElementDescendants', this.dataEl.layerId);
+          // });
+        }
+      }
+
+      // removes the copyId
+      for(let elementId of newElementIds) {
+        commit('mod_workspace/DELETE_copyProperty', elementId, {root: true});
+      }
+    });
+
+    // dispatch('mod_workspace/ADD_container', null, {root: true});
     dispatch('mod_workspace-history/SET_isEnableHistory', true, {root: true});
   },
   SET_enableCustomHotKey({commit}, val) {

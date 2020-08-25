@@ -4,6 +4,8 @@ import logging
 import datetime
 import pkg_resources
 import jsonschema
+import tensorflow as tf
+import re
 
 import perceptilabs
 
@@ -12,6 +14,9 @@ APPLICATION_LOG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)),'
 APPLICATION_LOG_FORMAT = '%(asctime)s - %(levelname)s - %(package)s:%(lineno)d - %(message)s'
 APPLICATION_LOG_LEVEL = logging.INFO
 
+USER_LOGGER = 'perceptilabs.consolelogger'
+USER_LOG_FORMAT = '%(asctime)s - %(message)s'
+USER_LOG_LEVEL = logging.INFO
 
 DATA_LOGGER = 'perceptilabs.datalogger'
 DATA_LOG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)),'data.log')
@@ -29,14 +34,35 @@ class PackageFilter(logging.Filter):
             
         return True    
 
-class QueuingHandler(logging.Handler):
-
+class QueueHandler(logging.Handler):
+    
     def __init__(self, *args, message_queue, **kwargs):
         logging.Handler.__init__(self, *args, **kwargs)
         self.message_queue = message_queue
+        self.previous_message = None
 
     def emit(self, record):
-        self.message_queue.put(self.format(record).rstrip('\n'))
+        message = self.prepare(record)
+        if message is None:
+            pass
+        elif self.previous_message is not None and message[8:] == self.previous_message[8:]:
+            pass
+        else:
+            self.message_queue.put(message)
+            self.previous_message = message
+
+    def prepare(self, record):
+        message = self.format(record).rstrip('\n')
+        # checking for tensorflow logs
+        if 'From' in message: 
+            result = re.search(r'From(.*?):\d+:', message)
+            if result:
+                position = result.span()
+                string = message[position[0]:position[1]]
+                log = message.replace(string,'')
+        else:
+            log = message
+        return log
 
 def is_docker():
     try:
@@ -66,6 +92,28 @@ def setup_application_logger(log_level=None):
     logger.addHandler(stream_handler)
     logger.addFilter(PackageFilter())
 
+
+def set_console_logger(queue, log_level = None):
+    if log_level is not None:
+        log_level = logging.getLevelName(log_level)
+    
+    user_logger = logging.getLogger(USER_LOGGER)
+    user_logger.setLevel(log_level or USER_LOG_LEVEL)
+    user_log_handler = QueueHandler(message_queue=queue, level=USER_LOG_LEVEL)
+    user_log_formatter = logging.Formatter(USER_LOG_FORMAT,"%H:%M:%S")
+    user_log_handler.setFormatter(user_log_formatter)
+    user_logger.addHandler(user_log_handler)
+
+    # adding logs from tensorflow logger to console log handler
+    tf_logger = tf.get_logger() 
+    tf_logger.addHandler(user_log_handler)
+
+    # adding warning level logs from application logger to console log handler
+    application_logger = logging.getLogger(APPLICATION_LOGGER)
+    application_log_handler = QueueHandler(message_queue=queue, level=logging.WARNING)
+    application_log_formatter = logging.Formatter(USER_LOG_FORMAT,"%H:%M:%S")
+    application_log_handler.setFormatter(application_log_formatter)
+    application_logger.addHandler(application_log_handler)
 
 _global_context = {
     'session_id': '',

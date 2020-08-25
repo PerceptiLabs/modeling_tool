@@ -60,11 +60,12 @@ def load_network(json_network, as_spec=False, layers_only=True):
 
 
 class Interface():
-    def __init__(self, cores, dataDict, checkpointDict, lwDict, core_mode=None, message_factory=None):
+    def __init__(self, cores, dataDict, checkpointDict, lwDict, issue_handler, core_mode=None, message_factory=None):
         self._cores=cores
         self._dataDict=dataDict
         self._checkpointDict=checkpointDict
         self._lwDict=lwDict
+        self._issue_handler = issue_handler
         self._core_mode = 'v2'
         self._lw_cache_v2 = LightweightCache(max_size=LW_CACHE_MAX_ITEMS) if USE_LW_CACHING else None
         self._settings_engine = None
@@ -130,7 +131,7 @@ class Interface():
         t.start()
 
     def _addCore(self, reciever):
-        core=coreLogic(reciever, self._core_mode)
+        core=coreLogic(reciever, self._issue_handler, self._core_mode)
         self._cores[reciever] = core
 
     def _setCore(self, reciever):
