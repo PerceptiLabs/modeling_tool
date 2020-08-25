@@ -252,7 +252,7 @@ const mutations = {
     getters.GET_currentNetwork.apiMeta.saved_version_location = saved_version_location;
   },
   replace_network_element_list(state, { newNetworkElementList, getters }) {
-    getters.GET_currentNetwork.networkElementList = newNetworkElementList;
+    Vue.set(state.workspaceContent[state.currentNetwork], 'networkElementList', newNetworkElementList);
   },
   set_model_location(state, { getters, location }) {
     getters.GET_currentNetwork.apiMeta.location = location;
@@ -675,10 +675,12 @@ const mutations = {
     let depth = checkPosition(newEl, elementList);
 
     if(isCursorInsideWorkspace && firstCopyPositionElement) {
-      newEl.layerMeta.position.top =  (cursorPosition.y + newEl.layerMeta.position.top) - firstCopyPositionElement.top - duplicatePositionIndent;
-      newEl.layerMeta.position.left =  (cursorPosition.x + newEl.layerMeta.position.left) - firstCopyPositionElement.left - duplicatePositionIndent;
+      // for copy/pasted components
+      newEl.layerMeta.position.top =  cursorPosition.y + (newEl.layerMeta.position.top /2) - firstCopyPositionElement.top;
+      newEl.layerMeta.position.left =  cursorPosition.x + (newEl.layerMeta.position.left / 2) - firstCopyPositionElement.left;
     }
     else {
+      // for components created from the layers toolbar
       newEl.layerMeta.position.top = newEl.layerMeta.position.top + (duplicatePositionIndent * depth);
       newEl.layerMeta.position.left = newEl.layerMeta.position.left + (duplicatePositionIndent * depth);
     }
@@ -733,7 +735,6 @@ const mutations = {
     let descendantsIds = []
     for(let ix in arrSelectID) {
       const id = arrSelectID[ix];
-      console.log(net);
       descendantsIds = [...descendantsIds, ...getters.GET_descendentsIds(copyOfNetwork[id], false)]
     }
     descendantsIds = Array.from(new Set(descendantsIds));
@@ -803,8 +804,8 @@ const mutations = {
       }
     }
     
-    
-    state.workspaceContent[state.currentNetwork].networkElementList = net;
+    // state.workspaceContent[state.currentNetwork].networkElementList = {...net};
+    dispatch('ReplaceNetworkElementList', {...net});
     dispatch('SET_isOpenElement', false);
     dispatch('mod_events/EVENT_IOGenerateAction', null, {root: true})
     .then(() => {
@@ -818,7 +819,7 @@ const mutations = {
         if(el.componentName === 'LayerContainer') {
           deleteElement(Object.keys(el.containerLayersList).map(key => net[key]))
         }
-       
+
         if(net[el.layerId].hasOwnProperty('outputs')){
           let outputs = net[el.layerId].outputs;
           Object.keys(outputs).map(outputId => {
@@ -849,7 +850,6 @@ const mutations = {
 
     if(startObject.layerId === endObject.layerId) return;
 
-    const startEl = currentElement(startObject.layerId);
     const endEl = currentElement(endObject.layerId);
 
 
@@ -879,6 +879,7 @@ const mutations = {
     // currentElement(startID).connectionArrow.push(stopID.toString());
     // currentElement(stopID).connectionIn.push(startID.toString());
     state.startArrowID = null;
+
     dispatch('mod_events/EVENT_IOGenerateAction', null, {root: true})
     dispatch('mod_events/EVENT_calcArray', null, {root: true})
   },
@@ -1008,6 +1009,8 @@ const mutations = {
   },
   set_elementOutputDim(state, {value}) {
     for(let element in value) {
+      if (!currentElement(element)) { continue; }
+      
       currentElement(element).layerMeta.OutputDim = value[element].Dim;
       currentElement(element).layerCodeError = value[element].Error
     }
@@ -1383,9 +1386,12 @@ const mutations = {
     }
   },
   SET_NeteworkChartDataMutation(state, { layerId, payload }) {
-    // debugger;
     const el = state.workspaceContent[state.currentNetwork].networkElementList[layerId];
-    if(el && el.hasOwnProperty('chartData')) {
+
+    // adds this refactoring because it caused a problem when deleting elements
+    if (!el) { return; }
+
+    if(el.hasOwnProperty('chartData')) {
       state.workspaceContent[state.currentNetwork].networkElementList[layerId]['chartData'] = payload;
     } else {
       state.workspaceContent[state.currentNetwork].networkElementList[layerId] = {
@@ -1803,7 +1809,7 @@ const actions = {
     commit('set_elementSettings', {dispatch, settings})
   },
   ADD_element({commit, getters, dispatch}, { event, setChangeToWorkspaceHistory = true }) {
-    commit('add_element', {getters, dispatch, event, setChangeToWorkspaceHistory})
+    commit('add_element', {getters, dispatch, event, setChangeToWorkspaceHistory});
 
     dispatch('mod_webstorage/saveNetwork', getters.GET_currentNetwork, {root: true});
     dispatch('mod_workspace-changes/updateUnsavedChanges', {
