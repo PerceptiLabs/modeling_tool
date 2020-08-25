@@ -16,10 +16,10 @@ def test_default_returns_inputs(script_factory):
         name='layer_name'
     )
     layer = LayerHelper(script_factory, layer_spec).get_instance()
-
-    inputs = {'some-var': 'some-value'}    
+    inputs = {'input': 'some-value'}    
     outputs = layer(inputs)
-    assert outputs == inputs
+    
+    assert outputs['output'] == inputs['input']
 
 
 def test_returns_exact_code(script_factory):
