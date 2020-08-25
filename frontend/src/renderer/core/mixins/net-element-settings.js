@@ -45,7 +45,7 @@ const netElementSettings = {
     saveSettingsToStore(tabName) {
       const saveSettings = {
         'elId': this.currentEl.layerId,
-        'code': this.coreCode ? deepCopy(this.coreCode) : null,
+        'code': this.currentEl.layerCode ? deepCopy(this.currentEl.layerCode) : null,
         'set': this.settings,
         'visited': this.currentEl.visited,
         tabName

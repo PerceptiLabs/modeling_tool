@@ -999,6 +999,8 @@ const mutations = {
   },
   set_elementInputDim(state, value) {
     for(let element in value) {
+      if (!currentElement(element)) { return; }
+
       currentElement(element).layerMeta.InputDim = value[element].inShape;
       currentElement(element).layerCodeError = value[element].Error
     }

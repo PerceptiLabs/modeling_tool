@@ -211,7 +211,6 @@ export default {
       }
      },
     refNetworkMouseDown(ev) {
-      console.log(ev.target.className);
       if(ev.target.className === 'network-field' && !(ev.shiftKey || ev.metaKey || ev.ctrlKey)) {
         this.markAllUnselectedAction();
       }
