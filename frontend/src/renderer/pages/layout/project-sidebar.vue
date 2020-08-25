@@ -259,10 +259,8 @@
 
 <style lang="scss" scoped>
   .wrapper {
-    position: fixed;
-    left: 0;
     width: 46px;
-    height: 100vh;
+    height: 100%;
     background: #23252A;
     // box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
   }

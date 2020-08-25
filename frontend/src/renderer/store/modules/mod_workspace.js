@@ -9,6 +9,7 @@ const namespaced = true;
 
 const state = {
   workspaceContent: [],
+  unparsedModels: [],
   currentNetwork: 0,
   dragElement: null,
   startArrowID: null,
@@ -1451,6 +1452,11 @@ const mutations = {
     dispatch('mod_events/EVENT_IOGenerateAction', null, {root: true});
     Vue.delete(el.inputs, [payload.inputVariableId]);
   },
+
+  SET_unparsedModels(state, { payload }) {
+    state.unparsedModels = payload.unparsedModels;
+  },
+  
   toggle_showModelPreviewsMutation(state, payload) {
     localStorage.setItem(LOCAL_STORAGE_WORKSPACE_SHOW_MODEL_PREVIEWS, payload);
     state.showModelPreviews = payload;
@@ -1462,6 +1468,9 @@ const mutations = {
 const actions = {
   EDIT_inputVariableValueAction({dispatch, commit}, payload) {
     commit('EDIT_inputVariableValue', { payload, dispatch });
+  },
+  SET_unparsedModels({ commit }, payload) {
+    commit('SET_unparsedModels', { payload });
   },
   DELETE_outputVariableAction({getters, commit, dispatch }, payload) {
     let net = getters.GET_currentNetworkElementList;

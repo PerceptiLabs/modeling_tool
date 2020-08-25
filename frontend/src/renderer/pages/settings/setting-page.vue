@@ -1,6 +1,5 @@
 <template lang="pug">
   div
-    project-sidebar
     .setting-page
       .setting-tabs-wrapper
         ul.tab-list
@@ -12,18 +11,16 @@
         
 </template>
 <script>
-  import ProjectSidebar     from '@/pages/layout/project-sidebar.vue'; 
   import SettingProfile     from '@/pages/settings/setting-profile.vue'; 
 export default {
   name: 'SettingPage',
-  components: { ProjectSidebar, SettingProfile }
+  components: { SettingProfile }
 }
 </script>
 <style lang="scss" scoped>
 .setting-page {
   margin-top: 5px;
   margin-right: 5px;
-  margin-left: 46px;
   background: linear-gradient(180deg, #363E51 0%, rgba(54, 62, 81, 0) 100%);
   border: 1px solid rgba(97, 133, 238, 0.4);
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.25);

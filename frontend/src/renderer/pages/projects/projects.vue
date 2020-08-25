@@ -4,7 +4,6 @@
       button(@click="handleContextOpenModel()") Open
       button(@click="handleContextRenameModel()") Rename
       button(@click="handleContextRemoveModel()") Delete
-    project-sidebar
     div(v-show="!showNewModelPopup").project-wrapper
       div.header-controls
         div.left-side
@@ -166,7 +165,6 @@
 </template>
 
 <script>
-  import ProjectSidebar from '@/pages/layout/project-sidebar.vue';
   import SortByButton from '@/pages/projects/components/sort-by-button.vue';
   import CollaboratorAvatar from '@/pages/projects/components/collaborator-avatar.vue'
   import FilePicker     from "@/components/different/file-picker.vue";
@@ -193,7 +191,6 @@
   export default {
     name: "pageProjects",
     components: {
-      ProjectSidebar,
       SortByButton,
       CollaboratorAvatar,
       FilePicker,
@@ -216,7 +213,6 @@
         ],
         initialModelList: mockModelList,
         modelList: mockModelList,
-        unparsedModels: [],
         selectedListIds: [],
         isImportModelsOpen: false,
         contextModelIndex: null,
@@ -232,8 +228,6 @@
       ...mapGetters({
         user:                 'mod_user/GET_userProfile',
         currentProject:       'mod_project/GET_project',
-        isDefaultProjectMode: 'mod_project/GET_isDefaultProjectMode',
-        networksWithChanges:  'mod_workspace-changes/get_networksWithChanges'
       }),
       ...mapState({
         currentProjectId:     state => state.mod_project.currentProject,
@@ -242,10 +236,12 @@
         showNewModelPopup:    state => state.globalView.globalPopup.showNewModelPopup,
         hotKeyPressDelete:    state => state.mod_events.globalPressKey.del,
         showLoadSettingPopup: state => state.globalView.globalPopup.showLoadSettingPopup,
-      }),
-      workspaceContent() {
-        return this.$store.state.mod_workspace.workspaceContent;
-      },
+        workspaceContent:     state => state.mod_workspace.workspaceContent,
+        unparsedModels:       state => state.mod_workspace.unparsedModels
+      })
+      // workspaceContent() {
+      //   return this.$store.state.mod_workspace.workspaceContent;
+      // },
     },
     watch: {
       searchValue: function (newValue) {
@@ -256,34 +252,6 @@
         
         this.modelList = initialModelList;
         this.onSortByChanged(this.isSelectedSortType);
-      },
-      currentProject: {
-        immediate: true,
-        handler(newVal, oldVal) {
-
-          if (!this.networksWithChanges.length) {
-            if (this.isDefaultProjectMode && (!newVal || !newVal.name || newVal.name !== 'Default')) { return; }
-            // using this function because the watcher can be aggressive with changes
-            if(!isSameProject(newVal,oldVal)) {
-              this.reset_network();
-              this.deleteAllIds();
-              this.fetchNetworkMetas(newVal);
-            }
-          }
-
-          function isSameProject(project1, project2) {
-            if (!project1 && !project2) { return false; }
-            if (project1 && !project2) { return false; }
-            if (!project1 && project2) { return false; }
-            if (project1.name !== project2.name)  { return false; }
-            if (project1.models.length !== project2.models.length)  { return false; }
-            if (
-              project1.models.every(p1 => !project2.models.includes(p1)) ||
-              project2.models.every(p2 => !project1.models.includes(p2)))  { return false; }
-
-            return true;
-          }
-        }
       },
       hotKeyPressDelete() {
         if (!this.projects) { return; }
@@ -305,17 +273,11 @@
         popupNewModel:       'globalView/SET_newModelPopup',
         showInfoPopup:       'globalView/GP_infoPopup',
         loadNetwork:         'mod_api/API_loadNetwork',
-        addNetwork:          'mod_workspace/ADD_network',
         set_currentNetwork:  'mod_workspace/SET_currentNetwork',
         createProjectModel:  'mod_project/createProjectModel',
-        API_getModel:        'mod_api/API_getModel',
         setActivePageAction: 'modal_pages/setActivePageAction',
         delete_network :     'mod_workspace/DELETE_network',
         UPDATE_MODE_ACTION : 'mod_workspace/UPDATE_MODE_ACTION',
-        SET_openStatistics : 'mod_workspace/SET_openStatistics',
-        SET_openTest :       'mod_workspace/SET_openTest',
-        getModelMeta:        'mod_project/getModel',
-        reset_network:       'mod_workspace/RESET_network',
 
         setNetworkNameAction:'mod_workspace/SET_networkName',
         updateWorkspaces:    'mod_webstorage/updateWorkspaces',
@@ -458,69 +420,6 @@
         });
         this.initialModelList = initialModelList;
 
-      },
-      fetchNetworkMetas(currentProject) {
-        if (!currentProject || !currentProject.models || !currentProject.models.length) { return; }
-
-        const promiseArray = 
-          currentProject.models
-            .map(x => this.getModelMeta(x));
-
-        Promise.all(promiseArray)
-          .then(metas => {
-            this.fetchAllNetworkJsons(metas);
-            this.fetchUnparsedModels(metas);
-          });
-      },
-      fetchAllNetworkJsons(modelMetas) {
-        if (!modelMetas) { return; }
-
-        const promiseArray = 
-          modelMetas
-            .filter(x => x.location)
-            .map(x => this.API_getModel(x.location + '/model.json'));
-        
-        Promise.all(promiseArray)
-          .then(models => {
-            this.addNetworksToWorkspace(models, modelMetas);
-            for(const model of models) {
-              this.$store.dispatch('mod_api/API_getModelStatus', model.networkID ) 
-            }
-          })
-          .then(() => {
-            this.$store.dispatch('mod_workspace/GET_workspace_statistics');
-          });
-      },
-      async fetchUnparsedModels(modelMetas){
-        let unparsedModels = [];
-
-        for(const model of modelMetas){
-          const modelJson = await this.API_getModel(model.location + '/model.json');
-          if(modelJson === "") {
-            unparsedModels.push(model);
-          }
-        } 
-        this.unparsedModels = unparsedModels;
-      },
-      addNetworksToWorkspace(models, modelsApiData) {
-        const filteredModels = models.filter(m => m);
-        for(const [index, model] of filteredModels.entries()) {
-          // if(modelsApiData[index].model_id !== model.networkID) {
-          //   model.networkID = modelsApiData[index].model_id;
-          //   model.apiMeta = modelsApiData[index];
-          // }
-          // update apiMeta wiht rygg meta.
-           model.apiMeta = modelsApiData[index];
-
-          const matchingApiData = modelsApiData.find(mad => mad.model_id === model.networkID);
-          if (matchingApiData) {
-            model.networkName = matchingApiData.name;
-            model.networkRootFolder = matchingApiData.location;
-          }
-          this.addNetwork({network: model, apiMeta: model.apiMeta, focusOnNetwork: false});
-        }
-
-        this.updateWorkspaces();
       },
       handleAddNetworkModal() {
         // open modal
@@ -667,9 +566,8 @@
   }
   .project-wrapper {
     margin-top: 4px;
-    margin-left: 46px;
     background-color: #23252A;
-    height: 100vh;
+    height: 100%;
     background: linear-gradient(180deg, #363E51 0%, rgba(54, 62, 81, 0) 100%);
     border: 1px solid rgba(97, 133, 238, 0.4);
     box-sizing: border-box;
