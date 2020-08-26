@@ -30,10 +30,10 @@
         )
           component(:is="element" :draggable="true" :showTitle="true" :ref="`layer-${element}`")
 
-    .single-layer-category(
-      @click="onLayerClick($event, 'custom')"
-    )
-      layer-custom(:draggable="true" :showTitle="true" ref="layer-custom")
+    //- .single-layer-category(
+    //-   @click="onLayerClick($event, 'custom')"
+    //- )
+    //-   layer-custom(:draggable="true" :showTitle="true" ref="layer-custom")
     
 </template>
 
@@ -178,6 +178,22 @@ export default {
           color: 'rgba(115, 254, 187, 0.7)',
           borderColor: 'rgba(115, 254, 187, 0.2)',
           bottomColor: 'rgba(115, 254, 187, 0.4)'
+        },
+        {
+          tooltip: 'Custom',
+          tooltip_interactive: {
+            title: 'Custom',
+            text: 'Custom components'
+          },
+          layerClass: 'net-element-custom',
+          iconClass: 'icon-train-group',
+          childListClass: '',
+          showEl: false,
+          networkElements: ['LayerCustom'],
+          id:'tutorial_custom',
+          color: 'rgba(204, 204, 204, 0.7)',
+          borderColor: 'rgba(204, 204, 204, 0.2)',
+          bottomColor: 'rgba(204, 204, 204, 0.4)'
         },
       ],
     }
