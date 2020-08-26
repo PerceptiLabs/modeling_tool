@@ -131,6 +131,10 @@
     stroke: $arrow-color; //inline styles for the canvas plagin
     stroke-width: 3;
     fill: transparent;
+    &:hover {
+      stroke-width: 4 !important;
+      cursor: pointer;
+    }
     &.is-focused {
       stroke-width: 5 !important;
     }

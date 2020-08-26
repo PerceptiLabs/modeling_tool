@@ -200,6 +200,7 @@ export default {
       tutorialPointActivate:   'mod_tutorials/pointActivate',
       SET_elementNetworkField: 'mod_workspaceHelpers/SET_elementNetworkField',
       markAllUnselectedAction: 'mod_workspace/markAllUnselectedAction',
+      unselectElements: 'mod_workspace/SET_elementUnselect',
     }),
     getElSize(layerId) {
       const el = document.querySelector(`[layer-id="${layerId}"]`);
@@ -363,6 +364,7 @@ export default {
       this.clearArrowFocus();
     },
     focusArrow(ev, arrow) {
+      this.unselectElements();
       this.currentFocusedArrowData = arrow;
       this.currentFocusedArrow = ev.target;
     },

@@ -8,6 +8,7 @@ $clip-path_indent: $arrows-start_size/2;
   background-color: $bg-workspace;
   &:hover {
     will-change: top, left;
+    cursor: pointer;
   }
   .btn--layersbar {
     width: 145px;
