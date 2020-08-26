@@ -31,6 +31,7 @@ def get_os():
 
 
 OS = get_os()
+PYTHON = sys.executable
 VALID_PYTHON_VERSION_PATTERN = "python 3\.[67][^\d]"
 
 # this depends on pwd being in the scripts directory
@@ -39,6 +40,7 @@ PROJECT_ROOT = os.path.dirname(SCRIPTS_DIR)
 BACKEND_SRC = os.path.join(PROJECT_ROOT, "backend")
 FRONTEND_SRC_ROOT = os.path.join(PROJECT_ROOT, "frontend")
 RYGG_DIR = os.path.join(PROJECT_ROOT, "rygg")
+FILESERVER_DIR = os.path.join(PROJECT_ROOT, "fileserver")
 WHEELFILES_DIR = os.path.join(PROJECT_ROOT, "wheelfiles")
 BUILD_DIR = os.path.join(PROJECT_ROOT, "build")
 BUILD_TMP = os.path.join(BUILD_DIR, "tmp")
@@ -189,7 +191,7 @@ def mkdir_p(dirname):
 
 
 def generate_included_files_common():
-    projects = "perceptilabs_runner rygg backend".split()
+    projects = "perceptilabs_runner rygg fileserver backend".split()
     for p in projects:
         for line in all_lines(f"{PROJECT_ROOT}/{p}/included_files.txt"):
             stripped = line.strip()
@@ -245,6 +247,7 @@ def install_prereqs():
 
     run_checked(f"pip install -r {BACKEND_SRC}/requirements.txt")
     run_checked(f"pip install -r {RYGG_DIR}/requirements.txt")
+    run_checked(f"pip install -r {FILESERVER_DIR}/requirements.txt")
     run_unchecked("pip install -r requirements_build.txt")
 
 def install_docker_host_prereqs():
@@ -383,6 +386,10 @@ def run_pytest_tests():
     with pushd(BACKEND_SRC):
         run_checked("python -m pytest")
 
+def run_django_tests():
+    print("Running django tests")
+    with pushd(FILESERVER_DIR):
+        subprocess.run([PYTHON, "-m", "django", "test", "--settings", "fileserver.settings"])
 
 def which_cmd():
     if OS == Os.WIN:
@@ -432,6 +439,10 @@ def combine_files(sources, dest):
                 lines = source_f.readlines()
                 dest_f.writelines(lines)
 
+def combine_requirements_files(roots, dest):
+    requirements_files = [f"{PROJECT_ROOT}/{d}/requirements.txt" for d in roots]
+    combine_files(requirements_files, dest)
+
 def wheel():
     assert_python_version()
     install_prereqs()
@@ -444,14 +455,15 @@ def wheel():
     copy_tree(f"{PROJECT_ROOT}/licenses/", f"{BUILD_TMP}/licenses/", update=True)
     copy_files(f"{PROJECT_ROOT}/backend", BUILD_TMP, list_path= f"{PROJECT_ROOT}/backend/included_files.txt")
     copy_files(f"{PROJECT_ROOT}/rygg", BUILD_TMP,  list_path=f"{PROJECT_ROOT}/rygg/included_files.txt")
+    copy_files(f"{PROJECT_ROOT}/fileserver", BUILD_TMP,  list_path=f"{PROJECT_ROOT}/fileserver/included_files.txt")
     copy_files(f"{PROJECT_ROOT}/perceptilabs_runner", f"{BUILD_TMP}/perceptilabs_runner/",  list_path=f"{PROJECT_ROOT}/perceptilabs_runner/included_files.txt")
     copy_file(f"{WHEELFILES_DIR}/setup.cfg", f"{BUILD_TMP}/setup.cfg", update=True)
-    combine_files([ f"{PROJECT_ROOT}/backend/requirements.txt", f"{PROJECT_ROOT}/rygg/requirements.txt"], f"{BUILD_TMP}/requirements.txt")
+    combine_requirements_files("backend rygg fileserver".split(), f"{BUILD_TMP}/requirements.txt")
     copy_file(f"{SCRIPTS_DIR}/setup.py", f"{BUILD_TMP}/setup.py", update=True)
     assemble_package_datas(
-            ["backend", "rygg", "frontend", "perceptilabs_runner"],
+            ["backend", "rygg", "fileserver", "frontend", "perceptilabs_runner"],
            f"{BUILD_TMP}/package_data.json")
-    write_all_lines(f"{BUILD_TMP}/cython_roots.txt", ["perceptilabs\n", "rygg\n", "static_file_server\n"])
+    write_all_lines(f"{BUILD_TMP}/cython_roots.txt", ["perceptilabs\n", "rygg\n", "fileserver\n", "static_file_server\n"])
     with included_files_common() as inc:
         copy_file(inc, f"{BUILD_TMP}/included_files.txt", update=True)
 
@@ -472,13 +484,15 @@ def test():
     mkdir_p(BUILD_TMP)
     copy_files(f"{PROJECT_ROOT}/backend", BUILD_TMP, list_path= f"{PROJECT_ROOT}/backend/included_files.txt")
     copy_files(f"{PROJECT_ROOT}/rygg", BUILD_TMP,  list_path=f"{PROJECT_ROOT}/rygg/included_files.txt")
+    copy_files(f"{PROJECT_ROOT}/fileserver", BUILD_TMP,  list_path=f"{PROJECT_ROOT}/fileserver/included_files.txt")
     copy_files(f"{PROJECT_ROOT}/perceptilabs_runner", f"{BUILD_TMP}/perceptilabs_runner/",  list_path=f"{PROJECT_ROOT}/perceptilabs_runner/included_files.txt")
-    combine_files([ f"{PROJECT_ROOT}/backend/requirements.txt", f"{PROJECT_ROOT}/rygg/requirements.txt"], f"{BUILD_TMP}/requirements.txt")
+    combine_requirements_files("backend rygg fileserver".split(), f"{BUILD_TMP}/requirements.txt")
     copy_file(f"{SCRIPTS_DIR}/setup.py", f"{BUILD_TMP}/setup.py", update=True)
-    write_all_lines(f"{BUILD_TMP}/cython_roots.txt", ["perceptilabs\n", "rygg\n", "static_file_server\n"])
+    write_all_lines(f"{BUILD_TMP}/cython_roots.txt", ["perceptilabs\n", "rygg\n", "fileserver\n", "static_file_server\n"])
     run_lint_test()
     run_cython_test()
     run_pytest_tests()
+    run_django_tests()
 
 class DockerBuilder():
     @staticmethod

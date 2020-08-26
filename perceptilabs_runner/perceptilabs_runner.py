@@ -1,5 +1,7 @@
 import argparse
 import importlib
+import os
+import secrets
 import signal
 import socket
 import subprocess
@@ -7,6 +9,7 @@ import sys
 import time
 
 PYTHON = sys.executable
+
 
 class bcolors:
     KERNEL = '\033[95m'
@@ -18,7 +21,7 @@ class bcolors:
     ENDC = '\033[0m'
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
-    
+
     if sys.platform.startswith("win"):
         try:
             import colorama
@@ -38,6 +41,7 @@ MIGRATION_CMD = [PYTHON, "-m", "django", "migrate", "--settings", "rygg.settings
 SERVICE_CMDS = [
     [PYTHON, "-c", "from perceptilabs.mainServer import main; main()"],
     [PYTHON, "-m", "django", "runserver", "--settings", "rygg.settings", "--noreload"],
+    [PYTHON, "-m", "django", "runserver", "--settings", "fileserver.settings", "--noreload"],
     [PYTHON, "-m", "django", "runserver", "localhost:8080", "--settings", "static_file_server.settings", "--noreload"],
     [PYTHON, "-c", "from static_file_server import website_launcher; website_launcher.launchAndKeepAlive()"],
 ]
@@ -48,9 +52,11 @@ HOST = "127.0.0.1"
 PORTS = {
             "kernel": 5000,
             "rygg": 8000,
+            "fileserver": 8011,
             "frontend": 8080,
         }
 # fmt: on
+
 
 def check_for_atari():
     if not sys.platform.startswith("win"):
@@ -66,6 +72,7 @@ def check_for_atari():
     # give the user a chance to read the message
     time.sleep(1)
 
+
 def do_migration(pipes):
     migtate_proc = subprocess.run(MIGRATION_CMD, **pipes)
     if migtate_proc.returncode != 0:
@@ -73,8 +80,11 @@ def do_migration(pipes):
         sys.exit(1)
 
 
-def start_one(cmd, pipes):
-    return subprocess.Popen(cmd, **pipes)
+def start_one(cmd, pipes, api_token):
+    env = os.environ.copy()
+    env["PL_FILE_SERVING_TOKEN"] = api_token
+
+    return subprocess.Popen(cmd, **pipes, env=env)
 
 
 def stop_one(proc, wait_secs=5):
@@ -117,6 +127,7 @@ def get_pipes(verbosity):
         "stdin": subprocess.DEVNULL,
     }
 
+
 class PortPoller:
     def is_port_live(port):
         with socket.socket() as s:
@@ -124,7 +135,11 @@ class PortPoller:
             return rc == 0
 
     def get_unresponsive_ports():
-        return [(name, port) for name, port in PORTS.items() if not PortPoller.is_port_live(port)]
+        return [
+            (name, port)
+            for name, port in PORTS.items()
+            if not PortPoller.is_port_live(port)
+        ]
 
     def wait_for_ports(interval_secs=3):
         count = 0
@@ -136,7 +151,7 @@ class PortPoller:
             count += 1
             if count > 1:
                 print(f"{bcolors.PERCEPTILABS}PerceptiLabs:{bcolors.ENDC} Waiting for services to listen on these ports:")
-                for s,p in unresponsive:
+                for s, p in unresponsive:
                     print(f"{bcolors.PERCEPTILABS}PerceptiLabs:{bcolors.ENDC}    {s} on port {p}")
             time.sleep(interval_secs)
 
@@ -154,11 +169,12 @@ def start(verbosity):
         check_for_atari()
         pipes = get_pipes(verbosity)
         do_migration(pipes)
-        procs = list([start_one(cmd, pipes) for cmd in SERVICE_CMDS])
+        api_token = secrets.token_urlsafe(nbytes=64)
+        procs = list([start_one(cmd, pipes, api_token) for cmd in SERVICE_CMDS])
         print(f"{bcolors.PERCEPTILABS}PerceptiLabs:{bcolors.ENDC} Starting")
         PortPoller.wait_for_ports()
         print(f"{bcolors.PERCEPTILABS}PerceptiLabs:{bcolors.ENDC} PerceptiLabs Started")
-        print(f"{bcolors.PERCEPTILABS}PerceptiLabs:{bcolors.ENDC} PerceptiLabs is running at http://localhost:8080")
+        print(f"{bcolors.PERCEPTILABS}PerceptiLabs:{bcolors.ENDC} PerceptiLabs is running at http://localhost:8080/?token={token}")
         print(f"{bcolors.PERCEPTILABS}PerceptiLabs:{bcolors.ENDC} Use Control-C to stop this server and shut down all PerceptiLabs processes.")
         signal.signal(signal.SIGINT, handler)
         watch(procs)
@@ -166,14 +182,17 @@ def start(verbosity):
         print(e)
         stop(procs)
 
+
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument( "-v", "--verbosity", help="set output verbosity (0,1, or 2)", type=int, default=0)
+    parser.add_argument("-v", "--verbosity", help="set output verbosity (0,1, or 2)", type=int, default=0)
     return parser.parse_args()
+
 
 def main():
     args = get_args()
     start(args.verbosity)
+
 
 if __name__ == "__main__":
     main()
