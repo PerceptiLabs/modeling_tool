@@ -73,8 +73,9 @@
     name: 'SetDataRandom',
     mixins: [mixinSet, mixinData, mixinFocus],
     mounted() {
-      this.Mix_settingsData_getDataMeta(this.currentEl.layerId);
-      this.saveSettingsToStore("Settings");
+      this.Mix_settingsData_getDataMeta(this.currentEl.layerId).then(() => {
+        this.saveSettings("Settings");
+      });
     },
     data() {
       return {

@@ -192,10 +192,10 @@ export default {
     border: 1px solid #363E51;
 
     .sidebar-setting-content & {
-      background: transparent;
-      height: 17px;
-      border: none;
-      color: #C4C4C4;
+      // background: transparent;
+      // height: 17px;
+      // border: none;
+      // color: #C4C4C4;
     }
 
     .network-component-footer-wrapper & {

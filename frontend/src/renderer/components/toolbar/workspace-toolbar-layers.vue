@@ -125,7 +125,7 @@ export default {
           iconClass: 'icon-processing-group',
           childListClass: '',
           showEl: false,
-          networkElements: ['process-reshape', 'process-embed', 'process-grayscale', 'ProcessOneHot', 'process-rescale'],
+          networkElements: ['process-reshape', 'process-grayscale', 'ProcessOneHot', 'process-rescale'],
           id:'tutorial_processing',
           color: 'rgba(253, 205, 114, 0.7)',
           borderColor: 'rgba(253, 205, 114, 0.2)',

@@ -206,6 +206,7 @@
     watch: {
       dataColumnsSelected(newVal) {
         this.settings.accessProperties.Columns = newVal;
+        this.saveSettings("Computer");
         // this.Mix_settingsData_getDataPlot('DataData')
         // this.Mix_settingsData_getPreviewVariableList(this.currentEl.layerId)
       },
@@ -218,12 +219,11 @@
       //   //deep: true
       // },
       fileList: {
-        handler(newVal) {
-          this.Mix_settingsData_getPartitionSummary(this.currentEl.layerId);
-
-          // for saving data on removing the file from list
-          this.saveSettings("Computer");
-          
+        handler(newVal, prevVal) {
+          if(newVal.length !== prevVal.length) {
+            this.Mix_settingsData_getPartitionSummary(this.currentEl.layerId);
+            this.saveSettings("Computer");
+          }
         },
         deep: true,
         //immediate: true
@@ -297,7 +297,7 @@
 
         this.filePickerAppendingItems = false;
         // the save should go here
-        this.saveSettings('Computer');
+        // this.saveSettings('Computer');
       },
       clearPath() {
         this.showFilePicker = false;
