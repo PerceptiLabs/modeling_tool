@@ -8,7 +8,8 @@
       the-menu
     
     .app-header-section.app-header-mid
-      h4(v-if="projectName").page-title {{projectName}} / <span class="page-route-title">{{routeHeaderAlias}} </span>
+      h4(v-if="projectName").page-title <span class="page-route-title">{{routeHeaderAlias}} </span>
+      //- h4(v-if="projectName").page-title {{projectName}} / <span class="page-route-title">{{routeHeaderAlias}} </span>
 
     .app-header-section.app-header-right
       button.btn.btn--dark.btn--toolbar-settings(

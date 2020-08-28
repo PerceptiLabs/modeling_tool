@@ -146,7 +146,6 @@ perceptilabs/core_new/communication/state.py
 perceptilabs/core_new/communication/utils.py
 perceptilabs/core_new/communication/deployment.py
 perceptilabs/core_new/communication/zmq.py
-perceptilabs/core_new/communication/task_executor.py
 
 # perceptilabs/core_new/compatibility
 perceptilabs/core_new/compatibility/__init__.py
