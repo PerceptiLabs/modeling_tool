@@ -1,6 +1,68 @@
 {% from 'tf1x_utils.j2' import session %}
 
 {% macro run_normal(layer_spec, graph_spec) %}
+        sess = self._sess
+        self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
+
+        log.info("Entering training loop")
+        
+        # Training loop
+        self._epoch = 0
+        while self._epoch < self._n_epochs and not self._stopped:
+            t0 = time.perf_counter()
+            self._training_iteration = 0
+            self._validation_iteration = 0
+            self._status = 'training'
+            sess.run(self._trn_init)            
+            try:
+                while not self._stopped:
+                    self.train_step()
+                    yield YieldLevel.SNAPSHOT
+                    self._training_iteration += 1
+            except tf.errors.OutOfRangeError:
+                pass
+
+            self._status = 'validation'
+            sess.run(self._val_init)            
+            try:
+                while not self._stopped:
+                    self.validation_step()
+                    yield YieldLevel.SNAPSHOT                    
+                    self._validation_iteration += 1
+            except tf.errors.OutOfRangeError:
+                pass
+            log.info(
+                f"Finished epoch {self._epoch+1}/{self._n_epochs} - "
+                f"loss training, validation: {self.loss_training:.6f}, {self.loss_validation:.6f} - "
+                f"acc. training, validation: {self.accuracy_training:.6f}, {self.accuracy_validation:.6f}"
+            )
+            log.info(f"Epoch duration: {round(time.perf_counter() - t0, 3)} s")
+
+            if self._stop_condition == "TargetAccuracy" and self._accuracy_training * 100 >= self._target_acc:
+                break             
+            self._epoch += 1
+
+        self._variables = {k: v for k, v in locals().items() if can_serialize(v)}            
+        yield YieldLevel.DEFAULT            
+        
+        # Test loop
+        self._testing_iteration = 0
+        self._status = 'testing'
+        sess.run(self._tst_init)                                
+        try:
+            while not self._stopped:
+                self.test_step()
+                yield YieldLevel.SNAPSHOT
+                self._testing_iteration += 1
+        except tf.errors.OutOfRangeError:
+            pass
+
+        self._status = 'finished'
+        self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
+        yield YieldLevel.DEFAULT
+{% endmacro %}
+
+{% macro init_normal() %}
         self._status = 'initializing'
 
         self._grid_size = {{layer_spec.grid_size}}
@@ -125,8 +187,7 @@
             if dst_var == 'labels':
                 target_tensor = layer_output_tensors[target_layer_id][src_var]
         # ----
-        
-        
+    
         # Create an exportable version of the TensorFlow graph
 
         self._input_tensor_export = {
@@ -329,107 +390,25 @@
                 status.assert_consumed().run_restore_ops(session=self._sess)
             {% endif %}
         {% endfilter %}                    
-        
-        def train_step():
-            if not self._headless:
-                _, self._predicted_object, self._predicted_class, self._predicted_normalized_box, self._classification_loss_training, self._bbox_loss_training, self._loss_training, self._accuracy_training, \
-                    self._image_accuracy, self._layer_outputs, self._layer_weights, self._layer_biases, \
-                    self._layer_gradients \
-                    = sess.run([
-                        update_weights, predicted_object, predicted_class, predicted_normalized_box, classification_loss_tensor, bbox_loss_tensor, loss_tensor, accuracy_tensor,
-                        image_accuracy_tensor, layer_output_tensors, layer_weight_tensors, layer_bias_tensors, layer_gradient_tensors
-                    ])
-                
-            else:
-                _, self._classification_loss_training, self._bbox_loss_training, self._loss_training, self._accuracy_training, \
-                    = sess.run([
-                        update_weights, classification_loss_tensor, bbox_loss_tensor, loss_tensor, accuracy_tensor
-                    ])
-        def validation_step():
-            if not self._headless:
-                self._predicted_object, self._predicted_class, self._predicted_normalized_box, self._classification_loss_validation, self._bbox_loss_validation, self._loss_validation, self._accuracy_validation, \
-                    self._image_accuracy, self._layer_outputs, self._layer_weights, self._layer_biases, \
-                    self._layer_gradients \
-                    = sess.run([
-                        predicted_object, predicted_class, predicted_normalized_box, classification_loss_tensor, bbox_loss_tensor, loss_tensor, accuracy_tensor,
-                        image_accuracy_tensor, layer_output_tensors, layer_weight_tensors, layer_bias_tensors, layer_gradient_tensors
-                    ])
-            else:
-                self._classification_loss_validation, self._bbox_loss_validation, self._loss_validation, self._accuracy_validation, \
-                    = sess.run([
-                        classification_loss_tensor, bbox_loss_tensor, loss_tensor, accuracy_tensor
-                    ])
 
-            
-        def test_step():
-            self._batch_size = 1
-            self._predicted_object, self._predicted_class, self._predicted_normalized_box, self._accuracy_testing, \
-                self._image_accuracy, self._layer_outputs \
-                = sess.run([
-                    predicted_object, predicted_class, predicted_normalized_box, accuracy_tensor,
-                    image_accuracy_tensor, layer_output_tensors
-                ])
+        self._layer_gradient = layer_gradient_tensors
+        self._layer_bias = layer_bias_tensors
+        self._layer_weight = layer_weight_tensors
+        self._layer_output = layer_output_tensors
+        self._image_acc = image_accuracy_tensor
+        self._acc = accuracy_tensor
+        self._loss = loss_tensor
+        self._bbox_loss = bbox_loss_tensor
+        self._class_loss = classification_loss_tensor
+        self._pred_norm_box = predicted_normalized_box
+        self._pred_class = predicted_class
+        self._pred_obj = predicted_object
+        self._weights = update_weights
 
-        self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
-
-        log.info("Entering training loop")
-        
-        # Training loop
-        self._epoch = 0
-        while self._epoch < self._n_epochs and not self._stopped:
-            t0 = time.perf_counter()
-            self._training_iteration = 0
-            self._validation_iteration = 0
-            self._status = 'training'
-            sess.run(trn_init)            
-            try:
-                while not self._stopped:
-                    train_step()
-                    yield YieldLevel.SNAPSHOT
-                    self._training_iteration += 1
-            except tf.errors.OutOfRangeError:
-                pass
-
-            self._status = 'validation'
-            sess.run(val_init)            
-            try:
-                while not self._stopped:
-                    validation_step()
-                    yield YieldLevel.SNAPSHOT                    
-                    self._validation_iteration += 1
-            except tf.errors.OutOfRangeError:
-                pass
-            log.info(
-                f"Finished epoch {self._epoch+1}/{self._n_epochs} - "
-                f"loss training, validation: {self.loss_training:.6f}, {self.loss_validation:.6f} - "
-                f"acc. training, validation: {self.accuracy_training:.6f}, {self.accuracy_validation:.6f}"
-            )
-            log.info(f"Epoch duration: {round(time.perf_counter() - t0, 3)} s")
-
-            if self._stop_condition == "TargetAccuracy" and self._accuracy_training * 100 >= self._target_acc:
-                break             
-            self._epoch += 1
-
-        self._variables = {k: v for k, v in locals().items() if can_serialize(v)}            
-        yield YieldLevel.DEFAULT            
-        
-        # Test loop
-        self._testing_iteration = 0
-        self._status = 'testing'
-        sess.run(tst_init)                                
-        try:
-            while not self._stopped:
-                test_step()
-                yield YieldLevel.SNAPSHOT
-                self._testing_iteration += 1
-        except tf.errors.OutOfRangeError:
-            pass
-
-        self._status = 'finished'
-        self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
-        yield YieldLevel.DEFAULT
+        self._trn_init = trn_init
+        self._val_init = val_init
+        self._tst_init = tst_init
 {% endmacro %}
-
 
 ################################################### Main #####################################################
 {% macro layer_tf1x_object_detection(layer_spec, graph_spec) %} #
@@ -487,6 +466,57 @@ class {{layer_spec.sanitized_name}}(ObjectDetectionLayer):
         self._tst_sz_tot = 0
 
         self._checkpoint = None
+    
+    def init_layer(self, graph: Graph):
+        if tf.compat.v1.get_default_session() is not None:
+            tf.compat.v1.get_default_session().close() 
+            tf.reset_default_graph()
+        {% if not layer_spec.distributed -%}
+            {{ init_normal() }}
+        {% endif %}
+
+    def train_step(self):
+        sess = self._sess
+        if not self._headless:
+            _, self._predicted_object, self._predicted_class, self._predicted_normalized_box, self._classification_loss_training, self._bbox_loss_training, self._loss_training, self._accuracy_training, \
+                self._image_accuracy, self._layer_outputs, self._layer_weights, self._layer_biases, \
+                self._layer_gradients \
+                = sess.run([
+                    self._weights, self._pred_obj, self._pred_class, self._pred_norm_box, self._class_loss, self._bbox_loss, self._loss, self._acc,
+                    self._image_acc, self._layer_output, self._layer_weight, self._layer_bias, self._layer_gradient
+                ])
+            
+        else:
+            _, self._classification_loss_training, self._bbox_loss_training, self._loss_training, self._accuracy_training, \
+                = sess.run([
+                    self._weights, self._class_loss, self._bbox_loss, self._loss, self._acc
+                ])
+    def validation_step(self):
+        sess = self._sess
+        if not self._headless:
+            self._predicted_object, self._predicted_class, self._predicted_normalized_box, self._classification_loss_validation, self._bbox_loss_validation, self._loss_validation, self._accuracy_validation, \
+                self._image_accuracy, self._layer_outputs, self._layer_weights, self._layer_biases, \
+                self._layer_gradients \
+                = sess.run([
+                    self._pred_obj, self._pred_class, self._pred_norm_box, self._class_loss, self._bbox_loss, self._loss, self._acc,
+                    self._image_acc, self._layer_output, self._layer_weight, self._layer_bias, self._layer_gradient
+                ])
+        else:
+            self._classification_loss_validation, self._bbox_loss_validation, self._loss_validation, self._accuracy_validation, \
+                = sess.run([
+                    self._class_loss, self._bbox_loss, self._loss, self._acc
+                ])
+
+        
+    def test_step(self):
+        sess = self._sess
+        self._batch_size = 1
+        self._predicted_object, self._predicted_class, self._predicted_normalized_box, self._accuracy_testing, \
+            self._image_accuracy, self._layer_outputs \
+            = sess.run([
+                self._pred_obj, self._pred_class, self._pred_norm_box, self._loss,
+                self._image_acc, self._layer_output
+            ])
         
     def run(self, graph: Graph):
         """Called as the main entry point for training. Responsible for training the model.
@@ -494,6 +524,7 @@ class {{layer_spec.sanitized_name}}(ObjectDetectionLayer):
         Args:
             graph: A PerceptiLabs Graph object containing references to all layers objects included in the model produced by this training layer.
         """   
+        self.init_layer(graph)
         {% if not layer_spec.distributed -%}
             {{ run_normal(layer_spec, graph_spec) }}
         {% endif %}            
@@ -632,9 +663,9 @@ class {{layer_spec.sanitized_name}}(ObjectDetectionLayer):
         return self._variables.copy()        
 
     @property
-    def sample(self) -> np.ndarray:
+    def sample(self):
         """Returns a single data sample"""        
-        return np.empty(())
+        return {}
 
     @property
     def size_training(self) -> int:

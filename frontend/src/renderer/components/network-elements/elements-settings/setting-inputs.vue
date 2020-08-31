@@ -1,11 +1,12 @@
 <template lang="pug">
-  div
+  div.input-wrapper
     div.input-container(
+      :class="{'is-editable': !element.inputs[inputId].isDefault}"
        v-for="(input, inputId) in element.inputs"
        @dblclick="openInputEdit(inputId)"
        @contextmenu.stop.prevent="openContextMenu(inputId)"
     ) 
-      span(
+      span.input-name(
         v-if="!(inputEditId === inputId)"
       ) {{input.name}}
       input.setting-input-edit(
@@ -128,16 +129,30 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
+.input-wrapper {
+  width: 66px;
+}
+.input-name {
+  display: block;
+  overflow: hidden;
+}
 .input-container {
   margin: 4px 0 4px 22px;
   position: relative;
   font-family: Nunito Sans;
   font-style: normal;
   font-weight: 600;
-  font-size: 9px;
+  font-size: 10px;
   line-height: 22px;
 
   color: #FFFFFF;
+  padding: 0 2px;
+  &.is-editable {
+    background: rgba(54, 62, 81, 0.4);
+    border: 1px solid #3F4C70;
+    box-sizing: border-box;
+    border-radius: 1px;
+  }
 }
 .input-dot {
   position: absolute;

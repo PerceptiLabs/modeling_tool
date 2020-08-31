@@ -1008,8 +1008,7 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id, re
             max_itr_tst = trn_node.layer.size_testing
 
             true_id = sanitized_to_id[trn_node.layer_id]
-
-            bbox_image, confidence_scores = plot_bounding_boxes(input_images[-1], predicted_objects, predicted_classes, predicted_normalized_boxes)
+            bbox_image, confidence_scores = plot_bounding_boxes(input_images.get('output')[-1], predicted_objects, predicted_classes, predicted_normalized_boxes)
 
             test_dict[true_id]['acc_val_iter'] = 0
             test_dict[true_id]['loss_train_iter'] = 0
@@ -1538,8 +1537,8 @@ def policy_gan(core, graphs, sanitized_to_name, sanitized_to_id, results):
             true_trn_id = sanitized_to_id[trn_node.layer_id]
             trn_layer = trn_node.layer
             switch_layer_id = trn_layer.get_switch_layer_id
-            data['generated_image'] = trn_layer.generator_layer_outputs.get(switch_layer_id)[-1]
-            data['real_image'] = trn_layer.real_layer_outputs.get(switch_layer_id)[-1]
+            data['generated_image'] = dict_first_value(trn_layer.generator_layer_outputs.get(switch_layer_id))[-1]
+            data['real_image'] = dict_first_value(trn_layer.real_layer_outputs.get(switch_layer_id))[-1]
             test_dict[true_trn_id].update(data)
 
             training_status = 'Finished'

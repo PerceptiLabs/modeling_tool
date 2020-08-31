@@ -4,28 +4,28 @@
       :class="{'tutorial-active': activeStepStoryboard === 4}"
       v-if="!statisticsIsOpen && !testIsOpen")
 
-      ul.toolbar_list
-        li
-          button#tutorial_pointer.btn.btn--toolbar(type="button"
-            :disabled="!networkIsOpen"
-            :class="{'active': networkMode === 'edit'}"
-            v-tooltip:bottom="'Edit'"
-            v-tooltip-interactive:bottom-right="interactiveInfo.edit"
-            @click="setNetMode('edit', 'tutorial_pointer')"
-          )
-            i.icon.icon-select
+      //- ul.toolbar_list
+      //-   li
+      //-     button#tutorial_pointer.btn.btn--toolbar(type="button"
+      //-       :disabled="!networkIsOpen"
+      //-       :class="{'active': networkMode === 'edit'}"
+      //-       v-tooltip:bottom="'Edit'"
+      //-       v-tooltip-interactive:bottom-right="interactiveInfo.edit"
+      //-       @click="setNetMode('edit', 'tutorial_pointer')"
+      //-     )
+      //-       i.icon.icon-select
 
-        li.toolbar_list-arrow-wrap(
-          :class="{'disable-hover': statisticsIsOpen}"
-        )
-          button#tutorial_list-arrow.btn.btn--toolbar(type="button"
-            :disabled="!networkIsOpen"
-            :class="{'active': networkMode === 'addArrow'}"
-            @click="setNetMode('addArrow', 'tutorial_list-arrow')"
-            v-tooltip:bottom="'Arrow'"
-            v-tooltip-interactive:bottom="interactiveInfo.arrow"
-          )
-            i.icon.icon-arrow-left
+      //-   li.toolbar_list-arrow-wrap(
+      //-     :class="{'disable-hover': statisticsIsOpen}"
+      //-   )
+      //-     button#tutorial_list-arrow.btn.btn--toolbar(type="button"
+      //-       :disabled="!networkIsOpen"
+      //-       :class="{'active': networkMode === 'addArrow'}"
+      //-       @click="setNetMode('addArrow', 'tutorial_list-arrow')"
+      //-       v-tooltip:bottom="'Arrow'"
+      //-       v-tooltip-interactive:bottom="interactiveInfo.arrow"
+      //-     )
+      //-       i.icon.icon-arrow-left
 
       ul.toolbar_list
         li

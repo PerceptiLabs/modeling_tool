@@ -11,11 +11,11 @@
         span Action space:
         span {{Mix_settingsData_actionSpace}}
 
-      set-data-environment-gym-img(
-        :layer-settings="settings"
-        :layer-id="currentEl.layerId"
-        @apply-settings="applySettings"
-      )
+      //- set-data-environment-gym-img(
+      //-   :layer-settings="settings"
+      //-   :layer-id="currentEl.layerId"
+      //-   @apply-settings="applySettings"
+      //- )
       //- .form_row
       //-   .form_label History length:
       //-   .form_input
@@ -58,6 +58,7 @@
     // },
     mounted() {
       this.Mix_settingsData_getDataMeta(this.currentEl.layerId);
+      this.applySettings();
     },
     data() {
       return {
@@ -100,6 +101,7 @@
        'settings.accessProperties.Atari': {
          handler(newVal) {
            if(newVal) {
+             this.applySettings();
              this.Mix_settingsData_getDataMeta(this.currentEl.layerId);
            }
          },
@@ -156,5 +158,6 @@
     padding: 4px 10px;
     display: flex;
     justify-content: space-between;
+    margin-bottom: 30px;
   }
 </style>
