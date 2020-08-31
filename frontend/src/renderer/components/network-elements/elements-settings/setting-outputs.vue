@@ -1,11 +1,13 @@
 <template lang="pug">
   div
     div.output-container(
+      :class="{'is-opened-variable-list': isVarableListOpen && outputId === variableListId}"
       v-for="(output, outputId) in element.outputs"
       @contextmenu.stop.prevent="openContextMenu(outputId)"
       @click.stop.prevent="openVariablesList(outputId)"
       :data-output-id="outputId"
-    ) {{output.name}}
+    ) 
+      span.output-text {{output.name}}
       div.circle-dot(
         :data-output-circle-dot-id="outputId"
         :data-output-layer-id="element.layerId"
@@ -20,7 +22,6 @@
         @mouseover="handlehover"
         @mouseleave="handleleave"
       )
-
       div.variable-list(
         v-if="isVarableListOpen && outputId === variableListId"
       )
@@ -202,6 +203,32 @@ export default {
   border: 1px solid rgba(97, 133, 238, 0.4);
   background: #131B30;
   margin: 4px 19px 4px 0;
+  &::after {
+    content: '';
+    position: absolute;
+    right: 3px;
+    top: 8px;
+    border-top: 4px solid #ccc;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+  }
+  &.is-opened-variable-list {
+    &::after {
+      content: '';
+      position: absolute;
+      right: 3px;
+      top: 8px;
+      border-top: 0px solid transparent;
+      border-bottom: 4px solid #ccc;
+      border-left: 4px solid transparent;
+      border-right: 4px solid transparent;
+    }
+  }
+}
+.output-text {
+  overflow: hidden;
+  display: block;
+  max-width: 35px;
 }
 .output-dot {
   position: absolute;
@@ -283,12 +310,15 @@ export default {
   z-index: 200;
   background: #0B0D13;
   border: 1px solid #363E51;
+  border-top: 0;
   box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
   border-radius: 2px;
   padding: 3px 0;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  top: 21px;
+  left:-1px;
+  width: calc(100% + 2px);
+  // left: 50%;
+  // transform: translate(-50%, -50%);
 }
 .variable-list-button {
   display: block;
