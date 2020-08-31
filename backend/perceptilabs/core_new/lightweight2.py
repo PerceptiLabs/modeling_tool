@@ -24,6 +24,7 @@ from perceptilabs.issues import UserlandError
 from perceptilabs.core_new.layers import BaseLayer, DataLayer, DataReinforce, DataSupervised, DataRandom, InnerLayer, Tf1xLayer, TrainingRandom, TrainingSupervised, TrainingReinforce, TrainingLayer, ClassificationLayer, ObjectDetectionLayer, RLLayer
 from perceptilabs.graph.splitter import GraphSplitter
 from perceptilabs.core_new.graph.utils import get_json_net_topology
+from perceptilabs.layers.utils import graph_spec_to_core_graph
 from perceptilabs.core_new.graph.builder import GraphBuilder, SnapshotBuilder
 from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP, REPLICATED_PROPERTIES_TABLE
 from perceptilabs.script import ScriptFactory
@@ -180,6 +181,39 @@ class Tf1xStrategy(BaseStrategy):
             status = checkpoint.restore(path)
             status.run_restore_ops(session=sess)
 
+class TrainingStrategy(BaseStrategy):
+    def __init__(self, graph_spec, script_factory):
+        self._graph_spec = graph_spec
+        self._script_factory = script_factory
+
+    def run(self, layer_spec, layer_class, input_results):
+        # We need the graph spec to run the training layer
+        with tf.Graph().as_default() as tfgraph:
+            try:
+                graph = graph_spec_to_core_graph(self._script_factory, self._graph_spec)
+                training_layer = graph.active_training_node.layer
+                training_layer.init_layer(graph)
+
+            except Exception as e:
+                instantiation_error = exception_to_error(layer_spec.id_, layer_spec.type_, e)
+                strategy_error = None
+                logger.debug(f"Layer {layer_spec.id_} raised an error when initializing")
+            else:
+                strategy_error = None
+                instantiation_error = None    
+    
+        results = LayerResults(
+            sample={},
+            out_shape={},
+            variables={},
+            columns={},
+            code_error=None,
+            instantiation_error=instantiation_error,
+            strategy_error=strategy_error
+        )
+        return results
+
+
             
 class DataSupervisedStrategy(BaseStrategy):
     def run(self, layer_spec, layer_class, input_results):
@@ -314,7 +348,8 @@ class LightweightCore:
             from_id: all_results[from_id]
             for (from_id, to_id) in graph_spec.edges_by_id if to_id == layer_spec.id_
         }
-        strategy = self._get_layer_strategy(layer_class)
+        script_factory = self._script_factory
+        strategy = self._get_layer_strategy(layer_class, graph_spec, script_factory)
         try:
             results = strategy.run(layer_spec, layer_class, input_results)
         except:
@@ -322,9 +357,9 @@ class LightweightCore:
             raise
         return results
 
-    def _get_layer_strategy(self, layer_obj):
+    def _get_layer_strategy(self, layer_obj, graph_spec=None, script_factory=None):
         if issubclass(layer_obj, TrainingLayer):
-            strategy = DefaultStrategy()
+            strategy = TrainingStrategy(graph_spec, script_factory)
         elif issubclass(layer_obj, DataSupervised):
             strategy = DataSupervisedStrategy()
         elif issubclass(layer_obj, DataReinforce):

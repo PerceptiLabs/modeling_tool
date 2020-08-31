@@ -1,6 +1,131 @@
 {% from 'tf1x_utils.j2' import session %}
 
 {% macro run_normal(layer_spec, graph_spec) %}
+        sess = self._sess
+        def epsilon(episode):
+            eps = 1/np.sqrt(self._initial_exploration + episode)
+            eps = self._final_exploration**(episode/self._final_exploration_frame)
+            eps = max(0.1, eps)
+            return eps
+        
+
+        def copy_weights(sess):
+            update_ops = []
+            online_variables = [var for var in tf.trainable_variables() if 'copy' not in var.name]
+            online_variables = sorted(online_variables, key=lambda v: v.name)
+            target_variables = [var for var in tf.trainable_variables() if 'copy' in var.name]
+            target_variables = sorted(target_variables, key=lambda v: v.name)
+            for v1, v2 in zip(target_variables, online_variables):
+                op = v1.assign(v2)
+                update_ops.append(op)
+            sess.run(update_ops)
+
+        # Training loop
+        log.info("Entering training loop")
+        self._replay_memory = []
+        self._episode = 0
+        iterations = 0
+        generator = self._gen
+        input_data_node = self._input_data
+        state_tensor = self._state
+        a_tensor = self._a
+        y_tensor = self._y
+        Q_online = self._Q_online
+        Q_target = self._Q_target
+        
+        while self._episode < self._n_episodes and not self._stopped:
+            t0 = time.perf_counter()
+            self._status = 'training'
+            state_ = input_data_node.layer_instance.reset_environment(generator)
+            state_seq = [state_['output']]*self._history_length
+            self._step_counter = 0
+            done = False
+            self._reward = 0
+            try:
+                while (not self._stopped) and (self._step_counter < self._n_steps_max) and not done:
+
+                    explore = np.random.random() < epsilon(self._episode) or iterations < self._replay_start_size
+                    if explore:
+                        action = np.random.randint(0, self._n_actions)
+                        probs = [1/self._n_actions for i in range(self._n_actions)]
+                    else:
+                        Q = Q_online.eval(session=sess, feed_dict={state_tensor: [np.concatenate(state_seq,-1)]}).squeeze()
+                        action = np.argmax(Q)
+                        probs = [i/np.sum(Q) for i in Q]
+                    state_info = input_data_node.layer_instance.take_action(generator, action)
+                    new_state, reward, done, info = state_info['output'], state_info['reward'], state_info['done'], state_info['info']
+                    new_state_seq = state_seq[1:] + [new_state]
+                    self._reward = reward
+
+                    transition = {
+                        'state_seq': np.array(state_seq),
+                        'new_state_seq': np.array(new_state_seq),
+                        'action': action,
+                        'reward': reward,
+                        'done': done,
+                        'probs':probs
+                        }
+                    self._replay_memory.append(transition)
+                                        
+                    if len(self._replay_memory) > self._replay_memory_size:
+                        self._replay_memory.pop(0)
+
+                    state_seq = new_state_seq
+                    
+                    if iterations % 4 == 0 and iterations > self._replay_start_size:
+                        
+                        batch_transitions = np.random.choice(self._replay_memory, self._batch_size)
+                        y_batch = np.zeros((self._batch_size, 1))
+                        a_batch = np.zeros((self._batch_size, 1))
+                        X_batch = np.zeros((self._batch_size,) + tuple(self._input_shape))
+
+                        for i, t in enumerate(batch_transitions):
+                            y_batch[i] = t['reward']
+                            if not t['done']:
+                                feed_dict = {state_tensor: [np.concatenate(t['new_state_seq'],-1)]}
+                                Q = Q_target.eval(feed_dict=feed_dict, session=sess).squeeze()
+                                y_batch[i] += self._gamma*np.amax(Q)
+                            a_batch[i] = t['action']
+                            X_batch[i] = np.concatenate(t['state_seq'],-1)
+                        
+                        feed_dict = {
+                         state_tensor: np.atleast_2d(X_batch),
+                         a_tensor: np.atleast_2d(a_batch),
+                         y_tensor: np.atleast_2d(y_batch),
+                        }
+                        
+                        # update this line
+                        _, self._loss_training, self._online_layer_outputs,\
+                        self._online_layer_weights, self._online_layer_biases, self._online_layer_gradients \
+                        = sess.run([self._online_weights, self._loss,
+                            self._online_layer_output, self._online_layer_weight, self._online_layer_bias, self._online_layer_gradient
+                        ], feed_dict=feed_dict)
+                    # Copy weights
+                    if iterations % 100 == 0:
+                        copy_weights(sess)
+                    state_ = new_state
+
+                    yield YieldLevel.SNAPSHOT
+                    self._step_counter += 1
+
+                    
+                    iterations += 1
+
+            except tf.errors.OutOfRangeError:
+                pass
+            
+            log.info(f"Episode duration: {round(time.perf_counter() - t0, 3)} s")            
+            self._episode += 1
+
+        self._variables = {k: v for k, v in locals().items() if can_serialize(v)}            
+        yield YieldLevel.DEFAULT            
+
+        self._status = 'finished'
+        self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
+        yield YieldLevel.DEFAULT
+{% endmacro %}
+
+{% macro init_normal() %}
         self._status = 'initializing'
         copied_graph = graph.clone()
         target_nodes = copied_graph.inner_nodes
@@ -65,11 +190,6 @@
 
         
         # Exploration/exploitation tradeoff
-        def epsilon(episode):
-            eps = 1/np.sqrt(self._initial_exploration + episode)
-            eps = self._final_exploration**(episode/self._final_exploration_frame)
-            eps = max(0.1, eps)
-            return eps
         
         
         input_shape = state_tensor.get_shape().as_list()[1:]
@@ -142,18 +262,6 @@
         grads_and_vars = optimizer.compute_gradients(loss_tensor)
         update_online_weights = optimizer.apply_gradients(grads_and_vars, global_step=global_step)
         
-        def copy_weights(sess):
-            update_ops = []
-            online_variables = [var for var in tf.trainable_variables() if 'copy' not in var.name]
-            online_variables = sorted(online_variables, key=lambda v: v.name)
-            target_variables = [var for var in tf.trainable_variables() if 'copy' in var.name]
-            target_variables = sorted(target_variables, key=lambda v: v.name)
-            for v1, v2 in zip(target_variables, online_variables):
-                op = v1.assign(v2)
-                update_ops.append(op)
-            sess.run(update_ops)
-
-
         sess = None
         {{session(sess, use_gpu=not layer_spec.use_cpu) | indent(width=8)}}        
         self._sess = sess
@@ -171,107 +279,28 @@
                 status.assert_consumed().run_restore_ops(session=self._sess)
             {% endif %}
         {% endfilter %}
-        
 
-        log.info("Entering training loop")
+        self._Q_online = Q_online_tensor
+        self._Q_target = Q_target_tensor
+        self._state = state_tensor
+        self._a = a_tensor
+        self._y = y_tensor
+        self._online_weights = update_online_weights
+        self._loss = loss_tensor
+        self._online_layer_output = online_layer_output_tensors
+        self._online_layer_weight = online_layer_weight_tensors
+        self._online_layer_gradient = online_layer_gradient_tensors
+        self._online_layer_bias = online_layer_bias_tensors
 
-        # Training loop
+        {# dynamic_dict = {
+            'input_data': input_data_node,
+            'input_shape': input_shape,
+            'gen': generator
+        } #}
 
-
-        self._replay_memory = []
-        self._episode = 0
-        iterations = 0
-
-        while self._episode < self._n_episodes and not self._stopped:
-            t0 = time.perf_counter()
-            self._status = 'training'
-            state_ = input_data_node.layer_instance.reset_environment(generator)
-            state_seq = [state_['output']]*self._history_length
-            self._step_counter = 0
-            done = False
-            self._reward = 0
-            try:
-                while (not self._stopped) and (self._step_counter < self._n_steps_max) and not done:
-
-                    explore = np.random.random() < epsilon(self._episode) or iterations < self._replay_start_size
-                    if explore:
-                        action = np.random.randint(0, self._n_actions)
-                        probs = [1/self._n_actions for i in range(self._n_actions)]
-                    else:
-                        Q = Q_online_tensor.eval(session=sess, feed_dict={state_tensor: [np.concatenate(state_seq,-1)]}).squeeze()
-                        action = np.argmax(Q)
-                        probs = [i/np.sum(Q) for i in Q]
-                    state_info = input_data_node.layer_instance.take_action(generator, action)
-                    new_state, reward, done, info = state_info['output'], state_info['reward'], state_info['done'], state_info['info']
-                    new_state_seq = state_seq[1:] + [new_state]
-                    self._reward = reward
-
-                    transition = {
-                        'state_seq': np.array(state_seq),
-                        'new_state_seq': np.array(new_state_seq),
-                        'action': action,
-                        'reward': reward,
-                        'done': done,
-                        'probs':probs
-                        }
-                    self._replay_memory.append(transition)
-                                        
-                    if len(self._replay_memory) > self._replay_memory_size:
-                        self._replay_memory.pop(0)
-
-                    state_seq = new_state_seq
-                    
-                    if iterations % 4 == 0 and iterations > self._replay_start_size:
-                        
-                        batch_transitions = np.random.choice(self._replay_memory, self._batch_size)
-                        y_batch = np.zeros((self._batch_size, 1))
-                        a_batch = np.zeros((self._batch_size, 1))
-                        X_batch = np.zeros((self._batch_size,) + tuple(input_shape))
-
-                        for i, t in enumerate(batch_transitions):
-                            y_batch[i] = t['reward']
-                            if not t['done']:
-                                feed_dict = {state_tensor: [np.concatenate(t['new_state_seq'],-1)]}
-                                Q = Q_target_tensor.eval(feed_dict=feed_dict, session=sess).squeeze()
-                                y_batch[i] += self._gamma*np.amax(Q)
-                            a_batch[i] = t['action']
-                            X_batch[i] = np.concatenate(t['state_seq'],-1)
-                        
-                        feed_dict = {
-                         state_tensor: np.atleast_2d(X_batch),
-                         a_tensor: np.atleast_2d(a_batch),
-                         y_tensor: np.atleast_2d(y_batch),
-                        }
-                        
-                        # update this line
-                        _, self._loss_training, self._online_layer_outputs,\
-                        self._online_layer_weights, self._online_layer_biases, self._online_layer_gradients \
-                        = sess.run([update_online_weights, loss_tensor,
-                            online_layer_output_tensors, online_layer_weight_tensors, online_layer_bias_tensors, online_layer_gradient_tensors
-                        ], feed_dict=feed_dict)
-                    # Copy weights
-                    if iterations % 100 == 0:
-                        copy_weights(sess)
-                    state_ = new_state
-
-                    yield YieldLevel.SNAPSHOT
-                    self._step_counter += 1
-
-                    
-                    iterations += 1
-
-            except tf.errors.OutOfRangeError:
-                pass
-            
-            log.info(f"Episode duration: {round(time.perf_counter() - t0, 3)} s")            
-            self._episode += 1
-
-        self._variables = {k: v for k, v in locals().items() if can_serialize(v)}            
-        yield YieldLevel.DEFAULT            
-
-        self._status = 'finished'
-        self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
-        yield YieldLevel.DEFAULT
+        self._input_data = input_data_node
+        self._input_shape = input_shape
+        self._gen = generator
 {% endmacro %}
 
 ################################################### Main #####################################################
@@ -323,6 +352,16 @@ class {{layer_spec.sanitized_name}}(RLLayer):
 
 
         self._checkpoint = None
+
+    def init_layer(self, graph: Graph):
+        if tf.compat.v1.get_default_session() is not None:
+            tf.compat.v1.get_default_session().close() 
+            tf.reset_default_graph()
+            
+        {% if not layer_spec.distributed -%}
+            {{ init_normal() }}
+        {% endif %}
+
         
     def run(self, graph: Graph):
         """Called as the main entry point for training. Responsible for training the model.
@@ -330,6 +369,7 @@ class {{layer_spec.sanitized_name}}(RLLayer):
         Args:
             graph: A PerceptiLabs Graph object containing references to all layers objects included in the model produced by this training layer.
         """   
+        self.init_layer(graph)
         {% if not layer_spec.distributed -%}
             {{ run_normal(layer_spec, graph_spec) }}
         {% endif %}                

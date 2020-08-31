@@ -1,6 +1,67 @@
 {% from 'tf1x_utils.j2' import session %}
 
-{% macro run_normal(layer_spec, graph_spec) %}
+{% macro run_normal(layer_spec, graph_spec, init_dict, tensor_dict) %}
+        sess = self._sess
+        self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
+
+        log.info("Entering training loop")
+
+        # Training loop
+        self._epoch = 0
+        while self._epoch < self._n_epochs and not self._stopped:
+            t0 = time.perf_counter()
+            self._training_iteration = 0
+            self._validation_iteration = 0
+            self._status = 'training'
+            sess.run(self._trn_init)            
+            try:
+                while not self._stopped:
+                    self.train_step()
+                    yield YieldLevel.SNAPSHOT
+                    self._training_iteration += 1
+            except tf.errors.OutOfRangeError:
+                pass
+
+            self._status = 'validation'
+            sess.run(self._val_init)            
+            try:
+                while not self._stopped:
+                    self.validation_step()
+                    yield YieldLevel.SNAPSHOT                    
+                    self._validation_iteration += 1
+            except tf.errors.OutOfRangeError:
+                pass
+            log.info(
+                f"Finished epoch {self._epoch+1}/{self._n_epochs} - "
+                f"generator loss training, validation: {self.generator_loss_training:.6f}, {self.generator_loss_validation:.6f} - "
+                f"discriminator loss training, validation: {self.discriminator_loss_training:.6f}, {self.discriminator_loss_validation:.6f} - "
+            )
+            log.info(f"Epoch duration: {round(time.perf_counter() - t0, 3)} s")  
+            if self._stop_condition == "TargetAccuracy" and self._accuracy_training * 100 >= self._target_acc:
+                break          
+            self._epoch += 1
+
+        self._variables = {k: v for k, v in locals().items() if can_serialize(v)}            
+        yield YieldLevel.DEFAULT            
+        
+        # Test loop
+        self._testing_iteration = 0
+        self._status = 'testing'
+        sess.run(self._tst_init)                                
+        try:
+            while not self._stopped:
+                self.test_step()
+                yield YieldLevel.SNAPSHOT
+                self._testing_iteration += 1
+        except tf.errors.OutOfRangeError:
+            pass
+
+        self._status = 'finished'
+        self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
+        yield YieldLevel.DEFAULT
+{% endmacro %}
+
+{% macro init_normal() %}
         self._status = 'initializing'
         real_data_layer_id = "{{graph_spec.nodes_by_name.get(layer_spec.real_layer_name).sanitized_name}}"
         switch_layer_id =  "{{graph_spec.nodes_by_name.get(layer_spec.switch_layer_name).sanitized_name}}"
@@ -372,122 +433,25 @@
                 status.assert_consumed().run_restore_ops(session=self._sess)
             {% endif %}
         {% endfilter %}                    
-        
-        def train_step():
-            if not self._headless:
-                _, self._generator_loss_training, self._generator_layer_outputs,\
-                    self._generator_layer_weights, self._generator_layer_biases, \
-                    self._generator_layer_gradients, self._real_layer_outputs, \
-                _, self._discriminator_loss_training, self._random_discriminator_layer_outputs, self._real_discriminator_layer_outputs,\
-                    self._discriminator_layer_weights, self._discriminator_layer_biases, \
-                    self._discriminator_layer_gradients \
-                    = sess.run([
-                        generator_update_weights, generator_loss_tensor, generator_layer_output_tensors, \
-                        generator_layer_weight_tensors, generator_layer_bias_tensors, generator_layer_gradient_tensors, real_layer_output_tensors, \
-                        discriminator_update_weights, discriminator_loss_tensor, random_discriminator_layer_output_tensors, \
-                        real_discriminator_layer_output_tensors, discriminator_layer_weight_tensors, discriminator_layer_bias_tensors, discriminator_layer_gradient_tensors
-                    ])
-                
-            else:
-                _, self._generator_loss_training, \
-                    _, self.__discriminator_loss_training \
-                    = sess.run([
-                        generator_update_weights, generator_loss_tensor, \
-                            discriminator_update_weights, discriminator_loss_tensor
-                    ])
 
-        def validation_step():
-            if not self._headless:
-                self._generator_loss_validation, self._generator_layer_outputs,\
-                    self._generator_layer_weights, self._generator_layer_biases, \
-                    self._generator_layer_gradients, self._real_layer_outputs, \
-                    self._discriminator_loss_validation, self._discriminator_layer_outputs,\
-                    self._discriminator_layer_weights, self._discriminator_layer_biases, \
-                    self._discriminator_layer_gradients \
-                    = sess.run([
-                        generator_loss_tensor, generator_layer_output_tensors, generator_layer_weight_tensors, \
-                        generator_layer_bias_tensors, generator_layer_gradient_tensors, real_layer_output_tensors, \
-                        discriminator_loss_tensor, random_discriminator_layer_output_tensors, discriminator_layer_weight_tensors, \
-                        discriminator_layer_bias_tensors, discriminator_layer_gradient_tensors
-                    ])
+        self._discriminator_layer_gradient = discriminator_layer_gradient_tensors
+        self._discriminator_layer_bias = discriminator_layer_bias_tensors
+        self._discriminator_layer_weight = discriminator_layer_weight_tensors.copy()
+        self._real_discriminator_layer_output = real_discriminator_layer_output_tensors
+        self._random_discriminator_layer_output = random_discriminator_layer_output_tensors
+        self._discriminator_loss = discriminator_loss_tensor
+        self._discriminator_weight = discriminator_update_weights
+        self._real_layer_output = real_layer_output_tensors
+        self._gen_layer_gradient = generator_layer_gradient_tensors
+        self._gen_layer_bias = generator_layer_bias_tensors
+        self._gen_layer_weight = generator_layer_weight_tensors.copy()
+        self._gen_layer_output = generator_layer_output_tensors.copy()
+        self._gen_loss = generator_loss_tensor
+        self._gen_weight = generator_update_weights
 
-            else:
-                self._generator_loss_validation, \
-                    self.__discriminator_loss_validation \
-                    = sess.run(
-                        generator_loss_tensor, \
-                        discriminator_loss_tensor
-                    )
-
-        def test_step():
-            self._generator_loss_testing, self._generator_layer_outputs,\
-                self._generator_layer_weights, self._generator_layer_gradients, self._real_layer_outputs, \
-                self._discriminator_loss_testing, self._discriminator_layer_outputs,\
-                self._discriminator_layer_weights, self._discriminator_layer_gradients \
-                = sess.run([
-                    generator_loss_tensor, generator_layer_output_tensors, \
-                    generator_layer_weight_tensors, generator_layer_gradient_tensors, real_layer_output_tensors, \
-                    discriminator_loss_tensor, random_discriminator_layer_output_tensors, \
-                    discriminator_layer_weight_tensors, discriminator_layer_gradient_tensors
-                ])
-
-        self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
-
-        log.info("Entering training loop")
-
-        # Training loop
-        self._epoch = 0
-        while self._epoch < self._n_epochs and not self._stopped:
-            t0 = time.perf_counter()
-            self._training_iteration = 0
-            self._validation_iteration = 0
-            self._status = 'training'
-            sess.run(trn_init)            
-            try:
-                while not self._stopped:
-                    train_step()
-                    yield YieldLevel.SNAPSHOT
-                    self._training_iteration += 1
-            except tf.errors.OutOfRangeError:
-                pass
-
-            self._status = 'validation'
-            sess.run(val_init)            
-            try:
-                while not self._stopped:
-                    validation_step()
-                    yield YieldLevel.SNAPSHOT                    
-                    self._validation_iteration += 1
-            except tf.errors.OutOfRangeError:
-                pass
-            log.info(
-                f"Finished epoch {self._epoch+1}/{self._n_epochs} - "
-                f"generator loss training, validation: {self.generator_loss_training:.6f}, {self.generator_loss_validation:.6f} - "
-                f"discriminator loss training, validation: {self.discriminator_loss_training:.6f}, {self.discriminator_loss_validation:.6f} - "
-            )
-            log.info(f"Epoch duration: {round(time.perf_counter() - t0, 3)} s")  
-            if self._stop_condition == "TargetAccuracy" and self._accuracy_training * 100 >= self._target_acc:
-                break          
-            self._epoch += 1
-
-        self._variables = {k: v for k, v in locals().items() if can_serialize(v)}            
-        yield YieldLevel.DEFAULT            
-        
-        # Test loop
-        self._testing_iteration = 0
-        self._status = 'testing'
-        sess.run(tst_init)                                
-        try:
-            while not self._stopped:
-                test_step()
-                yield YieldLevel.SNAPSHOT
-                self._testing_iteration += 1
-        except tf.errors.OutOfRangeError:
-            pass
-
-        self._status = 'finished'
-        self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
-        yield YieldLevel.DEFAULT
+        self._trn_init = trn_init
+        self._val_init = val_init
+        self._tst_init = tst_init
 {% endmacro %}
 
 ################################################### Main #####################################################
@@ -549,6 +513,78 @@ class {{layer_spec.sanitized_name}}(GANLayer):
         self._real_stds = []
 
         self._checkpoint = None
+
+    def init_layer(self, graph: Graph):
+        """This is the function that makes the training layer runnable. We take all variable initializations for tensors and initializers and wrap them in dictionaries
+        to be called in run().
+        """
+        if tf.compat.v1.get_default_session() is not None:
+            tf.compat.v1.get_default_session().close() 
+            tf.reset_default_graph()
+        {% if not layer_spec.distributed -%}
+            {{ init_normal() }}
+        {% endif %}
+
+    def train_step(self):
+        sess = self._sess
+        if not self._headless:
+            _, self._generator_loss_training, self._generator_layer_outputs,\
+                self._generator_layer_weights, self._generator_layer_biases, \
+                self._generator_layer_gradients, self._real_layer_outputs, \
+            _, self._discriminator_loss_training, self._random_discriminator_layer_outputs, self._real_discriminator_layer_outputs,\
+                self._discriminator_layer_weights, self._discriminator_layer_biases, \
+                self._discriminator_layer_gradients \
+                = sess.run([
+                    self._gen_weight, self._gen_loss, self._gen_layer_output, \
+                    self._gen_layer_weight, self._gen_layer_bias, self._gen_layer_gradient, self._real_layer_output, \
+                    self._discriminator_weight, self._discriminator_loss, self._random_discriminator_layer_output, \
+                    self._real_discriminator_layer_output, self._discriminator_layer_weight, self._discriminator_layer_bias, self._discriminator_layer_gradient
+                ])
+            
+        else:
+            _, self._generator_loss_training, \
+                _, self.__discriminator_loss_training \
+                = sess.run([
+                    self._gen_weight, self._gen_loss, \
+                        self._discriminator_weight, self._discriminator_loss
+                ])
+
+    def validation_step(self):
+        sess = self._sess
+        if not self._headless:
+            self._generator_loss_validation, self._generator_layer_outputs,\
+                self._generator_layer_weights, self._generator_layer_biases, \
+                self._generator_layer_gradients, self._real_layer_outputs, \
+                self._discriminator_loss_validation, self._discriminator_layer_outputs,\
+                self._discriminator_layer_weights, self._discriminator_layer_biases, \
+                self._discriminator_layer_gradients \
+                = sess.run([
+                    self._gen_loss, self._gen_layer_output, \
+                    self._gen_layer_weight, self._gen_layer_bias, self._gen_layer_gradient, self._real_layer_output, \
+                    self._discriminator_loss, self._random_discriminator_layer_output, \
+                    self._discriminator_layer_weight, self._discriminator_layer_bias, self._discriminator_layer_gradient
+                ])
+
+        else:
+            self._generator_loss_validation, \
+                self.__discriminator_loss_validation \
+                = sess.run(
+                    self._gen_loss, \
+                    self._discriminator_loss
+                )
+
+    def test_step(self):
+        sess = self._sess
+        self._generator_loss_testing, self._generator_layer_outputs,\
+            self._generator_layer_weights, self._generator_layer_gradients, self._real_layer_outputs, \
+            self._discriminator_loss_testing, self._discriminator_layer_outputs,\
+            self._discriminator_layer_weights, self._discriminator_layer_gradients \
+            = sess.run([
+                self._gen_loss, self._gen_layer_output, \
+                self._gen_layer_weight, self._gen_layer_gradient, self._real_layer_output, \
+                self._discriminator_loss, self._random_discriminator_layer_output, \
+                self._discriminator_layer_weight, self._discriminator_layer_gradient
+            ])
         
     def run(self, graph: Graph):
         """Called as the main entry point for training. Responsible for training the model.
@@ -556,8 +592,9 @@ class {{layer_spec.sanitized_name}}(GANLayer):
         Args:
             graph: A PerceptiLabs Graph object containing references to all layers objects included in the model produced by this training layer.
         """   
+        self.init_layer(graph)
         {% if not layer_spec.distributed -%}
-            {{ run_normal(layer_spec, graph_spec) }}
+            {{ run_normal(layer_spec, graph_spec, init_dict, tensor_dict) }}
         {% endif %}                
 
     def on_export(self, path: str, mode: str) -> None:
