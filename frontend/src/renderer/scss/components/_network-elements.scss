@@ -5,7 +5,7 @@ $layers-sidebar: (
   'process': rgba(253, 205, 114, 0.4),
   'learn-deep': rgba(241, 100, 100, 0.4),
   'train': rgba(101, 213, 163, 0.4),
-  'math': linear-gradient(#1B9EFC, #007BEF),
+  'math': rgba(0, 123, 239, 0.4),
   'learn-class': linear-gradient(#e273fe, #b061ee),
   'custom': linear-gradient(#697592, #4D556A),
   'layercontainer': linear-gradient(#e8f551, #9af142),
@@ -25,7 +25,7 @@ $layers-sidebar: (
   'process': rgba(253, 205, 114, 0.2),
   'learn-deep': rgba(241, 100, 100, 0.2),
   'train': rgba(101, 213, 163, 0.2),
-  'math': linear-gradient(#1B9EFC, #007BEF),
+  'math': rgba(0, 123, 239, 0.2),
   'learn-class': linear-gradient(#e273fe, #b061ee),
   'custom': linear-gradient(#697592, #4D556A),
   'layercontainer': linear-gradient(#e8f551, #9af142),
@@ -69,14 +69,30 @@ $layers-sidebar-active: (
   'layercontainer': linear-gradient(#a0a839, #6aa32d),
 );
 
-@each $name, $color in $layers-sidebar-active {
-  .net-element-#{$name} {
-    &:hover,
-    &.active,
-    .net-element_btn:hover &,
-    .net-element_arrows-start:hover ~ .net-element_btn & {
-      background: $color;
+// @each $name, $color in $layers-sidebar-active {
+//   .net-element-#{$name} {
+//     &:hover,
+//     &.active,
+//     .net-element_btn:hover &,
+//     .net-element_arrows-start:hover ~ .net-element_btn & {
+//       background: $color;
+//     }
+//   }
+// }
+.net-element {
+  .btn--layersbar {
+    border: 1.5px solid transparent !important; // fix for jumping comntent
+  }
+  .settings-layer {
+    border: 1.5px solid #3F4C70 !important;
+  }
+  &.net-element--active {
+    @each $name, $color in $layers-sidebar-active {
+      .net-element-#{$name} {
+        background: $color;
+      }
     }
+    
   }
 }
 
@@ -102,15 +118,37 @@ $layers-sidebar-active: (
 }
 
 .net-element {
-  &:hover .btn--layersbar {
-    box-shadow: inset 0 0 0 1px #fff;
+  &:hover {
+    .btn--layersbar {
+      border:  1.5px solid hsl(182, 79%, 52%) !important;
+    }
+    .settings-layer {
+      // border: 1px solid #B6C7FB !important;
+      border:  1.5px solid hsl(182, 79%, 52%) !important;
+      position: relative;
+      &:after {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        background: rgba(#B6C7FB, 0.5);
+        // background: #B6C7FB;
+        mix-blend-mode: soft-light;
+        pointer-events: none;
+      }
+    }
+  
   }
   .btn--layersbar .icon {
     font-size: 12px;
   }
 }
-.net-element--active .btn--layersbar {
-  box-shadow: inset 0 0 0 1px #fff;
+.net-element--active {
+  .btn--layersbar, .settings-layer {
+    border: 1.5px solid #22DDE5 !important;
+  }
 }
 .layer-type {
   font-family: "Nunito Sans";
