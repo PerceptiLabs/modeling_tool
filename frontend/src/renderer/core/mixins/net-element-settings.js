@@ -22,12 +22,12 @@ const netElementSettings = {
     }
   },
   watch: {
-    'settings': {
-      handler(prev, next) {
+    'computedSettings': {
+      handler(newVal, oldVal) {
         if(this.isSettedFromCore) {
           this.isSettedFromCore = false;
         } else {
-          if(!isEqual(JSON.parse(JSON.stringify(prev)), JSON.parse(JSON.stringify(next)))) {
+          if(!isEqual(JSON.parse(JSON.stringify(newVal)), JSON.parse(JSON.stringify(oldVal)))) {
             this.saveSettings("Settings");
           }
         }
@@ -42,6 +42,9 @@ const netElementSettings = {
     codeInputDim() {
       return this.currentEl.layerMeta.InputDim
     },
+    computedSettings: function() {
+      return Object.assign({}, this.settings);
+    }
   },
   methods: {
     saveSettingsToStore(tabName) {
