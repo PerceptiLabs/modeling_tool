@@ -51,6 +51,10 @@
 
 
       .button-group
+        button.btn.btn--primary(type="button"
+          @click="onToTutorialData"
+          ) To Tutorial Data Folder
+        span.spacer
         span(v-if="options.showNumberSelectedFiles") {{ buttonGroupMessage }}
         button.btn.btn--primary.btn--disabled(type="button"
           @click="onCancel"
@@ -200,6 +204,9 @@ export default {
       if (this.filePickerType !== 'file') { return; }
       this.selectedFiles = [fileName];
       this.onConfirm();
+    },
+    onToTutorialData() {
+      this.fetchPathInformation('');
     },
     toggleSelectedFile(fileName, event) {
       if (this.filePickerType !== 'file') { return; }
@@ -441,12 +448,17 @@ export default {
 
 .button-group {
   display: flex;
-  justify-content: flex-end;
   align-items: center;
   border-top: 0.1rem solid $color-8;
 
-  > * {
-    margin: 1rem 1rem 1rem 0;
+  padding: 1rem;
+
+  > *:not(:last-child) {
+    margin-right: 1rem;
+  }
+
+  span.spacer {
+    flex-grow: 1;
   }
 }
 
