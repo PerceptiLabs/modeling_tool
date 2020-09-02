@@ -521,9 +521,9 @@ class {{layer_spec.sanitized_name}}(RegressionLayer):
         return self._variables.copy()        
 
     @property
-    def sample(self) -> np.ndarray:
+    def sample(self) -> Dict[str, Dict[str, Picklable]]:
         """Returns a single data sample"""        
-        return {}
+        return {'output': np.array(self._loss_training)}
 
     @property
     def columns(self) -> List[str]: 

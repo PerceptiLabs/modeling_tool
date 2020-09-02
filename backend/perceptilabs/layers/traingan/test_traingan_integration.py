@@ -226,25 +226,3 @@ def test_save_checkpoint(script_factory, graph_spec):
     assert any(x.startswith('model.ckpt') for x in os.listdir(temp_path))
     #tf.reset_default_graph()
 
-def test_convergence(script_factory, graph_spec):
-    graph = graph_spec_to_core_graph(script_factory, graph_spec)
-    
-    training_layer = graph.active_training_node.layer
-    iterator = training_layer.run(graph) # TODO: self reference is weird. shouldnt be!
-
-    sentinel = object()
-    result = None
-    converged = False
-    
-    gen_loss_list = []
-    discrim_loss_list = []
-
-    while result is not sentinel and not converged:
-        result = next(iterator, sentinel)
-
-        gen_loss_list.append(training_layer.generator_loss_training)
-        discrim_loss_list.append(training_layer.discriminator_loss_training)
-        if len(gen_loss_list) > 5 and np.mean(np.diff(gen_loss_list)) < 0 and np.mean(np.diff(discrim_loss_list)) < 0:
-            converged = True
-     
-    assert converged

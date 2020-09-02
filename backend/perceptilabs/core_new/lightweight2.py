@@ -193,20 +193,26 @@ class TrainingStrategy(BaseStrategy):
                 graph = graph_spec_to_core_graph(self._script_factory, self._graph_spec)
                 training_layer = graph.active_training_node.layer
                 training_layer.init_layer(graph)
+                sample = training_layer.sample
+                variables = training_layer.variables.copy()
 
             except Exception as e:
                 instantiation_error = exception_to_error(layer_spec.id_, layer_spec.type_, e)
                 strategy_error = None
+                sample = {'output': None}
+                shape = {'output': None}
+                variables = {}
                 logger.debug(f"Layer {layer_spec.id_} raised an error when initializing")
             else:
                 strategy_error = None
-                instantiation_error = None    
+                instantiation_error = None
+                shape = {name: np.atleast_1d(value).shape for name, value in sample.items()}    
     
         results = LayerResults(
-            sample={},
-            out_shape={},
-            variables={},
-            columns={},
+            sample=sample,
+            out_shape=shape,
+            variables=variables,
+            columns=[],
             code_error=None,
             instantiation_error=instantiation_error,
             strategy_error=strategy_error

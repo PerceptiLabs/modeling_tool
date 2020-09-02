@@ -1,29 +1,40 @@
 #!/usr/bin/env python
 import os
-import platform
 import time
-import socket
 import sys
 
 _host = 'localhost'
 _port = 8080
 
 def launch():
+
+    command = get_start_command()
+    url = get_url()
+    os.system(f"{command} {url}")
+
+def get_url():
+    url = f"http://{_host}:{_port}"
+    token = os.environ.get("PL_FILE_SERVING_TOKEN")
+    if not token:
+        return url
+    return f"{url}/?token={token}"
+
+def get_start_command():
+    import platform
+
     os_platform = platform.platform()
-
-    command = None
-
     if 'Windows' in os_platform:
-        command = f'start http://{_host}:{_port}'
+        return 'start'
     elif 'Darwin' in os_platform:
-        command = f'open http://{_host}:{_port}'
+        return 'open'
     elif 'Linux' in os_platform:
-        command = f'xdg-open http://{_host}:{_port}'
-
-    if command:
-        os.system(command)
+        return 'xdg-open'
+    else:
+        raise Exception(f"Unknown platform: {os_platform}")
 
 def awaitHostPortOpen():
+    import socket
+
     # a_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     # a_socket.settimeout(1)
 
