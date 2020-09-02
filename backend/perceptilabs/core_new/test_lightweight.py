@@ -1401,7 +1401,7 @@ def test_out_shapes_ok_basic(graph_spec_binary_classification):
     assert results['3'].out_shape['output'] == (28, 28, 1) # Reshape
     assert results['4'].out_shape['output'] == (10,) # FC
     assert results['5'].out_shape['output'] == (10,) # One hot
-    assert results['6'].out_shape == {}
+    assert results['6'].out_shape['output'] == (1,)
 
 
 def test_columns_ok_lw(graph_spec_binary_classification):
@@ -1437,7 +1437,7 @@ def test_out_shapes_ok_for_3d_samples(graph_spec_binary_classification_3d):
     assert results['3'].out_shape['output'] == (2352, 1, 1) # Reshape
     assert results['4'].out_shape['output'] == (10,) # FC
     assert results['5'].out_shape['output'] == (10,) # One hot
-    assert results['6'].out_shape == {} # Train normal
+    assert results['6'].out_shape['output'] == (1,) # Train normal
 
 
 def test_out_shapes_ok_partial_graph(graph_spec_partial):
@@ -1449,7 +1449,7 @@ def test_out_shapes_ok_partial_graph(graph_spec_partial):
     assert results['3'].out_shape['output'] == (28, 28, 1) # Reshape
     assert results['4'].out_shape['output'] == (10,) # FC
     assert results['5'].out_shape == {} # One hot
-    assert results['6'].out_shape == {} # Train normal
+    assert results['6'].out_shape['output'] == None # Train normal
     
 
 def test_out_shapes_ok_with_syntax_error(graph_spec_syntax_error):
@@ -1461,7 +1461,7 @@ def test_out_shapes_ok_with_syntax_error(graph_spec_syntax_error):
     assert results['3'].out_shape == {} # Reshape
     assert results['4'].out_shape == {} # FC
     assert results['5'].out_shape['output'] == (10,) # One hot
-    assert results['6'].out_shape == {} # Train normal
+    assert results['6'].out_shape['output'] == None  # Train normal
 
 
 def test_errors_ok_with_syntax_error(graph_spec_syntax_error):
@@ -1480,7 +1480,7 @@ def test_out_shapes_ok_with_runtime_error(graph_spec_runtime_error):
     assert results['3'].out_shape == {} # Reshape
     assert results['4'].out_shape == {} # FC
     assert results['5'].out_shape['output'] == (10,) # One hot
-    assert results['6'].out_shape == {}
+    assert results['6'].out_shape['output'] == None 
     
 
 def test_errors_ok_with_runtime_error(graph_spec_runtime_error):

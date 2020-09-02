@@ -468,9 +468,6 @@ class {{layer_spec.sanitized_name}}(ObjectDetectionLayer):
         self._checkpoint = None
     
     def init_layer(self, graph: Graph):
-        if tf.compat.v1.get_default_session() is not None:
-            tf.compat.v1.get_default_session().close() 
-            tf.reset_default_graph()
         {% if not layer_spec.distributed -%}
             {{ init_normal() }}
         {% endif %}
@@ -663,9 +660,9 @@ class {{layer_spec.sanitized_name}}(ObjectDetectionLayer):
         return self._variables.copy()        
 
     @property
-    def sample(self):
+    def sample(self) -> Dict[str, Dict[str, Picklable]]: 
         """Returns a single data sample"""        
-        return {}
+        return {'output': np.array(self._predicted_normalized_box)}
 
     @property
     def size_training(self) -> int:

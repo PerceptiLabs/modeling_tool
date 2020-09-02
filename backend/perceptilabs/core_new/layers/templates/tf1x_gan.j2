@@ -699,9 +699,10 @@ class {{layer_spec.sanitized_name}}(GANLayer):
         return self._variables.copy()        
 
     @property
-    def sample(self) -> np.ndarray:
-        """Returns a single data sample"""        
-        return dict()
+    def sample(self) -> Dict[str, Dict[str, Picklable]]:
+        """Returns a single data sample"""       
+        sample = np.array([self._generator_loss_training])
+        return {'output': sample}
 
     @property
     def columns(self) -> List[str]: 
