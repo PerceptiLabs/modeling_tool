@@ -17,10 +17,10 @@ class DeepLearningRecurrentSpec(LayerSpec):
     def _from_dict_internal(cls, id_: str, dict_: Dict[str, Any], params: Dict[str, Any]) -> LayerSpec:
         if 'Properties' in dict_ and dict_['Properties'] is not None:                        
             params['n_neurons'] = int(dict_['Properties']['Neurons'])
-            params['version'] = int(dict_['Properties']['Version'])
+            params['version'] = dict_['Properties']['Version']
             params['time_steps'] = int(dict_['Properties']['Time_steps'])
             params['return_sequence'] = int(dict_['Properties']['Return_sequence'])
-            params['activation'] = dict_['Properties']['Activation_function']
+            params['activation'] = dict_['Properties']['Activation_function'] if dict_['Properties']['Activation_function'] else 'None'
             params['dropout'] = dict_['Properties']['Dropout']
             params['keep_prob'] = dict_['Properties']['Keep_prob']
         

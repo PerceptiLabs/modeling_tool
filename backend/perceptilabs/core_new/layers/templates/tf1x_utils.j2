@@ -10,6 +10,8 @@
         tf.compat.v1.nn.leaky_relu
     {% elif name == 'Softmax' %}
         tf.compat.v1.nn.softmax
+    {% elif name == 'None' %}
+        None
     {% endif %}
 {% endfilter %}
 {% endmacro %}

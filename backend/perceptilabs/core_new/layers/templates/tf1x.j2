@@ -987,8 +987,7 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
         self._biases = None
 
     def __call__(self, inputs: Dict[str, tf.Tensor], is_training: tf.Tensor = None):
-        """ Takes a tensor as input and feeds it forward through a recurrent layer, returning a newtensor."""        
-        y_before = None
+        """ Takes a tensor as input and feeds it forward through a recurrent layer, returning a newtensor."""       
         y = None
 
         with tf.compat.v1.variable_scope(self._scope, reuse=tf.compat.v1.AUTO_REUSE):   
@@ -1027,10 +1026,17 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
 
             
         self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
-        self._lw_variables['y_before'] = y_before
         self._lw_variables['y'] = y
+        
+        self._sample = {
+            'output': y,
+        }
 
-        return {'output': y}
+        self._outputs = {
+            'output': y,
+        }
+
+        return self._outputs
 
     @property
     def variables(self):
@@ -1055,14 +1061,17 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
     def get_sample(self, sess=None) -> np.ndarray:
         """Returns a single data sample"""
         if sess is not None:
-            y_before = self._lw_variables.get('y_before')
 
-            if y_before is not None:
-                y = sess.run(y_before)
+            # TODO: this if-statement should probably be jinja and based on presence of batch norm
+            if self._sample['output'] is None:
+                outputs = sess.run(self._outputs)
             else:
-                y = sess.run(self._lw_variables['y'])
-            
-            return y[0]
+                outputs = sess.run(self._sample)
+                
+            return {
+                key: value[0] if len(value) > 0 else value
+                for key, value in outputs.items()
+            }
         else:
             return None
 
