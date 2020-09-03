@@ -130,7 +130,7 @@ export default {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.coreStatus
     },
     // currentNet() {
-    //   this.scale = this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.zoom;
+    //   this.scale = this.$store.getters['mod_workspace/GET_currentNetworkZoom'];
     //   return this.$store.getters['mod_workspace/GET_currentNetworkElementList']
     // },
     networkClass() {

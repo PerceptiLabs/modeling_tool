@@ -56,13 +56,8 @@ export default {
       // this.settings.networkPath = this.currentNetwork.networkRootFolder;
       let location = this.currentNetwork.apiMeta.location;
       const modelNameStartIndex = location.lastIndexOf('/');
-      location = location.substring(0, modelNameStartIndex);
       this.settings.networkPath = location;
     }
-    let location = this.currentNetwork.apiMeta.location;
-      const modelNameStartIndex = location.lastIndexOf('/');
-      location = location.substring(0, modelNameStartIndex);
-      this.settings.networkPath = location;
     this.$store.dispatch('mod_api/API_checkTrainedNetwork')
       .then((isTrained)=> {
         this.settings.isSaveTrainedModel = isTrained;

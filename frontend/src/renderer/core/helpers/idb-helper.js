@@ -10,7 +10,7 @@ const _getDb = async () => {
     let request = window.indexedDB.open(DB_NAME, DB_VERSION);
     
     request.onerror = e => {
-      reject('Error');
+      reject(e);
     };
 
     request.onsuccess = e => {

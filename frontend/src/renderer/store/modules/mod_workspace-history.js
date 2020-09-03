@@ -78,7 +78,7 @@ const actions = {
     const newSnapshot = {
       networkName: currentNet.networkName,
       networkElementList: deepCloneNetwork(currentNet.networkElementList),
-      networkScale: rootGetters['mod_workspace/GET_currentNetwork'].networkMeta.zoom
+      networkScale: rootGetters['mod_workspace/GET_currentNetworkZoom']
     };
 
     if(!historyNet) { dispatch('UPDATE_networkList') }
@@ -107,7 +107,7 @@ const actions = {
         historyNet: [{
           networkName: JSON.parse(JSON.stringify(net.networkName)),
           networkElementList: deepCloneNetwork(net.networkElementList),
-          networkScale: rootGetters['mod_workspace/GET_currentNetwork'].networkMeta.zoom
+          networkScale: rootGetters['mod_workspace/GET_currentNetworkZoom']
         }],
       }
     }

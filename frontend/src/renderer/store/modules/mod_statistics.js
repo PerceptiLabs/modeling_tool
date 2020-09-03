@@ -108,7 +108,8 @@ const actions = {
       statistics: null,
       viewBox: null
     };
-    let net = rootGetters['mod_workspace/GET_currentNetworkElementList'];
+
+    let net = rootGetters['mod_workspace/GET_currentNetworkSnapshotElementList'];
     for(let el in net) {
       let item = net[el];
       if(elArr.statistics !== null && elArr.viewBox !== null || elArr.layerType === "Container") {

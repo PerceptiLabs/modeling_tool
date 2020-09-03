@@ -111,7 +111,7 @@ export default {
       testIsOpen:     'mod_workspace/GET_testIsOpen',
     }),
     layerType() {
-      return this.elData.layerType;      
+      return this.elData ? this.elData.layerType : '';
     },
     selectedMetric() {
       return this.$store.getters['mod_statistics/getSelectedMetric'](this.layerType);

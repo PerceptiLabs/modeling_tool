@@ -392,10 +392,7 @@
       },
 
       fetchNetworkMetas(currentProject) {
-        console.log(currentProject);
         if (!currentProject || !currentProject.models || !currentProject.models.length) { return; }
-
-        console.log(currentProject.models);
 
         const promiseArray = 
           currentProject.models
@@ -403,14 +400,12 @@
 
         Promise.all(promiseArray)
           .then(metas => {
-            console.log('metas', metas);
             this.fetchAllNetworkJsons(metas);
             this.fetchUnparsedModels(metas);
           });
       },
       fetchAllNetworkJsons(modelMetas) {
 
-        console.log(modelMetas);
         if (!modelMetas) { return; }
 
         const promiseArray = 

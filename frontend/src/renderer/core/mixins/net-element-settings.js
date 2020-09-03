@@ -72,7 +72,7 @@ const netElementSettings = {
       // console.trace();
       this.$store.dispatch('mod_api/API_getBatchPreviewSampleForElementDescendants', this.currentEl.layerId);
       // this.$store.dispatch('mod_api/API_getPreviewSample',  {layerId: this.currentEl.layerId, varData: 'output'}).then((data)=> {
-      //   this.$store.dispatch('mod_workspace/SET_NeteworkChartData', { 
+      //   this.$store.dispatch('mod_workspace/SET_NetworkChartData', { 
       //     layerId: this.currentEl.layerId,
       //     payload: data,
       //   });
