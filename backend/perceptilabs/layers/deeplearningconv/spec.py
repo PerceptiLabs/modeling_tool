@@ -10,9 +10,9 @@ class DeepLearningConvSpec(LayerSpec):
     dropout: bool = False
     keep_prob: float = 0.0
     conv_dim: str = '2D'
-    patch_size: int = 3
-    feature_maps: int = 8
-    stride: int = 2    
+    patch_size: Union[int, None] = 3
+    feature_maps: Union[int, None] = 8
+    stride: Union[int, None] = 2    
     padding: str = 'SAME'
     activation: Union[str, None] = 'Sigmoid'    
     pool: bool = False
@@ -28,9 +28,9 @@ class DeepLearningConvSpec(LayerSpec):
             params['keep_prob'] = try_cast(dict_['Properties']['Keep_prob'], float)
             params['batch_norm'] = try_cast(dict_['Properties'].get('Batch_norm'), bool)
             params['conv_dim'] = str(dict_['Properties']['Conv_dim'])
-            params['patch_size'] = int(dict_['Properties']['Patch_size'])
-            params['feature_maps'] = int(dict_['Properties']['Feature_maps'])
-            params['stride'] = int(dict_['Properties']['Stride'])
+            params['patch_size'] = int(dict_['Properties']['Patch_size']) if dict_['Properties']['Patch_size'] else None
+            params['feature_maps'] = int(dict_['Properties']['Feature_maps']) if dict_['Properties']['Feature_maps'] else None
+            params['stride'] = int(dict_['Properties']['Stride']) if dict_['Properties']['Stride'] else None
             params['padding'] = dict_['Properties']['Padding']
             params['activation'] = dict_['Properties']['Activation_function']
             

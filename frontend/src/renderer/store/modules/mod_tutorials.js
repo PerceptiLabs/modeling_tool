@@ -1242,7 +1242,7 @@ const actions = {
           let start = firstElement.getBoundingClientRect();
           let stop = secondElement.getBoundingClientRect();
           let arrowSize = start.width - layersbarElementSize.width === 0 ? 12 : 0;
-          let zoom = store.getters['mod_workspace/GET_currentNetwork'].networkMeta.zoom;
+          let zoom = store.getters['mod_workspace/GET_currentNetworkZoom'];
 
           if(getters.getActiveAction.schematic.position === 'bottom') {
             store.commit('mod_workspace/SET_preArrowStart', {x: (start.right - start.width - start.width / 2 - arrowSize) * zoom, y: (start.top - start.width)  * zoom });
@@ -1312,7 +1312,7 @@ const actions = {
      let elCoord = info.element.getBoundingClientRect();
      let tooltipArrow = 10;
      let isZoomElement = info.element.querySelector('.net-element_btn');
-     let zoom = isZoomElement ? store.getters['mod_workspace/GET_currentNetwork'].networkMeta.zoom : 1;
+     let zoom = isZoomElement ? store.getters['mod_workspace/GET_currentNetworkZoom'] : 1;
      switch (info.side) {
        case 'right':
          info.tooltip.style.top = (elCoord.top + elCoord.height / 2) * zoom  +'px';

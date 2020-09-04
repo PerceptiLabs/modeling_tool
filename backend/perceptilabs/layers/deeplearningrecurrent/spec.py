@@ -1,13 +1,13 @@
-from typing import Tuple, Dict, Any
+from typing import Tuple, Dict, Any, Union
 
 from perceptilabs.layers.specbase import LayerSpec
 
 
 class DeepLearningRecurrentSpec(LayerSpec):
     type_: str = 'DeepLearningRecurrent'
-    n_neurons: int = 10
+    n_neurons: Union[int, None] = 10
     version: str = 'RNN'
-    time_steps: int = 1
+    time_steps: Union[int, None] = 1
     return_sequence: bool = False
     activation: str = 'Sigmoid'
     dropout: bool = False
@@ -16,10 +16,10 @@ class DeepLearningRecurrentSpec(LayerSpec):
     @classmethod
     def _from_dict_internal(cls, id_: str, dict_: Dict[str, Any], params: Dict[str, Any]) -> LayerSpec:
         if 'Properties' in dict_ and dict_['Properties'] is not None:                        
-            params['n_neurons'] = int(dict_['Properties']['Neurons'])
+            params['n_neurons'] = int(dict_['Properties']['Neurons']) if dict_['Properties']['Neurons'] else None
             params['version'] = dict_['Properties']['Version']
-            params['time_steps'] = int(dict_['Properties']['Time_steps'])
-            params['return_sequence'] = int(dict_['Properties']['Return_sequence'])
+            params['time_steps'] = int(dict_['Properties']['Time_steps']) if dict_['Properties']['Time_steps'] else None
+            params['return_sequence'] = dict_['Properties']['Return_sequence']
             params['activation'] = dict_['Properties']['Activation_function'] if dict_['Properties']['Activation_function'] else 'None'
             params['dropout'] = dict_['Properties']['Dropout']
             params['keep_prob'] = dict_['Properties']['Keep_prob']

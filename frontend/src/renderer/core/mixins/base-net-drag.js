@@ -192,7 +192,7 @@ const baseNetDrag = {
   },
   computed: {
     networkScale() {
-      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.zoom
+      return this.$store.getters['mod_workspace/GET_currentNetworkZoom'];
     },
     isLock() {
       return this.dataEl.layerMeta.isLock

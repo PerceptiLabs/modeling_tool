@@ -4,7 +4,7 @@ const baseNetPaintArrows = {
       return this.$store.getters['mod_tutorials/getActiveAction']
     },
     wsZoom() {
-      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.zoom;
+      return this.$store.getters['mod_workspace/GET_currentNetworkZoom'];
     },
     // Mix_paintArrow_startDrawArrow() {
     //   return this.$store.state.mod_workspace.startArrowID

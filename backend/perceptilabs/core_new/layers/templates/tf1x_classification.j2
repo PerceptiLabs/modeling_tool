@@ -57,7 +57,6 @@
         except tf.errors.OutOfRangeError:
             pass
 
-        sess.close()
         self._status = 'finished'
         self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
         yield YieldLevel.DEFAULT
@@ -151,7 +150,6 @@
         except tf.errors.OutOfRangeError:
             pass
 
-        sess.close()
         self._status = 'finished'
         self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
         yield YieldLevel.DEFAULT

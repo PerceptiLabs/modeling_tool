@@ -1,8 +1,9 @@
 import html2canvas  from 'html2canvas';
 import canvg        from 'canvg'
-import { projectPCSave, generateID, loadPathFolder, deepCopy }  from "@/core/helpers.js";
-import { pathSlash }  from "@/core/constants.js";
+import { generateID }  from "@/core/helpers.js";
+
 import { mapGetters, mapMutations, mapActions } from "vuex";
+import cloneDeep from 'lodash.clonedeep';
 
 const workspaceSaveNet = {
   created() {
@@ -120,7 +121,7 @@ const workspaceSaveNet = {
       // debugger;
       const pathSaveProject = netInfo.networkPath;
 
-      let prepareNet = cloneNet(currentNet, newProjectId, netInfo);
+      let prepareNet = cloneNet(cloneDeep(currentNet), newProjectId, netInfo);
       /*check Is Trained Net + do ScreenShot*/
       doScreenShot(networkField)
         .then((img)=> {
@@ -128,6 +129,7 @@ const workspaceSaveNet = {
           if(netInfo.isSaveTrainedModel) {
             /*core save*/
             prepareNet.toLocal.isTrained = true;
+
             return this.saveTrainedNetwork({
               'Location': [pathSaveProject],
               'frontendNetwork': prepareNet.toFile,
@@ -205,7 +207,7 @@ const workspaceSaveNet = {
       }
 
       function saveProjectToLocalStore(project, ctx) {
-        let projectsLocalList = deepCopy(ctx.getLocalUserInfo.projectsList);
+        let projectsLocalList = cloneDeep(ctx.getLocalUserInfo.projectsList);
 
         if(projectsLocalList.length) {
           const idIndex = projectsLocalList.findIndex((proj)=> proj.id === project.id);
@@ -224,14 +226,34 @@ const workspaceSaveNet = {
       }
 
       function cloneNet(net, idProject, newNetInfo) {
+
+        /********************************************************************
+           
+          The following logic is added due to:
+            story 903 (decoupling of workspace - stats/test view)
+          
+          Before deciding between:
+            - Alt 1 (Save everything as the same “model”) and
+            - Alt 2 (Save as model and experiments)
+          we'll export the snapshot (stored in prepareNet.toFile.networkSnapshots[0]).
+          
+        *********************************************************************/
+        
+        if (newNetInfo.isSaveTrainedModel &&
+            net.networkSnapshots &&
+            net.networkSnapshots.length > 0) {
+
+          net.networkElementList = net.networkSnapshots[0];
+          delete net.consoleLogs;
+          delete net.networkSnapshots;
+        }
+
         //clone network
         let toFile = {};
         for (var key in net) {
           if(key === 'networkElementList') toFile[key] = JSON.parse(cloneEl(net[key]));
           else toFile[key] = net[key];
         }
-
-        // console.log('toFile.networkMeta', toFile.networkMeta);
 
         if(idProject) toFile.networkID = idProject;
         toFile.networkName = newNetInfo.networkName;

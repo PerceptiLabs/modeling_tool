@@ -40,28 +40,28 @@ export default {
   },
   computed: {
     ...mapGetters({
-        isTutorialMode:       'mod_tutorials/getIstutorialMode',
-        testIsOpen:         'mod_workspace/GET_testIsOpen',
-        statisticsIsOpen:   'mod_workspace/GET_statisticsIsOpen',
+      isTutorialMode:          'mod_tutorials/getIstutorialMode',
+      statisticsOrTestIsOpen: 'mod_workspace/GET_statisticsOrTestIsOpen',
     }),
     layerId() {
       return this.currentEl.layerId
     },
     storeCurrentElement() {
-      return this.$store.getters['mod_workspace/GET_networkElementById'](this.layerId);
+      if (this.statisticsOrTestIsOpen) {
+        return this.$store.getters['mod_workspace/GET_networkSnapshotElementById'](this.layerId);
+      } else {
+        return this.$store.getters['mod_workspace/GET_networkElementById'](this.layerId);
+      }
     },
     eLConnectionInElementChartData() {
       return this.$store.getters['mod_workspace/GET_networkElementConnectionInChartData'](this.layerId);
-    },
-    isNotOnStatisitcOrTestPage() {
-      return !(this.testIsOpen === true || this.statisticsIsOpen === true);
     },
     showModelPreviews() {
       return this.$store.state.mod_workspace.showModelPreviews;
     },
     shouldShowPreview() {
-      return (this.storeCurrentElement.chartData && this.storeCurrentElement.chartData.series && this.storeCurrentElement.chartData.series[0].data !== '')
-      && this.isNotOnStatisitcOrTestPage
+      return (this.storeCurrentElement && this.storeCurrentElement.chartData && this.storeCurrentElement.chartData.series && this.storeCurrentElement.chartData.series[0].data !== '')
+      && !this.statisticsOrTestIsOpen
       && this.showModelPreviews;
     },
   },
@@ -84,7 +84,7 @@ export default {
         .then((data)=> {
           this.previewValue = variableName;
           this.imgData = data;
-          this.$store.dispatch('mod_workspace/SET_NeteworkChartData', { 
+          this.$store.dispatch('mod_workspace/SET_NetworkChartData', { 
             layerId: this.layerId,
             payload: data,
           });

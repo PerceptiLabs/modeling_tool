@@ -87,7 +87,7 @@ export default {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.netMode
     },
     wsZoom() {
-      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.zoom;
+      return this.$store.getters['mod_workspace/GET_currentNetworkZoom'];
     },
     classEl() {
       return {

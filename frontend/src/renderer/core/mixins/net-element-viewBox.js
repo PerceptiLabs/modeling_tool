@@ -32,11 +32,11 @@ const viewBoxMixin = {
   },
   computed: {
     statElementID() {
-      let viewBoxEl = this.$store.getters['mod_workspace/GET_currentSelectedEl'].find((element)=>element.layerType === 'Training');
+      let viewBoxEl = this.$store.getters['mod_workspace/GET_currentSelectedElementsInSnapshot'].find((element)=>element.layerType === 'Training');
       return viewBoxEl === undefined ? undefined : viewBoxEl.layerId.toString()
     },
     boxElementID() {
-      let viewBoxEl = this.$store.getters['mod_workspace/GET_currentSelectedEl'].find((element)=>element.layerType !== 'Training');
+      let viewBoxEl = this.$store.getters['mod_workspace/GET_currentSelectedElementsInSnapshot'].find((element)=>element.layerType !== 'Training');
       return viewBoxEl === undefined ? undefined : viewBoxEl.layerId.toString()
     },
     currentNetworkID() {

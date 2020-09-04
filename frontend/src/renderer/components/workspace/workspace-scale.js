@@ -10,7 +10,7 @@ const workspaceScale = {
   computed: {
     scaleNet: {
       get: function () {
-        let zoom = this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.zoom * 100;
+        let zoom = this.$store.getters['mod_workspace/GET_currentNetworkZoom'] * 100;
         return Math.round(zoom);
       },
       set: function (newValue) {

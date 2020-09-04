@@ -122,7 +122,7 @@ class LayerSpecBuilder(ABC):
         if len(dict_['checkpoint']) == 0:
             return None
         
-        ckpt_path = dict_['checkpoint']['1']
+        ckpt_path = dict_['checkpoint'][1]
         if '//' in ckpt_path:
             if platform.system() == 'Windows':
                 new_ckpt_path = ckpt_path.split('//')[1]

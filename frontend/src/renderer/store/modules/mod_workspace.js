@@ -4,6 +4,7 @@ import idb  from "@/core/helpers/idb-helper.js";
 import Vue    from 'vue'
 import router from '@/router'
 import {isElectron} from "@/core/helpers";
+import cloneDeep from 'lodash.clonedeep';
 
 const namespaced = true;
 
@@ -43,6 +44,7 @@ const state = {
       openStatistics: null, //null - hide Statistics; false - close Statistics, true - open Statistics
       openTest: null,
       zoom: 1,
+      zoomSnapshot: 1,
       netMode: 'edit',//'addArrow'
       coreStatus: {
         Status: 'Waiting' //Created, Training, Validation, Paused, Finished
@@ -64,6 +66,17 @@ const state = {
 const getters = {
   GET_networkIsNotEmpty(state) {
     return !!state.workspaceContent.length
+  },
+  GET_networkSnapshotIsNotEmpty(state, getters) {
+    if (state.workspaceContent.length === 0 ||
+        !state.workspaceContent[state.currentNetwork] ||
+        !state.workspaceContent[state.currentNetwork].networkSnapshots ||
+        !state.workspaceContent[state.currentNetwork].networkSnapshots.length === 0) {
+          return false;
+        }
+
+    return true;
+
   },
   GET_currentNetwork(state, getters)  {
    
@@ -126,6 +139,40 @@ const getters = {
     }
     return selectedIds;
   },
+  // Snapshot version of the above functions
+  GET_networkSnapshotElementById: (state, getters) => layerId => {
+    return getters.GET_currentNetworkSnapshotElementList[layerId];
+  },
+  GET_currentNetworkSnapshotElementList(state, getters) {
+
+    if (!getters.GET_networkSnapshotIsNotEmpty ||
+        !getters.GET_currentNetwork.networkSnapshots ||
+        !getters.GET_currentNetwork.networkSnapshots.length > 0) {
+          return [];
+        }
+
+    return getters.GET_currentNetwork.networkSnapshots[0];
+  },
+  GET_currentSelectedElementsInSnapshot(state, getters) {
+    let selectedIndex = [];
+    if(getters.GET_networkIsNotEmpty) {
+      let elList = getters.GET_currentNetworkSnapshotElementList;
+      for(var el in elList) {
+        if (elList[el].componentName === 'LayerContainer' && elList[el].layerNone) continue;
+        if (elList[el].layerMeta.isSelected) selectedIndex.push(elList[el]);
+      }
+    }
+    return selectedIndex;
+  },
+  GET_currentNetworkZoom(state, getters) {
+    if (!getters.GET_networkIsNotEmpty) { return 1; }
+
+    if (getters.GET_statisticsOrTestIsOpen) {
+      return getters.GET_currentNetwork.networkMeta.zoomSnapshot || 1;
+    } else {
+      return getters.GET_currentNetwork.networkMeta.zoom;
+    } 
+  },
   GET_networkIsTraining(state, getters) {
     const coreStatus = getters.GET_networkCoreStatus;
     const statusList = ['Training', 'Validation', 'Paused'];
@@ -144,6 +191,11 @@ const getters = {
   GET_testIsOpen(state, getters) {
     if(getters.GET_networkIsNotEmpty) {
       return getters.GET_currentNetwork.networkMeta.openTest;
+    }
+  },
+  GET_statisticsOrTestIsOpen(state, getters) {
+    if(getters.GET_networkIsNotEmpty) {
+      return getters.GET_currentNetwork.networkMeta.openStatistics || getters.GET_currentNetwork.networkMeta.openTest;
     }
   },
   GET_networkIsOpen(state, getters) {
@@ -360,12 +412,14 @@ const mutations = {
       networkID: '',
       networkMeta: {},
       networkElementList: {},
-      networkRootFolder: ''
+      networkRootFolder: '',
+      networkSnapshots: []
     };
     const defaultMeta = {
       openStatistics: null, //null - hide Statistics; false - close Statistics, true - open Statistics
       openTest: null,
       zoom: 1,
+      zoomSnapshot: 1,
       netMode: 'edit',//'addArrow'
       coreStatus: {
         Status: 'Waiting' //Created, Training, Validation, Paused, Finished
@@ -584,6 +638,16 @@ const mutations = {
     }
     else getters.GET_currentNetwork.networkMeta.openTest = value;
   },
+  set_networkSnapshot(state, {dispatch, getters}) {
+
+    const clonedNetworkElementList = cloneDeep(getters.GET_currentNetwork.networkElementList);
+
+    if (!getters.GET_currentNetwork.networkSnapshots) {
+      Vue.set(getters.GET_currentNetwork, 'networkSnapshots', []);
+    }
+
+    getters.GET_currentNetwork.networkSnapshots.splice(0, 1, clonedNetworkElementList);
+  },
   set_statusNetworkCore(state, {getters, value}) {
     if(getters.GET_currentNetwork.networkMeta) {
       getters.GET_currentNetwork.networkMeta.coreStatus = value;
@@ -619,7 +683,11 @@ const mutations = {
     }
   },
   set_statusNetworkZoom(state, {getters, value}) {
-    getters.GET_currentNetwork.networkMeta.zoom = value;
+    if (getters.GET_statisticsOrTestIsOpen) {
+      getters.GET_currentNetwork.networkMeta.zoomSnapshot = value;
+    } else {
+      getters.GET_currentNetwork.networkMeta.zoom = value;
+    }
   },
   set_charts_doRequest(state, {getters, networkIndex}) {
     networkIndex
@@ -995,6 +1063,18 @@ const mutations = {
     state.workspaceContent[state.currentNetwork].networkElementList[id].layerMeta.position.top = top;
     state.workspaceContent[state.currentNetwork].networkElementList[id].layerMeta.position.left = left;
   },
+  change_singleElementInSnapshotPosition(state, {snapshotId = 0, id, top, left}) {
+
+    if (!state.workspaceContent[state.currentNetwork] ||
+        !state.workspaceContent[state.currentNetwork].networkSnapshots ||
+        !state.workspaceContent[state.currentNetwork].networkSnapshots.length === 0 ||
+        !state.workspaceContent[state.currentNetwork].networkSnapshots[snapshotId][id]) {
+      return;
+    }
+
+    state.workspaceContent[state.currentNetwork].networkSnapshots[snapshotId][id].layerMeta.position.top = top;
+    state.workspaceContent[state.currentNetwork].networkSnapshots[snapshotId][id].layerMeta.position.left = left;
+  },
   change_groupContainerDiff(state, {id, top, left}) {
     state.workspaceContent[state.currentNetwork].networkElementList[id].layerMeta.containerDiff.top = top;
     state.workspaceContent[state.currentNetwork].networkElementList[id].layerMeta.containerDiff.left = left;
@@ -1354,7 +1434,6 @@ const mutations = {
     state.preArrow.start = value;
     state.preArrow.stop = value;
     state.preArrow.show = true;
-    console.log(value);
   },
   SET_preArrowStop (state, value) {
     state.preArrow.stop = value
@@ -1385,11 +1464,13 @@ const mutations = {
       ...value
     }
   },
-  SET_NeteworkChartDataMutation(state, { layerId, payload }) {
-    const el = state.workspaceContent[state.currentNetwork].networkElementList[layerId];
+  SET_NetworkChartDataMutation(state, { layerId, payload }) {
 
-    // adds this refactoring because it caused a problem when deleting elements
-    if (!el) { return; }
+    if (!state.workspaceContent[state.currentNetwork] ||
+        !state.workspaceContent[state.currentNetwork].networkElementList ||
+        !state.workspaceContent[state.currentNetwork].networkElementList[layerId]) { return; }
+
+    const el = state.workspaceContent[state.currentNetwork].networkElementList[layerId];
 
     if(el.hasOwnProperty('chartData')) {
       state.workspaceContent[state.currentNetwork].networkElementList[layerId]['chartData'] = payload;
@@ -1593,7 +1674,6 @@ const actions = {
         dispatch('mod_api/API_getModelStatus', network.networkID, { root: true });
         Promise.all([isRunningPromise, isTrainedPromise])
           .then(([isRunning, isTrained]) => {
-            console.log(network.networkName + ' ----- '+ isRunning + isTrained);
             
             if (isRunning && isTrained) {
               commit('update_network_meta', {key: 'openStatistics', value: true, networkID: network.networkID})
@@ -1726,6 +1806,12 @@ const actions = {
   },
   SET_openTest({commit, getters, dispatch}, value) {
     commit('set_openTest', {dispatch, getters, value})
+  },
+  SET_networkSnapshot({commit, getters, dispatch}) {
+    return new Promise(resolve => {
+      commit('set_networkSnapshot', {dispatch, getters});
+      resolve();
+    });
   },
   SET_statusNetworkCore({commit, getters}, value) {
     commit('set_statusNetworkCore', {getters, value})
@@ -1901,8 +1987,8 @@ const actions = {
   SET_historyStep({commit, dispatch}, value) {
     commit('set_historyStep', {value, dispatch});
   },
-  SET_NeteworkChartData({ commit }, {layerId, payload}) {
-    commit('SET_NeteworkChartDataMutation', {layerId, payload});
+  SET_NetworkChartData({ commit }, {layerId, payload}) {
+    commit('SET_NetworkChartDataMutation', {layerId, payload});
   },
 
   //---------------
@@ -1944,6 +2030,8 @@ function updateLayerName(el, net, n){
 }
 
 function currentElement(id) {
+  if (!state.workspaceContent[state.currentNetwork]) { return; }
+
   return state.workspaceContent[state.currentNetwork].networkElementList[id];
 }
 const createNetElement = function (event) {

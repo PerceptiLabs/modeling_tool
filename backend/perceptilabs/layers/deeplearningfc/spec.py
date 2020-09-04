@@ -1,4 +1,4 @@
-from typing import Tuple, Dict, Any
+from typing import Tuple, Dict, Any, Union
 
 
 from perceptilabs.layers.specbase import LayerSpec
@@ -6,7 +6,7 @@ from perceptilabs.layers.specbase import LayerSpec
 
 class DeepLearningFcSpec(LayerSpec):
     type_: str = 'DeepLearningFC'
-    n_neurons: int = 10
+    n_neurons: Union[int, None] = 10
     activation: str = 'Sigmoid'
     batch_norm: bool = False
     dropout: bool = False
@@ -15,7 +15,7 @@ class DeepLearningFcSpec(LayerSpec):
     @classmethod
     def _from_dict_internal(cls, id_: str, dict_: Dict[str, Any], params: Dict[str, Any]) -> LayerSpec:
         if 'Properties' in dict_ and dict_['Properties'] is not None:                        
-            params['n_neurons'] = int(dict_['Properties']['Neurons'])
+            params['n_neurons'] = int(dict_['Properties']['Neurons']) if dict_['Properties']['Neurons'] else None
             params['activation'] = dict_['Properties']['Activation_function']
             params['batch_norm'] = dict_['Properties'].get('Batch_norm', False)
             params['dropout'] = dict_['Properties']['Dropout']

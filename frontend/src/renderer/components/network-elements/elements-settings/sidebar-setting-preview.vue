@@ -80,7 +80,7 @@ export default {
         .then((data)=> {
           this.previewValue = variableName;
           this.imgData = data;
-          this.$store.dispatch('mod_workspace/SET_NeteworkChartData', { 
+          this.$store.dispatch('mod_workspace/SET_NetworkChartData', { 
             layerId: this.layerId,
             payload: data,
           });

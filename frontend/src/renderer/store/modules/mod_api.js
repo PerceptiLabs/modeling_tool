@@ -1139,7 +1139,7 @@ const actions = {
         
         if(Object.keys(res.previews).length > 0) {
           Object.keys(res.previews).map(previewKey => {
-            dispatch('mod_workspace/SET_NeteworkChartData', {
+            dispatch('mod_workspace/SET_NetworkChartData', {
               layerId: previewKey,
               payload: res.previews[previewKey],
             }, {root: true});
@@ -1217,7 +1217,7 @@ const actions = {
 
         if(Object.keys(res.previews).length > 0) {
           Object.keys(res.previews).map(previewKey => {
-            dispatch('mod_workspace/SET_NeteworkChartData', {
+            dispatch('mod_workspace/SET_NetworkChartData', {
               layerId: previewKey,
               payload: res.previews[previewKey],
             }, {root: true});

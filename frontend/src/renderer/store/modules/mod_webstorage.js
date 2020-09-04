@@ -1,5 +1,5 @@
 import idb from '@/core/helpers/idb-helper.js';
-import { deepCloneNetwork } from '@/core/helpers.js';
+import cloneDeep from 'lodash.clonedeep';
 
 const namespaced = true;
 
@@ -13,7 +13,7 @@ const actions = {
   async saveNetwork(ctx, network) {
     if (!network || !network.networkID) { return; }
     
-    await idb.saveModel(deepCloneNetwork(network));
+    await idb.saveModel(cloneDeep(network));
   },
   async updateIds(ctx) {
 
@@ -35,7 +35,7 @@ const actions = {
     const workspaces = ctx.rootState.mod_workspace.workspaceContent || [];
     for(const ws of workspaces) {
       networkIDs.push(ws.networkID);
-      await idb.saveModel(deepCloneNetwork(ws));
+      await idb.saveModel(cloneDeep(ws));
     };
 
     networkIDs = networkIDs.filter(onlyUnique);
@@ -50,22 +50,25 @@ const actions = {
     networkIdsToLoad = networkIdsToLoad.sort((a,b) => a - b)
     const networks = await idb.getModels(networkIdsToLoad);
     
-    for(const network of networks) {
+    return new Promise((resolve) => {
+      for(const network of networks) {
 
-      // remove focus from previous focused network elements
-      if(network.networkElementList) {
-        Object.keys(network.networkElementList).map(elKey => {
-          network.networkElementList[elKey].layerMeta.isSelected = false;
-        });
+        // remove focus from previous focused network elements
+        if(network.networkElementList) {
+          Object.keys(network.networkElementList).map(elKey => {
+            network.networkElementList[elKey].layerMeta.isSelected = false;
+          });
+        }
+
+        // clears the handle of the setInterval function
+        // this value is used to determine if a new setInterval call should be made
+        network.networkMeta.chartsRequest.timerID = null;
+
+        ctx.dispatch('mod_workspace/ADD_existingNetworkToWorkspace', { network }, {root: true});
+
       }
-
-      // clears the handle of the setInterval function
-      // this value is used to determine if a new setInterval call should be made
-      network.networkMeta.chartsRequest.timerID = null;
-
-      ctx.dispatch('mod_workspace/ADD_existingNetworkToWorkspace', { network }, {root: true});
-
-    }
+      resolve();
+    });
   },
   async deleteAllIds(ctx) {
     await idb.deleteAllIds();

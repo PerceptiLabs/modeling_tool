@@ -19,10 +19,12 @@ const imageClassification = {
         "showCharts": 0
       }
     },
-    "networkRootFolder": '',
+    "networkRootFolder": "",
     "networkElementList": {
-      "1564399775664": {
-        "layerId": "1564399775664",
+      "1598915799200": {
+        "layerId": "1598915799200",
+        "copyId": null,
+        "copyContainerElement": null,
         "layerName": "Data_1",
         "layerType": "Data",
         "layerSettings": {
@@ -33,24 +35,14 @@ const imageClassification = {
             "Dataset_size": "",
             "Category": "Local",
             "Type": "Data",
-            "Sources": [
-              {
-                "type": "file",
-                "path": "mnist_input.npy"
-              }
-            ],
+            "Sources": [],
             "PathFake": [],
-            "Partition_list": [
-              [
-                70,
-                20,
-                10
-              ]
-            ],
+            "Partition_list": [],
             "Shuffle_data": true,
             "Action_space": ""
           }
         },
+        "layerSettingsTabName": "Computer",
         "layerCode": null,
         "layerCodeError": null,
         "layerNone": false,
@@ -59,10 +51,10 @@ const imageClassification = {
           "isLock": false,
           "isSelected": false,
           "position": {
-            "top": 160,
-            "left": 200
+            "top": 20,
+            "left": 20
           },
-          "OutputDim": "784",
+          "OutputDim": "",
           "InputDim": "[]",
           "layerContainerName": "",
           "layerBgColor": "",
@@ -71,20 +63,104 @@ const imageClassification = {
             "left": 0
           }
         },
+        "chartData": {},
         "checkpoint": [],
         "endPoints": [],
         "componentName": "DataData",
-        "connectionOut": [
-          "1564399777283"
-        ],
+        "connectionOut": [],
         "connectionIn": [],
-        "connectionArrow": [
-          "1564399777283"
+        "connectionArrow": [],
+        "visited": true,
+        "inputs": {},
+        "outputs": {
+          "15989157992000": {
+            "name": "output",
+            "reference_var": "output"
+          }
+        },
+        "forward_connections": [
+          {
+            "src_var": "output",
+            "dst_id": "1598915836465",
+            "dst_var": "input"
+          }
         ],
-        "layerSettingsTabName": "Computer"
+        "backward_connections": [],
+        "previewVariable": "output",
+        "previewVariableList": []
       },
-      "1564399777283": {
-        "layerId": "1564399777283",
+      "1598915800150": {
+        "layerId": "1598915800150",
+        "copyId": null,
+        "copyContainerElement": null,
+        "layerName": "Data_2",
+        "layerType": "Data",
+        "layerSettings": {
+          "Type": "Data",
+          "testInfoIsInput": true,
+          "accessProperties": {
+            "Columns": [],
+            "Dataset_size": "",
+            "Category": "Local",
+            "Type": "Data",
+            "Sources": [],
+            "PathFake": [],
+            "Partition_list": [],
+            "Shuffle_data": true,
+            "Action_space": ""
+          }
+        },
+        "layerSettingsTabName": "Computer",
+        "layerCode": null,
+        "layerCodeError": null,
+        "layerNone": false,
+        "layerMeta": {
+          "isInvisible": false,
+          "isLock": false,
+          "isSelected": false,
+          "position": {
+            "top": 280,
+            "left": 20
+          },
+          "OutputDim": "",
+          "InputDim": "[]",
+          "layerContainerName": "",
+          "layerBgColor": "",
+          "containerDiff": {
+            "top": 0,
+            "left": 0
+          }
+        },
+        "chartData": {},
+        "checkpoint": [],
+        "endPoints": [],
+        "componentName": "DataData",
+        "connectionOut": [],
+        "connectionIn": [],
+        "connectionArrow": [],
+        "visited": true,
+        "inputs": {},
+        "outputs": {
+          "15989158001500": {
+            "name": "output",
+            "reference_var": "output"
+          }
+        },
+        "forward_connections": [
+          {
+            "src_var": "output",
+            "dst_id": "1598915861658",
+            "dst_var": "input"
+          }
+        ],
+        "backward_connections": [],
+        "previewVariable": "output",
+        "previewVariableList": []
+      },
+      "1598915836465": {
+        "layerId": "1598915836465",
+        "copyId": null,
+        "copyContainerElement": null,
         "layerName": "Reshape_1",
         "layerType": "Other",
         "layerSettings": {
@@ -99,6 +175,7 @@ const imageClassification = {
             2
           ]
         },
+        "layerSettingsTabName": "Settings",
         "layerCode": null,
         "layerCodeError": null,
         "layerNone": false,
@@ -107,11 +184,11 @@ const imageClassification = {
           "isLock": false,
           "isSelected": false,
           "position": {
-            "top": 160,
-            "left": 330
+            "top": 20,
+            "left": 220
           },
-          "OutputDim": "28x28x1",
-          "InputDim": "[]",
+          "OutputDim": "",
+          "InputDim": "[784]",
           "layerContainerName": "",
           "layerBgColor": "",
           "containerDiff": {
@@ -119,22 +196,49 @@ const imageClassification = {
             "left": 0
           }
         },
+        "chartData": {},
         "checkpoint": [],
         "endPoints": [],
         "componentName": "ProcessReshape",
-        "connectionOut": [
-          "1564399781738"
+        "connectionOut": [],
+        "connectionIn": [],
+        "connectionArrow": [],
+        "visited": false,
+        "inputs": {
+          "15989158364650": {
+            "name": "input",
+            "reference_var_id": "15989157992000",
+            "reference_layer_id": "1598915799200",
+            "isDefault": true
+          }
+        },
+        "outputs": {
+          "15989158364650": {
+            "name": "output",
+            "reference_var": "output"
+          }
+        },
+        "forward_connections": [
+          {
+            "src_var": "output",
+            "dst_id": "1598915844680",
+            "dst_var": "input"
+          }
         ],
-        "connectionIn": [
-          "1564399775664"
+        "backward_connections": [
+          {
+            "src_id": "1598915799200",
+            "src_var": "output",
+            "dst_var": "input"
+          }
         ],
-        "connectionArrow": [
-          "1564399781738"
-        ],
-        "layerSettingsTabName": "Settings"
+        "previewVariable": "output",
+        "previewVariableList": []
       },
-      "1564399781738": {
-        "layerId": "1564399781738",
+      "1598915844680": {
+        "layerId": "1598915844680",
+        "copyId": null,
+        "copyContainerElement": null,
         "layerName": "Convolution_1",
         "layerType": "Other",
         "layerSettings": {
@@ -145,14 +249,15 @@ const imageClassification = {
           "Feature_maps": "8",
           "Activation_function": "Sigmoid",
           "Dropout": false,
-          "Batch_norm": false,
           "Keep_prob": "1",
+          "Batch_norm": false,
           "PoolBool": false,
           "Pooling": "Max",
           "Pool_area": "2",
           "Pool_padding": "SAME",
           "Pool_stride": "2"
         },
+        "layerSettingsTabName": "Settings",
         "layerCode": null,
         "layerCodeError": null,
         "layerNone": false,
@@ -161,11 +266,11 @@ const imageClassification = {
           "isLock": false,
           "isSelected": false,
           "position": {
-            "top": 160,
-            "left": 470
+            "top": 20,
+            "left": 420
           },
-          "OutputDim": "14x14x8",
-          "InputDim": "[]",
+          "OutputDim": "",
+          "InputDim": "[28, 28, 1]",
           "layerContainerName": "",
           "layerBgColor": "",
           "containerDiff": {
@@ -173,22 +278,118 @@ const imageClassification = {
             "left": 0
           }
         },
+        "chartData": {},
         "checkpoint": [],
         "endPoints": [],
         "componentName": "DeepLearningConv",
-        "connectionOut": [
-          "1564399782856"
+        "connectionOut": [],
+        "connectionIn": [],
+        "connectionArrow": [],
+        "visited": false,
+        "inputs": {
+          "15989158446800": {
+            "name": "input",
+            "reference_var_id": "15989158364650",
+            "reference_layer_id": "1598915836465",
+            "isDefault": true
+          }
+        },
+        "outputs": {
+          "15989158446800": {
+            "name": "output",
+            "reference_var": "output"
+          }
+        },
+        "forward_connections": [
+          {
+            "src_var": "output",
+            "dst_id": "1598970577549",
+            "dst_var": "input"
+          }
         ],
-        "connectionIn": [
-          "1564399777283"
+        "backward_connections": [
+          {
+            "src_id": "1598915836465",
+            "src_var": "output",
+            "dst_var": "input"
+          }
         ],
-        "connectionArrow": [
-          "1564399782856"
-        ],
-        "layerSettingsTabName": "Settings"
+        "previewVariable": "output",
+        "previewVariableList": []
       },
-      "1564399782856": {
-        "layerId": "1564399782856",
+      "1598915861658": {
+        "layerId": "1598915861658",
+        "copyId": null,
+        "copyContainerElement": null,
+        "layerName": "OneHot_1",
+        "layerType": "Other",
+        "layerSettings": {
+          "N_class": "10"
+        },
+        "layerSettingsTabName": "Settings",
+        "layerCode": null,
+        "layerCodeError": null,
+        "layerNone": false,
+        "layerMeta": {
+          "isInvisible": false,
+          "isLock": false,
+          "isSelected": false,
+          "position": {
+            "top": 280,
+            "left": 280
+          },
+          "OutputDim": "",
+          "InputDim": "",
+          "layerContainerName": "",
+          "layerBgColor": "",
+          "containerDiff": {
+            "top": 0,
+            "left": 0
+          }
+        },
+        "chartData": {},
+        "checkpoint": [],
+        "endPoints": [],
+        "componentName": "ProcessOneHot",
+        "connectionOut": [],
+        "connectionIn": [],
+        "connectionArrow": [],
+        "visited": false,
+        "inputs": {
+          "15989158616580": {
+            "name": "input",
+            "reference_var_id": "15989158001500",
+            "reference_layer_id": "1598915800150",
+            "isDefault": true
+          }
+        },
+        "outputs": {
+          "15989158616580": {
+            "name": "output",
+            "reference_var": "output"
+          }
+        },
+        "forward_connections": [
+          {
+            "src_var": "output",
+            "dst_id": "1598982397425",
+            "dst_var": "labels"
+          }
+        ],
+        "backward_connections": [
+          {
+            "src_id": "1598915800150",
+            "src_var": "output",
+            "dst_var": "input"
+          }
+        ],
+        "previewVariable": "output",
+        "previewVariableList": []
+      },
+      "1598970577549": {
+        "layerId": "1598970577549",
+        "copyId": null,
+        "copyContainerElement": null,
         "layerName": "Fully Connected_1",
         "layerType": "Other",
         "layerSettings": {
@@ -198,6 +399,7 @@ const imageClassification = {
           "Keep_prob": "1",
           "Batch_norm": false
         },
+        "layerSettingsTabName": "Settings",
         "layerCode": null,
         "layerCodeError": null,
         "layerNone": false,
@@ -206,11 +408,11 @@ const imageClassification = {
           "isLock": false,
           "isSelected": false,
           "position": {
-            "top": 160,
-            "left": 610
+            "top": 20,
+            "left": 640
           },
-          "OutputDim": "10",
-          "InputDim": "[]",
+          "OutputDim": "",
+          "InputDim": "",
           "layerContainerName": "",
           "layerBgColor": "",
           "containerDiff": {
@@ -218,133 +420,58 @@ const imageClassification = {
             "left": 0
           }
         },
+        "chartData": {},
         "checkpoint": [],
         "endPoints": [],
         "componentName": "DeepLearningFC",
-        "connectionOut": [
-          "1564399790363"
-        ],
-        "connectionIn": [
-          "1564399781738"
-        ],
-        "connectionArrow": [
-          "1564399790363"
-        ],
-        "layerSettingsTabName": "Settings"
-      },
-      "1564399786876": {
-        "layerId": "1564399786876",
-        "layerName": "Data_2",
-        "layerType": "Data",
-        "layerSettings": {
-          "Type": "Data",
-          "testInfoIsInput": true,
-          "accessProperties": {
-            "Columns": [],
-            "Dataset_size": "",
-            "Category": "Local",
-            "Type": "Data",
-            "Sources": [
-              {
-                "type": "file",
-                "path": "mnist_labels.npy"
-              }
-            ],
-            "PathFake": [],
-            "Partition_list": [
-              [
-                70,
-                20,
-                10
-              ]
-            ],
-            "Shuffle_data": true,
-            "Action_space": ""
-          }
-        },
-        "layerCode": null,
-        "layerCodeError": null,
-        "layerNone": false,
-        "layerMeta": {
-          "isInvisible": false,
-          "isLock": false,
-          "isSelected": true,
-          "position": {
-            "top": 340,
-            "left": 200
-          },
-          "OutputDim": "1",
-          "InputDim": "[]",
-          "layerContainerName": "",
-          "layerBgColor": "",
-          "containerDiff": {
-            "top": 0,
-            "left": 0
-          }
-        },
-        "checkpoint": [],
-        "endPoints": [],
-        "componentName": "DataData",
-        "connectionOut": [
-          "1564399788744"
-        ],
+        "connectionOut": [],
         "connectionIn": [],
-        "connectionArrow": [
-          "1564399788744"
-        ],
-        "layerSettingsTabName": "Computer"
-      },
-      "1564399788744": {
-        "layerId": "1564399788744",
-        "layerName": "OneHot_1",
-        "layerType": "Other",
-        "layerSettings": {
-          "N_class": "10"
-        },
-        "layerCode": null,
-        "layerCodeError": null,
-        "layerNone": false,
-        "layerMeta": {
-          "isInvisible": false,
-          "isLock": false,
-          "isSelected": false,
-          "position": {
-            "top": 340,
-            "left": 390
-          },
-          "OutputDim": "10",
-          "InputDim": "[]",
-          "layerContainerName": "",
-          "layerBgColor": "",
-          "containerDiff": {
-            "top": 0,
-            "left": 0
+        "connectionArrow": [],
+        "visited": true,
+        "inputs": {
+          "15989705775490": {
+            "name": "input",
+            "reference_var_id": "15989158446800",
+            "reference_layer_id": "1598915844680",
+            "isDefault": true
           }
         },
-        "checkpoint": [],
-        "endPoints": [],
-        "componentName": "ProcessOneHot",
-        "connectionOut": [
-          "1564399790363"
+        "outputs": {
+          "15989705775490": {
+            "name": "output",
+            "reference_var": "output"
+          }
+        },
+        "forward_connections": [
+          {
+            "src_var": "output",
+            "dst_id": "1598982397425",
+            "dst_var": "predictions"
+          }
         ],
-        "connectionIn": [
-          "1564399786876"
+        "backward_connections": [
+          {
+            "src_id": "1598915844680",
+            "src_var": "output",
+            "dst_var": "input"
+          }
         ],
-        "connectionArrow": [
-          "1564399790363"
-        ],
-        "layerSettingsTabName": "Settings"
+        "previewVariable": "output",
+        "previewVariableList": []
       },
-      "1564399790363": {
-        "layerId": "1564399790363",
+      "1598982397425": {
+        "layerId": "1598982397425",
+        "copyId": null,
+        "copyContainerElement": null,
         "layerName": "Normal_1",
         "layerType": "Training",
         "layerSettings": {
-          "Labels": "1564399788744",
+          "Labels": "",
           "Epochs": "10",
-          "Batch_size": "10",
           "N_class": "1",
           "Loss": "Quadratic",
+          "Stop_condition": "Epochs",
+          "Stop_Target_Accuracy": "0",
           "Class_weights": "1",
           "Learning_rate": "0.001",
           "Optimizer": "ADAM",
@@ -354,9 +481,9 @@ const imageClassification = {
           "Decay_steps": "100000",
           "Decay_rate": "0.96",
           "Training_iters": "20000",
-          "Stop_condition": "Epochs",
-          "Stop_Target_Accuracy": 0,
+          "Batch_size": "10"
         },
+        "layerSettingsTabName": "Settings",
         "layerCode": null,
         "layerCodeError": null,
         "layerNone": false,
@@ -365,11 +492,11 @@ const imageClassification = {
           "isLock": false,
           "isSelected": false,
           "position": {
-            "top": 340,
-            "left": 610
+            "top": 259,
+            "left": 954
           },
           "OutputDim": "",
-          "InputDim": "[]",
+          "InputDim": "",
           "layerContainerName": "",
           "layerBgColor": "",
           "containerDiff": {
@@ -377,18 +504,47 @@ const imageClassification = {
             "left": 0
           }
         },
+        "chartData": {},
         "checkpoint": [],
         "endPoints": [],
         "componentName": "TrainNormal",
         "connectionOut": [],
-        "connectionIn": [
-          "1564399782856",
-          "1564399788744"
-        ],
+        "connectionIn": [],
         "connectionArrow": [],
-        "layerSettingsTabName": "Settings"
+        "visited": false,
+        "inputs": {
+          "15989823974250": {
+            "name": "predictions",
+            "reference_var_id": "15989705775490",
+            "reference_layer_id": "1598970577549",
+            "isDefault": true
+          },
+          "15989823974251": {
+            "name": "labels",
+            "reference_var_id": "15989158616580",
+            "reference_layer_id": "1598915861658",
+            "isDefault": true
+          }
+        },
+        "outputs": {},
+        "forward_connections": [],
+        "backward_connections": [
+          {
+            "src_id": "1598970577549",
+            "src_var": "output",
+            "dst_var": "predictions"
+          },
+          {
+            "src_id": "1598915861658",
+            "src_var": "output",
+            "dst_var": "labels"
+          }
+        ],
+        "previewVariable": "output",
+        "previewVariableList": []
       }
-    }
+    },
+    
   }
 };
 
