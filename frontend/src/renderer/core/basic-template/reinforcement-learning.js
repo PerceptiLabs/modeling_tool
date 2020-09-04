@@ -25,10 +25,10 @@ const reinforcementLearning = {
         "showCharts": 347
       }
     },
-    "networkRootFolder": '',
+    "networkRootFolder": "",
     "networkElementList": {
-      "1591386329458": {
-        "layerId": "1591386329458",
+      "1598979671427": {
+        "layerId": "1598979671427",
         "copyId": null,
         "copyContainerElement": null,
         "layerName": "Environment_1",
@@ -49,10 +49,10 @@ const reinforcementLearning = {
         "layerMeta": {
           "isInvisible": false,
           "isLock": false,
-          "isSelected": true,
+          "isSelected": false,
           "position": {
-            "top": 280,
-            "left": 260
+            "top": 119.25,
+            "left": 142.5
           },
           "OutputDim": "210x160x3",
           "InputDim": "",
@@ -63,28 +63,40 @@ const reinforcementLearning = {
             "left": 0
           }
         },
+        "chartData": {},
         "checkpoint": [],
         "endPoints": [],
         "componentName": "DataEnvironment",
-        "connectionOut": [
-          "1592387860856"
-        ],
+        "connectionOut": [],
         "connectionIn": [],
-        "connectionArrow": [
-          "1592387860856"
-        ]
+        "connectionArrow": [],
+        "visited": true,
+        "inputs": {},
+        "outputs": {
+          "15989796714270": {
+            "name": "output",
+            "reference_var": "output"
+          }
+        },
+        "forward_connections": [
+          {
+            "src_var": "output",
+            "dst_id": "1598979676510",
+            "dst_var": "input"
+          }
+        ],
+        "backward_connections": [],
+        "previewVariable": "output",
+        "previewVariableList": []
       },
-      "1592387860856": {
-        "layerId": "1592387860856",
+      "1598979676510": {
+        "layerId": "1598979676510",
         "copyId": null,
         "copyContainerElement": null,
         "layerName": "Grayscale_1",
         "layerType": "Other",
         "layerSettings": {},
-        "layerSettingsTabName": "Code",
-        "layerCode": {
-          "Output": "class ProcessGrayscale_Grayscale_1(Tf1xLayer):\n    def __call__(self, x: tf.Tensor, is_training: tf.Tensor = None) -> tf.Tensor:\n        \"\"\" Takes a tensor as input and changes it to grayscale.\"\"\"\n        channels = x.get_shape().as_list()[-1]\n        if channels % 3 == 0:\n            if channels > 3:\n                splits = tf.split(x, int(channels/3), -1)\n                images = []\n                for split in splits:\n                    images.append(tf.image.rgb_to_grayscale(split))\n                y = tf.squeeze(tf.stack(images, -1), -2)\n            else:\n                y = tf.image.rgb_to_grayscale(x)\n        else:\n            y = x\n        self._variables = {k: v for k, v in locals().items() if can_serialize(v)}    \n        self.y = y\n\n        return y\n\n    @property\n    def variables(self) -> Dict[str, Picklable]:\n        \"\"\"Any variables belonging to this layer that should be rendered in the frontend.\n        \n        Returns:\n            A dictionary with tensor names for keys and picklable for values.\n        \"\"\"\n\n        return self._variables.copy()\n\n    @property\n    def trainable_variables(self) -> Dict[str, tf.Tensor]:\n        \"\"\"Any trainable variables belonging to this layer that should be updated during backpropagation. Their gradients will also be rendered in the frontend.\n        \n        Returns:\n            A dictionary with tensor names for keys and tensors for values.\n        \"\"\"\n        return {}\n\n    def get_sample(self, sess=None) -> np.ndarray:\n        \"\"\"Returns a single data sample\"\"\"\n        if sess is not None:\n            y = sess.run(self.y)\n            return y[0]\n        else:\n            return None\n\n    @property\n    def weights(self) -> Dict[str, tf.Tensor]:\n        \"\"\"Any weight tensors belonging to this layer that should be rendered in the frontend.\n\n        Return:\n            A dictionary with tensor names for keys and tensors for values.\n        \"\"\"        \n        return {}\n\n    @property\n    def biases(self) -> Dict[str, tf.Tensor]:\n        \"\"\"Any weight tensors belonging to this layer that should be rendered in the frontend.\n\n        Return:\n            A dictionary with tensor names for keys and tensors for values.\n        \"\"\"        \n        return {}        \n"
-        },
+        "layerCode": null,
         "layerCodeError": null,
         "layerNone": false,
         "layerMeta": {
@@ -92,8 +104,8 @@ const reinforcementLearning = {
           "isLock": false,
           "isSelected": false,
           "position": {
-            "top": 280,
-            "left": 410
+            "top": 120,
+            "left": 330
           },
           "OutputDim": "210x160x1",
           "InputDim": "",
@@ -104,21 +116,47 @@ const reinforcementLearning = {
             "left": 0
           }
         },
+        "chartData": {},
         "checkpoint": [],
         "endPoints": [],
         "componentName": "ProcessGrayscale",
-        "connectionOut": [
-          "1592387868143"
+        "connectionOut": [],
+        "connectionIn": [],
+        "connectionArrow": [],
+        "visited": false,
+        "inputs": {
+          "15989796765100": {
+            "name": "input",
+            "reference_var_id": "15989796714270",
+            "reference_layer_id": "1598979671427",
+            "isDefault": true
+          }
+        },
+        "outputs": {
+          "15989796765100": {
+            "name": "output",
+            "reference_var": "output"
+          }
+        },
+        "forward_connections": [
+          {
+            "src_var": "output",
+            "dst_id": "1598979686278",
+            "dst_var": "input"
+          }
         ],
-        "connectionIn": [
-          "1591386329458"
+        "backward_connections": [
+          {
+            "src_id": "1598979671427",
+            "src_var": "output",
+            "dst_var": "input"
+          }
         ],
-        "connectionArrow": [
-          "1592387868143"
-        ]
+        "previewVariable": "output",
+        "previewVariableList": []
       },
-      "1592387868143": {
-        "layerId": "1592387868143",
+      "1598979686278": {
+        "layerId": "1598979686278",
         "copyId": null,
         "copyContainerElement": null,
         "layerName": "Fully Connected_1",
@@ -139,8 +177,8 @@ const reinforcementLearning = {
           "isLock": false,
           "isSelected": false,
           "position": {
-            "top": 280,
-            "left": 560
+            "top": 120,
+            "left": 520
           },
           "OutputDim": "4",
           "InputDim": "",
@@ -151,21 +189,47 @@ const reinforcementLearning = {
             "left": 0
           }
         },
+        "chartData": {},
         "checkpoint": [],
         "endPoints": [],
         "componentName": "DeepLearningFC",
-        "connectionOut": [
-          "1592387884530"
+        "connectionOut": [],
+        "connectionIn": [],
+        "connectionArrow": [],
+        "visited": true,
+        "inputs": {
+          "15989796862780": {
+            "name": "input",
+            "reference_var_id": "15989796765100",
+            "reference_layer_id": "1598979676510",
+            "isDefault": true
+          }
+        },
+        "outputs": {
+          "15989796862780": {
+            "name": "output",
+            "reference_var": "output"
+          }
+        },
+        "forward_connections": [
+          {
+            "src_var": "output",
+            "dst_id": "1598982215514",
+            "dst_var": "action"
+          }
         ],
-        "connectionIn": [
-          "1592387860856"
+        "backward_connections": [
+          {
+            "src_id": "1598979676510",
+            "src_var": "output",
+            "dst_var": "input"
+          }
         ],
-        "connectionArrow": [
-          "1592387884530"
-        ]
+        "previewVariable": "output",
+        "previewVariableList": []
       },
-      "1592387884530": {
-        "layerId": "1592387884530",
+      "1598982215514": {
+        "layerId": "1598982215514",
         "copyId": null,
         "copyContainerElement": null,
         "layerName": "Reinforcement Learning_1",
@@ -192,12 +256,12 @@ const reinforcementLearning = {
         "layerMeta": {
           "isInvisible": false,
           "isLock": false,
-          "isSelected": true,
+          "isSelected": false,
           "position": {
-            "top": 280,
-            "left": 690
+            "top": 120,
+            "left": 760
           },
-          "OutputDim": "",
+          "OutputDim": "1",
           "InputDim": "",
           "layerContainerName": "",
           "layerBgColor": "",
@@ -206,16 +270,35 @@ const reinforcementLearning = {
             "left": 0
           }
         },
+        "chartData": {},
         "checkpoint": [],
         "endPoints": [],
         "componentName": "TrainReinforce",
         "connectionOut": [],
-        "connectionIn": [
-          "1592387868143"
+        "connectionIn": [],
+        "connectionArrow": [],
+        "visited": false,
+        "inputs": {
+          "15989822155140": {
+            "name": "action",
+            "reference_var_id": "15989796862780",
+            "reference_layer_id": "1598979686278",
+            "isDefault": true
+          }
+        },
+        "outputs": {},
+        "forward_connections": [],
+        "backward_connections": [
+          {
+            "src_id": "1598979686278",
+            "src_var": "output",
+            "dst_var": "action"
+          }
         ],
-        "connectionArrow": []
+        "previewVariable": "output",
+        "previewVariableList": []
       }
-    },
+    }
   }
 };
 
