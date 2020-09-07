@@ -3,9 +3,9 @@ fileserver/api/__init__.py
 fileserver/api/apps.py
 fileserver/api/migrations/__init__.py
 fileserver/api/models.py
-fileserver/api/tests.py
 fileserver/api/views.py
 fileserver/asgi.py
+fileserver/middleware.py
 fileserver/settings.py
 fileserver/urls.py
 fileserver/wsgi.py
