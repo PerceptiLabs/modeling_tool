@@ -1,3 +1,4 @@
+import Vue from 'vue';
 import cloneDeep from 'lodash.clonedeep';
 import { hashObject, generateID } from "@/core/helpers";
 
@@ -5,7 +6,8 @@ const namespaced = true;
 
 const state = {
   workspaceNotifications: [],
-  toasts: []
+  toasts: [],
+  toastTimers: {}
 };
 
 const getters = {
@@ -17,7 +19,50 @@ const getters = {
     return network.isNotificationWindowOpen;
   },
   getToasts: (state) => (networkId) => {
-    return state.toasts.filter(t => t.networkId === networkId);
+    let numErrors = 0;
+    let numWarnings = 0;
+
+    const network = state.workspaceNotifications.find(wn => wn.networkId === networkId);
+
+    if (network && network.errors) {
+      numErrors = network.errors.length;
+    }
+    if (network && network.warnings) {
+      numWarnings = network.warnings.length;
+    }
+
+    let errors = 
+      state.toasts.filter(t => 
+        t.networkId === networkId && 
+        t.type === 'error');
+
+    let warnings = 
+      state.toasts.filter(t => 
+        t.networkId === networkId && 
+        t.type === 'warning');
+
+
+    const result = []
+
+    if (errors && errors.length) {
+      result.push({ 
+        networkId,
+        type: 'error',
+        count: numErrors,
+        message: `There are ${ numErrors } unhandled ${ numErrors ? 'errors': 'error'}`
+      });
+    }
+
+    if (warnings && warnings.length) {
+      result.push({ 
+        networkId,
+        type: 'warning', 
+        count: numWarnings,
+        message: `There are ${ numWarnings } unhandled ${ numWarnings ? 'warnings': 'warning'}`
+      });
+    }
+
+    return result;
   },
   getErrors: (state) => (networkId) => {
     const network = state.workspaceNotifications.find(wn => wn.networkId === networkId);
@@ -98,6 +143,11 @@ const mutations = {
       state.toasts.splice(toastIdx, 1); 
     }    
   },
+  removeToastObjectsForNetwork(state, { networkId }) {    
+    if (!networkId) { return; }
+
+    Vue.set(state, 'toasts', state.toasts.filter(t => t.networkId !== networkId));
+  },
   removeErrorsExcept(state, { networkId, errorObjects }) {
     if (!networkId || !errorObjects) { return; }
     const network = state.workspaceNotifications.find(wn => wn.networkId === networkId);
@@ -121,11 +171,19 @@ const mutations = {
     const notificationObj = state.workspaceNotifications.find(wn => wn.networkId === networkId);
 
     notificationObj.selectedId = selectedId;
+  },
+  clearToastTimer(state, { networkId }) {
+    if (!state.toastTimers[networkId]) { return; }
+
+    clearTimeout(state.toastTimers[networkId]);
+  },
+  setToastTimer(state, { networkId, toastTimer }) {
+    Vue.set(state.toastTimers, networkId, toastTimer);
   }
 };
 
 const actions = {
-  addError({ commit, dispatch}, { networkId, errorObject = null }) {
+  addError({ commit, dispatch}, { networkId, errorObject = null, addToast = false }) {
 
     if (errorObject == null) {
       errorObject = {
@@ -139,9 +197,11 @@ const actions = {
     commit('assureWorkspace', { networkId });
     commit('addErrorNotification', { id, networkId, errorObject: cloneDeep(errorObject) });
 
-    dispatch('addToast', { id, networkId, toastType: 'error', message: errorObject.Message });
+    if (addToast) { 
+      dispatch('addToast', { id, networkId, toastType: 'error', message: errorObject.Message });
+    }
   },
-  addWarning({ commit, dispatch }, { networkId, warningObject = null }) {
+  addWarning({ commit, dispatch }, { networkId, warningObject = null, addToast = false }) {
 
     if (warningObject == null) {
       warningObject = {
@@ -155,20 +215,18 @@ const actions = {
     commit('assureWorkspace', { networkId });
     commit('addWarningNotification', { id, networkId, warningObject: cloneDeep(warningObject) });
     
-    dispatch('addToast', { id, networkId, toastType: 'warning', message: warningObject.Message });
+    if (addToast) { 
+      dispatch('addToast', { id, networkId, toastType: 'warning', message: warningObject.Message });
+    }
   },
-  addToast({ commit }, { id = null, networkId, toastType, message, toastLifespanMs = 10000}) {
+  addToast({ commit, dispatch }, { id = null, networkId, toastType, message }) {
     
     if (!id) {
       id = generateID();
     }
     commit('addToastObject', { id, networkId, toastType, message });
 
-    (function(id) {
-      setTimeout(function() {
-        commit('removeToastObject', { id });
-      }, toastLifespanMs);
-    })(id);
+    dispatch('upsertToastTimeout', { networkId });
   },
   setNotifications({ commit, dispatch }, { networkId, kernelResponses }) {
     commit('assureWorkspace', { networkId });
@@ -186,6 +244,8 @@ const actions = {
       });
     }
 
+    dispatch('addToast', { networkId, toastType: 'error' });
+    
     commit('removeErrorsExcept', { networkId, errorObjects });    
   },
   setNotificationWindowState({ commit }, { networkId, value, selectedId = '' }) {
@@ -194,6 +254,17 @@ const actions = {
     commit('setWindowState', { networkId, value });
     commit('setSelectedId', { networkId, selectedId });
   },
+  upsertToastTimeout({ commit }, { networkId, toastLifespanMs = 10000 }) {
+    
+    commit('clearToastTimer', { networkId });
+
+    const toastTimer = setTimeout(function() {
+      commit('clearToastTimer', { networkId });
+      commit('removeToastObjectsForNetwork', { networkId });
+    }, toastLifespanMs);
+
+    commit('setToastTimer', { networkId, toastTimer });
+  }
 };
 
 export default {

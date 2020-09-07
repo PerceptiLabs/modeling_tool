@@ -537,12 +537,12 @@ export default {
     addErrorNotification() {
       // used for test purposes 
       const networkId = this.workspace[this.indexCurrentNetwork].networkID;
-      this.$store.dispatch('mod_workspace-notifications/addError', { networkId });
+      this.$store.dispatch('mod_workspace-notifications/addError', { networkId, addToast: true });
     },
     addWarningNotification() {
       // used for test purposes 
       const networkId = this.workspace[this.indexCurrentNetwork].networkID;
-      this.$store.dispatch('mod_workspace-notifications/addWarning', { networkId });
+      this.$store.dispatch('mod_workspace-notifications/addWarning', { networkId, addToast: true });
     }
   }
 }
