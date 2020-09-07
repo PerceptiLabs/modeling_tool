@@ -403,7 +403,8 @@ class Interface():
                 end_points=end_points, 
                 containerize=containers).run()
             except Exception as e:
-                return {"content":"Parser Failed","errorMessage":"Parser got this Exception:\n" + str(e)}
+                return {}
+                # return {"content":"Parser Failed","errorMessage":"Parser got this Exception:\n" + str(e)}
 
         elif action == "getGraphOrder":
             jsonNetwork = load_network(value)

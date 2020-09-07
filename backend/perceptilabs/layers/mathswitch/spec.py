@@ -5,8 +5,8 @@ from perceptilabs.layers.specbase import LayerSpec, LayerConnection
 
 class MathSwitchSpec(LayerSpec):
     type_: str = 'MathSwitch'
-    selected_layer_id: Union[str, None] = None 
-    selected_var_name: Union[str, None] = None
+    selected_layer_id: Union[str, None] = "input1" 
+    selected_var_name: Union[str, None] = "input1"
     @classmethod
     def _from_dict_internal(cls, id_: str, dict_: Dict[str, Any], params: Dict[str, Any]) -> LayerSpec:
 

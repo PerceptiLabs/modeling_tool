@@ -73,23 +73,24 @@ class Message:
         errorList = issue_handler.pop_errors()
         warningList = issue_handler.pop_warnings()
         logList = issue_handler.pop_logs()
+
         if errorList:
             self._interface.close_core(self.request.get("reciever"))
-            if not content:
-                content={"content":"Core crashed without any error message, closing core"}
-            try:
+            if type(content) is dict and "content" in list(content.keys()):
                 content["errorMessage"]=errorList
-            except:
+            else:
                 content={"content":content, "errorMessage":errorList}
+
         if warningList:
-            try:
+            if type(content) is dict and "content" in list(content.keys()):
                 content["warningMessage"]=warningList
-            except:
+            else:
                 content={"content":content, "warningMessage":warningList}
+
         if logList:
-            try:
+            if type(content) is dict and "content" in list(content.keys()):
                 content["consoleLogs"]=logList
-            except:
+            else:
                 content={"content":content, "consoleLogs":logList}
         return content
 
