@@ -40,11 +40,11 @@ class SettingsEngine:
         for spec in graph_spec.nodes_by_id.values():
             if spec.visited:
                 skip_ids.append(spec.id_)                
-                logger.warning(f"Skipping settings recommendations for layer {spec.id_} because it has been modified by the user")
+                logger.info(f"Skipping settings recommendations for layer {spec.id_} because it has been modified by the user")
                 
             if isinstance(spec, DummySpec):
                 skip_ids.append(spec.id_)
-                logger.warning(f"Cannot make settings recommendation for layer {spec.id_}: no spec object/builder found for type '{spec.type_}'")
+                logger.info(f"Cannot make settings recommendation for layer {spec.id_}: no spec object/builder found for type '{spec.type_}'")
 
         rules = [rc() for rc in self._rule_classes]
         ordered_ids, rule_instances = self._get_ordered_layers(graph_spec, rules, skip_ids)

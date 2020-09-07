@@ -10,7 +10,12 @@ class {{layer_spec.sanitized_name}}(DataSupervised):
 
         columns = {}
         trn_sz_tot, val_sz_tot, tst_sz_tot = 0, 0, 0        
-        trn_gens_args_{{layer_spec.sanitized_name}}, val_gens_args_{{layer_spec.sanitized_name}}, tst_gens_args_{{layer_spec.sanitized_name}} = [], [], []        
+        trn_gens_args_{{layer_spec.sanitized_name}}, val_gens_args_{{layer_spec.sanitized_name}}, tst_gens_args_{{layer_spec.sanitized_name}} = [], [], []   
+        {% filter remove_lspaces(8) %}
+            {% if not layer_spec.sources %}   
+                raise Exception("No data has been loaded into the component")
+            {% endif %}    
+        {% endfilter %}  
         {% filter remove_lspaces(8) %}
             {% for idx, source in enumerate(layer_spec.sources): %}
                 {% set tag = str(layer_spec.sanitized_name) + '_' + str(idx) %}

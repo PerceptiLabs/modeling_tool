@@ -36,7 +36,7 @@ class CoreThread(threading.Thread):
          self.func()
       except Exception as e:
          with self.issue_handler.create_issue('Unexpected exception in CoreThread', e) as issue:
-            self.issue_handler.put_error(issue.frontend_message)
+            # self.issue_handler.put_error(issue.frontend_message)
             logger.error(issue.internal_message)
             sentry_sdk.capture_message(str(e))
             

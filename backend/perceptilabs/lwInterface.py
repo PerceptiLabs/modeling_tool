@@ -253,7 +253,7 @@ class getPartitionSummary(LW_interface_base):
 
         if isinstance(content, dict):
             if self._id in self.lw_core.error_handler:
-                logger.info("ErrorMessage: " + str(self.lw_core.error_handler[self._id]))
+                logger.warning("ErrorMessage: " + str(self.lw_core.error_handler[self._id]))
                 
                 content[self._id]['Error'] = {
                     'Message': self.lw_core.error_handler[self._id].message,
@@ -310,7 +310,7 @@ class getNetworkInputDim(LW_interface_base):
                 content[id_].update({"inShape":str(tmp).replace("'","")})
 
             if id_ in self.lw_core.error_handler:
-                logger.info("ErrorMessage: " + str(self.lw_core.error_handler[id_]))
+                logger.warning("ErrorMessage: " + str(self.lw_core.error_handler[id_]))
 
                 content[id_]['Error'] = {
                     'Message': self.lw_core.error_handler[id_].message,
@@ -338,7 +338,7 @@ class getNetworkOutputDim(LW_interface_base):
             content[Id].update({"Dim": str(value["outShape"]).replace("[","").replace("]","").replace(", ","x")})
 
             if Id in self.lw_core.error_handler:
-                logger.info("ErrorMessage: " + str(self.lw_core.error_handler[Id]))
+                logger.warning("ErrorMessage: " + str(self.lw_core.error_handler[Id]))
 
                 content[Id]['Error'] = {
                     'Message': self.lw_core.error_handler[Id].message,
