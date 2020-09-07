@@ -36,16 +36,6 @@ class bcolors:
             BOLD = ''
             UNDERLINE = ''
 
-# fmt: off
-MIGRATION_CMD = [PYTHON, "-m", "django", "migrate", "--settings", "rygg.settings"]
-SERVICE_CMDS = [
-    [PYTHON, "-c", "from perceptilabs.mainServer import main; main()"],
-    [PYTHON, "-m", "django", "runserver", "--settings", "rygg.settings", "--noreload"],
-    [PYTHON, "-m", "django", "runserver", "--settings", "fileserver.settings", "--noreload"],
-    [PYTHON, "-m", "django", "runserver", "localhost:8080", "--settings", "static_file_server.settings", "--noreload"],
-    [PYTHON, "-c", "from static_file_server import website_launcher; website_launcher.launchAndKeepAlive()"],
-]
-
 # We're assuming everything is running locally
 HOST = "127.0.0.1"
 
@@ -56,6 +46,16 @@ PORTS = {
             "frontend": 8080,
         }
 # fmt: on
+
+# fmt: off
+MIGRATION_CMD = [PYTHON, "-m", "django", "migrate", "--settings", "rygg.settings"]
+SERVICE_CMDS = [
+    [PYTHON, "-c", "from perceptilabs.mainServer import main; main()"],
+    [PYTHON, "-m", "django", "runserver", f"{HOST}:{PORTS['rygg']}", "--settings", "rygg.settings", "--noreload"],
+    [PYTHON, "-m", "django", "runserver", f"{HOST}:{PORTS['fileserver']}", "--settings", "fileserver.settings", "--noreload"],
+    [PYTHON, "-m", "django", "runserver", f"{HOST}:{PORTS['frontend']}", "--settings", "static_file_server.settings", "--noreload"],
+    [PYTHON, "-c", "from static_file_server import website_launcher; website_launcher.launchAndKeepAlive()"],
+]
 
 
 def check_for_atari():
@@ -174,7 +174,7 @@ def start(verbosity):
         print(f"{bcolors.PERCEPTILABS}PerceptiLabs:{bcolors.ENDC} Starting")
         PortPoller.wait_for_ports()
         print(f"{bcolors.PERCEPTILABS}PerceptiLabs:{bcolors.ENDC} PerceptiLabs Started")
-        print(f"{bcolors.PERCEPTILABS}PerceptiLabs:{bcolors.ENDC} PerceptiLabs is running at http://localhost:8080/?token={token}")
+        print(f"{bcolors.PERCEPTILABS}PerceptiLabs:{bcolors.ENDC} PerceptiLabs is running at http://localhost:8080/?token={api_token}")
         print(f"{bcolors.PERCEPTILABS}PerceptiLabs:{bcolors.ENDC} Use Control-C to stop this server and shut down all PerceptiLabs processes.")
         signal.signal(signal.SIGINT, handler)
         watch(procs)
