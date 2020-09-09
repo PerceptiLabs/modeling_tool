@@ -2,6 +2,7 @@
   button.toggle-button(
     :class="{'is-open': isClosed}"
     @click="toggleSidebar()"
+    v-if="!isNotebookMode"
     )
     svg.toggle-icon(
       :class="{'is-open': isClosed}"
@@ -17,13 +18,16 @@
 </template>
 
 <script>
-import { mapActions } from 'vuex';
+import { mapActions, mapGetters} from 'vuex';
 export default {
    name: "SidebarToggleButton",
    computed: {
     isClosed() {
       return this.$store.state.globalView.hideSidebar
     },
+    ...mapGetters({
+      isNotebookMode:       'mod_notebook/getNotebookMode',
+    })
    },
    methods: {
      ...mapActions({

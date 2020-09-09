@@ -288,7 +288,7 @@
         const index = this.workspaceContent.findIndex(wc => wc.networkID == networkID);
         this.set_currentNetwork(index > 0 ? index : 0);
         if(index !== -1) {
-          this.$store.commit("mod_workspace/setViewType", 'model');
+          this.$store.dispatch("mod_workspace/setViewType", 'model');
           this.$router.push({name: 'app'});
         }
       },
@@ -471,7 +471,7 @@
         const { networkMeta: { openStatistics } } = model;
 
         if (typeof openStatistics === 'boolean') {
-          this.$store.commit("mod_workspace/setViewType", 'statistic');
+          this.$store.dispatch("mod_workspace/setViewType", 'statistic');
           this.$router.push({name: 'app'}) 
             .then(() => {
               this.set_currentNetwork(index);

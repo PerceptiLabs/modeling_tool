@@ -71,7 +71,8 @@ export default {
       SET_openStatistics:     'mod_workspace/SET_openStatistics',
       SET_openTest:           'mod_workspace/SET_openTest',
       SET_networkSnapshot:    'mod_workspace/SET_networkSnapshot',
-      saveNetwork:            'mod_webstorage/saveNetwork'
+      saveNetwork:            'mod_webstorage/saveNetwork',
+      setViewType:            'mod_workspace/setViewType'
     }),
     setTab(i) {
       this.tabSelected = i;
@@ -83,6 +84,7 @@ export default {
         .then(_ => {
           this.API_startTraining();
           this.SET_openStatistics(true);
+          this.setViewType('statistic');
           this.SET_openTest(null);
           if(this.isTutorialMode) this.tutorialNextActiveStep('next');
           this.set_showTrainingSpinner(true);

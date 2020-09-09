@@ -373,14 +373,14 @@ export default {
       });
     },
     openStatistics(i) {
-      this.$store.commit('mod_workspace/setViewType', 'statistic');
+      this.$store.dispatch('mod_workspace/setViewType', 'statistic');
       this.setTabNetwork(i);
       this.$nextTick(()=>{
         this.set_openStatistics(true);
       })
     },
     openTest(i) {
-      this.$store.commit('mod_workspace/setViewType', 'test');
+      this.$store.dispatch('mod_workspace/setViewType', 'test');
       this.setTabNetwork(i);
       this.$nextTick(()=>{
         this.set_openTest(true);

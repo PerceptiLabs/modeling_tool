@@ -262,11 +262,7 @@ const mutations = {
   update_model(state, {index, field, value}) {
     Vue.set(state.workspaceContent[index], [field], value);
   },
-  setViewType(state, value) {
-    const possibleValues = ['model', 'statistic', 'test'];
-    const isValidValue = possibleValues.includes(value);
-    if(!isValidValue) {console.error(`View type can't have ${value} it should have one of ['model', 'statistic', 'test']`)}
-    //  should save it to local storage
+  setViewTypeMutation(state, value) {
     localStorage.setItem(LOCAL_STORAGE_WORKSPACE_VIEW_TYPE_KEY, value)
     state.viewType = value;
   },
@@ -655,7 +651,8 @@ const mutations = {
   },
   set_statusNetworkCoreDinamically(state, { modelId, payload }) {
     const networkIndex = state.workspaceContent.findIndex(net => net.networkID === modelId);
-    if(networkIndex !== -1) {
+    const payloadHaveValues = !!Object.keys(payload).length;
+    if(networkIndex !== -1 && payloadHaveValues) {
       Vue.set(state.workspaceContent[networkIndex].networkMeta, 'coreStatus', payload);
     }
   },
@@ -2000,6 +1997,23 @@ const actions = {
   },
   TOGGLE_showModelPreviews(ctx) {
     ctx.commit('toggle_showModelPreviewsMutation', !ctx.state.showModelPreviews)
+  },
+  setViewType({dispatch, commit }, value) {
+    const possibleValues = ['model', 'statistic', 'test'];
+    const isValidValue = possibleValues.includes(value);
+    if(!isValidValue) {console.error(`View type can't have ${value} it should have one of ['model', 'statistic', 'test']`)}
+    //  should save it to local storage
+    switch(value) {
+      case 'model': 
+        dispatch('globalView/hideSidebarAction', true, {root: true});
+        break;
+      case 'statistic':
+      case 'test': 
+        dispatch('globalView/hideSidebarAction', false, {root: true});
+        break;
+    }
+
+    commit('setViewTypeMutation', value);
   }
 };
 
