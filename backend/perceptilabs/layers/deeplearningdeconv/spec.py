@@ -38,7 +38,7 @@ class DeepLearningDeconvSpec(LayerSpec):
         props['Dropout'] = self.dropout
         props['Keep_prob'] = self.keep_prob
         props['Batch_norm'] = self.batch_norm
-        props['Conv_dim'] = self.conv_dim
+        props['Deconv_dim'] = self.deconv_dim
         props['Patch_size'] = self.patch_size
         props['Feature_maps'] = self.feature_maps
         props['Stride'] = self.stride
