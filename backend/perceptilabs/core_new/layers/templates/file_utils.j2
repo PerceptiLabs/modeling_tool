@@ -3,6 +3,7 @@
         global matrix_{{tag}}
         matrix_{{tag}} = np.load("{{path}}", mmap_mode='r+').astype(np.float32)
         size_{{tag}} = len(matrix_{{tag}})
+        
         def generator_{{tag}}(idx_lo, idx_hi):
             global matrix_{{tag}}
             yield from matrix_{{tag}}[idx_lo:idx_hi].squeeze()
