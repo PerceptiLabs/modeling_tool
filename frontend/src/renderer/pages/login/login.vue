@@ -83,6 +83,7 @@ export default {
       closeActivePageAction:  'modal_pages/closePageAction',
       cloud_userGetProfile:   'mod_apiCloud/CloudAPI_userGetProfile',
       getDefaultModeProject:  'mod_project/getDefaultModeProject',
+      getPiPyUpdate:          'mod_workspace-notifications/getPiPyUpdate'
     }),
     togglePasswordVisibility(fieldName) {
       this.passwordVisibility[fieldName] = !this.passwordVisibility[fieldName];
@@ -107,6 +108,8 @@ export default {
       };
       this.$store.dispatch('mod_apiCloud/CloudAPI_userLogin', dataParams)
         .then((tokens)=> {
+          this.getPiPyUpdate();     
+           
           if(tokens) {
             if(isWeb()) {
               this.$store.dispatch('mod_user/SET_userTokenSession', tokens);

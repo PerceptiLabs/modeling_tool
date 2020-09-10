@@ -163,7 +163,7 @@
         if(this.$route.name === 'app') {
           // networkMeta.openStatistics !== null
           if(this.isModelPageAndNetworkHasStatistic()) {
-            this.$store.commit("mod_workspace/setViewType", 'statistic');
+            this.$store.dispatch("mod_workspace/setViewType", 'statistic');
             const item = this.workspaceModels[this.statisticItemIndex];
             this.SET_currentNetwork(this.statisticItemIndex)
               .then(() => { 
@@ -176,7 +176,7 @@
             const { statisticItemIndex } = this;
             
             if(statisticItemIndex !== null) {
-              this.$store.commit("mod_workspace/setViewType", 'statistic');
+              this.$store.dispatch("mod_workspace/setViewType", 'statistic');
               this.SET_currentNetwork(statisticItemIndex);
               this.SET_openStatistics(true);
               this.SET_openTest(false);
@@ -188,7 +188,7 @@
         } else {
           const { statisticItemIndex } = this;
           if(statisticItemIndex !== null) {
-            this.$store.commit("mod_workspace/setViewType", 'statistic');
+            this.$store.dispatch("mod_workspace/setViewType", 'statistic');
             this.SET_currentNetwork(statisticItemIndex)
               .then(() => {
                 this.$router.push({name: 'app'});
@@ -215,14 +215,14 @@
       },
       toModelingTool() {
         if(this.isOnModelingToolPage()) {
-          this.$store.commit("mod_workspace/setViewType", 'model');
+          this.$store.dispatch("mod_workspace/setViewType", 'model');
           if (this.isOnStatisticsView()) {
             this.SET_openStatistics(false);
           } else if (this.isOnTestView()) {
             this.SET_openTest(false);
           }
         } else {
-          this.$store.commit("mod_workspace/setViewType", 'model');
+          this.$store.dispatch("mod_workspace/setViewType", 'model');
           this.SET_currentNetwork(0);
           if (this.isOnStatisticsView()) {
             this.SET_openStatistics(false);
@@ -234,7 +234,7 @@
       },
       toModelTest() {
         if(this.haveAtLeastOneTestItem) {
-          this.$store.commit("mod_workspace/setViewType", 'test');
+          this.$store.dispatch("mod_workspace/setViewType", 'test');
 
           if(this.isOnModelToolPage()) {
             if(this.doesCurrentNetworkHaveTest()) {

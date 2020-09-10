@@ -1,16 +1,21 @@
 import Vue from 'vue';
 import cloneDeep from 'lodash.clonedeep';
 import { hashObject, generateID } from "@/core/helpers";
+import axios from 'axios';
 
 const namespaced = true;
 
 const state = {
   workspaceNotifications: [],
   toasts: [],
+  pipy_version_available: false,
   toastTimers: {}
 };
 
 const getters = {
+  getPiPyShowNotification: (state) => {
+    return state.pipy_version_available;
+  },
   getNotificationWindowState: (state) => (networkId) => {
     const network = state.workspaceNotifications.find(wn => wn.networkId === networkId);
     
@@ -172,6 +177,9 @@ const mutations = {
 
     notificationObj.selectedId = selectedId;
   },
+  setShowPiPyNotification(state, { value }) {
+    state.pipy_version_available = value;
+  },
   clearToastTimer(state, { networkId }) {
     if (!state.toastTimers[networkId]) { return; }
 
@@ -253,6 +261,19 @@ const actions = {
     commit('assureWorkspace', { networkId });
     commit('setWindowState', { networkId, value });
     commit('setSelectedId', { networkId, selectedId });
+  },
+  getPiPyUpdate({ commit }) {
+    return axios.get('http://localhost:8000/app/updates_available')
+      .then((res) => {
+        if (res.data.newer_versions.length > 0) {
+          commit('setShowPiPyNotification', {value: true});
+        }
+
+        return res;
+      })
+      .catch((error)=> {
+        console.error(error); 
+      })      
   },
   upsertToastTimeout({ commit }, { networkId, toastLifespanMs = 10000 }) {
     

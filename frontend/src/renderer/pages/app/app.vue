@@ -208,6 +208,7 @@
     background-color: $bg-window;
 
     display: flex;
+    max-width: calc(100vw - 46px);
     
     /deep/ .wrapper {
       position: static;

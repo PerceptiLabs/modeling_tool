@@ -52,6 +52,7 @@ export default {
       this.$store.dispatch('mod_workspace/SET_statusNetworkCoreStatusProgressClear');
       this.$store.dispatch('mod_workspace/SET_elementUnselect');
       this.$store.dispatch('mod_workspace/SET_openTest', true);
+      this.$store.dispatch('mod_workspace/setViewType', 'test');
       this.tutorialPointActivate({way: 'next', validation: 'tutorial_run-test-button'})
     },
     closePopup() {

@@ -5,7 +5,9 @@ import collections
 import platform
 import ntpath, posixpath
 
-TracebackFrame = collections.namedtuple('TracebackFrame', ['lineno', 'name', 'filename', 'line'])
+TracebackFrame = collections.namedtuple(
+    'TracebackFrame', ['lineno', 'name', 'filename', 'line'], module=__name__
+)
 
 class YieldLevel(Enum):
     #STOP = 0

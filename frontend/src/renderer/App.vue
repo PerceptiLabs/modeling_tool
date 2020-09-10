@@ -21,6 +21,7 @@
     update-popup(v-if="isElectron") 
     the-info-popup(v-if="showPopup")
     confirm-popup
+    PiPyPopupUpdate(v-if="showPiPyNotification")
     create-issue-popup(v-if="showCreateIssuesPopup")
     modal-pages-engine
 </template>
@@ -43,6 +44,7 @@
   import HeaderWin              from '@/components/header/header-win.vue';
   import HeaderMac              from '@/components/header/header-mac.vue';
   import UpdatePopup            from '@/components/global-popups/update-popup/update-popup.vue'
+  import PiPyPopupUpdate        from "@/components/global-popups/update-popup/pipy-update-popup.vue";  
   import TheInfoPopup           from "@/components/global-popups/the-info-popup.vue";
   import ConfirmPopup           from "@/components/global-popups/confirm-popup.vue";
   import ModalPagesEngine       from '@/components/modal-pages-engine.vue';
@@ -54,7 +56,7 @@
       ProjectSidebar,
       ModalPagesEngine,
       HeaderLinux, HeaderWin, HeaderMac,
-      UpdatePopup, TheInfoPopup, ConfirmPopup, CreateIssuePopup
+      UpdatePopup, TheInfoPopup, ConfirmPopup, CreateIssuePopup, PiPyPopupUpdate
     },
     created() {
       window.addEventListener('online',  this.updateOnlineStatus);
@@ -169,6 +171,7 @@
         isDefaultProjectMode:   'mod_project/GET_isDefaultProjectMode',
         currentProject:         'mod_project/GET_project',
         networksWithChanges:    'mod_workspace-changes/get_networksWithChanges',
+        showPiPyNotification:   'mod_workspace-notifications/getPiPyShowNotification'
       }),
       platform() {
         return this.$store.state.globalView.platform
