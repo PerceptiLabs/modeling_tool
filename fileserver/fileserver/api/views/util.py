@@ -1,6 +1,6 @@
 from django.http import HttpResponse
 from django_http_exceptions import HTTPExceptions
-from fileserver.settings import SERVING_ROOT
+from fileserver.api.models.directory import resolve_dir
 import json
 import os
 
@@ -14,25 +14,22 @@ def get_optional_param(request, param, default):
     qp = request.query_params
     return qp[param] if qp.__contains__(param) else default
 
-def get_full_path(sub_path):
-    full_path = f"{SERVING_ROOT}/{sub_path}"
-    if not os.path.abspath(full_path).startswith(SERVING_ROOT):
-        msg = f"path parameter {sub_path} is not a valid path"
-        raise HTTPExceptions.BAD_REQUEST().with_content(msg)
-    return full_path
+def get_full_path(raw_path):
+    resolved = resolve_dir(raw_path)
+    return os.path.abspath(os.path.join("/", resolved))
 
 # Extracts the required "path" parameter from the request and validates it
 def get_path_param(request):
-    sub_path = get_required_param(request, "path")
-    return (get_full_path(sub_path), sub_path)
+    raw_path = get_required_param(request, "path")
+    return get_full_path(raw_path)
 
 def json_response(response_content):
     response_json = json.dumps(response_content)
     return HttpResponse(response_json, content_type="application/json")
 
 
-def make_path_response(full_path, sub_path):
-    return json_response({"path": sub_path})
+def make_path_response(full_path):
+    return json_response({"path": full_path})
 
 
 def request_as_dict(request):

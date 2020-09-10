@@ -1,5 +1,10 @@
 from django.test import TestCase
-from fileserver.api.models.directory import get_folder_content
+import unittest
+from fileserver.api.models.directory import (
+        get_folder_content,
+        resolve_dir,
+        get_tutorial_data,
+        )
 from fileserver.tests.utils import (
         temp_local_file,
         temp_local_dir,
@@ -15,7 +20,7 @@ class FolderContentsTest(TestCase):
              temp_local_file(f"{sd}/file_in_second.txt", "abc") as f:
                 r = get_folder_content(sd)
                 self.assertEqual(r, {
-                    'current_path': 'first/second',
+                    'current_path': f"{os.getcwd()}/first/second",
                     'dirs': ['third'],
                     'files': ['file_in_second.txt'],
                     'platform': platform.system()})
@@ -42,3 +47,19 @@ class FolderContentsTest(TestCase):
         as_lower = [d.lower() for d in r["dirs"]]
         self.assertTrue("c:" in as_lower)
         self.assertEqual(r['platform'], "Windows")
+
+class ResolveDirTests(TestCase):
+    @unittest.skipIf(platform.system() == "Windows", "Skipping non-windows test")
+    def test_posix(self):
+        resolved = resolve_dir("~/some/dir")
+        self.assertTrue(resolved.endswith("/some/dir"))
+        self.assertNotIn("~",  resolved)
+
+class TutorialDataTests(TestCase):
+    def test_without_tutorials(self):
+        self.assertIsNone(get_tutorial_data())
+
+    def test_with_tutorials(self):
+        with temp_local_dir("perceptilabs") as p,\
+             temp_local_dir("perceptilabs/tutorial_data") as t:
+            self.assertEqual(f"{os.getcwd()}/{t}", get_tutorial_data())

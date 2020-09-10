@@ -112,10 +112,6 @@ USE_TZ = True
 
 STATIC_URL = "/static/"
 
-SERVING_ROOT = os.getenv("PL_FILE_SERVING_ROOT") or os.getcwd()
-if not os.path.exists(SERVING_ROOT):
-    os.makedirs(SERVING_ROOT)
-
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,

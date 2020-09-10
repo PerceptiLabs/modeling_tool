@@ -9,7 +9,7 @@ from rest_framework.decorators import api_view
 
 @api_view(["GET", "HEAD"])
 def get_modeldirectory(request):
-    full_path, sub_path = get_path_param(request)
+    full_path = get_path_param(request)
     try:
         # we'll cheat by getting the contents generator and never iterating it.
         seq = get_contents(full_path)
@@ -18,11 +18,11 @@ def get_modeldirectory(request):
     except ValueError as e:
         raise HTTPExceptions.BAD_REQUEST.with_content(e)
 
-    return json_response({"path": sub_path})
+    return json_response({"path": full_path})
 
 @api_view(["GET"])
 def modeldirectory_tree(request):
-    full_path, sub_path = get_path_param(request)
+    full_path = get_path_param(request)
 
     try:
         paths_iter = get_contents(full_path)
@@ -32,7 +32,7 @@ def modeldirectory_tree(request):
     page, contents = get_paged_iter(paths_iter, request)
 
     return json_response({
-            "path": sub_path,
+            "path": full_path,
             "page": page,
             "contents": contents,
             })

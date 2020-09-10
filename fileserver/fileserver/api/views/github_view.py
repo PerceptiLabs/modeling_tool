@@ -18,7 +18,7 @@ def connect_to_repo(token, repo_name):
 
 @api_view(['POST'])
 def github_export(request):
-    full_path, *_ = get_path_param(request)
+    full_path = get_path_param(request)
     as_dict = request_as_dict(request)
 
     # required
