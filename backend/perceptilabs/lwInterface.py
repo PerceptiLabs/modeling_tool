@@ -482,12 +482,13 @@ class getPreviewBatchSample(LW_interface_base):
                 if 'previewVariable' in self._json_network[id_]:
                     try:
                         sample = data.sample[self._json_network[id_]['previewVariable']]
-                        dataObject = createDataObject([self._reduceTo2d(np.asarray(sample))])
+                        dataObject = createDataObject([self._reduceTo2d(np.asarray(sample).squeeze())])
                         if self._is_jsonable(dataObject):
                             returnJson[id_] = dataObject
                         else:
                             returnJson[id_] = None
                     except:
+                        logger.warning(f"A visualization of output variable '{self._json_network[id_]['previewVariable']}' could not be created for component '{self._json_network[id_]['Name']}'")
                         returnJson[id_] = None             
                 else:
                     returnJson[id_] = None
