@@ -3,7 +3,7 @@ from fileserver.api.views.file_view import FileView
 from fileserver.api.views.directory_view import DirectoryView, get_tutorial_data
 from fileserver.api.views.json_model_view import JsonModelView
 from fileserver.api.views.model_directory_view import (modeldirectory_tree, get_modeldirectory)
-from fileserver.api.views.github_view import (github_export, github_import)
+from fileserver.api.views.github_view import (github_export, github_import, github_issue)
 
 urlpatterns = [
     path("files", FileView.as_view()),
@@ -14,4 +14,5 @@ urlpatterns = [
     path("modeldirectories", get_modeldirectory),
     path(r"github/export", github_export),
     path(r"github/import", github_import),
+    path(r"github/issue", github_issue),
 ]

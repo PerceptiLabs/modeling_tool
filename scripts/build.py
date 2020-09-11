@@ -278,6 +278,11 @@ def set_perceptilabs_inner_version(rootDir, versions: Versions):
     sed_i(init_py, "^__version__ *=.*", f"__version__='{versions.as_pep440}'")
 
 
+def set_fileserver_inner_version(rootDir, versions: Versions):
+    init_py = os.path.join(rootDir, "fileserver", "__init__.py")
+    sed_i(init_py, "^__version__ *=.*", f"__version__='{versions.as_pep440}'")
+
+
 def set_rygg_inner_version(rootDir, versions: Versions):
     init_py = os.path.join(rootDir, "rygg", "__init__.py")
     sed_i(init_py, "^__version__ *=.*", f"__version__='{versions.as_pep440}'")
@@ -290,6 +295,7 @@ def set_wheel_version(versions: Versions):
     print(f"setting wheel version to {versions.as_pep440}")
     write_version_file(BUILD_TMP, versions)
     set_perceptilabs_inner_version(BUILD_TMP, versions)
+    set_fileserver_inner_version(BUILD_TMP, versions)
     set_rygg_inner_version(BUILD_TMP, versions)
 
 # update the version field in the package.json file

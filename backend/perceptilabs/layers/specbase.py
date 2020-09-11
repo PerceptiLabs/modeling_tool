@@ -6,6 +6,7 @@ from collections import namedtuple
 
 from pydantic import BaseModel
 
+from perceptilabs.utils import stringify
 from perceptilabs.logconf import APPLICATION_LOGGER
 import perceptilabs.layers.specutils as specutils
 
@@ -41,10 +42,7 @@ class MyModelMetaclass(pydantic.main.ModelMetaclass):
             
             annotations = {}
             for var_name, value in namespace.items():
-                if (
-                        pydantic.main.is_valid_field(var_name)
-                        and not isinstance(value, untouched_types)
-                ):
+                if pydantic.main.is_valid_field(var_name) and not isinstance(value, untouched_types):
                     annotations[var_name] = Any
                     
             namespace['__annotations__'] = annotations
@@ -54,7 +52,8 @@ class MyModelMetaclass(pydantic.main.ModelMetaclass):
     
 def dummy_func():
     pass
-    
+
+
 class MyBaseModel(BaseModel, metaclass=MyModelMetaclass):
     # Pydantic does not know how to ignore Cython functions, so we have to configure that explicitly
     
@@ -82,6 +81,8 @@ class LayerSpec(ABC, MyBaseModel):
     id_: str = None
     name: str = None
     type_: str = None
+    preview_variable: str = ''
+    get_preview: bool = False
     backward_connections: Tuple[LayerConnection, ...] = ()
     forward_connections: Tuple[LayerConnection, ...] = ()
     visited: bool = False
@@ -104,22 +105,23 @@ class LayerSpec(ABC, MyBaseModel):
         return self.__class__(**params)
 
 
-    def compute_field_hash(self, ignore_id_and_name=True, ignore_forward_connections=True, prefer_custom_code=True):
+    def compute_field_hash(self, ignore_forward_connections=True, prefer_custom_code=True):
         """ Computes a hash based on a _subset_ of the fields.
 
         Computes a hash based on the fields. This method is kept distinct from a __hash__ implementation since we have the option to ignore forward connections and ids.
 
         args:
-           ignore_id_and_name: if true, id and name note included in the hash. Not guaranteed if 'prefer_custom_code' is true.
            ignore_forward_connections: if true, skip forward connections.
            prefer_custom_code: if true, the hash will be based on that only. 
         """
+        ignored_fields = ['id_', 'name', 'visited', 'preview_variable', 'get_preview']
+
         if prefer_custom_code and self.custom_code is not None:
             return hash(self.custom_code)
         else:
             field_hashes = 0
             for field_name in self.fields.keys():
-                if ignore_id_and_name and field_name in ['id_', 'name', 'visited']:
+                if field_name in ignored_fields:
                     continue
                 if ignore_forward_connections and field_name == 'forward_connections':
                     continue
@@ -128,7 +130,7 @@ class LayerSpec(ABC, MyBaseModel):
                 try:
                     field_hashes += hash(field_name+str(hash(field_value)))
                 except TypeError:
-                    logger.exception(f"Failed hashing field {field_name} with type {field_value}")
+                    logger.exception(f"Failed hashing field {field_name} with type {type(field_value)} in layer {self.id_} [{self.type_}]")
                     raise     
             return hash(field_hashes)
         
@@ -174,6 +176,8 @@ class LayerSpec(ABC, MyBaseModel):
             'name': dict_.get('Name'),
             'type_': dict_.get('Type'),
             'visited': dict_.get('visited', False),
+            'preview_variable': dict_.get('previewVariable', ''),
+            'get_preview': dict_.get('getPreview', False),                        
             'end_points': tuple(dict_.get('endPoints', ())),
             'checkpoint_path': cls.resolve_checkpoint_path(dict_),
             'backward_connections': resolve_bw_cons(dict_),
@@ -193,6 +197,9 @@ class LayerSpec(ABC, MyBaseModel):
         dict_['Name'] = self.name
         dict_['Type'] = self.type_
         dict_['Code'] = self.custom_code
+        dict_['visited'] = self.visited
+        dict_['previewVariable'] = self.preview_variable
+        dict_['getPreview'] = self.get_preview        
         dict_['endPoints'] = list(self.end_points)
 
         if self.checkpoint_path is None:
@@ -223,17 +230,18 @@ class LayerSpec(ABC, MyBaseModel):
     def _to_dict_internal(self, dict_: Dict[str, Any]) -> Dict[str, Any]:
         """ Deconstructs a layer spec into a 'json network' layer dict """
         raise NotImplementedError        
-    
-
-        
+            
     @property
     def sanitized_name(self) -> str:
         """ Name with spaces replaced by underscore, as well as a prepended underscore. Prepended layer type """
         return self.type_ + sanitize_name(self.name)
 
-    def __repr__(self):
+    def __str__(self):
         return f"{self.__class__.__name__} (name: {self.name}, id: {self.id_}, type: {self.type_})"
-        
+
+    def __repr__(self):
+        return str(self) + '\n' + stringify(self.to_dict())
+    
     @classmethod
     def resolve_checkpoint_path(cls, dict_):
         import platform
@@ -255,12 +263,30 @@ class LayerSpec(ABC, MyBaseModel):
                 
         ckpt_path = os.path.dirname(ckpt_path)
         ckpt_path = ckpt_path.replace('\\','/')
-        return ckpt_path        
+        return ckpt_path
+
+    @property
+    def should_show_errors(self):
+        """ Returns true if the user has configured the component.
+
+        Some classes can be partially configured. For example, DataData layers whose file paths aren't specified."""
+        return self.visited
+
+
+class InnerLayerSpec(LayerSpec):
+    @property
+    def should_show_errors(self):
+        """ Inner layers can also have atleast one input layer to be configured """
+        if not super().should_show_errors:
+            return False
+
+        if len(self.backward_connections) == 0:
+            return False
+
+        return True
+            
     
-        
-        
-        
-        
+
 class DummySpec(LayerSpec):
     pass
 

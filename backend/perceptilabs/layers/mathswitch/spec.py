@@ -1,9 +1,9 @@
 from typing import Tuple, Dict, Any, Union
 
-from perceptilabs.layers.specbase import LayerSpec, LayerConnection
+from perceptilabs.layers.specbase import LayerSpec, LayerConnection, InnerLayerSpec
 
 
-class MathSwitchSpec(LayerSpec):
+class MathSwitchSpec(InnerLayerSpec):
     type_: str = 'MathSwitch'
     selected_layer_id: Union[str, None] = "input1" 
     selected_var_name: Union[str, None] = "input1"

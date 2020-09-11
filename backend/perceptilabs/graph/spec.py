@@ -46,9 +46,13 @@ class GraphSpec(ABC):
         return cls(layer_specs)
 
     @property
-    def nodes(self) -> List[LayerSpec]:
+    def layers(self) -> List[LayerSpec]:
         return list(self.nodes_by_id.values())
 
+    @property
+    def nodes(self) -> List[LayerSpec]:
+        return self.layers
+    
     @property
     def edges(self) -> List[LayerSpec]:
         return list(self._nx_graph.edges)

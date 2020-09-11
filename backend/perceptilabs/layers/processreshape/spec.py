@@ -1,9 +1,9 @@
 from typing import Tuple, Dict, Any
 
-from perceptilabs.layers.specbase import LayerSpec
+from perceptilabs.layers.specbase import LayerSpec, InnerLayerSpec
 
 
-class ProcessReshapeSpec(LayerSpec):
+class ProcessReshapeSpec(InnerLayerSpec):
     type_: str = 'ProcessReshape'
     shape: Tuple[int, ...] = ()
     permutation: Tuple[int, ...] = ()

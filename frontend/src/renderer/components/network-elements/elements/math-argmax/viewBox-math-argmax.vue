@@ -3,7 +3,7 @@
     .statistics-box_main.statistics-box_col
       chart-switch(
         chart-label="Output"
-        :chart-data="chartData.MathArgmax"
+        :chart-data="chartData.Output"
       )
 </template>
 

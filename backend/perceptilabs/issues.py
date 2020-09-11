@@ -95,7 +95,7 @@ class UserlandError:
         self.code = code
 
     def format(self, with_code=False):
-        text = f'Error in layer {self.layer_id} [{self.layer_type}]. '
+        text = f'Userland error in layer {self.layer_id} [{self.layer_type}]. '
         
         if self.line_number is not None:
             text += f'Line: {self.line_number}'

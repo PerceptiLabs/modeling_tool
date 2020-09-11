@@ -1,10 +1,10 @@
 from typing import Tuple, Dict, Any
 
 
-from perceptilabs.layers.specbase import LayerSpec
+from perceptilabs.layers.specbase import LayerSpec, InnerLayerSpec
 
 
-class ProcessOneHotSpec(LayerSpec):
+class ProcessOneHotSpec(InnerLayerSpec):
     type_: str = 'ProcessOneHot'
     n_classes: int = 10
     

@@ -44,7 +44,7 @@ def make_graph_spec(inputs_path, targets_path, learning_rate=0.3, checkpoint_pat
             type_='file',
             path=inputs_path.replace('\\','/'),
             ext='.npy',
-            split=(100, 0, 0)            
+            split=(70, 20, 10)            
         )],
         forward_connections=(conn_inputs_to_fc,)
     )
@@ -62,7 +62,7 @@ def make_graph_spec(inputs_path, targets_path, learning_rate=0.3, checkpoint_pat
             type_='file',
             path=targets_path.replace('\\','/'),
             ext='.npy',
-            split=(100, 0, 0)            
+            split=(70, 20, 10)            
         )],
         forward_connections=(conn_labels_to_train,)
     )

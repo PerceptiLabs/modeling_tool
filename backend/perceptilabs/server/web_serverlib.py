@@ -6,10 +6,13 @@ import io
 import os
 import logging
 import pprint
+
+from perceptilabs.utils import RateCounter
 from perceptilabs.logconf import APPLICATION_LOGGER
 
 
 logger = logging.getLogger(APPLICATION_LOGGER)
+
 
 
 class Message:
@@ -18,6 +21,10 @@ class Message:
         self._jsonheader_len = None
         self.jsonheader = None
         self._interface = interface
+
+        if logger.isEnabledFor(logging.DEBUG):                
+            self._bytes_in = RateCounter(window=3)
+            self._bytes_out = RateCounter(window=3)        
 
     def _json_encode(self, obj, encoding):
         return json.dumps(obj, ensure_ascii=False).encode(encoding)
@@ -96,6 +103,10 @@ class Message:
 
     async def interface(self, websocket, path):
         self.request = await websocket.recv()
+
+        if logger.isEnabledFor(logging.DEBUG):                
+            self._bytes_in.add_entry(value=len(self.request))
+        
         self.process_protoheader()
         self.process_jsonheader()
         self.process_request()
@@ -116,6 +127,11 @@ class Message:
         response = json.dumps(response)
 
         await websocket.send(response)
+        
+        if logger.isEnabledFor(logging.DEBUG):        
+            self._bytes_out.add_entry(value=len(response))
+            logger.debug(f'Bytes in per/s: {self._bytes_in.get_average_value()}. Requests per second {self._bytes_in.get_average_count()}')
+            logger.debug(f'Bytes out per/s: {self._bytes_out.get_average_value()}. Responses per second {self._bytes_out.get_average_count()}')                    
 
 
 # import logging        

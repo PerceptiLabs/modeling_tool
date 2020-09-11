@@ -1,7 +1,8 @@
 from collections.abc import  Iterable
 from fileserver.api.interfaces.github_export import RepoExporterAPI
+from fileserver.api.interfaces.github_issue import CreateIssueAPI
 from rest_framework.decorators import api_view
-from fileserver.api.models.github import export_repo_basic, import_repo
+from fileserver.api.models.github import export_repo_basic, import_repo, create_issue
 from fileserver.api.views.util import (
         get_required_param,
         get_path_param,
@@ -55,6 +56,26 @@ def github_import(request):
     try:
         import_repo(path, url, overwrite=overwrite)
         response = {"path": path}
+        return HttpResponse(json.dumps(response), content_type="application/json")
+    except ValueError as e:
+        raise HTTPExceptions.BAD_REQUEST.with_content(e)
+
+
+@api_view(['POST'])
+def github_issue(request):
+    
+    as_dict = request_as_dict(request)
+
+    github_token = get_required_body_param("github_token", as_dict)
+    issue_type = get_required_body_param("issue_type", as_dict)
+    title = as_dict.get("title")
+    body = as_dict.get("body")
+
+    try:
+        api = CreateIssueAPI(github_token,issue_type)
+        number = create_issue(api, title, body)
+
+        response = {"Issue Number": number}
         return HttpResponse(json.dumps(response), content_type="application/json")
     except ValueError as e:
         raise HTTPExceptions.BAD_REQUEST.with_content(e)

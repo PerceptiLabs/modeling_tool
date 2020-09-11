@@ -50,7 +50,13 @@ class {{layer_spec.sanitized_name}}(DataSupervised):
                 trn_sz = int(round(0.01*{{source.split[0]}}*size_{{tag}}))
                 val_sz = int(round(0.01*{{source.split[1]}}*size_{{tag}}))
                 tst_sz = int(size_{{tag}} - trn_sz - val_sz)
-        
+
+                if trn_sz <= 0:
+                    raise ValueError('Training dataset cannot be zero')
+                
+                if tst_sz <= 0:
+                    raise ValueError('Testing dataset cannot be zero')
+
                 trn_sz_tot += trn_sz
                 val_sz_tot += val_sz
                 tst_sz_tot += tst_sz

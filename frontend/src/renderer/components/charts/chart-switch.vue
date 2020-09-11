@@ -266,4 +266,17 @@
   .icon-full-screen-graph {
     color: #B6C7FB;
   }
+
+  .data-settings_chart {
+    .base-chart_main {
+      min-height: 140px;
+      display: flex;
+      align-items: center;
+
+      canvas {
+        max-height: 140px;
+      }
+    }
+  }
+
 </style>

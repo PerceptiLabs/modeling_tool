@@ -1,3 +1,5 @@
+import bisect
+import time
 import copy
 import warnings
 import functools
@@ -167,55 +169,13 @@ def get_start_nodes(graph):
             start_nodes.append(id_)
         return start_nodes
 
-
+    
+@deprecated
 def patch_net_connections(original_network):
     """ Converts forward/backward connection layers to comply with new standard """
     if True:
         return original_network
     
-    new_network = copy.deepcopy(original_network) # defensive copy
-    for layer_id, layer_dict in new_network.items():
-        bw_cons = layer_dict['backward_connections']
-        fw_cons = layer_dict['forward_connections']
-        
-        if (len(bw_cons) > 0 and isinstance(bw_cons[0], dict)) or (len(fw_cons) > 0 and isinstance(fw_cons[0], dict)):
-            # new-style json network, return
-            return original_network
-
-        layer_dict['backward_connections'] = [
-            {'src_id': src_id, 'src_var': 'output', 'dst_var': 'input'}
-            for src_id, src_name in bw_cons
-        ]
-        layer_dict['forward_connections'] = [
-            {'dst_id': dst_id, 'src_var': 'output', 'dst_var': 'input'}                
-            for dst_id, dst_name in fw_cons
-        ]
-        new_network[layer_id] = layer_dict
-
-
-    # ----
-    for layer_id, layer_dict in new_network.items():
-        bw_cons = layer_dict['backward_connections']
-        fw_cons = layer_dict['forward_connections']
-        
-
-        if layer_dict['Type'] == 'TrainNormal':
-            for idx, conn_spec in enumerate(bw_cons):
-                src_id = conn_spec['src_id']
-                dst_id = layer_id
-                if src_id == layer_dict['Properties']['Labels']:
-                    new_network[dst_id]['backward_connections'][idx]['dst_var'] = 'labels'
-                    new_network[src_id]['forward_connections'][0]['dst_var'] = 'labels'
-                    
-                else:
-                    new_network[dst_id]['backward_connections'][idx]['dst_var'] = 'predictions'                    
-                    new_network[src_id]['forward_connections'][0]['dst_var'] = 'predictions'
-
-                
-            new_network[layer_id] = layer_dict
-
-    return new_network
-
 
 class DummyExecutor(Executor):
 
@@ -282,16 +242,51 @@ def get_object_size(data_obj, obj_ids: Set[int]) -> int:
     
     else:
         return 0
+
+
+
     
+class RateCounter:
     
+    class Entry:
+        def __init__(self, t, v):
+            self.t = t
+            self.v = v
+            
+        def __lt__(self, other):
+            return self.t < other.t            
+    
+    def __init__(self, window):
+        self._window = window
+        self._entries = []
+
+    def _purge(self):
+        i = 0
+        t = time.time()
+        while i < len(self._entries):
+            if self._entries[i].t < t - self._window:
+                del self._entries[i]
+            i += 1
+            
+    def add_entry(self, value=None):
+        bisect.insort(self._entries, self.Entry(time.time(), value or 1))
+
+    def get_average_value(self):
+        self._purge()
+        try:
+            return sum(e.v for e in self._entries)/self._window
+        except:
+            return 0
+
+    def get_average_count(self):
+        self._purge()
+        try:
+            return len(self._entries)/self._window
+        except:
+            return 0
+
+        
+            
 if __name__ == "__main__":
-    import numpy as np
-    obj = {
-        'hello': '123456',
-        'hehe': {
-            'bla': [213,]*10,
-            'zzz': np.random.random((25, 323))
-        }
-    }    
-    x = stringify(obj)
-    print(x)
+    rc = RateCounter(1)
+    import pdb; pdb.set_trace()

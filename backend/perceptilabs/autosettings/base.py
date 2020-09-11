@@ -35,7 +35,7 @@ class SettingsEngine:
         self._rule_classes = inference_rules
         self._lw_core = lw_core
 
-    def run(self, graph_spec: GraphSpec):
+    def run(self, graph_spec: GraphSpec, lw_results=None):
         skip_ids = []
         for spec in graph_spec.nodes_by_id.values():
             if spec.visited:
@@ -51,13 +51,14 @@ class SettingsEngine:
 
         # Loop over IDs instead of objects because the object instance will change
         new_specs = {}
-        lw_results = None
+
+
         current_graph_spec = graph_spec
         for layer_id in ordered_ids:
             original_layer_spec = current_graph_spec.nodes_by_id[layer_id]
             spec_class = get_layer_definition(original_layer_spec.type_).spec_class
-        
-            if self._lw_core:
+
+            if lw_results is None and self._lw_core is not None:            
                 lw_results = self._lw_core.run(current_graph_spec)
 
             # Apply all topologically valid rules in order
@@ -73,8 +74,9 @@ class SettingsEngine:
                 current_graph_dict[current_layer_spec.id_] = current_layer_spec.to_dict()
                 current_graph_spec = GraphSpec.from_dict(current_graph_dict)
                 
-                
-        return new_specs
+
+        
+        return current_graph_spec
 
     def _maybe_apply_rule(self, rule, current_graph_spec, current_layer_spec, lw_results):
         new_layer_spec = current_layer_spec # Default

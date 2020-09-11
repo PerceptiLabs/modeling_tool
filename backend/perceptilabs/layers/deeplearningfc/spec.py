@@ -1,10 +1,10 @@
 from typing import Tuple, Dict, Any, Union
 
 
-from perceptilabs.layers.specbase import LayerSpec
+from perceptilabs.layers.specbase import InnerLayerSpec, LayerSpec
 
 
-class DeepLearningFcSpec(LayerSpec):
+class DeepLearningFcSpec(InnerLayerSpec):
     type_: str = 'DeepLearningFC'
     n_neurons: Union[int, None] = 10
     activation: str = 'Sigmoid'

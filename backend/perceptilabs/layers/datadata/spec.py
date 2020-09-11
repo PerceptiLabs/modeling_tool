@@ -82,3 +82,15 @@ class DataDataSpec(LayerSpec):
         }
         return dict_
         
+    @property
+    def should_show_errors(self):
+        """ Must have atleast one data source to be fully configured """
+        if len(self.forward_connections) > 0:
+            # If we have a forward connection, show all errors.
+            return True
+
+        if self.visited and len(self.sources) == 0:
+            # If the user made changes but didn't provide a data source.
+            return True            
+        
+        return super().should_show_errors
