@@ -114,7 +114,7 @@ def make_graph_spec(tutorial_data_path, learning_rate=0.3, checkpoint_path=None,
 @pytest.fixture()
 def graph_spec(tutorial_data_path):
     graph_spec = make_graph_spec(
-        os.path.join(tutorial_data_path, 'mnist_gan.npy').replace('\\','/')
+        os.path.join(tutorial_data_path, 'gan_mnist.npy').replace('\\','/')
     )        
     yield graph_spec
 
@@ -183,7 +183,7 @@ def test_save_model(script_factory, graph_spec):
 
 def test_initial_weights_differ(script_factory, tutorial_data_path):
     """ Check that the weights are DIFFERENT when creating two graphs. If not, it might not be meaningful to test loading a checkpoint """
-    inputs_path = os.path.join(tutorial_data_path, 'mnist_gan.npy')
+    inputs_path = os.path.join(tutorial_data_path, 'gan_mnist.npy')
     
     # --- Create a graph ---
     graph_spec1 = make_graph_spec(

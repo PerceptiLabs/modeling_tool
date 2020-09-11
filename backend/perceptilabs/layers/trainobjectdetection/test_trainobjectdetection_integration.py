@@ -77,7 +77,7 @@ def test_can_yield(script_factory, tutorial_data_path):
         name='layer_inputs',
         sources=[DataSource(
             type_='file',
-            path=os.path.join(tutorial_data_path, 'od_train_7.npy'),
+            path=os.path.join(tutorial_data_path, 'object_detection_input.npy'),
             ext='.npy',
             split=(70, 20, 10)            
         )],
@@ -106,7 +106,7 @@ def test_can_yield(script_factory, tutorial_data_path):
         name='layer_labels',
         sources=[DataSource(
             type_='file',
-            path=os.path.join(tutorial_data_path, 'od_labels_7.npy'),
+            path=os.path.join(tutorial_data_path, 'object_detection_labels.npy'),
             ext='.npy',
             split=(70, 20, 10)            
         )],
