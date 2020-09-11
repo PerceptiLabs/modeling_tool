@@ -29,7 +29,9 @@ def grayscale2RGBA(data):
 
     return flatData
 
-def subsample(sample,endSize=500):
+def subsample(sample, endSize=500):
+    """ downsamples an array such that the first two dimensions are <= endSize """
+    
     if len(sample.shape)==1:
         length=sample.size
         if length>endSize:
@@ -60,22 +62,6 @@ def convertToList(npy):
     npy = np.atleast_1d(npy).tolist()
     return npy
     
-    '''
-    if isinstance(npy, list):
-        return npy
-    
-    if len(npy.shape)==0:
-        import pdb; pdb.set_trace()
-        if isinstance(npy, np.integer):
-            npy=[int(npy)]
-        elif isinstance(npy, np.floating):
-            npy=[float(npy)]
-    elif len(npy.shape)==1:
-        npy=npy.tolist()
-    elif len(npy.shape)>1:
-        npy=npy.tolist()
-    return npy
-    '''
 
 TYPE_BAR       = "bar"
 TYPE_LINE      = "line"
@@ -112,6 +98,7 @@ def heatmap(dataVec, subSampleSize=None):
 
 
 def grayscale(dataVec, subSampleSize=None):
+    dataVec = subsample(dataVec, subSampleSize)    
     height, width = dataVec.shape[0:2]
     dataVec = grayscale2RGBA(dataVec)
     
@@ -123,6 +110,7 @@ def grayscale(dataVec, subSampleSize=None):
 
 
 def rgb(dataVec, subSampleSize=None):
+    dataVec = subsample(dataVec, subSampleSize)    
     height, width = dataVec.shape[0:2]
     dataVec = RGB2RGBa(dataVec)
     
@@ -181,7 +169,7 @@ def getType(dataVec):
     else:
         return TYPE_SCATTER   
 
-def createDataObject(dataList,typeList=None,styleList=None,nameList=None,subSampleSize=500):
+def createDataObject(dataList,typeList=None,styleList=None,nameList=None,subSampleSize=200):
     # return {}
     if np.any(np.asarray(dataList).ravel() is None):
         return {}

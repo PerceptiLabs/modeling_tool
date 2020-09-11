@@ -433,7 +433,25 @@ class getPreviewBatchSample(LW_interface_base):
                     returnJson[id_] = None
             else:
                 continue
+
+
+        self._maybe_log_obj_sizes(returnJson)
         return returnJson
+
+    def _maybe_log_obj_sizes(self, returnJson):
+        if not logger.isEnabledFor(logging.DEBUG):
+            return
+        
+        for id_, data_obj in returnJson.items():
+            for s in data_obj['series']:
+                try:
+                    logger.info(
+                        f"preview sample {id_}: length {len(s['data'])}, "
+                        f"height {s['height']}, width {s['width']}"
+                    )
+                except:
+                    pass
+            
 
 class getPreviewVariableList(LW_interface_base):
     def __init__(self, layer_id, lw_core, graph_spec):

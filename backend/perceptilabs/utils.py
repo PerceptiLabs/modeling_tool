@@ -1,3 +1,5 @@
+import bisect
+import time
 import copy
 import warnings
 import functools
@@ -282,16 +284,51 @@ def get_object_size(data_obj, obj_ids: Set[int]) -> int:
     
     else:
         return 0
+
+
+
     
+class RateCounter:
     
+    class Entry:
+        def __init__(self, t, v):
+            self.t = t
+            self.v = v
+            
+        def __lt__(self, other):
+            return self.t < other.t            
+    
+    def __init__(self, window):
+        self._window = window
+        self._entries = []
+
+    def _purge(self):
+        i = 0
+        t = time.time()
+        while i < len(self._entries):
+            if self._entries[i].t < t - self._window:
+                del self._entries[i]
+            i += 1
+            
+    def add_entry(self, value=None):
+        bisect.insort(self._entries, self.Entry(time.time(), value or 1))
+
+    def get_average_value(self):
+        self._purge()
+        try:
+            return sum(e.v for e in self._entries)/self._window
+        except:
+            return 0
+
+    def get_average_count(self):
+        self._purge()
+        try:
+            return len(self._entries)/self._window
+        except:
+            return 0
+
+        
+            
 if __name__ == "__main__":
-    import numpy as np
-    obj = {
-        'hello': '123456',
-        'hehe': {
-            'bla': [213,]*10,
-            'zzz': np.random.random((25, 323))
-        }
-    }    
-    x = stringify(obj)
-    print(x)
+    rc = RateCounter(1)
+    import pdb; pdb.set_trace()
