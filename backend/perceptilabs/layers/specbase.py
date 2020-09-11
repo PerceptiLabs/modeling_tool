@@ -276,15 +276,9 @@ class LayerSpec(ABC, MyBaseModel):
 class InnerLayerSpec(LayerSpec):
     @property
     def should_show_errors(self):
-        """ Inner layers can also have atleast one input layer to be configured """
-        if not super().should_show_errors:
-            return False
-
-        if len(self.backward_connections) == 0:
-            return False
-
-        return True
-            
+        """ Show errors if visited or if there are outgoing or ingoing connections """
+        return super().should_show_errors or len(self.forward_connections) > 0 or len(self.backward_connections) > 0
+           
     
 
 class DummySpec(LayerSpec):
