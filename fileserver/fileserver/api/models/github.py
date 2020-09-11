@@ -38,7 +38,8 @@ def build_export_dict(tensorpath, add_training_files: bool, datapaths=[]):
 
         for file_path in file_list:
             if (os.path.basename(file_path) in requested_files):
-                yield file_path
+                if not os.path.basename(file_path).startswith("."):
+                    yield file_path
 
     def _selected_files_dict(base_path, filenames_list):
         file_paths = _selected_files(tensorpath, filenames_list)
@@ -63,6 +64,9 @@ def build_export_dict(tensorpath, add_training_files: bool, datapaths=[]):
             ])
 
     def _data_files(datapath):
+        if os.path.isdir(datapath):
+            dir_name = os.path.basename(datapath)
+            return {os.path.join(datapath, f) : f"data/{dir_name}/{f}" for f in _all_files_to_export(datapath)}
         return {os.path.join(datapath, f) : f"data/{f}" for f in _all_files_to_export(datapath)}
 
     to_export = _base_files(tensorpath)
@@ -173,3 +177,10 @@ def import_repo(path, url, overwrite=False):
         prep_nonempty_dir_for_clone(dest_path)
 
     api.clone_to(dest_path)
+
+def create_issue(api, title, body):
+    
+    if api.issue_type == "invalid":
+        raise ValueError("Invalid Issue type")
+
+    return api._create_issue(title,body)
