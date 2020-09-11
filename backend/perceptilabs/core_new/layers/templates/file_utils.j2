@@ -6,7 +6,7 @@
         
         def generator_{{tag}}(idx_lo, idx_hi):
             global matrix_{{tag}}
-            yield from matrix_{{tag}}[idx_lo:idx_hi].squeeze()
+            yield from matrix_{{tag}}[idx_lo:idx_hi]
     {% endfilter %}
 {% endmacro %}
 
@@ -76,7 +76,7 @@
         {% endfilter %}
         def generator_{{tag}}(idx_lo, idx_hi):
             global df_{{tag}}
-            yield from df_{{tag}}.astype(np.float32).iloc[idx_lo:idx_hi].values.squeeze()
+            yield from df_{{tag}}.astype(np.float32).iloc[idx_lo:idx_hi].values
     {% endif %}
 {% endfilter %}
 {%- endmacro %}
@@ -106,7 +106,7 @@
             matrices_{{tag}}.append(matrix)
 
         def generator_{{tag}}(idx_lo, idx_hi):
-            yield from np.array(matrices_{{tag}})[idx_lo:idx_hi].squeeze()
+            yield from np.array(matrices_{{tag}})[idx_lo:idx_hi]
     {% endif %}
 {% endfilter %}
 {%- endmacro %}
@@ -140,5 +140,5 @@
         # Bring only the values we need into memory and yield them
         for p, div_lo, div_hi in sub_divs:
             df_computed = df.get_partition(p).compute()
-            yield from df_computed.astype(np.float32).iloc[div_lo-divs[p]:div_hi-divs[p]].values.squeeze()
+            yield from df_computed.astype(np.float32).iloc[div_lo-divs[p]:div_hi-divs[p]].values
 {%- endmacro %}
