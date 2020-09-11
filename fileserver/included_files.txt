@@ -4,6 +4,7 @@ fileserver/api/apps.py
 fileserver/api/interfaces/__init__.py
 fileserver/api/interfaces/github_export.py
 fileserver/api/interfaces/github_import.py
+fileserver/api/interfaces/github_issue.py
 fileserver/api/migrations/__init__.py
 fileserver/api/models/__init__.py
 fileserver/api/models/directory.py
