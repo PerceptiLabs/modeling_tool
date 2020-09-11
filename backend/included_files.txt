@@ -96,6 +96,16 @@ perceptilabs/layers/processonehot/imports.json
 perceptilabs/layers/processgrayscale/spec.py
 perceptilabs/layers/processgrayscale/imports.json
 
+# perceptilabs/layers/mathargmax
+perceptilabs/layers/mathargmax/spec.py
+perceptilabs/layers/mathargmax/imports.json
+perceptilabs/layers/mathargmax/template.j2
+
+# perceptilabs/layers/mathsoftmax
+perceptilabs/layers/mathsoftmax/spec.py
+perceptilabs/layers/mathsoftmax/imports.json
+perceptilabs/layers/mathsoftmax/template.j2
+
 # perceptilabs/layers/mathswitch
 perceptilabs/layers/mathswitch/spec.py
 perceptilabs/layers/mathswitch/imports.json

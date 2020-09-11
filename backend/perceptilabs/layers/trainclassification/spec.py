@@ -1,9 +1,9 @@
 from typing import Tuple, Dict, Any, Union
 
-from perceptilabs.layers.specbase import LayerSpec, LayerConnection
+from perceptilabs.layers.specbase import LayerSpec, LayerConnection, InnerLayerSpec
 
 
-class TrainClassificationSpec(LayerSpec):
+class TrainClassificationSpec(InnerLayerSpec):
     type_: str = 'TrainNormal'
     distributed: bool = False
     use_cpu: bool = True

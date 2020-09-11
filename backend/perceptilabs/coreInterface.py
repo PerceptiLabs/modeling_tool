@@ -868,7 +868,7 @@ class coreLogic():
 
         elif layerType in ["MathMerge", "MathSoftmax", "MathArgmax", "MathSwitch", "ProcessOneHot", "ProcessCrop", "ProcessReshape", "ProcessRescale"]:
             D=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})[-1]
-            output = createDataObject([np.squeeze(D)])
+            output = createDataObject([np.squeeze(D).astype(np.float32)])
             return {"Output":output}
         elif layerType == "ProcessGrayscale":
             D=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})[-1]

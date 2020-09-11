@@ -18,8 +18,9 @@ The layer spec class solves several problems:
     3. Implement _from_dict_internal and _to_dict_internal to parse the json network
 3. Add 'template.j2' and implement the Jinja template of the layer
 4. Add 'imports.json' and add the required import statements
-5. Add 'test_integration.py' to ensure that the files work well together (optional, but strongly recommended)
-6. Update perceptilabs/layers/definitions.py by adding a LayerMeta matching the new directory.
+5. Add 'test_<layer_name>_integration.py' to ensure that the files work well together (optional, but strongly recommended)
+6. Update backend/perceptilabs/layers/definitions.py by adding a LayerMeta matching the new directory.
+7. Add the new filepaths to backend/included_files.txt
 
 
 

@@ -1,22 +1,17 @@
-# TODO: (1) create flask server for running in remote process. (2) dynamic imports (3) more descriptive errors.
-
 import os
-import ast
 from abc import abstractmethod, ABC
 import traceback
 import logging
 import copy
 import json
 import time
-import networkx as nx
-import requests
 import importlib
 import threading
 from collections import namedtuple
 import tensorflow as tf
 import numpy as np
 from tempfile import NamedTemporaryFile
-
+from typing import Tuple, Dict, List
 
 from perceptilabs.layers.utils import resolve_checkpoint_path
 from perceptilabs.utils import stringify, add_line_numbering
@@ -38,9 +33,27 @@ from perceptilabs.logconf import APPLICATION_LOGGER
 logger = logging.getLogger(APPLICATION_LOGGER)
 
 
+class LayerResults:
+    def __init__(self, sample, out_shape, variables, columns, code_error, instantiation_error, strategy_error):
+        self.sample = sample
+        self.out_shape = out_shape
+        self.variables = variables
+        self.columns = columns
+        self.code_error = code_error
+        self.instantiation_error = instantiation_error
+        self.strategy_error = strategy_error
 
-LayerResults = namedtuple('LayerResults', ['sample', 'out_shape', 'variables', 'columns', 'code_error', 'instantiation_error', 'strategy_error'])
+    @property
+    def has_errors(self):
+        return bool(self.code_error or self.instantiation_error or self.strategy_error)
 
+    @property
+    def errors(self):
+        for error_type in ['code_error', 'instantiation_error', 'strategy_error']:
+            value = getattr(self, error_type)
+            if value is not None:
+                yield (error_type, value)
+        
 
 def exception_to_error(layer_id, layer_type, exception, line_offset=None):
     tb_obj = traceback.TracebackException(
@@ -68,6 +81,12 @@ def exception_to_error(layer_id, layer_type, exception, line_offset=None):
     error = UserlandError(layer_id, layer_type, line_no, message)
     return error
 
+
+def print_result_errors(layer_spec, results):
+    text = 'Layer ' + str(layer_spec) + ' has errors.'
+    for error_type, userland_error in results.errors:
+        text += '\n' + error_type + ': ' + userland_error.format()
+    logger.debug(text)
 
 class BaseStrategy(ABC):
     @abstractmethod
@@ -181,6 +200,7 @@ class Tf1xStrategy(BaseStrategy):
             status = checkpoint.restore(path)
             status.run_restore_ops(session=sess)
 
+            
 class TrainingStrategy(BaseStrategy):
     def __init__(self, graph_spec, script_factory):
         self._graph_spec = graph_spec
@@ -218,7 +238,6 @@ class TrainingStrategy(BaseStrategy):
             strategy_error=strategy_error
         )
         return results
-
 
             
 class DataSupervisedStrategy(BaseStrategy):
@@ -327,6 +346,9 @@ class LightweightCore:
                 if self._cache is not None:                
                     self._cache.put(layer_hash, layer_result)
                     logger.debug(f"Cached computed results for layer {layer_spec.id_} [{layer_spec.type_}]. Hash: {layer_hash}")
+
+            if logger.isEnabledFor(logging.DEBUG) and layer_result.has_errors:
+                print_result_errors(layer_spec, layer_result)        
                     
             all_results[layer_id] = layer_result                
             
@@ -361,6 +383,7 @@ class LightweightCore:
         except:
             logger.exception(f"Failed running strategy '{strategy.__class__.__name__}' on layer {layer_spec.id_}")
             raise
+
         return results
 
     def _get_layer_strategy(self, layer_obj, graph_spec=None, script_factory=None):
@@ -391,31 +414,6 @@ class LightweightCore:
         else:
             return code, None
 
-    def _get_layer_class(self, layer_spec, code):        
-        is_unix = os.name != 'nt' # Windows has permission issues when deleting tempfiles
-        with NamedTemporaryFile('wt', delete=is_unix, suffix='.py') as f:
-            f.write(code)
-            f.flush()
-
-            spec = importlib.util.spec_from_file_location("my_module", f.name)        
-            module = importlib.util.module_from_spec(spec)
-
-            try:
-                spec.loader.exec_module(module)
-            except Exception as e:
-                error = exception_to_error(layer_spec.id_, layer_spec.type_, e)
-                logger.debug(f"Layer {layer_spec.id_} raised an error when executing module")                                        
-                return None, error
-
-            class_name = layer_spec.sanitized_name
-
-            class_object = getattr(module, class_name)
-        
-        if not is_unix:
-            os.remove(f.name)
-
-        return class_object, None
-        
 
 class LightweightCoreAdapter:
     """ Compatibility with v1 core """

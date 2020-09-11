@@ -30,7 +30,7 @@ import perceptilabs.autosettings.utils as autosettings_utils
 
 
 #LW interface
-from perceptilabs.lwInterface import getRootFolder, getNotebookImports, getNotebookRunscript, getFolderContent, createFolder, saveJsonModel, getJsonModel, getGraphOrder, getDataMeta, getDataMetaV2, getPartitionSummary, getCode, getNetworkInputDim, getNetworkOutputDim, getPreviewSample, getPreviewBatchSample, getPreviewVariableList, Parse, resolveDir
+from perceptilabs.lwInterface import getRootFolder, getNotebookImports, getNotebookRunscript, getFolderContent, createFolder, saveJsonModel, getJsonModel, getGraphOrder, getDataMeta, getDataMetaV2, getPartitionSummary, getCode, GetNetworkInputDim, getNetworkOutputDim, getPreviewSample, getPreviewBatchSample, getPreviewVariableList, Parse, resolveDir, GetNetworkData
 
 logger = logging.getLogger(APPLICATION_LOGGER)
 
@@ -41,26 +41,46 @@ LW_CACHE_MAX_ITEMS = 25
 AGGREGATION_ENGINE_MAX_WORKERS = 2
 
 
+class NetworkLoader:
+    def __init__(self):
+        self._visited_layers = set()
 
+    def load(self, json_network, as_spec=False, layers_only=True):
+        """ to load the json network in a single location for easy debugging """
+        network = json_network.copy()
+        
+        if (layers_only or as_spec) and ('Layers' in network):
+            network = network['Layers']
 
-def load_network(json_network, as_spec=False, layers_only=True):
-    """ to load the json network in a single location for easy debugging """
-    network = json_network.copy()
+        self._track_visits(network)
     
-    if (layers_only or as_spec) and ('Layers' in network):
-        network = network['Layers']
-    
-    if as_spec:
-        network = GraphSpec.from_dict(network)
+        if as_spec:
+            network = GraphSpec.from_dict(network)
 
-    if logger.isEnabledFor(logging.DEBUG):
-        logger.debug("loading json network:" + pprint.pformat(network))
+        if logger.isEnabledFor(logging.DEBUG):
+            logger.debug("loading json network:" + pprint.pformat(network))
 
-    return network
+        return network
+
+    def _track_visits(self, network):
+        """ Sanity check to ensure we haven't gone from visited to not visited. """
+        reverted_visits = set()
+        for id_ in network:
+            if 'visited' not in network[id_]:
+                continue
+            
+            if network[id_]['visited']:
+                self._visited_layers.add(id_)
+            elif id_ in self._visited_layers:
+                reverted_visits.add(id_)
+
+        if reverted_visits:
+            logger.warning(f"Layers {','.join(reverted_visits)} changed from visited to not visited")
 
 
 class Interface():
     def __init__(self, cores, dataDict, checkpointDict, lwDict, issue_handler, core_mode=None, message_factory=None):
+        self._network_loader = NetworkLoader()
         self._cores=cores
         self._dataDict=dataDict
         self._checkpointDict=checkpointDict
@@ -171,7 +191,7 @@ class Interface():
             error_handler = LightweightErrorHandler()
             data_dict = {}
             
-            graph_spec = GraphSpec.from_dict(utils.patch_net_connections(jsonNetwork))
+            graph_spec = GraphSpec.from_dict(jsonNetwork)
             lw_core = LightweightCoreAdapter(graph_spec, extras_reader, error_handler, self._core.issue_handler, self._lw_cache_v2, data_dict)
             return lw_core, extras_reader, data_dict
         else:
@@ -225,7 +245,7 @@ class Interface():
         #Parse the value and send it to the correct function
         if action == "getDataMeta":
             Id = value['Id']
-            jsonNetwork = load_network(value['Network'])
+            jsonNetwork = self._network_loader.load(value['Network'])
             if "layerSettings" in value:
                 layerSettings = value["layerSettings"]
                 jsonNetwork[Id]["Properties"]=layerSettings
@@ -249,15 +269,15 @@ class Interface():
             return get_data_meta.run()
 
         elif action == "getSettingsRecommendation":
-            json_network = load_network(value["Network"])
+            #json_network = self._network_loader.load(value["Network"])
+            
+            #if self._settings_engine is not None:
+            #    new_json_network = autosettings_utils.get_recommendation(json_network, self._settings_engine)#
+            #else:
+            #    new_json_network = {}
+            #    logger.warning("Settings engine is not set. Cannot make recommendations")
 
-            if self._settings_engine is not None:
-                new_json_network = autosettings_utils.get_recommendation(json_network, self._settings_engine)
-            else:
-                new_json_network = {}
-                logger.warning("Settings engine is not set. Cannot make recommendations")
-
-            return new_json_network
+            return {}#new_json_network
                 
         elif action == "getFolderContent":
             current_path = value
@@ -293,7 +313,7 @@ class Interface():
 
         elif action == "getPartitionSummary":
             Id=value["Id"]
-            jsonNetwork = load_network(value["Network"])
+            jsonNetwork = self._network_loader.load(value["Network"])
             if "layerSettings" in value:
                 layerSettings = value["layerSettings"]
                 jsonNetwork[Id]["Properties"]=layerSettings
@@ -306,33 +326,31 @@ class Interface():
 
         elif action == "getCode":
             id_ = value['Id']            
-            graph_spec = load_network(value['Network'], as_spec=True)
+            graph_spec = self._network_loader.load(value['Network'], as_spec=True)
             
             get_code = getCode(id_=id_, graph_spec=graph_spec)                            
             return get_code.run()
 
         elif action == "getNetworkInputDim":
-            jsonNetwork = load_network(value)
+            graph_spec = self._network_loader.load(value, as_spec=True)
 
-            lw_core, extras_reader, data_container = self.create_lw_core(reciever, jsonNetwork)
+            lw_core, _, _ = self.create_lw_core(reciever, None, adapter=False)
 
-            return getNetworkInputDim(network=jsonNetwork, 
-                                    lw_core=lw_core, 
-                                    extras_reader=extras_reader).run()
-
+            output = GetNetworkInputDim(lw_core, graph_spec).run()
+            return output
         elif action == "getNetworkOutputDim":
-            jsonNetwork = load_network(value)
+            jsonNetwork = self._network_loader.load(value)
             lw_core, extras_reader, data_container = self.create_lw_core(reciever, jsonNetwork)
 
             return getNetworkOutputDim(lw_core=lw_core, 
                                     extras_reader=extras_reader).run()
 
         elif action == "getBatchPreviewSample":
-            json_network = load_network(value["Network"])
+            json_network = self._network_loader.load(value["Network"])
             lw_core, extras_reader, data_container = self.create_lw_core(reciever, json_network)
             outputDims = getNetworkOutputDim(lw_core, extras_reader).run()
 
-            graph_spec = GraphSpec.from_dict(utils.patch_net_connections(json_network))
+            graph_spec = GraphSpec.from_dict(json_network)
             lw_core, _, _ = self.create_lw_core(reciever, None, adapter=False)
 
             previews = getPreviewBatchSample(lw_core, graph_spec, json_network).run()
@@ -340,42 +358,30 @@ class Interface():
             return {"previews":previews, "outputDims": outputDims}
 
         elif action == "getNetworkData":
-            json_network = load_network(value["Network"])
-
-            if self._settings_engine is not None:
-                new_json_network = autosettings_utils.get_recommendation(json_network, self._settings_engine)
-            else:
-                new_json_network = {}
-                logger.warning("Settings engine is not set. Cannot make recommendations. Using old json_network.")
-
-            for id_,settings in new_json_network.items():
-                json_network[id_].update(settings)
-                json_network[id_]['getPreview']=True
-
-
-            lw_core, extras_reader, data_container = self.create_lw_core(reciever, json_network)
-            outputDims = getNetworkOutputDim(lw_core, extras_reader).run()
-
-            graph_spec = GraphSpec.from_dict(utils.patch_net_connections(json_network))
+            graph_spec = self._network_loader.load(value["Network"], as_spec=True)
             lw_core, _, _ = self.create_lw_core(reciever, None, adapter=False)
-            previews = getPreviewBatchSample(lw_core, graph_spec, json_network).run()
-            return {"previews":previews, "outputDims": outputDims, "newNetwork":new_json_network}
+            output = GetNetworkData(graph_spec, lw_core, self._settings_engine).run()
 
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.debug("get network data output:" + pprint.pformat(output))            
+
+            return output
+        
         elif action == "getPreviewSample":
             layer_id = value["Id"]
-            json_network = load_network(value["Network"])
+            json_network = self._network_loader.load(value["Network"])
             variable = value["Variable"]
             if variable == '(sample)' or variable is None:
                 variable = 'output' # WORKAROUND 
 
-            graph_spec = GraphSpec.from_dict(utils.patch_net_connections(json_network))            
+            graph_spec = GraphSpec.from_dict(json_network)            
             lw_core, _, _ = self.create_lw_core(reciever, None, adapter=False)
 
             return getPreviewSample(layer_id, lw_core, graph_spec, variable).run()
 
         elif action == "getPreviewVariableList":
             layer_id = value["Id"]
-            graph_spec = load_network(value["Network"], as_spec=True)
+            graph_spec = self._network_loader.load(value["Network"], as_spec=True)
             lw_core, _, _ = self.create_lw_core(reciever, None, adapter=False)
             
             return getPreviewVariableList(layer_id, lw_core, graph_spec).run()
@@ -407,15 +413,15 @@ class Interface():
                 # return {"content":"Parser Failed","errorMessage":"Parser got this Exception:\n" + str(e)}
 
         elif action == "getGraphOrder":
-            jsonNetwork = load_network(value)
+            jsonNetwork = self._network_loader.load(value)
             return getGraphOrder(jsonNetwork=jsonNetwork).run()       
 
         elif action == "getNotebookImports":
-            jsonNetwork = load_network(value)
+            jsonNetwork = self._network_loader.load(value)
             return getNotebookImports(jsonNetwork=jsonNetwork).run()          
 
         elif action == "getNotebookRunscript":
-            jsonNetwork = load_network(value)
+            jsonNetwork = self._network_loader.load(value)
             return getNotebookRunscript(jsonNetwork=jsonNetwork).run()
 
         elif action == "Close":
@@ -456,7 +462,7 @@ class Interface():
             return response
 
         elif action == "Start":
-            graph_spec = load_network(value, as_spec=True)
+            graph_spec = self._network_loader.load(value, as_spec=True)
             response = self._core.startCore(graph_spec, self._checkpointDict.copy())
             return response
 

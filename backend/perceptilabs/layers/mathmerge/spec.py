@@ -1,9 +1,9 @@
 from typing import Tuple, Dict, Any, Union
 
-from perceptilabs.layers.specbase import LayerSpec
+from perceptilabs.layers.specbase import LayerSpec, InnerLayerSpec
 
 
-class MathMergeSpec(LayerSpec):
+class MathMergeSpec(InnerLayerSpec):
     type_: str = 'MathMerge'
     merge_type: Union[str, None] = None
     merge_dim: Union[int, None] = None    

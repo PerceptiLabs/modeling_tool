@@ -1124,7 +1124,7 @@ const actions = {
               'set': res.newNetwork[ix].Properties,
               'code': res.newNetwork[ix].Code,
               tabName: currentEl.layerSettingsTabName,
-              visited: false,
+              visited: res.newNetwork[ix].visited,
             };
             dispatch('mod_workspace/SET_elementSettings', deepCopy(saveSettings), {root: true});
           }
@@ -1207,8 +1207,8 @@ const actions = {
               'elId': ix,
               'set': res.newNetwork[ix].Properties,
               'code': res.newNetwork[ix].Code,
-              tabName: currentEl.layerSettingsTabName,
-              visited: false,
+		tabName: currentEl.layerSettingsTabName,
+              visited: res.newNetwork[ix].visited,		
             };
             
             dispatch('mod_workspace/SET_elementSettings', deepCopy(saveSettings), {root: true});

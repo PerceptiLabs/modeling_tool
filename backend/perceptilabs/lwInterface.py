@@ -24,7 +24,14 @@ class LW_interface_base(ABC):
             return dict[variable]
         except:
             return ""
-
+        
+    def _reduceTo2d(self, data):
+        data_shape=np.shape(np.squeeze(data))
+        if len(data_shape)<=2 or (len(data_shape)==3 and (data_shape[-1]==3 or data_shape[-1]==1)):
+            return data
+        else:
+            return self._reduceTo2d(data[...,-1])
+        
 
 class saveJsonModel(LW_interface_base):
     def __init__(self, save_path, json_model):
@@ -281,45 +288,48 @@ class getCode(LW_interface_base):
         return {'Output': code}        
 
 
-class getNetworkInputDim(LW_interface_base):
-    def __init__(self, network, lw_core, extras_reader):
-        self._network = network
-        self.lw_core = lw_core
-        self.extras_reader = extras_reader
+class GetNetworkInputDim(LW_interface_base):
+    """ Used in some layers to validate values or to populate default values. 
+    E.g., in reshape and rescale 
+    """
+    
+    def __init__(self, lw_core, graph_spec):
+        self._lw_core = lw_core
+        self._graph_spec = graph_spec
 
     def run(self):
-        self.lw_core.run()
+        lw_results = self._lw_core.run(self._graph_spec)
 
-        content={}
+        content = {
+            layer_spec.id_: self._get_layer_content(layer_spec, lw_results)
+            for layer_spec in self._graph_spec.layers
+        }
+        return content
 
-        extras_dict=self.extras_reader.to_dict()
-        for id_, value in self._network.items():
-            content[id_]={}
+    def _get_layer_content(self, layer_spec, lw_results):
+        # Set the preview shape 
+        shape_str = '[]' # Default
+        if len(layer_spec.backward_connections) > 0:
+            conn = layer_spec.backward_connections[0]
+            input_results = lw_results.get(conn.src_id)
 
-            con=[conn_spec['src_id'] for conn_spec in value['backward_connections']]
+            if input_results is not None:
+                sample = input_results.get(conn.src_var)
+                shape = np.squeeze(sample.shape).tolist() if sample is not None else []
+                shape_str = str(shape)
 
-            if len(con)==1 and con[0] in extras_dict:
-                content[id_].update({"inShape":str(extras_dict[con[0]]["outShape"])})
-            else:
-                tmp=[]
-                for i in con:
-                    if i in extras_dict:
-                        tmp.append(extras_dict[i]["outShape"])
-                tmp=np.squeeze(tmp).tolist()
+        content = {'inShape': shape_str}
 
-                content[id_].update({"inShape":str(tmp).replace("'","")})
-
-            if id_ in self.lw_core.error_handler:
-                logger.warning("ErrorMessage: " + str(self.lw_core.error_handler[id_]))
-
-                content[id_]['Error'] = {
-                    'Message': self.lw_core.error_handler[id_].message,
-                    'Row': str(self.lw_core.error_handler[id_].line_number)
-                }
-            else:
-                content[id_]['Error'] = None
+        # Set the errors
+        layer_results = lw_results[layer_spec.id_]
+        if layer_spec.should_show_errors and layer_results.has_errors:
+            error_type, error_info = list(layer_results.errors)[-1] # Get the last error
+            content['Error'] = {'Message': error_info.message, 'Row': error_info.message}
+        else:
+            content['Error'] = None
 
         return content
+    
 
 class getNetworkOutputDim(LW_interface_base):
     def __init__(self, lw_core, extras_reader):
@@ -346,8 +356,71 @@ class getNetworkOutputDim(LW_interface_base):
                 }
             else:
                 content[Id]['Error'] = None  
-        return content           
+        return content
 
+    
+class GetNetworkData(LW_interface_base):
+    def __init__(self, graph_spec, lw_core, settings_engine=None):
+        self._graph_spec = graph_spec
+        self._lw_core = lw_core
+        self._settings_engine = settings_engine
+
+    def run(self):
+        graph_spec, applied_autosettings = self._maybe_apply_autosettings(self._graph_spec)
+        
+        dim_content, preview_content = {}, {}
+        lw_results = self._lw_core.run(graph_spec) 
+        
+        for layer_id, layer_results in lw_results.items():            
+            layer_spec = graph_spec[layer_id]
+            dim, preview = self._get_layer_content(layer_spec, layer_results)
+
+            dim_content[layer_id] = dim
+
+            if preview is not None:
+                preview_content[layer_id] = preview
+
+        return {
+            "previews": preview_content,
+            "outputDims": dim_content,
+            "newNetwork": graph_spec.to_dict() if applied_autosettings else {}
+        }
+        
+    def _get_layer_content(self, layer_spec, layer_results):
+        sample = layer_results.sample.get(layer_spec.preview_variable)
+        shape = np.atleast_1d(sample).shape if sample is not None else ()
+        
+        dim_str = "x".join(str(d) for d in shape)
+        dim_content = {"Dim": dim_str}
+
+        # Ignore errors for layers that are not fully configured
+        if layer_spec.should_show_errors and layer_results.has_errors:
+            error_type, error_info = list(layer_results.errors)[-1] # Get the last error
+            dim_content['Error'] = {'Message': error_info.message, 'Row': error_info.message}
+        else:
+            dim_content['Error'] = None
+
+        preview_content = None
+        if layer_spec.get_preview:
+            try:
+                sample_array = np.asarray(sample)
+                preview_content = createDataObject([self._reduceTo2d(sample_array)])
+            except:
+                logger.exception(f'Failed getting preview for layer {layer_spec}')
+            
+        return dim_content, preview_content
+
+    def _maybe_apply_autosettings(self, graph_spec):
+        applied = False
+        if self._settings_engine is not None:
+            graph_spec = self._settings_engine.run(graph_spec)
+            applied = True
+        else:
+            logger.warning("Settings engine is not set. Cannot make recommendations. Using old json_network.")
+
+        return graph_spec, applied
+
+        
 class getPreviewSample(LW_interface_base):
     def __init__(self, layer_id, lw_core, graph_spec, variable):
         self._layer_id = layer_id
@@ -363,13 +436,6 @@ class getPreviewSample(LW_interface_base):
             return True
         except (TypeError, OverflowError):
             return False
-
-    def _reduceTo2d(self, data):
-            data_shape=np.shape(np.squeeze(data))
-            if len(data_shape)<=2 or (len(data_shape)==3 and (data_shape[-1]==3 or data_shape[-1]==1)):
-                return data
-            else:
-                return self._reduceTo2d(data[...,-1])
     
     def run(self):
         results = self._lw_core.run(self._graph_spec)
@@ -392,6 +458,7 @@ class getPreviewSample(LW_interface_base):
 
         return content
 
+    
 class getPreviewBatchSample(LW_interface_base):
     def __init__(self, lw_core, graph_spec, json_network):
         self._lw_core = lw_core
@@ -400,20 +467,13 @@ class getPreviewBatchSample(LW_interface_base):
 
     def _is_jsonable(self, x):
         import json
-
+        
         try:
             json.dumps(x)
             return True
         except (TypeError, OverflowError):
             return False
-
-    def _reduceTo2d(self, data):
-            data_shape=np.shape(np.squeeze(data))
-            if len(data_shape)<=2 or (len(data_shape)==3 and (data_shape[-1]==3 or data_shape[-1]==1)):
-                return data
-            else:
-                return self._reduceTo2d(data[...,-1])
-    
+        
     def run(self):                                
         results = self._lw_core.run(self._graph_spec)
         returnJson = {}

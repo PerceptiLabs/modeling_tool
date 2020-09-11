@@ -1,0 +1,56 @@
+{% macro layer_tf1x_argmax(layer_spec, graph_spec) %}
+class {{layer_spec.sanitized_name}}(Tf1xLayer):
+    def __call__(self, inputs: Dict[str, tf.Tensor] , is_training: tf.Tensor = None) -> Dict[str, tf.Tensor]:
+        x = inputs['input']
+        y = tf.argmax(x, axis={{layer_spec.dimension}})
+        self._outputs = {'output': y}
+        return self._outputs
+
+
+    @property
+    def variables(self) -> Dict[str, Picklable]:
+        """Any variables belonging to this layer that should be rendered in the frontend.
+        
+        Returns:
+            A dictionary with tensor names for keys and picklable for values.
+        """
+        return {}
+
+    @property
+    def trainable_variables(self) -> Dict[str, tf.Tensor]:
+        """Any trainable variables belonging to this layer that should be updated during backpropagation. Their gradients will also be rendered in the frontend.
+        
+        Returns:
+            A dictionary with tensor names for keys and tensors for values.
+        """
+        return {}
+    
+    def get_sample(self, sess=None) -> np.ndarray:
+        """Returns a single data sample"""
+        if sess is not None:
+            outputs = sess.run(self._outputs)
+            return {
+                key: value[0] if len(value) > 0 else value
+                for key, value in outputs.items()
+            }
+        else:
+            return None
+
+    @property
+    def weights(self) -> Dict[str, tf.Tensor]:
+        """Any weight tensors belonging to this layer that should be rendered in the frontend.
+
+        Return:
+            A dictionary with tensor names for keys and tensors for values.
+        """        
+        return {}
+
+    @property    
+    def biases(self) -> Dict[str, tf.Tensor]:
+        """Any weight tensors belonging to this layer that should be rendered in the frontend.
+
+        Return:
+            A dictionary with tensor names for keys and tensors for values.
+        """        
+        return {}    
+{% endmacro %}

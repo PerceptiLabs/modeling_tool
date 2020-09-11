@@ -169,55 +169,13 @@ def get_start_nodes(graph):
             start_nodes.append(id_)
         return start_nodes
 
-
+    
+@deprecated
 def patch_net_connections(original_network):
     """ Converts forward/backward connection layers to comply with new standard """
     if True:
         return original_network
     
-    new_network = copy.deepcopy(original_network) # defensive copy
-    for layer_id, layer_dict in new_network.items():
-        bw_cons = layer_dict['backward_connections']
-        fw_cons = layer_dict['forward_connections']
-        
-        if (len(bw_cons) > 0 and isinstance(bw_cons[0], dict)) or (len(fw_cons) > 0 and isinstance(fw_cons[0], dict)):
-            # new-style json network, return
-            return original_network
-
-        layer_dict['backward_connections'] = [
-            {'src_id': src_id, 'src_var': 'output', 'dst_var': 'input'}
-            for src_id, src_name in bw_cons
-        ]
-        layer_dict['forward_connections'] = [
-            {'dst_id': dst_id, 'src_var': 'output', 'dst_var': 'input'}                
-            for dst_id, dst_name in fw_cons
-        ]
-        new_network[layer_id] = layer_dict
-
-
-    # ----
-    for layer_id, layer_dict in new_network.items():
-        bw_cons = layer_dict['backward_connections']
-        fw_cons = layer_dict['forward_connections']
-        
-
-        if layer_dict['Type'] == 'TrainNormal':
-            for idx, conn_spec in enumerate(bw_cons):
-                src_id = conn_spec['src_id']
-                dst_id = layer_id
-                if src_id == layer_dict['Properties']['Labels']:
-                    new_network[dst_id]['backward_connections'][idx]['dst_var'] = 'labels'
-                    new_network[src_id]['forward_connections'][0]['dst_var'] = 'labels'
-                    
-                else:
-                    new_network[dst_id]['backward_connections'][idx]['dst_var'] = 'predictions'                    
-                    new_network[src_id]['forward_connections'][0]['dst_var'] = 'predictions'
-
-                
-            new_network[layer_id] = layer_dict
-
-    return new_network
-
 
 class DummyExecutor(Executor):
 

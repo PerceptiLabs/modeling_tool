@@ -1,9 +1,9 @@
 from typing import Tuple, Dict, Any
 
-from perceptilabs.layers.specbase import LayerSpec
+from perceptilabs.layers.specbase import LayerSpec, InnerLayerSpec
 
 
-class ProcessRescaleSpec(LayerSpec):
+class ProcessRescaleSpec(InnerLayerSpec):
     type_: str = 'ProcessRescale'
     width: int = 25
     height: int = 25

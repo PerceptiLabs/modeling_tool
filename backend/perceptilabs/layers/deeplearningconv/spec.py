@@ -1,10 +1,10 @@
 from typing import Tuple, Dict, Any, Union, List
 
-from perceptilabs.layers.specbase import LayerSpec
+from perceptilabs.layers.specbase import LayerSpec, InnerLayerSpec
 from perceptilabs.layers.utils import try_cast
 
 
-class DeepLearningConvSpec(LayerSpec):
+class DeepLearningConvSpec(InnerLayerSpec):
     type_: str = 'DeepLearningConv'
     batch_norm: bool = False
     dropout: bool = False
