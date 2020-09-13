@@ -3,6 +3,7 @@ from django_http_exceptions import HTTPExceptions
 from fileserver.api.models.directory import resolve_dir
 import json
 import os
+import platform
 
 def get_required_param(request, param):
     qp = request.query_params
@@ -14,9 +15,12 @@ def get_optional_param(request, param, default):
     qp = request.query_params
     return qp[param] if qp.__contains__(param) else default
 
+IS_WIN = platform.system().lower().startswith("win")
+
 def get_full_path(raw_path):
     resolved = resolve_dir(raw_path)
-    return os.path.abspath(os.path.join("/", resolved))
+    with_root = resolved if IS_WIN else os.path.join("/", resolved)
+    return os.path.abspath(with_root)
 
 # Extracts the required "path" parameter from the request and validates it
 def get_path_param(request):

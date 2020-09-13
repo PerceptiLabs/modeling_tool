@@ -8,6 +8,7 @@ from fileserver.api.views.util import (
 from fileserver.api.models.directory import (
         get_folder_content,
         get_tutorial_data as get_tutorial_data_model,
+        get_drives as get_drives_model,
         )
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view
@@ -45,5 +46,14 @@ def get_tutorial_data(request):
     ret = get_tutorial_data_model()
     if ret:
         return make_path_response(ret)
+
+    raise HTTPExceptions.NO_CONTENT
+
+@api_view(["GET", "HEAD"])
+def get_drives(request):
+    ret = get_drives_model()
+    if ret:
+        response = {"drives": ret}
+        return json_response(response)
 
     raise HTTPExceptions.NO_CONTENT

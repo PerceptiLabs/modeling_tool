@@ -3,7 +3,11 @@ from django.test import TestCase
 import unittest
 from django_http_exceptions import HTTPExceptions
 from fileserver.api.views.file_view import FileView
-from fileserver.api.views.directory_view import DirectoryView
+from fileserver.api.views.directory_view import (
+        DirectoryView,
+        get_tutorial_data,
+        get_drives,
+        )
 from fileserver.api.views.json_model_view import JsonModelView
 from fileserver.api.views.model_directory_view import (modeldirectory_tree, get_modeldirectory)
 from fileserver.api.views.github_view import (github_export, github_import)
@@ -13,11 +17,12 @@ from fileserver.tests.utils import (
         local_file_cleanup,
         temp_json_file,
         local_dir_cleanup,
+        cwd,
         )
 from rest_framework.test import APIRequestFactory, APIClient
 import json
 import os
-
+import platform
 
 
 class SettingsTest(TestCase):
@@ -56,12 +61,21 @@ class TestCaseBase(TestCase):
         response = call()
         self.assertEqual(response.status_code, 200)
         as_dict = json.loads(response.content)
-        self.assertEqual(as_dict, expected_body)
+        self.maxDiff=None
+        self.assertDictEqual(as_dict, expected_body)
         return response
 
     def call_and_expect_error(self, method_name, path, error_class):
         call = self.build_call(method_name, path)
         self.assertRaises(error_class, call)
+
+
+class MethodViewWrapper:
+    def __init__(self, method):
+        self.method = method
+
+    def as_view(self):
+        return self.method
 
 
 class FileViewTestCase(TestCaseBase):
@@ -91,7 +105,7 @@ class FileViewTestCase(TestCaseBase):
             _,_,files = list(home_root_level)[0]
             return [f for f in files if not f[0] == "."][0]
 
-        request_path = f"~/{get_a_home_dir_file()}"
+        request_path = os.path.join("~", get_a_home_dir_file())
 
         response = self.call_and_expect_code("head", f"/files?path={request_path}", 200)
 
@@ -99,7 +113,7 @@ class FileViewTestCase(TestCaseBase):
     @unittest.skipIf("~" in os.path.expanduser("~"), "There's no home directory")
     def test_path_resolution_for_nonexistent_file(self):
         import secrets
-        request_path = f"~/{secrets.token_urlsafe()}"
+        request_path = os.path.join("~", "{secrets.token_urlsafe()}")
         response = self.call_and_expect_error("head", f"/files?path={request_path}", HTTPExceptions.NO_CONTENT)
 
 
@@ -108,23 +122,50 @@ class DirectoriesViewTestCase(TestCaseBase):
 
     def test_get_directories(self):
         with temp_local_dir("testing123") as d:
-            self.call_and_expect_code("get", f"/directories?path={os.getcwd()}/{d}", 200)
+            req_path = os.path.join(os.getcwd(), d)
+            self.call_and_expect_code("get", f"/directories?path={req_path}", 200)
 
     def test_head_directories(self):
         with temp_local_dir("testing123") as d:
-            self.call_and_expect_code("head", f"/directories?path={os.getcwd()}/{d}", 200)
+            req_path = os.path.join(os.getcwd(), d)
+            self.call_and_expect_code("head", f"/directories?path={req_path}", 200)
 
     def test_post_directories(self):
         with local_dir_cleanup("testing123") as d:
-            self.call_and_expect_code("post", f"/directories?path={os.getcwd()}/testing123", 200)
+            req_path = os.path.join(os.getcwd(), d)
+            self.call_and_expect_code("post", f"/directories?path={req_path}", 200)
             assert os.path.isdir("testing123"), f"expected post /directories to create file testing123"
 
     def test_delete_directories(self):
         with temp_local_dir("to_delete") as d:
+            req_path = os.path.join(os.getcwd(), d)
             self.assertTrue(os.path.isdir(d), "the directory wasn't set up")
-            self.call_and_expect_code("delete", f"/directories?path={os.getcwd()}/{d}", 200)
+            self.call_and_expect_code("delete", f"/directories?path={req_path}", 200)
             self.assertFalse(os.path.isdir(d), "the directory wasn't set up")
 
+class TutorialDataTestCase(TestCaseBase):
+    VIEW_CLASS = MethodViewWrapper(get_tutorial_data)
+
+    def test_get_missing_tutorial_data(self):
+        self.call_and_expect_error("get", "", HTTPExceptions.NO_CONTENT)
+
+    def test_get_extant_tutorial_data(self):
+        with temp_local_dir("perceptilabs") as p,\
+             temp_local_dir(os.path.join(p, "tutorial_data")) as d:
+            expected = os.path.join(cwd(), d)
+            self.call_and_expect_body("get", "", {"path": expected})
+
+
+class DrivesTestCase(TestCaseBase):
+    VIEW_CLASS = MethodViewWrapper(get_drives)
+
+    @unittest.skipIf(platform.system() == "Windows", "Skipping windows test")
+    def test_get_drives(self):
+        self.call_and_expect_error("get", "", HTTPExceptions.NO_CONTENT)
+
+    @unittest.skipUnless(platform.system() == "Windows", "Skipping non-windows test")
+    def test_get_drives(self):
+        self.call_and_expect_body("get", "", {"drives": ["C:"]})
 
 class JsonModelsViewTestCase(TestCaseBase):
     VIEW_CLASS = JsonModelView
@@ -156,22 +197,15 @@ class JsonModelsViewTestCase(TestCaseBase):
             self.assertFalse(os.path.exists(f), f"expected post /json_models to not create an invalid json file")
 
 
-class MethodViewWrapper:
-    def __init__(self, method):
-        self.method = method
-
-    def as_view(self):
-        return self.method
-
-
 class ModelDirectoryTestCase(TestCaseBase):
     VIEW_CLASS = MethodViewWrapper(get_modeldirectory)
 
     def test_get_good(self):
         with temp_local_dir("testing123") as d:
-            with temp_local_file(f"{d}/test_non_model.txt", "this is text") as test_file:
-                self.call_and_expect_code("get", f"?path={os.getcwd()}/{d}", 200)
-                self.call_and_expect_code("head", f"?path={os.getcwd()}/{d}", 200)
+            with temp_local_file(os.path.join(d, "test_non_model.txt"), "this is text") as test_file:
+                req_path = os.path.join(os.getcwd(), d)
+                self.call_and_expect_code("get", f"?path={req_path}", 200)
+                self.call_and_expect_code("head", f"?path={req_path}", 200)
 
     def test_get_missing(self):
         self.call_and_expect_error("get", f"?path=nonexistent", HTTPExceptions.NO_CONTENT)
@@ -182,21 +216,21 @@ class ModelDirectoryTestCase(TestCaseBase):
             self.call_and_expect_error("get", f"?path={test_file}", HTTPExceptions.BAD_REQUEST)
             self.call_and_expect_error("head", f"?path={test_file}", HTTPExceptions.BAD_REQUEST)
 
-
 class ModelDirectoryTreeTestCase(TestCaseBase):
     VIEW_CLASS = MethodViewWrapper(modeldirectory_tree)
 
     def test_get_good(self):
         expected = {
             "contents": [
-                {"path": f"{os.getcwd()}/testing123/test_non_model.txt", "size": 12}
+                {"path": os.path.join(cwd(), "testing123", "test_non_model.txt"), "size": 12}
             ],
             "page": 1,
-            "path": f"{os.getcwd()}/testing123",
+            "path": os.path.join(cwd(), "testing123"),
         }
         with temp_local_dir("testing123") as d:
-            with temp_local_file(f"{d}/test_non_model.txt", "this is text") as test_file:
-                self.call_and_expect_body("get", f"?path={os.getcwd()}/{d}", expected)
+            with temp_local_file(os.path.join(d, "test_non_model.txt"), "this is text") as test_file:
+                req_path = os.path.join(os.getcwd(), d)
+                self.call_and_expect_body("get", f"?path={req_path}", expected)
 
     def test_get_missing(self):
         self.call_and_expect_error("get", f"?path=nonexistent", HTTPExceptions.NO_CONTENT)

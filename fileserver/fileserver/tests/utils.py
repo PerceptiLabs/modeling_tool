@@ -27,7 +27,7 @@ def temp_local_file(name, content):
         f.write(content)
 
     with local_file_cleanup(full_name) as f:
-        yield f
+        yield full_name
 
 
 @contextmanager
@@ -44,3 +44,6 @@ def temp_json_file(name, content):
     with temp_local_file(name, as_json) as f:
         yield f
 
+
+def cwd():
+    return os.getcwd()
