@@ -329,7 +329,7 @@ export default {
       return false;
     },
     ...mapGetters({
-      isTutorialMode: 'mod_tutorials/getIstutorialMode',
+      isTutorialMode: 'mod_tutorials/getIsTutorialMode',
     })
   }
 }

@@ -1,5 +1,7 @@
 $popper-background-color: #2E3A5A;
-$tutorial-tooltip-bg: #3BC5FF;
+$tutorial-tooltip-bg: #23252A;
+$tutorial-tooltip-background-picture: '/static/img/tutorial/tutorial-background.png';
+$tutorial-tooltip-text-color: #FFFFFF;
 $arrow-size: 1rem;
 $margin-tooltip: .65rem;
 $triangleWith: 10px;
@@ -106,21 +108,37 @@ $triangleWith: 10px;
 
 
 .tooltip-tutorial {
-  font-size: 1.4rem;
-  font-weight: 400;
-  color: $bg-workspace;
+  color: $tutorial-tooltip-text-color;
   position: absolute;
   z-index: 12;
-  min-width: 3rem;
+  min-width: 15rem;
   max-width: 30rem;
-  padding: .8rem .6rem;
+  padding: 1rem 1rem;
   border-radius: 0.2rem;
   white-space: nowrap;
-  background-color: $tutorial-tooltip-bg;
+  background: url($tutorial-tooltip-background-picture);
+  background-size: cover; 
   box-shadow: $icon-shad;
   pointer-events: none;
   font-family: $base-font-sans-serif;
   text-align: left;
+
+  border-top: 4px solid #6185EE;
+  border-radius: 2px 2px 0px 0px;
+  box-sizing: border-box;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
+  
+  font-family: Nunito Sans;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 14px;
+  line-height: 19px;
+
+  display: flex;
+  flex-direction: column;
+
+  cursor: pointer;
+
   &:before {
     content: '';
     position: absolute;
@@ -196,8 +214,17 @@ $triangleWith: 10px;
 }
 
 .tooltip-tutorial_italic {
-	font-style: italic;
+	margin: 1rem 0;
 }
+
+.tooltip-tutorial_hidetips{
+	font-size: 11px;
+	line-height: 18px;
+	color: #818181;
+	margin-top: auto;
+	padding-top: auto;
+}
+
 .tooltip-tutorial_bold {
 	font-weight: 700;
 }

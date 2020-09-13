@@ -36,7 +36,7 @@ export default {
   },
   computed: {
     ...mapGetters({
-        isTutorialMode:       'mod_tutorials/getIstutorialMode',
+        isTutorialMode:       'mod_tutorials/getIsTutorialMode',
     }),
     layerId() {
       return this.currentEl.layerId
@@ -63,7 +63,6 @@ export default {
       api_getVariableList:  'mod_api/API_getPreviewVariableList',
       api_getPreviewSample: 'mod_api/API_getPreviewSample',
       api_getOutputDim:     'mod_api/API_getOutputDim',
-      tutorialPointActivate:'mod_tutorials/pointActivate',
     }),
     toggleSettingPreviewVisibility() {
       this.$store.commit('mod_workspace/toggleSettingPreviewVisibility');
@@ -72,7 +71,6 @@ export default {
       this.$emit('to-settings');
     },
     confirmSettings() {
-      this.tutorialPointActivate({way: 'next', validation: 'tutorial_button-confirm'});
       this.hideAllWindow();
     },
     getSample(variableName) {

@@ -55,9 +55,6 @@ export default {
     }
   },
   methods: {
-    ...mapActions({
-      tutorialPointActivate:    'mod_tutorials/pointActivate',
-    }),
     setTab(name) {
       this.tabSelected = name;
     },

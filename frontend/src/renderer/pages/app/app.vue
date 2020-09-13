@@ -64,7 +64,6 @@
       }
       this.$nextTick(()=> {
         this.addDragListeners();
-        if(this.getLocalUserInfo && this.getLocalUserInfo.showFirstAppTutorial) this.setShowStoryboard(true)
       });
       if(isWeb()) {
         if(shouldHideSidebar()) {
@@ -94,10 +93,10 @@
     },
     computed: {
       ...mapGetters({
-        activeAction:     'mod_tutorials/getActiveAction',
-        editIsOpen:       'mod_workspace/GET_networkIsOpen',
-        currentNetwork:   'mod_workspace/GET_currentNetwork',
-        getLocalUserInfo: 'mod_user/GET_LOCAL_userInfo',
+        editIsOpen:         'mod_workspace/GET_networkIsOpen',
+        currentNetwork:     'mod_workspace/GET_currentNetwork',
+        getLocalUserInfo:   'mod_user/GET_LOCAL_userInfo',
+        getCurrentStepCode: 'mod_tutorials/getCurrentStepCode',
       }),
       ...mapState({
         isShowTutorial:   state=> state.mod_tutorials.showTutorialStoryBoard,
@@ -124,14 +123,12 @@
     },
     methods: {
       ...mapMutations({
-        setShowStoryboard:                  'mod_tutorials/SET_showTutorialStoryBoard',
         set_appIsOpen:                      'globalView/SET_appIsOpen',
         setGridValue:                       'globalView/setGridStateMutation',
         add_dragElement:                    'mod_workspace/ADD_dragElement',
         set_workspaceChangesInLocalStorage: 'mod_workspace-changes/set_workspaceChangesInLocalStorage',
       }),
       ...mapActions({
-        tutorialPointActivate:'mod_tutorials/pointActivate',
         eventResize:          'mod_events/EVENT_eventResize',
         ADD_network:          'mod_workspace/ADD_network',
         ADD_element:          'mod_workspace/ADD_element',
@@ -139,6 +136,7 @@
         DELETE_userWorkspace: 'mod_user/DELETE_userWorkspace',
         setSidebarStateAction:'globalView/hideSidebarAction',
         updateWorkspaces:     'mod_webstorage/updateWorkspaces',
+        layerAddedAction:     'mod_tutorials/tutorial-workspace-layer-added-setup',
       }),
       addDragListeners() {
         this.$refs.layersbar.addEventListener("dragstart", this.dragStart, false);
@@ -179,7 +177,6 @@
       dragEnd(event) {
         this.offDragListener();
         event.target.style.opacity = "";
-        this.tutorialPointActivate({way: 'next', validation: this.activeAction.id})
       },
       dragOver(event) {
         event.preventDefault();
@@ -188,6 +185,7 @@
       dragLeave(event) {},
       dragDrop(event) {
         event.preventDefault();
+
         if(event.target.classList[0] === this.dragMeta.outClassName) {
           this.ADD_element({event})
         }

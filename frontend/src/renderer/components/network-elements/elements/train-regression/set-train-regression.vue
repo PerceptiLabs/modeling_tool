@@ -174,7 +174,7 @@ export default {
   },
   computed: {
     ...mapGetters({
-      isTutorialMode:     'mod_tutorials/getIstutorialMode',
+      isTutorialMode:     'mod_tutorials/getIsTutorialMode',
       currentNetworkList: 'mod_workspace/GET_currentNetworkElementList'
     }),
     inputId() {
@@ -186,12 +186,10 @@ export default {
   },
   methods: {
     ...mapActions({
-      tutorialPointActivate:    'mod_tutorials/pointActivate',
       popupInfo:               'globalView/GP_infoPopup'
     }),
     saveSettings(tabName) {
       this.applySettings(tabName);
-      this.$nextTick(()=> this.tutorialPointActivate({way: 'next', validation: 'tutorial_labels'}));
     },
   },
   watch: {

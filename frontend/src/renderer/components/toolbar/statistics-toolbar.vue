@@ -5,7 +5,7 @@
         path(d='M11 5.29545L1 5.29545M1 5.29545L5.58333 10M1 5.29545L5.58333 1' stroke='#B6C7FB' stroke-linecap='round' stroke-linejoin='round')
       | Back to model
     .toolbar-section
-      ul.toolbar-button-group
+      ul.toolbar-button-group(:data-tutorial-target="'tutorial-statistics-controls'")
         li.toolbar-button(@click="onPauseClick")
           i.icon.icon-player-pause
 
@@ -65,6 +65,7 @@ export default {
       stopTraining:         'mod_api/API_stopTraining',
       skipValidTraining:    'mod_api/API_skipValidTraining',
       SET_openStatistics:   'mod_workspace/SET_openStatistics',
+      setCurrentView:           'mod_tutorials/setCurrentView'
     }),
     onPauseClick() {
       this.pauseTraining();
@@ -77,6 +78,8 @@ export default {
     },
     handleBackToModel() {
       this.SET_openStatistics(false);
+
+      this.setCurrentView('tutorial-workspace-view');
     }
   }
 }

@@ -122,20 +122,25 @@ const actions = {
       })
   },
   getDefaultModeProject(ctx) {
-        
-    return ctx.dispatch('getProjects')
-      .then(({data: { results: projects }}) => {
+    
+    return new Promise((resolve, reject) => {
+      return ctx.dispatch('getProjects')
+        .then(({data: { results: projects }}) => {
 
-        const defaultProject = projects.find(p => p.name === 'Default');
-        if (!defaultProject) {
-          // create project called "Default" if it doesn't exist
-          return ctx.dispatch('prepareDefaultProjectDirectory');
-        }
-        
-        return defaultProject;    
-      })
-      .then(defaultProjectMeta => {
-        ctx.commit('selectProject', defaultProjectMeta.project_id);
+          const defaultProject = projects.find(p => p.name === 'Default');
+          if (!defaultProject) {
+            // create project called "Default" if it doesn't exist
+            return ctx.dispatch('prepareDefaultProjectDirectory');
+          }
+          
+          return defaultProject;    
+        })
+        .then(defaultProjectMeta => {
+          ctx.commit('selectProject', defaultProjectMeta.project_id);
+          // console.log('defaultProjectMeta', defaultProjectMeta);
+          resolve();
+        })
+        .catch(error => reject(error));
       });
   },
   prepareDefaultProjectDirectory(ctx) {

@@ -102,7 +102,7 @@
     },
     computed: {
       ...mapGetters({
-        isTutorialMode: 'mod_tutorials/getIstutorialMode'
+        isTutorialMode: 'mod_tutorials/getIsTutorialMode'
       }),
     },
     mounted() {
@@ -120,12 +120,10 @@
     },
     methods: {
       ...mapActions({
-        tutorialPointActivate:   'mod_tutorials/pointActivate',
         popupInfo:               'globalView/GP_infoPopup'
       }),
       saveSettings(tabName) {
         this.applySettings(tabName);
-        this.$nextTick(()=> this.tutorialPointActivate({way: 'next', validation: 'tutorial_neurons'}));
       },
       setIsSettingInputFocused(value) {
         this.$store.commit("mod_workspace/setIsSettingInputFocused", value);

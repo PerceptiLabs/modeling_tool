@@ -81,7 +81,7 @@
     },
     computed: {
       ...mapGetters({
-        isTutorialMode: 'mod_tutorials/getIstutorialMode'
+        isTutorialMode: 'mod_tutorials/getIsTutorialMode'
       }),
     },
     watch: {
@@ -112,7 +112,6 @@
     },
     methods: {
       ...mapActions({
-        tutorialPointActivate:    'mod_tutorials/pointActivate',
         infoPopup:                'globalView/GP_infoPopup',
       }),
       swap12() {
@@ -138,7 +137,6 @@
       //   console.trace();
       //   debugger;
       //   this.saveSettings('Settings');
-      //   // this.$nextTick(()=> this.tutorialPointActivate({way: 'next', validation: 'tutorial_input-reshape'}));
       // },
     }
   }

@@ -10,7 +10,9 @@
     )
 
       .layer-list-header(
-        :class="[{'active': layer.showEl}]"
+        :class="[{'active': showElementsInLayer(layer)}]"
+        :data-tutorial-marker="'LayerMenuItem_' + layer.tooltip"
+        :data-tutorial-target="layer.tooltip === 'Data' ? 'tutorial-workspace-layer-menu' : ''"
       )
         i.icon(:class="layer.iconClass")
         .layer-list-header-label {{ layer.tooltip }}
@@ -26,6 +28,7 @@
           @mouseleave="mouseOut"
           @click="onLayerClick($event, element)"
           :style="[calcLayerItemStyle(element, layer.color)]"
+          :data-tutorial-target="element === 'DataData' ? 'tutorial-workspace-layer-data' : ''"
           ref="referenceMenuItem"
         )
           component(:is="element" :draggable="true" :showTitle="true" :ref="`layer-${element}`")
@@ -39,7 +42,7 @@
 
 <script>
   import {trainingElements, deepLearnElements}  from '@/core/constants.js'
-  import { mapActions }       from 'vuex';
+  import { mapActions, mapGetters }       from 'vuex';
 
   import DataData             from '@/components/network-elements/elements/data-data/view-data-data.vue'
   import DataEnvironment      from '@/components/network-elements/elements/data-environment/view-data-environment.vue'
@@ -200,7 +203,7 @@ export default {
   },
   methods: {
     ...mapActions({
-      tutorialPointActivate:    'mod_tutorials/pointActivate',
+      setNextStep:              'mod_tutorials/setNextStep',
     }),
     toggleElList(idx) {
       
@@ -210,6 +213,8 @@ export default {
       else {
         this.layersbarList[idx].showEl = true;
       }
+
+      this.setNextStep('tutorial-workspace-layer-menu');
     },
     handleFocusOut() {
       this.layersbarList.forEach((item)=> {
@@ -338,8 +343,25 @@ export default {
       document.body.removeChild(this.clonedElement);
       this.clickedElementName = null;
       this.clonedElement = null;
+    },
+    showElementsInLayer(layer) {
+      if (layer.tooltip !== 'Data') {
+        return layer.showEl;
+      }
+        
+      if (this.getCurrentStepCode === 'tutorial-workspace-layer-data') {
+        return true;
+      } else {
+        return layer.showEl;
+      }
+
     }
   },
+  computed: {
+    ...mapGetters({
+      getCurrentStepCode:   'mod_tutorials/getCurrentStepCode',
+    })
+  }
 }
 </script>
 

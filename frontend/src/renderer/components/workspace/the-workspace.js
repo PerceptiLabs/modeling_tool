@@ -88,15 +88,16 @@ export default {
   },
   computed: {
     ...mapGetters({
-      currentSelectedEl:  'mod_workspace/GET_currentSelectedEl',
-      currentElList:      'mod_workspace/GET_currentNetworkElementList',
-      testIsOpen:         'mod_workspace/GET_testIsOpen',
-      statusNetworkCore:  'mod_workspace/GET_networkCoreStatus',
-      statisticsIsOpen:   'mod_workspace/GET_statisticsIsOpen',
+      currentSelectedEl:      'mod_workspace/GET_currentSelectedEl',
+      currentElList:          'mod_workspace/GET_currentNetworkElementList',
+      testIsOpen:             'mod_workspace/GET_testIsOpen',
+      statusNetworkCore:      'mod_workspace/GET_networkCoreStatus',
+      statisticsIsOpen:       'mod_workspace/GET_statisticsIsOpen',
 
-      isTutorialMode:     'mod_tutorials/getIstutorialMode',
-      isNotebookMode:     'mod_notebook/getNotebookMode',
-      tutorialActiveStep: 'mod_tutorials/getActiveStep',
+      isTutorialMode:         'mod_tutorials/getIsTutorialMode',
+      isNotebookMode:         'mod_notebook/getNotebookMode',
+      tutorialActiveStep:     'mod_tutorials/getActiveStep',
+      getCurrentStepCode:     'mod_tutorials/getCurrentStepCode',
     }),
     ...mapState({
       showNewModelPopup:          state => state.globalView.globalPopup.showNewModelPopup,
@@ -210,6 +211,7 @@ export default {
 
         this.net_trainingDone();
         this.event_startDoRequest(false);
+        this.setChecklistItemComplete({ itemId: 'finishTraining' });
       }
     },
     currentSelectedEl(newStatus) {
@@ -217,10 +219,7 @@ export default {
         && this.isTutorialMode
         && this.tutorialActiveStep === 'training'
       ) {
-        this.tutorialPointActivate({
-          way: 'next',
-          validation: newStatus[0].layerMeta.tutorialId
-        });
+        // add tutorial trigger here
       }
     },
     workspace(newVal) {
@@ -249,6 +248,19 @@ export default {
       this.isNeedWait
         ? this.currentData = this.buffer
         : null
+    },
+    getCurrentStepCode: {
+      handler(newVal, oldVal) {
+        if (!this.isTutorialMode) { return; }
+
+        // Using this watcher to check if the first notification in the buffer
+        // workspace view shows up.
+
+        if (newVal !== 'tutorial-workspace-layer-menu') { return; }
+
+        this.activateCurrentStep();
+      },
+      immediate: true
     }
   },
   methods: {
@@ -261,6 +273,8 @@ export default {
 
       setSelectedMetric:        'mod_statistics/setSelectedMetric',
       setLayerMetrics:          'mod_statistics/setLayerMetrics',
+
+      setChecklistItemComplete: 'mod_tutorials/setChecklistItemComplete',
     }),
     ...mapActions({
       popupConfirm:         'globalView/GP_confirmPopup',
@@ -273,8 +287,7 @@ export default {
       set_currentNetwork:   'mod_workspace/SET_currentNetwork',
       event_startDoRequest: 'mod_workspace/EVENT_startDoRequest',
       set_chartRequests:    'mod_workspace/SET_chartsRequestsIfNeeded',
-      tutorialPointActivate:'mod_tutorials/pointActivate',
-      offMainTutorial:      'mod_tutorials/offTutorial',
+      activateCurrentStep:  'mod_tutorials/activateCurrentStep',
       pushSnapshotToHistory:'mod_workspace-history/PUSH_newSnapshot',
       setNotificationWindowState: 'mod_workspace-notifications/setNotificationWindowState',
       popupNewModel:        'globalView/SET_newModelPopup',
@@ -340,30 +353,18 @@ export default {
       this.notificationWindowStateHanlder(false);
     },
     deleteTabNetwork(index) {
-      if(this.isTutorialMode) {
+      let hasUnsavedChanges = this.hasUnsavedChanges(this.workspace[index].networkID);
+      if (hasUnsavedChanges) {
         this.popupConfirm(
           {
-            text: 'Are you sure you want to end the tutorial?',
+            text: `Network ${this.workspace[index].networkName} has unsaved changes`,
+            cancel: () => { return; },
             ok: () => {
-              this.offMainTutorial();
               this.delete_network(index);
             }
           });
-      }
-      else {
-        let hasUnsavedChanges = this.hasUnsavedChanges(this.workspace[index].networkID);
-        if (hasUnsavedChanges) {
-          this.popupConfirm(
-            {
-              text: `Network ${this.workspace[index].networkName} has unsaved changes`,
-              cancel: () => { return; },
-              ok: () => {
-                this.delete_network(index);
-              }
-            });
-        } else {
-          this.delete_network(index);
-        }
+      } else {
+        this.delete_network(index);
       }
     },
     notificationWindowStateHanlder(value = false) {

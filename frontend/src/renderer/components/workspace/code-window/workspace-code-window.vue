@@ -159,7 +159,7 @@ export default {
       if (this.hasUnsavedChanges) {
         this.$store.dispatch('globalView/GP_confirmPopup',
         {
-          text: 'You have unsaved changes. Are you sure you wnat to close the editor?',
+          text: 'You have unsaved changes. Are you sure you want to close the editor?',
           ok: () => {
             this.closeWindow();
           }
@@ -169,6 +169,7 @@ export default {
       }
     },
     closeWindow() {
+      this.$store.dispatch('mod_tutorials/setNextStep', 'tutorial-workspace-settings-code');
       this.$store.dispatch('mod_workspace-code-editor/closeEditor', { networkId: this.networkId });
     },
     onContentChange(content) {

@@ -1,8 +1,5 @@
 const baseNetPaintArrows = {
   computed: {
-    activeAction() {
-      return this.$store.getters['mod_tutorials/getActiveAction']
-    },
     wsZoom() {
       return this.$store.getters['mod_workspace/GET_currentNetworkZoom'];
     },
@@ -65,7 +62,6 @@ const baseNetPaintArrows = {
         this.$store.dispatch('mod_api/API_getBatchPreviewSampleForElementDescendants', this.dataEl.layerId);
       });
       this.$store.commit('mod_workspace/CLEAR_preArrow');
-      this.$store.dispatch('mod_tutorials/pointActivate', {way: 'next', validation: this.activeAction.id});
       // this.$store.dispatch('mod_api/API_updateNetworkSetting', this.dataEl.layerId);
     }
   }

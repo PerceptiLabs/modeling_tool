@@ -1,6 +1,7 @@
 <template lang="pug">
   .network-field(
     :style="styleSvgArrow"
+    :data-tutorial-target="statisticsIsOpen ? 'tutorial-statistics-map' : ''"
     ref="network"
     @mousedown="refNetworkMouseDown($event)"
   )

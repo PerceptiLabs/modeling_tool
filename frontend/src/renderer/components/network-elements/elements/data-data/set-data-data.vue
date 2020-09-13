@@ -159,7 +159,7 @@
     computed: {
       ...mapGetters({
         appPath:            'globalView/GET_appPath',
-        isTutorialMode:     'mod_tutorials/getIstutorialMode',
+        isTutorialMode:     'mod_tutorials/getIsTutorialMode',
       }),
       dynamicTabs() {
         return this.settings.accessProperties.Sources.length ? ['Computer', 'Code'] : ['Computer']
@@ -198,9 +198,8 @@
       },
       validFileExtensions() {
         let optionBasic = ['png', 'gif', 'jpg', 'jpeg', 'bmp', 'tif', 'tiff', 'txt', 'json', 'csv', 'mat', 'npy', 'npz'];
-        let optionTutorial = ['npy'];
-
-        return this.isTutorialMode ? optionTutorial : optionBasic;
+        
+        return optionBasic;
       }
     },
     watch: {
@@ -239,7 +238,6 @@
     },
     methods: {
       ...mapActions({
-        tutorialPointActivate:  'mod_tutorials/pointActivate',
         // API_getPartitionSummary:'mod_api/API_getPartitionSummary',
         // API_getDataMeta:        'mod_api/API_getDataMeta',
       }),
@@ -287,7 +285,6 @@
         this.openFilePicker(this.filePickerType);
       },
       saveLoadFile(pathArr, type, isAppend) {
-        this.tutorialPointActivate({way: 'next', validation: 'tutorial_button-load'});
         if(isAppend) {
           const allPath = [... this.settings.accessProperties.Sources.map((el)=> el.path), ...pathArr];
           this.settings.accessProperties.Sources = this.Mix_settingsData_prepareSources([... new Set(allPath)], type)
@@ -331,7 +328,6 @@
       saveSettings(tabName) {
         this.applySettings(tabName);
         this.checkPartitionList();
-        this.$nextTick(()=> this.tutorialPointActivate({way: 'next', validation: 'tutorial_button-apply'}))
       },
       checkPartitionList() {
         this.settings.accessProperties.Partition_list.forEach((item)=> {

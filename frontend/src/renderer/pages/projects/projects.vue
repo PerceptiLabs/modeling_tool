@@ -11,10 +11,12 @@
             @click="openLoadModelPopup()"
             v-tooltip:bottom="'Import Model'"
             )
-            img(src="../../../../static/img/project-page/import.svg")
+            img(src="../../../../static/img/project-page/import.svg"
+              :data-tutorial-target="'tutorial-model-hub-import-button'")
           span.btn-round-icon.btn-rounded-new(
             @click="handleAddNetworkModal" 
             :class="{'high-lighted': isNewUser}" 
+            :data-tutorial-target="'tutorial-model-hub-new-button'"
             v-tooltip:bottom="'New Model'"
             )
             img(src="../../../../static/img/project-page/plus.svg")
@@ -73,7 +75,7 @@
               span.model-name(
                 v-if="!isRenamingItem(index)" 
                 v-tooltip:bottom="'Click to open Model'" 
-                @click.stop="gotToNetworkView(model.networkID)"
+                @click.stop="goToNetworkView(model.networkID)"
               ) {{model.networkName}}
               input.rename-control(
                 v-else 
@@ -228,6 +230,7 @@
       ...mapGetters({
         user:                 'mod_user/GET_userProfile',
         currentProject:       'mod_project/GET_project',
+        getCurrentStepCode:   'mod_tutorials/getCurrentStepCode',
       }),
       ...mapState({
         currentProjectId:     state => state.mod_project.currentProject,
@@ -265,6 +268,16 @@
         const newProjectsList = deepCopy(this.localUserInfo.projectsList);
         newProjectsList.splice(indexCheckedProj, 1);
         this.saveLocalUserInfo({key: 'projectsList', data: newProjectsList });
+      },
+      getCurrentStepCode: {
+        handler(newVal, oldVal) {
+          if (!this.isTutorialMode) { return; }
+          console.log('project getCurrentStepCode 1')
+          if (newVal !== 'tutorial-model-hub-new-button') { return; }
+          console.log('project getCurrentStepCode 2')
+          this.activateCurrentStep();
+        },
+        immediate: true
       }
     },
     methods: {
@@ -278,18 +291,23 @@
         setActivePageAction: 'modal_pages/setActivePageAction',
         delete_network :     'mod_workspace/DELETE_network',
         UPDATE_MODE_ACTION : 'mod_workspace/UPDATE_MODE_ACTION',
+        setCurrentView:       'mod_tutorials/setCurrentView',
 
         setNetworkNameAction:'mod_workspace/SET_networkName',
         updateWorkspaces:    'mod_webstorage/updateWorkspaces',
         deleteAllIds:        'mod_webstorage/deleteAllIds',        
       }),
-      gotToNetworkView(networkID) {
+      goToNetworkView(networkID) {
         // maybe should receive a id and search index by it
         const index = this.workspaceContent.findIndex(wc => wc.networkID == networkID);
         this.set_currentNetwork(index > 0 ? index : 0);
         if(index !== -1) {
           this.$store.dispatch("mod_workspace/setViewType", 'model');
           this.$router.push({name: 'app'});
+
+          this.$nextTick(() => {
+            this.setCurrentView('tutorial-workspace-view');
+          });
         }
       },
       loadFolderPath() {
@@ -424,6 +442,10 @@
       handleAddNetworkModal() {
         // open modal
         this.popupNewModel(true);
+
+        this.$nextTick(() => {
+          this.setCurrentView('tutorial-create-model-view');
+        });
       },
       onCloseSelectModelModal() {
         this.popupNewModel(false);
@@ -496,7 +518,7 @@
         this.isContextOpened = false
       },
       handleContextOpenModel() {
-        this.gotToNetworkView(this.workspaceContent[this.contextModelIndex].networkID);
+        this.goToNetworkView(this.workspaceContent[this.contextModelIndex].networkID);
         this.closeContext();
       },
 
@@ -556,6 +578,13 @@
       hasUnsavedChanges(networkId) {
         return this.$store.getters['mod_workspace-changes/get_hasUnsavedChanges'](networkId);
       }
+    },
+    created() {
+      // Adding this because of reloads on this page 
+      // When the stats and test views are their own routes,
+      // a better alternative would be to put a lot of the
+      // following in the router.
+      this.setCurrentView('tutorial-model-hub-view');
     }
   }
 </script>

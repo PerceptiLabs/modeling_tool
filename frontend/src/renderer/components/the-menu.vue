@@ -11,7 +11,9 @@
         button.btn.btn--link.header-nav_btn(type="button"
           v-if="item.visible"
         ) {{ item.label }}
-        ul.header-nav_sublist.sublist--top
+        ul.header-nav_sublist.sublist--top(
+          :data-tutorial-marker="'MenuItem_' + item.label"
+        )
           li.header-nav_item(
             v-for="(subItem, index) in item.submenu"
             :key="subItem.index"
@@ -68,12 +70,12 @@ export default {
   },
   computed: {
     ...mapGetters({
-      isTutorialMode:         'mod_tutorials/getIstutorialMode',
-      isStoryBoard:           'mod_tutorials/getIsTutorialStoryBoard',
-      isLogin:                'mod_user/GET_userIsLogin',
-      networkHistory:         'mod_workspace-history/GET_currentNetHistory',
-      isDefaultProjectMode:   'mod_project/GET_isDefaultProjectMode',
-      isNotebookMode:         'mod_notebook/getNotebookMode',
+      isTutorialMode:             'mod_tutorials/getIsTutorialMode',
+      isStoryBoard:               'mod_tutorials/getIsTutorialStoryBoard',
+      isLogin:                    'mod_user/GET_userIsLogin',
+      networkHistory:             'mod_workspace-history/GET_currentNetHistory',
+      isDefaultProjectMode:       'mod_project/GET_isDefaultProjectMode',
+      isNotebookMode:             'mod_notebook/getNotebookMode',
     }),
     ...mapState({
       currentProjectId:     state => state.mod_project.currentProject,
@@ -131,17 +133,14 @@ export default {
   },
   methods: {
     ...mapMutations({
-      setTutorialSB:    'mod_tutorials/SET_showTutorialStoryBoard',
       saveNetwork:      'mod_events/set_saveNetwork',
       saveNetworkAs:    'mod_events/set_saveNetworkAs',
-      setTutorialMode:  'mod_tutorials/SET_isTutorialMode',
+      setTutorialMode:  'mod_tutorials/setTutorialMode',
     }),
     ...mapActions({
       infoPopup:        'globalView/GP_infoPopup',
       popupConfirm:     'globalView/GP_confirmPopup',
       popupNewModel:    'globalView/SET_newModelPopup',
-      offMainTutorial:  'mod_tutorials/offTutorial',
-      hideTooltip:      'mod_tutorials/hideTooltip',
       appClose:         'mod_events/EVENT_appClose',
       appMinimize:      'mod_events/EVENT_appMinimize',
       appMaximize:      'mod_events/EVENT_appMaximize',
@@ -155,6 +154,7 @@ export default {
       toPrevStepHistoryMutation:'mod_workspace-history/TO_prevStepHistory',
       toNextStepHistoryMutation:'mod_workspace-history/TO_nextStepHistory',
       setActivePageAction: 'modal_pages/setActivePageAction',
+      setCurrentView:   'mod_tutorials/setCurrentView'
     }),
     HCSelectAll() {
       if(!this.isSettingInputFocused) {
@@ -190,123 +190,44 @@ export default {
       } 
     },
     logOut() {
-      if(this.isTutorialMode) {
-        this.hideTooltip();
-        this.popupConfirm(
-          {
-            text: 'Are you sure you want to end the tutorial?',
-            ok: () => {
-              this.offMainTutorial();
-              this.$store.dispatch('mod_events/EVENT_logOut');
-            }
-          });
-      } else if (this.hasNetworkWithUnsavedChanges) {
+      if (this.hasNetworkWithUnsavedChanges) {
         this.popupConfirm(
           {
             text: 'You still have unsaved models.\nAre you sure you want to log out?',
             ok: () => {
+              this.setCurrentView('');
               this.$store.dispatch('mod_events/EVENT_logOut');
             }
           });
       } else{
+        this.setCurrentView('');
         this.$store.dispatch('mod_events/EVENT_logOut');
       }
     },
     goToHelpPageDesktop() {
-      if(this.isTutorialMode) {
-        this.hideTooltip();
-        this.popupConfirm(
-          {
-            text: 'Are you sure you want to end the tutorial?',
-            ok: () => {
-              this.offMainTutorial();
-              this.goToLink(`${baseUrlSite}/i_docs`)
-            }
-          });
-      } else {
-        this.goToLink(`${baseUrlSite}/i_docs`)
-      }
+      this.goToLink(`${baseUrlSite}/i_docs`);
     },
     goToAboutPageDesktop() {
-      if(this.isTutorialMode) {
-        this.hideTooltip();
-        this.popupConfirm(
-          {
-            text: 'Are you sure you want to end the tutorial?',
-            ok: () => {
-              this.offMainTutorial();
-              this.goToLink(`${baseUrlSite}/about`)
-            }
-          });
-      } else {
-        this.goToLink(`${baseUrlSite}/about`)
-      }
+      this.goToLink(`${baseUrlSite}/about`);
     },
     goToHelpPageWeb() {
-      if(this.isTutorialMode) {
-        this.hideTooltip();
-        this.popupConfirm(
-          {
-            text: 'Are you sure you want to end the tutorial?',
-            ok: () => {
-              this.offMainTutorial();
-              window.location.href = 'https://join.slack.com/t/perceptilabs-com/shared_invite/zt-auchqflz-4YANlDBSyJW1qC7LdpQBSA';
-            }
-          });
-      } else {
-        window.location.href = 'https://join.slack.com/t/perceptilabs-com/shared_invite/zt-auchqflz-4YANlDBSyJW1qC7LdpQBSA';
-      }
+      window.location.href = 'https://join.slack.com/t/perceptilabs-com/shared_invite/zt-auchqflz-4YANlDBSyJW1qC7LdpQBSA';
     },
     goToAboutPageWeb() {
-      if(this.isTutorialMode) {
-        this.hideTooltip();
-        this.popupConfirm(
-          {
-            text: 'Are you sure you want to end the tutorial?',
-            ok: () => {
-              this.offMainTutorial();
-              window.location.href = 'https://perceptilabs.com/docs/overview';
-            }
-          });
-      } else {
-        window.location.href = 'https://perceptilabs.com/docs/overview';
-      }
-    },
-    showTutorial() {
-      this.$store.dispatch('mod_tutorials/START_storyboard');
+      window.location.href = 'https://perceptilabs.com/docs/overview';
     },
     openModel() {
-      if(this.isTutorialMode) {
-        this.hideTooltip();
-        this.popupConfirm(
-          {
-            text: 'Are you sure you want to end the tutorial?',
-            ok: () => {
-              this.offMainTutorial();
-              this.openNetwork();
-            }
-          });
-      } else {
-        this.openNetwork();
-      }
+      this.openNetwork();
     },
     newModel() {
       this.popupNewModel(true);
+
+      this.$nextTick(() => {
+        this.setCurrentView('tutorial-create-model-view');
+      });
     },
     openLoadModelPopup() {
-      if(this.isTutorialMode) {
-        this.hideTooltip();
-        this.popupConfirm(
-          {
-            text: 'Are you sure you want to end the tutorial?',
-            ok: () => {
-              this.offMainTutorial();
-              this.$store.dispatch('globalView/SET_filePickerPopup', {confirmCallback: this.onLoadNetworkConfirmed});
-            }
-          });
-      } else {
-        this.$store.dispatch('globalView/SET_filePickerPopup', {confirmCallback: this.onLoadNetworkConfirmed});
-      }
+      this.$store.dispatch('globalView/SET_filePickerPopup', {confirmCallback: this.onLoadNetworkConfirmed});
     },
     onLoadNetworkConfirmed(path) {
       if (!path || path.length === 0) { return; }
@@ -334,19 +255,15 @@ export default {
     },
     saveModel() {
       this.saveNetwork();
-      this.offMainTutorial();
     },
     saveModelAs() {
       this.saveNetworkAs();
-      this.offMainTutorial();
     },
     exportModel() {
       this.$store.dispatch('globalView/SET_exportNetworkPopup', true);
     },
     HC_delete() {
-      if(!this.isTutorialMode) {
-        this.$store.dispatch('mod_events/EVENT_pressHotKey', 'del')
-      }
+      this.$store.dispatch('mod_events/EVENT_pressHotKey', 'del')
     },
     HC_esc() {
       this.$store.dispatch('mod_events/EVENT_hotKeyEsc')
@@ -450,7 +367,6 @@ export default {
           submenu: [
             {label: 'Help',          enabled: false,                                  active: this.goToHelpPageDesktop },
             {label: 'About',                                                          active: this.goToAboutPageDesktop },
-            // {label: 'Tutorial mode', enabled: !this.isTutorialActive && this.isLogin, active: this.showTutorial },
             ...(this.isMac
               ? []
               : [{label: 'Check for updates',                                         active: this.checkUpdate }]
@@ -521,7 +437,6 @@ export default {
           submenu: [
             {label: 'Help',                                                           active: this.goToHelpPageWeb },
             {label: 'About',                                                          active: this.goToAboutPageWeb },
-            // {label: 'Tutorial mode', enabled: !this.isTutorialActive,                 active: this.showTutorial },
             {type: 'separator'},
             {label: `Version: ${this.appVersion}`, enabled: false,                    active: ()=>{} }
           ]

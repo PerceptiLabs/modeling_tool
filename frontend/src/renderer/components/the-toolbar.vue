@@ -160,9 +160,8 @@ export default {
   },
   computed: {
     ...mapGetters({
-      tutorialActiveAction: 'mod_tutorials/getActiveAction',
       interactiveInfoStatus:'mod_tutorials/getInteractiveInfo',
-      isTutorialMode:       'mod_tutorials/getIstutorialMode',
+      isTutorialMode:       'mod_tutorials/getIsTutorialMode',
       isNotebookMode:       'mod_notebook/getNotebookMode',
       currentElList:        'mod_workspace/GET_currentNetworkElementList',
       isTraining:           'mod_workspace/GET_networkIsTraining',
@@ -265,10 +264,7 @@ export default {
       pauseTraining:        'mod_api/API_pauseTraining',
       stopTraining:         'mod_api/API_stopTraining',
       skipValidTraining:    'mod_api/API_skipValidTraining',
-      tutorialPointActivate:'mod_tutorials/pointActivate',
       removeTooltip:        'mod_tutorials/removeTooltip',
-      offMainTutorial:      'mod_tutorials/offTutorial',
-      hideTooltip:          'mod_tutorials/hideTooltip',
       set_notebookMode:     'mod_notebook/SET_notebookMode',
       set_netMode:          'mod_workspace/SET_netMode',
       toPrevStepHistory:    'mod_workspace-history/TO_prevStepHistory',
@@ -283,7 +279,6 @@ export default {
     onOffBtn() {
       if(this.isTraining) this.trainStop();
       else this.trainStart();
-      this.$nextTick(()=> this.tutorialPointActivate({way:'next', validation: 'tutorial_run-training-button'}))
     },
     trainStart() {
       googleAnalytics.trackCustomEvent('start-training');
@@ -299,7 +294,6 @@ export default {
     },
     trainPause() {
       this.pauseTraining();
-      this.tutorialPointActivate({way:'next', validation: 'tutorial_pause-training'})
     },
     skipValid() {
       this.skipValidTraining();
@@ -340,26 +334,13 @@ export default {
     },
     setNetMode(type, tutorial_id) {
       this.set_netMode(type);
-      this.tutorialPointActivate({way:'next', validation: tutorial_id})
     },
     toggleInteractiveInfo() {
       this.removeTooltip();
       this.setInteractiveInfo(!this.interactiveInfoStatus);
     },
     toHomePage() {
-      if(this.isTutorialMode) {
-        this.hideTooltip();
-        this.popupConfirm(
-          {
-            text: 'Are you sure you want to end the tutorial?',
-            ok: () => {
-              this.offMainTutorial();
-              this.$router.push({name: 'projects'});
-            }
-          });
-      } else {
-        this.$router.push({name: 'projects'});
-      }
+      this.$router.push({name: 'projects'});
     }
   }
 }

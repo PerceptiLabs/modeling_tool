@@ -8,6 +8,7 @@
     router-link.nav-link(
       :class="{'is-active': this.$route.name === 'projects'}"
       :to="{name: 'projects'}"
+      @click.native="toProjects"
       v-tooltip:right="'ModelHub'"
       )
       svg(xmlns='http://www.w3.org/2000/svg' width='21' height='12' viewbox='0 0 21 12' fill='none')
@@ -105,8 +106,9 @@
       ...mapActions({
         SET_currentNetwork: 'mod_workspace/SET_currentNetwork',
         SET_openStatistics: 'mod_workspace/SET_openStatistics',
-        SET_openTest: 'mod_workspace/SET_openTest',
-        set_chartRequests:    'mod_workspace/SET_chartsRequestsIfNeeded',
+        SET_openTest:       'mod_workspace/SET_openTest',
+        set_chartRequests:  'mod_workspace/SET_chartsRequestsIfNeeded',
+        setCurrentView:     'mod_tutorials/setCurrentView'
       }),
       resetModelIndexes() {
         this.reseStatistic();
@@ -158,6 +160,11 @@
       isModelPageAndNetworkHasStatistic() {
         return this.$route.name === 'app' && this.currnetNetwork.networkMeta.openStatistics !== null
       },
+      toProjects() {
+        this.$nextTick(() => {
+          this.setCurrentView('tutorial-model-hub-view');
+        });
+      },
       toModelStatistic() {
         //$route.name === 'app' && currnetNetwork.networkMeta.openStatistics !== null
         if(this.$route.name === 'app') {
@@ -171,7 +178,6 @@
                 this.SET_openStatistics(true);
                 this.set_chartRequests(item.networkID);
                 })
-
           } else {
             const { statisticItemIndex } = this;
             
@@ -183,8 +189,6 @@
             }
           }
 
-
-
         } else {
           const { statisticItemIndex } = this;
           if(statisticItemIndex !== null) {
@@ -194,9 +198,12 @@
                 this.$router.push({name: 'app'});
                 this.SET_openStatistics(true);
               });
-            
           }
         }
+
+        this.$nextTick(() => {
+          this.setCurrentView('tutorial-statistics-view');
+        });
       },
       isOnStatisticsView() {
         return this.currnetNetwork.networkMeta.openStatistics === true
@@ -231,6 +238,10 @@
           }
           this.$router.push({name: 'app'});
         }
+
+        this.$nextTick(() => {
+          this.setCurrentView('tutorial-workspace-view');
+        });
       },
       toModelTest() {
         if(this.haveAtLeastOneTestItem) {
@@ -250,6 +261,10 @@
                 this.SET_openTest(true);
               });
           }
+
+          this.$nextTick(() => {
+            this.setCurrentView('tutorial-test-view');
+          });
         }
       },
     },

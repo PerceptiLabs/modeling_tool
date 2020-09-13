@@ -123,9 +123,6 @@ export default {
     }
   },
   methods: {
-    ...mapActions({
-      pointActivate:    'mod_tutorials/pointActivate'
-    }),
     setBtnList(objList) {
       this.$store.commit('mod_statistics/setLayerMetrics', { layerType: this.layerType, layerMetrics: objList });
       this.$store.commit('mod_statistics/setDefaultMetric', this.layerType);

@@ -122,12 +122,10 @@
     },
     methods: {
       ...mapActions({
-        tutorialPointActivate:    'mod_tutorials/pointActivate',
       }),
       setTab(name, id) {
         this.currentTab = name;
         this.setTabAction();
-        this.tutorialPointActivate({way: 'next', validation: id})
       },
       getData() {
         switch (this.currentTab) {

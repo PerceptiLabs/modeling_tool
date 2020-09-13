@@ -103,13 +103,12 @@ export default {
   },
   computed: {
     ...mapGetters({
-      tutorialActiveAction:   'mod_tutorials/getActiveAction',
-      tutorialDottedArrow:    'mod_tutorials/getIsDottedArrow',
       currentNetwork:         'mod_workspace/GET_currentNetwork',
       canEditLayers:          'mod_workspace/GET_networkIsOpen',
       statisticsIsOpen:       'mod_workspace/GET_statisticsIsOpen',
       testingIsOpen:          'mod_workspace/GET_testIsOpen',
       statisticsOrTestIsOpen: 'mod_workspace/GET_statisticsOrTestIsOpen',
+      getCurrentStepCode:     'mod_tutorials/getCurrentStepCode',
     }),
     isGridEnabled() {
       return false;
@@ -120,6 +119,9 @@ export default {
     },
     fullNetworkElementList() {
       return this.$store.getters['mod_workspace/GET_currentNetworkElementList'];
+    },
+    computedFullNetworkElementList() {
+      return Object.assign({}, this.fullNetworkElementList);
     },
     networkElementList() {
       let currentNetworkElementList = this.statisticsOrTestIsOpen
@@ -183,7 +185,6 @@ export default {
       setTimeout(()=> this.createArrowList(), 0)
     },
     eventCalcArrow() {
-      //this.tutorialPointActivate({way: 'next', validation: this.tutorialActiveAction.id});
       this.createArrowList()
     },
     hotKeyPressDelete() {
@@ -194,6 +195,23 @@ export default {
         this.calcSvgSize();
       }
     },
+    computedFullNetworkElementList: {
+      handler(newVal, oldVal) {
+
+        if (this.getCurrentStepCode !== 'tutorial-workspace-layer-data') {
+          return;
+        }
+
+        const newKeys = newVal ? Object.keys(newVal) : [];
+        const oldKeys = oldVal ? Object.keys(oldVal) : [];
+
+        if (newVal && 
+          oldVal &&
+          newKeys.length === oldKeys.length + 1) {
+            this.setNextStep('tutorial-workspace-layer-data');
+        }
+      }
+    }
 
     // eventIOGenerate() {
     //   this.generateForwardAndBackwardConnections();
@@ -206,10 +224,11 @@ export default {
       change_groupContainerDiff:              'mod_workspace/change_groupContainerDiff',
     }),
     ...mapActions({
-      tutorialPointActivate:   'mod_tutorials/pointActivate',
       SET_elementNetworkField: 'mod_workspaceHelpers/SET_elementNetworkField',
       markAllUnselectedAction: 'mod_workspace/markAllUnselectedAction',
       unselectElements:        'mod_workspace/SET_elementUnselect',
+      setNextStep:             'mod_tutorials/setNextStep',
+      layerAddedAction:        'mod_tutorials/tutorial-workspace-layer-added-setup',
     }),
     getElSize(layerId) {
       const el = document.querySelector(`[layer-id="${layerId}"]`);
@@ -418,7 +437,7 @@ export default {
     },
     arrowMovePaint(ev) {
       // 4
-      this.$store.commit('mod_tutorials/SET_isDottedArrow', false);
+      // this.$store.commit('mod_tutorials/SET_isDottedArrow', false);
       ev.preventDefault();
       ev.stopPropagation();
       this.$store.commit('mod_workspace/SET_preArrowStop', {

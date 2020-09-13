@@ -72,7 +72,6 @@ export default {
   },
   methods: {
     ...mapActions({
-      tutorialPointActivate:  'mod_tutorials/pointActivate',
       sendParseModel:         'mod_api/API_parse',
     }),
     applySet() {

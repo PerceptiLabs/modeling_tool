@@ -1,1391 +1,639 @@
-import router from "@/router";
-import store  from '@/store'
+import Vue    from 'vue';
+
+/****************************************************************************
+ * Notes:
+ * 
+ * The tutorial here is setup based on views and a number of steps in it.
+ * How many steps have progressed in each view is independent of the other
+ * views.
+ * 
+ * setCurrentView: sets the view
+ * setNextStep: triggers the next step if the element is the one currently
+ *    targeted. Or else, clicking on "Got it" in the notifications will
+ *    advance the steps as well.
+ * 
+ * To change the order of the notifications, just reorder the steps in the
+ * steps array under a view.
+ * 
+ * The actual creation of the notifications are in tutorial-notification.vue
+ ***************************************************************************/
 
 const namespaced = true;
-let delayTimer;
 
 const state = {
-  isTutorialMode: false,
-  showTutorialStoryBoard: false,
-  showMainTutorialInstruction: false,
-  mainTutorialIsStarted: false,
-  interactiveInfo: false,
-  isDottedArrow: false,
-  
-  activeStepStoryboard: 0,
-  
-  activeStepMainTutorial: 0,
-  activePointMainTutorial: 0,
-  activeActionMainTutorial: 0,
-  
-  //firstTimeApp: localStorage.showFirstAppTutorial ? false : true,
-  interective: {
-    first_instructions: {
-      title: 'Instructions:',
-      points: [
+  isTutorialMode: true, // controls both checklist and tips
+  isChecklistExpanded: true,
+  showTips: true,
+  hasShownWhatsNew: false,
+  checklistItems: [
+    {
+      itemId: 'createModel',
+      label: 'Create a model',
+      isCompleted: false
+    },
+    {
+      itemId: 'startTraining',
+      label: 'Start training your model',
+      isCompleted: false
+    },
+    {
+      itemId: 'finishTraining',
+      label: 'Finish training and see TEST view',
+      isCompleted: false
+    }
+  ],
+  currentView: '',
+  tutorialSteps: [
+    {
+      viewName: 'tutorial-whats-new-view',
+      isCompleted: false,
+      currentStepCode: '',
+      steps: []
+    },
+    {
+      viewName: 'tutorial-model-hub-view',
+      isCompleted: false,
+      currentStepCode: 'tutorial-model-hub-new-button',
+      steps: [
         {
-          actions: [
-            {
-              tooltip: '',
-              actionStatus: 'first'
-            },
-          ],
-          status:'first',
-          content: `<div class="text-block">When working with ML, you can divide the process into 2 overarching steps:</div>
-                    <p>1) Knowing your data</p>
-                    <p>2) Building your model</p>`
+          stepCode: 'tutorial-model-hub-new-button',
+          displayText: 'Get started by first creating a model.',
+          arrowDirection: 'left'
+        },
+        {
+          stepCode: 'tutorial-model-hub-import-button',
+          displayText: 'Import a model folder.',
+          arrowDirection: 'left'
+        },
+        {
+          stepCode: 'tutorial-model-hub-user-gravatar',
+          displayText: 'Hover to see your user info or log out.',
+          arrowDirection: 'top-right'
+        },
+        {
+          stepCode: 'tutorial-model-hub-question-mark',
+          displayText: 'Press to get access to help or resources.',
+          arrowDirection: 'top-right'
+        },
+        {
+          stepCode: 'tutorial-model-hub-report-button',
+          displayText: 'If something goes wrong, you can report it and we will make sure it gets fixed!',
+          arrowDirection: 'top-right'
         }
       ]
     },
-    import_data: {
-      title: 'Step 1. Import your data',
-      points: [
+    {
+      viewName: 'tutorial-create-model-view',
+      isCompleted: false,
+      currentStepCode: 'tutorial-create-model-new-model',
+      steps: [
         {
-          status:'disabled',
-          class_style: 'list_subtitle',
-          content: `In the <div class="marker">Operations Toolbar</div> go to <div class="marker">Data</div> > Select and drop <div class="marker">Data</div> to workspace > Load dataset`,
-          actions: [
-            {
-              tooltip: 'Click to expand',
-              position: 'right',
-              id: 'tutorial_data',
-              status: 'disabled',
-              animation: true
-            },
-            {
-              tooltip: 'Drag the Data element onto the workspace',
-              position: 'right',
-              id: 'tutorial_data-data',
-              dynamic_id: 'tutorial_data-data-1',
-              schematic: {
-                type: 'square',
-                top: 16.4,
-                left: 26
-              },
-              status: 'disabled',
-              animation: true
-            },
-            {
-              tooltip: `Double click to select <br> the MNIST dataset`,
-              position: 'right',
-              id: 'tutorial_data-data-1',
-              status: 'disabled',
-              animation: true,
-              position_element: {
-                top: 6.5,
-                left: 18
-              },
-            },
-            {
-              tooltip: `Click to select and <br> load mnsit_input.npy`,
-              position: 'right',
-              id: 'tutorial_button-load',
-              status: 'disabled',
-              animation: true
-            },
-            {
-              tooltip: 'Click to load the MNIST input',
-              position: 'right',
-              id: 'tutorial_button-apply',
-              status: 'disabled',
-              animation: true,
-            },
-            {
-              tooltip: 'Click to confirm',
-              position: 'right',
-              id: 'tutorial_button-confirm',
-              status: 'disabled',
-              animation: true,
-            }
-          ],
-          static_info: [
-            {
-              status:'disabled',
-              content: 'For this tutorial we will use the MNIST dataset'
-            },
-            {
-              status:'disabled',
-              content: 'There are 3000 samples inside this mnist dataset, each representing a handwritten digit'
-            }
-          ]
+          stepCode: 'tutorial-create-model-new-model',
+          displayText: 'Choose a model template, empty if you want to build your model from scratch.',
+          arrowDirection: 'right'
         },
         {
-          status:'disabled',
-          content: 'Repeat this step for your labeled data (your ground thruth) which are integers representing handwritten digits and are used to teach the model when it is correct',
-          actions: [
-            {
-              tooltip: 'Click to expand',
-              position: 'right',
-              id: 'tutorial_data',
-              status: 'disabled',
-              animation: true,
-            },
-            {
-              tooltip: 'Drag the Data element onto the workspace',
-              position: 'right',
-              id: 'tutorial_data-data',
-              dynamic_id: 'tutorial_data-data-2',
-              schematic: {
-                type: 'square',
-                top: 32.4,
-                left: 26
-              },
-              status: 'disabled',
-              animation: true,
-            },
-            {
-              tooltip: `Double click to select <br> the MNIST dataset`,
-              position: 'right',
-              id: 'tutorial_data-data-2',
-              status: 'disabled',
-              animation: true,
-            },
-            {
-              tooltip: `Click to select and <br> load mnist_labels.npy`,
-              position: 'right',
-              id: 'tutorial_button-load',
-              status: 'disabled',
-              animation: true,
-            },
-            {
-              tooltip: 'Click to load the MNIST labels',
-              position: 'right',
-              id: 'tutorial_button-apply',
-              status: 'disabled',
-              animation: true,
-            },
-            {
-              tooltip: 'Click to confirm',
-              position: 'right',
-              id: 'tutorial_button-confirm',
-              status: 'disabled',
-              animation: true,
-            }
-          ],
+          stepCode: 'tutorial-create-model-description',
+          displayText: 'A quick overview of the model.',
+          arrowDirection: 'left'
+        },
+        {
+          stepCode: 'tutorial-create-model-model-name',
+          displayText: 'This is where you give the model a name.',
+          arrowDirection: 'left'
+        },
+        {
+          stepCode: 'tutorial-create-model-model-path',
+          displayText: 'This is where the model folder will be saved.',          
+          arrowDirection: 'left'
         }
       ]
     },
-    precessing_reshape: {
-      title: 'Step 2. Reshape the dataset',
-      points: [
+    {
+      viewName: 'tutorial-workspace-view',
+      isCompleted: false,
+      currentStepCode: 'tutorial-workspace-layer-menu',
+      steps: [
         {
-          status:'disabled',
-          class_style: 'list_subtitle',
-          content: 'In the <div class="marker">Operations Toolbar</div> drag out a <div class="marker">Reshape Layer</div> > Connect an input > Edit the settings',
-          actions: [
-            {
-              tooltip: 'Click to expand',
-              position: 'right',
-              id: 'tutorial_processing',
-              status: 'disabled',
-              animation: true,
-            },
-            {
-              tooltip: 'Drag the Reshape element onto the workspace',
-              position: 'right',
-              id: 'tutorial_process-reshape',
-              dynamic_id: 'tutorial_process-reshape-1',
-              schematic: {
-                type: 'square',
-                top: 16.4,
-                left: 42,
-              },
-              status: 'disabled',
-              animation: true,
-            },
-            {
-              tooltip: `If you hover your mouse over the sides
-                        </br> of some elements you'll see connection dots </br>
-                        Drag a connection between a dot on this element and
-                        <div class="tooltip-tutorial_bold">Data and Process Reshape</div>`,
-              position: 'bottom',
-              id: 'tutorial_data-data-1',
-              schematic: {
-                type: 'arrow',
-                connection_start: 'tutorial_data-data-1',
-                connection_end: 'tutorial_process-reshape-1'
-              },
-              status: 'disabled',
-              animation: true,
-            },
-            {
-              tooltip: 'Double click to open settings',
-              position: 'right',
-              id: 'tutorial_process-reshape-1',
-              status: 'disabled',
-              animation: true,
-            },
-          ],
-          static_info: [
-            {
-              status:'disabled',
-              content: 'We want to build an image classifier by using images as inputs, not flattened arrays which is how this MNIST dataset is formatted'
-            },
-          ]
+          stepCode: 'tutorial-workspace-layer-menu',
+          displayText: 'You build out your model by combining components, you can find the components in these categories.',
+          arrowDirection: 'left'
         },
         {
-          status:'disabled',
-          content: 'Reshape the dataset into images of shape 28x28x1. ',
-          hoverInfo: [
-            {
-              tooltip: `<div class="tooltip-tutorial_italic">
-                          Reshape to 28x28x1 and
-                          <div class="tooltip-tutorial_bold">then click Apply <br></div>
-                       </div>`,
-              position: 'right',
-              id: 'tutorial_input-reshape',
-            },
-            {
-              tooltip: `<div class="tooltip-tutorial_italic">
-                          Axis positions of the data
-                          <div class="tooltip-tutorial_bold">click Apply</div>
-                       </div>`,
-              position: 'right',
-              id: 'tutorial_input-transpose',
-            }
-          ],
-          actions: [
-            {
-              tooltip: `<div class="tooltip-tutorial_italic">
-                          Reshape to 28x28x1 and
-                          <div class="tooltip-tutorial_bold">click Apply to continue</div>
-                       </div>`,
-              position: 'right',
-              id: 'tutorial_input-reshape',
-              status: 'disabled',
-              animation: true,
-            },
-            {
-              tooltip: 'Click to confirm',
-              position: 'right',
-              id: 'tutorial_button-confirm',
-              status: 'disabled',
-              animation: true,
-            }
-          ],
+          stepCode: 'tutorial-workspace-layer-data',
+          displayText: 'Drag out a component to start building your model.',
+          overrideActions: {
+            setup: 'tutorial-workspace-layer-data-setup',
+            teardown: 'tutorial-workspace-layer-data-teardown'
+          }
+        },
+        {
+          stepCode: 'tutorial-workspace-settings',
+          displayText: 'Here you can modify your component, if something is missing you can press <strong>Open Code</strong> to custom edit the component.',
+          arrowDirection: 'right'
+        },
+        {
+          stepCode: 'tutorial-workspace-preview-toggle',
+          displayText: 'Toggle <strong>Preview</strong> button to see all visualizations at once.',
+          arrowDirection: 'right'
+        },
+        {
+          stepCode: 'tutorial-workspace-notebook-view-toggle',
+          displayText: 'Toggle notebook view to see your model in a jupyter notebook format.',
+          arrowDirection: 'right'
+        },
+        {
+          stepCode: 'tutorial-workspace-start-training',
+          displayText: 'When you are happy with your model, press Run to start training it.',
+          arrowDirection: 'left'
+        },
+        {
+          stepCode: 'tutorial-workspace-settings-code',
+          displayText: 'Here you can view and customize the code of the component.',
+          arrowDirection: 'right'
         },
       ]
     },
-    convolutional_layer: {
-      title: 'Step 3. Use a Convolutional layer',
-      points: [
+    {
+      viewName: 'tutorial-core-side-view',
+      isCompleted: false,
+      currentStepCode: '',
+      steps: []
+    },
+    {
+      viewName: 'tutorial-statistics-view',
+      isCompleted: false,
+      currentStepCode: 'tutorial-statistics-tabs',
+      steps: [
         {
-          status:'disabled',
-          class_style: 'list_subtitle',
-          content: 'In the <div class="marker">Operations Toolbar</div> go to <div class="marker">Deep Learning</div> > <div class="marker">Drag out a Convolution Layer</div> > Connect an input > Edit the settings',
-          hoverInfo: [
-            {
-              tooltip: `<div class="tooltip-tutorial_italic">
-                          <div class="tooltip-tutorial_bold">Dimension</div>
-                          Choose which type of convolutional operation to use
-                          <div class="tooltip-tutorial_bold">Hover over other inputs to see more information. <br> Click Apply when ready</div>
-                       </div>`,
-              position: 'right',
-              id: 'tutorial_dimension',
-            },
-            {
-              tooltip: `<div class="tooltip-tutorial_italic">
-                          <div class="tooltip-tutorial_bold">Patch size:</div> 
-                          This is the size of the filter.</br> 
-                          E.g. with patch size 3, the </br> 
-                          filter will be a square of size 3x3. </br> 
-                          <div class="tooltip-tutorial_bold">Hover over other inputs to see more information. <br> Click Apply when ready</div>
-                        </div>`,
-              position: 'right',
-              id: 'tutorial_patch-size',
-            },
-            {
-              tooltip: `<div class="tooltip-tutorial_italic">
-                          <div class="tooltip-tutorial_bold">Stride:</div>
-                          This is the step size when </br>
-                          we slide the filter over the input </br>
-                          data to generate feature maps. </br>
-                          <div class="tooltip-tutorial_bold">Hover over other inputs to see more information. <br> Click Apply when ready</div>
-                       </div>`,
-              position: 'right',
-              id: 'tutorial_stride'
-            },
-            {
-              tooltip: `<div class="tooltip-tutorial_italic">
-                          <div class="tooltip-tutorial_bold">Feature Maps:</div>
-                          The number of </br>
-                          feature maps corresponds to the </br>
-                          number of different features to </br>
-                          look for in the input data. With </br>
-                          more complex data, it might be </br>
-                          better to increase the number </br>
-                          of feature maps. </br>
-                          <div class="tooltip-tutorial_bold">Hover over other inputs to see more information. <br> Click Apply when ready</div>
-                       </div>`,
-              position: 'right',
-              id: 'tutorial_feature-maps',
-            },
-            {
-              tooltip: `<div class="tooltip-tutorial_italic">
-                          <div class="tooltip-tutorial_bold">Zero-padding</div>
-                          Choose whether Zero-padding should be used or not
-                          <div class="tooltip-tutorial_bold">Hover over other inputs to see more information. <br> Click Apply when ready</div>
-                       </div>`,
-              position: 'right',
-              id: 'tutorial_zero-padding',
-            },
-            {
-              tooltip: `<div class="tooltip-tutorial_italic">
-                          <div class="tooltip-tutorial_bold">Activation function</div>
-                          Choose which activation function to use
-                          <div class="tooltip-tutorial_bold">Hover over other inputs to see more information. <br> Click Apply when ready</div>
-                       </div>`,
-              position: 'right',
-              id: 'tutorial_activeFunc',
-            },
-            {
-              tooltip: `<div class="tooltip-tutorial_italic">
-                          <div class="tooltip-tutorial_bold">Dropout</div>
-                          Choose whether dropout should be used or not
-                          <div class="tooltip-tutorial_bold">Hover over other inputs to see more information. <br> Click Apply when ready</div>
-                       </div>`,
-              position: 'right',
-              id: 'tutorial_dropout',
-            },
-            {
-              tooltip: `<div class="tooltip-tutorial_italic">
-                          <div class="tooltip-tutorial_bold">Pooling</div>
-                          Choose whether pooling should be used or not
-                          <div class="tooltip-tutorial_bold">Hover over other inputs to see more information. <br> Click Apply when ready</div>
-                       </div>`,
-              position: 'right',
-              id: 'tutorial_pooling',
-            }
-          ],
-          actions: [
-            {
-              tooltip: 'Click to expand',
-              position: 'right',
-              id: 'tutorial_deep-learning', 
-              status: 'disabled',
-              animation: true,
-            },
-            {
-              tooltip: 'Drag the Convolution element onto the workspace',
-              position: 'right',
-              id: 'tutorial_convolution',
-              dynamic_id: 'tutorial_convolution-1',
-              schematic: {
-                type: 'square',
-                top: 16.4,
-                left: 58,
-              },
-              status: 'disabled',
-              animation: true,
-            },
-            {
-              tooltip: 'Connect the Reshape layer <br> with the Convolutional layer',
-              position: 'bottom',
-              id: 'tutorial_process-reshape-1',
-              schematic: {
-                type: 'arrow',
-                connection_start: 'tutorial_process-reshape-1',
-                connection_end: 'tutorial_convolution-1'
-              },
-              status: 'disabled',
-              animation: true,
-            },
-            {
-              tooltip: 'Double click to open settings',
-              position: 'right',
-              id: 'tutorial_convolution-1',
-              status: 'disabled',
-              animation: true,
-            },
-            {
-              tooltip: `<div class="tooltip-tutorial_italic">
-                          <div class="tooltip-tutorial_bold">Patch size:</div> 
-                          This is the size of the filter.</br> 
-                          E.g. with patch size 3, the </br> 
-                          filter will be a square of size 3x3. </br> 
-                          <div class="tooltip-tutorial_bold">Hover over other inputs to see more information. <br> Click Apply when ready</div>
-                        </div>`,
-              position: 'right',
-              id: 'tutorial_patch-size',
-              status: 'disabled',
-              animation: true,
-            },
-            {
-              tooltip: 'Click to confirm',
-              position: 'right',
-              id: 'tutorial_button-confirm',
-              status: 'disabled',
-              animation: true,
-            }
-          ],
-          static_info: [
-            {
-              status:'disabled',
-              content: 'Convolution means to slide several filters over the input data.',
-            },
-            {
-              status:'disabled',
-              content: 'This generates outputs called feature maps, where each feature map corresponds to an extracted feature.'
-            }
-          ]
+          stepCode: 'tutorial-statistics-tabs',
+          displayText: 'Click on different tabs to get different overview statistics of how the training is going.',
+          overrideActions: {
+            setup: 'tutorial-statistics-tabs-setup',
+          }
+        },
+        {
+          stepCode: 'tutorial-statistics-map',
+          displayText: 'Click on a component on the map to change the content in the Viewbox to the right, this will let you peek into each component.',
+          arrowDirection: 'left'
+        },
+        {
+          stepCode: 'tutorial-statistics-controls',
+          displayText: 'Here you can pause, stop or skip validation.',
+          arrowDirection: 'left'
         },
       ]
     },
-    fully_connected_layer: {
-      title: 'Step 4. Use a Fully Connected layer',
-      points: [
+    {
+      viewName: 'tutorial-general-results-view',
+      isCompleted: false,
+      currentStepCode: '',
+      steps: []
+    },
+    {
+      viewName: 'tutorial-test-view',
+      isCompleted: false,
+      currentStepCode: 'tutorial-test-right-chart',
+      steps: [
         {
-          status:'disabled',
-          class_style: 'list_subtitle',
-          content: 'In the <div class="marker">Operations Toolbar</div> go to <div class="marker">Deep Learning</div> > <div class="marker">Drag out a Fully Connected layer</div> > Connect an input > Set the number of neurons',
-          actions: [
-            {
-              tooltip: 'Click to expand',
-              position: 'right',
-              id: 'tutorial_deep-learning', 
-              status: 'disabled',
-              animation: true,
-            },
-            {
-              tooltip: 'Drag the Fully Connected element onto the workspace',
-              position: 'right',
-              id: 'tutorial_fully-connected',
-              dynamic_id: 'tutorial_fully-connected-1',
-              schematic: {
-                type: 'square',
-                top: 16.4,
-                left: 74,
-              },
-              status: 'disabled',
-              animation: true,
-            },
-            {
-              tooltip: 'Connect the Convolutional layer <br> with the Fully Connected layer',
-              position: 'bottom',
-              id: 'tutorial_convolution-1',
-              schematic: {
-                type: 'arrow',
-                connection_start: 'tutorial_convolution-1',
-                connection_end: 'tutorial_fully-connected-1'
-              },
-              status: 'disabled',
-              animation: true,
-            },
-            {
-              tooltip: 'Double click to open settings',
-              position: 'right',
-              id: 'tutorial_fully-connected-1',
-              status: 'disabled',
-              animation: true,
-            }
-          ],
-          static_info: [
-            {
-              status:'disabled',
-              content: 'This operation compresses your data into a size that is equal to the number of neurons you set',
-            }
-          ]
+          stepCode: 'tutorial-test-right-chart',
+          displayText: 'Here you can see the prediction of your model for a specific sample.',
+          arrowDirection: 'right'
         },
         {
-          status:'disabled',
-          content: 'Set the same number of neurons as there are classes, which in this case is 10 since the images represent digits 0-9. ',
-          hoverInfo: [
-            {
-              tooltip: `<div class="tooltip-tutorial_italic">
-                          Set how many neurons to use
-                          <div class="tooltip-tutorial_bold">Hover over other inputs to see more information. <br> Click Apply when ready</div>
-                        </div>`,
-              position: 'right',
-              id: 'tutorial_neurons',
-            },
-            {
-              tooltip: `<div class="tooltip-tutorial_italic">
-                         Choose the activation function for each neuron
-                          <div class="tooltip-tutorial_bold">Hover over other inputs to see more information. <br> Click Apply when ready</div>
-                        </div>`,
-              position: 'right',
-              id: 'tutorial_activation_function',
-            },
-            {
-              tooltip: `<div class="tooltip-tutorial_italic">
-                          Choose whether dropout should be used or not
-                          <div class="tooltip-tutorial_bold">click Apply</div>
-                        </div>`,
-              position: 'right',
-              id: 'tutorial_dropout',
-            }
-          ],
-          actions: [
-            {
-              tooltip: `<div class="tooltip-tutorial_italic">
-                          Set how many neurons to use
-                          <div class="tooltip-tutorial_bold">Hover over other inputs to see more information. <br> Click Apply when ready</div>
-                        </div>`,
-              position: 'right',
-              id: 'tutorial_neurons',
-              status: 'disabled',
-              animation: true,
-            },
-            {
-              tooltip: 'Click to confirm',
-              position: 'right',
-              id: 'tutorial_button-confirm',
-              status: 'disabled',
-              animation: true,
-            }
-          ],
+          stepCode: 'tutorial-test-left-chart',
+          displayText: 'The content here can be changed by clicking on the map below, just like with the Viewbox.',
+          arrowDirection: 'left'
+        },
+        {
+          stepCode: 'tutorial-test-controls',
+          displayText: 'Press here to go to the next sample.',
+          arrowDirection: 'left'
         },
       ]
-    },
-    one_hot_encoding: {
-      title: 'Step 5. One Hot encoding on labels',
-      points: [
-        {
-          status:'disabled',
-          class_style: 'list_subtitle',
-          content: 'In the <div class="marker">Operations Toolbar</div> go to <div class="marker">Processing</div> > <div class="marker">Drag out a One Hot layer</div> > Connect an input > Set classes',
-          actions: [
-            {
-              tooltip: 'Click to expand',
-              position: 'right',
-              id: 'tutorial_processing', 
-              status: 'disabled',
-              animation: true,
-            },
-            {
-              tooltip: 'Drag the One Hot element onto the workspace',
-              position: 'right',
-              id: 'tutorial_one-hot',
-              dynamic_id: 'tutorial_one-hot-1',
-              schematic: {
-                type: 'square',
-                top: 32.4,
-                left: 42,
-              },
-              status: 'disabled',
-              animation: true,
-            },
-            {
-              tooltip: 'Connect the Data layer with <br> the One Hot layer',
-              position: 'bottom',
-              id: 'tutorial_data-data-2',
-              schematic: {
-                type: 'arrow',
-                connection_start: 'tutorial_data-data-2',
-                connection_end: 'tutorial_one-hot-1',
-              },
-              status: 'disabled',
-              animation: true,
-            },
-            {
-              tooltip: 'Double click to set classes',
-              position: 'right',
-              id: 'tutorial_one-hot-1',
-              status: 'disabled',
-              animation: true,
-            },
-            {
-              tooltip: 'Make sure the number of classes is<br> set to 10 and then press Apply',
-              position: 'right',
-              id: 'tutorial_number-of-classes',
-              status: 'disabled',
-              animation: true,
-            },
-            {
-              tooltip: 'Click to confirm',
-              position: 'right',
-              id: 'tutorial_button-confirm',
-              status: 'disabled',
-              animation: true,
-            }
-          ],
-          static_info: [
-            {
-              status:'disabled',
-              content: 'This operation transforms your label data to one dimension for each digit/ class (i.e. 10, in this case). '
-            },
-            {
-              status:'disabled',
-              content: 'This makes it easier for the AI to differentiate the digits so it can learn faster. '
-            }
-          ]
-        },
-      ]
-    },
-    train_normal: {
-      title: 'Step 6. Train your AI model',
-      points: [
-        {
-          status:'disabled',
-          class_style: 'list_subtitle',
-          content: 'In the <div class="marker">Operations Toolbar</div> go to <div class="marker">Training</div> >  Drag out a <div class="marker">Normal</div> training layer > Connect the inputs > Edit the settings',
-          hoverInfo: [
-            {
-              tooltip: `<div class="tooltip-tutorial_italic">
-                          Choose which input connection <br> represents the labels (GT). <br> In this case, make sure OneHot_1 is selected. 
-                          <div class="tooltip-tutorial_bold">Hover over other inputs to see more information. <br> Click Apply when ready</div>
-                       </div>`,
-              position: 'right',
-              id: 'tutorial_labels',
-            },
-            {
-              tooltip: `<div class="tooltip-tutorial_italic">
-                          Epochs 
-                          <div class="tooltip-tutorial_bold">Hover over other inputs to see more information. <br> Click Apply when ready</div>
-                       </div>`,
-              position: 'right',
-              id: 'tutorial_epochs',
-            },
-            {
-              tooltip: `<div class="tooltip-tutorial_italic">
-                          Cost function 
-                          <div class="tooltip-tutorial_bold">Hover over other inputs to see more information. <br> Click Apply when ready</div>
-                       </div>`,
-              position: 'right',
-              id: 'tutorial_cost-function',
-            },
-            {
-              tooltip: `<div class="tooltip-tutorial_italic">
-                          Choose which optimizer to use
-                          <div class="tooltip-tutorial_bold">Hover over other inputs to see more information. <br> Click Apply when ready</div>
-                       </div>`,
-              position: 'right',
-              id: 'tutorial_optimizer',
-            },
-            {
-              tooltip: `<div class="tooltip-tutorial_italic">
-                          Choose where to <br> split the chosen axis
-                          <div class="tooltip-tutorial_bold">Hover over other inputs to see more information. <br> Click Apply when ready</div>
-                       </div>`,
-              position: 'right',
-              id: 'tutorial_learning_rate',
-            },
-          ],
-          actions: [
-            {
-              tooltip: 'Click to expand',
-              position: 'right',
-              id: 'tutorial_training', 
-              status: 'disabled',
-              animation: true,
-            },
-            {
-              tooltip: 'Drag the Normal element onto the workspace',
-              position: 'right',
-              id: 'tutorial_training-normal',
-              dynamic_id: 'tutorial_training-normal-1',
-              schematic: {
-                type: 'square',
-                top: 32.4,
-                left: 75,
-              },
-              status: 'disabled',
-              animation: true,
-            },
-            {
-              tooltip: 'Connect the One Hot layer with <br> the Normal training layer',
-              position: 'bottom',
-              id: 'tutorial_one-hot',
-              schematic: {
-                type: 'arrow',
-                connection_start: 'tutorial_one-hot',
-                connection_end: 'tutorial_training-normal-1',
-              },
-              status: 'disabled',
-              animation: true,
-            },
-            {
-              tooltip: 'Connect the Fully Connected <br/> layer with the Normal training layer',
-              position: 'right',
-              id: 'tutorial_fully-connected-1',
-              schematic: {
-                type: 'arrow',
-                position: 'bottom',
-                connection_start: 'tutorial_fully-connected-1',
-                connection_end: 'tutorial_training-normal-1',
-              },
-              status: 'disabled',
-              animation: true,
-            },
-            {
-              tooltip: 'Double click to define parameters',
-              position: 'right',
-              id: 'tutorial_training-normal-1',
-              status: 'disabled',
-              animation: true,
-            },
-            {
-              tooltip: `<div class="tooltip-tutorial_italic">
-                        Choose which input connection</br> is represented by the labels. </br>
-                        Then click Apply
-                       </div>`,
-              position: 'right',
-              id: 'tutorial_labels',
-              status: 'disabled',
-              animation: true,
-            },
-            {
-              tooltip: 'Click to confirm',
-              position: 'right',
-              id: 'tutorial_button-confirm',
-              status: 'disabled',
-              animation: true,
-            }
-          ],
-          static_info: [
-            {
-              status:'disabled',
-              content: 'Now that the size of output from the Fully Connected (FC) layer and One Hot layer match, the Model can compare its predictions from the FC layer with the answers (GT) from the One Hot. '
-            }
-          ]
-        },
-      ]
-    },
-    run_training: {
-      title: 'Step 7. Run training data',
-      points: [
-        {
-          status:'disabled',
-          class_style: 'list_subtitle',
-          content: `In the <div class="marker">Top Toolbar</div> press <div class="marker">Run</div>`,
-          hoverInfo: [
-            {
-              tooltip: `<div class="tooltip-tutorial_italic">
-                          <div class="tooltip-tutorial_bold">Epoch:</div> refers to the number of times </br> you want to run through your entire dataset. </br>
-                          <div class="tooltip-tutorial_bold">Hover over other inputs to see more information. <br> Click Apply when ready</div>
-                        </div>`,
-              position: 'right',
-              id: 'tutorial_epochs-input',
-            },
-            {
-              tooltip: `<div class="tooltip-tutorial_italic">
-                          <div class="tooltip-tutorial_bold">Dropout rate:</div> when training we can </br> deactivate half (0.5) of all the </br> learning neurons in each layer in order for </br> the model to learn in a  more general way. 
-                          </br></br> Note: this has to be activated independently </br> for each deep learning layer.</br>
-                          <div class="tooltip-tutorial_bold">click Apply</div>
-                        </div>`,
-              position: 'right',
-              id: 'tutorial_drop-rate-input',
-            },
-            {
-              tooltip: `<div class="tooltip-tutorial_italic">
-                          Set how often to save a trained model
-                          <div class="tooltip-tutorial_bold">click Apply</div>
-                        </div>`,
-              position: 'right',
-              id: 'tutorial_save_model_every',
-            },
-          ],
-          actions: [
-            {
-              tooltip: 'Click to run training',
-              position: 'bottom',
-              id: 'tutorial_run-training-button', 
-              status: 'disabled',
-              animation: true,
-            },
-          ]
-        },
-      ]
-    },
-    training: {
-      title: 'Step 8. Training',
-      points: [
-        {
-          status:'disabled',
-          class_style: 'list_subtitle',
-          content: 'The top window shows training <div class="marker">Statistics</div> for the overall model. Press <div class="marker">"Next"</div> to continue',
-          actions: [
-            {
-              id: 'tutorial_statistics',
-              //tooltip: 'Click Next to continue',
-              //id_tooltip: 'tutorial_next_button',
-              //position: 'bottom',
-              status: 'disabled',
-              animation: true,
-              schematic: {
-                type: 'border'
-              },
-              next: true
-            }
-          ]
-        },
-        {
-          status:'disabled',
-          class_style: 'list_subtitle',
-          content: 'The <div class="marker">ViewBox</div> shows what’s happening in each component. Select any layer on the <div class="marker">Map View</div> to go into more detail. Press <div class="marker">"Next"</div> to continue',
-          actions: [
-            {
-              id: 'tutorial_view-box',
-              tooltip: 'Click Next to continue',
-              id_tooltip: 'tutorial_next_button',
-              position: 'bottom',
-              status: 'disabled',
-              animation: true,
-              schematic: {
-                type: 'border',
-              },
-              next: true
-            }
-          ]
-        },
-        {
-          status:'disabled',
-          class_style: 'list_subtitle',
-          content: 'Click <div class="marker">Reshape</div> in the <div class="marker">Map View</div> </br> Notice the corresponding display in the <div class="marker">ViewBox</div>',
-          actions: [
-            { 
-              tooltip: 'Click the Reshape element',
-              position: 'right',
-              id: 'tutorial_process-reshape-1',
-              status: 'disabled',
-              animation: true,
-            }
-          ]
-        },
-        {
-          status:'disabled',
-          class_style: 'list_subtitle',
-          content: 'Click <div class="marker">Fully Connected (FC)</div> in the <div class="marker">Map View</div>Notice how the bars in the <div class="marker">ViewBox</div> are the exact same as the blue bars in the highlighted area. You can press the Yellow label to hide the Yellow bars if it\'s difficult to see. Press <div class="marker">"Next"</div> to continue',
-          actions: [
-            { 
-              tooltip: 'This is the image that <br/> the AI trying to classify. </br> Press"Next" to continue',
-              position: 'right',
-              id: 'tutorial_view-box',
-              status: 'disabled',
-              animation: true,
-              next: true
-            },
-            { 
-              tooltip: 'Click Fully Connected',
-              position: 'right',
-              id: 'tutorial_fully-connected-1',
-              status: 'disabled',
-              animation: true,
-            },
-            { 
-              id: 'tutorial_prediction-chart',
-              tooltip: 'Click Next to continue',
-              id_tooltip: 'tutorial_next_button',
-              position: 'bottom',
-              status: 'disabled',
-              animation: true,
-              schematic: {
-                type: 'border',
-              },
-              next: true
-            },
-            {
-              tooltip: `<div class="tooltip-tutorial_italic">
-                          <div class="tooltip-tutorial_bold">Click to Prediction:</div> Overview of the </br> model perfomance
-                        </div>`,
-              position: 'right',
-              id: 'tutorial_prediction-tab',
-              status: 'disabled',
-              animation: true,
-            },
-            {
-              tooltip: `<div class="tooltip-tutorial_italic">
-                          <div class="tooltip-tutorial_bold">Click to Accuracy:</div> Overall </br> performance of a model. </br> The higher the accuracy, </br> the better it is at learning. 
-                        </div>`,
-              position: 'right',
-              id: 'tutorial_accuracy-tab',
-              status: 'disabled',
-              animation: true,
-            },
-            {
-              tooltip: `<div class="tooltip-tutorial_italic">
-                          <div class="tooltip-tutorial_bold">Click on Loss:</div> How much error there is in your predictions.
-                        </div>`,
-              position: 'right',
-              id: 'tutorial_loss-tab',
-              status: 'disabled',
-              animation: true,
-            }
-          ]
-        },
-        {
-          status:'disabled',
-          class_style: 'list_subtitle',
-          content: 'Continue training.',
-          actions: [
-            {
-              tooltip: 'Click to unpause',
-              position: 'bottom',
-              id: 'tutorial_pause-training',
-              status: 'disabled',
-              animation: true,
-            }
-          ]
-        },
-        {
-          status:'disabled',
-          class_style: 'list_subtitle',
-          content: 'Wait until training is complete for this model.',
-          actions: [
-            {
-              position: 'right',
-              status: 'disabled',
-              animation: true,
-              id:'tutorial_statistic-tab'
-            }
-          ]
-        },
-        {
-          status:'disabled',
-          animation: true,
-          class_style: 'list_subtitle',
-          content: 'Click to start test',
-          actions: [
-            {
-              tooltip: 'Click to start test',
-              position: 'right',
-              status: 'disabled',
-              animation: true,
-              id:'tutorial_run-test-button'
-            }
-          ]
-        },
-      ]
-    },
-    testing: {
-      title: 'Step 9',
-      points: [
-        {
-          status:'last step',
-          class_style: 'list_subtitle',
-          content: 'Testing shows how general your model is, i.e. to what extent can it classify things it has never seen before',
-          actions: [
-            {
-              tooltip: 'Click to explore view controls',
-              position: 'right',
-              status: 'disabled',
-              animation: true,
-              id:'tutorial_play-test-button'
-            }
-          ],
-        }
-      ]
-    },
-  }
+    }
+  ],
+  activeNotifications: []
 };
 
 const getters = {
-  getActiveStepStoryboard(state) {
-    return state.activeStepStoryboard;
+  getIsTutorialMode(state) {
+    return state.isTutorialMode;
   },
-  getIterective(state) {
-    return state.interective
+  getHasShownWhatsNew(state) {
+    return state.hasShownWhatsNew;
+  },  
+  getShowTutorialTips(state) {
+    return state.showTips;
   },
-  getIsTutorialStoryBoard(state) {
-    return state.showTutorialStoryBoard
+  getIsChecklistExpanded(state) {
+    return state.isChecklistExpanded;
   },
-  getIstutorialMode(state) {
-    return state.isTutorialMode
+  getChecklistItems(state) {
+    return state.checklistItems;
   },
-  getShowMainTutorialInstruction(state) {
-    return state.showMainTutorialInstruction
+  getCurrentView(state) {
+    return state.currentView;
   },
-  getInteractiveInfo(state) {
-    return state.interactiveInfo
+  getTutorialNotificationDisplayText: state => stepCode => {
+    try {
+      const tutorialStep = state.tutorialSteps.find(ts => ts.viewName === state.currentView);
+      const step = tutorialStep.steps.find(s => s.stepCode === stepCode);
+
+      return step.displayText;
+    } catch (err) {
+      return '';
+    }
   },
-  getMainTutorialIsStarted(state) {
-    return state.mainTutorialIsStarted
+  getStep: state => stepCode => {
+    try {
+      for(const ts of state.tutorialSteps) {
+        for(const s of ts.steps) {
+          if(s.stepCode === stepCode) {
+            return s;
+          }
+        }
+      }
+      
+      return null;
+    } catch (err) {
+      // console.log('Error: getStep', err)
+    }
   },
-  getActiveStepMainTutorial(state) {
-    return state.activeStepMainTutorial
+  getCurrentStep(state) {
+    try {
+      const tutorialStep = state.tutorialSteps.find(ts => ts.viewName === state.currentView);
+      // console.log('getCurrentStep', tutorialStep)
+      
+      if (!tutorialStep || tutorialStep.isCompleted) { return null; }
+      
+      const step = tutorialStep.steps.find(s => s.stepCode === tutorialStep.currentStepCode);
+      return step;
+    } catch (err) {
+      return null;
+    }
   },
-  getActivePointMainTutorial(state) {
-    return state.activePointMainTutorial
+  getCurrentStepCode(state) {
+
+    const tutorialSteps = state.tutorialSteps.find(ts => ts.viewName === state.currentView);
+    // console.log('getCurrentStepCode - tutorialSteps', tutorialSteps);
+
+    return tutorialSteps && tutorialSteps.currentStepCode ? tutorialSteps.currentStepCode : '';
   },
-  getActiveActionMainTutorial(state) {
-    return state.activeActionMainTutorial
+  getActiveNotifications(state) {
+    return state.activeNotifications;
   },
-  getActiveStep(state) {
-    return Object.keys(state.interective)[state.activeStepMainTutorial]
+  getActiveStep({commit, dispatch, getters}, value = '') {
+    // TOREMOVE
   },
-  getPoints(state, getters) {
-    return state.interective[getters.getActiveStep].points
-  },
-  getActivePoint(state, getters) {
-    return getters.getPoints[state.activePointMainTutorial]
-  },
-  getActiveAction(state, getters) {
-    return getters.getActivePoint ? getters.getActivePoint.actions[state.activeActionMainTutorial] : '';
-  },
-  getPrevActiveAction(state, getters) {
-    return getters.getActivePoint ? getters.getActivePoint.actions[state.activeActionMainTutorial - 1] : '';
-  },
-  getAllPointsIsDone(state, getters) {
-    var count = 0;
-    getters.getPoints.forEach(point => {
-      if(point.status === 'done') count++
-    });
-    return count === getters.getPoints.length
-  },
-  getHoverInfo(state, getters) {
-    return  getters.getActivePoint.hoverInfo;
-  },
-  getIsDottedArrow(state) {
-    return  state.isDottedArrow;
-  }
 };
 
 const mutations = {
-  SET_isTutorialMode(state, value) {
-    state.isTutorialMode = value
+  
+  setTutorialMode(state, value) {
+    state.isTutorialMode = value;
   },
-  SET_mainTutorialIsStarted(state, value) {
-    state.mainTutorialIsStarted = value
+  setHasShownWhatsNew(state, value) {
+    state.hasShownWhatsNew = value;
   },
-  SET_runButtonsActive(state, value) {
-    state.runButtonsActive = value;
+  setTutorialNotificationsState(state, value) {
+    state.showTips = value;
   },
-  SET_activeStepStoryboard(state, value) {
-    switch(value) {
-      case 'next':
-        state.activeStepStoryboard++;
-        break;
-      case 'prev':
-        state.activeStepStoryboard--;
-        break;
-      default:
-        state.activeStepStoryboard = value;
-        break;
+  setChecklistExpandedState(state, value) {
+    state.isChecklistExpanded = !!value
+  },
+  setChecklistItemComplete(state, { itemId }) {
+    const item = state.checklistItems.find(cli => cli.itemId === itemId);
+    if (!item) { return; }
+
+    item.isCompleted = true;
+  },
+  setCurrentView(state, value) {
+    state.currentView = value;
+  },
+  setNextStep(state) {
+    const tutorialStep = state.tutorialSteps.find(ts => ts.viewName === state.currentView);
+    if (!tutorialStep.steps || tutorialStep.steps.length === 0) { return ''; }
+
+    const currentIdx = tutorialStep.steps.findIndex(s => s.stepCode === tutorialStep.currentStepCode);
+    if (currentIdx === tutorialStep.steps.length - 1) {
+      tutorialStep.currentStepCode = '';
+      tutorialStep.isCompleted = true;
+    } else {
+      tutorialStep.currentStepCode = tutorialStep.steps[currentIdx + 1].stepCode;
+    }
+
+    return tutorialStep.currentStepCode;
+  },
+  addNotification(state, {stepCode, arrowDirection}) {
+    // check if notification exists
+    const notification = state.activeNotifications.find(an => an.stepCode === stepCode);
+
+    if (notification) {
+      Vue.set(notification, 'arrowDirection', arrowDirection);
+    } else {
+      state.activeNotifications.splice(0, 0, {
+        stepCode, 
+        arrowDirection
+      });
     }
   },
-  SET_showTutorialStoryBoard(state, value) {
-    state.showTutorialStoryBoard = value;
-    //state.firstTimeApp = value;
+  removeNotification(state, {stepCode}) {
+    const notificationIdx = state.activeNotifications.findIndex(an => an.stepCode === stepCode);
+
+    if (notificationIdx === -1) { return; }
+
+    state.activeNotifications.splice(notificationIdx, 1);
   },
-  SET_showMainTutorialInstruction(state, value) {
-    state.showMainTutorialInstruction = value
-  },
-  SET_activeStepMainTutorial(state, value) {
-    if(Number.isInteger(value)) {
-      state.activeStepMainTutorial = value
-    } else if(value === 'next') {
-      state.activeStepMainTutorial++
+  removeAllNotifications(state) {
+    if (!state.activeNotifications || state.activeNotifications.length === 0) { return; }
+
+    while (state.activeNotifications.length > 0) {
+      state.activeNotifications.splice(0, 1);
     }
   },
-  SET_activePointMainTutorial(state, value) {
-    if(Number.isInteger(value)) {
-      state.activePointMainTutorial = value
-    } else if(value === 'next') {
-      state.activePointMainTutorial++
-    }
-  },
-  SET_interactiveInfo(state, value) {
-    state.interactiveInfo = value;
-  },
-  SET_staticInfoValue(state, value) {
-    let static_info = state.interective[value.step].points[value.point].static_info;
-    static_info[value.index].status = value.status
-  },
-  SET_activeActionMainTutorial(state, value) {
-    if(Number.isInteger(value)) {
-      state.activeActionMainTutorial = value
-    }
-    else if(value === 'next') {
-      state.activeActionMainTutorial++;
-    }
-    else if(value === 'prev') {
-      state.activeActionMainTutorial--;
-    }
-  },
-  SET_pointActivate(state, value,) {
-    let points = state.interective[value.step].points;
-    points[value.point].status = value.status;
+  saveTutorialProgress(state) {
+    
+    const tutorialProgress = {
+      isTutorialMode: state.isTutorialMode,
+      isChecklistExpanded: state.isChecklistExpanded,
+      showTips: state.showTips,
+      hasShownWhatsNew: state.hasShownWhatsNew,
+      checklistItems: state.checklistItems.map(cli => (
+        {
+          itemId: cli.itemId, 
+          isCompleted: cli.isCompleted
+        })),
+      tutorialSteps: state.tutorialSteps.map(ts => ({
+        viewName: ts.viewName,
+        isCompleted: ts.isCompleted,
+        currentStepCode: ts.currentStepCode
+      }))
+    };
+
+    localStorage.setItem('tutorialProgress', JSON.stringify(tutorialProgress));
 
   },
-  SET_activeAction(state, value) {
-    let actions = state.interective[value.step].points[value.point].actions;
-    actions[value.action].status = value.status
+  loadTutorialProgress(state) {
+    
+    const progress = localStorage.getItem('tutorialProgress');
+    console.log('loadTutorialProgress', progress);
+    if (!progress) { return; }
+
   },
-  SET_isDottedArrow(state, value) {
-    state.isDottedArrow = value;
-}
 };
 
 const actions = {
-  pointActivate({commit, dispatch, getters}, value) {
-    if(getters.getIstutorialMode && 
-      getters.getMainTutorialIsStarted && 
-      getters.getActiveAction && 
-      getters.getActiveAction.id === value.validation) {
-        if(value.way === 'next')  {
-          dispatch('removeDuplicateId');
-          dispatch('checkActiveActionAndPoint', value);
-          if(getters.getActivePoint) dispatch('unlockElement', getters.getActiveAction.id);
-        }
-        else {
-          dispatch('removePrevUnlock');
-          if(getters.getActivePoint) dispatch('unlockElement', getters.getActiveAction.id);
-          dispatch('createTooltip', {id: getters.getActiveAction.id, tooltip: getters.getActiveAction.tooltip});
-          dispatch('drawSchematicElement', getters.getActiveAction.schematic);
-          commit('SET_pointActivate', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, status: 'active'});
-        }
+  activateChecklist({commit, dispatch}) {
+    commit('setTutorialMode', true);
+    commit('setChecklistExpandedState', true);
+    dispatch('activateCurrentStep');
+  },
+  activateCurrentStep({dispatch, getters}) {
+    // Check if no notifications, delegate the last one
+    if (getters.getIsTutorialMode && getters.getActiveNotifications.length === 0) {
+      // console.log('activateCurrentStep', getters.getCurrentStepCode);
+      const step =  getters.getStep(getters.getCurrentStepCode);
+      setTimeout(() => dispatch('setupDelegator', { step: step }), 0);
     }
   },
-  checkActiveActionAndPoint({commit, dispatch, getters}, value) {
-    commit('SET_activeAction', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, action: getters.getActiveActionMainTutorial, status: 'done'});
-    commit('SET_activeActionMainTutorial', 'next');
-    if(getters.getActiveAction) {
-      let checkId = document.getElementById(getters.getActiveAction.id);
-      let prevId = getters.getActiveAction.check_prev_id;
-      if(prevId) checkId = document.getElementById(getters.getPrevActiveAction.dynamic_id);
-      dispatch('createTooltip', {id: getters.getActiveAction.id, tooltip: getters.getActiveAction.tooltip});
-      dispatch('removeSchematicElement');
-      dispatch('drawSchematicElement', getters.getActiveAction.schematic);
-      dispatch('showHoverInfo');
-    }
-    else { // all actions has been done
-      dispatch('removeTooltip');
-      dispatch('nextPoint');
-      if(getters.getActivePoint) {
-        commit('SET_pointActivate', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, status: 'active'});
-        dispatch('createTooltip', {id: getters.getActiveAction.id, tooltip: getters.getActiveAction.tooltip,});
-      }
-      else { //all points has been done
-        dispatch('removeTooltip');
-        commit('SET_activePointMainTutorial', 0);
-        dispatch('lockOneElement');
-        if(getters.getActiveStepMainTutorial === 7) {
-          dispatch('createTooltip', {id: 'tutorial_start-training', position: 'right', tooltip: 'Click to run training'});
-        } else {
-          dispatch('createTooltip', {id: 'tutorial_next_button', position: 'right', tooltip: 'Click Next to continue'});
-        }
-      }
-    }
+  setChecklistItemComplete({commit, dispatch, getters}, { itemId = '' }) {
+    commit('setChecklistItemComplete', { itemId });
   },
-  createTooltip({getters, dispatch}, info) {
-    dispatch('removeTooltip');
-    let id = getters.getActiveAction.id_tooltip || info.id;
-    let element = document.getElementById(id);
-    let side = getters.getActiveAction.position || info.position;
-    if(getters.getActiveAction.tooltip && element) {
-      var tooltip = document.createElement('div');
-      delayTimer = setTimeout(()=>{
-        dispatch('sideCalculate', {element, tooltip, side});
-        tooltip.classList.add('tooltip-tutorial', `tooltip-tutorial--${side}`);
-        if(getters.getActiveAction.animation)
-          tooltip.classList.add(`tooltip-tutorial-animation--${side}`);
-        tooltip.innerHTML = info.tooltip;
-        document.body.appendChild(tooltip);
-        element.addEventListener('mouseup', repositionElement);
-      }, 250);
-    }
-    function repositionElement() {
-      dispatch('sideCalculate', {element, tooltip, side: getters.getActiveAction.position});
-    }
-  },
-  removeTooltip() {
-    let activeTooltips = document.querySelectorAll('.tooltip-tutorial');
-    clearTimeout(delayTimer);
-    if(activeTooltips.length > 0){
-      activeTooltips.forEach((tooltip)=> {
-        tooltip.remove();
-      })
-    }
-  },
-  showHideTooltip({getters}) {
-    if(getters.getIstutorialMode) {
-      let element = document.getElementById(getters.getActiveAction.id);
-      if(element && element.parentNode.classList.contains('unlock-element')) {
-        let activeTooltip = document.querySelector('.tooltip-tutorial');
-        activeTooltip.classList.contains('tooltip-hide') ?
-          activeTooltip.classList.remove('tooltip-hide') : activeTooltip.classList.add('tooltip-hide')
-      }
-    }
-  },
-  hideTooltip({getters}) {
-    let element = document.getElementById(getters.getActiveAction.id);
-    if(element && element.parentNode.classList.contains('unlock-element')) {
-      document.querySelector('.tooltip-tutorial').classList.add('tooltip-hide');
-    }
-  },
-  nextPoint({commit, getters, dispatch}) {
-    commit('SET_activeActionMainTutorial', 0);
-    commit('SET_pointActivate', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, status: 'done'});
-    let static_info = getters.getActivePoint.static_info;
-    if(static_info) {
-      for(let i = 0; i < static_info.length; i++ ) {
-        commit('SET_staticInfoValue', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, index: i, status: 'done'})
-      }
-    }
-    commit('SET_activePointMainTutorial', 'next');
-    dispatch('drawSchematicElement', getters.getActiveAction.schematic)
-  },
-  drawSchematicElement({getters, commit}, schematic) {
-    let tutorial_targetBorder = document.querySelector('.tutorial_target-border');
-    if(tutorial_targetBorder) tutorial_targetBorder.classList.remove('tutorial_target-border');
-    if(schematic) {
-      switch (schematic.type) {
-        case 'square':
-          let infoSection = document.querySelector('.info-section_main');
-          let element = document.createElement('div');
-          element.classList.add('schematic');
-          infoSection.insertBefore(element, infoSection.firstChild);
-          element.classList.add('schematic--square');
-          element.style.top = schematic.top + 'rem';
-          element.style.left = schematic.left + 'rem';
-          break;
-        case 'border':
-         let domElement = document.getElementById(getters.getActiveAction.id);
-         domElement.classList.add('tutorial_target-border');
-         break;
-        case 'arrow':
-          commit('SET_isDottedArrow', true);
-          let layersbarElementSize = document.querySelector('#tutorial_layersbar-list li button').getBoundingClientRect();
-          let firstElement = document.getElementById(getters.getActiveAction.schematic.connection_start);
-          let endId =  getters.getActiveAction.schematic.connection_end || getters.getActiveAction.id;
-          let secondElement = document.getElementById(endId);
-          let start = firstElement.getBoundingClientRect();
-          let stop = secondElement.getBoundingClientRect();
-          let arrowSize = start.width - layersbarElementSize.width === 0 ? 12 : 0;
-          let zoom = store.getters['mod_workspace/GET_currentNetworkZoom'];
+  setTutorialMode({commit, dispatch, getters}, value = false) {
+    commit('setTutorialMode', value);
 
-          if(getters.getActiveAction.schematic.position === 'bottom') {
-            store.commit('mod_workspace/SET_preArrowStart', {x: (start.right - start.width - start.width / 2 - arrowSize) * zoom, y: (start.top - start.width)  * zoom });
-            store.commit('mod_workspace/SET_preArrowStop', {x: (stop.right - start.width - start.width / 2 - arrowSize)  * zoom, y: (stop.top - start.width*2 + arrowSize)  * zoom});
-          }
-          else {
-            store.commit('mod_workspace/SET_preArrowStart', {x: (start.right - start.width - arrowSize)  * zoom, y: (start.top - start.height - arrowSize)  * zoom});
-            store.commit('mod_workspace/SET_preArrowStop', {x: (stop.right -  stop.width*2 - arrowSize)  * zoom, y: (stop.top - stop.height - arrowSize)  * zoom});
-          }
-      }
+    if (value === false) {
+      dispatch('removeAllNotifications');
     }
   },
-  showHoverInfo({getters, dispatch}) { //main tutorial hover tooltips
-    setTimeout(()=> {
-      const elements = document.querySelectorAll('[data-tutorial-hover-info]');
-      if(elements.length > 0) {
-        elements.forEach(function (element, index) {
-          element.addEventListener('mouseenter', function (event) {
-            dispatch('createTooltip', {id: getters.getHoverInfo[index].id, tooltip: getters.getHoverInfo[index].tooltip});
-          });
-          element.addEventListener('mouseleave', function (event) {
-            dispatch('removeTooltip');
-          })
-        })
-      }
-    }, 3000)
+  setHasShownWhatsNew({commit, dispatch, getters}, value = true) {
+    commit('setHasShownWhatsNew', value);
   },
-  lockElements({getters, dispatch}, cssSelector) {
-    let elements = document.querySelectorAll(cssSelector);
-    let blockingArea = document.createElement('div');
-    blockingArea.classList.add('lock-area');
-    elements.forEach(function (element) {
-      element.appendChild(blockingArea.cloneNode(true));
+  setTutorialNotificationsState({commit, dispatch, getters}, value = false) {
+    commit('setTutorialNotificationsState', value);
+
+    if (value) {
+      dispatch('activateNotification');
+    } else {
+      dispatch('removeAllNotifications');
+    }
+  },
+
+
+  /****************************************************************************
+   * Setup view/next step and the delegating function
+   ***************************************************************************/
+  setCurrentView({commit, dispatch, getters}, value = '') {
+    if (!getters.getIsTutorialMode) { return; }
+    
+    dispatch('removeAllNotifications');
+    commit('setCurrentView', value);
+    // console.log('%csetCurrentView', 'background: #222; color: #bada55', value);
+    
+    dispatch('activateNotification');
+  },
+  setNextStep({commit, dispatch, getters}, currentStep = '') {
+    if (!getters.getIsTutorialMode) { return; }
+
+    if (currentStep !== '' && currentStep !== getters.getCurrentStepCode) {
+      // The currentStep arg shows the parameter of the element triggering the next step.
+      // If the names don't match, don't advance the progress of the tutorial. 
+      dispatch('activateCurrentStep');
+      return;
+    }
+
+    const oldStep = getters.getCurrentStep;
+    commit('setNextStep', currentStep);
+    const newStep = getters.getCurrentStep;
+
+    setTimeout(() => {
+      dispatch('setupDelegator', { step: newStep });
+      dispatch('teardownDelegator', { step: oldStep });
+      dispatch('saveTutorialProgress');
+    }, 0);
+  },
+  setupDelegator({commit, dispatch, getters}, { step }) {
+    if (!step) { return; }
+
+    if (step.overrideActions && step.overrideActions.setup) {
+      dispatch(step.overrideActions.setup);
+    } else if (step.stepCode !== '') {
+      dispatch('commonNotificationSetup', { 
+        stepCode: step.stepCode,
+        arrowDirection: step.arrowDirection
+      });
+    }
+  },
+  teardownDelegator({commit, dispatch, getters}, { step }) {
+    if (!step) { return; }
+
+    if (step.overrideActions && step.overrideActions.teardown) {
+      dispatch(step.overrideActions.teardown);
+    } else if (step.stepCode !== '') {
+      dispatch('commonNotificationTeardown', { 
+        stepCode: step.stepCode
+      });
+    }
+  },
+
+  
+  /****************************************************************************
+   * Activate/remove notifications
+   ***************************************************************************/
+  activateNotification({commit, dispatch, getters}) {
+    // Used when a view gets toggled:
+    // For instance: ModelHub -> Created model -> ModelHub
+    // Without this action, the unclicked notification will not be shown
+
+    setTimeout(() => {
+      dispatch('setupDelegator', { step: getters.getCurrentStep });
+    }, 0);
+  },
+  removeAllNotifications({commit, dispatch, getters}) {
+    if (!getters.getActiveNotifications || getters.getActiveNotifications.length === 0) { return; }
+    
+    const notificationsCopy = getters.getActiveNotifications;
+
+    while (notificationsCopy.length > 0) {      
+      const notification = notificationsCopy.pop();
+      
+      const step = getters.getStep(notification.stepCode);
+      dispatch('teardownDelegator', { step });
+    }
+
+    commit('removeAllNotifications');
+  },
+
+  /****************************************************************************
+   * Tutorial progress
+   ***************************************************************************/
+  saveTutorialProgress({commit}) {
+    commit('saveTutorialProgress');
+  },
+  loadTutorialProgress({commit}) {
+    commit('loadTutorialProgress');
+  },
+
+  /****************************************************************************
+   * Common setup/teardown actions
+   ***************************************************************************/
+  commonNotificationSetup({commit, dispatch, getters}, { stepCode, arrowDirection = 'left' }) {
+
+    try {
+      let tutorialTarget = document.querySelector(`*[data-tutorial-target="${stepCode}"]`);
+      if (!tutorialTarget) { return; }
+
+      commit('addNotification', { 
+        stepCode,
+        arrowDirection
+      });
+
+    } catch(error) {
+      console.log('Error when creating elements to insert', error);
+    }
+
+  },
+  commonNotificationTeardown({commit, dispatch, getters}, { stepCode }) {
+
+    commit('removeNotification', {
+      stepCode: stepCode
+    });
+
+  },
+  doNothing({commit, dispatch, getters}) {
+    // If you don't want to invoke a setup or teardown action
+  },
+
+  /****************************************************************************
+   * Step specific actions
+   ***************************************************************************/
+  ['tutorial-model-hub-new-button-setup']({commit, dispatch, getters}) {
+
+    if (getters.getCurrentStepCode !== 'tutorial-model-hub-new-button') { return; }
+  
+    let fileMenuElement;
+
+    try {
+
+      fileMenuElement = document.querySelector('.header-nav_sublist[data-tutorial-marker="MenuItem_File"]');
+      fileMenuElement.style.display = 'block';
+      
+    } catch(error) {
+      console.log('Error when creating elements to insert', error);
+    }
+    
+    commit('addNotification', { 
+      stepCode: 'tutorial-model-hub-new-button',
+      arrowDirection: 'left'
+    });
+
+  },
+  ['tutorial-model-hub-new-button-teardown']({commit, dispatch, getters}) {
+
+    let fileMenuElement;
+
+    try {
+      fileMenuElement = document.querySelector('.header-nav_sublist[data-tutorial-marker="MenuItem_File"]');
+      fileMenuElement.style.display = '';
+
+    } catch(error) {
+      console.log('Error when removing elements', error);
+    }
+    
+    commit('removeNotification', {
+      stepCode: 'tutorial-model-hub-new-button'
+    });
+
+  },
+  ['tutorial-workspace-layer-data-setup']({commit, dispatch, getters}) {
+
+    try {
+      const layerMenuItemElement = document.querySelector('.layer-list-header[data-tutorial-marker="LayerMenuItem_Data"]');
+      if (!layerMenuItemElement) { return; }
+      
+      layerMenuItemElement.classList.add('active');
+      
+    } catch(error) {
+      console.log('Error when creating elements to insert', error);
+    }
+    
+    commit('addNotification', { 
+      stepCode: 'tutorial-workspace-layer-data',
+      arrowDirection: 'left'
+    });
+
+  },
+  ['tutorial-workspace-layer-data-teardown']({commit, dispatch, getters}) {
+
+    try {
+      const layerMenuItemElement = document.querySelector('.layer-list-header[data-tutorial-marker="LayerMenuItem_Data"]');
+      if (!layerMenuItemElement) { return; }
+
+      layerMenuItemElement.classList.remove('active');
+
+    } catch(error) {
+      console.log('Error when removing elements', error);
+    }
+    
+    commit('removeNotification', {
+      stepCode: 'tutorial-workspace-layer-data'
+    });
+
+  },
+  ['tutorial-statistics-tabs-setup']({commit, rootGetters}) {
+
+    const statisticsTabs = document.querySelector('.statistics-tabs[data-tutorial-target="tutorial-statistics-tabs"]');
+    const isSpinnerActive = rootGetters['mod_workspace/GET_showStartTrainingSpinner'];
+
+    if (!statisticsTabs || isSpinnerActive) { return; }
+
+    commit('addNotification', { 
+      stepCode: 'tutorial-statistics-tabs',
+      arrowDirection: 'right'
     });
   },
-  unlockElement({getters, dispatch}, id) {
-    let element = document.getElementById(id);
-    if(element && element.parentNode.parentNode.classList.contains('layersbar-list') ||
-      element && element.parentNode.parentNode.classList.contains('layer_child-list')) {
-        element.parentNode.classList.add('unlock-element')
-    }
-  },
-  unlockAllElements() {
-    let lockElements = document.querySelectorAll('.lock-area');
-    if(lockElements.length > 0) {
-      lockElements.forEach(function (element) {
-        element.remove();
-      })
-    }
-  },
-  removePrevUnlock() {
-    let prevUnlockElements = document.querySelectorAll('.unlock-element');
-    if(prevUnlockElements.length > 0) {
-      prevUnlockElements.forEach(function (element) {
-        element.classList.remove('unlock-element');
-      })
-    }
-  },
-  lockOneElement() {
-    setTimeout(()=> {
-      let element = document.querySelector('.unlock-element');
-      if(element) element.classList.remove('unlock-element');
-    }, 100);
-  },
-  sideCalculate({rootGetters}, info) {
-   if(info.element) {
-     let elCoord = info.element.getBoundingClientRect();
-     let tooltipArrow = 10;
-     let isZoomElement = info.element.querySelector('.net-element_btn');
-     let zoom = isZoomElement ? store.getters['mod_workspace/GET_currentNetworkZoom'] : 1;
-     switch (info.side) {
-       case 'right':
-         info.tooltip.style.top = (elCoord.top + elCoord.height / 2) * zoom  +'px';
-         info.tooltip.style.left = (elCoord.left + elCoord.width + tooltipArrow) * zoom + 'px';
-         break;
-       case 'left':
-         info.tooltip.style.top = elCoord.top + (elCoord.height / 2) +'px';
-         info.tooltip.style.left = elCoord.left - tooltipArrow + 'px';
-         break;
-       case 'top':
-         info.tooltip.style.top = elCoord.top - tooltipArrow +'px';
-         info.tooltip.style.left = elCoord.left + (elCoord.width / 2) + 'px';
-         break;
-       case 'bottom':
-         info.tooltip.style.top = elCoord.top + elCoord.height + tooltipArrow +'px';
-         info.tooltip.style.left = elCoord.left + (elCoord.width / 2) + 'px';
-         break;
-     }
-   }
-  },
-  tooltipReposition({dispatch, getters}, moveInstruction) {
-    if(getters.getIstutorialMode) {
-      let id = moveInstruction ? 'tutorial_next_button' : getters.getActiveAction.id;
-      let element = document.getElementById(id);
-      let tooltip = document.querySelector('.tooltip-tutorial');
-      dispatch('sideCalculate', {element, tooltip, side: getters.getActiveAction.position});
-    }
-  },
-  resetTutorial({dispatch, commit}){
-    dispatch('removeTooltip');
-    dispatch('removeSchematicElement');
-    commit('SET_activeActionMainTutorial', 0);
-    commit('SET_activePointMainTutorial', 0);
-    commit('SET_activeStepMainTutorial', 0);
-  },
-  resetStoryBoard({commit}) {
-    commit('SET_activeStepStoryboard', 0);
-    commit('SET_showTutorialStoryBoard', false);
-    commit('SET_interactiveInfo', false);
-  },
-  offTutorial({dispatch, commit, getters, state}) {
-    if(getters.getIstutorialMode) {
-      commit('SET_isTutorialMode', false);
-      commit('SET_showMainTutorialInstruction', false);
-      commit('SET_interactiveInfo', false);
-      dispatch('resetTutorial');
-      dispatch('unlockAllElements');
-      dispatch('mod_tracker/EVENT_tutorialModeStop', state.activeStepMainTutorial, {root: true});
-    }
-  },
-  onTutorial({dispatch, commit, getters, rootGetters}, context) {
-    commit('SET_isTutorialMode', true);
-    commit('SET_showMainTutorialInstruction', true);
-    commit('SET_interactiveInfo', false);
-    dispatch('lockElements', '#tutorial_layersbar-list');
-    dispatch('lockElements', '#tutorial_layer_child-list');
-    if(rootGetters['mod_workspace/GET_currentNetworkElementList'] !== null &&
-      !getters.getIstutorialMode)  dispatch('mod_workspace/ADD_network')
-  },
-  removeSchematicElement() {
-    let schematicElement = document.querySelector('.schematic');
-    if(schematicElement) schematicElement.remove()
-  },
-  removeDuplicateId() {
-    let workspaceElement = document.querySelector('.workspace_content').querySelector('.btn--layersbar');
-    if(workspaceElement) {
-      workspaceElement.setAttribute('id', '');
-    }
-  },
-  START_storyboard({commit}) {
-    commit('SET_showTutorialStoryBoard', true);
-    if(router.name !== 'app') router.push({name: 'app'});
-  }
+  
 };
 
 export default {

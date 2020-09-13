@@ -49,7 +49,7 @@
   
   import LogoutUserPageWrap from '@/pages/logout-user-page-wrap.vue'
   import { mapGetters, mapActions } from "vuex";
-  import { MODAL_PAGE_SIGN_UP, MODAL_PAGE_RESTORE_ACCOUNT, MODAL_PAGE_PROJECT } from "@/core/constants";
+  import { MODAL_PAGE_WHATS_NEW, MODAL_PAGE_SIGN_UP, MODAL_PAGE_RESTORE_ACCOUNT, MODAL_PAGE_PROJECT } from "@/core/constants";
   import ViewLoading from '@/components/different/view-loading.vue'
 export default {
   name: 'PageLogin',
@@ -71,6 +71,7 @@ export default {
   computed: {
     ...mapGetters({
       isDefaultProjectMode:   'mod_project/GET_isDefaultProjectMode',
+      hasShownWhatsNew:       'mod_tutorials/getHasShownWhatsNew',      
     }),
     isLoading() {
       return this.$store.state.mod_login.showLoader
@@ -83,7 +84,8 @@ export default {
       closeActivePageAction:  'modal_pages/closePageAction',
       cloud_userGetProfile:   'mod_apiCloud/CloudAPI_userGetProfile',
       getDefaultModeProject:  'mod_project/getDefaultModeProject',
-      getPiPyUpdate:          'mod_workspace-notifications/getPiPyUpdate'
+      getPiPyUpdate:          'mod_workspace-notifications/getPiPyUpdate',
+      setCurrentView:         'mod_tutorials/setCurrentView',
     }),
     togglePasswordVisibility(fieldName) {
       this.passwordVisibility[fieldName] = !this.passwordVisibility[fieldName];
@@ -130,6 +132,9 @@ export default {
             this.setDefaultProjectAction();
             this.setNormalAction();
             
+            // Adding this because the project view isn't recreated on logout
+            this.setCurrentView('tutorial-model-hub-view');
+
             if(this.$route.name !== 'projects') {
               this.$router.push({name: 'projects'});
             }
@@ -139,12 +144,20 @@ export default {
         .finally(()=>    {this.$store.commit('mod_login/SET_showLoader', false)});
     },
     setNormalAction() {
-      if (this.isDefaultProjectMode) { return; }
+      if (this.isDefaultProjectMode) {
+
+        console.log('setNormalAction hasShownWhatsNew', this.hasShownWhatsNew);
+        if (!this.hasShownWhatsNew) {
+          this.setActivePageAction(MODAL_PAGE_WHATS_NEW);
+        }
+      
+        return; 
+      }
 
       // call this if haven't project setted in local storage
       const hasProjectSelected = localStorage.hasOwnProperty('targetProject');
 
-      if(!hasProjectSelected) {
+      if (!hasProjectSelected) {
         this.setActivePageAction(MODAL_PAGE_PROJECT);
       } else {
         this.closePageAction();

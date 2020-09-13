@@ -89,7 +89,7 @@ export default {
   },
   computed: {
     isTutorial() {
-      return this.$store.getters['mod_tutorials/getIstutorialMode']
+      return this.$store.getters['mod_tutorials/getIsTutorialMode']
     }
   },
   watch: {

@@ -3,22 +3,25 @@
     create-select-project(v-if="currentPage === MODAL_PAGE_PROJECT")
     page-login(v-else-if="currentPage === MODAL_PAGE_SIGN_IN")
     page-register(v-else-if="currentPage === MODAL_PAGE_SIGN_UP")
+    page-whats-new(v-else-if="currentPage === MODAL_PAGE_WHATS_NEW")
     page-restore-account(v-else-if="currentPage === MODAL_PAGE_RESTORE_ACCOUNT")
 </template>
 <script>
   import { mapActions } from "vuex";
   import CreateSelectProject from "@/pages/create-select-project/create-select-project";
-  import { MODAL_PAGE_PROJECT, MODAL_PAGE_SIGN_IN, MODAL_PAGE_SIGN_UP, MODAL_PAGE_RESTORE_ACCOUNT } from "@/core/constants";
+  import { MODAL_PAGE_PROJECT, MODAL_PAGE_SIGN_IN, MODAL_PAGE_SIGN_UP, MODAL_PAGE_WHATS_NEW, MODAL_PAGE_RESTORE_ACCOUNT } from "@/core/constants";
   import PageLogin from "@/pages/login/login";
   import PageRegister from "@/pages/register/register";
+  import PageWhatsNew from "@/pages/onboarding/whats-new.vue";
   import PageRestoreAccount from "@/pages/restore-account/restore-account";
   
   let visibilityWatcher = null;
   
   export default {
     name: 'ModalPagesEngine',
-    components: {PageRestoreAccount, PageRegister, PageLogin, CreateSelectProject},
+    components: {PageRestoreAccount, PageRegister, PageWhatsNew, PageLogin, CreateSelectProject},
     created() {
+
       try {
         let localUserToken = JSON.parse(localStorage.getItem('currentUser'));
         if(!localUserToken.accessToken) {
@@ -27,7 +30,8 @@
       } catch(e) {
         this.setActivePageAction(MODAL_PAGE_SIGN_UP)
       };
-    
+
+     
       // let localUserToken = JSON.parse(localStorage.getItem('currentUser'));
       
       // if(!localUserToken) {
@@ -38,6 +42,7 @@
       return {
         MODAL_PAGE_PROJECT,
         MODAL_PAGE_SIGN_UP,
+        MODAL_PAGE_WHATS_NEW,
         MODAL_PAGE_SIGN_IN,
         MODAL_PAGE_RESTORE_ACCOUNT,
       }
