@@ -21,6 +21,7 @@ from perceptilabs.logconf import APPLICATION_LOGGER, set_user_email
 from perceptilabs.core_new.lightweight2 import LightweightCoreAdapter, LightweightCore
 from perceptilabs.core_new.cache2 import LightweightCache
 import perceptilabs.utils as utils
+import perceptilabs.dataevents as dataevents
 from perceptilabs.messaging.zmq_wrapper import ZmqMessagingFactory, ZmqMessageConsumer
 from perceptilabs.api.data_container import DataContainer as Exp_DataContainer
 from perceptilabs.messaging import MessageConsumer, MessagingFactory
@@ -79,14 +80,14 @@ class NetworkLoader:
 
 
 class Interface():
-    def __init__(self, cores, dataDict, checkpointDict, lwDict, issue_handler, core_mode=None, message_factory=None):
+    def __init__(self, cores, dataDict, checkpointDict, lwDict, issue_handler, message_factory=None, session_id='default'):
         self._network_loader = NetworkLoader()
         self._cores=cores
         self._dataDict=dataDict
         self._checkpointDict=checkpointDict
         self._lwDict=lwDict
         self._issue_handler = issue_handler
-        self._core_mode = 'v2'
+        self._session_id = session_id
         self._lw_cache_v2 = LightweightCache(max_size=LW_CACHE_MAX_ITEMS) if USE_LW_CACHING else None
         self._settings_engine = None
 
@@ -151,7 +152,7 @@ class Interface():
         t.start()
 
     def _addCore(self, reciever):
-        core=coreLogic(reciever, self._issue_handler, self._core_mode)
+        core=coreLogic(reciever, self._issue_handler)
         self._cores[reciever] = core
 
     def _setCore(self, reciever):
@@ -253,18 +254,11 @@ class Interface():
             lw_core, extras_reader, data_container = self.create_lw_core(reciever, jsonNetwork)
 
 
-            if self._core_mode == 'v1':
-                get_data_meta = getDataMeta(
-                    id_=Id, 
-                    lw_core=lw_core, 
-                    data_container=data_container
-                )
-            elif self._core_mode == 'v2':
-                get_data_meta = getDataMetaV2(
-                    id_=Id, 
-                    lw_core=lw_core, 
-                    extras_reader=extras_reader
-                )
+            get_data_meta = getDataMetaV2(
+                id_=Id, 
+                lw_core=lw_core, 
+                extras_reader=extras_reader
+            )
 
             return get_data_meta.run()
 
@@ -462,8 +456,10 @@ class Interface():
             return response
 
         elif action == "Start":
-            graph_spec = self._network_loader.load(value, as_spec=True)
-            response = self._core.startCore(graph_spec, self._checkpointDict.copy())
+            graph_spec = self._network_loader.load(value, as_spec=True)            
+            model_id = value.get('modelId', None)
+            
+            response = self._core.startCore(graph_spec, self._checkpointDict.copy(), model_id)
             return response
 
         elif action == "startTest":
@@ -539,15 +535,9 @@ class Interface():
             return response
 
         elif action == "setUser":
-            user = value
-            with configure_scope() as scope:
-                scope.user = {"email" : user}
-
-            perceptilabs.logconf.set_user_email(user)
-            logger.info("User has been set to %s" %str(value))
-            
-            return "User has been set to " + value
-
+            response = self.on_set_user(value)
+            return response
+        
         elif action == "scheduleAggregations":
             requests = [
                 AggregationRequest(
@@ -571,3 +561,15 @@ class Interface():
 
         else:
             raise LookupError(f"The requested action '{action}' does not exist")
+
+    def on_set_user(self, value):
+        user = value
+        with configure_scope() as scope:
+            scope.user = {"email" : user}
+
+        perceptilabs.logconf.set_user_email(user)
+        logger.info("User has been set to %s" % str(value))
+        dataevents.on_user_email_set()
+        
+        return "User has been set to " + value
+        

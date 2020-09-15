@@ -26,7 +26,8 @@ PROCESS_RESULTS_DELAY = 0.1
 
 
 class CompatibilityCore:
-    def __init__(self, command_queue, result_queue, graph_builder, script_factory, messaging_factory, graph_spec, threaded=False, issue_handler=None):
+    def __init__(self, command_queue, result_queue, graph_builder, script_factory, messaging_factory, graph_spec, threaded=False, issue_handler=None, model_id=None):
+        self._model_id = model_id
         self._command_queue = command_queue
         self._result_queue = result_queue
         self._graph_builder = graph_builder
@@ -108,7 +109,7 @@ class CompatibilityCore:
 
     def _run_core(self, core, graph_spec, on_iterate=None):
         try:
-            core.run(self._graph_spec, on_iterate=on_iterate)
+            core.run(self._graph_spec, on_iterate=on_iterate, model_id=self._model_id)
         except:
             self._running = False            
             raise     

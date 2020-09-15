@@ -1,6 +1,6 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema",
-    "$id": "kernel_started.json",
+    "$id": "user_email_set.json",
     "type": "object",
 
     "required": [
@@ -20,7 +20,6 @@
 		"swap_total": {"type": "number", "description": "From 'psutil.swap_memory().total'"},		
 		"swap_free": {"type": "number"}, "description": "From 'psutil.swap_memory().free'"}	
 	},
-
 	"platform": {
 	    "type": "object",
 	    "required": ["platform", "system", "release", "version", "processor"],
@@ -31,8 +30,7 @@
 		"version": {"type": "string", "description": "From platform.version()"},
 		"processor": {"type": "string", "description": "From platform.processor()"}
 	    }	    
-	},
-	
+	},	
 	"python": {
 	    "type": "object",
 	    "required": ["version", "packages"],
@@ -40,6 +38,18 @@
 		"version": {"type": "string"},
 		"packages": {"type": "array", "items": {"type": "string"}}
 	    }	    
+	},
+	"gpus": {
+	    "type": "array",
+	    "items": {
+		"type": "object",
+		"required": ["name", "driver", "memory_total"],
+		"properties": {
+		    "name": {"type": "string"},
+		    "driver": {"type": "string"},
+		    "memory_total": {"type": "number", "description": "Total memory in MB"}
+		}
+	    }
 	}
     }    
 }

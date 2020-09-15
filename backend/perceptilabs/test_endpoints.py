@@ -199,7 +199,7 @@ def send_request(request):
     checkpointDict=dict()
     lwDict=dict()
     issue_handler = IssueHandler()
-    core_interface = Interface(cores, dataDict, checkpointDict, lwDict, issue_handler, core_mode='v2')
+    core_interface = Interface(cores, dataDict, checkpointDict, lwDict, issue_handler)
 
     return core_interface.create_response(request)
 

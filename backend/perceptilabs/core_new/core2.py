@@ -34,6 +34,7 @@ from perceptilabs.script import ScriptFactory, FetchParameterError
 from perceptilabs.core_new.communication.deployment import ThreadStrategy, DeploymentStrategy
 from perceptilabs.messaging import MessagingFactory
 from perceptilabs.logconf import APPLICATION_LOGGER, DATA_LOGGER
+import perceptilabs.dataevents as dataevents
 
 
 logger = logging.getLogger(APPLICATION_LOGGER)
@@ -42,116 +43,6 @@ data_logger = logging.getLogger(DATA_LOGGER)
 # Train from a file named training_file.py and keep it in the temp directory unless we're in development mode
 training_script_name = "training_script.py" if os.getenv("PL_DEV") else f"{tempfile.gettempdir()}/training_script.py"
 
-def make_graph_spec_conform_to_schema(graph_spec):
-    if 'Layers' in graph_spec:
-        graph_spec = graph_spec['Layers'] 
-
-    edges = []
-    nodes = []
-    for from_id, layer_spec in graph_spec.items():
-        # Nodes. For now, we don't include any detailed parameters...
-        #layer_spec = layer_spec['Info']
-        
-        from perceptilabs.core_new.layers.definitions import DEFINITION_TABLE        
-        def_ = DEFINITION_TABLE.get(layer_spec['Type'])        
-        node = {
-            'type': def_.template_macro,
-            'id': from_id,
-        }
-        nodes.append(node)
-        
-        # Edges
-        fwd_cons = [x['dst_id'] for x in layer_spec['forward_connections']]
-        for to_id in fwd_cons:
-            edges.append([from_id, to_id])
-
-    return {
-        'nodes': nodes,
-        'edges': edges
-    }
-
-
-def collect_start_metrics(graph_spec, graph, training_sess_id):
-    """ quick-fix for collecting start metrics. update when newer version of core is merged"""
-    import numpy as np
-
-    n_params = 0
-    # TODO: training layer parameter called n_parameters for proper generalization...
-    for weights_dict in graph.active_training_node.layer.layer_weights.values():
-        for w in weights_dict.values():
-            n_params += np.prod(w.shape)
-
-    for biases_dict in graph.active_training_node.layer.layer_biases.values():
-        for b in biases_dict.values():
-            n_params += np.prod(b.shape)
-
-    formatted_graph = make_graph_spec_conform_to_schema(graph_spec)            
-
-    data_logger.info(
-        "training_started",
-        extra={
-            'namespace': dict(
-                training_session_id=training_sess_id,        
-                graph_spec=formatted_graph,
-                n_parameters=int(n_params)
-            )
-        }
-    )
-    
-
-
-def collect_end_metrics(graph_spec, graph, training_sess_id, session_info):
-    """ quick-fix for collecting start metrics. update when newer version of core is merged"""
-    import numpy as np
-
-    n_params = 0
-    # TODO: training layer parameter called n_parameters for proper generalization...
-    for weights_dict in graph.active_training_node.layer.layer_weights.values():
-        for w in weights_dict.values():
-            n_params += np.prod(w.shape)
-
-    for biases_dict in graph.active_training_node.layer.layer_biases.values():
-        for b in biases_dict.values():
-            n_params += np.prod(b.shape)
-
-    formatted_graph = make_graph_spec_conform_to_schema(graph_spec)
-    
-    data_meta_list = []
-    for node in graph.data_nodes:
-        data_meta = {
-            'layer_id': node.layer_id,
-        }
-        # TODO: remove hasattr when changes to DataLayer have been merged
-        if node is not None and hasattr(node.layer, 'size_training'):
-            data_meta.update({
-                'training_set_size': int(node.layer.size_training),
-                'validation_set_size': int(node.layer.size_validation),
-                'testing_set_size': int(node.layer.size_testing)
-            })
-        data_meta_list.append(data_meta)
-
-    data_logger.info(
-        "training_ended",
-        extra={
-            'namespace': dict(
-                training_session_id=training_sess_id,        
-                graph_spec=formatted_graph,
-                n_parameters=int(n_params),
-                time_total=session_info['time_total'],
-                cycle_state_initial=session_info['cycle_state_initial'],
-                cycle_state_final=session_info['cycle_state_final'],
-                cycle_time_process_messages=session_info['cycle_time_process_messages'],
-                cycle_time_training_step=session_info['cycle_time_training_step'],
-                cycle_time_send_snapshot=session_info['cycle_time_send_snapshot'],
-                cycle_time_total=session_info['cycle_time_total'],
-                mem_phys_total=session_info['mem_phys_total'],
-                cycle_mem_phys_available=session_info['cycle_mem_phys_available'],
-                mem_swap_total=session_info['mem_swap_total'],
-                cycle_mem_swap_free=session_info['cycle_mem_swap_free'],
-                data_meta=data_meta_list
-            )
-        }
-    )
 
 
 class Core:
@@ -165,10 +56,6 @@ class Core:
         self._issue_handler = issue_handler
         self._use_sentry = use_sentry
         self._samplers = samplers or []
-
-        #from perceptilabs.insights.dataset import DatasetDistribution
-        #self._dataset_distr = DatasetDistribution()
-        
         self._deployment_strategy = deployment_strategy or ThreadStrategy()
 
         self._server_timeout = server_timeout
@@ -185,10 +72,10 @@ class Core:
         self._time_started = None
         self._time_ended = None
         
-    def run(self, graph_spec: GraphSpec, session_id: str=None, on_iterate: List[Callable]=None, auto_close=False):
+    def run(self, graph_spec: GraphSpec, on_iterate: List[Callable]=None, auto_close=False, model_id: int=None):
         on_iterate = on_iterate or []
         self._graph_spec = graph_spec
-        step = self.run_stepwise(graph_spec, session_id=session_id, auto_close=auto_close)
+        step = self.run_stepwise(graph_spec, auto_close=auto_close, model_id=model_id)
         for counter, _ in enumerate(step):
             if counter % 100 == 0:
                 logger.debug(f"Running step {counter}")
@@ -197,13 +84,14 @@ class Core:
                 f(counter, self)
                     
         
-    def run_stepwise(self, graph_spec, session_id=None, auto_close=False):
-        self._session_id = session_id = session_id or uuid.uuid4().hex        
-        topic_generic = f'generic-{session_id}'.encode()    
-        topic_snapshots = f'snapshots-{session_id}'.encode()
+    def run_stepwise(self, graph_spec, auto_close=False, model_id=None):
+        self._training_session_id = training_session_id = uuid.uuid4().hex
+        self._model_id = model_id or uuid.uuid4().hex
+        topic_generic = f'generic-{training_session_id}'.encode()    
+        topic_snapshots = f'snapshots-{training_session_id}'.encode()
         
         #graph = self._graph_builder.build_from_spec(graph_spec)        
-        script_path = self._create_script(graph_spec, session_id, topic_generic, topic_snapshots, userland_timeout=self._userland_timeout)
+        script_path = self._create_script(graph_spec, training_session_id, topic_generic, topic_snapshots, userland_timeout=self._userland_timeout)
 
         try:
             self._deployment_strategy.run(script_path)
@@ -212,7 +100,7 @@ class Core:
             
         producer = self._messaging_factory.make_producer(topic_generic)        
         consumer = self._messaging_factory.make_consumer([topic_generic, topic_snapshots])
-        logger.info(f"Instantiated message producer/consumer pairs for topics {topic_generic} and {topic_snapshots} for session {session_id}")
+        logger.info(f"Instantiated message producer/consumer pairs for topics {topic_generic} and {topic_snapshots} for training session {training_session_id}")
 
         self._client = TrainingClient(
             producer, consumer,
@@ -334,22 +222,24 @@ class Core:
         self._last_graph = graph
 
         if not self._collected_start_metrics and self._last_graph is not None:
-            collect_start_metrics(self._graph_spec.to_dict(), self._last_graph, self._session_id)        
+            dataevents.collect_start_metrics(self._graph_spec, self._last_graph, self._training_session_id, self._model_id)        
             self._collected_start_metrics = True        
 
-    def _on_training_ended(self, session_info):
+    def _on_training_ended(self, session_info, end_state):
         if self._graph_spec is not None:
-            collect_end_metrics(self._graph_spec.to_dict(), self._last_graph, self._session_id, session_info)
+            dataevents.collect_end_metrics(self._graph_spec, self._last_graph, self._training_session_id, session_info, self._model_id, end_state)
+            
         self._time_ended = time.time()
         if self._paused_time_stamp is not None:
             self._time_paused += self._time_ended - self._paused_time_stamp
             self._paused_time_stamp = None
+            
     def _on_log_message(self, message):
         pass    
 
-    def _create_script(self, graph_spec, session_id, topic_generic, topic_snapshots, userland_timeout):
+    def _create_script(self, graph_spec, training_session_id, topic_generic, topic_snapshots, userland_timeout):
         try:
-            code, self._line_to_node_map = self._script_factory.make(graph_spec, session_id, topic_generic, topic_snapshots, userland_timeout=self._userland_timeout)
+            code, self._line_to_node_map = self._script_factory.make(graph_spec, training_session_id, topic_generic, topic_snapshots, userland_timeout=self._userland_timeout)
         except FetchParameterError as e:
              error = UserlandError(
                  e.layer_id, e.layer_type,

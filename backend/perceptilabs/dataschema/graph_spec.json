@@ -14,7 +14,8 @@
 		"required": ["id", "type"],
 		"properties": {
 		    "type": {"type": "string"},
-		    "id": {"type": "string"}
+		    "id": {"type": "string"},
+		    "namespace": {"type": "object"}
 		}
 	    }
 	},

@@ -37,7 +37,7 @@ def core_interface(message_factory):
     checkpointDict=dict()
     lwDict=dict()
     issue_handler = IssueHandler()
-    core_interface = Interface(cores, dataDict, checkpointDict, lwDict, issue_handler, core_mode='v2', message_factory=message_factory)
+    core_interface = Interface(cores, dataDict, checkpointDict, lwDict, issue_handler, message_factory=message_factory)
 
     return core_interface
 

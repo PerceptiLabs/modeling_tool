@@ -21,7 +21,9 @@
     "properties": {
 	"graph_spec": {"$ref": "file:graph_spec.json"},
 	"n_parameters": {"type": "number"},
+	"model_id": {"type": "number", "Description": "Model ID set by the frontend"},	
 	"training_session_id": {"type": "string"},
+	"end_state": {"type": "string", "description": "The final state of the training session"},	
 	"time_total": {"type": "number", "description": "Duration of the training session"},
 	"cycle_state_initial": {"type": "array", "items": {"type": "string"}, "description": "Name of the state at the beginning of a cycle"},
 	"cycle_state_final": {"type": "array", "items": {"type": "string"}, "description": "Name of the state at the end of a cycle"},	
@@ -44,7 +46,8 @@
 		    "layer_id": {"type": "string"},
 		    "training_set_size": {"type": "number"},
 		    "validation_set_size": {"type": "number"},
-		    "testing_set_size": {"type": "number"}
+		    "testing_set_size": {"type": "number"},
+		    "sample_shape": {"type": "array", "items": {"type": "number"}}
 		}
 	    }	    
 	}

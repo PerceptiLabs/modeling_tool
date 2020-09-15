@@ -4,7 +4,7 @@
     "required": [
 	"time_event",
 	"session_id",
-	"version",	
+	"version",
 	"user_email"
     ],
     "properties": {
@@ -35,6 +35,13 @@
                 "0.1.1"
             ]
         },
+        "commit": {
+            "type": "string",
+            "description": "The commit that was used to build the PerceptiLabs package",
+            "examples": [
+                "9c2da2780cb2aee533b92804de91fe0c2a8fcee4"
+            ]
+        },
         "user_email": {
             "type": "string",
             "description": "User identified via email",
@@ -42,10 +49,10 @@
 	    "pattern": "^\\S+@\\S+$",
             "examples": ["anton.k@perceptilabs.com"]
         },
-	"kernel_started": {"$ref": "kernel_started.json"},
+	"user_email_set": {"$ref": "user_email_set.json"},
 	"training_started": {"$ref": "training_started.json"},
-    "training_ended": {"$ref": "training_ended.json"},
-    "dc_memory_used": {"$ref": "dc_memory_used.json"}
+	"training_ended": {"$ref": "training_ended.json"},
+	"dc_memory_used": {"$ref": "dc_memory_used.json"}
     }
 }
 
