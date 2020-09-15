@@ -15,7 +15,7 @@ SECRET_KEY = "%6c1c))#ez&wg+dh1nu_g-28xvoky4slq6j^y@9$*l)0i2b^+c"
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
+ALLOWED_HOSTS = ['*'] if os.path.exists("/.dockerenv") else ["localhost", "127.0.0.1"]
 
 # Enforcement of the token
 API_TOKEN = os.getenv("PL_FILE_SERVING_TOKEN")

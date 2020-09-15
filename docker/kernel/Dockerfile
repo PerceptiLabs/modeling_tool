@@ -13,6 +13,7 @@ RUN yum -y update && \
 WORKDIR /src
 ADD included_files.txt requirements.txt requirements_build.txt ./
 ADD perceptilabs ./perceptilabs
+ADD fileserver ./fileserver
 
 RUN pip install --upgrade pip setuptools && \
     pip install -r requirements.txt && \
@@ -24,7 +25,7 @@ RUN python train_model.py data_1579288530.csv
 
 WORKDIR /out
 # Set up the out dir for the build
-ADD main.py setup.py setup.cfg package_data.json VERSION cython_roots.txt requirements.txt ./
+ADD runner main.py setup.py setup.cfg package_data.json VERSION cython_roots.txt requirements.txt ./
 RUN rsync -a /src --files-from=/src/included_files.txt . && \
     mv main.py main.pyx && \
     find . -name "__init__.py" -exec mv '{}' '{}x' \; && \
@@ -54,7 +55,7 @@ COPY licenses /licenses
 
 USER 0
 RUN yum -y update && \
-    yum -y install ncurses-devel rh-python36 rh-python36-pip rh-python36-python-devel rh-python36-python-libs libSM libXrender libXext && \
+    yum -y install ncurses-devel rh-python36 rh-python36-pip rh-python36-python-devel rh-python36-python-libs libSM libXrender libXext git && \
     yum clean all
 
 RUN  cd /opt/rh/rh-python36/root/usr/lib64 && \
@@ -67,6 +68,7 @@ RUN chmod +x /usr/bin/entrypoint.sh
 
 WORKDIR /opt/app-root/src
 COPY --from=build --chown=1001 /out .
+RUN chmod +x runner
 ADD requirements.txt .
 
 
@@ -81,8 +83,9 @@ RUN source scl_source enable rh-python36 && \
 USER 1001
 
 EXPOSE 5000
+EXPOSE 8011
 
 ENTRYPOINT [ "/usr/bin/entrypoint.sh" ]
 
-CMD ["python3.6", "-u", "main.py", "-p=browser"]
+CMD ["/opt/app-root/src/runner"]
 
