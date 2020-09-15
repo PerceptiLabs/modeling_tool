@@ -144,7 +144,6 @@ export default {
   name: 'SetDeepLearningConv',
   mixins: [mixinSet],
   mounted() {
-    this.focusFirstTutorialField();
     this.saveSettingsToStore("Settings");
   },
   data() {
@@ -255,11 +254,6 @@ export default {
     saveSettings(tabName) {
       this.applySettings(tabName);
     },
-    focusFirstTutorialField() {
-      this.$nextTick(()=> {
-        if (this.isTutorialMode) this.$refs.pathSize.focus()
-      })
-    }
   }
 }
 </script>

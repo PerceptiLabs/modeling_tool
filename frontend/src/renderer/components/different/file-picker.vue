@@ -128,7 +128,7 @@ export default {
     if (this.startupFolder) {
       path = this.startupFolder;
     }
-    else if(localStorage.hasOwnProperty(filePickerStorageKey) && !this.isTutorialMode) {
+    else if(localStorage.hasOwnProperty(filePickerStorageKey)) {
       path = localStorage.getItem(filePickerStorageKey);
     }
     
@@ -255,9 +255,7 @@ export default {
         
         if(!pathNotFound) {
           this.calculateBreadcrumbsLength(jsonData.current_path);
-          if(!this.isTutorialMode) {
-            localStorage.setItem(filePickerStorageKey, jsonData.current_path);
-          }
+          localStorage.setItem(filePickerStorageKey, jsonData.current_path);
         }
         
         if (jsonData.current_path === '.') {

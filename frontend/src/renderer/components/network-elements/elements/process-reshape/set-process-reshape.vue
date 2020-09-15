@@ -84,32 +84,6 @@
         isTutorialMode: 'mod_tutorials/getIsTutorialMode'
       }),
     },
-    watch: {
-      'settings.Shape': {
-        handler(newValue, oldVal) {
-          let correctVal = oldVal.every((item, index)=> {
-            return item === newValue[index]
-          });
-
-          if(this.isTutorialMode && !correctVal) {
-            this.infoPopup("Please don't change value of Reshape field when you in tutorial mode.");
-            this.settings.Shape = [28,28,1];
-          }
-        }
-      },
-      'settings.Permutation': {
-        handler(newValue, oldVal) {
-          let correctVal = oldVal.every((item, index)=> {
-            return item === newValue[index]
-          });
-
-          if(this.isTutorialMode && !correctVal) {
-            this.infoPopup("Please don't change value of Transpose field when you in tutorial mode.");
-            this.settings.Permutation = [0,1,2];
-          }
-        }
-      },
-    },
     methods: {
       ...mapActions({
         infoPopup:                'globalView/GP_infoPopup',

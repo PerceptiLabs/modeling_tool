@@ -107,21 +107,5 @@ export default {
       this.applySettings(tabName);
     },
   },
-  watch: {
-    'settings.Labels': {
-      handler(newValue) {
-        let label = this.inputLayers.filter((item)=> {
-          return item.value.toString() === newValue;
-        });
-        if(this.isTutorialMode && label[0].text !== 'OneHot_1') {
-          label = this.inputLayers.filter((item)=> {
-            return item.text === 'OneHot_1';
-          });
-            this.settings.Labels = label[0].value.toString();
-            this.popupInfo("Please set One Hot for Labels field when you in tutorial mode");
-        }
-      }
-    },
-  }
 }
 </script>

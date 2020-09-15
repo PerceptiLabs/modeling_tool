@@ -130,7 +130,9 @@ const state = {
         {
           stepCode: 'tutorial-workspace-settings',
           displayText: 'Here you can modify your component, if something is missing you can press <strong>Open Code</strong> to custom edit the component.',
-          arrowDirection: 'right'
+          overrideActions: {
+            setup: 'tutorial-workspace-settings-setup',
+          }
         },
         {
           stepCode: 'tutorial-workspace-preview-toggle',
@@ -618,6 +620,20 @@ const actions = {
     
     commit('removeNotification', {
       stepCode: 'tutorial-workspace-layer-data'
+    });
+
+  },
+  ['tutorial-workspace-settings-setup']({commit, dispatch, getters}) {
+
+    try {
+      commit('setChecklistExpandedState', false);
+    } catch(error) {
+      console.log('Error when creating elements to insert', error);
+    }
+    
+    commit('addNotification', { 
+      stepCode: 'tutorial-workspace-settings',
+      arrowDirection: 'right'
     });
 
   },

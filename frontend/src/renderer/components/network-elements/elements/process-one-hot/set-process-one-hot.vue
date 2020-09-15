@@ -34,16 +34,6 @@ export default {
   mounted() {
     this.saveSettingsToStore("Settings");
   },
-  watch: {
-    'settings.N_class': {
-      handler() {
-        if(this.isTutorialMode) {
-          this.settings.N_class = 10;
-          this.popupInfo("While the value of this field should be 10. But soon you will be able to set a different number of classes in the data. We are working on it");
-        }
-      }
-    },
-  },
   computed: {
     ...mapGetters({
       isTutorialMode: 'mod_tutorials/getIsTutorialMode'

@@ -272,9 +272,8 @@
       getCurrentStepCode: {
         handler(newVal, oldVal) {
           if (!this.isTutorialMode) { return; }
-          console.log('project getCurrentStepCode 1')
           if (newVal !== 'tutorial-model-hub-new-button') { return; }
-          console.log('project getCurrentStepCode 2')
+          
           this.activateCurrentStep();
         },
         immediate: true

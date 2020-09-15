@@ -247,6 +247,11 @@
         return false;
       },
       showTutorialNotifications() {
+        // Don't show notifications if there are any overlays
+        if (this.currentPage) {
+          return false;
+        }
+
         return this.getIsTutorialMode && this.getShowTutorialTips;
       },
       currentNetworkId() {
@@ -260,7 +265,10 @@
         let rightValueRm = 1;
         let bottomValueRm = 1;
 
-        if (this.$route.name !== 'projects' && !this.showNewModelPopup) {
+        if (this.$route.name !== 'projects' &&
+            this.$route.name !== 'settings' &&
+            !this.showNewModelPopup &&
+            !this.showCreateIssuesPopup) {
           
           bottomValueRm += 2; // the-workspace
           bottomValueRm += 1; // scrollbars

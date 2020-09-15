@@ -115,7 +115,7 @@ export default {
     },
     '$store.state.mod_events.globalPressKey.esc': {
       handler() {
-        if(!this.isTutorialMode) this.hideAllWindow();
+        // if(!this.isTutorialMode) this.hideAllWindow();
       }
     },
     '$store.state.mod_events.globalPressKey.del': {
@@ -194,7 +194,7 @@ export default {
       });
     },
     openContext(event) {
-      if(!this.isTutorialMode && !this.settingsIsOpen) {
+      if(!this.settingsIsOpen) {
         this.hideAllWindow();
         if(!this.currentSelectedEl.length) {
           this.elementSelect({id: this.currentId, setValue: true })
@@ -249,7 +249,7 @@ export default {
       document.removeEventListener('contextmenu', this.hideAllWindow, true);
     },
     deselect() {
-      if(!this.isTutorialMode) this.hideAllWindow();
+      this.hideAllWindow();
       // this.elementSelect({id: this.currentId, setValue: false });
     },
     tutorialSearchId(event) {

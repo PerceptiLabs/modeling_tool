@@ -120,7 +120,7 @@ export default {
     hasStatistics() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkStatistics;
     },
-    isStatistiOrTestOpened() {
+    isStatisticsOrTestOpened() {
       const currentItemNetwork = this.$store.getters['mod_workspace/GET_currentNetwork'];
       return currentItemNetwork.networkMeta.openStatistics === true || currentItemNetwork.networkMeta.openTest === true;
     },

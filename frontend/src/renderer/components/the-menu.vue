@@ -78,8 +78,8 @@ export default {
       isNotebookMode:             'mod_notebook/getNotebookMode',
     }),
     ...mapState({
-      currentProjectId:     state => state.mod_project.currentProject,
-      isSettingInputFocused:     state => state.mod_workspace.isSettingInputFocused,
+      currentProjectId:           state => state.mod_project.currentProject,
+      isSettingInputFocused:      state => state.mod_workspace.isSettingInputFocused,
     }),
     appVersion() {
       return this.$store.state.globalView.appVersion
@@ -187,7 +187,7 @@ export default {
     addNewNetwork() {
       if (this.$route.name !== 'projects') {
         this.$router.push({name: 'projects'});
-      } 
+      }
     },
     logOut() {
       if (this.hasNetworkWithUnsavedChanges) {
@@ -195,12 +195,10 @@ export default {
           {
             text: 'You still have unsaved models.\nAre you sure you want to log out?',
             ok: () => {
-              this.setCurrentView('');
               this.$store.dispatch('mod_events/EVENT_logOut');
             }
           });
       } else{
-        this.setCurrentView('');
         this.$store.dispatch('mod_events/EVENT_logOut');
       }
     },
@@ -398,7 +396,7 @@ export default {
         {
           label: 'File', visible: true,
           submenu: [
-            {label: 'New',     active: this.newModel},
+            {label: 'New',             active: this.newModel},
             {type: 'separator'},
             {label: 'Import Model',    active: this.openLoadModelPopup},
             ...(this.isDefaultProjectMode ?
