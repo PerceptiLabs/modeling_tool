@@ -241,7 +241,11 @@
         showLoadSettingPopup: state => state.globalView.globalPopup.showLoadSettingPopup,
         workspaceContent:     state => state.mod_workspace.workspaceContent,
         unparsedModels:       state => state.mod_workspace.unparsedModels
-      })
+      }),
+      statusLocalCore() {
+        return this.$store.state.mod_api.statusLocalCore;
+      }
+
       // workspaceContent() {
       //   return this.$store.state.mod_workspace.workspaceContent;
       // },
@@ -257,6 +261,11 @@
         this.onSortByChanged(this.isSelectedSortType);
       },
       hotKeyPressDelete() {
+        if(this.statusLocalCore!='online') {
+          this.showInfoPopup("Kernal is offline");
+          return;
+        }
+
         if (!this.projects) { return; }
 
         const indexCheckedProj = this.projects.findIndex((el)=> el.isChecked === true);
@@ -297,6 +306,11 @@
         deleteAllIds:        'mod_webstorage/deleteAllIds',        
       }),
       goToNetworkView(networkID) {
+        if(this.statusLocalCore!='online') {
+          this.showInfoPopup("Kernal is offline");
+          return;
+        }
+
         // maybe should receive a id and search index by it
         const index = this.workspaceContent.findIndex(wc => wc.networkID == networkID);
         this.set_currentNetwork(index > 0 ? index : 0);
@@ -350,6 +364,11 @@
         return this.selectedListIds.length < 2;
       },
       toggleItemSelection(modelId) {
+        if(this.statusLocalCore!='online') {
+          this.showInfoPopup("Kernal is offline");
+          return;
+        }
+
         modelId = parseInt(modelId);
         let itmPosition = this.selectedListIds.indexOf(modelId);
         if (itmPosition === -1) {
@@ -362,6 +381,11 @@
         return this.selectedListIds.length >= 1;
       },
       removeItems() {
+        if(this.statusLocalCore!='online') {
+          this.showInfoPopup("Kernal is offline");
+          return;
+        }
+
         const removeModelText = 
           this.selectedListIds && this.selectedListIds.length > 1 ?
           'Are you sure you want to delete the selected models?' :
@@ -388,6 +412,11 @@
           });
       },
       toggleFavoriteItems() {
+        if(this.statusLocalCore!='online') {
+          this.showInfoPopup("Kernal is offline");
+          return;
+        }
+
         let newModelList = [...this.workspaceContent];
         if (this.isAllItemSelectedFavorite()) {
           newModelList = newModelList.map((item, index) => {
@@ -409,6 +438,11 @@
         this.updateInitialModelListData();
       },
       setFavoriteValue(index, value) {
+        if(this.statusLocalCore!='online') {
+          this.showInfoPopup("Kernal is offline");
+          return;
+        }
+
         this.UPDATE_MODE_ACTION({index, field: 'isFavorite', value});
       },
       isAllItemSelectedFavorite() {
@@ -420,6 +454,11 @@
         return selectedLength === favoriteItemLength.length
       },
       toggleSelectedItems() {
+        if(this.statusLocalCore!='online') {
+          this.showInfoPopup("Kernal is offline");
+          return;
+        }
+
         if (this.isAtLeastOneItemSelected()) {
           this.selectedListIds = [];
         } else {
@@ -439,6 +478,11 @@
 
       },
       handleAddNetworkModal() {
+        if(this.statusLocalCore!='online') {
+          this.showInfoPopup("Kernal is offline");
+          return;
+        }
+
         // open modal
         this.popupNewModel(true);
 
@@ -459,6 +503,11 @@
         this.isImportModelsOpen = false;
       },
       openLoadModelPopup() {
+        if(this.statusLocalCore!='online') {
+          this.showInfoPopup("Kernal is offline");
+          return;
+        }
+
         this.$store.dispatch('globalView/SET_filePickerPopup', {confirmCallback: this.onLoadNetworkConfirmed});
       },
       onLoadNetworkConfirmed(path) {
@@ -489,6 +538,11 @@
         this.$store.commit("globalView/HIDE_allGlobalPopups");
       },
       handleStatisticClick(index, e, model) {
+        if(this.statusLocalCore!='online') {
+          this.showInfoPopup("Kernal is offline");
+          return;
+        }
+
         const { networkMeta: { openStatistics } } = model;
 
         if (typeof openStatistics === 'boolean') {
@@ -517,15 +571,30 @@
         this.isContextOpened = false
       },
       handleContextOpenModel() {
+        if(this.statusLocalCore!='online') {
+          this.showInfoPopup("Kernal is offline");
+          return;
+        }
+
         this.goToNetworkView(this.workspaceContent[this.contextModelIndex].networkID);
         this.closeContext();
       },
 
       handleContextRemoveModel() {
+        if(this.statusLocalCore!='online') {
+          this.showInfoPopup("Kernal is offline");
+          return;
+        }
+
         this.removeItems();
         this.closeContext();
       },
       onClickDeletedModel(model, index) {
+        if(this.statusLocalCore!='online') {
+          this.showInfoPopup("Kernal is offline");
+          return;
+        }
+
         this.popupConfirm({
             text: `Are you sure you want to remove ${model.name} from ModelHub since it no longer is connected to Project?`,
             ok: () => {
@@ -539,6 +608,11 @@
 
       // Rename Module
       handleContextRenameModel() {
+        if(this.statusLocalCore!='online') {
+          this.showInfoPopup("Kernal is offline");
+          return;
+        }
+
         this.renameIndex = this.contextModelIndex;
         this.renameValue = this.workspaceContent[this.renameIndex].networkName;
 
