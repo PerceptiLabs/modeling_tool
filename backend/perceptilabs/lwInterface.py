@@ -405,9 +405,9 @@ class GetNetworkData(LW_interface_base):
             try:
                 sample_array = np.asarray(sample)
                 if layer_spec.to_dict().get('previewVariable') == 'W' and len(sample_array.shape) >= 2:
-                    preview_content = createDataObject([self._reduceTo2d(sample_array)], typeList=['heatmap'])
+                    preview_content = createDataObject([self._reduceTo2d(sample_array).squeeze()], typeList=['heatmap'])
                 else:
-                    preview_content = createDataObject([self._reduceTo2d(sample_array)])
+                    preview_content = createDataObject([self._reduceTo2d(sample_array).squeeze()])
             except:
                 logger.exception(f'Failed getting preview for layer {layer_spec}')
             
