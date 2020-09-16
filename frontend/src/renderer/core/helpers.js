@@ -439,6 +439,11 @@ const hashObject = function(inputObject) {
 
 const hashString = s => s.split('').reduce((a,b) => (((a << 5) - a) + b.charCodeAt(0))|0, 0);
 
+const objectToQueryParams = (reqData) => {
+  return  Object.keys(reqData).map(function(key) {
+      return key + '=' + reqData[key];
+    }).join('&');
+}
 const calculateTutorialNotificationPosition = ({ targetElement, arrowDirection }) => {
   if(!targetElement) { return; }
 
@@ -521,5 +526,6 @@ export {
   layerBgColorTransparent,
   hashObject,
   hashString,
+  objectToQueryParams,
   calculateTutorialNotificationPosition
 }

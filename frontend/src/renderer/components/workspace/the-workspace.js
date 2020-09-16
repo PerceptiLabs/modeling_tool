@@ -18,6 +18,8 @@ import WorkspaceBeforeImport  from "@/components/global-popups/workspace-before-
 import WorkspaceSaveNetwork   from "@/components/global-popups/workspace-save-network.vue";
 import WorkspaceLoadNetwork   from "@/components/global-popups/workspace-load-network.vue";
 import ExportNetwork          from "@/components/global-popups/export-network.vue";
+import ExportNetworkGitHub    from "@/components/global-popups/export-network-git-hub.vue";
+import ImportModel            from "@/components/global-popups/import-model-popup.vue";
 import FilePickerPopup        from "@/components/global-popups/file-picker-popup.vue";
 import TheTesting             from "@/components/statistics/the-testing.vue";
 import TheViewBox             from "@/components/statistics/the-view-box";
@@ -31,7 +33,7 @@ import CodeWindow             from '@/components/workspace/code-window/workspace
 import InformationPanel       from '@/components/workspace/information-panel/information-panel.vue';
 import ResourceMonitor        from "@/components/charts/resource-monitor.vue";
 import SelectModelModal       from '@/pages/projects/components/select-model-modal.vue';
-import ViewBoxBtnList from '@/components/statistics/view-box-btn-list.vue'
+import ViewBoxBtnList         from '@/components/statistics/view-box-btn-list.vue'
 
 export default {
   name: 'WorkspaceContent',
@@ -40,7 +42,7 @@ export default {
     WorkspaceToolbar, StatisticsToolbar,
     NetworkField, TextEditable,
     GeneralResult, SelectCoreSide,
-    WorkspaceBeforeImport, WorkspaceSaveNetwork, WorkspaceLoadNetwork, ExportNetwork,
+    WorkspaceBeforeImport, WorkspaceSaveNetwork, WorkspaceLoadNetwork, ExportNetwork, ExportNetworkGitHub, ImportModel,
     TheTesting, TheViewBox, StartTrainingSpinner,
     TheToaster, TheMiniMap, FilePickerPopup, Notebook, TheSidebar,
     CodeWindow, InformationPanel,
@@ -115,6 +117,8 @@ export default {
       showLoadSettingPopup:       state => state.globalView.globalPopup.showLoadSettingPopup,
       showSaveNetworkPopup:       state => state.globalView.globalPopup.showSaveNetworkPopup,
       showExportNetworkPopup:     state => state.globalView.globalPopup.showExportNetworkPopup,
+      showExportNetworkToGitHubPopup:     state => state.globalView.globalPopup.showExportNetworkToGitHubPopup,
+      showImportNetworkfromGitHubOrLocalPopup:     state => state.globalView.globalPopup.showImportNetworkfromGitHubOrLocalPopup,
     }),
 
     hasStatistics() {

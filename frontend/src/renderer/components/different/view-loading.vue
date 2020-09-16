@@ -6,11 +6,12 @@
 <script>
 export default {
   name: 'ViewLoading',
-  computed: {
-    isLoading() {
-      return this.$store.state.mod_login.showLoader
-    },
-  }
+  props: {
+    isLoading: {
+      default: false,
+      type: Boolean,
+    }
+  },
 }
 </script>
 <style lang="scss" scoped>

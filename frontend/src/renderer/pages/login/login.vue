@@ -1,6 +1,6 @@
 <template lang="pug">
   div.wrapper
-    view-loading
+    view-loading(:isLoading="isLoading")
     form(@keyup.enter="validateForm")
       img.site-logo(src="./../../../../static/img/perceptilabs-new-log.svg")
 

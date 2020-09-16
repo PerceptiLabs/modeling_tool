@@ -37,13 +37,13 @@ def build_export_dict(tensorpath, add_training_files: bool, datapaths=[]):
         file_list = _list_files(root_path)
 
         for file_path in file_list:
-            if (os.path.basename(file_path) in requested_files):
+            if (file_path in requested_files):
                 if not os.path.basename(file_path).startswith("."):
                     yield file_path
 
     def _selected_files_dict(base_path, filenames_list):
-        file_paths = _selected_files(tensorpath, filenames_list)
-        return { os.path.join(tensorpath, f) : f for f in file_paths }
+        file_paths = _selected_files(base_path, filenames_list)
+        return { os.path.join(base_path, f) : f for f in file_paths }
 
     def _base_files(tensorpath):
         return _selected_files_dict(tensorpath, [
@@ -52,22 +52,15 @@ def build_export_dict(tensorpath, add_training_files: bool, datapaths=[]):
             ])
 
     def _training_files(tensorpath):
-        return _selected_files_dict(tensorpath, [
-            "model.json",
-            "checkpoint",
-            "model.ckpt-1.index",
-            "model.ckpt-1.data-00001-of-00002",
-            "model.ckpt-1.data-00000-of-00002",
-            "saved_model.pb",
-            "variables.data-00000-of-00001",
-            "variables.index",
-            ])
+        return _selected_files_dict(tensorpath,_all_files_to_export(tensorpath))
 
     def _data_files(datapath):
         if os.path.isdir(datapath):
             dir_name = os.path.basename(datapath)
             return {os.path.join(datapath, f) : f"data/{dir_name}/{f}" for f in _all_files_to_export(datapath)}
-        return {os.path.join(datapath, f) : f"data/{f}" for f in _all_files_to_export(datapath)}
+        elif os.path.isfile(datapath):
+            return {datapath : f"data/{os.path.basename(datapath)}"}
+        return {}
 
     to_export = _base_files(tensorpath)
     if add_training_files:

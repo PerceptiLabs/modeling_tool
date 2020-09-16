@@ -24,6 +24,8 @@ const state = {
     showLoadSettingPopup: false,
     showSaveNetworkPopup: false,
     showExportNetworkPopup: false,
+    showExportNetworkToGitHubPopup: false,
+    showImportNetworkfromGitHubOrLocalPopup: false,
     showNewModelPopup: false,
     showCreateIssuesPopup: false
   },
@@ -99,6 +101,12 @@ const mutations = {
   },
   set_exportNetworkPopup(state, value) {
     state.globalPopup.showExportNetworkPopup = value;
+  },
+  set_exportNetworkToGitHubPopup(state, value) {
+    state.globalPopup.showExportNetworkToGitHubPopup = value;
+  },
+  set_showImportNetworkfromGitHubOrLocalPopup(state, value) {
+    state.globalPopup.showImportNetworkfromGitHubOrLocalPopup = value;
   },
   set_createIssuesPopup(state, value) {
     state.globalPopup.showCreateIssuesPopup = value;
@@ -185,6 +193,12 @@ const actions = {
   },
   SET_exportNetworkPopup({commit}, value) {
     commit('set_exportNetworkPopup', value);
+  },
+  SET_exportNetworkToGithubPopup({commit}, value) {
+    commit('set_exportNetworkToGitHubPopup', value);
+  },
+  SET_showImportNetworkfromGitHubOrLocalPopup({commit}, value) {
+    commit('set_showImportNetworkfromGitHubOrLocalPopup', value);
   },
   SET_createIssuesPopup({commit}, value) {
     commit('set_createIssuesPopup', value);

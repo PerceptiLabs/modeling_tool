@@ -16,6 +16,11 @@ const baseUrlCloud  = 'https://perceptilabsamerica.azurewebsites.net/api/';
 // const baseUrlSite   = 'https://perceptilabs-website-dev.azurewebsites.net';
 const baseUrlSite   = 'https://perceptilabs.com';
 
+export const FILE_SERVER_BASE_URL = 'http://localhost:8011'
+
+export const GITHUB_AYTHORIZE_URL = `https://github.com/login/oauth/authorize?scope=public_repo,read:user&client_id=${process.env.GITHUB_CLIENT_ID}`;
+export const GITHUB_GET_TOKEN_BY_CODE_URL = 'https://ghsk.azurewebsites.net'
+
 const widthElement = 60;
 const workspaceGrid = 20;
 export const shadowBoxDragIfMoreThenElementsSelected = 3;

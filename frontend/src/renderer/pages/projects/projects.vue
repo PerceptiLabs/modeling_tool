@@ -1,5 +1,6 @@
 <template lang="pug">
   div
+    import-model(v-if="showImportNetworkfromGitHubOrLocalPopup")
     .modelContext(v-if="isContextOpened" :style="modelContextStyles")
       button(@click="handleContextOpenModel()") Open
       button(@click="handleContextRenameModel()") Rename
@@ -40,6 +41,13 @@
           span.text-button(
             :class="{ 'is-disable': !isAtLeastOneItemSelected() }"
             v-tooltip:bottom="'Open'") Open
+
+          span.github-button(
+            :class="{ 'is-disable': !isOneItemSelected() }"
+            v-tooltip:bottom="'Export to GitHub'"
+            @click="openExportToGithubModal")
+            img.github-button-icon(src="../../../../static/img/github.svg")
+            span.github-button-text GitHub
           //- span.text-button(v-if="isAtLeastOneItemSelected()") BlackBox
           span.text-button.is-disable() History
           //- span.text-button(v-if="isAtLeastOneItemSelected()" :class="{'is-disable': isDisabledCompareBtn()}") Compare
@@ -174,6 +182,7 @@
   import SelectModelModal from '@/pages/projects/components/select-model-modal.vue';
   import ModelStatus from '@/components/different/model-status.vue';
   import WorkspaceLoadNetwork   from "@/components/global-popups/workspace-load-network.vue";
+  import ImportModel    from "@/components/global-popups/import-model-popup.vue";
 
   import { mapActions, mapMutations, mapState, mapGetters } from 'vuex';
   import { isWeb, stringifyNetworkObjects } from "@/core/helpers";
@@ -200,6 +209,7 @@
       SelectModelModal,
       ModelStatus,
       WorkspaceLoadNetwork,
+      ImportModel,
     },
     data: function () {
       return {
@@ -240,7 +250,8 @@
         hotKeyPressDelete:    state => state.mod_events.globalPressKey.del,
         showLoadSettingPopup: state => state.globalView.globalPopup.showLoadSettingPopup,
         workspaceContent:     state => state.mod_workspace.workspaceContent,
-        unparsedModels:       state => state.mod_workspace.unparsedModels
+        unparsedModels:       state => state.mod_workspace.unparsedModels,
+        showImportNetworkfromGitHubOrLocalPopup:     state => state.globalView.globalPopup.showImportNetworkfromGitHubOrLocalPopup,
       }),
       statusLocalCore() {
         return this.$store.state.mod_api.statusLocalCore;
@@ -380,6 +391,9 @@
       isAtLeastOneItemSelected() {
         return this.selectedListIds.length >= 1;
       },
+      isOneItemSelected() {
+        return this.selectedListIds.length === 1;
+      },
       removeItems() {
         if(this.statusLocalCore!='online') {
           this.showInfoPopup("Kernal is offline");
@@ -503,12 +517,12 @@
         this.isImportModelsOpen = false;
       },
       openLoadModelPopup() {
+        // this.$store.dispatch('globalView/SET_filePickerPopup', {confirmCallback: this.onLoadNetworkConfirmed});
         if(this.statusLocalCore!='online') {
           this.showInfoPopup("Kernal is offline");
           return;
         }
-
-        this.$store.dispatch('globalView/SET_filePickerPopup', {confirmCallback: this.onLoadNetworkConfirmed});
+        this.$store.dispatch('globalView/SET_showImportNetworkfromGitHubOrLocalPopup', true);
       },
       onLoadNetworkConfirmed(path) {
         if (!path || path.length === 0) { return; }
@@ -650,6 +664,14 @@
       },
       hasUnsavedChanges(networkId) {
         return this.$store.getters['mod_workspace-changes/get_hasUnsavedChanges'](networkId);
+      },
+      openExportToGithubModal() {
+        if(!this.isOneItemSelected()) {
+          return;
+        }
+        const modelId = this.selectedListIds[0];
+        this.gotToNetworkView(modelId);
+        this.$store.dispatch('globalView/SET_exportNetworkToGithubPopup', true);
       }
     },
     created() {
@@ -1000,5 +1022,23 @@
   }
   // rename model
   .rename-control {
+  }
+  .github-button {
+    display: flex;
+    cursor: pointer;
+    &.is-disable {
+      cursor: default;
+      opacity: 0.4;
+    }
+  }
+  .github-button-icon {
+    margin-right: 10px;
+  }
+  .github-button-text {
+    font-family: 'Nunito Sans';
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 29px;
+    color: #E1E1E1;
   }
 </style>

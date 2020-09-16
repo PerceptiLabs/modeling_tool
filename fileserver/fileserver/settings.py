@@ -25,7 +25,7 @@ if API_TOKEN_REQUIRED and not API_TOKEN:
 
 
 INSTALLED_APPS = [
-    "corsheaders",
+	"corsheaders",
     "fileserver.api",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -114,6 +114,7 @@ USE_TZ = True
 
 STATIC_URL = "/static/"
 
+CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_CREDENTIALS = False
 CORS_ORIGIN_WHITELIST = [
     'http://localhost:8080',

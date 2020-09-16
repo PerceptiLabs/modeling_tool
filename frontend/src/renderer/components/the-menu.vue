@@ -51,7 +51,7 @@
   import { mapGetters, mapMutations, mapActions, mapState } from 'vuex';
   import { baseUrlSite, MODAL_PAGE_PROJECT } from '@/core/constants.js';
   import { isElectron, goToLink, isOsMacintosh, isDesktopApp } from '@/core/helpers.js'
-  
+  import axios from 'axios'
   let ipcRenderer = null;
   if(navigator.userAgent.toLowerCase().indexOf(' electron/') > -1) {
     const electron = require('electron');
@@ -225,32 +225,48 @@ export default {
       });
     },
     openLoadModelPopup() {
-      this.$store.dispatch('globalView/SET_filePickerPopup', {confirmCallback: this.onLoadNetworkConfirmed});
+      this.$store.dispatch('globalView/SET_showImportNetworkfromGitHubOrLocalPopup', true);
     },
-    onLoadNetworkConfirmed(path) {
-      if (!path || path.length === 0) { return; }
+    // openLoadModelPopup() {
+    //   debugger;
+    //   if(this.isTutorialMode) {
+    //     this.hideTooltip();
+    //     this.popupConfirm(
+    //       {
+    //         text: 'Are you sure you want to end the tutorial?',
+    //         ok: () => {
+    //           this.offMainTutorial();
+    //           this.$store.dispatch('globalView/SET_filePickerPopup', {confirmCallback: this.onLoadNetworkConfirmed});
+    //         }
+    //       });
+    //   } else {
+    //     this.$store.dispatch('globalView/SET_filePickerPopup', {confirmCallback: this.onLoadNetworkConfirmed});
+    //   }
+    // },
+    // onLoadNetworkConfirmed(path) {
+    //   if (!path || path.length === 0) { return; }
 
-      this.$store.dispatch('globalView/SET_filePickerPopup', false);
+    //   this.$store.dispatch('globalView/SET_filePickerPopup', false);
       
-      this.$store.dispatch('mod_events/EVENT_loadNetwork', path[0]);
-      // this.$store.dispatch('mod_api/API_getModel',`${path[0]}/model.json`)
-      //   .then(model => {
-      //     if(model.hasOwnProperty('apiMeta')) {
-      //       const { location } = model.apiMeta;
-      //       delete model.apiMeta;
-      //     }
-      //     this.$store.dispatch('mod_project/createProjectModel',{
-      //       name: model.networkName,
-      //       project: this.currentProjectId,
-      //       location: path[0],
-      //     }).then(apiMeta => {
-      //       this.$store.dispatch('mod_workspace/ADD_network', {network: model, apiMeta});
-      //     });
-      //   })
-      //   .catch(e => console.log(e));
+    //   this.$store.dispatch('mod_events/EVENT_loadNetwork', path[0]);
+    //   // this.$store.dispatch('mod_api/API_getModel',`${path[0]}/model.json`)
+    //   //   .then(model => {
+    //   //     if(model.hasOwnProperty('apiMeta')) {
+    //   //       const { location } = model.apiMeta;
+    //   //       delete model.apiMeta;
+    //   //     }
+    //   //     this.$store.dispatch('mod_project/createProjectModel',{
+    //   //       name: model.networkName,
+    //   //       project: this.currentProjectId,
+    //   //       location: path[0],
+    //   //     }).then(apiMeta => {
+    //   //       this.$store.dispatch('mod_workspace/ADD_network', {network: model, apiMeta});
+    //   //     });
+    //   //   })
+    //   //   .catch(e => console.log(e));
 
-      // this.loadNetwork(path[0]);
-    },
+    //   // this.loadNetwork(path[0]);
+    // },
     saveModel() {
       this.saveNetwork();
     },
@@ -259,6 +275,9 @@ export default {
     },
     exportModel() {
       this.$store.dispatch('globalView/SET_exportNetworkPopup', true);
+    },
+    exportModelToGithub() {
+      this.$store.dispatch('globalView/SET_exportNetworkToGithubPopup', true);
     },
     HC_delete() {
       this.$store.dispatch('mod_events/EVENT_pressHotKey', 'del')
@@ -408,6 +427,7 @@ export default {
             {label: 'Save as',   accelerator: this.isMac ? 'meta+shift+s' : 'ctrl+shift+s',     enabled: this.openApp && !this.isNotebookMode,  active: this.saveModelAs },
             {type: 'separator'},
             {label: 'Export',  active: this.exportModel,        enabled: this.openApp},
+            {label: 'Export to GitHub',  active: this.exportModelToGithub,        enabled: this.openApp},
             {type: 'separator'},
             {label: 'Log out', active: this.logOut,             enabled: this.isLogin},
           ]

@@ -123,6 +123,8 @@
       :popup-settings="saveNetworkPopup"
       )
     export-network(v-if="showExportNetworkPopup")
+    export-network-git-hub(v-if="showExportNetworkToGitHubPopup")
+    import-model(v-if="showImportNetworkfromGitHubOrLocalPopup")
     file-picker-popup(
       v-if="showFilePickerPopup"
       :filePickerType="showFilePickerPopup.filePickerType"

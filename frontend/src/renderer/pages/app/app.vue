@@ -25,6 +25,8 @@
   import TheTutorialStoryboard from "@/components/tutorial/tutorial-storyboard.vue";
   import {shouldHideSidebar, calculateSidebarScaleCoefficient } from "../../core/helpers";
   import {isWeb} from "@/core/helpers";
+  import { GITHUB_GET_TOKEN_BY_CODE_URL } from "@/core/constants";
+  import axios from 'axios';
 
   export default {
     name: 'pageQuantum',
@@ -35,6 +37,23 @@
         });
     },
     created() {
+      if(this.$route.query.hasOwnProperty('code')) {
+        const code = this.$route.query.code;
+        const client_id = process.env.GITHUB_CLIENT_ID
+        const data =  axios.get(`${GITHUB_GET_TOKEN_BY_CODE_URL}/${client_id}?code=${code}`, {
+          headers: { 'Content-Type': 'application/json'}
+        }).then(res => {
+          let access_token = res.data.access_token;
+          if(access_token) {
+            this.$store.dispatch('mod_github/setGithubTokenAction', access_token);
+            this.$store.dispatch('globalView/SET_exportNetworkToGithubPopup', true);
+            this.$router.push({
+              path: '/app',
+              query: {}
+            })
+          }
+          }).catch(err => console.log(err));
+      }
       if(isWeb()) {
         // this.$store.dispatch('mod_webstorage/loadWorkspaces')
         //   .then(_ => {
