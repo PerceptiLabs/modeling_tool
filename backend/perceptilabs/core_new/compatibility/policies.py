@@ -1315,21 +1315,21 @@ def policy_gan(core, graphs, sanitized_to_name, sanitized_to_id, results):
         return data
 
     def get_distributions(real_images, random_images, true_trn_id, results):
-        if 'trainDict' in results:
-            real_means = results['trainDict'][true_trn_id]["real_means"]
-            real_stddevs = results['trainDict'][true_trn_id]["real_stddevs"]
-            random_means = results['trainDict'][true_trn_id]["random_means"]
-            random_stddevs = results['trainDict'][true_trn_id]["random_stddevs"]
-        else:
-            real_means = []
-            real_stddevs = []
-            random_means = []
-            random_stddevs = []
+        # if 'trainDict' in results:
+        #     real_means = results['trainDict'][true_trn_id]["real_means"]
+        #     real_stddevs = results['trainDict'][true_trn_id]["real_stddevs"]
+        #     random_means = results['trainDict'][true_trn_id]["random_means"]
+        #     random_stddevs = results['trainDict'][true_trn_id]["random_stddevs"]
+        # else:
+        real_means = []
+        real_stddevs = []
+        random_means = []
+        random_stddevs = []
         for i in range(real_images.get('output').shape[0]):
             real_means.append(np.mean(real_images.get('output')[i]))
             real_stddevs.append(np.std(real_images.get('output')[i]))
-            random_means.append(np.mean(real_images.get('output')[i]))
-            random_stddevs.append(np.std(real_images.get('output')[i]))
+            random_means.append(np.mean(random_images.get('output')[i]))
+            random_stddevs.append(np.std(random_images.get('output')[i]))
         return real_means, real_stddevs, random_means, random_stddevs
 
     def images_distribution_plot(real_means, real_stddevs, random_means, random_stddevs):
@@ -1337,9 +1337,10 @@ def policy_gan(core, graphs, sanitized_to_name, sanitized_to_id, results):
         matplotlib.use('Agg')
         import matplotlib.pyplot as plt
         fig = plt.figure()
-        ax=fig.add_axes([0,0,1,1])
-        ax.scatter(real_means,real_stddevs, c= 'r')
-        ax.scatter(random_means, random_stddevs, c = 'b')
+        ax=fig.add_axes([0,0,1,1],facecolor = "#222731")
+
+        ax.scatter(real_means, real_stddevs, c= 'blue' )
+        ax.scatter(random_means, random_stddevs, c = 'red')
         fig.canvas.draw()
         data = np.fromstring(fig.canvas.tostring_rgb(), dtype=np.uint8, sep='')
         data = data.reshape(fig.canvas.get_width_height()[::-1] + (3,))
