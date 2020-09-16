@@ -294,7 +294,7 @@ export default {
             const suffix = "/";
 
             for(var el in elementList) {
-                if (elementList[el].layerSettings.Type === "Data") {
+                if (elementList[el].layerType === "Data" && elementList[el].layerSettings.accessProperties) {
                     if (elementList[el].layerSettings.accessProperties.Sources.length) {
                         elementList[el].layerSettings.accessProperties.Sources.forEach(item => {
                             item.path = rootPath + suffix + 'tutorial_data' + suffix + item.path;
