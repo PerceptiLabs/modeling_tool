@@ -24,7 +24,7 @@ TEMPLATE_STATIC_PATH = os.path.join(BASE_DIR, "static_file_server/dist/static")
 SECRET_KEY = 'xk92=44nlx503kb5ryv(!de6m=6o)k7tz&^bq6+x2jhlhjj3g='
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
@@ -74,7 +74,12 @@ WSGI_APPLICATION = 'static_file_server.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
-DATABASES = {}
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': ':memory:',
+    }
+}
 
 
 # Password validation
