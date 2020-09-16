@@ -2,19 +2,11 @@
   div
     .settings-layer_section.section-data-select(v-if="!settings.accessProperties.Sources.length && !showFilePicker" id="tutorial_button-load")
       button.btn.tutorial-relative(type="button"
-        @click="openFilePicker('file')"
-        v-tooltip-interactive:right="interactiveInfo.file"
+        @click="openFilePicker('multimode')"
         v-if="!showFilePicker"
         )
           i.icon.icon-open-file
-          span Choose files
-
-      button.btn.tutorial-relative(type="button"
-        @click="openFilePicker('folder')"
-        v-tooltip-interactive:bottom="interactiveInfo.folder"
-        )
-          i.icon.icon-open-folder
-          span Choose folders
+          span Load data
 
     template(v-else-if="showFilePicker")
       file-picker-popup(
@@ -152,7 +144,7 @@
         serverListFile: ['1', '2', '3'],
         serverListFileSelected: '2',
         showFilePicker: false,
-        filePickerType: 'file',
+        filePickerType: 'file', // or 'folder', 'multimode'
         filePickerAppendingItems: false,
       }
     },
@@ -288,8 +280,12 @@
         if(isAppend) {
           const allPath = [... this.settings.accessProperties.Sources.map((el)=> el.path), ...pathArr];
           this.settings.accessProperties.Sources = this.Mix_settingsData_prepareSources([... new Set(allPath)], type)
+        } else if (type === 'multimode') {
+          const preppedSources = pathArr.map(p => ({ path: p.path, type: p.type }));
+          this.settings.accessProperties.Sources = preppedSources;
+        } else {
+          this.settings.accessProperties.Sources = this.Mix_settingsData_prepareSources(pathArr, type);
         }
-        else this.settings.accessProperties.Sources = this.Mix_settingsData_prepareSources(pathArr, type);
         // this.getSettingsInfo();
 
         this.filePickerAppendingItems = false;
@@ -352,9 +348,9 @@
           this.saveLoadFile(selectedItems, 'file', this.filePickerAppendingItems);
         } else if (this.filePickerType === 'folder') {
           this.saveLoadFile(selectedItems, 'directory', this.filePickerAppendingItems)
+        } else if (this.filePickerType === 'multimode') {
+          this.saveLoadFile(selectedItems, 'multimode', this.filePickerAppendingItems)
         }
-
-        
       }
     }
   }
