@@ -1,7 +1,9 @@
 <template lang="pug">
   div.profile-wrapper
     div.profile-item
-      .profile-item-Avatar.with-border
+      .profile-item-Avatar.with-border(
+        :data-tutorial-target="'tutorial-model-hub-user-gravatar'"
+      )
         | {{user && user.firstName[0]}}
       .profile-item-drop-down
         button.bgc-transparent.ta-left.p-13
@@ -46,34 +48,21 @@
     },
     computed: {
       ...mapGetters({
-        user: 'mod_user/GET_userProfile',
-        isTutorialMode: 'mod_tutorials/getIstutorialMode',
+        user:               'mod_user/GET_userProfile',
+        isTutorialMode:     'mod_tutorials/getIsTutorialMode',
+        getCurrentStepCode: 'mod_tutorials/getCurrentStepCode',
+
       })
     },
     methods: {
       ...mapActions({
-        hideTooltip:      'mod_tutorials/hideTooltip',
         popupConfirm:     'globalView/GP_confirmPopup',
-        offMainTutorial:  'mod_tutorials/offTutorial',
+        setNextStep:      'mod_tutorials/setNextStep',
       }),
       logOut() {
-        
-         if(this.isTutorialMode) {
-          this.hideTooltip();
-          this.popupConfirm(
-            {
-              text: 'Are you sure you want to end the tutorial?',
-              ok: () => {
-                this.offMainTutorial();
-                this.$store.dispatch('mod_events/EVENT_logOut');
-              }
-            });
-        } else {
-          this.$store.dispatch('mod_events/EVENT_logOut');
-        }
-
+        this.$store.dispatch('mod_events/EVENT_logOut');
       }
-    },
+    }
   }
 </script>
 

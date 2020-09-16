@@ -439,6 +439,57 @@ const hashObject = function(inputObject) {
 
 const hashString = s => s.split('').reduce((a,b) => (((a << 5) - a) + b.charCodeAt(0))|0, 0);
 
+const objectToQueryParams = (reqData) => {
+  return  Object.keys(reqData).map(function(key) {
+      return key + '=' + reqData[key];
+    }).join('&');
+}
+const calculateTutorialNotificationPosition = ({ targetElement, arrowDirection }) => {
+  if(!targetElement) { return; }
+
+  let top;
+  let left;
+
+  let elCoord = targetElement.getBoundingClientRect();
+  let tooltipArrow = 20;
+  // let isZoomElement = info.element.querySelector('.net-element_btn');
+  // let zoom = isZoomElement ? store.getters['mod_workspace/GET_currentNetwork'].networkMeta.zoom : 1;
+
+  const zoom = 1;
+
+  switch (arrowDirection) {
+    case 'right':
+      // top = (elCoord.top - elCoord.height / 2) * zoom;
+      // left = elCoord.left - elCoord.width - tooltipArrow;
+
+      return {
+        top: elCoord.top,
+        right: elCoord.left - (elCoord.width * 2) - tooltipArrow
+      }
+    case 'left':
+      // top = elCoord.top - (elCoord.height / 2);
+      // left = (elCoord.left + elCoord.width + tooltipArrow) * zoom;
+      // break;
+      return {
+        top: elCoord.top,
+        left: elCoord.right + tooltipArrow
+      };
+    // case 'top':
+    //   top = elCoord.top - tooltipArrow;
+    //   left = elCoord.left + (elCoord.width / 2);
+    //   break;
+    // case 'bottom':
+    //   top = elCoord.top + elCoord.height + tooltipArrow;
+    //   left = elCoord.left + (elCoord.width / 2);
+    //   break;
+  }
+
+  // return {
+  //   top,
+  //   left
+  // }
+}
+
 export {
   openLoadDialog,
   openSaveDialog,
@@ -474,5 +525,7 @@ export {
   layerBgColor,
   layerBgColorTransparent,
   hashObject,
-  hashString
+  hashString,
+  objectToQueryParams,
+  calculateTutorialNotificationPosition
 }

@@ -36,11 +36,10 @@ CoreCommand = collections.namedtuple('CoreCommand', ['type', 'parameters', 'allo
 
 
 class coreLogic():
-    def __init__(self,networkName, issue_handler, core_mode='v2'):
-        logger.info(f"Created coreLogic for network '{networkName}' with core mode '{core_mode}'")
-
-        assert core_mode in ['v1', 'v2']
-        self._core_mode = core_mode
+    def __init__(self,networkName, issue_handler, session_id=None):
+        logger.info(f"Created coreLogic for network '{networkName}'")
+        self._session_id = session_id
+        self._core_mode = 'v2'
         
         self.networkName=networkName
         self.cThread=None
@@ -119,7 +118,7 @@ class coreLogic():
 
         return True
 
-    def startCore(self, graph_spec, checkpointValues):
+    def startCore(self, graph_spec, checkpointValues, model_id):
         self.graph_spec = graph_spec
 
         self.Close()
@@ -188,7 +187,8 @@ class coreLogic():
                 messaging_factory,
                 graph_spec,
                 threaded=True,
-                issue_handler=self.issue_handler
+                issue_handler=self.issue_handler,
+                model_id=model_id
             )            
             
         try:

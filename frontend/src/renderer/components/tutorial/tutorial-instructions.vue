@@ -1,210 +1,213 @@
 <template lang="pug">
-.tutorial-instruction-box
-  slot
 
-  .tutorial-instruction-box_list-area(v-if="isShowInstructions" @mousedown="dragElement($event)")
-    header.list-area_header
-      div
-        button.header_close-instructions.i.icon.icon-app-close(@click="switchTutorialMode")
-        //span.header_title title_q
-      .header_arrows-top(:class="{'list-hide': !isMaximize}" @click="minimizeList")
-        i.icon.icon-shevron
-        i.icon.icon-shevron
+//- Not in use
 
-    .list-area-box(v-show="isMaximize")
-      p.list-area_title {{interective[activeStep].title}}
-      perfect-scrollbar(tag="ul").list-area_list
-        .list-element.list-element--status(
-          v-for="(point, index) in points"
-          :key="index"
-          :class="[point.class_style, {'active': point.status === 'active', 'done': point.status === 'done'}]"
-        )
-          .element-text(v-html="point.content")
-          .list-element_static
-            .static_info.list-element--status(
-              v-for="(info, index) in point.static_info"
-              v-html="info.content"
-              :key="index"
-              :class="[{'done': info.status === 'done'}]"
-            )
+//- .tutorial-instruction-box
+//-   slot
 
-      footer.list-area_footer
-        button.footer_all-tutorials-btn
-          i.icon.icon-shevron-right
-          span All tutorials
-        .curent-steps(v-if="activeStep !== 'first_instructions'") {{stepCount}}/{{stepsLength}}
-        div
-          //button.footer_btn(v-if="stepCount > 0" @click="changeStep('back')") Back
-          button.footer_btn(
-            v-if="isFirstStep"
-            @click="startTutorial('next')"
-            ) Next
-          button#tutorial_next_button.footer_btn(
-            v-else-if="activeAction.next && !allPointsIsDone"
-            @click="pointActivate({way: 'next', validation: activeAction.id})"
-            ) Next
-          button#tutorial_next_button.footer_btn(
-            v-else-if="stepCount !== stepsLength"
-            @click="changeStep('next')" :disabled="disabledNext"
-            ) Next
-          button.footer_btn(
-            v-else-if="stepCount === stepsLength"
-            @click="endTutorial()"
-            ) End
+//-   .tutorial-instruction-box_list-area(v-if="isShowInstructions" @mousedown="dragElement($event)")
+//-     header.list-area_header
+//-       div
+//-         button.header_close-instructions.i.icon.icon-app-close(@click="switchTutorialMode")
+//-         //span.header_title title_q
+//-       .header_arrows-top(:class="{'list-hide': !isMaximize}" @click="minimizeList")
+//-         i.icon.icon-shevron
+//-         i.icon.icon-shevron
+
+//-     .list-area-box(v-show="isMaximize")
+//-       p.list-area_title {{interective[activeStep].title}}
+//-       perfect-scrollbar(tag="ul").list-area_list
+//-         .list-element.list-element--status(
+//-           v-for="(point, index) in points"
+//-           :key="index"
+//-           :class="[point.class_style, {'active': point.status === 'active', 'done': point.status === 'done'}]"
+//-         )
+//-           .element-text(v-html="point.content")
+//-           .list-element_static
+//-             .static_info.list-element--status(
+//-               v-for="(info, index) in point.static_info"
+//-               v-html="info.content"
+//-               :key="index"
+//-               :class="[{'done': info.status === 'done'}]"
+//-             )
+
+//-       footer.list-area_footer
+//-         button.footer_all-tutorials-btn
+//-           i.icon.icon-shevron-right
+//-           span All tutorials
+//-         .curent-steps(v-if="activeStep !== 'first_instructions'") {{stepCount}}/{{stepsLength}}
+//-         div
+//-           //button.footer_btn(v-if="stepCount > 0" @click="changeStep('back')") Back
+//-           button.footer_btn(
+//-             v-if="isFirstStep"
+//-             @click="startTutorial('next')"
+//-             ) Next
+//-           button#tutorial_next_button.footer_btn(
+//-             v-else-if="activeAction.next && !allPointsIsDone"
+//-             @click="pointActivate({way: 'next', validation: activeAction.id})"
+//-             ) Next
+//-           button#tutorial_next_button.footer_btn(
+//-             v-else-if="stepCount !== stepsLength"
+//-             @click="changeStep('next')" :disabled="disabledNext"
+//-             ) Next
+//-           button.footer_btn(
+//-             v-else-if="stepCount === stepsLength"
+//-             @click="endTutorial()"
+//-             ) End
 </template>
 <script>
-import { mapGetters, mapMutations, mapActions } from 'vuex';
+// import { mapGetters, mapMutations, mapActions } from 'vuex';
 export default {
-  name: 'TutorialInstructions',
-  data() {
-    return {
-      count: 0,
-      isMaximize: true
-    }
-  },
-  watch: {
-    eventResize() {
-      this.tooltipReposition();
-    },
-    isTutorialMode(isTutorialMode) {
-      let layersbar = document.querySelector('.page_layersbar');
-      let svg = document.querySelector('.svg-arrow');
-      if(isTutorialMode) {                                              //hide tooltip for elements from toolbar when these elements are hidden
-        svg.addEventListener('click', this.hideTooltip);
-        layersbar.addEventListener('click', this.showHideTooltip, true);
-      }
-      else {
-        svg.removeEventListener('click', this.hideTooltip);
-        layersbar.removeEventListener('click', this.showHideTooltip);
-      }
-    },
-    statisticsIsOpen(newVal) {
-      if(newVal) this.pointActivate({way: null, validation: this.activePoint.actions[0].id})
-    }
-  },
-  computed: {
-    ...mapGetters({
-      activeStep:                 'mod_tutorials/getActiveStep',
-      points:                     'mod_tutorials/getPoints',
-      interective:                'mod_tutorials/getIterective',
-      isTutorialMode:             'mod_tutorials/getIstutorialMode',
-      stepCount:                  'mod_tutorials/getActiveStepMainTutorial',
-      allPointsIsDone:            'mod_tutorials/getAllPointsIsDone',
-      activePoint:                'mod_tutorials/getActivePoint',
-      activeAction:               'mod_tutorials/getActiveAction',
-      isShowInstructions:         'mod_tutorials/getShowMainTutorialInstruction',
-      currentNetworkElementList:  'mod_workspace/GET_currentNetworkElementList',
-      statisticsIsOpen:           'mod_workspace/GET_statisticsIsOpen',
-    }),
-    currentNetwork() {
-      return this.$store.state.mod_workspace.currentNetwork
-    },
-    eventResize() {
-      return this.$store.state.mod_events.eventResize
-    },
-    stepsLength() {
-      return Object.keys(this.interective).length - 1
-    },
-    isFirstStep() {
-      return this.interective[this.activeStep].points[0].status === 'first'
-    },
-    disabledNext() {
-      return this.activeStep === 'run_training' || !this.allPointsIsDone
-    },
-    workspaceContent() {
-      return this.$store.state.mod_workspace.workspaceContent
-    }
-  },
-  methods: {
-    ...mapMutations({
-      setActiveStep:              'mod_tutorials/SET_activeStepMainTutorial',
-      setTutorialIstarted:        'mod_tutorials/SET_mainTutorialIsStarted',
-      setTutorialMode:            'mod_tutorials/SET_isTutorialMode',
-      goToFirstStep:              'mod_tutorials/SET_activeActionMainTutorial',
-      setShowInstructions:        'mod_tutorials/SET_showMainTutorialInstruction',
-      setInteractiveInfo:         'mod_tutorials/SET_interactiveInfo',
-    }),
-    ...mapActions({
-      pointActivate:              'mod_tutorials/pointActivate',
-      pointsDeactivate:           'mod_tutorials/pointsDeactivate',
-      resetTutorial:              'mod_tutorials/resetTutorial',
-      lockElements:               'mod_tutorials/lockElements',
-      unlockAllElements:          'mod_tutorials/unlockAllElements',
-      tooltipReposition:          'mod_tutorials/tooltipReposition',
-      offTutorial:                'mod_tutorials/offTutorial',
-      showHideTooltip:            'mod_tutorials/showHideTooltip',
-      hideTooltip:                'mod_tutorials/hideTooltip',
-      onTutorial:                 'mod_tutorials/onTutorial',
-      setNetworkCoreStatus:       'mod_workspace/SET_statusNetworkCoreStatus',
-      addNetwork:                 'mod_workspace/ADD_network',
-      deleteNetwork:              'mod_workspace/DELETE_network',
-      popupInfo:                  'globalView/GP_infoPopup',
-      trackerTutorialStart:       'mod_tracker/EVENT_tutorialModeStart',
-      trackerTutorialFinished:    'mod_tracker/EVENT_tutorialModeFinished'
-    }),
-    changeStep(way) {
-      if(way === 'next') {
-        this.setActiveStep(way);
-        this.pointActivate({way: null, validation: this.activePoint.actions[0].id})
-      }
-    },
-    startTutorial(way) {
-      //if(this.currentNetworkElementList) this.addNetwork();
-      this.setTutorialIstarted(true);
-      this.setActiveStep(way);
-      this.pointActivate({way: null, validation: this.activePoint.actions[0].id});
-      this.trackerTutorialStart();
-    },
-    endTutorial() {
-      this.setNetworkCoreStatus(false);
-      this.popupInfo(`Congratulations, you have successfully completed the Tutorial!
-                      If you wish to save the model you created, can do so from the File menu in the top left.
-                      Or you can export it by clicking on the tab "Export" in the right menu.`);
-      this.switchTutorialMode();
-      this.trackerTutorialFinished();
-    },
-    switchTutorialMode() {
-      if(this.isTutorialMode) {
-        this.offTutorial();
-      } else {
-        this.onTutorial(this);
-        this.isMaximize = true;
-        if(this.currentNetworkElementList) this.addNetwork();
-      }
-    },
+  // name: 'TutorialInstructions',
+  // data() {
+  //   return {
+  //     count: 0,
+  //     isMaximize: true
+  //   }
+  // },
+  // watch: {
+  //   eventResize() {
+  //     this.tooltipReposition();
+  //   },
+  //   isTutorialMode(isTutorialMode) {
+  //     let layersbar = document.querySelector('.page_layersbar');
+  //     let svg = document.querySelector('.svg-arrow');
+  //     if(isTutorialMode) {                                              //hide tooltip for elements from toolbar when these elements are hidden
+  //       svg.addEventListener('click', this.hideTooltip);
+  //       layersbar.addEventListener('click', this.showHideTooltip, true);
+  //     }
+  //     else {
+  //       svg.removeEventListener('click', this.hideTooltip);
+  //       layersbar.removeEventListener('click', this.showHideTooltip);
+  //     }
+  //   },
+  //   statisticsIsOpen(newVal) {
+  //     if(newVal) this.pointActivate({way: null, validation: this.activePoint.actions[0].id})
+  //   }
+  // },
+  // computed: {
+  //   ...mapGetters({
+  //     activeStep:                 'mod_tutorials/getActiveStep',
+  //     points:                     'mod_tutorials/getPoints',
+  //     interective:                'mod_tutorials/getIterective',
+  //     isTutorialMode:             'mod_tutorials/getIsTutorialMode',
+  //     stepCount:                  'mod_tutorials/getActiveStepMainTutorial',
+  //     allPointsIsDone:            'mod_tutorials/getAllPointsIsDone',
+  //     activePoint:                'mod_tutorials/getActivePoint',
+  //     activeAction:               'mod_tutorials/getActiveAction',
+  //     isShowInstructions:         'mod_tutorials/getShowMainTutorialInstruction',
+  //     currentNetworkElementList:  'mod_workspace/GET_currentNetworkElementList',
+  //     statisticsIsOpen:           'mod_workspace/GET_statisticsIsOpen',
+  //   }),
+  //   currentNetwork() {
+  //     return this.$store.state.mod_workspace.currentNetwork
+  //   },
+  //   eventResize() {
+  //     return this.$store.state.mod_events.eventResize
+  //   },
+  //   stepsLength() {
+  //     return Object.keys(this.interective).length - 1
+  //   },
+  //   isFirstStep() {
+  //     return this.interective[this.activeStep].points[0].status === 'first'
+  //   },
+  //   disabledNext() {
+  //     return this.activeStep === 'run_training' || !this.allPointsIsDone
+  //   },
+  //   workspaceContent() {
+  //     return this.$store.state.mod_workspace.workspaceContent
+  //   }
+  // },
+  // methods: {
+  //   ...mapMutations({
+  //     setActiveStep:              'mod_tutorials/SET_activeStepMainTutorial',
+  //     setTutorialIstarted:        'mod_tutorials/SET_mainTutorialIsStarted',
+  //     setTutorialMode:            'mod_tutorials/setTutorialMode',
+  //     goToFirstStep:              'mod_tutorials/SET_activeActionMainTutorial',
+  //     setShowInstructions:        'mod_tutorials/SET_showMainTutorialInstruction',
+  //     setInteractiveInfo:         'mod_tutorials/SET_interactiveInfo',
+  //   }),
+  //   ...mapActions({
+  //     // pointActivate:              'mod_tutorials/pointActivate',
+  //     // pointsDeactivate:           'mod_tutorials/pointsDeactivate',
+  //     // resetTutorial:              'mod_tutorials/resetTutorial',
+  //     // lockElements:               'mod_tutorials/lockElements',
+  //     // unlockAllElements:          'mod_tutorials/unlockAllElements',
+  //     // tooltipReposition:          'mod_tutorials/tooltipReposition',
+  //     // offTutorial:                'mod_tutorials/offTutorial',
+  //     // showHideTooltip:            'mod_tutorials/showHideTooltip',
+  //     // hideTooltip:                'mod_tutorials/hideTooltip',
+  //     // onTutorial:                 'mod_tutorials/onTutorial',
+  //     // setNetworkCoreStatus:       'mod_workspace/SET_statusNetworkCoreStatus',
+  //     // addNetwork:                 'mod_workspace/ADD_network',
+  //     // deleteNetwork:              'mod_workspace/DELETE_network',
+  //     // popupInfo:                  'globalView/GP_infoPopup',
+  //     // trackerTutorialStart:       'mod_tracker/EVENT_tutorialModeStart',
+  //     // trackerTutorialFinished:    'mod_tracker/EVENT_tutorialModeFinished'
+  //   }),
+  //   changeStep(way) {
+  //     if(way === 'next') {
+  //       this.setActiveStep(way);
+  //       this.pointActivate({way: null, validation: this.activePoint.actions[0].id})
+  //     }
+  //   },
+  //   startTutorial(way) {
+  //     //if(this.currentNetworkElementList) this.addNetwork();
+  //     this.setTutorialIstarted(true);
+  //     this.setActiveStep(way);
+  //     this.pointActivate({way: null, validation: this.activePoint.actions[0].id});
+  //     this.trackerTutorialStart();
+  //   },
+  //   endTutorial() {
+  //     this.setNetworkCoreStatus(false);
+  //     this.popupInfo(`Congratulations, you have successfully completed the Tutorial!
+  //                     If you wish to save the model you created, can do so from the File menu in the top left.
+  //                     Or you can export it by clicking on the tab "Export" in the right menu.`);
+  //     this.switchTutorialMode();
+  //     this.trackerTutorialFinished();
+  //   },
+  //   switchTutorialMode() {
+  //     if(this.isTutorialMode) {
+  //       this.offTutorial();
+  //     } else {
+  //       this.onTutorial(this);
+  //       this.isMaximize = true;
+  //       if(this.currentNetworkElementList) this.addNetwork();
+  //     }
+  //   },
 
-    minimizeList() {
-      this.isMaximize = !this.isMaximize;
-    },
-    dragElement(event) {
-      let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-      let elementDrag = (docEvent) => {
-        event.preventDefault();
-        pos1 = pos3 - docEvent.clientX;
-        pos2 = pos4 - docEvent.clientY;
-        pos3 = docEvent.clientX;
-        pos4 = docEvent.clientY;
-        element.style.top = (element.offsetTop - pos2) + "px";
-        element.style.left = (element.offsetLeft - pos1) + "px";
-      };
+  //   minimizeList() {
+  //     this.isMaximize = !this.isMaximize;
+  //   },
+  //   dragElement(event) {
+  //     let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+  //     let elementDrag = (docEvent) => {
+  //       event.preventDefault();
+  //       pos1 = pos3 - docEvent.clientX;
+  //       pos2 = pos4 - docEvent.clientY;
+  //       pos3 = docEvent.clientX;
+  //       pos4 = docEvent.clientY;
+  //       element.style.top = (element.offsetTop - pos2) + "px";
+  //       element.style.left = (element.offsetLeft - pos1) + "px";
+  //     };
 
-      let closeDragElement = () => {
-        document.removeEventListener('mouseup', closeDragElement);
-        document.removeEventListener('mousemove', elementDrag);
-        element.style.cursor = '';
-        if (!this.disabledNext || this.activeAction.next && !this.allPointsIsDone) {
-          this.tooltipReposition(true);
-        }
-      };
-      const element = event.currentTarget;
-      event.preventDefault();
-      pos3 = event.clientX;
-      pos4 = event.clientY;
-      element.style.cursor = 'grabbing';
-      document.addEventListener('mouseup', closeDragElement);
-      document.addEventListener('mousemove', elementDrag);
-    }
-  }
+  //     let closeDragElement = () => {
+  //       document.removeEventListener('mouseup', closeDragElement);
+  //       document.removeEventListener('mousemove', elementDrag);
+  //       element.style.cursor = '';
+  //       if (!this.disabledNext || this.activeAction.next && !this.allPointsIsDone) {
+  //         this.tooltipReposition(true);
+  //       }
+  //     };
+  //     const element = event.currentTarget;
+  //     event.preventDefault();
+  //     pos3 = event.clientX;
+  //     pos4 = event.clientY;
+  //     element.style.cursor = 'grabbing';
+  //     document.addEventListener('mouseup', closeDragElement);
+  //     document.addEventListener('mousemove', elementDrag);
+  //   }
+  // }
 }
 
 </script>

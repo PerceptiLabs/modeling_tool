@@ -195,7 +195,6 @@ const actions = {
     localStorage.removeItem('currentUser');
     dispatch('mod_user/RESET_userToken', null, {root: true});
     dispatch('mod_workspace/RESET_network', null, {root: true});
-    dispatch('mod_tutorials/offTutorial', null, {root: true});
     dispatch('mod_workspace-changes/clearNetworkChanges', null, {root: true});
     dispatch('modal_pages/setActivePageAction', MODAL_PAGE_SIGN_UP, {root: true});
     dispatch('mod_webstorage/cleanup', null, {root: true});

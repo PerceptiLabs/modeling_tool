@@ -8,12 +8,13 @@
     router-link.nav-link(
       :class="{'is-active': this.$route.name === 'projects'}"
       :to="{name: 'projects'}"
+      @click.native="toProjects"
       v-tooltip:right="'ModelHub'"
       )
       svg(xmlns='http://www.w3.org/2000/svg' width='21' height='12' viewbox='0 0 21 12' fill='none')
         path(fill-rule='evenodd' clip-rule='evenodd' d='M9.04773 0H19.0478C19.6001 0 20.0478 0.447715 20.0478 1V3.79031C20.0478 4.3426 19.6001 4.79031 19.0478 4.79031H9.04773C8.49544 4.79031 8.04773 4.3426 8.04773 3.79031V3.61304H3.73244C3.38663 4.21084 2.74028 4.61304 2 4.61304C0.89543 4.61304 0 3.71761 0 2.61304C0 1.50847 0.89543 0.613037 2 0.613037C2.74028 0.613037 3.38663 1.01524 3.73244 1.61304H8.04773V1C8.04773 0.447715 8.49544 0 9.04773 0ZM3.73244 10.613H8H8.04773V10.976C8.04773 11.5283 8.49544 11.976 9.04773 11.976H19.0478C19.6001 11.976 20.0478 11.5283 20.0478 10.976V8.18567C20.0478 7.63338 19.6001 7.18567 19.0478 7.18567H9.04773C8.49544 7.18567 8.04773 7.63338 8.04773 8.18567V8.61304H8H3.73244C3.38663 8.01524 2.74028 7.61304 2 7.61304C0.89543 7.61304 0 8.50847 0 9.61304C0 10.7176 0.89543 11.613 2 11.613C2.74028 11.613 3.38663 11.2108 3.73244 10.613Z' fill='#C4C4C4')
     div.nav-link(
-      :class="{'is-active': isOnModelToolPage() && !statisticsIsOpen && !isStatistiOrTestOpened , 'disabled': !networkIsNotEmpty}"
+      :class="{'is-active': isOnModelToolPage() && !statisticsIsOpen && !isStatisticsOrTestOpened , 'disabled': !networkIsNotEmpty}"
       @click="toModelingTool()"
       v-tooltip:right="'Modeling Tool'"
       )
@@ -51,6 +52,7 @@
     router-link.nav-link(
       :class="{'is-active': this.$route.name === 'settings'}"
       :to="{name: 'settings'}"
+      @click.native="toSettings"
       v-tooltip:right="'Settings'"
       )
       svg(xmlns='http://www.w3.org/2000/svg' width='19' height='20' viewbox='0 0 19 20' fill='none')
@@ -77,7 +79,8 @@
     },
     computed: {
       ...mapState({
-        workspaceModels: state => state.mod_workspace.workspaceContent,
+        workspaceModels:    state => state.mod_workspace.workspaceContent,
+        showNewModelPopup:  state => state.globalView.globalPopup.showNewModelPopup,
       }),
       ...mapGetters({
         statisticsIsOpen:   'mod_workspace/GET_statisticsIsOpen',
@@ -85,7 +88,7 @@
         currnetNetwork:     'mod_workspace/GET_currentNetwork',
         networkIsNotEmpty:  'mod_workspace/GET_networkIsNotEmpty',
       }),
-      isStatistiOrTestOpened() {
+      isStatisticsOrTestOpened() {
         const currentItemNetwork = this.$store.getters['mod_workspace/GET_currentNetwork'];
         if(!currentItemNetwork.hasOwnProperty('networkMeta')) return false;
         return currentItemNetwork.networkMeta.openStatistics === true || currentItemNetwork.networkMeta.openTest === true;
@@ -105,8 +108,9 @@
       ...mapActions({
         SET_currentNetwork: 'mod_workspace/SET_currentNetwork',
         SET_openStatistics: 'mod_workspace/SET_openStatistics',
-        SET_openTest: 'mod_workspace/SET_openTest',
-        set_chartRequests:    'mod_workspace/SET_chartsRequestsIfNeeded',
+        SET_openTest:       'mod_workspace/SET_openTest',
+        set_chartRequests:  'mod_workspace/SET_chartsRequestsIfNeeded',
+        setCurrentView:     'mod_tutorials/setCurrentView'
       }),
       resetModelIndexes() {
         this.reseStatistic();
@@ -158,6 +162,20 @@
       isModelPageAndNetworkHasStatistic() {
         return this.$route.name === 'app' && this.currnetNetwork.networkMeta.openStatistics !== null
       },
+      toProjects() {
+        this.$nextTick(() => {
+          if (this.showNewModelPopup) {
+            this.setCurrentView('tutorial-create-model-view');
+          } else {
+            this.setCurrentView('tutorial-model-hub-view');
+          }
+        });
+      },
+      toSettings() {
+        this.$nextTick(() => {
+          this.setCurrentView('');
+        });
+      },
       toModelStatistic() {
         //$route.name === 'app' && currnetNetwork.networkMeta.openStatistics !== null
         if(this.$route.name === 'app') {
@@ -171,7 +189,6 @@
                 this.SET_openStatistics(true);
                 this.set_chartRequests(item.networkID);
                 })
-
           } else {
             const { statisticItemIndex } = this;
             
@@ -183,8 +200,6 @@
             }
           }
 
-
-
         } else {
           const { statisticItemIndex } = this;
           if(statisticItemIndex !== null) {
@@ -194,9 +209,16 @@
                 this.$router.push({name: 'app'});
                 this.SET_openStatistics(true);
               });
-            
           }
         }
+
+        this.$nextTick(() => {
+          if (this.showNewModelPopup) {
+            this.setCurrentView('tutorial-create-model-view');
+          } else {
+            this.setCurrentView('tutorial-statistics-view');
+          }
+        });
       },
       isOnStatisticsView() {
         return this.currnetNetwork.networkMeta.openStatistics === true
@@ -231,6 +253,14 @@
           }
           this.$router.push({name: 'app'});
         }
+
+        this.$nextTick(() => {
+          if (this.showNewModelPopup) {
+            this.setCurrentView('tutorial-create-model-view');
+          } else {
+            this.setCurrentView('tutorial-workspace-view');
+          }
+        });
       },
       toModelTest() {
         if(this.haveAtLeastOneTestItem) {
@@ -250,6 +280,14 @@
                 this.SET_openTest(true);
               });
           }
+
+          this.$nextTick(() => {
+            if (this.showNewModelPopup) {
+              this.setCurrentView('tutorial-create-model-view');
+            } else {
+              this.setCurrentView('tutorial-test-view');
+            }
+          });
         }
       },
     },

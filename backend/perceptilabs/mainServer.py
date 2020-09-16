@@ -16,8 +16,6 @@ def get_input_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('-l','--log-level', default=None, type=str, choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
                         help='Log level name.')
-    parser.add_argument('-m','--core-mode', default='v2', type=str, choices=['v1', 'v2'],
-                        help='Specifies which version of the core to run.')
     parser.add_argument('-k','--instantly-kill', default=False, type=bool,
                         help="Set this to instantly kill the core, for test purposes.")
     parser.add_argument('-u', '--user', default="dev@dev.com", type=str,
@@ -29,38 +27,6 @@ def get_input_args():
     args = parser.parse_args()
     return args
 
-
-def on_kernel_started(commit_id, data_logger):
-    import pkg_resources
-    import platform
-    import psutil
-    import time
-    
-    data_logger.info(
-        'kernel_started',
-        extra={
-            'namespace': dict(
-                cpu_count=psutil.cpu_count(),
-                platform={
-                    'platform': platform.platform(),
-                    'system': platform.system(),
-                    'release': platform.release(),
-                    'version': platform.version(),
-                    'processor': platform.processor()
-                },
-                memory={
-                    'phys_total': psutil.virtual_memory().total, # Deceptive naming, but OK according to docs: https://psutil.readthedocs.io/en/latest/
-                    'phys_available': psutil.virtual_memory().available,
-                    'swap_total': psutil.swap_memory().total,             
-                    'swap_free': psutil.swap_memory().free
-                },
-                python={
-                    'version': platform.python_version(),
-                    'packages': [p.project_name + ' ' + p.version for p in pkg_resources.working_set]
-                }
-            )
-        }
-    )
 
 def main():
     args = get_input_args()
@@ -87,13 +53,6 @@ def main():
     setup_sentry(args.user, commit_id)
     logger.info("Reporting errors with commit id: " + str(commit_id))
 
-    try:
-        on_kernel_started(commit_id, data_logger)
-    except:
-        logger.exception("logging 'on_kernel_started' event failed!")
-
-    logger.info("Reporting errors with commit id: " + str(commit_id))
-
     message_bus = get_message_bus()
     message_bus.start()
     
@@ -102,7 +61,7 @@ def main():
     checkpointDict=dict()
     lwDict=dict()
     
-    core_interface = Interface(cores, dataDict, checkpointDict, lwDict, issue_handler, args.core_mode)
+    core_interface = Interface(cores, dataDict, checkpointDict, lwDict, issue_handler, session_id=session_id)
 
     if args.error:
         raise Exception("Test error")

@@ -122,7 +122,7 @@
   import PolicyLogin        from '@/pages/register/policy.vue'
   import CommunicationsPolicy from '@/pages/register/communications-policy.vue'
   import {mapActions} from "vuex";
-  import {MODAL_PAGE_SIGN_IN} from "@/core/constants";
+  import {MODAL_PAGE_SIGN_IN, MODAL_PAGE_WHATS_NEW} from "@/core/constants";
   
 
 export default {
@@ -167,7 +167,7 @@ export default {
       this.$validator.validateAll()
         .then((result) => {
           if (result) {
-            this.registryUser();
+            this.registerUser();
             return;
           }
         })
@@ -175,8 +175,8 @@ export default {
           console.log('error', error);
         })
     },
-    registryUser() {
-      googleAnalytics.trackCustomEvent('register');
+    registerUser() {
+      
       this.$store.commit('mod_login/SET_showLoader', true);
 
       this.$store.dispatch('mod_tracker/TRACK_userRegistration', this.user.email);
@@ -195,6 +195,7 @@ export default {
           console.log(err);
         })
         .finally(()=> this.$store.commit('mod_login/SET_showLoader', false));
+      
     },
     toCommunicationsPolicy() {
       this.showPolicy = false;

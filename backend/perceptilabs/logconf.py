@@ -21,7 +21,6 @@ USER_LOG_LEVEL = logging.INFO
 DATA_LOGGER = 'perceptilabs.datalogger'
 DATA_LOG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)),'data.log')
 
-
 class PackageFilter(logging.Filter):
     def filter(self, record):
         plabs_path = pkg_resources.resource_filename('perceptilabs', '')
@@ -117,7 +116,8 @@ def set_console_logger(queue, log_level = None):
 
 _global_context = {
     'session_id': '',
-    'user_email': 'notset@perceptilabs.com'
+    'user_email': 'notset@perceptilabs.com',
+    'commit_id': ''
 }
 
 
@@ -130,7 +130,11 @@ def set_user_email(email):
     global _global_context
     _global_context['user_email'] = email
 
-
+    
+def set_commit_id(commit_id):
+    global _global_context
+    _global_context['commit_id'] = commit_id
+    
 
 class DataFormatter(logging.Formatter):
     def __init__(self):
@@ -149,6 +153,7 @@ class DataFormatter(logging.Formatter):
             'session_id': _global_context.get('session_id', ''),
             'user_email': _global_context.get('user_email', 'dev@perceptilabs.com'),
             'version': perceptilabs.__version__,
+            'commit': _global_context.get('commit_id', ''),            
             record.msg: record.namespace
         }
 
@@ -175,17 +180,21 @@ def setup_data_logger(is_dev=True):
         file_handler.setFormatter(formatter)
         logger.addHandler(file_handler)
 
-    stream_handler = logging.StreamHandler()
-    stream_handler.setFormatter(formatter)
-    logger.addHandler(stream_handler)
-    from perceptilabs.azure import AzureHandler
-    azure_handler = AzureHandler.get_default()
-    azure_handler.setFormatter(formatter)    
-    
-    if not is_dev:
+    if is_dev:
+        stream_handler = logging.StreamHandler()
+        stream_handler.setFormatter(formatter)
+        logger.addHandler(stream_handler)
+    else:
+        from perceptilabs.azure import AzureHandler
+        azure_handler = AzureHandler.get_default()
+        azure_handler.setFormatter(formatter)        
         logger.addHandler(azure_handler)
 
-
+        from perceptilabs.mixpanel_handler import MixPanelHandler        
+        mixpanel_handler = MixPanelHandler()
+        mixpanel_handler.setFormatter(formatter)
+        logger.addHandler(mixpanel_handler)
+        
 
 def upload_logs(session_id):
     import os

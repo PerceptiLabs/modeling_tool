@@ -79,11 +79,11 @@ const getters = {
 
   },
   GET_currentNetwork(state, getters)  {
-   
+
     return getters.GET_networkIsNotEmpty
       ? state.workspaceContent[state.currentNetwork]
       : deepCloneNetwork(state.defaultModelTemplate) //{networkID: '1'} //for the close ap when the empty workspace
-      
+
   },
   GET_currentNetworkId(state, getters) {
     return getters.GET_networkIsNotEmpty
@@ -177,11 +177,6 @@ const getters = {
     const coreStatus = getters.GET_networkCoreStatus;
     const statusList = ['Training', 'Validation', 'Paused'];
     return !!statusList.includes(coreStatus)
-  },
-  GET_tutorialActiveId(state, getters, rootState, rootGetters) {
-    if( rootGetters['mod_tutorials/getIstutorialMode'] && rootGetters['mod_tutorials/getActiveAction']) {
-      return rootGetters['mod_tutorials/getActiveAction'].dynamic_id
-    }
   },
   GET_statisticsIsOpen(state, getters) {
     if(getters.GET_networkIsNotEmpty) {
@@ -333,7 +328,7 @@ const mutations = {
     } catch (error) {
       // console.error('Error persisting networks to localStorage', error);
     }
-    function onlyUnique(value, index, self) { 
+    function onlyUnique(value, index, self) {
       return self.indexOf(value) === index;
   }
   },
@@ -431,8 +426,8 @@ const mutations = {
     network === undefined
       ? newNetwork = defaultNetwork
       : newNetwork = network;
-    
-    newNetwork.apiMeta = apiMeta 
+
+    newNetwork.apiMeta = apiMeta
 
     newNetwork.networkMeta = defaultMeta;
     //-- Create unic ID
@@ -463,7 +458,7 @@ const mutations = {
     dispatch('mod_events/EVENT_IOGenerateAction', null, {root: true});
     function findNetId(newNet, netList) {
       let indexId = netList.findIndex((el)=> el.networkID === newNet.networkID);
-      return indexId; 
+      return indexId;
     }
     function createPositionElements(list) {
       if(!list || Object.keys(list).length === 0 || Object.values(list)[0].layerMeta.position.top !== null) {
@@ -548,7 +543,7 @@ const mutations = {
     // means that changes to networks will be overwritten on load (page refreshes)
 
     let workspace = state.workspaceContent;
-    
+
     const netIndex = findNetId(network, workspace);
     if (netIndex > -1) {
       workspace.splice(netIndex, 1, network)
@@ -560,7 +555,7 @@ const mutations = {
 
     function findNetId(newNet, netList) {
       let indexId = netList.findIndex((el)=> el.networkID === newNet.networkID);
-      return indexId; 
+      return indexId;
     }
   },
   delete_network(state, index) {
@@ -621,7 +616,7 @@ const mutations = {
       //dispatch('mod_events/EVENT_chartResize', null, {root: true});
     }
   },
-  
+
   set_openTest(state, {dispatch, getters, value}) {
     if(value && getters.GET_statisticsIsOpen !== null) {
       getters.GET_currentNetwork.networkMeta.openStatistics = false;
@@ -734,7 +729,6 @@ const mutations = {
     let left = newEl.layerMeta.position.left;
     let elementList = getters.GET_currentNetworkElementList;
 
-    newEl.layerMeta.tutorialId = getters.GET_tutorialActiveId;
     newEl.layerMeta.position.top = event.offsetY;
     newEl.layerMeta.position.left = event.offsetX;
     let depth = checkPosition(newEl, elementList);
@@ -755,13 +749,13 @@ const mutations = {
 
     if(!elementList || elementList.length === 0) state.workspaceContent[state.currentNetwork].networkElementList = {};
     Vue.set(state.workspaceContent[state.currentNetwork].networkElementList, newEl.layerId, newEl);
-  
+
     dispatch('SET_elementSelect', { id: newEl.layerId, resetOther: true, setValue: true});
     state.dragElement = null;
-    
+
     if(setChangeToWorkspaceHistory)
       dispatch('mod_workspace-history/PUSH_newSnapshot', null, {root: true});
-    
+
     dispatch('mod_api/API_getBatchPreviewSample', null, {root: true})
 
     function checkPosition(el, list) {
@@ -787,7 +781,7 @@ const mutations = {
     }
   },
   delete_element(state, {getters, dispatch}) {
-  
+
     let arrSelect = getters.GET_currentSelectedEl;
     if(!arrSelect.length) return;
     let arrSelectID = [];
@@ -804,7 +798,7 @@ const mutations = {
     }
     descendantsIds = Array.from(new Set(descendantsIds));
     descendantsIds = descendantsIds.filter((item) => {
-      return !arrSelectID.includes(item); 
+      return !arrSelectID.includes(item);
     })
     let getBatchPreviewPayload = {};
     for(let index in net)  {
@@ -897,7 +891,7 @@ const mutations = {
                   input.reference_var_id = null;
                   input.reference_layer_id = null;
                 }
-              }) 
+              })
             }
           })
         }
@@ -997,22 +991,22 @@ const mutations = {
     }
     let el = currentElement(value.id);
     if(el) {
-      currentElement(value.id).layerMeta.isSelected = value.setValue; 
+      currentElement(value.id).layerMeta.isSelected = value.setValue;
     }
   },
   set_elementSelectAll(state, {getters}) {
-    
+
     const net = getters.GET_currentNetworkElementList;
 
     let netWorkIdToOmit = [];
     omitIds(net);
-    
+
     for(let layer in getters.GET_currentNetworkElementList) {
       if(netWorkIdToOmit.indexOf(layer) === -1) {
-        currentElement(layer).layerMeta.isSelected = true;    
+        currentElement(layer).layerMeta.isSelected = true;
       }
     }
-    
+
     function omitIds(net) {
       Object.values(net).map(netEl => {
         if(netEl.layerType === 'Container' && !netEl.layerNone) {
@@ -1025,7 +1019,7 @@ const mutations = {
     }
   },
   set_elementMultiSelect(state, value) {
-    if(currentElement(value.id).layerNone === false) 
+    if(currentElement(value.id).layerNone === false)
     currentElement(value.id).layerMeta.isSelected = value.setValue;
   },
   SET_elementLock(state, id) {
@@ -1049,7 +1043,7 @@ const mutations = {
     let elPosition = currentElement(value.id).layerMeta.position;
     const toTop = value.top - elPosition.top;
     const toLeft = value.left - elPosition.left;
-    
+
     const selectedElIds = getters.GET_currentSelectedElIds;
     selectedElIds.map(id => {
       state.workspaceContent[state.currentNetwork].networkElementList[id].layerMeta.position.top += toTop;
@@ -1127,14 +1121,14 @@ const mutations = {
           return;
         }
       }
-      
+
     } else {
       // Check if selected items are all items inside a group
       dispatch('globalView/GP_infoPopup', 'Only items belonging to the container can be grouped', {root: true});
       dispatch('SET_elementUnselect');
       return;
     }
-    
+
     /* END validations */
     let newContainer = createClearContainer(arrSelect);
     updateLayerName(newContainer, elementList, 1);
@@ -1145,7 +1139,7 @@ const mutations = {
     } else {
       Vue.set(state.workspaceContent[state.currentNetwork].networkElementList, newContainer.layerId, newContainer);
     }
-    
+
     commit('close_container', {container: newContainer,  getters, dispatch});
     commit('set_elementUnselect', {getters});
 
@@ -1158,7 +1152,7 @@ const mutations = {
         }
         // attach to new created Container
       });
-     
+
       let fakeEvent = {
         timeStamp: generateID(),
         target: {
@@ -1347,11 +1341,11 @@ const mutations = {
       return;
     }
     dispatch('SET_elementUnselect');
-    
+
     const parentContainerId = net[container.layerId].parentContainerID;
     const containerId = container.layerId;
-    
-    
+
+
     let childContainersIds = []
     let childElementsIds = [];
     selectChildContainers({[container.layerId]: container.layerId});
@@ -1366,30 +1360,30 @@ const mutations = {
          }
        }
       }
-      
-    
+
+
 
     if(parentContainerId) {
       delete linkNet[container.parentContainerID].containerLayersList[container.layerId];
     }
-    
+
     for(let position in childContainersIds) {
       dispatch('OPEN_container', linkNet[childContainersIds[position]]);
     }
-    
-    
+
+
     for(let position in childElementsIds) {
       let el = linkNet[childElementsIds[position]];
       if(parentContainerId) {
         el.parentContainerID = parentContainerId;
         linkNet[parentContainerId].containerLayersList[childElementsIds[position]] = childElementsIds[position];
       } else {
-        delete el.parentContainerID 
+        delete el.parentContainerID
       }
     }
 
-    
-    
+
+
     for(let idEl in linkNet) {
       let el = net[idEl];
       el.connectionArrow = el.connectionArrow.filter((arrow)=> arrow !== container.layerId)
@@ -1575,7 +1569,7 @@ const actions = {
 
     commit('DELETE_outputVariableMutation', { payload, getters, dispatch });
 
-  
+
     // if(layerIdsWithReferene.length > 0) {
     //     for(let ix in layerIdsWithReferene) {
     //       debugger;
@@ -1605,7 +1599,7 @@ const actions = {
     } else {
       commit('add_network', { network, apiMeta, dispatch, focusOnNetwork });
       const lastNetworkID = state.workspaceContent[state.currentNetwork].networkID;
-      
+
       if (focusOnNetwork) {
         commit('set_lastActiveTabInLocalStorage', lastNetworkID);
       }
@@ -1614,11 +1608,11 @@ const actions = {
   },
   ADD_existingNetworkToWorkspace({commit,dispatch}, { network } = {}) {
     if (!network) { return;}
-    commit('add_existingNetworkToWorkspace', { network });   
+    commit('add_existingNetworkToWorkspace', { network });
   },
   DELETE_network({commit, dispatch}, index) {
     return new Promise(resolve => {
-       
+
       if(isElectron()) {
         const networkID = state.workspaceContent[index].networkID;
         commit('delete_network', index);
@@ -1627,9 +1621,9 @@ const actions = {
         // API_closeSession stops the process in the core
         const network = state.workspaceContent[index];
         dispatch('mod_api/API_closeSession', network.networkID, { root: true });
-    
+
         if (index === state.currentNetwork) {
-    
+
           if (state.workspaceContent.length === 1) {
             commit('set_lastActiveTabInLocalStorage', '');
           } else if (index === 0) {
@@ -1653,11 +1647,11 @@ const actions = {
     commit('markAllUnselectedMutation');
   },
   GET_workspace_statistics({commit, dispatch, state}){
-    
+
     setTimeout(() => {
       processNonActiveWorkspaces();
       processActiveWorkspaces();
-    },0); 
+    },0);
     // @todo investigate if this chose correct processActiveWorkspaces(); from storage;
     function processNonActiveWorkspaces() {
       // removing stats and test tabs if there aren't any trained models
@@ -1905,7 +1899,7 @@ const actions = {
       commit('delete_element', {getters, dispatch});
       // dispatch('mod_api/API_getOutputDim', null, {root: true});
     }
-    
+
     dispatch('mod_webstorage/saveNetwork', getters.GET_currentNetwork, {root: true});
     dispatch('mod_workspace-changes/updateUnsavedChanges', {
       networkId: getters.GET_currentNetworkId,
@@ -2099,7 +2093,7 @@ const componentsInputs = {
   DataData: [],
   DataEnvironment: [],
   DataRandom: [],
-  
+
   ProcessReshape: ['input'],
   ProcessGrayscale: ['input'],
   ProcessOneHot: ['input'],
@@ -2128,7 +2122,7 @@ const componentsOutputs = {
   DataData: ['output'],
   DataEnvironment: ['output'],
   DataRandom: ['output'],
-  
+
   ProcessReshape: ['output'],
   ProcessGrayscale: ['output'],
   ProcessOneHot: ['output'],
@@ -2168,7 +2162,7 @@ const getComponentInputs = (componentName) => {
     })
   }
   return inputs;
-  
+
 }
 const getComponentOutputs = (componentName) => {
   let outputs = {};

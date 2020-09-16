@@ -1,6 +1,6 @@
 <template lang="pug">
   main.page_login
-    view-loading
+    view-loading(isLoading="isLoading")
     .login_main
       .d-flex.align-items-center.log-in-header
         img(src="./../../../static/img/perceptilabs-logo-icon.svg" alt="PerceptiLabs logo")

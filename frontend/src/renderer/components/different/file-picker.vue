@@ -44,7 +44,7 @@
           @dblclick="onFileDoubleClick(fileName)"
           @click="toggleSelectedFile(fileName, $event)"
           v-for="fileName in files"
-          v-if="filePickerType === 'file'"
+          v-if="['file', 'multimode'].includes(filePickerType)"
           :key="fileName")
           img(src="/static/img/file-picker/file.svg" class="svg-icon")
           span {{ fileName }}
@@ -79,7 +79,7 @@ export default {
   props: {
     filePickerType: {
       type: String,
-      default: 'file' // can also be 'folder'
+      default: 'file' // can also be 'folder' or 'multimode'
     },
     fileTypeFilter: {
       type: Array,
@@ -128,7 +128,7 @@ export default {
     if (this.startupFolder) {
       path = this.startupFolder;
     }
-    else if(localStorage.hasOwnProperty(filePickerStorageKey) && !this.isTutorialMode) {
+    else if(localStorage.hasOwnProperty(filePickerStorageKey)) {
       path = localStorage.getItem(filePickerStorageKey);
     }
     
@@ -209,7 +209,7 @@ export default {
       this.fetchPathInformation('');
     },
     toggleSelectedFile(fileName, event) {
-      if (this.filePickerType !== 'file') { return; }
+      if (!['file', 'multimode'].includes(this.filePickerType)) { return; }
 
       if (event.ctrlKey || event.metaKey) {
         if (this.selectedFiles.includes(fileName)) {
@@ -224,11 +224,13 @@ export default {
 
     },
     toggleSelectedDirectory(dirName) {
-      if (this.filePickerType !== 'folder') { return; }
-
-      // ensuring that only one directory can be chosen
-      this.selectedDirectories = [];
-      this.selectedDirectories.push(dirName);
+      if (this.filePickerType == 'folder') {
+        // ensuring that only one directory can be chosen
+        this.selectedDirectories = [];
+        this.selectedDirectories.push(dirName);
+      } else if (this.filePickerType == 'multimode') {
+        this.selectedDirectories.push(dirName);
+      }
     },
     async fetchPathInformation(path, isSearching = false) {
       this.selectedFiles = [];
@@ -255,9 +257,7 @@ export default {
         
         if(!pathNotFound) {
           this.calculateBreadcrumbsLength(jsonData.current_path);
-          if(!this.isTutorialMode) {
-            localStorage.setItem(filePickerStorageKey, jsonData.current_path);
-          }
+          localStorage.setItem(filePickerStorageKey, jsonData.current_path);
         }
         
         if (jsonData.current_path === '.') {
@@ -291,6 +291,21 @@ export default {
           } else {
             emitPayload = this.selectedDirectories.map(d => this.osPathPrefix + this.currentPath.join('/') + '/' + d + this.osPathSuffix);
           }
+        } else if (this.filePickerType === 'multimode') {
+
+          const payloadFolders = this.selectedDirectories.map(d => ({
+            path: this.osPathPrefix + this.currentPath.join('/') + '/' + d + this.osPathSuffix,
+            type: 'directory'
+          }));
+
+          const payloadFiles = this.selectedFiles.map(f => ({
+            path: this.osPathPrefix + this.currentPath.join('/') + '/' + f,
+            type: 'file'
+          }));
+
+          emitPayload = [
+            ...payloadFolders,
+            ...payloadFiles];
         }
 
         this.$store.dispatch('globalView/SET_filePickerPopup', false);
@@ -329,7 +344,7 @@ export default {
       return false;
     },
     ...mapGetters({
-      isTutorialMode: 'mod_tutorials/getIstutorialMode',
+      isTutorialMode: 'mod_tutorials/getIsTutorialMode',
     })
   }
 }

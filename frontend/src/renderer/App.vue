@@ -24,11 +24,21 @@
     PiPyPopupUpdate(v-if="showPiPyNotification")
     create-issue-popup(v-if="showCreateIssuesPopup")
     modal-pages-engine
+    tutorials-checklist(v-if="showTutorialChecklist" :style="tutorialChecklistPosition")
+    #tutorial-notifications(v-if="showTutorialNotifications")
+      tutorial-notification(
+        v-for="n in tutorialNotifications"
+        :key="n.stepCode"
+        :stepCode="n.stepCode"
+        :arrowDirection="n.arrowDirection"
+      )
 </template>
 
 <script>
   import { isWeb, isElectron, isOsMacintosh } from "@/core/helpers";
   import CreateIssuePopup         from '@/components/global-popups/create-issues-popup.vue';
+  import TutorialsChecklist       from '@/components/tutorial/tutorial-checklist.vue';
+  import TutorialNotification from "@/components/different/tutorial-notification.vue";
 
   let ipcRenderer = null;
   if(isElectron()) {
@@ -56,7 +66,8 @@
       ProjectSidebar,
       ModalPagesEngine,
       HeaderLinux, HeaderWin, HeaderMac,
-      UpdatePopup, TheInfoPopup, ConfirmPopup, CreateIssuePopup, PiPyPopupUpdate
+      UpdatePopup, TheInfoPopup, ConfirmPopup, CreateIssuePopup, PiPyPopupUpdate,
+      TutorialsChecklist, TutorialNotification
     },
     created() {
       window.addEventListener('online',  this.updateOnlineStatus);
@@ -71,6 +82,7 @@
         });
         
       this.$store.commit('mod_project/setIsDefaultProjectMode');
+      this.$store.dispatch('mod_tutorials/loadTutorialProgress');
     },
     mounted() {      
       if (this.isDefaultProjectMode) { 
@@ -139,7 +151,7 @@
       this.checkLocalToken();
       this.$store.dispatch('mod_api/API_runServer', null, {root: true});
       // this.$store.dispatch('mod_workspace/GET_workspacesFromLocalStorage');
-            
+
       this.$nextTick(() =>{
       //   if(this.userId === 'Guest') {
       //     this.$store.dispatch('mod_tracker/TRACK_initMixPanelUser', this.userId);
@@ -171,13 +183,19 @@
         isDefaultProjectMode:   'mod_project/GET_isDefaultProjectMode',
         currentProject:         'mod_project/GET_project',
         networksWithChanges:    'mod_workspace-changes/get_networksWithChanges',
-        showPiPyNotification:   'mod_workspace-notifications/getPiPyShowNotification'
+        showPiPyNotification:   'mod_workspace-notifications/getPiPyShowNotification',
+        getActiveNotifications: 'mod_tutorials/getActiveNotifications',
+        getIsTutorialMode:      'mod_tutorials/getIsTutorialMode',
+        getShowTutorialTips:    'mod_tutorials/getShowTutorialTips',
       }),
       platform() {
         return this.$store.state.globalView.platform
       },
       showNotAvailable() {
         return this.$store.state.mod_autoUpdate.showNotAvailable
+      },
+      showNewModelPopup() {
+        return this.$store.state.globalView.globalPopup.showNewModelPopup;
       },
       // userToken() {
       //   return this.$store.state.mod_user.userToken
@@ -202,8 +220,8 @@
         return this.errorPopup.length || (this.infoPopup && this.infoPopup.length) || this.corePopup;
       },
       showMenuBar() {
-        const GET_userIsLogin = this.$store.getters['mod_user/GET_userIsLogin']
 
+        const GET_userIsLogin = this.$store.getters['mod_user/GET_userIsLogin']
         if (GET_userIsLogin && ['home', 'app', 'projects', 'main-page', 'settings'].includes(this.$route.name)) { 
           return true; 
         }
@@ -212,6 +230,74 @@
       },
       showCreateIssuesPopup() {
         return this.$store.state.globalView.globalPopup.showCreateIssuesPopup;
+      },
+      currentPage() {
+        return this.$store.state.modal_pages.currentPage
+      },
+      showTutorialChecklist() {
+        if (!this.getIsTutorialMode) { return false; }
+        
+        if (!this.currentPage) {
+          return true;
+        }
+        if (this.currentPage === 'MODAL_PAGE_PROJECT') {
+          return true;
+        }
+
+        return false;
+      },
+      showTutorialNotifications() {
+        // Don't show notifications if there are any overlays
+        if (this.currentPage) {
+          return false;
+        }
+
+        return this.getIsTutorialMode && this.getShowTutorialTips;
+      },
+      currentNetworkId() {
+        return this.$store.getters['mod_workspace/GET_currentNetworkId'];
+      },
+      tutorialNotifications() {
+        return this.getActiveNotifications;
+      },
+      tutorialChecklistPosition() {
+
+        let rightValueRm = 1;
+        let bottomValueRm = 1;
+
+        if (this.$route.name !== 'projects' &&
+            this.$route.name !== 'settings' &&
+            !this.showNewModelPopup &&
+            !this.showCreateIssuesPopup) {
+          
+          bottomValueRm += 2; // the-workspace
+          bottomValueRm += 1; // scrollbars
+
+          if (this.$store.state.globalView.hideSidebar) {
+            rightValueRm += 25; // hardcoded in the-sidebar.vue file
+          }
+
+          let isNotificationWindowOpen = this.$store.getters['mod_workspace-notifications/getNotificationWindowState'](this.currentNetworkId);
+
+          if (isNotificationWindowOpen) {
+            rightValueRm += 70; // hardcoded in the workspace-code-window.vue file
+          }
+
+          const toasts = this.$store.getters['mod_workspace-notifications/getToasts'](this.currentNetworkId);
+          if (toasts) {
+            const errorToast = toasts.find(t => t.type === 'error');
+            const warningToast = toasts.find(t => t.type === 'error');
+
+            if ((errorToast && errorToast.count) || (warningToast && errorToast.warningToast)) {
+              rightValueRm += 21; // hardcoded in the the-toaster.vue file
+            }
+          }
+        }
+
+        return { 
+          right: `${rightValueRm}rem`,
+          bottom: `${bottomValueRm}rem`
+        };
       }
     },
     watch: {
@@ -474,6 +560,7 @@
     grid-template-columns: 1fr;
     overflow: hidden;
     background: #27292F;
+    position: relative;
   }
   .app-header {
     position: relative;

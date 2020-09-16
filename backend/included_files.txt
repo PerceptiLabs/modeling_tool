@@ -20,6 +20,8 @@ perceptilabs/utils.py
 perceptilabs/license_checker.py
 perceptilabs/issues.py
 perceptilabs/script.py
+perceptilabs/dataevents.py
+perceptilabs/mixpanel_handler.py
 
 # perceptilabs/messaging
 perceptilabs/messaging/base.py
@@ -202,7 +204,7 @@ perceptilabs/insights/csv_ram_estimator/model_and_meta.pkl
 
 # perceptilabs/dataschema/
 perceptilabs/dataschema/master.json
-perceptilabs/dataschema/kernel_started.json
+perceptilabs/dataschema/user_email_set.json
 perceptilabs/dataschema/training_started.json
 perceptilabs/dataschema/training_ended.json
 perceptilabs/dataschema/graph_spec.json

@@ -10,13 +10,13 @@ ul.bookmark_tab-list
   .tab-group(
     v-for="(tab, i) in workspace"
     :key="i"
-    v-if="!isStatistiOrTestOpened || (tab.networkMeta.openStatistics !== null && isStatistiOrTestOpened && statisticsIsOpen) || (isStatistiOrTestOpened && tab.networkMeta.coreStatus.Status === 'Finished' && testIsOpen)"
+    v-if="!isStatisticsOrTestOpened || (tab.networkMeta.openStatistics !== null && isStatisticsOrTestOpened && statisticsIsOpen) || (isStatisticsOrTestOpened && tab.networkMeta.coreStatus.Status === 'Finished' && testIsOpen)"
     )
     
     li.bookmark_tab.workspace_tab(
-      :class="{'workspace_tab--active': indexCurrentNetwork === i && !tab.networkMeta.openStatistics && !tab.networkMeta.openTest, 'workspace_tab--active_network': indexCurrentNetwork === i, 'workspace_tab--disable': indexCurrentNetwork !== i && isTutorialMode}"
+      :class="{'workspace_tab--active': indexCurrentNetwork === i && !tab.networkMeta.openStatistics && !tab.networkMeta.openTest, 'workspace_tab--active_network': indexCurrentNetwork === i, 'workspace_tab--disable': false }"
       @click="setTabNetwork(i)"
-      v-if="!isStatistiOrTestOpened"
+      v-if="!isStatisticsOrTestOpened"
       )
       
       text-editable.tab_name(
@@ -34,8 +34,8 @@ ul.bookmark_tab-list
         .unsaved-changes-indicator(v-show="hasUnsavedChanges(tab.networkID)")
     
     li.bookmark_tab.workspace_tab(
-      v-if="tab.networkMeta.openStatistics !== null && isStatistiOrTestOpened && statisticsIsOpen"
-      :class="{'workspace_tab--active': indexCurrentNetwork === i && tab.networkMeta.openStatistics, 'workspace_tab--active_network': indexCurrentNetwork === i, 'workspace_tab--disable': indexCurrentNetwork !== i && isTutorialMode}"
+      v-if="tab.networkMeta.openStatistics !== null && isStatisticsOrTestOpened && statisticsIsOpen"
+      :class="{'workspace_tab--active': indexCurrentNetwork === i && tab.networkMeta.openStatistics, 'workspace_tab--active_network': indexCurrentNetwork === i, 'workspace_tab--disable': false}"
       @click="openStatistics(i)"
     )
 
@@ -56,8 +56,8 @@ ul.bookmark_tab-list
        
     
     li.bookmark_tab.workspace_tab(
-      v-if="isStatistiOrTestOpened && tab.networkMeta.coreStatus.Status === 'Finished' && testIsOpen"
-      :class="{'workspace_tab--active': indexCurrentNetwork === i && tab.networkMeta.openTest, 'workspace_tab--active_network': indexCurrentNetwork === i, 'workspace_tab--disable': indexCurrentNetwork !== i && isTutorialMode}"
+      v-if="isStatisticsOrTestOpened && tab.networkMeta.coreStatus.Status === 'Finished' && testIsOpen"
+      :class="{'workspace_tab--active': indexCurrentNetwork === i && tab.networkMeta.openTest, 'workspace_tab--active_network': indexCurrentNetwork === i, 'workspace_tab--disable': false}"
       @click="openTest(i)"
     )
       text-editable.tab_name(
@@ -83,6 +83,7 @@ ul.bookmark_tab-list
 
 view-box-btn-list.statistics-tabs(
   v-if="statisticsIsOpen && !testIsOpen"
+  :data-tutorial-target="'tutorial-statistics-tabs'"
   :layerType="'Training'")
 
 //- .toggle-sidebar(

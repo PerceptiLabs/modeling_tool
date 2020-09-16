@@ -749,7 +749,7 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
                 outputs = sess.run(self._sample)
                 
             return {
-                key: value[0] if len(value) > 0 else value
+                key: value[0] if key != 'W' else value
                 for key, value in outputs.items()
             }
         else:

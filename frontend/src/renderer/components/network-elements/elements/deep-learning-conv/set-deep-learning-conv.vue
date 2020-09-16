@@ -144,7 +144,6 @@ export default {
   name: 'SetDeepLearningConv',
   mixins: [mixinSet],
   mounted() {
-    this.focusFirstTutorialField();
     this.saveSettingsToStore("Settings");
   },
   data() {
@@ -223,7 +222,7 @@ export default {
   },
   computed: {
     ...mapGetters({
-      isTutorialMode:   'mod_tutorials/getIstutorialMode',
+      isTutorialMode:   'mod_tutorials/getIsTutorialMode',
     })
   },
   watchers:{
@@ -248,24 +247,13 @@ export default {
     setIsSettingInputFocused(value) {
       this.$store.commit("mod_workspace/setIsSettingInputFocused", value);
     },
-    ...mapActions({
-      tutorialPointActivate:    'mod_tutorials/pointActivate',
-    }),
     onFocus(inputId) {
-      this.tutorialPointActivate({way:'next', validation: inputId})
     },
     onBlur(inputId) {
-      this.tutorialPointActivate({way:'next', validation: inputId})
     },
     saveSettings(tabName) {
       this.applySettings(tabName);
-      this.$nextTick(()=> this.tutorialPointActivate({way: 'next', validation: 'tutorial_patch-size'}));
     },
-    focusFirstTutorialField() {
-      this.$nextTick(()=> {
-        if (this.isTutorialMode) this.$refs.pathSize.focus()
-      })
-    }
   }
 }
 </script>

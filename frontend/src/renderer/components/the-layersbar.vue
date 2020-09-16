@@ -188,11 +188,7 @@ export default {
     }
   },
   methods: {
-    ...mapActions({
-      tutorialPointActivate:    'mod_tutorials/pointActivate',
-    }),
     toggleElList(index, ev, tutorial_id) {
-      this.tutorialPointActivate({way:'next', validation: tutorial_id});
       if (this.layersbarList[index].showEl) {
         this.layersbarList[index].showEl = false;
         document.removeEventListener('click', this.clickOutside);

@@ -54,7 +54,7 @@ class GraphSpec(ABC):
         return self.layers
     
     @property
-    def edges(self) -> List[LayerSpec]:
+    def edges(self) -> List[Tuple[str, str]]:    
         return list(self._nx_graph.edges)
     
     def __getitem__(self, key):

@@ -97,7 +97,7 @@ def graph_spec_to_core_graph(script_factory, graph_spec):
     connections = {}
     for layer_spec in graph_spec:
         helper = LayerHelper(script_factory, layer_spec, graph_spec=graph_spec)
-        layers[layer_spec.sanitized_name] = helper.get_instance(preamble=preamble, print_code=True)
+        layers[layer_spec.sanitized_name] = helper.get_instance(preamble=preamble, print_code=False)
         
         for conn_spec in layer_spec.forward_connections:
             dest_spec = graph_spec[conn_spec.dst_id]

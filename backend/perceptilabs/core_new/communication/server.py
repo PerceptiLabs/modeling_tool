@@ -141,7 +141,7 @@ class TrainingServer:
                 session_info['time_total'] = t_total
                 session_info['mem_phys_total'] = int(virtual_memory.total)
                 session_info['mem_swap_total'] = int(swap_memory.total)                
-                self._send_training_ended(session_info)
+                self._send_training_ended(session_info, state.value)
                 sent_training_ended = True
             counter += 1
             yield
@@ -188,9 +188,11 @@ class TrainingServer:
         data = {'exception': repr(exception), 'traceback_frames': tb_frames}
         self._send_key_value('userland-error', data)
 
-    def _send_training_ended(self, session_info):
+    def _send_training_ended(self, session_info, state_value):
         self._closed_by_server = True        
-        self._send_key_value('training-ended', session_info)       
+        self._send_key_value(
+            'training-ended', {'session_info': session_info, 'end_state': state_value}
+        )       
         
     def _process_messages(self, state):
         messages = self._consumer.get_messages(per_message_timeout=0.000001)

@@ -29,12 +29,13 @@ def github_export(request):
 
     # optional
     include_trained = bool(as_dict.get("include_trained_model"))
-    data_sub_path = as_dict.get("data_path")
-    data_path = data_sub_path and get_full_path(data_sub_path)
+    raw_data_paths = list(as_dict.get("data_path"))
+
+    data_paths = [get_full_path(data_path) for data_path in raw_data_paths]
 
     try:
         api = connect_to_repo(github_token, repo_name)
-        sha = export_repo_basic(api, full_path, include_trained, data_path, commit_message=commit_message)
+        sha = export_repo_basic(api, full_path, include_trained, data_paths, commit_message=commit_message)
 
         response = {"sha": sha}
         return HttpResponse(json.dumps(response), content_type="application/json")

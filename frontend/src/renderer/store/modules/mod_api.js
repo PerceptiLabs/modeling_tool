@@ -315,6 +315,7 @@ const actions = {
       reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
       action: "Start",
       value: {
+        modelId: rootGetters['mod_workspace/GET_currentNetworkId'],
         Layers: getters.GET_coreNetwork
       }
     };

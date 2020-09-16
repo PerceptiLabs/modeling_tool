@@ -31,11 +31,11 @@ export default {
   mounted() {
     this.$store.dispatch('mod_api/API_getResultInfo')
       .then((data)=> {
-        console.log(data);
+
+        // TOREMOVE
+        delete data['consoleLogs']
         this.popupInfo = {...data};
-        console.log(this.popupInfo);
       });
-    this.tutorialPointActivate({way: 'next', validation: 'tutorial_statistic-tab'})
   },
   data() {
     return {
@@ -45,7 +45,7 @@ export default {
   },
   methods: {
     ...mapActions({
-      tutorialPointActivate:    'mod_tutorials/pointActivate',
+      setCurrentView:           'mod_tutorials/setCurrentView'
     }),
     runTest() {
       this.closePopup();
@@ -53,7 +53,7 @@ export default {
       this.$store.dispatch('mod_workspace/SET_elementUnselect');
       this.$store.dispatch('mod_workspace/SET_openTest', true);
       this.$store.dispatch('mod_workspace/setViewType', 'test');
-      this.tutorialPointActivate({way: 'next', validation: 'tutorial_run-test-button'})
+      this.setCurrentView('tutorial-test-view');
     },
     closePopup() {
       this.$store.commit('globalView/HIDE_allGlobalPopups');

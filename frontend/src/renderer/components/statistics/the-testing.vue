@@ -14,7 +14,10 @@
           :class="doGlobalEvent ? 'icon-player-pause' : 'icon-player-play'"
           @click="postTestStart()"
           )
-        button.btn.btn--link.icon.icon-player-next(type="button" @click="postTestMove('nextStep')")
+        button.btn.btn--link.icon.icon-player-next(
+          type="button" 
+          @click="postTestMove('nextStep')"
+          :data-tutorial-target="'tutorial-test-controls'")
 </template>
 
 <script>
@@ -47,12 +50,8 @@ export default {
     },
   },
   methods: {
-    ...mapActions({
-      tutorialPointActivate:    'mod_tutorials/pointActivate',
-    }),
     postTestStart() {
       this.$store.dispatch('mod_api/API_postTestPlay');
-      this.tutorialPointActivate({way:'next', validation:'tutorial_play-test-button'})
     },
     postTestMove(request) {
       this.$store.dispatch('mod_api/API_postTestMove', request);

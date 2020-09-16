@@ -21,7 +21,7 @@
 </template>
 
 <script>
-import { mapActions } from 'vuex';
+import { mapGetters, mapActions } from 'vuex';
 
 export default {
   name: "ViewBoxBtnList",
@@ -44,16 +44,24 @@ export default {
   },
   methods: {
     ...mapActions({
-      tutorialPointActivate:    'mod_tutorials/pointActivate',
+      setNextStep:      'mod_tutorials/setNextStep',
     }),
     setCurrentTab(tab, id) {
       // this.currentTab = tab;
       // this.$emit('set-current-btn', tab);
-      // if(id) this.tutorialPointActivate({way: 'next', validation: id})
       this.$store.commit('mod_statistics/setSelectedMetric', { layerType: this.layerType, selectedMetric: tab });
+
+      // Need to check if this.layerType === 'Training' because it's the same
+      // component for the Training and normal (next to network map) viewboxes.
+      if (this.layerType === 'Training' && this.getCurrentStepCode === 'tutorial-statistics-tabs') {
+        this.setNextStep('tutorial-statistics-tabs');
+      }
     }
   },
   computed: {
+    ...mapGetters({
+      getCurrentStepCode: 'mod_tutorials/getCurrentStepCode',
+    }),
     currentTab() {
       return this.$store.getters['mod_statistics/getSelectedMetric'](this.layerType);
     },

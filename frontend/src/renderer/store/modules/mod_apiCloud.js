@@ -63,7 +63,8 @@ const actions = {
       .catch((error)=>  {
         if (error.response.status === 401) {
           localStorage.removeItem('currentUser');
-          dispatch('modal_pages/setActivePageAction', MODAL_PAGE_SIGN_UP , {root: true})
+          
+          dispatch('modal_pages/setActivePageAction', MODAL_PAGE_SIGN_UP , {root: true});
         }
       } )
   },

@@ -174,7 +174,7 @@ export default {
   },
   computed: {
     ...mapGetters({
-      isTutorialMode:     'mod_tutorials/getIstutorialMode',
+      isTutorialMode:     'mod_tutorials/getIsTutorialMode',
       currentNetworkList: 'mod_workspace/GET_currentNetworkElementList'
     }),
     inputId() {
@@ -186,29 +186,11 @@ export default {
   },
   methods: {
     ...mapActions({
-      tutorialPointActivate:    'mod_tutorials/pointActivate',
       popupInfo:               'globalView/GP_infoPopup'
     }),
     saveSettings(tabName) {
       this.applySettings(tabName);
-      this.$nextTick(()=> this.tutorialPointActivate({way: 'next', validation: 'tutorial_labels'}));
     },
   },
-  watch: {
-    'settings.Labels': {
-      handler(newValue) {
-        let label = this.inputLayers.filter((item)=> {
-          return item.value.toString() === newValue;
-        });
-        if(this.isTutorialMode && label[0].text !== 'OneHot_1') {
-          label = this.inputLayers.filter((item)=> {
-            return item.text === 'OneHot_1';
-          });
-            this.settings.Labels = label[0].value.toString();
-            this.popupInfo("Please set One Hot for Labels field when you in tutorial mode");
-        }
-      }
-    },
-  }
 }
 </script>

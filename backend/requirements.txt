@@ -33,3 +33,4 @@ tensorflow-gpu==1.15; platform_system == "Linux"
 tensorflow-gpu==1.15; platform_system == "Windows"
 tensorflow==1.15; platform_system == "Darwin"
 websockets>=8.1
+mixpanel==4.7.0

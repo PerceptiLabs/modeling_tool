@@ -102,30 +102,18 @@
     },
     computed: {
       ...mapGetters({
-        isTutorialMode: 'mod_tutorials/getIstutorialMode'
+        isTutorialMode: 'mod_tutorials/getIsTutorialMode'
       }),
     },
     mounted() {
       this.saveSettingsToStore("Settings");
     },
-    watch: {
-      'settings.Neurons': {
-        handler() {
-          if(this.isTutorialMode) {
-            this.settings.Neurons = 10;
-            this.popupInfo("While the value of this field should be 10. But soon you will be able to set a different number of neurons. We are working on it");
-          }
-        }
-      },
-    },
     methods: {
       ...mapActions({
-        tutorialPointActivate:   'mod_tutorials/pointActivate',
         popupInfo:               'globalView/GP_infoPopup'
       }),
       saveSettings(tabName) {
         this.applySettings(tabName);
-        this.$nextTick(()=> this.tutorialPointActivate({way: 'next', validation: 'tutorial_neurons'}));
       },
       setIsSettingInputFocused(value) {
         this.$store.commit("mod_workspace/setIsSettingInputFocused", value);

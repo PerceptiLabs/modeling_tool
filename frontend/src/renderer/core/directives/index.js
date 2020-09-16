@@ -35,6 +35,21 @@ Vue.directive('tooltipInteractive', {
   }
 });
 
+Vue.directive('tutorialTooltip', {
+  bind: function (el, binding, vnode) {
+    console.log('bind', el, binding);
+    el.tooltipTutorialBinding = binding;
+    el.addEventListener('mouseenter', insertTutorialTip);
+    el.addEventListener('mouseleave', removeTutorialTip);
+    el.addEventListener('mousedown', removeTutorialTip);
+  },
+  unbind: function (el) {
+    el.removeEventListener('mouseenter', insertTutorialTip);
+    el.removeEventListener('mouseleave', removeTutorialTip);
+    el.removeEventListener('click', removeTutorialTip);
+  }
+});
+
 Vue.directive('comingSoon', {
   bind(el, binding) {
     if(binding.value) el.addEventListener('mousedown', showComingSoonPopup);
@@ -50,6 +65,16 @@ function showComingSoonPopup() {
 
 let delayTimer;
 
+function insertTutorialTip(event) {
+
+  if(!store.getters['mod_tutorials/getIsTutorialMode']) { return; }
+
+  console.log('insertTutorialTip', event);
+  const tutorialTip = createTutorialTip(event.currentTarget, event.currentTarget.tooltipTutorialBinding);
+  if (!tutorialTip) { return; }
+
+  document.body.appendChild(tutorialTip);
+}
 function insertTooltipInfo(event) {
   if(store.getters['mod_tutorials/getInteractiveInfo'] && event.currentTarget.tooltipTutorialBinding.value) {
     document.body.appendChild(createTooltipInfo(event.currentTarget, event.currentTarget.tooltipTutorialBinding));
@@ -69,6 +94,8 @@ function insertStandardTooltip(event) {
 }
 
 function createTooltipInfo(el, info) {
+  console.log('original');
+
   let tooltip = document.createElement('section');
   tooltip.classList.add('tooltip-tutorial',`tooltip-tutorial--${info.arg}`, 'js-tooltip-interactive');
   sideCalculate(el, tooltip, info);
@@ -78,6 +105,21 @@ function createTooltipInfo(el, info) {
     tooltip.innerHTML =  `<h4 class="tooltip-tutorial_bold tooltip-tutorial_italic">${info.value.title}</h4>
                           <span class="tooltip-tutorial_italic">${info.value.text}</span>`;
   }
+  return tooltip;
+}
+
+function createTutorialTip(el, info) {
+
+  console.log('createTutorialTip', el);
+  console.log('createTutorialTip info', info);
+
+  if (!info.value.conditional) { return; }
+
+  let tooltip = document.createElement('section');
+  tooltip.classList.add('tooltip-tutorial',`tooltip-tutorial--${info.arg}`, 'js-tooltip-interactive');
+  sideCalculate(el, tooltip, info);
+  tooltip.innerHTML =  `<span class="tooltip-tutorial_italic">${info.value.displayText}</span>`;
+
   return tooltip;
 }
 
@@ -102,6 +144,12 @@ function removeTooltipInfo() {
   }
 }
 
+function removeTutorialTip() {
+  let tooltip = document.body.querySelector('.js-tooltip-interactive');
+  if(tooltip) {
+    tooltip.remove();
+  }
+}
 
 function sideCalculate(element, tooltip, side) {
   let elCoord = element.getBoundingClientRect();

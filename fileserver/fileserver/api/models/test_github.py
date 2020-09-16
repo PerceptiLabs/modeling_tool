@@ -8,13 +8,15 @@ from fileserver.api.models.github import (
         export_repo_basic,
         import_repo
         )
+import os
 
 class BuildExportTests(TestCase):
     def test_simple(self):
         mock = Mock()
         with temp_local_dir("the_dir") as d:
             export_repo_basic(mock, d, False, None, commit_message="msg")
-            mock.add_files.assert_called_once_with({"the_dir/README.md": "README.md"}, "msg")
+            expected_path = os.path.join(d, "README.md")
+            mock.add_files.assert_called_once_with({expected_path: "README.md"}, "msg")
 
     # TODO: many more test cases
 
@@ -29,6 +31,7 @@ class BuildImportTests(TestCase):
             api_mock.model_exist.return_value = False
 
             import_repo(d, "http://noop")
-            api_mock.clone_to.assert_called_once_with(f"{d}/noop")
+            expected = os.path.join(d, "noop")
+            api_mock.clone_to.assert_called_once_with(expected)
 
     # TODO: many more test cases

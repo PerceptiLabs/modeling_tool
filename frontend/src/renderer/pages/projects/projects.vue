@@ -1,5 +1,6 @@
 <template lang="pug">
   div
+    import-model(v-if="showImportNetworkfromGitHubOrLocalPopup")
     .modelContext(v-if="isContextOpened" :style="modelContextStyles")
       button(@click="handleContextOpenModel()") Open
       button(@click="handleContextRenameModel()") Rename
@@ -11,10 +12,12 @@
             @click="openLoadModelPopup()"
             v-tooltip:bottom="'Import Model'"
             )
-            img(src="../../../../static/img/project-page/import.svg")
+            img(src="../../../../static/img/project-page/import.svg"
+              :data-tutorial-target="'tutorial-model-hub-import-button'")
           span.btn-round-icon.btn-rounded-new(
             @click="handleAddNetworkModal" 
             :class="{'high-lighted': isNewUser}" 
+            :data-tutorial-target="'tutorial-model-hub-new-button'"
             v-tooltip:bottom="'New Model'"
             )
             img(src="../../../../static/img/project-page/plus.svg")
@@ -38,6 +41,13 @@
           span.text-button(
             :class="{ 'is-disable': !isAtLeastOneItemSelected() }"
             v-tooltip:bottom="'Open'") Open
+
+          span.github-button(
+            :class="{ 'is-disable': !isOneItemSelected() }"
+            v-tooltip:bottom="'Export to GitHub'"
+            @click="openExportToGithubModal")
+            img.github-button-icon(src="../../../../static/img/github.svg")
+            span.github-button-text GitHub
           //- span.text-button(v-if="isAtLeastOneItemSelected()") BlackBox
           span.text-button.is-disable() History
           //- span.text-button(v-if="isAtLeastOneItemSelected()" :class="{'is-disable': isDisabledCompareBtn()}") Compare
@@ -73,7 +83,7 @@
               span.model-name(
                 v-if="!isRenamingItem(index)" 
                 v-tooltip:bottom="'Click to open Model'" 
-                @click.stop="gotToNetworkView(model.networkID)"
+                @click.stop="goToNetworkView(model.networkID)"
               ) {{model.networkName}}
               input.rename-control(
                 v-else 
@@ -172,6 +182,7 @@
   import SelectModelModal from '@/pages/projects/components/select-model-modal.vue';
   import ModelStatus from '@/components/different/model-status.vue';
   import WorkspaceLoadNetwork   from "@/components/global-popups/workspace-load-network.vue";
+  import ImportModel    from "@/components/global-popups/import-model-popup.vue";
 
   import { mapActions, mapMutations, mapState, mapGetters } from 'vuex';
   import { isWeb, stringifyNetworkObjects } from "@/core/helpers";
@@ -198,6 +209,7 @@
       SelectModelModal,
       ModelStatus,
       WorkspaceLoadNetwork,
+      ImportModel,
     },
     data: function () {
       return {
@@ -228,6 +240,7 @@
       ...mapGetters({
         user:                 'mod_user/GET_userProfile',
         currentProject:       'mod_project/GET_project',
+        getCurrentStepCode:   'mod_tutorials/getCurrentStepCode',
       }),
       ...mapState({
         currentProjectId:     state => state.mod_project.currentProject,
@@ -237,8 +250,13 @@
         hotKeyPressDelete:    state => state.mod_events.globalPressKey.del,
         showLoadSettingPopup: state => state.globalView.globalPopup.showLoadSettingPopup,
         workspaceContent:     state => state.mod_workspace.workspaceContent,
-        unparsedModels:       state => state.mod_workspace.unparsedModels
-      })
+        unparsedModels:       state => state.mod_workspace.unparsedModels,
+        showImportNetworkfromGitHubOrLocalPopup:     state => state.globalView.globalPopup.showImportNetworkfromGitHubOrLocalPopup,
+      }),
+      statusLocalCore() {
+        return this.$store.state.mod_api.statusLocalCore;
+      }
+
       // workspaceContent() {
       //   return this.$store.state.mod_workspace.workspaceContent;
       // },
@@ -254,6 +272,11 @@
         this.onSortByChanged(this.isSelectedSortType);
       },
       hotKeyPressDelete() {
+        if(this.statusLocalCore!='online') {
+          this.showInfoPopup("Kernal is offline");
+          return;
+        }
+
         if (!this.projects) { return; }
 
         const indexCheckedProj = this.projects.findIndex((el)=> el.isChecked === true);
@@ -265,6 +288,15 @@
         const newProjectsList = deepCopy(this.localUserInfo.projectsList);
         newProjectsList.splice(indexCheckedProj, 1);
         this.saveLocalUserInfo({key: 'projectsList', data: newProjectsList });
+      },
+      getCurrentStepCode: {
+        handler(newVal, oldVal) {
+          if (!this.isTutorialMode) { return; }
+          if (newVal !== 'tutorial-model-hub-new-button') { return; }
+          
+          this.activateCurrentStep();
+        },
+        immediate: true
       }
     },
     methods: {
@@ -278,18 +310,28 @@
         setActivePageAction: 'modal_pages/setActivePageAction',
         delete_network :     'mod_workspace/DELETE_network',
         UPDATE_MODE_ACTION : 'mod_workspace/UPDATE_MODE_ACTION',
+        setCurrentView:       'mod_tutorials/setCurrentView',
 
         setNetworkNameAction:'mod_workspace/SET_networkName',
         updateWorkspaces:    'mod_webstorage/updateWorkspaces',
         deleteAllIds:        'mod_webstorage/deleteAllIds',        
       }),
-      gotToNetworkView(networkID) {
+      goToNetworkView(networkID) {
+        if(this.statusLocalCore!='online') {
+          this.showInfoPopup("Kernal is offline");
+          return;
+        }
+
         // maybe should receive a id and search index by it
         const index = this.workspaceContent.findIndex(wc => wc.networkID == networkID);
         this.set_currentNetwork(index > 0 ? index : 0);
         if(index !== -1) {
           this.$store.dispatch("mod_workspace/setViewType", 'model');
           this.$router.push({name: 'app'});
+
+          this.$nextTick(() => {
+            this.setCurrentView('tutorial-workspace-view');
+          });
         }
       },
       loadFolderPath() {
@@ -333,6 +375,11 @@
         return this.selectedListIds.length < 2;
       },
       toggleItemSelection(modelId) {
+        if(this.statusLocalCore!='online') {
+          this.showInfoPopup("Kernal is offline");
+          return;
+        }
+
         modelId = parseInt(modelId);
         let itmPosition = this.selectedListIds.indexOf(modelId);
         if (itmPosition === -1) {
@@ -344,7 +391,15 @@
       isAtLeastOneItemSelected() {
         return this.selectedListIds.length >= 1;
       },
+      isOneItemSelected() {
+        return this.selectedListIds.length === 1;
+      },
       removeItems() {
+        if(this.statusLocalCore!='online') {
+          this.showInfoPopup("Kernal is offline");
+          return;
+        }
+
         const removeModelText = 
           this.selectedListIds && this.selectedListIds.length > 1 ?
           'Are you sure you want to delete the selected models?' :
@@ -371,6 +426,11 @@
           });
       },
       toggleFavoriteItems() {
+        if(this.statusLocalCore!='online') {
+          this.showInfoPopup("Kernal is offline");
+          return;
+        }
+
         let newModelList = [...this.workspaceContent];
         if (this.isAllItemSelectedFavorite()) {
           newModelList = newModelList.map((item, index) => {
@@ -392,6 +452,11 @@
         this.updateInitialModelListData();
       },
       setFavoriteValue(index, value) {
+        if(this.statusLocalCore!='online') {
+          this.showInfoPopup("Kernal is offline");
+          return;
+        }
+
         this.UPDATE_MODE_ACTION({index, field: 'isFavorite', value});
       },
       isAllItemSelectedFavorite() {
@@ -403,6 +468,11 @@
         return selectedLength === favoriteItemLength.length
       },
       toggleSelectedItems() {
+        if(this.statusLocalCore!='online') {
+          this.showInfoPopup("Kernal is offline");
+          return;
+        }
+
         if (this.isAtLeastOneItemSelected()) {
           this.selectedListIds = [];
         } else {
@@ -422,8 +492,17 @@
 
       },
       handleAddNetworkModal() {
+        if(this.statusLocalCore!='online') {
+          this.showInfoPopup("Kernal is offline");
+          return;
+        }
+
         // open modal
         this.popupNewModel(true);
+
+        this.$nextTick(() => {
+          this.setCurrentView('tutorial-create-model-view');
+        });
       },
       onCloseSelectModelModal() {
         this.popupNewModel(false);
@@ -438,7 +517,12 @@
         this.isImportModelsOpen = false;
       },
       openLoadModelPopup() {
-        this.$store.dispatch('globalView/SET_filePickerPopup', {confirmCallback: this.onLoadNetworkConfirmed});
+        // this.$store.dispatch('globalView/SET_filePickerPopup', {confirmCallback: this.onLoadNetworkConfirmed});
+        if(this.statusLocalCore!='online') {
+          this.showInfoPopup("Kernal is offline");
+          return;
+        }
+        this.$store.dispatch('globalView/SET_showImportNetworkfromGitHubOrLocalPopup', true);
       },
       onLoadNetworkConfirmed(path) {
         if (!path || path.length === 0) { return; }
@@ -468,6 +552,11 @@
         this.$store.commit("globalView/HIDE_allGlobalPopups");
       },
       handleStatisticClick(index, e, model) {
+        if(this.statusLocalCore!='online') {
+          this.showInfoPopup("Kernal is offline");
+          return;
+        }
+
         const { networkMeta: { openStatistics } } = model;
 
         if (typeof openStatistics === 'boolean') {
@@ -496,15 +585,30 @@
         this.isContextOpened = false
       },
       handleContextOpenModel() {
-        this.gotToNetworkView(this.workspaceContent[this.contextModelIndex].networkID);
+        if(this.statusLocalCore!='online') {
+          this.showInfoPopup("Kernal is offline");
+          return;
+        }
+
+        this.goToNetworkView(this.workspaceContent[this.contextModelIndex].networkID);
         this.closeContext();
       },
 
       handleContextRemoveModel() {
+        if(this.statusLocalCore!='online') {
+          this.showInfoPopup("Kernal is offline");
+          return;
+        }
+
         this.removeItems();
         this.closeContext();
       },
       onClickDeletedModel(model, index) {
+        if(this.statusLocalCore!='online') {
+          this.showInfoPopup("Kernal is offline");
+          return;
+        }
+
         this.popupConfirm({
             text: `Are you sure you want to remove ${model.name} from ModelHub since it no longer is connected to Project?`,
             ok: () => {
@@ -518,6 +622,11 @@
 
       // Rename Module
       handleContextRenameModel() {
+        if(this.statusLocalCore!='online') {
+          this.showInfoPopup("Kernal is offline");
+          return;
+        }
+
         this.renameIndex = this.contextModelIndex;
         this.renameValue = this.workspaceContent[this.renameIndex].networkName;
 
@@ -555,7 +664,22 @@
       },
       hasUnsavedChanges(networkId) {
         return this.$store.getters['mod_workspace-changes/get_hasUnsavedChanges'](networkId);
+      },
+      openExportToGithubModal() {
+        if(!this.isOneItemSelected()) {
+          return;
+        }
+        const modelId = this.selectedListIds[0];
+        this.gotToNetworkView(modelId);
+        this.$store.dispatch('globalView/SET_exportNetworkToGithubPopup', true);
       }
+    },
+    created() {
+      // Adding this because of reloads on this page 
+      // When the stats and test views are their own routes,
+      // a better alternative would be to put a lot of the
+      // following in the router.
+      this.setCurrentView('tutorial-model-hub-view');
     }
   }
 </script>
@@ -898,5 +1022,23 @@
   }
   // rename model
   .rename-control {
+  }
+  .github-button {
+    display: flex;
+    cursor: pointer;
+    &.is-disable {
+      cursor: default;
+      opacity: 0.4;
+    }
+  }
+  .github-button-icon {
+    margin-right: 10px;
+  }
+  .github-button-text {
+    font-family: 'Nunito Sans';
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 29px;
+    color: #E1E1E1;
   }
 </style>

@@ -18,41 +18,34 @@ def get_tutorial_data():
 
     return None
 
+def get_drives():
+    if not platform.system().lower().startswith("win"):
+        return None
+
+    import win32api
+    drives = win32api.GetLogicalDriveStrings()
+    return [d.upper().replace("\\", "") for d in drives.split('\000')[:-1]]
+
 def get_folder_content(requested_path):
-    def get_drives(requested_path):
-        if requested_path != '/' or not platform.system().lower().startswith("win"):
-            return None
+    no_empty = requested_path if requested_path else "."
 
-        import win32api
-        drives = win32api.GetLogicalDriveStrings()
-        return drives.split('\000')[:-1]
-
-    abs_path = os.path.abspath(requested_path)
+    abs_path = os.path.abspath(no_empty)
     if not os.path.exists(abs_path):
         return None
 
     if not os.path.isdir(abs_path):
-        raise ValueError(f"{requested_path} isn't a directory")
+        raise ValueError(f"{no_empty} isn't a directory")
 
-    drives = get_drives(abs_path)
-    if not drives:
-        return {
-            "current_path" : abs_path.replace('\\','/'),
-            "dirs" : [x for x in os.listdir(abs_path) if os.path.isdir(os.path.join(abs_path,x))],
-            "files" :  [x for x in os.listdir(abs_path) if os.path.isfile(os.path.join(abs_path,x))],
-            "platform": platform.system(),
-        }
-    else:
-        return {
-            "current_path" : abs_path.replace('\\','/'),
-            "dirs" : drives,
-            "files" :  [],
-            "platform": platform.system(),
-        }
+    return {
+        "current_path" : abs_path,
+        "dirs" : [x for x in os.listdir(abs_path) if os.path.isdir(os.path.join(abs_path,x))],
+        "files" :  [x for x in os.listdir(abs_path) if os.path.isfile(os.path.join(abs_path,x))],
+        "platform": platform.system(),
+    }
 
 def resolve_dir(path_to_resolve):
     def resolve_windows_path(input_path):
-        if '~/Documents' in input_path:
+        if '~/Documents' in input_path or "~\\Documents" in input_path:
             # get My Documents regardless of localization
             import ctypes.wintypes
 
@@ -61,7 +54,7 @@ def resolve_dir(path_to_resolve):
 
             return input_path.replace('~/Documents', buf.value)
 
-        elif '~/' in input_path:
+        elif '~/' in input_path or "~\\" in input_path:
             return os.path.expanduser(input_path)
 
         else:

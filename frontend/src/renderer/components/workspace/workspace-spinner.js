@@ -20,18 +20,23 @@ const workspaceSpinner = {
       }
       else {
         unwatch();
-        setTimeout(()=> {if(this.isTutorialMode) this.pauseTraining();}, 5000) //pause for tutorial
+        // setTimeout(()=> {if(this.isTutorialMode) this.pauseTraining();}, 5000) //pause for tutorial
       }
     },
   },
   methods: {
     ...mapActions({
       pauseTraining:        'mod_api/API_pauseTraining',
+      tutorialStatTabSetup: 'mod_tutorials/tutorial-statistics-tabs-setup'
     }),
     watch_doShowCharts() {
       if (this.counterHideSpinner > 1) {
         this.set_showTrainingSpinner(false);
         this.counterHideSpinner = 0
+
+        this.$nextTick(() => {
+          this.tutorialStatTabSetup();
+        });
       }
       else ++this.counterHideSpinner;
     },

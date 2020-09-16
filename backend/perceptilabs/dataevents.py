@@ -1,0 +1,155 @@
+from perceptilabs.logconf import APPLICATION_LOGGER, DATA_LOGGER
+import logging
+
+
+logger = logging.getLogger(APPLICATION_LOGGER)
+data_logger = logging.getLogger(DATA_LOGGER)
+
+
+
+def on_user_email_set():
+    import pkg_resources
+    import platform
+    import psutil
+    import GPUtil
+    import time
+    
+    data_logger.info(
+        'user_email_set',
+        extra={
+            'namespace': dict(
+                cpu_count=psutil.cpu_count(),
+                platform={
+                    'platform': platform.platform(),
+                    'system': platform.system(),
+                    'release': platform.release(),
+                    'version': platform.version(),
+                    'processor': platform.processor()
+                },
+                memory={
+                    'phys_total': psutil.virtual_memory().total, # Deceptive naming, but OK according to docs: https://psutil.readthedocs.io/en/latest/
+                    'phys_available': psutil.virtual_memory().available,
+                    'swap_total': psutil.swap_memory().total,             
+                    'swap_free': psutil.swap_memory().free
+                },
+                python={
+                    'version': platform.python_version(),
+                    'packages': [p.project_name + ' ' + p.version for p in pkg_resources.working_set]
+                },
+                gpus=[
+                    {'name': gpu.name, 'driver': gpu.driver, 'memory_total': gpu.memoryTotal}
+                    for gpu in GPUtil.getGPUs()
+                ]
+            )
+        }
+    )
+
+
+def make_json_net_conform_to_schema(json_net):
+    edges = []
+    nodes = []
+    for layer_spec in json_net.nodes:
+        node = {
+            'type': layer_spec.type_,
+            'id': layer_spec.id_
+        }
+        
+        namespace = {}
+        if layer_spec.type_ == 'DataData':
+            namespace['extensions'] = [s.ext for s in layer_spec.sources]
+        if namespace:
+            node['namespace'] = namespace
+
+        nodes.append(node)
+        
+    return {
+        'nodes': nodes,
+        'edges': [list(e) for e in json_net.edges]
+    }
+
+
+def collect_start_metrics(json_net, graph, training_sess_id, model_id):
+    """ quick-fix for collecting start metrics. update when newer version of core is merged"""
+    import numpy as np
+
+    n_params = 0
+    # TODO: training layer parameter called n_parameters for proper generalization...
+    for weights_dict in graph.active_training_node.layer.layer_weights.values():
+        for w in weights_dict.values():
+            n_params += np.prod(w.shape)
+
+    for biases_dict in graph.active_training_node.layer.layer_biases.values():
+        for b in biases_dict.values():
+            n_params += np.prod(b.shape)
+
+    formatted_graph = make_json_net_conform_to_schema(json_net)            
+    
+    data_logger.info(
+        "training_started",
+        extra={
+            'namespace': dict(
+                model_id=model_id,
+                training_session_id=training_sess_id,        
+                graph_spec=formatted_graph,
+                n_parameters=int(n_params)
+            )
+        }
+    )
+
+
+def collect_end_metrics(json_net, graph, training_sess_id, session_info, model_id, end_state):
+    """ quick-fix for collecting start metrics. update when newer version of core is merged"""
+    import numpy as np
+
+    n_params = 0
+    # TODO: training layer parameter called n_parameters for proper generalization...
+    for weights_dict in graph.active_training_node.layer.layer_weights.values():
+        for w in weights_dict.values():
+            n_params += np.prod(w.shape)
+
+    for biases_dict in graph.active_training_node.layer.layer_biases.values():
+        for b in biases_dict.values():
+            n_params += np.prod(b.shape)
+
+    formatted_graph = make_json_net_conform_to_schema(json_net)
+    
+    data_meta_list = []
+    for node in graph.data_nodes:
+        data_meta = {
+            'layer_id': node.layer_id,
+        }
+        # TODO: remove hasattr when changes to DataLayer have been merged
+        if node is not None and hasattr(node.layer, 'size_training'):
+            data_meta.update({
+                'training_set_size': int(node.layer.size_training),
+                'validation_set_size': int(node.layer.size_validation),
+                'testing_set_size': int(node.layer.size_testing),
+                'sample_shape': list(node.layer.sample['output'].shape) if 'output' in node.layer.sample else []
+            })
+        data_meta_list.append(data_meta)
+
+    data_logger.info(
+        "training_ended",
+        extra={
+            'namespace': dict(
+                model_id=model_id,
+                training_session_id=training_sess_id,        
+                graph_spec=formatted_graph,
+                n_parameters=int(n_params),
+                time_total=session_info['time_total'],
+                cycle_state_initial=session_info['cycle_state_initial'],
+                cycle_state_final=session_info['cycle_state_final'],
+                cycle_time_process_messages=session_info['cycle_time_process_messages'],
+                cycle_time_training_step=session_info['cycle_time_training_step'],
+                cycle_time_send_snapshot=session_info['cycle_time_send_snapshot'],
+                cycle_time_total=session_info['cycle_time_total'],
+                mem_phys_total=session_info['mem_phys_total'],
+                cycle_mem_phys_available=session_info['cycle_mem_phys_available'],
+                mem_swap_total=session_info['mem_swap_total'],
+                cycle_mem_swap_free=session_info['cycle_mem_swap_free'],
+                data_meta=data_meta_list,
+                end_state=end_state,
+            )
+        }
+    )
+    

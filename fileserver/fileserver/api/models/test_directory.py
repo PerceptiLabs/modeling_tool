@@ -4,10 +4,12 @@ from fileserver.api.models.directory import (
         get_folder_content,
         resolve_dir,
         get_tutorial_data,
+        get_drives,
         )
 from fileserver.tests.utils import (
         temp_local_file,
         temp_local_dir,
+        cwd,
         )
 import os
 import platform
@@ -15,12 +17,12 @@ import platform
 class FolderContentsTest(TestCase):
     def test_simple_case(self):
         with temp_local_dir("first") as fd, \
-             temp_local_dir(f"{fd}/second") as sd, \
-             temp_local_dir(f"{sd}/third") as td, \
-             temp_local_file(f"{sd}/file_in_second.txt", "abc") as f:
+             temp_local_dir(os.path.join(fd, "second")) as sd, \
+             temp_local_dir(os.path.join(sd, "third")) as td, \
+             temp_local_file(os.path.join(sd, "file_in_second.txt"), "abc") as f:
                 r = get_folder_content(sd)
                 self.assertEqual(r, {
-                    'current_path': f"{os.getcwd()}/first/second",
+                    'current_path': os.path.join(cwd(), "first", "second"),
                     'dirs': ['third'],
                     'files': ['file_in_second.txt'],
                     'platform': platform.system()})
@@ -36,17 +38,23 @@ class FolderContentsTest(TestCase):
 
             self.assertRaises(ValueError, run)
 
+    def test_current_dir(self):
+        r = get_folder_content('.')
+        self.maxDiff=None
+        self.assertEqual(r["current_path"], cwd())
+        self.assertGreater(len(r["dirs"]), 0)
+        self.assertGreater(len(r["files"]), 0)
 
-    # windows-specific test
-    def test_windows_root(self):
-        if platform.system() != "Windows":
-            return
+class GetDrivesTests(TestCase):
+    @unittest.skipIf(platform.system() != "Windows", "Skipping windows test")
+    def test_windows(self):
+        resolved = get_drives()
+        self.assertIn("C:", resolved)
 
-        r = get_folder_content("/")
-        self.assertEqual(r['current_path'], '/')
-        as_lower = [d.lower() for d in r["dirs"]]
-        self.assertTrue("c:" in as_lower)
-        self.assertEqual(r['platform'], "Windows")
+    @unittest.skipIf(platform.system() == "Windows", "Skipping non-windows test")
+    def test_posix(self):
+        resolved = get_drives()
+        self.assertIsNone(resolved)
 
 class ResolveDirTests(TestCase):
     @unittest.skipIf(platform.system() == "Windows", "Skipping non-windows test")
@@ -61,5 +69,6 @@ class TutorialDataTests(TestCase):
 
     def test_with_tutorials(self):
         with temp_local_dir("perceptilabs") as p,\
-             temp_local_dir("perceptilabs/tutorial_data") as t:
-            self.assertEqual(f"{os.getcwd()}/{t}", get_tutorial_data())
+             temp_local_dir(os.path.join(p, "tutorial_data")) as t:
+            expected = os.path.join(cwd(), t)
+            self.assertEqual(expected, get_tutorial_data())

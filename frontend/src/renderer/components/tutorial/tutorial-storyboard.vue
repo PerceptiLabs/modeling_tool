@@ -1,151 +1,151 @@
 <template lang="pug">
-  .tutorial-box
-    .tutorial-box_modal-popup
-      button.close-tutorial.icon.icon-app-close(type="button" @click="closeTutorial")
-      .modal-popup_step-info
-        .step-info_eyes
-          .eyes.eye-one
-            .eye_pupil(:class="currentStepTutorial.lookEyesClass")
-          .eyes.eye-two
-            .eye_pupil(:class="currentStepTutorial.lookEyesClass")
-        .step-info_title {{currentStepTutorial.title}}
-        p.step-info_text(v-html="currentStepTutorial.text")
-        .step-info_after-text
-          img( alt="step image"
-            v-if="currentStepTutorial.img"
-            :src="currentStepTutorial.img"
-          )
-          button.btn--outline-blue(type="button"
-            v-if="currentStepTutorial.button"
-            @click="currentStepTutorial.button.action"
-          ) {{currentStepTutorial.button.text}}
-        
-      button.modal-popup_control.prev-button.icon.icon-player-play(type="button"
-        @click="set_stepActive('prev')" 
-        v-show="activeStepStoryBoard > 0"
-      )
-      button.modal-popup_control.next-button.icon.icon-player-play(type="button"
-        @click="set_stepActive('next')" 
-        v-show="activeStepStoryBoard < firstTutorial.length - 1"
-      )
-      footer.modal-popup_footer
-        button.footer_skip-button(@click="skipStoryBoard") Skip intro
 
-        ul.footer_all-slides-controls
-          button.btn.btn--link.all-slides-controls_control( type="button"
-            v-for="(control, index) in firstTutorial"
-            :key="index"
-            :class="{'active': activeStepStoryBoard === index}"
-            @click="dot_stepActive(index)"
-          )
+  //- Not in use
+
+  //- .tutorial-box
+  //-   .tutorial-box_modal-popup
+  //-     button.close-tutorial.icon.icon-app-close(type="button" @click="closeTutorial")
+  //-     .modal-popup_step-info
+  //-       .step-info_eyes
+  //-         .eyes.eye-one
+  //-           .eye_pupil(:class="currentStepTutorial.lookEyesClass")
+  //-         .eyes.eye-two
+  //-           .eye_pupil(:class="currentStepTutorial.lookEyesClass")
+  //-       .step-info_title {{currentStepTutorial.title}}
+  //-       p.step-info_text(v-html="currentStepTutorial.text")
+  //-       .step-info_after-text
+  //-         img( alt="step image"
+  //-           v-if="currentStepTutorial.img"
+  //-           :src="currentStepTutorial.img"
+  //-         )
+  //-         button.btn--outline-blue(type="button"
+  //-           v-if="currentStepTutorial.button"
+  //-           @click="currentStepTutorial.button.action"
+  //-         ) {{currentStepTutorial.button.text}}
+        
+  //-     button.modal-popup_control.prev-button.icon.icon-player-play(type="button"
+  //-       @click="set_stepActive('prev')" 
+  //-       v-show="activeStepStoryBoard > 0"
+  //-     )
+  //-     button.modal-popup_control.next-button.icon.icon-player-play(type="button"
+  //-       @click="set_stepActive('next')" 
+  //-       v-show="activeStepStoryBoard < firstTutorial.length - 1"
+  //-     )
+  //-     footer.modal-popup_footer
+  //-       button.footer_skip-button(@click="skipStoryBoard") Skip intro
+
+  //-       ul.footer_all-slides-controls
+  //-         button.btn.btn--link.all-slides-controls_control( type="button"
+  //-           v-for="(control, index) in firstTutorial"
+  //-           :key="index"
+  //-           :class="{'active': activeStepStoryBoard === index}"
+  //-           @click="dot_stepActive(index)"
+  //-         )
 </template>
 <script>
-import {mapMutations, mapGetters, mapActions} from 'vuex';
+// import {mapMutations, mapGetters, mapActions} from 'vuex';
 export default {
-  name: 'TheTutorialStoryboard',
-  data() {
-    return {
-      firstTutorial: [
-        {
-          title: 'What is AI?',
-          text: 'AI refers to a machine or a software program that simulates human intelligence to accomplish a certain task (often in a narrow area).',
-          img: './static/img/tutorial/tutorial-1_step-1-icon.svg',
-          lookEyesClass: 'look-bottom'
-        },
-        {
-          title: 'How does it work?',
-          text: 'ML learns to respond to information in a certain way, depending on what you train it for. It uses historical data and algorithms to generate a model that is able to make decisions and/or predictions.',
-          img: './static/img/tutorial/tutorial-1_step-2-icon.svg',
-          lookEyesClass: 'look-bottom'
-        },
-        {
-          title: 'Where do I begin?',
-          text: 'The left toolbar contains all the operations you need to build your AI model. Fret not - we’ve coded the backend for you! All you have to do is drop your desired operations onto this workspace.',
-          img: './static/img/tutorial/tutorial-1_step-3-icon.svg',
-          lookEyesClass: 'look-left'
-        },
-        {
-          title: 'Customise with PerceptiLabs',
-          text: 'PerceptiLabs allows you to customise everything from building your model to managing your workflow. On the right, get an overview of your project, customize your profile settings, and import/ export your favourite models.',
-          img: './static/img/tutorial/tutorial-1_step-4-icon.svg',
-          lookEyesClass: 'look-top-right'
-        },
-        {
-          title: 'Don’t forget to ‘Run’',
-          text: 'When you are satisfied with the neural network you have built on this workspace, be sure to hit the ‘Run’ button above to generate your AI model.',
-          img: './static/img/tutorial/tutorial-1_step-5-icon.svg',
-          lookEyesClass: 'look-top-left'
-        },
+  // name: 'TheTutorialStoryboard',
+  // data() {
+  //   return {
+  //     firstTutorial: [
+  //       {
+  //         title: 'What is AI?',
+  //         text: 'AI refers to a machine or a software program that simulates human intelligence to accomplish a certain task (often in a narrow area).',
+  //         img: './static/img/tutorial/tutorial-1_step-1-icon.svg',
+  //         lookEyesClass: 'look-bottom'
+  //       },
+  //       {
+  //         title: 'How does it work?',
+  //         text: 'ML learns to respond to information in a certain way, depending on what you train it for. It uses historical data and algorithms to generate a model that is able to make decisions and/or predictions.',
+  //         img: './static/img/tutorial/tutorial-1_step-2-icon.svg',
+  //         lookEyesClass: 'look-bottom'
+  //       },
+  //       {
+  //         title: 'Where do I begin?',
+  //         text: 'The left toolbar contains all the operations you need to build your AI model. Fret not - we’ve coded the backend for you! All you have to do is drop your desired operations onto this workspace.',
+  //         img: './static/img/tutorial/tutorial-1_step-3-icon.svg',
+  //         lookEyesClass: 'look-left'
+  //       },
+  //       {
+  //         title: 'Customise with PerceptiLabs',
+  //         text: 'PerceptiLabs allows you to customise everything from building your model to managing your workflow. On the right, get an overview of your project, customize your profile settings, and import/ export your favourite models.',
+  //         img: './static/img/tutorial/tutorial-1_step-4-icon.svg',
+  //         lookEyesClass: 'look-top-right'
+  //       },
+  //       {
+  //         title: 'Don’t forget to ‘Run’',
+  //         text: 'When you are satisfied with the neural network you have built on this workspace, be sure to hit the ‘Run’ button above to generate your AI model.',
+  //         img: './static/img/tutorial/tutorial-1_step-5-icon.svg',
+  //         lookEyesClass: 'look-top-left'
+  //       },
 
-        {
-          title: 'Now you know the basics of the program. Feel free to start building your first model!',
-          text: `<span style="line-height: 1.8;">If you find any errors or have any suggestions, please click on </span>
-                 <img src="./static/img/tutorial/report-button-img.png" style="width: 56px;position: relative;top: -5px;" ><br>
-                 <span>Any feedback is highly appreciated!</span>`,
-          button: {
-            text: `Let's Try It`,
-            action: ()=> {this.startMainTutorial()}
-          },
-          lookEyesClass: 'look-close'
-        }
-      ]
-    }
-  },
-/*<button type="button" class="btn btn--primary">
-  <span >Report</span>
-  <i class="icon icon-bug-report"></i>
-  </button>*/
-  computed: {
-    ...mapGetters({
-      mainTutorialActivePoint:    'mod_tutorials/getActivePoint',
-      isTutorialMode:             'mod_tutorials/getIstutorialMode',
-      activeStepStoryBoard:       'mod_tutorials/getActiveStepStoryboard',
-      currentNetworkElementList:  'mod_workspace/GET_currentNetworkElementList'
-    }),
-    currentStepTutorial() {
-      return this.firstTutorial[this.activeStepStoryBoard]
-    }
-  },
-  methods: {
-     ...mapMutations({
-      setActiveStepStoryboard:          'mod_tutorials/SET_activeStepStoryboard',
-      setShowStoryboard:                'mod_tutorials/SET_showTutorialStoryBoard',
-      setShowInstructionsMainTutorial:  'mod_tutorials/SET_showMainTutorialInstruction',
-      setTutorialIsStarted:             'mod_tutorials/SET_mainTutorialIsStarted',
-      setActiveStep:                    'mod_tutorials/SET_activeStepMainTutorial',
-      //setFirstTimeApp:                  'mod_tutorials/SET_firstTimeApp',
-      setInteractiveInfo:               'mod_tutorials/SET_interactiveInfo',
-      setTutorialMode:                  'mod_tutorials/SET_isTutorialMode'
-    }),
-    ...mapActions({
-      mainTutorialPointActivate: 'mod_tutorials/pointActivate',
-      onMainTutorial:            'mod_tutorials/onTutorial',
-      resetStoryBoard:           'mod_tutorials/resetStoryBoard',
-      addNetwork:                'mod_workspace/ADD_network',
-      saveLocalUserInfo:         'mod_user/UPDATE_LOCAL_userInfo',
-    }),
-    closeTutorial() {
-      this.setActiveStepStoryboard(0);
-      this.setShowStoryboard(false);
-      this.saveLocalUserInfo({key: 'showFirstAppTutorial', data: false});
-    },
-    set_stepActive(way) {
-      this.setActiveStepStoryboard(way)
-    },
-    dot_stepActive(index) {
-      this.setActiveStepStoryboard(index)
-    },
-    skipStoryBoard() {
-      this.closeTutorial();
-      this.onMainTutorial();
-      if(this.currentNetworkElementList) this.addNetwork();
-    },
-    startMainTutorial() {
-      if(!this.isTutorialMode) this.onMainTutorial(this);
-      this.resetStoryBoard();
-      if(this.currentNetworkElementList) this.addNetwork();
-    }
-  }
+  //       {
+  //         title: 'Now you know the basics of the program. Feel free to start building your first model!',
+  //         text: `<span style="line-height: 1.8;">If you find any errors or have any suggestions, please click on </span>
+  //                <img src="./static/img/tutorial/report-button-img.png" style="width: 56px;position: relative;top: -5px;" ><br>
+  //                <span>Any feedback is highly appreciated!</span>`,
+  //         button: {
+  //           text: `Let's Try It`,
+  //           action: ()=> {this.startMainTutorial()}
+  //         },
+  //         lookEyesClass: 'look-close'
+  //       }
+  //     ]
+  //   }
+  // },
+
+  // computed: {
+  //   ...mapGetters({
+  //     mainTutorialActivePoint:    'mod_tutorials/getActivePoint',
+  //     isTutorialMode:             'mod_tutorials/getIsTutorialMode',
+  //     activeStepStoryBoard:       'mod_tutorials/getActiveStepStoryboard',
+  //     currentNetworkElementList:  'mod_workspace/GET_currentNetworkElementList'
+  //   }),
+  //   currentStepTutorial() {
+  //     return this.firstTutorial[this.activeStepStoryBoard]
+  //   }
+  // },
+  // methods: {
+  //    ...mapMutations({
+  //     setActiveStepStoryboard:          'mod_tutorials/SET_activeStepStoryboard',
+  //     setShowStoryboard:                'mod_tutorials/SET_showTutorialStoryBoard',
+  //     setShowInstructionsMainTutorial:  'mod_tutorials/SET_showMainTutorialInstruction',
+  //     setTutorialIsStarted:             'mod_tutorials/SET_mainTutorialIsStarted',
+  //     setActiveStep:                    'mod_tutorials/SET_activeStepMainTutorial',
+  //     //setFirstTimeApp:                  'mod_tutorials/SET_firstTimeApp',
+  //     setInteractiveInfo:               'mod_tutorials/SET_interactiveInfo',
+  //     setTutorialMode:                  'mod_tutorials/setTutorialMode'
+  //   }),
+  //   ...mapActions({
+  //     mainTutorialPointActivate: 'mod_tutorials/pointActivate',
+  //     onMainTutorial:            'mod_tutorials/onTutorial',
+  //     resetStoryBoard:           'mod_tutorials/resetStoryBoard',
+  //     addNetwork:                'mod_workspace/ADD_network',
+  //     saveLocalUserInfo:         'mod_user/UPDATE_LOCAL_userInfo',
+  //   }),
+  //   closeTutorial() {
+  //     this.setActiveStepStoryboard(0);
+  //     this.setShowStoryboard(false);
+  //     this.saveLocalUserInfo({key: 'showFirstAppTutorial', data: false});
+  //   },
+  //   set_stepActive(way) {
+  //     this.setActiveStepStoryboard(way)
+  //   },
+  //   dot_stepActive(index) {
+  //     this.setActiveStepStoryboard(index)
+  //   },
+  //   skipStoryBoard() {
+  //     this.closeTutorial();
+  //     this.onMainTutorial();
+  //     if(this.currentNetworkElementList) this.addNetwork();
+  //   },
+  //   startMainTutorial() {
+  //     if(!this.isTutorialMode) this.onMainTutorial(this);
+  //     this.resetStoryBoard();
+  //     if(this.currentNetworkElementList) this.addNetwork();
+  //   }
+  // }
 }
 </script>
 <style lang="scss" scoped>

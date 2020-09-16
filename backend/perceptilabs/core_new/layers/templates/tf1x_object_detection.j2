@@ -443,7 +443,7 @@ class {{layer_spec.sanitized_name}}(ObjectDetectionLayer):
         self._input_data_node = ''
         self._predicted_object = []
         self._predicted_class = []
-        self._predicted_normalized_box = []
+        self._predicted_normalized_box = [0.0]
 
         self._accuracy_training = 0.0
         self._accuracy_validation = 0.0

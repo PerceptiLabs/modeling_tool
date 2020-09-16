@@ -1,6 +1,6 @@
 <template lang="pug">
   .popup-global
-    .popup-global_overlay(@click="closePopup()")
+    .popup-global_overlay(@click="cancelTraining()")
     section.popup
       .popup-background
         ul.popup_tab-set
@@ -21,7 +21,7 @@
               p.big-text Start training
             .settings-layer_foot
               button.btn.btn--primary.btn--disabled(type="button"
-                @click="closePopup()"
+                @click="cancelTraining()"
                 ) Cancel
               button#tutorial_start-training.btn.btn--primary(type="button"
                 v-tooltip-interactive:right="interactiveInfo.start"
@@ -60,22 +60,26 @@ export default {
   },
   methods: {
     ...mapMutations({
-      tutorialNextActiveStep:   'mod_tutorials/SET_activeStepMainTutorial',
       closePopup:               'globalView/HIDE_allGlobalPopups',
-      set_showTrainingSpinner:  'mod_workspace/SET_showStartTrainingSpinner'
+      set_showTrainingSpinner:  'mod_workspace/SET_showStartTrainingSpinner',
+      setChecklistItemComplete: 'mod_tutorials/setChecklistItemComplete',
     }),
     ...mapActions({
       setSidebarStateAction:  'globalView/hideSidebarAction',
-      pointActivate:          'mod_tutorials/pointActivate',
       API_startTraining:      'mod_api/API_startTraining',
       SET_openStatistics:     'mod_workspace/SET_openStatistics',
       SET_openTest:           'mod_workspace/SET_openTest',
       SET_networkSnapshot:    'mod_workspace/SET_networkSnapshot',
       saveNetwork:            'mod_webstorage/saveNetwork',
-      setViewType:            'mod_workspace/setViewType'
+      setViewType:            'mod_workspace/setViewType',
+      setCurrentView:         'mod_tutorials/setCurrentView'
     }),
     setTab(i) {
       this.tabSelected = i;
+    },
+    cancelTraining() {
+      this.setCurrentView('tutorial-workspace-view');
+      this.closePopup();
     },
     startTraining() {
       this.closePopup();
@@ -86,9 +90,10 @@ export default {
           this.SET_openStatistics(true);
           this.setViewType('statistic');
           this.SET_openTest(null);
-          if(this.isTutorialMode) this.tutorialNextActiveStep('next');
           this.set_showTrainingSpinner(true);
           this.setSidebarStateAction(false);
+          this.setChecklistItemComplete({ itemId: 'startTraining' });
+          this.setCurrentView('tutorial-statistics-view');
         });
     },
   }

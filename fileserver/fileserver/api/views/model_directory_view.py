@@ -31,10 +31,12 @@ def modeldirectory_tree(request):
 
     page, contents = get_paged_iter(paths_iter, request)
 
-    return json_response({
+    response = {
             "path": full_path,
             "page": page,
             "contents": contents,
-            })
+            }
+
+    return json_response(response)
 
 

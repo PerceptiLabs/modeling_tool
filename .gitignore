@@ -19,6 +19,7 @@ backend/training_scripts/*
 *.pyc
 *.py~
 *.zip
+*~
 *#*#
 build/
 .vscode/

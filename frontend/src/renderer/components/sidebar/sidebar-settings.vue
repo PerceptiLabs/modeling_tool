@@ -1,9 +1,9 @@
 <template lang="pug">
   .sidebar-setting-wrapper
-    .sidebat-setting-head
-      .sidebat-setting-head-name Settings
-      button.sidebat-setting-head-open-code(@click="onOpenCodeButtonClick()") Open code
-    perfect-scrollbar.sidebar-setting-content
+    .sidebar-setting-head
+      .sidebar-setting-head-name Settings
+      button.sidebar-setting-head-open-code(@click="onOpenCodeButtonClick()") Open code
+    perfect-scrollbar.sidebar-setting-content(:data-tutorial-target="'tutorial-workspace-settings'")
       component.setting-values-wrapper(v-if="selectedEl !== null" :key="selectedEl.layerId" v-bind:is="selectedEl.componentName" :currentEl="selectedEl" ref="componentSettings")
       sidebar-setting-preview.setting-chart-wrapper(
         v-if="selectedEl !== null"
@@ -90,6 +90,7 @@ export default {
   methods: {
     ...mapActions({
       popupConfirm: 'globalView/GP_confirmPopup',
+      setNextStep:  'mod_tutorials/setNextStep',
     }),
     onOpenCodeButtonClick() {
       if (this.codeWindowState && this.hasUnsavedChanges) {
@@ -107,6 +108,8 @@ export default {
     },
     openComponentCode() {
       if (!this.selectedEl) { return; }
+
+      this.setNextStep('tutorial-workspace-settings');
       
       this.$store.dispatch('mod_workspace-code-editor/openEditor', {
         networkId: this.currentNetworkId,
@@ -123,7 +126,7 @@ export default {
   
   // background-color: red;
 }
-.sidebat-setting-head {
+.sidebar-setting-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -136,7 +139,7 @@ export default {
   box-sizing: border-box;
   height: 25px;
 }
-.sidebat-setting-head-name {
+.sidebar-setting-head-name {
 
   font-family: Nunito Sans;
   font-style: normal;
@@ -145,7 +148,7 @@ export default {
   line-height: 16px;
   color: #B6C7FB;
 }
-.sidebat-setting-head-open-code {
+.sidebar-setting-head-open-code {
   cursor: pointer;
   background: #131B30;
   border: 0.5px solid #5E6F9F;

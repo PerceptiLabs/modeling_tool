@@ -78,7 +78,7 @@ class TrainingClient:
                 self._on_state_changed(value)
         if key == 'training-ended':
             if self._on_training_ended:
-                self._on_training_ended(value)
+                self._on_training_ended(value['session_info'], value['end_state'])
         elif key == 'log-message':
             if self._on_log_message:
                 self._on_log_message(value['message'])

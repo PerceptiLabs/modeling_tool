@@ -61,8 +61,7 @@ export default {
   },
   computed: {
     ...mapGetters({
-      tutorialActiveAction: 'mod_tutorials/getActiveAction',
-      isTutorialMode:       'mod_tutorials/getIstutorialMode',
+      isTutorialMode:       'mod_tutorials/getIsTutorialMode',
       isTraining:           'mod_workspace/GET_networkIsTraining',
       editIsOpen:           'mod_workspace/GET_networkIsOpen',
       currentSelectedEl:    'mod_workspace/GET_currentSelectedEl',
@@ -116,7 +115,7 @@ export default {
     },
     '$store.state.mod_events.globalPressKey.esc': {
       handler() {
-        if(!this.isTutorialMode) this.hideAllWindow();
+        // if(!this.isTutorialMode) this.hideAllWindow();
       }
     },
     '$store.state.mod_events.globalPressKey.del': {
@@ -133,8 +132,6 @@ export default {
   },
   methods: {
     ...mapActions({
-      tutorialPointActivate:    'mod_tutorials/pointActivate',
-      tutorialShowHideTooltip:  'mod_tutorials/showHideTooltip',
       setNetMode:               'mod_workspace/SET_netMode',
       setElementInfoOpen:       'mod_workspace/SET_isOpenElement',
       elementDelete:            'mod_workspace/DELETE_element',
@@ -174,9 +171,6 @@ export default {
     },
     switchDblclick(event) {
       if (this.isLock) return;
-      if(this.isTutorialMode &&
-         this.tutorialActiveAction.schematic &&
-         this.tutorialActiveAction.schematic.type === 'arrow') return;
       if(this.networkMode !== 'edit') {
         this.setNetMode('edit');
         this.setFocusEl(event);
@@ -189,7 +183,6 @@ export default {
       this.$emit('open-container')
     },
     openSettings(event) {
-      this.tutorialShowHideTooltip();
       this.hideAllWindow();
       if(!this.editIsOpen) return;
 
@@ -198,14 +191,10 @@ export default {
 
       this.$nextTick(() => {
         this.calcWindowPosition();
-        this.tutorialPointActivate({
-          way: 'next',
-          validation: event.currentTarget.id
-        })
-      })
+      });
     },
     openContext(event) {
-      if(!this.isTutorialMode && !this.settingsIsOpen) {
+      if(!this.settingsIsOpen) {
         this.hideAllWindow();
         if(!this.currentSelectedEl.length) {
           this.elementSelect({id: this.currentId, setValue: true })
@@ -260,9 +249,8 @@ export default {
       document.removeEventListener('contextmenu', this.hideAllWindow, true);
     },
     deselect() {
-      if(!this.isTutorialMode) this.hideAllWindow();
+      this.hideAllWindow();
       // this.elementSelect({id: this.currentId, setValue: false });
-      this.tutorialShowHideTooltip();
     },
     tutorialSearchId(event) {
       //TODO need paused in tutorial

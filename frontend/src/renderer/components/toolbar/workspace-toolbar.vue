@@ -50,6 +50,7 @@
             :class="statusStartBtn"
             v-tooltip:bottom="'Run/Stop'"
             v-tooltip-interactive:bottom="interactiveInfo.runButton"
+            :data-tutorial-target="'tutorial-workspace-start-training'"
             @click="onOffBtn"
           )
             i.icon.icon-on-off
@@ -107,6 +108,7 @@
           :class="{'active': showModelPreviews}"
           @click="toggleModelPreviews"
           v-tooltip-interactive:bottom="interactiveInfo.interactiveDoc"
+          :data-tutorial-target="'tutorial-workspace-preview-toggle'"
         )
           span Preview
           .ring-icon
@@ -115,6 +117,7 @@
           :class="{'active': isNotebookMode}"
           @click="switchNotebookMode"
           v-tooltip-interactive:bottom="interactiveInfo.interactiveDoc"
+          :data-tutorial-target="'tutorial-workspace-notebook-view-toggle'"          
         )
           span Notebook
           .ring-icon
@@ -168,9 +171,8 @@ export default {
   },
   computed: {
     ...mapGetters({
-      tutorialActiveAction: 'mod_tutorials/getActiveAction',
       interactiveInfoStatus:'mod_tutorials/getInteractiveInfo',
-      isTutorialMode:       'mod_tutorials/getIstutorialMode',
+      isTutorialMode:       'mod_tutorials/getIsTutorialMode',
       currentElList:        'mod_workspace/GET_currentNetworkElementList',
       isTraining:           'mod_workspace/GET_networkIsTraining',
       statusNetworkCore:    'mod_workspace/GET_networkCoreStatus',
@@ -287,19 +289,19 @@ export default {
       pauseTraining:        'mod_api/API_pauseTraining',
       stopTraining:         'mod_api/API_stopTraining',
       skipValidTraining:    'mod_api/API_skipValidTraining',
-      tutorialPointActivate:'mod_tutorials/pointActivate',
       removeTooltip:        'mod_tutorials/removeTooltip',
-      offMainTutorial:      'mod_tutorials/offTutorial',
-      hideTooltip:          'mod_tutorials/hideTooltip',
       set_netMode:          'mod_workspace/SET_netMode',
       set_notebookMode:     'mod_notebook/SET_notebookMode',
       toPrevStepHistory:    'mod_workspace-history/TO_prevStepHistory',
       toNextStepHistory:    'mod_workspace-history/TO_nextStepHistory',
+      setCurrentView:       'mod_tutorials/setCurrentView',
+      setNextStep:          'mod_tutorials/setNextStep'
     }),
     switchTutorialMode() {
       this.$refs.tutorialComponent.switchTutorialMode()
     },
     switchNotebookMode() {
+      this.setNextStep('tutorial-workspace-notebook-view-toggle');
       this.set_notebookMode();
     },
     onOffBtn() {
@@ -308,9 +310,12 @@ export default {
           this.trainStop();
         } else {
           this.trainStart();
-        }
 
-        this.$nextTick(()=> this.tutorialPointActivate({way:'next', validation: 'tutorial_run-training-button'}))
+          this.$nextTick(() => {
+            this.setNextStep('tutorial-workspace-start-training');
+            this.setCurrentView('tutorial-core-side-view');
+          });
+        }
       } else {
         this.showInfoPopup('Kernel is not connected');
       }
@@ -330,7 +335,6 @@ export default {
     },
     trainPause() {
       this.pauseTraining();
-      this.tutorialPointActivate({way:'next', validation: 'tutorial_pause-training'})
     },
     skipValid() {
       this.skipValidTraining();
@@ -371,28 +375,16 @@ export default {
     },
     setNetMode(type, tutorial_id) {
       this.set_netMode(type);
-      this.tutorialPointActivate({way:'next', validation: tutorial_id})
     },
     toggleInteractiveInfo() {
       this.removeTooltip();
       this.setInteractiveInfo(!this.interactiveInfoStatus);
     },
     toHomePage() {
-      if(this.isTutorialMode) {
-        this.hideTooltip();
-        this.popupConfirm(
-          {
-            text: 'Are you sure you want to end the tutorial?',
-            ok: () => {
-              this.offMainTutorial();
-              this.$router.push({name: 'projects'});
-            }
-          });
-      } else {
-        this.$router.push({name: 'projects'});
-      }
+      this.$router.push({name: 'projects'});
     },
     toggleModelPreviews() {
+      this.setNextStep('tutorial-workspace-preview-toggle');
       this.$store.dispatch('mod_workspace/TOGGLE_showModelPreviews');
     }
   },

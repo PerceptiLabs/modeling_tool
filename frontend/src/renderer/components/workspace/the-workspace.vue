@@ -29,11 +29,13 @@
         the-view-box#tutorial_statistics.the-statistics(
           v-if="statisticsIsOpen || testIsOpen"
           :el-data="statisticsElSelected.statistics"
+          :data-tutorial-target="'tutorial-test-right-chart'"
           section-title="Statistics"
         )
         the-view-box#tutorial_view-box.the-view-box(
           v-if="statisticsIsOpen  || testIsOpen"
           :el-data="statisticsElSelected.viewBox"
+          :data-tutorial-target="'tutorial-test-left-chart'"
           section-title="ViewBox"
           )
         section.network_info-section.the-network-field(
@@ -59,6 +61,7 @@
         code-window(
           v-if="showCodeWindow"
           :networkId="currentNetworkId"
+          :data-tutorial-target="'tutorial-workspace-settings-code'"
         )
         //- notifications-window(
         //-   v-if="showNotificationWindow"
@@ -120,6 +123,8 @@
       :popup-settings="saveNetworkPopup"
       )
     export-network(v-if="showExportNetworkPopup")
+    export-network-git-hub(v-if="showExportNetworkToGitHubPopup")
+    import-model(v-if="showImportNetworkfromGitHubOrLocalPopup")
     file-picker-popup(
       v-if="showFilePickerPopup"
       :filePickerType="showFilePickerPopup.filePickerType"
@@ -148,7 +153,7 @@
   
   .select-modal-wrapper {
     position: absolute;
-    width: calc(100% - 50px);
+    width: calc(100% - 46px);
     height: calc(100% - 40px);
     background: rgba(33, 40, 57, 0.9);
     z-index: 99;

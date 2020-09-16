@@ -12,9 +12,36 @@
       //- h4(v-if="projectName").page-title {{projectName}} / <span class="page-route-title">{{routeHeaderAlias}} </span>
 
     .app-header-section.app-header-right
+
+      .help-button(
+        @click="toggleHelp(!showHelpPanel)"
+        @blur="toggleHelp(false)"
+        tabindex="0"
+        )
+        svg(
+          :data-tutorial-target="'tutorial-model-hub-question-mark'" width="25" height="25" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg"
+        )
+          circle(cx="12.5" cy="12.5" r="12" stroke="#5E6F9F")
+          path(d="M11.9053 15.4473C11.9053 14.7113 11.9966 14.1247 12.1792 13.6875C12.3618 13.2503 12.7215 12.7716 13.2583 12.2515C13.8006 11.7257 14.1437 11.3522 14.2876 11.1309C14.509 10.7933 14.6196 10.4281 14.6196 10.0352C14.6196 9.51497 14.4896 9.1193 14.2295 8.84814C13.9749 8.57145 13.5986 8.43311 13.1006 8.43311C12.6247 8.43311 12.2401 8.56868 11.9468 8.83984C11.659 9.10547 11.5151 9.46794 11.5151 9.92725H9.49805C9.50911 8.94775 9.84115 8.17301 10.4941 7.60303C11.1527 7.03304 12.0215 6.74805 13.1006 6.74805C14.2129 6.74805 15.0789 7.03027 15.6987 7.59473C16.3241 8.15918 16.6367 8.94775 16.6367 9.96045C16.6367 10.8625 16.2161 11.7507 15.375 12.625L14.354 13.6294C13.9888 14.0444 13.8006 14.6504 13.7896 15.4473H11.9053ZM11.7642 18.0288C11.7642 17.7023 11.8665 17.4395 12.0713 17.2402C12.276 17.0355 12.5527 16.9331 12.9014 16.9331C13.2555 16.9331 13.535 17.0382 13.7397 17.2485C13.9445 17.4533 14.0469 17.7134 14.0469 18.0288C14.0469 18.3332 13.9473 18.5877 13.748 18.7925C13.5488 18.9972 13.2666 19.0996 12.9014 19.0996C12.5361 19.0996 12.2539 18.9972 12.0547 18.7925C11.861 18.5877 11.7642 18.3332 11.7642 18.0288Z" fill="#B6C7FB")
+
+        .help-button-panel(v-if="showHelpPanel")
+          .help-button-panel-content
+            .help-button-panel-content-item(@click="toggleTutorialTips") {{ hideTipsDisplayText }}
+            .help-button-panel-content-item(@click="onActivateChecklist") Get started checklist
+            .help-button-panel-content-item(@click="goToWhatsNew") What's new
+            .help-button-panel-content-item(@click="openVideoTutorials") 
+              span Video tutorials
+              svg(width="13" height="13" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg")
+                path(d="M10.875 10.875H2.125V2.125H6.5V0.875H2.125C1.43125 0.875 0.875 1.4375 0.875 2.125V10.875C0.875 11.5625 1.43125 12.125 2.125 12.125H10.875C11.5625 12.125 12.125 11.5625 12.125 10.875V6.5H10.875V10.875ZM7.75 0.875V2.125H9.99375L3.85 8.26875L4.73125 9.15L10.875 3.00625V5.25H12.125V0.875H7.75Z" fill="white")
+            .help-button-panel-content-item(@click="goToDocumentation") 
+              span Documentation
+              svg(width="13" height="13" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg")
+                path(d="M10.875 10.875H2.125V2.125H6.5V0.875H2.125C1.43125 0.875 0.875 1.4375 0.875 2.125V10.875C0.875 11.5625 1.43125 12.125 2.125 12.125H10.875C11.5625 12.125 12.125 11.5625 12.125 10.875V6.5H10.875V10.875ZM7.75 0.875V2.125H9.99375L3.85 8.26875L4.73125 9.15L10.875 3.00625V5.25H12.125V0.875H7.75Z" fill="white")
+
       button.btn.btn--dark.btn--toolbar-settings(
           type="button"
           @click="goToReport"
+          :data-tutorial-target="'tutorial-model-hub-report-button'"
         )
 
         span Report
@@ -32,7 +59,8 @@
   import TheMenu from '@/components/the-menu.vue'
   import {isWeb} from "@/core/helpers";
   import HeaderProfile from "@/components/header/header-profile";
-  import { mapGetters } from 'vuex';
+  import { mapGetters, mapActions } from 'vuex';
+  import { MODAL_PAGE_WHATS_NEW } from "@/core/constants";
 
 export default {
   name: "HeaderWin",
@@ -40,11 +68,14 @@ export default {
   data: function() {
     return {
       isWeb: isWeb(),
+      showHelpPanel: false,
+      MODAL_PAGE_WHATS_NEW
     }
   },
   computed: {
     ...mapGetters({
-      currentModel: 'mod_workspace/GET_currentNetwork',
+      currentModel:   'mod_workspace/GET_currentNetwork',
+      showTips:       'mod_tutorials/getShowTutorialTips',
     }),
     showRestoreIcon() {
       return this.$store.state.globalView.appIsFullView
@@ -81,9 +112,23 @@ export default {
         } break;
       }
       return theName;
+    },
+    hideTipsDisplayText() {
+      if (this.showTips) {
+        return 'Disable tips';
+      } else {
+        return 'Enable tips';
+      }
     }
   },
   methods: {
+    ...mapActions({
+      setNextStep:          'mod_tutorials/setNextStep',
+      setCurrentView:       'mod_tutorials/setCurrentView',
+      activateChecklist:    'mod_tutorials/activateChecklist',
+      setTips:              'mod_tutorials/setTutorialNotificationsState',
+      setActivePageAction:  'modal_pages/setActivePageAction',
+    }),
     appClose() {
       this.$emit('app-closed')
     },
@@ -95,11 +140,30 @@ export default {
     },
     toProjectPage() {
       if(this.$route.name === 'app') {
+        this.setCurrentView('tutorial-model-hub-view');
         this.$router.push({name: 'projects'})
       }
     },
     goToReport() {
       this.$store.dispatch('globalView/SET_createIssuesPopup', true);
+    },
+    toggleHelp(value = null) {
+      this.showHelpPanel = !!value;
+    },
+    toggleTutorialTips() {
+      this.setTips(!this.showTips);
+    },
+    onActivateChecklist() {
+      this.activateChecklist();
+    },
+    goToWhatsNew() {
+      this.setActivePageAction(MODAL_PAGE_WHATS_NEW);
+    },
+    openVideoTutorials() {
+      window.open('https://www.youtube.com/watch?v=tdELIpi-BZI', '_blank');
+    },
+    goToDocumentation() {
+      window.open('https://perceptilabs.com/docs/overview', '_blank');
     }
   }
 }
@@ -213,5 +277,53 @@ export default {
       }
     }
 
+  }
+
+  .help-button {
+    position: relative;
+
+    .help-button-panel {
+      // transform-origin: top right;
+      position: absolute;
+      top: 3rem;
+      right: 0;
+
+      background: #131B30;
+      border: 1px solid #363E51;
+      box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
+      border-radius: 2px;
+
+      width: 16rem;
+
+      margin-left: 0;
+
+      .help-button-panel-content {
+        
+        height: 100%; 
+
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        
+        padding: 1.5rem 1rem;
+
+        > .help-button-panel-content-item {
+          margin: 0;
+          font-family: Nunito Sans;
+          font-style: normal;
+          font-weight: normal;
+          font-size: 14px;
+          line-height: 19px;
+          color: #FFFFFF;
+
+          cursor: pointer;
+
+        }
+
+        > .help-button-panel-content-item + .help-button-panel-content-item {
+          margin-top: 1rem;
+        }
+      }
+    }
   }
 </style>

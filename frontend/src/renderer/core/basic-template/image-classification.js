@@ -28,21 +28,26 @@ const imageClassification = {
         "layerName": "Data_1",
         "layerType": "Data",
         "layerSettings": {
-          "Type": "Data",
-          "testInfoIsInput": true,
           "accessProperties": {
             "Columns": [],
-            "Dataset_size": "",
-            "Category": "Local",
-            "Type": "Data",
-            "Sources": [],
-            "PathFake": [],
-            "Partition_list": [],
-            "Shuffle_data": true,
-            "Action_space": ""
-          }
+            "Sources": [
+              {
+                "type": "file",
+                "path": "classification_mnist_input.npy"
+              }
+            ],
+            "Partition_list": [
+              [
+                70,
+                20,
+                10
+              ]
+            ],
+            "Shuffle_data": true
+          },
+          "lazy": false
         },
-        "layerSettingsTabName": "Computer",
+        "layerSettingsTabName": "Settings",
         "layerCode": null,
         "layerCodeError": null,
         "layerNone": false,
@@ -54,7 +59,7 @@ const imageClassification = {
             "top": 20,
             "left": 20
           },
-          "OutputDim": "",
+          "OutputDim": "784",
           "InputDim": "[]",
           "layerContainerName": "",
           "layerBgColor": "",
@@ -96,21 +101,26 @@ const imageClassification = {
         "layerName": "Data_2",
         "layerType": "Data",
         "layerSettings": {
-          "Type": "Data",
-          "testInfoIsInput": true,
           "accessProperties": {
             "Columns": [],
-            "Dataset_size": "",
-            "Category": "Local",
-            "Type": "Data",
-            "Sources": [],
-            "PathFake": [],
-            "Partition_list": [],
-            "Shuffle_data": true,
-            "Action_space": ""
-          }
+            "Sources": [
+              {
+                "type": "file",
+                "path": "classification_mnist_labels.npy"
+              }
+            ],
+            "Partition_list": [
+              [
+                70,
+                20,
+                10
+              ]
+            ],
+            "Shuffle_data": true
+          },
+          "lazy": false
         },
-        "layerSettingsTabName": "Computer",
+        "layerSettingsTabName": "Settings",
         "layerCode": null,
         "layerCodeError": null,
         "layerNone": false,
@@ -122,7 +132,7 @@ const imageClassification = {
             "top": 280,
             "left": 20
           },
-          "OutputDim": "",
+          "OutputDim": "1",
           "InputDim": "[]",
           "layerContainerName": "",
           "layerBgColor": "",
@@ -187,7 +197,7 @@ const imageClassification = {
             "top": 20,
             "left": 220
           },
-          "OutputDim": "",
+          "OutputDim": "28x28x1",
           "InputDim": "[784]",
           "layerContainerName": "",
           "layerBgColor": "",
@@ -242,20 +252,20 @@ const imageClassification = {
         "layerName": "Convolution_1",
         "layerType": "Other",
         "layerSettings": {
-          "Conv_dim": "2D",
-          "Patch_size": "3",
-          "Stride": "2",
-          "Padding": "SAME",
-          "Feature_maps": "8",
-          "Activation_function": "Sigmoid",
           "Dropout": false,
-          "Keep_prob": "1",
+          "Keep_prob": 1,
           "Batch_norm": false,
+          "Conv_dim": "2D",
+          "Patch_size": 3,
+          "Feature_maps": 8,
+          "Stride": 2,
+          "Padding": "SAME",
+          "Activation_function": "Sigmoid",
           "PoolBool": false,
           "Pooling": "Max",
-          "Pool_area": "2",
+          "Pool_area": 2,
           "Pool_padding": "SAME",
-          "Pool_stride": "2"
+          "Pool_stride": 2
         },
         "layerSettingsTabName": "Settings",
         "layerCode": null,
@@ -269,7 +279,7 @@ const imageClassification = {
             "top": 20,
             "left": 420
           },
-          "OutputDim": "",
+          "OutputDim": "14x14x8",
           "InputDim": "[28, 28, 1]",
           "layerContainerName": "",
           "layerBgColor": "",
@@ -324,7 +334,7 @@ const imageClassification = {
         "layerName": "OneHot_1",
         "layerType": "Other",
         "layerSettings": {
-          "N_class": "10"
+          "N_class": 10
         },
         "layerSettingsTabName": "Settings",
         "layerCode": null,
@@ -338,7 +348,7 @@ const imageClassification = {
             "top": 280,
             "left": 280
           },
-          "OutputDim": "",
+          "OutputDim": "10",
           "InputDim": "",
           "layerContainerName": "",
           "layerBgColor": "",
@@ -393,10 +403,10 @@ const imageClassification = {
         "layerName": "Fully Connected_1",
         "layerType": "Other",
         "layerSettings": {
-          "Neurons": "10",
-          "Activation_function": "Sigmoid",
           "Dropout": false,
-          "Keep_prob": "1",
+          "Keep_prob": 1,
+          "Neurons": 10,
+          "Activation_function": "Sigmoid",
           "Batch_norm": false
         },
         "layerSettingsTabName": "Settings",
@@ -411,7 +421,7 @@ const imageClassification = {
             "top": 20,
             "left": 640
           },
-          "OutputDim": "",
+          "OutputDim": "10",
           "InputDim": "",
           "layerContainerName": "",
           "layerBgColor": "",
@@ -466,22 +476,21 @@ const imageClassification = {
         "layerName": "Normal_1",
         "layerType": "Training",
         "layerSettings": {
-          "Labels": "",
-          "Epochs": "10",
-          "N_class": "1",
-          "Loss": "Quadratic",
-          "Stop_condition": "Epochs",
-          "Stop_Target_Accuracy": "0",
-          "Class_weights": "1",
-          "Learning_rate": "0.001",
+          "Learning_rate": 0.001,
+          "Decay_rate": 0.96,
+          "Decay_steps": 100000,
+          "Momentum": 0.9,
+          "Beta_2": 0.999,
+          "Beta_1": 0.9,
           "Optimizer": "ADAM",
-          "Beta_1": "0.9",
-          "Beta_2": "0.999",
-          "Momentum": "0.9",
-          "Decay_steps": "100000",
-          "Decay_rate": "0.96",
-          "Training_iters": "20000",
-          "Batch_size": "10"
+          "Epochs": 10,
+          "Batch_size": 10,
+          "Loss": "Quadratic",
+          "Labels": "1598915861658",
+          "Class_weights": 1,
+          "Use_CPU": true,
+          "Stop_Target_Accuracy": 0,
+          "Stop_condition": "Epochs"
         },
         "layerSettingsTabName": "Settings",
         "layerCode": null,
@@ -495,7 +504,7 @@ const imageClassification = {
             "top": 259,
             "left": 954
           },
-          "OutputDim": "",
+          "OutputDim": "1",
           "InputDim": "",
           "layerContainerName": "",
           "layerBgColor": "",
@@ -543,8 +552,7 @@ const imageClassification = {
         "previewVariable": "output",
         "previewVariableList": []
       }
-    },
-    
+    }    
   }
 };
 

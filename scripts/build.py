@@ -531,18 +531,32 @@ class DockerBuilder():
         sed_i(dockerfile, "version *=\".*\"", f"version=\"{versions.as_pep440}\"")
 
     @staticmethod
+    def _append_to(src_file, dest_file):
+        with open(src_file, "r") as src,\
+             open(dest_file, "a") as dest:
+                 dest.write(src.read())
+
+    @staticmethod
     def _assemble_kernel_docker(versions: Versions):
         copy_tree(f"{BACKEND_SRC}/", f"{BUILD_DOCKER_KERNEL}", update=True)
         copy_tree(f"{PROJECT_ROOT}/licenses/", f"{BUILD_DOCKER_KERNEL}/licenses/", update=True)
         copy_file(f"{SCRIPTS_DIR}/setup.py", f"{BUILD_DOCKER_KERNEL}/setup.py", update=True)
         copy_file(f"{SCRIPTS_DIR}/requirements_build.txt", f"{BUILD_DOCKER_KERNEL}/requirements_build.txt", update=True)
-        FILES_FROM_DOCKER_DIR = "setup.cfg entrypoint.sh Dockerfile".split()
+        FILES_FROM_DOCKER_DIR = "setup.cfg entrypoint.sh Dockerfile runner".split()
         for from_docker in FILES_FROM_DOCKER_DIR:
             copy_file( f"{PROJECT_ROOT}/docker/kernel/{from_docker}", f"{BUILD_DOCKER_KERNEL}/{from_docker}", update=True)
-        write_all_lines(f"{BUILD_DOCKER_KERNEL}/cython_roots.txt", ["perceptilabs\n"])
+        set_perceptilabs_inner_version(BUILD_DOCKER_KERNEL, versions)
+
+        # add fileserver stuff to the kernel dir
+        copy_files(f"{FILESERVER_DIR}/", f"{BUILD_DOCKER_KERNEL}", list_path=f"{FILESERVER_DIR}/included_files.txt")
+        copy_file(f"{FILESERVER_DIR}/requirements.txt", f"{BUILD_DOCKER_KERNEL}/requirements_fileserver.txt", update=True)
+        DockerBuilder._append_to(f"{FILESERVER_DIR}/requirements.txt", f"{BUILD_DOCKER_KERNEL}/requirements.txt")
+        DockerBuilder._append_to(f"{FILESERVER_DIR}/included_files.txt", f"{BUILD_DOCKER_KERNEL}/included_files.txt")
+        set_fileserver_inner_version(BUILD_DOCKER_KERNEL, versions)
+
+        write_all_lines(f"{BUILD_DOCKER_KERNEL}/cython_roots.txt", ["perceptilabs\n", "fileserver\n"])
 
         DockerBuilder._set_dockerfile_version_label(BUILD_DOCKER_KERNEL, versions)
-        set_perceptilabs_inner_version(BUILD_DOCKER_KERNEL, versions)
         write_version_file(BUILD_DOCKER_KERNEL, versions)
 
 
