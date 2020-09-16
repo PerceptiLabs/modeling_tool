@@ -21,6 +21,7 @@ perceptilabs/license_checker.py
 perceptilabs/issues.py
 perceptilabs/script.py
 perceptilabs/dataevents.py
+perceptilabs/mixpanel_handler.py
 
 # perceptilabs/messaging
 perceptilabs/messaging/base.py

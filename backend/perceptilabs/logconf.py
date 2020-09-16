@@ -190,6 +190,11 @@ def setup_data_logger(is_dev=True):
         azure_handler.setFormatter(formatter)        
         logger.addHandler(azure_handler)
 
+        from perceptilabs.mixpanel_handler import MixPanelHandler        
+        mixpanel_handler = MixPanelHandler()
+        mixpanel_handler.setFormatter(formatter)
+        logger.addHandler(mixpanel_handler)
+        
 
 def upload_logs(session_id):
     import os
