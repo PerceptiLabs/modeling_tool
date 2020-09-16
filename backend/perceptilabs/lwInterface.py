@@ -311,7 +311,7 @@ class GetNetworkInputDim(LW_interface_base):
         shape_str = '[]' # Default
         if len(layer_spec.backward_connections) > 0:
             conn = layer_spec.backward_connections[0]
-            input_results = lw_results.get(conn.src_id)
+            input_results = lw_results.get(conn.src_id).sample
 
             if input_results is not None:
                 sample = input_results.get(conn.src_var)
