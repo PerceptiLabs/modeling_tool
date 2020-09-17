@@ -7,6 +7,9 @@
       .section-content
         img(:src="contentSrcForStep")
 
+        h3 {{ headersForSteps[stepNumber] }}
+
+        p {{ descriptionForSteps[stepNumber] }}
       .section-navigation
         .spacer
 
@@ -40,8 +43,19 @@ export default {
       stepNumber: 0,
       contentForSteps: [
         '../../../../static/img/whats-new/whats-new-1.png',
-        '../../../../static/img/whats-new/whats-new-1.png'
-      ]
+        '../../../../static/img/whats-new/whats-new-2.png',
+        '../../../../static/img/whats-new/whats-new-3.png'
+      ],
+      headersForSteps: [
+        'New component interface',
+        'View all your models in one place',
+        'Export to GitHub'
+      ],
+      descriptionForSteps: [
+        'You can now see each visualization of the output instantly! Each visualization will update in real-time when you change each component setting.',
+        'In the new ModelHub tab you can keep track of all your models. You can see each model\'s progress, your team of collaborators and who last modified your model.',
+        'We\'ve added in a new feature: you can now export your models to GitHub!'
+      ],
     }
   },
   computed: {
@@ -51,7 +65,7 @@ export default {
       }
 
       return this.contentForSteps[this.stepNumber];
-    }
+    },
   },
   methods: {    
     ...mapActions({
@@ -121,8 +135,34 @@ export default {
 }
 
 .section-content {
+
+  display: flex;
+  flex-direction: column;
+
   height: 25rem;
   margin-bottom: 3rem;
+
+  img + h3 {
+    margin-top: 2rem;
+    margin-bottom: 0;
+
+    font-family: Nunito Sans;
+    font-style: normal;
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 19px;
+  }
+
+  h3 + p {
+    margin-top: 1rem;
+    text-align: center;
+
+    font-family: Nunito Sans;
+    font-style: normal;
+    font-weight: normal;
+    font-size: 12px;
+    line-height: 16px;
+  }
 }
 
 .section-navigation {

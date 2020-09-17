@@ -108,6 +108,8 @@
       }
       this.$store.commit('mod_workspace-changes/get_workspaceChangesInLocalStorage');
 
+      this.$store.dispatch('mod_tutorials/activateNotification');      
+
       // @todo fetch models for project;
       if(isWeb()) {
         this.updateOnlineStatus();
@@ -236,7 +238,8 @@
       },
       showTutorialChecklist() {
         if (!this.getIsTutorialMode) { return false; }
-        
+        if (this.hasModalsOpenInWorkspace) { return false; }
+
         if (!this.currentPage) {
           return true;
         }
@@ -248,11 +251,25 @@
       },
       showTutorialNotifications() {
         // Don't show notifications if there are any overlays
-        if (this.currentPage) {
-          return false;
-        }
+        if (this.currentPage) { return false; }
+        if (this.hasModalsOpenInWorkspace) { return false; }
 
         return this.getIsTutorialMode && this.getShowTutorialTips;
+      },
+      hasModalsOpenInWorkspace() {
+        
+        return (
+          this.$store.state.globalView.globalPopup.showNetResult ||
+          this.$store.state.globalView.globalPopup.showWorkspaceBeforeImport ||
+          this.$store.state.globalView.globalPopup.showCoreSideSettings ||
+          this.$store.state.globalView.globalPopup.showFilePickerPopup ||
+          this.$store.state.globalView.globalPopup.showLoadSettingPopup ||
+          this.$store.state.globalView.globalPopup.showSaveNetworkPopup ||
+          this.$store.state.globalView.globalPopup.showExportNetworkPopup ||
+          this.showCreateIssuesPopup ||
+          this.showPopup
+        );
+
       },
       currentNetworkId() {
         return this.$store.getters['mod_workspace/GET_currentNetworkId'];
@@ -266,9 +283,7 @@
         let bottomValueRm = 1;
 
         if (this.$route.name !== 'projects' &&
-            this.$route.name !== 'settings' &&
-            !this.showNewModelPopup &&
-            !this.showCreateIssuesPopup) {
+            this.$route.name !== 'settings') {
           
           bottomValueRm += 2; // the-workspace
           bottomValueRm += 1; // scrollbars

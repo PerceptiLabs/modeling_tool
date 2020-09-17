@@ -313,6 +313,16 @@ const mutations = {
   setCurrentView(state, value) {
     state.currentView = value;
   },
+  setToFirstStepIfNeeded(state) {
+    const tutorialStep = state.tutorialSteps.find(ts => ts.viewName === state.currentView);
+    if (!tutorialStep.isCompleted ||
+        !tutorialStep.steps ||
+        tutorialStep.steps.length === 0) { return; }
+
+    const firstStep = tutorialStep.steps[0];
+    tutorialStep.isCompleted = false;
+    tutorialStep.currentStepCode = firstStep.stepCode;
+  },
   setNextStep(state) {
     const tutorialStep = state.tutorialSteps.find(ts => ts.viewName === state.currentView);
     if (!tutorialStep.steps || tutorialStep.steps.length === 0) { return ''; }
@@ -379,9 +389,39 @@ const mutations = {
   loadTutorialProgress(state) {
     
     const progress = localStorage.getItem('tutorialProgress');
-    console.log('loadTutorialProgress', progress);
     if (!progress) { return; }
 
+    const parsedProgress = JSON.parse(progress);
+    // console.log('loadTutorialProgress', JSON.parse(progress));
+
+    state.isTutorialMode = parsedProgress.isTutorialMode;
+    state.isChecklistExpanded = parsedProgress.isChecklistExpanded;
+    state.showTips = parsedProgress.showTips;
+
+    state.hasShownWhatsNew = parsedProgress.hasShownWhatsNew;
+
+    for (const pcli of parsedProgress.checklistItems) {
+      const scli = state.checklistItems.find(cli => cli.itemId === pcli.itemId);
+
+      if (!scli) { return; }
+
+      // For testing:
+      // scli.isCompleted = false;
+      scli.isCompleted = pcli.isCompleted;
+    }
+
+    for (const pts of parsedProgress.tutorialSteps) {
+      const sts = state.tutorialSteps.find(ts => ts.viewName === pts.viewName);
+
+      if (!sts) { return; }
+      // For testing:
+      // sts.isCompleted = false;
+      // sts.currentStepCode = sts.steps[0] ? sts.steps[0].stepCode : '';
+      sts.isCompleted = pts.isCompleted;
+      sts.currentStepCode = pts.currentStepCode;
+    }
+
+    console.log('state', state);
   },
 };
 
@@ -416,7 +456,11 @@ const actions = {
     commit('setTutorialNotificationsState', value);
 
     if (value) {
-      dispatch('activateNotification');
+      commit('setToFirstStepIfNeeded');
+
+      setTimeout(() => {
+        dispatch('activateNotification');
+      }, 0);
     } else {
       dispatch('removeAllNotifications');
     }
