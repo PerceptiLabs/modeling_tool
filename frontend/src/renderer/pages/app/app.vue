@@ -155,6 +155,7 @@
         DELETE_userWorkspace: 'mod_user/DELETE_userWorkspace',
         setSidebarStateAction:'globalView/hideSidebarAction',
         updateWorkspaces:     'mod_webstorage/updateWorkspaces',
+        saveTutorialProgress: 'mod_tutorials/saveTutorialProgress',
         layerAddedAction:     'mod_tutorials/tutorial-workspace-layer-added-setup',
       }),
       addDragListeners() {
@@ -164,6 +165,7 @@
         this.$refs.layersbar.removeEventListener("dragstart", this.dragStart, false);
       },
       beforeUnload() {
+        this.saveTutorialProgress();
         this.set_workspaceChangesInLocalStorage();
       },
       offDragListener() {

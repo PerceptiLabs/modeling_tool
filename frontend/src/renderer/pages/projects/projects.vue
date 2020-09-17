@@ -273,7 +273,7 @@
       },
       hotKeyPressDelete() {
         if(this.statusLocalCore!='online') {
-          this.showInfoPopup("Kernal is offline");
+          this.showInfoPopup("Kernel is offline");
           return;
         }
 
@@ -318,7 +318,7 @@
       }),
       goToNetworkView(networkID) {
         if(this.statusLocalCore!='online') {
-          this.showInfoPopup("Kernal is offline");
+          this.showInfoPopup("Kernel is offline");
           return;
         }
 
@@ -376,7 +376,7 @@
       },
       toggleItemSelection(modelId) {
         if(this.statusLocalCore!='online') {
-          this.showInfoPopup("Kernal is offline");
+          this.showInfoPopup("Kernel is offline");
           return;
         }
 
@@ -396,7 +396,7 @@
       },
       removeItems() {
         if(this.statusLocalCore!='online') {
-          this.showInfoPopup("Kernal is offline");
+          this.showInfoPopup("Kernel is offline");
           return;
         }
 
@@ -427,7 +427,7 @@
       },
       toggleFavoriteItems() {
         if(this.statusLocalCore!='online') {
-          this.showInfoPopup("Kernal is offline");
+          this.showInfoPopup("Kernel is offline");
           return;
         }
 
@@ -453,7 +453,7 @@
       },
       setFavoriteValue(index, value) {
         if(this.statusLocalCore!='online') {
-          this.showInfoPopup("Kernal is offline");
+          this.showInfoPopup("Kernel is offline");
           return;
         }
 
@@ -469,7 +469,7 @@
       },
       toggleSelectedItems() {
         if(this.statusLocalCore!='online') {
-          this.showInfoPopup("Kernal is offline");
+          this.showInfoPopup("Kernel is offline");
           return;
         }
 
@@ -493,7 +493,7 @@
       },
       handleAddNetworkModal() {
         if(this.statusLocalCore!='online') {
-          this.showInfoPopup("Kernal is offline");
+          this.showInfoPopup("Kernel is offline");
           return;
         }
 
@@ -519,7 +519,7 @@
       openLoadModelPopup() {
         // this.$store.dispatch('globalView/SET_filePickerPopup', {confirmCallback: this.onLoadNetworkConfirmed});
         if(this.statusLocalCore!='online') {
-          this.showInfoPopup("Kernal is offline");
+          this.showInfoPopup("Kernel is offline");
           return;
         }
         this.$store.dispatch('globalView/SET_showImportNetworkfromGitHubOrLocalPopup', true);
@@ -553,7 +553,7 @@
       },
       handleStatisticClick(index, e, model) {
         if(this.statusLocalCore!='online') {
-          this.showInfoPopup("Kernal is offline");
+          this.showInfoPopup("Kernel is offline");
           return;
         }
 
@@ -586,7 +586,7 @@
       },
       handleContextOpenModel() {
         if(this.statusLocalCore!='online') {
-          this.showInfoPopup("Kernal is offline");
+          this.showInfoPopup("Kernel is offline");
           return;
         }
 
@@ -596,7 +596,7 @@
 
       handleContextRemoveModel() {
         if(this.statusLocalCore!='online') {
-          this.showInfoPopup("Kernal is offline");
+          this.showInfoPopup("Kernel is offline");
           return;
         }
 
@@ -605,7 +605,7 @@
       },
       onClickDeletedModel(model, index) {
         if(this.statusLocalCore!='online') {
-          this.showInfoPopup("Kernal is offline");
+          this.showInfoPopup("Kernel is offline");
           return;
         }
 
@@ -623,7 +623,7 @@
       // Rename Module
       handleContextRenameModel() {
         if(this.statusLocalCore!='online') {
-          this.showInfoPopup("Kernal is offline");
+          this.showInfoPopup("Kernel is offline");
           return;
         }
 

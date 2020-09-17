@@ -203,9 +203,9 @@ class ScriptFactory:
         return code        
     
     def _create_graph_snippet(self, graph_spec):
-        code = "layers = {\n"
+        code = "layer_classes = {\n"
         for node in graph_spec.nodes_by_id.values():
-            code += "    '" + node.sanitized_name + "': " + node.sanitized_name + "(),\n"
+            code += "    '" + node.sanitized_name + "': " + node.sanitized_name + ",\n"
         code += "}\n\n"
 
         code += "edges = {\n"
@@ -235,8 +235,6 @@ class ScriptFactory:
         code += "}\n\n"
         # --------------
 
-        code += "graph_builder = GraphBuilder()\n"
-        code += "graph = graph_builder.build_from_layers_and_edges(layers, edges, connections=conn_info)\n\n"        
         return code
 
     def _create_training_server_snippet(self, topic_generic, topic_snapshots, userland_timeout):
@@ -256,11 +254,15 @@ class ScriptFactory:
         code += "producer_generic = factory.make_producer(topic_generic)\n"
         code += "producer_snapshots = factory.make_producer(topic_snapshots)\n"
         code += "consumer = factory.make_consumer([topic_generic])\n"
-            
         code += "\n"
+        code += "graph_builder = GraphBuilder()\n"
+        code += "\n"        
         code += "server = TrainingServer(\n"
         code += "    producer_generic, producer_snapshots, consumer,\n"
-        code += "    graph,\n"
+        code += "    graph_builder,\n"
+        code += "    layer_classes,\n"
+        code += "    edges,\n"
+        code += "    conn_info,\n"                        
         code += "    snapshot_builder=snapshot_builder,\n"
         code += "    userland_timeout={},\n".format(userland_timeout)
         if self._max_time_run is not None:

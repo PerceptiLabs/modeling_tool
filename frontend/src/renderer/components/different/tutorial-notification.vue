@@ -129,11 +129,12 @@ $arrow-size: 1rem;
   font-family: $base-font-sans-serif;
   text-align: left;
 
+  border: 1px solid #5E6F9F;
   border-top: 4px solid #6185EE;
   border-radius: 2px 2px 0px 0px;
   box-sizing: border-box;
   box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
-  
+
   font-family: Nunito Sans;
   font-style: normal;
   font-weight: normal;
@@ -168,7 +169,9 @@ $arrow-size: 1rem;
 		top: 10%;
 		left: 100%;
 		transform: translate(-50%, 0) rotate(45deg);
-		background:$tutorial-tooltip-bg;
+    background:$tutorial-tooltip-bg;
+    border-top: 1px solid #5E6F9F;
+    border-right: 1px solid #5E6F9F;
 	}
 }
 .tutorial-notification--right {
@@ -177,7 +180,9 @@ $arrow-size: 1rem;
 		top: 50%;
 		left: 100%;
 		transform: translate(-50%,-50%) rotate(45deg);
-		background: $tutorial-tooltip-bg;
+    background: $tutorial-tooltip-bg;
+    border-top: 1px solid #5E6F9F;
+    border-right: 1px solid #5E6F9F;
 	}
 }
 .tutorial-notification--bottom {
@@ -195,6 +200,8 @@ $arrow-size: 1rem;
     right: 100%;
     transform: translate(50%,-50%) rotate(45deg);
     background: $tutorial-tooltip-bg;
+    border-left: 1px solid #5E6F9F;
+    border-bottom: 1px solid #5E6F9F;
   }
 }
 

@@ -106,7 +106,7 @@ const linearRegression = {
             "Sources": [
               {
                 "type": "file",
-                "path": "linreg_outputs.npy"
+                "path": "linreg_labels.npy"
               }
             ],
             "Partition_list": [

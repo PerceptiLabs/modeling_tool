@@ -329,6 +329,10 @@ def test_core_handles_userland_timeout(messaging_factory):
     graph = MagicMock()
     graph.run.side_effect = run_graph
     graph_builder = MagicMock()
+    graph_builder.build_from_layers_and_edges.return_value = graph or MagicMock()
+    layer_classes = MagicMock()
+    edges = MagicMock()
+    connections = MagicMock()
     deployment_strategy = MagicMock()
     issue_handler = MagicMock()
     script_factory = MagicMock()
@@ -347,7 +351,7 @@ def test_core_handles_userland_timeout(messaging_factory):
 
         training_server = TrainingServer(
             prod_generic, prod_snapshots, consumer,
-            graph,
+            graph_builder, layer_classes, edges, connections,
             snapshot_builder=MagicMock(),
             userland_timeout=userland_timeout,
             max_time_run=120
@@ -387,6 +391,10 @@ def test_core_handles_userland_error(messaging_factory):
     graph = MagicMock()
     graph.run.side_effect = run_graph
     graph_builder = MagicMock()
+    graph_builder.build_from_layers_and_edges.return_value = graph or MagicMock()
+    layer_classes = MagicMock()
+    edges = MagicMock()
+    connections = MagicMock()
     deployment_strategy = MagicMock()
     issue_handler = MagicMock()
     
@@ -405,7 +413,7 @@ def test_core_handles_userland_error(messaging_factory):
         consumer = messaging_factory.make_consumer([topic_generic])            
         training_server = TrainingServer(
             prod_generic, prod_snapshots, consumer,                
-            graph,
+            graph_builder, layer_classes, edges, connections,
             snapshot_builder=MagicMock(),
             max_time_run=120                
         )
@@ -446,6 +454,10 @@ def test_core_handles_training_server_timeout(messaging_factory):
     graph = MagicMock()
     graph.run.side_effect = run_graph
     graph_builder = MagicMock()
+    graph_builder.build_from_layers_and_edges.return_value = graph or MagicMock()
+    layer_classes = MagicMock()
+    edges = MagicMock()
+    connections = MagicMock()
     deployment_strategy = MagicMock()
     script_factory = MagicMock()
     script_factory.make.return_value = ('', {})
@@ -461,7 +473,7 @@ def test_core_handles_training_server_timeout(messaging_factory):
         consumer = messaging_factory.make_consumer([topic_generic])            
         training_server = TrainingServer(
             prod_generic, prod_snapshots, consumer,                
-            graph,
+            graph_builder, layer_classes, edges, connections,
             snapshot_builder=MagicMock(),
             userland_timeout=userland_timeout,
             ping_interval=ping_interval,
@@ -500,7 +512,10 @@ def test_pause_works(graph_spec_binary_classification, messaging_factory):
     graph = MagicMock()
     graph.run.side_effect = run_graph
     graph_builder = MagicMock()
-
+    graph_builder.build_from_layers_and_edges.return_value = graph or MagicMock()
+    layer_classes = MagicMock()
+    edges = MagicMock()
+    connections = MagicMock()
     script_factory = MagicMock()
     script_factory.make.return_value = ('', {})
 
@@ -515,7 +530,7 @@ def test_pause_works(graph_spec_binary_classification, messaging_factory):
         consumer = messaging_factory.make_consumer([topic_generic])            
         training_server = TrainingServer(
             prod_generic, prod_snapshots, consumer,                
-            graph,
+            graph_builder, layer_classes, edges, connections,
             snapshot_builder=MagicMock(),
             max_time_run=120                
         )
@@ -562,7 +577,10 @@ def test_resume_works(graph_spec_binary_classification, messaging_factory):
     graph = MagicMock()
     graph.run.side_effect = run_graph
     graph_builder = MagicMock()
-
+    graph_builder.build_from_layers_and_edges.return_value = graph or MagicMock()
+    layer_classes = MagicMock()
+    edges = MagicMock()
+    connections = MagicMock()
     script_factory = MagicMock()
     script_factory.make.return_value = ('', {})
 
@@ -577,7 +595,7 @@ def test_resume_works(graph_spec_binary_classification, messaging_factory):
         consumer = messaging_factory.make_consumer([topic_generic])            
         training_server = TrainingServer(
             prod_generic, prod_snapshots, consumer,                
-            graph,
+            graph_builder, layer_classes, edges, connections,
             snapshot_builder=MagicMock(),
             max_time_run=120                
         )

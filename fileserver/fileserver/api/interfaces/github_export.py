@@ -11,7 +11,7 @@ class RepoExporterAPI():
         repo = self._get_or_make_repository()
         path_data_pairs = RepoExporterAPI._file_datas(files)
         element_list = [self._element_from_file_data(repo, file_path, data) for file_path, data in path_data_pairs]
-        return self._add_elements_to_new_commit(repo, element_list, commit_message)
+        return [self._add_elements_to_new_commit(repo, element_list, commit_message), self._get_repo_url()]
 
     @staticmethod
     def _file_datas(files: dict):
@@ -37,6 +37,9 @@ class RepoExporterAPI():
         master_ref = repo.get_git_ref("heads/master")
         master_ref.edit(sha=commit.sha)
         return commit.sha
+
+    def _get_repo_url(self):
+        return (f"www.github.com/{self.git.get_user.login}/{self.repo_name}")
 
     @staticmethod
     def _list_users_repo_names(git):
