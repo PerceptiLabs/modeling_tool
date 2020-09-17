@@ -35,9 +35,9 @@ def github_export(request):
 
     try:
         api = connect_to_repo(github_token, repo_name)
-        sha = export_repo_basic(api, full_path, include_trained, data_paths, commit_message=commit_message)
+        sha_and_url = export_repo_basic(api, full_path, include_trained, data_paths, commit_message=commit_message)
 
-        response = {"sha": sha}
+        response = {"sha": sha_and_url[0], "URL": sha_and_url[1]}
         return HttpResponse(json.dumps(response), content_type="application/json")
     except ValueError as e:
         raise HTTPExceptions.BAD_REQUEST.with_content(e)

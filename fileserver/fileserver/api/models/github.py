@@ -1,5 +1,5 @@
 from fileserver.api.interfaces.github_import import RepoImporterAPI
-import os, shutil
+import os, requests
 from send2trash import send2trash
 
 
@@ -81,11 +81,14 @@ def export_repo_basic(
 ):
 
     def _create_README(tensorpath):
-        if not os.path.exists(os.path.join(tensorpath, "README.md")):
-            # the README is in the models dir
-            readme_path = os.path.join(os.path.dirname(__file__), "README.md")
-            dest = os.path.join(tensorpath, "README.md")
-            shutil.copyfile(readme_path, dest)
+        file_url = {
+            "README.md": "https://github.com/PerceptiLabs/ExportTemplate/raw/master/README.md",
+            "pl_logo.png": "https://github.com/PerceptiLabs/ExportTemplate/raw/master/pl_logo.png"
+        }
+        for file in file_url:
+            obj = requests.get(file_url[file])
+            with open(os.path.join(tensorpath, file), "wb") as file:
+                file.write(obj.content)
 
     """
     call to export the files
