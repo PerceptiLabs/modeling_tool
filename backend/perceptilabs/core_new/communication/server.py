@@ -28,14 +28,17 @@ logger = logging.getLogger(APPLICATION_LOGGER)
 
 
 class TrainingServer:
-    def __init__(self, producer_generic, producer_snapshots, consumer, graph, snapshot_builder=None, userland_timeout=15, ping_interval=3, max_time_run=None):
+    def __init__(self, producer_generic, producer_snapshots, consumer, graph_builder, layer_classes, edges, connections, snapshot_builder=None, userland_timeout=15, ping_interval=3, max_time_run=None):
         self._producer_generic = producer_generic
         self._producer_snapshots = producer_snapshots
         self._consumer = consumer
 
         self._snapshot_builder = snapshot_builder        
         self._userland_timeout = userland_timeout
-        self._graph = graph
+        self._graph_builder = graph_builder
+        self._layer_classes = layer_classes
+        self._edges = edges
+        self._connections = connections
         self._closing = False
         self._max_time_run = max_time_run
 
@@ -58,6 +61,13 @@ class TrainingServer:
         self._producer_snapshots.start()
         
         state = State(on_transition=self._on_state_transition)
+
+        try:
+            self._graph = self._build_graph()            
+        except Exception as e:
+            self._send_userland_error(e)            
+            state.transition(State.TRAINING_FAILED)
+            return
         
         training_iterator = self._graph.run()
         training_sentinel = object()
@@ -154,6 +164,17 @@ class TrainingServer:
         self._producer_generic.stop()
         self._producer_snapshots.stop()
         self._consumer.stop()
+
+    def _build_graph(self):
+        layers = {}
+        for layer_id, layer_class in self._layer_classes.items():
+            layers[layer_id] = layer_class()        
+        
+        graph = self._graph_builder.build_from_layers_and_edges(
+            layers, self._edges, connections=self._connections
+        )
+        return graph
+        
 
     def _advance_training(self, training_step, sentinel):
         """Take a training step, check for userland errors, send snapshot if possible"""

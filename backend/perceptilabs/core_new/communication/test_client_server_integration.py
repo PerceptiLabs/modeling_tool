@@ -42,12 +42,22 @@ def create_server(messaging_factory, topic_gn, topic_sn, graph=None, snapshot_bu
     server_producer_snapshots = messaging_factory.make_producer(topic_sn)
     server_consumer = messaging_factory.make_consumer([topic_gn])
 
-    graph = graph or MagicMock()
+
+    graph_builder = MagicMock()
+    graph_builder.build_from_layers_and_edges.return_value = graph or MagicMock()
+
+    layer_classes = MagicMock()
+    edges = MagicMock()
+    connections = MagicMock()
+    
     snapshot_builder = snapshot_builder or MagicMock()
     
     server = TrainingServer(
         server_producer_generic, server_producer_snapshots, server_consumer,
-        graph,
+        graph_builder,
+        layer_classes,
+        edges,
+        connections,
         snapshot_builder=snapshot_builder,
         userland_timeout=userland_timeout,
         max_time_run=120

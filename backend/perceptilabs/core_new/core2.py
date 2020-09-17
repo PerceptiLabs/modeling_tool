@@ -89,6 +89,9 @@ class Core:
         self._model_id = model_id or uuid.uuid4().hex
         topic_generic = f'generic-{training_session_id}'.encode()    
         topic_snapshots = f'snapshots-{training_session_id}'.encode()
+        producer = self._messaging_factory.make_producer(topic_generic)        
+        consumer = self._messaging_factory.make_consumer([topic_generic, topic_snapshots])
+        logger.info(f"Instantiated message producer/consumer pairs for topics {topic_generic} and {topic_snapshots} for training session {training_session_id}")
         
         #graph = self._graph_builder.build_from_spec(graph_spec)        
         script_path = self._create_script(graph_spec, training_session_id, topic_generic, topic_snapshots, userland_timeout=self._userland_timeout)
@@ -98,9 +101,6 @@ class Core:
         except SyntaxError as e:
             self._handle_syntax_error(e)
             
-        producer = self._messaging_factory.make_producer(topic_generic)        
-        consumer = self._messaging_factory.make_consumer([topic_generic, topic_snapshots])
-        logger.info(f"Instantiated message producer/consumer pairs for topics {topic_generic} and {topic_snapshots} for training session {training_session_id}")
 
         self._client = TrainingClient(
             producer, consumer,
