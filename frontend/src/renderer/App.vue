@@ -330,7 +330,7 @@
         if(this.userId !== 'Guest') {
           this.trackerCreateUser(this.userEmail);
           this.trackerUpdateUser(this.userEmail);
-          this.trackerInitUser(this.userId);
+          this.trackerInitUser(this.userEmail);
         }
       },
 

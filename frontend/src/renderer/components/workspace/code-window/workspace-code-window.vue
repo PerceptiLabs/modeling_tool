@@ -220,9 +220,11 @@ export default {
       this.$store.dispatch('mod_api/API_getBatchPreviewSample', payload, {root: true})
     },
     onFocus(source) {
-      this.$store.commit('mod_workspace-code-editor/setIsInFocusState', true); 
+      this.$store.dispatch('mod_tracker/EVENT_codeEditorStartFocus');
+      this.$store.commit('mod_workspace-code-editor/setIsInFocusState', true);
     },
     onBlur(source) {
+      this.$store.dispatch('mod_tracker/EVENT_codeEditorStopFocus');
       this.$store.commit('mod_workspace-code-editor/setIsInFocusState', false);
     }
   },

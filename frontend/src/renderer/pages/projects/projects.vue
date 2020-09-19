@@ -186,6 +186,7 @@
 
   import { mapActions, mapMutations, mapState, mapGetters } from 'vuex';
   import { isWeb, stringifyNetworkObjects } from "@/core/helpers";
+  import { TRACKER_SCREENNAME_PROJECTS } from "@/core/constants";
   import cloneDeep from 'lodash.clonedeep';
   const mockModelList = [
     // {id: 1, dateCreated: new Date().setHours(15), dateLastOpened: new Date(), size: '10', name:'Placeholder 1', status: '75%', savedVersion: '-', sessionEndTime: 'Placeholder', collaborators: [{id: 1, name: 'Anton', img: null,}], lastModified: { user: {id: 1, name: 'Anton', img: null}, date: '19/02/20 13:00:00'}, isFavorite: true},
@@ -673,6 +674,11 @@
         this.gotToNetworkView(modelId);
         this.$store.dispatch('globalView/SET_exportNetworkToGithubPopup', true);
       }
+    },
+    mounted() {
+      this.$store.dispatch('mod_tracker/EVENT_screenChange', { 
+          screenName: TRACKER_SCREENNAME_PROJECTS
+        });
     },
     created() {
       // Adding this because of reloads on this page 
