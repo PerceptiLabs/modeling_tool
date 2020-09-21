@@ -70,6 +70,7 @@ def make_graph_spec(inputs_path, targets_path, learning_rate=0.3, checkpoint_pat
         id_='layer_train',
         name='layer_train',
         batch_size=8,
+        optimizer='SGD',
         learning_rate=learning_rate,
         n_epochs=200,
         distributed=distributed,

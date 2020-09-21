@@ -86,7 +86,7 @@ class Core:
         
     def run_stepwise(self, graph_spec, auto_close=False, model_id=None):
         self._training_session_id = training_session_id = uuid.uuid4().hex
-        self._model_id = model_id or uuid.uuid4().hex
+        self._model_id = model_id or uuid.uuid4().int
         topic_generic = f'generic-{training_session_id}'.encode()    
         topic_snapshots = f'snapshots-{training_session_id}'.encode()
         producer = self._messaging_factory.make_producer(topic_generic)        
