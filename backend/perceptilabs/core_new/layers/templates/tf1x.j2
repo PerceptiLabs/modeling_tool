@@ -334,7 +334,8 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
         self._n_neurons = {{layer_spec.n_neurons}}
         self._variables = {}
         self._lw_variables = {}
-        
+        self._keep_prob = {{layer_spec.keep_prob}}
+
     def __call__(self, inputs: Dict[str, tf.Tensor], is_training: tf.Tensor = None) -> Dict[str, tf.Tensor]:
         """ Takes a tensor as input and feeds it forward through a layer of neurons, returning a newtensor."""
         x = inputs['input']
@@ -343,7 +344,9 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
         y_before = None
         y = None
 
-        with tf.compat.v1.variable_scope(self._scope, reuse=tf.compat.v1.AUTO_REUSE):        
+        with tf.compat.v1.variable_scope(self._scope, reuse=tf.compat.v1.AUTO_REUSE):
+            is_training = tf.constant(True) if is_training is None else is_training
+            
             initial = tf.random.truncated_normal((n_inputs, self._n_neurons), stddev=0.1)
             W = tf.compat.v1.get_variable('W', initializer=initial)
 
@@ -367,7 +370,7 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
 
             {% filter remove_lspaces(8) %}
                 {% if layer_spec.dropout %}
-                    y = tf.nn.dropout(y, rate = 1 - {{layer_spec.keep_prob}})
+                    y = tf.nn.dropout(y, keep_prob=self._keep_prob*tf.cast(is_training, tf.float32))
                 {% endif %}
             {% endfilter %}
             
@@ -614,6 +617,7 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
         y = None
 
         with tf.compat.v1.variable_scope(self._scope, reuse=tf.compat.v1.AUTO_REUSE):
+            is_training = tf.constant(True) if is_training is None else is_training            
             {% filter remove_lspaces(8) %}
                 {% if layer_spec.conv_dim == '1D' %}
                     shape = [
@@ -680,7 +684,7 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
             {% endfilter %}
             {% filter remove_lspaces(8) %}
                 {% if layer_spec.dropout %}
-                    y = tf.nn.dropout(y, self._keep_prob)
+                    y = tf.nn.dropout(y, self._keep_prob*tf.cast(is_training, tf.float32))
                 {% endif %}
             {% endfilter %}
             {% filter remove_lspaces(12) %}
@@ -799,6 +803,7 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
         y = None
 
         with tf.compat.v1.variable_scope(self._scope, reuse=tf.compat.v1.AUTO_REUSE):
+            is_training = tf.constant(True) if is_training is None else is_training            
             {% filter remove_lspaces(8) %}
                 {% if layer_spec.deconv_dim == '2D' %}
                     shape = [
@@ -891,7 +896,7 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
 
             {% filter remove_lspaces(8) %}
                 {% if layer_spec.dropout %}
-                    y = tf.nn.dropout(y,self._keep_prob)
+                    y = tf.nn.dropout(y,self._keep_prob*tf.cast(is_training, tf.float32))
                 {% endif %}
                 {% if layer_spec.activation is not none %}
                     y = y + b
@@ -901,7 +906,7 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
             {% filter remove_lspaces(12) %}
                 {% if layer_spec.batch_norm %}
                     {% if layer_spec.dropout %}
-                        y_before = tf.nn.dropout(y_before, self._keep_prob)
+                        y_before = tf.nn.dropout(y_before, self._keep_prob*tf.cast(is_training, tf.float32))
                     {% endif %}
                     
                     {% if layer_spec.activation is not none %}
@@ -997,12 +1002,14 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
         self._lw_variables = {}
         self._weights = None
         self._biases = None
+        self._keep_prob = {{layer_spec.keep_prob}}
 
     def __call__(self, inputs: Dict[str, tf.Tensor], is_training: tf.Tensor = None):
         """ Takes a tensor as input and feeds it forward through a recurrent layer, returning a newtensor."""       
         y = None
 
-        with tf.compat.v1.variable_scope(self._scope, reuse=tf.compat.v1.AUTO_REUSE):   
+        with tf.compat.v1.variable_scope(self._scope, reuse=tf.compat.v1.AUTO_REUSE):
+            is_training = tf.constant(True) if is_training is None else is_training            
             {% filter remove_lspaces(8) %}   
                 {% if layer_spec.version == 'LSTM' %}
                     cell = tf.nn.rnn_cell.LSTMCell(self._neurons, activation={{activation_name(layer_spec.activation)}}, state_is_tuple=True, name=self._scope)
@@ -1015,7 +1022,7 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
             
             {% filter remove_lspaces(8) %}
                 {% if layer_spec.dropout %}
-                    cell = tf.nn.rnn_cell.DropoutWrapper(cell, output_keep_prob=self._keep_prob)
+                    cell = tf.nn.rnn_cell.DropoutWrapper(cell, output_keep_prob=self._keep_prob*tf.cast(is_training, tf.float64))
                 {% endif %}
             {% endfilter %}
 
