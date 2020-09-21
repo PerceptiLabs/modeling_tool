@@ -4,6 +4,13 @@ import scaleNet   from './workspace-scale.js'
 import spinnerNet from './workspace-spinner.js'
 import helpersNet from './workspace-helpers.js'
 import {debounce} from '@/core/helpers'
+import { 
+  TRACKER_SCREENNAME_WORKSPACE,
+  TRACKER_SCREENNAME_WORKSPACE_TRAINING,
+  TRACKER_SCREENNAME_STATISTICS,
+  TRACKER_SCREENNAME_STATISTICS_TRAINING,
+  TRACKER_SCREENNAME_TEST,
+  TRACKER_SCREENNAME_TEST_TRAINING } from "@/core/constants";
 import Analytics  from '@/core/analytics'
 import { trainingElements, deepLearnElements }  from '@/core/constants.js';
 
@@ -90,16 +97,17 @@ export default {
   },
   computed: {
     ...mapGetters({
-      currentSelectedEl:      'mod_workspace/GET_currentSelectedEl',
-      currentElList:          'mod_workspace/GET_currentNetworkElementList',
-      testIsOpen:             'mod_workspace/GET_testIsOpen',
-      statusNetworkCore:      'mod_workspace/GET_networkCoreStatus',
-      statisticsIsOpen:       'mod_workspace/GET_statisticsIsOpen',
+      currentSelectedEl:  'mod_workspace/GET_currentSelectedEl',
+      currentElList:      'mod_workspace/GET_currentNetworkElementList',
+      testIsOpen:         'mod_workspace/GET_testIsOpen',
+      statusNetworkCore:  'mod_workspace/GET_networkCoreStatus',
+      statisticsIsOpen:   'mod_workspace/GET_statisticsIsOpen',
+      isTraining:         'mod_workspace/GET_networkIsTraining',
 
-      isTutorialMode:         'mod_tutorials/getIsTutorialMode',
-      isNotebookMode:         'mod_notebook/getNotebookMode',
-      tutorialActiveStep:     'mod_tutorials/getActiveStep',
-      getCurrentStepCode:     'mod_tutorials/getCurrentStepCode',
+      isTutorialMode:     'mod_tutorials/getIstutorialMode',
+      isNotebookMode:     'mod_notebook/getNotebookMode',
+      tutorialActiveStep: 'mod_tutorials/getActiveStep',
+      getCurrentStepCode: 'mod_tutorials/getCurrentStepCode',
     }),
     ...mapState({
       showNewModelPopup:          state => state.globalView.globalPopup.showNewModelPopup,
@@ -191,6 +199,23 @@ export default {
     isNeedWait() {
       return this.$store.getters['mod_workspace/GET_networkWaitGlobalEvent']
     },
+    currentScreen() {
+      // This is used to generate a screen name used for tracking changes in the
+      
+      if (this.statisticsIsOpen) {
+        return this.isTraining ? 
+          TRACKER_SCREENNAME_STATISTICS_TRAINING :
+          TRACKER_SCREENNAME_STATISTICS;
+      } else if (this.testIsOpen) {
+        return this.isTraining ? 
+          TRACKER_SCREENNAME_TEST_TRAINING :
+          TRACKER_SCREENNAME_TEST;
+      } else {
+        return this.isTraining ? 
+          TRACKER_SCREENNAME_WORKSPACE_TRAINING :
+          TRACKER_SCREENNAME_WORKSPACE;
+      }
+    }
   },
   watch: {
     statusNetworkCore(newStatus) {
@@ -210,7 +235,7 @@ export default {
         && this.testIsOpen === null
       ) {
         // user journey tracking
-        this.$store.dispatch('mod_tracker/EVENT_trainingCompleted');
+        this.$store.dispatch('mod_tracker/EVENT_trainingCompleted', 'Finished training');
         Analytics.googleAnalytics.trackCustomEvent('training-completed');
 
         this.net_trainingDone();
@@ -252,6 +277,16 @@ export default {
       this.isNeedWait
         ? this.currentData = this.buffer
         : null
+    },
+    currentScreen: {
+      handler(newVal, oldVal) {
+        // console.log('currentScreen watcher', newVal, oldVal);
+        if (newVal === oldVal) { return; }
+
+        this.$store.dispatch('mod_tracker/EVENT_screenChange', { 
+          screenName: this.currentScreen
+        });
+      }
     },
     getCurrentStepCode: {
       handler(newVal, oldVal) {
@@ -354,7 +389,7 @@ export default {
       // the requested tab not being the first
       this.set_chartRequests(this.workspace[index].networkID);
 
-      this.notificationWindowStateHanlder(false);
+      this.notificationWindowStateHandler(false);
     },
     deleteTabNetwork(index) {
       let hasUnsavedChanges = this.hasUnsavedChanges(this.workspace[index].networkID);
@@ -371,7 +406,10 @@ export default {
         this.delete_network(index);
       }
     },
-    notificationWindowStateHanlder(value = false) {
+    notificationWindowStateHandler(value = false) {
+
+      this.$store.dispatch('mod_tracker/EVENT_consoleWindowToggle', value);
+
       this.setNotificationWindowState({
         networkId: this.workspace[this.indexCurrentNetwork].networkID,
         value: value

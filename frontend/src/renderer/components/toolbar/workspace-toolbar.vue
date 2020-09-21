@@ -301,6 +301,7 @@ export default {
       this.$refs.tutorialComponent.switchTutorialMode()
     },
     switchNotebookMode() {
+      this.$store.dispatch('mod_tracker/EVENT_toolbarNotebookButtonToggle', !this.isNotebookMode);
       this.setNextStep('tutorial-workspace-notebook-view-toggle');
       this.set_notebookMode();
     },
@@ -330,7 +331,7 @@ export default {
     trainStop() {
       this.stopTraining();
       
-      this.$store.dispatch('mod_tracker/EVENT_trainingCompleted');
+      this.$store.dispatch('mod_tracker/EVENT_trainingCompleted', 'User stopped');
       googleAnalytics.trackCustomEvent('training-completed');
     },
     trainPause() {
@@ -384,6 +385,7 @@ export default {
       this.$router.push({name: 'projects'});
     },
     toggleModelPreviews() {
+      this.$store.dispatch('mod_tracker/EVENT_toolbarPreviewButtonToggle', !this.showModelPreviews);
       this.setNextStep('tutorial-workspace-preview-toggle');
       this.$store.dispatch('mod_workspace/TOGGLE_showModelPreviews');
     }

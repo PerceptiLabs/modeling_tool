@@ -1,4 +1,5 @@
 import os
+import re
 from abc import abstractmethod, ABC
 import traceback
 import logging
@@ -68,16 +69,23 @@ def exception_to_error(layer_id, layer_type, exception, line_offset=None):
 
         if line_offset is not None:
             line_no -= line_offset
-    
-    message = ''
-    #include_following = False
-    for counter, line in enumerate(tb_obj.format()):
-        #if '_call_with_frames_removed' in line:
-        #    include_following = True
-        #    continue
-        #if counter == 0 or include_following:
-        message += line
 
+    def adjust_line_num(match):
+        """ Decreases the line number in a traceback string. Assumes that the line string is in the first match. """
+        i1, i2 = match.regs[1]
+        line_number = int(match.string[i1:i2]) - line_offset
+        new_string = match.string[0:i1] + str(line_number) + match.string[i2:]
+        return new_string
+
+    message = ''
+    for counter, line in enumerate(tb_obj.format()):
+        if line_offset is None:
+            message += line
+        else:
+            # The code shown to the user does not include the import statements (and the optional preamble)
+            # Therefore, we decrease the traceback line by an offset
+            message += re.sub( '  File "<rendered-code.*, line ([0-9]*), in .*', adjust_line_num, line)
+            
     error = UserlandError(layer_id, layer_type, line_no, message)
     return error
 
@@ -90,7 +98,7 @@ def print_result_errors(layer_spec, results):
 
 class BaseStrategy(ABC):
     @abstractmethod
-    def run(self, layer_spec, layer_class, input_results):
+    def run(self, layer_spec, layer_class, input_results, line_offset=None):
         raise NotImplementedError
 
     @staticmethod
@@ -108,17 +116,17 @@ class BaseStrategy(ABC):
 
     
 class DefaultStrategy(BaseStrategy):
-    def run(self, layer_spec, layer_class, input_results):    
+    def run(self, layer_spec, layer_class, input_results, line_offset=None):    
         return self.get_default()
     
 
 class Tf1xStrategy(BaseStrategy):
-    def run(self, layer_spec, layer_class, input_results):
+    def run(self, layer_spec, layer_class, input_results, line_offset=None):
         with tf.Graph().as_default() as graph:
             try:
                 layer_instance = layer_class()
             except Exception as e:
-                error = exception_to_error(layer_spec.id_, layer_spec.type_, e)
+                error = exception_to_error(layer_spec.id_, layer_spec.type_, e, line_offset=line_offset)
                 logger.debug(f"Layer {layer_spec.id_} raised an error when instantiating layer class")
                 return self.get_default(strategy_error=error)                    
             input_tensors = {}
@@ -147,14 +155,14 @@ class Tf1xStrategy(BaseStrategy):
             try:
                 output_tensor = layer_instance(input_tensors)
             except Exception as e:
-                error = exception_to_error(layer_spec.id_, layer_spec.type_, e)
+                error = exception_to_error(layer_spec.id_, layer_spec.type_, e, line_offset=line_offset)
                 logger.debug(f"Layer {layer_spec.id_} raised an error in __call__" + str(e))
                 return self.get_default(strategy_error=error)                    
                 
             with tf.Session(config=tf.ConfigProto(device_count={'GPU': 0})) as sess:
-                return self._run_internal(sess, layer_spec.id_, layer_spec.type_, layer_instance, output_tensor, input_tensors)
+                return self._run_internal(sess, layer_spec.id_, layer_spec.type_, layer_instance, output_tensor, input_tensors, line_offset)
 
-    def _run_internal(self, sess, layer_id, layer_type, layer_instance, output_tensor, layer_spec):
+    def _run_internal(self, sess, layer_id, layer_type, layer_instance, output_tensor, layer_spec, line_offset):
         sess.run(tf.global_variables_initializer())
 
         if tf.version.VERSION.startswith('1.15'):
@@ -165,7 +173,7 @@ class Tf1xStrategy(BaseStrategy):
             variables = layer_instance.variables.copy()
             outputs = layer_instance.get_sample(sess=sess)
         except Exception as e:
-            error = exception_to_error(layer_id, layer_type, e)
+            error = exception_to_error(layer_id, layer_type, e, line_offset=line_offset)
             logger.debug(f"Layer {layer_id} raised an error on sess.run")            
             return self.get_default(strategy_error=error)
 
@@ -206,7 +214,7 @@ class TrainingStrategy(BaseStrategy):
         self._graph_spec = graph_spec
         self._script_factory = script_factory
 
-    def run(self, layer_spec, layer_class, input_results):
+    def run(self, layer_spec, layer_class, input_results, line_offset=None):
         # We need the graph spec to run the training layer
         with tf.Graph().as_default() as tfgraph:
             try:
@@ -217,7 +225,7 @@ class TrainingStrategy(BaseStrategy):
                 variables = training_layer.variables.copy()
 
             except Exception as e:
-                instantiation_error = exception_to_error(layer_spec.id_, layer_spec.type_, e)
+                instantiation_error = exception_to_error(layer_spec.id_, layer_spec.type_, e, line_offset=line_offset)
                 strategy_error = None
                 sample = {'output': None}
                 shape = {'output': None}
@@ -241,7 +249,7 @@ class TrainingStrategy(BaseStrategy):
 
             
 class DataSupervisedStrategy(BaseStrategy):
-    def run(self, layer_spec, layer_class, input_results):
+    def run(self, layer_spec, layer_class, input_results, line_offset=None):
         try:
             layer_instance = layer_class()
             columns = layer_instance.columns        
@@ -252,7 +260,7 @@ class DataSupervisedStrategy(BaseStrategy):
             shape = {'output': None}
             variables = {}
             columns = []
-            strategy_error = exception_to_error(layer_spec.id_, layer_spec.type_, e)
+            strategy_error = exception_to_error(layer_spec.id_, layer_spec.type_, e, line_offset=line_offset)
             logger.debug(f"Layer {layer_spec.id_} raised an error when calling sample property")                        
         else:
             shape = {name: np.atleast_1d(value).shape for name, value in output.items()}
@@ -271,14 +279,14 @@ class DataSupervisedStrategy(BaseStrategy):
 
     
 class DataReinforceStrategy(BaseStrategy):
-    def run(self, layer_spec, layer_class, input_results):
+    def run(self, layer_spec, layer_class, input_results, line_offset=None):
         layer_instance = layer_class()
         try:
             y = layer_instance.sample
         except Exception as e:
             y = None
             shape = None
-            strategy_error = exception_to_error(layer_spec.id_, layer_spec.type_, e)
+            strategy_error = exception_to_error(layer_spec.id_, layer_spec.type_, e, line_offset=line_offset)
             logger.debug(f"Layer {layer_spec.id_} raised an error when calling sample property")                        
         else:
             shape = np.atleast_1d(y).shape
@@ -360,11 +368,12 @@ class LightweightCore:
             return BaseStrategy.get_default(code_error=code_error)
 
         layer_helper = LayerHelper(self._script_factory, layer_spec, graph_spec)
+        layer_code_offset = layer_helper.get_line_count(prepend_imports=True, layer_code=False) # Get length of imports                            
         try:
             layer_class = layer_helper.get_class()
         except Exception as e:
-            layer_class = None                                                
-            instantiation_error = exception_to_error(layer_spec.id_, layer_spec.type_, e)
+            layer_class = None
+            instantiation_error = exception_to_error(layer_spec.id_, layer_spec.type_, e, line_offset=layer_code_offset)
             logger.debug(f"Layer {layer_spec.id_} raised an error when executing module " + repr(e))
         else:
             instantiation_error = None
@@ -379,7 +388,7 @@ class LightweightCore:
         script_factory = self._script_factory
         strategy = self._get_layer_strategy(layer_class, graph_spec, script_factory)
         try:
-            results = strategy.run(layer_spec, layer_class, input_results)
+            results = strategy.run(layer_spec, layer_class, input_results, line_offset=layer_code_offset)
         except:
             logger.exception(f"Failed running strategy '{strategy.__class__.__name__}' on layer {layer_spec.id_}")
             raise
@@ -404,8 +413,9 @@ class LightweightCore:
         try:
             code = layer_helper.get_code(check_syntax=True)
         except SyntaxError as e:
-            logger.exception(f"Layer {layer_spec.id_} raised an error when getting layer code") 
-            return None, exception_to_error(layer_spec.id_, layer_spec.type_, e)
+            logger.exception(f"Layer {layer_spec.id_} raised an error when getting layer code")
+            layer_code_offset = layer_helper.get_line_count(prepend_imports=True, layer_code=False) # Get length of imports            
+            return None, exception_to_error(layer_spec.id_, layer_spec.type_, e, line_offset=layer_code_offset)
         except Exception as e:
             logger.warning(f"{type(e).__name__}: {str(e)} | couldn't get code for {layer_spec.id_}. Treating it as not fully specified")
             if logger.isEnabledFor(logging.DEBUG):

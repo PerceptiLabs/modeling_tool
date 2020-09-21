@@ -37,7 +37,7 @@ class LayerHelper:
         self._graph_spec = graph_spec
         self._class_object = None
         
-    def get_code(self, prepend_imports=False, preamble=None, check_syntax=False, print_code=False):
+    def get_code(self, preamble=None, prepend_imports=False, layer_code=True, check_syntax=False, print_code=False):
         code = preamble or ""
         
         if prepend_imports:
@@ -48,10 +48,11 @@ class LayerHelper:
                 code += stmt + '\n'            
             code += '\n'
 
-        code += self._script_factory.render_layer_code(
-            self._layer_spec,
-            macro_kwargs={'layer_spec': self._layer_spec, 'graph_spec': self._graph_spec}
-        )
+        if layer_code:
+            code += self._script_factory.render_layer_code(
+                self._layer_spec,
+                macro_kwargs={'layer_spec': self._layer_spec, 'graph_spec': self._graph_spec}
+            )
         
         if check_syntax:
             try:
@@ -93,4 +94,8 @@ class LayerHelper:
         
         return instance
 
+    def get_line_count(self, preamble=None, prepend_imports=False, layer_code=True):
+        code = self.get_code(preamble=preamble, prepend_imports=prepend_imports, layer_code=layer_code)
+        line_count = len(code.split('\n')) - int(len(code) > 0)
+        return line_count
     

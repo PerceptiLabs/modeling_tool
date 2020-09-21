@@ -289,7 +289,7 @@ export default {
     trainStop() {
       this.stopTraining();
       
-      this.$store.dispatch('mod_tracker/EVENT_trainingCompleted');
+      this.$store.dispatch('mod_tracker/EVENT_trainingCompleted', 'User stopped');
       googleAnalytics.trackCustomEvent('training-completed');
     },
     trainPause() {

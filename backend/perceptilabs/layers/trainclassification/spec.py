@@ -11,12 +11,12 @@ class TrainClassificationSpec(InnerLayerSpec):
     decay_rate: Union[float, None] = None
     decay_steps: Union[int, None] = None
     momentum: Union[float, None] = None
-    beta1: Union[float, None] = None
-    beta2: Union[float, None] = None
-    optimizer: str = 'SGD'
+    beta1: Union[float, None] = 0.9
+    beta2: Union[float, None] = 0.999
+    optimizer: str = 'ADAM'
     class_weights: Union[float, None] = None
     n_epochs: int = 10
-    batch_size: int = 8
+    batch_size: int = 10
     loss_function: str = 'Quadratic'
     connection_labels: Union[LayerConnection, None] = None
     connection_predictions: Union[LayerConnection, None] = None    

@@ -24,7 +24,31 @@ from perceptilabs.core_new.communication.state import State, StateTransitionErro
 logger = logging.getLogger(APPLICATION_LOGGER)
 
 
+def is_tf_op_error(exception):
+    """ Checks whether an exception implements tf.errors.OpError 
 
+    Workaround for retrieving operation errors from errors raised in sess.run. 
+    """
+    
+    import tensorflow as tf
+    return isinstance(exception, tf.errors.OpError)
+
+
+def extract_tf_op_traceback_frames(exception):
+    """ Takes a tf.errors.OpError 
+
+    Workaround for retrieving operation errors from errors raised in sess.run. 
+    """
+    original_op = exception.op # The first one is always not None
+    while original_op is not None:
+        op_tb = original_op.traceback
+        original_op = original_op._original_op
+
+    frames = [
+        traceback.FrameSummary(lineno=tuple_[1], name=tuple_[2], filename=tuple_[0], line=tuple_[3])
+        for tuple_ in op_tb
+    ]
+    return frames
 
 
 class TrainingServer:
@@ -202,10 +226,17 @@ class TrainingServer:
         self._send_key_value('userland-timeout')        
     
     def _send_userland_error(self, exception):
+        if is_tf_op_error(exception):
+            # TensorFlow raises errors on sess.run(), but we want errors from the operation itself            
+            frames = extract_tf_op_traceback_frames(exception)
+        else:
+            frames = traceback.extract_tb(exception.__traceback__)            
+        
         tb_frames = [
             TracebackFrame(frame.lineno, frame.name, frame.filename, frame.line)
-            for frame in traceback.extract_tb(exception.__traceback__)
+            for frame in frames
         ]
+            
         data = {'exception': repr(exception), 'traceback_frames': tb_frames}
         self._send_key_value('userland-error', data)
 

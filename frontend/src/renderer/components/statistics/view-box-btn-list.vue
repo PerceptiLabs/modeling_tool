@@ -51,6 +51,12 @@ export default {
       // this.$emit('set-current-btn', tab);
       this.$store.commit('mod_statistics/setSelectedMetric', { layerType: this.layerType, selectedMetric: tab });
 
+      this.$store.dispatch('mod_tracker/EVENT_viewboxMetricSelect', {
+        view: this.testIsOpen ? 'Test' : 'Statistics', // can only be in Test or Statistics view
+        layerType: this.layerType,
+        selectedMetric: tab
+      });
+      
       // Need to check if this.layerType === 'Training' because it's the same
       // component for the Training and normal (next to network map) viewboxes.
       if (this.layerType === 'Training' && this.getCurrentStepCode === 'tutorial-statistics-tabs') {
@@ -67,6 +73,9 @@ export default {
     },
     tabSet() {
       return this.$store.getters['mod_statistics/getLayerMetrics'](this.layerType);
+    },
+    testIsOpen() {
+      return this.$store.getters['mod_workspace/GET_testIsOpen'];
     }
   }
 }

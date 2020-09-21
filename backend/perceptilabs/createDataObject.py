@@ -2,12 +2,17 @@ import numpy as np
 import itertools
 
 
-def RGB2RGBa(data):
+def RGB2RGBa(data, normalize):
     data=np.squeeze(data)
     (w,h,d)=np.shape(data)
     newData=np.empty((w, h, 4))
-    normalizedData=np.around((data/data.max(0).max(0))*255)
-    newData[:, :, 0:3] = normalizedData
+
+    if normalize:
+        normalizedData=np.around((data/data.max(0).max(0))*255)
+        newData[:, :, 0:3] = normalizedData
+    else:
+        newData[:, :, 0:3] = data
+    
     newData[:,:,3]=255
     flatData=np.reshape(newData,-1)
     return flatData
@@ -73,17 +78,17 @@ TYPE_PIE       = "pie"
 
 BAR_LINE_THRESHOLD = 25
 
-def bar(dataVec, subSampleSize=None):
+def bar(dataVec):
     obj = {"data": convertToList(dataVec)}
     return obj
 
 
-def line(dataVec, subSampleSize=None):
+def line(dataVec):
     obj = {"data": convertToList(dataVec)}
     return obj
 
 
-def heatmap(dataVec, subSampleSize=None):
+def heatmap(dataVec, subSampleSize):
     data = subsample(dataVec, subSampleSize)
     data = convertToList(data)
     
@@ -97,7 +102,7 @@ def heatmap(dataVec, subSampleSize=None):
     return obj
 
 
-def grayscale(dataVec, subSampleSize=None):
+def grayscale(dataVec, subSampleSize):
     dataVec = subsample(dataVec, subSampleSize)    
     height, width = dataVec.shape[0:2]
     dataVec = grayscale2RGBA(dataVec)
@@ -109,10 +114,10 @@ def grayscale(dataVec, subSampleSize=None):
     return output
 
 
-def rgb(dataVec, subSampleSize=None):
+def rgb(dataVec, subSampleSize, normalize):
     dataVec = subsample(dataVec, subSampleSize)    
     height, width = dataVec.shape[0:2]
-    dataVec = RGB2RGBa(dataVec)
+    dataVec = RGB2RGBa(dataVec, normalize)
     
     output = {"data": convertToList(dataVec),
               "type": TYPE_RGBA,
@@ -121,12 +126,12 @@ def rgb(dataVec, subSampleSize=None):
     return output
 
 
-def scatter(dataVec, subSampleSize=None):
+def scatter(dataVec):
     obj = {"data": convertToList(dataVec)}
     return obj    
 
 
-def pie(dataVec, subSampleSize=None):
+def pie(dataVec):
     try:
         list_ = [dict(name=n, value=float(v)) for n, v in dataVec]
     except Exception as e:
@@ -134,13 +139,6 @@ def pie(dataVec, subSampleSize=None):
     output = {"data": list_}
     return output
 
-TYPE_TO_SPEC_FUNC = {TYPE_BAR: bar,
-                     TYPE_LINE: line,
-                     TYPE_GRAYSCALE: grayscale,
-                     TYPE_RGBA: rgb,
-                     TYPE_HEATMAP: heatmap,
-                     TYPE_SCATTER: scatter,
-                     TYPE_PIE: pie}
 
 def getType(dataVec):
     dataVec = np.asarray(dataVec)
@@ -169,7 +167,7 @@ def getType(dataVec):
     else:
         return TYPE_SCATTER   
 
-def createDataObject(dataList,typeList=None,styleList=None,nameList=None,subSampleSize=200):
+def createDataObject(dataList,typeList=None,styleList=None,nameList=None,subSampleSize=200, normalize=True):
     # return {}
     if np.any(np.asarray(dataList).ravel() is None):
         return {}
@@ -198,8 +196,21 @@ def createDataObject(dataList,typeList=None,styleList=None,nameList=None,subSamp
         if dataVec is None:
             break
 
-        customFieldsFunc = TYPE_TO_SPEC_FUNC.get(type_)
-        if customFieldsFunc is None:
+        if type_ == TYPE_BAR:
+            output = bar(dataVec)
+        elif type_ == TYPE_LINE:
+            output = line(dataVec)
+        elif type_ == TYPE_RGBA:
+            output = rgb(dataVec, subSampleSize, normalize)
+        elif type_ == TYPE_GRAYSCALE:
+            output = grayscale(dataVec, subSampleSize)
+        elif type_ == TYPE_HEATMAP:
+            output = heatmap(dataVec, subSampleSize)
+        elif type_ == TYPE_SCATTER:
+            output = scatter(dataVec)
+        elif type_ == TYPE_PIE:
+            output = pie(dataVec)
+        else:
             raise ValueError("Unknown type: " + type_)        
 
         seriesEntry = dict(type=type_)
@@ -208,7 +219,7 @@ def createDataObject(dataList,typeList=None,styleList=None,nameList=None,subSamp
         if style:
             seriesEntry['linestyle'] = style
             
-        seriesEntry.update(customFieldsFunc(dataVec, subSampleSize))        
+        seriesEntry.update(output)        
         seriesList.append(seriesEntry)
 
     dataObject = dict()

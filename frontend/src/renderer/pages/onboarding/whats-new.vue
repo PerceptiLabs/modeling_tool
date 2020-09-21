@@ -42,9 +42,9 @@ export default {
     return {
       stepNumber: 0,
       contentForSteps: [
-        '../../../../static/img/whats-new/whats-new-1.png',
-        '../../../../static/img/whats-new/whats-new-2.png',
-        '../../../../static/img/whats-new/whats-new-3.png'
+        './static/img/whats-new/whats-new-1.png',
+        './static/img/whats-new/whats-new-2.png',
+        './static/img/whats-new/whats-new-3.png'
       ],
       headersForSteps: [
         'New component interface',

@@ -77,7 +77,8 @@ def make_graph_spec(inputs_path, targets_path, learning_rate=0.3, checkpoint_pat
         checkpoint_path=checkpoint_path,
         backward_connections=(conn_labels_to_train, conn_fc_to_train),
         connection_labels=conn_labels_to_train,
-        connection_predictions=conn_fc_to_train
+        connection_predictions=conn_fc_to_train,
+        optimizer='SGD'
     )
 
     graph_spec = GraphSpec([

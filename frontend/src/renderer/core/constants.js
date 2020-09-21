@@ -40,6 +40,15 @@ export const MODAL_PAGE_CREATE_MODEL = 'MODAL_PAGE_CREATE_MODEL';
 
 export const PROJECT_DEFAULT_FOLDER = '/Users/antonbourosu/proj/'
 
+
+export const TRACKER_SCREENNAME_PROJECTS = 'Projects';
+export const TRACKER_SCREENNAME_WORKSPACE = 'Workspace';
+export const TRACKER_SCREENNAME_WORKSPACE_TRAINING = 'Workspace-Training';
+export const TRACKER_SCREENNAME_STATISTICS = 'Statistics';
+export const TRACKER_SCREENNAME_STATISTICS_TRAINING = 'Statistics-Training';
+export const TRACKER_SCREENNAME_TEST = 'Test';
+export const TRACKER_SCREENNAME_TEST_TRAINING = 'Test-Training';
+
 export const LOCAL_STORAGE_WORKSPACE_VIEW_TYPE_KEY  = 'mod_workspace_view_type'
 export const LOCAL_STORAGE_WORKSPACE_SHOW_MODEL_PREVIEWS  = 'show_model_previews'
 
