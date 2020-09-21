@@ -42,6 +42,7 @@ def request_as_dict(request):
         ret = json.loads(request.body, encoding="utf-8")
         as_utf8 = request.body.decode("utf-8")
         ret = json.loads(as_utf8, encoding="utf-8")
+        
         return ret
     except:
         raise HTTPExceptions.BAD_REQUEST.with_content("Invalid json request")

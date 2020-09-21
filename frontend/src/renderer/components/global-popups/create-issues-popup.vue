@@ -1,42 +1,74 @@
 <template lang="pug">
   base-global-popup(:tab-set="popupTitle")
-    template(slot="Report to PerceptiLabs-content")
-      .popup-body-section
-        .section-header
-          i.icon.icon-bug-report.section-header-icon 
-          .section-header-label There's a bug
+    //- This is the form
+    //- The confirmation is below
+    template(v-if="isForm")
+      template(slot="Report to PerceptiLabs-content")
+        .popup-body-section
+          .section-header
+            i.icon.icon-bug-report.section-header-icon 
+            .section-header-label Report a bug
 
-        .section-content
-          span Comments
-          textarea.section-content-textarea(
-            v-model="issueBody"
-            ref="issueTextArea")
+          .section-content
+            span Title
+            input.section-content-input(
+              v-model="issueTitle"
+              ref="issueTitle")
 
-    template(slot="action")
-      button.btn.btn--primary.btn--disabled(type="button"
-        @click="cancel"
-        ) Cancel
-      button.btn.btn--primary(type="button"
-        @click="ok"
-        ) Send
+          .section-content
+            span Comments
+            textarea.section-content-textarea(
+              v-model="issueBody"
+              ref="issueBody")
 
-    template(slot="after-footer")
-      .after-footer-section
-        .section-header
-          img.section-header-icon(src="./../../../../static/img/slack.png")
-          .section-header-label Connect on Slack
+          //- .section-content.post-as-section
+          //-   .section-content-label Post as:
+          //-   .section-content-radio-group
+          //-     base-radio(group-name="postas-group" value-input="normal" v-model="issueType" :disabled="true")
+          //-       span Username
+          //-     base-radio(group-name="postas-group" value-input="anonymous" v-model="issueType")
+          //-       span Anonymous
 
-        .section-content.left-indent
-          .section-content-text Ask and get answers from PerceptiLabs' community Slack channel. 
-          a.section-content-link(:href="slackLink" target="_blank") Take me there.
-        
+      template(slot="action")
+        button.btn.btn--primary.btn--disabled(type="button"
+          @click="cancel"
+          ) Cancel
+        button.btn.btn--primary(type="button"
+          @click="ok"
+          ) Post
 
+      template(slot="after-footer")
+        .after-footer-section
+          .section-header
+            svg.section-header-icon(width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg")
+              path(fill-rule="evenodd" clip-rule="evenodd" d="M0 1.25C0 0.918479 0.131696 0.600537 0.366117 0.366117C0.600537 0.131696 0.918479 0 1.25 0L8.75 0C9.08152 0 9.39946 0.131696 9.63388 0.366117C9.8683 0.600537 10 0.918479 10 1.25V6.25C10 6.58152 9.8683 6.89946 9.63388 7.13388C9.39946 7.3683 9.08152 7.5 8.75 7.5H2.75875C2.593 7.50004 2.43406 7.56591 2.31687 7.68313L0.53375 9.46625C0.490082 9.51003 0.434407 9.53987 0.373773 9.55199C0.313138 9.56412 0.25027 9.55798 0.193125 9.53436C0.135979 9.51074 0.0871262 9.4707 0.0527483 9.4193C0.0183704 9.3679 1.31343e-05 9.30746 0 9.24563L0 1.25ZM2.1875 1.875C2.10462 1.875 2.02513 1.90792 1.96653 1.96653C1.90792 2.02513 1.875 2.10462 1.875 2.1875C1.875 2.27038 1.90792 2.34987 1.96653 2.40847C2.02513 2.46708 2.10462 2.5 2.1875 2.5H7.8125C7.89538 2.5 7.97487 2.46708 8.03347 2.40847C8.09208 2.34987 8.125 2.27038 8.125 2.1875C8.125 2.10462 8.09208 2.02513 8.03347 1.96653C7.97487 1.90792 7.89538 1.875 7.8125 1.875H2.1875ZM2.1875 3.4375C2.10462 3.4375 2.02513 3.47042 1.96653 3.52903C1.90792 3.58763 1.875 3.66712 1.875 3.75C1.875 3.83288 1.90792 3.91237 1.96653 3.97097C2.02513 4.02958 2.10462 4.0625 2.1875 4.0625H7.8125C7.89538 4.0625 7.97487 4.02958 8.03347 3.97097C8.09208 3.91237 8.125 3.83288 8.125 3.75C8.125 3.66712 8.09208 3.58763 8.03347 3.52903C7.97487 3.47042 7.89538 3.4375 7.8125 3.4375H2.1875ZM2.1875 5C2.10462 5 2.02513 5.03292 1.96653 5.09153C1.90792 5.15013 1.875 5.22962 1.875 5.3125C1.875 5.39538 1.90792 5.47487 1.96653 5.53347C2.02513 5.59208 2.10462 5.625 2.1875 5.625H5.3125C5.39538 5.625 5.47487 5.59208 5.53347 5.53347C5.59208 5.47487 5.625 5.39538 5.625 5.3125C5.625 5.22962 5.59208 5.15013 5.53347 5.09153C5.47487 5.03292 5.39538 5 5.3125 5H2.1875Z" fill="#B6C7FB")
+            .section-header-label Ask our forum
+
+          .section-content.left-indent
+            .section-content-text Get answers from PerceptiLabs' community forum
+            a.section-content-link(:href="forumLink" target="_blank") here
+            | .
+
+    
+    //- This is the confirmation portion
+    template(v-else)
+      template(slot="Report to PerceptiLabs-content")
+        .popup-body-section.ma-2
+          .section-content.center
+            span Posted successfully
+          .section-content.center
+            span Your post is now live on PerceptiLabs' GitHub issues page.
+
+      template(slot="action")
+        .action-section
+          button.btn.btn--primary(type="button"
+            @click="viewIssue"
+            ) View Issue
 </template>
 
 <script>
   import BaseGlobalPopup  from "@/components/global-popups/base-global-popup";
-
-  import axios from 'axios';
+  import { createIssueInGithub } from '@/core/apiFileserver';
 
   export default {
     name: "CreateIssuesPopup",
@@ -53,31 +85,56 @@
     },
     data() {
       return {
+        isForm: true,
+        issueTitle: '',      
         issueBody: '',
+        issueType: 'anonymous',
         popupTitle: ['Report to PerceptiLabs'],
-        slackLink: 'https://join.slack.com/t/perceptilabs-com/shared_invite/enQtODQ5NzAwNDkxOTExLWUxODAwZDk0MzA1MmM4OTViNWE4MmVjYjc2OTQwMTQ4N2NmM2ZlYmI5NjZjOWRiYjBkYjBjMTMzNjEyMDNiNDk'
+        forumLink: 'http://forum.perceptilabs.com',
+        gitHubIssuesUrl: 'https://github.com/PerceptiLabs/PerceptiLabs/issues/',
+        gitHubIssueNumber: ''
       }
     },
     methods: {
       ok() {
 
-        const payload = {
-          'title': `User Issue ${(new Date).toISOString()}`,
-          'body': this.issueBody
+        const requestPayload = {
+          'title': this.issueTitle,
+          'body': this.issueBody,
+          'issue_type': this.issueType,
+          'github_token': ''
         };
 
-        if (this.issueBody) {
-          this.$store.dispatch('mod_issues/createIssue', payload)
+        const requestParams = {
+          token: process.env.PL_FILE_SERVING_TOKEN,
+        }
+
+        if (this.issueTitle && this.issueBody) {
+          createIssueInGithub(requestParams, requestPayload)
             .then(res => {
+              if (!res.data) { return; }
+
+              this.gitHubIssueNumber = res.data['Issue Number'];
+
+              this.issueTitle = '';
               this.issueBody = '';
-              this.closePopup();
-            });
-        } else if (this.$refs['issueTextArea']) {
-          this.$refs['issueTextArea'].classList.add('has-error');
+              this.isForm = false;
+            });            
+        } else {
+          if (this.$refs['issueTitle']) {
+            this.$refs['issueTitle'].classList.add('has-error');
+          }
+          if (this.$refs['issueBody']) {
+            this.$refs['issueBody'].classList.add('has-error');
+          }
         }
       },
       cancel() {
         this.cancelCallback();
+        this.closePopup();
+      },
+      viewIssue() {
+        window.open(`${this.gitHubIssuesUrl}${this.gitHubIssueNumber}`, '_blank');
         this.closePopup();
       },
       closePopup() {
@@ -105,12 +162,32 @@
 
   .popup-body-section {
     padding: 1.5rem;
+
+    &.ma-2 {
+      margin: 2rem;
+    }
+
+    .section-header + .section-content {
+      margin-top: 1.5rem;
+    }
   }
 
   .after-footer-section {
     border-top: 1px solid #3F4C70;
     padding: 1.5rem;
+  }
 
+  .post-as-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .section-content-radio-group {
+
+      /deep/ .custom-radio:last-of-type {
+        padding-right: 0;
+      }
+    }
   }
 
   .section-header {
@@ -151,6 +228,11 @@
       margin-left: 2rem;
     }
 
+    &.center {
+      display: flex;
+      justify-content: center;
+    }
+
     .section-content-text {
       display: flex;
       align-items: center;
@@ -159,6 +241,20 @@
     .section-content-link {
       font-weight: bold;
       color: #7397FE;
+    }
+
+    .section-content-input {
+      background: transparent;
+
+      border: 1px solid #5E6F9F;
+      box-sizing: border-box;
+      border-radius: 2px;
+
+      margin-top:0.5rem;
+
+      &.has-error {
+        border: 1px solid #fe7373;
+      }
     }
 
     .section-content-textarea {
@@ -175,5 +271,15 @@
         border: 1px solid #fe7373;
       }
     }
+
+    + .section-content {
+      margin-top: 1rem;
+    }
+  }
+
+  .action-section {
+    width: 100%;
+    display: flex;
+    justify-content: center;
   }
 </style>
