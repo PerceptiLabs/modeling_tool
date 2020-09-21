@@ -1454,7 +1454,7 @@ class coreLogic():
             
             if view=="Data_distribution":
                 data_distribution = self.getStatistics({"layerId":layerId,"variable":"data_distribution","innervariable":""})
-                dataObjectOutput = createDataObject([data_distribution])
+                dataObjectOutput = createDataObject([data_distribution], normalize=False)
     
                 output = {"Data_distribution": dataObjectOutput}
                 return output

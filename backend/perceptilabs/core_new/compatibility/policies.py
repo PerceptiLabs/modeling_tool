@@ -1341,9 +1341,18 @@ def policy_gan(core, graphs, sanitized_to_name, sanitized_to_id, results):
 
         ax.scatter(real_means, real_stddevs, c= 'blue' )
         ax.scatter(random_means, random_stddevs, c = 'red')
+        
         fig.canvas.draw()
         data = np.fromstring(fig.canvas.tostring_rgb(), dtype=np.uint8, sep='')
         data = data.reshape(fig.canvas.get_width_height()[::-1] + (3,))
+
+        # Set colors:
+        border_color = (97, 133, 238) #618533
+        data[:4, :, :] = border_color
+        data[-4:, :, :] = border_color
+        data[:, :4, :] = border_color
+        data[:, -4:, :] = border_color
+        
         plt.close()
         return data
 
