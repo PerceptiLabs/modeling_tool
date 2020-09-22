@@ -10,7 +10,7 @@
   .checklist-content(v-if="isChecklistExpanded")
 
     .checklist-content-section
-      .checklist-content-item
+      .checklist-content-item.watch-tutorial(@click="openVideoTutorials")
         .item-icon
           svg(width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg")
             path(fill-rule="evenodd" clip-rule="evenodd" d="M7.5 15C11.6421 15 15 11.6421 15 7.5C15 3.35786 11.6421 0 7.5 0C3.35786 0 0 3.35786 0 7.5C0 11.6421 3.35786 15 7.5 15ZM11 7.11111L5 4V11L11 7.11111Z" fill="#B6C7FB")
@@ -30,6 +30,9 @@
             circle(cx="7.5" cy="7.5" r="7" stroke="#B6C7FB")
 
         span.item-label(:class="{'is-completed': i.isCompleted}") {{ i.label }}
+
+    .checklist-content-section.checklist-skip
+      span(@click.stop="skipChecklist") Skip
 </template>
 
 <script>
@@ -42,18 +45,26 @@ export default {
   },
   computed: {
     ...mapGetters({
-      isTutorialMode:       'mod_tutorials/getIsTutorialMode',
-      isChecklistExpanded:  'mod_tutorials/getIsChecklistExpanded',
-      checklistItems:       'mod_tutorials/getChecklistItems'
+      isTutorialMode:             'mod_tutorials/getIsTutorialMode',
+      isChecklistExpanded:        'mod_tutorials/getIsChecklistExpanded',
+      checklistItems:             'mod_tutorials/getChecklistItems'
     }),
   },
   methods: {
     ...mapMutations({
       setChecklistExpandedState:  'mod_tutorials/setChecklistExpandedState'
     }),
-    ...mapActions({}),
+    ...mapActions({
+      setShowChecklist:           'mod_tutorials/setShowChecklist',
+    }),
     toggleChecklist() {
       this.setChecklistExpandedState(!this.isChecklistExpanded);
+    },
+    openVideoTutorials() {
+      window.open('https://www.youtube.com/watch?v=tdELIpi-BZI', '_blank');
+    },
+    skipChecklist() {
+      this.setShowChecklist(false);
     }
   }
 }
@@ -138,6 +149,10 @@ $small-separation: 1.5rem;
   display: flex;
   align-items: flex-start;
 
+  &.watch-tutorial {
+    cursor: pointer;
+  }
+
   + .checklist-content-item {
     margin-top: $small-separation;
   }
@@ -150,6 +165,22 @@ $small-separation: 1.5rem;
   .item-label.is-completed {
     text-decoration: line-through;
     color: #818181;
+  }
+}
+
+.checklist-skip {
+  margin-top: 2rem;
+
+  > span {
+    font-family: Nunito Sans;
+    font-style: normal;
+    font-weight: normal;
+    font-size: 11px;
+    line-height: 18px;
+    color: #818181;
+    text-decoration: underline;
+
+    cursor: pointer;
   }
 }
 

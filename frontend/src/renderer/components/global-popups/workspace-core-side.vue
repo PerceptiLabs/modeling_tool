@@ -62,17 +62,17 @@ export default {
     ...mapMutations({
       closePopup:               'globalView/HIDE_allGlobalPopups',
       set_showTrainingSpinner:  'mod_workspace/SET_showStartTrainingSpinner',
-      setChecklistItemComplete: 'mod_tutorials/setChecklistItemComplete',
     }),
     ...mapActions({
-      setSidebarStateAction:  'globalView/hideSidebarAction',
-      API_startTraining:      'mod_api/API_startTraining',
-      SET_openStatistics:     'mod_workspace/SET_openStatistics',
-      SET_openTest:           'mod_workspace/SET_openTest',
-      SET_networkSnapshot:    'mod_workspace/SET_networkSnapshot',
-      saveNetwork:            'mod_webstorage/saveNetwork',
-      setViewType:            'mod_workspace/setViewType',
-      setCurrentView:         'mod_tutorials/setCurrentView'
+      setSidebarStateAction:    'globalView/hideSidebarAction',
+      API_startTraining:        'mod_api/API_startTraining',
+      SET_openStatistics:       'mod_workspace/SET_openStatistics',
+      SET_openTest:             'mod_workspace/SET_openTest',
+      SET_networkSnapshot:      'mod_workspace/SET_networkSnapshot',
+      saveNetwork:              'mod_webstorage/saveNetwork',
+      setViewType:              'mod_workspace/setViewType',
+      setCurrentView:           'mod_tutorials/setCurrentView',
+      setChecklistItemComplete: 'mod_tutorials/setChecklistItemComplete',
     }),
     setTab(i) {
       this.tabSelected = i;

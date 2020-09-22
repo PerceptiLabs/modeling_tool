@@ -126,6 +126,7 @@ export default {
       setNextStep:          'mod_tutorials/setNextStep',
       setCurrentView:       'mod_tutorials/setCurrentView',
       activateChecklist:    'mod_tutorials/activateChecklist',
+      setShowChecklist:     'mod_tutorials/setShowChecklist',
       setTips:              'mod_tutorials/setTutorialNotificationsState',
       setActivePageAction:  'modal_pages/setActivePageAction',
     }),
@@ -154,6 +155,7 @@ export default {
       this.setTips(!this.showTips);
     },
     onActivateChecklist() {
+      this.setShowChecklist();
       this.activateChecklist();
     },
     goToWhatsNew() {
