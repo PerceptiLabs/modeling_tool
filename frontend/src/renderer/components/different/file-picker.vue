@@ -201,7 +201,7 @@ export default {
       this.calcFolderPath(dirName);
     },
     onFileDoubleClick(fileName) {
-      if (this.filePickerType !== 'file') { return; }
+      if (!['file', 'multimode'].includes(this.filePickerType)) { return; }
       this.selectedFiles = [fileName];
       this.onConfirm();
     },
