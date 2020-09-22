@@ -19,7 +19,7 @@ const netElementSettingsData = {
   },
   methods: {
     coreRequest,
-    Mix_settingsData_getDataMeta(layerId) {
+    Mix_settingsData_getDataMeta(layerId, autoUpdateAccessProperties = true) {
       if(isWeb())
       this.$store.commit('mod_workspace/SET_webLoadingDataFlag', true);
       this.showSpinner = true;
@@ -29,7 +29,10 @@ const netElementSettingsData = {
             if(data.Action_space) {
               this.Mix_settingsData_actionSpace = data.Action_space;
             }
-            this.settings.accessProperties = {...this.settings.accessProperties, ...data};
+
+            if (autoUpdateAccessProperties){
+              this.settings.accessProperties = {...this.settings.accessProperties, ...data};
+            }
             return data;
           }
         })

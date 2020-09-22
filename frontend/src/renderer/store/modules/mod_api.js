@@ -1127,7 +1127,7 @@ const actions = {
               tabName: currentEl.layerSettingsTabName,
               visited: res.newNetwork[ix].visited,
             };
-            dispatch('mod_workspace/SET_elementSettings', deepCopy(saveSettings), {root: true});
+            dispatch('mod_workspace/SET_elementSettings', {settings: deepCopy(saveSettings)}, {root: true});
           }
         }
         if(res.outputDims) {
@@ -1212,7 +1212,7 @@ const actions = {
               visited: res.newNetwork[ix].visited,		
             };
             
-            dispatch('mod_workspace/SET_elementSettings', deepCopy(saveSettings), {root: true});
+            dispatch('mod_workspace/SET_elementSettings', {settings: deepCopy(saveSettings)}, {root: true});
           }
         }
 

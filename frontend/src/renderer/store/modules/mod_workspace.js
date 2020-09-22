@@ -970,11 +970,12 @@ const mutations = {
 
   /*-- NETWORK ELEMENTS SETTINGS --*/
   set_elementSettings(state, {dispatch, settings}) {
+    if (!currentElement(settings.elId)) { return; }
+
     currentElement(settings.elId).layerSettings = settings.set;
     currentElement(settings.elId).layerCode = settings.code;
     currentElement(settings.elId).layerSettingsTabName = settings.tabName;
     currentElement(settings.elId).visited = settings.visited;
-    dispatch('mod_workspace-history/PUSH_newSnapshot', null, {root: true});
   },
 
   /*-- NETWORK ELEMENTS META --*/
@@ -1882,8 +1883,13 @@ const actions = {
   //---------------
   //  NETWORK ELEMENTS
   //---------------
-  SET_elementSettings({commit, dispatch}, settings) {
-    commit('set_elementSettings', {dispatch, settings})
+  SET_elementSettings({commit, dispatch}, {settings, pushOntoHistory = false}) {
+
+    commit('set_elementSettings', {dispatch, settings, pushOntoHistory})
+
+    if (pushOntoHistory) {
+      dispatch('mod_workspace-history/PUSH_newSnapshot', null, {root: true});
+    }    
   },
   ADD_element({commit, getters, dispatch}, { event, setChangeToWorkspaceHistory = true }) {
     commit('add_element', {getters, dispatch, event, setChangeToWorkspaceHistory});

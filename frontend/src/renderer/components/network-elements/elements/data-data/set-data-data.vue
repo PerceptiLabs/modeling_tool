@@ -99,7 +99,7 @@
     mixins: [mixinSet, mixinData, mixinFocus],
     components: {ChartSwitch, SettingsCloud, TripleInput, SettingsFileList, WebUploadFile, FilePicker, FilePickerPopup },
     mounted() {
-      if(this.settings.accessProperties.Columns.length) {
+      if(this.settings.accessProperties.Columns && this.settings.accessProperties.Columns.length) {
         this.dataColumnsSelected = this.settings.accessProperties.Columns;
       }
 
@@ -197,7 +197,7 @@
     watch: {
       dataColumnsSelected(newVal) {
         this.settings.accessProperties.Columns = newVal;
-        this.saveSettings("Computer");
+        this.saveSettings("Computer", false);
         // this.Mix_settingsData_getDataPlot('DataData')
         // this.Mix_settingsData_getPreviewVariableList(this.currentEl.layerId)
       },
@@ -213,7 +213,7 @@
         handler(newVal, prevVal) {
           if(newVal.length !== prevVal.length) {
             this.Mix_settingsData_getPartitionSummary(this.currentEl.layerId);
-            this.saveSettings("Computer");
+            this.saveSettings("Computer", false);
           }
         },
         deep: true,
@@ -304,10 +304,19 @@
       getSettingsInfo() {
         if(this.settings.accessProperties.Sources.length) {
 
-          this.Mix_settingsData_getDataMeta(this.currentEl.layerId)
+          this.Mix_settingsData_getDataMeta(this.currentEl.layerId, false)
             .then((data) => {
-              //console.log(data);
-              if (data && data.Columns && data.Columns.length) this.createSelectArr(data.Columns);
+              if (data && data.Columns && data.Columns.length) {
+                this.createSelectArr(data.Columns);
+
+                // Apply the other settings if needed.
+                delete data.Columns;
+                this.settings.accessProperties = {...this.settings.accessProperties, ...data};
+              } else {
+                // Clean up for cases where we changes data sources from
+                // one with label to another without
+                this.dataColumns = [];
+              }
             });
 
         }
@@ -319,10 +328,14 @@
           //this.settings.accessProperties.Columns.push(index)
         });
         this.dataColumns = [...selectArr];
-        this.dataColumnsSelected.push(this.dataColumns[0].value);
+        for (i = 0; i < this.dataColumns.length; i++){
+          if (!this.dataColumnsSelected.includes(this.dataColumns[i].value)) {
+            this.dataColumnsSelected.push(this.dataColumns[i].value);
+          }
+        }
       },
-      saveSettings(tabName) {
-        this.applySettings(tabName);
+      saveSettings(tabName, pushOntoHistory=false) {
+        this.applySettings(tabName, pushOntoHistory);
         this.checkPartitionList();
       },
       checkPartitionList() {

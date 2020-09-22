@@ -24,6 +24,7 @@ const state = {
   isTutorialMode: true, // controls both checklist and tips
   isChecklistExpanded: true,
   showTips: true,
+  showChecklist: true,
   hasShownWhatsNew: false,
   checklistItems: [
     {
@@ -231,6 +232,9 @@ const getters = {
   getIsChecklistExpanded(state) {
     return state.isChecklistExpanded;
   },
+  getShowChecklist(state) {
+    return state.showChecklist;
+  },
   getChecklistItems(state) {
     return state.checklistItems;
   },
@@ -304,11 +308,19 @@ const mutations = {
   setChecklistExpandedState(state, value) {
     state.isChecklistExpanded = !!value
   },
+  setShowChecklist(state, value) {
+    state.showChecklist = !!value
+  },
   setChecklistItemComplete(state, { itemId }) {
     const item = state.checklistItems.find(cli => cli.itemId === itemId);
     if (!item) { return; }
 
     item.isCompleted = true;
+  },
+  setChecklistStateClosedIfAllItemsComplete(state) {
+    if (!state.checklistItems.every(cli => cli.isCompleted)) { return; }
+
+    state.showChecklist = false;
   },
   setCurrentView(state, value) {
     state.currentView = value;
@@ -370,6 +382,7 @@ const mutations = {
       isTutorialMode: state.isTutorialMode,
       isChecklistExpanded: state.isChecklistExpanded,
       showTips: state.showTips,
+      showChecklist: state.showChecklist,
       hasShownWhatsNew: state.hasShownWhatsNew,
       checklistItems: state.checklistItems.map(cli => (
         {
@@ -397,6 +410,7 @@ const mutations = {
     state.isTutorialMode = parsedProgress.isTutorialMode;
     state.isChecklistExpanded = parsedProgress.isChecklistExpanded;
     state.showTips = parsedProgress.showTips;
+    state.showChecklist = parsedProgress.showChecklist,
 
     state.hasShownWhatsNew = parsedProgress.hasShownWhatsNew;
 
@@ -420,8 +434,6 @@ const mutations = {
       sts.isCompleted = pts.isCompleted;
       sts.currentStepCode = pts.currentStepCode;
     }
-
-    console.log('state', state);
   },
 };
 
@@ -441,6 +453,10 @@ const actions = {
   },
   setChecklistItemComplete({commit, dispatch, getters}, { itemId = '' }) {
     commit('setChecklistItemComplete', { itemId });
+    commit('setChecklistStateClosedIfAllItemsComplete', { itemId });
+  },
+  setShowChecklist({commit, dispatch, getters}, value = true) {
+    commit('setShowChecklist', value);
   },
   setTutorialMode({commit, dispatch, getters}, value = false) {
     commit('setTutorialMode', value);

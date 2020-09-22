@@ -188,6 +188,7 @@
         showPiPyNotification:   'mod_workspace-notifications/getPiPyShowNotification',
         getActiveNotifications: 'mod_tutorials/getActiveNotifications',
         getIsTutorialMode:      'mod_tutorials/getIsTutorialMode',
+        getShowChecklist:       'mod_tutorials/getShowChecklist',
         getShowTutorialTips:    'mod_tutorials/getShowTutorialTips',
       }),
       platform() {
@@ -238,6 +239,8 @@
       },
       showTutorialChecklist() {
         if (!this.getIsTutorialMode) { return false; }
+        if (!this.getShowChecklist) { return false; }
+        
         if (this.hasModalsOpenInWorkspace) { return false; }
 
         if (!this.currentPage) {
@@ -257,7 +260,6 @@
         return this.getIsTutorialMode && this.getShowTutorialTips;
       },
       hasModalsOpenInWorkspace() {
-        
         return (
           this.$store.state.globalView.globalPopup.showNetResult ||
           this.$store.state.globalView.globalPopup.showWorkspaceBeforeImport ||
@@ -266,6 +268,9 @@
           this.$store.state.globalView.globalPopup.showLoadSettingPopup ||
           this.$store.state.globalView.globalPopup.showSaveNetworkPopup ||
           this.$store.state.globalView.globalPopup.showExportNetworkPopup ||
+          this.$store.state.globalView.globalPopup.showExportNetworkPopup ||
+          this.$store.state.globalView.globalPopup.showExportNetworkToGitHubPopup ||
+          this.$store.state.globalView.globalPopup.showImportNetworkfromGitHubOrLocalPopup ||
           this.showCreateIssuesPopup ||
           this.showPopup
         );
@@ -283,7 +288,8 @@
         let bottomValueRm = 1;
 
         if (this.$route.name !== 'projects' &&
-            this.$route.name !== 'settings') {
+            this.$route.name !== 'settings' &&
+            !this.showNewModelPopup) {
           
           bottomValueRm += 2; // the-workspace
           bottomValueRm += 1; // scrollbars
@@ -541,7 +547,6 @@
         this.setUnparsedModels({unparsedModels});
       },
       addNetworksToWorkspace(models, modelsApiData) {
-        console.log('addNetworkToworkspace', models, modelsApiData);
         const filteredModels = models.filter(m => m);
         for(const [index, model] of filteredModels.entries()) {
           // if(modelsApiData[index].model_id !== model.networkID) {

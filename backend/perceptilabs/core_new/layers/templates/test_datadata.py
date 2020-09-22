@@ -185,7 +185,6 @@ def test_csv_columns_ok_lazy(script_factory, csv_30x784):
 
 def test_csv_columns_ok_when_selected(script_factory, csv_30x784):
     sources = [{'type': 'file', 'path': csv_30x784, 'ext': '.csv'}]
-
     layer_spec = DataDataSpec(
         id_='123', name='layer123', type_='DataData', 
         sources=(DataSource(type_='file', path=csv_30x784, ext='.csv', split=(70, 20, 10)),),

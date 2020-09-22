@@ -462,9 +462,11 @@ export default {
       const connectList = [];
       const net = this.networkElementList;
 
-      findPerspectiveSide(this.networkScale);
-      // calcCorrectPosition(this.networkScale);
-      this.arrowsList = connectList;
+      this.$nextTick(() => {
+        findPerspectiveSide(this.networkScale);
+        // calcCorrectPosition(this.networkScale);
+        this.arrowsList = connectList;
+      })
 
       function findPerspectiveSide(zoom) {
         const validConnectionIds = [];

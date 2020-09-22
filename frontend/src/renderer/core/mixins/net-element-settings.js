@@ -28,7 +28,9 @@ const netElementSettings = {
           this.isSettedFromCore = false;
         } else {
           if(!isEqual(JSON.parse(JSON.stringify(newVal)), JSON.parse(JSON.stringify(oldVal)))) {
-            this.saveSettings("Settings");
+            // Note that the "saveSettings" function called is the one in the layer.
+            // Not the one in this file.
+            this.saveSettings("Settings", true);
           }
         }
       },
@@ -55,12 +57,12 @@ const netElementSettings = {
         'visited': this.currentEl.visited,
         tabName
       };
-      this.$store.dispatch('mod_workspace/SET_elementSettings', deepCopy(saveSettings));
+      this.$store.dispatch('mod_workspace/SET_elementSettings', {settings: deepCopy(saveSettings), pushOntoHistory: false}, false);
     },
     saveSettings(tabName) {
       this.applySettings(tabName);
     },
-    applySettings(tabName) {
+    applySettings(tabName, pushOntoHistory) {
       const saveSettings = {
         'elId': this.currentEl.layerId,
         'code': this.currentEl.layerCode,
@@ -68,8 +70,7 @@ const netElementSettings = {
         'visited': true,
         tabName
       };
-      this.$store.dispatch('mod_workspace/SET_elementSettings', deepCopy(saveSettings));
-      // console.trace();
+      this.$store.dispatch('mod_workspace/SET_elementSettings', {settings: deepCopy(saveSettings), pushOntoHistory});
       this.$store.dispatch('mod_api/API_getBatchPreviewSampleForElementDescendants', this.currentEl.layerId);
       // this.$store.dispatch('mod_api/API_getPreviewSample',  {layerId: this.currentEl.layerId, varData: 'output'}).then((data)=> {
       //   this.$store.dispatch('mod_workspace/SET_NetworkChartData', { 

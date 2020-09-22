@@ -65,14 +65,16 @@
         {{generator_lazy_df(df, tag, idx_lo, idx_hi) | indent(width=8)}} 
     {% else %}
         global df_{{tag}}
-        df_{{tag}} = pd.read_csv("{{path}}")
-        columns_{{tag}} = df_{{tag}}.columns.tolist()        
-        size_{{tag}} = len(df_{{tag}})        
-
+        df_{{tag}} = pd.read_csv("{{path}}")  
+        columns_{{tag}} = df_{{tag}}.columns.tolist()              
+        size_{{tag}} = len(df_{{tag}})       
+        
+        
         {% filter remove_lspaces(8) %}
-            {% if selected_columns is not none and selected_columns|length > 0 %}
+            {% if selected_columns is not none and selected_columns is iterable and selected_columns|length > 0 %}
                 df_{{tag}} = df_{{tag}}.iloc[:, list({{selected_columns}})]
             {% endif %}
+
         {% endfilter %}
         def generator_{{tag}}(idx_lo, idx_hi):
             global df_{{tag}}

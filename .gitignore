@@ -45,6 +45,7 @@ frontend/src/node_modules/
 frontend/cypress/fixtures/*.json
 frontend/cypress/screenshots/**/*.png
 frontend/cypress/videos/**/*.mp4
+frontend/static_file_server/static_file_server/dist/
 !frontend/.gitkeep
 **/data.log
 .idea

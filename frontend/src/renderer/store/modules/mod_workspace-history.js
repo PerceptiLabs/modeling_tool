@@ -33,7 +33,7 @@ const mutations = {
     state.isEnableHistory = value;
   },
   to_prevStepHistory(state, {currentID, dispatch}) {
-    console.log("PREV");
+    // console.log("PREV");
     let historyCurrNet = state.history[currentID];
     if(historyCurrNet.historyStep < historyCurrNet.historyNet.length - 1) {
       const numStep = ++state.history[currentID].historyStep;
@@ -48,7 +48,7 @@ const mutations = {
     }
   },
   to_nextStepHistory(state, {currentID, dispatch}) {
-    console.log("NEXT");
+    // console.log("NEXT");
     let historyCurrNet = state.history[currentID];
     if(historyCurrNet.historyStep) {
       const numStep = --state.history[currentID].historyStep;
@@ -121,6 +121,17 @@ const actions = {
       const currentID = rootGetters['mod_workspace/GET_currentNetworkId'];
       commit('to_prevStepHistory', {currentID, dispatch});
       dispatch('mod_webstorage/saveNetwork', getters.GET_currentNetwork, {root: true});
+
+      // calculating all preview vars here, can potentially refactor here:
+      const fullNetworkElementList = rootGetters['mod_workspace/GET_currentNetworkElementList'];
+      let payload = {};
+      for(let id in fullNetworkElementList) {
+        payload[id] = fullNetworkElementList[id].previewVariable;
+      }
+
+      setTimeout(() => {
+        dispatch('mod_api/API_getBatchPreviewSample', payload, {root: true});
+      }, 0);
     }
   },
   TO_nextStepHistory({commit, getters, rootGetters, dispatch}) {
@@ -129,6 +140,17 @@ const actions = {
       const currentID = rootGetters['mod_workspace/GET_currentNetworkId'];
       commit('to_nextStepHistory', {currentID, dispatch});
       dispatch('mod_webstorage/saveNetwork', getters.GET_currentNetwork, {root: true});
+
+      // calculating all preview vars here, can potentially refactor here:
+      const fullNetworkElementList = rootGetters['mod_workspace/GET_currentNetworkElementList'];
+      let payload = {};
+      for(let id in fullNetworkElementList) {
+        payload[id] = fullNetworkElementList[id].previewVariable;
+      }
+
+      setTimeout(() => {
+        dispatch('mod_api/API_getBatchPreviewSample', payload, {root: true});
+      }, 0);
     }
   },
 };

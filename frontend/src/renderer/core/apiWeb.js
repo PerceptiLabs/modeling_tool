@@ -1,6 +1,6 @@
 
 import store from '@/store'
-
+import { stringifyNetworkObjects } from '@/core/helpers';
 
 const wsPathDefSingleton = (function() {
   // adding this function so that one can request the value stored in the
@@ -101,7 +101,7 @@ function coreRequest(data, path, no, name) {
             "content-encoding": 'utf-8',
             "content-length": 0,
           };
-          let dataJSON = JSON.stringify(message);
+          let dataJSON = stringifyNetworkObjects(message);
           //console.log('input data ', dataJSON);
           let dataByte = (new TextEncoder('utf-8').encode(dataJSON));
           let dataByteLength = dataByte.length;
