@@ -28,7 +28,7 @@ export default {
         'set': null,
         'tabName': 'Code'
       };
-      this.$store.dispatch('mod_workspace/SET_elementSettings', deepCopy(saveSettings));
+      this.$store.dispatch('mod_workspace/SET_elementSettings', {settings: deepCopy(saveSettings)});
     }
   },
   data() {

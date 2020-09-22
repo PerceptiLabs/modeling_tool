@@ -207,7 +207,8 @@ export default {
         networkId: this.networkId, 
         hasUnsavedChanges: false 
       });
-      this.$store.dispatch('mod_workspace/SET_elementSettings', deepCopy(saveSettings));
+      this.$store.dispatch('mod_workspace/SET_elementSettings', {settings: deepCopy(saveSettings)});
+      this.$store.dispatch('mod_api/API_getOutputDim');
       this.$store.dispatch('mod_webstorage/saveNetwork', this.currentNetwork, {root: true});
       
       // calculating all preview vars here, can potentially refactor here:

@@ -17,7 +17,7 @@ const baseNetDrag = {
 
   created() {
     this.bodyDrag = false;
-    this.itemWasDraged = false;
+    this.itemWasDragged = false;
     this.stickStartPos = {mouseX: 0, mouseY: 0, x: 0, y: 0, w: 0, h: 0};
   },
 
@@ -109,14 +109,14 @@ const baseNetDrag = {
     },
 
     bodyMove(ev) {
-      if(!this.isFewItemsSelected() && !this.itemWasDraged) {
+      if(!this.isFewItemsSelected() && !this.itemWasDragged) {
         this.updateDragBoxContainerMutation({
           isVisible: true,
           ...this.getDragBoxSize(),
         });
       }
       
-      this.itemWasDraged = true;
+      this.itemWasDragged = true;
       
       if(this.isFewItemsSelected()) {
         this.updateItems(ev);
@@ -153,11 +153,16 @@ const baseNetDrag = {
         });
       }
       
-      if(this.isCurrentItemSelected(this.dataEl.layerId) && !this.itemWasDraged && !(ev.shiftKey || ev.metaKey || ev.ctrlKey)) {
+      if(this.isCurrentItemSelected(this.dataEl.layerId) && !this.itemWasDragged && !(ev.shiftKey || ev.metaKey || ev.ctrlKey)) {
         this.setElementSelectedAction({id: this.dataEl.layerId, setValue: true, resetOther: true})
       }
-      
-      this.itemWasDraged = false;
+
+      if (this.itemWasDragged) {
+        // TODO: only add when the top/left values have changed
+        this.$store.dispatch('mod_workspace-history/PUSH_newSnapshot', null, {root: true});
+      }
+
+      this.itemWasDragged = false;
       this.bodyDrag = false;
       this.$store.dispatch('mod_workspace/CHANGE_elementPosition', this.rect);
       this.$parent.$parent.createArrowList();
@@ -169,8 +174,6 @@ const baseNetDrag = {
       document.removeEventListener('touchstart', this.up, true);
       
       this.$store.dispatch('mod_workspace/afterNetworkElementIsDragged');
-
-      this.$store.dispatch('mod_workspace-history/PUSH_newSnapshot', null, {root: true});
     },
     updateItems(ev) {
       if(!(ev.pageX % workspaceGrid || ev.pageY % workspaceGrid)) return;

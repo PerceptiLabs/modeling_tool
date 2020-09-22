@@ -197,7 +197,7 @@
     watch: {
       dataColumnsSelected(newVal) {
         this.settings.accessProperties.Columns = newVal;
-        this.saveSettings("Computer");
+        this.saveSettings("Computer", false);
         // this.Mix_settingsData_getDataPlot('DataData')
         // this.Mix_settingsData_getPreviewVariableList(this.currentEl.layerId)
       },
@@ -213,7 +213,7 @@
         handler(newVal, prevVal) {
           if(newVal.length !== prevVal.length) {
             this.Mix_settingsData_getPartitionSummary(this.currentEl.layerId);
-            this.saveSettings("Computer");
+            this.saveSettings("Computer", false);
           }
         },
         deep: true,
@@ -334,8 +334,8 @@
           }
         }
       },
-      saveSettings(tabName) {
-        this.applySettings(tabName);
+      saveSettings(tabName, pushOntoHistory=false) {
+        this.applySettings(tabName, pushOntoHistory);
         this.checkPartitionList();
       },
       checkPartitionList() {
