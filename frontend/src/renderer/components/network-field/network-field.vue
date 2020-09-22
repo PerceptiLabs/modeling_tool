@@ -62,7 +62,7 @@
       line.svg-arrow_line.arrow--hidden(
         v-if="preArrow.show"
         marker-end="url(#svg-arrow_triangle)"
-        :stroke-dasharray="(tutorialDottedArrow ? '7 6' : 'none')"
+        :stroke-dasharray="'none'"
         :x1="preArrow.start.x"
         :y1="preArrow.start.y"
         :x2="preArrow.stop.x"

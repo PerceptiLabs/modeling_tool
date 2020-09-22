@@ -420,8 +420,6 @@ const mutations = {
       sts.isCompleted = pts.isCompleted;
       sts.currentStepCode = pts.currentStepCode;
     }
-
-    console.log('state', state);
   },
 };
 

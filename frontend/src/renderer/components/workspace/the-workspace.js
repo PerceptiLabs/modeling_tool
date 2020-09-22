@@ -104,7 +104,7 @@ export default {
       statisticsIsOpen:   'mod_workspace/GET_statisticsIsOpen',
       isTraining:         'mod_workspace/GET_networkIsTraining',
 
-      isTutorialMode:     'mod_tutorials/getIstutorialMode',
+      isTutorialMode:     'mod_tutorials/getIsTutorialMode',
       isNotebookMode:     'mod_notebook/getNotebookMode',
       tutorialActiveStep: 'mod_tutorials/getActiveStep',
       getCurrentStepCode: 'mod_tutorials/getCurrentStepCode',

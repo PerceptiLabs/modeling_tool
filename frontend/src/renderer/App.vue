@@ -541,7 +541,6 @@
         this.setUnparsedModels({unparsedModels});
       },
       addNetworksToWorkspace(models, modelsApiData) {
-        console.log('addNetworkToworkspace', models, modelsApiData);
         const filteredModels = models.filter(m => m);
         for(const [index, model] of filteredModels.entries()) {
           // if(modelsApiData[index].model_id !== model.networkID) {

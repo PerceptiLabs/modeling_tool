@@ -31,13 +31,12 @@ class DataDataSpec(LayerSpec):
 
     @classmethod
     def _from_dict_internal(cls, id_: str, dict_: Dict[str, Any], params: Dict[str, Any]) -> LayerSpec:
-        if 'Properties' in dict_ and dict_['Properties'] is not None:
-
+        if 'Properties' in dict_ and dict_['Properties'] is not None:   
             params['selected_columns'] = try_cast(dict_['Properties']['accessProperties']['Columns'], tuple)
             params['sources'] = tuple(cls._parse_sources(dict_))
             params['lazy'] = False
             params['shuffle'] = dict_['Properties']['accessProperties']['Shuffle_data']
-        
+
         return cls(**params)
 
     @classmethod

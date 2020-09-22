@@ -20,6 +20,8 @@ def RGB2RGBa(data, normalize):
 
 def grayscale2RGBA(data):
     data=np.squeeze(data)
+    if len(np.shape(data)) < 2:
+        data = np.expand_dims(data, axis=0)
     (w,h)=np.shape(data)
     newData=np.empty((w, h, 4))
         

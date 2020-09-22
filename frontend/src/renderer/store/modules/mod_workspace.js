@@ -970,6 +970,8 @@ const mutations = {
 
   /*-- NETWORK ELEMENTS SETTINGS --*/
   set_elementSettings(state, {dispatch, settings}) {
+    if (!currentElement(settings.elId)) { return; }
+
     currentElement(settings.elId).layerSettings = settings.set;
     currentElement(settings.elId).layerCode = settings.code;
     currentElement(settings.elId).layerSettingsTabName = settings.tabName;

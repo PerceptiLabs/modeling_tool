@@ -54,7 +54,7 @@ export default {
   },
   computed: {
     ...mapGetters({
-      isTutorialMode: 'mod_tutorials/getIstutorialMode',
+      isTutorialMode: 'mod_tutorials/getIsTutorialMode',
       currentNetwork: 'mod_workspace/GET_currentNetwork',
     }),
   },
