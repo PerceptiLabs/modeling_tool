@@ -49,6 +49,11 @@
 	    "pattern": "^\\S+@\\S+$",
             "examples": ["anton.k@perceptilabs.com"]
         },
+        "system": {
+            "type": "string",
+            "description": "The users system",
+	    "enum": ["Linux", "Windows", "Darwin"]
+        },
 	"user_email_set": {"$ref": "user_email_set.json"},
 	"training_started": {"$ref": "training_started.json"},
 	"training_ended": {"$ref": "training_ended.json"},
