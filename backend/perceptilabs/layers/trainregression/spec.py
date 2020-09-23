@@ -24,15 +24,15 @@ class TrainRegressionSpec(InnerLayerSpec):
     def _from_dict_internal(cls, id_: str, dict_: Dict[str, Any], params: Dict[str, Any]) -> LayerSpec:
         if 'Properties' in dict_ and dict_['Properties'] is not None:
             params['learning_rate'] = float(dict_['Properties']['Learning_rate'])        
-            params['decay_rate'] = float(dict_['Properties']['Decay_rate'])
-            params['decay_steps'] = int(dict_['Properties']['Decay_steps'])
-            params['momentum'] = float(dict_['Properties']['Momentum'])
-            params['beta2'] = float(dict_['Properties']['Beta_2'])
-            params['beta1'] = float(dict_['Properties']['Beta_1'])
+            params['decay_rate'] = float(dict_['Properties']['Decay_rate']) if dict_['Properties']['Decay_rate'] else None
+            params['decay_steps'] = int(dict_['Properties']['Decay_steps']) if dict_['Properties']['Decay_steps'] else None
+            params['momentum'] = float(dict_['Properties']['Momentum']) if dict_['Properties']['Momentum'] else None
+            params['beta2'] = float(dict_['Properties']['Beta_2']) if dict_['Properties']['Beta_2'] else None
+            params['beta1'] = float(dict_['Properties']['Beta_1']) if dict_['Properties']['Beta_1'] else None
             params['optimizer'] = str(dict_['Properties']['Optimizer'])
             params['n_epochs'] = int(dict_['Properties']['Epochs'])
             params['batch_size'] = int(dict_['Properties'].get('Batch_size', 8))        
-            params['class_weights'] = str(dict_['Properties']['Class_weights'])          
+            params['class_weights'] = float(dict_['Properties']['Class_weights']) if dict_['Properties']['Class_weights'] else None          
             params['distributed'] = False
             params['use_cpu'] = dict_['Properties'].get('Use_CPU', True)
 

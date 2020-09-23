@@ -7,7 +7,7 @@ class TrainClassificationSpec(InnerLayerSpec):
     type_: str = 'TrainNormal'
     distributed: bool = False
     use_cpu: bool = True
-    learning_rate: float = 0.01
+    learning_rate: float = 0.001
     decay_rate: Union[float, None] = None
     decay_steps: Union[int, None] = None
     momentum: Union[float, None] = None
