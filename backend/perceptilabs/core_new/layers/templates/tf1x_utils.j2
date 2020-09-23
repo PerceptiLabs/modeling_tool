@@ -1,3 +1,28 @@
+{% macro build_output_dict(target_var, var_map, untouched_vars) -%}
+{# Builds the output dictionary. Adds a batch dimension when necessary #}
+{% if var_map|length == 1 %}
+    {% filter remove_lspaces(8) %}    
+        {{target_var}} = {'output': {{var_map['output']}}}
+    {% endfilter %}        
+{% else %}
+    {% filter remove_lspaces(8) %}    
+        {{target_var}} = {
+    {%- endfilter %}            
+    {% filter remove_lspaces(12) %}
+        {% for out_name, var_name in var_map.items() %}
+            {% if out_name == 'output' or out_name in untouched_vars %}
+                '{{out_name}}': {{var_name}},
+            {% else %}
+                '{{out_name}}': tf.expand_dims({{var_name}}, axis=0),            
+            {% endif %}
+        {% endfor %}
+    {%- endfilter %}
+    {% filter remove_lspaces(8) -%}                
+        }
+    {% endfilter %}                    
+    {% endif %}
+{%- endmacro %}
+
 {% macro activation_name(name, var_name) %}
 {% filter remove_lspaces(8) %}
     {% if name == 'Sigmoid' %}
@@ -36,7 +61,7 @@
 {% filter remove_lspaces(8) %}
     {% if batch_norm %}
         y_before = y
-        y = tf.compat.v1.layers.batch_normalization(y, training=(is_training or True))
+        y = tf.compat.v1.layers.batch_normalization(y, training=is_training)
     {% endif %}
 {% endfilter %}
 {% endmacro %}

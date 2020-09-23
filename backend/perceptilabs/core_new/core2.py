@@ -254,7 +254,7 @@ class Core:
             f.flush()
         return training_script_name
 
-    def _on_userland_error(self, exception, traceback_frames):
+    def _on_userland_error(self, exception: str, traceback_frames: List[TracebackFrame]):
         message = str(exception) +'\n\n'
         collect = False
         last_node = None

@@ -237,7 +237,10 @@ class TrainingServer:
             for frame in frames
         ]
             
-        data = {'exception': repr(exception), 'traceback_frames': tb_frames}
+        data = {
+            'exception': exception.message if hasattr(exception, 'message') else repr(exception),
+            'traceback_frames': tb_frames
+        }
         self._send_key_value('userland-error', data)
 
     def _send_training_ended(self, session_info, state_value):

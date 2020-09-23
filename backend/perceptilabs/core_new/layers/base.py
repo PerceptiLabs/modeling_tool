@@ -145,6 +145,15 @@ class Tf1xLayer(InnerLayer):
         """
         raise NotImplementedError
 
+    @abstractmethod
+    def get_sample(self) -> Dict[str, tf.Tensor]:
+        """ Returns a dictionary of sample tensors
+
+        Returns:
+            A dictionary of sample tensors
+        """
+        raise NotImplementedError
+
     @property
     @abstractmethod
     def weights(self) -> Dict[str, tf.Tensor]:
@@ -165,12 +174,6 @@ class Tf1xLayer(InnerLayer):
         """        
         raise NotImplementedError
 
-    @abstractmethod        
-    def get_sample(self, sess=None) -> np.ndarray:
-        """Returns a single data sample"""
-        raise NotImplementedError
-        
-    
 
 class TrainingLayer(DataLayer):
     @abstractmethod
