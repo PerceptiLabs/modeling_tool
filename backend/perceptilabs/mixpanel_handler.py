@@ -1,7 +1,8 @@
 """ WARNING: this module contains a temporary workaround needed for the September 2020 release and will be deprecated soon. Speak with Craig or Anton before making changes """
-
 import json
 import logging
+import datetime
+
 from mixpanel import Mixpanel
 
 from perceptilabs.logconf import APPLICATION_LOGGER
@@ -23,8 +24,14 @@ def event_common(event_full):
         '$time': event_full['time_event'],
         'Session ID': event_full['session_id'],
         'Version': event_full['version'],
-        'Commit': event_full['commit'],        
+        'Commit': event_full['commit']
     }
+
+    system = event_full.get('system')
+    mixpanel_os = {'Darwin': 'Mac OS X', 'Linux': 'Linux', 'Windows': 'Windows'}
+    if system in mixpanel_os:
+        payload['OS'] = mixpanel_os[system]
+    
     return payload
 
 
@@ -144,8 +151,13 @@ class MixPanelHandler(logging.Handler):
         except:
             logger.exception("Failed getting user from event ")
             return
-        
-        mp.people_set(user_id, {'$email': event_original['user_email']})
+
+        current_time = datetime.datetime.utcnow()
+        mp.people_set_once(user_id, {'$created': current_time})
+        mp.people_set(
+            user_id,
+            {'$email': event_original['user_email'], '$last_login': current_time}
+        )
         
         for event_id, event_handler in event_handlers.items():
             if event_id in event_original: # One or more event_ids exist at the top level, serving as a namespace for that event

@@ -171,7 +171,11 @@ class Tf1xStrategy(BaseStrategy):
             logger.warning(f"Checkpoint restore only works with TensorFlow 1.15. Current version is {tf.version.VERSION}")
         try:
             variables = layer_instance.variables.copy()
-            outputs = layer_instance.get_sample(sess=sess)
+            sample_tensors = layer_instance.get_sample()
+            outputs = {
+                key: value[0] # Drop batch dimension
+                for key, value in sess.run(sample_tensors).items()
+            }            
         except Exception as e:
             error = exception_to_error(layer_id, layer_type, e, line_offset=line_offset)
             logger.debug(f"Layer {layer_id} raised an error on sess.run")            

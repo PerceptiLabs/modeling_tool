@@ -5,6 +5,7 @@ import datetime
 import pkg_resources
 import jsonschema
 import tensorflow as tf
+import platform
 import re
 
 import perceptilabs
@@ -114,10 +115,12 @@ def set_console_logger(queue, log_level = None):
     application_log_handler.setFormatter(application_log_formatter)
     application_logger.addHandler(application_log_handler)
 
+    
 _global_context = {
     'session_id': '',
     'user_email': 'notset@perceptilabs.com',
-    'commit_id': ''
+    'commit_id': '',
+    'system': platform.system()
 }
 
 
@@ -153,7 +156,8 @@ class DataFormatter(logging.Formatter):
             'session_id': _global_context.get('session_id', ''),
             'user_email': _global_context.get('user_email', 'dev@perceptilabs.com'),
             'version': perceptilabs.__version__,
-            'commit': _global_context.get('commit_id', ''),            
+            'commit': _global_context.get('commit_id', ''),
+            'system': _global_context.get('system', ''),
             record.msg: record.namespace
         }
 

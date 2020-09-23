@@ -251,6 +251,7 @@ const linearRegression = {
           "Decay_rate": 0.96,
           "Decay_steps": 100000,
           "Momentum": 0.9,
+          "Batch_size": 8,
           "Beta_2": 0.999,
           "Beta_1": 0.9,
           "Optimizer": "SGD",

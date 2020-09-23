@@ -1,5 +1,5 @@
 <template lang="pug">
-  .popup-global
+  .popup-global.z-100
     .popup-global_overlay(@click="closePopup()")
     section.popup
       //.popup_tab-set
@@ -94,6 +94,11 @@
 <style scoped lang="scss">
   @import "../../scss/base";
   @import "../../scss/common/info-popup";
+
+  .z-100 {
+    z-index: 100;
+  }
+
   .popup_header {
     position: relative;
   }

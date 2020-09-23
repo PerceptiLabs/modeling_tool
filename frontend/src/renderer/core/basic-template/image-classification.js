@@ -437,7 +437,7 @@ const imageClassification = {
         "connectionOut": [],
         "connectionIn": [],
         "connectionArrow": [],
-        "visited": true,
+        "visited": false,
         "inputs": {
           "15989705775490": {
             "name": "input",

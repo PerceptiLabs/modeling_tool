@@ -134,7 +134,8 @@ export default {
     },
     computed: {
         ...mapState({
-          currentProjectId: state => state.mod_project.currentProject,  
+          currentProjectId:     state => state.mod_project.currentProject,
+          showNewModelPopup:    state => state.globalView.globalPopup.showNewModelPopup, 
         }),
         ...mapGetters({
             currentProject: 'mod_project/GET_project',
@@ -145,7 +146,7 @@ export default {
         this.modelPath = this.projectPath;
         document.addEventListener('keyup', this.handleKeyup);
     },
-    beforeDestory() {
+    beforeDestroy() {
         document.removeEventListener('keyup', this.handleKeyup);
     },
     methods: {

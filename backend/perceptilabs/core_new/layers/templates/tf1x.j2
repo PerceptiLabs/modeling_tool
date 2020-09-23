@@ -1,4 +1,4 @@
-{% from 'tf1x_utils.j2' import batch_normal, activation_function, activation_name %}
+{% from 'tf1x_utils.j2' import batch_normal, activation_function, activation_name, build_output_dict %}
 
 {% macro layer_tf1x_switch(layer_spec, graph_spec=None) %}
 class {{layer_spec.sanitized_name}}(Tf1xLayer):
@@ -14,7 +14,19 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
         self._variables = {k: v for k, v in locals().items() if can_serialize(v)}    
         self.y = y
 
-        self._outputs = {'output': y}
+        {{ build_output_dict(
+            'self._outputs',
+            {'output': 'y'},
+            [])|indent(width=8)
+        }}
+        return self._outputs
+
+    def get_sample(self) -> Dict[str, tf.Tensor]:
+        """ Returns a dictionary of sample tensors
+
+        Returns:
+            A dictionary of sample tensors
+        """
         return self._outputs
 
     @property
@@ -35,17 +47,6 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
             A dictionary with tensor names for keys and tensors for values.
         """
         return {}
-
-    def get_sample(self, sess=None) -> np.ndarray:
-        """Returns a single data sample"""
-        if sess is not None:
-            outputs = sess.run(self._outputs)
-            return {
-                key: value[0] if len(value) > 0 else value
-                for key, value in outputs.items()
-            }
-        else:
-            return None
 
     @property
     def weights(self) -> Dict[str, tf.Tensor]:
@@ -87,7 +88,19 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
         self._variables = {k: v for k, v in locals().items() if can_serialize(v)}    
         self.y = y
 
-        self._outputs = {'output': y}
+        {{ build_output_dict(
+            'self._outputs',
+            {'output': 'y'},
+            [])|indent(width=8)
+        }}
+        return self._outputs
+
+    def get_sample(self) -> Dict[str, tf.Tensor]:
+        """ Returns a dictionary of sample tensors
+
+        Returns:
+            A dictionary of sample tensors
+        """
         return self._outputs
 
     @property
@@ -109,17 +122,6 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
         """
         return {}
 
-    def get_sample(self, sess=None) -> np.ndarray:
-        """Returns a single data sample"""
-        if sess is not None:
-            outputs = sess.run(self._outputs)
-            return {
-                key: value[0] if len(value) > 0 else value
-                for key, value in outputs.items()
-            }
-        else:
-            return None
-        
     @property
     def weights(self) -> Dict[str, tf.Tensor]:
         """Any weight tensors belonging to this layer that should be rendered in the frontend.
@@ -160,7 +162,19 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
         y = tf.reshape(x, new_shape)
         y = tf.transpose(y, perm=[0] + [i+1 for i in permutation])
 
-        self._outputs = {'output': y}
+        {{ build_output_dict(
+            'self._outputs',
+            {'output': 'y'},
+            [])|indent(width=8)
+        }}
+        return self._outputs
+
+    def get_sample(self) -> Dict[str, tf.Tensor]:
+        """ Returns a dictionary of sample tensors
+
+        Returns:
+            A dictionary of sample tensors
+        """
         return self._outputs
 
     @property
@@ -181,17 +195,6 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
         """
         return {}
     
-    def get_sample(self, sess=None) -> np.ndarray:        
-        """Returns a single data sample"""
-        if sess is not None:
-            outputs = sess.run(self._outputs)
-            return {
-                key: value[0] if len(value) > 0 else value
-                for key, value in outputs.items()
-            }
-        else:
-            return None
-
     @property
     def weights(self) -> Dict[str, tf.Tensor]:
         """Any weight tensors belonging to this layer that should be rendered in the frontend.
@@ -217,7 +220,20 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
         """Takes an image and reshapes it."""
         x = inputs['input']
         y = tf.image.resize(x, [{{layer_spec.height}}, {{layer_spec.width}}], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR, preserve_aspect_ratio=False)
-        self._outputs = {'output': y}
+
+        {{ build_output_dict(
+            'self._outputs',
+            {'output': 'y'},
+            [])|indent(width=8)
+        }}
+        return self._outputs
+
+    def get_sample(self) -> Dict[str, tf.Tensor]:
+        """ Returns a dictionary of sample tensors
+
+        Returns:
+            A dictionary of sample tensors
+        """
         return self._outputs
 
     @property
@@ -237,17 +253,6 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
             A dictionary with tensor names for keys and tensors for values.
         """
         return {}
-
-    def get_sample(self, sess=None) -> np.ndarray:        
-        """Returns a single data sample"""
-        if sess is not None:
-            outputs = sess.run(self._outputs)
-            return {
-                key: value[0] if len(value) > 0 else value
-                for key, value in outputs.items()
-            }
-        else:
-            return None
 
     @property
     def weights(self) -> Dict[str, tf.Tensor]:
@@ -273,8 +278,21 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
 class {{layer_spec.sanitized_name}}(Tf1xLayer):
     def __call__(self, inputs: Dict[str, tf.Tensor] , is_training: tf.Tensor = None) -> Dict[str, tf.Tensor]:
         x = inputs['input']
-        y = tf.one_hot(tf.cast(x, dtype=tf.int32), {{layer_spec.n_classes}})       
-        self._outputs = {'output': y}
+        y = tf.one_hot(tf.cast(x, dtype=tf.int32), {{layer_spec.n_classes}})
+
+        {{ build_output_dict(
+            'self._outputs',
+            {'output': 'y'},
+            [])|indent(width=8)
+        }}
+        return self._outputs
+
+    def get_sample(self) -> Dict[str, tf.Tensor]:
+        """ Returns a dictionary of sample tensors
+
+        Returns:
+            A dictionary of sample tensors
+        """
         return self._outputs
 
 
@@ -296,17 +314,6 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
         """
         return {}
     
-    def get_sample(self, sess=None) -> np.ndarray:
-        """Returns a single data sample"""
-        if sess is not None:
-            outputs = sess.run(self._outputs)
-            return {
-                key: value[0] if len(value) > 0 else value
-                for key, value in outputs.items()
-            }
-        else:
-            return None
-
     @property
     def weights(self) -> Dict[str, tf.Tensor]:
         """Any weight tensors belonging to this layer that should be rendered in the frontend.
@@ -333,7 +340,6 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
         self._scope = '{{layer_spec.sanitized_name}}'
         self._n_neurons = {{layer_spec.n_neurons}}
         self._variables = {}
-        self._lw_variables = {}
         self._keep_prob = {{layer_spec.keep_prob}}
 
     def __call__(self, inputs: Dict[str, tf.Tensor], is_training: tf.Tensor = None) -> Dict[str, tf.Tensor]:
@@ -354,7 +360,8 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
             b = tf.compat.v1.get_variable('b', initializer=initial)
             flat_node = tf.cast(tf.reshape(x, [-1, n_inputs]), dtype=tf.float32)
             y = tf.matmul(flat_node, W) + b
-            
+
+            y_before = y
             {{ batch_normal(layer_spec.batch_norm, y, is_training) | indent(width=12)}}
 
             {% filter remove_lspaces(8) %}
@@ -375,25 +382,29 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
             {% endfilter %}
             
         self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
-        self._lw_variables['y_before'] = y_before
-        self._lw_variables['y'] = y
 
-        self._sample = {
-            'output': y_before,
-            'initial': initial,
-            'W': W,
-            'b': b,
-            'flat_node': flat_node
-        }
-        
-        self._outputs = {
-            'output': y,
-            'initial': initial,
-            'W': W,
-            'b': b,
-            'flat_node': flat_node
-        }
+        {{ build_output_dict(
+            'self._outputs',
+            {'output': 'y', 'y_before': 'y_before', 'initial': 'initial', 'W': 'W', 'b': 'b', 'flat_node': 'flat_node'},
+            ['y_before'])|indent(width=8)
+        }}
         return self._outputs
+
+    def get_sample(self) -> Dict[str, tf.Tensor]:
+        """ Returns a dictionary of sample tensors
+
+        Returns:
+            A dictionary of sample tensors
+        """
+        {% filter remove_lspaces(8) %}
+            {% if layer_spec.batch_norm %}
+                sample = self._outputs
+                sample['output'] = sample['y_before'] # Before batch normalization
+                return sample
+            {% else %}
+                return self._outputs
+            {% endif %}
+        {% endfilter %}
 
     @property
     def variables(self):
@@ -414,23 +425,6 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
         variables = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope=self._scope)
         variables = {v.name: v for v in variables}
         return variables
-
-    def get_sample(self, sess=None) -> np.ndarray:
-        """Returns a single data sample"""
-        if sess is not None:
-
-            # TODO: this if-statement should probably be jinja and based on presence of batch norm
-            if self._sample['output'] is None:
-                outputs = sess.run(self._outputs)
-            else:
-                outputs = sess.run(self._sample)
-                
-            return {
-                key: value[0] if len(value) > 0 else value
-                for key, value in outputs.items()
-            }
-        else:
-            return None
 
     @property
     def weights(self):
@@ -479,9 +473,19 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
         {% endfilter %}
 
         self._variables = {k: v for k, v in locals().items() if can_serialize(v)}    
+        {{ build_output_dict(
+            'self._outputs',
+            {'output': 'y'},
+            [])|indent(width=8)
+        }}
+        return self._outputs
 
-        self._outputs = {'output': y}
+    def get_sample(self) -> Dict[str, tf.Tensor]:
+        """ Returns a dictionary of sample tensors
 
+        Returns:
+            A dictionary of sample tensors
+        """
         return self._outputs
 
     @property
@@ -501,18 +505,6 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
         Returns:
             A dictionary with tensor names for keys and tensors for values.
         """
-        return {}
-
-    def get_sample(self, sess=None) -> np.ndarray:
-        """Returns a single data sample"""
-        if sess is not None:
-            outputs = sess.run(self._outputs)
-            return {
-                key: value[0] if len(value) > 0 else value
-                for key, value in outputs.items()
-            }
-        else:
-            return None
         return {}
 
     @property
@@ -568,14 +560,6 @@ class {{layer_name}}(Tf1xLayer):
         """
         return {}
 
-    def get_sample(self, sess=None) -> np.ndarray:
-        """Returns a single data sample"""
-        if sess is not None:
-            y = sess.run(self.y)
-            return y[0]
-        else:
-            return None
-            
     @property
     def weights(self) -> Dict[str, tf.Tensor]:
         """Any weight tensors belonging to this layer that should be rendered in the frontend.
@@ -607,7 +591,6 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
         self._stride = {{layer_spec.stride}}
         self._keep_prob = {{layer_spec.keep_prob}}
         self._variables = {}
-        self._lw_variables = {}
         
     def __call__(self, inputs: Dict[str, tf.Tensor], is_training: tf.Tensor = None) -> Dict[str, tf.Tensor]:
         """ Takes a tensor as input and feeds it forward through a convolutional layer, returning a newtensor."""
@@ -669,7 +652,8 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
                         y = tf.nn.conv3d(x, W, strides=[1, self._stride, self._stride, self._stride, 1], padding=self._padding)+b
                 {% endif %}
             {% endfilter %}
-            
+
+            y_before = y            
             {{ batch_normal(layer_spec.batch_norm, y, is_training) | indent(width=12)}}
 
             {% filter remove_lspaces(8) %}
@@ -705,22 +689,29 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
             {% endfilter %}
         
         self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
-        self._lw_variables['y_before'] = y_before
-        self._lw_variables['y'] = y
 
-        self._sample = {
-            'output': y_before,
-            'W': W,
-            'b': b,
-        }
-        
-        self._outputs = {
-            'output': y,
-            'W': W,
-            'b': b,
-        }
-
+        {{ build_output_dict(
+            'self._outputs',
+            {'output': 'y', 'y_before': 'y_before', 'W': 'W', 'b': 'b'},
+            ['y_before'])|indent(width=8)
+        }}
         return self._outputs
+
+    def get_sample(self) -> Dict[str, tf.Tensor]:
+        """ Returns a dictionary of sample tensors
+
+        Returns:
+            A dictionary of sample tensors
+        """
+        {% filter remove_lspaces(8) %}
+            {% if layer_spec.batch_norm %}
+                sample = self._outputs
+                sample['output'] = sample['y_before'] # Before batch normalization
+                return sample
+            {% else %}
+                return self._outputs
+            {% endif %}
+        {% endfilter %}
 
     @property
     def variables(self):
@@ -741,23 +732,6 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
         variables = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope=self._scope)
         variables = {v.name: v for v in variables}
         return variables        
-
-    def get_sample(self, sess=None) -> np.ndarray:
-        """Returns a single data sample"""
-        if sess is not None:
-
-            # TODO: this if-statement should probably be jinja and based on presence of batch norm
-            if self._sample['output'] is None:
-                outputs = sess.run(self._outputs)
-            else:
-                outputs = sess.run(self._sample)
-                
-            return {
-                key: value[0] if key != 'W' else value
-                for key, value in outputs.items()
-            }
-        else:
-            return None
 
     @property
     def weights(self):
@@ -793,7 +767,6 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
         self._keep_prob = {{layer_spec.keep_prob}}
         self._dropout = {{layer_spec.dropout}}
         self._variables = {}
-        self._lw_variables = {}
         
     def __call__(self, inputs: Dict[str, tf.Tensor], is_training: tf.Tensor = None):
         """ Takes a tensor as input and feeds it forward through a deconvolutional layer, returning a newtensor."""
@@ -892,6 +865,7 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
                 {% endif %}
             {% endfilter %}
 
+            y_before = y            
             {{ batch_normal(layer_spec.batch_norm, y, is_training) | indent(width=12)}}
 
             {% filter remove_lspaces(8) %}
@@ -917,21 +891,29 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
             {% endfilter %}
             
         self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
-        self._lw_variables['y_before'] = y_before
-        self._lw_variables['y'] = y
 
-        self._sample = {
-            'output': y_before,
-            'W': W,
-            'b': b,
-        }
-        
-        self._outputs = {
-            'output': y,
-            'W': W,
-            'b': b,
-        }
+        {{ build_output_dict(
+            'self._outputs',
+            {'output': 'y', 'y_before': 'y_before', 'W': 'W', 'b': 'b'},
+            ['y_before'])|indent(width=8)
+        }}
         return self._outputs
+    
+    def get_sample(self) -> Dict[str, tf.Tensor]:
+        """ Returns a dictionary of sample tensors
+
+        Returns:
+            A dictionary of sample tensors
+        """
+        {% filter remove_lspaces(8) %}
+            {% if layer_spec.batch_norm %}
+                sample = self._outputs
+                sample['output'] = sample['y_before'] # Before batch normalization
+                return sample
+            {% else %}
+                return self._outputs
+            {% endif %}
+        {% endfilter %}
 
     @property
     def variables(self):
@@ -952,23 +934,6 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
         variables = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope=self._scope)
         variables = {v.name: v for v in variables}
         return variables        
-
-    def get_sample(self, sess=None) -> np.ndarray:
-        """Returns a single data sample"""
-        if sess is not None:
-
-            # TODO: this if-statement should probably be jinja and based on presence of batch norm
-            if self._sample['output'] is None:
-                outputs = sess.run(self._outputs)
-            else:
-                outputs = sess.run(self._sample)
-                
-            return {
-                key: value[0] if len(value) > 0 else value
-                for key, value in outputs.items()
-            }
-        else:
-            return None
 
     @property
     def weights(self):
@@ -999,7 +964,6 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
         self._scope = '{{layer_spec.sanitized_name}}'
         self._variables = {}
         self._neurons = {{layer_spec.n_neurons}}
-        self._lw_variables = {}
         self._weights = None
         self._biases = None
         self._keep_prob = {{layer_spec.keep_prob}}
@@ -1045,16 +1009,20 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
 
             
         self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
-        self._lw_variables['y'] = y
         
-        self._sample = {
-            'output': y,
-        }
+        {{ build_output_dict(
+            'self._outputs',
+            {'output': 'y'},
+            [])|indent(width=8)
+        }}
+        return self._outputs
 
-        self._outputs = {
-            'output': y,
-        }
+    def get_sample(self) -> Dict[str, tf.Tensor]:
+        """ Returns a dictionary of sample tensors
 
+        Returns:
+            A dictionary of sample tensors
+        """
         return self._outputs
 
     @property
@@ -1076,23 +1044,6 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
         variables = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope=self._scope)
         variables = {v.name: v for v in variables}
         return variables
-
-    def get_sample(self, sess=None) -> np.ndarray:
-        """Returns a single data sample"""
-        if sess is not None:
-
-            # TODO: this if-statement should probably be jinja and based on presence of batch norm
-            if self._sample['output'] is None:
-                outputs = sess.run(self._outputs)
-            else:
-                outputs = sess.run(self._sample)
-                
-            return {
-                key: value[0] if len(value) > 0 else value
-                for key, value in outputs.items()
-            }
-        else:
-            return None
 
     @property
     def weights(self):
