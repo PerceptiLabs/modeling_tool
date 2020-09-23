@@ -26,7 +26,6 @@ def updates_available():
         return []
 
     versions = pypi_versions()
-    print(versions)
 
     current_version = parse_version(current_version_str)
 
