@@ -7,7 +7,6 @@ import * as Integrations from '@sentry/integrations';
 import axios        from 'axios'
 import VeeValidate  from 'vee-validate';
 import VueHotkey    from 'v-hotkey'
-import Keycloak from 'keycloak-js'
 
 import App    from './App'
 import router from './router'
@@ -26,7 +25,7 @@ import 'vue2-perfect-scrollbar/dist/vue2-perfect-scrollbar.css'
 
 //- Global directives
 import {mask} from 'vue-the-mask' // page registration dont use now
-import { parseJWT } from '@/core/helpers'
+
 import Analytics from '@/core/analytics';
 if(isElectron()) {
   Vue.use(require('vue-electron'));
@@ -70,58 +69,10 @@ Analytics.googleAnalytics.setup();
 Analytics.googleAnalytics.trackUserId(store.getters['mod_user/GET_userID']);
 
 
-
-let initOptions = {
-  url: `${process.env.KEYCLOACK_BASE_URL}/auth`, realm: `${process.env.KEYCLOACK_RELM}`, clientId: `${process.env.KEYCLOACK_CLIENT_ID}`, onLoad:'login-required'
-}
-export let keycloak = Keycloak(initOptions);
-
-keycloak.init({ onLoad: initOptions.onLoad }).then((auth) =>{
-    
-  if(!auth) {
-    window.location.reload();
-  } else {
-    console.log("Authenticated");
-  }
-
-  new Vue({
-    components: { App },
-    router,
-    store,
-    template: '<App/>'
-  }).$mount('#app');
-  
-  
-  let userProfile = parseJWT(keycloak.token)
-  userProfile.firstName = userProfile.given_name
-  userProfile.lastName = userProfile.family_name
-
-  store.dispatch('mod_user/SET_userProfile', userProfile, {root: true});
-  store.dispatch('mod_user/SET_userToken', {
-    accessToken: keycloak.token,
-    refreshToken: keycloak.refreshToken,
-  }, {root: true});
-
-  localStorage.setItem('currentUser', keycloak.token);
-  localStorage.setItem("vue-token", keycloak.token);
-  localStorage.setItem("vue-refresh-token", keycloak.refreshToken);
-
-  setInterval(() =>{
-    keycloak.updateToken(1).success((refreshed)=>{
-      if (refreshed) {
-        console.log('Token refreshed'+ refreshed);
-      } else {
-        console.warn('Token not refreshed, valid for '
-        + Math.round(keycloak.tokenParsed.exp + keycloak.timeSkew - new Date().getTime() / 1000) + ' seconds');
-      }
-    }).error(()=>{
-        console.error('Failed to refresh token');
-    });
-
-
-  }, 6000)
-
-}).catch((e) =>{
-  console.error("Authenticated Failed");
-  console.error(e);
-});
+/* eslint-disable no-new */
+new Vue({
+  components: { App },
+  router,
+  store,
+  template: '<App/>'
+}).$mount('#app');

@@ -4,15 +4,15 @@
       .profile-item-Avatar.with-border(
         :data-tutorial-target="'tutorial-model-hub-user-gravatar'"
       )
-        | {{user && user.email[0].toUpperCase()}}
+        | {{user && user.firstName[0]}}
       .profile-item-drop-down
         button.bgc-transparent.ta-left.p-13
           .d-flex
             .profile-item-Avatar
               | {{user && user.firstName[0]}}
             div.ml-12
-              //- h3.white.fz-14.mb-0 -
-              p.fz-12.mb-0.mt-7 {{user && user.email}}
+              h3.white.fz-14.mb-0 {{user && user.firstName}} {{ user && user.lastName}}
+              p.fz-12.mb-0 {{user && user.email}}
         .profile-separator
         //- button.bgc-transparent.ta-left.profile-item-wrapper(v-for="collaborator in collaboratorData")
         //-   .d-flex
@@ -177,8 +177,5 @@
     border-radius: 50%;
     text-align: center;
     line-height: 17px;
-  }
-  .mt-7 {
-    margin-top: 7px;
   }
 </style>
