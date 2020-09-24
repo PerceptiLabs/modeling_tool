@@ -927,18 +927,6 @@ const actions = {
         console.error(err);
       });
   },
-  API_isFileExist (ctx, path) {
-    const theData = {
-      receiver: '',
-      action: 'isFileExist',
-      value: {
-        path
-      }
-    };
-    return coreRequest(theData)
-      .then(res => res)
-      .catch(e => console.error(e));
-  },
   // @param {object} payload | { networkId: variableName } 
   API_getBatchPreviewSample({ getters, dispatch, rootGetters }, payload) {
     const networkList = getters.GET_coreNetworkElementList;
