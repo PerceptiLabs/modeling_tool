@@ -352,14 +352,7 @@ class Interface():
             return {"previews":previews, "outputDims": outputDims}
 
         elif action == "getNetworkData":
-            graph_spec = self._network_loader.load(value["Network"], as_spec=True)
-            lw_core, _, _ = self.create_lw_core(reciever, None, adapter=False)
-            output = GetNetworkData(graph_spec, lw_core, self._settings_engine).run()
-
-            if logger.isEnabledFor(logging.DEBUG):
-                logger.debug("get network data output:" + pprint.pformat(output))            
-
-            return output
+            return self._get_network_data(reciever, value)
         
         elif action == "getPreviewSample":
             layer_id = value["Id"]
@@ -572,4 +565,19 @@ class Interface():
         dataevents.on_user_email_set()
         
         return "User has been set to " + value
+        
+    def _get_network_data(self, receiver, value):
+        json_network = value["Network"]
+            
+        if logger.isEnabledFor(logging.DEBUG):
+            logger.debug("_get_network_data input network: \n" + stringify(json_network))
+        
+        graph_spec = self._network_loader.load(json_network, as_spec=True)
+        lw_core, _, _ = self.create_lw_core(receiver, None, adapter=False)
+        output = GetNetworkData(graph_spec, lw_core, self._settings_engine).run()
+
+        if logger.isEnabledFor(logging.DEBUG):
+            logger.debug("_get_network_data output network: \n" + stringify(output))
+            
+        return output
         

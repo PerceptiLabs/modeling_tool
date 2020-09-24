@@ -414,14 +414,14 @@ class GetNetworkData(LW_interface_base):
         return dim_content, preview_content
 
     def _maybe_apply_autosettings(self, graph_spec):
-        applied = False
         if self._settings_engine is not None:
-            graph_spec = self._settings_engine.run(graph_spec)
-            applied = True
+            new_graph_spec = self._settings_engine.run(graph_spec)
+
+            if new_graph_spec is not None:
+                return new_graph_spec, True
         else:
             logger.warning("Settings engine is not set. Cannot make recommendations. Using old json_network.")
-
-        return graph_spec, applied
+        return graph_spec, False
 
         
 class getPreviewSample(LW_interface_base):
