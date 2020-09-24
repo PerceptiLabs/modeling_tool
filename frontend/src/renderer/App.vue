@@ -150,7 +150,7 @@
 
         this.calcAppPath();
       }
-      this.checkLocalToken();
+      // this.checkLocalToken();
       this.$store.dispatch('mod_api/API_runServer', null, {root: true});
       // this.$store.dispatch('mod_workspace/GET_workspacesFromLocalStorage');
 
@@ -458,17 +458,17 @@
         }
         this.SET_appPath(path);
       },
-      checkLocalToken() {
-        let localUserToken = JSON.parse(localStorage.getItem('currentUser'));
-        if(localUserToken) {
-          this.setUserToken(localUserToken);
-          if(['main-page', 'settings'].includes(this.$router.history.current.name)) {
-            this.$router.replace({name: 'projects'});
-          }
-        } else {
-          this.$router.push({name: 'main-page'}).catch(err => {});
-        }    
-      },
+      // checkLocalToken() {
+      //   let localUserToken = JSON.parse(localStorage.getItem('currentUser'));
+      //   if(localUserToken) {
+      //     this.setUserToken(localUserToken);
+      //     if(['main-page', 'settings'].includes(this.$router.history.current.name)) {
+      //       this.$router.replace({name: 'projects'});
+      //     }
+      //   } else {
+      //     this.$router.push({name: 'main-page'}).catch(err => {});
+      //   }    
+      // },
       disableHotKeys(event) {
         const isHotkey = isOsMacintosh() ? event.metaKey : event.ctrlKey;
         if (!isHotkey) { 

@@ -1,4 +1,5 @@
 import router         from "@/router";
+import { keycloak } from '@/main.js'
 import {
   filePCRead,
   isWeb,
@@ -186,8 +187,9 @@ const actions = {
     commit('set_saveNetworkAs');
   },
   EVENT_logOut({commit, dispatch}, isSendLogout = true) {
-    if(isSendLogout) dispatch('mod_apiCloud/CloudAPI_userLogout', null, {root: true});
-  
+    // if(isSendLogout) dispatch('mod_apiCloud/CloudAPI_userLogout', null, {root: true});
+    if(isSendLogout) keycloak.logout()
+    
     // setting to -1 and then removing because the project.vue component isn't recreated here
     // this means that selecting the same project won't make it fetch models
     commit('mod_project/selectProject', -1, {root: true});

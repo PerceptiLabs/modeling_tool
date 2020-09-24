@@ -96,6 +96,7 @@
     "echarts-gl": "^1.1.1",
     "electron-updater": "^4.1.2",
     "html2canvas": "^1.0.0-rc.4",
+    "keycloak-js": "11.0.2",
     "lodash.clonedeep": "4.5.0",
     "lodash.isequal": "4.5.0",
     "mixpanel-browser": "^2.29.1",
