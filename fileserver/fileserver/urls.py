@@ -11,8 +11,10 @@ from fileserver.api.views.directory_view import (
 from fileserver.api.views.json_model_view import JsonModelView
 from fileserver.api.views.model_directory_view import (modeldirectory_tree, get_modeldirectory)
 from fileserver.api.views.github_view import (github_export, github_import, github_issue)
+from fileserver.api.views.version_view import version as version_view
 
 urlpatterns = [
+    path("version", version_view),
     path("files", FileView.as_view()),
     path("json_models", JsonModelView.as_view()),
     path("directories", DirectoryView.as_view()),

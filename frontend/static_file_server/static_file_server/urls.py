@@ -16,6 +16,15 @@ Including another URLconf
 from django.urls import path, re_path
 from django.views.generic import TemplateView
 
+class  TokenView(TemplateView):
+    template_name = 'index.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        token = request.GET.get("token")
+        ret = super().dispatch(request, *args, **kwargs)
+        ret.set_cookie("fileserver_token", value=token) # TODO: other settings like secure= or samesite=
+        return ret
+
 urlpatterns = [
-    re_path('', TemplateView.as_view(template_name='index.html')),
+    re_path('', TokenView.as_view()),
 ]

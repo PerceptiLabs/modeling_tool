@@ -3,21 +3,41 @@ import { objectToQueryParams } from '@/core/helpers'
 import { FILE_SERVER_BASE_URL } from '@/core/constants'
 import { stringifyNetworkObjects }   from "@/core/helpers.js";
 
-const tokenEndpoint = 'static/token';
-
 const fileServerHttpReqest =  axios.create();
 fileServerHttpReqest.defaults.baseURL = FILE_SERVER_BASE_URL
 fileServerHttpReqest.defaults.headers.common["Content-Type"] = `application/json`;
 fileServerHttpReqest.defaults.params = {}
 fileServerHttpReqest.defaults.params['token'] = process.env.PL_FILE_SERVING_TOKEN
 
+function getCookie(name) {
+    const cookieArr = document.cookie.split(";");
+
+    for(var i = 0; i < cookieArr.length; i++) {
+        const cookiePair = cookieArr[i].split("=");
+
+        if(name == cookiePair[0].trim()) {
+            return decodeURIComponent(cookiePair[1]);
+        }
+    }
+
+    return null;
+}
+
 if (!process.env.PL_FILE_SERVING_TOKEN) {
   // This section is for when the frontend is built as static files.
   // (process.env is not available then)
-  axios.get(tokenEndpoint)
-    .then(response => {
-      fileServerHttpReqest.defaults.params['token'] = response.data;
-    });
+	const token = getCookie("fileserver_token")
+	fileServerHttpReqest.defaults.params['token'] = token
+}
+
+export const fileserverAvailability = () => {
+  return fileServerHttpReqest.get("/version")
+  .then(res => {
+    return (res.status === 200) ? "AVAILABLE" : "UNAVAILABLE"
+  })
+  .catch(err => {
+    return (err.response && err.response.status === 400)? "BAD_TOKEN" : "UNAVAILABLE"
+  })
 }
 
 export const importRepositoryFromGithub = (data) => {

@@ -40,6 +40,7 @@
   import TutorialsChecklist       from '@/components/tutorial/tutorial-checklist.vue';
   import TutorialNotification from "@/components/different/tutorial-notification.vue";
   import { getModelJson as fileserver_getModelJson } from '@/core/apiFileserver';
+  import { fileserverAvailability } from '@/core/apiFileserver';
 
   let ipcRenderer = null;
   if(isElectron()) {
@@ -152,6 +153,7 @@
         this.calcAppPath();
       }
       this.checkLocalToken();
+      this.checkFileserverAvailability();
       this.$store.dispatch('mod_api/API_runServer', null, {root: true});
       // this.$store.dispatch('mod_workspace/GET_workspacesFromLocalStorage');
 
@@ -467,6 +469,15 @@
         } else {
           this.$router.push({name: 'main-page'}).catch(err => {});
         }    
+      },
+      checkFileserverAvailability() {
+        fileserverAvailability().then(resp => {
+          if (resp === "UNAVAILABLE") {
+            this.openErrorPopup("The file server isn't available");
+          } else if (resp === "BAD_TOKEN") {
+            this.openErrorPopup("Unable to talk to the file server. Did you use the correct token to load this page?");
+          }
+        })
       },
       disableHotKeys(event) {
         const isHotkey = isOsMacintosh() ? event.metaKey : event.ctrlKey;

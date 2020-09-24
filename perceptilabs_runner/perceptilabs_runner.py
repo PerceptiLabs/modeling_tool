@@ -155,14 +155,6 @@ class PortPoller:
                     print(f"{bcolors.PERCEPTILABS}PerceptiLabs:{bcolors.ENDC}    {s} on port {p}")
             time.sleep(interval_secs)
 
-def write_token(token):
-    import static_file_server
-    module_directory = os.path.dirname(static_file_server.__file__)
-    static_directory = os.path.join(module_directory, "dist", "static")
-    token_file = os.path.join(static_directory, "token")
-    with open(token_file, "w") as f:
-        f.write(token)
-
 def start(verbosity):
     # give the handler closure the shared procs variable
     procs = []
@@ -177,7 +169,6 @@ def start(verbosity):
         pipes = get_pipes(verbosity)
         do_migration(pipes)
         api_token = secrets.token_urlsafe(nbytes=64)
-        write_token(api_token)
         procs = list([start_one(cmd, pipes, api_token) for cmd in SERVICE_CMDS])
         print(f"{bcolors.PERCEPTILABS}PerceptiLabs:{bcolors.ENDC} Starting")
         PortPoller.wait_for_ports()
