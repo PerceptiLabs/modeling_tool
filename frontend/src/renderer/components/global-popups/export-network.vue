@@ -33,6 +33,7 @@
 <script>
 import { isWeb } from "@/core/helpers";
 import BaseGlobalPopup  from "@/components/global-popups/base-global-popup";
+import { doesFileExist as fileserver_doesFileExist } from '@/core/apiFileserver';
 
 export default {
   name: "ExportNetwork",
@@ -77,11 +78,11 @@ export default {
     async ok() {
       if(this.settings.Location !== '') {
         const fileName = this.settings.Location + `/${this.settings.name}.ipynb`;
-        const isFolderAlreadyExist = await this.$store.dispatch('mod_api/API_isFileExist', fileName);
+        const isFolderAlreadyExist = await fileserver_doesFileExist(fileName);
        
        if(isFolderAlreadyExist) {
           this.$store.dispatch('globalView/GP_confirmPopup', {
-            text: 'File already exist, are you sure want to overwrite it?',
+            text: 'File already exists, are you sure want to overwrite it?',
             ok: () => {
               exportData.call(this, this.settings)
             }

@@ -14,6 +14,13 @@ from fileserver.tests.utils import (
 import os
 import platform
 
+BLANK_RESPONSE = {
+        "current_path": "",
+        "dirs": "",
+        "files": "",
+        "platform": platform.system(),
+        }
+
 class FolderContentsTest(TestCase):
     def test_simple_case(self):
         with temp_local_dir("first") as fd, \
@@ -22,26 +29,24 @@ class FolderContentsTest(TestCase):
              temp_local_file(os.path.join(sd, "file_in_second.txt"), "abc") as f:
                 r = get_folder_content(sd)
                 self.assertEqual(r, {
-                    'current_path': os.path.join(cwd(), "first", "second"),
+                    'current_path': os.path.join("first", "second"),
                     'dirs': ['third'],
                     'files': ['file_in_second.txt'],
                     'platform': platform.system()})
 
     def test_missing_dir(self):
         r = get_folder_content("nonexistent_dir")
-        self.assertEqual(r, None)
+        self.assertDictEqual(BLANK_RESPONSE, r)
 
     def test_non_dir(self):
         with temp_local_file(f"f.txt", "abc") as f:
-            def run():
-                get_folder_content(f)
-
-            self.assertRaises(ValueError, run)
+            r = get_folder_content(f)
+            self.assertEqual(BLANK_RESPONSE, r)
 
     def test_current_dir(self):
         r = get_folder_content('.')
         self.maxDiff=None
-        self.assertEqual(r["current_path"], cwd())
+        self.assertEqual(r["current_path"], ".")
         self.assertGreater(len(r["dirs"]), 0)
         self.assertGreater(len(r["files"]), 0)
 

@@ -70,6 +70,7 @@
 import { coreRequest } from '@/core/apiWeb.js';
 import { filePickerStorageKey } from '@/core/constants.js';
 import { mapGetters } from "vuex";
+import { getFolderContent as fileserver_getFolderContent } from '@/core/apiFileserver';
 
 const breadcrumbCharacterLength = 58;
 
@@ -124,14 +125,14 @@ export default {
   },
   mounted() {
     let path = '';
-    
+
     if (this.startupFolder) {
       path = this.startupFolder;
     }
     else if(localStorage.hasOwnProperty(filePickerStorageKey)) {
       path = localStorage.getItem(filePickerStorageKey);
     }
-    
+
     this.fetchPathInformation(path)
           .then(response => {
             if (response == false) {
@@ -234,17 +235,10 @@ export default {
     },
     async fetchPathInformation(path, isSearching = false) {
       this.selectedFiles = [];
-      let theData = {
-          reciever: '0',
-          action: 'getFolderContent',
-          value: path
-      };
-
       this.$store.dispatch('globalView/ShowCoreNotFoundPopup', null, { root: true });
 
       try {
-        const jsonData = await coreRequest(theData);
-        
+        const jsonData = await fileserver_getFolderContent(path);
         this.setOsSpecifics(jsonData.platform);
 
         const pathNotFound = jsonData.current_path === "";
@@ -254,12 +248,10 @@ export default {
         } else {
           this.searchDirNotFound = false;
         }
-        
         if(!pathNotFound) {
           this.calculateBreadcrumbsLength(jsonData.current_path);
           localStorage.setItem(filePickerStorageKey, jsonData.current_path);
         }
-        
         if (jsonData.current_path === '.') {
           this.currentPath = [];
         } else {
@@ -268,6 +260,7 @@ export default {
 
         this.directories = jsonData.dirs.filter(d => !d.startsWith('.')).sort();
         if (this.fileTypeFilter.length === 0) {
+
           this.files = jsonData.files;
         } else {
           this.files = jsonData.files.filter(f => {

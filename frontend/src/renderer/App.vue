@@ -39,6 +39,7 @@
   import CreateIssuePopup         from '@/components/global-popups/create-issues-popup.vue';
   import TutorialsChecklist       from '@/components/tutorial/tutorial-checklist.vue';
   import TutorialNotification from "@/components/different/tutorial-notification.vue";
+  import { getModelJson as fileserver_getModelJson } from '@/core/apiFileserver';
 
   let ipcRenderer = null;
   if(isElectron()) {
@@ -405,8 +406,6 @@
         getDefaultModeProject:  'mod_project/getDefaultModeProject',
         getModelMeta:           'mod_project/getModel',
         
-        createFolder:           'mod_api/API_createFolder',
-        API_getModel:           'mod_api/API_getModel',
         API_getModelStatus:     'mod_api/API_getModelStatus',
 
         cloud_userGetProfile:   'mod_apiCloud/CloudAPI_userGetProfile',
@@ -521,7 +520,7 @@
         const promiseArray = 
           modelMetas
             .filter(x => x.location)
-            .map(x => this.API_getModel(x.location + '/model.json'));
+            .map(x => fileserver_getModelJson(x.location + '/model.json'));
         
         Promise.all(promiseArray)
           .then(models => {
@@ -538,8 +537,8 @@
         let unparsedModels = [];
 
         modelMetas.forEach(async (model) => {
-          const modelJson = await this.API_getModel(model.location + '/model.json');
-          if(modelJson === "") {
+          const modelJson = await fileserver_getModelJson(model.location + '/model.json');
+          if(!modelJson) {
             unparsedModels.push(model);
           }
         });

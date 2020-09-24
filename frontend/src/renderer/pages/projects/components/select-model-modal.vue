@@ -87,6 +87,11 @@
     import { mapActions, mapState, mapGetters } from 'vuex';
     import { generateID } from '@/core/helpers';
     import cloneDeep from 'lodash.clonedeep';
+    import { doesDirExist as fileserver_doesDirExist } from '@/core/apiFileserver';
+    import { getFolderContent as fileserver_getFolderContent } from '@/core/apiFileserver';
+    import { getResolvedDir as fileserver_getResolvedDir } from '@/core/apiFileserver';
+    import { getRootFolder as fileserver_getRootFolder } from '@/core/apiFileserver';
+
 export default {
     name: 'SelectModelModal',
     components: { FilePickerPopup },
@@ -156,10 +161,6 @@ export default {
             getModelMeta:               'mod_project/getModel',
             getProjects:                'mod_project/getProjects',
             showErrorPopup:             'globalView/GP_errorPopup',
-            isDirExists:                'mod_api/API_isDirExist',
-            resolveDir:                 'mod_api/API_resolveDir',
-            getFolderContent:           'mod_api/API_getFolderContent',
-            API_getRootFolder:          'mod_api/API_getRootFolder',
             setCurrentView:             'mod_tutorials/setCurrentView',
             setNextStep:                'mod_tutorials/setNextStep',
             setChecklistItemComplete:   'mod_tutorials/setChecklistItemComplete',
@@ -182,9 +183,9 @@ export default {
             if (this.modelName && this.hasChangedModelName) { return; }
             if (!this.modelPath) { return; }
 
-            const resolvedDir = await this.resolveDir(this.modelPath);
-            const dirContents = await this.getFolderContent(resolvedDir);
-            
+            const resolvedDir = await fileserver_getResolvedDir(this.modelPath);
+            const dirContents = await fileserver_getFolderContent(resolvedDir);
+
             let namePrefix = '';
             if (this.chosenTemplate >= 0 &&
                 this.chosenTemplate <= this.basicTemplates.length - 1) {
@@ -217,7 +218,7 @@ export default {
                 this.currentProject.models
                     .map(x => this.getModelMeta(x));
             const modelMeta = await Promise.all(promiseArray);
-            const rootPath = await this.API_getRootFolder();
+            const rootPath = await fileserver_getRootFolder();
             const modelNames = modelMeta.map(x => x.name);
             if(modelNames.indexOf(modelName) !== -1) {
                 this.showErrorPopup(`The name of model "${modelName}" already exists.`);
@@ -225,7 +226,7 @@ export default {
                 return;
             }
             
-            const dirAlreadyExist = await this.isDirExists(`${this.modelPath}/${modelName}`);
+            const dirAlreadyExist = await fileserver_doesDirExist(`${this.modelPath}/${modelName}`);
             if(dirAlreadyExist) {
                 this.showErrorPopup(`The "${modelName}" folder already exists in "${this.modelPath}" location.`);
                 this.setCurrentView('tutorial-model-hub-view');
@@ -252,9 +253,8 @@ export default {
 
                 } else {
                     let template = cloneDeep(basicTemplates[chosenTemplate].template.network);
-                    
-                    const newRootPath = rootPath.replace(/\\/g, "/");
 
+                    const newRootPath = rootPath.replace(/\\/g, "/");
                     this.convertToAbsolutePath(template.networkElementList, newRootPath);
 
                     template.networkName = modelName;

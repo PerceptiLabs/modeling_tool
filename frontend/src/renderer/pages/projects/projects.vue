@@ -188,6 +188,8 @@
   import { isWeb, stringifyNetworkObjects } from "@/core/helpers";
   import { TRACKER_SCREENNAME_PROJECTS } from "@/core/constants";
   import cloneDeep from 'lodash.clonedeep';
+  import { getModelJson as fileserver_getModelJson } from '@/core/apiFileserver';
+
   const mockModelList = [
     // {id: 1, dateCreated: new Date().setHours(15), dateLastOpened: new Date(), size: '10', name:'Placeholder 1', status: '75%', savedVersion: '-', sessionEndTime: 'Placeholder', collaborators: [{id: 1, name: 'Anton', img: null,}], lastModified: { user: {id: 1, name: 'Anton', img: null}, date: '19/02/20 13:00:00'}, isFavorite: true},
     // {id: 2, dateCreated: new Date().setHours(3), dateLastOpened: new Date(), size: '12', name:'Placeholder 4', status: '50%', savedVersion: '-', sessionEndTime: 'Placeholder', collaborators: [{id: 2, name: 'Robert', img: null,}], lastModified: { user: {id: 1, name: 'Anton', img: null}, date: '19/02/20 13:00:00'}, isFavorite: false},
@@ -305,7 +307,6 @@
         popupConfirm:        'globalView/GP_confirmPopup',
         popupNewModel:       'globalView/SET_newModelPopup',
         showInfoPopup:       'globalView/GP_infoPopup',
-        loadNetwork:         'mod_api/API_loadNetwork',
         set_currentNetwork:  'mod_workspace/SET_currentNetwork',
         createProjectModel:  'mod_project/createProjectModel',
         setActivePageAction: 'modal_pages/setActivePageAction',
@@ -339,7 +340,7 @@
         this.$store.commit("globalView/set_filePickerPopup", true);
       },
       openTemplate(path) {
-        this.loadNetwork(path)
+        fileserver_getModelJson(path)
       },
       onSortByChanged(valueSelected) {
         let modelList = [...this.modelList];
@@ -530,23 +531,6 @@
         this.$store.dispatch('globalView/SET_filePickerPopup', false);
 
         this.$store.dispatch('mod_events/EVENT_loadNetwork', path[0]);
-
-        // this.API_getModel(`${path[0]}/model.json`)
-        //   .then(model => {
-
-        //     if(model.hasOwnProperty('apiMeta')) {
-        //       const { location } = model.apiMeta;
-        //       delete model.apiMeta;
-        //     }
-        //     this.createProjectModel({
-        //       name: model.networkName,
-        //       project: this.currentProjectId,
-        //       location: path[0],
-        //     }).then(apiMeta => {
-        //       this.addNetwork({network: model, apiMeta});
-        //     });
-        //   })
-        //   .catch(e => console.log(e));
       },
       confirmCallback(el) {
         this.openTemplate(el[0]);

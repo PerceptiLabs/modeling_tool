@@ -1,6 +1,6 @@
 import {coreRequest as coreRequestWeb, openWS}  from "@/core/apiWeb.js";
 import coreRequestElectron from "@/core/apiCore.js";
-import { deepCopy, parseJWT, isWeb, stringifyNetworkObjects }   from "@/core/helpers.js";
+import { deepCopy, parseJWT, isWeb }   from "@/core/helpers.js";
 import { createNotebookJson }   from "@/core/helpers/notebook-helper.js";
 import { pathSlash }  from "@/core/constants.js";
 import {isElectron} from "@/core/helpers";
@@ -456,54 +456,6 @@ const actions = {
       });
   },
 
-  //---------------
-  // NETWORK LOAD
-  //---------------
-  
-  API_loadNetwork({rootGetters}, path) {
-    const theData = {
-      reciever: "",
-      action: "getJsonModel",
-      value: path
-    }
-
-    return coreRequest(theData)
-      .then((data) => data)
-      .catch((err) => {
-        console.error('loading network error: ', err);
-      });
-  },
-
-  API_getRootFolder() {
-    const theData = {
-      reciever: '',
-      action: 'getRootFolder',
-      value: ''
-    }
-
-    return coreRequest(theData)
-      .then((data)=> data)
-      .catch((err)=> {
-        console.error(err);
-      })
-  },
-
-  //---------------
-  //  NETWORK SAVE
-  //---------------
-  API_loadNetwork(ctx, path) {
-    const theData = {
-      reciever: "",
-      action: "getJsonModel",
-      value: path
-    }
-
-    return coreRequest(theData)
-      .then((data) => data)
-      .catch((err) => {
-        console.error('loading network error: ', err);
-      });
-  },
   API_checkNetworkRunning({rootGetters}, receiver) {
     const theData = {
       reciever: receiver,
@@ -543,71 +495,7 @@ const actions = {
         return Promise.reject();
       });
   },
-  API_saveModel({dispatch, getters, rootGetters}, {model}) {
-    // location shoul be getted from default location of project
-    // /model_${model.apiMeta.model_id}
-    const save_path = `${model.apiMeta.location}`;
-    
-    const theData = {
-      action: "saveJsonModel",
-      value:  {
-        reciever: model,
-        path: save_path,
-        json: stringifyNetworkObjects(model),
-      }
-    };
-    return coreRequest(theData)
-      .then((data)=> {
-        return data;
-      })
-      .catch((err)=> {
-        console.error('SaveModel', err);
-      });
-  },
-  API_getModel(ctx, path) {
-    const theData = {
-      action: 'getJsonModel',
-      value: path
-    }
-    return coreRequest(theData)
-      .then(res=> {
-        return res;
-      }).catch(e => {
-        console.log(e);
-      })
-  },
 
-  API_saveJsonModel({rootGetters}, {path}) {
-    const networkJson = cloneDeep(rootGetters['mod_workspace/GET_currentNetwork']);
-    const healthNetworkElementList = {};
-    Object.keys(networkJson.networkElementList).map(key => {
-      const el = networkJson.networkElementList[key];
-      healthNetworkElementList[key] = {
-        ...el,
-        chartData: {}
-      }
-    })
-
-    const healthNetworkJson = {
-      ...networkJson,
-      networkElementList: healthNetworkElementList
-    }
-    const theData = {
-      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
-      action: 'saveJsonModel',
-      value:  {
-        json: stringifyNetworkObjects(healthNetworkJson),
-        path
-      }
-    };
-    
-    return coreRequest(theData)
-      .then((data)=> data)
-      .catch((err)=> {
-        console.error('saveJsonModel answer', err);
-        return Promise.reject();
-      });
-  },
 
   //---------------
   //  ELEMENT SETTINGS
@@ -1039,51 +927,6 @@ const actions = {
         console.error(err);
       });
   },
-  API_createFolder(ctx, {folder_path}) {
-    if (!folder_path) { return; }
-
-    const theData = {
-      receiver: '',
-      action: 'createFolder',
-      value: {
-        "folder_path": folder_path
-      },
-    }
-    
-    return coreRequest(theData)
-      .then(res => {
-        return res;
-      })
-      .catch(err => {
-        console.error(err);
-      });
-  },
-  API_isDirExist (ctx, path) {
-    const theData = {
-      receiver: '',
-      action: 'isDirExist',
-      value: {
-        path
-      }
-    };
-    return coreRequest(theData)
-      .then(res => res)
-      .catch(e => console.error(e));
-  },
-  API_resolveDir (ctx, path) {
-    // resolves ~ for windows
-    // expands to the full path for POSIX
-    const theData = {
-      receiver: '',
-      action: 'resolveDir',
-      value: {
-        path
-      }
-    };
-    return coreRequest(theData)
-      .then(res => res)
-      .catch(e => console.error(e));
-  },
   API_isFileExist (ctx, path) {
     const theData = {
       receiver: '',
@@ -1230,19 +1073,6 @@ const actions = {
         console.error(e)
       });
   },
-  API_getFolderContent (ctx, path) {
-    // resolves ~ for windows
-    // expands to the full path for POSIX
-    const theData = {
-      receiver: '',
-      action: 'getFolderContent',
-      value: path
-    };
-
-    return coreRequest(theData)
-      .then(res => res)
-      .catch(e => console.error(e));
-  }
 };
 
 export default {

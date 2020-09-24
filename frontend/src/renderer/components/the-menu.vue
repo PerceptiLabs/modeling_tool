@@ -227,46 +227,6 @@ export default {
     openLoadModelPopup() {
       this.$store.dispatch('globalView/SET_showImportNetworkfromGitHubOrLocalPopup', true);
     },
-    // openLoadModelPopup() {
-    //   debugger;
-    //   if(this.isTutorialMode) {
-    //     this.hideTooltip();
-    //     this.popupConfirm(
-    //       {
-    //         text: 'Are you sure you want to end the tutorial?',
-    //         ok: () => {
-    //           this.offMainTutorial();
-    //           this.$store.dispatch('globalView/SET_filePickerPopup', {confirmCallback: this.onLoadNetworkConfirmed});
-    //         }
-    //       });
-    //   } else {
-    //     this.$store.dispatch('globalView/SET_filePickerPopup', {confirmCallback: this.onLoadNetworkConfirmed});
-    //   }
-    // },
-    // onLoadNetworkConfirmed(path) {
-    //   if (!path || path.length === 0) { return; }
-
-    //   this.$store.dispatch('globalView/SET_filePickerPopup', false);
-      
-    //   this.$store.dispatch('mod_events/EVENT_loadNetwork', path[0]);
-    //   // this.$store.dispatch('mod_api/API_getModel',`${path[0]}/model.json`)
-    //   //   .then(model => {
-    //   //     if(model.hasOwnProperty('apiMeta')) {
-    //   //       const { location } = model.apiMeta;
-    //   //       delete model.apiMeta;
-    //   //     }
-    //   //     this.$store.dispatch('mod_project/createProjectModel',{
-    //   //       name: model.networkName,
-    //   //       project: this.currentProjectId,
-    //   //       location: path[0],
-    //   //     }).then(apiMeta => {
-    //   //       this.$store.dispatch('mod_workspace/ADD_network', {network: model, apiMeta});
-    //   //     });
-    //   //   })
-    //   //   .catch(e => console.log(e));
-
-    //   // this.loadNetwork(path[0]);
-    // },
     saveModel() {
       this.saveNetwork();
     },

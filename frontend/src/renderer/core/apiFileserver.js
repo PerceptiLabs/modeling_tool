@@ -1,6 +1,7 @@
 import axios            from 'axios'
 import { objectToQueryParams } from '@/core/helpers'
 import { FILE_SERVER_BASE_URL } from '@/core/constants'
+import { stringifyNetworkObjects }   from "@/core/helpers.js";
 
 const tokenEndpoint = 'static/token';
 
@@ -27,6 +28,64 @@ export const importRepositoryFromGithub = (data) => {
 export const exportAsGithubRepository = (data) => {
   const queryParams = objectToQueryParams(data);
   return fileServerHttpReqest.post(`/github/export?${queryParams}`, data)
+}
+
+export const doesDirExist = (path) => {
+  return fileServerHttpReqest.head(`/directories?path=${path}`)
+  .then(res => {
+    return (res.status === 200);
+  })
+}
+
+export const getFolderContent = (path) => {
+  return fileServerHttpReqest.get(`/directories/get_folder_content?path=${path}`)
+    .then(res => {
+      return (res.status === 200)? res.data : null
+    })
+}
+
+export const getRootFolder = () => {
+  return fileServerHttpReqest.get(`/directories/root`)
+    .then(res => {
+      return (res.status === 200)? res.data.path : "/"
+    })
+}
+
+export const getResolvedDir = (path) => {
+  return fileServerHttpReqest.get(`/directories/resolved_dir?path=${path}`)
+    .then(res => {
+      return (res.status === 200)? res.data.path : null
+    })
+    .catch(err => { return null })
+}
+
+export const getModelJson = (path) => {
+  return fileServerHttpReqest.get(`/json_models?path=${path}`)
+    .then(res => {
+      let ret = (res.status === 200)? res.data.model_body : null
+      return ret
+    })
+    .catch(err => { return null })
+}
+
+export const saveModelJson = (model) => {
+  const path = `${model.apiMeta.location}`;
+  const modelAsString = stringifyNetworkObjects(model)
+  return fileServerHttpReqest.post(`/json_models?path=${path}`, modelAsString)
+}
+
+export const doesFileExist = (path) => {
+  return fileServerHttpReqest.head(`/files?path=${path}`)
+  .then(res => {
+    return (res.status === 200);
+  })
+}
+
+export const createFolder = (path) => {
+  return fileServerHttpReqest.post(`/directories?path=${path}`)
+    .then(res => {
+      return (res.status === 200)? res.data.path : null
+    })
 }
 
 export const createIssueInGithub = (params, data) => {
