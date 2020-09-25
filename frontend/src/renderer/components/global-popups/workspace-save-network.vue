@@ -20,14 +20,14 @@
               :class="{'bg-error': !settings.networkPath}"
               @click="openFilePicker"
             )
-      .settings-layer_section
-        .form_row
-          .form_label Save settings:
-          .form_input
-            base-radio(group-name="group" :value-input="false" v-model="settings.isSaveTrainedModel")
-              span Save model
-            base-radio(group-name="group" :value-input="true" v-model="settings.isSaveTrainedModel" :disabled="!existTrained")
-              span Save trained model
+      //- .settings-layer_section
+      //-   .form_row
+      //-     .form_label Save settings:
+      //-     .form_input
+      //-       base-radio(group-name="group" :value-input="false" v-model="settings.isSaveTrainedModel")
+      //-         span Save model
+      //-       base-radio(group-name="group" :value-input="true" v-model="settings.isSaveTrainedModel" :disabled="!existTrained")
+      //-         span Save trained model
 
     template(slot="action")
       button.btn.btn--primary.btn--disabled(type="button"
@@ -59,9 +59,9 @@ export default {
       this.settings.networkPath = location;
     }
     this.$store.dispatch('mod_api/API_checkTrainedNetwork')
-      .then((isTrained)=> {
-        this.settings.isSaveTrainedModel = isTrained;
-        this.existTrained = isTrained;
+      .then((response)=> {
+        this.settings.isSaveTrainedModel = response.result.content;
+        this.existTrained = response.result.content;
       })
   },
   data() {
@@ -70,7 +70,7 @@ export default {
       settings: {
         networkName: '',
         networkPath: '',
-        isSaveTrainedModel: true,
+        isSaveTrainedModel: false,
       },
       existTrained: false,
       promiseOk: null,

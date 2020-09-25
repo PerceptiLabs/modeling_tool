@@ -42,6 +42,9 @@ const viewBoxMixin = {
     currentNetworkID() {
       return this.$store.getters['mod_workspace/GET_currentNetworkId']
     },
+    currentNetworIdForKernelRequests() {
+      return this.$store.getters['mod_workspace/GET_currentNetworIdForKernelRequests']
+    },
     serverStatus() {
       return this.$store.getters['mod_workspace/GET_networkCoreStatus']
     },
@@ -79,7 +82,7 @@ const viewBoxMixin = {
 
       if(!layerId || !layerType) return;
       let theData = {
-        reciever: this.currentNetworkID,
+        receiver: this.currentNetworIdForKernelRequests,
         action: this.$store.getters['mod_workspace/GET_testIsOpen']
           ? 'getTestingStatistics'
           : 'getTrainingStatistics',

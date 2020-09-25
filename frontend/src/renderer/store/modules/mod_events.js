@@ -95,6 +95,11 @@ const actions = {
           return;
         }
         
+        for (const idx in model.networkElementList) {
+          model.networkElementList[idx].checkpoint = [];
+          model.networkElementList[idx].checkpoint.push(null);
+          model.networkElementList[idx].checkpoint.push(pathProject);
+        }
         // Loaded model are the same with current model
         if(currentNetworkId === model.networkID) {
           dispatch('mod_workspace/ReplaceNetworkElementList', model.networkElementList, {root: true});
@@ -134,25 +139,28 @@ const actions = {
             model.networkRootFolder = pathProject;
           }
           
-          if(isTrained) {
-            dispatch('globalView/SET_loadSettingPopup', {
-              visible: 'true',
-              ok: (isLoadingTrainedModel) => {
-                if (isLoadingTrainedModel) {
-                  createProjectAndAddNetworkFn(model, rootState.mod_project.currentProject);
-                } else {
-                  for(let id in model.networkElementList) {
-                    let element = model.networkElementList[id];
-                    element.checkpoint = [];
-                  }
-                  createProjectAndAddNetworkFn(model, rootState.mod_project.currentProject);
-                }
-              }
-            }, {root: true})
-          } 
-          else {
-            createProjectAndAddNetworkFn(model, rootState.mod_project.currentProject);
-          }
+          // Now only loading the normal model
+          createProjectAndAddNetworkFn(model, rootState.mod_project.currentProject);
+
+          // if(isTrained) {
+          //   dispatch('globalView/SET_loadSettingPopup', {
+          //     visible: 'true',
+          //     ok: (isLoadingTrainedModel) => {
+          //       if (isLoadingTrainedModel) {
+          //         createProjectAndAddNetworkFn(model, rootState.mod_project.currentProject);
+          //       } else {
+          //         for(let id in model.networkElementList) {
+          //           let element = model.networkElementList[id];
+          //           element.checkpoint = [];
+          //         }
+          //         createProjectAndAddNetworkFn(model, rootState.mod_project.currentProject);
+          //       }
+          //     }
+          //   }, {root: true})
+          // } 
+          // else {
+          //   createProjectAndAddNetworkFn(model, rootState.mod_project.currentProject);
+          // }
 
         }
 

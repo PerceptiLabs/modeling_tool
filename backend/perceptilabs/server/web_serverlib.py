@@ -82,7 +82,7 @@ class Message:
         logList = issue_handler.pop_logs()
 
         if errorList:
-            self._interface.close_core(self.request.get("reciever"))
+            self._interface.close_core(self.request.get("receiver"))
             if type(content) is dict and "content" in list(content.keys()):
                 content["errorMessage"]=errorList
             else:

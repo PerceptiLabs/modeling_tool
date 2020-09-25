@@ -1,6 +1,8 @@
 {% from 'tf1x_utils.j2' import session %}
 
-{% macro run_normal(layer_spec, graph_spec) %}
+{% macro train_normal(layer_spec, graph_spec) %}
+        
+        self._checkpoint_save_path = '{{layer_spec.checkpoint_path}}'
         sess = self._sess
         def epsilon(episode):
             eps = 1/np.sqrt(self._initial_exploration + episode)
@@ -118,14 +120,14 @@
             self._episode += 1
 
         self._variables = {k: v for k, v in locals().items() if can_serialize(v)}            
-        yield YieldLevel.DEFAULT            
-
         self._status = 'finished'
-        self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
-        yield YieldLevel.DEFAULT
+        yield YieldLevel.SNAPSHOT
+        self.on_export(self._checkpoint_save_path, 'checkpoint')   
+        sess.close()       
+        
 {% endmacro %}
 
-{% macro init_normal() %}
+{% macro init_normal(mode) %}
         self._status = 'initializing'
         copied_graph = graph.clone()
         target_nodes = copied_graph.inner_nodes
@@ -272,13 +274,17 @@
         self._checkpoint = tf.train.Checkpoint(**trackable_variables)
         sess.run(tf.global_variables_initializer())
         
-        {% filter remove_lspaces(8) %}
-            {% if layer_spec.checkpoint_path is not none %}        
-                path = tf.train.latest_checkpoint('{{layer_spec.checkpoint_path}}')
+        checkpoint_directory = '{{layer_spec.checkpoint_path}}'
+        use_checkpoint = {{layer_spec.load_checkpoint}}
+        if use_checkpoint:
+            path = tf.train.latest_checkpoint(checkpoint_directory)
+            if path is not None:
                 status = self._checkpoint.restore(path)
-                status.assert_consumed().run_restore_ops(session=self._sess)
-            {% endif %}
-        {% endfilter %}
+                status.run_restore_ops(session=self._sess)
+            elif path is None and self._mode == 'testing':
+                log.error('There are no saved checkpoint files for this model.')
+                self._sess.close()
+
 
         self._Q_online = Q_online_tensor
         self._Q_target = Q_target_tensor
@@ -293,11 +299,11 @@
         self._online_layer_bias = online_layer_bias_tensors
         self._reward = 0
 
-        {# dynamic_dict = {
-            'input_data': input_data_node,
-            'input_shape': input_shape,
-            'gen': generator
-        } #}
+        # {# dynamic_dict = {
+        #     'input_data': input_data_node,
+        #     'input_shape': input_shape,
+        #     'gen': generator
+        # } #}
 
         self._input_data = input_data_node
         self._input_shape = input_shape
@@ -354,25 +360,37 @@ class {{layer_spec.sanitized_name}}(RLLayer):
 
         self._checkpoint = None
 
-    def init_layer(self, graph: Graph):
+    def init_layer(self, graph: Graph, mode = 'initializing'):
+        self._mode = mode
         {% if not layer_spec.distributed -%}
             {{ init_normal() }}
         {% endif %}
 
-        
-    def run(self, graph: Graph):
-        """Called as the main entry point for training. Responsible for training the model.
+    def train(self, graph:Graph):
+        """
+        Training is done when this function is called. Once the training ends, checkpoint files are saved.
+        """
+    
+        {% if not layer_spec.distributed -%}
+            {{train_normal(layer_spec, graph_spec) }}
+        {% endif %} 
+
+    def run(self, graph: Graph, mode = 'initializing'):
+        """
+        Called as the main entry point for training. Responsible for training the model.
 
         Args:
             graph: A PerceptiLabs Graph object containing references to all layers objects included in the model produced by this training layer.
-        """   
-        self.init_layer(graph)
-        {% if not layer_spec.distributed -%}
-            {{ run_normal(layer_spec, graph_spec) }}
-        {% endif %}                
+            mode: Different modes in which graph can be run in. Modes: training, testing, initializing
+        """
+        self.init_layer(graph, mode)
+        self._variables = {k: v for k, v in locals().items() if can_serialize(v)} 
+        
+        if mode == 'training':
+            yield from self.train(graph)
 
     def on_export(self, path: str, mode: str) -> None:
-        """Called when the export or save button is clicked in the frontend.
+        """Called when the export button is clicked in the frontend.
         It is up to the implementing layer to save the model to disk.
         
         Args:
@@ -380,21 +398,36 @@ class {{layer_spec.sanitized_name}}(RLLayer):
             mode: how to export the model. Made available to frontend via 'export_modes' property."""
 
         log.debug(f"Export called. Project path = {path}, mode = {mode}")
-        pb_path = os.path.join(path, '1')
+        
+        if mode in ['TFModel', 'TFLite']:
+            pb_path = os.path.join(path, '1')
+            if os.path.exists(pb_path):
+                shutil.rmtree(pb_path)
+            
+            time.sleep(.0000000000000001) #Force your computer to do a clock cycle to avoid Windows permission exception
+
+            os.makedirs(pb_path, exist_ok=True)
         
         # Export non-compressed model
-        if mode in ['TFModel', 'TFModel+checkpoint']:
-            tf.compat.v1.saved_model.simple_save(self._sess, pb_path, inputs={'input': self._input_tensor_export}, outputs={'output': self._output_tensor_export})
+        if mode in ['TFModel']:
+            tf.compat.v1.saved_model.simple_save(self._sess, pb_path, inputs=self._input_tensor_export, outputs=self._output_tensor_export)
 
         # Export compressed model
-        if mode in ['TFLite', 'TFLite+checkpoint']:
-            converter = tf.lite.TFLiteConverter.from_session(self._sess, [self._input_tensor_export], [self._output_tensor_export])
+        if mode in ['TFLite']:
+            frozen_path = os.path.join(pb_path, 'frozen_model.pb')
+            converter = tf.lite.TFLiteConverter.from_session(self._sess, list(self._input_tensor_export.values()), list(self._output_tensor_export.values()))
             converter.post_training_quantize = True
             tflite_model = converter.convert()
-            open(pb_path, "wb").write(tflite_model)
+            with open(frozen_path, "wb") as f:
+                f.write(tflite_model)
 
         # Export checkpoint
-        if mode in ['TFModel+checkpoint', 'TFLite+checkpoint']:
+        if mode in ['checkpoint']:
+            for fname in os.listdir(path):
+                if fname.endswith('.json'):
+                    pass
+                else:
+                    os.remove(os.path.join(path,fname))
             {% filter remove_lspaces(8) %}
                 {% if layer_spec.distributed %}
                     self._saver.save(self._sess, os.path.join(path, 'model.ckpt'), global_step=0)
@@ -406,6 +439,7 @@ class {{layer_spec.sanitized_name}}(RLLayer):
     def on_stop(self) -> None:
         """Called when the save model button is clicked in the frontend. 
         It is up to the implementing layer to save the model to disk."""
+        self.on_export(self._checkpoint_save_path, 'checkpoint') 
         self._stopped = True
 
     def on_headless_activate(self) -> None:

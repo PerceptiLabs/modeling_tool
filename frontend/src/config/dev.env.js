@@ -8,4 +8,5 @@ module.exports = merge(prodEnv, {
   GOOGLE_ANALYTICS_ID: '"UA-114940346-2"',
   FORCE_DEFAULT_PROJECT: '"true"',
   GITHUB_CLIENT_ID: '"094271b0edb47c75dc24"',
+  PL_FILE_SERVING_TOKEN: '"12312"' 
 })

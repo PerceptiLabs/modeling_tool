@@ -1,9 +1,50 @@
 {% from 'tf1x_utils.j2' import session %}
 
-{% macro run_normal(layer_spec, graph_spec) %}        
+{% macro train_normal(layer_spec, graph_spec) %}        
+        
         sess = self._sess                 
         self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
+        self._checkpoint_save_path = '{{layer_spec.checkpoint_path}}'
 
+        def train_step(sess):
+            if not self._headless:
+                _, self._loss_training, self._squared_error_training, \
+                    self._squared_variance_training, self._r_squared_training,\
+                    self._layer_outputs, self._layer_weights, self._layer_biases, \
+                    self._layer_gradients \
+                    = sess.run([
+                        self._weights, self._loss, self._squared_err,
+                        self._squared_var, self._r_sq, 
+                        self._layer_output, self._layer_weight, self._layer_bias, self._layer_gradient
+                    ])
+            else:
+                _, self._loss_training, self._squared_error_training, \
+                    self._squared_variance_training, self._r_squared_training \
+                    = sess.run([
+                        self._weights, self._loss, self._squared_err,
+                        self._squared_var, self._r_sq 
+                    ])
+    
+        def validation_step(sess):
+            if not self._headless:
+                self._loss_validation, self._squared_error_validation, \
+                    self._squared_variance_validation, self._r_squared_validation, \
+                    self._layer_outputs, self._layer_weights, self._layer_biases, \
+                    self._layer_gradients \
+                    = sess.run([
+                        self._loss, self._squared_err,
+                        self._squared_var, self._r_sq, 
+                        self._layer_output, self._layer_weight, self._layer_bias, self._layer_gradient
+                    ])
+            else:
+                self._loss_validation, self._squared_error_validation, \
+                    self._squared_variance_validation, self._r_squared_validation \
+                    = sess.run([
+                        self._loss, self._squared_err,
+                        self._squared_var, self._r_sq 
+                    ])
+
+        
         log.info("Entering training loop")
 
         # Training loop
@@ -16,7 +57,7 @@
             sess.run(self._trn_init)            
             try:
                 while not self._stopped:
-                    self.train_step()
+                    train_step(sess)
                     yield YieldLevel.SNAPSHOT
                     self._training_iteration += 1
             except tf.errors.OutOfRangeError:
@@ -26,7 +67,7 @@
             sess.run(self._val_init)            
             try:
                 while not self._stopped:
-                    self.validation_step()
+                    validation_step(sess)
                     yield YieldLevel.SNAPSHOT                    
                     self._validation_iteration += 1
             except tf.errors.OutOfRangeError:
@@ -37,30 +78,57 @@
                 
             )
             log.info(f"Epoch duration: {round(time.perf_counter() - t0, 3)} s")            
+            
             self._epoch += 1
 
 
         self._variables = {k: v for k, v in locals().items() if can_serialize(v)}            
-        yield YieldLevel.DEFAULT            
-        
-        # Test loop
-        self._testing_iteration = 0
-        self._status = 'testing'
-        sess.run(self._tst_init)                                
-        try:
-            while not self._stopped:
-                self.test_step()
-                yield YieldLevel.SNAPSHOT
-                self._testing_iteration += 1
-        except tf.errors.OutOfRangeError:
-            pass
-
         self._status = 'finished'
-        self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
-        yield YieldLevel.DEFAULT
+        yield YieldLevel.SNAPSHOT
+        self.on_export(self._checkpoint_save_path, 'checkpoint')   
+        sess.close()
 {% endmacro %}
 
-{% macro init_normal() %}
+
+{% macro test_normal(layer_spec, graph_spec) %}
+                  
+        sess = self._sess
+        self._epoch = 0
+
+        def test_step(sess):
+            self._loss_testing, self._squared_error_testing, \
+                self._squared_variance_testing, self._r_squared_testing, \
+                self._layer_outputs, self._layer_weights, self._layer_gradients \
+                = sess.run([
+                    self._loss, self._squared_err,
+                    self._squared_var, self._r_sq,
+                    self._layer_output, self._layer_weight, self._layer_gradient
+                ])
+        
+        # Test loop
+        log.info("Entering testing loop")
+        self._status = 'testing'
+
+        self._testing_iteration = 0
+        sess.run(self._tst_init)                                
+        while not self._stopped:
+            try:
+                test_step(sess)
+                yield YieldLevel.SNAPSHOT
+                self._testing_iteration += 1
+            except tf.errors.OutOfRangeError:
+                self._testing_iteration = 0
+                sess.run(self._tst_init)
+                test_step(sess)   
+                yield YieldLevel.SNAPSHOT
+        
+        self._status = 'finished'
+        self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
+        yield YieldLevel.SNAPSHOT
+        sess.close()
+{% endmacro %}
+
+{% macro init_normal(mode) %}
         self._status = 'initializing'
 
         output_layer_id = "{{graph_spec.nodes_by_id[layer_spec.connection_predictions.src_id].sanitized_name}}"
@@ -278,14 +346,17 @@
         self._checkpoint = tf.train.Checkpoint(**trackable_variables)
         
         sess.run(tf.global_variables_initializer())
-        {% filter remove_lspaces(8) %}
-            {% if layer_spec.checkpoint_path is not none %}
-                checkpoint_directory = '{{layer_spec.checkpoint_path}}'
-                path = tf.train.latest_checkpoint(checkpoint_directory)
+        
+        checkpoint_directory = '{{layer_spec.checkpoint_path}}'
+        use_checkpoint = {{layer_spec.load_checkpoint}}
+        if use_checkpoint:
+            path = tf.train.latest_checkpoint(checkpoint_directory)
+            if path is not None:
                 status = self._checkpoint.restore(path)
                 status.run_restore_ops(session=self._sess)
-            {% endif %}
-        {% endfilter %}
+            elif path is None and self._mode == 'testing':
+                log.error('There are no saved checkpoint files for this model.')
+                self._sess.close()
 
 
         self._trn_init = trn_init
@@ -349,79 +420,50 @@ class {{layer_spec.sanitized_name}}(RegressionLayer):
         self._tst_sz_tot = 0
 
         self._checkpoint = None
-
-    def train_step(self):
-        sess = self._sess
-        if not self._headless:
-            _, self._loss_training, self._squared_error_training, \
-                self._squared_variance_training, self._r_squared_training,\
-                self._layer_outputs, self._layer_weights, self._layer_biases, \
-                self._layer_gradients \
-                = sess.run([
-                    self._weights, self._loss, self._squared_err,
-                    self._squared_var, self._r_sq, 
-                    self._layer_output, self._layer_weight, self._layer_bias, self._layer_gradient
-                ])
-        else:
-            _, self._loss_training, self._squared_error_training, \
-                self._squared_variance_training, self._r_squared_training \
-                = sess.run([
-                    self._weights, self._loss, self._squared_err,
-                    self._squared_var, self._r_sq 
-                ])
-    
-    def validation_step(self):
-        sess = self._sess
-        if not self._headless:
-            self._loss_validation, self._squared_error_validation, \
-                self._squared_variance_validation, self._r_squared_validation, \
-                self._layer_outputs, self._layer_weights, self._layer_biases, \
-                self._layer_gradients \
-                = sess.run([
-                    self._loss, self._squared_err,
-                    self._squared_var, self._r_sq, 
-                    self._layer_output, self._layer_weight, self._layer_bias, self._layer_gradient
-                ])
-        else:
-            self._loss_validation, self._squared_error_validation, \
-                self._squared_variance_validation, self._r_squared_validation \
-                = sess.run([
-                    self._loss, self._squared_err,
-                    self._squared_var, self._r_sq 
-                ])
-
-        
-    def test_step(self):
-        sess = self._sess
-        self._loss_testing, self._squared_error_testing, \
-            self._squared_variance_testing, self._r_squared_testing, \
-            self._layer_outputs, self._layer_weights, self._layer_gradients \
-            = sess.run([
-                self._loss, self._squared_err,
-                self._squared_var, self._r_sq,
-                self._layer_output, self._layer_weight, self._layer_gradient
-            ])
             
-    def init_layer(self, graph:Graph):
+    def init_layer(self, graph:Graph, mode = 'initializing'):
         """This is the function that makes the training layer runnable. We take all variable initializations for tensors and initializers and wrap them in dictionaries
         to be called in run().
         """
+        self._mode = mode
         {% if not layer_spec.distributed -%}
             {{ init_normal() }}
         {% endif %}
 
         
-    def run(self, graph: Graph):
+    def train(self, graph:Graph):
+        """Training is done when this function is called. Once the training ends, checkpoint files are saved.
+        """
+    
+        {% if not layer_spec.distributed -%}
+            {{ train_normal(layer_spec, graph_spec) }}
+        {% endif %} 
+
+    def test(self, graph:Graph):
+        """Testing is done when this function is called. 
+        """
+
+        {% if not layer_spec.distributed -%}
+            {{ test_normal(layer_spec, graph_spec) }}
+        {% endif %} 
+
+    def run(self, graph: Graph, mode = 'initializing'):
         """Called as the main entry point for training. Responsible for training the model.
 
         Args:
             graph: A PerceptiLabs Graph object containing references to all layers objects included in the model produced by this training layer.
-        """   
-        self.init_layer(graph)
-        {{ run_normal(layer_spec, graph_spec) }}           
+        """  
+        self.init_layer(graph, mode)
+        self._variables = {k: v for k, v in locals().items() if can_serialize(v)} 
+        
+        if mode == 'training':
+            yield from self.train(graph)
+        elif mode == 'testing':
+            yield from self.test(graph)
+
 
     def on_export(self, path: str, mode: str) -> None:
-        """Called when the export or save button is clicked in the frontend.
+        """Called when the export button is clicked in the frontend.
         It is up to the implementing layer to save the model to disk.
         
         Args:
@@ -429,18 +471,22 @@ class {{layer_spec.sanitized_name}}(RegressionLayer):
             mode: how to export the model. Made available to frontend via 'export_modes' property."""
 
         log.debug(f"Export called. Project path = {path}, mode = {mode}")
-        pb_path = os.path.join(path, '1')
-        if os.path.exists(pb_path):
-            shutil.rmtree(pb_path)
+        
+        if mode in ['TFModel', 'TFLite']:
+            pb_path = os.path.join(path, '1')
+            if os.path.exists(pb_path):
+                shutil.rmtree(pb_path)
+            
+            time.sleep(.0000000000000001) #Force your computer to do a clock cycle to avoid Windows permission exception
 
-        os.makedirs(pb_path, exist_ok=True)
+            os.makedirs(pb_path, exist_ok=True)
         
         # Export non-compressed model
-        if mode in ['TFModel', 'TFModel+checkpoint']:
+        if mode in ['TFModel']:
             tf.compat.v1.saved_model.simple_save(self._sess, pb_path, inputs=self._input_tensor_export, outputs=self._output_tensor_export)
 
         # Export compressed model
-        if mode in ['TFLite', 'TFLite+checkpoint']:
+        if mode in ['TFLite']:
             frozen_path = os.path.join(pb_path, 'frozen_model.pb')
             converter = tf.lite.TFLiteConverter.from_session(self._sess, list(self._input_tensor_export.values()), list(self._output_tensor_export.values()))
             converter.post_training_quantize = True
@@ -449,7 +495,13 @@ class {{layer_spec.sanitized_name}}(RegressionLayer):
                 f.write(tflite_model)
 
         # Export checkpoint
-        if mode in ['TFModel+checkpoint', 'TFLite+checkpoint']:
+        if mode in ['checkpoint']:
+            os.makedirs(path, exist_ok=True)
+            for fname in os.listdir(path):
+                if fname.endswith('.json'):
+                    pass
+                else:
+                    os.remove(os.path.join(path,fname))
             {% filter remove_lspaces(8) %}
                 {% if layer_spec.distributed %}
                     self._saver.save(self._sess, os.path.join(path, 'model.ckpt'), global_step=0)
@@ -461,6 +513,7 @@ class {{layer_spec.sanitized_name}}(RegressionLayer):
     def on_stop(self) -> None:
         """Called when the save model button is clicked in the frontend. 
         It is up to the implementing layer to save the model to disk."""
+        self.on_export(self._checkpoint_save_path, 'checkpoint')   
         self._stopped = True
 
     def on_headless_activate(self) -> None:
@@ -487,7 +540,8 @@ class {{layer_spec.sanitized_name}}(RegressionLayer):
             'TFModel',
             'TFLite'
             'TFModel+checkpoint',
-            'TFLite+checkpoint',            
+            'TFLite+checkpoint',
+            'checkpoint'            
         ]
         
     @property

@@ -255,6 +255,8 @@ export default {
         this.$store.dispatch('mod_tracker/EVENT_trainingCompleted', 'Finished training');
         Analytics.googleAnalytics.trackCustomEvent('training-completed');
 
+        const currentNetwork = this.$store.getters['mod_workspace/GET_currentNetwork'];
+        this.$store.dispatch('mod_webstorage/saveNetwork', currentNetwork, {root: true});
         this.net_trainingDone();
         this.event_startDoRequest(false);
         this.setChecklistItemComplete({ itemId: 'finishTraining' });
@@ -449,6 +451,13 @@ export default {
       this.setTabNetwork(i);
       this.$nextTick(()=>{
         this.set_openTest(true);
+        
+        // this.$store.dispatch('mod_api/API_startTestWithCheckpointJson');
+          // .then(()=>{
+          //   this.$nextTick(()=> {
+          //     this.$store.dispatch('mod_api/API_postTestMove', 'nextStep');
+          //   })
+          // });
       })
     },
     trainingFinished(index) {

@@ -46,6 +46,8 @@ from perceptilabs.lwInterface import (
         getPreviewVariableList,
         Parse,
         GetNetworkData,
+        ScanCheckpoint, 
+        CopyJsonModel
         )
 
 logger = logging.getLogger(APPLICATION_LOGGER)
@@ -98,8 +100,8 @@ class Interface():
     def __init__(self, cores, dataDict, checkpointDict, lwDict, issue_handler, message_factory=None, session_id='default'):
         self._network_loader = NetworkLoader()
         self._cores=cores
+        self._checkpointDict = checkpointDict
         self._dataDict=dataDict
-        self._checkpointDict=checkpointDict
         self._lwDict=lwDict
         self._issue_handler = issue_handler
         self._session_id = session_id
@@ -166,14 +168,14 @@ class Interface():
         t.daemon = True
         t.start()
 
-    def _addCore(self, reciever):
-        core=coreLogic(reciever, self._issue_handler)
-        self._cores[reciever] = core
+    def _addCore(self, receiver):
+        core=coreLogic(receiver, self._issue_handler, self._session_id)
+        self._cores[receiver] = core
 
-    def _setCore(self, reciever):
-        if reciever not in self._cores:
-            self._addCore(reciever)
-        self._core = self._cores[reciever]
+    def _setCore(self, receiver):
+        if receiver not in self._cores:
+            self._addCore(receiver)
+        self._core = self._cores[receiver]
 
         if USE_AUTO_SETTINGS:
             self._settings_engine = autosettings_utils.setup_engine(self._lw_cache_v2)
@@ -184,24 +186,15 @@ class Interface():
             del c
         sys.exit(1)
 
-    def close_core(self, reciever):
-        if reciever in self._cores:
-            msg = self._cores[reciever].Close()
-            del self._cores[reciever]
+    def close_core(self, receiver):
+        if receiver in self._cores:
+            msg = self._cores[receiver].Close()
+            del self._cores[receiver]
             return msg
         else:
-            return "No core called %s" %reciever
+            return "No core called %s" %receiver
 
-    def getCheckpointDict(self):
-        return self._checkpointDict.copy()
-
-    def _add_to_checkpointDict(self, content):
-        if content["checkpoint"][-1] not in self._checkpointDict:
-            ckptObj=extractCheckpointInfo(content["endPoints"], *content["checkpoint"])
-            self._checkpointDict[content["checkpoint"][-1]]=ckptObj.getVariablesAndConstants()
-            ckptObj.close()
-
-    def create_lw_core(self, reciever, jsonNetwork, adapter=True):
+    def create_lw_core(self, receiver, jsonNetwork, adapter=True):
         if adapter:
             extras_reader = LayerExtrasReader()
             error_handler = LightweightErrorHandler()
@@ -219,12 +212,12 @@ class Interface():
             return lw_core, None, None
 
     def create_response(self, request):
-        reciever = request.get('reciever')
+        receiver = str(request.get('receiver'))
         action = request.get('action')
         value = request.get('value')
 
-        if action != 'checkCore':
-            logger.info(f"Frontend request: {action}")
+        # if action != 'checkCore':
+        #     logger.info(f"Frontend request: {action}")
         
         if logger.isEnabledFor(logging.DEBUG):
             logger.debug("creating response for action: {}. \nFull request:\n{}".format(
@@ -233,19 +226,19 @@ class Interface():
             ))
 
         with configure_scope() as scope:
-            scope.set_extra("reciever",reciever)
+            scope.set_extra("receiver",receiver)
             scope.set_extra("action",action)
             scope.set_extra("value",value)
 
-        self._setCore(reciever)
+        self._setCore(receiver)
         
-        #try:
-        response = self._create_response(reciever, action, value)
-        #except Exception as e:
-        #    with self._core.issue_handler.create_issue('Error in create_response', e) as issue:
-        #        self._core.issue_handler.put_error(issue.frontend_message)
-        #        response = {'content': issue.frontend_message}                
-        #        logger.error(issue.internal_message)
+        try:
+            response = self._create_response(receiver, action, value)
+        except Exception as e:
+           with self._core.issue_handler.create_issue('Error in create_response', e) as issue:
+               self._core.issue_handler.put_error(issue.frontend_message)
+               response = {'content': issue.frontend_message}                
+               logger.error(issue.internal_message)
 
         if logger.isEnabledFor(logging.DEBUG):
             logger.debug("created response for action: {}. \nFull request:\n{}\nResponse:\n{}".format(
@@ -254,10 +247,9 @@ class Interface():
                 stringify(response)
             ))
 
-
         return response, self._core.issue_handler
 
-    def _create_response(self, reciever, action, value):
+    def _create_response(self, receiver, action, value):
         #Parse the value and send it to the correct function
         if action == "getDataMeta":
             Id = value['Id']
@@ -266,7 +258,7 @@ class Interface():
                 layerSettings = value["layerSettings"]
                 jsonNetwork[Id]["Properties"]=layerSettings
 
-            lw_core, extras_reader, data_container = self.create_lw_core(reciever, jsonNetwork)
+            lw_core, extras_reader, data_container = self.create_lw_core(receiver, jsonNetwork)
 
 
             get_data_meta = getDataMetaV2(
@@ -295,7 +287,7 @@ class Interface():
                 layerSettings = value["layerSettings"]
                 jsonNetwork[Id]["Properties"]=layerSettings
 
-            lw_core, extras_reader, data_container = self.create_lw_core(reciever, jsonNetwork)
+            lw_core, extras_reader, data_container = self.create_lw_core(receiver, jsonNetwork)
 
             return getPartitionSummary(id_=Id, 
                                     lw_core=lw_core, 
@@ -311,31 +303,31 @@ class Interface():
         elif action == "getNetworkInputDim":
             graph_spec = self._network_loader.load(value, as_spec=True)
 
-            lw_core, _, _ = self.create_lw_core(reciever, None, adapter=False)
+            lw_core, _, _ = self.create_lw_core(receiver, None, adapter=False)
 
             output = GetNetworkInputDim(lw_core, graph_spec).run()
             return output
         elif action == "getNetworkOutputDim":
             jsonNetwork = self._network_loader.load(value)
-            lw_core, extras_reader, data_container = self.create_lw_core(reciever, jsonNetwork)
+            lw_core, extras_reader, data_container = self.create_lw_core(receiver, jsonNetwork)
 
             return getNetworkOutputDim(lw_core=lw_core, 
                                     extras_reader=extras_reader).run()
 
         elif action == "getBatchPreviewSample":
             json_network = self._network_loader.load(value["Network"])
-            lw_core, extras_reader, data_container = self.create_lw_core(reciever, json_network)
+            lw_core, extras_reader, data_container = self.create_lw_core(receiver, json_network)
             outputDims = getNetworkOutputDim(lw_core, extras_reader).run()
 
             graph_spec = GraphSpec.from_dict(json_network)
-            lw_core, _, _ = self.create_lw_core(reciever, None, adapter=False)
+            lw_core, _, _ = self.create_lw_core(receiver, None, adapter=False)
 
-            previews = getPreviewBatchSample(lw_core, graph_spec, json_network).run()
+            previews, trained_layers_info = getPreviewBatchSample(lw_core, graph_spec, json_network).run()
 
-            return {"previews":previews, "outputDims": outputDims}
+            return {"previews":previews, "outputDims": outputDims, "trainedLayers": trained_layers_info}
 
         elif action == "getNetworkData":
-            return self._get_network_data(reciever, value)
+            return self._get_network_data(receiver, value)
         
         elif action == "getPreviewSample":
             layer_id = value["Id"]
@@ -345,14 +337,14 @@ class Interface():
                 variable = 'output' # WORKAROUND 
 
             graph_spec = GraphSpec.from_dict(json_network)            
-            lw_core, _, _ = self.create_lw_core(reciever, None, adapter=False)
+            lw_core, _, _ = self.create_lw_core(receiver, None, adapter=False)
 
             return getPreviewSample(layer_id, lw_core, graph_spec, variable).run()
 
         elif action == "getPreviewVariableList":
             layer_id = value["Id"]
             graph_spec = self._network_loader.load(value["Network"], as_spec=True)
-            lw_core, _, _ = self.create_lw_core(reciever, None, adapter=False)
+            lw_core, _, _ = self.create_lw_core(receiver, None, adapter=False)
             
             return getPreviewVariableList(layer_id, lw_core, graph_spec).run()
 
@@ -394,11 +386,11 @@ class Interface():
             jsonNetwork = self._network_loader.load(value)
             return getNotebookRunscript(jsonNetwork=jsonNetwork).run()
 
-        elif action == "Close":
+        elif action == "Close":  
             self.shutDown()
 
-        elif action == "closeSession":
-            return self.close_core(reciever)
+        elif action == "closeCore":   
+            return self.close_core(receiver)
 
         elif action == "updateResults":
             response = self._core.updateResults()
@@ -432,22 +424,21 @@ class Interface():
             return response
 
         elif action == "Start":
-            graph_spec = self._network_loader.load(value, as_spec=True)            
-            model_id = value.get('modelId', None)
-            
-            response = self._core.startCore(graph_spec, self._checkpointDict.copy(), model_id)
+            CopyJsonModel(value['copyJson_path']).run()
+            graph_spec = self._network_loader.load(value, as_spec=True)
+            self._core.set_running_mode('training')            
+            model_id = int(value.get('modelId', None))
+            response = self._core.startCore(graph_spec, model_id)
             return response
 
         elif action == "startTest":
-            response = self._core.startTest()
+            graph_spec = self._network_loader.load(value, as_spec=True)
+            model_id = value.get('modelId', None)
+            if model_id is not None:
+                model_id = int(model_id)
+            response = self._core.startTest(graph_spec, model_id)
             return response
 
-        elif action == "isTestPlaying":
-            return self._core.isTestPlaying()
-
-        elif action == "resetTest":
-            response = self._core.resetTest()
-            return response
 
         elif action =="getTestStatus":
             response = self._core.getTestStatus()
@@ -457,17 +448,6 @@ class Interface():
             response = self._core.nextStep()
             return response
 
-        elif action == "previousStep":
-            response = self._core.previousStep()
-            return response
-
-        elif action == "playTest":
-            response = self._core.playTest()
-            return response
-
-        elif action == "getIter":
-            response = self._core.getIter()
-            return response
 
         elif action == "getEpoch":
             response = self._core.getEpoch()
@@ -490,16 +470,28 @@ class Interface():
             return response
 
         elif action == "Export":
-            response = self._core.exportNetwork(value)
-            return response
+            # first check if checkpoint exists
+            if ScanCheckpoint(path = value['path']).run() or value["Type"] == 'ipynb':
+                graph_spec = self._network_loader.load(value, as_spec=True)
+                model_id = value.get('modelId', None)
+                if model_id is not None:
+                    model_id = int(model_id)
+                response = self._core.exportNetwork(value, graph_spec, model_id)
+                return response
+            else:
+                return {'content':'The model is not trained.'}
 
         elif action == "isTrained":
-            response = self._core.isTrained()
+            result = self._core.isTrained()
+            response = {'result':result, 'receiver':receiver}
             return response
 
-        elif action == "SaveTrained":
+        elif action == "SaveTrained":  
             response = self._core.saveNetwork(value)
             return response
+
+        elif action == "ScanCheckpoint":
+            return ScanCheckpoint(path = value).run()
 
         elif action == "getEndResults":
             # time.sleep(3)

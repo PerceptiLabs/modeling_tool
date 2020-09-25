@@ -9,7 +9,7 @@ import perceptilabs.autosettings.rules as rules
 
 
 @pytest.fixture
-def graph_spec():
+def graph_spec(temp_path_checkpoints):
     n_classes = 10
     n_samples = 30
 
@@ -24,6 +24,7 @@ def graph_spec():
     inputs_path = f1.name.replace("\\","/")
     labels_path = f2.name.replace("\\","/")
     
+    checkpoint_path = temp_path_checkpoints
     json_network = {
         "Layers": {
             "1": {
@@ -48,7 +49,7 @@ def graph_spec():
                     }
                 ],
                 "Code": None,
-                "checkpoint": [],
+                "checkpoint": {'path':checkpoint_path, 'load_checkpoint':False },
                 "endPoints": []               
             },
             "2": {
@@ -74,7 +75,7 @@ def graph_spec():
                     }
                 ],
                 "Code": None,
-                "checkpoint": [],
+                "checkpoint": {'path':checkpoint_path, 'load_checkpoint':False },
                 "endPoints": [],                
             },
             "3": {
@@ -101,13 +102,13 @@ def graph_spec():
                     }
                 ],                
                 "Code": None,
-                "checkpoint": [],
+                "checkpoint": {'path':checkpoint_path, 'load_checkpoint':False },
                 "endPoints": [],                
             },
             "3.1": {
                 "Name": "conv1",
                 "Type": "DeepLearningConv",
-                "checkpoint": [],
+                "checkpoint": {'path':checkpoint_path, 'load_checkpoint':False },
                 "endPoints": [],
                 "Properties": {
                     "Conv_dim": "2D",
@@ -147,7 +148,7 @@ def graph_spec():
             "3.2": {
                 "Name": "conv2",
                 "Type": "DeepLearningConv",
-                "checkpoint": [],
+                "checkpoint": {'path':checkpoint_path, 'load_checkpoint':False },
                 "endPoints": [],
                 "Properties": {
                     "Conv_dim": "2D",
@@ -210,7 +211,7 @@ def graph_spec():
                     }
                 ],
                 "Code": None,
-                "checkpoint": [],
+                "checkpoint": {'path':checkpoint_path, 'load_checkpoint':False },
                 "endPoints": [],                
             },
             "5": {
@@ -236,7 +237,7 @@ def graph_spec():
                     }
                 ],
                 "Code": None,
-                "checkpoint": [],
+                "checkpoint": {'path':checkpoint_path, 'load_checkpoint':False },
                 "endPoints": [],                                
             },
             "6": {
@@ -274,7 +275,7 @@ def graph_spec():
                 ],
                 "forward_connections": [],
                 "Code": None,
-                "checkpoint": [],
+                "checkpoint": {'path':checkpoint_path, 'load_checkpoint':False },
                 "endPoints": [],                                
             }
         }

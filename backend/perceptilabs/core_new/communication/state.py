@@ -8,6 +8,7 @@ class StateTransitionError(Exception):
 class State:
     INITIALIZING = 'initializing'    
     READY = 'ready'    
+
     TRAINING_PAUSED = 'training-paused'
     TRAINING_PAUSED_HEADLESS = 'training-paused-headless'    
     TRAINING_RUNNING = 'training-running'
@@ -16,6 +17,12 @@ class State:
     TRAINING_STOPPED = 'training-stopped'
     TRAINING_TIMEOUT = 'training-timeout'
     TRAINING_FAILED = 'training-failed'
+    
+    TESTING_PAUSED = 'testing-paused'
+    TESTING_RUNNING = 'testing-running'
+    TESTING_STOPPED = 'testing-stopped'
+    TESTING_FAILED = 'testing-failed'
+
     CLOSING = 'closing'
 
     idle_states = (
@@ -23,24 +30,32 @@ class State:
         TRAINING_PAUSED,
         TRAINING_PAUSED_HEADLESS,
         TRAINING_COMPLETED,
-        TRAINING_STOPPED
+        TRAINING_STOPPED,
+        TESTING_PAUSED,
+        TESTING_STOPPED
     )
     done_states = (
         TRAINING_COMPLETED,
-        TRAINING_STOPPED
+        TRAINING_STOPPED,
+        TESTING_STOPPED
     )
     exit_states = (
         CLOSING,
         TRAINING_TIMEOUT,
-        TRAINING_FAILED
+        TRAINING_FAILED,
+        TESTING_FAILED,
+        TESTING_STOPPED,
+        TRAINING_COMPLETED
     )
     running_states = (
         TRAINING_RUNNING,
-        TRAINING_RUNNING_HEADLESS
+        TRAINING_RUNNING_HEADLESS,
+        TESTING_RUNNING
     )
     paused_states = (
         TRAINING_PAUSED,
-        TRAINING_PAUSED_HEADLESS
+        TRAINING_PAUSED_HEADLESS,
+        TESTING_PAUSED
     )
     active_states = running_states + paused_states
     ended_states = done_states + exit_states
@@ -77,7 +92,16 @@ class State:
         (TRAINING_PAUSED_HEADLESS, CLOSING),                                
         (TRAINING_TIMEOUT, CLOSING),
         (TRAINING_FAILED, CLOSING),
-        (READY, CLOSING)
+        (READY, CLOSING),
+        (READY, TESTING_RUNNING),
+        (READY, TESTING_STOPPED),
+        (READY, TESTING_FAILED),
+        (TESTING_RUNNING, TESTING_PAUSED),
+        (TESTING_RUNNING, TESTING_STOPPED),
+        (TESTING_PAUSED, TESTING_STOPPED),
+        (TESTING_PAUSED, TESTING_RUNNING),
+        (TESTING_STOPPED, CLOSING),
+        (TESTING_FAILED, CLOSING)
     )
     
     def __init__(self, on_transition=None):

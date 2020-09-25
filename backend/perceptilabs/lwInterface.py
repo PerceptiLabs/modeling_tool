@@ -4,6 +4,7 @@ import logging
 import numpy as np
 import tensorflow as tf
 import platform
+import shutil
 
 from perceptilabs.script import ScriptFactory
 from perceptilabs.logconf import APPLICATION_LOGGER
@@ -49,7 +50,7 @@ class getDataMeta(LW_interface_base):
         }
         return content
 
-    
+
 class getDataMetaV2(LW_interface_base):
     def __init__(self, id_, lw_core, extras_reader):
         self._id = id_
@@ -69,7 +70,7 @@ class getDataMetaV2(LW_interface_base):
         }
         return content
     
-    
+
 class getGraphOrder(LW_interface_base):
     def __init__(self, jsonNetwork):
         self.jsonNetwork = jsonNetwork
@@ -220,13 +221,13 @@ class GetNetworkData(LW_interface_base):
     def run(self):
         graph_spec, applied_autosettings = self._maybe_apply_autosettings(self._graph_spec)
         
-        dim_content, preview_content = {}, {}
+        dim_content, preview_content, trained_layers_info = {}, {}, {}
         lw_results = self._lw_core.run(graph_spec) 
         
         for layer_id, layer_results in lw_results.items():            
             layer_spec = graph_spec[layer_id]
             dim, preview = self._get_layer_content(layer_spec, layer_results)
-
+            trained_layers_info[layer_id] = layer_results.trained
             dim_content[layer_id] = dim
 
             if preview is not None:
@@ -235,7 +236,8 @@ class GetNetworkData(LW_interface_base):
         return {
             "previews": preview_content,
             "outputDims": dim_content,
-            "newNetwork": graph_spec.to_dict() if applied_autosettings else {}
+            "newNetwork": graph_spec.to_dict() if applied_autosettings else {},
+            "trainedLayers": trained_layers_info
         }
         
     def _get_layer_content(self, layer_spec, layer_results):
@@ -332,7 +334,9 @@ class getPreviewBatchSample(LW_interface_base):
     def run(self):                                
         results = self._lw_core.run(self._graph_spec)
         returnJson = {}
-        for id_, data in results.items():               
+        trained_layers = {}
+        for id_, data in results.items():
+            trained_layers[id_] = data.trained               
             if 'getPreview' in self._json_network[id_] and self._json_network[id_]['getPreview']:
                 if 'previewVariable' in self._json_network[id_]:
                     try:
@@ -350,9 +354,8 @@ class getPreviewBatchSample(LW_interface_base):
             else:
                 continue
 
-
         self._maybe_log_obj_sizes(returnJson)
-        return returnJson
+        return returnJson, trained_layers
 
     def _maybe_log_obj_sizes(self, returnJson):
         if not logger.isEnabledFor(logging.DEBUG):
@@ -440,3 +443,28 @@ class Parse(LW_interface_base):
             # warningList.append("Could not load the variables, try changing the End Points.\n"+str(filteredValueDict))
         
         return content
+
+
+class ScanCheckpoint(LW_interface_base):
+    def __init__(self, path):
+        self._path = path
+
+    def run(self):
+        response = False
+        if 'checkpoints' in os.listdir(self._path):
+            for filename in os.listdir(os.path.join(self._path,'checkpoints')):
+                if filename == 'checkpoint':
+                    response = True
+                    break
+        return response
+
+
+class CopyJsonModel(LW_interface_base):
+    def __init__(self, folder_path):
+        self._folder_path = folder_path
+    def run(self):
+        file_path = os.path.join(self._folder_path, 'model.json')
+        copy_path = os.path.join(self._folder_path, 'checkpoints','checkpoint_model.json')
+        if not os.path.isdir(os.path.join(self._folder_path,'checkpoints')):
+            os.mkdir(os.path.join(self._folder_path,'checkpoints'))
+        shutil.copy2(file_path, copy_path)

@@ -34,10 +34,8 @@ def try_cast(value, type_, default=None):
 
 def resolve_checkpoint_path(specs):
     import platform
-    if len(specs['checkpoint']) == 0:
-        return None
     
-    ckpt_path = specs['checkpoint']['1']
+    ckpt_path = specs['checkpoint']['path']
     if '//' in ckpt_path:
         if platform.system() == 'Windows':
             new_ckpt_path = ckpt_path.split('//')[1]
@@ -49,8 +47,9 @@ def resolve_checkpoint_path(specs):
         )
         ckpt_path = new_ckpt_path
 
-    ckpt_path = os.path.dirname(ckpt_path)
     ckpt_path=ckpt_path.replace('\\','/')
+    if os.path.basename(os.path.normpath(ckpt_path)) != 'checkpoints':
+        ckpt_path = os.path.join(ckpt_path,'checkpoints')
     return ckpt_path
 
 

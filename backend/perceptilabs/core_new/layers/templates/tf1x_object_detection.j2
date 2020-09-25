@@ -1,8 +1,41 @@
 {% from 'tf1x_utils.j2' import session %}
 
-{% macro run_normal(layer_spec, graph_spec) %}
+{% macro train_normal(layer_spec, graph_spec) %}
+        
         sess = self._sess
         self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
+        self._checkpoint_save_path = '{{layer_spec.checkpoint_path}}'
+
+        def train_step(sess):
+            if not self._headless:
+                _, self._predicted_object, self._predicted_class, self._predicted_normalized_box, self._classification_loss_training, self._bbox_loss_training, self._loss_training, self._accuracy_training, \
+                    self._image_accuracy, self._layer_outputs, self._layer_weights, self._layer_biases, \
+                    self._layer_gradients \
+                    = sess.run([
+                        self._weights, self._pred_obj, self._pred_class, self._pred_norm_box, self._class_loss, self._bbox_loss, self._loss, self._acc,
+                        self._image_acc, self._layer_output, self._layer_weight, self._layer_bias, self._layer_gradient
+                    ])
+                
+            else:
+                _, self._classification_loss_training, self._bbox_loss_training, self._loss_training, self._accuracy_training, \
+                    = sess.run([
+                        self._weights, self._class_loss, self._bbox_loss, self._loss, self._acc
+                    ])
+
+        def validation_step(sess):
+            if not self._headless:
+                self._predicted_object, self._predicted_class, self._predicted_normalized_box, self._classification_loss_validation, self._bbox_loss_validation, self._loss_validation, self._accuracy_validation, \
+                    self._image_accuracy, self._layer_outputs, self._layer_weights, self._layer_biases, \
+                    self._layer_gradients \
+                    = sess.run([
+                        self._pred_obj, self._pred_class, self._pred_norm_box, self._class_loss, self._bbox_loss, self._loss, self._acc,
+                        self._image_acc, self._layer_output, self._layer_weight, self._layer_bias, self._layer_gradient
+                    ])
+            else:
+                self._classification_loss_validation, self._bbox_loss_validation, self._loss_validation, self._accuracy_validation, \
+                    = sess.run([
+                        self._class_loss, self._bbox_loss, self._loss, self._acc
+                    ])
 
         log.info("Entering training loop")
         
@@ -16,7 +49,7 @@
             sess.run(self._trn_init)            
             try:
                 while not self._stopped:
-                    self.train_step()
+                    train_step(sess)
                     yield YieldLevel.SNAPSHOT
                     self._training_iteration += 1
             except tf.errors.OutOfRangeError:
@@ -26,7 +59,7 @@
             sess.run(self._val_init)            
             try:
                 while not self._stopped:
-                    self.validation_step()
+                    validation_step(sess)
                     yield YieldLevel.SNAPSHOT                    
                     self._validation_iteration += 1
             except tf.errors.OutOfRangeError:
@@ -43,26 +76,51 @@
             self._epoch += 1
 
         self._variables = {k: v for k, v in locals().items() if can_serialize(v)}            
-        yield YieldLevel.DEFAULT            
-        
-        # Test loop
-        self._testing_iteration = 0
-        self._status = 'testing'
-        sess.run(self._tst_init)                                
-        try:
-            while not self._stopped:
-                self.test_step()
-                yield YieldLevel.SNAPSHOT
-                self._testing_iteration += 1
-        except tf.errors.OutOfRangeError:
-            pass
-
         self._status = 'finished'
-        self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
-        yield YieldLevel.DEFAULT
+        yield YieldLevel.SNAPSHOT            
+        self.on_export(self._checkpoint_save_path, 'checkpoint')   
+        sess.close()
 {% endmacro %}
 
-{% macro init_normal() %}
+
+{% macro test_normal(layer_spec, graph_spec) %}
+        
+        sess = self._sess
+        self._epoch = 0
+
+        def test_step(sess):
+            self._batch_size = 1
+            self._predicted_object, self._predicted_class, self._predicted_normalized_box, self._accuracy_testing, \
+                self._image_accuracy, self._layer_outputs \
+                = sess.run([
+                    self._pred_obj, self._pred_class, self._pred_norm_box, self._loss,
+                    self._image_acc, self._layer_output
+                ])
+        
+        log.info("Entering testing loop")
+        self._status = 'testing'
+
+        self._testing_iteration = 0
+        sess.run(self._tst_init)                                
+        while not self._stopped:
+            try:
+                test_step(sess)
+                yield YieldLevel.SNAPSHOT
+                self._testing_iteration += 1
+            except tf.errors.OutOfRangeError:
+                self._testing_iteration = 0
+                sess.run(self._tst_init)
+                test_step(sess)   
+                yield YieldLevel.SNAPSHOT
+        
+        self._status = 'finished'
+        self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
+        yield YieldLevel.SNAPSHOT
+        sess.close()
+
+{% endmacro %}
+
+{% macro init_normal(mode) %}
         self._status = 'initializing'
 
         self._grid_size = {{layer_spec.grid_size}}
@@ -381,15 +439,19 @@
         trackable_variables.update({x.name: x for x in tf.trainable_variables() if isinstance(x, Trackable)})
         trackable_variables.update({k: v for k, v in locals().items() if isinstance(v, Trackable) and not isinstance(v, tf.python.data.ops.iterator_ops.Iterator)}) # TODO: Iterators based on 'stateful functions' cannot be serialized.
         self._checkpoint = tf.train.Checkpoint(**trackable_variables)
+        
         sess.run(tf.global_variables_initializer())
         
-        {% filter remove_lspaces(8) %}
-            {% if layer_spec.checkpoint_path is not none %}        
-                path = tf.train.latest_checkpoint('{{layer_spec.checkpoint_path}}')
+        checkpoint_directory = '{{layer_spec.checkpoint_path}}'
+        use_checkpoint = {{layer_spec.load_checkpoint}}
+        if use_checkpoint:
+            path = tf.train.latest_checkpoint(checkpoint_directory)
+            if path is not None:
                 status = self._checkpoint.restore(path)
-                status.assert_consumed().run_restore_ops(session=self._sess)
-            {% endif %}
-        {% endfilter %}                    
+                status.run_restore_ops(session=self._sess)
+            elif path is None and self._mode == 'testing':
+                log.error('There are no saved checkpoint files for this model.')
+                self._sess.close()
 
         self._layer_gradient = layer_gradient_tensors
         self._layer_bias = layer_bias_tensors
@@ -410,7 +472,6 @@
         self._tst_init = tst_init
 {% endmacro %}
 
-################################################### Main #####################################################
 {% macro layer_tf1x_object_detection(layer_spec, graph_spec) %} #
 import itertools
 import cv2
@@ -467,67 +528,46 @@ class {{layer_spec.sanitized_name}}(ObjectDetectionLayer):
 
         self._checkpoint = None
     
-    def init_layer(self, graph: Graph):
+    def init_layer(self, graph: Graph, mode = 'initializing'):
+        
+        self._mode = mode
         {% if not layer_spec.distributed -%}
             {{ init_normal() }}
         {% endif %}
 
-    def train_step(self):
-        sess = self._sess
-        if not self._headless:
-            _, self._predicted_object, self._predicted_class, self._predicted_normalized_box, self._classification_loss_training, self._bbox_loss_training, self._loss_training, self._accuracy_training, \
-                self._image_accuracy, self._layer_outputs, self._layer_weights, self._layer_biases, \
-                self._layer_gradients \
-                = sess.run([
-                    self._weights, self._pred_obj, self._pred_class, self._pred_norm_box, self._class_loss, self._bbox_loss, self._loss, self._acc,
-                    self._image_acc, self._layer_output, self._layer_weight, self._layer_bias, self._layer_gradient
-                ])
-            
-        else:
-            _, self._classification_loss_training, self._bbox_loss_training, self._loss_training, self._accuracy_training, \
-                = sess.run([
-                    self._weights, self._class_loss, self._bbox_loss, self._loss, self._acc
-                ])
-    def validation_step(self):
-        sess = self._sess
-        if not self._headless:
-            self._predicted_object, self._predicted_class, self._predicted_normalized_box, self._classification_loss_validation, self._bbox_loss_validation, self._loss_validation, self._accuracy_validation, \
-                self._image_accuracy, self._layer_outputs, self._layer_weights, self._layer_biases, \
-                self._layer_gradients \
-                = sess.run([
-                    self._pred_obj, self._pred_class, self._pred_norm_box, self._class_loss, self._bbox_loss, self._loss, self._acc,
-                    self._image_acc, self._layer_output, self._layer_weight, self._layer_bias, self._layer_gradient
-                ])
-        else:
-            self._classification_loss_validation, self._bbox_loss_validation, self._loss_validation, self._accuracy_validation, \
-                = sess.run([
-                    self._class_loss, self._bbox_loss, self._loss, self._acc
-                ])
+    def train(self, graph:Graph):
+        """Training is done when this function is called. Once the training ends, checkpoint files are saved.
+        """
 
+        {% if not layer_spec.distributed -%}
+            {{ train_normal(layer_spec, graph_spec) }}
+        {% endif %} 
+
+    def test(self, graph:Graph):
+        """Testing is done when this function is called. 
+        """
+
+        {% if not layer_spec.distributed -%}
+            {{ test_normal(layer_spec, graph_spec) }}
+        {% endif %} 
         
-    def test_step(self):
-        sess = self._sess
-        self._batch_size = 1
-        self._predicted_object, self._predicted_class, self._predicted_normalized_box, self._accuracy_testing, \
-            self._image_accuracy, self._layer_outputs \
-            = sess.run([
-                self._pred_obj, self._pred_class, self._pred_norm_box, self._loss,
-                self._image_acc, self._layer_output
-            ])
-        
-    def run(self, graph: Graph):
+    def run(self, graph: Graph, mode = 'initializing'):
         """Called as the main entry point for training. Responsible for training the model.
 
         Args:
             graph: A PerceptiLabs Graph object containing references to all layers objects included in the model produced by this training layer.
-        """   
-        self.init_layer(graph)
-        {% if not layer_spec.distributed -%}
-            {{ run_normal(layer_spec, graph_spec) }}
-        {% endif %}            
+        """  
+
+        self.init_layer(graph, mode)
+        self._variables = {k: v for k, v in locals().items() if can_serialize(v)} 
+        
+        if mode == 'training':
+            yield from self.train(graph)
+        elif mode == 'testing':
+            yield from self.test(graph)
 
     def on_export(self, path: str, mode: str) -> None:
-        """Called when the export or save button is clicked in the frontend.
+        """Called when the export button is clicked in the frontend.
         It is up to the implementing layer to save the model to disk.
         
         Args:
@@ -535,28 +575,36 @@ class {{layer_spec.sanitized_name}}(ObjectDetectionLayer):
             mode: how to export the model. Made available to frontend via 'export_modes' property."""
 
         log.debug(f"Export called. Project path = {path}, mode = {mode}")
-        pb_path = os.path.join(path, '1')
+        
+        if mode in ['TFModel', 'TFLite']:
+            pb_path = os.path.join(path, '1')
+            if os.path.exists(pb_path):
+                shutil.rmtree(pb_path)
+            
+            time.sleep(.0000000000000001) #Force your computer to do a clock cycle to avoid Windows permission exception
 
-        if os.path.exists(pb_path):
-            shutil.rmtree(pb_path)
-
-        os.makedirs(pb_path, exist_ok=True)
+            os.makedirs(pb_path, exist_ok=True)
         
         # Export non-compressed model
-        if mode in ['TFModel', 'TFModel+checkpoint']:
-            tf.compat.v1.saved_model.simple_save(self._sess, pb_path, inputs={'input': self._input_tensor_export}, outputs={'output': self._output_tensor_export})
+        if mode in ['TFModel']:
+            tf.compat.v1.saved_model.simple_save(self._sess, pb_path, inputs=self._input_tensor_export, outputs=self._output_tensor_export)
 
         # Export compressed model
-        if mode in ['TFLite', 'TFLite+checkpoint']:
+        if mode in ['TFLite']:
             frozen_path = os.path.join(pb_path, 'frozen_model.pb')
-            converter = tf.lite.TFLiteConverter.from_session(self._sess, [self._input_tensor_export], [self._output_tensor_export])
+            converter = tf.lite.TFLiteConverter.from_session(self._sess, list(self._input_tensor_export.values()), list(self._output_tensor_export.values()))
             converter.post_training_quantize = True
             tflite_model = converter.convert()
             with open(frozen_path, "wb") as f:
                 f.write(tflite_model)
 
         # Export checkpoint
-        if mode in ['TFModel+checkpoint', 'TFLite+checkpoint']:
+        if mode in ['checkpoint']:
+            for fname in os.listdir(path):
+                if fname.endswith('.json'):
+                    pass
+                else:
+                    os.remove(os.path.join(path,fname))
             {% filter remove_lspaces(8) %}
                 {% if layer_spec.distributed %}
                     self._saver.save(self._sess, os.path.join(path, 'model.ckpt'), global_step=0)
@@ -568,6 +616,7 @@ class {{layer_spec.sanitized_name}}(ObjectDetectionLayer):
     def on_stop(self) -> None:
         """Called when the save model button is clicked in the frontend. 
         It is up to the implementing layer to save the model to disk."""
+        self.on_export(self._checkpoint_save_path, 'checkpoint')   
         self._stopped = True
 
     def on_headless_activate(self) -> None:
@@ -594,7 +643,8 @@ class {{layer_spec.sanitized_name}}(ObjectDetectionLayer):
             'TFModel',
             'TFLite'
             'TFModel+checkpoint',
-            'TFLite+checkpoint',            
+            'TFLite+checkpoint',
+            'checkpoint'            
         ]
         
     @property
@@ -1379,5 +1429,5 @@ class {{layer_spec.sanitized_name}}(ObjectDetectionLayer):
 
             self._status = 'finished'
             self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
-            yield YieldLevel.DEFAULT
+            yield YieldLevel.SNAPSHOT
 {% endmacro %}

@@ -100,7 +100,7 @@ class Message:
         warningList = issue_handler.pop_warnings()
 
         if errorList:
-            self._interface.close_core(self.request.get("reciever"))
+            self._interface.close_core(self.request.get("receiver"))
             if not content:
                 content={"content":"Core crashed without any error message, closing core"}
             try:

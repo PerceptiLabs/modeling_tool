@@ -46,7 +46,7 @@ training_script_name = "training_script.py" if os.getenv("PL_DEV") else f"{tempf
 
 
 class Core:
-    def __init__(self, graph_builder: GraphBuilder, script_factory: ScriptFactory, messaging_factory: MessagingFactory, issue_handler: IssueHandler=None, server_timeout=610, userland_timeout=600, deployment_strategy=None, use_sentry=False, samplers=None):
+    def __init__(self, graph_builder: GraphBuilder, script_factory: ScriptFactory, messaging_factory: MessagingFactory, issue_handler: IssueHandler=None, running_mode = 'training', server_timeout=610, userland_timeout=600, deployment_strategy=None, use_sentry=False, samplers=None):
         self._graph_builder = graph_builder
         self._script_factory = script_factory
         self._messaging_factory = messaging_factory
@@ -56,6 +56,7 @@ class Core:
         self._issue_handler = issue_handler
         self._use_sentry = use_sentry
         self._samplers = samplers or []
+        self._running_mode = running_mode
         self._deployment_strategy = deployment_strategy or ThreadStrategy()
 
         self._server_timeout = server_timeout
@@ -82,10 +83,11 @@ class Core:
 
             for f in on_iterate:
                 f(counter, self)
-                    
         
     def run_stepwise(self, graph_spec, auto_close=False, model_id=None):
         self._training_session_id = training_session_id = uuid.uuid4().hex
+        logger.info(f"Core.run_stepwise called. Training session: [{training_session_id}]")
+        
         self._model_id = model_id or uuid.uuid4().int
         topic_generic = f'generic-{training_session_id}'.encode()    
         topic_snapshots = f'snapshots-{training_session_id}'.encode()
@@ -174,6 +176,10 @@ class Core:
     @property
     def is_closed_by_force(self):
         return self._closed_by_force
+
+    @property
+    def has_client(self):
+        return self._client is not None
         
     def _await_status_ready(self, client_step):
         while self._client.training_state != State.READY and not self.is_closed:
@@ -201,6 +207,11 @@ class Core:
 
     def _on_training_state_changed(self, new_state):
         logger.info(f"Training server entered state {new_state}")
+
+        if new_state == State.CLOSING:
+            self._client.shutdown()            
+            self._closed_by_server = True
+            logger.info(f"Core closed by server. Training session: [{self._training_session_id}]")            
         
     def _on_userland_timeout(self):
         if self._issue_handler is not None:
@@ -221,16 +232,16 @@ class Core:
         self._graphs.append(graph)
         self._last_graph = graph
 
-        if not self._collected_start_metrics and self._last_graph is not None:
+        if not self._collected_start_metrics and self._last_graph is not None and self._running_mode == 'training':
             dataevents.collect_start_metrics(self._graph_spec, self._last_graph, self._training_session_id, self._model_id)        
             self._collected_start_metrics = True        
 
     def _on_training_ended(self, session_info, end_state):
-        if self._graph_spec is not None:
+        if self._graph_spec is not None and self._running_mode == 'training':
             dataevents.collect_end_metrics(self._graph_spec, self._last_graph, self._training_session_id, session_info, self._model_id, end_state)
             
         self._time_ended = time.time()
-        if self._paused_time_stamp is not None:
+        if self._paused_time_stamp is not None and self._running_mode == 'training':
             self._time_paused += self._time_ended - self._paused_time_stamp
             self._paused_time_stamp = None
             
@@ -241,14 +252,14 @@ class Core:
         try:
             code, self._line_to_node_map = self._script_factory.make(graph_spec, training_session_id, topic_generic, topic_snapshots, userland_timeout=self._userland_timeout)
         except FetchParameterError as e:
-             error = UserlandError(
-                 e.layer_id, e.layer_type,
-                 line_number=None,
-                 message=f"Couldn't fetch parameter '{e.parameter}'. Verify that the layer has been applied.",
-                 code=None
-             )
-             self._handle_userland_error(error)             
-             
+            error = UserlandError(
+                e.layer_id, e.layer_type,
+                line_number=None,
+                message=f"Couldn't fetch parameter '{e.parameter}'. Verify that the layer has been applied.",
+                code=None
+            )
+            self._handle_userland_error(error)
+            
         with open(training_script_name, 'wt') as f:
             f.write(code)
             f.flush()
@@ -272,12 +283,12 @@ class Core:
                 last_node = node
                 last_lineno = true_lineno
 
-                message += f'File "{frame.filename}", line {frame.lineno}, in {frame.name}, ' + \
-                           f'origin {node.id_}, line {true_lineno} [{node.type_}]\n' +\
-                           f'  {frame.line}\n'
+                message +=  f'File "{frame.filename}", line {frame.lineno}, in {frame.name}, ' + \
+                            f'origin {node.id_}, line {true_lineno} [{node.type_}]\n' +\
+                            f'  {frame.line}\n'
             else:
-                message += f'File "{frame.filename}", line {frame.lineno}, in {frame.name}\n' + \
-                           f'  {frame.line}\n'
+                message +=  f'File "{frame.filename}", line {frame.lineno}, in {frame.name}\n' + \
+                            f'  {frame.line}\n'
         
         if last_node:
             error = UserlandError(last_node.id_, last_node.type_, last_lineno, message)
@@ -328,7 +339,10 @@ class Core:
 
     def request_export(self, path: str, mode: str):
         self._client.request_export(path, mode)
-        logger.debug(f"Requested export with path: {path}, mode: {mode}")        
+        logger.debug(f"Requested export with path: {path}, mode: {mode}")  
+
+    def request_advance_testing(self):
+        self._client.request_advance_testing()
 
     def request_stop(self):
         self._client.request_stop()
@@ -390,6 +404,10 @@ class Core:
     def export(self, path, mode):
         self.request_export(path, mode)
         
+    @deprecated
+    def advance_testing(self):
+        self.request_advance_testing()
+    
     @deprecated
     def pause(self):
         self.request_pause()

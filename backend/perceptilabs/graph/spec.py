@@ -24,7 +24,7 @@ class GraphSpec(ABC):
             dict_[id_] = node.to_dict()
         return dict_
 
-    @classmethod
+    @classmethod 
     def from_dict(cls, dict_):
         if 'Layers' in dict_:
             dict_ = dict_['Layers']
@@ -35,8 +35,8 @@ class GraphSpec(ABC):
             layer_spec_dict = dict_[id_]
             try:
                 layer_spec = get_layer_definition(type_). \
-                             spec_class. \
-                             from_dict(id_, layer_spec_dict)
+                            spec_class. \
+                            from_dict(id_, layer_spec_dict)
                 layer_specs.append(layer_spec)
             except:
                 from perceptilabs.utils import stringify

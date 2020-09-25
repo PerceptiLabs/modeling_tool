@@ -12,6 +12,7 @@ from collections import namedtuple
 import tensorflow as tf
 import numpy as np
 from tempfile import NamedTemporaryFile
+import itertools
 from typing import Tuple, Dict, List
 
 from perceptilabs.layers.utils import resolve_checkpoint_path
@@ -35,7 +36,7 @@ logger = logging.getLogger(APPLICATION_LOGGER)
 
 
 class LayerResults:
-    def __init__(self, sample, out_shape, variables, columns, code_error, instantiation_error, strategy_error):
+    def __init__(self, sample, out_shape, variables, columns, code_error, instantiation_error, strategy_error, trained):
         self.sample = sample
         self.out_shape = out_shape
         self.variables = variables
@@ -43,6 +44,7 @@ class LayerResults:
         self.code_error = code_error
         self.instantiation_error = instantiation_error
         self.strategy_error = strategy_error
+        self.trained = trained
 
     @property
     def has_errors(self):
@@ -110,7 +112,8 @@ class BaseStrategy(ABC):
             columns=[],
             code_error=code_error,
             instantiation_error=instantiation_error,
-            strategy_error=strategy_error
+            strategy_error=strategy_error,
+            trained = False
         )                
         return results
 
@@ -160,11 +163,11 @@ class Tf1xStrategy(BaseStrategy):
                 return self.get_default(strategy_error=error)                    
                 
             with tf.Session(config=tf.ConfigProto(device_count={'GPU': 0})) as sess:
-                return self._run_internal(sess, layer_spec.id_, layer_spec.type_, layer_instance, output_tensor, input_tensors, line_offset)
+                return self._run_internal(sess, layer_spec.id_, layer_spec.type_, layer_instance, output_tensor, input_tensors, layer_spec, line_offset)
 
-    def _run_internal(self, sess, layer_id, layer_type, layer_instance, output_tensor, layer_spec, line_offset):
+    def _run_internal(self, sess, layer_id, layer_type, layer_instance, output_tensor, input_tensor, layer_spec, line_offset):
         sess.run(tf.global_variables_initializer())
-
+        self._trained = False
         if tf.version.VERSION.startswith('1.15'):
             self._restore_checkpoint(layer_spec, sess)
         else:
@@ -191,26 +194,34 @@ class Tf1xStrategy(BaseStrategy):
             columns=[],
             code_error=None,
             instantiation_error=None,
-            strategy_error=None            
+            strategy_error=None,
+            trained = self._trained       
         )
         return results
         
     def _restore_checkpoint(self, spec, sess):
-        if 'checkpoint' in spec:
-            from tensorflow.python.training.tracking.base import Trackable
-
-            export_directory = resolve_checkpoint_path(spec)
-            
-            trackable_variables = {}
-            trackable_variables.update({x.name: x for x in tf.trainable_variables() if isinstance(x, Trackable)})
-            trackable_variables.update({k: v for k, v in locals().items() if isinstance(v, Trackable) and
-                                        not isinstance(v, tf.python.data.ops.iterator_ops.Iterator)}) # TODO: Iterators based on 'stateful functions' cannot be serialized.
-            
-            checkpoint = tf.train.Checkpoint(**trackable_variables)
-
-            path = tf.train.latest_checkpoint(export_directory)
-            status = checkpoint.restore(path)
-            status.run_restore_ops(session=sess)
+        spec = spec.to_dict()
+        if spec['checkpoint']['load_checkpoint']:
+            layer_name = spec['Type'] + '_' + spec['Name'].replace(' ', '_')
+            if 'checkpoint' in spec:
+                from tensorflow.python.training.tracking.base import Trackable
+                export_directory = resolve_checkpoint_path(spec)
+                trackable_variables = {}
+                trackable_variables.update({x.name: x for x in tf.trainable_variables() if isinstance(x, Trackable)})
+                trackable_variables.update({k: v for k, v in locals().items() if isinstance(v, Trackable) and
+                                            not isinstance(v, tf.python.data.ops.iterator_ops.Iterator)}) # TODO: Iterators based on 'stateful functions' cannot be serialized.
+                checkpoint = tf.train.Checkpoint(**trackable_variables)
+                path = tf.train.latest_checkpoint(export_directory)
+                # we verify for variables in checkpoints before enabling 'trained' status on each layer separately. we verify names and shapes of variables
+                if path is not None:
+                    checkpoint_variables = tf.train.list_variables(path)
+                    for xt, xc in itertools.product(trackable_variables, checkpoint_variables):
+                        if layer_name in xt and layer_name in xc[0]:
+                            if trackable_variables[xt].shape == xc[1]:     # checking for variable shapes
+                                self._trained = True
+                                status = checkpoint.restore(path)
+                                status.run_restore_ops(session=sess)
+                                break
 
             
 class TrainingStrategy(BaseStrategy):
@@ -247,7 +258,8 @@ class TrainingStrategy(BaseStrategy):
             columns=[],
             code_error=None,
             instantiation_error=instantiation_error,
-            strategy_error=strategy_error
+            strategy_error=strategy_error,
+            trained = False
         )
         return results
 
@@ -277,7 +289,8 @@ class DataSupervisedStrategy(BaseStrategy):
             columns=columns,
             code_error=None,
             instantiation_error=None,
-            strategy_error=strategy_error
+            strategy_error=strategy_error,
+            trained = False
         )
         return results
 
@@ -305,7 +318,8 @@ class DataReinforceStrategy(BaseStrategy):
             columns = [],
             code_error=None,
             instantiation_error=None,
-            strategy_error=strategy_error
+            strategy_error=strategy_error,
+            trained = False
         )
         return results
 
@@ -468,7 +482,8 @@ class LightweightCoreAdapter:
                 'action_space': layer_info.variables.get('action_space',''),
                 'Variables': var_names,
                 'Default_var': default_var,
-                'cols': layer_info.columns
+                'cols': layer_info.columns,
+                'trained': layer_info.trained
             }
             extras_dict[layer_id] = entry
 

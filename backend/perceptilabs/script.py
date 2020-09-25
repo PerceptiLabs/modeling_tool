@@ -69,7 +69,7 @@ def is_syntax_ok(code):
 
 
 class ScriptFactory:
-    def __init__(self, mode='default', max_time_run=None, simple_message_bus=False):
+    def __init__(self, mode='default', max_time_run=None, simple_message_bus=False, running_mode = 'initializing'):
         # if legacy, simply reuse codehq
         # if modern, use modern when possible if not try to wrap hq layers
         self._simple_message_bus = simple_message_bus
@@ -78,6 +78,7 @@ class ScriptFactory:
         self._engine = J2Engine(templates_directory)
         self._top_level_imports = TOP_LEVEL_IMPORTS
         self._max_time_run = max_time_run
+        self._running_mode = running_mode
         
     def get_runscript(self, graph_spec):
         code  = self._create_graph_snippet(graph_spec)
@@ -93,7 +94,6 @@ class ScriptFactory:
         code = self._create_imports_snippet(graph_spec)
         code += self._create_logging_snippet()
         return code
-
 
     def get_layer_import_statements(self, layer_spec, include_top_level=False):
         if include_top_level:
@@ -164,15 +164,6 @@ class ScriptFactory:
         if len(code) > 0:
             code += '\n'
         return code
-
-    def _create_logging_snippet(self):
-        code  = "logging.basicConfig(\n"
-        code += "    stream=sys.stdout,\n"
-        code += "    format='%(asctime)s - %(levelname)s - %(message)s',\n"
-        code += "    level=logging.INFO\n"
-        code += ")\n"
-        code += "log = logging.getLogger(__name__)\n\n"
-        return code        
     
     def _create_layers_snippet(self, graph_spec, offset=None):
         code = ''
@@ -192,7 +183,7 @@ class ScriptFactory:
         if len(code) > 0:
             code += '\n'
         return code, line_to_node_map
-
+    
     def _create_logging_snippet(self):
         code  = "logging.basicConfig(\n"
         code += "    stream=sys.stdout,\n"
@@ -262,12 +253,14 @@ class ScriptFactory:
         code += "    graph_builder,\n"
         code += "    layer_classes,\n"
         code += "    edges,\n"
-        code += "    conn_info,\n"                        
+        code += "    conn_info,\n" 
+        code += "    mode = '{}',\n".format(self._running_mode)                       
         code += "    snapshot_builder=snapshot_builder,\n"
         code += "    userland_timeout={},\n".format(userland_timeout)
         if self._max_time_run is not None:
             code += "    max_time_run={},\n".format(self._max_time_run) # For debugging
         code += ")\n\n"
+
         return code
 
     def _create_main_block(self):

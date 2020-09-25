@@ -26,7 +26,7 @@ PROCESS_RESULTS_DELAY = 0.1
 
 
 class CompatibilityCore:
-    def __init__(self, command_queue, result_queue, graph_builder, script_factory, messaging_factory, graph_spec, threaded=False, issue_handler=None, model_id=None):
+    def __init__(self, command_queue, result_queue, graph_builder, script_factory, messaging_factory, graph_spec, running_mode = 'training', threaded=False, issue_handler=None, model_id=None):
         self._model_id = model_id
         self._command_queue = command_queue
         self._result_queue = result_queue
@@ -35,6 +35,7 @@ class CompatibilityCore:
         self._messaging_factory = messaging_factory        
         self._graph_spec = copy.deepcopy(graph_spec)
         self._issue_handler = issue_handler
+        self._running_mode = running_mode
 
         self._sanitized_to_id = {spec.sanitized_name: spec.id_ for spec in graph_spec.nodes}
         self._sanitized_to_name = {spec.sanitized_name: spec.name for spec in graph_spec.nodes}        
@@ -55,6 +56,9 @@ class CompatibilityCore:
             commands = {}
             count = {}
 
+            while not self._core.has_client:
+                time.sleep(0.3)   
+            
             while not self._command_queue.empty():
                 command = self._command_queue.get()
 
@@ -73,29 +77,29 @@ class CompatibilityCore:
                     logger.debug(f'Processing command {command_id}: {command}. Overriding {count[command.type]-1} previous commands of the same type.') # TODO: logger.debug instead
                 else:
                     logger.debug(f'Processing command {command_id}: {command}.') # TODO: logger.debug instead
-                self._send_command(core, command)
+                try:
+                    self._send_command(core, command)
+                except Exception as e:
+                    logger.exception(f'Error while processing command {command} in CompatibilityCore. Error is: {e}')
             
         def do_process_results(counter, core):
 
             graphs = core.graphs
 
             if len(graphs) > 0:
-                logger.debug(f"Processing {len(graphs)} graph snapshots")
                 self.results = self._get_results_dicts(graphs, self.results)
-                for result_dict in self.results:
-                    result_dict['training_duration'] = core.training_duration
-                    self._result_queue.put(copy.deepcopy(result_dict))
-                if self.results:
-                    self.results = self.results[-1]
+                if self._running_mode == 'training':
+                    self.results['training_duration'] = core.training_duration
+                self._result_queue.put(copy.deepcopy(self.results))
             
         set_tensorflow_mode('graph')
-        core = Core(self._graph_builder, self._script_factory, self._messaging_factory, self._issue_handler, use_sentry=True)
+        core = Core(self._graph_builder, self._script_factory, self._messaging_factory, self._issue_handler, running_mode = self._running_mode, use_sentry=True)
         self._core = core
         
         if self._threaded:
             def worker(func, delay):
                 counter = 0
-                while self._running:
+                while self._running and not self._core.is_closed:
                     func(counter, core)
                     counter += 1
                     time.sleep(delay)
@@ -128,7 +132,9 @@ class CompatibilityCore:
         elif command.type == 'headless' and not command.parameters['on']:            
             core.headlessOff()
         elif command.type == 'export':
-            core.export(command.parameters['path'], command.parameters['mode'])            
+            core.export(command.parameters['path'], command.parameters['mode'])
+        elif command.type == 'advance_testing':
+            core.advance_testing()            
             
     def _get_results_dicts(self, graphs, results):
         self._print_graph_debug_info(graphs)
@@ -228,7 +234,7 @@ if __name__ == "__main__":
                 layer['Properties']['Distributed'] = False
 
         network = network['Layers']
-               
+            
     script_factory = ScriptFactory(simple_message_bus=True)
     messaging_factory = SimpleMessagingFactory()
     

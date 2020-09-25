@@ -24,7 +24,7 @@
         path(d='M16.258 2.79565H7.2688V4.51608C7.2688 4.5591 7.2688 4.64512 7.2688 4.68813H15.3118V10.4516C15.3118 10.9677 15.7419 11.3978 16.258 11.3978C16.7742 11.3978 17.2043 10.9677 17.2043 10.4516V3.74189C17.1613 3.22576 16.7742 2.79565 16.258 2.79565Z' fill='#C4C4C4')
         path(d='M6.53763 7.44086H0.903226C0.387097 7.44086 0 7.05376 0 6.53763V0.903226C0 0.387097 0.387097 0 0.903226 0H6.53763C7.05376 0 7.44086 0.387097 7.44086 0.903226V6.53763C7.44086 7.05376 7.05376 7.44086 6.53763 7.44086ZM0.903226 0.860215C0.860215 0.860215 0.860215 0.860215 0.860215 0.903226V6.53763C0.860215 6.58065 0.860215 6.58065 0.903226 6.58065H6.53763C6.58065 6.58065 6.58065 6.58065 6.58065 6.53763V0.903226C6.58065 0.860215 6.58065 0.860215 6.53763 0.860215H0.903226Z' fill='#C4C4C4')
         path(d='M6.53763 20.5163H0.903226C0.387097 20.5163 0 20.1292 0 19.6131V13.9787C0 13.4625 0.387097 13.0754 0.903226 13.0754H6.53763C7.05376 13.0754 7.44086 13.4625 7.44086 13.9787V19.6131C7.44086 20.1292 7.05376 20.5163 6.53763 20.5163ZM0.903226 13.9357C0.860215 13.9357 0.860215 13.9357 0.860215 13.9787V19.6131C0.860215 19.6561 0.860215 19.6561 0.903226 19.6561H6.53763C6.58065 19.6561 6.58065 19.6561 6.58065 19.6131V13.9787C6.58065 13.9357 6.58065 13.9357 6.53763 13.9357H0.903226Z' fill='#C4C4C4')
-    div.nav-link(:class="{'disabled': !haveAtLeastOneItemStatistic , 'is-active': statisticsIsOpen && isOnModelToolPage()}"
+    div.nav-link(:class="{'disabled': false , 'is-active': statisticsIsOpen && isOnModelToolPage()}"
       @click="toModelStatistic()"
       v-tooltip:right="'Statistics View'"
       )
@@ -35,7 +35,7 @@
         path(d='M19.4409 0.946237V3.31183C19.4409 3.82796 19.0108 4.25806 18.4947 4.25806H16.1291C15.613 4.25806 15.1829 3.82796 15.1829 3.31183V0.946237C15.1829 0.430108 15.613 0 16.1291 0H18.4947C19.0108 0 19.4409 0.430108 19.4409 0.946237Z' fill='#C4C4C4')
         path(d='M10.8817 20.473H9.03224C8.04299 20.473 7.2688 19.6988 7.2688 18.7096V13.8923C7.2688 12.9031 8.04299 12.1289 9.03224 12.1289H10.8817C11.8709 12.1289 12.6451 12.9031 12.6451 13.8923V18.7096C12.6451 19.6988 11.8709 20.473 10.8817 20.473ZM9.07525 13.2472C8.73116 13.2472 8.43009 13.5483 8.43009 13.8923V18.7096C8.43009 19.0536 8.73116 19.3547 9.07525 19.3547H10.9247C11.2688 19.3547 11.5699 19.0536 11.5699 18.7096V13.8923C11.5699 13.5483 11.2688 13.2472 10.9247 13.2472H9.07525Z' fill='#C4C4C4')
         path(d='M18.2366 23.7418H16.3871C15.4409 23.7418 14.6237 22.9676 14.6237 21.9784V13.8923C14.6237 12.9031 15.3979 12.1289 16.3871 12.1289H18.2366C19.2258 12.1289 20 12.9031 20 13.8923V21.9784C20 22.9246 19.2258 23.7418 18.2366 23.7418ZM16.3871 13.2472C16.043 13.2472 15.7419 13.5483 15.7419 13.8923V21.9784C15.7419 22.3225 16.043 22.6235 16.3871 22.6235H18.2366C18.5806 22.6235 18.8817 22.3225 18.8817 21.9784V13.8923C18.8817 13.5483 18.5806 13.2472 18.2366 13.2472H16.3871Z' fill='#C4C4C4')
-    div.nav-link(:class="{'disabled': !haveAtLeastOneTestItem , 'is-active-stroke': testIsOpen && isOnModelToolPage()}"
+    div.nav-link(:class="{'disabled': false , 'is-active-stroke': testIsOpen && isOnModelToolPage()}"
       @click="toModelTest()"
       v-tooltip:right="'Test View'"
       )
@@ -44,7 +44,7 @@
         path( class="test-borders" d="M17 21H25" stroke="#C4C4C4" stroke-width="2")
         g(clip-path="url(#clip0)")
           path(class="test-fill test-borders" d="M24.1 11H17.9C17.6239 11 17.4 11.2239 17.4 11.5V12.2273C17.4 12.5034 17.6239 12.7273 17.9 12.7273H18.1C18.2105 12.7273 18.3 12.8159 18.3 12.9263C18.2991 14.4189 18.2801 17.1218 17.85 18.7727C17.5185 20.0453 15.3144 23.9741 13.577 27.1057C12.8486 28.4186 13.7959 30 15.2973 30H26.7748C28.2589 30 29.2003 28.454 28.4838 27.1543C26.7375 23.9865 24.4854 20.0602 24.15 18.7727C23.7184 17.1159 23.7007 14.532 23.7 12.9266C23.7 12.8162 23.7895 12.7273 23.9 12.7273H24.1C24.3761 12.7273 24.6 12.5034 24.6 12.2273V11.5C24.6 11.2239 24.3761 11 24.1 11Z" fill="#C4C4C4" stroke="#C4C4C4")
-        
+
         defs
           clipPath(id="clip0")
             rect(width="18" height="10" fill="white" transform="translate(12 21)")
@@ -85,19 +85,45 @@
       ...mapGetters({
         statisticsIsOpen:   'mod_workspace/GET_statisticsIsOpen',
         testIsOpen:         'mod_workspace/GET_testIsOpen',
-        currnetNetwork:     'mod_workspace/GET_currentNetwork',
+        currentNetwork:     'mod_workspace/GET_currentNetwork',
+        currentNetworkIndex:'mod_workspace/GET_currentNetworkIndex',
         networkIsNotEmpty:  'mod_workspace/GET_networkIsNotEmpty',
       }),
       isStatisticsOrTestOpened() {
         const currentItemNetwork = this.$store.getters['mod_workspace/GET_currentNetwork'];
         if(!currentItemNetwork.hasOwnProperty('networkMeta')) return false;
         return currentItemNetwork.networkMeta.openStatistics === true || currentItemNetwork.networkMeta.openTest === true;
-     },
-      
+      },
+      firstItemWithTextIndex() {
+        return this.workspaceModels.findIndex(model => model.networkMeta.openTest !== null && model.networkMeta.coreStatus.Status === 'Finished');
+      },
+      hasStatistics() {
+        return this.workspaceModels.some(model => model.networkMeta.openStatistics !== null);
+      },
+      hasTest() {
+        return this.workspaceModels.some(model => model.networkMeta.openTest !== null && model.networkMeta.coreStatus.Status === 'Finished');
+      },
+      currentOrFirstStatisticsIdx() {
+        const idx = this.workspaceModels.findIndex(model => model.networkMeta.openStatistics !== null);
+        return idx;
+      },
+      currentOrFirstTestIdx() {
+
+        let idx = -1;
+
+        if (typeof this.testIsOpen === 'boolean') {
+          idx = this.currentNetworkIndex;
+        } else {
+          idx = this.workspaceModels.findIndex(model => model.networkMeta.openTest !== null && model.networkMeta.coreStatus.Status === 'Finished');
+        }
+
+        return idx;
+      },
     },
     watch: {
       workspaceModels: {
         deep: true,
+        immediate: true,
         handler(models) {
           this.resetModelIndexes();
           this.handelModelIndexes(models);
@@ -110,13 +136,17 @@
         SET_openStatistics: 'mod_workspace/SET_openStatistics',
         SET_openTest:       'mod_workspace/SET_openTest',
         set_chartRequests:  'mod_workspace/SET_chartsRequestsIfNeeded',
+        setStatisticsAvailability:'mod_workspace/setStatisticsAvailability',
+        setCheckpointAvailability:'mod_workspace/setCheckpointAvailability',
+        closeStatsTestViews:  'mod_workspace/SET_statisticsAndTestToClosed',
         setCurrentView:     'mod_tutorials/setCurrentView'
+
       }),
       resetModelIndexes() {
-        this.reseStatistic();
+        this.resetStatistic();
         this.resetTest();
       },
-      reseStatistic(){
+      resetStatistic(){
         this.statisticItemIndex = null;
         this.haveAtLeastOneItemStatistic = false;
       },
@@ -129,18 +159,21 @@
         this.handleTestState(models);
       },
       handleStatisticState(models) {
-        const firsImteWithStatistcsIndex = models.findIndex(model => model.networkMeta.openStatistics !== null);
-        if(firsImteWithStatistcsIndex !== -1) {
+        const firstItemWithStatistcsIndex = models.findIndex(model => model.networkMeta.openStatistics !== null);
+        // console.log('handleStatisticState', firstItemWithStatistcsIndex);
+
+        if(firstItemWithStatistcsIndex !== -1) {
            this.haveAtLeastOneItemStatistic = true;
-           this.statisticItemIndex = firsImteWithStatistcsIndex;
+           this.statisticItemIndex = firstItemWithStatistcsIndex;
         } else {
           this.haveAtLeastOneItemStatistic = false;
           this.statisticItemIndex = null;
         }
       },
       handleTestState(models) {
-        const firstItemWithTextIndex = models.findIndex(model => model.networkMeta.openTest !== null && model.networkMeta.coreStatus.Status === 'Finished');
-        
+        const firstItemWithTextIndex = models.findIndex(model => model.networkMeta.openTest !== null && model.networkMeta.coreStatus.Status !== 'Finished');
+        // console.log('handleTestState', firstItemWithTextIndex);
+
         if(firstItemWithTextIndex !== -1) {
           this.haveAtLeastOneTestItem = true;
           this.testItemIndex = firstItemWithTextIndex;
@@ -154,13 +187,13 @@
         return this.$route.name === 'app';
       },
       doesCurrentNetworkHaveTest() {
-        return this.currnetNetwork.networkMeta.openTest !== null &&  this.currnetNetwork.networkMeta.coreStatus.Status === 'Finished'
+        return this.currentNetwork.networkMeta.openTest !== null;
       },
       isModelPageAndNetworkHasStatistic() {
-        return this.$route.name === 'app' && this.currnetNetwork.networkMeta.openStatistics !== null
+        return this.$route.name === 'app' && this.currentNetwork.networkMeta.openStatistics !== null
       },
       isModelPageAndNetworkHasStatistic() {
-        return this.$route.name === 'app' && this.currnetNetwork.networkMeta.openStatistics !== null
+        return this.$route.name === 'app' && this.currentNetwork.networkMeta.openStatistics !== null
       },
       toProjects() {
         this.$nextTick(() => {
@@ -177,21 +210,27 @@
         });
       },
       toModelStatistic() {
-        //$route.name === 'app' && currnetNetwork.networkMeta.openStatistics !== null
+        // console.log('*** toModelTest hasStatistics', this.hasStatistics);
+        // if(!this.haveAtLeastOneItemStatistic) {
+        if(!this.hasStatistics) {
+          this.setStatisticsAvailability();
+          return;
+        }
+
         if(this.$route.name === 'app') {
           // networkMeta.openStatistics !== null
           if(this.isModelPageAndNetworkHasStatistic()) {
             this.$store.dispatch("mod_workspace/setViewType", 'statistic');
             const item = this.workspaceModels[this.statisticItemIndex];
             this.SET_currentNetwork(this.statisticItemIndex)
-              .then(() => { 
+              .then(() => {
                 this.$store.dispatch("mod_workspace/EVENT_onceDoRequest");
                 this.SET_openStatistics(true);
                 this.set_chartRequests(item.networkID);
                 })
           } else {
             const { statisticItemIndex } = this;
-            
+
             if(statisticItemIndex !== null) {
               this.$store.dispatch("mod_workspace/setViewType", 'statistic');
               this.SET_currentNetwork(statisticItemIndex);
@@ -221,16 +260,16 @@
         });
       },
       isOnStatisticsView() {
-        return this.currnetNetwork.networkMeta.openStatistics === true
+        return this.currentNetwork.networkMeta.openStatistics === true
       },
       isOnTestView() {
-        return this.currnetNetwork.networkMeta.openTest === true
+        return this.currentNetwork.networkMeta.openTest === true
       },
       haveCurrentModelStatistics() {
-        return this.currnetNetwork.networkMeta.openStatistics !== null
+        return this.currentNetwork.networkMeta.openStatistics !== null
       },
       haveCurrentModelTest() {
-        return this.currnetNetwork.networkMeta.openTest !== null
+        return this.currentNetwork.networkMeta.openTest !== null
       },
       isOnModelingToolPage() {
         return this.$route.name === 'app';
@@ -245,12 +284,14 @@
           }
         } else {
           this.$store.dispatch("mod_workspace/setViewType", 'model');
+          this.closeStatsTestViews({ networkId: this.currentNetwork.networkID });
           this.SET_currentNetwork(0);
-          if (this.isOnStatisticsView()) {
-            this.SET_openStatistics(false);
-          } else if (this.isOnTestView()) {
-            this.SET_openTest(false);
-          }
+          // if (this.isOnStatisticsView()) {
+          //   this.SET_openStatistics(false);
+          // } else if (this.isOnTestView()) {
+          //   this.SET_openTest(false);
+          // }
+
           this.$router.push({name: 'app'});
         }
 
@@ -263,36 +304,44 @@
         });
       },
       toModelTest() {
-        if(this.haveAtLeastOneTestItem) {
-          this.$store.dispatch("mod_workspace/setViewType", 'test');
-
-          if(this.isOnModelToolPage()) {
-            if(this.doesCurrentNetworkHaveTest()) {
-              this.SET_openTest(true);
-            } else {
-              this.SET_currentNetwork(this.testItemIndex);
-              this.SET_openTest(true);
-            }
-          } else {
-            this.SET_currentNetwork(this.testItemIndex)
-              .then(_ => {
-                this.$router.push({name: 'app'});
-                this.SET_openTest(true);
-              });
-          }
-
-          this.$nextTick(() => {
-            if (this.showNewModelPopup) {
-              this.setCurrentView('tutorial-create-model-view');
-            } else {
-              this.setCurrentView('tutorial-test-view');
+        this.setCheckpointAvailability()
+          .then(results => {
+            if (results.some(r => r.hasCheckpoint)) {
+                this.goToTestView();
             }
           });
-        }
       },
+      goToTestView() {
+        this.$store.dispatch("mod_workspace/setViewType", 'test');
+
+        if(this.isOnModelToolPage()) {
+          if(this.doesCurrentNetworkHaveTest()) {
+            this.SET_openTest(true);
+          } else {
+            this.SET_currentNetwork(this.currentOrFirstTestIdx);
+            this.SET_openTest(true);
+          }
+        } else {
+          this.SET_currentNetwork(this.currentOrFirstTestIdx)
+            .then(_ => {
+              this.$router.push({name: 'app'});
+              this.SET_openTest(true);
+            });
+        }
+
+        // this.$store.dispatch('mod_api/API_startTestWithCheckpointJson');
+
+        this.$nextTick(() => {
+          if (this.showNewModelPopup) {
+            this.setCurrentView('tutorial-create-model-view');
+          } else {
+            this.setCurrentView('tutorial-test-view');
+          }
+        });
+      }
     },
   }
- 
+
 </script>
 // 1px solid rgba(97, 133, 238, 0.4)
 <style lang="scss" scoped>

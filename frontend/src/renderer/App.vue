@@ -81,6 +81,8 @@
       this.loadWorkspacesFromWebStorage()
         .then(_ => {
           this.$store.commit('mod_workspace/get_lastActiveTabFromLocalStorage');
+          this.setStatisticsAvailability();
+          this.setCheckpointAvailability();
         });
         
       this.$store.commit('mod_project/setIsDefaultProjectMode');
@@ -414,9 +416,11 @@
         
         loadWorkspacesFromWebStorage:   'mod_webstorage/loadWorkspaces',
 
-        reset_network:          'mod_workspace/RESET_network',
-        addNetwork:             'mod_workspace/ADD_network',
-        setUnparsedModels:      'mod_workspace/SET_unparsedModels',
+        reset_network:            'mod_workspace/RESET_network',
+        addNetwork:               'mod_workspace/ADD_network',
+        setUnparsedModels:        'mod_workspace/SET_unparsedModels',
+        setStatisticsAvailability:'mod_workspace/setStatisticsAvailability',
+        setCheckpointAvailability:'mod_workspace/setCheckpointAvailability',
 
         deleteAllIds:        'mod_webstorage/deleteAllIds',        
         updateWorkspaces:    'mod_webstorage/updateWorkspaces',
@@ -539,9 +543,14 @@
             models.forEach(model => {
               this.API_getModelStatus(model.networkID);
             });
+
+            this.$nextTick(() => {
+              this.setStatisticsAvailability();
+              this.setCheckpointAvailability();
+            });
           })
           .then(() => {
-            this.$store.dispatch('mod_workspace/GET_workspace_statistics');
+            // this.$store.dispatch('mod_workspace/GET_workspace_statistics');
           });
       },
       async fetchUnparsedModels(modelMetas){

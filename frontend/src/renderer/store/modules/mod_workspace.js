@@ -46,6 +46,7 @@ const state = {
       openTest: null,
       zoom: 1,
       zoomSnapshot: 1,
+      usingWeights: false,
       netMode: 'edit',//'addArrow'
       coreStatus: {
         Status: 'Waiting' //Created, Training, Validation, Paused, Finished
@@ -86,10 +87,29 @@ const getters = {
       : deepCloneNetwork(state.defaultModelTemplate) //{networkID: '1'} //for the close ap when the empty workspace
 
   },
+  GET_currentNetworkIndex(state, getters)  {
+    return state.currentNetwork;
+  },
+  GET_networkByNetworkId: (state, getters) => (networkId) =>  {
+    if (!networkId) { return null; }
+
+    const network = state.workspaceContent.find(wc => wc.networkID == networkId);
+    
+    return network;
+  },
   GET_currentNetworkId(state, getters) {
     return getters.GET_networkIsNotEmpty
       ? state.workspaceContent[state.currentNetwork].networkID
       : 0
+  },
+  GET_currentNetworIdForKernelRequests(state, getters) {
+    if (!getters.GET_networkIsNotEmpty) { return 0; }
+
+    if (getters.GET_testIsOpen) {
+      return state.workspaceContent[state.currentNetwork].networkID + 't';
+    } else {
+      return state.workspaceContent[state.currentNetwork].networkID;
+    }
   },
   GET_networkElementById: state => layerId => {
     return state.workspaceContent[state.currentNetwork].networkElementList[layerId];
@@ -174,6 +194,18 @@ const getters = {
       return getters.GET_currentNetwork.networkMeta.zoom;
     } 
   },
+  GET_currentNetworkModeWeightsState(state, getters) {
+    if (!getters.GET_networkIsNotEmpty) { return false; }
+
+    if (getters.GET_currentNetwork.networkMeta && 
+        getters.GET_currentNetwork.networkMeta.usingWeights &&
+        typeof getters.GET_currentNetwork.networkMeta.usingWeights === 'boolean') {
+      return getters.GET_currentNetwork.networkMeta.usingWeights;
+    } else {
+      return false;
+    }
+
+  },
   GET_networkIsTraining(state, getters) {
     const coreStatus = getters.GET_networkCoreStatus;
     const statusList = ['Training', 'Validation', 'Paused'];
@@ -243,6 +275,17 @@ const getters = {
   GET_descendentsIds: (state, getters, rootState, rootGetters) => (pivotLayer, withPivot) => {
     return rootGetters['mod_api/GET_descendentsIds'](pivotLayer, withPivot);
   },
+  GET_networksInCurrentProject(state, getters) {
+
+    if(getters.GET_networkIsNotEmpty) {
+      const currentProject = getters.GET_currentNetwork;
+      if (!currentProject || !currentProject.apiMeta.project) { return []; }
+
+      return state.workspaceContent.filter(wc => wc.apiMeta.project === currentProject.apiMeta.project);
+    } else {
+      return [];
+    }
+  }
 };
 
 const mutations = {
@@ -274,6 +317,19 @@ const mutations = {
   cleanupUnnecessaryArrowsMutation(state, { getters }){
     const networkList = getters.GET_currentNetworkElementList;
 
+  },
+  updateCheckpointPaths(state) {
+    if (!state.workspaceContent[state.currentNetwork] ||
+        !state.workspaceContent[state.currentNetwork].networkElementList) { return; }
+
+    const projectPath = state.workspaceContent[state.currentNetwork].apiMeta.location;
+    const networkList = state.workspaceContent[state.currentNetwork].networkElementList;
+
+    for (const idx in networkList) {
+      networkList[idx].checkpoint = [];
+      networkList[idx].checkpoint.push(null);
+      networkList[idx].checkpoint.push(projectPath);
+    }
   },
   updateForwardBackwardConnectionsMutation(state, {payload,  getters}) {
     const networkList = getters.GET_currentNetworkElementList
@@ -617,7 +673,18 @@ const mutations = {
       //dispatch('mod_events/EVENT_chartResize', null, {root: true});
     }
   },
+  set_openStatisticsByNetworkId(state, {dispatch, getters, networkId, value}) {
+    // This is used for setting which networks have been trained.
 
+    const network = getters.GET_networkByNetworkId(networkId);
+    if (!network) { return; }
+
+    if(value) {
+      network.networkMeta.openStatistics = false;
+    } else {
+      network.networkMeta.openStatistics = null;
+    }
+  },
   set_openTest(state, {dispatch, getters, value}) {
     if(value && getters.GET_statisticsIsOpen !== null) {
       getters.GET_currentNetwork.networkMeta.openStatistics = false;
@@ -629,6 +696,45 @@ const mutations = {
       //dispatch('mod_events/EVENT_chartResize', null, {root: true});
     }
     else getters.GET_currentNetwork.networkMeta.openTest = value;
+  },
+  set_openTestByNetworkId(state, {dispatch, getters, networkId, value}) {
+    const network = getters.GET_networkByNetworkId(networkId);
+    if (!network) { return; }
+
+    if(value && network.networkMeta.openStatistics !== null) {
+      network.networkMeta.openStatistics = false;
+    }
+    if(value) {
+      network.networkMeta.openTest = false;
+      network.networkMeta.coreStatus.Status = 'Finished';
+      // dispatch('mod_statistics/STAT_defaultSelect', null, {root: true});
+      // network.networkMeta.openTest = true
+    } else {
+      // network.networkMeta.openTest = value;
+      network.networkMeta.openTest = null;
+    }
+  },
+  SET_statisticsAndTestToClosed(state, { getters, networkId }) {
+    const network = getters.GET_networkByNetworkId(networkId);
+    if (!network) { return; }
+
+    if (typeof network.networkMeta.openStatistics === 'boolean') {
+      network.networkMeta.openStatistics = false;
+    }
+
+    if (typeof network.networkMeta.openTest === 'boolean') {
+      network.networkMeta.openTest = false;
+    }
+  },
+  set_layerTrainedStatus(state, {getters, networkId, layerId, value}) {
+
+    const network = state.workspaceContent.find(wc => wc.networkID === networkId);
+    if (!network) { return; }
+
+    const element = network.networkElementList[layerId];
+    if (!element) { return; }
+
+    Vue.set(element, 'isTrained', value);
   },
   set_networkSnapshot(state, {dispatch, getters}) {
 
@@ -747,10 +853,19 @@ const mutations = {
     depth = 0;
 
     updateLayerName(newEl, elementList, 1);
-
+    
     if(!elementList || elementList.length === 0) state.workspaceContent[state.currentNetwork].networkElementList = {};
+    
     Vue.set(state.workspaceContent[state.currentNetwork].networkElementList, newEl.layerId, newEl);
 
+    // updates checkpoints because of the refactoring done Sept 2020
+    for(const idx in state.workspaceContent[state.currentNetwork].networkElementList){
+      const el = state.workspaceContent[state.currentNetwork].networkElementList[idx];
+      el.checkpoint = [];
+      el.checkpoint.push(null);
+      el.checkpoint.push(state.workspaceContent[state.currentNetwork].apiMeta.location);
+    }
+  
     dispatch('SET_elementSelect', { id: newEl.layerId, resetOther: true, setValue: true});
     state.dragElement = null;
 
@@ -1541,6 +1656,13 @@ const mutations = {
     localStorage.setItem(LOCAL_STORAGE_WORKSPACE_SHOW_MODEL_PREVIEWS, payload);
     state.showModelPreviews = payload;
   },
+  toggleModelWeightsState(state, { networkId, value }) {
+
+    const network = state.workspaceContent.find(wc => wc.networkID === networkId);
+    if (!network) { return; }
+    
+    Vue.set(network.networkMeta, 'usingWeights', value);
+  },
 };
 
 
@@ -1618,11 +1740,11 @@ const actions = {
       if(isElectron()) {
         const networkID = state.workspaceContent[index].networkID;
         commit('delete_network', index);
-        dispatch('mod_api/API_closeSession', networkID, { root: true });
+        dispatch('mod_api/API_closeCore', networkID, { root: true });
       } else {
-        // API_closeSession stops the process in the core
+        // API_closeCore stops the process in the core
         const network = state.workspaceContent[index];
-        dispatch('mod_api/API_closeSession', network.networkID, { root: true });
+        dispatch('mod_api/API_closeCore', network.networkID, { root: true });
 
         if (index === state.currentNetwork) {
 
@@ -1648,81 +1770,152 @@ const actions = {
   markAllUnselectedAction({commit}){
     commit('markAllUnselectedMutation');
   },
-  GET_workspace_statistics({commit, dispatch, state}){
+  // GET_workspace_statistics({commit, dispatch, state}){
 
-    setTimeout(() => {
-      processNonActiveWorkspaces();
-      processActiveWorkspaces();
-    },0);
-    // @todo investigate if this chose correct processActiveWorkspaces(); from storage;
-    function processNonActiveWorkspaces() {
-      // removing stats and test tabs if there aren't any trained models
-      // this happens when the core is restarted
-      const networks = state.workspaceContent.filter(network =>
-        network.networkElementList !== null &&
-        network.networkID !== state.workspaceContent[state.currentNetwork].networkID);
-      for(let network of networks) {
-        const isRunningPromise = dispatch('mod_api/API_checkNetworkRunning', network.networkID, { root: true });
-        const isTrainedPromise = dispatch('mod_api/API_checkTrainedNetwork', network.networkID, { root: true });
-        dispatch('mod_api/API_getModelStatus', network.networkID, { root: true });
-        Promise.all([isRunningPromise, isTrainedPromise])
-          .then(([isRunning, isTrained]) => {
+  //   setTimeout(() => {
+  //     processNonActiveWorkspaces();
+  //     processActiveWorkspaces();
+  //   },0);
+  //   // @todo investigate if this chose correct processActiveWorkspaces(); from storage;
+  //   function processNonActiveWorkspaces() {
+  //     // removing stats and test tabs if there aren't any trained models
+  //     // this happens when the core is restarted
+  //     const networks = state.workspaceContent.filter(network =>
+  //       network.networkElementList !== null &&
+  //       network.networkID !== state.workspaceContent[state.currentNetwork].networkID);
+  //     for(let network of networks) {
+  //       const isRunningPromise = dispatch('mod_api/API_checkNetworkRunning', network.networkID, { root: true });
+  //       const isTrainedPromise = dispatch('mod_api/API_checkTrainedNetwork', network.networkID, { root: true });
+  //       dispatch('mod_api/API_getModelStatus', network.networkID, { root: true });
+  //       Promise.all([isRunningPromise, isTrainedPromise])
+  //         .then(([isRunning, isTrained]) => {
             
-            if (isRunning && isTrained) {
-              commit('update_network_meta', {key: 'openStatistics', value: true, networkID: network.networkID})
-              // commit('update_network_meta', {key: 'openTest', value: null, networkID: network.networkID})
-              commit('update_network_meta', {key: 'openTest', value: true, networkID: network.networkID})
-              // network.networkMeta.openStatistics = true;
-              // network.networkMeta.openTest = null;
-            } else if (!isRunning && isTrained) {
-              // network.networkMeta.openStatistics = false;
-              // network.networkMeta.openTest = false;
-              commit('update_network_meta', {key: 'openStatistics', value: false, networkID: network.networkID})
-              commit('update_network_meta', {key: 'openTest', value: false, networkID: network.networkID})
-            } else {
-              // network.networkMeta.openStatistics = null;
-              // network.networkMeta.openTest = null;
-              commit('update_network_meta', {key: 'openStatistics', value: null, networkID: network.networkID})
-              commit('update_network_meta', {key: 'openTest', value: null, networkID: network.networkID})
-            }
-          });
-      }
+  //           if (isRunning && isTrained) {
+  //             commit('update_network_meta', {key: 'openStatistics', value: true, networkID: network.networkID})
+  //             // commit('update_network_meta', {key: 'openTest', value: null, networkID: network.networkID})
+  //             commit('update_network_meta', {key: 'openTest', value: true, networkID: network.networkID})
+  //             // network.networkMeta.openStatistics = true;
+  //             // network.networkMeta.openTest = null;
+  //           } else if (!isRunning && isTrained) {
+  //             // network.networkMeta.openStatistics = false;
+  //             // network.networkMeta.openTest = false;
+  //             commit('update_network_meta', {key: 'openStatistics', value: false, networkID: network.networkID})
+  //             commit('update_network_meta', {key: 'openTest', value: false, networkID: network.networkID})
+  //           } else {
+  //             // network.networkMeta.openStatistics = null;
+  //             // network.networkMeta.openTest = null;
+  //             commit('update_network_meta', {key: 'openStatistics', value: null, networkID: network.networkID})
+  //             commit('update_network_meta', {key: 'openTest', value: null, networkID: network.networkID})
+  //           }
+  //         });
+  //     }
+  //   }
+
+  //   function processActiveWorkspaces() {
+  //     const network = state.workspaceContent.find(network =>
+  //       network.networkID === state.workspaceContent[state.currentNetwork].networkID);
+  //       if(!network) return;
+  //       const isRunningPromise = dispatch('mod_api/API_checkNetworkRunning', network.networkID, { root: true });
+  //       const isTrainedPromise = dispatch('mod_api/API_checkTrainedNetwork', network.networkID, { root: true });
+  //       Promise.all([isRunningPromise, isTrainedPromise])
+  //         .then(([isRunning, isTrained]) => {
+  //         if (isRunning && !isTrained) {
+  //           console.log(network.networkName + ' ----- '+ isRunning + isTrained);
+  //           // when the spinner is loading
+  //           commit('SET_showStartTrainingSpinner', true);
+  //           // dispatch('SET_openStatistics', network.networkMeta.openStatistics);
+  //           dispatch('SET_openStatistics', state.viewType === 'statistic' ? true : false);
+  //           dispatch('SET_openTest', null);
+  //           dispatch('SET_chartsRequestsIfNeeded', network.networkID);
+  //         } else if (isRunning && isTrained) {
+  //           // after spinner is done loading, and the first charts are shown
+  //           // dispatch('SET_openStatistics', !!network.networkMeta.openStatistics);
+  //           dispatch('SET_openStatistics', state.viewType === 'statistic' ? true : false);
+  //           dispatch('SET_openTest', state.viewType === 'test' ? true : false);
+  //           dispatch('SET_chartsRequestsIfNeeded', network.networkID);
+  //         } else if (!isRunning && isTrained) {
+  //           // after training is done
+  //           // dispatch('SET_openStatistics', network.networkMeta.openStatistics);
+  //           dispatch('SET_openStatistics',  false);
+  //           dispatch('SET_openTest', state.viewType === 'test' ? true : false);
+  //           dispatch('SET_chartsRequestsIfNeeded', network.networkID);
+  //         } else {
+  //           dispatch('SET_openStatistics', null);
+  //           dispatch('SET_openTest', null);
+  //         }
+  //     }).catch(e => console.log(e));
+  //   }
+  // },
+  setStatisticsAvailability({getters, commit, dispatch, state}){
+    if(!getters.GET_networkIsNotEmpty) { return; }
+    const networksInProject = getters.GET_networksInCurrentProject;
+
+    const isTrainedPromises = [];
+    
+    for (const n of networksInProject) {
+      const isTrainedPromise = dispatch('mod_api/API_checkTrainedNetwork', n.networkID, {root: true});
+      
+      isTrainedPromises.push(isTrainedPromise);
     }
 
-    function processActiveWorkspaces() {
-      const network = state.workspaceContent.find(network =>
-        network.networkID === state.workspaceContent[state.currentNetwork].networkID);
-        if(!network) return;
-        const isRunningPromise = dispatch('mod_api/API_checkNetworkRunning', network.networkID, { root: true });
-        const isTrainedPromise = dispatch('mod_api/API_checkTrainedNetwork', network.networkID, { root: true });
-        Promise.all([isRunningPromise, isTrainedPromise])
-          .then(([isRunning, isTrained]) => {
-          if (isRunning && !isTrained) {
-            console.log(network.networkName + ' ----- '+ isRunning + isTrained);
-            // when the spinner is loading
-            commit('SET_showStartTrainingSpinner', true);
-            // dispatch('SET_openStatistics', network.networkMeta.openStatistics);
-            dispatch('SET_openStatistics', state.viewType === 'statistic' ? true : false);
-            dispatch('SET_openTest', null);
-            dispatch('SET_chartsRequestsIfNeeded', network.networkID);
-          } else if (isRunning && isTrained) {
-            // after spinner is done loading, and the first charts are shown
-            // dispatch('SET_openStatistics', !!network.networkMeta.openStatistics);
-            dispatch('SET_openStatistics', state.viewType === 'statistic' ? true : false);
-            dispatch('SET_openTest', state.viewType === 'test' ? true : false);
-            dispatch('SET_chartsRequestsIfNeeded', network.networkID);
-          } else if (!isRunning && isTrained) {
-            // after training is done
-            // dispatch('SET_openStatistics', network.networkMeta.openStatistics);
-            dispatch('SET_openStatistics',  false);
-            dispatch('SET_openTest', state.viewType === 'test' ? true : false);
-            dispatch('SET_chartsRequestsIfNeeded', network.networkID);
-          } else {
-            dispatch('SET_openStatistics', null);
-            dispatch('SET_openTest', null);
-          }
-      }).catch(e => console.log(e));
+    Promise.all(isTrainedPromises)
+      .then(results => {
+
+        // console.log('setStatisticsAvailability', results);
+
+        for (const r of results) {
+          dispatch('SET_openStatisticsByNetworkId', 
+          {
+            networkId: r.receiver,
+            value: r.result && r.result.content ? r.result.content : false
+          });
+        }
+      });
+
+  },
+  setCheckpointAvailability({getters, commit, dispatch, state}){
+
+    if(!getters.GET_networkIsNotEmpty) { return; }
+
+    // Calls the kernel and asks which of the networks have checkpoints.
+
+    const networksInProject = getters.GET_networksInCurrentProject;
+    const scanCheckpointPromises = [];
+    
+    for (const n of networksInProject) {
+      const promise = dispatch('mod_api/API_scanCheckpoint', { 
+        networkId: n.networkID,
+        path: n.apiMeta.location
+      }, {root: true});
+
+      scanCheckpointPromises.push(promise)
     }
+
+    return Promise.all(scanCheckpointPromises)
+      .then(results => {
+        // for (const r of results) {
+        //   r.networkName = networksInProject.find(n => n.networkID === r.networkId).networkName;
+        // }
+
+        const setTestPromises = [];
+
+        for (const r of results) {
+          // if (!r.hasCheckpoint) { continue; }
+
+          const setTestPromise = dispatch('SET_openTestByNetworkId', 
+          {
+            networkId: r.networkId,
+            value: r.hasCheckpoint
+          });
+
+          setTestPromises.push(setTestPromise);
+        }
+
+        return Promise.all(setTestPromises)
+          .then(() => {
+            return results;
+          })
+      });
   },
   SET_chartsRequestsIfNeeded({state, dispatch}, networkID) {
     // This function is used to determine if the page has been refreshed after the training
@@ -1797,8 +1990,17 @@ const actions = {
   SET_openStatistics({commit, getters, dispatch}, value) {
     commit('set_openStatistics', {dispatch, getters, value})
   },
+  SET_openStatisticsByNetworkId({commit, getters, dispatch}, { networkId, value }) {
+    commit('set_openStatisticsByNetworkId', {dispatch, getters, networkId, value})
+  },
   SET_openTest({commit, getters, dispatch}, value) {
     commit('set_openTest', {dispatch, getters, value})
+  },
+  SET_openTestByNetworkId({commit, getters, dispatch}, { networkId, value }) {
+    commit('set_openTestByNetworkId', {dispatch, getters, networkId, value})
+  },
+  SET_statisticsAndTestToClosed({commit, getters}, { networkId }) {
+    commit('SET_statisticsAndTestToClosed', { getters, networkId })
   },
   SET_networkSnapshot({commit, getters, dispatch}) {
     return new Promise(resolve => {
@@ -1808,6 +2010,19 @@ const actions = {
   },
   SET_statusNetworkCore({commit, getters}, value) {
     commit('set_statusNetworkCore', {getters, value})
+  },
+  SET_layerTrainedStatus({commit, getters}, { networkId, trainedLayers } ) {
+
+    if (!networkId || !trainedLayers) { return; }
+
+    for (const layerId in trainedLayers) { 
+      commit('set_layerTrainedStatus', {
+        getters,
+        networkId,
+        layerId,
+        value: trainedLayers[layerId],
+      });
+    }    
   },
   SET_statusNetworkCoreDinamically({commit, getters}, value) {
     const { modelId, ...payload} = value;
@@ -1999,6 +2214,12 @@ const actions = {
   TOGGLE_showModelPreviews(ctx) {
     ctx.commit('toggle_showModelPreviewsMutation', !ctx.state.showModelPreviews)
   },
+  toggleModelWeightsState({ commit, getters }) {
+    commit('toggleModelWeightsState', {
+      networkId: getters.GET_currentNetworkId,
+      value: !getters.GET_currentNetworkModeWeightsState
+    })
+  },
   setViewType({dispatch, commit }, value) {
     const possibleValues = ['model', 'statistic', 'test'];
     const isValidValue = possibleValues.includes(value);
@@ -2093,6 +2314,7 @@ const createNetElement = function (event) {
     backward_connections: [],
     previewVariable: 'output',
     previewVariableList: [],
+    isTrained: false
   };
 };
 

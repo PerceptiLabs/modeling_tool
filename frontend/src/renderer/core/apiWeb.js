@@ -167,7 +167,7 @@ function coreRequest(data, path, no, name) {
               if(obgData.errorMessage && obgData.errorMessage.length) {
 
                 if(initialSentData.action === "updateResults") {
-                  const modelId = parseInt(initialSentData.reciever);
+                  const modelId = parseInt(initialSentData.receiver);
                   let errorMessage = obgData.errorMessage[0];
                   // let startPosition =  errorMessage.indexOf(' This will be reported as a bug.');
                   // if(startPosition !== -1) {

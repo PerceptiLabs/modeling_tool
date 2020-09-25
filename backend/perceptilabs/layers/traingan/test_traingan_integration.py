@@ -25,7 +25,7 @@ from perceptilabs.graph.spec import GraphSpec
 def script_factory():
     yield ScriptFactory()
 
-def make_graph_spec(tutorial_data_path, learning_rate=0.3, checkpoint_path=None, distributed=False):
+def make_graph_spec(temp_path_checkpoints, tutorial_data_path, learning_rate=0.3, checkpoint_path=None, distributed=False):
     # --- CONNECTIONS ---
     conn_random_to_fc = LayerConnection(src_id='layer_random', src_var='output', dst_id='layer_fc', dst_var='input')
     conn_fc_to_switch = LayerConnection(src_id='layer_fc', src_var='output', dst_id='layer_switch', dst_var='input2')
@@ -37,10 +37,14 @@ def make_graph_spec(tutorial_data_path, learning_rate=0.3, checkpoint_path=None,
     conn_fc2_to_train = LayerConnection(src_id='layer_fc2', src_var='output', dst_id='layer_train', dst_var='input')
 
     # --- LAYER SPECS ---
+    if checkpoint_path is None:
+            checkpoint_path = temp_path_checkpoints
+    
     layer_random = DataRandomSpec(
         id_='layer_random',
         name='layer_random',
         shape=(100,),
+        checkpoint_path = checkpoint_path,
         forward_connections=(conn_random_to_fc,)
     )
 
@@ -48,6 +52,7 @@ def make_graph_spec(tutorial_data_path, learning_rate=0.3, checkpoint_path=None,
         id_='layer_fc',
         name='layer_fc',        
         n_neurons=784,
+        checkpoint_path = checkpoint_path,
         backward_connections=(conn_random_to_fc,),
         forward_connections=(conn_fc_to_switch,)
     )
@@ -61,6 +66,7 @@ def make_graph_spec(tutorial_data_path, learning_rate=0.3, checkpoint_path=None,
             ext='.npy',
             split=(70, 20, 10)            
         )],
+        checkpoint_path = checkpoint_path,
         forward_connections=(conn_real_to_fc3,)
     )
 
@@ -68,6 +74,7 @@ def make_graph_spec(tutorial_data_path, learning_rate=0.3, checkpoint_path=None,
         id_='layer_fc3',
         name='layer_fc3',        
         n_neurons=784,
+        checkpoint_path = checkpoint_path,
         backward_connections=(conn_real_to_fc3,),
         forward_connections=(conn_fc3_to_switch,)
     )
@@ -76,6 +83,7 @@ def make_graph_spec(tutorial_data_path, learning_rate=0.3, checkpoint_path=None,
         id_='layer_switch',
         name='layer_switch',
         selected_var_name='input1',
+        checkpoint_path = checkpoint_path,
         backward_connections=(conn_fc3_to_switch,conn_fc_to_switch,),
         forward_connections=(conn_switch_to_fc2,)
     )
@@ -84,6 +92,7 @@ def make_graph_spec(tutorial_data_path, learning_rate=0.3, checkpoint_path=None,
         id_='layer_fc2',
         name='layer_fc2',        
         n_neurons=1,
+        checkpoint_path = checkpoint_path,
         backward_connections=(conn_switch_to_fc2,),
         forward_connections=(conn_fc2_to_train,)
     )
@@ -112,8 +121,9 @@ def make_graph_spec(tutorial_data_path, learning_rate=0.3, checkpoint_path=None,
     return graph_spec
 
 @pytest.fixture()
-def graph_spec(tutorial_data_path):
+def graph_spec(temp_path_checkpoints, tutorial_data_path):
     graph_spec = make_graph_spec(
+        temp_path_checkpoints,
         os.path.join(tutorial_data_path, 'gan_mnist.npy').replace('\\','/')
     )        
     yield graph_spec
@@ -171,40 +181,42 @@ def test_save_model(script_factory, graph_spec):
     temp_path = tempfile.mkdtemp().replace('\\', '/')
     training_layer = graph.active_training_node.layer
     
-    iterator = training_layer.run(graph) # TODO: self reference is weird. shouldnt be!
+    iterator = training_layer.run(graph, mode = 'training') # TODO: self reference is weird. shouldnt be!
     next(iterator) # First iteration (including initialization)
     target_path = os.path.join(temp_path, '1', 'saved_model.pb')
 
     # import pytest; pytest.set_trace()
     # assert not os.path.isfile(target_path)
     
-    training_layer.on_export(temp_path, mode='TFModel+checkpoint')
+    training_layer.on_export(temp_path, mode='TFModel')
     assert os.path.isfile(target_path)
 
-def test_initial_weights_differ(script_factory, tutorial_data_path):
+def test_initial_weights_differ(temp_path_checkpoints, script_factory, tutorial_data_path):
     """ Check that the weights are DIFFERENT when creating two graphs. If not, it might not be meaningful to test loading a checkpoint """
     inputs_path = os.path.join(tutorial_data_path, 'gan_mnist.npy')
     
     # --- Create a graph ---
     graph_spec1 = make_graph_spec(
+        temp_path_checkpoints,
         inputs_path,
     )        
     graph1 = graph_spec_to_core_graph(script_factory, graph_spec1)
     
     tl1 = graph1.active_training_node.layer
-    iterator = tl1.run(graph1) # TODO: self reference is weird. design flaw!
+    iterator = tl1.run(graph1, mode = 'training') # TODO: self reference is weird. design flaw!
     next(iterator)
     w1 = next(iter(tl1.layer_weights['DeepLearningFC_layer_fc2'].values()))
     #tf.reset_default_graph()
     
     # --- Create a second graph ---
     graph_spec2 = make_graph_spec(
+        temp_path_checkpoints,
         inputs_path,
     )        
     graph2 = graph_spec_to_core_graph(script_factory, graph_spec2)
 
     tl2 = graph2.active_training_node.layer
-    iterator = tl2.run(graph2) 
+    iterator = tl2.run(graph2, mode = 'training') 
     next(iterator) 
     w2 = next(iter(tl2.layer_weights['DeepLearningFC_layer_fc'].values()))
     #tf.reset_default_graph()
@@ -217,12 +229,12 @@ def test_save_checkpoint(script_factory, graph_spec):
     graph1 = graph_spec_to_core_graph(script_factory, graph_spec)
 
     training_layer = graph1.active_training_node.layer
-    iterator = training_layer.run(graph1) # TODO: self reference is weird. design flaw!
+    iterator = training_layer.run(graph1, mode = 'training') # TODO: self reference is weird. design flaw!
 
     next(iterator) # First iteration (including initialization)
     assert not any(x.startswith('model.ckpt') for x in os.listdir(temp_path))
 
-    training_layer.on_export(temp_path, mode='TFModel+checkpoint')
+    training_layer.on_export(temp_path, mode='checkpoint')
     assert any(x.startswith('model.ckpt') for x in os.listdir(temp_path))
     #tf.reset_default_graph()
 

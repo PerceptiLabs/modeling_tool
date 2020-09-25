@@ -3,30 +3,23 @@
     .popup-global_overlay(@click="cancelTraining()")
     section.popup
       .popup-background
-        ul.popup_tab-set
-          button.popup_header(
-          v-for="(tab, i) in tabs"
-          :key="tab.i"
-          v-coming-soon="tabSelected != i"
-          @click="setTab(i)"
-          :class="{'disable': tabSelected != i}"
-          
-          )
-            h3(v-html="tab")
+        .popup_tab-set
+          .popup_header.disable
+            h3 Result
         .popup_tab-body
           .popup_body(
             :class="{'active': tabSelected == 0}"
           )
             .settings-layer_section.text-center
-              p.big-text Start training
+              p.big-text Start training with weights?
             .settings-layer_foot
               button.btn.btn--primary.btn--disabled(type="button"
-                @click="cancelTraining()"
-                ) Cancel
+                @click="startTraining(false)"
+                ) No
               button#tutorial_start-training.btn.btn--primary(type="button"
                 v-tooltip-interactive:right="interactiveInfo.start"
-                @click="startTraining()"
-                ) Start
+                @click="startTraining(true)"
+                ) Yes
           .popup_body(
             :class="{'active': tabSelected == 1}"
           )
@@ -37,12 +30,14 @@
 
 <script>
 import { mapGetters, mapMutations, mapActions } from 'vuex';
+import { saveModelJson as fileserver_saveModelJson } from '@/core/apiFileserver';
+
 export default {
   name: "SelectCoreSide",
   data() {
     return {
       tabSelected: 0,
-      tabs: ['Computer', 'Cloud'],
+      tabs: ['Training'],
       settings: {},
       interactiveInfo: {
         start: {
@@ -62,6 +57,7 @@ export default {
     ...mapMutations({
       closePopup:               'globalView/HIDE_allGlobalPopups',
       set_showTrainingSpinner:  'mod_workspace/SET_showStartTrainingSpinner',
+      updateCheckpointPaths:    'mod_workspace/updateCheckpointPaths',
     }),
     ...mapActions({
       setSidebarStateAction:    'globalView/hideSidebarAction',
@@ -81,12 +77,16 @@ export default {
       this.setCurrentView('tutorial-workspace-view');
       this.closePopup();
     },
-    startTraining() {
+    startTraining(withWeights = false) {
       this.closePopup();
+      this.updateCheckpointPaths();
+
+      fileserver_saveModelJson(this.currentNetwork);
+
       this.SET_networkSnapshot()
         .then(_ => this.saveNetwork(this.currentNetwork))
         .then(_ => {
-          this.API_startTraining();
+          this.API_startTraining({ loadCheckpoint: withWeights });
           this.SET_openStatistics(true);
           this.setViewType('statistic');
           this.SET_openTest(null);
@@ -95,7 +95,7 @@ export default {
           this.setChecklistItemComplete({ itemId: 'startTraining' });
           this.setCurrentView('tutorial-statistics-view');
         });
-    },
+    }
   }
 }
 </script>
