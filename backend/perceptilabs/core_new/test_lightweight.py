@@ -9,7 +9,7 @@ from perceptilabs.utils import sanitize_path
 from perceptilabs.graph.spec import GraphSpec
 
 @pytest.fixture(scope='function')
-def graph_spec_binary_classification():
+def graph_spec_binary_classification(temp_path_checkpoints):
     n_classes = 10
     n_samples = 30
 
@@ -32,7 +32,7 @@ def graph_spec_binary_classification():
     #inputs_path = "/home/anton/Data/mnist_split/mnist_input.npy"
     #labels_path = "/home/anton/Data/mnist_split/mnist_labels.npy"
     
-    
+    checkpoint_path = temp_path_checkpoints
     graph_spec_json = {
         "Layers": {
             "1": {
@@ -56,7 +56,7 @@ def graph_spec_binary_classification():
                     }
                 ],
                 "Code": None,
-                "checkpoint": []
+                "checkpoint": {'path': checkpoint_path, 'load_checkpoint':False}
             },
             "2": {
                 "Name": "data_labels",
@@ -80,7 +80,7 @@ def graph_spec_binary_classification():
                     }
                 ],
                 "Code": None,
-                "checkpoint": []
+                "checkpoint": {'path': checkpoint_path, 'load_checkpoint':False}
             },
             "3": {
                 "Name": "reshape",
@@ -106,7 +106,7 @@ def graph_spec_binary_classification():
                     }
                 ],
                 "Code": None,
-                "checkpoint": []
+                "checkpoint": {'path': checkpoint_path, 'load_checkpoint':False}
             },
             "4": {
                 "Name": "fc",
@@ -135,7 +135,7 @@ def graph_spec_binary_classification():
                     }
                 ],
                 "Code": None,
-                "checkpoint": []
+                "checkpoint": {'path': checkpoint_path, 'load_checkpoint':False}
             },
             "5": {
                 "Name": "one_hot",
@@ -160,7 +160,7 @@ def graph_spec_binary_classification():
                     }
                 ],
                 "Code": None,
-                "checkpoint": []
+                "checkpoint": {'path': checkpoint_path, 'load_checkpoint':False}
             },
             "6": {
                 "Name": "training",
@@ -197,7 +197,7 @@ def graph_spec_binary_classification():
                 ],
                 "forward_connections": [],                
                 "Code": None,
-                "checkpoint": []
+                "checkpoint": {'path': checkpoint_path, 'load_checkpoint':False}
             }
         }
     }
@@ -211,7 +211,7 @@ def graph_spec_binary_classification():
 
 
 @pytest.fixture(scope='function')
-def graph_spec_partial():
+def graph_spec_partial(temp_path_checkpoints):
     n_classes = 10
     n_samples = 30
 
@@ -234,7 +234,7 @@ def graph_spec_partial():
     #inputs_path = "/home/anton/Data/mnist_split/mnist_input.npy"
     #labels_path = "/home/anton/Data/mnist_split/mnist_labels.npy"
     
-    
+    checkpoint_path = temp_path_checkpoints
     graph_spec_json = {
         "Layers": {
             "1": {
@@ -258,7 +258,7 @@ def graph_spec_partial():
                     }
                 ],
                 "Code": None,
-                "checkpoint": []
+                "checkpoint": {'path': checkpoint_path, 'load_checkpoint':False}
             },
             "3": {
                 "Name": "reshape",
@@ -284,7 +284,7 @@ def graph_spec_partial():
                     }
                 ],
                 "Code": None,
-                "checkpoint": []
+                "checkpoint": {'path': checkpoint_path, 'load_checkpoint':False}
             },
             "4": {
                 "Name": "fc",
@@ -313,7 +313,7 @@ def graph_spec_partial():
                     }
                 ],
                 "Code": None,
-                "checkpoint": []
+                "checkpoint": {'path': checkpoint_path, 'load_checkpoint':False}
             },
             "5": {
                 "Name": "one_hot",
@@ -331,7 +331,7 @@ def graph_spec_partial():
                     }
                 ],
                 "Code": None,
-                "checkpoint": []
+                "checkpoint": {'path': checkpoint_path, 'load_checkpoint':False}
             },
             "6": {
                 "Name": "training",
@@ -368,7 +368,7 @@ def graph_spec_partial():
                 ],
                 "forward_connections": [],                
                 "Code": None,
-                "checkpoint": []
+                "checkpoint": {'path': checkpoint_path, 'load_checkpoint':False}
             }
         }
     }
@@ -381,7 +381,7 @@ def graph_spec_partial():
     f2.close()
 
 @pytest.fixture(scope='function')
-def graph_spec_syntax_error():
+def graph_spec_syntax_error(temp_path_checkpoints):
     n_classes = 10
     n_samples = 30
 
@@ -404,7 +404,7 @@ def graph_spec_syntax_error():
     #inputs_path = "/home/anton/Data/mnist_split/mnist_input.npy"
     #labels_path = "/home/anton/Data/mnist_split/mnist_labels.npy"
     
-    
+    checkpoint_path = temp_path_checkpoints
     graph_spec_json = {
         "Layers": {
             "1": {
@@ -428,7 +428,7 @@ def graph_spec_syntax_error():
                     }
                 ],
                 "Code": None,
-                "checkpoint": []
+                "checkpoint": {'path': checkpoint_path, 'load_checkpoint':False}
             },
             "2": {
                 "Name": "data_labels",
@@ -452,7 +452,7 @@ def graph_spec_syntax_error():
                     }
                 ],
                 "Code": None,
-                "checkpoint": []
+                "checkpoint": {'path': checkpoint_path, 'load_checkpoint':False}
             },
             "3": {
                 "Name": "reshape",
@@ -478,7 +478,7 @@ def graph_spec_syntax_error():
                     }
                 ],
                 "Code": {"Output": "print('hello')\n!!!"},
-                "checkpoint": []
+                "checkpoint": {'path': checkpoint_path, 'load_checkpoint':False}
             },
             "4": {
                 "Name": "fc",
@@ -507,7 +507,7 @@ def graph_spec_syntax_error():
                     }
                 ],
                 "Code": None,
-                "checkpoint": []
+                "checkpoint": {'path': checkpoint_path, 'load_checkpoint':False}
             },
             "5": {
                 "Name": "one_hot",
@@ -532,7 +532,7 @@ def graph_spec_syntax_error():
                     }
                 ],
                 "Code": None,
-                "checkpoint": []
+                "checkpoint": {'path': checkpoint_path, 'load_checkpoint':False}
             },
             "6": {
                 "Name": "training",
@@ -569,7 +569,7 @@ def graph_spec_syntax_error():
                 ],
                 "forward_connections": [],                
                 "Code": None,
-                "checkpoint": []
+                "checkpoint": {'path': checkpoint_path, 'load_checkpoint':False}
             }
         }
     }
@@ -582,7 +582,7 @@ def graph_spec_syntax_error():
     f2.close()
     
 @pytest.fixture(scope='function')
-def graph_spec_runtime_error():
+def graph_spec_runtime_error(temp_path_checkpoints):
     n_classes = 10
     n_samples = 30
 
@@ -605,7 +605,7 @@ def graph_spec_runtime_error():
     #inputs_path = "/home/anton/Data/mnist_split/mnist_input.npy"
     #labels_path = "/home/anton/Data/mnist_split/mnist_labels.npy"
     
-    
+    checkpoint_path = temp_path_checkpoints
     graph_spec_json = {
         "Layers": {
             "1": {
@@ -629,7 +629,7 @@ def graph_spec_runtime_error():
                     }
                 ],
                 "Code": None,
-                "checkpoint": []
+                "checkpoint": {'path': checkpoint_path, 'load_checkpoint':False}
             },
             "2": {
                 "Name": "data_labels",
@@ -653,7 +653,7 @@ def graph_spec_runtime_error():
                     }
                 ],
                 "Code": None,
-                "checkpoint": []
+                "checkpoint": {'path': checkpoint_path, 'load_checkpoint':False}
             },
             "3": {
                 "Name": "reshape",
@@ -679,7 +679,7 @@ def graph_spec_runtime_error():
                     }
                 ],
                 "Code": {"Output": "print('hello')\n1/0"},
-                "checkpoint": []
+                "checkpoint": {'path': checkpoint_path, 'load_checkpoint':False}
             },
             "4": {
                 "Name": "fc",
@@ -708,7 +708,7 @@ def graph_spec_runtime_error():
                     }
                 ],
                 "Code": None,
-                "checkpoint": []
+                "checkpoint": {'path': checkpoint_path, 'load_checkpoint':False}
             },
             "5": {
                 "Name": "one_hot",
@@ -733,7 +733,7 @@ def graph_spec_runtime_error():
                     }
                 ],
                 "Code": None,
-                "checkpoint": []
+                "checkpoint": {'path': checkpoint_path, 'load_checkpoint':False}
             },
             "6": {
                 "Name": "training",
@@ -770,7 +770,7 @@ def graph_spec_runtime_error():
                 ],
                 "forward_connections": [],                
                 "Code": None,
-                "checkpoint": []
+                "checkpoint": {'path': checkpoint_path, 'load_checkpoint':False}
             }
         }
     }
@@ -783,7 +783,7 @@ def graph_spec_runtime_error():
     f2.close()
     
 @pytest.fixture(scope='function')
-def graph_spec_runtime_error_training():
+def graph_spec_runtime_error_training(temp_path_checkpoints):
     n_classes = 10
     n_samples = 30
 
@@ -806,7 +806,7 @@ def graph_spec_runtime_error_training():
     #inputs_path = "/home/anton/Data/mnist_split/mnist_input.npy"
     #labels_path = "/home/anton/Data/mnist_split/mnist_labels.npy"
     
-    
+    checkpoint_path = temp_path_checkpoints
     graph_spec_json = {
         "Layers": {
             "1": {
@@ -830,7 +830,7 @@ def graph_spec_runtime_error_training():
                     }
                 ],
                 "Code": None,
-                "checkpoint": []
+                "checkpoint": {'path': checkpoint_path, 'load_checkpoint':False}
             },
             "2": {
                 "Name": "data_labels",
@@ -854,7 +854,7 @@ def graph_spec_runtime_error_training():
                     }
                 ],
                 "Code": None,
-                "checkpoint": []
+                "checkpoint": {'path': checkpoint_path, 'load_checkpoint':False}
             },
             "3": {
                 "Name": "reshape",
@@ -880,7 +880,7 @@ def graph_spec_runtime_error_training():
                     }
                 ],
                 "Code": None,
-                "checkpoint": []
+                "checkpoint": {'path': checkpoint_path, 'load_checkpoint':False}
             },
             "4": {
                 "Name": "fc",
@@ -909,7 +909,7 @@ def graph_spec_runtime_error_training():
                     }
                 ],
                 "Code": None,
-                "checkpoint": []
+                "checkpoint": {'path': checkpoint_path, 'load_checkpoint':False}
             },
             "5": {
                 "Name": "one_hot",
@@ -934,7 +934,7 @@ def graph_spec_runtime_error_training():
                     }
                 ],
                 "Code": None,
-                "checkpoint": []
+                "checkpoint": {'path': checkpoint_path, 'load_checkpoint':False}
             },
             "6": {
                 "Name": "training",
@@ -971,7 +971,7 @@ def graph_spec_runtime_error_training():
                 ],
                 "forward_connections": [],                
                 "Code": {"Output": "print('hello')\n1/0"},
-                "checkpoint": []
+                "checkpoint": {'path': checkpoint_path, 'load_checkpoint':False}
             }
         }
     }
@@ -985,7 +985,7 @@ def graph_spec_runtime_error_training():
     
 
 @pytest.fixture(scope='function')
-def graph_spec_binary_classification_with_strings():
+def graph_spec_binary_classification_with_strings(temp_path_checkpoints):
     n_classes = 10
     n_samples = 30
 
@@ -1012,6 +1012,7 @@ def graph_spec_binary_classification_with_strings():
     #inputs_path = "/home/anton/Data/mnist_split/mnist_input.npy"
     #labels_path = "/home/anton/Data/mnist_split/mnist_labels.npy"
     
+    checkpoint_path = temp_path_checkpoints 
     graph_spec_json = {
         "Layers": {
             "1": {
@@ -1036,7 +1037,7 @@ def graph_spec_binary_classification_with_strings():
                     }
                 ],
                 "Code": None,
-                "checkpoint": []
+                "checkpoint": {'path': checkpoint_path, 'load_checkpoint':False}
             },
             "2": {
                 "Name": "data_labels",
@@ -1061,7 +1062,7 @@ def graph_spec_binary_classification_with_strings():
                     }
                 ],
                 "Code": None,
-                "checkpoint": []
+                "checkpoint": {'path': checkpoint_path, 'load_checkpoint':False}
             },
             "3": {
                 "Name": "reshape",
@@ -1087,7 +1088,7 @@ def graph_spec_binary_classification_with_strings():
                     }
                 ],
                 "Code": None,
-                "checkpoint": []
+                "checkpoint": {'path': checkpoint_path, 'load_checkpoint':False}
             },
             "4": {
                 "Name": "fc",
@@ -1116,7 +1117,7 @@ def graph_spec_binary_classification_with_strings():
                     }
                 ],
                 "Code": None,
-                "checkpoint": []
+                "checkpoint": {'path': checkpoint_path, 'load_checkpoint':False}
             },
             "5": {
                 "Name": "one_hot",
@@ -1141,7 +1142,7 @@ def graph_spec_binary_classification_with_strings():
                     }
                 ],
                 "Code": None,
-                "checkpoint": []
+                "checkpoint": {'path': checkpoint_path, 'load_checkpoint':False}
             },
             "6": {
                 "Name": "training",
@@ -1178,7 +1179,7 @@ def graph_spec_binary_classification_with_strings():
                 ],
                 "forward_connections": [],                
                 "Code": None,
-                "checkpoint": []
+                "checkpoint": {'path': checkpoint_path, 'load_checkpoint':False}
             }
         }
     }
@@ -1192,7 +1193,7 @@ def graph_spec_binary_classification_with_strings():
 
 
 @pytest.fixture(scope='function')
-def graph_spec_binary_classification_3d():
+def graph_spec_binary_classification_3d(temp_path_checkpoints):
     n_classes = 10
     n_samples = 30
 
@@ -1209,6 +1210,8 @@ def graph_spec_binary_classification_3d():
 
     #inputs_path = "/home/anton/Data/mnist_split/mnist_input.npy"
     #labels_path = "/home/anton/Data/mnist_split/mnist_labels.npy"
+    
+    checkpoint_path = temp_path_checkpoints
     
     graph_spec_json = {
         "Layers": {
@@ -1234,7 +1237,7 @@ def graph_spec_binary_classification_3d():
                     }
                 ],
                 "Code": None,
-                "checkpoint": []
+                "checkpoint": {'path': checkpoint_path, 'load_checkpoint':False}
             },
             "2": {
                 "Name": "data_labels",
@@ -1259,7 +1262,7 @@ def graph_spec_binary_classification_3d():
                     }
                 ],
                 "Code": None,
-                "checkpoint": []
+                "checkpoint": {'path': checkpoint_path, 'load_checkpoint':False}
             },
             "3": {
                 "Name": "reshape",
@@ -1285,7 +1288,7 @@ def graph_spec_binary_classification_3d():
                     }
                 ],
                 "Code": None,
-                "checkpoint": []
+                "checkpoint": {'path': checkpoint_path, 'load_checkpoint':False}
             },
             "4": {
                 "Name": "fc",
@@ -1314,7 +1317,7 @@ def graph_spec_binary_classification_3d():
                     }
                 ],
                 "Code": None,
-                "checkpoint": []
+                "checkpoint": {'path': checkpoint_path, 'load_checkpoint':False}
             },
             "5": {
                 "Name": "one_hot",
@@ -1339,7 +1342,7 @@ def graph_spec_binary_classification_3d():
                     }
                 ],
                 "Code": None,
-                "checkpoint": []
+                "checkpoint": {'path': checkpoint_path, 'load_checkpoint':False}
             },
             "6": {
                 "Name": "training",
@@ -1376,7 +1379,7 @@ def graph_spec_binary_classification_3d():
                 ],
                 "forward_connections": [],                
                 "Code": None,
-                "checkpoint": []
+                "checkpoint": {'path': checkpoint_path, 'load_checkpoint':False}
             }
         }
     }
@@ -1497,3 +1500,13 @@ def test_errors_detected_in_training_layer(graph_spec_runtime_error_training):
     assert "ZeroDivisionError" in results['6'].instantiation_error.message        
 
     
+def test_load_checkpoints_ok(graph_spec_binary_classification):
+    lw_core = LightweightCore()
+    results = lw_core.run(graph_spec_binary_classification)
+
+    assert results['1'].trained == False
+    assert results['2'].trained == False
+    assert results['3'].trained == False
+    assert results['4'].trained == False
+    assert results['5'].trained == False
+    assert results['6'].trained == False

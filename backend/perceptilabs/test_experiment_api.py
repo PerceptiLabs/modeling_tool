@@ -42,7 +42,7 @@ def core_interface(message_factory):
     return core_interface
 
 def create_schedule_aggregations_request_experiment():
-    reciever = 0000
+    receiver = 0000
     action = "scheduleAggregations"
     value = [
         {
@@ -56,17 +56,17 @@ def create_schedule_aggregations_request_experiment():
         }
     ]
 
-    return {"reciever": reciever, "action":action, "value":value}
+    return {"receiver": receiver, "action":action, "value":value}
 
 def create_get_aggregation_results_request_experiment():
-    reciever = 0000
+    receiver = 0000
     action = "getAggregationResults"
     value = ['get_identity']
 
-    return {"reciever": reciever, "action":action, "value":value}
+    return {"receiver": receiver, "action":action, "value":value}
     
 def create_schedule_aggregations_request_basic():
-    reciever = 0000
+    receiver = 0000
     action = "scheduleAggregations"
     value = [
         {
@@ -80,17 +80,17 @@ def create_schedule_aggregations_request_basic():
         }
     ]
 
-    return {"reciever": reciever, "action":action, "value":value}
+    return {"receiver": receiver, "action":action, "value":value}
 
 def create_get_aggregation_results_request_basic():
-    reciever = 0000
+    receiver = 0000
     action = "getAggregationResults"
     value = ['get_average']
 
-    return {"reciever": reciever, "action":action, "value":value}
+    return {"receiver": receiver, "action":action, "value":value}
 
 def create_schedule_aggregations_request_extensive():
-    reciever = 0000
+    receiver = 0000
     action = "scheduleAggregations"
     value = [
         {
@@ -122,14 +122,14 @@ def create_schedule_aggregations_request_extensive():
         }
     ]
 
-    return {"reciever": reciever, "action":action, "value":value}
+    return {"receiver": receiver, "action":action, "value":value}
 
 def create_get_aggregation_results_request_extensive():
-    reciever = 0000
+    receiver = 0000
     action = "getAggregationResults"
     value = ['get_average', 'get_max', 'get_min']
 
-    return {"reciever": reciever, "action":action, "value":value}
+    return {"receiver": receiver, "action":action, "value":value}
 
 def test_get_experiment_data(core_interface, experiment):
     train_loss_input = np.random.normal(size=5)

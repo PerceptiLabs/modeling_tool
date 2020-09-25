@@ -106,7 +106,8 @@ class TrainingClient:
         self._running = False
         self._process_outgoing_messages()
         self._producer.stop()
-        self._consumer.stop()        
+        self._consumer.stop()
+        logger.info("Client shutdown complete!")        
 
     def _send_message(self, key, value=None):
         message_dict = {'key': key, 'value': value or ''}
@@ -136,6 +137,9 @@ class TrainingClient:
         
     def request_export(self, path, mode):
         self._send_message('on_request_export', {'path': path, 'mode': mode})
+    
+    def request_advance_testing(self):
+        self._send_message('on_advance_testing')
         
     @property
     def training_state(self):

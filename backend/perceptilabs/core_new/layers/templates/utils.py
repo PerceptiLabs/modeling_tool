@@ -167,6 +167,7 @@ def run_and_get_layer_macro(j2_engine, definition_table, macro_path, macro_name,
     builder.set_parameter('visited', False)
     builder.set_parameter('end_points', [])
     builder.set_parameter('checkpoint_path', None)
+    builder.set_parameter('load_checkpoint', True)
     builder.set_parameter('backward_connections', ())
     builder.set_parameter('forward_connections', ())                            
 

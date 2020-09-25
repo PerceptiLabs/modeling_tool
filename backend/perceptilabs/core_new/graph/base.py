@@ -109,9 +109,9 @@ class Graph:
     def inner_nodes(self):
         return [n for n in self._ordered_nodes if not n.is_training_node and not n.is_data_node]
 
-    @property
-    def active_training_node(self):
-        return self._end_node
+    # @property
+    # def active_training_node(self):
+    #     return self._end_node
 
     @property
     def trainable_subgraphs(self):
@@ -183,14 +183,21 @@ class Graph:
     def active_training_node(self):
         return self.nodes[-1] # TODO : adapt this for split graph
 
-    def run(self):
-        yield from self.active_training_node.layer.run(self)
+    def run(self, mode = 'training'):
+        if mode in ['training', 'testing']:
+            yield from self.active_training_node.layer.run(self, mode)
+       
+    def init_layer(self, mode = 'training'):
+        self.active_training_node.layer.init_layer(self, mode)       
 
     def on_stop(self):
         self.active_training_node.layer.on_stop()        
         
     def on_export(self, path, mode):
         self.active_training_node.layer.on_export(path, mode)        
+
+    def advance_testing(self):
+        self.active_training_node.layer.advance_testing()  
 
     def on_headless_activate(self):
         self.active_training_node.layer.on_headless_activate()        

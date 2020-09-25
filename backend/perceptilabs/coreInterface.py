@@ -36,7 +36,7 @@ CoreCommand = collections.namedtuple('CoreCommand', ['type', 'parameters', 'allo
 
 
 class coreLogic():
-    def __init__(self,networkName, issue_handler, session_id=None):
+    def __init__(self, networkName, issue_handler, session_id=None):
         logger.info(f"Created coreLogic for network '{networkName}'")
         self._session_id = session_id
         self._core_mode = 'v2'
@@ -49,7 +49,6 @@ class coreLogic():
         self.setupLogic()
         self.plLicense = LicenseV2()
         
-        self._save_counter = 0
         self._aggregation_futures = []
 
         self.issue_handler = issue_handler
@@ -70,11 +69,7 @@ class coreLogic():
 
         self.testIter=0
         self.maxTestIter=0
-        self.testList=[]
-        self.playCounter=None
-        self.playing=False
-
-        self.saver=None
+        self.testList= None
 
         self.savedResultsDict={}
 
@@ -118,18 +113,20 @@ class coreLogic():
 
         return True
 
-    def startCore(self, graph_spec, checkpointValues, model_id):
+    def set_running_mode(self, mode):
+        self._running_mode = mode
+        logger.info(f"Running mode {mode} set for coreLogic w\ network '{self.networkName}'")
+
+    def startCore(self, graph_spec, model_id):
         self.graph_spec = graph_spec
 
-        self.Close()
+        try:
+            self.Close()
+        except:
+            pass
         self.setupLogic()
         
         logger.debug('printing network .......\n')
-
-        if logger.isEnabledFor(logging.DEBUG):        
-            import json
-            with open('net.json_', 'w') as f:
-                json.dump(graph_spec.to_dict(), f, indent=4) 
 
         if logger.isEnabledFor(logging.DEBUG):        
             import json
@@ -161,35 +158,32 @@ class coreLogic():
                 layer['Properties']['Distributed'] = distributed
         graph_spec = graph_spec.from_dict(network)
         # -----
+        from perceptilabs.core_new.compatibility import CompatibilityCore
+        from perceptilabs.messaging.zmq_wrapper import ZmqMessagingFactory  
+        from perceptilabs.messaging.simple import SimpleMessagingFactory          
+        from perceptilabs.core_new.graph.builder import GraphBuilder
+        from perceptilabs.script import ScriptFactory
 
-        if self._core_mode == 'v1':
-            raise NotImplementedError
-        elif self._core_mode == 'v2':
-            from perceptilabs.core_new.compatibility import CompatibilityCore
-            from perceptilabs.messaging.zmq_wrapper import ZmqMessagingFactory  
-            from perceptilabs.messaging.simple import SimpleMessagingFactory          
-            from perceptilabs.core_new.graph.builder import GraphBuilder
-            from perceptilabs.script import ScriptFactory
+        from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP                
 
-            from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP                
-
-            replica_by_name = {repl_cls.__name__: repl_cls for repl_cls in BASE_TO_REPLICA_MAP.values()}                
-            graph_builder = GraphBuilder(replica_by_name)
-            
-            script_factory = ScriptFactory(simple_message_bus=True)
-            messaging_factory = SimpleMessagingFactory()#ZmqMessagingFactory()
-            
-            self.core = CompatibilityCore(
-                self.commandQ,
-                self.resultQ,
-                graph_builder,
-                script_factory,
-                messaging_factory,
-                graph_spec,
-                threaded=True,
-                issue_handler=self.issue_handler,
-                model_id=model_id
-            )            
+        replica_by_name = {repl_cls.__name__: repl_cls for repl_cls in BASE_TO_REPLICA_MAP.values()}                
+        graph_builder = GraphBuilder(replica_by_name)
+        
+        script_factory = ScriptFactory(simple_message_bus=True, running_mode = self._running_mode)
+        messaging_factory = SimpleMessagingFactory()#ZmqMessagingFactory()
+        
+        self.core = CompatibilityCore(
+            self.commandQ,
+            self.resultQ,
+            graph_builder,
+            script_factory,
+            messaging_factory,
+            graph_spec,
+            running_mode = self._running_mode,
+            threaded=True,
+            issue_handler=self.issue_handler,
+            model_id=model_id
+        )            
             
         try:
             logger.debug("Starting core..." + repr(self.core))                                
@@ -208,60 +202,46 @@ class coreLogic():
         return {"content":"core started"}
 
     def Pause(self):
-        if self._core_mode == 'v1':
-            self.commandQ.put('pause')
-        else:
-            self.commandQ.put(
-                CoreCommand(
-                    type='pause',
-                    parameters={'paused': True},
-                    allow_override=True
-                )
+        self.commandQ.put(
+            CoreCommand(
+                type='pause',
+                parameters={'paused': True},
+                allow_override=True
             )
+        )
             
         self.paused=True
-        return {"content": "Paused"}
+        return  {"content": "Paused"}
         
     def Unpause(self):
-        if self._core_mode == 'v1':
-            self.commandQ.put('unpause')
-        else:
-            self.commandQ.put(
-                CoreCommand(
-                    type='pause',
-                    parameters={'paused': False},
-                    allow_override=True
-                )
+
+        self.commandQ.put(
+            CoreCommand(
+                type='pause',
+                parameters={'paused': False},
+                allow_override=True
             )
+        )
         self.paused=False
         return {"content":"Unpaused"}
 
     def headless(self, On):
-        if self._core_mode == 'v1':
-            if On:
-                self.commandQ.put("headlessOn")
-            else:
-                self.commandQ.put("headlessOff")                
-        else:        
-            self.commandQ.put(
-                CoreCommand(
-                    type='headless',
-                    parameters={'on': On},
-                    allow_override=True
-                )
+        self.commandQ.put(
+            CoreCommand(
+                type='headless',
+                parameters={'on': On},
+                allow_override=True
             )
+        )
 
     def headlessOn(self):
-        if self._core_mode == 'v1':
-            self.commandQ.put("headlessOn")
-        else:
-            self.commandQ.put(
-                CoreCommand(
-                    type='headless',
-                    parameters={'on': True},
-                    allow_override=True
-                )
-        )        
+        self.commandQ.put(
+            CoreCommand(
+                type='headless',
+                parameters={'on': True},
+                allow_override=True
+            )
+    )        
 
     def headlessOff(self):
         if self._core_mode == 'v1':
@@ -274,37 +254,30 @@ class coreLogic():
                     allow_override=True
                 )
             )        
-        
-    def Close(self):
-        if self._core_mode == 'v1':
-            self.Stop()
-        else:
-            self.commandQ.put(
-                CoreCommand(
-                    type='close',
-                    parameters=None,
-                    allow_override=False
-                )
+
+    def Close(self):  # TODO: refactor this
+        self.commandQ.put(
+            CoreCommand(
+                type='close',
+                parameters=None,
+                allow_override=False
             )
-            time.sleep(1.5) # Give the Core some time to close the training server before killing the thread...
+        )
+        time.sleep(1.5) # Give the Core some time to close the training server before killing the thread...
         
         if self.cThread and self.cThread.isAlive():
             self.cThread.kill()
         return {"content":"closed core %s" % str(self.networkName)}
 
-    def Stop(self):
+    def Stop(self): # TODO: refactor this
         self.status="Stop"
-
-        if self._core_mode == 'v1':
-            self.commandQ.put('stop')
-        else:
-            self.commandQ.put(
-                CoreCommand(
-                    type='stop',
-                    parameters=None,
-                    allow_override=False
-                )
+        self.commandQ.put(
+            CoreCommand(
+                type='stop',
+                parameters=None,
+                allow_override=False
             )
+        )
         return {"content":"Stopping"}
 
     def checkCore(self):
@@ -316,14 +289,13 @@ class coreLogic():
         else:
             return { "content": False }
 
-    def isTrained(self):
+    def isTrained(self):    
         is_trained = (
-            (self._core_mode == 'v1' and self.saver is not None) or
             (self._core_mode == 'v2' and self.core is not None and self.resultDict is not None)
         )
         return {"content": is_trained}
-
-    def exportNetwork(self,value):
+    
+    def exportNetwork(self,value, graph_spec, model_id):
         logger.debug(f"exportNetwork called. Value = {pprint.pformat(value)}")
 
         # Keys in 'value' : 
@@ -332,11 +304,7 @@ class coreLogic():
         if value["Type"] == 'ipynb':
             return self.saveIpynbToDisk(value)
 
-        # For value["Type"] = 'TFModel'
-        if self._core_mode == 'v1':
-            return self.exportNetworkV1(value)
-        else:
-            return self.exportNetworkV2(value)            
+        return self.exportNetworkV2(value, graph_spec, model_id)            
 
     def saveIpynbToDisk(self, value):
         path = value.get('Location')
@@ -354,13 +322,16 @@ class coreLogic():
         
         return {"content":"Export success!\nSaved as:\n" + filepath}
 
-    def exportNetworkV2(self, value):
+    def exportNetworkV2(self, value, graph_spec, model_id):
         path = os.path.join(value["Location"], value.get('frontendNetwork', self.networkName))
         path = os.path.abspath(path)
+        
+        self.set_running_mode('exporting')
+        self.startCore(graph_spec, model_id)
 
-        mode = 'TFModel+checkpoint' # Default mode. # TODO: perhaps all export modes should be exposed to frontend?
+        mode = 'TFModel' # Default mode. # TODO: perhaps all export modes should be exposed to frontend?
         if value["Compressed"]:
-            mode = 'TFLite+checkpoint'         
+            mode = 'TFLite'         
 
         self.commandQ.put(
             CoreCommand(
@@ -369,56 +340,8 @@ class coreLogic():
                 allow_override=False
             )
         )
-        return {"content": f"Exporting model to path {path}"}
-        
-    def exportNetworkV1(self,value):        
-        if self.saver is None:
-            self._logAndWarningQueue("Export failed.\nMake sure you have started running the network before you try to Export it.")
-            return {"content":"Export Failed.\nNo trained weights to Export."}
-        try:
-            exporter = exportNetwork(self.saver)
-            if value["Type"]=="TFModel":
-                if "frontendNetwork" in value:
-                    path=os.path.abspath(value["Location"]+"/"+value["frontendNetwork"])
-                else:
-                    path=os.path.abspath(value["Location"]+"/"+str(self.networkName))
-                if value["Compressed"]:
-                    exporter.asCompressedTfModel(path)
-                else:
-                    exporter.asTfModel(path,self.epoch)
-                return {"content":"Export success!\nSaved as:\n" + path}
-            
-        except Exception as e:
-            message = "Export failed with this error: " + str(e)
-            with self.issue_handler.create_issue(message, e) as issue:
-                self.issue_handler.put_warning(issue.frontend_message)
-                logger.warning(issue.internal_message)
-                return {"content": self.issue_handler.frontend_message}
-
-    def saveNetwork(self, value):
-        """ Saves json network to disk and exports tensorflow model+checkpoints. """
-        self._save_counter += 1
-        path = os.path.abspath(value["Location"][0])
-        
-        if not os.path.exists(path):   
-            os.mkdir(path)
-            
-        frontend_network = value['frontendNetwork'].copy()
-
-        if self.isTrained():
-            #export_path = os.path.join(path, '1')            
-            self.core.core_v2.export(path, mode='TFModel+checkpoint') # TODO: will all types of graphs support this?
-
-            # The following is used to restore the checkpoint when the saved network is loaded again.. networkElementList is the usual json_network, but with some extra frontend stuff.
-            for id_ in frontend_network['networkElementList'].keys():
-                frontend_network['networkElementList'][id_]['checkpoint'] = [None, os.path.join(path, 'model.ckpt-'+str(self._save_counter))] 
-
-        with open(os.path.join(path, 'model.json'), 'w') as json_file:
-            json.dump(frontend_network, json_file, indent=4)        
-            
-        return {"content": f"Saving to: {path}"}            
-        
-
+        return {"content": f"Exporting of model requested to the path {path}"}
+    
     def skipValidation(self):
         self.commandQ.put("skip")
         logger.warning('skipValidation called... incompatible with core v2')
@@ -431,7 +354,7 @@ class coreLogic():
                 if self.status=="Running":
                     return {"Status":self.savedResultsDict["trainingStatus"],"Iterations":self.testIter, "Progress": self.testIter/(self.savedResultsDict["maxTestIter"]-1)}
                 else:
-                    return {"Status":self.status,"Iterations":self.testIter, "Progress": self.testIter/(self.savedResultsDict["maxTestIter"]-1)}
+                    return {"Status":self.status,"Iterations":self.testIter, "Progress": self.testIter/(self.savedResultsDict["maxTestIter"])}
             else:
                 return {"content":"Max Test Iterations are 0"}
         except KeyError:
@@ -490,58 +413,35 @@ class coreLogic():
         except KeyError:
             return {}
 
-    def startTest(self):
-        #TODO: Remove this function
-        if self.savedResultsDict["trainingStatus"]=='Testing' or self.savedResultsDict["trainingStatus"]=='Finished':
-            return {"content":"Started Testing"}
+    def startTest(self, graph_spec, model_id):
+        if not self.isRunning()['content'] :
+            self.set_running_mode('testing')
+            self.startCore(graph_spec, model_id)
+            return {"content":"core started for testing"}
         else:
-            return {"content":"No test data"}
+            return {"content":"test already running"}
 
     def nextStep(self):
-        if self.testIter<self.maxTestIter-1:
-            self.testIter+=1
+        """Sends advance_testing request during testing.
+        """
+        if not (self.cThread and self.cThread.isAlive()):
+            return {'content': False}
         else:
-            self.resetTest()
+            if self.cThread:
+                self.commandQ.put(
+                        CoreCommand(
+                            type='advance_testing',
+                            parameters={},
+                            allow_override=True
+                        )
+                    )
         return {"content":"Current sample is: "+str(self.testIter)}
-    
-    def previousStep(self):
-        if self.testIter>0:
-            self.testIter-=1
-        return {"content":"Current sample is: "+str(self.testIter)}
 
-    def resetTest(self):
-        self.testIter=0
-        return {"content":"Test is now back to iter 1"}
-
-    def isTestPlaying(self):
-        return self.playing
-
-    def increaseStep(self):
-        while self.testIter<self.maxTestIter-1:
-            if not self.playing:
-                return
-            self.testIter+=1
-            time.sleep(2.0)
-        self.playing=False
-        return
-
-    def playTest(self):
-        if self.playCounter:
-            self.playing=False
-            self.playCounter.join()
-            self.playCounter=None
-        else:
-            self.playing=True
-            self.playCounter=threading.Thread(target=self.increaseStep)
-            self.playCounter.start()
-
-        return {"content": "Play started"}
-        
     def scheduleAggregations(self, engine: AggregationEngine, requests: List[AggregationRequest]):
         """ Schedules a batch of metric aggregations 
         
         Args:
-            engine: Aggregation Engine to computate
+            engine: Aggregation Engine to compute
             requests: A list of AggregationRequests to computate
         """
         future = engine.request_batch(requests)
@@ -553,7 +453,7 @@ class coreLogic():
                 del self._aggregation_futures[0]
                 
         future.add_done_callback(prune_futures)
-        
+
     def getAggregationResults(self, result_names: list) -> dict:
         """ Retrieve results of scheduled aggregations 
         
@@ -576,38 +476,22 @@ class coreLogic():
             value, _, _ = results.get(result_name, (None, None, None))
             retrieved[result_name] = value
         return retrieved
-    
+
     def updateResults(self):
-        
-        # if not self.resultQ.empty():
-        #     self.savedResultsDict.update(self.resultQ.get())
-        #     with self.resultQ.mutex:
-        #         self.resultQ.queue.clear()
+
 
         #TODO: Look from the back and go forward if we find a test instead of going through all of them
         tmp=None
-
-        count = 0
         while not self.resultQ.empty():
             tmp = self.resultQ.get()
 
-            if "saver" in tmp:
-                self.saver=tmp.pop("saver")
-
-            if "testDict" in tmp:
-                self.testList.append(tmp["testDict"])
-                if not self.maxTestIter:
-                    self.maxTestIter = tmp['maxTestIter']
-
-            if 'testDicts' in tmp:
-                self.testList = tmp["testDicts"]
+            if 'testDict' in tmp:
+                self.testList = tmp["testDict"]
                 self.maxTestIter = tmp['maxTestIter']
-
-            count += 1
-
-        if count > 0:
-            logger.debug(f"Got {count} items from resultQ. len(tmp) == {len(tmp)}")        
-            
+                if self.testIter != self.maxTestIter-1:
+                    self.testIter += 1
+                else:
+                    self.testIter = 1
         if tmp:
             self.savedResultsDict.update(tmp)
             
@@ -655,7 +539,7 @@ class coreLogic():
         
         try:
             self.batch_size=1
-            self.resultDict=self.testList[self.testIter]
+            self.resultDict=self.testList
         except IndexError:
             #TODO: There should never be able to be an index error here.
             logger.exception("Error in getTestingStatistics")
@@ -671,7 +555,8 @@ class coreLogic():
             message = f"Error in getTestingStatistics. layer_id = {layer_id}, layer_type = {layer_type}, view = {view}."            
             if logger.isEnabledFor(logging.DEBUG):
                 message += " savedResultsDict: " + pprint.pformat(self.savedResultsDict)
-            logger.exception(message)
+            if not self.resultQ.empty():
+                logger.exception(message)
 
     def getEndResults(self):
         #TODO: Show in frontend results for each end layer, not just for one.
@@ -749,11 +634,11 @@ class coreLogic():
                 avD=self.getStatistics({"layerId":layerId,"variable":"Gradient","innervariable":"Average"})
 
                 dataObj = createDataObject([minD, maxD, avD],
-                                           typeList=3*['line'],
-                                           nameList=['Min', 'Max', 'Average'],
-                                           styleList=[{"color":"#83c1ff"},
-                                                      {"color":"#0070d6"},
-                                                      {"color":"#6b8ff7"}])
+                                            typeList=3*['line'],
+                                            nameList=['Min', 'Max', 'Average'],
+                                            styleList=[{"color":"#83c1ff"},
+                                                        {"color":"#0070d6"},
+                                                        {"color":"#6b8ff7"}])
                 output = {"Gradients": dataObj}
                 return output
         elif layerType=="DeepLearningConv":
@@ -785,11 +670,11 @@ class coreLogic():
                 avD=self.getStatistics({"layerId":layerId,"variable":"Gradient","innervariable":"Average"})
 
                 dataObj = createDataObject([minD, maxD, avD],
-                                           typeList=3*['line'],
-                                           nameList=['Min', 'Max', 'Average'],
-                                           styleList=[{"color":"#83c1ff"},
-                                                      {"color":"#0070d6"},
-                                                      {"color":"#6b8ff7"}])
+                                            typeList=3*['line'],
+                                            nameList=['Min', 'Max', 'Average'],
+                                            styleList=[{"color":"#83c1ff"},
+                                                        {"color":"#0070d6"},
+                                                        {"color":"#6b8ff7"}])
                 output = {"Gradients": dataObj}
                 return output
         elif layerType=="DeepLearningDeconv":
@@ -822,11 +707,11 @@ class coreLogic():
                 avD=self.getStatistics({"layerId":layerId,"variable":"Gradient","innervariable":"Average"})
 
                 dataObj = createDataObject([minD, maxD, avD],
-                                           typeList=3*['line'],
-                                           nameList=['Min', 'Max', 'Average'],
-                                           styleList=[{"color":"#83c1ff"},
-                                                      {"color":"#0070d6"},
-                                                      {"color":"#6b8ff7"}])
+                                            typeList=3*['line'],
+                                            nameList=['Min', 'Max', 'Average'],
+                                            styleList=[{"color":"#83c1ff"},
+                                                        {"color":"#0070d6"},
+                                                        {"color":"#6b8ff7"}])
                 output = {"Gradients": dataObj}
                 return output
         elif layerType=="DeepLearningRecurrent":
@@ -1142,12 +1027,12 @@ class coreLogic():
                 totalValidation=self.getStatistics({"layerId":layerId,"variable":"acc_validation_epoch","innervariable":""})
 
                 dataObjectCurrent = createDataObject([currentValidation, currentTraining],
-                                                     typeList=['line', 'line'],
-                                                     nameList=['Validation', 'Training'])
+                                                        typeList=['line', 'line'],
+                                                        nameList=['Validation', 'Training'])
             
                 dataObjectTotal = createDataObject([totalValidation, totalTraining],
-                                                   typeList=['line', 'line'],
-                                                   nameList=['Validation', 'Training'])
+                                                    typeList=['line', 'line'],
+                                                    nameList=['Validation', 'Training'])
                 output = {"Current": dataObjectCurrent, "Total": dataObjectTotal}
                 return output
                 
@@ -1168,12 +1053,12 @@ class coreLogic():
                 totalValidation=self.getStatistics({"layerId":layerId,"variable":"loss_validation_epoch","innervariable":""})
 
                 dataObjectCurrent = createDataObject([currentValidation, currentTraining],
-                                                     typeList=['line', 'line'],
-                                                     nameList=['Validation', 'Training'])
+                                                    typeList=['line', 'line'],
+                                                    nameList=['Validation', 'Training'])
             
                 dataObjectTotal = createDataObject([totalValidation, totalTraining],
-                                                   typeList=['line', 'line'],
-                                                   nameList=['Validation', 'Training'])
+                                                    typeList=['line', 'line'],
+                                                    nameList=['Validation', 'Training'])
                 output = {"Current": dataObjectCurrent, "Total": dataObjectTotal}
                 return output
             if view=="F1":
@@ -1194,12 +1079,12 @@ class coreLogic():
 
 
                 dataObjectCurrent = createDataObject([currentValidation, currentTraining],
-                                                     typeList=['line', 'line'],
-                                                     nameList=['Validation', 'Training'])
+                                                    typeList=['line', 'line'],
+                                                    nameList=['Validation', 'Training'])
             
                 dataObjectTotal = createDataObject([totalValidation, totalTraining],
-                                                   typeList=['line', 'line'],
-                                                   nameList=['Validation', 'Training'])
+                                                    typeList=['line', 'line'],
+                                                    nameList=['Validation', 'Training'])
                 output = {"Current": dataObjectCurrent, "Total": dataObjectTotal}
                 return output
             if view=="Precision&Recall":
@@ -1211,12 +1096,12 @@ class coreLogic():
                 totalValidation=self.getStatistics({"layerId":layerId,"variable":"epochValFPandR","innervariable":""})
                 
                 dataObjectCurrent = createDataObject([currentValidation, currentTraining],
-                                                     typeList=['line', 'line'],
-                                                     nameList=['Validation', 'Training'])
+                                                    typeList=['line', 'line'],
+                                                    nameList=['Validation', 'Training'])
             
                 dataObjectTotal = createDataObject([totalValidation, totalTraining],
-                                                   typeList=['line', 'line'],
-                                                   nameList=['Validation', 'Training'])
+                                                    typeList=['line', 'line'],
+                                                    nameList=['Validation', 'Training'])
                 output = {"Current": dataObjectCurrent, "Total": dataObjectTotal}
                 return output
             if view=="ROC":
@@ -1228,12 +1113,12 @@ class coreLogic():
                 totalValidation=self.getStatistics({"layerId":layerId,"variable":"epochValROC","innervariable":""})
                 
                 dataObjectCurrent = createDataObject([currentValidation, currentTraining],
-                                                     typeList=['line', 'line'],
-                                                     nameList=['Validation', 'Training'])
+                                                    typeList=['line', 'line'],
+                                                    nameList=['Validation', 'Training'])
             
                 dataObjectTotal = createDataObject([totalValidation, totalTraining],
-                                                   typeList=['line', 'line'],
-                                                   nameList=['Validation', 'Training'])
+                                                    typeList=['line', 'line'],
+                                                    nameList=['Validation', 'Training'])
                 output = {"Current": dataObjectCurrent, "Total": dataObjectTotal}
                 return output            
             if view=="AUC":
@@ -1253,12 +1138,12 @@ class coreLogic():
 
 
                 dataObjectCurrent = createDataObject([currentValidation, currentTraining],
-                                                     typeList=['line', 'line'],
-                                                     nameList=['Validation', 'Training'])
+                                                    typeList=['line', 'line'],
+                                                    nameList=['Validation', 'Training'])
             
                 dataObjectTotal = createDataObject([totalValidation, totalTraining],
-                                                   typeList=['line', 'line'],
-                                                   nameList=['Validation', 'Training'])
+                                                    typeList=['line', 'line'],
+                                                    nameList=['Validation', 'Training'])
                 output = {"Current": dataObjectCurrent, "Total": dataObjectTotal}
                 return output
 
@@ -1300,12 +1185,12 @@ class coreLogic():
                 totalValidation=self.getStatistics({"layerId":layerId,"variable":"acc_validation_epoch","innervariable":""})
 
                 dataObjectCurrent = createDataObject([currentValidation, currentTraining],
-                                                     typeList=['line', 'line'],
-                                                     nameList=['Validation', 'Training'])
+                                                    typeList=['line', 'line'],
+                                                    nameList=['Validation', 'Training'])
             
                 dataObjectTotal = createDataObject([totalValidation, totalTraining],
-                                                   typeList=['line', 'line'],
-                                                   nameList=['Validation', 'Training'])
+                                                    typeList=['line', 'line'],
+                                                    nameList=['Validation', 'Training'])
                 output = {"Current": dataObjectCurrent, "Total": dataObjectTotal}
                 return output
                 
@@ -1326,12 +1211,12 @@ class coreLogic():
                 totalValidation=self.getStatistics({"layerId":layerId,"variable":"loss_validation_epoch","innervariable":""})
 
                 dataObjectCurrent = createDataObject([currentValidation, currentTraining],
-                                                     typeList=['line', 'line'],
-                                                     nameList=['Validation', 'Training'])
+                                                    typeList=['line', 'line'],
+                                                    nameList=['Validation', 'Training'])
             
                 dataObjectTotal = createDataObject([totalValidation, totalTraining],
-                                                   typeList=['line', 'line'],
-                                                   nameList=['Validation', 'Training'])
+                                                    typeList=['line', 'line'],
+                                                    nameList=['Validation', 'Training'])
                 output = {"Current": dataObjectCurrent, "Total": dataObjectTotal}
                 return output
             
@@ -1351,12 +1236,12 @@ class coreLogic():
                 totalValidation=self.getStatistics({"layerId":layerId,"variable":"classification_loss_validation_epoch","innervariable":""})
 
                 dataObjectCurrent = createDataObject([currentValidation, currentTraining],
-                                                     typeList=['line', 'line'],
-                                                     nameList=['Validation', 'Training'])
+                                                    typeList=['line', 'line'],
+                                                    nameList=['Validation', 'Training'])
             
                 dataObjectTotal = createDataObject([totalValidation, totalTraining],
-                                                   typeList=['line', 'line'],
-                                                   nameList=['Validation', 'Training'])
+                                                    typeList=['line', 'line'],
+                                                    nameList=['Validation', 'Training'])
                 output = {"Current": dataObjectCurrent, "Total": dataObjectTotal}
                 return output
             
@@ -1376,12 +1261,12 @@ class coreLogic():
                 totalValidation=self.getStatistics({"layerId":layerId,"variable":"bboxes_loss_validation_epoch","innervariable":""})
 
                 dataObjectCurrent = createDataObject([currentValidation, currentTraining],
-                                                     typeList=['line', 'line'],
-                                                     nameList=['Validation', 'Training'])
+                                                    typeList=['line', 'line'],
+                                                    nameList=['Validation', 'Training'])
             
                 dataObjectTotal = createDataObject([totalValidation, totalTraining],
-                                                   typeList=['line', 'line'],
-                                                   nameList=['Validation', 'Training'])
+                                                    typeList=['line', 'line'],
+                                                    nameList=['Validation', 'Training'])
                 output = {"Current": dataObjectCurrent, "Total": dataObjectTotal}
                 return output
 
@@ -1404,12 +1289,12 @@ class coreLogic():
                 totalValidation=self.getStatistics({"layerId":layerId,"variable":"gen_loss_validation_epoch","innervariable":""})
 
                 dataObjectCurrent = createDataObject([currentValidation, currentTraining],
-                                                     typeList=['line', 'line'],
-                                                     nameList=['Validation', 'Training'])
+                                                    typeList=['line', 'line'],
+                                                    nameList=['Validation', 'Training'])
             
                 dataObjectTotal = createDataObject([totalValidation, totalTraining],
-                                                   typeList=['line', 'line'],
-                                                   nameList=['Validation', 'Training'])
+                                                    typeList=['line', 'line'],
+                                                    nameList=['Validation', 'Training'])
                 output = {"Current": dataObjectCurrent, "Total": dataObjectTotal}
                 return output
             
@@ -1430,12 +1315,12 @@ class coreLogic():
                 totalValidation=self.getStatistics({"layerId":layerId,"variable":"dis_loss_validation_epoch","innervariable":""})
 
                 dataObjectCurrent = createDataObject([currentValidation, currentTraining],
-                                                     typeList=['line', 'line'],
-                                                     nameList=['Validation', 'Training'])
+                                                    typeList=['line', 'line'],
+                                                    nameList=['Validation', 'Training'])
             
                 dataObjectTotal = createDataObject([totalValidation, totalTraining],
-                                                   typeList=['line', 'line'],
-                                                   nameList=['Validation', 'Training'])
+                                                    typeList=['line', 'line'],
+                                                    nameList=['Validation', 'Training'])
                 output = {"Current": dataObjectCurrent, "Total": dataObjectTotal}
                 return output
             if view == "Images":
@@ -1458,7 +1343,7 @@ class coreLogic():
     
                 output = {"Data_distribution": dataObjectOutput}
                 return output
-                  
+                
         elif layerType=="TrainReinforce":
             if view=="Prediction":
                 state = self.getStatistics({"layerId":layerId,"variable":"state","innervariable":""})
@@ -1470,7 +1355,7 @@ class coreLogic():
                                             typeList=['bar', 'line'], 
                                             nameList= ['taken action', 'probabilities'],
                                             styleList=[{"color":"#83c1ff"},
-                                                      {"color":"#0070d6"}])
+                                                        {"color":"#0070d6"}])
                 
                 output = {"Input":state_, "Prediction": prediction}
                 return output
@@ -1491,12 +1376,12 @@ class coreLogic():
                 totalTraining=self.getStatistics({"layerId":layerId,"variable":"loss_training_episode","innervariable":""})
             
                 dataObjectCurrent = createDataObject([currentTraining],
-                                                     typeList=['line'],
-                                                     nameList=['Training'])
+                                                    typeList=['line'],
+                                                    nameList=['Training'])
             
                 dataObjectTotal = createDataObject([totalTraining],
-                                                   typeList=['line'],
-                                                   nameList=['Training'])
+                                                    typeList=['line'],
+                                                    nameList=['Training'])
                 output = {"Current": dataObjectCurrent, "Total": dataObjectTotal}
                 return output
             if view=="Steps":
@@ -1576,10 +1461,10 @@ class coreLogic():
         layer_type = self.graph_spec[layer_id].type_
         layer_name = self.graph_spec[layer_id].name
         
-        message = f"getStatistics called with:\n" \
-                  f"    layerId       = '{layer_id}' [{layer_name}: {layer_type}]\n"\
-                  f"    variable      = '{variable}'\n"\
-                  f"    innervariable = '{innervariable}'\n "
+        message =   f"getStatistics called with:\n" \
+                    f"    layerId       = '{layer_id}' [{layer_name}: {layer_type}]\n"\
+                    f"    variable      = '{variable}'\n"\
+                    f"    innervariable = '{innervariable}'\n "
         
         if isinstance(result, np.ndarray):
             message += f"output: ndarray of shape {result.shape} and dtype {result.dtype}"

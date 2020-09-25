@@ -1,18 +1,6 @@
 <template lang="pug">
   .statistics-box
-    //-ul.statistics-box_tabset(v-if="!testIsOpen")
-      li.statistics-box_tab(
-      v-for="(tab, i) in tabset"
-      /:key="i"
-      )
-        button.btn.btn--tabs.tutorial-relative(
-        type="button"
-        v-tooltip-interactive:right="tab.interactiveInfo"
-        @click="setTab(tab.name, tab.id)"
-        /:class="{'active': currentTab === tab.name}"
-        /:id="tab.id"
-        ) {{ tab.name }}
-    .statistics-box_main.statistics-box_col(v-if="currentTab === 'Generator_Loss'")
+    .statistics-box_main.statistics-box_col(v-if="computedCurrentTab === 'Generator_Loss'")
       chart-switch(
         key="1"
         chart-label="Generator loss during one epoch"
@@ -25,7 +13,7 @@
         :chart-data="chartData.Generator_Loss.Total"
         :custom-color="colorListAccuracy"
       )
-    .statistics-box_main.statistics-box_col(v-if="currentTab === 'Discriminator_Loss'")
+    .statistics-box_main.statistics-box_col(v-if="computedCurrentTab === 'Discriminator_Loss'")
       chart-switch(
         key="3"
         chart-label="Discriminator loss during one epoch"
@@ -38,7 +26,7 @@
         :chart-data="chartData.Discriminator_Loss.Total"
         :custom-color="colorListAccuracy"
       )
-    .statistics-box_main.statistics-box_col(v-if="currentTab === 'Samples'")
+    .statistics-box_main.statistics-box_col(v-if="computedCurrentTab === 'Samples'")
       .statistics-box_row
         .statistics-box_col(v-if="!testIsOpen")
           chart-switch(
@@ -54,7 +42,7 @@
             :chart-data="chartData.Images.Generated_Output"
             :custom-color="colorListAccuracy"
           )
-    .statistics-box_main.statistics-box_col(v-if="currentTab === 'Data_distribution'")
+    .statistics-box_main.statistics-box_col(v-if="computedCurrentTab === 'Data_distribution'")
       chart-switch(
         key="11"
         chart-label="Data distribution"
@@ -116,19 +104,15 @@
       }
     },
     watch: {
-      testIsOpen(newVal) {
-        newVal ? this.setTab('Samples') : null
+      currentTab() {
+        this.setTabAction();
       }
     },
     methods: {
       ...mapActions({
       }),
-      setTab(name, id) {
-        this.currentTab = name;
-        this.setTabAction();
-      },
       getData() {
-        switch (this.currentTab) {
+        switch (this.computedCurrentTab) {
           case 'Generator_Loss':
             this.chartRequest(this.statElementID, 'TrainGan', 'Generator_Loss');
             break;
@@ -144,6 +128,11 @@
         }
       }
     },
+    computed: {
+      computedCurrentTab() {
+        return this.testIsOpen ? 'Samples' : this.currentTab;
+      }
+    }
 
   }
 </script>

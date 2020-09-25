@@ -30,14 +30,20 @@
 import { mapActions } from 'vuex';
 export default {
   name: "TheTesting",
+  data() {
+    return { 
+      chartRequestTimerId : null,
+      chartRequestIntervalMs: 3000
+    };
+  },
   mounted() {
     this.getStatus();
-    this.$store.dispatch('mod_api/API_postTestStart')
-      .then(()=>{
-        this.$nextTick(()=> {
-          this.$store.dispatch('mod_workspace/EVENT_onceDoRequest')
-        })
-      })
+
+    this.$store.dispatch('mod_api/API_startTestWithCheckpointJson');
+
+    this.chartRequestTimerId = setInterval(() => {
+      this.$store.dispatch("mod_workspace/EVENT_onceDoRequest");
+    }, this.chartRequestIntervalMs);
   },
   computed: {
     doGlobalEvent() {
@@ -66,6 +72,9 @@ export default {
       this.$store.dispatch('mod_api/API_getStatus');
     }
   },
+  beforeDestroy() {
+    clearInterval(this.chartRequestTimerId);
+  }
 }
 </script>
 

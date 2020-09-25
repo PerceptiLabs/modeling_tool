@@ -30,7 +30,10 @@ def script_factory():
     yield ScriptFactory()
 
 
-def make_graph_spec(inputs_path, targets_path, learning_rate=0.3, checkpoint_path=None, distributed=False):
+def make_graph_spec(temp_path_checkpoints, inputs_path, targets_path, learning_rate=0.3, checkpoint_path=None, distributed=False): # TODO: fix checkpoint path. it can't be none
+    
+    if checkpoint_path is None:
+        checkpoint_path = temp_path_checkpoints
     # --- CONNECTIONS ---
     conn_inputs_to_fc = LayerConnection(src_id='layer_inputs', src_var='output', dst_id='layer_fc', dst_var='input')
     conn_fc_to_train = LayerConnection(src_id='layer_fc', src_var='output', dst_id='layer_train', dst_var='predictions')
@@ -46,12 +49,14 @@ def make_graph_spec(inputs_path, targets_path, learning_rate=0.3, checkpoint_pat
             ext='.npy',
             split=(70, 20, 10)            
         )],
+        checkpoint_path=checkpoint_path,
         forward_connections=(conn_inputs_to_fc,)
     )
     layer_fc = DeepLearningFcSpec(
         id_='layer_fc',
         name='layer_fc',        
         n_neurons=3,
+        checkpoint_path=checkpoint_path,
         backward_connections=(conn_inputs_to_fc,),
         forward_connections=(conn_fc_to_train,)
     )
@@ -64,6 +69,7 @@ def make_graph_spec(inputs_path, targets_path, learning_rate=0.3, checkpoint_pat
             ext='.npy',
             split=(70, 20, 10)            
         )],
+        checkpoint_path=checkpoint_path,
         forward_connections=(conn_labels_to_train,)
     )
     layer_train = TrainClassificationSpec(
@@ -75,6 +81,7 @@ def make_graph_spec(inputs_path, targets_path, learning_rate=0.3, checkpoint_pat
         n_epochs=200,
         distributed=distributed,
         checkpoint_path=checkpoint_path,
+        load_checkpoint = True,
         backward_connections=(conn_labels_to_train, conn_fc_to_train),
         connection_labels=conn_labels_to_train,
         connection_predictions=conn_fc_to_train
@@ -90,8 +97,9 @@ def make_graph_spec(inputs_path, targets_path, learning_rate=0.3, checkpoint_pat
 
 
 @pytest.fixture()
-def graph_spec(temp_path):
+def graph_spec(temp_path, temp_path_checkpoints):
     graph_spec = make_graph_spec(
+        temp_path_checkpoints, 
         os.path.join(temp_path, '16x4_inputs.npy'),
         os.path.join(temp_path, '16x4_targets.npy')
     )        
@@ -99,8 +107,9 @@ def graph_spec(temp_path):
 
     
 @pytest.fixture()
-def graph_spec_distr(temp_path):
+def graph_spec_distr(temp_path, temp_path_checkpoints):
     graph_spec = make_graph_spec(
+        temp_path_checkpoints,
         os.path.join(temp_path, '16x4_inputs.npy'),
         os.path.join(temp_path, '16x4_targets.npy'),
         distributed=True
@@ -150,7 +159,7 @@ def test_can_yield(script_factory, graph_spec):
     graph = graph_spec_to_core_graph(script_factory, graph_spec)
 
     try:
-        next(graph.run())        
+        next(graph.run(mode = 'training'))        
     except Exception as e:
         print(add_line_numbering(code['layer_train']))
         pytest.fail("Raised error on run!\n" + traceback_from_exception(e))
@@ -161,7 +170,7 @@ def test_convergence(script_factory, graph_spec):
     graph = graph_spec_to_core_graph(script_factory, graph_spec)
     
     training_layer = graph.active_training_node.layer
-    iterator = training_layer.run(graph) # TODO: self reference is weird. shouldnt be!
+    iterator = training_layer.run(graph, mode = 'training') # TODO: self reference is weird. shouldnt be!
 
     sentinel = object()
     result = None
@@ -182,7 +191,7 @@ def test_save_model(script_factory, graph_spec, temp_path):
     graph = graph_spec_to_core_graph(script_factory, graph_spec)    
 
     training_layer = graph.active_training_node.layer
-    iterator = training_layer.run(graph) # TODO: self reference is weird. shouldnt be!
+    iterator = training_layer.run(graph, mode = 'training') # TODO: self reference is weird. shouldnt be!
 
     next(iterator) # First iteration (including initialization)
     target_path = os.path.join(temp_path, '1', 'saved_model.pb')
@@ -197,42 +206,44 @@ def test_save_checkpoint(script_factory, graph_spec, temp_path):
     graph = graph_spec_to_core_graph(script_factory, graph_spec)
         
     training_layer = graph.active_training_node.layer
-    iterator = training_layer.run(graph) # TODO: self reference is weird. design flaw!
+    iterator = training_layer.run(graph, mode = 'training') # TODO: self reference is weird. design flaw!
 
     next(iterator) # First iteration (including initialization)
     assert not any(x.startswith('model.ckpt') for x in os.listdir(temp_path))
     
-    training_layer.on_export(temp_path, mode='TFModel+checkpoint')
+    training_layer.on_export(temp_path, mode='checkpoint')
     assert any(x.startswith('model.ckpt') for x in os.listdir(temp_path))
     #tf.reset_default_graph()
 
-def test_initial_weights_differ(script_factory, temp_path):
+def test_initial_weights_differ(script_factory, temp_path, temp_path_checkpoints):
     """ Check that the weights are DIFFERENT when creating two graphs. If not, it might not be meaningful to test loading a checkpoint """
     inputs_path = os.path.join(temp_path, '16x4_inputs.npy')
     targets_path = os.path.join(temp_path, '16x4_targets.npy')
     
     # --- Create a graph ---
     graph_spec1 = make_graph_spec(
+        temp_path_checkpoints,
         inputs_path,
         targets_path
     )        
     graph1 = graph_spec_to_core_graph(script_factory, graph_spec1)
     
     tl1 = graph1.active_training_node.layer
-    iterator = tl1.run(graph1) # TODO: self reference is weird. design flaw!
+    iterator = tl1.run(graph1, mode = 'training') # TODO: self reference is weird. design flaw!
     next(iterator)
     w1 = next(iter(tl1.layer_weights['DeepLearningFC_layer_fc'].values()))
     #tf.reset_default_graph()
     
     # --- Create a second graph ---
     graph_spec2 = make_graph_spec(
+        temp_path_checkpoints,
         inputs_path,
         targets_path,
     )        
     graph2 = graph_spec_to_core_graph(script_factory, graph_spec2)
 
     tl2 = graph2.active_training_node.layer
-    iterator = tl2.run(graph2) 
+    iterator = tl2.run(graph2, mode = 'training') 
     next(iterator) 
     w2 = next(iter(tl2.layer_weights['DeepLearningFC_layer_fc'].values()))
     #tf.reset_default_graph()
@@ -240,37 +251,42 @@ def test_initial_weights_differ(script_factory, temp_path):
     assert np.all(w1 != w2)
     
 
-def test_load_checkpoint(script_factory, temp_path):
+def test_load_checkpoint(script_factory, temp_path, temp_path_checkpoints):
+    checkpoint_path = os.path.join(temp_path, "checkpoints")
+    
     inputs_path = os.path.join(temp_path, '16x4_inputs.npy')
     targets_path = os.path.join(temp_path, '16x4_targets.npy')
     
     graph_spec1 = make_graph_spec(
+        temp_path_checkpoints,
         inputs_path,
         targets_path
     )        
     graph1 = graph_spec_to_core_graph(script_factory, graph_spec1)
     
     tl1 = graph1.active_training_node.layer
-    iterator = tl1.run(graph1) # TODO: self reference is weird. design flaw!
+    iterator = tl1.run(graph1, mode = 'training') # TODO: self reference is weird. design flaw!
 
     for i in range(3):
         next(iterator) # Run a few iterations
     w1 = next(iter(tl1.layer_weights['DeepLearningFC_layer_fc'].values()))
 
-    tl1.on_export(temp_path, mode='TFModel+checkpoint')
-    #tf.reset_default_graph()
+    tl1.on_export(checkpoint_path, mode='checkpoint')
+    # tf.reset_default_graph()
     
     # --- Create a second graph and restore the checkpoint ---
+    
     graph_spec2 = make_graph_spec(
+        temp_path_checkpoints,
         inputs_path,
         targets_path,
-        checkpoint_path=temp_path,
+        checkpoint_path=checkpoint_path,
         learning_rate=0.0
     )        
     graph2 = graph_spec_to_core_graph(script_factory, graph_spec2)
     
     tl2 = graph2.active_training_node.layer
-    iterator = tl2.run(graph2) 
+    iterator = tl2.run(graph2, mode = 'training') 
     next(iterator) # Since learning rate is zero, the training step will NOT change the weights. Thus they should remain equal to the checkpoint values.
 
     w2 = next(iter(tl2.layer_weights['DeepLearningFC_layer_fc'].values()))
@@ -323,7 +339,7 @@ def test_can_yield_distributed(script_factory, graph_spec_distr):
     graph = graph_spec_to_core_graph(script_factory, graph_spec_distr)
 
     try:
-        next(graph.run())        
+        next(graph.run(mode = 'training'))        
     except Exception as e:
         pytest.fail("Raised error on run!\n" + traceback_from_exception(e))
     #tf.reset_default_graph()
@@ -333,7 +349,7 @@ def test_convergence_distributed(script_factory, graph_spec_distr):
     graph = graph_spec_to_core_graph(script_factory, graph_spec_distr)
     
     training_layer = graph.active_training_node.layer
-    iterator = training_layer.run(graph) # TODO: self reference is weird. shouldnt be!
+    iterator = training_layer.run(graph, mode = 'training') # TODO: self reference is weird. shouldnt be!
 
     sentinel = object()
     result = None
@@ -354,7 +370,7 @@ def test_save_model_distributed(script_factory, graph_spec_distr, temp_path):
     graph = graph_spec_to_core_graph(script_factory, graph_spec_distr)    
 
     training_layer = graph.active_training_node.layer
-    iterator = training_layer.run(graph) # TODO: self reference is weird. shouldnt be!
+    iterator = training_layer.run(graph, mode = 'training') # TODO: self reference is weird. shouldnt be!
 
     next(iterator) # First iteration (including initialization)
     target_path = os.path.join(temp_path, '1', 'saved_model.pb')
@@ -368,22 +384,23 @@ def test_save_checkpoint_distributed(script_factory, graph_spec_distr, temp_path
     graph = graph_spec_to_core_graph(script_factory, graph_spec_distr)
         
     training_layer = graph.active_training_node.layer
-    iterator = training_layer.run(graph) # TODO: self reference is weird. design flaw!
+    iterator = training_layer.run(graph, mode = 'training') # TODO: self reference is weird. design flaw!
 
     next(iterator) # First iteration (including initialization)
     assert not any(x.startswith('model.ckpt') for x in os.listdir(temp_path))
     
-    training_layer.on_export(temp_path, mode='TFModel+checkpoint')
+    training_layer.on_export(temp_path, mode='checkpoint')
     assert any(x.startswith('model.ckpt') for x in os.listdir(temp_path))
 
 
-def test_initial_weights_differ_distributed(script_factory, temp_path):
+def test_initial_weights_differ_distributed(script_factory, temp_path, temp_path_checkpoints):
     """ Check that the weights are DIFFERENT when creating two graphs. If not, it might not be meaningful to test loading a checkpoint """
     inputs_path = os.path.join(temp_path, '16x4_inputs.npy')
     targets_path = os.path.join(temp_path, '16x4_targets.npy')
     
     # --- Create a graph ---
     graph_spec1 = make_graph_spec(
+        temp_path_checkpoints,
         inputs_path,
         targets_path,
         distributed=True
@@ -391,12 +408,13 @@ def test_initial_weights_differ_distributed(script_factory, temp_path):
     graph1 = graph_spec_to_core_graph(script_factory, graph_spec1)
     
     tl1 = graph1.active_training_node.layer
-    iterator = tl1.run(graph1) # TODO: self reference is weird. design flaw!
+    iterator = tl1.run(graph1, mode = 'training') # TODO: self reference is weird. design flaw!
     next(iterator)
     w1 = next(iter(tl1.layer_weights['DeepLearningFC_layer_fc'].values()))
 
     # --- Create a second graph ---
     graph_spec2 = make_graph_spec(
+        temp_path_checkpoints,
         inputs_path,
         targets_path,
         distributed=True        
@@ -404,18 +422,20 @@ def test_initial_weights_differ_distributed(script_factory, temp_path):
     graph2 = graph_spec_to_core_graph(script_factory, graph_spec2)
 
     tl2 = graph2.active_training_node.layer
-    iterator = tl2.run(graph2) 
+    iterator = tl2.run(graph2, mode = 'training') 
     next(iterator) 
     w2 = next(iter(tl2.layer_weights['DeepLearningFC_layer_fc'].values()))
 
     assert np.all(w1 != w2)
 
     
-def test_load_checkpoint_distributed(script_factory, temp_path):
+def test_load_checkpoint_distributed(script_factory, temp_path, temp_path_checkpoints):
     inputs_path = os.path.join(temp_path, '16x4_inputs.npy')
     targets_path = os.path.join(temp_path, '16x4_targets.npy')
     
+    checkpoint_path = os.path.join(temp_path, 'checkpoints')
     graph_spec1 = make_graph_spec(
+        temp_path_checkpoints,
         inputs_path,
         targets_path,
         distributed=True
@@ -423,26 +443,27 @@ def test_load_checkpoint_distributed(script_factory, temp_path):
     graph1 = graph_spec_to_core_graph(script_factory, graph_spec1)
     
     tl1 = graph1.active_training_node.layer
-    iterator = tl1.run(graph1) # TODO: self reference is weird. design flaw!
+    iterator = tl1.run(graph1, mode = 'training') # TODO: self reference is weird. design flaw!
 
     for i in range(3):
         next(iterator) # Run a few iterations
     w1 = next(iter(tl1.layer_weights['DeepLearningFC_layer_fc'].values()))
 
-    tl1.on_export(temp_path, mode='TFModel+checkpoint')
+    tl1.on_export(checkpoint_path, mode='checkpoint')
     
     # --- Create a second graph and restore the checkpoint ---
     graph_spec2 = make_graph_spec(
+        temp_path_checkpoints,
         inputs_path,
         targets_path,
-        checkpoint_path=temp_path,
+        checkpoint_path=checkpoint_path,
         learning_rate=0.0,
         distributed=True
     )        
     graph2 = graph_spec_to_core_graph(script_factory, graph_spec2)
     
     tl2 = graph2.active_training_node.layer
-    iterator = tl2.run(graph2) 
+    iterator = tl2.run(graph2, mode = 'training') 
     next(iterator) # Since learning rate is zero, the training step will NOT change the weights. Thus they should remain equal to the checkpoint values.
 
     w2 = next(iter(tl2.layer_weights['DeepLearningFC_layer_fc'].values()))
@@ -453,6 +474,9 @@ def test_load_checkpoint_distributed(script_factory, temp_path):
 def test_can_convert_to_dict_and_back(graph_spec):
     dict_ = graph_spec.to_dict()
     new_spec = GraphSpec.from_dict(dict_)
-
-    assert new_spec == graph_spec
-    
+    dict_1 = new_spec.to_dict()
+    new_spec2 = GraphSpec.from_dict(dict_1)  # TODO: need to handle checkpoint path in a better way
+    dict_2 = new_spec2.to_dict()
+    new_spec3 = GraphSpec.from_dict(dict_)
+    assert new_spec == new_spec2 == new_spec3
+    assert dict_1 == dict_2

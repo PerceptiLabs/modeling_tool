@@ -38,7 +38,9 @@ const getters = {
 const mutations = {
   SET_selectedElArr (state, value) {
     for (var keyId in value) {
-      value[keyId].layerMeta.isSelected = true;
+      if (value[keyId] && value[keyId].layerMeta) {
+        value[keyId].layerMeta.isSelected = true;
+      }
     }
     state.selectedElArr = value;
   },

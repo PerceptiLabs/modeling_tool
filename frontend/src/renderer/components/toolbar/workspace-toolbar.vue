@@ -125,6 +125,13 @@
           .ring-icon
         button.button-model-type(
           type="button"
+          :class="{'active': modelWeightsActive, 'disabled': !networkHasCheckpoint}"
+          @click="toggleModelWeights"
+        )
+          span Weights
+          .ring-icon
+        button.btn.btn--dark.btn--toolbar-settings(
+          type="button"
           :class="{'active': isNotebookMode}"
           @click="switchNotebookMode(true)"
           v-tooltip-interactive:bottom="interactiveInfo.interactiveDoc"
@@ -156,6 +163,8 @@ import { goToLink }                             from '@/core/helpers.js'
 
 import LayersToolbar            from '@/components/toolbar/workspace-toolbar-layers.vue';
 import SidebarToggleButton      from '@/components/toolbar/sidebar-toggle-button.vue';
+
+import { saveModelJson as fileserver_saveModelJson } from '@/core/apiFileserver';
 
 export default {
   name: 'WorkspaceToolbar',
@@ -193,12 +202,14 @@ export default {
     ...mapGetters({
       interactiveInfoStatus:'mod_tutorials/getInteractiveInfo',
       isTutorialMode:       'mod_tutorials/getIsTutorialMode',
+      currentNetwork:       'mod_workspace/GET_currentNetwork',
       currentElList:        'mod_workspace/GET_currentNetworkElementList',
       isTraining:           'mod_workspace/GET_networkIsTraining',
       statusNetworkCore:    'mod_workspace/GET_networkCoreStatus',
       statisticsIsOpen:     'mod_workspace/GET_statisticsIsOpen',
       testIsOpen:           'mod_workspace/GET_testIsOpen',
       networkIsOpen:        'mod_workspace/GET_networkIsOpen',
+      isUsingModelWeights:  'mod_workspace/GET_currentNetworkModeWeightsState',
       networkHistory:       'mod_workspace-history/GET_currentNetHistory',
       isNotebookMode:       'mod_notebook/getNotebookMode',
       currnetNetwork:     'mod_workspace/GET_currentNetwork',
@@ -239,6 +250,9 @@ export default {
     currentNetMeta() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta
     },
+    currentApiMeta() {
+      return this.$store.getters['mod_workspace/GET_currentNetwork'].apiMeta
+    },
     networkMode() {
       return this.currentNetMeta.netMode
     },
@@ -268,6 +282,15 @@ export default {
     },
     showModelPreviews() {
       return this.$store.state.mod_workspace.showModelPreviews;
+    },
+    modelWeightsActive() {
+      return this.isUsingModelWeights;
+    },
+    networkHasCheckpoint() {
+      // Checking testIsOpen because it is a boolean if scanCheckpoint returns true.
+      // More accurate than the following because it gets set upon training (checkpoints could be deleted)
+      // return Object.values(this.currentElList).some(el => el.checkpoint && el.checkpoint.length > 0);
+      return typeof this.testIsOpen === 'boolean';
     }
   },
   watch: {
@@ -322,23 +345,65 @@ export default {
         if(this.isTraining)  {
           this.trainStop();
         } else {
-          this.trainStart();
 
-          this.$nextTick(() => {
-            this.setNextStep('tutorial-workspace-start-training');
-            this.setCurrentView('tutorial-core-side-view');
-          });
+          this.$store.dispatch('mod_api/API_scanCheckpoint', { 
+            networkId: this.currentNetwork.networkID,
+            path: this.currentNetwork.apiMeta.location
+          })
+            .then(result => {
+              if (result.hasCheckpoint) {
+                this.trainStartWithCheckpoint();
+
+                this.$nextTick(() => {
+                  this.setNextStep('tutorial-workspace-start-training');
+                  this.setCurrentView('tutorial-core-side-view');
+                });
+              } else {
+                this.trainStartWithoutCheckpoint();
+              }
+            });          
         }
       } else {
         this.showInfoPopup('Kernel is not connected');
       }
     
     },
-    trainStart() {
+    trainStartWithCheckpoint() {
       googleAnalytics.trackCustomEvent('start-training');
       let valid = this.validateNetwork();
       if (!valid) return;
       this.GP_showCoreSideSettings(true);
+    },
+    trainStartWithoutCheckpoint() {
+      googleAnalytics.trackCustomEvent('start-training');
+      // if toggle off
+      // start directly
+
+      // Refactor this and the core in workspace-core-side
+      this.$store.commit('mod_workspace/updateCheckpointPaths');
+    
+      fileserver_saveModelJson(this.currentNetwork);
+
+      this.$store.dispatch('mod_workspace/SET_networkSnapshot')
+        .then(_ => this.$store.dispatch('mod_webstorage/saveNetwork'))
+        .then(_ => {
+          this.$store.dispatch('mod_api/API_startTraining', { loadCheckpoint: false });
+
+          this.$store.dispatch('mod_workspace/SET_openStatistics', true);
+          this.$store.dispatch('mod_workspace/setViewType', 'statistic');
+          this.$store.dispatch('mod_workspace/SET_openTest', null);
+          this.$store.commit('mod_workspace/SET_showStartTrainingSpinner', true);
+          this.$store.dispatch('globalView/hideSidebarAction', false);
+
+          this.$store.dispatch('mod_tutorials/setChecklistItemComplete', { itemId: 'startTraining' });
+          this.$store.dispatch('mod_tutorials/setCurrentView', 'tutorial-statistics-view');
+
+
+          this.$nextTick(() => {
+            this.setNextStep('tutorial-workspace-start-training');
+            this.setCurrentView('tutorial-statistics-view');
+          });
+        });
     },
     trainStop() {
       this.stopTraining();
@@ -400,6 +465,17 @@ export default {
       this.$store.dispatch('mod_tracker/EVENT_toolbarPreviewButtonToggle', !this.showModelPreviews);
       this.setNextStep('tutorial-workspace-preview-toggle');
       this.$store.dispatch('mod_workspace/TOGGLE_showModelPreviews');
+    },
+    toggleModelWeights() {
+      this.$store.dispatch('mod_workspace/toggleModelWeightsState');
+
+      // Should refactor this
+      const fullNetworkElementList = this.$store.getters['mod_workspace/GET_currentNetworkElementList'];
+      let payload = {};
+      for(let id in fullNetworkElementList) {
+        payload[id] = fullNetworkElementList[id].previewVariable;
+      }
+      this.$store.dispatch('mod_api/API_getBatchPreviewSample', payload);
     },
     isModelPageAndNetworkHasStatistic() {
       return this.$route.name === 'app' && this.currnetNetwork.networkMeta.openStatistics !== null
@@ -623,12 +699,24 @@ export default {
       border: 2px solid $toolbar-button-border;
     }
 
-    &.active {
+    &.active:not(.disabled) {
       color: $color-1;
       border: 1px solid $color-1;
 
       & > .ring-icon {
         border: 2px solid $color-1;
+      }
+    }
+
+    &.disabled {
+      color: #5E6F9F;
+      border: 1px solid #5E6F9F;
+
+      pointer-events: none;
+      cursor: default;
+
+      & > .ring-icon {
+        border: 2px solid #5E6F9F;
       }
     }
 

@@ -161,6 +161,8 @@
         createProjectModel:       'mod_project/createProjectModel',
         addNetwork:               'mod_workspace/ADD_network',
         resetNetwork:             'mod_workspace/RESET_network',
+        setStatisticsAvailability:'mod_workspace/setStatisticsAvailability',
+        setCheckpointAvailability:'mod_workspace/setCheckpointAvailability',
         clearNetworkChanges:      'mod_workspace-changes/clearNetworkChanges',
         loadWorkspaces:           'mod_webstorage/loadWorkspaces',
         deleteAllIds:             'mod_webstorage/deleteAllIds'
@@ -201,7 +203,6 @@
         } else {
           this.goToProject(projectId);
         }
-
       },
       goToProject(projectId) {
         // Setting the projectId to something nonsensical so the watcher 
@@ -210,6 +211,11 @@
         this.selectProject(-1);
         this.selectProject(projectId);
         this.closePageAction();
+
+        this.$nextTick(() => {
+          this.setStatisticsAvailability;
+          this.setCheckpointAvailability()
+        });
 
         // load models and set them in the workspace from:
         // 1. model's "location" property
@@ -287,7 +293,7 @@
 
               const deleteModelsPromises = theProjectModels.map(model_id => {
                   this.$store.dispatch('mod_project/deleteModel', { model_id });
-                  this.$store.dispatch('mod_api/API_closeSession', model_id, { root: true });
+                  this.$store.dispatch('mod_api/API_closeCore', model_id, { root: true });
               });
 
               Promise.all(deleteModelsPromises)

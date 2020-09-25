@@ -1,9 +1,9 @@
 
 <template lang="pug">
   .statistics-box
-    .statistics-box_main.statistics-box_col(v-if="currentTab === 'Prediction'")
-      .statistics-box_row(v-if="!testIsOpen")
-        .statistics-box_col
+    .statistics-box_main.statistics-box_col(v-if="computedCurrentTab === 'Prediction'")
+      .statistics-box_row
+        .statistics-box_col(v-if="!testIsOpen")
           chart-switch(
             key="1"
             chart-label="Input"
@@ -16,7 +16,7 @@
             :chart-data="chartData.Prediction.PvG"
             :custom-color="colorPie"
             )
-      .statistics-box_row
+      .statistics-box_row(v-if="!testIsOpen")
         .statistics-box_col
           chart-switch(
             key="3"
@@ -32,7 +32,7 @@
             :custom-color="colorList"
             )
 
-    .statistics-box_main.statistics-box_col(v-if="currentTab === 'Loss'")
+    .statistics-box_main.statistics-box_col(v-if="computedCurrentTab === 'Loss'")
       chart-switch(
         key="6"
         chart-label="Loss during one epoch"
@@ -45,7 +45,7 @@
         :chart-data="chartData.Loss.Total"
         :custom-color="colorListAccuracy"
       )
-    .statistics-box_main.statistics-box_col(v-if="currentTab === 'R_Squared'")
+    .statistics-box_main.statistics-box_col(v-if="computedCurrentTab === 'R_Squared'")
       chart-switch(
         key="8"
         chart-label="R Squared data during one epoch"
@@ -111,7 +111,7 @@
     },
     methods: {
       getData() {
-        switch (this.currentTab) {
+        switch (this.computedCurrentTab) {
           case 'Prediction':
             this.chartRequest(this.statElementID, 'TrainRegression', 'Prediction');
             break;
@@ -124,5 +124,10 @@
         }
       }
     },
+    computed: {
+      computedCurrentTab() {
+        return this.testIsOpen ? 'Prediction' : this.currentTab;
+      }
+    }
   }
 </script>

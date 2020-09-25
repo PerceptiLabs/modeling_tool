@@ -6,7 +6,7 @@ from perceptilabs.mainInterface import Interface
 import perceptilabs.utils as utils
 from perceptilabs.issues import IssueHandler
 
-def create_json_network():
+def create_json_network(temp_path_checkpoints):
     n_classes = 10
     n_samples = 30
 
@@ -21,6 +21,7 @@ def create_json_network():
     inputs_path = f1.name.replace("\\","/")
     labels_path = f2.name.replace("\\","/")
 
+    checkpoint_path = temp_path_checkpoints
     json_network = {
         "1": {
             "Name": "data_inputs",
@@ -43,7 +44,7 @@ def create_json_network():
                 }
             ],
             "Code": None,
-            "checkpoint": []
+            "checkpoint": {'path':checkpoint_path, 'load_checkpoint':False }
         },
         "2": {
             "Name": "data_labels",
@@ -67,7 +68,7 @@ def create_json_network():
                 }
             ],
             "Code": None,
-            "checkpoint": []
+            "checkpoint": {'path':checkpoint_path, 'load_checkpoint':False }
         },
         "3": {
             "Name": "reshape",
@@ -93,7 +94,7 @@ def create_json_network():
                 }
             ],
             "Code": None,
-            "checkpoint": []
+            "checkpoint": {'path':checkpoint_path, 'load_checkpoint':False }
         },
         "4": {
             "Name": "fc",
@@ -122,7 +123,7 @@ def create_json_network():
                 }
             ],
             "Code": None,
-            "checkpoint": []
+            "checkpoint": {'path':checkpoint_path, 'load_checkpoint':False }
         },
         "5": {
             "Name": "one_hot",
@@ -147,7 +148,7 @@ def create_json_network():
                 }
             ],
             "Code": None,
-            "checkpoint": []
+            "checkpoint": {'path':checkpoint_path, 'load_checkpoint':False }
         },
         "6": {
             "Name": "training",
@@ -184,14 +185,14 @@ def create_json_network():
             ],
             "forward_connections": [],                
             "Code": None,
-            "checkpoint": []
+            "checkpoint": {'path':checkpoint_path, 'load_checkpoint':False }
         }
     }
 
     return utils.patch_net_connections(json_network)
 
-def create_request(reciever, action, value):
-    return {"reciever": reciever, "action":action, "value":value}
+def create_request(receiver, action, value):
+    return {"receiver": receiver, "action":action, "value":value}
 
 def send_request(request):
     cores=dict()
@@ -199,20 +200,18 @@ def send_request(request):
     checkpointDict=dict()
     lwDict=dict()
     issue_handler = IssueHandler()
-    core_interface = Interface(cores, dataDict, checkpointDict, lwDict, issue_handler)
+    main_interface = Interface(cores, dataDict, checkpointDict, lwDict, issue_handler)
 
-    return core_interface.create_response(request)
+    return main_interface.create_response(request)
 
-def test_getGraphOrder():
-    reciever = 0000
+def test_getGraphOrder(temp_path_checkpoints):
+    receiver = 0000
     action = "getGraphOrder"
-    value = create_json_network()
+    value = create_json_network(temp_path_checkpoints)
 
-
-    request = create_request(reciever, action, value)
+    request = create_request(receiver, action, value)
     
     response, issue_handler = send_request(request)
-    
     assert len(issue_handler.pop_warnings()) == 0
     assert len(issue_handler.pop_errors()) == 0
     assert (
@@ -222,13 +221,13 @@ def test_getGraphOrder():
 
 
 @pytest.mark.skip    
-def test_start():
-    reciever = 0000
+def test_start(temp_path_checkpoints):
+    receiver = 0000
     action = "Start"
-    value = create_json_network()
+    value = create_json_network(temp_path_checkpoints)
 
 
-    request = create_request(reciever, action, value)
+    request = create_request(receiver, action, value)
     
     response, issue_handler = send_request(request)
     

@@ -58,6 +58,7 @@ def create_server(messaging_factory, topic_gn, topic_sn, graph=None, snapshot_bu
         layer_classes,
         edges,
         connections,
+        mode = 'training',
         snapshot_builder=snapshot_builder,
         userland_timeout=userland_timeout,
         max_time_run=120
@@ -144,6 +145,28 @@ def test_receives_status_paused_on_request(messaging_factory, topic_gn, topic_sn
         server.shutdown()
         client.shutdown()
         
+def test_calls_advance_testing_on_request(messaging_factory, topic_gn, topic_sn):
+    server = create_server(messaging_factory, topic_gn, topic_sn)
+    client = create_client(messaging_factory, topic_gn, topic_sn)
+    server._mode = "testing"    
+    try:
+        server_step = server.run_stepwise()
+        client_step = client.run_stepwise()
+
+        # Run one iteration for both to initiate the connection
+        next(server_step)
+        next(client_step)
+        client.request_start()
+        client.request_advance_testing()
+        def cond(_):
+            next(server_step)
+            next(client_step)
+            return client.training_state == State.TESTING_PAUSED
+        assert loop_until_true(cond)        
+    finally:
+        server.shutdown()
+        client.shutdown()
+
 
 def test_can_resume_when_paused(messaging_factory, topic_gn, topic_sn):
     server = create_server(messaging_factory, topic_gn, topic_sn)
@@ -185,7 +208,7 @@ def test_handles_received_graphs(messaging_factory, topic_gn, topic_sn):
     graph_builder = MagicMock()
     on_receive_graph = MagicMock()
 
-    def graph_run():
+    def graph_run(mode):
         while True:
             yield YieldLevel.SNAPSHOT
 
@@ -220,3 +243,34 @@ def test_handles_received_graphs(messaging_factory, topic_gn, topic_sn):
         client.shutdown()
         
         
+def test_export_works(messaging_factory, topic_gn, topic_sn, temp_path):
+    server = create_server(messaging_factory, topic_gn, topic_sn)
+    client = create_client(messaging_factory, topic_gn, topic_sn)
+    server._mode = "exporting"
+    
+    try:
+        server_step = server.run_stepwise()
+        client_step = client.run_stepwise()
+
+        # Run one iteration for both to initiate the connection
+        next(server_step)
+        next(client_step)
+        client.request_start()
+        
+        def cond(_):
+            next(server_step)
+            next(client_step)
+            return client.training_state == State.TRAINING_RUNNING
+        
+        assert loop_until_true(cond)   
+        client.request_export(temp_path, 'TFModel')
+        
+        def cond(_):
+            next(server_step)
+            next(client_step)
+            return client.training_state == State.TRAINING_COMPLETED
+        
+        assert loop_until_true(cond)        
+    finally:
+        server.shutdown()
+        client.shutdown()

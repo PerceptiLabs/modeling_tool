@@ -75,6 +75,7 @@ def create_server(messaging_factory, topic_gn, topic_sn, graph=None, snapshot_bu
         layer_classes,
         edges,
         connections,
+        mode = 'training',
         snapshot_builder=snapshot_builder,
         userland_timeout=userland_timeout,
         max_time_run=120
@@ -127,7 +128,7 @@ def test_can_stop_when_ready(messaging_factory, topic_gn, topic_sn, consumer, pr
 def test_can_start_when_ready(messaging_factory, topic_gn, topic_sn, consumer, producer):
     n_training_steps_taken = 0
     
-    def run_graph():
+    def run_graph(mode = 'training'):
         nonlocal n_training_steps_taken
         while True:
             n_training_steps_taken += 1
@@ -167,7 +168,7 @@ def test_can_start_when_ready(messaging_factory, topic_gn, topic_sn, consumer, p
 def test_reaches_state_completed(messaging_factory, topic_gn, topic_sn, consumer, producer):
     n_training_steps_taken = 0
     
-    def run_graph():
+    def run_graph(mode = 'training'):
         nonlocal n_training_steps_taken
         for _ in range(10):
             n_training_steps_taken += 1
@@ -205,7 +206,7 @@ def test_sends_one_snapshot_per_yield(messaging_factory, topic_gn, topic_sn, con
     n_training_steps_to_take = 3
     n_snapshots_received = 0
     
-    def run_graph():
+    def run_graph(mode = 'training'):
         nonlocal n_training_steps_to_take
         for _ in range(n_training_steps_to_take):
             yield YieldLevel.SNAPSHOT
@@ -251,7 +252,7 @@ def test_sends_one_snapshot_per_yield(messaging_factory, topic_gn, topic_sn, con
 def test_userland_timeout_gives_timeout_state(messaging_factory, topic_gn, topic_sn, consumer, producer):
     n_training_steps_taken = 0
     
-    def run_graph():
+    def run_graph(mode = 'training'):
         nonlocal n_training_steps_taken
         while n_training_steps_taken < 3:
             n_training_steps_taken += 1
@@ -291,7 +292,7 @@ def test_userland_timeout_gives_timeout_state(messaging_factory, topic_gn, topic
 def test_userland_timeout_sends_timeout_message(messaging_factory, topic_gn, topic_sn, consumer, producer):
     n_training_steps_taken = 0
     
-    def run_graph():
+    def run_graph(mode = 'training'):
         nonlocal n_training_steps_taken
         while n_training_steps_taken < 3:
             n_training_steps_taken += 1
@@ -330,7 +331,7 @@ def test_userland_timeout_sends_timeout_message(messaging_factory, topic_gn, top
 def test_userland_error_gives_error_state(messaging_factory, topic_gn, topic_sn, consumer, producer):
     n_training_steps_taken = 0
     
-    def run_graph():
+    def run_graph(mode = 'training'):
         nonlocal n_training_steps_taken
         while n_training_steps_taken < 3:
             n_training_steps_taken += 1
@@ -369,7 +370,7 @@ def test_userland_error_gives_error_state(messaging_factory, topic_gn, topic_sn,
 def test_userland_error_sends_error_message(messaging_factory, topic_gn, topic_sn, consumer, producer):
     n_training_steps_taken = 0
     
-    def run_graph():
+    def run_graph(mode = 'training'):
         nonlocal n_training_steps_taken
         while n_training_steps_taken < 3:
             n_training_steps_taken += 1
@@ -414,7 +415,7 @@ def test_userland_error_sends_error_message(messaging_factory, topic_gn, topic_s
 def test_can_pause(messaging_factory, topic_gn, topic_sn, consumer, producer):
     n_training_steps_taken = 0
     
-    def run_graph():
+    def run_graph(mode = 'training'):
         nonlocal n_training_steps_taken
         while True:
             n_training_steps_taken += 1
@@ -457,7 +458,7 @@ def test_can_pause(messaging_factory, topic_gn, topic_sn, consumer, producer):
 def test_can_resume_when_paused(messaging_factory, topic_gn, topic_sn, consumer, producer):
     n_training_steps_taken = 0
     
-    def run_graph():
+    def run_graph(mode = 'training'):
         nonlocal n_training_steps_taken
         while True:
             n_training_steps_taken += 1
@@ -535,85 +536,6 @@ def test_calls_graph_stop_when_requested(messaging_factory, topic_gn, topic_sn, 
             raw_messages = consumer.get_messages()
             messages = [deserialize(m) for m in raw_messages]
             return graph.on_stop.call_count == 1
-
-        assert loop_until_true(cond)
-    finally:
-        server.shutdown()
-
-
-def test_calls_graph_export_when_requested(messaging_factory, topic_gn, topic_sn, consumer, producer):
-    graph = MagicMock()
-
-    server = create_server(messaging_factory, topic_gn, topic_sn, graph)
-    try:
-        step = server.run_stepwise()
-        
-        def cond(_):
-            next(step)
-            raw_messages = consumer.get_messages()
-            messages = [deserialize(m) for m in raw_messages]
-            return {'key': 'state', 'value': State.READY} in messages
-
-        assert loop_until_true(cond)
-        producer.send(serialize({'key': 'on_request_export', 'value': {'path': 'abc', 'mode': 'xyz'}}))
-        def cond(_):
-            next(step) # Keep iterating.
-            raw_messages = consumer.get_messages()
-            messages = [deserialize(m) for m in raw_messages]
-            return (
-                graph.on_export.call_count == 1 and
-                graph.on_export.call_args_list[0][0][0] == 'abc' and
-                graph.on_export.call_args_list[0][0][1] == 'xyz'
-            )
-
-        assert loop_until_true(cond)
-    finally:
-        server.shutdown()
-
-
-def test_calls_graph_export_when_requested_after_training_completed(messaging_factory, topic_gn, topic_sn, consumer, producer):
-    n_training_steps_taken = 0
-    
-    def run_graph():
-        nonlocal n_training_steps_taken
-        for _ in range(10):
-            n_training_steps_taken += 1
-            yield
-            
-    graph = MagicMock()
-    graph.run.side_effect = run_graph
-
-    server = create_server(messaging_factory, topic_gn, topic_sn, graph=graph)        
-    try:
-        step = server.run_stepwise()
-        
-        def cond(_):
-            next(step)             
-            raw_messages = consumer.get_messages()
-            messages = [deserialize(m) for m in raw_messages]
-            return {'key': 'state', 'value': State.READY} in messages
-
-        assert loop_until_true(cond)
-        producer.send(serialize({'key': 'on_request_start', 'value': ''}))
-
-        def cond(_):
-            next(step) # Keep iterating.
-            raw_messages = consumer.get_messages()
-            messages = [deserialize(m) for m in raw_messages]
-            return {'key': 'state', 'value': State.TRAINING_COMPLETED} in messages
-
-        assert loop_until_true(cond)
-
-        producer.send(serialize({'key': 'on_request_export', 'value': {'path': 'abc', 'mode': 'xyz'}}))
-        def cond(_):
-            next(step) # Keep iterating.
-            raw_messages = consumer.get_messages()
-            messages = [deserialize(m) for m in raw_messages]
-            return (
-                graph.on_export.call_count == 1 and
-                graph.on_export.call_args_list[0][0][0] == 'abc' and
-                graph.on_export.call_args_list[0][0][1] == 'xyz'
-            )
 
         assert loop_until_true(cond)
     finally:

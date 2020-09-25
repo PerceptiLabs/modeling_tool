@@ -52,7 +52,7 @@ def extract_tf_op_traceback_frames(exception):
 
 
 class TrainingServer:
-    def __init__(self, producer_generic, producer_snapshots, consumer, graph_builder, layer_classes, edges, connections, snapshot_builder=None, userland_timeout=15, ping_interval=3, max_time_run=None):
+    def __init__(self, producer_generic, producer_snapshots, consumer, graph_builder, layer_classes, edges, connections, mode = 'training', snapshot_builder=None, userland_timeout=15, ping_interval=3, max_time_run=None):
         self._producer_generic = producer_generic
         self._producer_snapshots = producer_snapshots
         self._consumer = consumer
@@ -65,19 +65,21 @@ class TrainingServer:
         self._connections = connections
         self._closing = False
         self._max_time_run = max_time_run
+        self._mode = mode
 
     def run(self, auto_start=False):
-        t0 = time.perf_counter()
-        update_client = self.run_stepwise(auto_start=auto_start)
-        for counter, _ in enumerate(update_client):
-            if counter % 100 == 0:
-                logger.debug(f"Running step {counter}")
-            if self._closing:
-                logger.info(f"Server closing. Leaving run loop {counter}")
-                break
-            if self._max_time_run is not None and time.perf_counter() - t0 >= self._max_time_run:
-                logger.info(f"Exceeded run method max time. Leaving run loop {counter}")
-                break
+
+            t0 = time.perf_counter()
+            update_client = self.run_stepwise(auto_start=auto_start)
+            for counter, _ in enumerate(update_client):
+                if counter % 100 == 0:
+                    logger.debug(f"Running step {counter}")
+                if self._closing:
+                    logger.info(f"Server closing. Leaving run loop {counter}")
+                    break
+                if self._max_time_run is not None and time.perf_counter() - t0 >= self._max_time_run:
+                    logger.info(f"Exceeded run method max time. Leaving run loop {counter}")
+                    break
 
     def run_stepwise(self, auto_start=False):
         self._consumer.start()                        
@@ -89,23 +91,36 @@ class TrainingServer:
         try:
             self._graph = self._build_graph()            
         except Exception as e:
-            self._send_userland_error(e)            
-            state.transition(State.TRAINING_FAILED)
+            self._send_userland_error(e)
+            if self._mode == 'training':            
+                state.transition(State.TRAINING_FAILED)
+            elif self._mode == 'testing':
+                state.transition(State.TESTING_FAILED)
             return
         
-        training_iterator = self._graph.run()
+        if self._mode == 'training':
+            yield from self.run_stepwise_training(state, auto_start)
+        elif self._mode == 'testing':
+            yield from self.run_stepwise_testing(state, auto_start)
+        elif self._mode == 'exporting':
+            yield from self.run_stepwise_exporting(state, auto_start)
+            
+        
+        return state.value
+
+    def run_stepwise_training(self, state, auto_start=False):
+        training_iterator = self._graph.run(self._mode)
         training_sentinel = object()
         training_step_result = None
 
         def training_step():
-            return next(training_iterator, training_sentinel)
-        
-        main_step_times = collections.deque(maxlen=1)
-        train_step_times = collections.deque(maxlen=1)        
+            return next(training_iterator, training_sentinel)   
         
         state.transition(State.READY)
         if auto_start:
-            state.transition(State.TRAINING_RUNNING)            
+            state.transition(State.TRAINING_RUNNING) 
+        else:
+            self._send_key_value('state', state.value)           
         
         logger.info("Entering main-loop [TrainingServer]")
         counter = 0
@@ -142,7 +157,6 @@ class TrainingServer:
                         self._send_graph(self._graph)
                         t_send_snapshot = time.perf_counter() - t
 
-                t4 = time.perf_counter()
                 state.transition(new_state)
                 
             elif state.value in State.idle_states:                
@@ -157,7 +171,6 @@ class TrainingServer:
             virtual_memory = psutil.virtual_memory()
             swap_memory = psutil.swap_memory()
             t_cycle = time.perf_counter() - t0
-
 
             n_decimals = 6 #microseconds precision         
             session_info['cycle_state_initial'].append(initial_state)
@@ -180,14 +193,96 @@ class TrainingServer:
             counter += 1
             yield
 
-        self._closing = True
-        self.shutdown()
-        return state.value
+        self.shutdown(state)
+        return state
 
-    def shutdown(self):
+    def run_stepwise_testing(self, state, auto_start=False):
+        testing_iterator = self._graph.run(self._mode)
+        testing_sentinel = object()
+        testing_step_result = None
+
+        def testing_step():
+            return next(testing_iterator, testing_sentinel)
+        
+        state.transition(State.READY)
+        if auto_start:
+            state.transition(State.TESTING_RUNNING)
+        else:
+            self._send_key_value('state', state.value)            
+        
+        logger.info("Entering main-loop testing [TrainingServer]")
+        counter = 0
+        snapshot_count = 0
+        sent_testing_ended = False
+        t0 = time.time()
+
+        while state.value not in State.exit_states:
+            initial_state = state.value
+            self._process_messages(state)
+            if state.value in State.running_states:
+                t0 = time.time()
+                new_state = None
+                try:
+                    testing_step_result = testing_step()
+                    snapshot_count += 1
+                    new_state = State.TESTING_PAUSED
+                except Exception as e:
+                    logger.info("testing step raised an error: " + traceback_from_exception(e))
+                    new_state = State.TESTING_FAILED
+                    self._send_userland_error(e)
+                else: 
+                    if testing_step_result is testing_sentinel:
+                        new_state = State.TESTING_STOPPED
+                    elif testing_step_result is YieldLevel.SNAPSHOT:
+                        self._send_graph(self._graph)
+
+                state.transition(new_state)
+                
+            elif state.value in State.idle_states:                
+                if counter % 5 == 0:
+                    #logger.info(f"In idle state '{state.value}'")                                
+                    self._send_key_value('state', state.value)
+                if time.time() - t0 > 120:
+                    state.transition(state.TESTING_STOPPED)
+                time.sleep(1.0)
+                
+            elif state.value not in State.exit_states:
+                raise RuntimeError(f"Unexpected state: {state}")
+
+            
+            
+            if not sent_testing_ended and state.value in State.ended_states:
+                
+                sent_testing_ended = True
+            counter += 1
+            yield
+
+        self.shutdown(state)
+        return state
+
+    def run_stepwise_exporting(self, state, auto_start=False):
+        
+        state.transition(State.READY)
+        state.transition(State.TRAINING_RUNNING) 
+        self._graph.init_layer(self._mode)
+        
+        while state.value not in State.exit_states:
+            self._process_messages(state)
+            yield
+
+        self.shutdown(state)
+        return state
+    
+    def shutdown(self, state=None):
+        self._closing = True
+        if state:
+            state.transition(State.CLOSING)
+        
         self._producer_generic.stop()
         self._producer_snapshots.stop()
         self._consumer.stop()
+
+        logger.info("TrainingServer consumers closed.")
 
     def _build_graph(self):
         layers = {}
@@ -214,6 +309,24 @@ class TrainingServer:
             if training_step_result is sentinel:
                 new_state = State.TRAINING_COMPLETED
             elif training_step_result is YieldLevel.SNAPSHOT:
+                self._send_graph(self._graph)
+        finally:
+            return new_state        
+        
+    def _advance_testing(self, testing_step, sentinel):
+        """Take a testing step, check for userland errors, send snapshot if possible"""
+        
+        new_state = None
+        try:
+            testing_step_result = testing_step()
+        except Exception as e:
+            logger.info("Training step raised an error: " + repr(e))            
+            new_state = State.TESTING_FAILED
+            self._send_userland_error(e)
+        else:
+            if testing_step_result is sentinel:
+                new_state = State.TESTING_STOPPED
+            elif testing_step_result is YieldLevel.SNAPSHOT:
                 self._send_graph(self._graph)
         finally:
             return new_state        
@@ -247,7 +360,7 @@ class TrainingServer:
         self._closed_by_server = True        
         self._send_key_value(
             'training-ended', {'session_info': session_info, 'end_state': state_value}
-        )       
+        )   
         
     def _process_messages(self, state):
         messages = self._consumer.get_messages(per_message_timeout=0.000001)
@@ -258,26 +371,41 @@ class TrainingServer:
         message = deserialize(raw_message)
         message_key = message['key']
         message_value = message['value']
-        
-        #logger.info(f"Received message '{message_key}'")
-        
         new_state = None
+
         if message_key == 'on_request_start':
-            state.transition(State.TRAINING_RUNNING)
+            if self._mode in ['training', 'exporting'] :
+                state.transition(State.TRAINING_RUNNING)
+            elif self._mode =='testing':
+                state.transition(State.TESTING_RUNNING)
+
         if message_key == 'on_request_close':
             state.transition(State.CLOSING)
+
         elif message_key == 'on_request_stop':
+            if self._mode in ['training', 'exporting'] :
+                success_state = State.TRAINING_STOPPED
+            elif self._mode =='testing':
+                success_state = State.TESTING_STOPPED
             self._call_userland_method(
                 self._graph.on_stop,
                 state,
-                success_state=State.TRAINING_STOPPED
+                success_state=success_state
             )
+
         elif message_key == 'on_request_export':
+            print('export called')
             self._call_userland_method(
                 self._graph.on_export,
                 state,
+                success_state=State.TRAINING_COMPLETED,
                 args=(message_value['path'], message_value['mode'])
             )
+
+        elif message_key == 'on_advance_testing':
+            if state.value == State.TESTING_PAUSED:
+                state.transition(State.TESTING_RUNNING)
+
         elif message_key == 'on_request_headless_activate':
             if state.value == State.TRAINING_RUNNING:            
                 self._call_userland_method(
@@ -293,6 +421,7 @@ class TrainingServer:
                 )
             else:
                 raise StateTransitionError("Couldn't transition from {state.value}")
+
         elif message_key == 'on_request_headless_deactivate':
             if state.value == State.TRAINING_RUNNING_HEADLESS:            
                 self._call_userland_method(
@@ -307,14 +436,16 @@ class TrainingServer:
                     success_state=State.TRAINING_PAUSED
                 )
             else:
-                raise StateTransitionError("Couldn't transition from {state.value}")                
+                raise StateTransitionError("Couldn't transition from {state.value}")
+
         elif message_key == 'on_request_pause':
             if state.value == State.TRAINING_RUNNING:
                 state.transition(State.TRAINING_PAUSED)
             elif state.value == State.TRAINING_RUNNING_HEADLESS:
                 state.transition(State.TRAINING_PAUSED_HEADLESS)
             else:
-                raise StateTransitionError("Couldn't transition from {state.value}")                
+                raise StateTransitionError("Couldn't transition from {state.value}") 
+
         elif message_key == 'on_request_resume':
             if state.value == State.TRAINING_PAUSED:            
                 state.transition(State.TRAINING_RUNNING)
@@ -336,7 +467,6 @@ class TrainingServer:
             method(*args, **kwargs)
         except Exception as e:
             logger.info("Userland method raised an error: " + repr(e))            
-            new_state = State.TRAINING_FAILED
             self._send_userland_error(e)
             state.transition(State.TRAINING_FAILED)            
         else:
@@ -344,7 +474,6 @@ class TrainingServer:
 
     def _send_key_value(self, key, value=None, producer=None):
         producer = producer or self._producer_generic
-        
         message_dict = {'key': key, 'value': value or ''}
         message = serialize(message_dict)
         producer.send(message)

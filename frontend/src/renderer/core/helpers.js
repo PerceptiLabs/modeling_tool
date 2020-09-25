@@ -447,55 +447,46 @@ const hashObject = function(inputObject) {
 
 const hashString = s => s.split('').reduce((a,b) => (((a << 5) - a) + b.charCodeAt(0))|0, 0);
 
+const createCoreNetwork = (network, createCoreNetwork = false) => {
+  if (!network) { return null; }
+
+  let layers = {};
+  for(let layer in network.networkElementList) {
+    const el = network.networkElementList[layer];
+    if(el.componentName === 'LayerContainer') continue;
+
+    /*prepare checkpoint*/
+    const checkpointPath = {
+      'load_checkpoint': true, // always true during testing
+      'path': ''
+    };
+
+    if(el.checkpoint.length) {
+      checkpointPath.path = el.checkpoint[1];
+    }
+
+    /*prepare elements*/
+    layers[el.layerId] = {
+      Name: el.layerName,
+      Type: el.componentName,
+      checkpoint: checkpointPath,
+      endPoints: el.endPoints,
+      Properties: el.layerSettings,
+      Code: el.layerCode,
+      backward_connections: el.backward_connections,
+      forward_connections: el.forward_connections,
+      visited: el.visited,
+      previewVariable: el.previewVariable
+    };
+
+  }
+  return layers;
+}
+
 const objectToQueryParams = (reqData) => {
   return  Object.keys(reqData).map(function(key) {
       return key + '=' + reqData[key];
     }).join('&');
-}
-const calculateTutorialNotificationPosition = ({ targetElement, arrowDirection }) => {
-  if(!targetElement) { return; }
-
-  let top;
-  let left;
-
-  let elCoord = targetElement.getBoundingClientRect();
-  let tooltipArrow = 20;
-  // let isZoomElement = info.element.querySelector('.net-element_btn');
-  // let zoom = isZoomElement ? store.getters['mod_workspace/GET_currentNetwork'].networkMeta.zoom : 1;
-
-  const zoom = 1;
-
-  switch (arrowDirection) {
-    case 'right':
-      // top = (elCoord.top - elCoord.height / 2) * zoom;
-      // left = elCoord.left - elCoord.width - tooltipArrow;
-
-      return {
-        top: elCoord.top,
-        right: elCoord.left - (elCoord.width * 2) - tooltipArrow
-      }
-    case 'left':
-      // top = elCoord.top - (elCoord.height / 2);
-      // left = (elCoord.left + elCoord.width + tooltipArrow) * zoom;
-      // break;
-      return {
-        top: elCoord.top,
-        left: elCoord.right + tooltipArrow
-      };
-    // case 'top':
-    //   top = elCoord.top - tooltipArrow;
-    //   left = elCoord.left + (elCoord.width / 2);
-    //   break;
-    // case 'bottom':
-    //   top = elCoord.top + elCoord.height + tooltipArrow;
-    //   left = elCoord.left + (elCoord.width / 2);
-    //   break;
-  }
-
-  // return {
-  //   top,
-  //   left
-  // }
 }
 
 export {
@@ -534,6 +525,6 @@ export {
   layerBgColorTransparent,
   hashObject,
   hashString,
-  objectToQueryParams,
-  calculateTutorialNotificationPosition
+  createCoreNetwork,
+  objectToQueryParams
 }

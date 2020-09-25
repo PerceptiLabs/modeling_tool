@@ -62,7 +62,7 @@ const netElementSettingsData = {
       return Promise.resolve();
       if(isElectron()) {
         let theData = {
-          reciever: this.Mix_settingsData_currentNetworkID,
+          receiver: this.Mix_settingsData_currentNetworkID,
           action: 'deleteData',
           value: {
             Id: this.currentEl.layerId,
@@ -79,7 +79,7 @@ const netElementSettingsData = {
     },
     // Mix_settingsData_getDataPlot(type) {
     //   let theData = {
-    //     reciever: this.Mix_settingsData_currentNetworkID,
+    //     receiver: this.Mix_settingsData_currentNetworkID,
     //     action: 'getDataPlot',
     //     value: {
     //       Id: this.currentEl.layerId,

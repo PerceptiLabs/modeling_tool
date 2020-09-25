@@ -3,8 +3,9 @@ import coreRequestElectron from "@/core/apiCore.js";
 import { deepCopy, parseJWT, isWeb }   from "@/core/helpers.js";
 import { createNotebookJson }   from "@/core/helpers/notebook-helper.js";
 import { pathSlash }  from "@/core/constants.js";
-import {isElectron} from "@/core/helpers";
+import { isElectron, createCoreNetwork } from "@/core/helpers";
 import { PROJECT_DEFAULT_FOLDER } from "../../core/constants";
+import { getModelJson as fileserver_getModelJson } from '@/core/apiFileserver';
 import cloneDeep from 'lodash.clonedeep';
 let coreRequest = null;
 let ipcRenderer = null;
@@ -40,12 +41,16 @@ const getters = {
     const rootPath = network.networkRootFolder;
     for(let layer in network.networkElementList) {
       const el = network.networkElementList[layer];
-      let checkpointPath = deepCopy(el.checkpoint);
       if(el.componentName === 'LayerContainer') continue;
+
       /*prepare checkpoint*/
-      if(rootPath && el.checkpoint.length) {
-        const filePath = el.checkpoint[1].slice(0, el.checkpoint[1].length);
-        checkpointPath[1] = rootPath + pathSlash + filePath;
+      const checkpointPath = {
+        'load_checkpoint': rootGetters['mod_workspace/GET_currentNetworkModeWeightsState'],
+        'path': ''
+      };
+
+      if(el.checkpoint.length) {
+        checkpointPath.path = el.checkpoint[1]
       }
 
       // const namesConnectionOut = [];
@@ -76,7 +81,42 @@ const getters = {
       };
 
     }
-    return layers
+    return layers;
+  },
+  GET_coreNetworkWithCheckpointConfig: (state, getters, rootState, rootGetters) => (loadCheckpoint = null) =>{
+    const network = rootGetters['mod_workspace/GET_currentNetwork'];
+    let layers = {};
+    const rootPath = network.networkRootFolder;
+    for(let layer in network.networkElementList) {
+      const el = network.networkElementList[layer];
+      if(el.componentName === 'LayerContainer') continue;
+
+      /*prepare checkpoint*/
+      const checkpointPath = {
+        'load_checkpoint': loadCheckpoint === null ? rootGetters['mod_workspace/GET_currentNetworkModeWeightsState'] : loadCheckpoint,
+        'path': ''
+      };
+
+      if(el.checkpoint.length) {
+        checkpointPath.path = el.checkpoint[1]
+      }
+
+      /*prepare elements*/
+      layers[el.layerId] = {
+        Name: el.layerName,
+        Type: el.componentName,
+        checkpoint: checkpointPath,
+        endPoints: el.endPoints,
+        Properties: el.layerSettings,
+        Code: el.layerCode,
+        backward_connections: el.backward_connections,
+        forward_connections: el.forward_connections,
+        visited: el.visited,
+        previewVariable: el.previewVariable
+      };
+
+    }
+    return layers;
   },
   get_headlessState: (state) => (networkId) => {
     const headlessState = state.headlessState.find(hs => hs.id === networkId);
@@ -252,10 +292,10 @@ const actions = {
     }
   },
 
-  API_closeSession(context, reciever) {
+  API_closeCore(context, receiver) {
     const theData = {
-      reciever: reciever,
-      action: 'closeSession',
+      receiver: receiver,
+      action: 'closeCore',
       value: ''
     };
     coreRequest(theData)
@@ -265,7 +305,7 @@ const actions = {
 
   API_CLOSE_core() {
     const theData = {
-      reciever: 'server',
+      receiver: 'server',
       action: 'Close',
       value: ''
     };
@@ -310,19 +350,21 @@ const actions = {
   //  NETWORK TRAINING
   //---------------
   API_startTraining({dispatch, getters, rootGetters}) {
-    //const net = rootGetters['mod_workspace/GET_currentNetwork'];
+    const network = rootGetters['mod_workspace/GET_currentNetwork'];
+
     const theData = {
-      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
+      receiver: rootGetters['mod_workspace/GET_currentNetworkId'],
       action: "Start",
       value: {
         modelId: rootGetters['mod_workspace/GET_currentNetworkId'],
-        Layers: getters.GET_coreNetwork
+        Layers: getters.GET_coreNetwork,
+        'copyJson_path': network.apiMeta.location || ''
       }
     };
     if(isWeb()) {
       dispatch('globalView/ShowCoreNotFoundPopup', null, { root: true });
     }
-    //console.log('API_startTraining', theData);
+    // console.log('API_startTraining', theData);
     coreRequest(theData)
       .then((data)=> {
         dispatch('mod_workspace/EVENT_startDoRequest', true, {root: true});
@@ -336,7 +378,7 @@ const actions = {
 
   API_pauseTraining({dispatch, rootGetters}) {
     const theData = {
-      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
+      receiver: rootGetters['mod_workspace/GET_currentNetworkId'],
       action: rootGetters['mod_workspace/GET_networkCoreStatus'] === 'Paused' ? 'Unpause' : 'Pause', // Pause and Unpause
       value: ''
     };
@@ -355,10 +397,10 @@ const actions = {
         console.error(err);
       });
   },
-  API_stopTraining({dispatch, rootGetters}, reciever = null) {
+  API_stopTraining({dispatch, rootGetters}, receiver = null) {
 
     const theData = {
-      reciever: reciever || rootGetters['mod_workspace/GET_currentNetworkId'],
+      receiver: receiver || rootGetters['mod_workspace/GET_currentNetworkId'],
       action: 'Stop',
       value: ''
     };
@@ -376,7 +418,7 @@ const actions = {
 
   API_skipValidTraining({rootGetters}) {
     const theData = {
-      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
+      receiver: rootGetters['mod_workspace/GET_currentNetworkId'],
       action: 'SkipToValidation',
       value: ''
     };
@@ -389,7 +431,7 @@ const actions = {
 
   API_getResultInfo({rootGetters}) {
     const theData = {
-      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
+      receiver: rootGetters['mod_workspace/GET_currentNetworkId'],
       action: 'getEndResults',
     };
     //console.log('API_getResultInfo', theData);
@@ -405,7 +447,7 @@ const actions = {
   //---------------
   API_postTestStart({rootGetters, dispatch}) {
     const theData = {
-      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
+      receiver: rootGetters['mod_workspace/GET_currentNetworkId'],
       action: 'startTest',
       value: ''
     };
@@ -416,10 +458,44 @@ const actions = {
       .then((data)=> { dispatch('mod_tracker/EVENT_testOpenTab', null, {root: true}) })
       .catch((err)=> { console.error(err) });
   },
+  API_startTestWithCheckpointJson({rootGetters, dispatch}) {
 
+    if(isWeb()) {
+      dispatch('globalView/ShowCoreNotFoundPopup', null, { root: true });
+    }
+
+    const currentNetwork = rootGetters['mod_workspace/GET_currentNetwork'];
+
+    const currentNetworkUsingWeights = rootGetters['mod_workspace/GET_currentNetworkModeWeightsState'];
+
+    return fileserver_getModelJson(currentNetwork.apiMeta.location + '/checkpoints/checkpoint_model.json')
+      .then(resultCheckpointJson => {
+        const coreResultCheckpointJson = createCoreNetwork(resultCheckpointJson, currentNetworkUsingWeights);
+        if (!coreResultCheckpointJson) { return; }
+
+        const startTestData = {
+          receiver: rootGetters['mod_workspace/GET_currentNetworkId'] + 't',
+          action: 'startTest',
+          value: coreResultCheckpointJson
+        };
+
+        // console.log('API_startTestWithCheckpointJson startTest req', startTestData);
+        return coreRequest(startTestData)
+        
+      })
+      .then((startTestResult)=> { 
+        // console.log('API_startTestWithCheckpointJson startTest res', startTestResult);
+        dispatch('mod_tracker/EVENT_testOpenTab', null, {root: true});
+
+        return Promise.resolve(startTestResult);
+      })
+    
+      .catch((err)=> { console.error(err) });
+  },
+  
   API_postTestPlay({rootGetters, dispatch}) {
     const theData = {
-      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
+      receiver: rootGetters['mod_workspace/GET_currentNetworkId'],
       action: 'playTest',
       value: ''
     };
@@ -441,13 +517,24 @@ const actions = {
 
   API_postTestMove({rootGetters, rootState, dispatch}, request) {
     const theData = {
-      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
+      receiver: rootGetters['mod_workspace/GET_currentNetworIdForKernelRequests'],
       action: request, //nextStep, previousStep
       value: ''
     };
+
+    // console.log('API_postTestMove req', theData);
     dispatch('API_updateResults')
-      .then(()=> coreRequest(theData))
-      .then(()=> {
+      .then(res => {
+        // console.log('API_postTestMove res', res);
+        return coreRequest(theData);
+      })
+      .then(nextStepRes => {
+        // console.log('nextStepRes', theData, nextStepRes);
+        if (!nextStepRes) { 
+          // this means the session is closed in the kernel
+          return dispatch('API_startTestWithCheckpointJson');
+        }
+
         dispatch('mod_workspace/EVENT_onceDoRequest', null, {root: true});
         dispatch('mod_tracker/EVENT_testMove', theData.action, {root: true});
       })
@@ -458,7 +545,7 @@ const actions = {
 
   API_checkNetworkRunning({rootGetters}, receiver) {
     const theData = {
-      reciever: receiver,
+      receiver: receiver,
       action: "isRunning",
       value: ""
     };
@@ -471,7 +558,7 @@ const actions = {
 
   API_checkTrainedNetwork({rootGetters}, receiver = null) {
     const theData = {
-      reciever: receiver || rootGetters['mod_workspace/GET_currentNetworkId'],
+      receiver: receiver || rootGetters['mod_workspace/GET_currentNetworkId'],
       action: "isTrained"
     };
     return coreRequest(theData)
@@ -483,7 +570,7 @@ const actions = {
 
   API_saveTrainedNetwork({dispatch, getters, rootGetters}, {Location, frontendNetwork, networkName}) {
     const theData = {
-      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
+      receiver: rootGetters['mod_workspace/GET_currentNetworkId'],
       action: "SaveTrained",
       value:  {Location, frontendNetwork, networkName}
     };
@@ -496,13 +583,12 @@ const actions = {
       });
   },
 
-
   //---------------
   //  ELEMENT SETTINGS
   //---------------
   API_getInputDim({dispatch, getters, rootGetters}) {
     const theData = {
-      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
+      receiver: rootGetters['mod_workspace/GET_currentNetworkId'],
       action: "getNetworkInputDim",
       value: getters.GET_coreNetwork
     };
@@ -522,7 +608,7 @@ const actions = {
 
   API_getOutputDim({dispatch, getters, rootGetters}) {
     // const theData = {
-    //   reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
+    //   receiver: rootGetters['mod_workspace/GET_currentNetworkId'],
     //   action: "getNetworkOutputDim",
     //   value: getters.GET_coreNetwork
     // };
@@ -550,7 +636,7 @@ const actions = {
 
   API_getPreviewSample({dispatch, getters, rootGetters}, {layerId, varData}) {
     const theData = {
-      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
+      receiver: rootGetters['mod_workspace/GET_currentNetworkId'],
       action: "getPreviewSample",
       value: {
         Id: layerId,
@@ -570,7 +656,7 @@ const actions = {
 
   API_getPreviewVariableList({dispatch, getters, rootGetters}, layerId) {
     const theData = {
-      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
+      receiver: rootGetters['mod_workspace/GET_currentNetworkId'],
       action: 'getPreviewVariableList',
       value: {
         Id: layerId,
@@ -592,7 +678,7 @@ const actions = {
     if(settings) net[layerId].Properties = settings;
 
     const theData = {
-      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
+      receiver: rootGetters['mod_workspace/GET_currentNetworkId'],
       action: 'getCode',
       value: {
         Id: layerId,
@@ -621,7 +707,7 @@ const actions = {
   API_getGraphOrder({ rootGetters }, jsonNetwork) {
 
     const theData = {
-      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
+      receiver: rootGetters['mod_workspace/GET_currentNetworkId'],
       action: 'getGraphOrder',
       value: jsonNetwork
     };
@@ -640,7 +726,7 @@ const actions = {
   API_getGraphOrder({ rootGetters }, jsonNetwork) {
 
     const theData = {
-      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
+      receiver: rootGetters['mod_workspace/GET_currentNetworkId'],
       action: 'getGraphOrder',
       value: jsonNetwork
     };
@@ -659,7 +745,7 @@ const actions = {
   API_getNotebookImports({ rootGetters }, jsonNetwork) {
 
     const theData = {
-      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
+      receiver: rootGetters['mod_workspace/GET_currentNetworkId'],
       action: 'getNotebookImports',
       value: jsonNetwork
     };
@@ -678,7 +764,7 @@ const actions = {
   API_getNotebookRunscript({ rootGetters }, jsonNetwork) {
 
     const theData = {
-      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
+      receiver: rootGetters['mod_workspace/GET_currentNetworkId'],
       action: 'getNotebookRunscript',
       value: jsonNetwork
     };
@@ -699,7 +785,7 @@ const actions = {
     if(settings) net[layerId].Properties = settings;
 
     const theData = {
-      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
+      receiver: rootGetters['mod_workspace/GET_currentNetworkId'],
       action: 'getPartitionSummary',
       value: {
         Id: layerId,
@@ -718,7 +804,7 @@ const actions = {
     if(settings) net[layerId].Properties = settings;
 
     const theData = {
-      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
+      receiver: rootGetters['mod_workspace/GET_currentNetworkId'],
       action: 'getDataMeta',
       value: {
         Id: layerId,
@@ -740,7 +826,7 @@ const actions = {
   //---------------
   API_parse({dispatch, getters, rootGetters}, path) {
     const theData = {
-      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
+      receiver: rootGetters['mod_workspace/GET_currentNetworkId'],
       action: "Parse",
       value: path
     };
@@ -756,11 +842,12 @@ const actions = {
   async API_exportData({rootGetters, getters, dispatch}, settings) {
 
     const theData = {
-      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
+      receiver: rootGetters['mod_workspace/GET_currentNetworkId'] + 'e',
       action: 'Export',
       value: await makePayload.call(this, settings)
     };
 
+    console.log('API_exportData', theData);
     if(isWeb()) {
       dispatch('globalView/ShowCoreNotFoundPopup', null, { root: true });
     }
@@ -798,7 +885,9 @@ const actions = {
       if (!settings || settings.Type === 'TFModel') {
         return ({
           ...settings,
-          frontendNetwork: rootGetters['mod_workspace/GET_currentNetwork'].networkName
+          Layers: getters.GET_coreNetwork,
+          path: rootGetters['mod_workspace/GET_currentNetwork'].apiMeta.location || '',
+          frontendNetwork: rootGetters['mod_workspace/GET_currentNetwork'].networkName,
         });
       }
   
@@ -808,8 +897,10 @@ const actions = {
           const payload = await createNotebookJson(this);
           return ({
             ...settings,
+            Layers: getters.GET_coreNetwork,
+            path: rootGetters['mod_workspace/GET_currentNetwork'].apiMeta.location || '',
             frontendNetwork: settings.name,
-            NotebookJson: payload
+            NotebookJson: payload,
           });
         } 
         catch(err) {
@@ -823,13 +914,16 @@ const actions = {
   //---------------
   API_getStatus({rootGetters, dispatch, commit}) {
     const theData = {
-      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
+      receiver: rootGetters['mod_workspace/GET_currentNetworIdForKernelRequests'],
       action: rootGetters['mod_workspace/GET_testIsOpen'] ? 'getTestStatus' :'getStatus',
       value: ''
     };
+
+    // console.log('API_getStatus req', theData);
+
     coreRequest(theData)
       .then((data)=> {
-        //console.log('API_getStatus answer', data);
+        // console.log('API_getStatus res', data);
         dispatch('mod_workspace/SET_statusNetworkCore', {...rootGetters['mod_workspace/GET_currentNetwork'].networkMeta.coreStatus, ...data}, {root: true})
       })
       .catch((err)=> {
@@ -841,7 +935,7 @@ const actions = {
   },
   API_getModelStatus({rootGetters, dispatch, commit}, modelId) {
     const theData = {
-      reciever: modelId,
+      receiver: modelId,
       // action: rootGetters['mod_workspace/GET_testIsOpen'] ? 'getTestStatus' :'getStatus',
       // @todo ask about this twho types getTestStatus && getStatus, difference between them.
       action: 'getStatus',
@@ -883,7 +977,7 @@ const actions = {
     }
 
     const theData = {
-      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
+      receiver: rootGetters['mod_workspace/GET_currentNetworkId'],
       action: 'headless',
       value: value
     };
@@ -896,7 +990,7 @@ const actions = {
 
   API_updateResults({rootGetters}) {
     const theData = {
-      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
+      receiver: rootGetters['mod_workspace/GET_currentNetworIdForKernelRequests'],
       action: 'updateResults',
       value: ''
     };
@@ -917,7 +1011,7 @@ const actions = {
     const userObject = parseJWT(userToken);
 
     const theData = {
-      reciever: '',
+      receiver: '',
       action: 'setUser',
       value: userObject.email
     };
@@ -930,6 +1024,7 @@ const actions = {
   // @param {object} payload | { networkId: variableName } 
   API_getBatchPreviewSample({ getters, dispatch, rootGetters }, payload) {
     const networkList = getters.GET_coreNetworkElementList;
+    const networkId = rootGetters['mod_workspace/GET_currentNetworkId'];
     let net = cloneDeep(getters.GET_coreNetwork);
     for(let elId in payload) {
       net[elId]['getPreview'] = payload[elId] !== undefined;
@@ -942,9 +1037,15 @@ const actions = {
       }
     };
 
+    // console.log(
+    //   'API_getBatchPreviewSample req',
+    //   theData
+    // );
+
     return coreRequest(theData)
       .then(res => {
         // console.log(
+        //   'API_getBatchPreviewSample res',
         //   theData,
         //   res
         // );
@@ -976,6 +1077,13 @@ const actions = {
               payload: res.previews[previewKey],
             }, {root: true});
           })
+        }
+
+        if (res.trainedLayers) {
+          dispatch('mod_workspace/SET_layerTrainedStatus', {
+            networkId,
+            trainedLayers: res.trainedLayers,
+          }, {root: true});          
         }
       
         return res;
@@ -1024,6 +1132,12 @@ const actions = {
     return coreRequest(theData)
       .then(res => {
         
+        // console.log(
+        //   'API_getBatchPreviewSampleForElementDescendants res',
+        //   theData,
+        //   res
+        // );
+
         if(res.outputDims) {
           dispatch('mod_workspace/SET_elementOutputDim', res.outputDims, {root: true});
           dispatch('mod_workspace-notifications/setNotifications', {
@@ -1061,6 +1175,23 @@ const actions = {
         console.error(e)
       });
   },
+  API_scanCheckpoint (ctx, { networkId, path }) {
+    const theData = {
+      receiver: networkId,
+      action: 'ScanCheckpoint',
+      value: path
+    };
+
+    return coreRequest(theData)
+      .then(res => {
+        return ({
+          networkId,
+          hasCheckpoint: res 
+        });
+      })
+      .catch(e => console.error(e));
+  },
+  
 };
 
 export default {

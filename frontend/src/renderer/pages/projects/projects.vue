@@ -316,6 +316,7 @@
         setActivePageAction: 'modal_pages/setActivePageAction',
         delete_network :     'mod_workspace/DELETE_network',
         UPDATE_MODE_ACTION : 'mod_workspace/UPDATE_MODE_ACTION',
+        closeStatsTestViews:  'mod_workspace/SET_statisticsAndTestToClosed',
         setCurrentView:       'mod_tutorials/setCurrentView',
 
         setNetworkNameAction:'mod_workspace/SET_networkName',
@@ -331,6 +332,9 @@
         // maybe should receive a id and search index by it
         const index = this.workspaceContent.findIndex(wc => wc.networkID == networkID);
         this.set_currentNetwork(index > 0 ? index : 0);
+
+        this.closeStatsTestViews({ networkId: networkID });
+
         if(index !== -1) {
           this.$store.dispatch("mod_workspace/setViewType", 'model');
           this.$router.push({name: 'app'});

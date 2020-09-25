@@ -107,7 +107,6 @@ export default {
   },
   computed: {
     ...mapGetters({
-      activePoint:    'mod_tutorials/getActivePoint',
       testIsOpen:     'mod_workspace/GET_testIsOpen',
     }),
     layerType() {

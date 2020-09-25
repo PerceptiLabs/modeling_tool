@@ -87,7 +87,9 @@ class LayerSpec(ABC, MyBaseModel):
     forward_connections: Tuple[LayerConnection, ...] = ()
     visited: bool = False
     custom_code: Union[str, None] = None
-    checkpoint_path: Union[str, None] = None    
+    checkpoint_path: Union[str, None] = None 
+    load_checkpoint: bool = True   
+    scan_checkpoint: bool = False
     end_points: Union[Tuple[str, ...], None] = ()
 
     class Config:
@@ -170,7 +172,7 @@ class LayerSpec(ABC, MyBaseModel):
                 custom_code = None
             return custom_code
         
-        
+        checkpoint_path, has_checkpoint = cls.resolve_checkpoint_path(dict_)
         params = {
             'id_': str(id_),
             'name': dict_.get('Name'),
@@ -179,7 +181,9 @@ class LayerSpec(ABC, MyBaseModel):
             'preview_variable': dict_.get('previewVariable', ''),
             'get_preview': dict_.get('getPreview', False),                        
             'end_points': tuple(dict_.get('endPoints', ())),
-            'checkpoint_path': cls.resolve_checkpoint_path(dict_),
+            'checkpoint_path': checkpoint_path, 
+            'load_checkpoint': dict_['checkpoint']['load_checkpoint'],
+            'scan_checkpoint': has_checkpoint,
             'backward_connections': resolve_bw_cons(dict_),
             'forward_connections': resolve_fw_cons(dict_),
             'custom_code': resolve_custom_code(dict_)
@@ -202,10 +206,7 @@ class LayerSpec(ABC, MyBaseModel):
         dict_['getPreview'] = self.get_preview        
         dict_['endPoints'] = list(self.end_points)
 
-        if self.checkpoint_path is None:
-            dict_['checkpoint'] = []
-        else:
-            dict_['checkpoint'] = {'1': os.path.join(self.checkpoint_path, 'dummy.ckpt')} # TODO: hack to make it work with mysterious frontend behavior. Ask for refactor when this causes trouble.
+        dict_['checkpoint'] = {'path':self.checkpoint_path, 'load_checkpoint':self.load_checkpoint }  #TODO: hack to make it work with mysterious frontend behavior. Ask for refactor when this causes trouble. 
 
         dict_['backward_connections'] = [
             {
@@ -245,11 +246,8 @@ class LayerSpec(ABC, MyBaseModel):
     @classmethod
     def resolve_checkpoint_path(cls, dict_):
         import platform
-        
-        if 'checkpoint' not in dict_ or len(dict_['checkpoint']) == 0:
-            return None
-        
-        ckpt_path = dict_['checkpoint'][1]
+        has_checkpoint = False
+        ckpt_path = dict_['checkpoint']['path']
         if '//' in ckpt_path:
             if platform.system() == 'Windows':
                 new_ckpt_path = ckpt_path.split('//')[1]
@@ -261,9 +259,13 @@ class LayerSpec(ABC, MyBaseModel):
                 )
                 ckpt_path = new_ckpt_path
                 
-        ckpt_path = os.path.dirname(ckpt_path)
+        if os.path.basename(os.path.normpath(ckpt_path)) != 'checkpoints':
+            ckpt_path = os.path.join(ckpt_path,'checkpoints')
         ckpt_path = ckpt_path.replace('\\','/')
-        return ckpt_path
+        if os.path.isdir(ckpt_path):
+            if 'checkpoint' in os.listdir(ckpt_path):
+                has_checkpoint = True
+        return ckpt_path, has_checkpoint      
 
     @property
     def should_show_errors(self):

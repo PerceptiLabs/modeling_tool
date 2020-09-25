@@ -203,16 +203,15 @@ def policy_regression(core, graphs, sanitized_to_name, sanitized_to_id, results)
         return data
 
     current_graph = graphs[-1]
-    results_list = []
-    test_graphs = []
-    train_graphs = None
+    test_graph = None
+    train_graphs_exist = None
     for graph in graphs:
         if graph.active_training_node.layer.status == 'testing':
-            test_graphs.append(graph)
+            test_graph = graph
         else:
-            train_graphs = True
+            train_graphs_exist = True
 
-    if train_graphs:
+    if train_graphs_exist :
         trn_node = current_graph.active_training_node
         train_dict = {}
 
@@ -282,62 +281,56 @@ def policy_regression(core, graphs, sanitized_to_name, sanitized_to_id, results)
             "progress": trn_node.layer.progress
         }
 
-        results_list.append(result_dict)
+        return result_dict
 
-    if len(test_graphs) > 0:
-        test_dicts = []
-        for current_graph in test_graphs:
-            trn_node = current_graph.active_training_node
-            test_dict = {}
-            for node in current_graph.nodes:
-                data = {}
-                true_id = sanitized_to_id[node.layer_id] # nodes use spec names for layer ids
-                data.update(get_layer_inputs_and_outputs(current_graph, node, trn_node))
-                test_dict[true_id] = data
+    if test_graph is not None:
+        trn_node = test_graph.active_training_node
+        test_dict = {}
+        for node in test_graph.nodes:
+            data = {}
+            true_id = sanitized_to_id[node.layer_id] # nodes use spec names for layer ids
+            data.update(get_layer_inputs_and_outputs(test_graph, node, trn_node))
+            test_dict[true_id] = data
 
-            training_status = 'Finished'
-            status='Running'
-            test_status='Waiting'
+        training_status = 'Finished'
+        status='Running'
+        test_status='Waiting'
 
-            # if trn_node.layer.size_testing and trn_node.layer.batch_size:
-            max_itr_tst = trn_node.layer.size_testing
+        # if trn_node.layer.size_testing and trn_node.layer.batch_size:
+        max_itr_tst = trn_node.layer.size_testing
 
-            true_id = sanitized_to_id[trn_node.layer_id]
+        true_id = sanitized_to_id[trn_node.layer_id]
 
 
-            test_dict[true_id]['loss_validation_epoch'] = 0
-            test_dict[true_id]['mse_validation_epoch'] = 0
-            test_dict[true_id]['r_sq_validation_epoch'] = 0
-            test_dict[true_id]['sq_variance_validation_epoch'] = 0
+        test_dict[true_id]['loss_validation_epoch'] = 0
+        test_dict[true_id]['mse_validation_epoch'] = 0
+        test_dict[true_id]['r_sq_validation_epoch'] = 0
+        test_dict[true_id]['sq_variance_validation_epoch'] = 0
 
-            test_dict[true_id]['loss_train_epoch'] = 0
-            test_dict[true_id]['mse_train_epoch'] = 0
-            test_dict[true_id]['r_sq_train_epoch'] = 0
-            test_dict[true_id]['sq_variance_train_epoch'] = 0
+        test_dict[true_id]['loss_train_epoch'] = 0
+        test_dict[true_id]['mse_train_epoch'] = 0
+        test_dict[true_id]['r_sq_train_epoch'] = 0
+        test_dict[true_id]['sq_variance_train_epoch'] = 0
 
-            test_dict[true_id]['loss_validation_iter'] = 0
-            test_dict[true_id]['mse_validation_iter'] = 0
-            test_dict[true_id]['r_sq_validation_iter'] = 0
-            test_dict[true_id]['sq_variance_validation_iter'] = 0
+        test_dict[true_id]['loss_validation_iter'] = 0
+        test_dict[true_id]['mse_validation_iter'] = 0
+        test_dict[true_id]['r_sq_validation_iter'] = 0
+        test_dict[true_id]['sq_variance_validation_iter'] = 0
 
-            test_dict[true_id]['loss_train_iter'] = 0
-            test_dict[true_id]['mse_train_iter'] = 0
-            test_dict[true_id]['r_sq_train_iter'] = 0
-            test_dict[true_id]['sq_variance_train_iter'] = 0
+        test_dict[true_id]['loss_train_iter'] = 0
+        test_dict[true_id]['mse_train_iter'] = 0
+        test_dict[true_id]['r_sq_train_iter'] = 0
+        test_dict[true_id]['sq_variance_train_iter'] = 0
 
-            test_dicts.append(test_dict)
 
         result_dict = {
             "maxTestIter": max_itr_tst,
-            "testDicts": test_dicts,
+            "testDict": test_dict,
             "trainingStatus": training_status,
             "testStatus": test_status,
             "status": status
         }
-
-        results_list.append(result_dict)
-    
-    return results_list
+        return result_dict
 
 def policy_classification(core, graphs, sanitized_to_name, sanitized_to_id, results):
 
@@ -512,16 +505,16 @@ def policy_classification(core, graphs, sanitized_to_name, sanitized_to_id, resu
         return data
 
     current_graph = graphs[-1]
-    results_list = []
-    test_graphs = []
-    train_graphs = None
+    test_graph = None
+   
+    train_graphs_exist = None
     for graph in graphs:
         if graph.active_training_node.layer.status == 'testing':
-            test_graphs.append(graph)
+            test_graph = graph
         else:
-            train_graphs = True
+            train_graphs_exist = True
 
-    if train_graphs:
+    if train_graphs_exist:
         trn_node = current_graph.active_training_node
         train_dict = {}
 
@@ -590,55 +583,48 @@ def policy_classification(core, graphs, sanitized_to_name, sanitized_to_id, resu
             "status": status,
             "progress": trn_node.layer.progress
         }
-        results_list.append(result_dict)
+        return result_dict
 
-    if len(test_graphs) > 0:
-        test_dicts = results.get('testDicts', []) # get existing
-        for current_graph in test_graphs:
-            trn_node = current_graph.active_training_node
-            test_dict = {}
-            for node in current_graph.nodes:
-                data = {}
-                true_id = sanitized_to_id[node.layer_id] # nodes use spec names for layer ids
-                data.update(get_layer_inputs_and_outputs(current_graph, node, trn_node))
-                test_dict[true_id] = data
+    if test_graph is not None:
+        trn_node = test_graph.active_training_node
+        test_dict = {}
+        for node in test_graph.nodes:
+            data = {}
+            true_id = sanitized_to_id[node.layer_id] # nodes use spec names for layer ids
+            data.update(get_layer_inputs_and_outputs(test_graph, node, trn_node))
+            test_dict[true_id] = data
 
-            training_status = 'Finished'
-            status='Running'
-            test_status='Waiting'
+        training_status = 'Finished'
+        status='Running'
+        test_status= 'Running' 
 
-            # if trn_node.layer.size_testing and trn_node.layer.batch_size:
-            max_itr_tst = trn_node.layer.size_testing
+        max_itr_tst = trn_node.layer.size_testing
 
-            true_id = sanitized_to_id[trn_node.layer_id]
-            test_dict[true_id]['acc_training_epoch'] = 0
-            test_dict[true_id]['f1_training_epoch'] = 0
-            test_dict[true_id]['auc_training_epoch'] = 0
+        true_id = sanitized_to_id[trn_node.layer_id]
+        test_dict[true_id]['acc_training_epoch'] = 0
+        test_dict[true_id]['f1_training_epoch'] = 0
+        test_dict[true_id]['auc_training_epoch'] = 0
 
-            test_dict[true_id]['acc_validation_epoch'] = 0
-            test_dict[true_id]['f1_validation_epoch'] = 0
-            test_dict[true_id]['auc_validation_epoch'] = 0
+        test_dict[true_id]['acc_validation_epoch'] = 0
+        test_dict[true_id]['f1_validation_epoch'] = 0
+        test_dict[true_id]['auc_validation_epoch'] = 0
 
-            test_dict[true_id]['acc_train_iter'] = 0
-            test_dict[true_id]['f1_train_iter'] = 0
-            test_dict[true_id]['auc_train_iter'] = 0
+        test_dict[true_id]['acc_train_iter'] = 0
+        test_dict[true_id]['f1_train_iter'] = 0
+        test_dict[true_id]['auc_train_iter'] = 0
 
-            test_dict[true_id]['acc_val_iter'] = 0
-            test_dict[true_id]['f1_val_iter'] = 0
-            test_dict[true_id]['auc_val_iter'] = 0
-
-            test_dicts.append(test_dict)
-
+        test_dict[true_id]['acc_val_iter'] = 0
+        test_dict[true_id]['f1_val_iter'] = 0
+        test_dict[true_id]['auc_val_iter'] = 0
+        
         result_dict = {
             "maxTestIter": max_itr_tst,
-            "testDicts": test_dicts,
+            "testDict": test_dict,
             "trainingStatus": training_status,
             "testStatus": test_status,
             "status": status
         }
-        results_list.append(result_dict)
-
-    return results_list
+        return result_dict
 
 def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id, results):
 
@@ -901,17 +887,16 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id, re
         return data
 
     current_graph = graphs[-1]
-    results_list = []
-    test_graphs = []
-    train_graphs = None
+    test_graph = None
+    train_graphs_exist = None
     for graph in graphs:
         if graph.active_training_node.layer.status == 'testing':
-            test_graphs.append(graph)
+            test_graph = graph
         else:
-            train_graphs = True
+            train_graphs_exist = True
             
     
-    if train_graphs:
+    if train_graphs_exist:
         trn_node = current_graph.active_training_node
         train_dict = {}
 
@@ -980,75 +965,69 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id, re
             "status": status,
             "progress": trn_node.layer.progress
         }
-        results_list.append(result_dict)
+        return result_dict
 
-    if len(test_graphs) > 0:
-        test_dicts = results.get('testDicts', []) # get existing
-        for current_graph in test_graphs:
-            trn_node = current_graph.active_training_node
-            trn_layer = current_graph.active_training_node.layer
-            input_data_layer = trn_layer.get_input_data_node
-            input_images = trn_node.layer.layer_outputs.get(input_data_layer)
-            predicted_objects = trn_layer.get_predicted_objects
-            predicted_classes = trn_layer.get_predicted_classes
-            predicted_normalized_boxes = trn_layer.get_predicted_normalized_boxes
+    if test_graph is not None:
+        trn_node = test_graph.active_training_node
+        trn_layer = test_graph.active_training_node.layer
+        input_data_layer = trn_layer.get_input_data_node
+        input_images = trn_node.layer.layer_outputs.get(input_data_layer)
+        predicted_objects = trn_layer.get_predicted_objects
+        predicted_classes = trn_layer.get_predicted_classes
+        predicted_normalized_boxes = trn_layer.get_predicted_normalized_boxes
 
-            test_dict = {}
-            for node in current_graph.nodes:
-                data = {}
-                true_id = sanitized_to_id[node.layer_id] # nodes use spec names for layer ids
-                data.update(get_layer_inputs_and_outputs(current_graph, node, trn_node))
-                test_dict[true_id] = data
+        test_dict = {}
+        for node in test_graph.nodes:
+            data = {}
+            true_id = sanitized_to_id[node.layer_id] # nodes use spec names for layer ids
+            data.update(get_layer_inputs_and_outputs(test_graph, node, trn_node))
+            test_dict[true_id] = data
 
-            training_status = 'Finished'
-            status='Running'
-            test_status='Waiting'
+        training_status = 'Finished'
+        status='Running'
+        test_status='Waiting'
 
-            # if trn_node.layer.size_testing and trn_node.layer.batch_size:
-            max_itr_tst = trn_node.layer.size_testing
+        # if trn_node.layer.size_testing and trn_node.layer.batch_size:
+        max_itr_tst = trn_node.layer.size_testing
 
-            true_id = sanitized_to_id[trn_node.layer_id]
-            bbox_image, confidence_scores = plot_bounding_boxes(input_images.get('output')[-1], predicted_objects, predicted_classes, predicted_normalized_boxes)
+        true_id = sanitized_to_id[trn_node.layer_id]
+        bbox_image, confidence_scores = plot_bounding_boxes(input_images.get('output')[-1], predicted_objects, predicted_classes, predicted_normalized_boxes)
 
-            test_dict[true_id]['acc_val_iter'] = 0
-            test_dict[true_id]['loss_train_iter'] = 0
-            test_dict[true_id]['classification_loss_train_iter'] = 0
-            test_dict[true_id]['bboxes_loss_train_iter'] = 0
-            test_dict[true_id]['acc_train_iter'] = 0
+        test_dict[true_id]['acc_val_iter'] = 0
+        test_dict[true_id]['loss_train_iter'] = 0
+        test_dict[true_id]['classification_loss_train_iter'] = 0
+        test_dict[true_id]['bboxes_loss_train_iter'] = 0
+        test_dict[true_id]['acc_train_iter'] = 0
 
-            test_dict[true_id]['image_accuracy'] = [0.0]
+        test_dict[true_id]['image_accuracy'] = [0.0]
 
-            test_dict[true_id]['acc_val_iter'] = 0
-            test_dict[true_id]['loss_val_iter'] = 0
-            test_dict[true_id]['classification_loss_val_iter'] = 0
-            test_dict[true_id]['bboxes_loss_val_iter'] = 0
+        test_dict[true_id]['acc_val_iter'] = 0
+        test_dict[true_id]['loss_val_iter'] = 0
+        test_dict[true_id]['classification_loss_val_iter'] = 0
+        test_dict[true_id]['bboxes_loss_val_iter'] = 0
 
-            test_dict[true_id]['acc_training_epoch'] = 0
-            test_dict[true_id]['loss_training_epoch'] = 0
-            test_dict[true_id]['classification_loss_training_epoch'] = 0
-            test_dict[true_id]['bboxes_loss_training_epoch'] = 0
+        test_dict[true_id]['acc_training_epoch'] = 0
+        test_dict[true_id]['loss_training_epoch'] = 0
+        test_dict[true_id]['classification_loss_training_epoch'] = 0
+        test_dict[true_id]['bboxes_loss_training_epoch'] = 0
 
-            test_dict[true_id]['acc_validation_epoch'] = 0
-            test_dict[true_id]['loss_validation_epoch'] = 0
-            test_dict[true_id]['classification_loss_validation_epoch'] = 0
-            test_dict[true_id]['bboxes_loss_validation_epoch'] = 0
+        test_dict[true_id]['acc_validation_epoch'] = 0
+        test_dict[true_id]['loss_validation_epoch'] = 0
+        test_dict[true_id]['classification_loss_validation_epoch'] = 0
+        test_dict[true_id]['bboxes_loss_validation_epoch'] = 0
 
-            test_dict[true_id]['confidence_scores'] = confidence_scores
-            test_dict[true_id]['image_bboxes'] =  bbox_image
-
-            test_dicts.append(test_dict)
+        test_dict[true_id]['confidence_scores'] = confidence_scores
+        test_dict[true_id]['image_bboxes'] =  bbox_image
 
         result_dict = {
             "maxTestIter": max_itr_tst,
-            "testDicts": test_dicts,
+            "testDict": test_dict,
             "trainingStatus": training_status,
             "testStatus": test_status,
             "status": status
         }
-
-        results_list.append(result_dict)
     
-    return results_list
+        return result_dict
 
 def policy_reinforce(core, graphs, sanitized_to_name, sanitized_to_id, results):
 
@@ -1175,17 +1154,15 @@ def policy_reinforce(core, graphs, sanitized_to_name, sanitized_to_id, results):
         return data
 
     current_graph = graphs[-1]
-    results_list = []
-    test_graphs = []
-    train_graphs = None
+    test_graph = None
+    train_graphs_exist = None
     for graph in graphs:
         if graph.active_training_node.layer.status == 'testing':
-            test_graphs.append(graph)
+            test_graph = graph
         else:
-            train_graphs = True
+            train_graphs_exist = True
             
-    
-    if train_graphs:
+    if train_graphs_exist:
         trn_node = current_graph.active_training_node
         train_dict = {}
 
@@ -1249,9 +1226,8 @@ def policy_reinforce(core, graphs, sanitized_to_name, sanitized_to_id, results):
             "status": status,
             "progress": trn_node.layer.progress
         }
-        results_list.append(result_dict)
 
-    return results_list
+        return result_dict
 
 def policy_gan(core, graphs, sanitized_to_name, sanitized_to_id, results):
 
@@ -1451,18 +1427,17 @@ def policy_gan(core, graphs, sanitized_to_name, sanitized_to_id, results):
         return data
 
     current_graph = graphs[-1]
-    results_list = []
-    test_graphs = []
-    train_graphs = None
+    test_graph = None
+    train_graphs_exist = None
     for graph in graphs:
         if graph.active_training_node.layer.status == 'testing':
-            test_graphs.append(graph)
+            test_graph = graph
         else:
-            train_graphs = True 
-             
+            train_graphs_exist = True 
+            
     
-    if train_graphs:
-        trn_node = current_graph.active_training_node
+    if train_graphs_exist:
+        trn_node = current_graph.active_training_node  # TODO: using current graph might create issues in future
         train_dict = {}
 
         # ----- Get layer specific data.
@@ -1530,45 +1505,41 @@ def policy_gan(core, graphs, sanitized_to_name, sanitized_to_id, results):
             "status": status,
             "progress": trn_node.layer.progress
         }
-        results_list.append(result_dict)
+        return result_dict
 
-    if len(test_graphs) > 0:
-        test_dicts = []
-        for current_graph in test_graphs:
-            trn_node = current_graph.active_training_node
-            test_dict = {}
-            for node in current_graph.nodes:
-                data = {}
-                true_id = sanitized_to_id[node.layer_id] # nodes use spec names for layer ids
-                data.update(get_layer_inputs_and_outputs(current_graph, node, trn_node))
-                test_dict[true_id] = data
-            
-            data = {}        
-            true_trn_id = sanitized_to_id[trn_node.layer_id]
-            trn_layer = trn_node.layer
-            switch_layer_id = trn_layer.get_switch_layer_id
-            data['generated_image'] = dict_first_value(trn_layer.generator_layer_outputs.get(switch_layer_id))[-1]
-            data['real_image'] = dict_first_value(trn_layer.real_layer_outputs.get(switch_layer_id))[-1]
-            test_dict[true_trn_id].update(data)
+    if test_graph is not None:
+        trn_node = test_graph.active_training_node
+        test_dict = {}
+        for node in test_graph.nodes:
+            data = {}
+            true_id = sanitized_to_id[node.layer_id] # nodes use spec names for layer ids
+            data.update(get_layer_inputs_and_outputs(test_graph, node, trn_node))
+            test_dict[true_id] = data
+        
+        data = {}        
+        true_trn_id = sanitized_to_id[trn_node.layer_id]
+        trn_layer = trn_node.layer
+        switch_layer_id = trn_layer.get_switch_layer_id
+        data['generated_image'] = dict_first_value(trn_layer.generator_layer_outputs.get(switch_layer_id))[-1]
+        data['real_image'] = dict_first_value(trn_layer.real_layer_outputs.get(switch_layer_id))[-1]
+        test_dict[true_trn_id].update(data)
 
-            training_status = 'Finished'
-            status='Running'
-            test_status='Waiting'
+        training_status = 'Finished'
+        status='Running'
+        test_status='Waiting'
 
-            # if trn_node.layer.size_testing and trn_node.layer.batch_size:
-            max_itr_tst = trn_node.layer.size_testing
+        # if trn_node.layer.size_testing and trn_node.layer.batch_size:
+        max_itr_tst = trn_node.layer.size_testing
 
-            true_id = sanitized_to_id[trn_node.layer_id]
+        true_id = sanitized_to_id[trn_node.layer_id]
 
-            test_dicts.append(test_dict)
 
         result_dict = {
             "maxTestIter": max_itr_tst,
-            "testDicts": test_dicts,
+            "testDict": test_dict,
             "trainingStatus": training_status,
             "testStatus": test_status,
             "status": status
         }
-        results_list.append(result_dict)
     
-    return results_list
+        return result_dict

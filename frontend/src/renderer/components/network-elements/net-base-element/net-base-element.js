@@ -71,7 +71,7 @@ export default {
       return this.editIsOpen && !this.settingsIsOpen && !this.contextIsOpen
     },
     showCheckpoint() {
-      return this.dataEl.checkpoint && this.dataEl.checkpoint.length
+      return this.dataEl.isTrained;
     },
     currentId() {
       return this.dataEl.layerId
