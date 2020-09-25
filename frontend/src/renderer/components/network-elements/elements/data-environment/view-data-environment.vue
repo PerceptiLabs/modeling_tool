@@ -6,14 +6,14 @@
     v-tooltip-interactive:right="interactiveInfo"
     :style="layerStyles"
   )
-    i.icon.icon-map
+    i.icon.icon-data
     text-editable.layer-type(
       v-if="withLayerTypeText"
       :text-title="currentEl.layerName"
       @change-title="editElName"
       :styleType="['network-view']"
       )
-    .layerTitle(v-if="showTitle") {{ displayTitle }}   
+    .layerTitle(v-if="showTitle") {{ displayTitle }}
 
 </template>
 

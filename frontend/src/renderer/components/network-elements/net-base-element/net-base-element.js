@@ -90,6 +90,7 @@ export default {
     },
     classEl() {
       return {
+        [`el-type-${this.dataEl.layerType}`]: true,
         'net-element--active': this.isSelectedEl,
         'element--hidden': this.dataEl.layerMeta.isInvisible
       }

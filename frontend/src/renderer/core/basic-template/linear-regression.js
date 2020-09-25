@@ -25,7 +25,7 @@ const linearRegression = {
         "layerId": "1598990332625",
         "copyId": null,
         "copyContainerElement": null,
-        "layerName": "Data_1",
+        "layerName": "Local_1",
         "layerType": "Data",
         "layerSettings": {
           "accessProperties": {
@@ -98,7 +98,7 @@ const linearRegression = {
         "layerId": "1598990333926",
         "copyId": null,
         "copyContainerElement": null,
-        "layerName": "Data_2",
+        "layerName": "Local_2",
         "layerType": "Data",
         "layerSettings": {
           "accessProperties": {
@@ -171,7 +171,7 @@ const linearRegression = {
         "layerId": "1598990349372",
         "copyId": null,
         "copyContainerElement": null,
-        "layerName": "Fully Connected_1",
+        "layerName": "Dense_1",
         "layerType": "Other",
         "layerSettings": {
           "Dropout": false,

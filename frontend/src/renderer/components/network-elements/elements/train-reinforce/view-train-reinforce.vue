@@ -6,7 +6,7 @@
     v-tooltip-interactive:right="interactiveInfo"
     :style="layerStyles"
   )
-    i.icon.icon-train-reinforce
+    i.icon.icon-train-group
     text-editable.layer-type(
       v-if="withLayerTypeText"
       :text-title="currentEl.layerName"
@@ -34,7 +34,7 @@ export default {
         title: 'Train Reinforce',
         text: 'Reinforcement learning layer.'
       },
-      displayTitle: 'Reinforce'
+      displayTitle: 'Reinforcement Learning'
     }
   }
 }

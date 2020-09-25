@@ -8,13 +8,14 @@
         span Test
     ul.file-settings_list
       li.file-list_item(
+        style="overflow: hidden"
         v-for="(file, i) in fileList"
         :key="i"
       )
         .form_row
           .form_label
             button.btn.btn--icon.icon.icon-app-close(type="button" @click="deleteItem(i)")
-            span.file-item_path.heavy-text {{ file.path }}
+            span(:title="file.path").file-item_path.heavy-text {{ file.path }}
             spinner-upload-file.spinner-upload-file(v-if="loadingFlag")
           .form_input
             triple-input.file-list-item_settings(
@@ -27,7 +28,7 @@
               @handle-blur="$emit('handle-blur')"
             )
 
-    button.btn.btn--link.light-text(type="button" @click="addFile") + Add {{ nameAddItem }}
+    //- button.btn.btn--link.light-text(type="button" @click="addFile") + Add {{ nameAddItem }}
 
 </template>
 
@@ -155,10 +156,13 @@ export default {
   .file-list_item {
     padding: $file-list-indent;
     border-bottom: 1px solid $bg-toolbar;
+    overflow: hidden;
     .form_row {
       align-items: stretch;
     }
     .form_label {
+      flex: 0 0 35%;
+      max-width: 35%;
       display: flex;
       overflow-y: hidden;
       align-items: center;

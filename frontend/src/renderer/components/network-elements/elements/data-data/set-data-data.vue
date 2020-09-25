@@ -13,7 +13,9 @@
         :filePickerType="filePickerType"
         :fileTypeFilter="validFileExtensions"
         :confirmCallback="confirmFilePickerSelection"
-        :cancelCallback="clearPath")
+        :cancelCallback="clearPath"
+        :options="{showToTutotialDataFolder: true}"
+        )
 
       //-web-upload-file#tutorial_button-load.tutorial-relative(
         v-model="settings.accessProperties.PathFake"
@@ -30,7 +32,8 @@
         .form_row
           button.btn.btn--link(type="button" @click="clearPath")
             img(src="../../../../../../static/img/back.svg")
-        .form_row(v-if="dataColumns.length")
+        .form_row.flex-column.align-items-start(v-if="dataColumns.length")
+          .form_label Columns
           base-select(
             v-model="dataColumnsSelected"
             :select-options="dataColumns"

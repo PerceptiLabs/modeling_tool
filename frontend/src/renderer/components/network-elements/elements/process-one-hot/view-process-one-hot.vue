@@ -7,7 +7,7 @@
   id="tutorial_one-hot"
     :style="layerStyles"
   )
-    i.icon.icon-one-hot
+    i.icon.icon-processing-group
     text-editable.layer-type(
       v-if="withLayerTypeText"
       :text-title="currentEl.layerName"

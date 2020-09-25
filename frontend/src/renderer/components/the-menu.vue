@@ -358,8 +358,8 @@ export default {
             {type:  'separator'},
             {label: 'Delete',       accelerator: this.isMac ? 'meta+backspace' : 'delete',                              active: this.HC_delete,                    visible: false  },
             {label: 'DeleteMac',    accelerator: this.isMac ? 'backspace' : '',                              active: this.HC_delete,                    visible: false  },
-            {label: 'Add group',    accelerator: this.isMac ? 'meta+g' : 'ctrl+g',              enabled: this.openApp,  active: this.HC_addLayerContainer,         visible: false  },
-            {label: 'Ungroup',      accelerator: this.isMac ? 'meta+shift+g' : 'ctrl+shift+g',  enabled: this.openApp,  active: this.HC_unGroupLayerContainer,     visible: false  },
+            // {label: 'Add group',    accelerator: this.isMac ? 'meta+g' : 'ctrl+g',              enabled: this.openApp,  active: this.HC_addLayerContainer,         visible: false  },
+            // {label: 'Ungroup',      accelerator: this.isMac ? 'meta+shift+g' : 'ctrl+shift+g',  enabled: this.openApp,  active: this.HC_unGroupLayerContainer,     visible: false  },
             {type:  'separator'},
             {label: 'Close setting popups',          accelerator: 'esc',                                                active: this.HC_esc,                       visible: false  },
           ]
@@ -425,8 +425,8 @@ export default {
             {type:  'separator'},
             {label: 'Delete',       accelerator: this.isMac ? 'meta+backspace' : 'delete',                              active: this.HC_delete,                    visible: false  },
             {label: 'DeleteMac',    accelerator: this.isMac ? 'backspace' : '',                              active: this.HC_delete,                    visible: false  },
-            {label: 'Add group',    accelerator: this.isMac ? 'meta+g' : 'ctrl+g',              enabled: this.openApp,  active: this.HC_addLayerContainer,         visible: false  },
-            {label: 'Ungroup',      accelerator: this.isMac ? 'meta+shift+g' : 'ctrl+shift+g',  enabled: this.openApp,  active: this.HC_unGroupLayerContainer,     visible: false  },
+            // {label: 'Add group',    accelerator: this.isMac ? 'meta+g' : 'ctrl+g',              enabled: this.openApp,  active: this.HC_addLayerContainer,         visible: false  },
+            // {label: 'Ungroup',      accelerator: this.isMac ? 'meta+shift+g' : 'ctrl+shift+g',  enabled: this.openApp,  active: this.HC_unGroupLayerContainer,     visible: false  },
             {type:  'separator'},
             {label: 'Close setting popups',          accelerator: 'esc',                                                active: this.HC_esc,                       visible: false  },
           ]
@@ -513,7 +513,7 @@ export default {
     white-space: nowrap;
     border-radius: 0;
     &:hover {
-      background: #124368;
+      background: rgba(#6185EE, .5)
     }
     .text-disable {
       flex: 0 0 auto;

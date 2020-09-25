@@ -44,9 +44,10 @@
             v-tooltip-interactive:bottom="interactiveInfo.redo"
           )
             i.icon.icon-step-next
+      .horizontal-separator
       ul.toolbar_list
         li(:class="{'tutorial-active': activeStepStoryboard === 4}")
-          button#tutorial_run-training-button.btn.btn--toolbar.bg-primary.run-button(type="button"
+          button#tutorial_run-training-button.btn-menu-bar(type="button"
             :class="statusStartBtn"
             v-tooltip:bottom="'Run/Stop'"
             v-tooltip-interactive:bottom="interactiveInfo.runButton"
@@ -55,6 +56,14 @@
           )
             i.icon.icon-on-off
             span(v-html="statusTraining === 'training' || statusTraining === 'pause' ? 'Stop' : 'Run'")
+      .horizontal-separator
+      ul.toolbar_list
+        li(:class="{'tutorial-active': activeStepStoryboard === 4}")
+          button#tutorial_run-training-button.btn-menu-bar(type="button"
+            :class="{'disabled': !haveAtLeastOneItemStatistic , 'active': statisticsIsOpen && isOnModelToolPage()}"
+            @click="toModelStatistic"
+          )
+            | Go to statistic
         //- li
         //-   button#tutorial_pause-training.btn.btn--toolbar.tutorial-relative(type="button"
         //-     :class="{'active': statusNetworkCore === 'Paused'}"
@@ -77,16 +86,7 @@
       //-     input.search-bar(
       //-       placeholder="Search operation"
       //-     )
-      ul.toolbar_list
-        li
-          span TensorFlow 1.15 
-      ul.toolbar_list
-        li
-          span Python 3
-          span.btn.python-status(
-            :class="{'connected': statusLocalCore === 'online', 'disconnected': statusLocalCore === 'offline'}"
-            v-tooltip:networkElement="kernelLabel"
-          )
+     
       //ul.toolbar_list
         li
           button.btn.btn--toolbar(type="button"
@@ -102,8 +102,7 @@
             i.icon.icon-box
 
       .toolbar_settings
-        span.text-primary.middle-text(v-html="statusTrainingText")
-        button.btn.btn--dark.btn--toolbar-settings(
+        button.btn-menu-bar(
           type="button"
           :class="{'active': showModelPreviews}"
           @click="toggleModelPreviews"
@@ -112,10 +111,22 @@
         )
           span Preview
           .ring-icon
-        button.btn.btn--dark.btn--toolbar-settings(
+        
+        div.horizontal-separator
+        
+        button.button-model-type.ml-0(
+          type="button"
+          :class="{'active': !isNotebookMode}"
+          @click="switchNotebookMode(false)"
+          v-tooltip-interactive:bottom="interactiveInfo.interactiveDoc"
+          :data-tutorial-target="'tutorial-workspace-notebook-view-toggle'"          
+        )
+          span Modeling
+          .ring-icon
+        button.button-model-type(
           type="button"
           :class="{'active': isNotebookMode}"
-          @click="switchNotebookMode"
+          @click="switchNotebookMode(true)"
           v-tooltip-interactive:bottom="interactiveInfo.interactiveDoc"
           :data-tutorial-target="'tutorial-workspace-notebook-view-toggle'"          
         )
@@ -138,7 +149,7 @@
 </template>
 
 <script>
-import { mapGetters, mapActions, mapMutations } from 'vuex';
+import { mapGetters, mapActions, mapMutations, mapState } from 'vuex';
 import { googleAnalytics }                      from '@/core/analytics';
 import { trainingElements, deepLearnElements }  from '@/core/constants.js';
 import { goToLink }                             from '@/core/helpers.js'
@@ -149,6 +160,9 @@ import SidebarToggleButton      from '@/components/toolbar/sidebar-toggle-button
 export default {
   name: 'WorkspaceToolbar',
   components: { LayersToolbar, SidebarToggleButton },
+  created(){
+    this.handleStatisticState(this.workspaceModels);
+  },
   data() {
     return {
       x: null,
@@ -166,10 +180,16 @@ export default {
         interactiveDoc: {title: 'Interactive documentation', text: `Use this to find out what all </br> different operations and functions do`},
         tutorial: {title: 'Tutorial', text: `Choose an interactive tutorial`}
       },
-      reportLink: 'https://join.slack.com/t/perceptilabs-com/shared_invite/enQtODQ5NzAwNDkxOTExLWUxODAwZDk0MzA1MmM4OTViNWE4MmVjYjc2OTQwMTQ4N2NmM2ZlYmI5NjZjOWRiYjBkYjBjMTMzNjEyMDNiNDk'
+      reportLink: 'https://join.slack.com/t/perceptilabs-com/shared_invite/enQtODQ5NzAwNDkxOTExLWUxODAwZDk0MzA1MmM4OTViNWE4MmVjYjc2OTQwMTQ4N2NmM2ZlYmI5NjZjOWRiYjBkYjBjMTMzNjEyMDNiNDk',
+      haveAtLeastOneItemStatistic: false,
+      statisticItemIndex: null,
     }
   },
   computed: {
+    ...mapState({
+      workspaceModels:    state => state.mod_workspace.workspaceContent,
+      showNewModelPopup:  state => state.globalView.globalPopup.showNewModelPopup,
+    }),
     ...mapGetters({
       interactiveInfoStatus:'mod_tutorials/getInteractiveInfo',
       isTutorialMode:       'mod_tutorials/getIsTutorialMode',
@@ -181,6 +201,7 @@ export default {
       networkIsOpen:        'mod_workspace/GET_networkIsOpen',
       networkHistory:       'mod_workspace-history/GET_currentNetHistory',
       isNotebookMode:       'mod_notebook/getNotebookMode',
+      currnetNetwork:     'mod_workspace/GET_currentNetwork',
     }),
     statusStartBtn() {
       return {
@@ -211,29 +232,7 @@ export default {
           break;
       }
     },
-    statusTrainingText() {
-      switch (this.statusTraining) {
-        case 'training':
-          return '<i class="icon icon-repeat animation-loader"></i> Training';
-          break;
-        case 'pause':
-          return 'Training paused';
-          break;
-        case 'finish':
-          return 'Training completed';
-          break;
-      }
-    },
-    statusTestText() {
-      switch (this.statusTraining) {
-        case 'training':
-          return '<i class="icon icon-repeat animation-loader"></i> Test running';
-          break;
-        case 'pause':
-          return '<i class="icon icon-notification"></i> Test completed';
-          break;
-      }
-    },
+
     hideLayers () {
       return this.$store.state.globalView.hideLayers
     },
@@ -274,7 +273,15 @@ export default {
   watch: {
     networkIsOpen(newVal) {
       if(!newVal) this.set_netMode('edit');
-    }
+    },
+    workspaceModels: {
+        deep: true,
+        handler(models) {
+          this.statisticItemIndex = null;
+          this.haveAtLeastOneItemStatistic = false;
+          this.handleStatisticState(models);
+        }
+      },
   },
   methods: {
     ...mapMutations({
@@ -295,15 +302,20 @@ export default {
       toPrevStepHistory:    'mod_workspace-history/TO_prevStepHistory',
       toNextStepHistory:    'mod_workspace-history/TO_nextStepHistory',
       setCurrentView:       'mod_tutorials/setCurrentView',
-      setNextStep:          'mod_tutorials/setNextStep'
+      setNextStep:          'mod_tutorials/setNextStep',
+      SET_openStatistics:   'mod_workspace/SET_openStatistics',
+      set_chartRequests:    'mod_workspace/SET_chartsRequestsIfNeeded',
+      SET_openTest:       'mod_workspace/SET_openTest',
+      SET_currentNetwork: 'mod_workspace/SET_currentNetwork',
+
     }),
     switchTutorialMode() {
       this.$refs.tutorialComponent.switchTutorialMode()
     },
-    switchNotebookMode() {
-      this.$store.dispatch('mod_tracker/EVENT_toolbarNotebookButtonToggle', !this.isNotebookMode);
+    switchNotebookMode(setNotebook) {
+      this.$store.dispatch('mod_tracker/EVENT_toolbarNotebookButtonToggle', setNotebook);
       this.setNextStep('tutorial-workspace-notebook-view-toggle');
-      this.set_notebookMode();
+      this.set_notebookMode(setNotebook);
     },
     onOffBtn() {
       if (this.statusLocalCore === 'online') {
@@ -388,7 +400,64 @@ export default {
       this.$store.dispatch('mod_tracker/EVENT_toolbarPreviewButtonToggle', !this.showModelPreviews);
       this.setNextStep('tutorial-workspace-preview-toggle');
       this.$store.dispatch('mod_workspace/TOGGLE_showModelPreviews');
-    }
+    },
+    isModelPageAndNetworkHasStatistic() {
+      return this.$route.name === 'app' && this.currnetNetwork.networkMeta.openStatistics !== null
+    },
+    toModelStatistic() {
+        //$route.name === 'app' && currnetNetwork.networkMeta.openStatistics !== null
+        if(this.$route.name === 'app') {
+          // networkMeta.openStatistics !== null
+          if(this.isModelPageAndNetworkHasStatistic()) {
+            this.$store.dispatch("mod_workspace/setViewType", 'statistic');
+            const item = this.workspaceModels[this.statisticItemIndex];
+            this.SET_currentNetwork(this.statisticItemIndex)
+              .then(() => { 
+                this.$store.dispatch("mod_workspace/EVENT_onceDoRequest");
+                this.SET_openStatistics(true);
+                this.set_chartRequests(item.networkID);
+                })
+          } else {
+            const { statisticItemIndex } = this;
+            
+            if(statisticItemIndex !== null) {
+              this.$store.dispatch("mod_workspace/setViewType", 'statistic');
+              this.SET_currentNetwork(statisticItemIndex);
+              this.SET_openStatistics(true);
+              this.SET_openTest(false);
+            }
+          }
+
+        } else {
+          const { statisticItemIndex } = this;
+          if(statisticItemIndex !== null) {
+            this.$store.dispatch("mod_workspace/setViewType", 'statistic');
+            this.SET_currentNetwork(statisticItemIndex)
+              .then(() => {
+                this.$router.push({name: 'app'});
+                this.SET_openStatistics(true);
+              });
+          }
+        }
+
+        this.$nextTick(() => {
+          if (this.showNewModelPopup) {
+            this.setCurrentView('tutorial-create-model-view');
+          } else {
+            this.setCurrentView('tutorial-statistics-view');
+          }
+        });
+      },
+    handleStatisticState(models) {
+      const firsImteWithStatistcsIndex = models.findIndex(model => model.networkMeta.openStatistics !== null);
+      if(firsImteWithStatistcsIndex !== -1) {
+          this.haveAtLeastOneItemStatistic = true;
+          this.statisticItemIndex = firsImteWithStatistcsIndex;
+      } 
+    },
+    isOnModelToolPage(){
+      return this.$route.name === 'app';
+    },
   },
 }
 </script>
@@ -404,7 +473,7 @@ export default {
     border-radius: 0px;
     position: relative;
     grid-area: toolbar;
-    z-index: 7;
+    z-index: 12;
     height: $h-toolbar;
   }
   .toggle-wrap {
@@ -430,14 +499,14 @@ export default {
     display: flex;
     align-items: center;
     margin: 0;
-    padding: 0 .7143rem;
+    // padding: 0 .7143rem;
     list-style: none;
     > li + li {
       margin-left: .3571rem;
     }
-    + .toolbar_list {
-      border-left: 1px solid $toolbar-separator-color;
-    }
+    // + .toolbar_list {
+    //   border-left: 1px solid $toolbar-separator-color;
+    // }
 
     &:first-child {
       margin-left: 2rem;
@@ -564,6 +633,31 @@ export default {
     }
 
   }
+  .button-model-type {
+    // margin: 16px;
+    height: 30px;
+    position: relative;
+    display: block;
+    background-color: transparent;
+    // border: 1px solid red;
+    color: rgba(182, 199, 251, 0.2);
+    font-family: Nunito Sans;
+    font-size: 12px;
+    &.active {
+      font-weight: bold;
+      color: #B6C7FB;
+      &::after {
+        content: "";
+        position: absolute;
+        background-color: #B6C7FB;
+        width: 80%;
+        height: 2px;
+        left: 10%;
+        bottom: 0;
+        border-radius: 5px 5px 0 0;
+      }
+    }
+  }
 
   .search-bar {
     background: #363E51;
@@ -588,5 +682,15 @@ export default {
      background-color: #FE7373;
     }
   }
-  
+  .horizontal-separator {
+    height: 20px;
+    width: 1px;
+    margin-left: 12px;
+    margin-right: 12px;
+    border-radius: 1px;
+    background-color: #5E6F9F;
+  }
+  .ml-0 {
+    margin-left: 0;
+  }
 </style>

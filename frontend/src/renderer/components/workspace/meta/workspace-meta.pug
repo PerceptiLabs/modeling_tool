@@ -1,48 +1,48 @@
-.workspace_scale()
+.workspace_scale
+  .worksapce-scale-info.mr-10 Zoom
   button.btn.btn--icon.workspace-scale_btn(type="button" @click="decScale()")
     i.icon.icon-minus
-
-  .input-wrap_icon.workspace-scale_input
+  .workspace-scale_input
     input(type="text" 
     v-model.number="scaleNet" 
     @keypress="filterNonNumber($event)" 
     @blur="onZoomInputBlur")
     span %
-
   button.btn.btn--icon.workspace-scale_btn(type="button" @click="incScale()")
     i.icon.icon-zoom-plus
+.workspace-meta-right-box
+  model-status(
+    v-if="(currentNetwork.networkMeta.coreStatus.Status !== 'Waiting') && !statisticsIsOpen"
+    :options="{styleInlineLabel: true}"
+    :statusData="currentNetwork && currentNetwork.networkMeta.coreStatus"
+  )
+  .x-space-20
+  div
+    span Python 3 - TensorFlow 1.15
+    span.btn.python-status(
+      :class="{'connected': statusLocalCore === 'online', 'disconnected': statusLocalCore === 'offline'}"
+      v-tooltip:networkElement="kernelLabel"
+    )
+  .x-space-20
+  .workspace_meta-action
 
-  //the-mini-map
-
-.workspace_meta-action
-
-  button(
-    @click="addErrorNotification"
-  ) Add error
-  button(
-    @click="addWarningNotification"
-  ) Add warning
-
-  .workspace-notifications
-    button(
-      @click="notificationWindowStateHandler(!showNotificationWindow)"
-    ) {{ workspaceErrors }} errors
-    svg.has-error(v-if="workspaceErrors > 0" width="10" height="9" viewBox="0 0 10 9" fill="none" xmlns="http://www.w3.org/2000/svg")
-      ellipse(cx="5.48426" cy="4.5" rx="4.50379" ry="4.5" fill="#FE7373")
-      path(d="M4.72977 0.94L6.26977 0.95L5.87977 5.88H5.11977L4.72977 0.94ZM6.19977 6.62V8H4.79977V6.62H6.19977Z" fill="#23252A")
-    svg.no-error(v-else width="10" height="9" viewBox="0 0 10 9" fill="none" xmlns="http://www.w3.org/2000/svg")
-      ellipse(cx="5.48523" cy="4.5" rx="4.50379" ry="4.5" fill="#73FEBB")
-      path(fill-rule="evenodd" clip-rule="evenodd" d="M8.59204 3.00676L4.39496 7.61966L2.48145 5.22977L3.36066 4.52699L4.44967 5.8871L7.75891 2.25L8.59204 3.00676Z" fill="#23252A")
+    div.btn-menu-bottom-group-bar
+      button(
+        :class="{'active': getNotificationWindowSelectedTab === 'ErrorInfoPanel' && showNotificationWindow}"
+        @click="notificationWindowStateHandlerNew('ErrorInfoPanel')"
+      ) {{ workspaceErrors }} Problems
+        span.btn.python-status(
+        :class="{'connected': workspaceErrors > 0, 'disconnected': workspaceErrors > 0}")
+      button(
+        :class="{'active': getNotificationWindowSelectedTab === 'ConsoleInfoPanel' && showNotificationWindow}"
+        @click="notificationWindowStateHandlerNew('ConsoleInfoPanel')"
+        ) Console
       
-.workspace_meta-action.d-flex
-  button.btn.btn--color.hardware-trigger(type="button" 
-    :class="{clicked: showResourceView!=0}"
+  .x-space-10
+  
+  button.btn-menu-bar.size-xs(
+    v-if="statisticsIsOpen"
+    type="button" 
+    :class="{clicked: showResourceView!=0, 'active': showResourceView != 0}"
     @click="setResourceView(1)"
     ) Hardware
-
-  //-button.btn.btn--color.btn--color__purpur(type="button" disabled="disabled"
-    v-if="statisticsIsOpen && statusNetworkCore == 'Finished'"
-    @click="saveNetwork"
-    ) Extract Data
-
-

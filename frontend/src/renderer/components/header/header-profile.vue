@@ -1,7 +1,7 @@
 <template lang="pug">
   div.profile-wrapper
     div.profile-item
-      .profile-item-Avatar.with-border(
+      .profile-item-Avatar.with-border.f-nunito(
         :data-tutorial-target="'tutorial-model-hub-user-gravatar'"
       )
         | {{user && user.firstName[0]}}
@@ -11,8 +11,8 @@
             .profile-item-Avatar
               | {{user && user.firstName[0]}}
             div.ml-12
-              h3.white.fz-14.mb-0 {{user && user.firstName}} {{ user && user.lastName}}
-              p.fz-12.mb-0 {{user && user.email}}
+              h3.white.fz-14.mb-0.f-nunito {{user && user.firstName}} {{ user && user.lastName}}
+              p.fz-12.mb-0.f-nunito {{user && user.email}}
         .profile-separator
         //- button.bgc-transparent.ta-left.profile-item-wrapper(v-for="collaborator in collaboratorData")
         //-   .d-flex
@@ -27,7 +27,7 @@
         //-   h3.fz-14 Add another account
         //- .profile-separator
 
-        button.sign-out-all(@click="logOut")
+        button.sign-out-all.f-nunito(@click="logOut")
           | Sign out
 </template>
 
@@ -177,5 +177,8 @@
     border-radius: 50%;
     text-align: center;
     line-height: 17px;
+  }
+  .f-nunito {
+    font-family: "Nunito Sans";
   }
 </style>

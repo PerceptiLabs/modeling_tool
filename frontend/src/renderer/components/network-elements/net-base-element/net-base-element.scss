@@ -12,7 +12,7 @@ $clip-path_indent: $arrows-start_size/2;
   }
   .btn--layersbar {
     width: 145px;
-    height: 17px;
+    height: 20px;
     border-radius: 2px 2px 0 0;
   }
 }
@@ -38,7 +38,7 @@ $clip-path_indent: $arrows-start_size/2;
   margin: 0;
   padding: 0;
   background-color: transparent;
-  box-shadow: $layer-shad;
+  // box-shadow: $layer-shad;
 }
 
 .net-element_be-for-end {

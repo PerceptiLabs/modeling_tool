@@ -6,7 +6,7 @@
     v-tooltip-interactive:right="interactiveInfo"
     :style="layerStyles"
   )
-    i.icon.icon-round-left
+    i.icon.icon-deep-learning-group
     text-editable.layer-type(
       v-if="withLayerTypeText"
       :text-title="currentEl.layerName"

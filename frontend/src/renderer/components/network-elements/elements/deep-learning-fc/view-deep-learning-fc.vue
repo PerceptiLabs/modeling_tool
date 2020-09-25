@@ -1,13 +1,13 @@
 <template lang="pug">
   .btn.btn--layersbar.net-element-learn-deep(:draggable="draggable"
   data-component="DeepLearningFC"
-  data-layer="Fully Connected"
+  data-layer="Dense"
   data-type="Other"
   v-tooltip-interactive:right="interactiveInfo"
   id="tutorial_fully-connected"
     :style="layerStyles"
   )
-    i.icon.icon-round
+    i.icon.icon-deep-learning-group
     text-editable.layer-type(
       v-if="withLayerTypeText"
       :text-title="currentEl.layerName"
@@ -35,7 +35,7 @@ export default {
         title: 'Deep Learning FC',
         text: 'Fully Connected layer'
       },
-      displayTitle: 'Fully connected'
+      displayTitle: 'Dense'
     }
   }
 }

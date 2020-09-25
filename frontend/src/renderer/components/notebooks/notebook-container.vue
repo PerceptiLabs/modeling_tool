@@ -1,13 +1,16 @@
 <template>
-  <div id="notebook-container">
-    <div id="cell-list">
-      <notebook-cell
-        v-for="cell in cells"
-        :key="cell.layerId"
-        :cell="cell"
-        :isFocused="focusedCellId === cell.layerId"
-        @click="onCellClick"
-      />
+  <div class="notebook-box">
+    <notebook-info-message />
+    <div id="notebook-container">
+      <div id="cell-list">
+        <notebook-cell
+          v-for="cell in cells"
+          :key="cell.layerId"
+          :cell="cell"
+          :isFocused="focusedCellId === cell.layerId"
+          @click="onCellClick"
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -17,10 +20,12 @@ import { mapGetters } from 'vuex';
 import { stringifyNetworkObjects, promiseWithTimeout } from '@/core/helpers';
 
 import NotebookCell from "@/components/notebooks/notebook-cell.vue";
+import NotebookInfoMessage from "@/components/notebooks/notebook-info-message.vue";
 
 export default {
   components: {
-    NotebookCell
+    NotebookCell,
+    NotebookInfoMessage,
   },
   computed: {
     ...mapGetters({
@@ -150,6 +155,10 @@ export default {
   }
 }
 
+.notebook-box {
+  position: relative;
+  height: 100%;
+}
 #notebook-container {
   background-color: linear-gradient(180deg, #363E51 0%, rgba(54, 62, 81, 0) 100%);
   padding: 5rem 0;

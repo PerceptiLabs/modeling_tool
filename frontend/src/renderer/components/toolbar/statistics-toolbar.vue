@@ -6,18 +6,31 @@
       | Back to model
     .toolbar-section
       ul.toolbar-button-group(:data-tutorial-target="'tutorial-statistics-controls'")
-        li.toolbar-button(@click="onPauseClick")
+        button.btn-menu-bar(
+          v-if="!trainintIsStopped"
+          @click="onPauseClick"
+        )
           i.icon.icon-player-pause
+        
+        button.btn-menu-bar(
+          v-if="trainintIsStopped"
+          @click="startTraining"
+        )
+          i.icon.icon-player-play.scaled-icon
+        
+        button.btn-menu-bar(
+          @click="onStopClick"
+        )
+          icon.icon.icon-stop2
 
-        li.toolbar-button(@click="onStopClick")
-          i.icon.icon-stop2
-
-        li.toolbar-button(@click="onSkipClick")
-
+        button.btn-menu-bar(
+          @click="onSkipClick"
+        )
           i.icon.icon-player-next
 
     .toolbar-section
       model-status(
+        v-if="statisticsIsOpen"
         :statusData="currentNetwork.networkMeta.coreStatus"
       )
     .toolbar-section
@@ -30,19 +43,35 @@
 
 import ModelStatus  from '@/components/different/model-status.vue';
 
-import { mapGetters, mapActions } from 'vuex';
+import { mapGetters, mapActions, mapMutations } from 'vuex';
 
 export default {
   name: 'StatisticsToolbar',
   components: { ModelStatus },
   data() {
-    return {}
+    return {
+     trainintIsStopped: false, 
+    }
+  },
+  watch: {
+    statusNetworkCore: {
+      handler(statusNetworkCore) {
+        console.log(statusNetworkCore);
+        if(statusNetworkCore === 'Stop' || statusNetworkCore === 'Paused' || statusNetworkCore === 'Finished') {
+          this.trainintIsStopped = true;
+        } else {
+          this.trainintIsStopped = false;
+        }
+      },
+      deep: true
+    },
   },
   computed: {
     ...mapGetters({
       statusNetworkCore:    'mod_workspace/GET_networkCoreStatus',
       statisticsIsOpen:     'mod_workspace/GET_statisticsIsOpen',
       currentNetwork:       'mod_workspace/GET_currentNetwork',
+      isTraining:           'mod_workspace/GET_networkIsTraining',
     }),
     statusTraining() {
       switch (this.statusNetworkCore) {
@@ -58,17 +87,32 @@ export default {
           break;
       }
     },
+    statusLocalCore() {
+      return this.$store.state.mod_api.statusLocalCore;
+    },
   },
   methods: {
+    ...mapMutations({
+      set_showTrainingSpinner:  'mod_workspace/SET_showStartTrainingSpinner',
+    }),
     ...mapActions({
       pauseTraining:        'mod_api/API_pauseTraining',
       stopTraining:         'mod_api/API_stopTraining',
       skipValidTraining:    'mod_api/API_skipValidTraining',
       SET_openStatistics:   'mod_workspace/SET_openStatistics',
-      setCurrentView:           'mod_tutorials/setCurrentView'
+      setCurrentView:       'mod_tutorials/setCurrentView',
+      showInfoPopup:        'globalView/GP_infoPopup',
+
+      API_startTraining:        'mod_api/API_startTraining',
+      setSidebarStateAction:    'globalView/hideSidebarAction',
     }),
     onPauseClick() {
       this.pauseTraining();
+    },
+    startTraining() {
+     this.API_startTraining();
+     this.setSidebarStateAction(false);
+     this.set_showTrainingSpinner(true);
     },
     onStopClick() {
       this.stopTraining();
@@ -178,5 +222,18 @@ export default {
     transform: translateY(-50%);
     right: -12px;
   }
+}
+.btn-menu-bar {
+  padding: 5px 5px;
+  margin-right: 3px;
+}
+.btn-menu-bar .icon {
+  display: block;
+  margin-right: 0;
+  font-size: 11px;
+}
+.scaled-icon {
+  transform-origin: 50% 50%;
+  transform: scale(1.7);
 }
 </style>

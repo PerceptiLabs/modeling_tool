@@ -131,6 +131,7 @@ export default {
     border-bottom: 1px solid #3F4C70;
     &.no-preview {
       border-bottom: 1px solid transparent;
+      border-radius: 0 0 4px 4px;
     }
   }
  

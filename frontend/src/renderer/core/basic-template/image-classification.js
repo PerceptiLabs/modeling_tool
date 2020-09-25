@@ -25,7 +25,7 @@ const imageClassification = {
         "layerId": "1598915799200",
         "copyId": null,
         "copyContainerElement": null,
-        "layerName": "Data_1",
+        "layerName": "Local_1",
         "layerType": "Data",
         "layerSettings": {
           "accessProperties": {
@@ -98,7 +98,7 @@ const imageClassification = {
         "layerId": "1598915800150",
         "copyId": null,
         "copyContainerElement": null,
-        "layerName": "Data_2",
+        "layerName": "Local_2",
         "layerType": "Data",
         "layerSettings": {
           "accessProperties": {
@@ -400,7 +400,7 @@ const imageClassification = {
         "layerId": "1598970577549",
         "copyId": null,
         "copyContainerElement": null,
-        "layerName": "Fully Connected_1",
+        "layerName": "Dense_1",
         "layerType": "Other",
         "layerSettings": {
           "Dropout": false,
@@ -473,7 +473,7 @@ const imageClassification = {
         "layerId": "1598982397425",
         "copyId": null,
         "copyContainerElement": null,
-        "layerName": "Normal_1",
+        "layerName": "Classification_1",
         "layerType": "Training",
         "layerSettings": {
           "Learning_rate": 0.001,

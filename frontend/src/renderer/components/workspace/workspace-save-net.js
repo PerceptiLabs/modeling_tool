@@ -92,7 +92,7 @@ const workspaceSaveNet = {
             
             if(isFolderAlreadyExist) {
               this.$store.dispatch('globalView/GP_confirmPopup', {
-                text: 'Folder exists, are you sure want to overwrite it?',
+                text: `A folder already exists, are you sure <br/> you want to overwrite it?`,
                 ok: () => {
                   this.saveNetwork(answer, netId, isSaveProjectPath);
                 }

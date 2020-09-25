@@ -545,7 +545,7 @@ const actions = {
    ***************************************************************************/
   activateNotification({commit, dispatch, getters}) {
     // Used when a view gets toggled:
-    // For instance: ModelHub -> Created model -> ModelHub
+    // For instance: Mode lHub -> Created model -> Model Hub
     // Without this action, the unclicked notification will not be shown
 
     setTimeout(() => {

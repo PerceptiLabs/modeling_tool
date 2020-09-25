@@ -23,6 +23,13 @@ const getters = {
 
     return network.isNotificationWindowOpen;
   },
+  getNotificationWindowSelectedTab: (state) => (networkId) => {
+    const network = state.workspaceNotifications.find(wn => wn.networkId === networkId);
+    
+    if (!network) { return false; }
+
+    return network.selectedTab;
+  },
   getToasts: (state) => (networkId) => {
     let numErrors = 0;
     let numWarnings = 0;
@@ -102,6 +109,7 @@ const mutations = {
     const defaultEntry = {
       networkId: networkId,
       isNotificationWindowOpen: false,
+      selectedTab: '', // ErrorInfoPanel | ConsoleInfoPanel
       selectedId: '', // which row is selected
       errors: [],
       warnings: []
@@ -165,11 +173,11 @@ const mutations = {
     network.errors = network.errors
       .filter(n => errorHashes.includes(n.id));
   },
-  setWindowState(state, { networkId, value }) {
+  setWindowState(state, { networkId, value, selectedTab }) {
     if (!networkId) { return; }
     const network = state.workspaceNotifications.find(wn => wn.networkId === networkId);
-
     network.isNotificationWindowOpen = !!value;
+    network.selectedTab = selectedTab;
   },
   setSelectedId(state, { networkId, selectedId }) {
     
@@ -187,6 +195,11 @@ const mutations = {
   },
   setToastTimer(state, { networkId, toastTimer }) {
     Vue.set(state.toastTimers, networkId, toastTimer);
+  },
+  setSelectedTabMutation(state, { tabName, networkId }) {
+    if (!networkId) { return; }
+    const network = state.workspaceNotifications.find(wn => wn.networkId === networkId);
+    network.selectedTab = tabName;
   }
 };
 
@@ -256,10 +269,9 @@ const actions = {
     
     commit('removeErrorsExcept', { networkId, errorObjects });    
   },
-  setNotificationWindowState({ commit }, { networkId, value, selectedId = '' }) {
-
+  setNotificationWindowState({ commit }, { networkId, value, selectedTab = 'ErrorInfoPanel', selectedId = '' }) {
     commit('assureWorkspace', { networkId });
-    commit('setWindowState', { networkId, value });
+    commit('setWindowState', { networkId, value, selectedTab });
     commit('setSelectedId', { networkId, selectedId });
   },
   getPiPyUpdate({ commit }) {
@@ -285,6 +297,9 @@ const actions = {
     }, toastLifespanMs);
 
     commit('setToastTimer', { networkId, toastTimer });
+  },
+  setSelectedTabAction({ commit }, { tabName, networkId }) {
+    commit('setSelectedTabMutation', { tabName, networkId });
   }
 };
 

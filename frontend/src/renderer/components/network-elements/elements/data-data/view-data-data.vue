@@ -1,7 +1,7 @@
 <template lang="pug">
   .btn.btn--layersbar.net-element-data(:draggable="draggable"
     data-component="DataData"
-    data-layer="Data"
+    data-layer="Local"
     data-type="Data"
     v-tooltip-interactive:right="interactiveInfo"
     id="tutorial_data-data"
@@ -35,7 +35,7 @@ export default {
         title: 'Data',
         text: 'Read local data or data from a server'
       },
-      displayTitle: 'Data'
+      displayTitle: 'Local'
     }
   }
 }

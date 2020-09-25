@@ -162,7 +162,21 @@ export default {
       color: white;
     }
     &.selected {
-      border: 1px solid #6185EE;
+      color: white;
+      font-weight: bold;
+      border-top: 1px solid #5D5E60;
+      border-bottom: 1px solid #5D5E60;
+      &::after {
+        content: "";
+        position: absolute;
+        left: -2px;
+        top: 0;
+        bottom: 0;
+        width: 3px;
+        border-top-right-radius: 2px;
+        border-bottom-right-radius: 2px;
+        background:#6185EE;
+      }
     }
     .icon {
       display: block;
@@ -193,6 +207,8 @@ export default {
     display: flex;
     align-items: center;
     overflow: hidden;
+    font-size: 12px;
+    font-family: Nunito Sans;
   }
   .layer-item_title {
     padding-left: 1rem;

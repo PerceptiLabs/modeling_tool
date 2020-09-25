@@ -1,13 +1,13 @@
 <template lang="pug">
   .btn.btn--layersbar.net-element-train(:draggable="draggable"
     data-component="TrainDetector"
-    data-layer="Detector"
+    data-layer="Object Detection"
     data-type="Training"
     v-tooltip-interactive:right="interactiveInfo"
     id="tutorial_training-detector"
     :style="layerStyles"
   )
-    i.icon.icon-training-detector
+    i.icon.icon-train-group
     text-editable.layer-type(
       v-if="withLayerTypeText"
       :text-title="currentEl.layerName"
@@ -35,7 +35,7 @@ export default {
         title: 'Train Detector',
         text: 'Detector supervised learning layer'
       },
-      displayTitle: 'Detector'
+      displayTitle: 'Object Detection'
     }
   }
 }

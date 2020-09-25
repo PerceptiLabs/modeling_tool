@@ -51,7 +51,9 @@
 
 
       .button-group
-        button.btn.btn--primary(type="button"
+        button.btn.btn--primary(
+          v-if="options.showToTutotialDataFolder"
+          type="button"
           @click="onToTutorialData"
           ) To Tutorial Data Folder
         span.spacer
@@ -99,6 +101,7 @@ export default {
       default: () => ({
         showBackButton: true,
         showNumberSelectedFiles: true,
+        showToTutotialDataFolder: false,
       })
     },
     startupFolder: {
@@ -432,7 +435,8 @@ export default {
     }
 
     &:hover {
-      background-color: $col-primary2;
+      // background-color: $col-primary2;
+      background-color: rgba(#6185EE, .5);
     }
   }
 

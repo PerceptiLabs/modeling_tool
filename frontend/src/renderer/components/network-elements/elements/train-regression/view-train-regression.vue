@@ -7,7 +7,7 @@
     id="tutorial_training-regression"
     :style="layerStyles"
   )
-    i.icon.icon-train-regression
+    i.icon.icon-train-group
     text-editable.layer-type(
       v-if="withLayerTypeText"
       :text-title="currentEl.layerName"

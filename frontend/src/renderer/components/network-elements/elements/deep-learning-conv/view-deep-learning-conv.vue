@@ -7,7 +7,7 @@
     id="tutorial_convolution"
     :style="layerStyles"
   )
-    i.icon.icon-round-out
+    i.icon.icon-deep-learning-group
     text-editable.layer-type(
       v-if="withLayerTypeText"
       :text-title="currentEl.layerName"

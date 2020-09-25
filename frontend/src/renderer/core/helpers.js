@@ -334,6 +334,7 @@ const layerBgColor = function (componentName) {
   switch (componentName) {
     case 'DataData':
     case 'DataEnvironment':
+    case 'DataRandom':
       className = 'net-color-data';
       break;
     case 'DeepLearningFC':
@@ -357,12 +358,16 @@ const layerBgColor = function (componentName) {
     case 'TrainLoss':
     case 'TrainOptimizer':
     case 'TrainDetector':
+    case 'TrainGan':
+    case 'TrainGan':
+    case 'TrainRegression':
       className = 'net-color-train';
       break;
     case 'MathArgmax':
     case 'MathMerge':
     case 'MathSplit':
     case 'MathSoftmax':
+    case 'MathSwitch':
       className = 'net-color-math';
       break;
     case 'ClassicMLDbscans':
@@ -374,6 +379,9 @@ const layerBgColor = function (componentName) {
       break;
     case 'LayerContainer':
       className = 'net-color-layercontainer';
+      break;
+    case 'LayerCustom':
+      className = 'net-color-custom';
       break;
   }
   return [className];
