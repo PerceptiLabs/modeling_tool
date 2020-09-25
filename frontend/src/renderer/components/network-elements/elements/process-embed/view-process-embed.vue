@@ -6,7 +6,7 @@
   v-tooltip-interactive:right="interactiveInfo"
     :style="layerStyles"
   )
-    i.icon.icon-put-in-button
+    i.icon.icon-processing-group
     text-editable.layer-type(
       v-if="withLayerTypeText"
       :text-title="currentEl.layerName"

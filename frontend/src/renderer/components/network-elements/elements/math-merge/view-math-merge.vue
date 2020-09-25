@@ -6,7 +6,7 @@
   v-tooltip-interactive:right="interactiveInfo"
     :style="layerStyles"
   )
-    i.icon.icon-road-concat
+    i.icon.icon-math-group
     text-editable.layer-type(
       v-if="withLayerTypeText"
       :text-title="currentEl.layerName"

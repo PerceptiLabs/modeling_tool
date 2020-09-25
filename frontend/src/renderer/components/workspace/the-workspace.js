@@ -41,6 +41,7 @@ import InformationPanel       from '@/components/workspace/information-panel/inf
 import ResourceMonitor        from "@/components/charts/resource-monitor.vue";
 import SelectModelModal       from '@/pages/projects/components/select-model-modal.vue';
 import ViewBoxBtnList         from '@/components/statistics/view-box-btn-list.vue'
+import ModelStatus            from '@/components/different/model-status.vue';
 
 export default {
   name: 'WorkspaceContent',
@@ -54,7 +55,8 @@ export default {
     TheToaster, TheMiniMap, FilePickerPopup, Notebook, TheSidebar,
     CodeWindow, InformationPanel,
     Notebook, ResourceMonitor, SelectModelModal,
-    ViewBoxBtnList
+    ViewBoxBtnList,
+    ModelStatus
     
   },
   mounted() {
@@ -108,6 +110,7 @@ export default {
       isNotebookMode:     'mod_notebook/getNotebookMode',
       tutorialActiveStep: 'mod_tutorials/getActiveStep',
       getCurrentStepCode: 'mod_tutorials/getCurrentStepCode',
+      currentNetwork:     'mod_workspace/GET_currentNetwork',
     }),
     ...mapState({
       showNewModelPopup:          state => state.globalView.globalPopup.showNewModelPopup,
@@ -128,6 +131,7 @@ export default {
       showExportNetworkToGitHubPopup:     state => state.globalView.globalPopup.showExportNetworkToGitHubPopup,
       showImportNetworkfromGitHubOrLocalPopup:     state => state.globalView.globalPopup.showImportNetworkfromGitHubOrLocalPopup,
     }),
+    
 
     hasStatistics() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkStatistics;
@@ -141,6 +145,16 @@ export default {
     },
     coreStatus() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.coreStatus
+    },
+    statusLocalCore() {
+      return this.$store.state.mod_api.statusLocalCore;
+    },
+    kernelLabel() {
+      if(this.statusLocalCore !== "online") {
+        return "Kenerl is not connected";
+      } else {
+        return "Kenerl is connected";
+      }
     },
     // currentNet() {
     //   this.scale = this.$store.getters['mod_workspace/GET_currentNetworkZoom'];
@@ -171,6 +185,9 @@ export default {
     },
     showNotificationWindow() {
       return this.$store.getters['mod_workspace-notifications/getNotificationWindowState'](this.workspace[this.indexCurrentNetwork].networkID);
+    },
+    getNotificationWindowSelectedTab() {
+      return this.$store.getters['mod_workspace-notifications/getNotificationWindowSelectedTab'](this.workspace[this.indexCurrentNetwork].networkID);
     },
     workspaceErrors() {
       return this.$store.getters['mod_workspace-notifications/getErrors'](this.currentNetworkId).length;
@@ -388,7 +405,7 @@ export default {
       // the requested tab not being the first
       this.set_chartRequests(this.workspace[index].networkID);
 
-      this.notificationWindowStateHandler(false);
+      this.notificationWindowStateHandlerNew(this.getNotificationWindowSelectedTab); // for closing it
     },
     deleteTabNetwork(index) {
       let hasUnsavedChanges = this.hasUnsavedChanges(this.workspace[index].networkID);
@@ -405,14 +422,20 @@ export default {
         this.delete_network(index);
       }
     },
-    notificationWindowStateHandler(value = false) {
-
-      this.$store.dispatch('mod_tracker/EVENT_consoleWindowToggle', value);
+    notificationWindowStateHandlerNew(selectedTab){
+      let state = true;
+      if(selectedTab === this.getNotificationWindowSelectedTab) {
+        state = false;
+      }
+      let tab =  !state ? '' : selectedTab;
 
       this.setNotificationWindowState({
         networkId: this.workspace[this.indexCurrentNetwork].networkID,
-        value: value
+        value: state,
+        selectedTab: tab,
       });
+      
+      this.$store.dispatch('mod_tracker/EVENT_consoleWindowToggle', { value: state, selectedTab: selectedTab });
     },
     openStatistics(i) {
       this.$store.dispatch('mod_workspace/setViewType', 'statistic');
@@ -585,6 +608,9 @@ export default {
       // used for test purposes 
       const networkId = this.workspace[this.indexCurrentNetwork].networkID;
       this.$store.dispatch('mod_workspace-notifications/addWarning', { networkId, addToast: true });
+    },
+    openTerminalConsole() {
+      console.log('open terminal console')
     }
   }
 }

@@ -44,16 +44,22 @@
                             @keyup="onModelNameKeyup"
                             :data-tutorial-target="'tutorial-create-model-model-name'")
                     h4.presets-text Model Path
-                    .model-title-input-wrapper
-                        input.model-title-input(
-                            type="text" 
-                            v-model="modelPath" 
-                            @click="openFilePicker"
-                            :data-tutorial-target="'tutorial-create-model-model-path'")
+                    .mode-path-wrapper
+                        .form_holder
+                            .form_row
+                                input.form_input(
+                                    readonly
+                                    type="text" 
+                                    v-model="modelPath" 
+                                    :data-tutorial-target="'tutorial-create-model-model-path'")
+                                    
+                                button.btn.btn--dark-blue-rev(type="button" @click="openFilePicker") Browse
                     p.template-description(
                         v-if="chosenTemplate !== null"
                         :data-tutorial-target="'tutorial-create-model-description'"
-                        ) {{basicTemplates[chosenTemplate] &&basicTemplates[chosenTemplate].description}}
+                        ) 
+                        | {{basicTemplates[chosenTemplate] &&basicTemplates[chosenTemplate].description}}
+                        | {{chosenTemplate === -1 && 'This is an empty model which acts as a clean slate if you want to start from scratch'}}
                     p.template-description-else(
                         v-else
                         :data-tutorial-target="'tutorial-create-model-description'"
@@ -79,7 +85,7 @@
 <script>
     import imageClassification    from '@/core/basic-template/image-classification.js'
     import reinforcementLearning  from '@/core/basic-template/reinforcement-learning.js'
-    import linearRegression   from '@/core/basic-template/linear-regression.js'
+    import linearRegression       from '@/core/basic-template/linear-regression.js'
     import objectDetection        from '@/core/basic-template/object-detection.js'
     import ganTemplate            from '@/core/basic-template/gan-template.js'
     import FilePickerPopup        from "@/components/global-popups/file-picker-popup.vue";
@@ -87,6 +93,11 @@
     import { mapActions, mapState, mapGetters } from 'vuex';
     import { generateID } from '@/core/helpers';
     import cloneDeep from 'lodash.clonedeep';
+    import { doesDirExist as fileserver_doesDirExist } from '@/core/apiFileserver';
+    import { getFolderContent as fileserver_getFolderContent } from '@/core/apiFileserver';
+    import { getResolvedDir as fileserver_getResolvedDir } from '@/core/apiFileserver';
+    import { getRootFolder as fileserver_getRootFolder } from '@/core/apiFileserver';
+
 export default {
     name: 'SelectModelModal',
     components: { FilePickerPopup },
@@ -94,7 +105,7 @@ export default {
         return {
             basicTemplates: [
             {
-                title: 'Image Classification',
+                title: 'Image Classification CNN',
                 imgPath: './static/img/project-page/classification.png',
                 template: imageClassification,
                 description: 'This is a simple image classification template, perfect for datasets such as Mnist. The standard dataset included with this template is a Mnist dataset where the input is an array of 784 grayscale pixel values and there are 10 unique label values (integers 0-9). The model consists of a reshaping component, a convolutional layer as well as a fully connected output layer with 10 neurons. Because of the reshaping component it requries the input data to be 784 or a form thereof (28x28 for example). The labels have to be an integer ranging from 0 to 9 to be compatable with the one hot encoding being applied to the labels.'
@@ -106,13 +117,13 @@ export default {
                 description: `This is a template for linear regression, where it tries to create a line of best fit for the datapoints you load. The standard dataset is a one dimensional input value and one dimensional labels. The input data can be multidimensional, but our visualizations only allow for one dimensional data at the moment. The labels data can only be one dimensional as they represent the value of the input data. The model is built as a single fully connected layer with one neuron as output.`
             },
             {
-                title: 'Reinforcement Learning',
+                title: 'DQN',
                 imgPath: './static/img/project-page/reinforcement-learning.png',
                 template: reinforcementLearning,
                 description: `The is a template for Reinforcement Learning consisting of one grayscale component, one convolutional layer and one fully connected layer as output. This template uses Q learning on Atari Gym games, where it is set up to play breakout. To play another game, make sure that you change the neurons from the fully connected layer to match the number of possible actions in the actionspace, which you can see in the Environment component.`
             },
             {
-                title: 'Object Detection',
+                title: 'YOLO V1',
                 imgPath: './static/img/project-page/object-detection.png',
                 template: objectDetection,
                 description: `This is a template of the Object Detection model YOLO. It trains on a custom built dataset containing different shapes as standard. Since it consists of only convolutional layers, any input data will work to train on, just make sure that the label data matches the input data properly.`
@@ -156,10 +167,6 @@ export default {
             getModelMeta:               'mod_project/getModel',
             getProjects:                'mod_project/getProjects',
             showErrorPopup:             'globalView/GP_errorPopup',
-            isDirExists:                'mod_api/API_isDirExist',
-            resolveDir:                 'mod_api/API_resolveDir',
-            getFolderContent:           'mod_api/API_getFolderContent',
-            API_getRootFolder:          'mod_api/API_getRootFolder',
             setCurrentView:             'mod_tutorials/setCurrentView',
             setNextStep:                'mod_tutorials/setNextStep',
             setChecklistItemComplete:   'mod_tutorials/setChecklistItemComplete',
@@ -182,9 +189,9 @@ export default {
             if (this.modelName && this.hasChangedModelName) { return; }
             if (!this.modelPath) { return; }
 
-            const resolvedDir = await this.resolveDir(this.modelPath);
-            const dirContents = await this.getFolderContent(resolvedDir);
-            
+            const resolvedDir = await fileserver_getResolvedDir(this.modelPath);
+            const dirContents = await fileserver_getFolderContent(resolvedDir);
+
             let namePrefix = '';
             if (this.chosenTemplate >= 0 &&
                 this.chosenTemplate <= this.basicTemplates.length - 1) {
@@ -217,7 +224,7 @@ export default {
                 this.currentProject.models
                     .map(x => this.getModelMeta(x));
             const modelMeta = await Promise.all(promiseArray);
-            const rootPath = await this.API_getRootFolder();
+            const rootPath = await fileserver_getRootFolder();
             const modelNames = modelMeta.map(x => x.name);
             if(modelNames.indexOf(modelName) !== -1) {
                 this.showErrorPopup(`The name of model "${modelName}" already exists.`);
@@ -225,7 +232,7 @@ export default {
                 return;
             }
             
-            const dirAlreadyExist = await this.isDirExists(`${this.modelPath}/${modelName}`);
+            const dirAlreadyExist = await fileserver_doesDirExist(`${this.modelPath}/${modelName}`);
             if(dirAlreadyExist) {
                 this.showErrorPopup(`The "${modelName}" folder already exists in "${this.modelPath}" location.`);
                 this.setCurrentView('tutorial-model-hub-view');
@@ -252,9 +259,8 @@ export default {
 
                 } else {
                     let template = cloneDeep(basicTemplates[chosenTemplate].template.network);
-                    
-                    const newRootPath = rootPath.replace(/\\/g, "/");
 
+                    const newRootPath = rootPath.replace(/\\/g, "/");
                     this.convertToAbsolutePath(template.networkElementList, newRootPath);
 
                     template.networkName = modelName;
@@ -496,8 +502,8 @@ export default {
 
         color: #FFFFFF;
         &.is-disabled {
-            opacity: 0.3;
-            background-color: #ccc;
+            // opacity: 0.3;
+            background-color: rgb(120, 120, 120);
             cursor: not-allowed;
         }
     }
@@ -571,5 +577,8 @@ export default {
 
     .template-description-else {
         min-height: 15rem;
+    }
+    .mode-path-wrapper {
+        padding: 0 20px;
     }
 </style>

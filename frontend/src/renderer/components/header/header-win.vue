@@ -2,9 +2,7 @@
   header.app-header
     .app-header-section.app-header-left
       .app-header_logo
-        a(@click="toProjectPage")
-          //-img(src="./../../../../static/img/PerceptiLabs_Logo-web-white_beta-01.svg" alt="PerceptiLabs logo")
-          img(src="./../../../../static/img/project-page/logo.svg" alt="PerceptiLabs logo")
+        img(src="./../../../../static/img/project-page/logo.svg" alt="PerceptiLabs logo")
       the-menu
     
     .app-header-section.app-header-mid
@@ -98,8 +96,8 @@ export default {
     routeHeaderAlias() {
       let theName = '';
       switch(this.$route.name) {
-        case 'main-page': theName = 'ModelHub'; break;
-        case 'projects': theName = 'ModelHub'; break;
+        case 'main-page': theName = 'Model Hub'; break;
+        case 'projects': theName = 'Model Hub'; break;
         case 'settings': theName = 'Settings'; break;
         case 'app':  {
           if(this.currentModel && 
@@ -178,7 +176,7 @@ export default {
     display: flex;
     height: $h-header-win;
     background: #363E50;
-    font-family: sans-serif;
+    // font-family: sans-serif;
     background: #141c31;
     border: 1px solid rgba(97, 133, 238, 0.4);
     box-sizing: border-box;
@@ -210,7 +208,7 @@ export default {
   }
   .app-header_logo {
     margin: 0 12px 0 5px;
-    cursor: pointer;
+    // cursor: pointer;
     a {
       display: block;
       -webkit-app-region: no-drag;

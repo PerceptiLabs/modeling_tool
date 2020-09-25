@@ -159,7 +159,7 @@ const reinforcementLearning = {
         "layerId": "1598979686278",
         "copyId": null,
         "copyContainerElement": null,
-        "layerName": "Fully Connected_1",
+        "layerName": "Dense_1",
         "layerType": "Other",
         "layerSettings": {
           "Neurons": "4",

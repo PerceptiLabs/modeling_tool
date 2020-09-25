@@ -6,7 +6,7 @@
     v-tooltip-interactive:right="interactiveInfo"
     :style="layerStyles"
   )
-    i.icon.icon-random-data
+    i.icon.icon-data
     text-editable.layer-type(
       v-if="withLayerTypeText"
       :text-title="currentEl.layerName"

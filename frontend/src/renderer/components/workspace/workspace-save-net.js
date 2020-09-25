@@ -4,6 +4,8 @@ import { generateID }  from "@/core/helpers.js";
 
 import { mapGetters, mapMutations, mapActions } from "vuex";
 import cloneDeep from 'lodash.clonedeep';
+import { doesDirExist as fileserver_doesDirExist } from '@/core/apiFileserver';
+import { saveModelJson as fileserver_saveModelJson } from '@/core/apiFileserver';
 
 const workspaceSaveNet = {
   created() {
@@ -86,11 +88,11 @@ const workspaceSaveNet = {
       this.askSaveFilePopup()
         .then(async (answer)=> {
           if(answer) {
-            const isFolderAlreadyExist = await this.$store.dispatch('mod_api/API_isDirExist', answer.networkPath);
+            const isFolderAlreadyExist = await fileserver_doesDirExist(answer.networkPath);
             
             if(isFolderAlreadyExist) {
               this.$store.dispatch('globalView/GP_confirmPopup', {
-                text: 'Folder exist, are you sure want to overwrite it?',
+                text: `A folder already exists, are you sure <br/> you want to overwrite it?`,
                 ok: () => {
                   this.saveNetwork(answer, netId, isSaveProjectPath);
                 }
@@ -137,15 +139,29 @@ const workspaceSaveNet = {
             }).catch(() => Promise.reject())
           }
           else {
-            // /*app save*/
-            // return projectPCSave(prepareNet.toFile)
-            
+            /*app save*/
             const payload = {
               path: prepareNet.toLocal.pathProject
             };
-            return this.$store.dispatch('mod_api/API_saveJsonModel', payload)
-              .catch((e) => Promise.reject(e));
-            
+            const networkJson = cloneDeep(this.currentNetwork)
+            const healthNetworkElementList = {};
+            Object.keys(networkJson.networkElementList).map(key => {
+              const el = networkJson.networkElementList[key];
+              healthNetworkElementList[key] = {
+                ...el,
+                chartData: {}
+              }
+            })
+            const healthNetworkJson = {
+              ...networkJson,
+              networkElementList: healthNetworkElementList
+            }
+            return fileserver_saveModelJson(healthNetworkJson)
+              .catch((e) => {
+                console.log(e)
+                Promise.reject(e)
+              });
+
           }
         })
         .then(()=> {
@@ -173,7 +189,8 @@ const workspaceSaveNet = {
           saveProjectToLocalStore(prepareNet.toLocal, this);
         })
         .catch((error) => {
-          this.$store.dispatch('globalView/GP_errorPopup','Kernel is not connected');
+          console.log(error)
+          this.$store.dispatch('globalView/GP_errorPopup',"Couldn't save model")
         })
         .finally(()=> {
           networkField.style.filter = '';

@@ -8,20 +8,24 @@
     div(v-show="!showNewModelPopup").project-wrapper
       div.header-controls
         div.left-side
-          span.import-button-container(
+          span.header-action-button-wrapper.import-button-container(
             @click="openLoadModelPopup()"
             v-tooltip:bottom="'Import Model'"
             )
             img(src="../../../../static/img/project-page/import.svg"
               :data-tutorial-target="'tutorial-model-hub-import-button'")
-          span.btn-round-icon.btn-rounded-new(
-            @click="handleAddNetworkModal" 
-            :class="{'high-lighted': isNewUser}" 
+            span.left-header-btn-text Import
+          span.header-action-button-wrapper(
+            @click="handleAddNetworkModal"
             :data-tutorial-target="'tutorial-model-hub-new-button'"
             v-tooltip:bottom="'New Model'"
             )
-            img(src="../../../../static/img/project-page/plus.svg")
-            div(v-if="isNewUser").create-first-model Create your first model
+            span.btn-round-icon.btn-rounded-new(
+              :class="{'high-lighted': isNewUser}" 
+              )
+              img(src="../../../../static/img/project-page/plus.svg")
+              div(v-if="isNewUser").create-first-model Create your first model
+            span.left-header-btn-text Create
           //- div.search-input
           //-   img(src="../../../../static/img/search-models.svg")
           //-   input(
@@ -36,20 +40,20 @@
 
           //-   svg(v-if="isAllItemSelectedFavorite()" width="21" height="19" viewBox="0 0 21 19" fill="none")
           //-     path(d="M9.54894 0.927049C9.8483 0.0057385 11.1517 0.0057404 11.4511 0.927051L13.0819 5.9463C13.2158 6.35833 13.5997 6.63729 14.033 6.63729H19.3105C20.2792 6.63729 20.682 7.8769 19.8983 8.4463L15.6287 11.5484C15.2782 11.803 15.1315 12.2544 15.2654 12.6664L16.8963 17.6857C17.1956 18.607 16.1411 19.3731 15.3574 18.8037L11.0878 15.7016C10.7373 15.447 10.2627 15.447 9.91221 15.7016L5.64258 18.8037C4.85887 19.3731 3.80439 18.607 4.10374 17.6857L5.7346 12.6664C5.86847 12.2544 5.72181 11.803 5.37132 11.5484L1.10169 8.4463C0.317977 7.8769 0.720754 6.63729 1.68948 6.63729H6.96703C7.40026 6.63729 7.78421 6.35833 7.91809 5.9463L9.54894 0.927049Z" fill="#6185EE")
-          span.img-button.pt-4(:class="{ 'disabledIconButton': !isAtLeastOneItemSelected() }" @click="removeItems()" v-tooltip:bottom="'Delete'")
-            img(src="../../../../static/img/project-page/remove.svg")
-          span.text-button(
-            :class="{ 'is-disable': !isAtLeastOneItemSelected() }"
-            v-tooltip:bottom="'Open'") Open
-
           span.github-button(
             :class="{ 'is-disable': !isOneItemSelected() }"
             v-tooltip:bottom="'Export to GitHub'"
             @click="openExportToGithubModal")
             img.github-button-icon(src="../../../../static/img/github.svg")
             span.github-button-text GitHub
+          span.text-button(
+            :class="{ 'is-disable': !isAtLeastOneItemSelected() }"
+            v-tooltip:bottom="'Open'") Open
+          span.img-button.pt-4(:class="{ 'disabledIconButton': !isAtLeastOneItemSelected() }" @click="removeItems()" v-tooltip:bottom="'Delete'")
+            img(src="../../../../static/img/project-page/remove.svg")
+          
           //- span.text-button(v-if="isAtLeastOneItemSelected()") BlackBox
-          span.text-button.is-disable() History
+          //- span.text-button.is-disable() History
           //- span.text-button(v-if="isAtLeastOneItemSelected()" :class="{'is-disable': isDisabledCompareBtn()}") Compare
           //- sort-by-button(
           //-   :options="sortOptions"
@@ -62,12 +66,12 @@
           div.column-1 
             span.btn-round-icon.check-model-button(@click="toggleSelectedItems()" v-tooltip:bottom="'Select All'")
               //- img(v-if="isAtLeastOneItemSelected()" src="../../../../static/img/project-page/minus.svg")
-              img(v-if="isAtLeastOneItemSelected()" src="../../../../static/img/project-page/checked.svg")
+              img(v-if="isAllItemsSelected()" src="../../../../static/img/project-page/checked.svg")
             | Name
           div.column-2 Status
           div.column-3 Exported
           div.column-4 Training Time
-          div.column-5 Collaborators
+          //- div.column-5 Collaborators
           div.column-6 Last Modified
         div.models-list-row.model-list-item(
           v-for="(model, index) in workspaceContent"
@@ -111,11 +115,11 @@
             span(v-else @click.stop="") Not Exported
           div.column-4
             span(@click.stop="") {{ model && model.networkMeta && model.networkMeta.coreStatus && model.networkMeta.coreStatus.Training_Duration ? model.networkMeta.coreStatus.Training_Duration.toFixed(2) + 's' : '-' }}
-          div.column-5
-            collaborator-avatar(
-                @click.stop=""
-                :list="[{id: 1, name: user && user.firstName || '', img: null,}]"
-              )
+          //- div.column-5
+          //-   collaborator-avatar(
+          //-       @click.stop=""
+          //-       :list="[{id: 1, name: user && user.firstName || '', img: null,}]"
+          //-     )
           div.column-6(@click.stop="")
             collaborator-avatar(
                 :list="[{id: 1, name: user && user.firstName || '', img: null,}]"
@@ -140,11 +144,11 @@
             span(@click.stop="") -
           div.column-4
             span(@click.stop="") -
-          div.column-5
-            collaborator-avatar(
-                @click.stop=""
-                :list="[{id: 1, name: user && user.firstName || '', img: null,}]"
-              )
+          //- div.column-5
+          //-   collaborator-avatar(
+          //-       @click.stop=""
+          //-       :list="[{id: 1, name: user && user.firstName || '', img: null,}]"
+          //-     )
           div.column-6(@click.stop="")
             collaborator-avatar(
                 :list="[{id: 1, name: user && user.firstName || '', img: null,}]"
@@ -188,6 +192,8 @@
   import { isWeb, stringifyNetworkObjects } from "@/core/helpers";
   import { TRACKER_SCREENNAME_PROJECTS } from "@/core/constants";
   import cloneDeep from 'lodash.clonedeep';
+  import { getModelJson as fileserver_getModelJson } from '@/core/apiFileserver';
+
   const mockModelList = [
     // {id: 1, dateCreated: new Date().setHours(15), dateLastOpened: new Date(), size: '10', name:'Placeholder 1', status: '75%', savedVersion: '-', sessionEndTime: 'Placeholder', collaborators: [{id: 1, name: 'Anton', img: null,}], lastModified: { user: {id: 1, name: 'Anton', img: null}, date: '19/02/20 13:00:00'}, isFavorite: true},
     // {id: 2, dateCreated: new Date().setHours(3), dateLastOpened: new Date(), size: '12', name:'Placeholder 4', status: '50%', savedVersion: '-', sessionEndTime: 'Placeholder', collaborators: [{id: 2, name: 'Robert', img: null,}], lastModified: { user: {id: 1, name: 'Anton', img: null}, date: '19/02/20 13:00:00'}, isFavorite: false},
@@ -305,7 +311,6 @@
         popupConfirm:        'globalView/GP_confirmPopup',
         popupNewModel:       'globalView/SET_newModelPopup',
         showInfoPopup:       'globalView/GP_infoPopup',
-        loadNetwork:         'mod_api/API_loadNetwork',
         set_currentNetwork:  'mod_workspace/SET_currentNetwork',
         createProjectModel:  'mod_project/createProjectModel',
         setActivePageAction: 'modal_pages/setActivePageAction',
@@ -339,7 +344,7 @@
         this.$store.commit("globalView/set_filePickerPopup", true);
       },
       openTemplate(path) {
-        this.loadNetwork(path)
+        fileserver_getModelJson(path)
       },
       onSortByChanged(valueSelected) {
         let modelList = [...this.modelList];
@@ -468,13 +473,17 @@
         let favoriteItemLength = newModelList.filter(item => this.selectedListIds.indexOf(parseInt(item.networkID, 10)) !== -1 && item.isFavorite);
         return selectedLength === favoriteItemLength.length
       },
+      isAllItemsSelected() {
+        return this.selectedListIds.length === this.workspaceContent.length;
+      },
       toggleSelectedItems() {
         if(this.statusLocalCore!='online') {
           this.showInfoPopup("Kernel is offline");
           return;
         }
 
-        if (this.isAtLeastOneItemSelected()) {
+        const soemItemsAreSelected = this.selectedListIds.length !== this.workspaceContent.length;
+        if(this.isAllItemsSelected()) {
           this.selectedListIds = [];
         } else {
           let newWorkspaceContent = [...this.workspaceContent];
@@ -530,23 +539,6 @@
         this.$store.dispatch('globalView/SET_filePickerPopup', false);
 
         this.$store.dispatch('mod_events/EVENT_loadNetwork', path[0]);
-
-        // this.API_getModel(`${path[0]}/model.json`)
-        //   .then(model => {
-
-        //     if(model.hasOwnProperty('apiMeta')) {
-        //       const { location } = model.apiMeta;
-        //       delete model.apiMeta;
-        //     }
-        //     this.createProjectModel({
-        //       name: model.networkName,
-        //       project: this.currentProjectId,
-        //       location: path[0],
-        //     }).then(apiMeta => {
-        //       this.addNetwork({network: model, apiMeta});
-        //     });
-        //   })
-        //   .catch(e => console.log(e));
       },
       confirmCallback(el) {
         this.openTemplate(el[0]);
@@ -611,7 +603,7 @@
         }
 
         this.popupConfirm({
-            text: `Are you sure you want to remove ${model.name} from ModelHub since it no longer is connected to Project?`,
+            text: `Are you sure you want to remove ${model.name} from Model Hub since it no longer is connected to Project?`,
             ok: () => {
               this.$store.dispatch('mod_project/deleteModel', model)
                 .then((serverResponse) => {
@@ -671,7 +663,7 @@
           return;
         }
         const modelId = this.selectedListIds[0];
-        this.gotToNetworkView(modelId);
+        this.goToNetworkView(modelId);
         this.$store.dispatch('globalView/SET_exportNetworkToGithubPopup', true);
       }
     },
@@ -706,7 +698,7 @@
     padding-right: 19px;
   }
   .header-controls {
-    padding: 7px 40px;
+    padding: 7px 16px 7px 40px;
     border-bottom: 1px solid #464D5F;;
     display: flex;
     .left-side {
@@ -766,7 +758,7 @@
   }
   .img-button {
     cursor: pointer;
-    margin: 0 10px 0 25px;
+    margin: 0 10px 0 10px;
     &.disabledIconButton {
       opacity: 0.4;
       cursor: default;
@@ -811,6 +803,7 @@
       min-width: 220px;
     }
     .column-5 {
+      display: none;
       min-width: 180px;
     }
     .column-6 {
@@ -1029,14 +1022,27 @@
   // rename model
   .rename-control {
   }
-  .github-button {
-    display: flex;
-    cursor: pointer;
-    &.is-disable {
-      cursor: default;
-      opacity: 0.4;
-    }
+  .left-header-btn-text {
+    display: inline-block;
+    margin-left: 8px;
+    font-weight: 600;
+    color: #E1E1E1;
+    font-size: 14px;
   }
+  .header-action-button-wrapper {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+  }
+  .github-button {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      &.is-disable {
+        cursor: default;
+        opacity: 0.4;
+      }
+    }
   .github-button-icon {
     margin-right: 10px;
   }

@@ -51,7 +51,9 @@
 
 
       .button-group
-        button.btn.btn--primary(type="button"
+        button.btn.btn--primary(
+          v-if="options.showToTutotialDataFolder"
+          type="button"
           @click="onToTutorialData"
           ) To Tutorial Data Folder
         span.spacer
@@ -70,6 +72,7 @@
 import { coreRequest } from '@/core/apiWeb.js';
 import { filePickerStorageKey } from '@/core/constants.js';
 import { mapGetters } from "vuex";
+import { getFolderContent as fileserver_getFolderContent } from '@/core/apiFileserver';
 
 const breadcrumbCharacterLength = 58;
 
@@ -98,6 +101,7 @@ export default {
       default: () => ({
         showBackButton: true,
         showNumberSelectedFiles: true,
+        showToTutotialDataFolder: false,
       })
     },
     startupFolder: {
@@ -124,14 +128,14 @@ export default {
   },
   mounted() {
     let path = '';
-    
+
     if (this.startupFolder) {
       path = this.startupFolder;
     }
     else if(localStorage.hasOwnProperty(filePickerStorageKey)) {
       path = localStorage.getItem(filePickerStorageKey);
     }
-    
+
     this.fetchPathInformation(path)
           .then(response => {
             if (response == false) {
@@ -234,17 +238,10 @@ export default {
     },
     async fetchPathInformation(path, isSearching = false) {
       this.selectedFiles = [];
-      let theData = {
-          reciever: '0',
-          action: 'getFolderContent',
-          value: path
-      };
-
       this.$store.dispatch('globalView/ShowCoreNotFoundPopup', null, { root: true });
 
       try {
-        const jsonData = await coreRequest(theData);
-        
+        const jsonData = await fileserver_getFolderContent(path);
         this.setOsSpecifics(jsonData.platform);
 
         const pathNotFound = jsonData.current_path === "";
@@ -254,12 +251,10 @@ export default {
         } else {
           this.searchDirNotFound = false;
         }
-        
         if(!pathNotFound) {
           this.calculateBreadcrumbsLength(jsonData.current_path);
           localStorage.setItem(filePickerStorageKey, jsonData.current_path);
         }
-        
         if (jsonData.current_path === '.') {
           this.currentPath = [];
         } else {
@@ -268,6 +263,7 @@ export default {
 
         this.directories = jsonData.dirs.filter(d => !d.startsWith('.')).sort();
         if (this.fileTypeFilter.length === 0) {
+
           this.files = jsonData.files;
         } else {
           this.files = jsonData.files.filter(f => {
@@ -439,7 +435,8 @@ export default {
     }
 
     &:hover {
-      background-color: $col-primary2;
+      // background-color: $col-primary2;
+      background-color: rgba(#6185EE, .5);
     }
   }
 

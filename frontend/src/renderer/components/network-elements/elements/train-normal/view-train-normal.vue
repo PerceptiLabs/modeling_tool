@@ -1,13 +1,13 @@
 <template lang="pug">
   .btn.btn--layersbar.net-element-train(:draggable="draggable"
     data-component="TrainNormal"
-    data-layer="Normal"
+    data-layer="Classification"
     data-type="Training"
     v-tooltip-interactive:right="interactiveInfo"
     id="tutorial_training-normal"
     :style="layerStyles"
   )
-    i.icon.icon-training
+    i.icon.icon-train-group
     text-editable.layer-type(
       v-if="withLayerTypeText"
       :text-title="currentEl.layerName"
@@ -35,7 +35,7 @@ export default {
         title: 'Image Classification',
         text: 'Normal supervised learning layer'
       },
-      displayTitle: 'Normal'
+      displayTitle: 'Classification'
     }
   }
 }

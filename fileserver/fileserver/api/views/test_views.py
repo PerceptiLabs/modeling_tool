@@ -281,8 +281,8 @@ class GithubExportTestCase(TestCaseBase):
 
     def test_simple(self):
         with patch("fileserver.api.views.github_view.connect_to_repo", return_value=Mock()),\
-             patch("fileserver.api.views.github_view.export_repo_basic", return_value="2341234"),\
+             patch("fileserver.api.views.github_view.export_repo_basic", return_value=["2341234", "the_url"]),\
              temp_local_dir("testing123") as d:
 
             response = self.call_and_expect_code("post", f"?path={d}", 200, body=GithubExportTestCase.SIMPLE_BODY)
-            self.assertEqual(response.content, b'{"sha": "2341234"}')
+            self.assertEqual(response.content, b'{"sha": "2341234", "URL": "the_url"}')

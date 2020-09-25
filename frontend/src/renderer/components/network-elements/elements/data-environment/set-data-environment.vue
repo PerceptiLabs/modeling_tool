@@ -1,7 +1,8 @@
 <template lang="pug">
   div
     .settings-layer_section(style="position:relative")
-      .form_row
+      .form_row.flex-column.align-items-start
+        .form_label Environment
         base-select(
           v-model="settings.accessProperties.Atari"
           :select-options="selectOptions"

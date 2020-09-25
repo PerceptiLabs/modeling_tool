@@ -1,5 +1,6 @@
 import { requestCloudApi } from "@/core/apiCloud";
 import {generateID} from "@/core/helpers";
+import { createFolder as fileserver_createFolder } from '@/core/apiFileserver';
 import axios from 'axios';
 const namespaced = true;
 
@@ -144,8 +145,7 @@ const actions = {
       });
   },
   prepareDefaultProjectDirectory(ctx) {
-    
-    return ctx.dispatch('mod_api/API_createFolder', { folder_path: '~/Documents/Perceptilabs/Default' }, {root: true})
+    return fileserver_createFolder('~/Documents/Perceptilabs/Default')
       .then(createFolderRes => {
         if (!createFolderRes) { throw new Error('Problem creating project directory'); }
 

@@ -5,6 +5,7 @@ import Vue    from 'vue'
 import router from '@/router'
 import {isElectron} from "@/core/helpers";
 import cloneDeep from 'lodash.clonedeep';
+import { saveModelJson as fileserver_saveModelJson } from '@/core/apiFileserver';
 
 const namespaced = true;
 
@@ -454,7 +455,7 @@ const mutations = {
       router.replace({name: 'app'});
     }
 
-    dispatch('mod_api/API_saveModel', {model: newNetwork}, {root: true});
+    fileserver_saveModelJson(newNetwork)
     dispatch('mod_events/EVENT_IOGenerateAction', null, {root: true});
     function findNetId(newNet, netList) {
       let indexId = netList.findIndex((el)=> el.networkID === newNet.networkID);

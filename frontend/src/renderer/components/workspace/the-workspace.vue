@@ -7,10 +7,8 @@
       v-show="!showTrainingSpinner"
     )
       include ./tabset/workspace-tabset.pug
-    
-    component(:is="toolbarType")
-
-    .workspace_content.bookmark_content.js-workspace(
+    component.blue-left-border(:is="toolbarType")
+    .workspace_content.bookmark_content.js-workspace.blue-border(
       v-show="!isNotebookMode"  
       ref="workspaceNet"
       :class="{'workspace-relative' : showTrainingSpinner, 'open-statistics': statisticsIsOpen}"
@@ -88,7 +86,7 @@
         :confirmCallback="showFilePickerPopup.confirmCallback || showFilePickerPopup")
       //- showFilePickerPopup container the callback function
     .hardware-metrics(
-      v-show="showResourceView!=0"
+      v-show="showResourceView!=0 && statisticsIsOpen"
       ) 
       .header
         h4 RAM/CPU/GPU
@@ -112,7 +110,7 @@
           span GPU
 
     .workspace_meta(
-      v-if="!isNotebookMode"  
+      v-if="!isNotebookMode"
       )
       include ./meta/workspace-meta.pug
     notebook(v-if="isNotebookMode")
@@ -262,66 +260,11 @@
     display: block;
     overflow: auto;
   }
-  .workspace_meta {
-    position: relative; //for minimap
-    flex: 0 0 auto;
-    background-color: #23252A;
-    
-    display: flex;
-    justify-content: space-between;
-    padding: .5rem;
-
-    .workspace_meta-action {
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-
-      button {
-        background-color: #23252A;
-        color: white;
-      }
-
-      .workspace-notifications {
-        display: flex;
-        align-items: center;
-
-        margin-right: 1rem;
-
-        svg {
-          height: 1rem;
-          width: 1rem;
-
-          &.has-error
-          {
-            fill:#FE7373; ;
-          }
-
-          &.no-error
-          {
-            fill:#73FEBB ;
-          }
-        }
-      }
-    }
-  
-  }
+ 
   .workspace-relative {
     position: relative;
   }
-  .hardware-trigger {
-    width: 70px;
-    height: 19px;
-    border: 0.5px solid #5E6F9F;
-    box-sizing: border-box;
-    border-radius: 1px;
-    background: transparent;
-    color: #B6C7FB;
-
-    &.clicked {
-      background: #131B30;
-    }
-
-  }
+  
   .hardware-metrics {
     z-index: 10;
     border-radius: 2px;
@@ -400,5 +343,11 @@
 
   .statistics-tabs {
     margin-left: auto;
+  }
+  .blue-border {
+   border: 1px solid rgba(97, 133, 238, 0.4);
+  }
+  .blue-left-border {
+   border: 1px solid rgba(97, 133, 238, 0.4);
   }
 </style>

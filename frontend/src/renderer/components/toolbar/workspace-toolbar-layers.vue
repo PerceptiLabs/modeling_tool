@@ -151,7 +151,7 @@ export default {
           bottomColor: 'rgba(241, 100, 100, 0.4)'
         },
         {
-          tooltip: 'Mathematics',
+          tooltip: 'Operations',
           tooltip_interactive: {
             title: 'Mathematics',
             text: 'Mathematical components'
@@ -189,7 +189,7 @@ export default {
             text: 'Custom components'
           },
           layerClass: 'net-element-custom',
-          iconClass: 'icon-train-group',
+          iconClass: 'icon-custom',
           childListClass: '',
           showEl: false,
           networkElements: ['LayerCustom'],
@@ -491,6 +491,8 @@ export default {
 
         .layerTitle {
           white-space: pre;
+          font-size: 12px;
+          font-family: Nunito Sans;
         }
       }
 

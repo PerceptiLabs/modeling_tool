@@ -24,7 +24,7 @@ const objectDetection = {
           "layerId": "1598990439670",
           "copyId": null,
           "copyContainerElement": null,
-          "layerName": "Data_1",
+          "layerName": "Local_1",
           "layerType": "Data",
           "layerSettings": {
             "accessProperties": {
@@ -999,7 +999,7 @@ const objectDetection = {
           "layerId": "1598990616678",
           "copyId": null,
           "copyContainerElement": null,
-          "layerName": "Detector_1",
+          "layerName": "Object Detection_1",
           "layerType": "Training",
           "layerSettings": {
             "Learning_rate": 0.001,
@@ -1082,7 +1082,7 @@ const objectDetection = {
           "layerId": "1598990633508",
           "copyId": null,
           "copyContainerElement": null,
-          "layerName": "Data_2",
+          "layerName": "Local_2",
           "layerType": "Data",
           "layerSettings": {
             "accessProperties": {

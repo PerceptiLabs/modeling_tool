@@ -9,6 +9,7 @@ import {
   calculateSidebarScaleCoefficient
 } from "@/core/helpers";
 import { MODAL_PAGE_SIGN_UP , pathSlash} from "@/core/constants";
+import { getModelJson as fileserver_getModelJson } from '@/core/apiFileserver';
 
 let ipcRenderer = null;
 
@@ -78,8 +79,9 @@ const actions = {
       pathIndex = localProjectsList.findIndex((proj)=> proj.pathProject === pathProject);
     }
 
-    dispatch('mod_api/API_loadNetwork', pathFile, {root: true})
+    fileserver_getModelJson(pathFile)
       .then(async (model) => {
+
         //validate model
         let isTrained = false;
         let currentNetworkId = rootGetters['mod_workspace/GET_currentNetworkId'];

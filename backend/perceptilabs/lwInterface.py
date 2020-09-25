@@ -33,154 +33,6 @@ class LW_interface_base(ABC):
             return self._reduceTo2d(data[...,-1])
         
 
-class saveJsonModel(LW_interface_base):
-    def __init__(self, save_path, json_model):
-        self._save_path = save_path
-        self._json_model = json_model
-
-    def run(self):
-        import json
-        full_path = os.path.expanduser(self._save_path)
-
-        if not os.path.isdir(full_path):
-            os.mkdir(full_path)
-        
-        file_path = os.path.join(full_path, 'model.json')
-        with open(file_path, 'w') as outfile:
-            json.dump(json.loads(self._json_model), outfile)
-
-class getRootFolder(LW_interface_base):
-    def run(self):
-        return os.path.dirname(os.path.abspath(__file__))
-
-class getFolderContent(LW_interface_base):
-    def __init__(self, current_path):
-        self._current_path = current_path
-
-    def run(self):
-        if not self._current_path:
-            # self._current_path = os.path.abspath('')
-            #TODO Make it a seperate request to get the path to tutorial_data
-            path = os.path.join(os.path.dirname(os.path.abspath(__file__)),'tutorial_data')
-            if os.path.exists(path):
-                self._current_path = path    
-            else:
-                self._current_path = os.path.abspath('')
-
-        drives = []
-        if self._current_path == '.' and platform.system() == 'Windows':            
-            import win32api
-            drives = win32api.GetLogicalDriveStrings()
-            drives = drives.split('\000')[:-1]
-
-        elif not os.path.isdir(self._current_path):
-            return {
-                "current_path" : '',
-                "dirs" : '',
-                "files" :  '',
-                "platform": platform.system(),
-            }
-        
-        if not drives:
-            return {
-                "current_path" : self._current_path.replace('\\','/'),
-                "dirs" : [x for x in os.listdir(self._current_path) if os.path.isdir(os.path.join(self._current_path,x))],
-                "files" :  [x for x in os.listdir(self._current_path) if os.path.isfile(os.path.join(self._current_path,x))],
-                "platform": platform.system(),
-            }
-        else:
-            return {
-                "current_path" : self._current_path.replace('\\','/'),
-                "dirs" : drives,
-                "files" :  [],
-                "platform": platform.system(),
-            }
-class getJsonModel(LW_interface_base):
-    def __init__(self, json_path):
-        self._json_path = os.path.expanduser(json_path)
-    
-    def run(self):
-        if not os.path.exists(self._json_path):
-            return ""
-        
-        import json
-        with open(self._json_path, 'r') as f:
-            json_model = json.load(f)
-        return json_model
-
-class createFolder(LW_interface_base):
-    def __init__(self, folder_path):
-        self.folder_path = folder_path
-
-    def run(self):
-        try:
-            import platform
-
-            if platform.system() == 'Windows':
-                resolved_path = self.resolveWindowsPath(self.folder_path)
-                expanded_path = os.path.normpath(resolved_path)
-                
-            else:
-                expanded_path = os.path.expanduser(self.folder_path)
-
-            os.makedirs(expanded_path, exist_ok=True)
-            return expanded_path 
-
-        except:
-            return ''
-    
-    def resolveWindowsPath(self, inputPath):
-        if '~/Documents' in inputPath:
-            # get My Documents regardless of localization
-            import ctypes.wintypes
-            
-            buf= ctypes.create_unicode_buffer(ctypes.wintypes.MAX_PATH)
-            _ = ctypes.windll.shell32.SHGetFolderPathW(0, 5, 0, 5, buf)
-
-            return inputPath.replace('~/Documents', buf.value)
-        
-        elif '~/' in inputPath:
-            return os.path.expanduser(inputPath)
-
-        else:
-            return inputPath
-
-
-class resolveDir(LW_interface_base):
-    def __init__(self, path):
-        self.path = path
-
-    def run(self):
-        try:
-            import platform
-
-            if platform.system() == 'Windows':
-                resolved_path = self.resolveWindowsPath(self.path)
-                expanded_path = os.path.normpath(resolved_path)               
-            else:
-                expanded_path = os.path.expanduser(self.path)
-                
-            return expanded_path
-
-        except Exception as e:
-            return ''
-    
-    def resolveWindowsPath(self, inputPath):
-        if '~/Documents' in inputPath:
-            # get My Documents regardless of localization
-            import ctypes.wintypes
-            
-            buf= ctypes.create_unicode_buffer(ctypes.wintypes.MAX_PATH)
-            _ = ctypes.windll.shell32.SHGetFolderPathW(0, 5, 0, 5, buf)
-
-            return inputPath.replace('~/Documents', buf.value)
-        
-        elif '~/' in inputPath:
-            return os.path.expanduser(inputPath)
-
-        else:
-            return inputPath
-
 class getDataMeta(LW_interface_base):
     def __init__(self, id_, lw_core, data_container):
         self._id = id_
@@ -414,14 +266,14 @@ class GetNetworkData(LW_interface_base):
         return dim_content, preview_content
 
     def _maybe_apply_autosettings(self, graph_spec):
-        applied = False
         if self._settings_engine is not None:
-            graph_spec = self._settings_engine.run(graph_spec)
-            applied = True
+            new_graph_spec = self._settings_engine.run(graph_spec)
+
+            if new_graph_spec is not None:
+                return new_graph_spec, True
         else:
             logger.warning("Settings engine is not set. Cannot make recommendations. Using old json_network.")
-
-        return graph_spec, applied
+        return graph_spec, False
 
         
 class getPreviewSample(LW_interface_base):

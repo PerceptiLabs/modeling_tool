@@ -7,7 +7,7 @@
     id="tutorial_process-reshape"
     :style="layerStyles"
   )
-    i.icon.icon-full-screen
+    i.icon.icon-processing-group
     text-editable.layer-type(
       v-if="withLayerTypeText"
       :text-title="currentEl.layerName"

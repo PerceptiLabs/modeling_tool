@@ -15,7 +15,7 @@
         .form_input
           input(
             type="number"
-            v-model="settings.batch_size"
+            v-model="settings.Batch_size"
             @focus="setIsSettingInputFocused(true)"
             @blur="setIsSettingInputFocused(false)")
     .settings-layer_section
@@ -142,7 +142,7 @@ export default {
         Momentum: '0.9',
         Decay_steps: '100000',
         Decay_rate: '0.96',
-        batch_size: 3,
+        Batch_size: 8,
         Training_iters: "20000"
       },
       interactiveInfo: {

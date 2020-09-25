@@ -8,7 +8,7 @@
     id="tutorial_data-data"
     :style="layerStyles"
   )
-    i.icon.icon-data-cloud
+    i.icon.icon-data
     text-editable.layer-type(
       v-if="withLayerTypeText"
       :text-title="currentEl.layerName"

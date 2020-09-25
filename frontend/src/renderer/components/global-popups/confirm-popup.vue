@@ -7,7 +7,7 @@
       .popup_body
         .settings-layer_section
           .section_attention !
-          p.section_text.middle-text.text-center {{infoPopup}}
+          p.section_text.middle-text.text-center(v-html="infoPopup")
       .popup_foot
         button.btn-info-popup(type="button"
           @click="ok") Ok

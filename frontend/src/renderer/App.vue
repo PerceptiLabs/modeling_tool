@@ -39,6 +39,8 @@
   import CreateIssuePopup         from '@/components/global-popups/create-issues-popup.vue';
   import TutorialsChecklist       from '@/components/tutorial/tutorial-checklist.vue';
   import TutorialNotification from "@/components/different/tutorial-notification.vue";
+  import { getModelJson as fileserver_getModelJson } from '@/core/apiFileserver';
+  import { fileserverAvailability } from '@/core/apiFileserver';
 
   let ipcRenderer = null;
   if(isElectron()) {
@@ -151,6 +153,7 @@
         this.calcAppPath();
       }
       this.checkLocalToken();
+      this.checkFileserverAvailability();
       this.$store.dispatch('mod_api/API_runServer', null, {root: true});
       // this.$store.dispatch('mod_workspace/GET_workspacesFromLocalStorage');
 
@@ -405,8 +408,6 @@
         getDefaultModeProject:  'mod_project/getDefaultModeProject',
         getModelMeta:           'mod_project/getModel',
         
-        createFolder:           'mod_api/API_createFolder',
-        API_getModel:           'mod_api/API_getModel',
         API_getModelStatus:     'mod_api/API_getModelStatus',
 
         cloud_userGetProfile:   'mod_apiCloud/CloudAPI_userGetProfile',
@@ -469,6 +470,15 @@
           this.$router.push({name: 'main-page'}).catch(err => {});
         }    
       },
+      checkFileserverAvailability() {
+        fileserverAvailability().then(resp => {
+          if (resp === "UNAVAILABLE") {
+            this.openErrorPopup("The file server isn't available");
+          } else if (resp === "BAD_TOKEN") {
+            this.openErrorPopup("Unable to talk to the file server. Did you use the correct token to load this page?");
+          }
+        })
+      },
       disableHotKeys(event) {
         const isHotkey = isOsMacintosh() ? event.metaKey : event.ctrlKey;
         if (!isHotkey) { 
@@ -521,7 +531,7 @@
         const promiseArray = 
           modelMetas
             .filter(x => x.location)
-            .map(x => this.API_getModel(x.location + '/model.json'));
+            .map(x => fileserver_getModelJson(x.location + '/model.json'));
         
         Promise.all(promiseArray)
           .then(models => {
@@ -538,8 +548,8 @@
         let unparsedModels = [];
 
         modelMetas.forEach(async (model) => {
-          const modelJson = await this.API_getModel(model.location + '/model.json');
-          if(modelJson === "") {
+          const modelJson = await fileserver_getModelJson(model.location + '/model.json');
+          if(!modelJson) {
             unparsedModels.push(model);
           }
         });
@@ -584,7 +594,7 @@
   }
   .app-header {
     position: relative;
-    z-index: 12;
+    z-index: 13;
     grid-area: header;
     -webkit-app-region: drag;
     .btn {

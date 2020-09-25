@@ -59,11 +59,11 @@ $layers-sidebar: (
 
 $layers-sidebar-active: (
   'io': linear-gradient(#8394c5, #66708b),
-  'data': linear-gradient(#4c63a6, #384e8e),
-  'process': linear-gradient(#c29f5b, #a98246),
-  'learn-deep': linear-gradient(#ca5a5a, #9d3c3c),
-  'train': linear-gradient(#58c28f, #44a1a7),
-  'math': linear-gradient(#0385e2, #0061bd),
+  'data': rgba(115, 151, 254, 0.8),
+  'process': rgba(253, 205, 114, 0.8),
+  'learn-deep': rgba(242, 101, 101, 0.8),
+  'train': rgba(101, 213, 163, 0.8),
+  'math': rgba(0, 123, 239, 0.8),
   'learn-class': linear-gradient(#af58c5, #76449d),
   'custom': #4a5367,
   'layercontainer': linear-gradient(#a0a839, #6aa32d),
@@ -120,16 +120,18 @@ $layers-sidebar-active: (
 .net-element {
   &:hover {
     .btn--layersbar {
-      border:  1.5px solid hsl(182, 79%, 52%) !important;
+      border:  1.5px solid hsl(182, 79%, 52%) !important; ;
+      border-bottom-color: transparent !important;
     }
     .settings-layer {
       // border: 1px solid #B6C7FB !important;
       border:  1.5px solid hsl(182, 79%, 52%) !important;
+      border-top-color: transparent !important;
       position: relative;
       &:after {
         content: '';
         position: absolute;
-        top: 0;
+        top: -2px;
         right: 0;
         bottom: 0;
         left: 0;
@@ -148,6 +150,12 @@ $layers-sidebar-active: (
 .net-element--active {
   .btn--layersbar, .settings-layer {
     border: 1.5px solid #22DDE5 !important;
+  }
+  .settings-layer {
+    border-top-color: transparent !important;
+  }
+  .btn--layersbar {
+    border-bottom-color: transparent !important;
   }
 }
 .layer-type {

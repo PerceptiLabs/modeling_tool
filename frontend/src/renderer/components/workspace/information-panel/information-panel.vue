@@ -29,35 +29,41 @@
 </template>
 
 <script>
+import { mapState, mapActions } from 'vuex'
 import ErrorInfoPanel   from '@/components/workspace/information-panel/information-panel-errors.vue'
 import ConsoleInfoPanel from '@/components/workspace/information-panel/information-panel-console.vue'
+
 
 export default {
   name: "InformationPanel",
   components: { ErrorInfoPanel, ConsoleInfoPanel },
-  data() {
-    return {
-      selectedTab: 'ErrorInfoPanel'
-    }
-  },
   computed: {
+    ...mapState({
+      workspace:                  state => state.mod_workspace.workspaceContent,
+      indexCurrentNetwork:        state => state.mod_workspace.currentNetwork,
+    }),
     currentNetworkId() {
       return this.$store.getters['mod_workspace/GET_currentNetworkId'];
     },
+    getNotificationWindowSelectedTab() {
+      return this.$store.getters['mod_workspace-notifications/getNotificationWindowSelectedTab'](this.workspace[this.indexCurrentNetwork].networkID);
+    },
     componentType() {
-      return this.selectedTab || 'ErrorInfoPanel';
+      return this.getNotificationWindowSelectedTab || 'ErrorInfoPanel';
     },
   },
   methods: {
     onTabClick(tabName) {
-      if (!tabName) { this.selectedTab = 'ErrorInfoPanel'; }
-
-      this.selectedTab = tabName;
+      this.$store.dispatch("mod_workspace-notifications/setSelectedTabAction", {
+        tabName,
+        networkId: this.workspace[this.indexCurrentNetwork].networkID,
+      });
     },
     closeWindow() {
       this.$store.dispatch('mod_workspace-notifications/setNotificationWindowState', {
         networkId: this.currentNetworkId,
-        value: false
+        value: false,
+        selectedTab: '',
       });
     }
   }

@@ -14,7 +14,7 @@ const mutations = {
   set_notebookMode(state, {value, dispatch}) {
     if (typeof value === 'boolean') {
         state.isNotebookMode = value;
-        dispatch('globalView/hideSidebarAction', value, {root: true});
+        dispatch('globalView/hideSidebarAction', !value, {root: true});
     } else {
         state.isNotebookMode = !state.isNotebookMode;
         dispatch('globalView/hideSidebarAction', !state.isNotebookMode, {root: true});

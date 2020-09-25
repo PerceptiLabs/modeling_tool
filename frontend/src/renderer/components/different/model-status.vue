@@ -3,7 +3,10 @@
       div(v-if="statusData.Status === 'Finished'").d-flex.align-items-center
         img(src="./../../../../static/img/model-status-complete.svg")
         span.training-complete-text Training Complete
-      div(v-else)
+      div(
+        :class="{'show-status-inline': options.styleInlineLabel}"
+        v-else
+        )
         
         .name.warn-color(v-if="showError()") Error
         .name(v-else :class="{'warn-color': showError()}") {{statusData.Status ? statusData.Status === 'Stop' ? 'Stopped' : statusData.Status : 'Untrained'}}
@@ -36,7 +39,7 @@ export default {
   props: {
     statusData: {
       type: Object,
-      default: {},
+      default: function() { return {}},
     },
     status: {
       type: Number,
@@ -45,6 +48,12 @@ export default {
     coreError: {
       type: Object,
       default: function() { return {}},
+    },
+    options: {
+      type: Object,
+      default: function() { return {
+        styleInlineLabel: false,
+      }},
     }
   },
   data() {
@@ -88,9 +97,9 @@ export default {
     font-family: Nunito Sans;
     font-style: normal;
     font-weight: normal;
-    font-size: 14px;
+    font-size: 12px;
     line-height: 19px;
-    color: #E1E1E1;
+    color: #fff;
   }
   .train-progress-wrapper {
     background: #363E51;
@@ -123,5 +132,11 @@ export default {
  
   .warn-color {
     color: #E48B23;
+  }
+  .show-status-inline {
+    display: flex;
+    .name {
+      margin-right: 5px;
+    }
   }
 </style>

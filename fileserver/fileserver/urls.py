@@ -4,17 +4,25 @@ from fileserver.api.views.directory_view import (
         DirectoryView,
         get_tutorial_data,
         get_drives,
+        get_folder_content,
+        get_resolved_dir,
+        get_root_path,
         )
 from fileserver.api.views.json_model_view import JsonModelView
 from fileserver.api.views.model_directory_view import (modeldirectory_tree, get_modeldirectory)
 from fileserver.api.views.github_view import (github_export, github_import, github_issue)
+from fileserver.api.views.version_view import version as version_view
 
 urlpatterns = [
+    path("version", version_view),
     path("files", FileView.as_view()),
     path("json_models", JsonModelView.as_view()),
     path("directories", DirectoryView.as_view()),
     path("directories/tutorial_data", get_tutorial_data),
     path("directories/drives", get_drives),
+    path("directories/get_folder_content", get_folder_content),
+    path("directories/resolved_dir", get_resolved_dir),
+    path("directories/root", get_root_path),
     path("modeldirectories/tree", modeldirectory_tree),
     path("modeldirectories", get_modeldirectory),
     path(r"github/export", github_export),

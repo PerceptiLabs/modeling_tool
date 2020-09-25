@@ -47,8 +47,8 @@ export default {
   width: 29px;
   height: 29px;
   position:fixed;
-  top: 70px;
-  right: 0;
+  top: 71px;
+  right: 4px;
 }
 .toggle-icon {
   transform-origin: 50% 50%;

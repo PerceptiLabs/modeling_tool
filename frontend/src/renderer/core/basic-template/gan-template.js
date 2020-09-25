@@ -24,7 +24,7 @@ const ganTemplate = {
           "layerId": "1598914253772",
           "copyId": null,
           "copyContainerElement": null,
-          "layerName": "Data_1",
+          "layerName": "Local_1",
           "layerType": "Data",
           "layerSettings": {
             "accessProperties": {
@@ -241,7 +241,7 @@ const ganTemplate = {
           "layerId": "1598914325207",
           "copyId": null,
           "copyContainerElement": null,
-          "layerName": "Fully Connected_1",
+          "layerName": "Dense_1",
           "layerType": "Other",
           "layerSettings": {
             "Dropout": false,
@@ -314,7 +314,7 @@ const ganTemplate = {
           "layerId": "1598914328961",
           "copyId": null,
           "copyContainerElement": null,
-          "layerName": "Fully Connected_2",
+          "layerName": "Dense_2",
           "layerType": "Other",
           "layerSettings": {
             "Dropout": false,
@@ -546,7 +546,7 @@ const ganTemplate = {
           "layerId": "1598914700401",
           "copyId": null,
           "copyContainerElement": null,
-          "layerName": "Fully Connected_3",
+          "layerName": "Dense_3",
           "layerType": "Other",
           "layerSettings": {
             "Dropout": false,
@@ -619,7 +619,7 @@ const ganTemplate = {
           "layerId": "1598914702587",
           "copyId": null,
           "copyContainerElement": null,
-          "layerName": "Fully Connected_4",
+          "layerName": "Dense_4",
           "layerType": "Other",
           "layerSettings": {
             "Dropout": false,
@@ -708,7 +708,7 @@ const ganTemplate = {
             "switch_layer": "Switch_1",
             "Stop_condition": "Epochs",
             "Stop_Target_Accuracy": 0,
-            "real_data_layer": "Data_1"
+            "real_data_layer": "Local_1"
           },
           "layerSettingsTabName": "Settings",
           "layerCode": null,

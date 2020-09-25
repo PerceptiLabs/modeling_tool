@@ -113,6 +113,7 @@ export default {
   @import "../scss/base";
   .sidebar-top-empty-space {
     height: 31px;
+    min-height: 30px;
     width: 100%;
     background-color: #23252A;
   }

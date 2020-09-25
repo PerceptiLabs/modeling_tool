@@ -131,6 +131,10 @@ export default {
 <style lang="scss" scoped>
 .input-wrapper {
   width: 66px;
+  //  *** For Training component with are bigger to fit input names ***
+  .el-type-Training & {
+    width: 75px;
+  }
 }
 .input-name {
   display: block;

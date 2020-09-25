@@ -7,7 +7,7 @@
     id="tutorial_training-gan"
     :style="layerStyles"
   )
-    i.icon.icon-train-gan
+    i.icon.icon-train-group
     text-editable.layer-type(
       v-if="withLayerTypeText"
       :text-title="currentEl.layerName"

@@ -96,6 +96,9 @@
   import { generateID, getDefaultProjectPathForOs } from "@/core/helpers";
   import { coreRequest } from '@/core/apiWeb.js';
   import cloneDeep from 'lodash.clonedeep';
+  import { getFolderContent as fileserver_getFolderContent } from '@/core/apiFileserver';
+  import { getModelJson as fileserver_getModelJson } from '@/core/apiFileserver';
+  import { createFolder as fileserver_createFolder } from '@/core/apiFileserver';
 
   export default {
     name: 'CreateSelectProject',
@@ -153,8 +156,6 @@
         closePageAction:          'modal_pages/closePageAction',
         getProjects:              'mod_project/getProjects',
         createProject:            'mod_project/createProject',
-        createLocalProjectFolder: 'mod_api/API_createFolder',
-        API_getModelAction:       'mod_api/API_getModel',
         deleteProjectAction:      'mod_project/deleteProject',
         updateProjectAction:      'mod_project/updateProject',
         createProjectModel:       'mod_project/createProjectModel',
@@ -236,11 +237,9 @@
           return;
         }
 
-        let createProjectFolderReq = {
-          folder_path: this.newProjectLocation + '/' + this.newProjectName
-        };
+        const newFolderPath = this.newProjectLocation + '/' + this.newProjectName
 
-        this.createLocalProjectFolder(createProjectFolderReq)
+        fileserver_createFolder(newFolderPath)
         .then(createFolderRes => {
           if (createFolderRes !== '') {
             let createProjectReq = {
@@ -366,14 +365,8 @@
 
 
         this.selectedFiles = [];
-        let theData = {
-            reciever: '0',
-            action: 'getFolderContent',
-            value: processedFilePath
-        };
-
         try {
-          const { dirs, current_path} = await coreRequest(theData);
+          const { dirs, current_path} = await fileserver_getFolderContent(processedFilePath);
           const haveDirectories = dirs.length > 0;
           if(!haveDirectories) {
             // cerate project only with that dir
@@ -388,7 +381,7 @@
             const modelPaths = dirs.map(dirPath => current_path + '/' + dirPath);
           
             const promiseArray = 
-              modelPaths.map(modelPath => this.$store.dispatch('mod_api/API_getModel', modelPath + '/model.json'));
+              modelPaths.map(modelPath => fileserver_getModelJson(modelPath + '/model.json'));
             
             let localModelsData = await Promise.all(promiseArray);
             localModelsData = localModelsData.filter(model => model);

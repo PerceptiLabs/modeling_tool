@@ -53,7 +53,7 @@ export default {
       ],
       descriptionForSteps: [
         'You can now see each visualization of the output instantly! Each visualization will update in real-time when you change each component setting.',
-        'In the new ModelHub tab you can keep track of all your models. You can see each model\'s progress, your team of collaborators and who last modified your model.',
+        'In the new Model Hub tab you can keep track of all your models. You can see each model\'s progress, your team of collaborators and who last modified your model.',
         'We\'ve added in a new feature: you can now export your models to GitHub!'
       ],
     }

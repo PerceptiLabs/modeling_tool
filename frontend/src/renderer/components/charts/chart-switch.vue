@@ -170,7 +170,7 @@
     z-index: 1;
   }
 
-  .popup {
+  .popup, .sidebar-setting-preview  {
     .btn.save {
       display: none;
     }
@@ -184,7 +184,7 @@
     overflow: hidden;
     flex-direction: column;
     background: $bg-workspace-3;
-    // border: 1px solid $border-color;
+    border: 1px solid $border-color;
 
     &.full-view {
       position: absolute;
@@ -268,11 +268,13 @@
   }
 
   .data-settings_chart {
+    &.base-chart {
+      border: none;
+    }
     .base-chart_main {
       min-height: 140px;
       display: flex;
       align-items: center;
-
       canvas {
         max-height: 140px;
       }

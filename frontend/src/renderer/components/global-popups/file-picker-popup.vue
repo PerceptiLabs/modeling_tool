@@ -50,6 +50,10 @@ export default {
     popupTitle: {
       type: String,
       default: "Select a folder"
+    },
+    options: {
+      type: Object,
+      default: {},
     }
   },
   data() {
@@ -58,6 +62,7 @@ export default {
       filePickerOptions: {
         showBackButton: false,
         showNumberSelectedFiles: false,
+        ...this.options,
       }
     }
   },
