@@ -39,7 +39,7 @@ class RepoExporterAPI():
         return commit.sha
 
     def _get_repo_url(self):
-        return (f"www.github.com/{self.git.get_user.login}/{self.repo_name}")
+        return (f"www.github.com/{self.git.get_user().login}/{self.repo_name}")
 
     @staticmethod
     def _list_users_repo_names(git):

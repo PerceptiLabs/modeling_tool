@@ -110,7 +110,6 @@ export default {
       if(this.isLoading) { return }
 
       const  reqData = {
-        token: process.env.PL_FILE_SERVING_TOKEN,
         path: [this.currentModel.apiMeta.location],
         model_path: "",
         data_path: this.settings.includeDataFiles ? this.getDataComponentsFilePaths() : [],
