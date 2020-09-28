@@ -22,7 +22,7 @@ class  TokenView(TemplateView):
     def dispatch(self, request, *args, **kwargs):
         token = request.GET.get("token")
         ret = super().dispatch(request, *args, **kwargs)
-        ret.set_cookie("fileserver_token", value=token) # TODO: other settings like secure= or samesite=
+        ret.set_cookie("fileserver_token", value=token, samesite="Strict")
         return ret
 
 urlpatterns = [
