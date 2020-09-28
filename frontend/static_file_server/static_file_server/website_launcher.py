@@ -22,7 +22,7 @@ def get_url():
 def get_start_command():
     import platform
 
-    os_platform = platform.platform()
+    os_platform = platform.system()
     if 'Windows' in os_platform:
         return 'start'
     elif 'Darwin' in os_platform:

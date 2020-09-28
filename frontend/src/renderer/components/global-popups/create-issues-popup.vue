@@ -105,12 +105,8 @@
           'github_token': ''
         };
 
-        const requestParams = {
-          token: process.env.PL_FILE_SERVING_TOKEN,
-        }
-
         if (this.issueTitle && this.issueBody) {
-          createIssueInGithub(requestParams, requestPayload)
+          createIssueInGithub(requestPayload)
             .then(res => {
               if (!res.data) { return; }
 
