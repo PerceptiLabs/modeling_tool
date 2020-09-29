@@ -38,7 +38,7 @@ export default {
   name: 'ModelStatus',
   mounted() {
     console.log(this.statusData);
-    debugger;
+    // debugger;
   },
   computed: {
     showProgress: function() {
