@@ -63,7 +63,7 @@
             :class="{'disabled': !haveAtLeastOneItemStatistic , 'active': statisticsIsOpen && isOnModelToolPage()}"
             @click="toModelStatistic"
           )
-            | Go to statistic
+            | Go to statistics
         //- li
         //-   button#tutorial_pause-training.btn.btn--toolbar.tutorial-relative(type="button"
         //-     :class="{'active': statusNetworkCore === 'Paused'}"
