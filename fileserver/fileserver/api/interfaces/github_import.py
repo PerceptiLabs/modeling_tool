@@ -1,6 +1,5 @@
 import requests
 from github import Github
-from git import Repo
 
 class RepoImporterAPI():
     def __init__(self, url):
@@ -32,5 +31,10 @@ class RepoImporterAPI():
         return False
 
     def clone_to(self, dest_path):
+        try:
+            from git import Repo
+        except:
+            raise RuntimeError("git_import")
+
         Repo.clone_from(self.url, dest_path)
 
