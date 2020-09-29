@@ -44,7 +44,6 @@ data_logger = logging.getLogger(DATA_LOGGER)
 training_script_name = "training_script.py" if os.getenv("PL_DEV") else f"{tempfile.gettempdir()}/training_script.py"
 
 
-
 class Core:
     def __init__(self, graph_builder: GraphBuilder, script_factory: ScriptFactory, messaging_factory: MessagingFactory, issue_handler: IssueHandler=None, running_mode = 'training', server_timeout=610, userland_timeout=600, deployment_strategy=None, use_sentry=False, samplers=None):
         self._graph_builder = graph_builder
@@ -119,8 +118,9 @@ class Core:
         
         client_step = self._client.run_stepwise()
         yield from self._await_status_ready(client_step)
+
+        self.request_start()
         
-        self.request_start()        
         yield from self._await_status_active(client_step)
         self._time_started = time.time()
         
@@ -180,30 +180,35 @@ class Core:
     @property
     def has_client(self):
         return self._client is not None
+
+    def _await_status(self, client_step, expected_states, sleep_interval=0.5, by_force_only=False):
+        is_closed = lambda: self.is_closed_by_force if by_force_only else self.is_closed
+
+        t0 = time.perf_counter()
+        s0 = self._client.training_state
         
-    def _await_status_ready(self, client_step):
-        while self._client.training_state != State.READY and not self.is_closed:
+        while self._client.training_state not in expected_states and not is_closed():
             next(client_step)
-            time.sleep(0.5)            
+            time.sleep(sleep_interval)
             yield
 
-    def _await_status_active(self, client_step):            
-        while (self._client.training_state not in State.active_states) and not self.is_closed:
-            next(client_step)
-            time.sleep(0.5)            
-            yield
+        logger.info(
+            f"Awaiting status completed with transition: {s0} -> {self._client.training_state}. "
+            f"is_closed: {self.is_closed}, is_closed_by_force: {self.is_closed_by_force}. "
+            f"Duration: {time.perf_counter() - t0}"
+        )
+
+    def _await_status_ready(self, client_step):
+        yield from self._await_status(client_step, [State.READY])
+
+    def _await_status_active(self, client_step):
+        yield from self._await_status(client_step, State.active_states)        
 
     def _await_status_done(self, client_step):
-        while (self._client.training_state not in State.done_states) and not self.is_closed:
-            next(client_step)
-            time.sleep(1.0)
-            yield
+        yield from self._await_status(client_step, State.done_states, sleep_interval=1.0)                
 
     def _await_status_exit(self, client_step):
-        while (self._client.training_state not in State.exit_states) and not self.is_closed_by_force:
-            next(client_step)
-            time.sleep(1.0)            
-            yield
+        yield from self._await_status(client_step, State.exit_states, sleep_interval=1.0, by_force_only=True)
 
     def _on_training_state_changed(self, new_state):
         logger.info(f"Training server entered state {new_state}")
@@ -212,7 +217,6 @@ class Core:
             self._client.shutdown()            
             self._closed_by_server = True
             logger.info(f"Core closed by server. Training session: [{self._training_session_id}]")            
-        
     def _on_userland_timeout(self):
         if self._issue_handler is not None:
             self._issue_handler.put_error('Training stopped because a training step too long!')
@@ -314,8 +318,9 @@ class Core:
 
     def request_start(self):
         self._client.request_start()
+        logger.info("Requested start")
 
-    def request_close(self):
+    def request_close(self, is_auto=False):
         self._client.request_close()
         logger.info("Requested close")
         

@@ -196,6 +196,8 @@ class coreLogic():
             with self.issue_handler.create_issue(message, e) as issue:
                 self.issue_handler.put_error(issue.frontend_message)
                 logger.error(issue.internal_message)
+        else:
+            logger.info(f"Started core for network {self.networkName}. Mode: {self._running_mode}")
                 
         self.status="Running"
             
