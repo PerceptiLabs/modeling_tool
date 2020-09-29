@@ -75,8 +75,8 @@ export default {
   .popup_foot {
     .btn.btn--primary {
 
-      width: 9.5rem;
-      height: 3.5rem;
+      width: 8rem;
+      height: 2rem;
       background-color: $color-6;
       color: $white;
 

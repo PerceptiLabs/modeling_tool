@@ -13,6 +13,9 @@ const state = {
   workspaceContent: [],
   unparsedModels: [],
   currentNetwork: 0,
+  currentModelIndex: -1,
+  currentStatsIndex: -1,
+  currentTestIndex: -1,
   dragElement: null,
   startArrowID: null,
   webLoadingDataFlag: false,
@@ -44,6 +47,9 @@ const state = {
     networkMeta: {
       openStatistics: null, //null - hide Statistics; false - close Statistics, true - open Statistics
       openTest: null,
+      hideModel: false,
+      hideStatistics: true,
+      hideTest: true,
       zoom: 1,
       zoomSnapshot: 1,
       usingWeights: false,
@@ -57,15 +63,18 @@ const state = {
         doRequest: 0,
         showCharts: 0
       },
-      networkElementList: {},
-      networkRootFolder: ''
-    }
+    },
+    networkElementList: {},
+    networkRootFolder: ''
   },
   viewType: localStorage.getItem(LOCAL_STORAGE_WORKSPACE_VIEW_TYPE_KEY) || 'model', // [model,statistic,test]
   showModelPreviews: localStorage.hasOwnProperty(LOCAL_STORAGE_WORKSPACE_SHOW_MODEL_PREVIEWS) ? localStorage.getItem(LOCAL_STORAGE_WORKSPACE_SHOW_MODEL_PREVIEWS) === 'true' : true,
 };
 
 const getters = {
+  GET_defaultNetworkTemplate(state) {
+    return state.defaultModelTemplate;
+  },
   GET_networkIsNotEmpty(state) {
     return !!state.workspaceContent.length
   },
@@ -110,6 +119,15 @@ const getters = {
     } else {
       return state.workspaceContent[state.currentNetwork].networkID;
     }
+  },
+  GET_currentModelIndex(state) {
+    return state.currentModelIndex;
+  },
+  GET_currentStatsIndex(state) {
+    return state.currentStatsIndex;
+  },
+  GET_currentTestIndex(state) {
+    return state.currentTestIndex;
   },
   GET_networkElementById: state => layerId => {
     return state.workspaceContent[state.currentNetwork].networkElementList[layerId];
@@ -210,6 +228,9 @@ const getters = {
     const coreStatus = getters.GET_networkCoreStatus;
     const statusList = ['Training', 'Validation', 'Paused'];
     return !!statusList.includes(coreStatus)
+  },
+  GET_viewType(state, getters) {
+    return state.viewType;
   },
   GET_statisticsIsOpen(state, getters) {
     if(getters.GET_networkIsNotEmpty) {
@@ -486,7 +507,8 @@ const mutations = {
 
     newNetwork.apiMeta = apiMeta
 
-    newNetwork.networkMeta = defaultMeta;
+    setNetworkMeta(newNetwork.networkMeta, defaultMeta, true);
+
     //-- Create unic ID
     if(!newNetwork.networkID) {
       newNetwork.networkID = generateID();
@@ -593,6 +615,24 @@ const mutations = {
         })
       }
     }
+    function setNetworkMeta(original, target, preserveHideStates = true) {
+      if (!preserveHideStates) {
+        original = target;
+        return;
+      }
+      
+      if (original.hasOwnProperty('hideModel')) {
+        target['hideModel'] = original['hideModel'];
+      }
+
+      if (original.hasOwnProperty('hideStatistics')) {
+        target['hideStatistics'] = original['hideStatistics'];
+      }
+
+      if (original.hasOwnProperty('hideTest')) {
+        target['hideTest'] = original['hideTest'];
+      }
+    }
   },
   add_existingNetworkToWorkspace (state, { network }) {
     // This method is used for load the networks in to the workspace from the idb
@@ -652,6 +692,9 @@ const mutations = {
     getters.GET_currentNetwork.networkMeta.netMode = value;
   },
   set_openStatistics(state, {dispatch, getters, value}) {
+
+    if (!getters.GET_currentNetwork) { return; }
+
     getters.GET_currentNetwork.networkMeta.openStatistics = value;
     let isTraining = getters.GET_networkIsTraining;
 
@@ -679,13 +722,18 @@ const mutations = {
     const network = getters.GET_networkByNetworkId(networkId);
     if (!network) { return; }
 
-    if(value) {
-      network.networkMeta.openStatistics = false;
-    } else {
+    // Adds network.networkMeta.openStatistics !== true condition
+    // to not close the tab on new requests
+    if(!value) {
       network.networkMeta.openStatistics = null;
+    } else if (network.networkMeta.openStatistics !== true) {
+      network.networkMeta.openStatistics = false;
     }
   },
   set_openTest(state, {dispatch, getters, value}) {
+
+    if (!getters.GET_currentNetwork) { return; }
+
     if(value && getters.GET_statisticsIsOpen !== null) {
       getters.GET_currentNetwork.networkMeta.openStatistics = false;
     }
@@ -701,17 +749,11 @@ const mutations = {
     const network = getters.GET_networkByNetworkId(networkId);
     if (!network) { return; }
 
-    if(value && network.networkMeta.openStatistics !== null) {
-      network.networkMeta.openStatistics = false;
-    }
-    if(value) {
+    if(!value) {
+      network.networkMeta.openTest = null;
+    } else if (network.networkMeta.openTest !== true) {
       network.networkMeta.openTest = false;
       network.networkMeta.coreStatus.Status = 'Finished';
-      // dispatch('mod_statistics/STAT_defaultSelect', null, {root: true});
-      // network.networkMeta.openTest = true
-    } else {
-      // network.networkMeta.openTest = value;
-      network.networkMeta.openTest = null;
     }
   },
   SET_statisticsAndTestToClosed(state, { getters, networkId }) {
@@ -783,26 +825,32 @@ const mutations = {
   },
   set_statusNetworkZoom(state, {getters, value}) {
     if (getters.GET_statisticsOrTestIsOpen) {
-      getters.GET_currentNetwork.networkMeta.zoomSnapshot = value;
+      // Using Vue.set because the zoomSnapshot seems to not be a part of 
+      // the default network template anymore...
+      Vue.set(getters.GET_currentNetwork.networkMeta, 'zoomSnapshot', value);
     } else {
       getters.GET_currentNetwork.networkMeta.zoom = value;
     }
   },
   set_charts_doRequest(state, {getters, networkIndex}) {
+    let currentDoRequestValue = getters.GET_currentNetwork.networkMeta.chartsRequest.doRequest + 1;
+
     networkIndex
-      ? state.workspaceContent[networkIndex].networkMeta.chartsRequest.doRequest++ //TODO проверить что счетчики идут паралельно в нескольких networks
-      : getters.GET_currentNetwork.networkMeta.chartsRequest.doRequest++
+      ? Vue.set(state.workspaceContent[networkIndex].networkMeta.chartsRequest, 'doRequest', currentDoRequestValue) //TODO проверить что счетчики идут паралельно в нескольких networks
+      : Vue.set(getters.GET_currentNetwork.networkMeta.chartsRequest, 'doRequest', currentDoRequestValue);
   },
   set_charts_showCharts(state, {getters, networkIndex}) {
+    let currentShowChartsValue = getters.GET_currentNetwork.networkMeta.chartsRequest.showCharts + 1;
+
     networkIndex
-      ? state.workspaceContent[networkIndex].networkMeta.chartsRequest.showCharts++
-      : getters.GET_currentNetwork.networkMeta.chartsRequest.showCharts++
+      ? Vue.set(state.workspaceContent[networkIndex].networkMeta.chartsRequest, 'showCharts', currentShowChartsValue)
+      : Vue.set(getters.GET_currentNetwork.networkMeta.chartsRequest, 'showCharts', currentShowChartsValue);
   },
   set_charts_timerID(state, {getters, timerId}) {
     getters.GET_currentNetwork.networkMeta.chartsRequest.timerID = timerId;
   },
   set_statusNetworkWaitGlobalEvent(state, {getters, value}) {
-    getters.GET_currentNetwork.networkMeta.chartsRequest.waitGlobalEvent = value;
+    Vue.set(getters.GET_currentNetwork.networkMeta.chartsRequest, 'waitGlobalEvent', value);
   },
   //---------------
   //  NETWORK ELEMENTS
@@ -1532,6 +1580,15 @@ const mutations = {
   set_currentNetwork(state, tabIndex) {
     state.currentNetwork = tabIndex;
   },
+  set_currentModelIndex(state, tabIndex) {
+    state.currentModelIndex = tabIndex;
+  },
+  set_currentStatsIndex(state, tabIndex) {
+    state.currentStatsIndex = tabIndex;
+  },
+  set_currentTestIndex(state, tabIndex) {
+    state.currentTestIndex = tabIndex;
+  },
   ADD_dragElement(state, event) {
     state.dragElement = createNetElement(event);
   },
@@ -1718,17 +1775,21 @@ const actions = {
     commit('replace_network_element_list', {newNetworkElementList, getters});
   },
   ADD_network({commit, dispatch}, { network, apiMeta = {}, focusOnNetwork = true } = {}) {
-    if(isElectron()) {
-      commit('add_network', { network, apiMeta, dispatch, focusOnNetwork });
-    } else {
-      commit('add_network', { network, apiMeta, dispatch, focusOnNetwork });
-      const lastNetworkID = state.workspaceContent[state.currentNetwork].networkID;
 
-      if (focusOnNetwork) {
-        commit('set_lastActiveTabInLocalStorage', lastNetworkID);
+    return new Promise((resolve, reject) => {
+      if(isElectron()) {
+        commit('add_network', { network, apiMeta, dispatch, focusOnNetwork });
+      } else {
+        commit('add_network', { network, apiMeta, dispatch, focusOnNetwork });
+        const lastNetworkID = state.workspaceContent[state.currentNetwork].networkID;
+
+        if (focusOnNetwork) {
+          commit('set_lastActiveTabInLocalStorage', lastNetworkID);
+        }
+        dispatch('mod_webstorage/updateWorkspaces', null, { root: true });
       }
-      dispatch('mod_webstorage/updateWorkspaces', null, { root: true });
-    }
+      return Promise.resolve();
+    });
   },
   ADD_existingNetworkToWorkspace({commit,dispatch}, { network } = {}) {
     if (!network) { return;}
@@ -1858,18 +1919,25 @@ const actions = {
       isTrainedPromises.push(isTrainedPromise);
     }
 
-    Promise.all(isTrainedPromises)
+    return Promise.all(isTrainedPromises)
       .then(results => {
 
-        // console.log('setStatisticsAvailability', results);
+        const setStatisticsPromises = [];
 
         for (const r of results) {
-          dispatch('SET_openStatisticsByNetworkId', 
+          const setStatisticsPromise = dispatch('SET_openStatisticsByNetworkId', 
           {
             networkId: r.receiver,
             value: r.result && r.result.content ? r.result.content : false
           });
+
+          setStatisticsPromises.push(setStatisticsPromise);
         }
+
+        return Promise.all(setStatisticsPromises)
+          .then(() => {
+            return results;
+          })
       });
 
   },
@@ -1965,6 +2033,16 @@ const actions = {
     commit('set_lastActiveTabInLocalStorage', state.workspaceContent[index].networkID);
     return Promise.resolve();
   },
+  SET_currentModelIndex({commit}, index){
+    commit('set_currentModelIndex', index);
+  },
+  SET_currentStatsIndex({commit}, index){
+    commit('set_currentStatsIndex', index);
+  },
+  SET_currentTestIndex({commit}, index){
+    commit('set_currentTestIndex', index);
+  },
+
   SET_networkName({commit, getters, dispatch}, value) {
     commit('set_networkName', {getters, value})
     let currentNetwork = JSON.parse(JSON.stringify(getters.GET_currentNetwork.apiMeta));

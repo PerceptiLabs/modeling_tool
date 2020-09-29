@@ -53,7 +53,7 @@ export default {
     height: 85px;
     top: 56px;
     right: 36px;
-    z-index: 10;
+    z-index: 12;
     animation-name: move;
     animation-duration: 2s;
   }

@@ -164,6 +164,11 @@ const actions = {
 
         }
 
+        if (model.networkMeta) {
+          model.networkMeta.openStatistics = null;
+          model.networkMeta.openTest = null;
+        }
+
         dispatch('mod_project/getProjects', null , {root: true});
       }).catch(err => {
         console.log(err);
@@ -176,8 +181,14 @@ const actions = {
         name: mod.networkName,
         project: projectId,
         location: pathFile.substring(0, pathFile.lastIndexOf('/')),
-      }, {root: true}).then(apiMeta => {
+      }, {root: true})
+      .then(apiMeta => {
         dispatch('mod_workspace/ADD_network', {network: mod, apiMeta}, {root: true});
+      })
+      .then(_ => {
+        const workspaceModels = rootState.mod_workspace.workspaceContent;
+        const modelCandidate = workspaceModels.filter(item => item.networkMeta.hideModel!==true).length;
+        dispatch('mod_workspace/SET_currentModelIndex', modelCandidate - 1, {root: true});
       });
     }
   },

@@ -49,6 +49,7 @@
 
   }
   import Analytics from '@/core/analytics';
+  import { LOCAL_STORAGE_WORKSPACE_VIEW_TYPE_KEY } from '@/core/constants.js'
 
   import { mapMutations, mapActions, mapGetters } from 'vuex';
   import ProjectSidebar         from '@/pages/layout/project-sidebar.vue';
@@ -84,9 +85,10 @@
           this.setStatisticsAvailability();
           this.setCheckpointAvailability();
         });
-        
+
       this.$store.commit('mod_project/setIsDefaultProjectMode');
       this.$store.dispatch('mod_tutorials/loadTutorialProgress');
+      this.initTutorialView();
     },
     mounted() {      
       if (this.isDefaultProjectMode) { 
@@ -195,6 +197,7 @@
         getIsTutorialMode:      'mod_tutorials/getIsTutorialMode',
         getShowChecklist:       'mod_tutorials/getShowChecklist',
         getShowTutorialTips:    'mod_tutorials/getShowTutorialTips',
+        emptyNavigationMode:    'mod_empty-navigation/getEmptyScreenMode',        
       }),
       platform() {
         return this.$store.state.globalView.platform
@@ -294,6 +297,7 @@
 
         if (this.$route.name !== 'projects' &&
             this.$route.name !== 'settings' &&
+            this.emptyNavigationMode === 0 &&
             !this.showNewModelPopup) {
           
           bottomValueRm += 2; // the-workspace
@@ -385,6 +389,8 @@
         SET_updateProgress:   'mod_autoUpdate/SET_updateProgress',
         // loadProjectFromLocalStorage: 'mod_workspace/get_workspacesFromLocalStorage',
         // setPageTitleMutation: 'globalView/setPageTitleMutation',
+
+        setViewTypeMutation:  'mod_workspace/setViewTypeMutation'
       }),
       ...mapActions({
         openErrorPopup:         'globalView/GP_infoPopup',
@@ -425,6 +431,7 @@
         deleteAllIds:        'mod_webstorage/deleteAllIds',        
         updateWorkspaces:    'mod_webstorage/updateWorkspaces',
 
+        setCurrentView:         'mod_tutorials/setCurrentView',
       }),
       updateOnlineStatus() {
         this.SET_onlineStatus(navigator.onLine);
@@ -585,6 +592,22 @@
 
         this.updateWorkspaces();
       },
+    
+      initTutorialView() {
+        const viewType = localStorage.getItem(LOCAL_STORAGE_WORKSPACE_VIEW_TYPE_KEY);
+        this.setViewTypeMutation(viewType);
+        switch (viewType) {
+          case 'model':
+            this.setCurrentView('tutorial-workspace-view');
+            break
+          case 'statistics':
+            this.setCurrentView('tutorial-statistics-view');
+            break
+          case 'test':
+            this.setCurrentView('tutorial-test-view');
+            break
+        }
+      }
     },
   }
 </script>

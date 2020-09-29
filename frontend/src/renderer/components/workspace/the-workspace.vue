@@ -2,14 +2,17 @@
   main.page_workspace(
     :class="{'open-statistics': statisticsIsOpen}"
   )
+    empty-navigation(v-if="emptyNavigationMode!=0")
+
     .workspace_tabset(
       ref="tabset"
       v-show="!showTrainingSpinner"
+      v-if="emptyNavigationMode==0"
     )
       include ./tabset/workspace-tabset.pug
-    component.blue-left-border(:is="toolbarType")
+    component.blue-left-border(:is="toolbarType" v-if="emptyNavigationMode==0")
     .workspace_content.bookmark_content.js-workspace.blue-border(
-      v-show="!isNotebookMode"  
+      v-show="!isNotebookMode && emptyNavigationMode==0"  
       ref="workspaceNet"
       :class="{'workspace-relative' : showTrainingSpinner, 'open-statistics': statisticsIsOpen}"
       )
@@ -110,7 +113,7 @@
           span GPU
 
     .workspace_meta(
-      v-if="!isNotebookMode"
+      v-if="!isNotebookMode && emptyNavigationMode===0"
       )
       include ./meta/workspace-meta.pug
     notebook(v-if="isNotebookMode")
@@ -181,7 +184,6 @@
 
     .tab-group {
       display: flex;
-      margin-right: 10px;
     }
   }
   .workspace_content {

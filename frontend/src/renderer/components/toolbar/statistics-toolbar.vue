@@ -1,19 +1,18 @@
 <template lang="pug">
   aside.page_toolbar(v-if="statisticsIsOpen")
     button.back-to-model-btn(@click="handleBackToModel")
-      svg(width='12' height='11' viewbox='0 0 12 11' fill='none' xmlns='http://www.w3.org/2000/svg')
-        path(d='M11 5.29545L1 5.29545M1 5.29545L5.58333 10M1 5.29545L5.58333 1' stroke='#B6C7FB' stroke-linecap='round' stroke-linejoin='round')
+      i.icon.icon-arrow-right
       | Back to model
     .toolbar-section
       ul.toolbar-button-group(:data-tutorial-target="'tutorial-statistics-controls'")
         button.btn-menu-bar(
-          v-if="!trainintIsStopped"
+          v-if="!isTrainingStopped"
           @click="onPauseClick"
         )
           i.icon.icon-player-pause
         
         button.btn-menu-bar(
-          v-if="trainintIsStopped"
+          v-if="isTrainingStopped"
           @click="startTraining"
         )
           i.icon.icon-player-play.scaled-icon
@@ -21,7 +20,7 @@
         button.btn-menu-bar(
           @click="onStopClick"
         )
-          icon.icon.icon-stop2
+          i.icon.icon-stop2
 
         button.btn-menu-bar(
           @click="onSkipClick"
@@ -30,6 +29,7 @@
 
     .toolbar-section
       model-status(
+        :options="{styleInlineLabel: true}"
         v-if="statisticsIsOpen"
         :statusData="currentNetwork.networkMeta.coreStatus"
       )
@@ -43,14 +43,14 @@
 
 import ModelStatus  from '@/components/different/model-status.vue';
 
-import { mapGetters, mapActions, mapMutations } from 'vuex';
+import { mapGetters, mapActions, mapMutations, mapState } from 'vuex';
 
 export default {
   name: 'StatisticsToolbar',
   components: { ModelStatus },
   data() {
     return {
-     trainintIsStopped: false, 
+      isTrainingStopped: false, 
     }
   },
   watch: {
@@ -58,15 +58,18 @@ export default {
       handler(statusNetworkCore) {
         console.log(statusNetworkCore);
         if(statusNetworkCore === 'Stop' || statusNetworkCore === 'Paused' || statusNetworkCore === 'Finished') {
-          this.trainintIsStopped = true;
+          this.isTrainingStopped = true;
         } else {
-          this.trainintIsStopped = false;
+          this.isTrainingStopped = false;
         }
       },
       deep: true
     },
   },
   computed: {
+    ...mapState({
+      currentNetworkIndex:           state => state.mod_workspace.currentNetwork,
+    }),
     ...mapGetters({
       statusNetworkCore:    'mod_workspace/GET_networkCoreStatus',
       statisticsIsOpen:     'mod_workspace/GET_statisticsIsOpen',
@@ -97,6 +100,7 @@ export default {
     }),
     ...mapActions({
       pauseTraining:        'mod_api/API_pauseTraining',
+      unpauseTraining:      'mod_api/API_unpauseTraining',
       stopTraining:         'mod_api/API_stopTraining',
       skipValidTraining:    'mod_api/API_skipValidTraining',
       SET_openStatistics:   'mod_workspace/SET_openStatistics',
@@ -110,9 +114,15 @@ export default {
       this.pauseTraining();
     },
     startTraining() {
-     this.API_startTraining();
-     this.setSidebarStateAction(false);
-     this.set_showTrainingSpinner(true);
+      // The start button is presented as away to unpause
+      // Without this check, startTraining will always be invoked.
+      if (this.statusNetworkCore === 'Paused') {
+        this.unpauseTraining();
+      } else {
+        this.API_startTraining();
+        this.setSidebarStateAction(false);
+        this.set_showTrainingSpinner(true);
+      }
     },
     onStopClick() {
       this.stopTraining();
@@ -122,7 +132,9 @@ export default {
     },
     handleBackToModel() {
       this.SET_openStatistics(false);
-
+      this.$store.dispatch('mod_workspace/setViewType', 'model');
+      this.$store.dispatch("mod_workspace/SET_currentModelIndex", this.currentNetworkIndex);      
+      this.$store.commit('mod_workspace/update_network_meta', {key: 'hideModel', networkID: this.currentNetwork.networkID, value: false});
       this.setCurrentView('tutorial-workspace-view');
     }
   }
@@ -208,9 +220,10 @@ export default {
   font-size: 11px;
   line-height: 15px;
   color: #B6C7FB;
-  svg{
-    vertical-align: middle;
-    margin-right: 7px;
+  display: flex;
+  align-items: center;
+  i {
+    margin-right: 5px;
   }
   &::after {
     content: '';
@@ -221,6 +234,11 @@ export default {
     top: 50%;
     transform: translateY(-50%);
     right: -12px;
+  }
+  &:hover {
+    background-color: #6185EE;
+    border-color: #6185EE;
+    color: white;
   }
 }
 .btn-menu-bar {

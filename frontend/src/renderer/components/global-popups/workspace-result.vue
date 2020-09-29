@@ -25,7 +25,7 @@
 </template>
 
 <script>
-import { mapActions } from 'vuex';
+import { mapState, mapActions } from 'vuex';
 export default {
   name: "GeneralResult",
   mounted() {
@@ -51,6 +51,7 @@ export default {
       this.closePopup();
       this.$store.dispatch('mod_workspace/SET_statusNetworkCoreStatusProgressClear');
       this.$store.dispatch('mod_workspace/SET_elementUnselect');
+      this.$store.dispatch("mod_workspace/SET_currentTestIndex", this.currentNetworkIndex);      
       this.$store.dispatch('mod_workspace/SET_openTest', true);
       this.$store.dispatch('mod_workspace/setViewType', 'test');
       this.setCurrentView('tutorial-test-view');
@@ -64,6 +65,9 @@ export default {
     }
   },
   computed: {
+    ...mapState({
+      currentNetworkIndex:           state => state.mod_workspace.currentNetwork,
+    }),
     trainingTargetMetric() {
 
       if (this.popupInfo.acc_train) {

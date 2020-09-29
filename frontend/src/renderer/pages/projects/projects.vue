@@ -47,6 +47,7 @@
             img.github-button-icon(src="../../../../static/img/github.svg")
             span.github-button-text GitHub
           span.text-button(
+            @click="openItems"
             :class="{ 'is-disable': !isAtLeastOneItemSelected() }"
             v-tooltip:bottom="'Open'") Open
           span.img-button.pt-4(:class="{ 'disabledIconButton': !isAtLeastOneItemSelected() }" @click="removeItems()" v-tooltip:bottom="'Delete'")
@@ -83,8 +84,9 @@
             span.btn-round-icon.check-model-button(v-tooltip:bottom="isItemSelected(model.networkID) ? 'Unselect' : 'Select'")
               img(v-if="isItemSelected(model.networkID)" src="../../../../static/img/project-page/checked.svg")
 
-            .editable-field
+            .editable-field.model-name-wrapper
               span.model-name(
+                title="model.networkName}"
                 v-if="!isRenamingItem(index)" 
                 v-tooltip:bottom="'Click to open Model'" 
                 @click.stop="goToNetworkView(model.networkID)"
@@ -312,12 +314,15 @@
         popupNewModel:       'globalView/SET_newModelPopup',
         showInfoPopup:       'globalView/GP_infoPopup',
         set_currentNetwork:  'mod_workspace/SET_currentNetwork',
+        set_currentModelIndex: 'mod_workspace/SET_currentModelIndex',
         createProjectModel:  'mod_project/createProjectModel',
         setActivePageAction: 'modal_pages/setActivePageAction',
         delete_network :     'mod_workspace/DELETE_network',
         UPDATE_MODE_ACTION : 'mod_workspace/UPDATE_MODE_ACTION',
         closeStatsTestViews:  'mod_workspace/SET_statisticsAndTestToClosed',
         setCurrentView:       'mod_tutorials/setCurrentView',
+        SET_openStatistics: 'mod_workspace/SET_openStatistics',
+        SET_openTest:       'mod_workspace/SET_openTest',
 
         setNetworkNameAction:'mod_workspace/SET_networkName',
         updateWorkspaces:    'mod_webstorage/updateWorkspaces',
@@ -330,13 +335,20 @@
         }
 
         // maybe should receive a id and search index by it
+        this.$store.commit('mod_workspace/update_network_meta', {key: 'hideModel', networkID: networkID, value: false});
+
         const index = this.workspaceContent.findIndex(wc => wc.networkID == networkID);
         this.set_currentNetwork(index > 0 ? index : 0);
 
         this.closeStatsTestViews({ networkId: networkID });
 
+        this.set_currentModelIndex(index > 0 ? index : 0);
+        this.$store.commit('mod_empty-navigation/set_emptyScreenMode', 0);
+        console.log(index);
         if(index !== -1) {
           this.$store.dispatch("mod_workspace/setViewType", 'model');
+          // this.SET_openStatistics(false);
+          // this.SET_openTest(false);
           this.$router.push({name: 'app'});
 
           this.$nextTick(() => {
@@ -403,6 +415,22 @@
       },
       isOneItemSelected() {
         return this.selectedListIds.length === 1;
+      },
+      openItems() {
+        if(this.statusLocalCore!='online') {
+          this.showInfoPopup("Kernel is offline");
+          return;
+        }
+
+        this.selectedListIds.forEach(id => {
+          this.$store.commit('mod_workspace/update_network_meta', {key: 'hideModel', networkID: id, value: false});
+          const index = this.workspaceContent.findIndex(wc => wc.networkID == id);
+          this.set_currentNetwork(index > 0 ? index : 0);
+          this.set_currentModelIndex(index > 0 ? index : 0);
+        });
+
+        this.$store.commit('mod_empty-navigation/set_emptyScreenMode', 0);
+        this.$router.push({name: 'app'});
       },
       removeItems() {
         if(this.statusLocalCore!='online') {
@@ -478,7 +506,7 @@
         return selectedLength === favoriteItemLength.length
       },
       isAllItemsSelected() {
-        return this.selectedListIds.length === this.workspaceContent.length;
+        return this.selectedListIds.length === this.workspaceContent.length && this.workspaceContent.length !== 0;
       },
       toggleSelectedItems() {
         if(this.statusLocalCore!='online') {
@@ -556,11 +584,19 @@
 
         const { networkMeta: { openStatistics } } = model;
 
+
         if (typeof openStatistics === 'boolean') {
           this.$store.dispatch("mod_workspace/setViewType", 'statistic');
+
           this.$router.push({name: 'app'}) 
             .then(() => {
               this.set_currentNetwork(index);
+              this.$store.commit('mod_empty-navigation/set_emptyScreenMode', 0);
+              
+              this.$store.dispatch("mod_workspace/SET_currentStatsIndex", index);
+              this.$store.commit('mod_workspace/update_network_meta', {key: 'hideStatistics', networkID: model.networkID, value: false});
+              this.SET_openStatistics(true);
+              this.SET_openTest(false);
             });
         } else {
           this.showInfoPopup("The model does not have any statistics, you should run this model first");
@@ -891,7 +927,7 @@
     }
 
     .model-unsaved_changes_indicator {
-
+      margin-right: 10px;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -1056,5 +1092,13 @@
     font-size: 14px;
     line-height: 29px;
     color: #E1E1E1;
+  }
+  .model-name-wrapper {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    max-width: 25vw;
+    height: 1.2em;
+    white-space: nowrap;
+    padding-right: 15px;
   }
 </style>

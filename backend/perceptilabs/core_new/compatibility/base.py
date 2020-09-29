@@ -58,8 +58,8 @@ class CompatibilityCore:
             count = {}
 
             while not self._core.has_client:
-                time.sleep(0.3)
-
+                time.sleep(0.3)   
+            
             while not self._command_queue.empty():
                 command = self._command_queue.get()
 

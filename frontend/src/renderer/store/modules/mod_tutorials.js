@@ -289,9 +289,6 @@ const getters = {
   getActiveNotifications(state) {
     return state.activeNotifications;
   },
-  getActiveStep({commit, dispatch, getters}, value = '') {
-    // TOREMOVE
-  },
 };
 
 const mutations = {
@@ -327,7 +324,8 @@ const mutations = {
   },
   setToFirstStepIfNeeded(state) {
     const tutorialStep = state.tutorialSteps.find(ts => ts.viewName === state.currentView);
-    if (!tutorialStep.isCompleted ||
+    if (!tutorialStep ||
+        !tutorialStep.isCompleted ||
         !tutorialStep.steps ||
         tutorialStep.steps.length === 0) { return; }
 
@@ -445,11 +443,20 @@ const actions = {
   },
   activateCurrentStep({dispatch, getters}) {
     // Check if no notifications, delegate the last one
-    if (getters.getIsTutorialMode && getters.getActiveNotifications.length === 0) {
+    if (getters.getShowTutorialTips && getters.getActiveNotifications.length === 0) {
       // console.log('activateCurrentStep', getters.getCurrentStepCode);
       const step =  getters.getStep(getters.getCurrentStepCode);
-      setTimeout(() => dispatch('setupDelegator', { step: step }), 0);
+      setTimeout(() => {
+        dispatch('setupDelegator', { step: step });
+      }, 0);
     }
+  },
+  deactivateCurrentStep({dispatch, getters}) {
+    const step =  getters.getStep(getters.getCurrentStepCode);
+
+    setTimeout(() => {
+      dispatch('teardownDelegator', { step: step });
+    }, 0);
   },
   setChecklistItemComplete({commit, dispatch, getters}, { itemId = '' }) {
     commit('setChecklistItemComplete', { itemId });
@@ -487,7 +494,7 @@ const actions = {
    * Setup view/next step and the delegating function
    ***************************************************************************/
   setCurrentView({commit, dispatch, getters}, value = '') {
-    if (!getters.getIsTutorialMode) { return; }
+    // if (!getters.getShowTutorialTips) { return; }
     
     dispatch('removeAllNotifications');
     commit('setCurrentView', value);
@@ -496,7 +503,7 @@ const actions = {
     dispatch('activateNotification');
   },
   setNextStep({commit, dispatch, getters}, currentStep = '') {
-    if (!getters.getIsTutorialMode) { return; }
+    if (!getters.getShowTutorialTips) { return; }
 
     if (currentStep !== '' && currentStep !== getters.getCurrentStepCode) {
       // The currentStep arg shows the parameter of the element triggering the next step.
@@ -516,6 +523,7 @@ const actions = {
     }, 0);
   },
   setupDelegator({commit, dispatch, getters}, { step }) {
+    if (!getters.getShowTutorialTips) { return; }
     if (!step) { return; }
 
     if (step.overrideActions && step.overrideActions.setup) {

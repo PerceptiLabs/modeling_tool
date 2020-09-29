@@ -9,13 +9,15 @@
           .name-wrapper
             .form_label.mr-10 Save as:
             .form_row.w-75
-              input.form_input(type="text" v-model="settings.name")
+              input.form_input.input-black(type="text" v-model="settings.name")
+        .horozontal-separator
         .settings-layer_section
           .form_holder
             base-checkbox(v-model="settings.includeTensorflowFiles" :isNewUi="true") Include TensorFlow Files
-          .form_holder
+          .form_holder.mb-0
             base-checkbox(v-model="settings.includeDataFiles" :isNewUi="true") Include Data Files
         view-loading(:isLoading="isLoading")
+        .horozontal-separator
         //- base-accordion(:accordion-title="accordionData" :isNewUi="true")
         //-   template(slot="basicSettings")
         //-     .settings-layer_section
@@ -28,6 +30,7 @@
         //-       span advanced settings
 
     template(slot="action" v-if="isGithubTokenSetted")
+      
       button.btn.btn--primary.btn--disabled(type="button"
         @click="closePopup") Cancel
       button.btn.btn--primary(type="button"
@@ -185,6 +188,20 @@ export default {
   line-height: 16px;
   text-align: center;
   color: #FFFFFF;
-  padding: 6px 25px;
+  padding: 1px 23px;
+}
+.horozontal-separator {
+  height: 1px;
+  width: calc(100% + 20px);
+  margin-left: -10px;
+  background-color: #3F4C70;
+  margin-bottom: 10px;
+}
+.input-black {
+  background-color: #202330;
+  border: none;
+}
+.mb-0 {
+  margin-bottom: 0;
 }
 </style>

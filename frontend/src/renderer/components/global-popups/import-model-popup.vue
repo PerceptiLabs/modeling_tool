@@ -18,6 +18,7 @@
               input.form_input(type="text" v-model="saveModelLocation" readonly)
               button.btn.btn--dark-blue-rev(type="button" @click="openLoadModelPopup") Browse
         div(slot="Import from-content" v-if="currentTab === 'github'")
+          view-loading(:isLoading="isFetching" )
           div.import-model-box-with-border
             .form_holder
               .form_label Enter Git Repository:
@@ -30,13 +31,13 @@
               .form_row
                 input.form_input(type="text" v-model="saveGithubModelLocation" readonly)
                 button.btn.btn--dark-blue-rev(type="button" @click="openLoadGithubLocation") Browse
-    
+          
 
     template(slot="action")
       button.btn.btn--primary.btn--disabled(type="button"
         @click="closePopup") Cancel
       button.btn.btn--primary(type="button"
-        @click="onInportHandleType") Import
+        @click="onImportHandleType") Import
 
 
 </template>
@@ -45,11 +46,12 @@
 import { isWeb } from "@/core/helpers";
 import BaseGlobalPopup  from "@/components/global-popups/base-global-popup";
 import BaseAccordion    from "@/components/base/accordion.vue";
+import ViewLoading from '@/components/different/view-loading.vue'
 import { mapActions, mapState, mapGetters } from 'vuex'
 import { importRepositoryFromGithub } from '@/core/apiFileserver.js';
 export default {
   name: "ImportModel",
-  components: {BaseGlobalPopup, BaseAccordion},
+  components: { BaseGlobalPopup, BaseAccordion, ViewLoading },
   data() {
     return {
       popupTitle: ['Import from'],
@@ -62,6 +64,7 @@ export default {
       saveModelLocation: '',
       saveGithubModelLocation: '',
       githubRepositoryUrl: 'http://www',
+      isFetching: false,
     }
   },
   computed: {
@@ -98,7 +101,7 @@ export default {
     setImportModelLocationPath(path) {
       this.saveModelLocation = path[0]
     },
-    onInportHandleType(){
+    onImportHandleType() {
       switch (this.currentTab) {
         case 'local': {
           this.onLoadNetworkConfirmed(this.saveModelLocation);
@@ -117,6 +120,7 @@ export default {
     
       this.loadNetwork(path);
       this.$store.dispatch('globalView/SET_showImportNetworkfromGitHubOrLocalPopup', false);
+      this.$store.dispatch('mod_workspace/setViewType', 'model');
     },
     importRepositoryFromGithubAction() {
       const path = this.saveGithubModelLocation
@@ -124,12 +128,18 @@ export default {
       const overwrite = true;
 
       const repositoyName = url.slice(url.lastIndexOf('/')+1);
+      this.isFetching = true;
       importRepositoryFromGithub({path, url, overwrite})
         .then(res => {
           const saveToPath = this.saveGithubModelLocation;
           this.onLoadNetworkConfirmed(saveToPath + '/' + repositoyName)
         })
-        .catch(e => console.log(e));
+        .catch(error => {
+          this.$store.dispatch('globalView/GP_errorPopup', error.response.data);
+        })
+        .finally(() => {
+          this.isFetching = false;
+        });
     }
    }
 }
@@ -175,6 +185,10 @@ export default {
   
   &.is-active {
     background: transparent;
+  }
+
+  &:not(.is-active) {
+    background: #2A2F3A;
   }
 }
 .import-model-box-with-border {

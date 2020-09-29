@@ -72,8 +72,9 @@ export default {
   },
   computed: {
     ...mapGetters({
-      currentModel:   'mod_workspace/GET_currentNetwork',
-      showTips:       'mod_tutorials/getShowTutorialTips',
+      currentViewType: 'mod_workspace/GET_viewType',
+      currentModel:    'mod_workspace/GET_currentNetwork',
+      showTips:        'mod_tutorials/getShowTutorialTips',
     }),
     showRestoreIcon() {
       return this.$store.state.globalView.appIsFullView
@@ -100,12 +101,12 @@ export default {
         case 'projects': theName = 'Model Hub'; break;
         case 'settings': theName = 'Settings'; break;
         case 'app':  {
-          if(this.currentModel && 
-            this.currentModel.networkMeta && 
-            this.currentModel.networkMeta.openStatistics) {
+          if(this.currentViewType==='statistic') {
             theName = 'Statistics View';
-          } else {
+          } else if(this.currentViewType==='model') {
             theName = 'Modeling Tool';
+          } else {
+            theName = 'Test View';
           }
         } break;
       }

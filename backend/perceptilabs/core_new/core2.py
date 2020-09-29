@@ -217,6 +217,7 @@ class Core:
             self._client.shutdown()            
             self._closed_by_server = True
             logger.info(f"Core closed by server. Training session: [{self._training_session_id}]")            
+        
     def _on_userland_timeout(self):
         if self._issue_handler is not None:
             self._issue_handler.put_error('Training stopped because a training step too long!')

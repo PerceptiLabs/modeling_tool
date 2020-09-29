@@ -49,11 +49,11 @@ export default {
     },
     popupTitle: {
       type: String,
-      default: "Select a folder"
+      default: "Select a file/folder"
     },
     options: {
       type: Object,
-      default: {},
+      default: () => {},
     }
   },
   data() {
