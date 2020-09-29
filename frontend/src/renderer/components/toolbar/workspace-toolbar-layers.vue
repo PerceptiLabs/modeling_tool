@@ -349,7 +349,8 @@ export default {
         return layer.showEl;
       }
         
-      if (this.getCurrentStepCode === 'tutorial-workspace-layer-data') {
+      if (this.getShowTutorialTips &&
+          this.getCurrentStepCode === 'tutorial-workspace-layer-data') {
         return true;
       } else {
         return layer.showEl;
@@ -360,6 +361,7 @@ export default {
   computed: {
     ...mapGetters({
       getCurrentStepCode:   'mod_tutorials/getCurrentStepCode',
+      getShowTutorialTips:  'mod_tutorials/getShowTutorialTips',
     })
   }
 }

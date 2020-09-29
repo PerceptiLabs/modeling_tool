@@ -71,7 +71,6 @@ export default {
   computed: {
     ...mapGetters({
       isTutorialMode:             'mod_tutorials/getIsTutorialMode',
-      isStoryBoard:               'mod_tutorials/getIsTutorialStoryBoard',
       isLogin:                    'mod_user/GET_userIsLogin',
       networkHistory:             'mod_workspace-history/GET_currentNetHistory',
       isDefaultProjectMode:       'mod_project/GET_isDefaultProjectMode',

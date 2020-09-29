@@ -46,7 +46,7 @@ from perceptilabs.lwInterface import (
         getPreviewVariableList,
         Parse,
         GetNetworkData,
-        ScanCheckpoint, 
+        ScanCheckpoint,
         CopyJsonModel
         )
 

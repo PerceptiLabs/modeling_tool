@@ -60,10 +60,10 @@
       ul.toolbar_list
         li(:class="{'tutorial-active': activeStepStoryboard === 4}")
           button#tutorial_run-training-button.btn-menu-bar(type="button"
-            :class="{'disabled': !haveAtLeastOneItemStatistic , 'active': statisticsIsOpen && isOnModelToolPage()}"
+            :class="{'disabled': !networkIsTrained , 'active': statisticsIsOpen && isOnModelToolPage()}"
             @click="toModelStatistic"
           )
-            | Go to statistic
+            | Go to statistics
         //- li
         //-   button#tutorial_pause-training.btn.btn--toolbar.tutorial-relative(type="button"
         //-     :class="{'active': statusNetworkCore === 'Paused'}"
@@ -100,8 +100,17 @@
             v-tooltip-interactive:bottom="interactiveInfo.blackBox"
           )
             i.icon.icon-box
-
       .toolbar_settings
+        button.btn-menu-bar(
+            type="button"
+            :class="{'active': modelWeightsActive, 'disabled': !networkHasCheckpoint}"
+            @click="toggleModelWeights"
+            v-tooltip-interactive:bottom="interactiveInfo.interactiveDoc"
+            v-tooltip:bottom="networkHasCheckpoint?'Press this to load your most recent checkpoint':'You do not have any checkpoints, run a model to create some'"
+            :data-tutorial-target="'tutorial-workspace-preview-toggle'"
+          )
+            span Weights
+            .ring-icon
         button.btn-menu-bar(
           type="button"
           :class="{'active': showModelPreviews}"
@@ -122,8 +131,8 @@
           :data-tutorial-target="'tutorial-workspace-notebook-view-toggle'"          
         )
           span Modeling
-          .ring-icon
-        button.button-model-type(
+        
+        button.button-model-type.ml-0(
           type="button"
           :class="{'active': modelWeightsActive, 'disabled': !networkHasCheckpoint}"
           @click="toggleModelWeights"
@@ -138,8 +147,7 @@
           :data-tutorial-target="'tutorial-workspace-notebook-view-toggle'"          
         )
           span Notebook
-          .ring-icon
-
+      
         //- tutorial-instructions(
         //-   ref="tutorialComponent"
         //-   v-tooltip-interactive:bottom="interactiveInfo.tutorial")
@@ -196,8 +204,9 @@ export default {
   },
   computed: {
     ...mapState({
-      workspaceModels:    state => state.mod_workspace.workspaceContent,
-      showNewModelPopup:  state => state.globalView.globalPopup.showNewModelPopup,
+      workspaceModels:      state => state.mod_workspace.workspaceContent,
+      currentNetworkIndex:  state => state.mod_workspace.currentNetwork,
+      showNewModelPopup:    state => state.globalView.globalPopup.showNewModelPopup,
     }),
     ...mapGetters({
       interactiveInfoStatus:'mod_tutorials/getInteractiveInfo',
@@ -212,7 +221,6 @@ export default {
       isUsingModelWeights:  'mod_workspace/GET_currentNetworkModeWeightsState',
       networkHistory:       'mod_workspace-history/GET_currentNetHistory',
       isNotebookMode:       'mod_notebook/getNotebookMode',
-      currnetNetwork:     'mod_workspace/GET_currentNetwork',
     }),
     statusStartBtn() {
       return {
@@ -286,6 +294,9 @@ export default {
     modelWeightsActive() {
       return this.isUsingModelWeights;
     },
+    networkIsTrained() {
+      return typeof this.statisticsIsOpen === 'boolean';
+    },
     networkHasCheckpoint() {
       // Checking testIsOpen because it is a boolean if scanCheckpoint returns true.
       // More accurate than the following because it gets set upon training (checkpoints could be deleted)
@@ -310,6 +321,7 @@ export default {
     ...mapMutations({
       setInteractiveInfo:     'mod_tutorials/SET_interactiveInfo',
       set_showTrainingSpinner:'mod_workspace/SET_showStartTrainingSpinner',
+      setCurrentStatsIndex:   'mod_workspace/set_currentStatsIndex',
       set_hideLayers:         'globalView/SET_hideLayers',
       GP_showCoreSideSettings:'globalView/GP_showCoreSideSettings',
     }),
@@ -328,9 +340,8 @@ export default {
       setNextStep:          'mod_tutorials/setNextStep',
       SET_openStatistics:   'mod_workspace/SET_openStatistics',
       set_chartRequests:    'mod_workspace/SET_chartsRequestsIfNeeded',
-      SET_openTest:       'mod_workspace/SET_openTest',
-      SET_currentNetwork: 'mod_workspace/SET_currentNetwork',
-
+      SET_openTest:         'mod_workspace/SET_openTest',
+      SET_currentNetwork:   'mod_workspace/SET_currentNetwork',
     }),
     switchTutorialMode() {
       this.$refs.tutorialComponent.switchTutorialMode()
@@ -345,6 +356,8 @@ export default {
         if(this.isTraining)  {
           this.trainStop();
         } else {
+
+          this.setCurrentStatsIndex(this.currentNetworkIndex);
 
           this.$store.dispatch('mod_api/API_scanCheckpoint', { 
             networkId: this.currentNetwork.networkID,
@@ -478,10 +491,10 @@ export default {
       this.$store.dispatch('mod_api/API_getBatchPreviewSample', payload);
     },
     isModelPageAndNetworkHasStatistic() {
-      return this.$route.name === 'app' && this.currnetNetwork.networkMeta.openStatistics !== null
+      return this.$route.name === 'app' && this.currentNetwork.networkMeta.openStatistics !== null
     },
     toModelStatistic() {
-        //$route.name === 'app' && currnetNetwork.networkMeta.openStatistics !== null
+        //$route.name === 'app' && currentNetwork.networkMeta.openStatistics !== null
         if(this.$route.name === 'app') {
           // networkMeta.openStatistics !== null
           if(this.isModelPageAndNetworkHasStatistic()) {

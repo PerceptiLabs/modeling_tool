@@ -58,8 +58,8 @@
                         v-if="chosenTemplate !== null"
                         :data-tutorial-target="'tutorial-create-model-description'"
                         ) 
-                        | {{basicTemplates[chosenTemplate] &&basicTemplates[chosenTemplate].description}}
-                        | {{chosenTemplate === -1 && 'This is an empty model which acts as a clean slate if you want to start from scratch'}}
+                        span(v-if="chosenTemplate > -1") {{basicTemplates[chosenTemplate] && basicTemplates[chosenTemplate].description}}
+                        span(v-else) {{'This is an empty model which acts as a clean slate if you want to start from scratch'}}
                     p.template-description-else(
                         v-else
                         :data-tutorial-target="'tutorial-create-model-description'"
@@ -145,12 +145,14 @@ export default {
     },
     computed: {
         ...mapState({
-          currentProjectId:     state => state.mod_project.currentProject,
-          showNewModelPopup:    state => state.globalView.globalPopup.showNewModelPopup, 
+          currentProjectId:     state => state.mod_project.currentProject,  
+          workspaces:           state => state.mod_workspace.workspaceContent,
         }),
         ...mapGetters({
-            currentProject: 'mod_project/GET_project',
-            projectPath: 'mod_project/GET_projectPath'
+            currentProject:     'mod_project/GET_project',
+            projectPath:        'mod_project/GET_projectPath',
+            currentNetworkId:   'mod_workspace/GET_currentNetworkId',
+            defaultTemplate:    'mod_workspace/GET_defaultNetworkTemplate'
         })
     },
     mounted() {
@@ -163,6 +165,7 @@ export default {
     methods: {
         ...mapActions({
             addNetwork:                 'mod_workspace/ADD_network',
+			closeStatsTestViews:        'mod_workspace/SET_statisticsAndTestToClosed',
             createProjectModel:         'mod_project/createProjectModel',
             getModelMeta:               'mod_project/getModel',
             getProjects:                'mod_project/getProjects',
@@ -247,14 +250,11 @@ export default {
                 location: `${this.modelPath}/${modelName}`,
             }).then(apiMeta => {
                 if(chosenTemplate === -1) {
-                    const defaultNetwork = {
-                        networkName: modelName,
-                        networkID: apiMeta.model_id,
-                        networkMeta: {},
-                        networkElementList: {},
-                        networkRootFolder: ''
-                    };
-                    this.addNetwork({ network: defaultNetwork,  apiMeta });
+                    const defaultTemplate = cloneDeep(this.defaultTemplate);
+                    defaultTemplate.networkID = apiMeta.model_id;
+                    defaultTemplate.networkName = modelName;
+                    
+                    this.addNetwork({ network: defaultTemplate,  apiMeta });
                     modelType = 'Custom';
 
                 } else {
@@ -275,7 +275,11 @@ export default {
             this.$store.dispatch('mod_tracker/EVENT_modelCreation', modelType, {root: true});
 
             this.closeModal(false);
+            this.closeStatsTestViews({ networkId: this.currentNetworkId });
 
+            this.$store.dispatch('mod_workspace/setViewType', 'model');
+            this.$store.dispatch("mod_workspace/SET_currentModelIndex", this.workspaces.length);      
+            this.$store.commit('mod_empty-navigation/set_emptyScreenMode', 0);
             this.setChecklistItemComplete({ itemId: 'createModel' });
 
             // closing model will invoke:
@@ -349,9 +353,10 @@ export default {
         justify-content: center;
         align-items: center;
         
-        background: rgba(97, 133, 238, 0.2);
+        background-color: rgb(20, 28, 49);
         border: 1px solid rgba(97, 133, 238, 0.4);
         border-radius: 2px 2px 0px 0px;
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.25);
 
         font-size: 14px;
         line-height: 19px;
@@ -487,10 +492,10 @@ export default {
         height: 35px;
         width: 100%;
 
-        background: rgba(97, 133, 238, 0.2);
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: #3F4C70;
         box-sizing: border-box;
         border-radius: 2px;
+        box-shadow: 0px 3px 5px rgba(0, 0, 0, 0.25);
 
         font-family: Nunito Sans;
         font-style: normal;

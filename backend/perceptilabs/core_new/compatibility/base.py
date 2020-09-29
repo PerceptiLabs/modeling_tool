@@ -41,6 +41,7 @@ class CompatibilityCore:
         self._sanitized_to_name = {spec.sanitized_name: spec.name for spec in graph_spec.nodes}        
 
         self._threaded = threaded
+        
         self._running = False
         self._core = None
         self.results = {}
@@ -50,7 +51,7 @@ class CompatibilityCore:
         return self._core        
         
     def run(self):
-        self._running = True
+        self._set_running(True)
 
         def do_process_commands(counter, core): 
             commands = {}
@@ -83,7 +84,6 @@ class CompatibilityCore:
                     logger.exception(f'Error while processing command {command} in CompatibilityCore. Error is: {e}')
             
         def do_process_results(counter, core):
-
             graphs = core.graphs
 
             if len(graphs) > 0:
@@ -99,7 +99,7 @@ class CompatibilityCore:
         if self._threaded:
             def worker(func, delay):
                 counter = 0
-                while self._running and not self._core.is_closed:
+                while self.is_running and not self._core.is_closed:
                     func(counter, core)
                     counter += 1
                     time.sleep(delay)
@@ -114,9 +114,19 @@ class CompatibilityCore:
     def _run_core(self, core, graph_spec, on_iterate=None):
         try:
             core.run(self._graph_spec, on_iterate=on_iterate, model_id=self._model_id)
+            logger.info("Core.run() called from CompatibilityCore")
         except:
-            self._running = False            
-            raise     
+            self._set_running(False)
+            raise
+
+    def _set_running(self, status):
+        self._running = status
+        logger.info(f"CompabilityCore is_running set to {status}")
+
+
+    @property
+    def is_running(self):
+        return self._running        
 
     def _send_command(self, core, command):
         if command.type == 'pause' and command.parameters['paused']:

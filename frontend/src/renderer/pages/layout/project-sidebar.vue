@@ -1,5 +1,5 @@
 <template lang="pug">
-  div.wrapper
+  div.wrapper.project-sidebar
     //- router-link.nav-link(
     //-   :to="{name: 'app'}")
     //-   svg(xmlns='http://www.w3.org/2000/svg' width='18' height='20' viewbox='0 0 18 20' fill='none')
@@ -14,7 +14,7 @@
       svg(xmlns='http://www.w3.org/2000/svg' width='21' height='12' viewbox='0 0 21 12' fill='none')
         path(fill-rule='evenodd' clip-rule='evenodd' d='M9.04773 0H19.0478C19.6001 0 20.0478 0.447715 20.0478 1V3.79031C20.0478 4.3426 19.6001 4.79031 19.0478 4.79031H9.04773C8.49544 4.79031 8.04773 4.3426 8.04773 3.79031V3.61304H3.73244C3.38663 4.21084 2.74028 4.61304 2 4.61304C0.89543 4.61304 0 3.71761 0 2.61304C0 1.50847 0.89543 0.613037 2 0.613037C2.74028 0.613037 3.38663 1.01524 3.73244 1.61304H8.04773V1C8.04773 0.447715 8.49544 0 9.04773 0ZM3.73244 10.613H8H8.04773V10.976C8.04773 11.5283 8.49544 11.976 9.04773 11.976H19.0478C19.6001 11.976 20.0478 11.5283 20.0478 10.976V8.18567C20.0478 7.63338 19.6001 7.18567 19.0478 7.18567H9.04773C8.49544 7.18567 8.04773 7.63338 8.04773 8.18567V8.61304H8H3.73244C3.38663 8.01524 2.74028 7.61304 2 7.61304C0.89543 7.61304 0 8.50847 0 9.61304C0 10.7176 0.89543 11.613 2 11.613C2.74028 11.613 3.38663 11.2108 3.73244 10.613Z' fill='#C4C4C4')
     div.nav-link(
-      :class="{'is-active': isOnModelToolPage() && !statisticsIsOpen && !isStatisticsOrTestOpened , 'disabled': !networkIsNotEmpty}"
+      :class="{'is-active': isOnModelToolPage() && (GET_viewType==='model')}"
       @click="toModelingTool()"
       v-tooltip:right="'Modeling Tool'"
       )
@@ -23,8 +23,8 @@
         path(d='M4.68813 7.2688H2.79565V13.2903H4.68813V7.2688Z' fill='#C4C4C4')
         path(d='M16.258 2.79565H7.2688V4.51608C7.2688 4.5591 7.2688 4.64512 7.2688 4.68813H15.3118V10.4516C15.3118 10.9677 15.7419 11.3978 16.258 11.3978C16.7742 11.3978 17.2043 10.9677 17.2043 10.4516V3.74189C17.1613 3.22576 16.7742 2.79565 16.258 2.79565Z' fill='#C4C4C4')
         path(d='M6.53763 7.44086H0.903226C0.387097 7.44086 0 7.05376 0 6.53763V0.903226C0 0.387097 0.387097 0 0.903226 0H6.53763C7.05376 0 7.44086 0.387097 7.44086 0.903226V6.53763C7.44086 7.05376 7.05376 7.44086 6.53763 7.44086ZM0.903226 0.860215C0.860215 0.860215 0.860215 0.860215 0.860215 0.903226V6.53763C0.860215 6.58065 0.860215 6.58065 0.903226 6.58065H6.53763C6.58065 6.58065 6.58065 6.58065 6.58065 6.53763V0.903226C6.58065 0.860215 6.58065 0.860215 6.53763 0.860215H0.903226Z' fill='#C4C4C4')
-        path(d='M6.53763 20.5163H0.903226C0.387097 20.5163 0 20.1292 0 19.6131V13.9787C0 13.4625 0.387097 13.0754 0.903226 13.0754H6.53763C7.05376 13.0754 7.44086 13.4625 7.44086 13.9787V19.6131C7.44086 20.1292 7.05376 20.5163 6.53763 20.5163ZM0.903226 13.9357C0.860215 13.9357 0.860215 13.9357 0.860215 13.9787V19.6131C0.860215 19.6561 0.860215 19.6561 0.903226 19.6561H6.53763C6.58065 19.6561 6.58065 19.6561 6.58065 19.6131V13.9787C6.58065 13.9357 6.58065 13.9357 6.53763 13.9357H0.903226Z' fill='#C4C4C4')
-    div.nav-link(:class="{'disabled': false , 'is-active': statisticsIsOpen && isOnModelToolPage()}"
+        path(d='M6.53763 20.5163H0.903226C0.387097 20.5163 0 20.192 0 19.6131V13.9787C0 13.4625 0.387097 13.0754 0.903226 13.0754H6.53763C7.05376 13.0754 7.44086 13.4625 7.44086 13.9787V19.6131C7.44086 20.1292 7.05376 20.5163 6.53763 20.5163ZM0.903226 13.9357C0.860215 13.9357 0.860215 13.9357 0.860215 13.9787V19.6131C0.860215 19.6561 0.860215 19.6561 0.903226 19.6561H6.53763C6.58065 19.6561 6.58065 19.6561 6.58065 19.6131V13.9787C6.58065 13.9357 6.58065 13.9357 6.53763 13.9357H0.903226Z' fill='#C4C4C4')
+    div.nav-link(:class="{'is-active': (GET_viewType==='statistic') && isOnModelToolPage()}"
       @click="toModelStatistic()"
       v-tooltip:right="'Statistics View'"
       )
@@ -35,7 +35,7 @@
         path(d='M19.4409 0.946237V3.31183C19.4409 3.82796 19.0108 4.25806 18.4947 4.25806H16.1291C15.613 4.25806 15.1829 3.82796 15.1829 3.31183V0.946237C15.1829 0.430108 15.613 0 16.1291 0H18.4947C19.0108 0 19.4409 0.430108 19.4409 0.946237Z' fill='#C4C4C4')
         path(d='M10.8817 20.473H9.03224C8.04299 20.473 7.2688 19.6988 7.2688 18.7096V13.8923C7.2688 12.9031 8.04299 12.1289 9.03224 12.1289H10.8817C11.8709 12.1289 12.6451 12.9031 12.6451 13.8923V18.7096C12.6451 19.6988 11.8709 20.473 10.8817 20.473ZM9.07525 13.2472C8.73116 13.2472 8.43009 13.5483 8.43009 13.8923V18.7096C8.43009 19.0536 8.73116 19.3547 9.07525 19.3547H10.9247C11.2688 19.3547 11.5699 19.0536 11.5699 18.7096V13.8923C11.5699 13.5483 11.2688 13.2472 10.9247 13.2472H9.07525Z' fill='#C4C4C4')
         path(d='M18.2366 23.7418H16.3871C15.4409 23.7418 14.6237 22.9676 14.6237 21.9784V13.8923C14.6237 12.9031 15.3979 12.1289 16.3871 12.1289H18.2366C19.2258 12.1289 20 12.9031 20 13.8923V21.9784C20 22.9246 19.2258 23.7418 18.2366 23.7418ZM16.3871 13.2472C16.043 13.2472 15.7419 13.5483 15.7419 13.8923V21.9784C15.7419 22.3225 16.043 22.6235 16.3871 22.6235H18.2366C18.5806 22.6235 18.8817 22.3225 18.8817 21.9784V13.8923C18.8817 13.5483 18.5806 13.2472 18.2366 13.2472H16.3871Z' fill='#C4C4C4')
-    div.nav-link(:class="{'disabled': false , 'is-active-stroke': testIsOpen && isOnModelToolPage()}"
+    div.nav-link(:class="{'is-active-stroke': (GET_viewType==='test') && isOnModelToolPage()}"
       @click="toModelTest()"
       v-tooltip:right="'Test View'"
       )
@@ -62,6 +62,10 @@
 
 <script>
   import { mapState, mapActions, mapGetters }  from 'vuex';
+  import { 
+    LOCAL_STORAGE_WORKSPACE_VIEW_TYPE_KEY,
+  } from "@/core/constants";
+
   export default {
     name: 'ProjectSidebar',
     data() {
@@ -77,6 +81,8 @@
       this.handleStatisticState(this.workspaceModels);
       this.handleTestState(this.workspaceModels);
     },
+    mounted() {
+    },
     computed: {
       ...mapState({
         workspaceModels:    state => state.mod_workspace.workspaceContent,
@@ -88,6 +94,10 @@
         currentNetwork:     'mod_workspace/GET_currentNetwork',
         currentNetworkIndex:'mod_workspace/GET_currentNetworkIndex',
         networkIsNotEmpty:  'mod_workspace/GET_networkIsNotEmpty',
+        GET_viewType:       'mod_workspace/GET_viewType',
+        GET_currentModelIndex: 'mod_workspace/GET_currentModelIndex',
+        GET_currentStatsIndex: 'mod_workspace/GET_currentStatsIndex',
+        GET_currentTestIndex: 'mod_workspace/GET_currentTestIndex',
       }),
       isStatisticsOrTestOpened() {
         const currentItemNetwork = this.$store.getters['mod_workspace/GET_currentNetwork'];
@@ -119,8 +129,59 @@
 
         return idx;
       },
+      modelCount() {
+        return this.workspaceModels.length;
+      }
     },
     watch: {
+      modelCount: {
+        handler(newValue, oldValue) {
+          if (newValue - oldValue === 1 && oldValue != 0 ) return;
+         
+          const selectedTab = localStorage.getItem(LOCAL_STORAGE_WORKSPACE_VIEW_TYPE_KEY);
+          
+          const modelCandidate = this.workspaceModels.findIndex(item => item.networkMeta.hideModel!==true);
+          this.$store.dispatch('mod_workspace/SET_currentModelIndex', modelCandidate);
+
+          const testCandidate = this.workspaceModels.findIndex(item => typeof item.networkMeta.openTest === 'boolean' && item.networkMeta.hideTest!==true);
+          this.$store.dispatch('mod_workspace/SET_currentTestIndex', testCandidate);
+
+          const statsCandidate = this.workspaceModels.findIndex(item => typeof item.networkMeta.openStatistics === 'boolean' && item.networkMeta.hideStatistics!==true);
+          this.$store.dispatch('mod_workspace/SET_currentStatsIndex', statsCandidate);     
+
+          console.log(modelCandidate, testCandidate, statsCandidate);
+          console.log(selectedTab);
+          if (selectedTab === 'model') {
+            this.$store.dispatch("mod_workspace/setViewType", 'model');
+            if (modelCandidate >= 0) {
+              this.$store.dispatch("mod_workspace/SET_currentNetwork", modelCandidate);
+              this.$store.commit('mod_empty-navigation/set_emptyScreenMode', 0);
+            } else {
+              this.$store.commit('mod_empty-navigation/set_emptyScreenMode', 1);
+            }
+          } else if (selectedTab ==='test') {
+            this.$store.dispatch("mod_workspace/setViewType", 'test');
+            if (testCandidate >= 0) {
+              this.$store.dispatch("mod_workspace/SET_currentNetwork", testCandidate);
+              this.$store.dispatch("mod_workspace/SET_openTest", true);
+              this.$store.commit('mod_empty-navigation/set_emptyScreenMode', 0);
+            } else {
+              this.$store.commit('mod_empty-navigation/set_emptyScreenMode', 3);
+            }
+          } else {
+            this.$store.dispatch("mod_workspace/setViewType", 'statistic');
+            if (statsCandidate >= 0) {
+              this.$store.dispatch("mod_workspace/SET_currentNetwork", statsCandidate);
+              this.$store.dispatch("mod_workspace/SET_openStatistics", true);
+              this.$store.commit('mod_empty-navigation/set_emptyScreenMode', 0);
+            } else {
+              this.$store.commit('mod_empty-navigation/set_emptyScreenMode', 2);
+            }
+          }
+
+
+        }
+      },
       workspaceModels: {
         deep: true,
         immediate: true,
@@ -210,46 +271,56 @@
         });
       },
       toModelStatistic() {
-        // console.log('*** toModelTest hasStatistics', this.hasStatistics);
-        // if(!this.haveAtLeastOneItemStatistic) {
-        if(!this.hasStatistics) {
-          this.setStatisticsAvailability();
+        // setStatisticsAvailability calls isTrained for each networks
+        // The result determines if the kernel has info about the stats views
+        // In other words, "false" sets openStatistics to null
+        this.setStatisticsAvailability()
+        .then(_ => {
+          this.$nextTick(() => {
+            this.goToStatisticsView();
+          });
+        });
+      },
+      goToStatisticsView() { 
+        //$route.name === 'app' && currnetNetwork.networkMeta.openStatistics !== null
+        console.group('---------- STATS SIDEBUTTON CLICKED ----------');
+        console.log("ModelingIndex", this.GET_currentModelIndex);
+        console.log("StatsIndex", this.GET_currentStatsIndex);
+        console.log("TestsIndex", this.GET_currentTestIndex);
+        console.groupEnd();
+
+        const item = this.workspaceModels[this.GET_currentStatsIndex];
+        if (item && typeof item.networkMeta.openStatistics !== 'boolean') {
+          // This block is triggered when there is a crash
+          // The GET_currentStatsIndex could be pointing to a network that
+          // doesn't have valid training data/visualization.
+          // So we must recalc a new candidate
+
+          const statsCandidate = this.workspaceModels.findIndex(item => typeof item.networkMeta.openStatistics === 'boolean' && item.networkMeta.hideStatistics!==true);
+          this.$store.commit('mod_workspace/set_currentStatsIndex', statsCandidate);
+        }
+
+        if(this.GET_currentStatsIndex==-1) {
+          this.$store.dispatch("mod_workspace/setViewType", 'statistic');
+          this.$store.commit('mod_empty-navigation/set_emptyScreenMode', 2);
+          if(!this.isOnModelToolPage()) {this.$router.push({name: 'app'});}
           return;
         }
 
-        if(this.$route.name === 'app') {
-          // networkMeta.openStatistics !== null
-          if(this.isModelPageAndNetworkHasStatistic()) {
-            this.$store.dispatch("mod_workspace/setViewType", 'statistic');
-            const item = this.workspaceModels[this.statisticItemIndex];
-            this.SET_currentNetwork(this.statisticItemIndex)
-              .then(() => {
-                this.$store.dispatch("mod_workspace/EVENT_onceDoRequest");
-                this.SET_openStatistics(true);
-                this.set_chartRequests(item.networkID);
-                })
-          } else {
-            const { statisticItemIndex } = this;
+        this.$store.commit('mod_empty-navigation/set_emptyScreenMode', 0);
 
-            if(statisticItemIndex !== null) {
-              this.$store.dispatch("mod_workspace/setViewType", 'statistic');
-              this.SET_currentNetwork(statisticItemIndex);
-              this.SET_openStatistics(true);
-              this.SET_openTest(false);
-            }
-          }
+        this.$store.dispatch("mod_workspace/setViewType", 'statistic');
+        if(!this.isOnModelingToolPage()){
+          this.$router.push({name: 'app'});
+        } 
 
-        } else {
-          const { statisticItemIndex } = this;
-          if(statisticItemIndex !== null) {
-            this.$store.dispatch("mod_workspace/setViewType", 'statistic');
-            this.SET_currentNetwork(statisticItemIndex)
-              .then(() => {
-                this.$router.push({name: 'app'});
-                this.SET_openStatistics(true);
-              });
-          }
-        }
+        this.SET_currentNetwork(this.GET_currentStatsIndex)
+          .then(() => { 
+            this.$store.dispatch("mod_workspace/EVENT_onceDoRequest");
+            this.SET_openStatistics(true);
+            // this.SET_openTest(false);
+            this.set_chartRequests(item.networkID);
+            })
 
         this.$nextTick(() => {
           if (this.showNewModelPopup) {
@@ -275,25 +346,40 @@
         return this.$route.name === 'app';
       },
       toModelingTool() {
-        if(this.isOnModelingToolPage()) {
-          this.$store.dispatch("mod_workspace/setViewType", 'model');
-          if (this.isOnStatisticsView()) {
-            this.SET_openStatistics(false);
-          } else if (this.isOnTestView()) {
-            this.SET_openTest(false);
-          }
-        } else {
-          this.$store.dispatch("mod_workspace/setViewType", 'model');
-          this.closeStatsTestViews({ networkId: this.currentNetwork.networkID });
-          this.SET_currentNetwork(0);
-          // if (this.isOnStatisticsView()) {
-          //   this.SET_openStatistics(false);
-          // } else if (this.isOnTestView()) {
-          //   this.SET_openTest(false);
-          // }
+        console.group('---------- MODEL SIDEBUTTON CLICKED ----------');
+        console.log("ModelingIndex", this.GET_currentModelIndex);
+        console.log("StatsIndex", this.GET_currentStatsIndex);
+        console.log("TestsIndex", this.GET_currentTestIndex);
+        console.groupEnd();
 
-          this.$router.push({name: 'app'});
+        if(this.GET_currentModelIndex==-1) {
+          this.$store.dispatch("mod_workspace/setViewType", 'model');
+          this.$store.commit('mod_empty-navigation/set_emptyScreenMode', 1);
+
+          if (this.currentNetwork) { 
+            this.closeStatsTestViews({ networkId: this.currentNetwork.networkID });
+          }
+
+          if(!this.isOnModelToolPage()) {this.$router.push({name: 'app'});}
+          return;
         }
+
+        this.$store.commit('mod_empty-navigation/set_emptyScreenMode', 0);
+        this.$store.dispatch("mod_workspace/setViewType", 'model');
+
+        if(!this.isOnModelingToolPage()){
+          this.$router.push({name: 'app'});
+        } 
+
+        this.SET_currentNetwork(this.GET_currentModelIndex);
+
+        // if (this.isOnStatisticsView()) {
+        //   this.SET_openStatistics(false);
+        // } else if (this.isOnTestView()) {
+        //   this.SET_openTest(false);
+        // }
+
+        this.closeStatsTestViews({ networkId: this.currentNetwork.networkID });
 
         this.$nextTick(() => {
           if (this.showNewModelPopup) {
@@ -304,32 +390,45 @@
         });
       },
       toModelTest() {
+        // setCheckpointAvailability calls scanCheckpoint for each network
+        // The result determines if the kernel has info about the test view
+        // In other words, "false" sets openTest to null
         this.setCheckpointAvailability()
-          .then(results => {
-            if (results.some(r => r.hasCheckpoint)) {
-                this.goToTestView();
-            }
-          });
+          .then(_ => {
+            this.$nextTick(() => {
+              this.goToTestView();
+            });
+        });
       },
       goToTestView() {
-        this.$store.dispatch("mod_workspace/setViewType", 'test');
+        console.group('---------- TEST SIDEBUTTON CLICKED ----------');
+        console.log("ModelingIndex", this.GET_currentModelIndex);
+        console.log("StatsIndex", this.GET_currentStatsIndex);
+        console.log("TestsIndex", this.GET_currentTestIndex);
+        console.groupEnd();
 
-        if(this.isOnModelToolPage()) {
-          if(this.doesCurrentNetworkHaveTest()) {
-            this.SET_openTest(true);
-          } else {
-            this.SET_currentNetwork(this.currentOrFirstTestIdx);
-            this.SET_openTest(true);
-          }
-        } else {
-          this.SET_currentNetwork(this.currentOrFirstTestIdx)
-            .then(_ => {
-              this.$router.push({name: 'app'});
-              this.SET_openTest(true);
-            });
+        const item = this.workspaceModels[this.GET_currentTestIndex];
+        if (item && typeof item.networkMeta.openTest !== 'boolean') {
+          const testCandidate = this.workspaceModels.findIndex(item => typeof item.networkMeta.openTest === 'boolean' && item.networkMeta.hideTest!==true);
+          this.$store.commit('mod_workspace/set_currentTestIndex', testCandidate);
         }
 
-        // this.$store.dispatch('mod_api/API_startTestWithCheckpointJson');
+        if(this.GET_currentTestIndex==-1) {
+          this.$store.dispatch("mod_workspace/setViewType", 'test');
+          if(!this.isOnModelToolPage()) {this.$router.push({name: 'app'});}
+          this.$store.commit('mod_empty-navigation/set_emptyScreenMode', 3);
+          return;
+        }
+
+        this.$store.commit('mod_empty-navigation/set_emptyScreenMode', 0);
+        this.$store.dispatch("mod_workspace/setViewType", 'test');
+
+        if(!this.isOnModelingToolPage()){
+          this.$router.push({name: 'app'});
+        } 
+
+        this.SET_currentNetwork(this.GET_currentTestIndex);
+        this.SET_openTest(true);
 
         this.$nextTick(() => {
           if (this.showNewModelPopup) {
@@ -338,7 +437,7 @@
             this.setCurrentView('tutorial-test-view');
           }
         });
-      }
+      },
     },
   }
 

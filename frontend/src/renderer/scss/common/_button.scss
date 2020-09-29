@@ -25,8 +25,12 @@
   //min-width: 9rem;
   //height: 3rem;
 
-  min-width: 9.5rem;
-  height: 3.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  min-width: 8rem;
+  height: 2rem;
   padding: .5em;
   text-align: center;
   text-overflow: ellipsis;
@@ -159,8 +163,8 @@
   @extend .btn--dark-blue;
   color: $white;
   transition: none;
-  height: 3.5rem;
-  min-width: 9.5rem;
+  height: 2rem;
+  min-width: 8rem;
   background: rgba(97, 133, 238, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 2px;

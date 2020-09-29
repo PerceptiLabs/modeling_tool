@@ -8,7 +8,7 @@
     the-workspace.workspace
     //- the-toolbar
     //- the-layersbar
-    the-sidebar
+    the-sidebar(v-if="getEmptyScreenMode==0")
     //- the-tutorial-storyboard(v-if="isShowTutorial")
 
 </template>
@@ -112,9 +112,10 @@
     },
     computed: {
       ...mapGetters({
+        currentNetwork:   'mod_workspace/GET_currentNetwork',
+        getLocalUserInfo: 'mod_user/GET_LOCAL_userInfo',
+        getEmptyScreenMode: 'mod_empty-navigation/getEmptyScreenMode',
         editIsOpen:         'mod_workspace/GET_networkIsOpen',
-        currentNetwork:     'mod_workspace/GET_currentNetwork',
-        getLocalUserInfo:   'mod_user/GET_LOCAL_userInfo',
         getCurrentStepCode: 'mod_tutorials/getCurrentStepCode',
       }),
       ...mapState({

@@ -7,9 +7,11 @@ import socket
 import subprocess
 import sys
 import time
+import platform
 
 PYTHON = sys.executable
 
+IS_WIN = platform.system().lower().startswith("win")
 
 class bcolors:
     KERNEL = '\033[95m'
@@ -22,7 +24,7 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
-    if sys.platform.startswith("win"):
+    if IS_WIN:
         try:
             import colorama
             colorama.init()
@@ -59,7 +61,7 @@ SERVICE_CMDS = [
 
 
 def check_for_atari():
-    if not sys.platform.startswith("win"):
+    if not IS_WIN:
         return
 
     spec = importlib.util.find_spec("atari_py")
@@ -72,6 +74,25 @@ def check_for_atari():
     # give the user a chance to read the message
     time.sleep(1)
 
+def which_cmd():
+    return "where" if IS_WIN else "which"
+
+def check_for_git():
+
+    try:
+        from git import Repo
+        return
+    except:
+        pass
+
+    # ok, so we can't import git. Likely because there's no git installed
+    has_git_exe = os.system(f"{which_cmd()} git") == 0
+    if has_git_exe:
+        print(f"{bcolors.WARNING}PerceptiLabs:{bcolors.ENDC} We're having trouble talking to git, so interactions with GitHub may not be available")
+    else:
+        print(f"{bcolors.WARNING}PerceptiLabs:{bcolors.ENDC} Your environment does not have git installed, so interactions with GitHub will not be available")
+
+    time.sleep(1)
 
 def do_migration(pipes):
     migtate_proc = subprocess.run(MIGRATION_CMD, **pipes)
@@ -166,6 +187,7 @@ def start(verbosity):
 
     try:
         check_for_atari()
+        check_for_git()
         pipes = get_pipes(verbosity)
         do_migration(pipes)
         api_token = secrets.token_urlsafe(nbytes=64)

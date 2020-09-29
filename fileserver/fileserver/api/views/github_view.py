@@ -60,6 +60,10 @@ def github_import(request):
         return HttpResponse(json.dumps(response), content_type="application/json")
     except ValueError as e:
         raise HTTPExceptions.BAD_REQUEST.with_content(e)
+    except RuntimeError as e:
+        if e.message == "git_import":
+            raise HTTPExceptions.BAD_REQUEST.with_content("Git isn't available")
+        raise e
 
 
 @api_view(['POST'])

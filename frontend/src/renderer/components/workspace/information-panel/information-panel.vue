@@ -1,27 +1,22 @@
 <template lang="pug">
   .information-panel-container
     .information-panel-header
-      div
-        .information-panel-header-tab
+      div.information-panel-header-wrapper
+        .information-panel-header-tab(
+          :class="{'is-active': getNotificationWindowSelectedTab === 'ErrorInfoPanel'}"
+        )
           span(@click="onTabClick('ErrorInfoPanel')") Errors
-        .information-panel-header-tab
+          span.count-label {{workspaceErrors}}
+        .information-panel-header-tab(
+          :class="{'is-active': getNotificationWindowSelectedTab === 'ConsoleInfoPanel'}"
+        )
           span(@click="onTabClick('ConsoleInfoPanel')") Console
       div 
-        svg.close-window.clickable-icon(
+        i(
           @click="closeWindow"
-          viewBox="0 0 7 8"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg")
-          path(
-            fill-rule="evenodd"
-            clip-rule="evenodd"
-            d="M6.81187 7.03489C7.05234 6.80548 7.06381 6.4219 6.83748 6.17816L4.48982 3.64974L6.83748 1.12132C7.06381 0.877568 7.05234 0.493997 6.81187 0.264587C6.5714 0.0351768 6.193 0.0468001 5.96667 0.290548L3.23333 3.23435C3.01664 3.46772 3.01664 3.83175 3.23333 4.06512L5.96667 7.00892C6.193 7.25267 6.5714 7.2643 6.81187 7.03489Z"
-            fill="white")
-          path(
-            fill-rule="evenodd"
-            clip-rule="evenodd"
-            d="M0.188129 0.264663C-0.0523387 0.494073 -0.0638057 0.877644 0.162517 1.12139L2.51018 3.64981L0.162516 6.17823C-0.0638062 6.42198 -0.0523392 6.80555 0.188128 7.03496C0.428596 7.26437 0.807004 7.25275 1.03333 7.009L3.76667 4.0652C3.98336 3.83183 3.98336 3.4678 3.76667 3.23443L1.03333 0.290624C0.807004 0.0468761 0.428596 0.0352527 0.188129 0.264663Z"
-            fill="white")
+          type="button"
+          class="icon icon-app-minimize btn btn--icon clickable-icon")
+
     
     .perfect-scrollbar-padding-container
 
@@ -50,6 +45,9 @@ export default {
     },
     componentType() {
       return this.getNotificationWindowSelectedTab || 'ErrorInfoPanel';
+    },
+    workspaceErrors() {
+      return this.$store.getters['mod_workspace-notifications/getErrors'](this.workspace[this.indexCurrentNetwork].networkID).length;
     },
   },
   methods: {
@@ -107,7 +105,8 @@ export default {
   }
 
   .information-panel-header {
-    background: #3F4C70;
+    // background: #3F4C70;
+    border-bottom: 1px solid #475D9C;
 
     display: flex;
     align-items: center;
@@ -137,9 +136,24 @@ export default {
 
     .information-panel-header-tab {
       cursor: pointer;
-
+      position: relative;
+      color: #C4C4C4;
       & + .information-panel-header-tab {
         margin-left: 2rem;
+      }
+      &.is-active {
+        color: #fff;
+        font-weight: bold;
+        &:after {
+          content: '';
+          position: absolute;
+          width: 100%;
+          height: 1px;
+          background-color: #fff;
+          bottom: -3.5px;
+          left: 0;
+          font-size: 9px;
+        }
       }
     }
   }
@@ -147,5 +161,19 @@ export default {
   .perfect-scrollbar-padding-container {
     height: calc(100% - #{$information-panel-header-height});
     padding: 1rem;
+  }
+  .count-label {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    background-color: #363E51;
+    margin-left: 3px;
+    border-radius: 50%;
+    text-align: center;
+    font-size: 9px;
+    line-height: 14px;
+  }
+  .information-panel-header-wrapper {
+    padding: 10px;
   }
 </style>

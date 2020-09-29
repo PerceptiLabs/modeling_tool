@@ -98,9 +98,16 @@ class TrainingClient:
             logger.warning(f"Unknown message key {key} [TrainingClient]")
 
     def _process_outgoing_messages(self):
+        keys = []
         while not self._out_queue.empty():
-            message = self._out_queue.get()
-            self._producer.send(message)            
+            message_dict = self._out_queue.get()
+            message = serialize(message_dict)            
+            self._producer.send(message)
+            keys.append(message_dict['key'])
+
+        if keys:
+            key_text = ", ".join(f"'{k}'" for k in keys)
+            logger.info("Processed outgoing messages: " + key_text)
             
     def shutdown(self):
         self._running = False
@@ -111,8 +118,7 @@ class TrainingClient:
 
     def _send_message(self, key, value=None):
         message_dict = {'key': key, 'value': value or ''}
-        message = serialize(message_dict)
-        self._out_queue.put(message)
+        self._out_queue.put(message_dict)
         
     def request_start(self):
         self._send_message('on_request_start')

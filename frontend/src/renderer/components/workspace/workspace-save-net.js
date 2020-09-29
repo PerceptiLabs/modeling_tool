@@ -61,11 +61,7 @@ const workspaceSaveNet = {
         networkName: network.networkName,
         networkPath: network.apiMeta.location
       };
-      console.log('eventSaveNetwork 1');
-
-      this.saveNetwork(settings, network.networkID)
-
-      console.log('eventSaveNetwork 2');
+      this.doSaveNetwork(settings, network.networkID);
 
 //       this.checkTrainedNetwork()
 //         .then((isTrained)=> {
@@ -86,7 +82,7 @@ const workspaceSaveNet = {
 //               networkName: network.networkName,
 //               networkPath: network.apiMeta.location
 //             };
-//             this.saveNetwork(settings, network.networkID)
+//             this.doSaveNetwork(settings, network.networkID)
 //           }
 //         })
 
@@ -105,11 +101,11 @@ const workspaceSaveNet = {
               this.$store.dispatch('globalView/GP_confirmPopup', {
                 text: `A folder already exists, are you sure <br/> you want to overwrite it?`,
                 ok: () => {
-                  this.saveNetwork(answer, netId, isSaveProjectPath);
+                  this.doSaveNetwork(answer, netId, isSaveProjectPath);
                 }
               })
             } else {
-              this.saveNetwork(answer, netId, isSaveProjectPath);
+              this.doSaveNetwork(answer, netId, isSaveProjectPath);
             }
           }
         })
@@ -125,7 +121,7 @@ const workspaceSaveNet = {
           this.$store.dispatch('globalView/SET_saveNetworkPopup', false);
         });
     },
-    saveNetwork(netInfo, netId, saveProjectPath) {
+    doSaveNetwork(netInfo, netId, saveProjectPath) {
       const networkField = this.$refs.networkField[0].$refs.network;
       networkField.style.filter = 'blur(5px)';
 
@@ -277,8 +273,8 @@ const workspaceSaveNet = {
 
           net.networkElementList = net.networkSnapshots[0];
           delete net.consoleLogs;
-          delete net.networkSnapshots;
         }
+        delete net.networkSnapshots;
 
         //clone network
         let toFile = {};

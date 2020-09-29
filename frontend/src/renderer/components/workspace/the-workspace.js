@@ -38,10 +38,14 @@ import TheSidebar             from '@/components/the-sidebar.vue'
 import Notebook               from '@/components/notebooks/notebook-container.vue';
 import CodeWindow             from '@/components/workspace/code-window/workspace-code-window.vue';
 import InformationPanel       from '@/components/workspace/information-panel/information-panel.vue';
+import NotificationsWindow    from '@/components/workspace/notifications-window/workspace-notifications-window.vue';
+import EmptyNavigation        from '@/components/empty-navigation/empty-navigation.vue';
 import ResourceMonitor        from "@/components/charts/resource-monitor.vue";
 import SelectModelModal       from '@/pages/projects/components/select-model-modal.vue';
 import ViewBoxBtnList         from '@/components/statistics/view-box-btn-list.vue'
 import ModelStatus            from '@/components/different/model-status.vue';
+
+import { saveModelJson as fileserver_saveModelJson } from '@/core/apiFileserver';
 
 export default {
   name: 'WorkspaceContent',
@@ -55,19 +59,18 @@ export default {
     TheToaster, TheMiniMap, FilePickerPopup, Notebook, TheSidebar,
     CodeWindow, InformationPanel,
     Notebook, ResourceMonitor, SelectModelModal,
-    ViewBoxBtnList,
+    ViewBoxBtnList, EmptyNavigation,
     ModelStatus
     
   },
   mounted() {
     window.addEventListener('resize', this.onResize);
-    this.$refs.tabset.addEventListener('wheel', this.onTabScroll);
+    if(this.$refs.tabset) this.$refs.tabset.addEventListener('wheel', this.onTabScroll);
 
     this.checkTabWidths();
     this.$nextTick().then(x => {
       this.scrollActiveTabIntoView();
     });
-    
     window.addEventListener('mousemove',  this.startCursorListener);
   },
   beforeDestroy() {
@@ -104,12 +107,17 @@ export default {
       testIsOpen:         'mod_workspace/GET_testIsOpen',
       statusNetworkCore:  'mod_workspace/GET_networkCoreStatus',
       statisticsIsOpen:   'mod_workspace/GET_statisticsIsOpen',
-      isTraining:         'mod_workspace/GET_networkIsTraining',
+      currentModelIndex:  'mod_workspace/GET_currentModelIndex',
+      currentStatsIndex:  'mod_workspace/GET_currentStatsIndex',
+      currentTestIndex:   'mod_workspace/GET_currentTestIndex',
+      getViewType:        'mod_workspace/GET_viewType',
 
       isTutorialMode:     'mod_tutorials/getIsTutorialMode',
-      isNotebookMode:     'mod_notebook/getNotebookMode',
-      tutorialActiveStep: 'mod_tutorials/getActiveStep',
+      getShowTutorialTips:'mod_tutorials/getShowTutorialTips',
       getCurrentStepCode: 'mod_tutorials/getCurrentStepCode',
+      isNotebookMode:     'mod_notebook/getNotebookMode',
+      emptyNavigationMode:'mod_empty-navigation/getEmptyScreenMode',
+      isTraining:         'mod_workspace/GET_networkIsTraining',
       currentNetwork:     'mod_workspace/GET_currentNetwork',
     }),
     ...mapState({
@@ -187,6 +195,11 @@ export default {
       return this.$store.getters['mod_workspace-notifications/getNotificationWindowState'](this.workspace[this.indexCurrentNetwork].networkID);
     },
     getNotificationWindowSelectedTab() {
+
+      if (!this.workspace[this.indexCurrentNetwork]) {
+        return '';
+      }
+
       return this.$store.getters['mod_workspace-notifications/getNotificationWindowSelectedTab'](this.workspace[this.indexCurrentNetwork].networkID);
     },
     workspaceErrors() {
@@ -309,7 +322,11 @@ export default {
     },
     getCurrentStepCode: {
       handler(newVal, oldVal) {
-        if (!this.isTutorialMode) { return; }
+
+        if (!this.getShowTutorialTips) {
+          this.deactivateCurrentStep();
+          return;
+        }
 
         // Using this watcher to check if the first notification in the buffer
         // workspace view shows up.
@@ -326,6 +343,7 @@ export default {
       set_showTrainingSpinner:  'mod_workspace/SET_showStartTrainingSpinner',
       set_cursorPosition:       'mod_workspace/SET_CopyCursorPosition',
       set_cursorInsideWorkspace:'mod_workspace/SET_cursorInsideWorkspace',
+      set_currentModelIndex:    'mod_workspace/set_currentModelIndex',
       set_hideSidebar:          'globalView/SET_hideSidebar',
       GP_showCoreSideSettings:  'globalView/GP_showCoreSideSettings',
       setSelectedMetric:        'mod_statistics/setSelectedMetric',
@@ -334,6 +352,7 @@ export default {
     ...mapActions({
       popupConfirm:               'globalView/GP_confirmPopup',
       net_trainingDone:           'globalView/NET_trainingDone',
+      saveNetwork:                'mod_webstorage/saveNetwork',
       delete_network:             'mod_workspace/DELETE_network',
       set_openStatistics:         'mod_workspace/SET_openStatistics',
       set_openTest:               'mod_workspace/SET_openTest',
@@ -342,12 +361,14 @@ export default {
       set_currentNetwork:         'mod_workspace/SET_currentNetwork',
       event_startDoRequest:       'mod_workspace/EVENT_startDoRequest',
       set_chartRequests:          'mod_workspace/SET_chartsRequestsIfNeeded',
+      closeStatsTestViews:        'mod_workspace/SET_statisticsAndTestToClosed',
       activateCurrentStep:        'mod_tutorials/activateCurrentStep',
+      deactivateCurrentStep:      'mod_tutorials/deactivateCurrentStep',
       setChecklistItemComplete:   'mod_tutorials/setChecklistItemComplete',
       pushSnapshotToHistory:      'mod_workspace-history/PUSH_newSnapshot',
       setNotificationWindowState: 'mod_workspace-notifications/setNotificationWindowState',
       popupNewModel:              'globalView/SET_newModelPopup',
-
+      SET_emptyScreenMode:        'mod_empty-navigation/SET_emptyScreenMode',
     }),
     onCloseSelectModelModal() {
       this.popupNewModel(false);
@@ -390,7 +411,7 @@ export default {
       return this.$store.getters['mod_workspace-changes/get_hasUnsavedChanges'](networkId);
 
     },
-    // resize(newRect, i) {
+    // resize(newRect, i) {s
     //   //console.log(newRect);
     //   //console.log(i);
     //   // this.network[i].meta.top = newRect.top;
@@ -398,23 +419,104 @@ export default {
     // },
     setTabNetwork(index) {
       this.set_showTrainingSpinner(false);
-      if(this.statisticsIsOpen !== null) this.set_openStatistics(false);
-      if(this.testIsOpen !== null) this.set_openTest(false);
       this.set_currentNetwork(index);
+      // this.set_openStatistics(false);
+      // this.set_openTest(false);
+      this.closeStatsTestViews({ networkId: this.workspace[index].networkID });
       this.set_elementUnselect();
 
       // request charts if the page has been refreshed, and
       // the requested tab not being the first
       this.set_chartRequests(this.workspace[index].networkID);
 
-      this.notificationWindowStateHandlerNew(this.getNotificationWindowSelectedTab); // for closing it
+      this.notificationWindowStateHandlerNew(this.getNotificationWindowSelectedTab); 
+      this.$store.commit('mod_workspace/set_currentModelIndex', index);
+
+    },
+    hideModelTab(index) {
+      const networkID = this.workspace[index].networkID;
+      let hasUnsavedChanges = this.hasUnsavedChanges(networkID);
+
+      if (hasUnsavedChanges) {
+        this.popupConfirm(
+          {
+            text: `${this.workspace[index].networkName} has unsaved changes`,
+            cancel: () => { return; },
+            ok: () => {
+              this.updateUnsavedChanges({
+                networkId: this.workspace[index].networkID, 
+                value: false
+              });
+
+              hideProcess(this);
+            }
+          });
+      } else {
+        hideProcess(this);
+      }
+
+      function hideProcess(parent) {
+        parent.$store.commit('mod_workspace/update_network_meta', {key: 'hideModel', networkID: networkID, value: true});
+        // console.log('hiding', parent.currentModelIndex, index);
+
+        parent.saveNetwork(parent.workspace[index]);
+        fileserver_saveModelJson(parent.workspace[index]);
+
+        if (parent.currentModelIndex===index) {
+          const candidate = parent.workspace.findIndex(item => item.networkMeta.hideModel!=true);
+  
+          if (candidate > -1) {
+            parent.setTabNetwork(candidate);
+          } else {
+            parent.SET_emptyScreenMode(1);
+            parent.$store.commit('mod_workspace/set_currentModelIndex', -1);
+          }
+        }
+      }
+    },
+    hideStatsTab(index) {
+      const networkID = this.workspace[index].networkID;
+      this.$store.commit('mod_workspace/update_network_meta', {key: 'hideStatistics', networkID: networkID, value: true});
+
+      if (this.currentStatsIndex===index) {
+        const candidate = this.workspace.findIndex(item => typeof item.networkMeta.openStatistics === 'boolean' && item.networkMeta.hideStatistics!==true);
+
+        if (candidate > -1) {
+          this.$store.dispatch('mod_workspace/SET_currentNetwork', candidate);
+          this.$store.commit('mod_workspace/set_currentStatsIndex', candidate);
+          this.set_openStatistics(true);
+        } else {
+          this.SET_emptyScreenMode(2);
+          this.$store.commit('mod_workspace/set_currentStatsIndex', -1);
+        }
+      }
+
+    },
+    hideTestTab(index) {
+      const networkID = this.workspace[index].networkID;
+      this.$store.commit('mod_workspace/update_network_meta', {key: 'hideTest', networkID: networkID, value: true});
+
+
+      if (this.currentTestIndex===index) {
+        const candidate = this.workspace.findIndex(item => typeof item.networkMeta.openTest === 'boolean' && item.networkMeta.hideTest!==true);
+
+        if (candidate > -1) {
+          this.$store.dispatch('mod_workspace/SET_currentNetwork', candidate);
+          this.$store.commit('mod_workspace/set_currentTestIndex', candidate);
+          this.set_openTest(true);
+        } else {
+          this.SET_emptyScreenMode(3);
+          this.$store.commit('mod_workspace/set_currentTestIndex', -1);
+        }
+      }
+
     },
     deleteTabNetwork(index) {
       let hasUnsavedChanges = this.hasUnsavedChanges(this.workspace[index].networkID);
       if (hasUnsavedChanges) {
         this.popupConfirm(
           {
-            text: `Network ${this.workspace[index].networkName} has unsaved changes`,
+            text: `${this.workspace[index].networkName} has unsaved changes`,
             cancel: () => { return; },
             ok: () => {
               this.delete_network(index);
@@ -441,24 +543,23 @@ export default {
     },
     openStatistics(i) {
       this.$store.dispatch('mod_workspace/setViewType', 'statistic');
-      this.setTabNetwork(i);
-      this.$nextTick(()=>{
-        this.set_openStatistics(true);
-      })
+      this.$store.dispatch('mod_workspace/SET_currentNetwork', i);
+      this.$store.dispatch('mod_workspace/SET_currentStatsIndex', i);
+      this.set_openStatistics(true);
     },
     openTest(i) {
       this.$store.dispatch('mod_workspace/setViewType', 'test');
-      this.setTabNetwork(i);
-      this.$nextTick(()=>{
-        this.set_openTest(true);
-        
-        // this.$store.dispatch('mod_api/API_startTestWithCheckpointJson');
-          // .then(()=>{
-          //   this.$nextTick(()=> {
-          //     this.$store.dispatch('mod_api/API_postTestMove', 'nextStep');
-          //   })
-          // });
-      })
+      
+      // --- MERGE CHANGES ---
+      // this.setTabNetwork(i);
+      // this.$nextTick(()=>{
+      //   this.set_openTest(true);
+      // })
+      // --- MERGE CHANGES ---
+
+      this.$store.dispatch('mod_workspace/SET_currentNetwork', i);
+      this.$store.dispatch('mod_workspace/SET_currentTestIndex', i);
+      this.set_openTest(true);
     },
     trainingFinished(index) {
       let networkStatus = this.workspace[index].networkMeta.coreStatus.Status;

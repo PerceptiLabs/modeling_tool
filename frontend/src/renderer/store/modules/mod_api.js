@@ -5,7 +5,7 @@ import { createNotebookJson }   from "@/core/helpers/notebook-helper.js";
 import { pathSlash }  from "@/core/constants.js";
 import { isElectron, createCoreNetwork } from "@/core/helpers";
 import { PROJECT_DEFAULT_FOLDER } from "../../core/constants";
-import { getModelJson as fileserver_getModelJson } from '@/core/apiFileserver';
+import { getModelJson as fileserver_getModelJson, doesDirExist as fileserver_doesDirExist } from '@/core/apiFileserver';
 import cloneDeep from 'lodash.clonedeep';
 let coreRequest = null;
 let ipcRenderer = null;
@@ -83,7 +83,7 @@ const getters = {
     }
     return layers;
   },
-  GET_coreNetworkWithCheckpointConfig: (state, getters, rootState, rootGetters) => (loadCheckpoint = null) =>{
+  GET_coreNetworkWithCheckpointConfig: (state, getters, rootState, rootGetters) => (loadCheckpoint = false) =>{
     const network = rootGetters['mod_workspace/GET_currentNetwork'];
     let layers = {};
     const rootPath = network.networkRootFolder;
@@ -93,7 +93,7 @@ const getters = {
 
       /*prepare checkpoint*/
       const checkpointPath = {
-        'load_checkpoint': loadCheckpoint === null ? rootGetters['mod_workspace/GET_currentNetworkModeWeightsState'] : loadCheckpoint,
+        'load_checkpoint': loadCheckpoint,
         'path': ''
       };
 
@@ -349,7 +349,7 @@ const actions = {
   //---------------
   //  NETWORK TRAINING
   //---------------
-  API_startTraining({dispatch, getters, rootGetters}) {
+  API_startTraining({dispatch, getters, rootGetters}, { loadCheckpoint = false } = {}) {
     const network = rootGetters['mod_workspace/GET_currentNetwork'];
 
     const theData = {
@@ -357,7 +357,7 @@ const actions = {
       action: "Start",
       value: {
         modelId: rootGetters['mod_workspace/GET_currentNetworkId'],
-        Layers: getters.GET_coreNetwork,
+        Layers: getters.GET_coreNetworkWithCheckpointConfig(loadCheckpoint),
         'copyJson_path': network.apiMeta.location || ''
       }
     };
@@ -379,7 +379,28 @@ const actions = {
   API_pauseTraining({dispatch, rootGetters}) {
     const theData = {
       receiver: rootGetters['mod_workspace/GET_currentNetworkId'],
-      action: rootGetters['mod_workspace/GET_networkCoreStatus'] === 'Paused' ? 'Unpause' : 'Pause', // Pause and Unpause
+      action: 'Pause',
+      value: ''
+    };
+
+    coreRequest(theData)
+      .then((data)=> {
+        if(rootGetters['mod_workspace/GET_networkWaitGlobalEvent']) {
+          dispatch('mod_workspace/EVENT_startDoRequest', false, {root: true});
+          dispatch('API_getStatus');
+          }
+        else {
+          dispatch('mod_workspace/EVENT_startDoRequest', true, {root: true});
+        }
+      })
+      .catch((err)=> {
+        console.error(err);
+      });
+  },
+  API_unpauseTraining({dispatch, rootGetters}) {
+    const theData = {
+      receiver: rootGetters['mod_workspace/GET_currentNetworkId'],
+      action: 'Unpause',
       value: ''
     };
 
@@ -1153,8 +1174,8 @@ const actions = {
               'elId': ix,
               'set': res.newNetwork[ix].Properties,
               'code': res.newNetwork[ix].Code,
-		tabName: currentEl.layerSettingsTabName,
-              visited: res.newNetwork[ix].visited,		
+              tabName: currentEl.layerSettingsTabName,
+              visited: res.newNetwork[ix].visited,
             };
             
             dispatch('mod_workspace/SET_elementSettings', {settings: deepCopy(saveSettings)}, {root: true});
@@ -1175,13 +1196,19 @@ const actions = {
         console.error(e)
       });
   },
-  API_scanCheckpoint (ctx, { networkId, path }) {
+  async API_scanCheckpoint (ctx, { networkId, path }) {
     const theData = {
       receiver: networkId,
       action: 'ScanCheckpoint',
       value: path
     };
-
+    const isDirExist = await fileserver_doesDirExist(path);
+    if(!isDirExist) {
+       return ({
+        networkId,
+        hasCheckpoint: false 
+      });
+    }
     return coreRequest(theData)
       .then(res => {
         return ({

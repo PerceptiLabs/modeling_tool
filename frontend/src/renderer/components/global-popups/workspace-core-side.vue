@@ -29,7 +29,7 @@
 </template>
 
 <script>
-import { mapGetters, mapMutations, mapActions } from 'vuex';
+import { mapState, mapGetters, mapMutations, mapActions } from 'vuex';
 import { saveModelJson as fileserver_saveModelJson } from '@/core/apiFileserver';
 
 export default {
@@ -52,12 +52,16 @@ export default {
       isTutorialMode: 'mod_tutorials/getIsTutorialMode',
       currentNetwork: 'mod_workspace/GET_currentNetwork',
     }),
+    ...mapState({
+      currentNetworkIndex:           state => state.mod_workspace.currentNetwork,
+    })
   },
   methods: {
     ...mapMutations({
       closePopup:               'globalView/HIDE_allGlobalPopups',
       set_showTrainingSpinner:  'mod_workspace/SET_showStartTrainingSpinner',
       updateCheckpointPaths:    'mod_workspace/updateCheckpointPaths',
+      setCurrentStatsIndex:     'mod_workspace/set_currentStatsIndex'
     }),
     ...mapActions({
       setSidebarStateAction:    'globalView/hideSidebarAction',
@@ -82,16 +86,20 @@ export default {
       this.updateCheckpointPaths();
 
       fileserver_saveModelJson(this.currentNetwork);
+      this.$store.commit('mod_events/set_saveNetwork');
 
       this.SET_networkSnapshot()
         .then(_ => this.saveNetwork(this.currentNetwork))
         .then(_ => {
           this.API_startTraining({ loadCheckpoint: withWeights });
+          this.setCurrentStatsIndex(this.currentNetworkIndex);
+          this.$store.commit('mod_workspace/update_network_meta', {key: 'coreStatus', networkID: this.currentNetwork.networkID, value: {Status: 'Created'}});
           this.SET_openStatistics(true);
           this.setViewType('statistic');
           this.SET_openTest(null);
           this.set_showTrainingSpinner(true);
           this.setSidebarStateAction(false);
+          this.$store.commit('mod_empty-navigation/set_emptyScreenMode', 0);
           this.setChecklistItemComplete({ itemId: 'startTraining' });
           this.setCurrentView('tutorial-statistics-view');
         });

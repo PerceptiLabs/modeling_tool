@@ -112,6 +112,9 @@
           return  waitInfo ? `${waitInfo}%` : ''
         }
         return ''
+      },
+      viewType() {
+        return this.$store.getters['mod_workspace/GET_viewType'];
       }
     },
     watch: {
@@ -131,6 +134,16 @@
           this.imgData = null
         }
       },
+      viewType: {
+        handler(newVal, oldVal) {
+          if (newVal === 'test') {
+            this.imgType = '';
+            this.imgData = null;
+            this.showRequestSpinner = true;
+          }
+        },
+        immediate: true
+      }
     },
     methods: {
       saveChart() {

@@ -14,10 +14,10 @@ ul.bookmark_tab-list
     )
     
     li.bookmark_tab.workspace_tab(
-      :class="{'workspace_tab--active': indexCurrentNetwork === i && !tab.networkMeta.openStatistics && !tab.networkMeta.openTest, 'workspace_tab--active_network': indexCurrentNetwork === i, 'workspace_tab--disable': false }"
+      :class="{'workspace_tab--active': currentModelIndex === i && !tab.networkMeta.openStatistics && !tab.networkMeta.openTest, 'workspace_tab--active_network': indexCurrentNetwork === i, 'workspace_tab--disable': false }"
       @click="setTabNetwork(i)"
-      v-if="!isStatisticsOrTestOpened"
-      )
+      v-if="(getViewType==='model') && !isStatisticsOrTestOpened && !tab.networkMeta.hideModel"
+    )
       
       text-editable.tab_name(
         :text-title="tab.networkName"
@@ -25,17 +25,16 @@ ul.bookmark_tab-list
         )
       
       button.btn.btn--icon.tab_close(type="button"
-        :disabled="workspace.length <= 1"
-        @click.stop="deleteTabNetwork(i)"
         @mouseout="$event.target.classList.remove('hover')"
         @mouseover="$event.target.classList.add('hover')"
+        @click.stop="hideModelTab(i)"
       )
         i.icon.icon-close
         .unsaved-changes-indicator(v-show="hasUnsavedChanges(tab.networkID)")
     
     li.bookmark_tab.workspace_tab(
-      v-if="tab.networkMeta.openStatistics !== null && isStatisticsOrTestOpened && statisticsIsOpen"
-      :class="{'workspace_tab--active': indexCurrentNetwork === i && tab.networkMeta.openStatistics, 'workspace_tab--active_network': indexCurrentNetwork === i, 'workspace_tab--disable': false}"
+      v-if="(getViewType==='statistic') && (typeof tab.networkMeta.openStatistics === 'boolean')  && !tab.networkMeta.hideStatistics"
+      :class="{'workspace_tab--active': currentStatsIndex === i && tab.networkMeta.openStatistics, 'workspace_tab--active_network': indexCurrentNetwork === i, 'workspace_tab--disable': false}"
       @click="openStatistics(i)"
     )
 
@@ -45,19 +44,16 @@ ul.bookmark_tab-list
         )
 
       button.btn.btn--icon.tab_close(type="button"
-        :disabled="workspace.length <= 1"
-        @click.stop="deleteTabNetwork(i)"
         @mouseout="$event.target.classList.remove('hover')"
         @mouseover="$event.target.classList.add('hover')"
+        @click.stop="hideStatsTab(i)"
       )
         i.icon.icon-close
-        .unsaved-changes-indicator(v-show="hasUnsavedChanges(tab.networkID)")
       //- i.icon(:class="{'icon-circle-o': trainingWaiting(i), 'icon-circle-o green-color-icon': trainingInProcess(i), 'icon-ellipse green-color-icon': trainingFinished(i) }")
-       
     
     li.bookmark_tab.workspace_tab(
-      v-if="tab.networkMeta.openTest !== null && isStatisticsOrTestOpened && testIsOpen"
-      :class="{'workspace_tab--active': indexCurrentNetwork === i && tab.networkMeta.openTest, 'workspace_tab--active_network': indexCurrentNetwork === i, 'workspace_tab--disable': false}"
+      v-if="(getViewType==='test') && (typeof tab.networkMeta.openTest === 'boolean') && !tab.networkMeta.hideTest"
+      :class="{'workspace_tab--active': currentTestIndex === i && tab.networkMeta.openTest, 'workspace_tab--active_network': indexCurrentNetwork === i, 'workspace_tab--disable': false}"
       @click="openTest(i)"
     )
       text-editable.tab_name(
@@ -65,13 +61,11 @@ ul.bookmark_tab-list
         @change-title="set_networkName"
         )
       button.btn.btn--icon.tab_close(type="button"
-        :disabled="workspace.length <= 1"
-        @click.stop="deleteTabNetwork(i)"
         @mouseout="$event.target.classList.remove('hover')"
         @mouseover="$event.target.classList.add('hover')"
+        @click.stop="hideTestTab(i)"
       )
         i.icon.icon-close
-        .unsaved-changes-indicator(v-show="hasUnsavedChanges(tab.networkID)")
 
 .tab-arrow.right(
   v-show="tabArrows.show"

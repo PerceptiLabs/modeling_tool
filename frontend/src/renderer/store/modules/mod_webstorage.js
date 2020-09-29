@@ -63,11 +63,13 @@ const actions = {
         if(network.networkMeta) {
           network.networkMeta.openStatistics = null;
           network.networkMeta.openTest = null;
-        }
 
-        // clears the handle of the setInterval function
-        // this value is used to determine if a new setInterval call should be made
-        network.networkMeta.chartsRequest.timerID = null;
+          if (network.networkMeta.chartsRequest) {
+            // clears the handle of the setInterval function
+            // this value is used to determine if a new setInterval call should be made
+            network.networkMeta.chartsRequest.timerID = null;
+          }
+        }
 
         ctx.dispatch('mod_workspace/ADD_existingNetworkToWorkspace', { network }, {root: true});
 

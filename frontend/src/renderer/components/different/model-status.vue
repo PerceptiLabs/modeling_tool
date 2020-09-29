@@ -11,7 +11,7 @@
         .name.warn-color(v-if="showError()") Error
         .name(v-else :class="{'warn-color': showError()}") {{statusData.Status ? statusData.Status === 'Stop' ? 'Stopped' : statusData.Status : 'Untrained'}}
         
-        div.d-flex.align-items-center
+        div.d-flex.align-items-center(v-if="showProgress")
           .train-progress-wrapper
             .train-progress-bars(:style="progressStyle") 
           
@@ -36,6 +36,15 @@
 <script>
 export default {
   name: 'ModelStatus',
+  mounted() {
+    console.log(this.statusData);
+    debugger;
+  },
+  computed: {
+    showProgress: function() {
+      return this.statusData.hasOwnProperty('Progress');
+    }
+  },
   props: {
     statusData: {
       type: Object,

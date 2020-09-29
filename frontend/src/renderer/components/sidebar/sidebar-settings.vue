@@ -2,7 +2,10 @@
   .sidebar-setting-wrapper
     .sidebar-setting-head
       .sidebar-setting-head-name Settings
-      button.sidebar-setting-head-open-code(@click="onOpenCodeButtonClick()") Open code
+      button.sidebar-setting-head-open-code(
+        v-if="selectedEl !== null"
+        @click="onOpenCodeButtonClick()"
+        ) Open code
     perfect-scrollbar.sidebar-setting-content(:data-tutorial-target="'tutorial-workspace-settings'")
       component.setting-values-wrapper(v-if="selectedEl !== null" :key="selectedEl.layerId" v-bind:is="selectedEl.componentName" :currentEl="selectedEl" ref="componentSettings")
       sidebar-setting-preview.setting-chart-wrapper(

@@ -178,6 +178,12 @@ function coreRequest(data, path, no, name) {
 
                 store.dispatch('globalView/GP_errorPopup', obgData.errorMessage);
                 store.dispatch('mod_tracker/EVENT_coreError', obgData.errorMessage);
+                store.dispatch('mod_workspace/setViewType', 'model');
+                store.commit('mod_workspace/update_network_meta', 
+                          {key: 'coreStatus', 
+                           networkID: store.getters['mod_workspace/GET_currentNetwork'].networkID,
+                           value: {Status: 'Waiting'}
+                          });
                 store.dispatch('mod_workspace/EVENT_startDoRequest', false);
                 store.dispatch('mod_workspace/SET_openStatistics', null);
                 store.dispatch('mod_workspace/SET_openTest', null);

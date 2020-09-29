@@ -87,6 +87,6 @@
     min-height: 100%;
     background: rgba(35, 37, 42, 0.7);
     backdrop-filter: blur(10px);
-    z-index: 12;
+    z-index: 13;
   }
 </style>
