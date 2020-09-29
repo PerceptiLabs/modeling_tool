@@ -104,7 +104,11 @@ const actions = {
     mixPanel.track('Model Creation', {'Type': modelType});
   },
   EVENT_modelSave({}, model) {
-    mixPanel.track('Model Save', model);
+    try { 
+      mixPanel.track('Model Save', model);
+    } catch (err) {
+      // Circular dependencies or large payload will trigger the error
+    }
   },
   EVENT_modelExport({}, data) {
 

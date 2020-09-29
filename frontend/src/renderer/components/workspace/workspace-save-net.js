@@ -61,11 +61,7 @@ const workspaceSaveNet = {
         networkName: network.networkName,
         networkPath: network.apiMeta.location
       };
-      console.log('eventSaveNetwork 1');
-
-      this.saveNetwork(settings, network.networkID)
-
-      console.log('eventSaveNetwork 2');
+      this.saveNetwork(settings, network.networkID);
 
 //       this.checkTrainedNetwork()
 //         .then((isTrained)=> {
@@ -277,8 +273,8 @@ const workspaceSaveNet = {
 
           net.networkElementList = net.networkSnapshots[0];
           delete net.consoleLogs;
-          delete net.networkSnapshots;
         }
+        delete net.networkSnapshots;
 
         //clone network
         let toFile = {};
