@@ -135,3 +135,7 @@ export const createIssueInGithub = (data) => {
   const queryParams = objectToQueryParams(data);
   return fileServerHttpReqest.post(`/github/issue?${queryParams}`, data)
 }
+
+export const deleteFolder = (path) => {
+  return fileServerHttpReqest.delete(`/directories?path=${path}`)
+}

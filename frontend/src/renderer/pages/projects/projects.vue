@@ -633,7 +633,7 @@
           return;
         }
 
-        this.removeItems();
+        this.delete_network(this.contextModelIndex);
         this.closeContext();
       },
       onClickDeletedModel(model, index) {

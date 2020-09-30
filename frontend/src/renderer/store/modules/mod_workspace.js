@@ -4,6 +4,7 @@ import idb  from "@/core/helpers/idb-helper.js";
 import Vue    from 'vue'
 import router from '@/router'
 import {isElectron} from "@/core/helpers";
+import { deleteFolder as fileserver_deleteFolder } from '@/core/apiFileserver';
 import cloneDeep from 'lodash.clonedeep';
 import { saveModelJson as fileserver_saveModelJson } from '@/core/apiFileserver';
 
@@ -655,7 +656,12 @@ const mutations = {
       return indexId;
     }
   },
-  delete_network(state, index) {
+  async delete_network(state, index) {
+
+    const path = state.workspaceContent[index].apiMeta.location.replace('/', '\\');
+    await fileserver_deleteFolder(path)
+
+
     if(state.currentNetwork >= index) {
       const index = state.currentNetwork - 1;
       state.currentNetwork = index < 0 ? 0 : index
