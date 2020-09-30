@@ -126,14 +126,11 @@ export default {
       this.isLoading = true;
       exportAsGithubRepository(reqData)
         .then(res => {
-          this.isLoading = false;
           const haveRepoNameSpaces = this.settings.name.indexOf(' ') !== -1;
-          this.$store.dispatch('globalView/GP_infoPopup',`The model was exported successfully! ${haveRepoNameSpaces ? 'Spaces in the model name will be replaced with dashes': ''}`)
+          this.$store.dispatch('globalView/GP_infoPopup',`The model was exported successfully to: ${res.data.URL} ${haveRepoNameSpaces ? `<br/>Spaces in the model name will be replaced with dashes`: ''}`)
         }).catch(err => {
-          this.isLoading = false;
           this.$store.dispatch('globalView/GP_infoPopup',`Fail on export`)
-          // console.log(`${err.response.status} - ${err.response.data}`)
-        })
+        }).finally(() => this.isLoading = false)
     },
    }
 }

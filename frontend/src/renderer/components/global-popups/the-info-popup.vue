@@ -8,7 +8,7 @@
         .settings-layer_section.big-text(:class="{'popup--error': !isInfo}")
           .section_attention(:class="{'header_attention--error': !isInfo}") !
           .section_text
-            p(v-if="isText && !comingSoonPopup") {{ popupText }}
+            p(v-if="isText && !comingSoonPopup" v-html="popupText") 
             p(v-else-if="isText && comingSoonPopup") This feature is coming soon. For suggestions on new features, hit us up on:&ensp;
               a.btn.btn--link.text-primary(@click="goToLink('https://join.slack.com/t/perceptilabs-com/shared_invite/enQtODQ5NzAwNDkxOTExLWUxODAwZDk0MzA1MmM4OTViNWE4MmVjYjc2OTQwMTQ4N2NmM2ZlYmI5NjZjOWRiYjBkYjBjMTMzNjEyMDNiNDk')") slack
             div(v-else-if="coreNotFoundPopup && isWeb")
