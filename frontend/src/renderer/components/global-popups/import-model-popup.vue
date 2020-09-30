@@ -21,7 +21,7 @@
           view-loading(:isLoading="isFetching" )
           div.import-model-box-with-border
             .form_holder
-              .form_label Enter Git Repository:
+              .form_label Enter a Git Repository containing your model.json:
               .form_holder.github-url-input
                 .pre-input-label url
                 input.form_input(type="text" v-model="githubRepositoryUrl")
