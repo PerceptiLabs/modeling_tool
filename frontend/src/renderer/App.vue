@@ -41,6 +41,7 @@
   import TutorialNotification from "@/components/different/tutorial-notification.vue";
   import { getModelJson as fileserver_getModelJson } from '@/core/apiFileserver';
   import { fileserverAvailability } from '@/core/apiFileserver';
+  import { pullTokenFromEnv as fileserver_pullTokenFromEnv } from '@/core/apiFileserver';
 
   let ipcRenderer = null;
   if(isElectron()) {
@@ -91,6 +92,8 @@
       this.initTutorialView();
     },
     mounted() {      
+      fileserver_pullTokenFromEnv()
+
       if (this.isDefaultProjectMode) { 
         // in the free version, the user is locked to a single project
         this.getDefaultModeProject();

@@ -22,23 +22,27 @@ function getCookie(name) {
     return null;
 }
 
-function maybeSetToken() {
+export function pullTokenFromEnv() {
   if (!!fileServerHttpReqest.defaults.params['token']) {
     return;
   }
 
-  if (!!process.env.PL_FILE_SERVING_TOKEN) {
-    fileServerHttpReqest.defaults.params['token'] = process.env.PL_FILE_SERVING_TOKEN
-  } else {
-    // This section is for when the frontend is built as static files.
-    // (process.env is not available then)
-    const token = getCookie("fileserver_token")
+  // Try, in order, the cookie, env var, and finally the session storage
+  const token =
+    getCookie("fileserver_token") ||
+    process.env.PL_FILE_SERVING_TOKEN ||
+    sessionStorage.fileserver_token
+
+  if (!!token) {
     fileServerHttpReqest.defaults.params['token'] = token
+
+    // Since we lose the cookie easily, save the token to session storage
+    sessionStorage.fileserver_token = token
   }
 }
 
 export const fileserverAvailability = () => {
-  maybeSetToken();
+  pullTokenFromEnv();
   return fileServerHttpReqest.get("/version")
   .then(res => {
     return (res.status === 200) ? "AVAILABLE" : "UNAVAILABLE"
@@ -49,19 +53,19 @@ export const fileserverAvailability = () => {
 }
 
 export const importRepositoryFromGithub = (data) => {
-  maybeSetToken();
+  pullTokenFromEnv();
   const queryParams = objectToQueryParams(data);
   return fileServerHttpReqest.post(`/github/import?${queryParams}`, data);
 }
 
 export const exportAsGithubRepository = (data) => {
-  maybeSetToken();
+  pullTokenFromEnv();
   const queryParams = objectToQueryParams(data);
   return fileServerHttpReqest.post(`/github/export?${queryParams}`, data)
 }
 
 export const doesDirExist = (path) => {
-  maybeSetToken();
+  pullTokenFromEnv();
   return fileServerHttpReqest.head(`/directories?path=${path}`)
   .then(res => {
     return (res.status === 200);
@@ -69,7 +73,7 @@ export const doesDirExist = (path) => {
 }
 
 export const getFolderContent = (path) => {
-  maybeSetToken();
+  pullTokenFromEnv();
   return fileServerHttpReqest.get(`/directories/get_folder_content?path=${path}`)
     .then(res => {
       return (res.status === 200)? res.data : null
@@ -77,7 +81,7 @@ export const getFolderContent = (path) => {
 }
 
 export const getRootFolder = () => {
-  maybeSetToken();
+  pullTokenFromEnv();
   return fileServerHttpReqest.get(`/directories/root`)
     .then(res => {
       return (res.status === 200)? res.data.path : "/"
@@ -85,7 +89,7 @@ export const getRootFolder = () => {
 }
 
 export const getResolvedDir = (path) => {
-  maybeSetToken();
+  pullTokenFromEnv();
   return fileServerHttpReqest.get(`/directories/resolved_dir?path=${path}`)
     .then(res => {
       return (res.status === 200)? res.data.path : null
@@ -94,7 +98,7 @@ export const getResolvedDir = (path) => {
 }
 
 export const getModelJson = (path) => {
-  maybeSetToken();
+  pullTokenFromEnv();
   return fileServerHttpReqest.get(`/json_models?path=${path}`)
     .then(res => {
       let ret = (res.status === 200)? res.data.model_body : null
@@ -104,14 +108,14 @@ export const getModelJson = (path) => {
 }
 
 export const saveModelJson = (model) => {
-  maybeSetToken();
+  pullTokenFromEnv();
   const path = `${model.apiMeta.location}`;
   const modelAsString = stringifyNetworkObjects(model)
   return fileServerHttpReqest.post(`/json_models?path=${path}`, modelAsString)
 }
 
 export const doesFileExist = (path) => {
-  maybeSetToken();
+  pullTokenFromEnv();
   return fileServerHttpReqest.head(`/files?path=${path}`)
   .then(res => {
     return (res.status === 200);
@@ -119,7 +123,7 @@ export const doesFileExist = (path) => {
 }
 
 export const createFolder = (path) => {
-  maybeSetToken();
+  pullTokenFromEnv();
   return fileServerHttpReqest.post(`/directories?path=${path}`)
     .then(res => {
       return (res.status === 200)? res.data.path : null
@@ -127,7 +131,7 @@ export const createFolder = (path) => {
 }
 
 export const createIssueInGithub = (data) => {
-  maybeSetToken();
+  pullTokenFromEnv();
   const queryParams = objectToQueryParams(data);
   return fileServerHttpReqest.post(`/github/issue?${queryParams}`, data)
 }

@@ -1,28 +1,16 @@
-"""static_file_server URL Configuration
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/3.0/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
 from django.urls import path, re_path
 from django.views.generic import TemplateView
+from django_http_exceptions import HTTPExceptions
+import os
 
-class  TokenView(TemplateView):
+class TokenView(TemplateView):
     template_name = 'index.html'
 
     def dispatch(self, request, *args, **kwargs):
-        token = request.GET.get("token")
+        token = request.GET.get("token") or os.getenv("PL_FILE_SERVING_TOKEN")
         ret = super().dispatch(request, *args, **kwargs)
-        ret.set_cookie("fileserver_token", value=token, samesite="Strict")
+        if token:
+            ret.set_cookie("fileserver_token", value=token, samesite="Strict")
         return ret
 
 urlpatterns = [
