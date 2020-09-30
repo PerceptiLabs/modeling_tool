@@ -128,6 +128,6 @@ export const createFolder = (path) => {
 
 export const createIssueInGithub = (data) => {
   maybeSetToken();
-  const queryParams = objectToQueryParams(params);
+  const queryParams = objectToQueryParams(data);
   return fileServerHttpReqest.post(`/github/issue?${queryParams}`, data)
 }
