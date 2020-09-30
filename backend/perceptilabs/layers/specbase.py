@@ -94,6 +94,9 @@ class LayerSpec(ABC, MyBaseModel):
 
     class Config:
         allow_mutation = False
+
+    def has_input_variable(self, var_name):
+        return var_name in (conn.dst_var for conn in self.backward_connections)
         
     def clone(self, modified_params: Dict[str, Any]=None) -> 'LayerSpec':
         """ Creates a modified version of the layer spec """

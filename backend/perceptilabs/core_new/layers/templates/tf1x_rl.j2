@@ -1,4 +1,4 @@
-{% from 'tf1x_utils.j2' import session %}
+{% from 'tf1x_utils.j2' import session, check_input_vars %}
 
 {% macro train_normal(layer_spec, graph_spec) %}
         
@@ -128,6 +128,7 @@
 {% endmacro %}
 
 {% macro init_normal(mode) %}
+        {{ check_input_vars(layer_spec, ['action'])|indent(width=8)}}
         self._status = 'initializing'
         copied_graph = graph.clone()
         target_nodes = copied_graph.inner_nodes

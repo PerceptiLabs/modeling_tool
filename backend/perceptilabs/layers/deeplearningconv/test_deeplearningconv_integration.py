@@ -6,6 +6,7 @@ import tensorflow as tf
 from perceptilabs.script import ScriptFactory
 from perceptilabs.layers.helper import LayerHelper
 from perceptilabs.layers.deeplearningconv.spec import DeepLearningConvSpec
+from perceptilabs.layers.specbase import LayerConnection
 
 
 @pytest.fixture(scope='module')
@@ -23,7 +24,8 @@ def test_conv2d_1x1_should_be_sum(script_factory):
         stride=2,
         patch_size=2,
         feature_maps=1,
-        activation=None
+        activation=None,
+        backward_connections=(LayerConnection(dst_var='input'),)
     )
     layer = LayerHelper(script_factory, layer_spec).get_instance()
     x = np.ones((1, 2, 2, 1), dtype=np.float32)    
@@ -57,7 +59,8 @@ def test_conv2d_zero_keep_prob_equals_zero_output(script_factory):
         feature_maps=1,
         activation=None,
         dropout=True,
-        keep_prob=1e-7
+        keep_prob=1e-7,
+        backward_connections=(LayerConnection(dst_var='input'),)        
     )
     layer = LayerHelper(script_factory, layer_spec).get_instance()
 
@@ -91,7 +94,8 @@ def test_conv2d_is_training_overrides_dropout(script_factory):
         feature_maps=1,
         activation=None,
         dropout=True,
-        keep_prob=1e-7
+        keep_prob=1e-7,
+        backward_connections=(LayerConnection(dst_var='input'),)        
     )
     layer = LayerHelper(script_factory, layer_spec).get_instance()
 

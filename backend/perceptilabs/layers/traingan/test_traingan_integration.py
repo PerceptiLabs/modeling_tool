@@ -151,6 +151,9 @@ def test_can_instantiate(script_factory):
     layer_spec = TrainGanSpec(
         id_='layer_id',
         name='layer_name',
+        backward_connections=(
+            LayerConnection(dst_var='input'),
+        )
     )
 
     graph_spec = MagicMock()

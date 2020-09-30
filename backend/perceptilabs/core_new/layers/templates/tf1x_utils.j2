@@ -1,3 +1,14 @@
+{% macro check_input_vars(layer_spec, required_variables) -%}
+{% filter remove_lspaces(12) %}            
+    {% for var_name in required_variables %}
+        {% if not layer_spec.has_input_variable(var_name) %}
+            raise TypeError("Missing input connection '{{var_name}}'")
+        {% endif %}
+    {% endfor %}                                
+{% endfilter %}
+{%- endmacro %}
+
+
 {% macro build_output_dict(target_var, var_map, untouched_vars) -%}
 {# Builds the output dictionary. Adds a batch dimension when necessary #}
 {% if var_map|length == 1 %}

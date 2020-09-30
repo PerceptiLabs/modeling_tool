@@ -1,4 +1,4 @@
-{% from 'tf1x_utils.j2' import session %}
+{% from 'tf1x_utils.j2' import session, check_input_vars %}
 
 {% macro train_normal(layer_spec, graph_spec ) %}
         sess = self._sess
@@ -138,8 +138,22 @@
 
 {% macro init_normal(mode) %}
         self._status = 'initializing'
-        real_data_layer_id = "{{graph_spec.nodes_by_name.get(layer_spec.real_layer_name).sanitized_name}}"
-        switch_layer_id =  "{{graph_spec.nodes_by_name.get(layer_spec.switch_layer_name).sanitized_name}}"
+
+        {% filter remove_lspaces(8) %}
+            {% if layer_spec.real_layer_name in graph_spec.nodes_by_name %}
+                real_data_layer_id = "{{graph_spec.nodes_by_name.get(layer_spec.real_layer_name).sanitized_name}}"
+            {% else %}
+                raise TypeError("Real layer with name '{{layer_spec.real_layer_name}}' not found!")
+            {% endif %}
+        {% endfilter %}
+
+        {% filter remove_lspaces(8) %}
+            {% if layer_spec.switch_layer_name in graph_spec.nodes_by_name %}
+                switch_layer_id = "{{graph_spec.nodes_by_name.get(layer_spec.switch_layer_name).sanitized_name}}"
+            {% else %}
+                raise TypeError("Switch layer with name '{{layer_spec.switch_layer_name}}' not found!")
+            {% endif %}
+        {% endfilter %}
 
         for node in graph.data_nodes:
             if node.layer_id != real_data_layer_id and not node.is_training_node:
@@ -153,7 +167,14 @@
         output_node = [node for node in graph.get_input_nodes(training_node)][0]
         output_layer_id = output_node.layer_id
         self._switch_layer_id = switch_layer_id
-        self._selected_layer_id = "{{graph_spec.nodes_by_name.get(layer_spec.switch_layer_name).selected_layer_id}}"
+
+        {% filter remove_lspaces(8) %}
+            {% if layer_spec.switch_layer_name in graph_spec.nodes_by_name %}
+                self._selected_layer_id = "{{graph_spec.nodes_by_name.get(layer_spec.switch_layer_name).selected_layer_id}}"
+            {% else %}
+                raise TypeError("Switch layer with name '{{layer_spec.switch_layer_name}}' not found!")
+            {% endif %}
+        {% endfilter %}
         
         generator_nodes = graph.get_nodes_inbetween(random_data_node, switch_node)
         discriminator_nodes = graph.get_nodes_inbetween(switch_node, output_node)
@@ -536,6 +557,7 @@
 class {{layer_spec.sanitized_name}}(GANLayer):
 
     def __init__(self):
+        {{ check_input_vars(layer_spec, ['input'])|indent(width=8)}}                
         self._n_epochs = {{layer_spec.n_epochs}}
         self._batch_size = {{layer_spec.batch_size}}
 

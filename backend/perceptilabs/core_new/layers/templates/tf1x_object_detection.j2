@@ -1,4 +1,4 @@
-{% from 'tf1x_utils.j2' import session %}
+{% from 'tf1x_utils.j2' import session, check_input_vars %}
 
 {% macro train_normal(layer_spec, graph_spec) %}
         
@@ -137,8 +137,20 @@
         self._batch_size = {{layer_spec.batch_size}}
         # we need classes
 
-        output_layer_id = "{{graph_spec.nodes_by_id[layer_spec.connection_predictions.src_id].sanitized_name}}"
-        target_layer_id = "{{graph_spec.nodes_by_id[layer_spec.connection_labels.src_id].sanitized_name}}"
+        {% filter remove_lspaces(8) %}
+            {% if layer_spec.connection_predictions is not none %}
+                output_layer_id = "{{graph_spec.nodes_by_id[layer_spec.connection_predictions.src_id].sanitized_name}}"
+            {% else %}
+                output_layer_id = None
+            {% endif %}
+        {% endfilter %}
+        {% filter remove_lspaces(8) %}
+            {% if layer_spec.connection_labels is not none %}
+                target_layer_id = "{{graph_spec.nodes_by_id[layer_spec.connection_labels.src_id].sanitized_name}}"
+            {% else %}
+                target_layer_id = None
+            {% endif %}
+        {% endfilter %}
         
         input_data_nodes = graph.get_direct_data_nodes(output_layer_id)
         label_data_nodes = graph.get_direct_data_nodes(target_layer_id)
@@ -478,6 +490,7 @@ import cv2
 import copy
 class {{layer_spec.sanitized_name}}(ObjectDetectionLayer):
     def __init__(self):
+        {{ check_input_vars(layer_spec, ['labels', 'predictions'])|indent(width=8)}}        
         self._n_epochs = {{layer_spec.n_epochs}}
         self._batch_size = {{layer_spec.batch_size}}
 
