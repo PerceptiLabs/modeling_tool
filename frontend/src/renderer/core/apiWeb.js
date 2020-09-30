@@ -190,6 +190,30 @@ function coreRequest(data, path, no, name) {
                 store.commit('mod_workspace/SET_showStartTrainingSpinner', false);
               }
 
+              if(obgData.warningMessage && obgData.warningMessage.length) {
+                for(const wm of obgData.warningMessage) {
+                  store.dispatch('mod_workspace-notifications/addError', {
+                    networkId: store.getters['mod_workspace/GET_currentNetworkId'],
+                    errorObject: ({
+                      Message: wm,
+                    }),
+                    addToast: true
+                  });
+                }
+              }
+
+              if(obgData.generalLogs && obgData.generalLogs.length) {
+                for(const wm of obgData.generalLogs) {
+                  store.dispatch('mod_workspace-notifications/addWarning', {
+                    networkId: store.getters['mod_workspace/GET_currentNetworkId'],
+                    warningObject: ({
+                      Message: wm,
+                    }),
+                    addToast: true
+                  });
+                }
+              }
+
               if (obgData.consoleLogs) {
                 store.dispatch('mod_logs/addLogsForNetwork', {
                   networkId: store.getters['mod_workspace/GET_currentNetworkId'],

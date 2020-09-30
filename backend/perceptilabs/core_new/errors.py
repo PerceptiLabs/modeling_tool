@@ -75,8 +75,8 @@ class LightweightErrorHandler(LayerErrorHandler):
 
     def _handle_syntax_error(self, session, exception: Exception):
         tbObj = traceback.TracebackException(exception.__class__,
-                                             exception,
-                                             exception.__traceback__)
+                                            exception,
+                                            exception.__traceback__)
 
         descr = "".join(tbObj.format_exception_only())
         

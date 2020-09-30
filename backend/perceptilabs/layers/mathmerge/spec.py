@@ -10,9 +10,9 @@ class MathMergeSpec(InnerLayerSpec):
 
     @classmethod
     def _from_dict_internal(cls, id_: str, dict_: Dict[str, Any], params: Dict[str, Any]) -> LayerSpec:
-        params['merge_type'] = dict_['Properties']['Type']
-        merge_dim = dict_['Properties']['Merge_dim'] 
-        params['merge_dim'] = int(merge_dim) if merge_dim != '' else None
+        params['merge_type'] = dict_['Properties']['Type'] if dict_['Properties'] else None
+        merge_dim = dict_['Properties']['Merge_dim'] if dict_['Properties'] else None
+        params['merge_dim'] = int(merge_dim) if merge_dim  else None
         return cls(**params)
 
     def _to_dict_internal(self, dict_: Dict[str, Any]) -> Dict[str, Any]:

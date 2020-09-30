@@ -41,7 +41,7 @@ def main():
     perceptilabs.logconf.setup_application_logger(log_level=args.log_level)
     perceptilabs.logconf.setup_data_logger(is_dev=(commit_id == "Dev"))
     perceptilabs.logconf.set_session_id(session_id)
-    perceptilabs.logconf.set_console_logger(queue = issue_handler._logs)
+    perceptilabs.logconf.setup_console_logger(queue = issue_handler._logs)
 
     logger = logging.getLogger(perceptilabs.logconf.APPLICATION_LOGGER)
     data_logger = logging.getLogger(perceptilabs.logconf.DATA_LOGGER)

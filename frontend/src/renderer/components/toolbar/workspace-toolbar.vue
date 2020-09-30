@@ -41,7 +41,6 @@
             @click="toModelStatistic"
           )
             | Go to statistics
-
       //ul.toolbar_list
         li
           button.btn.btn--toolbar(type="button"

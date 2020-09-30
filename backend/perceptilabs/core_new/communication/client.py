@@ -95,7 +95,7 @@ class TrainingClient:
                 graph = self._graph_builder.build_from_snapshot(value)                
                 self._on_receive_graph(graph)
         else:
-            logger.warning(f"Unknown message key {key} [TrainingClient]")
+            logger.info(f"Unknown message key {key} [TrainingClient]")
 
     def _process_outgoing_messages(self):
         keys = []

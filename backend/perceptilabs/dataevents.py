@@ -134,21 +134,21 @@ def collect_end_metrics(json_net, graph, training_sess_id, session_info, model_i
             'namespace': dict(
                 model_id=model_id,
                 training_session_id=training_sess_id,        
-                graph_spec=formatted_graph,
                 n_parameters=int(n_params),
                 time_total=session_info['time_total'],
-                cycle_state_initial=session_info['cycle_state_initial'],
-                cycle_state_final=session_info['cycle_state_final'],
+                end_state=end_state,
+                cycle_time_total=session_info['cycle_time_total'],
+                mem_phys_total=session_info['mem_phys_total'],
+                mem_swap_total=session_info['mem_swap_total'],
                 cycle_time_process_messages=session_info['cycle_time_process_messages'],
                 cycle_time_training_step=session_info['cycle_time_training_step'],
                 cycle_time_send_snapshot=session_info['cycle_time_send_snapshot'],
-                cycle_time_total=session_info['cycle_time_total'],
-                mem_phys_total=session_info['mem_phys_total'],
                 cycle_mem_phys_available=session_info['cycle_mem_phys_available'],
-                mem_swap_total=session_info['mem_swap_total'],
                 cycle_mem_swap_free=session_info['cycle_mem_swap_free'],
-                data_meta=data_meta_list,
-                end_state=end_state,
+                cycle_state_initial=session_info['cycle_state_initial'],
+                cycle_state_final=session_info['cycle_state_final'],
+                graph_spec=formatted_graph,
+                data_meta=data_meta_list
             )
         }
     )

@@ -147,7 +147,7 @@ class ScriptFactory:
             standard_library_imports.update(stdlib)
             third_party_imports.update(thirdparty)
             perceptilabs_imports.update(plabs)
-                                              
+                                                
         code = ''        
         for stmt in sorted(standard_library_imports, key=len):
             code += stmt + '\n'
