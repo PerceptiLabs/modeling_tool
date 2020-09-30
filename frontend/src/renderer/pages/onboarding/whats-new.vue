@@ -11,7 +11,13 @@
 
         p {{ descriptionForSteps[stepNumber] }}
       .section-navigation
-        .spacer
+        .navigation-action(
+          v-if="stepNumber > 0"
+          @click="stepNumber--")
+          svg.prev-step(width="9" height="14" viewBox="0 0 9 14" fill="none" xmlns="http://www.w3.org/2000/svg")
+            path(fill-rule="evenodd" clip-rule="evenodd" d="M1.01982 14L1.21612e-08 12.9802L5.98018 7L1.54787e-07 1.01982L1.01982 1.21612e-08L8.01982 7L1.01982 14Z" fill="#6185EE")
+
+        .spacer(v-else)
 
         .step-buttons
           .step-button(
@@ -37,7 +43,6 @@ import { MODAL_PAGE_PROJECT, MODAL_PAGE_WHATS_NEW } from "@/core/constants";
 
 export default {
   name: 'PageWhatsNew',
-  components: {},
   data() {
     return {
       stepNumber: 0,
@@ -67,6 +72,12 @@ export default {
       return this.contentForSteps[this.stepNumber];
     },
   },
+  mounted() {
+    document.addEventListener('keydown', this.keysNavigationHandler);
+  },
+  destroyed() {
+    document.removeEventListener('keydown', this.keysNavigationHandler);
+  },
   methods: {    
     ...mapActions({
       setActivePageAction:    'modal_pages/setActivePageAction',
@@ -76,6 +87,18 @@ export default {
       setCurrentView:         'mod_tutorials/setCurrentView',
       setHasShownWhatsNew:    'mod_tutorials/setHasShownWhatsNew',
     }),
+    keysNavigationHandler(event) {
+      const key = event.key;
+      if(key === 'ArrowLeft' && this.stepNumber > 0) {
+        this.stepNumber--;
+      }
+      if(key === 'ArrowRight' && this.stepNumber < this.contentForSteps.length - 1) {
+        this.stepNumber++;
+      }
+      if(key === 'Enter' && this.stepNumber === this.contentForSteps.length - 1) {
+        this.onGetStarted();
+      }
+    },
     onGetStarted() {
       this.getDefaultModeProject()
         .then(_ => {
@@ -149,7 +172,7 @@ export default {
     font-family: Nunito Sans;
     font-style: normal;
     font-weight: 600;
-    font-size: 14px;
+    font-size: 16px;
     line-height: 19px;
   }
 
@@ -160,7 +183,7 @@ export default {
     font-family: Nunito Sans;
     font-style: normal;
     font-weight: normal;
-    font-size: 12px;
+    font-size: 14px;
     line-height: 16px;
   }
 }
@@ -218,20 +241,28 @@ export default {
     flex: 1;
 
     .get-started {
-      height: 3rem;
-      width: 10rem;
+      height: 32px;
+      width: 95px;
 
       display: flex;
       justify-content: center;
       align-items: center;
 
       background: #6185EE;
-
+      border-radius: 2px;
+      
       cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
     }
 
     .next-step {
       cursor: pointer;
+    }
+    .prev-step {
+      cursor: pointer;
+      transform-origin: 50% 50%;
+      transform: rotate(180deg)
     }
   }
 }
