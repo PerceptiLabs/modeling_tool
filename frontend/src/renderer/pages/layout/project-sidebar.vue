@@ -149,8 +149,6 @@
           const statsCandidate = this.workspaceModels.findIndex(item => typeof item.networkMeta.openStatistics === 'boolean' && item.networkMeta.hideStatistics!==true);
           this.$store.dispatch('mod_workspace/SET_currentStatsIndex', statsCandidate);     
 
-          console.log(modelCandidate, testCandidate, statsCandidate);
-          console.log(selectedTab);
           if (selectedTab === 'model') {
             this.$store.dispatch("mod_workspace/setViewType", 'model');
             if (modelCandidate >= 0) {

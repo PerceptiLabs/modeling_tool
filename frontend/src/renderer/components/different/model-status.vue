@@ -36,10 +36,6 @@
 <script>
 export default {
   name: 'ModelStatus',
-  mounted() {
-    console.log(this.statusData);
-    // debugger;
-  },
   computed: {
     showProgress: function() {
       return this.statusData.hasOwnProperty('Progress');
