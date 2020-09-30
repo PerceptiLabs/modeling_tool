@@ -1490,7 +1490,8 @@ def test_errors_ok_with_runtime_error(graph_spec_runtime_error):
     lw_core = LightweightCore()
     results = lw_core.run(graph_spec_runtime_error)
 
-    assert "ZeroDivisionError" in results['3'].instantiation_error.message    
+    assert "ZeroDivisionError" in results['3'].instantiation_error.message
+    assert results['3'].instantiation_error.line_number == 2
 
     
 def test_errors_detected_in_training_layer(graph_spec_runtime_error_training):
@@ -1498,6 +1499,7 @@ def test_errors_detected_in_training_layer(graph_spec_runtime_error_training):
     results = lw_core.run(graph_spec_runtime_error_training)
 
     assert "ZeroDivisionError" in results['6'].instantiation_error.message        
+    assert results['6'].instantiation_error.line_number == 2    
 
     
 def test_load_checkpoints_ok(graph_spec_binary_classification):

@@ -56,7 +56,35 @@ class LayerResults:
             value = getattr(self, error_type)
             if value is not None:
                 yield (error_type, value)
-        
+
+def format_exception(exception, adjust_by_offset=None):
+    """ Format an exception with shifted line numbers due to imports and other not-shown stuff """
+    pattern = '  File "<rendered-code.*, line ([0-9]*), in .*'
+    
+    tb_obj = traceback.TracebackException(
+        exception.__class__,
+        exception,
+        exception.__traceback__
+    )
+    
+    def adjust_line_num(match):
+        """ Decreases the line number in a traceback string. Assumes that the line string is in the first match. """
+        i1, i2 = match.regs[1]
+        line_number = int(match.string[i1:i2]) - adjust_by_offset
+        new_string = match.string[0:i1] + str(line_number) + match.string[i2:]
+        return new_string
+
+    message = ''
+    for counter, line in enumerate(tb_obj.format()):
+        if adjust_by_offset is None:
+            message += line
+        else:
+            # The code shown to the user does not include the import statements (and the optional preamble)
+            # Therefore, we decrease the traceback line by an offset
+            message += re.sub(pattern, adjust_line_num, line)
+            
+    return message
+
 
 def exception_to_error(layer_id, layer_type, exception, line_offset=None):
     tb_obj = traceback.TracebackException(
@@ -64,30 +92,27 @@ def exception_to_error(layer_id, layer_type, exception, line_offset=None):
         exception,
         exception.__traceback__
     )
-
+    
+    # Get the line number of the last frame of rendered code
     line_no = None
-    if hasattr(tb_obj, 'lineno'):
-        line_no = int(tb_obj.lineno)
+    last_rendered_is_another_layer = True
 
-        if line_offset is not None:
-            line_no -= line_offset
+    for frame in tb_obj.stack:
+        if frame.filename.startswith(f"<rendered-code: "):
+            line_no = int(frame.lineno)
+            last_rendered_is_another_layer = not frame.filename.startswith(f"<rendered-code: {layer_id}")
 
-    def adjust_line_num(match):
-        """ Decreases the line number in a traceback string. Assumes that the line string is in the first match. """
-        i1, i2 = match.regs[1]
-        line_number = int(match.string[i1:i2]) - line_offset
-        new_string = match.string[0:i1] + str(line_number) + match.string[i2:]
-        return new_string
-
-    message = ''
-    for counter, line in enumerate(tb_obj.format()):
-        if line_offset is None:
-            message += line
-        else:
-            # The code shown to the user does not include the import statements (and the optional preamble)
-            # Therefore, we decrease the traceback line by an offset
-            message += re.sub( '  File "<rendered-code.*, line ([0-9]*), in .*', adjust_line_num, line)
-            
+    if last_rendered_is_another_layer:
+        # If the origin of the layer is _another_ rendered layer, then we will not raise an error here.
+        # Example: A Dense layer has an error that propagates to the training layer.
+        return None
+    
+    # The executed code is different from the code seen by the user (e.g., imports are not shown).
+    # Subtract the unseen part to make sure the error is pointed at the correct line
+    if line_no is not None and line_offset is not None:
+        line_no -= line_offset
+        
+    message = format_exception(exception, adjust_by_offset=line_offset)
     error = UserlandError(layer_id, layer_type, line_no, message)
     return error
 
@@ -225,43 +250,65 @@ class Tf1xStrategy(BaseStrategy):
 
             
 class TrainingStrategy(BaseStrategy):
+    PREAMBLE  = 'import logging\n'
+    PREAMBLE += 'log = logging.getLogger(__name__)\n\n'
+    PREAMBLE_LINES = len(PREAMBLE.split('\n')) - 1
+    
     def __init__(self, graph_spec, script_factory):
         self._graph_spec = graph_spec
         self._script_factory = script_factory
 
     def run(self, layer_spec, layer_class, input_results, line_offset=None):
         # We need the graph spec to run the training layer
+        
         with tf.Graph().as_default() as tfgraph:
-            try:
-                graph = graph_spec_to_core_graph(self._script_factory, self._graph_spec)
-                training_layer = graph.active_training_node.layer
-                training_layer.init_layer(graph)
-                sample = training_layer.sample
-                variables = training_layer.variables.copy()
-
-            except Exception as e:
-                instantiation_error = exception_to_error(layer_spec.id_, layer_spec.type_, e, line_offset=line_offset)
-                strategy_error = None
-                sample = {'output': None}
-                shape = {'output': None}
-                variables = {}
-                logger.debug(f"Layer {layer_spec.id_} raised an error when initializing")
+            graph = self._create_graph()
+            if graph is not None:
+                sample, shape, variables, strategy_error = self._run_training_layer(graph, layer_spec, line_offset)
             else:
+                sample = shape = {'output': None}
+                variables = {}                
                 strategy_error = None
-                instantiation_error = None
-                shape = {name: np.atleast_1d(value).shape for name, value in sample.items()}    
-    
+                
         results = LayerResults(
             sample=sample,
             out_shape=shape,
             variables=variables,
             columns=[],
             code_error=None,
-            instantiation_error=instantiation_error,
+            instantiation_error=strategy_error,
             strategy_error=strategy_error,
             trained = False
         )
         return results
+
+    def _create_graph(self):
+        """ Creates the graph since it's needed as input for the training layer"""
+        try:
+            graph = graph_spec_to_core_graph(self._script_factory, self._graph_spec, preamble=self.PREAMBLE)
+        except Exception as e:
+            graph = None
+            logger.info("create graph step failed: " + repr(e))        
+        return graph
+
+    def _run_training_layer(self, graph, layer_spec, line_offset):
+        """ Run the training layer """
+        try:
+            training_layer = graph.active_training_node.layer
+            training_layer.init_layer(graph)
+            sample = training_layer.sample
+            variables = training_layer.variables.copy()
+        except Exception as e:
+            strategy_error = exception_to_error(layer_spec.id_, layer_spec.type_, e, line_offset=(line_offset + self.PREAMBLE_LINES))
+            sample = {'output': None}
+            shape = {'output': None}
+            variables = {}
+            logger.debug(f"Layer {layer_spec.id_} raised an error when initializing")
+        else:
+            strategy_error = None
+            shape = {name: np.atleast_1d(value).shape for name, value in sample.items()}    
+
+        return sample, shape, variables, strategy_error
 
             
 class DataSupervisedStrategy(BaseStrategy):
@@ -386,7 +433,7 @@ class LightweightCore:
             return BaseStrategy.get_default(code_error=code_error)
 
         layer_helper = LayerHelper(self._script_factory, layer_spec, graph_spec)
-        layer_code_offset = layer_helper.get_line_count(prepend_imports=True, layer_code=False) # Get length of imports                            
+        layer_code_offset = layer_helper.get_line_count(prepend_imports=True, layer_code=False) # Get length of imports
         try:
             layer_class = layer_helper.get_class()
         except Exception as e:
@@ -432,8 +479,10 @@ class LightweightCore:
             code = layer_helper.get_code(check_syntax=True)
         except SyntaxError as e:
             logger.exception(f"Layer {layer_spec.id_} raised an error when getting layer code")
-            layer_code_offset = layer_helper.get_line_count(prepend_imports=True, layer_code=False) # Get length of imports            
-            return None, exception_to_error(layer_spec.id_, layer_spec.type_, e, line_offset=layer_code_offset)
+            layer_code_offset = layer_helper.get_line_count(prepend_imports=True, layer_code=False) # Get length of imports
+            message = format_exception(e, adjust_by_offset=layer_code_offset)
+            error = UserlandError(layer_id, layer_spec.type_, e.lineno, message)
+            return None, error
         except Exception as e:
             logger.warning(f"{type(e).__name__}: {str(e)} | couldn't get code for {layer_spec.id_}. Treating it as not fully specified")
             if logger.isEnabledFor(logging.DEBUG):

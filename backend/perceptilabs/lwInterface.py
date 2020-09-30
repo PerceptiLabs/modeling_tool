@@ -177,7 +177,7 @@ class GetNetworkInputDim(LW_interface_base):
         layer_results = lw_results[layer_spec.id_]
         if layer_spec.should_show_errors and layer_results.has_errors:
             error_type, error_info = list(layer_results.errors)[-1] # Get the last error
-            content['Error'] = {'Message': error_info.message, 'Row': error_info.message}
+            content['Error'] = {'Message': error_info.message, 'Row': error_info.line_number}
         else:
             content['Error'] = None
 
@@ -250,7 +250,7 @@ class GetNetworkData(LW_interface_base):
         # Ignore errors for layers that are not fully configured
         if layer_spec.should_show_errors and layer_results.has_errors:
             error_type, error_info = list(layer_results.errors)[-1] # Get the last error
-            dim_content['Error'] = {'Message': error_info.message, 'Row': error_info.message}
+            dim_content['Error'] = {'Message': error_info.message, 'Row': error_info.line_number}
         else:
             dim_content['Error'] = None
 

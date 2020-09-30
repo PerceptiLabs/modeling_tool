@@ -83,12 +83,13 @@ def resolve_tf1x_stop_cond(specs):
     return stop_condition
 
 
-def graph_spec_to_core_graph(script_factory, graph_spec):
+def graph_spec_to_core_graph(script_factory, graph_spec, preamble=None):
     from perceptilabs.layers.helper import LayerHelper    
     from perceptilabs.core_new.graph.builder import GraphBuilder
-    
-    preamble  = 'import logging\n'
-    preamble += 'log = logging.getLogger(__name__)\n\n'
+
+    if preamble is None:
+        preamble  = 'import logging\n'
+        preamble += 'log = logging.getLogger(__name__)\n\n'
 
     code = {}
     layers = {}
@@ -110,5 +111,6 @@ def graph_spec_to_core_graph(script_factory, graph_spec):
 
     graph_builder = GraphBuilder()
     graph = graph_builder.build_from_layers_and_edges(layers, list(edges), connections=connections)
+
     return graph
 
