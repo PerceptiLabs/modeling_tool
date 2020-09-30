@@ -36,6 +36,11 @@ const state = {
     del: 0,
     esc: 0
   },
+  componentEvents: {
+    test: {
+      nextSampleClick: 0
+    }
+  },
   isEnableCustomHotKey: true
 };
 
@@ -57,6 +62,9 @@ const mutations = {
   },
   set_globalPressKey(state, path) {
     state.globalPressKey[path]++
+  },
+  set_componentEvent_test_nextSampleClick(state) {
+    state.componentEvents.test.nextSampleClick++;
   },
   set_enableCustomHotKey(state, value) {
     state.isEnableCustomHotKey = value
@@ -484,6 +492,9 @@ const actions = {
   },
   SET_enableCustomHotKey({commit}, val) {
     commit('set_enableCustomHotKey', val)
+  },
+  EVENT_componentEvent_test_nextSampleClick({commit}) {
+    commit('set_componentEvent_test_nextSampleClick');
   },
 };
 

@@ -68,6 +68,7 @@ const actions = {
             // clears the handle of the setInterval function
             // this value is used to determine if a new setInterval call should be made
             network.networkMeta.chartsRequest.timerID = null;
+            network.networkMeta.chartsRequest.waitGlobalEvent = false;
           }
         }
 

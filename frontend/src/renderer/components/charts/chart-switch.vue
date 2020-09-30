@@ -64,6 +64,10 @@
         default: false
       },
     },
+    created() {
+      this.imgType = '';
+      this.imgData = null;
+    },
     mounted() {
       if(this.chartData) {
         this.imgType = this.chartData.series[0].type;
@@ -115,11 +119,18 @@
       },
       viewType() {
         return this.$store.getters['mod_workspace/GET_viewType'];
-      }
+      },
+      nextSampleClicker() {
+        return this.$store.state.mod_events.componentEvents.test.nextSampleClick;
+      },
     },
     watch: {
-      statusNetworkCore(newVal) {
-        //console.log(newVal)
+      nextSampleClicker: {
+        handler() {
+          this.imgType = '';
+          this.imgData = null;
+          this.showRequestSpinner = true;
+        }
       },
       chartData(newVal) {
         if(newVal) {

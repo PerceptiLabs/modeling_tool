@@ -66,6 +66,10 @@ export default {
       this.$store.dispatch('mod_api/API_postTestPlay');
     },
     postTestMove(request) {
+      // This request sets the spinner going
+      this.$store.dispatch('mod_events/EVENT_componentEvent_test_nextSampleClick');
+
+      // Fetches chart data and turns spinner off
       this.$store.dispatch('mod_api/API_postTestMove', request);
     },
     getStatus() {
