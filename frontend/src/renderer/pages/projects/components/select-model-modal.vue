@@ -108,31 +108,31 @@ export default {
                 title: 'Image Classification CNN',
                 imgPath: './static/img/project-page/classification.png',
                 template: imageClassification,
-                description: 'This is a simple image classification template, perfect for datasets such as Mnist. The standard dataset included with this template is a Mnist dataset where the input is an array of 784 grayscale pixel values and there are 10 unique label values (integers 0-9). The model consists of a reshaping component, a convolutional layer as well as a fully connected output layer with 10 neurons. Because of the reshaping component it requries the input data to be 784 or a form thereof (28x28 for example). The labels have to be an integer ranging from 0 to 9 to be compatable with the one hot encoding being applied to the labels.'
+                description: 'This is a simple image classification template, perfect for datasets such as MNIST. The standard dataset included with this template is an MNIST dataset where the input is an array of 784 grayscale pixel values and 10 unique label values (integers 0-9). The model consists of a reshaping component, a convolutional layer, and a fully connected output layer with 10 neurons. Because of the reshaping component it requries the input data to be 784 or a form thereof (28x28, for example). The labels must be integers ranging from 0 to 9 to be compatible with the one hot encoding that is applied to the labels.'
             },
             {
                 title: 'Linear Regression',
                 imgPath: './static/img/project-page/linear-regression.png',
                 template: linearRegression,
-                description: `This is a template for linear regression, where it tries to create a line of best fit for the datapoints you load. The standard dataset is a one dimensional input value and one dimensional labels. The input data can be multidimensional, but our visualizations only allow for one dimensional data at the moment. The labels data can only be one dimensional as they represent the value of the input data. The model is built as a single fully connected layer with one neuron as output.`
+                description: `This is a template for linear regression, where it tries to create a line of best fit for the datapoints you load. The standard dataset is a one-dimensional input value and one-dimensional labels. The input data can be multidimensional, but our visualizations will display the data in one dimension. The labels data must be one-dimensional as they represent the value of the input data. The model is built as a single fully connected layer with one neuron as output.`
             },
             {
                 title: 'DQN',
                 imgPath: './static/img/project-page/reinforcement-learning.png',
                 template: reinforcementLearning,
-                description: `The is a template for Reinforcement Learning consisting of one grayscale component, one convolutional layer and one fully connected layer as output. This template uses Q learning on Atari Gym games, where it is set up to play breakout. To play another game, make sure that you change the neurons from the fully connected layer to match the number of possible actions in the actionspace, which you can see in the Environment component.`
+                description: `This is a template for Reinforcement Learning consisting of one grayscale component, one convolutional layer and one fully connected layer as output. This template uses Q learning on Atari Gym games, where it is set up to play breakout. To play another game, you will change the neurons in the fully connected layer to match the number of possible actions in the actionspace, which you can see in the Environment component.`
             },
             {
                 title: 'YOLO V1',
                 imgPath: './static/img/project-page/object-detection.png',
                 template: objectDetection,
-                description: `This is a template of the Object Detection model YOLO. It trains on a custom built dataset containing different shapes as standard. Since it consists of only convolutional layers, any input data will work to train on, just make sure that the label data matches the input data properly.`
+                description: `This is a template of the Object Detection model YOLO. It trains on a custom-built dataset containing different shapes as standard. Since it consists of only convolutional layers, any input data will work to train on, as long as the label data matches the input data.`
             },
             {
                 title: 'GAN',
                 imgPath: './static/img/project-page/GAN.png',
                 template: ganTemplate,
-                description: `This is a template for a Generative Adversarial Network (GAN) where it trains on the Mnist data as a standard. The model consists of a generative network and a discriminative network, as well as a switch layer layer which switches between the generated image and real image.`
+                description: `This is a template for a Generative Adversarial Network (GAN) where it trains on the MNIST data as a standard. The model consists of a generative network and a discriminative network, as well as a switch layer which switches between the generated image and real image.`
             },
             ],
             chosenTemplate: null,
@@ -230,14 +230,14 @@ export default {
             const rootPath = await fileserver_getRootFolder();
             const modelNames = modelMeta.map(x => x.name);
             if(modelNames.indexOf(modelName) !== -1) {
-                this.showErrorPopup(`The name of model "${modelName}" already exists.`);
+                this.showErrorPopup(`The model name "${modelName}" already exists.`);
                 this.setCurrentView('tutorial-model-hub-view');
                 return;
             }
             
             const dirAlreadyExist = await fileserver_doesDirExist(`${this.modelPath}/${modelName}`);
             if(dirAlreadyExist) {
-                this.showErrorPopup(`The "${modelName}" folder already exists in "${this.modelPath}" location.`);
+                this.showErrorPopup(`The "${modelName}" folder already exists at "${this.modelPath}".`);
                 this.setCurrentView('tutorial-model-hub-view');
                 return;
             }

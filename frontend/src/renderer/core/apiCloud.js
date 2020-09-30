@@ -71,7 +71,7 @@ function CloudAPI_updateToken() {
     .catch((error)=> {
       if(isElectron()) {
         store.dispatch('mod_events/EVENT_logOut', false, {root: true});
-        store.dispatch('globalView/GP_errorPopup', 'You have not worked with the application for a long time. Please login');
+        store.dispatch('globalView/GP_errorPopup', 'Your session has ended. Please login again.');
       }
       console.log(error);
     })

@@ -91,7 +91,7 @@ const actions = {
 
         // checking and break if model location already exist in current project
         if(projectModelsPaths.indexOf(model.apiMeta.location) !== -1 && !(currentNetworkId === model.networkID)) {
-          dispatch('globalView/GP_errorPopup', `Chosen model is already in project`, {root: true});
+          dispatch('globalView/GP_errorPopup', `The chosen model is already in the project`, {root: true});
           return;
         }
         
@@ -172,7 +172,7 @@ const actions = {
         dispatch('mod_project/getProjects', null , {root: true});
       }).catch(err => {
         console.log(err);
-        dispatch('globalView/GP_infoPopup', 'Fetching went wrong', {root: true});
+        dispatch('globalView/GP_infoPopup', 'Fetching failed', {root: true});
         return;
       });
 

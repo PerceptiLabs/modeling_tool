@@ -1076,9 +1076,9 @@ const mutations = {
     const endEl = currentElement(endObject.layerId);
 
 
-    // check if already have connection
+    // check if input already has connection
     if(endEl.inputs[endObject.inputDotId].reference_layer_id !== null) {
-      dispatch('globalView/GP_infoPopup', 'Input already have connection!', {root: true});
+      dispatch('globalView/GP_infoPopup', 'This input already has a connection!', {root: true});
       return;
     }
 
@@ -1267,7 +1267,7 @@ const mutations = {
     /* validations */
     if(arrSelect.length === 0) isValid = false;
     if(arrSelect.length === 1) {
-      dispatch('globalView/GP_infoPopup', 'At least 2 elements are needed to create a group', {root: true});
+      dispatch('globalView/GP_infoPopup', 'At least two elements are needed to create a group', {root: true});
       isValid = false;
     }
     if(!isValid) {
@@ -1281,7 +1281,7 @@ const mutations = {
     if(selectedItemsParentContainerId) {
       if(arrSelect[0].parentContainerID !== undefined) {
         if(Object.keys(elementList[arrSelect[0].parentContainerID].containerLayersList).length === arrSelect.length) {
-          dispatch('globalView/GP_infoPopup', 'All items inside a group can\'t be grouped', {root: true});
+          dispatch('globalView/GP_infoPopup', 'Not all items inside a group can be grouped', {root: true});
           dispatch('SET_elementUnselect');
           return;
         }

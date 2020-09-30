@@ -82,7 +82,7 @@ export default {
        
        if(isFolderAlreadyExist) {
           this.$store.dispatch('globalView/GP_confirmPopup', {
-            text: 'File already exists, are you sure want to overwrite it?',
+            text: 'That file already exists. Are you sure you want to overwrite it?',
             ok: () => {
               exportData.call(this, this.settings)
             }

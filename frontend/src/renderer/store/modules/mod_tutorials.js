@@ -58,7 +58,7 @@ const state = {
       steps: [
         {
           stepCode: 'tutorial-model-hub-new-button',
-          displayText: 'Get started by first creating a model.',
+          displayText: 'Get started by creating a model.',
           arrowDirection: 'left'
         },
         {
@@ -117,7 +117,7 @@ const state = {
       steps: [
         {
           stepCode: 'tutorial-workspace-layer-menu',
-          displayText: 'You build out your model by combining components, you can find the components in these categories.',
+          displayText: 'You build out your model by combining components. You can find the components in these categories.',
           arrowDirection: 'left'
         },
         {
@@ -130,7 +130,7 @@ const state = {
         },
         {
           stepCode: 'tutorial-workspace-settings',
-          displayText: 'Here you can modify your component, if something is missing you can press <strong>Open Code</strong> to custom edit the component.',
+          displayText: 'Here you can modify your component. If something is missing you can press <strong>Open Code</strong> to custom-edit the component.',
           overrideActions: {
             setup: 'tutorial-workspace-settings-setup',
           }
@@ -142,12 +142,12 @@ const state = {
         },
         {
           stepCode: 'tutorial-workspace-notebook-view-toggle',
-          displayText: 'Toggle notebook view to see your model in a jupyter notebook format.',
+          displayText: 'Toggle notebook view to see your model in a Jupyter notebook format.',
           arrowDirection: 'right'
         },
         {
           stepCode: 'tutorial-workspace-start-training',
-          displayText: 'When you are happy with your model, press Run to start training it.',
+          displayText: 'When you are happy with your model press Run to start training it.',
           arrowDirection: 'left'
         },
         {

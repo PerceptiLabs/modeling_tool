@@ -216,7 +216,7 @@ export default {
       interactiveInfo: {
         labels: {
           title: 'Labels',
-          text: 'Choose which input connection is represent the labels'
+          text: 'Choose which input connection represents the labels'
         },
         epochs: {
           title: 'epochs',

@@ -4,29 +4,6 @@
       :class="{'tutorial-active': activeStepStoryboard === 4}"
       v-if="!statisticsIsOpen && !testIsOpen")
 
-      //- ul.toolbar_list
-      //-   li
-      //-     button#tutorial_pointer.btn.btn--toolbar(type="button"
-      //-       :disabled="!networkIsOpen"
-      //-       :class="{'active': networkMode === 'edit'}"
-      //-       v-tooltip:bottom="'Edit'"
-      //-       v-tooltip-interactive:bottom-right="interactiveInfo.edit"
-      //-       @click="setNetMode('edit', 'tutorial_pointer')"
-      //-     )
-      //-       i.icon.icon-select
-
-      //-   li.toolbar_list-arrow-wrap(
-      //-     :class="{'disable-hover': statisticsIsOpen}"
-      //-   )
-      //-     button#tutorial_list-arrow.btn.btn--toolbar(type="button"
-      //-       :disabled="!networkIsOpen"
-      //-       :class="{'active': networkMode === 'addArrow'}"
-      //-       @click="setNetMode('addArrow', 'tutorial_list-arrow')"
-      //-       v-tooltip:bottom="'Arrow'"
-      //-       v-tooltip-interactive:bottom="interactiveInfo.arrow"
-      //-     )
-      //-       i.icon.icon-arrow-left
-
       ul.toolbar_list
         li
           button.btn.btn--toolbar(type="button"
@@ -64,29 +41,7 @@
             @click="toModelStatistic"
           )
             | Go to statistics
-        //- li
-        //-   button#tutorial_pause-training.btn.btn--toolbar.tutorial-relative(type="button"
-        //-     :class="{'active': statusNetworkCore === 'Paused'}"
-        //-     :disabled="!isTraining"
-        //-     v-tooltip:bottom="'Pause'"
-        //-     v-tooltip-interactive:bottom="interactiveInfo.pause"
-        //-     @click="trainPause"
-        //-   )
-        //-     i.icon.icon-pause
-        //- li
-        //-   button.btn.btn--toolbar(type="button"
-        //-     :disabled="statusNetworkCore !== 'Validation'"
-        //-     v-tooltip:bottom="'Skip'"
-        //-     v-tooltip-interactive:bottom="interactiveInfo.skip"
-        //-     @click="skipValid"
-        //-   )
-        //-     i.icon.icon-next
-      //- ul.toolbar_list
-      //-   li
-      //-     input.search-bar(
-      //-       placeholder="Search operation"
-      //-     )
-     
+
       //ul.toolbar_list
         li
           button.btn.btn--toolbar(type="button"
@@ -148,16 +103,6 @@
         )
           span Notebook
       
-        //- tutorial-instructions(
-        //-   ref="tutorialComponent"
-        //-   v-tooltip-interactive:bottom="interactiveInfo.tutorial")
-        //-   button.btn.btn--dark.btn--toolbar-settings(type="button"
-        //-     @click="switchTutorialMode"
-        //-     :class="{'active': isTutorialMode}"
-        //-   )
-        //-     span Tutorial
-        //-     .ring-icon
-
         sidebar-toggle-button
     .layers-toolbar(v-if="!statisticsIsOpen && !testIsOpen")
       layers-toolbar

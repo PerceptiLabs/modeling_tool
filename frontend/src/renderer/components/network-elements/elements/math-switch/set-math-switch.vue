@@ -53,7 +53,7 @@ export default {
       interactiveInfo: {
         selected_layer: {
           title: 'Selected Layer',
-          text: 'Choose which input connection is represent the selected layer'
+          text: 'Choose which input connection represents the selected layer'
         },
       }
     }

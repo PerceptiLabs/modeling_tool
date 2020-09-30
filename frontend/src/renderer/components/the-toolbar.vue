@@ -144,7 +144,7 @@ export default {
       x: null,
       y: null,
       interactiveInfo: {
-        edit:     {title: 'Edit',     text: `Use this to being able to drag & ,<br/> drop, select, edit, etc`},
+        edit:     {title: 'Edit',     text: `Use this to drag & drop,<br/> select, edit, etc.`},
         arrow:    {title: 'Arrow',    text: `Use this to connect the <br/>layers and define the dataflow`},
         undo:     {title: 'Undo',     text: `Use this to connect the <br/>Undo`},
         redo:     {title: 'Redo',     text: `Redo`},
@@ -153,7 +153,7 @@ export default {
         skip:     {title: 'Skip',     text: `Skip validation`},
         hyperparameters: {title: 'Generate Hyperparameters',text: `Auto-generate the hyperparameters`},
         blackBox: {title: 'BlackBox', text: `Load the data and let our algorithm </br> build a model for you and train it`},
-        interactiveDoc: {title: 'Interactive documentation', text: `Use this to find out what all </br> different operations and functions do`},
+        interactiveDoc: {title: 'Interactive documentation', text: `Use this to see what all </br> operations and functions do`},
         tutorial: {title: 'Tutorial', text: `Choose an interactive tutorial`}
       }
     }
@@ -323,7 +323,7 @@ export default {
         deepLearnIncluded = net.find(element => deepLearnElements.includes(element.componentName));
       }
       if(deepLearnIncluded === undefined) {
-        this.showInfoPopup('If you use the Training elements, you must use the Deep Learn elements');
+        this.showInfoPopup('If you use the Training elements you must use the Deep Learning elements');
         return false
       }
 

@@ -64,7 +64,7 @@ const filePCSave = function (fileName, fileContent) {
   return new Promise((success, reject) => {
     fs.writeFile(fileName, fileContent, (err, data) => {
       if(err) {
-        store.dispatch('globalView/GP_errorPopup', `An error occurred creating the file ${err.message}`);
+        store.dispatch('globalView/GP_errorPopup', `An error occurred while creating the file: ${err.message}`);
         return reject(err);
       }
       else return success(fileName)

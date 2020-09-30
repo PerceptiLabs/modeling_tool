@@ -147,7 +147,7 @@ const actions = {
   prepareDefaultProjectDirectory(ctx) {
     return fileserver_createFolder('~/Documents/Perceptilabs/Default')
       .then(createFolderRes => {
-        if (!createFolderRes) { throw new Error('Problem creating project directory'); }
+        if (!createFolderRes) { throw new Error('Problem while creating project directory'); }
 
         let createProjectReq = {
           name: 'Default',

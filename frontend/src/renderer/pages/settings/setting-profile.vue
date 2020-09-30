@@ -163,8 +163,8 @@ export default {
           this.password.newPassword = '';
           this.password.newPasswordConfirmation = '';
           this.handleDisplayPasswordModal(false);
-          this.showInfoPopup('A new password has been changed');
-          return 'A new password has been changed'
+          this.showInfoPopup('Your password has been changed');
+          return 'Your password has been changed'
         })
     },
     handleSaveProfile(){
@@ -173,7 +173,7 @@ export default {
           if(isValid) {
             this.cloud_userSetProfile(this.user)
               .then(res => {
-                this.showInfoPopup('User names has been changed');
+                this.showInfoPopup('Your user name has been changed');
               })
           }
         });

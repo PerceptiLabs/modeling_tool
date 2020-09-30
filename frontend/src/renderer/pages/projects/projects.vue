@@ -599,7 +599,7 @@
               this.SET_openTest(false);
             });
         } else {
-          this.showInfoPopup("The model does not have any statistics, you should run this model first");
+          this.showInfoPopup("The model does not have any statistics. Run this model to generate statistics.");
         }
       },
       openContext(e, modelIndex) {
@@ -643,7 +643,7 @@
         }
 
         this.popupConfirm({
-            text: `Are you sure you want to remove ${model.name} from Model Hub since it no longer is connected to Project?`,
+            text: `Are you sure you want to remove ${model.name} from Model Hub since it is no longer connected to the Project?`,
             ok: () => {
               this.$store.dispatch('mod_project/deleteModel', model)
                 .then((serverResponse) => {

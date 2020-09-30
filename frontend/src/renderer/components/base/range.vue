@@ -470,7 +470,7 @@
         if (this.data) {
           return this.data.length - 1
         } else if (Math.floor((this.maximum - this.minimum) * this.multiple) % (this.interval * this.multiple) !== 0) {
-          this.printError('Prop[interval] is illegal, Please make sure that the interval can be divisible')
+          this.printError('Prop[interval] is invalid. Please make sure that the interval is divisible')
         }
         return (this.maximum - this.minimum) / this.interval
       },
@@ -1102,7 +1102,7 @@
       this.isComponentExists = true;
 
       if (typeof window === 'undefined' || typeof document === 'undefined') {
-        return this.printError('window or document is undefined, can not be initialization.')
+        return this.printError('The window or document is undefined and can not be initialized.')
       }
 
       this.$nextTick(() => {

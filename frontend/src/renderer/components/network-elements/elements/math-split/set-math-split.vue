@@ -46,7 +46,7 @@ export default {
         },
         splitOn: {
           title: 'Split on',
-          text: 'Choose in which position to split on at the chosen axis'
+          text: 'Choose where to split on the chosen axis'
         },
       }
     }
