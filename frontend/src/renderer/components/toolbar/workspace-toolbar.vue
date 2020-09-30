@@ -89,20 +89,12 @@
         
         button.button-model-type.ml-0(
           type="button"
-          :class="{'active': modelWeightsActive, 'disabled': !networkHasCheckpoint}"
-          @click="toggleModelWeights"
-        )
-          span Weights
-          .ring-icon
-        button.btn.btn--dark.btn--toolbar-settings(
-          type="button"
           :class="{'active': isNotebookMode}"
           @click="switchNotebookMode(true)"
           v-tooltip-interactive:bottom="interactiveInfo.interactiveDoc"
           :data-tutorial-target="'tutorial-workspace-notebook-view-toggle'"          
         )
           span Notebook
-      
         sidebar-toggle-button
     .layers-toolbar(v-if="!statisticsIsOpen && !testIsOpen")
       layers-toolbar
