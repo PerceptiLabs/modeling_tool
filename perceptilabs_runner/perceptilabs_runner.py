@@ -190,7 +190,7 @@ def start(verbosity):
         check_for_git()
         pipes = get_pipes(verbosity)
         do_migration(pipes)
-        api_token = secrets.token_urlsafe(nbytes=64)
+        api_token = secrets.token_urlsafe()
         procs = list([start_one(cmd, pipes, api_token) for cmd in SERVICE_CMDS])
         print(f"{bcolors.PERCEPTILABS}PerceptiLabs:{bcolors.ENDC} Starting")
         PortPoller.wait_for_ports()
