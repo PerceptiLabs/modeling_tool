@@ -164,6 +164,14 @@ export default {
   line-height: 15px;
   color: #B6C7FB;
 
+  &:hover {
+    background: #6185EE;
+    border-color: #6185EE;
+    color: #fff;
+  }
+  &:active:hover {
+    background: #7397FE;
+  }
 }
 .setting-values-wrapper {
   // padding: 10px 15px;

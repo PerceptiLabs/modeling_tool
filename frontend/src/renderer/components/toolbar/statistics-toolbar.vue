@@ -241,6 +241,9 @@ export default {
     border-color: #6185EE;
     color: white;
   }
+  &:active:hover {
+    background: #7397FE;
+  }
 }
 .btn-menu-bar {
   padding: 5px 5px;

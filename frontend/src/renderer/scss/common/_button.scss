@@ -273,10 +273,16 @@
     border-color: #6185EE;
     color: #fff;
   }
+  &:active:hover {
+    background: #7397FE;
+  }
   &.active {
     background-color: #2A2F3A;
     &:hover {
       background-color: #6185EE;
+    }
+    &:active:hover {
+      background: #7397FE;
     }
   }
   &.disabled {
