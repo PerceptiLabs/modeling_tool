@@ -5,6 +5,7 @@
     template(v-if="isForm")
       template(slot="Report to PerceptiLabs-content")
         .popup-body-section
+          view-loading(:isLoading="isRequesting")
           .section-header
             i.icon.icon-bug-report.section-header-icon 
             .section-header-label Report a bug
@@ -69,10 +70,11 @@
 <script>
   import BaseGlobalPopup  from "@/components/global-popups/base-global-popup";
   import { createIssueInGithub } from '@/core/apiFileserver';
+  import ViewLoading from '@/components/different/view-loading.vue'
 
   export default {
     name: "CreateIssuesPopup",
-    components: {BaseGlobalPopup},
+    components: { BaseGlobalPopup, ViewLoading },
     props: {
       confirmCallback: {
         type: Function,
@@ -86,13 +88,14 @@
     data() {
       return {
         isForm: true,
-        issueTitle: '',      
+        issueTitle: '',
         issueBody: '',
         issueType: 'anonymous',
         popupTitle: ['Report to PerceptiLabs'],
         forumLink: 'http://forum.perceptilabs.com',
         gitHubIssuesUrl: 'https://github.com/PerceptiLabs/PerceptiLabs/issues/',
-        gitHubIssueNumber: ''
+        gitHubIssueNumber: '',
+        isRequesting: false,
       }
     },
     methods: {
@@ -106,6 +109,7 @@
         };
 
         if (this.issueTitle && this.issueBody) {
+          this.isRequesting = true
           createIssueInGithub(requestPayload)
             .then(res => {
               if (!res.data) { return; }
@@ -115,7 +119,7 @@
               this.issueTitle = '';
               this.issueBody = '';
               this.isForm = false;
-            });            
+            }).finally(() => this.isRequesting = false);
         } else {
           if (this.$refs['issueTitle']) {
             this.$refs['issueTitle'].classList.add('has-error');

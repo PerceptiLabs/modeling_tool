@@ -8,7 +8,9 @@
             h3 Result
         .popup_body
           .settings-layer_section
-            .body_results-info.d-flex
+            .chart-spinner-wrapper(v-if="isLoading")
+              chart-spinner
+            .body_results-info.d-flex(v-else)
               .column-item(v-for="(columData, index) in popupInfo")
                 p.header {{Object.keys(columData)[0]}}
                 .lists(v-for="lists in columData")
@@ -26,8 +28,11 @@
 
 <script>
 import { mapState, mapActions } from 'vuex';
+import ChartSpinner     from '@/components/charts/chart-spinner'
+
 export default {
   name: "GeneralResult",
+  components: { ChartSpinner },
   mounted() {
     this.$store.dispatch('mod_api/API_getResultInfo')
       .then((data)=> {
@@ -35,12 +40,13 @@ export default {
         // TOREMOVE
         delete data['consoleLogs']
         this.popupInfo = {...data};
-      });
+      }).finally(()=> { this.isLoading = false });
   },
   data() {
     return {
       popupInfo: {
-      }
+      },
+      isLoading: true,
     }
   },
   methods: {
@@ -119,6 +125,13 @@ export default {
     }
     .results-info--validation {
       margin-right: 1rem;
+    }
+  }
+  .chart-spinner-wrapper {
+    position: relative;
+    min-height: 100px;
+    .chart-spinner-box {
+      background: transparent;
     }
   }
 </style>
