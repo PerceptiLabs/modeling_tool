@@ -22,10 +22,10 @@
         )
           i.icon.icon-stop2
 
-        button.btn-menu-bar(
-          @click="onSkipClick"
-        )
-          i.icon.icon-player-next
+        // button.btn-menu-bar(
+        //   @click="onSkipClick"
+        // )
+        //   i.icon.icon-player-next
 
     .toolbar-section
       model-status(
