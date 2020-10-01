@@ -4,7 +4,6 @@
 			.row 
 				img.img-folder(src="static/img/model-empty.png")
 			.row
-				h3 OOPS!
 				p.description(
 					v-if="getModelCount===0"
 					) It appears you have not built any models. <br/> Create a model to begin.
@@ -29,16 +28,19 @@
 			.row 
 				img.img-folder(src="static/img/stats-empty.png")
 			.row
-				h3 OOPS!
 				p.description(
 					v-if="getModelCount===0"
 					) It appears you have not built any models. <br/> Create a model to begin.
 				p.description(
 					v-if="getModelCount>0 && getAvailableStats.length===0"
-					)   It appears you have not run any models. Run a model <br/>from Modeling Tool or Model Hub to view statistics.<br/><br/>Note: only statistics from your current session is available.
+					)   It appears you have not run any models. Run a model <br/>from Modeling Tool or Model Hub to view statistics.<br/><br/>
+					img.info-image(src="static/img/info.png")
+					span.fz-14 Only statistics from your current session is available.
 				p.description(
 					v-if="getModelCount>0 && getAvailableStats.length>0"
-					)   It appears you do not have any statistics open.<br/>Note: only statistics from your current session is available.<br/><br/>Following models can be opened:
+					)   It appears you do not have any statistics open.<br/>
+					img.info-image(src="static/img/info.png")
+					span.fz-14 Only statistics from your current session is available.<br/><br/>Following models can be opened:
 				ul(v-if="getAvailableStats.length>0")
 					.header Recently Opened
 					li(
@@ -64,7 +66,6 @@
 			.row 
 				img.img-folder(src="static/img/test-empty.png")
 			.row
-				h3 OOPS!
 				p.description(
 					v-if="getModelCount===0"
 					) It appears you have not built any models. <br/> Create a model to begin.
@@ -216,15 +217,7 @@ export default {
                 }
             }
         }
-
-        h3 {
-            font-family: Nunito Sans;
-            font-weight: 600;
-            font-size: 36px;
-            line-height: 49px;
-            margin-bottom: 12px;
-        }
-
+				
         p {
             font-family: Nunito Sans;
             font-style: normal;
@@ -250,7 +243,7 @@ export default {
             color: #B6C7FB;
             margin-right: 10px;
             padding: 10px;
-            box-shadow: 0px 3px rgba(0,0,0,0.3);
+            // box-shadow: 0px 3px rgba(0,0,0,0.3);
 
             &:hover {
                 background-color: #6185EE;
@@ -287,4 +280,12 @@ export default {
             }
         }
     }
+		.info-image {
+			margin-right: 10px !important;
+			vertical-align: top;
+   		margin-top: 2px;
+		}
+		.fz-14 {
+			font-size: 14px;
+		}
 </style>
