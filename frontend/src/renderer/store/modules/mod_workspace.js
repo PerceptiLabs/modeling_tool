@@ -2059,8 +2059,15 @@ const actions = {
     delete currentNetwork.updated;
     dispatch("mod_project/updateModel", currentNetwork, {root: true});
   },
-  SET_networkLocation({commit, getters}, value) {
-    commit('set_model_location', { location: value, getters })
+  SET_networkLocation({commit, getters, dispatch}, value) {
+    commit('set_model_location', { location: value, getters });
+    let currentNetwork = JSON.parse(JSON.stringify(getters.GET_currentNetwork.apiMeta));
+    currentNetwork.location = value;
+    delete currentNetwork.saved_by;
+    delete currentNetwork.saved_version_location;
+    delete currentNetwork.created;
+    delete currentNetwork.updated;
+    dispatch("mod_project/updateModel", currentNetwork, {root: true});
   },
   SET_networkRootFolder({commit, getters}, value) {
     commit('set_networkRootFolder', {getters, value})

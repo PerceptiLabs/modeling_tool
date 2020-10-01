@@ -12,22 +12,14 @@
               :class="{'bg-error': !settings.networkName}"
             )
       .settings-layer_section(v-if="!popupSettings.isFreezeInfo")
-        .form_row
+        .form_holder
           .form_label Model path:
-          .form_input
-            input.ellipsis(type="text"
-              v-model="settings.networkPath"
-              :class="{'bg-error': !settings.networkPath}"
-              @click="openFilePicker"
+          .form_row
+            input.ellipsis.form_input(type="text"
+            v-model="settings.networkPath"
+            :class="{'bg-error': !settings.networkPath}"
             )
-      //- .settings-layer_section
-      //-   .form_row
-      //-     .form_label Save settings:
-      //-     .form_input
-      //-       base-radio(group-name="group" :value-input="false" v-model="settings.isSaveTrainedModel")
-      //-         span Save model
-      //-       base-radio(group-name="group" :value-input="true" v-model="settings.isSaveTrainedModel" :disabled="!existTrained")
-      //-         span Save trained model
+            button.btn.btn--dark-blue-rev(type="button" @click="openFilePicker") Browse
 
     template(slot="action")
       button.btn.btn--primary.btn--disabled(type="button"

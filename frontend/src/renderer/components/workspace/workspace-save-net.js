@@ -130,46 +130,37 @@ const workspaceSaveNet = {
 
       const pathSaveProject = netInfo.networkPath;
 
+
       let prepareNet = cloneNet(cloneDeep(currentNet), newProjectId, netInfo);
       /*check Is Trained Net + do ScreenShot*/
       doScreenShot(networkField)
         .then((img)=> {
           prepareNet.toLocal.image = img;
-          if(netInfo.isSaveTrainedModel) {
-            /*core save*/
-            prepareNet.toLocal.isTrained = true;
 
-            return this.saveTrainedNetwork({
-              'Location': [pathSaveProject],
-              'frontendNetwork': prepareNet.toFile,
-              'networkName': this.currentNetwork.networkName
-            }).catch(() => Promise.reject())
+          if(prepareNet.toFile.apiMeta.location !== prepareNet.toLocal.pathProject || 
+            prepareNet.toFile.apiMeta.name !== prepareNet.toLocal.name) {
+            this.$store.dispatch('mod_workspace/SET_networkLocation', prepareNet.toLocal.pathProject); // change new location in vuex
+            this.$store.dispatch('mod_workspace/SET_networkName', prepareNet.toLocal.name); // change new location in vuex
           }
-          else {
-            /*app save*/
-            const payload = {
-              path: prepareNet.toLocal.pathProject
-            };
-            const networkJson = cloneDeep(this.currentNetwork)
-            const healthNetworkElementList = {};
-            Object.keys(networkJson.networkElementList).map(key => {
-              const el = networkJson.networkElementList[key];
-              healthNetworkElementList[key] = {
-                ...el,
-                chartData: {}
-              }
-            })
-            const healthNetworkJson = {
-              ...networkJson,
-              networkElementList: healthNetworkElementList
+
+          const networkJson = cloneDeep(this.currentNetwork)
+          const healthNetworkElementList = {};
+          Object.keys(networkJson.networkElementList).map(key => {
+            const el = networkJson.networkElementList[key];
+            healthNetworkElementList[key] = {
+              ...el,
+              chartData: {}
             }
-            return fileserver_saveModelJson(healthNetworkJson)
-              .catch((e) => {
-                console.log(e)
-                Promise.reject(e)
-              });
-
+          })
+          const healthNetworkJson = {
+            ...networkJson,
+            networkElementList: healthNetworkElementList
           }
+          return fileserver_saveModelJson(healthNetworkJson)
+            .catch((e) => {
+              console.log(e)
+              Promise.reject(e)
+            });
         })
         .then(()=> {
           // Update the model in the webstorage too.
@@ -182,11 +173,6 @@ const workspaceSaveNet = {
           this.$store.dispatch('mod_project/patchModel', { model_id: currentNet.apiMeta.model_id, updated: savedTime});
 
           /*save project to project page*/
-          if(prepareNet.toFile.apiMeta.location !== prepareNet.toLocal.pathProject || 
-            prepareNet.toFile.apiMeta.name !== prepareNet.toLocal.name) {
-            this.$store.dispatch('mod_workspace/SET_networkLocation', prepareNet.toLocal.pathProject); // change new location in vuex
-            this.$store.dispatch('mod_workspace/SET_networkName', prepareNet.toLocal.name); // change new location in vuex
-          }
           if(saveProjectPath) this.set_networkRootFolder(pathSaveProject);
           this.trackerModelSave(prepareNet.toFile);
           this.updateUnsavedChanges({
