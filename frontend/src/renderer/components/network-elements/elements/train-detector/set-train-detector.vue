@@ -116,6 +116,7 @@
               @focus="setIsSettingInputFocused(true)"
               @blur="setIsSettingInputFocused(false)")
  
+        .form_row
           .form_label Decay rate:
           .form_input
             input(

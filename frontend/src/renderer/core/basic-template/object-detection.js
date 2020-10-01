@@ -1016,7 +1016,14 @@ const objectDetection = {
             "Class_weights": 1,
             "Use_CPU": true,
             "Stop_Target_Accuracy": 0,
-            "Stop_condition": "Epochs"
+            "Stop_condition": "Epochs",
+            "grid_size": '7',
+            "threshold": '0.8',
+            "lambda_class": '0.5',
+            "lambda_noobj": '0.1',
+            "num_box": '2',
+            "N_class": '1',
+            "Training_iters": "20000"
           },
           "layerSettingsTabName": "Settings",
           "layerCode": null,
