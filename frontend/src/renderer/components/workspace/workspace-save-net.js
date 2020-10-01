@@ -221,6 +221,7 @@ const workspaceSaveNet = {
       }
 
       function saveProjectToLocalStore(project, ctx) {
+        if (!ctx.getLocalUserInfo) { return; }
         let projectsLocalList = cloneDeep(ctx.getLocalUserInfo.projectsList);
 
         if(projectsLocalList.length) {
