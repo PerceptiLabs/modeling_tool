@@ -49,7 +49,7 @@ import BaseAccordion    from "@/components/base/accordion.vue"
 import ViewLoading from '@/components/different/view-loading.vue'
 import axios from 'axios'
 
-import { exportAsGithubRepository } from '@/core/apiFileserver';
+import { exportAsGithubRepository as fileserver_exportAsGithubRepository } from '@/core/apiFileserver';
 
 export default {
   name: "ExportNetworkGitHub",
@@ -124,12 +124,15 @@ export default {
         commit_message: 'Perceptilabs commit message'
       }
       this.isLoading = true;
-      exportAsGithubRepository(reqData)
-        .then(res => {
+      fileserver_exportAsGithubRepository(reqData)
+        .then(url => {
           const haveRepoNameSpaces = this.settings.name.indexOf(' ') !== -1;
-          this.$store.dispatch('globalView/GP_infoPopup',`The model was exported successfully to: ${res.data.URL} ${haveRepoNameSpaces ? `<br/>Spaces in the model name will be replaced with dashes`: ''}`)
+          this.$store.dispatch('globalView/GP_infoPopup',`The model was exported successfully to: ${url} ${haveRepoNameSpaces ? `<br/>Spaces in the model name will be replaced with dashes`: ''}`)
         }).catch(err => {
-          this.$store.dispatch('globalView/GP_infoPopup',`Fail on export`)
+            const msg = (!!err.userMessage) ?
+            `Exporting failed. <br />${err.userMessage}`:
+            `Exporting failed.`
+            this.$store.dispatch('globalView/GP_errorPopup', msg)
         }).finally(() => this.isLoading = false)
     },
    }

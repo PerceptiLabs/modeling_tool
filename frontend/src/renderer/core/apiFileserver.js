@@ -48,20 +48,36 @@ export const fileserverAvailability = () => {
     return (res.status === 200) ? "AVAILABLE" : "UNAVAILABLE"
   })
   .catch(err => {
+    if (!!err.response.data){ console.log(err.response.data) }
     return (err.response && err.response.status === 400)? "BAD_TOKEN" : "UNAVAILABLE"
   })
+}
+
+// fileserver sends back 422 when it's a user error and the body contains the user-visible error message
+function handle422(promise) {
+  return promise
+    .catch(err => {
+      console.log("in catch")
+      console.log(err.response.status)
+
+      let newErr = (err.response.status === 422) ? {userMessage: err.response.data} : {};
+      console.log(newErr)
+      throw newErr
+    })
 }
 
 export const importRepositoryFromGithub = (data) => {
   pullTokenFromEnv();
   const queryParams = objectToQueryParams(data);
-  return fileServerHttpReqest.post(`/github/import?${queryParams}`, data);
+  return handle422(fileServerHttpReqest.post(`/github/import?${queryParams}`, data))
 }
 
 export const exportAsGithubRepository = (data) => {
   pullTokenFromEnv();
   const queryParams = objectToQueryParams(data);
-  return fileServerHttpReqest.post(`/github/export?${queryParams}`, data)
+  let promise = fileServerHttpReqest.post(`/github/export?${queryParams}`, data)
+    .then(res => { return res.data.URL; })
+   return handle422(promise)
 }
 
 export const doesDirExist = (path) => {

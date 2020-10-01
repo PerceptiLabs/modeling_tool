@@ -48,7 +48,7 @@ import BaseGlobalPopup  from "@/components/global-popups/base-global-popup";
 import BaseAccordion    from "@/components/base/accordion.vue";
 import ViewLoading from '@/components/different/view-loading.vue'
 import { mapActions, mapState, mapGetters } from 'vuex'
-import { importRepositoryFromGithub } from '@/core/apiFileserver.js';
+import { importRepositoryFromGithub as fileserver_importRepositoryFromGithub } from '@/core/apiFileserver.js';
 export default {
   name: "ImportModel",
   components: { BaseGlobalPopup, BaseAccordion, ViewLoading },
@@ -129,13 +129,17 @@ export default {
 
       const repositoyName = url.slice(url.lastIndexOf('/')+1);
       this.isFetching = true;
-      importRepositoryFromGithub({path, url, overwrite})
-        .then(res => {
+      fileserver_importRepositoryFromGithub({path, url, overwrite})
+        .then(() => {
           const saveToPath = this.saveGithubModelLocation;
           this.onLoadNetworkConfirmed(saveToPath + '/' + repositoyName)
         })
-        .catch(error => {
-          this.$store.dispatch('globalView/GP_errorPopup', error.response.data);
+        .catch(err => {
+console.log(err)
+          const msg = (!!err.userMessage) ?
+          `Importing failed. <br />${err.userMessage}`:
+          `Importing failed.`
+          this.$store.dispatch('globalView/GP_errorPopup', msg)
         })
         .finally(() => {
           this.isFetching = false;
