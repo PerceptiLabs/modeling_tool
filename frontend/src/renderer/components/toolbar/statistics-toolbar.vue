@@ -212,7 +212,7 @@ export default {
   position: relative;
   margin-left: 8px;
   // margin-right: 20px;
-  height:  25px;
+  height:  23px;
   background: transparent;
   border: 1px solid #5E6F9F;
   border-radius: 2px;
@@ -222,6 +222,7 @@ export default {
   color: #B6C7FB;
   display: flex;
   align-items: center;
+  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
   i {
     margin-right: 5px;
   }

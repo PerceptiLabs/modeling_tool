@@ -85,8 +85,7 @@
           :data-tutorial-target="'tutorial-workspace-notebook-view-toggle'"          
         )
           span Modeling
-        
-        button.button-model-type.ml-0(
+        button.btn.btn--dark.btn--toolbar-settings(
           type="button"
           :class="{'active': isNotebookMode}"
           @click="switchNotebookMode(true)"

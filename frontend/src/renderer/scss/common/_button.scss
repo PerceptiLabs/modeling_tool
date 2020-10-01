@@ -305,9 +305,9 @@
   }
    &.active {
     background-color: #2A2F3A;
-    // &:hover {
-    //   background-color: #6185EE;
-    // }
+    &:hover {
+      background-color: #6185EE;
+    }
   }
     &:first-child {
       border-top-left-radius: 1px;
