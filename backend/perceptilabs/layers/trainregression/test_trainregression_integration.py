@@ -237,7 +237,7 @@ def test_load_checkpoint(script_factory, temp_path_100x1, temp_path_checkpoints)
     inputs_path = os.path.join(temp_path_100x1, '100x1_inputs.npy')
     targets_path = os.path.join(temp_path_100x1, '100x1_outputs.npy')
     
-    checkpoint_path = os.path.join(temp_path_100x1, "checkpoints")
+    checkpoint_path = os.path.join(temp_path_100x1, "checkpoint")
     graph_spec1 = make_graph_spec(
         temp_path_checkpoints,
         inputs_path,

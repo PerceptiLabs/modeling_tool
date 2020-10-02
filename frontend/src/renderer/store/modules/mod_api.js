@@ -49,8 +49,18 @@ const getters = {
         'path': ''
       };
 
-      if(el.checkpoint.length) {
+      if(el.checkpoint.length >= 2) {
         checkpointPath.path = el.checkpoint[1]
+        
+        if (checkpointPath.path.slice(-1) !== '/') {
+          checkpointPath.path += '/';
+        } else if (checkpointPath.path.slice(-1) !== '\\') {
+          checkpointPath.path += '\\';
+        }
+  
+        checkpointPath.path += 'checkpoint';
+      } else {
+        checkpointPath.path = network.apiMeta.location + '/checkpoint'
       }
 
       // const namesConnectionOut = [];
@@ -97,8 +107,18 @@ const getters = {
         'path': ''
       };
 
-      if(el.checkpoint.length) {
+      if(el.checkpoint.length >= 2) {
         checkpointPath.path = el.checkpoint[1]
+        
+        if (checkpointPath.path.slice(-1) !== '/') {
+          checkpointPath.path += '/';
+        } else if (checkpointPath.path.slice(-1) !== '\\') {
+          checkpointPath.path += '\\';
+        }
+  
+        checkpointPath.path += 'checkpoint';
+      } else {
+        checkpointPath.path = network.apiMeta.location + '/checkpoint'
       }
 
       /*prepare elements*/
@@ -487,9 +507,10 @@ const actions = {
 
     const currentNetwork = rootGetters['mod_workspace/GET_currentNetwork'];
 
+    // Can actually remove this since it's not used in the createCoreNetwork call below
     const currentNetworkUsingWeights = rootGetters['mod_workspace/GET_currentNetworkModeWeightsState'];
 
-    return fileserver_getModelJson(currentNetwork.apiMeta.location + '/checkpoints/checkpoint_model.json')
+    return fileserver_getModelJson(currentNetwork.apiMeta.location + '/checkpoint/checkpoint_model.json')
       .then(resultCheckpointJson => {
         const coreResultCheckpointJson = createCoreNetwork(resultCheckpointJson, currentNetworkUsingWeights);
         if (!coreResultCheckpointJson) { return; }

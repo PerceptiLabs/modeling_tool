@@ -415,6 +415,7 @@ export default {
       this.$store.dispatch('mod_workspace/TOGGLE_showModelPreviews');
     },
     toggleModelWeights() {
+      if (!this.networkHasCheckpoint) { return; }
       this.$store.dispatch('mod_workspace/toggleModelWeightsState');
 
       // Should refactor this

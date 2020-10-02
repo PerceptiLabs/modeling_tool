@@ -116,8 +116,8 @@ class LayerSpec(ABC, MyBaseModel):
         Computes a hash based on the fields. This method is kept distinct from a __hash__ implementation since we have the option to ignore forward connections and ids.
 
         args:
-           ignore_forward_connections: if true, skip forward connections.
-           prefer_custom_code: if true, the hash will be based on that only. 
+            ignore_forward_connections: if true, skip forward connections.
+            prefer_custom_code: if true, the hash will be based on that only. 
         """
         ignored_fields = ['id_', 'name', 'visited', 'preview_variable', 'get_preview']
 
@@ -175,7 +175,6 @@ class LayerSpec(ABC, MyBaseModel):
                 custom_code = None
             return custom_code
         
-        checkpoint_path, has_checkpoint = cls.resolve_checkpoint_path(dict_)
         params = {
             'id_': str(id_),
             'name': dict_.get('Name'),
@@ -184,9 +183,9 @@ class LayerSpec(ABC, MyBaseModel):
             'preview_variable': dict_.get('previewVariable', ''),
             'get_preview': dict_.get('getPreview', False),                        
             'end_points': tuple(dict_.get('endPoints', ())),
-            'checkpoint_path': checkpoint_path, 
+            'checkpoint_path': cls.resolve_checkpoint_path(dict_), 
             'load_checkpoint': dict_['checkpoint']['load_checkpoint'],
-            'scan_checkpoint': has_checkpoint,
+            'scan_checkpoint': cls.scan_checkpoint_folder(dict_),
             'backward_connections': resolve_bw_cons(dict_),
             'forward_connections': resolve_fw_cons(dict_),
             'custom_code': resolve_custom_code(dict_)
@@ -248,12 +247,17 @@ class LayerSpec(ABC, MyBaseModel):
     
     @classmethod
     def resolve_checkpoint_path(cls, dict_):
+        """ Method returns the modified checkpoint_path so that it works with the OS being used. 
+        Args:
+            dict_ : network dict corresponding to particular layer
+        Returns:
+            checkpoint_path: refactored checkpoint path according to the OS.
+        """
         import platform
-        has_checkpoint = False
-        ckpt_path = dict_['checkpoint']['path']
+        ckpt_path = dict_['checkpoint']['path']  
         if '//' in ckpt_path:
             if platform.system() == 'Windows':
-                new_ckpt_path = ckpt_path.split('//')[1]
+                ckpt_path = ckpt_path.split('//')[1]
             else:
                 new_ckpt_path = os.path.sep+ckpt_path.split(2*os.path.sep)[1] # Sometimes frontend repeats the directory path. /<dir-path>//<dir-path>/model.ckpt-1
                 logger.warning(
@@ -261,15 +265,29 @@ class LayerSpec(ABC, MyBaseModel):
                     f"New path: '{new_ckpt_path}'"
                 )
                 ckpt_path = new_ckpt_path
-                
-        if os.path.basename(os.path.normpath(ckpt_path)) != 'checkpoints':
-            ckpt_path = os.path.join(ckpt_path,'checkpoints')
-        ckpt_path = ckpt_path.replace('\\','/')
-        if os.path.isdir(ckpt_path):
-            if 'checkpoint' in os.listdir(ckpt_path):
-                has_checkpoint = True
-        return ckpt_path, has_checkpoint      
+        
+        ckpt_path = ckpt_path.replace('\\', '/')
+        if os.path.basename(os.path.normpath(ckpt_path)) != 'checkpoint':
+            logger.error(f"The given path '{ckpt_path}' is not a valid checkpoint path.")
+        return ckpt_path      
 
+    @classmethod
+    def scan_checkpoint_folder(self, dict_):
+        """Method checks for the checkpoint files in the directory. It creates the directory if it doesn't exist.
+        Args:
+            dict_ : network dict corresponding to particular layer
+        Returns:
+            has_checkpoint: bool which returns TRUE if there are checkpoint files in the checkpoint folder.
+        """
+        has_checkpoint = False
+        ckpt_path = dict_['checkpoint']['path'] 
+        if not os.path.isdir(ckpt_path):
+            os.makedirs(ckpt_path, exist_ok=True)
+        elif 'checkpoint' in os.listdir(ckpt_path):
+            has_checkpoint = True
+        return has_checkpoint      
+
+        
     @property
     def should_show_errors(self):
         """ Returns true if the user has configured the component.
@@ -283,7 +301,7 @@ class InnerLayerSpec(LayerSpec):
     def should_show_errors(self):
         """ Show errors if visited or if there are outgoing or ingoing connections """
         return super().should_show_errors or len(self.forward_connections) > 0 or len(self.backward_connections) > 0
-           
+            
     
 
 class DummySpec(LayerSpec):

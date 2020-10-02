@@ -447,7 +447,7 @@ const hashObject = function(inputObject) {
 
 const hashString = s => s.split('').reduce((a,b) => (((a << 5) - a) + b.charCodeAt(0))|0, 0);
 
-const createCoreNetwork = (network, createCoreNetwork = false) => {
+const createCoreNetwork = (network, currentNetworkUsingWeights = false) => {
   if (!network) { return null; }
 
   let layers = {};
@@ -461,8 +461,18 @@ const createCoreNetwork = (network, createCoreNetwork = false) => {
       'path': ''
     };
 
-    if(el.checkpoint.length) {
-      checkpointPath.path = el.checkpoint[1];
+    if(el.checkpoint.length >= 2) {
+      checkpointPath.path = el.checkpoint[1]
+      
+      if (checkpointPath.path.slice(-1) !== '/') {
+        checkpointPath.path += '/';
+      } else if (checkpointPath.path.slice(-1) !== '\\') {
+        checkpointPath.path += '\\';
+      }
+
+      checkpointPath.path += 'checkpoint';
+    } else {
+      checkpointPath.path = network.apiMeta.location + '/checkpoint'
     }
 
     /*prepare elements*/

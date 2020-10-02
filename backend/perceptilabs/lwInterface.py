@@ -451,8 +451,8 @@ class ScanCheckpoint(LW_interface_base):
 
     def run(self):
         response = False
-        if 'checkpoints' in os.listdir(self._path):
-            for filename in os.listdir(os.path.join(self._path,'checkpoints')):
+        if 'checkpoint' in os.listdir(self._path):
+            for filename in os.listdir(os.path.join(self._path,'checkpoint')):
                 if filename == 'checkpoint':
                     response = True
                     break
@@ -464,7 +464,7 @@ class CopyJsonModel(LW_interface_base):
         self._folder_path = folder_path
     def run(self):
         file_path = os.path.join(self._folder_path, 'model.json')
-        copy_path = os.path.join(self._folder_path, 'checkpoints','checkpoint_model.json')
-        if not os.path.isdir(os.path.join(self._folder_path,'checkpoints')):
-            os.mkdir(os.path.join(self._folder_path,'checkpoints'))
+        copy_path = os.path.join(self._folder_path, 'checkpoint','checkpoint_model.json')
+        if not os.path.isdir(os.path.join(self._folder_path,'checkpoint')):
+            os.mkdir(os.path.join(self._folder_path,'checkpoint'))
         shutil.copy2(file_path, copy_path)
