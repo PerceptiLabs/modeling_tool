@@ -463,8 +463,11 @@ class CopyJsonModel(LW_interface_base):
     def __init__(self, folder_path):
         self._folder_path = folder_path
     def run(self):
+        import time
         file_path = os.path.join(self._folder_path, 'model.json')
         copy_path = os.path.join(self._folder_path, 'checkpoint','checkpoint_model.json')
         if not os.path.isdir(os.path.join(self._folder_path,'checkpoint')):
             os.mkdir(os.path.join(self._folder_path,'checkpoint'))
+            time.sleep(.0000000000000001) #Force your computer to do a clock cycle to avoid Windows issues
         shutil.copy2(file_path, copy_path)
+        time.sleep(.0000000000000001) #Force your computer to do a clock cycle to avoid Windows issues
