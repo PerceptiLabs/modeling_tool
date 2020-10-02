@@ -167,6 +167,7 @@ const goToLink = function (url) {
     let link = document.createElement('a');
     link.setAttribute('href', url);
     link.setAttribute('target', '_blank');
+    link.setAttribute('rel', 'noopener noreferrer');
     link.click();
   }
 };
