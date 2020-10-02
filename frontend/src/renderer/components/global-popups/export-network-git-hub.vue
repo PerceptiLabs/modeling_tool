@@ -1,10 +1,7 @@
 <template lang="pug">
-  base-global-popup(:tab-set="popupTitle")
+  base-global-popup(:tab-set="popupTitle" v-if="isGithubTokenSetted")
     template(slot="Export to GitHub-content")
-      div.github-authentication-wrapper(v-if="!isGithubTokenSetted")
-        h4.auth-text Authentication required
-        a.verify-link(:href="GITHUB_AYTHORIZE_URL")  Verify
-      div(v-if="isGithubTokenSetted")
+      div
         .settings-layer_section
           .name-wrapper
             .form_label.mr-10 Save as:
@@ -84,9 +81,13 @@ export default {
       return this.$store.state.mod_github.githubToken;
     }
   },
+  created() {
+     if(!this.isGithubTokenSetted) {
+      window.location.href = this.GITHUB_AYTHORIZE_URL;
+    }
+  },
   mounted() {
     this.settings.name = this.$store.getters['mod_workspace/GET_currentNetwork'].networkName;
-    this.shouldVerifyGithubAuth = true;
   },
   methods: {
     closePopup() {
@@ -105,7 +106,6 @@ export default {
           dataComponentsSourcePaths.push(sourceObj.path);
         })
       })
-      // console.log(dataComponentsSourcePaths);
       return dataComponentsSourcePaths;
 
     },
@@ -158,37 +158,6 @@ export default {
 }
 .w-75 {
   width: 75%;
-}
-.github-authentication-wrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-.auth-text {
-  font-family: Nunito Sans;
-  font-style: normal;
-  font-weight: normal;
-  font-size: 12px;
-  line-height: 16px;
-  text-align: center;
-  color: #C4C4C4;
-  margin-bottom: 10px;
-  margin-top: 15px;
-}
-.verify-link {
-  background: #6185EE;
-  border: 1px solid #6185EE;
-  box-sizing: border-box;
-  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
-  border-radius: 2px;
-  font-family: Nunito Sans;
-  font-style: normal;
-  font-weight: 600;
-  font-size: 12px;
-  line-height: 16px;
-  text-align: center;
-  color: #FFFFFF;
-  padding: 1px 23px;
 }
 .horozontal-separator {
   height: 1px;
