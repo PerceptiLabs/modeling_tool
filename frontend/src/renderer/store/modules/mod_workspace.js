@@ -926,7 +926,7 @@ const mutations = {
     if(setChangeToWorkspaceHistory)
       dispatch('mod_workspace-history/PUSH_newSnapshot', null, {root: true});
 
-    dispatch('mod_api/API_getBatchPreviewSample', null, {root: true})
+    dispatch('mod_api/API_getBatchPreviewSample', {}, {root: true})
 
     function checkPosition(el, list) {
       let depth = 0;
@@ -1726,6 +1726,23 @@ const mutations = {
     
     Vue.set(network.networkMeta, 'usingWeights', value);
   },
+  setChartComponentLoadingStateMutation(state, {descendants, value, getters}) {
+    const networkList = getters.GET_currentNetworkElementList;
+    descendants.forEach(componentId => {
+      if(networkList[componentId].chartDataIsLoading !== undefined) {
+        if(value) { // is should increment
+          Vue.set(networkList[componentId], 'chartDataIsLoading', networkList[componentId].chartDataIsLoading + 1);
+        } else {
+          Vue.set(networkList[componentId], 'chartDataIsLoading', networkList[componentId].chartDataIsLoading - 1);
+        }
+      } else {
+        // is triggered when network component haven't this field
+        if(value) {
+          Vue.set(networkList[componentId], 'chartDataIsLoading', 1);
+        }
+      }
+    })
+  },
 };
 
 
@@ -2327,7 +2344,10 @@ const actions = {
     }
 
     commit('setViewTypeMutation', value);
-  }
+  },
+  setChartComponentLoadingState({ getters, commit }, {descendants, value}) {
+    commit('setChartComponentLoadingStateMutation', {getters, descendants, value});
+  },
 };
 
 export default {

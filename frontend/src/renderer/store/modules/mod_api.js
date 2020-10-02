@@ -1083,7 +1083,7 @@ const actions = {
     //   'API_getBatchPreviewSample req',
     //   theData
     // );
-
+    dispatch('mod_workspace/setChartComponentLoadingState', { descendants: Object.keys(payload), value: true } , { root: true });
     return coreRequest(theData)
       .then(res => {
         // console.log(
@@ -1133,6 +1133,8 @@ const actions = {
       })
       .catch(e => {
         console.error(e)
+      }).finally(() => {
+        dispatch('mod_workspace/setChartComponentLoadingState', { descendants: Object.keys(payload), value: false } , { root: true });
       });
   },
   API_getBatchPreviewSampleForElementDescendants({ getters, dispatch, rootGetters }, layerId) {
@@ -1154,6 +1156,8 @@ const actions = {
     }
 
     descendants.push(layerId); 
+
+    dispatch('mod_workspace/setChartComponentLoadingState', { descendants, value: true } , { root: true });
 
     for(let ix in net) {
       let el = net[ix];
@@ -1215,6 +1219,8 @@ const actions = {
       })
       .catch(e => {
         console.error(e)
+      }).finally(() => {
+        dispatch('mod_workspace/setChartComponentLoadingState', { descendants, value: false } , { root: true });
       });
   },
   async API_scanCheckpoint (ctx, { networkId, path }) {
