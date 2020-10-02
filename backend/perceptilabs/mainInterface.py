@@ -406,7 +406,9 @@ class Interface():
 
         elif action == "headless":
             On=value    #bool value
-            response = self._core.headless(On)
+            response = {}
+            #TODO: Re-enalbe headless mode after frontend is more stable
+            # response = self._core.headless(On)
             return response
 
         elif action == "getTrainingStatistics":
