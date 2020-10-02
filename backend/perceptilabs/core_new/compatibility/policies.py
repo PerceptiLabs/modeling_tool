@@ -791,7 +791,6 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id, re
             trn_layer = graph.active_training_node.layer
             input_data_layer = trn_layer.get_input_data_node
             input_images = trn_node.layer.layer_outputs.get(input_data_layer)
-
             if trn_layer.status == 'training':
                 acc_trn_iter.append(trn_layer.accuracy_training)
                 loss_trn_iter.append(trn_layer.loss_training)
@@ -822,6 +821,8 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id, re
             loss_val_epoch = results['trainDict'][true_trn_id]["loss_validation_epoch"]
             classification_loss_val_epoch = results['trainDict'][true_trn_id]["classification_loss_validation_epoch"]
             bbox_loss_val_epoch = results['trainDict'][true_trn_id]["bboxes_loss_validation_epoch"]
+            bbox_image = results['trainDict'][true_trn_id]["image_bboxes"]
+            confidence_scores = results['trainDict'][true_trn_id]["confidence_scores"]
         else:
             acc_trn_epoch = []
             loss_trn_epoch = []
@@ -855,8 +856,9 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id, re
                 bbox_loss_val_epoch.append(trn_layer.loss_bbox_validation)
 
             idx += 1
-
-        bbox_image, confidence_scores = plot_bounding_boxes(dict_first_value(input_images)[-1], predicted_objects, predicted_classes, predicted_normalized_boxes)
+            
+        if trn_layer.status != 'finished':
+            bbox_image, confidence_scores = plot_bounding_boxes(dict_first_value(input_images)[-1], predicted_objects, predicted_classes, predicted_normalized_boxes)
 
         # ---- Update the dicts
 
@@ -881,7 +883,6 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id, re
         data['loss_validation_epoch'] = loss_val_epoch
         data['classification_loss_validation_epoch'] = classification_loss_val_epoch
         data['bboxes_loss_validation_epoch'] = bbox_loss_val_epoch
-
         data['confidence_scores'] = confidence_scores
         data['image_bboxes'] =  bbox_image
         return data

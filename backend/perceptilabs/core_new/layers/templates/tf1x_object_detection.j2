@@ -77,8 +77,8 @@
 
         self._variables = {k: v for k, v in locals().items() if can_serialize(v)}            
         self._status = 'finished'
-        yield YieldLevel.SNAPSHOT            
         self.on_export(self._checkpoint_save_path, 'checkpoint')   
+        yield YieldLevel.SNAPSHOT
         sess.close()
 {% endmacro %}
 
