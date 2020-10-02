@@ -33,7 +33,7 @@ if(isElectron()) {
 } 
 
 //Vue.http = Vue.prototype.$http = axios;
-
+Vue.config.devtools = isDevelopMode;
 Vue.config.productionTip = isDevelopMode;
 Vue.config.performance = isDevelopMode;
 

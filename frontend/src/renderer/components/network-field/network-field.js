@@ -103,6 +103,7 @@ export default {
   },
   computed: {
     ...mapGetters({
+      viewType:               'mod_workspace/GET_viewType',
       currentNetwork:         'mod_workspace/GET_currentNetwork',
       canEditLayers:          'mod_workspace/GET_networkIsOpen',
       statisticsIsOpen:       'mod_workspace/GET_statisticsIsOpen',
@@ -741,6 +742,8 @@ export default {
         : 'url(#svg-arrow_triangle)';
     },
     getAllPreviews() {
+      if (this.viewType !== 'model') { return; }
+
       let payload = {};
       for(let id in this.fullNetworkElementList) {
         const el = this.fullNetworkElementList[id];
