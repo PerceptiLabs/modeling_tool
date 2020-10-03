@@ -225,7 +225,7 @@
 
         input_tensor, label_tensor = iterator.get_next()
 
-        # Build the TensorFlow graph # TODO: perhaps this part can be delegated to the graph?
+        # Build the TensorFlow graph
 
         def build_graph(input_tensor, label_tensor):
             layer_output_tensors = {
@@ -248,7 +248,6 @@
 
         layer_output_tensors = build_graph(input_tensor, label_tensor)
 
-        # TODO: (adil) temporary solution before refactor
         output_tensor = None
         target_tensor = None
 
@@ -341,7 +340,7 @@
                 # self._internal_layer_gradients[node.layer_id] = {name: [] for name in node.layer.trainable_variables.keys()} # Initialize
                 # self._layer_gradients = self._internal_layer_gradients.copy()
 
-        # trainable_vars = tf.trainable_variables() # TODO: safer to get from nodes. Especially with split graph in mind.
+        # trainable_vars = tf.trainable_variables()
         # grads = tf.gradients(loss_tensor, trainable_vars)
         # update_weights = optimizer.apply_gradients(zip(grads, trainable_vars), global_step=global_step)        
         
@@ -354,7 +353,7 @@
 
         trackable_variables = {}
         trackable_variables.update({x.name: x for x in tf.trainable_variables() if isinstance(x, Trackable)})
-        trackable_variables.update({k: v for k, v in locals().items() if isinstance(v, Trackable) and not isinstance(v, tf.python.data.ops.iterator_ops.Iterator)}) # TODO: Iterators based on 'stateful functions' cannot be serialized.
+        trackable_variables.update({k: v for k, v in locals().items() if isinstance(v, Trackable) and not isinstance(v, tf.python.data.ops.iterator_ops.Iterator)})
         self._checkpoint = tf.train.Checkpoint(**trackable_variables)
         
         sess.run(tf.global_variables_initializer())
@@ -613,7 +612,6 @@ class {{layer_spec.sanitized_name}}(RegressionLayer):
 
     def make_generator_training(self) -> Generator[np.ndarray, None, None]:
         """Returns a generator yielding single samples of training data. In the case of a training layer, this typically yields the model output."""        
-        # Simply call sess.run on the output & target tensors :)  #TODO: how to make generators generic? We have two datasets here, but not all datasets will be labeled. Distinguish between supervised/unsupervised data layers and instead REQUIRE pairs of data layers for supervised?
         yield from []
         
     def make_generator_validation(self) -> Generator[np.ndarray, None, None]:

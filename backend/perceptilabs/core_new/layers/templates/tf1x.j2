@@ -592,7 +592,6 @@ class {{layer_name}}(Tf1xLayer):
 class {{layer_spec.sanitized_name}}(Tf1xLayer):
     def __init__(self):
         self._scope = '{{layer_spec.sanitized_name}}'        
-        # TODO: implement support for 1d and 3d conv, dropout, funcs, pooling, etc
         self._patch_size = {{layer_spec.patch_size}}
         self._feature_maps = {{layer_spec.feature_maps}}
         self._padding = '{{layer_spec.padding}}'

@@ -246,7 +246,7 @@
 
         
 
-        # Build the TensorFlow graph # TODO: perhaps this part can be delegated to the graph?
+        # Build the TensorFlow graph
         def build_real_graph(real_tensor):
             if len(real_nodes) > 1:
                 switch_node.layer._selected_layer_id = real_nodes[-2].layer_id
@@ -491,7 +491,7 @@
                 discriminator_layer_gradient_tensors[node.layer_id] = gradients
 
         
-        trainable_vars = tf.trainable_variables() # TODO: safer to get from nodes. Especially with split graph in mind.
+        trainable_vars = tf.trainable_variables()
         
         discriminator_vars=[]
         for var in trainable_vars:
@@ -516,7 +516,7 @@
         
         trackable_variables = {}
         trackable_variables.update({x.name: x for x in tf.trainable_variables() if isinstance(x, Trackable)})
-        trackable_variables.update({k: v for k, v in locals().items() if isinstance(v, Trackable) and not isinstance(v, tf.python.data.ops.iterator_ops.Iterator)}) # TODO: Iterators based on 'stateful functions' cannot be serialized.
+        trackable_variables.update({k: v for k, v in locals().items() if isinstance(v, Trackable) and not isinstance(v, tf.python.data.ops.iterator_ops.Iterator)})
         self._checkpoint = tf.train.Checkpoint(**trackable_variables)
         sess.run(tf.global_variables_initializer())
         
@@ -795,7 +795,6 @@ class {{layer_spec.sanitized_name}}(GANLayer):
 
     def make_generator_training(self) -> Generator[np.ndarray, None, None]:
         """Returns a generator yielding single samples of training data. In the case of a training layer, this typically yields the model output."""        
-        # Simply call sess.run on the output & target tensors :)  #TODO: how to make generators generic? We have two datasets here, but not all datasets will be labeled. Distinguish between supervised/unsupervised data layers and instead REQUIRE pairs of data layers for supervised?
         yield from []
         
     def make_generator_validation(self) -> Generator[np.ndarray, None, None]:
