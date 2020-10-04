@@ -27,7 +27,8 @@ const workspaceScale = {
   },
   methods: {
     ...mapActions({
-      set_statusNetworkZoom: 'mod_workspace/SET_statusNetworkZoom',
+      set_statusNetworkZoom:          'mod_workspace/SET_statusNetworkZoom',
+      updateNetworkElementPositions:  'mod_workspace/updateNetworkElementPositions'
     }),
     calcScaleMap() {
       this.$nextTick(()=> {
@@ -51,14 +52,20 @@ const workspaceScale = {
         return (this.scaleNet <= curr) ? prev : curr;
       });
 
-      this.set_statusNetworkZoom(nextSmallest/100);
+      const zoomLevel = nextSmallest/100;
+
+      this.updateNetworkElementPositions({ zoom: zoomLevel });
+      this.set_statusNetworkZoom(zoomLevel);
     },
     incScale () {
       const nextLargest = this.scalingSteps.reduce((prev, curr) => {
         return (this.scaleNet < prev) ? prev : curr;
       });
 
-      this.set_statusNetworkZoom(nextLargest/100);
+      const zoomLevel = nextLargest/100;
+
+      this.updateNetworkElementPositions({ zoom: zoomLevel });
+      this.set_statusNetworkZoom(zoomLevel);
     },   
     filterNonNumber: function(event) {
       event = event || window.event;

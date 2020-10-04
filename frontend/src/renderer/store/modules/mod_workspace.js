@@ -2143,7 +2143,7 @@ const actions = {
     commit('set_statusNetworkCoreStatusProgressClear', {getters})
   },
   SET_statusNetworkZoom({commit, getters}, value) {
-    commit('set_statusNetworkZoom', {getters, value})
+    commit('set_statusNetworkZoom', {getters, value});
   },
   SET_statusNetworkWaitGlobalEvent({commit, getters}, value) {
     commit('set_statusNetworkWaitGlobalEvent', {getters, value})
@@ -2207,6 +2207,41 @@ const actions = {
   //---------------
   //  NETWORK ELEMENTS
   //---------------
+  updateNetworkElementPositions({getters, commit}, {zoom = 1}) {
+
+    let elementList;
+    let changePositionFunctionName;
+    const oldZoom = getters.GET_currentNetworkZoom;
+    const newZoom = zoom; // assigned to new so it's easier to read later on
+
+    // choosing the right element list and commit functions
+    if (getters.GET_statisticsOrTestIsOpen) {
+      // update snapshot
+      elementList = getters.GET_currentNetworkSnapshotElementList;
+      if (!elementList) { return; }
+
+      changePositionFunctionName = 'change_singleElementInSnapshotPosition';
+
+      getters
+    } else {
+      // update normal
+      elementList = getters.GET_currentNetworkElementList;
+      changePositionFunctionName = 'change_singleElementPosition';
+    }
+
+    // performing the actual position update
+    for (var el in elementList) {
+      const element = elementList[el];
+      const x0 = element.layerMeta.position.left;
+      const y0 = element.layerMeta.position.top;
+
+      commit(changePositionFunctionName, {
+        id: el,
+        top: y0 / oldZoom * newZoom,
+        left: x0 / oldZoom * newZoom
+      })
+    }
+  },
   SET_elementSettings({commit, dispatch}, {settings, pushOntoHistory = false}) {
 
     commit('set_elementSettings', {dispatch, settings, pushOntoHistory})
