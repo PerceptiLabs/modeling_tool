@@ -669,21 +669,16 @@ const mutations = {
 
     state.workspaceContent.splice(index, 1);
   },
-  delete_networkById(state, networkID) {
+  async delete_networkById(state, networkId) {
+    const networkIndex = state.workspaceContent.findIndex(w => w.networkID == networkId);
 
-    const networkIndex = state.workspaceContent.findIndex(w => w.networkID == networkID);
+    const path = state.workspaceContent[networkIndex].apiMeta.location;
 
-    const lastActiveId = localStorage.getItem('_network.meta');
-    if (lastActiveId) {
-      const lastActiveIdJson = JSON.parse(lastActiveId);
-      if (lastActiveIdJson.lastActiveNetworkID === networkID) {
-        localStorage.removeItem('_network.meta');
-      }
-    }
-
-    if (~networkIndex) {
+    if (networkIndex >= 0) {
       state.workspaceContent.splice(networkIndex, 1);
     }
+
+    await fileserver_deleteFolder(path)
   },
   //---------------
   //  LOADER FOR TRAINING
@@ -1851,7 +1846,37 @@ const actions = {
       resolve();
     })
   },
+  DELETE_networkById({commit, dispatch}, networkId) {
+    return new Promise(resolve => {
 
+      const index = state.workspaceContent.findIndex(wc => wc.networkID === networkId);
+
+      // API_closeCore stops the process in the core
+      dispatch('mod_api/API_closeCore', networkId, { root: true });
+
+      if (index === state.currentNetwork) {
+
+        if (state.workspaceContent.length === 1) {
+          commit('set_lastActiveTabInLocalStorage', '');
+        } else if (index === 0) {
+          commit('set_lastActiveTabInLocalStorage', state.workspaceContent[index + 1].networkID);
+        } else {
+          commit('set_lastActiveTabInLocalStorage', state.workspaceContent[index - 1].networkID);
+        }
+      }
+
+      const modelApiMeta = state.workspaceContent[index].apiMeta;
+      // deleting in rygg
+      dispatch('mod_project/deleteModel', modelApiMeta, {root: true});
+
+      // deleting in webstorage
+      dispatch('mod_webstorage/deleteId', networkId, { root: true });
+      dispatch('mod_webstorage/deleteNetwork', networkId, { root: true });
+      
+      commit('delete_networkById', networkId);
+      resolve();
+    })
+  },
   markAllUnselectedAction({commit}){
     commit('markAllUnselectedMutation');
   },

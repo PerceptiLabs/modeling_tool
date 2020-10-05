@@ -310,6 +310,10 @@
       currentNetworkId() {
         return this.$store.getters['mod_workspace/GET_currentNetworkId'];
       },
+      unparsedModels() {
+        return this.$store.state.mod_workspace.unparsedModels
+          .map(m => m.model_id);
+      },
       tutorialNotifications() {
         return this.getActiveNotifications;
       },
@@ -374,15 +378,18 @@
 
       currentProject: {
         immediate: true,
+        deep: true,
         handler(newVal, oldVal) {
-          if (!this.networksWithChanges.length) {
-            if (this.isDefaultProjectMode && (!newVal || !newVal.name || newVal.name !== 'Default')) { return; }
-            // using this function because the watcher can be aggressive with changes
-            if(!isSameProject(newVal,oldVal)) {
-              this.reset_network();
-              this.deleteAllIds();
-              this.fetchNetworkMetas(newVal);
-            }
+          // Used to have an if statement to not load if there are unsaved changes,
+          // this is now use but filtering out the networksWithChanges in the
+          // fetchAllNetworkJsons function
+
+          if (this.isDefaultProjectMode && (!newVal || !newVal.name || newVal.name !== 'Default')) { return; }
+          // using this function because the watcher can be aggressive with changes
+          if(!isSameProject(newVal,oldVal)) {
+            this.reset_network();
+            this.deleteAllIds();
+            this.fetchNetworkMetas(newVal);
           }
 
           function isSameProject(project1, project2) {
@@ -413,6 +420,7 @@
         // loadProjectFromLocalStorage: 'mod_workspace/get_workspacesFromLocalStorage',
         // setPageTitleMutation: 'globalView/setPageTitleMutation',
 
+        deleteNetworkById:    'mod_workspace/delete_networkById',
         setViewTypeMutation:  'mod_workspace/setViewTypeMutation'
       }),
       ...mapActions({
@@ -451,6 +459,7 @@
         setStatisticsAvailability:'mod_workspace/setStatisticsAvailability',
         setCheckpointAvailability:'mod_workspace/setCheckpointAvailability',
 
+        deleteId:            'mod_webstorage/deleteId',
         deleteAllIds:        'mod_webstorage/deleteAllIds',        
         updateWorkspaces:    'mod_webstorage/updateWorkspaces',
 
@@ -545,7 +554,7 @@
         }
       },
 
-      fetchNetworkMetas(currentProject) {
+      async fetchNetworkMetas(currentProject) {
         if (!currentProject || !currentProject.models || !currentProject.models.length) { return; }
 
         const promiseArray = 
@@ -554,33 +563,38 @@
 
         Promise.all(promiseArray)
           .then(metas => {
-            this.fetchAllNetworkJsons(metas);
             this.fetchUnparsedModels(metas);
+            this.fetchAllNetworkJsons(metas);
           });
       },
       fetchAllNetworkJsons(modelMetas) {
 
         if (!modelMetas) { return; }
 
-        const promiseArray = 
-          modelMetas
+        const promiseArray = []
+        const filteredMetas = modelMetas
             .filter(x => x.location)
-            .map(x => fileserver_getModelJson(x.location + '/model.json'));
+            .filter(x => !this.networksWithChanges.includes(x.model_id));
+
+        for (const fm of filteredMetas) {
+          promiseArray.push(fileserver_getModelJson(fm.location + '/model.json'));
+        }
         
+        // console.log('fetchAllNetworkJsons filteredMetas', filteredMetas);
         Promise.all(promiseArray)
           .then(models => {
+            // console.log('fetchAllNetworkJsons models', models);
             this.addNetworksToWorkspace(models, modelMetas);
             models.forEach(model => {
-              this.API_getModelStatus(model.networkID);
+              if (model) {
+                this.API_getModelStatus(model.networkID);
+              }
             });
 
             this.$nextTick(() => {
               this.setStatisticsAvailability();
               this.setCheckpointAvailability();
             });
-          })
-          .then(() => {
-            // this.$store.dispatch('mod_workspace/GET_workspace_statistics');
           });
       },
       async fetchUnparsedModels(modelMetas){
@@ -590,6 +604,13 @@
           const modelJson = await fileserver_getModelJson(model.location + '/model.json');
           if(!modelJson) {
             unparsedModels.push(model);
+            
+            // Doing these removes explicitly because the data can be loaded from webstorage
+            // The effect is that the same network can appear doubled in the Model Hub
+            // Remove from workspace content
+            this.deleteNetworkById(model.model_id);
+            // Remove from webstorage
+            this.deleteId(model.model_id);
           }
         });
 
@@ -598,12 +619,11 @@
       addNetworksToWorkspace(models, modelsApiData) {
         const filteredModels = models.filter(m => m);
         for(const [index, model] of filteredModels.entries()) {
-          // if(modelsApiData[index].model_id !== model.networkID) {
-          //   model.networkID = modelsApiData[index].model_id;
-          //   model.apiMeta = modelsApiData[index];
-          // }
+          
+          if (this.unparsedModels.includes(model.networkID)) { return; }
+
           // update apiMeta wiht rygg meta.
-           model.apiMeta = modelsApiData[index];
+          model.apiMeta = modelsApiData[index];
 
           const matchingApiData = modelsApiData.find(mad => mad.model_id === model.networkID);
           if (matchingApiData) {
@@ -613,7 +633,8 @@
           this.addNetwork({network: model, apiMeta: model.apiMeta, focusOnNetwork: false});
         }
 
-        this.updateWorkspaces();
+        // Commented out because addNetwork already calls updateWorkspaces
+        // this.updateWorkspaces();
       },
     
       initTutorialView() {

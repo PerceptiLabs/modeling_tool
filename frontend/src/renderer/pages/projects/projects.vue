@@ -78,7 +78,7 @@
           v-for="(model, index) in workspaceContent"
           @click="toggleItemSelection(model.networkID)"
           @contextmenu.stop.prevent="openContext($event, index)"
-          :key="model.networkID"
+          :key="'Valid_' + model.networkID"
           :class="{'is-selected': isItemSelected(model.networkID)}")
           div.column-1
             span.btn-round-icon.check-model-button(v-tooltip:bottom="isItemSelected(model.networkID) ? 'Unselect' : 'Select'")
@@ -131,7 +131,7 @@
         
         div.models-list-row.model-list-item(
           v-for="(model, index) in unparsedModels"
-          :key="model.id"
+          :key="'Unparsed_' + model.id"
           :class="{'is-selected': isItemSelected(model.networkID)}"
           @click="onClickDeletedModel(model, index)"
           )
@@ -310,15 +310,16 @@
     },
     methods: {
       ...mapActions({
-        popupConfirm:         'globalView/GP_confirmPopup',
-        popupNewModel:        'globalView/SET_newModelPopup',
-        showInfoPopup:        'globalView/GP_infoPopup',
-        set_currentNetwork:   'mod_workspace/SET_currentNetwork',
-        set_currentModelIndex:'mod_workspace/SET_currentModelIndex',
-        createProjectModel:   'mod_project/createProjectModel',
-        setActivePageAction:  'modal_pages/setActivePageAction',
-        delete_network :      'mod_workspace/DELETE_network',
-        UPDATE_MODE_ACTION :  'mod_workspace/UPDATE_MODE_ACTION',
+        popupConfirm:        'globalView/GP_confirmPopup',
+        popupNewModel:       'globalView/SET_newModelPopup',
+        showInfoPopup:       'globalView/GP_infoPopup',
+        set_currentNetwork:  'mod_workspace/SET_currentNetwork',
+        set_currentModelIndex: 'mod_workspace/SET_currentModelIndex',
+        createProjectModel:  'mod_project/createProjectModel',
+        setActivePageAction: 'modal_pages/setActivePageAction',
+        delete_network :     'mod_workspace/DELETE_network',
+        delete_networkById:  'mod_workspace/DELETE_networkById',        
+        UPDATE_MODE_ACTION : 'mod_workspace/UPDATE_MODE_ACTION',
         closeStatsTestViews:  'mod_workspace/SET_statisticsAndTestToClosed',
         setCurrentView:       'mod_tutorials/setCurrentView',
         setNextStep:          'mod_tutorials/setNextStep',
@@ -434,7 +435,7 @@
         this.$store.commit('mod_empty-navigation/set_emptyScreenMode', 0);
         this.$router.push({name: 'app'});
       },
-      removeItems() {
+      async removeItems() {
         if(this.statusLocalCore!='online') {
           this.showInfoPopup("Kernel is offline");
           return;
@@ -448,20 +449,17 @@
         this.popupConfirm(
           {
             text: removeModelText,
-            ok: () => {
-              let removeIndexes = [];
-              this.workspaceContent.map((network, index) =>  {
-                if(this.selectedListIds.indexOf(parseInt(network.networkID)) !== -1) {
-                  removeIndexes.push(index);
-                }
-              })
-              removeIndexes.sort((a, b) => (b - a));
+            ok: async () => {
+              const promises = [];
 
-              removeIndexes.map((index) => {
-                this.delete_network(index);
-              });
-
+              for (const networkId of this.selectedListIds) {
+                // promises.push(this.delete_networkById(networkId));
+                await this.delete_networkById(networkId);
+              }
+              
               this.selectedListIds = [];
+
+              this.updateWorkspaces();
             }
           });
       },

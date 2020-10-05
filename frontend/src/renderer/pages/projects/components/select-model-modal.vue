@@ -277,7 +277,7 @@ export default {
 
                 this.$store.dispatch("mod_workspace/SET_currentModelIndex", this.workspaces.length - 1);
                 this.$store.dispatch('mod_workspace/setViewType', 'model');
-                console.log('this.workspaces', this.workspaces);
+                
                 this.$store.commit('mod_empty-navigation/set_emptyScreenMode', 0);
                 this.setChecklistItemComplete({ itemId: 'createModel' });
 
