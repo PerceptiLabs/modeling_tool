@@ -1,4 +1,4 @@
-{% from 'tf1x_utils.j2' import session %}
+{% from 'tf1x_utils.j2' import session, check_input_vars %}
 
 {% macro train_normal(layer_spec, graph_spec) %}
         
@@ -34,6 +34,9 @@
         y_tensor = self._y
         Q_online = self._Q_online
         Q_target = self._Q_target
+
+        if self._replay_memory_size > 0:
+            log.warning(f"Populating replay memory. The ViewBox will be unavailable until the first {self._replay_start_size} iterations have been completed.\nNote: The viewbox will reflect what is used in backpropagation while the top statistics show what goes into the replay memory.")
         
         while self._episode < self._n_episodes and not self._stopped:
             t0 = time.perf_counter()
@@ -128,6 +131,7 @@
 {% endmacro %}
 
 {% macro init_normal(mode) %}
+        {{ check_input_vars(layer_spec, ['action'])|indent(width=8)}}
         self._status = 'initializing'
         copied_graph = graph.clone()
         target_nodes = copied_graph.inner_nodes
@@ -270,7 +274,7 @@
 
         trackable_variables = {}
         trackable_variables.update({x.name: x for x in tf.trainable_variables() if isinstance(x, Trackable)})
-        trackable_variables.update({k: v for k, v in locals().items() if isinstance(v, Trackable) and not isinstance(v, tf.python.data.ops.iterator_ops.Iterator)}) # TODO: Iterators based on 'stateful functions' cannot be serialized.
+        trackable_variables.update({k: v for k, v in locals().items() if isinstance(v, Trackable) and not isinstance(v, tf.python.data.ops.iterator_ops.Iterator)})
         self._checkpoint = tf.train.Checkpoint(**trackable_variables)
         sess.run(tf.global_variables_initializer())
         
@@ -571,7 +575,6 @@ class {{layer_spec.sanitized_name}}(RLLayer):
 
     def make_generator(self) -> Generator[np.ndarray, None, None]:
         """Returns a generator yielding single samples of training data. In the case of a training layer, this typically yields the model output."""        
-        # Simply call sess.run on the output & target tensors :)  #TODO: how to make generators generic? We have two datasets here, but not all datasets will be labeled. Distinguish between supervised/unsupervised data layers and instead REQUIRE pairs of data layers for supervised?
         yield from []
 
     def reset_environment(self, generator) -> np.ndarray:

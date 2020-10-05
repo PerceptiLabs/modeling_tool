@@ -33,7 +33,7 @@ export default {
     return {
       interactiveInfo: {
         title: 'Data Random',
-        text: 'Read an Random either </br> from Gym or Unity'
+        text: 'Generate random data of a specified shape'
       },
       displayTitle: 'Random'
     }

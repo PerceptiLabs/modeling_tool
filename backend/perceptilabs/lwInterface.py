@@ -6,10 +6,13 @@ import tensorflow as tf
 import platform
 import shutil
 
-from perceptilabs.script import ScriptFactory
+
 from perceptilabs.logconf import APPLICATION_LOGGER
+from perceptilabs.script import ScriptFactory
 from perceptilabs.graph.spec import GraphSpec
 from perceptilabs.createDataObject import createDataObject
+import perceptilabs.logconf
+import perceptilabs.utils as utils
 
 
 logger = logging.getLogger(APPLICATION_LOGGER)
@@ -177,7 +180,7 @@ class GetNetworkInputDim(LW_interface_base):
         layer_results = lw_results[layer_spec.id_]
         if layer_spec.should_show_errors and layer_results.has_errors:
             error_type, error_info = list(layer_results.errors)[-1] # Get the last error
-            content['Error'] = {'Message': error_info.message, 'Row': error_info.message}
+            content['Error'] = {'Message': error_info.message, 'Row': error_info.line_number}
         else:
             content['Error'] = None
 
@@ -250,7 +253,7 @@ class GetNetworkData(LW_interface_base):
         # Ignore errors for layers that are not fully configured
         if layer_spec.should_show_errors and layer_results.has_errors:
             error_type, error_info = list(layer_results.errors)[-1] # Get the last error
-            dim_content['Error'] = {'Message': error_info.message, 'Row': error_info.message}
+            dim_content['Error'] = {'Message': error_info.message, 'Row': error_info.line_number}
         else:
             dim_content['Error'] = None
 
@@ -451,8 +454,8 @@ class ScanCheckpoint(LW_interface_base):
 
     def run(self):
         response = False
-        if 'checkpoints' in os.listdir(self._path):
-            for filename in os.listdir(os.path.join(self._path,'checkpoints')):
+        if 'checkpoint' in os.listdir(self._path):
+            for filename in os.listdir(os.path.join(self._path,'checkpoint')):
                 if filename == 'checkpoint':
                     response = True
                     break
@@ -463,8 +466,50 @@ class CopyJsonModel(LW_interface_base):
     def __init__(self, folder_path):
         self._folder_path = folder_path
     def run(self):
+        import time
         file_path = os.path.join(self._folder_path, 'model.json')
-        copy_path = os.path.join(self._folder_path, 'checkpoints','checkpoint_model.json')
-        if not os.path.isdir(os.path.join(self._folder_path,'checkpoints')):
-            os.mkdir(os.path.join(self._folder_path,'checkpoints'))
+        copy_path = os.path.join(self._folder_path, 'checkpoint','checkpoint_model.json')
+        if not os.path.isdir(os.path.join(self._folder_path,'checkpoint')):
+            os.mkdir(os.path.join(self._folder_path,'checkpoint'))
+            time.sleep(.0000000000000001) #Force your computer to do a clock cycle to avoid Windows issues
         shutil.copy2(file_path, copy_path)
+        time.sleep(.0000000000000001) #Force your computer to do a clock cycle to avoid Windows issues        
+
+
+class UploadKernelLogs(LW_interface_base):
+    """ Uploads the Kernel logs to Azure and associates them to a GitHub issue"""
+    def __init__(self, content, session_id):
+        """ 
+        Args:
+            content: the json request coming from the frontend
+            session_id: the ID of the current kernel session
+        """
+        
+        self._issue_title = content['issueTitle']
+        self._issue_body = content['issueBody']
+        self._github_issue_number = content['gitHubIssueNumber']
+        self._github_issue_url = content['gitHubIssueUrl']
+        self._session_id = session_id
+
+    def run(self):
+        import time
+        """ Uploads logs to Azure """
+        # NOTE: this should be logged _before_ the logs are uploaded
+        # so that the information is also embedded in the log
+        logger.info(
+            f"User reported an issue.\n"
+            f"Title: {self._issue_title}\n"
+            f"Issue number: {self._github_issue_number}.\n"
+            f"Issue url: {self._github_issue_url}.\n"
+            f"Body: \n{self._issue_body}"
+        )
+
+        zip_name = utils.format_logs_zipfile_name(self._session_id, self._github_issue_number)
+        try:
+            perceptilabs.logconf.upload_logs(zip_name)
+        except:
+            logger.exception("Failed uploading logs for!")
+            return False
+        else:
+            return True
+            

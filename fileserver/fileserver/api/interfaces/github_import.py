@@ -1,5 +1,6 @@
 import requests
 from github import Github
+from fileserver.api.exceptions import UserError
 
 class RepoImporterAPI():
     def __init__(self, url):
@@ -34,7 +35,7 @@ class RepoImporterAPI():
         try:
             from git import Repo
         except:
-            raise RuntimeError("git_import")
+            raise UserError("We can't talk to the git command. Is it installed?")
 
         Repo.clone_from(self.url, dest_path)
 

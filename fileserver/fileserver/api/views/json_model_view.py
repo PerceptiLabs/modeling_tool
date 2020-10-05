@@ -20,7 +20,7 @@ class JsonModelView(APIView):
     @staticmethod
     def load_json(full_path):
         with open(full_path, "r") as f:
-            odne = False
+            done = False
             try:
                 return json.load(f)
             except json.decoder.JSONDecodeError:

@@ -103,6 +103,7 @@ export default {
   },
   computed: {
     ...mapGetters({
+      viewType:               'mod_workspace/GET_viewType',
       currentNetwork:         'mod_workspace/GET_currentNetwork',
       canEditLayers:          'mod_workspace/GET_networkIsOpen',
       statisticsIsOpen:       'mod_workspace/GET_statisticsIsOpen',
@@ -179,10 +180,8 @@ export default {
       this.calcSvgSize(true)
     },
     networkScale(currentZoom, oldZoom) {
-      this.updateElementPositionsOnZoom(currentZoom, oldZoom);
-      this.updateSnapshotElementPositionsOnZoom(currentZoom, oldZoom);
       this.calcSvgSize(true);
-      setTimeout(()=> this.createArrowList(), 0)
+      setTimeout(()=> this.createArrowList(), 0);
     },
     eventCalcArrow() {
       this.createArrowList()
@@ -208,7 +207,7 @@ export default {
         if (newVal && 
           oldVal &&
           newKeys.length === oldKeys.length + 1) {
-            this.setNextStep('tutorial-workspace-layer-data');
+            this.setNextStep({currentStep:'tutorial-workspace-layer-data'});
         }
       }
     }
@@ -321,49 +320,6 @@ export default {
        offsetX: this.$refs.network.parentElement.parentElement.parentElement.offsetLeft,
        offsetY: this.$refs.network.parentElement.parentElement.parentElement.offsetTop
       };
-    },
-    updateElementPositionsOnZoom(newScale, oldScale) {
-      for (var el in this.fullNetworkElementList) {
-        const element = this.fullNetworkElementList[el];
-        const x0 = element.layerMeta.position.left;
-        const y0 = element.layerMeta.position.top;
-
-        this.change_singleElementPosition({
-          id: el,
-          top: y0 / oldScale * newScale,
-          left: x0 / oldScale * newScale
-        })
-
-        // if (element.layerMeta.containerDiff) {
-        //   const preTop = element.layerMeta.containerDiff.top;
-        //   const preLeft = element.layerMeta.containerDiff.left;
-        //   this.change_groupContainerDiff({
-        //     id: el,
-        //     top: preTop / oldScale * newScale,
-        //     left: preLeft / oldScale * newScale
-        //   })
-        // }
-      }
-    },
-    updateSnapshotElementPositionsOnZoom(newScale, oldScale) {
-
-      if (!this.networkElementListSnapshot) { return; }
-
-      if (typeof this.statisticsIsOpen !== 'boolean' &&
-          typeof this.testingIsOpen !== 'boolean') { return; }
-
-      // For snapshot
-      for (var el in this.networkElementListSnapshot) {
-        const element = this.networkElementListSnapshot[el];
-        const x0 = element.layerMeta.position.left;
-        const y0 = element.layerMeta.position.top;
-
-        this.change_singleElementInSnapshotPosition({
-          id: el,
-          top: y0 / oldScale * newScale,
-          left: x0 / oldScale * newScale
-        });
-      }
     },
     calcSvgSize(redrawArrows) {
       const parentWorkspace = this.$parent.$refs.container;
@@ -741,6 +697,8 @@ export default {
         : 'url(#svg-arrow_triangle)';
     },
     getAllPreviews() {
+      if (this.viewType !== 'model') { return; }
+
       let payload = {};
       for(let id in this.fullNetworkElementList) {
         const el = this.fullNetworkElementList[id];

@@ -882,9 +882,7 @@ def test_checkpoint_is_saved(graph_spec_binary_classification, messaging_factory
     graph_spec = GraphSpec.from_dict(graph_spec_binary_classification)
     
     core.run(graph_spec, auto_close=True)
-    
-    assert 'checkpoint' in os.listdir(os.path.join(checkpoint_path,'checkpoints'))
-    
+    assert 'checkpoint' in os.listdir(checkpoint_path)
 
 def test_export_is_working(graph_spec_binary_classification, messaging_factory, temp_path_checkpoints):
     
@@ -906,7 +904,7 @@ def test_export_is_working(graph_spec_binary_classification, messaging_factory, 
     
     core.run(graph_spec, auto_close=True)
     
-    assert 'checkpoint' in os.listdir(os.path.join(checkpoint_path,'checkpoints'))
+    assert 'checkpoint' in os.listdir(checkpoint_path)
     
     ################################################################
     
@@ -945,44 +943,29 @@ def test_export_is_working(graph_spec_binary_classification, messaging_factory, 
     core.request_close()
 
 def test_testing_loads_checkpoints(graph_spec_binary_classification, messaging_factory, temp_path_checkpoints):
-    passed = False
-    graphs = []
     
-    def metric_fn(graphs):
-        if len(graphs) > 10:
-            accuracy_list = [g.active_training_node.layer.accuracy_training for g in graphs[-10:]]
-            accuracy = np.mean(accuracy_list)
-            return accuracy >= 0.75
-        else:
-            return False
-        
-    for attempt in range(10):
-        
-        print(f"Beginning attempt {attempt}")
-        script_factory = ScriptFactory(max_time_run=180, running_mode = 'training', simple_message_bus=True)
+    script_factory = ScriptFactory(max_time_run=180, running_mode = 'training', simple_message_bus=True)
 
-        replica_by_name = {repl_cls.__name__: repl_cls for repl_cls in BASE_TO_REPLICA_MAP.values()}
-        graph_builder = GraphBuilder(replica_by_name)
-        
-        core = Core(
-            graph_builder,
-            script_factory,
-            messaging_factory
-        )
-        checkpoint_path = temp_path_checkpoints
-        for _, spec in graph_spec_binary_classification['Layers'].items():
-            spec['checkpoint'] =  {'path':checkpoint_path, 'load_checkpoint':False }
-        
-        graph_spec_binary_classification['Layers']['6']["Properties"]["Epochs"] = 100
-        
-        graph_spec = GraphSpec.from_dict(graph_spec_binary_classification)
-        
-        core.run(graph_spec, auto_close=True)
-        graphs.extend(core.graphs)        
-        passed = metric_fn(graphs)
-        if passed:
-            break
-    assert 'checkpoint' in os.listdir(os.path.join(checkpoint_path,'checkpoints'))
+    replica_by_name = {repl_cls.__name__: repl_cls for repl_cls in BASE_TO_REPLICA_MAP.values()}
+    graph_builder = GraphBuilder(replica_by_name)
+    
+    core = Core(
+        graph_builder,
+        script_factory,
+        messaging_factory
+    )
+    
+    checkpoint_path = temp_path_checkpoints
+    
+    for _, spec in graph_spec_binary_classification['Layers'].items():
+        spec['checkpoint'] =  {'path':checkpoint_path, 'load_checkpoint':False }
+    
+    graph_spec_binary_classification['Layers']['6']["Properties"]["Epochs"] = 100
+    
+    graph_spec = GraphSpec.from_dict(graph_spec_binary_classification)
+    core.run(graph_spec, auto_close=True)
+    assert 'checkpoint' in os.listdir(checkpoint_path)
+    
     core.request_close()
     
     ################################################################
@@ -999,7 +982,6 @@ def test_testing_loads_checkpoints(graph_spec_binary_classification, messaging_f
         messaging_factory,
         running_mode='testing'
     )
-    checkpoint_path = temp_path_checkpoints
     for _, spec in graph_spec_binary_classification['Layers'].items():
         spec['checkpoint'] =  {'path':checkpoint_path, 'load_checkpoint':True }
     

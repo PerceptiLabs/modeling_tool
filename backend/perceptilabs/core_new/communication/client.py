@@ -81,7 +81,7 @@ class TrainingClient:
                 self._on_training_ended(value['session_info'], value['end_state'])
         elif key == 'log-message':
             if self._on_log_message:
-                self._on_log_message(value['message'])
+                self._on_log_message(value['level'], value['message'])
         elif key == 'userland-timeout':
             logger.info("Userland timeout")
             if self._on_userland_timeout:
@@ -95,7 +95,7 @@ class TrainingClient:
                 graph = self._graph_builder.build_from_snapshot(value)                
                 self._on_receive_graph(graph)
         else:
-            logger.warning(f"Unknown message key {key} [TrainingClient]")
+            logger.info(f"Unknown message key {key} [TrainingClient]")
 
     def _process_outgoing_messages(self):
         keys = []

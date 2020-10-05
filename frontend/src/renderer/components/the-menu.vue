@@ -208,10 +208,10 @@ export default {
       this.goToLink(`${baseUrlSite}/about`);
     },
     goToHelpPageWeb() {
-      window.location.href = 'https://join.slack.com/t/perceptilabs-com/shared_invite/zt-auchqflz-4YANlDBSyJW1qC7LdpQBSA';
+       this.goToLink('https://join.slack.com/t/perceptilabs-com/shared_invite/zt-auchqflz-4YANlDBSyJW1qC7LdpQBSA');
     },
     goToAboutPageWeb() {
-      window.location.href = 'https://perceptilabs.com/docs/overview';
+      this.goToLink(`https://perceptilabs.com/docs/overview`);
     },
     openModel() {
       this.openNetwork();

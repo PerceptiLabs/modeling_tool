@@ -41,6 +41,7 @@
   import TutorialNotification from "@/components/different/tutorial-notification.vue";
   import { getModelJson as fileserver_getModelJson } from '@/core/apiFileserver';
   import { fileserverAvailability } from '@/core/apiFileserver';
+  import { pullTokenFromEnv as fileserver_pullTokenFromEnv } from '@/core/apiFileserver';
 
   let ipcRenderer = null;
   if(isElectron()) {
@@ -61,7 +62,7 @@
   import TheInfoPopup           from "@/components/global-popups/the-info-popup.vue";
   import ConfirmPopup           from "@/components/global-popups/confirm-popup.vue";
   import ModalPagesEngine       from '@/components/modal-pages-engine.vue';
-  import { MODAL_PAGE_PROJECT } from '@/core/constants.js';
+  import { MODAL_PAGE_PROJECT, MODAL_PAGE_WHATS_NEW } from '@/core/constants.js';
 
   export default {
     name: 'TheApp',
@@ -77,6 +78,7 @@
       window.addEventListener('offline', this.updateOnlineStatus);
       this.trackerInit();
       this.readUserInfo();
+      fileserver_pullTokenFromEnv();
       
       // from webstorage
       this.loadWorkspacesFromWebStorage()
@@ -87,10 +89,9 @@
         });
 
       this.$store.commit('mod_project/setIsDefaultProjectMode');
-      this.$store.dispatch('mod_tutorials/loadTutorialProgress');
-      this.initTutorialView();
+      
     },
-    mounted() {      
+    mounted() {
       if (this.isDefaultProjectMode) { 
         // in the free version, the user is locked to a single project
         this.getDefaultModeProject();
@@ -113,6 +114,15 @@
         }
       }
       this.$store.commit('mod_workspace-changes/get_workspaceChangesInLocalStorage');
+
+      this.$store.dispatch('mod_tutorials/loadTutorialProgress')
+        .then(() => {
+          if (!this.getHasShownWhatsNew) {
+            this.setActivePageAction(MODAL_PAGE_WHATS_NEW);
+          } else {
+            this.initTutorialView();
+          }
+        });
 
       this.$store.dispatch('mod_tutorials/activateNotification');      
 
@@ -156,7 +166,7 @@
 
         this.calcAppPath();
       }
-      this.checkLocalToken();
+      // this.checkLocalToken();
       this.checkFileserverAvailability();
       this.$store.dispatch('mod_api/API_runServer', null, {root: true});
       // this.$store.dispatch('mod_workspace/GET_workspacesFromLocalStorage');
@@ -191,12 +201,17 @@
         user:                   'mod_user/GET_userProfile',
         isDefaultProjectMode:   'mod_project/GET_isDefaultProjectMode',
         currentProject:         'mod_project/GET_project',
+        viewType:               'mod_workspace/GET_viewType',
+        currentModelIndex:      'mod_workspace/GET_currentModelIndex',
+        currentStatsIndex:      'mod_workspace/GET_currentStatsIndex',
+        currentTestIndex:       'mod_workspace/GET_currentTestIndex',
         networksWithChanges:    'mod_workspace-changes/get_networksWithChanges',
         showPiPyNotification:   'mod_workspace-notifications/getPiPyShowNotification',
         getActiveNotifications: 'mod_tutorials/getActiveNotifications',
         getIsTutorialMode:      'mod_tutorials/getIsTutorialMode',
         getShowChecklist:       'mod_tutorials/getShowChecklist',
         getShowTutorialTips:    'mod_tutorials/getShowTutorialTips',
+        getHasShownWhatsNew:    'mod_tutorials/getHasShownWhatsNew', 
         emptyNavigationMode:    'mod_empty-navigation/getEmptyScreenMode',        
       }),
       platform() {
@@ -262,8 +277,16 @@
       },
       showTutorialNotifications() {
         // Don't show notifications if there are any overlays
+
         if (this.currentPage) { return false; }
         if (this.hasModalsOpenInWorkspace) { return false; }
+
+        // have check each screen because the proposal to separate each view
+        // into it's own component wasn't well received.
+        if (this.$route.name === 'projects') { return this.getShowTutorialTips; }
+        else if (this.viewType === 'model' && this.currentModelIndex === -1) { return false; }
+        else if (this.viewType === 'statistic' && this.currentStatsIndex === -1) { return false; }
+        else if (this.viewType === 'test' && this.currentTestIndex === -1) { return false; }
 
         return this.getIsTutorialMode && this.getShowTutorialTips;
       },
@@ -367,10 +390,10 @@
             if (project1 && !project2) { return false; }
             if (!project1 && project2) { return false; }
             if (project1.name !== project2.name)  { return false; }
-            if (project1.models.length !== project2.models.length)  { return false; }
-            if (
-              project1.models.every(p1 => !project2.models.includes(p1)) ||
-              project2.models.every(p2 => !project1.models.includes(p2)))  { return false; }
+            // if (project1.models.length !== project2.models.length)  { return false; }
+            // if (
+            //   project1.models.every(p1 => !project2.models.includes(p1)) ||
+            //   project2.models.every(p2 => !project1.models.includes(p2)))  { return false; }
 
             return true;
           }
@@ -470,17 +493,17 @@
         }
         this.SET_appPath(path);
       },
-      checkLocalToken() {
-        let localUserToken = JSON.parse(localStorage.getItem('currentUser'));
-        if(localUserToken) {
-          this.setUserToken(localUserToken);
-          if(['main-page', 'settings'].includes(this.$router.history.current.name)) {
-            this.$router.replace({name: 'projects'});
-          }
-        } else {
-          this.$router.push({name: 'main-page'}).catch(err => {});
-        }    
-      },
+      // checkLocalToken() {
+      //   let localUserToken = JSON.parse(localStorage.getItem('currentUser'));
+      //   if(localUserToken) {
+      //     this.setUserToken(localUserToken);
+      //     if(['main-page', 'settings'].includes(this.$router.history.current.name)) {
+      //       this.$router.replace({name: 'projects'});
+      //     }
+      //   } else {
+      //     this.$router.push({name: 'main-page'}).catch(err => {});
+      //   }    
+      // },
       checkFileserverAvailability() {
         fileserverAvailability().then(resp => {
           if (resp === "UNAVAILABLE") {
@@ -595,17 +618,19 @@
     
       initTutorialView() {
         const viewType = localStorage.getItem(LOCAL_STORAGE_WORKSPACE_VIEW_TYPE_KEY);
+
+        // for the project side bar
         this.setViewTypeMutation(viewType);
-        switch (viewType) {
-          case 'model':
-            this.setCurrentView('tutorial-workspace-view');
-            break
-          case 'statistics':
-            this.setCurrentView('tutorial-statistics-view');
-            break
-          case 'test':
-            this.setCurrentView('tutorial-test-view');
-            break
+
+        // for the tutorial
+        if (this.$route.name === 'projects') { 
+          this.setCurrentView('tutorial-model-hub-view');
+        } else if (viewType === 'model') {
+          this.setCurrentView('tutorial-workspace-view');
+        } else if (viewType === 'statistic') {
+          this.setCurrentView('tutorial-statistics-view');
+        } else if (viewType === 'test') {
+          this.setCurrentView('tutorial-test-view');
         }
       }
     },

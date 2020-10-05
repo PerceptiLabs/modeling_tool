@@ -32,23 +32,24 @@ import perceptilabs.autosettings.utils as autosettings_utils
 
 #LW interface
 from perceptilabs.lwInterface import (
-        getNotebookImports,
-        getNotebookRunscript,
-        getGraphOrder,
-        getDataMeta,
-        getDataMetaV2,
-        getPartitionSummary,
-        getCode,
-        GetNetworkInputDim,
-        getNetworkOutputDim,
-        getPreviewSample,
-        getPreviewBatchSample,
-        getPreviewVariableList,
-        Parse,
-        GetNetworkData,
-        ScanCheckpoint,
-        CopyJsonModel
-        )
+    getNotebookImports,
+    getNotebookRunscript,
+    getGraphOrder,
+    getDataMeta,
+    getDataMetaV2,
+    getPartitionSummary,
+    getCode,
+    GetNetworkInputDim,
+    getNetworkOutputDim,
+    getPreviewSample,
+    getPreviewBatchSample,
+    getPreviewVariableList,
+    Parse,
+    GetNetworkData,
+    ScanCheckpoint,
+    CopyJsonModel,
+    UploadKernelLogs
+)
 
 logger = logging.getLogger(APPLICATION_LOGGER)
 
@@ -216,8 +217,8 @@ class Interface():
         action = request.get('action')
         value = request.get('value')
 
-        # if action != 'checkCore':
-        #     logger.info(f"Frontend request: {action}")
+        if action != 'checkCore':
+            logger.info(f"Frontend receiver: {receiver} , Frontend request: {action}")
         
         if logger.isEnabledFor(logging.DEBUG):
             logger.debug("creating response for action: {}. \nFull request:\n{}".format(
@@ -235,10 +236,10 @@ class Interface():
         try:
             response = self._create_response(receiver, action, value)
         except Exception as e:
-           with self._core.issue_handler.create_issue('Error in create_response', e) as issue:
-               self._core.issue_handler.put_error(issue.frontend_message)
-               response = {'content': issue.frontend_message}                
-               logger.error(issue.internal_message)
+            with self._core.issue_handler.create_issue('Error in create_response', e) as issue:
+                self._core.issue_handler.put_warning(issue.frontend_message)
+                response = {'content': issue.frontend_message}                
+                logger.error(issue.internal_message)
 
         if logger.isEnabledFor(logging.DEBUG):
             logger.debug("created response for action: {}. \nFull request:\n{}\nResponse:\n{}".format(
@@ -406,7 +407,9 @@ class Interface():
 
         elif action == "headless":
             On=value    #bool value
-            response = self._core.headless(On)
+            response = {}
+            #TODO: Re-enalbe headless mode after frontend is more stable
+            # response = self._core.headless(On)
             return response
 
         elif action == "getTrainingStatistics":
@@ -526,7 +529,10 @@ class Interface():
             result_names = value
             response = self._core.getAggregationResults(result_names)
             return response
-
+        elif action == 'UploadKernelLogs':
+            uploader = UploadKernelLogs(value, self._session_id)
+            response = uploader.run()
+            return response
         else:
             raise LookupError(f"The requested action '{action}' does not exist")
 

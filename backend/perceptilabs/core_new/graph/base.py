@@ -186,7 +186,7 @@ class Graph:
     def run(self, mode = 'training'):
         if mode in ['training', 'testing']:
             yield from self.active_training_node.layer.run(self, mode)
-       
+        
     def init_layer(self, mode = 'training'):
         self.active_training_node.layer.init_layer(self, mode)       
 

@@ -116,6 +116,7 @@
               @focus="setIsSettingInputFocused(true)"
               @blur="setIsSettingInputFocused(false)")
  
+        .form_row
           .form_label Decay rate:
           .form_input
             input(
@@ -216,7 +217,7 @@ export default {
       interactiveInfo: {
         labels: {
           title: 'Labels',
-          text: 'Choose which input connection is represent the labels'
+          text: 'Choose which input connection represents the labels'
         },
         epochs: {
           title: 'epochs',

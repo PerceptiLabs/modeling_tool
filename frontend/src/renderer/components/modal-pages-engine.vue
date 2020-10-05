@@ -1,10 +1,10 @@
 <template lang="pug">
   div(v-if="isOpen")#modal-page-engine-wrapper.modal-page-engine-wrapper
     create-select-project(v-if="currentPage === MODAL_PAGE_PROJECT")
-    page-login(v-else-if="currentPage === MODAL_PAGE_SIGN_IN")
-    page-register(v-else-if="currentPage === MODAL_PAGE_SIGN_UP")
+    //- page-login(v-else-if="currentPage === MODAL_PAGE_SIGN_IN")
+    //- page-register(v-else-if="currentPage === MODAL_PAGE_SIGN_UP")
+    //- page-restore-account(v-else-if="currentPage === MODAL_PAGE_RESTORE_ACCOUNT")
     page-whats-new(v-else-if="currentPage === MODAL_PAGE_WHATS_NEW")
-    page-restore-account(v-else-if="currentPage === MODAL_PAGE_RESTORE_ACCOUNT")
 </template>
 <script>
   import { mapActions } from "vuex";
@@ -28,7 +28,7 @@
           throw "haven't token";
         }
       } catch(e) {
-        this.setActivePageAction(MODAL_PAGE_SIGN_UP)
+        // this.setActivePageAction(MODAL_PAGE_SIGN_UP)
       };
 
      

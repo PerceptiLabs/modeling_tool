@@ -88,14 +88,14 @@
             btnId: 'tutorial_loss-tab',
             btnInteractiveInfo: {
               title: 'Loss',
-              text: 'View the loss.'
+              text: 'View the loss'
             }
           },
           'R_Squared': {
             btnId: 'tutorial_r_squared-tab',
             btnInteractiveInfo: {
               title: 'R Squared',
-              text: 'View the R Squared data.'
+              text: 'View the R Squared data'
             }
           },
         },

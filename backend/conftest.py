@@ -136,9 +136,10 @@ def print_name_and_memory():
     log.info('Finalizing test: {}, memory: {}'.format(test_name, psutil.Process().memory_full_info()))    
 
 
-@pytest.fixture(scope='session', autouse=True)
+@pytest.fixture(scope='function', autouse=True)
 def temp_path_checkpoints():
-    path = tempfile.mkdtemp().replace('\\', '/')
-    path = os.path.join(path, 'dummy_model')
+    path = tempfile.mkdtemp()
+    path = os.path.join(path, 'dummy_model', 'checkpoint')
+    path = path.replace('\\', '/')
     yield path
 

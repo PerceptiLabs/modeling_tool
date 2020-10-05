@@ -28,26 +28,26 @@
           v-if="pathIndex >= currentPath.length - breadcrumbShowLastXPositions"
           :key="pathIndex")
           span.directory-crumb(@click="calcBreadcrumbPath(pathIndex)") {{ pathName }}
+      perfect-scrollbar
+        .selectable-list
+          .list-item(
+            :class="{selected:isSelected(directory)}"
+            @click="onDirectoryClick(directory)"
+            @dblclick="onDirectoryDoubleClick(directory)"
+            v-for="(directory, index) in directories"
+            :key="index")
+            img(src="/static/img/file-picker/folder.svg" class="svg-icon")
+            span {{ directory }}
 
-      .selectable-list
-        .list-item(
-          :class="{selected:isSelected(directory)}"
-          @click="onDirectoryClick(directory)"
-          @dblclick="onDirectoryDoubleClick(directory)"
-          v-for="(directory, index) in directories"
-          :key="index")
-          img(src="/static/img/file-picker/folder.svg" class="svg-icon")
-          span {{ directory }}
-
-        .list-item(
-          :class="{selected:isSelected(fileName)}"
-          @dblclick="onFileDoubleClick(fileName)"
-          @click="toggleSelectedFile(fileName, $event)"
-          v-for="fileName in files"
-          v-if="['file', 'multimode'].includes(filePickerType)"
-          :key="fileName")
-          img(src="/static/img/file-picker/file.svg" class="svg-icon")
-          span {{ fileName }}
+          .list-item(
+            :class="{selected:isSelected(fileName)}"
+            @dblclick="onFileDoubleClick(fileName)"
+            @click="toggleSelectedFile(fileName, $event)"
+            v-for="fileName in files"
+            v-if="['file', 'multimode'].includes(filePickerType)"
+            :key="fileName")
+            img(src="/static/img/file-picker/file.svg" class="svg-icon")
+            span {{ fileName }}
 
 
       .button-group
@@ -410,6 +410,7 @@ export default {
   overflow-y: auto;
   padding: 0.3rem 0;
   background-color: $bg-workspace-2;
+  min-height: 224px;
 
   .list-item {
     display: flex;

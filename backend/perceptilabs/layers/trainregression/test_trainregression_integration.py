@@ -121,6 +121,10 @@ def test_can_instantiate(script_factory):
     layer_spec = TrainRegressionSpec(
         id_='layer_id',
         name='layer_name',
+        backward_connections=(
+            LayerConnection(dst_var='predictions'),
+            LayerConnection(dst_var='labels')
+        )
     )
     graph_spec = MagicMock()
     graph_spec.nodes_by_id.__getitem__.sanitized_name = '123'
@@ -233,7 +237,7 @@ def test_load_checkpoint(script_factory, temp_path_100x1, temp_path_checkpoints)
     inputs_path = os.path.join(temp_path_100x1, '100x1_inputs.npy')
     targets_path = os.path.join(temp_path_100x1, '100x1_outputs.npy')
     
-    checkpoint_path = os.path.join(temp_path_100x1, "checkpoints")
+    checkpoint_path = os.path.join(temp_path_100x1, "checkpoint")
     graph_spec1 = make_graph_spec(
         temp_path_checkpoints,
         inputs_path,

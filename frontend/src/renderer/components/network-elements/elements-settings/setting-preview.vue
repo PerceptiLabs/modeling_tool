@@ -8,9 +8,10 @@
         :element="storeCurrentElement"
         :outputsVariables="storeCurrentElement.previewVariableList"
       )
-
+    .chart-spinner-wrapper(v-if="showLoadingSpinner")
+      chart-spinner
     chart-switch.data-settings_chart(
-      v-if="shouldShowPreview"
+      v-if="shouldShowPreview && !showLoadingSpinner"
       :disable-header="true"
       :chart-data="storeCurrentElement.chartData"
     )
@@ -21,12 +22,13 @@
   import ChartSwitch  from "@/components/charts/chart-switch.vue";
   import SettingInputs  from "@/components/network-elements/elements-settings/setting-inputs.vue";
   import SettingOutputs  from "@/components/network-elements/elements-settings/setting-outputs.vue";
+  import ChartSpinner     from '@/components/charts/chart-spinner'
   import {mapActions, mapGetters} from 'vuex';
   
 export default {
   name: "SettingsPreview",
   inject: ['hideAllWindow'],
-  components: {ChartSwitch, SettingInputs, SettingOutputs},
+  components: {ChartSwitch, SettingInputs, SettingOutputs, ChartSpinner},
   props: {
     currentEl: { type: Object },
   },
@@ -43,6 +45,9 @@ export default {
       isTutorialMode:          'mod_tutorials/getIsTutorialMode',
       statisticsOrTestIsOpen:  'mod_workspace/GET_statisticsOrTestIsOpen',
     }),
+    showLoadingSpinner() {
+      return this.storeCurrentElement.chartDataIsLoading !== undefined && this.storeCurrentElement.chartDataIsLoading !== 0;
+    },
     layerId() {
       return this.currentEl.layerId
     },
@@ -137,5 +142,12 @@ export default {
  
   .data-settings_chart {
     border-radius:  0 0 4px 4px;
+  }
+  .chart-spinner-wrapper {
+    position: relative;
+    min-height: 140px;
+    .chart-spinner-box {
+      background: transparent;
+    }
   }
 </style>

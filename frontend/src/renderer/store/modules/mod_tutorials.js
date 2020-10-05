@@ -58,7 +58,7 @@ const state = {
       steps: [
         {
           stepCode: 'tutorial-model-hub-new-button',
-          displayText: 'Get started by first creating a model.',
+          displayText: 'Get started by creating a model.',
           arrowDirection: 'left'
         },
         {
@@ -117,7 +117,7 @@ const state = {
       steps: [
         {
           stepCode: 'tutorial-workspace-layer-menu',
-          displayText: 'You build out your model by combining components, you can find the components in these categories.',
+          displayText: 'You build out your model by combining components. You can find the components in these categories.',
           arrowDirection: 'left'
         },
         {
@@ -130,7 +130,7 @@ const state = {
         },
         {
           stepCode: 'tutorial-workspace-settings',
-          displayText: 'Here you can modify your component, if something is missing you can press <strong>Open Code</strong> to custom edit the component.',
+          displayText: 'Here you can modify your component. If something is missing you can press <strong>Open Code</strong> to custom-edit the component.',
           overrideActions: {
             setup: 'tutorial-workspace-settings-setup',
           }
@@ -142,12 +142,12 @@ const state = {
         },
         {
           stepCode: 'tutorial-workspace-notebook-view-toggle',
-          displayText: 'Toggle notebook view to see your model in a jupyter notebook format.',
+          displayText: 'Toggle notebook view to see your model in a Jupyter notebook format.',
           arrowDirection: 'right'
         },
         {
           stepCode: 'tutorial-workspace-start-training',
-          displayText: 'When you are happy with your model, press Run to start training it.',
+          displayText: 'When you are happy with your model press Run to start training it.',
           arrowDirection: 'left'
         },
         {
@@ -474,6 +474,7 @@ const actions = {
   },
   setHasShownWhatsNew({commit, dispatch, getters}, value = true) {
     commit('setHasShownWhatsNew', value);
+    dispatch('saveTutorialProgress');
   },
   setTutorialNotificationsState({commit, dispatch, getters}, value = false) {
     commit('setTutorialNotificationsState', value);
@@ -502,7 +503,7 @@ const actions = {
     
     dispatch('activateNotification');
   },
-  setNextStep({commit, dispatch, getters}, currentStep = '') {
+  setNextStep({commit, dispatch, getters}, {currentStep = '', activateNextStep = true}) {
     if (!getters.getShowTutorialTips) { return; }
 
     if (currentStep !== '' && currentStep !== getters.getCurrentStepCode) {
@@ -517,7 +518,13 @@ const actions = {
     const newStep = getters.getCurrentStep;
 
     setTimeout(() => {
-      dispatch('setupDelegator', { step: newStep });
+      // Adds ability to disable setup so certain triggers can work well:
+      // Clicking on Create in the projects view will cause an extra notification to
+      // appear if activateNextStep is not deactivated.
+      if (activateNextStep) {
+        dispatch('setupDelegator', { step: newStep });
+      }
+
       dispatch('teardownDelegator', { step: oldStep });
       dispatch('saveTutorialProgress');
     }, 0);
@@ -582,7 +589,10 @@ const actions = {
     commit('saveTutorialProgress');
   },
   loadTutorialProgress({commit}) {
-    commit('loadTutorialProgress');
+    return new Promise((resolve, reject) => {
+      commit('loadTutorialProgress');
+      resolve();
+    });
   },
 
   /****************************************************************************

@@ -4,6 +4,7 @@ import idb  from "@/core/helpers/idb-helper.js";
 import Vue    from 'vue'
 import router from '@/router'
 import {isElectron} from "@/core/helpers";
+import { deleteFolder as fileserver_deleteFolder } from '@/core/apiFileserver';
 import cloneDeep from 'lodash.clonedeep';
 import { saveModelJson as fileserver_saveModelJson } from '@/core/apiFileserver';
 
@@ -655,7 +656,12 @@ const mutations = {
       return indexId;
     }
   },
-  delete_network(state, index) {
+  async delete_network(state, index) {
+
+    const path = state.workspaceContent[index].apiMeta.location.replace('/', '\\');
+    await fileserver_deleteFolder(path)
+
+
     if(state.currentNetwork >= index) {
       const index = state.currentNetwork - 1;
       state.currentNetwork = index < 0 ? 0 : index
@@ -920,7 +926,7 @@ const mutations = {
     if(setChangeToWorkspaceHistory)
       dispatch('mod_workspace-history/PUSH_newSnapshot', null, {root: true});
 
-    dispatch('mod_api/API_getBatchPreviewSample', null, {root: true})
+    dispatch('mod_api/API_getBatchPreviewSample', {}, {root: true})
 
     function checkPosition(el, list) {
       let depth = 0;
@@ -1076,9 +1082,9 @@ const mutations = {
     const endEl = currentElement(endObject.layerId);
 
 
-    // check if already have connection
+    // check if input already has connection
     if(endEl.inputs[endObject.inputDotId].reference_layer_id !== null) {
-      dispatch('globalView/GP_infoPopup', 'Input already have connection!', {root: true});
+      dispatch('globalView/GP_infoPopup', 'This input already has a connection!', {root: true});
       return;
     }
 
@@ -1267,7 +1273,7 @@ const mutations = {
     /* validations */
     if(arrSelect.length === 0) isValid = false;
     if(arrSelect.length === 1) {
-      dispatch('globalView/GP_infoPopup', 'At least 2 elements are needed to create a group', {root: true});
+      dispatch('globalView/GP_infoPopup', 'At least two elements are needed to create a group', {root: true});
       isValid = false;
     }
     if(!isValid) {
@@ -1281,7 +1287,7 @@ const mutations = {
     if(selectedItemsParentContainerId) {
       if(arrSelect[0].parentContainerID !== undefined) {
         if(Object.keys(elementList[arrSelect[0].parentContainerID].containerLayersList).length === arrSelect.length) {
-          dispatch('globalView/GP_infoPopup', 'All items inside a group can\'t be grouped', {root: true});
+          dispatch('globalView/GP_infoPopup', 'Not all items inside a group can be grouped', {root: true});
           dispatch('SET_elementUnselect');
           return;
         }
@@ -1720,6 +1726,24 @@ const mutations = {
     
     Vue.set(network.networkMeta, 'usingWeights', value);
   },
+  setChartComponentLoadingStateMutation(state, {descendants, value, getters, networkId}) {
+    const networkList = getters.GET_networkByNetworkId(networkId).networkElementList;
+    
+    descendants.forEach(componentId => {
+      if(networkList[componentId] && networkList[componentId].chartDataIsLoading !== undefined) {
+        if(value) { // is should increment
+          Vue.set(networkList[componentId], 'chartDataIsLoading', networkList[componentId].chartDataIsLoading + 1);
+        } else {
+          Vue.set(networkList[componentId], 'chartDataIsLoading', networkList[componentId].chartDataIsLoading - 1);
+        }
+      } else {
+        // is triggered when network component haven't this field
+        if(value) {
+          Vue.set(networkList[componentId], 'chartDataIsLoading', 1);
+        }
+      }
+    })
+  },
 };
 
 
@@ -1788,7 +1812,7 @@ const actions = {
         }
         dispatch('mod_webstorage/updateWorkspaces', null, { root: true });
       }
-      return Promise.resolve();
+      return resolve();
     });
   },
   ADD_existingNetworkToWorkspace({commit,dispatch}, { network } = {}) {
@@ -2053,8 +2077,15 @@ const actions = {
     delete currentNetwork.updated;
     dispatch("mod_project/updateModel", currentNetwork, {root: true});
   },
-  SET_networkLocation({commit, getters}, value) {
-    commit('set_model_location', { location: value, getters })
+  SET_networkLocation({commit, getters, dispatch}, value) {
+    commit('set_model_location', { location: value, getters });
+    let currentNetwork = JSON.parse(JSON.stringify(getters.GET_currentNetwork.apiMeta));
+    currentNetwork.location = value;
+    delete currentNetwork.saved_by;
+    delete currentNetwork.saved_version_location;
+    delete currentNetwork.created;
+    delete currentNetwork.updated;
+    dispatch("mod_project/updateModel", currentNetwork, {root: true});
   },
   SET_networkRootFolder({commit, getters}, value) {
     commit('set_networkRootFolder', {getters, value})
@@ -2113,7 +2144,7 @@ const actions = {
     commit('set_statusNetworkCoreStatusProgressClear', {getters})
   },
   SET_statusNetworkZoom({commit, getters}, value) {
-    commit('set_statusNetworkZoom', {getters, value})
+    commit('set_statusNetworkZoom', {getters, value});
   },
   SET_statusNetworkWaitGlobalEvent({commit, getters}, value) {
     commit('set_statusNetworkWaitGlobalEvent', {getters, value})
@@ -2177,6 +2208,41 @@ const actions = {
   //---------------
   //  NETWORK ELEMENTS
   //---------------
+  updateNetworkElementPositions({getters, commit}, {zoom = 1}) {
+
+    let elementList;
+    let changePositionFunctionName;
+    const oldZoom = getters.GET_currentNetworkZoom;
+    const newZoom = zoom; // assigned to new so it's easier to read later on
+
+    // choosing the right element list and commit functions
+    if (getters.GET_statisticsOrTestIsOpen) {
+      // update snapshot
+      elementList = getters.GET_currentNetworkSnapshotElementList;
+      if (!elementList) { return; }
+
+      changePositionFunctionName = 'change_singleElementInSnapshotPosition';
+
+      getters
+    } else {
+      // update normal
+      elementList = getters.GET_currentNetworkElementList;
+      changePositionFunctionName = 'change_singleElementPosition';
+    }
+
+    // performing the actual position update
+    for (var el in elementList) {
+      const element = elementList[el];
+      const x0 = element.layerMeta.position.left;
+      const y0 = element.layerMeta.position.top;
+
+      commit(changePositionFunctionName, {
+        id: el,
+        top: y0 / oldZoom * newZoom,
+        left: x0 / oldZoom * newZoom
+      })
+    }
+  },
   SET_elementSettings({commit, dispatch}, {settings, pushOntoHistory = false}) {
 
     commit('set_elementSettings', {dispatch, settings, pushOntoHistory})
@@ -2314,7 +2380,10 @@ const actions = {
     }
 
     commit('setViewTypeMutation', value);
-  }
+  },
+  setChartComponentLoadingState({ getters, commit }, {descendants, value, networkId }) {
+    commit('setChartComponentLoadingStateMutation', {getters, descendants, value, networkId});
+  },
 };
 
 export default {

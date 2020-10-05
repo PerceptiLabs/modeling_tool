@@ -8,6 +8,7 @@ import threading
 import pkg_resources
 
 import perceptilabs.logconf
+import perceptilabs.utils as utils
 from perceptilabs.messaging.zmq_wrapper import get_message_bus
 from perceptilabs.issues import IssueHandler
 
@@ -41,7 +42,7 @@ def main():
     perceptilabs.logconf.setup_application_logger(log_level=args.log_level)
     perceptilabs.logconf.setup_data_logger(is_dev=(commit_id == "Dev"))
     perceptilabs.logconf.set_session_id(session_id)
-    perceptilabs.logconf.set_console_logger(queue = issue_handler._logs)
+    perceptilabs.logconf.setup_console_logger(queue = issue_handler._logs)
 
     logger = logging.getLogger(perceptilabs.logconf.APPLICATION_LOGGER)
     data_logger = logging.getLogger(perceptilabs.logconf.DATA_LOGGER)
@@ -78,7 +79,8 @@ def main():
     except Exception as e:
         logger.exception("Exception in server")
     finally:
-        perceptilabs.logconf.upload_logs(session_id)
+        zip_name = utils.format_logs_zipfile_name(session_id)
+        perceptilabs.logconf.upload_logs(zip_name)
 
 if __name__ == "__main__":
     main()

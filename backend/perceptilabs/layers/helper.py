@@ -9,6 +9,11 @@ from perceptilabs.logconf import APPLICATION_LOGGER
 logger = logging.getLogger(APPLICATION_LOGGER)
 
 
+RENDERED_CODE_FILE_NAME = '<rendered-code>'
+RENDERED_CODE_FILE_NAME_WITH_TAG = '<rendered-code: %s>'
+
+
+
 class _CodeLoader:
     """ Data package module loader. Executes package import code and adds the package to the
     module cache.
@@ -22,9 +27,9 @@ class _CodeLoader:
 
     def exec_module(self, module, tag=None):
         if tag is None:
-            file_name = '<rendered-code>'
+            file_name = RENDERED_CODE_FILE_NAME
         else:
-            file_name = f'<rendered-code: {tag}>'
+            file_name = RENDERED_CODE_FILE_NAME_WITH_TAG % tag
             
         code_obj = compile(self._source_bytes, file_name, 'exec', dont_inherit=True, optimize=2)
         exec(code_obj, module.__dict__)
@@ -55,14 +60,12 @@ class LayerHelper:
             )
         
         if check_syntax:
-            try:
-                ast.parse(code)
-            except SyntaxError:
-                logger.error('Syntax error in:\n' + add_line_numbering(code))
-                raise
+            file_name = RENDERED_CODE_FILE_NAME_WITH_TAG % self._make_tag()
+            compile(code.encode(), file_name, 'exec', ast.PyCF_ONLY_AST)
 
         if print_code:
             print(f'{self._layer_spec.id_} [{self._layer_spec.type_}] code:\n' + add_line_numbering(code))
+            
         return code
 
     def get_class(self, preamble=None, print_code=False):
@@ -75,7 +78,7 @@ class LayerHelper:
             spec = importlib.machinery.ModuleSpec("my_module", loader)
             module = importlib.util.module_from_spec(spec)
             try:        
-                spec.loader.exec_module(module, tag=f'{self._layer_spec.id_} [{self._layer_spec.type_}]')        
+                spec.loader.exec_module(module, tag=self._make_tag())        
             except:
                 logger.exception('Error importing code:\n' + add_line_numbering(code))
                 raise
@@ -96,6 +99,8 @@ class LayerHelper:
 
     def get_line_count(self, preamble=None, prepend_imports=False, layer_code=True):
         code = self.get_code(preamble=preamble, prepend_imports=prepend_imports, layer_code=layer_code)
-        line_count = len(code.split('\n')) - int(len(code) > 0)
+        line_count = len(code.split('\n')) - 1
         return line_count
-    
+
+    def _make_tag(self):
+        return f'{self._layer_spec.id_} [{self._layer_spec.type_}]'        

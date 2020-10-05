@@ -29,7 +29,7 @@ def make_graph_spec(temp_path_checkpoints, tutorial_data_path, learning_rate=0.3
     # --- CONNECTIONS ---
     conn_random_to_fc = LayerConnection(src_id='layer_random', src_var='output', dst_id='layer_fc', dst_var='input')
     conn_fc_to_switch = LayerConnection(src_id='layer_fc', src_var='output', dst_id='layer_switch', dst_var='input2')
-      
+        
     conn_real_to_fc3 = LayerConnection(src_id='layer_real', src_var='output', dst_id='layer_fc3', dst_var='input')
     conn_fc3_to_switch = LayerConnection(src_id='layer_fc3', src_var='output', dst_id='layer_switch', dst_var='input1')
 
@@ -151,6 +151,9 @@ def test_can_instantiate(script_factory):
     layer_spec = TrainGanSpec(
         id_='layer_id',
         name='layer_name',
+        backward_connections=(
+            LayerConnection(dst_var='input'),
+        )
     )
 
     graph_spec = MagicMock()

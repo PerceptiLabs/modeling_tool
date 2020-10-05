@@ -285,6 +285,29 @@ class RateCounter:
         except:
             return 0
 
+
+def format_logs_zipfile_name(session_id, issue_id=None):
+    import datetime
+
+    time = datetime.datetime.utcnow()
+
+    year = str(time.year).zfill(4)
+    month = str(time.month).zfill(2)
+    day = str(time.day).zfill(2)
+
+    if issue_id is None:
+        filename = f"default-{year}-{month}-{day}-{session_id}.txt"
+    else:
+        filename = f"issue-{issue_id}-{year}-{month}-{day}-{session_id}.txt"        
+
+    return filename
+
+    
+
+
+
+    
+        
         
             
 if __name__ == "__main__":

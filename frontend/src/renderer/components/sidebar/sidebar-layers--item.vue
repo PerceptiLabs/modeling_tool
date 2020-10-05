@@ -94,7 +94,7 @@ export default {
         }
         const sameNames = layersArray.filter( layer => layer ===  newText);
         if(sameNames.length > 1) {
-          this.infoPopup(`Name ${newText} already in use!`);
+          this.infoPopup(`Name ${newText} is already in use!`);
           this.itemData.layerName = oldText;
         }
       }

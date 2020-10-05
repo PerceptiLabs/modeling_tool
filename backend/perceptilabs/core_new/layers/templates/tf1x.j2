@@ -1,8 +1,9 @@
-{% from 'tf1x_utils.j2' import batch_normal, activation_function, activation_name, build_output_dict %}
+{% from 'tf1x_utils.j2' import batch_normal, activation_function, activation_name, build_output_dict, check_input_vars %}
 
 {% macro layer_tf1x_switch(layer_spec, graph_spec=None) %}
 class {{layer_spec.sanitized_name}}(Tf1xLayer):
     def __init__(self):
+        {{ check_input_vars(layer_spec, ['input1', 'input2'])|indent(width=8)}}        
         self._selected_layer_name = '{{layer_spec.selected_layer_id}}' 
         self._selected_var_name = '{{layer_spec.selected_var_name}}'
         
@@ -72,6 +73,7 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
 class {{layer_spec.sanitized_name}}(Tf1xLayer):
     def __call__(self, inputs: Dict[str, tf.Tensor], is_training: tf.Tensor = None) -> Dict[str, tf.Tensor]:
         """ Takes a tensor as input and changes it to grayscale."""
+        {{ check_input_vars(layer_spec, ['input'])|indent(width=8)}}        
         x = inputs['input']
         channels = x.get_shape().as_list()[-1]
         if channels % 3 == 0:
@@ -146,6 +148,7 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
 class {{layer_spec.sanitized_name}}(Tf1xLayer):
     def __call__(self, inputs: Dict[str, tf.Tensor], is_training: tf.Tensor = None) -> Dict[str, tf.Tensor]:
         """ Takes a tensor as input and reshapes it."""
+        {{ check_input_vars(layer_spec, ['input'])|indent(width=8)}}        
         shape = list({{layer_spec.shape}})
         permutation = list({{layer_spec.permutation}})
         
@@ -218,6 +221,7 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
 class {{layer_spec.sanitized_name}}(Tf1xLayer):
     def __call__(self, inputs: Dict[str, tf.Tensor], is_training: tf.Tensor = None) -> Dict[str, tf.Tensor]:
         """Takes an image and reshapes it."""
+        {{ check_input_vars(layer_spec, ['input'])|indent(width=8)}}                
         x = inputs['input']
         y = tf.image.resize(x, [{{layer_spec.height}}, {{layer_spec.width}}], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR, preserve_aspect_ratio=False)
 
@@ -277,6 +281,7 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
 {% macro layer_tf1x_one_hot(layer_spec, graph_spec) %}
 class {{layer_spec.sanitized_name}}(Tf1xLayer):
     def __call__(self, inputs: Dict[str, tf.Tensor] , is_training: tf.Tensor = None) -> Dict[str, tf.Tensor]:
+        {{ check_input_vars(layer_spec, ['input'])|indent(width=8)}}                
         x = inputs['input']
         y = tf.one_hot(tf.cast(x, dtype=tf.int32), {{layer_spec.n_classes}})
 
@@ -344,6 +349,7 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
 
     def __call__(self, inputs: Dict[str, tf.Tensor], is_training: tf.Tensor = None) -> Dict[str, tf.Tensor]:
         """ Takes a tensor as input and feeds it forward through a layer of neurons, returning a newtensor."""
+        {{ check_input_vars(layer_spec, ['input'])|indent(width=8)}}                
         x = inputs['input']
         n_inputs = np.prod(x.get_shape().as_list()[1:], dtype=np.int32)
         b_norm = {{layer_spec.batch_norm}}
@@ -458,6 +464,7 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
 
     def __call__(self, inputs: Dict[str, tf.Tensor], is_training: tf.Tensor = None) -> Dict[str, tf.Tensor]:
         """ Takes two tensors as input and merges them accordingly. """
+        {{ check_input_vars(layer_spec, ['input1', 'input2'])|indent(width=8)}}                
         {% filter remove_lspaces(8) %}
             {% if layer_spec.merge_type == 'Concat' %}
                 y = tf.concat([inputs['input1'],inputs['input2']], self._merge_dim)
@@ -530,6 +537,7 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
 class {{layer_name}}(Tf1xLayer):
     def __call__(self, x: tf.Tensor, is_training: tf.Tensor = None) -> tf.Tensor:
         """ Takes a tensor as input and creates word embedding."""
+        {{ check_input_vars(layer_spec, ['input'])|indent(width=8)}}                
         words = tf.string_split(x)
         vocab_size = words.get_shape().as_list()[0]
         embed_size=10
@@ -584,7 +592,6 @@ class {{layer_name}}(Tf1xLayer):
 class {{layer_spec.sanitized_name}}(Tf1xLayer):
     def __init__(self):
         self._scope = '{{layer_spec.sanitized_name}}'        
-        # TODO: implement support for 1d and 3d conv, dropout, funcs, pooling, etc
         self._patch_size = {{layer_spec.patch_size}}
         self._feature_maps = {{layer_spec.feature_maps}}
         self._padding = '{{layer_spec.padding}}'
@@ -594,6 +601,7 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
         
     def __call__(self, inputs: Dict[str, tf.Tensor], is_training: tf.Tensor = None) -> Dict[str, tf.Tensor]:
         """ Takes a tensor as input and feeds it forward through a convolutional layer, returning a newtensor."""
+        {{ check_input_vars(layer_spec, ['input'])|indent(width=8)}}                
         x = tf.dtypes.cast(inputs['input'], tf.float32)        
         b_norm = {{layer_spec.batch_norm}}
         y_before = None
@@ -770,6 +778,7 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
         
     def __call__(self, inputs: Dict[str, tf.Tensor], is_training: tf.Tensor = None):
         """ Takes a tensor as input and feeds it forward through a deconvolutional layer, returning a newtensor."""
+        {{ check_input_vars(layer_spec, ['input'])|indent(width=8)}}                
         x = inputs['input']                
         b_norm = {{layer_spec.batch_norm}}
         y_before = None
@@ -969,7 +978,8 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
         self._keep_prob = {{layer_spec.keep_prob}}
 
     def __call__(self, inputs: Dict[str, tf.Tensor], is_training: tf.Tensor = None):
-        """ Takes a tensor as input and feeds it forward through a recurrent layer, returning a newtensor."""       
+        """ Takes a tensor as input and feeds it forward through a recurrent layer, returning a newtensor."""
+        {{ check_input_vars(layer_spec, ['input'])|indent(width=8)}}                
         y = None
 
         with tf.compat.v1.variable_scope(self._scope, reuse=tf.compat.v1.AUTO_REUSE):

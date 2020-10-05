@@ -147,7 +147,7 @@ class ScriptFactory:
             standard_library_imports.update(stdlib)
             third_party_imports.update(thirdparty)
             perceptilabs_imports.update(plabs)
-                                              
+                                                
         code = ''        
         for stmt in sorted(standard_library_imports, key=len):
             code += stmt + '\n'
@@ -259,6 +259,7 @@ class ScriptFactory:
         code += "    userland_timeout={},\n".format(userland_timeout)
         if self._max_time_run is not None:
             code += "    max_time_run={},\n".format(self._max_time_run) # For debugging
+        code += "    userland_logger=log\n"
         code += ")\n\n"
 
         return code

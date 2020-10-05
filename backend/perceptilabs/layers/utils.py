@@ -33,23 +33,33 @@ def try_cast(value, type_, default=None):
 
 
 def resolve_checkpoint_path(specs):
+    """ Method returns the modified checkpoint_path so that it works with the OS being used. 
+            Method also checks for the checkpoint in the directory. It creates the directory if it doesn't exist.
+
+        Args:
+            dict_ : network dict corresponding to particular layer
+
+        Returns:
+            checkpoint_path: modified checkpoint path corresponding to the OS.
+    """
     import platform
-    
-    ckpt_path = specs['checkpoint']['path']
+    ckpt_path = specs['checkpoint']['path']  
     if '//' in ckpt_path:
         if platform.system() == 'Windows':
-            new_ckpt_path = ckpt_path.split('//')[1]
+            ckpt_path = ckpt_path.split('//')[1]
         else:
             new_ckpt_path = os.path.sep+ckpt_path.split(2*os.path.sep)[1] # Sometimes frontend repeats the directory path. /<dir-path>//<dir-path>/model.ckpt-1
-        logger.warning(
-            f"Splitting malformed checkpoint path: '{ckpt_path}'. "
-            f"New path: '{new_ckpt_path}'"
-        )
-        ckpt_path = new_ckpt_path
-
-    ckpt_path=ckpt_path.replace('\\','/')
-    if os.path.basename(os.path.normpath(ckpt_path)) != 'checkpoints':
-        ckpt_path = os.path.join(ckpt_path,'checkpoints')
+            logger.warning(
+                f"Splitting malformed checkpoint path: '{ckpt_path}'. "
+                f"New path: '{new_ckpt_path}'"
+            )
+            ckpt_path = new_ckpt_path
+    
+    ckpt_path = ckpt_path.replace('\\', '/')
+    if os.path.basename(os.path.normpath(ckpt_path)) != 'checkpoint':
+        logger.error(f"The given path '{ckpt_path}' is not a valid checkpoint path.")
+    if not os.path.isdir(ckpt_path):
+        os.makedirs(ckpt_path, exist_ok=True)
     return ckpt_path
 
 
@@ -83,12 +93,13 @@ def resolve_tf1x_stop_cond(specs):
     return stop_condition
 
 
-def graph_spec_to_core_graph(script_factory, graph_spec):
+def graph_spec_to_core_graph(script_factory, graph_spec, preamble=None):
     from perceptilabs.layers.helper import LayerHelper    
     from perceptilabs.core_new.graph.builder import GraphBuilder
-    
-    preamble  = 'import logging\n'
-    preamble += 'log = logging.getLogger(__name__)\n\n'
+
+    if preamble is None:
+        preamble  = 'import logging\n'
+        preamble += 'log = logging.getLogger(__name__)\n\n'
 
     code = {}
     layers = {}
@@ -110,5 +121,6 @@ def graph_spec_to_core_graph(script_factory, graph_spec):
 
     graph_builder = GraphBuilder()
     graph = graph_builder.build_from_layers_and_edges(layers, list(edges), connections=connections)
+
     return graph
 

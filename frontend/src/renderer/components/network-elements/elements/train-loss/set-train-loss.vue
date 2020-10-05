@@ -78,11 +78,11 @@ export default {
       interactiveInfo: {
         labels: {
           title: 'Labels',
-          text: 'Choose which input connection is represent the labels'
+          text: 'Choose which input connection represents the labels'
         },
         costFunction: {
           title: 'Split on',
-          text: 'Choose in which position to split on at the chosen axis'
+          text: 'Choose where to split on the chosen axis'
         },
       }
     }

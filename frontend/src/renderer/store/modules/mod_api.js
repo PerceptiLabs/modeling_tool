@@ -49,8 +49,18 @@ const getters = {
         'path': ''
       };
 
-      if(el.checkpoint.length) {
+      if(el.checkpoint.length >= 2) {
         checkpointPath.path = el.checkpoint[1]
+        
+        if (checkpointPath.path.slice(-1) !== '/') {
+          checkpointPath.path += '/';
+        } else if (checkpointPath.path.slice(-1) !== '\\') {
+          checkpointPath.path += '\\';
+        }
+  
+        checkpointPath.path += 'checkpoint';
+      } else {
+        checkpointPath.path = network.apiMeta.location + '/checkpoint'
       }
 
       // const namesConnectionOut = [];
@@ -97,8 +107,18 @@ const getters = {
         'path': ''
       };
 
-      if(el.checkpoint.length) {
+      if(el.checkpoint.length >= 2) {
         checkpointPath.path = el.checkpoint[1]
+        
+        if (checkpointPath.path.slice(-1) !== '/') {
+          checkpointPath.path += '/';
+        } else if (checkpointPath.path.slice(-1) !== '\\') {
+          checkpointPath.path += '\\';
+        }
+  
+        checkpointPath.path += 'checkpoint';
+      } else {
+        checkpointPath.path = network.apiMeta.location + '/checkpoint'
       }
 
       /*prepare elements*/
@@ -487,9 +507,10 @@ const actions = {
 
     const currentNetwork = rootGetters['mod_workspace/GET_currentNetwork'];
 
+    // Can actually remove this since it's not used in the createCoreNetwork call below
     const currentNetworkUsingWeights = rootGetters['mod_workspace/GET_currentNetworkModeWeightsState'];
 
-    return fileserver_getModelJson(currentNetwork.apiMeta.location + '/checkpoints/checkpoint_model.json')
+    return fileserver_getModelJson(currentNetwork.apiMeta.location + '/checkpoint/checkpoint_model.json')
       .then(resultCheckpointJson => {
         const coreResultCheckpointJson = createCoreNetwork(resultCheckpointJson, currentNetworkUsingWeights);
         if (!coreResultCheckpointJson) { return; }
@@ -1044,6 +1065,8 @@ const actions = {
   },
   // @param {object} payload | { networkId: variableName } 
   API_getBatchPreviewSample({ getters, dispatch, rootGetters }, payload) {
+    if (!payload) { payload = {}; }
+
     const networkList = getters.GET_coreNetworkElementList;
     const networkId = rootGetters['mod_workspace/GET_currentNetworkId'];
     let net = cloneDeep(getters.GET_coreNetwork);
@@ -1062,6 +1085,8 @@ const actions = {
     //   'API_getBatchPreviewSample req',
     //   theData
     // );
+    
+    dispatch('mod_workspace/setChartComponentLoadingState', { descendants: Object.keys(payload), value: true, networkId } , { root: true });
 
     return coreRequest(theData)
       .then(res => {
@@ -1112,12 +1137,15 @@ const actions = {
       })
       .catch(e => {
         console.error(e)
+      }).finally(() => {
+        dispatch('mod_workspace/setChartComponentLoadingState', { descendants: Object.keys(payload), value: false, networkId } , { root: true });
       });
   },
   API_getBatchPreviewSampleForElementDescendants({ getters, dispatch, rootGetters }, layerId) {
     const networkList = getters.GET_coreNetworkElementList;
     const pivotLayer = networkList[layerId];
     let descendants = getDescendants(pivotLayer, []);
+    const networkId = rootGetters['mod_workspace/GET_currentNetworkId'];
     let net = cloneDeep(getters.GET_coreNetwork);
     
     function getDescendants(networkElement, dataIds){
@@ -1133,6 +1161,8 @@ const actions = {
     }
 
     descendants.push(layerId); 
+
+    dispatch('mod_workspace/setChartComponentLoadingState', { descendants, value: true, networkId } , { root: true });
 
     for(let ix in net) {
       let el = net[ix];
@@ -1194,6 +1224,8 @@ const actions = {
       })
       .catch(e => {
         console.error(e)
+      }).finally(() => {
+        dispatch('mod_workspace/setChartComponentLoadingState', { descendants, value: false, networkId } , { root: true });
       });
   },
   async API_scanCheckpoint (ctx, { networkId, path }) {
@@ -1219,6 +1251,15 @@ const actions = {
       .catch(e => console.error(e));
   },
   
+  API_UploadKernelLogs (ctx, payload) {
+    const theData = {
+      // receiver: networkId,
+      action: 'UploadKernelLogs',
+      value: payload
+    };
+    
+    return coreRequest(theData)
+  },
 };
 
 export default {

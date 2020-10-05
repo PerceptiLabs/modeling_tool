@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import MagicMock
 import os
-
+import shutil
 import numpy as np
 import tensorflow as tf
 
@@ -141,6 +141,10 @@ def test_can_instantiate(script_factory):
     layer_spec = TrainClassificationSpec(
         id_='layer_id',
         name='layer_name',
+        backward_connections=(
+            LayerConnection(dst_var='predictions'),
+            LayerConnection(dst_var='labels')
+        )
     )
     graph_spec = MagicMock()
     graph_spec.nodes_by_id.__getitem__.sanitized_name = '123'
@@ -202,18 +206,22 @@ def test_save_model(script_factory, graph_spec, temp_path):
     #tf.reset_default_graph()    
     
     
-def test_save_checkpoint(script_factory, graph_spec, temp_path):
+def test_save_checkpoint(script_factory, graph_spec, temp_path_checkpoints):
+    checkpoint_path = temp_path_checkpoints
+    os.makedirs(checkpoint_path, exist_ok=True)
     graph = graph_spec_to_core_graph(script_factory, graph_spec)
         
     training_layer = graph.active_training_node.layer
     iterator = training_layer.run(graph, mode = 'training') # TODO: self reference is weird. design flaw!
 
     next(iterator) # First iteration (including initialization)
-    assert not any(x.startswith('model.ckpt') for x in os.listdir(temp_path))
+    assert not any(x.startswith('model.ckpt') for x in os.listdir(checkpoint_path))
+
+    training_layer.on_export(checkpoint_path, mode='checkpoint')
     
-    training_layer.on_export(temp_path, mode='checkpoint')
-    assert any(x.startswith('model.ckpt') for x in os.listdir(temp_path))
+    assert any(x.startswith('model.ckpt') for x in os.listdir(checkpoint_path))
     #tf.reset_default_graph()
+    shutil.rmtree(checkpoint_path)
 
 def test_initial_weights_differ(script_factory, temp_path, temp_path_checkpoints):
     """ Check that the weights are DIFFERENT when creating two graphs. If not, it might not be meaningful to test loading a checkpoint """
@@ -252,7 +260,7 @@ def test_initial_weights_differ(script_factory, temp_path, temp_path_checkpoints
     
 
 def test_load_checkpoint(script_factory, temp_path, temp_path_checkpoints):
-    checkpoint_path = os.path.join(temp_path, "checkpoints")
+    checkpoint_path = os.path.join(temp_path, "checkpoint")
     
     inputs_path = os.path.join(temp_path, '16x4_inputs.npy')
     targets_path = os.path.join(temp_path, '16x4_targets.npy')
@@ -319,7 +327,11 @@ def test_can_instantiate_distributed(script_factory):
     layer_spec = TrainClassificationSpec(
         id_='layer_id',
         name='layer_name',
-        distributed=True
+        distributed=True,
+        backward_connections=(
+            LayerConnection(dst_var='predictions'),
+            LayerConnection(dst_var='labels')
+        )
     )
     graph_spec = MagicMock()
     graph_spec.nodes_by_id.__getitem__.sanitized_name = '123'
@@ -475,8 +487,4 @@ def test_can_convert_to_dict_and_back(graph_spec):
     dict_ = graph_spec.to_dict()
     new_spec = GraphSpec.from_dict(dict_)
     dict_1 = new_spec.to_dict()
-    new_spec2 = GraphSpec.from_dict(dict_1)  # TODO: need to handle checkpoint path in a better way
-    dict_2 = new_spec2.to_dict()
-    new_spec3 = GraphSpec.from_dict(dict_)
-    assert new_spec == new_spec2 == new_spec3
-    assert dict_1 == dict_2
+    assert dict_ == dict_1

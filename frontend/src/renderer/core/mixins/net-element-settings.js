@@ -1,7 +1,8 @@
 import SettingsCode     from '@/components/network-elements/elements-settings/setting-code.vue';
 import NetBaseSettings  from '@/components/network-elements/net-base-settings/net-base-settings.vue';
-import { deepCopy }     from "@/core/helpers.js";
+import { deepCopy, debounce }     from "@/core/helpers.js";
 import isEqual from 'lodash.isequal';
+
 const netElementSettings = {
   props: {
     currentEl: {
@@ -14,11 +15,17 @@ const netElementSettings = {
     if(this.currentEl.layerSettings) this.settings = deepCopy(this.currentEl.layerSettings);
 
   },
+  created() {
+    this.debouncedSaveSettings = debounce( function() {
+      this.saveSettings("Settings", true);
+    }, 800)
+  },
   data() {
     return {
       isSettedFromCore: false,
       settings: {},
-      coreCode: null
+      coreCode: null,
+      debouncedSaveSettings: null,
     }
   },
   watch: {
@@ -30,7 +37,7 @@ const netElementSettings = {
           if(!isEqual(JSON.parse(JSON.stringify(newVal)), JSON.parse(JSON.stringify(oldVal)))) {
             // Note that the "saveSettings" function called is the one in the layer.
             // Not the one in this file.
-            this.saveSettings("Settings", true);
+            this.debouncedSaveSettings();
           }
         }
       },

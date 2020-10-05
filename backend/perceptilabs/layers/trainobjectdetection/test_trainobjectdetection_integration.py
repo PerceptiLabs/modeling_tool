@@ -47,6 +47,10 @@ def test_can_instantiate(script_factory):
     layer_spec = TrainObjectDetectionSpec(
         id_='layer_id',
         name='layer_name',
+        backward_connections=(
+            LayerConnection(dst_var='predictions'),
+            LayerConnection(dst_var='labels')
+        )
     )
 
     graph_spec = MagicMock()

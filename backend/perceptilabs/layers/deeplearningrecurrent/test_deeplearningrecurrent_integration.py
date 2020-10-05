@@ -6,7 +6,7 @@ import numpy as np
 from perceptilabs.script import ScriptFactory
 from perceptilabs.layers.helper import LayerHelper
 from perceptilabs.layers.deeplearningrecurrent.spec import DeepLearningRecurrentSpec
-
+from perceptilabs.layers.specbase import LayerConnection
 
 @pytest.fixture(scope='module')
 def script_factory():
@@ -17,7 +17,8 @@ def test_basics(script_factory):
     layer_spec = DeepLearningRecurrentSpec(
         id_='layer_id',
         name='layer_name',
-        n_neurons=7
+        n_neurons=7,
+        backward_connections=(LayerConnection(dst_var='input'),)        
     )
     layer = LayerHelper(script_factory, layer_spec).get_instance()
     x = tf.constant(np.random.random((16, 10, 3))) # [batch, time, features]
@@ -31,7 +32,6 @@ def test_basics(script_factory):
     
     assert output['output'].shape == (16, 7)
 
-
     
 def test_recurrent_zero_keep_prob_equals_zero_output(script_factory):
     """ If the keep probability is low the expected output should be zero """
@@ -41,7 +41,8 @@ def test_recurrent_zero_keep_prob_equals_zero_output(script_factory):
         name='layer_name',
         n_neurons=7,
         dropout=True,
-        keep_prob=1e-7
+        keep_prob=1e-7,
+        backward_connections=(LayerConnection(dst_var='input'),)        
     )
     layer = LayerHelper(script_factory, layer_spec).get_instance()
     x = tf.constant(np.random.random((16, 10, 3))) # [batch, time, features]
@@ -72,7 +73,8 @@ def test_recurrent_is_training_overrides_dropout(script_factory):
         name='layer_name',
         n_neurons=7,
         dropout=True,
-        keep_prob=1e-7
+        keep_prob=1e-7,
+        backward_connections=(LayerConnection(dst_var='input'),)        
     )
     layer = LayerHelper(script_factory, layer_spec).get_instance()
     x = tf.constant(np.random.random((16, 10, 3))) # [batch, time, features]

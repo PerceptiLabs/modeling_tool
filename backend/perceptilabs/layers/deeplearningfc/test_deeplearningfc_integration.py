@@ -6,6 +6,7 @@ import tensorflow as tf
 from perceptilabs.script import ScriptFactory
 from perceptilabs.layers.helper import LayerHelper
 from perceptilabs.layers.deeplearningfc.spec import DeepLearningFcSpec
+from perceptilabs.layers.specbase import LayerConnection
 
 
 @pytest.fixture(scope='module')
@@ -18,7 +19,8 @@ def test_fully_connected_1x1_should_be_normal_multiplication(script_factory):
         id_='layer_id',
         name='layer_name',
         n_neurons=1,
-        activation='Sigmoid'
+        activation='Sigmoid',
+        backward_connections=(LayerConnection(dst_var='input'),)        
     )
     layer = LayerHelper(script_factory, layer_spec).get_instance()
 
@@ -47,7 +49,8 @@ def test_fully_connected_zero_keep_prob_equals_zero_output(script_factory):
         n_neurons=1,
         activation='Sigmoid',
         dropout=True,
-        keep_prob=1e-7
+        keep_prob=1e-7,
+        backward_connections=(LayerConnection(dst_var='input'),)                
     )
     layer = LayerHelper(script_factory, layer_spec).get_instance()
 
@@ -76,7 +79,8 @@ def test_fully_connected_is_training_overrides_dropout(script_factory):
         n_neurons=1,
         activation='Sigmoid',
         dropout=True,
-        keep_prob=1e-7
+        keep_prob=1e-7,
+        backward_connections=(LayerConnection(dst_var='input'),)                
     )
     layer = LayerHelper(script_factory, layer_spec).get_instance()
 

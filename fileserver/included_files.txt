@@ -1,6 +1,7 @@
 fileserver/__init__.py
 fileserver/api/__init__.py
 fileserver/api/apps.py
+fileserver/api/exceptions.py
 fileserver/api/interfaces/__init__.py
 fileserver/api/interfaces/github_export.py
 fileserver/api/interfaces/github_import.py

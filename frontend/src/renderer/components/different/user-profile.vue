@@ -208,7 +208,7 @@ export default {
             .then((isValid)=> {
               if (isValid) {
                 ctx.logout();
-                return `A confirmation has been sent to your old mail ${ctx.user.email}. Please follow the link and your mail will be changed. Otherwise, your old mail will act`;
+                return `A confirmation has been sent to your existing address at ${ctx.user.email}. Please follow the link in that email to change your address.`;
               }
               else {
                 return false;
@@ -225,7 +225,7 @@ export default {
               }
             })
             .then(()=> {
-              return 'A new password has been changed'
+              return 'Your password has been changed'
             })
         }
       }

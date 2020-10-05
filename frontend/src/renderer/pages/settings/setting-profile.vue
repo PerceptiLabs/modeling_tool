@@ -2,22 +2,22 @@
   div(v-if="user")
     .contnet-caption Review your personal information here
     .profile-box
-      .profile-preview {{user && user.firstName[0]}}
+      .profile-preview {{user && user.email[0].toUpperCase()}}
       form(
         data-vv-scope="userNames"
       )
-        .input-wrapper
-          label(for="name") First Name
-          .form_row
-            input(id="name" name="firstName" v-validate="'required|min:3'" type="text" @input="editFirstName" :value="user.firstName" )
-          p.text-error(
-              v-show="errors.has('userNames.firstName')") {{ errors.first('userNames.firstName') }}   
-        .input-wrapper
-          label(for="last_name") Last Name
-          .form_row
-            input(id="last_name" name="lastName" v-validate="'required|min:3'" type="text" @input="editLastName" :value="user.lastName")
-          p.text-error(
-              v-show="errors.has('userNames.lastName')") {{ errors.first('userNames.lastName') }}   
+        //- .input-wrapper
+        //-   label(for="name") First Name
+        //-   .form_row
+        //-     input(id="name" name="firstName" v-validate="'required|min:3'" type="text" @input="editFirstName" :value="user.firstName" )
+        //-   p.text-error(
+        //-       v-show="errors.has('userNames.firstName')") {{ errors.first('userNames.firstName') }}   
+        //- .input-wrapper
+        //-   label(for="last_name") Last Name
+        //-   .form_row
+        //-     input(id="last_name" name="lastName" v-validate="'required|min:3'" type="text" @input="editLastName" :value="user.lastName")
+        //-   p.text-error(
+        //-       v-show="errors.has('userNames.lastName')") {{ errors.first('userNames.lastName') }}   
       form(
         data-vv-scope="formEmail"
       )
@@ -27,16 +27,16 @@
             input.email-disabled(@input="editEmail" name="new email" disabled readonly v-validate="'required|email'"  type="text" :value="user.email" )
           p.text-error(
               v-show="errors.has('formEmail.new email')") {{ errors.first('formEmail.new email') }}    
-      .input-wrapper
-        label() Password
-        p.password-star ***************
-        button.change-password-btn(
-          @click="handleDisplayPasswordModal(true)"
-        ) Change pasword
+      //- .input-wrapper
+      //-   label() Password
+      //-   p.password-star ***************
+      //-   button.change-password-btn(
+      //-     @click="handleDisplayPasswordModal(true)"
+      //-   ) Change pasword
 
-      .change-password-actions
-        button.change-password-modal-btn.blue(@click="handleSaveProfile") Save
-        button.change-password-modal-btn(@click="resetChangedValues") Cancel
+      //- .change-password-actions
+      //-   button.change-password-modal-btn.blue(@click="handleSaveProfile") Save
+      //-   button.change-password-modal-btn(@click="resetChangedValues") Cancel
   
     div(v-if="isChangePasswordOpened")
       div.popup-new-ui 
@@ -163,8 +163,8 @@ export default {
           this.password.newPassword = '';
           this.password.newPasswordConfirmation = '';
           this.handleDisplayPasswordModal(false);
-          this.showInfoPopup('A new password has been changed');
-          return 'A new password has been changed'
+          this.showInfoPopup('Your password has been changed');
+          return 'Your password has been changed'
         })
     },
     handleSaveProfile(){
@@ -173,7 +173,7 @@ export default {
           if(isValid) {
             this.cloud_userSetProfile(this.user)
               .then(res => {
-                this.showInfoPopup('User names has been changed');
+                this.showInfoPopup('Your user name has been changed');
               })
           }
         });

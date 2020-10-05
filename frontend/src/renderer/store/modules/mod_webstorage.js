@@ -59,7 +59,14 @@ const actions = {
             network.networkElementList[elKey].layerMeta.isSelected = false;
           });
         }
+        // it's for reseting loading spinner of component chart
+        if(network.networkElementList) {
+          Object.keys(network.networkElementList).forEach(networkElementId => {
+            network.networkElementList[networkElementId].chartDataIsLoading = 0;
+          })
+        }
 
+        network.chartDataIsLoading = 0;
         if(network.networkMeta) {
           network.networkMeta.openStatistics = null;
           network.networkMeta.openTest = null;
@@ -68,6 +75,7 @@ const actions = {
             // clears the handle of the setInterval function
             // this value is used to determine if a new setInterval call should be made
             network.networkMeta.chartsRequest.timerID = null;
+            network.networkMeta.chartsRequest.waitGlobalEvent = false;
           }
         }
 

@@ -5,24 +5,18 @@ const reinforcementLearning = {
     "networkID": "",
     "networkSettings": null,
     "networkMeta": {
-      "openStatistics": false,
+      "openStatistics": null,
       "openTest": null,
       "zoom": 1,
       "netMode": "edit",
       "coreStatus": {
-        "Status": "Stop",
-        "Iterations": 60,
-        "Epoch": 0,
-        "Progress": 0.0000030000001500000076,
-        "CPU": 7.8,
-        "GPU": 0,
-        "Memory": 78.6
+        "Status": "Waiting",
       },
       "chartsRequest": {
-        "timerID": 205,
+        "timerID": null,
         "waitGlobalEvent": false,
-        "doRequest": 347,
-        "showCharts": 347
+        "doRequest": 0,
+        "showCharts": 0
       }
     },
     "networkRootFolder": "",
@@ -34,13 +28,8 @@ const reinforcementLearning = {
         "layerName": "Environment_1",
         "layerType": "Data",
         "layerSettings": {
-          "Type": "Environment",
           "accessProperties": {
-            "EnvType": "Gym",
-            "Sources": [],
-            "Atari": "Breakout",
-            "Category": "Local",
-            "Type": "Data"
+            "Atari": "Breakout"
           }
         },
         "layerCode": null,
@@ -95,7 +84,6 @@ const reinforcementLearning = {
         "copyContainerElement": null,
         "layerName": "Grayscale_1",
         "layerType": "Other",
-        "layerSettings": {},
         "layerCode": null,
         "layerCodeError": null,
         "layerNone": false,
@@ -141,7 +129,7 @@ const reinforcementLearning = {
         "forward_connections": [
           {
             "src_var": "output",
-            "dst_id": "1598979686278",
+            "dst_id": "1601035580243",
             "dst_var": "input"
           }
         ],
@@ -162,10 +150,10 @@ const reinforcementLearning = {
         "layerName": "Dense_1",
         "layerType": "Other",
         "layerSettings": {
-          "Neurons": "4",
-          "Activation_function": "Sigmoid",
           "Dropout": false,
-          "Keep_prob": "1",
+          "Keep_prob": 1,
+          "Neurons": 4,
+          "Activation_function": "Sigmoid",
           "Batch_norm": false
         },
         "layerSettingsTabName": "Settings",
@@ -178,7 +166,7 @@ const reinforcementLearning = {
           "isSelected": false,
           "position": {
             "top": 120,
-            "left": 520
+            "left": 720
           },
           "OutputDim": "4",
           "InputDim": "",
@@ -200,8 +188,8 @@ const reinforcementLearning = {
         "inputs": {
           "15989796862780": {
             "name": "input",
-            "reference_var_id": "15989796765100",
-            "reference_layer_id": "1598979676510",
+            "reference_var_id": "16010355802430",
+            "reference_layer_id": "1601035580243",
             "isDefault": true
           }
         },
@@ -220,7 +208,7 @@ const reinforcementLearning = {
         ],
         "backward_connections": [
           {
-            "src_id": "1598979676510",
+            "src_id": "1601035580243",
             "src_var": "output",
             "dst_var": "input"
           }
@@ -235,19 +223,14 @@ const reinforcementLearning = {
         "layerName": "Reinforcement Learning_1",
         "layerType": "Training",
         "layerSettings": {
-          "ReinforceType": "Q_learning",
-          "Update_freq": "4",
-          "Gamma": "0.95",
-          "Loss": "Quadratic",
-          "Eps": "1",
-          "Eps_min": "0.1",
-          "Eps_decay": "0.2",
-          "Learning_rate": "0.01",
+          "Learning_rate": 0.01,
+          "Distributed": false,
           "Optimizer": "SGD",
-          "Max_steps": "1000",
-          "Episodes": "20000",
-          "History_length": "10",
-          "Batch_size": "32"
+          "Episodes": 20000,
+          "Batch_size": 32,
+          "Max_steps": 1000,
+          "History_length": 10,
+          "Use_CPU": true
         },
         "layerSettingsTabName": "Settings",
         "layerCode": null,
@@ -259,7 +242,7 @@ const reinforcementLearning = {
           "isSelected": false,
           "position": {
             "top": 120,
-            "left": 760
+            "left": 940
           },
           "OutputDim": "1",
           "InputDim": "",
@@ -297,8 +280,91 @@ const reinforcementLearning = {
         ],
         "previewVariable": "output",
         "previewVariableList": []
+      },
+      "1601035580243": {
+        "layerId": "1601035580243",
+        "copyId": null,
+        "copyContainerElement": null,
+        "layerName": "Convolution_1",
+        "layerType": "Other",
+        "layerSettings": {
+          "Dropout": false,
+          "Keep_prob": 0,
+          "Batch_norm": false,
+          "Conv_dim": "2D",
+          "Patch_size": 3,
+          "Feature_maps": 8,
+          "Stride": 2,
+          "Padding": "SAME",
+          "Activation_function": "Sigmoid",
+          "PoolBool": false,
+          "Pooling": null,
+          "Pool_area": null,
+          "Pool_padding": "None",
+          "Pool_stride": null
+        },
+        "layerSettingsTabName": "Settings",
+        "layerCode": null,
+        "layerCodeError": null,
+        "layerNone": false,
+        "layerMeta": {
+          "isInvisible": false,
+          "isLock": false,
+          "isSelected": false,
+          "position": {
+            "top": 120,
+            "left": 520
+          },
+          "tutorialId": "",
+          "OutputDim": "105x80x8",
+          "InputDim": "",
+          "layerContainerName": "",
+          "layerBgColor": "",
+          "containerDiff": {
+            "top": 0,
+            "left": 0
+          }
+        },
+        "chartData": {},
+        "checkpoint": [],
+        "endPoints": [],
+        "componentName": "DeepLearningConv",
+        "connectionOut": [],
+        "connectionIn": [],
+        "connectionArrow": [],
+        "visited": false,
+        "inputs": {
+          "16010355802430": {
+            "name": "input",
+            "reference_var_id": "15989796765100",
+            "reference_layer_id": "1598979676510",
+            "isDefault": true
+          }
+        },
+        "outputs": {
+          "16010355802430": {
+            "name": "output",
+            "reference_var": "output"
+          }
+        },
+        "forward_connections": [
+          {
+            "src_var": "output",
+            "dst_id": "1598979686278",
+            "dst_var": "input"
+          }
+        ],
+        "backward_connections": [
+          {
+            "src_id": "1598979676510",
+            "src_var": "output",
+            "dst_var": "input"
+          }
+        ],
+        "previewVariable": "output",
+        "previewVariableList": []
       }
-    }
+    }    
   }
 };
 

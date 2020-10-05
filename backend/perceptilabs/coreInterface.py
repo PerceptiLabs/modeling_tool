@@ -15,7 +15,7 @@ import GPUtil
 import collections
 import math
 
-from perceptilabs.logconf import APPLICATION_LOGGER
+from perceptilabs.logconf import APPLICATION_LOGGER, USER_LOGGER
 from perceptilabs.networkExporter import exportNetwork
 from perceptilabs.networkSaver import saveNetwork
 import perceptilabs.utils as utils
@@ -30,7 +30,7 @@ from typing import List
 from perceptilabs.license_checker import LicenseV2
 
 logger = logging.getLogger(APPLICATION_LOGGER)
-
+user_logger = logging.getLogger(USER_LOGGER)
 
 CoreCommand = collections.namedtuple('CoreCommand', ['type', 'parameters', 'allow_override'])
 
@@ -75,8 +75,8 @@ class coreLogic():
         self.savedResultsDict={}
 
     def _logAndWarningQueue(self, msg):
-        logger.warning(msg)
-        self.issue_handler.put_warning(msg)        
+        user_logger.info(msg)
+        self.issue_handler.put_info(msg)        
         
     def gpu_list(self):
         try:

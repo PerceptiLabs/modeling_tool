@@ -5,42 +5,42 @@
         .statistics-box_col(v-if="!testIsOpen")
           chart-switch(
             key="2"
-            chart-label=""
+            chart-label="Input"
             :chart-data="chartData.Prediction.Input"
           )
         .statistics-box_col
           chart-switch(
             key="3"
-            chart-label=""
+            chart-label="Probability to take action vs Taken action"
             :chart-data="chartData.Prediction.Prediction"
             :custom-color="colorList"
           )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Reward'")
       chart-switch(
         key="4"
-        chart-label=""
+        chart-label="Reward during one episode"
         :chart-data="chartData.Reward.Current"
       )
       chart-switch(
         key="5"
-        chart-label=""
+        chart-label="Reward over all episodes"
         :chart-data="chartData.Reward.Total"
       )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Loss'")
       chart-switch(
         key="6"
-        chart-label=""
+        chart-label="Loss during one episode"
         :chart-data="chartData.Loss.Current"
       )
       chart-switch(
         key="7"
-        chart-label=""
+        chart-label="Loss over all episodes"
         :chart-data="chartData.Loss.Total"
       )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Steps'")
       chart-switch(
         key="8"
-        chart-label=""
+        chart-label="Steps per episode"
         :chart-data="chartData.Steps.Steps"
       )
 

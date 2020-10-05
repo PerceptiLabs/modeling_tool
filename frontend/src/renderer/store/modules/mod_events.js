@@ -1,4 +1,5 @@
 import router         from "@/router";
+import { keycloak } from '@/main.js'
 import {
   filePCRead,
   isWeb,
@@ -36,6 +37,11 @@ const state = {
     del: 0,
     esc: 0
   },
+  componentEvents: {
+    test: {
+      nextSampleClick: 0
+    }
+  },
   isEnableCustomHotKey: true
 };
 
@@ -57,6 +63,9 @@ const mutations = {
   },
   set_globalPressKey(state, path) {
     state.globalPressKey[path]++
+  },
+  set_componentEvent_test_nextSampleClick(state) {
+    state.componentEvents.test.nextSampleClick++;
   },
   set_enableCustomHotKey(state, value) {
     state.isEnableCustomHotKey = value
@@ -91,7 +100,7 @@ const actions = {
 
         // checking and break if model location already exist in current project
         if(projectModelsPaths.indexOf(model.apiMeta.location) !== -1 && !(currentNetworkId === model.networkID)) {
-          dispatch('globalView/GP_errorPopup', `Chosen model is already in project`, {root: true});
+          dispatch('globalView/GP_errorPopup', `The chosen model is already in the project`, {root: true});
           return;
         }
         
@@ -172,7 +181,7 @@ const actions = {
         dispatch('mod_project/getProjects', null , {root: true});
       }).catch(err => {
         console.log(err);
-        dispatch('globalView/GP_infoPopup', 'Fetching went wrong', {root: true});
+        dispatch('globalView/GP_infoPopup', 'Fetching failed', {root: true});
         return;
       });
 
@@ -207,8 +216,9 @@ const actions = {
     commit('set_saveNetworkAs');
   },
   EVENT_logOut({commit, dispatch}, isSendLogout = true) {
-    if(isSendLogout) dispatch('mod_apiCloud/CloudAPI_userLogout', null, {root: true});
-  
+    // if(isSendLogout) dispatch('mod_apiCloud/CloudAPI_userLogout', null, {root: true});
+    if(isSendLogout) keycloak.logout()
+    
     // setting to -1 and then removing because the project.vue component isn't recreated here
     // this means that selecting the same project won't make it fetch models
     commit('mod_project/selectProject', -1, {root: true});
@@ -484,6 +494,9 @@ const actions = {
   },
   SET_enableCustomHotKey({commit}, val) {
     commit('set_enableCustomHotKey', val)
+  },
+  EVENT_componentEvent_test_nextSampleClick({commit}) {
+    commit('set_componentEvent_test_nextSampleClick');
   },
 };
 

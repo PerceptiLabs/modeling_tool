@@ -6,6 +6,7 @@ import tensorflow as tf
 from perceptilabs.script import ScriptFactory
 from perceptilabs.layers.helper import LayerHelper
 from perceptilabs.layers.deeplearningdeconv.spec import DeepLearningDeconvSpec
+from perceptilabs.layers.specbase import LayerConnection
 
 
 @pytest.fixture(scope='module')
@@ -22,7 +23,8 @@ def test_basics(script_factory):
         padding='SAME',
         stride=2,
         feature_maps=1,
-        activation=None
+        activation=None,
+        backward_connections=(LayerConnection(dst_var='input'),)        
     )
     layer = LayerHelper(script_factory, layer_spec).get_instance()
 
@@ -79,7 +81,8 @@ def test_deconv_zero_keep_prob_equals_zero_output(script_factory):
         feature_maps=1,
         activation=None,
         dropout=True,
-        keep_prob=1e-7
+        keep_prob=1e-7,
+        backward_connections=(LayerConnection(dst_var='input'),)        
     )
     layer = LayerHelper(script_factory, layer_spec).get_instance()
 
@@ -113,7 +116,8 @@ def test_deconv_is_training_overrides_dropout(script_factory):
         feature_maps=1,
         activation=None,
         dropout=True,
-        keep_prob=1e-7
+        keep_prob=1e-7,
+        backward_connections=(LayerConnection(dst_var='input'),)        
     )
     layer = LayerHelper(script_factory, layer_spec).get_instance()
 

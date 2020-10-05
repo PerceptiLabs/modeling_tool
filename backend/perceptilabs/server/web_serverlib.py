@@ -80,7 +80,8 @@ class Message:
         errorList = issue_handler.pop_errors()
         warningList = issue_handler.pop_warnings()
         logList = issue_handler.pop_logs()
-
+        infoList = issue_handler.pop_info()
+        
         if errorList:
             self._interface.close_core(self.request.get("receiver"))
             if type(content) is dict and "content" in list(content.keys()):
@@ -99,6 +100,14 @@ class Message:
                 content["consoleLogs"]=logList
             else:
                 content={"content":content, "consoleLogs":logList}
+        
+        if infoList:
+            print(infoList)
+            if type(content) is dict and "content" in list(content.keys()):
+                content["generalLogs"]=infoList
+            else:
+                content={"content":content, "generalLogs":infoList}
+        
         return content
 
     async def interface(self, websocket, path):

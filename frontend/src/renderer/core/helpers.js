@@ -64,7 +64,7 @@ const filePCSave = function (fileName, fileContent) {
   return new Promise((success, reject) => {
     fs.writeFile(fileName, fileContent, (err, data) => {
       if(err) {
-        store.dispatch('globalView/GP_errorPopup', `An error occurred creating the file ${err.message}`);
+        store.dispatch('globalView/GP_errorPopup', `An error occurred while creating the file: ${err.message}`);
         return reject(err);
       }
       else return success(fileName)
@@ -167,6 +167,7 @@ const goToLink = function (url) {
     let link = document.createElement('a');
     link.setAttribute('href', url);
     link.setAttribute('target', '_blank');
+    link.setAttribute('rel', 'noopener noreferrer');
     link.click();
   }
 };
@@ -447,7 +448,7 @@ const hashObject = function(inputObject) {
 
 const hashString = s => s.split('').reduce((a,b) => (((a << 5) - a) + b.charCodeAt(0))|0, 0);
 
-const createCoreNetwork = (network, createCoreNetwork = false) => {
+const createCoreNetwork = (network, currentNetworkUsingWeights = false) => {
   if (!network) { return null; }
 
   let layers = {};
@@ -461,8 +462,18 @@ const createCoreNetwork = (network, createCoreNetwork = false) => {
       'path': ''
     };
 
-    if(el.checkpoint.length) {
-      checkpointPath.path = el.checkpoint[1];
+    if(el.checkpoint.length >= 2) {
+      checkpointPath.path = el.checkpoint[1]
+      
+      if (checkpointPath.path.slice(-1) !== '/') {
+        checkpointPath.path += '/';
+      } else if (checkpointPath.path.slice(-1) !== '\\') {
+        checkpointPath.path += '\\';
+      }
+
+      checkpointPath.path += 'checkpoint';
+    } else {
+      checkpointPath.path = network.apiMeta.location + '/checkpoint'
     }
 
     /*prepare elements*/

@@ -60,7 +60,7 @@ export default {
       // Need to check if this.layerType === 'Training' because it's the same
       // component for the Training and normal (next to network map) viewboxes.
       if (this.layerType === 'Training' && this.getCurrentStepCode === 'tutorial-statistics-tabs') {
-        this.setNextStep('tutorial-statistics-tabs');
+        this.setNextStep({currentStep:'tutorial-statistics-tabs'});
       }
     }
   },

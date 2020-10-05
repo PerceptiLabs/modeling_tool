@@ -58,6 +58,9 @@ class IssueHandler:
     def create_issue(message, exception=None):
         return Issue(message, exception)
 
+    def put_log(self, message):
+        self._logs.put(message)
+        
     def put_error(self, message):
         self._errors.put(message)
 
@@ -79,7 +82,7 @@ class IssueHandler:
 
     def pop_warnings(self):
         return self._pop_messages(self._warnings)    
-
+    
     def pop_info(self):
         return self._pop_messages(self._info)
 
@@ -109,7 +112,7 @@ class UserlandError:
     def __repr__(self):
         return self.format()
 
-        
+    
 if __name__ == "__main__":
     issues = IssueHandler()
 

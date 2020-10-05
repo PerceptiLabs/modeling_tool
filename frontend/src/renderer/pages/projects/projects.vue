@@ -310,23 +310,25 @@
     },
     methods: {
       ...mapActions({
-        popupConfirm:        'globalView/GP_confirmPopup',
-        popupNewModel:       'globalView/SET_newModelPopup',
-        showInfoPopup:       'globalView/GP_infoPopup',
-        set_currentNetwork:  'mod_workspace/SET_currentNetwork',
-        set_currentModelIndex: 'mod_workspace/SET_currentModelIndex',
-        createProjectModel:  'mod_project/createProjectModel',
-        setActivePageAction: 'modal_pages/setActivePageAction',
-        delete_network :     'mod_workspace/DELETE_network',
-        UPDATE_MODE_ACTION : 'mod_workspace/UPDATE_MODE_ACTION',
+        popupConfirm:         'globalView/GP_confirmPopup',
+        popupNewModel:        'globalView/SET_newModelPopup',
+        showInfoPopup:        'globalView/GP_infoPopup',
+        set_currentNetwork:   'mod_workspace/SET_currentNetwork',
+        set_currentModelIndex:'mod_workspace/SET_currentModelIndex',
+        createProjectModel:   'mod_project/createProjectModel',
+        setActivePageAction:  'modal_pages/setActivePageAction',
+        delete_network :      'mod_workspace/DELETE_network',
+        UPDATE_MODE_ACTION :  'mod_workspace/UPDATE_MODE_ACTION',
         closeStatsTestViews:  'mod_workspace/SET_statisticsAndTestToClosed',
         setCurrentView:       'mod_tutorials/setCurrentView',
-        SET_openStatistics: 'mod_workspace/SET_openStatistics',
-        SET_openTest:       'mod_workspace/SET_openTest',
+        setNextStep:          'mod_tutorials/setNextStep',
 
-        setNetworkNameAction:'mod_workspace/SET_networkName',
-        updateWorkspaces:    'mod_webstorage/updateWorkspaces',
-        deleteAllIds:        'mod_webstorage/deleteAllIds',        
+        SET_openStatistics:   'mod_workspace/SET_openStatistics',
+        SET_openTest:         'mod_workspace/SET_openTest',
+
+        setNetworkNameAction: 'mod_workspace/SET_networkName',
+        updateWorkspaces:     'mod_webstorage/updateWorkspaces',
+        deleteAllIds:         'mod_webstorage/deleteAllIds',        
       }),
       goToNetworkView(networkID) {
         if(this.statusLocalCore!='online') {
@@ -538,6 +540,10 @@
           this.showInfoPopup("Kernel is offline");
           return;
         }
+        this.setNextStep({
+          currentStep:'tutorial-model-hub-new-button',
+          activateNextStep: false // or extra notification will appear
+        });
 
         // open modal
         this.popupNewModel(true);
@@ -599,7 +605,7 @@
               this.SET_openTest(false);
             });
         } else {
-          this.showInfoPopup("The model does not have any statistics, you should run this model first");
+          this.showInfoPopup("The model does not have any statistics. Run this model to generate statistics.");
         }
       },
       openContext(e, modelIndex) {
@@ -633,7 +639,7 @@
           return;
         }
 
-        this.removeItems();
+        this.delete_network(this.contextModelIndex);
         this.closeContext();
       },
       onClickDeletedModel(model, index) {
@@ -643,7 +649,7 @@
         }
 
         this.popupConfirm({
-            text: `Are you sure you want to remove ${model.name} from Model Hub since it no longer is connected to Project?`,
+            text: `Are you sure you want to remove ${model.name} from Model Hub since it is no longer connected to the Project?`,
             ok: () => {
               this.$store.dispatch('mod_project/deleteModel', model)
                 .then((serverResponse) => {

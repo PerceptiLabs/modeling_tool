@@ -2,6 +2,7 @@ from collections.abc import  Iterable
 from fileserver.api.interfaces.github_export import RepoExporterAPI
 from fileserver.api.interfaces.github_issue import CreateIssueAPI
 from rest_framework.decorators import api_view
+from fileserver.api.exceptions import UserError
 from fileserver.api.models.github import export_repo_basic, import_repo, create_issue
 from fileserver.api.views.util import (
         get_required_param,
@@ -41,6 +42,8 @@ def github_export(request):
         return HttpResponse(json.dumps(response), content_type="application/json")
     except ValueError as e:
         raise HTTPExceptions.BAD_REQUEST.with_content(e)
+    except UserError as e:
+        raise HTTPExceptions.UNPROCESSABLE_ENTITY.with_content(e.message)
 
 
 
@@ -60,10 +63,8 @@ def github_import(request):
         return HttpResponse(json.dumps(response), content_type="application/json")
     except ValueError as e:
         raise HTTPExceptions.BAD_REQUEST.with_content(e)
-    except RuntimeError as e:
-        if e.message == "git_import":
-            raise HTTPExceptions.BAD_REQUEST.with_content("Git isn't available")
-        raise e
+    except UserError as e:
+        raise HTTPExceptions.UNPROCESSABLE_ENTITY.with_content(e.message)
 
 
 @api_view(['POST'])

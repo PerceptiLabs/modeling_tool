@@ -101,7 +101,7 @@
           },
           file: {
             title: 'Select File',
-            text: 'Select a file that is the data'
+            text: 'Select a data file'
           }
         },
         settings: {

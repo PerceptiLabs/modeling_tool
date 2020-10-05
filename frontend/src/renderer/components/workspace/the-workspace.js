@@ -322,18 +322,10 @@ export default {
     },
     getCurrentStepCode: {
       handler(newVal, oldVal) {
-
         if (!this.getShowTutorialTips) {
           this.deactivateCurrentStep();
           return;
         }
-
-        // Using this watcher to check if the first notification in the buffer
-        // workspace view shows up.
-
-        if (newVal !== 'tutorial-workspace-layer-menu') { return; }
-
-        this.activateCurrentStep();
       },
       immediate: true
     }

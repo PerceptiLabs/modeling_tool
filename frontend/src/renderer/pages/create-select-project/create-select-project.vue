@@ -187,7 +187,7 @@
         if (this.networksWithChanges.length > 0) {
           this.popupConfirm(
           {
-            text: 'There are unsaved networks, are you sure you want to change projects?',
+            text: 'There are unsaved networks. Are you sure you want to change projects?',
             cancel: () => {
               this.closePageAction();
             },
@@ -288,7 +288,7 @@
         const theProjectModels = theProject.models;
         if(!!theProjectModels.length) {
           this.$store.dispatch('globalView/GP_confirmPopup', {
-            text: 'There are still models inside this project, are you sure you want to delete the project and all its containing models?',
+            text: 'There are still models inside this project. Are you sure you want to delete the project and all its containing models?',
             ok: () => {
 
               const deleteModelsPromises = theProjectModels.map(model_id => {

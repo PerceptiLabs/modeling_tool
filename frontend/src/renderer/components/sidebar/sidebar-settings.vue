@@ -2,7 +2,7 @@
   .sidebar-setting-wrapper
     .sidebar-setting-head
       .sidebar-setting-head-name Settings
-      button.sidebar-setting-head-open-code(
+      button.btn-menu-bar(
         v-if="selectedEl !== null"
         @click="onOpenCodeButtonClick()"
         ) Open code
@@ -112,7 +112,7 @@ export default {
     openComponentCode() {
       if (!this.selectedEl) { return; }
 
-      this.setNextStep('tutorial-workspace-settings');
+      this.setNextStep({currentStep:'tutorial-workspace-settings'});
       
       this.$store.dispatch('mod_workspace-code-editor/openEditor', {
         networkId: this.currentNetworkId,
@@ -140,7 +140,7 @@ export default {
   background: #363E51;
   border: 1px solid #475D9C;
   box-sizing: border-box;
-  height: 25px;
+  height: 31px;
 }
 .sidebar-setting-head-name {
 
@@ -164,6 +164,14 @@ export default {
   line-height: 15px;
   color: #B6C7FB;
 
+  &:hover {
+    background: #6185EE;
+    border-color: #6185EE;
+    color: #fff;
+  }
+  &:active:hover {
+    background: #7397FE;
+  }
 }
 .setting-values-wrapper {
   // padding: 10px 15px;

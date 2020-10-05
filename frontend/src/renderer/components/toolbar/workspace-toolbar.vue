@@ -4,29 +4,6 @@
       :class="{'tutorial-active': activeStepStoryboard === 4}"
       v-if="!statisticsIsOpen && !testIsOpen")
 
-      //- ul.toolbar_list
-      //-   li
-      //-     button#tutorial_pointer.btn.btn--toolbar(type="button"
-      //-       :disabled="!networkIsOpen"
-      //-       :class="{'active': networkMode === 'edit'}"
-      //-       v-tooltip:bottom="'Edit'"
-      //-       v-tooltip-interactive:bottom-right="interactiveInfo.edit"
-      //-       @click="setNetMode('edit', 'tutorial_pointer')"
-      //-     )
-      //-       i.icon.icon-select
-
-      //-   li.toolbar_list-arrow-wrap(
-      //-     :class="{'disable-hover': statisticsIsOpen}"
-      //-   )
-      //-     button#tutorial_list-arrow.btn.btn--toolbar(type="button"
-      //-       :disabled="!networkIsOpen"
-      //-       :class="{'active': networkMode === 'addArrow'}"
-      //-       @click="setNetMode('addArrow', 'tutorial_list-arrow')"
-      //-       v-tooltip:bottom="'Arrow'"
-      //-       v-tooltip-interactive:bottom="interactiveInfo.arrow"
-      //-     )
-      //-       i.icon.icon-arrow-left
-
       ul.toolbar_list
         li
           button.btn.btn--toolbar(type="button"
@@ -64,29 +41,6 @@
             @click="toModelStatistic"
           )
             | Go to statistics
-        //- li
-        //-   button#tutorial_pause-training.btn.btn--toolbar.tutorial-relative(type="button"
-        //-     :class="{'active': statusNetworkCore === 'Paused'}"
-        //-     :disabled="!isTraining"
-        //-     v-tooltip:bottom="'Pause'"
-        //-     v-tooltip-interactive:bottom="interactiveInfo.pause"
-        //-     @click="trainPause"
-        //-   )
-        //-     i.icon.icon-pause
-        //- li
-        //-   button.btn.btn--toolbar(type="button"
-        //-     :disabled="statusNetworkCore !== 'Validation'"
-        //-     v-tooltip:bottom="'Skip'"
-        //-     v-tooltip-interactive:bottom="interactiveInfo.skip"
-        //-     @click="skipValid"
-        //-   )
-        //-     i.icon.icon-next
-      //- ul.toolbar_list
-      //-   li
-      //-     input.search-bar(
-      //-       placeholder="Search operation"
-      //-     )
-     
       //ul.toolbar_list
         li
           button.btn.btn--toolbar(type="button"
@@ -107,7 +61,6 @@
             @click="toggleModelWeights"
             v-tooltip-interactive:bottom="interactiveInfo.interactiveDoc"
             v-tooltip:bottom="networkHasCheckpoint?'Press this to load your most recent checkpoint':'You do not have any checkpoints, run a model to create some'"
-            :data-tutorial-target="'tutorial-workspace-preview-toggle'"
           )
             span Weights
             .ring-icon
@@ -128,18 +81,9 @@
           :class="{'active': !isNotebookMode}"
           @click="switchNotebookMode(false)"
           v-tooltip-interactive:bottom="interactiveInfo.interactiveDoc"
-          :data-tutorial-target="'tutorial-workspace-notebook-view-toggle'"          
         )
           span Modeling
-        
         button.button-model-type.ml-0(
-          type="button"
-          :class="{'active': modelWeightsActive, 'disabled': !networkHasCheckpoint}"
-          @click="toggleModelWeights"
-        )
-          span Weights
-          .ring-icon
-        button.btn.btn--dark.btn--toolbar-settings(
           type="button"
           :class="{'active': isNotebookMode}"
           @click="switchNotebookMode(true)"
@@ -147,17 +91,6 @@
           :data-tutorial-target="'tutorial-workspace-notebook-view-toggle'"          
         )
           span Notebook
-      
-        //- tutorial-instructions(
-        //-   ref="tutorialComponent"
-        //-   v-tooltip-interactive:bottom="interactiveInfo.tutorial")
-        //-   button.btn.btn--dark.btn--toolbar-settings(type="button"
-        //-     @click="switchTutorialMode"
-        //-     :class="{'active': isTutorialMode}"
-        //-   )
-        //-     span Tutorial
-        //-     .ring-icon
-
         sidebar-toggle-button
     .layers-toolbar(v-if="!statisticsIsOpen && !testIsOpen")
       layers-toolbar
@@ -348,7 +281,7 @@ export default {
     },
     switchNotebookMode(setNotebook) {
       this.$store.dispatch('mod_tracker/EVENT_toolbarNotebookButtonToggle', setNotebook);
-      this.setNextStep('tutorial-workspace-notebook-view-toggle');
+      this.setNextStep({currentStep:'tutorial-workspace-notebook-view-toggle'});
       this.set_notebookMode(setNotebook);
     },
     onOffBtn() {
@@ -368,7 +301,7 @@ export default {
                 this.trainStartWithCheckpoint();
 
                 this.$nextTick(() => {
-                  this.setNextStep('tutorial-workspace-start-training');
+                  this.setNextStep({currentStep:'tutorial-workspace-start-training'});
                   this.setCurrentView('tutorial-core-side-view');
                 });
               } else {
@@ -413,7 +346,7 @@ export default {
 
 
           this.$nextTick(() => {
-            this.setNextStep('tutorial-workspace-start-training');
+            this.setNextStep({currentStep:'tutorial-workspace-start-training'});
             this.setCurrentView('tutorial-statistics-view');
           });
         });
@@ -476,10 +409,11 @@ export default {
     },
     toggleModelPreviews() {
       this.$store.dispatch('mod_tracker/EVENT_toolbarPreviewButtonToggle', !this.showModelPreviews);
-      this.setNextStep('tutorial-workspace-preview-toggle');
+      this.setNextStep({currentStep:'tutorial-workspace-preview-toggle'});
       this.$store.dispatch('mod_workspace/TOGGLE_showModelPreviews');
     },
     toggleModelWeights() {
+      if (!this.networkHasCheckpoint) { return; }
       this.$store.dispatch('mod_workspace/toggleModelWeightsState');
 
       // Should refactor this
