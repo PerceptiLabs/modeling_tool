@@ -10,7 +10,7 @@ class TokenView(TemplateView):
         token = request.GET.get("token") or os.getenv("PL_FILE_SERVING_TOKEN")
         ret = super().dispatch(request, *args, **kwargs)
         if token:
-            ret.set_cookie("fileserver_token", value=token, samesite="Strict")
+            ret.set_cookie("fileserver_token", value=token, samesite="Lax")
         return ret
 
 urlpatterns = [

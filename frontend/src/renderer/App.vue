@@ -78,6 +78,7 @@
       window.addEventListener('offline', this.updateOnlineStatus);
       this.trackerInit();
       this.readUserInfo();
+      fileserver_pullTokenFromEnv();
       
       // from webstorage
       this.loadWorkspacesFromWebStorage()
@@ -90,9 +91,7 @@
       this.$store.commit('mod_project/setIsDefaultProjectMode');
       
     },
-    mounted() {      
-      fileserver_pullTokenFromEnv()
-
+    mounted() {
       if (this.isDefaultProjectMode) { 
         // in the free version, the user is locked to a single project
         this.getDefaultModeProject();
