@@ -32,23 +32,24 @@ import perceptilabs.autosettings.utils as autosettings_utils
 
 #LW interface
 from perceptilabs.lwInterface import (
-        getNotebookImports,
-        getNotebookRunscript,
-        getGraphOrder,
-        getDataMeta,
-        getDataMetaV2,
-        getPartitionSummary,
-        getCode,
-        GetNetworkInputDim,
-        getNetworkOutputDim,
-        getPreviewSample,
-        getPreviewBatchSample,
-        getPreviewVariableList,
-        Parse,
-        GetNetworkData,
-        ScanCheckpoint,
-        CopyJsonModel
-        )
+    getNotebookImports,
+    getNotebookRunscript,
+    getGraphOrder,
+    getDataMeta,
+    getDataMetaV2,
+    getPartitionSummary,
+    getCode,
+    GetNetworkInputDim,
+    getNetworkOutputDim,
+    getPreviewSample,
+    getPreviewBatchSample,
+    getPreviewVariableList,
+    Parse,
+    GetNetworkData,
+    ScanCheckpoint,
+    CopyJsonModel,
+    UploadKernelLogs
+)
 
 logger = logging.getLogger(APPLICATION_LOGGER)
 
@@ -528,7 +529,10 @@ class Interface():
             result_names = value
             response = self._core.getAggregationResults(result_names)
             return response
-
+        elif action == 'UploadKernelLogs':
+            uploader = UploadKernelLogs(value, self._session_id)
+            response = uploader.run()
+            return response
         else:
             raise LookupError(f"The requested action '{action}' does not exist")
 

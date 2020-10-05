@@ -113,12 +113,22 @@
           createIssueInGithub(requestPayload)
             .then(res => {
               if (!res.data) { return; }
+              this.isForm = false;
 
               this.gitHubIssueNumber = res.data['Issue Number'];
+            
+              const kernelLogPayload = {
+                'issueTitle': this.issueTitle,
+                'issueBody': this.issueBody,
+                'gitHubIssueNumber': this.gitHubIssueNumber,
+                'gitHubIssueUrl': `${this.gitHubIssuesUrl}${this.gitHubIssueNumber}`,
+              };
+
+              this.$store.dispatch('mod_api/API_UploadKernelLogs', kernelLogPayload);
 
               this.issueTitle = '';
               this.issueBody = '';
-              this.isForm = false;
+
             }).finally(() => this.isRequesting = false);
         } else {
           if (this.$refs['issueTitle']) {

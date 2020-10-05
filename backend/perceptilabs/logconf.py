@@ -229,7 +229,7 @@ def setup_data_logger(is_dev=True):
         logger.addHandler(mixpanel_handler)
         
 
-def upload_logs(session_id):
+def upload_logs(zip_name):
     import os
     import time
     import uuid
@@ -249,10 +249,13 @@ def upload_logs(session_id):
         directory_path = tempfile.mkdtemp(prefix='perceptilabs_logs_')
         archives_path = tempfile.mkdtemp(prefix='perceptilabs_archives_')
 
-        shutil.copy(APPLICATION_LOG_FILE, os.path.join(directory_path, APPLICATION_LOG_FILE))
-        shutil.copy(DATA_LOG_FILE, os.path.join(directory_path, DATA_LOG_FILE))
+        def make_temp_copy(source_file, temp_dir):
+            dest_file = os.path.join(temp_dir, os.path.basename(source_file))
+            shutil.copy(source_file, dest_file)
 
-        zip_name = "logs_{}_{}".format(int(time.time()), session_id)
+        make_temp_copy(APPLICATION_LOG_FILE, directory_path)
+        make_temp_copy(DATA_LOG_FILE, directory_path)        
+        
         zip_path_no_ext = os.path.join(archives_path, zip_name)
         zip_full_path = zip_path_no_ext + '.zip'
 

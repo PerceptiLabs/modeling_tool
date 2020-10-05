@@ -8,6 +8,7 @@ import threading
 import pkg_resources
 
 import perceptilabs.logconf
+import perceptilabs.utils as utils
 from perceptilabs.messaging.zmq_wrapper import get_message_bus
 from perceptilabs.issues import IssueHandler
 
@@ -78,7 +79,8 @@ def main():
     except Exception as e:
         logger.exception("Exception in server")
     finally:
-        perceptilabs.logconf.upload_logs(session_id)
+        zip_name = utils.format_logs_zipfile_name(session_id)
+        perceptilabs.logconf.upload_logs(zip_name)
 
 if __name__ == "__main__":
     main()

@@ -1251,6 +1251,15 @@ const actions = {
       .catch(e => console.error(e));
   },
   
+  API_UploadKernelLogs (ctx, payload) {
+    const theData = {
+      // receiver: networkId,
+      action: 'UploadKernelLogs',
+      value: payload
+    };
+    
+    return coreRequest(theData)
+  },
 };
 
 export default {
