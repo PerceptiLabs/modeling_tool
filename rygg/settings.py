@@ -29,7 +29,7 @@ SECRET_KEY = '-nj5*1agd@#(1*gcm2kd2q!*ui!kg2*yew=ata$n!sj-nnl&a7'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]']
+ALLOWED_HOSTS = ["*"]
 
 APPEND_SLASH=True
 
@@ -48,6 +48,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "request_logging.middleware.LoggingMiddleware",
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.security.SecurityMiddleware',
@@ -150,15 +151,21 @@ CORS_ALLOW_CREDENTIALS = False
 
 LOGGING = {
     'version': 1,
+    "disable_existing_loggers": False,
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
         },
     },
     'loggers': {
+        "django.request": {
+            "handlers": ["console"],
+            'level': os.getenv('RYGG_LOG_LEVEL', 'WARNING'),
+            "propagate": False,
+        },
         'rygg': {
             'handlers': ['console'],
-            'level': os.getenv('RYGG_LOG_LEVEL', 'WARNING')
+            'level': os.getenv('RYGG_LOG_LEVEL', 'WARNING'),
         },
     },
 }
