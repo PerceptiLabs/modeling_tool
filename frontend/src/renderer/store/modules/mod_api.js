@@ -1086,7 +1086,7 @@ const actions = {
     //   theData
     // );
     
-    dispatch('mod_workspace/setChartComponentLoadingState', { descendants: Object.keys(payload), value: true } , { root: true });
+    dispatch('mod_workspace/setChartComponentLoadingState', { descendants: Object.keys(payload), value: true, networkId } , { root: true });
 
     return coreRequest(theData)
       .then(res => {
@@ -1138,13 +1138,14 @@ const actions = {
       .catch(e => {
         console.error(e)
       }).finally(() => {
-        dispatch('mod_workspace/setChartComponentLoadingState', { descendants: Object.keys(payload), value: false } , { root: true });
+        dispatch('mod_workspace/setChartComponentLoadingState', { descendants: Object.keys(payload), value: false, networkId } , { root: true });
       });
   },
   API_getBatchPreviewSampleForElementDescendants({ getters, dispatch, rootGetters }, layerId) {
     const networkList = getters.GET_coreNetworkElementList;
     const pivotLayer = networkList[layerId];
     let descendants = getDescendants(pivotLayer, []);
+    const networkId = rootGetters['mod_workspace/GET_currentNetworkId'];
     let net = cloneDeep(getters.GET_coreNetwork);
     
     function getDescendants(networkElement, dataIds){
@@ -1161,7 +1162,7 @@ const actions = {
 
     descendants.push(layerId); 
 
-    dispatch('mod_workspace/setChartComponentLoadingState', { descendants, value: true } , { root: true });
+    dispatch('mod_workspace/setChartComponentLoadingState', { descendants, value: true, networkId } , { root: true });
 
     for(let ix in net) {
       let el = net[ix];
@@ -1224,7 +1225,7 @@ const actions = {
       .catch(e => {
         console.error(e)
       }).finally(() => {
-        dispatch('mod_workspace/setChartComponentLoadingState', { descendants, value: false } , { root: true });
+        dispatch('mod_workspace/setChartComponentLoadingState', { descendants, value: false, networkId } , { root: true });
       });
   },
   async API_scanCheckpoint (ctx, { networkId, path }) {

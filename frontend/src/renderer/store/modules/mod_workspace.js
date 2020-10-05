@@ -1726,8 +1726,9 @@ const mutations = {
     
     Vue.set(network.networkMeta, 'usingWeights', value);
   },
-  setChartComponentLoadingStateMutation(state, {descendants, value, getters}) {
-    const networkList = getters.GET_currentNetworkElementList;
+  setChartComponentLoadingStateMutation(state, {descendants, value, getters, networkId}) {
+    const networkList = getters.GET_networkByNetworkId(networkId).networkElementList;
+    
     descendants.forEach(componentId => {
       if(networkList[componentId] && networkList[componentId].chartDataIsLoading !== undefined) {
         if(value) { // is should increment
@@ -2380,8 +2381,8 @@ const actions = {
 
     commit('setViewTypeMutation', value);
   },
-  setChartComponentLoadingState({ getters, commit }, {descendants, value}) {
-    commit('setChartComponentLoadingStateMutation', {getters, descendants, value});
+  setChartComponentLoadingState({ getters, commit }, {descendants, value, networkId }) {
+    commit('setChartComponentLoadingStateMutation', {getters, descendants, value, networkId});
   },
 };
 
