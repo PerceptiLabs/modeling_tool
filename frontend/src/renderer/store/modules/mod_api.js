@@ -1065,6 +1065,8 @@ const actions = {
   },
   // @param {object} payload | { networkId: variableName } 
   API_getBatchPreviewSample({ getters, dispatch, rootGetters }, payload) {
+    if (!payload) { payload = {}; }
+
     const networkList = getters.GET_coreNetworkElementList;
     const networkId = rootGetters['mod_workspace/GET_currentNetworkId'];
     let net = cloneDeep(getters.GET_coreNetwork);
@@ -1083,7 +1085,9 @@ const actions = {
     //   'API_getBatchPreviewSample req',
     //   theData
     // );
+    
     dispatch('mod_workspace/setChartComponentLoadingState', { descendants: Object.keys(payload), value: true } , { root: true });
+
     return coreRequest(theData)
       .then(res => {
         // console.log(

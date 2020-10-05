@@ -310,23 +310,25 @@
     },
     methods: {
       ...mapActions({
-        popupConfirm:        'globalView/GP_confirmPopup',
-        popupNewModel:       'globalView/SET_newModelPopup',
-        showInfoPopup:       'globalView/GP_infoPopup',
-        set_currentNetwork:  'mod_workspace/SET_currentNetwork',
-        set_currentModelIndex: 'mod_workspace/SET_currentModelIndex',
-        createProjectModel:  'mod_project/createProjectModel',
-        setActivePageAction: 'modal_pages/setActivePageAction',
-        delete_network :     'mod_workspace/DELETE_network',
-        UPDATE_MODE_ACTION : 'mod_workspace/UPDATE_MODE_ACTION',
+        popupConfirm:         'globalView/GP_confirmPopup',
+        popupNewModel:        'globalView/SET_newModelPopup',
+        showInfoPopup:        'globalView/GP_infoPopup',
+        set_currentNetwork:   'mod_workspace/SET_currentNetwork',
+        set_currentModelIndex:'mod_workspace/SET_currentModelIndex',
+        createProjectModel:   'mod_project/createProjectModel',
+        setActivePageAction:  'modal_pages/setActivePageAction',
+        delete_network :      'mod_workspace/DELETE_network',
+        UPDATE_MODE_ACTION :  'mod_workspace/UPDATE_MODE_ACTION',
         closeStatsTestViews:  'mod_workspace/SET_statisticsAndTestToClosed',
         setCurrentView:       'mod_tutorials/setCurrentView',
-        SET_openStatistics: 'mod_workspace/SET_openStatistics',
-        SET_openTest:       'mod_workspace/SET_openTest',
+        setNextStep:          'mod_tutorials/setNextStep',
 
-        setNetworkNameAction:'mod_workspace/SET_networkName',
-        updateWorkspaces:    'mod_webstorage/updateWorkspaces',
-        deleteAllIds:        'mod_webstorage/deleteAllIds',        
+        SET_openStatistics:   'mod_workspace/SET_openStatistics',
+        SET_openTest:         'mod_workspace/SET_openTest',
+
+        setNetworkNameAction: 'mod_workspace/SET_networkName',
+        updateWorkspaces:     'mod_webstorage/updateWorkspaces',
+        deleteAllIds:         'mod_webstorage/deleteAllIds',        
       }),
       goToNetworkView(networkID) {
         if(this.statusLocalCore!='online') {
@@ -538,6 +540,10 @@
           this.showInfoPopup("Kernel is offline");
           return;
         }
+        this.setNextStep({
+          currentStep:'tutorial-model-hub-new-button',
+          activateNextStep: false // or extra notification will appear
+        });
 
         // open modal
         this.popupNewModel(true);

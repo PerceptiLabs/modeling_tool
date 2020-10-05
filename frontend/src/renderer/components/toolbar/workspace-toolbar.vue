@@ -61,7 +61,6 @@
             @click="toggleModelWeights"
             v-tooltip-interactive:bottom="interactiveInfo.interactiveDoc"
             v-tooltip:bottom="networkHasCheckpoint?'Press this to load your most recent checkpoint':'You do not have any checkpoints, run a model to create some'"
-            :data-tutorial-target="'tutorial-workspace-preview-toggle'"
           )
             span Weights
             .ring-icon
@@ -82,7 +81,6 @@
           :class="{'active': !isNotebookMode}"
           @click="switchNotebookMode(false)"
           v-tooltip-interactive:bottom="interactiveInfo.interactiveDoc"
-          :data-tutorial-target="'tutorial-workspace-notebook-view-toggle'"          
         )
           span Modeling
         button.button-model-type.ml-0(
@@ -283,7 +281,7 @@ export default {
     },
     switchNotebookMode(setNotebook) {
       this.$store.dispatch('mod_tracker/EVENT_toolbarNotebookButtonToggle', setNotebook);
-      this.setNextStep('tutorial-workspace-notebook-view-toggle');
+      this.setNextStep({currentStep:'tutorial-workspace-notebook-view-toggle'});
       this.set_notebookMode(setNotebook);
     },
     onOffBtn() {
@@ -303,7 +301,7 @@ export default {
                 this.trainStartWithCheckpoint();
 
                 this.$nextTick(() => {
-                  this.setNextStep('tutorial-workspace-start-training');
+                  this.setNextStep({currentStep:'tutorial-workspace-start-training'});
                   this.setCurrentView('tutorial-core-side-view');
                 });
               } else {
@@ -348,7 +346,7 @@ export default {
 
 
           this.$nextTick(() => {
-            this.setNextStep('tutorial-workspace-start-training');
+            this.setNextStep({currentStep:'tutorial-workspace-start-training'});
             this.setCurrentView('tutorial-statistics-view');
           });
         });
@@ -411,7 +409,7 @@ export default {
     },
     toggleModelPreviews() {
       this.$store.dispatch('mod_tracker/EVENT_toolbarPreviewButtonToggle', !this.showModelPreviews);
-      this.setNextStep('tutorial-workspace-preview-toggle');
+      this.setNextStep({currentStep:'tutorial-workspace-preview-toggle'});
       this.$store.dispatch('mod_workspace/TOGGLE_showModelPreviews');
     },
     toggleModelWeights() {

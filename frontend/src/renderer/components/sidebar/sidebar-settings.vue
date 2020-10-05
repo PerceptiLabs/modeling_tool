@@ -112,7 +112,7 @@ export default {
     openComponentCode() {
       if (!this.selectedEl) { return; }
 
-      this.setNextStep('tutorial-workspace-settings');
+      this.setNextStep({currentStep:'tutorial-workspace-settings'});
       
       this.$store.dispatch('mod_workspace-code-editor/openEditor', {
         networkId: this.currentNetworkId,

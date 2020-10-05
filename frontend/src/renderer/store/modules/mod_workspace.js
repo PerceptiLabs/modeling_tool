@@ -1729,7 +1729,7 @@ const mutations = {
   setChartComponentLoadingStateMutation(state, {descendants, value, getters}) {
     const networkList = getters.GET_currentNetworkElementList;
     descendants.forEach(componentId => {
-      if(networkList[componentId].chartDataIsLoading !== undefined) {
+      if(networkList[componentId] && networkList[componentId].chartDataIsLoading !== undefined) {
         if(value) { // is should increment
           Vue.set(networkList[componentId], 'chartDataIsLoading', networkList[componentId].chartDataIsLoading + 1);
         } else {
@@ -1811,7 +1811,7 @@ const actions = {
         }
         dispatch('mod_webstorage/updateWorkspaces', null, { root: true });
       }
-      return Promise.resolve();
+      return resolve();
     });
   },
   ADD_existingNetworkToWorkspace({commit,dispatch}, { network } = {}) {

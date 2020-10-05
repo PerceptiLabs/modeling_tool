@@ -186,7 +186,7 @@ export default {
             this.chosenTemplate = index;
             this.autoPopulateName();
 
-            this.setNextStep('tutorial-create-model-new-model');
+            this.setNextStep({currentStep:'tutorial-create-model-new-model'});
         },
         async autoPopulateName() {
             if (this.modelName && this.hasChangedModelName) { return; }
@@ -254,44 +254,45 @@ export default {
                     defaultTemplate.networkID = apiMeta.model_id;
                     defaultTemplate.networkName = modelName;
                     
-                    this.addNetwork({ network: defaultTemplate,  apiMeta });
                     modelType = 'Custom';
 
+                    return this.addNetwork({ network: defaultTemplate,  apiMeta });
                 } else {
                     let template = cloneDeep(basicTemplates[chosenTemplate].template.network);
 
                     const newRootPath = rootPath.replace(/\\/g, "/");
                     this.convertToAbsolutePath(template.networkElementList, newRootPath);
-
                     template.networkName = modelName;
                     template.networkID = apiMeta.model_id;
-                    this.addNetwork({network: template, apiMeta});
-                    
+
                     modelType = basicTemplates[chosenTemplate].title;
+
+                    return this.addNetwork({network: template, apiMeta});
                 }
+            }).then(_ => {
+                this.getProjects();
+                this.$store.dispatch('mod_tracker/EVENT_modelCreation', modelType, {root: true});
+
+                this.closeStatsTestViews({ networkId: this.currentNetworkId });
+
+                this.$store.dispatch("mod_workspace/SET_currentModelIndex", this.workspaces.length - 1);
+                this.$store.dispatch('mod_workspace/setViewType', 'model');
+                console.log('this.workspaces', this.workspaces);
+                this.$store.commit('mod_empty-navigation/set_emptyScreenMode', 0);
+                this.setChecklistItemComplete({ itemId: 'createModel' });
+
+                
+                // closing model will invoke:
+                // setCurrentView('tutorial-model-hub-view');
+                // hence the next tick
+                this.$nextTick(() => {
+                    this.setCurrentView('tutorial-workspace-view');
+                });
             });
-
-            this.getProjects();
-            this.$store.dispatch('mod_tracker/EVENT_modelCreation', modelType, {root: true});
-
             this.closeModal(false);
-            this.closeStatsTestViews({ networkId: this.currentNetworkId });
-
-            this.$store.dispatch('mod_workspace/setViewType', 'model');
-            this.$store.dispatch("mod_workspace/SET_currentModelIndex", this.workspaces.length);      
-            this.$store.commit('mod_empty-navigation/set_emptyScreenMode', 0);
-            this.setChecklistItemComplete({ itemId: 'createModel' });
-
-            // closing model will invoke:
-            // setCurrentView('tutorial-model-hub-view');
-            // hence the next tick
-            this.$nextTick(() => {
-                this.setCurrentView('tutorial-workspace-view');
-            });
-
         },
         openFilePicker() {
-            this.setNextStep('tutorial-create-model-model-path');
+            this.setNextStep({currentStep:'tutorial-create-model-model-path'});
             this.showFilePickerPopup = true;
         },
         closePopup() {
@@ -332,7 +333,7 @@ export default {
                 this.hasChangedModelName = true;
             }
 
-            this.setNextStep('tutorial-create-model-model-name');
+            this.setNextStep({currentStep:'tutorial-create-model-model-name'});
         }
     },
 }

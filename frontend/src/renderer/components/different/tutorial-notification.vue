@@ -94,7 +94,7 @@ export default {
   },
   methods: {
     onGotItClick() {
-      this.$store.dispatch('mod_tutorials/setNextStep', this.stepCode);
+      this.$store.dispatch('mod_tutorials/setNextStep', {currentStep: this.stepCode});
     },
     onHideTipClick() {
       // console.log('onHideTipClick!')

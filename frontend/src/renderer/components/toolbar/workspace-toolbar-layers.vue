@@ -214,7 +214,7 @@ export default {
         this.layersbarList[idx].showEl = true;
       }
 
-      this.setNextStep('tutorial-workspace-layer-menu');
+      this.setNextStep({currentStep:'tutorial-workspace-layer-menu'});
     },
     handleFocusOut() {
       this.layersbarList.forEach((item)=> {

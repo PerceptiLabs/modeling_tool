@@ -474,6 +474,7 @@ const actions = {
   },
   setHasShownWhatsNew({commit, dispatch, getters}, value = true) {
     commit('setHasShownWhatsNew', value);
+    dispatch('saveTutorialProgress');
   },
   setTutorialNotificationsState({commit, dispatch, getters}, value = false) {
     commit('setTutorialNotificationsState', value);
@@ -502,7 +503,7 @@ const actions = {
     
     dispatch('activateNotification');
   },
-  setNextStep({commit, dispatch, getters}, currentStep = '') {
+  setNextStep({commit, dispatch, getters}, {currentStep = '', activateNextStep = true}) {
     if (!getters.getShowTutorialTips) { return; }
 
     if (currentStep !== '' && currentStep !== getters.getCurrentStepCode) {
@@ -517,7 +518,13 @@ const actions = {
     const newStep = getters.getCurrentStep;
 
     setTimeout(() => {
-      dispatch('setupDelegator', { step: newStep });
+      // Adds ability to disable setup so certain triggers can work well:
+      // Clicking on Create in the projects view will cause an extra notification to
+      // appear if activateNextStep is not deactivated.
+      if (activateNextStep) {
+        dispatch('setupDelegator', { step: newStep });
+      }
+
       dispatch('teardownDelegator', { step: oldStep });
       dispatch('saveTutorialProgress');
     }, 0);
@@ -582,7 +589,10 @@ const actions = {
     commit('saveTutorialProgress');
   },
   loadTutorialProgress({commit}) {
-    commit('loadTutorialProgress');
+    return new Promise((resolve, reject) => {
+      commit('loadTutorialProgress');
+      resolve();
+    });
   },
 
   /****************************************************************************

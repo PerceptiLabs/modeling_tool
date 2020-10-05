@@ -207,7 +207,7 @@ export default {
         if (newVal && 
           oldVal &&
           newKeys.length === oldKeys.length + 1) {
-            this.setNextStep('tutorial-workspace-layer-data');
+            this.setNextStep({currentStep:'tutorial-workspace-layer-data'});
         }
       }
     }
