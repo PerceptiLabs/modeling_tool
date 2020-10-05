@@ -250,9 +250,17 @@ class Core:
             self._time_paused += self._time_ended - self._paused_time_stamp
             self._paused_time_stamp = None
             
-    def _on_log_message(self, message):
-        pass    
+    def _on_log_message(self, level, message):
+        if self._issue_handler is None:
+            return
 
+        if level == 'WARNING':            
+            self._issue_handler.put_info(message) # TODO: more intuitive naming
+        elif level in ['ERROR', 'CRITICAL']:
+            self._issue_handler.put_error(message)            
+            
+        self._issue_handler.put_log(message)
+        
     def _create_script(self, graph_spec, training_session_id, topic_generic, topic_snapshots, userland_timeout):
         try:
             code, self._line_to_node_map = self._script_factory.make(graph_spec, training_session_id, topic_generic, topic_snapshots, userland_timeout=self._userland_timeout)

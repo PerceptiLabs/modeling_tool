@@ -34,6 +34,9 @@
         y_tensor = self._y
         Q_online = self._Q_online
         Q_target = self._Q_target
+
+        if self._replay_memory_size > 0:
+            log.warning(f"Populating replay memory. The ViewBox will be unavailable until the first {self._replay_start_size} iterations have been completed.\nNote: The viewbox will reflect what is used in backpropagation while the top statistics show what goes into the replay memory.")
         
         while self._episode < self._n_episodes and not self._stopped:
             t0 = time.perf_counter()

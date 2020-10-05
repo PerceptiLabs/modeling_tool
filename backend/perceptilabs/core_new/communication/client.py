@@ -81,7 +81,7 @@ class TrainingClient:
                 self._on_training_ended(value['session_info'], value['end_state'])
         elif key == 'log-message':
             if self._on_log_message:
-                self._on_log_message(value['message'])
+                self._on_log_message(value['level'], value['message'])
         elif key == 'userland-timeout':
             logger.info("Userland timeout")
             if self._on_userland_timeout:

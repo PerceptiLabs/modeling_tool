@@ -52,7 +52,7 @@ def extract_tf_op_traceback_frames(exception):
 
 
 class TrainingServer:
-    def __init__(self, producer_generic, producer_snapshots, consumer, graph_builder, layer_classes, edges, connections, mode = 'training', snapshot_builder=None, userland_timeout=15, ping_interval=3, max_time_run=None):
+    def __init__(self, producer_generic, producer_snapshots, consumer, graph_builder, layer_classes, edges, connections, mode = 'training', snapshot_builder=None, userland_timeout=15, ping_interval=3, max_time_run=None, userland_logger=None):
         self._producer_generic = producer_generic
         self._producer_snapshots = producer_snapshots
         self._consumer = consumer
@@ -67,6 +67,9 @@ class TrainingServer:
         self._max_time_run = max_time_run
         self._mode = mode
 
+        if userland_logger:
+            self._handle_userland_logs(userland_logger)
+        
     def run(self, auto_start=False):
 
             t0 = time.perf_counter()
@@ -483,5 +486,13 @@ class TrainingServer:
             snapshot = self._snapshot_builder.build(graph)
             self._send_key_value('graph', value=snapshot, producer=self._producer_snapshots)
 
-                
+    def _handle_userland_logs(self, userland_logger):
+        def send_key_value(key, value):
+            self._send_key_value(key, value)                
+
+        class MyHandler(logging.Handler):
+            def emit(self, record):
+                dict_ = {'message': self.format(record), 'level': record.levelname}
+                send_key_value('log-message', value=dict_)
         
+        userland_logger.addHandler(MyHandler())
