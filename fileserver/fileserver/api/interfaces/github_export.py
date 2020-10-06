@@ -9,7 +9,7 @@ GITHUB_URL_FORMAT = "www.github.com/{username}/{repo_name}"
 
 class RepoExporterAPI():
     def __init__(self, token, repo_name):
-        self.git = Github(token)
+        self.git = Github(login_or_token = token, timeout=120)
         self.repo_name = repo_name.replace(" ", "-")
 
     # Github allows files up to 100MB
