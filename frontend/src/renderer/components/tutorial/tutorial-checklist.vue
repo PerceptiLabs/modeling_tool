@@ -56,6 +56,8 @@ export default {
     }),
     ...mapActions({
       setShowChecklist:           'mod_tutorials/setShowChecklist',
+      trackSkipChecklist:         'mod_tracker/EVENT_skipChecklist',
+
     }),
     toggleChecklist() {
       this.setChecklistExpandedState(!this.isChecklistExpanded);
@@ -64,6 +66,7 @@ export default {
       window.open('https://www.youtube.com/watch?v=tdELIpi-BZI', '_blank');
     },
     skipChecklist() {
+      this.trackSkipChecklist();
       this.setShowChecklist(false);
     }
   }

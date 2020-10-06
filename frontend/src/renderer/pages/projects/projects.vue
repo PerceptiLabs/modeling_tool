@@ -454,6 +454,8 @@
 
               for (const networkId of this.selectedListIds) {
                 // promises.push(this.delete_networkById(networkId));
+                this.$store.dispatch('mod_tracker/EVENT_modelDeletion');
+
                 await this.delete_networkById(networkId);
               }
               
@@ -649,6 +651,7 @@
         this.popupConfirm({
             text: `Are you sure you want to remove ${model.name} from Model Hub since it is no longer connected to the Project?`,
             ok: () => {
+              this.$store.dispatch('mod_tracker/EVENT_modelDeletion', 'Unparsed');
               this.$store.dispatch('mod_project/deleteModel', model)
                 .then((serverResponse) => {
                   this.unparsedModels.splice(index, 1);
