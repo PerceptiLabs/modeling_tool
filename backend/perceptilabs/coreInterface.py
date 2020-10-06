@@ -76,7 +76,6 @@ class coreLogic():
 
     def _logAndWarningQueue(self, msg):
         user_logger.info(msg)
-        self.issue_handler.put_info(msg)        
         
     def gpu_list(self):
         try:
