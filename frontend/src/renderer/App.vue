@@ -369,13 +369,12 @@
         if(this.isWeb) {
           Analytics.googleAnalytics.trackUserId(this.$store.getters['mod_user/GET_userID']);
         }
-        if(this.userId !== 'Guest') {
-          this.trackerCreateUser(this.userEmail);
-          this.trackerUpdateUser(this.userEmail);
-          this.trackerInitUser(this.userEmail);
-        }
       },
-
+      userEmail(newVal) {
+        this.trackerCreateUser(newVal);
+        this.trackerUpdateUser(newVal);
+        this.trackerInitUser(newVal);
+      },
       currentProject: {
         immediate: true,
         deep: true,
