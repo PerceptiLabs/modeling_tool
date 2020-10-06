@@ -49,7 +49,7 @@ def build_export_dict(tensorpath, add_training_files: bool, datapaths=[]):
         return _selected_files_dict(tensorpath, [
             "model.json",
             "README.md",
-            "pl_logo.jpg"
+            "pl_logo.png"
             ])
 
     def _training_files(tensorpath):
