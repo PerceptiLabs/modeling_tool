@@ -25,7 +25,8 @@ def build_export_dict(tensorpath, add_training_files: bool, datapaths=[]):
         """
 
         tempfiles = [os.path.join(r, filename) for r, d, f in (os.walk(root_path)) for filename in f]
-        return [os.path.relpath(filename, root_path) for filename in tempfiles]
+        file_list = [os.path.relpath(filename, root_path) for filename in tempfiles]
+        return [file.replace(os.sep, '/') for file in file_list]
 
     def _all_files_to_export(root_path):
         file_list = _list_files(root_path)
