@@ -211,7 +211,6 @@
       login(tabName) {
         this.settings.step = 'settings';
         //this.applySettings(tabName);
-        //this.checkPartitionList()
       },
       addFiles() {
         if(this.typeOpened === 'file') this.loadFile(true);
@@ -249,14 +248,6 @@
         data.forEach((el, index)=> selectArr.push({text: el, value: index}));
         this.dataColumns = [...selectArr];
         this.dataColumnsSelected.push(this.dataColumns[0].value);
-      },
-
-      checkPartitionList() {
-        this.settings.accessProperties.Partition_list.forEach((item)=> {
-          if(item[0]+item[1]+item[2] !== 100) {
-            this.$store.dispatch('globalView/GP_errorPopup', `Train + Validate + Test must be 100%`)
-          }
-        })
       },
       hideBtn() {
         document.getElementById('js-hide-btn').style.cssText = 'display: none'
