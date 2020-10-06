@@ -130,8 +130,21 @@ export default {
         : this.fullNetworkElementList;
 
       let newNet = {};
+      let selectedOne = false;
+
       for(let id in currentNetworkElementList) {
         let el = currentNetworkElementList[id];
+        if(this.statisticsOrTestIsOpen) {
+          el.layerMeta.isSelected = false;
+          if (el.layerType==="Training") {
+            el.layerMeta.isSelected = true;
+          } else {
+            if (!selectedOne) {
+              el.layerMeta.isSelected = true;
+              selectedOne = true;
+            }
+          }
+        }
         if(!el.layerNone || el.componentName === 'LayerContainer') newNet[id] = el
       }
       return newNet
