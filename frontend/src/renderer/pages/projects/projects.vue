@@ -124,7 +124,7 @@
           //-     )
           div.column-6(@click.stop="")
             collaborator-avatar(
-                :list="[{id: 1, name: user && user.firstName || '', img: null,}]"
+                :list="[{id: 1, name: user && user.email || '', img: null,}]"
               )
             | {{ (model && model.apiMeta && model.apiMeta.updated) ? formatDate(model.apiMeta.updated)  : ''}}
         
