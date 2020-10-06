@@ -15,6 +15,20 @@ const actions = {
     
     await idb.saveModel(cloneDeep(network));
   },
+  async deleteNetwork(ctx, networkId) {
+    if (!networkId) { return; }
+    
+    await idb.deleteModel(networkId);
+  },
+  async deleteId(ctx, id) {
+    await idb.deleteId(id);
+  },
+  async deleteIds(ctx, ids) {
+
+    for (const id of ids) {
+      await idb.deleteId(id);
+    }
+  },
   async updateIds(ctx) {
 
     
@@ -49,7 +63,7 @@ const actions = {
     let networkIdsToLoad = await idb.getIds() || [];
     networkIdsToLoad = networkIdsToLoad.sort((a,b) => a - b)
     const networks = await idb.getModels(networkIdsToLoad);
-    
+
     return new Promise((resolve) => {
       for(const network of networks) {
 

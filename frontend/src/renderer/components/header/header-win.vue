@@ -127,6 +127,7 @@ export default {
       activateChecklist:    'mod_tutorials/activateChecklist',
       setShowChecklist:     'mod_tutorials/setShowChecklist',
       setTips:              'mod_tutorials/setTutorialNotificationsState',
+      trackHelpOption:      'mod_tracker/TRACK_helpOption',
       setActivePageAction:  'modal_pages/setActivePageAction',
     }),
     appClose() {
@@ -152,18 +153,23 @@ export default {
     },
     toggleTutorialTips() {
       this.setTips(!this.showTips);
+      this.trackHelpOption('Toggle tutorial tips');
     },
     onActivateChecklist() {
       this.setShowChecklist();
       this.activateChecklist();
+      this.trackHelpOption('Activate checklist');
     },
     goToWhatsNew() {
       this.setActivePageAction(MODAL_PAGE_WHATS_NEW);
+      this.trackHelpOption('Go to Whats New');
     },
     openVideoTutorials() {
-      window.open('https://www.youtube.com/watch?v=tdELIpi-BZI', '_blank');
+      this.trackHelpOption('Go to Video Tutorials');
+      window.open('https://www.youtube.com/watch?v=IDC_uHfdpnw&list=PLhDSeRDt1gigF-8DrTBedYy3TMZ2OelqA', '_blank');
     },
     goToDocumentation() {
+      this.trackHelpOption('Go to Documentation');
       window.open('https://perceptilabs.com/docs/overview', '_blank');
     }
   }

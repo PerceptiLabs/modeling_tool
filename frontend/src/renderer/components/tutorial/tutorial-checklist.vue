@@ -56,14 +56,17 @@ export default {
     }),
     ...mapActions({
       setShowChecklist:           'mod_tutorials/setShowChecklist',
+      trackSkipChecklist:         'mod_tracker/EVENT_skipChecklist',
+
     }),
     toggleChecklist() {
       this.setChecklistExpandedState(!this.isChecklistExpanded);
     },
     openVideoTutorials() {
-      window.open('https://www.youtube.com/watch?v=tdELIpi-BZI', '_blank');
+      window.open('https://www.youtube.com/watch?v=IDC_uHfdpnw&list=PLhDSeRDt1gigF-8DrTBedYy3TMZ2OelqA', '_blank');
     },
     skipChecklist() {
+      this.trackSkipChecklist();
       this.setShowChecklist(false);
     }
   }

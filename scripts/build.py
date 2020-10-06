@@ -390,7 +390,7 @@ def run_cython_test():
 def run_pytest_tests():
     print("Running python tests")
     with pushd(BACKEND_SRC):
-        run_checked("python -m pytest")
+        run_checked("python -m pytest -rfe")
 
 def run_django_tests():
     print("Running django tests")

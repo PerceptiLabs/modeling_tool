@@ -81,6 +81,24 @@ export default {
     });
   },
 
+
+  async deleteId(id) {
+
+    let db = await _getDb();
+
+    return new Promise(resolve => {
+
+      let trans = db.transaction(['ids'],'readwrite');
+      trans.oncomplete = () => {
+        resolve();
+      };
+
+      let store = trans.objectStore('ids');
+      store.delete(id);
+    }); 
+  }, 
+
+
   async deleteAllIds() {
 
     let db = await _getDb();
@@ -162,7 +180,7 @@ export default {
   
   },
 
-  async deleteModel(model) {
+  async deleteModel(networkId) {
 
     let db = await _getDb();
 
@@ -174,7 +192,7 @@ export default {
       };
 
       let store = trans.objectStore('models');
-      store.delete(model.networkID);
+      store.delete(networkId);
     }); 
   }, 
 

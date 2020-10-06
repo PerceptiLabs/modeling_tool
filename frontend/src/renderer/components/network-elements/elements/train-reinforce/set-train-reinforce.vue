@@ -6,14 +6,14 @@
         .form_input
           base-radio(group-name="group" value-input="Q_learning" v-model="settings.ReinforceType")
             span Q-learning
-          base-radio(group-name="group" value-input="Policy_learning" v-model="settings.ReinforceType")
-            span Policy-learning
-          base-radio(group-name="group" value-input="A3C" v-model="settings.ReinforceType")
-            span A3C
-          base-radio(group-name="group" value-input="A2C" v-model="settings.ReinforceType")
-            span A2C
-          base-radio(group-name="group" value-input="PPO" v-model="settings.ReinforceType")
-            span PPO
+          //- base-radio(group-name="group" value-input="Policy_learning" v-model="settings.ReinforceType")
+          //-   span Policy-learning
+          //- base-radio(group-name="group" value-input="A3C" v-model="settings.ReinforceType")
+          //-   span A3C
+          //- base-radio(group-name="group" value-input="A2C" v-model="settings.ReinforceType")
+          //-   span A2C
+          //- base-radio(group-name="group" value-input="PPO" v-model="settings.ReinforceType")
+          //-   span PPO
     .settings-layer_section
       .form_row(v-tooltip-interactive:right="interactiveInfo.optimizer")
         .form_label Optimizer:

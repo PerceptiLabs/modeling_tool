@@ -254,7 +254,7 @@ export default {
 
         pre.item-message-content {
           user-select: text;
-          white-space: pre;
+          white-space: break-spaces;
           overflow: hidden;
           text-overflow: ellipsis;
       

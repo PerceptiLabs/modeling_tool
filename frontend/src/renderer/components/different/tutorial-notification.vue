@@ -98,6 +98,7 @@ export default {
     },
     onHideTipClick() {
       // console.log('onHideTipClick!')
+      this.$store.dispatch('mod_tracker/EVENT_hideTips');
       this.$store.dispatch('mod_tutorials/setTutorialNotificationsState', false);
     }
   }

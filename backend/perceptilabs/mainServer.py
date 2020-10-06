@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import sys
 import json
@@ -63,6 +64,13 @@ def main():
     lwDict=dict()
     
     core_interface = Interface(cores, dataDict, checkpointDict, lwDict, issue_handler, session_id=session_id)
+
+
+
+    from perceptilabs.memorywatcher import MemoryWatcher
+    memory_watcher = MemoryWatcher(issue_handler=issue_handler, core_interfaces=cores)
+    memory_watcher.initialize(asyncio.get_event_loop())
+    
 
     if args.error:
         raise Exception("Test error")

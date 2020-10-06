@@ -155,7 +155,6 @@
         SET_chartRequests:    'mod_workspace/SET_chartsRequestsIfNeeded',
         DELETE_userWorkspace: 'mod_user/DELETE_userWorkspace',
         setSidebarStateAction:'globalView/hideSidebarAction',
-        updateWorkspaces:     'mod_webstorage/updateWorkspaces',
         screenChange:         'mod_tracker/EVENT_screenChange',
         saveTutorialProgress: 'mod_tutorials/saveTutorialProgress',
         layerAddedAction:     'mod_tutorials/tutorial-workspace-layer-added-setup',

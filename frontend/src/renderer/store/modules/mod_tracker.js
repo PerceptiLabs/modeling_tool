@@ -76,6 +76,9 @@ const actions = {
   TRACK_userRegistration(ctx, email) {
     mixPanel.track('User registration', {'Email': email});
   },
+  TRACK_helpOption(ctx, helpOption) {
+    mixPanel.track('Help option', {'Option name': helpOption});
+  },
   /* APP */
   EVENT_appStart({rootState}) {
     mixPanel.track('App Start', {
@@ -123,6 +126,9 @@ const actions = {
     }
 
     mixPanel.track('Model Export', payload);
+  },
+  EVENT_modelDeletion({}, modelType = 'Normal') {
+    mixPanel.track('Model Deletion', {'Type': modelType});
   },
   /* Workspace */
   EVENT_toolbarPreviewButtonToggle({}, buttonState = true) {
@@ -182,6 +188,12 @@ const actions = {
   },
   EVENT_tutorialModeFinished() {
     mixPanel.track('Tutorial Mode Finished');
+  },
+  EVENT_hideTips(ctx) {
+    mixPanel.track('Hide tutorial tips');
+  },
+  EVENT_skipChecklist(ctx) {
+    mixPanel.track('Skip Get Started checklist');
   },
   /* Code editor in focus */
   EVENT_codeEditorStartFocus({getters, commit}) {

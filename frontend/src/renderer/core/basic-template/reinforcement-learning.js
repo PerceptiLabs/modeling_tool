@@ -223,6 +223,7 @@ const reinforcementLearning = {
         "layerName": "Reinforcement Learning_1",
         "layerType": "Training",
         "layerSettings": {
+          "ReinforceType": "Q_learning",
           "Learning_rate": 0.01,
           "Distributed": false,
           "Optimizer": "SGD",

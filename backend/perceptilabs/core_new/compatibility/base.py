@@ -48,8 +48,8 @@ class CompatibilityCore:
 
     @property
     def core_v2(self):
-        return self._core        
-        
+        return self._core
+
     def run(self):
         self._set_running(True)
 

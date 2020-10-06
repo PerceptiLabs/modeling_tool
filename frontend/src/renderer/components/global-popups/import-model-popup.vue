@@ -31,7 +31,9 @@
               .form_row
                 input.form_input(type="text" v-model="saveGithubModelLocation" readonly)
                 button.btn.btn--dark-blue-rev(type="button" @click="openLoadGithubLocation") Browse
-          
+            div.info-box
+              img.info-image(src="static/img/info.png")
+              span.fz-14 If your repository contains data, it will be added <br/> to your local model folder
 
     template(slot="action")
       button.btn.btn--primary.btn--disabled(type="button"
@@ -132,10 +134,10 @@ export default {
       fileserver_importRepositoryFromGithub({path, url, overwrite})
         .then(() => {
           const saveToPath = this.saveGithubModelLocation;
-          this.onLoadNetworkConfirmed(saveToPath + '/' + repositoyName)
+          this.onLoadNetworkConfirmed(saveToPath + '/' + repositoyName);
         })
         .catch(err => {
-console.log(err)
+          console.log(err)
           const msg = (!!err.userMessage) ?
           `Importing failed. <br />${err.userMessage}`:
           `Importing failed.`
@@ -229,6 +231,14 @@ console.log(err)
     color: #C4C4C4;
     background: rgba(54, 62, 81, 0.4);
     background-blend-mode: multiply;
+  }
+}
+.info-box {
+  display: flex;
+  align-items: center;
+  color: #B6C7FB;
+  .info-image {
+    margin-right: 12px;
   }
 }
 </style>

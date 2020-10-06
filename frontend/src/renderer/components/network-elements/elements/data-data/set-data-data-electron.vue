@@ -276,11 +276,11 @@
         this.checkPartitionList();
       },
       checkPartitionList() {
-        this.settings.accessProperties.Partition_list.forEach((item)=> {
-          if(item[0]+item[1]+item[2] !== 100) {
-            this.$store.dispatch('globalView/GP_errorPopup', `Train + Validate + Test must be 100%`)
-          }
-        })
+        // this.settings.accessProperties.Partition_list.forEach((item)=> {
+        //   if(item[0]+item[1]+item[2] !== 100) {
+        //     this.$store.dispatch('globalView/GP_errorPopup', `Train + Validate + Test must be 100%`)
+        //   }
+        // })
       },
       hideBtn() {
         const btn = document.getElementById('js-hide-btn');
