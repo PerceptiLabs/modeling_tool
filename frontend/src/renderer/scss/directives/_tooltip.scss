@@ -21,6 +21,9 @@ $triangleWith: 10px;
 		&.tooltip--bottom {
 			transform: translate(-50%, 0%);
 		}
+		&.tooltip--up {
+			transform: translate(-50%, -180%);
+		}
 		&.tooltip--networkElement {
 			transform: translate(-50%, 0%);
 		}
@@ -71,6 +74,20 @@ $triangleWith: 10px;
 		bottom: 100%;
 		left: 50%;
 		transform: translate(-50%, 50%) rotate(45deg);
+		background: linear-gradient(135deg, $popper-background-color 50%, rgba($popper-background-color,0) 58%);
+		box-shadow: -1px -1px 1px rgba(#000, .5);
+	}
+}
+.tooltip--up {
+	top: 100%;
+	left: 50%;
+	margin-top: $margin-tooltip;
+	transform: translate(-50%, 0%) rotateY(90deg);
+	box-shadow: 0 1px 1px rgba(#000, .5);
+	&:before {
+		top: 100%;
+		left: 50%;
+		transform: translate(-50%, -50%) rotate(225deg);
 		background: linear-gradient(135deg, $popper-background-color 50%, rgba($popper-background-color,0) 58%);
 		box-shadow: -1px -1px 1px rgba(#000, .5);
 	}
