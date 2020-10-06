@@ -52,6 +52,7 @@ class coreLogic():
         self._aggregation_futures = []
 
         self.issue_handler = issue_handler
+        self._running_mode = None
 
     def setupLogic(self):
         #self.warningQueue=queue.Queue()
@@ -73,6 +74,13 @@ class coreLogic():
         self.testList= None
 
         self.savedResultsDict={}
+
+    @property
+    def core_v2(self):
+        if self.core is not None:
+            return self.core.core_v2
+        else:
+            return None        
 
     def _logAndWarningQueue(self, msg):
         user_logger.info(msg)
@@ -113,6 +121,24 @@ class coreLogic():
 
         return True
 
+    @property
+    def running_mode(self):
+        return self._running_mode
+
+    @property
+    def training_state(self):
+        if self.core_v2 is not None and self.core_v2.has_client:
+            return self.core_v2.training_state
+        else:
+            return None
+
+    @property
+    def training_session_id(self):
+        if self.core_v2 is not None:
+            return self.core_v2.training_session_id
+        else:
+            return None
+        
     def set_running_mode(self, mode):
         self._running_mode = mode
         logger.info(f"Running mode {mode} set for coreLogic w\ network '{self.networkName}'")

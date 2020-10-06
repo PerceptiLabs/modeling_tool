@@ -60,6 +60,7 @@ class Core:
 
         self._server_timeout = server_timeout
         self._userland_timeout = userland_timeout
+        self._training_session_id = None
 
         self._client = None
         self._closed_by_server = False
@@ -166,6 +167,10 @@ class Core:
             self._issue_handler.put_error(error.format())
 
     @property
+    def training_session_id(self):
+        return self._training_session_id
+
+    @property
     def is_closed(self):
         return self.is_closed_by_server or self.is_closed_by_force
 
@@ -232,6 +237,14 @@ class Core:
             logger.error("Training server timed out!")
 
         self.force_close(timeout=1)
+
+    @property
+    def last_graph(self):
+        return self._last_graph
+
+    @property
+    def graph_spec(self):
+        return self._graph_spec
     
     def _on_receive_graph(self, graph):
         self._graphs.append(graph)

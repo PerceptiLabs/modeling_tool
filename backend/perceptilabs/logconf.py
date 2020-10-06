@@ -21,6 +21,7 @@ USER_LOG_LEVEL = logging.INFO
 
 DATA_LOGGER = 'perceptilabs.datalogger'
 DATA_LOG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)),'data.log')
+DATA_LOGGER_MAX_LENGTH_DEV = 1500 # Only show the first N characters in dev console
 
 class PackageFilter(logging.Filter):
     def filter(self, record):
@@ -198,7 +199,10 @@ class DataFormatter(logging.Formatter):
             logging.getLogger(APPLICATION_LOGGER).exception(f'Data log formatter failed for event {record.msg}')
             text = ''
 
-        return f"{text[:self._max_length]} ... message truncated, only showing first {self._max_length} characters"
+        if self._max_length is None:
+            return text
+        else:
+            return f"{text[:self._max_length]} ... message truncated, only showing first {self._max_length} characters"
 
 
 def setup_data_logger(is_dev=True):
@@ -212,11 +216,11 @@ def setup_data_logger(is_dev=True):
         file_handler.setFormatter(formatter)
         logger.addHandler(file_handler)
 
-    if is_dev:                                                                                                                                                                                              
-        dev_formatter = DataFormatter(max_length=350)                                                                                                                                                        
-        stream_handler = logging.StreamHandler()                                                                                                                                                            
-        stream_handler.setFormatter(dev_formatter)                                                                                                                                                          
-        logger.addHandler(stream_handler)      
+    if is_dev:
+        dev_formatter = DataFormatter(max_length=DATA_LOGGER_MAX_LENGTH_DEV)
+        stream_handler = logging.StreamHandler()
+        stream_handler.setFormatter(dev_formatter)
+        logger.addHandler(stream_handler)
     else:
         from perceptilabs.azure import AzureHandler
         azure_handler = AzureHandler.get_default()

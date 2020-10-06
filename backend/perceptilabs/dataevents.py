@@ -153,3 +153,49 @@ def collect_end_metrics(json_net, graph, training_sess_id, session_info, model_i
         }
     )
 
+
+def collect_memory_limit_exceeded(max_memory_rate, core_interfaces):
+    import pkg_resources
+    import platform
+    import psutil
+    import GPUtil
+    import time
+
+
+    
+    data_logger.info(
+        "memory_limit_exceeded",
+        extra={
+            'namespace': dict(
+                max_memory_rate=max_memory_rate,
+                cpu_count=psutil.cpu_count(),
+                platform={
+                    'platform': platform.platform(),
+                    'system': platform.system(),
+                    'release': platform.release(),
+                    'version': platform.version(),
+                    'processor': platform.processor()
+                },
+                memory={
+                    'phys_total': psutil.virtual_memory().total, # Deceptive naming, but OK according to docs: https://psutil.readthedocs.io/en/latest/
+                    'phys_available': psutil.virtual_memory().available,
+                    'swap_total': psutil.swap_memory().total,             
+                    'swap_free': psutil.swap_memory().free
+                },
+                gpus=[
+                    {'name': gpu.name, 'driver': gpu.driver, 'memory_total': gpu.memoryTotal}
+                    for gpu in GPUtil.getGPUs()
+                ],
+                core_interfaces=[
+                    {
+                        'running_mode': ci.running_mode or 'notset',
+                        'training_session_id': ci.training_session_id or 'notset',
+                        'training_state': ci.training_state or 'notset'
+                    }
+                    for ci in core_interfaces.values()
+                ]                
+            )
+        }
+    )
+
+
