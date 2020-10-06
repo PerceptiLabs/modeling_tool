@@ -26,14 +26,14 @@
   .x-space-20
   .workspace_meta-action
 
-    div.btn-menu-bottom-group-bar
-      button.btn-menu-bar(
+    div.btn-menu-bottom-group-bars
+      button.btn-menu-bar.size-xs(
         :class="{'active': getNotificationWindowSelectedTab === 'ErrorInfoPanel' && showNotificationWindow}"
         @click="notificationWindowStateHandlerNew('ErrorInfoPanel')"
       ) {{ workspaceErrors }} Problems
         span.btn.python-status(
-        :class="{'connected': workspaceErrors > 0, 'disconnected': workspaceErrors > 0}")
-      button.btn-menu-bar(
+        :class="{'connected': workspaceErrors === 0, 'disconnected': workspaceErrors > 0}")
+      button.btn-menu-bar.size-xs(
         :class="{'active': getNotificationWindowSelectedTab === 'ConsoleInfoPanel' && showNotificationWindow}"
         @click="notificationWindowStateHandlerNew('ConsoleInfoPanel')"
         ) Console
