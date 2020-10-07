@@ -219,7 +219,7 @@ def graph_spec_binary_classification():
                     "Decay_steps": "100000",
                     "Decay_rate": "0.96",
                     "Batch_size": 10,                    
-                    "Learning_rate": "0.05",
+                    "Learning_rate": "0.3",
                     "Distributed": False,
                     "Stop_Iteration":0,
                     "Stop_Target_Accuracy":80,
