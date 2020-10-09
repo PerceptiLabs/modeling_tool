@@ -921,7 +921,7 @@ const mutations = {
     if(setChangeToWorkspaceHistory)
       dispatch('mod_workspace-history/PUSH_newSnapshot', null, {root: true});
 
-    dispatch('mod_api/API_getBatchPreviewSample', {}, {root: true})
+    // dispatch('mod_api/API_getBatchPreviewSample', {}, {root: true})
 
     function checkPosition(el, list) {
       let depth = 0;

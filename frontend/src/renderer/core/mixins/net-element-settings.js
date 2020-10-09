@@ -12,7 +12,13 @@ const netElementSettings = {
   components: { SettingsCode, NetBaseSettings },
   beforeMount() {
     this.isSettedFromCore = true;
-    if(this.currentEl.layerSettings) this.settings = deepCopy(this.currentEl.layerSettings);
+    if(this.currentEl.layerSettings) {
+      this.settings = deepCopy(this.currentEl.layerSettings);
+    } else {
+      // it will be triggered only when component is created
+      this.saveSettingsToStore("Settings");
+      this.$store.dispatch('mod_api/API_getBatchPreviewSampleForElementDescendants', this.currentEl.layerId);
+    }
 
   },
   created() {
