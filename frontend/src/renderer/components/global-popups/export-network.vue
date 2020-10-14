@@ -76,11 +76,11 @@ export default {
       this.$store.commit('globalView/HIDE_allGlobalPopups');
     },
     async ok() {
-      if(this.settings.Location !== '') {
+      if(this.settings.Location !== '' && this.settings.Type === 'ipynb') {
         const fileName = this.settings.Location + `/${this.settings.name}.ipynb`;
-        const isFolderAlreadyExist = await fileserver_doesFileExist(fileName);
+        const doesFileExist = await fileserver_doesFileExist(fileName);
        
-       if(isFolderAlreadyExist) {
+       if(doesFileExist) {
           this.$store.dispatch('globalView/GP_confirmPopup', {
             text: 'That file already exists. Are you sure you want to overwrite it?',
             ok: () => {
