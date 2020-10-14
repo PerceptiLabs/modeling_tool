@@ -695,7 +695,7 @@
         let day = date.getDate().toString();
         day = day.length > 1 ? day : `0${day}`
         let month = date.getMonth() + 1;
-        month = month.length > 1 ? month : `0${month}`
+        month = month > 9 ? month : `0${month}`
         const year = date.getFullYear().toString().substring(2);
         const hour = date.getHours();
         const minutes = date.getMinutes();
