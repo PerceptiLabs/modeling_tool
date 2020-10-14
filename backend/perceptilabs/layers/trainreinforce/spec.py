@@ -9,6 +9,8 @@ class TrainReinforceSpec(InnerLayerSpec):
     history_length: int = 1
     n_episodes: int = 10
     optimizer: str = 'SGD'
+    beta1 = 0.99
+    beta2 = 0.999
     learning_rate: float = 0.01
     distributed: bool = False
     batch_size: int = 8
