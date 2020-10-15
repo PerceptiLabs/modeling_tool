@@ -58,8 +58,9 @@
     //   this.getPreviewSample();
     // },
     mounted() {
-      this.Mix_settingsData_getDataMeta(this.currentEl.layerId);
-      this.applySettings();
+      this.Mix_settingsData_getDataMeta(this.currentEl.layerId).then(() => {
+        this.saveSettingsToStore("Settings");
+      });
     },
     data() {
       return {
@@ -101,10 +102,11 @@
      watch: {
        'settings.accessProperties.Atari': {
          handler(newVal) {
-           if(newVal) {
-             this.applySettings();
-             this.Mix_settingsData_getDataMeta(this.currentEl.layerId);
-           }
+          if(newVal) {
+            this.Mix_settingsData_getDataMeta(this.currentEl.layerId).then(() => {
+              this.saveSettingsToStore("Settings");
+            });
+          }
          },
          //immediate: true
        },

@@ -74,7 +74,7 @@
     mixins: [mixinSet, mixinData, mixinFocus],
     mounted() {
       this.Mix_settingsData_getDataMeta(this.currentEl.layerId).then(() => {
-        this.saveSettings("Settings");
+        this.saveSettingsToStore("Settings");
       });
     },
     data() {
@@ -88,14 +88,6 @@
           distribution: 'Normal',
           shape: '(1, 5, 7, 4, 7)',
         },
-      }
-    },
-    watch: {
-      'settings': {
-        handler() {
-          this.applySettings("Settings")
-        },
-        deep: true,
       }
     },
   }

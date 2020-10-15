@@ -217,7 +217,9 @@
         handler(newVal, prevVal) {
           if(newVal.length !== prevVal.length) {
             this.Mix_settingsData_getPartitionSummary(this.currentEl.layerId);
-            this.saveSettings("Computer", false);
+            // update and fetch only when file is add or remove
+            if(this.currentEl.layerSettings.accessProperties.Sources.length != this.settings.accessProperties.Sources.length)
+              this.saveSettings("Computer", false);
           }
         },
         deep: true,

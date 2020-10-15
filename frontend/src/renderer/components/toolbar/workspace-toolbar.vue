@@ -31,7 +31,8 @@
             :data-tutorial-target="'tutorial-workspace-start-training'"
             @click="onOffBtn"
           )
-            i.icon.icon-on-off
+            img(v-if="showSpinnerOnRun===true" src="../../../../static/img/spinner.gif" width="12px" style="margin-right: 5px")
+            i.icon.icon-on-off(v-if="showSpinnerOnRun===false")
             span(v-html="statusTraining === 'training' || statusTraining === 'pause' ? 'Stop' : 'Run'")
       .horizontal-separator
       ul.toolbar_list
@@ -133,6 +134,7 @@ export default {
       reportLink: 'https://join.slack.com/t/perceptilabs-com/shared_invite/enQtODQ5NzAwNDkxOTExLWUxODAwZDk0MzA1MmM4OTViNWE4MmVjYjc2OTQwMTQ4N2NmM2ZlYmI5NjZjOWRiYjBkYjBjMTMzNjEyMDNiNDk',
       haveAtLeastOneItemStatistic: false,
       statisticItemIndex: null,
+      showSpinnerOnRun: false
     }
   },
   computed: {
@@ -289,7 +291,7 @@ export default {
         if(this.isTraining)  {
           this.trainStop();
         } else {
-
+          this.showSpinnerOnRun = true;
           this.setCurrentStatsIndex(this.currentNetworkIndex);
 
           this.$store.dispatch('mod_api/API_scanCheckpoint', { 
@@ -297,6 +299,8 @@ export default {
             path: this.currentNetwork.apiMeta.location
           })
             .then(result => {
+              this.showSpinnerOnRun = false;
+
               if (result.hasCheckpoint) {
                 this.trainStartWithCheckpoint();
 
