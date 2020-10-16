@@ -131,6 +131,7 @@ def create_get_aggregation_results_request_extensive():
 
     return {"receiver": receiver, "action":action, "value":value}
 
+@pytest.mark.skip
 def test_get_experiment_data(core_interface, experiment):
     train_loss_input = np.random.normal(size=5)
     test_loss_input = np.empty(5)
@@ -158,6 +159,7 @@ def test_get_experiment_data(core_interface, experiment):
     assert np.isclose(train_loss_input, train_identity, equal_nan=True).all()
     assert np.isclose(test_loss_input, test_identity, equal_nan=True).all()
 
+@pytest.mark.skip
 def test_get_aggregations_results_basic(core_interface, experiment):
     train_loss_input = np.random.normal(size=5)
     test_loss_input = np.empty(5)
@@ -184,6 +186,7 @@ def test_get_aggregations_results_basic(core_interface, experiment):
 
     assert np.isclose(actual['get_average'], expected, equal_nan=True).all()  
 
+@pytest.mark.skip
 def test_get_aggregations_results_extensive(core_interface, experiment):
     train_loss_input = np.random.normal(size=5)
     test_loss_input = np.empty(5)
