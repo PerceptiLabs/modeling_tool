@@ -1,6 +1,7 @@
 import numpy as np
 import itertools
 
+IMAGE_SUBSAMPLE_SIZE = 25
 
 def RGB2RGBa(data, normalize):
     data=np.squeeze(data)
@@ -170,7 +171,6 @@ def getType(dataVec):
         return TYPE_SCATTER   
 
 def createDataObject(dataList,typeList=None,styleList=None,nameList=None,subSampleSize=200, normalize=True):
-    # return {}
     if np.any(np.asarray(dataList).ravel() is None):
         return {}
     if not typeList: # default-argument-lists tend to misbehave
@@ -192,6 +192,7 @@ def createDataObject(dataList,typeList=None,styleList=None,nameList=None,subSamp
         typeList.append(type_)
 
     seriesList = []
+
     for dataVec, type_, style, name in itertools.zip_longest(dataList, typeList,
                                                              styleList, nameList):
 
@@ -203,11 +204,11 @@ def createDataObject(dataList,typeList=None,styleList=None,nameList=None,subSamp
         elif type_ == TYPE_LINE:
             output = line(dataVec)
         elif type_ == TYPE_RGBA:
-            output = rgb(dataVec, subSampleSize, normalize)
+            output = rgb(dataVec, IMAGE_SUBSAMPLE_SIZE, normalize)
         elif type_ == TYPE_GRAYSCALE:
-            output = grayscale(dataVec, subSampleSize)
+            output = grayscale(dataVec, IMAGE_SUBSAMPLE_SIZE)
         elif type_ == TYPE_HEATMAP:
-            output = heatmap(dataVec, subSampleSize)
+            output = heatmap(dataVec, IMAGE_SUBSAMPLE_SIZE)
         elif type_ == TYPE_SCATTER:
             output = scatter(dataVec)
         elif type_ == TYPE_PIE:
