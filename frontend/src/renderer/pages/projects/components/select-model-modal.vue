@@ -243,12 +243,15 @@ export default {
             }
 
             let modelType;
+            let newModelId;
 
             this.createProjectModel({
                 name: modelName,
                 project: this.currentProjectId,
                 location: `${this.modelPath}/${modelName}`,
             }).then(apiMeta => {
+                newModelId = apiMeta.model_id;
+
                 if(chosenTemplate === -1) {
                     const defaultTemplate = cloneDeep(this.defaultTemplate);
                     defaultTemplate.networkID = apiMeta.model_id;
@@ -275,7 +278,7 @@ export default {
 
                 this.closeStatsTestViews({ networkId: this.currentNetworkId });
 
-                this.$store.dispatch("mod_workspace/SET_currentModelIndex", this.workspaces.length - 1);
+                this.$store.dispatch("mod_workspace/SET_currentModelIndexByNetworkId", newModelId);
                 this.$store.dispatch('mod_workspace/setViewType', 'model');
                 
                 this.$store.commit('mod_empty-navigation/set_emptyScreenMode', 0);

@@ -506,7 +506,8 @@ const mutations = {
       ? newNetwork = defaultNetwork
       : newNetwork = network;
 
-    newNetwork.apiMeta = apiMeta
+    newNetwork.apiMeta = apiMeta;
+    newNetwork.networkID = apiMeta.model_id;
 
     setNetworkMeta(newNetwork.networkMeta, defaultMeta, true);
 
@@ -521,11 +522,19 @@ const mutations = {
 
     const netIndex = findNetId(newNetwork, workspace);
     if (netIndex > -1) {
-      workspace.splice(netIndex, 1, newNetwork)
+      workspace.splice(netIndex, 1, newNetwork);
       state.currentNetwork = netIndex;
     } else {
-      workspace.push(deepCloneNetwork(newNetwork));
-      state.currentNetwork = workspace.length - 1;
+
+      // find position to insert 
+      // (can be done with binary serach but no gains with < 10 models)
+      let currIdx = 0
+      while (currIdx < workspace.length && 
+          workspace[currIdx].networkID < newNetwork.networkID) {
+        currIdx += 1;
+      }
+      workspace.splice(currIdx, 0, deepCloneNetwork(newNetwork));
+      state.currentNetwork = currIdx;
     }
 
     //-- Open last Network
@@ -644,11 +653,19 @@ const mutations = {
 
     const netIndex = findNetId(network, workspace);
     if (netIndex > -1) {
-      workspace.splice(netIndex, 1, network)
+      workspace.splice(netIndex, 1, network);
       state.currentNetwork = netIndex;
     } else {
-      workspace.push(deepCloneNetwork(network));
-      state.currentNetwork = workspace.length - 1;
+      // find position to insert 
+      // (can be done with binary serach but no gains with < 10 models)
+      let currIdx = 0
+      while (currIdx < workspace.length && 
+          workspace[currIdx].networkID < network.networkID) {
+        currIdx += 1;
+      }
+      
+      workspace.splice(currIdx, 0, deepCloneNetwork(network));
+      state.currentNetwork = currIdx;
     }
 
     function findNetId(newNet, netList) {
@@ -672,12 +689,11 @@ const mutations = {
   async delete_networkById(state, networkId) {
     const networkIndex = state.workspaceContent.findIndex(w => w.networkID == networkId);
 
+    if (networkIndex < 0) { return; }
+    
+    state.workspaceContent.splice(networkIndex, 1);
+    
     const path = state.workspaceContent[networkIndex].apiMeta.location;
-
-    if (networkIndex >= 0) {
-      state.workspaceContent.splice(networkIndex, 1);
-    }
-
     await fileserver_deleteFolder(path)
   },
   //---------------
@@ -1584,6 +1600,10 @@ const mutations = {
   set_currentModelIndex(state, tabIndex) {
     state.currentModelIndex = tabIndex;
   },
+  set_currentModelIndexByNetworkId(state, networkId) {
+    const idx = state.workspaceContent.findIndex(wc => wc.networkID == networkId);
+    state.currentModelIndex = idx;
+  },
   set_currentStatsIndex(state, tabIndex) {
     state.currentStatsIndex = tabIndex;
   },
@@ -1849,7 +1869,8 @@ const actions = {
   DELETE_networkById({commit, dispatch}, networkId) {
     return new Promise(resolve => {
 
-      const index = state.workspaceContent.findIndex(wc => wc.networkID === networkId);
+      const index = state.workspaceContent.findIndex(wc => wc.networkID == networkId);
+      if (index === -1) { return; }
 
       // API_closeCore stops the process in the core
       dispatch('mod_api/API_closeCore', networkId, { root: true });
@@ -1864,7 +1885,6 @@ const actions = {
           commit('set_lastActiveTabInLocalStorage', state.workspaceContent[index - 1].networkID);
         }
       }
-
       const modelApiMeta = state.workspaceContent[index].apiMeta;
       // deleting in rygg
       dispatch('mod_project/deleteModel', modelApiMeta, {root: true});
@@ -2084,6 +2104,9 @@ const actions = {
   },
   SET_currentModelIndex({commit}, index){
     commit('set_currentModelIndex', index);
+  },
+  SET_currentModelIndexByNetworkId({commit}, networkId){
+    commit('set_currentModelIndexByNetworkId', networkId);
   },
   SET_currentStatsIndex({commit}, index){
     commit('set_currentStatsIndex', index);

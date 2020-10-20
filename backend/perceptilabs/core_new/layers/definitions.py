@@ -199,6 +199,8 @@ DEFINITION_TABLE = {
             'import gym',
             'import numpy as np',                                    
             'from perceptilabs.core_new.utils import Picklable',
+            'from mlagents_envs.environment import UnityEnvironment',
+            'from gym_unity.envs import UnityEnv',
             'from perceptilabs.core_new.serialization import can_serialize, serialize'                    ]
     ),
     'MathMerge' : LayerDef(
@@ -530,6 +532,9 @@ DEFINITION_TABLE = {
             'from perceptilabs.core_new.graph import Graph',
             'from perceptilabs.core_new.layers.base import RLLayer, Tf1xLayer',
             'from perceptilabs.core_new.serialization import can_serialize, serialize',
+            'from gym_unity.envs import UnityEnv',
+            'from mlagents_envs.environment import UnityEnvironment',
+            'from gym_unity.envs import UnityToGymWrapper'
             'from tensorflow.python.training.tracking.base import Trackable'            
         ]
     ),

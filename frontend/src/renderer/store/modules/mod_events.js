@@ -150,27 +150,6 @@ const actions = {
           
           // Now only loading the normal model
           createProjectAndAddNetworkFn(model, rootState.mod_project.currentProject);
-
-          // if(isTrained) {
-          //   dispatch('globalView/SET_loadSettingPopup', {
-          //     visible: 'true',
-          //     ok: (isLoadingTrainedModel) => {
-          //       if (isLoadingTrainedModel) {
-          //         createProjectAndAddNetworkFn(model, rootState.mod_project.currentProject);
-          //       } else {
-          //         for(let id in model.networkElementList) {
-          //           let element = model.networkElementList[id];
-          //           element.checkpoint = [];
-          //         }
-          //         createProjectAndAddNetworkFn(model, rootState.mod_project.currentProject);
-          //       }
-          //     }
-          //   }, {root: true})
-          // } 
-          // else {
-          //   createProjectAndAddNetworkFn(model, rootState.mod_project.currentProject);
-          // }
-
         }
 
         if (model.networkMeta) {
@@ -186,18 +165,19 @@ const actions = {
       });
 
     function createProjectAndAddNetworkFn (mod, projectId) {
+      let networkId;
+
       dispatch('mod_project/createProjectModel', {
         name: mod.networkName,
         project: projectId,
         location: pathFile.substring(0, pathFile.lastIndexOf('/')),
       }, {root: true})
       .then(apiMeta => {
-        dispatch('mod_workspace/ADD_network', {network: mod, apiMeta}, {root: true});
+        networkId = apiMeta.model_id;
+        return dispatch('mod_workspace/ADD_network', {network: mod, apiMeta}, {root: true});
       })
       .then(_ => {
-        const workspaceModels = rootState.mod_workspace.workspaceContent;
-        const modelCandidate = workspaceModels.filter(item => item.networkMeta.hideModel!==true).length;
-        dispatch('mod_workspace/SET_currentModelIndex', modelCandidate - 1, {root: true});
+        dispatch('mod_workspace/SET_currentModelIndexByNetworkId', networkId, {root: true});
       });
     }
   },

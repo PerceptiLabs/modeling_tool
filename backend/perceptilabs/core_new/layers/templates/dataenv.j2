@@ -4,10 +4,34 @@ class {{layer_spec.sanitized_name}}(DataReinforce):
     def __init__(self):
         self._variables = {}
         self._env_name = '{{layer_spec.environment_name}}'
-        self._env = gym.make(self._env_name)
+        self._unity_env_path = '{{layer_spec.unity_env_path}}'
+        self._timeout_wait = {{layer_spec.timeout_wait}}
+        self._env = None
+        self.set_environment()
+
+    def set_environment(self):
+        {% filter remove_lspaces(8) %}
+            {% if layer_spec.use_unity %}
+                self.reset_parameters = EnvironmentParametersChannel()
+                self.engine_config = EngineConfigurationChannel()
+
+                if self._env_name not in list(default_registry.keys()) and self._unity_env_path is not None:
+                    registry = UnityEnvRegistry()
+                    registry.register_from_yaml(self._unity_env_path)
+                    self._unity_env = registry[self._env_name].make(timeout_wait=self._timeout_wait, side_channels=[self.reset_parameters, self.engine_config])
+
+                else:
+                    self._unity_env = default_registry[self._env_name].make(timeout_wait=self._timeout_wait, side_channels=[self.reset_parameters, self.engine_config])
+
+                self.engine_config.set_configuration_parameters(time_scale=20.0)
+                self.reset_parameters.set_float_parameter("train-mode", 1.0)
+                self._env = UnityToGymWrapper(self._unity_env, flatten_branched=True)
+            {% else %}
+                self._env = gym.make(self._env_name)
+            {% endif %}
+        {% endfilter %}
         sample = self._env.reset()
         action_space = self._env.action_space.n
-        
         self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
 
     @property
@@ -28,12 +52,17 @@ class {{layer_spec.sanitized_name}}(DataReinforce):
         """ Returns the action space of the environment"""
         n_actions = self._env.action_space.n
         return list(range(0,n_actions))
-        
 
     def make_generator(self) -> Generator[np.ndarray, None, None]:
         """Returns a sample from gym environment."""                                        
         def gen():
-            env = gym.make(self._env_name)
+            {% filter remove_lspaces(8) %}
+                {% if layer_spec.use_unity %}
+                    env = self._env
+                {% else %}
+                    env = gym.make(self._env_name)
+                {% endif %}
+            {% endfilter %}
             start_state = env.reset()
             while True:
                 action = yield

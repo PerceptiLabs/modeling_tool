@@ -5,7 +5,19 @@
     ],
     "third_party": [
         "import numpy as np",
-	"import gym"
+        "import gym",
+        "from perceptilabs.core_new.layers.base import DataReinforce",
+        "import tensorflow as tf",
+        "import gym",
+        "import numpy as np",                                    
+        "from perceptilabs.core_new.utils import Picklable",
+        "import mlagents_envs.environment",
+        "from mlagents_envs.environment import UnityEnvironment",
+        "from gym_unity.envs import UnityToGymWrapper",
+        "from mlagents_envs.side_channel.environment_parameters_channel import (EnvironmentParametersChannel,)",
+        "from mlagents_envs.side_channel.engine_configuration_channel import (EngineConfigurationChannel,)",
+        "from mlagents_envs.registry import UnityEnvRegistry",
+        "from mlagents_envs.registry import default_registry"
     ],
     "perceptilabs": [
         "from perceptilabs.core_new.utils import Picklable",
