@@ -51,6 +51,7 @@ export const PROJECT_DEFAULT_FOLDER = '/Users/antonbourosu/proj/'
 
 
 export const TRACKER_SCREENNAME_PROJECTS = 'Projects';
+export const TRACKER_SCREENNAME_PROJECTS_TRAINING = 'Projects-Training';
 export const TRACKER_SCREENNAME_WORKSPACE = 'Workspace';
 export const TRACKER_SCREENNAME_WORKSPACE_TRAINING = 'Workspace-Training';
 export const TRACKER_SCREENNAME_STATISTICS = 'Statistics';

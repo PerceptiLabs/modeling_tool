@@ -368,6 +368,8 @@
         }
       },
       userEmail(newVal) {
+        if (newVal === 'Guest') { return; }
+
         this.trackerCreateUser(newVal);
         this.trackerUpdateUser(newVal);
         this.trackerInitUser(newVal);

@@ -64,6 +64,14 @@
   import { mapState, mapActions, mapGetters }  from 'vuex';
   import { 
     LOCAL_STORAGE_WORKSPACE_VIEW_TYPE_KEY,
+    TRACKER_SCREENNAME_WORKSPACE,
+    TRACKER_SCREENNAME_WORKSPACE_TRAINING,
+    TRACKER_SCREENNAME_STATISTICS,
+    TRACKER_SCREENNAME_STATISTICS_TRAINING,
+    TRACKER_SCREENNAME_TEST,
+    TRACKER_SCREENNAME_TEST_TRAINING,
+    TRACKER_SCREENNAME_PROJECTS,
+    TRACKER_SCREENNAME_PROJECTS_TRAINING
   } from "@/core/constants";
 
   export default {
@@ -89,15 +97,16 @@
         showNewModelPopup:  state => state.globalView.globalPopup.showNewModelPopup,
       }),
       ...mapGetters({
-        statisticsIsOpen:   'mod_workspace/GET_statisticsIsOpen',
-        testIsOpen:         'mod_workspace/GET_testIsOpen',
-        currentNetwork:     'mod_workspace/GET_currentNetwork',
-        currentNetworkIndex:'mod_workspace/GET_currentNetworkIndex',
-        networkIsNotEmpty:  'mod_workspace/GET_networkIsNotEmpty',
-        GET_viewType:       'mod_workspace/GET_viewType',
-        GET_currentModelIndex: 'mod_workspace/GET_currentModelIndex',
-        GET_currentStatsIndex: 'mod_workspace/GET_currentStatsIndex',
-        GET_currentTestIndex: 'mod_workspace/GET_currentTestIndex',
+        statisticsIsOpen:       'mod_workspace/GET_statisticsIsOpen',
+        testIsOpen:             'mod_workspace/GET_testIsOpen',
+        currentNetwork:         'mod_workspace/GET_currentNetwork',
+        currentNetworkIndex:    'mod_workspace/GET_currentNetworkIndex',
+        networkIsNotEmpty:      'mod_workspace/GET_networkIsNotEmpty',
+        anyNetworkIsTraining:   'mod_workspace/GET_anyNetworkIsTraining',
+        GET_viewType:           'mod_workspace/GET_viewType',
+        GET_currentModelIndex:  'mod_workspace/GET_currentModelIndex',
+        GET_currentStatsIndex:  'mod_workspace/GET_currentStatsIndex',
+        GET_currentTestIndex:   'mod_workspace/GET_currentTestIndex',
       }),
       isStatisticsOrTestOpened() {
         const currentItemNetwork = this.$store.getters['mod_workspace/GET_currentNetwork'];
@@ -131,6 +140,25 @@
       },
       modelCount() {
         return this.workspaceModels.length;
+      },
+      screenName() {
+        if (this.$route.name === 'projects')   {
+          return this.anyNetworkIsTraining ? 
+            TRACKER_SCREENNAME_PROJECTS_TRAINING : 
+            TRACKER_SCREENNAME_PROJECTS
+        } else if (this.GET_viewType === 'statistic') {
+          return this.anyNetworkIsTraining ? 
+            TRACKER_SCREENNAME_STATISTICS_TRAINING :
+            TRACKER_SCREENNAME_STATISTICS;
+        } else if (this.GET_viewType === 'test') {
+          return this.anyNetworkIsTraining ? 
+            TRACKER_SCREENNAME_TEST_TRAINING :
+            TRACKER_SCREENNAME_TEST;
+        } else if (this.GET_viewType === 'model') {
+          return this.anyNetworkIsTraining ? 
+            TRACKER_SCREENNAME_WORKSPACE_TRAINING :
+            TRACKER_SCREENNAME_WORKSPACE;
+        } 
       }
     },
     watch: {
@@ -188,6 +216,14 @@
           this.handelModelIndexes(models);
         }
       },
+      screenName: {
+        handler(newVal, oldVal) {
+          this.$store.dispatch('mod_tracker/EVENT_screenChange', { 
+            screenName: newVal
+          });
+        },
+        immediate: true
+      }
     },
     methods: {
       ...mapActions({
@@ -318,7 +354,7 @@
             this.SET_openStatistics(true);
             // this.SET_openTest(false);
             this.set_chartRequests(item.networkID);
-            })
+          });
 
         this.$nextTick(() => {
           if (this.showNewModelPopup) {
@@ -370,12 +406,6 @@
         } 
 
         this.SET_currentNetwork(this.GET_currentModelIndex);
-
-        // if (this.isOnStatisticsView()) {
-        //   this.SET_openStatistics(false);
-        // } else if (this.isOnTestView()) {
-        //   this.SET_openTest(false);
-        // }
 
         this.closeStatsTestViews({ networkId: this.currentNetwork.networkID });
 

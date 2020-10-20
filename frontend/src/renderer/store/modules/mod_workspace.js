@@ -230,6 +230,20 @@ const getters = {
     const statusList = ['Training', 'Validation', 'Paused'];
     return !!statusList.includes(coreStatus)
   },
+  GET_anyNetworkIsTraining(state, getters) {
+    const statusList = ['Training', 'Validation', 'Paused'];
+
+    return state.workspaceContent.some(wc => {
+
+      if (!wc.networkMeta || 
+          !wc.networkMeta.coreStatus || 
+          !wc.networkMeta.coreStatus.Status) { return; }
+
+      if (statusList.includes(wc.networkMeta.coreStatus.Status)) {
+        return true;
+      }
+    });
+  },
   GET_viewType(state, getters) {
     return state.viewType;
   },
@@ -770,7 +784,6 @@ const mutations = {
       network.networkMeta.openTest = null;
     } else if (network.networkMeta.openTest !== true) {
       network.networkMeta.openTest = false;
-      network.networkMeta.coreStatus.Status = 'Finished';
     }
   },
   SET_statisticsAndTestToClosed(state, { getters, networkId }) {
@@ -1742,6 +1755,7 @@ const mutations = {
     Vue.set(network.networkMeta, 'usingWeights', value);
   },
   setChartComponentLoadingStateMutation(state, {descendants, value, getters, networkId}) {
+    if (!getters.GET_networkByNetworkId(networkId)) { return; }
     const networkList = getters.GET_networkByNetworkId(networkId).networkElementList;
     
     descendants.forEach(componentId => {

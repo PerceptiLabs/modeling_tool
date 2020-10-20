@@ -192,7 +192,6 @@
 
   import { mapActions, mapMutations, mapState, mapGetters } from 'vuex';
   import { isWeb, stringifyNetworkObjects } from "@/core/helpers";
-  import { TRACKER_SCREENNAME_PROJECTS } from "@/core/constants";
   import cloneDeep from 'lodash.clonedeep';
   import { getModelJson as fileserver_getModelJson } from '@/core/apiFileserver';
 
@@ -347,7 +346,7 @@
 
         this.set_currentModelIndex(index > 0 ? index : 0);
         this.$store.commit('mod_empty-navigation/set_emptyScreenMode', 0);
-        console.log(index);
+        
         if(index !== -1) {
           this.$store.dispatch("mod_workspace/setViewType", 'model');
           // this.SET_openStatistics(false);
@@ -715,9 +714,6 @@
       }
     },
     mounted() {
-      this.$store.dispatch('mod_tracker/EVENT_screenChange', { 
-          screenName: TRACKER_SCREENNAME_PROJECTS
-        });
     },
     created() {
       // Adding this because of reloads on this page 

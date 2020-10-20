@@ -229,23 +229,6 @@ export default {
     isNeedWait() {
       return this.$store.getters['mod_workspace/GET_networkWaitGlobalEvent']
     },
-    currentScreen() {
-      // This is used to generate a screen name used for tracking changes in the
-      
-      if (this.statisticsIsOpen) {
-        return this.isTraining ? 
-          TRACKER_SCREENNAME_STATISTICS_TRAINING :
-          TRACKER_SCREENNAME_STATISTICS;
-      } else if (this.testIsOpen) {
-        return this.isTraining ? 
-          TRACKER_SCREENNAME_TEST_TRAINING :
-          TRACKER_SCREENNAME_TEST;
-      } else {
-        return this.isTraining ? 
-          TRACKER_SCREENNAME_WORKSPACE_TRAINING :
-          TRACKER_SCREENNAME_WORKSPACE;
-      }
-    }
   },
   watch: {
     statusNetworkCore(newStatus) {
@@ -309,16 +292,6 @@ export default {
       this.isNeedWait
         ? this.currentData = this.buffer
         : null
-    },
-    currentScreen: {
-      handler(newVal, oldVal) {
-        // console.log('currentScreen watcher', newVal, oldVal);
-        if (newVal === oldVal) { return; }
-
-        this.$store.dispatch('mod_tracker/EVENT_screenChange', { 
-          screenName: this.currentScreen
-        });
-      }
     },
     getCurrentStepCode: {
       handler(newVal, oldVal) {
