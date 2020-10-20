@@ -36,7 +36,7 @@ export default {
   },
   created() {
     clearInterval(this.kernelTimerHandle);
-    this.kernelTimerHandle = setInterval(this.checkKernelStatus, 5000);
+    this.kernelTimerHandle = setInterval(this.checkKernelStatus, 5001);
   },
   destroyed() {
     clearInterval(this.kernelTimerHandle);

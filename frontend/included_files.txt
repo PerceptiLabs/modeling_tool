@@ -1,0 +1,6 @@
+package-lock.json
+package.json
+package_data.json
+src/
+static/
+static_file_server/

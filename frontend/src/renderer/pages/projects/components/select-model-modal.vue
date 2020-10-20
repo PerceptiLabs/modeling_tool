@@ -221,7 +221,6 @@ export default {
             const { chosenTemplate, modelName, basicTemplates } = this;
             if((chosenTemplate === null) || !modelName)  return
 
-
             // check if models name already exists
             const promiseArray = 
                 this.currentProject.models

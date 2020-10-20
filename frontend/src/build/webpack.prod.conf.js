@@ -13,11 +13,6 @@ const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
 
 const devMode = false
 
-const fs = require('fs')
-const packageJson = fs.readFileSync('./package.json')
-const version = JSON.parse(packageJson).version || 0
-const envs = Object.assign(require('../config/prod.env'), {'PACKAGE_VERSION': `"${version}"`})
-
 const webpackConfig = merge(baseWebpackConfig, {
   module: {
     rules: [
@@ -73,10 +68,6 @@ const webpackConfig = merge(baseWebpackConfig, {
     concatenateModules: true
   },
   plugins: [
-    // http://vuejs.github.io/vue-loader/en/workflow/production.html
-    new webpack.DefinePlugin({
-      'process.env': envs
-    }),
     new UglifyJsPlugin({
       uglifyOptions: {
         compress: {

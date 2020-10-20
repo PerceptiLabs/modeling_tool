@@ -41,7 +41,6 @@
   import TutorialNotification from "@/components/different/tutorial-notification.vue";
   import { getModelJson as fileserver_getModelJson } from '@/core/apiFileserver';
   import { fileserverAvailability } from '@/core/apiFileserver';
-  import { pullTokenFromEnv as fileserver_pullTokenFromEnv } from '@/core/apiFileserver';
 
   let ipcRenderer = null;
   if(isElectron()) {
@@ -78,7 +77,7 @@
       window.addEventListener('offline', this.updateOnlineStatus);
       this.trackerInit();
       this.readUserInfo();
-      fileserver_pullTokenFromEnv();
+      this.checkFileserverAvailability();
       
       // from webstorage
       this.loadWorkspacesFromWebStorage()
@@ -166,8 +165,6 @@
 
         this.calcAppPath();
       }
-      // this.checkLocalToken();
-      this.checkFileserverAvailability();
       this.$store.dispatch('mod_api/API_runServer', null, {root: true});
       // this.$store.dispatch('mod_workspace/GET_workspacesFromLocalStorage');
 

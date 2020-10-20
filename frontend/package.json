@@ -23,6 +23,7 @@
     "dev:web": "webpack-dev-server --inline --progress --config src/build/webpack.dev.conf.js",
     "start:web": "npm run dev:web",
     "build-render": "node src/build/build.js",
+    "build-docker": "node src/build/build.js docker",
     "dev:all": "npm run dev & npm run dev:web"
   },
   "build": {

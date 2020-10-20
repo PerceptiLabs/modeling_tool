@@ -15,7 +15,7 @@ let spawn = null;
 if(!(navigator.userAgent.toLowerCase().indexOf(' electron/') > -1)) {
   coreRequest = coreRequestWeb;
 } else {
-const electron =  require('electron');
+  const electron =  require('electron');
   spawn = require('child_process').spawn;
   ipcRenderer = electron.ipcRenderer;
   coreRequest = coreRequestElectron
@@ -275,7 +275,7 @@ const actions = {
         else {
           clearInterval(timer);
         }
-      }, 5000);
+      }, 5001);
     }
     function getCoreRequest() {
       const theData = {
@@ -969,7 +969,7 @@ const actions = {
         dispatch('mod_workspace/SET_statusNetworkCore', {...rootGetters['mod_workspace/GET_currentNetwork'].networkMeta.coreStatus, ...data}, {root: true})
       })
       .catch((err)=> {
-        if(err.toString() !== "Error: connect ECONNREFUSED 127.0.0.1:5000") {
+        if(!err.toString().match(/Error: connect ECONNREFUSED/)) {
           console.error(err);
         }
         commit('SET_statusLocalCore', 'offline')
@@ -991,7 +991,7 @@ const actions = {
         }, {root: true})
       })
       .catch((err)=> {
-        if(err.toString() !== "Error: connect ECONNREFUSED 127.0.0.1:5000") {
+        if(!err.toString().match(/Error: connect ECONNREFUSED/)) {
           console.error(err);
         }
         commit('SET_statusLocalCore', 'offline')

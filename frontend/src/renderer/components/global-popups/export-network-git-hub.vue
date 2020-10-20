@@ -40,7 +40,7 @@
 <script>
 import { isWeb } from "@/core/helpers"
 import { mapGetters } from 'vuex'
-import { GITHUB_AYTHORIZE_URL } from '@/core/constants.js'
+import { GITHUB_AUTHORIZE_URL } from '@/core/constants.js'
 import BaseGlobalPopup  from "@/components/global-popups/base-global-popup"
 import BaseAccordion    from "@/components/base/accordion.vue"
 import ViewLoading from '@/components/different/view-loading.vue'
@@ -54,7 +54,7 @@ export default {
   data() {
     return {
       isLoading: false,
-      GITHUB_AYTHORIZE_URL,
+      GITHUB_AUTHORIZE_URL,
       popupTitle: ['Export to GitHub'],
       settings: {
         name: '',
@@ -83,7 +83,7 @@ export default {
   },
   created() {
      if(!this.isGithubTokenSetted) {
-      window.location.href = this.GITHUB_AYTHORIZE_URL;
+      window.location.href = this.GITHUB_AUTHORIZE_URL;
     }
   },
   mounted() {

@@ -1,0 +1,22 @@
+asgiref>=3.2.10
+certifi>=2020.6.20
+chardet>=3.0.4
+Deprecated>=1.2.10
+Django>=3.1
+django-http-exceptions>=1.3.1
+django-request-logging>=0.7.2
+djangorestframework>=3.11.1
+gitdb>=4.0.5
+GitPython>=3.1.8
+idna>=2.10
+PyGithub>=1.53
+PyJWT>=1.7.1
+pytz>=2020.1
+requests>=2.24.0
+Send2Trash>=1.5.0
+smmap>=3.0.4
+sqlparse>=0.3.1
+urllib3>=1.25.10
+wrapt>=1.12.1
+django-cors-headers>=3.2.1
+pypiwin32>=223; platform_system == "Windows"

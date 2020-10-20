@@ -1,14 +1,14 @@
 const net = require('net');
 import store from '@/store'
+import { KERNEL_HOST } from '@/core/constants.js'
+import { KERNEL_PORT } from '@/core/constants.js'
 
 /*GENERAL CORE*/
-const coreRequest = function (message, port, address) {
+const coreRequest = function (message) {
   return new Promise((resolve, reject) => {
     let socket = new net.Socket();
-    let socketAddress = address || '127.0.0.1';
-    let socketPort = port || 5000;
 
-    socket.connect(socketPort, socketAddress, ()=> {
+    socket.connect(KERNEL_PORT, KERNEL_HOST, ()=> {
       //console.log(message);
       const messageBuff = prepareCoreMessage(message);
       socket.write(messageBuff);

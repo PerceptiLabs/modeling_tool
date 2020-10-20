@@ -546,6 +546,7 @@ class DockerBuilder():
         for from_docker in FILES_FROM_DOCKER_DIR:
             copy_file( f"{PROJECT_ROOT}/docker/kernel/{from_docker}", f"{BUILD_DOCKER_KERNEL}/{from_docker}", update=True)
         set_perceptilabs_inner_version(BUILD_DOCKER_KERNEL, versions)
+        sed_i(f"{BUILD_DOCKER_KERNEL}/requirements.txt", "^opencv-python.*$", "opencv-python-headless")
 
         # add fileserver stuff to the kernel dir
         copy_files(f"{FILESERVER_DIR}/", f"{BUILD_DOCKER_KERNEL}", list_path=f"{FILESERVER_DIR}/included_files.txt")
@@ -562,19 +563,12 @@ class DockerBuilder():
 
     @staticmethod
     def _assemble_frontend_docker(versions: Versions):
-        copy_tree(f"{FRONTEND_SRC_ROOT}/", BUILD_DOCKER_FRONTEND, update=True)
-        rm_rf(f"{BUILD_DOCKER_FRONTEND}/node_modules")
+        copy_files(f"{FRONTEND_SRC_ROOT}/", BUILD_DOCKER_FRONTEND, list_path=f"{FRONTEND_SRC_ROOT}/included_files.txt")
         copy_tree(f"{PROJECT_ROOT}/licenses/", f"{BUILD_DOCKER_FRONTEND}/licenses/", update=True)
 
-        FILES_FROM_DOCKER_DIR = "Dockerfile http.conf run-httpd.sh".split()
+        FILES_FROM_DOCKER_DIR = "Dockerfile http.conf run-httpd.sh .dockerignore".split()
         for from_docker in FILES_FROM_DOCKER_DIR:
             copy_file(f"{PROJECT_ROOT}/docker/Frontend/{from_docker}", f"{BUILD_DOCKER_FRONTEND}/{from_docker}", update=True)
-
-        #TODO: this is a terrible hack to turn off autosuggest for docker
-        # the real fix is tracked in bug 895 and story 896
-        cfgfile = f"{BUILD_DOCKER_FRONTEND}/src/config/prod.env.js"
-        sed_i(cfgfile, ".*FORCE_DEFAULT_PROJECT:.*", f"FORCE_DEFAULT_PROJECT: '\"false\"'")
-        sed_i(cfgfile, ".*FORCE_DEFAULT_PROJECT:.*,", f"FORCE_DEFAULT_PROJECT: '\"false\"',")
 
         DockerBuilder._set_dockerfile_version_label(BUILD_DOCKER_FRONTEND, versions)
         set_frontend_version(f"{BUILD_DOCKER_FRONTEND}/package.json", versions)
