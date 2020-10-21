@@ -36,7 +36,7 @@
             span(v-html="statusTraining === 'training' || statusTraining === 'pause' ? 'Stop' : 'Run'")
       .horizontal-separator
       ul.toolbar_list
-        li(:class="{'tutorial-active': activeStepStoryboard === 4}")
+        li(v-tooltip:bottom="'Press to go to the Statistics view'")
           button#tutorial_run-training-button.btn-menu-bar(type="button"
             :class="{'disabled': !networkIsTrained , 'active': statisticsIsOpen && isOnModelToolPage()}"
             @click="toModelStatistic"
@@ -56,42 +56,41 @@
           )
             i.icon.icon-box
       .toolbar_settings
-        button.btn-menu-bar(
+        .button-container(v-tooltip:bottom="networkHasCheckpoint?'Press this to load your most recent checkpoint':'You do not have any checkpoints, run a model to create some'")
+          button.btn-menu-bar(
+              type="button"
+              :class="{'active': modelWeightsActive, 'disabled': !networkHasCheckpoint}"
+              @click="toggleModelWeights"
+            )
+              span Weights
+              .ring-icon
+        .button-container(v-tooltip:bottom="'Press to toggle the Preview'")
+          button.btn-menu-bar(
             type="button"
-            :class="{'active': modelWeightsActive, 'disabled': !networkHasCheckpoint}"
-            @click="toggleModelWeights"
-            v-tooltip-interactive:bottom="interactiveInfo.interactiveDoc"
-            v-tooltip:bottom="networkHasCheckpoint?'Press this to load your most recent checkpoint':'You do not have any checkpoints, run a model to create some'"
+            :class="{'active': showModelPreviews}"
+            @click="toggleModelPreviews"    
+            :data-tutorial-target="'tutorial-workspace-preview-toggle'"
           )
-            span Weights
+            span Preview
             .ring-icon
-        button.btn-menu-bar(
-          type="button"
-          :class="{'active': showModelPreviews}"
-          @click="toggleModelPreviews"
-          v-tooltip-interactive:bottom="interactiveInfo.interactiveDoc"
-          :data-tutorial-target="'tutorial-workspace-preview-toggle'"
-        )
-          span Preview
-          .ring-icon
-        
+          
         div.horizontal-separator
         
-        button.button-model-type.ml-0(
-          type="button"
-          :class="{'active': !isNotebookMode}"
-          @click="switchNotebookMode(false)"
-          v-tooltip-interactive:bottom="interactiveInfo.interactiveDoc"
-        )
-          span Modeling
-        button.button-model-type.ml-0(
-          type="button"
-          :class="{'active': isNotebookMode}"
-          @click="switchNotebookMode(true)"
-          v-tooltip-interactive:bottom="interactiveInfo.interactiveDoc"
-          :data-tutorial-target="'tutorial-workspace-notebook-view-toggle'"          
-        )
-          span Notebook
+        .button-container(v-tooltip:bottom="'Press to enter Modeling view'")
+          button.button-model-type.ml-0(
+            type="button"
+            :class="{'active': !isNotebookMode}"
+            @click="switchNotebookMode(false)" 
+          )
+            span Modeling
+        .button-container(v-tooltip:bottom="'Press to enter Notebook view'")
+          button.button-model-type.ml-0(
+            type="button"
+            :class="{'active': isNotebookMode}"
+            @click="switchNotebookMode(true)"
+            :data-tutorial-target="'tutorial-workspace-notebook-view-toggle'"          
+          )
+            span Notebook
         sidebar-toggle-button
     .layers-toolbar(v-if="!statisticsIsOpen && !testIsOpen")
       layers-toolbar
