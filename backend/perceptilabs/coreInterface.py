@@ -195,7 +195,11 @@ class coreLogic():
         replica_by_name = {repl_cls.__name__: repl_cls for repl_cls in BASE_TO_REPLICA_MAP.values()}                
         graph_builder = GraphBuilder(replica_by_name)
         
-        script_factory = ScriptFactory(simple_message_bus=True, running_mode = self._running_mode)
+        script_factory = ScriptFactory(
+            mode='tf2x' if utils.is_tf2x() else 'tf1x',
+            simple_message_bus=True,
+            running_mode=self._running_mode
+        )
         messaging_factory = SimpleMessagingFactory()#ZmqMessagingFactory()
         
         self.core = CompatibilityCore(
@@ -595,7 +599,13 @@ class coreLogic():
                 acc_val=self.getStatistics({"layerId":id_, "variable":"acc_validation_epoch","innervariable":""})
                 loss_train=self.getStatistics({"layerId":id_, "variable":"loss_training_epoch","innervariable":""})
                 loss_val=self.getStatistics({"layerId":id_, "variable":"loss_validation_epoch","innervariable":""})
-                end_results.update({1:{"Training": {"Accuracy Training":float(acc_train[-1]*100), "Loss Training":float(loss_train[-1])}}, 2:{"Validation": {"Accuracy Validation":float(acc_val[-1]*100), "Loss Validation":float(loss_val[-1])}}})
+
+                acc_train_final = float(acc_train[-1]*100) if len(acc_train) > 0 else -1.0
+                loss_train_final = float(loss_train[-1]*100) if len(loss_train) > 0 else -1.0
+                acc_val_final = float(acc_val[-1]*100) if len(acc_val) > 0 else -1.0
+                loss_val_final = float(loss_val[-1]*100) if len(loss_val) > 0 else -1.0
+                
+                end_results.update({1:{"Training": {"Accuracy Training":acc_train_final, "Loss Training":loss_train_final}}, 2:{"Validation": {"Accuracy Validation":acc_val_final, "Loss Validation": loss_val_final}}})
             elif layer_spec.type_ == "TrainDetector":
                 acc_train=self.getStatistics({"layerId":id_, "variable":"acc_training_epoch","innervariable":""})
                 acc_val=self.getStatistics({"layerId":id_, "variable":"acc_validation_epoch","innervariable":""})

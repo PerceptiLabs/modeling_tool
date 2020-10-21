@@ -152,7 +152,7 @@ def test_convergence(script_factory, graph_spec):
     graph = graph_spec_to_core_graph(script_factory, graph_spec)
     
     training_layer = graph.active_training_node.layer
-    iterator = training_layer.run(graph, mode = 'training') # TODO: self reference is weird. shouldnt be!
+    iterator = training_layer.run(graph, mode='training') 
 
     sentinel = object()
     result = None
@@ -177,7 +177,7 @@ def test_save_model(script_factory, graph_spec, temp_path_100x1):
     graph = graph_spec_to_core_graph(script_factory, graph_spec)    
 
     training_layer = graph.active_training_node.layer
-    iterator = training_layer.run(graph, mode = 'training') # TODO: self reference is weird. shouldnt be!
+    iterator = training_layer.run(graph, mode='training') 
 
     next(iterator) # First iteration (including initialization)
     target_path = os.path.join(temp_path_100x1, '1', 'saved_model.pb')
@@ -190,7 +190,7 @@ def test_save_checkpoint(script_factory, graph_spec, temp_path_100x1):
     graph = graph_spec_to_core_graph(script_factory, graph_spec)
         
     training_layer = graph.active_training_node.layer
-    iterator = training_layer.run(graph, mode = 'training') # TODO: self reference is weird. design flaw!
+    iterator = training_layer.run(graph, mode='training') 
 
     next(iterator) # First iteration (including initialization)
     assert not any(x.startswith('model.ckpt') for x in os.listdir(temp_path_100x1))
@@ -212,10 +212,9 @@ def test_initial_weights_differ(script_factory, temp_path_100x1, temp_path_check
     graph1 = graph_spec_to_core_graph(script_factory, graph_spec1)
     
     tl1 = graph1.active_training_node.layer
-    iterator = tl1.run(graph1, mode = 'training') # TODO: self reference is weird. design flaw!
+    iterator = tl1.run(graph1, mode='training') 
     next(iterator)
     w1 = next(iter(tl1.layer_weights['DeepLearningFC_layer_fc'].values()))
-    #tf.reset_default_graph()
     
     # --- Create a second graph ---
     graph_spec2 = make_graph_spec(
@@ -226,13 +225,13 @@ def test_initial_weights_differ(script_factory, temp_path_100x1, temp_path_check
     graph2 = graph_spec_to_core_graph(script_factory, graph_spec2)
 
     tl2 = graph2.active_training_node.layer
-    iterator = tl2.run(graph2, mode = 'training') 
+    iterator = tl2.run(graph2, mode='training') 
     next(iterator) 
     w2 = next(iter(tl2.layer_weights['DeepLearningFC_layer_fc'].values()))
-    #tf.reset_default_graph()
     
     assert np.all(w1 != w2)
 
+    
 def test_load_checkpoint(script_factory, temp_path_100x1, temp_path_checkpoints):
     inputs_path = os.path.join(temp_path_100x1, '100x1_inputs.npy')
     targets_path = os.path.join(temp_path_100x1, '100x1_outputs.npy')
@@ -241,19 +240,19 @@ def test_load_checkpoint(script_factory, temp_path_100x1, temp_path_checkpoints)
     graph_spec1 = make_graph_spec(
         temp_path_checkpoints,
         inputs_path,
-        targets_path
+        targets_path,
+        learning_rate=0.0
     )        
     graph1 = graph_spec_to_core_graph(script_factory, graph_spec1)
     
     tl1 = graph1.active_training_node.layer
-    iterator = tl1.run(graph1, mode = 'training') # TODO: self reference is weird. design flaw!
+    iterator = tl1.run(graph1, mode='training') 
 
     for i in range(3):
         next(iterator) # Run a few iterations
     w1 = next(iter(tl1.layer_weights['DeepLearningFC_layer_fc'].values()))
-
+    
     tl1.on_export(checkpoint_path, mode='checkpoint')
-    #tf.reset_default_graph()
     
     # --- Create a second graph and restore the checkpoint ---
     graph_spec2 = make_graph_spec(
@@ -266,9 +265,9 @@ def test_load_checkpoint(script_factory, temp_path_100x1, temp_path_checkpoints)
     graph2 = graph_spec_to_core_graph(script_factory, graph_spec2)
     
     tl2 = graph2.active_training_node.layer
-    iterator = tl2.run(graph2, mode = 'training') 
+    iterator = tl2.run(graph2, mode='training') 
     next(iterator) # Since learning rate is zero, the training step will NOT change the weights. Thus they should remain equal to the checkpoint values.
 
     w2 = next(iter(tl2.layer_weights['DeepLearningFC_layer_fc'].values()))
-    #tf.reset_default_graph()
+
     assert np.all(w1 == w2)

@@ -69,9 +69,10 @@ def is_syntax_ok(code):
 
 
 class ScriptFactory:
-    def __init__(self, mode='default', max_time_run=None, simple_message_bus=False, running_mode = 'initializing'):
-        # if legacy, simply reuse codehq
-        # if modern, use modern when possible if not try to wrap hq layers
+    def __init__(self, mode='tf1x', max_time_run=None, simple_message_bus=False, running_mode = 'initializing'):
+
+        self._mode = mode
+        
         self._simple_message_bus = simple_message_bus
         
         templates_directory = pkg_resources.resource_filename('perceptilabs', TEMPLATES_DIRECTORY)
@@ -112,7 +113,7 @@ class ScriptFactory:
                 target_set.add(stmt)
 
 
-        layer_def = get_layer_definition(layer_spec.type_)
+        layer_def = get_layer_definition(layer_spec.type_, tf2x=(self._mode=='tf2x'))
         if layer_def is None:
             raise RuntimeError(f"No layer definition for '{layer_spec.type_}'. Check perceptilabs.layers.definitions module")
         
@@ -147,8 +148,8 @@ class ScriptFactory:
             standard_library_imports.update(stdlib)
             third_party_imports.update(thirdparty)
             perceptilabs_imports.update(plabs)
-                                                
-        code = ''        
+
+        code = ''
         for stmt in sorted(standard_library_imports, key=len):
             code += stmt + '\n'
         if len(code) > 0:
@@ -163,6 +164,7 @@ class ScriptFactory:
             code += stmt + '\n'            
         if len(code) > 0:
             code += '\n'
+
         return code
     
     def _create_layers_snippet(self, graph_spec, offset=None):
@@ -294,12 +296,12 @@ class ScriptFactory:
         else:
             # TODO(anton.k): exact path defined in layerspec instead?
             package_root = pkg_resources.resource_filename('perceptilabs', '.')
-            layer_def = get_layer_definition(layer_spec.type_)
+            layer_def = get_layer_definition(layer_spec.type_, tf2x=(self._mode=='tf2x'))
             if layer_def is None:
                 raise RuntimeError(f"No layer definition for '{layer_spec.type_}'. Check perceptilabs.layers.definitions module")
             
             _macro_path = os.path.join(package_root, layer_def.macro_path)
-            
+
             if os.path.isfile(_macro_path):
                 macro_path = _macro_path
             else:

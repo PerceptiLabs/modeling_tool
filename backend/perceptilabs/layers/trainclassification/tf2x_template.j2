@@ -1,0 +1,450 @@
+{% from 'tf1x_utils.j2' import session, session_distributed, check_input_vars %}
+{% macro layer_tf2x_classification(layer_spec, graph_spec) %}                    
+class {{layer_spec.sanitized_name}}(ClassificationLayer):
+
+    def __init__(self):
+        {{ check_input_vars(layer_spec, ['labels', 'predictions'])|indent(width=8)}}
+            
+        self._n_epochs = {{layer_spec.n_epochs}}
+        self._batch_size = {{layer_spec.batch_size}}
+        self._target_acc = {{layer_spec.target_acc}}
+        self._stop_condition = '{{layer_spec.stop_condition}}'
+
+        self._stopped = False
+        self._paused = False
+        self._headless = False
+        self._status = 'created'
+        
+        self._loss_training = 0.0
+        self._loss_validation = 0.0
+        self._loss_testing = 0.0      
+
+        self._accuracy_training = 0.0
+        self._accuracy_validation = 0.0
+        self._accuracy_testing = 0.0      
+        
+        self._variables = {}
+        self._layer_outputs = {}
+        self._layer_weights = {}
+        self._layer_biases = {}        
+        self._layer_gradients = {}
+
+        self._training_iteration = 0
+        self._validation_iteration = 0
+        self._testing_iteration = 0
+
+        self._trn_sz_tot = 0
+        self._val_sz_tot = 0
+        self._tst_sz_tot = 0
+
+        self._checkpoint = None
+        self._checkpoint_save_path = None
+
+    def init_layer(self, graph:Graph, mode = 'initializing'):
+        """This is the function that makes the training layer runnable. We take all variable initializations for tensors and initializers and wrap them in dictionaries
+        to be called in run().
+        """
+        self._mode = mode
+
+
+        self._is_training = tf.Variable(name="is_train", dtype=tf.bool, initial_value=False)        
+        input_layer_id, label_layer_id, prediction_layer_id, target_layer_id, prediction_var_name, target_var_name = self._get_io_layer_ids(graph)
+        
+        self._dataset_train, self._dataset_val, _ = self._initialize_data(graph, input_layer_id, label_layer_id)
+        self._prediction_model, self._target_model = self._build_models(
+            graph, self._dataset_train.element_spec,
+            input_layer_id, label_layer_id, prediction_layer_id, target_layer_id, prediction_var_name, target_var_name
+        )
+
+    def train(self, graph: Graph):
+        """Training is done when this function is called. Once the training ends, checkpoint files are saved.
+        """
+        self._epoch = 0
+        while self._epoch < self._n_epochs:
+            self._status = 'training'
+            yield from self._dataset_iteration(self._dataset_train)
+            
+            self._status = 'validation'            
+            yield from self._dataset_iteration(self._dataset_val, update_gradients=False)
+            
+            self._log_epoch_summary()
+            self._epoch += 1
+
+        self._status = 'finished'
+        yield YieldLevel.SNAPSHOT
+        
+    def _log_epoch_summary(self):
+        log.info(
+            f"Finished epoch {self._epoch+1}/{self._n_epochs} - "
+            f"loss training, validation: {self.loss_training:.6f}, {self.loss_validation:.6f} - "
+            f"acc. training, validation: {self.accuracy_training:.6f}, {self.accuracy_validation:.6f}"
+        )
+        
+    def test(self, graph: Graph):
+        """Testing is done when this function is called. 
+        """
+        raise NotImplementedError
+
+    def run(self, graph: Graph, mode='training'):
+        """Called as the main entry point for training. Responsible for training the model.
+
+        Args:
+            graph: A PerceptiLabs Graph object containing references to all layers objects included in the model produced by this training layer.
+            mode: Different modes in which graph can be run in. Modes: training, testing, initializing
+        """  
+
+        self.init_layer(graph, mode)
+        self._variables = {k: v for k, v in locals().items() if can_serialize(v)} 
+        
+        if mode == 'training':
+            yield from self.train(graph)
+        elif mode == 'testing':
+            yield from self.test(graph)
+        
+    def on_export(self, path: str, mode: str) -> None:
+        """Called when the export button is clicked in the frontend.
+        It is up to the implementing layer to save the model to disk.
+        
+        Args:
+            path: the directory where the exported model will be stored.
+            mode: how to export the model. Made available to frontend via 'export_modes' property."""
+
+        raise NotImplementedError
+    
+    def on_stop(self) -> None:
+        """Called when the save model button is clicked in the frontend. 
+        It is up to the implementing layer to save the model to disk."""
+        self.on_export(self._checkpoint_save_path, 'checkpoint') 
+        self._stopped = True
+
+    def on_headless_activate(self) -> None:
+        """"Called when the statistics shown in statistics window are not needed.
+        Purose is to speed up the iteration speed significantly."""
+        self._headless = True
+
+        self._layer_outputs = {} 
+        self._layer_weights = {}
+        self._layer_biases = {}
+        self._layer_gradients = {}
+
+    def on_headless_deactivate(self) -> None:
+        """"Called when the statistics shown in statistics window are needed.
+        May slow down the iteration speed of the training."""
+        import time
+        log.info(f"Set to headless_off at time {time.time()}")
+        self._headless = False
+
+    @property
+    def export_modes(self) -> List[str]:
+        """Returns the possible modes of exporting a model."""        
+        return [
+            'TFModel',
+            'TFLite',
+            'checkpoint'            
+        ]
+
+
+    @property
+    def is_paused(self) -> None:
+        """Returns true when the training is paused."""        
+        return self._paused
+
+    @property
+    def batch_size(self):
+        """ Size of the current training batch """        
+        return self._batch_size
+
+    @property
+    def status(self):
+        """Called when the pause button is clicked in the frontend. It is up to the implementing layer to pause its execution."""        
+        return self._status
+    
+    @property
+    def epoch(self):
+        """The current epoch"""        
+        return self._epoch
+
+    @property
+    def variables(self):
+        """Any variables belonging to this layer that should be rendered in the frontend.
+        
+        Returns:
+            A dictionary with tensor names for keys and picklable for values.
+        """
+        return self._variables.copy()        
+
+    @property
+    def sample(self) -> Dict[str, Dict[str, Picklable]]:
+        """Returns a single data sample"""
+        sample = {'output': np.array(self._accuracy_training)}        
+        return sample
+
+    @property
+    def columns(self) -> List[str]: 
+        """Column names. Corresponds to each column in a sample """
+        return []
+
+    @property
+    def size_training(self) -> int:
+        """Returns the size of the training dataset"""                                    
+        return self._trn_sz_tot
+
+    @property
+    def size_validation(self) -> int:
+        """Returns the size of the validation dataset"""                                            
+        return self._val_sz_tot
+
+    @property
+    def size_testing(self) -> int:
+        """Returns the size of the testing dataset"""
+        return self._tst_sz_tot
+
+    def make_generator_training(self) -> Generator[np.ndarray, None, None]:
+        """Returns a generator yielding single samples of training data. In the case of a training layer, this typically yields the model output."""        
+        yield from []
+        
+    def make_generator_validation(self) -> Generator[np.ndarray, None, None]:
+        """Returns a generator yielding single samples of validation data. In the case of a training layer, this typically yields the model output."""                
+        yield from []
+        
+    def make_generator_testing(self) -> Generator[np.ndarray, None, None]:
+        """Returns a generator yielding single samples of testing data. In the case of a training layer, this typically yields the model output."""                        
+        yield from []
+
+    @property
+    def accuracy_training(self) -> float:
+        """Returns the current accuracy of the training phase"""        
+        return self._accuracy_training
+    
+    @property
+    def accuracy_validation(self) -> float:
+        """Returns the current accuracy of the validation phase"""                
+        return self._accuracy_validation
+
+    @property
+    def accuracy_testing(self) -> float:
+        """Returns the current accuracy of the testing phase"""                        
+        return self._accuracy_testing
+
+    @property
+    def loss_training(self) -> float:
+        """Returns the current loss of the training phase"""                
+        return self._loss_training        
+
+    @property
+    def loss_validation(self) -> float:
+        """Returns the current loss of the validation phase"""                        
+        return self._loss_validation        
+
+    @property
+    def loss_testing(self) -> float:
+        """Returns the current loss of the testing phase"""                
+        return self._loss_testing
+
+    @property
+    def layer_weights(self) -> Dict[str, Dict[str, Picklable]]:
+        """The weight values of each layer in the input Graph during the training.
+
+        Returns:
+            A dictionary of nested dictionaries, where each key is a layer id. The nested dictionaries contain weight name and value pairs. The values must be picklable.
+        """        
+        return self._layer_weights
+
+    @property
+    def layer_biases(self) -> Dict[str, Dict[str, Picklable]]:
+        """The bias values of each layer in the input Graph during the training.
+
+        Returns:
+            A dictionary of nested dictionaries, where each key is a layer id. The nested dictionaries contain weight name and value pairs. The values must be picklable.
+        """        
+        return self._layer_biases
+    
+    @property
+    def layer_gradients(self) -> Dict[str, Dict[str, Picklable]]:
+        """The gradients with respect to the loss of all trainable variables of each layer in the input Graph.
+
+        Returns:
+            A dictionary of nested dictionaries, where each key is a layer id. The nested dictionaries contain gradient name and value pairs. The values must be picklable.
+        """        
+        return self._layer_gradients
+    
+    @property
+    def layer_outputs(self) -> Dict[str, Dict[str, Picklable]]:
+        """The output values of each layer in the input Graph during the training (e.g., tf.Tensors evaluated for each iteration)
+
+        Returns:
+            A dictionary of nested dictionaries, where each key is a layer id. The nested dictionaries contain variable name and value pairs. The values must be picklable.
+        """
+        return self._layer_outputs
+
+    @property
+    def training_iteration(self) -> int:
+        """The current training iteration"""
+        return self._training_iteration
+
+    @property
+    def validation_iteration(self) -> int:
+        """The current validation iteration"""        
+        return self._validation_iteration
+
+    @property
+    def testing_iteration(self) -> int:
+        """The current testing iteration"""                
+        return self._testing_iteration
+    
+    @property
+    def progress(self) -> float:
+        """A number indicating the overall progress of the training
+        
+        Returns:
+            A floating point number between 0 and 1
+        """        
+        n_iterations_per_epoch = np.ceil(self.size_training / self.batch_size) + \
+                                 np.ceil(self.size_validation / self.batch_size)
+        n_iterations_total = self._n_epochs * n_iterations_per_epoch
+
+        iteration = self.epoch * n_iterations_per_epoch + \
+                    self.training_iteration + self.validation_iteration
+        
+        progress = min(iteration/(n_iterations_total - 1), 1.0)
+        return progress
+
+    def _get_io_layer_ids(self, graph):
+        {% filter remove_lspaces(8) %}
+            {% if layer_spec.connection_predictions is not none %}
+                output_layer_id = "{{graph_spec.nodes_by_id[layer_spec.connection_predictions.src_id].sanitized_name}}"
+                output_var_name = "{{layer_spec.connection_predictions.src_var}}"
+            {% else %}
+                output_layer_id = None
+                output_var_name = None                
+            {% endif %}
+        {% endfilter %}
+        {% filter remove_lspaces(8) %}
+            {% if layer_spec.connection_labels is not none %}
+                target_layer_id = "{{graph_spec.nodes_by_id[layer_spec.connection_labels.src_id].sanitized_name}}"
+                target_var_name = "{{layer_spec.connection_predictions.src_var}}"                
+            {% else %}
+                target_layer_id = None
+                target_var_name = None                
+            {% endif %}
+        {% endfilter %}
+
+        input_data_nodes = graph.get_direct_data_nodes(output_layer_id)
+        label_data_nodes = graph.get_direct_data_nodes(target_layer_id)
+
+        assert len(input_data_nodes) == 1
+        assert len(label_data_nodes) == 1
+        
+        return input_data_nodes[0].layer_id, label_data_nodes[0].layer_id, output_layer_id, target_layer_id, output_var_name, target_var_name
+
+    def _initialize_data(self, graph, input_layer_id, label_layer_id):
+        input_data_node = graph.get_node_by_id(input_layer_id)
+        label_data_node = graph.get_node_by_id(label_layer_id)
+        
+        self._trn_sz_tot = input_data_node.layer.size_training
+        self._val_sz_tot = input_data_node.layer.size_validation
+        self._tst_sz_tot = input_data_node.layer.size_testing
+
+        input_sample = input_data_node.layer_instance.sample
+        label_sample = label_data_node.layer_instance.sample       
+        
+        # Make training set
+        dataset_trn = tf.data.Dataset.zip((
+            tf.data.Dataset.from_generator(
+                input_data_node.layer_instance.make_generator_training,
+                output_shapes={k: v.shape for k, v in input_sample.items()},
+                output_types={k: v.dtype for k, v in input_sample.items()}
+            ),
+            tf.data.Dataset.from_generator(
+                label_data_node.layer_instance.make_generator_training,
+                output_shapes={k: v.shape for k, v in label_sample.items()},
+                output_types={k: v.dtype for k, v in label_sample.items()}
+            )
+        ))
+
+        # Make validation set
+        dataset_val = tf.data.Dataset.zip((
+            tf.data.Dataset.from_generator(
+                input_data_node.layer_instance.make_generator_validation,
+                output_shapes={k: v.shape for k, v in input_sample.items()},
+                output_types={k: v.dtype for k, v in input_sample.items()}
+            ),
+            tf.data.Dataset.from_generator(
+                label_data_node.layer_instance.make_generator_validation,
+                output_shapes={k: v.shape for k, v in label_sample.items()},
+                output_types={k: v.dtype for k, v in label_sample.items()}
+            )
+        ))
+
+        # Make testing set
+        dataset_tst = tf.data.Dataset.zip((
+            tf.data.Dataset.from_generator(
+                input_data_node.layer_instance.make_generator_testing,
+                output_shapes={k: v.shape for k, v in input_sample.items()},
+                output_types={k: v.dtype for k, v in input_sample.items()}
+            ),
+            tf.data.Dataset.from_generator(
+                label_data_node.layer_instance.make_generator_testing,
+                output_shapes={k: v.shape for k, v in label_sample.items()},
+                output_types={k: v.dtype for k, v in label_sample.items()}
+            )
+        ))
+        
+        dataset_train = dataset_trn.batch(self._batch_size)
+        dataset_val = dataset_val.batch(self._batch_size)
+        dataset_test = dataset_tst.batch(1)
+
+        return dataset_train, dataset_val, dataset_test
+
+    def _build_models(self, graph, element_spec, input_layer_id, label_layer_id, prediction_layer_id, target_layer_id, prediction_var_name, target_var_name):
+        input_tensors = {
+            var_name: tf.keras.Input(shape=element_spec.shape[1:])
+            for var_name, element_spec in element_spec[0].items()
+        }
+        label_tensors = {
+            var_name: tf.keras.Input(shape=element_spec.shape[1:])
+            for var_name, element_spec in element_spec[1].items()
+        }
+
+        layer_output_tensors = {
+            input_layer_id: input_tensors,
+            label_layer_id: label_tensors
+        }
+        
+        for dst_node in graph.inner_nodes:
+            inputs = {
+                dst_var: layer_output_tensors[src_node.layer_id][src_var]
+                for src_node, src_var, dst_var in graph.get_input_connections(dst_node)
+            }
+            y = dst_node.layer_instance(
+                inputs,
+                is_training=self._is_training
+            )
+            layer_output_tensors[dst_node.layer_id] = y
+
+        prediction_model = tf.keras.Model(inputs=input_tensors, outputs=layer_output_tensors[prediction_layer_id][prediction_var_name])
+        target_model = tf.keras.Model(inputs=label_tensors, outputs=layer_output_tensors[target_layer_id][target_var_name])
+
+        return prediction_model, target_model
+
+    def _dataset_iteration(self, dataset, update_gradients=True):
+        loss_fn = tf.keras.losses.MeanSquaredError()
+        optimizer = tf.keras.optimizers.SGD(learning_rate=1e-3)
+        
+        weight_tensors = self._prediction_model.trainable_weights + self._target_model.trainable_weights
+        for step, (inputs_batch, labels_batch) in enumerate(dataset):
+
+            with tf.GradientTape() as tape:
+                predictions_batch = self._prediction_model(inputs_batch, training=update_gradients)
+                targets_batch = self._target_model(labels_batch, training=update_gradients)
+                loss_value = loss_fn(predictions_batch, targets_batch)
+                
+            gradients = tape.gradient(loss_value, weight_tensors)
+
+            if update_gradients:
+                optimizer.apply_gradients(zip(gradients, weight_tensors))
+                
+            yield YieldLevel.SNAPSHOT
+
+        
+{% endmacro %}

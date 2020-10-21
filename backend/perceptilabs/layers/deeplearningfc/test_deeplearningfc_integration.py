@@ -14,6 +14,11 @@ def script_factory():
     yield ScriptFactory()
 
     
+@pytest.fixture(scope='module')
+def script_factory_tf2x():
+    yield ScriptFactory(mode='tf2x')
+    
+    
 def test_fully_connected_1x1_should_be_normal_multiplication(script_factory):
     layer_spec = DeepLearningFcSpec(
         id_='layer_id',
@@ -100,3 +105,27 @@ def test_fully_connected_is_training_overrides_dropout(script_factory):
                 n_fails += 1
 
     assert n_fails/n_trials < 1/50 # Allow 1/50 to be a failure
+
+@pytest.mark.tf2x                
+def test_tf2x_fully_connected_1x1_should_be_normal_multiplication(script_factory_tf2x):
+    layer_spec = DeepLearningFcSpec(
+        id_='layer_id',
+        name='layer_name',
+        n_neurons=1,
+        activation='Sigmoid',
+        backward_connections=(LayerConnection(dst_var='input'),)        
+    )
+    layer = LayerHelper(script_factory_tf2x, layer_spec).get_instance()
+
+    x = 32*np.ones((1, 1))
+    y = layer({'input': tf.constant(x)})
+    
+    w = next(iter(layer.weights.values())).numpy()
+    b = next(iter(layer.biases.values())).numpy()
+
+    actual = y['output'].numpy()
+        
+    sigmoid = lambda x: 1/(1+np.exp(-x))
+    expected = sigmoid(w*x + b)
+
+    assert np.isclose(actual, expected)

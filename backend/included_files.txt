@@ -70,6 +70,8 @@ perceptilabs/layers/datarandom/imports.json
 # perceptilabs/layers/deeplearningfc
 perceptilabs/layers/deeplearningfc/spec.py
 perceptilabs/layers/deeplearningfc/imports.json
+perceptilabs/layers/deeplearningfc/tf2x_imports.json
+perceptilabs/layers/deeplearningfc/tf2x_template.j2
 
 # perceptilabs/layers/deeplearningconv
 perceptilabs/layers/deeplearningconv/spec.py
@@ -124,6 +126,8 @@ perceptilabs/layers/layercustom/imports.json
 # perceptilabs/layers/trainclassification
 perceptilabs/layers/trainclassification/spec.py
 perceptilabs/layers/trainclassification/imports.json
+perceptilabs/layers/trainclassification/tf2x_imports.json
+perceptilabs/layers/trainclassification/tf2x_template.j2
 
 # perceptilabs/layers/trainobjectdetection
 perceptilabs/layers/trainobjectdetection/spec.py

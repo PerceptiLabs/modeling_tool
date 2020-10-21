@@ -7,10 +7,14 @@ from perceptilabs.logconf import APPLICATION_LOGGER
 logger = logging.getLogger(APPLICATION_LOGGER)
 
 
-def get_layer_definition(type_: str):
+def get_layer_definition(type_: str, tf2x=False):
     assert isinstance(type_, str)
-    from perceptilabs.layers.definitions import DEFINITION_TABLE
-    return DEFINITION_TABLE.get(type_, None)
+    from perceptilabs.layers.definitions import DEFINITION_TABLE, DEFINITION_TABLE_TF2X
+
+    if tf2x:
+        return DEFINITION_TABLE_TF2X.get(type_, None)
+    else:
+        return DEFINITION_TABLE.get(type_, None)    
 
 
 def get_layer_builder(type_: str):
@@ -93,7 +97,7 @@ def resolve_tf1x_stop_cond(specs):
     return stop_condition
 
 
-def graph_spec_to_core_graph(script_factory, graph_spec, preamble=None):
+def graph_spec_to_core_graph(script_factory, graph_spec, preamble=None, print_code=False):
     from perceptilabs.layers.helper import LayerHelper    
     from perceptilabs.core_new.graph.builder import GraphBuilder
 
@@ -107,7 +111,7 @@ def graph_spec_to_core_graph(script_factory, graph_spec, preamble=None):
     connections = {}
     for layer_spec in graph_spec:
         helper = LayerHelper(script_factory, layer_spec, graph_spec=graph_spec)
-        layers[layer_spec.sanitized_name] = helper.get_instance(preamble=preamble, print_code=False)
+        layers[layer_spec.sanitized_name] = helper.get_instance(preamble=preamble, print_code=print_code)
         
         for conn_spec in layer_spec.forward_connections:
             dest_spec = graph_spec[conn_spec.dst_id]

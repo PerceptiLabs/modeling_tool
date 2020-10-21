@@ -7,7 +7,6 @@ import threading
 import numpy as np
 
 
-from perceptilabs.core_new.utils import set_tensorflow_mode
 from perceptilabs.messaging import MessagingFactory, ZmqMessagingFactory, SimpleMessagingFactory
 from perceptilabs.core_new.graph.utils import sanitize_layer_name
 from perceptilabs.core_new.core2 import Core
@@ -91,13 +90,14 @@ class CompatibilityCore:
                 if self._running_mode == 'training':
                     self.results['training_duration'] = core.training_duration
                 self._result_queue.put(copy.deepcopy(self.results))
-            
-        set_tensorflow_mode('graph')
+
         core = Core(self._graph_builder, self._script_factory, self._messaging_factory, self._issue_handler, running_mode = self._running_mode, use_sentry=True)
         self._core = core
         
         if self._threaded:
             def worker(func, delay):
+                logger.debug(f"Entering worker thread for function {func}. Period: {delay}")
+                
                 counter = 0
                 while self.is_running and not self._core.is_closed:
                     func(counter, core)
@@ -147,6 +147,7 @@ class CompatibilityCore:
             core.advance_testing()            
             
     def _get_results_dicts(self, graphs, results):
+        logger.debug("_get_results_dict called")
         self._print_graph_debug_info(graphs)
         result_dicts = [{}]        
         try:
@@ -185,7 +186,7 @@ class CompatibilityCore:
 
         graph = graphs[-1]
 
-        text = ""
+        text = "graph info: "
         for node in graph.nodes:
             layer = node.layer
             attr_names = sorted(dir(layer))
