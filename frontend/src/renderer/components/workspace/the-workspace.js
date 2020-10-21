@@ -97,8 +97,14 @@ export default {
         CPU: 0
       },
       buffer: {},
-      isCreateModelModalOpen: false
+      isCreateModelModalOpen: false,
+      debouncedCopyCursorPositionFn: null,
     }
+  },
+  created() {
+    this.debouncedCopyCursorPositionFn = debounce(function(x, y) {
+      this.set_cursorPosition({x, y});
+    }, process.env.NODE_ENV === 'production' ? 60 : 4000)
   },
   computed: {
     ...mapGetters({
@@ -345,7 +351,7 @@ export default {
       const newY = event.offsetY  - (event.offsetY % 10);
       
       if((oldX !== newX) || (oldY !== newY)) {
-        debounce(this.set_cursorPosition({x: newX, y: newY}), 60);
+        this.debouncedCopyCursorPositionFn(newX, newY);
       }
 
       if(event.offsetX <= borderline ||

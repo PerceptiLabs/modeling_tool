@@ -35,6 +35,8 @@ const workspaceSpinner = {
 
         this.$nextTick(() => {
           this.tutorialStatTabSetup();
+          // is used for zoom map on statistics page
+          this.$store.dispatch('mod_workspace/SET_zoomToFitMapInStatistics');
         });
       }
       else ++this.counterHideSpinner;
