@@ -2,6 +2,17 @@ import numpy as np
 import itertools
 
 IMAGE_SUBSAMPLE_SIZE = 25
+SUBSAMPLE_SIZE = 200
+BAR_LINE_THRESHOLD = 25
+
+TYPE_BAR       = "bar"
+TYPE_LINE      = "line"
+TYPE_GRAYSCALE = "grayscale"
+TYPE_RGBA      = "rgba"
+TYPE_HEATMAP   = "heatmap"
+TYPE_SCATTER   = "scatter"
+TYPE_PIE       = "pie"
+
 
 def RGB2RGBa(data, normalize):
     data=np.squeeze(data)
@@ -39,61 +50,65 @@ def grayscale2RGBA(data):
 
 def subsample(sample, endSize=500):
     """ downsamples an array such that the first two dimensions are <= endSize """
-    
-    if len(sample.shape)==1:
-        length=sample.size
-        if length>endSize:
-            lenRatio=length/endSize
-        else:
-            lenRatio=1
-        result=sample[::int(lenRatio)]
+    x_data = None
+    y_data = None
 
-    elif len(sample.shape)>=2:
-        height,width=sample.shape[0:2]
-        if height>endSize or width>endSize:
-            if height>width:
-                heightRatio=widthRatio=height/endSize
+    if len(sample.shape) == 1:
+        length = sample.size
+
+        if length > endSize:
+            lenRatio = length / endSize
+        else:
+            lenRatio = 1
+        
+        x_data = [i for i in range(0, length, int(lenRatio))]
+        y_data = sample[::int(lenRatio)]
+
+    elif len(sample.shape) >= 2:
+        height, width = sample.shape[0:2]
+
+        if height > endSize or width > endSize:
+            if height > width:
+                heightRatio = widthRatio = height / endSize
             else:
-                heightRatio=widthRatio=width/endSize
+                heightRatio = widthRatio = width / endSize
         else:
-            heightRatio=widthRatio=1
-        result=sample[::int(np.ceil(heightRatio)),::int(np.ceil(widthRatio))]
-    else:
-        result=sample
+            heightRatio = widthRatio = 1
 
-    return result
+        y_data = sample[::int(np.ceil(heightRatio)), ::int(np.ceil(widthRatio))]
+    else:
+        y_data = sample
+
+    return x_data, y_data
 
 
 def convertToList(npy):
     if np.any(npy.ravel()==None):
-        return ""    
+        return ""
+    
     npy = np.atleast_1d(npy).tolist()
     return npy
     
 
-TYPE_BAR       = "bar"
-TYPE_LINE      = "line"
-TYPE_GRAYSCALE = "grayscale"
-TYPE_RGBA      = "rgba"
-TYPE_HEATMAP   = "heatmap"
-TYPE_SCATTER   = "scatter"
-TYPE_PIE       = "pie"
-
-BAR_LINE_THRESHOLD = 25
-
-def bar(dataVec):
-    obj = {"data": convertToList(dataVec)}
+def bar(data_vec, sub_sample_size):
+    x_data, y_data = subsample(data_vec, sub_sample_size)
+    data = convertToList(y_data)
+    
+    obj = {"x_data": x_data, "data": data}
     return obj
 
 
-def line(dataVec):
-    obj = {"data": convertToList(dataVec)}
+def line(data_vec, sub_sample_size):
+    x_data, y_data = subsample(data_vec, sub_sample_size)
+    data = convertToList(y_data)
+    
+    obj = {"x_data": x_data, "data": data}
     return obj
 
 
-def heatmap(dataVec, subSampleSize):
-    data = subsample(dataVec, subSampleSize)
-    data = convertToList(data)
+def heatmap(data_vec, subSampleSize):
+    x_data, y_data = subsample(data_vec, subSampleSize)
+    data = convertToList(y_data)
     
     new_data = []
     for i in range(len(data)):
@@ -101,57 +116,67 @@ def heatmap(dataVec, subSampleSize):
             new_point = [i, j, data[i][j]]
             new_data.append(new_point)
             
-    obj = {"data": new_data}
+    obj = {"x_data": x_data, "data": new_data}
     return obj
 
 
-def grayscale(dataVec, subSampleSize):
-    dataVec = subsample(dataVec, subSampleSize)    
-    height, width = dataVec.shape[0:2]
-    dataVec = grayscale2RGBA(dataVec)
+def grayscale(data_vec, subSampleSize):
+    x_data, y_data = subsample(data_vec, subSampleSize)    
+    height, width = y_data.shape[0:2]
+    data = grayscale2RGBA(y_data)
     
-    output = {"data": convertToList(dataVec),
-              "type": TYPE_RGBA,
-              "height": height,
-              "width": width}
+    output = {
+        "x_data": x_data,
+        "data": convertToList(data),
+        "type": TYPE_RGBA,
+        "height": height,
+        "width": width
+    }
+
     return output
 
 
-def rgb(dataVec, subSampleSize, normalize):
-    dataVec = subsample(dataVec, subSampleSize)    
-    height, width = dataVec.shape[0:2]
-    dataVec = RGB2RGBa(dataVec, normalize)
+def rgb(data_vec, subSampleSize, normalize):
+    x_data, y_data = subsample(data_vec, subSampleSize)    
+    height, width = y_data.shape[0:2]
+    y_data = RGB2RGBa(y_data, normalize)
     
-    output = {"data": convertToList(dataVec),
-              "type": TYPE_RGBA,
-              "height": height,
-              "width": width}
+    output = {
+        "x_data": x_data,
+        "data": convertToList(y_data),
+        "type": TYPE_RGBA,
+        "height": height,
+        "width": width
+    }
+
     return output
 
 
-def scatter(dataVec):
-    obj = {"data": convertToList(dataVec)}
-    return obj    
+def scatter(data_vec, sub_sample_size):
+    x_data, y_data = subsample(data_vec, sub_sample_size)
+    data = convertToList(x_data)
+    
+    obj = {"x_data": data, "data": y_data}
+    return obj
 
 
-def pie(dataVec):
+def pie(data_vec):
     try:
-        list_ = [dict(name=n, value=float(v)) for n, v in dataVec]
+        list_ = [dict(name=n, value=float(v)) for n, v in data_vec]
     except Exception as e:
         raise
     output = {"data": list_}
     return output
 
 
-def getType(dataVec):
-    dataVec = np.asarray(dataVec)
+def getType(data_vec):
+    data_vec = np.asarray(data_vec)
 
-    type_ = None
-    shape = dataVec.shape
+    shape = data_vec.shape
     dims = len(shape)
 
     if dims == 0:
-        if dataVec == 0:
+        if data_vec == 0:
             return TYPE_SCATTER
         else:
             return TYPE_BAR
@@ -170,19 +195,22 @@ def getType(dataVec):
     else:
         return TYPE_SCATTER   
 
-def createDataObject(dataList,typeList=None,styleList=None,nameList=None,subSampleSize=200, normalize=True):
+def createDataObject(dataList, typeList=None, styleList=None, nameList=None, subSampleSize=200, normalize=True):
     if np.any(np.asarray(dataList).ravel() is None):
         return {}
-    if not typeList: # default-argument-lists tend to misbehave
+    if not typeList:
         typeList = []
     if not styleList:
         styleList = []
     if not nameList:
         nameList = []    
 
-    dataList = [np.asarray(vec) for vec in dataList] # if not array, convert
-    
-    size = max(map(np.size, dataList)) # used to make sure all arrays are equal length
+    # if not array, convert
+    dataList = [np.asarray(vec) for vec in dataList]
+
+    # used to make sure all arrays are equal length
+    size = max(map(np.size, dataList))
+
     if size > 1:
         dataList = [vec[0:size] for vec in dataList] 
     
@@ -200,9 +228,9 @@ def createDataObject(dataList,typeList=None,styleList=None,nameList=None,subSamp
             break
 
         if type_ == TYPE_BAR:
-            output = bar(dataVec)
+            output = bar(dataVec, SUBSAMPLE_SIZE)
         elif type_ == TYPE_LINE:
-            output = line(dataVec)
+            output = line(dataVec, SUBSAMPLE_SIZE)
         elif type_ == TYPE_RGBA:
             output = rgb(dataVec, IMAGE_SUBSAMPLE_SIZE, normalize)
         elif type_ == TYPE_GRAYSCALE:
@@ -210,7 +238,7 @@ def createDataObject(dataList,typeList=None,styleList=None,nameList=None,subSamp
         elif type_ == TYPE_HEATMAP:
             output = heatmap(dataVec, IMAGE_SUBSAMPLE_SIZE)
         elif type_ == TYPE_SCATTER:
-            output = scatter(dataVec)
+            output = scatter(dataVec, SUBSAMPLE_SIZE)
         elif type_ == TYPE_PIE:
             output = pie(dataVec)
         else:
@@ -227,9 +255,11 @@ def createDataObject(dataList,typeList=None,styleList=None,nameList=None,subSamp
 
     dataObject = dict()
     dataObject["xLength"] = dataList[0].size
-    dataObject["series"]  = seriesList    
+    dataObject["series"]  = seriesList
+
     if nameList:
-        dataObject["legend"] = {"data": [n for n in nameList]}        
+        dataObject["legend"] = {"data": [n for n in nameList]}
+
     return dataObject
                   
         
