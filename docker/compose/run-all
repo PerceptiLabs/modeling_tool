@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+if [ ! -d plabs ]; then
+  mkdir plabs
+fi
+
+chmod 777 plabs
+
+docker-compose up
