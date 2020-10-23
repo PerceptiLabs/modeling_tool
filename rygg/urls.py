@@ -29,4 +29,5 @@ urlpatterns = [
     path("", (include(router.urls))),
     path(r"app/version/", views.get_version),
     path(r"app/updates_available/", views.get_updates_available),
+    path('mixpanel/', include('mixpanel_proxy.urls'))
 ]

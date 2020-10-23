@@ -44,7 +44,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'rygg.api'
+    'rygg.api',
+    'mixpanel_proxy'
 ]
 
 MIDDLEWARE = [
@@ -145,9 +146,10 @@ REST_FRAMEWORK = {
         'PAGE_SIZE': 10
         }
 
-
-CORS_ORIGIN_ALLOW_ALL = True
-CORS_ALLOW_CREDENTIALS = False
+# CORS_ALLOW_CREDENTIALS and CORS_ORIGIN_WHITELIST are set to more restrictive values
+# for MixPanel's sake
+CORS_ALLOW_CREDENTIALS = True
+CORS_ORIGIN_WHITELIST = [os.environ.get('FRONTEND_BASE_URL', 'http://localhost:8080')]
 
 LOGGING = {
     'version': 1,
@@ -173,3 +175,6 @@ LOGGING = {
 # Github
 GITHUB_API_KEY = os.environ.get('GITHUB_API_KEY', '')
 GITHUB_API_ENDPOINT = os.environ.get('GITHUB_API_ENDPOINT', '')
+
+# Endpoint to fetch current machine's external IP address
+EXTERNAL_IP_RESOLVER_ENDPOINT = 'https://api.ipify.org'
