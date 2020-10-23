@@ -1,3 +1,12 @@
+mixpanel_proxy/__init__.py
+mixpanel_proxy/admin.py
+mixpanel_proxy/apps.py
+mixpanel_proxy/migrations
+mixpanel_proxy/models.py
+mixpanel_proxy/tests.py
+mixpanel_proxy/urls.py
+mixpanel_proxy/utils.py
+mixpanel_proxy/views.py
 rygg/__init__.py
 rygg/api/__init__.py
 rygg/api/admin.py
