@@ -5,10 +5,9 @@
     //-   svg(xmlns='http://www.w3.org/2000/svg' width='18' height='20' viewbox='0 0 18 20' fill='none')
     //-     path(d='M8.84619 0L0 5.01709V8.90789L8.84619 13.925L17.6924 8.90789V5.01709L8.84619 0ZM14.1192 6.89423L8.84619 9.89766L3.57317 6.89423L8.84619 3.8908L14.1192 6.89423Z' fill='#C4C4C4')
     //-     path(d='M0 11.092V14.9828L8.84619 19.9999L17.6924 14.9828V11.092L8.84619 16.1433L0 11.092Z' fill='#C4C4C4')
-    router-link.nav-link(
+    div.nav-link(
       :class="{'is-active': this.$route.name === 'projects'}"
-      :to="{name: 'projects'}"
-      @click.native="toProjects"
+      @click="toProjects"
       v-tooltip:right="'Model Hub'"
       )
       svg(xmlns='http://www.w3.org/2000/svg' width='21' height='12' viewbox='0 0 21 12' fill='none')
@@ -49,10 +48,9 @@
           clipPath(id="clip0")
             rect(width="18" height="10" fill="white" transform="translate(12 21)")
 
-    router-link.nav-link(
+    div.nav-link(
       :class="{'is-active': this.$route.name === 'settings'}"
-      :to="{name: 'settings'}"
-      @click.native="toSettings"
+      @click="toSettings"
       v-tooltip:right="'Settings'"
       )
       svg(xmlns='http://www.w3.org/2000/svg' width='19' height='20' viewbox='0 0 19 20' fill='none')
@@ -108,6 +106,9 @@
         GET_currentStatsIndex:  'mod_workspace/GET_currentStatsIndex',
         GET_currentTestIndex:   'mod_workspace/GET_currentTestIndex',
       }),
+      statusLocalCore() {
+        return this.$store.state.mod_api.statusLocalCore;
+      },
       isStatisticsOrTestOpened() {
         const currentItemNetwork = this.$store.getters['mod_workspace/GET_currentNetwork'];
         if(!currentItemNetwork.hasOwnProperty('networkMeta')) return false;
@@ -234,8 +235,8 @@
         setStatisticsAvailability:'mod_workspace/setStatisticsAvailability',
         setCheckpointAvailability:'mod_workspace/setCheckpointAvailability',
         closeStatsTestViews:  'mod_workspace/SET_statisticsAndTestToClosed',
-        setCurrentView:     'mod_tutorials/setCurrentView'
-
+        setCurrentView:     'mod_tutorials/setCurrentView',
+        showInfoPopup:       'globalView/GP_infoPopup',
       }),
       resetModelIndexes() {
         this.resetStatistic();
@@ -291,6 +292,7 @@
         return this.$route.name === 'app' && this.currentNetwork.networkMeta.openStatistics !== null
       },
       toProjects() {
+        this.$router.push({name: 'projects'});                          
         this.$nextTick(() => {
           if (this.showNewModelPopup) {
             this.setCurrentView('tutorial-create-model-view');
@@ -300,11 +302,17 @@
         });
       },
       toSettings() {
+        this.$router.push({name: 'settings'});
+
         this.$nextTick(() => {
           this.setCurrentView('');
         });
       },
       toModelStatistic() {
+        if(this.statusLocalCore!='online') {
+          this.showInfoPopup("Kernel is offline");
+          return;
+        }        
         // setStatisticsAvailability calls isTrained for each networks
         // The result determines if the kernel has info about the stats views
         // In other words, "false" sets openStatistics to null
@@ -380,6 +388,11 @@
         return this.$route.name === 'app';
       },
       toModelingTool() {
+        if(this.statusLocalCore!='online') {
+          this.showInfoPopup("Kernel is offline");
+          return;
+        }
+
         console.group('---------- MODEL SIDEBUTTON CLICKED ----------');
         console.log("ModelingIndex", this.GET_currentModelIndex);
         console.log("StatsIndex", this.GET_currentStatsIndex);
@@ -418,6 +431,10 @@
         });
       },
       toModelTest() {
+        if(this.statusLocalCore!='online') {
+          this.showInfoPopup("Kernel is offline");
+          return;
+        }        
         // setCheckpointAvailability calls scanCheckpoint for each network
         // The result determines if the kernel has info about the test view
         // In other words, "false" sets openTest to null
