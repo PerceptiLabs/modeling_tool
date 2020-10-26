@@ -1090,11 +1090,14 @@ const actions = {
 
     return coreRequest(theData)
       .then(res => {
+        // console.group('getNetworkData');
         // console.log(
         //   'API_getBatchPreviewSample res',
         //   theData,
         //   res
         // );
+        // console.log('previews', res.previews);
+        // console.groupEnd();
         if(Object.keys(res.newNetwork).length > 0) {
           for( let ix in res.newNetwork) {
             const currentEl = networkList[ix];
@@ -1182,12 +1185,14 @@ const actions = {
     };
     return coreRequest(theData)
       .then(res => {
-        
+        // console.group('API_getBatchPreviewSampleForElementDescendants');
         // console.log(
         //   'API_getBatchPreviewSampleForElementDescendants res',
         //   theData,
         //   res
         // );
+        // console.log('previews', res.previews);
+        // console.groupEnd();
 
         if(res.outputDims) {
           dispatch('mod_workspace/SET_elementOutputDim', res.outputDims, {root: true});
