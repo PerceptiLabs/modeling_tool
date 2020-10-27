@@ -1,57 +1,16 @@
-
 import store from '@/store'
 import { stringifyNetworkObjects } from '@/core/helpers';
+import { whenUrlIsResolved } from '@/core/urlResolver';
+import { KERNEL_BASE_URL } from '@/core/constants'
+import { KERNEL_URL_CONFIG_PATH }   from "@/core/constants";
 
-const wsPathDefSingleton = (function() {
-  // adding this function so that one can request the value stored in the
-  // CORE_URL environment variable
-
-  // the endpoint for where the config can be mounted as a volume
-  const coreUrlConfigPath = 'static/core_url';
-
-  let hasFetched = false;
-
-  // default values for the address to the core
-
-  // var wsPathDef = 'ws://perceptilabs-core-robertproject.apps.cluster-rdu-3950.rdu-3950.example.opentlc.com ';
-  // var wsPathDef = ("ws://" + window.location.host).replace('perceptilabs-frontend', 'perceptilabs-core');
-  // var wsPathDef = 'ws://perceptilabs-core:5000';
-  // var wsPathDef = "ws://" + window.location.host + ":443";
-  var wsPathDef = `ws://${window.location.hostname}:5000`;
-
-  return {
-    getInstance(wsPath){
-      return new Promise(resolve => {
-        if (!hasFetched) {
-
-          hasFetched = true;
-          fetch(coreUrlConfigPath)
-          .then(response => response.text())
-          .then(envVar => {
-
-            if (envVar && envVar.startsWith('ws://')){
-              wsPathDef = envVar;
-            } else if (envVar && !envVar.startsWith('ws://')) {
-              wsPathDef = 'ws://' + envVar;
-            }
-            // console.log('core_url', wsPathDef);
-            resolve(wsPathDef);
-          })
-          .catch(error => {
-            resolve(wsPathDef); // will be default in this case
-          });
-        } else {
-          resolve(wsPathDef); // will be default in this case
-        }
-      });
-    }
-  }
-})();
 
 function calcTime(stop, start, name, nameComp) {
   let time = stop - start;
   console.log(`${name}`, `${nameComp}` , `${time}ms`);
 }
+
+const kernelUrlPromise = whenUrlIsResolved(KERNEL_URL_CONFIG_PATH, KERNEL_BASE_URL)
 
 function coreRequest(data, path, no, name) {
     // var timeStartAnswer = 0;
@@ -63,11 +22,11 @@ function coreRequest(data, path, no, name) {
 
   // console.log('process.env', process.env);
   const initialSentData = data;
-  return wsPathDefSingleton.getInstance()
-    .then(core_url => {
+  return kernelUrlPromise
+    .then(kernel_url => {
       return new Promise((resolve, reject) => {
         // let wsPath = path || wsPathDef;
-        let wsPath = path || core_url;
+        let wsPath = path || kernel_url;
         //console.log('path ', wsPath);
 
         let websocket = new WebSocket(wsPath);

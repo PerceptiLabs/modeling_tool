@@ -19,16 +19,18 @@ def tutorial_data_path():
 
     
 @pytest.fixture(autouse=True)
-def init_graph():
+def init_graph(request):
     #reference: https://stackoverflow.com/questions/56719066/reset-default-graph-upon-exiting-tf-session-in-unit-tests
-    with tf.Graph().as_default():
+    tf.reset_default_graph()
+    tf.enable_v2_behavior()
+    
+    if 'tf2x' in request.keywords:
+        tf.enable_eager_execution()
         yield
-
-        
-#@pytest.fixture(autouse=True)
-#def reset():
-#    yield
-#    tf.reset_default_graph()        
+    else:
+        tf.disable_eager_execution()        
+        with tf.Graph().as_default():
+            yield
 
     
 @pytest.fixture()

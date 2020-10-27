@@ -1,6 +1,12 @@
 'use strict'
 require('./check-versions')()
 
+// Add the env file as process.env
+const isDocker = process.argv[2] === "docker";
+const envFile = isDocker ?
+  '../config/docker.env':
+  '../config/prod.env';
+
 process.env.NODE_ENV = 'production'
 
 const ora = require('ora')
@@ -11,7 +17,26 @@ const webpack = require('webpack')
 const config = require('../config')
 const webpackConfig = require('./webpack.prod.conf')
 
-const spinner = ora('building for production...')
+function add_process_env(envFile){
+  const fs = require('fs')
+  const packageJson = fs.readFileSync('./package.json')
+  const version = JSON.parse(packageJson).version || 0
+  const envs = Object.assign(require(envFile), {'PACKAGE_VERSION': `"${version}"`})
+
+  // http://vuejs.github.io/vue-loader/en/workflow/production.html
+  webpackConfig.plugins.unshift(
+    new webpack.DefinePlugin({
+    'process.env': envs
+  })
+  );
+}
+
+add_process_env(envFile);
+
+const msg = isDocker ?
+  'building for docker...' :
+  'building for production...';
+const spinner = ora(msg);
 spinner.start()
 
 rm(path.join(config.build.assetsRoot, config.build.assetsSubDirectory), err => {

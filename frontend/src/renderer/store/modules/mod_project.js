@@ -1,7 +1,7 @@
 import { requestCloudApi } from "@/core/apiCloud";
 import {generateID} from "@/core/helpers";
 import { createFolder as fileserver_createFolder } from '@/core/apiFileserver';
-import axios from 'axios';
+import { rygg } from '@/core/apiRygg.js';
 const namespaced = true;
 
 const state = {
@@ -57,7 +57,7 @@ const mutations = {
 
 const actions = {
   getProjects(ctx) {
-    return axios.get('http://localhost:8000/projects')
+    return rygg.get(`/projects`)
       .then((res) => {
         ctx.commit('setProjectList', res.data.results);
         return res;
@@ -67,7 +67,7 @@ const actions = {
       })
     },
   createProject(ctx, payload) {
-    return axios.post('http://localhost:8000/projects/', payload)
+    return rygg.post(`/projects/`, payload)
       .then(res => {
         ctx.commit('createProject', res.data); 
         return res.data;
@@ -75,14 +75,14 @@ const actions = {
   },
   updateProject(ctx, payload) {
     const {projectId, ...postData} = payload;
-    return axios.patch(`http://localhost:8000/projects/${projectId}/`, postData)
+    return rygg.patch(`/projects/${projectId}/`, postData)
       .then(res => {
         ctx.dispatch('getProjects');
         return res.data;
       })
   },
   deleteProject(ctx, payload) {
-    return axios.delete(`http://localhost:8000/projects/${payload.projectId}/`)
+    return rygg.delete(`/projects/${payload.projectId}/`)
       .then(res => {
         ctx.commit('removeProjectIdInLocalStorage', payload.projectId);
         ctx.dispatch('getProjects');
@@ -90,7 +90,7 @@ const actions = {
       .catch(e => console.log(e));
   },
   getModel(ctx, modelId) {
-    return axios.get(`http://localhost:8000/models/${modelId}/`)
+    return rygg.get(`/models/${modelId}/`)
       .then(res => res.data)
       .catch(console.error)
   },
@@ -101,22 +101,22 @@ const actions = {
     return models;
   },
   createProjectModel(ctx, payload) {
-    return axios.post('http://localhost:8000/models/', payload)
+    return rygg.post(`/models/`, payload)
       .then(res => {
         return res.data
       })
   },
   updateModel(ctx, payload) {
     const { model_id, ...payloadData } = payload
-    return axios.put(`http://localhost:8000/models/${model_id}/`, payloadData)
+    return rygg.put(`/models/${model_id}/`, payloadData)
   },
   patchModel(ctx, payload) {
     const { model_id, ...payloadData } = payload;
-    return axios.patch(`http://localhost:8000/models/${model_id}/`, payloadData);
+    return rygg.patch(`/models/${model_id}/`, payloadData);
   },
   deleteModel(ctx, payload) {
     const { model_id, project } = payload;
-    return axios.delete(`http://localhost:8000/models/${model_id}/`)
+    return rygg.delete(`/models/${model_id}/`)
       .then(res => {
         ctx.dispatch('getProjects');
         return res.data

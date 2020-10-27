@@ -24,16 +24,6 @@
       v-if="dataEl.componentName === 'LayerContainer'"
       @click="openLayerContainer"
       )
-
-    //- .net-element_arrows-start(v-if="showDotsArrow")
-    //-   button.arrows-start_btn(type="button" @mousedown="startArrowPaint($event)")
-    //- .net-element_arrows-start.net-element_arrows-start--right(v-if="showDotsArrow")
-    //-   button.arrows-start_btn(type="button" @mousedown="startArrowPaint($event)")
-    //- .net-element_arrows-start.net-element_arrows-start--bottom(v-if="showDotsArrow")
-    //-   button.arrows-start_btn(type="button" @mousedown="startArrowPaint($event)")
-    //- .net-element_arrows-start.net-element_arrows-start--left(v-if="showDotsArrow")
-    //-   button.arrows-start_btn(type="button")
-
     .net-element_btn(
       ref="BaseElement"
       )
@@ -41,23 +31,6 @@
     settings-preview(
         :current-el="dataEl"
       )
-    //- pre {{JSON.parse(JSON.stringify(this.$store.getters['mod_workspace/GET_networkElementConnectionInChartData'](dataEl.layerId) || {}), 1)}}
-    //- div.variable-area
-    //- .net-element_window(
-    //-   v-if="settingsIsOpen"
-    //-   :class="classElWindow"
-    //-   ref="elementSettings"
-    //-   )
-    //-   slot(name="settings")
-
-    //- .net-element_window.net-element_context-menu(
-    //-   v-if="contextIsOpen"
-    //-   :class="classElWindow"
-    //-   )
-    //-   context-menu(
-    //-     :data-el="dataEl"
-    //-     @open-settings.stop="switchDblclick($event)"
-    //-     )
 
 </template>
 

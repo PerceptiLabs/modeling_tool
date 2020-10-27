@@ -2,6 +2,10 @@ import os
 import platform
 
 def get_tutorial_data():
+    env_var = os.getenv("PL_TUTORIALS_DATA")
+    if env_var:
+        return env_var
+
     def ancestors(path):
         cur = os.path.abspath(path)
         parent = os.path.dirname(cur)

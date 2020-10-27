@@ -4,15 +4,15 @@ services:
   db:
     image: postgres:12
     ports:
-      - 5432:5432
+      - "5432:5432"
     environment:
       POSTGRES_DB: rygg
       POSTGRES_USER: rygg
       POSTGRES_PASSWORD: rygg
 
   rygg:
-    image: perceptilabs.azurecr.io/rygg:latest
-    # image: rygg_dev
+    # image: perceptilabs.azurecr.io/rygg:latest
+    image: rygg_dev
     environment:
       DJANGO_DATABASE: postgres
       DB_NAME: rygg
@@ -20,23 +20,33 @@ services:
       DB_USER: rygg
       DB_PASS: rygg
     ports:
-      - 8000:8000
+      - "8000:8000"
     depends_on:
       - db
 
   frontend:
-    image: perceptilabs.azurecr.io/frontend:latest
-    # image: frontend_dev
+    # image: perceptilabs.azurecr.io/frontend:latest
+    image: frontend_dev
     ports:
-      - 8080:8080
+      - "8080:8080"
     depends_on:
       - rygg
       - kernel
+    environment:
+      PL_KERNEL_URL: ws://localhost:5000
+      PL_FILESERVER_URL: http://localhost:8011
+      PL_RYGG_URL: http://localhost:8000
 
   kernel:
-    image: perceptilabs.azurecr.io/kernel:latest
-    # image: kernel_dev
+    # image: perceptilabs.azurecr.io/kernel:latest
+    image: kernel_dev
     volumes:
-      - .:/plabs
+      - ./plabs:/perceptilabs/Documents/Perceptilabs
     ports:
-      - 5000:5000
+      - "5000:5000"
+      - "8011:8011"
+
+    environment:
+      HOME: /perceptilabs
+      PL_FILE_SERVING_TOKEN: thetoken
+      PL_TUTORIALS_DATA: /opt/app-root/src/perceptilabs/tutorial_data

@@ -29,8 +29,13 @@ from perceptilabs.graph.spec import GraphSpec
 def script_factory():
     yield ScriptFactory()
 
+    
+@pytest.fixture(scope='module')
+def script_factory_tf2x():
+    yield ScriptFactory(mode='tf2x')
+    
 
-def make_graph_spec(temp_path_checkpoints, inputs_path, targets_path, learning_rate=0.3, checkpoint_path=None, distributed=False): # TODO: fix checkpoint path. it can't be none
+def make_graph_spec(temp_path_checkpoints, inputs_path, targets_path, learning_rate=0.3, checkpoint_path=None, distributed=False, n_epochs=200): # TODO: fix checkpoint path. it can't be none
     
     if checkpoint_path is None:
         checkpoint_path = temp_path_checkpoints
@@ -78,7 +83,7 @@ def make_graph_spec(temp_path_checkpoints, inputs_path, targets_path, learning_r
         batch_size=8,
         optimizer='SGD',
         learning_rate=learning_rate,
-        n_epochs=200,
+        n_epochs=n_epochs,
         distributed=distributed,
         checkpoint_path=checkpoint_path,
         load_checkpoint = True,
@@ -107,6 +112,18 @@ def graph_spec(temp_path, temp_path_checkpoints):
 
     
 @pytest.fixture()
+def graph_spec_few_epochs(temp_path, temp_path_checkpoints):
+    graph_spec = make_graph_spec(
+        temp_path_checkpoints, 
+        os.path.join(temp_path, '16x4_inputs.npy'),
+        os.path.join(temp_path, '16x4_targets.npy'),
+        n_epochs=5
+    )        
+    yield graph_spec
+    
+
+    
+@pytest.fixture()
 def graph_spec_distr(temp_path, temp_path_checkpoints):
     graph_spec = make_graph_spec(
         temp_path_checkpoints,
@@ -115,8 +132,8 @@ def graph_spec_distr(temp_path, temp_path_checkpoints):
         distributed=True
     )        
     yield graph_spec
-    
 
+    
 def test_syntax(script_factory):
     layer_spec = TrainClassificationSpec(
         id_='layer_id',
@@ -165,7 +182,6 @@ def test_can_yield(script_factory, graph_spec):
     try:
         next(graph.run(mode = 'training'))        
     except Exception as e:
-        print(add_line_numbering(code['layer_train']))
         pytest.fail("Raised error on run!\n" + traceback_from_exception(e))
 
     #tf.reset_default_graph()
@@ -488,3 +504,142 @@ def test_can_convert_to_dict_and_back(graph_spec):
     new_spec = GraphSpec.from_dict(dict_)
     dict_1 = new_spec.to_dict()
     assert dict_ == dict_1
+
+
+@pytest.mark.tf2x    
+def test_tf2x_syntax(script_factory_tf2x):
+    layer_spec = TrainClassificationSpec(
+        id_='layer_id',
+        name='layer_name',
+    )
+    
+    graph_spec = MagicMock()
+    graph_spec.nodes_by_id.__getitem__.sanitized_name = '123'
+
+    try:
+        code = LayerHelper(
+            script_factory_tf2x,
+            layer_spec,
+            graph_spec=graph_spec
+        ).get_code(check_syntax=True)
+    except SyntaxError as e:
+        pytest.fail("Raised syntax error: " + repr(e))
+        raise
+    
+
+@pytest.mark.tf2x    
+def test_tf2x_can_instantiate(script_factory_tf2x):
+    layer_spec = TrainClassificationSpec(
+        id_='layer_id',
+        name='layer_name',
+        backward_connections=(
+            LayerConnection(dst_var='predictions'),
+            LayerConnection(dst_var='labels')
+        )
+    )
+    graph_spec = MagicMock()
+    graph_spec.nodes_by_id.__getitem__.sanitized_name = '123'
+    
+    try:
+        code = LayerHelper(
+            script_factory_tf2x,
+            layer_spec,
+            graph_spec=graph_spec
+        ).get_instance()
+    except Exception as e:
+        pytest.fail("Raised error on instantiation! " + repr(e))
+
+
+@pytest.mark.tf2x            
+def test_tf2x_can_yield(script_factory_tf2x, graph_spec):
+    graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec, print_code=True)
+
+    try:
+        next(graph.run(mode='training'))        
+    except Exception as e:
+        pytest.fail("Raised error on run!\n" + traceback_from_exception(e))
+
+
+@pytest.mark.tf2x            
+def test_tf2x_progress_reaches_status_training(script_factory_tf2x, graph_spec_few_epochs):
+    graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec_few_epochs)
+    
+    training_layer = graph.active_training_node.layer
+    iterator = training_layer.run(graph, mode = 'training') # TODO: self reference is weird. shouldnt be!
+
+    sentinel = object()
+    result = None
+    reached_condition = False
+    
+    while result is not sentinel and not reached_condition:
+        result = next(iterator, sentinel)
+
+        if training_layer.status == 'training':
+            reached_condition = True
+
+    assert reached_condition
+
+
+@pytest.mark.tf2x            
+def test_tf2x_progress_reaches_status_finished(script_factory_tf2x, graph_spec_few_epochs):
+    graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec_few_epochs)
+    
+    training_layer = graph.active_training_node.layer
+    iterator = training_layer.run(graph, mode = 'training') # TODO: self reference is weird. shouldnt be!
+
+    sentinel = object()
+    result = None
+    reached_condition = False
+    
+    while result is not sentinel and not reached_condition:
+        result = next(iterator, sentinel)
+
+        if training_layer.status == 'finished':
+            reached_condition = True
+
+    assert reached_condition
+    
+        
+
+@pytest.mark.tf2x            
+def test_tf2x_progress_reaches_one(script_factory_tf2x, graph_spec_few_epochs):
+    graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec_few_epochs)
+    
+    training_layer = graph.active_training_node.layer
+    iterator = training_layer.run(graph, mode = 'training') # TODO: self reference is weird. shouldnt be!
+
+    sentinel = object()
+    result = None
+    reached_one = False
+    
+    while result is not sentinel and not reached_one:
+        result = next(iterator, sentinel)
+
+        if training_layer.progress == 1.0:
+            reached_one = True
+
+    assert reached_one
+        
+
+@pytest.mark.skip
+@pytest.mark.tf2x            
+def test_tf2x_convergence(script_factory_tf2x, graph_spec):
+    graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec)
+    
+    training_layer = graph.active_training_node.layer
+    iterator = training_layer.run(graph, mode = 'training') # TODO: self reference is weird. shouldnt be!
+
+    sentinel = object()
+    result = None
+    converged = False
+    
+    accuracy_list = []
+    while result is not sentinel and not converged:
+        result = next(iterator, sentinel)
+
+        accuracy_list.append(training_layer.accuracy_training)
+        if np.mean(accuracy_list[-10:]) >= 0.8:
+            converged = True
+            
+    assert converged
+    

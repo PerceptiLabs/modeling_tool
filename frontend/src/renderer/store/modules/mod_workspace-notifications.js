@@ -1,7 +1,7 @@
 import Vue from 'vue';
 import cloneDeep from 'lodash.clonedeep';
 import { hashObject, generateID } from "@/core/helpers";
-import axios from 'axios';
+import { rygg } from '@/core/apiRygg.js';
 
 const namespaced = true;
 
@@ -275,7 +275,7 @@ const actions = {
     commit('setSelectedId', { networkId, selectedId });
   },
   getPiPyUpdate({ commit }) {
-    return axios.get('http://localhost:8000/app/updates_available')
+    return rygg.get(`/app/updates_available`)
       .then((res) => {
         if (res.data.newer_versions.length > 0) {
           commit('setShowPiPyNotification', {value: true});

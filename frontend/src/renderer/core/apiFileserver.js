@@ -1,12 +1,10 @@
 import axios            from 'axios'
 import { objectToQueryParams } from '@/core/helpers'
-import { FILE_SERVER_BASE_URL } from '@/core/constants'
 import { stringifyNetworkObjects }   from "@/core/helpers.js";
 
-const fileServerHttpReqest =  axios.create();
-fileServerHttpReqest.defaults.baseURL = FILE_SERVER_BASE_URL
-fileServerHttpReqest.defaults.headers.common["Content-Type"] = `application/json`;
-fileServerHttpReqest.defaults.params = {}
+import { FILESERVER_BASE_URL } from '@/core/constants'
+import { FILESERVER_URL_CONFIG_PATH }   from "@/core/constants";
+import { whenUrlIsResolved } from '@/core/urlResolver';
 
 function getCookie(name) {
     const cookieArr = document.cookie.split(";");
@@ -22,91 +20,98 @@ function getCookie(name) {
     return null;
 }
 
-export function pullTokenFromEnv() {
-  if (!!fileServerHttpReqest.defaults.params['token']) {
-    return;
-  }
+const whenFileserverReady = whenUrlIsResolved(FILESERVER_URL_CONFIG_PATH, FILESERVER_BASE_URL)
+  .then(url => {
+    let ret = axios.create();
+    ret.defaults.baseURL = url
+    ret.defaults.headers.common["Content-Type"] = `application/json`;
+    ret.defaults.params = {}
+    return ret
+  });
 
-  // Try, in order, the cookie, env var, and finally the session storage
-  const token =
-    getCookie("fileserver_token") ||
-    process.env.PL_FILE_SERVING_TOKEN ||
-    sessionStorage.fileserver_token
+function whenHaveFileserverToken(){
+  return whenFileserverReady
+    .then(requestor => {
+      if (!!requestor.defaults.params['token']) {
+        return requestor;
+      }
 
-  if (!!token) {
-    fileServerHttpReqest.defaults.params['token'] = token
+      // Try, in order, the cookie, env var, and finally the session storage
+      const token =
+        getCookie("fileserver_token") ||
+        process.env.PL_FILE_SERVING_TOKEN ||
+        sessionStorage.fileserver_token;
 
-    // Since we lose the cookie easily, save the token to session storage
-    sessionStorage.fileserver_token = token
-  }
+      if (!!token) {
+        requestor.defaults.params['token'] = token;
+
+        // Since we lose the cookie easily, save the token to session storage
+        sessionStorage.fileserver_token = token;
+      }
+      return requestor;
+    });
 }
 
 export const fileserverAvailability = () => {
-  pullTokenFromEnv();
-  return fileServerHttpReqest.get("/version")
-  .then(res => {
-    return (res.status === 200) ? "AVAILABLE" : "UNAVAILABLE"
-  })
-  .catch(err => {
-    if (!!err.response.data){ console.log(err.response.data) }
-    return (err.response && err.response.status === 400)? "BAD_TOKEN" : "UNAVAILABLE"
-  })
-}
-
-// fileserver sends back 422 when it's a user error and the body contains the user-visible error message
-function handle422(promise) {
-  return promise
+  return whenHaveFileserverToken()
+    .then(requestor => requestor.get("/version"))
+    .then(res => {
+      return (res.status === 200) ? "AVAILABLE" : "UNAVAILABLE"
+    })
     .catch(err => {
-      console.log("in catch")
-      console.log(err.response.status)
-
-      let newErr = (err.response.status === 422) ? {userMessage: err.response.data} : {};
-      console.log(newErr)
-      throw newErr
+      if (!!err.response.data){ console.log(err.response.data) }
+      return (err.response && err.response.status === 400)? "BAD_TOKEN" : "UNAVAILABLE"
     })
 }
 
+// fileserver sends back 422 when it's a user error and the body contains the user-visible error message
+function convert422(error) {
+    let newErr = (err.response.status === 422) ? {userMessage: err.response.data} : {};
+    throw newError
+}
+
 export const importRepositoryFromGithub = (data) => {
-  pullTokenFromEnv();
   const queryParams = objectToQueryParams(data);
-  return handle422(fileServerHttpReqest.post(`/github/import?${queryParams}`, data))
+  return whenHaveFileserverToken()
+    .then(fs => fs.post(`/github/import?${queryParams}`, data))
+    .catch(err => convert422(err))
 }
 
 export const exportAsGithubRepository = (data) => {
-  pullTokenFromEnv();
   const queryParams = objectToQueryParams(data);
-  let promise = fileServerHttpReqest.post(`/github/export?${queryParams}`, data)
+  return whenHaveFileserverToken()
+    .then(fs => fs.post(`/github/export?${queryParams}`, data))
     .then(res => { return res.data.URL; })
-   return handle422(promise)
+    .catch(err => convert422(err))
 }
 
 export const doesDirExist = (path) => {
-  pullTokenFromEnv();
-  return fileServerHttpReqest.head(`/directories?path=${path}`)
-  .then(res => {
-    return (res.status === 200);
-  })
+  return whenHaveFileserverToken()
+    .then(fs => fs.head(`/directories?path=${path}`))
+    .then(res => {
+      return (res.status === 200);
+    })
 }
 
 export const getFolderContent = (path) => {
-  pullTokenFromEnv();
-  return fileServerHttpReqest.get(`/directories/get_folder_content?path=${path}`)
+  return whenHaveFileserverToken()
+    .then(fs => fs.get(`/directories/get_folder_content?path=${path}`))
     .then(res => {
       return (res.status === 200)? res.data : null
     })
 }
 
 export const getRootFolder = () => {
-  pullTokenFromEnv();
-  return fileServerHttpReqest.get(`/directories/root`)
+  return whenHaveFileserverToken()
+    .then(fs => fs.get(`/directories/root`))
     .then(res => {
       return (res.status === 200)? res.data.path : "/"
     })
 }
 
 export const getResolvedDir = (path) => {
-  pullTokenFromEnv();
-  return fileServerHttpReqest.get(`/directories/resolved_dir?path=${path}`)
+  return whenHaveFileserverToken()
+    .then(fs => fs.get(`/directories/resolved_dir?path=${path}`))
     .then(res => {
       return (res.status === 200)? res.data.path : null
     })
@@ -114,8 +119,8 @@ export const getResolvedDir = (path) => {
 }
 
 export const getModelJson = (path) => {
-  pullTokenFromEnv();
-  return fileServerHttpReqest.get(`/json_models?path=${path}`)
+  return whenHaveFileserverToken()
+    .then(fs => fs.get(`/json_models?path=${path}`))
     .then(res => {
       let ret = (res.status === 200)? res.data.model_body : null
       return ret
@@ -124,34 +129,35 @@ export const getModelJson = (path) => {
 }
 
 export const saveModelJson = (model) => {
-  pullTokenFromEnv();
   const path = `${model.apiMeta.location}`;
   const modelAsString = stringifyNetworkObjects(model)
-  return fileServerHttpReqest.post(`/json_models?path=${path}`, modelAsString)
+  return whenHaveFileserverToken()
+    .then(fs => fs.post(`/json_models?path=${path}`, modelAsString))
 }
 
 export const doesFileExist = (path) => {
-  pullTokenFromEnv();
-  return fileServerHttpReqest.head(`/files?path=${path}`)
-  .then(res => {
-    return (res.status === 200);
-  })
+  return whenHaveFileserverToken()
+    .then(fs => fs.head(`/files?path=${path}`))
+    .then(res => {
+      return (res.status === 200);
+    })
 }
 
 export const createFolder = (path) => {
-  pullTokenFromEnv();
-  return fileServerHttpReqest.post(`/directories?path=${path}`)
+  return whenHaveFileserverToken()
+    .then(fs => fs.post(`/directories?path=${path}`))
     .then(res => {
       return (res.status === 200)? res.data.path : null
     })
 }
 
 export const createIssueInGithub = (data) => {
-  pullTokenFromEnv();
   const queryParams = objectToQueryParams(data);
-  return fileServerHttpReqest.post(`/github/issue?${queryParams}`, data)
+  return whenHaveFileserverToken()
+    .then(fs => fs.post(`/github/issue?${queryParams}`, data))
 }
 
 export const deleteFolder = (path) => {
-  return fileServerHttpReqest.delete(`/directories?path=${path}`)
+  return whenHaveFileserverToken()
+    .then(fs => fs.delete(`/directories?path=${path}`))
 }

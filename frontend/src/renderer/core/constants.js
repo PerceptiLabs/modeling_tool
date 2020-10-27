@@ -10,15 +10,24 @@ const deepLearnElements = ['DeepLearningFC', 'DeepLearningConv', 'DeepLearningDe
 
 const pathWebWorkers = './static/webworkers';
 
-// const baseUrlCloud  = 'http://perceptilabs.trafficmanager.net/api/';
 const baseUrlCloud  = 'https://perceptilabsamerica.azurewebsites.net/api/';
-// const baseUrlCloud  = 'http://localhost:8000/';
-// const baseUrlSite   = 'https://perceptilabs-website-dev.azurewebsites.net';
 const baseUrlSite   = 'https://perceptilabs.com';
 
-export const FILE_SERVER_BASE_URL = 'http://localhost:8011'
+const baseHost = window.location.hostname
 
-export const GITHUB_AYTHORIZE_URL = `https://github.com/login/oauth/authorize?scope=public_repo,read:user&client_id=${process.env.GITHUB_CLIENT_ID}`;
+export const FILESERVER_URL_CONFIG_PATH = 'fileserver_url';
+export const FILESERVER_BASE_URL = `http://${baseHost}:8011`
+
+export const RYGG_URL_CONFIG_PATH = 'rygg_url';
+export const RYGG_BASE_URL = `http://${baseHost}:8000`
+
+export const KERNEL_URL_CONFIG_PATH = 'kernel_url';
+export const KERNEL_BASE_URL = `ws://${baseHost}:5000`
+// for legacy stuff in apiCore
+export const KERNEL_HOST = baseHost
+export const KERNEL_PORT = 5000
+
+export const GITHUB_AUTHORIZE_URL = `https://github.com/login/oauth/authorize?scope=public_repo,read:user&client_id=${process.env.GITHUB_CLIENT_ID}`;
 export const GITHUB_GET_TOKEN_BY_CODE_URL = 'https://ghsk.azurewebsites.net'
 
 const widthElement = 60;
@@ -42,6 +51,7 @@ export const PROJECT_DEFAULT_FOLDER = '/Users/antonbourosu/proj/'
 
 
 export const TRACKER_SCREENNAME_PROJECTS = 'Projects';
+export const TRACKER_SCREENNAME_PROJECTS_TRAINING = 'Projects-Training';
 export const TRACKER_SCREENNAME_WORKSPACE = 'Workspace';
 export const TRACKER_SCREENNAME_WORKSPACE_TRAINING = 'Workspace-Training';
 export const TRACKER_SCREENNAME_STATISTICS = 'Statistics';

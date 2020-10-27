@@ -6,18 +6,19 @@
     .toolbar-section
       ul.toolbar-button-group(:data-tutorial-target="'tutorial-statistics-controls'")
         button.btn-menu-bar(
-          v-if="!isTrainingStopped"
+          v-if="!isTrainingStopped && isPlayPauseButtonEnabled"
           @click="onPauseClick"
         )
           i.icon.icon-player-pause
         
         button.btn-menu-bar(
-          v-if="isTrainingStopped"
+          v-if="isTrainingStopped && isPlayPauseButtonEnabled"
           @click="startTraining"
         )
           i.icon.icon-player-play.scaled-icon
         
         button.btn-menu-bar(
+          v-if="!(statusNetworkCore === 'Stop')"
           @click="onStopClick"
         )
           i.icon.icon-stop2
@@ -76,6 +77,9 @@ export default {
       currentNetwork:       'mod_workspace/GET_currentNetwork',
       isTraining:           'mod_workspace/GET_networkIsTraining',
     }),
+    isPlayPauseButtonEnabled() {
+      return !(this.statusNetworkCore === 'Waiting' || this.statusNetworkCore === 'Created') ;
+    },
     statusTraining() {
       switch (this.statusNetworkCore) {
         case 'Training':

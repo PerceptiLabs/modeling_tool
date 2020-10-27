@@ -70,56 +70,82 @@ Analytics.googleAnalytics.setup();
 Analytics.googleAnalytics.trackUserId(store.getters['mod_user/GET_userID']);
 
 
-
-let initOptions = {
-  url: `${process.env.KEYCLOACK_BASE_URL}/auth`, realm: `${process.env.KEYCLOACK_RELM}`, clientId: `${process.env.KEYCLOACK_CLIENT_ID}`, onLoad:'login-required'
-}
-export let keycloak = Keycloak(initOptions);
-
-keycloak.init({ onLoad: initOptions.onLoad }).then((auth) =>{
-    
-  if(!auth) {
-    window.location.reload();
-  }
-
+function runApp(token, refreshToken){
   new Vue({
     components: { App },
     router,
     store,
     template: '<App/>'
   }).$mount('#app');
-  
-  
-  let userProfile = parseJWT(keycloak.token)
+
+
+  let userProfile = parseJWT(token)
   userProfile.firstName = userProfile.given_name
   userProfile.lastName = userProfile.family_name
 
   store.dispatch('mod_user/SET_userProfile', userProfile, {root: true});
   store.dispatch('mod_user/SET_userToken', {
-    accessToken: keycloak.token,
-    refreshToken: keycloak.refreshToken,
+    accessToken: token,
+    refreshToken: refreshToken,
   }, {root: true});
 
-  localStorage.setItem('currentUser', keycloak.token);
-  localStorage.setItem("vue-token", keycloak.token);
-  localStorage.setItem("vue-refresh-token", keycloak.refreshToken);
+  localStorage.setItem('currentUser', token);
+  localStorage.setItem("vue-token", token);
+  localStorage.setItem("vue-refresh-token", refreshToken);
+}
 
-  setInterval(() =>{
-    keycloak.updateToken(1).success((refreshed)=>{
-      if (refreshed) {
-        console.log('Token refreshed'+ refreshed);
-      } else {
-        console.warn('Token not refreshed, valid for '
-        + Math.round(keycloak.tokenParsed.exp + keycloak.timeSkew - new Date().getTime() / 1000) + ' seconds');
-      }
-    }).error(()=>{
+
+function login(){
+  let initOptions = {
+    url: `${process.env.KEYCLOACK_BASE_URL}/auth`, realm: `${process.env.KEYCLOACK_RELM}`, clientId: `${process.env.KEYCLOACK_CLIENT_ID}`, onLoad:'login-required'
+  }
+  let keycloak = Keycloak(initOptions);
+
+  keycloak.init({ onLoad: initOptions.onLoad }).then((auth) =>{
+
+    if(!auth) {
+      window.location.reload();
+    }
+
+    runApp(keycloak.token, keycloak.refreshToken);
+
+    setInterval(() =>{
+      keycloak.updateToken(1).success((refreshed)=>{
+        if (refreshed) {
+          console.log('Token refreshed'+ refreshed);
+        }
+      }).error(()=>{
         console.error('Failed to refresh token');
-    });
+      });
 
 
-  }, 6000)
+    }, 6000)
 
-}).catch((e) =>{
-  console.error("Authenticated Failed");
-  console.error(e);
-});
+  }).catch((e) =>{
+    console.error("Authenticated Failed");
+    console.error(e);
+  });
+}
+
+
+// Allow running w/o login for a hard-coded user
+// TODO: this will be removed after creating a local docker-based keycloak login realm
+function demo(){
+  const user = {
+    given_name: "John",
+    family_name: "Doe",
+    email: "a@a.test",
+    userId: 1,
+  }
+
+  const token = "placeholder." + window.btoa(JSON.stringify(user));
+  const refreshToken = "placeholder_refreshToken";
+  runApp(token, refreshToken);
+}
+
+
+if (process.env.NO_KC == 'true'){
+  demo();
+} else {
+  login();
+}

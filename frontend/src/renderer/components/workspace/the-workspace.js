@@ -97,8 +97,14 @@ export default {
         CPU: 0
       },
       buffer: {},
-      isCreateModelModalOpen: false
+      isCreateModelModalOpen: false,
+      debouncedCopyCursorPositionFn: null,
     }
+  },
+  created() {
+    this.debouncedCopyCursorPositionFn = debounce(function(x, y) {
+      this.set_cursorPosition({x, y});
+    }, process.env.NODE_ENV === 'production' ? 60 : 4000)
   },
   computed: {
     ...mapGetters({
@@ -229,23 +235,6 @@ export default {
     isNeedWait() {
       return this.$store.getters['mod_workspace/GET_networkWaitGlobalEvent']
     },
-    currentScreen() {
-      // This is used to generate a screen name used for tracking changes in the
-      
-      if (this.statisticsIsOpen) {
-        return this.isTraining ? 
-          TRACKER_SCREENNAME_STATISTICS_TRAINING :
-          TRACKER_SCREENNAME_STATISTICS;
-      } else if (this.testIsOpen) {
-        return this.isTraining ? 
-          TRACKER_SCREENNAME_TEST_TRAINING :
-          TRACKER_SCREENNAME_TEST;
-      } else {
-        return this.isTraining ? 
-          TRACKER_SCREENNAME_WORKSPACE_TRAINING :
-          TRACKER_SCREENNAME_WORKSPACE;
-      }
-    }
   },
   watch: {
     statusNetworkCore(newStatus) {
@@ -310,16 +299,6 @@ export default {
         ? this.currentData = this.buffer
         : null
     },
-    currentScreen: {
-      handler(newVal, oldVal) {
-        // console.log('currentScreen watcher', newVal, oldVal);
-        if (newVal === oldVal) { return; }
-
-        this.$store.dispatch('mod_tracker/EVENT_screenChange', { 
-          screenName: this.currentScreen
-        });
-      }
-    },
     getCurrentStepCode: {
       handler(newVal, oldVal) {
         if (!this.getShowTutorialTips) {
@@ -372,7 +351,7 @@ export default {
       const newY = event.offsetY  - (event.offsetY % 10);
       
       if((oldX !== newX) || (oldY !== newY)) {
-        debounce(this.set_cursorPosition({x: newX, y: newY}), 60);
+        this.debouncedCopyCursorPositionFn(newX, newY);
       }
 
       if(event.offsetX <= borderline ||

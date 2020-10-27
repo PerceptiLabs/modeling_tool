@@ -53,6 +53,7 @@ const actions = {
       mixPanel.init(mixPanelDesktopToken);
     } else {
       mixPanel.init(mixPanelWebToken);
+      mixPanel.opt_in_tracking();
     }
   },
   TRACK_initMixPanelUser({}, id) {
@@ -94,11 +95,14 @@ const actions = {
     const oldScreenName = getters.getCurrentScreen;
     const oldTimestamp = getters.getCurrentScreenStartTime;
     const newTimestamp = Date.now();
+    
+    if (oldScreenName === screenName) { return; }
 
     commit('setCurrentScreen', screenName);
 
     if (oldScreenName && oldTimestamp && newTimestamp) {
       const seconds = ((newTimestamp - oldTimestamp) / 1000).toFixed(2);
+
       mixPanel.track('Time spent on view', { ScreenName: oldScreenName, TimeInSeconds: seconds } );
     }
   },

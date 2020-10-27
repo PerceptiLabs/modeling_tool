@@ -105,11 +105,7 @@ const folderPCDelete = function (path) {
 };
 
 const getDefaultProjectPathForOs = function() {
-  if (isOsWindows()) {
-    return '~/Documents/PerceptiLabs'; //the path to MyDocuments is resolved in Kernel
-  } else if (isOsMacintosh() || isOsLinux()) {
-    return '~/Documents/PerceptiLabs';
-  } 
+  return '~/Documents/PerceptiLabs'; //the path to MyDocuments is resolved in Kernel
 }
 
 /*encryption */

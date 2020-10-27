@@ -7,11 +7,21 @@ import logging
 import argparse
 import threading
 import pkg_resources
+import tensorflow as tf    
+
+
+
+
 
 import perceptilabs.logconf
 import perceptilabs.utils as utils
 from perceptilabs.messaging.zmq_wrapper import get_message_bus
 from perceptilabs.issues import IssueHandler
+
+if utils.is_tf2x():
+    tf.enable_v2_behavior()
+else:
+    tf.disable_v2_behavior()    
 
 
 def get_input_args():
@@ -35,9 +45,7 @@ def main():
     session_id = uuid.uuid4().hex
     issue_handler = IssueHandler()
 
-    with open(pkg_resources.resource_filename('perceptilabs', 'app_variables.json'), 'r') as f:
-        app_variables = json.load(f)
-
+    app_variables = utils.get_app_variables()        
     commit_id = app_variables["BuildVariables"]["CommitId"]
     
     perceptilabs.logconf.setup_application_logger(log_level=args.log_level)
@@ -48,6 +56,9 @@ def main():
     logger = logging.getLogger(perceptilabs.logconf.APPLICATION_LOGGER)
     data_logger = logging.getLogger(perceptilabs.logconf.DATA_LOGGER)
 
+    if utils.is_tf2x():
+        logger.warning("Running TensorFlow version >= 2.0. Experimental support only!")
+    
     from perceptilabs.mainInterface import Interface
     from perceptilabs.server.appServer import Server
     from perceptilabs.main_setup import setup_sentry

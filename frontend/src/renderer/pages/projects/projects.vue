@@ -8,24 +8,22 @@
     div(v-show="!showNewModelPopup").project-wrapper
       div.header-controls
         div.left-side
-          span.header-action-button-wrapper.import-button-container(
-            @click="openLoadModelPopup()"
-            v-tooltip:bottom="'Import Model'"
-            )
-            img(src="../../../../static/img/project-page/import.svg"
-              :data-tutorial-target="'tutorial-model-hub-import-button'")
-            span.left-header-btn-text Import
-          span.header-action-button-wrapper(
-            @click="handleAddNetworkModal"
-            :data-tutorial-target="'tutorial-model-hub-new-button'"
-            v-tooltip:bottom="'New Model'"
-            )
-            span.btn-round-icon.btn-rounded-new(
-              :class="{'high-lighted': isNewUser}" 
+          .button-container(v-tooltip:bottom="'Import Model'")
+            span.header-action-button-wrapper.import-button-container(
+              @click="openLoadModelPopup()"
               )
-              img(src="../../../../static/img/project-page/plus.svg")
-              div(v-if="isNewUser").create-first-model Create your first model
-            span.left-header-btn-text Create
+              img(src="../../../../static/img/project-page/import.svg"
+                :data-tutorial-target="'tutorial-model-hub-import-button'")
+              span.left-header-btn-text Import
+          .button-container(v-tooltip:bottom="'New Model'")
+            span.header-action-button-wrapper(
+              @click="handleAddNetworkModal"
+              :data-tutorial-target="'tutorial-model-hub-new-button'"
+              )
+              span.btn-round-icon.btn-rounded-new(:class="{'high-lighted': isNewUser}")
+                img(src="../../../../static/img/project-page/plus.svg")
+                div(v-if="isNewUser").create-first-model Create your first model
+              span.left-header-btn-text Create
           //- div.search-input
           //-   img(src="../../../../static/img/search-models.svg")
           //-   input(
@@ -40,18 +38,21 @@
 
           //-   svg(v-if="isAllItemSelectedFavorite()" width="21" height="19" viewBox="0 0 21 19" fill="none")
           //-     path(d="M9.54894 0.927049C9.8483 0.0057385 11.1517 0.0057404 11.4511 0.927051L13.0819 5.9463C13.2158 6.35833 13.5997 6.63729 14.033 6.63729H19.3105C20.2792 6.63729 20.682 7.8769 19.8983 8.4463L15.6287 11.5484C15.2782 11.803 15.1315 12.2544 15.2654 12.6664L16.8963 17.6857C17.1956 18.607 16.1411 19.3731 15.3574 18.8037L11.0878 15.7016C10.7373 15.447 10.2627 15.447 9.91221 15.7016L5.64258 18.8037C4.85887 19.3731 3.80439 18.607 4.10374 17.6857L5.7346 12.6664C5.86847 12.2544 5.72181 11.803 5.37132 11.5484L1.10169 8.4463C0.317977 7.8769 0.720754 6.63729 1.68948 6.63729H6.96703C7.40026 6.63729 7.78421 6.35833 7.91809 5.9463L9.54894 0.927049Z" fill="#6185EE")
-          span.github-button(
-            :class="{ 'is-disable': !isOneItemSelected() }"
-            v-tooltip:bottom="'Export to GitHub'"
-            @click="openExportToGithubModal")
-            img.github-button-icon(src="../../../../static/img/github.svg")
-            span.github-button-text GitHub
-          span.text-button(
-            @click="openItems"
-            :class="{ 'is-disable': !isAtLeastOneItemSelected() }"
-            v-tooltip:bottom="'Open'") Open
-          span.img-button.pt-4(:class="{ 'disabledIconButton': !isAtLeastOneItemSelected() }" @click="removeItems()" v-tooltip:bottom="'Delete'")
-            img(src="../../../../static/img/project-page/remove.svg")
+          
+          .button-container(v-tooltip:bottom="'Export to GitHub'")
+            span.github-button(
+              :class="{ 'is-disable': !isOneItemSelected() }"
+              @click="openExportToGithubModal")
+              img.github-button-icon(src="../../../../static/img/github.svg")
+              span.github-button-text GitHub
+          .button-container(v-tooltip:bottom="'Open'")
+            span.text-button(
+              @click="openItems"
+              :class="{ 'is-disable': !isAtLeastOneItemSelected() }"
+              ) Open
+          .button-container(v-tooltip:bottom="'Delete'")
+            span.img-button.pt-4(:class="{ 'disabledIconButton': !isAtLeastOneItemSelected() }" @click="removeItems()")
+              img(src="../../../../static/img/project-page/remove.svg")
           
           //- span.text-button(v-if="isAtLeastOneItemSelected()") BlackBox
           //- span.text-button.is-disable() History
@@ -192,7 +193,6 @@
 
   import { mapActions, mapMutations, mapState, mapGetters } from 'vuex';
   import { isWeb, stringifyNetworkObjects } from "@/core/helpers";
-  import { TRACKER_SCREENNAME_PROJECTS } from "@/core/constants";
   import cloneDeep from 'lodash.clonedeep';
   import { getModelJson as fileserver_getModelJson } from '@/core/apiFileserver';
 
@@ -347,7 +347,7 @@
 
         this.set_currentModelIndex(index > 0 ? index : 0);
         this.$store.commit('mod_empty-navigation/set_emptyScreenMode', 0);
-        console.log(index);
+        
         if(index !== -1) {
           this.$store.dispatch("mod_workspace/setViewType", 'model');
           // this.SET_openStatistics(false);
@@ -715,9 +715,6 @@
       }
     },
     mounted() {
-      this.$store.dispatch('mod_tracker/EVENT_screenChange', { 
-          screenName: TRACKER_SCREENNAME_PROJECTS
-        });
     },
     created() {
       // Adding this because of reloads on this page 
@@ -765,6 +762,7 @@
     .right-side {
       margin-left: auto;
       display: flex;
+      align-items: center;
     }
   }
   .search-input {

@@ -230,6 +230,20 @@ const getters = {
     const statusList = ['Training', 'Validation', 'Paused'];
     return !!statusList.includes(coreStatus)
   },
+  GET_anyNetworkIsTraining(state, getters) {
+    const statusList = ['Training', 'Validation', 'Paused'];
+
+    return state.workspaceContent.some(wc => {
+
+      if (!wc.networkMeta || 
+          !wc.networkMeta.coreStatus || 
+          !wc.networkMeta.coreStatus.Status) { return; }
+
+      if (statusList.includes(wc.networkMeta.coreStatus.Status)) {
+        return true;
+      }
+    });
+  },
   GET_viewType(state, getters) {
     return state.viewType;
   },
@@ -770,7 +784,6 @@ const mutations = {
       network.networkMeta.openTest = null;
     } else if (network.networkMeta.openTest !== true) {
       network.networkMeta.openTest = false;
-      network.networkMeta.coreStatus.Status = 'Finished';
     }
   },
   SET_statisticsAndTestToClosed(state, { getters, networkId }) {
@@ -796,8 +809,18 @@ const mutations = {
     Vue.set(element, 'isTrained', value);
   },
   set_networkSnapshot(state, {dispatch, getters}) {
+    const network = cloneDeep(getters.GET_currentNetwork);
+    
+    let clonedNetworkElementList = network.networkElementList;
+    const zoomValue = network.networkMeta.zoom * 100;
 
-    const clonedNetworkElementList = cloneDeep(getters.GET_currentNetwork.networkElementList);
+    if(getters.GET_currentNetwork.networkMeta.hasOwnProperty('zoomSnapshot')) {
+      getters.GET_currentNetwork.networkMeta.zoomSnapshot = 1;
+    }
+    Object.keys(clonedNetworkElementList).map(elId => {
+      clonedNetworkElementList[elId].layerMeta.position.top = (clonedNetworkElementList[elId].layerMeta.position.top / zoomValue) * 100;
+      clonedNetworkElementList[elId].layerMeta.position.left = (clonedNetworkElementList[elId].layerMeta.position.left / zoomValue) * 100;
+    })
 
     if (!getters.GET_currentNetwork.networkSnapshots) {
       Vue.set(getters.GET_currentNetwork, 'networkSnapshots', []);
@@ -1742,6 +1765,7 @@ const mutations = {
     Vue.set(network.networkMeta, 'usingWeights', value);
   },
   setChartComponentLoadingStateMutation(state, {descendants, value, getters, networkId}) {
+    if (!getters.GET_networkByNetworkId(networkId)) { return; }
     const networkList = getters.GET_networkByNetworkId(networkId).networkElementList;
     
     descendants.forEach(componentId => {
@@ -2431,6 +2455,27 @@ const actions = {
   },
   setChartComponentLoadingState({ getters, commit }, {descendants, value, networkId }) {
     commit('setChartComponentLoadingStateMutation', {getters, descendants, value, networkId});
+  },
+  SET_zoomToFitMapInStatistics({getters, commit, dispatch}, payload){
+      const el = document.getElementsByClassName('the-network-field')[0];
+      const window = el.getElementsByClassName('info-section_main')[0];
+  
+      const { offsetWidth,scrollWidth, offsetHeight, scrollHeight } = window;
+  
+      const wCoeficient = scrollWidth / 100;
+      const wPercent = offsetWidth / wCoeficient;
+  
+      const hCoeficient = scrollHeight / 100;
+      const hPercent = offsetHeight / hCoeficient;
+      
+      const decreasePercent = Math.min(hPercent, wPercent);
+  
+      const zoom =  (1 - ((100 - decreasePercent ) / 100)).toFixed(2);
+  
+      console.log({ zoom, offsetWidth,scrollWidth, offsetHeight, scrollHeight, wCoeficient, wPercent, hCoeficient, hPercent});
+     
+      dispatch('updateNetworkElementPositions', { zoom } )
+      dispatch('SET_statusNetworkZoom', zoom  )
   },
 };
 

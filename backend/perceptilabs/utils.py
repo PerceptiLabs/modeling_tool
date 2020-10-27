@@ -1,3 +1,5 @@
+import os
+import json
 import bisect
 import time
 import copy
@@ -5,12 +7,33 @@ import warnings
 import functools
 from concurrent.futures import Future, Executor
 from threading import Lock
+import pkg_resources
 
 
 import numpy as np
 import pandas as pd
 from sys import getsizeof
 from typing import Set
+
+
+    
+def get_app_variables():
+    with open(pkg_resources.resource_filename('perceptilabs', 'app_variables.json'), 'r') as f:
+        app_variables = json.load(f)
+    return app_variables
+
+
+def is_tf2x():
+    """ When enabled, the tool will run TensorFlow 2.x """
+    if os.getenv("PL_TF2X"):
+        return True
+
+    app_variables = get_app_variables()
+    if app_variables["BuildVariables"].get("Tf2x", False):
+        return True
+
+    return False
+    
 
 def deprecated(func):
     """This is a decorator which can be used to mark functions
