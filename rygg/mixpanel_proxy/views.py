@@ -2,10 +2,10 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from rest_framework.decorators import api_view
 from requests import get
-from mixpanel_proxy.apps import external_ip
-from mixpanel_proxy.utils import parse_b64_to_dict
-from mixpanel_proxy.utils import url_encode_mixpanel_style_params
-from mixpanel_proxy.utils import parse_queryDict_to_dict
+from rygg.mixpanel_proxy.apps import external_ip
+from rygg.mixpanel_proxy.utils import parse_b64_to_dict
+from rygg.mixpanel_proxy.utils import url_encode_mixpanel_style_params
+from rygg.mixpanel_proxy.utils import parse_queryDict_to_dict
 
 import logging
 logger = logging.getLogger(__name__)

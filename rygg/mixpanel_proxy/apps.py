@@ -5,7 +5,7 @@ from requests import get
 external_ip = None
 
 class MixpanelProxyConfig(AppConfig):
-    name = 'mixpanel_proxy'
+    name = 'rygg.mixpanel_proxy'
 
     # Makes sure the MixpanelProxyConfig isn't needlessly run twice
     hasLoaded = False
