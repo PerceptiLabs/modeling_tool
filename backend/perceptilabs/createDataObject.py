@@ -154,9 +154,9 @@ def rgb(data_vec, subSampleSize, normalize):
 
 def scatter(data_vec, sub_sample_size):
     x_data, y_data = subsample(data_vec, sub_sample_size)
-    data = convertToList(x_data)
+    data = convertToList(y_data)
     
-    obj = {"x_data": data, "data": y_data}
+    obj = {"x_data": x_data, "data": data}
     return obj
 
 
@@ -195,7 +195,7 @@ def getType(data_vec):
     else:
         return TYPE_SCATTER   
 
-def createDataObject(dataList, typeList=None, styleList=None, nameList=None, subSampleSize=200, normalize=True):
+def createDataObject(dataList, typeList=None, styleList=None, nameList=None, subSampleSize=None, normalize=True):
     if np.any(np.asarray(dataList).ravel() is None):
         return {}
     if not typeList:
@@ -232,11 +232,11 @@ def createDataObject(dataList, typeList=None, styleList=None, nameList=None, sub
         elif type_ == TYPE_LINE:
             output = line(dataVec, SUBSAMPLE_SIZE)
         elif type_ == TYPE_RGBA:
-            output = rgb(dataVec, IMAGE_SUBSAMPLE_SIZE, normalize)
+            output = rgb(dataVec, subSampleSize or IMAGE_SUBSAMPLE_SIZE, normalize)
         elif type_ == TYPE_GRAYSCALE:
-            output = grayscale(dataVec, IMAGE_SUBSAMPLE_SIZE)
+            output = grayscale(dataVec, subSampleSize or IMAGE_SUBSAMPLE_SIZE)
         elif type_ == TYPE_HEATMAP:
-            output = heatmap(dataVec, IMAGE_SUBSAMPLE_SIZE)
+            output = heatmap(dataVec, subSampleSize or IMAGE_SUBSAMPLE_SIZE)
         elif type_ == TYPE_SCATTER:
             output = scatter(dataVec, SUBSAMPLE_SIZE)
         elif type_ == TYPE_PIE:
