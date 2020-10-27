@@ -80,6 +80,9 @@ export default {
       currentProjectId:           state => state.mod_project.currentProject,
       isSettingInputFocused:      state => state.mod_workspace.isSettingInputFocused,
     }),
+    statusLocalCore() {
+      return this.$store.state.mod_api.statusLocalCore;
+    },    
     appVersion() {
       return this.$store.state.globalView.appVersion
     },
@@ -217,6 +220,11 @@ export default {
       this.openNetwork();
     },
     newModel() {
+      if(this.statusLocalCore!='online') {
+        this.infoPopup("Kernel is offline");
+        return;
+      }
+
       this.popupNewModel(true);
 
       this.$nextTick(() => {
@@ -224,18 +232,43 @@ export default {
       });
     },
     openLoadModelPopup() {
+      if(this.statusLocalCore!='online') {
+        this.infoPopup("Kernel is offline");
+        return;
+      }
+      
       this.$store.dispatch('globalView/SET_showImportNetworkfromGitHubOrLocalPopup', true);
     },
     saveModel() {
+      if(this.statusLocalCore!='online') {
+        this.infoPopup("Kernel is offline");
+        return;
+      }
+
       this.saveNetwork();
     },
     saveModelAs() {
+      if(this.statusLocalCore!='online') {
+        this.infoPopup("Kernel is offline");
+        return;
+      }
+
       this.saveNetworkAs();
     },
     exportModel() {
+      if(this.statusLocalCore!='online') {
+        this.infoPopup("Kernel is offline");
+        return;
+      }
+
       this.$store.dispatch('globalView/SET_exportNetworkPopup', true);
     },
     exportModelToGithub() {
+      if(this.statusLocalCore!='online') {
+        this.infoPopup("Kernel is offline");
+        return;
+      }
+
       this.$store.dispatch('globalView/SET_exportNetworkToGithubPopup', true);
     },
     HC_delete() {

@@ -11,8 +11,8 @@ services:
       POSTGRES_PASSWORD: rygg
 
   rygg:
-    image: perceptilabs.azurecr.io/rygg:latest
-    # image: rygg_dev
+    # image: perceptilabs.azurecr.io/rygg:latest
+    image: rygg_dev
     environment:
       DJANGO_DATABASE: postgres
       DB_NAME: rygg
@@ -25,8 +25,8 @@ services:
       - db
 
   frontend:
-    image: perceptilabs.azurecr.io/frontend:latest
-    # image: frontend_dev
+    # image: perceptilabs.azurecr.io/frontend:latest
+    image: frontend_dev
     ports:
       - "8080:8080"
     depends_on:
@@ -38,8 +38,8 @@ services:
       PL_RYGG_URL: http://localhost:8000
 
   kernel:
-    image: perceptilabs.azurecr.io/kernel:latest
-    # image: kernel_dev
+    # image: perceptilabs.azurecr.io/kernel:latest
+    image: kernel_dev
     volumes:
       - ./plabs:/perceptilabs/Documents/Perceptilabs
     ports:
