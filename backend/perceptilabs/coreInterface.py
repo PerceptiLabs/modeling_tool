@@ -636,15 +636,15 @@ class coreLogic():
         
         if layerType=="DataEnvironment":
             state = self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})[-1,:,:,:3]
-            dataObj = createDataObject([state])
+            dataObj = createDataObject([state], subSampleSize=200)
             return {"Data":dataObj}            
         elif layerType=="DataData":
             D=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})           
-            dataObj = createDataObject([D[-1]])      
+            dataObj = createDataObject([D[-1]], subSampleSize=200)      
             return {"Data":dataObj}
         elif layerType=="DataRandom":
             D=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})           
-            dataObj = createDataObject([D[-1]])      
+            dataObj = createDataObject([D[-1]], subSampleSize=200)      
             return {"Data":dataObj}
         # elif layerType=="MathSwitch":
         #     D=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})           
@@ -653,16 +653,16 @@ class coreLogic():
         elif layerType=="DeepLearningFC":
             if view=="Output":
                 D=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})[-1]
-                dataObject = createDataObject([D])                
+                dataObject = createDataObject([D], subSampleSize=200)                
                 output = {"Output": dataObject}
                 return output
             if view=="Weights&Bias":
                 w=self.getStatistics({"layerId":layerId,"variable":"W","innervariable":""})
                 w=np.average(w,axis=0)
-                dataObjectWeights = createDataObject([w], typeList=['line'])
+                dataObjectWeights = createDataObject([w], typeList=['line'], subSampleSize=200)
                 
                 b=self.getStatistics({"layerId":layerId,"variable":"b","innervariable":""})
-                dataObjectBias = createDataObject([b], typeList=['line'])
+                dataObjectBias = createDataObject([b], typeList=['line'], subSampleSize=200)
                 
                 output = {"Bias": dataObjectBias, "Weights": dataObjectWeights}
                 return output
@@ -676,7 +676,8 @@ class coreLogic():
                                             nameList=['Min', 'Max', 'Average'],
                                             styleList=[{"color":"#83c1ff"},
                                                         {"color":"#0070d6"},
-                                                        {"color":"#6b8ff7"}])
+                                                        {"color":"#6b8ff7"}],
+                                            subSampleSize=200)
                 output = {"Gradients": dataObj}
                 return output
         elif layerType=="DeepLearningConv":
@@ -692,14 +693,14 @@ class coreLogic():
                 outputs=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})[-1]
                 outputs=outputs[:, :, 0]
                     
-                dataObjWeights = createDataObject([weights], typeList=['heatmap'])
-                dataObjOutput = createDataObject([outputs])                
+                dataObjWeights = createDataObject([weights], typeList=['heatmap'], subSampleSize=200)
+                dataObjOutput = createDataObject([outputs], subSampleSize=200)                
 
                 obj = {"Weights":dataObjWeights, "Output": dataObjOutput}
                 return obj
             if view=="Bias":
                 b=self.getStatistics({"layerId":layerId,"variable":"b","innervariable":""})
-                dataObj = createDataObject([b], typeList=['line'])
+                dataObj = createDataObject([b], typeList=['line'], subSampleSize=200)
                 output = {"Bias": dataObj}
                 return output
             if view=="Gradients":
@@ -712,7 +713,8 @@ class coreLogic():
                                             nameList=['Min', 'Max', 'Average'],
                                             styleList=[{"color":"#83c1ff"},
                                                         {"color":"#0070d6"},
-                                                        {"color":"#6b8ff7"}])
+                                                        {"color":"#6b8ff7"}],
+                                            subSampleSize=200)
                 output = {"Gradients": dataObj}
                 return output
         elif layerType=="DeepLearningDeconv":
@@ -729,14 +731,14 @@ class coreLogic():
                 outputs=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})[-1]
                 outputs=outputs[:, :, 0]
                     
-                dataObjWeights = createDataObject([weights], typeList=['heatmap'])
-                dataObjOutput = createDataObject([outputs])                
+                dataObjWeights = createDataObject([weights], typeList=['heatmap'], subSampleSize=200)
+                dataObjOutput = createDataObject([outputs], subSampleSize=200)                
 
                 obj = {"Weights":dataObjWeights, "Output": dataObjOutput}
                 return obj
             if view=="Bias":
                 b=self.getStatistics({"layerId":layerId,"variable":"b","innervariable":""})
-                dataObj = createDataObject([b], typeList=['line'])
+                dataObj = createDataObject([b], typeList=['line'], subSampleSize=200)
                 output = {"Bias": dataObj}
                 return output
             if view=="Gradients":
@@ -749,14 +751,15 @@ class coreLogic():
                                             nameList=['Min', 'Max', 'Average'],
                                             styleList=[{"color":"#83c1ff"},
                                                         {"color":"#0070d6"},
-                                                        {"color":"#6b8ff7"}])
+                                                        {"color":"#6b8ff7"}],
+                                            subSampleSize=200)
                 output = {"Gradients": dataObj}
                 return output
         elif layerType=="DeepLearningRecurrent":
             
             # if view=="Output":
             D=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})[-1]
-            dataObject = createDataObject([D])                
+            dataObject = createDataObject([D], subSampleSize=200)                
             dataObject = {"Output": dataObject}
             return dataObject
 
@@ -791,26 +794,26 @@ class coreLogic():
 
         elif layerType in ["MathMerge", "MathSoftmax", "MathArgmax", "MathSwitch", "ProcessOneHot", "ProcessCrop", "ProcessReshape", "ProcessRescale"]:
             D=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})[-1]
-            output = createDataObject([np.squeeze(D).astype(np.float32)])
+            output = createDataObject([np.squeeze(D).astype(np.float32)], subSampleSize=200)
             return {"Output":output}
         elif layerType == "ProcessGrayscale":
             D=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})[-1]
             if len(D.shape) == 3:
                 if D.shape[-1] == 1:
-                    output = createDataObject([D])
+                    output = createDataObject([D], subSampleSize=200)
                 else:
-                    output = createDataObject([D[:,:,0]])
+                    output = createDataObject([D[:,:,0]], subSampleSize=200)
             elif len(D.shape)>3:
-                output = createDataObject([D[0]])
+                output = createDataObject([D[0]], subSampleSize=200)
             else:
-                output = createDataObject([D])
+                output = createDataObject([D], subSampleSize=200)
             return {"Output":output}
 
         elif layerType=="TrainRegression":
             if view=="Prediction":
                 #Make sure that all the inputs are sent to frontend!!!!!!!!!!!!!!!
                 inputs=[self.getStatistics({"layerId": node.id_,"variable":"Y","innervariable":""}) for node in self.graph_spec.get_start_nodes()]
-                D = [createDataObject([input_]) for input_ in inputs]
+                D = [createDataObject([input_], subSampleSize=200) for input_ in inputs]
                 
                 X = self.getStatistics({"layerId": layerId, "variable":"X", "innervariable":""})
 
@@ -1019,7 +1022,6 @@ class coreLogic():
                         returnDict={"Input":D[0],"PvG":PvG,"AveragePvG":APvG,"Accuracy":Accuracy}
 
                     elif cType=="grayscale" or cType=="RGB" or cType=="heatmap":
-                        pass
                         # network_output=self.subsample(network_output)
                         # Labels=self.subsample(labels)
                         # (height,width)=network_output.shape[0:2]
@@ -1036,6 +1038,7 @@ class coreLogic():
                         # accList = [[('Accuracy', lastAcc*100.0), ('Empty', (1-lastAcc)*100.0)]]
                         # Accuracy = createDataObject(accList, typeList=['pie'])
                         # returnDict={"Input":D[0],"PvG":Mask,"AveragePvG":Prediction,"Accuracy":Accuracy}    
+                        returnDict = {}
                                     
                 else:
                     chartType="line"
@@ -1191,17 +1194,17 @@ class coreLogic():
                 
                 image = self.getStatistics({"layerId": layerId, "variable":"image_bboxes", "innervariable":""})
                 # image = np.random.randint(0,255,[224,224,3])
-                Bboxes = createDataObject([image])    
+                Bboxes = createDataObject([image], subSampleSize=200)    
 
 
                 # Confidence of the boxes in sample
                 confidence_scores = self.getStatistics({"layerId":layerId,"variable":"confidence_scores","innervariable":""})
-                Confidence = createDataObject([confidence_scores], typeList=['bar'])
+                Confidence = createDataObject([confidence_scores], typeList=['bar'], subSampleSize=200)
                 
                 # PIE
                 acc=self.getStatistics({"layerId":layerId,"variable":"image_accuracy","innervariable":""})[0]
                 accList = [[('Accuracy', acc*100.0), ('Empty', (1-acc)*100.0)]]
-                Accuracy = createDataObject(accList, typeList=['pie'])
+                Accuracy = createDataObject(accList, typeList=['pie'], subSampleSize=200)
 
                 returnDict={"Bboxes":Bboxes,"Confidence":Confidence,"Accuracy":Accuracy}
                 return returnDict
@@ -1364,11 +1367,11 @@ class coreLogic():
             if view == "Images":
                 generated_sample=self.getStatistics({"layerId":layerId,"variable":"generated_image","innervariable":""})
 
-                dataObjectOutput = createDataObject([generated_sample])
+                dataObjectOutput = createDataObject([generated_sample], subSampleSize=200)
                 
                 real_sample=self.getStatistics({"layerId":layerId,"variable":"real_image","innervariable":""})
 
-                dataObjectInput = createDataObject([real_sample])
+                dataObjectInput = createDataObject([real_sample], subSampleSize=200)
             
     
                 output = { "Real_Input":dataObjectInput, "Generated_Output": dataObjectOutput}
@@ -1377,7 +1380,7 @@ class coreLogic():
             
             if view=="Data_distribution":
                 data_distribution = self.getStatistics({"layerId":layerId,"variable":"data_distribution","innervariable":""})
-                dataObjectOutput = createDataObject([data_distribution], normalize=False)
+                dataObjectOutput = createDataObject([data_distribution], subSampleSize=200, normalize=False)
     
                 output = {"Data_distribution": dataObjectOutput}
                 return output
@@ -1385,7 +1388,7 @@ class coreLogic():
         elif layerType=="TrainReinforce":
             if view=="Prediction":
                 state = self.getStatistics({"layerId":layerId,"variable":"state","innervariable":""})
-                state_ = createDataObject([state])
+                state_ = createDataObject([state], subSampleSize=200)
 
                 prediction = self.getStatistics({"layerId":layerId,"variable":"pred","innervariable":""})
                 probs = self.getStatistics({"layerId":layerId,"variable":"probs","innervariable":""})
@@ -1424,7 +1427,7 @@ class coreLogic():
                 return output
             if view=="Steps":
                 steps=self.getStatistics({"layerId":layerId,"variable":"Steps","innervariable":""})
-                steps = createDataObject([steps])
+                steps = createDataObject([steps], subSampleSize=200)
                 obj = {"Steps": steps}
                 return obj
         else:
