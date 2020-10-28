@@ -19,11 +19,6 @@ from perceptilabs.layers.deeplearningfc.spec import DeepLearningFcSpec
 from perceptilabs.layers.utils import graph_spec_to_core_graph
 from perceptilabs.graph.spec import GraphSpec
 
-#@pytest.fixture(autouse=True)
-#def reset():
-#    yield
-#    tf.reset_default_graph()
-    
 
 @pytest.fixture(scope='module')
 def script_factory():
@@ -121,7 +116,6 @@ def graph_spec_few_epochs(temp_path, temp_path_checkpoints):
     )        
     yield graph_spec
     
-
     
 @pytest.fixture()
 def graph_spec_distr(temp_path, temp_path_checkpoints):
@@ -175,6 +169,34 @@ def test_can_instantiate(script_factory):
     except Exception as e:
         pytest.fail("Raised error on instantiation! " + repr(e))
 
+
+def test_get_prediction_data_layer(script_factory, graph_spec):
+    training_layer = graph_spec.training_layer        
+    actual = training_layer.get_prediction_data_layer(graph_spec)
+    expected = graph_spec.layers[0] # input data layer
+    assert actual == expected
+
+    
+def test_get_target_data_layer(script_factory, graph_spec):
+    training_layer = graph_spec.training_layer    
+    actual = training_layer.get_target_data_layer(graph_spec)
+    expected = graph_spec.layers[2] # labels data layer
+    assert actual == expected
+
+
+def test_get_prediction_inner_layers(script_factory, graph_spec):
+    training_layer = graph_spec.training_layer
+    actual = training_layer.get_prediction_inner_layers(graph_spec)
+    expected = [graph_spec.layers[1]]
+    assert actual == expected
+
+    
+def test_get_target_inner_layers(script_factory, graph_spec):
+    training_layer = graph_spec.training_layer    
+    actual = training_layer.get_target_inner_layers(graph_spec)
+    expected = []
+    assert actual == expected
+    
         
 def test_can_yield(script_factory, graph_spec):
     graph = graph_spec_to_core_graph(script_factory, graph_spec)
@@ -332,7 +354,7 @@ def test_syntax_distributed(script_factory):
         code = LayerHelper(
             script_factory,
             layer_spec,
-            graph_spec=graph_spec
+            graph_spec=graph_spec,
         ).get_code(check_syntax=True)
     except SyntaxError as e:
         pytest.fail("Raised syntax error: " + repr(e))
@@ -514,14 +536,14 @@ def test_tf2x_syntax(script_factory_tf2x):
     )
     
     graph_spec = MagicMock()
-    graph_spec.nodes_by_id.__getitem__.sanitized_name = '123'
-
+    graph_spec.nodes_by_id.__getitem__.sanitized_name.return_value = '123'
+    
     try:
         code = LayerHelper(
             script_factory_tf2x,
             layer_spec,
             graph_spec=graph_spec
-        ).get_code(check_syntax=True)
+        ).get_code(check_syntax=True, print_code=True)
     except SyntaxError as e:
         pytest.fail("Raised syntax error: " + repr(e))
         raise
@@ -619,7 +641,25 @@ def test_tf2x_progress_reaches_one(script_factory_tf2x, graph_spec_few_epochs):
             reached_one = True
 
     assert reached_one
-        
+
+    
+@pytest.mark.tf2x            
+def test_tf2x_layer_output_values_set(script_factory_tf2x, graph_spec_few_epochs):
+    graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec_few_epochs)
+    
+    training_layer = graph.active_training_node.layer
+    iterator = training_layer.run(graph, mode = 'training') # TODO: self reference is weird. shouldnt be!
+
+    sentinel = object()
+    result = None
+
+    outputs_set = False    
+    while result is not sentinel and not outputs_set:
+        result = next(iterator, sentinel)
+        outputs_set = all(len(out_dict) > 0 for out_dict in training_layer.layer_outputs.values())
+
+    assert outputs_set
+    
 
 @pytest.mark.skip
 @pytest.mark.tf2x            

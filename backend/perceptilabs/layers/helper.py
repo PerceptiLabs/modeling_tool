@@ -58,14 +58,13 @@ class LayerHelper:
                 self._layer_spec,
                 macro_kwargs={'layer_spec': self._layer_spec, 'graph_spec': self._graph_spec}
             )
-        
+
+        if print_code:
+            print(f'{self._layer_spec.id_} [{self._layer_spec.type_}] code:\n' + add_line_numbering(code))
         if check_syntax:
             file_name = RENDERED_CODE_FILE_NAME_WITH_TAG % self._make_tag()
             compile(code.encode(), file_name, 'exec', ast.PyCF_ONLY_AST)
 
-        if print_code:
-            print(f'{self._layer_spec.id_} [{self._layer_spec.type_}] code:\n' + add_line_numbering(code))
-            
         return code
 
     def get_class(self, preamble=None, print_code=False):
@@ -73,7 +72,7 @@ class LayerHelper:
             code = self.get_code(
                 prepend_imports=True, check_syntax=True, preamble=preamble, print_code=print_code
             )
-            
+
             loader = _CodeLoader(code)
             spec = importlib.machinery.ModuleSpec("my_module", loader)
             module = importlib.util.module_from_spec(spec)

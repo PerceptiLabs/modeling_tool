@@ -1,10 +1,10 @@
 import logging
 import networkx as nx
 from collections import namedtuple
-from abc import ABC, abstractmethod
 from typing import List, Dict, Tuple
 
 
+from perceptilabs.graph import AbstractGraphSpec
 from perceptilabs.logconf import APPLICATION_LOGGER
 from perceptilabs.layers.specbase import LayerSpec
 from perceptilabs.layers.utils import get_layer_definition
@@ -13,7 +13,7 @@ from perceptilabs.layers.utils import get_layer_definition
 logger = logging.getLogger(APPLICATION_LOGGER)
 
 
-class GraphSpec(ABC):
+class GraphSpec(AbstractGraphSpec):
     def __init__(self, nodes: List[LayerSpec]):
         self._nx_graph = self._create_networkx_graph(nodes)
         self._nodes_by_id = {n.id_: n for n in nodes}
@@ -98,16 +98,32 @@ class GraphSpec(ABC):
         total_hash = hash(tuple([s.compute_field_hash()**2 for s in included_specs]))
         return total_hash
 
+    def get_ordered_ids(self) -> List[str]:
+        """ Returns the layers in terms of execution order 
 
-    def get_ordered_ids(self):
-        """ Returns the layers in terms of execution order """
+        Returns:
+            A list of ID strings
+        """
         topological_tree = list(nx.topological_sort(self._nx_graph))
         ordered_ids = tuple(topological_tree)
         return ordered_ids
 
-    def get_ordered_nodes(self):
+    def get_ordered_layers(self) -> List[LayerSpec]:
+        """ Returns the layers in terms of execution order. 
+        
+        Returns:
+            A list of LayerSpecs
+        """        
         return [self.nodes_by_id[id_] for id_ in self.get_ordered_ids()]
 
+    def get_ordered_nodes(self):
+        """ Returns the layers in terms of execution order. Alias for 'get_ordered_layers'
+        
+        Returns:
+            A list of LayerSpecs
+        """        
+        return self.get_ordered_layers()
+    
     def __eq__(self, other):
         if type(self) != type(other):
             return False
@@ -234,6 +250,19 @@ class GraphSpec(ABC):
         nx_graph.add_nodes_from([l.id_ for l in layer_specs])            
         return nx_graph
 
+    @property
+    def training_layer(self) -> LayerSpec:
+        """ Get the training layer of this graph. Assumes there's only one.
+        
+        Returns:
+            The training layer.
+        """
+        for layer in self.layers:
+            if layer.is_training_layer:
+                return layer
+        return None
+
+    
     
 if __name__ == "__main__":
 

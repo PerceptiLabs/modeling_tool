@@ -1,9 +1,11 @@
-from typing import Tuple, Dict, Any, Union
-
-from perceptilabs.layers.specbase import LayerSpec, LayerConnection, InnerLayerSpec
+from typing import Tuple, Dict, Any, Union, List
 
 
-class TrainClassificationSpec(InnerLayerSpec):
+from perceptilabs.graph import AbstractGraphSpec
+from perceptilabs.layers.specbase import LayerSpec, LayerConnection, TrainingLayerSpec, DummySpec, DataLayerSpec
+
+
+class TrainClassificationSpec(TrainingLayerSpec):
     type_: str = 'TrainNormal'
     distributed: bool = False
     use_cpu: bool = True
@@ -18,8 +20,8 @@ class TrainClassificationSpec(InnerLayerSpec):
     n_epochs: int = 10
     batch_size: int = 10
     loss_function: str = 'Quadratic'
-    connection_labels: Union[LayerConnection, None] = None
-    connection_predictions: Union[LayerConnection, None] = None    
+    connection_labels: LayerConnection = LayerConnection() # Default to an unset one
+    connection_predictions: LayerConnection = LayerConnection()  # Default to an unset one
     target_acc: Union[int, None] = None
     stop_condition: str = 'Epochs'                        
 
@@ -82,3 +84,91 @@ class TrainClassificationSpec(InnerLayerSpec):
         
         return dict_
 
+    def get_prediction_layer(self, graph_spec: AbstractGraphSpec) -> LayerSpec:
+        """ Returns the LayerSpec going into the 'predictions' connection
+
+        Args:
+            graph_spec: the current GraphSpec.
+
+        Returns:
+            A LayerSpec
+        """
+        return graph_spec[self.connection_predictions.src_id]
+
+    def get_target_layer(self, graph_spec: AbstractGraphSpec) -> LayerSpec:
+        """ Returns the LayerSpec going into the 'labels' connection
+
+        Args:
+            graph_spec: the current GraphSpec.
+        
+        Returns:
+            A LayerSpec
+        """
+        return graph_spec[self.connection_labels.src_id]        
+
+    def get_prediction_data_layer(self, graph_spec: AbstractGraphSpec) -> DataLayerSpec:
+        """ Returns the DataLayerSpec going into the 'predictions' connection (potentially via other layers).
+
+        Args:
+            graph_spec: the current GraphSpec.
+        
+        Returns:
+            A DataLayerSpec
+        """
+        prediction_layer = self.get_prediction_layer(graph_spec)
+        data_layer = self._get_data_layer_feeding_into(prediction_layer, graph_spec)
+        return data_layer if data_layer is not None else DummySpec() # Default
+
+    def get_target_data_layer(self, graph_spec: AbstractGraphSpec) -> DataLayerSpec:
+        """ Returns the DataLayerSpec going into the 'labels' connection (potentially via other layers).
+
+        Args:
+            graph_spec: the current GraphSpec.
+        
+        Returns:
+            A DataLayerSpec
+        """
+        target_layer = self.get_target_layer(graph_spec)
+        data_layer = self._get_data_layer_feeding_into(target_layer, graph_spec)
+        return data_layer if data_layer is not None else DummySpec() # Default
+
+    def _get_data_layer_feeding_into(self, into_layer, graph_spec):
+        """ Get all data type ancestors of a layer"""
+        for layer_spec in graph_spec.layers:
+            if layer_spec.is_ancestor_to(into_layer, graph_spec) and layer_spec.is_data_layer:
+                return layer_spec
+        return None
+
+    def get_prediction_inner_layers(self, graph_spec: AbstractGraphSpec) -> List[LayerSpec]:
+        """ Returns the LayerSpecs going into the 'predictions' connection (either directly or indirectly).
+
+        Args:
+            graph_spec: the current GraphSpec.
+        
+        Returns:
+            A list of LayerSpecs
+        """
+        prediction_layer = self.get_prediction_layer(graph_spec)
+        return self._get_inner_layers_feeding_into(prediction_layer, graph_spec)    
+
+    def get_target_inner_layers(self, graph_spec: AbstractGraphSpec) -> List[LayerSpec]:
+        """ Returns the LayerSpecs going into the 'labels' connection (either directly or indirectly).
+
+        Args:
+            graph_spec: the current GraphSpec.
+        
+        Returns:
+            A list of LayerSpecs
+        """
+        target_layer = self.get_target_layer(graph_spec)        
+        return self._get_inner_layers_feeding_into(target_layer, graph_spec)
+
+    def _get_inner_layers_feeding_into(self, into_layer, graph_spec):
+        """ Get all ancestors of a layer"""
+        layers = []
+        for layer_spec in graph_spec.get_ordered_layers():
+            if layer_spec.is_ancestor_to(into_layer, graph_spec) and not layer_spec.is_data_layer:
+                layers.append(layer_spec)
+        return layers
+
+    
