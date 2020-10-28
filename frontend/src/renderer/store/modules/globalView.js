@@ -33,6 +33,7 @@ const state = {
   popupConfirmOk: null,
   pageTitle: '',
   isGridEnabled: false,
+  isMiniMapNavigatorOpened: false,
 };
 const getters = {
   GET_appPath(state) {
@@ -135,7 +136,11 @@ const mutations = {
   setGridStateMutation(state, value) {
     localStorage.setItem(localStorageGridKey, value);
     state.isGridEnabled = value;
-  }
+  },
+  setMiniMapNavigationMutation(state, value) {
+    localStorage.setItem('isMiniMapNavigatorOpened', value);
+    state.isMiniMapNavigatorOpened = value;
+  },
 };
 
 const actions = {

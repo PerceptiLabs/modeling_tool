@@ -10,6 +10,8 @@
     span %
   button.btn.btn--icon.workspace-scale_btn(type="button" @click="incScale()")
     i.icon.icon-zoom-plus
+  base-checkbox( :isMiniMap="true" :isNewUi="true" :value="isMiniMapNavigatorOpened" @input="setMiniMapNavigationMutation") Map
+  
 .workspace-meta-right-box
   model-status(
     v-if="(currentNetwork.networkMeta.coreStatus.Status !== 'Waiting') && !statisticsIsOpen"

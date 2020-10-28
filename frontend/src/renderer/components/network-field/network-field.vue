@@ -3,6 +3,7 @@
     :style="styleSvgArrow"
     :data-tutorial-target="statisticsIsOpen ? 'tutorial-statistics-map' : ''"
     ref="network"
+    :class="{'isViewMode': isViewMode}"
     @mousedown="refNetworkMouseDown($event)"
   )
     svg(v-if="isGridEnabled" width="100%" height="100%" xmlns='http://www.w3.org/2000/svg')
@@ -96,6 +97,17 @@
     position: relative;
     flex: 1 1 100%;
     z-index: 1;
+    &.isViewMode {
+      &::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 5;
+      }
+    }
   }
   .svg-arrow {
     position: absolute;

@@ -78,6 +78,10 @@ export default {
       type: Number,
       default: 100,
     },
+    isViewMode: {
+      type: Boolean,
+      default: false,
+    }
   },
   data() {
     return {
@@ -336,6 +340,7 @@ export default {
     },
     calcSvgSize(redrawArrows) {
       const parentWorkspace = this.$parent.$refs.container;
+      if(!parentWorkspace) { return 0} 
       let offsetHeight = parentWorkspace.offsetHeight;
       let offsetWidth = parentWorkspace.offsetWidth;
       const gapSize = 60;
