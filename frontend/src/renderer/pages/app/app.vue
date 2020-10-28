@@ -90,6 +90,10 @@
         }
         calculateSidebarScaleCoefficient(); 
       }
+      if(localStorage.hasOwnProperty('isMiniMapNavigatorOpened')) {
+        const mapValue = localStorage.getItem('isMiniMapNavigatorOpened') === 'true';
+        this.setMiniMapNavigationMutation(mapValue);
+      }
     },
     beforeDestroy() {
       window.removeEventListener("resize", this.resizeEv, false);
@@ -147,6 +151,7 @@
         setGridValue:                       'globalView/setGridStateMutation',
         add_dragElement:                    'mod_workspace/ADD_dragElement',
         set_workspaceChangesInLocalStorage: 'mod_workspace-changes/set_workspaceChangesInLocalStorage',
+        setMiniMapNavigationMutation:       'globalView/setMiniMapNavigationMutation',
       }),
       ...mapActions({
         eventResize:          'mod_events/EVENT_eventResize',

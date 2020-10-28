@@ -44,6 +44,7 @@ import ResourceMonitor        from "@/components/charts/resource-monitor.vue";
 import SelectModelModal       from '@/pages/projects/components/select-model-modal.vue';
 import ViewBoxBtnList         from '@/components/statistics/view-box-btn-list.vue'
 import ModelStatus            from '@/components/different/model-status.vue';
+import MiniMapNavigation      from '@/components/workspace/mini-map-navigation.vue';
 
 import { saveModelJson as fileserver_saveModelJson } from '@/core/apiFileserver';
 
@@ -60,7 +61,8 @@ export default {
     CodeWindow, InformationPanel,
     Notebook, ResourceMonitor, SelectModelModal,
     ViewBoxBtnList, EmptyNavigation,
-    ModelStatus
+    ModelStatus,
+    MiniMapNavigation
     
   },
   mounted() {
@@ -144,6 +146,7 @@ export default {
       showExportNetworkPopup:     state => state.globalView.globalPopup.showExportNetworkPopup,
       showExportNetworkToGitHubPopup:     state => state.globalView.globalPopup.showExportNetworkToGitHubPopup,
       showImportNetworkfromGitHubOrLocalPopup:     state => state.globalView.globalPopup.showImportNetworkfromGitHubOrLocalPopup,
+      isMiniMapNavigatorOpened:   state => state.globalView.isMiniMapNavigatorOpened,
     }),
     
 
@@ -319,6 +322,7 @@ export default {
       GP_showCoreSideSettings:  'globalView/GP_showCoreSideSettings',
       setSelectedMetric:        'mod_statistics/setSelectedMetric',
       setLayerMetrics:          'mod_statistics/setLayerMetrics',
+      setMiniMapNavigationMutation:   'globalView/setMiniMapNavigationMutation',
     }),
     ...mapActions({
       popupConfirm:               'globalView/GP_confirmPopup',

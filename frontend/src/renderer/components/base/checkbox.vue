@@ -1,5 +1,5 @@
 <template lang="pug">
-  label.custom-checkbox(:class="{'v-2': isNewUi}")
+  label.custom-checkbox(:class="{'v-2': isNewUi, 'is-mini-map': isMiniMap}")
     .checkbox-text(v-if="labelPosition==='left'")
       slot
     input(type="checkbox"
@@ -36,6 +36,10 @@ export default {
       type: Boolean,
       default: false,
     },
+    isMiniMap: {
+      type: Boolean,
+      default: false,
+    }
   },
   mounted () {
     this.valueInput = this.value;
@@ -43,6 +47,11 @@ export default {
   data() {
     return {
       valueInput: null
+    }
+  },
+  watch: {
+    value: function (newValue){
+      this.valueInput = newValue;
     }
   },
   methods: {
@@ -141,6 +150,11 @@ export default {
         height: 13px;
         background: #383F50;
         border-radius: 2px;
+      }
+    }
+    &.is-mini-map {
+      .checkbox-fake {
+        background: #23252A;
       }
     }
   }

@@ -397,36 +397,55 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
         return dataset_train, dataset_val, dataset_test
 
     def _build_models(self, graph, element_spec, input_layer_id, label_layer_id, prediction_layer_id, target_layer_id, prediction_var_name, target_var_name):
-        input_tensors = {
-            var_name: tf.keras.Input(shape=element_spec.shape[1:])
-            for var_name, element_spec in element_spec[0].items()
-        }
-        label_tensors = {
-            var_name: tf.keras.Input(shape=element_spec.shape[1:])
-            for var_name, element_spec in element_spec[1].items()
-        }
-
-        layer_output_tensors = {
-            input_layer_id: input_tensors,
-            label_layer_id: label_tensors
-        }
         
-        for dst_node in graph.inner_nodes:
-            inputs = {
-                dst_var: layer_output_tensors[src_node.layer_id][src_var]
-                for src_node, src_var, dst_var in graph.get_input_connections(dst_node)
-            }
-            y = dst_node.layer_instance(
-                inputs,
-                is_training=self._is_training
-            )
-            layer_output_tensors[dst_node.layer_id] = y
+        class PredictionModel(tf.keras.Model):
+            def __init__(self, *args, **kwargs):
+                super().__init__(*args, **kwargs)
+                self.layer_outputs = {}
 
-        prediction_model = tf.keras.Model(inputs=input_tensors, outputs=layer_output_tensors[prediction_layer_id][prediction_var_name])
-        target_model = tf.keras.Model(inputs=label_tensors, outputs=layer_output_tensors[target_layer_id][target_var_name])
+            def call(self, inputs, *args, **kwargs):
+                self.layer_outputs["{{layer_spec.get_prediction_data_layer(graph_spec).sanitized_name}}"] = inputs
+
+                {% filter remove_lspaces(8) %}                
+                    {% for layer_spec in layer_spec.get_prediction_inner_layers(graph_spec): %}
+                        self.layer_outputs["{{layer_spec.sanitized_name}}"] = graph.get_node_by_id("{{layer_spec.sanitized_name}}").layer_instance({
+                        {% filter remove_lspaces(4) -%}                                            
+                            {% for conn in layer_spec.backward_connections: %}
+                                "{{conn.dst_var}}": self.layer_outputs["{{conn.get_src_sanitized_name(graph_spec)}}"]["{{conn.src_var}}"],
+                            {% endfor -%}
+                        {% endfilter %}
+                        })
+                    {% endfor %}
+                {% endfilter %}
+                return self.layer_outputs["{{layer_spec.connection_predictions.get_src_sanitized_name(graph_spec)}}"]["{{layer_spec.connection_predictions.src_var}}"]                
+
+            
+        class TargetModel(tf.keras.Model):
+            def __init__(self, *args, **kwargs):
+                super().__init__(*args, **kwargs)
+                self.layer_outputs = {}
+
+            def call(self, inputs, *args, **kwargs):
+                self.layer_outputs["{{layer_spec.get_target_data_layer(graph_spec).sanitized_name}}"] = inputs
+                
+                {% filter remove_lspaces(8) %}                
+                    {% for layer_spec in layer_spec.get_target_inner_layers(graph_spec): %}
+                        self.layer_outputs["{{layer_spec.sanitized_name}}"] = graph.get_node_by_id("{{layer_spec.sanitized_name}}").layer_instance({                    
+                        {% filter remove_lspaces(4) -%}                                            
+                            {% for conn in layer_spec.backward_connections: %}
+                                "{{conn.dst_var}}": self.layer_outputs["{{conn.get_src_sanitized_name(graph_spec)}}"]["{{conn.src_var}}"],
+                            {% endfor -%}
+                        {% endfilter %}
+                        })
+                    {% endfor %}
+                {% endfilter %}                
+                return self.layer_outputs["{{layer_spec.connection_labels.get_src_sanitized_name(graph_spec)}}"]["{{layer_spec.connection_labels.src_var}}"]
+
+        prediction_model = PredictionModel()
+        target_model = TargetModel()
 
         return prediction_model, target_model
-
+    
     def _dataset_iteration(self, dataset, update_gradients=True):
         loss_fn = tf.keras.losses.MeanSquaredError()
         optimizer = tf.keras.optimizers.SGD(learning_rate=1e-3)
@@ -438,9 +457,11 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
                 predictions_batch = self._prediction_model(inputs_batch, training=update_gradients)
                 targets_batch = self._target_model(labels_batch, training=update_gradients)
                 loss_value = loss_fn(predictions_batch, targets_batch)
-                
-            gradients = tape.gradient(loss_value, weight_tensors)
 
+            self._layer_outputs.update(self._prediction_model.layer_outputs)
+            self._layer_outputs.update(self._target_model.layer_outputs)            
+
+            gradients = tape.gradient(loss_value, weight_tensors)
             if update_gradients:
                 optimizer.apply_gradients(zip(gradients, weight_tensors))
                 

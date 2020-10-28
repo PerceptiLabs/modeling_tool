@@ -44,7 +44,7 @@
           )
           .info-section_head(v-if="statisticsIsOpen || testIsOpen")
             h3 Map
-          perfect-scrollbar.info-section_main.js-info-section_main(
+          perfect-scrollbar#perfect-scrollbar-parent-el.info-section_main.js-info-section_main(
             @wheel="scaleScroll($event)"
             )
             network-field(
@@ -57,7 +57,7 @@
             div(:style="dragBoxHorizontalBottomBorder()")
             div(:style="dragBoxVerticalLeftBorder()")
             div(:style="dragBoxVerticalRightBorder()")
-
+          mini-map-navigation(:scaleNet="scaleNet")
           //- sidebar-layers.layers-sidebar
         code-window(
           v-if="showCodeWindow"

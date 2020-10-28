@@ -64,6 +64,7 @@ $clip-path_indent: $arrows-start_size/2;
   z-index: 4;
   &:before {
     content: 't';
+    color: #eee;
     position: absolute;
     top: 50%;
     left: 50%;

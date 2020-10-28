@@ -9,6 +9,7 @@ from pydantic import BaseModel
 from perceptilabs.utils import stringify
 from perceptilabs.logconf import APPLICATION_LOGGER
 import perceptilabs.layers.specutils as specutils
+from perceptilabs.graph import AbstractGraphSpec
 
 logger = logging.getLogger(APPLICATION_LOGGER)
 
@@ -75,6 +76,18 @@ class LayerConnection(MyBaseModel):
         
     def __hash__(self):
         return hash(self.src_id + self.src_var + self.dst_id + self.dst_var)
+
+    def get_src_sanitized_name(self, graph_spec: AbstractGraphSpec) -> str:
+        """ Looks up the 'sanitized name' of the source layer """
+        return self._get_sanitized_name(self.src_id, graph_spec)        
+
+    def get_dst_sanitized_name(self, graph_spec: AbstractGraphSpec) -> str:
+        """ Looks up the 'sanitized name' of the destination layer """        
+        return self._get_sanitized_name(self.dst_id, graph_spec)
+
+    def _get_sanitized_name(self, layer_id, graph_spec):
+        layer = graph_spec.nodes_by_id.get(layer_id)
+        return layer.sanitized_name if layer is not None else None
     
     
 class LayerSpec(ABC, MyBaseModel):
@@ -237,7 +250,10 @@ class LayerSpec(ABC, MyBaseModel):
     @property
     def sanitized_name(self) -> str:
         """ Name with spaces replaced by underscore, as well as a prepended underscore. Prepended layer type """
-        return self.type_ + sanitize_name(self.name)
+        if self.type_ and self.name:
+            return self.type_ + sanitize_name(self.name)
+        else:
+            return None
 
     def __str__(self):
         return f"{self.__class__.__name__} (name: {self.name}, id: {self.id_}, type: {self.type_})"
@@ -295,16 +311,47 @@ class LayerSpec(ABC, MyBaseModel):
         Some classes can be partially configured. For example, DataData layers whose file paths aren't specified."""
         return self.visited
 
+    @property
+    def is_training_layer(self):
+        return False
+
+    @property
+    def is_data_layer(self):
+        return False
+
+    @property
+    def is_inner_layer(self):
+        return False
+
+    def is_ancestor_to(self, layer_spec, graph_spec):
+        return (layer_spec == self) or (self in graph_spec.get_ancestors(layer_spec))
+    
 
 class InnerLayerSpec(LayerSpec):
     @property
     def should_show_errors(self):
         """ Show errors if visited or if there are outgoing or ingoing connections """
         return super().should_show_errors or len(self.forward_connections) > 0 or len(self.backward_connections) > 0
-            
+    
+    @property
+    def is_inner_layer(self):
+        return True
+
+
+class TrainingLayerSpec(InnerLayerSpec):
+    @property
+    def is_training_layer(self):
+        return True
+
+
+class DataLayerSpec(InnerLayerSpec):
+    @property
+    def is_data_layer(self):
+        return True
     
 
 class DummySpec(LayerSpec):
-    pass
+    def _to_dict_internal(self, dict_: Dict[str, Any]) -> Dict[str, Any]:
+        pass
 
 

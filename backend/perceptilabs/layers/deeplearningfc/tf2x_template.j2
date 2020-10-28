@@ -10,7 +10,7 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
         """ Takes a tensor as input and feeds it forward through a layer of neurons, returning a newtensor."""
         {{ check_input_vars(layer_spec, ['input'])|indent(width=8)}}                
         input_ = inputs['input']
-
+        
         flat_input = tf.keras.layers.Flatten()(input_)
 
         W0 = tf.random.truncated_normal((flat_input.shape[1], self._n_neurons), stddev=0.1)        
