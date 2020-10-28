@@ -94,12 +94,12 @@ function runApp(token, refreshToken){
   localStorage.setItem("vue-refresh-token", refreshToken);
 }
 
-
+export let keycloak;
 function login(){
   let initOptions = {
     url: `${process.env.KEYCLOACK_BASE_URL}/auth`, realm: `${process.env.KEYCLOACK_RELM}`, clientId: `${process.env.KEYCLOACK_CLIENT_ID}`, onLoad:'login-required'
   }
-  let keycloak = Keycloak(initOptions);
+  keycloak = Keycloak(initOptions);
 
   keycloak.init({ onLoad: initOptions.onLoad }).then((auth) =>{
 
