@@ -133,7 +133,10 @@ export default {
             `Exporting failed. <br />${err.userMessage}`:
             `Exporting failed.`
             this.$store.dispatch('globalView/GP_errorPopup', msg)
-        }).finally(() => this.isLoading = false)
+        }).finally(() => {
+          this.isLoading = false;
+          this.$store.dispatch('mod_tracker/EVENT_modelExport', { settings: { Type: 'GitHub' } }, {root: true});
+        });
     },
    }
 }
