@@ -205,11 +205,9 @@ def createDataObject(dataList, typeList=None, styleList=None, nameList=None, sub
     if not nameList:
         nameList = []    
 
-    # if not array, convert
-    dataList = [np.asarray(vec) for vec in dataList]
+    dataList = [np.asarray(vec) for vec in dataList]    # if not array, convert
 
-    # used to make sure all arrays are equal length
-    size = max(map(np.size, dataList))
+    size = max(map(np.size, dataList))                  # used to make sure all arrays are equal length
 
     if size > 1:
         dataList = [vec[0:size] for vec in dataList] 
