@@ -14,6 +14,9 @@ class DataEnvironmentSpec(LayerSpec):
     @classmethod
     def _from_dict_internal(cls, id_: str, dict_: Dict[str, Any], params: Dict[str, Any]) -> LayerSpec:
         params['environment_name'] = dict_['Properties']['accessProperties']['Atari'] + '-v0'
+        params['use_unity'] = dict_['Properties']['use_unity'] if 'use_unity' in dict_['Properties'] else False
+        params['unity_env_path'] = dict_['Properties']['unity_env_path'] if 'unity_env_path' in dict_['Properties'] else None
+        params['timeout_wait'] = dict_['Properties']['timeout_wait'] if 'timeout_wait' in dict_['Properties'] else 30.0
         return cls(**params)
 
     def _to_dict_internal(self, dict_: Dict[str, Any]) -> Dict[str, Any]:
