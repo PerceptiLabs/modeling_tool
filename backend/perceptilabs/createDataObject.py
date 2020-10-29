@@ -1,8 +1,8 @@
 import numpy as np
 import itertools
 
-IMAGE_SUBSAMPLE_SIZE = 25
-SUBSAMPLE_SIZE = 200
+DEFAULT_IMAGE_SUBSAMPLE_SIZE = 25
+DEFAULT_SUBSAMPLE_SIZE = 200
 BAR_LINE_THRESHOLD = 25
 
 TYPE_BAR       = "bar"
@@ -226,17 +226,17 @@ def createDataObject(dataList, typeList=None, styleList=None, nameList=None, sub
             break
 
         if type_ == TYPE_BAR:
-            output = bar(dataVec, SUBSAMPLE_SIZE)
+            output = bar(dataVec, DEFAULT_SUBSAMPLE_SIZE)
         elif type_ == TYPE_LINE:
-            output = line(dataVec, SUBSAMPLE_SIZE)
+            output = line(dataVec, DEFAULT_SUBSAMPLE_SIZE)
         elif type_ == TYPE_RGBA:
-            output = rgb(dataVec, subSampleSize or IMAGE_SUBSAMPLE_SIZE, normalize)
+            output = rgb(dataVec, subSampleSize or DEFAULT_IMAGE_SUBSAMPLE_SIZE, normalize)
         elif type_ == TYPE_GRAYSCALE:
-            output = grayscale(dataVec, subSampleSize or IMAGE_SUBSAMPLE_SIZE)
+            output = grayscale(dataVec, subSampleSize or DEFAULT_IMAGE_SUBSAMPLE_SIZE)
         elif type_ == TYPE_HEATMAP:
-            output = heatmap(dataVec, subSampleSize or IMAGE_SUBSAMPLE_SIZE)
+            output = heatmap(dataVec, subSampleSize or DEFAULT_IMAGE_SUBSAMPLE_SIZE)
         elif type_ == TYPE_SCATTER:
-            output = scatter(dataVec, SUBSAMPLE_SIZE)
+            output = scatter(dataVec, DEFAULT_SUBSAMPLE_SIZE)
         elif type_ == TYPE_PIE:
             output = pie(dataVec)
         else:
