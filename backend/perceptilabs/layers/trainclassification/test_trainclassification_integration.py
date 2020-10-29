@@ -279,6 +279,8 @@ def test_initial_weights_differ(script_factory, temp_path, temp_path_checkpoints
     next(iterator)
     w1 = next(iter(tl1.layer_weights['DeepLearningFC_layer_fc'].values()))
     #tf.reset_default_graph()
+
+    #x= training_layer.layer_biases[fc_layer_id].get('b')
     
     # --- Create a second graph ---
     graph_spec2 = make_graph_spec(
@@ -587,7 +589,7 @@ def test_tf2x_progress_reaches_status_training(script_factory_tf2x, graph_spec_f
     graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec_few_epochs)
     
     training_layer = graph.active_training_node.layer
-    iterator = training_layer.run(graph, mode = 'training') # TODO: self reference is weird. shouldnt be!
+    iterator = training_layer.run(graph, mode = 'training') 
 
     sentinel = object()
     result = None
@@ -607,7 +609,7 @@ def test_tf2x_progress_reaches_status_finished(script_factory_tf2x, graph_spec_f
     graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec_few_epochs)
     
     training_layer = graph.active_training_node.layer
-    iterator = training_layer.run(graph, mode = 'training') # TODO: self reference is weird. shouldnt be!
+    iterator = training_layer.run(graph, mode = 'training') 
 
     sentinel = object()
     result = None
@@ -628,7 +630,7 @@ def test_tf2x_progress_reaches_one(script_factory_tf2x, graph_spec_few_epochs):
     graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec_few_epochs)
     
     training_layer = graph.active_training_node.layer
-    iterator = training_layer.run(graph, mode = 'training') # TODO: self reference is weird. shouldnt be!
+    iterator = training_layer.run(graph, mode = 'training') 
 
     sentinel = object()
     result = None
@@ -648,26 +650,71 @@ def test_tf2x_layer_output_values_set(script_factory_tf2x, graph_spec_few_epochs
     graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec_few_epochs)
     
     training_layer = graph.active_training_node.layer
-    iterator = training_layer.run(graph, mode = 'training') # TODO: self reference is weird. shouldnt be!
+    iterator = training_layer.run(graph, mode='training') 
 
     sentinel = object()
     result = None
 
-    outputs_set = False    
-    while result is not sentinel and not outputs_set:
+    values_set = False    
+    while result is not sentinel and not values_set:
         result = next(iterator, sentinel)
-        outputs_set = all(len(out_dict) > 0 for out_dict in training_layer.layer_outputs.values())
+        values_set = all(len(out_dict) > 0 for out_dict in training_layer.layer_outputs.values())
 
-    assert outputs_set
+    assert values_set
+
+
+@pytest.mark.tf2x            
+def test_tf2x_layer_weights_and_biases_set(script_factory_tf2x, graph_spec_few_epochs):
+    graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec_few_epochs)
     
+    fc_layer_id = graph.nodes[2].layer_id
+    training_layer = graph.active_training_node.layer    
+    iterator = training_layer.run(graph, mode='training') 
+
+    sentinel = object()
+    result = None
+
+    values_set = False    
+    while result is not sentinel and not values_set:
+        result = next(iterator, sentinel)
+
+        values_set = (
+            isinstance(training_layer.layer_weights[fc_layer_id].get('W'), np.ndarray) and
+            isinstance(training_layer.layer_biases[fc_layer_id].get('b'), np.ndarray)
+        )
+
+    assert values_set
+
+
+@pytest.mark.tf2x            
+def test_tf2x_layer_gradients_set(script_factory_tf2x, graph_spec_few_epochs):
+    graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec_few_epochs)
+    
+    fc_layer_id = graph.nodes[2].layer_id
+    training_layer = graph.active_training_node.layer    
+    iterator = training_layer.run(graph, mode='training') 
+
+    sentinel = object()
+    result = None
+
+    values_set = False    
+    while result is not sentinel and not values_set:
+        result = next(iterator, sentinel)
+
+        values_set = (
+            isinstance(training_layer.layer_gradients[fc_layer_id].get('W'), np.ndarray) and
+            isinstance(training_layer.layer_gradients[fc_layer_id].get('b'), np.ndarray)
+        )
+
+    assert values_set
 
 @pytest.mark.skip
 @pytest.mark.tf2x            
 def test_tf2x_convergence(script_factory_tf2x, graph_spec):
-    graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec)
+    graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec, print_code=True)
     
     training_layer = graph.active_training_node.layer
-    iterator = training_layer.run(graph, mode = 'training') # TODO: self reference is weird. shouldnt be!
+    iterator = training_layer.run(graph, mode='training') 
 
     sentinel = object()
     result = None

@@ -25,9 +25,9 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
         
         self._variables = {}
         self._layer_outputs = {}
-        self._layer_weights = {}
-        self._layer_biases = {}        
         self._layer_gradients = {}
+        self._layer_weight_tensors = {}
+        self._layer_biases = {}                
 
         self._training_iteration = 0
         self._validation_iteration = 0
@@ -62,10 +62,10 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
         self._epoch = 0
         while self._epoch < self._n_epochs:
             self._status = 'training'
-            yield from self._dataset_iteration(self._dataset_train)
+            yield from self._dataset_iteration(self._dataset_train, update_weights=True)
             
             self._status = 'validation'            
-            yield from self._dataset_iteration(self._dataset_val, update_gradients=False)
+            yield from self._dataset_iteration(self._dataset_val, update_weights=False)
             
             self._log_epoch_summary()
             self._epoch += 1
@@ -123,9 +123,9 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
         self._headless = True
 
         self._layer_outputs = {} 
-        self._layer_weights = {}
-        self._layer_biases = {}
         self._layer_gradients = {}
+        self._layer_weights = {}
+        self._layer_biases = {}        
 
     def on_headless_deactivate(self) -> None:
         """"Called when the statistics shown in statistics window are needed.
@@ -248,7 +248,7 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
         Returns:
             A dictionary of nested dictionaries, where each key is a layer id. The nested dictionaries contain weight name and value pairs. The values must be picklable.
         """        
-        return self._layer_weights
+        return self._evaluate_nested_tensors(self._layer_weights)
 
     @property
     def layer_biases(self) -> Dict[str, Dict[str, Picklable]]:
@@ -256,8 +256,8 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
 
         Returns:
             A dictionary of nested dictionaries, where each key is a layer id. The nested dictionaries contain weight name and value pairs. The values must be picklable.
-        """        
-        return self._layer_biases
+        """
+        return self._evaluate_nested_tensors(self._layer_biases)        
     
     @property
     def layer_gradients(self) -> Dict[str, Dict[str, Picklable]]:
@@ -266,7 +266,7 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
         Returns:
             A dictionary of nested dictionaries, where each key is a layer id. The nested dictionaries contain gradient name and value pairs. The values must be picklable.
         """        
-        return self._layer_gradients
+        return self._evaluate_nested_tensors(self._layer_gradients)
     
     @property
     def layer_outputs(self) -> Dict[str, Dict[str, Picklable]]:
@@ -402,13 +402,15 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
             def __init__(self, *args, **kwargs):
                 super().__init__(*args, **kwargs)
                 self.layer_outputs = {}
+                self.layer_instances = {}                
 
             def call(self, inputs, *args, **kwargs):
                 self.layer_outputs["{{layer_spec.get_prediction_data_layer(graph_spec).sanitized_name}}"] = inputs
 
                 {% filter remove_lspaces(8) %}                
                     {% for layer_spec in layer_spec.get_prediction_inner_layers(graph_spec): %}
-                        self.layer_outputs["{{layer_spec.sanitized_name}}"] = graph.get_node_by_id("{{layer_spec.sanitized_name}}").layer_instance({
+                        self.layer_instances["{{layer_spec.sanitized_name}}"] = layer_instance = graph.get_node_by_id("{{layer_spec.sanitized_name}}").layer_instance                    
+                        self.layer_outputs["{{layer_spec.sanitized_name}}"] = layer_instance({
                         {% filter remove_lspaces(4) -%}                                            
                             {% for conn in layer_spec.backward_connections: %}
                                 "{{conn.dst_var}}": self.layer_outputs["{{conn.get_src_sanitized_name(graph_spec)}}"]["{{conn.src_var}}"],
@@ -424,13 +426,15 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
             def __init__(self, *args, **kwargs):
                 super().__init__(*args, **kwargs)
                 self.layer_outputs = {}
+                self.layer_instances = {}                                
 
             def call(self, inputs, *args, **kwargs):
                 self.layer_outputs["{{layer_spec.get_target_data_layer(graph_spec).sanitized_name}}"] = inputs
                 
                 {% filter remove_lspaces(8) %}                
                     {% for layer_spec in layer_spec.get_target_inner_layers(graph_spec): %}
-                        self.layer_outputs["{{layer_spec.sanitized_name}}"] = graph.get_node_by_id("{{layer_spec.sanitized_name}}").layer_instance({                    
+                        self.layer_instances["{{layer_spec.sanitized_name}}"] = layer_instance = graph.get_node_by_id("{{layer_spec.sanitized_name}}").layer_instance
+                        self.layer_outputs["{{layer_spec.sanitized_name}}"] = layer_instance({                    
                         {% filter remove_lspaces(4) -%}                                            
                             {% for conn in layer_spec.backward_connections: %}
                                 "{{conn.dst_var}}": self.layer_outputs["{{conn.get_src_sanitized_name(graph_spec)}}"]["{{conn.src_var}}"],
@@ -446,26 +450,64 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
 
         return prediction_model, target_model
     
-    def _dataset_iteration(self, dataset, update_gradients=True):
+    def _dataset_iteration(self, dataset, update_weights=True):
         loss_fn = tf.keras.losses.MeanSquaredError()
-        optimizer = tf.keras.optimizers.SGD(learning_rate=1e-3)
-        
-        weight_tensors = self._prediction_model.trainable_weights + self._target_model.trainable_weights
-        for step, (inputs_batch, labels_batch) in enumerate(dataset):
+        optimizer = tf.keras.optimizers.SGD(learning_rate={{layer_spec.learning_rate}})
 
+        for step, (inputs_batch, labels_batch) in enumerate(dataset):
             with tf.GradientTape() as tape:
-                predictions_batch = self._prediction_model(inputs_batch, training=update_gradients)
-                targets_batch = self._target_model(labels_batch, training=update_gradients)
+                predictions_batch = self._prediction_model(inputs_batch, training=update_weights)
+                targets_batch = self._target_model(labels_batch, training=update_weights)
                 loss_value = loss_fn(predictions_batch, targets_batch)
 
             self._layer_outputs.update(self._prediction_model.layer_outputs)
-            self._layer_outputs.update(self._target_model.layer_outputs)            
+            self._layer_outputs.update(self._target_model.layer_outputs)
 
-            gradients = tape.gradient(loss_value, weight_tensors)
-            if update_gradients:
-                optimizer.apply_gradients(zip(gradients, weight_tensors))
+            self._layer_weights = self._get_trainable_tensors(which='weights')
+            self._layer_biases = self._get_trainable_tensors(which='biases')
+            
+            all_trainables = self._get_trainable_tensors()
+            self._layer_gradients = tape.gradient(loss_value, all_trainables)
+
+            if update_weights:
+                grads_and_vars = zip(self._flatten_dict(self._layer_gradients), self._flatten_dict(all_trainables))
+                optimizer.apply_gradients(grads_and_vars)
                 
             yield YieldLevel.SNAPSHOT
+
+    def _get_trainable_tensors(self, which='all'):
+        trainables_dict = {}
+        for model in [self._prediction_model, self._target_model]:
+            for layer_id, layer_instance in model.layer_instances.items():
+                trainables_dict[layer_id] = {}
+
+                if which in ['weights', 'all']:
+                    for name, tensor in layer_instance.weights.items():
+                        trainables_dict[layer_id][name] = tensor
+
+                if which in ['biases', 'all']:
+                    for name, tensor in layer_instance.biases.items():
+                        trainables_dict[layer_id][name] = tensor
+                        
+        return trainables_dict
+
+    def _evaluate_nested_tensors(self, outer_dict):
+        new_outer = {}
+        for layer_id, inner_dict in outer_dict.items():
+            new_outer[layer_id] = {}
+
+            for tensor_name, tensor in inner_dict.items():
+                new_outer[layer_id][tensor_name] = tensor.numpy()
+                    
+        return new_outer
+        
+    def _flatten_dict(self, dict_):
+        output = []        
+        for layer_id in sorted(dict_.keys()):
+            for tensor_name in sorted(dict_[layer_id].keys()):
+                output.append(dict_[layer_id][tensor_name])
+        return output
+                
 
         
 {% endmacro %}
