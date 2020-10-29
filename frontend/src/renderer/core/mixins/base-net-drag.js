@@ -109,6 +109,10 @@ const baseNetDrag = {
     },
 
     bodyMove(ev) {
+      if(this.getIsWorkspaceDragEvent) {
+        return;
+      }
+
       if(!this.isFewItemsSelected() && !this.itemWasDragged) {
         this.updateDragBoxContainerMutation({
           isVisible: true,
@@ -240,7 +244,10 @@ const baseNetDrag = {
         left: this.left,
         top: this.top,
       }
-    }
+    },
+    ...mapGetters({
+      getIsWorkspaceDragEvent: 'mod_events/getIsWorkspaceDragEvent',
+    }),
   },
 
   watch: {

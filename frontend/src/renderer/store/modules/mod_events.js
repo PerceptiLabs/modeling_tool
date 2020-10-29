@@ -42,8 +42,15 @@ const state = {
       nextSampleClick: 0
     }
   },
-  isEnableCustomHotKey: true
+  isEnableCustomHotKey: true,
+  isWorkspaceDragEvent: false,
 };
+
+const getters = {
+  getIsWorkspaceDragEvent(state) {
+    return state.isWorkspaceDragEvent;
+  }
+}
 
 const mutations = {
   set_eventIOGenerate(state){
@@ -70,6 +77,9 @@ const mutations = {
   set_enableCustomHotKey(state, value) {
     state.isEnableCustomHotKey = value
   },
+  set_isWorkspaceDragEvent(state, value) {
+    state.isWorkspaceDragEvent = value;
+  }
 };
 const actions = {
   EVENT_IOGenerateAction(ctx){
@@ -480,6 +490,7 @@ const actions = {
 };
 
 export default {
+  getters,
   namespaced,
   state,
   mutations,
