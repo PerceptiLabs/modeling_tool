@@ -44,7 +44,7 @@
           )
           .info-section_head(v-if="statisticsIsOpen || testIsOpen")
             h3 Map
-          perfect-scrollbar#perfect-scrollbar-parent-el.info-section_main.js-info-section_main(
+          perfect-scrollbar.info-section_main.js-info-section_main(
             @wheel="scaleScroll($event)"
             id="networkWorkspace"
             )

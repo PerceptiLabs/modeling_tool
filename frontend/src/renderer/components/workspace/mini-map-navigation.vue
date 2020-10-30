@@ -64,7 +64,7 @@
         setTimeout(() => this.updateAllStyles())
       },
       netPosition(currentValues, prevValues) {
-        const parentWorkspace = document.getElementById('perfect-scrollbar-parent-el');
+        const parentWorkspace = document.getElementById('networkWorkspace');
         const { offsetWidth, scrollHeight, offsetHeight } = parentWorkspace;
         
         const previousMaxWidth = Math.max(...prevValues.map(itm => itm[1]));
@@ -96,12 +96,12 @@
       this.updateWorkspaceMiniMapWrapperStyling();
       this.updateBoxOutlineStyles();
       setTimeout(() => this.updateAllStyles());
-      document.getElementById('perfect-scrollbar-parent-el').addEventListener('scroll', this.updateBoxOutlineStyles);
+      document.getElementById('networkWorkspace').addEventListener('scroll', this.updateBoxOutlineStyles);
       window.addEventListener('resize', this.updateBoxOutlineStyles);
       
     },
     destroyed() {
-      document.getElementById('perfect-scrollbar-parent-el').removeEventListener('scroll', this.updateBoxOutlineStyles);
+      document.getElementById('networkWorkspace').removeEventListener('scroll', this.updateBoxOutlineStyles);
       window.removeEventListener('resize', this.updateBoxOutlineStyles);
       clearTimeout(this.updateAllStyles);
     },
@@ -179,7 +179,7 @@
       minMapToMapPosition(e) {
         const { offsetX, offsetY } = e;
         const { w, height, width } = this.getScaleForMiniMap();
-        const parentWorkspace = document.getElementById('perfect-scrollbar-parent-el');
+        const parentWorkspace = document.getElementById('networkWorkspace');
         const { scrollWidth, offsetWidth, scrollHeight, offsetHeight } = parentWorkspace;
         const leftClickInPercent = offsetX / (width / 100);
         const topClickInPercent = offsetY / (height / 100);
@@ -197,7 +197,7 @@
         const { w, h, height } = this.getScaleForMiniMap();
         let scale = this.scaleNet / 100;
 
-        const parentWorkspace = document.getElementById('perfect-scrollbar-parent-el');
+        const parentWorkspace = document.getElementById('networkWorkspace');
         const { scrollWidth, offsetWidth, scrollLeft, scrollHeight, offsetHeight, scrollTop } = parentWorkspace;
         const shouldShowBox = scrollWidth <= offsetWidth && scrollHeight <= offsetHeight;
         this.boxOutlineStyles = {

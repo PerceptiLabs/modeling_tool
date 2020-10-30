@@ -41,11 +41,13 @@ const workspaceDrag = {
     },
     onMouseMove(ev) {
       ev.preventDefault();
+
+      const networkWorkspace = document.getElementById('networkWorkspace');
+
       if(!this.isDragInitialCordSetted) {
         if(!this.getIsWorkspaceDragEvent) {
           this.$store.commit('mod_events/set_isWorkspaceDragEvent', true);
         }
-        const networkWorkspace = document.getElementById('networkWorkspace');
         this.setInitailDragPosition(ev.clientX, ev.clientY);
         this.initialScrollLeft = networkWorkspace.scrollLeft;
         this.initialScrollTop = networkWorkspace.scrollTop;
