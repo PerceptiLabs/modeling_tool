@@ -13,11 +13,17 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
         
         flat_input = tf.keras.layers.Flatten()(input_)
 
-        W0 = tf.random.truncated_normal((flat_input.shape[1], self._n_neurons), stddev=0.1)        
-        W = tf.Variable(initial_value=W0)
+        {# Workaround to prevent re-creating weights@call. Fix w/ keras.layers.Layer. #}            
+        if not hasattr(self, 'W'):
+            W0 = tf.random.truncated_normal((flat_input.shape[1], self._n_neurons), stddev=0.1)
+            self.W = tf.Variable(initial_value=W0)
+        W = self.W
 
-        b0 = tf.constant(0.0, shape=self._n_neurons, dtype=tf.float32)        
-        b = tf.Variable(initial_value=b0)
+        {# Workaround to prevent re-creating weights@call. Fix w/ keras.layers.Layer. #}
+        if not hasattr(self, 'b'):        
+            b0 = tf.constant(0.0, shape=[self._n_neurons], dtype=tf.float32)        
+            self.b = tf.Variable(initial_value=b0)
+        b = self.b
         
         y = tf.matmul(flat_input, W) + b
         {{ activation_function(layer_spec.activation, 'y') }}

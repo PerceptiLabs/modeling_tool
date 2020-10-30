@@ -3,6 +3,7 @@ import saveNet    from './workspace-save-net.js'
 import scaleNet   from './workspace-scale.js'
 import spinnerNet from './workspace-spinner.js'
 import helpersNet from './workspace-helpers.js'
+import dragNet    from './workspace-drag.js'
 import {debounce} from '@/core/helpers'
 import { 
   TRACKER_SCREENNAME_WORKSPACE,
@@ -50,7 +51,7 @@ import { saveModelJson as fileserver_saveModelJson } from '@/core/apiFileserver'
 
 export default {
   name: 'WorkspaceContent',
-  mixins: [saveNet, scaleNet, spinnerNet, helpersNet],
+  mixins: [saveNet, scaleNet, spinnerNet, helpersNet, dragNet],
   components: {
     WorkspaceToolbar, StatisticsToolbar,
     NetworkField, TextEditable,
@@ -127,6 +128,7 @@ export default {
       emptyNavigationMode:'mod_empty-navigation/getEmptyScreenMode',
       isTraining:         'mod_workspace/GET_networkIsTraining',
       currentNetwork:     'mod_workspace/GET_currentNetwork',
+      getIsWorkspaceDragEvent: 'mod_events/getIsWorkspaceDragEvent',
     }),
     ...mapState({
       showNewModelPopup:          state => state.globalView.globalPopup.showNewModelPopup,

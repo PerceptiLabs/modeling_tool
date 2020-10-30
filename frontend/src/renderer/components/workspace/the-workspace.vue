@@ -14,7 +14,7 @@
     .workspace_content.bookmark_content.js-workspace.blue-border(
       v-show="!isNotebookMode && emptyNavigationMode==0"  
       ref="workspaceNet"
-      :class="{'workspace-relative' : showTrainingSpinner, 'open-statistics': statisticsIsOpen}"
+      :class="{'workspace-relative' : showTrainingSpinner, 'open-statistics': statisticsIsOpen, 'is-drag-active': getIsWorkspaceDragEvent}"
       )
       .network(
         v-if="indexCurrentNetwork === i"
@@ -46,6 +46,7 @@
             h3 Map
           perfect-scrollbar#perfect-scrollbar-parent-el.info-section_main.js-info-section_main(
             @wheel="scaleScroll($event)"
+            id="networkWorkspace"
             )
             network-field(
               ref="networkField"
@@ -190,7 +191,9 @@
     display: flex;
     flex: 1 1 100%;
     overflow: hidden;
-
+    &.is-drag-active {
+      cursor: grab;
+    }
     &.open-statistics {
       z-index: 3;      
       background: transparent;

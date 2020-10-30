@@ -66,6 +66,9 @@ class GraphSpec(AbstractGraphSpec):
         
         return self.nodes_by_id[key]
 
+    def get_layer_by_sanitized_name(self, sanitized_name):
+        return self.nodes_by_sanitized_name[sanitized_name]
+
     def get_successors(self, layer_spec: LayerSpec):
         """ Get all nodes directly connected from layer_spec """                
         return [self.__getitem__(id_) for id_ in self._nx_graph.successors(layer_spec.id_)]

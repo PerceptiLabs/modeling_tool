@@ -27,6 +27,7 @@
           @mouseenter="mouseOver(element)"
           @mouseleave="mouseOut"
           @click="onLayerClick($event, element)"
+          @mousedown="onLayerClick($event, element)"
           :style="[calcLayerItemStyle(element, layer.color)]"
           :data-tutorial-target="element === 'DataData' ? 'tutorial-workspace-layer-data' : ''"
           ref="referenceMenuItem"
@@ -237,7 +238,7 @@ export default {
     onLayerClick(event, elementName) {
       // This function handles the magic of cloning and setting up event listeners
       if (this.clickedElementName) {  return; }
-      
+
       this.cloneElement(elementName);
       this.setClonedElementStyle();
       this.setupClickDropFunctionality();
@@ -343,6 +344,7 @@ export default {
       document.body.removeChild(this.clonedElement);
       this.clickedElementName = null;
       this.clonedElement = null;
+      this.handleFocusOut();
     },
     showElementsInLayer(layer) {
       if (layer.tooltip !== 'Data') {

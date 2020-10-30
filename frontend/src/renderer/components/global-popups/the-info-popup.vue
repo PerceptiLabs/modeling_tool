@@ -27,11 +27,9 @@
                 | For more information, visit &nbsp;
                 a.btn.btn--link.text-primary(target="_blank" href="https://perceptilabs.com/docs/installation") https://perceptilabs.com/docs/installation
             ul.w-100(v-else)
-              perfect-scrollbar(
-                tag="li"
-                v-for="(text, i) in popupText"
-                :key="i"
-                ) {{ text }}
+              perfect-scrollbar(style="max-height: 30vh")
+                div(v-for="(text, i) in popupText" :key="i") 
+                  p(style="white-space: break-spaces") {{ text }}
 
           .popup_clipboard(v-if="!coreNotFoundPopup")
             button.btn.btn--icon.icon.icon-clipboard-add(type="button"

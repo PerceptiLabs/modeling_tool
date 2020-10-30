@@ -135,10 +135,13 @@ class ClassificationLayerReplica(ClassificationLayer):
     def __init__(self, sample, size_training, size_validation, size_testing, variables,
                  accuracy_training, accuracy_testing, accuracy_validation,
                  loss_training, loss_testing, loss_validation,
+                 auc_training, auc_validation,
                  status, layer_weights, layer_biases, layer_gradients, layer_outputs,
                  batch_size, training_iteration, validation_iteration,
                  testing_iteration, progress, epoch, export_modes, columns):
 
+        self._auc_training = auc_training
+        self._auc_validation = auc_validation
         self._export_modes = export_modes
         self._epoch = epoch
         self._sample = sample
@@ -221,7 +224,15 @@ class ClassificationLayerReplica(ClassificationLayer):
     @property
     def loss_validation(self):
         return self._loss_validation
-        
+
+    @property
+    def auc_training(self):
+        return self._auc_training
+
+    @property
+    def auc_validation(self):
+        return self._auc_validation
+            
     @property
     def status(self):
         return self._status

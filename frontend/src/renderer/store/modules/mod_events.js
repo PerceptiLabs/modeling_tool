@@ -1,4 +1,5 @@
 import router         from "@/router";
+import { keycloak }   from '@/main.js';
 import {
   filePCRead,
   isWeb,
@@ -41,8 +42,15 @@ const state = {
       nextSampleClick: 0
     }
   },
-  isEnableCustomHotKey: true
+  isEnableCustomHotKey: true,
+  isWorkspaceDragEvent: false,
 };
+
+const getters = {
+  getIsWorkspaceDragEvent(state) {
+    return state.isWorkspaceDragEvent;
+  }
+}
 
 const mutations = {
   set_eventIOGenerate(state){
@@ -69,6 +77,9 @@ const mutations = {
   set_enableCustomHotKey(state, value) {
     state.isEnableCustomHotKey = value
   },
+  set_isWorkspaceDragEvent(state, value) {
+    state.isWorkspaceDragEvent = value;
+  }
 };
 const actions = {
   EVENT_IOGenerateAction(ctx){
@@ -195,6 +206,7 @@ const actions = {
     commit('set_saveNetworkAs');
   },
   EVENT_logOut({commit, dispatch}, isSendLogout = true) {
+    if(isSendLogout) keycloak.logout();
 
     // setting to -1 and then removing because the project.vue component isn't recreated here
     // this means that selecting the same project won't make it fetch models
@@ -478,6 +490,7 @@ const actions = {
 };
 
 export default {
+  getters,
   namespaced,
   state,
   mutations,

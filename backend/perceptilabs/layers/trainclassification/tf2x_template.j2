@@ -7,27 +7,20 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
             
         self._n_epochs = {{layer_spec.n_epochs}}
         self._batch_size = {{layer_spec.batch_size}}
-        self._target_acc = {{layer_spec.target_acc}}
-        self._stop_condition = '{{layer_spec.stop_condition}}'
 
         self._stopped = False
         self._paused = False
         self._headless = False
         self._status = 'created'
-        
-        self._loss_training = 0.0
-        self._loss_validation = 0.0
+
+        self._accuracy_testing = 0.0
         self._loss_testing = 0.0      
 
-        self._accuracy_training = 0.0
-        self._accuracy_validation = 0.0
-        self._accuracy_testing = 0.0      
-        
         self._variables = {}
         self._layer_outputs = {}
-        self._layer_weights = {}
-        self._layer_biases = {}        
         self._layer_gradients = {}
+        self._layer_weight_tensors = {}
+        self._layer_biases = {}                
 
         self._training_iteration = 0
         self._validation_iteration = 0
@@ -56,22 +49,51 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
             input_layer_id, label_layer_id, prediction_layer_id, target_layer_id, prediction_var_name, target_var_name
         )
 
+        self._metric_training_loss = tf.keras.metrics.Mean()
+        self._metric_training_accuracy = tf.keras.metrics.CategoricalAccuracy()
+        self._metric_validation_loss = tf.keras.metrics.Mean()
+        self._metric_validation_accuracy = tf.keras.metrics.CategoricalAccuracy()
+        self._metric_training_auc = tf.keras.metrics.AUC(curve='ROC')
+        self._metric_validation_auc = tf.keras.metrics.AUC(curve='ROC')        
+        
     def train(self, graph: Graph):
         """Training is done when this function is called. Once the training ends, checkpoint files are saved.
         """
-        self._epoch = 0
-        while self._epoch < self._n_epochs:
+        for self._epoch in range(self._n_epochs):
             self._status = 'training'
-            yield from self._dataset_iteration(self._dataset_train)
+            yield from self._dataset_iteration(
+                self._dataset_train,
+                self._metric_training_loss,
+                self._metric_training_accuracy,
+                self._metric_training_auc,
+                self._set_training_iteration,
+                update_weights=True
+            )
             
             self._status = 'validation'            
-            yield from self._dataset_iteration(self._dataset_val, update_gradients=False)
+            yield from self._dataset_iteration(
+                self._dataset_val,
+                self._metric_validation_loss,
+                self._metric_validation_accuracy,
+                self._metric_validation_auc,                
+                self._set_validation_iteration,
+                update_weights=False
+            )
             
             self._log_epoch_summary()
-            self._epoch += 1
-
+            {% filter if_true(layer_spec.early_stopping_enabled, remove_left_spaces=4) %}
+                if self._should_stop_early():
+                    break
+            {% endfilter %}
+            
         self._status = 'finished'
         yield YieldLevel.SNAPSHOT
+
+    def _set_training_iteration(self, value):
+        self._training_iteration = value
+
+    def _set_validation_iteration(self, value):
+        self._validation_iteration = value
         
     def _log_epoch_summary(self):
         log.info(
@@ -123,9 +145,9 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
         self._headless = True
 
         self._layer_outputs = {} 
-        self._layer_weights = {}
-        self._layer_biases = {}
         self._layer_gradients = {}
+        self._layer_weights = {}
+        self._layer_biases = {}        
 
     def on_headless_deactivate(self) -> None:
         """"Called when the statistics shown in statistics window are needed.
@@ -176,7 +198,7 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
     @property
     def sample(self) -> Dict[str, Dict[str, Picklable]]:
         """Returns a single data sample"""
-        sample = {'output': np.array(self._accuracy_training)}        
+        sample = {'output': np.array(self.accuracy_training)}        
         return sample
 
     @property
@@ -213,13 +235,13 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
 
     @property
     def accuracy_training(self) -> float:
-        """Returns the current accuracy of the training phase"""        
-        return self._accuracy_training
+        """Returns the current accuracy of the training phase"""
+        return self._metric_training_accuracy.result().numpy()
     
     @property
     def accuracy_validation(self) -> float:
-        """Returns the current accuracy of the validation phase"""                
-        return self._accuracy_validation
+        """Returns the current accuracy of the validation phase"""
+        return self._metric_validation_accuracy.result().numpy()
 
     @property
     def accuracy_testing(self) -> float:
@@ -229,17 +251,27 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
     @property
     def loss_training(self) -> float:
         """Returns the current loss of the training phase"""                
-        return self._loss_training        
+        return self._metric_training_loss.result().numpy()
 
     @property
     def loss_validation(self) -> float:
         """Returns the current loss of the validation phase"""                        
-        return self._loss_validation        
+        return self._metric_validation_loss.result().numpy()
 
     @property
     def loss_testing(self) -> float:
         """Returns the current loss of the testing phase"""                
         return self._loss_testing
+
+    @property
+    def auc_training(self) -> float:
+        """Returns the current AUC of the training phase"""                
+        return self._metric_training_auc.result().numpy()
+
+    @property
+    def auc_validation(self) -> float:
+        """Returns the current AUC of the validation phase"""                
+        return self._metric_validation_auc.result().numpy()    
 
     @property
     def layer_weights(self) -> Dict[str, Dict[str, Picklable]]:
@@ -248,7 +280,7 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
         Returns:
             A dictionary of nested dictionaries, where each key is a layer id. The nested dictionaries contain weight name and value pairs. The values must be picklable.
         """        
-        return self._layer_weights
+        return self._evaluate_nested_tensors(self._layer_weights)
 
     @property
     def layer_biases(self) -> Dict[str, Dict[str, Picklable]]:
@@ -256,8 +288,8 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
 
         Returns:
             A dictionary of nested dictionaries, where each key is a layer id. The nested dictionaries contain weight name and value pairs. The values must be picklable.
-        """        
-        return self._layer_biases
+        """
+        return self._evaluate_nested_tensors(self._layer_biases)        
     
     @property
     def layer_gradients(self) -> Dict[str, Dict[str, Picklable]]:
@@ -266,7 +298,7 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
         Returns:
             A dictionary of nested dictionaries, where each key is a layer id. The nested dictionaries contain gradient name and value pairs. The values must be picklable.
         """        
-        return self._layer_gradients
+        return self._evaluate_nested_tensors(self._layer_gradients)
     
     @property
     def layer_outputs(self) -> Dict[str, Dict[str, Picklable]]:
@@ -301,7 +333,7 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
         """        
         n_iterations_per_epoch = np.ceil(self.size_training / self.batch_size) + \
                                  np.ceil(self.size_validation / self.batch_size)
-        n_iterations_total = self._n_epochs * n_iterations_per_epoch
+        n_iterations_total = (self._n_epochs - 1) * n_iterations_per_epoch
 
         iteration = self.epoch * n_iterations_per_epoch + \
                     self.training_iteration + self.validation_iteration
@@ -310,23 +342,23 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
         return progress
 
     def _get_io_layer_ids(self, graph):
-        {% filter remove_lspaces(8) %}
-            {% if layer_spec.connection_predictions is not none %}
-                output_layer_id = "{{graph_spec.nodes_by_id[layer_spec.connection_predictions.src_id].sanitized_name}}"
-                output_var_name = "{{layer_spec.connection_predictions.src_var}}"
-            {% else %}
-                output_layer_id = None
-                output_var_name = None                
-            {% endif %}
+        {% filter if_true(layer_spec.get_connection_predictions() is not none, remove_left_spaces=4) %}
+            output_layer_id = "{{graph_spec.nodes_by_id[layer_spec.get_connection_predictions().src_id].sanitized_name}}"
+            output_var_name = "{{layer_spec.get_connection_predictions().src_var}}"
         {% endfilter %}
-        {% filter remove_lspaces(8) %}
-            {% if layer_spec.connection_labels is not none %}
-                target_layer_id = "{{graph_spec.nodes_by_id[layer_spec.connection_labels.src_id].sanitized_name}}"
-                target_var_name = "{{layer_spec.connection_predictions.src_var}}"                
-            {% else %}
-                target_layer_id = None
-                target_var_name = None                
-            {% endif %}
+        {% filter if_true(layer_spec.get_connection_predictions() is none, remove_left_spaces=4) %}        
+            output_layer_id = None
+            output_var_name = None                
+        {% endfilter %}
+        {% filter if_true(layer_spec.get_connection_labels() is not none, remove_left_spaces=4) %}
+        
+            target_layer_id = "{{graph_spec.nodes_by_id[layer_spec.get_connection_labels().src_id].sanitized_name}}"
+            target_var_name = "{{layer_spec.get_connection_predictions().src_var}}"                
+        {% endfilter %}
+        {% filter if_true(layer_spec.get_connection_labels() is none, remove_left_spaces=4) %}
+        
+            target_layer_id = None
+            target_var_name = None                
         {% endfilter %}
 
         input_data_nodes = graph.get_direct_data_nodes(output_layer_id)
@@ -402,13 +434,15 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
             def __init__(self, *args, **kwargs):
                 super().__init__(*args, **kwargs)
                 self.layer_outputs = {}
+                self.layer_instances = {}                
 
             def call(self, inputs, *args, **kwargs):
                 self.layer_outputs["{{layer_spec.get_prediction_data_layer(graph_spec).sanitized_name}}"] = inputs
 
                 {% filter remove_lspaces(8) %}                
                     {% for layer_spec in layer_spec.get_prediction_inner_layers(graph_spec): %}
-                        self.layer_outputs["{{layer_spec.sanitized_name}}"] = graph.get_node_by_id("{{layer_spec.sanitized_name}}").layer_instance({
+                        self.layer_instances["{{layer_spec.sanitized_name}}"] = layer_instance = graph.get_node_by_id("{{layer_spec.sanitized_name}}").layer_instance                    
+                        self.layer_outputs["{{layer_spec.sanitized_name}}"] = layer_instance({
                         {% filter remove_lspaces(4) -%}                                            
                             {% for conn in layer_spec.backward_connections: %}
                                 "{{conn.dst_var}}": self.layer_outputs["{{conn.get_src_sanitized_name(graph_spec)}}"]["{{conn.src_var}}"],
@@ -417,20 +451,22 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
                         })
                     {% endfor %}
                 {% endfilter %}
-                return self.layer_outputs["{{layer_spec.connection_predictions.get_src_sanitized_name(graph_spec)}}"]["{{layer_spec.connection_predictions.src_var}}"]                
+                return self.layer_outputs["{{layer_spec.get_connection_predictions().get_src_sanitized_name(graph_spec)}}"]["{{layer_spec.get_connection_predictions().src_var}}"]                
 
             
         class TargetModel(tf.keras.Model):
             def __init__(self, *args, **kwargs):
                 super().__init__(*args, **kwargs)
                 self.layer_outputs = {}
+                self.layer_instances = {}                                
 
             def call(self, inputs, *args, **kwargs):
                 self.layer_outputs["{{layer_spec.get_target_data_layer(graph_spec).sanitized_name}}"] = inputs
                 
                 {% filter remove_lspaces(8) %}                
                     {% for layer_spec in layer_spec.get_target_inner_layers(graph_spec): %}
-                        self.layer_outputs["{{layer_spec.sanitized_name}}"] = graph.get_node_by_id("{{layer_spec.sanitized_name}}").layer_instance({                    
+                        self.layer_instances["{{layer_spec.sanitized_name}}"] = layer_instance = graph.get_node_by_id("{{layer_spec.sanitized_name}}").layer_instance
+                        self.layer_outputs["{{layer_spec.sanitized_name}}"] = layer_instance({                    
                         {% filter remove_lspaces(4) -%}                                            
                             {% for conn in layer_spec.backward_connections: %}
                                 "{{conn.dst_var}}": self.layer_outputs["{{conn.get_src_sanitized_name(graph_spec)}}"]["{{conn.src_var}}"],
@@ -439,33 +475,98 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
                         })
                     {% endfor %}
                 {% endfilter %}                
-                return self.layer_outputs["{{layer_spec.connection_labels.get_src_sanitized_name(graph_spec)}}"]["{{layer_spec.connection_labels.src_var}}"]
+                return self.layer_outputs["{{layer_spec.get_connection_labels().get_src_sanitized_name(graph_spec)}}"]["{{layer_spec.get_connection_labels().src_var}}"]
 
         prediction_model = PredictionModel()
         target_model = TargetModel()
 
         return prediction_model, target_model
     
-    def _dataset_iteration(self, dataset, update_gradients=True):
+    def _dataset_iteration(self, dataset, metric_loss, metric_accuracy, metric_auc, iteration_setter, update_weights=True):        
         loss_fn = tf.keras.losses.MeanSquaredError()
-        optimizer = tf.keras.optimizers.SGD(learning_rate=1e-3)
-        
-        weight_tensors = self._prediction_model.trainable_weights + self._target_model.trainable_weights
-        for step, (inputs_batch, labels_batch) in enumerate(dataset):
+        optimizer = tf.keras.optimizers.SGD(learning_rate={{layer_spec.learning_rate}})
 
+        metric_loss.reset_states()
+        metric_accuracy.reset_states()
+        metric_auc.reset_states()
+        metric_accuracy.reset_states()        
+
+        for step, (inputs_batch, labels_batch) in enumerate(dataset):
+            iteration_setter(step)
             with tf.GradientTape() as tape:
-                predictions_batch = self._prediction_model(inputs_batch, training=update_gradients)
-                targets_batch = self._target_model(labels_batch, training=update_gradients)
+                predictions_batch = self._prediction_model(inputs_batch, training=update_weights)
+                targets_batch = self._target_model(labels_batch, training=update_weights)
                 loss_value = loss_fn(predictions_batch, targets_batch)
 
-            self._layer_outputs.update(self._prediction_model.layer_outputs)
-            self._layer_outputs.update(self._target_model.layer_outputs)            
+            metric_loss.update_state(loss_value)
+            metric_accuracy.update_state(targets_batch, predictions_batch)
+            metric_auc.update_state(targets_batch, predictions_batch)
+            metric_accuracy.update_state(predictions_batch, targets_batch)
 
-            gradients = tape.gradient(loss_value, weight_tensors)
-            if update_gradients:
-                optimizer.apply_gradients(zip(gradients, weight_tensors))
+            self._layer_outputs.update(self._prediction_model.layer_outputs)
+            self._layer_outputs.update(self._target_model.layer_outputs)
+
+            self._layer_weights = self._get_trainable_tensors(which='weights')
+            self._layer_biases = self._get_trainable_tensors(which='biases')
+            
+            all_trainables = self._get_trainable_tensors()
+            self._layer_gradients = tape.gradient(loss_value, all_trainables)
+
+            if update_weights:
+                grads_and_vars = zip(self._flatten_dict(self._layer_gradients), self._flatten_dict(all_trainables))
+                optimizer.apply_gradients(grads_and_vars)
                 
             yield YieldLevel.SNAPSHOT
+
+    def _get_trainable_tensors(self, which: str='all') -> Dict[str, Dict[str, tf.Tensor]]:
+        """ Get trainable tensors from any/all of the models """
+        trainables_dict = {}
+        for model in [self._prediction_model, self._target_model]:
+            for layer_id, layer_instance in model.layer_instances.items():
+                trainables_dict[layer_id] = {}
+
+                if which in ['weights', 'all']:
+                    for name, tensor in layer_instance.weights.items():
+                        trainables_dict[layer_id][name] = tensor
+
+                if which in ['biases', 'all']:
+                    for name, tensor in layer_instance.biases.items():
+                        trainables_dict[layer_id][name] = tensor
+                        
+        return trainables_dict
+
+    def _evaluate_nested_tensors(self, outer_dict: Dict[str, Dict[str, tf.Tensor]]) -> Dict[str, Dict[str, np.ndarray]]:
+        """ Evaluate tensors in a nested dictionary """
+        new_outer = {}
+        for layer_id, inner_dict in outer_dict.items():
+            new_outer[layer_id] = {}
+
+            for tensor_name, tensor in inner_dict.items():
+                new_outer[layer_id][tensor_name] = tensor.numpy()
+                    
+        return new_outer
+        
+    def _flatten_dict(self, dict_: Dict[str, Dict[str, tf.Tensor]]) -> List[tf.Tensor]:
+        """ Flatten a nested dictionary into a list """
+        output = []        
+        for layer_id in sorted(dict_.keys()):
+            for tensor_name in sorted(dict_[layer_id].keys()):
+                output.append(dict_[layer_id][tensor_name])
+        return output
+    
+    {% filter if_true(layer_spec.early_stopping_enabled, remove_left_spaces=4) %}    
+        def _should_stop_early(self) -> bool:
+            """ Conditions for early stopping. Returns true if any condition is met """
+            {% filter if_true(layer_spec.stop_condition == "TargetAccuracy", remove_left_spaces=4) %}
+                target_accuracy = {{layer_spec.target_acc}}
+                if self.accuracy_training * 100 >= target_accuracy:
+                    log.info(f"Early stopping: accuracy {self.accuracy_training*100:.2f}% >= {target_accuracy*100}%")
+                    return True
+            {% endfilter %}                
+            return False
+    {% endfilter %}
+        
+                
 
         
 {% endmacro %}

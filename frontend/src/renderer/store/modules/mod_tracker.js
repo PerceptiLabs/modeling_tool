@@ -117,16 +117,18 @@ const actions = {
       // Circular dependencies or large payload will trigger the error
     }
   },
-  EVENT_modelExport({}, data) {
+  EVENT_modelExport({}, { settings }) {
 
     const payload = {};
 
-    if (data.settings.Type == 'TFModel' && data.settings.Compressed) {
+    if (settings.Type == 'TFModel' && settings.Compressed) {
       payload['Type'] = 'tensorflow-compressed';
-    } else if (data.settings.Type == 'TFModel' && !data.settings.Compressed) {
+    } else if (settings.Type == 'TFModel' && !settings.Compressed) {
       payload['Type'] = 'tensorflow';
-    } else if (data.settings.Type == 'ipynb') {
+    } else if (settings.Type == 'ipynb') {
       payload['Type'] = 'notebook';
+    } else if (settings.Type == 'GitHub') {
+      payload['Type'] = 'GitHub';
     }
 
     mixPanel.track('Model Export', payload);

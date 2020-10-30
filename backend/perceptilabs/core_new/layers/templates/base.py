@@ -45,6 +45,7 @@ class J2Engine:
 
         self._jenv.filters['remove_lspaces'] = self.remove_lspaces
         self._jenv.filters['call_macro'] = self.call_macro
+        self._jenv.filters['if_true'] = self.if_true        
         self._verbose = verbose
 
     @property
@@ -56,6 +57,23 @@ class J2Engine:
     def call_macro(context, macro_name, *args, **kwargs):
         #import pdb;pdb.set_trace()                
         return context.vars[macro_name](*args, **kwargs)
+
+    @staticmethod
+    def if_true(text, condition, remove_left_spaces=0):
+        if not condition:
+            return ''
+        
+        new_text = ''
+        lines = text.split('\n')
+
+        for lineno, line in enumerate(lines):
+            last = '\n' if lineno < len(lines) - 1 else ''
+            if line.startswith(' '*remove_left_spaces):
+                new_text += line[remove_left_spaces:] + last
+            else:
+                new_text += line + last
+                
+        return new_text
 
     @staticmethod
     def remove_lspaces(text, count):

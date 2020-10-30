@@ -30,7 +30,7 @@ def script_factory_tf2x():
     yield ScriptFactory(mode='tf2x')
     
 
-def make_graph_spec(temp_path_checkpoints, inputs_path, targets_path, learning_rate=0.3, checkpoint_path=None, distributed=False, n_epochs=200): # TODO: fix checkpoint path. it can't be none
+def make_graph_spec(temp_path_checkpoints, inputs_path, targets_path, learning_rate=0.3, checkpoint_path=None, distributed=False, n_epochs=200, early_stopping=False): # TODO: fix checkpoint path. it can't be none
     
     if checkpoint_path is None:
         checkpoint_path = temp_path_checkpoints
@@ -84,7 +84,9 @@ def make_graph_spec(temp_path_checkpoints, inputs_path, targets_path, learning_r
         load_checkpoint = True,
         backward_connections=(conn_labels_to_train, conn_fc_to_train),
         connection_labels=conn_labels_to_train,
-        connection_predictions=conn_fc_to_train
+        connection_predictions=conn_fc_to_train,
+        stop_condition='TargetAccuracy' if early_stopping else 'Epochs',
+        target_acc=50 if early_stopping else None
     )
 
     graph_spec = GraphSpec([
@@ -102,6 +104,17 @@ def graph_spec(temp_path, temp_path_checkpoints):
         temp_path_checkpoints, 
         os.path.join(temp_path, '16x4_inputs.npy'),
         os.path.join(temp_path, '16x4_targets.npy')
+    )        
+    yield graph_spec
+
+    
+@pytest.fixture()
+def graph_spec_early_stopping(temp_path, temp_path_checkpoints):
+    graph_spec = make_graph_spec(
+        temp_path_checkpoints, 
+        os.path.join(temp_path, '16x4_inputs.npy'),
+        os.path.join(temp_path, '16x4_targets.npy'),
+        early_stopping=True        
     )        
     yield graph_spec
 
@@ -279,6 +292,8 @@ def test_initial_weights_differ(script_factory, temp_path, temp_path_checkpoints
     next(iterator)
     w1 = next(iter(tl1.layer_weights['DeepLearningFC_layer_fc'].values()))
     #tf.reset_default_graph()
+
+    #x= training_layer.layer_biases[fc_layer_id].get('b')
     
     # --- Create a second graph ---
     graph_spec2 = make_graph_spec(
@@ -587,7 +602,7 @@ def test_tf2x_progress_reaches_status_training(script_factory_tf2x, graph_spec_f
     graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec_few_epochs)
     
     training_layer = graph.active_training_node.layer
-    iterator = training_layer.run(graph, mode = 'training') # TODO: self reference is weird. shouldnt be!
+    iterator = training_layer.run(graph, mode = 'training') 
 
     sentinel = object()
     result = None
@@ -607,7 +622,7 @@ def test_tf2x_progress_reaches_status_finished(script_factory_tf2x, graph_spec_f
     graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec_few_epochs)
     
     training_layer = graph.active_training_node.layer
-    iterator = training_layer.run(graph, mode = 'training') # TODO: self reference is weird. shouldnt be!
+    iterator = training_layer.run(graph, mode = 'training') 
 
     sentinel = object()
     result = None
@@ -628,7 +643,7 @@ def test_tf2x_progress_reaches_one(script_factory_tf2x, graph_spec_few_epochs):
     graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec_few_epochs)
     
     training_layer = graph.active_training_node.layer
-    iterator = training_layer.run(graph, mode = 'training') # TODO: self reference is weird. shouldnt be!
+    iterator = training_layer.run(graph, mode = 'training') 
 
     sentinel = object()
     result = None
@@ -648,26 +663,98 @@ def test_tf2x_layer_output_values_set(script_factory_tf2x, graph_spec_few_epochs
     graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec_few_epochs)
     
     training_layer = graph.active_training_node.layer
-    iterator = training_layer.run(graph, mode = 'training') # TODO: self reference is weird. shouldnt be!
+    iterator = training_layer.run(graph, mode='training') 
 
     sentinel = object()
     result = None
 
-    outputs_set = False    
-    while result is not sentinel and not outputs_set:
+    values_set = False    
+    while result is not sentinel and not values_set:
         result = next(iterator, sentinel)
-        outputs_set = all(len(out_dict) > 0 for out_dict in training_layer.layer_outputs.values())
+        values_set = all(len(out_dict) > 0 for out_dict in training_layer.layer_outputs.values())
 
-    assert outputs_set
+    assert values_set
+
+
+@pytest.mark.tf2x            
+def test_tf2x_layer_weights_and_biases_set(script_factory_tf2x, graph_spec_few_epochs):
+    graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec_few_epochs)
     
+    fc_layer_id = graph.nodes[2].layer_id
+    training_layer = graph.active_training_node.layer    
+    iterator = training_layer.run(graph, mode='training') 
 
-@pytest.mark.skip
+    sentinel = object()
+    result = None
+
+    values_set = False    
+    while result is not sentinel and not values_set:
+        result = next(iterator, sentinel)
+
+        values_set = (
+            isinstance(training_layer.layer_weights[fc_layer_id].get('W'), np.ndarray) and
+            isinstance(training_layer.layer_biases[fc_layer_id].get('b'), np.ndarray)
+        )
+
+    assert values_set
+
+
+@pytest.mark.tf2x            
+def test_tf2x_layer_gradients_set(script_factory_tf2x, graph_spec_few_epochs):
+    graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec_few_epochs)
+    
+    fc_layer_id = graph.nodes[2].layer_id
+    training_layer = graph.active_training_node.layer    
+    iterator = training_layer.run(graph, mode='training') 
+
+    sentinel = object()
+    result = None
+
+    values_set = False    
+    while result is not sentinel and not values_set:
+        result = next(iterator, sentinel)
+
+        values_set = (
+            isinstance(training_layer.layer_gradients[fc_layer_id].get('W'), np.ndarray) and
+            isinstance(training_layer.layer_gradients[fc_layer_id].get('b'), np.ndarray)
+        )
+
+    assert values_set
+
+    
+@pytest.mark.tf2x            
+def test_tf2x_layer_metrics_set(script_factory_tf2x, graph_spec_few_epochs):
+    graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec_few_epochs)
+    
+    fc_layer_id = graph.nodes[2].layer_id
+    training_layer = graph.active_training_node.layer    
+    iterator = training_layer.run(graph, mode='training') 
+
+    sentinel = object()
+    result = None
+
+    values_set = False    
+    while result is not sentinel and not values_set:
+        result = next(iterator, sentinel)
+        
+        values_set = (
+            isinstance(training_layer.loss_training, np.float32) and
+            isinstance(training_layer.loss_validation, np.float32) and            
+            isinstance(training_layer.accuracy_training, np.float32) and
+            isinstance(training_layer.accuracy_validation, np.float32) and            
+            0 <= training_layer.accuracy_training <= 1.0 and
+            0 <= training_layer.accuracy_validation <= 1.0 
+        )
+
+    assert values_set
+
+    
 @pytest.mark.tf2x            
 def test_tf2x_convergence(script_factory_tf2x, graph_spec):
-    graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec)
+    graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec, print_code=True)
     
     training_layer = graph.active_training_node.layer
-    iterator = training_layer.run(graph, mode = 'training') # TODO: self reference is weird. shouldnt be!
+    iterator = training_layer.run(graph, mode='training') 
 
     sentinel = object()
     result = None
@@ -682,4 +769,79 @@ def test_tf2x_convergence(script_factory_tf2x, graph_spec):
             converged = True
             
     assert converged
+
+
+@pytest.mark.tf2x            
+def test_tf2x_policy_dict_is_not_empty(script_factory_tf2x, graph_spec):
+    from perceptilabs.core_new.compatibility.policies import policy_classification
     
+    graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec, print_code=True)
+
+    fn_is_paused = lambda: False
+    fn_sanitized_to_name = lambda sanitized_name: graph_spec.get_layer_by_sanitized_name(sanitized_name).name
+    fn_sanitized_to_id = lambda sanitized_name: graph_spec.get_layer_by_sanitized_name(sanitized_name).id_
+
+    sentinel = object()
+    result = None
+    training_layer = graph.active_training_node.layer
+    iterator = training_layer.run(graph, mode='training')
+
+    results = {}
+
+    while result is not sentinel and not results:
+        result = next(iterator, sentinel)
+
+        results = policy_classification(
+            fn_is_paused,
+            [graph],
+            fn_sanitized_to_name,
+            fn_sanitized_to_id,
+            results
+        )
+    assert results
+    
+
+@pytest.mark.tf2x            
+def test_tf2x_early_stopping_on_training_accuracy(script_factory_tf2x, graph_spec_early_stopping):
+    graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec_early_stopping, print_code=True)
+    
+    training_layer = graph.active_training_node.layer
+    iterator = training_layer.run(graph, mode='training') 
+    sentinel = object()
+    result = None
+    
+    last_accuracy = None
+    while result is not sentinel:
+        result = next(iterator, sentinel)
+        last_accuracy = training_layer.accuracy_training
+
+    assert (
+        100*last_accuracy > graph_spec_early_stopping.training_layer.target_acc and
+        training_layer.epoch < graph_spec_early_stopping.training_layer.n_epochs - 1
+    )
+
+    
+@pytest.mark.tf2x            
+def test_tf2x_layer_auc_set(script_factory_tf2x, graph_spec_few_epochs):
+    graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec_few_epochs)
+    
+    fc_layer_id = graph.nodes[2].layer_id
+    training_layer = graph.active_training_node.layer
+
+    iterator = training_layer.run(graph, mode='training') 
+
+    sentinel = object()
+    result = None
+
+    values_set = False    
+    while result is not sentinel and not values_set:
+        result = next(iterator, sentinel)
+
+        values_set = (
+            isinstance(training_layer.auc_training, np.float32) and
+            isinstance(training_layer.auc_validation, np.float32) and
+            0 <= training_layer.auc_training <= 1.0 and
+            0 <= training_layer.auc_validation <= 1.0        
+        )
+
+    assert values_set

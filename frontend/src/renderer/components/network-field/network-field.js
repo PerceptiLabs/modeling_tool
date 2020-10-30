@@ -114,6 +114,7 @@ export default {
       testingIsOpen:          'mod_workspace/GET_testIsOpen',
       statisticsOrTestIsOpen: 'mod_workspace/GET_statisticsOrTestIsOpen',
       getCurrentStepCode:     'mod_tutorials/getCurrentStepCode',
+      getIsWorkspaceDragEvent: 'mod_events/getIsWorkspaceDragEvent',
     }),
     isGridEnabled() {
       return false;
@@ -277,6 +278,10 @@ export default {
       }
     },
     moveMultiSelect(ev) {
+      if(this.getIsWorkspaceDragEvent) { 
+        this.mouseUpMultiSelect();
+        return 0 
+      };
       const xPosition = this.findXPosition(ev);
       const yPosition = this.findYPosition(ev);
       const xStart = this.multiSelect.xStart;
@@ -289,7 +294,7 @@ export default {
       if(yStart > yPosition) this.multiSelect.y = yPosition;
     },
     mouseUpMultiSelect() {
-    
+      
       const xStart = this.multiSelect.x;
       const yStart = this.multiSelect.y;
     
