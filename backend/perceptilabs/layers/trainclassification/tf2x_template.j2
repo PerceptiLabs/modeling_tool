@@ -333,8 +333,8 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
     def _get_io_layer_ids(self, graph):
         {% filter remove_lspaces(8) %}
             {% if layer_spec.connection_predictions is not none %}
-                output_layer_id = "{{graph_spec.nodes_by_id[layer_spec.connection_predictions.src_id].sanitized_name}}"
-                output_var_name = "{{layer_spec.connection_predictions.src_var}}"
+                output_layer_id = "{{graph_spec.nodes_by_id[layer_spec.get_connection_predictions().src_id].sanitized_name}}"
+                output_var_name = "{{layer_spec.get_connection_predictions().src_var}}"
             {% else %}
                 output_layer_id = None
                 output_var_name = None                
@@ -342,8 +342,8 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
         {% endfilter %}
         {% filter remove_lspaces(8) %}
             {% if layer_spec.connection_labels is not none %}
-                target_layer_id = "{{graph_spec.nodes_by_id[layer_spec.connection_labels.src_id].sanitized_name}}"
-                target_var_name = "{{layer_spec.connection_predictions.src_var}}"                
+                target_layer_id = "{{graph_spec.nodes_by_id[layer_spec.get_connection_labels().src_id].sanitized_name}}"
+                target_var_name = "{{layer_spec.get_connection_predictions().src_var}}"                
             {% else %}
                 target_layer_id = None
                 target_var_name = None                
@@ -440,7 +440,7 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
                         })
                     {% endfor %}
                 {% endfilter %}
-                return self.layer_outputs["{{layer_spec.connection_predictions.get_src_sanitized_name(graph_spec)}}"]["{{layer_spec.connection_predictions.src_var}}"]                
+                return self.layer_outputs["{{layer_spec.get_connection_predictions().get_src_sanitized_name(graph_spec)}}"]["{{layer_spec.get_connection_predictions().src_var}}"]                
 
             
         class TargetModel(tf.keras.Model):
@@ -464,7 +464,7 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
                         })
                     {% endfor %}
                 {% endfilter %}                
-                return self.layer_outputs["{{layer_spec.connection_labels.get_src_sanitized_name(graph_spec)}}"]["{{layer_spec.connection_labels.src_var}}"]
+                return self.layer_outputs["{{layer_spec.get_connection_labels().get_src_sanitized_name(graph_spec)}}"]["{{layer_spec.get_connection_labels().src_var}}"]
 
         prediction_model = PredictionModel()
         target_model = TargetModel()

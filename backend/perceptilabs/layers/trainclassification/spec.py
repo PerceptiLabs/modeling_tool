@@ -20,8 +20,8 @@ class TrainClassificationSpec(TrainingLayerSpec):
     n_epochs: int = 10
     batch_size: int = 10
     loss_function: str = 'Quadratic'
-    connection_labels: LayerConnection = LayerConnection() # Default to an unset one
-    connection_predictions: LayerConnection = LayerConnection()  # Default to an unset one
+    connection_labels: Union[LayerConnection, None] = None
+    connection_predictions: Union[LayerConnection, None] = None
     target_acc: Union[int, None] = None
     stop_condition: str = 'Epochs'                        
 
@@ -93,7 +93,7 @@ class TrainClassificationSpec(TrainingLayerSpec):
         Returns:
             A LayerSpec
         """
-        return graph_spec[self.connection_predictions.src_id]
+        return graph_spec[self.get_connection_predictions().src_id]
 
     def get_target_layer(self, graph_spec: AbstractGraphSpec) -> LayerSpec:
         """ Returns the LayerSpec going into the 'labels' connection
@@ -104,7 +104,7 @@ class TrainClassificationSpec(TrainingLayerSpec):
         Returns:
             A LayerSpec
         """
-        return graph_spec[self.connection_labels.src_id]        
+        return graph_spec[self.get_connection_labels().src_id]        
 
     def get_prediction_data_layer(self, graph_spec: AbstractGraphSpec) -> DataLayerSpec:
         """ Returns the DataLayerSpec going into the 'predictions' connection (potentially via other layers).
@@ -171,4 +171,11 @@ class TrainClassificationSpec(TrainingLayerSpec):
                 layers.append(layer_spec)
         return layers
 
+    def get_connection_labels(self) -> LayerConnection:
+        """ Returns the connection for the labels. If unset, returns a new LayerConnection """
+        return self.connection_labels or LayerConnection()
+
+    def get_connection_predictions(self) -> LayerConnection:
+        """ Returns the connection for the predictions. If unset, returns a new LayerConnection """
+        return self.connection_predictions or LayerConnection()
     
