@@ -164,16 +164,22 @@ class CompatibilityCore:
             logger.debug("graph is None, returning empty results")
             return [{}]
         layer = graphs[-1].active_training_node.layer
+
+        fn_sanitized_to_name = lambda sanitized_name: self._sanitized_to_name[sanitized_name]
+        fn_sanitized_to_id = lambda sanitized_name: self._sanitized_to_id[sanitized_name]
+
+        fn_is_paused = lambda: self._core.is_training_paused
+        
         if isinstance(layer, ClassificationLayer):
-            result_dicts = policy_classification(self._core, graphs, self._sanitized_to_name, self._sanitized_to_id, results)
+            result_dicts = policy_classification(fn_is_paused, graphs, fn_sanitized_to_name, fn_sanitized_to_id, results)
         elif  isinstance(layer, ObjectDetectionLayer):
-            result_dicts = policy_object_detection(self._core, graphs, self._sanitized_to_name, self._sanitized_to_id, results)
+            result_dicts = policy_object_detection(fn_is_paused, graphs, fn_sanitized_to_name, fn_sanitized_to_id, results)
         elif  isinstance(layer, GANLayer):
-            result_dicts = policy_gan(self._core, graphs, self._sanitized_to_name, self._sanitized_to_id, results)
+            result_dicts = policy_gan(fn_is_paused, graphs, fn_sanitized_to_name, fn_sanitized_to_id, results)
         elif  isinstance(layer, RegressionLayer):
-            result_dicts = policy_regression(self._core, graphs, self._sanitized_to_name, self._sanitized_to_id, results)
+            result_dicts = policy_regression(fn_is_paused, graphs, fn_sanitized_to_name, fn_sanitized_to_id, results)
         elif  isinstance(layer, RLLayer):
-            result_dicts = policy_reinforce(self._core, graphs, self._sanitized_to_name, self._sanitized_to_id, results)
+            result_dicts = policy_reinforce(fn_is_paused, graphs, fn_sanitized_to_name, fn_sanitized_to_id, results)
         return result_dicts
 
     def _print_graph_debug_info(self, graphs):

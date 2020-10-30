@@ -18,14 +18,14 @@ def dict_first_value(dict_):
     return dict_.get('output', None)
 
     
-def policy_regression(core, graphs, sanitized_to_name, sanitized_to_id, results):
+def policy_regression(is_paused, graphs, sanitized_to_name, sanitized_to_id, results):
 
     def get_layer_inputs_and_outputs(graph, node, trn_node):
         data = {}
         data['Y'] = dict_first_value(trn_node.layer.layer_outputs.get(node.layer_id)) # OUTPUT: ndarrays of layer-speci
         data['X'] = {} # This layer works with layer names...
         for input_node in graph.get_input_nodes(node):
-            input_name = sanitized_to_name[input_node.layer_id]
+            input_name = sanitized_to_name(input_node.layer_id)
             input_value = dict_first_value(trn_node.layer.layer_outputs.get(input_node.layer_id))
             data['X'][input_name] = {'Y': input_value}
         return data
@@ -218,7 +218,7 @@ def policy_regression(core, graphs, sanitized_to_name, sanitized_to_id, results)
         # ----- Get layer specific data.
         for node in current_graph.nodes:
             data = {}
-            true_id = sanitized_to_id[node.layer_id] # nodes use spec names for layer ids
+            true_id = sanitized_to_id(node.layer_id) # nodes use spec names for layer ids
 
             if node.layer.variables is not None:
                 data.update(node.layer.variables)
@@ -229,7 +229,7 @@ def policy_regression(core, graphs, sanitized_to_name, sanitized_to_id, results)
 
         # ----- Get data specific to the training layer.
         data = {}
-        true_trn_id = sanitized_to_id[trn_node.layer_id]
+        true_trn_id = sanitized_to_id(trn_node.layer_id)
         data.update(get_metrics(graphs, true_trn_id, results))
         train_dict[true_trn_id].update(data)
 
@@ -263,7 +263,7 @@ def policy_regression(core, graphs, sanitized_to_name, sanitized_to_id, results)
         elif trn_node.layer.status == 'finished':
             training_status = 'Finished'
 
-        if core.is_paused:
+        if is_paused():
             status = 'Paused'
         else:
             status = 'Running'
@@ -288,7 +288,7 @@ def policy_regression(core, graphs, sanitized_to_name, sanitized_to_id, results)
         test_dict = {}
         for node in test_graph.nodes:
             data = {}
-            true_id = sanitized_to_id[node.layer_id] # nodes use spec names for layer ids
+            true_id = sanitized_to_id(node.layer_id) # nodes use spec names for layer ids
             data.update(get_layer_inputs_and_outputs(test_graph, node, trn_node))
             test_dict[true_id] = data
 
@@ -299,7 +299,7 @@ def policy_regression(core, graphs, sanitized_to_name, sanitized_to_id, results)
         # if trn_node.layer.size_testing and trn_node.layer.batch_size:
         max_itr_tst = trn_node.layer.size_testing
 
-        true_id = sanitized_to_id[trn_node.layer_id]
+        true_id = sanitized_to_id(trn_node.layer_id)
 
 
         test_dict[true_id]['loss_validation_epoch'] = 0
@@ -332,7 +332,7 @@ def policy_regression(core, graphs, sanitized_to_name, sanitized_to_id, results)
         }
         return result_dict
 
-def policy_classification(core, graphs, sanitized_to_name, sanitized_to_id, results):
+def policy_classification(is_paused, graphs, sanitized_to_name, sanitized_to_id, results):
 
 
     def get_layer_inputs_and_outputs(graph, node, trn_node):
@@ -340,7 +340,7 @@ def policy_classification(core, graphs, sanitized_to_name, sanitized_to_id, resu
         data['Y'] = dict_first_value(trn_node.layer.layer_outputs.get(node.layer_id)) # OUTPUT: ndarrays of layer-speci
         data['X'] = {} # This layer works with layer names...
         for input_node in graph.get_input_nodes(node):
-            input_name = sanitized_to_name[input_node.layer_id]
+            input_name = sanitized_to_name(input_node.layer_id)
             input_value = dict_first_value(trn_node.layer.layer_outputs.get(input_node.layer_id))
             data['X'][input_name] = {'Y': input_value}
         return data
@@ -521,7 +521,7 @@ def policy_classification(core, graphs, sanitized_to_name, sanitized_to_id, resu
         # ----- Get layer specific data.
         for node in current_graph.nodes:
             data = {}
-            true_id = sanitized_to_id[node.layer_id] # nodes use spec names for layer ids
+            true_id = sanitized_to_id(node.layer_id) # nodes use spec names for layer ids
 
             if node.layer.variables is not None:
                 data.update(node.layer.variables)
@@ -532,7 +532,7 @@ def policy_classification(core, graphs, sanitized_to_name, sanitized_to_id, resu
 
         # ----- Get data specific to the training layer.
         data = {}
-        true_trn_id = sanitized_to_id[trn_node.layer_id]
+        true_trn_id = sanitized_to_id(trn_node.layer_id)
         data.update(get_metrics(graphs, true_trn_id, results))
         train_dict[true_trn_id].update(data)
 
@@ -566,7 +566,7 @@ def policy_classification(core, graphs, sanitized_to_name, sanitized_to_id, resu
         elif trn_node.layer.status == 'finished':
             training_status = 'Finished'
 
-        if core.is_training_paused:
+        if is_paused():
             status = 'Paused'
         else:
             status = 'Running'
@@ -590,7 +590,7 @@ def policy_classification(core, graphs, sanitized_to_name, sanitized_to_id, resu
         test_dict = {}
         for node in test_graph.nodes:
             data = {}
-            true_id = sanitized_to_id[node.layer_id] # nodes use spec names for layer ids
+            true_id = sanitized_to_id(node.layer_id) # nodes use spec names for layer ids
             data.update(get_layer_inputs_and_outputs(test_graph, node, trn_node))
             test_dict[true_id] = data
 
@@ -600,7 +600,7 @@ def policy_classification(core, graphs, sanitized_to_name, sanitized_to_id, resu
 
         max_itr_tst = trn_node.layer.size_testing
 
-        true_id = sanitized_to_id[trn_node.layer_id]
+        true_id = sanitized_to_id(trn_node.layer_id)
         test_dict[true_id]['acc_training_epoch'] = 0
         test_dict[true_id]['f1_training_epoch'] = 0
         test_dict[true_id]['auc_training_epoch'] = 0
@@ -626,14 +626,14 @@ def policy_classification(core, graphs, sanitized_to_name, sanitized_to_id, resu
         }
         return result_dict
 
-def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id, results):
+def policy_object_detection(is_paused, graphs, sanitized_to_name, sanitized_to_id, results):
 
     def get_layer_inputs_and_outputs(graph, node, trn_node):
         data = {}
         data['Y'] = dict_first_value(trn_node.layer.layer_outputs.get(node.layer_id)) # OUTPUT: ndarrays of layer-speci
         data['X'] = {} # This layer works with layer names...
         for input_node in graph.get_input_nodes(node):
-            input_name = sanitized_to_name[input_node.layer_id]
+            input_name = sanitized_to_name(input_node.layer_id)
             input_value = dict_first_value(trn_node.layer.layer_outputs.get(input_node.layer_id))
             data['X'][input_name] = {'Y': input_value}
         return data
@@ -904,7 +904,7 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id, re
         # ----- Get layer specific data.
         for node in current_graph.nodes:
             data = {}
-            true_id = sanitized_to_id[node.layer_id] # nodes use spec names for layer ids
+            true_id = sanitized_to_id(node.layer_id) # nodes use spec names for layer ids
 
             if node.layer.variables is not None:
                 data.update(node.layer.variables)
@@ -915,7 +915,7 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id, re
 
         # ----- Get data specific to the training layer.
         data = {}
-        true_trn_id = sanitized_to_id[trn_node.layer_id]
+        true_trn_id = sanitized_to_id(trn_node.layer_id)
         data.update(get_metrics(graphs, true_trn_id, results))
         train_dict[true_trn_id].update(data)
 
@@ -949,7 +949,7 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id, re
         elif trn_node.layer.status == 'finished':
             training_status = 'Finished'
 
-        if core.is_training_paused:
+        if is_paused():
             status = 'Paused'
         else:
             status = 'Running'
@@ -980,7 +980,7 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id, re
         test_dict = {}
         for node in test_graph.nodes:
             data = {}
-            true_id = sanitized_to_id[node.layer_id] # nodes use spec names for layer ids
+            true_id = sanitized_to_id(node.layer_id) # nodes use spec names for layer ids
             data.update(get_layer_inputs_and_outputs(test_graph, node, trn_node))
             test_dict[true_id] = data
 
@@ -991,7 +991,7 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id, re
         # if trn_node.layer.size_testing and trn_node.layer.batch_size:
         max_itr_tst = trn_node.layer.size_testing
 
-        true_id = sanitized_to_id[trn_node.layer_id]
+        true_id = sanitized_to_id(trn_node.layer_id)
         bbox_image, confidence_scores = plot_bounding_boxes(input_images.get('output')[-1], predicted_objects, predicted_classes, predicted_normalized_boxes)
 
         test_dict[true_id]['acc_val_iter'] = 0
@@ -1030,14 +1030,14 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id, re
     
         return result_dict
 
-def policy_reinforce(core, graphs, sanitized_to_name, sanitized_to_id, results):
+def policy_reinforce(is_paused, graphs, sanitized_to_name, sanitized_to_id, results):
 
     def get_layer_inputs_and_outputs(graph, node, trn_node):
         data = {}
         data['Y'] = dict_first_value(trn_node.layer.layer_outputs.get(node.layer_id)) # OUTPUT: ndarrays of layer-speci
         data['X'] = {} # This layer works with layer names...
         for input_node in graph.get_input_nodes(node):
-            input_name = sanitized_to_name[input_node.layer_id]
+            input_name = sanitized_to_name(input_node.layer_id)
             input_value = dict_first_value(trn_node.layer.layer_outputs.get(input_node.layer_id))
             data['X'][input_name] = {'Y': input_value}
         return data
@@ -1170,7 +1170,7 @@ def policy_reinforce(core, graphs, sanitized_to_name, sanitized_to_id, results):
         # ----- Get layer specific data.
         for node in current_graph.nodes:
             data = {}
-            true_id = sanitized_to_id[node.layer_id] # nodes use spec names for layer ids
+            true_id = sanitized_to_id(node.layer_id) # nodes use spec names for layer ids
 
             if node.layer.variables is not None:
                 data.update(node.layer.variables)
@@ -1181,7 +1181,7 @@ def policy_reinforce(core, graphs, sanitized_to_name, sanitized_to_id, results):
 
         # ----- Get data specific to the training layer.
         data = {}
-        true_trn_id = sanitized_to_id[trn_node.layer_id]
+        true_trn_id = sanitized_to_id(trn_node.layer_id)
         data.update(get_metrics(graphs, true_trn_id, results))
         train_dict[true_trn_id].update(data)
 
@@ -1210,7 +1210,7 @@ def policy_reinforce(core, graphs, sanitized_to_name, sanitized_to_id, results):
         elif trn_node.layer.status == 'finished':
             training_status = 'Finished'
 
-        if core.is_training_paused:
+        if is_paused.is_training_paused:
             status = 'Paused'
         else:
             status = 'Running'
@@ -1230,14 +1230,14 @@ def policy_reinforce(core, graphs, sanitized_to_name, sanitized_to_id, results):
 
         return result_dict
 
-def policy_gan(core, graphs, sanitized_to_name, sanitized_to_id, results):
+def policy_gan(is_paused, graphs, sanitized_to_name, sanitized_to_id, results):
 
     def get_layer_inputs_and_outputs(graph, node, trn_node):
         data = {}
         data['Y'] = dict_first_value(trn_node.layer.layer_outputs.get(node.layer_id)) # OUTPUT: ndarrays of layer-speci
         data['X'] = {} # This layer works with layer names...
         for input_node in graph.get_input_nodes(node):
-            input_name = sanitized_to_name[input_node.layer_id]
+            input_name = sanitized_to_name(input_node.layer_id)
             input_value = dict_first_value(trn_node.layer.layer_outputs.get(input_node.layer_id))
             data['X'][input_name] = {'Y': input_value}
         return data
@@ -1444,7 +1444,7 @@ def policy_gan(core, graphs, sanitized_to_name, sanitized_to_id, results):
         # ----- Get layer specific data.
         for node in current_graph.nodes:
             data = {}
-            true_id = sanitized_to_id[node.layer_id] # nodes use spec names for layer ids
+            true_id = sanitized_to_id(node.layer_id) # nodes use spec names for layer ids
 
             if node.layer.variables is not None:
                 data.update(node.layer.variables)
@@ -1455,7 +1455,7 @@ def policy_gan(core, graphs, sanitized_to_name, sanitized_to_id, results):
 
         # ----- Get data specific to the training layer.
         data = {}
-        true_trn_id = sanitized_to_id[trn_node.layer_id]
+        true_trn_id = sanitized_to_id(trn_node.layer_id)
         data.update(get_metrics(graphs, true_trn_id, results))
         train_dict[true_trn_id].update(data)
 
@@ -1489,7 +1489,7 @@ def policy_gan(core, graphs, sanitized_to_name, sanitized_to_id, results):
         elif trn_node.layer.status == 'finished':
             training_status = 'Finished'
 
-        if core.is_training_paused:
+        if is_paused():
             status = 'Paused'
         else:
             status = 'Running'
@@ -1513,12 +1513,12 @@ def policy_gan(core, graphs, sanitized_to_name, sanitized_to_id, results):
         test_dict = {}
         for node in test_graph.nodes:
             data = {}
-            true_id = sanitized_to_id[node.layer_id] # nodes use spec names for layer ids
+            true_id = sanitized_to_id(node.layer_id) # nodes use spec names for layer ids
             data.update(get_layer_inputs_and_outputs(test_graph, node, trn_node))
             test_dict[true_id] = data
         
         data = {}        
-        true_trn_id = sanitized_to_id[trn_node.layer_id]
+        true_trn_id = sanitized_to_id(trn_node.layer_id)
         trn_layer = trn_node.layer
         switch_layer_id = trn_layer.get_switch_layer_id
         data['generated_image'] = dict_first_value(trn_layer.generator_layer_outputs.get(switch_layer_id))[-1]
@@ -1532,7 +1532,7 @@ def policy_gan(core, graphs, sanitized_to_name, sanitized_to_id, results):
         # if trn_node.layer.size_testing and trn_node.layer.batch_size:
         max_itr_tst = trn_node.layer.size_testing
 
-        true_id = sanitized_to_id[trn_node.layer_id]
+        true_id = sanitized_to_id(trn_node.layer_id)
 
 
         result_dict = {

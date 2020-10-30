@@ -15,8 +15,6 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
         self._headless = False
         self._status = 'created'
         
-        self._loss_training = 0.0
-        self._loss_validation = 0.0
         self._loss_testing = 0.0      
 
         self._accuracy_training = 0.0
@@ -56,22 +54,45 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
             input_layer_id, label_layer_id, prediction_layer_id, target_layer_id, prediction_var_name, target_var_name
         )
 
+        self._metric_training_loss = tf.keras.metrics.Mean()
+        self._metric_training_accuracy = tf.keras.metrics.CategoricalAccuracy()
+        self._metric_validation_loss = tf.keras.metrics.Mean()
+        self._metric_validation_accuracy = tf.keras.metrics.CategoricalAccuracy()
+
     def train(self, graph: Graph):
         """Training is done when this function is called. Once the training ends, checkpoint files are saved.
-        """
+        """            
         self._epoch = 0
         while self._epoch < self._n_epochs:
             self._status = 'training'
-            yield from self._dataset_iteration(self._dataset_train, update_weights=True)
+            yield from self._dataset_iteration(
+                self._dataset_train,
+                self._metric_training_loss,
+                self._metric_training_accuracy,
+                self._set_training_iteration,
+                update_weights=True
+            )
             
             self._status = 'validation'            
-            yield from self._dataset_iteration(self._dataset_val, update_weights=False)
+            yield from self._dataset_iteration(
+                self._dataset_val,
+                self._metric_validation_loss,
+                self._metric_validation_accuracy,
+                self._set_validation_iteration,
+                update_weights=False
+            )
             
             self._log_epoch_summary()
             self._epoch += 1
 
         self._status = 'finished'
         yield YieldLevel.SNAPSHOT
+
+    def _set_training_iteration(self, value):
+        self._training_iteration = value
+
+    def _set_validation_iteration(self, value):
+        self._validation_iteration = value        
         
     def _log_epoch_summary(self):
         log.info(
@@ -213,13 +234,13 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
 
     @property
     def accuracy_training(self) -> float:
-        """Returns the current accuracy of the training phase"""        
-        return self._accuracy_training
+        """Returns the current accuracy of the training phase"""
+        return self._metric_training_accuracy.result().numpy()
     
     @property
     def accuracy_validation(self) -> float:
-        """Returns the current accuracy of the validation phase"""                
-        return self._accuracy_validation
+        """Returns the current accuracy of the validation phase"""
+        return self._metric_validation_accuracy.result().numpy()
 
     @property
     def accuracy_testing(self) -> float:
@@ -229,12 +250,12 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
     @property
     def loss_training(self) -> float:
         """Returns the current loss of the training phase"""                
-        return self._loss_training        
+        return self._metric_training_loss.result().numpy()
 
     @property
     def loss_validation(self) -> float:
         """Returns the current loss of the validation phase"""                        
-        return self._loss_validation        
+        return self._metric_validation_loss.result().numpy()
 
     @property
     def loss_testing(self) -> float:
@@ -450,15 +471,22 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
 
         return prediction_model, target_model
     
-    def _dataset_iteration(self, dataset, update_weights=True):
+    def _dataset_iteration(self, dataset, metric_loss, metric_accuracy, iteration_setter, update_weights=True):        
         loss_fn = tf.keras.losses.MeanSquaredError()
         optimizer = tf.keras.optimizers.SGD(learning_rate={{layer_spec.learning_rate}})
 
+        metric_loss.reset_states()
+        metric_accuracy.reset_states()        
+
         for step, (inputs_batch, labels_batch) in enumerate(dataset):
+            iteration_setter(step)
             with tf.GradientTape() as tape:
                 predictions_batch = self._prediction_model(inputs_batch, training=update_weights)
                 targets_batch = self._target_model(labels_batch, training=update_weights)
                 loss_value = loss_fn(predictions_batch, targets_batch)
+
+            metric_loss.update_state(loss_value)
+            metric_accuracy.update_state(predictions_batch, targets_batch)
 
             self._layer_outputs.update(self._prediction_model.layer_outputs)
             self._layer_outputs.update(self._target_model.layer_outputs)

@@ -708,7 +708,34 @@ def test_tf2x_layer_gradients_set(script_factory_tf2x, graph_spec_few_epochs):
 
     assert values_set
 
-@pytest.mark.skip
+    
+@pytest.mark.tf2x            
+def test_tf2x_layer_metrics_set(script_factory_tf2x, graph_spec_few_epochs):
+    graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec_few_epochs)
+    
+    fc_layer_id = graph.nodes[2].layer_id
+    training_layer = graph.active_training_node.layer    
+    iterator = training_layer.run(graph, mode='training') 
+
+    sentinel = object()
+    result = None
+
+    values_set = False    
+    while result is not sentinel and not values_set:
+        result = next(iterator, sentinel)
+        
+        values_set = (
+            isinstance(training_layer.loss_training, np.float32) and
+            isinstance(training_layer.loss_validation, np.float32) and            
+            isinstance(training_layer.accuracy_training, np.float32) and
+            isinstance(training_layer.accuracy_validation, np.float32) and            
+            0 <= training_layer.accuracy_training <= 1.0 and
+            0 <= training_layer.accuracy_validation <= 1.0 
+        )
+
+    assert values_set
+
+    
 @pytest.mark.tf2x            
 def test_tf2x_convergence(script_factory_tf2x, graph_spec):
     graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec, print_code=True)
@@ -729,4 +756,36 @@ def test_tf2x_convergence(script_factory_tf2x, graph_spec):
             converged = True
             
     assert converged
+
+
+@pytest.mark.tf2x            
+def test_tf2x_policy_dict_is_not_empty(script_factory_tf2x, graph_spec):
+    from perceptilabs.core_new.compatibility.policies import policy_classification
     
+    graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec, print_code=True)
+
+    fn_is_paused = lambda: False
+    fn_sanitized_to_name = lambda sanitized_name: graph_spec.get_layer_by_sanitized_name(sanitized_name).name
+    fn_sanitized_to_id = lambda sanitized_name: graph_spec.get_layer_by_sanitized_name(sanitized_name).id_
+    
+    training_layer = graph.active_training_node.layer
+    iterator = training_layer.run(graph, mode='training') 
+
+    sentinel = object()
+    result = None
+    converged = False
+    
+    results = {}
+
+    while result is not sentinel and not results:
+        result = next(iterator, sentinel)
+
+        results = policy_classification(
+            fn_is_paused,
+            [graph],
+            fn_sanitized_to_name,
+            fn_sanitized_to_id,
+            results
+        )
+    assert results
+        
