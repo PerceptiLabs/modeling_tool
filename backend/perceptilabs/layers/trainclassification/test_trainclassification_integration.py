@@ -787,5 +787,30 @@ def test_tf2x_policy_dict_is_not_empty(script_factory_tf2x, graph_spec):
             fn_sanitized_to_id,
             results
         )
-    assert results
         
+    assert results
+
+    
+@pytest.mark.tf2x            
+def test_tf2x_layer_auc_set(script_factory_tf2x, graph_spec_few_epochs):
+    graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec_few_epochs)
+    
+    fc_layer_id = graph.nodes[2].layer_id
+    training_layer = graph.active_training_node.layer    
+    iterator = training_layer.run(graph, mode='training') 
+
+    sentinel = object()
+    result = None
+
+    values_set = False    
+    while result is not sentinel and not values_set:
+        result = next(iterator, sentinel)
+
+        values_set = (
+            isinstance(training_layer.auc_training, np.float32) and
+            isinstance(training_layer.auc_validation, np.float32) and
+            0 <= training_layer.auc_training <= 1.0 and
+            0 <= training_layer.auc_validation <= 1.0        
+        )
+
+    assert values_set

@@ -58,7 +58,9 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
         self._metric_training_accuracy = tf.keras.metrics.CategoricalAccuracy()
         self._metric_validation_loss = tf.keras.metrics.Mean()
         self._metric_validation_accuracy = tf.keras.metrics.CategoricalAccuracy()
-
+        self._metric_training_auc = tf.keras.metrics.AUC(curve='ROC')
+        self._metric_validation_auc = tf.keras.metrics.AUC(curve='ROC')        
+        
     def train(self, graph: Graph):
         """Training is done when this function is called. Once the training ends, checkpoint files are saved.
         """            
@@ -69,6 +71,7 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
                 self._dataset_train,
                 self._metric_training_loss,
                 self._metric_training_accuracy,
+                self._metric_training_auc,
                 self._set_training_iteration,
                 update_weights=True
             )
@@ -78,6 +81,7 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
                 self._dataset_val,
                 self._metric_validation_loss,
                 self._metric_validation_accuracy,
+                self._metric_validation_auc,                
                 self._set_validation_iteration,
                 update_weights=False
             )
@@ -261,6 +265,16 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
     def loss_testing(self) -> float:
         """Returns the current loss of the testing phase"""                
         return self._loss_testing
+
+    @property
+    def auc_training(self) -> float:
+        """Returns the current AUC of the training phase"""                
+        return self._metric_training_auc.result().numpy()
+
+    @property
+    def auc_validation(self) -> float:
+        """Returns the current AUC of the validation phase"""                
+        return self._metric_validation_auc.result().numpy()    
 
     @property
     def layer_weights(self) -> Dict[str, Dict[str, Picklable]]:
@@ -471,11 +485,13 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
 
         return prediction_model, target_model
     
-    def _dataset_iteration(self, dataset, metric_loss, metric_accuracy, iteration_setter, update_weights=True):        
+    def _dataset_iteration(self, dataset, metric_loss, metric_accuracy, metric_auc, iteration_setter, update_weights=True):        
         loss_fn = tf.keras.losses.MeanSquaredError()
         optimizer = tf.keras.optimizers.SGD(learning_rate={{layer_spec.learning_rate}})
 
         metric_loss.reset_states()
+        metric_accuracy.reset_states()
+        metric_auc.reset_states()
         metric_accuracy.reset_states()        
 
         for step, (inputs_batch, labels_batch) in enumerate(dataset):
@@ -486,6 +502,8 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
                 loss_value = loss_fn(predictions_batch, targets_batch)
 
             metric_loss.update_state(loss_value)
+            metric_accuracy.update_state(targets_batch, predictions_batch)
+            metric_auc.update_state(targets_batch, predictions_batch)
             metric_accuracy.update_state(predictions_batch, targets_batch)
 
             self._layer_outputs.update(self._prediction_model.layer_outputs)

@@ -12,6 +12,9 @@ import numpy as np
 import cv2
 
 
+import perceptilabs.utils as utils
+
+
 def dict_first_value(dict_):
     if dict_ is None:
         return None
@@ -417,26 +420,36 @@ def policy_classification(is_paused, graphs, sanitized_to_name, sanitized_to_id,
             acc_trn_iter = []
             loss_trn_iter = []
             f1_trn_iter = x
-            auc_trn_iter = x
 
             acc_val_iter = []
             loss_val_iter = []
             f1_val_iter = x
-            auc_val_iter = x
 
+
+            if utils.is_tf2x():
+                auc_trn_iter = []               
+                auc_val_iter = []
+            else:
+                auc_trn_iter = x                
+                auc_val_iter = x                
+                
         for graph in graphs:
             trn_layer = graph.active_training_node.layer
             if trn_layer.epoch == current_epoch and trn_layer.status == 'training':
                 acc_trn_iter.append(trn_layer.accuracy_training)
                 loss_trn_iter.append(trn_layer.loss_training)
                 #f1_trn_iter.append(trn_layer.f1_score_training) # TODO: fix these two
-                #auc_trn_iter.append(trn_layer.auc_training)
+
+                if utils.is_tf2x():
+                    auc_trn_iter.append(trn_layer.auc_training)
 
             if trn_layer.epoch == current_epoch and trn_layer.status == 'validation':
                 acc_val_iter.append(trn_layer.accuracy_validation)
                 loss_val_iter.append(trn_layer.loss_validation)
                 #f1_val_iter.append(trn_layer.f1_score_validation) # TODO: fix these two
-                #auc_val_iter.append(trn_layer.auc_validation)
+
+                if utils.is_tf2x():
+                    auc_val_iter.append(trn_layer.auc_validation)
 
         # ---- Get the metrics from the end of each epoch
 
@@ -454,12 +467,18 @@ def policy_classification(is_paused, graphs, sanitized_to_name, sanitized_to_id,
             acc_trn_epoch = []
             loss_trn_epoch = []
             f1_trn_epoch = x
-            auc_trn_epoch = x
+
 
             acc_val_epoch = []
             loss_val_epoch = []
             f1_val_epoch = x
-            auc_val_epoch = x
+
+            if utils.is_tf2x():
+                auc_trn_epoch = []               
+                auc_val_epoch = []
+            else:
+                auc_trn_epoch = x                
+                auc_val_epoch = x
 
         idx = 0
 
@@ -471,14 +490,21 @@ def policy_classification(is_paused, graphs, sanitized_to_name, sanitized_to_id,
             if is_final_training_iteration and trn_layer.status == 'training':
                 acc_trn_epoch.append(trn_layer.accuracy_training)
                 loss_trn_epoch.append(trn_layer.loss_training)
-                # TODO: f1 and auc train
+                # TODO: f1 
+
+                if utils.is_tf2x():
+                    auc_trn_epoch.append(trn_layer.auc_training)                    
             
             is_final_validation_iteration = (trn_layer.validation_iteration == np.ceil(trn_layer.size_validation / trn_layer.batch_size) - 1)
             
             if is_final_validation_iteration and trn_layer.status == 'validation':
                 acc_val_epoch.append(trn_layer.accuracy_validation)
                 loss_val_epoch.append(trn_layer.loss_validation)
-                # TODO: f1 and auc val
+                # TODO: f1 
+
+                if utils.is_tf2x():
+                    auc_val_epoch.append(trn_layer.auc_validation)                    
+                
             idx += 1
 
         # ---- Update the dicts

@@ -11,7 +11,7 @@ from abc import ABC, abstractmethod
 from typing import Dict, Any, overload, List, Generator
 
 from perceptilabs.core_new.utils import Picklable
-
+import perceptilabs.utils as utils
 
 class BaseLayer(ABC):
     """Base class for any PerceptiLabs graph layer"""
@@ -457,6 +457,23 @@ class ClassificationLayer(TrainingSupervised):
         """Returns the current loss of the testing phase"""                        
         raise NotImplementedError
 
+    @property
+    def auc_training(self) -> float:
+        """Returns the current AUC score of the training phase"""
+
+        if utils.is_tf2x():
+            raise NotImplementedError
+        else:
+            return -1.0
+            
+    @property
+    def auc_validation(self) -> float:
+        """Returns the current AUC score of the validation phase"""
+        if utils.is_tf2x():
+            raise NotImplementedError
+        else:
+            return -1.0
+    
     @property
     @abstractmethod    
     def layer_weights(self) -> Dict[str, Dict[str, Picklable]]:
