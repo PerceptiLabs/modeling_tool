@@ -7,20 +7,15 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
             
         self._n_epochs = {{layer_spec.n_epochs}}
         self._batch_size = {{layer_spec.batch_size}}
-        self._target_acc = {{layer_spec.target_acc}}
-        self._stop_condition = '{{layer_spec.stop_condition}}'
 
         self._stopped = False
         self._paused = False
         self._headless = False
         self._status = 'created'
-        
+
+        self._accuracy_testing = 0.0
         self._loss_testing = 0.0      
 
-        self._accuracy_training = 0.0
-        self._accuracy_validation = 0.0
-        self._accuracy_testing = 0.0      
-        
         self._variables = {}
         self._layer_outputs = {}
         self._layer_gradients = {}
@@ -63,9 +58,8 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
         
     def train(self, graph: Graph):
         """Training is done when this function is called. Once the training ends, checkpoint files are saved.
-        """            
-        self._epoch = 0
-        while self._epoch < self._n_epochs:
+        """
+        for self._epoch in range(self._n_epochs):
             self._status = 'training'
             yield from self._dataset_iteration(
                 self._dataset_train,
@@ -87,8 +81,11 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
             )
             
             self._log_epoch_summary()
-            self._epoch += 1
-
+            {% filter if_true(layer_spec.early_stopping_enabled, remove_left_spaces=4) %}
+                if self._should_stop_early():
+                    break
+            {% endfilter %}
+            
         self._status = 'finished'
         yield YieldLevel.SNAPSHOT
 
@@ -96,7 +93,7 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
         self._training_iteration = value
 
     def _set_validation_iteration(self, value):
-        self._validation_iteration = value        
+        self._validation_iteration = value
         
     def _log_epoch_summary(self):
         log.info(
@@ -201,7 +198,7 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
     @property
     def sample(self) -> Dict[str, Dict[str, Picklable]]:
         """Returns a single data sample"""
-        sample = {'output': np.array(self._accuracy_training)}        
+        sample = {'output': np.array(self.accuracy_training)}        
         return sample
 
     @property
@@ -336,7 +333,7 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
         """        
         n_iterations_per_epoch = np.ceil(self.size_training / self.batch_size) + \
                                  np.ceil(self.size_validation / self.batch_size)
-        n_iterations_total = self._n_epochs * n_iterations_per_epoch
+        n_iterations_total = (self._n_epochs - 1) * n_iterations_per_epoch
 
         iteration = self.epoch * n_iterations_per_epoch + \
                     self.training_iteration + self.validation_iteration
@@ -345,23 +342,23 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
         return progress
 
     def _get_io_layer_ids(self, graph):
-        {% filter remove_lspaces(8) %}
-            {% if layer_spec.connection_predictions is not none %}
-                output_layer_id = "{{graph_spec.nodes_by_id[layer_spec.get_connection_predictions().src_id].sanitized_name}}"
-                output_var_name = "{{layer_spec.get_connection_predictions().src_var}}"
-            {% else %}
-                output_layer_id = None
-                output_var_name = None                
-            {% endif %}
+        {% filter if_true(layer_spec.get_connection_predictions() is not none, remove_left_spaces=4) %}
+            output_layer_id = "{{graph_spec.nodes_by_id[layer_spec.get_connection_predictions().src_id].sanitized_name}}"
+            output_var_name = "{{layer_spec.get_connection_predictions().src_var}}"
         {% endfilter %}
-        {% filter remove_lspaces(8) %}
-            {% if layer_spec.connection_labels is not none %}
-                target_layer_id = "{{graph_spec.nodes_by_id[layer_spec.get_connection_labels().src_id].sanitized_name}}"
-                target_var_name = "{{layer_spec.get_connection_predictions().src_var}}"                
-            {% else %}
-                target_layer_id = None
-                target_var_name = None                
-            {% endif %}
+        {% filter if_true(layer_spec.get_connection_predictions() is none, remove_left_spaces=4) %}        
+            output_layer_id = None
+            output_var_name = None                
+        {% endfilter %}
+        {% filter if_true(layer_spec.get_connection_labels() is not none, remove_left_spaces=4) %}
+        
+            target_layer_id = "{{graph_spec.nodes_by_id[layer_spec.get_connection_labels().src_id].sanitized_name}}"
+            target_var_name = "{{layer_spec.get_connection_predictions().src_var}}"                
+        {% endfilter %}
+        {% filter if_true(layer_spec.get_connection_labels() is none, remove_left_spaces=4) %}
+        
+            target_layer_id = None
+            target_var_name = None                
         {% endfilter %}
 
         input_data_nodes = graph.get_direct_data_nodes(output_layer_id)
@@ -521,7 +518,8 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
                 
             yield YieldLevel.SNAPSHOT
 
-    def _get_trainable_tensors(self, which='all'):
+    def _get_trainable_tensors(self, which: str='all') -> Dict[str, Dict[str, tf.Tensor]]:
+        """ Get trainable tensors from any/all of the models """
         trainables_dict = {}
         for model in [self._prediction_model, self._target_model]:
             for layer_id, layer_instance in model.layer_instances.items():
@@ -537,7 +535,8 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
                         
         return trainables_dict
 
-    def _evaluate_nested_tensors(self, outer_dict):
+    def _evaluate_nested_tensors(self, outer_dict: Dict[str, Dict[str, tf.Tensor]]) -> Dict[str, Dict[str, np.ndarray]]:
+        """ Evaluate tensors in a nested dictionary """
         new_outer = {}
         for layer_id, inner_dict in outer_dict.items():
             new_outer[layer_id] = {}
@@ -547,12 +546,26 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
                     
         return new_outer
         
-    def _flatten_dict(self, dict_):
+    def _flatten_dict(self, dict_: Dict[str, Dict[str, tf.Tensor]]) -> List[tf.Tensor]:
+        """ Flatten a nested dictionary into a list """
         output = []        
         for layer_id in sorted(dict_.keys()):
             for tensor_name in sorted(dict_[layer_id].keys()):
                 output.append(dict_[layer_id][tensor_name])
         return output
+    
+    {% filter if_true(layer_spec.early_stopping_enabled, remove_left_spaces=4) %}    
+        def _should_stop_early(self) -> bool:
+            """ Conditions for early stopping. Returns true if any condition is met """
+            {% filter if_true(layer_spec.stop_condition == "TargetAccuracy", remove_left_spaces=4) %}
+                target_accuracy = {{layer_spec.target_acc}}
+                if self.accuracy_training * 100 >= target_accuracy:
+                    log.info(f"Early stopping: accuracy {self.accuracy_training*100:.2f}% >= {target_accuracy*100}%")
+                    return True
+            {% endfilter %}                
+            return False
+    {% endfilter %}
+        
                 
 
         

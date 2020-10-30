@@ -171,6 +171,10 @@ class TrainClassificationSpec(TrainingLayerSpec):
                 layers.append(layer_spec)
         return layers
 
+    @property
+    def early_stopping_enabled(self):
+        return self.stop_condition != 'Epochs'
+
     def get_connection_labels(self) -> LayerConnection:
         """ Returns the connection for the labels. If unset, returns a new LayerConnection """
         return self.connection_labels or LayerConnection()
@@ -178,4 +182,3 @@ class TrainClassificationSpec(TrainingLayerSpec):
     def get_connection_predictions(self) -> LayerConnection:
         """ Returns the connection for the predictions. If unset, returns a new LayerConnection """
         return self.connection_predictions or LayerConnection()
-    

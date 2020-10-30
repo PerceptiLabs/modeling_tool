@@ -30,7 +30,7 @@ def script_factory_tf2x():
     yield ScriptFactory(mode='tf2x')
     
 
-def make_graph_spec(temp_path_checkpoints, inputs_path, targets_path, learning_rate=0.3, checkpoint_path=None, distributed=False, n_epochs=200): # TODO: fix checkpoint path. it can't be none
+def make_graph_spec(temp_path_checkpoints, inputs_path, targets_path, learning_rate=0.3, checkpoint_path=None, distributed=False, n_epochs=200, early_stopping=False): # TODO: fix checkpoint path. it can't be none
     
     if checkpoint_path is None:
         checkpoint_path = temp_path_checkpoints
@@ -84,7 +84,9 @@ def make_graph_spec(temp_path_checkpoints, inputs_path, targets_path, learning_r
         load_checkpoint = True,
         backward_connections=(conn_labels_to_train, conn_fc_to_train),
         connection_labels=conn_labels_to_train,
-        connection_predictions=conn_fc_to_train
+        connection_predictions=conn_fc_to_train,
+        stop_condition='TargetAccuracy' if early_stopping else 'Epochs',
+        target_acc=50 if early_stopping else None
     )
 
     graph_spec = GraphSpec([
@@ -102,6 +104,17 @@ def graph_spec(temp_path, temp_path_checkpoints):
         temp_path_checkpoints, 
         os.path.join(temp_path, '16x4_inputs.npy'),
         os.path.join(temp_path, '16x4_targets.npy')
+    )        
+    yield graph_spec
+
+    
+@pytest.fixture()
+def graph_spec_early_stopping(temp_path, temp_path_checkpoints):
+    graph_spec = make_graph_spec(
+        temp_path_checkpoints, 
+        os.path.join(temp_path, '16x4_inputs.npy'),
+        os.path.join(temp_path, '16x4_targets.npy'),
+        early_stopping=True        
     )        
     yield graph_spec
 
@@ -767,14 +780,12 @@ def test_tf2x_policy_dict_is_not_empty(script_factory_tf2x, graph_spec):
     fn_is_paused = lambda: False
     fn_sanitized_to_name = lambda sanitized_name: graph_spec.get_layer_by_sanitized_name(sanitized_name).name
     fn_sanitized_to_id = lambda sanitized_name: graph_spec.get_layer_by_sanitized_name(sanitized_name).id_
-    
-    training_layer = graph.active_training_node.layer
-    iterator = training_layer.run(graph, mode='training') 
 
     sentinel = object()
     result = None
-    converged = False
-    
+    training_layer = graph.active_training_node.layer
+    iterator = training_layer.run(graph, mode='training')
+
     results = {}
 
     while result is not sentinel and not results:
@@ -787,8 +798,27 @@ def test_tf2x_policy_dict_is_not_empty(script_factory_tf2x, graph_spec):
             fn_sanitized_to_id,
             results
         )
-        
     assert results
+    
+
+@pytest.mark.tf2x            
+def test_tf2x_early_stopping_on_training_accuracy(script_factory_tf2x, graph_spec_early_stopping):
+    graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec_early_stopping, print_code=True)
+    
+    training_layer = graph.active_training_node.layer
+    iterator = training_layer.run(graph, mode='training') 
+    sentinel = object()
+    result = None
+    
+    last_accuracy = None
+    while result is not sentinel:
+        result = next(iterator, sentinel)
+        last_accuracy = training_layer.accuracy_training
+
+    assert (
+        100*last_accuracy > graph_spec_early_stopping.training_layer.target_acc and
+        training_layer.epoch < graph_spec_early_stopping.training_layer.n_epochs - 1
+    )
 
     
 @pytest.mark.tf2x            
@@ -796,7 +826,8 @@ def test_tf2x_layer_auc_set(script_factory_tf2x, graph_spec_few_epochs):
     graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec_few_epochs)
     
     fc_layer_id = graph.nodes[2].layer_id
-    training_layer = graph.active_training_node.layer    
+    training_layer = graph.active_training_node.layer
+
     iterator = training_layer.run(graph, mode='training') 
 
     sentinel = object()
