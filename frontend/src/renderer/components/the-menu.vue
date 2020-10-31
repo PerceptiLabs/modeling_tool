@@ -211,10 +211,10 @@ export default {
       this.goToLink(`${baseUrlSite}/about`);
     },
     goToHelpPageWeb() {
-       this.goToLink('https://join.slack.com/t/perceptilabs-com/shared_invite/zt-auchqflz-4YANlDBSyJW1qC7LdpQBSA');
+       this.goToLink('https://www.perceptilabs.com/docs/overview');
     },
     goToAboutPageWeb() {
-      this.goToLink(`https://perceptilabs.com/docs/overview`);
+      this.$store.commit('globalView/set_showAppAbout', true);
     },
     openModel() {
       this.openNetwork();
@@ -447,8 +447,6 @@ export default {
           submenu: [
             {label: 'Help',                                                           active: this.goToHelpPageWeb },
             {label: 'About',                                                          active: this.goToAboutPageWeb },
-            {type: 'separator'},
-            {label: `Version: ${this.appVersion}`, enabled: false,                    active: ()=>{} }
           ]
         },
         {

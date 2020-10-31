@@ -27,7 +27,8 @@ const state = {
     showExportNetworkToGitHubPopup: false,
     showImportNetworkfromGitHubOrLocalPopup: false,
     showNewModelPopup: false,
-    showCreateIssuesPopup: false
+    showCreateIssuesPopup: false,
+    showAppAbout: false,
   },
   popupConfirmCancel: null,
   popupConfirmOk: null,
@@ -137,9 +138,15 @@ const mutations = {
     localStorage.setItem(localStorageGridKey, value);
     state.isGridEnabled = value;
   },
+  set_showAppAbout(state, value) {
+    state.globalPopup.showAppAbout = value;
+  },
   setMiniMapNavigationMutation(state, value) {
     localStorage.setItem('isMiniMapNavigatorOpened', value);
     state.isMiniMapNavigatorOpened = value;
+  },
+  set_showAppAbout(state, value) {
+    state.globalPopup.showAppAbout = value;
   },
 };
 

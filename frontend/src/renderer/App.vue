@@ -25,6 +25,7 @@
     create-issue-popup(v-if="showCreateIssuesPopup")
     modal-pages-engine
     tutorials-checklist(v-if="showTutorialChecklist" :style="tutorialChecklistPosition")
+    about-app-popup(v-if="showAppAboutPopUp")
     #tutorial-notifications(v-if="showTutorialNotifications")
       tutorial-notification(
         v-for="n in tutorialNotifications"
@@ -61,6 +62,7 @@
   import TheInfoPopup           from "@/components/global-popups/the-info-popup.vue";
   import ConfirmPopup           from "@/components/global-popups/confirm-popup.vue";
   import ModalPagesEngine       from '@/components/modal-pages-engine.vue';
+  import AboutAppPopup           from "@/components/global-popups/about-app-popup.vue";
   import { MODAL_PAGE_PROJECT, MODAL_PAGE_WHATS_NEW } from '@/core/constants.js';
 
   export default {
@@ -69,7 +71,7 @@
       ProjectSidebar,
       ModalPagesEngine,
       HeaderLinux, HeaderWin, HeaderMac,
-      UpdatePopup, TheInfoPopup, ConfirmPopup, CreateIssuePopup, PiPyPopupUpdate,
+      UpdatePopup, TheInfoPopup, ConfirmPopup, CreateIssuePopup, PiPyPopupUpdate, AboutAppPopup,
       TutorialsChecklist, TutorialNotification
     },
     created() {
@@ -352,7 +354,10 @@
           right: `${rightValueRm}rem`,
           bottom: `${bottomValueRm}rem`
         };
-      }
+      },
+      showAppAboutPopUp() {
+        return this.$store.state.globalView.globalPopup.showAppAbout;
+      },
     },
     watch: {
       '$route': {
