@@ -704,10 +704,10 @@ const mutations = {
     const networkIndex = state.workspaceContent.findIndex(w => w.networkID == networkId);
 
     if (networkIndex < 0) { return; }
-    
-    state.workspaceContent.splice(networkIndex, 1);
-    
+
     const path = state.workspaceContent[networkIndex].apiMeta.location;
+    state.workspaceContent.splice(networkIndex, 1);
+
     await fileserver_deleteFolder(path)
   },
   //---------------

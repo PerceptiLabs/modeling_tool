@@ -436,6 +436,7 @@
         this.$router.push({name: 'app'});
       },
       async removeItems() {
+        if(!this.selectedListIds.length) return; // prevent removing modal when no item are selected
         if(this.statusLocalCore!='online') {
           this.showInfoPopup("Kernel is offline");
           return;
