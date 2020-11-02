@@ -222,14 +222,14 @@ class GetNetworkData(LW_interface_base):
         self._settings_engine = settings_engine
 
     def run(self):
-        graph_spec, applied_autosettings = self._maybe_apply_autosettings(self._graph_spec)
+        graph_spec, auto_updated_layers = self._maybe_apply_autosettings(self._graph_spec)
         
         dim_content, preview_content, trained_layers_info = {}, {}, {}
         lw_results = self._lw_core.run(graph_spec) 
         
         for layer_id, layer_results in lw_results.items():            
             layer_spec = graph_spec[layer_id]
-            dim, preview = self._get_layer_content(layer_spec, layer_results)
+            dim, preview = self._get_layer_content(layer_spec, layer_results, auto_updated_layers)
             trained_layers_info[layer_id] = layer_results.trained
             dim_content[layer_id] = dim
 
@@ -239,11 +239,11 @@ class GetNetworkData(LW_interface_base):
         return {
             "previews": preview_content,
             "outputDims": dim_content,
-            "newNetwork": graph_spec.to_dict() if applied_autosettings else {},
+            "newNetwork": graph_spec.to_dict() if auto_updated_layers else {},
             "trainedLayers": trained_layers_info
         }
         
-    def _get_layer_content(self, layer_spec, layer_results):
+    def _get_layer_content(self, layer_spec, layer_results, auto_updated_layers):
         sample = layer_results.sample.get(layer_spec.preview_variable)
         shape = np.atleast_1d(sample).shape if sample is not None else ()
         
@@ -258,7 +258,7 @@ class GetNetworkData(LW_interface_base):
             dim_content['Error'] = None
 
         preview_content = None
-        if layer_spec.get_preview:
+        if layer_spec.get_preview or layer_spec.id_ in auto_updated_layers:
             try:
                 sample_array = np.asarray(sample)
                 if layer_spec.to_dict().get('previewVariable') == 'W' and len(sample_array.shape) >= 2:
@@ -275,10 +275,10 @@ class GetNetworkData(LW_interface_base):
             new_graph_spec = self._settings_engine.run(graph_spec)
 
             if new_graph_spec is not None:
-                return new_graph_spec, True
+                return new_graph_spec, new_graph_spec.difference(graph_spec)
         else:
             logger.warning("Settings engine is not set. Cannot make recommendations. Using old json_network.")
-        return graph_spec, False
+        return graph_spec, set()
 
         
 class getPreviewSample(LW_interface_base):

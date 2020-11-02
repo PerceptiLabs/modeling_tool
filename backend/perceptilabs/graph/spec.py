@@ -1,7 +1,7 @@
 import logging
 import networkx as nx
 from collections import namedtuple
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Set
 
 
 from perceptilabs.graph import AbstractGraphSpec
@@ -128,14 +128,7 @@ class GraphSpec(AbstractGraphSpec):
         return self.get_ordered_layers()
     
     def __eq__(self, other):
-        if type(self) != type(other):
-            return False
-
-        for node1, node2 in zip(self.get_ordered_nodes(), other.get_ordered_nodes()):
-            if node1 != node2:
-                return False
-            
-        return True
+        return len(self.difference(other)) == 0
 
     def get_origin(self, layer_spec: LayerSpec):
         """ Return the 'start nodes' connected to this layer (possibly including the layer itself) """
@@ -264,6 +257,27 @@ class GraphSpec(AbstractGraphSpec):
             if layer.is_training_layer:
                 return layer
         return None
+
+    def difference(self, other: 'GraphSpec') -> Set[str]:
+        """ Gets the IDs of layers that are different between two graphs
+        
+        Args:
+            other: another GraphSpec
+
+        Returns:
+            a set of layer ids         
+        """
+
+        if type(self) != type(other):
+            return set()
+        
+        different_layers = set()
+        for node1, node2 in zip(self.get_ordered_nodes(), other.get_ordered_nodes()):
+            if node1 != node2:
+                different_layers.add(node1.id_)
+            
+        return different_layers
+        
 
     
     
