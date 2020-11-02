@@ -81,10 +81,30 @@ $layers-sidebar-active: (
 // }
 .net-element {
   .btn--layersbar {
-    border: 1.5px solid transparent !important; // fix for jumping comntent
+    position: relative;
+    border: 3px solid transparent !important; // fix for jumping comntent
+
+    // after and before is a fix for transparent border when component is hovered or active
+    &:after {
+      position: absolute;
+      width: 3px;
+      height: 6px;
+      left: -3px;
+      bottom: -6px;
+      background-color: #1473e6;
+    }
+    &:before {
+      position: absolute;
+      width: 3px;
+      height: 6px;
+      right: -3px;
+      bottom: -6px;
+      background-color: #1473e6;
+    }
   }
   .settings-layer {
-    border: 1.5px solid #3F4C70 !important;
+    border-top-width: 0 !important;
+    border: 3px solid #3F4C70 !important;
   }
   &.net-element--active {
     @each $name, $color in $layers-sidebar-active {
@@ -102,16 +122,6 @@ $layers-sidebar-active: (
 	}
 }
 
-
-//.net-element.active:before{
-//  content: '';
-//  position: absolute;
-//  top: 0;
-//  left: 0;
-//  right: 0;
-//  bottom: 0;
-//  outline: 1px dashed $col-placeholder;
-//}
 .element--hidden .net-element_btn,
 .arrow--hidden {
 	opacity: .4;
@@ -120,12 +130,17 @@ $layers-sidebar-active: (
 .net-element {
   &:hover {
     .btn--layersbar {
-      border:  1.5px solid hsl(182, 79%, 52%) !important; ;
+      border:  3px solid #1473e6 !important; ;
       border-bottom-color: transparent !important;
+      &:after {
+        content: '';
+      }
+      &:before {
+        content: '';
+      }
     }
     .settings-layer {
-      // border: 1px solid #B6C7FB !important;
-      border:  1.5px solid hsl(182, 79%, 52%) !important;
+      border:  3px solid #1473e6 !important;
       border-top-color: transparent !important;
       position: relative;
       &:after {
@@ -149,13 +164,19 @@ $layers-sidebar-active: (
 }
 .net-element--active {
   .btn--layersbar, .settings-layer {
-    border: 1.5px solid #22DDE5 !important;
+    border: 3px solid #1473e6 !important;
   }
   .settings-layer {
     border-top-color: transparent !important;
   }
   .btn--layersbar {
     border-bottom-color: transparent !important;
+    &:after {
+      content: '';
+    }
+    &:before {
+      content: '';
+    }
   }
 }
 .layer-type {
