@@ -1,3 +1,6 @@
+tensorflow==1.15; platform_system == "Linux"
+tensorflow==1.15; platform_system == "Windows"
+tensorflow==1.15; platform_system == "Darwin"
 astor>=0.8.0
 azure-eventhub==5.1.0
 azure-storage==0.36.0
@@ -32,8 +35,5 @@ sentry-sdk==0.10.2; platform_system == "Darwin"
 sentry-sdk==0.10.2; platform_system == "Linux"
 sentry-sdk==0.14.3; platform_system == "Windows"
 six>=1.14.0
-tensorflow-gpu==1.15; platform_system == "Linux"
-tensorflow-gpu==1.15; platform_system == "Windows"
-tensorflow==1.15; platform_system == "Darwin"
 websockets>=8.1
 mixpanel==4.7.0
