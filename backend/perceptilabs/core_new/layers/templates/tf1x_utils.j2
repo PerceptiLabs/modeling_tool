@@ -55,15 +55,15 @@
 {% macro activation_function(name, var_name) %}
 {% filter remove_lspaces(8) %}
     {% if name == 'Sigmoid' %}
-        {{var_name}} = tf.compat.v1.sigmoid({{var_name}})
+        {{var_name}} = tf.nn.sigmoid({{var_name}})
     {% elif name == 'ReLU' %}
-        {{var_name}} = tf.compat.v1.nn.relu({{var_name}})
+        {{var_name}} = tf.nn.relu({{var_name}})
     {% elif name == 'Tanh' %}
-        {{var_name}} = tf.compat.v1.tanh({{var_name}})
+        {{var_name}} = tf.nn.tanh({{var_name}})
     {% elif name == 'LeakyReLU' %}
-        {{var_name}} = tf.compat.v1.nn.leaky_relu({{var_name}})
+        {{var_name}} = tf.nn.leaky_relu({{var_name}})
     {% elif name == 'Softmax' %}
-        {{var_name}} = tf.compat.v1.nn.softmax({{var_name}})
+        {{var_name}} = tf.nn.softmax({{var_name}})
     {% endif %}
 {% endfilter %}
 {% endmacro %}
