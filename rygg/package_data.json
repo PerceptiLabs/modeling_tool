@@ -1,0 +1,3 @@
+{
+  "rygg": ["api/migrations/*.py"]
+}
