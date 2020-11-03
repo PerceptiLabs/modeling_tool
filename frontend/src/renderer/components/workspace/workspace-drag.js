@@ -3,12 +3,14 @@ import { mapGetters } from 'vuex';
 
 const workspaceDrag = {
   mounted() {
-    document.addEventListener('mousedown', this.mouseDownHandler);
-    document.addEventListener('mouseup', this.mouseUpHandler);
+    const el = document.getElementById('networkWorkspace');
+    el.addEventListener('mousedown', this.mouseDownHandler);
+    el.addEventListener('mouseup', this.mouseUpHandler);
   },
   beforeDestroy() {
-    document.removeEventListener('mousedown', this.mouseDownHandler);
-    document.removeEventListener('mouseup', this.mouseUpHandler);
+    const el = document.getElementById('networkWorkspace');
+    el.removeEventListener('mousedown', this.mouseDownHandler);
+    el.removeEventListener('mouseup', this.mouseUpHandler);
   },
   data() {
     return {
@@ -28,11 +30,13 @@ const workspaceDrag = {
     mouseDownHandler(ev){
       ev.preventDefault();
       if(ev.ctrlKey || ev.metaKey || ev.button === 1) {
-        document.addEventListener('mousemove', this.onMouseMove);
+        const el = document.getElementById('networkWorkspace');
+        el.addEventListener('mousemove', this.onMouseMove);
       }
     },
     mouseUpHandler() {
-      document.removeEventListener('mousemove', this.onMouseMove);
+      const el = document.getElementById('networkWorkspace');
+      el.removeEventListener('mousemove', this.onMouseMove);
       this.resetToInitialSetup();
     },
     setInitailDragPosition(clientX, clientY) {
