@@ -20,6 +20,7 @@ export const FILESERVER_BASE_URL = `http://${baseHost}:8011`
 
 export const RYGG_URL_CONFIG_PATH = 'rygg_url';
 export const RYGG_BASE_URL = `http://${baseHost}:8000`
+export const RYGG_MIXPANEL_ENDPOINT = '/mixpanel'; // MixPanel proxy functions
 
 export const KERNEL_URL_CONFIG_PATH = 'kernel_url';
 export const KERNEL_BASE_URL = `ws://${baseHost}:5000`

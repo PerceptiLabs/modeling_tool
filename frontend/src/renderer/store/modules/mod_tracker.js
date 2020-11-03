@@ -1,7 +1,7 @@
 import mixPanel from 'mixpanel-browser'
 import { isElectron } from "@/core/helpers";
 import { isDevelopMode } from "@/core/constants";
-
+import { resolveProxyUrl } from "@/core/helpers/mixpanel-helper";
 const mixPanelDesktopToken = 'ff98c9e22047d4a1eef9146339e038ee';
 const mixPanelWebToken = isDevelopMode ? 
   '8312db76002e43f8a9dc9acf9a12c1fc' :
@@ -46,15 +46,21 @@ const mutations = {
 
 const actions = {
   TRACK_initMixPanel() {
-    if (isDevelopMode) {
-      mixPanel.init(mixPanelWebToken);
-      mixPanel.opt_out_tracking();
-    } else if (isElectron()) {
-      mixPanel.init(mixPanelDesktopToken);
-    } else {
-      mixPanel.init(mixPanelWebToken);
-      mixPanel.opt_in_tracking();
-    }
+
+    resolveProxyUrl().then(proxyUrl => {
+
+      if (proxyUrl) {
+        mixPanel.init(mixPanelWebToken, { api_host: proxyUrl });
+      } else {
+        mixPanel.init(mixPanelWebToken);
+      }
+
+      if (isDevelopMode) {
+        mixPanel.opt_out_tracking();
+      } else {
+        mixPanel.opt_in_tracking();
+      }
+    });
   },
   TRACK_initMixPanelUser({}, id) {
     mixPanel.identify(id);

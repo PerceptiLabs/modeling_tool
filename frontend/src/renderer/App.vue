@@ -375,9 +375,11 @@
       userEmail(newVal) {
         if (newVal === 'Guest') { return; }
 
-        this.trackerCreateUser(newVal);
-        this.trackerUpdateUser(newVal);
-        this.trackerInitUser(newVal);
+        setTimeout(() => {
+          this.trackerCreateUser(newVal);
+          this.trackerUpdateUser(newVal);
+          this.trackerInitUser(newVal);
+        }, 5000);
       },
       currentProject: {
         immediate: true,
