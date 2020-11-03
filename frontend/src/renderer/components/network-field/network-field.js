@@ -186,6 +186,7 @@ export default {
         width: this.svgWidth,
         height: this.svgHeight,
         zIndex: 6,
+        overflow: 'visible'
       };
       return size
     },

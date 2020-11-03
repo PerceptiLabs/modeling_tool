@@ -20,7 +20,7 @@
           )
     button.btn.btn--icon.visible-icon.rescale(
       type="button"
-      :class="{'invisible-icon': isLocked}"
+      :class="{'invisible-icon': !isLocked}"
       @click="toggleLock()"
     )
       i.icon.icon-lock
@@ -77,23 +77,6 @@
         this.isLocked = !this.isLocked;
       }
     },
-    watch: {
-      'settings.width': {
-        handler() {
-          if(this.isLocked) {
-            this.settings.height = this.settings.width * this.ratio;
-          }
-        }
-      },
-      'settings.height': {
-        handler() {
-          if(this.isLocked) {
-            this.settings.width = this.settings.height / this.ratio;
-          }
-        }
-      }
-
-    }
   }
 </script>
 
@@ -115,7 +98,8 @@
   }
   .multiple.icon-app-close {
     position: absolute;
-    top: 20px;
-    right: 32%;
+    top: 18px;
+    right: 24%;
+    font-size: 6px;    
   }
 </style>
