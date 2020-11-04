@@ -96,12 +96,18 @@
       this.updateWorkspaceMiniMapWrapperStyling();
       this.updateBoxOutlineStyles();
       setTimeout(() => this.updateAllStyles());
-      document.getElementById('networkWorkspace').addEventListener('scroll', this.updateBoxOutlineStyles);
+      const networkWorkspace = document.getElementById('networkWorkspace');
+      if (networkWorkspace) { 
+        networkWorkspace.addEventListener('scroll', this.updateBoxOutlineStyles);
+      }
       window.addEventListener('resize', this.updateBoxOutlineStyles);
       
     },
     destroyed() {
-      document.getElementById('networkWorkspace').removeEventListener('scroll', this.updateBoxOutlineStyles);
+      const networkWorkspace = document.getElementById('networkWorkspace');
+      if (networkWorkspace) { 
+        networkWorkspace.removeEventListener('scroll', this.updateBoxOutlineStyles);
+      }
       window.removeEventListener('resize', this.updateBoxOutlineStyles);
       clearTimeout(this.updateAllStyles);
     },

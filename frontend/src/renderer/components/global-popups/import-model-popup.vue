@@ -122,6 +122,7 @@ export default {
     
       this.loadNetwork(path);
       this.$store.dispatch('globalView/SET_showImportNetworkfromGitHubOrLocalPopup', false);
+      this.$store.dispatch('mod_empty-navigation/SET_emptyScreenMode', 0);
       this.$store.dispatch('mod_workspace/setViewType', 'model');
     },
     importRepositoryFromGithubAction() {
