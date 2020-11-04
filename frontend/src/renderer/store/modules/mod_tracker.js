@@ -135,6 +135,9 @@ const actions = {
       payload['Type'] = 'notebook';
     } else if (settings.Type == 'GitHub') {
       payload['Type'] = 'GitHub';
+      payload['GH Username'] = settings['GH Username'];
+      payload['GH Repo URL'] = settings['GH Repo URL'];
+      payload['Export Successful'] = settings['Export Successful'];
     }
 
     mixPanel.track('Model Export', payload);

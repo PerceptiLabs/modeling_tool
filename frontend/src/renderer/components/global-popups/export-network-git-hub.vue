@@ -39,6 +39,7 @@
 
 <script>
 import { isWeb } from "@/core/helpers"
+import { extractGithubUsernameFromURL } from "@/core/helpers/github-helper.js"
 import { mapGetters } from 'vuex'
 import { GITHUB_AUTHORIZE_URL } from '@/core/constants.js'
 import BaseGlobalPopup  from "@/components/global-popups/base-global-popup"
@@ -124,9 +125,19 @@ export default {
         commit_message: 'Perceptilabs commit message'
       }
       this.isLoading = true;
+
+      let githubUsername = '';
+      let githubRepoUrl = '';
+      let isExportSuccessful = false;
+
       fileserver_exportAsGithubRepository(reqData)
         .then(url => {
           const haveRepoNameSpaces = this.settings.name.indexOf(' ') !== -1;
+
+          githubUsername = extractGithubUsernameFromURL(url);
+          githubRepoUrl = url;
+          isExportSuccessful = true;
+
           this.$store.dispatch('globalView/GP_infoPopup',`The model was exported successfully to: ${url} ${haveRepoNameSpaces ? `<br/>Spaces in the model name will be replaced with dashes`: ''}`)
         }).catch(err => {
             const msg = (!!err.userMessage) ?
@@ -135,7 +146,15 @@ export default {
             this.$store.dispatch('globalView/GP_errorPopup', msg)
         }).finally(() => {
           this.isLoading = false;
-          this.$store.dispatch('mod_tracker/EVENT_modelExport', { settings: { Type: 'GitHub' } }, {root: true});
+
+          this.$store.dispatch('mod_tracker/EVENT_modelExport', {
+            settings: {
+              'Type': 'GitHub',
+              'GH Username': githubUsername,
+              'GH Repo URL': githubRepoUrl,
+              'Export Successful': isExportSuccessful
+            }
+          }, {root: true});
         });
     },
    }
