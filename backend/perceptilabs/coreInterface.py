@@ -35,6 +35,9 @@ user_logger = logging.getLogger(USER_LOGGER)
 CoreCommand = collections.namedtuple('CoreCommand', ['type', 'parameters', 'allow_override'])
 
 
+CPU_GPU_POLICY = 'force-cpu' # {'use-spec', 'force-gpu', 'force-cpu'}
+
+
 class coreLogic():
     def __init__(self, networkName, issue_handler, session_id=None):
         logger.info(f"Created coreLogic for network '{networkName}'")
@@ -121,6 +124,26 @@ class coreLogic():
 
         return True
 
+    def _override_graph_spec(self, graph_spec):
+        """ Returns a new GraphSpec with certain settings modified """
+        gpus = self.gpu_list()
+        distributed = self.isDistributable(gpus)
+
+        assert CPU_GPU_POLICY in {'use-spec', 'force-gpu', 'force-cpu'}        
+        
+        network = graph_spec.to_dict()
+        for _id, layer in network.items():
+            if 'Train' in layer['Type']:
+                if CPU_GPU_POLICY == 'force-cpu':
+                    layer['Properties']['Use_CPU'] = True
+                if CPU_GPU_POLICY == 'force-gpu':
+                    layer['Properties']['Use_CPU'] = False                    
+
+            if layer['Type'] == 'TrainNormal':
+                layer['Properties']['Distributed'] = distributed
+
+        return graph_spec.from_dict(network)
+
     @property
     def running_mode(self):
         return self._running_mode
@@ -159,30 +182,7 @@ class coreLogic():
             with open('net.json_', 'w') as f:
                 json.dump(graph_spec.to_dict(), f, indent=4)
                 
-        def backprop(layer_id):
-            backward_connections = network['Layers'][layer_id]['backward_connections']
-            if backward_connections:
-                id_, name = backward_connections[0]
-                return backprop(id_)
-            else:
-                return layer_id
-
-
-        gpus = self.gpu_list()
-        distributed = self.isDistributable(gpus)
-
-        use_cpu_only = True
-
-        # ----- 
-        network = graph_spec.to_dict()
-        for _id, layer in network.items():
-            if 'Train' in layer['Type']:
-                if not 'Use_CPU' in layer['Properties']:
-                    layer['Properties']['Use_CPU'] = use_cpu_only
-
-            if layer['Type'] == 'TrainNormal':
-                layer['Properties']['Distributed'] = distributed
-        graph_spec = graph_spec.from_dict(network)
+        graph_spec = self._override_graph_spec(graph_spec)
         # -----
         from perceptilabs.core_new.compatibility import CompatibilityCore
         from perceptilabs.messaging.zmq_wrapper import ZmqMessagingFactory  
