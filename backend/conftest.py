@@ -10,6 +10,11 @@ import tensorflow as tf
 import numpy as np
 
 
+from perceptilabs.core_new.layers.templates import J2Engine
+from perceptilabs.core_new.layers.templates.utils import render_and_execute_macro
+from perceptilabs.script import TEMPLATE_DIRECTORIES
+from perceptilabs.layers.helper import load_code_as_module
+
 log = logging.getLogger(__name__)
 
 @pytest.fixture(scope='session')
@@ -145,3 +150,37 @@ def temp_path_checkpoints():
     path = path.replace('\\', '/')
     yield path
 
+    
+@pytest.fixture(scope='session')
+def load_jinja_macro():    
+    j2_engine = J2Engine(TEMPLATE_DIRECTORIES)
+
+    def closure(macro_file, macro_name, macro_parameters=None, preamble=None):
+        preamble = preamble + '\n' if preamble else ''
+
+        def format_param(x):
+            if isinstance(x, str):
+                x = f"'{x}'"
+            return x
+
+        # Construct jinja template
+        template  = preamble
+        template += "{% from '" + macro_file + "' import " + macro_name + " %}\n"
+
+        if macro_parameters:
+            template += "{{ " + macro_name + "(\n"
+            for param_name, param_value in macro_parameters.items():
+                template += f"    {param_name}={format_param(param_value)},\n"
+            template += ") | remove_spaces(4) }}\n"
+        else:
+            template += "{{ " + macro_name + "() | remove_spaces(4) }}\n"
+            
+        template = template.strip()
+
+        # Execute code
+        code = j2_engine.render_string(template)
+        module = load_code_as_module(code)
+        
+        return module
+    
+    yield closure

@@ -55,6 +55,10 @@ perceptilabs/layers/specbase.py
 perceptilabs/layers/specutils.py
 perceptilabs/layers/definitions.py
 
+# perceptilabs/layers/jinja_macros
+perceptilabs/layers/jinja_macros/controlflow.j2
+perceptilabs/layers/jinja_macros/losses.j2
+
 # perceptilabs/layers/datadata
 perceptilabs/layers/datadata/spec.py
 perceptilabs/layers/datadata/imports.json

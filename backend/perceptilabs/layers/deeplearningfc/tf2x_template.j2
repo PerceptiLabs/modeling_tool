@@ -1,4 +1,5 @@
 {% from 'tf1x_utils.j2' import batch_normal, activation_function, activation_name, build_output_dict, check_input_vars %}
+{% from 'controlflow.j2' import indented_if %}
 
 
 {% macro indented_if(condition) %}

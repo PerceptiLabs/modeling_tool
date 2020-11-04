@@ -24,10 +24,9 @@ def log_rendering_errors(func):
 
 
 class J2Engine:
-    def __init__(self, templates_directory, verbose=False):
-        self._templates_directory = templates_directory
+    def __init__(self, template_directories, verbose=False):
         self._jenv = jinja2.Environment(
-            loader=jinja2.FileSystemLoader(templates_directory),
+            loader=jinja2.FileSystemLoader(template_directories),
             trim_blocks=True,
             lstrip_blocks=True,
             undefined=jinja2.StrictUndefined
@@ -45,12 +44,10 @@ class J2Engine:
 
         self._jenv.filters['remove_lspaces'] = self.remove_lspaces
         self._jenv.filters['call_macro'] = self.call_macro
+        self._jenv.filters['add_spaces'] = self.add_spaces
+        self._jenv.filters['remove_spaces'] = self.remove_spaces        
         self._jenv.filters['if_true'] = self.if_true        
         self._verbose = verbose
-
-    @property
-    def templates_directory(self):
-        return self._templates_directory
 
     @staticmethod
     @jinja2.contextfilter
@@ -59,6 +56,26 @@ class J2Engine:
         return context.vars[macro_name](*args, **kwargs)
 
     @staticmethod
+    def add_spaces(text, count):
+        indent = ' '*count
+        new_text = ''.join('\n' + indent + line for line in text.splitlines())
+        return new_text
+
+    @staticmethod
+    def remove_spaces(text, count):
+        new_text = ''
+        lines = text.split('\n')
+
+        for lineno, line in enumerate(lines):
+            last = '\n' if lineno < len(lines) - 1 else ''
+            if line.startswith(' '*count):
+                new_text += line[count:] + last
+            else:
+                new_text += line + last
+                
+        return new_text
+
+    @staticmethod    
     def if_true(text, condition, remove_left_spaces=0):
         if not condition:
             return ''
@@ -77,18 +94,8 @@ class J2Engine:
 
     @staticmethod
     def remove_lspaces(text, count):
-        new_text = ''
-        lines = text.split('\n')
-
-        for lineno, line in enumerate(lines):
-            last = '\n' if lineno < len(lines) - 1 else ''
-            if line.startswith(' '*count):
-                new_text += line[count:] + last
-            else:
-                new_text += line + last
-                
-        return new_text
-
+        return J2Engine.remove_spaces(text, count)
+    
     @log_rendering_errors
     def render(self, path, **kwargs):
         text = self._jenv.get_template(path).render(**kwargs)

@@ -34,6 +34,14 @@ class _CodeLoader:
         code_obj = compile(self._source_bytes, file_name, 'exec', dont_inherit=True, optimize=2)
         exec(code_obj, module.__dict__)
 
+        
+def load_code_as_module(code, tag=None):
+    loader = _CodeLoader(code)
+    spec = importlib.machinery.ModuleSpec("my_module", loader)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module, tag=tag)        
+    return module
+
 
 class LayerHelper:
     def __init__(self, script_factory, layer_spec, graph_spec=None):
@@ -72,16 +80,13 @@ class LayerHelper:
             code = self.get_code(
                 prepend_imports=True, check_syntax=True, preamble=preamble, print_code=print_code
             )
-
-            loader = _CodeLoader(code)
-            spec = importlib.machinery.ModuleSpec("my_module", loader)
-            module = importlib.util.module_from_spec(spec)
-            try:        
-                spec.loader.exec_module(module, tag=self._make_tag())        
+            
+            try:
+                module = load_code_as_module(code, tag=self._make_tag())
             except:
                 logger.exception('Error importing code:\n' + add_line_numbering(code))
                 raise
-        
+
             self._class_object = getattr(module, self._layer_spec.sanitized_name)        
         return self._class_object
 

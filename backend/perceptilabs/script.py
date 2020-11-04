@@ -16,7 +16,15 @@ from perceptilabs.core_new.layers.templates import J2Engine
 from perceptilabs.core_new.graph.utils import sanitize_layer_name
 from perceptilabs.layers.utils import get_layer_definition
 from perceptilabs.logconf import APPLICATION_LOGGER
-from perceptilabs.core_new.layers.definitions import TEMPLATES_DIRECTORY
+
+
+
+mk_abs = lambda x: pkg_resources.resource_filename('perceptilabs', x) # Make absolute path
+
+TEMPLATE_DIRECTORIES = [ # Relative to the package root directory
+    mk_abs('core_new/layers/templates/'),
+    mk_abs('layers/jinja_macros/')
+]
 
 
 TOP_LEVEL_IMPORTS = {
@@ -75,8 +83,7 @@ class ScriptFactory:
         
         self._simple_message_bus = simple_message_bus
         
-        templates_directory = pkg_resources.resource_filename('perceptilabs', TEMPLATES_DIRECTORY)
-        self._engine = J2Engine(templates_directory)
+        self._engine = J2Engine(TEMPLATE_DIRECTORIES)
         self._top_level_imports = TOP_LEVEL_IMPORTS
         self._max_time_run = max_time_run
         self._running_mode = running_mode

@@ -1,4 +1,7 @@
 {% from 'tf1x_utils.j2' import session, session_distributed, check_input_vars %}
+{% from 'controlflow.j2' import indented_if, indented_loop %}
+{% from 'losses.j2' import loss_quadratic, loss_crossentropy, loss_weighted_crossentropy, loss_dice %}
+
 
 {% macro indented_loop(items) %}
     {% filter remove_lspaces(4) -%}                
@@ -485,14 +488,22 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
 
         return prediction_model, target_model
     
-    def _dataset_iteration(self, dataset, metric_loss, metric_accuracy, metric_auc, iteration_setter, is_training=True):        
-        loss_fn = tf.keras.losses.MeanSquaredError()
+    def _dataset_iteration(self, dataset, metric_loss, metric_accuracy, metric_auc, iteration_setter, is_training=True):
+        {% if layer_spec.loss_function == 'Quadratic' %}
+            {{ loss_quadratic('loss_fn') | add_spaces(count=4) }}
+        {% elif layer_spec.loss_function == 'Cross_entropy' %}
+            {{ loss_crossentropy('loss_fn') | add_spaces(count=4) }}
+        {% elif layer_spec.loss_function == 'W_cross_entropy' %}
+            {{ loss_weighted_crossentropy('loss_fn', layer_spec.class_weights) | add_spaces(count=4) }}
+        {% elif layer_spec.loss_function == 'Dice' %}
+            {{ loss_dice('loss_fn') | add_spaces(count=4) }}
+        {% endif %}
+        
         optimizer = tf.keras.optimizers.SGD(learning_rate={{layer_spec.learning_rate}})
 
         metric_loss.reset_states()
         metric_accuracy.reset_states()
         metric_auc.reset_states()
-        metric_accuracy.reset_states()        
 
         for step, (inputs_batch, labels_batch) in enumerate(dataset):
             iteration_setter(step)
