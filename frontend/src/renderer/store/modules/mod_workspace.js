@@ -49,8 +49,8 @@ const state = {
       openStatistics: null, //null - hide Statistics; false - close Statistics, true - open Statistics
       openTest: null,
       hideModel: false,
-      hideStatistics: true,
-      hideTest: true,
+      hideStatistics: false,
+      hideTest: false,
       zoom: 1,
       zoomSnapshot: 1,
       usingWeights: false,
@@ -726,6 +726,7 @@ const mutations = {
 
     if (!getters.GET_currentNetwork) { return; }
 
+    // debugger;
     getters.GET_currentNetwork.networkMeta.openStatistics = value;
     let isTraining = getters.GET_networkIsTraining;
 
