@@ -29,7 +29,6 @@ export default {
     }
   },
   mounted() {
-    //this.$refs.rootBaseElement.addEventListener('mousedown', this.switchMousedownEvent);
     this.$refs.rootBaseElement.addEventListener('touchstart', this.switchMousedownEvent);
   },
 

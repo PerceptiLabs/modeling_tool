@@ -6,12 +6,19 @@
         v-if="selectedEl !== null"
         @click="onOpenCodeButtonClick()"
         ) Open code
-    perfect-scrollbar.sidebar-setting-content(:data-tutorial-target="'tutorial-workspace-settings'")
+    perfect-scrollbar.sidebar-setting-content(
+      :data-tutorial-target="'tutorial-workspace-settings'"
+      :class="{'sidebar-setting-content-with-component': selectedEl !== null }"
+      )
       component.setting-values-wrapper(v-if="selectedEl !== null" :key="selectedEl.layerId" v-bind:is="selectedEl.componentName" :currentEl="selectedEl" ref="componentSettings")
       sidebar-setting-preview.setting-chart-wrapper(
         v-if="selectedEl !== null"
         :current-el="selectedEl"
         )
+    button.reset-component-btn(
+      v-if="selectedEl !== null"
+      @click="resetComponentSettings"
+      ) Reset Component
 </template>
 <script>
 
@@ -119,6 +126,9 @@ export default {
         element: this.selectedEl,
       });
     },
+    resetComponentSettings() {
+      this.$store.dispatch("mod_workspace/resetNetworkElementSettings", { layerId: this.selectedEl.layerId });
+    },
   }
   
 }
@@ -184,7 +194,22 @@ export default {
 .sidebar-setting-content {
   // padding: 10px;
   background-color: #23252A;
-  height: calc(60vh - 39px);
+  height: calc(65vh - 99px);
   overflow-x: scroll;
+  &.sidebar-setting-content-with-component {
+    height: calc(65vh - 123px);
+  }
+}
+.reset-component-btn {
+  margin-top: auto;
+  border-top: 1px solid #5D5E60;
+  background: #131B30;
+  border-radius: 1px;
+  font-family: Nunito Sans;
+  font-size: 11px;
+  line-height: 18px;
+  color: rgba(182, 199, 251, 0.75);
+  width: 100%;
+  height: 24px;
 }
 </style>

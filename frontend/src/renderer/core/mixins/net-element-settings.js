@@ -2,6 +2,7 @@ import SettingsCode     from '@/components/network-elements/elements-settings/se
 import NetBaseSettings  from '@/components/network-elements/net-base-settings/net-base-settings.vue';
 import { deepCopy, debounce }     from "@/core/helpers.js";
 import isEqual from 'lodash.isequal';
+import cloneDeep from 'lodash.clonedeep';
 
 const netElementSettings = {
   props: {
@@ -18,6 +19,10 @@ const netElementSettings = {
       // it will be triggered only when component is created
       this.saveSettingsToStore("Settings");
       this.$store.dispatch('mod_api/API_getBatchPreviewSampleForElementDescendants', this.currentEl.layerId);
+    }
+
+    if(!this.currentEl.hasOwnProperty('innitialSettings')) {
+      this.$store.dispatch('mod_workspace/setNetworkElementDefaultSetting', { layerId: this.currentEl.layerId});
     }
 
   },
@@ -49,6 +54,12 @@ const netElementSettings = {
       },
       deep: true,
     },
+    resetSettingClicker : {
+      handler() {
+        this.isSettedFromCore = true;
+        this.settings = cloneDeep(this.currentEl.layerSettings);
+      }
+    }
   },
   computed: {
     userMode() {
@@ -59,7 +70,10 @@ const netElementSettings = {
     },
     computedSettings: function() {
       return Object.assign({}, this.settings);
-    }
+    },
+    resetSettingClicker() {
+      return this.$store.state.mod_events.componentEvents.model.resetSettingClick;
+    },
   },
   methods: {
     saveSettingsToStore(tabName) {

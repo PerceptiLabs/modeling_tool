@@ -40,6 +40,9 @@ const state = {
   componentEvents: {
     test: {
       nextSampleClick: 0
+    },
+    model: {
+      resetSettingClick: 0,
     }
   },
   isEnableCustomHotKey: true,
@@ -76,6 +79,9 @@ const mutations = {
   },
   set_enableCustomHotKey(state, value) {
     state.isEnableCustomHotKey = value
+  },
+  set_componentEvent_model_resetSettingClick(state) {
+    state.componentEvents.model.resetSettingClick++;
   },
   set_isWorkspaceDragEvent(state, value) {
     state.isWorkspaceDragEvent = value;
@@ -487,6 +493,9 @@ const actions = {
   EVENT_componentEvent_test_nextSampleClick({commit}) {
     commit('set_componentEvent_test_nextSampleClick');
   },
+  EVENT_componentEvent_model_resetSettingClick({commit}) {
+    commit('set_componentEvent_model_resetSettingClick');
+  }
 };
 
 export default {

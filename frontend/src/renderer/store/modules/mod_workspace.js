@@ -1783,6 +1783,19 @@ const mutations = {
       }
     })
   },
+  setNetworkElementDefaultSettingMutation(state, { layerId, getters }) {
+    const el = getters.GET_networkElementById(layerId)
+    const innitialSettings = el.layerSettings
+    Vue.set(el, 'innitialSettings', innitialSettings);
+  },
+  resetNetworkElementSettingsMutation(state, { layerId, getters, dispatch }) {
+    const el = getters.GET_networkElementById(layerId);
+    el.layerSettings = el.innitialSettings;
+    el.visited = false;
+
+    dispatch('mod_api/API_getBatchPreviewSampleForElementDescendants', layerId, { root: true });
+    dispatch('mod_events/EVENT_componentEvent_model_resetSettingClick', null, { root: true });
+  },
 };
 
 
@@ -2477,6 +2490,12 @@ const actions = {
       dispatch('updateNetworkElementPositions', { zoom } )
       dispatch('SET_statusNetworkZoom', zoom  )
   },
+  setNetworkElementDefaultSetting({ commit, getters }, { layerId }) {
+    commit('setNetworkElementDefaultSettingMutation', { layerId, getters });
+  },
+  resetNetworkElementSettings({ commit, getters, dispatch }, { layerId }) {
+    commit('resetNetworkElementSettingsMutation', { layerId, getters, dispatch });
+  }
 };
 
 export default {
