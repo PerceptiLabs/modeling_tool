@@ -1,6 +1,11 @@
 <template lang="pug">
   .sidebar-setting-wrapper
     .sidebar-setting-head
+      sidebar-auto-setting-info(
+        v-if="selectedEl !== null"
+        :key="selectedEl.layerId"
+        :selectedEl="selectedEl"
+      )
       .sidebar-setting-head-name Settings
       button.btn-menu-bar(
         v-if="selectedEl !== null"
@@ -59,6 +64,7 @@ import TrainDetector        from '@/components/network-elements/elements/train-d
 import LayerCustom          from '@/components/network-elements/elements/layer-custom/layer-custom.vue'
 
 import SidebarSettingPreview  from "@/components/network-elements/elements-settings/sidebar-setting-preview.vue";
+import SidebarAutoSettingInfo from '@/components/sidebar/sidebar-auto-setting-info.vue'
 
 import { mapGetters, mapActions } from 'vuex';
 
@@ -78,7 +84,8 @@ export default {
     ProcessCrop, ProcessEmbed, ProcessGrayscale, ProcessOneHot, ProcessReshape, ProcessRescale,
     MathArgmax, MathMerge, MathSwitch, MathSoftmax, MathSplit,
     TrainNormal, TrainRegression, TrainGenetic, TrainDynamic, TrainReinforce, TrainLoss, TrainOptimizer, TrainGan, TrainDetector,
-    LayerCustom
+    LayerCustom,
+    SidebarAutoSettingInfo
   }, 
   computed: {
     ...mapGetters({
@@ -140,6 +147,7 @@ export default {
   // background-color: red;
 }
 .sidebar-setting-head {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
