@@ -1,43 +1,141 @@
-#Backend ignores
+# Osx hidden files
+.DS_Store
+
+# Byte-compiled / optimized / DLL files
+**/__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+#  Usually these files are written by a python script from a template
+#  before PyInstaller builds the exe, so as to inject date/other infos into it.
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff:
+**/*.log
+local_settings.py
+db.sqlite3
+
+# Flask stuff:
+instance/
+.webassets-cache
+
+# Scrapy stuff:
+.scrapy
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+target/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# celery beat schedule file
+celerybeat-schedule
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+.env
+**/.venv
+env/
+**/venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+
+#Backend
 backend/*.pyc
 backend/*.pyo
 backend/**/model.json
 backend/net.json
 backend/net.json_
-backend/venv/
-.venv/
 .env
 .python-version
 backend/venv-user/
-backend/data.log
 backend/dist/
 backend/deploy.py
 backend/training_script.py
 backend/training_script.py
 backend/training_scripts/*
-**/__pycache__/
 *.pyc
 *.py~
 *.zip
 *~
 *#*#
-build/
-.vscode/
-backend/.vscode/
-backend/kernel.log
-backend/data.log
+
+
 #Frontend ignores
 frontend_out
 frontend/core/*
 frontend/dist/*
-frontend/dist/electron/*
-frontend/dist/web/*
 frontend/node_modules/
 frontend/build/*
 !frontend/build/icons
 !frontend/build/*.plist
 !frontend/src/build/
-frontend/npm-debug.log
 frontend/npm-debug.log.*
 frontend/thumbs.db
 frontend/src/dist/
@@ -47,17 +145,13 @@ frontend/cypress/screenshots/**/*.png
 frontend/cypress/videos/**/*.mp4
 frontend/static_file_server/static_file_server/dist/
 !frontend/.gitkeep
-**/data.log
+log.txt
+backend/perceptilabs/insights/csv_ram_estimator/model_and_meta.pkl
+jsconfig.json
+
+# dev tools
 .idea
 .idea/*
 .idea/workspace.xml
 ../.idea/workspace.xml
-.vscode/*
-app.log
-backend.log
-kernel.log
-log.txt
-.DS_Store
-backend/perceptilabs/insights/csv_ram_estimator/model_and_meta.pkl
-jsconfig.json
-rygg
+**/.vscode/*
