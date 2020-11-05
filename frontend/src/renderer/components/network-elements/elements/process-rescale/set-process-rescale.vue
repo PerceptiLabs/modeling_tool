@@ -2,8 +2,9 @@
   .settings-layer_section.rescale
     .form_row
       .form_label Width * Height:
-      .form_input
+      .form_input(style="padding-left: 0")
         input(
+          style="width: 60px"
           type="number"
           v-model="settings.width"
           @focus="setIsSettingInputFocused(true)"
@@ -12,6 +13,7 @@
           )
       .form_input
         input(
+          style="width: 60px"
           type="number" 
           v-model="settings.height"
           @focus="setIsSettingInputFocused(true)"
@@ -75,6 +77,8 @@
       },
       toggleLock() {
         this.isLocked = !this.isLocked;
+        if(this.isLocked && this.settings.width > 0) 
+          this.ratio = this.settings.height / this.settings.width
       }
     },
   }
@@ -99,7 +103,7 @@
   .multiple.icon-app-close {
     position: absolute;
     top: 18px;
-    right: 24%;
+    right: 31%;
     font-size: 6px;    
   }
 </style>
