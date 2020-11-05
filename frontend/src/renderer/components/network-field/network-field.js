@@ -64,11 +64,12 @@ export default {
   },
   mounted() {
     this.drawArrows();
-    this.$store.dispatch('mod_events/EVENT_IOGenerateAction', null, {root: true})
-      .then(() => {
-        // this.$store.dispatch('mod_api/API_getOutputDim');
-        this.getAllPreviews();
-      });
+    if(!this.isViewMode) {
+      this.$store.dispatch('mod_events/EVENT_IOGenerateAction', null, {root: true})
+        .then(() => {
+          this.getAllPreviews();
+        });
+    }
   },
   beforeDestroy() {
     this.removeArrowListener();
