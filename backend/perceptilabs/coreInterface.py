@@ -968,7 +968,7 @@ class coreLogic():
             if view=="Prediction":
                 #Make sure that all the inputs are sent to frontend!!!!!!!!!!!!!!!
                 inputs=[self.getStatistics({"layerId": node.id_,"variable":"Y","innervariable":""})[-1] for node in self.graph_spec.get_start_nodes()]
-                D = [createDataObject([input_]) for input_ in inputs]
+                D = [createDataObject([input_], subSampleSize=200) for input_ in inputs]
                 
                 X = self.getStatistics({"layerId": layerId, "variable":"X", "innervariable":""})
 
