@@ -50,10 +50,10 @@
           span All changes saved
         button.revert-btn(
           @click="beforeCloseWindowCheck"
-        ) Cancel
-        button.save-btn(
-          @click="onSaveClick"
-        ) Save
+        ) Close
+        // button.save-btn(
+        //   @click="onSaveClick"
+        // ) Save
 
 </template>
 
@@ -359,6 +359,8 @@ export default {
       }
     }
     .revert-btn {
+      background: #6185EE;
+      margin: 0 1rem;      
       margin-left: auto;
     }
     .save-btn {
