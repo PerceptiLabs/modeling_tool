@@ -25,9 +25,9 @@
                 path(fill-rule="evenodd" clip-rule="evenodd" d="M0 0L2.5 2.5L5 0L0 0Z" fill="#E1E1E1")
               svg(v-else width="3" height="5" viewBox="0 0 3 5" fill="none" xmlns="http://www.w3.org/2000/svg")
                 path(fill-rule="evenodd" clip-rule="evenodd" d="M0.25 5L2.75 2.5L0.25 1.09278e-07L0.25 5Z" fill="#E1E1E1")
-            .item-header-label Type of message
+            .item-header-label  {{ titleMessage(e.Message) }}
           .item-message(v-if="expandedItems.includes(e.id)")
-            .item-message-header Problem
+            // .item-message-header Problem
             pre.item-message-content(
               @dblclick="onDblClickMessage(e.layerId)"
             ) {{ e.Message }}
@@ -57,9 +57,9 @@
                 path(fill-rule="evenodd" clip-rule="evenodd" d="M0 0L2.5 2.5L5 0L0 0Z" fill="#E1E1E1")
               svg(v-else width="3" height="5" viewBox="0 0 3 5" fill="none" xmlns="http://www.w3.org/2000/svg")
                 path(fill-rule="evenodd" clip-rule="evenodd" d="M0.25 5L2.75 2.5L0.25 1.09278e-07L0.25 5Z" fill="#E1E1E1")
-            .item-header-label Type of message
+            .item-header-label {{ titleMessage(w.Message) }}
           .item-message(v-if="expandedItems.includes(w.id)")
-            .item-message-header Problem
+            // .item-message-header Problem
             pre.item-message-content(
               @dblclick="onDblClickMessage(w.layerId)"
             ) {{ w.Message }}
@@ -100,6 +100,10 @@ export default {
     }
   },
   methods: {
+    titleMessage(message) {
+      const array = message.trim().split("\n");
+      return array.pop();
+    },
     onDblClickMessage(layerId) {
       if (!layerId) { return; }
       const element = this.$store.getters['mod_workspace/GET_networkElementById'](layerId);
@@ -275,6 +279,12 @@ export default {
           background: rgba(97, 133, 238, 0.25);
         }
       }
+    }
+
+    .item-header-label {
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
     }
   }
 </style>
