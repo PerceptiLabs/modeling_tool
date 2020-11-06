@@ -155,10 +155,21 @@ perceptilabs/core_new/__init__.py
 perceptilabs/core_new/core2.py
 perceptilabs/core_new/errors.py
 perceptilabs/core_new/extras.py
-perceptilabs/core_new/lightweight2.py
-perceptilabs/core_new/cache2.py
 perceptilabs/core_new/utils.py
 perceptilabs/core_new/serialization.py
+
+# perceptilabs/lwcore
+perceptilabs/lwcore/__init__.py
+perceptilabs/lwcore/base.py
+perceptilabs/lwcore/cache.py
+perceptilabs/lwcore/results.py
+perceptilabs/lwcore/utils.py
+
+# perceptilabs/lwcore
+perceptilabs/lwcore/strategies/__init__.py
+perceptilabs/lwcore/strategies/base.py
+perceptilabs/lwcore/strategies/tf1x.py
+perceptilabs/lwcore/strategies/tf2x.py
 
 # perceptilabs/core_new/communication
 perceptilabs/core_new/communication/__init__.py

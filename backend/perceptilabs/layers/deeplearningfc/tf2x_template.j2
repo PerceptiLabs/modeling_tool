@@ -40,6 +40,7 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
         
         {% call indented_if(layer_spec.batch_norm) %}
             y = tf.keras.layers.BatchNormalization()(y_before, training=is_training)
+            {{ activation_function(layer_spec.activation, 'y_before') | indent(8) }}            
         {% endcall %}
         {% call indented_if(not layer_spec.batch_norm) %}
             y = y_before
@@ -61,7 +62,14 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
         Returns:
             A dictionary of sample tensors
         """
-        return self._outputs
+        {% call indented_if(layer_spec.batch_norm) %}            
+            sample = self._outputs
+            sample['output'] = sample['y_before'] # Before batch normalization
+            return sample
+        {% endcall %}
+        {% call indented_if(not layer_spec.batch_norm) %}
+            return self._outputs
+        {% endcall %}
 
     @property
     def variables(self):

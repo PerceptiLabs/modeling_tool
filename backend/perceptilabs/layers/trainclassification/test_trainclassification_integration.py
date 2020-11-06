@@ -10,13 +10,9 @@ from perceptilabs.utils import add_line_numbering
 from perceptilabs.issues import traceback_from_exception
 from perceptilabs.script import ScriptFactory
 from perceptilabs.layers.helper import LayerHelper
-from perceptilabs.layers.trainclassification.spec import TrainClassificationSpec
-from perceptilabs.layers.specbase import LayerConnection
-from perceptilabs.layers.datadata.spec import DataDataSpec, DataSource
-from perceptilabs.layers.processonehot.spec import ProcessOneHotSpec
-from perceptilabs.layers.processreshape.spec import ProcessReshapeSpec
-from perceptilabs.layers.deeplearningfc.spec import DeepLearningFcSpec
 from perceptilabs.layers.utils import graph_spec_to_core_graph
+from perceptilabs.layers.specbase import LayerConnection
+from perceptilabs.layers.trainclassification.spec import TrainClassificationSpec
 from perceptilabs.graph.spec import GraphSpec
 
 
@@ -29,77 +25,8 @@ def script_factory():
 def script_factory_tf2x():
     yield ScriptFactory(mode='tf2x')
     
-
-def make_graph_spec(temp_path_checkpoints, inputs_path, targets_path, learning_rate=0.3, checkpoint_path=None, distributed=False, n_epochs=200, early_stopping=False): # TODO: fix checkpoint path. it can't be none
-    
-    if checkpoint_path is None:
-        checkpoint_path = temp_path_checkpoints
-    # --- CONNECTIONS ---
-    conn_inputs_to_fc = LayerConnection(src_id='layer_inputs', src_var='output', dst_id='layer_fc', dst_var='input')
-    conn_fc_to_train = LayerConnection(src_id='layer_fc', src_var='output', dst_id='layer_train', dst_var='predictions')
-    
-    conn_labels_to_train = LayerConnection(src_id='layer_labels', src_var='output', dst_id='layer_train', dst_var='labels')
-    # --- LAYER SPECS ---
-    layer_inputs = DataDataSpec(
-        id_='layer_inputs',
-        name='layer_inputs',
-        sources=[DataSource(
-            type_='file',
-            path=inputs_path.replace('\\','/'),
-            ext='.npy',
-            split=(70, 20, 10)            
-        )],
-        checkpoint_path=checkpoint_path,
-        forward_connections=(conn_inputs_to_fc,)
-    )
-    layer_fc = DeepLearningFcSpec(
-        id_='layer_fc',
-        name='layer_fc',        
-        n_neurons=3,
-        checkpoint_path=checkpoint_path,
-        backward_connections=(conn_inputs_to_fc,),
-        forward_connections=(conn_fc_to_train,)
-    )
-    layer_labels = DataDataSpec(
-        id_='layer_labels',
-        name='layer_labels',
-        sources=[DataSource(
-            type_='file',
-            path=targets_path.replace('\\','/'),
-            ext='.npy',
-            split=(70, 20, 10)            
-        )],
-        checkpoint_path=checkpoint_path,
-        forward_connections=(conn_labels_to_train,)
-    )
-    layer_train = TrainClassificationSpec(
-        id_='layer_train',
-        name='layer_train',
-        batch_size=8,
-        optimizer='SGD',
-        learning_rate=learning_rate,
-        n_epochs=n_epochs,
-        distributed=distributed,
-        checkpoint_path=checkpoint_path,
-        load_checkpoint = True,
-        backward_connections=(conn_labels_to_train, conn_fc_to_train),
-        connection_labels=conn_labels_to_train,
-        connection_predictions=conn_fc_to_train,
-        stop_condition='TargetAccuracy' if early_stopping else 'Epochs',
-        target_acc=50 if early_stopping else None
-    )
-
-    graph_spec = GraphSpec([
-        layer_inputs,
-        layer_fc,
-        layer_labels,
-        layer_train
-    ])
-    return graph_spec
-
-
 @pytest.fixture()
-def graph_spec(temp_path, temp_path_checkpoints):
+def graph_spec(make_graph_spec, temp_path, temp_path_checkpoints):
     graph_spec = make_graph_spec(
         temp_path_checkpoints, 
         os.path.join(temp_path, '16x4_inputs.npy'),
@@ -109,7 +36,7 @@ def graph_spec(temp_path, temp_path_checkpoints):
 
     
 @pytest.fixture()
-def graph_spec_early_stopping(temp_path, temp_path_checkpoints):
+def graph_spec_early_stopping(make_graph_spec, temp_path, temp_path_checkpoints):
     graph_spec = make_graph_spec(
         temp_path_checkpoints, 
         os.path.join(temp_path, '16x4_inputs.npy'),
@@ -120,7 +47,7 @@ def graph_spec_early_stopping(temp_path, temp_path_checkpoints):
 
     
 @pytest.fixture()
-def graph_spec_few_epochs(temp_path, temp_path_checkpoints):
+def graph_spec_few_epochs(make_graph_spec, temp_path, temp_path_checkpoints):
     graph_spec = make_graph_spec(
         temp_path_checkpoints, 
         os.path.join(temp_path, '16x4_inputs.npy'),
@@ -131,7 +58,7 @@ def graph_spec_few_epochs(temp_path, temp_path_checkpoints):
     
     
 @pytest.fixture()
-def graph_spec_distr(temp_path, temp_path_checkpoints):
+def graph_spec_distr(make_graph_spec, temp_path, temp_path_checkpoints):
     graph_spec = make_graph_spec(
         temp_path_checkpoints,
         os.path.join(temp_path, '16x4_inputs.npy'),
@@ -274,7 +201,7 @@ def test_save_checkpoint(script_factory, graph_spec, temp_path_checkpoints):
     #tf.reset_default_graph()
     shutil.rmtree(checkpoint_path)
 
-def test_initial_weights_differ(script_factory, temp_path, temp_path_checkpoints):
+def test_initial_weights_differ(make_graph_spec, script_factory, temp_path, temp_path_checkpoints):
     """ Check that the weights are DIFFERENT when creating two graphs. If not, it might not be meaningful to test loading a checkpoint """
     inputs_path = os.path.join(temp_path, '16x4_inputs.npy')
     targets_path = os.path.join(temp_path, '16x4_targets.npy')
@@ -312,7 +239,7 @@ def test_initial_weights_differ(script_factory, temp_path, temp_path_checkpoints
     assert np.all(w1 != w2)
     
 
-def test_load_checkpoint(script_factory, temp_path, temp_path_checkpoints):
+def test_load_checkpoint(make_graph_spec, script_factory, temp_path, temp_path_checkpoints):
     checkpoint_path = os.path.join(temp_path, "checkpoint")
     
     inputs_path = os.path.join(temp_path, '16x4_inputs.npy')
@@ -458,7 +385,7 @@ def test_save_checkpoint_distributed(script_factory, graph_spec_distr, temp_path
     assert any(x.startswith('model.ckpt') for x in os.listdir(temp_path))
 
 
-def test_initial_weights_differ_distributed(script_factory, temp_path, temp_path_checkpoints):
+def test_initial_weights_differ_distributed(make_graph_spec, script_factory, temp_path, temp_path_checkpoints):
     """ Check that the weights are DIFFERENT when creating two graphs. If not, it might not be meaningful to test loading a checkpoint """
     inputs_path = os.path.join(temp_path, '16x4_inputs.npy')
     targets_path = os.path.join(temp_path, '16x4_targets.npy')
@@ -494,7 +421,7 @@ def test_initial_weights_differ_distributed(script_factory, temp_path, temp_path
     assert np.all(w1 != w2)
 
     
-def test_load_checkpoint_distributed(script_factory, temp_path, temp_path_checkpoints):
+def test_load_checkpoint_distributed(make_graph_spec, script_factory, temp_path, temp_path_checkpoints):
     inputs_path = os.path.join(temp_path, '16x4_inputs.npy')
     targets_path = os.path.join(temp_path, '16x4_targets.npy')
     

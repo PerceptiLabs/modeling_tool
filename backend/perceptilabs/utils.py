@@ -33,6 +33,10 @@ def is_tf2x():
         return True
 
     return False
+
+
+def is_tf1x():
+    return not is_tf2x()
     
 
 def deprecated(func):

@@ -18,8 +18,7 @@ from perceptilabs.utils import stringify
 from perceptilabs.core_new.errors import LightweightErrorHandler
 from perceptilabs.core_new.extras import LayerExtrasReader
 from perceptilabs.logconf import APPLICATION_LOGGER, set_user_email
-from perceptilabs.core_new.lightweight2 import LightweightCoreAdapter, LightweightCore
-from perceptilabs.core_new.cache2 import LightweightCache
+from perceptilabs.lwcore import LightweightCoreAdapter, LightweightCore, LightweightCache
 import perceptilabs.utils as utils
 import perceptilabs.dataevents as dataevents
 from perceptilabs.messaging.zmq_wrapper import ZmqMessagingFactory, ZmqMessageConsumer

@@ -93,7 +93,7 @@ class TrainClassificationSpec(TrainingLayerSpec):
         Returns:
             A LayerSpec
         """
-        return graph_spec[self.get_connection_predictions().src_id]
+        return graph_spec.nodes_by_id.get(self.get_connection_predictions().src_id)
 
     def get_target_layer(self, graph_spec: AbstractGraphSpec) -> LayerSpec:
         """ Returns the LayerSpec going into the 'labels' connection
@@ -104,7 +104,7 @@ class TrainClassificationSpec(TrainingLayerSpec):
         Returns:
             A LayerSpec
         """
-        return graph_spec[self.get_connection_labels().src_id]        
+        return graph_spec.nodes_by_id.get(self.get_connection_labels().src_id)
 
     def get_prediction_data_layer(self, graph_spec: AbstractGraphSpec) -> DataLayerSpec:
         """ Returns the DataLayerSpec going into the 'predictions' connection (potentially via other layers).
@@ -134,6 +134,9 @@ class TrainClassificationSpec(TrainingLayerSpec):
 
     def _get_data_layer_feeding_into(self, into_layer, graph_spec):
         """ Get all data type ancestors of a layer"""
+        if into_layer is None:
+            return None
+        
         for layer_spec in graph_spec.layers:
             if layer_spec.is_ancestor_to(into_layer, graph_spec) and layer_spec.is_data_layer:
                 return layer_spec
@@ -165,6 +168,9 @@ class TrainClassificationSpec(TrainingLayerSpec):
 
     def _get_inner_layers_feeding_into(self, into_layer, graph_spec):
         """ Get all ancestors of a layer"""
+        if into_layer is None:
+            return []
+
         layers = []
         for layer_spec in graph_spec.get_ordered_layers():
             if layer_spec.is_ancestor_to(into_layer, graph_spec) and not layer_spec.is_data_layer:
@@ -182,3 +188,11 @@ class TrainClassificationSpec(TrainingLayerSpec):
     def get_connection_predictions(self) -> LayerConnection:
         """ Returns the connection for the predictions. If unset, returns a new LayerConnection """
         return self.connection_predictions or LayerConnection()
+
+    @property
+    def is_fully_configured(self):
+        """ If some configuration is missing. E.g., labels connection for a training layer """
+        return (self.connection_labels is not None) and (self.connection_predictions is not None)
+
+
+    

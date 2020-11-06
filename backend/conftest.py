@@ -38,7 +38,7 @@ def init_graph(request):
             yield
 
     
-@pytest.fixture()
+@pytest.fixture(scope='function')
 def temp_path():
     path = tempfile.mkdtemp().replace('\\', '/')
 
@@ -149,6 +149,33 @@ def temp_path_checkpoints():
     path = os.path.join(path, 'dummy_model', 'checkpoint')
     path = path.replace('\\', '/')
     yield path
+    
+
+@pytest.fixture(scope='session')
+def load_jinja_macro():    
+    j2_engine = J2Engine(TEMPLATE_DIRECTORIES)
+
+    def closure(macro_file, macro_name, macro_parameters=None, preamble=None):
+        preamble = preamble + '\n' if preamble else ''
+
+        def format_param(x):
+            if isinstance(x, str):
+                x = f"'{x}'"
+            return x
+
+        # Construct jinja template
+        template  = preamble
+        template += "{% from '" + macro_file + "' import " + macro_name + " %}\n"
+
+        if macro_parameters:
+            template += "{{ " + macro_name + "(\n"
+            for param_name, param_value in macro_parameters.items():
+                template += f"    {param_name}={format_param(param_value)},\n"
+            template += ") | remove_spaces(4) }}\n"
+        else:
+            template += "{{ " + macro_name + "() | remove_spaces(4) }}\n"
+            
+        template = template.strip()
 
     
 @pytest.fixture(scope='session')
@@ -184,3 +211,107 @@ def load_jinja_macro():
         return module
     
     yield closure
+
+
+@pytest.fixture(scope='session')    
+def make_graph_spec():
+    from perceptilabs.layers.specbase import LayerConnection
+    from perceptilabs.layers.datadata.spec import DataDataSpec, DataSource
+    from perceptilabs.layers.processonehot.spec import ProcessOneHotSpec
+    from perceptilabs.layers.processreshape.spec import ProcessReshapeSpec
+    from perceptilabs.layers.deeplearningfc.spec import DeepLearningFcSpec
+    from perceptilabs.layers.trainclassification.spec import TrainClassificationSpec
+    from perceptilabs.graph.spec import GraphSpec    
+    import tempfile
+
+
+    
+    def fn_make_graph_spec(temp_path_checkpoints, inputs_path, targets_path, learning_rate=0.3, checkpoint_path=None, distributed=False, n_epochs=200, early_stopping=False): # TODO: fix checkpoint path. it can't be none
+        checkpoint_path = checkpoint_path or temp_path_checkpoints
+        
+        # --- CONNECTIONS ---
+        conn_inputs_to_fc = LayerConnection(src_id='layer_inputs', src_var='output', dst_id='layer_fc', dst_var='input')
+        conn_fc_to_train = LayerConnection(src_id='layer_fc', src_var='output', dst_id='layer_train', dst_var='predictions')
+    
+        conn_labels_to_train = LayerConnection(src_id='layer_labels', src_var='output', dst_id='layer_train', dst_var='labels')
+        # --- LAYER SPECS ---
+        layer_inputs = DataDataSpec(
+            id_='layer_inputs',
+            name='layer_inputs',
+            sources=[DataSource(
+                type_='file',
+                path=inputs_path.replace('\\','/'),
+                ext='.npy',
+                split=(70, 20, 10)            
+            )],
+            checkpoint_path=checkpoint_path,
+            forward_connections=(conn_inputs_to_fc,)
+        )
+        layer_fc = DeepLearningFcSpec(
+            id_='layer_fc',
+            name='layer_fc',        
+            n_neurons=3,
+            checkpoint_path=checkpoint_path,
+            backward_connections=(conn_inputs_to_fc,),
+            forward_connections=(conn_fc_to_train,)
+        )
+        layer_labels = DataDataSpec(
+            id_='layer_labels',
+            name='layer_labels',
+            sources=[DataSource(
+                type_='file',
+                path=targets_path.replace('\\','/'),
+                ext='.npy',
+                split=(70, 20, 10)            
+            )],
+            checkpoint_path=checkpoint_path,
+            forward_connections=(conn_labels_to_train,)
+        )
+        layer_train = TrainClassificationSpec(
+            id_='layer_train',
+            name='layer_train',
+            batch_size=8,
+            optimizer='SGD',
+            learning_rate=learning_rate,
+            n_epochs=n_epochs,
+            distributed=distributed,
+            checkpoint_path=checkpoint_path,
+            load_checkpoint = True,
+            backward_connections=(conn_labels_to_train, conn_fc_to_train),
+            connection_labels=conn_labels_to_train,
+            connection_predictions=conn_fc_to_train,
+            stop_condition='TargetAccuracy' if early_stopping else 'Epochs',
+            target_acc=50 if early_stopping else None
+        )
+    
+        graph_spec = GraphSpec([
+            layer_inputs,
+            layer_fc,
+            layer_labels,
+            layer_train
+        ])
+        return graph_spec
+    
+    yield fn_make_graph_spec
+
+
+@pytest.fixture(scope='function')
+def classification_spec_basic(make_graph_spec, temp_path, temp_path_checkpoints):
+    graph_spec = make_graph_spec(
+        temp_path_checkpoints, 
+        os.path.join(temp_path, '16x4_inputs.npy'),
+        os.path.join(temp_path, '16x4_targets.npy')
+    )        
+    yield graph_spec
+
+
+@pytest.fixture(scope='session')
+def script_factory():
+    from perceptilabs.script import ScriptFactory    
+    yield ScriptFactory()
+
+    
+@pytest.fixture(scope='session')
+def script_factory_tf2x():
+    from perceptilabs.script import ScriptFactory        
+    yield ScriptFactory(mode='tf2x')

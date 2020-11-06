@@ -325,6 +325,11 @@ class LayerSpec(ABC, MyBaseModel):
 
     def is_ancestor_to(self, layer_spec, graph_spec):
         return (layer_spec == self) or (self in graph_spec.get_ancestors(layer_spec))
+
+    @property
+    def is_fully_configured(self):
+        """ If some configuration is missing. E.g., labels connection for a training layer """
+        return True
     
 
 class InnerLayerSpec(LayerSpec):
@@ -342,7 +347,7 @@ class TrainingLayerSpec(InnerLayerSpec):
     @property
     def is_training_layer(self):
         return True
-
+    
 
 class DataLayerSpec(InnerLayerSpec):
     @property

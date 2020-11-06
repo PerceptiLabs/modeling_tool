@@ -7,7 +7,7 @@ from perceptilabs.autosettings import InferenceRule
 from perceptilabs.graph.spec import GraphSpec
 from perceptilabs.layers.specbase import LayerSpec
 from perceptilabs.layers.utils import get_layer_builder
-from perceptilabs.core_new.lightweight2 import LayerResults
+from perceptilabs.lwcore import LayerResults
 
 
 class DeepLearningFcOutputShapeFromLabels(InferenceRule):
@@ -389,7 +389,7 @@ if __name__ == "__main__":
         DataDataShouldUseLazy
     ]
     
-    from perceptilabs.core_new.lightweight2 import LightweightCore
+    from perceptilabs.lwcore import LightweightCore
     engine = SettingsEngine(rules, lw_core=LightweightCore())
     rec_net = engine.run(graph_spec, graph_spec_tmp=json_network)
     

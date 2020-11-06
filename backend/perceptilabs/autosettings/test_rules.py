@@ -2,7 +2,7 @@ import pytest
 import tempfile
 import numpy as np
 
-from perceptilabs.core_new.lightweight2 import LightweightCore
+from perceptilabs.lwcore import LightweightCore
 from perceptilabs.graph.spec import GraphSpec
 from perceptilabs.autosettings import SettingsEngine
 import perceptilabs.autosettings.rules as rules

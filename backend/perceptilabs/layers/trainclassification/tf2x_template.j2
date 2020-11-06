@@ -381,7 +381,7 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
 
     def _get_io_layer_ids(self, graph):
         {% filter if_true(layer_spec.get_connection_predictions() is not none, remove_left_spaces=4) %}
-            output_layer_id = "{{graph_spec.nodes_by_id[layer_spec.get_connection_predictions().src_id].sanitized_name}}"
+            output_layer_id = "{{layer_spec.get_connection_predictions().get_src_sanitized_name(graph_spec)}}"
             output_var_name = "{{layer_spec.get_connection_predictions().src_var}}"
         {% endfilter %}
         {% filter if_true(layer_spec.get_connection_predictions() is none, remove_left_spaces=4) %}        
@@ -389,8 +389,8 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
             output_var_name = None                
         {% endfilter %}
         {% filter if_true(layer_spec.get_connection_labels() is not none, remove_left_spaces=4) %}
-        
-            target_layer_id = "{{graph_spec.nodes_by_id[layer_spec.get_connection_labels().src_id].sanitized_name}}"
+
+            target_layer_id = "{{layer_spec.get_connection_labels().get_src_sanitized_name(graph_spec)}}"
             target_var_name = "{{layer_spec.get_connection_predictions().src_var}}"                
         {% endfilter %}
         {% filter if_true(layer_spec.get_connection_labels() is none, remove_left_spaces=4) %}

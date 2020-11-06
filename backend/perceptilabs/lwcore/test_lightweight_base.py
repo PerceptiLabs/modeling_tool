@@ -4,7 +4,7 @@ import tempfile
 import numpy as np
 
 
-from perceptilabs.core_new.lightweight2 import LightweightCore
+from perceptilabs.lwcore import LightweightCore
 from perceptilabs.utils import sanitize_path
 from perceptilabs.graph.spec import GraphSpec
 

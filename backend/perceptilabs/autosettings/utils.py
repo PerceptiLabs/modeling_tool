@@ -6,7 +6,7 @@ from perceptilabs.autosettings import DEFAULT_RULES, SettingsEngine
 from perceptilabs.graph.spec import GraphSpec
 from perceptilabs.layers.specbase import DummySpec
 from perceptilabs.layers import get_layer_builder
-from perceptilabs.core_new.lightweight2 import LightweightCore
+from perceptilabs.lwcore import LightweightCore
 from perceptilabs.logconf import APPLICATION_LOGGER
 
 

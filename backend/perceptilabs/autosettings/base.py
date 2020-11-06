@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 import networkx as nx
 
 from perceptilabs.graph.spec import GraphSpec
-from perceptilabs.core_new.lightweight2 import LayerResults
+from perceptilabs.lwcore import LayerResults
 from perceptilabs.layers.specbase import LayerSpec, DummySpec
 from perceptilabs.layers.utils import get_layer_definition
 from perceptilabs.logconf import APPLICATION_LOGGER
