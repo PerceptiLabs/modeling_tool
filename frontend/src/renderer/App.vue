@@ -93,6 +93,8 @@
       
     },
     mounted() {
+      this.getPyPiUpdate();
+
       if (this.isDefaultProjectMode) { 
         // in the free version, the user is locked to a single project
         this.getDefaultModeProject();
@@ -467,6 +469,8 @@
         deleteId:            'mod_webstorage/deleteId',
         deleteAllIds:        'mod_webstorage/deleteAllIds',        
         updateWorkspaces:    'mod_webstorage/updateWorkspaces',
+
+        getPyPiUpdate:          'mod_workspace-notifications/getPyPiUpdate',
 
         setCurrentView:         'mod_tutorials/setCurrentView',
       }),

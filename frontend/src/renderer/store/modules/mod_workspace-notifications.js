@@ -274,7 +274,7 @@ const actions = {
     commit('setWindowState', { networkId, value, selectedTab });
     commit('setSelectedId', { networkId, selectedId });
   },
-  getPiPyUpdate({ commit }) {
+  getPyPiUpdate({ commit }) {
     return rygg.get(`/app/updates_available`)
       .then((res) => {
         if (res.data.newer_versions.length > 0) {

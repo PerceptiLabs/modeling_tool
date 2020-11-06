@@ -84,7 +84,7 @@ export default {
       closeActivePageAction:  'modal_pages/closePageAction',
       cloud_userGetProfile:   'mod_apiCloud/CloudAPI_userGetProfile',
       getDefaultModeProject:  'mod_project/getDefaultModeProject',
-      getPiPyUpdate:          'mod_workspace-notifications/getPiPyUpdate',
+      getPyPiUpdate:          'mod_workspace-notifications/getPyPiUpdate',
       setCurrentView:         'mod_tutorials/setCurrentView',
     }),
     togglePasswordVisibility(fieldName) {
@@ -110,7 +110,7 @@ export default {
       };
       this.$store.dispatch('mod_apiCloud/CloudAPI_userLogin', dataParams)
         .then((tokens)=> {
-          this.getPiPyUpdate();     
+          this.getPyPiUpdate();     
            
           if(tokens) {
             if(isWeb()) {
