@@ -3,7 +3,6 @@ import saveNet    from './workspace-save-net.js'
 import scaleNet   from './workspace-scale.js'
 import spinnerNet from './workspace-spinner.js'
 import helpersNet from './workspace-helpers.js'
-import dragNet    from './workspace-drag.js'
 import {debounce} from '@/core/helpers'
 import { 
   TRACKER_SCREENNAME_WORKSPACE,
@@ -51,7 +50,7 @@ import { saveModelJson as fileserver_saveModelJson } from '@/core/apiFileserver'
 
 export default {
   name: 'WorkspaceContent',
-  mixins: [saveNet, scaleNet, spinnerNet, helpersNet, dragNet],
+  mixins: [saveNet, scaleNet, spinnerNet, helpersNet],
   components: {
     WorkspaceToolbar, StatisticsToolbar,
     NetworkField, TextEditable,

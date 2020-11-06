@@ -42,6 +42,7 @@ import LayerCustom          from '@/components/network-elements/elements/layer-c
 
 import SettingsArrow        from '@/components/network-elements/elements-settings/setting-arrow.vue'
 
+import NetworkDrag    from '@/components/network-field/network-drag.js'
 import { mapGetters, mapMutations, mapActions } from 'vuex';
 import { deepCopy } from "@/core/helpers.js";
 
@@ -62,6 +63,7 @@ export default {
     LayerContainer, LayerCustom,
     SettingsArrow
   },
+  mixins: [NetworkDrag],
   mounted() {
     this.drawArrows();
     if(!this.isViewMode) {
