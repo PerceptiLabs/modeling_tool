@@ -7,23 +7,28 @@ import logging
 import argparse
 import threading
 import pkg_resources
-import tensorflow as tf    
-
-
-
+import tensorflow as tf
 
 
 import perceptilabs.logconf
 import perceptilabs.utils as utils
+from perceptilabs.main_setup import setup_sentry, set_sentry_tag
 from perceptilabs.messaging.zmq_wrapper import get_message_bus
 from perceptilabs.issues import IssueHandler
+
+APP_VARIABLES = utils.get_app_variables()        
+COMMIT_ID = APP_VARIABLES["BuildVariables"]["CommitId"]
+
+setup_sentry(COMMIT_ID)
+set_sentry_tag('error-type', 'startup-error')
+
 
 if utils.is_tf2x():
     tf.enable_v2_behavior()
 else:
     tf.disable_v2_behavior()    
 
-
+    
 def get_input_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('-l','--log-level', default=None, type=str, choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
@@ -41,15 +46,13 @@ def get_input_args():
 
 
 def main():
+    
     args = get_input_args()
     session_id = uuid.uuid4().hex
     issue_handler = IssueHandler()
 
-    app_variables = utils.get_app_variables()        
-    commit_id = app_variables["BuildVariables"]["CommitId"]
-    
     perceptilabs.logconf.setup_application_logger(log_level=args.log_level)
-    perceptilabs.logconf.setup_data_logger(is_dev=(commit_id == "Dev"))
+    perceptilabs.logconf.setup_data_logger(is_dev=(COMMIT_ID == "Dev"))
     perceptilabs.logconf.set_session_id(session_id)
     perceptilabs.logconf.setup_console_logger(queue = issue_handler._logs)
 
@@ -61,10 +64,10 @@ def main():
     
     from perceptilabs.mainInterface import Interface
     from perceptilabs.server.appServer import Server
-    from perceptilabs.main_setup import setup_sentry
 
-    setup_sentry(args.user, commit_id)
-    logger.info("Reporting errors with commit id: " + str(commit_id))
+
+
+    logger.info("Reporting errors with commit id: " + str(COMMIT_ID))
 
     message_bus = get_message_bus()
     message_bus.start()
@@ -86,6 +89,7 @@ def main():
     if args.error:
         raise Exception("Test error")
 
+    set_sentry_tag('error-type', 'internal-error')    
     print("PerceptiLabs is ready...")
 
     try:

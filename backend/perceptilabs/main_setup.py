@@ -9,7 +9,7 @@ from perceptilabs.logconf import APPLICATION_LOGGER
 
 logger = logging.getLogger(APPLICATION_LOGGER)
 
-def setup_sentry(user=None, commit_id=None):
+def setup_sentry(commit_id=None):
     def strip_unimportant_errors(event, hint):
         log_ignores=['Error in getTestingStatistics', 'Error in getTrainingStatistics', ]
 
@@ -25,5 +25,7 @@ def setup_sentry(user=None, commit_id=None):
         scope.set_tag('error-type', 'internal-error')
         sentry_sdk.utils.MAX_STRING_LENGTH = 8192
 
-        if user:
-            scope.user = {"email" : user}
+
+def set_sentry_tag(tag, value):
+    with sentry_sdk.configure_scope() as scope:
+        scope.set_tag(tag, value)
