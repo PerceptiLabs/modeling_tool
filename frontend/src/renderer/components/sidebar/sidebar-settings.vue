@@ -15,7 +15,17 @@
       :data-tutorial-target="'tutorial-workspace-settings'"
       :class="{'sidebar-setting-content-with-component': selectedEl !== null }"
       )
-      component.setting-values-wrapper(v-if="selectedEl !== null" :key="selectedEl.layerId" v-bind:is="selectedEl.componentName" :currentEl="selectedEl" ref="componentSettings")
+      sidebar-locked-settings-wrapper(
+        :selectedEl="selectedEl"
+      )
+        component.setting-values-wrapper(
+          v-if="selectedEl !== null"
+          :key="selectedEl.layerId"
+          v-bind:is="selectedEl.componentName"
+          :currentEl="selectedEl"
+          ref="componentSettings"
+          )
+
       sidebar-setting-preview.setting-chart-wrapper(
         v-if="selectedEl !== null"
         :current-el="selectedEl"
@@ -64,6 +74,7 @@ import TrainDetector        from '@/components/network-elements/elements/train-d
 import LayerCustom          from '@/components/network-elements/elements/layer-custom/layer-custom.vue'
 
 import SidebarSettingPreview  from "@/components/network-elements/elements-settings/sidebar-setting-preview.vue";
+import SidebarLockedSettingsWrapper from "@/components/sidebar/sidebar-locked-settings-wrapper.vue"
 import SidebarAutoSettingInfo from '@/components/sidebar/sidebar-auto-setting-info.vue'
 
 import { mapGetters, mapActions } from 'vuex';
@@ -85,6 +96,7 @@ export default {
     MathArgmax, MathMerge, MathSwitch, MathSoftmax, MathSplit,
     TrainNormal, TrainRegression, TrainGenetic, TrainDynamic, TrainReinforce, TrainLoss, TrainOptimizer, TrainGan, TrainDetector,
     LayerCustom,
+    SidebarLockedSettingsWrapper,
     SidebarAutoSettingInfo
   }, 
   computed: {

@@ -1786,17 +1786,23 @@ const mutations = {
   },
   setNetworkElementDefaultSettingMutation(state, { layerId, getters }) {
     const el = getters.GET_networkElementById(layerId)
-    const innitialSettings = el.layerSettings
-    Vue.set(el, 'innitialSettings', innitialSettings);
+    const initialSettings = el.layerSettings
+    Vue.set(el, 'initialSettings', initialSettings);
   },
   resetNetworkElementSettingsMutation(state, { layerId, getters, dispatch }) {
     const el = getters.GET_networkElementById(layerId);
-    el.layerSettings = el.innitialSettings;
+    el.layerSettings = el.initialSettings;
     el.visited = false;
+    el.layerCode = null; // is setted null for fetching new code of component
 
     dispatch('mod_api/API_getBatchPreviewSampleForElementDescendants', layerId, { root: true });
     dispatch('mod_events/EVENT_componentEvent_model_resetSettingClick', null, { root: true });
+    dispatch('lockNetworkElementSettings', { layerId, value: false });
   },
+  lockNetworkElementSettingsMutation(state, { getters, layerId, value }) {
+    const el = getters.GET_networkElementById(layerId);
+    Vue.set(el, 'isSettingsLocked', value);
+  }
 };
 
 
@@ -2496,6 +2502,9 @@ const actions = {
   },
   resetNetworkElementSettings({ commit, getters, dispatch }, { layerId }) {
     commit('resetNetworkElementSettingsMutation', { layerId, getters, dispatch });
+  },
+  lockNetworkElementSettings({ commit, getters }, { layerId, value }) {
+    commit('lockNetworkElementSettingsMutation', { layerId, getters, value });
   }
 };
 

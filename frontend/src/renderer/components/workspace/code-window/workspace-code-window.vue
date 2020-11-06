@@ -108,7 +108,10 @@ export default {
     },
     errorRow() {
       return !!this.errorData ? this.errorData.Row : 0;
-    }
+    },
+    resetSettingClicker() {
+      return this.$store.state.mod_events.componentEvents.model.resetSettingClick;
+    },
   },
   methods: {
     initLayerCode() {
@@ -202,7 +205,7 @@ export default {
         'set': this.currentEl.layerSettings,
         'tabName': 'Code'
       };
-
+      this.$store.dispatch('mod_workspace/lockNetworkElementSettings', { layerId: this.currentEl.layerId, value: true });
       this.$store.commit('mod_workspace-code-editor/setHasUnsavedChanges', { 
         networkId: this.networkId, 
         hasUnsavedChanges: false 
@@ -234,6 +237,11 @@ export default {
       immediate: true,
       handler(newVal, oldVal) {
         this.initLayerCode();
+      }
+    },
+    resetSettingClicker : {
+      handler() {
+        this.getCode();
       }
     }
   }

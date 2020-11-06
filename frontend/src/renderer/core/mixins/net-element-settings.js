@@ -21,7 +21,7 @@ const netElementSettings = {
       this.$store.dispatch('mod_api/API_getBatchPreviewSampleForElementDescendants', this.currentEl.layerId);
     }
 
-    if(!this.currentEl.hasOwnProperty('innitialSettings')) {
+    if(!this.currentEl.hasOwnProperty('initialSettings')) {
       this.$store.dispatch('mod_workspace/setNetworkElementDefaultSetting', { layerId: this.currentEl.layerId});
     }
 
