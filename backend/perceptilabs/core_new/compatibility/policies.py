@@ -1236,7 +1236,7 @@ def policy_reinforce(is_paused, graphs, sanitized_to_name, sanitized_to_id, resu
         elif trn_node.layer.status == 'finished':
             training_status = 'Finished'
 
-        if is_paused.is_training_paused:
+        if is_paused():
             status = 'Paused'
         else:
             status = 'Running'
