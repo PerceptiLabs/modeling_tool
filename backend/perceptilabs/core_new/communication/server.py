@@ -133,7 +133,7 @@ class TrainingServer:
         
         while state.value not in State.exit_states:
             initial_state = state.value
-            t_training_step = t_send_snapshot = t_process_messages = 0 # Defaults
+            t_training_step = t_send_snapshot = t_process_messages = 0.0 # Defaults
             
             t0 = time.perf_counter()
             new_state = self._process_messages(state)
@@ -175,13 +175,14 @@ class TrainingServer:
             swap_memory = psutil.swap_memory()
             t_cycle = time.perf_counter() - t0
 
-            n_decimals = 6 #microseconds precision         
+            n_decimals = 6 #microseconds precision
+            round_ = lambda x: float(round(x, n_decimals))
             session_info['cycle_state_initial'].append(initial_state)
             session_info['cycle_state_final'].append(state.value)
-            session_info['cycle_time_process_messages'].append(round(t_process_messages, n_decimals))
-            session_info['cycle_time_training_step'].append(round(t_training_step, n_decimals))
-            session_info['cycle_time_send_snapshot'].append(round(t_send_snapshot, n_decimals))
-            session_info['cycle_time_total'].append(round(t_cycle, n_decimals))
+            session_info['cycle_time_process_messages'].append(round_(t_process_messages))
+            session_info['cycle_time_training_step'].append(round_(t_training_step))
+            session_info['cycle_time_send_snapshot'].append(round_(t_send_snapshot))
+            session_info['cycle_time_total'].append(round_(t_cycle))
             session_info['cycle_mem_phys_available'].append(int(virtual_memory.available))
             session_info['cycle_mem_swap_free'].append(int(swap_memory.free))
             
