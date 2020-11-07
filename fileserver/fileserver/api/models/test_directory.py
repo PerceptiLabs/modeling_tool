@@ -29,7 +29,7 @@ class FolderContentsTest(TestCase):
              temp_local_file(os.path.join(sd, "file_in_second.txt"), "abc") as f:
                 r = get_folder_content(sd)
                 self.assertEqual(r, {
-                    'current_path': os.path.join("first", "second"),
+                    'current_path': "first/second",
                     'dirs': ['third'],
                     'files': ['file_in_second.txt'],
                     'platform': platform.system()})
@@ -43,6 +43,7 @@ class FolderContentsTest(TestCase):
             r = get_folder_content(f)
             self.assertEqual(BLANK_RESPONSE, r)
 
+    @unittest.skipIf(platform.system() == "Windows", "Skipping non-windows test")
     def test_current_dir(self):
         r = get_folder_content('.')
         self.maxDiff=None

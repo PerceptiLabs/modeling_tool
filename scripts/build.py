@@ -395,7 +395,7 @@ def run_pytest_tests():
 def run_django_tests():
     print("Running django tests")
     with pushd(FILESERVER_DIR):
-        subprocess.run([PYTHON, "-m", "django", "test", "--settings", "fileserver.settings"])
+        run_checked_arr([PYTHON, "-m", "django", "test", "--settings", "fileserver.settings"])
 
 def which_cmd():
     if OS == Os.WIN:

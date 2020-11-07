@@ -96,6 +96,7 @@ class FileViewTestCase(TestCaseBase):
 
     # This only works if there's a home directory
     @unittest.skipIf("~" in os.path.expanduser("~"), "There's no home directory")
+    @unittest.skipIf(os.path.exists("/.dockerenv"), "In Docker. There's no home directory")
     def test_path_resolution_for_existing_file(self):
         def get_a_home_dir_file():
             import itertools
@@ -103,11 +104,11 @@ class FileViewTestCase(TestCaseBase):
             home_walk = os.walk(home)
             home_root_level = itertools.islice(home_walk, 1)
             _,_,files = list(home_root_level)[0]
-            return [f for f in files if not f[0] == "."][0]
+            return [f for f in files if not f[0] == "."][:1]
 
-        request_path = os.path.join("~", get_a_home_dir_file())
-
-        response = self.call_and_expect_code("head", f"/files?path={request_path}", 200)
+        for f in get_a_home_dir_file():
+            request_path = os.path.join("~", f)
+            response = self.call_and_expect_code("head", f"/files?path={request_path}", 200)
 
     # This only works if there's a home directory
     @unittest.skipIf("~" in os.path.expanduser("~"), "There's no home directory")
@@ -165,7 +166,10 @@ class DrivesTestCase(TestCaseBase):
 
     @unittest.skipUnless(platform.system() == "Windows", "Skipping non-windows test")
     def test_get_drives(self):
-        self.call_and_expect_body("get", "", {"drives": ["C:"]})
+        response = self.call_and_expect_code("get", "", 200).content
+        as_dict = json.loads(response)
+        drives = as_dict["drives"]
+        self.assertIn("C:", drives)
 
 class JsonModelsViewTestCase(TestCaseBase):
     VIEW_CLASS = JsonModelView

@@ -15,8 +15,11 @@ class BuildExportTests(TestCase):
         mock = Mock()
         with temp_local_dir("the_dir") as d:
             export_repo_basic(mock, d, False, None, commit_message="msg")
-            expected_path = os.path.join(d, "README.md")
-            mock.add_files.assert_called_once_with({expected_path: "README.md"}, "msg")
+            expected = {
+                    os.path.join(d, "README.md"): "README.md",
+                    os.path.join(d, "pl_logo.png"): "pl_logo.png",
+                    }
+            mock.add_files.assert_called_once_with(expected, "msg")
 
     # TODO: many more test cases
 
