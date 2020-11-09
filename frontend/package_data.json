@@ -6,6 +6,7 @@
     "dist/static/fonts/*.woff2",
     "dist/static/img/*.jpg",
     "dist/static/img/*.svg",
+    "dist/static/img/*.gif",
     "dist/static/img/*.png",
     "dist/static/img/*.ico",
     "dist/static/img/file-picker/*.svg",

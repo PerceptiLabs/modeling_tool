@@ -31,7 +31,7 @@
             :data-tutorial-target="'tutorial-workspace-start-training'"
             @click="onOffBtn"
           )
-            img(v-if="showSpinnerOnRun===true" src="../../../../static/img/spinner.gif" width="12px" style="margin-right: 5px")
+            img(v-if="showSpinnerOnRun===true" src="static/img/spinner.gif" width="12px" style="margin-right: 5px")
             i.icon.icon-on-off(v-if="showSpinnerOnRun===false")
             span(v-html="statusTraining === 'training' || statusTraining === 'pause' ? 'Stop' : 'Run'")
       .horizontal-separator
