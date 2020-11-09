@@ -228,6 +228,7 @@ perceptilabs/dataschema/master.json
 perceptilabs/dataschema/user_email_set.json
 perceptilabs/dataschema/training_started.json
 perceptilabs/dataschema/training_ended.json
+perceptilabs/dataschema/nth_iteration_ended.json
 perceptilabs/dataschema/graph_spec.json
 perceptilabs/dataschema/dc_memory_used.json
 perceptilabs/dataschema/memory_limit_exceeded.json

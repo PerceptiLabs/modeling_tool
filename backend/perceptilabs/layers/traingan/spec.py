@@ -1,11 +1,11 @@
 from typing import Tuple, Dict, Any, Union
 
-from perceptilabs.layers.specbase import LayerSpec, LayerConnection, InnerLayerSpec
+from perceptilabs.layers.specbase import LayerSpec, LayerConnection, TrainingLayerSpec
 from perceptilabs.layers.specbase import sanitize_name
 from perceptilabs.layers.utils import resolve_tf1x_stop_cond
 
 
-class TrainGanSpec(InnerLayerSpec):
+class TrainGanSpec(TrainingLayerSpec):
     type_: str = 'TrainGan'
     batch_size: int = 8
     switch_layer_name: Union[str, None] = None

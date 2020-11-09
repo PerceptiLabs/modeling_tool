@@ -1,9 +1,9 @@
 from typing import Tuple, Dict, Any, Union
 
-from perceptilabs.layers.specbase import LayerSpec, LayerConnection, InnerLayerSpec
+from perceptilabs.layers.specbase import LayerSpec, LayerConnection, TrainingLayerSpec
 
 
-class TrainRegressionSpec(InnerLayerSpec):
+class TrainRegressionSpec(TrainingLayerSpec):
     type_: str = 'TrainRegression'
     distributed: bool = False
     use_cpu: bool = False

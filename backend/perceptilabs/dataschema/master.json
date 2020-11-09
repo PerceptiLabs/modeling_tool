@@ -57,8 +57,9 @@
 	"user_email_set": {"$ref": "user_email_set.json"},
 	"training_started": {"$ref": "training_started.json"},
 	"training_ended": {"$ref": "training_ended.json"},
+	"nth_iteration_ended": {"$ref": "nth_iteration_ended.json"},			
 	"dc_memory_used": {"$ref": "dc_memory_used.json"},
-	"memory_limit_exceeded": {"$ref": "memory_limit_exceeded.json"}	
+	"memory_limit_exceeded": {"$ref": "memory_limit_exceeded.json"}
     }
 }
 

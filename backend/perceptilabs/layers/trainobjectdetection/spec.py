@@ -1,9 +1,9 @@
 from typing import Tuple, Dict, Any, Union
 
-from perceptilabs.layers.specbase import LayerSpec, LayerConnection, InnerLayerSpec
+from perceptilabs.layers.specbase import LayerSpec, LayerConnection, TrainingLayerSpec
 
 
-class TrainObjectDetectionSpec(InnerLayerSpec):
+class TrainObjectDetectionSpec(TrainingLayerSpec):
     type_: str = 'TrainDetector'
     distributed: bool = False
     use_cpu: bool = False

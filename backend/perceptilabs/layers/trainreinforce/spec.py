@@ -1,10 +1,10 @@
 from typing import Tuple, Dict, Any, Union
 
-from perceptilabs.layers.specbase import LayerSpec, LayerConnection, InnerLayerSpec
+from perceptilabs.layers.specbase import LayerSpec, LayerConnection, TrainingLayerSpec
 from perceptilabs.layers.utils import resolve_checkpoint_path
 
 
-class TrainReinforceSpec(InnerLayerSpec):
+class TrainReinforceSpec(TrainingLayerSpec):
     type_: str = 'TrainReinforce'
     history_length: int = 1
     n_episodes: int = 10

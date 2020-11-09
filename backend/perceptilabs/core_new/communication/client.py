@@ -25,7 +25,7 @@ logger = logging.getLogger(APPLICATION_LOGGER)
     
 
 class TrainingClient:
-    def __init__(self, producer, consumer, graph_builder=None, on_state_changed=None, on_receive_graph=None, on_log_message=None, on_userland_error=None, on_userland_timeout=None, on_server_timeout=None, server_timeout=20, on_training_ended=None):
+    def __init__(self, producer, consumer, graph_builder=None, on_state_changed=None, on_receive_graph=None, on_log_message=None, on_userland_error=None, on_userland_timeout=None, on_server_timeout=None, server_timeout=20, on_training_ended=None, on_nth_iteration_ended=None):
         self._producer = producer
         self._consumer = consumer
         self._on_log_message = on_log_message
@@ -36,6 +36,7 @@ class TrainingClient:
         self._on_receive_graph = on_receive_graph
         self._on_state_changed = on_state_changed
         self._on_training_ended = on_training_ended
+        self._on_nth_iteration_ended = on_nth_iteration_ended        
         self._graph_builder = graph_builder
         
         self._out_queue = queue.Queue()
@@ -79,6 +80,9 @@ class TrainingClient:
         if key == 'training-ended':
             if self._on_training_ended:
                 self._on_training_ended(value['session_info'], value['end_state'])
+        if key == 'nth-iteration-ended':
+            if self._on_nth_iteration_ended:
+                self._on_nth_iteration_ended(value['info'])
         elif key == 'log-message':
             if self._on_log_message:
                 self._on_log_message(value['level'], value['message'])

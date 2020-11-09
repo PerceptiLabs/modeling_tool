@@ -199,3 +199,17 @@ def collect_memory_limit_exceeded(max_memory_rate, core_interfaces):
     )
 
 
+def collect_nth_iteration_ended(graph_spec, training_session_id, model_id, info):
+    import numpy as np
+
+    namespace = info
+    namespace['training_layer_type'] = graph_spec.training_layer.type_
+    namespace['training_session_id'] = training_session_id
+    namespace['model_id'] = model_id
+    
+    data_logger.info(
+        "nth_iteration_ended",
+        extra={
+            'namespace': namespace
+        }
+    )

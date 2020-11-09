@@ -10,10 +10,11 @@ import logging
 import requests
 import traceback
 import collections
+import numpy as np
 from queue import Queue
 
 
-
+import perceptilabs.dataevents as dataevents
 from perceptilabs.issues import traceback_from_exception
 from perceptilabs.logconf import APPLICATION_LOGGER
 from perceptilabs.core_new.utils import YieldLevel, TracebackFrame
@@ -126,11 +127,11 @@ class TrainingServer:
             self._send_key_value('state', state.value)           
         
         logger.info("Entering main-loop [TrainingServer]")
-        counter = 0
+        self._initialize_performance_tracking()
+        cycle_counter = 0 # A 'cycle' in the while loop below
+        training_step_counter = 0
         t_start = time.perf_counter()
-        sent_training_ended = False
-        session_info = collections.defaultdict(list)
-        
+
         while state.value not in State.exit_states:
             initial_state = state.value
             t_training_step = t_send_snapshot = t_process_messages = 0.0 # Defaults
@@ -151,7 +152,8 @@ class TrainingServer:
 
                     new_state = State.TRAINING_FAILED
                     self._send_userland_error(e)
-                else: 
+                else:
+                    training_step_counter += 1                    
                     t_training_step = time.perf_counter() - t
                     if training_step_result is training_sentinel:
                         new_state = State.TRAINING_COMPLETED
@@ -163,42 +165,104 @@ class TrainingServer:
                 state.transition(new_state)
                 
             elif state.value in State.idle_states:                
-                if counter % 5 == 0:
+                if cycle_counter % 5 == 0:
                     #logger.info(f"In idle state '{state.value}'")                                
                     self._send_key_value('state', state.value)
                 time.sleep(1.0)
                 
             elif state.value not in State.exit_states:
                 raise RuntimeError(f"Unexpected state: {state}")
-
-            virtual_memory = psutil.virtual_memory()
-            swap_memory = psutil.swap_memory()
-            t_cycle = time.perf_counter() - t0
-
-            n_decimals = 6 #microseconds precision
-            round_ = lambda x: float(round(x, n_decimals))
-            session_info['cycle_state_initial'].append(initial_state)
-            session_info['cycle_state_final'].append(state.value)
-            session_info['cycle_time_process_messages'].append(round_(t_process_messages))
-            session_info['cycle_time_training_step'].append(round_(t_training_step))
-            session_info['cycle_time_send_snapshot'].append(round_(t_send_snapshot))
-            session_info['cycle_time_total'].append(round_(t_cycle))
-            session_info['cycle_mem_phys_available'].append(int(virtual_memory.available))
-            session_info['cycle_mem_swap_free'].append(int(swap_memory.free))
             
-            if not sent_training_ended and state.value in State.ended_states:
-                t_total = time.perf_counter() - t_start
-                session_info = dict(session_info)
-                session_info['time_total'] = t_total
-                session_info['mem_phys_total'] = int(virtual_memory.total)
-                session_info['mem_swap_total'] = int(swap_memory.total)                
-                self._send_training_ended(session_info, state.value)
-                sent_training_ended = True
-            counter += 1
+            self._record_performance(t0, t_process_messages, t_training_step, t_send_snapshot, initial_state, state.value, training_step_counter)
+
+            self._maybe_send_nth_iteration_ended(t_start, training_step_counter)
+            self._maybe_send_training_ended(t_start, state.value)
+            
+            cycle_counter += 1
             yield
 
         self.shutdown(state)
         return state
+
+    def _initialize_performance_tracking(self):
+        self._sent_training_ended = False
+        self._session_info = collections.defaultdict(list)
+        self._mem_phys_total = int(psutil.virtual_memory().total)
+        self._mem_swap_total = int(psutil.swap_memory().total)
+
+    def _record_performance(self, t_cycle_started, t_process_messages, t_training_step, t_send_snapshot, initial_state, final_state, training_step_counter):
+        """ Tracks current performance values """
+        virtual_memory = psutil.virtual_memory()
+        swap_memory = psutil.swap_memory()
+        t_cycle = time.perf_counter() - t_cycle_started
+
+        n_decimals = 6 #microseconds precision
+        round_ = lambda x: float(round(x, n_decimals))
+        self._session_info['cycle_state_initial'].append(initial_state)
+        self._session_info['cycle_state_final'].append(final_state)
+        self._session_info['cycle_time_process_messages'].append(round_(t_process_messages))
+        self._session_info['cycle_time_training_step'].append(round_(t_training_step))
+        self._session_info['cycle_time_send_snapshot'].append(round_(t_send_snapshot))
+        self._session_info['cycle_time_total'].append(round_(t_cycle))
+        self._session_info['cycle_mem_phys_available'].append(int(virtual_memory.available))
+        self._session_info['cycle_mem_swap_free'].append(int(swap_memory.free))
+
+    def _maybe_send_nth_iteration_ended(self, t_training_started, training_step_counter):
+        frequency = 100 # Send info every Nth iteration
+
+        round_ = lambda x: float(round(x, 6))    
+        
+        def get_metrics(vec, n, cast):
+            """ Get percentiles and mean of the last n values """
+            vec = vec[-n:]
+            p25, p50, p75 = np.percentile(vec, [25, 50, 75])
+            mean = np.mean(vec)
+            min_ = np.amin(vec)            
+            max_ = np.amax(vec)
+            return cast(p25), cast(p50), cast(p75), cast(mean), cast(min_), cast(max_)
+
+        if training_step_counter % frequency == 0:
+            ctt_p25, ctt_p50, ctt_p75, ctt_avg, ctt_min, ctt_max = get_metrics(
+                self._session_info['cycle_time_total'],
+                frequency, cast=lambda x: float(round(x, 6))
+            )
+            cmpa_p25, cmpa_p50, cmpa_p75, cmpa_avg, cmpa_min, cmpa_max = get_metrics(
+                self._session_info['cycle_mem_phys_available'],
+                frequency, cast=int
+            )    
+            info = {
+                'training_step': training_step_counter,
+                'mem_phys_total': self._mem_phys_total,
+                'cycle_time_total': {
+                    'p25': ctt_p25,
+                    'p50': ctt_p50,
+                    'p75': ctt_p75,
+                    'avg': ctt_avg,
+                    'min': ctt_min,
+                    'max': ctt_max
+                },
+                'cycle_mem_phys_available': {
+                    'p25': cmpa_p25,
+                    'p50': cmpa_p50,
+                    'p75': cmpa_p75,
+                    'avg': cmpa_avg,
+                    'min': cmpa_min,
+                    'max': cmpa_max
+                }
+            }
+            self._send_key_value('nth-iteration-ended', {'info': info})
+            
+        
+    def _maybe_send_training_ended(self, t_training_started, final_state):
+        if not self._sent_training_ended and final_state in State.ended_states:
+            t_total = time.perf_counter() - t_training_started
+            session_info_dict = dict(self._session_info) # Cannot serialize defaultdict
+            session_info_dict['time_total'] = t_total
+            session_info_dict['mem_phys_total'] = self._mem_phys_total
+            session_info_dict['mem_swap_total'] = self._mem_swap_total
+            
+            self._send_training_ended(session_info_dict, final_state)
+            self._sent_training_ended = True
 
     def run_stepwise_testing(self, state, auto_start=False):
         testing_iterator = self._graph.run(self._mode)

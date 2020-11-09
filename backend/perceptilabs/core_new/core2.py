@@ -110,7 +110,8 @@ class Core:
             on_receive_graph=self._on_receive_graph,
             on_userland_error=self._on_userland_error,
             on_state_changed=self._on_training_state_changed,
-            on_training_ended=self._on_training_ended,            
+            on_training_ended=self._on_training_ended,
+            on_nth_iteration_ended=self._on_nth_iteration_ended,                        
             on_server_timeout=self._on_server_timeout,
             on_userland_timeout=self._on_userland_timeout,
             on_log_message=self._on_log_message,
@@ -254,6 +255,10 @@ class Core:
             dataevents.collect_start_metrics(self._graph_spec, self._last_graph, self._training_session_id, self._model_id)        
             self._collected_start_metrics = True        
 
+    def _on_nth_iteration_ended(self, info):
+        if self._graph_spec is not None and self._running_mode == 'training':        
+            dataevents.collect_nth_iteration_ended(self._graph_spec, self._training_session_id, self._model_id, info)        
+            
     def _on_training_ended(self, session_info, end_state):
         if self._graph_spec is not None and self._running_mode == 'training':
             dataevents.collect_end_metrics(self._graph_spec, self._last_graph, self._training_session_id, session_info, self._model_id, end_state)
