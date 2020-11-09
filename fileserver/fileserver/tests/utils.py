@@ -44,6 +44,14 @@ def temp_json_file(name, content):
     with temp_local_file(name, as_json) as f:
         yield f
 
+@contextmanager
+def temp_read_only(name):
+    prev = os.stat(name).st_mode
+    try:
+        os.chmod(name, 0o0)
+        yield
+    finally:
+        os.chmod(name, prev)
 
 def cwd():
     return os.getcwd()

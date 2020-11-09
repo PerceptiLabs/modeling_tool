@@ -49,6 +49,9 @@ class JsonModelView(APIView):
         if not os.path.isdir(model_dir):
             raise HTTPExceptions.BAD_REQUEST.with_content(f"not a directory: {model_dir}")
 
+        if not os.access(model_dir, os.W_OK):
+            raise HTTPExceptions.BAD_REQUEST.with_content(f"not writable: {model_dir}")
+
         with open(full_path, "w") as f:
             json.dump(model_dict, f)
 

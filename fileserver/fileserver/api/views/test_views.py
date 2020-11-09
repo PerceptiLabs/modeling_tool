@@ -17,6 +17,7 @@ from fileserver.tests.utils import (
         local_file_cleanup,
         temp_json_file,
         local_dir_cleanup,
+        temp_read_only,
         cwd,
         )
 from rest_framework.test import APIRequestFactory, APIClient
@@ -65,8 +66,8 @@ class TestCaseBase(TestCase):
         self.assertDictEqual(as_dict, expected_body)
         return response
 
-    def call_and_expect_error(self, method_name, path, error_class):
-        call = self.build_call(method_name, path)
+    def call_and_expect_error(self, method_name, path, error_class, body=None):
+        call = self.build_call(method_name, path, body=body)
         self.assertRaises(error_class, call)
 
 
@@ -200,6 +201,15 @@ class JsonModelsViewTestCase(TestCaseBase):
             self.call_and_expect_error("post", cur_url, HTTPExceptions.BAD_REQUEST)
             self.assertFalse(os.path.exists(f), f"expected post /json_models to not create an invalid json file")
 
+    @unittest.skipIf(platform.system() == "Windows", "Skipping posix test")
+    def test_post_when_dir_is_readonly(self):
+        dir_name = os.path.join(os.getcwd(), "testdata")
+        with temp_local_dir(dir_name) as the_dir:
+            with temp_read_only(the_dir):
+                cur_url = f"{the_dir}/json_models?path=a_file.json"
+                req = {"this": "is json"}
+                test_file = os.path.join(the_dir, "testing123.json")
+                self.call_and_expect_error("post", cur_url, HTTPExceptions.BAD_REQUEST, body=req)
 
 class ModelDirectoryTestCase(TestCaseBase):
     VIEW_CLASS = MethodViewWrapper(get_modeldirectory)
