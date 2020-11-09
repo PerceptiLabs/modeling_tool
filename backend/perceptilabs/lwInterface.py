@@ -10,7 +10,7 @@ import shutil
 from perceptilabs.logconf import APPLICATION_LOGGER
 from perceptilabs.script import ScriptFactory
 from perceptilabs.graph.spec import GraphSpec
-from perceptilabs.createDataObject import createDataObject
+from perceptilabs.createDataObject import createDataObject, subsample_data
 import perceptilabs.logconf
 import perceptilabs.utils as utils
 
@@ -224,18 +224,27 @@ class GetNetworkData(LW_interface_base):
     def run(self):
         graph_spec, auto_updated_layers = self._maybe_apply_autosettings(self._graph_spec)
         
-        dim_content, preview_content, trained_layers_info = {}, {}, {}
+        dim_content, preview_content, trained_layers_info, subsample_data_info = {}, {}, {}, {}
         lw_results = self._lw_core.run(graph_spec) 
-        
+        total_num_layer_components = 0
+        total_data_points = 0
+
         for layer_id, layer_results in lw_results.items():            
             layer_spec = graph_spec[layer_id]
-            dim, preview = self._get_layer_content(layer_spec, layer_results, auto_updated_layers)
+            dim, preview, layer_data_points = self._get_layer_content(layer_spec, layer_results, auto_updated_layers)
             trained_layers_info[layer_id] = layer_results.trained
             dim_content[layer_id] = dim
 
             if preview is not None:
-                preview_content[layer_id] = preview
+                subsample_data_info[layer_id] = preview
+            
+            if layer_data_points:
+                total_data_points += layer_data_points
+            
+            total_num_layer_components += 1
 
+        preview_content = subsample_data(subsample_data_info, total_num_layer_components, total_data_points)
+        
         return {
             "previews": preview_content,
             "outputDims": dim_content,
@@ -258,17 +267,28 @@ class GetNetworkData(LW_interface_base):
             dim_content['Error'] = None
 
         preview_content = None
+        layer_sample_data_points = None
+
         if layer_spec.get_preview or layer_spec.id_ in auto_updated_layers:
             try:
                 sample_array = np.asarray(sample)
+                sample_layer_shape = sample_array.shape
+                layer_sample_data_points = int(np.prod(sample_layer_shape))
+                sample_data = [self._reduceTo2d(sample_array).squeeze()]
+
+                preview_content = {
+                    'data': sample_data,
+                    'data_shape': sample_layer_shape,
+                    'data_points': layer_sample_data_points
+                }
+
                 if layer_spec.to_dict().get('previewVariable') == 'W' and len(sample_array.shape) >= 2:
-                    preview_content = createDataObject([self._reduceTo2d(sample_array).squeeze()], typeList=['heatmap'])
-                else:
-                    preview_content = createDataObject([self._reduceTo2d(sample_array).squeeze()])
+                    preview_content['type_list'] = ['heatmap']
+
             except:
                 logger.exception(f'Failed getting preview for layer {layer_spec}')
             
-        return dim_content, preview_content
+        return dim_content, preview_content, layer_sample_data_points
 
     def _maybe_apply_autosettings(self, graph_spec):
         if self._settings_engine is not None:
