@@ -101,3 +101,11 @@ sess = tf.Session(config=config)
     sess = tf.Session(config=config)# since we use keras metrics
     tf.keras.backend.set_session(sess) # since we use keras metrics
 {% endmacro %}
+
+{% macro representative_dataset_gen(generator) %}
+def representative_dataset_gen():
+    for i in range(10):
+        data = list(next({{generator}}).values())
+        image = np.expand_dims(data[-1], axis=0)
+        yield [image]
+{% endmacro %}

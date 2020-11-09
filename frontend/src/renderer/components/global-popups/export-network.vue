@@ -20,6 +20,8 @@
             input.form_input(type="text" v-model="settings.name")
         .form_holder(v-if="settings.Type === 'TFModel'")
           base-checkbox(v-model="settings.Compressed") Compressed
+        .form_holder(v-if="settings.Type === 'TFModel'")
+          base-checkbox(v-model="settings.Quantized") Quantized
 
     template(slot="action")
       button.btn.btn--primary.btn--disabled(type="button"
@@ -49,12 +51,25 @@ export default {
         Location: '',
         Type: 'TFModel',
         Compressed: false,
+        Quantized: false,
         name: '',
       }
     }
   },
   mounted() {
     this.settings.name = this.$store.getters['mod_workspace/GET_currentNetwork'].networkName;
+  },
+  watch: {
+    'settings.Quantized'(value) {
+      if(value) {
+        this.settings.Compressed = false;
+      }
+    },
+    'settings.Compressed'(value) {
+      if(value) {
+        this.settings.Quantized = false;
+      }
+    },
   },
   methods: {
     setExportPath(value) {

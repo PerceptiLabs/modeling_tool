@@ -362,9 +362,10 @@ class coreLogic():
         self.startCore(graph_spec, model_id)
 
         mode = 'TFModel' # Default mode. # TODO: perhaps all export modes should be exposed to frontend?
-        if value["Compressed"]:
-            mode = 'TFLite'         
-
+        if value["Quantized"]:
+            mode = 'TFQuantized'         
+        elif value['Compressed']:
+            mode = 'TFLite'
         self.commandQ.put(
             CoreCommand(
                 type='export',

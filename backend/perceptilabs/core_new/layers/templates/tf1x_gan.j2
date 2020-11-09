@@ -1,4 +1,4 @@
-{% from 'tf1x_utils.j2' import session, check_input_vars %}
+{% from 'tf1x_utils.j2' import session, check_input_vars, representative_dataset_gen %}
 
 {% macro train_normal(layer_spec, graph_spec ) %}
         sess = self._sess
@@ -233,6 +233,8 @@
             )
         ))
 
+        self._export_random_data_gen = random_data_node.layer_instance.make_generator_training()
+        
         dataset_trn = dataset_trn.batch(self._batch_size)
         dataset_val = dataset_val.batch(self._batch_size)
         dataset_tst = dataset_tst.batch(1)
@@ -255,38 +257,20 @@
                 switch_node.layer._selected_layer_id = real_data_node.layer_id
                 switch_node.layer._selected_var_name = [dst_var for src_node, src_var, dst_var in graph.get_input_connections(switch_node) if src_node.layer_id == switch_node.layer._selected_layer_id][0]
 
-            _random_data_node=random_data_node
+            _random_data_node = random_data_node
 
-            layer_output_tensors = {
-                real_data_node.layer_id: real_tensor
-            }
+            layer_output_tensors = {real_data_node.layer_id: real_tensor}
 
             for dst_node in real_nodes:
                 inputs = {
-                    dst_var: layer_output_tensors[src_node.layer_id][src_var]
-                    for src_node, src_var, dst_var in graph.get_input_connections(dst_node)
-                    if src_node not in generator_nodes + [_random_data_node]
-                }
-                y = dst_node.layer_instance(
-                    inputs
-                )
+                            dst_var: layer_output_tensors[src_node.layer_id][src_var]
+                            for src_node, src_var, dst_var in graph.get_input_connections(dst_node)
+                            if src_node not in generator_nodes + [_random_data_node]
+                        }
+                
+                y = dst_node.layer_instance(inputs)
                 layer_output_tensors[dst_node.layer_id] = y
 
-            {# # for node in real_nodes:
-            #     if len(list(graph.get_input_nodes(node))) <= 1:
-            #         args = []
-            #         for input_node in graph.get_input_nodes(node):
-            #             args.append(layer_output_tensors[input_node.layer_id])
-            #         y = node.layer_instance(*args)
-            #     elif len(list(graph.get_input_nodes(node))) > 1:
-            #         args = {}
-            #         for input_node in graph.get_input_nodes(node):
-            #             if input_node in real_nodes:
-            #                 args[input_node.layer_id] = layer_output_tensors[input_node.layer_id]
-            #             elif input_node == real_data_node:
-            #                 args[real_data_node.layer_id] = layer_output_tensors[real_data_node.layer_id]
-            #         y = node.layer_instance(args)
-            #     layer_output_tensors[node.layer_id] = y #}
             return layer_output_tensors
 
         def build_generator_graph(random_tensor):
@@ -294,59 +278,31 @@
             switch_node.layer._selected_var_name = [dst_var for src_node, src_var, dst_var in graph.get_input_connections(switch_node) if src_node.layer_id == switch_node.layer._selected_layer_id][0]
             _real_data_node = real_data_node
 
-            layer_output_tensors = {
-                random_data_node.layer_id: random_tensor
-            }
+            layer_output_tensors = {random_data_node.layer_id: random_tensor}
 
             for dst_node in generator_nodes:
                 inputs = {
-                    dst_var: layer_output_tensors[src_node.layer_id][src_var]
-                    for src_node, src_var, dst_var in graph.get_input_connections(dst_node) 
-                    if src_node not in real_nodes+[_real_data_node]
-                }
-                y = dst_node.layer_instance(
-                    inputs
-                )
+                            dst_var: layer_output_tensors[src_node.layer_id][src_var]
+                            for src_node, src_var, dst_var in graph.get_input_connections(dst_node) 
+                            if src_node not in real_nodes+[_real_data_node]
+                        }
+
+                y = dst_node.layer_instance(inputs)
                 layer_output_tensors[dst_node.layer_id] = y
 
-
-
-            # for node in generator_nodes:
-            #     if len(list(graph.get_input_nodes(node))) <= 1:
-            #         args = []
-            #         for input_node in graph.get_input_nodes(node):
-            #             args.append(layer_output_tensors[input_node.layer_id])
-            #         y = node.layer_instance(*args)
-            #     elif len(list(graph.get_input_nodes(node))) > 1:
-            #         args = {}
-            #         for input_node in graph.get_input_nodes(node):
-            #             if input_node in generator_nodes:
-            #                 args[input_node.layer_id] = layer_output_tensors[input_node.layer_id]
-            #         y = node.layer_instance(args)
-            #     layer_output_tensors[node.layer_id] = y
             return layer_output_tensors
         
         def build_discriminator_graph(input_tensor):
-            layer_output_tensors = {
-                switch_node.layer_id: input_tensor
-            }
+            layer_output_tensors = {switch_node.layer_id: input_tensor}
             for dst_node in discriminator_nodes:
                 inputs = {
-                    dst_var: layer_output_tensors[src_node.layer_id][src_var]
-                    for src_node, src_var, dst_var in graph.get_input_connections(dst_node)
-                }
-                y = dst_node.layer_instance(
-                    inputs
-                )
+                            dst_var: layer_output_tensors[src_node.layer_id][src_var]
+                            for src_node, src_var, dst_var in graph.get_input_connections(dst_node)
+                        }
+
+                y = dst_node.layer_instance(inputs)
                 layer_output_tensors[dst_node.layer_id] = y
 
-
-            {# # for node in discriminator_nodes:
-            #     args = []
-            #     for input_node in graph.get_input_nodes(node):
-            #         args.append(layer_output_tensors[input_node.layer_id])
-            #         y = node.layer_instance(*args)
-            #     layer_output_tensors[node.layer_id] = y #}
             return layer_output_tensors
 
         generator_layer_output_tensors = build_generator_graph(random_tensor)
@@ -357,15 +313,6 @@
         
         real_discriminator_layer_output_tensors = build_discriminator_graph(real_output_tensor)
         random_discriminator_layer_output_tensors = build_discriminator_graph(generator_output_tensor)
-        
-        # real_discriminator_outputs = real_discriminator_layer_output_tensors[output_layer_id]
-        # random_discriminator_outputs = random_discriminator_layer_output_tensors[output_layer_id]
-        
-        # Create an exportable version of the TensorFlow graph
-        
-        # self._real_tensor_export = tf.placeholder(shape=dataset_trn.output_shapes[0], dtype=dataset_trn.output_types[0])
-        # self._random_tensor_export = tf.placeholder(shape=dataset_trn.output_shapes[1], dtype=dataset_trn.output_types[1])
-
         self._real_tensor_export= {
             key: tf.placeholder(shape=shape, dtype=type_)
             for (key, shape), (_, type_) in zip(dataset_trn.output_shapes[0].items(), dataset_trn.output_types[0].items())            
@@ -380,6 +327,12 @@
         self._generator_output_tensor_export = build_generator_graph(self._random_tensor_export)[switch_layer_id]
 
         self._discriminator_real_output_tensor_export = build_discriminator_graph(self._real_output_tensor_export)[output_layer_id]
+
+        self._random_input_tensor_export= {
+            key: tf.placeholder(shape=shape, dtype=type_)
+            for (key, shape), (_, type_) in zip(dataset_trn.output_shapes[1].items(), dataset_tst.output_types[1].items())            
+        }
+        self._generator_output_tensor_export = build_generator_graph(self._random_input_tensor_export)[switch_layer_id]
         self._discriminator_random_output_tensor_export = build_discriminator_graph(self._generator_output_tensor_export)[output_layer_id]
         
         #loss function
@@ -507,9 +460,8 @@
                 if generator_layer_id in var.name:
                     generator_vars.append(var)
 
-        generator_update_weights = generator_optimizer.minimize(generator_loss_tensor, var_list = generator_vars, global_step=global_step) 
-             
-
+        generator_update_weights = generator_optimizer.minimize(generator_loss_tensor, var_list = generator_vars, global_step=global_step)
+            
         sess = None
         {{session(sess, use_gpu=not layer_spec.use_cpu) | indent(width=8)}}      
         self._sess = sess
@@ -655,7 +607,6 @@ class {{layer_spec.sanitized_name}}(GANLayer):
         elif mode == 'testing':
             yield from self.test(graph)
 
-
     def on_export(self, path: str, mode: str) -> None:
         """Called when the export button is clicked in the frontend.
         It is up to the implementing layer to save the model to disk.
@@ -666,7 +617,7 @@ class {{layer_spec.sanitized_name}}(GANLayer):
 
         log.debug(f"Export called. Project path = {path}, mode = {mode}")
         
-        if mode in ['TFModel', 'TFLite']:
+        if mode in ['TFModel', 'TFLite', 'TFQuantized']:
             pb_path = os.path.join(path, '1')
             if os.path.exists(pb_path):
                 shutil.rmtree(pb_path)
@@ -689,6 +640,20 @@ class {{layer_spec.sanitized_name}}(GANLayer):
             tflite_model = converter.convert()
             with open(frozen_path, "wb") as f:
                 f.write(tflite_model)
+
+        if mode in ['TFQuantized']:
+            {{representative_dataset_gen('self._export_random_data_gen') | indent(width=12)}}
+            tflite_path = os.path.join(pb_path, 'tflite_model.tflite')
+            converter = tf.lite.TFLiteConverter.from_session(self._sess, list(self._random_input_tensor_export.values()), [self._generator_output_tensor_export['output'], self._discriminator_random_output_tensor_export['output']])
+            converter.optimizations = [tf.lite.Optimize.DEFAULT]
+            converter.representative_dataset = representative_dataset_gen
+            converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8, tf.lite.OpsSet.TFLITE_BUILTINS, tf.lite.OpsSet.SELECT_TF_OPS]
+            converter.inference_input_type = tf.uint8
+            converter.inference_output_type = tf.uint8
+            tflite_model = converter.convert()
+            with open(tflite_path, "wb") as f:
+                f.write(tflite_model)
+
 
         # Export checkpoint
         if mode in ['checkpoint']:
@@ -733,9 +698,9 @@ class {{layer_spec.sanitized_name}}(GANLayer):
         """Returns the possible modes of exporting a model."""        
         return [
             'TFModel',
-            'TFLite'
-            'TFModel+checkpoint',
-            'TFLite+checkpoint',            
+            'TFLite',
+            'TFQuantized',
+            'checkpoint'            
         ]
         
     @property

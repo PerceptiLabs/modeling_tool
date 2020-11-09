@@ -1,4 +1,4 @@
-{% from 'tf1x_utils.j2' import session, check_input_vars %}
+{% from 'tf1x_utils.j2' import session, check_input_vars, representative_dataset_gen %}
 
 {% macro train_normal(layer_spec, graph_spec) %}        
         
@@ -203,6 +203,8 @@
                 output_types={k: v.dtype for k, v in label_sample.items()}
             )
         ))
+        
+        self._export_data_gen = input_data_node.layer_instance.make_generator_training()
 
         dataset_trn = dataset_trn.batch(self._batch_size)
         dataset_val = dataset_val.batch(self._batch_size)
@@ -264,14 +266,14 @@
         
         self._input_tensor_export = {
             key: tf.placeholder(shape=shape, dtype=type_)
-            for (key, shape), (_, type_) in zip(dataset_trn.output_shapes[0].items(), dataset_trn.output_types[0].items())            
+            for (key, shape), (_, type_) in zip(dataset_tst.output_shapes[0].items(), dataset_tst.output_types[0].items())            
         }
 
         self._output_tensor_export = build_graph(
             self._input_tensor_export,
             {                                                                                                                                                                       
                 key: tf.placeholder(shape=shape, dtype=type_)
-                for (key, shape), (_, type_) in zip(dataset_trn.output_shapes[1].items(), dataset_trn.output_types[1].items())
+                for (key, shape), (_, type_) in zip(dataset_tst.output_shapes[1].items(), dataset_tst.output_types[1].items())
             }             
         )[output_layer_id]
 
@@ -484,7 +486,7 @@ class {{layer_spec.sanitized_name}}(RegressionLayer):
 
         log.debug(f"Export called. Project path = {path}, mode = {mode}")
         
-        if mode in ['TFModel', 'TFLite']:
+        if mode in ['TFModel', 'TFLite', 'TFQuantized']:
             pb_path = os.path.join(path, '1')
             if os.path.exists(pb_path):
                 shutil.rmtree(pb_path)
@@ -505,6 +507,20 @@ class {{layer_spec.sanitized_name}}(RegressionLayer):
             tflite_model = converter.convert()
             with open(frozen_path, "wb") as f:
                 f.write(tflite_model)
+        
+        if mode in ['TFQuantized']:
+            {{representative_dataset_gen('self._export_data_gen') | indent(width=12)}}
+            tflite_path = os.path.join(pb_path, 'tflite_model.tflite')
+            converter = tf.lite.TFLiteConverter.from_session(self._sess, [self._input_tensor_export['output']], [self._output_tensor_export['output']])
+            converter.optimizations = [tf.lite.Optimize.DEFAULT]
+            converter.representative_dataset = representative_dataset_gen
+            converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8, tf.lite.OpsSet.TFLITE_BUILTINS, tf.lite.OpsSet.SELECT_TF_OPS]
+            converter.inference_input_type = tf.uint8
+            converter.inference_output_type = tf.uint8
+            tflite_model = converter.convert()
+            with open(tflite_path, "wb") as f:
+                f.write(tflite_model)
+            
 
         # Export checkpoint
         if mode in ['checkpoint']:
@@ -551,8 +567,7 @@ class {{layer_spec.sanitized_name}}(RegressionLayer):
         return [
             'TFModel',
             'TFLite'
-            'TFModel+checkpoint',
-            'TFLite+checkpoint',
+            'TFQuantized',
             'checkpoint'            
         ]
         

@@ -1,4 +1,4 @@
-{% from 'tf1x_utils.j2' import session, check_input_vars %}
+{% from 'tf1x_utils.j2' import session, check_input_vars, representative_dataset_gen %}
 
 {% macro train_normal(layer_spec, graph_spec) %}
         
@@ -150,6 +150,8 @@
         generator.send(None)
         state_ = input_data_node.layer_instance.reset_environment(generator)
 
+        self._export_data_node = input_data_node.layer_instance
+        
         self._actions = input_data_node.layer_instance.action_space
         self._n_actions = len(self._actions)
         # create state tensor
@@ -398,6 +400,7 @@ class {{layer_spec.sanitized_name}}(RLLayer):
         log.debug(f"Export called. Project path = {path}, mode = {mode}")
         
         if mode in ['TFModel', 'TFLite']:
+            import shutil
             pb_path = os.path.join(path, '1')
             if os.path.exists(pb_path):
                 shutil.rmtree(pb_path)
@@ -413,12 +416,39 @@ class {{layer_spec.sanitized_name}}(RLLayer):
         # Export compressed model
         if mode in ['TFLite']:
             frozen_path = os.path.join(pb_path, 'frozen_model.pb')
-            converter = tf.lite.TFLiteConverter.from_session(self._sess, list(self._input_tensor_export.values()), list(self._output_tensor_export.values()))
+            converter = tf.lite.TFLiteConverter.from_session(self._sess, list(self._input_tensor_export.values()), [self._output_tensor_export['output']])
             converter.post_training_quantize = True
             tflite_model = converter.convert()
             with open(frozen_path, "wb") as f:
                 f.write(tflite_model)
 
+        if mode in ['TFQuantized']:
+            raise Exception("Quantization not supported for Reinforcement Learning models.")
+            {# try:
+                def representative_dataset_gen():
+                    export_data_gen = self._export_data_node.make_generator()
+                    for i in range(10):
+                        export_data_gen.send(None)
+                        data = [next(export_data_gen)['output']]
+                        image = np.expand_dims(data[-1], axis=0)
+                        image = image*self._history_length
+                        image = np.concatenate(image,-1).squeeze()
+                        print(image.shape)
+                        yield [image]
+                
+                tflite_path = os.path.join(pb_path, 'tflite_model.tflite')
+                converter = tf.lite.TFLiteConverter.from_session(self._sess, [self._input_tensor_export], [self._output_tensor_export['output']])
+                converter.optimizations = [tf.lite.Optimize.DEFAULT]
+                converter.representative_dataset = representative_dataset_gen
+                converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8, tf.lite.OpsSet.TFLITE_BUILTINS, tf.lite.OpsSet.SELECT_TF_OPS]
+                converter.inference_input_type = tf.uint8
+                converter.inference_output_type = tf.uint8
+                tflite_model = converter.convert()
+                with open(tflite_path, "wb") as f:
+                    f.write(tflite_model)
+            except Exception as e:
+                raise #}
+            
         # Export checkpoint
         if mode in ['checkpoint']:
             for fname in os.listdir(path):
@@ -463,8 +493,8 @@ class {{layer_spec.sanitized_name}}(RLLayer):
         return [
             'TFModel',
             'TFLite'
-            'TFModel+checkpoint',
-            'TFLite+checkpoint',            
+            'checkpoint',
+            'TFQuantized'            
         ]
         
     @property
