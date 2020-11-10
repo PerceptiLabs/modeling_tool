@@ -264,14 +264,14 @@
 
         self._input_tensor_export = {
             key: tf.placeholder(shape=shape, dtype=type_)
-            for (key, shape), (_, type_) in zip(dataset_tst.output_shapes[0].items(), dataset_tst.output_types[0].items())            
+            for (key, shape), (_, type_) in zip(dataset_trn.output_shapes[0].items(), dataset_trn.output_types[0].items())            
         }
     
         self._output_tensor_export = build_graph(
             self._input_tensor_export,
             {                                                                                                                                                                       
                 key: tf.placeholder(shape=shape, dtype=type_)
-                for (key, shape), (_, type_) in zip(dataset_tst.output_shapes[1].items(), dataset_tst.output_types[1].items())
+                for (key, shape), (_, type_) in zip(dataset_trn.output_shapes[1].items(), dataset_trn.output_types[1].items())
             }             
         )[output_layer_id]
         

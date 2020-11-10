@@ -366,7 +366,6 @@
             key: tf.placeholder(shape=shape, dtype=type_)
             for (key, shape), (_, type_) in zip(dataset_trn.output_shapes[0].items(), dataset_trn.output_types[0].items())            
         }
-        print(dataset_trn.output_shapes[0].items())
         self._output_tensor_export = build_graph(
             self._input_tensor_export,
             {                                                                                                                                                                       

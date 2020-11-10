@@ -313,24 +313,10 @@
         
         real_discriminator_layer_output_tensors = build_discriminator_graph(real_output_tensor)
         random_discriminator_layer_output_tensors = build_discriminator_graph(generator_output_tensor)
-        self._real_tensor_export= {
-            key: tf.placeholder(shape=shape, dtype=type_)
-            for (key, shape), (_, type_) in zip(dataset_trn.output_shapes[0].items(), dataset_trn.output_types[0].items())            
-        }
-        self._random_tensor_export= {
-            key: tf.placeholder(shape=shape, dtype=type_)
-            for (key, shape), (_, type_) in zip(dataset_trn.output_shapes[1].items(), dataset_trn.output_types[1].items())            
-        }
-        
-
-        self._real_output_tensor_export = build_real_graph(self._real_tensor_export)[switch_layer_id]
-        self._generator_output_tensor_export = build_generator_graph(self._random_tensor_export)[switch_layer_id]
-
-        self._discriminator_real_output_tensor_export = build_discriminator_graph(self._real_output_tensor_export)[output_layer_id]
 
         self._random_input_tensor_export= {
             key: tf.placeholder(shape=shape, dtype=type_)
-            for (key, shape), (_, type_) in zip(dataset_trn.output_shapes[1].items(), dataset_tst.output_types[1].items())            
+            for (key, shape), (_, type_) in zip(dataset_trn.output_shapes[1].items(), dataset_trn.output_types[1].items())            
         }
         self._generator_output_tensor_export = build_generator_graph(self._random_input_tensor_export)[switch_layer_id]
         self._discriminator_random_output_tensor_export = build_discriminator_graph(self._generator_output_tensor_export)[output_layer_id]
@@ -629,13 +615,13 @@ class {{layer_spec.sanitized_name}}(GANLayer):
         # Export non-compressed model
         if mode in ['TFModel']:
             tf.compat.v1.saved_model.simple_save(self._sess, pb_path, \
-                inputs={'real_input': self._real_tensor_export['output'], 'random_input': self._random_tensor_export['output']}, \
-                outputs={'real_output': self._discriminator_real_output_tensor_export['output'], 'random_output': self._discriminator_random_output_tensor_export['output'] })
+                inputs={'random_input': self._random_input_tensor_export['output']}, \
+                outputs={'generator_output': self._generator_output_tensor_export['output'], 'discriminator_output':self._discriminator_random_output_tensor_export['output']})
 
         # Export compressed model
         if mode in ['TFLite']:
             frozen_path = os.path.join(pb_path, 'frozen_model.pb')
-            converter = tf.lite.TFLiteConverter.from_session(self._sess, [self._real_tensor_export['output'], self._random_tensor_export['output']], [self._discriminator_real_output_tensor_export['output'], self._discriminator_random_output_tensor_export['output']])
+            converter = tf.lite.TFLiteConverter.from_session(self._sess, list(self._random_input_tensor_export.values()), [self._generator_output_tensor_export['output'], self._discriminator_random_output_tensor_export['output']])
             converter.post_training_quantize = True
             tflite_model = converter.convert()
             with open(frozen_path, "wb") as f:
