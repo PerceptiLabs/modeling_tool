@@ -5,7 +5,7 @@
       .popup-background
         .popup_tab-set
           .popup_header.disable
-            h3 Result
+            h3 Use weights?
         .popup_tab-body
           .popup_body(
             :class="{'active': tabSelected == 0}"
