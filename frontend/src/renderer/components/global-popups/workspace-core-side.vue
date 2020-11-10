@@ -31,6 +31,7 @@
 <script>
 import { mapState, mapGetters, mapMutations, mapActions } from 'vuex';
 import { saveModelJson as fileserver_saveModelJson } from '@/core/apiFileserver';
+import { removeChartData }        from '@/core/helpers.js';
 
 export default {
   name: "SelectCoreSide",
@@ -85,11 +86,14 @@ export default {
       this.closePopup();
       this.updateCheckpointPaths();
 
-      fileserver_saveModelJson(this.currentNetwork);
-      this.$store.commit('mod_events/set_saveNetwork');
+      // To minimize model.json and checkpoint_model.json sizes
+      let streamLinedNetwork = this.currentNetwork;
+      streamLinedNetwork = removeChartData(streamLinedNetwork);
 
-      this.SET_networkSnapshot()
-        .then(_ => this.saveNetwork(this.currentNetwork))
+      this.$store.commit('mod_events/set_saveNetwork');
+      fileserver_saveModelJson(streamLinedNetwork) // model.json
+        .then(_ => this.SET_networkSnapshot()) // snapshot for the network in stats/test views
+        .then(_ => this.saveNetwork(this.currentNetwork)) // webstorage
         .then(_ => {
           this.API_startTraining({ loadCheckpoint: withWeights });
           this.setCurrentStatsIndex(this.currentNetworkIndex);

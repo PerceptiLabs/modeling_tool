@@ -143,26 +143,6 @@ const workspaceSaveNet = {
             this.$store.dispatch('mod_workspace/SET_networkName', prepareNet.toLocal.name); // change new location in vuex
           }
 
-          const networkJson = cloneDeep(this.currentNetwork)
-          const healthNetworkElementList = {};
-          Object.keys(networkJson.networkElementList).map(key => {
-            const el = networkJson.networkElementList[key];
-            healthNetworkElementList[key] = {
-              ...el,
-              chartData: {}
-            }
-          })
-          const healthNetworkJson = {
-            ...networkJson,
-            networkElementList: healthNetworkElementList
-          }
-          return fileserver_saveModelJson(healthNetworkJson)
-            .catch((e) => {
-              console.log(e)
-              Promise.reject(e)
-            });
-        })
-        .then(()=> {
           // Update the model in the webstorage too.
           //try to update date first
           const savedTime = new Date();

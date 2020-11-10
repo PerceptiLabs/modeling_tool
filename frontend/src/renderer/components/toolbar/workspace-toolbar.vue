@@ -98,9 +98,12 @@
 
 <script>
 import { mapGetters, mapActions, mapMutations, mapState } from 'vuex';
-import { googleAnalytics }                      from '@/core/analytics';
-import { trainingElements, deepLearnElements }  from '@/core/constants.js';
-import { goToLink }                             from '@/core/helpers.js'
+
+import { googleAnalytics }        from '@/core/analytics';
+import { trainingElements }       from '@/core/constants.js';
+import { deepLearnElements }      from '@/core/constants.js';
+import { goToLink }               from '@/core/helpers.js';
+import { removeChartData }        from '@/core/helpers.js';
 
 import LayersToolbar            from '@/components/toolbar/workspace-toolbar-layers.vue';
 import SidebarToggleButton      from '@/components/toolbar/sidebar-toggle-button.vue';
@@ -330,10 +333,12 @@ export default {
 
       // Refactor this and the core in workspace-core-side
       this.$store.commit('mod_workspace/updateCheckpointPaths');
-    
-      fileserver_saveModelJson(this.currentNetwork);
+      
+      let streamLinedNetwork = this.currentNetwork;
+      streamLinedNetwork = removeChartData(streamLinedNetwork);
 
-      this.$store.dispatch('mod_workspace/SET_networkSnapshot')
+      fileserver_saveModelJson(streamLinedNetwork)
+        .then(response => this.$store.dispatch('mod_workspace/SET_networkSnapshot'))
         .then(_ => this.$store.dispatch('mod_webstorage/saveNetwork'))
         .then(_ => {
           this.$store.dispatch('mod_api/API_startTraining', { loadCheckpoint: false });

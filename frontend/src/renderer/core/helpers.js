@@ -1,3 +1,5 @@
+import cloneDeep from 'lodash.clonedeep';
+
 let shell = null;
 let ipcRenderer = null;
 let fs = null;
@@ -496,6 +498,30 @@ const objectToQueryParams = (reqData) => {
     }).join('&');
 }
 
+const removeChartData = (inputNetwork) => {
+  if (!inputNetwork || !inputNetwork['networkElementList']) { return inputNetwork; }
+
+  const network = cloneDeep(inputNetwork);
+
+  for (const key of Object.keys(network['networkElementList'])) {
+    const layerObject = network['networkElementList'][key];
+    if (!layerObject.hasOwnProperty('chartData')) { continue; }
+
+    layerObject['chartData'] = {};
+  }
+
+  return network;
+}
+
+const removeNetworkSnapshots = (inputNetwork) => {
+  if (!inputNetwork || !inputNetwork['networkSnapshots']) { return inputNetwork; }
+
+  const network = cloneDeep(inputNetwork);
+  delete network['networkSnapshots'];
+
+  return network;
+}
+
 export {
   openLoadDialog,
   openSaveDialog,
@@ -533,5 +559,7 @@ export {
   hashObject,
   hashString,
   createCoreNetwork,
-  objectToQueryParams
+  objectToQueryParams,
+  removeChartData,
+  removeNetworkSnapshots
 }
