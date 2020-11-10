@@ -1772,9 +1772,9 @@ const mutations = {
     descendants.forEach(componentId => {
       if(networkList[componentId] && networkList[componentId].chartDataIsLoading !== undefined) {
         if(value) { // is should increment
-          Vue.set(networkList[componentId], 'chartDataIsLoading', networkList[componentId].chartDataIsLoading + 1);
-        } else {
-          Vue.set(networkList[componentId], 'chartDataIsLoading', networkList[componentId].chartDataIsLoading - 1);
+          networkList[componentId].chartDataIsLoading += 1
+        } else if(networkList[componentId].chartDataIsLoading > 0) {
+          networkList[componentId].chartDataIsLoading -= 1
         }
       } else {
         // is triggered when network component haven't this field
