@@ -9,6 +9,7 @@ import platform
 import re
 
 import perceptilabs
+from perceptilabs.utils import is_tf2x
 
 APPLICATION_LOGGER = 'perceptilabs.applogger'
 APPLICATION_LOG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)),'kernel.log')
@@ -148,7 +149,8 @@ _global_context = {
     'session_id': '',
     'user_email': 'notset@perceptilabs.com',
     'commit_id': '',
-    'system': platform.system()
+    'system': platform.system(),
+    'tf2x': is_tf2x()
 }
 
 
@@ -187,6 +189,7 @@ class DataFormatter(logging.Formatter):
             'version': perceptilabs.__version__,
             'commit': _global_context.get('commit_id', ''),
             'system': _global_context.get('system', ''),
+            'tf2x': _global_context.get('tf2x', ''),            
             record.msg: record.namespace
         }
 

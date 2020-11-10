@@ -6,7 +6,6 @@ logger = logging.getLogger(APPLICATION_LOGGER)
 data_logger = logging.getLogger(DATA_LOGGER)
 
 
-
 def on_user_email_set():
     import pkg_resources
     import platform
@@ -198,6 +197,32 @@ def collect_memory_limit_exceeded(max_memory_rate, core_interfaces):
         }
     )
 
+
+def collect_lwcore_finished(time_total, all_durations, has_cache):
+    t_cache_lookup, t_compute, t_cache_insert, used_cache = [], [], [], []
+
+    rnd = lambda x: float(round(x, 7))
+    
+    for durations in all_durations:
+        t_cache_lookup.append(rnd(durations['t_cache_lookup']))
+        t_compute.append(rnd(durations['t_compute']))
+        t_cache_insert.append(rnd(durations['t_cache_insert']))
+        used_cache.append(durations['used_cache'])
+    
+    data_logger.info(
+        "lwcore_finished",
+        extra={
+            'namespace': {
+                'time_total': time_total,                
+                'has_cache': has_cache,
+                't_cache_lookup': t_cache_lookup,
+                't_compute': t_compute,
+                't_cache_insert': t_cache_insert,
+                'used_cache': used_cache                
+            }
+        }
+    )
+            
 
 def collect_nth_iteration_ended(graph_spec, training_session_id, model_id, info):
     import numpy as np

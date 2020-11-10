@@ -232,6 +232,7 @@ perceptilabs/dataschema/nth_iteration_ended.json
 perceptilabs/dataschema/graph_spec.json
 perceptilabs/dataschema/dc_memory_used.json
 perceptilabs/dataschema/memory_limit_exceeded.json
+perceptilabs/dataschema/lwcore_finished.json
 
 # backend/perceptilabs/aggregation/
 perceptilabs/aggregation/__init__.py

@@ -2,6 +2,7 @@ import pytest
 import pandas as pd
 import tempfile
 import numpy as np
+from unittest.mock import MagicMock
 
 
 from perceptilabs.lwcore import LightweightCore
@@ -1512,3 +1513,24 @@ def test_load_checkpoints_ok(graph_spec_binary_classification):
     assert results['4'].trained == False
     assert results['5'].trained == False
     assert results['6'].trained == False
+
+    
+def test_calls_cache_get_when_cached_entry_exists(graph_spec_binary_classification):
+    cache = MagicMock()
+    cache.__contains__.return_value = True
+    
+    lw_core = LightweightCore(cache=cache)
+    results = lw_core.run(graph_spec_binary_classification)
+
+    assert cache.get.call_count > 0
+
+def test_calls_cache_put_when_cached_entry_exists(graph_spec_binary_classification):
+    cache = MagicMock()
+    cache.__contains__.return_value = False
+    
+    lw_core = LightweightCore(cache=cache)
+    results = lw_core.run(graph_spec_binary_classification)
+
+    assert cache.put.call_count > 0
+
+    

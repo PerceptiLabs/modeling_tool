@@ -43,8 +43,6 @@ class BaseStrategy(ABC):
         return results
 
     
-
-    
 class DefaultStrategy(BaseStrategy):
     def run(self, layer_spec, layer_class, input_results, line_offset=None):    
         return self.get_default()
