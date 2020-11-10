@@ -213,6 +213,7 @@ export default {
       }
       else {
         this.layersbarList[idx].showEl = true;
+        document.addEventListener('click', this.handleClickWithoutElementSelected)
       }
 
       this.setNextStep({currentStep:'tutorial-workspace-layer-menu'});
@@ -338,10 +339,12 @@ export default {
     cleanupClickDropFunctionality() {
       document.removeEventListener('mousemove', this.startComponentPositionUpdates);
       document.removeEventListener('click', this.stopComponentPositionUpdates);
-      document.removeEventListener('contextmenu', this.handleEscKeypress);
+      document.removeEventListener('contextmenu', this.handleCancelEvents);
       document.removeEventListener('keyup', this.handleEscKeypress);
 
-      document.body.removeChild(this.clonedElement);
+      if(this.clonedElement) {
+        document.body.removeChild(this.clonedElement);
+      }
       this.clickedElementName = null;
       this.clonedElement = null;
       this.handleFocusOut();
@@ -358,7 +361,14 @@ export default {
         return layer.showEl;
       }
 
-    }
+    },
+    handleClickWithoutElementSelected(event) {
+      if(this.clickedElementName === null && this.clonedElement === null) {
+        event.stopPropagation();
+        this.handleFocusOut();
+        document.removeEventListener('click', this.handleClickWithoutElementSelected);
+      }
+    },
   },
   computed: {
     ...mapGetters({
