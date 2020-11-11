@@ -1,4 +1,5 @@
 from fileserver.api.interfaces.github_import import RepoImporterAPI
+from fileserver.api.exceptions import UserError
 import os, requests
 from send2trash import send2trash
 
@@ -127,12 +128,12 @@ def import_repo(path, url, overwrite=False):
         try:  # remove the existing directory
             send2trash(repopath)
         except OSError as error:
-            raise ValueError(f"Error while sending the repo to the trash: {repopath}", error)
+            raise UserError(f"Error while sending the repo to the trash: {repopath}", error)
 
         try:  # create a new directory
             os.mkdir(repopath)
         except OSError as error:
-            raise ValueError(f"Error while making new directory: {repopath}", error)
+            raise UserError(f"Error while making new directory: {repopath}", error)
 
     def parse_reponame(url):
         """
@@ -147,16 +148,16 @@ def import_repo(path, url, overwrite=False):
             last_suffix = len(url)
 
         if last_slash < 0 or last_suffix <= last_slash:
-            raise ValueError("Badly formatted url {}".format(url))
+            raise UserError("Badly formatted url {}".format(url))
 
         return url[last_slash + 1 : last_suffix]
 
     api = RepoImporterAPI(url)
     if not api.is_public():
-        raise ValueError("Invalid URL")
+        raise UserError("Invalid URL")
 
     if api.model_exist():
-        raise ValueError("No model file found")
+        raise UserError("No model file found")
 
     reponame = parse_reponame(url)
     dest_path = os.path.join(path, reponame)
@@ -166,11 +167,11 @@ def import_repo(path, url, overwrite=False):
         os.makedirs(dest_path)
 
     if not os.path.isdir(dest_path):
-        raise ValueError(f"{dest_path} exists but isn't a directory")
+        raise UserError(f"{dest_path} exists but isn't a directory")
 
     if os.listdir(dest_path):
         if not overwrite:
-            raise ValueError(f"Path {dest_path} isn't empty. Pass overwrite=True to overwrite")
+            raise UserError(f"Path {dest_path} isn't empty. Pass overwrite=True to overwrite")
 
         prep_nonempty_dir_for_clone(dest_path)
 
@@ -179,6 +180,6 @@ def import_repo(path, url, overwrite=False):
 def create_issue(api, title, body):
     
     if api.issue_type == "invalid":
-        raise ValueError("Invalid Issue type")
+        raise UserError("Invalid Issue type")
 
     return api._create_issue(title,body)

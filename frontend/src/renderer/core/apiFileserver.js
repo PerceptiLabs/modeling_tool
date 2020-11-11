@@ -66,8 +66,11 @@ export const fileserverAvailability = () => {
 
 // fileserver sends back 422 when it's a user error and the body contains the user-visible error message
 function convert422(error) {
-    let newErr = (err.response.status === 422) ? {userMessage: err.response.data} : {};
-    throw newError
+  if (!error.response) {
+    throw error;
+  }
+  let newErr = (error.response.status === 422) ? {userMessage: error.response.data} : {};
+  throw newErr;
 }
 
 export const importRepositoryFromGithub = (data) => {
