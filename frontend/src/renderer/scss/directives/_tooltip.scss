@@ -109,8 +109,9 @@ $triangleWith: 10px;
 }
 .tooltip--right-wrap-text {
 	white-space: pre-wrap;
-	max-width: 380px;
-	top: 50%;
+  max-width: 380px;
+  top: 50%;
+  width: max-content;
 	left: 100%;
 	margin-left: $margin-tooltip;
 	transform: translateY(-50%) rotateX(90deg);

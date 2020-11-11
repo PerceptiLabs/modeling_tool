@@ -19,9 +19,11 @@
           .form_row
             input.form_input(type="text" v-model="settings.name")
         .form_holder(v-if="settings.Type === 'TFModel'")
-          base-checkbox(v-model="settings.Compressed") Compressed
+          span.checkbox-tooltip(v-tooltip:right-wrap-text="`Produces a frozen model (.pb) which\ncan be used for inference`")
+            base-checkbox(v-model="settings.Compressed") Compressed
         .form_holder(v-if="settings.Type === 'TFModel'")
-          base-checkbox(v-model="settings.Quantized") Quantized
+          span.checkbox-tooltip(v-tooltip:right-wrap-text="`Produces a quantized tf-lite model which\ncan be used for edge devices`")
+            base-checkbox(v-model="settings.Quantized")  Quantized
 
     template(slot="action")
       button.btn.btn--primary.btn--disabled(type="button"
@@ -128,5 +130,8 @@ export default {
   font-weight: 600;
   font-size: 16px;
   line-height: 22px;
+}
+.checkbox-tooltip {
+  display: inline-block;
 }
 </style>
