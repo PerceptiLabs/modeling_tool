@@ -22,6 +22,6 @@ requests-oauthlib>=1.2.0
 requests>=2.23.0
 six>=1.14.0
 sqlparse>=0.3.1
-urllib3>=1.25.8
+urllib3==1.25.10 #pinning this to 1.25.10 to avoid installation errors for the packages 'requests' and 'botocore'
 wcwidth>=0.1.9
 zipp>=3.1.0
