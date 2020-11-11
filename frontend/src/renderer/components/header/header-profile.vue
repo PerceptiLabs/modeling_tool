@@ -4,12 +4,12 @@
       .profile-item-Avatar.with-border.f-nunito(
         :data-tutorial-target="'tutorial-model-hub-user-gravatar'"
       )
-        | {{user && user.email[0].toUpperCase()}}
+        | {{user && user.email && user.email[0].toUpperCase()}}
       .profile-item-drop-down
         button.bgc-transparent.ta-left.p-13
           .d-flex
             .profile-item-Avatar
-              | {{user && user.firstName[0]}}
+              | {{user && user.firstName && user.firstName[0]}}
             div.ml-12
               //- h3.white.fz-14.mb-0.f-nunito {{user && user.firstName}} {{ user && user.lastName}}
               p.fz-12.mb-0.mt-7.f-nunito {{user && user.email}}
