@@ -15,6 +15,10 @@ def check(dest):
 
 
 def get_dest():
+
+    if os.getenv("DB") != "postgres":
+        sys.exit(0)
+
     host = str(os.getenv("DB_HOST", ""))
     port = int(os.getenv("DB_PORT", 5432))
     if len(host) == 0:
