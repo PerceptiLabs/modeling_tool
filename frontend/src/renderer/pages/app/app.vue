@@ -18,7 +18,7 @@
   import { throttleEv } from '@/core/helpers.js'
   import { localStorageGridKey } from '@/core/constants.js'
 
-  import TheToolbar         from '@/components/the-toolbar.vue'
+  // import TheToolbar         from '@/components/the-toolbar.vue'
   import TheLayersbar       from '@/components/the-layersbar.vue'
   import TheSidebar         from '@/components/the-sidebar.vue'
   import TheWorkspace       from '@/components/workspace/the-workspace.vue'
@@ -30,7 +30,7 @@
 
   export default {
     name: 'pageQuantum',
-    components: { TheToolbar, TheLayersbar, TheSidebar, TheWorkspace, TheTutorialStoryboard },
+    components: { TheLayersbar, TheSidebar, TheWorkspace, TheTutorialStoryboard },
      beforeRouteEnter(to, from, next) {
         next((vm) => {
             vm.from = from;

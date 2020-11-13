@@ -123,9 +123,19 @@ export default {
       if (this.statusNetworkCore === 'Paused') {
         this.unpauseTraining();
       } else {
-        this.API_startTraining();
-        this.setSidebarStateAction(false);
-        this.set_showTrainingSpinner(true);
+        this.$store.dispatch('mod_api/API_scanCheckpoint', { 
+          networkId: this.currentNetwork.networkID,
+          path: this.currentNetwork.apiMeta.location
+        })
+          .then(result => {
+            if (result.hasCheckpoint) {
+              this.$store.commit('globalView/GP_showCoreSideSettings', true);
+            } else {
+              this.API_startTraining();
+              this.setSidebarStateAction(false);
+              this.set_showTrainingSpinner(true);
+            }
+          });  
       }
     },
     onStopClick() {
@@ -140,7 +150,7 @@ export default {
       this.$store.dispatch("mod_workspace/SET_currentModelIndex", this.currentNetworkIndex);      
       this.$store.commit('mod_workspace/update_network_meta', {key: 'hideModel', networkID: this.currentNetwork.networkID, value: false});
       this.setCurrentView('tutorial-workspace-view');
-    }
+    },
   }
 }
 </script>
