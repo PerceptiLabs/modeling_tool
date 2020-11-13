@@ -1524,6 +1524,7 @@ def test_calls_cache_get_when_cached_entry_exists(graph_spec_binary_classificati
 
     assert cache.get.call_count > 0
 
+    
 def test_calls_cache_put_when_cached_entry_exists(graph_spec_binary_classification):
     cache = MagicMock()
     cache.__contains__.return_value = False

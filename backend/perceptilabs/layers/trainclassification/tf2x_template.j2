@@ -4,15 +4,6 @@
 {% from 'optimizers.j2' import optimizer_sgd, optimizer_adam, optimizer_adagrad, optimizer_rmsprop, optimizer_momentum %}
 
 
-{% macro indented_loop(items) %}
-    {% filter remove_lspaces(4) -%}                
-        {% for item in items: -%}
-            {{ caller(item) }}
-        {%- endfor -%}
-    {% endfilter -%}    
-{% endmacro %}
-
-
 {% macro layer_tf2x_classification(layer_spec, graph_spec) %}                    
 class {{layer_spec.sanitized_name}}(ClassificationLayer):
 

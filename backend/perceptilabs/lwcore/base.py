@@ -23,7 +23,7 @@ from perceptilabs.layers.helper import LayerHelper
 from perceptilabs.logconf import APPLICATION_LOGGER
 from perceptilabs.lwcore.utils import exception_to_error, format_exception
 from perceptilabs.lwcore.cache import LightweightCache
-from perceptilabs.lwcore.strategies import DefaultStrategy, DataSupervisedStrategy, DataReinforceStrategy, Tf1xInnerStrategy, Tf1xTrainingStrategy, Tf2xInnerStrategy
+from perceptilabs.lwcore.strategies import DefaultStrategy, DataSupervisedStrategy, DataReinforceStrategy, Tf1xInnerStrategy, Tf1xTrainingStrategy, Tf2xInnerStrategy, Tf2xTrainingStrategy
 from perceptilabs.lwcore.results import LayerResults
 import perceptilabs.dataevents as dataevents
 
@@ -158,7 +158,7 @@ class LightweightCore:
         if issubclass(layer_obj, TrainingLayer) and is_tf1x():
             strategy = Tf1xTrainingStrategy(graph_spec, script_factory)
         elif issubclass(layer_obj, TrainingLayer) and is_tf2x():
-            strategy = DefaultStrategy()
+            strategy = Tf2xTrainingStrategy(graph_spec, script_factory)            
         elif issubclass(layer_obj, DataSupervised):
             strategy = DataSupervisedStrategy()
         elif issubclass(layer_obj, DataReinforce):
