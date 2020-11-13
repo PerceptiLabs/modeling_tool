@@ -14,6 +14,7 @@
     perfect-scrollbar.sidebar-setting-content(
       :data-tutorial-target="'tutorial-workspace-settings'"
       :class="{'sidebar-setting-content-with-component': selectedEl !== null }"
+      ref="sidebarSettingWrapper"
       )
       sidebar-locked-settings-wrapper(
         :selectedEl="selectedEl"
@@ -112,8 +113,10 @@ export default {
     },
   },
   watch: {
-    'selectedEl'(el) {
-        //console.log('sidebar-settings selectedEl', el);
+    'selectedEl.layerId'(el) {
+       if(el) {
+         this.$refs.sidebarSettingWrapper.$el.scrollTop = 0;
+       }
     }
   },
   methods: {
