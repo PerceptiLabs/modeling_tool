@@ -27,10 +27,20 @@ export default {
       default: function(){return {}}
     }
   },
+  computed: {
+    isDataComponent() {
+      const componentName = this.selectedEl.componentName;
+      
+      return ['DataData', 'DataEnvironment', 'DataRandom'].includes(componentName);
+    }
+  },
   watch: {
     'selectedEl.visited': {
       handler(currentVisited, previousVisited){
-        if(currentVisited === true && previousVisited === false && this.shouldShowSidebarAutosettingInfo) {
+        if(currentVisited === true
+          && previousVisited === false
+          && this.shouldShowSidebarAutosettingInfo
+          && !this.isDataComponent) {
           this.shouldDisplay = true;
         }
       }
