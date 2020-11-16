@@ -49,7 +49,7 @@ $clip-path_indent: $arrows-start_size/2;
   z-index: 2;
   transform: translateX(-50%);
   white-space: nowrap;
-  background-color: rgba($bg-workspace, .5);
+  background-color: transparent;
 }
 .net-element_checkpoint-icon {
   position: absolute;
