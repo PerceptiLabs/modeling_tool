@@ -153,11 +153,15 @@ class MixPanelHandler(logging.Handler):
             return
 
         current_time = datetime.datetime.utcnow()
-        mp.people_set_once(user_id, {'$created': current_time})
-        mp.people_set(
-            user_id,
-            {'$email': event_original['user_email'], '$last_login': current_time}
-        )
+        try:
+            mp.people_set_once(user_id, {'$created': current_time})
+            mp.people_set(
+                user_id,
+                {'$email': event_original['user_email'], '$last_login': current_time}
+            )
+        except:
+            logger.exception("Failed setting mixpanel user")
+            return
         
         for event_id, event_handler in event_handlers.items():
             if event_id in event_original: # One or more event_ids exist at the top level, serving as a namespace for that event
