@@ -195,6 +195,7 @@
   import { isWeb, stringifyNetworkObjects } from "@/core/helpers";
   import cloneDeep from 'lodash.clonedeep';
   import { getModelJson as fileserver_getModelJson } from '@/core/apiFileserver';
+  import { LOCAL_STORAGE_HIDE_DELETE_MODAL } from '@/core/constants.js'
 
   const mockModelList = [
     // {id: 1, dateCreated: new Date().setHours(15), dateLastOpened: new Date(), size: '10', name:'Placeholder 1', status: '75%', savedVersion: '-', sessionEndTime: 'Placeholder', collaborators: [{id: 1, name: 'Anton', img: null,}], lastModified: { user: {id: 1, name: 'Anton', img: null}, date: '19/02/20 13:00:00'}, isFavorite: true},
@@ -311,6 +312,7 @@
     methods: {
       ...mapActions({
         popupConfirm:        'globalView/GP_confirmPopup',
+        popupDeleteConfirm:  'globalView/GP_deleteConfirmPopup',
         popupNewModel:       'globalView/SET_newModelPopup',
         showInfoPopup:       'globalView/GP_infoPopup',
         set_currentNetwork:  'mod_workspace/SET_currentNetwork',
@@ -442,14 +444,15 @@
           return;
         }
 
-        const removeModelText = 
-          this.selectedListIds && this.selectedListIds.length > 1 ?
-          'Are you sure you want to delete the selected models?' :
-          'Are you sure you want to delete the selected model?';
-
-        this.popupConfirm(
-          {
-            text: removeModelText,
+        if(localStorage.getItem(LOCAL_STORAGE_HIDE_DELETE_MODAL)) {
+          for (const networkId of this.selectedListIds) {
+            this.$store.dispatch('mod_tracker/EVENT_modelDeletion');
+            await this.delete_networkById(networkId);
+          }
+          this.selectedListIds = [];
+          this.updateWorkspaces();
+        } else {
+          this.popupDeleteConfirm({
             ok: async () => {
               const promises = [];
 
@@ -465,6 +468,8 @@
               this.updateWorkspaces();
             }
           });
+
+        }
       },
       toggleFavoriteItems() {
         if(this.statusLocalCore!='online') {
@@ -634,13 +639,26 @@
         this.closeContext();
       },
 
-      handleContextRemoveModel() {
+      async handleContextRemoveModel() {
         if(this.statusLocalCore!='online') {
           this.showInfoPopup("Kernel is offline");
           return;
         }
 
-        this.delete_network(this.contextModelIndex);
+        const modelIndex = this.contextModelIndex;
+
+        if(localStorage.getItem(LOCAL_STORAGE_HIDE_DELETE_MODAL)) {
+          this.$store.dispatch('mod_tracker/EVENT_modelDeletion');
+          await this.delete_network(modelIndex);
+        } else {
+          this.popupDeleteConfirm({
+            ok: async () => {
+              this.$store.dispatch('mod_tracker/EVENT_modelDeletion');
+              await this.delete_network(modelIndex);
+            }
+          });
+        }
+        
         this.closeContext();
       },
       onClickDeletedModel(model, index) {

@@ -21,6 +21,7 @@
     update-popup(v-if="isElectron") 
     the-info-popup(v-if="showPopup")
     confirm-popup
+    delete-confirm-popup
     PiPyPopupUpdate(v-if="showPiPyNotification")
     create-issue-popup(v-if="showCreateIssuesPopup")
     modal-pages-engine
@@ -61,6 +62,7 @@
   import PiPyPopupUpdate        from "@/components/global-popups/update-popup/pipy-update-popup.vue";  
   import TheInfoPopup           from "@/components/global-popups/the-info-popup.vue";
   import ConfirmPopup           from "@/components/global-popups/confirm-popup.vue";
+  import DeleteConfirmPopup     from "@/components/global-popups/delete-confirm-popup.vue";
   import ModalPagesEngine       from '@/components/modal-pages-engine.vue';
   import AboutAppPopup           from "@/components/global-popups/about-app-popup.vue";
   import { MODAL_PAGE_PROJECT, MODAL_PAGE_WHATS_NEW } from '@/core/constants.js';
@@ -71,7 +73,7 @@
       ProjectSidebar,
       ModalPagesEngine,
       HeaderLinux, HeaderWin, HeaderMac,
-      UpdatePopup, TheInfoPopup, ConfirmPopup, CreateIssuePopup, PiPyPopupUpdate, AboutAppPopup,
+      UpdatePopup, TheInfoPopup, ConfirmPopup, DeleteConfirmPopup, CreateIssuePopup, PiPyPopupUpdate, AboutAppPopup,
       TutorialsChecklist, TutorialNotification
     },
     created() {

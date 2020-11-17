@@ -62,6 +62,7 @@ export const TRACKER_SCREENNAME_TEST_TRAINING = 'Test-Training';
 
 export const LOCAL_STORAGE_WORKSPACE_VIEW_TYPE_KEY  = 'mod_workspace_view_type'
 export const LOCAL_STORAGE_WORKSPACE_SHOW_MODEL_PREVIEWS  = 'show_model_previews'
+export const LOCAL_STORAGE_HIDE_DELETE_MODAL = 'hide_delete_modal'
 
 export {
   isDevelopMode,

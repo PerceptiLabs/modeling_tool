@@ -157,5 +157,17 @@ export default {
         background: #23252A;
       }
     }
+    &.is-silver {
+      input[type=checkbox] {
+        position: absolute;
+        left: -9999px;
+        opacity: 0;
+        width: 1px;
+        height: 1px;
+        &:checked + .checkbox-fake {
+          background: #EEE;
+        }      
+      }
+    }
   }
 </style>

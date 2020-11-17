@@ -19,6 +19,7 @@ const state = {
     showErrorPopup: false,
     showWorkspaceBeforeImport: false,
     showConfirmPopup: false,
+    showDeleteConfirmPopup: false,
     coreNotFoundPopup: false,
     showFilePickerPopup: false,
     showLoadSettingPopup: false,
@@ -115,6 +116,11 @@ const mutations = {
   },
   gp_confirmPopup(state, value) {
     state.globalPopup.showConfirmPopup = value.text;
+    state.popupConfirmCancel = value.cancel;
+    state.popupConfirmOk = value.ok;
+  },
+  gp_deleteConfirmPopup(state, value) {
+    state.globalPopup.showDeleteConfirmPopup = true;
     state.popupConfirmCancel = value.cancel;
     state.popupConfirmOk = value.ok;
   },
@@ -218,6 +224,9 @@ const actions = {
   },  
   GP_confirmPopup({commit}, value) {
     commit('gp_confirmPopup', value);
+  },
+  GP_deleteConfirmPopup({commit}, value) {
+    commit('gp_deleteConfirmPopup', value);
   },
   GP_errorPopup({commit}, value) {
     commit('gp_errorPopup', value);
