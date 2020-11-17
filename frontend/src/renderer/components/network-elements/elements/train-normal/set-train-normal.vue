@@ -46,6 +46,8 @@
             span ADAM
           base-radio(group-name="group1" value-input="SGD" v-model="settings.Optimizer")
             span SGD
+          base-radio(group-name="group1" value-input="adagrad" v-model="settings.Optimizer")
+            span Adagrad
           base-radio(group-name="group1" value-input="Momentum" v-model="settings.Optimizer")
             span Momentum
           base-radio(group-name="group1" value-input="RMSprop" v-model="settings.Optimizer")
