@@ -772,3 +772,25 @@ def test_tf2x_layer_auc_set(script_factory_tf2x, graph_spec_few_epochs):
         )
 
     assert values_set
+
+    
+@pytest.mark.tf2x            
+def test_tf2x_export_tfmodel_can_load_and_predict(temp_path, script_factory_tf2x, graph_spec_few_epochs):
+    graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec_few_epochs)
+    
+    fc_layer_id = graph.nodes[2].layer_id
+    training_layer = graph.active_training_node.layer
+
+    iterator = training_layer.run(graph, mode='training') 
+
+    for _ in iterator:
+        pass
+    
+    training_layer.on_export(temp_path, 'TFModel')
+
+    loaded_model = tf.keras.models.load_model(os.path.join(temp_path, '1')) # Adds a subdirectory for model version
+    assert isinstance(loaded_model.predict({'output': np.random.random((1, 4))}), np.ndarray)
+
+
+    
+    

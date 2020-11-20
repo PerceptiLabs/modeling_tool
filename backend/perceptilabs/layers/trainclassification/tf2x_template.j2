@@ -160,7 +160,20 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
             path: the directory where the exported model will be stored.
             mode: how to export the model. Made available to frontend via 'export_modes' property."""
 
-        raise NotImplementedError
+        def make_model_path():
+            """ TensorFlow serving expects model version to be indicated by sub-directory name """
+            model_path = os.path.join(path, '1')
+            if os.path.exists(model_path):
+                shutil.rmtree(model_path)
+                time.sleep(0.0000000000000001)  # Force your computer to do a clock cycle to avoid Windows permission exception
+            os.makedirs(model_path, exist_ok=True)
+            return model_path
+        
+        if mode == 'TFModel':
+            model_path = make_model_path()
+            self._prediction_model.save(model_path)
+        else:
+            raise NotImplementedError(f"Exporting as {mode} is not supported")
     
     def on_stop(self) -> None:
         """Called when the save model button is clicked in the frontend. 
@@ -458,52 +471,66 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
         return dataset_train, dataset_val, dataset_test
 
     def _build_models(self, graph, element_spec, input_layer_id, label_layer_id, prediction_layer_id, target_layer_id, prediction_var_name, target_var_name):
-        
-        class PredictionModel(tf.keras.Model):
-            def __init__(self, *args, **kwargs):
-                super().__init__(*args, **kwargs)
-                self.layer_outputs = {}
-                self.layer_instances = {}                
 
-            def call(self, inputs, *args, **kwargs):
-                self.layer_outputs["{{layer_spec.get_prediction_data_layer(graph_spec).sanitized_name}}"] = inputs
+        class PredictionModel(tf.keras.Model):
+            def __init__(self, element_spec):
+                super().__init__()
+                self.layer_outputs = {}
+                self.layer_instances = {}
+
                 {% call(layer_spec) indented_loop(layer_spec.get_prediction_inner_layers(graph_spec)) %}
                     self.layer_instances["{{layer_spec.sanitized_name}}"] = layer_instance = graph.get_node_by_id("{{layer_spec.sanitized_name}}").layer_instance                                    
+                    self.layer_{{layer_spec.sanitized_name}} = layer_instance.keras_layer
+                {% endcall %}
+
+                self._set_inputs(element_spec)  # makes shapes available for save/export
+                
+            def call(self, inputs, training=False):
+                self.layer_outputs["{{layer_spec.get_prediction_data_layer(graph_spec).sanitized_name}}"] = inputs
+                {% call(layer_spec) indented_loop(layer_spec.get_prediction_inner_layers(graph_spec)) %}
+                    layer_instance = self.layer_instances["{{layer_spec.sanitized_name}}"]
                     self.layer_outputs["{{layer_spec.sanitized_name}}"] = layer_instance.keras_layer(
                         {
                             {% call(conn) indented_loop(layer_spec.backward_connections) %}
                                 "{{conn.dst_var}}": self.layer_outputs["{{conn.get_src_sanitized_name(graph_spec)}}"]["{{conn.src_var}}"],
                             {% endcall %}
                         },
-                        is_training=kwargs["training"]
+                        training=training
                     )
                 {% endcall %}
                 return self.layer_outputs["{{layer_spec.get_connection_predictions().get_src_sanitized_name(graph_spec)}}"]["{{layer_spec.get_connection_predictions().src_var}}"]                
+
             
         class TargetModel(tf.keras.Model):
-            def __init__(self, *args, **kwargs):
-                super().__init__(*args, **kwargs)
+            def __init__(self, element_spec):
+                super().__init__()
                 self.layer_outputs = {}
-                self.layer_instances = {}                                
+                self.layer_instances = {}
 
-            def call(self, inputs, *args, **kwargs):
+                {% call(layer_spec) indented_loop(layer_spec.get_prediction_inner_layers(graph_spec)) %}
+                    self.layer_instances["{{layer_spec.sanitized_name}}"] = layer_instance = graph.get_node_by_id("{{layer_spec.sanitized_name}}").layer_instance                                    
+                    self.layer_{{layer_spec.sanitized_name}} = layer_instance.keras_layer
+                {% endcall %}
+
+                self._set_inputs(element_spec)  # makes shapes available for save/export
+               
+            def call(self, inputs, training=False):
                 self.layer_outputs["{{layer_spec.get_target_data_layer(graph_spec).sanitized_name}}"] = inputs                
                 {% call(layer_spec) indented_loop(layer_spec.get_target_inner_layers(graph_spec)) %}
-                    self.layer_instances["{{layer_spec.sanitized_name}}"] = layer_instance = graph.get_node_by_id("{{layer_spec.sanitized_name}}").layer_instance                
+                    layer_instance = self.layer_instances["{{layer_spec.sanitized_name}}"]
                     self.layer_outputs["{{layer_spec.sanitized_name}}"] = layer_instance.keras_layer(
                         {
                             {% call(conn) indented_loop(layer_spec.backward_connections) %}
                                 "{{conn.dst_var}}": self.layer_outputs["{{conn.get_src_sanitized_name(graph_spec)}}"]["{{conn.src_var}}"],
                             {% endcall %}
                         },
-                        is_training=kwargs["training"]
+                        training=training
                     )
                 {% endcall %}                
                 return self.layer_outputs["{{layer_spec.get_connection_labels().get_src_sanitized_name(graph_spec)}}"]["{{layer_spec.get_connection_labels().src_var}}"]
 
-        prediction_model = PredictionModel()
-        target_model = TargetModel()
-
+        prediction_model = PredictionModel(element_spec[0])
+        target_model = TargetModel(element_spec[1])
         return prediction_model, target_model
     
     def _dataset_iteration(self, dataset, loss_fn, metric_loss, metric_accuracy, metric_auc, iteration_setter, is_training=True, optimizer=None):

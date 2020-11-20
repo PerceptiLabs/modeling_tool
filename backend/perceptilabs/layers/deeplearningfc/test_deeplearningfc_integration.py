@@ -179,7 +179,7 @@ def test_tf2x_fully_connected_batch_norm_uses_initial_params_when_not_training(s
     layer = LayerHelper(script_factory_tf2x, layer_spec).get_instance(print_code=True)
 
     x = 32*np.random.random((10, 1))
-    y = layer({'input': tf.constant(x)}, is_training=False)
+    y = layer({'input': tf.constant(x)}, training=False)
     
     w = next(iter(layer.weights.values())).numpy()
     b = next(iter(layer.biases.values())).numpy()

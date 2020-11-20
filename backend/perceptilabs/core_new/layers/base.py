@@ -181,11 +181,18 @@ class Tf2xLayer(Tf1xLayer):
     NOTE: The properties of this layer likely have to be updated as new TF2 layers are added. For example, make sure all weights are returned with the correct name. 
     """
 
-    def __init__(self, keras_layer):
-        self.keras_layer = keras_layer
+    def __init__(self, keras_class):
+        self._keras_class = keras_class
+        self._keras_layer = None
         self._outputs = {'output': None}
 
-    def __call__(self, *args, **kwargs):
+    @property
+    def keras_layer(self):
+        if self._keras_layer is None:
+            self._keras_layer = self._keras_class()
+        return self._keras_layer
+    
+    def __call__(self, *args, **kwargs):        
         self._outputs = self.keras_layer(*args, **kwargs)
         return self._outputs
 
@@ -199,7 +206,6 @@ class Tf2xLayer(Tf1xLayer):
                 "This variable must be declared as an output in order for "
                 "the previews to work properly."
             )
-
         return vars_
 
     @property
@@ -227,7 +233,6 @@ class Tf2xLayer(Tf1xLayer):
         else:
             return {}   
     
-
 
 class TrainingLayer(DataLayer):
     @abstractmethod

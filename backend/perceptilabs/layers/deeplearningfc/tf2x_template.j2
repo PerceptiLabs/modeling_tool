@@ -10,18 +10,17 @@ class {{layer_spec.sanitized_name}}Keras(tf.keras.layers.Layer):
         self._n_neurons = {{layer_spec.n_neurons}}
         self._variables = {}
 
-    def call(self, inputs: Dict[str, tf.Tensor], is_training: bool = True) -> Dict[str, tf.Tensor]:
+    def call(self, inputs, training=True):
         """ Takes a tensor as input and feeds it forward through a layer of neurons, returning a newtensor. Invoked by the Keras framework. """
         {{ check_input_vars(layer_spec, ['input'])|indent(width=8)}}                
         input_ = inputs['input']
         
-        flat_input = tf.keras.layers.Flatten()(input_)
-
+        flat_input = self.flatten(input_)
         linear_output = tf.matmul(flat_input, self.W) + self.b
         
         {% call indented_if(layer_spec.batch_norm) %}
             {{ activation_function(layer_spec.activation, input_var='linear_output', assigned_var='preview') | indent(8) }}            	
-            linear_output = tf.keras.layers.BatchNormalization()(linear_output, training=is_training)
+            linear_output = self.batch_norm(linear_output, training=training)
             {{ activation_function(layer_spec.activation, input_var='linear_output', assigned_var='output') | indent(8) }}            
         {% endcall %}
         {% call indented_if(not layer_spec.batch_norm) %}
@@ -44,16 +43,21 @@ class {{layer_spec.sanitized_name}}Keras(tf.keras.layers.Layer):
             input_shape: A dictionary with layer id and its tensor shape        
         """
         flat_input_dim = np.product(input_shape['input'][1:]) # Excluding batch size
-            
+        self.flatten = tf.keras.layers.Flatten()
+        {% call indented_if(layer_spec.batch_norm) %}	
+            self.batch_norm = tf.keras.layers.BatchNormalization()
+	{% endcall %}            
         self.W = self.add_weight(
             shape=(flat_input_dim, self._n_neurons),
             initializer=tf.keras.initializers.TruncatedNormal(stddev=0.1),
-            dtype=tf.float32            
+            dtype=tf.float32,
+            name='W'
         )
         self.b = self.add_weight(
             shape=(self._n_neurons,),
             initializer=tf.keras.initializers.Constant(value=0.0),
-            dtype=tf.float32
+            dtype=tf.float32,
+            name='b'
         )
 
     def get_config(self) -> Dict[str, Picklable]:
@@ -69,7 +73,7 @@ class {{layer_spec.sanitized_name}}Keras(tf.keras.layers.Layer):
 class {{layer_spec.sanitized_name}}(Tf2xLayer):
     def __init__(self):
         super().__init__(
-            keras_layer={{layer_spec.sanitized_name}}Keras()
+            keras_class={{layer_spec.sanitized_name}}Keras
         )        
     
 {% endmacro %}
