@@ -43,6 +43,7 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
         to be called in run().
         """
         self._mode = mode
+        self._graph=graph
         
         input_layer_id, label_layer_id, prediction_layer_id, target_layer_id, prediction_var_name, target_var_name = self._get_io_layer_ids(graph)
         
@@ -51,7 +52,10 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
             graph, self._dataset_train.element_spec,
             input_layer_id, label_layer_id, prediction_layer_id, target_layer_id, prediction_var_name, target_var_name
         )
-
+        {% call indented_if(layer_spec.load_checkpoint) %}
+            self.load_weights('{{layer_spec.checkpoint_path}}')        
+        {% endcall %}
+        
         self._metric_training_loss = tf.keras.metrics.Mean()
         self._metric_training_accuracy = tf.keras.metrics.CategoricalAccuracy()
         self._metric_validation_loss = tf.keras.metrics.Mean()
@@ -116,6 +120,7 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
             {% endfilter %}
             
         self._status = 'finished'
+        self.on_export('{{layer_spec.checkpoint_path}}', 'checkpoint')           
         yield YieldLevel.SNAPSHOT
 
     def _set_training_iteration(self, value):
@@ -134,7 +139,7 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
     def test(self, graph: Graph):
         """Testing is done when this function is called. 
         """
-        raise NotImplementedError
+        raise NotImplementedError("Testing phase is not implemented!")
 
     def run(self, graph: Graph, mode='training'):
         """Called as the main entry point for training. Responsible for training the model.
@@ -168,17 +173,22 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
                 time.sleep(0.0000000000000001)  # Force your computer to do a clock cycle to avoid Windows permission exception
             os.makedirs(model_path, exist_ok=True)
             return model_path
+
+        os.makedirs(path, exist_ok=True)
         
         if mode == 'TFModel':
             model_path = make_model_path()
             self._prediction_model.save(model_path)
+        elif mode == 'checkpoint':
+            checkpoint_prefix = os.path.join(path, 'model.ckpt')
+            self._prediction_model.save_weights(checkpoint_prefix, overwrite=True)
         else:
             raise NotImplementedError(f"Exporting as {mode} is not supported")
     
     def on_stop(self) -> None:
         """Called when the save model button is clicked in the frontend. 
         It is up to the implementing layer to save the model to disk."""
-        self.on_export(self._checkpoint_save_path, 'checkpoint') 
+        self.on_export('{{layer_spec.checkpoint_path}}', 'checkpoint')                   
         self._stopped = True
 
     def on_headless_activate(self) -> None:
@@ -600,6 +610,18 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
             for tensor_name in sorted(dict_[layer_id].keys()):
                 output.append(dict_[layer_id][tensor_name])
         return output
+
+    def load_weights(self, checkpoint_directory):
+        """ Load prediction model weights from a directory
+
+        Args:
+            checkpoint_directory: a directory where a TensorFlow checkpoint has been saved.
+        """
+        latest_checkpoint = tf.train.latest_checkpoint(checkpoint_directory)
+        if latest_checkpoint is not None:
+            self._prediction_model.load_weights(latest_checkpoint)
+        else:
+            log.error('There are no saved checkpoint files for this model.')        
     
     {% filter if_true(layer_spec.early_stopping_enabled, remove_left_spaces=4) %}    
         def _should_stop_early(self) -> bool:
@@ -613,6 +635,6 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
             return False
     {% endfilter %}
         
-                
+    
 
 {% endmacro %}

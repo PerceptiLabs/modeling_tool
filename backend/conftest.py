@@ -226,7 +226,7 @@ def make_graph_spec():
 
 
     
-    def fn_make_graph_spec(temp_path_checkpoints, inputs_path, targets_path, learning_rate=0.3, checkpoint_path=None, distributed=False, n_epochs=200, early_stopping=False): # TODO: fix checkpoint path. it can't be none
+    def fn_make_graph_spec(temp_path_checkpoints, inputs_path, targets_path, learning_rate=0.3, checkpoint_path=None, distributed=False, n_epochs=200, early_stopping=False, load_checkpoint=True): # TODO: fix checkpoint path. it can't be none
         checkpoint_path = checkpoint_path or temp_path_checkpoints
         
         # --- CONNECTIONS ---
@@ -276,7 +276,7 @@ def make_graph_spec():
             n_epochs=n_epochs,
             distributed=distributed,
             checkpoint_path=checkpoint_path,
-            load_checkpoint = True,
+            load_checkpoint=load_checkpoint,
             backward_connections=(conn_labels_to_train, conn_fc_to_train),
             connection_labels=conn_labels_to_train,
             connection_predictions=conn_fc_to_train,

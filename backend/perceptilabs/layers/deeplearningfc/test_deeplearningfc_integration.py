@@ -96,17 +96,10 @@ def test_fully_connected_is_training_overrides_dropout(script_factory):
 
 
     # To rule out chance: evaluate the layer several times and assert outputs are non-zero on average
-    n_fails = 0
-    n_trials = 50
-    for i in range(n_trials):
-        with tf.Session() as sess:    
-            sess.run(tf.global_variables_initializer())
-            output = sess.run(y)['output']
-
-            if np.all(output == 0):
-                n_fails += 1
-
-    assert n_fails/n_trials <= 1/50 # Allow 1/50 to be a failure
+    with tf.Session() as sess:    
+        sess.run(tf.global_variables_initializer())
+        output = sess.run(y)['output']
+        assert not np.allclose(output, 0)
 
     
 @pytest.mark.tf2x                

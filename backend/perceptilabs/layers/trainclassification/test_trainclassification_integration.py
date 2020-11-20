@@ -52,7 +52,8 @@ def graph_spec_few_epochs(make_graph_spec, temp_path, temp_path_checkpoints):
         temp_path_checkpoints, 
         os.path.join(temp_path, '16x4_inputs.npy'),
         os.path.join(temp_path, '16x4_targets.npy'),
-        n_epochs=5
+        n_epochs=5,
+        load_checkpoint=False
     )        
     yield graph_spec
     
@@ -792,5 +793,60 @@ def test_tf2x_export_tfmodel_can_load_and_predict(temp_path, script_factory_tf2x
     assert isinstance(loaded_model.predict({'output': np.random.random((1, 4))}), np.ndarray)
 
 
+@pytest.mark.tf2x            
+def test_tf2x_save_weights_automatically(temp_path, script_factory_tf2x, graph_spec_few_epochs):
+    graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec_few_epochs)
     
+    fc_layer_id = graph.nodes[2].layer_id
+    training_layer = graph.active_training_node.layer
+
+    iterator = training_layer.run(graph, mode='training') 
+
+    for _ in iterator:
+        pass
+
+    assert any(
+        file_name.startswith('model.ckpt')
+        for file_name in os.listdir(graph_spec_few_epochs.training_layer.checkpoint_path)
+    )
+
+
+@pytest.mark.tf2x            
+def test_tf2x_load_weights(temp_path, script_factory_tf2x, graph_spec_few_epochs):
     
+    def has_equal_weights(tl1, tl2):
+        """ Check if two training layers have equal weights """
+        for layer_id in tl1.layer_weights.keys():
+            for var_name in tl1.layer_weights[layer_id].keys():
+                weights1 = tl1.layer_weights[layer_id][var_name]
+                weights2 = tl2.layer_weights[layer_id][var_name]                
+                if np.any(weights1 != weights2):
+                    return False
+                
+        return True        
+
+    # Train the network once and export the weights 
+    graph1 = graph_spec_to_core_graph(script_factory_tf2x, graph_spec_few_epochs)
+    training_layer1 = graph1.active_training_node.layer
+    iterator = training_layer1.run(graph1, mode='training') 
+    for _ in iterator:
+        pass
+
+    # Explicit call to avoid conflict with the call to on_export at the end of training
+    checkpoint_dir = os.path.join(temp_path, 'new_ckpt_dir')
+    os.mkdir(checkpoint_dir)
+    training_layer1.on_export(checkpoint_dir, 'checkpoint')
+    
+    # Train another network with the same specs
+    graph2 = graph_spec_to_core_graph(script_factory_tf2x, graph_spec_few_epochs)
+    training_layer2 = graph2.active_training_node.layer
+    iterator = training_layer2.run(graph2, mode='training') 
+    for _ in iterator:
+        pass
+
+    # Assert that the weights are different before loading the checkpoint
+    assert not has_equal_weights(training_layer2, training_layer1)
+
+    # Load the checkpoint and compare
+    training_layer2.load_weights(checkpoint_dir)
+    assert has_equal_weights(training_layer2, training_layer1)    
