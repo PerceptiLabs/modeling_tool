@@ -42,6 +42,9 @@ perceptilabs/autosettings/base.py
 perceptilabs/autosettings/rules.py
 perceptilabs/autosettings/utils.py
 
+# perceptilabs/parser 
+perceptilabs/parser/onnx_converter.py
+
 # perceptilabs/graph
 perceptilabs/graph/__init__.py
 perceptilabs/graph/splitter.py

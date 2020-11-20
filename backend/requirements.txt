@@ -1,3 +1,7 @@
+tensorflow==1.15
+onnx==1.8.0
+tf2onnx==1.7.2
+keras2onnx==1.7.0
 astor>=0.8.0
 azure-eventhub==5.1.0
 azure-storage==0.36.0
