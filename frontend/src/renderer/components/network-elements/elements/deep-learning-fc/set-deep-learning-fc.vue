@@ -42,6 +42,7 @@
           input(
             type="number"
             v-model="settings.Keep_prob"
+            :class="{'invalid': !isValidKeepProbability }"
             @focus="setIsSettingInputFocused(true)"
             @blur="setIsSettingInputFocused(false)")
     .settings-layer_section
@@ -62,14 +63,16 @@
 </template>
 
 <script>
-  import mixinSet       from '@/core/mixins/net-element-settings.js';
-  import SettingsCode   from '@/components/network-elements/elements-settings/setting-code.vue';
-  import NetBaseSettings  from '@/components/network-elements/net-base-settings/net-base-settings.vue';
+  import mixinSet           from '@/core/mixins/net-element-settings.js';
+  import mixinSetValidators from '@/core/mixins/net-element-settings-validators.js';
+
+  import SettingsCode       from '@/components/network-elements/elements-settings/setting-code.vue';
+  import NetBaseSettings    from '@/components/network-elements/net-base-settings/net-base-settings.vue';
   import {mapGetters, mapActions}   from 'vuex';
 
   export default {
     name: 'SetDeepLearningFC',
-    mixins: [mixinSet],
+    mixins: [mixinSet, mixinSetValidators],
     components: { SettingsCode, NetBaseSettings },
     data() {
       return {
@@ -113,6 +116,8 @@
         popupInfo:               'globalView/GP_infoPopup'
       }),
       saveSettings(tabName) {
+        if (!this.isValidKeepProbability) { return; }
+
         this.applySettings(tabName);
       },
       setIsSettingInputFocused(value) {

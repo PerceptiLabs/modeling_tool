@@ -1,4 +1,4 @@
-{% from 'tf1x_utils.j2' import batch_normal, activation_function, activation_name, build_output_dict, check_input_vars %}
+{% from 'tf1x_utils.j2' import batch_normal, activation_function, activation_name, dropout, build_output_dict, check_input_vars %}
 
 {% macro layer_tf1x_switch(layer_spec, graph_spec=None) %}
 class {{layer_spec.sanitized_name}}(Tf1xLayer):
@@ -345,6 +345,7 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
         self._scope = '{{layer_spec.sanitized_name}}'
         self._n_neurons = {{layer_spec.n_neurons}}
         self._variables = {}
+        self._dropout = {{layer_spec.dropout}}
         self._keep_prob = {{layer_spec.keep_prob}}
 
     def __call__(self, inputs: Dict[str, tf.Tensor], is_training: tf.Tensor = None) -> Dict[str, tf.Tensor]:
@@ -353,6 +354,7 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
         x = inputs['input']
         n_inputs = np.prod(x.get_shape().as_list()[1:], dtype=np.int32)
         b_norm = {{layer_spec.batch_norm}}
+        dropout_ = {{layer_spec.dropout}}
         y_before = None
         y = None
 
@@ -368,24 +370,19 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
             y = tf.matmul(flat_node, W) + b
 
             y_before = y
-            {{ batch_normal(layer_spec.batch_norm, y, is_training) | indent(width=12)}}
+            {{ batch_normal(layer_spec.batch_norm) | indent(width=12)}}
 
             {% filter remove_lspaces(8) %}
                 {% if layer_spec.activation is not none %}
                     {{ activation_function(layer_spec.activation, 'y') }}                
-                {% endif %}
-            {% endfilter %}
-            {% filter remove_lspaces(8) %}
-                {% if layer_spec.batch_norm %}
                     {{ activation_function(layer_spec.activation, 'y_before') }}
                 {% endif %}
             {% endfilter %}
 
-            {% filter remove_lspaces(8) %}
-                {% if layer_spec.dropout %}
-                    y = tf.nn.dropout(y, keep_prob=self._keep_prob*tf.cast(is_training, tf.float32))
-                {% endif %}
-            {% endfilter %}
+            if self._dropout and (self._keep_prob <= 0 or self._keep_prob >  1):
+                raise ValueError('Keep probability is not within a valid range!')
+
+            {{ dropout(layer_spec.dropout) | indent(width=12)}}
             
         self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
 
@@ -596,6 +593,7 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
         self._feature_maps = {{layer_spec.feature_maps}}
         self._padding = '{{layer_spec.padding}}'
         self._stride = {{layer_spec.stride}}
+        self._dropout = {{layer_spec.dropout}}
         self._keep_prob = {{layer_spec.keep_prob}}
         self._variables = {}
         
@@ -604,6 +602,7 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
         {{ check_input_vars(layer_spec, ['input'])|indent(width=8)}}                
         x = tf.dtypes.cast(inputs['input'], tf.float32)        
         b_norm = {{layer_spec.batch_norm}}
+        dropout_ = {{layer_spec.dropout}}
         y_before = None
         y = None
 
@@ -662,7 +661,7 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
             {% endfilter %}
 
             y_before = y            
-            {{ batch_normal(layer_spec.batch_norm, y, is_training) | indent(width=12)}}
+            {{ batch_normal(layer_spec.batch_norm) | indent(width=12)}}
 
             {% filter remove_lspaces(8) %}
                 {% if activation is not none %}
@@ -674,11 +673,12 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
                     {{ activation_function(layer_spec.activation, 'y_before') }}
                 {% endif %}
             {% endfilter %}
-            {% filter remove_lspaces(8) %}
-                {% if layer_spec.dropout %}
-                    y = tf.nn.dropout(y, self._keep_prob*tf.cast(is_training, tf.float32))
-                {% endif %}
-            {% endfilter %}
+
+            if self._dropout and (self._keep_prob <= 0 or self._keep_prob >  1):
+                raise ValueError('Keep probability is not within a valid range!')
+                
+            {{ dropout(layer_spec.dropout) | indent(width=12)}}
+            
             {% filter remove_lspaces(12) %}
                 {% if layer_spec.pool and layer_spec.pooling == "Max" %}
                     {% if layer_spec.conv_dim == '1D' %}
@@ -875,12 +875,9 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
             {% endfilter %}
 
             y_before = y            
-            {{ batch_normal(layer_spec.batch_norm, y, is_training) | indent(width=12)}}
+            {{ batch_normal(layer_spec.batch_norm) | indent(width=12)}}
 
             {% filter remove_lspaces(8) %}
-                {% if layer_spec.dropout %}
-                    y = tf.nn.dropout(y,self._keep_prob*tf.cast(is_training, tf.float32))
-                {% endif %}
                 {% if layer_spec.activation is not none %}
                     y = y + b
                     {{ activation_function(layer_spec.activation, 'y') }}
@@ -888,10 +885,6 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
             {% endfilter %}
             {% filter remove_lspaces(12) %}
                 {% if layer_spec.batch_norm %}
-                    {% if layer_spec.dropout %}
-                        y_before = tf.nn.dropout(y_before, self._keep_prob*tf.cast(is_training, tf.float32))
-                    {% endif %}
-                    
                     {% if layer_spec.activation is not none %}
                         y_before = y_before + b
                         {{ activation_function(layer_spec.activation, 'y_before') }}
@@ -899,6 +892,11 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
                 {% endif %}
             {% endfilter %}
             
+            if self._dropout and (self._keep_prob <= 0 or self._keep_prob >  1):
+                raise ValueError('Keep probability is not within a valid range!')
+
+            {{ dropout(layer_spec.dropout) | indent(width=12)}}
+
         self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
 
         {{ build_output_dict(
@@ -975,6 +973,7 @@ class {{layer_spec.sanitized_name}}(Tf1xLayer):
         self._neurons = {{layer_spec.n_neurons}}
         self._weights = None
         self._biases = None
+        self._dropout = {{layer_spec.dropout}}
         self._keep_prob = {{layer_spec.keep_prob}}
 
     def __call__(self, inputs: Dict[str, tf.Tensor], is_training: tf.Tensor = None):

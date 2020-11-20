@@ -72,6 +72,7 @@
           input(
             type="number"
             v-model="settings.Keep_prob"
+            :class="{'invalid': !isValidKeepProbability }"
             @focus="setIsSettingInputFocused(true)"
             @blur="setIsSettingInputFocused(false)")
 
@@ -95,11 +96,12 @@
 </template>
 
 <script>
-import mixinSet       from '@/core/mixins/net-element-settings.js';
+import mixinSet           from '@/core/mixins/net-element-settings.js';
+import mixinSetValidators from '@/core/mixins/net-element-settings-validators.js';
 
 export default {
   name: 'SetDeepLearningRecurrent',
-  mixins: [mixinSet],
+  mixins: [mixinSet, mixinSetValidators],
   inject: ['hideAllWindow'],
   data() {
     return {
@@ -140,6 +142,11 @@ export default {
     applyRecurrentSettings() {
       this.applySettings('Settings');
       this.showPreview = true
+    },
+    saveSettings(tabName) {
+      if (!this.isValidKeepProbability) { return; }
+
+      this.applySettings(tabName);
     },
     setIsSettingInputFocused(value) {
       this.$store.commit("mod_workspace/setIsSettingInputFocused", value);

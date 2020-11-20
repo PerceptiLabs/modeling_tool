@@ -68,11 +68,19 @@
 {% endfilter %}
 {% endmacro %}
 
-{% macro batch_normal(batch_norm, y, is_training) %}
+{% macro batch_normal(batch_norm) %}
 {% filter remove_lspaces(8) %}
     {% if batch_norm %}
-        y_before = y
         y = tf.compat.v1.layers.batch_normalization(y, training=is_training)
+    {% endif %}
+{% endfilter %}
+{% endmacro %}
+
+{% macro dropout(dropout_) %}
+{% filter remove_lspaces(8) %}
+    {% if dropout_ %}
+        y = tf.nn.dropout(y, rate=(1 - self._keep_prob)*tf.cast(is_training, tf.float32))
+        y_before = tf.nn.dropout(y_before, rate=(1 - self._keep_prob)*tf.cast(is_training, tf.float32))
     {% endif %}
 {% endfilter %}
 {% endmacro %}

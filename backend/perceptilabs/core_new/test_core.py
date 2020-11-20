@@ -157,7 +157,7 @@ def graph_spec_binary_classification():
                     "Neurons": str(n_classes),
                     "Activation_function" : "Sigmoid",
                     "Dropout": False,
-                    "Keep_prob": "0.0",
+                    "Keep_prob": "1.0",
                     "Batch_norm": False
                 },
                 "backward_connections": [
@@ -377,7 +377,7 @@ def graph_spec_binary_classification_2():
                     "Neurons": str(n_classes),
                     "Activation_function" : "Sigmoid",
                     "Dropout": False,
-                    "Keep_prob": "0.0",
+                    "Keep_prob": "1.0",
                     "Batch_norm": False
                 },
                 "backward_connections": [

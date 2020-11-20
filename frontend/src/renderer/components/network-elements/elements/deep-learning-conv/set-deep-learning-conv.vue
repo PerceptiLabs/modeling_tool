@@ -77,6 +77,7 @@
           input(
             type="number" 
             v-model="settings.Keep_prob"
+            :class="{'invalid': !isValidKeepProbability }"
             @focus="setIsSettingInputFocused(true)"
             @blur="setIsSettingInputFocused(false)")
     .settings-layer_section
@@ -136,13 +137,15 @@
 </template>
 
 <script>
-import mixinSet       from '@/core/mixins/net-element-settings.js';
+import mixinSet           from '@/core/mixins/net-element-settings.js';
+import mixinSetValidators from '@/core/mixins/net-element-settings-validators.js';
+
 import { mapGetters, mapActions } from 'vuex';
 import isEqual from 'lodash.isequal';
 
 export default {
   name: 'SetDeepLearningConv',
-  mixins: [mixinSet],
+  mixins: [mixinSet, mixinSetValidators],
   mounted() {
     this.saveSettingsToStore("Settings");
   },
@@ -225,24 +228,6 @@ export default {
       isTutorialMode:   'mod_tutorials/getIsTutorialMode',
     })
   },
-  watchers:{
-    // 'Conv_dim'() {
-
-    // },
-    //     Patch_size: "3",
-    //     Stride: "2",
-    //     Padding: "SAME", //'SAME', 'VALID'
-    //     Feature_maps: "8",
-    //     Activation_function: "Sigmoid", //Sigmoid, ReLU, Tanh, None
-    //     Dropout: false, //True, False
-    //     Keep_prob: '1',
-    //     Batch_norm: false,
-    //     PoolBool: false, //True, False
-    //     Pooling: "Max", //Max, Mean
-    //     Pool_area: "2",
-    //     Pool_padding: "SAME", //'SAME', 'VALID'
-    //     Pool_stride: "2"
-  },
   methods: {
     setIsSettingInputFocused(value) {
       this.$store.commit("mod_workspace/setIsSettingInputFocused", value);
@@ -252,6 +237,8 @@ export default {
     onBlur(inputId) {
     },
     saveSettings(tabName) {
+      if (!this.isValidKeepProbability) { return; }
+
       this.applySettings(tabName);
     },
   }

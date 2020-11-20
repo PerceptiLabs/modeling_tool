@@ -25,6 +25,8 @@ def test_fully_connected_1x1_should_be_normal_multiplication(script_factory):
         name='layer_name',
         n_neurons=1,
         activation='Sigmoid',
+        dropout=False,
+        keep_prob=1.0,
         backward_connections=(LayerConnection(dst_var='input'),)        
     )
     layer = LayerHelper(script_factory, layer_spec).get_instance()
@@ -74,7 +76,7 @@ def test_fully_connected_zero_keep_prob_equals_zero_output(script_factory):
             if np.any(output != 0):
                 n_fails += 1
 
-    assert n_fails/n_trials < 1/50 # Allow 1/50 to be a failure
+    assert n_fails/n_trials <= 1/50 # Allow 1/50 to be a failure
 
 
 def test_fully_connected_is_training_overrides_dropout(script_factory):
@@ -104,7 +106,7 @@ def test_fully_connected_is_training_overrides_dropout(script_factory):
             if np.all(output == 0):
                 n_fails += 1
 
-    assert n_fails/n_trials < 1/50 # Allow 1/50 to be a failure
+    assert n_fails/n_trials <= 1/50 # Allow 1/50 to be a failure
 
     
 @pytest.mark.tf2x                
