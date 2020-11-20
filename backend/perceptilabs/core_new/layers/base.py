@@ -175,6 +175,60 @@ class Tf1xLayer(InnerLayer):
         raise NotImplementedError
 
 
+class Tf2xLayer(Tf1xLayer):
+    """ This layer is an adapter between Keras layers and our infrastructure for sending data.
+    
+    NOTE: The properties of this layer likely have to be updated as new TF2 layers are added. For example, make sure all weights are returned with the correct name. 
+    """
+
+    def __init__(self, keras_layer):
+        self.keras_layer = keras_layer
+        self._outputs = {'output': None}
+
+    def __call__(self, *args, **kwargs):
+        self._outputs = self.keras_layer(*args, **kwargs)
+        return self._outputs
+
+    def get_sample(self):
+        vars_ = self._outputs.copy()
+        if 'preview' in vars_:
+            vars_['output'] = vars_['preview'] # Overwrite the output with the preview variable. 
+        else:
+            raise RuntimeError(
+                "Could not fetch 'preview' variable from Keras layer. "
+                "This variable must be declared as an output in order for "
+                "the previews to work properly."
+            )
+
+        return vars_
+
+    @property
+    def variables(self):
+        return self.keras_layer.get_config()
+
+    @property
+    def trainable_variables(self):
+        dict_ = {}
+        dict_.update(self.weights)
+        dict_.update(self.biases)
+        return dict_
+
+    @property
+    def weights(self):
+        if hasattr(self.keras_layer, 'W'):
+            return {'W': getattr(self.keras_layer, 'W')}
+        else:
+            return {}
+    
+    @property
+    def biases(self):
+        if hasattr(self.keras_layer, 'b'):
+            return {'b': getattr(self.keras_layer, 'b')}
+        else:
+            return {}   
+    
+
+
 class TrainingLayer(DataLayer):
     @abstractmethod
     def on_stop(self) -> None:

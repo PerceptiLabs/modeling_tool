@@ -469,7 +469,7 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
                 self.layer_outputs["{{layer_spec.get_prediction_data_layer(graph_spec).sanitized_name}}"] = inputs
                 {% call(layer_spec) indented_loop(layer_spec.get_prediction_inner_layers(graph_spec)) %}
                     self.layer_instances["{{layer_spec.sanitized_name}}"] = layer_instance = graph.get_node_by_id("{{layer_spec.sanitized_name}}").layer_instance                                    
-                    self.layer_outputs["{{layer_spec.sanitized_name}}"] = layer_instance(
+                    self.layer_outputs["{{layer_spec.sanitized_name}}"] = layer_instance.keras_layer(
                         {
                             {% call(conn) indented_loop(layer_spec.backward_connections) %}
                                 "{{conn.dst_var}}": self.layer_outputs["{{conn.get_src_sanitized_name(graph_spec)}}"]["{{conn.src_var}}"],
@@ -490,7 +490,7 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
                 self.layer_outputs["{{layer_spec.get_target_data_layer(graph_spec).sanitized_name}}"] = inputs                
                 {% call(layer_spec) indented_loop(layer_spec.get_target_inner_layers(graph_spec)) %}
                     self.layer_instances["{{layer_spec.sanitized_name}}"] = layer_instance = graph.get_node_by_id("{{layer_spec.sanitized_name}}").layer_instance                
-                    self.layer_outputs["{{layer_spec.sanitized_name}}"] = layer_instance(
+                    self.layer_outputs["{{layer_spec.sanitized_name}}"] = layer_instance.keras_layer(
                         {
                             {% call(conn) indented_loop(layer_spec.backward_connections) %}
                                 "{{conn.dst_var}}": self.layer_outputs["{{conn.get_src_sanitized_name(graph_spec)}}"]["{{conn.src_var}}"],

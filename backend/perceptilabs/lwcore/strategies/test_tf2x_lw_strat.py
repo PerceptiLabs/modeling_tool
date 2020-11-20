@@ -24,7 +24,7 @@ def test_tf2x_inner_result_has_shape(script_factory_tf2x, classification_spec_ba
 
     expected = {
         'output': (3,),
-        'y_before': (3,),        
+        'preview': (3,),        
         'W': (4, 3),
         'b': (3,)        
     }

@@ -58,6 +58,7 @@ perceptilabs/layers/definitions.py
 # perceptilabs/layers/jinja_macros
 perceptilabs/layers/jinja_macros/controlflow.j2
 perceptilabs/layers/jinja_macros/losses.j2
+perceptilabs/layers/jinja_macros/activations.j2
 perceptilabs/layers/jinja_macros/optimizers.j2
 
 # perceptilabs/layers/datadata

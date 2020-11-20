@@ -195,3 +195,50 @@ def test_tf2x_fully_connected_batch_norm_uses_initial_params_when_not_training(s
     
     assert np.all(np.isclose(actual, expected, rtol=1e-03))
     
+ 
+@pytest.mark.tf2x                
+def test_tf2x_fully_connected_1x1_with_no_activation(script_factory_tf2x):
+    layer_spec = DeepLearningFcSpec(
+        id_='layer_id',
+        name='layer_name',
+        n_neurons=1,
+        activation='None',
+        backward_connections=(LayerConnection(dst_var='input'),)        
+    )
+    layer = LayerHelper(script_factory_tf2x, layer_spec).get_instance(print_code=True)
+
+    x = 32*np.ones((1, 1))
+    y = layer({'input': tf.constant(x)})
+    
+    w = next(iter(layer.weights.values())).numpy()
+    b = next(iter(layer.biases.values())).numpy()
+
+    actual = y['output'].numpy()
+    expected = w*x + b
+
+    assert np.isclose(actual, expected)
+   
+
+@pytest.mark.tf2x                
+def test_tf2x_fully_connected_1x1_with_relu(script_factory_tf2x):
+    layer_spec = DeepLearningFcSpec(
+        id_='layer_id',
+        name='layer_name',
+        n_neurons=1,
+        activation='ReLU',
+        backward_connections=(LayerConnection(dst_var='input'),)        
+    )
+    layer = LayerHelper(script_factory_tf2x, layer_spec).get_instance(print_code=True)
+
+    x = 32*np.ones((1, 1))
+    y = layer({'input': tf.constant(x)})
+    
+    w = next(iter(layer.weights.values())).numpy()
+    b = next(iter(layer.biases.values())).numpy()
+
+    actual = y['output'].numpy()
+    expected = max(w*x + b, 0)
+
+    assert np.isclose(actual, expected)
+   
+    
