@@ -96,8 +96,8 @@ export default {
         offsetX: 0,
         offsetY: 0,
       },
-      svgWidth: '100%',
-      svgHeight: '100%',
+      svgWidth: null,
+      svgHeight: null,
       multiSelect: {
         show: false,
         xStart: 0,  yStart: 0,
@@ -352,15 +352,14 @@ export default {
       if(!parentWorkspace) { return 0} 
       let offsetHeight = parentWorkspace.offsetHeight;
       let offsetWidth = parentWorkspace.offsetWidth;
-      const gapSize = 60;
-      
+      const gapSizeWidth = 145 * this.networkScale;
+      const gapSizeHeight = 223  * this.networkScale;
       // calculate max boundaries for network elements
       const positions = Object.values(this.networkElementList).map(item => item.layerMeta.position);
-      const maxWidthPositions = Math.max(...positions.map(position => position.left)) + this.layerSize * this.networkScale + gapSize;
-      const maxHeightPositions = Math.max(...positions.map(position => position.top)) + this.layerSize * this.networkScale + gapSize;
-
-      this.svgWidth = Math.max(offsetWidth, maxWidthPositions);
-      this.svgHeight = Math.max(offsetHeight, maxHeightPositions);
+      const maxWidthPositions = Math.max(...positions.map(position => position.left)) + this.layerSize * this.networkScale + gapSizeWidth;
+      const maxHeightPositions = Math.max(...positions.map(position => position.top)) + this.layerSize * this.networkScale + gapSizeHeight;
+      this.svgWidth = Math.max(offsetWidth, maxWidthPositions) + 'px';
+      this.svgHeight = Math.max(offsetHeight, maxHeightPositions) + 'px';
 
       if (redrawArrows) {
         this.$nextTick(() => {
