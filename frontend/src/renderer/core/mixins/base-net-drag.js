@@ -130,8 +130,8 @@ const baseNetDrag = {
 
         const stickStartPos = this.stickStartPos;
        
-        const top = calcLayerPosition((this.applyCoefficientScale(ev.pageY) - (this.applyCoefficientScale(stickStartPos.mouseY) - initialTop)));
-        const left = calcLayerPosition((this.applyCoefficientScale(ev.pageX) - (this.applyCoefficientScale(stickStartPos.mouseX) - (initialLeft))));
+        const top = this.applyCoefficientScale(ev.pageY) - (this.applyCoefficientScale(stickStartPos.mouseY) - initialTop);
+        const left = this.applyCoefficientScale(ev.pageX) - (this.applyCoefficientScale(stickStartPos.mouseX) - initialLeft);
         
         this.updateDragBoxContainerMutation({
           isVisible: true,
@@ -144,10 +144,11 @@ const baseNetDrag = {
     },
 
     bodyUp(ev) {
-      
+      this.bodyDrag = false;
       // update network and remove borders
+      this.updateItems(ev);
+
       if(!this.isFewItemsSelected()) {
-        this.updateItems(ev);
         this.updateDragBoxContainerMutation({
           isVisible: false,
           top: 0,
@@ -167,7 +168,6 @@ const baseNetDrag = {
       }
 
       this.itemWasDragged = false;
-      this.bodyDrag = false;
       this.$store.dispatch('mod_workspace/CHANGE_elementPosition', this.rect);
       this.$parent.$parent.createArrowList();
 
@@ -187,8 +187,8 @@ const baseNetDrag = {
         x: (stickStartPos.mouseX - (ev.pageX || ev.touches[0].pageX)), 
         y: (stickStartPos.mouseY - (ev.pageY || ev.touches[0].pageY)) 
       };
-      const top = calcLayerPosition(stickStartPos.top - delta.y);
-      const left = calcLayerPosition(stickStartPos.left - delta.x);
+      const top = this.bodyDrag ? stickStartPos.top - delta.y : calcLayerPosition(stickStartPos.top - delta.y);
+      const left = this.bodyDrag ? stickStartPos.left - delta.x : calcLayerPosition(stickStartPos.left - delta.x);
       if((this.top !== top) || (this.left !== left)) {
         this.top = (top < 0) ? 0 : top;
         this.left = (left < 0) ? 0 : left;
