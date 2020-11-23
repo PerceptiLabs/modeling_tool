@@ -5,12 +5,15 @@ const workspaceDrag = {
   mounted() {
     const el = document.getElementById('networkWorkspace');
     el.addEventListener('mousedown', this.mouseDownHandler);
-    el.addEventListener('mouseup', this.mouseUpHandler);
+    document.addEventListener('mouseup', this.mouseUpHandler);
   },
   beforeDestroy() {
     const el = document.getElementById('networkWorkspace');
-    el.removeEventListener('mousedown', this.mouseDownHandler);
-    el.removeEventListener('mouseup', this.mouseUpHandler);
+    if(el) {
+      el.removeEventListener('mousedown', this.mouseDownHandler);
+    }
+    
+    document.removeEventListener('mouseup', this.mouseUpHandler);
   },
   data() {
     return {
@@ -31,12 +34,14 @@ const workspaceDrag = {
       ev.preventDefault();
       if(ev.ctrlKey || ev.metaKey || ev.button === 1) {
         const el = document.getElementById('networkWorkspace');
+        document.addEventListener('keyup', this.mouseUpHandler);
         el.addEventListener('mousemove', this.onMouseMove);
       }
     },
     mouseUpHandler() {
       const el = document.getElementById('networkWorkspace');
       el.removeEventListener('mousemove', this.onMouseMove);
+      document.removeEventListener('keyup', this.mouseUpHandler);
       this.resetToInitialSetup();
     },
     setInitailDragPosition(clientX, clientY) {
