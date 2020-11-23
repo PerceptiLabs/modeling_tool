@@ -16,7 +16,9 @@
           v-model="searchValue" 
           @keyup.enter="searchPath"
           @click="onNavigateToClick"
-          placeholder="Navigate to...")
+          placeholder="Navigate to..."
+          @focus="setIsSettingInputFocused(true)"
+          @blur="setIsSettingInputFocused(false)")
     .filepicker(ref="file-picker")
       .directory-breadcrumb(ref="directory-breadcrumb")
         .breadcrumb.home(@click="calcRootFolderPath")
@@ -28,7 +30,7 @@
           v-if="pathIndex >= currentPath.length - breadcrumbShowLastXPositions"
           :key="pathIndex")
           span.directory-crumb(@click="calcBreadcrumbPath(pathIndex)") {{ pathName }}
-      perfect-scrollbar
+      perfect-scrollbar(ref="filePickerList")
         .selectable-list
           .list-item(
             :class="{selected:isSelected(directory)}"
@@ -73,12 +75,13 @@ import { coreRequest } from '@/core/apiWeb.js';
 import { filePickerStorageKey } from '@/core/constants.js';
 import { mapGetters } from "vuex";
 import { getFolderContent as fileserver_getFolderContent } from '@/core/apiFileserver';
-
+import mixinFocus from '@/core/mixins/net-element-settings-input-focus.js';
 const breadcrumbCharacterLength = 58;
 
 
 export default {
   name: 'FilePicker',
+  mixins: [mixinFocus],
   props: {
     filePickerType: {
       type: String,
@@ -142,6 +145,10 @@ export default {
               this.fetchPathInformation('');
             }
           });
+    
+    
+
+    
   },
   methods: {
     onNavigateToClick() {
@@ -182,10 +189,12 @@ export default {
       }
 
       this.fetchPathInformation(breadcrumbPath);
+      this.scrollListToTop();
     },
     calcRootFolderPath() {
       let folderPath = this.isOsWindows ? '.' : this.osPathPrefix + this.osPathSuffix ;
       this.fetchPathInformation(folderPath);
+      this.scrollListToTop();
     },
     calcFolderPath(dirName) {
       let folderPath;
@@ -203,6 +212,7 @@ export default {
     onDirectoryDoubleClick(dirName) {
       this.selectedDirectories = [];
       this.calcFolderPath(dirName);
+      this.scrollListToTop();
     },
     onFileDoubleClick(fileName) {
       if (!['file', 'multimode'].includes(this.filePickerType)) { return; }
@@ -211,6 +221,7 @@ export default {
     },
     onToTutorialData() {
       this.fetchPathInformation('');
+      this.scrollListToTop();
     },
     toggleSelectedFile(fileName, event) {
       if (!['file', 'multimode'].includes(this.filePickerType)) { return; }
@@ -322,6 +333,10 @@ export default {
       } else {
         this.fetchPathInformation('');
       }
+      this.scrollListToTop();
+    },
+    scrollListToTop() {
+      this.$refs.filePickerList.$el.scrollTop = 0;
     }
   },
   computed: {
