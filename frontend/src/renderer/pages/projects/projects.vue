@@ -70,9 +70,10 @@
               //- img(v-if="isAtLeastOneItemSelected()" src="../../../../static/img/project-page/minus.svg")
               img(v-if="isAllItemsSelected()" src="../../../../static/img/project-page/checked.svg")
             | Name
-          div.column-2 Status
+          div.column-2 Training Status
+          div.column-4 Duration
+          div.column-7 Test History
           div.column-3 Exported
-          div.column-4 Training Time
           //- div.column-5 Collaborators
           div.column-6 Last Modified
         div.models-list-row.model-list-item(
@@ -113,9 +114,6 @@
               :statusData="model.networkMeta.coreStatus"
               :coreError="model.networkMeta.coreError"
             )
-          div.column-3
-            span(v-if="!!model.apiMeta.saved_version_location" @click.stop="" v-tooltip:right="model.apiMeta.saved_version_location") Exported
-            span(v-else @click.stop="") Not Exported
           div.column-4
             span(@click.stop="") {{ model && model.networkMeta && model.networkMeta.coreStatus && model.networkMeta.coreStatus.Training_Duration ? model.networkMeta.coreStatus.Training_Duration.toFixed(2) + 's' : '-' }}
           //- div.column-5
@@ -123,6 +121,13 @@
           //-       @click.stop=""
           //-       :list="[{id: 1, name: user && user.firstName || '', img: null,}]"
           //-     )
+          div.column-7
+            span(v-if="typeof model.networkMeta.openTest === 'boolean'" @click.stop="handleTestClick(index, model)") Run Test
+              img(src="../../../../static/img/jump-icon.svg")
+            span(v-else @click.stop="") -
+          div.column-3
+            span(v-if="!!model.apiMeta.saved_version_location" @click.stop="" v-tooltip:right="model.apiMeta.saved_version_location") Exported
+            span(v-else @click.stop="") Not Exported
           div.column-6(@click.stop="")
             collaborator-avatar(
                 :list="[{id: 1, name: user && user.email || '', img: null,}]"
@@ -143,9 +148,10 @@
 
           div.column-2 Deleted
            
-          div.column-3
-            span(@click.stop="") -
           div.column-4
+            span(@click.stop="") -
+          div.column-7 Deleted
+          div.column-3
             span(@click.stop="") -
           //- div.column-5
           //-   collaborator-avatar(
@@ -614,6 +620,32 @@
           this.showInfoPopup("The model does not have any statistics. Run this model to generate statistics.");
         }
       },
+      handleTestClick(index, model) {
+        if(this.statusLocalCore!='online') {
+          this.showInfoPopup("Kernel is offline");
+          return;
+        }
+
+        const { networkMeta: { openTest } } = model;
+
+
+        if (typeof openTest === 'boolean') {
+          this.$store.dispatch("mod_workspace/setViewType", 'test');
+
+          this.$router.push({name: 'app'}) 
+            .then(() => {
+              this.set_currentNetwork(index);
+              this.$store.commit('mod_empty-navigation/set_emptyScreenMode', 0);
+              
+              this.$store.dispatch("mod_workspace/SET_currentTestIndex", index);
+              this.$store.commit('mod_workspace/update_network_meta', {key: 'hideTest', networkID: model.networkID, value: false});
+              this.SET_openTest(true);
+            });
+        } else {
+          this.showInfoPopup("The model does not have any test. Run this model to generate test.");
+        }
+      },
+
       openContext(e, modelIndex) {
         const { pageX, pageY } = e;
         this.modelContextStyles = {
@@ -857,14 +889,14 @@
       padding-left: 110px;
     }
     .column-2 {
-      min-width: 200px; 
+      min-width: 220px; 
       cursor: pointer;
     }
     .column-3 {
-      min-width: 200px;
+      min-width: 220px;
     }
     .column-4 {
-      min-width: 220px;
+      min-width: 180px;
     }
     .column-5 {
       display: none;
@@ -872,6 +904,15 @@
     }
     .column-6 {
       min-width: 180px;
+    }
+    .column-7 {
+      min-width: 220px;
+      cursor: pointer;
+
+      img {
+        margin-left: 10px;
+        margin-bottom: 3px
+      }
     }
   }
   .model-list-header {
