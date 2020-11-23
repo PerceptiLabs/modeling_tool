@@ -106,6 +106,7 @@ export default {
       },
       currentFocusedArrow: null,
       currentFocusedArrowData: null,
+      mouseOutsideDirection: '',
     }
   },
   computed: {
@@ -275,11 +276,45 @@ export default {
         this.multiSelect.xStart = this.multiSelect.x = this.findXPosition(ev);
         this.multiSelect.yStart = this.multiSelect.y = this.findYPosition(ev);
         this.$refs.network.addEventListener('mousemove', this.moveMultiSelect);
+        document.addEventListener('mouseout', this.handleMultiselectToolOutsideNetwork)
+        document.addEventListener('mousemove', this.handleSelectToolMouseOutsideNetwork)
         document.addEventListener('mouseup', this.mouseUpMultiSelect);
       }
       if(isLeftBtn && !isEditMode && isOpenNet && targetEl) {
         this.$store.dispatch('mod_workspace/SET_netMode', 'edit');
       }
+    },
+    handleSelectToolMouseOutsideNetwork(ev) {
+      const { mouseOutsideDirection } = this;
+      if(mouseOutsideDirection !== '') {
+        var el = document.getElementById('networkWorkspace');
+        const moveSpace = 10;
+        isOnSide('r', mouseOutsideDirection) && (el.scrollLeft += moveSpace)
+        isOnSide('l', mouseOutsideDirection) && (el.scrollLeft -= moveSpace)
+        isOnSide('t', mouseOutsideDirection) && (el.scrollTop -= moveSpace)
+        isOnSide('b', mouseOutsideDirection) && (el.scrollTop += moveSpace)
+        
+        this.moveMultiSelect(ev);
+      }
+
+      function isOnSide(sideChar, str) {
+        return str.indexOf(sideChar) !== -1
+      }
+    },
+    handleMultiselectToolOutsideNetwork(mouseEvent) {
+      this.mouseOutsideDirection = '';
+      const elemBounding = document.getElementById('networkWorkspace').getBoundingClientRect();
+      const elementLeftEdge = elemBounding.left;
+      const elementTopEdge = elemBounding.top;
+      const elementRightEdge = elemBounding.right;
+      const elementBottomEdge = elemBounding.bottom;
+      const mouseX = mouseEvent.pageX;
+      const mouseY = mouseEvent.pageY;
+
+      mouseY >= elementBottomEdge && (this.mouseOutsideDirection += 'b')
+      mouseY <= elementTopEdge && (this.mouseOutsideDirection += 't')
+      mouseX >= elementRightEdge && (this.mouseOutsideDirection += 'r')
+      mouseX <= elementLeftEdge && (this.mouseOutsideDirection += 'l')
     },
     moveMultiSelect(ev) {
       if(this.getIsWorkspaceDragEvent) { 
@@ -331,6 +366,9 @@ export default {
     removeMultiSelectListener() {
       this.$refs.network.removeEventListener('mousemove', this.moveMultiSelect);
       document.removeEventListener('mouseup', this.mouseUpMultiSelect);
+      document.removeEventListener('mouseout', this.handleMultiselectToolOutsideNetwork)
+      document.removeEventListener('mousemove', this.handleSelectToolMouseOutsideNetwork)
+      this.mouseOutsideDirection = '';
     },
     // resizeCalc(ev) {
     //   let width = ev.srcElement.innerWidth;
