@@ -325,11 +325,11 @@
       },
       goToStatisticsView() { 
         //$route.name === 'app' && currnetNetwork.networkMeta.openStatistics !== null
-        console.group('---------- STATS SIDEBUTTON CLICKED ----------');
-        console.log("ModelingIndex", this.GET_currentModelIndex);
-        console.log("StatsIndex", this.GET_currentStatsIndex);
-        console.log("TestsIndex", this.GET_currentTestIndex);
-        console.groupEnd();
+        // console.group('---------- STATS SIDEBUTTON CLICKED ----------');
+        // console.log("ModelingIndex", this.GET_currentModelIndex);
+        // console.log("StatsIndex", this.GET_currentStatsIndex);
+        // console.log("TestsIndex", this.GET_currentTestIndex);
+        // console.groupEnd();
 
         const item = this.workspaceModels[this.GET_currentStatsIndex];
         if (item && typeof item.networkMeta.openStatistics !== 'boolean') {

@@ -141,7 +141,7 @@ export default {
 
 			this.SET_emptyScreenMode(0);
 			this.$store.commit('mod_workspace/update_network_meta', {key: 'hideStatistics', networkID: networkID, value: false});
-
+      this.$store.dispatch('mod_workspace/SET_chartsRequestsIfNeeded', networkID);
 			if(index !== -1) {
 				this.$store.dispatch("mod_workspace/setViewType", 'statistic');
 

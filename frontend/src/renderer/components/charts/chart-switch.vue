@@ -113,7 +113,7 @@
         ) {
           let waitInfo = this.$store.state.mod_statistics.piePercents;
           if(this.statusNetworkCore === 'Finished') return `${this.chartData.series[0].data[0].value.toFixed()}%`;
-          return  waitInfo ? `${waitInfo}%` : ''
+          return  waitInfo ? `${waitInfo}%` : this.chartData.series[0].data[0].value.toFixed() + '%'
         }
         return ''
       },

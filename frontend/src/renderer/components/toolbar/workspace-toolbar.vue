@@ -333,13 +333,13 @@ export default {
 
       // Refactor this and the core in workspace-core-side
       this.$store.commit('mod_workspace/updateCheckpointPaths');
+      this.$store.dispatch('mod_workspace/SET_networkSnapshot')
       
       let streamLinedNetwork = this.currentNetwork;
       streamLinedNetwork = removeChartData(streamLinedNetwork);
 
       fileserver_saveModelJson(streamLinedNetwork)
-        .then(response => this.$store.dispatch('mod_workspace/SET_networkSnapshot'))
-        .then(_ => this.$store.dispatch('mod_webstorage/saveNetwork'))
+        .then(_ => this.$store.dispatch('mod_webstorage/saveNetwork', this.currentNetwork))
         .then(_ => {
           this.$store.dispatch('mod_api/API_startTraining', { loadCheckpoint: false });
 
