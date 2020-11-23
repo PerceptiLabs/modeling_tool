@@ -135,7 +135,8 @@ const actions = {
             delete model.apiMeta;
           }
           delete model.networkID;
-  
+          
+          model.networkMeta.coreStatus = { Status: 'Waiting' };
   
           try {
             if(!(model.networkName
