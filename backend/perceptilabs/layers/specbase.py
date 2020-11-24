@@ -359,4 +359,4 @@ class DummySpec(LayerSpec):
     def _to_dict_internal(self, dict_: Dict[str, Any]) -> Dict[str, Any]:
         pass
 
-
+    

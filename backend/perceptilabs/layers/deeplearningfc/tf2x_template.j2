@@ -27,6 +27,10 @@ class {{layer_spec.sanitized_name}}Keras(tf.keras.layers.Layer):
             {{ activation_function(layer_spec.activation, input_var='linear_output', assigned_var='output') | indent(8) }}
             preview = output
         {% endcall %}
+	{% call indented_if(layer_spec.dropout) %}
+            output = self.dropout(output, training=training)
+            preview = self.dropout(preview, training=training)	    
+	{% endcall %}	
         self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
 
         {{ build_output_dict(
@@ -46,7 +50,10 @@ class {{layer_spec.sanitized_name}}Keras(tf.keras.layers.Layer):
         self.flatten = tf.keras.layers.Flatten()
         {% call indented_if(layer_spec.batch_norm) %}	
             self.batch_norm = tf.keras.layers.BatchNormalization()
-	{% endcall %}            
+	{% endcall %}
+	{% call indented_if(layer_spec.dropout) %}
+            self.dropout = tf.keras.layers.Dropout(rate={{layer_spec.dropout_rate}})
+	{% endcall %}
         self.W = self.add_weight(
             shape=(flat_input_dim, self._n_neurons),
             initializer=tf.keras.initializers.TruncatedNormal(stddev=0.1),

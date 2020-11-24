@@ -12,6 +12,10 @@ class DeepLearningFcSpec(InnerLayerSpec):
     dropout: bool = False
     keep_prob: float = 0.0
 
+    @property
+    def dropout_rate(self):
+        return 1.0 - self.keep_prob
+
     @classmethod
     def _from_dict_internal(cls, id_: str, dict_: Dict[str, Any], params: Dict[str, Any]) -> LayerSpec:
         if 'Properties' in dict_ and dict_['Properties'] is not None:                        

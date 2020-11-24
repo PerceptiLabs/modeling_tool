@@ -227,3 +227,41 @@ def test_tf2x_fully_connected_1x1_with_relu(script_factory_tf2x):
     assert np.isclose(actual, expected)
    
     
+@pytest.mark.tf2x                
+def test_tf2x_fully_connected_zero_keep_prob_equals_zero_output(script_factory_tf2x):
+    """ If the keep probability is low the expected output should be zero """
+
+    layer_spec = DeepLearningFcSpec(
+        id_='layer_id',
+        name='layer_name',
+        n_neurons=1,
+        activation='Sigmoid',
+        dropout=True,
+        keep_prob=1e-7,
+        backward_connections=(LayerConnection(dst_var='input'),)                
+    )
+    layer = LayerHelper(script_factory_tf2x, layer_spec).get_instance()
+
+    x = 32*np.ones((10, 10))
+    y = layer({'input': tf.constant(x)}, training=True)
+
+    assert np.all(y['output'] == 0)
+
+
+@pytest.mark.tf2x                    
+def test_tf2x_fully_connected_is_training_overrides_dropout(script_factory_tf2x):
+    layer_spec = DeepLearningFcSpec(
+        id_='layer_id',
+        name='layer_name',
+        n_neurons=1,
+        activation='Sigmoid',
+        dropout=True,
+        keep_prob=1e-7,
+        backward_connections=(LayerConnection(dst_var='input'),)                
+    )
+    layer = LayerHelper(script_factory_tf2x, layer_spec).get_instance()
+
+    x = 32*np.ones((10, 10))
+    y = layer({'input': tf.constant(x)}, training=False)
+
+    assert np.any(y['output'] != 0)    
