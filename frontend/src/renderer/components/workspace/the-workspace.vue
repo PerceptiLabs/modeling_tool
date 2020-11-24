@@ -6,7 +6,6 @@
 
     .workspace_tabset(
       ref="tabset"
-      v-show="!showTrainingSpinner"
       v-if="emptyNavigationMode==0"
     )
       include ./tabset/workspace-tabset.pug
@@ -44,9 +43,12 @@
           )
           .info-section_head(v-if="statisticsIsOpen || testIsOpen")
             h3 Map
+          .spinner-container(v-if="showTrainingSpinner && isStatisticsOrTestOpened")
+            chart-spinner
           perfect-scrollbar.info-section_main.js-info-section_main(
             @wheel="scaleScroll($event)"
             id="networkWorkspace"
+            v-if="!showTrainingSpinner || !isStatisticsOrTestOpened"
             )
             network-field(
               ref="networkField"
@@ -81,7 +83,6 @@
 
         the-toaster(:style="toasterRightPosition")
 
-      start-training-spinner(v-if="showTrainingSpinner")
       file-picker-popup(
         v-if="showFilePickerPopup"
         :filePickerType="showFilePickerPopup.filePickerType"
@@ -354,5 +355,9 @@
   }
   .blue-left-border {
    border: 1px solid rgba(97, 133, 238, 0.4);
+  }
+  .spinner-container {
+    position: relative;
+    height: 100%;
   }
 </style>

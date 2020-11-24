@@ -45,6 +45,7 @@ import SelectModelModal       from '@/pages/projects/components/select-model-mod
 import ViewBoxBtnList         from '@/components/statistics/view-box-btn-list.vue'
 import ModelStatus            from '@/components/different/model-status.vue';
 import MiniMapNavigation      from '@/components/workspace/mini-map-navigation.vue';
+import ChartSpinner           from '@/components/charts/chart-spinner'
 
 import { saveModelJson as fileserver_saveModelJson } from '@/core/apiFileserver';
 
@@ -62,8 +63,8 @@ export default {
     Notebook, ResourceMonitor, SelectModelModal,
     ViewBoxBtnList, EmptyNavigation,
     ModelStatus,
-    MiniMapNavigation
-    
+    MiniMapNavigation,
+    ChartSpinner
   },
   mounted() {
     window.addEventListener('resize', this.onResize);
