@@ -214,14 +214,7 @@ export default {
       this.$store.dispatch('mod_api/API_getOutputDim');
       this.$store.dispatch('mod_webstorage/saveNetwork', this.currentNetwork, {root: true});
       
-      // calculating all preview vars here, can potentially refactor here:
-      const fullNetworkElementList = this.$store.getters['mod_workspace/GET_currentNetworkElementList'];
-      let payload = {};
-      for(let id in fullNetworkElementList) {
-        payload[id] = fullNetworkElementList[id].previewVariable;
-      }
-
-      this.$store.dispatch('mod_api/API_getBatchPreviewSample', payload, {root: true})
+      this.$store.dispatch('mod_api/API_getBatchPreviewSampleForElementDescendants', this.currentEl.layerId, {root: true})
     },
     onFocus(source) {
       this.$store.dispatch('mod_tracker/EVENT_codeEditorStartFocus');
