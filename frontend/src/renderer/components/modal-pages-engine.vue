@@ -5,21 +5,23 @@
     //- page-register(v-else-if="currentPage === MODAL_PAGE_SIGN_UP")
     //- page-restore-account(v-else-if="currentPage === MODAL_PAGE_RESTORE_ACCOUNT")
     page-whats-new(v-else-if="currentPage === MODAL_PAGE_WHATS_NEW")
+    page-questionnaire(v-else-if="currentPage === MODAL_PAGE_QUESTIONNAIRE")
 </template>
 <script>
   import { mapActions } from "vuex";
   import CreateSelectProject from "@/pages/create-select-project/create-select-project";
-  import { MODAL_PAGE_PROJECT, MODAL_PAGE_SIGN_IN, MODAL_PAGE_SIGN_UP, MODAL_PAGE_WHATS_NEW, MODAL_PAGE_RESTORE_ACCOUNT } from "@/core/constants";
+  import { MODAL_PAGE_PROJECT, MODAL_PAGE_SIGN_IN, MODAL_PAGE_SIGN_UP, MODAL_PAGE_WHATS_NEW, MODAL_PAGE_RESTORE_ACCOUNT, MODAL_PAGE_QUESTIONNAIRE } from "@/core/constants";
   import PageLogin from "@/pages/login/login";
   import PageRegister from "@/pages/register/register";
   import PageWhatsNew from "@/pages/onboarding/whats-new.vue";
+  import PageQuestionnaire from "@/pages/questionnaire/questionnaire.vue";
   import PageRestoreAccount from "@/pages/restore-account/restore-account";
   
   let visibilityWatcher = null;
   
   export default {
     name: 'ModalPagesEngine',
-    components: {PageRestoreAccount, PageRegister, PageWhatsNew, PageLogin, CreateSelectProject},
+    components: {PageRestoreAccount, PageRegister, PageWhatsNew, PageLogin, CreateSelectProject, PageQuestionnaire},
     created() {
 
       try {
@@ -45,6 +47,7 @@
         MODAL_PAGE_WHATS_NEW,
         MODAL_PAGE_SIGN_IN,
         MODAL_PAGE_RESTORE_ACCOUNT,
+        MODAL_PAGE_QUESTIONNAIRE
       }
     },
     computed:{

@@ -15,6 +15,8 @@ const baseUrlSite   = 'https://perceptilabs.com';
 
 const baseHost = window.location.hostname
 
+export const KEYCLOAK_URL_CONFIG_PATH = 'keycloak_url';
+
 export const FILESERVER_URL_CONFIG_PATH = 'fileserver_url';
 export const FILESERVER_BASE_URL = `http://${baseHost}:8011`
 
@@ -47,6 +49,7 @@ export const MODAL_PAGE_SIGN_UP = 'MODAL_PAGE_SIGN_UP';
 export const MODAL_PAGE_WHATS_NEW = 'MODAL_PAGE_WHATS_NEW';
 export const MODAL_PAGE_RESTORE_ACCOUNT = 'MODAL_PAGE_RESTORE_ACCOUNT';
 export const MODAL_PAGE_CREATE_MODEL = 'MODAL_PAGE_CREATE_MODEL';
+export const MODAL_PAGE_QUESTIONNAIRE = 'MODAL_PAGE_QUESTIONNAIRE';
 
 export const PROJECT_DEFAULT_FOLDER = '/Users/antonbourosu/proj/'
 

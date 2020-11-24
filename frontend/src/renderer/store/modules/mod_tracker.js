@@ -56,7 +56,8 @@ const actions = {
       }
 
       if (isDevelopMode) {
-        mixPanel.opt_out_tracking();
+        mixPanel.opt_in_tracking();
+
       } else {
         mixPanel.opt_in_tracking();
       }
@@ -94,6 +95,15 @@ const actions = {
   },
   EVENT_appClose() {
     mixPanel.track('App Close');
+  },
+  /* Questionnaire */
+  EVENT_questionnaireSubmitted({getters, commit}, { answers }) {
+    for (const answer of answers) {
+      // wanted to wrap all of the answers in a single object but filtering in 
+      // MixPanel can only go 1 layer deep
+      mixPanel.track('Questionnaire response', { Question: answer.q, ...answer.a } );
+    }
+
   },
   /* Screen tracking */
   EVENT_screenChange({getters, commit}, { screenName = ''}) {

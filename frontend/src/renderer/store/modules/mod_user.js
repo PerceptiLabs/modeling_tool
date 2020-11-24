@@ -13,6 +13,16 @@ const getters = {
   GET_userIsLogin(state) {
     return !!state.userToken.length
   },
+  GET_userToken(state) {
+    return state.userToken;
+  },
+  GET_isUserFirstLogin(state, getters) {
+    //['first login'] is defined by the mapper in KeyCloak
+    if (!getters.GET_userTokenInfo) { return false; }
+    else if (typeof getters.GET_userTokenInfo['first login'] === 'undefined') { return true; }
+
+    return getters.GET_userTokenInfo['first login'];
+  },
   GET_userTokenInfo(state) {
     const token = state.userToken;
     return token.length ? parseJwt(token) : null;

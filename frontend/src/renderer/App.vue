@@ -65,7 +65,7 @@
   import DeleteConfirmPopup     from "@/components/global-popups/delete-confirm-popup.vue";
   import ModalPagesEngine       from '@/components/modal-pages-engine.vue';
   import AboutAppPopup           from "@/components/global-popups/about-app-popup.vue";
-  import { MODAL_PAGE_PROJECT, MODAL_PAGE_WHATS_NEW } from '@/core/constants.js';
+  import { MODAL_PAGE_PROJECT, MODAL_PAGE_WHATS_NEW, MODAL_PAGE_QUESTIONNAIRE } from '@/core/constants.js';
 
   export default {
     name: 'TheApp',
@@ -122,14 +122,16 @@
 
       this.$store.dispatch('mod_tutorials/loadTutorialProgress')
         .then(() => {
-          if (!this.getHasShownWhatsNew) {
+          if (this.isUserFirstLogin) {
+            this.setActivePageAction(MODAL_PAGE_QUESTIONNAIRE);
+          } else if (!this.getHasShownWhatsNew) {
             this.setActivePageAction(MODAL_PAGE_WHATS_NEW);
           } else {
             this.initTutorialView();
           }
-        });
+        });      
 
-      this.$store.dispatch('mod_tutorials/activateNotification');      
+      this.$store.dispatch('mod_tutorials/activateNotification');
 
       // @todo fetch models for project;
       if(isWeb()) {
@@ -234,6 +236,9 @@
       },
       userEmail() {
         return this.$store.getters['mod_user/GET_userEmail']
+      },
+      isUserFirstLogin() {
+        return this.$store.getters['mod_user/GET_isUserFirstLogin'];
       },
       /*show popup*/
       infoPopup() {
