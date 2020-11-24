@@ -16,7 +16,7 @@
     "perceptilabs": [
         "from perceptilabs.core_new.utils import Picklable, YieldLevel",
         "from perceptilabs.core_new.graph import Graph",
-        "from perceptilabs.core_new.layers.base import ClassificationLayer, Tf1xLayer",
+        "from perceptilabs.core_new.layers.base import ClassificationLayer, Tf2xLayer",
         "from perceptilabs.core_new.serialization import can_serialize, serialize"
     ]
 }
