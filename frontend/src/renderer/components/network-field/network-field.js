@@ -331,28 +331,25 @@ export default {
 
       if(xStart > xPosition) this.multiSelect.x = xPosition;
       if(yStart > yPosition) this.multiSelect.y = yPosition;
-    },
-    mouseUpMultiSelect() {
-      
-      const xStart = this.multiSelect.x;
-      const yStart = this.multiSelect.y;
-    
-      // this.getElScaledSize();
+
       for (var el in this.networkElementList) {
-        const element = this.networkElementList[el];
-        const x = element.layerMeta.position.left;
-        const y = element.layerMeta.position.top;
-        const elSize = this.getElSize(el);
-        const xStop = xStart + this.multiSelect.width - elSize.width;
-        const yStop = yStart + this.multiSelect.height - elSize.height;
-        if(x > xStart
-          && x < xStop
-          && y > yStart
-          && y < yStop ) {
-          this.$store.dispatch('mod_workspace/SET_elementMultiSelect', { id: element.layerId, setValue: true });
+
+        if(this.isElementHoveredBySelectingTool(el)) {
+          document.querySelector(`[layer-id="${el}"]`).classList.add('net-element--selecting')
+        } else {
+          document.querySelector(`[layer-id="${el}"]`).classList.remove('net-element--selecting')
         }
       }
-
+    },
+    mouseUpMultiSelect() {
+    
+      for (var el in this.networkElementList) {
+        if(this.isElementHoveredBySelectingTool(el)) {
+          document.querySelector(`[layer-id="${el}"]`).classList.remove('net-element--selecting')
+          this.$store.dispatch('mod_workspace/SET_elementMultiSelect', { id: this.networkElementList[el].layerId, setValue: true });
+        }
+      }
+    
       this.multiSelect = {
         show: false,
         xStart: 0,  yStart: 0,
@@ -363,6 +360,49 @@ export default {
       this.removeMultiSelectListener();
       this.$refs.network.click();
     },
+    isElementHoveredBySelectingTool(el) {
+      const element = this.networkElementList[el];
+      const elSize = this.getElSize(el);
+
+      const x = element.layerMeta.position.left;
+      const y = element.layerMeta.position.top;
+      const x1 = element.layerMeta.position.left + elSize.width;
+      const y1 = element.layerMeta.position.top + elSize.height;
+      
+      const tempX = [this.multiSelect.x, this.multiSelect.width + this.multiSelect.x].sort((a, b) => (a - b));
+      const tempY = [this.multiSelect.y, this.multiSelect.height + this.multiSelect.y].sort((a, b) => (a - b));
+      
+      const xStart = tempX[0];
+      const yStart = tempY[0];
+      const xEnd = tempX[1];
+      const yEnd = tempY[1];
+ 
+      const rect = [xStart, xEnd, yStart, yEnd];
+      const rectEl = [x, x1, y, y1];
+
+      if(
+        this.isPointInsideRect(x, y, rect)
+        || this.isPointInsideRect(x1, y, rect)
+        || this.isPointInsideRect(x, y1, rect)
+        || this.isPointInsideRect(x1, y1, rect)
+        || this.isPointInsideRect(xStart, yStart, rectEl)
+        || this.isPointInsideRect(xEnd, yStart, rectEl)
+        || this.isPointInsideRect(xStart, yEnd, rectEl)
+        || this.isPointInsideRect(xEnd, yEnd, rectEl)
+      ) {
+        return true;
+      } else {
+        return false;
+      }
+    },
+    isPointInsideRect(x, y, rect) {
+
+      if((x > rect[0]) && (x < rect[1])
+      && (y > rect[2]) && (y < rect[3])) {
+        return true;
+      }
+      return false;
+    },
     removeMultiSelectListener() {
       this.$refs.network.removeEventListener('mousemove', this.moveMultiSelect);
       document.removeEventListener('mouseup', this.mouseUpMultiSelect);
@@ -370,15 +410,6 @@ export default {
       document.removeEventListener('mousemove', this.handleSelectToolMouseOutsideNetwork)
       this.mouseOutsideDirection = '';
     },
-    // resizeCalc(ev) {
-    //   let width = ev.srcElement.innerWidth;
-    //   if(this.smallViewPort) {
-    //     if(width > 1440) this.smallViewPort = false;
-    //   }
-    //   else {
-    //     if(width <= 1440) this.smallViewPort = true;
-    //   }
-    // },
     calcOffset() {
       this.offset = {
        offsetX: this.$refs.network.parentElement.parentElement.parentElement.offsetLeft,

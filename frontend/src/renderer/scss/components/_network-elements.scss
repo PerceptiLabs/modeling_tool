@@ -162,7 +162,7 @@ $layers-sidebar-active: (
     font-size: 12px;
   }
 }
-.net-element--active {
+.net-element--active, .net-element--selecting  {
   .btn--layersbar, .settings-layer {
     border: 3px solid #1473e6 !important;
   }
