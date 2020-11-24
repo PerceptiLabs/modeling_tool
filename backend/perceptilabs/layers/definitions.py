@@ -174,6 +174,12 @@ DEFINITION_TABLE_TF2X = {
         'layers/deeplearningfc/tf2x_template.j2',        
         'layer_tf2x_fully_connected'
     ),
+    'ProcessOneHot': LayerMeta(
+        DeepLearningFcSpec,
+        'layers/processonehot/tf2x_imports.json',
+        'layers/processonehot/tf2x_template.j2',        
+        'layer_tf2x_one_hot'
+    ),
     'TrainNormal': LayerMeta(
         TrainClassificationSpec,
         'layers/trainclassification/tf2x_imports.json',

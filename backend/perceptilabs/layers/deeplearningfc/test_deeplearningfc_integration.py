@@ -8,16 +8,6 @@ from perceptilabs.layers.helper import LayerHelper
 from perceptilabs.layers.deeplearningfc.spec import DeepLearningFcSpec
 from perceptilabs.layers.specbase import LayerConnection
 
-
-@pytest.fixture(scope='module')
-def script_factory():
-    yield ScriptFactory()
-
-    
-@pytest.fixture(scope='module')
-def script_factory_tf2x():
-    yield ScriptFactory(mode='tf2x')
-    
     
 def test_fully_connected_1x1_should_be_normal_multiplication(script_factory):
     layer_spec = DeepLearningFcSpec(

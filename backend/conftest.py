@@ -18,6 +18,16 @@ from perceptilabs.layers.helper import load_code_as_module
 log = logging.getLogger(__name__)
 
 @pytest.fixture(scope='session')
+def script_factory():
+    yield ScriptFactory()
+
+    
+@pytest.fixture(scope='session')
+def script_factory_tf2x():
+    yield ScriptFactory(mode='tf2x')
+
+
+@pytest.fixture(scope='session')
 def tutorial_data_path():
     path = pkg_resources.resource_filename('perceptilabs', 'tutorial_data')
     yield path
