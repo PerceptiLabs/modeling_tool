@@ -1,8 +1,8 @@
 <template lang="pug">
   perfect-scrollbar.information-panel-content
     .error-section
-      .section-header
-        .section-header-caret-icon.clickable-icon(@click="toggleErrorSection")
+      .section-header(@click="toggleErrorSection")
+        .section-header-caret-icon.clickable-icon
           svg(v-if="showErrorSection" width="5" height="3" viewBox="0 0 5 3" fill="none" xmlns="http://www.w3.org/2000/svg")
             path(fill-rule="evenodd" clip-rule="evenodd" d="M0 0L2.5 2.5L5 0L0 0Z" fill="#E1E1E1")
           svg(v-else width="3" height="5" viewBox="0 0 3 5" fill="none" xmlns="http://www.w3.org/2000/svg")
@@ -19,18 +19,15 @@
           :class="{selected: e.id === selectedId}"
           @click="onClickNotification(e.id)"
         ) 
-          .item-header
-            .item-header-icon.clickable-icon(@click="toggleItem(e.id)")
+          .item-header(@click="toggleItem(e.id, e.layerId)")
+            .item-header-icon.clickable-icon
               svg(v-if="expandedItems.includes(e.id)" width="5" height="3" viewBox="0 0 5 3" fill="none" xmlns="http://www.w3.org/2000/svg")
                 path(fill-rule="evenodd" clip-rule="evenodd" d="M0 0L2.5 2.5L5 0L0 0Z" fill="#E1E1E1")
               svg(v-else width="3" height="5" viewBox="0 0 3 5" fill="none" xmlns="http://www.w3.org/2000/svg")
                 path(fill-rule="evenodd" clip-rule="evenodd" d="M0.25 5L2.75 2.5L0.25 1.09278e-07L0.25 5Z" fill="#E1E1E1")
             .item-header-label  {{ titleMessage(e.Message) }}
           .item-message(v-if="expandedItems.includes(e.id)")
-            // .item-message-header Problem
-            pre.item-message-content(
-              @dblclick="onDblClickMessage(e.layerId)"
-            ) {{ e.Message }}
+            pre.item-message-content {{ e.Message }}
 
     .warning-section
       .section-header
@@ -59,9 +56,8 @@
                 path(fill-rule="evenodd" clip-rule="evenodd" d="M0.25 5L2.75 2.5L0.25 1.09278e-07L0.25 5Z" fill="#E1E1E1")
             .item-header-label {{ titleMessage(w.Message) }}
           .item-message(v-if="expandedItems.includes(w.id)")
-            // .item-message-header Problem
             pre.item-message-content(
-              @dblclick="onDblClickMessage(w.layerId)"
+              @dblclick="openCodeEditor(w.layerId)"
             ) {{ w.Message }}
 </template>
 
@@ -73,7 +69,6 @@ export default {
   components: { Spinner },
   data() {
     return {
-      // selectedId: '',
       showErrorSection: true,
       showWarningSection: true,
       expandedItems: []
@@ -104,7 +99,7 @@ export default {
       const array = message.trim().split("\n");
       return array.pop();
     },
-    onDblClickMessage(layerId) {
+    openCodeEditor(layerId) {
       if (!layerId) { return; }
       const element = this.$store.getters['mod_workspace/GET_networkElementById'](layerId);
 
@@ -125,11 +120,14 @@ export default {
     toggleWarningSection() {
       this.showWarningSection = !this.showWarningSection;
     },
-    toggleItem(itemId) {
+    toggleItem(itemId, layerId) {
       const idx = this.expandedItems.indexOf(itemId);
-
+      
       if (idx >= 0) { this.expandedItems.splice(idx, 1); }
-      else { this.expandedItems.push(itemId); }
+      else { 
+        this.expandedItems.push(itemId);
+        this.openCodeEditor(layerId);
+      }
     },
   }
 }
