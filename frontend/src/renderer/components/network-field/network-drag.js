@@ -4,7 +4,10 @@ import { mapGetters } from 'vuex';
 const workspaceDrag = {
   mounted() {
     const el = document.getElementById('networkWorkspace');
-    el.addEventListener('mousedown', this.mouseDownHandler);
+    if(el) {
+      el.addEventListener('mousedown', this.mouseDownHandler);
+    }
+    
     document.addEventListener('mouseup', this.mouseUpHandler);
   },
   beforeDestroy() {

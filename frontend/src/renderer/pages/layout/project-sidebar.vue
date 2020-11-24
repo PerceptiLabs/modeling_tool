@@ -224,6 +224,13 @@
           });
         },
         immediate: true
+      },
+      GET_viewType: {
+        handler(value) {
+          if (value === 'statistic' || value === 'test') {
+            this.$store.dispatch('mod_notebook/SET_notebookMode', false);
+          }
+        }
       }
     },
     methods: {
@@ -393,11 +400,11 @@
           return;
         }
 
-        console.group('---------- MODEL SIDEBUTTON CLICKED ----------');
-        console.log("ModelingIndex", this.GET_currentModelIndex);
-        console.log("StatsIndex", this.GET_currentStatsIndex);
-        console.log("TestsIndex", this.GET_currentTestIndex);
-        console.groupEnd();
+        // console.group('---------- MODEL SIDEBUTTON CLICKED ----------');
+        // console.log("ModelingIndex", this.GET_currentModelIndex);
+        // console.log("StatsIndex", this.GET_currentStatsIndex);
+        // console.log("TestsIndex", this.GET_currentTestIndex);
+        // console.groupEnd();
 
         if(this.GET_currentModelIndex==-1) {
           this.$store.dispatch("mod_workspace/setViewType", 'model');
@@ -446,11 +453,11 @@
         });
       },
       goToTestView() {
-        console.group('---------- TEST SIDEBUTTON CLICKED ----------');
-        console.log("ModelingIndex", this.GET_currentModelIndex);
-        console.log("StatsIndex", this.GET_currentStatsIndex);
-        console.log("TestsIndex", this.GET_currentTestIndex);
-        console.groupEnd();
+        // console.group('---------- TEST SIDEBUTTON CLICKED ----------');
+        // console.log("ModelingIndex", this.GET_currentModelIndex);
+        // console.log("StatsIndex", this.GET_currentStatsIndex);
+        // console.log("TestsIndex", this.GET_currentTestIndex);
+        // console.groupEnd();
 
         const item = this.workspaceModels[this.GET_currentTestIndex];
         if (item && typeof item.networkMeta.openTest !== 'boolean') {

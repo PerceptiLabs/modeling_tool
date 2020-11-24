@@ -447,6 +447,7 @@ export default {
           } else {
             parent.SET_emptyScreenMode(1);
             parent.$store.commit('mod_workspace/set_currentModelIndex', -1);
+            parent.$store.dispatch('mod_notebook/SET_notebookMode', false);
           }
         }
       }
