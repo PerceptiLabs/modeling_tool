@@ -44,7 +44,7 @@
 
         span Report
         i.icon.icon-bug-report
-      header-profile
+      header-profile(v-if="showProfile")
       ul(v-if="!isWeb").app-header_actions
         button.btn.btn--app-minify(type="button" @click="appMinimize()").i.icon.icon-app-minimize
         button.btn.btn--app-full(type="button"
@@ -67,6 +67,7 @@ export default {
     return {
       isWeb: isWeb(),
       showHelpPanel: false,
+      showProfile: !process.env.NO_KC,
       MODAL_PAGE_WHATS_NEW
     }
   },

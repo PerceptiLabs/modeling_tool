@@ -104,6 +104,8 @@ export default {
         this.pageNumber--;
       } else if(key === 'ArrowRight' && this.isNavigationAllowed(this.pageNumber + 1)) {
         this.pageNumber++;
+      } else if(key === 'Escape') {
+        this.onCancel();
       } else if(key === 'Enter' && this.pageNumber === this.lastPageIndex) {
         this.onConfirm();
       }

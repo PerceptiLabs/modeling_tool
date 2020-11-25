@@ -77,8 +77,13 @@ def is_docker():
     except:
         return False
 
+def is_podman():
+    # see https://github.com/containers/podman/issues/3586
+    # in podman, the "container" variable is set
+    return os.getenv("container") is not None
+
 def should_log_to_file():
-    return not is_docker()
+    return not (is_docker() or is_podman())
 
 def setup_application_logger(log_level=None):
     if log_level is not None:

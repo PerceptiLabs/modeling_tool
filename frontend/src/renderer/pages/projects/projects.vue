@@ -129,7 +129,7 @@
             span(v-if="!!model.apiMeta.saved_version_location" @click.stop="" v-tooltip:right="model.apiMeta.saved_version_location") Exported
             span(v-else @click.stop="") Not Exported
           div.column-6(@click.stop="")
-            collaborator-avatar(
+            collaborator-avatar(v-if="showUser"
                 :list="[{id: 1, name: user && user.email || '', img: null,}]"
               )
             | {{ (model && model.apiMeta && model.apiMeta.updated) ? formatDate(model.apiMeta.updated)  : ''}}
@@ -250,6 +250,7 @@
         // for renaming models
         renameIndex: null,
         renameValue: null,
+        showUser: !process.env.NO_KC,
       }
     },
     computed: {
@@ -743,15 +744,7 @@
       formatDate (dateString) {
         if(!dateString) { return ''; }
         let date = new Date(dateString);
-        let day = date.getDate().toString();
-        day = day.length > 1 ? day : `0${day}`
-        let month = date.getMonth() + 1;
-        month = month > 9 ? month : `0${month}`
-        const year = date.getFullYear().toString().substring(2);
-        const hour = date.getHours();
-        const minutes = date.getMinutes();
-        const seconds = date.getSeconds();
-        return `${day}/${month}/${year} ${hour}:${minutes}:${seconds}`;
+        return `${date.toLocaleDateString(navigator.language)} ${date.toLocaleTimeString([], {hour12: false})}`;
       },
       hasUnsavedChanges(networkId) {
         return this.$store.getters['mod_workspace-changes/get_hasUnsavedChanges'](networkId);

@@ -40,7 +40,7 @@ const getters = {
     return !info ? 'Guest' : info.email
   },
   GET_userProfile(state) {
-    return state.userProfile
+    return process.env.NO_KC ? null : state.userProfile;
   },
   GET_LOCAL_userInfo(state, getters) {
     if(state.getLocalUserList) {

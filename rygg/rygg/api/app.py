@@ -3,6 +3,7 @@ import requests
 import json
 from rygg import __version__ as current_version_str
 from packaging.version import parse as parse_version
+from rygg.settings import IS_CONTAINERIZED
 
 
 def get_newer_versions():
@@ -22,7 +23,7 @@ def pypi_versions():
 
 def updates_available():
     # if the distribution is docker, then don't upgrade from there
-    if os.path.isfile("/.dockerenv"):
+    if IS_CONTAINERIZED:
         return []
 
     versions = pypi_versions()

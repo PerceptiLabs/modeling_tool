@@ -20,7 +20,7 @@
           )
             div.separator(v-if="subItem.type === 'separator'")
             button.btn.btn--link.header-nav_sublist-btn(type="button"
-              v-else
+              v-if="(!('visible' in subItem) || subItem.visible) && subItem.type !== 'separator'"
               :disabled="subItem.enabled === false"
               @click="subItem.active"
             )
@@ -88,6 +88,9 @@ export default {
     },
     isTutorialActive() {
       return this.isTutorialMode || this.isStoryBoard;
+    },
+    showExport() {
+      return !process.env.NO_KC;
     },
     openApp() {
       return this.$store.state.globalView.appIsOpen
@@ -419,7 +422,7 @@ export default {
             {label: 'Save as',   accelerator: this.isMac ? 'meta+shift+s' : 'ctrl+shift+s',     enabled: this.openApp && !this.isNotebookMode,  active: this.saveModelAs },
             {type: 'separator'},
             {label: 'Export',  active: this.exportModel,        enabled: this.openApp},
-            {label: 'Export to GitHub',  active: this.exportModelToGithub,        enabled: this.openApp},
+            {label: 'Export to GitHub',  active: this.exportModelToGithub,        enabled: this.showExport, visible: this.showExport},
             {type: 'separator'},
             {label: 'Log out', active: this.logOut,             enabled: this.isLogin},
           ]

@@ -3,7 +3,7 @@ from django.http import HttpResponseBadRequest
 
 def token_middleware(get_response):
     def check_token(request):
-        if settings.DEBUG:
+        if settings.DEBUG or settings.IS_CONTAINERIZED:
             return None
 
         passed_token = request.GET.get("token") or request.POST.get("token")

@@ -1,7 +1,7 @@
 {% macro load_npy(path, tag) %}
     {% filter remove_lspaces(8) %}
         global matrix_{{tag}}
-        matrix_{{tag}} = np.load("{{path}}", mmap_mode='r+').astype(np.float32)
+        matrix_{{tag}} = np.load("{{path}}", mmap_mode='r').astype(np.float32)
         size_{{tag}} = len(matrix_{{tag}})
         
         def generator_{{tag}}(idx_lo, idx_hi):
@@ -20,7 +20,7 @@
         # Load all files in the path with .npy/.npz extension into a list
         for file_path in file_paths:
             file_load = npy_read(file_path)
-            file_shape = np.load(file_path, mmap_mode='r+').shape
+            file_shape = np.load(file_path, mmap_mode='r').shape
             matrix_{{tag}}.append(da.from_delayed(file_load, shape=file_shape, dtype=float))
         
         size_{{tag}} = file_shape[0] * len(matrix_{{tag}})

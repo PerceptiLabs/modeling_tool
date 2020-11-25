@@ -26,6 +26,9 @@ SECRET_KEY = 'xk92=44nlx503kb5ryv(!de6m=6o)k7tz&^bq6+x2jhlhjj3g='
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+# see https://github.com/containers/podman/issues/3586
+IS_CONTAINERIZED = os.path.exists("/.dockerenv") or os.getenv("container")
+
 ALLOWED_HOSTS = ['*']
 
 

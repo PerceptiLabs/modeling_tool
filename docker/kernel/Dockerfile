@@ -27,6 +27,7 @@ WORKDIR /out
 # Set up the out dir for the build
 ADD runner main.py setup.py setup.cfg package_data.json VERSION cython_roots.txt requirements.txt ./
 RUN rsync -a /src --files-from=/src/included_files.txt . && \
+    mv perceptilabs/tutorial_data /tutorial_data && \
     mv main.py main.pyx && \
     find . -name "__init__.py" -exec mv '{}' '{}x' \; && \
     python setup.py build_ext --inplace --user && \
@@ -52,6 +53,10 @@ LABEL name="PerceptiLabs-Modelling-Backend" \
       description="This will build a server for you which will act as a backend for our modelling platform. It listens to port 5000 to communicate with the frontend."
 
 COPY licenses /licenses
+
+USER 1001
+WORKDIR /tutorial_data
+COPY --from=build --chown=1001 /tutorial_data .
 
 USER 0
 RUN yum -y update && \

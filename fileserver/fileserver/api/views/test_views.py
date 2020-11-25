@@ -26,16 +26,6 @@ import os
 import platform
 
 
-class SettingsTest(TestCase):
-    EXPECTED_HOSTS = set(["127.0.0.1", "localhost"])
-
-    def test_allowed_hosts(self):
-        from fileserver.settings import ALLOWED_HOSTS
-
-        l = set(ALLOWED_HOSTS)
-        self.assertSetEqual(l, self.EXPECTED_HOSTS)
-
-
 class TestCaseBase(TestCase):
     def build_request(self, method_name, path, body=None):
         self.factory = APIRequestFactory()
