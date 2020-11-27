@@ -10,11 +10,13 @@
       )
     .chart-spinner-wrapper(v-if="showLoadingSpinner")
       chart-spinner
-    chart-switch.data-settings_chart(
-      v-if="shouldShowPreview && !showLoadingSpinner"
-      :disable-header="true"
-      :chart-data="storeCurrentElement.chartData"
-    )
+    .chart-container(v-if="!showLoadingSpinner" style="overflow: hidden")
+      transition(name="slide-fade")
+        chart-switch.data-settings_chart(
+          v-show="shouldShowPreview"
+          :disable-header="true"
+          :chart-data="storeCurrentElement.chartData"
+        )
 
 </template>
 
@@ -126,7 +128,6 @@ export default {
   .settings-layer {
     width: 145px;
     box-sizing: border-box;
-    border: 1px solid #3F4C70;
     border-radius: 0 0 4px 4px;
   }
   .network-component-footer-wrapper {
@@ -145,9 +146,23 @@ export default {
   }
   .chart-spinner-wrapper {
     position: relative;
+    background: #23252A;
     min-height: 140px;
     .chart-spinner-box {
       background: transparent;
     }
   }
+  .slide-fade-enter-active {
+    transition: all 1s ease;
+  }
+  .slide-fade-enter {
+    transition-duration: 2s;
+    transform: translateY(-140px);
+  }
+
+  .slide-fade-leave-to {
+    transition-duration: 0.7s;
+    transform: translateY(-140px);
+  }
+
 </style>

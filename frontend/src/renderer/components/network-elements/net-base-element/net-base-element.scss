@@ -5,7 +5,7 @@ $clip-path_indent: $arrows-start_size/2;
   position: absolute;
   box-sizing: border-box;
   border-radius: .5rem;
-  background-color: $bg-workspace;
+  background-color: transparent;
   &:hover {
     will-change: top, left;
     cursor: pointer;
@@ -38,6 +38,7 @@ $clip-path_indent: $arrows-start_size/2;
   margin: 0;
   padding: 0;
   background-color: transparent;
+  background-color: #23252A;
   // box-shadow: $layer-shad;
 }
 
