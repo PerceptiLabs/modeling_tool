@@ -14,6 +14,7 @@ services:
     # image: perceptilabs.azurecr.io/rygg:latest
     image: rygg_dev
     environment:
+      CORS_WHITELIST: http://localhost:8080
       DJANGO_DATABASE: postgres
       DB_NAME: rygg
       DB_HOST: db
@@ -33,9 +34,9 @@ services:
       - rygg
       - kernel
     environment:
-      PL_KERNEL_URL: ws://localhost:5000
-      PL_FILESERVER_URL: http://localhost:8011
-      PL_RYGG_URL: http://localhost:8000
+      PL_KERNEL_URL: ws://kernel:5000
+      PL_FILESERVER_URL: http://kernel:8011
+      PL_RYGG_URL: http://rygg:8000
 
   kernel:
     # image: perceptilabs.azurecr.io/kernel:latest
@@ -47,6 +48,7 @@ services:
       - "8011:8011"
 
     environment:
+      CORS_WHITELIST: http://localhost:8080
       HOME: /perceptilabs
       PL_FILE_SERVING_TOKEN: thetoken
       PL_TUTORIALS_DATA: /opt/app-root/src/perceptilabs/tutorial_data

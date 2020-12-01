@@ -18,8 +18,9 @@ class TokenView(TemplateView):
 
 # TODO: this needs to be replaced by the openshift operator setting the PL_xyz._URL variables in the pods
 def other_url(request, variable_name, replacement_str):
-    if not IS_CONTAINERIZED:
-        return os.getenv(variable_name, "")
+    from_env = os.getenv(variable_name, "")
+    if from_env or not IS_CONTAINERIZED:
+        return from_env
 
     my_host = request.get_host().split(':')[0]
     other_host = my_host.replace("frontend", replacement_str)
