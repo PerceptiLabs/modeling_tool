@@ -692,10 +692,10 @@ class coreLogic():
                 elif len(Wshapes)==5:
                     weights=np.average(weights[:,:,:,:,-1],3)
                 outputs=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})[-1]
-                outputs=outputs[:, :, 0]
+                
                     
                 dataObjWeights = createDataObject([weights], type_list=['heatmap'])
-                dataObjOutput = createDataObject([outputs])                
+                dataObjOutput = self._process_conv_layer_output(outputs)        
 
                 obj = {"Weights":dataObjWeights, "Output": dataObjOutput}
                 return obj
@@ -790,8 +790,14 @@ class coreLogic():
             #                                           {"color":"#6b8ff7"}])
             #     output = {"Gradients": dataObj}
                 # return output
-
-        elif layerType in ["MathMerge", "MathSoftmax", "MathArgmax", "MathSwitch", "ProcessOneHot", "ProcessCrop", "ProcessReshape", "ProcessRescale"]:
+        elif layerType=="MathMerge":
+            D=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})[-1]
+            if len(D.shape) == 3:
+                output = self._process_conv_layer_output(D)
+            else:
+                output = createDataObject([np.squeeze(D).astype(np.float32)])
+            return {"Output":output}
+        elif layerType in ["MathSoftmax", "MathArgmax", "MathSwitch", "ProcessOneHot", "ProcessCrop", "ProcessReshape", "ProcessRescale"]:
             D=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})[-1]
             output = createDataObject([np.squeeze(D).astype(np.float32)])
             return {"Output":output}
@@ -1519,3 +1525,8 @@ class coreLogic():
             message += f"output: {type(result)}"
             
         logger.debug(message)
+    
+    def _process_conv_layer_output(self, output):
+        output=output[:, :, 0]
+        processed_output = createDataObject([output])  
+        return processed_output
