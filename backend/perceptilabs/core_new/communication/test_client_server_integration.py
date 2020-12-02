@@ -37,7 +37,7 @@ def messaging_factory():
     return SimpleMessagingFactory()
 
     
-def create_server(messaging_factory, topic_gn, topic_sn, graph=None, snapshot_builder=None, userland_timeout=15):
+def create_server(messaging_factory, topic_gn, topic_sn, graph=None, snapshot_builder=None, userland_timeout=15, mode = 'training'):
     server_producer_generic = messaging_factory.make_producer(topic_gn)
     server_producer_snapshots = messaging_factory.make_producer(topic_sn)
     server_consumer = messaging_factory.make_consumer([topic_gn])
@@ -58,7 +58,7 @@ def create_server(messaging_factory, topic_gn, topic_sn, graph=None, snapshot_bu
         layer_classes,
         edges,
         connections,
-        mode = 'training',
+        mode = mode,
         snapshot_builder=snapshot_builder,
         userland_timeout=userland_timeout,
         max_time_run=120
@@ -243,11 +243,10 @@ def test_handles_received_graphs(messaging_factory, topic_gn, topic_sn):
         client.shutdown()
         
         
-def test_export_works(messaging_factory, topic_gn, topic_sn, temp_path):
-    server = create_server(messaging_factory, topic_gn, topic_sn)
+def test_export_works_while_training(messaging_factory, topic_gn, topic_sn, temp_path):
+    graph = MagicMock()
+    server = create_server(messaging_factory, topic_gn, topic_sn, graph = graph, mode = 'training')
     client = create_client(messaging_factory, topic_gn, topic_sn)
-    server._mode = "exporting"
-    
     try:
         server_step = server.run_stepwise()
         client_step = client.run_stepwise()
@@ -268,7 +267,38 @@ def test_export_works(messaging_factory, topic_gn, topic_sn, temp_path):
         def cond(_):
             next(server_step)
             next(client_step)
-            return client.training_state == State.TRAINING_COMPLETED
+            return client.training_state == State.TRAINING_RUNNING and graph.on_export.call_count == 1
+        
+        assert loop_until_true(cond)        
+    finally:
+        server.shutdown()
+        client.shutdown()
+        
+def test_export_works_after_training(messaging_factory, topic_gn, topic_sn, temp_path):
+    graph = MagicMock()
+    server = create_server(messaging_factory, topic_gn, topic_sn, graph = graph, mode = "exporting")
+    client = create_client(messaging_factory, topic_gn, topic_sn)
+    try:
+        server_step = server.run_stepwise()
+        client_step = client.run_stepwise()
+
+        # Run one iteration for both to initiate the connection
+        next(server_step)
+        next(client_step)
+        client.request_start()
+        
+        def cond(_):
+            next(server_step)
+            next(client_step)
+            return client.training_state == State.EXPORT_READY
+        
+        assert loop_until_true(cond)   
+        client.request_export(temp_path, 'TFModel')
+        
+        def cond(_):
+            next(server_step)
+            next(client_step)
+            return client.training_state == State.EXPORT_COMPLETED and graph.on_export.call_count == 1
         
         assert loop_until_true(cond)        
     finally:

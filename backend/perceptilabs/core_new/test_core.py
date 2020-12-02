@@ -905,7 +905,6 @@ def test_export_is_working(graph_spec_binary_classification, messaging_factory, 
     core.run(graph_spec, auto_close=True)
     
     assert 'checkpoint' in os.listdir(checkpoint_path)
-    
     ################################################################
     
     script_factory = ScriptFactory(max_time_run=180, running_mode = 'exporting', simple_message_bus=True)
@@ -928,7 +927,7 @@ def test_export_is_working(graph_spec_binary_classification, messaging_factory, 
     
     def cond_training_is_running(_):
         next(core_step, None)
-        return core.is_training_running and not core.is_training_paused
+        return core.is_export_ready and not core.is_training_paused
     
     def cond_export_file_exists(_):
         next(core_step, None)

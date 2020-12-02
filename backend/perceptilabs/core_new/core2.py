@@ -392,6 +392,12 @@ class Core:
         return self._client.training_state in State.paused_states        
 
     @property
+    def is_export_ready(self):
+        if self._client is None:
+            return False
+        return self._client.training_state == State.EXPORT_READY
+    
+    @property
     def training_state(self):
         return self._client.training_state
 
@@ -421,7 +427,7 @@ class Core:
     @property
     @deprecated
     def is_running(self):
-        return self.is_training_running
+        return self.is_training_running 
     
     @deprecated
     def close(self, wait_for_deployment=False):

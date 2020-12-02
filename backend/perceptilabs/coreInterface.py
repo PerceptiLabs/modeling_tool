@@ -354,18 +354,19 @@ class coreLogic():
         
         return {"content":"Export success!\nSaved as:\n" + filepath}
 
-    def exportNetworkV2(self, value, graph_spec, model_id):
+    def exportNetworkV2(self, value, graph_spec = None, model_id = None):
         path = os.path.join(value["Location"], value.get('frontendNetwork', self.networkName))
         path = os.path.abspath(path)
-        
-        self.set_running_mode('exporting')
-        self.startCore(graph_spec, model_id)
-
         mode = 'TFModel' # Default mode. # TODO: perhaps all export modes should be exposed to frontend?
         if value["Quantized"]:
             mode = 'TFQuantized'         
         elif value['Compressed']:
             mode = 'TFLite'
+            
+        if graph_spec is not None:
+            self.set_running_mode('exporting')
+            self.startCore(graph_spec, model_id)
+        
         self.commandQ.put(
             CoreCommand(
                 type='export',

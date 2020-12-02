@@ -883,10 +883,24 @@ const actions = {
 
   async API_exportData({rootGetters, getters, dispatch}, settings) {
 
-    const theData = {
-      receiver: rootGetters['mod_workspace/GET_currentNetworkId'] + 'e',
-      action: 'Export',
-      value: await makePayload.call(this, settings)
+    let theData;
+    
+    if (['Training', 'Validation', 'Paused'].includes(rootGetters['mod_workspace/GET_networkCoreStatus'])) {
+
+      let payload = await makePayload.call(this, settings);
+      delete payload['Layers'];
+
+      theData = {
+        receiver: rootGetters['mod_workspace/GET_currentNetworkId'],
+        action: 'Export',
+        value: payload
+      };
+    } else {
+      theData = {
+        receiver: rootGetters['mod_workspace/GET_currentNetworkId'] + 'e',
+        action: 'Export',
+        value: await makePayload.call(this, settings)
+      };
     };
 
     console.log('API_exportData', theData);

@@ -23,6 +23,9 @@ class State:
     TESTING_STOPPED = 'testing-stopped'
     TESTING_FAILED = 'testing-failed'
 
+    EXPORT_READY = 'export-ready'
+    EXPORT_COMPLETED = 'export-completed'
+    
     CLOSING = 'closing'
 
     idle_states = (
@@ -32,12 +35,14 @@ class State:
         TRAINING_COMPLETED,
         TRAINING_STOPPED,
         TESTING_PAUSED,
-        TESTING_STOPPED
+        TESTING_STOPPED,
+        EXPORT_COMPLETED
     )
     done_states = (
         TRAINING_COMPLETED,
         TRAINING_STOPPED,
-        TESTING_STOPPED
+        TESTING_STOPPED,
+        EXPORT_COMPLETED
     )
     exit_states = (
         CLOSING,
@@ -45,7 +50,8 @@ class State:
         TRAINING_FAILED,
         TESTING_FAILED,
         TESTING_STOPPED,
-        TRAINING_COMPLETED
+        TRAINING_COMPLETED,
+        EXPORT_COMPLETED
     )
     running_states = (
         TRAINING_RUNNING,
@@ -56,6 +62,10 @@ class State:
         TRAINING_PAUSED,
         TRAINING_PAUSED_HEADLESS,
         TESTING_PAUSED
+    )
+    export_states = (
+        EXPORT_READY,
+        EXPORT_COMPLETED
     )
     active_states = running_states + paused_states
     ended_states = done_states + exit_states
@@ -101,7 +111,11 @@ class State:
         (TESTING_PAUSED, TESTING_STOPPED),
         (TESTING_PAUSED, TESTING_RUNNING),
         (TESTING_STOPPED, CLOSING),
-        (TESTING_FAILED, CLOSING)
+        (TESTING_FAILED, CLOSING),
+        (READY, EXPORT_READY),
+        (EXPORT_READY, EXPORT_COMPLETED),
+        (EXPORT_READY, CLOSING),
+        (EXPORT_COMPLETED, CLOSING)
     )
     
     def __init__(self, on_transition=None):

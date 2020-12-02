@@ -331,7 +331,7 @@ class TrainingServer:
     def run_stepwise_exporting(self, state, auto_start=False):
         
         state.transition(State.READY)
-        state.transition(State.TRAINING_RUNNING) 
+        state.transition(State.EXPORT_READY) 
         self._graph.init_layer(self._mode)
         
         while state.value not in State.exit_states:
@@ -442,10 +442,12 @@ class TrainingServer:
         new_state = None
 
         if message_key == 'on_request_start':
-            if self._mode in ['training', 'exporting'] :
+            if self._mode in ['training'] :
                 state.transition(State.TRAINING_RUNNING)
             elif self._mode =='testing':
                 state.transition(State.TESTING_RUNNING)
+            elif self._mode == 'exporting':
+                state.transition(State.EXPORT_READY)
 
         if message_key == 'on_request_close':
             state.transition(State.CLOSING)
@@ -462,11 +464,15 @@ class TrainingServer:
             )
 
         elif message_key == 'on_request_export':
-            print('export called')
+            
+            if state.value == State.EXPORT_READY:
+                success_state = State.EXPORT_COMPLETED 
+            elif state.value in state.active_states:
+                success_state = state.value
             self._call_userland_method(
                 self._graph.on_export,
                 state,
-                success_state=State.TRAINING_COMPLETED,
+                success_state=success_state,
                 args=(message_value['path'], message_value['mode'])
             )
 

@@ -176,7 +176,6 @@ class Interface():
         if receiver not in self._cores:
             self._addCore(receiver)
         self._core = self._cores[receiver]
-
         if USE_AUTO_SETTINGS:
             self._settings_engine = autosettings_utils.setup_engine(self._lw_cache_v2)
 
@@ -215,7 +214,6 @@ class Interface():
         receiver = str(request.get('receiver'))
         action = request.get('action')
         value = request.get('value')
-
         if action != 'checkCore':
             logger.info(f"Frontend receiver: {receiver} , Frontend request: {action}")
         
@@ -472,13 +470,19 @@ class Interface():
             return response
 
         elif action == "Export":
-            # first check if checkpoint exists
-            if ScanCheckpoint(path = value['path']).run() or value["Type"] == 'ipynb':
-                graph_spec = self._network_loader.load(value, as_spec=True)
-                model_id = value.get('modelId', None)
-                if model_id is not None:
-                    model_id = int(model_id)
-                response = self._core.exportNetwork(value, graph_spec, model_id)
+            # first check if checkpoint exists if export is requested after training
+
+            mode = self._get_receiver_mode(receiver)
+            if mode == 'export_while_training':
+                if (ScanCheckpoint(path = value['path']).run() or value["Type"] == 'ipynb'):
+                    model_id = value.get('modelId', None)
+                    if model_id is not None:
+                        model_id = int(model_id)
+                    graph_spec = self._network_loader.load(value, as_spec=True)
+                    response = self._core.exportNetwork(value, graph_spec, model_id)
+                    return response
+            elif mode == 'export_after_training':
+                response = self._core.exportNetwork(value, graph_spec = None, model_id = None)
                 return response
             else:
                 return {'content':'The model is not trained.'}
@@ -561,3 +565,21 @@ class Interface():
             
         return output
         
+    def _get_receiver_mode(self,receiver_id):
+        """
+        Requests to start testing contain 't' in receiver id.
+        Some requests to export model contain 'e' in receiver id.
+        Args:
+            receiver_id (string): receiver id for the request
+        """
+        if receiver_id is not None:
+            if 'e' in receiver_id:
+                mode = 'export_while_training'
+            elif 'e' not in receiver_id:
+                mode = 'export_after_training'
+            elif 't' in receiver_id:
+                mode = 'testing'
+        else:
+            return None
+                
+        return mode
