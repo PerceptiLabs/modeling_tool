@@ -8,7 +8,7 @@
     the-workspace.workspace
     //- the-toolbar
     //- the-layersbar
-    the-sidebar(v-if="getEmptyScreenMode==0")
+    the-sidebar(v-if="getViewMode==='model' && getEmptyScreenMode===0")
     //- the-tutorial-storyboard(v-if="isShowTutorial")
 
 </template>
@@ -119,6 +119,7 @@
         currentNetwork:   'mod_workspace/GET_currentNetwork',
         getLocalUserInfo: 'mod_user/GET_LOCAL_userInfo',
         getEmptyScreenMode: 'mod_empty-navigation/getEmptyScreenMode',
+        getViewMode:        'mod_workspace/GET_viewType',
         editIsOpen:         'mod_workspace/GET_networkIsOpen',
         getCurrentStepCode: 'mod_tutorials/getCurrentStepCode',
       }),
