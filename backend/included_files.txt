@@ -57,6 +57,7 @@ perceptilabs/layers/helper.py
 perceptilabs/layers/specbase.py
 perceptilabs/layers/specutils.py
 perceptilabs/layers/definitions.py
+perceptilabs/layers/mixins.py
 
 # perceptilabs/layers/jinja_macros
 perceptilabs/layers/jinja_macros/controlflow.j2
@@ -85,6 +86,8 @@ perceptilabs/layers/deeplearningfc/tf2x_template.j2
 # perceptilabs/layers/deeplearningconv
 perceptilabs/layers/deeplearningconv/spec.py
 perceptilabs/layers/deeplearningconv/imports.json
+perceptilabs/layers/deeplearningconv/tf2x_imports.json
+perceptilabs/layers/deeplearningconv/tf2x_template.j2
 
 # perceptilabs/layers/deeplearningdeconv
 perceptilabs/layers/deeplearningdeconv/spec.py
@@ -97,6 +100,8 @@ perceptilabs/layers/deeplearningrecurrent/imports.json
 # perceptilabs/layers/processreshape
 perceptilabs/layers/processreshape/spec.py
 perceptilabs/layers/processreshape/imports.json
+perceptilabs/layers/processreshape/tf2x_imports.json
+perceptilabs/layers/processreshape/tf2x_template.j2
 
 # perceptilabs/layers/processrescale
 perceptilabs/layers/processrescale/spec.py

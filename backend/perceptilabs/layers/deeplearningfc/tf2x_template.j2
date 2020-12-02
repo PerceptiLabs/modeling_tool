@@ -16,7 +16,7 @@ class {{layer_spec.sanitized_name}}Keras(tf.keras.layers.Layer):
         input_ = inputs['input']
         
         flat_input = self.flatten(input_)
-        linear_output = tf.matmul(flat_input, self.W) + self.b
+        linear_output = tf.matmul(flat_input, self.kernel) + self.bias
         
         {% call indented_if(layer_spec.batch_norm) %}
             {{ activation_function(layer_spec.activation, input_var='linear_output', assigned_var='preview') | indent(8) }}            	
@@ -35,7 +35,7 @@ class {{layer_spec.sanitized_name}}Keras(tf.keras.layers.Layer):
 
         {{ build_output_dict(
             'self._outputs',
-            {'output': 'output', 'W': 'self.W', 'b': 'self.b', 'preview': 'preview'},
+            {'output': 'output', 'W': 'self.kernel', 'b': 'self.bias', 'preview': 'preview'},
             ['output', 'preview'])|indent(width=8)
         }}
         return self._outputs
@@ -54,17 +54,17 @@ class {{layer_spec.sanitized_name}}Keras(tf.keras.layers.Layer):
 	{% call indented_if(layer_spec.dropout) %}
             self.dropout = tf.keras.layers.Dropout(rate={{layer_spec.dropout_rate}})
 	{% endcall %}
-        self.W = self.add_weight(
+        self.kernel = self.add_weight(
             shape=(flat_input_dim, self._n_neurons),
             initializer=tf.keras.initializers.TruncatedNormal(stddev=0.1),
             dtype=tf.float32,
-            name='W'
+            name='kernel'
         )
-        self.b = self.add_weight(
+        self.bias = self.add_weight(
             shape=(self._n_neurons,),
             initializer=tf.keras.initializers.Constant(value=0.0),
             dtype=tf.float32,
-            name='b'
+            name='bias'
         )
 
     def get_config(self) -> Dict[str, Picklable]:

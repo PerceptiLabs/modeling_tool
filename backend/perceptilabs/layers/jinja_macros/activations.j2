@@ -10,7 +10,7 @@
         {{assigned_var}} = tf.nn.leaky_relu({{input_var}})
     {% elif name == 'Softmax' %}
         {{assigned_var}} = tf.nn.softmax({{input_var}})
-    {% elif name == 'None' %}
+    {% elif (name == 'None') or (name == none) %}
         {{assigned_var}} = {{input_var}}    
     {% endif %}
 {% endfilter %}

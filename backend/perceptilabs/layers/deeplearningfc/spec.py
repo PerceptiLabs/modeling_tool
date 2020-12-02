@@ -2,19 +2,16 @@ from typing import Tuple, Dict, Any, Union
 
 
 from perceptilabs.layers.specbase import InnerLayerSpec, LayerSpec
+from perceptilabs.layers.mixins import MixinDeepLearning
 
 
-class DeepLearningFcSpec(InnerLayerSpec):
+class DeepLearningFcSpec(InnerLayerSpec, MixinDeepLearning):
     type_: str = 'DeepLearningFC'
     n_neurons: Union[int, None] = 10
     activation: str = 'Sigmoid'
     batch_norm: bool = False
     dropout: bool = False
     keep_prob: float = 0.0
-
-    @property
-    def dropout_rate(self):
-        return 1.0 - self.keep_prob
 
     @classmethod
     def _from_dict_internal(cls, id_: str, dict_: Dict[str, Any], params: Dict[str, Any]) -> LayerSpec:

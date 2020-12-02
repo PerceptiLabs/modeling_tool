@@ -1,10 +1,11 @@
 from typing import Tuple, Dict, Any, Union, List
 
 from perceptilabs.layers.specbase import LayerSpec, InnerLayerSpec
+from perceptilabs.layers.mixins import MixinDeepLearning
 from perceptilabs.layers.utils import try_cast
 
 
-class DeepLearningConvSpec(InnerLayerSpec):
+class DeepLearningConvSpec(InnerLayerSpec, MixinDeepLearning):
     type_: str = 'DeepLearningConv'
     batch_norm: bool = False
     dropout: bool = False
@@ -19,7 +20,7 @@ class DeepLearningConvSpec(InnerLayerSpec):
     pooling: Union[str, None] = None
     pool_padding: Union[str, None] = None    
     pool_area: Union[int, None] = None
-    pool_stride: Union[int, None] = None    
+    pool_stride: Union[int, None] = None
 
     @classmethod
     def _from_dict_internal(cls, id_: str, dict_: Dict[str, Any], params: Dict[str, Any]) -> LayerSpec:

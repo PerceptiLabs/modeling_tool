@@ -168,11 +168,23 @@ DEFINITION_TABLE_TF2X = {
         'core_new/layers/templates/datadata.j2',        
         'layer_datadata'
     ),
+    'DeepLearningConv': LayerMeta(
+        DeepLearningConvSpec,
+        'layers/deeplearningconv/tf2x_imports.json',
+        'layers/deeplearningconv/tf2x_template.j2',        
+        'layer_tf2x_conv'
+    ),    
     'DeepLearningFC': LayerMeta(
         DeepLearningFcSpec,
         'layers/deeplearningfc/tf2x_imports.json',
         'layers/deeplearningfc/tf2x_template.j2',        
         'layer_tf2x_fully_connected'
+    ),
+    'ProcessReshape': LayerMeta(
+        ProcessReshapeSpec,
+        'layers/processreshape/tf2x_imports.json',
+        'layers/processreshape/tf2x_template.j2',        
+        'layer_tf2x_reshape'
     ),
     'ProcessOneHot': LayerMeta(
         DeepLearningFcSpec,

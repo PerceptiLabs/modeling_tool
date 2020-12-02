@@ -7,6 +7,14 @@ class ProcessReshapeSpec(InnerLayerSpec):
     type_: str = 'ProcessReshape'
     shape: Tuple[int, ...] = ()
     permutation: Tuple[int, ...] = ()
+
+    def get_permutation(self, indexing='zero'):
+        """ Whether to use zero-indexing or one-indexing """
+        if indexing == 'one':
+            return tuple(x + 1 for x in self.permutation)
+        else:
+            return self.permutation
+    
     @classmethod
     def _from_dict_internal(cls, id_: str, dict_: Dict[str, Any], params: Dict[str, Any]) -> LayerSpec:
         if 'Properties' in dict_ and dict_['Properties'] is not None:
