@@ -12,7 +12,9 @@ LABEL name="PerceptiLabs-rygg-app" \
       maintainer="contact@perceptilabs.com" \
       vendor="PerceptiLabs" \
       version="1.0" \
-      release="1"
+      release="1" \
+      summary="A component of the PerceptiLabs modeling platform." \
+      description="This image works in the background to support operations of the PerceptiLabs modeling platform."
 
 WORKDIR /app
 
