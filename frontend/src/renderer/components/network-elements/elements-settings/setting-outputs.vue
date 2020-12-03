@@ -1,7 +1,7 @@
 <template lang="pug">
   div
     div.output-container(
-      :class="{'is-opened-variable-list': isVarableListOpen && outputId === variableListId}"
+      :class="{'is-opened-variable-list': isVariableListOpen && outputId === variableListId}"
       v-for="(output, outputId) in element.outputs"
       @contextmenu.stop.prevent="openContextMenu(outputId)"
       @click.stop.prevent="openVariablesList(outputId)"
@@ -23,7 +23,7 @@
         @mouseleave="handleleave"
       )
       div.variable-list(
-        v-if="isVarableListOpen && outputId === variableListId"
+        v-if="isVariableListOpen && outputId === variableListId"
       )
         button.variable-list-button(
           v-for="(variable) in outputsVariables"
@@ -49,7 +49,7 @@ export default {
   mixins: [baseNetPaintArrows],
   data() {
     return {
-      isVarableListOpen: false,
+      isVariableListOpen: false,
       variableListId: null,
       isContextOpen: false,
       contextOpenedId: null,
@@ -139,13 +139,17 @@ export default {
       return Object.values(obj).length === 1;
     },
     openVariablesList(outputId){
-      this.isVarableListOpen = true;
-      this.variableListId = outputId;
-      this.getVariableList();
-      document.addEventListener('click', this.onClickOutsideVariableMenu);
+      if(this.isVariableListOpen) {
+        this.closeVariableList();
+      } else {
+        this.isVariableListOpen = true;
+        this.variableListId = outputId;
+        this.getVariableList();
+        document.addEventListener('click', this.onClickOutsideVariableMenu);
+      }
     },
     closeVariableList(){
-      this.isVarableListOpen = false;
+      this.isVariableListOpen = false;
       this.variableListId = null;
       document.removeEventListener('click', this.onClickOutsideVariableMenu);
     },
