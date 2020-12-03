@@ -379,6 +379,9 @@ const actions = {
     }
   },
   EVENT_hotKeyPaste({rootState, rootGetters, dispatch, commit}) {
+    if(rootState.mod_workspace-code-editor.isInFocus) {
+      return 0;
+    }
     dispatch('mod_workspace-history/SET_isEnableHistory', false, {root: true});
     let buffer = rootState.mod_buffer.buffer;
     dispatch('mod_workspace/SET_elementUnselect', null, {root: true});
