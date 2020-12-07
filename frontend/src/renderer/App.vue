@@ -586,7 +586,7 @@
           });
       },
       fetchAllNetworkJsons(modelMetas) {
-
+        
         if (!modelMetas) { return; }
 
         const promiseArray = []
@@ -635,20 +635,21 @@
         this.setUnparsedModels({unparsedModels});
       },
       addNetworksToWorkspace(models, modelsApiData) {
-        const filteredModels = models.filter(m => m);
-        for(const [index, model] of filteredModels.entries()) {
-          
-          if (this.unparsedModels.includes(model.networkID)) { return; }
+        for(const [index, model] of models.entries()) {
+          if(model) { 
+            if (this.unparsedModels.includes(model.networkID)) { return; }
 
-          // update apiMeta wiht rygg meta.
-          model.apiMeta = modelsApiData[index];
+            // update apiMeta wiht rygg meta.
+            model.apiMeta = modelsApiData[index];
 
-          const matchingApiData = modelsApiData.find(mad => mad.model_id === model.networkID);
-          if (matchingApiData) {
-            model.networkName = matchingApiData.name;
-            model.networkRootFolder = matchingApiData.location;
-          }
-          this.addNetwork({network: model, apiMeta: model.apiMeta, focusOnNetwork: false});
+            const matchingApiData = modelsApiData.find(mad => mad.model_id === model.networkID);
+            if (matchingApiData) {
+              model.networkName = matchingApiData.name;
+              model.networkRootFolder = matchingApiData.location;
+            }
+            this.addNetwork({network: model, apiMeta: model.apiMeta, focusOnNetwork: false});
+
+           }
         }
 
         // Commented out because addNetwork already calls updateWorkspaces

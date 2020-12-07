@@ -671,7 +671,7 @@ const mutations = {
       state.currentNetwork = netIndex;
     } else {
       // find position to insert 
-      // (can be done with binary serach but no gains with < 10 models)
+      // (can be done with binary search but no gains with < 10 models) 
       let currIdx = 0
       while (currIdx < workspace.length && 
           workspace[currIdx].networkID < network.networkID) {

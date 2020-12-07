@@ -1,5 +1,6 @@
 import idb from '@/core/helpers/idb-helper.js';
 import cloneDeep from 'lodash.clonedeep';
+import { doesFileExist as fileserver_doesFileExist } from '@/core/apiFileserver';
 
 const namespaced = true;
 
@@ -18,7 +19,7 @@ const actions = {
   async deleteNetwork(ctx, networkId) {
     if (!networkId) { return; }
     
-    await idb.deleteModel(networkId);
+    await idb.deleteModel(networkId.toString());
   },
   async deleteId(ctx, id) {
     await idb.deleteId(id);
@@ -64,9 +65,14 @@ const actions = {
     networkIdsToLoad = networkIdsToLoad.sort((a,b) => a - b)
     const networks = await idb.getModels(networkIdsToLoad);
 
-    return new Promise((resolve) => {
+    return new Promise(async (resolve) => {
       for(const network of networks) {
-
+        const doesFileExist = await fileserver_doesFileExist(network.apiMeta.location + '/model.json');
+        if(!doesFileExist) {
+           ctx.dispatch('deleteId', network.apiMeta.model_id);
+           ctx.dispatch('deleteNetwork', network.apiMeta.model_id);
+           return 0;
+        }
         // remove focus from previous focused network elements
         if(network.networkElementList) {
           Object.keys(network.networkElementList).map(elKey => {
