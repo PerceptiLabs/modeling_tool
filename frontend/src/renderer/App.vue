@@ -230,14 +230,11 @@
       showNewModelPopup() {
         return this.$store.state.globalView.globalPopup.showNewModelPopup;
       },
-      // userToken() {
-      //   return this.$store.state.mod_user.userToken
-      // },
       userId() {
         return this.$store.getters['mod_user/GET_userID']
       },
-      userEmail() {
-        return this.$store.getters['mod_user/GET_userEmail']
+      userProfile() {
+        return this.$store.getters['mod_user/GET_userProfile']
       },
       isUserFirstLogin() {
         return this.$store.getters['mod_user/GET_isUserFirstLogin'];
@@ -383,8 +380,8 @@
           Analytics.googleAnalytics.trackUserId(this.$store.getters['mod_user/GET_userID']);
         }
       },
-      userEmail(newVal) {
-        if (newVal === 'Guest') { return; }
+      userProfile(newVal) {
+        if (!newVal || newVal.email === 'Guest') { return; }
 
         setTimeout(() => {
           this.trackerCreateUser(newVal);

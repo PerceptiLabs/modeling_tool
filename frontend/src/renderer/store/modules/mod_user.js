@@ -29,7 +29,7 @@ const getters = {
   },
   GET_userID(state, getters) {//'Guest' for the trackers
     const info = getters.GET_userTokenInfo;
-    return !info ? 'Guest' : info.unique_name
+    return !info ? 'Guest' : info.sub;
   },
   GET_userRole(state, getters) {//User, Advanced
     const info = getters.GET_userTokenInfo;
