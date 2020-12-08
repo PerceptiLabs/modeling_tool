@@ -37,19 +37,19 @@
             @click="onDirectoryClick(directory)"
             @dblclick="onDirectoryDoubleClick(directory)"
             v-for="(directory, index) in directories"
-            :key="index")
+            :key="'dir_' + index")
             img(src="/static/img/file-picker/folder.svg" class="svg-icon")
             span {{ directory }}
 
-          .list-item(
-            :class="{selected:isSelected(fileName)}"
-            @dblclick="onFileDoubleClick(fileName)"
-            @click="toggleSelectedFile(fileName, $event)"
-            v-for="fileName in files"
-            v-if="['file', 'multimode'].includes(filePickerType)"
-            :key="fileName")
-            img(src="/static/img/file-picker/file.svg" class="svg-icon")
-            span {{ fileName }}
+          template(v-if="['file', 'multimode'].includes(filePickerType)")
+            .list-item(
+              :class="{selected:isSelected(fileName)}"
+              @dblclick="onFileDoubleClick(fileName)"
+              @click="toggleSelectedFile(fileName, $event)"
+              v-for="(fileName, fileNameIdx) in files"
+              :key="'file_' + fileNameIdx")
+              img(src="/static/img/file-picker/file.svg" class="svg-icon")
+              span {{ fileName }}
 
 
       .button-group
@@ -272,15 +272,19 @@ export default {
           this.currentPath = jsonData.current_path.split('/').filter(el => el);
         }
 
-        this.directories = jsonData.dirs.filter(d => !d.startsWith('.')).sort();
-        if (this.fileTypeFilter.length === 0) {
+        this.directories = jsonData.dirs
+          .filter(d => !d.startsWith('.'))
+          .sort(this.caseInsensitiveSort);
 
-          this.files = jsonData.files;
+        if (this.fileTypeFilter.length === 0) {
+          this.files = jsonData.files.sort(this.caseInsensitiveSort);
         } else {
-          this.files = jsonData.files.filter(f => {
-            let ext = f.replace(/.*\./, '').toLowerCase();
-            return ~this.fileTypeFilter.indexOf(ext);
-          })
+          this.files = jsonData.files
+            .sort(this.caseInsensitiveSort)
+            .filter(f => {
+              let ext = f.replace(/.*\./, '').toLowerCase();
+              return ~this.fileTypeFilter.indexOf(ext);
+            });
         }
       } catch(e) {
         return false;
@@ -337,6 +341,11 @@ export default {
     },
     scrollListToTop() {
       this.$refs.filePickerList.$el.scrollTop = 0;
+    },
+    caseInsensitiveSort(a, b) {
+      if (a.toLowerCase() === b.toLowerCase()) { return 0; }
+      else if (a.toLowerCase() < b.toLowerCase()) { return -1; }
+      else { return 1; }
     }
   },
   computed: {
