@@ -399,9 +399,9 @@ class TrainingServer:
         finally:
             return new_state        
 
-    def _on_state_transition(self, new_state):
+    def _on_state_transition(self, new_state, old_state):
         self._send_key_value('state', new_state)
-        logger.info(f"Transitioned to state '{new_state}'")
+        logger.info(f"Transitioned to state '{new_state}' from '{old_state}'")
 
     def _send_userland_timeout(self):
         self._send_key_value('userland-timeout')        

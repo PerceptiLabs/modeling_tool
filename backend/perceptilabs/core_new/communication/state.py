@@ -141,11 +141,12 @@ class State:
         
         with self._lock: 
             if (self._state, new_state) in self.allowed_transitions:
+                old_state = self._state
                 self._state = new_state
             else:
                 raise StateTransitionError(f"Cannot transition from '{self._state}' to '{new_state}'")
             if self._on_transition:
-                self._on_transition(new_state)
+                self._on_transition(new_state, old_state)
                 
     @classmethod
     def visualize(cls):

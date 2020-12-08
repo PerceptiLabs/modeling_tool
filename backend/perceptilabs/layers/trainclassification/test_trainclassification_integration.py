@@ -849,4 +849,14 @@ def test_tf2x_load_weights(temp_path, script_factory_tf2x, graph_spec_few_epochs
 
     # Load the checkpoint and compare
     training_layer2.load_weights(checkpoint_dir)
-    assert has_equal_weights(training_layer2, training_layer1)    
+    assert has_equal_weights(training_layer2, training_layer1)
+
+
+@pytest.mark.tf2x            
+def test_tf2x_test_mode_yields_correct_number_of_outputs(script_factory_tf2x, graph_spec):
+    graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec, print_code=True)
+
+
+    n_yields = len(list(graph.run(mode='testing')))
+    assert n_yields == 2 # 10% of dataset
+    

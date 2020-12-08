@@ -13,6 +13,7 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
         self._n_epochs = {{layer_spec.n_epochs}}
         self._batch_size = {{layer_spec.batch_size}}
 
+        self._epoch = 0
         self._stopped = False
         self._paused = False
         self._headless = False
@@ -47,7 +48,7 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
         
         input_layer_id, label_layer_id, prediction_layer_id, target_layer_id, prediction_var_name, target_var_name = self._get_io_layer_ids(graph)
         
-        self._dataset_train, self._dataset_val, _ = self._initialize_data(graph, input_layer_id, label_layer_id)
+        self._dataset_train, self._dataset_val, self._dataset_test = self._initialize_data(graph, input_layer_id, label_layer_id)
         self._prediction_model, self._target_model = self._build_models(
             graph, self._dataset_train.element_spec,
             input_layer_id, label_layer_id, prediction_layer_id, target_layer_id, prediction_var_name, target_var_name
@@ -58,24 +59,28 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
         
         self._metric_training_loss = tf.keras.metrics.Mean()
         self._metric_training_accuracy = tf.keras.metrics.CategoricalAccuracy()
+        self._metric_training_auc = tf.keras.metrics.AUC(curve='ROC')        
         self._metric_validation_loss = tf.keras.metrics.Mean()
         self._metric_validation_accuracy = tf.keras.metrics.CategoricalAccuracy()
-        self._metric_training_auc = tf.keras.metrics.AUC(curve='ROC')
-        self._metric_validation_auc = tf.keras.metrics.AUC(curve='ROC')        
+        self._metric_validation_auc = tf.keras.metrics.AUC(curve='ROC')
+        self._metric_testing_loss = tf.keras.metrics.Mean()
+        self._metric_testing_accuracy = tf.keras.metrics.CategoricalAccuracy()
+        self._metric_testing_auc = tf.keras.metrics.AUC(curve='ROC')
+
+        {% if layer_spec.loss_function == 'Quadratic' %}
+            {{ loss_quadratic('self._loss_fn') | add_spaces(count=4) }}
+        {% elif layer_spec.loss_function == 'Cross_entropy' %}
+            {{ loss_crossentropy('self._loss_fn') | add_spaces(count=4) }}
+        {% elif layer_spec.loss_function == 'W_cross_entropy' %}
+            {{ loss_weighted_crossentropy('self._loss_fn', layer_spec.class_weights) | add_spaces(count=4) }}
+        {% elif layer_spec.loss_function == 'Dice' %}
+            {{ loss_dice('self._loss_fn') | add_spaces(count=4) }}
+        {% endif %}
+
         
     def train(self, graph: Graph):
         """Training is done when this function is called. Once the training ends, checkpoint files are saved.
         """
-        {% if layer_spec.loss_function == 'Quadratic' %}
-            {{ loss_quadratic('loss_fn') | add_spaces(count=4) }}
-        {% elif layer_spec.loss_function == 'Cross_entropy' %}
-            {{ loss_crossentropy('loss_fn') | add_spaces(count=4) }}
-        {% elif layer_spec.loss_function == 'W_cross_entropy' %}
-            {{ loss_weighted_crossentropy('loss_fn', layer_spec.class_weights) | add_spaces(count=4) }}
-        {% elif layer_spec.loss_function == 'Dice' %}
-            {{ loss_dice('loss_fn') | add_spaces(count=4) }}
-        {% endif %}
-
         {% if layer_spec.optimizer == 'SGD' %}         
             {{ optimizer_sgd('optimizer', layer_spec.learning_rate) | add_spaces(count=4) }}
         {% elif layer_spec.optimizer == 'ADAM' %}
@@ -92,7 +97,6 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
             self._status = 'training'
             yield from self._dataset_iteration(
                 self._dataset_train,
-                loss_fn,
                 self._metric_training_loss,
                 self._metric_training_accuracy,
                 self._metric_training_auc,
@@ -104,13 +108,11 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
             self._status = 'validation'            
             yield from self._dataset_iteration(
                 self._dataset_val,
-                loss_fn,
                 self._metric_validation_loss,
                 self._metric_validation_accuracy,
                 self._metric_validation_auc,                
                 self._set_validation_iteration,
-                is_training=False,
-                optimizer=optimizer
+                is_training=False
             )
             
             self._log_epoch_summary()
@@ -128,6 +130,9 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
 
     def _set_validation_iteration(self, value):
         self._validation_iteration = value
+
+    def _set_testing_iteration(self, value):
+        self._testing_iteration = value
         
     def _log_epoch_summary(self):
         log.info(
@@ -137,10 +142,26 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
         )
         
     def test(self, graph: Graph):
-        """Testing is done when this function is called. 
-        """
-        raise NotImplementedError("Testing phase is not implemented!")
+        """ Testing is done when this function is called. """
 
+        log.info("Entering testing loop")
+        self._status = 'testing'
+
+        status_iterator = self._dataset_iteration(
+                self._dataset_test,
+                self._metric_testing_loss,
+                self._metric_testing_accuracy,
+                self._metric_testing_auc,
+                self._set_testing_iteration,
+                is_training=False,
+        )
+
+        for counter, status in enumerate(status_iterator):
+            log.info(f"Yielding test sample #{counter}")            
+            yield status
+
+
+            
     def run(self, graph: Graph, mode='training'):
         """Called as the main entry point for training. Responsible for training the model.
 
@@ -297,8 +318,8 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
 
     @property
     def accuracy_testing(self) -> float:
-        """Returns the current accuracy of the testing phase"""                        
-        return self._accuracy_testing
+        """Returns the current accuracy of the testing phase"""
+        return self._metric_testing_accuracy.result().numpy()        
 
     @property
     def loss_training(self) -> float:
@@ -312,8 +333,8 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
 
     @property
     def loss_testing(self) -> float:
-        """Returns the current loss of the testing phase"""                
-        return self._loss_testing
+        """Returns the current loss of the testing phase"""
+        return self._metric_testing_loss.result().numpy()        
 
     @property
     def auc_training(self) -> float:
@@ -323,7 +344,12 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
     @property
     def auc_validation(self) -> float:
         """Returns the current AUC of the validation phase"""                
-        return self._metric_validation_auc.result().numpy()    
+        return self._metric_validation_auc.result().numpy()
+    
+    @property
+    def auc_testing(self) -> float:
+        """Returns the current AUC of the testing phase"""                
+        return self._metric_testing_auc.result().numpy()    
 
     @property
     def layer_weights(self) -> Dict[str, Dict[str, Picklable]]:
@@ -543,7 +569,7 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
         target_model = TargetModel(element_spec[1])
         return prediction_model, target_model
     
-    def _dataset_iteration(self, dataset, loss_fn, metric_loss, metric_accuracy, metric_auc, iteration_setter, is_training=True, optimizer=None):
+    def _dataset_iteration(self, dataset, metric_loss, metric_accuracy, metric_auc, iteration_setter, is_training=True, optimizer=None):
         metric_loss.reset_states()
         metric_accuracy.reset_states()
         metric_auc.reset_states()
@@ -553,7 +579,7 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
             with tf.GradientTape() as tape:
                 predictions_batch = self._prediction_model(inputs_batch, training=is_training)
                 targets_batch = self._target_model(labels_batch, training=is_training)
-                loss_value = loss_fn(predictions_batch, targets_batch)
+                loss_value = self._loss_fn(predictions_batch, targets_batch)
 
             metric_loss.update_state(loss_value)
             metric_accuracy.update_state(targets_batch, predictions_batch)
