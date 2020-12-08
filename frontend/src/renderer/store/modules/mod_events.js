@@ -30,7 +30,7 @@ const state = {
   saveNetworkAs: 0,
   eventResize: 0,
   // is used for calculate from input/output of network component the backward and forward connections
-  // is should be incrementd when
+  // is should be increment when
   // arrow is created/deleted, element/s is deleted.
   eventIOGenerate: 0,
   globalPressKey: {
@@ -398,7 +398,6 @@ const actions = {
         setChangeToWorkspaceHistory: false 
       }, {root: true})
     })
-
     Promise.all(addElementPromises)
       .then(result => {
 
@@ -486,10 +485,12 @@ const actions = {
       for(let elementId of newElementIds) {
         commit('mod_workspace/DELETE_copyProperty', elementId, {root: true});
       }
+    })
+    .then(() => {
+      dispatch('mod_workspace-history/SET_isEnableHistory', true, {root: true});
+      dispatch('mod_workspace-history/PUSH_newSnapshot', null, {root: true});
     });
 
-    // dispatch('mod_workspace/ADD_container', null, {root: true});
-    dispatch('mod_workspace-history/SET_isEnableHistory', true, {root: true});
   },
   SET_enableCustomHotKey({commit}, val) {
     commit('set_enableCustomHotKey', val)
