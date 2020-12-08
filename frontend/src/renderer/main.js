@@ -10,9 +10,10 @@ import VueHotkey    from 'v-hotkey'
 import Keycloak from 'keycloak-js'
 
 import App    from './App'
+import NoInternetConnection from '@/pages/NoInternetConnection.vue'
 import router from './router'
 import store  from './store'
-import { isElectron, setAppTypeRootClasses } from "@/core/helpers";
+import { isElectron, setAppTypeRootClasses, setCookie, getCookie } from "@/core/helpers";
 import { isDevelopMode } from '@/core/constants.js'
 
 //- Global components
@@ -78,6 +79,7 @@ function runApp(token, refreshToken){
     template: '<App/>'
   }).$mount('#app');
 
+  setCookie('loggedInUser', token, 365 * 10);
 
   let userProfile = parseJWT(token)
   userProfile.firstName = userProfile.given_name
@@ -143,9 +145,28 @@ function demo(){
   runApp(token, refreshToken);
 }
 
-
-if (process.env.NO_KC == 'true'){
-  demo();
-} else {
-  login();
+function renderNoInternetConnectionPage() {
+  new Vue({
+    components: { NoInternetConnection },
+    router,
+    store,
+    template: '<NoInternetConnection/>'
+  }).$mount('#app');
 }
+
+const loggedInUser = getCookie('loggedInUser');
+
+if(loggedInUser) {
+  runApp(loggedInUser, 'placeholder');
+} else {
+  if (process.env.NO_KC == 'true'){
+    demo();
+  } else {
+    if(window.navigator.onLine) {
+      login();
+    } else {
+      renderNoInternetConnectionPage();
+    }
+  }
+}
+

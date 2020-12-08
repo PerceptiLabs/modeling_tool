@@ -58,7 +58,7 @@ export default {
     GeneralResult, SelectCoreSide,
     WorkspaceBeforeImport, WorkspaceSaveNetwork, WorkspaceLoadNetwork, ExportNetwork, ExportNetworkGitHub, ImportModel,
     TheTesting, TheViewBox, StartTrainingSpinner,
-    TheToaster, TheMiniMap, FilePickerPopup, Notebook, TheSidebar,
+    TheToaster, TheMiniMap, FilePickerPopup, TheSidebar,
     CodeWindow, InformationPanel,
     Notebook, ResourceMonitor, SelectModelModal,
     ViewBoxBtnList, EmptyNavigation,

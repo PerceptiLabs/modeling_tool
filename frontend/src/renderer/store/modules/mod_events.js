@@ -1,15 +1,13 @@
 import router         from "@/router";
 import { keycloak }   from '@/main.js';
 import {
-  filePCRead,
   isWeb,
   isElectron,
   loadPathFolder,
   projectPathModel,
-  shouldHideSidebar,
-  calculateSidebarScaleCoefficient
+  eraseCookie,
 } from "@/core/helpers";
-import { MODAL_PAGE_SIGN_UP , pathSlash} from "@/core/constants";
+import { MODAL_PAGE_SIGN_UP } from "@/core/constants";
 import { getModelJson as fileserver_getModelJson } from '@/core/apiFileserver';
 
 let ipcRenderer = null;
@@ -213,7 +211,15 @@ const actions = {
     commit('set_saveNetworkAs');
   },
   EVENT_logOut({commit, dispatch}, isSendLogout = true) {
-    if(isSendLogout) keycloak.logout();
+    if(isSendLogout) {
+      if(keycloak && window.navigator.onLine) { // has internet connection and keycloak instance are available
+        keycloak.logout();
+        eraseCookie('loggedInUser')
+      } else {
+        eraseCookie('loggedInUser');
+        window.location.reload();
+      }
+    }
 
     // setting to -1 and then removing because the project.vue component isn't recreated here
     // this means that selecting the same project won't make it fetch models

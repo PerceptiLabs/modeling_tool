@@ -1,24 +1,10 @@
 import axios            from 'axios'
 import { objectToQueryParams } from '@/core/helpers'
-import { stringifyNetworkObjects }   from "@/core/helpers.js";
+import { stringifyNetworkObjects, getCookie }   from "@/core/helpers.js";
 
 import { FILESERVER_BASE_URL } from '@/core/constants'
 import { FILESERVER_URL_CONFIG_PATH }   from "@/core/constants";
 import { whenUrlIsResolved } from '@/core/urlResolver';
-
-function getCookie(name) {
-    const cookieArr = document.cookie.split(";");
-
-    for(var i = 0; i < cookieArr.length; i++) {
-        const cookiePair = cookieArr[i].split("=");
-
-        if(name == cookiePair[0].trim()) {
-            return decodeURIComponent(cookiePair[1]);
-        }
-    }
-
-    return null;
-}
 
 const whenFileserverReady = whenUrlIsResolved(FILESERVER_URL_CONFIG_PATH, FILESERVER_BASE_URL)
   .then(url => {
