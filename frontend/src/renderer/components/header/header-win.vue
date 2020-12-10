@@ -41,9 +41,9 @@
           @click="goToReport"
           :data-tutorial-target="'tutorial-model-hub-report-button'"
         )
-
-        span Report
-        i.icon.icon-bug-report
+        img(v-if="isLoading" src="static/img/spinner.gif" width="12px" style="margin-right: 5px")
+        span(v-if="!isLoading") Report
+        i.icon.icon-bug-report(v-if="!isLoading")
       header-profile(v-if="showProfile")
       ul(v-if="!isWeb").app-header_actions
         button.btn.btn--app-minify(type="button" @click="appMinimize()").i.icon.icon-app-minimize
@@ -59,6 +59,7 @@
   import HeaderProfile from "@/components/header/header-profile";
   import { mapGetters, mapActions } from 'vuex';
   import { MODAL_PAGE_WHATS_NEW } from "@/core/constants";
+  import { fileserverAvailability } from '@/core/apiFileserver';
 
 export default {
   name: "HeaderWin",
@@ -68,7 +69,8 @@ export default {
       isWeb: isWeb(),
       showHelpPanel: false,
       showProfile: !process.env.NO_KC,
-      MODAL_PAGE_WHATS_NEW
+      MODAL_PAGE_WHATS_NEW,
+      isLoading: false
     }
   },
   computed: {
@@ -130,7 +132,11 @@ export default {
       setTips:              'mod_tutorials/setTutorialNotificationsState',
       trackHelpOption:      'mod_tracker/TRACK_helpOption',
       setActivePageAction:  'modal_pages/setActivePageAction',
+      openErrorPopup:       'globalView/GP_infoPopup',
     }),
+    setLoading(value) {
+      this.isLoading = value;
+    },
     appClose() {
       this.$emit('app-closed')
     },
@@ -147,7 +153,15 @@ export default {
       }
     },
     goToReport() {
-      this.$store.dispatch('globalView/SET_createIssuesPopup', true);
+      this.setLoading(true);
+      fileserverAvailability().then(response => {
+        this.setLoading(false);
+        if (response === "AVAILABLE") {
+          this.$store.dispatch('globalView/SET_createIssuesPopup', true);
+        } else {
+          this.openErrorPopup("It seems PerceptiLabs Backend is not running so this feature can't be used. If you need support or want to manually report a bug you can visit <a style='color: #B6C7FB' href='https://forum.perceptilabs.com' target='_blank'>forum.perceptilabs.com</a>");
+        }
+      });
     },
     toggleHelp(value = null) {
       this.showHelpPanel = !!value;
@@ -266,6 +280,8 @@ export default {
     min-width: 0;
     color: $toolbar-button-border;
     background: #141c31;
+    width: 81px;
+    height: 30px;
 
     padding-right: 1rem;
     padding-left: 1rem;

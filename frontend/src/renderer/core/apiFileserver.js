@@ -43,9 +43,11 @@ export const fileserverAvailability = () => {
     .then(requestor => requestor.get("/version"))
     .then(res => {
       return (res.status === 200) ? "AVAILABLE" : "UNAVAILABLE"
+    }, (reject) => {
+      throw reject;
     })
     .catch(err => {
-      if (!!err.response.data){ console.log(err.response.data) }
+      if (err.response && !!err.response.data){ console.log(err.response.data) }
       return (err.response && err.response.status === 400)? "BAD_TOKEN" : "UNAVAILABLE"
     })
 }
