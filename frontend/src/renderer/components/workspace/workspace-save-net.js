@@ -1,5 +1,4 @@
 import html2canvas  from 'html2canvas';
-import canvg        from 'canvg'
 import { generateID }  from "@/core/helpers.js";
 
 import { mapGetters, mapMutations, mapActions } from "vuex";
@@ -143,6 +142,24 @@ const workspaceSaveNet = {
             this.$store.dispatch('mod_workspace/SET_networkName', prepareNet.toLocal.name); // change new location in vuex
           }
 
+          const networkJson = cloneDeep(this.currentNetwork)
+          const healthNetworkElementList = {};
+          Object.keys(networkJson.networkElementList).map(key => {
+            const el = networkJson.networkElementList[key];
+            healthNetworkElementList[key] = {
+              ...el,
+              chartData: {}
+            }
+          })
+          const healthNetworkJson = {
+            ...networkJson,
+            networkElementList: healthNetworkElementList
+          }
+          fileserver_saveModelJson(healthNetworkJson)
+            .catch((e) => {
+              console.log(e)
+            });
+
           // Update the model in the webstorage too.
           //try to update date first
           const savedTime = new Date();
@@ -177,7 +194,7 @@ const workspaceSaveNet = {
             arrowsCanvas.style.position = 'absolute';
             arrowsCanvas.style.zIndex = '0';
             networkFieldEl.appendChild(arrowsCanvas);
-//            canvg(arrowsCanvas, svg.outerHTML, {});
+
             svg.style.display = 'none';
   
             const options = {
