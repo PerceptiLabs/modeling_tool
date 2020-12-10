@@ -31,7 +31,7 @@ def test_onnx_existence_tf1x(temp_path):
 
         assert onnx_model is None
 
-        onnx_model = create_onnx_from_tf1x(sess.graph)
+        onnx_model, _ = create_onnx_from_tf1x(sess.graph)
 
         assert onnx_model is not None
 

@@ -5,7 +5,8 @@ import keras2onnx
 import sys
 import os
 from google.protobuf import text_format
-
+from tensorflow.graph_util import convert_variables_to_constants as freeze_graph
+from tensorflow.python.platform import gfile
 
 
 def load_tf2x_model(path):
@@ -13,21 +14,31 @@ def load_tf2x_model(path):
 
 def load_tf1x_model(path):
     f = open(path)
-    graph_protobuf = text_format.Parse(f.read(), tf.GraphDef())
-    
-    graph_clone = tf.Graph()
-    with graph_clone.as_default():
-        tf.import_graph_def(graph_def=graph_protobuf, name="")
-    return graph_clone
+    graph_def = text_format.Parse(f.read(), tf.GraphDef())
+
+    graph = tf.Graph()
+    with graph.as_default():
+        tf.import_graph_def(graph_def=graph_def, name='')
+    return graph
+
+def get_inputs_outputs(path):
+    f = open(path)
+    graph_def = text_format.Parse(f.read(), tf.GraphDef())
+    inputs = list()
+    outputs = list()
+    name_list = list()
+    for node in graph_def.node: # tensorflow.core.framework.node_def_pb2.NodeDef
+        name_list.append(node.name)
+        inputs.extend(node.input)
+    outputs = list(set(name_list) - set(inputs))
+    return inputs, outputs
 
 def create_onnx_from_keras(model):
     """Crete an ONNX model from keras and save it to the specified path."""
-    try:
-        onnx_model = keras2onnx.convert_keras(model, 'keras-onnx', debug_mode=1)
-    except:
-        return None
-    else:
-        return onnx_model
+    onnx_model = keras2onnx.convert_keras(model, 'keras-onnx', debug_mode=1)
+
+    return onnx_model
+
 
 def load_tf1x_frozen(path):
     with tf.gfile.GFile(path,"rb") as f:
@@ -40,25 +51,31 @@ def load_tf1x_frozen(path):
 
 def create_onnx_from_tf1x(model):
     """Crete an ONNX model from the tf1x model and save it to the specified path."""
-    try:
-        onnx_graph = tf2onnx.tfonnx.process_tf_graph(model, 
+    onnx_graph = tf2onnx.tfonnx.process_tf_graph(model, 
             continue_on_error=False, verbose=False, target=None,
             opset=None, custom_op_handlers=None,
             custom_rewriter=None, extra_opset=None,
             shape_override=None, inputs_as_nchw=None,
-            input_names=[model.as_graph_def().node[0].name + ":0"], output_names=[model.as_graph_def().node[-1].name + ":0"],
+            input_names=["input:0"], output_names=["output:0"],
             const_node_values=None)
-        onnx_model = onnx_graph.make_model("tf1x-onnx")
+    model = onnx_graph.make_model("tf1x-onnx")
+    return onnx_graph, model
+
+def save_onnx_to_disk(onnx_model, path):
+    """Take a generated ONNX model and save it to disk. To be used for export functionality."""
+    try:
+        with open(path, "wb") as f:
+            f.write(onnx_model.SerializeToString())
     except:
-        return None
-    else:
-        return onnx_model
+        return Exception("Couldn't save the ONNX model to disk!")
 
 if __name__ == "__main__":
-    # path = '/Users/adilsalhotra/developer/test/parser/mobilenet_v1_1.0_224/mobilenet_v1_1.0_224_eval.pbtxt'
-    # path_frozen = '/Users/adilsalhotra/developer/test/parser/mobilenet_v1_1.0_224/mobilenet_v1_1.0_224_frozen.pb'
+    path = '/Users/adilsalhotra/developer/test/parser/mobilenet_v1_1.0_224/mobilenet_v1_1.0_224_eval.pbtxt'
+    path_frozen = '/Users/adilsalhotra/developer/test/parser/mobilenet_v1_1.0_224/mobilenet_v1_1.0_224_frozen.pb'
+    # path = '/Users/adilsalhotra/developer/test/parser/nn/saved_model.pb'
 
-
-    # model = load_tf1x_frozen(path_frozen)
-    # create_onnx_from_tf1x(model, "model.onnx")
+    model = load_tf1x_frozen(path_frozen)
+    inputs, outputs = get_inputs_outputs(path)
+    onnx_graph, onnx_model = create_onnx_from_tf1x(model)
+    save_onnx_to_disk(onnx_model, "model.onnx")
     print("ONNX model created.")
