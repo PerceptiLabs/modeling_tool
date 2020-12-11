@@ -20,7 +20,19 @@ def dict_first_value(dict_):
         return None
     return dict_.get('output', None)
 
-    
+def average(metric, iteration, value):
+    """Given the list of moving average values each epoch, we calculate the add/update moving average value of the current epoch.
+
+    Args:
+        metric (List): List of moving average values for corresponding epochs.
+        iteration (Int): numbmer of completed iterations in the current epoch.
+        value (Float): metric value for the last completed iteration.
+
+    Returns:
+        moving average value of the current epoch
+    """
+    return (metric[-1]*iteration+value)/(iteration+1)
+
 def policy_regression(is_paused, graphs, sanitized_to_name, sanitized_to_id, results):
 
     def get_layer_inputs_and_outputs(graph, node, trn_node):
@@ -84,11 +96,6 @@ def policy_regression(is_paused, graphs, sanitized_to_name, sanitized_to_id, res
 
     def get_metrics(graphs, true_trn_id, results):
         data = {}
-        x = np.random.random((60,)) # TODO: these are temporary whiel figuring out F1 and AUC
-        y = np.random.random((10,))
-
-        # ---- Get the metrics for ongoing epoch
-        current_epoch = graphs[-1].active_training_node.layer.epoch
 
         if 'trainDict' in results:
             r_sq_trn_iter = results['trainDict'][true_trn_id]["r_sq_train_iter"]
@@ -103,29 +110,29 @@ def policy_regression(is_paused, graphs, sanitized_to_name, sanitized_to_id, res
 
             # inputs = results['trainDict'][true_trn_id]["inputs"]
             # outputs = results['trainDict'][true_trn_id]["outputs"]
-
-        else:
-            r_sq_trn_iter = []
-            loss_trn_iter = []
-            mse_trn_iter = []
-            sq_variance_trn_iter = []
-
-            r_sq_val_iter = []
-            loss_val_iter = []
-            mse_val_iter = []
-            sq_variance_val_iter = []
-
-
+            
         for graph in graphs:
             trn_layer = graph.active_training_node.layer
-            if trn_layer.epoch == current_epoch and trn_layer.status == 'training':
+            new_epoch = (trn_layer.training_iteration == 0)
+            if new_epoch:
+                r_sq_trn_iter = []
+                loss_trn_iter = []
+                mse_trn_iter = []
+                sq_variance_trn_iter = []
+
+                r_sq_val_iter = []
+                loss_val_iter = []
+                mse_val_iter = []
+                sq_variance_val_iter = []
+            
+            if trn_layer.status == 'training':
                 r_sq_trn_iter.append(trn_layer.r_squared_training)
                 loss_trn_iter.append(trn_layer.loss_training)
                 mse_trn_iter.append(trn_layer.squared_error_training)
                 sq_variance_trn_iter.append(trn_layer.squared_variance_training)
-
-
-            if trn_layer.epoch == current_epoch and trn_layer.status == 'validation':
+            
+            
+            if trn_layer.status == 'validation':
                 r_sq_val_iter.append(trn_layer.r_squared_validation)
                 loss_val_iter.append(trn_layer.loss_validation)
                 mse_val_iter.append(trn_layer.squared_error_validation)
@@ -163,23 +170,31 @@ def policy_regression(is_paused, graphs, sanitized_to_name, sanitized_to_id, res
 
         while idx < len(graphs):
             trn_layer = graphs[idx].active_training_node.layer
-
-            is_final_training_iteration = (trn_layer.training_iteration == np.ceil(trn_layer.size_training / trn_layer.batch_size) - 1)
+            new_epoch = (trn_layer.training_iteration == 0)
             
-            if is_final_training_iteration and trn_layer.status == 'training':
+            if new_epoch and trn_layer.status == 'training':
                 loss_trn_epoch.append(trn_layer.loss_training)
                 r_sq_trn_epoch.append(trn_layer.r_squared_training)
                 mse_trn_epoch.append(trn_layer.squared_error_training)
                 sq_variance_trn_epoch.append(trn_layer.squared_variance_training)
-
-            is_final_validation_iteration = (trn_layer.validation_iteration == np.ceil(trn_layer.size_validation / trn_layer.batch_size) - 1)
+            elif not new_epoch and trn_layer.status == 'training':
+                loss_trn_epoch[-1] = average(loss_trn_epoch, trn_layer.training_iteration, trn_layer.loss_training)
+                r_sq_trn_epoch[-1] = average(r_sq_trn_epoch, trn_layer.training_iteration, trn_layer.r_squared_training)
+                mse_trn_epoch[-1] = average(mse_trn_epoch, trn_layer.training_iteration, trn_layer.squared_error_training)
+                sq_variance_trn_epoch[-1] = average(sq_variance_trn_epoch, trn_layer.training_iteration, trn_layer.squared_variance_training)
             
-            if is_final_validation_iteration and trn_layer.status == 'validation':
+            new_epoch = (trn_layer.validation_iteration == 0)
+            if new_epoch and trn_layer.status == 'validation':
                 loss_val_epoch.append(trn_layer.loss_validation)
                 r_sq_val_epoch.append(trn_layer.r_squared_validation)
                 mse_val_epoch.append(trn_layer.squared_error_validation)
                 sq_variance_val_epoch.append(trn_layer.squared_variance_validation)
-            
+            elif (not new_epoch) and trn_layer.status == 'validation':
+                loss_val_epoch[-1] = average(loss_trn_epoch, trn_layer.validation_iteration, trn_layer.loss_validation)
+                r_sq_val_epoch[-1] = average(r_sq_trn_epoch, trn_layer.validation_iteration, trn_layer.r_squared_validation)
+                mse_val_epoch[-1] = average(mse_trn_epoch, trn_layer.validation_iteration, trn_layer.squared_error_validation)
+                sq_variance_val_epoch[-1] = average(sq_variance_trn_epoch, trn_layer.validation_iteration, trn_layer.squared_variance_validation)
+                
             idx += 1
 
         # ---- Update the dicts
@@ -403,8 +418,7 @@ def policy_classification(is_paused, graphs, sanitized_to_name, sanitized_to_id,
         y = np.random.random((10,))
 
         # ---- Get the metrics for ongoing epoch
-        current_epoch = graphs[-1].active_training_node.layer.epoch
-
+        
         if 'trainDict' in results:
             acc_trn_iter = results['trainDict'][true_trn_id]["acc_train_iter"]
             loss_trn_iter = results['trainDict'][true_trn_id]["loss_train_iter"]
@@ -415,42 +429,39 @@ def policy_classification(is_paused, graphs, sanitized_to_name, sanitized_to_id,
             loss_val_iter = results['trainDict'][true_trn_id]["loss_val_iter"]
             f1_val_iter = results['trainDict'][true_trn_id]["f1_val_iter"]
             auc_val_iter = results['trainDict'][true_trn_id]["auc_val_iter"]
-
-        else:
-            acc_trn_iter = []
-            loss_trn_iter = []
-            f1_trn_iter = x
-
-            acc_val_iter = []
-            loss_val_iter = []
-            f1_val_iter = x
-
-
-            if utils.is_tf2x():
-                auc_trn_iter = []               
-                auc_val_iter = []
-            else:
-                auc_trn_iter = x                
-                auc_val_iter = x                
                 
         for graph in graphs:
             trn_layer = graph.active_training_node.layer
-            if trn_layer.epoch == current_epoch and trn_layer.status == 'training':
+            new_epoch = (trn_layer.training_iteration == 0)
+            
+            if new_epoch:
+                acc_trn_iter = []
+                loss_trn_iter = []
+                f1_trn_iter = x
+
+                acc_val_iter = []
+                loss_val_iter = []
+                f1_val_iter = x
+
+                if utils.is_tf2x():
+                    auc_trn_iter = []
+                    auc_val_iter = []         
+                else:
+                    auc_trn_iter = x
+                    auc_val_iter = x
+            
+            if trn_layer.status == 'training':
                 acc_trn_iter.append(trn_layer.accuracy_training)
                 loss_trn_iter.append(trn_layer.loss_training)
                 #f1_trn_iter.append(trn_layer.f1_score_training) # TODO: fix these two
-
                 if utils.is_tf2x():
                     auc_trn_iter.append(trn_layer.auc_training)
-
-            if trn_layer.epoch == current_epoch and trn_layer.status == 'validation':
+            if trn_layer.status == 'validation':
                 acc_val_iter.append(trn_layer.accuracy_validation)
                 loss_val_iter.append(trn_layer.loss_validation)
                 #f1_val_iter.append(trn_layer.f1_score_validation) # TODO: fix these two
-
                 if utils.is_tf2x():
                     auc_val_iter.append(trn_layer.auc_validation)
-
         # ---- Get the metrics from the end of each epoch
 
         if 'trainDict' in results:
@@ -483,28 +494,34 @@ def policy_classification(is_paused, graphs, sanitized_to_name, sanitized_to_id,
         idx = 0
 
         while idx < len(graphs):
+            
             trn_layer = graphs[idx].active_training_node.layer
-
-            is_final_training_iteration = (trn_layer.training_iteration == np.ceil(trn_layer.size_training / trn_layer.batch_size) - 1)
+            new_epoch = (trn_layer.training_iteration == 0)
             
-            if is_final_training_iteration and trn_layer.status == 'training':
-                acc_trn_epoch.append(trn_layer.accuracy_training)
+            if new_epoch and trn_layer.status == 'training':
                 loss_trn_epoch.append(trn_layer.loss_training)
-                # TODO: f1 
-
+                acc_trn_epoch.append(trn_layer.accuracy_training)
                 if utils.is_tf2x():
-                    auc_trn_epoch.append(trn_layer.auc_training)                    
+                    auc_trn_epoch.append(trn_layer.auc_training)
+            elif not new_epoch and trn_layer.status == 'training':
+                loss_trn_epoch[-1] = average(loss_trn_epoch, trn_layer.training_iteration, trn_layer.loss_training)
+                acc_trn_epoch[-1] = average(acc_trn_epoch, trn_layer.training_iteration, trn_layer.accuracy_training)
+                if utils.is_tf2x():
+                    auc_trn_epoch[:-1].append(trn_layer.auc_training)
+                    
+            new_epoch = (trn_layer.validation_iteration == 0)
             
-            is_final_validation_iteration = (trn_layer.validation_iteration == np.ceil(trn_layer.size_validation / trn_layer.batch_size) - 1)
-            
-            if is_final_validation_iteration and trn_layer.status == 'validation':
-                acc_val_epoch.append(trn_layer.accuracy_validation)
+            if new_epoch and (trn_layer.status == 'validation'):
                 loss_val_epoch.append(trn_layer.loss_validation)
-                # TODO: f1 
-
+                acc_val_epoch.append(trn_layer.accuracy_validation)
                 if utils.is_tf2x():
-                    auc_val_epoch.append(trn_layer.auc_validation)                    
-                
+                    auc_val_epoch.append(trn_layer.auc_validation)     
+            elif (not new_epoch) and (trn_layer.status == 'validation'):
+                loss_val_epoch[-1] = average(loss_val_epoch, trn_layer.validation_iteration, trn_layer.loss_validation)
+                acc_val_epoch[-1] = average(acc_val_epoch, trn_layer.validation_iteration, trn_layer.accuracy_validation)
+                if utils.is_tf2x():
+                    auc_val_epoch[:-1].append(trn_layer.auc_validation)             
+
             idx += 1
 
         # ---- Update the dicts
@@ -532,7 +549,7 @@ def policy_classification(is_paused, graphs, sanitized_to_name, sanitized_to_id,
 
     current_graph = graphs[-1]
     test_graph = None
-   
+    
     train_graphs_exist = None
     for graph in graphs:
         if graph.active_training_node.layer.status == 'testing':
@@ -784,7 +801,6 @@ def policy_object_detection(is_paused, graphs, sanitized_to_name, sanitized_to_i
         data = {}
 
         # ---- Get the metrics for ongoing epoch
-        current_epoch = graphs[-1].active_training_node.layer.epoch
 
         if 'trainDict' in results:
             acc_trn_iter = results['trainDict'][true_trn_id]["acc_train_iter"]
@@ -797,17 +813,6 @@ def policy_object_detection(is_paused, graphs, sanitized_to_name, sanitized_to_i
             classification_loss_val_iter = results['trainDict'][true_trn_id]["classification_loss_val_iter"]
             bbox_loss_val_iter = results['trainDict'][true_trn_id]["bboxes_loss_val_iter"]
 
-        else:
-            acc_trn_iter = []
-            loss_trn_iter = []
-            classification_loss_trn_iter =[]
-            bbox_loss_trn_iter = []
-
-            acc_val_iter = []
-            loss_val_iter = []
-            classification_loss_val_iter = []
-            bbox_loss_val_iter = []
-
         predicted_objects = 0.
         predicted_classes = 0.
         predicted_normalized_boxes = 0.
@@ -815,6 +820,18 @@ def policy_object_detection(is_paused, graphs, sanitized_to_name, sanitized_to_i
 
         for graph in graphs:
             trn_layer = graph.active_training_node.layer
+            new_epoch = (trn_layer.training_iteration == 0)
+            if new_epoch:
+                acc_trn_iter = []
+                loss_trn_iter = []
+                classification_loss_trn_iter =[]
+                bbox_loss_trn_iter = []
+
+                acc_val_iter = []
+                loss_val_iter = []
+                classification_loss_val_iter = []
+                bbox_loss_val_iter = []
+                
             input_data_layer = trn_layer.get_input_data_node
             input_images = trn_node.layer.layer_outputs.get(input_data_layer)
             if trn_layer.status == 'training':
@@ -864,23 +881,31 @@ def policy_object_detection(is_paused, graphs, sanitized_to_name, sanitized_to_i
 
         while idx < len(graphs):
             trn_layer = graphs[idx].active_training_node.layer
-
-            is_final_training_iteration = (trn_layer.training_iteration == np.ceil(trn_layer.size_training / trn_layer.batch_size) - 1)
+            new_epoch = (trn_layer.training_iteration == 0)
             
-            if is_final_training_iteration and trn_layer.status == 'training':
+            if  new_epoch and trn_layer.status == 'training':
                 acc_trn_epoch.append(trn_layer.accuracy_training)
                 loss_trn_epoch.append(trn_layer.loss_training)
                 classification_loss_trn_epoch.append(trn_layer.loss_classification_training)
                 bbox_loss_trn_epoch.append(trn_layer.loss_bbox_training)
+            elif not new_epoch and trn_layer.status == 'training':
+                loss_trn_epoch[-1] = average(loss_trn_epoch, trn_layer.training_iteration, trn_layer.loss_training)
+                acc_trn_epoch[-1] = average(acc_trn_epoch, trn_layer.training_iteration, trn_layer.accuracy_training)
+                classification_loss_trn_epoch[-1] = average(classification_loss_trn_epoch, trn_layer.training_iteration, trn_layer.loss_classification_training)
+                bbox_loss_trn_epoch[-1] = average(classification_loss_trn_epoch, trn_layer.training_iteration, trn_layer.loss_bbox_training)
             
-            is_final_validation_iteration = (trn_layer.validation_iteration == np.ceil(trn_layer.size_validation / trn_layer.batch_size) - 1)
+            new_epoch = (trn_layer.validation_iteration == 0)
             
-            if is_final_validation_iteration and trn_layer.status == 'validation':
+            if new_epoch and trn_layer.status == 'validation':
                 acc_val_epoch.append(trn_layer.accuracy_validation)
                 loss_val_epoch.append(trn_layer.loss_validation)
                 classification_loss_val_epoch.append(trn_layer.loss_classification_validation)
                 bbox_loss_val_epoch.append(trn_layer.loss_bbox_validation)
-
+            elif (not new_epoch) and trn_layer.status == 'validation':
+                acc_val_epoch[:-1].append(trn_layer.accuracy_validation)
+                loss_val_epoch[:-1].append(trn_layer.loss_validation)
+                classification_loss_val_epoch[:-1].append(trn_layer.loss_classification_validation)
+                bbox_loss_val_epoch[:-1].append(trn_layer.loss_bbox_validation)
             idx += 1
             
         if trn_layer.status != 'finished':
@@ -1120,17 +1145,18 @@ def policy_reinforce(is_paused, graphs, sanitized_to_name, sanitized_to_id, resu
     def get_metrics(graphs, true_trn_id, results):
         data = {}
         # ---- Get the metrics for ongoing episode
-        current_episode = graphs[-1].active_training_node.layer.episode
 
         if 'trainDict' in results:
             loss_trn_iter = results['trainDict'][true_trn_id]["loss_train_iter"]
             reward_trn_iter = results['trainDict'][true_trn_id]["reward_train_iter"]
-        else:
-            reward_trn_iter = []
-            loss_trn_iter = []
-
+        
         for graph in graphs:
             trn_layer = graph.active_training_node.layer
+            new_episode = (trn_layer.step_counter == 0)
+            if new_episode:
+                reward_trn_iter = []
+                loss_trn_iter = []
+            
             # data_node = graph.data_nodes[0]
             state = trn_node.layer.transition['state_seq'][-1]
             steps = trn_node.layer.step_counter
@@ -1141,7 +1167,7 @@ def policy_reinforce(is_paused, graphs, sanitized_to_name, sanitized_to_id, resu
                 pred = np.zeros((n_actions,))
                 pred[int(current_action)] = 1
 
-            if trn_layer.episode == current_episode and trn_layer.status == 'training':
+            if trn_layer.status == 'training':
                 reward_trn_iter.append(trn_layer.reward)
                 loss_trn_iter.append(trn_layer.loss_training)
 
@@ -1362,9 +1388,6 @@ def policy_gan(is_paused, graphs, sanitized_to_name, sanitized_to_id, results):
     def get_metrics(graphs, true_trn_id, results):
         data = {}
 
-        # ---- Get the metrics for ongoing epoch
-        current_epoch = graphs[-1].active_training_node.layer.epoch
-
         if 'trainDict' in results:
             gen_loss_trn_iter = results['trainDict'][true_trn_id]["gen_loss_train_iter"]
             dis_loss_trn_iter = results['trainDict'][true_trn_id]["dis_loss_train_iter"]
@@ -1372,22 +1395,23 @@ def policy_gan(is_paused, graphs, sanitized_to_name, sanitized_to_id, results):
             gen_loss_val_iter = results['trainDict'][true_trn_id]["gen_loss_val_iter"]
             dis_loss_val_iter = results['trainDict'][true_trn_id]["dis_loss_val_iter"]
 
-        else:
-            gen_loss_trn_iter =[]
-            dis_loss_trn_iter = []
-
-            gen_loss_val_iter = []
-            dis_loss_val_iter = []
-
         for graph in graphs:
             trn_layer = graph.active_training_node.layer
+            new_epoch = (trn_layer.training_iteration == 0)
+            if new_epoch:
+                gen_loss_trn_iter =[]
+                dis_loss_trn_iter = []
+
+                gen_loss_val_iter = []
+                dis_loss_val_iter = []
+
             switch_layer_id = trn_layer.get_switch_layer_id
             random_images = trn_node.layer.generator_layer_outputs.get(switch_layer_id)
             real_images = trn_node.layer.real_layer_outputs.get(switch_layer_id)
-            if trn_layer.epoch == current_epoch and trn_layer.status == 'training':
+            if trn_layer.status == 'training':
                 gen_loss_trn_iter.append(trn_layer.generator_loss_training)
                 dis_loss_trn_iter.append(trn_layer.discriminator_loss_training)
-            if trn_layer.epoch == current_epoch and trn_layer.status == 'validation':
+            if trn_layer.status == 'validation':
                 gen_loss_val_iter.append(trn_layer.generator_loss_validation)
                 dis_loss_val_iter.append(trn_layer.discriminator_loss_validation)
 
@@ -1413,18 +1437,22 @@ def policy_gan(is_paused, graphs, sanitized_to_name, sanitized_to_id, results):
 
         while idx < len(graphs):
             trn_layer = graphs[idx].active_training_node.layer
-
-            is_final_training_iteration = (trn_layer.training_iteration == np.ceil(trn_layer.size_training / trn_layer.batch_size) - 1)
             
-            if is_final_training_iteration and trn_layer.status == 'training':
+            new_epoch = (trn_layer.training_iteration == 0)
+            if new_epoch and trn_layer.status == 'training':
                 gen_loss_trn_epoch.append(trn_layer.generator_loss_training)
                 dis_loss_trn_epoch.append(trn_layer.discriminator_loss_training)
-                    
-            is_final_validation_iteration = (trn_layer.validation_iteration == np.ceil(trn_layer.size_validation / trn_layer.batch_size) - 1)
-            
-            if is_final_validation_iteration and trn_layer.status == 'validation':
+            elif not new_epoch and trn_layer.status == 'training':
+                gen_loss_trn_epoch[-1] = average(gen_loss_trn_epoch, trn_layer.training_iteration, trn_layer.generator_loss_training)
+                dis_loss_trn_epoch[-1] = average(dis_loss_trn_epoch, trn_layer.training_iteration, trn_layer.discriminator_loss_training)
+                
+            new_epoch = (trn_layer.status == 'validation')
+            if new_epoch and trn_layer.status == 'validation':
                 gen_loss_val_epoch.append(trn_layer.generator_loss_validation)
                 dis_loss_val_epoch.append(trn_layer.discriminator_loss_validation)
+            elif not new_epoch and trn_layer.status == 'validation':
+                gen_loss_val_epoch[-1] = average(gen_loss_val_epoch, trn_layer.training_iteration, trn_layer.generator_loss_validation)
+                dis_loss_val_epoch[-1] = average(dis_loss_val_epoch, trn_layer.training_iteration, trn_layer.discriminator_loss_validation)
             idx += 1
 
         # ---- Update the dicts
