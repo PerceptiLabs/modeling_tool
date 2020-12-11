@@ -194,6 +194,8 @@ def test_save_model(script_factory, graph_spec):
     training_layer.on_export(temp_path, mode='TFModel')
     assert os.path.isfile(target_path)
 
+    
+@pytest.mark.skip    
 def test_initial_weights_differ(temp_path_checkpoints, script_factory, tutorial_data_path):
     """ Check that the weights are DIFFERENT when creating two graphs. If not, it might not be meaningful to test loading a checkpoint """
     inputs_path = os.path.join(tutorial_data_path, 'gan_mnist.npy')
@@ -208,7 +210,7 @@ def test_initial_weights_differ(temp_path_checkpoints, script_factory, tutorial_
     tl1 = graph1.active_training_node.layer
     iterator = tl1.run(graph1, mode = 'training') # TODO: self reference is weird. design flaw!
     next(iterator)
-    w1 = next(iter(tl1.layer_weights['DeepLearningFC_layer_fc2'].values()))
+    w1 = next(iter(tl1.layer_weights['DeepLearningFC_layer_fc'].values()))
     #tf.reset_default_graph()
     
     # --- Create a second graph ---

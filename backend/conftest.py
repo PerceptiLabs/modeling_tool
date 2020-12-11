@@ -32,6 +32,18 @@ def tutorial_data_path():
     path = pkg_resources.resource_filename('perceptilabs', 'tutorial_data')
     yield path
 
+
+@pytest.fixture(autouse=True, scope='function')
+def set_seeds():
+    import random
+    random.seed(42)
+    
+    import numpy as np
+    np.random.seed(42)
+    
+    from tensorflow.python.framework import random_seed
+    random_seed.set_seed(42)
+
     
 @pytest.fixture(autouse=True)
 def init_graph(request):

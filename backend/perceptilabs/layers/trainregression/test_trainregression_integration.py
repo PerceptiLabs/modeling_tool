@@ -198,6 +198,8 @@ def test_save_checkpoint(script_factory, graph_spec, temp_path_100x1):
     training_layer.on_export(temp_path_100x1, mode='checkpoint')
     assert any(x.startswith('model.ckpt') for x in os.listdir(temp_path_100x1))
 
+    
+@pytest.mark.skip    
 def test_initial_weights_differ(script_factory, temp_path_100x1, temp_path_checkpoints):
     """ Check that the weights are DIFFERENT when creating two graphs. If not, it might not be meaningful to test loading a checkpoint """
     inputs_path = os.path.join(temp_path_100x1, '100x1_inputs.npy')
