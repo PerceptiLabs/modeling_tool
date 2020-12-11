@@ -41,12 +41,13 @@ def get_input_args():
                         help="Sets what type of frontend you want to communicate with. Can be either 'desktop' or 'browser'.")
     parser.add_argument('-e', '--error', default=False, type=bool, 
                         help="Force an error to see that all the error logging works as it should")
+    parser.add_argument('-a','--allow-headless', default=False, action='store_true',
+                        help="Allow headless mode.")
     args = parser.parse_args()
     return args
 
 
 def main():
-    
     args = get_input_args()
     session_id = uuid.uuid4().hex
     issue_handler = IssueHandler()
@@ -77,7 +78,7 @@ def main():
     checkpointDict=dict()
     lwDict=dict()
     
-    core_interface = Interface(cores, dataDict, checkpointDict, lwDict, issue_handler, session_id=session_id)
+    core_interface = Interface(cores, dataDict, checkpointDict, lwDict, issue_handler, session_id=session_id, allow_headless=args.allow_headless)
 
 
 

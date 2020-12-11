@@ -485,13 +485,15 @@ class TrainingServer:
                 self._call_userland_method(
                     self._graph.on_headless_activate,
                     state,
-                    success_state=State.TRAINING_RUNNING_HEADLESS
+                    success_state=State.TRAINING_RUNNING_HEADLESS,
+                    failure_state=None # Remain in same state
                 )
             elif state.value == State.TRAINING_PAUSED:
                 self._call_userland_method(
                     self._graph.on_headless_activate,
                     state,
-                    success_state=State.TRAINING_PAUSED_HEADLESS
+                    success_state=State.TRAINING_PAUSED_HEADLESS,
+                    failure_state=None # Remain in same state                    
                 )
             else:
                 raise StateTransitionError(f"Couldn't transition from {state.value}")
@@ -501,13 +503,15 @@ class TrainingServer:
                 self._call_userland_method(
                     self._graph.on_headless_deactivate,
                     state,
-                    success_state=State.TRAINING_RUNNING
+                    success_state=State.TRAINING_RUNNING,
+                    failure_state=None # Remain in same state                    
                 )
             elif state.value == State.TRAINING_PAUSED_HEADLESS:
                 self._call_userland_method(
                     self._graph.on_headless_deactivate,
                     state,
-                    success_state=State.TRAINING_PAUSED
+                    success_state=State.TRAINING_PAUSED,
+                    failure_state=None # Remain in same state
                 )
             else:
                 raise StateTransitionError(f"Couldn't transition from {state.value}")
@@ -534,7 +538,7 @@ class TrainingServer:
         
         return new_state
 
-    def _call_userland_method(self, method, state, args=None, kwargs=None, success_state=None):
+    def _call_userland_method(self, method, state, args=None, kwargs=None, success_state=None, failure_state=State.TRAINING_FAILED):
         args = args or ()
         kwargs = kwargs or {}
         try:
@@ -542,7 +546,7 @@ class TrainingServer:
         except Exception as e:
             logger.info("Userland method raised an error: " + repr(e))            
             self._send_userland_error(e)
-            state.transition(State.TRAINING_FAILED)            
+            state.transition(failure_state)            
         else:
             state.transition(success_state)
 

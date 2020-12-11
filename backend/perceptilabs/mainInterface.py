@@ -97,7 +97,8 @@ class NetworkLoader:
 
 
 class Interface():
-    def __init__(self, cores, dataDict, checkpointDict, lwDict, issue_handler, message_factory=None, session_id='default'):
+    def __init__(self, cores, dataDict, checkpointDict, lwDict, issue_handler, message_factory=None, session_id='default', allow_headless=False):
+        self._allow_headless = allow_headless
         self._network_loader = NetworkLoader()
         self._cores=cores
         self._checkpointDict = checkpointDict
@@ -403,11 +404,7 @@ class Interface():
             return response
 
         elif action == "headless":
-            On=value    #bool value
-            response = {}
-            #TODO: Re-enalbe headless mode after frontend is more stable
-            # response = self._core.headless(On)
-            return response
+            return self._create_response_headless(value)
 
         elif action == "getTrainingStatistics":
             response = self._core.getTrainingStatistics(value)
@@ -583,3 +580,9 @@ class Interface():
             return None
                 
         return mode
+
+    def _create_response_headless(self, request_value):
+        """ Toggles headless mode on/off. Returns None if successful """
+        if not self._allow_headless:
+            return None        
+        return self._core.set_headless(active=request_value)

@@ -257,35 +257,27 @@ class coreLogic():
         self.paused=False
         return {"content":"Unpaused"}
 
-    def headless(self, On):
+    def set_headless(self, active):
+        """ Enable/disable headless """
         self.commandQ.put(
             CoreCommand(
                 type='headless',
-                parameters={'on': On},
+                parameters={'on': active},
                 allow_override=True
             )
         )
 
+    def headless(self, On):
+        """ Alias for set_headless """
+        self.set_headless(active=On)
+
     def headlessOn(self):
-        self.commandQ.put(
-            CoreCommand(
-                type='headless',
-                parameters={'on': True},
-                allow_override=True
-            )
-    )        
+        """ Deprecated. Use set_headless """
+        self.set_headless(active=True)
 
     def headlessOff(self):
-        if self._core_mode == 'v1':
-            self.commandQ.put("headlessOff")
-        else:
-            self.commandQ.put(
-                CoreCommand(
-                    type='headless',
-                    parameters={'on': False},
-                    allow_override=True
-                )
-            )        
+        """ Deprecated. Use set_headless """        
+        self.set_headless(active=False)
 
     def Close(self):  # TODO: refactor this
         self.commandQ.put(

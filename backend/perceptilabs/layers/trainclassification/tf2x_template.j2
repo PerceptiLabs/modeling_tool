@@ -25,7 +25,7 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
         self._variables = {}
         self._layer_outputs = {}
         self._layer_gradients = {}
-        self._layer_weight_tensors = {}
+        self._layer_weights = {}
         self._layer_biases = {}                
 
         self._training_iteration = 0
@@ -94,6 +94,7 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
         {% endif %}
 
         for self._epoch in range(self._n_epochs):
+            t0 = time.perf_counter()
             self._status = 'training'
             yield from self._dataset_iteration(
                 self._dataset_train,
@@ -115,7 +116,7 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
                 is_training=False
             )
             
-            self._log_epoch_summary()
+            self._log_epoch_summary(t_start=t0)
             {% filter if_true(layer_spec.early_stopping_enabled, remove_left_spaces=4) %}
                 if self._should_stop_early():
                     break
@@ -134,11 +135,12 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
     def _set_testing_iteration(self, value):
         self._testing_iteration = value
         
-    def _log_epoch_summary(self):
+    def _log_epoch_summary(self, t_start):
         log.info(
             f"Finished epoch {self._epoch+1}/{self._n_epochs} - "
             f"loss training, validation: {self.loss_training:.6f}, {self.loss_validation:.6f} - "
             f"acc. training, validation: {self.accuracy_training:.6f}, {self.accuracy_validation:.6f}"
+            f"\n Epoch duration: {time.perf_counter() - t_start}s"
         )
         
     def test(self, graph: Graph):
@@ -155,7 +157,6 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
                 self._set_testing_iteration,
                 is_training=False,
         )
-
         for counter, status in enumerate(status_iterator):
             log.info(f"Yielding test sample #{counter}")            
             yield status
@@ -213,21 +214,20 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
         self._stopped = True
 
     def on_headless_activate(self) -> None:
-        """"Called when the statistics shown in statistics window are not needed.
-        Purose is to speed up the iteration speed significantly."""
+        """"Called when the statistics shown in statistics window are not needed. Purpose is to speed up the iteration speed significantly."""
         self._headless = True
 
         self._layer_outputs = {} 
         self._layer_gradients = {}
         self._layer_weights = {}
         self._layer_biases = {}        
-
+        log.info(f"Called on_headless_activate at time {time.time()}")
+        
     def on_headless_deactivate(self) -> None:
-        """"Called when the statistics shown in statistics window are needed.
-        May slow down the iteration speed of the training."""
-        import time
-        log.info(f"Set to headless_off at time {time.time()}")
+        """"Called when the statistics shown in statistics window are needed. May slow down the iteration speed of the training."""
+
         self._headless = False
+        log.info(f"Called on_headless_deactivate at time {time.time()}")
 
     @property
     def export_modes(self) -> List[str]:
@@ -508,15 +508,24 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
 
     def _build_models(self, graph, element_spec, input_layer_id, label_layer_id, prediction_layer_id, target_layer_id, prediction_var_name, target_var_name):
 
+        self._prediction_model_layer_instances = {
+        {% call(layer_spec) indented_loop(layer_spec.get_prediction_inner_layers(graph_spec)) %}
+            "{{layer_spec.sanitized_name}}": graph.get_node_by_id("{{layer_spec.sanitized_name}}").layer_instance,                                     
+        {% endcall %}
+        }                                    
+        self._target_model_layer_instances = {
+        {% call(layer_spec) indented_loop(layer_spec.get_target_inner_layers(graph_spec)) %}
+            "{{layer_spec.sanitized_name}}": graph.get_node_by_id("{{layer_spec.sanitized_name}}").layer_instance,                                     
+        {% endcall %}
+        }
+
         class PredictionModel(tf.keras.Model):
             def __init__(self, element_spec):
                 super().__init__()
                 self.layer_outputs = {}
-                self.layer_instances = {}
 
                 {% call(layer_spec) indented_loop(layer_spec.get_prediction_inner_layers(graph_spec)) %}
-                    self.layer_instances["{{layer_spec.sanitized_name}}"] = layer_instance = graph.get_node_by_id("{{layer_spec.sanitized_name}}").layer_instance                                    
-                    self.layer_{{layer_spec.sanitized_name}} = layer_instance.keras_layer
+                    self.layer_{{layer_spec.sanitized_name}} = graph.get_node_by_id("{{layer_spec.sanitized_name}}").layer_instance.keras_layer
                 {% endcall %}
 
                 self._set_inputs(element_spec)  # makes shapes available for save/export
@@ -524,8 +533,7 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
             def call(self, inputs, training=False):
                 self.layer_outputs["{{layer_spec.get_prediction_data_layer(graph_spec).sanitized_name}}"] = inputs
                 {% call(layer_spec) indented_loop(layer_spec.get_prediction_inner_layers(graph_spec)) %}
-                    layer_instance = self.layer_instances["{{layer_spec.sanitized_name}}"]
-                    self.layer_outputs["{{layer_spec.sanitized_name}}"] = layer_instance.keras_layer(
+                    self.layer_outputs["{{layer_spec.sanitized_name}}"] = self.layer_{{layer_spec.sanitized_name}}(
                         {
                             {% call(conn) indented_loop(layer_spec.backward_connections) %}
                                 "{{conn.dst_var}}": self.layer_outputs["{{conn.get_src_sanitized_name(graph_spec)}}"]["{{conn.src_var}}"],
@@ -541,11 +549,9 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
             def __init__(self, element_spec):
                 super().__init__()
                 self.layer_outputs = {}
-                self.layer_instances = {}
 
                 {% call(layer_spec) indented_loop(layer_spec.get_target_inner_layers(graph_spec)) %}
-                    self.layer_instances["{{layer_spec.sanitized_name}}"] = layer_instance = graph.get_node_by_id("{{layer_spec.sanitized_name}}").layer_instance                                    
-                    self.layer_{{layer_spec.sanitized_name}} = layer_instance.keras_layer
+                    self.layer_{{layer_spec.sanitized_name}} = graph.get_node_by_id("{{layer_spec.sanitized_name}}").layer_instance.keras_layer
                 {% endcall %}
 
                 self._set_inputs(element_spec)  # makes shapes available for save/export
@@ -553,8 +559,7 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
             def call(self, inputs, training=False):
                 self.layer_outputs["{{layer_spec.get_target_data_layer(graph_spec).sanitized_name}}"] = inputs                
                 {% call(layer_spec) indented_loop(layer_spec.get_target_inner_layers(graph_spec)) %}
-                    layer_instance = self.layer_instances["{{layer_spec.sanitized_name}}"]
-                    self.layer_outputs["{{layer_spec.sanitized_name}}"] = layer_instance.keras_layer(
+                    self.layer_outputs["{{layer_spec.sanitized_name}}"] = self.layer_{{layer_spec.sanitized_name}}(
                         {
                             {% call(conn) indented_loop(layer_spec.backward_connections) %}
                                 "{{conn.dst_var}}": self.layer_outputs["{{conn.get_src_sanitized_name(graph_spec)}}"]["{{conn.src_var}}"],
@@ -586,14 +591,18 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
             metric_auc.update_state(targets_batch, predictions_batch)
             metric_accuracy.update_state(predictions_batch, targets_batch)
 
-            self._layer_outputs.update(self._prediction_model.layer_outputs)
-            self._layer_outputs.update(self._target_model.layer_outputs)
 
-            self._layer_weights = self._get_trainable_tensors(which='weights')
-            self._layer_biases = self._get_trainable_tensors(which='biases')
-            
             all_trainables = self._get_trainable_tensors()
-            self._layer_gradients = tape.gradient(loss_value, all_trainables)
+            layer_gradients = tape.gradient(loss_value, all_trainables)
+            
+            if not self._headless: #  In headless mode, we stop tracking 'expensive' data
+                self._layer_gradients = layer_gradients
+                
+                self._layer_outputs.update(self._prediction_model.layer_outputs)
+                self._layer_outputs.update(self._target_model.layer_outputs)
+
+                self._layer_weights = self._get_trainable_tensors(which='weights')
+                self._layer_biases = self._get_trainable_tensors(which='biases')
 
             if is_training:
                 grads_and_vars = zip(self._flatten_dict(self._layer_gradients), self._flatten_dict(all_trainables))
@@ -604,8 +613,8 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
     def _get_trainable_tensors(self, which: str='all') -> Dict[str, Dict[str, tf.Tensor]]:
         """ Get trainable tensors from any/all of the models """
         trainables_dict = {}
-        for model in [self._prediction_model, self._target_model]:
-            for layer_id, layer_instance in model.layer_instances.items():
+        for layer_instances in [self._prediction_model_layer_instances, self._target_model_layer_instances]:
+            for layer_id, layer_instance in layer_instances.items():
                 trainables_dict[layer_id] = {}
 
                 if which in ['weights', 'all']:

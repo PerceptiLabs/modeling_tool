@@ -853,8 +853,44 @@ def test_tf2x_load_weights(temp_path, script_factory_tf2x, graph_spec_few_epochs
 @pytest.mark.tf2x            
 def test_tf2x_test_mode_yields_correct_number_of_outputs(script_factory_tf2x, graph_spec):
     graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec, print_code=True)
-
-
+    
     n_yields = len(list(graph.run(mode='testing')))
     assert n_yields == 2 # 10% of dataset
+
     
+@pytest.mark.tf2x            
+def test_tf2x_headless_mode_gives_empty_dicts(script_factory_tf2x, graph_spec):
+    graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec)
+    
+    training_layer = graph.active_training_node.layer    
+    iterator = training_layer.run(graph, mode='training') 
+
+    all_dicts_have_content = lambda: (
+        training_layer.layer_weights != {},
+        training_layer.layer_biases != {},            
+        training_layer.layer_gradients != {},
+        training_layer.layer_outputs != {}
+    )
+    all_dicts_are_empty = lambda: (
+        training_layer.layer_weights == {},
+        training_layer.layer_biases == {},            
+        training_layer.layer_gradients == {},
+        training_layer.layer_outputs == {}
+    )
+
+    # Take the first training step and check for content
+    next(iterator) 
+    assert all_dicts_have_content
+
+    training_layer.on_headless_activate() 
+    assert all_dicts_are_empty
+
+    # Take a training step and check that dicts _remain_ clear
+    next(iterator) 
+    assert all_dicts_are_empty
+
+    training_layer.on_headless_deactivate()
+    
+    # Take another training step and check that dicts are populated again
+    next(iterator) 
+    assert all_dicts_have_content
