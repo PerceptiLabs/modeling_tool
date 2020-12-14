@@ -274,6 +274,9 @@ const actions = {
     commit('set_globalPressKey', 'esc');
   },
   EVENT_hotKeyCut({rootState, rootGetters, dispatch, commit}) {
+    if(rootState['mod_workspace-code-editor'].isInFocus) {
+      return 0;
+    }
     commit('mod_workspace/CLEAR_CopyElementsPosition', null, {root: true});
     if(rootGetters['mod_workspace/GET_enableHotKeyElement']) {
       let arrSelect = rootGetters['mod_workspace/GET_currentSelectedEl'];
@@ -385,7 +388,7 @@ const actions = {
     }
   },
   EVENT_hotKeyPaste({rootState, rootGetters, dispatch, commit}) {
-    if(rootState.mod_workspace-code-editor.isInFocus) {
+    if(rootState['mod_workspace-code-editor'].isInFocus) {
       return 0;
     }
     dispatch('mod_workspace-history/SET_isEnableHistory', false, {root: true});
