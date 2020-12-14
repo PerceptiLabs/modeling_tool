@@ -377,7 +377,8 @@ const actions = {
           layerSettingsTabName: el.layerSettingsTabName,
           layerCode: el.layerCode,
           offsetY: el.layerMeta.position.top * 2,
-          offsetX: el.layerMeta.position.left * 2
+          offsetX: el.layerMeta.position.left * 2,
+          isSettingsLocked: el.isSettingsLocked || false,
         };
         arrBuf.push(newEl)
       }

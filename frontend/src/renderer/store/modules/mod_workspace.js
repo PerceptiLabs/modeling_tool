@@ -2583,7 +2583,8 @@ const createNetElement = function (event) {
     backward_connections: [],
     previewVariable: 'output',
     previewVariableList: [],
-    isTrained: false
+    isTrained: false,
+    isSettingsLocked: event.isSettingsLocked || false,
   };
 };
 
