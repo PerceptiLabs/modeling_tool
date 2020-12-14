@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+if [ $# -lt 1 ]; then
+  echo "Missing parameter."
+  echo "USAGE: $0 <images tag>"
+  exit 1
+fi
+
+PL_IMG_TAG=$1
+PROJECT_ROOT=$(git rev-parse --show-toplevel)
+BUILD_OUTPUT=${PROJECT_ROOT}/build/docker/pl-airgapped
+TARBALL_NAME=pl-airgapped.${PL_IMG_TAG}.tar.gz
+DOCKER_COMPOSE_SRC=${PROJECT_ROOT}/docker/compose
+PERCEPTILABS_AB_TENANT=069b44e7-dd8e-4a34-ae4b-983f50242bff
+
+az account show | grep -q ${PERCEPTILABS_AB_TENANT}
+if [ $? -ne 0 ]; then
+  echo -n "logging in ... "
+  az login --tenant ${PERCEPTILABS_AB_TENANT} --allow-no-subscriptions > /dev/null
+  echo "done"
+else
+  echo "Using existing login"
+fi
+
+
+echo "Building deployment for tag ${PL_IMG_TAG}"
+
+mkdir -p ${BUILD_OUTPUT}
+
+docker pull perceptilabs.azurecr.io/rygg:${PL_IMG_TAG}
+docker pull perceptilabs.azurecr.io/frontend:${PL_IMG_TAG}
+docker pull perceptilabs.azurecr.io/kernel:${PL_IMG_TAG}
+docker pull postgres:12
+echo
+echo "Images pulled. Exporting them..."
+echo
+docker save \
+  perceptilabs.azurecr.io/rygg:${PL_IMG_TAG} \
+  perceptilabs.azurecr.io/frontend:${PL_IMG_TAG} \
+  perceptilabs.azurecr.io/kernel:${PL_IMG_TAG} \
+  postgres:12 \
+  --output ${BUILD_OUTPUT}/images.tar
+
+# put the right image number into the loader
+SED_STR="s/^PL_IMG_TAG=.*/PL_IMG_TAG=${PL_IMG_TAG}/g"
+sed ${SED_STR} ${DOCKER_COMPOSE_SRC}/perceptilabs-loader > ${BUILD_OUTPUT}/perceptilabs-loader
+chmod +x ${BUILD_OUTPUT}/perceptilabs-loader
+
+cp ${DOCKER_COMPOSE_SRC}/docker-compose.yml ${BUILD_OUTPUT}
+
+pushd ${BUILD_OUTPUT}
+tar -czvf ${TARBALL_NAME} images.tar perceptilabs-loader docker-compose.yml
+popd
+
+echo "uploading ..."
+az storage blob upload \
+  --file ${BUILD_OUTPUT}/${TARBALL_NAME} \
+  --container-name pl-airgapped \
+  --name ${TARBALL_NAME} \
+  --account-name perceptilabs \
+
+echo "Complete."
+echo "Users can now download the tarball from https://perceptilabs.blob.core.windows.net/pl-airgapped/pl-airgapped.${PL_IMG_TAG}.tar.gz"
+echo "They can unpack it and run perceptilabs-loader"

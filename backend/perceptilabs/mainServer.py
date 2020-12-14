@@ -8,6 +8,7 @@ import argparse
 import threading
 import pkg_resources
 import tensorflow as tf
+import os
 
 
 import perceptilabs.logconf
@@ -31,7 +32,7 @@ else:
     
 def get_input_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-l','--log-level', default=None, type=str, choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
+    parser.add_argument('-l','--log-level', default=os.getenv("PL_KERNEL_LOG_LEVEL"), type=str, choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
                         help='Log level name.')
     parser.add_argument('-k','--instantly-kill', default=False, type=bool,
                         help="Set this to instantly kill the core, for test purposes.")

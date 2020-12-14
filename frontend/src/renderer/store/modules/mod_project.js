@@ -57,7 +57,7 @@ const mutations = {
 
 const actions = {
   getProjects(ctx) {
-    return rygg.get(`/projects`)
+    return rygg.get(`/projects/`)
       .then((res) => {
         ctx.commit('setProjectList', res.data.results);
         return res;

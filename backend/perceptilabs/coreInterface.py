@@ -177,7 +177,7 @@ class coreLogic():
         
         logger.debug('printing network .......\n')
 
-        if logger.isEnabledFor(logging.DEBUG):        
+        if logger.isEnabledFor(logging.DEBUG) and os.access(os.getcwd(), os.W_OK):
             import json
             with open('net.json_', 'w') as f:
                 json.dump(graph_spec.to_dict(), f, indent=4)

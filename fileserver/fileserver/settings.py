@@ -135,7 +135,7 @@ LOGGING = {
     "loggers": {
         "django.request": {
             "handlers": ["console"],
-            'level': os.getenv('FILESERVER_LOG_LEVEL', 'WARNING'),
+            'level': os.getenv('PL_FILESERVER_LOG_LEVEL', 'WARNING'),
             "propagate": False,
         },
     },

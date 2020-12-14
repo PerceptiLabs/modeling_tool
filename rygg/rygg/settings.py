@@ -172,7 +172,7 @@ LOGGING = {
     'loggers': {
         "django.request": {
             "handlers": ["console"],
-            'level': os.getenv('RYGG_LOG_LEVEL', 'WARNING'),
+            'level': os.getenv('PL_RYGG_LOG_LEVEL', 'WARNING'),
             "propagate": False,
         },
         'rygg': {

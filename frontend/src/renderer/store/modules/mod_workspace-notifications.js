@@ -282,7 +282,7 @@ const actions = {
     commit('setSelectedId', { networkId, selectedId });
   },
   getPyPiUpdate({ commit }) {
-    return rygg.get(`/app/updates_available`)
+    return rygg.get(`/app/updates_available/`)
       .then((res) => {
         if (res.data.newer_versions.length > 0) {
           commit('setShowPiPyNotification', {value: true});

@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+PL_IMG_TAG=replaceme
+
+# Figure out the hostname
+read -p "Enter hostname you use to access this computer [${HOSTNAME}] " PL_HOST
+if [ -z "${PL_HOST}" ]; then
+  PL_HOST=${HOSTNAME}
+fi
+
+# plabs will be mounted as the home directory in the kernel
+# it has to belong to the docker user
+mkdir -p plabs
+sudo chown 1001 plabs
+
+echo "Loading docker images"
+docker load --quiet --input images.tar
+
+PL_HOST=${PL_HOST} PL_IMG_TAG=${PL_IMG_TAG} docker-compose up

@@ -502,29 +502,38 @@ def test():
 
 class DockerBuilder():
     @staticmethod
-    def all():
-        DockerBuilder.assembleKernel()
-        DockerBuilder.assembleFrontend()
-        DockerBuilder.assembleRygg()
+    def all(do_clean=False):
+        DockerBuilder.assembleKernel(do_clean=do_clean)
+        DockerBuilder.assembleFrontend(do_clean=do_clean)
+        DockerBuilder.assembleRygg(do_clean=do_clean)
         DockerBuilder.build_kernel()
         DockerBuilder.build_frontend()
         DockerBuilder.build_rygg()
 
 
     @staticmethod
-    def assembleKernel():
+    def assembleKernel(do_clean=False):
+        if do_clean:
+            rm_rf(BUILD_DOCKER_KERNEL)
+
         mkdir_p(BUILD_DOCKER)
         versionString = calc_version()
         DockerBuilder._assemble_kernel_docker(versionString)
 
     @staticmethod
-    def assembleFrontend():
+    def assembleFrontend(do_clean=False):
+        if do_clean:
+            rm_rf(BUILD_DOCKER_FRONTEND)
+
         mkdir_p(BUILD_DOCKER)
         versionString = calc_version()
         DockerBuilder._assemble_frontend_docker(versionString)
 
     @staticmethod
-    def assembleRygg():
+    def assembleRygg(do_clean=False):
+        if do_clean:
+            rm_rf(BUILD_DOCKER_RYGG)
+
         mkdir_p(BUILD_DOCKER)
         versionString = calc_version()
         DockerBuilder._assemble_rygg_docker(versionString)
@@ -630,15 +639,18 @@ if __name__ == "__main__":
         if len(sys.argv) < 3:
             print(USAGE)
             sys.exit(1)
+
+        do_clean = ('--clean' in sys.argv)
+
         dockertype = sys.argv[2]
         if dockertype == "kernel":
-            DockerBuilder.assembleKernel()
+            DockerBuilder.assembleKernel(do_clean=do_clean)
         elif dockertype == "frontend":
-            DockerBuilder.assembleFrontend()
+            DockerBuilder.assembleFrontend(do_clean=do_clean)
         elif dockertype == "rygg":
-            DockerBuilder.assembleRygg()
+            DockerBuilder.assembleRygg(do_clean=do_clean)
         elif dockertype == "all":
-            DockerBuilder.all()
+            DockerBuilder.all(do_clean=do_clean)
         else:
             print(f"Invalid docker type: {dockertype}")
             print(USAGE)
