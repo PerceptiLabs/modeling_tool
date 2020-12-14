@@ -169,9 +169,9 @@ export default {
     },
     kernelLabel() {
       if(this.statusLocalCore !== "online") {
-        return "Kenerl is not connected";
+        return "Kernel is not connected";
       } else {
-        return "Kenerl is connected";
+        return "Kernel is connected";
       }
     },
     statusTraining() {
@@ -349,9 +349,10 @@ export default {
           this.$store.commit('mod_workspace/SET_showStartTrainingSpinner', true);
           this.$store.dispatch('globalView/hideSidebarAction', false);
 
-          this.$store.dispatch('mod_tutorials/setChecklistItemComplete', { itemId: 'startTraining' });
+          if (!this.$store.getters['mod_workspace-notifications/getHasErrors'](this.currentNetwork.networkID)) {
+            this.$store.dispatch('mod_tutorials/setChecklistItemComplete', { itemId: 'startTraining' });
+          }
           this.$store.dispatch('mod_tutorials/setCurrentView', 'tutorial-statistics-view');
-
 
           this.$nextTick(() => {
             this.setNextStep({currentStep:'tutorial-workspace-start-training'});

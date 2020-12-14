@@ -50,8 +50,9 @@ export default {
   },
   computed: {
     ...mapGetters({
-      isTutorialMode: 'mod_tutorials/getIsTutorialMode',
-      currentNetwork: 'mod_workspace/GET_currentNetwork',
+      isTutorialMode:   'mod_tutorials/getIsTutorialMode',
+      currentNetwork:   'mod_workspace/GET_currentNetwork',
+      networkHasErrors: 'mod_workspace-notifications/getHasErrors'
     }),
     ...mapState({
       currentNetworkIndex:           state => state.mod_workspace.currentNetwork,
@@ -104,7 +105,9 @@ export default {
           this.set_showTrainingSpinner(true);
           this.setSidebarStateAction(false);
           this.$store.commit('mod_empty-navigation/set_emptyScreenMode', 0);
-          this.setChecklistItemComplete({ itemId: 'startTraining' });
+          if(!this.networkHasErrors(this.currentNetwork.networkID)) {
+            this.setChecklistItemComplete({ itemId: 'startTraining' });
+          }
           this.setCurrentView('tutorial-statistics-view');
         });
     }

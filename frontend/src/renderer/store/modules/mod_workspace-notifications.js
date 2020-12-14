@@ -76,6 +76,13 @@ const getters = {
 
     return result;
   },
+  getHasErrors: (state) => (networkId) => {
+    const network = state.workspaceNotifications.find(wn => wn.networkId === networkId);
+    
+    if (!network) { return []; }
+
+    return network.errors && network.errors.length > 0;
+  },
   getErrors: (state) => (networkId) => {
     const network = state.workspaceNotifications.find(wn => wn.networkId === networkId);
     
