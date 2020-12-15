@@ -133,7 +133,7 @@
         }
       },
       chartData(newVal) {
-        if(newVal) {
+        if(newVal && newVal.series && newVal.series.length) {
           this.imgType = newVal.series[0].type;
           this.imgData = newVal;
           if(this.showRequestSpinner) {

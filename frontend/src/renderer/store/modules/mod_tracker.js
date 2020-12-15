@@ -75,9 +75,9 @@ const actions = {
   TRACK_updateUser({},{ given_name, family_name, name, email }) {
     mixPanel.people.set({
       "$email": email,
-      "$first_name": !given_name.includes("perceptilabs_") ? given_name : '',
-      "$last_name": !family_name.includes("perceptilabs_") ? family_name : '',
-      "$name": !name.includes("perceptilabs_") ? name : '',
+      "$first_name": given_name && !given_name.includes("perceptilabs_") ? given_name : '',
+      "$last_name": family_name && !family_name.includes("perceptilabs_") ? family_name : '',
+      "$name": name && !name.includes("perceptilabs_") ? name : '',
       "$last_login": new Date(),
     });
   },
