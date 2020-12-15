@@ -30,16 +30,16 @@
               d="M0.188129 0.264663C-0.0523387 0.494073 -0.0638057 0.877644 0.162517 1.12139L2.51018 3.64981L0.162516 6.17823C-0.0638062 6.42198 -0.0523392 6.80555 0.188128 7.03496C0.428596 7.26437 0.807004 7.25275 1.03333 7.009L3.76667 4.0652C3.98336 3.83183 3.98336 3.4678 3.76667 3.23443L1.03333 0.290624C0.807004 0.0468761 0.428596 0.0352527 0.188129 0.264663Z"
               fill="white")
       spinner(v-if="isLoading")
-      code-hq.code-window-content(
+
+      codeEditor.code-window-content(
         v-else
-        ref="codeEditor"
         :code="layerCode"
         :error-row="errorRow"
         @input="onContentChange"
-        @focus="onFocus('mirror')"
-        @blur="onBlur('mirror')"
+        @focus="onFocus('code-editor')"
+        @blur="onBlur('code-editor')"
         @save-shortcut="onSaveShortcut"
-        )
+      )
 
       .code-window-footer
         .save-indicator(
@@ -59,12 +59,14 @@
 
 <script>
 import Spinner   from '@/components/different/start-training-spinner.vue'
-import codeHq from "@/components/network-elements/elements-settings/code-hq.vue";
+import codeHq from '@/components/network-elements/elements-settings/code-hq.vue';
+import codeEditor from '@/components/different/code-editor.vue';
+
 import { deepCopy, layerBgColorTransparent } from "@/core/helpers.js";
 
 export default {
   name: "CodeWindow",
-  components: { codeHq, Spinner },
+  components: { codeHq, codeEditor, Spinner },
   props: {
     networkId: {
       type: Number
@@ -79,7 +81,8 @@ export default {
       layerCode: '',
       isLoading: false,
       showSaveIndicator: false,
-      hasUnsavedCodeChanges: false
+      hasUnsavedCodeChanges: false,
+      editorInstance: null
     }
   },
   computed: {
@@ -319,13 +322,12 @@ export default {
   .code-window-content {
     position: relative;
     max-width: 100%;
-    max-height: calc(100% - #{$code-window-header-height} - #{$code-window-footer-height});
-    overflow-y: auto;
+    max-height: calc(100% - #{$code-window-header-height} - #{$code-window-footer-height} - 1rem);
 
     box-sizing: border-box;
     background: #1E1E1E;
 
-    padding: 1rem;
+    margin: 1rem;
 
     font-size: $code-window-font-size;
   }

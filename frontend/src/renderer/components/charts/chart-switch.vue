@@ -69,7 +69,7 @@
       this.imgData = null;
     },
     mounted() {
-      if(this.chartData) {
+      if(this.chartData && this.chartData.series && this.chartData.series.length) {
         this.imgType = this.chartData.series[0].type;
         this.imgData = this.chartData;
         if(this.showRequestSpinner) {

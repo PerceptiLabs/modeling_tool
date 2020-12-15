@@ -2,15 +2,13 @@
   <div class="cell-contents">
     <div class="cell-input">
       <div class="cell-input-operation-count">In [ {{ cell.execution_count || '&nbsp;' }} ]:</div>
-      <CodeHQ 
+      <codeEditor 
         :class="['cell-input-code', {'focused': isFocused}]"
-        :value="cell.Output" 
-        :autofocus="false" 
-        :lineNumbers="false"
-        :styleActiveLine="false"
-        :mode="codeMirrorMode" 
-        :maxWidth="'100%'"
-        :readOnly=true />
+        :code="cell.Output"
+        :readOnly="true"
+        :autoUpdateEditorHeight="true"
+        :scrollBeyondLastLine="false"
+        :handleMouseWheel="false" />
     </div>
     
     <div 
@@ -26,12 +24,10 @@
 
 
 <script>
-import CodeHQ from "@/components/network-elements/elements-settings/code-hq.vue";
+import codeEditor from '@/components/different/code-editor.vue';
 
 export default {
-  components: {
-    CodeHQ
-  },
+  components: { codeEditor },
   props: {
     cell: {
       required: true,
@@ -79,7 +75,6 @@ $cell-left-gutter: 6.6rem;
     }
 
     .cell-input-code {
-      flex-grow: 1;
       padding: 0.5rem 1rem 0.5rem 1rem;
       border-radius: 2px;
       border: 1px solid $bg-toolbar;
@@ -89,11 +84,6 @@ $cell-left-gutter: 6.6rem;
       &.focused {
         border: 1px solid $color-6;
       }
-
-      /deep/ .CodeMirror {
-        background-color: transparent;
-      }
-
     }
   }
 
@@ -102,7 +92,6 @@ $cell-left-gutter: 6.6rem;
     white-space: pre-wrap;
 
     display: flex;
-    // border-left: 1px solid transparent;
 
     .cell-output-gutter {
       width: $cell-left-gutter;

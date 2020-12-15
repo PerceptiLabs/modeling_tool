@@ -34,7 +34,6 @@ const workspaceDrag = {
   },
   methods: {
     mouseDownHandler(ev){
-      ev.preventDefault();
       if(ev.ctrlKey || ev.metaKey || ev.button === 1) {
         const el = document.getElementById('networkWorkspace');
         document.addEventListener('keyup', this.mouseUpHandler);

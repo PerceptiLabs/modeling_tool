@@ -333,6 +333,8 @@ const actions = {
     }    
   },
   EVENT_hotKeyCopy({rootState, rootGetters, dispatch, commit}) {
+    if(rootState['mod_workspace-code-editor'].isInFocus) { return; }
+
     commit('mod_workspace/CLEAR_CopyElementsPosition', null, {root: true});
     if(rootGetters['mod_workspace/GET_enableHotKeyElement']) {
       let arrSelect = rootGetters['mod_workspace/GET_currentSelectedEl'];
