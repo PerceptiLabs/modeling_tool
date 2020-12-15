@@ -318,15 +318,19 @@ export default {
             }
         },
         handleKeyup(event) {
-           if (event.key === "Escape") {
-                event.stopPropagation();
-                this.closeModal(true);
-            } else if (event.key === "Enter" && !this.isDisableCreateAction()) {
-                event.stopPropagation();
-                this.createModel();
-                this.chosenTemplate = null;
-                this.modelName = '';
+          if (event.key === "Escape") {
+            event.stopPropagation();
+            if(this.showFilePickerPopup) {
+              this.showFilePickerPopup = false;
+            } else {
+              this.closeModal(true);
             }
+          } else if (event.key === "Enter" && !this.isDisableCreateAction()) {
+            event.stopPropagation();
+            this.createModel();
+            this.chosenTemplate = null;
+            this.modelName = '';
+          }
         },
         onModelNameKeyup() {
             if (this.modelName === '') {
