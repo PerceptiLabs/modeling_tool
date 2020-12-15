@@ -13,7 +13,7 @@
         ) Open code
     perfect-scrollbar.sidebar-setting-content(
       :data-tutorial-target="'tutorial-workspace-settings'"
-      :class="{'sidebar-setting-content-with-component': selectedEl !== null }"
+      :class="{'sidebar-setting-content-with-component': selectedEl !== null, 'closed-preview': isSettingPreviewVisible}"
       ref="sidebarSettingWrapper"
       )
       sidebar-locked-settings-wrapper(
@@ -27,10 +27,10 @@
           ref="componentSettings"
           )
 
-      sidebar-setting-preview.setting-chart-wrapper(
-        v-if="selectedEl !== null"
-        :current-el="selectedEl"
-        )
+    sidebar-setting-preview.setting-chart-wrapper(
+      v-if="selectedEl !== null"
+      :current-el="selectedEl"
+      )
     button.reset-component-btn(
       v-if="selectedEl !== null"
       @click="resetComponentSettings"
@@ -111,6 +111,10 @@ export default {
     hasUnsavedChanges() {
       return this.$store.getters['mod_workspace-code-editor/getHasUnsavedChanges'](this.currentNetworkId);
     },
+    isSettingPreviewVisible() {
+      const hasData = this.selectedEl && this.selectedEl.chartData && this.selectedEl.chartData.series && this.selectedEl.chartData.series[0].data !== '';
+      return hasData && this.$store.state.mod_workspace.isSettingPreviewVisible;
+    }
   },
   watch: {
     'selectedEl.layerId'(el) {
@@ -210,8 +214,11 @@ export default {
   // padding: 10px 15px;
 }
 .setting-chart-wrapper {
-  margin: 0 10px 0 5px;
-  border-top: 1px solid #343948;
+  position: absolute;
+  width: 250px;
+  border-top: 2px solid #5D5E60;
+  bottom: 23px;   
+  z-index: 10;
 }
 // also .sidebar-setting-content are used in _forms.scss for stylize sidebar setting inputs
 .sidebar-setting-content {
@@ -219,11 +226,19 @@ export default {
   background-color: #23252A;
   height: calc(65vh - 99px);
   overflow-x: scroll;
+  
   &.sidebar-setting-content-with-component {
     height: calc(65vh - 123px);
+    padding-bottom: 30px;
+
+    &.closed-preview {
+      height: calc(65vh - 263px);
+    }
   }
 }
 .reset-component-btn {
+  position: absolute;
+  bottom: 0;
   margin-top: auto;
   border-top: 1px solid #5D5E60;
   background: #131B30;
@@ -232,7 +247,7 @@ export default {
   font-size: 11px;
   line-height: 18px;
   color: rgba(182, 199, 251, 0.75);
-  width: 100%;
+  width: 250px;
   height: 24px;
 }
 </style>

@@ -1,12 +1,13 @@
 <template lang="pug">
   .sidebar-setting-preview(v-if="storeCurrentElement.chartData && storeCurrentElement.chartData.series && storeCurrentElement.chartData.series[0].data !== ''")
     div(
+      class="preview-handler"
       @click="toggleSettingPreviewVisibility()"
     )
       h4.sidebar-setting-preview-title Preview
-      .preview-chevron(:class="{'is-open': isSettingPreviewVisible}")
+      i.icon(:class="isSettingPreviewVisible?'icon-shevron-up': 'icon-shevron'")
     chart-switch.data-settings_chart(
-      v-if="!isSettingPreviewVisible"
+      v-show="isSettingPreviewVisible"
       :disable-header="true"
       :chart-data="storeCurrentElement.chartData"
     )
@@ -99,23 +100,25 @@ export default {
 </script>
 <style lang="scss" scoped>
   @import "../../../scss/base";
-  .sidebar-setting-preview {
-    padding: 7px 5px 14px 10px
+  .preview-handler {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 10px;
+    border-bottom: 1px solid #5D5E60;
+    background: #23252A;
   }
   .sidebar-setting-preview-title {
-    display: inline-block;
     cursor: pointer;
     font-family: Nunito Sans;
     font-style: normal;
     font-weight: 300;
-    font-size: 9px;
+    font-size: 12px;
     line-height: 12px;
     margin-bottom: 0;
   }
   .preview-chevron {
     cursor: pointer;
-    margin-left: 5px;
-    display: inline-block;
     border-top: 4px solid #ccc;
     border-left: 4px solid transparent;
     border-right: 4px solid transparent;
@@ -126,5 +129,5 @@ export default {
       border-right: 4px solid transparent;
     }
   }
-  
+
 </style>

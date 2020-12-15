@@ -20,6 +20,7 @@ export default {
 
 <style lang="scss" scoped>
   .components-settings-lock-wrapper {
+    min-height: calc(100% - 30px);
     position: relative;
     &.is-locked {
       &:after {
