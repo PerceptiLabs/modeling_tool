@@ -1118,7 +1118,7 @@ const actions = {
             const saveSettings = {
               'elId': ix,
               'set': res.newNetwork[ix].Properties,
-              'code': res.newNetwork[ix].Code,
+              'code': { Output: res.newNetwork[ix].Code },
               tabName: currentEl.layerSettingsTabName,
               visited: res.newNetwork[ix].visited,
             };
@@ -1222,11 +1222,10 @@ const actions = {
             const saveSettings = {
               'elId': ix,
               'set': res.newNetwork[ix].Properties,
-              'code': res.newNetwork[ix].Code,
+              'code': { Output: res.newNetwork[ix].Code },
               tabName: currentEl.layerSettingsTabName,
               visited: res.newNetwork[ix].visited,
             };
-            
             dispatch('mod_workspace/SET_elementSettings', {settings: deepCopy(saveSettings)}, {root: true});
           }
         }

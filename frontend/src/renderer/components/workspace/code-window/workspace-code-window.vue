@@ -121,7 +121,7 @@ export default {
       if (!this.currentEl.layerCode) {
         // for normal elements (except for custom code)
         this.getCode();
-
+        
       } else if (typeof this.currentEl.layerCode === 'object' && !this.currentEl.layerCode.Output) {
         // for custom code element, not sure why it's not a string
         this.getCode();
@@ -206,6 +206,7 @@ export default {
         'elId': this.currentEl.layerId,
         'code': { Output: this.layerCode },
         'set': this.currentEl.layerSettings,
+        'visited': true,
         'tabName': 'Code'
       };
       this.$store.dispatch('mod_workspace/lockNetworkElementSettings', { layerId: this.currentEl.layerId, value: true });
