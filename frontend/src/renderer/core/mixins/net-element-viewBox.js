@@ -97,6 +97,12 @@ const viewBoxMixin = {
           if(data === 'Null' || data === null) {
             return
           }
+
+          // This launch an event to stop fetching statistics infinitely
+          if(theData.action === 'getTestingStatistics') {
+            this.$store.commit('mod_events/set_componentEvent_test_receiveData');
+          }
+          
           Vue.nonreactive(data);
           if(view.length && this && this.chartData) {
             this.$set(this.chartData, view, data)

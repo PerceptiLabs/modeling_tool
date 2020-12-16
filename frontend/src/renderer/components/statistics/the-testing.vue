@@ -41,9 +41,8 @@ export default {
 
     this.$store.dispatch('mod_api/API_startTestWithCheckpointJson');
 
-    this.chartRequestTimerId = setInterval(() => {
-      this.$store.dispatch("mod_workspace/EVENT_onceDoRequest");
-    }, this.chartRequestIntervalMs);
+    this.launchRequestTimerId();
+
   },
   computed: {
     doGlobalEvent() {
@@ -60,6 +59,24 @@ export default {
       }
       return (progress * 100).toFixed(1);
     },
+    testReceiveData() {
+      return this.$store.state.mod_events.componentEvents.test.receiveData;
+    },
+    testSessionIsClosed() {
+      return this.$store.state.mod_events.componentEvents.test.sessionIsClosed;
+    }
+  },
+  watch: {
+    testReceiveData: {
+      handler() {
+        this.clearRequestTimerId();
+      }
+    },
+    testSessionIsClosed: {
+      handler() {
+        this.launchRequestTimerId();
+      }
+    }
   },
   methods: {
     postTestStart() {
@@ -74,10 +91,18 @@ export default {
     },
     getStatus() {
       this.$store.dispatch('mod_api/API_getStatus');
+    },
+    launchRequestTimerId() {
+      this.chartRequestTimerId = setInterval(() => {
+        this.$store.dispatch("mod_workspace/EVENT_onceDoRequest");
+      }, this.chartRequestIntervalMs);
+    },
+    clearRequestTimerId() {
+      clearInterval(this.chartRequestTimerId);
     }
   },
   beforeDestroy() {
-    clearInterval(this.chartRequestTimerId);
+    this.clearRequestTimerId();
   }
 }
 </script>

@@ -37,7 +37,9 @@ const state = {
   },
   componentEvents: {
     test: {
-      nextSampleClick: 0
+      nextSampleClick: 0,
+      receiveData: 0,
+      sessionIsClosed: 0,
     },
     model: {
       resetSettingClick: 0,
@@ -74,6 +76,12 @@ const mutations = {
   },
   set_componentEvent_test_nextSampleClick(state) {
     state.componentEvents.test.nextSampleClick++;
+  },
+  set_componentEvent_test_receiveData(state) {
+    state.componentEvents.test.receiveData++;
+  },
+  set_componentEvent_test_sessionIsClosed(state) {
+    state.componentEvents.test.sessionIsClosed++;
   },
   set_enableCustomHotKey(state, value) {
     state.isEnableCustomHotKey = value

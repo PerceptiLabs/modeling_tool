@@ -557,7 +557,7 @@ const actions = {
       });
   },
 
-  API_postTestMove({rootGetters, rootState, dispatch}, request) {
+  API_postTestMove({rootGetters, rootState, dispatch, commit}, request) {
     const theData = {
       receiver: rootGetters['mod_workspace/GET_currentNetworIdForKernelRequests'],
       action: request, //nextStep, previousStep
@@ -573,6 +573,8 @@ const actions = {
       .then(nextStepRes => {
         // console.log('nextStepRes', theData, nextStepRes);
         if (!nextStepRes) { 
+          console.log('Session is closed in kernel');
+          commit('mod_events/set_componentEvent_test_sessionIsClosed', null, { root: true });
           // this means the session is closed in the kernel
           return dispatch('API_startTestWithCheckpointJson');
         }
