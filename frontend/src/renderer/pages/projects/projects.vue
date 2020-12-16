@@ -21,7 +21,7 @@
               :data-tutorial-target="'tutorial-model-hub-new-button'"
               )
               span.btn-round-icon.btn-rounded-new(:class="{'high-lighted': isNewUser}")
-                img(src="../../../../static/img/project-page/plus.svg")
+                img.btn-rounded-new-image(src="../../../../static/img/project-page/plus.svg")
                 div(v-if="isNewUser").create-first-model Create your first model
               span.left-header-btn-text Create
           //- div.search-input
@@ -870,6 +870,9 @@
   }
   .btn-rounded-new {
     border-radius: 2px;
+    .btn-rounded-new-image {
+      width: 9px;
+    }
   }
   .pl-40 {
     padding-left: 40px;
