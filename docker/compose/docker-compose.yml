@@ -31,24 +31,7 @@ services:
       - "8080:8080"
     depends_on:
       - rygg
-      - kernel
     environment:
       PL_KERNEL_URL: "ws://${PL_HOST}:5000"
       PL_FILESERVER_URL: "http://${PL_HOST}:8011"
       PL_RYGG_URL: "http://${PL_HOST}:8000"
-
-  kernel:
-    image: perceptilabs.azurecr.io/kernel:$PL_IMG_TAG
-    volumes:
-      - ./plabs:/perceptilabs/Documents/Perceptilabs
-    ports:
-      - "5000:5000"
-      - "8011:8011"
-
-    environment:
-      CORS_WHITELIST: "http://${PL_HOST}:8080"
-      PL_KERNEL_LOG_LEVEL: ERROR
-      PL_FILESERVER_LOG_LEVEL: ERROR
-      HOME: /perceptilabs
-      PL_FILE_SERVING_TOKEN: thetoken
-      PL_TUTORIALS_DATA: /tutorial_data
