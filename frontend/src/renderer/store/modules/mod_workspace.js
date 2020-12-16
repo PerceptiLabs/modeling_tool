@@ -70,6 +70,7 @@ const state = {
   },
   viewType: localStorage.getItem(LOCAL_STORAGE_WORKSPACE_VIEW_TYPE_KEY) || 'model', // [model,statistic,test]
   showModelPreviews: localStorage.hasOwnProperty(LOCAL_STORAGE_WORKSPACE_SHOW_MODEL_PREVIEWS) ? localStorage.getItem(LOCAL_STORAGE_WORKSPACE_SHOW_MODEL_PREVIEWS) === 'true' : true,
+  fetchedPreviewsNetworksIds: []
 };
 
 const getters = {
@@ -325,6 +326,9 @@ const getters = {
 };
 
 const mutations = {
+  setFetchedPreviewsNetworksIds(state, networkId) {
+    state.fetchedPreviewsNetworksIds.push(networkId)
+  },
   toggleSettingPreviewVisibility() {
     state.isSettingPreviewVisible = !state.isSettingPreviewVisible;
   },

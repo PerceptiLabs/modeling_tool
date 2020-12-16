@@ -63,6 +63,10 @@
         type: Boolean,
         default: false
       },
+      showInitiallyRequestSpinner: {
+        type: Boolean,
+        default: true,
+      }
     },
     created() {
       this.imgType = '';
@@ -81,7 +85,7 @@
       return {
         imgType: '',
         imgData: null,
-        showRequestSpinner: true,
+        showRequestSpinner: this.showInitiallyRequestSpinner,
         fullView: false,
       }
     },

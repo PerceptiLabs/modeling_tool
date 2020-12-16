@@ -69,7 +69,11 @@ export default {
     if(!this.isViewMode) {
       this.$store.dispatch('mod_events/EVENT_IOGenerateAction', null, {root: true})
         .then(() => {
-          this.getAllPreviews();
+          const networkID = this.currentNetwork.networkID;
+          if(!this.fetchedPreviewsNetworksIds.includes(networkID)) {
+            this.getAllPreviews();
+            this.$store.commit("mod_workspace/setFetchedPreviewsNetworksIds", networkID);
+          }
         });
     }
   },
@@ -120,6 +124,9 @@ export default {
       getCurrentStepCode:     'mod_tutorials/getCurrentStepCode',
       getIsWorkspaceDragEvent: 'mod_events/getIsWorkspaceDragEvent',
     }),
+    fetchedPreviewsNetworksIds() {
+      return this.$store.state.mod_workspace.fetchedPreviewsNetworksIds;
+    },
     isGridEnabled() {
       return false;
       return this.$store.state.globalView.isGridEnabled;

@@ -16,6 +16,7 @@
           v-show="shouldShowPreview"
           :disable-header="true"
           :chart-data="storeCurrentElement.chartData"
+          :showInitiallyRequestSpinner="false"
         )
 
 </template>
