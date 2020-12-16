@@ -390,7 +390,8 @@ def run_cython_test():
 def run_pytest_tests():
     print("Running python tests")
     with pushd(BACKEND_SRC):
-        run_checked("python -m pytest -rfe")
+        run_checked("python -m pytest -rfe -m tf2x", env={'PL_TF2X': '123'})
+        run_checked_arr(['python', '-m', 'pytest', '-rfe', '-m', """not tf2x"""])
 
 def run_django_tests():
     print("Running django tests")
@@ -495,11 +496,12 @@ def test():
     combine_requirements_files("backend rygg fileserver".split(), f"{BUILD_TMP}/requirements.txt")
     copy_file(f"{SCRIPTS_DIR}/setup.py", f"{BUILD_TMP}/setup.py", update=True)
     write_all_lines(f"{BUILD_TMP}/cython_roots.txt", ["perceptilabs\n", "rygg\n", "fileserver\n", "static_file_server\n"])
-    run_lint_test()
-    run_cython_test()
     run_pytest_tests()
     run_django_tests()
+    run_lint_test()    
+    run_cython_test()
 
+    
 class DockerBuilder():
     @staticmethod
     def all(do_clean=False):
