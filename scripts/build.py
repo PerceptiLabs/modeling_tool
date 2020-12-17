@@ -1,7 +1,7 @@
 from distutils.dir_util import copy_tree
 from distutils.file_util import copy_file
 from enum import Enum, auto
-from shutil import rmtree
+from shutil import rmtree, move
 from subprocess import Popen, PIPE, CalledProcessError
 import contextlib
 import glob
@@ -251,8 +251,8 @@ def install_prereqs():
     run_unchecked("pip install -r requirements_build.txt")
 
 def install_docker_host_prereqs():
-    run_unchecked("pip install semver>=2.10")
-    run_unchecked("pip install packaging>=20.4")
+    run_unchecked("pip install --upgrade pip")
+    run_unchecked("pip install semver>=2.10 packaging>=20.4")
 
 
 # Pull from the VERSION file with optional overrides in VERSION_OVERRIDE and VERSION_EXTENSION
@@ -559,6 +559,10 @@ class DockerBuilder():
         copy_tree(f"{PROJECT_ROOT}/licenses/", f"{BUILD_DOCKER_KERNEL}/licenses/", update=True)
         copy_file(f"{SCRIPTS_DIR}/setup.py", f"{BUILD_DOCKER_KERNEL}/setup.py", update=True)
         copy_file(f"{SCRIPTS_DIR}/requirements_build.txt", f"{BUILD_DOCKER_KERNEL}/requirements_build.txt", update=True)
+
+        # help the dockerfile keep the image size down: put the tutorial data where it will not be copied into the image with the code
+        move(f"{BUILD_DOCKER_KERNEL}/perceptilabs/tutorial_data", BUILD_DOCKER_KERNEL)
+        mkdir_p(f"{BUILD_DOCKER_KERNEL}/perceptilabs/tutorial_data")
         FILES_FROM_DOCKER_DIR = "setup.cfg entrypoint.sh Dockerfile runner".split()
         for from_docker in FILES_FROM_DOCKER_DIR:
             copy_file( f"{PROJECT_ROOT}/docker/kernel/{from_docker}", f"{BUILD_DOCKER_KERNEL}/{from_docker}", update=True)

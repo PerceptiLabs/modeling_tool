@@ -6,7 +6,8 @@ FROM registry.access.redhat.com/ubi7/python-36 as build
 USER 0
 
 RUN yum -y update && \
-    yum -y install rsync
+    yum -y install rsync && \
+    yum clean all
 
 # add source
 # do the build in here
@@ -27,7 +28,7 @@ WORKDIR /out
 # Set up the out dir for the build
 ADD runner main.py setup.py setup.cfg package_data.json VERSION cython_roots.txt requirements.txt ./
 RUN rsync -a /src --files-from=/src/included_files.txt . && \
-    mv perceptilabs/tutorial_data /tutorial_data && \
+    rm -rf /src && \
     mv main.py main.pyx && \
     find . -name "__init__.py" -exec mv '{}' '{}x' \; && \
     python setup.py build_ext --inplace --user && \
@@ -42,7 +43,7 @@ RUN rsync -a /src --files-from=/src/included_files.txt . && \
 ################
 # PUBLISH PHASE
 ################
-FROM nvcr.io/nvidia/cuda:10.0-cudnn7-devel-ubi7
+FROM perceptilabs.azurecr.io/nv_base:7.6.5.32
 
 LABEL name="PerceptiLabs-Modelling-Backend" \
       maintainer="contact@perceptilabs.com" \
@@ -52,45 +53,30 @@ LABEL name="PerceptiLabs-Modelling-Backend" \
       summary="This is the free version of the backend of our modelling platform v1." \
       description="This will build a server for you which will act as a backend for our modelling platform. It listens to port 5000 to communicate with the frontend."
 
-COPY licenses /licenses
-
-USER 1001
-WORKDIR /tutorial_data
-COPY --from=build --chown=1001 /tutorial_data .
-
 USER 0
 RUN yum -y update && \
-    yum -y install ncurses-devel rh-python36 rh-python36-pip rh-python36-python-devel rh-python36-python-libs libSM libXrender libXext git && \
+    yum -y install ncurses-devel libSM libXrender libXext git && \
     yum clean all
-
-RUN  cd /opt/rh/rh-python36/root/usr/lib64 && \
-     ln -s libpython3.6m.so.rh-python36-1.0 libpython3.6m.so.1.0
 
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda-10.0/compat
 
-COPY entrypoint.sh /usr/bin/entrypoint.sh
-RUN chmod +x /usr/bin/entrypoint.sh
-
 WORKDIR /opt/app-root/src
 COPY --from=build --chown=1001 /out .
-RUN chmod +x runner
 ADD requirements.txt .
 
-
-RUN source scl_source enable rh-python36 && \
-    python -m pip install --upgrade pip && \
-    pip install --upgrade setuptools && \
+RUN chmod +x runner && \
+    python -m pip install --upgrade pip setuptools && \
     pip install --no-cache-dir -r requirements.txt && \
     rm requirements.txt
     # pip install --no-cache-dir dask[array] --upgrade && \
     # pip install --no-cache-dir  --upgrade dask
 
 USER 1001
+COPY licenses /licenses
+COPY tutorial_data /tutorial_data
 
 EXPOSE 5000
 EXPOSE 8011
-
-ENTRYPOINT [ "/usr/bin/entrypoint.sh" ]
 
 CMD ["/opt/app-root/src/runner"]
 
