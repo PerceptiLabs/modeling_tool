@@ -54,7 +54,11 @@
                                     :data-tutorial-target="'tutorial-create-model-model-path'")
                                     
                                 button.btn.btn--dark-blue-rev(type="button" @click="openFilePicker") Browse
-                    p.template-description(
+                    p.label(v-if="chosenTemplate > -1 && chosenTemplate !== null") Preview:
+                    .screenshoot-container(v-if="chosenTemplate > -1 && chosenTemplate !== null")
+                        img(:src="`./../../../../../static/img/${basicTemplates[chosenTemplate].screenshoot}`" class="image-screenshoot")
+                    p.label(v-if="chosenTemplate !== null") Description:
+                    perfect-scrollbar.template-description(
                         v-if="chosenTemplate !== null"
                         :data-tutorial-target="'tutorial-create-model-description'"
                         ) 
@@ -108,31 +112,36 @@ export default {
                 title: 'Image Classification CNN',
                 imgPath: './static/img/project-page/classification.png',
                 template: imageClassification,
-                description: 'This is a simple image classification template, perfect for datasets such as MNIST. The standard dataset included with this template is an MNIST dataset where the input is an array of 784 grayscale pixel values and 10 unique label values (integers 0-9). The model consists of a reshaping component, a convolutional layer, and a fully connected output layer with 10 neurons. Because of the reshaping component it requries the input data to be 784 or a form thereof (28x28, for example). The labels must be integers ranging from 0 to 9 to be compatible with the one hot encoding that is applied to the labels.'
+                description: 'This is a simple image classification template, perfect for datasets such as MNIST. The standard dataset included with this template is an MNIST dataset where the input is an array of 784 grayscale pixel values and 10 unique label values (integers 0-9). The model consists of a reshaping component, a convolutional layer, and a fully connected output layer with 10 neurons. Because of the reshaping component it requries the input data to be 784 or a form thereof (28x28, for example). The labels must be integers ranging from 0 to 9 to be compatible with the one hot encoding that is applied to the labels.',
+                screenshoot: 'template_image_classification.png'
             },
             {
                 title: 'Linear Regression',
                 imgPath: './static/img/project-page/linear-regression.png',
                 template: linearRegression,
-                description: `This is a template for linear regression, where it tries to create a line of best fit for the datapoints you load. The standard dataset is a one-dimensional input value and one-dimensional labels. The input data can be multidimensional, but our visualizations will display the data in one dimension. The labels data must be one-dimensional as they represent the value of the input data. The model is built as a single fully connected layer with one neuron as output.`
+                description: `This is a template for linear regression, where it tries to create a line of best fit for the datapoints you load. The standard dataset is a one-dimensional input value and one-dimensional labels. The input data can be multidimensional, but our visualizations will display the data in one dimension. The labels data must be one-dimensional as they represent the value of the input data. The model is built as a single fully connected layer with one neuron as output.`,
+                screenshoot: 'template_linear_regression.png'
             },
             {
                 title: 'DQN',
                 imgPath: './static/img/project-page/reinforcement-learning.png',
                 template: reinforcementLearning,
-                description: `This is a template for Reinforcement Learning consisting of one grayscale component, one convolutional layer and one fully connected layer as output. This template uses Q learning on Atari Gym games, where it is set up to play breakout. To play another game, you will change the neurons in the fully connected layer to match the number of possible actions in the actionspace, which you can see in the Environment component.`
+                description: `This is a template for Reinforcement Learning consisting of one grayscale component, one convolutional layer and one fully connected layer as output. This template uses Q learning on Atari Gym games, where it is set up to play breakout. To play another game, you will change the neurons in the fully connected layer to match the number of possible actions in the actionspace, which you can see in the Environment component.`,
+                screenshoot: 'template_dqn.png'
             },
             {
                 title: 'YOLO V1',
                 imgPath: './static/img/project-page/object-detection.png',
                 template: objectDetection,
-                description: `This is a template of the Object Detection model YOLO. It trains on a custom-built dataset containing different shapes as standard. Since it consists of only convolutional layers, any input data will work to train on, as long as the label data matches the input data.`
+                description: `This is a template of the Object Detection model YOLO. It trains on a custom-built dataset containing different shapes as standard. Since it consists of only convolutional layers, any input data will work to train on, as long as the label data matches the input data.`,
+                screenshoot: 'template_yolo.png'
             },
             {
                 title: 'GAN',
                 imgPath: './static/img/project-page/GAN.png',
                 template: ganTemplate,
-                description: `This is a template for a Generative Adversarial Network (GAN) where it trains on the MNIST data as a standard. The model consists of a generative network and a discriminative network, as well as a switch layer which switches between the generated image and real image.`
+                description: `This is a template for a Generative Adversarial Network (GAN) where it trains on the MNIST data as a standard. The model consists of a generative network and a discriminative network, as well as a switch layer which switches between the generated image and real image.`,
+                screenshoot: 'template_gan.png'
             },
             ],
             chosenTemplate: null,
@@ -352,6 +361,17 @@ export default {
         transform: translate(-50%, -50%);
         min-width: 849px;
         max-width: 80vw;
+    }
+    .label {
+        font-family: Nunito Sans;
+        font-style: normal;
+        font-weight: normal;
+        font-size: 12px;
+        line-height: 16px;
+        color: #E1E1E1;
+        display: flex;
+        align-items: center;        
+        padding-left: 20px;
     }
     .header {
         position: relative;
@@ -577,16 +597,22 @@ export default {
         margin-right: 5px;
     }
     .template-description {
-        padding: 30px 20px 0;
+        margin: 0px 20px 40px;
         font-family: Nunito Sans;
         font-style: normal;
-        font-weight: 300;
         font-size: 12px;
         line-height: 16px;
-        color: #9E9E9E;
         min-height: 15rem;
+        height: 16rem;
+        font-weight: normal;
+        line-height: 16px;
+        color: #C4C4C4;        
     }
-
+    .screenshoot-container {
+        margin: 0 20px;
+        margin-bottom: 20px;
+        background: #23252A;
+    }
     .template-description-else {
         min-height: 15rem;
     }
