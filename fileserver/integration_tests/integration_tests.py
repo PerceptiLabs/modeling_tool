@@ -1,18 +1,32 @@
+import os
 import sys
 import rest
 
-usingDocker = True
+usingDocker = False
+if len(sys.argv) < 2:
+    print(f"USAGE: {sys.argv[0]} <docker-tag>|local")
+    print(f"Example: {sys.argv[0]} 1234")
+    print(f"Example: {sys.argv[0]} local")
+    sys.exit(1)
 
-if usingDocker:
+if sys.argv[1] == 'local':
+    CMD = "PL_FILE_SERVING_TOKEN=thetoken PL_TUTORIALS_DATA=$(git rev-parse --show-toplevel)/backend/perceptilabs/tutorial_data python manage.py runserver 8011"
+    host = "localhost"
+    home = os.getenv("HOME")
+    platform = "Darwin"
+    TUTORIAL_DATA_RELPATH="../../backend/perceptilabs/tutorial_data"
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    tutorial_data = os.path.abspath(os.path.join(script_dir, TUTORIAL_DATA_RELPATH))
+else:
+    CMD='docker run -it --env "HOME=/perceptilabs" --env "PL_TUTORIALS_DATA=/tutorial_data" --publish 8011:8011 --volume $(pwd)/plabs:/perceptilabs/Documents/Perceptilabs percepilabs.azurecr.io/kernel:' + sys.argv[1]
     host = "localhost"
     home = "/perceptilabs"
     platform = "Linux"
-    tutorial_data = "/opt/app-root/src/perceptilabs/tutorial_data"
-else:
-    host = "localhost"
-    home = "/Users/j"
-    platform = "Darwin"
-    tutorial_data = '/Users/j/f/modeling/perceptilabs/tutorial_data'
+    tutorial_data = "/tutorial_data"
+
+print("start the fileserver with the following:")
+print(CMD)
+input("Press enter to continue")
 
 rest = rest.FileserverRest(f"http://{host}:8011", "thetoken")
 
