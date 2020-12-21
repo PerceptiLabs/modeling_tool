@@ -57,7 +57,6 @@ export default {
   watch: {
     statusNetworkCore: {
       handler(statusNetworkCore) {
-        console.log(statusNetworkCore);
         if(statusNetworkCore === 'Stop' || statusNetworkCore === 'Paused' || statusNetworkCore === 'Finished') {
           this.isTrainingStopped = true;
         } else {

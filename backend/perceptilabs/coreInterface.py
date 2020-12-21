@@ -56,6 +56,9 @@ class coreLogic():
 
         self.issue_handler = issue_handler
         self._running_mode = None
+        self._save_counter = 0
+        
+        self.headless_state = False
 
     def setupLogic(self):
         #self.warningQueue=queue.Queue()
@@ -259,13 +262,22 @@ class coreLogic():
 
     def set_headless(self, active):
         """ Enable/disable headless """
-        self.commandQ.put(
-            CoreCommand(
-                type='headless',
-                parameters={'on': active},
-                allow_override=True
-            )
-        )
+        if active != self.headless_state:
+            self.headless_state = active
+
+            if self._core_mode == 'v1':
+                if active:
+                    self.commandQ.put("headlessOn")
+                else:
+                    self.commandQ.put("headlessOff")                
+            else:        
+                self.commandQ.put(
+                    CoreCommand(
+                        type='headless',
+                        parameters={'on': active},
+                        allow_override=True
+                    )
+                )
 
     def headless(self, On):
         """ Alias for set_headless """

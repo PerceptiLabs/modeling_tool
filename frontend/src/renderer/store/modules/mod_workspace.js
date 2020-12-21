@@ -730,23 +730,8 @@ const mutations = {
 
     if (!getters.GET_currentNetwork) { return; }
 
-    // debugger;
     getters.GET_currentNetwork.networkMeta.openStatistics = value;
-    let isTraining = getters.GET_networkIsTraining;
 
-    if(isTraining) {
-      if (value) {
-        dispatch('mod_api/API_setHeadless', true, {root: true})
-          .then(_ => {
-            dispatch('mod_api/API_setHeadless', false, {root: true})
-          });
-      } else {
-        dispatch('mod_api/API_setHeadless', true, {root: true});
-      }
-    }
-    if(value && getters.GET_testIsOpen !== null) {
-      getters.GET_currentNetwork.networkMeta.openTest = false;
-    }
     if(value) {
       dispatch('mod_statistics/STAT_defaultSelect', null, {root: true});
       //dispatch('mod_events/EVENT_chartResize', null, {root: true});

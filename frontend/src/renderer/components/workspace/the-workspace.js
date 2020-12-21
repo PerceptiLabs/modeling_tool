@@ -77,6 +77,10 @@ export default {
     window.addEventListener('mousemove',  this.startCursorListener);
   },
   beforeDestroy() {
+    if (this.isTraining) {
+      this.setHeadless(true);
+    }
+
     window.removeEventListener('resize', this.onResize);
 
     if (!this.$refs.tabset) { return; }
@@ -268,6 +272,20 @@ export default {
         this.event_startDoRequest(false);
         this.setChecklistItemComplete({ itemId: 'finishTraining' });
       }
+    },
+    isTraining: {
+      handler(newVal, oldVal) {
+        
+        // When the "autoupdate previews" task is done, this "if" needs to be expanded
+        // with a check to include: this.getViewType === 'model'
+        if (newVal && this.getViewType === 'statistic') {
+          this.setHeadless(false);
+          return;
+        }
+
+        this.setHeadless(true);
+      },
+      immediate: true
     },
     currentSelectedEl(newStatus) {
       if(newStatus.length > 0
@@ -699,6 +717,9 @@ export default {
     },
     openTerminalConsole() {
       console.log('open terminal console')
+    },
+    setHeadless(isHeadless) {
+      this.$store.dispatch('mod_api/API_setHeadless', isHeadless, {root: true})
     }
   }
 }
