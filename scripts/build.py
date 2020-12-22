@@ -114,7 +114,10 @@ def sed_i(filename, pattern, replacement):
 
 def rm_rf(dirname):
     if os.path.exists(dirname):
-        rmtree(dirname)
+        if os.path.isdir(dirname):
+            rmtree(dirname)
+        else:
+            os.remove(dirname)
 
 
 def copy_files(src_root, dest_root, list_path=None):
@@ -561,6 +564,7 @@ class DockerBuilder():
         copy_file(f"{SCRIPTS_DIR}/requirements_build.txt", f"{BUILD_DOCKER_KERNEL}/requirements_build.txt", update=True)
 
         # help the dockerfile keep the image size down: put the tutorial data where it will not be copied into the image with the code
+        rm_rf(f"{BUILD_DOCKER_KERNEL}/tutorial_data")
         move(f"{BUILD_DOCKER_KERNEL}/perceptilabs/tutorial_data", BUILD_DOCKER_KERNEL)
         mkdir_p(f"{BUILD_DOCKER_KERNEL}/perceptilabs/tutorial_data")
         FILES_FROM_DOCKER_DIR = "setup.cfg entrypoint.sh Dockerfile runner".split()
@@ -568,6 +572,7 @@ class DockerBuilder():
             copy_file( f"{PROJECT_ROOT}/docker/kernel/{from_docker}", f"{BUILD_DOCKER_KERNEL}/{from_docker}", update=True)
         set_perceptilabs_inner_version(BUILD_DOCKER_KERNEL, versions)
         sed_i(f"{BUILD_DOCKER_KERNEL}/requirements.txt", "^opencv-python.*$", "opencv-python-headless")
+
 
         # add fileserver stuff to the kernel dir
         copy_files(f"{FILESERVER_DIR}/", f"{BUILD_DOCKER_KERNEL}", list_path=f"{FILESERVER_DIR}/included_files.txt")
