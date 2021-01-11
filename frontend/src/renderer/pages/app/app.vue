@@ -81,9 +81,6 @@
       if(isWeb()) {
         window.addEventListener('beforeunload', this.beforeUnload);
       }
-      this.$nextTick(()=> {
-        this.addDragListeners();
-      });
       if(isWeb()) {
         if(shouldHideSidebar()) {
           this.setSidebarStateAction(false);
@@ -100,7 +97,6 @@
       if(isWeb()) {
         window.removeEventListener('beforeunload', this.beforeUnload);
       }
-      this.removeDragListeners();
       this.set_appIsOpen(false);
     },
     data() {
@@ -133,19 +129,6 @@
           : 'edit'
       },
     },
-    watch: {
-      editIsOpen(newVal) {
-        if(newVal) {
-          this.$nextTick(function () {
-            this.addDragListeners()
-          })
-        }
-        else {
-          this.removeDragListeners();
-          this.offDragListener();
-        }
-      },
-    },
     methods: {
       ...mapMutations({
         set_appIsOpen:                      'globalView/SET_appIsOpen',
@@ -165,66 +148,11 @@
         saveTutorialProgress: 'mod_tutorials/saveTutorialProgress',
         layerAddedAction:     'mod_tutorials/tutorial-workspace-layer-added-setup',
       }),
-      addDragListeners() {
-        this.$refs.layersbar.addEventListener("dragstart", this.dragStart, false);
-      },
-      removeDragListeners() {
-        this.$refs.layersbar.removeEventListener("dragstart", this.dragStart, false);
-      },
       beforeUnload() {
         this.screenChange({ screenName: '' });
         this.saveTutorialProgress();
         this.set_workspaceChangesInLocalStorage();
       },
-      offDragListener() {
-        this.$refs.layersbar.removeEventListener("dragend", this.dragEnd, false);
-        this.$refs.layersbar.removeEventListener("dragover", this.dragOver, false);
-        this.$refs.layersbar.removeEventListener("dragenter", this.dragEnter, false);
-        this.$refs.layersbar.removeEventListener("dragleave", this.dragLeave, false);
-        this.$refs.layersbar.removeEventListener("drop", this.dragDrop, false);
-      },
-      dragStart(event) {
-        if(isWeb())
-        event.dataTransfer.setData('text/plain', event.target.outerHTML);
-        if ( event.target.draggable
-          && this.editIsOpen
-          && event.target.className.includes('btn--layersbar')
-        ) {
-          this.$refs.layersbar.addEventListener("dragend", this.dragEnd, false);
-          this.$refs.layersbar.addEventListener("dragover", this.dragOver, false);
-          this.$refs.layersbar.addEventListener("dragenter", this.dragEnter, false);
-          this.$refs.layersbar.addEventListener("dragleave", this.dragLeave, false);
-          this.$refs.layersbar.addEventListener("drop", this.dragDrop, false);
-
-          this.dragMeta.dragged = event.target;
-          this.add_dragElement(event);
-          event.target.style.opacity = .75;
-          if(isWeb())
-          this.adjustDraggingForFireFox(event);
-        }
-      },
-      dragEnd(event) {
-        this.offDragListener();
-        event.target.style.opacity = "";
-      },
-      dragOver(event) {
-        event.preventDefault();
-      },
-      dragEnter(event) {},
-      dragLeave(event) {},
-      dragDrop(event) {
-        event.preventDefault();
-
-        if(event.target.classList[0] === this.dragMeta.outClassName) {
-          this.ADD_element({event})
-        }
-      },
-      adjustDraggingForFireFox(event) {
-        event.dataTransfer.setDragImage(
-          event.target, 
-          event.target.clientWidth/2, 
-          event.target.clientHeight/2);
-      }
     }
   }
 </script>

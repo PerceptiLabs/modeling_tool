@@ -26,7 +26,6 @@
           :key="i"
           @mouseenter="mouseOver(element)"
           @mouseleave="mouseOut"
-          @click="onLayerClick($event, element)"
           @mousedown="onLayerClick($event, element)"
           :style="[calcLayerItemStyle(element, layer.color)]"
           :data-tutorial-target="element === 'DataData' ? 'tutorial-workspace-layer-data' : ''"
@@ -239,11 +238,14 @@ export default {
     },
     onLayerClick(event, elementName) {
       // This function handles the magic of cloning and setting up event listeners
+      event.preventDefault();
       if (this.clickedElementName) {  return; }
 
       this.cloneElement(elementName);
+
       this.setClonedElementStyle();
       this.setupClickDropFunctionality();
+
     },
     startComponentPositionUpdates(event) {
       const x = event.clientX + (document.documentElement.scrollLeft ? document.documentElement.scrollLeft : document.body.scrollLeft);
@@ -335,13 +337,13 @@ export default {
     setupClickDropFunctionality() {
       document.body.appendChild(this.clonedElement);
       document.addEventListener('mousemove', this.startComponentPositionUpdates);
-      document.addEventListener('click', this.stopComponentPositionUpdates);
+      this.clonedElement.addEventListener('mouseup', this.stopComponentPositionUpdates);
       document.addEventListener('contextmenu', this.handleCancelEvents);
       document.addEventListener('keyup', this.handleEscKeypress);
     },
     cleanupClickDropFunctionality() {
       document.removeEventListener('mousemove', this.startComponentPositionUpdates);
-      document.removeEventListener('click', this.stopComponentPositionUpdates);
+      this.clonedElement.removeEventListener('mouseup', this.stopComponentPositionUpdates);
       document.removeEventListener('contextmenu', this.handleCancelEvents);
       document.removeEventListener('keyup', this.handleEscKeypress);
 

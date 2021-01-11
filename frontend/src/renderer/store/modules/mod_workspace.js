@@ -823,7 +823,7 @@ const mutations = {
       getters.GET_currentNetwork.networkMeta.coreStatus = value;
     }
   },
-  set_statusNetworkCoreDinamically(state, { modelId, payload }) {
+  set_statusNetworkCoreDynamically(state, { modelId, payload }) {
     const networkIndex = state.workspaceContent.findIndex(net => net.networkID === modelId);
     const payloadHaveValues = !!Object.keys(payload).length;
     if(networkIndex !== -1 && payloadHaveValues) {
@@ -943,7 +943,7 @@ const mutations = {
       el.checkpoint.push(null);
       el.checkpoint.push(state.workspaceContent[state.currentNetwork].apiMeta.location);
     }
-  
+    
     dispatch('SET_elementSelect', { id: newEl.layerId, resetOther: true, setValue: true});
     state.dragElement = null;
 
@@ -1782,7 +1782,7 @@ const mutations = {
     const el = getters.GET_networkElementById(layerId);
     el.layerSettings = el.initialSettings;
     el.visited = false;
-    el.layerCode = null; // is setted null for fetching new code of component
+    el.layerCode = null; // is set null for fetching new code of component
 
     dispatch('mod_api/API_getBatchPreviewSampleForElementDescendants', layerId, { root: true });
     dispatch('mod_events/EVENT_componentEvent_model_resetSettingClick', null, { root: true });
@@ -1806,7 +1806,7 @@ const actions = {
   DELETE_outputVariableAction({getters, commit, dispatch }, payload) {
     let net = getters.GET_currentNetworkElementList;
 
-    let layerIdsWithReferene = [];
+    let layerIdsWithReference = [];
 
     for(let elId in net) {
       let el = net[elId];
@@ -1815,7 +1815,7 @@ const actions = {
       for(let inputId in inputs) {
         const reference_var_id = inputs[inputId].reference_var_id;
         if(reference_var_id === payload.outputVariableId) {
-          layerIdsWithReferene.push(elId);
+          layerIdsWithReference.push(elId);
         }
       }
     }
@@ -1823,13 +1823,13 @@ const actions = {
     commit('DELETE_outputVariableMutation', { payload, getters, dispatch });
 
 
-    // if(layerIdsWithReferene.length > 0) {
-    //     for(let ix in layerIdsWithReferene) {
+    // if(layerIdsWithReference.length > 0) {
+    //     for(let ix in layerIdsWithReference) {
     //       debugger;
-    //         dispatch('mod_api/API_getBatchPreviewSampleForElementDescendants_test', layerIdsWithReferene[ix], { root: true });
+    //         dispatch('mod_api/API_getBatchPreviewSampleForElementDescendants_test', layerIdsWithReference[ix], { root: true });
     //     }
     //   }
-    return layerIdsWithReferene;
+    return layerIdsWithReference;
   },
   DELETE_inputVariableAction({ dispatch, commit }, payload) {
     commit('DELETE_inputVariableMutation', { payload, dispatch });
@@ -2214,9 +2214,9 @@ const actions = {
       });
     }    
   },
-  SET_statusNetworkCoreDinamically({commit, getters}, value) {
+  SET_statusNetworkCoreDynamically({commit, getters}, value) {
     const { modelId, ...payload} = value;
-    commit('set_statusNetworkCoreDinamically', {getters, modelId, payload})
+    commit('set_statusNetworkCoreDynamically', {getters, modelId, payload})
   },
   SET_statusNetworkCoreStatus({commit, getters}, value) {
     commit('set_statusNetworkCoreStatus', {getters, value})
@@ -2471,17 +2471,17 @@ const actions = {
   
       const { offsetWidth,scrollWidth, offsetHeight, scrollHeight } = window;
   
-      const wCoeficient = scrollWidth / 100;
-      const wPercent = offsetWidth / wCoeficient;
+      const wCoefficient = scrollWidth / 100;
+      const wPercent = offsetWidth / wCoefficient;
   
-      const hCoeficient = scrollHeight / 100;
-      const hPercent = offsetHeight / hCoeficient;
+      const hCoefficient = scrollHeight / 100;
+      const hPercent = offsetHeight / hCoefficient;
       
       const decreasePercent = Math.min(hPercent, wPercent);
   
       const zoom =  (1 - ((100 - decreasePercent ) / 100)).toFixed(2);
   
-      console.log({ zoom, offsetWidth,scrollWidth, offsetHeight, scrollHeight, wCoeficient, wPercent, hCoeficient, hPercent});
+      console.log({ zoom, offsetWidth,scrollWidth, offsetHeight, scrollHeight, wCoefficient, wPercent, hCoefficient, hPercent});
      
       dispatch('updateNetworkElementPositions', { zoom } )
       dispatch('SET_statusNetworkZoom', zoom  )

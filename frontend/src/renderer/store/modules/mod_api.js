@@ -1001,7 +1001,7 @@ const actions = {
     };
     coreRequest(theData)
       .then((data)=> {
-        dispatch('mod_workspace/SET_statusNetworkCoreDinamically', {
+        dispatch('mod_workspace/SET_statusNetworkCoreDynamically', {
           ...data,
           modelId: modelId,
         }, {root: true})
