@@ -34,7 +34,10 @@ export const GITHUB_AUTHORIZE_URL = `https://github.com/login/oauth/authorize?sc
 export const GITHUB_GET_TOKEN_BY_CODE_URL = 'https://ghsk.azurewebsites.net'
 
 const widthElement = 60;
-const workspaceGrid = 20;
+const workspaceGrid = 30;
+
+export const workspaceGridSmallGapSize = 30;
+export const workspaceGridBigGapSize = 150;
 export const shadowBoxDragIfMoreThenElementsSelected = 3;
 const pathSlash = process.platform === 'win32' ? '\\' : '/';
 

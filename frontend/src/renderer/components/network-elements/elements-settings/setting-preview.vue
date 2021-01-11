@@ -127,7 +127,7 @@ export default {
     width: 142px;
   }
   .settings-layer {
-    width: 145px;
+    width: 150px;
     box-sizing: border-box;
     border-radius: 0 0 4px 4px;
   }

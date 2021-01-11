@@ -43,6 +43,7 @@ const state = {
     },
     model: {
       resetSettingClick: 0,
+      componentDrop: 0,
     }
   },
   isEnableCustomHotKey: true,
@@ -70,6 +71,9 @@ const mutations = {
   },
   set_eventResize(state) {
     state.eventResize++
+  },
+  set_eventComponentDrop(state) {
+    state.componentEvents.model.componentDrop++;
   },
   set_globalPressKey(state, path) {
     state.globalPressKey[path]++

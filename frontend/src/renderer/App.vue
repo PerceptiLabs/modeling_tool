@@ -51,7 +51,7 @@
 
   }
   import Analytics from '@/core/analytics';
-  import { LOCAL_STORAGE_WORKSPACE_VIEW_TYPE_KEY } from '@/core/constants.js'
+  import { LOCAL_STORAGE_WORKSPACE_VIEW_TYPE_KEY, localStorageGridKey } from '@/core/constants.js'
 
   import { mapMutations, mapActions, mapGetters } from 'vuex';
   import ProjectSidebar         from '@/pages/layout/project-sidebar.vue';
@@ -117,6 +117,10 @@
         if(localStorage.hasOwnProperty('currentUser')) {
           this.setActivePageAction(MODAL_PAGE_PROJECT);
         }
+      }
+      if(localStorage.hasOwnProperty(localStorageGridKey)) {
+        const gridValue = localStorage.getItem(localStorageGridKey) === 'true';
+        this.$store.commit('globalView/setGridStateMutation', gridValue);
       }
       this.$store.commit('mod_workspace-changes/get_workspaceChangesInLocalStorage');
 

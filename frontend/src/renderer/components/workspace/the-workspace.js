@@ -244,6 +244,14 @@ export default {
     isNeedWait() {
       return this.$store.getters['mod_workspace/GET_networkWaitGlobalEvent']
     },
+    isGridEnabled: {
+      get() {
+        return this.$store.state.globalView.isGridEnabled 
+      },
+      set(value) {
+        this.setGridValue(value);
+      }
+    },
   },
   watch: {
     statusNetworkCore(newStatus) {
@@ -343,6 +351,7 @@ export default {
       setSelectedMetric:        'mod_statistics/setSelectedMetric',
       setLayerMetrics:          'mod_statistics/setLayerMetrics',
       setMiniMapNavigationMutation:   'globalView/setMiniMapNavigationMutation',
+      setGridValue:             'globalView/setGridStateMutation',
     }),
     ...mapActions({
       popupConfirm:               'globalView/GP_confirmPopup',

@@ -43,8 +43,11 @@ import LayerCustom          from '@/components/network-elements/elements/layer-c
 import SettingsArrow        from '@/components/network-elements/elements-settings/setting-arrow.vue'
 
 import NetworkDrag    from '@/components/network-field/network-drag.js'
+import NetworkGrid    from '@/components/network-field/network-grid.vue'
 import { mapGetters, mapMutations, mapActions } from 'vuex';
 import { deepCopy } from "@/core/helpers.js";
+
+let resizeObservable = null;
 
 export default {
   name: 'NetworkField',
@@ -61,7 +64,8 @@ export default {
 
     // ClassicMLDbscans, ClassicMLKMeans, ClassicMLKNN, ClassicMLRandomForest, ClassicMLSVM,
     LayerContainer, LayerCustom,
-    SettingsArrow
+    SettingsArrow,
+    NetworkGrid
   },
   mixins: [NetworkDrag],
   mounted() {
@@ -76,8 +80,13 @@ export default {
           }
         });
     }
+
+    this.lunchTheResizeObserver();
+    setTimeout(this.calculateGridStyle(),0);
+
   },
   beforeDestroy() {
+    resizeObservable.disconnect();
     this.removeArrowListener();
   },
   props: {
@@ -111,6 +120,8 @@ export default {
       currentFocusedArrow: null,
       currentFocusedArrowData: null,
       mouseOutsideDirection: '',
+      gridStyle: {},
+      resizeObservable: null,
     }
   },
   computed: {
@@ -128,7 +139,6 @@ export default {
       return this.$store.state.mod_workspace.fetchedPreviewsNetworksIds;
     },
     isGridEnabled() {
-      return false;
       return this.$store.state.globalView.isGridEnabled;
     },
     networkElementListSnapshot() {
@@ -204,13 +214,23 @@ export default {
     scaledLayerSize() {
       return this.layerSize * this.networkScale;
     },
+    inComponentDrop() {
+      return this.$store.state['mod_events'].componentEvents.model.componentDrop;
+    }
   },
   watch: {
+    inComponentDrop(){
+      setTimeout(() => {
+        this.calcSvgSize();
+        this.calculateGridStyle();
+      }, 0)
+    },
     statisticsOrTestIsOpen() {
       this.calcSvgSize(true)
     },
     networkScale(currentZoom, oldZoom) {
       this.calcSvgSize(true);
+      this.calculateGridStyle();
       setTimeout(()=> this.createArrowList(), 0);
     },
     eventCalcArrow() {
@@ -221,6 +241,7 @@ export default {
     },
     '$store.state.mod_events.eventResize': {
       handler() {
+        this.calculateGridStyle();
         this.calcSvgSize();
       }
     },
@@ -488,6 +509,7 @@ export default {
       this.calcOffset();
       //this.calcLayerSize();
       this.createArrowList();
+      this.calculateGridStyle();
     },
     addArrowListener() {
       this.$refs.network.addEventListener('mousemove', this.arrowMovePaint);
@@ -807,6 +829,37 @@ export default {
         payload[id] = el.previewVariable;
       }
       this.$store.dispatch('mod_api/API_getBatchPreviewSample', payload);
+    },
+    calculateGridStyle() {
+      let widthHeightStyle = {};
+      if(this.$refs.network) {
+        const clientWidth = this.$refs.network.clientWidth;
+        const clientHeight = this.$refs.network.clientHeight;
+        const width = (clientWidth / (this.networkScale * 100)) * 100
+        const height = (clientHeight / (this.networkScale * 100)) * 100
+        widthHeightStyle['width'] = width + 'px'
+        widthHeightStyle['height'] = height + 'px'
+      }
+      this.gridStyle = {
+        position: 'absolute',
+        top: '0',
+        left: '0',
+        transform: `scale(${this.networkScale}`,
+        transformOrigin: '0 0',
+        width: '100%',
+        height: '100%',
+        pointerEvents: 'none',
+        ...widthHeightStyle
+      }
+    },
+    lunchTheResizeObserver() {
+      resizeObservable = new ResizeObserver(() => {
+        this.calcSvgSize(true)
+        this.calculateGridStyle();
+      })
+  
+      const elementThatShouldBeWatched = document.getElementById('networkWorkspace');
+      resizeObservable.observe(elementThatShouldBeWatched);
     }
-  }
+  },
 }

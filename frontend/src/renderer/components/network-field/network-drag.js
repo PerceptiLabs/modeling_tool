@@ -24,7 +24,7 @@ const workspaceDrag = {
       initialY: null,
       initialScrollLeft: null,
       initialScrollTop: null,
-      isDragInitialCordSetted: false,
+      isDragInitialCordSet: false,
     }
   },
   computed: {
@@ -44,9 +44,10 @@ const workspaceDrag = {
       const el = document.getElementById('networkWorkspace');
       el.removeEventListener('mousemove', this.onMouseMove);
       document.removeEventListener('keyup', this.mouseUpHandler);
+      this.$store.commit('mod_events/set_eventComponentDrop');
       this.resetToInitialSetup();
     },
-    setInitailDragPosition(clientX, clientY) {
+    setInitialDragPosition(clientX, clientY) {
       this.clientX = clientX;
       this.clientY = clientY;
     },
@@ -55,14 +56,14 @@ const workspaceDrag = {
 
       const networkWorkspace = document.getElementById('networkWorkspace');
 
-      if(!this.isDragInitialCordSetted) {
+      if(!this.isDragInitialCordSet) {
         if(!this.getIsWorkspaceDragEvent) {
           this.$store.commit('mod_events/set_isWorkspaceDragEvent', true);
         }
-        this.setInitailDragPosition(ev.clientX, ev.clientY);
+        this.setInitialDragPosition(ev.clientX, ev.clientY);
         this.initialScrollLeft = networkWorkspace.scrollLeft;
         this.initialScrollTop = networkWorkspace.scrollTop;
-        this.isDragInitialCordSetted = true;
+        this.isDragInitialCordSet = true;
       } 
 
       networkWorkspace.scrollLeft = this.initialScrollLeft + (this.clientX - ev.clientX)
@@ -72,10 +73,10 @@ const workspaceDrag = {
       if(this.getIsWorkspaceDragEvent) {
         this.$store.commit('mod_events/set_isWorkspaceDragEvent', false);
       }
-      this.setInitailDragPosition(null, null);
+      this.setInitialDragPosition(null, null);
       this.initialScrollLeft = null;
       this.initialScrollTop = null;
-      this.isDragInitialCordSetted = false;
+      this.isDragInitialCordSet = false;
     }
   }
 };
