@@ -65,7 +65,8 @@
   import DeleteConfirmPopup     from "@/components/global-popups/delete-confirm-popup.vue";
   import ModalPagesEngine       from '@/components/modal-pages-engine.vue';
   import AboutAppPopup           from "@/components/global-popups/about-app-popup.vue";
-  import { MODAL_PAGE_PROJECT, MODAL_PAGE_WHATS_NEW, MODAL_PAGE_QUESTIONNAIRE } from '@/core/constants.js';
+  import { MODAL_PAGE_PROJECT, MODAL_PAGE_WHATS_NEW, MODAL_PAGE_QUESTIONNAIRE, IS_VALID_KEYCLOACK_CHECKER_URL } from '@/core/constants.js';
+  import { isUrlReachable } from '@/core/apiFileserver.js';
 
   export default {
     name: 'TheApp',
@@ -125,11 +126,13 @@
       this.$store.commit('mod_workspace-changes/get_workspaceChangesInLocalStorage');
 
       this.$store.dispatch('mod_tutorials/loadTutorialProgress')
-        .then(() => {
+        .then(async () => {
           if (this.isUserFirstLogin) {
-            if (!process.env.NO_KC){
+            const isKeycloackReachable = await isUrlReachable(IS_VALID_KEYCLOACK_CHECKER_URL);
+            if (!process.env.NO_KC && isKeycloackReachable){
               this.setActivePageAction(MODAL_PAGE_QUESTIONNAIRE);
             }
+
           } else if (!this.getHasShownWhatsNew) {
             this.setActivePageAction(MODAL_PAGE_WHATS_NEW);
           } else {

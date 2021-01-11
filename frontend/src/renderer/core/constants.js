@@ -33,6 +33,8 @@ export const KERNEL_PORT = 5000
 export const GITHUB_AUTHORIZE_URL = `https://github.com/login/oauth/authorize?scope=public_repo,read:user&client_id=${process.env.GITHUB_CLIENT_ID}`;
 export const GITHUB_GET_TOKEN_BY_CODE_URL = 'https://ghsk.azurewebsites.net'
 
+export const IS_VALID_KEYCLOACK_CHECKER_URL = `${process.env.KEYCLOACK_BASE_URL}/auth/realms/${process.env.KEYCLOACK_RELM}/protocol/openid-connect/3p-cookies/step1.html`;
+
 const widthElement = 60;
 const workspaceGrid = 30;
 

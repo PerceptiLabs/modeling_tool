@@ -14,7 +14,7 @@ import NoInternetConnection from '@/pages/NoInternetConnection.vue'
 import router from './router'
 import store  from './store'
 import { isElectron, setAppTypeRootClasses, setCookie, getCookie } from "@/core/helpers";
-import { isDevelopMode } from '@/core/constants.js'
+import { isDevelopMode, IS_VALID_KEYCLOACK_CHECKER_URL } from '@/core/constants.js'
 
 //- Global components
 import BaseCheckbox     from '@/components/base/checkbox.vue'
@@ -29,6 +29,7 @@ import 'vue2-perfect-scrollbar/dist/vue2-perfect-scrollbar.css'
 import {mask} from 'vue-the-mask' // page registration dont use now
 import { parseJWT } from '@/core/helpers'
 import Analytics from '@/core/analytics';
+import { isUrlReachable } from '@/core/apiFileserver.js';
 if(isElectron()) {
   Vue.use(require('vue-electron'));
 } 
@@ -60,6 +61,7 @@ import './core/filters'
 
 //- Use component
 import '@/core/plugins/eCharts.js'
+
 Vue.component('base-checkbox', BaseCheckbox);
 Vue.component('base-radio', BaseRadiobutton);
 Vue.component('base-select', BaseSelect);
@@ -97,12 +99,17 @@ function runApp(token, refreshToken){
 }
 
 export let keycloak;
-function login(){
+async function login(){
+  const isKeycloackReachable = await isUrlReachable(IS_VALID_KEYCLOACK_CHECKER_URL);
+
+  if(!isKeycloackReachable) {
+    demo();
+    return;
+  } 
   let initOptions = {
     url: `${process.env.KEYCLOACK_BASE_URL}/auth`, realm: `${process.env.KEYCLOACK_RELM}`, clientId: `${process.env.KEYCLOACK_CLIENT_ID}`, onLoad:'login-required'
   }
   keycloak = Keycloak(initOptions);
-
   keycloak.init({ onLoad: initOptions.onLoad }).then((auth) =>{
 
     if(!auth) {

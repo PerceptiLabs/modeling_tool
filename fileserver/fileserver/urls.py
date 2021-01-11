@@ -12,6 +12,7 @@ from fileserver.api.views.json_model_view import JsonModelView
 from fileserver.api.views.model_directory_view import (modeldirectory_tree, get_modeldirectory)
 from fileserver.api.views.github_view import (github_export, github_import, github_issue)
 from fileserver.api.views.version_view import version as version_view
+from fileserver.api.views.url_reachable import is_url_reachable
 
 urlpatterns = [
     path("version", version_view),
@@ -28,4 +29,5 @@ urlpatterns = [
     path(r"github/export", github_export),
     path(r"github/import", github_import),
     path(r"github/issue", github_issue),
+    path("is_url_reachable", is_url_reachable),
 ]

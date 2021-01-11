@@ -152,3 +152,14 @@ export const deleteFolder = (path) => {
   return whenHaveFileserverToken()
     .then(fs => fs.delete(`/directories?path=${path}`))
 }
+
+export const isUrlReachable = async (path) => {
+  try {
+    const fs = await whenHaveFileserverToken();
+    const res = await fs.get(`/is_url_reachable?path=${path}`);
+    let ret = (res.data.response_code === 200) ? true : false;
+    return ret;
+  } catch (err) {
+    return false;
+  }
+}
