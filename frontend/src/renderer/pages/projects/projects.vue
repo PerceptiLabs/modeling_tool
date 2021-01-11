@@ -76,93 +76,94 @@
           div.column-3 Exported
           //- div.column-5 Collaborators
           div.column-6 Last Modified
-        div.models-list-row.model-list-item(
-          v-for="(model, index) in workspaceContent"
-          @click="toggleItemSelection(model.networkID)"
-          @contextmenu.stop.prevent="openContext($event, index)"
-          :key="'Valid_' + model.networkID"
-          :class="{'is-selected': isItemSelected(model.networkID)}")
-          div.column-1
-            span.btn-round-icon.check-model-button(v-tooltip:bottom="isItemSelected(model.networkID) ? 'Unselect' : 'Select'")
-              img(v-if="isItemSelected(model.networkID)" src="../../../../static/img/project-page/checked.svg")
+        perfect-scrollbar.model-list-scrollbar
+          div.models-list-row.model-list-item(
+            v-for="(model, index) in workspaceContent"
+            @click="toggleItemSelection(model.networkID)"
+            @contextmenu.stop.prevent="openContext($event, index)"
+            :key="'Valid_' + model.networkID"
+            :class="{'is-selected': isItemSelected(model.networkID)}")
+            div.column-1
+              span.btn-round-icon.check-model-button(v-tooltip:bottom="isItemSelected(model.networkID) ? 'Unselect' : 'Select'")
+                img(v-if="isItemSelected(model.networkID)" src="../../../../static/img/project-page/checked.svg")
 
-            .editable-field.model-name-wrapper
-              span.model-name(
-                title="model.networkName}"
-                v-if="!isRenamingItem(index)" 
-                v-tooltip:bottom="'Click to open Model'" 
-                @click.stop="goToNetworkView(model.networkID)"
-              ) {{model.networkName}}
-              input.rename-control(
-                v-else 
-                v-model="renameValue" 
-                @blur="renameModel"
-                @keyup.enter="renameModel"
-                ref="titleInput"
+              .editable-field.model-name-wrapper
+                span.model-name(
+                  title="model.networkName}"
+                  v-if="!isRenamingItem(index)" 
+                  v-tooltip:bottom="'Click to open Model'" 
+                  @click.stop="goToNetworkView(model.networkID)"
+                ) {{model.networkName}}
+                input.rename-control(
+                  v-else 
+                  v-model="renameValue" 
+                  @blur="renameModel"
+                  @keyup.enter="renameModel"
+                  ref="titleInput"
+                )
+
+              div.model-unsaved_changes_indicator(v-if="hasUnsavedChanges(model.networkID)")
+                span Unsaved
+                .indicator-circle
+
+              //- svg.is-favorite(v-if="model.isFavorite" @click.stop="setFavoriteValue(index, false)" width="21" height="19" viewBox="0 0 21 19" fill="none" v-tooltip:bottom="'Favorite'")
+              //-   path(d="M9.54894 0.927049C9.8483 0.0057385 11.1517 0.0057404 11.4511 0.927051L13.0819 5.9463C13.2158 6.35833 13.5997 6.63729 14.033 6.63729H19.3105C20.2792 6.63729 20.682 7.8769 19.8983 8.4463L15.6287 11.5484C15.2782 11.803 15.1315 12.2544 15.2654 12.6664L16.8963 17.6857C17.1956 18.607 16.1411 19.3731 15.3574 18.8037L11.0878 15.7016C10.7373 15.447 10.2627 15.447 9.91221 15.7016L5.64258 18.8037C4.85887 19.3731 3.80439 18.607 4.10374 17.6857L5.7346 12.6664C5.86847 12.2544 5.72181 11.803 5.37132 11.5484L1.10169 8.4463C0.317977 7.8769 0.720754 6.63729 1.68948 6.63729H6.96703C7.40026 6.63729 7.78421 6.35833 7.91809 5.9463L9.54894 0.927049Z" fill="#6185EE")
+              //- svg.is-not-favorite(v-if="!model.isFavorite" @click.stop="setFavoriteValue(index, true)" width='22' height='20' viewBox='0 0 22 20' fill='none' xmlns='http://www.w3.org/2000/svg')
+              //-   path(d='M10.5245 1.08156C10.6741 0.620903 11.3259 0.620907 11.4755 1.08156L13.2186 6.4463C13.4195 7.06434 13.9954 7.48278 14.6452 7.48278H20.2861C20.7704 7.48278 20.9718 8.10258 20.5799 8.38729L16.0164 11.7029C15.4907 12.0848 15.2707 12.7619 15.4715 13.3799L17.2146 18.7447C17.3643 19.2053 16.8371 19.5884 16.4452 19.3037L11.8817 15.9881C11.3559 15.6061 10.6441 15.6061 10.1183 15.9881L5.5548 19.3037C5.16294 19.5884 4.6357 19.2053 4.78538 18.7447L6.52849 13.3799C6.7293 12.7619 6.50931 12.0848 5.98358 11.7029L1.42006 8.38729C1.0282 8.10259 1.22959 7.48278 1.71395 7.48278H7.35477C8.00461 7.48278 8.58055 7.06434 8.78136 6.4463L10.5245 1.08156Z' stroke='#AEAEAE')
+            div.column-2(@click.stop="handleStatisticClick(index, $event, model)")
+              model-status(
+                :statusData="model.networkMeta.coreStatus"
+                :coreError="model.networkMeta.coreError"
               )
-
-            div.model-unsaved_changes_indicator(v-if="hasUnsavedChanges(model.networkID)")
-              span Unsaved
-              .indicator-circle
-
-            //- svg.is-favorite(v-if="model.isFavorite" @click.stop="setFavoriteValue(index, false)" width="21" height="19" viewBox="0 0 21 19" fill="none" v-tooltip:bottom="'Favorite'")
-            //-   path(d="M9.54894 0.927049C9.8483 0.0057385 11.1517 0.0057404 11.4511 0.927051L13.0819 5.9463C13.2158 6.35833 13.5997 6.63729 14.033 6.63729H19.3105C20.2792 6.63729 20.682 7.8769 19.8983 8.4463L15.6287 11.5484C15.2782 11.803 15.1315 12.2544 15.2654 12.6664L16.8963 17.6857C17.1956 18.607 16.1411 19.3731 15.3574 18.8037L11.0878 15.7016C10.7373 15.447 10.2627 15.447 9.91221 15.7016L5.64258 18.8037C4.85887 19.3731 3.80439 18.607 4.10374 17.6857L5.7346 12.6664C5.86847 12.2544 5.72181 11.803 5.37132 11.5484L1.10169 8.4463C0.317977 7.8769 0.720754 6.63729 1.68948 6.63729H6.96703C7.40026 6.63729 7.78421 6.35833 7.91809 5.9463L9.54894 0.927049Z" fill="#6185EE")
-            //- svg.is-not-favorite(v-if="!model.isFavorite" @click.stop="setFavoriteValue(index, true)" width='22' height='20' viewBox='0 0 22 20' fill='none' xmlns='http://www.w3.org/2000/svg')
-            //-   path(d='M10.5245 1.08156C10.6741 0.620903 11.3259 0.620907 11.4755 1.08156L13.2186 6.4463C13.4195 7.06434 13.9954 7.48278 14.6452 7.48278H20.2861C20.7704 7.48278 20.9718 8.10258 20.5799 8.38729L16.0164 11.7029C15.4907 12.0848 15.2707 12.7619 15.4715 13.3799L17.2146 18.7447C17.3643 19.2053 16.8371 19.5884 16.4452 19.3037L11.8817 15.9881C11.3559 15.6061 10.6441 15.6061 10.1183 15.9881L5.5548 19.3037C5.16294 19.5884 4.6357 19.2053 4.78538 18.7447L6.52849 13.3799C6.7293 12.7619 6.50931 12.0848 5.98358 11.7029L1.42006 8.38729C1.0282 8.10259 1.22959 7.48278 1.71395 7.48278H7.35477C8.00461 7.48278 8.58055 7.06434 8.78136 6.4463L10.5245 1.08156Z' stroke='#AEAEAE')
-          div.column-2(@click.stop="handleStatisticClick(index, $event, model)")
-            model-status(
-              :statusData="model.networkMeta.coreStatus"
-              :coreError="model.networkMeta.coreError"
+            div.column-4
+              span(@click.stop="") {{ model && model.networkMeta && model.networkMeta.coreStatus && model.networkMeta.coreStatus.Training_Duration ? model.networkMeta.coreStatus.Training_Duration.toFixed(2) + 's' : '-' }}
+            //- div.column-5
+            //-   collaborator-avatar(
+            //-       @click.stop=""
+            //-       :list="[{id: 1, name: user && user.firstName || '', img: null,}]"
+            //-     )
+            div.column-7
+              span(v-if="typeof model.networkMeta.openTest === 'boolean'" @click.stop="handleTestClick(index, model)") Run Test
+                img(src="../../../../static/img/jump-icon.svg")
+              span(v-else @click.stop="") -
+            div.column-3
+              span(v-if="!!model.apiMeta.saved_version_location" @click.stop="" v-tooltip:right="model.apiMeta.saved_version_location") Exported
+              span(v-else @click.stop="") Not Exported
+            div.column-6(@click.stop="")
+              collaborator-avatar(v-if="showUser"
+                  :list="[{id: 1, name: user && user.email || '', img: null,}]"
+                )
+              | {{ (model && model.apiMeta && model.apiMeta.updated) ? formatDate(model.apiMeta.updated)  : ''}}
+          
+          
+          div.models-list-row.model-list-item(
+            v-for="(model, index) in unparsedModels"
+            :key="'Unparsed_' + model.id"
+            :class="{'is-selected': isItemSelected(model.networkID)}"
+            @click="onClickDeletedModel(model, index)"
             )
-          div.column-4
-            span(@click.stop="") {{ model && model.networkMeta && model.networkMeta.coreStatus && model.networkMeta.coreStatus.Training_Duration ? model.networkMeta.coreStatus.Training_Duration.toFixed(2) + 's' : '-' }}
-          //- div.column-5
-          //-   collaborator-avatar(
-          //-       @click.stop=""
-          //-       :list="[{id: 1, name: user && user.firstName || '', img: null,}]"
-          //-     )
-          div.column-7
-            span(v-if="typeof model.networkMeta.openTest === 'boolean'" @click.stop="handleTestClick(index, model)") Run Test
-              img(src="../../../../static/img/jump-icon.svg")
-            span(v-else @click.stop="") -
-          div.column-3
-            span(v-if="!!model.apiMeta.saved_version_location" @click.stop="" v-tooltip:right="model.apiMeta.saved_version_location") Exported
-            span(v-else @click.stop="") Not Exported
-          div.column-6(@click.stop="")
-            collaborator-avatar(v-if="showUser"
-                :list="[{id: 1, name: user && user.email || '', img: null,}]"
-              )
-            | {{ (model && model.apiMeta && model.apiMeta.updated) ? formatDate(model.apiMeta.updated)  : ''}}
-        
-        
-        div.models-list-row.model-list-item(
-          v-for="(model, index) in unparsedModels"
-          :key="'Unparsed_' + model.id"
-          :class="{'is-selected': isItemSelected(model.networkID)}"
-          @click="onClickDeletedModel(model, index)"
-          )
-          div.column-1
-            //- span.btn-round-icon.check-model-button
-              //- img(v-if="isItemSelected(model.networkID)" src="../../../../static/img/project-page/checked.svg")
-            span.model-name {{model.name}}
+            div.column-1
+              //- span.btn-round-icon.check-model-button
+                //- img(v-if="isItemSelected(model.networkID)" src="../../../../static/img/project-page/checked.svg")
+              span.model-name {{model.name}}
 
-          div.column-2 Deleted
-           
-          div.column-4
-            span(@click.stop="") -
-          div.column-7 Deleted
-          div.column-3
-            span(@click.stop="") -
-          //- div.column-5
-          //-   collaborator-avatar(
-          //-       @click.stop=""
-          //-       :list="[{id: 1, name: user && user.firstName || '', img: null,}]"
-          //-     )
-          div.column-6(@click.stop="")
-            collaborator-avatar(
-                :list="[{id: 1, name: user && user.firstName || '', img: null,}]"
-              )
-            | {{ (model && model && model.updated) ? formatDate(model.updated) : ''}}
+            div.column-2 Deleted
+            
+            div.column-4
+              span(@click.stop="") -
+            div.column-7 Deleted
+            div.column-3
+              span(@click.stop="") -
+            //- div.column-5
+            //-   collaborator-avatar(
+            //-       @click.stop=""
+            //-       :list="[{id: 1, name: user && user.firstName || '', img: null,}]"
+            //-     )
+            div.column-6(@click.stop="")
+              collaborator-avatar(
+                  :list="[{id: 1, name: user && user.firstName || '', img: null,}]"
+                )
+              | {{ (model && model && model.updated) ? formatDate(model.updated) : ''}}
 
 
     file-picker-popup(
@@ -1161,5 +1162,8 @@
     height: 1.2em;
     white-space: nowrap;
     padding-right: 15px;
+  }
+  .model-list-scrollbar {
+    max-height: calc(100vh - 130px);
   }
 </style>
