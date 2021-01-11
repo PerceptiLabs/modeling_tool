@@ -187,8 +187,10 @@ const baseNetDrag = {
         x: (stickStartPos.mouseX - (ev.pageX || ev.touches[0].pageX)), 
         y: (stickStartPos.mouseY - (ev.pageY || ev.touches[0].pageY)) 
       };
-      const top = this.bodyDrag ? stickStartPos.top - delta.y : calcLayerPosition(stickStartPos.top - delta.y);
-      const left = this.bodyDrag ? stickStartPos.left - delta.x : calcLayerPosition(stickStartPos.left - delta.x);
+      
+      const networkScale = this.networkScale;
+      const top = this.bodyDrag ? stickStartPos.top - delta.y : calcLayerPosition(stickStartPos.top - delta.y, networkScale);
+      const left = this.bodyDrag ? stickStartPos.left - delta.x : calcLayerPosition(stickStartPos.left - delta.x, networkScale);
       if((this.top !== top) || (this.left !== left)) {
         this.top = (top < 0) ? 0 : top;
         this.left = (left < 0) ? 0 : left;

@@ -123,8 +123,8 @@ const generateID = function() {
   return Date.now().toString();
 };
 
-const calcLayerPosition = function (position) {
-  const grid = workspaceGrid;
+const calcLayerPosition = function (position, zoomScaleCoefficient = 1) {
+  const grid = workspaceGrid * zoomScaleCoefficient;
   return Math.round(position/grid)*grid
 };
 

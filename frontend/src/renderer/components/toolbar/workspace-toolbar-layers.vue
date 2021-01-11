@@ -86,6 +86,7 @@
 
   import LayerCustom         from '@/components/network-elements/elements/layer-custom/view-layer-custom.vue'
 
+  import { calcLayerPosition } from '@/core/helpers.js';
 
 export default {
   name: 'TheLayersbar',
@@ -268,6 +269,8 @@ export default {
           top <= event.y && 
           event.y <= bottom) {
         
+        const networkScale = this.networkScale;
+
         let fakeEvent = {
           target: {
             dataset: {
@@ -278,8 +281,8 @@ export default {
             clientHeight: 0,
             clientWidth: 0
           },
-          offsetX: event.x - left,
-          offsetY: event.y - top
+          offsetX: calcLayerPosition(event.x - left, networkScale),
+          offsetY: calcLayerPosition(event.y - top, networkScale),
         };
 
         this.$store.dispatch('mod_workspace/ADD_element', { event: fakeEvent });
@@ -374,7 +377,10 @@ export default {
     ...mapGetters({
       getCurrentStepCode:   'mod_tutorials/getCurrentStepCode',
       getShowTutorialTips:  'mod_tutorials/getShowTutorialTips',
-    })
+    }),
+    networkScale() {
+      return this.$store.getters['mod_workspace/GET_currentNetworkZoom'];
+    },
   }
 }
 </script>
