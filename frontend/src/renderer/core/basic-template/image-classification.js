@@ -56,8 +56,8 @@ const imageClassification = {
           "isLock": false,
           "isSelected": false,
           "position": {
-            "top": 20,
-            "left": 20
+            "top": 30,
+            "left": 30
           },
           "OutputDim": "784",
           "InputDim": "[]",
@@ -129,8 +129,8 @@ const imageClassification = {
           "isLock": false,
           "isSelected": false,
           "position": {
-            "top": 280,
-            "left": 20
+            "top": 270,
+            "left": 30
           },
           "OutputDim": "1",
           "InputDim": "[]",
@@ -194,8 +194,8 @@ const imageClassification = {
           "isLock": false,
           "isSelected": false,
           "position": {
-            "top": 20,
-            "left": 220
+            "top": 30,
+            "left": 210
           },
           "OutputDim": "28x28x1",
           "InputDim": "[784]",
@@ -276,7 +276,7 @@ const imageClassification = {
           "isLock": false,
           "isSelected": false,
           "position": {
-            "top": 20,
+            "top": 30,
             "left": 420
           },
           "OutputDim": "14x14x8",
@@ -345,8 +345,8 @@ const imageClassification = {
           "isLock": false,
           "isSelected": false,
           "position": {
-            "top": 280,
-            "left": 280
+            "top": 270,
+            "left": 300
           },
           "OutputDim": "10",
           "InputDim": "",
@@ -418,8 +418,8 @@ const imageClassification = {
           "isLock": false,
           "isSelected": false,
           "position": {
-            "top": 20,
-            "left": 640
+            "top": 30,
+            "left": 630
           },
           "OutputDim": "10",
           "InputDim": "",
@@ -501,8 +501,8 @@ const imageClassification = {
           "isLock": false,
           "isSelected": false,
           "position": {
-            "top": 259,
-            "left": 954
+            "top": 270,
+            "left": 960
           },
           "OutputDim": "1",
           "InputDim": "",

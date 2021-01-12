@@ -40,8 +40,8 @@ const reinforcementLearning = {
           "isLock": false,
           "isSelected": false,
           "position": {
-            "top": 119.25,
-            "left": 142.5
+            "top": 120,
+            "left": 150
           },
           "OutputDim": "210x160x3",
           "InputDim": "",
@@ -166,7 +166,7 @@ const reinforcementLearning = {
           "isSelected": false,
           "position": {
             "top": 120,
-            "left": 720
+            "left": 690
           },
           "OutputDim": "4",
           "InputDim": "",
@@ -243,7 +243,7 @@ const reinforcementLearning = {
           "isSelected": false,
           "position": {
             "top": 120,
-            "left": 940
+            "left": 870
           },
           "OutputDim": "1",
           "InputDim": "",
@@ -314,7 +314,7 @@ const reinforcementLearning = {
           "isSelected": false,
           "position": {
             "top": 120,
-            "left": 520
+            "left": 510
           },
           "tutorialId": "",
           "OutputDim": "105x80x8",

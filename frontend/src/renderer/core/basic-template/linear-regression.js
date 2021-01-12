@@ -56,8 +56,8 @@ const linearRegression = {
           "isLock": false,
           "isSelected": false,
           "position": {
-            "top": 40,
-            "left": 80
+            "top": 30,
+            "left": 90
           },
           "OutputDim": "1",
           "InputDim": "",
@@ -130,7 +130,7 @@ const linearRegression = {
           "isSelected": false,
           "position": {
             "top": 480,
-            "left": 80
+            "left": 90
           },
           "OutputDim": "1",
           "InputDim": "",
@@ -189,8 +189,8 @@ const linearRegression = {
           "isLock": false,
           "isSelected": false,
           "position": {
-            "top": 40,
-            "left": 400
+            "top": 30,
+            "left": 390
           },
           "OutputDim": "1",
           "InputDim": "",
@@ -270,8 +270,8 @@ const linearRegression = {
           "isLock": false,
           "isSelected": false,
           "position": {
-            "top": 288,
-            "left": 753
+            "top": 300,
+            "left": 750
           },
           "OutputDim": "1",
           "InputDim": "",

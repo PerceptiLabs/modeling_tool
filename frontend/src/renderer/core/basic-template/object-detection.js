@@ -55,8 +55,8 @@ const objectDetection = {
             "isLock": false,
             "isSelected": false,
             "position": {
-              "top": 40,
-              "left": 20
+              "top": 30,
+              "left": 30
             },
             "OutputDim": "224x224x3",
             "InputDim": "",
@@ -124,8 +124,8 @@ const objectDetection = {
             "isLock": false,
             "isSelected": false,
             "position": {
-              "top": 40,
-              "left": 180
+              "top": 30,
+              "left": 210
             },
             "OutputDim": "224x224x16",
             "InputDim": "",
@@ -206,8 +206,8 @@ const objectDetection = {
             "isLock": false,
             "isSelected": false,
             "position": {
-              "top": 40,
-              "left": 360
+              "top": 30,
+              "left": 390
             },
             "OutputDim": "112x112x16",
             "InputDim": "",
@@ -288,8 +288,8 @@ const objectDetection = {
             "isLock": false,
             "isSelected": false,
             "position": {
-              "top": 40,
-              "left": 540
+              "top": 30,
+              "left": 570
             },
             "OutputDim": "112x112x32",
             "InputDim": "",
@@ -370,8 +370,8 @@ const objectDetection = {
             "isLock": false,
             "isSelected": false,
             "position": {
-              "top": 40,
-              "left": 720
+              "top": 30,
+              "left": 750
             },
             "OutputDim": "56x56x32",
             "InputDim": "",
@@ -452,8 +452,8 @@ const objectDetection = {
             "isLock": false,
             "isSelected": false,
             "position": {
-              "top": 280,
-              "left": 20
+              "top": 270,
+              "left": 30
             },
             "OutputDim": "56x56x64",
             "InputDim": "",
@@ -534,8 +534,8 @@ const objectDetection = {
             "isLock": false,
             "isSelected": false,
             "position": {
-              "top": 280,
-              "left": 220
+              "top": 270,
+              "left": 210
             },
             "OutputDim": "28x28x64",
             "InputDim": "",
@@ -616,8 +616,8 @@ const objectDetection = {
             "isLock": false,
             "isSelected": false,
             "position": {
-              "top": 280,
-              "left": 420
+              "top": 270,
+              "left": 390
             },
             "OutputDim": "28x28x128",
             "InputDim": "",
@@ -698,8 +698,8 @@ const objectDetection = {
             "isLock": false,
             "isSelected": false,
             "position": {
-              "top": 280,
-              "left": 600
+              "top": 270,
+              "left": 570
             },
             "OutputDim": "14x14x128",
             "InputDim": "",
@@ -780,8 +780,8 @@ const objectDetection = {
             "isLock": false,
             "isSelected": false,
             "position": {
-              "top": 500,
-              "left": 20
+              "top": 510,
+              "left": 30
             },
             "OutputDim": "7x7x256",
             "InputDim": "",
@@ -862,8 +862,8 @@ const objectDetection = {
             "isLock": false,
             "isSelected": false,
             "position": {
-              "top": 500,
-              "left": 200
+              "top": 510,
+              "left": 210
             },
             "OutputDim": "7x7x512",
             "InputDim": "",
@@ -944,8 +944,8 @@ const objectDetection = {
             "isLock": false,
             "isSelected": false,
             "position": {
-              "top": 500,
-              "left": 400
+              "top": 510,
+              "left": 390
             },
             "OutputDim": "7x7x13",
             "InputDim": "",
@@ -1034,8 +1034,8 @@ const objectDetection = {
             "isLock": false,
             "isSelected": false,
             "position": {
-              "top": 500,
-              "left": 780
+              "top": 510,
+              "left": 750
             },
             "OutputDim": "0",
             "InputDim": "",
@@ -1120,8 +1120,8 @@ const objectDetection = {
             "isLock": false,
             "isSelected": false,
             "position": {
-              "top": 580,
-              "left": 580
+              "top": 600,
+              "left": 570
             },
             "OutputDim": "7x7x8",
             "InputDim": "",
@@ -1189,8 +1189,8 @@ const objectDetection = {
             "isLock": false,
             "isSelected": false,
             "position": {
-              "top": 280,
-              "left": 780
+              "top": 270,
+              "left": 750
             },
             "OutputDim": "14x14x256",
             "InputDim": "",

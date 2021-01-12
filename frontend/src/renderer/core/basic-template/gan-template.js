@@ -56,7 +56,7 @@ const ganTemplate = {
             "isSelected": true,
             "position": {
               "top": 420,
-              "left": 20
+              "left": 30
             },
             "OutputDim": "784",
             "InputDim": "[]",
@@ -121,7 +121,7 @@ const ganTemplate = {
             "isSelected": false,
             "position": {
               "top": 420,
-              "left": 200
+              "left": 210
             },
             "OutputDim": "28x28x1",
             "InputDim": "[]",
@@ -197,8 +197,8 @@ const ganTemplate = {
             "isLock": false,
             "isSelected": false,
             "position": {
-              "top": 20,
-              "left": 20
+              "top": 30,
+              "left": 30
             },
             "OutputDim": "100",
             "InputDim": "[]",
@@ -259,8 +259,8 @@ const ganTemplate = {
             "isLock": false,
             "isSelected": false,
             "position": {
-              "top": 20,
-              "left": 180
+              "top": 30,
+              "left": 210
             },
             "OutputDim": "128",
             "InputDim": "[100]",
@@ -332,8 +332,8 @@ const ganTemplate = {
             "isLock": false,
             "isSelected": false,
             "position": {
-              "top": 20,
-              "left": 340
+              "top": 30,
+              "left": 390
             },
             "OutputDim": "784",
             "InputDim": "[128]",
@@ -410,8 +410,8 @@ const ganTemplate = {
             "isLock": false,
             "isSelected": false,
             "position": {
-              "top": 20,
-              "left": 520
+              "top": 30,
+              "left": 570
             },
             "OutputDim": "28x28x1",
             "InputDim": "[784]",
@@ -480,8 +480,8 @@ const ganTemplate = {
             "isLock": false,
             "isSelected": false,
             "position": {
-              "top": 280,
-              "left": 700
+              "top": 270,
+              "left": 750
             },
             "OutputDim": "28x28x1",
             "InputDim": "[[28, 28, 1], []]",
@@ -564,8 +564,8 @@ const ganTemplate = {
             "isLock": false,
             "isSelected": false,
             "position": {
-              "top": 280,
-              "left": 920
+              "top": 270,
+              "left": 930
             },
             "OutputDim": "128",
             "InputDim": "[]",
@@ -637,8 +637,8 @@ const ganTemplate = {
             "isLock": false,
             "isSelected": false,
             "position": {
-              "top": 280,
-              "left": 1140
+              "top": 270,
+              "left": 1110
             },
             "OutputDim": "1",
             "InputDim": "[]",
@@ -719,8 +719,8 @@ const ganTemplate = {
             "isLock": false,
             "isSelected": false,
             "position": {
-              "top": 280,
-              "left": 1340
+              "top": 270,
+              "left": 1290
             },
             "OutputDim": "1",
             "InputDim": "[]",
