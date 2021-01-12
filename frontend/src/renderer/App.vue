@@ -78,6 +78,16 @@
       TutorialsChecklist, TutorialNotification
     },
     created() {
+      window.addEventListener("beforeunload", (e) => {
+        let networksHaveChanges = this.networksWithChanges.some(id=> this.getWorkspacesIds.includes(id));
+        if(networksHaveChanges) { 
+          const confirmationMessage = 'It looks like you have edited model.';
+          
+          (e || window.event).returnValue = confirmationMessage; //Gecko + IE
+
+          return confirmationMessage; //Gecko + Webkit, Safari, Chrome etc.
+        }
+    });
       window.addEventListener('online',  this.updateOnlineStatus);
       window.addEventListener('offline', this.updateOnlineStatus);
       this.trackerInit();
@@ -226,7 +236,7 @@
         getShowChecklist:       'mod_tutorials/getShowChecklist',
         getShowTutorialTips:    'mod_tutorials/getShowTutorialTips',
         getHasShownWhatsNew:    'mod_tutorials/getHasShownWhatsNew', 
-        emptyNavigationMode:    'mod_empty-navigation/getEmptyScreenMode',        
+        emptyNavigationMode:    'mod_empty-navigation/getEmptyScreenMode',
       }),
       platform() {
         return this.$store.state.globalView.platform
@@ -373,6 +383,9 @@
       showAppAboutPopUp() {
         return this.$store.state.globalView.globalPopup.showAppAbout;
       },
+      getWorkspacesIds() {
+        return this.$store.state['mod_workspace'].workspaceContent.map(workspace => workspace.networkID.toString());
+      }
     },
     watch: {
       '$route': {
