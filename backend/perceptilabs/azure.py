@@ -3,7 +3,7 @@ import os
 from concurrent.futures import ThreadPoolExecutor
 
 from azure.eventhub import EventData, EventHubProducerClient
-from azure.storage.blob import BlockBlobService
+from azure.storage.blob import BlobServiceClient
 from azure.storage.blob import ContentSettings
 
 from perceptilabs.logconf import APPLICATION_LOGGER
@@ -15,10 +15,12 @@ logger = logging.getLogger(APPLICATION_LOGGER)
 AZURE_ACCOUNT_NAME_EU = 'uantumetdisks'
 AZURE_ACCOUNT_KEY_EU  = '65rzvvM8RGmELHhQy3PrJdIQH1fQFH0J9CIdJd5U0zNMwz2V7ifhbJNtub/jLaN0P+3lsYWQQg4wjVsXi/1RWQ=='
 AZURE_CONTAINER_EU    = 'users'
+AZURE_CONNSTR_EU      = 'DefaultEndpointsProtocol=https;AccountName=uantumetdisks;AccountKey=65rzvvM8RGmELHhQy3PrJdIQH1fQFH0J9CIdJd5U0zNMwz2V7ifhbJNtub/jLaN0P+3lsYWQQg4wjVsXi/1RWQ==;EndpointSuffix=core.windows.net'
     
 AZURE_ACCOUNT_NAME_US = 'quantumnetamerica'
 AZURE_ACCOUNT_KEY_US  = 'QyCugvLSHZo/AMsevEgU1LVqGA5UX2b7PxpKmM3Uco50v+krDpRnEJ3vtkia77XgR9OAdTwYrYhLs+KZmzn7tQ=='
 AZURE_CONTAINER_US    = 'users'
+AZURE_CONNSTR_US     = 'DefaultEndpointsProtocol=https;AccountName=quantumnetamerica;AccountKey=QyCugvLSHZo/AMsevEgU1LVqGA5UX2b7PxpKmM3Uco50v+krDpRnEJ3vtkia77XgR9OAdTwYrYhLs+KZmzn7tQ==;EndpointSuffix=core.windows.net'
 
 EVENTHUB_NAME = 'pipkernelkpi'
 EVENTHUB_CONNECTION_STRING = 'Endpoint=sb://kernelstreams-ns.servicebus.windows.net/;SharedAccessKeyName=kernelStreamsSharedAccessKey;SharedAccessKey=N1rlZl+91nSiyD19GParplRI6jHECl/HB3PpE8gRRoU='
@@ -71,22 +73,30 @@ class AzureHandler(logging.Handler):
     
 
 class AzureUploader:
-    def __init__(self, account_name, account_key, container_name):
-        self._acc_name = account_name
-        self._acc_key = account_key
+    def __init__(self, conn_str, container_name):
+        """ 
+            Uploads files to Azure blob storage.
+   
+            conn_str: an Azure blob container connection string
+            container_name: blob container name
+        """
+        self._conn_str = conn_str
         self._container = container_name
 
     def upload(self, file_path):
-        block_blob_service = BlockBlobService(account_name=self._acc_name,
-                                              account_key=self._acc_key)
+        """ Uploads a local file to Azure """
         file_name = os.path.basename(file_path)
         
-        block_blob_service.create_blob_from_path(
-            self._container,
-            file_name,
-            file_path,            
-            content_settings=ContentSettings(content_type='application/zip')
+        blob_service_client = BlobServiceClient.from_connection_string(self._conn_str)
+        blob_client = blob_service_client.get_blob_client(
+            container=self._container,
+            blob=file_name
         )
-
+        with open(file_path, "rb") as data:
+            blob_client.upload_blob(
+                data,
+                content_settings=ContentSettings(content_type='application/zip')                
+            )
+        
     def __repr__(self):
-        return self.__class__.__name__ + ":" + self._acc_name
+        return self.__class__.__name__ + ":" + self._container

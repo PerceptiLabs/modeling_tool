@@ -250,11 +250,11 @@ def upload_logs(zip_name):
 
     logger = logging.getLogger(APPLICATION_LOGGER)
 
-    from perceptilabs.azure import AzureUploader, AZURE_ACCOUNT_NAME_EU, AZURE_ACCOUNT_KEY_EU, AZURE_CONTAINER_EU, AZURE_ACCOUNT_NAME_US, AZURE_ACCOUNT_KEY_US, AZURE_CONTAINER_US
+    from perceptilabs.azure import AzureUploader, AZURE_CONNSTR_EU, AZURE_CONTAINER_EU, AZURE_CONNSTR_US, AZURE_CONTAINER_US
 
     data_uploaders = [
-        AzureUploader(AZURE_ACCOUNT_NAME_EU, AZURE_ACCOUNT_KEY_EU, AZURE_CONTAINER_EU),
-        AzureUploader(AZURE_ACCOUNT_NAME_US, AZURE_ACCOUNT_KEY_US, AZURE_CONTAINER_US)
+        AzureUploader(AZURE_CONNSTR_EU, AZURE_CONTAINER_EU),
+        AzureUploader(AZURE_CONNSTR_US, AZURE_CONTAINER_US)
     ]
 
     try:
