@@ -281,6 +281,7 @@ class GithubExportTestCase(TestCaseBase):
             "file_list": [],
             "data_path": "some/path",
             "commit_message": "first commit",
+            "export_type": "basic",
             }
 
     def test_simple(self):

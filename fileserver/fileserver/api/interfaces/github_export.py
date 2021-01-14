@@ -45,12 +45,13 @@ class RepoExporterAPI():
         return InputGitTreeElement(path=file_path, mode="100644", type="blob", sha=sha)
 
     def _add_elements_to_new_commit(self, repo, element_list, commit_message):
-        head_sha = repo.get_branch("main").commit.sha
+        master_branch = repo.default_branch
+        head_sha = repo.get_branch(master_branch).commit.sha
         base_tree = repo.get_git_tree(sha=head_sha)
         tree = repo.create_git_tree(element_list, base_tree)
         parent = repo.get_git_commit(sha=head_sha)
         commit = repo.create_git_commit(commit_message, tree, [parent])
-        master_ref = repo.get_git_ref("heads/main")
+        master_ref = repo.get_git_ref(ref='refs/heads/' + master_branch)
         master_ref.edit(sha=commit.sha)
         return commit.sha
 

@@ -3,7 +3,7 @@ from fileserver.api.interfaces.github_export import RepoExporterAPI
 from fileserver.api.interfaces.github_issue import CreateIssueAPI
 from rest_framework.decorators import api_view
 from fileserver.api.exceptions import UserError
-from fileserver.api.models.github import export_repo_basic, import_repo, create_issue
+from fileserver.api.models.github import export_repo_basic, import_repo, create_issue, export_repo_advanced
 from fileserver.api.views.util import (
         get_required_param,
         get_path_param,
@@ -27,6 +27,7 @@ def github_export(request):
     github_token = get_required_body_param("github_token", as_dict)
     repo_name = get_required_body_param("repo_name", as_dict)
     commit_message = get_required_body_param("commit_message", as_dict)
+    export_type = as_dict.get("export_type")
 
     # optional
     include_trained = bool(as_dict.get("include_trained_model"))
@@ -35,8 +36,18 @@ def github_export(request):
     data_paths = [get_full_path(data_path) for data_path in raw_data_paths]
 
     try:
-        api = connect_to_repo(github_token, repo_name)
-        sha_and_url = export_repo_basic(api, full_path, include_trained, data_paths, commit_message=commit_message)
+        if export_type == "basic":
+            api = connect_to_repo(github_token, repo_name)
+            sha_and_url = export_repo_basic(api, full_path, include_trained, data_paths, commit_message=commit_message)
+        
+        elif export_type == "advanced":
+            tensorfiles_list = list(as_dict.get("tensorfiles"))
+            datafiles_list = list(as_dict.get("datafiles"))
+            api = connect_to_repo(github_token, repo_name)
+            sha_and_url = export_repo_advanced(api, full_path, tensorfiles_list, datafiles_list, data_paths, commit_message=commit_message)
+        
+        else:
+            raise HTTPExceptions.BAD_REQUEST.with_content("Invaild github export type")
 
         response = {"sha": sha_and_url[0], "URL": sha_and_url[1]}
         return HttpResponse(json.dumps(response), content_type="application/json")
