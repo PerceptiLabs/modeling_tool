@@ -868,7 +868,7 @@ const actions = {
   //---------------
   //  IMPORT/EXPORT
   //---------------
-  API_parse({dispatch, getters, rootGetters}, path) {
+  API_parse({dispatch, getters, rootState, rootGetters}, path) {
     const theData = {
       receiver: rootGetters['mod_workspace/GET_currentNetworkId'],
       action: "Parse",
@@ -876,7 +876,38 @@ const actions = {
     };
     return coreRequest(theData)
       .then((data)=> {
-        dispatch('mod_workspace/ADD_network', data.network, {root: true});
+        let networkId;
+
+        dispatch('mod_project/createProjectModel', {
+          name: data.network.networkName,
+          project: rootState.mod_project.currentProject,
+          location: `${rootGetters['mod_project/GET_projectPath']}/${data.network.networkName}`,
+        }, {root: true})
+        .then(apiMeta => {
+          networkId = apiMeta.model_id;
+
+          for(let key in data.network.networkElementList) {
+            // data.network.networkElementList[key].backward_connections=[]
+            // data.network.networkElementList[key].forward_connections=[]
+            data.network.networkElementList[key].inputs={"16100284150430":{"name":"input","reference_var_id":null,"reference_layer_id":null,"isDefault":true}}
+            data.network.networkElementList[key].outputs={"16100286360500":{"name":"output","reference_var":"output"}}
+          }
+
+
+          data.network.networkMeta={
+            chartsRequest: {timerID: null, waitGlobalEvent: false, doRequest: 0, showCharts: 0},
+            coreStatus: {Status: "Waiting"},
+            netMode: "edit",
+            openStatistics: null,
+            openTest: null,
+            zoom: 1
+          }
+          return dispatch('mod_workspace/ADD_network', {network: data.network, apiMeta}, {root: true});
+        })
+        .then(_ => {
+          dispatch('mod_workspace/SET_currentModelIndexByNetworkId', networkId, {root: true});
+        });
+
       })
       .catch((err)=> {
         console.error('Parse answer', err);

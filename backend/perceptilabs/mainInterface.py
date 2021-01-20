@@ -7,6 +7,9 @@ import threading
 from sentry_sdk import configure_scope
 from concurrent.futures import ThreadPoolExecutor
 
+from perceptilabs.parser.onnx_converter import *
+from perceptilabs.parser.parse_onnx import LayerCheckpoint, Parser
+
 #core interface
 from perceptilabs.extractVariables import extractCheckpointInfo
 from perceptilabs.s3buckets import S3BucketAdapter
@@ -347,31 +350,8 @@ class Interface():
             
             return getPreviewVariableList(layer_id, lw_core, graph_spec).run()
 
-        elif action == "Parse":
-            if value["Pb"]:
-                pb=value["Pb"][0]
-            else:
-                pb=value["Pb"]
-
-            if value["Checkpoint"]:
-                ckpt=value["Checkpoint"][0]
-            else:
-                ckpt=value["Checkpoint"]
-
-            trainableFlag=value["Trainable"]
-            end_points=value["EndPoints"]
-            containers=value["Containers"]
-
-            try:
-                return Parse(pb=pb, 
-                checkpointDict=self._checkpointDict, 
-                checkpoint=ckpt, 
-                make_trainable=trainableFlag, 
-                end_points=end_points, 
-                containerize=containers).run()
-            except Exception as e:
-                return {}
-                # return {"content":"Parser Failed","errorMessage":"Parser got this Exception:\n" + str(e)}
+        elif action == "Parse":     
+            return self._parse(value[0])
 
         elif action == "getGraphOrder":
             jsonNetwork = self._network_loader.load(value)
@@ -586,3 +566,11 @@ class Interface():
         if not self._allow_headless:
             return None        
         return self._core.set_headless(active=request_value)
+
+    def _parse(self, path):
+        frozen_pb_model = load_tf1x_frozen(path)
+        _, onnx_model = create_onnx_from_tf1x(frozen_pb_model)
+        parser = Parser(onnx_model)
+        layer_checkpoint_list = parser.parse()
+        jsonNetwork = parser.save_json(layer_checkpoint_list[0])
+        return jsonNetwork

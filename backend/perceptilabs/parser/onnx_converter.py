@@ -51,12 +51,15 @@ def load_tf1x_frozen(path):
 
 def create_onnx_from_tf1x(model):
     """Crete an ONNX model from the tf1x model and save it to the specified path."""
+    inputs = [model.as_graph_def().node[0].name + ":0"]
+    outputs = [model.as_graph_def().node[-1].name + ":0"]
+
     onnx_graph = tf2onnx.tfonnx.process_tf_graph(model, 
             continue_on_error=False, verbose=False, target=None,
             opset=None, custom_op_handlers=None,
             custom_rewriter=None, extra_opset=None,
             shape_override=None, inputs_as_nchw=None,
-            input_names=["input:0"], output_names=["output:0"],
+            input_names=inputs, output_names=outputs,
             const_node_values=None)
     model = onnx_graph.make_model("tf1x-onnx")
     return onnx_graph, model
@@ -70,12 +73,16 @@ def save_onnx_to_disk(onnx_model, path):
         return Exception("Couldn't save the ONNX model to disk!")
 
 if __name__ == "__main__":
-    path = '/Users/adilsalhotra/developer/test/parser/mobilenet_v1_1.0_224/mobilenet_v1_1.0_224_eval.pbtxt'
-    path_frozen = '/Users/adilsalhotra/developer/test/parser/mobilenet_v1_1.0_224/mobilenet_v1_1.0_224_frozen.pb'
+    # path = '/Users/adilsalhotra/developer/test/parser/mobilenet_v1_1.0_224/mobilenet_v1_1.0_224_eval.pbtxt'
+    path_frozen = '/Users/adilsalhotra/developer/perceptilabs/backend/perceptilabs/parser/mobilenet_v1_1.0_224/mobilenet_v1_1.0_224_frozen.pb'
     # path = '/Users/adilsalhotra/developer/test/parser/nn/saved_model.pb'
+    path_frozen1 = '/Users/adilsalhotra/developer/test/file_config/saved_model/saved_model_frozen.pb'
+    path = '/Users/adilsalhotra/developer/test/file_config/saved_model/saved_model.pb'
 
-    model = load_tf1x_frozen(path_frozen)
-    inputs, outputs = get_inputs_outputs(path)
+    model = load_tf1x_frozen(path_frozen1)
+    test_ = load_tf1x_frozen(path_frozen)
+
+    # graph = load_tf1x_model('/Users/adilsalhotra/developer/test/file_config/saved_model/saved_model.pb')
     onnx_graph, onnx_model = create_onnx_from_tf1x(model)
-    save_onnx_to_disk(onnx_model, "model.onnx")
+    save_onnx_to_disk(onnx_model, "reshape_model.onnx")
     print("ONNX model created.")

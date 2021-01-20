@@ -1,9 +1,8 @@
-# from parse_onnx import LayerCheckpoint, get_layer, parse, convert_checkpoint, get_names
-from parse_onnx import Parser
+from perceptilabs.parser.parse_onnx import *
 from perceptilabs.layers.specbase import LayerSpec, InnerLayerSpec
 from perceptilabs.layers.processreshape.spec import ProcessReshapeSpec
 from perceptilabs.layers.specbase import LayerConnection
-from onnx_converter import create_onnx_from_tf1x, load_tf1x_model, load_tf1x_frozen
+from perceptilabs.parser.onnx_converter import create_onnx_from_tf1x, load_tf1x_model, load_tf1x_frozen
 import pytest
 import tensorflow as tf
 import os

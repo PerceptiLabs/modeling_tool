@@ -242,6 +242,21 @@ export default {
       
       this.$store.dispatch('globalView/SET_showImportNetworkfromGitHubOrLocalPopup', true);
     },
+    openLoadPbPopup() {
+      if(this.statusLocalCore!='online') {
+        this.infoPopup("Kernel is offline");
+        return;
+      }
+      
+      this.$store.dispatch('globalView/SET_filePickerPopup', {
+        filePickerType: 'file',
+        confirmCallback: this.onLoadPbComplete
+      });
+    },
+    onLoadPbComplete(path) {
+      console.log('onLoadPbComplete', path);
+      this.$store.dispatch('mod_api/API_parse', path);
+    },
     saveModel() {
       if(this.statusLocalCore!='online') {
         this.infoPopup("Kernel is offline");

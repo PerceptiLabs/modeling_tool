@@ -1,14 +1,18 @@
 import onnx
 import tensorflow as tf
 from onnx import shape_inference
-from onnx_converter import create_onnx_from_tf1x, load_tf1x_model, load_tf1x_frozen
+from perceptilabs.parser.onnx_converter import create_onnx_from_tf1x, load_tf1x_model, load_tf1x_frozen
 from perceptilabs import funclib
+from perceptilabs.graph.spec import GraphSpec 
 from perceptilabs.layers.specbase import LayerSpec, InnerLayerSpec
 from perceptilabs.layers.processreshape.spec import ProcessReshapeSpec
 from perceptilabs.layers.specbase import LayerConnection
 import google.protobuf
 from google.protobuf.json_format import MessageToDict
 
+
+import numpy as np
+import networkx as nx
 
 class LayerCheckpoint():
     def __init__(self, name="", ops=None, shape=(), start_node=False, end_node=False, 
@@ -33,7 +37,7 @@ class LayerCheckpoint():
         
 class Parser():
 
-    def __init__(self, model=None):
+    def __init__(self, model=None, path=None):
         """
             args
             model: The ONNX model to parse
@@ -44,8 +48,11 @@ class Parser():
         """
         self.low_prio_ops = ['Cast', 'Identity']
         self.low_prio_inputs = ['shape:0']
-        self.model = model
 
+        if model is not None:
+            self.model = model
+        else:
+            self.model = self.load_onnx_model(path)
     def parse(self):
         """
             Get the inputs, layers, and outputs as lists of LayerCheckpoints. Get relevant information for 
@@ -122,7 +129,7 @@ class Parser():
                 layers[index].forward_connections.append(outputs[index].name)
 
     def convert_checkpoint(self, layers):
-        layer_specs = list()
+        layer_specs = []
         for layer_checkpoint in layers:
             layer_spec = ProcessReshapeSpec(
                 id_='layer_id', #TODO:(adil.s) Don't manually assign layer ID when building a GraphSpec!
@@ -133,3 +140,133 @@ class Parser():
             layer_specs.append(layer_spec)
 
         return layer_specs
+
+    def create_id_mappings(self, layer_specs):
+                
+        idList=np.random.sample(range(1, len(layer_specs)+1, len(layer_specs)))
+        name2idDict={}
+        id2nameDict={}
+        for layer_spec in layer_specs:
+            Id=str(idList[0])
+            name2idDict[Id]=layer_spec.name
+            id2nameDict[layer_spec.name]=Id
+        return id2nameDict, name2idDict
+
+    def create_nx_graph(self, layer_specs, name2idDict, id2nameDict):
+        json = [GraphSpec(layer_specs).to_dict()]
+
+        G=nx.Graph()
+        maxWeight=1
+
+        for layer_spec in layer_specs:
+            if len(layer_spec.name.split("/")) > maxWeight:
+                maxWeight=len(layer_spec.name.split("/"))
+    
+        for layer_spec in layer_specs:
+            if len(layer_spec.forward_connections) < 1:
+                G.add_node(name2idDict[layer_spec.name])
+                break
+            for con in layer_spec.forward_connections:
+                next_layer_name = id2nameDict[con]
+                layer_namespace = layer_spec.name.split("/")
+                next_layer_namespace = next_layer_name.split("/")
+                weight=1
+
+                if len(layer_namespace)>len(next_layer_namespace):
+                    for i in next_layer_namespace:
+                        if i not in layer_namespace:
+                            weight=maxWeight - next_layer_namespace.index(i)
+                            break
+                else:
+                    for i in layer_namespace:
+                        if i not in next_layer_namespace:
+                            weight=maxWeight - layer_namespace.index(i)
+                            break
+                # print(weight)
+                G.add_edge(name2idDict[layer_spec.name],con,weight=weight)
+    
+        
+        positions=nx.kamada_kawai_layout(G,scale=1500,dim=2,weight='weight') 
+        flipped_positions={node: (x,-y) for (node, (x,y)) in positions.items()}
+
+        xScale=yScale=1.3
+        minX=50
+        minY=50
+        for Id,pos in flipped_positions.items():
+            if pos[0]*xScale < minX:
+                minX = pos[0] * xScale
+            if pos[1] * yScale < minY:
+                minY = pos[1] * yScale
+        
+        adjX = 50 - minX
+        adjY = 50 - minY
+        positionsCopy = {}
+        for Id,pos in flipped_positions.items():
+            positionsCopy[Id] = [pos[0] * xScale + adjX, pos[1] * yScale + adjY]
+
+        positions = positionsCopy
+        return positions
+
+    def save_json(self, layer_spec):
+        layer_specs = [layer_spec]
+
+        name2idDict, id2nameDict = self.create_id_mappings(layer_specs)
+        positions = self.create_nx_graph(layer_specs, name2idDict, id2nameDict)
+
+        #######################################Create layers in correct foramt#######################################
+        layer_dict = dict()
+        for layer_spec in layer_specs:
+            OutputDim = str(layer_spec.shape).replace("(","").replace(")","").replace(", ","x").replace("None","?")
+            layer_dict[name2idDict[layer_spec.name]] = {
+                "layerId": name2idDict[layer_spec.name],
+                "checkpoint": None,
+                "endPoints": layer_spec.end_points,
+                # "layerName": layerName.split("/")[-1],
+                "layerName": layer_spec.name.split('/')[-1],
+                "layerType": layer_spec.type_,
+                "layerSettings": "",
+                "layerCode":{"Output":layer_spec.custom_code},
+                "layerNone": False,
+                "layerMeta": {
+                    # "layerContainerName": ["/".join(layerName.split("/")[0:i]) for i in range(1,len(layerName.split("/")))],
+                    "layerBgColor": '',
+                    "layerContainerName": '',
+                    "isInvisible": False,
+                    "isLock": False,
+                    "isSelected": False,
+                    "position": {
+                    # "top": None,
+                    # "left": None
+                    # "top": random.randint(10,700),
+                    # "left": random.randint(10,700)
+                    "top":positions[name2idDict[layer_spec.name]][0],
+                    "left":positions[name2idDict[layer_spec.name]][1]
+                    },
+                    "OutputDim": OutputDim,
+                    "InputDim": "",
+                    "containerDiff": {
+                    "top": 0,
+                    "left": 0
+                    }
+                },
+                "layerCodeError": None,
+                "componentName": layer_spec.type_,
+                "connectionOut":layer_spec.forward_connections,
+                "connectionIn":layer_spec.backward_connections,
+                "connectionArrow": layer_spec.forward_connections,
+                "previewVariable":"output"
+            }
+
+        ########################################Create Network#####################################################
+        Network={
+            "network":{
+                "networkName":'ReshapeGraph',
+                "networkID":"",
+                "networkSettings":None,
+                "networkMeta": {},
+                "networkElementList": layer_dict,
+            }
+        }
+
+        return Network
+                
