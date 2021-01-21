@@ -28,7 +28,7 @@ const mutations = {
     const changes = localStorage.getItem('_network.changes') || '{}';
     const parsedChanges = JSON.parse(changes);
 
-    for ([key, value] of Object.entries(parsedChanges)) {
+    for (const [key, value] of Object.entries(parsedChanges)) {
       Vue.set(state.networkChanges, key, value);
     }
   },
@@ -37,7 +37,7 @@ const mutations = {
   
     const changes = JSON.parse(JSON.stringify(state.networkChanges));
 
-    for ([key,value] of Object.entries(changes)) {
+    for (const [key,value] of Object.entries(changes)) {
       if (value === false) {
         delete changes[key];
       }
