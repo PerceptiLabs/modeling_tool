@@ -198,6 +198,12 @@ DEFINITION_TABLE_TF2X = {
         'layers/processonehot/tf2x_template.j2',        
         'layer_tf2x_one_hot'
     ),
+    'ProcessGrayscale': LayerMeta(
+        ProcessGrayscaleSpec,
+        'layers/processgrayscale/tf2x_imports.json',
+        'layers/processgrayscale/tf2x_template.j2',
+        'layer_tf2x_grayscale'
+    ),
     'TrainNormal': LayerMeta(
         TrainClassificationSpec,
         'layers/trainclassification/tf2x_imports.json',
