@@ -186,6 +186,12 @@ DEFINITION_TABLE_TF2X = {
         'layers/processreshape/tf2x_template.j2',        
         'layer_tf2x_reshape'
     ),
+    'ProcessRescale': LayerMeta(
+        ProcessRescaleSpec,
+        'layers/processrescale/tf2x_imports.json',
+        'layers/processrescale/tf2x_template.j2',
+        'layer_tf2x_rescale'
+    ),
     'ProcessOneHot': LayerMeta(
         DeepLearningFcSpec,
         'layers/processonehot/tf2x_imports.json',
