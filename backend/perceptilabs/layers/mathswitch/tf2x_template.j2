@@ -1,22 +1,29 @@
 {% from 'tf1x_utils.j2' import build_output_dict, check_input_vars %}
 {% from 'controlflow.j2' import indented_if %}
 
-
-{% macro layer_tf2x_rescale(layer_spec, graph_spec) %}
+{% macro layer_tf2x_switch(layer_spec, graph_spec) %}
 class {{layer_spec.sanitized_name}}Keras(tf.keras.layers.Layer):
-    def call(self, inputs, training=True):
-        """ Takes a tensor and rescales it """
-        {{ check_input_vars(layer_spec, ['input'])|indent(width=8)}}               
-        input_ = inputs['input']
-        output = tf.image.resize(input_, [{{layer_spec.height}}, {{layer_spec.width}}])
-        
+    def __call__(self, inputs: Dict[str, tf.Tensor] , is_training: tf.Tensor = None) -> Dict[str, tf.Tensor]:
+        """ Takes the outputs of all the incoming layers as input and returns the output of that layer."""
+        {{ check_input_vars(layer_spec, ['input1', 'input2'])|indent(width=8)}}            
+        {% call indented_if(layer_spec.selected_var_name == 'input1')%}
+            y = inputs['input1']
+        {% endcall %}
+
+        {% call indented_if(layer_spec.selected_var_name == 'input2')%}
+            y = inputs['input2']
+        {% endcall %}
         {{ build_output_dict(
             'self._outputs',
-            {'output': 'output', 'preview': 'output'},
+            {'output': 'y', 'preview': 'y'},
             ['output', 'preview'])|indent(width=8)
         }}
+
         return self._outputs
-	
+    
+    def get_sample(self):
+        return self._outputs
+
     def get_config(self):
         """Any variables belonging to this layer that should be rendered in the frontend.
         
@@ -30,7 +37,5 @@ class {{layer_spec.sanitized_name}}(Tf2xLayer):
     def __init__(self):
         super().__init__(
             keras_class={{layer_spec.sanitized_name}}Keras
-        )        
-    
+        )       
 {% endmacro %}
-

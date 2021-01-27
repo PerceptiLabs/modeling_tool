@@ -198,6 +198,12 @@ DEFINITION_TABLE_TF2X = {
         'layers/processonehot/tf2x_template.j2',        
         'layer_tf2x_one_hot'
     ),
+    'MathSwitch': LayerMeta(
+        MathSwitchSpec,
+        'layers/mathswitch/tf2x_imports.json',
+        'layers/mathswitch/tf2x_template.j2',        
+        'layer_tf2x_switch'
+    ),
     'ProcessGrayscale': LayerMeta(
         ProcessGrayscaleSpec,
         'layers/processgrayscale/tf2x_imports.json',
