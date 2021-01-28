@@ -114,6 +114,7 @@ export default {
       else {
         this.ClickElementTracking = ev.target.closest('.js-clickout');
         document.addEventListener('click', this.clickOutside);
+        this.$store.dispatch('mod_workspace/SET_elementUnselect');
         this.$store.dispatch('mod_workspace/SET_elementSelect', {id: this.currentId, setValue: true});
       }
     },
