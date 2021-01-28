@@ -607,9 +607,9 @@ class coreLogic():
                 loss_val=self.getStatistics({"layerId":id_, "variable":"loss_validation_epoch","innervariable":""})
 
                 acc_train_final = float(acc_train[-1]*100) if len(acc_train) > 0 else -1.0
-                loss_train_final = float(loss_train[-1]*100) if len(loss_train) > 0 else -1.0
+                loss_train_final = float(loss_train[-1]) if len(loss_train) > 0 else -1.0
                 acc_val_final = float(acc_val[-1]*100) if len(acc_val) > 0 else -1.0
-                loss_val_final = float(loss_val[-1]*100) if len(loss_val) > 0 else -1.0
+                loss_val_final = float(loss_val[-1]) if len(loss_val) > 0 else -1.0
                 
                 end_results.update({1:{"Training": {"Accuracy Training":acc_train_final, "Loss Training":loss_train_final}}, 2:{"Validation": {"Accuracy Validation":acc_val_final, "Loss Validation": loss_val_final}}})
             elif layer_spec.type_ == "TrainDetector":
