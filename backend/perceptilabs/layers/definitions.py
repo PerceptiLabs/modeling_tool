@@ -210,6 +210,12 @@ DEFINITION_TABLE_TF2X = {
         'layers/processgrayscale/tf2x_template.j2',
         'layer_tf2x_grayscale'
     ),
+    'MathMerge': LayerMeta(
+        MathMergeSpec,
+        'layers/mathmerge/tf2x_imports.json',
+        'layers/mathmerge/tf2x_template.j2',
+        'layer_tf2x_merge'
+    ),
     'TrainNormal': LayerMeta(
         TrainClassificationSpec,
         'layers/trainclassification/tf2x_imports.json',
