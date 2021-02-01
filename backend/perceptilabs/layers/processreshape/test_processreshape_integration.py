@@ -75,4 +75,18 @@ def test_tf2x_reshape_27x1_to_3x3x3(script_factory_tf2x):
     assert y['output'].shape == (1, 3, 3, 3)
     
 
+@pytest.mark.tf2x
+def test_tf2x_reshape_784_to_28x28x0_equals_28x28(script_factory_tf2x):
+    layer_spec = ProcessReshapeSpec(
+        id_='layer_id',
+        name='layer_name',
+        shape=(28, 28, 0),
+        permutation=(0, 1, 2),
+        backward_connections=(LayerConnection(dst_var='input'),)        
+    )
+    layer = LayerHelper(script_factory_tf2x, layer_spec).get_instance()
+
+    x = np.random.random((1, 784))
+    y = layer({'input': x})
+    assert y['output'].shape == (1, 28, 28)
 
