@@ -23,17 +23,17 @@ const baseNetPaintArrows = {
       ev.stopPropagation();
       const { outputDotId,outputLayerId } = ev.target.dataset;
       let el = this.dataEl;
-      let currentTargerStartElement = document.querySelector(`[layer-id="${outputLayerId}"]`);
+      let currentTargetStartElement = document.querySelector(`[layer-id="${outputLayerId}"]`);
       let theDot = document.querySelector(`[data-output-circle-dot-id="${outputDotId}"][data-output-layer-id="${outputLayerId}"]`);
 
-      const { x: layerWidth, y: layerHeight } = currentTargerStartElement.getBoundingClientRect();
+      const { x: layerWidth, y: layerHeight } = currentTargetStartElement.getBoundingClientRect();
       const { x: dotWidth, y: dotHeight } = theDot.getBoundingClientRect();
       const dotPositionWidth = (dotWidth - layerWidth);
       const dotPositionHeight = (dotHeight  - layerHeight) 
 
 
       this.$parent.$parent.addArrowListener();
-      //  the start id should be setted as varid and layerid;
+      //  the start id should be set as variableID and layerId;
       // this.$store.commit('mod_workspace/SET_startArrowID', el.layerId);
       this.$store.commit('mod_workspace/SET_startArrowID', {
         outputDotId,

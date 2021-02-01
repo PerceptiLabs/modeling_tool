@@ -33,17 +33,12 @@
         )
           component(:is="element" :draggable="true" :showTitle="true" :ref="`layer-${element}`")
 
-    //- .single-layer-category(
-    //-   @click="onLayerClick($event, 'custom')"
-    //- )
-    //-   layer-custom(:draggable="true" :showTitle="true" ref="layer-custom")
-    
 </template>
 
 <script>
   import {trainingElements, deepLearnElements}  from '@/core/constants.js'
   import { mapActions, mapGetters }       from 'vuex';
-
+import { generateID }  from "@/core/helpers.js";
   import DataData             from '@/components/network-elements/elements/data-data/view-data-data.vue'
   import DataEnvironment      from '@/components/network-elements/elements/data-environment/view-data-environment.vue'
   import DataCloud            from '@/components/network-elements/elements/data-cloud/view-data-cloud.vue'
@@ -102,6 +97,7 @@ export default {
       hoveredElement: '',
       clickedElementName: null,
       clonedElement: null,
+      previousAddedElementId: null,
       layersbarList: [
         {
           tooltip: 'Data',
@@ -274,6 +270,7 @@ export default {
         const networkScale = this.networkScale;
 
         let fakeEvent = {
+          id: generateID(), // here should be generated id to know 
           target: {
             dataset: {
               layer: this.clonedElement.dataset.layer,
@@ -287,9 +284,60 @@ export default {
           offsetY: calcLayerPosition(event.y - top, networkScale),
         };
 
-        this.$store.dispatch('mod_workspace/ADD_element', { event: fakeEvent });
+        const isShiftPressed = event.shiftKey;
 
-        this.cleanupClickDropFunctionality();
+        if(isShiftPressed) {
+        
+          if(this.previousAddedElementId !== null) { // is second element placed by holding shift key
+
+            this.$store.dispatch('mod_workspace/ADD_element', { event: fakeEvent });
+
+            setTimeout(() => {
+              const previousElement = this.$store.getters['mod_workspace/GET_networkElementById'](this.previousAddedElementId);
+
+              const outputs = previousElement.outputs;
+              const outputKey = Object.keys(outputs)[0];
+              
+
+
+              const currentElement = this.$store.getters['mod_workspace/GET_networkElementById'](fakeEvent.id);
+
+              const inputs = currentElement.inputs;
+              let inputKey = null;
+              Object.keys(inputs).map(key => {
+                if(inputs[key].isDefault) {
+                  inputKey = key;
+                }
+              })
+
+              if(!!inputKey && !!outputKey) {
+                this.$store.commit('mod_workspace/SET_startArrowID', {
+                outputDotId: outputKey,
+                outputLayerId: previousElement.layerId,
+                layerId: previousElement.layerId,
+                });
+                this.$store.dispatch('mod_workspace/ADD_arrow', {
+                  inputDotId: inputKey,
+                  inputLayerId: currentElement.layerId,
+                  layerId: currentElement.layerId,
+                }).then(() => {
+                  this.$store.dispatch('mod_api/API_getBatchPreviewSampleForElementDescendants', currentElement.layerId);
+                });
+              }
+
+              this.previousAddedElementId = fakeEvent.id;
+            }, 100)
+
+          } else {
+            this.$store.dispatch('mod_workspace/ADD_element', { event: fakeEvent });
+            this.previousAddedElementId = fakeEvent.id;
+          }
+
+        } else {
+          this.$store.dispatch('mod_workspace/ADD_element', { event: fakeEvent });
+          this.cleanupClickDropFunctionality();
+        }
+        
       }
     },
     cloneElement(elementName) {
@@ -350,6 +398,7 @@ export default {
       if(this.clonedElement) {
         document.body.removeChild(this.clonedElement);
       }
+      this.previousAddedElementId = null;
       this.clickedElementName = null;
       this.clonedElement = null;
       this.handleFocusOut();

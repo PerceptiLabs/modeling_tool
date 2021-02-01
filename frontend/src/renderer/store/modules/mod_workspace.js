@@ -2530,7 +2530,7 @@ function currentElement(id) {
 }
 const createNetElement = function (event) {
   return {
-    layerId: generateID(),
+    layerId: event.id || generateID(),
     copyId: event.target.dataset.copyId || null,
     copyContainerElement: event.target.dataset.copyContainerElement || null,
     layerName: event.target.dataset.layer,
