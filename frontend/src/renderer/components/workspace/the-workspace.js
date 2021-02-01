@@ -75,11 +75,13 @@ export default {
       this.scrollActiveTabIntoView();
     });
     window.addEventListener('mousemove',  this.startCursorListener);
+    window.addEventListener('contextmenu', this.preventEvent)
   },
   beforeDestroy() {
     if (this.isTraining) {
       this.setHeadless(true);
     }
+    window.removeEventListener('contextmenu', e => e.preventDefault())
 
     window.removeEventListener('resize', this.onResize);
 
@@ -729,6 +731,9 @@ export default {
     },
     setHeadless(isHeadless) {
       this.$store.dispatch('mod_api/API_setHeadless', isHeadless, {root: true})
+    },
+    preventEvent(e) {
+      e.preventDefault();
     }
   }
 }
