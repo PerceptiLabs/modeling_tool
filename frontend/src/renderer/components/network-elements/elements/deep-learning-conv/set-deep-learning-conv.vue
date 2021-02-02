@@ -2,17 +2,39 @@
 
   div
     .settings-layer_section
-      .form_row(v-tooltip-interactive:right="interactiveInfo.dimension")
-        .form_label Dimension:
-        #tutorial_dimension.form_input(data-tutorial-hover-info)
-          base-radio(group-name="group" value-input="Automatic" v-model="settings.Conv_dim")
-            span Automatic
-          base-radio(group-name="group" value-input="1D" v-model="settings.Conv_dim")
-            span 1D
-          base-radio(group-name="group" value-input="2D" v-model="settings.Conv_dim")
-            span 2D
-          base-radio(group-name="group" value-input="3D" v-model="settings.Conv_dim")
-            span 3D
+      template(v-if="isTF2XEnabled")
+        .form_row(v-tooltip-interactive:right="interactiveInfo.convolutionType")
+          .form_label Convolution type:
+          #tutorial_convolution_type.form_input(data-tutorial-hover-info)
+            base-radio(group-name="convolutionTypeGroup" value-input="Conv" v-model="settings.Conv_type")
+              span Conv
+            base-radio(group-name="convolutionTypeGroup" value-input="Transpose" v-model="settings.Conv_type")
+              span Transpose
+            base-radio(group-name="convolutionTypeGroup" value-input="Separable" v-model="settings.Conv_type")
+              span Separable
+            base-radio(group-name="convolutionTypeGroup" value-input="Depthwise" v-model="settings.Conv_type")
+              span Depthwise
+        .form_row(v-tooltip-interactive:right="interactiveInfo.dimension")
+          .form_label Dimension:
+          #tutorial_dimension.form_input(data-tutorial-hover-info)
+            base-radio(
+              v-for="convDimOption in validConvolutionDimOptions"
+              :key="convDimOption"
+              group-name="group" :value-input="convDimOption" v-model="settings.Conv_dim")
+              span {{ convDimOption }}
+
+      template(v-else)
+        .form_row(v-tooltip-interactive:right="interactiveInfo.dimension")
+          .form_label Dimension:
+          #tutorial_dimension.form_input(data-tutorial-hover-info)
+            base-radio(group-name="group" value-input="Automatic" v-model="settings.Conv_dim")
+              span Automatic
+            base-radio(group-name="group" value-input="1D" v-model="settings.Conv_dim")
+              span 1D
+            base-radio(group-name="group" value-input="2D" v-model="settings.Conv_dim")
+              span 2D
+            base-radio(group-name="group" value-input="3D" v-model="settings.Conv_dim")
+              span 3D
     .settings-layer_section
       .form_row(v-tooltip-interactive:right="interactiveInfo.patchSize")
         .form_label Patch size:
@@ -152,6 +174,7 @@ export default {
   data() {
     return {
       settings: {
+        Conv_type: 'Conv',
         Conv_dim: "2D", //Automatic, 1D, 2D, 3D
         Patch_size: "3",
         Stride: "2",
@@ -168,6 +191,10 @@ export default {
         Pool_stride: "2"
       },
       interactiveInfo: {
+        convolutionType: {
+          title: 'Convolution Type',
+          text: 'Choose which type of convolutional operation to use'
+        },
         dimension: {
           title: 'Dimension',
           text: 'Choose which type of convolutional operation to use'
@@ -226,7 +253,23 @@ export default {
   computed: {
     ...mapGetters({
       isTutorialMode:   'mod_tutorials/getIsTutorialMode',
-    })
+    }),
+    isTF2XEnabled() {
+      return process.env.ENABLE_TF2X === 'true';
+    },
+    validConvolutionDimOptions() {
+      const convType = this.settings.Conv_type;
+
+      if (convType === 'Conv') {
+        return ['1D', '2D', '3D'];
+      } else if (convType === 'Transpose') {
+        return ['2D', '3D'];
+      } else if (convType === 'Separable') {
+        return ['1D', '2D'];
+      } else if (convType === 'Depthwise') {
+        return ['2D'];
+      } 
+    }
   },
   methods: {
     setIsSettingInputFocused(value) {
@@ -241,6 +284,19 @@ export default {
 
       this.applySettings(tabName);
     },
+  },
+  watch: {
+    'settings.Conv_type': {
+      handler(newVal) {
+        // To make sure a valid Conv_dim is always set
+        if (this.validConvolutionDimOptions &&
+          this.validConvolutionDimOptions.length &&
+          !this.validConvolutionDimOptions.includes(this.settings.Conv_dim)){
+            
+          this.settings.Conv_dim = this.validConvolutionDimOptions[0]
+        }
+      }
+    }
   }
 }
 </script>

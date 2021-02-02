@@ -117,6 +117,8 @@ perceptilabs/layers/processonehot/tf2x_template.j2
 # perceptilabs/layers/processgrayscale
 perceptilabs/layers/processgrayscale/spec.py
 perceptilabs/layers/processgrayscale/imports.json
+perceptilabs/layers/processgrayscale/tf2x_imports.json
+perceptilabs/layers/processgrayscale/tf2x_template.j2
 
 # perceptilabs/layers/mathargmax
 perceptilabs/layers/mathargmax/spec.py
@@ -135,6 +137,8 @@ perceptilabs/layers/mathswitch/imports.json
 # perceptilabs/layers/mathmerge
 perceptilabs/layers/mathmerge/spec.py
 perceptilabs/layers/mathmerge/imports.json
+perceptilabs/layers/mathmerge/tf2x_imports.json
+perceptilabs/layers/mathmerge/tf2x_template.j2
 
 # perceptilabs/layers/layercustom
 perceptilabs/layers/layercustom/spec.py

@@ -1532,6 +1532,9 @@ class coreLogic():
         logger.debug(message)
     
     def _process_conv_layer_output(self, output):
-        output=output[:, :, 0]
+        if len(output.shape) != 2:
+            output=output[:, :, 0]
+
         processed_output = createDataObject([output])  
+        
         return processed_output

@@ -117,6 +117,7 @@ const presentRedHat = {
        "layerName": "Convolution_1",
        "layerType": "Other",
        "layerSettings": {
+         "Conv_type": "Conv",
          "Conv_dim": "2D",
          "Patch_size": "3",
          "Stride": "2",

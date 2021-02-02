@@ -11,5 +11,6 @@ module.exports = merge(prodEnv, {
   KEYCLOACK_RELM: '"vue-perceptilabs"',
   KEYCLOACK_CLIENT_ID: '"vue-perceptilabs-client-id"',
   GITHUB_CLIENT_ID: '"094271b0edb47c75dc24"',
-  PL_FILE_SERVING_TOKEN: '"12312"' 
+  PL_FILE_SERVING_TOKEN: '"12312"',
+  ENABLE_TF2X: '"false"',
 })

@@ -10,6 +10,7 @@ class DeepLearningConvSpec(InnerLayerSpec, MixinDeepLearning):
     batch_norm: bool = False
     dropout: bool = False
     keep_prob: float = 0.0
+    conv_type: str = 'Conv'
     conv_dim: str = '2D'
     patch_size: Union[int, None] = 3
     feature_maps: Union[int, None] = 8
@@ -28,6 +29,7 @@ class DeepLearningConvSpec(InnerLayerSpec, MixinDeepLearning):
             params['dropout'] = dict_['Properties']['Dropout']                
             params['keep_prob'] = try_cast(dict_['Properties']['Keep_prob'], float)
             params['batch_norm'] = try_cast(dict_['Properties'].get('Batch_norm'), bool)
+            params['conv_type'] = str(dict_['Properties'].get('Conv_type', 'Conv'))
             params['conv_dim'] = str(dict_['Properties']['Conv_dim'])
             params['patch_size'] = int(dict_['Properties']['Patch_size']) if dict_['Properties']['Patch_size'] else None
             params['feature_maps'] = int(dict_['Properties']['Feature_maps']) if dict_['Properties']['Feature_maps'] else None
@@ -50,6 +52,7 @@ class DeepLearningConvSpec(InnerLayerSpec, MixinDeepLearning):
         props['Dropout'] = self.dropout
         props['Keep_prob'] = self.keep_prob
         props['Batch_norm'] = self.batch_norm
+        props['Conv_type'] = self.conv_type
         props['Conv_dim'] = self.conv_dim
         props['Patch_size'] = self.patch_size
         props['Feature_maps'] = self.feature_maps

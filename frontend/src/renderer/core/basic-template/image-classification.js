@@ -255,6 +255,7 @@ const imageClassification = {
           "Dropout": false,
           "Keep_prob": 1,
           "Batch_norm": false,
+          "Conv_type": "Conv",
           "Conv_dim": "2D",
           "Patch_size": 3,
           "Feature_maps": 8,
