@@ -1,7 +1,8 @@
 import DataData             from '@/components/network-elements/elements/data-data/data-data.vue'
 import DataEnvironment      from '@/components/network-elements/elements/data-environment/data-environment.vue'
 import DataCloud            from '@/components/network-elements/elements/data-cloud/data-cloud.vue'
-import DataRandom            from '@/components/network-elements/elements/data-random/data-random.vue'
+import DataRandom           from '@/components/network-elements/elements/data-random/data-random.vue'
+import IoInput          from '@/components/network-elements/elements/io-input/io-input.vue'
 
 import DeepLearningFC       from '@/components/network-elements/elements/deep-learning-fc/deep-learning-fc.vue'
 import DeepLearningConv     from '@/components/network-elements/elements/deep-learning-conv/deep-learning-conv.vue'
@@ -52,7 +53,7 @@ let resizeObservable = null;
 export default {
   name: 'NetworkField',
   components: {
-    DataData, DataEnvironment, DataRandom,
+    DataData, DataEnvironment, DataRandom, IoInput,
     // DataCloud,
     DeepLearningFC, DeepLearningConv, DeepLearningDeconv, DeepLearningRecurrent,
     ProcessEmbed, ProcessGrayscale, ProcessOneHot, ProcessReshape, ProcessRescale,

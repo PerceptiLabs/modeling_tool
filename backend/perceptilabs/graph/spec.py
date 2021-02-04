@@ -34,9 +34,8 @@ class GraphSpec(AbstractGraphSpec):
             type_ = json_layer['Type']
             layer_spec_dict = dict_[id_]
             try:
-                layer_spec = get_layer_definition(type_). \
-                            spec_class. \
-                            from_dict(id_, layer_spec_dict)
+                layer_def = get_layer_definition(type_)
+                layer_spec = layer_def.spec_class.from_dict(id_, layer_spec_dict)
                 layer_specs.append(layer_spec)
             except:
                 from perceptilabs.utils import stringify

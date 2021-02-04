@@ -5,7 +5,7 @@ import numpy as np
 import tensorflow as tf
 
 from perceptilabs.lwcore.results import LayerResults
-from perceptilabs.lwcore.strategies.base import BaseStrategy, TrainingStrategy
+from perceptilabs.lwcore.strategies.base import JinjaLayerStrategy, TrainingStrategy
 from perceptilabs.layers.utils import resolve_checkpoint_path
 from perceptilabs.lwcore.utils import exception_to_error
 from perceptilabs.logconf import APPLICATION_LOGGER
@@ -14,8 +14,8 @@ from perceptilabs.logconf import APPLICATION_LOGGER
 logger = logging.getLogger(APPLICATION_LOGGER)
 
 
-class Tf1xInnerStrategy(BaseStrategy):
-    def run(self, layer_spec, layer_class, input_results, line_offset=None):
+class Tf1xInnerStrategy(JinjaLayerStrategy):
+    def _run_internal(self, layer_spec, graph_spec, layer_class, input_results, line_offset=None):
         with tf.Graph().as_default() as graph:
             try:
                 layer_instance = layer_class()
@@ -54,9 +54,9 @@ class Tf1xInnerStrategy(BaseStrategy):
                 return self.get_default(strategy_error=error)                    
                 
             with tf.Session(config=tf.ConfigProto(device_count={'GPU': 0})) as sess:
-                return self._run_internal(sess, layer_spec.id_, layer_spec.type_, layer_instance, output_tensor, input_tensors, layer_spec, line_offset)
+                return self._run_tensorflow_ops(sess, layer_spec.id_, layer_spec.type_, layer_instance, output_tensor, input_tensors, layer_spec, line_offset)
 
-    def _run_internal(self, sess, layer_id, layer_type, layer_instance, output_tensor, input_tensor, layer_spec, line_offset):
+    def _run_tensorflow_ops(self, sess, layer_id, layer_type, layer_instance, output_tensor, input_tensor, layer_spec, line_offset):
         sess.run(tf.global_variables_initializer())
         self._trained = False
         if tf.version.VERSION.startswith('1.15'):
@@ -116,10 +116,10 @@ class Tf1xInnerStrategy(BaseStrategy):
                             
 
 class Tf1xTrainingStrategy(TrainingStrategy):
-    def _create_graph_and_run(self, layer_spec, line_offset):
+    def _create_graph_and_run(self, layer_spec, graph_spec, line_offset):
         """ Create the graph object and run it """
         with tf.Graph().as_default() as tfgraph:
-            graph = self._create_graph()  
+            graph = self._create_graph(graph_spec)  
             if graph is not None:
                 sample, shape, variables, strategy_error = self._run_training_layer(graph, layer_spec, line_offset)
             else:

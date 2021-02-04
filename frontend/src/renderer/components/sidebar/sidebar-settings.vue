@@ -38,11 +38,12 @@
 </template>
 <script>
 
-import SettingsElWeb         from '@/components/network-elements/elements/data-data/set-data-data.vue'
-import SettingsElElectron   from '@/components/network-elements/elements/data-data/set-data-data-electron.vue';
+import SettingsElWeb      from '@/components/network-elements/elements/data-data/set-data-data.vue'
+import SettingsElElectron from '@/components/network-elements/elements/data-data/set-data-data-electron.vue';
 import DataRandom         from '@/components/network-elements/elements/data-random/set-data-random.vue'
-import DataEnvironment  from '@/components/network-elements/elements/data-environment/set-data-environment.vue'
-import DataCloud        from '@/components/network-elements/elements/data-cloud/set-data-cloud.vue'
+import DataEnvironment    from '@/components/network-elements/elements/data-environment/set-data-environment.vue'
+import DataCloud          from '@/components/network-elements/elements/data-cloud/set-data-cloud.vue'
+import IoInput            from '@/components/network-elements/elements/io-input/set-io-input.vue'
 
 import DeepLearningFC        from '@/components/network-elements/elements/deep-learning-fc/set-deep-learning-fc.vue'
 import DeepLearningConv      from '@/components/network-elements/elements/deep-learning-conv/set-deep-learning-conv.vue'
@@ -91,7 +92,7 @@ export default {
   name: 'SidebarSettings',
   components: { 
     SidebarSettingPreview,
-    DataData, DataEnvironment, DataRandom, DataCloud,
+    DataData, DataEnvironment, DataRandom, DataCloud, IoInput,
     DeepLearningFC, DeepLearningConv, DeepLearningDeconv, DeepLearningRecurrent,
     ProcessCrop, ProcessEmbed, ProcessGrayscale, ProcessOneHot, ProcessReshape, ProcessRescale,
     MathArgmax, MathMerge, MathSwitch, MathSoftmax, MathSplit,

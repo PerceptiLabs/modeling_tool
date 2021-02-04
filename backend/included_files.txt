@@ -166,6 +166,10 @@ perceptilabs/layers/trainreinforce/imports.json
 perceptilabs/layers/trainregression/spec.py
 perceptilabs/layers/trainregression/imports.json
 
+# perceptilabs/layers/ioinput
+perceptilabs/layers/ioinput/spec.py
+
+
 # perceptilabs/core_new
 perceptilabs/core_new/__init__.py
 perceptilabs/core_new/core2.py

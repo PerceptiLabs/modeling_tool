@@ -20,6 +20,7 @@ from perceptilabs.layers.trainregression.spec import TrainRegressionSpec
 from perceptilabs.layers.trainreinforce.spec import TrainReinforceSpec
 from perceptilabs.layers.trainobjectdetection.spec import TrainObjectDetectionSpec
 from perceptilabs.layers.traingan.spec import TrainGanSpec
+from perceptilabs.layers.ioinput.spec import InputLayerSpec
 
 LayerMeta = namedtuple(
     'LayerMeta', [
@@ -221,6 +222,12 @@ DEFINITION_TABLE_TF2X = {
         'layers/trainclassification/tf2x_imports.json',
         'layers/trainclassification/tf2x_template.j2',        
         'layer_tf2x_classification'
-    ),    
+    ),
+    'IoInput': LayerMeta(
+        InputLayerSpec,
+        imports_path=None,
+        macro_path=None,
+        macro_name=None
+    ),
 }
 

@@ -4,7 +4,7 @@ import numpy as np
 import tensorflow as tf
 
 from perceptilabs.lwcore.results import LayerResults
-from perceptilabs.lwcore.strategies.base import BaseStrategy, TrainingStrategy
+from perceptilabs.lwcore.strategies.base import JinjaLayerStrategy, TrainingStrategy
 from perceptilabs.lwcore.utils import exception_to_error
 
 from perceptilabs.logconf import APPLICATION_LOGGER
@@ -13,13 +13,14 @@ from perceptilabs.logconf import APPLICATION_LOGGER
 logger = logging.getLogger(APPLICATION_LOGGER)
 
 
-class Tf2xInnerStrategy(BaseStrategy):
-    def run(self, layer_spec, layer_class, input_results, line_offset=None):
+class Tf2xInnerStrategy(JinjaLayerStrategy):
+    def _run_internal(self, layer_spec, graph_spec, layer_class, input_results, line_offset=None):
         """ Returns a LayerResults obj. containing shapes and previews for a layer
 
         Args:
             layer_spec: describes the layer configuration
-            layer_class: a class implementing the layer
+            graph_spec: graph spec
+            layer_class: corresponds to layer spec
             input_results: a dict with LayerResults from other layers in the same graph
             line_offset: used to map line numbers of the executed code to the line numbers visible to the user.
         Returns:
@@ -98,9 +99,9 @@ class Tf2xInnerStrategy(BaseStrategy):
             
         
 class Tf2xTrainingStrategy(TrainingStrategy):
-    def _create_graph_and_run(self, layer_spec, line_offset):
+    def _create_graph_and_run(self, layer_spec, graph_spec, line_offset):
         """ Create the graph object and run it """
-        graph = self._create_graph()  
+        graph = self._create_graph(graph_spec)  
         if graph is not None:
             sample, shape, variables, strategy_error = self._run_training_layer(graph, layer_spec, line_offset)
         else:

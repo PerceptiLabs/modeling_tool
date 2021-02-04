@@ -7,6 +7,9 @@ from rygg.mixpanel_proxy.utils import parse_b64_to_dict
 from rygg.mixpanel_proxy.utils import url_encode_mixpanel_style_params
 from rygg.mixpanel_proxy.utils import parse_queryDict_to_dict
 
+import json
+from urllib.parse import parse_qs
+
 import logging
 logger = logging.getLogger(__name__)
 
@@ -35,6 +38,27 @@ def track(request):
 
     return HttpResponse()
 
+@api_view(['POST'])
+def track(request):
+    # Used to event tracking
+
+    decodedBody = parse_qs(request.body.decode('ASCII'))
+
+    dataDict = parse_b64_to_dict(decodedBody['data'][0])
+
+    # Setting external ip here because the user could be using NAT
+    dataDict['properties']['ip'] = external_ip
+
+    params = url_encode_mixpanel_style_params(dataDict)
+
+    try:
+        mp_response = get(url=MIXPANEL_API_JS_ENDPOINT + MIXPANEL_TRACK_PATH, params=params)
+    except:
+        logger.error('Error when sending tracking data to MixPanel')
+
+    return HttpResponse()
+
+
 @api_view(['GET'])
 def decide(request):
 
@@ -48,7 +72,7 @@ def decide(request):
 
     return HttpResponse()
 
-@api_view(['GET'])
+@api_view(['GET', 'POST'])
 def engage(request):
     # Used to profile updates
 

@@ -42,7 +42,8 @@ import { generateID }  from "@/core/helpers.js";
   import DataData             from '@/components/network-elements/elements/data-data/view-data-data.vue'
   import DataEnvironment      from '@/components/network-elements/elements/data-environment/view-data-environment.vue'
   import DataCloud            from '@/components/network-elements/elements/data-cloud/view-data-cloud.vue'
-  import DataRandom            from '@/components/network-elements/elements/data-random/view-data-random.vue'
+  import DataRandom           from '@/components/network-elements/elements/data-random/view-data-random.vue'
+  import IoInput              from '@/components/network-elements/elements/io-input/view-io-input.vue'
 
   import DeepLearningFC       from '@/components/network-elements/elements/deep-learning-fc/view-deep-learning-fc.vue'
   import DeepLearningConv     from '@/components/network-elements/elements/deep-learning-conv/view-deep-learning-conv.vue'
@@ -68,7 +69,7 @@ import { generateID }  from "@/core/helpers.js";
 
   import MathArgmax           from '@/components/network-elements/elements/math-argmax/view-math-argmax.vue'
   import MathMerge            from '@/components/network-elements/elements/math-merge/view-math-merge.vue'
-  import MathSwitch            from '@/components/network-elements/elements/math-switch/view-math-switch.vue'
+  import MathSwitch           from '@/components/network-elements/elements/math-switch/view-math-switch.vue'
   import MathSoftmax          from '@/components/network-elements/elements/math-softmax/view-math-softmax.vue'
   import MathSplit            from '@/components/network-elements/elements/math-split/view-math-split.vue'
 
@@ -85,7 +86,7 @@ import { generateID }  from "@/core/helpers.js";
 export default {
   name: 'TheLayersbar',
   components: {
-    DataData, DataEnvironment, DataRandom,
+    DataData, DataEnvironment, DataRandom, IoInput,
     DeepLearningFC, DeepLearningConv, DeepLearningDeconv, DeepLearningRecurrent,
     ProcessEmbed, ProcessGrayscale, ProcessOneHot, ProcessReshape, ProcessRescale,
     TrainNormal, TrainRegression, TrainGenetic, TrainDynamic, TrainReinforce, TrainDetector, TrainGan,
@@ -109,7 +110,7 @@ export default {
           iconClass: 'icon-data-group',
           childListClass: '',
           showEl: false,
-          networkElements: ['DataData', 'DataEnvironment', 'DataRandom'],
+          networkElements: (process.env.ENABLE_TF2X === 'true') ? ['DataData', 'DataEnvironment', 'DataRandom', 'IoInput'] : ['DataData', 'DataEnvironment', 'DataRandom'],
           id:'tutorial_data',
           color: 'rgba(97, 133, 238, 0.7)',
           borderColor: 'rgba(97, 133, 238, 0.2)',

@@ -20,10 +20,15 @@ from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP, REPLIC
 from perceptilabs.script import ScriptFactory
 from perceptilabs.core_new.graph.utils import sanitize_layer_name
 from perceptilabs.layers.helper import LayerHelper
+from perceptilabs.layers.specbase import TrainingLayerSpec, InnerLayerSpec
+from perceptilabs.layers.ioinput.spec import InputLayerSpec
+from perceptilabs.layers.datadata.spec import DataDataSpec
+from perceptilabs.layers.datarandom.spec import DataRandomSpec
+from perceptilabs.layers.dataenvironment.spec import DataEnvironmentSpec
 from perceptilabs.logconf import APPLICATION_LOGGER
 from perceptilabs.lwcore.utils import exception_to_error, format_exception
 from perceptilabs.lwcore.cache import LightweightCache
-from perceptilabs.lwcore.strategies import DefaultStrategy, DataSupervisedStrategy, DataReinforceStrategy, Tf1xInnerStrategy, Tf1xTrainingStrategy, Tf2xInnerStrategy, Tf2xTrainingStrategy
+from perceptilabs.lwcore.strategies import DefaultStrategy, DataSupervisedStrategy, DataReinforceStrategy, Tf1xInnerStrategy, Tf1xTrainingStrategy, Tf2xInnerStrategy, Tf2xTrainingStrategy, InputLayerStrategy
 from perceptilabs.lwcore.results import LayerResults
 import perceptilabs.dataevents as dataevents
 
@@ -79,7 +84,7 @@ class LightweightCore:
         t0 = time.perf_counter()        
         cached_result, layer_hash = self._get_cached_result(layer_spec, subgraph_spec)
         t1 = time.perf_counter()
-        layer_result = cached_result or self._generate_code_and_compute_results(layer_spec, subgraph_spec, ancestor_results)
+        layer_result = cached_result or self._compute_layer_results(layer_spec, subgraph_spec, ancestor_results)
         t2 = time.perf_counter()
         self._maybe_put_results_in_cache(layer_spec, cached_result, layer_result, layer_hash)
         t3 = time.perf_counter()
@@ -108,86 +113,41 @@ class LightweightCore:
                 
         return cached_result, layer_hash
 
-    def _generate_code_and_compute_results(self, layer_spec, subgraph_spec, ancestor_results):
-        """ Generate code and compute the results of a layer """
-        code, code_error = self._get_layer_code(layer_spec.id_, layer_spec, subgraph_spec)
-            
-        layer_result = self._compute_layer_results(
-            layer_spec.id_, subgraph_spec, layer_spec, code,
-            code_error, ancestor_results
-        )
-        logger.debug(f"Computed results for layer {layer_spec.id_} [{layer_spec.type_}]")
-        return layer_result        
-
-    def _compute_layer_results(self, layer_id, graph_spec, layer_spec, code, code_error, all_results):
-        if code is None:
-            return DefaultStrategy.get_default(code_error=code_error)
-
-        if not layer_spec.is_fully_configured:  # E.g., required input connections aren't set..
-            return DefaultStrategy.get_default()                        
-
-        layer_helper = LayerHelper(self._script_factory, layer_spec, graph_spec)
-        layer_code_offset = layer_helper.get_line_count(prepend_imports=True, layer_code=False) # Get length of imports
-        try:
-            layer_class = layer_helper.get_class()
-        except Exception as e:
-            layer_class = None
-            instantiation_error = exception_to_error(layer_spec.id_, layer_spec.type_, e, line_offset=layer_code_offset)
-            logger.debug(f"Layer {layer_spec.id_} raised an error when executing module " + repr(e))
-        else:
-            instantiation_error = None
-
-        if layer_class is None:
-            return DefaultStrategy.get_default(instantiation_error=instantiation_error)            
-        
+    def _compute_layer_results(self, layer_spec, graph_spec, all_results):
+        """ Find and invoke a strategy for computing the results of a layer """
         input_results = {
             from_id: all_results[from_id]
             for (from_id, to_id) in graph_spec.edges_by_id if to_id == layer_spec.id_
         }
-        script_factory = self._script_factory
-        strategy = self._get_layer_strategy(layer_class, graph_spec, script_factory)
+        
+        strategy = self._get_layer_strategy(layer_spec, graph_spec, self._script_factory)
+        
         try:
-            results = strategy.run(layer_spec, layer_class, input_results, line_offset=layer_code_offset)
+            results = strategy.run(layer_spec, graph_spec, input_results)
         except:
             logger.exception(f"Failed running strategy '{strategy.__class__.__name__}' on layer {layer_spec.id_}")
             raise
-
+        logger.debug(f"Computed results for layer {layer_spec.id_} [{layer_spec.type_}]")
         return results
 
-    def _get_layer_strategy(self, layer_obj, graph_spec=None, script_factory=None):
-        if issubclass(layer_obj, TrainingLayer) and is_tf1x():
-            strategy = Tf1xTrainingStrategy(graph_spec, script_factory)
-        elif issubclass(layer_obj, TrainingLayer) and is_tf2x():
-            strategy = Tf2xTrainingStrategy(graph_spec, script_factory)            
-        elif issubclass(layer_obj, DataSupervised):
-            strategy = DataSupervisedStrategy()
-        elif issubclass(layer_obj, DataReinforce):
-            strategy = DataReinforceStrategy()
-        elif issubclass(layer_obj, Tf1xLayer) and is_tf1x(): 
-            strategy = Tf1xInnerStrategy()
-        elif issubclass(layer_obj, Tf1xLayer) and is_tf2x(): 
-            strategy = Tf2xInnerStrategy()
+    def _get_layer_strategy(self, layer_spec, graph_spec=None, script_factory=None):
+        if isinstance(layer_spec, InputLayerSpec):
+            strategy = InputLayerStrategy()            
+        elif isinstance(layer_spec, TrainingLayerSpec) and is_tf1x():
+            strategy = Tf1xTrainingStrategy(script_factory)
+        elif isinstance(layer_spec, TrainingLayerSpec) and is_tf2x():
+            strategy = Tf2xTrainingStrategy(script_factory)            
+        elif isinstance(layer_spec, (DataDataSpec, DataRandomSpec)):
+            strategy = DataSupervisedStrategy(script_factory)
+        elif isinstance(layer_spec, DataEnvironmentSpec):
+            strategy = DataReinforceStrategy(script_factory)
+        elif isinstance(layer_spec, InnerLayerSpec) and is_tf1x(): 
+            strategy = Tf1xInnerStrategy(script_factory)
+        elif isinstance(layer_spec, InnerLayerSpec) and is_tf2x(): 
+            strategy = Tf2xInnerStrategy(script_factory)
         else:
             strategy = DefaultStrategy()
         return strategy
-
-    def _get_layer_code(self, layer_id, layer_spec, graph_spec):
-        layer_helper = LayerHelper(self._script_factory, layer_spec, graph_spec)
-        try:
-            code = layer_helper.get_code(check_syntax=True)
-        except SyntaxError as e:
-            logger.exception(f"Layer {layer_spec.id_} raised an error when getting layer code")
-            layer_code_offset = layer_helper.get_line_count(prepend_imports=True, layer_code=False) # Get length of imports
-            message = format_exception(e, adjust_by_offset=layer_code_offset)
-            error = UserlandError(layer_id, layer_spec.type_, e.lineno, message)
-            return None, error
-        except Exception as e:
-            logger.warning(f"{type(e).__name__}: {str(e)} | couldn't get code for {layer_spec.id_}. Treating it as not fully specified")
-            if logger.isEnabledFor(logging.DEBUG):
-                logger.warning("layer spec: \n" + stringify(layer_spec.to_dict()))
-            return None, None
-        else:
-            return code, None
 
 
 class LightweightCoreAdapter:

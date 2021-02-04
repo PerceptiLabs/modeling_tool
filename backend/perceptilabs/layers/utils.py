@@ -2,6 +2,7 @@ import os
 import logging
 
 from perceptilabs.logconf import APPLICATION_LOGGER
+from perceptilabs.utils import is_tf2x
 
 
 logger = logging.getLogger(APPLICATION_LOGGER)
@@ -11,7 +12,7 @@ def get_layer_definition(type_: str, tf2x=False):
     assert isinstance(type_, str)
     from perceptilabs.layers.definitions import DEFINITION_TABLE, DEFINITION_TABLE_TF2X
 
-    if tf2x:
+    if is_tf2x() or tf2x:
         return DEFINITION_TABLE_TF2X.get(type_, None)
     else:
         return DEFINITION_TABLE.get(type_, None)    

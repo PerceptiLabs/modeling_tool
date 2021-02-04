@@ -2582,6 +2582,8 @@ const componentsInputs = {
   DataEnvironment: [],
   DataRandom: [],
 
+  IoInput: [],
+
   ProcessReshape: ['input'],
   ProcessGrayscale: ['input'],
   ProcessOneHot: ['input'],
@@ -2610,6 +2612,8 @@ const componentsOutputs = {
   DataData: ['output'],
   DataEnvironment: ['output'],
   DataRandom: ['output'],
+  
+  IoInput: ['output'],
 
   ProcessReshape: ['output'],
   ProcessGrayscale: ['output'],

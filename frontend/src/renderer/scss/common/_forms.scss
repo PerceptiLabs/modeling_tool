@@ -76,11 +76,11 @@ textarea.new-ui {
 input[type='number'] {
 	width: 4.5em;
 	text-align: center;
-  padding-right: .5rem;
-  padding-left: .5rem;
-  -moz-appearance:textfield;
-  &::-webkit-outer-spin-button,
-  &::-webkit-inner-spin-button {
+	padding-right: .5rem;
+	padding-left: .5rem;
+	-moz-appearance:textfield;
+	&::-webkit-outer-spin-button,
+	&::-webkit-inner-spin-button {
     -webkit-appearance: none;
     margin: 0;
 	}
@@ -215,6 +215,10 @@ input[type='submit'] {
 		}
 		&:focus {
 			border: 1px solid $color-6;
+		}
+	
+		&.w-full {
+			width: 100%;
 		}
 	}
 }

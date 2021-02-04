@@ -8,6 +8,7 @@ import tempfile
 import pkg_resources
 import tensorflow as tf
 import numpy as np
+import pandas as pd
 
 
 from perceptilabs.core_new.layers.templates import J2Engine
@@ -111,6 +112,18 @@ def temp_path():
     
     yield path
     shutil.rmtree(path)
+
+    
+@pytest.fixture()
+def csv_path(temp_path):
+    df = pd.DataFrame({
+        'x1': [1.0, 2.0, 3.0],
+        'y1': [10.0, 40.0, 50.0]
+    })
+    path = os.path.join(temp_path, 'data.csv')
+    df.to_csv(path, index=False)
+    yield path
+    
 
 @pytest.fixture()
 def temp_path_100x1():
