@@ -71,14 +71,11 @@ def main():
 
     logger.info("Reporting errors with commit id: " + str(COMMIT_ID))
 
-    message_bus = get_message_bus()
-    message_bus.start()
-    
     cores=dict()
     dataDict=dict()
     checkpointDict=dict()
     lwDict=dict()
-    
+
     core_interface = Interface(cores, dataDict, checkpointDict, lwDict, issue_handler, session_id=session_id, allow_headless=args.allow_headless)
 
 
@@ -86,8 +83,8 @@ def main():
     from perceptilabs.memorywatcher import MemoryWatcher
     memory_watcher = MemoryWatcher(issue_handler=issue_handler, core_interfaces=cores)
     memory_watcher.initialize(asyncio.get_event_loop())
-    
 
+    
     if args.error:
         raise Exception("Test error")
 
@@ -100,7 +97,6 @@ def main():
             server.serve_desktop(core_interface, args.instantly_kill)
         elif args.platform == 'browser':
             server.serve_web(core_interface, args.instantly_kill)
-        message_bus.stop()            
     except Exception as e:
         logger.exception("Exception in server")
     finally:

@@ -100,7 +100,7 @@ class NetworkLoader:
 
 
 class Interface():
-    def __init__(self, cores, dataDict, checkpointDict, lwDict, issue_handler, message_factory=None, session_id='default', allow_headless=False):
+    def __init__(self, cores, dataDict, checkpointDict, lwDict, issue_handler, message_factory=None, session_id='default', allow_headless=False, experiment_api=False):
         self._allow_headless = allow_headless
         self._network_loader = NetworkLoader()
         self._cores=cores
@@ -112,9 +112,10 @@ class Interface():
         self._lw_cache_v2 = LightweightCache(max_size=LW_CACHE_MAX_ITEMS) if USE_LW_CACHING else None
         self._settings_engine = None
 
-        self._data_container = Exp_DataContainer()
-        self._aggregation_engine = self._setup_aggregation_engine(self._data_container)
-        self._start_experiment_thread(message_factory)
+        if experiment_api:
+            self._data_container = Exp_DataContainer()
+            self._aggregation_engine = self._setup_aggregation_engine(self._data_container)
+            self._start_experiment_thread(message_factory)
     
     def _setup_consumer(self, message_factory: MessagingFactory = None) -> MessageConsumer:
         '''Creates consumer for incoming experiment data
