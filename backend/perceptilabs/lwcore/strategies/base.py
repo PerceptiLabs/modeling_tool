@@ -226,7 +226,7 @@ class TrainingStrategy(JinjaLayerStrategy):
         return sample, shape, variables, strategy_error
 
 
-class InputLayerStrategy(BaseStrategy):
+class IoLayerStrategy(BaseStrategy):
     def run(self, layer_spec, layer_class, input_results, line_offset=None):
         columns = []
         variables = {}

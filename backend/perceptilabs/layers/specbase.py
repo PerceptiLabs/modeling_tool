@@ -324,6 +324,10 @@ class LayerSpec(ABC, MyBaseModel):
         return False
 
     @property
+    def is_output_layer(self):
+        return False
+
+    @property
     def is_input_layer(self):
         return False
 

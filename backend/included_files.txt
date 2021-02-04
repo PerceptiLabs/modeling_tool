@@ -60,6 +60,9 @@ perceptilabs/layers/specutils.py
 perceptilabs/layers/definitions.py
 perceptilabs/layers/mixins.py
 
+# perceptilabs/layers/iooutput
+perceptilabs/layers/iooutput/spec.py
+
 # perceptilabs/layers/jinja_macros
 perceptilabs/layers/jinja_macros/controlflow.j2
 perceptilabs/layers/jinja_macros/losses.j2

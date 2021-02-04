@@ -20,15 +20,14 @@ from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP, REPLIC
 from perceptilabs.script import ScriptFactory
 from perceptilabs.core_new.graph.utils import sanitize_layer_name
 from perceptilabs.layers.helper import LayerHelper
-from perceptilabs.layers.specbase import TrainingLayerSpec, InnerLayerSpec
-from perceptilabs.layers.ioinput.spec import InputLayerSpec
+from perceptilabs.layers.specbase import TrainingLayerSpec, InnerLayerSpec, IoLayerSpec
 from perceptilabs.layers.datadata.spec import DataDataSpec
 from perceptilabs.layers.datarandom.spec import DataRandomSpec
 from perceptilabs.layers.dataenvironment.spec import DataEnvironmentSpec
 from perceptilabs.logconf import APPLICATION_LOGGER
 from perceptilabs.lwcore.utils import exception_to_error, format_exception
 from perceptilabs.lwcore.cache import LightweightCache
-from perceptilabs.lwcore.strategies import DefaultStrategy, DataSupervisedStrategy, DataReinforceStrategy, Tf1xInnerStrategy, Tf1xTrainingStrategy, Tf2xInnerStrategy, Tf2xTrainingStrategy, InputLayerStrategy
+from perceptilabs.lwcore.strategies import DefaultStrategy, DataSupervisedStrategy, DataReinforceStrategy, Tf1xInnerStrategy, Tf1xTrainingStrategy, Tf2xInnerStrategy, Tf2xTrainingStrategy, IoLayerStrategy
 from perceptilabs.lwcore.results import LayerResults
 import perceptilabs.dataevents as dataevents
 
@@ -131,8 +130,8 @@ class LightweightCore:
         return results
 
     def _get_layer_strategy(self, layer_spec, graph_spec=None, script_factory=None):
-        if isinstance(layer_spec, InputLayerSpec):
-            strategy = InputLayerStrategy()            
+        if isinstance(layer_spec, IoLayerSpec):
+            strategy = IoLayerStrategy()            
         elif isinstance(layer_spec, TrainingLayerSpec) and is_tf1x():
             strategy = Tf1xTrainingStrategy(script_factory)
         elif isinstance(layer_spec, TrainingLayerSpec) and is_tf2x():

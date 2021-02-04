@@ -2604,7 +2604,9 @@ const componentsInputs = {
   TrainReinforce: ['action'],
   TrainGan: ['input'],
   TrainDetector: ['predictions', 'labels'],
-  LayerCustom: ['input']
+  LayerCustom: ['input'],
+
+  IoOutput: ['input']
 };
 
 
@@ -2636,6 +2638,8 @@ const componentsOutputs = {
   TrainReinforce: [],
   TrainGan: [],
   TrainDetector: [],
+
+  IoOutput: []
 };
 
 

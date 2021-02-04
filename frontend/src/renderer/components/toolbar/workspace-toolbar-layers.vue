@@ -79,7 +79,9 @@ import { generateID }  from "@/core/helpers.js";
   import ClassicMLRandomForest from '@/components/network-elements/elements/classic-ml-random-forest/view-classic-ml-random-forest.vue'
   import ClassicMLSVM         from '@/components/network-elements/elements/classic-ml-vector-machine/view-classic-ml-vector-machine.vue'
 
-  import LayerCustom         from '@/components/network-elements/elements/layer-custom/view-layer-custom.vue'
+  import IoOutput             from '@/components/network-elements/elements/io-output/view-io-output.vue'
+
+  import LayerCustom          from '@/components/network-elements/elements/layer-custom/view-layer-custom.vue'
 
   import { calcLayerPosition } from '@/core/helpers.js';
 
@@ -91,6 +93,7 @@ export default {
     ProcessEmbed, ProcessGrayscale, ProcessOneHot, ProcessReshape, ProcessRescale,
     TrainNormal, TrainRegression, TrainGenetic, TrainDynamic, TrainReinforce, TrainDetector, TrainGan,
     MathArgmax, MathMerge, MathSoftmax, MathSwitch,
+    IoOutput,
     LayerCustom
   },
   data() {
@@ -433,6 +436,26 @@ export default {
     networkScale() {
       return this.$store.getters['mod_workspace/GET_currentNetworkZoom'];
     },
+  },
+  mounted() {
+    if (process.env.ENABLE_TF2X !== 'true') { return; }
+
+    this.layersbarList.push({
+      tooltip: 'IO',
+      tooltip_interactive: {
+        title: 'IO',
+        text: 'IO components'
+      },
+      layerClass: 'net-element-custom',
+      iconClass: 'icon-train-group',
+      childListClass: '',
+      showEl: false,
+      networkElements: [IoOutput],
+      id:'tutorial_io',
+      color: 'rgba(204, 204, 204, 0.7)',
+      borderColor: 'rgba(204, 204, 204, 0.2)',
+      bottomColor: 'rgba(204, 204, 204, 0.4)'
+    });
   }
 }
 </script>

@@ -75,6 +75,8 @@ import TrainDetector        from '@/components/network-elements/elements/train-d
 
 import LayerCustom          from '@/components/network-elements/elements/layer-custom/layer-custom.vue'
 
+import IoOutput             from '@/components/network-elements/elements/io-output/set-io-output.vue'
+
 import SidebarSettingPreview  from "@/components/network-elements/elements-settings/sidebar-setting-preview.vue";
 import SidebarLockedSettingsWrapper from "@/components/sidebar/sidebar-locked-settings-wrapper.vue"
 import SidebarAutoSettingInfo from '@/components/sidebar/sidebar-auto-setting-info.vue'
@@ -97,6 +99,7 @@ export default {
     ProcessCrop, ProcessEmbed, ProcessGrayscale, ProcessOneHot, ProcessReshape, ProcessRescale,
     MathArgmax, MathMerge, MathSwitch, MathSoftmax, MathSplit,
     TrainNormal, TrainRegression, TrainGenetic, TrainDynamic, TrainReinforce, TrainLoss, TrainOptimizer, TrainGan, TrainDetector,
+    IoOutput,
     LayerCustom,
     SidebarLockedSettingsWrapper,
     SidebarAutoSettingInfo

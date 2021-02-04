@@ -41,6 +41,8 @@ import ClassicMLSVM         from '@/components/network-elements/elements/classic
 import LayerContainer       from '@/components/network-elements/elements/layer-container/layer-container.vue'
 import LayerCustom          from '@/components/network-elements/elements/layer-custom/layer-custom.vue'
 
+import IoOutput             from '@/components/network-elements/elements/io-output/io-output.vue'
+
 import SettingsArrow        from '@/components/network-elements/elements-settings/setting-arrow.vue'
 
 import NetworkDrag    from '@/components/network-field/network-drag.js'
@@ -64,6 +66,7 @@ export default {
     // MathSplit,
 
     // ClassicMLDbscans, ClassicMLKMeans, ClassicMLKNN, ClassicMLRandomForest, ClassicMLSVM,
+    IoOutput,
     LayerContainer, LayerCustom,
     SettingsArrow,
     NetworkGrid
