@@ -183,6 +183,12 @@ DEFINITION_TABLE_TF2X = {
         'layers/deeplearningfc/tf2x_template.j2',        
         'layer_tf2x_fully_connected'
     ),
+    'DeepLearningRecurrent': LayerMeta(
+        DeepLearningRecurrentSpec,
+        'layers/deeplearningrecurrent/tf2x_imports.json',
+        'layers/deeplearningrecurrent/tf2x_template.j2',        
+        'layer_tf2x_recurrent'
+    ),
     'ProcessReshape': LayerMeta(
         ProcessReshapeSpec,
         'layers/processreshape/tf2x_imports.json',
