@@ -57,10 +57,12 @@ def test_output_result_has_correct_value(temp_path):
     results = strategy.run(layer_spec, graph_spec, input_results)
 
     expected = {
-        'output': np.array([123])
+        'output': (123,)
     }
+    
     assert results.sample == expected
 
+    
 @pytest.mark.tf2x
 def test_input_result_has_correct_value(temp_path):
     file_path = os.path.join(temp_path, 'data.csv')
@@ -80,7 +82,9 @@ def test_input_result_has_correct_value(temp_path):
     results = strategy.run(layer_spec, graph_spec, input_results)
 
     expected = {
-        'output': np.array([123])
+        'output': (123,)
     }
-
+    
     assert results.sample == expected
+
+    

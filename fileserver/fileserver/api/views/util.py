@@ -70,23 +70,3 @@ def get_paged_iter(seq, request):
 
     return (page, get_page(seq, page=page, per=per))
 
-def make_file_content_response(request, file_path):
-
-    num_rows = get_optional_param(request, "num_rows", 4) #5 rows, 0 indexed
-    row_count = 0
-
-    print(file_path, num_rows)
-
-    row_contents = []
-
-    try:
-        with open(file_path, 'r') as reader:
-            line = reader.readline()
-            while line != '' and row_count < num_rows:
-                row_contents.append(line)
-                line = reader.readline()
-                row_count += 1
-    except Exception as err:
-        raise('Error when reading file contents')
-
-    return json_response({"file_contents": row_contents})

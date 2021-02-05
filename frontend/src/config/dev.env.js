@@ -13,5 +13,4 @@ module.exports = merge(prodEnv, {
   GITHUB_CLIENT_ID: '"094271b0edb47c75dc24"',
   PL_FILE_SERVING_TOKEN: '"12312"',
   ENABLE_TF2X: '"false"',
-  ENABLE_DATA_WIZARD: '"false"',
 })

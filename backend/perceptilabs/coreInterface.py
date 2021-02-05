@@ -39,11 +39,10 @@ CPU_GPU_POLICY = 'force-cpu' # {'use-spec', 'force-gpu', 'force-cpu'}
 
 
 class coreLogic():
-    def __init__(self, networkName, issue_handler, session_id=None, trainer='core_v2'):
+    def __init__(self, networkName, issue_handler, session_id=None):
         logger.info(f"Created coreLogic for network '{networkName}'")
         self._session_id = session_id
         self._core_mode = 'v2'
-        self._trainer = trainer
         
         self.networkName=networkName
         self.cThread=None
@@ -81,6 +80,13 @@ class coreLogic():
         self.testList= None
 
         self.savedResultsDict={}
+
+    @property
+    def core_v2(self):
+        if self.core is not None:
+            return self.core.core_v2
+        else:
+            return None        
 
     def _logAndWarningQueue(self, msg):
         user_logger.info(msg)
@@ -144,52 +150,28 @@ class coreLogic():
     @property
     def running_mode(self):
         return self._running_mode
+
+    @property
+    def training_state(self):
+        if self.core_v2 is not None and self.core_v2.has_client:
+            return self.core_v2.training_state
+        else:
+            return None
+
+    @property
+    def training_session_id(self):
+        if self.core_v2 is not None:
+            return self.core_v2.training_session_id
+        else:
+            return None
         
     def set_running_mode(self, mode):
         self._running_mode = mode
         logger.info(f"Running mode {mode} set for coreLogic w\ network '{self.networkName}'")
 
-    def _get_corev2_trainer(self, script_factory):
-        from perceptilabs.core_new.core2 import Core
-        from perceptilabs.messaging.zmq_wrapper import ZmqMessagingFactory  
-        from perceptilabs.messaging.simple import SimpleMessagingFactory          
-        from perceptilabs.core_new.graph.builder import GraphBuilder
-        from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP
-        
-        messaging_factory = SimpleMessagingFactory()#ZmqMessagingFactory()
-        replica_by_name = {repl_cls.__name__: repl_cls for repl_cls in BASE_TO_REPLICA_MAP.values()}                        
-        graph_builder = GraphBuilder(replica_by_name)
-        trainer = Core(
-            graph_builder,
-            script_factory,
-            messaging_factory,
-            self.issue_handler,
-            running_mode=self._running_mode,
-            use_sentry=True
-        )
-        return trainer
-
-    def _get_standard_trainer(self, script_factory, graph_spec):
-        from perceptilabs.trainer import Trainer
-
-        from perceptilabs.modelrecommender.base import ModelRecommender
-        from perceptilabs.data.base import DataLoader, FeatureSpec    
-        from perceptilabs.script import ScriptFactory
-
-        data_loader = DataLoader.from_graph_spec(graph_spec)
-        trainer = Trainer(script_factory, data_loader, graph_spec)
-        
-        return trainer
-
-    def _get_trainer(self, script_factory, graph_spec):
-        if self._trainer == 'core_v2':
-            return self._get_corev2_trainer(script_factory)
-        elif self._trainer == 'standard':
-            return self._get_standard_trainer(script_factory, graph_spec)
-        else:
-            raise ValueError(f"Unknown trainer choice: '{self._trainer}'")
-
     def startCore(self, graph_spec, model_id):
+        self.graph_spec = graph_spec
+
         try:
             self.Close()
         except:
@@ -206,23 +188,33 @@ class coreLogic():
         graph_spec = self._override_graph_spec(graph_spec)
         # -----
         from perceptilabs.core_new.compatibility import CompatibilityCore
+        from perceptilabs.messaging.zmq_wrapper import ZmqMessagingFactory  
+        from perceptilabs.messaging.simple import SimpleMessagingFactory          
+        from perceptilabs.core_new.graph.builder import GraphBuilder
         from perceptilabs.script import ScriptFactory
 
+        from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP                
+
+        replica_by_name = {repl_cls.__name__: repl_cls for repl_cls in BASE_TO_REPLICA_MAP.values()}                
+        graph_builder = GraphBuilder(replica_by_name)
         
         script_factory = ScriptFactory(
             mode='tf2x' if utils.is_tf2x() else 'tf1x',
             simple_message_bus=True,
             running_mode=self._running_mode
         )
-
-        trainer = self._get_trainer(script_factory, graph_spec)
+        messaging_factory = SimpleMessagingFactory()#ZmqMessagingFactory()
         
         self.core = CompatibilityCore(
             self.commandQ,
             self.resultQ,
+            graph_builder,
+            script_factory,
+            messaging_factory,
             graph_spec,
-            trainer,
+            running_mode = self._running_mode,
             threaded=True,
+            issue_handler=self.issue_handler,
             model_id=model_id
         )            
             
@@ -240,8 +232,7 @@ class coreLogic():
         else:
             logger.info(f"Started core for network {self.networkName}. Mode: {self._running_mode}")
                 
-        self.status = "Running"
-        self.graph_spec = graph_spec
+        self.status="Running"
             
         return {"content":"core started"}
 
@@ -457,8 +448,7 @@ class coreLogic():
                     "GPU": gpu,
                     "Memory":mem
                 }
-        except KeyError as e:
-            logger.debug(f"Key Error in getStatus: {repr(e)}")
+        except KeyError:
             return {}
 
     def startTest(self, graph_spec, model_id):
@@ -526,6 +516,8 @@ class coreLogic():
         return retrieved
 
     def updateResults(self):
+
+
         #TODO: Look from the back and go forward if we find a test instead of going through all of them
         tmp=None
         while not self.resultQ.empty():
@@ -541,6 +533,7 @@ class coreLogic():
         if tmp:
             self.savedResultsDict.update(tmp)
             
+
         return {"content":"Results saved"}
 
     def getTrainingStatistics(self,value):
@@ -652,7 +645,7 @@ class coreLogic():
             dataObj = createDataObject([state])
             return {"Data":dataObj}            
         elif layerType=="DataData":
-            D=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})
+            D=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})           
             dataObj = createDataObject([D[-1]])      
             return {"Data":dataObj}
         elif layerType=="DataRandom":

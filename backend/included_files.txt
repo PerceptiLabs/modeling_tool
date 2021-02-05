@@ -50,7 +50,6 @@ perceptilabs/parser/parse_onnx.py
 perceptilabs/graph/__init__.py
 perceptilabs/graph/splitter.py
 perceptilabs/graph/spec.py
-perceptilabs/graph/builder.py
 
 # perceptilabs/layers
 perceptilabs/layers/__init__.py
@@ -183,8 +182,6 @@ perceptilabs/core_new/errors.py
 perceptilabs/core_new/extras.py
 perceptilabs/core_new/utils.py
 perceptilabs/core_new/serialization.py
-perceptilabs/core_new/policies.py
-
 
 # perceptilabs/lwcore
 perceptilabs/lwcore/__init__.py
@@ -211,6 +208,7 @@ perceptilabs/core_new/communication/zmq.py
 # perceptilabs/core_new/compatibility
 perceptilabs/core_new/compatibility/__init__.py
 perceptilabs/core_new/compatibility/base.py
+perceptilabs/core_new/compatibility/policies.py
 
 # perceptilabs/core_new/graph/
 perceptilabs/core_new/graph/__init__.py
@@ -271,16 +269,3 @@ perceptilabs/api/data_container.py
 perceptilabs/api/experiment.py
 
 perceptilabs/tutorial_data/
-
-# backend/perceptilabs/data/
-perceptilabs/data/__init__.py
-perceptilabs/data/base.py
-
-# backend/perceptilabs/modelrecommender/
-perceptilabs/modelrecommender/__init__.py
-perceptilabs/modelrecommender/base.py
-
-# backend/perceptilabs/trainer/
-perceptilabs/trainer/__init__.py
-perceptilabs/trainer/base.py
-perceptilabs/trainer/results.py

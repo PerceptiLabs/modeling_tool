@@ -233,8 +233,7 @@ class IoLayerStrategy(BaseStrategy):
         
         try:
             df = pd.read_csv(layer_spec.file_path)
-            value = np.array([df[layer_spec.feature_name][0]])  # As a batch with one value
-            output = {'output': value}
+            output = {'output': df.dropna()[layer_spec.feature_name].iloc[0]}
         except Exception as e:
             output = {'output': None}
             shape = {'output': None}

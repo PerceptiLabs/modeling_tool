@@ -115,7 +115,7 @@ class GraphSpec(AbstractGraphSpec):
         
         Returns:
             A list of LayerSpecs
-        """
+        """        
         return [self.nodes_by_id[id_] for id_ in self.get_ordered_ids()]
 
     def get_ordered_nodes(self):

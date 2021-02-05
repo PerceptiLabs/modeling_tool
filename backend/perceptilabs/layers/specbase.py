@@ -339,16 +339,6 @@ class LayerSpec(ABC, MyBaseModel):
         """ If some configuration is missing. E.g., labels connection for a training layer """
         return True
 
-    @property
-    def input_connections(self):
-        """ Alias for backward connections """
-        return self.backward_connections
-    
-    @property
-    def output_connections(self):
-        """ Alias for forward connections """
-        return self.forward_connections        
-
     
 class IoLayerSpec(LayerSpec):
     pass
@@ -370,21 +360,13 @@ class TrainingLayerSpec(InnerLayerSpec):
     def is_training_layer(self):
         return True
     
-    @property
-    def is_inner_layer(self):
-        return False
 
-    
 class DataLayerSpec(InnerLayerSpec):
     @property
     def is_data_layer(self):
         return True
-
-    @property
-    def is_inner_layer(self):
-        return False
-
     
+
 class DummySpec(LayerSpec):
     def _to_dict_internal(self, dict_: Dict[str, Any]) -> Dict[str, Any]:
         pass

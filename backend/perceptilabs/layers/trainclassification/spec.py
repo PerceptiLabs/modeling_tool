@@ -23,7 +23,7 @@ class TrainClassificationSpec(TrainingLayerSpec):
     connection_labels: Union[LayerConnection, None] = None
     connection_predictions: Union[LayerConnection, None] = None
     target_acc: Union[int, None] = None
-    stop_condition: str = 'Epochs'
+    stop_condition: str = 'Epochs'                        
 
     @classmethod
     def _from_dict_internal(cls, id_: str, dict_: Dict[str, Any], params: Dict[str, Any]) -> LayerSpec:

@@ -202,7 +202,7 @@ DEFINITION_TABLE_TF2X = {
         'layer_tf2x_rescale'
     ),
     'ProcessOneHot': LayerMeta(
-        ProcessOneHotSpec,
+        DeepLearningFcSpec,
         'layers/processonehot/tf2x_imports.json',
         'layers/processonehot/tf2x_template.j2',        
         'layer_tf2x_one_hot'

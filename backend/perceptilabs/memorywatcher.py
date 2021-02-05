@@ -82,7 +82,7 @@ class MemoryWatcher:
             console_message += f"    training state: {core_interface.training_state}\n"
             console_message += f"    training session id: {core_interface.training_session_id}"
             
-            core = getattr(core_interface, 'core_v2', None)             
+            core = core_interface.core_v2            
             if core is not None:
                 console_message += f"\n    is_closed: {core.is_closed}"
                 console_message += f"\n    is_closed_by_server: {core.is_closed_by_server}"

@@ -13,7 +13,7 @@
         :filePickerType="filePickerType"
         :fileTypeFilter="validFileExtensions"
         :confirmCallback="confirmFilePickerSelection"
-        :cancelCallback="closeFilePicker"
+        :cancelCallback="clearPath"
         :options="{showToTutotialDataFolder: true}"
         )
 
@@ -88,10 +88,6 @@
     mixins: [mixinSet, mixinData, mixinFocus],
     components: {ChartSwitch, SettingsCloud, TripleInput, SettingsFileList, WebUploadFile, FilePicker, FilePickerPopup },
     mounted() {
-      if (this.settings.FilePath && this.settings.accessProperties.Sources.length === 0) {
-        this.settings.accessProperties.Sources = this.Mix_settingsData_prepareSources([this.settings.FilePath], 'file');
-        this.settings.accessProperties.Partition_list = [[70, 20, 10]];
-      }
       this.debouncedSaveSettingsFunction = debounce((tabName, pushOntoHistory) => {
         this.applySettings(tabName, pushOntoHistory);
       }, 500);
@@ -240,10 +236,6 @@
       },
       clearPath() {
         this.getSettingsInfo();
-      },
-      closeFilePicker() {
-        this.clearPath();
-        this.showFilePicker = false;
       },
       getSettingsInfo() {
         if(this.settings.accessProperties.Sources.length) {
