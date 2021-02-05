@@ -1,5 +1,8 @@
 from django.urls import path
-from fileserver.api.views.file_view import FileView
+from fileserver.api.views.file_view import (
+        FileView,
+        get_file_content
+)
 from fileserver.api.views.directory_view import (
         DirectoryView,
         get_tutorial_data,
@@ -17,6 +20,7 @@ from fileserver.api.views.url_reachable import is_url_reachable
 urlpatterns = [
     path("version", version_view),
     path("files", FileView.as_view()),
+    path("files/get_file_content", get_file_content),
     path("json_models", JsonModelView.as_view()),
     path("directories", DirectoryView.as_view()),
     path("directories/tutorial_data", get_tutorial_data),

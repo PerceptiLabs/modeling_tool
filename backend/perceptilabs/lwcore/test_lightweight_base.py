@@ -10,6 +10,7 @@ from perceptilabs.utils import sanitize_path
 from perceptilabs.graph.spec import GraphSpec
 from perceptilabs.layers.iooutput.spec import OutputLayerSpec
 from perceptilabs.layers.ioinput.spec import InputLayerSpec
+from perceptilabs.layers.iooutput.spec import OutputLayerSpec
 
 
 @pytest.fixture(scope='function')
@@ -1554,3 +1555,13 @@ def test_preview_available_for_input_layer(csv_path):
     lw_core = LightweightCore()
     results = lw_core.run(graph_spec)
     assert results['123'].sample.get('output') == 1.0
+    
+
+@pytest.mark.tf2x    
+def test_preview_available_for_output_layer(csv_path):
+    layer_spec = OutputLayerSpec(id_='123', feature_name='x1', file_path=csv_path)
+    graph_spec = GraphSpec([layer_spec])
+    lw_core = LightweightCore()
+    results = lw_core.run(graph_spec)
+    assert results['123'].sample.get('output') == 1.0
+    

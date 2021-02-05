@@ -1,6 +1,7 @@
 import os
 import sys
 import time
+import copy
 import enum
 import uuid
 import pprint
@@ -34,6 +35,8 @@ from perceptilabs.script import ScriptFactory, FetchParameterError
 from perceptilabs.core_new.communication.deployment import ThreadStrategy, DeploymentStrategy
 from perceptilabs.messaging import MessagingFactory
 from perceptilabs.logconf import APPLICATION_LOGGER, DATA_LOGGER
+from perceptilabs.core_new.policies import policy_classification, policy_regression, policy_object_detection, policy_gan, policy_reinforce
+from perceptilabs.core_new.layers import *
 import perceptilabs.dataevents as dataevents
 
 
@@ -72,8 +75,15 @@ class Core:
         self._paused_time_stamp = None
         self._time_started = None
         self._time_ended = None
+
+        self._results = {}
+        self._sanitized_to_id = {}
+        self._sanitized_to_name = {}                
         
     def run(self, graph_spec: GraphSpec, on_iterate: List[Callable]=None, auto_close=False, model_id: int=None):
+        self._sanitized_to_id = {spec.sanitized_name: spec.id_ for spec in graph_spec.nodes}
+        self._sanitized_to_name = {spec.sanitized_name: spec.name for spec in graph_spec.nodes}
+        
         on_iterate = on_iterate or []
         self._graph_spec = graph_spec
         step = self.run_stepwise(graph_spec, auto_close=auto_close, model_id=model_id)
@@ -327,12 +337,53 @@ class Core:
             error = UserlandError(node.id_, node.type_, frame.lineno, message)
 
         self._handle_userland_error(error)
-        
-    @property
-    def graphs(self) -> List[Graph]:
-        copy_graph = self._graphs.copy()
+
+    def _pop_unprocessed_graphs(self):
+        graphs = self.graphs
         self._graphs = []
-        return copy_graph
+        return graphs
+
+    @property
+    def graphs(self):
+        graphs = self._graphs.copy()
+        return graphs
+
+    def get_results(self):
+        """ Returns a dictionary with the accumulated training results  """
+        unprocessed_graphs = self._pop_unprocessed_graphs()
+
+        if len(unprocessed_graphs) > 0:
+            self._update_results_dict(unprocessed_graphs)            
+            return copy.deepcopy(self._results)
+        else:
+            return None
+
+    def _update_results_dict(self, graphs):
+        # Run policies...
+
+        layer = graphs[-1].active_training_node.layer
+
+        fn_sanitized_to_name = lambda sanitized_name: self._sanitized_to_name[sanitized_name]
+        fn_sanitized_to_id = lambda sanitized_name: self._sanitized_to_id[sanitized_name]
+
+        fn_is_paused = lambda: self.is_training_paused
+
+        existing_results = self._results
+        
+        if isinstance(layer, ClassificationLayer):
+            new_result_dict = policy_classification(fn_is_paused, graphs, fn_sanitized_to_name, fn_sanitized_to_id, existing_results)
+        elif  isinstance(layer, ObjectDetectionLayer):
+            new_result_dict = policy_object_detection(fn_is_paused, graphs, fn_sanitized_to_name, fn_sanitized_to_id, existing_results)
+        elif  isinstance(layer, GANLayer):
+            new_result_dict = policy_gan(fn_is_paused, graphs, fn_sanitized_to_name, fn_sanitized_to_id, existing_results)
+        elif  isinstance(layer, RegressionLayer):
+            new_result_dict = policy_regression(fn_is_paused, graphs, fn_sanitized_to_name, fn_sanitized_to_id, existing_results)
+        elif  isinstance(layer, RLLayer):
+            new_result_dict = policy_reinforce(fn_is_paused, graphs, fn_sanitized_to_name, fn_sanitized_to_id, existing_results)
+        self._results = new_result_dict
+        
+        self._results['training_duration'] = self.training_duration # TODO: move into policies
+        
 
     def force_close(self, timeout=240):
         self.request_close()
@@ -456,12 +507,22 @@ class Core:
 
     @deprecated
     def headlessOff(self):
-        self.request_headless_deactivate()
+        self.headless_off()
+
+    def headless_off(self):
+        self.request_headless_deactivate()        
 
     @deprecated
     def headlessOn(self):
+        self.headless_on()
+
+    def headless_on(self):
         self.request_headless_activate()        
-            
+
+    @property
+    def is_ready(self):
+        return self.has_client
+
 
     
 

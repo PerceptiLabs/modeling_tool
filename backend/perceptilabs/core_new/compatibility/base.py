@@ -12,7 +12,6 @@ from perceptilabs.core_new.graph.utils import sanitize_layer_name
 from perceptilabs.core_new.core2 import Core
 from perceptilabs.core_new.layers import *
 from perceptilabs.core_new.layers.replicas import NotReplicatedError
-from perceptilabs.core_new.compatibility.policies import policy_classification, policy_regression, policy_object_detection, policy_gan, policy_reinforce
 
 
 from perceptilabs.logconf import APPLICATION_LOGGER
@@ -25,96 +24,44 @@ PROCESS_RESULTS_DELAY = 0.1
 
 
 class CompatibilityCore:
-    def __init__(self, command_queue, result_queue, graph_builder, script_factory, messaging_factory, graph_spec, running_mode = 'training', threaded=False, issue_handler=None, model_id=None):
+    def __init__(self, command_queue, result_queue, graph_spec, trainer, threaded=False, model_id=None):
         self._model_id = model_id
         self._command_queue = command_queue
         self._result_queue = result_queue
-        self._graph_builder = graph_builder
-        self._script_factory = script_factory
-        self._messaging_factory = messaging_factory        
-        self._graph_spec = copy.deepcopy(graph_spec)
-        self._issue_handler = issue_handler
-        self._running_mode = running_mode
-
-        self._sanitized_to_id = {spec.sanitized_name: spec.id_ for spec in graph_spec.nodes}
-        self._sanitized_to_name = {spec.sanitized_name: spec.name for spec in graph_spec.nodes}        
-
+        self._graph_spec = graph_spec
         self._threaded = threaded
-        
         self._running = False
-        self._core = None
-        self.results = {}
-
-    @property
-    def core_v2(self):
-        return self._core
-
+        self._trainer = trainer
+        
     def run(self):
+        """ Runs the training """
         self._set_running(True)
 
-        def do_process_commands(counter, core): 
-            commands = {}
-            count = {}
-
-            while not self._core.has_client:
-                time.sleep(0.3)   
-            
-            while not self._command_queue.empty():
-                command = self._command_queue.get()
-
-                if command.type not in count:
-                    count[command.type] = 0
-                count[command.type] += 1
-
-                if command.allow_override:
-                    id_ = f'{command.type}-0'
-                else:
-                    id_ = f'{command.type}-{count[command.type]}'
-                commands[id_] = command
-
-            for command_id, command in commands.items():
-                if command.allow_override and count[command.type] > 1:
-                    logger.debug(f'Processing command {command_id}: {command}. Overriding {count[command.type]-1} previous commands of the same type.') # TODO: logger.debug instead
-                else:
-                    logger.debug(f'Processing command {command_id}: {command}.') # TODO: logger.debug instead
-                try:
-                    self._send_command(core, command)
-                except Exception as e:
-                    logger.exception(f'Error while processing command {command} in CompatibilityCore. Error is: {e}')
-            
-        def do_process_results(counter, core):
-            graphs = core.graphs
-
-            if len(graphs) > 0:
-                self.results = self._get_results_dicts(graphs, self.results)
-                if self._running_mode == 'training':
-                    self.results['training_duration'] = core.training_duration
-                self._result_queue.put(copy.deepcopy(self.results))
-
-        core = Core(self._graph_builder, self._script_factory, self._messaging_factory, self._issue_handler, running_mode = self._running_mode, use_sentry=True)
-        self._core = core
-        
         if self._threaded:
-            def worker(func, delay):
-                logger.debug(f"Entering worker thread for function {func}. Period: {delay}")
-                
-                counter = 0
-                while self.is_running and not self._core.is_closed:
-                    func(counter, core)
-                    counter += 1
-                    time.sleep(delay)
-                func(counter, core)    #One extra for good measure
-
-            threading.Thread(target=worker, args=(do_process_commands, PROCESS_COMMANDS_DELAY), daemon=True).start()    
-            threading.Thread(target=worker, args=(do_process_results, PROCESS_RESULTS_DELAY), daemon=True).start()                  
-            self._run_core(core, self._graph_spec)
+            self._run_trainer_threaded(self._trainer, self._graph_spec)
         else:
-            self._run_core(core, self._graph_spec, on_iterate=[do_process_commands, do_process_results])            
+            self._run_trainer(self._trainer, self._graph_spec, on_iterate=[self._do_process_commands, self._do_process_results])
 
-    def _run_core(self, core, graph_spec, on_iterate=None):
+    def _run_trainer_threaded(self, trainer, graph_spec):
+        """ Starts two workers: one for processing frontend commands, one for training """
+        def worker(func, delay):
+            logger.debug(f"Entering worker thread for function {func}. Period: {delay}")
+            
+            counter = 0
+            while self.is_running and not self._trainer.is_closed:
+                func(counter, self._trainer)
+                counter += 1
+                time.sleep(delay)
+            func(counter, self._trainer)    #One extra for good measure
+
+        threading.Thread(target=worker, args=(self._do_process_commands, PROCESS_COMMANDS_DELAY), daemon=True).start()    
+        threading.Thread(target=worker, args=(self._do_process_results, PROCESS_RESULTS_DELAY), daemon=True).start()                  
+        self._run_trainer(self._trainer, self._graph_spec)        
+
+    def _run_trainer(self, trainer, graph_spec, on_iterate=None):
         try:
-            core.run(self._graph_spec, on_iterate=on_iterate, model_id=self._model_id)
-            logger.info("Core.run() called from CompatibilityCore")
+            trainer.run(self._graph_spec, on_iterate=on_iterate, model_id=self._model_id)
+            logger.info("Trainer.run() called from CompatibilityCore")
         except:
             self._set_running(False)
             raise
@@ -128,103 +75,74 @@ class CompatibilityCore:
     def is_running(self):
         return self._running        
 
-    def _send_command(self, core, command):
+    def _forward_command_to_trainer(self, trainer, command):
         if command.type == 'pause' and command.parameters['paused']:
-            core.pause()
+            trainer.pause()
         elif command.type == 'pause' and not command.parameters['paused']:            
-            core.unpause()
+            trainer.unpause()
         elif command.type == 'stop':
-            core.stop()
+            trainer.stop()
         elif command.type == 'close':
-            core.close()
+            trainer.close()
         elif command.type == 'headless' and command.parameters['on']:
-            core.headlessOn()
+            trainer.headless_on()
         elif command.type == 'headless' and not command.parameters['on']:            
-            core.headlessOff()
+            trainer.headless_off()
         elif command.type == 'export':
-            core.export(command.parameters['path'], command.parameters['mode'])
+            trainer.export(command.parameters['path'], command.parameters['mode'])
         elif command.type == 'advance_testing':
-            core.advance_testing()            
+            if hasattr(trainer, 'advance_testing'):
+                trainer.advance_testing()
+            else:
+                logger.warning("Testing not implemented for current trainer")
             
-    def _get_results_dicts(self, graphs, results):
-        logger.debug("_get_results_dict called")
-        self._print_graph_debug_info(graphs)
-        result_dicts = [{}]        
-        try:
-            result_dicts = self._get_results_dicts_internal(graphs, results)
-        except:
-            logger.exception('Error when getting results dict')
-        finally:
-            for result_dict in result_dicts:
-                self._print_result_dict_debug_info(result_dict)
-            return result_dicts                
-    
-    def _get_results_dicts_internal(self, graphs, results):
-        if not graphs:
-            logger.debug("graph is None, returning empty results")
-            return [{}]
-        layer = graphs[-1].active_training_node.layer
-
-        fn_sanitized_to_name = lambda sanitized_name: self._sanitized_to_name[sanitized_name]
-        fn_sanitized_to_id = lambda sanitized_name: self._sanitized_to_id[sanitized_name]
-
-        fn_is_paused = lambda: self._core.is_training_paused
-        
-        if isinstance(layer, ClassificationLayer):
-            result_dicts = policy_classification(fn_is_paused, graphs, fn_sanitized_to_name, fn_sanitized_to_id, results)
-        elif  isinstance(layer, ObjectDetectionLayer):
-            result_dicts = policy_object_detection(fn_is_paused, graphs, fn_sanitized_to_name, fn_sanitized_to_id, results)
-        elif  isinstance(layer, GANLayer):
-            result_dicts = policy_gan(fn_is_paused, graphs, fn_sanitized_to_name, fn_sanitized_to_id, results)
-        elif  isinstance(layer, RegressionLayer):
-            result_dicts = policy_regression(fn_is_paused, graphs, fn_sanitized_to_name, fn_sanitized_to_id, results)
-        elif  isinstance(layer, RLLayer):
-            result_dicts = policy_reinforce(fn_is_paused, graphs, fn_sanitized_to_name, fn_sanitized_to_id, results)
-        return result_dicts
-
-    def _print_graph_debug_info(self, graphs):
-        if not logger.isEnabledFor(logging.DEBUG):
-            return
-
-        if len(graphs) == 0:
-            logger.debug("No graphs available")
-            return
-
-        graph = graphs[-1]
-
-        text = "graph info: "
-        for node in graph.nodes:
-            layer = node.layer
-            attr_names = sorted(dir(layer))
-            n_chars = max(len(n) for n in attr_names)
-            
-            text += f"{node.layer_id} [{type(layer.__class__.__name__)}]\n"
-            for attr_name in attr_names:
-                if hasattr(layer.__class__, attr_name) and isinstance(getattr(layer.__class__, attr_name), property):
-                    name = attr_name.ljust(n_chars, ' ')
-                    try:
-                        value = getattr(layer, attr_name)
-                        value_str = str(value).replace('\n', '')
-                        if len(value_str) > 70:
-                            value_str = value_str[0:70] + '...'
-                        value_str = f'{value_str} [{type(value).__name__}]'
-                    except NotReplicatedError:
-                        value_str = '<not replicated>'
-                    except Exception as e:
-                        value_str = f'<error: {repr(e)}>'
-                    finally:
-                        text += f"    {name}: {value_str}\n"                        
-            text += '\n'
-
-        logger.debug(text)
-
     def _print_result_dict_debug_info(self, result_dict):
         if logger.isEnabledFor(logging.DEBUG):
             from perceptilabs.utils import stringify
             text = stringify(result_dict, indent=4, sort=True)
             logger.debug("result_dict: \n" + text)
-        
 
+    def _do_process_results(self, counter, trainer):
+        """ Retrieves the resultDict from the Trainer """
+        results = trainer.get_results()
+
+        if results is not None:
+            self._result_queue.put(results)
+            self._print_result_dict_debug_info(results)
+        
+    def _do_process_commands(self, counter, trainer):
+        """ Process user commands coming in from the frontend (e.g., pause/unpause) """
+        commands = {}
+        count = {}
+
+        while not self._trainer.is_ready:
+            time.sleep(0.3)   
+            
+        while not self._command_queue.empty():
+            command = self._command_queue.get()
+
+            if command.type not in count:
+                count[command.type] = 0
+            count[command.type] += 1
+
+            if command.allow_override:
+                id_ = f'{command.type}-0'
+            else:
+                id_ = f'{command.type}-{count[command.type]}'
+            commands[id_] = command
+
+        for command_id, command in commands.items():
+            if command.allow_override and count[command.type] > 1:
+                logger.debug(f'Processing command {command_id}: {command}. Overriding {count[command.type]-1} previous commands of the same type.') # TODO: logger.debug instead
+            else:
+                logger.debug(f'Processing command {command_id}: {command}.') # TODO: logger.debug instead
+            try:
+                self._forward_command_to_trainer(trainer, command)
+            except Exception as e:
+                logger.exception(f'Error while processing command {command} in CompatibilityCore. Error is: {e}')
+            
+
+            
 
 if __name__ == "__main__":
 

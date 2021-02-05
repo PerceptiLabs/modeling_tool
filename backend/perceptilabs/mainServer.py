@@ -34,6 +34,7 @@ def get_input_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('-l','--log-level', default=os.getenv("PL_KERNEL_LOG_LEVEL"), type=str, choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
                         help='Log level name.')
+    parser.add_argument('-t','--trainer', default=os.getenv("PL_KERNEL_TRAINER", "core_v2"), type=str, choices=['core_v2', 'standard'], help='Which trainer to use.')
     parser.add_argument('-k','--instantly-kill', default=False, type=bool,
                         help="Set this to instantly kill the core, for test purposes.")
     parser.add_argument('-u', '--user', default="dev@dev.com", type=str,
@@ -53,6 +54,9 @@ def main():
     session_id = uuid.uuid4().hex
     issue_handler = IssueHandler()
 
+    if args.trainer == 'standard' and not utils.is_tf2x():
+        raise RuntimeError("The standard trainer is currently only supported for tf2x")
+    
     perceptilabs.logconf.setup_application_logger(log_level=args.log_level)
     perceptilabs.logconf.setup_data_logger(is_dev=(COMMIT_ID == "Dev"))
     perceptilabs.logconf.set_session_id(session_id)
@@ -75,10 +79,8 @@ def main():
     dataDict=dict()
     checkpointDict=dict()
     lwDict=dict()
-
-    core_interface = Interface(cores, dataDict, checkpointDict, lwDict, issue_handler, session_id=session_id, allow_headless=args.allow_headless)
-
-
+    
+    core_interface = Interface(cores, dataDict, checkpointDict, lwDict, issue_handler, session_id=session_id, allow_headless=args.allow_headless, trainer=args.trainer)
 
     from perceptilabs.memorywatcher import MemoryWatcher
     memory_watcher = MemoryWatcher(issue_handler=issue_handler, core_interfaces=cores)

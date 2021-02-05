@@ -2,9 +2,18 @@
 {% from 'controlflow.j2' import indented_if %}
 {% from 'activations.j2' import activation_function %}
 
+from abc import ABC, abstractmethod # TODO: remove w/ work item 1534
+
+class PerceptiLabsVisualizer(ABC):
+    # TODO: move this to a centralized location (see work item 1534)
+    @property
+    @abstractmethod
+    def visualized_trainables(self):
+        """ Returns two dictionaries (weights, biases) with key/value pairs to be visualized in the frontend """
+        
 
 {% macro layer_tf2x_fully_connected(layer_spec, graph_spec) %}
-class {{layer_spec.sanitized_name}}Keras(tf.keras.layers.Layer):
+class {{layer_spec.sanitized_name}}Keras(tf.keras.layers.Layer, PerceptiLabsVisualizer):
     def __init__(self):
         super().__init__()
         self._n_neurons = {{layer_spec.n_neurons}}
@@ -46,7 +55,7 @@ class {{layer_spec.sanitized_name}}Keras(tf.keras.layers.Layer):
         Args:
             input_shape: A dictionary with layer id and its tensor shape        
         """
-        flat_input_dim = np.product(input_shape['input'][1:]) # Excluding batch size
+        flat_input_dim = int(np.product(input_shape['input'][1:])) # Excluding batch size
         self.flatten = tf.keras.layers.Flatten()
         {% call indented_if(layer_spec.batch_norm) %}	
             self.batch_norm = tf.keras.layers.BatchNormalization()
@@ -74,10 +83,14 @@ class {{layer_spec.sanitized_name}}Keras(tf.keras.layers.Layer):
             A dictionary with tensor names for keys and picklable for values.
         """
         return self._variables
-        
+
+    @property
+    def visualized_trainables(self):
+        return {'W': self.kernel}, {'b': self.bias}
 
 
 class {{layer_spec.sanitized_name}}(Tf2xLayer):
+    # TODO: deprecate this part! (see work item 1534)
     def __init__(self):
         super().__init__(
             keras_class={{layer_spec.sanitized_name}}Keras

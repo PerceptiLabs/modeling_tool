@@ -699,7 +699,7 @@ def test_tf2x_convergence(script_factory_tf2x, graph_spec):
 
 @pytest.mark.tf2x            
 def test_tf2x_policy_dict_is_not_empty(script_factory_tf2x, graph_spec):
-    from perceptilabs.core_new.compatibility.policies import policy_classification
+    from perceptilabs.core_new.policies import policy_classification
     
     graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec, print_code=True)
 
