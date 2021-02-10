@@ -7,7 +7,6 @@
       v-show="!testIsOpen"
       :layerType="'ViewBox'"
       )
-    
     .info-section_main(v-if="elData !== null")
       component(
         :is="elData.componentName"
@@ -54,7 +53,7 @@
   import MathSwitch    from '@/components/network-elements/elements/math-switch/viewBox-math-switch.vue'
   import MathSoftmax  from '@/components/network-elements/elements/math-softmax/viewBox-math-softmax.vue'
   import MathSplit    from '@/components/network-elements/elements/math-split/viewBox-math-split.vue'
-  import LayerCustom          from '@/components/network-elements/elements/layer-custom/layer-custom.vue'
+  import LayerCustom          from '@/components/network-elements/elements/layer-custom/viewBox-layer-custom.vue'
 
   import ViewBoxBtnList from '@/components/statistics/view-box-btn-list.vue'
 
@@ -72,7 +71,7 @@ export default {
     // TrainLoss, TrainOptimizer, 
     MathArgmax, MathMerge, MathSoftmax, MathSwitch,
     // MathSplit,
-
+    LayerCustom,
     // ClassicMLDbscans, ClassicMLKMeans, ClassicMLKNN, ClassicMLRandomForest, ClassicMLSVM,
   ViewBoxBtnList
 },

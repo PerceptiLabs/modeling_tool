@@ -638,7 +638,7 @@ class coreLogic():
 
     
     def getLayerStatistics(self, layerId, layerType, view):
-        logger.debug("getLayerStatistics for layer '{}' with type '{}' and view: '{}'".format(layerId, layerType, view))
+        logger.info("getLayerStatistics for layer '{}' with type '{}' and view: '{}'".format(layerId, layerType, view))
         
         if layerType=="DataEnvironment":
             state = self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})[-1,:,:,:3]
@@ -656,6 +656,10 @@ class coreLogic():
         #     D=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})           
         #     dataObj = createDataObject([D[-1]])      
         #     return {"Data":dataObj}
+        elif layerType=="LayerCustom":
+            D=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})  
+            dataObj = createDataObject([D[-1]])      
+            return {"Output":dataObj}
         elif layerType=="DeepLearningFC":
             if view=="Output":
                 D=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})[-1]
