@@ -81,13 +81,7 @@ export default {
       this.$store.dispatch('globalView/SET_filePickerPopup', false);
     },
     saveLoadFile() {
-      if(isWeb()) {
-        this.$store.dispatch('globalView/SET_filePickerPopup', {confirmCallback: this.setExportPath});
-      } else {
-        loadPathFolder()
-          .then((pathArr)=> this.settings.Location = pathArr[0] )
-          .catch((err)=> console.error(err) ) 
-      }
+      this.$store.dispatch('globalView/SET_filePickerPopup', {confirmCallback: this.setExportPath});
     },
     closePopup() {
       this.$store.commit('globalView/HIDE_allGlobalPopups');

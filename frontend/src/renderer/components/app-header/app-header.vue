@@ -45,18 +45,11 @@
         span(v-if="!isLoading") Report
         i.icon.icon-bug-report(v-if="!isLoading")
       header-profile(v-if="showProfile")
-      ul(v-if="!isWeb").app-header_actions
-        button.btn.btn--app-minify(type="button" @click="appMinimize()").i.icon.icon-app-minimize
-        button.btn.btn--app-full(type="button"
-          @click="appMaximize"
-          :class="{'icon-app-restore-down': showRestoreIcon, 'icon-app-resize': !showRestoreIcon}").i.icon
-        button.btn.btn--app-close(type="button" @click="appClose()").i.icon.icon-app-close
 </template>
 
 <script>
   import TheMenu from '@/components/the-menu.vue'
-  import {isWeb} from "@/core/helpers";
-  import HeaderProfile from "@/components/header/header-profile";
+  import HeaderProfile from "@/components/app-header/header-profile";
   import { mapGetters, mapActions } from 'vuex';
   import { MODAL_PAGE_WHATS_NEW } from "@/core/constants";
   import { fileserverAvailability } from '@/core/apiFileserver';
@@ -66,7 +59,6 @@ export default {
   components: {HeaderProfile, TheMenu},
   data: function() {
     return {
-      isWeb: isWeb(),
       showHelpPanel: false,
       showProfile: !process.env.NO_KC,
       MODAL_PAGE_WHATS_NEW,
@@ -136,15 +128,6 @@ export default {
     }),
     setLoading(value) {
       this.isLoading = value;
-    },
-    appClose() {
-      this.$emit('app-closed')
-    },
-    appMinimize() {
-      this.$emit('app-minimized')
-    },
-    appMaximize() {
-      this.$emit('app-maximized')
     },
     toProjectPage() {
       if(this.$route.name === 'app') {

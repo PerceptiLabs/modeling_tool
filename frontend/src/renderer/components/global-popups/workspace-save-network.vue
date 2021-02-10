@@ -33,7 +33,6 @@
 
 <script>
 import BaseGlobalPopup  from "@/components/global-popups/base-global-popup";
-import { openLoadDialog, generateID } from '@/core/helpers.js'
 import { pathSlash }  from "@/core/constants.js";
 
 export default {
@@ -101,17 +100,6 @@ export default {
       }
       this.promiseOk(this.settings);
     },
-    // loadPathProject() {
-    //   // doesn't do anything on the web version
-    //   if(this.settings.projectPath.length) return;
-    //   let opt = {
-    //     title:"The folder in which the project will be saved",
-    //     properties: ['openDirectory'],
-    //   };
-    //   openLoadDialog(opt)
-    //     .then((pathArr)=> { this.settings.projectPath = pathArr[0] })
-    //     .catch(()=> {})
-    // },
     setPath(path) {
       if (path && path.length > 0) { 
         this.settings.networkPath = path[0];

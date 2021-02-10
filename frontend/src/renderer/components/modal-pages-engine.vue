@@ -1,52 +1,26 @@
 <template lang="pug">
   div(v-if="isOpen")#modal-page-engine-wrapper.modal-page-engine-wrapper
     create-select-project(v-if="currentPage === MODAL_PAGE_PROJECT")
-    //- page-login(v-else-if="currentPage === MODAL_PAGE_SIGN_IN")
-    //- page-register(v-else-if="currentPage === MODAL_PAGE_SIGN_UP")
-    //- page-restore-account(v-else-if="currentPage === MODAL_PAGE_RESTORE_ACCOUNT")
     page-whats-new(v-else-if="currentPage === MODAL_PAGE_WHATS_NEW")
     page-questionnaire(v-else-if="currentPage === MODAL_PAGE_QUESTIONNAIRE")
 </template>
 <script>
   import { mapActions } from "vuex";
   import CreateSelectProject from "@/pages/create-select-project/create-select-project";
-  import { MODAL_PAGE_PROJECT, MODAL_PAGE_SIGN_IN, MODAL_PAGE_SIGN_UP, MODAL_PAGE_WHATS_NEW, MODAL_PAGE_RESTORE_ACCOUNT, MODAL_PAGE_QUESTIONNAIRE } from "@/core/constants";
-  import PageLogin from "@/pages/login/login";
-  import PageRegister from "@/pages/register/register";
+  import { MODAL_PAGE_PROJECT, MODAL_PAGE_WHATS_NEW, MODAL_PAGE_QUESTIONNAIRE } from "@/core/constants";
   import PageWhatsNew from "@/pages/onboarding/whats-new.vue";
   import PageQuestionnaire from "@/pages/questionnaire/questionnaire.vue";
-  import PageRestoreAccount from "@/pages/restore-account/restore-account";
   
   let visibilityWatcher = null;
   
   export default {
     name: 'ModalPagesEngine',
-    components: {PageRestoreAccount, PageRegister, PageWhatsNew, PageLogin, CreateSelectProject, PageQuestionnaire},
-    created() {
-
-      try {
-        let localUserToken = JSON.parse(localStorage.getItem('currentUser'));
-        if(!localUserToken.accessToken) {
-          throw "haven't token";
-        }
-      } catch(e) {
-        // this.setActivePageAction(MODAL_PAGE_SIGN_UP)
-      };
-
-     
-      // let localUserToken = JSON.parse(localStorage.getItem('currentUser'));
-      
-      // if(!localUserToken) {
-      //   this.setActivePageAction(MODAL_PAGE_SIGN_UP)
-      // }
-    },
+    components: { PageWhatsNew, CreateSelectProject, PageQuestionnaire},
+    created() {},
     data: function() {
       return {
         MODAL_PAGE_PROJECT,
-        MODAL_PAGE_SIGN_UP,
         MODAL_PAGE_WHATS_NEW,
-        MODAL_PAGE_SIGN_IN,
-        MODAL_PAGE_RESTORE_ACCOUNT,
         MODAL_PAGE_QUESTIONNAIRE
       }
     },

@@ -191,8 +191,6 @@
 <script>
   import SortByButton from '@/pages/projects/components/sort-by-button.vue';
   import CollaboratorAvatar from '@/pages/projects/components/collaborator-avatar.vue'
-  import FilePicker     from "@/components/different/file-picker.vue";
-  import FilePickerPopup        from "@/components/global-popups/file-picker-popup.vue";
   import SelectModelModal from '@/pages/projects/components/select-model-modal.vue';
   import ModelStatus from '@/components/different/model-status.vue';
   import WorkspaceLoadNetwork   from "@/components/global-popups/workspace-load-network.vue";
@@ -221,8 +219,6 @@
     components: {
       SortByButton,
       CollaboratorAvatar,
-      FilePicker,
-      FilePickerPopup,
       SelectModelModal,
       ModelStatus,
       WorkspaceLoadNetwork,

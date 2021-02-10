@@ -1,16 +1,7 @@
 import VueNonreactive from 'vue-nonreactive/vue-nonreactive.js';
 import Vue from 'vue'
 Vue.use(VueNonreactive);
-import coreRequestElectron  from "@/core/apiCore.js";
-import {coreRequest as coreRequestWeb, openWS}  from "@/core/apiWeb.js";
-let coreRequest = null;
-
-if(!(navigator.userAgent.toLowerCase().indexOf(' electron/') > -1)) {
-  coreRequest = coreRequestWeb;
-} else {
-  coreRequest = coreRequestElectron;
-}
-
+import {coreRequest }  from "@/core/apiWeb.js";
 
 const viewBoxMixin = {
   props: {

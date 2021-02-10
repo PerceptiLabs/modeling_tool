@@ -17,16 +17,6 @@
         :options="{showToTutotialDataFolder: true}"
         )
 
-      //-web-upload-file#tutorial_button-load.tutorial-relative(
-        v-model="settings.accessProperties.PathFake"
-        /:input-disabled="disabledBtn"
-        /:input-multiple="true"
-        /:showPath="false"
-        )
-        .btn.tutorial-relative
-          i.icon.icon-open-file
-          span Choose files
-
     template(v-else)
       .settings-layer_section
         .form_row
@@ -91,21 +81,17 @@
   import ChartSwitch    from "@/components/charts/chart-switch.vue";
   import TripleInput    from "@/components/base/triple-input";
   import WebUploadFile  from "@/components/web/upload-file.vue";
-  import FilePicker     from "@/components/different/file-picker.vue";
-  import FilePickerPopup        from "@/components/global-popups/file-picker-popup.vue";
 
-  import {openLoadDialog, loadPathFolder} from '@/core/helpers.js'
   import {mapActions, mapGetters}     from 'vuex';
 
   export default {
     name: 'SetDataData',
     mixins: [mixinSet, mixinData, mixinFocus],
-    components: {ChartSwitch, SettingsCloud, TripleInput, SettingsFileList, WebUploadFile, FilePicker, FilePickerPopup },
+    components: { ChartSwitch, SettingsCloud, TripleInput, SettingsFileList, WebUploadFile },
     mounted() {
       if(this.settings.accessProperties.Columns && this.settings.accessProperties.Columns.length) {
         this.dataColumnsSelected = this.settings.accessProperties.Columns;
       }
-
       this.saveSettingsToStore("Computer");
       // this.saveSettings("Computer");
     },
@@ -274,9 +260,6 @@
       loadFolder(isAppend) {
         this.showFilePicker = true;
         this.filePickerType = 'folder';
-        //loadPathFolder()
-        //  .then((pathArr)=> this.saveLoadFile(pathArr, 'directory', isAppend))
-        //  .catch(()=> { })
       },
       addFiles() {
         this.filePickerAppendingItems = true;

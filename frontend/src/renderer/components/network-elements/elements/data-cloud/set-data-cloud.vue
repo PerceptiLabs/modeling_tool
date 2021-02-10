@@ -72,8 +72,7 @@
   import ChartSwitch    from "@/components/charts/chart-switch.vue";
   import TripleInput    from "@/components/base/triple-input";
 
-  import {openLoadDialog, loadPathFolder} from '@/core/helpers.js'
-  import {mapActions, mapGetters}     from 'vuex';
+  import { mapGetters }     from 'vuex';
 
   export default {
     name: 'SetDataCloud',

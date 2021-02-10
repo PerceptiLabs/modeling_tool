@@ -33,12 +33,10 @@ import TheViewBox             from "@/components/statistics/the-view-box";
 import StartTrainingSpinner   from '@/components/different/start-training-spinner.vue'
 import TheMiniMap             from '@/components/different/the-mini-map.vue'
 import TheToaster             from '@/components/different/the-toaster.vue'
-// import SidebarLayers          from '@/components/workspace/sidebar/workspace-sidebar-layers.vue'
 import TheSidebar             from '@/components/the-sidebar.vue'
 import Notebook               from '@/components/notebooks/notebook-container.vue';
 import CodeWindow             from '@/components/workspace/code-window/workspace-code-window.vue';
 import InformationPanel       from '@/components/workspace/information-panel/information-panel.vue';
-import NotificationsWindow    from '@/components/workspace/notifications-window/workspace-notifications-window.vue';
 import EmptyNavigation        from '@/components/empty-navigation/empty-navigation.vue';
 import ResourceMonitor        from "@/components/charts/resource-monitor.vue";
 import SelectModelModal       from '@/pages/projects/components/select-model-modal.vue';

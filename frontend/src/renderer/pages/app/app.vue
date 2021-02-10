@@ -1,15 +1,7 @@
 <template lang="pug">
-
-  //- .page(
-  //-   v-if="showPage"
-  //-   ref="layersbar"
-  //-   )
   .page(ref="layersbar")
     the-workspace.workspace
-    //- the-toolbar
-    //- the-layersbar
     the-sidebar(v-if="getViewMode==='model' && getEmptyScreenMode===0")
-    //- the-tutorial-storyboard(v-if="isShowTutorial")
 
 </template>
 
@@ -18,11 +10,8 @@
   import { throttleEv } from '@/core/helpers.js'
   import { localStorageGridKey } from '@/core/constants.js'
 
-  // import TheToolbar         from '@/components/the-toolbar.vue'
-  import TheLayersbar       from '@/components/the-layersbar.vue'
   import TheSidebar         from '@/components/the-sidebar.vue'
   import TheWorkspace       from '@/components/workspace/the-workspace.vue'
-  import TheTutorialStoryboard from "@/components/tutorial/tutorial-storyboard.vue";
   import {shouldHideSidebar, calculateSidebarScaleCoefficient } from "../../core/helpers";
   import {isWeb} from "@/core/helpers";
   import { GITHUB_GET_TOKEN_BY_CODE_URL } from "@/core/constants";
@@ -30,7 +19,8 @@
 
   export default {
     name: 'pageQuantum',
-    components: { TheLayersbar, TheSidebar, TheWorkspace, TheTutorialStoryboard },
+    components: { TheSidebar, TheWorkspace },
+
      beforeRouteEnter(to, from, next) {
         next((vm) => {
             vm.from = from;
@@ -53,25 +43,6 @@
             })
           }
           }).catch(err => console.log(err));
-      }
-      if(isWeb()) {
-        // this.$store.dispatch('mod_webstorage/loadWorkspaces')
-        //   .then(_ => {
-        //     if(this.from.name === null) {
-        //       this.$store.commit('mod_workspace/get_lastActiveTabFromLocalStorage');
-        //     }
-        //     if(!this.workspaceContent.length) { 
-        //       this.$router.push({'name': 'projects'});
-        //     }
-
-        //     // request charts if the page has been refreshed, and
-        //     // the current tab is the first one
-
-        //     // this.SET_chartRequests(this.workspaceContent[0].networkID);
-        //   });
-      } else {
-        if(!this.workspaceContent.length) this.ADD_network();
-        this.DELETE_userWorkspace();
       }
     },
     mounted() {

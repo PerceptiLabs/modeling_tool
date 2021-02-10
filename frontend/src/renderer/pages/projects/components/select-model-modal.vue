@@ -92,7 +92,7 @@
     import linearRegression       from '@/core/basic-template/linear-regression.js'
     import objectDetection        from '@/core/basic-template/object-detection.js'
     import ganTemplate            from '@/core/basic-template/gan-template.js'
-    import FilePickerPopup        from "@/components/global-popups/file-picker-popup.vue";
+    // import FilePickerPopup        from "@/components/global-popups/file-picker-popup.vue";
 
     import { mapActions, mapState, mapGetters } from 'vuex';
     import { generateID } from '@/core/helpers';
@@ -104,7 +104,7 @@
 
 export default {
     name: 'SelectModelModal',
-    components: { FilePickerPopup },
+    components: {  },
     data: function() {
         return {
             basicTemplates: [

@@ -46,7 +46,6 @@
 
 <script>
 import { mapActions }   from 'vuex';
-import { openLoadDialog } from '@/core/helpers.js'
 
 import BaseGlobalPopup  from "@/components/global-popups/base-global-popup";
 

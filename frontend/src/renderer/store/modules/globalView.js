@@ -20,7 +20,6 @@ const state = {
     showWorkspaceBeforeImport: false,
     showConfirmPopup: false,
     showDeleteConfirmPopup: false,
-    coreNotFoundPopup: false,
     showFilePickerPopup: false,
     showLoadSettingPopup: false,
     showSaveNetworkPopup: false,
@@ -85,9 +84,6 @@ const mutations = {
   },
   gp_ComingSoonPopup(state, value) {
     state.globalPopup.ComingSoonPopup = value
-  },
-  coreNotFoundPopup(state, value) {
-    // state.globalPopup.coreNotFoundPopup = value;
   },
   set_filePickerPopup(state, value) {
     state.globalPopup.showFilePickerPopup = value;
@@ -175,28 +171,6 @@ const actions = {
   GP_ComingSoonPopup({commit}) {
     commit('gp_infoPopup', 'a');
     commit('gp_ComingSoonPopup', true);
-  },
-  ShowCoreNotFoundPopup({ commit, rootState, dispatch }) {
-    // if (rootState.mod_api.statusLocalCore === 'online') { return; }
-
-    // let isServerRequestDone = false;
-    // dispatch('mod_api/checkCoreAvailability', null, { root: true })
-    //   .then(() =>{
-    //     isServerRequestDone = true;
-    //   })
-    //   .catch((e) =>{
-    //     isServerRequestDone = true;
-    //   });
-
-    // const delayActionDispatch = setTimeout(() => {
-    //   const coreIsOffline = rootState.mod_api.statusLocalCore === 'offline';
-    //   //if server responds more then a second or currently is offline show the core offline modal
-    //   if(coreIsOffline || !isServerRequestDone) {
-    //     commit('coreNotFoundPopup', true);
-    //   }
-    //   clearTimeout(delayActionDispatch)
-    // }, 1000);
-
   },
   SET_filePickerPopup({commit}, value) {
     commit('set_filePickerPopup', value);

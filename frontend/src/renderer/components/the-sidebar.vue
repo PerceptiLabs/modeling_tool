@@ -1,45 +1,20 @@
 <template lang="pug">
   aside.page_sidebar(:class="{'page_sidebar--hide': !hideSidebar, 'tutorial-active': activeStepStoryboard === 3}")
-    //- ul.sidebar_tabset
-    //-   li(v-for="(tab, i) in tabset"
-    //-     :key="i"
-    //-   )
-    //-     button.btn(type="button"
-    //-       :class="{'active': i === tabSelected}"
-    //-       @click="selectTab(i)"
-    //-       v-tooltip-interactive:bottom="tab.tooltipInfo"
-    //-     ) {{tab.name}}
-    .sidebar-top-empty-space
     .sidebar_tab
       sidebar-layers(:class="showTraining ? 'training' : ''")
-      sidebar-training(v-if="ifTraining" v-show="showTraining")
       sidebar-settings  
-    //- .sidebar_tab(v-if="tabSelected === 1")
-    //-   user-profile
-    //- .sidebar_tab(v-if="tabSelected === 2")
-    //-   import-data
-    //- .sidebar_tab(v-if="tabSelected === 3")
-    //-   export-data
 
-    //- sidebar-share
-    
 </template>
 
 <script>
-  import SidebarLayers    from '@/components/sidebar/sidebar-layers.vue'
-  import SidebarTraining  from "@/components/sidebar/sidebar-training";
-  import SidebarSettings  from '@/components/sidebar/sidebar-settings.vue'
-  // import SidebarComments  from '@/components/sidebar/sidebar-comments.vue'
-  // import SidebarShare     from '@/components/sidebar/sidebar-share.vue'
-  // import ExportData       from "@/components/different/export-data.vue";
-  // import ImportData       from "@/components/different/import-data.vue";
-  // import UserProfile       from "@/components/different/user-profile.vue";
+  import SidebarLayers    from '@/components/sidebar/sidebar-layers.vue';
+  import SidebarSettings  from '@/components/sidebar/sidebar-settings.vue';
   import { mapGetters, mapActions } from 'vuex';
 
 export default {
   name: 'TheSidebar',
   components: {
-    SidebarTraining, SidebarLayers, SidebarSettings
+    SidebarLayers, SidebarSettings
   },
   data() {
     return {
@@ -123,6 +98,8 @@ export default {
     max-width: $w-sidebar;
     grid-area: sidebar;
     transition: max-width .3s;
+    padding-top: 30px;
+    background-color: #23252A;
     &.page_sidebar--hide {
       max-width: 0;
     }

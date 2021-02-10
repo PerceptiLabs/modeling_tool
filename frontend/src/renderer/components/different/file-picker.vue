@@ -249,7 +249,6 @@ export default {
     },
     async fetchPathInformation(path, isSearching = false) {
       this.selectedFiles = [];
-      this.$store.dispatch('globalView/ShowCoreNotFoundPopup', null, { root: true });
 
       try {
         const jsonData = await fileserver_getFolderContent(path);

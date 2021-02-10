@@ -1,25 +1,9 @@
-import {coreRequest as coreRequestWeb, openWS}  from "@/core/apiWeb.js";
-import coreRequestElectron from "@/core/apiCore.js";
+import { coreRequest }  from "@/core/apiWeb.js";
 import { deepCopy, parseJWT, isWeb }   from "@/core/helpers.js";
 import { createNotebookJson }   from "@/core/helpers/notebook-helper.js";
-import { pathSlash }  from "@/core/constants.js";
-import { isElectron, createCoreNetwork } from "@/core/helpers";
-import { PROJECT_DEFAULT_FOLDER } from "../../core/constants";
+import { createCoreNetwork } from "@/core/helpers";
 import { getModelJson as fileserver_getModelJson, doesDirExist as fileserver_doesDirExist } from '@/core/apiFileserver';
 import cloneDeep from 'lodash.clonedeep';
-let coreRequest = null;
-let ipcRenderer = null;
-let spawn = null;
-
-
-if(!(navigator.userAgent.toLowerCase().indexOf(' electron/') > -1)) {
-  coreRequest = coreRequestWeb;
-} else {
-  const electron =  require('electron');
-  spawn = require('child_process').spawn;
-  ipcRenderer = electron.ipcRenderer;
-  coreRequest = coreRequestElectron
-};
 
 
 const namespaced = true;
@@ -27,7 +11,6 @@ const namespaced = true;
 
 const state = {
   statusLocalCore: 'offline', //online
-  corePid: 0,
   headlessState: [],
 };
 
@@ -171,9 +154,6 @@ const mutations = {
   SET_statusLocalCore(state, value) {
     state.statusLocalCore = value
   },
-  set_corePid(state, value) {
-    state.corePid = value
-  },
   set_headlessState(state, { id, value }) {
     const headlessState = state.headlessState.find(hs => hs.id === id);
 
@@ -189,10 +169,6 @@ const mutations = {
 };
 
 const actions = {
-  SET_corePid({commit}, id) {
-    commit('set_corePid', id);
-    ipcRenderer.send('save-corePid', id)
-  },
   //---------------
   //  CORE
   //---------------
@@ -228,39 +204,8 @@ const actions = {
     startCore();
 
     function startCore() {
-      if(isElectron()) {
-        coreIsStarting = true;
-        let openServer;
-        let platformPath = '';
-        switch (process.platform) {
-          case 'win32':
-            platformPath = 'core/appServer.exe';
-            break;
-          case 'darwin':
-          case 'linux':
-            process.env.NODE_ENV === 'production'
-              ? platformPath = path + 'core/appServer'
-              : platformPath = 'core/appServer';
-            break;
-        }
-        console.log('PID: ', process.pid);
-        openServer = spawn(platformPath, ['-f', process.pid, '-u', userEmail], {stdio: ['ignore', 'ignore', 'pipe']});
-        dispatch('SET_corePid', openServer.pid);
-        openServer.on('error', (err)=>  {
-          console.log('core error', err)
-          coreOffline()
-        });
-        openServer.on('close', (code)=> {
-          console.log('core close', code)
-          coreOffline()
-        });
-        waitOnlineCore()
-      }
-      if(isWeb()) {
         dispatch('checkCoreAvailability');
         dispatch("coreStatusWatcher");
-      }
-      
     }
     function waitOnlineCore() {
       timer = setInterval(()=> {
@@ -381,9 +326,6 @@ const actions = {
         'copyJson_path': network.apiMeta.location || ''
       }
     };
-    if(isWeb()) {
-      dispatch('globalView/ShowCoreNotFoundPopup', null, { root: true });
-    }
     // console.log('API_startTraining', theData);
     coreRequest(theData)
       .then((data)=> {
@@ -492,18 +434,11 @@ const actions = {
       action: 'startTest',
       value: ''
     };
-    if(isWeb()) {
-      dispatch('globalView/ShowCoreNotFoundPopup', null, { root: true });
-    }
     return coreRequest(theData)
       .then((data)=> { dispatch('mod_tracker/EVENT_testOpenTab', null, {root: true}) })
       .catch((err)=> { console.error(err) });
   },
   API_startTestWithCheckpointJson({rootGetters, dispatch}) {
-
-    if(isWeb()) {
-      dispatch('globalView/ShowCoreNotFoundPopup', null, { root: true });
-    }
 
     const currentNetwork = rootGetters['mod_workspace/GET_currentNetwork'];
 
@@ -637,9 +572,6 @@ const actions = {
       value: getters.GET_coreNetwork
     };
 
-    if(isWeb()) {
-      dispatch('globalView/ShowCoreNotFoundPopup', null, { root: true });
-    }
     return coreRequest(theData)
       .then((data)=> {
         if(data) return dispatch('mod_workspace/SET_elementInputDim', data, {root: true});
@@ -656,9 +588,6 @@ const actions = {
     //   action: "getNetworkOutputDim",
     //   value: getters.GET_coreNetwork
     // };
-    // if(isWeb()) {
-    //   dispatch('globalView/ShowCoreNotFoundPopup', null, { root: true });
-    // }
     // //console.log('API_getOutputDim');
     // // @todo -- this request are not longer used instead is used  ->>>> mod_api/API_getBatchPreviewSample
     // return coreRequest(theData)
@@ -733,9 +662,6 @@ const actions = {
     // console.log('getCode', theData);
     // console.log('getCode - payload', theData);
     // console.log('getCode - layerId', layerId);
-    if(isWeb()) {
-      dispatch('globalView/ShowCoreNotFoundPopup', null, { root: true });
-    }
     return coreRequest(theData)
       .then((data)=> {
         // console.log('getCode - response', data);
@@ -937,9 +863,6 @@ const actions = {
     };
 
     console.log('API_exportData', theData);
-    if(isWeb()) {
-      dispatch('globalView/ShowCoreNotFoundPopup', null, { root: true });
-    }
     const trackerData = {
       result: '',
       network: getters.GET_coreNetwork,

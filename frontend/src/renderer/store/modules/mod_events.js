@@ -1,23 +1,11 @@
 import router         from "@/router";
 import { keycloak }   from '@/main.js';
 import {
-  isWeb,
   isElectron,
-  loadPathFolder,
   projectPathModel,
   eraseCookie,
 } from "@/core/helpers";
-import { MODAL_PAGE_SIGN_UP } from "@/core/constants";
 import { getModelJson as fileserver_getModelJson } from '@/core/apiFileserver';
-
-let ipcRenderer = null;
-
-
-if(navigator.userAgent.toLowerCase().indexOf(' electron/') > -1) {
-  const electron = require('electron');
-  ipcRenderer = electron.ipcRenderer;
-}
-
 
 const namespaced = true;
 
@@ -208,14 +196,6 @@ const actions = {
       });
     }
   },
-  EVENT_openNetwork({dispatch}) {
-    const opt = {
-      title:"Load Project Folder",
-    };
-    loadPathFolder(opt)
-      .then((pathArr)=> dispatch('EVENT_loadNetwork', pathArr[0]))
-      .catch((err)=> {});
-  },
   EVENT_saveNetwork({commit}) {
     commit('set_saveNetwork');
   },
@@ -241,43 +221,13 @@ const actions = {
     dispatch('mod_user/RESET_userToken', null, {root: true});
     dispatch('mod_workspace/RESET_network', null, {root: true});
     dispatch('mod_workspace-changes/clearNetworkChanges', null, {root: true});
-    dispatch('modal_pages/setActivePageAction', MODAL_PAGE_SIGN_UP, {root: true});
     dispatch('mod_webstorage/cleanup', null, {root: true});
 
     router.replace({name: 'projects'})
       .catch(e => {/*console.error('Error during logout', e)*/});
   },
-  EVENT_appClose({dispatch, rootState, rootGetters}, event) {
-    if(isWeb()) {
-      dispatch('mod_tracker/EVENT_appClose', null, {root: true});
-    } else if(isElectron()) {
-      if(event) event.preventDefault();
-      dispatch('mod_tracker/EVENT_appClose', null, {root: true});
-      if(rootGetters['mod_user/GET_userIsLogin']) {
-        dispatch('mod_user/SAVE_LOCAL_workspace', null, {root: true});
-      }
-      if(rootState.mod_api.statusLocalCore === 'online') {
-        dispatch('mod_api/API_stopTraining', null, {root: true})
-          .then(()=> dispatch('mod_api/API_CLOSE_core', null, {root: true}))
-          .then(()=> ipcRenderer.send('app-close', rootState.mod_api.corePid));
-      }
-      else {
-        ipcRenderer.send('app-close')
-      }
-    }
-  },
-  EVENT_appMinimize() {
-    ipcRenderer.send('app-minimize')
-  },
-  EVENT_appMaximize() {
-    if(isElectron()) {
-      ipcRenderer.send('app-maximize')
-    }
-  },
   EVENT_eventResize({commit}) {
-    if(isElectron()) {
-      commit('set_eventResize');
-    }
+    commit('set_eventResize');
   },
   EVENT_pressHotKey({commit}, hotKeyName) {
     commit('set_globalPressKey', hotKeyName)

@@ -1,18 +1,5 @@
 import cloneDeep from 'lodash.clonedeep';
 
-let shell = null;
-let ipcRenderer = null;
-let fs = null;
-
-if(navigator.userAgent.toLowerCase().indexOf(' electron/') > -1) {
-  const electron = require('electron');
-  const fileSystem = require('fs');
-  shell = electron.shell;
-  ipcRenderer = electron.ipcRenderer;
-  fs = fileSystem;
-}
-import store from '@/store'
-
 import {
   workspaceGrid,
   pathSlash,
@@ -20,91 +7,12 @@ import {
   sidebarNavCoefficientScaleCalculateFromHeight
 } from '@/core/constants.js'
 
-/*modal window*/
-const openLoadDialog = function (options) {
-  return new Promise((success, reject) => {
-    ipcRenderer.on('open-dialog_path', (event, path) => {
-      ipcRenderer.removeAllListeners('open-dialog_path');
-      !!(path && path.length) ? success(path) : reject();
-    });
-    ipcRenderer.send('open-dialog', options);
-  });
-};
 
-const openSaveDialog = function (options) {
-  console.log('openSaveDialog', options);
-  return new Promise((success, reject) => {
-    ipcRenderer.on('open-save-dialog_path', (event, path) => {
-      ipcRenderer.removeAllListeners('open-save-dialog_path');
-      !!(path && path.length) ? success(path) : reject();
-    });
-    ipcRenderer.send('open-save-dialog', options);
-  });
-};
-
-const loadPathFolder = function (customOptions) {
-  const optionsDefault = {
-    title:"Select folder",
-    buttonLabel: "Select folder",
-    properties: ['openDirectory']
-  };
-  let options = {...optionsDefault, ...customOptions};
-  return openLoadDialog(options);
-};
-
-
-/*file actions*/
-const filePCRead = function (path) {
-  return new Promise((success, reject) => {
-    fs.readFile(path, (err, data) => {
-      return !!err ? reject(err) : success(data);
-    })
-  });
-};
-
-const filePCSave = function (fileName, fileContent) {
-  return new Promise((success, reject) => {
-    fs.writeFile(fileName, fileContent, (err, data) => {
-      if(err) {
-        store.dispatch('globalView/GP_errorPopup', `An error occurred while creating the file: ${err.message}`);
-        return reject(err);
-      }
-      else return success(fileName)
-    });
-    return success(fileName)
-  });
-};
-
-const projectPCSave = function (fileContent) {
-  const projectPath = fileContent.networkRootFolder;
-  if (!fs.existsSync(projectPath)){
-    fs.mkdirSync(projectPath);
-  }
-  const jsonPath = projectPathModel(projectPath);
-  return filePCSave(jsonPath, JSON.stringify(fileContent))
-};
 
 const projectPathModel = function (projectPath) {
   return `${projectPath}${pathSlash}model.json`
 };
 
-const folderPCDelete = function (path) {
-  return new Promise((success, reject) => {
-    if (!fs.existsSync(path)) success();
-    const files = fs.readdirSync(path);
-    if (files.length > 0) {
-      files.forEach(function(filename) {
-        if (fs.statSync(path + pathSlash + filename).isDirectory()) {
-          folderPCDelete(path + pathSlash + filename)
-        } else {
-          fs.unlinkSync(path + pathSlash + filename)
-        }
-      });
-    }
-    fs.rmdirSync(path);
-    success();
-  });
-};
 
 const getDefaultProjectPathForOs = function() {
   return '~/Documents/PerceptiLabs'; //the path to MyDocuments is resolved in Kernel
@@ -159,15 +67,11 @@ const throttleEv = function (func, ms) {
 };
 
 const goToLink = function (url) {
-  if(navigator.userAgent.toLowerCase().indexOf(' electron/') > -1) {
-    shell.openExternal(url);
-  } else {
-    let link = document.createElement('a');
-    link.setAttribute('href', url);
-    link.setAttribute('target', '_blank');
-    link.setAttribute('rel', 'noopener noreferrer');
-    link.click();
-  }
+  let link = document.createElement('a');
+  link.setAttribute('href', url);
+  link.setAttribute('target', '_blank');
+  link.setAttribute('rel', 'noopener noreferrer');
+  link.click();
 };
 
 const deepCopy = function (object) {
@@ -287,17 +191,6 @@ const setAppTypeRootClasses = () => {
     document.body.classList.add('is-electron');
     document.getElementsByTagName('html')[0].classList.add('is-electron');
   }
-};
-
-const fixFilepathSeparator = function fileUrl(filepath) {
-  if (!filepath) { return filepath; }
-
-  if (filepath.startsWith('\\\\')) {
-    // if it's a network share, we have to keep the \\\\
-    return '\\\\' + filepath.substring(2).replace(/\\/g, '/');
-  }
-
-  return filepath.replace(/\\/g, '/');
 };
 
 const debounce = function(callback, waitInMs) {
@@ -548,14 +441,7 @@ const eraseCookie = (name) => {
 }
 
 export {
-  openLoadDialog,
-  openSaveDialog,
-  loadPathFolder,
-  filePCRead,
-  filePCSave,
-  projectPCSave,
   projectPathModel,
-  folderPCDelete,
   getDefaultProjectPathForOs,
   encryptionData,
   decryptionData,
@@ -567,7 +453,6 @@ export {
   deepCloneNetwork,
   isLocalStorageAvailable,
   stringifyNetworkObjects,
-  fixFilepathSeparator,
   promiseWithTimeout,
   isOsWindows,
   isDesktopApp,

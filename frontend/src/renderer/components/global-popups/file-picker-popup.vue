@@ -9,18 +9,17 @@
             h3 {{ popupTitle }}
         .popup_body
           file-picker(
-              :filePickerType="filePickerType"
-              :fileTypeFilter="fileTypeFilter"
-              :options="filePickerOptions"
-              :startupFolder="startupFolder"
-              :confirmCallback="confirmCallback"
-              :cancelCallback="closePopup")
+            :filePickerType="filePickerType"
+            :fileTypeFilter="fileTypeFilter"
+            :options="filePickerOptions"
+            :startupFolder="startupFolder"
+            :confirmCallback="confirmCallback"
+            :cancelCallback="closePopup")
           
 </template>
 
 <script>
 import Moveable from "moveable";
-import { pathSlash }  from '@/core/constants.js';
 import FilePicker from '@/components/different/file-picker.vue';
 
 export default {

@@ -38,8 +38,7 @@
 </template>
 <script>
 
-import SettingsElWeb      from '@/components/network-elements/elements/data-data/set-data-data.vue'
-import SettingsElElectron from '@/components/network-elements/elements/data-data/set-data-data-electron.vue';
+import DataData       from '@/components/network-elements/elements/data-data/set-data-data.vue'
 import DataRandom         from '@/components/network-elements/elements/data-random/set-data-random.vue'
 import DataEnvironment    from '@/components/network-elements/elements/data-environment/set-data-environment.vue'
 import DataCloud          from '@/components/network-elements/elements/data-cloud/set-data-cloud.vue'
@@ -83,13 +82,6 @@ import SidebarLockedSettingsWrapper from "@/components/sidebar/sidebar-locked-se
 import SidebarAutoSettingInfo from '@/components/sidebar/sidebar-auto-setting-info.vue'
 
 import { mapGetters, mapActions } from 'vuex';
-
-let DataData = null;
-if(!(navigator.userAgent.toLowerCase().indexOf(' electron/') > -1)) {
-  DataData = SettingsElWeb;
-} else {
-  DataData = SettingsElElectron
-}
   
 export default {
   name: 'SidebarSettings',
@@ -167,10 +159,6 @@ export default {
 </script>
 <style lang="scss" scoped>
 
-.sidebar-setting-wrapper {
-  
-  // background-color: red;
-}
 .sidebar-setting-head {
   position: relative;
   display: flex;

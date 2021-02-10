@@ -4,7 +4,6 @@ import Vue from 'vue'
 //- Global plugins
 import * as Sentry from '@sentry/browser';
 import * as Integrations from '@sentry/integrations';
-import axios        from 'axios'
 import VeeValidate  from 'vee-validate';
 import VueHotkey    from 'v-hotkey'
 import Keycloak from 'keycloak-js'
@@ -13,7 +12,7 @@ import App    from './App'
 import NoInternetConnection from '@/pages/NoInternetConnection.vue'
 import router from './router'
 import store  from './store'
-import { isElectron, setAppTypeRootClasses, setCookie, getCookie } from "@/core/helpers";
+import { setAppTypeRootClasses, setCookie, getCookie } from "@/core/helpers";
 import { isDevelopMode, IS_VALID_KEYCLOACK_CHECKER_URL } from '@/core/constants.js'
 
 //- Global components
@@ -21,18 +20,15 @@ import BaseCheckbox     from '@/components/base/checkbox.vue'
 import BaseRadiobutton  from '@/components/base/radiobutton.vue'
 import BaseSelect       from '@/components/base/select.vue'
 import BaseRange        from '@/components/base/range.vue'
+import FilePickerPopup  from '@/components/global-popups/file-picker-popup.vue'
 import PerfectScrollBar from 'vue2-perfect-scrollbar';
 
 import 'vue2-perfect-scrollbar/dist/vue2-perfect-scrollbar.css'
 
 //- Global directives
-import {mask} from 'vue-the-mask' // page registration dont use now
 import { parseJWT } from '@/core/helpers'
 import Analytics from '@/core/analytics';
 import { isUrlReachable } from '@/core/apiFileserver.js';
-if(isElectron()) {
-  Vue.use(require('vue-electron'));
-} 
 
 //Vue.http = Vue.prototype.$http = axios;
 Vue.config.devtools = isDevelopMode;
@@ -54,7 +50,6 @@ Vue.use(VueHotkey);
 Vue.use(PerfectScrollBar);
 //- Use directives
 import './core/directives'
-Vue.directive('mask', mask);
 
 //- Use filters
 import './core/filters'
@@ -66,7 +61,7 @@ Vue.component('base-checkbox', BaseCheckbox);
 Vue.component('base-radio', BaseRadiobutton);
 Vue.component('base-select', BaseSelect);
 Vue.component('base-range', BaseRange);
-
+Vue.component('file-picker-popup', FilePickerPopup)
       
 // analytics
 Analytics.googleAnalytics.setup();

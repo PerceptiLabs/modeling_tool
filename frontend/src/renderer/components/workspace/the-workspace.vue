@@ -3,7 +3,6 @@
     :class="{'open-statistics': statisticsIsOpen}"
   )
     empty-navigation(v-if="emptyNavigationMode!=0")
-
     .workspace_tabset(
       ref="tabset"
       v-if="emptyNavigationMode==0"
@@ -114,10 +113,10 @@
           .ticker.green
           span GPU
 
-    .workspace_meta(
+    .workspace_footer(
       v-if="!isNotebookMode && emptyNavigationMode===0"
       )
-      include ./meta/workspace-meta.pug
+      include ./footer/workspace-footer.pug
     notebook(v-if="isNotebookMode")
 
     workspace-save-network(
@@ -152,7 +151,7 @@
 <style lang="scss" scoped>
   @import "../../scss/base";
   @import "./tabset/workspace-tabset";
-  @import "./meta/workspace-meta";
+  @import "./footer/workspace-footer";
   
   .select-modal-wrapper {
     position: absolute;

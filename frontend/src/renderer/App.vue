@@ -1,20 +1,8 @@
 <template lang="pug">
   #app
-    header-win.app-header(
-      v-if="platform === 'win32' || (showMenuBar && isWeb) "
-      @app-closed="appClose"
-      @app-minimized="appMinimize"
-      @app-maximized="appMaximize"
+    app-header.app-header(
+      v-if="showMenuBar"
     )
-    header-mac.app-header(
-      v-if="platform === 'darwin' && showMacHeader && isElectron"
-    )
-      header-linux.app-header(
-        v-if="platform === 'linux' && isElectron"
-        @app-closed="appClose"
-        @app-minimized="appMinimize"
-        @app-maximized="appMaximize"
-      )
     div.d-flex.app-page
       project-sidebar
       router-view.flex-1
@@ -43,28 +31,18 @@
   import TutorialNotification from "@/components/different/tutorial-notification.vue";
   import { getModelJson as fileserver_getModelJson } from '@/core/apiFileserver';
   import { fileserverAvailability } from '@/core/apiFileserver';
-
-  let ipcRenderer = null;
-  if(isElectron()) {
-    const electron = require('electron');
-    ipcRenderer = electron.ipcRenderer;
-
-  }
   import Analytics from '@/core/analytics';
   import { LOCAL_STORAGE_WORKSPACE_VIEW_TYPE_KEY, localStorageGridKey } from '@/core/constants.js'
-
   import { mapMutations, mapActions, mapGetters } from 'vuex';
   import ProjectSidebar         from '@/pages/layout/project-sidebar.vue';
-  import HeaderLinux            from '@/components/header/header-linux.vue';
-  import HeaderWin              from '@/components/header/header-win.vue';
-  import HeaderMac              from '@/components/header/header-mac.vue';
+  import AppHeader              from '@/components/app-header/app-header.vue';
   import UpdatePopup            from '@/components/global-popups/update-popup/update-popup.vue'
   import PiPyPopupUpdate        from "@/components/global-popups/update-popup/pipy-update-popup.vue";  
   import TheInfoPopup           from "@/components/global-popups/the-info-popup.vue";
   import ConfirmPopup           from "@/components/global-popups/confirm-popup.vue";
   import DeleteConfirmPopup     from "@/components/global-popups/delete-confirm-popup.vue";
   import ModalPagesEngine       from '@/components/modal-pages-engine.vue';
-  import AboutAppPopup           from "@/components/global-popups/about-app-popup.vue";
+  import AboutAppPopup          from "@/components/global-popups/about-app-popup.vue";
   import { MODAL_PAGE_PROJECT, MODAL_PAGE_WHATS_NEW, MODAL_PAGE_QUESTIONNAIRE, IS_VALID_KEYCLOACK_CHECKER_URL } from '@/core/constants.js';
   import { isUrlReachable } from '@/core/apiFileserver.js';
 
@@ -73,7 +51,7 @@
     components: {
       ProjectSidebar,
       ModalPagesEngine,
-      HeaderLinux, HeaderWin, HeaderMac,
+      AppHeader,
       UpdatePopup, TheInfoPopup, ConfirmPopup, DeleteConfirmPopup, CreateIssuePopup, PiPyPopupUpdate, AboutAppPopup,
       TutorialsChecklist, TutorialNotification
     },
@@ -152,56 +130,15 @@
 
       this.$store.dispatch('mod_tutorials/activateNotification');
 
-      // @todo fetch models for project;
-      if(isWeb()) {
-        this.updateOnlineStatus();
-        this.SET_appVersion(process.env.PACKAGE_VERSION);
-        this.$store.dispatch('mod_api/API_runServer', null, {root: true});
-        document.body.style.overflow = 'hidden';
-        document.addEventListener('keydown', this.disableHotKeys);
-      } else {
-        this.appReady();
-        this.updateOnlineStatus();
-        /*Menu*/
-        ipcRenderer.on('get-app-version', (event, data)=> this.SET_appVersion(data));
-
-        /*Auto update*/
-        ipcRenderer.on('checking-for-update', (event, updateInfo)=> this.SET_updateInfo(updateInfo));
-        ipcRenderer.on('update-available', (event, updateInfo)=> {
-          this.$nextTick(()=> {
-            this.SET_showPopupUpdates(true);
-            this.SET_updateInfo(updateInfo)
-          })
-        });
-        ipcRenderer.on('update-not-available', (event, update)=> {
-          if(this.showNotAvailable) {
-            this.SET_showPopupUpdates(true);
-            this.SET_updateStatus('not update')
-          }
-        });
-        ipcRenderer.on('update-downloading', (event, percent)=> this.SET_updateProgress(Math.round(percent)));
-        ipcRenderer.on('update-completed', (event, percent)=> this.SET_updateStatus('done'));
-        ipcRenderer.on('update-error', (event, error)=> {
-          this.SET_showPopupUpdates(false);
-          if(error) this.openErrorPopup(error);
-        });
-
-        ipcRenderer.on('show-mac-header', (event, value)=> { this.showMacHeader = value });
-        ipcRenderer.on('info',            (event, data)=> { /*console.log(data); */});
-        ipcRenderer.on('show-restore-down-icon', (event, value)=> this.SET_appIsFullView(value));
-
-        this.calcAppPath();
-      }
+      this.updateOnlineStatus();
+      this.SET_appVersion(process.env.PACKAGE_VERSION);
+      this.$store.dispatch('mod_api/API_runServer', null, {root: true});
+      document.body.style.overflow = 'hidden';
+      document.addEventListener('keydown', this.disableHotKeys);
+     
       this.$store.dispatch('mod_api/API_runServer', null, {root: true});
       // this.$store.dispatch('mod_workspace/GET_workspacesFromLocalStorage');
 
-      this.$nextTick(() =>{
-      //   if(this.userId === 'Guest') {
-      //     this.$store.dispatch('mod_tracker/TRACK_initMixPanelUser', this.userId);
-      //   }
-      //   //this.appReady();
-        this.sendPathToAnalist(this.$route.fullPath);
-      })
       if(!this.user) this.cloud_userGetProfile();
 
       setTimeout(() => {
@@ -238,9 +175,6 @@
         getHasShownWhatsNew:    'mod_tutorials/getHasShownWhatsNew', 
         emptyNavigationMode:    'mod_empty-navigation/getEmptyScreenMode',
       }),
-      platform() {
-        return this.$store.state.globalView.platform
-      },
       showNotAvailable() {
         return this.$store.state.mod_autoUpdate.showNotAvailable
       },
@@ -263,11 +197,8 @@
       errorPopup() {
         return this.$store.state.globalView.globalPopup.showErrorPopup
       },
-      corePopup() {
-        return this.$store.state.globalView.globalPopup.coreNotFoundPopup
-      },
       showPopup() {
-        return this.errorPopup.length || (this.infoPopup && this.infoPopup.length) || this.corePopup;
+        return this.errorPopup.length || (this.infoPopup && this.infoPopup.length);
       },
       showMenuBar() {
 
@@ -388,17 +319,8 @@
       }
     },
     watch: {
-      '$route': {
-        handler(to, from) {
-          if(this.isElectron) {
-            this.sendPathToAnalist(to.fullPath);
-          }
-        }
-      },
       userId(newVal) {
-        if(this.isWeb) {
-          Analytics.googleAnalytics.trackUserId(this.$store.getters['mod_user/GET_userID']);
-        }
+        Analytics.googleAnalytics.trackUserId(this.$store.getters['mod_user/GET_userID']);
       },
       userProfile(newVal) {
         if (!newVal || newVal.email === 'Guest') { return; }
@@ -444,12 +366,7 @@
       ...mapMutations({
         SET_appVersion:       'globalView/SET_appVersion',
         SET_appIsFullView:    'globalView/SET_appIsFullView',
-        SET_appPath:          'globalView/SET_appPath',
 
-        SET_updateInfo:       'mod_autoUpdate/SET_updateInfo',
-        SET_showPopupUpdates: 'mod_autoUpdate/SET_showPopupUpdates',
-        SET_updateStatus:     'mod_autoUpdate/SET_updateStatus',
-        SET_updateProgress:   'mod_autoUpdate/SET_updateProgress',
         // loadProjectFromLocalStorage: 'mod_workspace/get_workspacesFromLocalStorage',
         // setPageTitleMutation: 'globalView/setPageTitleMutation',
 
@@ -465,10 +382,6 @@
         trackerCreateUser:      'mod_tracker/TRACK_createUser',
         trackerUpdateUser:      'mod_tracker/TRACK_updateUser',
         trackerAppStart:        'mod_tracker/EVENT_appStart',
-
-        eventAppClose:          'mod_events/EVENT_appClose',
-        eventAppMinimize:       'mod_events/EVENT_appMinimize',
-        eventAppMaximize:       'mod_events/EVENT_appMaximize',
 
         setUserToken:           'mod_user/SET_userToken',
         readUserInfo:           'mod_user/GET_LOCAL_userInfo',
@@ -503,51 +416,6 @@
       updateOnlineStatus() {
         this.SET_onlineStatus(navigator.onLine);
       },
-      sendPathToAnalist(path) {
-        if(process.env.NODE_ENV === 'production') {
-          if(this.isElectron) {
-            ipcRenderer.send('change-route', {path, id: this.userId})
-          }
-        }
-      },
-      appReady() {
-        const splash = document.getElementById('splashscreen');
-        setTimeout(()=> {
-          if(this.isElectron) {
-            ipcRenderer.send('app-ready');
-          }
-          splash.remove();
-          document.body.classList.remove('show-splashscreen');
-          this.trackerAppStart();
-        }, this.isElectron ? 2000 : 1000)
-      },
-      calcAppPath() {
-        let resPath = process.resourcesPath;
-        var path = '';
-        switch (process.platform) {
-          case 'win32':
-            path = resPath.slice(0, resPath.indexOf('resources'));
-            break;
-          case 'darwin':
-            path = resPath.slice(0, resPath.indexOf('Resources'));
-            break;
-          case 'linux':
-            path = resPath.slice(0, resPath.indexOf('resources'));
-            break
-        }
-        this.SET_appPath(path);
-      },
-      // checkLocalToken() {
-      //   let localUserToken = JSON.parse(localStorage.getItem('currentUser'));
-      //   if(localUserToken) {
-      //     this.setUserToken(localUserToken);
-      //     if(['main-page', 'settings'].includes(this.$router.history.current.name)) {
-      //       this.$router.replace({name: 'projects'});
-      //     }
-      //   } else {
-      //     this.$router.push({name: 'main-page'}).catch(err => {});
-      //   }    
-      // },
       checkFileserverAvailability() {
         fileserverAvailability().then(resp => {
           if (resp === "UNAVAILABLE") {
@@ -572,23 +440,6 @@
               break;
         }
       },
-      /*Header actions*/
-      appClose() {
-        if(this.isElectron) {
-          this.eventAppClose();
-        }
-      },
-      appMinimize() {
-        if(this.isElectron) {
-          this.eventAppMinimize();
-        }
-      },
-      appMaximize() {
-        if(this.isElectron) {
-          this.eventAppMaximize();
-        }
-      },
-
       async fetchNetworkMetas(currentProject) {
         if (!currentProject || !currentProject.models || !currentProject.models.length) { return; }
 

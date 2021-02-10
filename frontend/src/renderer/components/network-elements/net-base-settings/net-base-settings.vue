@@ -40,16 +40,9 @@
 </template>
 
 <script>
-  import coreRequestElectron  from "@/core/apiCore.js";
-  import {coreRequest as coreRequestWeb, openWS}  from "@/core/apiWeb.js";
+  import { coreRequest }  from "@/core/apiWeb.js";
   import SettingsPreview  from "@/components/network-elements/elements-settings/setting-preview.vue";
-  let coreRequest = null;
 
-  if(!(navigator.userAgent.toLowerCase().indexOf(' electron/') > -1)) {
-    coreRequest = coreRequestWeb;
-  } else {
-    coreRequest = coreRequestElectron;
-  }
 export default {
   name: 'NetBaseSettings',
   components: {SettingsPreview },

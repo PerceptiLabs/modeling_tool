@@ -92,7 +92,7 @@
 <script>
   import { mapState, mapGetters, mapActions, mapMutations } from "vuex";
   import SortByButton from "@/components/sort-by-button";
-  import FilePickerPopup        from "@/components/global-popups/file-picker-popup.vue";
+  // import FilePickerPopup        from "@/components/global-popups/file-picker-popup.vue";
   import { generateID, getDefaultProjectPathForOs } from "@/core/helpers";
   import { coreRequest } from '@/core/apiWeb.js';
   import cloneDeep from 'lodash.clonedeep';
@@ -102,7 +102,7 @@
 
   export default {
     name: 'CreateSelectProject',
-    components: { SortByButton, FilePickerPopup },
+    components: { SortByButton },
     data() {
       return {
         searchValue: '',

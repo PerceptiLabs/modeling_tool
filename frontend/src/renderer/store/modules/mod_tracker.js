@@ -96,9 +96,6 @@ const actions = {
       'App Version': rootState.globalView.appVersion
     });
   },
-  EVENT_appClose() {
-    mixPanel.track('App Close');
-  },
   /* Questionnaire */
   EVENT_questionnaireSubmitted({getters, commit}, { answers }) {
     for (const answer of answers) {

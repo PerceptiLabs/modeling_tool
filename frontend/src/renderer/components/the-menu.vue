@@ -1,6 +1,5 @@
 <template lang="pug">
   nav.app-header_nav(
-    :class="{'app-header--hidden': isMac && isElectron}"
     v-hotkey="keymap"
     )
     ul.header-nav
@@ -31,41 +30,20 @@
               i.icon.icon-shevron-right(
                 v-if="subItem.submenu"
                 )
-            //-ul.header-nav_sublist.sublist--right(v-if="subItem.submenu")
-              li.header-nav_item(
-                v-for="(subSubItem, ind) in subItem.submenu"
-                /:key="subSubItem.ind"
-              )
-                button.btn.btn--link.header-nav_sublist-btn(type="button"
-                  /:disabled="subSubItem.enabled === false"
-                  @click="subItem.active"
-                )
-                  span {{subSubItem.label}}
-                  span.text-disable.hotkey(
-                    v-if="subSubItem.accelerator"
-                  ) {{ subSubItem.accelerator }}
-
 </template>
 
 <script>
   import { mapGetters, mapMutations, mapActions, mapState } from 'vuex';
   import { baseUrlSite, MODAL_PAGE_PROJECT } from '@/core/constants.js';
-  import { isElectron, goToLink, isOsMacintosh, isDesktopApp } from '@/core/helpers.js'
-  import axios from 'axios'
-  let ipcRenderer = null;
-  if(navigator.userAgent.toLowerCase().indexOf(' electron/') > -1) {
-    const electron = require('electron');
-    ipcRenderer = electron.ipcRenderer;
-  }
+  import { goToLink, isOsMacintosh } from '@/core/helpers.js'
+ 
 export default {
   name: "TheMenu",
   mounted() {
-    this.mainProcessListeners()
   },
   data() {
     return {
       dataKeymap: {},
-      isElectron: isElectron(),
     }
   },
   computed: {
@@ -98,17 +76,9 @@ export default {
     isMac() {
       return isOsMacintosh();
     },
-    isDesktop() {
-      return isDesktopApp();
-    },
     navMenu() {
-      if (isElectron()) {
-        return this.navMenuDesktop();
-      } else {
-        return this.navMenuWeb();
-      }
+      return this.navMenuWeb()
     },
-
     keymap () {
       this.navMenu.forEach((item) => {
         item.submenu.forEach((subItem) => {
@@ -131,11 +101,6 @@ export default {
       return this.$store.getters['mod_workspace-changes/get_networksWithChanges'].length > 0;      
     },
   },
-  watch: {
-    navMenu(newMenu) {
-      if(process.platform === 'darwin' && isElectron()) ipcRenderer.send('app-menu', newMenu)
-    }
-  },
   methods: {
     ...mapMutations({
       saveNetwork:      'mod_events/set_saveNetwork',
@@ -146,10 +111,6 @@ export default {
       infoPopup:        'globalView/GP_infoPopup',
       popupConfirm:     'globalView/GP_confirmPopup',
       popupNewModel:    'globalView/SET_newModelPopup',
-      appClose:         'mod_events/EVENT_appClose',
-      appMinimize:      'mod_events/EVENT_appMinimize',
-      appMaximize:      'mod_events/EVENT_appMaximize',
-      openNetwork:      'mod_events/EVENT_openNetwork',
       loadNetwork:      'mod_events/EVENT_loadNetwork',
       HCCopy:           'mod_events/EVENT_hotKeyCopy',
       HCCut:           'mod_events/EVENT_hotKeyCut',
@@ -167,28 +128,6 @@ export default {
       }
     },
     goToLink,
-    mainProcessListeners(isRemove) {
-      this.navMenu.forEach((item) => {
-        item.submenu.forEach((subItem) => {
-          if(subItem.label) {
-            if(isRemove) {
-              if(isElectron())
-              ipcRenderer.removeAllListeners(`menu-event-${subItem.label}`);
-            }
-            else {
-              if(isElectron())
-              ipcRenderer.on(`menu-event-${subItem.label}`, ()=> { subItem.active() });
-            }
-          }
-        })
-      });
-    },
-    checkUpdate() {
-      if(isElectron()) {
-        this.$store.commit('mod_autoUpdate/SET_showNotAvailable', true);
-        ipcRenderer.send('check-update'); 
-      }
-    },
     addNewNetwork() {
       if (this.$route.name !== 'projects') {
         this.$router.push({name: 'projects'});
@@ -218,9 +157,6 @@ export default {
     },
     goToAboutPageWeb() {
       this.$store.commit('globalView/set_showAppAbout', true);
-    },
-    openModel() {
-      this.openNetwork();
     },
     newModel() {
       if(this.statusLocalCore!='online') {
@@ -315,106 +251,6 @@ export default {
     },
     setActivePage() {
       this.setActivePageAction(MODAL_PAGE_PROJECT);
-    },
-    navMenuDesktop() {
-      return [
-        ...(this.isMac ? [{
-            label: 'PerceptiLabs',
-            submenu: [
-              { role: 'about',      active: ()=>{}},
-              {label: 'Check for updates...', active: this.checkUpdate },
-              { type: 'separator'},
-              { role: 'services',   active: ()=>{}},
-              { type: 'separator'},
-              { role: 'hide',       active: ()=>{}},
-              { role: 'hideothers', active: ()=>{}},
-              { role: 'unhide',     active: ()=>{}},
-              { type: 'separator'},
-              {label: 'Quit PerceptiLabs', accelerator: 'meta+q', active: (e)=> this.appClose(e) }
-            ]
-          }] : []),
-        {
-          label: 'File', visible: true,
-          submenu: [
-            {label: 'New',          accelerator: this.isMac ? 'meta+n' : 'ctrl+n',              enabled: this.isLogin,  active: this.addNewNetwork },
-            {label: 'Open',         accelerator: this.isMac ? 'meta+o' : 'ctrl+o',              enabled: this.isLogin,  active: this.openModel },
-            {label: 'Save',         accelerator: this.isMac ? 'meta+s' : 'ctrl+s',              enabled: this.openApp,  active: this.saveModel },
-            {label: 'Save as...',   accelerator: this.isMac ? 'meta+shift+s' : 'ctrl+shift+s',  enabled: this.openApp,  active: this.saveModelAs },
-            {type: 'separator'},
-            {label: 'Log out',                                                                  enabled: this.isLogin,  active: this.logOut },
-            ...(this.isMac
-              ? []
-              : [{label: 'Exit', accelerator: 'alt+f4', active: (e)=> this.appClose(e) }]
-            )
-          ]
-        },
-        {
-          label: 'Edit', visible: true,
-          submenu: [
-            {label: 'Undo',         accelerator: this.isMac ? 'meta+z' : 'ctrl+z',              role: 'undo',           active: this.toPrevStepHistory },
-            {label: 'Redo',         accelerator: this.isMac ? 'meta+shift+z' : 'ctrl+y',  role: 'redo',           active: this.toNextStepHistory },
-            {type:  'separator'},
-            {label: 'Copy',         accelerator: this.isMac ? 'meta+c' : 'ctrl+c',              role: 'copy',           active: this.HCCopy },
-            {label: 'Paste',        accelerator: this.isMac ? 'meta+v' : 'ctrl+v',              role: 'paste',          active: this.HCPaste },
-            {type:  'separator'},
-            {label: 'Select all',   accelerator: this.isMac ? 'meta+a' : 'ctrl+a',              role: 'selectAll',      active: this.HCSelectAll },
-            {label: 'Deselect all', accelerator: this.isMac ? 'meta+shift+a' : 'ctrl+shift+a',  enabled: this.openApp,  active: this.HCDeselectAll },
-
-          ]
-        },
-        {
-          label: 'Settings', visible: true,
-          submenu: [
-            {label: 'Edit profile',    enabled: false,         active: function() {} },
-            {label: 'History',         enabled: false,         active: function() {} },
-          ]
-        },
-        {
-          role: 'window',
-          label: 'Window', visible: true,
-          submenu: [
-            ...(this.isMac
-              ? [
-                  { role: 'minimize', active: ()=>{}},
-                  { role: 'zoom',     active: ()=>{}},
-                  { type: 'separator'},
-                  { role: 'front',    active: ()=>{} },
-                  { type: 'separator'},
-                ]
-              : [
-                  {label: 'Minimize', active: this.appMinimize },
-                  {label: 'Zoom',     active: this.appMaximize },
-                ]
-            ),
-          ]
-        },
-        {
-          role: 'help',
-          label: 'Help', visible: true,
-          submenu: [
-            {label: 'Help',          enabled: false,                                  active: this.goToHelpPageDesktop },
-            {label: 'About',                                                          active: this.goToAboutPageDesktop },
-            ...(this.isMac
-              ? []
-              : [{label: 'Check for updates',                                         active: this.checkUpdate }]
-            ),
-            {type: 'separator'},
-            {label: `Version: ${this.appVersion}`, enabled: false,                    active: ()=>{} }
-          ]
-        },
-        {
-          label: '', visible: false,
-          submenu: [
-            {type:  'separator'},
-            {label: 'Delete',       accelerator: this.isMac ? 'meta+backspace' : 'delete',                              active: this.HC_delete,                    visible: false  },
-            {label: 'DeleteMac',    accelerator: this.isMac ? 'backspace' : '',                              active: this.HC_delete,                    visible: false  },
-            // {label: 'Add group',    accelerator: this.isMac ? 'meta+g' : 'ctrl+g',              enabled: this.openApp,  active: this.HC_addLayerContainer,         visible: false  },
-            // {label: 'Ungroup',      accelerator: this.isMac ? 'meta+shift+g' : 'ctrl+shift+g',  enabled: this.openApp,  active: this.HC_unGroupLayerContainer,     visible: false  },
-            {type:  'separator'},
-            {label: 'Close setting popups',          accelerator: 'esc',                                                active: this.HC_esc,                       visible: false  },
-          ]
-        }
-      ]
     },
     navMenuWeb() {
       return [
