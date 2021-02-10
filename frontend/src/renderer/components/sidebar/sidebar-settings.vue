@@ -75,6 +75,7 @@ import TrainDetector        from '@/components/network-elements/elements/train-d
 
 import LayerCustom          from '@/components/network-elements/elements/layer-custom/layer-custom.vue'
 
+import PreTrainedVGG16     from '@/components/network-elements/elements/pretrained-vgg16/set-pretrained-vgg16.vue'
 import IoOutput             from '@/components/network-elements/elements/io-output/set-io-output.vue'
 
 import SidebarSettingPreview  from "@/components/network-elements/elements-settings/sidebar-setting-preview.vue";
@@ -101,6 +102,7 @@ export default {
     TrainNormal, TrainRegression, TrainGenetic, TrainDynamic, TrainReinforce, TrainLoss, TrainOptimizer, TrainGan, TrainDetector,
     IoOutput,
     LayerCustom,
+    PreTrainedVGG16,
     SidebarLockedSettingsWrapper,
     SidebarAutoSettingInfo
   }, 

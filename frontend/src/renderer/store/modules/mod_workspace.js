@@ -2606,6 +2606,7 @@ const componentsInputs = {
   TrainDetector: ['predictions', 'labels'],
   LayerCustom: ['input'],
 
+  PreTrainedVGG16: ['input'],
   IoOutput: ['input']
 };
 
@@ -2639,6 +2640,7 @@ const componentsOutputs = {
   TrainGan: [],
   TrainDetector: [],
 
+  PreTrainedVGG16: ['output'],
   IoOutput: []
 };
 

@@ -20,6 +20,7 @@ from perceptilabs.layers.trainregression.spec import TrainRegressionSpec
 from perceptilabs.layers.trainreinforce.spec import TrainReinforceSpec
 from perceptilabs.layers.trainobjectdetection.spec import TrainObjectDetectionSpec
 from perceptilabs.layers.traingan.spec import TrainGanSpec
+from perceptilabs.layers.pretrainedvgg16.spec import PreTrainedVGG16Spec
 from perceptilabs.layers.iooutput.spec import OutputLayerSpec
 from perceptilabs.layers.ioinput.spec import InputLayerSpec
 
@@ -202,7 +203,7 @@ DEFINITION_TABLE_TF2X = {
         'layer_tf2x_rescale'
     ),
     'ProcessOneHot': LayerMeta(
-        DeepLearningFcSpec,
+        ProcessOneHotSpec,
         'layers/processonehot/tf2x_imports.json',
         'layers/processonehot/tf2x_template.j2',        
         'layer_tf2x_one_hot'
@@ -230,6 +231,12 @@ DEFINITION_TABLE_TF2X = {
         'layers/trainclassification/tf2x_imports.json',
         'layers/trainclassification/tf2x_template.j2',        
         'layer_tf2x_classification'
+    ),    
+    'PreTrainedVGG16': LayerMeta(
+        PreTrainedVGG16Spec,
+        'layers/pretrainedvgg16/tf2x_imports.json',
+        'layers/pretrainedvgg16/tf2x_template.j2',        
+        'layer_pretrained_vgg16'
     ),
     'IoOutput': LayerMeta(
         OutputLayerSpec,
@@ -242,6 +249,6 @@ DEFINITION_TABLE_TF2X = {
         imports_path=None,
         macro_path=None,
         macro_name=None
-    ),
+    )
 }
 

@@ -36,19 +36,20 @@
 </template>
 
 <script>
-  import {trainingElements, deepLearnElements}  from '@/core/constants.js'
+  import { trainingElements, deepLearnElements }  from '@/core/constants.js'
   import { mapActions, mapGetters }       from 'vuex';
-import { generateID }  from "@/core/helpers.js";
+  import { generateID }  from "@/core/helpers.js";
+  
   import DataData             from '@/components/network-elements/elements/data-data/view-data-data.vue'
   import DataEnvironment      from '@/components/network-elements/elements/data-environment/view-data-environment.vue'
   import DataCloud            from '@/components/network-elements/elements/data-cloud/view-data-cloud.vue'
   import DataRandom           from '@/components/network-elements/elements/data-random/view-data-random.vue'
   import IoInput              from '@/components/network-elements/elements/io-input/view-io-input.vue'
 
-  import DeepLearningFC       from '@/components/network-elements/elements/deep-learning-fc/view-deep-learning-fc.vue'
-  import DeepLearningConv     from '@/components/network-elements/elements/deep-learning-conv/view-deep-learning-conv.vue'
-  import DeepLearningDeconv   from '@/components/network-elements/elements/deep-learning-deconv/view-deep-learning-deconv.vue'
-  import DeepLearningRecurrent from '@/components/network-elements/elements/deep-learning-recurrent/view-deep-learning-recurrent.vue'
+  import DeepLearningFC         from '@/components/network-elements/elements/deep-learning-fc/view-deep-learning-fc.vue'
+  import DeepLearningConv       from '@/components/network-elements/elements/deep-learning-conv/view-deep-learning-conv.vue'
+  import DeepLearningDeconv     from '@/components/network-elements/elements/deep-learning-deconv/view-deep-learning-deconv.vue'
+  import DeepLearningRecurrent  from '@/components/network-elements/elements/deep-learning-recurrent/view-deep-learning-recurrent.vue'
 
   import ProcessCrop          from '@/components/network-elements/elements/process-crop/view-process-crop.vue'
   import ProcessEmbed         from '@/components/network-elements/elements/process-embed/view-process-embed.vue'
@@ -83,6 +84,8 @@ import { generateID }  from "@/core/helpers.js";
 
   import LayerCustom          from '@/components/network-elements/elements/layer-custom/view-layer-custom.vue'
 
+  import PreTrainedVGG16      from '@/components/network-elements/elements/pretrained-vgg16/view-pretrained-vgg16.vue'
+
   import { calcLayerPosition } from '@/core/helpers.js';
 
 export default {
@@ -93,6 +96,8 @@ export default {
     ProcessEmbed, ProcessGrayscale, ProcessOneHot, ProcessReshape, ProcessRescale,
     TrainNormal, TrainRegression, TrainGenetic, TrainDynamic, TrainReinforce, TrainDetector, TrainGan,
     MathArgmax, MathMerge, MathSoftmax, MathSwitch,
+    LayerCustom,
+    PreTrainedVGG16,
     IoOutput,
     LayerCustom
   },
@@ -427,6 +432,17 @@ export default {
         document.removeEventListener('click', this.handleClickWithoutElementSelected);
       }
     },
+    addPreTrainedVGG16ToDeepLearningDropDown() {
+      try {
+        const dlObject = this.layersbarList.find(l => l.tooltip === 'Deep Learning');
+
+        if (!dlObject.networkElements.includes(PreTrainedVGG16)) {
+          dlObject.networkElements.push(PreTrainedVGG16);
+        }
+      } catch(err) {
+        console.log('Deep Learning layers hidden');
+      }
+    }
   },
   computed: {
     ...mapGetters({
@@ -440,6 +456,7 @@ export default {
   mounted() {
     if (process.env.ENABLE_TF2X !== 'true') { return; }
 
+    this.addPreTrainedVGG16ToDeepLearningDropDown();
     this.layersbarList.push({
       tooltip: 'IO',
       tooltip_interactive: {
