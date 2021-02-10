@@ -88,6 +88,10 @@ function runApp(token, refreshToken){
   userProfile.lastName = userProfile.family_name
 
   store.dispatch('mod_user/SET_userProfile', userProfile, {root: true});
+  setTokens(store, token, refreshToken)
+}
+
+function setTokens(store, token, refreshToken) {
   store.dispatch('mod_user/SET_userToken', {
     accessToken: token,
     refreshToken: refreshToken,
@@ -107,33 +111,36 @@ async function login(){
     return;
   } 
   let initOptions = {
-    url: `${process.env.KEYCLOACK_BASE_URL}/auth`, realm: `${process.env.KEYCLOACK_RELM}`, clientId: `${process.env.KEYCLOACK_CLIENT_ID}`, onLoad:'login-required'
+    url: `${process.env.KEYCLOACK_BASE_URL}/auth`, 
+    realm: `${process.env.KEYCLOACK_RELM}`, 
+    clientId: `${process.env.KEYCLOACK_CLIENT_ID}`, 
+    onLoad:'login-required',
+    checkLoginIframe: false // only true when onLoad is set to 'check-sso', causes errors when offline
   }
   keycloak = Keycloak(initOptions);
-  keycloak.init({ onLoad: initOptions.onLoad }).then((auth) =>{
+  keycloak.init({ onLoad: initOptions.onLoad, checkLoginIframe: initOptions.checkLoginIframe }).then((auth) =>{
 
-    if(!auth) {
-      window.location.reload();
-    }
+      if(!auth) {
+        window.location.reload();
+      }
 
-    runApp(keycloak.token, keycloak.refreshToken);
+      runApp(keycloak.token, keycloak.refreshToken);
 
-    setInterval(() =>{
-      keycloak.updateToken(1).success((refreshed)=>{
-        if (refreshed) {
-          console.log('Token refreshed'+ refreshed);
-        }
-      }).error(()=>{
-        console.error('Failed to refresh token');
-      });
+      setInterval(() =>{
+        keycloak.updateToken(1).success((refreshed)=>{
+          if (refreshed) {
+            setTokens(store, keycloak.token, keycloak.refreshToken);
+          }
+        }).error(()=>{
+          console.error('Failed to refresh token');
+        });
 
+      }, 6000)
 
-    }, 6000)
-
-  }).catch((e) =>{
-    console.error("Authenticated Failed");
-    console.error(e);
-  });
+    }).catch((e) =>{
+      console.error("Authenticated Failed");
+      console.error(e);
+    });
 }
 
 
@@ -161,19 +168,22 @@ function renderNoInternetConnectionPage() {
   }).$mount('#app');
 }
 
-const loggedInUser = getCookie('loggedInUser');
 
-if(loggedInUser) {
-  runApp(loggedInUser, 'placeholder');
-} else {
-  if (process.env.NO_KC == 'true'){
-    demo();
-  } else {
-    if(window.navigator.onLine) {
+(async function main () {
+  try {
+    const loggedInUser = getCookie('loggedInUser');
+    const isKeycloackReachable = await isUrlReachable(IS_VALID_KEYCLOACK_CHECKER_URL);
+
+    if (process.env.NO_KC == 'true') {
+      demo();
+    } else if(isKeycloackReachable) {
       login();
+    } else if(loggedInUser && !isKeycloackReachable) {
+      runApp(loggedInUser, 'placeholder');
     } else {
       renderNoInternetConnectionPage();
-    }
+    }    
+  } catch(err){
+    console.error(err)
   }
-}
-
+})();
