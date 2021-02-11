@@ -266,6 +266,14 @@ const getters = {
       // console.log('Error: getStep', err)
     }
   },
+  getCurrentViewSteps(state) {
+    try {
+      const tutorialStep = state.tutorialSteps.find(ts => ts.viewName === state.currentView);
+      return tutorialStep;
+    } catch (err) {
+      return null;
+    }
+  },
   getCurrentStep(state) {
     try {
       const tutorialStep = state.tutorialSteps.find(ts => ts.viewName === state.currentView);
@@ -350,6 +358,11 @@ const mutations = {
   addNotification(state, {stepCode, arrowDirection}) {
     // check if notification exists
     const notification = state.activeNotifications.find(an => an.stepCode === stepCode);
+
+
+    // set current StepCode
+    const tutorialStep = state.tutorialSteps.find(ts => ts.viewName === state.currentView)
+    tutorialStep.currentStepCode = stepCode;
 
     if (notification) {
       Vue.set(notification, 'arrowDirection', arrowDirection);
@@ -715,17 +728,20 @@ const actions = {
     });
 
   },
-  ['tutorial-statistics-tabs-setup']({commit, rootGetters}) {
+  ['tutorial-statistics-tabs-setup']({commit, rootGetters, getters}) {
 
     const statisticsTabs = document.querySelector('.statistics-tabs[data-tutorial-target="tutorial-statistics-tabs"]');
     const isSpinnerActive = rootGetters['mod_workspace/GET_showStartTrainingSpinner'];
 
     if (!statisticsTabs || isSpinnerActive) { return; }
 
-    commit('addNotification', { 
-      stepCode: 'tutorial-statistics-tabs',
-      arrowDirection: 'right'
-    });
+    if (!getters.getCurrentViewSteps.isCompleted) {
+      commit('addNotification', { 
+        stepCode: 'tutorial-statistics-tabs',
+        arrowDirection: 'right'
+      });
+    }
+    
   },
   
 };
