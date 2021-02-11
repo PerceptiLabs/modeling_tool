@@ -2139,7 +2139,10 @@ const actions = {
     commit('set_currentModelIndex', index);
   },
   SET_currentModelIndexByNetworkId({commit}, networkId){
-    commit('set_currentModelIndexByNetworkId', networkId);
+    return new Promise(resolve => {
+      commit('set_currentModelIndexByNetworkId', networkId);
+      resolve();
+    });
   },
   SET_currentStatsIndex({commit}, index){
     commit('set_currentStatsIndex', index);
@@ -2190,7 +2193,10 @@ const actions = {
     commit('set_openTestByNetworkId', {dispatch, getters, networkId, value})
   },
   SET_statisticsAndTestToClosed({commit, getters}, { networkId }) {
-    commit('SET_statisticsAndTestToClosed', { getters, networkId })
+    return new Promise(resolve => {
+      commit('SET_statisticsAndTestToClosed', { getters, networkId });
+      resolve();
+    });
   },
   SET_networkSnapshot({commit, getters, dispatch}) {
     return new Promise(resolve => {
@@ -2446,21 +2452,25 @@ const actions = {
     })
   },
   setViewType({dispatch, commit }, value) {
-    const possibleValues = ['model', 'statistic', 'test'];
-    const isValidValue = possibleValues.includes(value);
-    if(!isValidValue) {console.error(`View type can't have ${value} it should have one of ['model', 'statistic', 'test']`)}
-    //  should save it to local storage
-    switch(value) {
-      case 'model': 
-        dispatch('globalView/hideSidebarAction', true, {root: true});
-        break;
-      case 'statistic':
-      case 'test': 
-        dispatch('globalView/hideSidebarAction', false, {root: true});
-        break;
-    }
+    return new Promise((resolve, reject) => {
 
-    commit('setViewTypeMutation', value);
+      const possibleValues = ['model', 'statistic', 'test'];
+      const isValidValue = possibleValues.includes(value);
+      if(!isValidValue) {console.error(`View type can't have ${value} it should have one of ['model', 'statistic', 'test']`)}
+      //  should save it to local storage
+      switch(value) {
+        case 'model': 
+          dispatch('globalView/hideSidebarAction', true, {root: true});
+          break;
+        case 'statistic':
+          case 'test': 
+          dispatch('globalView/hideSidebarAction', false, {root: true});
+          break;
+        }
+        
+      commit('setViewTypeMutation', value);
+      resolve();
+    });
   },
   setChartComponentLoadingState({ getters, commit }, {descendants, value, networkId }) {
     commit('setChartComponentLoadingStateMutation', {getters, descendants, value, networkId});

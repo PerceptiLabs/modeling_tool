@@ -30,6 +30,7 @@ from perceptilabs.messaging import MessageConsumer, MessagingFactory
 
 import perceptilabs.logconf
 import perceptilabs.autosettings.utils as autosettings_utils
+import perceptilabs.modelrecommender as modelrecommender
 
 
 #LW interface
@@ -387,6 +388,9 @@ class Interface():
         elif action == "headless":
             return self._create_response_headless(value)
 
+        elif action == "getModelRecommendation":
+            return self._create_response_model_recommendation(value)
+
         elif action == "getTrainingStatistics":
             response = self._core.getTrainingStatistics(value)
             return response
@@ -568,6 +572,20 @@ class Interface():
             return None        
         return self._core.set_headless(active=request_value)
 
+    def _create_response_model_recommendation(self, request_value):
+        feature_specs = {
+            feature_name: modelrecommender.FeatureSpec(
+                datatype=feature_info['datatype'].lower(),
+                iotype=feature_info['iotype'].lower(),
+                csv_path=feature_info['csv_path']
+            )
+            for feature_name, feature_info in request_value.items()
+        }
+        recommender = modelrecommender.ModelRecommender()
+        graph_spec = recommender.get_graph(feature_specs)
+        json_network = graph_spec.to_dict()
+        return json_network        
+
     def _parse(self, path):
         frozen_pb_model = load_tf1x_frozen(path)
         _, onnx_model = create_onnx_from_tf1x(frozen_pb_model)
@@ -575,3 +593,4 @@ class Interface():
         layer_checkpoint_list = parser.parse()
         jsonNetwork = parser.save_json(layer_checkpoint_list[0])
         return jsonNetwork
+

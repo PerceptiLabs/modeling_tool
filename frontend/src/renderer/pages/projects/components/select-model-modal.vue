@@ -6,34 +6,45 @@
             .close-cross(@click="closeModal(true)")
             span New Model
         .main-wrapper
-            .main-templates
-                .main-templates-header
-                    h3 Templates
-                    //- div.search-template
-                    //-     img(src="./../../../../../static/img/search-models.svg")
-                    //-     input(type='text' placeholder="Search")
-                .main-templates-items
-                    .template-item(
-                        :class="{'is-selected': (chosenTemplate === -1)}"
-                        @click="choseTemplate(-1)"
-                    )
-                        div.template-image
-                            svg(width="50" height="50" viewBox="-10 -10 50 50" fill="none" xmlns="http://www.w3.org/2000/svg")
-                                rect(x="0.5" y="0.5" width="32.3333" height="32.3333" rx="1.5" stroke="#C4C4C4" stroke-opacity="0.8")
-                                rect(x="7.16797" y="7.16602" width="32.3333" height="32.3333" rx="1.5" fill="#383F50" stroke="#C4C4C4")
-                                path(d="M29.79 23.9637H24.2527V29.4873H22.4298V23.9637H16.9062V22.1271H22.4298V16.6035H24.2527V22.1271H29.79V23.9637Z" fill="#C4C4C4")
+            template(v-if="!isTF2XEnabled || !isDataWizardEnabled")
+                .main-templates
+                    .main-templates-header
+                        h3 Templates
+                        //- div.search-template
+                        //-     img(src="./../../../../../static/img/search-models.svg")
+                        //-     input(type='text' placeholder="Search")
+                    .main-templates-items
+                        .template-item(
+                            :class="{'is-selected': (chosenTemplate === -1)}"
+                            @click="choseTemplate(-1)"
+                        )
+                            div.template-image
+                                svg(width="50" height="50" viewBox="-10 -10 50 50" fill="none" xmlns="http://www.w3.org/2000/svg")
+                                    rect(x="0.5" y="0.5" width="32.3333" height="32.3333" rx="1.5" stroke="#C4C4C4" stroke-opacity="0.8")
+                                    rect(x="7.16797" y="7.16602" width="32.3333" height="32.3333" rx="1.5" fill="#383F50" stroke="#C4C4C4")
+                                    path(d="M29.79 23.9637H24.2527V29.4873H22.4298V23.9637H16.9062V22.1271H22.4298V16.6035H24.2527V22.1271H29.79V23.9637Z" fill="#C4C4C4")
 
 
-                        span.template-name Empty
-                    .template-item(
-                        v-for="(temp, i) in basicTemplates"
-                        :class="{'is-selected': (chosenTemplate === i)}"
-                        @click="choseTemplate(i)"
-                    )
-                        div.template-image(v-if="temp.imgPath")
-                            img(:src="temp.imgPath" :alt="temp.title")
-                        span.template-name {{ temp.title }}
-                    
+                            span.template-name Empty
+                        .template-item(
+                            v-for="(temp, i) in basicTemplates"
+                            :class="{'is-selected': (chosenTemplate === i)}"
+                            @click="choseTemplate(i)"
+                        )
+                            div.template-image(v-if="temp.imgPath")
+                                img(:src="temp.imgPath" :alt="temp.title")
+                            span.template-name {{ temp.title }}
+            template(v-else)
+                .main-file-structure-section
+                    .main-file-structure-header
+                        h3 File structure
+                        //- div.search-template
+                        //-     img(src="./../../../../../static/img/search-models.svg")
+                        //-     input(type='text' placeholder="Search")
+                    .main-file-structure-contents
+                        .load-contents-group(v-if="!dataSet")
+                            button.action-button(@click="openFilePicker('setDataPath')") Load data
+                        csv-table(v-else :dataSet="dataSet" @update="handleCSVDataTypeUpdates")        
             .main-actions 
                 div  
                     h4.presets-text Name:
@@ -72,7 +83,7 @@
                     button.action-button.mr-5(@click="closeModal(true)") Cancel
                     button.action-button.create-btn.ml-5(
                         :class="{'is-disabled': isDisableCreateAction()}"
-                        @click="createModel()"
+                        @click="debouncedCreateModelFunction()"
                     )
                         svg.plus-icon(width='17' height='17' viewbox='0 0 17 17' fill='none' xmlns='http://www.w3.org/2000/svg')
                             path(d='M11.7924 8.82157H8.96839V11.6386H8.0387V8.82157H5.22168V7.88489H8.0387V5.06787H8.96839V7.88489H11.7924V8.82157Z' fill='white')
@@ -80,9 +91,10 @@
                         | Create
         file-picker-popup(
             v-if="showFilePickerPopup"
-            popupTitle="Choose Model path"
-            :startupFolder="this.modelPath"
-            :confirmCallback="updateModelPath"
+            :popupTitle="filepickerOptions.popupTitle"
+            :filePickerType="filepickerOptions.filePickerType"
+            :startupFolder="filepickerOptions.startupFolder"
+            :confirmCallback="filepickerOptions.confirmCallback"
             :cancelCallback="closePopup"
         )
 </template>
@@ -92,19 +104,25 @@
     import linearRegression       from '@/core/basic-template/linear-regression.js'
     import objectDetection        from '@/core/basic-template/object-detection.js'
     import ganTemplate            from '@/core/basic-template/gan-template.js'
-    // import FilePickerPopup        from "@/components/global-popups/file-picker-popup.vue";
+    import FilePickerPopup        from "@/components/global-popups/file-picker-popup.vue";
+    import CsvTable               from "@/components/different/csv-table.vue";
 
     import { mapActions, mapState, mapGetters } from 'vuex';
-    import { generateID } from '@/core/helpers';
+    import { convertModelRecommendationToVisNodeEdgeList, createVisNetwork } from '@/core/helpers/layer-positioning-helper';
+    import { buildLayers } from '@/core/helpers/layer-creation-helper';
+
+    import { debounce } from '@/core/helpers'
     import cloneDeep from 'lodash.clonedeep';
+
     import { doesDirExist as fileserver_doesDirExist } from '@/core/apiFileserver';
     import { getFolderContent as fileserver_getFolderContent } from '@/core/apiFileserver';
     import { getResolvedDir as fileserver_getResolvedDir } from '@/core/apiFileserver';
     import { getRootFolder as fileserver_getRootFolder } from '@/core/apiFileserver';
+    import { getFileContent as fileserver_getFileContent } from '@/core/apiFileserver';
 
 export default {
     name: 'SelectModelModal',
-    components: {  },
+    components: { FilePickerPopup, CsvTable },
     data: function() {
         return {
             basicTemplates: [
@@ -149,7 +167,17 @@ export default {
             description: '',
             modelPath: '',
             showFilePickerPopup: false,
-            hasChangedModelName: false
+            hasChangedModelName: false,
+            csvData: null, // parsed dataset and meta
+            dataSet: null,
+            dataSetPath: null,
+            filepickerOptions: {
+                popupTitle: '',
+                filePickerType: '',
+                startupFolder: '',
+                confirmCallback: ''
+            },
+            debouncedCreateModelFunction: null
         }
     },
     computed: {
@@ -162,11 +190,21 @@ export default {
             projectPath:        'mod_project/GET_projectPath',
             currentNetworkId:   'mod_workspace/GET_currentNetworkId',
             defaultTemplate:    'mod_workspace/GET_defaultNetworkTemplate'
-        })
+        }),
+        isTF2XEnabled() {
+            return process.env.ENABLE_TF2X === 'true';
+        },
+        isDataWizardEnabled() {
+            return process.env.ENABLE_DATA_WIZARD === 'true';
+        }
     },
     mounted() {
         this.modelPath = this.projectPath;
         document.addEventListener('keyup', this.handleKeyup);
+
+        this.debouncedCreateModelFunction = debounce(_ => {
+            this.createModel();
+        }, 1000);
     },
     beforeDestroy() {
         document.removeEventListener('keyup', this.handleKeyup);
@@ -182,9 +220,11 @@ export default {
             setCurrentView:             'mod_tutorials/setCurrentView',
             setNextStep:                'mod_tutorials/setNextStep',
             setChecklistItemComplete:   'mod_tutorials/setChecklistItemComplete',
+            getModelRecommendation:     'mod_api/API_getModelRecommendation',
+            
         }),
         closeModal(triggerViewChange = false) {
-            this.$emit('close');
+            this.$store.dispatch('globalView/SET_newModelPopup', false);
 
             if (triggerViewChange)
             {
@@ -205,7 +245,8 @@ export default {
             const dirContents = await fileserver_getFolderContent(resolvedDir);
 
             let namePrefix = '';
-            if (this.chosenTemplate >= 0 &&
+            if (this.chosenTemplate && // null case for TF2X models
+                this.chosenTemplate >= 0 &&
                 this.chosenTemplate <= this.basicTemplates.length - 1) {
                 namePrefix = this.basicTemplates[this.chosenTemplate].title
                     .replace(' ', '');
@@ -223,13 +264,94 @@ export default {
             this.modelName = `${namePrefix} ${highestSuffix + 1}`
         },
         isDisableCreateAction() {
-            const { chosenTemplate, modelName, basicTemplates } = this;
-            return ((chosenTemplate === null) || !modelName);
+
+            if (this.isTF2XEnabled) {
+                const { modelName,  csvData} = this;
+                return (!csvData || !modelName);
+            } else {
+                const { chosenTemplate, modelName, basicTemplates } = this;
+                return ((chosenTemplate === null) || !modelName);
+            }
         },
         async createModel() {
+            
+            if (this.isTF2XEnabled && this.isDataWizardEnabled) {
+                await this.createModelTF2X();
+            } else {
+                await this.createModelTF1X();
+            }
+        },
+        async createModelTF2X() {
+
+            if (!this.csvData) { return; }
+
+            const { modelName, modelPath } = this;
+
+            // Check validity
+            if(!await this.isValidModelName(modelName)) {
+                // TODO: showErrorPopup closes all popups, need to change this logic for UX
+                // Annoying to have to type everything in again
+                this.showErrorPopup(`The model name "${modelName}" already exists.`);
+                this.setCurrentView('tutorial-model-hub-view');
+                return;
+            }
+
+            if(!await this.isValidDirName(modelName, modelPath)) {
+                this.showErrorPopup(`The "${modelName}" folder already exists at "${modelPath}".`);
+                this.setCurrentView('tutorial-model-hub-view');
+                return;
+            }
+
+            const payload = this.formatCSVTypesIntoKernelFormat()
+            const modelRecommendation = await this.getModelRecommendation(payload)
+            
+            const inputData = convertModelRecommendationToVisNodeEdgeList(modelRecommendation);
+            const network = createVisNetwork(inputData);
+
+            // Wait till the 'stabilized' event has fired
+            await new Promise(resolve => network.on('stabilized', async (data) => resolve()));
+
+            // Creating the project/network entry in rygg
+            const apiMeta = await this.createProjectModel({
+                name: modelName,
+                project: this.currentProjectId,
+                location: `${this.modelPath}/${modelName}`,
+            });
+            
+            // Creating the networkElementList for the network
+            var ids = inputData.nodes.getIds();
+            var nodePositions = network.getPositions(ids);
+            const layers = await buildLayers(modelRecommendation, nodePositions);
+            
+            // Creating network and adding the prepped layer to it
+            const newNetwork = cloneDeep(this.defaultTemplate);
+            newNetwork.networkID = apiMeta.model_id;
+            newNetwork.networkName = modelName;
+            newNetwork.networkElementList = layers;
+
+            // Adding network to workspace
+            await this.addNetwork({ network: newNetwork,  apiMeta });
+
+            // Swapping view so that the newly created model is shown
+            // TODO: break apart this views
+            await this.$store.dispatch('mod_workspace/SET_statisticsAndTestToClosed',{ networkId: this.currentNetworkId });
+            await this.$store.dispatch('mod_workspace/SET_currentModelIndexByNetworkId', apiMeta.model_id);
+            await this.$store.dispatch('mod_workspace/setViewType', 'model');
+            
+            this.$store.commit('mod_empty-navigation/set_emptyScreenMode', 0);
+            this.setChecklistItemComplete({ itemId: 'createModel' });
+
+            this.$nextTick(() => {
+                this.setCurrentView('tutorial-workspace-view');
+            });
+
+            this.closeModal(false);
+        },
+        async createModelTF1X() {
             const { chosenTemplate, modelName, basicTemplates } = this;
             if((chosenTemplate === null) || !modelName)  return
 
+            // TODO: test with isValidModelName
             // check if models name already exists
             const promiseArray = 
                 this.currentProject.models
@@ -243,6 +365,7 @@ export default {
                 return;
             }
             
+            // TODO: test with isValidDirName
             const dirAlreadyExist = await fileserver_doesDirExist(`${this.modelPath}/${modelName}`);
             if(dirAlreadyExist) {
                 this.showErrorPopup(`The "${modelName}" folder already exists at "${this.modelPath}".`);
@@ -299,12 +422,26 @@ export default {
                 this.$nextTick(() => {
                     this.setCurrentView('tutorial-workspace-view');
                 });
+
+                this.closeModal(false);
             });
-            this.closeModal(false);
         },
-        openFilePicker() {
-            this.setNextStep({currentStep:'tutorial-create-model-model-path'});
-            this.showFilePickerPopup = true;
+        openFilePicker(openFilePickerReason) {
+
+            if (openFilePickerReason === 'setDataPath') {
+                this.filepickerOptions.popupTitle = 'Choose data to load';
+                this.filepickerOptions.filePickerType = 'multimode';
+                this.filepickerOptions.startupFolder = this.modelPath;
+                this.filepickerOptions.confirmCallback = this.handleDataPathUpdates;
+            } else {    
+                this.filepickerOptions.popupTitle = 'Choose Model path';
+                this.filepickerOptions.filePickerType = 'folder';
+                this.filepickerOptions.startupFolder = this.modelPath;
+                this.filepickerOptions.confirmCallback = this.updateModelPath;
+
+                this.setNextStep({currentStep:'tutorial-create-model-model-path'});
+            }
+            this.showFilePickerPopup = true;                
         },
         closePopup() {
             this.showFilePickerPopup = false;
@@ -336,7 +473,7 @@ export default {
             }
           } else if (event.key === "Enter" && !this.isDisableCreateAction()) {
             event.stopPropagation();
-            this.createModel();
+            this.debouncedCreateModelFunction();
             this.chosenTemplate = null;
             this.modelName = '';
           }
@@ -349,6 +486,54 @@ export default {
             }
 
             this.setNextStep({currentStep:'tutorial-create-model-model-name'});
+        },
+        async handleDataPathUpdates(dataPath) {
+            if (!dataPath || !dataPath.length || dataPath[0].type !== 'file') {
+                this.showFilePickerPopup = false;
+                return;
+            }
+
+            const fileContents = await fileserver_getFileContent(`${dataPath[0].path}`);
+
+            if (fileContents && fileContents.file_contents) {
+                this.dataSet = fileContents.file_contents;
+                this.dataSetPath = dataPath[0].path;
+                this.autoPopulateName();
+            }
+
+            this.showFilePickerPopup = false;
+        },
+        handleCSVDataTypeUpdates(payload) {
+            this.csvData = payload;
+        },
+        formatCSVTypesIntoKernelFormat() {
+            const payload={};
+
+            for(const [idx, val] of this.csvData.columnNames.entries()) {
+                const sanitizedVal=val.replace(/^\n|\n$/g, '')
+                payload[sanitizedVal]={}
+                payload[sanitizedVal]['csv_path']=this.dataSetPath
+                payload[sanitizedVal]['iotype']=this.csvData.ioTypes[idx],
+                    payload[sanitizedVal]['datatype']=this.csvData.dataTypes[idx]
+            }
+            return payload
+        },
+        async isValidModelName(modelName) {
+            if(!modelName) { return; }
+
+            const promiseArray = 
+                this.currentProject.models
+                    .map(x => this.getModelMeta(x));
+            const modelMeta = await Promise.all(promiseArray);
+            const modelNames = modelMeta.map(x => x.name);
+
+            // Making sure name is not already in the list
+            return modelNames.indexOf(modelName) === -1;            
+        },
+        async isValidDirName(modelName, modelPath) {
+            const dirAlreadyExist = await fileserver_doesDirExist(`${modelPath}/${modelName}`);
+            
+            return !dirAlreadyExist;
         }
     },
 }
@@ -470,6 +655,71 @@ export default {
             border: 3px solid #1473e6;
             border-radius: 3px;
         }
+    }
+    .main-file-structure-section {
+        box-sizing: border-box;
+        width: 610px;
+        padding-bottom: 120px;
+
+        background: linear-gradient(180deg, #363E51 0%, rgba(54, 62, 81, 0) 100%);
+        border: 1px solid rgba(97, 133, 238, 0.4);
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.25);
+        border-radius: 0;
+        min-height: 520px;
+        // border-right-width: 0;
+        border-bottom-left-radius: 2px;
+    }
+    .main-file-structure-header {
+        padding: 23px 30px;
+        display: flex;
+        align-items: center;
+        justify-content: space-around
+        h3  {
+            font-family: Nunito Sans;
+            font-size: 16px;
+            line-height: 22px;
+            color: #E1E1E1;
+        }
+        .search-template {
+            width: 100%;
+            position: relative;
+            margin-left: 140px;
+            img {
+                position: absolute;
+                top: 50%;
+                transform: translateY(-50%);
+                left: 12px;
+            }
+            input {
+                width: 100%;
+                border: 1px solid #4D556A;
+                box-sizing: border-box;
+                border-radius: 2px;
+                background: transparent;
+                height: 30px;
+                padding-left: 42px;
+            }
+        }
+    
+    }
+    .main-file-structure-contents {
+        width: 100%;
+        height: 100%;
+        padding: 0 30px;
+        // margin-top: 33px;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+    
+        & > .load-contents-group > button {
+            height: 100%;
+            line-height: 100%;
+
+            text-align: center;
+            padding: 1.5rem;
+        }
+
     }
     .main-actions {
         display: flex;

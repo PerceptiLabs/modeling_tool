@@ -1234,6 +1234,16 @@ const actions = {
     
     return coreRequest(theData)
   },
+
+  API_getModelRecommendation (ctx, payload) {
+    const theData = {
+      receiver: '',
+      action: 'getModelRecommendation',
+      value: payload
+    };
+    
+    return coreRequest(theData)
+  },
 };
 
 export default {

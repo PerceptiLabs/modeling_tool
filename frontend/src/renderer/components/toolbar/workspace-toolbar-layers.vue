@@ -44,7 +44,6 @@
   import DataEnvironment      from '@/components/network-elements/elements/data-environment/view-data-environment.vue'
   import DataCloud            from '@/components/network-elements/elements/data-cloud/view-data-cloud.vue'
   import DataRandom           from '@/components/network-elements/elements/data-random/view-data-random.vue'
-  import IoInput              from '@/components/network-elements/elements/io-input/view-io-input.vue'
 
   import DeepLearningFC         from '@/components/network-elements/elements/deep-learning-fc/view-deep-learning-fc.vue'
   import DeepLearningConv       from '@/components/network-elements/elements/deep-learning-conv/view-deep-learning-conv.vue'
@@ -80,6 +79,7 @@
   import ClassicMLRandomForest from '@/components/network-elements/elements/classic-ml-random-forest/view-classic-ml-random-forest.vue'
   import ClassicMLSVM         from '@/components/network-elements/elements/classic-ml-vector-machine/view-classic-ml-vector-machine.vue'
 
+  import IoInput              from '@/components/network-elements/elements/io-input/view-io-input.vue'
   import IoOutput             from '@/components/network-elements/elements/io-output/view-io-output.vue'
 
   import LayerCustom          from '@/components/network-elements/elements/layer-custom/view-layer-custom.vue'
@@ -91,14 +91,13 @@
 export default {
   name: 'TheLayersbar',
   components: {
-    DataData, DataEnvironment, DataRandom, IoInput,
+    DataData, DataEnvironment, DataRandom,
     DeepLearningFC, DeepLearningConv, DeepLearningDeconv, DeepLearningRecurrent,
     ProcessEmbed, ProcessGrayscale, ProcessOneHot, ProcessReshape, ProcessRescale,
     TrainNormal, TrainRegression, TrainGenetic, TrainDynamic, TrainReinforce, TrainDetector, TrainGan,
     MathArgmax, MathMerge, MathSoftmax, MathSwitch,
-    LayerCustom,
+    IoInput, IoOutput,
     PreTrainedVGG16,
-    IoOutput,
     LayerCustom
   },
   data() {
@@ -457,7 +456,8 @@ export default {
     if (process.env.ENABLE_TF2X !== 'true') { return; }
 
     this.addPreTrainedVGG16ToDeepLearningDropDown();
-    this.layersbarList.push({
+
+    const ioDropdown = {
       tooltip: 'IO',
       tooltip_interactive: {
         title: 'IO',
@@ -467,12 +467,16 @@ export default {
       iconClass: 'icon-train-group',
       childListClass: '',
       showEl: false,
-      networkElements: [IoOutput],
+      networkElements: [ 'IoInput', 'IoOutput' ],
       id:'tutorial_io',
       color: 'rgba(204, 204, 204, 0.7)',
       borderColor: 'rgba(204, 204, 204, 0.2)',
       bottomColor: 'rgba(204, 204, 204, 0.4)'
-    });
+    }
+    
+    if (!this.layersbarList.some(listItem => listItem.tooltip === 'IO')) {
+      this.layersbarList.push(ioDropdown);
+    }
   }
 }
 </script>
@@ -658,3 +662,4 @@ export default {
     }
   }
 </style>
+OB

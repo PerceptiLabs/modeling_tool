@@ -134,6 +134,14 @@ export const doesFileExist = (path) => {
     })
 }
 
+export const getFileContent = (path) => {
+  return whenHaveFileserverToken()
+    .then(fs => fs.get(`/files/get_file_content?path=${path}`))
+    .then(res => {
+      return (res.status === 200) ? res.data : null;
+    })
+}
+
 export const createFolder = (path) => {
   return whenHaveFileserverToken()
     .then(fs => fs.post(`/directories?path=${path}`))

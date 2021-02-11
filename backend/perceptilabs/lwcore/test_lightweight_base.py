@@ -1537,6 +1537,23 @@ def test_calls_cache_put_when_cached_entry_exists(graph_spec_binary_classificati
 
     assert cache.put.call_count > 0
 
+
+@pytest.mark.tf2x    
+def test_preview_available_for_input_layer(csv_path):
+    layer_spec = InputLayerSpec(id_='123', feature_name='x1', file_path=csv_path)
+    graph_spec = GraphSpec([layer_spec])
+    lw_core = LightweightCore()
+    results = lw_core.run(graph_spec)
+    assert results['123'].sample.get('output') == 1.0
+    
+
+@pytest.mark.tf2x    
+def test_preview_available_for_output_layer(csv_path):
+    layer_spec = OutputLayerSpec(id_='123', feature_name='x1', file_path=csv_path)
+    graph_spec = GraphSpec([layer_spec])
+    lw_core = LightweightCore()
+    results = lw_core.run(graph_spec)
+    assert results['123'].sample.get('output') == 1.0
     
 @pytest.mark.tf2x    
 def test_preview_available_for_output_layer(csv_path):

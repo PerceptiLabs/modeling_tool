@@ -50,6 +50,7 @@ perceptilabs/parser/parse_onnx.py
 perceptilabs/graph/__init__.py
 perceptilabs/graph/splitter.py
 perceptilabs/graph/spec.py
+perceptilabs/graph/builder.py
 
 # perceptilabs/layers
 perceptilabs/layers/__init__.py
@@ -275,3 +276,11 @@ perceptilabs/api/data_container.py
 perceptilabs/api/experiment.py
 
 perceptilabs/tutorial_data/
+
+# backend/perceptilabs/data/
+perceptilabs/data/__init__.py
+perceptilabs/data/base.py
+
+# backend/perceptilabs/modelrecommender/
+perceptilabs/modelrecommender/__init__.py
+perceptilabs/modelrecommender/base.py
