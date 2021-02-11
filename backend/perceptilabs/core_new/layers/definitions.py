@@ -334,30 +334,6 @@ DEFINITION_TABLE = {
             'from perceptilabs.core_new.serialization import can_serialize, serialize'            
         ]
     ),
-    'DeepLearningDeconv': LayerDef(
-        Tf1xLayer,
-        'tf1x.j2',
-        'layer_tf1x_deconv',
-        {
-            'deconv_dim': lambda specs: specs['Properties']['Deconv_dim'],
-            'patch_size': lambda specs: specs['Properties']['Patch_size'],
-            'stride': lambda specs: specs['Properties']['Stride'],
-            'feature_maps': lambda specs: specs['Properties']['Feature_maps'],
-            'padding': lambda specs: specs['Properties']['Padding'],
-            'activation': resolve_tf1x_activation_name,
-            'dropout': lambda specs: specs['Properties']['Dropout'],
-            'keep_prob': lambda specs: specs['Properties']['Keep_prob'],
-            'batch_norm': lambda specs: specs['Properties'].get('Batch_norm', False)
-        },
-        import_statements=[
-            'import tensorflow as tf',
-            'import numpy as np',
-            'from typing import Dict',
-            'from perceptilabs.core_new.utils import Picklable',
-            'from perceptilabs.core_new.layers.base import Tf1xLayer',
-            'from perceptilabs.core_new.serialization import can_serialize, serialize'
-        ]
-    ),
     'DeepLearningRecurrent': LayerDef(
         Tf1xLayer,
         'tf1x.j2',

@@ -40,7 +40,6 @@
   import DataCloud        from '@/components/network-elements/elements/data-cloud/viewBox-data-cloud.vue'
   import DeepLearningFC        from '@/components/network-elements/elements/deep-learning-fc/viewBox-deep-learning-fc.vue'
   import DeepLearningConv      from '@/components/network-elements/elements/deep-learning-conv/viewBox-deep-learning-conv.vue'
-  import DeepLearningDeconv    from '@/components/network-elements/elements/deep-learning-deconv/viewBox-deep-learning-deconv.vue'
   import DeepLearningRecurrent from '@/components/network-elements/elements/deep-learning-recurrent/viewBox-deep-learning-recurrent.vue'
   import ProcessCrop      from '@/components/network-elements/elements/process-crop/viewBox-process-crop.vue'
   import ProcessEmbed     from '@/components/network-elements/elements/process-embed/viewBox-process-embed.vue'
@@ -64,7 +63,7 @@ export default {
   components: {
     DataData, DataEnvironment, DataRandom,
     // DataCloud,
-    DeepLearningFC, DeepLearningConv, DeepLearningDeconv, DeepLearningRecurrent,
+    DeepLearningFC, DeepLearningConv, DeepLearningRecurrent,
     ProcessEmbed, ProcessGrayscale, ProcessOneHot, ProcessReshape, ProcessRescale,
     // ProcessCrop,
     TrainNormal, TrainRegression, TrainGenetic, TrainDynamic, TrainReinforce, TrainDetector, TrainGan,

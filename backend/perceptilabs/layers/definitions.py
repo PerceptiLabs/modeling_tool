@@ -4,7 +4,6 @@ from perceptilabs.layers.dataenvironment.spec import DataEnvironmentSpec
 from perceptilabs.layers.datarandom.spec import DataRandomSpec
 from perceptilabs.layers.deeplearningfc.spec import DeepLearningFcSpec
 from perceptilabs.layers.deeplearningconv.spec import DeepLearningConvSpec
-from perceptilabs.layers.deeplearningdeconv.spec import DeepLearningDeconvSpec
 from perceptilabs.layers.deeplearningrecurrent.spec import DeepLearningRecurrentSpec
 from perceptilabs.layers.processonehot.spec import ProcessOneHotSpec
 from perceptilabs.layers.processreshape.spec import ProcessReshapeSpec
@@ -64,12 +63,6 @@ DEFINITION_TABLE = {
         'layers/deeplearningconv/imports.json',
         'core_new/layers/templates/tf1x.j2',        
         'layer_tf1x_conv'
-    ),
-    'DeepLearningDeconv': LayerMeta(
-        DeepLearningDeconvSpec,
-        'layers/deeplearningdeconv/imports.json',
-        'core_new/layers/templates/tf1x.j2',        
-        'layer_tf1x_deconv'
     ),
     'DeepLearningRecurrent': LayerMeta(
         DeepLearningRecurrentSpec,

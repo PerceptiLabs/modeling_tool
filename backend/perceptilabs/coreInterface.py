@@ -733,43 +733,6 @@ class coreLogic():
                                                         {"color":"#6b8ff7"}])
                 output = {"Gradients": dataObj}
                 return output
-        elif layerType=="DeepLearningDeconv":
-            if view=="Weights&Output":
-                weights=self.getStatistics({"layerId":layerId,"variable":"W","innervariable":""})                
-                Wshapes=weights.shape
-                if len(Wshapes)==3:
-                    weights=np.expand_dims(np.average(weights[:,:,-1],1),axis=0)
-                elif len(Wshapes)==4:
-                    weights=np.average(weights[:,:,:,-1],2)
-                elif len(Wshapes)==5:
-                    weights=np.average(weights[:,:,:,:,-1],3)
-
-                outputs=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})[-1]
-                outputs=outputs[:, :, 0]
-                    
-                dataObjWeights = createDataObject([weights], type_list=['heatmap'])
-                dataObjOutput = createDataObject([outputs])                
-
-                obj = {"Weights":dataObjWeights, "Output": dataObjOutput}
-                return obj
-            if view=="Bias":
-                b=self.getStatistics({"layerId":layerId,"variable":"b","innervariable":""})
-                dataObj = createDataObject([b], type_list=['line'])
-                output = {"Bias": dataObj}
-                return output
-            if view=="Gradients":
-                minD=self.getStatistics({"layerId":layerId,"variable":"Gradient","innervariable":"Min"})
-                maxD=self.getStatistics({"layerId":layerId,"variable":"Gradient","innervariable":"Max"})
-                avD=self.getStatistics({"layerId":layerId,"variable":"Gradient","innervariable":"Average"})
-
-                dataObj = createDataObject([minD, maxD, avD],
-                                            type_list=3*['line'],
-                                            name_list=['Min', 'Max', 'Average'],
-                                            style_list=[{"color":"#83c1ff"},
-                                                        {"color":"#0070d6"},
-                                                        {"color":"#6b8ff7"}])
-                output = {"Gradients": dataObj}
-                return output
         elif layerType=="DeepLearningRecurrent":
             
             # if view=="Output":
@@ -1452,7 +1415,7 @@ class coreLogic():
                 obj = {"Steps": steps}
                 return obj
         else:
-            return "FieldError: Does not recognize the layerType. " + layerType + " is not in [Train, Fc, Conv, Deconv, Argmax, Softmax, Merge, OneHot, Crop, Reshape, Grayscale]"
+            return "FieldError: Does not recognize the layerType. " + layerType + " is not in [Train, Fc, Conv, Argmax, Softmax, Merge, OneHot, Crop, Reshape, Grayscale]"
 
     def getPlot(self,D):
         shape=np.squeeze(D).shape

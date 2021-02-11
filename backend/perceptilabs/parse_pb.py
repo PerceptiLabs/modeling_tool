@@ -209,13 +209,12 @@ def augmentParsedAttr(operation, argument, parsed):
    return parsed
 
 def findComponentName(layer):
-   # ProcessOneHot,ProcessCrop,ProcessReshape,,ProcessEmbed,ProcessGrayscale,DeepLearningFC,DeepLearningConv,DeepLearningDeconv,DeepLearningRecurrent,MathArgmax,
+   # ProcessOneHot,ProcessCrop,ProcessReshape,,ProcessEmbed,ProcessGrayscale,DeepLearningFC,DeepLearningConv,DeepLearningRecurrent,MathArgmax,
    # MathSoftmax,MathSplit,MathMerge,PointWise,TrainNormal,TrainReinforce,ClassicMLKMeans,ClassicMLDbscans,ClassicMLKNN,ClassicMLRandomForest,ClassicMLSVM
 
    #Check first for high Prio types and then for Low prio types and lastly custom. Search backwards
    highPrio={
       "DeepLearningConv":["conv"],
-      "DeepLearningDeconv":["deconv"],
       "DeepLearningFC":["fully_connected"],  #Need a better way to find fully connected layers since they can be manually built or with function
       "DataData":["placeholder"],
    }
@@ -340,7 +339,7 @@ def prune_tree(root):
 
 def grow_tree(root):
    #Adds depth where needed but tries to merge where it can instead
-   operation_dependency_dict={"AvgPool":["Conv", "Deconv"]}
+   operation_dependency_dict={"AvgPool":["Conv"]}
    nonDicts=[]
    dicts=[]
    #Check what the branches contain

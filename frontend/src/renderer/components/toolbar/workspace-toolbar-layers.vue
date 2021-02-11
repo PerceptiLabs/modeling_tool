@@ -45,10 +45,9 @@
   import DataCloud            from '@/components/network-elements/elements/data-cloud/view-data-cloud.vue'
   import DataRandom           from '@/components/network-elements/elements/data-random/view-data-random.vue'
 
-  import DeepLearningFC         from '@/components/network-elements/elements/deep-learning-fc/view-deep-learning-fc.vue'
-  import DeepLearningConv       from '@/components/network-elements/elements/deep-learning-conv/view-deep-learning-conv.vue'
-  import DeepLearningDeconv     from '@/components/network-elements/elements/deep-learning-deconv/view-deep-learning-deconv.vue'
-  import DeepLearningRecurrent  from '@/components/network-elements/elements/deep-learning-recurrent/view-deep-learning-recurrent.vue'
+  import DeepLearningFC       from '@/components/network-elements/elements/deep-learning-fc/view-deep-learning-fc.vue'
+  import DeepLearningConv     from '@/components/network-elements/elements/deep-learning-conv/view-deep-learning-conv.vue'
+  import DeepLearningRecurrent from '@/components/network-elements/elements/deep-learning-recurrent/view-deep-learning-recurrent.vue'
 
   import ProcessCrop          from '@/components/network-elements/elements/process-crop/view-process-crop.vue'
   import ProcessEmbed         from '@/components/network-elements/elements/process-embed/view-process-embed.vue'
@@ -92,7 +91,7 @@ export default {
   name: 'TheLayersbar',
   components: {
     DataData, DataEnvironment, DataRandom,
-    DeepLearningFC, DeepLearningConv, DeepLearningDeconv, DeepLearningRecurrent,
+    DeepLearningFC, DeepLearningConv, DeepLearningRecurrent,
     ProcessEmbed, ProcessGrayscale, ProcessOneHot, ProcessReshape, ProcessRescale,
     TrainNormal, TrainRegression, TrainGenetic, TrainDynamic, TrainReinforce, TrainDetector, TrainGan,
     MathArgmax, MathMerge, MathSoftmax, MathSwitch,

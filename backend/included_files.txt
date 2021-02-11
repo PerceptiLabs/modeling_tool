@@ -94,10 +94,6 @@ perceptilabs/layers/deeplearningconv/imports.json
 perceptilabs/layers/deeplearningconv/tf2x_imports.json
 perceptilabs/layers/deeplearningconv/tf2x_template.j2
 
-# perceptilabs/layers/deeplearningdeconv
-perceptilabs/layers/deeplearningdeconv/spec.py
-perceptilabs/layers/deeplearningdeconv/imports.json
-
 # perceptilabs/layers/deeplearningrecurrent
 perceptilabs/layers/deeplearningrecurrent/spec.py
 perceptilabs/layers/deeplearningrecurrent/imports.json

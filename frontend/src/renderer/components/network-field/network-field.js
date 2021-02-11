@@ -4,10 +4,9 @@ import DataCloud            from '@/components/network-elements/elements/data-cl
 import DataRandom           from '@/components/network-elements/elements/data-random/data-random.vue'
 import IoInput          from '@/components/network-elements/elements/io-input/io-input.vue'
 
-import DeepLearningFC         from '@/components/network-elements/elements/deep-learning-fc/deep-learning-fc.vue'
-import DeepLearningConv       from '@/components/network-elements/elements/deep-learning-conv/deep-learning-conv.vue'
-import DeepLearningDeconv     from '@/components/network-elements/elements/deep-learning-deconv/deep-learning-deconv.vue'
-import DeepLearningRecurrent  from '@/components/network-elements/elements/deep-learning-recurrent/deep-learning-recurrent.vue'
+import DeepLearningFC       from '@/components/network-elements/elements/deep-learning-fc/deep-learning-fc.vue'
+import DeepLearningConv     from '@/components/network-elements/elements/deep-learning-conv/deep-learning-conv.vue'
+import DeepLearningRecurrent from '@/components/network-elements/elements/deep-learning-recurrent/deep-learning-recurrent.vue'
 
 import ProcessCrop          from '@/components/network-elements/elements/process-crop/process-crop.vue'
 import ProcessEmbed         from '@/components/network-elements/elements/process-embed/process-embed.vue'
@@ -58,7 +57,7 @@ export default {
   components: {
     DataData, DataEnvironment, DataRandom, IoInput,
     // DataCloud,
-    DeepLearningFC, DeepLearningConv, DeepLearningDeconv, DeepLearningRecurrent, 
+    DeepLearningFC, DeepLearningConv, DeepLearningRecurrent,
     ProcessEmbed, ProcessGrayscale, ProcessOneHot, ProcessReshape, ProcessRescale,
     // ProcessCrop,
     TrainNormal, TrainRegression, TrainGenetic, TrainDynamic, TrainReinforce, TrainDetector, TrainGan,

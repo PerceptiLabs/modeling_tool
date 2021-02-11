@@ -2601,7 +2601,6 @@ const componentsInputs = {
 
   DeepLearningFC: ['input'],
   DeepLearningConv: ['input'],
-  DeepLearningDeconv: ['input'],
   DeepLearningRecurrent: ['input'],
 
   MathArgmax: ['input'],
@@ -2635,7 +2634,6 @@ const componentsOutputs = {
 
   DeepLearningFC: ['output'],
   DeepLearningConv: ['output'],
-  DeepLearningDeconv: ['output'],
   DeepLearningRecurrent: ['output'],
 
   MathArgmax: ['output'],
