@@ -96,7 +96,6 @@
       this.debouncedSaveSettingsFunction = debounce((tabName, pushOntoHistory) => {
         this.applySettings(tabName, pushOntoHistory);
       }, 500);
-
       this.saveSettingsToStore("Computer");
     },
     data() {

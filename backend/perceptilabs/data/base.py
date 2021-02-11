@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import tensorflow as tf
 from typing import Dict
 from collections import namedtuple
@@ -11,7 +12,25 @@ class DataLoader:
     def __init__(self, data_frame: pd.DataFrame, feature_specs: Dict[str, FeatureSpec]):
         self._feature_specs = feature_specs
         self._df = data_frame
-    
+
+    @classmethod
+    def from_graph_spec(cls, graph_spec):
+        feature_specs = {}
+        paths = []
+        for layer_spec in graph_spec.get_ordered_layers():
+            if layer_spec.is_input_layer or layer_spec.is_output_layer:
+                iotype = 'input' if layer_spec.is_input_layer else 'output'
+                paths.append(layer_spec.file_path)
+                
+                feature_specs[layer_spec.feature_name] = FeatureSpec(
+                    iotype=iotype,
+                    datatype=None
+                )
+        if len(set(paths)) != 1:
+            raise NotImplementedError("Exactly one data file is supported!")
+
+        return cls.from_csv(feature_specs, paths[0])
+        
     @classmethod
     def from_csv(cls, feature_specs: Dict[str, FeatureSpec], path: str) -> 'DataLoader':
         """ Creates a DataLoader given a csv file
@@ -28,8 +47,11 @@ class DataLoader:
         input_columns = [name for name, feature_spec in self._feature_specs.items() if feature_spec.iotype=='input']
         target_columns = [name for name, feature_spec in self._feature_specs.items() if feature_spec.iotype=='output']
 
-        input_dataset = tf.data.Dataset.from_tensor_slices(self._df[input_columns].to_dict(orient='list'))
-        target_dataset = tf.data.Dataset.from_tensor_slices(self._df[target_columns].to_dict(orient='list'))
+        input_dataframe = self._df[input_columns].astype(np.float32)
+        target_dataframe = self._df[target_columns].astype(np.float32)
+        
+        input_dataset = tf.data.Dataset.from_tensor_slices(input_dataframe.to_dict(orient='list'))
+        target_dataset = tf.data.Dataset.from_tensor_slices(target_dataframe.to_dict(orient='list'))
         
         dataset = tf.data.Dataset.zip((input_dataset, target_dataset))
         return dataset
@@ -39,3 +61,9 @@ class DataLoader:
         """ Returns the feature specs """
         return self._feature_specs.copy()
 
+    def get_feature_shape(self, feature_name):
+        """ Returns the shape of a feature. """
+        dataset = self.get_dataset()
+        inputs_batch, targets_batch = next(iter(dataset))
+        shape = inputs_batch[feature_name].shape
+        return shape

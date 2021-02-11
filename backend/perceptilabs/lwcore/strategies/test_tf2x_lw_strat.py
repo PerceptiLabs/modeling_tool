@@ -61,7 +61,6 @@ def test_output_result_has_correct_value(temp_path):
     }
     assert results.sample == expected
 
-    
 @pytest.mark.tf2x
 def test_input_result_has_correct_value(temp_path):
     file_path = os.path.join(temp_path, 'data.csv')

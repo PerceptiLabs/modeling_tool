@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Any, Dict
+from typing import Dict, Any
 
 from perceptilabs.layers.definitions import DEFINITION_TABLE_TF2X as DEFINITION_TABLE
 from perceptilabs.layers.specbase import LayerConnection, sanitize_name
@@ -72,7 +72,7 @@ class GraphSpecBuilder:
         return layer_spec
 
     def build(self) -> GraphSpec:
-        """ Builds the specifiede graph. 
+        """ Builds the specified graph. 
 
         Returns:
             A graph spec

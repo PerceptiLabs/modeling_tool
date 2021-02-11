@@ -187,9 +187,9 @@ def collect_memory_limit_exceeded(max_memory_rate, core_interfaces):
                 ],
                 core_interfaces=[
                     {
-                        'running_mode': ci.running_mode or 'notset',
-                        'training_session_id': ci.training_session_id or 'notset',
-                        'training_state': ci.training_state or 'notset'
+                        'running_mode': getattr(ci, 'running_mode', None) or 'notset',
+                        'training_session_id': getattr(ci, 'training_session_id', None) or 'notset',
+                        'training_state': getattr(ci, 'training_state', None) or 'notset'
                     }
                     for ci in core_interfaces.values()
                 ]                

@@ -13,7 +13,7 @@ class DataSource(MyBaseModel):
     path: str = ''
     ext: str = ''
     split: Tuple[int, int, int] = (70, 20, 10)
-
+    
     @validator('path', allow_reuse=True, check_fields=False)
     def remove_path_backslashes(cls, path):
         return path.replace('\\', '/')

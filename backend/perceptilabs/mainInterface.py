@@ -101,7 +101,7 @@ class NetworkLoader:
 
 
 class Interface():
-    def __init__(self, cores, dataDict, checkpointDict, lwDict, issue_handler, message_factory=None, session_id='default', allow_headless=False, experiment_api=False):
+    def __init__(self, cores, dataDict, checkpointDict, lwDict, issue_handler, message_factory=None, session_id='default', allow_headless=False, trainer='core_v2', experiment_api=False):
         self._allow_headless = allow_headless
         self._network_loader = NetworkLoader()
         self._cores=cores
@@ -112,6 +112,7 @@ class Interface():
         self._session_id = session_id
         self._lw_cache_v2 = LightweightCache(max_size=LW_CACHE_MAX_ITEMS) if USE_LW_CACHING else None
         self._settings_engine = None
+        self._trainer = trainer
 
         if experiment_api:
             self._data_container = Exp_DataContainer()
@@ -175,7 +176,7 @@ class Interface():
         t.start()
 
     def _addCore(self, receiver):
-        core=coreLogic(receiver, self._issue_handler, self._session_id)
+        core=coreLogic(receiver, self._issue_handler, self._session_id, trainer=self._trainer)
         self._cores[receiver] = core
 
     def _setCore(self, receiver):
