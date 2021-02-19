@@ -10,6 +10,11 @@ const chartsMixin = {
       type: Array
     },
   },
+  
+  created() {
+    this.chartModel = this.defaultModel;
+  },
+
   beforeMount() {
     if(this.isNotPicture) {
       this.applyCustomColor();
@@ -86,11 +91,8 @@ const chartsMixin = {
       }
     },
     drawChart(ev) {
-      if(this.isNeedWait) this.chartModelBuffer = ev.data;
-      else {
-        this.$refs.chart.hideLoading();
-        this.chartModel = ev.data;
-      }
+      this.$refs.chart.hideLoading();
+      this.chartModel = ev.data;
     },
     chartResize() {
       this.$refs.chart.resize()

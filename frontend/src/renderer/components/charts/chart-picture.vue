@@ -40,9 +40,7 @@ export default {
       this.wWorker.postMessage({canvasImg, dataImg});
     },
     drawChart(ev) {
-      this.isNeedWait
-        ? this.chartModelBuffer = ev.data
-        : this.showImage(ev.data);
+      this.showImage(ev.data)
 
     },
     showImage(imgData) {

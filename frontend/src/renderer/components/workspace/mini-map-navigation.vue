@@ -204,19 +204,21 @@
         let scale = this.scaleNet / 100;
 
         const parentWorkspace = document.getElementById('networkWorkspace');
-        const { scrollWidth, offsetWidth, scrollLeft, scrollHeight, offsetHeight, scrollTop } = parentWorkspace;
-        const shouldShowBox = scrollWidth <= offsetWidth && scrollHeight <= offsetHeight;
-        this.boxOutlineStyles = {
-          display: shouldShowBox ? 'none': 'block',
-          // width: ((offsetWidth) * w) / scale + 'px',
-         
-          maxWidth: '100%',
-          maxHeight: '100%',
-          width: ((offsetWidth) * w) + 'px',
-          height: ((offsetHeight) * w) + 'px',
-          left: ((scrollLeft) * w) + 'px',
-          top: ((scrollTop) * w) + 'px',
-          zIndex: 15
+        if (parentWorkspace) {
+          const { scrollWidth, offsetWidth, scrollLeft, scrollHeight, offsetHeight, scrollTop } = parentWorkspace;
+          const shouldShowBox = scrollWidth <= offsetWidth && scrollHeight <= offsetHeight;
+          this.boxOutlineStyles = {
+            display: shouldShowBox ? 'none': 'block',
+            // width: ((offsetWidth) * w) / scale + 'px',
+           
+            maxWidth: '100%',
+            maxHeight: '100%',
+            width: ((offsetWidth) * w) + 'px',
+            height: ((offsetHeight) * w) + 'px',
+            left: ((scrollLeft) * w) + 'px',
+            top: ((scrollTop) * w) + 'px',
+            zIndex: 15
+          }
         }
       },
       updateAllStyles() {

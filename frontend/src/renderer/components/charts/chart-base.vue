@@ -39,6 +39,7 @@
         }
       }
     },
+
     methods: {
       createWWorker() {
         this.wWorker = new Worker(`${pathWebWorkers}/calcChartBase.js`);
