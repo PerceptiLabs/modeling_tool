@@ -446,7 +446,8 @@ def combine_files(sources, dest):
     with open(dest, "w") as dest_f:
         for source in sources:
             with open(source, "r") as source_f:
-                lines = source_f.readlines()
+                lines = [line.strip('\n') + '\n' for line in source_f.readlines()]
+                print(lines)
                 dest_f.writelines(lines)
 
 def combine_requirements_files(roots, dest):
