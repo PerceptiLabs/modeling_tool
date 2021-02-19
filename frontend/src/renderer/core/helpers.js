@@ -392,18 +392,43 @@ const objectToQueryParams = (reqData) => {
 }
 
 const removeChartData = (inputNetwork) => {
-  if (!inputNetwork || !inputNetwork['networkElementList']) { return inputNetwork; }
 
-  const network = cloneDeep(inputNetwork);
-
-  for (const key of Object.keys(network['networkElementList'])) {
-    const layerObject = network['networkElementList'][key];
-    if (!layerObject.hasOwnProperty('chartData')) { continue; }
-
-    layerObject['chartData'] = {};
-  }
+  let network = cloneDeep(inputNetwork);
+  
+  network = cleanNetworkElementListChartData(network);
+  network = cleanNetworkSnapshotsChartData(network);
 
   return network;
+
+
+  function cleanNetworkElementListChartData(net) {
+    if (!net || !net['networkElementList']) { return net; }
+
+    for (const key of Object.keys(net['networkElementList'])) {
+      const layerObject = net['networkElementList'][key];
+      if (!layerObject.hasOwnProperty('chartData')) { continue; }
+  
+      layerObject['chartData'] = {};
+    }
+    return net
+  }
+
+  function cleanNetworkSnapshotsChartData(net) {
+    if (!net || !net['networkSnapshots']) { return net; }
+    
+    const networkHaveSnapshots = net.networkSnapshots && net.networkSnapshots.length > 0;
+
+    if(networkHaveSnapshots) {
+      for (const key of Object.keys(net['networkSnapshots'][0])) {
+        const layerObject = net['networkSnapshots'][0][key];
+        if (!layerObject.hasOwnProperty('chartData')) { continue; }
+    
+        layerObject['chartData'] = {};
+      }
+    }
+   
+    return net
+  }
 }
 
 const removeNetworkSnapshots = (inputNetwork) => {
