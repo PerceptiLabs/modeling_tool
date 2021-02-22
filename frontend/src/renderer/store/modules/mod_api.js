@@ -846,7 +846,7 @@ const actions = {
     
     if (['Training', 'Validation', 'Paused'].includes(rootGetters['mod_workspace/GET_networkCoreStatus'])) {
 
-      let payload = await makePayload.call(this, settings);
+      let payload = await makePayload.call(this, settings, true);
       delete payload['Layers'];
 
       theData = {
@@ -858,7 +858,7 @@ const actions = {
       theData = {
         receiver: rootGetters['mod_workspace/GET_currentNetworkId'] + 'e',
         action: 'Export',
-        value: await makePayload.call(this, settings)
+        value: await makePayload.call(this, settings, true)
       };
     };
 
@@ -893,11 +893,11 @@ const actions = {
         dispatch('mod_tracker/EVENT_modelExport', trackerData, {root: true});
       })
 
-    async function makePayload(settings = null) {
+    async function makePayload(settings = null, loadCheckpoints = false) {
       if (!settings || settings.Type === 'TFModel') {
         return ({
           ...settings,
-          Layers: getters.GET_coreNetwork,
+          Layers: getters.GET_coreNetworkWithCheckpointConfig(loadCheckpoints),
           path: rootGetters['mod_workspace/GET_currentNetwork'].apiMeta.location || '',
           frontendNetwork: rootGetters['mod_workspace/GET_currentNetwork'].networkName,
         });
@@ -909,7 +909,7 @@ const actions = {
           const payload = await createNotebookJson(this);
           return ({
             ...settings,
-            Layers: getters.GET_coreNetwork,
+            Layers: getters.GET_coreNetworkWithCheckpointConfig(loadCheckpoints),
             path: rootGetters['mod_workspace/GET_currentNetwork'].apiMeta.location || '',
             frontendNetwork: settings.name,
             NotebookJson: payload,
