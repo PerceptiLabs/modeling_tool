@@ -3,7 +3,7 @@
     //- .info-section_head(v-show="!testIsOpen")
     //-   h3 {{ sectionTitle }}
     view-box-btn-list(
-      v-if="layerMetrics && layerType !== 'Training'"
+      v-if="layerMetrics && layerType !== 'Training' && layerType !== 'IoOutput'"
       v-show="!testIsOpen"
       :layerType="'ViewBox'"
       )

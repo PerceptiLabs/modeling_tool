@@ -2,7 +2,7 @@
   .btn.btn--layersbar.net-element-train(:draggable="draggable"
     data-component="IoOutput"
     data-layer="IO_Output"
-    data-type="Data"
+    data-type="IoOutput"
     v-tooltip-interactive:right="interactiveInfo"
     id="tutorial_io-output"
     :style="layerStyles"

@@ -136,6 +136,24 @@ def test_layer_gradients_contain_exactly_one_float(script_factory_tf2x, data_loa
     trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs)
     next(trainer.run_stepwise()) # Take the first training steps
 
+    value = trainer.get_layer_weights('1')
+    assert isinstance(value, np.ndarray)
+
+
+@pytest.mark.tf2x
+def test_layer_bias_is_array(script_factory_tf2x, data_loader, graph_spec_few_epochs):
+    trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs)
+    next(trainer.run_stepwise()) # Take the first training steps
+
+    value = trainer.get_layer_bias('1')
+    assert isinstance(value, np.ndarray)
+    
+
+@pytest.mark.tf2x
+def test_layer_gradients_contain_exactly_one_float(script_factory_tf2x, data_loader, graph_spec_few_epochs):
+    trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs)
+    next(trainer.run_stepwise()) # Take the first training steps
+
     minimum = trainer.get_layer_gradients('1', 'minimum')
     maximum = trainer.get_layer_gradients('1', 'maximum')
     average = trainer.get_layer_gradients('1', 'average')
@@ -189,7 +207,22 @@ def test_trainer_target_stats_available(script_factory_tf2x, data_loader, graph_
     next(trainer.run_stepwise()) # Take the first training steps
 
     target_stats = trainer.get_target_stats()
-    assert 'y1' in target_stats.targets_batch 
-
+    assert 'y1' in target_stats.sample_batch 
 
     
+@pytest.mark.tf2x
+def test_trainer_prediction_stats_available(script_factory_tf2x, data_loader, graph_spec_few_epochs):
+    trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs)
+    next(trainer.run_stepwise()) # Take the first training steps
+
+    prediction_stats = trainer.get_prediction_stats()
+    assert 'y1' in prediction_stats.sample_batch 
+
+    
+@pytest.mark.tf2x
+def test_trainer_input_stats_available(script_factory_tf2x, data_loader, graph_spec_few_epochs):
+    trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs)
+    next(trainer.run_stepwise()) # Take the first training steps
+
+    input_stats = trainer.get_input_stats()
+    assert 'x1' in input_stats.sample_batch 

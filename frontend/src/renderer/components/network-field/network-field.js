@@ -167,7 +167,7 @@ export default {
         let el = currentNetworkElementList[id];
         if(this.statisticsOrTestIsOpen) {
           el.layerMeta.isSelected = false;
-          if (el.layerType==="Training") {
+          if (el.layerType === 'Training' || el.layerType === 'IoOutput') {
             el.layerMeta.isSelected = true;
           } else {
             if (!selectedOne) {

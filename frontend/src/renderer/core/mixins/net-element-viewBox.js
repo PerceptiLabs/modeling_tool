@@ -23,11 +23,11 @@ const viewBoxMixin = {
   },
   computed: {
     statElementID() {
-      let viewBoxEl = this.$store.getters['mod_workspace/GET_currentSelectedElementsInSnapshot'].find((element)=>element.layerType === 'Training');
+      let viewBoxEl = this.$store.getters['mod_workspace/GET_currentSelectedElementsInSnapshot'].find((element)=>element.layerType === 'Training' || element.layerType === 'IoOutput');
       return viewBoxEl === undefined ? undefined : viewBoxEl.layerId.toString()
     },
     boxElementID() {
-      let viewBoxEl = this.$store.getters['mod_workspace/GET_currentSelectedElementsInSnapshot'].find((element)=>element.layerType !== 'Training');
+      let viewBoxEl = this.$store.getters['mod_workspace/GET_currentSelectedElementsInSnapshot'].find((element)=>element.layerType !== 'Training' && element.layerType !== 'IoOutput');
       return viewBoxEl === undefined ? undefined : viewBoxEl.layerId.toString()
     },
     currentNetworkID() {
@@ -69,6 +69,8 @@ const viewBoxMixin = {
       this.getData();
     },
     chartRequest(layerId, layerType, view) {
+      console.log('chartRequest - meta', layerId, layerType, view);
+
       this.startRequest = new Date();
 
       if(!layerId || !layerType) return;
@@ -88,6 +90,8 @@ const viewBoxMixin = {
           if(data === 'Null' || data === null) {
             return
           }
+
+          console.log('chartRequest - response', data);
 
           // This launch an event to stop fetching statistics infinitely
           if(theData.action === 'getTestingStatistics') {

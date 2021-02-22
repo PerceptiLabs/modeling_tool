@@ -185,7 +185,7 @@ const createLayers = async (coreNetwork, layerPositions) => {
     const creationOptions = {
       layerId: k,
       layerName: v['Name'],
-      layerType: 'Other', // TODO: Data/Other/Training
+      layerType: v['Type'],
       componentName: v['Type'],
       layerSettings: v['Type'].startsWith('Io') ?  IoInputSetting.data().settings : null
     }

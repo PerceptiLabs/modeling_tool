@@ -20,14 +20,14 @@ const state = {
 
 const getters = {
   getSelectedMetric: (state) => (layerType) => {
-    if (layerType === 'Training') {
+    if (layerType === 'Training' || layerType === 'IoOutput') {
       return state.statisticsTabs.selectedMetric;  
     } else {
       return state.viewBoxTabs.selectedMetric;
     }
   },
   getLayerMetrics: (state) => (layerType) => {
-    if (layerType === 'Training') {
+    if (layerType === 'Training' || layerType === 'IoOutput') {
       return state.statisticsTabs.layerMetrics;  
     } else {
       return state.viewBoxTabs.layerMetrics;
@@ -49,7 +49,7 @@ const mutations = {
   },
   CHANGE_selectElArr(state, dataEl) {
     let elArr = state.selectedElArr;
-    if (dataEl.layerType === "Training") {
+    if (dataEl.layerType === 'Training' || dataEl.layerType === 'IoOutput') {
       elArr.statistics.layerMeta.isSelected = false;
       elArr.statistics = dataEl;
       elArr.statistics.layerMeta.isSelected = true;
@@ -63,7 +63,7 @@ const mutations = {
   setDefaultMetric(state, layerType) {
     let tabs = '';
 
-    if (layerType === 'Training') {
+    if (layerType === 'Training' || layerType === 'IoOutput') {
       tabs = state.statisticsTabs;
     } else {
       tabs = state.viewBoxTabs;
@@ -80,7 +80,7 @@ const mutations = {
   setSelectedMetric(state, { layerType, selectedMetric }) {
     let tabs = '';
 
-    if (layerType === 'Training') {
+    if (layerType === 'Training' || layerType === 'IoOutput') {
       tabs = state.statisticsTabs;
     } else {
       tabs = state.viewBoxTabs;
@@ -96,7 +96,7 @@ const mutations = {
     }
   },
   setLayerMetrics(state, { layerType, layerMetrics }) {
-    if (layerType === 'Training') {
+    if (layerType === 'Training' || layerType === 'IoOutput') {
       Vue.set(state.statisticsTabs, 'layerMetrics', layerMetrics || {});
     } else {
       Vue.set(state.viewBoxTabs, 'layerMetrics', layerMetrics || {});
@@ -117,10 +117,10 @@ const actions = {
       if(elArr.statistics !== null && elArr.viewBox !== null || elArr.layerType === "Container") {
         continue
       }
-      if(elArr.statistics === null && item.layerType === "Training") {
+      if(elArr.statistics === null && (item.layerType === "Training" || item.layerType === 'IoOutput')) {
         elArr.statistics = item;
       }
-      if(elArr.viewBox === null && item.layerType !== "Training") {
+      if(elArr.viewBox === null && item.layerType !== "Training" && item.layerType !== 'IoOutput') {
         elArr.viewBox = item;
       }
     }

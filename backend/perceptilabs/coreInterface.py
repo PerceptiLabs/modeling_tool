@@ -662,7 +662,7 @@ class coreLogic():
         elif layerType in 'IoInput':
             return self._get_stats_ioinput(layerId) 
         elif layerType in 'IoOutput':
-            return self._get_stats_iooutput(layerId) 
+            return self._get_stats_iooutput(layerId, view) 
         elif layerType=="LayerCustom":
             D=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})  
             dataObj = createDataObject([D[-1]])      
@@ -1525,7 +1525,40 @@ class coreLogic():
         data_object = createDataObject([output_value])      
         return {"Data": data_object}
 
-    def _get_stats_iooutput(self, layer_id):
-        target_value = self.savedResultsDict['target_stats'].get_value_by_layer_id(layer_id)
+    def _get_stats_iooutput(self, layer_id, view):
+        if view == "":
+            return self._get_stats_iooutput_viewbox(layer_id)            
+        elif view == "Prediction":
+            return self._get_stats_iooutput_prediction(layer_id)
+
+    def _get_stats_iooutput_viewbox(self, layer_id):
+        target_value = self.savedResultsDict['target_stats'].get_sample_by_layer_id(layer_id)
         data_object = createDataObject([target_value])      
         return {"Data": data_object}
+
+    def _get_stats_iooutput_prediction(self, layer_id):
+        input_stats = self.savedResultsDict['input_stats']
+        pred_stats = self.savedResultsDict['prediction_stats']
+        target_stats = self.savedResultsDict['target_stats']
+        
+        input_value = input_stats.get_arbitrary_sample()  # TODO: create story to display the input separately
+        pred_value = pred_stats.get_sample_by_layer_id(layer_id)
+        target_value = target_stats.get_sample_by_layer_id(layer_id)
+        
+        pred_batch_average = pred_stats.get_batch_average(layer_id)
+        target_batch_average = target_stats.get_batch_average(layer_id)
+
+        chart_type = self.getPlot(pred_value)
+        if chart_type == "bar" or chart_type == "line" or chart_type == 'scatter':
+            input_obj = createDataObject([input_value])
+            pred_vs_target_obj = createDataObject([pred_value, target_value], name_list=['Prediction', 'Ground Truth'])
+            avg_pred_vs_target_obj = createDataObject([pred_batch_average, target_batch_average], name_list=['Prediction', 'Ground Truth'])
+
+            accuracy_list = [[('Accuracy', 0.0), ('Empty', 100.0)]]
+            accuracy_obj = createDataObject(accuracy_list, type_list=['pie'])  # TODO: add accuracy pie chart. Move elsewhere in the frontend? (story 1540)
+
+            
+            return {"Input": input_obj, "PvG": pred_vs_target_obj, "AveragePvG": avg_pred_vs_target_obj, "Accuracy": accuracy_obj} 
+        else:
+            return {}
+

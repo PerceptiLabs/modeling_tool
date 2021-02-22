@@ -6,7 +6,7 @@ import tensorflow as tf
 import numpy as np
 
 from perceptilabs.trainer.model import TrainingModel
-from perceptilabs.trainer.stats import TargetStatsTracker, TargetStats, GradientStatsTracker, GradientStats
+from perceptilabs.trainer.stats import SampleStatsTracker, SampleStats, GradientStatsTracker, GradientStats
 from perceptilabs.logconf import APPLICATION_LOGGER
 
 
@@ -94,14 +94,14 @@ class Trainer:
         metric_auc.reset_states()
 
         for step, (inputs_batch, targets_batch) in enumerate(dataset):
-            trainables_by_layer, gradients_by_layer, final_and_intermediate_outputs_by_layer = self._work_on_batch(
+            predictions_batch, trainables_by_layer, gradients_by_layer, final_and_intermediate_outputs_by_layer = self._work_on_batch(
                 model, losses, inputs_batch, targets_batch, metric_loss, training, optimizer
             )
             
             if self._headless:
                 self._reset_tracked_values()
             else:
-                self._update_tracked_values(trainables_by_layer, gradients_by_layer, final_and_intermediate_outputs_by_layer, targets_batch)
+                self._update_tracked_values(trainables_by_layer, gradients_by_layer, final_and_intermediate_outputs_by_layer, inputs_batch, predictions_batch, targets_batch)
             
             self._num_batches_completed_all_epochs += 1
             set_num_batches_completed_this_epoch(step + 1)            
@@ -124,7 +124,7 @@ class Trainer:
         if training:
             optimizer.apply_gradients(grads_and_vars)
 
-        return trainables_by_layer, gradients_by_layer, final_and_intermediate_outputs
+        return predictions_batch, trainables_by_layer, gradients_by_layer, final_and_intermediate_outputs
 
     def _compute_gradients(self, tape, total_loss, trainables_by_layer, flat_trainables):
         """ Compute the gradients. Return two variations, one structured by layer and one flat """
@@ -146,24 +146,28 @@ class Trainer:
     def _reset_tracked_values(self):
         self._layer_outputs = {}
         self._layer_trainables = {}
-        self._target_stats_tracker = TargetStatsTracker()
+        self._input_stats_tracker = SampleStatsTracker()
+        self._prediction_stats_tracker = SampleStatsTracker()                        
+        self._target_stats_tracker = SampleStatsTracker()
         self._gradient_stats_tracker = GradientStatsTracker()
 
-    def _update_tracked_values(self, trainables_by_layer, gradients_by_layer, final_and_intermediate_outputs_by_layer, targets_batch):
+    def _update_tracked_values(self, trainables_by_layer, gradients_by_layer, final_and_intermediate_outputs_by_layer, inputs_batch, predictions_batch, targets_batch):
         """ Take a snapshot of the current tensors (e.g., layer weights) """
         self._layer_outputs = final_and_intermediate_outputs_by_layer
         self._layer_trainables = trainables_by_layer
+        
+        self._input_stats_tracker.update(graph_spec=self._graph_spec, sample_batch=inputs_batch)
+        self._prediction_stats_tracker.update(graph_spec=self._graph_spec, sample_batch=predictions_batch)                
+        self._target_stats_tracker.update(graph_spec=self._graph_spec, sample_batch=targets_batch)
         self._gradient_stats_tracker.update(gradients_by_layer=gradients_by_layer)
-        self._target_stats_tracker.update(graph_spec=self._graph_spec, targets_batch=targets_batch)
 
     def _collect_trainables_by_layer(self, model):
         """ Collect the trainable tensors from the model and structure them by layer """
         trainables_by_layer, weights_by_layer, biases_by_layer = {}, {}, {}
         for layer_id, layer in model.layers_by_id.items():
             weights, bias = getattr(layer, 'visualized_trainables', (None, None)) # TODO: check isinstance(..., PerceptiLabsVisualizer) once story 1534 has been completed
-            
             trainables_by_layer[layer_id] = {'weights': weights, 'bias': bias}
-            
+                
         return trainables_by_layer
 
     def _set_num_training_batches_completed_this_epoch(self, value):
@@ -325,6 +329,18 @@ class Trainer:
         except KeyError as e:
             return None
 
+    def get_target_stats(self) -> SampleStats:
+        """ Returns a stats object for the current target values """
+        return self._target_stats_tracker.save()
+        
+    def get_prediction_stats(self) -> SampleStats:
+        """ Returns a stats object for the current prediction values """
+        return self._prediction_stats_tracker.save()
+        
+    def get_input_stats(self) -> SampleStats:
+        """ Returns a stats object for the current input values """
+        return self._input_stats_tracker.save()
+
     def get_layer_gradients(self, layer_id, aggregation):
         """ Get the gradients of a layer
         
@@ -375,12 +391,14 @@ class Trainer:
             'progress': self.progress, 
             'status': 'Paused' if self.is_paused else 'Running',
             'training_duration': 5.0, # TODO: fix training duration (story 1569)
+            'input_stats': self.get_input_stats(),
+            'prediction_stats': self.get_prediction_stats(),
             'target_stats': self.get_target_stats()
         }
         t1 = time.perf_counter()
         logger.debug(f"get_results finished. Duration: {t1 - t0}")        
         return dict_
 
-    def get_target_stats(self) -> TargetStats:
+    def get_target_stats(self) -> SampleStats:
         """ Returns a tracker for the current target values """
         return self._target_stats_tracker.save()
