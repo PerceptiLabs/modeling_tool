@@ -1,8 +1,16 @@
-import tensorflow as tf
 import collections
+import time
+import logging
+
+import tensorflow as tf
 import numpy as np
 
 from perceptilabs.trainer.model import TrainingModel
+from perceptilabs.trainer.stats import TargetStatsTracker, TargetStats, GradientStatsTracker, GradientStats
+from perceptilabs.logconf import APPLICATION_LOGGER
+
+
+logger = logging.getLogger(APPLICATION_LOGGER)
 
 
 class Trainer:
@@ -14,12 +22,13 @@ class Trainer:
         self._headless = False
 
         self._num_epochs_completed = 0        
-        self._num_epochs = 10 # TODO: read from spec (story 1535)
+        self._num_epochs = 100 # TODO: read from spec (story 1535)
         self._batch_size = 2 # TODO: read from spec (story 1535)
 
-        self._reset_tracked_tensors()
-        self._initialize_batch_counters(data_loader)        
+        self._reset_tracked_values()
+        self._initialize_batch_counters(data_loader)
         self._set_status('Waiting')
+        
         
     def run(self, _=None, on_iterate=None, model_id=None):
         """ Run all training steps """
@@ -28,9 +37,14 @@ class Trainer:
             pass
     
     def run_stepwise(self):
-        """ Take a training/validation step and yield """        
+        """ Take a training/validation step and yield """
+        logger.info("Initializing training")        
+
         self._training_model = TrainingModel(self._script_factory, self._graph_spec)
+        logger.info("Training model initialized")
+        
         dataset_train = self._data_loader.get_dataset().batch(self.batch_size)
+        logger.info("Dataset loaded")
         
         self._metric_training_loss = tf.keras.metrics.Mean()
         self._metric_training_accuracy = tf.keras.metrics.CategoricalAccuracy()
@@ -41,7 +55,7 @@ class Trainer:
         self._metric_validation_auc = tf.keras.metrics.AUC(curve='ROC')
 
         # TODO: Implement different optimizers (story 1535)
-        optimizer = tf.keras.optimizers.SGD(learning_rate=0.1) #  TODO: fix learning rate (story 1535)
+        optimizer = tf.keras.optimizers.SGD(learning_rate=0.01) #  TODO: fix learning rate (story 1535)
 
         losses = {
             layer_spec.feature_name: tf.keras.losses.MeanSquaredError() # TODO: get from training settings/output layers (story 1536)
@@ -49,6 +63,7 @@ class Trainer:
             if layer_spec.is_output_layer
         }
 
+        logger.info("Entering training loop")        
         self._num_epochs_completed = 0
         while self._num_epochs_completed < self.num_epochs:
             self._set_status('Training')
@@ -79,13 +94,14 @@ class Trainer:
         metric_auc.reset_states()
 
         for step, (inputs_batch, targets_batch) in enumerate(dataset):
-            weights_by_layer, biases_by_layer, gradients_by_layer, final_and_intermediate_outputs_by_layer = self._work_on_batch(
+            trainables_by_layer, gradients_by_layer, final_and_intermediate_outputs_by_layer = self._work_on_batch(
                 model, losses, inputs_batch, targets_batch, metric_loss, training, optimizer
             )
+            
             if self._headless:
-                self._reset_tracked_tensors()
+                self._reset_tracked_values()
             else:
-                self._update_tracked_tensors(weights_by_layer, biases_by_layer, gradients_by_layer, final_and_intermediate_outputs_by_layer)
+                self._update_tracked_values(trainables_by_layer, gradients_by_layer, final_and_intermediate_outputs_by_layer, targets_batch)
             
             self._num_batches_completed_all_epochs += 1
             set_num_batches_completed_this_epoch(step + 1)            
@@ -102,13 +118,13 @@ class Trainer:
         # TODO: implement accuracy metric (story 1540)
         # TODO: implement auc metric (story 1541)
 
-        trainables_by_layer, weights_by_layer, biases_by_layer = self._collect_trainables_by_layer(model)
+        trainables_by_layer = self._collect_trainables_by_layer(model)
         gradients_by_layer, grads_and_vars = self._compute_gradients(tape, total_loss, trainables_by_layer, model.trainable_variables)
         
         if training:
             optimizer.apply_gradients(grads_and_vars)
 
-        return weights_by_layer, biases_by_layer, gradients_by_layer, final_and_intermediate_outputs
+        return trainables_by_layer, gradients_by_layer, final_and_intermediate_outputs
 
     def _compute_gradients(self, tape, total_loss, trainables_by_layer, flat_trainables):
         """ Compute the gradients. Return two variations, one structured by layer and one flat """
@@ -127,29 +143,28 @@ class Trainer:
             )
         return total_loss
 
-    def _reset_tracked_tensors(self):
-        self._update_tracked_tensors({}, {}, {}, {})
+    def _reset_tracked_values(self):
+        self._layer_outputs = {}
+        self._layer_trainables = {}
+        self._target_stats_tracker = TargetStatsTracker()
+        self._gradient_stats_tracker = GradientStatsTracker()
 
-    def _update_tracked_tensors(self, weights_by_layer, biases_by_layer, gradients_by_layer, final_and_intermediate_outputs_by_layer):
+    def _update_tracked_values(self, trainables_by_layer, gradients_by_layer, final_and_intermediate_outputs_by_layer, targets_batch):
         """ Take a snapshot of the current tensors (e.g., layer weights) """
-        self._layer_gradients = gradients_by_layer
         self._layer_outputs = final_and_intermediate_outputs_by_layer
-        self._layer_weights = weights_by_layer
-        self._layer_biases = biases_by_layer
+        self._layer_trainables = trainables_by_layer
+        self._gradient_stats_tracker.update(gradients_by_layer=gradients_by_layer)
+        self._target_stats_tracker.update(graph_spec=self._graph_spec, targets_batch=targets_batch)
 
     def _collect_trainables_by_layer(self, model):
         """ Collect the trainable tensors from the model and structure them by layer """
         trainables_by_layer, weights_by_layer, biases_by_layer = {}, {}, {}
         for layer_id, layer in model.layers_by_id.items():
-            weights, biases = getattr(layer, 'visualized_trainables', ({}, {})) # TODO: check isinstance(..., PerceptiLabsVisualizer) once story 1534 has been completed
-            weights_by_layer[layer_id] = weights
-            biases_by_layer[layer_id] = biases
-
-            trainables_by_layer[layer_id] = {}
-            trainables_by_layer[layer_id].update(weights_by_layer[layer_id])
-            trainables_by_layer[layer_id].update(biases_by_layer[layer_id])
+            weights, bias = getattr(layer, 'visualized_trainables', (None, None)) # TODO: check isinstance(..., PerceptiLabsVisualizer) once story 1534 has been completed
             
-        return trainables_by_layer, weights_by_layer, biases_by_layer
+            trainables_by_layer[layer_id] = {'weights': weights, 'bias': bias}
+            
+        return trainables_by_layer
 
     def _set_num_training_batches_completed_this_epoch(self, value):
         """ The number of iterations completed in the _current_ epoch """
@@ -169,42 +184,6 @@ class Trainer:
         """ The current training status """
         return self._status
         
-    @property
-    def layer_weights(self):
-        """The weight values of each layer in the input Graph during the training.
-
-        Returns:
-            A dictionary of nested dictionaries, where each key is a layer id. The nested dictionaries contain weight name and value pairs. 
-        """        
-        return self._evaluate_nested_tensors(self._layer_weights)
-
-    @property
-    def layer_biases(self):
-        """The bias values of each layer in the input Graph during the training.
-
-        Returns:
-            A dictionary of nested dictionaries, where each key is a layer id. The nested dictionaries contain weight name and value pairs. 
-        """
-        return self._evaluate_nested_tensors(self._layer_biases)        
-    
-    @property
-    def layer_gradients(self):
-        """The gradients with respect to the loss of all trainable variables of each layer in the input Graph.
-
-        Returns:
-            A dictionary of nested dictionaries, where each key is a layer id. The nested dictionaries contain gradient name and value pairs.
-        """        
-        return self._evaluate_nested_tensors(self._layer_gradients)
-    
-    @property
-    def layer_outputs(self):
-        """The output values of each layer in the input Graph during the training (e.g., tf.Tensors evaluated for each iteration)
-
-        Returns:
-            A dictionary of nested dictionaries, where each key is a layer id. The nested dictionaries contain variable name and value pairs.
-        """
-        return self._evaluate_nested_tensors(self._layer_outputs)
-
     @property
     def batch_size(self):
         return self._batch_size
@@ -315,38 +294,75 @@ class Trainer:
         inference_model = tf.keras.Model(inputs=inputs, outputs=outputs)
         return inference_model        
 
-    def _evaluate_nested_tensors(self, outer_dict):
-        """ Evaluate tensors in a nested dictionary """
-        new_outer = {}
-        for layer_id, inner_dict in outer_dict.items():
-            new_outer[layer_id] = {}
+    def get_layer_output(self, layer_id, output_variable='output'):
+        """ Gets the output batch of a layer 
+        
+        Arguments:
+            layer_id: the layer id
+            output_variable: which variable to fetch from the output dict
+        Returns:
+            A numpy array (or None if the layer/variable doesnt exist)            
+        """
+        try:
+            output_batch = self._layer_outputs[layer_id][output_variable].numpy()
+            return output_batch
+        except KeyError as e:
+            return None
 
-            for tensor_name, tensor in inner_dict.items():
-                new_outer[layer_id][tensor_name] = tensor.numpy()
-                    
-        return new_outer
-    
+    def get_layer_weights(self, layer_id):
+        """ Get the weights associated with a layer """
+        try:
+            value = self._layer_trainables[layer_id]['weights'].numpy()
+            return value
+        except KeyError as e:
+            return None
+
+    def get_layer_bias(self, layer_id):
+        """ Get the bias associated with a layer """        
+        try:
+            value = self._layer_trainables[layer_id]['bias'].numpy()
+            return value
+        except KeyError as e:
+            return None
+
+    def get_layer_gradients(self, layer_id, aggregation):
+        """ Get the gradients of a layer
+        
+        Arguments:
+            layer_id: the layer id
+            aggregation: one of minimum, maximum and average
+        """
+        stats = self._gradient_stats_tracker.save()
+        if aggregation == 'minimum':
+            return stats.get_minimum_by_layer_id(layer_id)
+        elif aggregation == 'average':
+            return stats.get_average_by_layer_id(layer_id)            
+        elif aggregation == 'maximum':
+            return stats.get_maximum_by_layer_id(layer_id)                        
+        
     def _get_train_dict(self):
         dict_ = {}
         for layer_spec in self._graph_spec.layers:
             # TODO: implement accuracy (story 1540)
             # TODO: implement auc metric (story 1541)
-            # TODO: implement loss (
+            # TODO: implement loss (story 1571)
+            
             dict_[layer_spec.id_] = {
-                'X': {'input1': {'Y': 123}}, # TODO: fix (story 1562)
-                'Y': 123, # TODO: fix Y (story 1562)
-                'W': 1234, # TODO: fix W (story 1562)
-                'Biases': 400, # TODO: fix biases (story 1562)
-                'Gradient': { # TODO: fix gradients (story 1562)
-                    'Min': [0.3, 0.4, 0.5], 
-                    'Max': [0.8, 0.9, 0.10],
-                    'Average': [0.5, 0.6, 0.8]
+                'X': {'input1': {'Y': 123}}, # TODO: fix [this is only used in training layer] (story 1566)
+                'Y': self.get_layer_output(layer_spec.id_),
+                'W': self.get_layer_weights(layer_spec.id_),
+                'b': self.get_layer_bias(layer_spec.id_),
+                'Gradient': { 
+                    'Min': self.get_layer_gradients(layer_spec.id_, 'minimum'), 
+                    'Max': self.get_layer_gradients(layer_spec.id_, 'maximum'),
+                    'Average': self.get_layer_gradients(layer_spec.id_, 'average')
                 }
             }
         return dict_
 
     def get_results(self):
         """ Return a dict for the coreInterface to derive plots from """
+        t0 = time.perf_counter()        
         dict_ = {
             'iter': self.num_batches_completed_this_epoch,
             'maxIter': self.num_batches_per_epoch,
@@ -358,11 +374,13 @@ class Trainer:
             'trainingStatus': self.status,
             'progress': self.progress, 
             'status': 'Paused' if self.is_paused else 'Running',
-            'training_duration': 5.0 # TODO: fix training duration (story 1569)             
+            'training_duration': 5.0, # TODO: fix training duration (story 1569)
+            'target_stats': self.get_target_stats()
         }
+        t1 = time.perf_counter()
+        logger.debug(f"get_results finished. Duration: {t1 - t0}")        
         return dict_
 
-
-        
-        
-        
+    def get_target_stats(self) -> TargetStats:
+        """ Returns a tracker for the current target values """
+        return self._target_stats_tracker.save()

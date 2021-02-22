@@ -1,5 +1,6 @@
 import os
 import pytest
+import pickle
 from unittest.mock import MagicMock
 
 import numpy as np
@@ -102,36 +103,77 @@ def test_num_completed_batches_are_ok(script_factory_tf2x, data_loader, graph_sp
 
 
 @pytest.mark.tf2x
-def test_trainer_tracked_tensor_structs_ok(script_factory_tf2x, data_loader, graph_spec_few_epochs):
+def test_layer_output_ok(script_factory_tf2x, data_loader, graph_spec_few_epochs):
     trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs)
-    
     next(trainer.run_stepwise()) # Take the first training steps
 
-    def has_valid_struct(dict_):
-        if not isinstance(dict_, dict):
-            return False
-
-        for layer_id, sub_dict in dict_.items():
-            if not isinstance(layer_id, str):
-                return False
-            if not isinstance(sub_dict, dict):
-                return False
-
-            for output_name, output_value in sub_dict.items():
-                if not isinstance(output_name, str):
-                    return False
-                
-                if not isinstance(output_value, np.ndarray):
-                    return False
-        return True
-
-    assert has_valid_struct(trainer.layer_outputs)
-    assert has_valid_struct(trainer.layer_gradients)
-    assert has_valid_struct(trainer.layer_weights)
-    assert has_valid_struct(trainer.layer_biases)            
+    expected = data_loader.to_pandas()['x1'][0:2].to_numpy()
+    actual = trainer.get_layer_output('0')
+    
+    assert np.all(actual == expected)
     
 
 @pytest.mark.tf2x
+def test_layer_weights_is_array(script_factory_tf2x, data_loader, graph_spec_few_epochs):
+    trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs)
+    next(trainer.run_stepwise()) # Take the first training steps
+
+    value = trainer.get_layer_weights('1')
+    assert isinstance(value, np.ndarray)
+
+
+@pytest.mark.tf2x
+def test_layer_bias_is_array(script_factory_tf2x, data_loader, graph_spec_few_epochs):
+    trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs)
+    next(trainer.run_stepwise()) # Take the first training steps
+
+    value = trainer.get_layer_bias('1')
+    assert isinstance(value, np.ndarray)
+    
+
+@pytest.mark.tf2x
+def test_layer_gradients_contain_exactly_one_float(script_factory_tf2x, data_loader, graph_spec_few_epochs):
+    trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs)
+    next(trainer.run_stepwise()) # Take the first training steps
+
+    minimum = trainer.get_layer_gradients('1', 'minimum')
+    maximum = trainer.get_layer_gradients('1', 'maximum')
+    average = trainer.get_layer_gradients('1', 'average')
+    
+    assert isinstance(minimum, list) and len(minimum) == 1 and isinstance(minimum[0], np.float32)
+    assert isinstance(maximum, list) and len(maximum) == 1 and isinstance(maximum[0], np.float32)
+    assert isinstance(average, list) and len(average) == 1 and isinstance(average[0], np.float32)
+    assert minimum[0] <= maximum[0]
+
+@pytest.mark.tf2x
+def test_computed_results_do_not_change(script_factory_tf2x, data_loader, graph_spec_few_epochs):
+    """ Once results have been computed, the Trainer shouldn't modify the structure.
+
+    A simple way to test for that is to pickle the structure twice. 
+    Once at the beginning of training and once after.
+
+    Note: the results themselves should change
+    """
+    trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs)
+
+    step = trainer.run_stepwise()
+    next(step)  # Take the first training steps
+
+    initial_results = trainer.get_results()
+    pickled_initial_results = pickle.dumps(initial_results)
+        
+    for _ in step:  # Complete training
+        pass
+
+    final_results = trainer.get_results()    
+    pickled_final_results = pickle.dumps(final_results)
+    repickled_initial_results = pickle.dumps(initial_results)
+    
+    assert pickled_initial_results != pickled_final_results  # The results should be different
+    assert repickled_initial_results == pickled_initial_results  # But the initial results shouldn't change.
+
+    
+@pytest.mark.tf2x    
 def test_trainer_inference_model_ok(script_factory_tf2x, data_loader, graph_spec_few_epochs):
     trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs)
     trainer.run()
@@ -141,5 +183,13 @@ def test_trainer_inference_model_ok(script_factory_tf2x, data_loader, graph_spec
     assert y['y1'].numpy().shape == (3, 1)
     
 
-    
+@pytest.mark.tf2x
+def test_trainer_target_stats_available(script_factory_tf2x, data_loader, graph_spec_few_epochs):
+    trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs)
+    next(trainer.run_stepwise()) # Take the first training steps
 
+    target_stats = trainer.get_target_stats()
+    assert 'y1' in target_stats.targets_batch 
+
+
+    

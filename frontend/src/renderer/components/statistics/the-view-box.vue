@@ -54,6 +54,9 @@
   import MathSplit    from '@/components/network-elements/elements/math-split/viewBox-math-split.vue'
   import LayerCustom          from '@/components/network-elements/elements/layer-custom/viewBox-layer-custom.vue'
 
+  import IoInput          from '@/components/network-elements/elements/io-input/viewbox-io-input.vue'
+  import IoOutput         from '@/components/network-elements/elements/io-output/viewbox-io-output.vue'
+
   import ViewBoxBtnList from '@/components/statistics/view-box-btn-list.vue'
 
   import { mapGetters, mapMutations, mapActions } from 'vuex';
@@ -70,6 +73,7 @@ export default {
     // TrainLoss, TrainOptimizer, 
     MathArgmax, MathMerge, MathSoftmax, MathSwitch,
     // MathSplit,
+    IoInput, IoOutput,
     LayerCustom,
     // ClassicMLDbscans, ClassicMLKMeans, ClassicMLKNN, ClassicMLRandomForest, ClassicMLSVM,
   ViewBoxBtnList

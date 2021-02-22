@@ -55,7 +55,6 @@ class GraphSpecBuilder:
     def _build_layer(self, layer_id):
         """ Build a layer """
         settings = self._layers[layer_id]
-
         settings['forward_connections'] = tuple([
             connection
             for connection in self._connections[layer_id]

@@ -645,7 +645,7 @@ class coreLogic():
 
     
     def getLayerStatistics(self, layerId, layerType, view):
-        logger.info("getLayerStatistics for layer '{}' with type '{}' and view: '{}'".format(layerId, layerType, view))
+        logger.debug("getLayerStatistics for layer '{}' with type '{}' and view: '{}'".format(layerId, layerType, view))
         
         if layerType=="DataEnvironment":
             state = self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})[-1,:,:,:3]
@@ -659,10 +659,10 @@ class coreLogic():
             D=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})           
             dataObj = createDataObject([D[-1]])      
             return {"Data":dataObj}
-        # elif layerType=="MathSwitch":
-        #     D=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})           
-        #     dataObj = createDataObject([D[-1]])      
-        #     return {"Data":dataObj}
+        elif layerType in 'IoInput':
+            return self._get_stats_ioinput(layerId) 
+        elif layerType in 'IoOutput':
+            return self._get_stats_iooutput(layerId) 
         elif layerType=="LayerCustom":
             D=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})  
             dataObj = createDataObject([D[-1]])      
@@ -1450,12 +1450,15 @@ class coreLogic():
     #             yield (key, value)
 
     def getStatistics(self,statSpec):
-        if self.resultDict is not None:
-            logger.debug(f"ResultDict has entries for layers {list(self.resultDict.keys())}")
-
         layerId=statSpec["layerId"]
         variable=statSpec["variable"]
         innervariable=statSpec["innervariable"]
+        return self._get_layer_statistics_internal(layerId, variable, innervariable)        
+
+    def _get_layer_statistics_internal(self, layerId, variable="", innervariable=""):
+        if self.resultDict is not None:
+            logger.debug(f"ResultDict has entries for layers {list(self.resultDict.keys())}")
+
         logger.debug("getStatistics for layer {}, variable {}, innervariable {}".format(
             layerId,
             variable,
@@ -1512,3 +1515,17 @@ class coreLogic():
         processed_output = createDataObject([output])  
         
         return processed_output
+
+    def _get_stats_ioinput(self, layer_id):
+        output_batch = self._get_layer_statistics_internal(layer_id, variable="Y")
+        try:
+            output_value = output_batch[-1]
+        except:
+            output_value = 0.0  # Default value
+        data_object = createDataObject([output_value])      
+        return {"Data": data_object}
+
+    def _get_stats_iooutput(self, layer_id):
+        target_value = self.savedResultsDict['target_stats'].get_value_by_layer_id(layer_id)
+        data_object = createDataObject([target_value])      
+        return {"Data": data_object}

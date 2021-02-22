@@ -20,7 +20,7 @@ logger = logging.getLogger(APPLICATION_LOGGER)
 
 
 PROCESS_COMMANDS_DELAY = 0.3
-PROCESS_RESULTS_DELAY = 0.1
+PROCESS_RESULTS_DELAY = 1.0
 
 
 class CompatibilityCore:

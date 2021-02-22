@@ -67,3 +67,6 @@ class DataLoader:
         inputs_batch, targets_batch = next(iter(dataset))
         shape = inputs_batch[feature_name].shape
         return shape
+
+    def to_pandas(self):
+        return self._df

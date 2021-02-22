@@ -215,7 +215,7 @@ class DataFormatter(logging.Formatter):
 
 def setup_data_logger(is_dev=True):
     logger = logging.getLogger(DATA_LOGGER)
-    logger.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG)
 
     formatter = DataFormatter()
 
@@ -228,7 +228,7 @@ def setup_data_logger(is_dev=True):
         dev_formatter = DataFormatter(max_length=DATA_LOGGER_MAX_LENGTH_DEV)
         stream_handler = logging.StreamHandler()
         stream_handler.setFormatter(dev_formatter)
-        logger.addHandler(stream_handler)
+        # logger.addHandler(stream_handler)
     else:
         from perceptilabs.azure import AzureHandler
         azure_handler = AzureHandler.get_default()

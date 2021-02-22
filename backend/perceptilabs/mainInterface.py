@@ -222,7 +222,7 @@ class Interface():
         action = request.get('action')
         value = request.get('value')
         if action != 'checkCore':
-            logger.info(f"Frontend receiver: {receiver} , Frontend request: {action}")
+            logger.debug(f"Frontend receiver: {receiver} , Frontend request: {action}")
         
         if logger.isEnabledFor(logging.DEBUG):
             logger.debug("creating response for action: {}. \nFull request:\n{}".format(

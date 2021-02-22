@@ -9,7 +9,7 @@ class PerceptiLabsVisualizer(ABC):
     @property
     @abstractmethod
     def visualized_trainables(self):
-        """ Returns two dictionaries (weights, biases) with key/value pairs to be visualized in the frontend """
+        """ Returns two tf.Variables (weights, biases) to be visualized in the frontend """
         
 
 {% macro layer_tf2x_fully_connected(layer_spec, graph_spec) %}
@@ -86,7 +86,7 @@ class {{layer_spec.sanitized_name}}Keras(tf.keras.layers.Layer, PerceptiLabsVisu
 
     @property
     def visualized_trainables(self):
-        return {'W': self.kernel}, {'b': self.bias}
+        return self.kernel, self.bias
 
 
 class {{layer_spec.sanitized_name}}(Tf2xLayer):
