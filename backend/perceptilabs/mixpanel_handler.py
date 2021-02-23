@@ -141,7 +141,7 @@ class MixPanelHandler(logging.Handler):
         try:
             event_original = json.loads(message)
         except:
-            logger.exception("Failed loading json from message: " + message)
+            logger.debug("Failed loading json from message: " + message)
         else:
             self._transform_and_track(event_original)
 
@@ -149,7 +149,7 @@ class MixPanelHandler(logging.Handler):
         try:
             user_id = event_original['user_email']
         except:
-            logger.exception("Failed getting user from event ")
+            logger.debug("Failed getting user from event ")
             return
 
         current_time = datetime.datetime.utcnow()
@@ -160,7 +160,7 @@ class MixPanelHandler(logging.Handler):
                 {'$email': event_original['user_email'], '$last_login': current_time}
             )
         except:
-            logger.exception("Failed setting mixpanel user")
+            logger.debug("Failed setting mixpanel user")
             return
         
         for event_id, event_handler in event_handlers.items():
@@ -171,7 +171,7 @@ class MixPanelHandler(logging.Handler):
                     event_transformed = event_handler(event_original, event_original[event_id])
                     logger.debug("Transformed event: " + event_id)
                 except:
-                    logger.exception("Failed transforming event " + event_id)
+                    logger.debug("Failed transforming event " + event_id)
                 else:
                     # Disabling the tracking for now.
                     mp.track(user_id, event_id, event_transformed) 
