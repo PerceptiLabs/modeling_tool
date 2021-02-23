@@ -83,7 +83,8 @@
 
   import LayerCustom          from '@/components/network-elements/elements/layer-custom/view-layer-custom.vue'
 
-  import PreTrainedVGG16      from '@/components/network-elements/elements/pretrained-vgg16/view-pretrained-vgg16.vue'
+  import PreTrainedVGG16        from '@/components/network-elements/elements/pretrained-vgg16/view-pretrained-vgg16.vue'
+  import PreTrainedInceptionV3  from '@/components/network-elements/elements/pretrained-inceptionv3/view-pretrained-inceptionv3.vue'
 
   import { calcLayerPosition } from '@/core/helpers.js';
 
@@ -95,8 +96,9 @@ export default {
     ProcessEmbed, ProcessGrayscale, ProcessOneHot, ProcessReshape, ProcessRescale,
     TrainNormal, TrainRegression, TrainGenetic, TrainDynamic, TrainReinforce, TrainDetector, TrainGan,
     MathArgmax, MathMerge, MathSoftmax, MathSwitch,
-    IoInput, IoOutput,
-    PreTrainedVGG16,
+    LayerCustom,
+    PreTrainedVGG16, PreTrainedInceptionV3,
+    IoOutput,
     LayerCustom
   },
   data() {
@@ -430,12 +432,15 @@ export default {
         document.removeEventListener('click', this.handleClickWithoutElementSelected);
       }
     },
-    addPreTrainedVGG16ToDeepLearningDropDown() {
+    addPreTrainedLayersToDeepLearningDropDown() {
       try {
         const dlObject = this.layersbarList.find(l => l.tooltip === 'Deep Learning');
 
-        if (!dlObject.networkElements.includes(PreTrainedVGG16)) {
-          dlObject.networkElements.push(PreTrainedVGG16);
+        if (!dlObject.networkElements.includes('PreTrainedVGG16')) {
+          dlObject.networkElements.push('PreTrainedVGG16');
+        }
+        if (!dlObject.networkElements.includes('PreTrainedInceptionV3')) {
+          dlObject.networkElements.push('PreTrainedInceptionV3');
         }
       } catch(err) {
         console.log('Deep Learning layers hidden');
@@ -454,7 +459,7 @@ export default {
   mounted() {
     if (process.env.ENABLE_TF2X !== 'true') { return; }
 
-    this.addPreTrainedVGG16ToDeepLearningDropDown();
+    this.addPreTrainedLayersToDeepLearningDropDown();
 
     const ioDropdown = {
       tooltip: 'IO',

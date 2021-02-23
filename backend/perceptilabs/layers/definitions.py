@@ -20,6 +20,7 @@ from perceptilabs.layers.trainreinforce.spec import TrainReinforceSpec
 from perceptilabs.layers.trainobjectdetection.spec import TrainObjectDetectionSpec
 from perceptilabs.layers.traingan.spec import TrainGanSpec
 from perceptilabs.layers.pretrainedvgg16.spec import PreTrainedVGG16Spec
+from perceptilabs.layers.pretrainedinceptionv3.spec import PreTrainedInceptionV3Spec
 from perceptilabs.layers.iooutput.spec import OutputLayerSpec
 from perceptilabs.layers.ioinput.spec import InputLayerSpec
 
@@ -230,6 +231,12 @@ DEFINITION_TABLE_TF2X = {
         'layers/pretrainedvgg16/tf2x_imports.json',
         'layers/pretrainedvgg16/tf2x_template.j2',        
         'layer_pretrained_vgg16'
+    ),
+    'PreTrainedInceptionV3': LayerMeta(
+        PreTrainedInceptionV3Spec,
+        'layers/pretrainedinceptionv3/tf2x_imports.json',
+        'layers/pretrainedinceptionv3/tf2x_template.j2',        
+        'layer_pretrained_inceptionv3'
     ),
     'IoOutput': LayerMeta(
         OutputLayerSpec,

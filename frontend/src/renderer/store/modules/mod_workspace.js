@@ -2616,6 +2616,8 @@ const componentsInputs = {
   LayerCustom: ['input'],
 
   PreTrainedVGG16: ['input'],
+  PreTrainedInceptionV3: ['input'],
+
   IoOutput: ['input']
 };
 
@@ -2649,6 +2651,8 @@ const componentsOutputs = {
   TrainDetector: [],
 
   PreTrainedVGG16: ['output'],
+  PreTrainedInceptionV3: ['output'],
+
   IoOutput: []
 };
 

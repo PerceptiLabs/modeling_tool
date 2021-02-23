@@ -173,6 +173,11 @@ perceptilabs/layers/pretrainedvgg16/spec.py
 perceptilabs/layers/pretrainedvgg16/tf2x_template.j2
 perceptilabs/layers/pretrainedvgg16/tf2x_imports.json
 
+# perceptilabs/layers/pretrainedinceptionv3
+perceptilabs/layers/pretrainedinceptionv3/spec.py
+perceptilabs/layers/pretrainedinceptionv3/tf2x_template.j2
+perceptilabs/layers/pretrainedinceptionv3/tf2x_imports.json
+
 
 # perceptilabs/layers/ioinput
 perceptilabs/layers/ioinput/spec.py

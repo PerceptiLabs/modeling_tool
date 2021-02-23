@@ -40,7 +40,9 @@ import ClassicMLSVM         from '@/components/network-elements/elements/classic
 import LayerContainer       from '@/components/network-elements/elements/layer-container/layer-container.vue'
 import LayerCustom          from '@/components/network-elements/elements/layer-custom/layer-custom.vue'
 
-import PreTrainedVGG16      from '@/components/network-elements/elements/pretrained-vgg16/pretrained-vgg16.vue'
+import PreTrainedVGG16        from '@/components/network-elements/elements/pretrained-vgg16/pretrained-vgg16.vue'
+import PreTrainedInceptionV3  from '@/components/network-elements/elements/pretrained-inceptionv3/pretrained-inceptionv3.vue'
+
 import IoOutput             from '@/components/network-elements/elements/io-output/io-output.vue'
 
 import SettingsArrow        from '@/components/network-elements/elements-settings/setting-arrow.vue'
@@ -68,7 +70,7 @@ export default {
     // ClassicMLDbscans, ClassicMLKMeans, ClassicMLKNN, ClassicMLRandomForest, ClassicMLSVM,
     IoOutput,
     LayerContainer, LayerCustom,
-    PreTrainedVGG16,
+    PreTrainedVGG16, PreTrainedInceptionV3,
     SettingsArrow,
     NetworkGrid
   },
