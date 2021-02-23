@@ -1,6 +1,6 @@
 trigger:
 - none
-
+pool: Docker Build
 variables:
   # CommitId is passed in to the app_variables.json file
   BuildVariables.CommitId : $(Build.SourceVersion)
