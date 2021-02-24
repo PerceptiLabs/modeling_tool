@@ -43,40 +43,47 @@ def print_result_errors(layer_spec, results):
 
     
 class LightweightCore:
-    def __init__(self, issue_handler=None, cache=None):
+    def __init__(self, issue_handler=None, cache=None, data_loader=None):
         self._issue_handler = issue_handler
         self._cache = cache
         self._script_factory = ScriptFactory(mode='tf2x' if is_tf2x() else 'tf1x')
+        self._data_loader = data_loader
     
     def run(self, graph_spec):
         t0 = time.perf_counter()
         subgraph_specs = graph_spec.split(GraphSplitter())        
         all_results = {}
-        all_durations = []
+        all_durations = {}
+        all_used_cache = {}
 
         for subgraph_spec in subgraph_specs:
-            subgraph_results, subgraph_durations = self._run_subgraph(subgraph_spec)
+            subgraph_results, subgraph_durations, subgraph_used_cache = self._run_subgraph(subgraph_spec)
             all_results.update(subgraph_results)
-            all_durations.extend(subgraph_durations)
+            all_durations.update(subgraph_durations)
+            all_used_cache.update(subgraph_used_cache)
 
         t_total = time.perf_counter() - t0
-        dataevents.collect_lwcore_finished(t_total, all_durations, has_cache=(self._cache is not None))
+        layers_that_used_cache = [layer_id for layer_id, used_cache in all_used_cache.items() if used_cache]        
+        logger.info(f"Ran lightweight core. Duration: {t_total}s. Used cache for layers: "  + ", ".join(layers_that_used_cache))
+        
         return all_results
     
     def _run_subgraph(self, subgraph_spec):
         all_results = {}
-        all_durations = []
+        all_durations = {}
+        all_used_cache = {}
         for layer_spec in subgraph_spec.get_ordered_layers():
-            layer_result, durations = self._get_layer_results(layer_spec, subgraph_spec, all_results)
-            all_durations.append(durations)
+            layer_result, durations, used_cache = self._get_layer_results(layer_spec, subgraph_spec, all_results)
             
             if logger.isEnabledFor(logging.DEBUG) and layer_result.has_errors:
-                print_result_errors(layer_spec, layer_result)        
-                    
+                print_result_errors(layer_spec, layer_result)
+                
+            all_durations[layer_spec.id_] = durations
+            all_used_cache[layer_spec.id_] = used_cache                    
             all_results[layer_spec.id_] = layer_result                
             
         assert len(all_results) == len(subgraph_spec)
-        return all_results, all_durations
+        return all_results, all_durations, all_used_cache
 
     def _get_layer_results(self, layer_spec, subgraph_spec, ancestor_results):
         """ Either fetched a cached result or Computes results of layer_spec using ancestor results """        
@@ -88,8 +95,9 @@ class LightweightCore:
         self._maybe_put_results_in_cache(layer_spec, cached_result, layer_result, layer_hash)
         t3 = time.perf_counter()
 
-        durations = {'t_cache_lookup': t1 - t0, 't_compute': t2 - t1, 't_cache_insert': t3 - t2, 'used_cache': cached_result is not None, 'type': layer_spec.type_}
-        return layer_result, durations
+        used_cache = cached_result is not None
+        durations = {'t_cache_lookup': t1 - t0, 't_compute': t2 - t1, 't_cache_insert': t3 - t2, 'used_cache': used_cache, 'type': layer_spec.type_}
+        return layer_result, durations, used_cache
 
     def _maybe_put_results_in_cache(self, layer_spec, cached_result, layer_result, layer_hash):
         """ Try to put new results in cache """        
@@ -131,7 +139,7 @@ class LightweightCore:
 
     def _get_layer_strategy(self, layer_spec, graph_spec=None, script_factory=None):
         if isinstance(layer_spec, IoLayerSpec):
-            strategy = IoLayerStrategy()            
+            strategy = IoLayerStrategy(self._data_loader)            
         elif isinstance(layer_spec, TrainingLayerSpec) and is_tf1x():
             strategy = Tf1xTrainingStrategy(script_factory)
         elif isinstance(layer_spec, TrainingLayerSpec) and is_tf2x():
@@ -151,7 +159,7 @@ class LightweightCore:
 
 class LightweightCoreAdapter:
     """ Compatibility with v1 core """
-    def __init__(self, graph_spec, layer_extras_reader, error_handler, issue_handler, cache, data_dict):
+    def __init__(self, graph_spec, layer_extras_reader, error_handler, issue_handler, cache, data_dict, data_loader=None):
         self._graph_spec = graph_spec
         self._error_handler = error_handler
         self._extras_reader = layer_extras_reader
@@ -160,7 +168,8 @@ class LightweightCoreAdapter:
         
         self._core = LightweightCore(
             issue_handler=issue_handler,
-            cache=cache
+            cache=cache,
+            data_loader=data_loader
         )
 
     def run(self):

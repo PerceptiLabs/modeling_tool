@@ -227,13 +227,15 @@ class TrainingStrategy(JinjaLayerStrategy):
 
 
 class IoLayerStrategy(BaseStrategy):
+    def __init__(self, data_loader):
+        self._dataset = data_loader.get_dataset()
+    
     def run(self, layer_spec, layer_class, input_results, line_offset=None):
         columns = []
         variables = {}
         
         try:
-            df = pd.read_csv(layer_spec.file_path)
-            value = np.array([df[layer_spec.feature_name][0]])  # As a batch with one value
+            value = self._get_first_batch_from_dataset(layer_spec).numpy()
             output = {'output': value}
         except Exception as e:
             output = {'output': None}
@@ -255,4 +257,17 @@ class IoLayerStrategy(BaseStrategy):
             trained = False
         )
         return results
+
+    def _get_first_batch_from_dataset(self, layer_spec):
+        inputs_batch, targets_batch = next(iter(self._dataset))
+
+        if layer_spec.is_input_layer:
+            return inputs_batch[layer_spec.feature_name]
+        elif layer_spec.is_output_layer:
+            return targets_batch[layer_spec.feature_name]
+        else:
+            raise RuntimeError
+
+
+        
 

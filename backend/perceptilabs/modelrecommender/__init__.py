@@ -1,1 +1,1 @@
-from perceptilabs.modelrecommender.base import ModelRecommender, FeatureSpec
+from perceptilabs.modelrecommender.base import ModelRecommender

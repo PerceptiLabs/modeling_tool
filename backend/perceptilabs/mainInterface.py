@@ -30,8 +30,9 @@ from perceptilabs.messaging import MessageConsumer, MessagingFactory
 
 import perceptilabs.logconf
 import perceptilabs.autosettings.utils as autosettings_utils
-import perceptilabs.modelrecommender as modelrecommender
-
+from perceptilabs.modelrecommender import ModelRecommender
+from perceptilabs.data.base import FeatureSpec, DataLoader
+from perceptilabs.utils import is_tf1x
 
 #LW interface
 from perceptilabs.lwInterface import (
@@ -57,7 +58,7 @@ from perceptilabs.lwInterface import (
 logger = logging.getLogger(APPLICATION_LOGGER)
 
 
-USE_AUTO_SETTINGS = True
+USE_AUTO_SETTINGS = is_tf1x()  # TODO: enable for TF2 (story 1561)
 USE_LW_CACHING = True
 LW_CACHE_MAX_ITEMS = 25 
 AGGREGATION_ENGINE_MAX_WORKERS = 2
@@ -184,7 +185,12 @@ class Interface():
             self._addCore(receiver)
         self._core = self._cores[receiver]
         if USE_AUTO_SETTINGS:
-            self._settings_engine = autosettings_utils.setup_engine(self._lw_cache_v2)
+            self._settings_engine = autosettings_utils.setup_engine(
+                self._create_lw_core_internal(
+                    data_loader=None, # TODO: set data loader for TF2 (story 1561)
+                    use_issue_handler=False
+                )
+            )
 
     def shutDown(self):
         for c in self._cores.values():
@@ -201,21 +207,29 @@ class Interface():
             return "No core called %s" %receiver
 
     def create_lw_core(self, receiver, jsonNetwork, adapter=True):
+        graph_spec = GraphSpec.from_dict(jsonNetwork)
+        data_loader = DataLoader.from_graph_spec(graph_spec)  # TODO(anton.k): REUSE THIS!
+        
         if adapter:
             extras_reader = LayerExtrasReader()
             error_handler = LightweightErrorHandler()
             data_dict = {}
             
-            graph_spec = GraphSpec.from_dict(jsonNetwork)
-            lw_core = LightweightCoreAdapter(graph_spec, extras_reader, error_handler, self._core.issue_handler, self._lw_cache_v2, data_dict)
+
+            lw_core = LightweightCoreAdapter(graph_spec, extras_reader, error_handler, self._core.issue_handler, self._lw_cache_v2, data_dict, data_loader=data_loader)
             return lw_core, extras_reader, data_dict
         else:
-            lw_core = LightweightCore(
-                issue_handler=self._core.issue_handler,
-                cache=self._lw_cache_v2
-            )
-
+            lw_core = self._create_lw_core_internal(data_loader)
             return lw_core, None, None
+
+    def _create_lw_core_internal(self, data_loader, use_issue_handler=True):
+        lw_core = LightweightCore(
+            issue_handler=(self._core.issue_handler if use_issue_handler else None),
+            cache=self._lw_cache_v2,
+            data_loader=data_loader
+        )
+        return lw_core
+        
 
     def create_response(self, request):
         receiver = str(request.get('receiver'))
@@ -307,8 +321,9 @@ class Interface():
 
         elif action == "getNetworkInputDim":
             graph_spec = self._network_loader.load(value, as_spec=True)
-
-            lw_core, _, _ = self.create_lw_core(receiver, None, adapter=False)
+            json_network = graph_spec.to_dict()
+            
+            lw_core, _, _ = self.create_lw_core(receiver, json_network, adapter=False)
 
             output = GetNetworkInputDim(lw_core, graph_spec).run()
             return output
@@ -325,7 +340,7 @@ class Interface():
             outputDims = getNetworkOutputDim(lw_core, extras_reader).run()
 
             graph_spec = GraphSpec.from_dict(json_network)
-            lw_core, _, _ = self.create_lw_core(receiver, None, adapter=False)
+            lw_core, _, _ = self.create_lw_core(receiver, json_network, adapter=False)
 
             previews, trained_layers_info = getPreviewBatchSample(lw_core, graph_spec, json_network).run()
 
@@ -342,14 +357,15 @@ class Interface():
                 variable = 'output' # WORKAROUND 
 
             graph_spec = GraphSpec.from_dict(json_network)            
-            lw_core, _, _ = self.create_lw_core(receiver, None, adapter=False)
+            lw_core, _, _ = self.create_lw_core(receiver, json_network, adapter=False)
 
             return getPreviewSample(layer_id, lw_core, graph_spec, variable).run()
 
         elif action == "getPreviewVariableList":
             layer_id = value["Id"]
             graph_spec = self._network_loader.load(value["Network"], as_spec=True)
-            lw_core, _, _ = self.create_lw_core(receiver, None, adapter=False)
+            json_network = graph_spec.to_dict()
+            lw_core, _, _ = self.create_lw_core(receiver, json_network, adapter=False)
             
             return getPreviewVariableList(layer_id, lw_core, graph_spec).run()
 
@@ -409,6 +425,7 @@ class Interface():
         elif action == "Start":
             CopyJsonModel(value['copyJson_path']).run()
             graph_spec = self._network_loader.load(value, as_spec=True)
+            
             self._core.set_running_mode('training')            
             model_id = int(value.get('modelId', None))
             response = self._core.startCore(graph_spec, model_id)
@@ -540,7 +557,7 @@ class Interface():
             logger.debug("_get_network_data input network: \n" + stringify(json_network))
         
         graph_spec = self._network_loader.load(json_network, as_spec=True)
-        lw_core, _, _ = self.create_lw_core(receiver, None, adapter=False)
+        lw_core, _, _ = self.create_lw_core(receiver, json_network, adapter=False)
         output = GetNetworkData(graph_spec, lw_core, self._settings_engine).run()
 
         if logger.isEnabledFor(logging.DEBUG):
@@ -574,18 +591,19 @@ class Interface():
         return self._core.set_headless(active=request_value)
 
     def _create_response_model_recommendation(self, request_value):
-        feature_specs = {
-            feature_name: modelrecommender.FeatureSpec(
+        feature_specs = {}
+        
+        for feature_name, feature_info in request_value.items():
+            feature_specs[feature_name] = FeatureSpec(
                 datatype=feature_info['datatype'].lower(),
                 iotype=feature_info['iotype'].lower(),
-                csv_path=feature_info['csv_path']
+                file_path=feature_info['csv_path']
             )
-            for feature_name, feature_info in request_value.items()
-        }
-        recommender = modelrecommender.ModelRecommender()
+
+        recommender = ModelRecommender()
         graph_spec = recommender.get_graph(feature_specs)
         json_network = graph_spec.to_dict()
-        return json_network        
+        return json_network
 
     def _parse(self, path):
         frozen_pb_model = load_tf1x_frozen(path)

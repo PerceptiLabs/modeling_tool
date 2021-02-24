@@ -6,7 +6,7 @@ from unittest.mock import MagicMock
 import numpy as np
 import pandas as pd
 
-from perceptilabs.data import DataLoader, FeatureSpec
+from perceptilabs.data.base import DataLoader, FeatureSpec
 from perceptilabs.graph.builder import GraphSpecBuilder
 from perceptilabs.trainer import Trainer
 
@@ -21,12 +21,11 @@ def csv_path(temp_path):
     
 @pytest.fixture()
 def data_loader(csv_path):
-    dl = DataLoader.from_csv(
-        feature_specs={
-            'x1': FeatureSpec('numerical', 'input'),
-            'y1': FeatureSpec('numerical', 'output')            
-        },
-        path=csv_path
+    dl = DataLoader.from_features(
+        {
+            'x1': FeatureSpec('numerical', 'input', csv_path),
+            'y1': FeatureSpec('numerical', 'output', csv_path)            
+        }
     )
     yield dl
 

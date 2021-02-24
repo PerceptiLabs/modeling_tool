@@ -11,7 +11,7 @@ from perceptilabs.graph.spec import GraphSpec
 from perceptilabs.layers.iooutput.spec import OutputLayerSpec
 from perceptilabs.layers.ioinput.spec import InputLayerSpec
 from perceptilabs.layers.iooutput.spec import OutputLayerSpec
-
+from perceptilabs.data.base import DataLoader
 
 @pytest.fixture(scope='function')
 def graph_spec_binary_classification(temp_path_checkpoints):
@@ -1567,18 +1567,20 @@ def test_preview_available_for_output_layer(csv_path):
 
 @pytest.mark.tf2x    
 def test_preview_available_for_input_layer(csv_path):
-    layer_spec = InputLayerSpec(id_='123', feature_name='x1', file_path=csv_path)
-    graph_spec = GraphSpec([layer_spec])
-    lw_core = LightweightCore()
+    input_spec = InputLayerSpec(id_='123', feature_name='x1', file_path=csv_path, datatype='numerical')
+    output_spec = OutputLayerSpec(id_='456', feature_name='y1', file_path=csv_path, datatype='numerical')    
+    graph_spec = GraphSpec([input_spec, output_spec])    
+    lw_core = LightweightCore(data_loader=DataLoader.from_graph_spec(graph_spec))
     results = lw_core.run(graph_spec)
     assert results['123'].sample.get('output') == 1.0
     
 
 @pytest.mark.tf2x    
 def test_preview_available_for_output_layer(csv_path):
-    layer_spec = OutputLayerSpec(id_='123', feature_name='x1', file_path=csv_path)
-    graph_spec = GraphSpec([layer_spec])
-    lw_core = LightweightCore()
+    input_spec = InputLayerSpec(id_='123', feature_name='x1', file_path=csv_path, datatype='numerical')
+    output_spec = OutputLayerSpec(id_='456', feature_name='y1', file_path=csv_path, datatype='numerical')    
+    graph_spec = GraphSpec([input_spec, output_spec])
+    lw_core = LightweightCore(data_loader=DataLoader.from_graph_spec(graph_spec))
     results = lw_core.run(graph_spec)
     assert results['123'].sample.get('output') == 1.0
     

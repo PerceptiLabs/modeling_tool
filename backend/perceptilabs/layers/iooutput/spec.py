@@ -4,8 +4,9 @@ from perceptilabs.layers.specbase import IoLayerSpec, LayerSpec
 
 class OutputLayerSpec(IoLayerSpec):
     type_: str = 'IoOutput'
+    datatype: str = ''
     feature_name: str = ''
-    file_path: str = ''
+    file_path: str = '' # TODO: Remove. Also ask for frontend to remove this. 
 
     @property
     def is_output_layer(self):
@@ -16,12 +17,14 @@ class OutputLayerSpec(IoLayerSpec):
         if 'Properties' in dict_ and dict_['Properties'] is not None:
             params['feature_name'] = dict_['Properties']['FeatureName']
             params['file_path'] = dict_['Properties']['FilePath']            
-
+            params['datatype'] = dict_['Properties']['DataType']
+            
         return cls(**params)
 
     def _to_dict_internal(self, dict_: Dict[str, Any]) -> Dict[str, Any]:
         dict_['Properties'] = {
             'FeatureName': self.feature_name,
-            'FilePath': self.file_path
+            'FilePath': self.file_path,
+            'DataType': self.datatype            
         }
         return dict_

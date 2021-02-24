@@ -2,15 +2,6 @@
 {% from 'controlflow.j2' import indented_if %}
 {% from 'activations.j2' import activation_function %}
 
-from abc import ABC, abstractmethod # TODO: remove w/ work item 1534
-
-class PerceptiLabsVisualizer(ABC):
-    # TODO: move this to a centralized location (see work item 1534)
-    @property
-    @abstractmethod
-    def visualized_trainables(self):
-        """ Returns two tf.Variables (weights, biases) to be visualized in the frontend """
-        
 
 {% macro layer_tf2x_fully_connected(layer_spec, graph_spec) %}
 class {{layer_spec.sanitized_name}}Keras(tf.keras.layers.Layer, PerceptiLabsVisualizer):
@@ -86,6 +77,7 @@ class {{layer_spec.sanitized_name}}Keras(tf.keras.layers.Layer, PerceptiLabsVisu
 
     @property
     def visualized_trainables(self):
+        """ Returns two tf.Variables (weights, biases) to be visualized in the frontend """    
         return self.kernel, self.bias
 
 

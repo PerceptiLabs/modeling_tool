@@ -13,8 +13,7 @@ from perceptilabs.logconf import APPLICATION_LOGGER
 logger = logging.getLogger(APPLICATION_LOGGER)
 
 
-def setup_engine(lightweight_cache):
-    lw_core = LightweightCore(issue_handler=None, cache=lightweight_cache)
+def setup_engine(lw_core):
     settings_engine = SettingsEngine(DEFAULT_RULES, lw_core=lw_core)
     return settings_engine
 

@@ -53,7 +53,6 @@
   import MathSoftmax  from '@/components/network-elements/elements/math-softmax/viewBox-math-softmax.vue'
   import MathSplit    from '@/components/network-elements/elements/math-split/viewBox-math-split.vue'
   import LayerCustom          from '@/components/network-elements/elements/layer-custom/viewBox-layer-custom.vue'
-
   import IoInput          from '@/components/network-elements/elements/io-input/viewBox-io-input.vue'
   import IoOutput         from '@/components/network-elements/elements/io-output/viewBox-io-output.vue'
 

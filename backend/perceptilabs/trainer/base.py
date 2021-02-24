@@ -5,6 +5,7 @@ import logging
 import tensorflow as tf
 import numpy as np
 
+from perceptilabs.layers.visualizer import PerceptiLabsVisualizer
 from perceptilabs.trainer.model import TrainingModel
 from perceptilabs.trainer.stats import SampleStatsTracker, SampleStats, GradientStatsTracker, GradientStats
 from perceptilabs.logconf import APPLICATION_LOGGER
@@ -107,7 +108,7 @@ class Trainer:
             set_num_batches_completed_this_epoch(step + 1)            
             yield
 
-    @tf.function
+    #@tf.function
     def _work_on_batch(self, model, losses, inputs_batch, targets_batch, metric_loss, training, optimizer):
         """ Train or validate on a batch of data """
         with tf.GradientTape() as tape:
@@ -163,10 +164,22 @@ class Trainer:
 
     def _collect_trainables_by_layer(self, model):
         """ Collect the trainable tensors from the model and structure them by layer """
-        trainables_by_layer, weights_by_layer, biases_by_layer = {}, {}, {}
+        trainables_by_layer = {}
         for layer_id, layer in model.layers_by_id.items():
-            weights, bias = getattr(layer, 'visualized_trainables', (None, None)) # TODO: check isinstance(..., PerceptiLabsVisualizer) once story 1534 has been completed
-            trainables_by_layer[layer_id] = {'weights': weights, 'bias': bias}
+            if isinstance(layer, PerceptiLabsVisualizer):
+                weights, bias = layer.visualized_trainables
+                
+                trainables = {}
+                if isinstance(weights, tf.Variable):
+                    trainables['weights'] = weights
+                if isinstance(bias, tf.Variable):
+                    trainables['bias'] = bias
+                    
+                if trainables:
+                    trainables_by_layer[layer_id] = trainables
+                
+            elif len(layer.trainable_variables) > 0:
+                logger.warning("Layer {layer_id} has trainable variables but does not implement the PerceptiLabsVisualizer abstract class. Weights, biases and derived quantities such as gradients will not be visualized correctly.")
                 
         return trainables_by_layer
 

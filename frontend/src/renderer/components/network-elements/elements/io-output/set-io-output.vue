@@ -120,6 +120,7 @@
           Type: 'IoOutput',
           FeatureName: '',
           FilePath: '',
+          DataType: '',
           testInfoIsInput: true,//input  false - labels
           accessProperties: {
             Sources: [], //{type: 'file'/'directory', path: 'PATH'}

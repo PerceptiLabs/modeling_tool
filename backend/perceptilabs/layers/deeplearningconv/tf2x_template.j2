@@ -73,7 +73,7 @@
 
 
 {% macro layer_tf2x_conv(layer_spec, graph_spec) %}
-class {{layer_spec.sanitized_name}}Keras(tf.keras.layers.Layer):
+class {{layer_spec.sanitized_name}}Keras(tf.keras.layers.Layer, PerceptiLabsVisualizer):
     def __init__(self):
         super().__init__()
         self._variables = {}
@@ -181,7 +181,13 @@ class {{layer_spec.sanitized_name}}Keras(tf.keras.layers.Layer):
         Returns:
             A dictionary with tensor names for keys and picklable for values.
         """
-        return self._variables        
+        return self._variables
+
+    @property
+    def visualized_trainables(self):
+        """ Returns two tf.Variables (weights, biases) to be visualized in the frontend """
+        kernel, bias = self.conv.weights
+        return kernel, bias
 
 
 class {{layer_spec.sanitized_name}}(Tf2xLayer):

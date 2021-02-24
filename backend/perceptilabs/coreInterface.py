@@ -1561,4 +1561,3 @@ class coreLogic():
             return {"Input": input_obj, "PvG": pred_vs_target_obj, "AveragePvG": avg_pred_vs_target_obj, "Accuracy": accuracy_obj} 
         else:
             return {}
-

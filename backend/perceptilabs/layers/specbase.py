@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from typing import Tuple, Dict, Type, Any, List, Union
 from collections import namedtuple
 
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 
 from perceptilabs.utils import stringify
 from perceptilabs.logconf import APPLICATION_LOGGER
@@ -73,7 +73,13 @@ class LayerConnection(MyBaseModel):
 
     class Config:
         allow_mutation = False
-        
+
+    @validator('src_id', 'src_var', 'dst_id', 'dst_var')
+    def _check_not_none(cls, value):
+        if value is None:
+            raise ValueError('cannot be None')
+        return value
+
     def __hash__(self):
         return hash(self.src_id + self.src_var + self.dst_id + self.dst_var)
 

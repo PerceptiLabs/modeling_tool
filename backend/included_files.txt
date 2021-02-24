@@ -60,6 +60,7 @@ perceptilabs/layers/specbase.py
 perceptilabs/layers/specutils.py
 perceptilabs/layers/definitions.py
 perceptilabs/layers/mixins.py
+perceptilabs/layers/visualizer.py
 
 # perceptilabs/layers/iooutput
 perceptilabs/layers/iooutput/spec.py
@@ -283,9 +284,25 @@ perceptilabs/tutorial_data/
 perceptilabs/data/__init__.py
 perceptilabs/data/base.py
 
+# backend/perceptilabs/data/preprocessing/
+perceptilabs/data/preprocessing/__init__.py
+perceptilabs/data/preprocessing/image.py
+perceptilabs/data/preprocessing/numerical.py
+
 # backend/perceptilabs/modelrecommender/
 perceptilabs/modelrecommender/__init__.py
 perceptilabs/modelrecommender/base.py
+
+# backend/perceptilabs/modelrecommender/encoders/
+perceptilabs/modelrecommender/encoders/__init__.py
+perceptilabs/modelrecommender/encoders/base.py
+perceptilabs/modelrecommender/encoders/numerical.py
+perceptilabs/modelrecommender/encoders/image.py
+
+# backend/perceptilabs/modelrecommender/decodders/
+perceptilabs/modelrecommender/encoders/__init__.py
+perceptilabs/modelrecommender/encoders/base.py
+perceptilabs/modelrecommender/encoders/numerical.py
 
 # backend/perceptilabs/trainer/
 perceptilabs/trainer/__init__.py
