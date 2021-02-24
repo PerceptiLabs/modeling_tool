@@ -208,7 +208,11 @@ class Interface():
 
     def create_lw_core(self, receiver, jsonNetwork, adapter=True):
         graph_spec = GraphSpec.from_dict(jsonNetwork)
-        data_loader = DataLoader.from_graph_spec(graph_spec)  # TODO(anton.k): REUSE THIS!
+
+        if self._trainer == 'standard':
+            data_loader = DataLoader.from_graph_spec(graph_spec)  # TODO(anton.k): REUSE THIS!
+        else:
+            data_loader = None
         
         if adapter:
             extras_reader = LayerExtrasReader()
