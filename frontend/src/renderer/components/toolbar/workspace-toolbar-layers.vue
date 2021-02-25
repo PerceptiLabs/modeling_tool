@@ -98,7 +98,7 @@ export default {
     MathArgmax, MathMerge, MathSoftmax, MathSwitch,
     LayerCustom,
     PreTrainedVGG16, PreTrainedInceptionV3,
-    IoOutput,
+    IoInput, IoOutput,
     LayerCustom
   },
   data() {
