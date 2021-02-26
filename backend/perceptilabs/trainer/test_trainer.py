@@ -120,7 +120,6 @@ def test_layer_weights_is_array(script_factory_tf2x, data_loader, graph_spec_few
     value = trainer.get_layer_weights('1')
     assert isinstance(value, np.ndarray)
 
-
 @pytest.mark.tf2x
 def test_layer_bias_is_array(script_factory_tf2x, data_loader, graph_spec_few_epochs):
     trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs)
@@ -241,9 +240,31 @@ def test_trainer_input_stats_available(script_factory_tf2x, data_loader, graph_s
     assert 'x1' in input_stats.sample_batch 
 
 @pytest.mark.tf2x
+def test_trainer_can_pause_and_unpause(script_factory_tf2x, data_loader, graph_spec_few_epochs):
+    trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs)
+    next(trainer.run_stepwise()) # Take the first training steps
+    
+    trainer.pause()
+    assert trainer.status == 'Paused'
+
+    trainer.unpause()
+    assert trainer.status != 'Paused'
+
+@pytest.mark.tf2x
 def test_trainer_can_stop(script_factory_tf2x, data_loader, graph_spec_few_epochs):
     trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs)
 
     next(trainer.run_stepwise()) # Take the first training steps    
     trainer.stop()
     assert trainer.status == 'Finished'
+
+@pytest.mark.tf2x
+def test_trainer_can_pause_stop(script_factory_tf2x, data_loader, graph_spec_few_epochs):
+    trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs)
+
+    next(trainer.run_stepwise()) # Take the first training steps    
+    trainer.pause()
+    next(trainer.run_stepwise())
+    trainer.stop()
+    assert trainer.status == 'Finished'
+

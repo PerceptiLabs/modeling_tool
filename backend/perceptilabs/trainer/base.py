@@ -4,6 +4,9 @@ import logging
 
 import tensorflow as tf
 import numpy as np
+import time
+import logging
+from perceptilabs.logconf import APPLICATION_LOGGER, USER_LOGGER
 
 from perceptilabs.layers.visualizer import PerceptiLabsVisualizer
 from perceptilabs.trainer.model import TrainingModel
@@ -13,12 +16,12 @@ from perceptilabs.logconf import APPLICATION_LOGGER
 
 logger = logging.getLogger(APPLICATION_LOGGER)
 
-
 class Trainer:
     def __init__(self, script_factory, data_loader, graph_spec):
         self._script_factory = script_factory
         self._data_loader = data_loader
         self._graph_spec = graph_spec
+        self._training_time = 0.0
         
         self._headless = False
 
@@ -67,7 +70,9 @@ class Trainer:
         logger.info("Entering training loop")        
         self._num_epochs_completed = 0
         while self._num_epochs_completed < self.num_epochs and not self.is_closed:
+            t0 = time.perf_counter()
             self._set_status('Training')
+
             yield from self._loop_over_dataset(
                 self._training_model,
                 losses,
@@ -79,16 +84,31 @@ class Trainer:
                 training=True,
                 optimizer=optimizer
             )
+
+            time_paused_training = self._sleep_while_paused()
             if self.is_closed:
                 break
             self._set_status('Validation')
+
             yield # TODO: loop over dataset for validation (story 1537)
+
+            time_paused_validation = self._sleep_while_paused()
             if self.is_closed:
                 break
             self._num_epochs_completed += 1
+            epoch_time = time.perf_counter() - t0 - time_paused_training - time_paused_validation
+
+            logger.info(
+                f"Finished epoch {self._num_epochs_completed}/{self.num_epochs} - "
+            )
+            logger.info(f"Epoch duration: {round(epoch_time, 3)} s")
+            self._training_time += epoch_time
+
             yield
             
         self._set_status('Finished')
+        logger.info(f"Training completed. Total duration: {round(self._training_time, 3)} s")
+        
         # TODO: automatic export at end of training (story 1538)
 
     def _loop_over_dataset(self, model, losses, dataset, metric_loss, metric_accuracy, metric_auc, set_num_batches_completed_this_epoch, training=True, optimizer=None):
@@ -195,7 +215,7 @@ class Trainer:
         self._num_validation_batches_completed_this_epoch = value
 
     def _set_status(self, value):
-        if value not in ['Waiting', 'Training', 'Validation', 'Finished']:
+        if value not in ['Waiting', 'Paused', 'Training', 'Validation', 'Finished']:
             raise ValueError(f"Cannot set status to '{value}'")
         self._status = value
 
@@ -264,17 +284,30 @@ class Trainer:
 
     @property
     def is_paused(self):
-        # TODO: implement (story 1543)
-        return False
-
-    def pause(self):
-        # TODO: implement (story 1543)
-        pass
-
-    def unpause(self):
-        # TODO: implement (story 1543)
-        pass
+        return self.status == 'Paused'
     
+    def _sleep_while_paused(self):
+        t0 = time.perf_counter()
+        while self.is_paused:
+            time.sleep(1)
+
+        return time.perf_counter() - t0
+
+    def _store_prev_status(self):
+        if self.status == 'Training':
+            self._prev_status = 'Training'
+        if self.status == 'Validation':
+            self._prev_status = 'Validation'
+        
+    def pause(self):
+        self._store_prev_status()
+        self._set_status('Paused')
+        logger.info(f"Trainer is in state Paused")
+        
+    def unpause(self):
+        self._set_status(self._prev_status)
+        logger.info(f"Trainer is in state %s", self._prev_status)
+
     def stop(self):
         self._set_status('Finished')
     
@@ -405,7 +438,7 @@ class Trainer:
             'trainingStatus': self.status,
             'progress': self.progress, 
             'status': 'Paused' if self.is_paused else 'Running',
-            'training_duration': 5.0, # TODO: fix training duration (story 1569)
+            'training_duration': self._training_time,
             'input_stats': self.get_input_stats(),
             'prediction_stats': self.get_prediction_stats(),
             'target_stats': self.get_target_stats()
