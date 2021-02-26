@@ -122,12 +122,20 @@ class LayerSpec(ABC, MyBaseModel):
         
         modified_params = modified_params or {}
         params = {}
-        for key in self.fields.keys():
-            params[key] = getattr(self, key)
+
+        for field_name in self.field_names:
+            params[field_name] = getattr(self, field_name)
 
         params.update(modified_params)
         return self.__class__(**params)
 
+    @property
+    def field_names(self):
+        """ The fields of this layer spec. """
+        if hasattr(self, 'fields'):  # Pydantic >= 1.8.0 does not have the fields property.
+            return list(self.fields.keys())
+        else:
+            return list(dict(self))           
 
     def compute_field_hash(self, ignore_forward_connections=True, prefer_custom_code=True):
         """ Computes a hash based on a _subset_ of the fields.
@@ -144,7 +152,7 @@ class LayerSpec(ABC, MyBaseModel):
             return hash(self.custom_code)
         else:
             field_hashes = 0
-            for field_name in self.fields.keys():
+            for field_name in self.field_names:
                 if field_name in ignored_fields:
                     continue
                 if ignore_forward_connections and field_name == 'forward_connections':
