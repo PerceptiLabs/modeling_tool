@@ -2,6 +2,7 @@ import {calcLayerPosition} from '@/core/helpers.js'
 import { workspaceGrid, shadowBoxDragIfMoreThenElementsSelected}   from '@/core/constants.js'
 import {mapActions, mapGetters, mapMutations} from "vuex";
 import {debounce, throttleEv} from '@/core/helpers'
+import cloneDeep from 'lodash.clonedeep';
 
 const baseNetDrag = {
   // props: {
@@ -12,6 +13,7 @@ const baseNetDrag = {
       left: this.x,
       top: this.y,
       throttleMove: throttleEv(this.move, 33),
+      initialElementsPositons: {}
     }
   },
 
@@ -91,6 +93,8 @@ const baseNetDrag = {
         return;
       }
 
+      this.initialElementsPositons = cloneDeep(this.networkElmentPositions);
+
       this.$parent.$parent.$el.addEventListener('mousemove', this.throttleMove);
       document.addEventListener('mouseup', this.up);
 
@@ -121,7 +125,7 @@ const baseNetDrag = {
       }
       
       this.itemWasDragged = true;
-      
+
       if(this.isFewItemsSelected()) {
         this.updateItems(ev);
       } else {
@@ -162,11 +166,15 @@ const baseNetDrag = {
         this.setElementSelectedAction({id: this.dataEl.layerId, setValue: true, resetOther: true})
       }
 
-      if (this.itemWasDragged) {
-        // TODO: only add when the top/left values have changed
+      if (this.itemWasDragged && this.wasELementsPositionChanged()) {
         this.$store.dispatch('mod_workspace-history/PUSH_newSnapshot', null, {root: true});
-      }
 
+        this.$store.dispatch('mod_workspace-changes/updateUnsavedChanges', {
+          networkId: this.currentNetworkId,
+          value: true
+        }, {root: true});
+      }
+      
       this.itemWasDragged = false;
       this.$store.dispatch('mod_workspace/CHANGE_elementPosition', this.rect);
       this.$parent.$parent.createArrowList();
@@ -196,10 +204,24 @@ const baseNetDrag = {
         this.left = (left < 0) ? 0 : left;
         this.$store.dispatch('mod_workspace/CHANGE_elementPosition', this.rect);
       }
+    },
+    wasELementsPositionChanged() {
+      let isPositionChanged = false
+      let currentPositions = this.networkElmentPositions;
+      Object.keys(this.initialElementsPositons).map(key => {
+        if((this.initialElementsPositons[key].left !== currentPositions[key].left)
+          || this.initialElementsPositons[key].top !== currentPositions[key].top ) {
+            isPositionChanged = true;
+          }
+      });
+      return isPositionChanged;
     }
 
   },
   computed: {
+    currentNetworkId() {
+      return this.$store.getters['mod_workspace/GET_currentNetworkId']
+    },
     networkScale() {
       return this.$store.getters['mod_workspace/GET_currentNetworkZoom'];
     },
@@ -249,6 +271,7 @@ const baseNetDrag = {
     },
     ...mapGetters({
       getIsWorkspaceDragEvent: 'mod_events/getIsWorkspaceDragEvent',
+      networkElmentPositions:  'mod_workspace/GET_networkElmentPositions',
     }),
   },
 

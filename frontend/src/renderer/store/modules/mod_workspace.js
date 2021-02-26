@@ -322,6 +322,17 @@ const getters = {
     } else {
       return [];
     }
+  },
+  GET_networkElmentPositions(state, getters){
+    const networkList = getters.GET_currentNetworkElementList;
+    if(networkList === null) {
+      return {};
+    }
+    let positions = {};
+    Object.values(networkList).map(el => {
+      positions[el.layerId] = el.layerMeta.position
+    })
+    return positions;
   }
 };
 
@@ -2399,10 +2410,6 @@ const actions = {
   },
   afterNetworkElementIsDragged({ dispatch, getters }) {
     dispatch('mod_webstorage/saveNetwork', getters.GET_currentNetwork, {root: true});
-    dispatch('mod_workspace-changes/updateUnsavedChanges', {
-      networkId: getters.GET_currentNetworkId,
-      value: true
-    }, {root: true});
   },
   //---------------
   //  NETWORK CONTAINER
