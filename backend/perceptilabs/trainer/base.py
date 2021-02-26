@@ -66,7 +66,7 @@ class Trainer:
 
         logger.info("Entering training loop")        
         self._num_epochs_completed = 0
-        while self._num_epochs_completed < self.num_epochs:
+        while self._num_epochs_completed < self.num_epochs and not self.is_closed:
             self._set_status('Training')
             yield from self._loop_over_dataset(
                 self._training_model,
@@ -79,9 +79,12 @@ class Trainer:
                 training=True,
                 optimizer=optimizer
             )
+            if self.is_closed:
+                break
             self._set_status('Validation')
             yield # TODO: loop over dataset for validation (story 1537)
-             
+            if self.is_closed:
+                break
             self._num_epochs_completed += 1
             yield
             
@@ -273,8 +276,7 @@ class Trainer:
         pass
     
     def stop(self):
-        # TODO: implement (story 1544)
-        pass
+        self._set_status('Finished')
     
     def headless_on(self):
         # TODO: implement (story 1545)

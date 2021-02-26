@@ -163,6 +163,20 @@ def test_layer_gradients_contain_exactly_one_float(script_factory_tf2x, data_loa
     assert minimum[0] <= maximum[0]
 
 @pytest.mark.tf2x
+def test_layer_gradients_contain_exactly_one_float(script_factory_tf2x, data_loader, graph_spec_few_epochs):
+    trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs)
+    next(trainer.run_stepwise()) # Take the first training steps
+
+    minimum = trainer.get_layer_gradients('1', 'minimum')
+    maximum = trainer.get_layer_gradients('1', 'maximum')
+    average = trainer.get_layer_gradients('1', 'average')
+    
+    assert isinstance(minimum, list) and len(minimum) == 1 and isinstance(minimum[0], np.float32)
+    assert isinstance(maximum, list) and len(maximum) == 1 and isinstance(maximum[0], np.float32)
+    assert isinstance(average, list) and len(average) == 1 and isinstance(average[0], np.float32)
+    assert minimum[0] <= maximum[0]
+
+@pytest.mark.tf2x
 def test_computed_results_do_not_change(script_factory_tf2x, data_loader, graph_spec_few_epochs):
     """ Once results have been computed, the Trainer shouldn't modify the structure.
 
@@ -225,3 +239,11 @@ def test_trainer_input_stats_available(script_factory_tf2x, data_loader, graph_s
 
     input_stats = trainer.get_input_stats()
     assert 'x1' in input_stats.sample_batch 
+
+@pytest.mark.tf2x
+def test_trainer_can_stop(script_factory_tf2x, data_loader, graph_spec_few_epochs):
+    trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs)
+
+    next(trainer.run_stepwise()) # Take the first training steps    
+    trainer.stop()
+    assert trainer.status == 'Finished'
