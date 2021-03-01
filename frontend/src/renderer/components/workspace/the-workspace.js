@@ -11,7 +11,6 @@ import {
   TRACKER_SCREENNAME_STATISTICS_TRAINING,
   TRACKER_SCREENNAME_TEST,
   TRACKER_SCREENNAME_TEST_TRAINING } from "@/core/constants";
-import Analytics  from '@/core/analytics'
 import { trainingElements, deepLearnElements }  from '@/core/constants.js';
 
 import WorkspaceToolbar       from '../toolbar/workspace-toolbar.vue';
@@ -272,7 +271,6 @@ export default {
       ) {
         // user journey tracking
         this.$store.dispatch('mod_tracker/EVENT_trainingCompleted', 'Finished training');
-        Analytics.googleAnalytics.trackCustomEvent('training-completed');
 
         const currentNetwork = this.$store.getters['mod_workspace/GET_currentNetwork'];
         this.$store.dispatch('mod_webstorage/saveNetwork', currentNetwork, {root: true});

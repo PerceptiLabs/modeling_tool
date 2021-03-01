@@ -18,7 +18,7 @@
           i.icon.icon-player-play.scaled-icon
         
         button.btn-menu-bar(
-          v-if="!(statusNetworkCore === 'Stop')"
+          v-if="!(statusNetworkCore === 'Stop' || statusNetworkCore === 'Created')"
           @click="onStopClick"
         )
           i.icon.icon-stop2
@@ -112,6 +112,7 @@ export default {
 
       API_startTraining:        'mod_api/API_startTraining',
       setSidebarStateAction:    'globalView/hideSidebarAction',
+      net_trainingDone:           'globalView/NET_trainingDone',
     }),
     onPauseClick() {
       this.pauseTraining();
@@ -138,7 +139,11 @@ export default {
       }
     },
     onStopClick() {
+      // early stopping should open test view.
+      this.net_trainingDone();
+      
       this.stopTraining();
+
     },
     onSkipClick() {
       this.skipValidTraining();

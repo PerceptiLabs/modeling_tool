@@ -1,7 +1,9 @@
 import mixPanel from 'mixpanel-browser'
 import { isElectron } from "@/core/helpers";
 import { isDevelopMode } from "@/core/constants";
+import Analytics  from '@/core/analytics'
 import { resolveProxyUrl } from "@/core/helpers/mixpanel-helper";
+
 const mixPanelDesktopToken = 'ff98c9e22047d4a1eef9146339e038ee';
 const mixPanelWebToken = isDevelopMode ? 
   '8312db76002e43f8a9dc9acf9a12c1fc' :
@@ -174,6 +176,7 @@ const actions = {
   },
   EVENT_trainingCompleted({}, reason = '') {
     mixPanel.track('Training Completed', { 'Completed reason': reason });
+    Analytics.googleAnalytics.trackCustomEvent('training-completed');
   },
   EVENT_trainingLayerView({}, ) {
     if(isElectron()) {
