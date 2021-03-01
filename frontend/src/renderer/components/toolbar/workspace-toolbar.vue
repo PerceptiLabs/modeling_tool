@@ -446,6 +446,7 @@ export default {
             this.SET_currentNetwork(this.statisticItemIndex)
               .then(() => { 
                 this.$store.dispatch("mod_workspace/EVENT_onceDoRequest");
+                this.$store.commit('mod_workspace/update_network_meta', {key: 'hideStatistics', networkID: item.networkID, value: false});
                 this.SET_openStatistics(true);
                 this.set_chartRequests(item.networkID);
                 })
@@ -454,6 +455,8 @@ export default {
             
             if(statisticItemIndex !== null) {
               this.$store.dispatch("mod_workspace/setViewType", 'statistic');
+              const item = this.workspaceModels[this.statisticItemIndex];
+              this.$store.commit('mod_workspace/update_network_meta', {key: 'hideStatistics', networkID: item.networkID, value: false});
               this.SET_currentNetwork(statisticItemIndex);
               this.SET_openStatistics(true);
               this.SET_openTest(false);
@@ -464,6 +467,8 @@ export default {
           const { statisticItemIndex } = this;
           if(statisticItemIndex !== null) {
             this.$store.dispatch("mod_workspace/setViewType", 'statistic');
+            const item = this.workspaceModels[this.statisticItemIndex];
+            this.$store.commit('mod_workspace/update_network_meta', {key: 'hideStatistics', networkID: item.networkID, value: false});
             this.SET_currentNetwork(statisticItemIndex)
               .then(() => {
                 this.$router.push({name: 'app'});

@@ -367,7 +367,7 @@
           .then(() => { 
             this.$store.dispatch("mod_workspace/EVENT_onceDoRequest");
             this.SET_openStatistics(true);
-            // this.SET_openTest(false);
+            this.SET_openTest(false);
             this.set_chartRequests(item.networkID);
           });
 
