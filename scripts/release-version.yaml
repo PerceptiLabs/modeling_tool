@@ -1,0 +1,129 @@
+- hosts: localhost
+  gather_facts: no
+  vars_prompt:
+    - name: new_version
+      prompt: "Please enter the new version"
+      private: no
+    - name: hotfix_branch
+      prompt: "Please enter the hotfix_branch."
+      default: current_release
+      private: no
+    - name: remote_name
+      prompt: "Please enter the name of the remote"
+      default: origin
+      private: no
+  vars:
+    new_version_gpu: "{{ new_version }}-GPU"
+    base: "{{ lookup('pipe', 'git rev-parse --show-toplevel') }}"
+    version_file: "{{ (base, 'VERSION') | path_join }}"
+    hotfix_branch_gpu: "{{ hotfix_branch }}-GPU"
+    temp_version_branch: "temporary_branch_{{new_version}}"
+
+  tasks:
+    - command: "git status --porcelain --untracked-files no"
+      register: git_status_response
+
+    - fail:
+        msg: "Stopping so you can stash your changes"
+      when: "{{ git_status_response.stdout | length > 0 }}"
+
+    - name: "Try to get the version from remote"
+      command: "git fetch {{ remote_name }} {{ new_version }} --tags"
+      failed_when: false
+      register: tag_checkout_result
+
+    - set_fact:
+        tag_already_in_remote: "{{ tag_checkout_result.rc == 0 }}"
+        local_tag_mismatch_remote: "{{ 'rejected' in tag_checkout_result.stderr and 'clobber' in tag_checkout_result.stderr }}"
+
+    - when: not tag_already_in_remote and not local_tag_mismatch_remote
+      block:
+      - name: "Delete any local tag"
+        command: "git tag -d '{{ new_version }}'"
+        failed_when: false
+
+      - name: "The tag doesn't exist. Go to the hotfix branch and make it"
+        command: "git checkout {{ hotfix_branch }}"
+      - command: "git pull --ff-only '{{ remote_name }}' '{{ hotfix_branch }}'"
+
+      - set_fact:
+          current_version: "{{ lookup('file', version_file) }}"
+
+      - name: "Make sure the version is > last version"
+        fail:
+          msg: "The requested version ({{ new_version }}) needs to be higher than the existing version ({{ current_version }})."
+        when: new_version is not version(current_version, '>')
+
+      - name: "Delete any preexisting temp branch. Don't fail if it's not there"
+        command: "git branch -D {{ temp_version_branch }}"
+        failed_when: false
+
+      - name: "Make a temporary branch for scratch work"
+        command: "git checkout -b {{ temp_version_branch }}"
+
+      - name: "change the VERSION file"
+        copy:
+          dest: "{{ version_file }}"
+          content: "{{ new_version }}"
+
+      - name: "add VERSION change to source"
+        command: "git add VERSION"
+
+      - name: "Commit VERSION change"
+        command: "git commit -m 'Bump version to {{ new_version }}'"
+
+      - name: "switch to the origin's current release branch"
+        command: "git checkout '{{ hotfix_branch }}'"
+
+      - name: "merge the changes in"
+        command: "git merge --ff-only {{ temp_version_branch }}"
+
+      - name: "tag it"
+        command: "git tag '{{ new_version }}'"
+
+      - name: "delete the temp branch"
+        command: "git branch -D '{{ temp_version_branch }}'"
+
+      - name: "switch to the current release branch"
+        command: "git checkout {{ hotfix_branch }}"
+
+      - name: push the branch to origin
+        command: "git push '{{ remote_name }}' HEAD"
+
+      - name: push the tag to origin
+        command: "git push '{{ remote_name }}' '{{ new_version }}'"
+
+      - pause:
+          prompt: "Go to the pipelines webpage and start a build for tag {{ new_version }}. Make sure that you give it variable: FORCE_PUSH=true . Retain the build as well. ... Press Enter when complete"
+
+    - name: "Try to get the gpu version tag from remote"
+      command: "git fetch {{ remote_name }} {{ new_version_gpu }} --tags"
+      failed_when: false
+      register: tag_checkout_result
+
+    - set_fact:
+        tag_already_in_remote: "{{ tag_checkout_result.rc == 0 }}"
+        local_tag_mismatch_remote: "{{ 'rejected' in tag_checkout_result.stderr and 'clobber' in tag_checkout_result.stderr }}"
+
+    - when: not tag_already_in_remote and not local_tag_mismatch_remote
+      block:
+      - name: switch to the gpu branch
+        command: "git checkout '{{ hotfix_branch_gpu }}'"
+
+      - name: reset the gpu branch to the cpu branch
+        command: "git reset --hard '{{ hotfix_branch }}'"
+
+      - name: cherry-pick ab5ec6a56 to get the GPU-enabling code
+        command: "git cherry-pick ab5ec6a56"
+
+      - name: tag with gpu tag
+        command: "git tag '{{ new_version_gpu }}'"
+
+      - name: push the branch to origin
+        command: "git push -f '{{ remote_name }}' HEAD"
+
+      - name: push gpu tag
+        command: "git push '{{ remote_name }}' '{{ new_version_gpu }}'"
+
+      - pause:
+          prompt: "Go to the pipelines webpage and start a build for tag {{ new_version_gpu }}. Make sure that you give it variables: FORCE_PUSH=true and PACKAGE_NAME_OVERRIDE=perceptilabs-gpu . Retain the build as well. ... Press Enter when complete"
