@@ -42,7 +42,6 @@ import DataData       from '@/components/network-elements/elements/data-data/set
 import DataRandom         from '@/components/network-elements/elements/data-random/set-data-random.vue'
 import DataEnvironment    from '@/components/network-elements/elements/data-environment/set-data-environment.vue'
 import DataCloud          from '@/components/network-elements/elements/data-cloud/set-data-cloud.vue'
-import IoInput            from '@/components/network-elements/elements/io-input/set-io-input.vue'
 
 import DeepLearningFC        from '@/components/network-elements/elements/deep-learning-fc/set-deep-learning-fc.vue'
 import DeepLearningConv      from '@/components/network-elements/elements/deep-learning-conv/set-deep-learning-conv.vue'
@@ -73,9 +72,11 @@ import TrainDetector        from '@/components/network-elements/elements/train-d
 
 import LayerCustom          from '@/components/network-elements/elements/layer-custom/layer-custom.vue'
 
-import PreTrainedVGG16        from '@/components/network-elements/elements/pretrained-vgg16/set-pretrained-vgg16.vue'
+import PreTrainedResNet50  from '@/components/network-elements/elements/pretrained-resnet50/set-pretrained-resnet50.vue'
+import PreTrainedVGG16     from '@/components/network-elements/elements/pretrained-vgg16/set-pretrained-vgg16.vue'
 import PreTrainedInceptionV3  from '@/components/network-elements/elements/pretrained-inceptionv3/set-pretrained-inceptionv3.vue'
 
+import IoInput            from '@/components/network-elements/elements/io-input/set-io-input.vue'
 import IoOutput             from '@/components/network-elements/elements/io-output/set-io-output.vue'
 
 import SidebarSettingPreview  from "@/components/network-elements/elements-settings/sidebar-setting-preview.vue";
@@ -88,14 +89,14 @@ export default {
   name: 'SidebarSettings',
   components: { 
     SidebarSettingPreview,
-    DataData, DataEnvironment, DataRandom, DataCloud, IoInput,
+    DataData, DataEnvironment, DataRandom, DataCloud,
     DeepLearningFC, DeepLearningConv, DeepLearningRecurrent,
     ProcessCrop, ProcessEmbed, ProcessGrayscale, ProcessOneHot, ProcessReshape, ProcessRescale,
     MathArgmax, MathMerge, MathSwitch, MathSoftmax, MathSplit,
     TrainNormal, TrainRegression, TrainGenetic, TrainDynamic, TrainReinforce, TrainLoss, TrainOptimizer, TrainGan, TrainDetector,
-    IoOutput,
+    IoInput, IoOutput,
     LayerCustom,
-    PreTrainedVGG16, PreTrainedInceptionV3,
+    PreTrainedVGG16, PreTrainedInceptionV3, PreTrainedResNet50,
     SidebarLockedSettingsWrapper,
     SidebarAutoSettingInfo
   }, 

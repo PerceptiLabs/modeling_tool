@@ -2,7 +2,6 @@ import DataData             from '@/components/network-elements/elements/data-da
 import DataEnvironment      from '@/components/network-elements/elements/data-environment/data-environment.vue'
 import DataCloud            from '@/components/network-elements/elements/data-cloud/data-cloud.vue'
 import DataRandom           from '@/components/network-elements/elements/data-random/data-random.vue'
-import IoInput          from '@/components/network-elements/elements/io-input/io-input.vue'
 
 import DeepLearningFC       from '@/components/network-elements/elements/deep-learning-fc/deep-learning-fc.vue'
 import DeepLearningConv     from '@/components/network-elements/elements/deep-learning-conv/deep-learning-conv.vue'
@@ -40,9 +39,11 @@ import ClassicMLSVM         from '@/components/network-elements/elements/classic
 import LayerContainer       from '@/components/network-elements/elements/layer-container/layer-container.vue'
 import LayerCustom          from '@/components/network-elements/elements/layer-custom/layer-custom.vue'
 
-import PreTrainedVGG16        from '@/components/network-elements/elements/pretrained-vgg16/pretrained-vgg16.vue'
+import PreTrainedVGG16      from '@/components/network-elements/elements/pretrained-vgg16/pretrained-vgg16.vue'
 import PreTrainedInceptionV3  from '@/components/network-elements/elements/pretrained-inceptionv3/pretrained-inceptionv3.vue'
+import PreTrainedResNet50   from '@/components/network-elements/elements/pretrained-resnet50/pretrained-resnet50.vue'
 
+import IoInput              from '@/components/network-elements/elements/io-input/io-input.vue'
 import IoOutput             from '@/components/network-elements/elements/io-output/io-output.vue'
 
 import SettingsArrow        from '@/components/network-elements/elements-settings/setting-arrow.vue'
@@ -57,7 +58,7 @@ let resizeObservable = null;
 export default {
   name: 'NetworkField',
   components: {
-    DataData, DataEnvironment, DataRandom, IoInput,
+    DataData, DataEnvironment, DataRandom,
     // DataCloud,
     DeepLearningFC, DeepLearningConv, DeepLearningRecurrent,
     ProcessEmbed, ProcessGrayscale, ProcessOneHot, ProcessReshape, ProcessRescale,
@@ -68,9 +69,9 @@ export default {
     // MathSplit,
 
     // ClassicMLDbscans, ClassicMLKMeans, ClassicMLKNN, ClassicMLRandomForest, ClassicMLSVM,
-    IoOutput,
+    IoInput, IoOutput,
     LayerContainer, LayerCustom,
-    PreTrainedVGG16, PreTrainedInceptionV3,
+    PreTrainedVGG16, PreTrainedInceptionV3,PreTrainedResNet50,
     SettingsArrow,
     NetworkGrid
   },

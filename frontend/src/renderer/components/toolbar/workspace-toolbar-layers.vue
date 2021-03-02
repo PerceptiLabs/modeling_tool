@@ -85,6 +85,7 @@
 
   import PreTrainedVGG16        from '@/components/network-elements/elements/pretrained-vgg16/view-pretrained-vgg16.vue'
   import PreTrainedInceptionV3  from '@/components/network-elements/elements/pretrained-inceptionv3/view-pretrained-inceptionv3.vue'
+  import PreTrainedResNet50   from '@/components/network-elements/elements/pretrained-resnet50/view-pretrained-resnet50.vue'
 
   import { calcLayerPosition } from '@/core/helpers.js';
 
@@ -97,9 +98,8 @@ export default {
     TrainNormal, TrainRegression, TrainGenetic, TrainDynamic, TrainReinforce, TrainDetector, TrainGan,
     MathArgmax, MathMerge, MathSoftmax, MathSwitch,
     LayerCustom,
-    PreTrainedVGG16, PreTrainedInceptionV3,
-    IoInput, IoOutput,
-    LayerCustom
+    PreTrainedVGG16, PreTrainedInceptionV3, PreTrainedResNet50,
+    IoInput, IoOutput
   },
   data() {
     return {
@@ -438,6 +438,9 @@ export default {
 
         if (!dlObject.networkElements.includes('PreTrainedVGG16')) {
           dlObject.networkElements.push('PreTrainedVGG16');
+        }
+        if (!dlObject.networkElements.includes('PreTrainedResNet50')) {
+          dlObject.networkElements.push('PreTrainedResNet50');
         }
         if (!dlObject.networkElements.includes('PreTrainedInceptionV3')) {
           dlObject.networkElements.push('PreTrainedInceptionV3');

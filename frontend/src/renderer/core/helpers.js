@@ -232,6 +232,7 @@ const layerBgColor = function (componentName) {
     case 'DeepLearningFC':
     case 'DeepLearningConv':
     case 'DeepLearningRecurrent':
+    case 'PreTrainedResNet50':
     case 'PreTrainedVGG16':
     case 'PreTrainedInceptionV3':
       className = 'net-color-learn-deep';
@@ -290,6 +291,7 @@ const layerBgColorTransparent = function (componentName) {
     case 'DeepLearningFC':
     case 'DeepLearningConv':
     case 'DeepLearningRecurrent':
+    case 'PreTrainedResNet50':
     case 'PreTrainedVGG16':
     case 'PreTrainedInceptionV3':
       className = 'net-element-learn-deep';

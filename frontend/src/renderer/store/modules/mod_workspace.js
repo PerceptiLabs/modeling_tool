@@ -2599,8 +2599,6 @@ const componentsInputs = {
   DataEnvironment: [],
   DataRandom: [],
 
-  IoInput: [],
-
   ProcessReshape: ['input'],
   ProcessGrayscale: ['input'],
   ProcessOneHot: ['input'],
@@ -2622,9 +2620,11 @@ const componentsInputs = {
   TrainDetector: ['predictions', 'labels'],
   LayerCustom: ['input'],
 
+  PreTrainedResNet50: ['input'],
   PreTrainedVGG16: ['input'],
   PreTrainedInceptionV3: ['input'],
-
+  
+  IoInput: [],
   IoOutput: ['input']
 };
 
@@ -2633,8 +2633,6 @@ const componentsOutputs = {
   DataData: ['output'],
   DataEnvironment: ['output'],
   DataRandom: ['output'],
-  
-  IoInput: ['output'],
 
   ProcessReshape: ['output'],
   ProcessGrayscale: ['output'],
@@ -2657,9 +2655,11 @@ const componentsOutputs = {
   TrainGan: [],
   TrainDetector: [],
 
+  PreTrainedResNet50: ['output'],
   PreTrainedVGG16: ['output'],
   PreTrainedInceptionV3: ['output'],
 
+  IoInput: ['output'],
   IoOutput: []
 };
 
