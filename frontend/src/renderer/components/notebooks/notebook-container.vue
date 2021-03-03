@@ -157,7 +157,7 @@ export default {
 
 .notebook-box {
   position: relative;
-  height: 100%;
+  height: calc(100vh - 129px);
 }
 #notebook-container {
   background-color: linear-gradient(180deg, #363E51 0%, rgba(54, 62, 81, 0) 100%);
