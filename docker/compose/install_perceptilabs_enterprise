@@ -6,6 +6,7 @@ DOCKER_USERNAME=perceptilabsenterprise
 CONTAINER_REGISTRY=perceptilabsenterprise.azurecr.io
 AZURE_BLOB_URL=https://perceptilabs.blob.core.windows.net/enterprise
 DOCKER_COMPOSE_URL=${AZURE_BLOB_URL}/${VERSION}/docker-compose.yaml
+NGINX_CONF_URL=${AZURE_BLOB_URL}/${VERSION}/nginx.conf
 
 ###################################################################################################
 # Get User Input
@@ -42,6 +43,8 @@ curl -s $DOCKER_COMPOSE_URL \
   | sed "s/\${PL_VERSION}/$VERSION/g" \
   > docker-compose.yaml
 
+wget $NGINX_CONF_URL
+
 mkdir -p plabs
 chmod 777 plabs
 sudo docker login ${CONTAINER_REGISTRY} --username ${DOCKER_USERNAME} --password "${PL_PASSWORD}"
@@ -50,4 +53,4 @@ echo pulling images
 sudo docker-compose pull
 
 sudo docker-compose up -d
-echo The tool is ready at http://${PL_SERVER_NAME}:8080
+echo The tool is ready at http://${PL_SERVER_NAME}

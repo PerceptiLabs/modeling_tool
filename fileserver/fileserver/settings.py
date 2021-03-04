@@ -15,11 +15,19 @@ SECRET_KEY = "%6c1c))#ez&wg+dh1nu_g-28xvoky4slq6j^y@9$*l)0i2b^+c"
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-# see https://github.com/containers/podman/issues/3586
-IS_CONTAINERIZED = os.path.exists("/.dockerenv") or os.getenv("container")
+def is_docker():
+    try:
+        return os.path.isfile("/.dockerenv")
+    except:
+        return False
 
-# TODO: the * needs to be replaced by a variable so we can receive the base address of the namespace on the OpenShift cluster.
-ALLOWED_HOSTS = ['*'] # if IS_CONTAINERIZED else ["localhost", "127.0.0.1"]
+def is_podman():
+    # see https://github.com/containers/podman/issues/3586
+    # in podman, the "container" variable is set
+    return os.getenv("container") is not None
+
+IS_CONTAINERIZED = is_docker() or is_podman()
+ALLOWED_HOSTS = ['*'] if IS_CONTAINERIZED else ["localhost", "127.0.0.1"]
 
 # Enforcement of the token
 API_TOKEN = os.getenv("PL_FILE_SERVING_TOKEN")
@@ -29,7 +37,7 @@ if API_TOKEN_REQUIRED and not API_TOKEN:
 
 
 INSTALLED_APPS = [
-	"corsheaders",
+    "corsheaders",
     "fileserver.api",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -118,15 +126,12 @@ USE_TZ = True
 
 STATIC_URL = "/static/"
 
-CORS_ORIGIN_ALLOW_ALL = True
+# CORS_ALLOW_CREDENTIALS and CORS_ORIGIN_WHITELIST are set to more restrictive values for MixPanel's sake
 CORS_ALLOW_CREDENTIALS = False
+CORS_ORIGIN_ALLOW_ALL = IS_CONTAINERIZED
 
-# CORS_WHITELIST overrides FRONTEND_BASE_URL
-whitelist_strs = os.getenv("CORS_WHITELIST")
-if whitelist_strs:
-    CORS_ORIGIN_WHITELIST = [s for s in whitelist_strs.split(" ") if s]
-else:
-    CORS_ORIGIN_WHITELIST = ['http://localhost:8080']
+if not IS_CONTAINERIZED:
+    CORS_ORIGIN_WHITELIST = [ 'http://localhost:8080', ]
 
 LOGGING = {
     "version": 1,

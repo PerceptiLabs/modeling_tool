@@ -3,8 +3,6 @@ version: '3.4'
 services:
   db:
     image: postgres:12
-    ports:
-      - "5432:5432"
     environment:
       POSTGRES_DB: rygg
       POSTGRES_USER: rygg
@@ -19,33 +17,32 @@ services:
       DB_HOST: db
       DB_USER: rygg
       DB_PASS: rygg
-    ports:
-      - "8000:8000"
     depends_on:
       - db
 
   frontend:
     image: ${CONTAINER_REGISTRY}/frontend:${PL_VERSION}
-    ports:
-      - "8080:8080"
     depends_on:
       - rygg
       - kernel
-    environment:
-      PL_KERNEL_URL: ws://${PL_SERVER_NAME}:5000
-      PL_FILESERVER_URL: http://${PL_SERVER_NAME}:8011
-      PL_RYGG_URL: http://${PL_SERVER_NAME}:8000
 
   kernel:
     image: ${CONTAINER_REGISTRY}/kernel:${PL_VERSION}
     volumes:
       - ./plabs:/perceptilabs/Documents/Perceptilabs
-    ports:
-      - "5000:5000"
-      - "8011:8011"
 
     environment:
       HOME: /perceptilabs
       PL_FILE_SERVING_TOKEN: thetoken
       PL_TUTORIALS_DATA: /opt/app-root/src/perceptilabs/tutorial_data
-      FRONTEND_BASE_URL: http://${PL_SERVER_NAME}:8080
+
+  nginx:
+    image: nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - rygg
+      - kernel
+      - frontend
