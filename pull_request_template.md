@@ -23,7 +23,7 @@
 *To be filled in*
 
 
-Please also:
+#Please also:
 - [ ] Include any new files in included_files.txt
 - [ ] Update the story on the board
 - [ ] Announce changes that will affect everyone in #dev in slack
