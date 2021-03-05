@@ -14,7 +14,7 @@
 -------------------------------
 *To be filled in*
 
-# Please review the following files:
+# Please review the following files
 -------------------------------
 *To be filled in*
 
