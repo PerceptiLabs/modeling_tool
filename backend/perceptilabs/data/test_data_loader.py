@@ -71,6 +71,91 @@ def test_image_data_is_loaded_correctly(temp_path):
         actual_image = inputs['x'].numpy()
         assert np.all(np.isclose(actual_image, expected_image, atol=1))
 
+        
+@pytest.mark.tf2x
+def test_splitting():
+    data = [[1, -1], [1, -1], [1, -1], [2, -2], [2, -2], [3, -3]]
+    df = pd.DataFrame(data, columns=['x1', 'x2']) 
 
+    feature_specs = {
+        'x1': FeatureSpec('numerical', 'input'),
+        'x2': FeatureSpec('numerical', 'output'),
+    }
+    dl = DataLoader(
+        df, feature_specs, partitions={'training': 3/6, 'validation': 2/6, 'test': 1/6}
+    )
+    
+    def validate_set(dataset, expected_size, expected_x1, expected_x2):
+        assert len(list(dataset)) == expected_size
+        for inputs, targets in dataset:
+            assert inputs['x1'].numpy() == expected_x1
+            assert targets['x2'].numpy() == expected_x2
+            
+    validate_set(
+        dl.get_dataset(partition='training'),
+        expected_size=3,
+        expected_x1=1.0,
+        expected_x2=-1.0
+    )
+    validate_set(
+        dl.get_dataset(partition='validation'),
+        expected_size=2,
+        expected_x1=2.0,
+        expected_x2=-2.0
+    )
+    validate_set(
+        dl.get_dataset(partition='test'),
+        expected_size=1,
+        expected_x1=3.0,
+        expected_x2=-3.0
+    )
+
+
+@pytest.mark.tf2x
+def test_splitting_rows_are_preserved():  # I.e., check that columns arent shuffled differently
+    data = [[1.0, 1.0], [2.0, 2.0], [3.0, 3.0], [4.0, 4.0], [5.0, 5.0], [6.0, 6.0]]
+    df = pd.DataFrame(data, columns=['x1', 'x2']) 
+
+    feature_specs = {
+        'x1': FeatureSpec('numerical', 'input'),
+        'x2': FeatureSpec('numerical', 'output'),
+    }
+    dl = DataLoader(
+        df, feature_specs, partitions={'training': 3/6, 'validation': 2/6, 'test': 1/6}
+    )
+    
+    def validate_set(dataset, expected_rows):
+        for inputs, targets in dataset:
+            actual_row = [inputs['x1'].numpy(), targets['x2'].numpy()]
+            assert actual_row in expected_rows
         
-        
+    validate_set(
+        dl.get_dataset(partition='training'),
+        expected_rows=[[1.0, 1.0], [2.0, 2.0], [3.0, 3.0]]
+    )
+    validate_set(
+        dl.get_dataset(partition='validation'),
+        expected_rows=[[4.0, 4.0], [5.0, 5.0]]
+    )
+    validate_set(
+        dl.get_dataset(partition='test'),
+        expected_rows=[[6.0, 6.0]] 
+    )
+    
+
+@pytest.mark.tf2x
+def test_get_dataset_size():
+    data = [[1, -1], [1, -1], [1, -1], [2, -2], [2, -2], [3, -3]]
+    df = pd.DataFrame(data, columns=['x1', 'x2']) 
+
+    feature_specs = {
+        'x1': FeatureSpec('numerical', 'input'),
+        'x2': FeatureSpec('numerical', 'output'),
+    }
+    dl = DataLoader(
+        df, feature_specs, partitions={'training': 3/6, 'validation': 2/6, 'test': 1/6}
+    )
+
+    assert dl.get_dataset_size(partition='training') == 3
+    assert dl.get_dataset_size(partition='validation') == 2
+    assert dl.get_dataset_size(partition='test') == 1    

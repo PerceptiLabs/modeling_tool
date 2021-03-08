@@ -7,7 +7,8 @@ import numpy as np
 import tensorflow as tf
 from typing import Dict
 
-import perceptilabs.data.preprocessing as preprocessing
+import perceptilabs.data.pipelines as pipelines
+
 
 @dataclass
 class FeatureSpec:
@@ -17,32 +18,22 @@ class FeatureSpec:
 
 
 class DataLoader:
-    def __init__(self, data_frame, feature_specs, base_directory=None):
-        self._feature_specs = feature_specs
-        self._preprocessing_pipelines = {}
-
+    def __init__(self, data_frame, feature_specs, partitions=None, base_directory=None):
+        partitions = partitions or {'training': 1.0, 'validation': 0.0, 'test': 0.0}
+        
+        self._validate_partitions(partitions)
+        self._validate_feature_specs(data_frame.columns, feature_specs)
+        
         if base_directory is not None:
-            self._df = self._make_paths_absolute(data_frame, base_directory)
-        else:
-            self._df = data_frame
+            data_frame = self._make_paths_absolute(data_frame, feature_specs, base_directory)
+        
+        self._datasets, self._pipelines = self._build_datasets_and_pipelines(
+            data_frame, feature_specs, partitions
+        )
 
-    def _make_paths_absolute(self, df, base_directory):
-        path_cols = [
-            feature_name
-            for feature_name, feature_spec in self._feature_specs.items()
-            if feature_spec.datatype in ['image']
-        ]
-
-        def make_absolute(series):
-            """ convert from <file_name> to <base_directory>/<file_name> """
-            return str(base_directory + os.path.sep) + series  
-
-        df[path_cols] = df[path_cols].apply(make_absolute)
-        return df
-    
     @classmethod
-    def from_graph_spec(cls, graph_spec, default_dataset=None):
-        # TODO: docs
+    def from_graph_spec(cls, graph_spec, partitions=None):
+        """ Derives a data loader from a graph spec """
         feature_specs = {}
         paths = []
         for layer_spec in graph_spec.get_ordered_layers():
@@ -58,14 +49,10 @@ class DataLoader:
         if len(set(paths)) != 1:
             raise NotImplementedError("Exactly one data file is supported!")
 
-        if default_dataset is not None and default_dataset.feature_specs == feature_specs:
-            # If the new dataset would be equivalent to the default dataset, don't create a new one.
-            return default_dataset
-        else:
-            return cls.from_features(feature_specs)
+        return cls.from_features(feature_specs, partitions=partitions)
         
     @classmethod
-    def from_features(cls, feature_specs: Dict[str, FeatureSpec]) -> 'DataLoader':
+    def from_features(cls, feature_specs, partitions=None) -> 'DataLoader':
         """ Creates a DataLoader given set of features
 
         Arguments:
@@ -80,57 +67,155 @@ class DataLoader:
 
         path = next(iter(paths))
         df = pd.read_csv(path)
-        return cls(df, feature_specs, base_directory=os.path.dirname(path))
+        return cls(df, feature_specs, partitions=partitions, base_directory=os.path.dirname(path))
 
-    def _select_columns_by_iotype(self, iotype):
-        # TODO: docs
+    def _select_columns_by_iotype(self, df, feature_specs, iotype):
+        """ Selects input or output components from the dataframe """
         assert iotype in ['input', 'output']
-        column_names = [name for name, feature_spec in self._feature_specs.items() if feature_spec.iotype==iotype]        
-        return self._df[column_names]
+        column_names = [name for name, feature_spec in feature_specs.items() if feature_spec.iotype==iotype]        
+        return df[column_names]
 
-    def _create_dataset_from_dataframe(self, df):
-        per_feature_datasets = {
-            feature_name: self._load_and_preprocess_feature(df, feature_name) 
-            for feature_name in df.columns            
-        }
-        dict_dataset = tf.data.Dataset.zip(per_feature_datasets)
-        return dict_dataset
+    def _create_datasets_and_pipelines_from_dataframe(self, df, feature_specs, partitions):
+        """ Creates pre- and post-processing pipelines for the dataframe and then splits it into 3 tensorflow datasets """
+        per_feature_training_sets = {}
+        per_feature_validation_sets = {}
+        per_feature_test_sets = {}
 
-    def _load_and_preprocess_feature(self, df, feature_name):
-        feature_dataset = tf.data.Dataset.from_tensor_slices(df[feature_name].values.tolist())
+        pipelines = {}
 
-        feature_datatype = self._feature_specs[feature_name].datatype        
-        pipeline = self._preprocessing_pipelines[feature_name] = self._build_preprocessing_pipeline(
-            feature_datatype, feature_dataset
+        for feature_name in df.columns:                    
+            feature_datasets, feature_pipelines = self._load_and_preprocess_feature(
+                df, feature_specs, feature_name, partitions
+            )
+            feature_training_set, feature_validation_set, feature_test_set = feature_datasets
+            per_feature_training_sets[feature_name] = feature_training_set
+            per_feature_validation_sets[feature_name] = feature_validation_set
+            per_feature_test_sets[feature_name] = feature_test_set            
+
+            training_pipeline, inference_pipeline, postprocessing_pipeline = feature_pipelines
+            pipelines[feature_name] = {
+                'training': training_pipeline,
+                'inference': inference_pipeline,
+                'postprocessing': postprocessing_pipeline
+            }
+
+        training_set = tf.data.Dataset.zip(per_feature_training_sets)
+        validation_set = tf.data.Dataset.zip(per_feature_validation_sets)
+        test_set = tf.data.Dataset.zip(per_feature_test_sets)
+        datasets = (training_set, validation_set, test_set)        
+        return datasets, pipelines
+
+    def _load_and_preprocess_feature(self, df, feature_specs, feature_name, partitions):
+        """ Loads a single column from the dataframe and splits it into a set of preprocessed tf.data.Datasets """
+        feature_values = df[feature_name].values.tolist()  # Create a dataset for an individual column
+        feature_dataset = tf.data.Dataset.from_tensor_slices(feature_values)
+
+        feature_training_set, feature_validation_set, feature_test_set = self._split_dataset(
+            feature_dataset, len(df), partitions
         )
-        feature_dataset = feature_dataset.map(lambda x: pipeline(x))  # Apply the pipeline
-        return feature_dataset
+        training_pipeline, inference_pipeline, postprocessing_pipeline = self._build_pipelines(
+            feature_specs[feature_name].datatype, feature_training_set
+        )
+        feature_training_set = feature_training_set.map(lambda x: training_pipeline(x))
+        feature_validation_set = feature_validation_set.map(lambda x: inference_pipeline(x))  
+        feature_test_set = feature_test_set.map(lambda x: inference_pipeline(x))
 
-    def _build_preprocessing_pipeline(self, feature_datatype, feature_dataset):
-        # TODO: validation and test data shouldn't be used to build the pipeline (data leakage) [story 1537]
+        feature_datasets = (feature_training_set, feature_validation_set, feature_test_set)
+        feature_pipelines = (training_pipeline, inference_pipeline, postprocessing_pipeline)
+        
+        return feature_datasets, feature_pipelines
+
+    def _split_dataset(self, full_dataset, dataset_size, partitions):
+        """ Splits a dataset. NOTE: this is per column, so shuffling here is not recommended. """
+        training_size = int(partitions['training'] * dataset_size)
+        validation_size = int(partitions['validation'] * dataset_size)
+        
+        training_set = full_dataset.take(training_size)
+        test_val_set = full_dataset.skip(training_size)
+        validation_set = test_val_set.take(validation_size)        
+        test_set = test_val_set.skip(validation_size)        
+
+        return training_set, validation_set, test_set
+
+    def _build_pipelines(self, feature_datatype, feature_training_set):
+        """ Build pipelines. 
+        
+        Returns:
+            Two preprocessing pipelines: one for training and one for inference.
+            One postprocessing pipeline.
+        """
+        build_pipeline = self._get_pipeline_builder(feature_datatype)
+        
+        training_pipeline, inference_pipeline, postprocessing_pipeline = build_pipeline(
+            feature_training_set
+        )
+        if inference_pipeline is None:
+            inference_pipeline = training_pipeline
+            
+        if postprocessing_pipeline is None:
+            postprocessing_pipeline = tf.keras.Model()  # Identity: do nothing.
+
+        return training_pipeline, inference_pipeline, postprocessing_pipeline
+    
+    def _get_pipeline_builder(self, feature_datatype):
+        """ Get pipeline builder """
         if feature_datatype == 'numerical':
-            return preprocessing.build_numerical_pipeline(feature_dataset)        
+            return pipelines.build_numerical_pipelines
         elif feature_datatype == 'image':
-            return preprocessing.build_image_pipeline(feature_dataset)
+            return pipelines.build_image_pipelines
         else:
             raise NotImplementedError(f"No preprocessing pipeline defined for type '{feature_datatype}'")
 
-    def get_dataset(self):
+    def get_dataset(self, partition='training'):
         """ Returns a TensorFlow dataset """
-        input_dataframe = self._select_columns_by_iotype('input')
-        target_dataframe = self._select_columns_by_iotype('output')
-        
-        input_dataset = self._create_dataset_from_dataframe(input_dataframe)
-        target_dataset = self._create_dataset_from_dataframe(target_dataframe)
-        
-        dataset = tf.data.Dataset.zip((input_dataset, target_dataset))
-        dataset = dataset.cache()  # Caches the preprocessed data in memory.        
+        dataset = self._datasets[partition]
         return dataset
 
-    @property
-    def feature_specs(self) -> Dict[str, FeatureSpec]:
-        """ Returns the feature specs """
-        return self._feature_specs.copy()
+    def get_dataset_size(self, partition='training'):
+        """ Returns size of a partition TensorFlow dataset """
+        size = len(list(self.get_dataset(partition=partition)))        
+        return size
+
+    def get_preprocessing_pipeline(self, feature_name, mode='training'):
+        """ Get the preprocessing pipeline associated with a feature """
+        if mode not in ['training', 'inference']:
+            raise ValueError("Valid preprocessing modes are 'training' and 'inference'")
+        
+        return self._pipelines[feature_name][mode]        
+        
+    def get_postprocessing_pipeline(self, feature_name):
+        """ Get the postprocessing pipeline associated with a feature """
+        return self._pipelines[feature_name]['postprocessing']        
+        
+    def _build_datasets_and_pipelines(self, df, feature_specs, partitions):
+        input_dataframe = self._select_columns_by_iotype(df, feature_specs, 'input')
+        target_dataframe = self._select_columns_by_iotype(df, feature_specs, 'output')
+        
+        input_datasets, input_pipelines = self._create_datasets_and_pipelines_from_dataframe(
+            input_dataframe, feature_specs, partitions
+        )
+        target_datasets, target_pipelines = self._create_datasets_and_pipelines_from_dataframe(
+            target_dataframe, feature_specs, partitions
+        )
+        
+        input_training_set, input_validation_set, input_test_set = input_datasets
+        target_training_set, target_validation_set, target_test_set = target_datasets
+
+        training_set = tf.data.Dataset.zip((input_training_set, target_training_set))
+        validation_set = tf.data.Dataset.zip((input_validation_set, target_validation_set))
+        test_set = tf.data.Dataset.zip((input_test_set, target_test_set))
+
+        datasets = {
+            'training': training_set.cache(),
+            'validation': validation_set.cache(),
+            'test': test_set.cache()                
+        }
+        
+        pipelines = {}
+        pipelines.update(input_pipelines)
+        pipelines.update(target_pipelines)
+        
+        return datasets, pipelines
 
     def get_feature_shape(self, feature_name):
         """ Returns the shape of a feature. """
@@ -138,6 +223,47 @@ class DataLoader:
         inputs_batch, targets_batch = next(iter(dataset))
         shape = inputs_batch[feature_name].shape
         return shape
+    
+    def _make_paths_absolute(self, df, feature_specs, base_directory):
+        """ Converts relative paths in the dataframe to absolute paths"""
+        path_cols = [
+            feature_name
+            for feature_name, feature_spec in feature_specs.items()
+            if feature_spec.datatype in ['image']
+        ]
 
-    def to_pandas(self):
-        return self._df
+        def make_absolute(series):
+            """ convert from <file_name> to <base_directory>/<file_name> """
+            return str(base_directory + os.path.sep) + series  
+
+        df[path_cols] = df[path_cols].apply(make_absolute)
+        return df
+    
+    def _validate_partitions(self, partitions):
+        """ Check that data partitions add up to 100% """
+        sum_ = partitions['training'] + partitions['validation'] + partitions['test']
+        if not np.isclose(sum_, 1.0):
+            raise ValueError("Partitions must sum to 1.0!")        
+
+    def _validate_feature_specs(self, columns, feature_specs):
+        """ Assert that the there is a one-to-one mapping between the columns and feature specs. Also, that atleast one input and one output is specified """
+        for column in columns:
+            if column not in feature_specs:
+                raise ValueError(f"Column '{column}' not in feature specs")
+        
+        inputs = set()
+        outputs = set()
+        
+        for name, spec in feature_specs.items():
+            if name not in columns:
+                raise ValueError(f"Feature '{name}' not in columns")
+            
+            if spec.iotype == 'input':
+                inputs.add(name)
+            elif spec.iotype == 'output':
+                outputs.add(name)
+
+        if len(inputs) == 0:
+            raise ValueError("No inputs specified!")
+        if len(outputs) == 0:
+            raise ValueError("No outputs specified!")

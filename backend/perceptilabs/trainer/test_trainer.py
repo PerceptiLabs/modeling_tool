@@ -14,7 +14,7 @@ from perceptilabs.trainer import Trainer
 @pytest.fixture()
 def csv_path(temp_path):
     file_path = os.path.join(temp_path, 'data.csv')
-    df = pd.DataFrame({'x1': [123.0, 24.0, 13.0, 45.0], 'y1': [1.0, 2.0, 3.0, 4.0]})
+    df = pd.DataFrame({'x1': [123.0, 24.0, 13.0, 45.0, -10.0], 'y1': [1.0, 2.0, 3.0, 4.0, -1.0]})
     df.to_csv(file_path, index=False)    
     yield file_path
 
@@ -25,7 +25,8 @@ def data_loader(csv_path):
         {
             'x1': FeatureSpec('numerical', 'input', csv_path),
             'y1': FeatureSpec('numerical', 'output', csv_path)            
-        }
+        },
+        partitions={'training': 4/5, 'validation': 1/5, 'test': 0.0}
     )
     yield dl
 
@@ -97,16 +98,20 @@ def test_num_completed_batches_are_ok(script_factory_tf2x, data_loader, graph_sp
     # Run some sanity checks
     assert trainer.num_batches_completed_all_epochs == trainer.num_batches_all_epochs
     assert trainer.num_batches_per_epoch*trainer.num_epochs == trainer.num_batches_all_epochs
+    assert trainer.num_training_batches_completed_this_epoch > 0
+    assert trainer.num_validation_batches_completed_this_epoch > 0
     assert trainer.num_training_batches_completed_this_epoch + trainer.num_validation_batches_completed_this_epoch == trainer.num_batches_completed_this_epoch
     assert trainer.num_batches_completed_this_epoch == trainer.num_batches_per_epoch
 
 
 @pytest.mark.tf2x
-def test_layer_output_ok(script_factory_tf2x, data_loader, graph_spec_few_epochs):
+def test_layer_output_ok(script_factory_tf2x, csv_path, data_loader, graph_spec_few_epochs):
     trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs)
     next(trainer.run_stepwise()) # Take the first training steps
 
-    expected = data_loader.to_pandas()['x1'][0:2].to_numpy()
+    df = pd.read_csv(csv_path)
+    
+    expected = df['x1'][0:2].to_numpy()
     actual = trainer.get_layer_output('0')
     
     assert np.all(actual == expected)
@@ -262,9 +267,10 @@ def test_trainer_can_stop(script_factory_tf2x, data_loader, graph_spec_few_epoch
 def test_trainer_can_pause_stop(script_factory_tf2x, data_loader, graph_spec_few_epochs):
     trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs)
 
-    next(trainer.run_stepwise()) # Take the first training steps    
+    step = trainer.run_stepwise()
+    next(step) # Take the first training steps    
     trainer.pause()
-    next(trainer.run_stepwise())
+    next(step)
     trainer.stop()
     assert trainer.status == 'Finished'
 

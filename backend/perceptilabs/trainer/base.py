@@ -47,8 +47,7 @@ class Trainer:
         self._training_model = TrainingModel(self._script_factory, self._graph_spec)
         logger.info("Training model initialized")
         
-        dataset_train = self._data_loader.get_dataset().batch(self.batch_size)
-        logger.info("Dataset loaded")
+        training_set, validation_set = self._get_datasets()
         
         self._metric_training_loss = tf.keras.metrics.Mean()
         self._metric_training_accuracy = tf.keras.metrics.CategoricalAccuracy()
@@ -76,7 +75,7 @@ class Trainer:
             yield from self._loop_over_dataset(
                 self._training_model,
                 losses,
-                dataset_train,
+                training_set,
                 self._metric_training_loss,
                 self._metric_training_accuracy,
                 self._metric_training_auc,
@@ -84,13 +83,21 @@ class Trainer:
                 training=True,
                 optimizer=optimizer
             )
-
             time_paused_training = self._sleep_while_paused()
             if self.is_closed:
                 break
             self._set_status('Validation')
 
-            yield # TODO: loop over dataset for validation (story 1537)
+            yield from self._loop_over_dataset(
+                self._training_model,
+                losses,
+                validation_set,
+                self._metric_validation_loss,
+                self._metric_validation_accuracy,
+                self._metric_validation_auc,
+                self._set_num_validation_batches_completed_this_epoch,
+                training=False
+            )            
 
             time_paused_validation = self._sleep_while_paused()
             if self.is_closed:
@@ -131,7 +138,7 @@ class Trainer:
             set_num_batches_completed_this_epoch(step + 1)            
             yield
 
-    #@tf.function
+    @tf.function
     def _work_on_batch(self, model, losses, inputs_batch, targets_batch, metric_loss, training, optimizer):
         """ Train or validate on a batch of data """
         with tf.GradientTape() as tape:
@@ -261,7 +268,8 @@ class Trainer:
 
     def _initialize_batch_counters(self, data_loader):
         """ Initialize iteration/batch counters to keep track of progress """
-        dataset_size = len(list(data_loader.get_dataset()))
+        dataset_size = data_loader.get_dataset_size(partition='training') + \
+                       data_loader.get_dataset_size(partition='validation')
 
         self._num_batches_per_epoch = int(np.ceil(dataset_size / self.batch_size))
         self._num_batches_all_epochs = self._num_batches_per_epoch * self._num_epochs
@@ -450,3 +458,12 @@ class Trainer:
     def get_target_stats(self) -> SampleStats:
         """ Returns a tracker for the current target values """
         return self._target_stats_tracker.save()
+
+    def _get_datasets(self):
+        """ Get the datasets from the data loader """
+        training_set = self._data_loader.get_dataset(partition='training').batch(self.batch_size)
+        validation_set = self._data_loader.get_dataset(partition='validation').batch(self.batch_size)
+        logger.info("Datasets collected")        
+        return training_set, validation_set
+        
+        

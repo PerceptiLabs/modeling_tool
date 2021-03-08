@@ -289,10 +289,10 @@ perceptilabs/tutorial_data/
 perceptilabs/data/__init__.py
 perceptilabs/data/base.py
 
-# backend/perceptilabs/data/preprocessing/
-perceptilabs/data/preprocessing/__init__.py
-perceptilabs/data/preprocessing/image.py
-perceptilabs/data/preprocessing/numerical.py
+# backend/perceptilabs/data/pipelines/
+perceptilabs/data/pipelines/__init__.py
+perceptilabs/data/pipelines/image.py
+perceptilabs/data/pipelines/numerical.py
 
 # backend/perceptilabs/modelrecommender/
 perceptilabs/modelrecommender/__init__.py
