@@ -221,19 +221,21 @@ class Tf2xLayer(Tf1xLayer):
 
     @property
     def weights(self):
-        if hasattr(self.keras_layer, 'kernel'):
+        """ Return the trainable weight of a layer """        
+        if hasattr(self.keras_layer, 'kernel') and self.keras_layer.kernel.trainable:
             return {'W': self.keras_layer.kernel}
-        elif hasattr(self.keras_layer, 'conv'):
+        elif hasattr(self.keras_layer, 'conv') and self.keras_layer.conv.kernel.trainable:
             return {'W': self.keras_layer.conv.kernel}            
         else:
             return {}
-                
+        
     @property
     def biases(self):
-        if hasattr(self.keras_layer, 'bias'):        
+        """ Return the trainable bias of a layer """
+        if hasattr(self.keras_layer, 'bias') and self.keras_layer.bias.trainable:        
             return {'b': self.keras_layer.bias}
-        elif hasattr(self.keras_layer, 'conv'):
-            return {'W': self.keras_layer.conv.bias}            
+        elif hasattr(self.keras_layer, 'conv') and self.keras_layer.conv.bias.trainable:
+            return {'b': self.keras_layer.conv.bias}            
         else:
             return {}
 
