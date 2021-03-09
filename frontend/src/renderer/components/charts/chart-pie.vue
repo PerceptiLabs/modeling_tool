@@ -16,6 +16,14 @@
     data() {
       return {
         defaultModel: {
+          tooltip: {
+            show: true,
+            confine: true,
+            backgroundColor: '#475D9C',
+            textStyle: {
+              fontSize: 10
+            }
+          },
           toolbox: {
             feature: {
               saveAsImage: {

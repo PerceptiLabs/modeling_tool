@@ -17,7 +17,15 @@
     data() {
       return {
         defaultModel: {
-          tooltip: {},
+          tooltip: {
+            show: true,
+            confine: true,
+            trigger: 'axis',
+            backgroundColor: '#475D9C',
+            textStyle: {
+              fontSize: 10
+            }
+          },
           toolbox: {
             feature: {
               saveAsImage: {

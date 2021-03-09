@@ -17,7 +17,15 @@ export default {
   data() {
     return {
       defaultModel: {
-        tooltip: {},
+        tooltip: {
+            show: true,
+            trigger: 'axis',
+            confine: true,
+            backgroundColor: '#475D9C',
+            textStyle: {
+              fontSize: 10
+            }
+        },
         grid: {
           right: 50
         },
