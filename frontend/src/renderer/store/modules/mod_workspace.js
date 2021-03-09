@@ -70,7 +70,8 @@ const state = {
   },
   viewType: localStorage.getItem(LOCAL_STORAGE_WORKSPACE_VIEW_TYPE_KEY) || 'model', // [model,statistic,test]
   showModelPreviews: localStorage.hasOwnProperty(LOCAL_STORAGE_WORKSPACE_SHOW_MODEL_PREVIEWS) ? localStorage.getItem(LOCAL_STORAGE_WORKSPACE_SHOW_MODEL_PREVIEWS) === 'true' : true,
-  fetchedPreviewsNetworksIds: []
+  fetchedPreviewsNetworksIds: [],
+  copyOrCutNetworkSnapshot: [],
 };
 
 const getters = {
@@ -333,6 +334,9 @@ const getters = {
       positions[el.layerId] = el.layerMeta.position
     })
     return positions;
+  },
+  GET_copyOrCutNetworkSnapshot(state) {
+    return state.copyOrCutNetworkSnapshot;
   }
 };
 
@@ -340,17 +344,11 @@ const mutations = {
   setFetchedPreviewsNetworksIds(state, networkId) {
     state.fetchedPreviewsNetworksIds.push(networkId)
   },
-  toggleSettingPreviewVisibility() {
-    state.isSettingPreviewVisible = !state.isSettingPreviewVisible;
-  },
   SET_previewVariable(state, payload){
     currentElement(payload.layerId).previewVariable = payload.previewVariableName
   },
   SET_previewVariableList(state, payload){
     currentElement(payload.layerId).previewVariableList = payload.previewVariableList
-  },
-  update_model(state, {index, field, value}) {
-    Vue.set(state.workspaceContent[index], [field], value);
   },
   setViewTypeMutation(state, value) {
     localStorage.setItem(LOCAL_STORAGE_WORKSPACE_VIEW_TYPE_KEY, value)
@@ -361,9 +359,6 @@ const mutations = {
     if(modelIndex !== -1) {
       Vue.set(state.workspaceContent[modelIndex].networkMeta, key, value)
     }
-  },
-  set_model_saved_version_location(state, { getters, saved_version_location }) {
-    getters.GET_currentNetwork.apiMeta.saved_version_location = saved_version_location;
   },
   cleanupUnnecessaryArrowsMutation(state, { getters }){
     const networkList = getters.GET_currentNetworkElementList;
@@ -1802,7 +1797,10 @@ const mutations = {
   lockNetworkElementSettingsMutation(state, { getters, layerId, value }) {
     const el = getters.GET_networkElementById(layerId);
     Vue.set(el, 'isSettingsLocked', value);
-  }
+  },
+  SET_copyOrCutNetworkSnapshot(state, { getters }) {
+    state.copyOrCutNetworkSnapshot = deepCloneNetwork(getters.GET_currentNetworkElementList);
+  },
 };
 
 
@@ -2511,7 +2509,10 @@ const actions = {
   },
   lockNetworkElementSettings({ commit, getters }, { layerId, value }) {
     commit('lockNetworkElementSettingsMutation', { layerId, getters, value });
-  }
+  },
+  copyOrCutNetworkSnapshotAction({commit, getters}) {
+    commit('SET_copyOrCutNetworkSnapshot', { getters })
+  },
 };
 
 export default {

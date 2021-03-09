@@ -240,6 +240,7 @@ const actions = {
       return 0;
     }
     commit('mod_workspace/CLEAR_CopyElementsPosition', null, {root: true});
+    dispatch('mod_workspace/copyOrCutNetworkSnapshotAction', null, { root: true }); // copy the snapshot of network elements for paste functionality
     if(rootGetters['mod_workspace/GET_enableHotKeyElement']) {
       let arrSelect = rootGetters['mod_workspace/GET_currentSelectedEl'];
       let arrBuf = [];
@@ -296,7 +297,7 @@ const actions = {
   },
   EVENT_hotKeyCopy({rootState, rootGetters, dispatch, commit}) {
     if(rootState['mod_workspace-code-editor'].isInFocus) { return; }
-
+    dispatch('mod_workspace/copyOrCutNetworkSnapshotAction', null, { root: true }); // copy the snapshot of network elements for paste functionality
     commit('mod_workspace/CLEAR_CopyElementsPosition', null, {root: true});
     if(rootGetters['mod_workspace/GET_enableHotKeyElement']) {
       let arrSelect = rootGetters['mod_workspace/GET_currentSelectedEl'];
@@ -377,6 +378,7 @@ const actions = {
 
       const networkList = rootGetters['mod_workspace/GET_currentNetwork'].networkElementList;
       const clipBoardNetworkList = rootState.mod_buffer.clipBoardNetworkList;
+      const copyOrCutNetworkSnapshot = rootGetters['mod_workspace/GET_copyOrCutNetworkSnapshot'];
 
       // make a mapping of the old element ids to the new so we don't have to loop through 
       const newElementIds = Object.keys(networkList).filter(nId => !oldElementIds.includes(nId));
@@ -395,9 +397,9 @@ const actions = {
           dispatch('mod_workspace/SET_elementMultiSelect', {id: networkList[elementId].layerId, setValue: true}, {root: true});
         }
         
-        if (!networkList[sourceId].inputs) { continue; }
+        if (!copyOrCutNetworkSnapshot[sourceId].inputs) { continue; }
 
-        for (const inputItem of Object.entries(networkList[sourceId].inputs)) {
+        for (const inputItem of Object.entries(copyOrCutNetworkSnapshot[sourceId].inputs)) {
           
           const oldDestName = inputItem[1].name;
           const oldSourceLayerId = inputItem[1].reference_layer_id;
@@ -422,7 +424,7 @@ const actions = {
           }
 
           // getting information on where the arrow ends
-          const oldElementOutputs = networkList[oldSourceLayerId].outputs;            
+          const oldElementOutputs = copyOrCutNetworkSnapshot[oldSourceLayerId].outputs;            
           let oldSourceVarName = '';
           for(const i of Object.entries(oldElementOutputs)) {
             if (i[0] === oldSourceVarId) {

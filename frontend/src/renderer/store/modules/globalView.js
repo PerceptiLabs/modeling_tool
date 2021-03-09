@@ -147,9 +147,6 @@ const mutations = {
     localStorage.setItem('isMiniMapNavigatorOpened', value);
     state.isMiniMapNavigatorOpened = value;
   },
-  set_showAppAbout(state, value) {
-    state.globalPopup.showAppAbout = value;
-  },
 };
 
 const actions = {

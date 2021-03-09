@@ -1,4 +1,5 @@
 
+import { deepCloneNetwork } from "@/core/helpers";
 
 const namespaced = true;
 
@@ -12,7 +13,7 @@ const mutations = {
     state.buffer = value
   },
   set_clipBoardNetworkList(state, value) {
-    state.clipBoardNetworkList = Object.assign({}, value);
+    state.clipBoardNetworkList = deepCloneNetwork(value);
   }
 };
 

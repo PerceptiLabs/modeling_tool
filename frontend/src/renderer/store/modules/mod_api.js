@@ -693,25 +693,6 @@ const actions = {
       });
   },
 
-  API_getGraphOrder({ rootGetters }, jsonNetwork) {
-
-    const theData = {
-      receiver: rootGetters['mod_workspace/GET_currentNetworkId'],
-      action: 'getGraphOrder',
-      value: jsonNetwork
-    };
-
-    return coreRequest(theData)
-      .then((data)=> {
-        // console.log('API_getGraphOrder data', data);
-        return data;
-      })
-      .catch((err)=> {
-        // console.log('API_getGraphOrder error');
-        console.error(err);
-      });
-  },
-
   API_getNotebookImports({ rootGetters }, jsonNetwork) {
 
     const theData = {

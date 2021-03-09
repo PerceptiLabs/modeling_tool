@@ -8,11 +8,10 @@
 <script>
   import { mapState, mapGetters, mapMutations, mapActions } from 'vuex';
   import { throttleEv } from '@/core/helpers.js'
-  import { localStorageGridKey } from '@/core/constants.js'
 
   import TheSidebar         from '@/components/the-sidebar.vue'
   import TheWorkspace       from '@/components/workspace/the-workspace.vue'
-  import {shouldHideSidebar, calculateSidebarScaleCoefficient } from "../../core/helpers";
+  import {shouldHideSidebar, calculateSidebarScaleCoefficient } from "@/core/helpers";
   import {isWeb} from "@/core/helpers";
   import { GITHUB_GET_TOKEN_BY_CODE_URL } from "@/core/constants";
   import axios from 'axios';
