@@ -37,6 +37,7 @@ export const IS_VALID_KEYCLOACK_CHECKER_URL = `${process.env.KEYCLOACK_BASE_URL}
 
 const widthElement = 60;
 const workspaceGrid = 30;
+export const SHIFT_HOLDING_CONNECT_COMPONENT_MAX_DISTANCE = 250;
 
 export const workspaceGridSmallGapSize = 30;
 export const workspaceGridBigGapSize = 150;

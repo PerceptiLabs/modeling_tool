@@ -6,7 +6,8 @@ import mousedownOutside   from '@/core/mixins/mousedown-outside.js'
 import SettingsPreview  from "@/components/network-elements/elements-settings/setting-preview.vue";
 
 import {mapGetters, mapActions}       from 'vuex';
-
+import { calcLayerPosition } from '@/core/helpers.js'
+import { SHIFT_HOLDING_CONNECT_COMPONENT_MAX_DISTANCE } from '@/core/constants';
 export default {
   name: 'NetBaseElement',
   mixins: [baseNetDrag, baseNetPaintArrows, mousedownOutside],
@@ -65,6 +66,8 @@ export default {
       editIsOpen:           'mod_workspace/GET_networkIsOpen',
       currentSelectedEl:    'mod_workspace/GET_currentSelectedEl',
       statisticsIsOpen:     'mod_workspace/GET_statisticsIsOpen',
+      modAddComponentState: 'mod_addComponent/GET_mod_addComponentState',
+      networkElmentPositions: 'mod_workspace/GET_networkElmentPositions'
     }),
     showDotsArrow() {
       return this.editIsOpen && !this.settingsIsOpen && !this.contextIsOpen
@@ -90,7 +93,7 @@ export default {
     classEl() {
       return {
         [`el-type-${this.dataEl.layerType}`]: true,
-        'net-element--active': this.isSelectedEl,
+        'net-element--active': this.isSelectedEl || this.dataEl.layerId === this.closestElId,
         'element--hidden': this.dataEl.layerMeta.isInvisible
       }
     },
@@ -105,9 +108,37 @@ export default {
     },
     isSettingInputFocused() {
       return this.$store.state.mod_workspace.isSettingInputFocused;
+    },
+    closestElId() {
+      return this.$store.state['mod_addComponent'].closestElId;
     }
   },
   watch: {
+    'modAddComponentState.draggedComponnentPosition':{
+      handler(data) {
+        const { isShiftPressed, isFirstComponentDragged, draggedComponnentPosition: {x, y}} = this.modAddComponentState;
+        let closestElId = null;
+        let distance = null;
+        const el = document.getElementById('networkWorkspace') || {scrollLeft: 0, scrollTop: 0};
+        const mousePositionX = x + 46 + el.scrollLeft;
+        const mousePositionY = y - 130 + el.scrollTop;
+        if(isShiftPressed && isFirstComponentDragged) {
+          Object.keys(this.networkElmentPositions).map(elId => {
+            const elPositionX = calcLayerPosition(this.networkElmentPositions[elId].left, this.wsZoom) +  75 * this.wsZoom;
+            const elPositionY = calcLayerPosition(this.networkElmentPositions[elId].top, this.wsZoom) + 20 * this.wsZoom;
+            const currentDistance = this.getDistance(mousePositionX , mousePositionY, elPositionX, elPositionY);
+            
+            if(currentDistance < distance || distance === null && currentDistance <= SHIFT_HOLDING_CONNECT_COMPONENT_MAX_DISTANCE) { 
+              distance = currentDistance;
+              closestElId = elId;
+            }
+          })
+        }
+        this.$store.dispatch('mod_addComponent/setClosestElementId', closestElId)
+      },
+      deep: true,
+      immediate: true
+    },
     isSelectedEl(newVal) {
       newVal
         ? this.mousedownOutsideBefore()
@@ -131,6 +162,11 @@ export default {
     },
   },
   methods: {
+    getDistance(div1x, div1y, div2x, div2y){
+      const distanceSquared = Math.pow(div1x - div2x, 2) + Math.pow(div1y - div2y, 2);
+      const distance = Math.sqrt(distanceSquared);
+      return distance
+    },
     ...mapActions({
       setNetMode:               'mod_workspace/SET_netMode',
       setElementInfoOpen:       'mod_workspace/SET_isOpenElement',

@@ -88,6 +88,7 @@
   import PreTrainedResNet50   from '@/components/network-elements/elements/pretrained-resnet50/view-pretrained-resnet50.vue'
 
   import { calcLayerPosition } from '@/core/helpers.js';
+  import { connectComponentsWithArrow } from '@/core/modelHelpers.js'
 
 export default {
   name: 'TheLayersbar',
@@ -100,6 +101,14 @@ export default {
     LayerCustom,
     PreTrainedVGG16, PreTrainedInceptionV3, PreTrainedResNet50,
     IoInput, IoOutput
+  },
+  created(){
+    document.addEventListener('keyup', this.handleShiftKeyState);
+    document.addEventListener('keydown', this.handleShiftKeyState);
+  },
+  beforeDestroy() {
+    document.removeEventListener('keyup', this.handleShiftKeyState);
+    document.removeEventListener('keydown', this.handleShiftKeyState);
   },
   data() {
     return {
@@ -258,9 +267,14 @@ export default {
       
       const halfHeight = this.clonedElement.style.height.replace('px', '') / 2;
       const halfWidth = this.clonedElement.style.width.replace('px', '') / 2;
+      const xPosition = x - halfWidth;
+      const yPosition = y - halfHeight;
       
-      this.clonedElement.style.left = (x - halfWidth) + 'px';
-      this.clonedElement.style.top = (y - halfHeight) + 'px';
+      this.$store.dispatch('mod_addComponent/setDraggedComponnentPosition', {x:xPosition , y: yPosition});
+      
+      this.clonedElement.style.left = xPosition + 'px';
+      this.clonedElement.style.top = yPosition + 'px';
+
     },
     handleCancelEvents(event) {
       event.preventDefault();
@@ -300,46 +314,20 @@ export default {
           if(this.previousAddedElementId !== null) { // is second element placed by holding shift key
 
             this.$store.dispatch('mod_workspace/ADD_element', { event: fakeEvent });
+            
+            connectComponentsWithArrow(this.previousAddedElementId, fakeEvent.id);
+            
 
-            setTimeout(() => {
-              const previousElement = this.$store.getters['mod_workspace/GET_networkElementById'](this.previousAddedElementId);
-
-              const outputs = previousElement.outputs;
-              const outputKey = Object.keys(outputs)[0];
-              
-
-
-              const currentElement = this.$store.getters['mod_workspace/GET_networkElementById'](fakeEvent.id);
-
-              const inputs = currentElement.inputs;
-              let inputKey = null;
-              Object.keys(inputs).map(key => {
-                if(inputs[key].isDefault) {
-                  inputKey = key;
-                }
-              })
-
-              if(!!inputKey && !!outputKey) {
-                this.$store.commit('mod_workspace/SET_startArrowID', {
-                outputDotId: outputKey,
-                outputLayerId: previousElement.layerId,
-                layerId: previousElement.layerId,
-                });
-                this.$store.dispatch('mod_workspace/ADD_arrow', {
-                  inputDotId: inputKey,
-                  inputLayerId: currentElement.layerId,
-                  layerId: currentElement.layerId,
-                }).then(() => {
-                  this.$store.dispatch('mod_api/API_getBatchPreviewSampleForElementDescendants', currentElement.layerId);
-                });
-              }
-
-              this.previousAddedElementId = fakeEvent.id;
-            }, 100)
-
-          } else {
-            this.$store.dispatch('mod_workspace/ADD_element', { event: fakeEvent });
             this.previousAddedElementId = fakeEvent.id;
+          } else {
+            // place where firs component is added;
+            this.$store.dispatch('mod_workspace/ADD_element', { event: fakeEvent });
+            
+              
+            connectComponentsWithArrow(this.closestElId, fakeEvent.id)
+
+            this.previousAddedElementId = fakeEvent.id;
+            this.$store.dispatch('mod_addComponent/setFirstComponentDragged', false);
           }
 
         } else {
@@ -362,7 +350,6 @@ export default {
     },
     setClonedElementStyle() {
         const referenceItem = this.$refs['referenceMenuItem'][0];
-
         this.clonedElement.classList.add('layer_child-list-item');
         this.clonedElement.style.height = referenceItem.offsetHeight + 'px';
         this.clonedElement.style.width = referenceItem.offsetWidth + 'px';
@@ -397,6 +384,7 @@ export default {
       this.clonedElement.addEventListener('mouseup', this.stopComponentPositionUpdates);
       document.addEventListener('contextmenu', this.handleCancelEvents);
       document.addEventListener('keyup', this.handleEscKeypress);
+      this.$store.dispatch('mod_addComponent/setFirstComponentDragged', true);
     },
     cleanupClickDropFunctionality() {
       document.removeEventListener('mousemove', this.startComponentPositionUpdates);
@@ -411,6 +399,7 @@ export default {
       this.clickedElementName = null;
       this.clonedElement = null;
       this.handleFocusOut();
+      this.$store.dispatch('mod_addComponent/setFirstComponentDragged', false);
     },
     showElementsInLayer(layer) {
       if (layer.tooltip !== 'Data') {
@@ -431,6 +420,10 @@ export default {
         this.handleFocusOut();
         document.removeEventListener('click', this.handleClickWithoutElementSelected);
       }
+    },
+    handleShiftKeyState(event) {
+      const isShiftPressed = event.shiftKey;
+      this.$store.dispatch('mod_addComponent/setShiftKey', isShiftPressed);
     },
     addPreTrainedLayersToDeepLearningDropDown() {
       try {
@@ -458,6 +451,9 @@ export default {
     networkScale() {
       return this.$store.getters['mod_workspace/GET_currentNetworkZoom'];
     },
+    closestElId() {
+      return this.$store.state['mod_addComponent'].closestElId;
+    }
   },
   mounted() {
     if (process.env.ENABLE_TF2X !== 'true') { return; }
@@ -669,4 +665,3 @@ export default {
     }
   }
 </style>
-OB
