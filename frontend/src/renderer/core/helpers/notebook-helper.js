@@ -4,7 +4,6 @@ let store;
 let coreNetwork;
 let currentNetwork;
 
-const promiseTimeoutMs = 4000;
 
 const notebookJsonBuilderV4 = (function (networkCode) {
   let publicMethods = {};
@@ -75,7 +74,7 @@ const fetchNetworkCode = () => {
 
   for (let networkElement of networkElements) {
     const promise = addIdToLayerCode.call(this, networkElement);
-    fetchCodePromises.push(promiseWithTimeout(promiseTimeoutMs, promise));
+    fetchCodePromises.push(promise);
   }
 
   return Promise.all(fetchCodePromises).then(code => {
