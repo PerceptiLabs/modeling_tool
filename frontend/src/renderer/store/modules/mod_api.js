@@ -1,15 +1,18 @@
 import { coreRequest }  from "@/core/apiWeb.js";
 import { deepCopy, parseJWT, isWeb }   from "@/core/helpers.js";
 import { createNotebookJson }   from "@/core/helpers/notebook-helper.js";
+import { pathSlash, sessionStorageInstanceIdKey }  from "@/core/constants.js";
 import { createCoreNetwork } from "@/core/helpers";
 import { getModelJson as fileserver_getModelJson, doesDirExist as fileserver_doesDirExist } from '@/core/apiFileserver';
 import cloneDeep from 'lodash.clonedeep';
+import { v4 as uuidv4  } from 'uuid';
 
 
 const namespaced = true;
 //let pauseAction = 'Pause';
 
 const state = {
+  instanceId: null,
   statusLocalCore: 'offline', //online
   headlessState: [],
 };
@@ -165,6 +168,9 @@ const mutations = {
     } else {
       headlessState.isHeadless = value;
     }
+  },
+  API_setAppInstanceMutation(state, payload) {
+    state.instanceId = payload;
   }
 };
 
@@ -1225,6 +1231,14 @@ const actions = {
     
     return coreRequest(theData)
   },
+  API_setAppInstance({commit}) {
+    let instanceKey = sessionStorage.getItem(sessionStorageInstanceIdKey);
+    if(instanceKey === null) {
+      instanceKey = uuidv4();
+      sessionStorage.setItem(sessionStorageInstanceIdKey, instanceKey);
+    }
+    commit('API_setAppInstanceMutation', instanceKey);
+  }
 };
 
 export default {

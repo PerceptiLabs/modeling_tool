@@ -13,6 +13,7 @@ function calcTime(stop, start, name, nameComp) {
 const kernelUrlPromise = whenUrlIsResolved(KERNEL_URL_CONFIG_PATH, KERNEL_BASE_URL)
 
 function coreRequest(data, path, no, name) {
+    data.instanceId = store.state.mod_api.instanceId
     // var timeStartAnswer = 0;
     // var timeStartSend = 0;
     // var timeStopSend = 0;

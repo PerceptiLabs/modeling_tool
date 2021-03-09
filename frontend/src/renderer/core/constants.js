@@ -49,6 +49,8 @@ const sidebarNavCoefficientScaleCalculateFromHeight = 920;
 const filePickerStorageKey = 'filePickerPathSource';
 const localStorageGridKey = 'isGridEnabled';
 
+export const sessionStorageInstanceIdKey = 'perceptilabs_instance_id';
+
 export const MODAL_PAGE_PROJECT = 'MODAL_PAGE_PROJECT';
 export const MODAL_PAGE_WHATS_NEW = 'MODAL_PAGE_WHATS_NEW';
 export const MODAL_PAGE_CREATE_MODEL = 'MODAL_PAGE_CREATE_MODEL';

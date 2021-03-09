@@ -55,6 +55,9 @@
       UpdatePopup, TheInfoPopup, ConfirmPopup, DeleteConfirmPopup, CreateIssuePopup, PiPyPopupUpdate, AboutAppPopup,
       TutorialsChecklist, TutorialNotification
     },
+    beforeCreate() {
+      this.$store.dispatch('mod_api/API_setAppInstance');
+    },
     created() {
       window.addEventListener("beforeunload", (e) => {
         let networksHaveChanges = this.networksWithChanges.some(id=> this.getWorkspacesIds.includes(id));
