@@ -12,8 +12,8 @@ import { defineComponent } from "vue";
 
 export default defineComponent({
   props: {
-    msg: String
-  }
+    msg: String,
+  },
 });
 </script>
 

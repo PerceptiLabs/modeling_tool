@@ -15,19 +15,19 @@ const routes: Array<RouteRecordRaw> = [
         children: [
           {
             path: "",
-            redirect: "projects"
+            redirect: "projects",
           },
           {
             path: "projects",
             name: "ProjectsView",
-            component: () => import("@/views/main/ProjectsView.vue")
+            component: () => import("@/views/main/ProjectsView.vue"),
           },
           {
             path: "settings",
             name: "SettingsView",
-            component: () => import("@/views/main/SettingsView.vue")
-          }
-        ]
+            component: () => import("@/views/main/SettingsView.vue"),
+          },
+        ],
       },
       {
         path: "projects/:projectId",
@@ -35,7 +35,7 @@ const routes: Array<RouteRecordRaw> = [
         children: [
           {
             path: "",
-            redirect: { name: "ModelsView" }
+            redirect: { name: "ModelsView" },
           },
           {
             path: "models",
@@ -44,57 +44,57 @@ const routes: Array<RouteRecordRaw> = [
               {
                 path: "",
                 name: "ModelsView",
-                component: () => import("@/views/project/model/ModelsView.vue")
+                component: () => import("@/views/project/model/ModelsView.vue"),
               },
               {
                 path: ":modelId",
                 name: "ModelView",
-                component: () => import("@/views/project/model/ModelView.vue")
-              }
-            ]
+                component: () => import("@/views/project/model/ModelView.vue"),
+              },
+            ],
           },
           {
             path: "data",
             name: "DataView",
-            component: () => import("@/views/project/data/DataView.vue")
+            component: () => import("@/views/project/data/DataView.vue"),
           },
           {
             path: "test",
             name: "TestView",
-            component: () => import("@/views/project/test/TestView.vue")
+            component: () => import("@/views/project/test/TestView.vue"),
           },
           {
             path: "system",
             name: "SystemView",
-            component: () => import("@/views/project/system/SystemView.vue")
-          }
-        ]
-      }
-    ]
+            component: () => import("@/views/project/system/SystemView.vue"),
+          },
+        ],
+      },
+    ],
   },
   {
     path: "/404",
     name: "404 Page",
-    component: Page404
+    component: Page404,
   },
   env.NODE_ENV === "development"
     ? {
         path: "/test",
-        component: TestView
+        component: TestView,
       }
     : {
         path: "/test",
-        redirect: { name: "404 Page" }
+        redirect: { name: "404 Page" },
       },
   {
     path: "/:pathMatch(.*)",
-    redirect: { name: "404 Page" }
-  }
+    redirect: { name: "404 Page" },
+  },
 ];
 
 const router = createRouter({
   history: createWebHistory(env.BASE_URL),
-  routes
+  routes,
 });
 
 export default router;

@@ -1,5 +1,5 @@
 import { HttpRequest } from "./http";
-import { RYGG_BASE_URL, RYGG_URL_CONFIG_PATH } from "../constants";
+import { RYGG_BASE_URL, RYGG_URL_CONFIG_PATH } from "../../config/constants";
 
 export class RyggRequest extends HttpRequest {
   constructor() {

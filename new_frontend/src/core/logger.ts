@@ -1,7 +1,7 @@
-import { isDevelopMode } from "./constants";
+import { isDevelopMode } from "../config/constants";
 
 class Logger {
-  log(...args: any[]) {
+  log(...args: unknown[]) {
     if (isDevelopMode) {
       console.log(...args);
     } else {
@@ -9,25 +9,25 @@ class Logger {
     }
   }
 
-  warn(...args: any[]) {
+  warn(...args: unknown[]) {
     if (isDevelopMode) {
-      console.warn(args);
+      console.warn(...args);
     } else {
       // log somewhere else
     }
   }
 
-  error(...args: any[]) {
+  error(...args: unknown[]) {
     if (isDevelopMode) {
-      console.error(args);
+      console.error(...args);
     } else {
       // log somewhere else
     }
   }
 
-  table(...args: any[]) {
+  table(...args: unknown[]) {
     if (isDevelopMode) {
-      console.error(args);
+      console.error(...args);
     } else {
       // log somewhere else
     }

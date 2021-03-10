@@ -17,4 +17,5 @@ export default {
   ENABLE_TF2X: (process.env["VUE_APP_ENABLE_TF2X"] as boolean) || false,
   ENABLE_DATA_WIZARD:
     (process.env["VUE_APP_ENABLE_DATA_WIZARD"] as boolean) || false,
+  NO_KC: (process.env["VUE_APP_NO_KC"] as boolean) || false,
 };

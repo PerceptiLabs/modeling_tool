@@ -2,7 +2,7 @@ import { Module, Mutation, VuexModule } from "vuex-module-decorators";
 
 @Module({
   name: "mod_template",
-  namespaced: true
+  namespaced: true,
 })
 export default class TemplateModule extends VuexModule {
   private _someData = 0;

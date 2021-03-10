@@ -141,7 +141,7 @@ export default defineComponent({
     },
     onReset() {
       this.templateStore.reset();
-    }
-  }
+    },
+  },
 });
 </script>

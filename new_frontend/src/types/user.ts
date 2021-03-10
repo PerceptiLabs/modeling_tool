@@ -1,19 +1,19 @@
 export interface IUser {
-  userToken: string;
-  userTokenRefresh: string;
+  userToken: string | null;
+  userTokenRefresh: string | null;
   userProfile: IUserProfile | null;
   getLocalUserList: Array<any> | null;
 }
 
 export enum ERealmAccessRole {
   OFFLINE_ACCESS = "offline_access",
-  UMA_AUTHORIZATION = "uma_authorization"
+  UMA_AUTHORIZATION = "uma_authorization",
 }
 
 export enum EResourceAccessRole {
   MANAGE_ACCOUNT = "manage-account",
   MANAGE_ACCOUNT_LINKS = "manage-account-links",
-  VIEW_PROFILE = "view-profile"
+  VIEW_PROFILE = "view-profile",
 }
 
 export interface IUserProfile {

@@ -1,6 +1,9 @@
 import logger from "../logger";
 import urlResolver from "../urlResolver";
-import { KERNEL_URL_CONFIG_PATH, KERNEL_BASE_URL } from "../constants";
+import {
+  KERNEL_URL_CONFIG_PATH,
+  KERNEL_BASE_URL,
+} from "../../config/constants";
 
 export class SocketRequest {
   private _resolver: Promise<string>;
@@ -9,13 +12,13 @@ export class SocketRequest {
     this._resolver = urlResolver(KERNEL_URL_CONFIG_PATH, KERNEL_BASE_URL);
   }
 
-  async initialize(sendData: any) {
+  async initialize(sendData: unknown) {
     const url = await this._resolver;
     const ws = new WebSocket(url);
 
-    ws.onopen = (ev) => {
+    ws.onopen = ev => {
       this.onOpen(ev);
-      ws.send(sendData);
+      ws.send(JSON.stringify(sendData));
     };
     ws.onclose = this.onClose;
     ws.onerror = this.onError;
@@ -23,20 +26,20 @@ export class SocketRequest {
   }
 
   onOpen(_ev: Event) {
-    logger.log("websocket: open");
+    logger.log("websocket: open", _ev);
   }
   onClose(_ev: Event) {
-    logger.log("websocket: close");
+    logger.log("websocket: close", _ev);
   }
   onError(_ev: Event) {
     logger.error("websocket: error", _ev);
   }
 
-  onMessage(ev: MessageEvent<string>) {
+  onMessage(ev: MessageEvent) {
     logger.log("websocket: message", JSON.parse(ev.data));
   }
 
-  sendMessage(message: any) {
+  sendMessage(message: unknown) {
     this.initialize(message);
   }
 }
@@ -44,45 +47,45 @@ export class SocketRequest {
 /**
  * Socket controller which keeps only one socket connection, not supported by kernel yet
  */
-export class FutureSocketRequest {
-  private _resolver: Promise<string>;
-  private _ws?: WebSocket;
+// export class FutureSocketRequest {
+//   private _resolver: Promise<string>;
+//   private _ws?: WebSocket;
 
-  constructor() {
-    this._resolver = urlResolver(KERNEL_URL_CONFIG_PATH, KERNEL_BASE_URL);
-    this.initialize();
-  }
+//   constructor() {
+//     this._resolver = urlResolver(KERNEL_URL_CONFIG_PATH, KERNEL_BASE_URL);
+//     this.initialize();
+//   }
 
-  async initialize() {
-    if (this._ws) {
-      this._ws.close();
-    }
+//   async initialize() {
+//     if (this._ws) {
+//       this._ws.close();
+//     }
 
-    const url = await this._resolver;
-    this._ws = new WebSocket(url);
+//     const url = await this._resolver;
+//     this._ws = new WebSocket(url);
 
-    this._ws.onopen = this.onOpen;
-    this._ws.onclose = this.onClose;
-    this._ws.onerror = this.onError;
-    this._ws.onmessage = this.onMessage;
-  }
+//     this._ws.onopen = this.onOpen;
+//     this._ws.onclose = this.onClose;
+//     this._ws.onerror = this.onError;
+//     this._ws.onmessage = this.onMessage;
+//   }
 
-  onOpen() {
-    logger.log("websocket: open", this._ws?.url);
-  }
-  onClose() {
-    logger.log("websocket: close");
+//   onOpen() {
+//     logger.log("websocket: open", this._ws?.url);
+//   }
+//   onClose() {
+//     logger.log("websocket: close");
 
-    // keep this connection alive until app is done
-    this.initialize();
-  }
-  onError(ev: Event) {
-    logger.error("websocket: error", ev);
-  }
+//     // keep this connection alive until app is done
+//     this.initialize();
+//   }
+//   onError(ev: Event) {
+//     logger.error("websocket: error", ev);
+//   }
 
-  onMessage(ev: MessageEvent<string>) {
-    logger.log("websocket: message", JSON.parse(ev.data));
-  }
+//   onMessage(ev: MessageEvent) {
+//     logger.log("websocket: message", JSON.parse(ev.data));
+//   }
 
-  send(data: any) {}
-}
+//   send(data: any) {}
+// }
