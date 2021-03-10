@@ -22,6 +22,8 @@
 - name: spin up an ec2 server
   hosts: localhost
   gather_facts: no
+  vars:
+    ansible_python_interpreter: python
   vars_files:
   - constants.yaml
   - secrets.yaml
@@ -100,6 +102,8 @@
 - name: Get instances
   hosts: localhost
   gather_facts: no
+  vars:
+    ansible_python_interpreter: python
   vars_files:
     - constants.yaml
   tasks:
