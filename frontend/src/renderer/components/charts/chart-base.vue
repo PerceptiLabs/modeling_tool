@@ -34,6 +34,13 @@
               },
             }
           },
+          grid: {
+            left: '3%',
+            bottom: '7%',
+            top: '15%',
+            right: '3%',
+            containLabel: true
+          },
           xAxis: {
             data: [],
             axisLabel: {
@@ -41,7 +48,11 @@
               showMaxLabel: true
             }
           },
-          yAxis: {},
+          yAxis: {
+            nameTextStyle: {
+              fontSize: 10
+            }
+          },
           legend: {},
           series: []
         }
