@@ -54,7 +54,12 @@
             }
           },
           legend: {},
-          series: []
+          series: [],
+          dataZoom: [{
+            type: 'inside',
+            throttle: 50,
+            moveOnMouseMove: false
+          }]
         }
       }
     },
