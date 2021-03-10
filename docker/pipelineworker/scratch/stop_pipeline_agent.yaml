@@ -1,0 +1,12 @@
+---
+- name: stop
+  hosts: localhost
+  gather_facts: no
+  vars:
+    ansible_python_interpreter: python # makes it use the venv python
+    resource_group: azure-pipeline-agents
+  tasks:
+    - azure_rm_virtualmachine:
+        name: azure-pipeline-agent
+        resource_group: "{{ resource_group }}"
+        state: absent

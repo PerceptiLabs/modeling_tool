@@ -1,0 +1,70 @@
+---
+- name: Make sure pip3 is installed
+  import_tasks: tasks/pip3.yml
+
+- name: make sure the pip package for docker management is present
+  pip:
+    name: docker
+    state: present
+
+- name: Check whether docker is already installed
+  shell: (which docker >/dev/null && docker version --format {% raw %}"{{.Client.Version}}"{% endraw %}) || true
+  changed_when: false
+  register: docker_version_output
+
+- set_fact:
+    docker_version: "{{ docker_version_output.stdout }}"
+
+- name: Install docker for Ubuntu
+  when: (docker_version|d('0', true) is version('20.0', '<=')) and (ansible_distribution == 'Ubuntu')
+  include_role:
+    name: third_party_apt
+  vars:
+    apt_key_url: https://download.docker.com/linux/ubuntu/gpg
+    apt_repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+    packages:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+
+- name: set group
+  become: yes
+  group:
+    name: docker
+
+- name: add group to user
+  become: yes
+  user:
+    name: "{{ ansible_user }}"
+    append: yes
+    groups: docker
+
+- meta: reset_connection
+
+- block:
+  - name: run hello-world to test docker
+    docker_container:
+      name: hello-world
+      image: hello-world
+      container_default_behavior: compatibility
+      detach: no
+    register: output
+    failed_when: (output is failed) or ('Hello from Docker' not in (output.container.Output|d('')))
+  always:
+  - name: remove hello world
+    docker_image:
+      name: hello-world
+      state: absent
+      force_absent: yes
+
+- name: get docker-compose version
+  shell: (which docker-compose >/dev/null && docker-compose version --short) || true
+  changed_when: false
+  register: docker_compose_version_output
+  failed_when: false
+
+- name: install docker-compose
+  pip:
+    name: docker-compose
+    state: latest
+  when: (docker_compose_version_output.stdout|length == 0) or (docker_compose_version_output.stdout is version("1.20", "<"))

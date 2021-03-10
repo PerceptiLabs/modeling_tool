@@ -1,0 +1,3 @@
+---
+# defaults file for third_party_apt
+package_state: latest

@@ -1,0 +1,28 @@
+---
+- name: check that required parameters are set
+  assert:
+    that:
+      - apt_key_url is defined
+      - apt_repo is defined
+      - packages is defined
+      - (package_state in ['build-dep', 'latest', 'present', 'fixed'])
+
+- name: Add the third-party apt key
+  become: yes
+  ansible.builtin.apt_key:
+    url: "{{ apt_key_url }}"
+    state: present
+
+- name: add the third-party repo
+  become: yes
+  ansible.builtin.apt_repository:
+    repo: "{{ apt_repo }}"
+    state: present
+    update_cache: yes
+
+- name: install the requested packages
+  become: yes
+  apt:
+    name: "{{ packages }}"
+    state: "{{ package_state }}"
+

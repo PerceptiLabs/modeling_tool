@@ -1,0 +1,165 @@
+---
+- name: check for secrets file
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - stat:
+        path: secrets.yaml
+      register: stat
+    - fail:
+        msg: "You need to create secrets.yaml file to set these variables: azure_token, aws_ssh_key_name, ansible_ssh_private_key_file"
+      when: not stat.stat.exists
+    - include_vars:
+        file: secrets.yaml
+    - fail:
+        msg: >
+          Your secrets.yaml file needs to contain these variables
+          - azure_token : your personal access token in the azure devops account
+          - aws_ssh_key_name: the name of the private key in the AWS account you can use to ssh into EC2 instances
+          - ansible_ssh_private_key_file: The file containing the ssh private key
+      when: (azure_token is not defined) or (aws_ssh_key_name is not defined) or (ansible_ssh_private_key_file is not defined)
+
+- name: spin up an ec2 server
+  hosts: localhost
+  gather_facts: no
+  vars_files:
+  - constants.yaml
+  - secrets.yaml
+  tasks:
+    - name: make ssh security group
+      ec2_group:
+        name: "{{ security_group }}"
+        region: "{{ ec2_region }}"
+        description: SSH Security Group
+        rules:
+          - proto: tcp
+            ports:
+            - 22
+            cidr_ip: 0.0.0.0/0
+            rule_desc: allow all on port 22
+    - name: start machine
+      amazon.aws.ec2:
+        group: "{{ security_group }}"
+        instance_tags: "{{ tags }}"
+        instance_type: "{{ instance_type }}"
+        image: "{{ image }}"
+        key_name: "{{ aws_ssh_key_name }}"
+        region: "{{ ec2_region }}"
+        volumes:
+          - device_name: /dev/sda1
+            volume_type: gp2
+            volume_size: "{{ disk_gb }}"
+        wait: yes
+        count_tag: "{{ tags }}"
+        exact_count: "{{ number_of_hosts }}"
+      register: start_result
+    - add_host:
+        hostname: "{{ item.public_dns_name }}"
+        groupname: launched_hosts
+        ec2_instance_info: "{{ item }}"
+      loop:  "{{ start_result.instances }}"
+    - add_host:
+        hostname: "{{ item.public_ip }}"
+        groupname: launched_ips
+        ec2_instance_info: "{{ item }}"
+      loop:  "{{ start_result.instances }}"
+
+- name: Wait for servers to start and add them to known_hosts.
+  hosts: launched_hosts:launched_ips
+  gather_facts: no
+  vars:
+    # They just came up. They won't be in known_hosts
+    ansible_ssh_extra_args: '-o StrictHostKeyChecking=no'
+  tasks:
+    # ec2 module doesn't wait until the sshd server is completely ready. Compensate
+    - name: "Waiting for host(s) to be available"
+      wait_for:
+        state: started
+        host: "{{ inventory_hostname }}"
+        port: 22
+        delay: 3
+      delegate_to: localhost
+
+    - name: "Getting ssh key hashes for the host(s)"
+      shell:  "ssh-keyscan {{ inventory_hostname }} -H"
+      changed_when: false
+      register: out
+      failed_when: out.stdout_lines | length == 0
+      delegate_to: localhost
+
+    - name: "Adding to ~/.ssh/known_hosts"
+      known_hosts:
+        state: present
+        key: "{{ item }}"
+        name: "{{ item.split(' ')|first }}"
+      delegate_to: localhost
+      loop: "{{ out.stdout_lines|d([]) }}"
+      # This task's check-delete-add loop fails when there's parallelism. Limit it to a single thread
+      throttle: 1
+
+- name: Get instances
+  hosts: localhost
+  gather_facts: no
+  vars_files:
+    - constants.yaml
+  tasks:
+  - name: build the filter for running hosts
+    set_fact:
+      filters: "{{ filters | default({'instance-state-name': 'running'}) | combine({'tag:'+item.key: item.value}) }}"
+    with_dict: "{{ tags }}"
+  - name: Get the instances
+    ec2_instance_info:
+      region: "{{ ec2_region }}"
+      filters: "{{ filters }}"
+    register: instance_info
+  - add_host:
+      hostname: "{{ item.public_dns_name }}"
+      groupname: running_hosts
+      ec2_instance_info: "{{ item }}"
+    loop:  "{{ instance_info.instances }}"
+
+- name: set up the machine
+  hosts: running_hosts
+  vars_files:
+  - constants.yaml
+  vars:
+  roles:
+    - docker_on_ubuntu
+  tasks:
+    - include_vars: secrets.yaml
+    - file:
+        name: "{{ agent_python}}/{{ item }}/x64"
+        state: directory
+        recurse: yes
+      loop: "{{ python_versions }}"
+    - file:
+        src: "{{ python3 }}"
+        dest: "{{ agent_python }}/{{ item }}/x64/python"
+        state: link
+      loop: "{{ python_versions }}"
+    - file:
+        src: "{{ pip3 }}"
+        dest: "{{ agent_python }}/{{ item }}/x64/pip"
+        state: link
+      loop: "{{ python_versions }}"
+    - file:
+        state: touch
+        name: "{{ agent_python }}/{{ item }}/x64.complete"
+      loop: "{{ python_versions }}"
+    - get_url:
+        url: "{{ agent_package }}"
+        dest: "{{ ansible_env.HOME }}"
+      register: download_output
+    - name: unpack the package
+      unarchive:
+        remote_src: yes
+        src: "{{ download_output.dest }}"
+        dest: "{{ ansible_env.HOME }}"
+    - name: run config
+      command: "sh -c \"{{ ansible_env.HOME }}/config.sh --unattended --url {{ azure_project_url }} --auth pat --token {{ azure_token }} --pool '{{ pool_name }}' --agent {{ agent_name }} --replace --work {{ work_dir }}\""
+    - name: install service
+      become: yes
+      command: "sh -c \"{{ansible_env.HOME}}/svc.sh install\" }}"
+    - name: start service
+      become: yes
+      command: "sh -c \"{{ansible_env.HOME}}/svc.sh start\" }}"

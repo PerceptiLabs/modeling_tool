@@ -212,7 +212,8 @@ class Graph:
     def get_nodes_inbetween(self, source, target):
         paths_between_generator = nx.all_simple_paths(self._nx_graph, source, target)
         nodes_between_list = [node for path in paths_between_generator for node in path]
-        return nodes_between_list[1:]
+        ordered_nodes = [node for node in self._ordered_nodes if node in nodes_between_list]
+        return ordered_nodes[1:]
 
     def clone(self): 
         from perceptilabs.core_new.graph.builder import GraphBuilder

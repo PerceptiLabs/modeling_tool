@@ -848,7 +848,7 @@ const actions = {
         value: await makePayload.call(this, settings, true)
       };
     };
-
+    
     console.log('API_exportData', theData);
     const trackerData = {
       result: '',

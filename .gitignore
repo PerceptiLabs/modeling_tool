@@ -155,3 +155,6 @@ jsconfig.json
 .idea/workspace.xml
 ../.idea/workspace.xml
 **/.vscode/*
+
+# secrets for docker build worker
+secrets.yaml

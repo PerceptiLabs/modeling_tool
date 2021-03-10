@@ -141,6 +141,27 @@ const workspaceSaveNet = {
             this.$store.dispatch('mod_workspace/SET_networkLocation', prepareNet.toLocal.pathProject); // change new location in vuex
             this.$store.dispatch('mod_workspace/SET_networkName', prepareNet.toLocal.name); // change new location in vuex
           }
+          
+          const networkJson = cloneDeep(this.currentNetwork)
+          const healthNetworkElementList = {};
+          Object.keys(networkJson.networkElementList).map(key => {
+            const el = networkJson.networkElementList[key];
+            healthNetworkElementList[key] = {
+              ...el,
+              chartData: {}
+            }
+          })
+          const healthNetworkJson = {
+            ...networkJson,
+            networkElementList: healthNetworkElementList
+          }
+          return fileserver_saveModelJson(healthNetworkJson)
+            .catch((e) => {
+              console.log(e)
+              Promise.reject(e)
+            });
+        })
+        .then(()=> {
 
           const networkJson = cloneDeep(this.currentNetwork)
           const healthNetworkElementList = {};

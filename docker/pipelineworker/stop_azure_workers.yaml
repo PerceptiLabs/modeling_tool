@@ -1,0 +1,35 @@
+---
+- hosts: localhost
+  gather_facts: no
+  vars_files:
+    - constants.yaml
+  tasks:
+    - name: build the filter for running hosts
+      set_fact:
+        filters: "{{ filters | default({}) | combine({'tag:'+item.key: item.value}) }}"
+      with_dict: "{{ tags }}"
+    - name: Get the instances
+      ec2_instance_info:
+        region: "{{ ec2_region }}"
+        filters: "{{ filters }}"
+      register: instance_info
+    - set_fact:
+        hostnames: "{{ instance_info.instances | json_query('[*].public_dns_name') }}"
+        ip_addresses: "{{ instance_info.instances | json_query('[*].public_ip_address') }}"
+        instance_ids: "{{ instance_info.instances | json_query('[*].instance_id') }}"
+    - name: remove the instances from known_hosts
+      known_hosts:
+        name: "{{ item }}"
+        state: absent
+      loop: "{{ ip_addresses + hostnames }}"
+    - name: stop the instances
+      community.aws.ec2_instance:
+        state: absent
+        instance_ids: "i-0fc9f32b62ca09a05" #"{{ instance_ids }}"
+        ec2_region: "{{ ec2_region }}"
+        wait: yes
+    - name: remove the azure-pipeline-worker security group
+      ec2_group:
+        name: azure-pipeline-worker
+        ec2_region: "{{ ec2_region }}"
+        state: absent

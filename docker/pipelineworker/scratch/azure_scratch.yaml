@@ -1,0 +1,77 @@
+---
+- name: ensure requirements are installed
+  hosts: localhost
+  gather_facts: no
+  vars:
+    ansible_python_interpreter: python # makes it use the venv python
+  tasks:
+    - command: which pip
+      register: pip_path_out
+    - assert:
+        that:
+          - playbook_dir in pip_path_out.stdout
+
+    - name: install requirements for ansible control of azure
+      pip:
+        requirements: "{{ playbook_dir }}/requirements-azure.txt"
+
+- name: start a machine
+  hosts: localhost
+  gather_facts: no
+  vars:
+    ansible_python_interpreter: python # makes it use the venv python
+    resource_group: azure-pipeline-agents
+    auth_source: cli
+    location: eastus
+    username: pipelineuser
+    public_ssh_key: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC5NiAWKJOlkepI2taux1j363XfcOidJt0jMtAa/+5SjjI2p3DvxXPRx/1d9iPnv/mrreaYmQgrRFTM8+xuj728wLHkfHhOda2bXZlgsE4NOVXq3erv4NA+cXFXD7eT2KVzA9LMlKnXo7X7JJcppm/muJRbIQh+3n/LTYCRis5YLHLUBAwfm5+fXo6uuEdRQJ7yihArsEtXznNr4NbRrx0N7IC7/tErzHuAiU1DQ4KLrHRX1P3j6Q45YPujODanzoH1GcjgF5CeK/UIU3kX58EiLk8dN6MGcyFhlXcAiOfBZT0G+1OjPdMvzTxIGX6gCDwAjIPD9wee7Jzqh+JY6LRN8dqlVNkifDdMy4kvWkvXHv7+H1kLk6fZ2JhM76NXT7nj8Zbw4qhUhf+xJMqYOFcFZcqVAAj/dfKomVzhHWRCp5OLrhkKXACuEYAeTHbEoCm5BDAxhTAl3WbxXe+L5v5tp7xPkkSJ4afdT79RrDDZu28Se1/rtbuTIEdx/GFE1tE= generated-by-azure
+    private_ssh_key_path: /Users/j/Downloads/azure/azure-pipeline-agent-key.pem
+    vm_size: Standard_DS1_v2
+    virtual_network_name: azure-pipeline-agents-vnet
+    address_prefixes_cidr: "10.0.1.0/24"
+    ubuntu1804:
+      publisher: Canonical
+      offer: UbuntuServer
+      sku: 18.04-LTS
+      version: latest
+  tasks:
+    - azure_rm_resourcegroup:
+        name: "{{ resource_group }}"
+        auth_source: "{{ auth_source }}"
+        location: "{{ location }}"
+        state: present
+    - azure_rm_virtualnetwork:
+        name: "{{ virtual_network_name }}"
+        resource_group: "{{ resource_group }}"
+        address_prefixes_cidr: "{{ address_prefixes_cidr }}"
+    - azure_rm_subnet:
+        name: default
+        resource_group: "{{ resource_group }}"
+        virtual_network_name: "{{ virtual_network_name }}"
+        address_prefixes_cidr: "10.0.1.0/28"
+    - azure_rm_virtualmachine:
+        admin_username: "{{ username }}"
+        auth_source: "{{ auth_source }}"
+        image: "{{ ubuntu1804 }}"
+        name: azure-pipeline-agent
+        os_disk_size_gb: 200
+        resource_group: "{{ resource_group }}"
+        ssh_password_enabled: no
+        ssh_public_keys:
+          - path: "/home/{{username}}/.ssh/authorized_keys"
+            key_data: "{{ public_ssh_key }}"
+        started: yes
+        state: present
+        virtual_network_name: "{{ virtual_network_name }}"
+        vm_size: "{{ vm_size }}"
+      register: vm_start_output
+    - add_host:
+        group: servers
+        name: "{{ item }}"
+        ansible_user: "{{ username }}"
+        ansible_ssh_private_key_file: "{{ private_ssh_key_path }}"
+        ansible_python_interpreter: /usr/bin/python3
+      loop: "{{ vm_start_output | json_query(jmes_path) | d([]) | flatten  }}"
+      vars:
+        jmes_path: "ansible_facts.azure_vm.properties.networkProfile.networkInterfaces[*].properties.ipConfigurations[*].properties.publicIPAddress.properties.ipAddress"
+
