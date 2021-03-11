@@ -475,18 +475,17 @@ class Interface():
 
         elif action == "Export":
             # first check if checkpoint exists if export is requested after training
-
             mode = self._get_receiver_mode(receiver)
             if mode == 'export_while_training':
                 if (ScanCheckpoint(path = value['path']).run() or value["Type"] == 'ipynb'):
                     model_id = value.get('modelId', None)
                     if model_id is not None:
                         model_id = int(model_id)
-                    graph_spec = self._network_loader.load(value, as_spec=True)
-                    response = self._core.exportNetwork(value, graph_spec, model_id)
+                    response = self._core.exportNetwork(value, graph_spec=None, model_id=model_id)
                     return response
             elif mode == 'export_after_training':
-                response = self._core.exportNetwork(value, graph_spec = None, model_id = None)
+                graph_spec = self._network_loader.load(value, as_spec=True)
+                response = self._core.exportNetwork(value, graph_spec, model_id=None)
                 return response
             else:
                 return {'content':'The model is not trained.'}
@@ -577,9 +576,9 @@ class Interface():
             receiver_id (string): receiver id for the request
         """
         if receiver_id is not None:
-            if 'e' in receiver_id:
+            if 'e' not in receiver_id:
                 mode = 'export_while_training'
-            elif 'e' not in receiver_id:
+            elif 'e' in receiver_id:
                 mode = 'export_after_training'
             elif 't' in receiver_id:
                 mode = 'testing'

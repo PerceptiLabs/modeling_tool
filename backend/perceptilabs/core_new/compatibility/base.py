@@ -181,8 +181,5 @@ if __name__ == "__main__":
 
     network = patch_net_connections(network)
     graph_spec = GraphSpec.from_dict(network)            
-
-    import pdb; pdb.set_trace()
-    
     core = CompatibilityCore(commandQ, resultQ, graph_builder, script_factory, messaging_factory, graph_spec, threaded=False)
     core.run()    
