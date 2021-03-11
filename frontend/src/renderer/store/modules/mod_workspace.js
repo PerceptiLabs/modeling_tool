@@ -2621,6 +2621,7 @@ const componentsInputs = {
   TrainDetector: ['predictions', 'labels'],
   LayerCustom: ['input'],
 
+  PreTrainedMobileNetV2: ['input'],
   PreTrainedResNet50: ['input'],
   PreTrainedVGG16: ['input'],
   PreTrainedInceptionV3: ['input'],
@@ -2634,7 +2635,7 @@ const componentsOutputs = {
   DataData: ['output'],
   DataEnvironment: ['output'],
   DataRandom: ['output'],
-
+  
   ProcessReshape: ['output'],
   ProcessGrayscale: ['output'],
   ProcessOneHot: ['output'],
@@ -2656,10 +2657,11 @@ const componentsOutputs = {
   TrainGan: [],
   TrainDetector: [],
 
-  PreTrainedResNet50: ['output'],
+  PreTrainedMobileNetV2: ['output'],
   PreTrainedVGG16: ['output'],
   PreTrainedInceptionV3: ['output'],
-
+  PreTrainedResNet50: ['output'],
+  
   IoInput: ['output'],
   IoOutput: []
 };

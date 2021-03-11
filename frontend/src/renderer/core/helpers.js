@@ -234,6 +234,7 @@ const layerBgColor = function (componentName) {
     case 'DeepLearningRecurrent':
     case 'PreTrainedResNet50':
     case 'PreTrainedVGG16':
+    case 'PreTrainedMobileNetV2':
     case 'PreTrainedInceptionV3':
       className = 'net-color-learn-deep';
       break;

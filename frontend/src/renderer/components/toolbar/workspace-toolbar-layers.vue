@@ -84,6 +84,7 @@
   import LayerCustom          from '@/components/network-elements/elements/layer-custom/view-layer-custom.vue'
 
   import PreTrainedVGG16        from '@/components/network-elements/elements/pretrained-vgg16/view-pretrained-vgg16.vue'
+  import PreTrainedMobileNetV2  from '@/components/network-elements/elements/pretrained-mobilenetv2/view-pretrained-mobilenetv2.vue'
   import PreTrainedInceptionV3  from '@/components/network-elements/elements/pretrained-inceptionv3/view-pretrained-inceptionv3.vue'
   import PreTrainedResNet50   from '@/components/network-elements/elements/pretrained-resnet50/view-pretrained-resnet50.vue'
 
@@ -99,7 +100,7 @@ export default {
     TrainNormal, TrainRegression, TrainGenetic, TrainDynamic, TrainReinforce, TrainDetector, TrainGan,
     MathArgmax, MathMerge, MathSoftmax, MathSwitch,
     LayerCustom,
-    PreTrainedVGG16, PreTrainedInceptionV3, PreTrainedResNet50,
+    PreTrainedVGG16, PreTrainedInceptionV3, PreTrainedResNet50, PreTrainedMobileNetV2, 
     IoInput, IoOutput
   },
   created(){
@@ -438,6 +439,10 @@ export default {
         if (!dlObject.networkElements.includes('PreTrainedInceptionV3')) {
           dlObject.networkElements.push('PreTrainedInceptionV3');
         }
+        if (!dlObject.networkElements.includes('PreTrainedMobileNetV2')) {
+          dlObject.networkElements.push('PreTrainedMobileNetV2');
+        }
+        
       } catch(err) {
         console.log('Deep Learning layers hidden');
       }
