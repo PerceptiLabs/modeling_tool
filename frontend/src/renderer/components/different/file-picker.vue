@@ -66,6 +66,7 @@
         button.btn.btn--primary(type="button"
           @click="onConfirm"
           :disabled="isConfirmButtonDisabled"
+          data-testing-target="save-model-as-confirm-location"
           ) Confirm
 </template>
 

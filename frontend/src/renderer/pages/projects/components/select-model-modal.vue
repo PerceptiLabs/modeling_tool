@@ -81,7 +81,7 @@
                     )
                 .main-actions-buttons
                     button.action-button.mr-5(@click="closeModal(true)") Cancel
-                    button.action-button.create-btn.ml-5(
+                    button#create-model-btn.action-button.create-btn.ml-5(
                         :class="{'is-disabled': isDisableCreateAction()}"
                         @click="debouncedCreateModelFunction()"
                     )

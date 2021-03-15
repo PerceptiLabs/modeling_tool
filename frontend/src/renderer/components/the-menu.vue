@@ -12,6 +12,7 @@
         ) {{ item.label }}
         ul.header-nav_sublist.sublist--top(
           :data-tutorial-marker="'MenuItem_' + item.label"
+          :data-testing-target="'MenuItem_' + item.label"
         )
           li.header-nav_item(
             v-for="(subItem, index) in item.submenu"

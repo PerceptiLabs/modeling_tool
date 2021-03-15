@@ -10,7 +10,7 @@
     span %
   button.btn.btn--icon.workspace-scale_btn(type="button" @click="incScale()")
     i.icon.icon-zoom-plus
-  base-checkbox( :isMiniMap="true" :isNewUi="true" :value="isMiniMapNavigatorOpened" @input="setMiniMapNavigationMutation") Map
+  base-checkbox( :isMiniMap="true" :isNewUi="true" :value="isMiniMapNavigatorOpened" @input="setMiniMapNavigationMutation"  data-testing-target="mini-map-checkbox") Map
   base-checkbox( :isMiniMap="true" :isNewUi="true" v-model="isGridEnabled") Grid
 .workspace-meta-right-box
   model-status(

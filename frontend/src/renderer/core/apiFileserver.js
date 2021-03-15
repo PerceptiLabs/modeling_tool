@@ -77,11 +77,16 @@ export const exportAsGithubRepository = (data) => {
 }
 
 export const doesDirExist = (path) => {
-  return whenHaveFileserverToken()
-    .then(fs => fs.head(`/directories?path=${path}`))
+   whenHaveFileserverToken()
+    .then(fs => {
+      return fs.head(`/directories?path=${path}`);
+    })
     .then(res => {
       return (res.status === 200);
     })
+    .catch(e => {
+      return Promise.reject(e)
+    });
 }
 
 export const getFolderContent = (path) => {

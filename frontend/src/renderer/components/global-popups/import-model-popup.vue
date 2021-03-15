@@ -15,7 +15,12 @@
           .form_holder
             .form_label Path:
             .form_row
-              input.form_input(type="text" v-model="saveModelLocation" readonly)
+              input.form_input(
+                type="text"
+                v-model="saveModelLocation"
+                readonly
+                data-testing-target="import-model-path"
+                )
               button.btn.btn--dark-blue-rev(type="button" @click="openLoadModelPopup") Browse
         div(slot="Import from-content" v-if="currentTab === 'github'")
           view-loading(:isLoading="isFetching" )

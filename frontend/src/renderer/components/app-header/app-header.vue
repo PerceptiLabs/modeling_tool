@@ -40,6 +40,7 @@
           type="button"
           @click="goToReport"
           :data-tutorial-target="'tutorial-model-hub-report-button'"
+          data-testing-target="report-modal-btn"
         )
         img(v-if="isLoading" src="static/img/spinner.gif" width="12px" style="margin-right: 5px")
         span(v-if="!isLoading") Report

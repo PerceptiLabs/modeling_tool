@@ -10,6 +10,7 @@
             input(type="text"
               v-model="settings.networkName"
               :class="{'bg-error': !settings.networkName}"
+              data-testing-target="save-model-as-model-name"
             )
       .settings-layer_section(v-if="!popupSettings.isFreezeInfo")
         .form_holder
@@ -18,8 +19,13 @@
             input.ellipsis.form_input(type="text"
             v-model="settings.networkPath"
             :class="{'bg-error': !settings.networkPath}"
+            data-testing-target="save-model-as-path"
             )
-            button.btn.btn--dark-blue-rev(type="button" @click="openFilePicker") Browse
+            button.btn.btn--dark-blue-rev(
+              type="button"
+              @click="openFilePicker"
+              data-testing-target="save-model-as-browse"
+              ) Browse
 
     template(slot="action")
       button.btn.btn--primary.btn--disabled(type="button"

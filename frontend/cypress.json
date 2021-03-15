@@ -1,0 +1,27 @@
+{
+  "chromeWebSecurity": false,
+  "viewportWidth": 1366,
+  "viewportHeight": 768,
+  "testFiles": [
+    "authorize.spec.js",
+    "skipLogInModal.spec.js",
+    "createImageClasification.spec.js",
+    "skypeTips.spec.js",
+    "addComponents.spec.js",
+    "connectComponents.spec.js",
+    "removeCommponent.spec.js",
+    "historyNavigation.spec.js",
+    "componentFocusAndBlur.spec.js",
+    "copyPasteComponent.spec.js",
+    "dragComponent.spec.js",
+    "toggleCodeWindow.spec.js",
+    "toggleSidebar.spec.js",
+    "componentInputAddRemove.spec.js",
+    "componentOutputAddRemove.spec.js",
+    "zoomInOut.spec.js",
+    "toggleMiniMap.spec.js",
+    "saveLoadModel.spec.js",
+    "openReportModal.spec.js",
+    "removeModels.spec.js"
+  ]
+}

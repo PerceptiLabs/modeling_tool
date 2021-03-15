@@ -6,6 +6,7 @@
     @mouseleave="handleMouseUp"
     v-if="isMiniMapNavigatorOpened"
     ref="miniMap"
+    data-testing-target="mini-map"
     )
     div.mini-map-relative-wrapper(:style="miniMapRelativeWrapperStyles")
       div.close-mini-map-position

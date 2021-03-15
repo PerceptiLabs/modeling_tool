@@ -3,6 +3,7 @@
     :class="{'is-open': isClosed}"
     @click="toggleSidebar()"
     v-if="!isNotebookMode"
+    data-testing-target="sidebar-tootle-btn"
     )
     svg.toggle-icon(
       :class="{'is-open': isClosed}"

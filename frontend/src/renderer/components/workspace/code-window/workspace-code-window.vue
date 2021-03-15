@@ -24,7 +24,9 @@
             @click="beforeCloseWindowCheck"
             viewBox="0 0 7 8"
             fill="none"
-            xmlns="http://www.w3.org/2000/svg")
+            xmlns="http://www.w3.org/2000/svg"
+            data-testing-target="code-window-close"
+            )
             path(
               fill-rule="evenodd"
               clip-rule="evenodd"

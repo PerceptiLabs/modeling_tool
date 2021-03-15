@@ -4,7 +4,9 @@
     //- The confirmation is below
     template(v-if="isForm")
       template(slot="Report to PerceptiLabs-content")
-        .popup-body-section
+        .popup-body-section(
+          data-testing-target="report-modal"
+        )
           view-loading(:isLoading="isRequesting")
           .section-header
             i.icon.icon-bug-report.section-header-icon 
