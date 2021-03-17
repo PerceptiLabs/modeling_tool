@@ -17,6 +17,7 @@
           :disable-header="true"
           :chart-data="storeCurrentElement.chartData"
           :showInitiallyRequestSpinner="false"
+          :enableDrag="enableDrag"
         )
 
 </template>
@@ -48,6 +49,10 @@ export default {
       isTutorialMode:          'mod_tutorials/getIsTutorialMode',
       statisticsOrTestIsOpen:  'mod_workspace/GET_statisticsOrTestIsOpen',
     }),
+    enableDrag() {
+      if(this.statisticsOrTestIsOpen) return true;
+      return false;
+    },
     showLoadingSpinner() {
       return this.storeCurrentElement.chartDataIsLoading !== undefined && this.storeCurrentElement.chartDataIsLoading !== 0;
     },

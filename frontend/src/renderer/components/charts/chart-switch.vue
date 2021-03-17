@@ -24,6 +24,7 @@
         :disable-header="disableHeader"
         :chart-data="imgData"
         :custom-color="customColor"
+        :enableDrag="enableDrag"
       )
       .base-chart_info(v-if="chartPieInfo.length") {{ chartPieInfo }}
 
@@ -46,6 +47,10 @@
       chartLabel: {
         type: String,
         default: ''
+      },
+      enableDrag: {
+        type: Boolean,
+        default: true
       },
       chartData: {
         type: [Object, Array],

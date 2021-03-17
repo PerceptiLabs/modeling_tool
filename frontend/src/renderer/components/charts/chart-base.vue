@@ -63,7 +63,12 @@
         }
       }
     },
-
+    props: {
+      enableDrag: {
+        type: Boolean,
+        default: true
+      }
+    },
     methods: {
       createWWorker() {
         this.wWorker = new Worker(`${pathWebWorkers}/calcChartBase.js`);
@@ -71,6 +76,7 @@
       },
       sendDataToWWorker(dataWatch) {
         let data = dataWatch || this.chartData;
+        this.defaultModel.dataZoom[0].moveOnMouseMove = this.enableDrag;
         if (data === null || data === undefined) {
           this.chartModel = this.defaultModel;
           return
