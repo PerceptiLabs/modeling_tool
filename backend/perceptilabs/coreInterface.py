@@ -26,6 +26,7 @@ from perceptilabs.createDataObject import createDataObject
 from perceptilabs.messaging import MessageProducer
 from perceptilabs.aggregation import AggregationRequest, AggregationEngine
 from typing import List
+from perceptilabs.utils import is_tf1x
 
 from perceptilabs.license_checker import LicenseV2
 
@@ -216,7 +217,6 @@ class coreLogic():
         )
 
         trainer = self._get_trainer(script_factory, graph_spec)
-        
         self.core = CompatibilityCore(
             self.commandQ,
             self.resultQ,
@@ -348,7 +348,6 @@ class coreLogic():
 
         if value["Type"] == 'ipynb':
             return self.saveIpynbToDisk(value)
-
         return self.exportNetworkV2(value, graph_spec, model_id)            
 
     def saveIpynbToDisk(self, value):
@@ -375,11 +374,21 @@ class coreLogic():
             mode = 'TFQuantized'         
         elif value['Compressed']:
             mode = 'TFLite'
-            
-        if graph_spec is not None:
+
+        from perceptilabs.script import ScriptFactory
+
+
+        script_factory = ScriptFactory(
+            mode='tf2x' if utils.is_tf2x() else 'tf1x',
+            simple_message_bus=True,
+            running_mode=self._running_mode
+        )
+
+        if graph_spec is not None and utils.is_tf1x():
             self.set_running_mode('exporting')
             self.startCore(graph_spec, model_id)
-        
+
+
         self.commandQ.put(
             CoreCommand(
                 type='export',
@@ -387,6 +396,7 @@ class coreLogic():
                 allow_override=False
             )
         )
+
         return {"content": f"Exporting of model requested to the path {path}"}
     
     def skipValidation(self):

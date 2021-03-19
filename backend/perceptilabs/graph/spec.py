@@ -213,6 +213,10 @@ class GraphSpec(AbstractGraphSpec):
         start_nodes = [node for node in self.nodes if len(node.backward_connections) == 0]
         return start_nodes
     
+    def get_checkpoint_path(self):
+        checkpoint_path = self.layers[0].checkpoint_path
+        return checkpoint_path
+    
     def _get_connections(self, layer_specs):
         bw_cons = set()
         fw_cons = set()

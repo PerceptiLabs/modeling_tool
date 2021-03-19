@@ -322,12 +322,18 @@ export default {
     },
     trainStartWithCheckpoint() {
       googleAnalytics.trackCustomEvent('start-training');
-      let valid = this.validateNetwork();
-      if (!valid) return;
+      if (process.env.ENABLE_TF2X !== 'true') {
+        let valid = this.validateNetwork();
+        if (!valid) return;
+      }
       this.GP_showCoreSideSettings(true);
     },
     trainStartWithoutCheckpoint() {
       googleAnalytics.trackCustomEvent('start-training');
+      if (process.env.ENABLE_TF2X !== 'true') {
+        let valid = this.validateNetwork();
+        if (!valid) return;
+      }
       // if toggle off
       // start directly
 

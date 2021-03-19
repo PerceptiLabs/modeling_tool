@@ -17,6 +17,7 @@ from perceptilabs.aggregation import AggregationRequest, AggregationEngine
 from perceptilabs.coreInterface import coreLogic
 
 from perceptilabs.graph.spec import GraphSpec
+from perceptilabs.exporter.base import Exporter
 from perceptilabs.utils import stringify
 from perceptilabs.core_new.errors import LightweightErrorHandler
 from perceptilabs.core_new.extras import LayerExtrasReader
@@ -33,6 +34,7 @@ import perceptilabs.autosettings.utils as autosettings_utils
 from perceptilabs.modelrecommender import ModelRecommender
 from perceptilabs.data.base import FeatureSpec, DataLoader
 from perceptilabs.utils import is_tf1x
+from perceptilabs.script import ScriptFactory
 
 #LW interface
 from perceptilabs.lwInterface import (
@@ -474,21 +476,8 @@ class Interface():
             return response
 
         elif action == "Export":
-            # first check if checkpoint exists if export is requested after training
-            mode = self._get_receiver_mode(receiver)
-            if mode == 'export_while_training':
-                if (ScanCheckpoint(path = value['path']).run() or value["Type"] == 'ipynb'):
-                    model_id = value.get('modelId', None)
-                    if model_id is not None:
-                        model_id = int(model_id)
-                    response = self._core.exportNetwork(value, graph_spec=None, model_id=model_id)
-                    return response
-            elif mode == 'export_after_training':
-                graph_spec = self._network_loader.load(value, as_spec=True)
-                response = self._core.exportNetwork(value, graph_spec, model_id=None)
-                return response
-            else:
-                return {'content':'The model is not trained.'}
+            response = self._create_response_export(value, receiver)
+            return response
 
         elif action == "isTrained":
             result = self._core.isTrained()
@@ -607,6 +596,44 @@ class Interface():
         graph_spec = recommender.get_graph(feature_specs)
         json_network = graph_spec.to_dict()
         return json_network
+    
+    def _create_response_export(self, value, receiver):
+        if utils.is_tf2x():
+            return self._create_response_export_tf2x(value, receiver)
+        else:
+            return self._create_response_export_tf1x(value, receiver)
+
+    def _create_response_export_tf2x(self, value, receiver):
+        # first check if checkpoint exists if export is requested after training
+        mode = self._get_receiver_mode(receiver)
+        if mode == 'export_while_training':                    
+            _model_id = value.get('modelId', None)
+            if _model_id is not None:
+                _model_id = int(_model_id)
+            response = self._core.exportNetwork(value, graph_spec=None, model_id=_model_id)
+            return response
+        elif mode == 'export_after_training':
+            graph_spec = self._network_loader.load(value, as_spec=True)
+            response = self._export_using_exporter(value, path=value['Location'], graph_spec=graph_spec)
+            return response
+        else:
+            return {'content':'The model is not trained.'}
+
+    def _create_response_export_tf1x(self, value, receiver):
+        mode = self._get_receiver_mode(receiver)
+        if mode == 'export_while_training':
+            if (ScanCheckpoint(path = value['path']).run() or value["Type"] == 'ipynb'):
+                model_id = value.get('modelId', None)
+                if model_id is not None:
+                    model_id = int(model_id)
+                response = self._core.exportNetwork(value, graph_spec=None, model_id=model_id)
+                return response
+        elif mode == 'export_after_training':
+            graph_spec = self._network_loader.load(value, as_spec=True)
+            response = self._core.exportNetwork(value, graph_spec, model_id=None)
+            return response
+        else:
+            return {'content':'The model is not trained.'}
 
     def _parse(self, path):
         frozen_pb_model = load_tf1x_frozen(path)
@@ -615,4 +642,18 @@ class Interface():
         layer_checkpoint_list = parser.parse()
         jsonNetwork = parser.save_json(layer_checkpoint_list[0])
         return jsonNetwork
+
+
+    def _export_using_exporter(self, value, path, graph_spec):
+        script_factory = ScriptFactory(
+            mode='tf2x' if utils.is_tf2x() else 'tf1x',
+            simple_message_bus=True,
+        )
+        try:
+            exporter = Exporter.from_disk(path, graph_spec, script_factory)
+        except:
+            return {"content": f"Can't export a model that hasn't been trained yet."}
+        export_path = os.path.join(path, value['name'])
+        exporter.export_inference(export_path)
+        return {"content": f"Exporting of model requested to the path {path}"}
 

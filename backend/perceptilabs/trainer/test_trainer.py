@@ -1,8 +1,10 @@
 import os
 import pytest
 import pickle
+import tempfile
 from unittest.mock import MagicMock
 
+import tensorflow as tf
 import numpy as np
 import pandas as pd
 
@@ -34,11 +36,11 @@ def data_loader(csv_path):
 @pytest.fixture()
 def graph_spec_few_epochs(csv_path):
     gsb = GraphSpecBuilder()
-
+    dirpath = tempfile.mkdtemp()
     # Create the layers
     id1 = gsb.add_layer(
         'IoInput',
-        settings={'feature_name': 'x1', 'file_path': csv_path}
+        settings={'datatype': 'numerical', 'feature_name': 'x1', 'file_path': csv_path, 'checkpoint_path':dirpath}
     )
     id2 = gsb.add_layer(
         'DeepLearningFC',
@@ -46,7 +48,7 @@ def graph_spec_few_epochs(csv_path):
     )
     id3 = gsb.add_layer(
         'IoOutput',
-        settings={'feature_name': 'y1', 'file_path': csv_path}
+        settings={'datatype': 'numerical', 'feature_name': 'y1', 'file_path': csv_path}
     )
 
     # Connect the layers
@@ -206,16 +208,6 @@ def test_computed_results_do_not_change(script_factory_tf2x, data_loader, graph_
     
     assert pickled_initial_results != pickled_final_results  # The results should be different
     assert repickled_initial_results == pickled_initial_results  # But the initial results shouldn't change.
-
-    
-@pytest.mark.tf2x    
-def test_trainer_inference_model_ok(script_factory_tf2x, data_loader, graph_spec_few_epochs):
-    trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs)
-    trainer.run()
-    model = trainer.get_inference_model()
-    x = {'x1': np.array([1.0, 2.0, 3.0])}
-    y = model(x)
-    assert y['y1'].numpy().shape == (3, 1)
     
 
 @pytest.mark.tf2x
@@ -273,4 +265,46 @@ def test_trainer_can_pause_stop(script_factory_tf2x, data_loader, graph_spec_few
     next(step)
     trainer.stop()
     assert trainer.status == 'Finished'
+    
+@pytest.mark.tf2x
+def test_trainer_export_on_training_finish(script_factory_tf2x, data_loader, graph_spec_few_epochs):
+    temp_dir = graph_spec_few_epochs.to_dict()['0']['checkpoint']['path']
+    trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs, num_epochs=1)
 
+    step = trainer.run_stepwise()
+    next(step)  # Take the first training steps
+
+    assert 'checkpoint' not in os.listdir(temp_dir)
+
+    for _ in step:  # Complete training
+        pass
+
+    assert len(os.listdir(temp_dir)) > 0
+    assert 'checkpoint' in os.listdir(temp_dir)
+
+    
+@pytest.mark.tf2x
+def test_trainer_export_checkpoint_while_training(script_factory_tf2x, data_loader, graph_spec_few_epochs):
+    temp_dir = graph_spec_few_epochs.to_dict()['0']['checkpoint']['path']
+    trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs, num_epochs=1)
+
+    step = trainer.run_stepwise()
+    next(step)  # Take the first training steps
+
+    assert 'checkpoint' not in os.listdir(temp_dir)
+
+    trainer.export(temp_dir, mode='Checkpoint')
+    assert 'checkpoint' in os.listdir(temp_dir)
+
+@pytest.mark.tf2x
+def test_trainer_export_pb_while_training(script_factory_tf2x, data_loader, graph_spec_few_epochs):
+    temp_dir = graph_spec_few_epochs.to_dict()['0']['checkpoint']['path']
+    trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs, num_epochs=1)
+
+    step = trainer.run_stepwise()
+    next(step)  # Take the first training steps
+
+    assert 'saved_model.pb' not in os.listdir(temp_dir)
+
+    trainer.export(temp_dir, mode='TFModel')
+    assert 'saved_model.pb' in os.listdir(temp_dir)

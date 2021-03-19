@@ -320,6 +320,9 @@ perceptilabs/modelrecommender/decoders/numerical.py
 perceptilabs/trainer/__init__.py
 perceptilabs/trainer/base.py
 
+# backend/perceptilabs/exporter/
+perceptilabs/exporter/base.py
+
 # backend/perceptilabs/trainer/stats/
 perceptilabs/trainer/stats/__init__.py
 perceptilabs/trainer/stats/base.py

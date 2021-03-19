@@ -4,6 +4,7 @@ import logging
 
 import tensorflow as tf
 import numpy as np
+import os
 import time
 import logging
 from perceptilabs.logconf import APPLICATION_LOGGER, USER_LOGGER
@@ -17,20 +18,25 @@ from perceptilabs.logconf import APPLICATION_LOGGER
 logger = logging.getLogger(APPLICATION_LOGGER)
 
 class Trainer:
-    def __init__(self, script_factory, data_loader, graph_spec):
+    def __init__(self, script_factory, data_loader, graph_spec, num_epochs=100):
         self._script_factory = script_factory
         self._data_loader = data_loader
         self._graph_spec = graph_spec
         self._training_time = 0.0
+
+        self._training_model = TrainingModel(self._script_factory, self._graph_spec)
         
         self._headless = False
 
         self._num_epochs_completed = 0        
-        self._num_epochs = 100 # TODO: read from spec (story 1535)
+        self._num_epochs = num_epochs # TODO: read from spec (story 1535)
         self._batch_size = 2 # TODO: read from spec (story 1535)
 
         self._reset_tracked_values()
         self._initialize_batch_counters(data_loader)
+
+        self._exporter = self._create_exporter()
+
         self._set_status('Waiting')
         
         
@@ -40,11 +46,12 @@ class Trainer:
         for _ in self.run_stepwise():
             pass
     
+
+    
     def run_stepwise(self):
         """ Take a training/validation step and yield """
         logger.info("Initializing training")        
-
-        self._training_model = TrainingModel(self._script_factory, self._graph_spec)
+        
         logger.info("Training model initialized")
         
         training_set, validation_set = self._get_datasets()
@@ -66,12 +73,11 @@ class Trainer:
             if layer_spec.is_output_layer
         }
 
-        logger.info("Entering training loop")        
+        logger.info("Entering training loop")       
         self._num_epochs_completed = 0
         while self._num_epochs_completed < self.num_epochs and not self.is_closed:
             t0 = time.perf_counter()
             self._set_status('Training')
-
             yield from self._loop_over_dataset(
                 self._training_model,
                 losses,
@@ -110,13 +116,19 @@ class Trainer:
             )
             logger.info(f"Epoch duration: {round(epoch_time, 3)} s")
             self._training_time += epoch_time
-
-            yield
+            yield 
             
         self._set_status('Finished')
         logger.info(f"Training completed. Total duration: {round(self._training_time, 3)} s")
+
+        ckpt_path = self._graph_spec.get_checkpoint_path()
+        inference_export_path = os.path.dirname(ckpt_path)
         
-        # TODO: automatic export at end of training (story 1538)
+        
+        self.export_inference(inference_export_path)
+        self.export_checkpoint(ckpt_path)
+        
+
 
     def _loop_over_dataset(self, model, losses, dataset, metric_loss, metric_accuracy, metric_auc, set_num_batches_completed_this_epoch, training=True, optimizer=None):
         """ Loop over all batches of data once """
@@ -226,6 +238,11 @@ class Trainer:
             raise ValueError(f"Cannot set status to '{value}'")
         self._status = value
 
+    def _create_exporter(self):
+        from perceptilabs.exporter.base import Exporter
+        exporter = Exporter(self._graph_spec, self._training_model)
+        return exporter
+
     @property
     def status(self):
         """ The current training status """
@@ -327,32 +344,8 @@ class Trainer:
         # TODO: implement (story 1545)
         pass        
 
-    def export(self, path, mode):
-        # TODO: implement (1538)
-        if mode == 'TFModel':
-            self.save_model(path)
-
     def close(self):
-        self.stop()
-        
-    def save_model(self, path):
-        """ Save the model """
-        model = self.get_inference_model()
-        model.save(path)
-
-    def get_inference_model(self):
-        """ Convert the Training Model to a simpler version (e.g., skip intermediate outputs)  """        
-        # TODO: add option to include pre- and post-processing pipelines (story 1609)
-        inputs = {}
-        for layer_spec in self._graph_spec:
-            if not layer_spec.is_input_layer:
-                continue
-            shape = self._data_loader.get_feature_shape(layer_spec.feature_name)
-            inputs[layer_spec.feature_name] = tf.keras.Input(shape=shape)
-                
-        outputs, _ = self._training_model(inputs)
-        inference_model = tf.keras.Model(inputs=inputs, outputs=outputs)
-        return inference_model        
+        self.stop()     
 
     def get_layer_output(self, layer_id, output_variable='output'):
         """ Gets the output batch of a layer 
@@ -458,6 +451,18 @@ class Trainer:
     def get_target_stats(self) -> SampleStats:
         """ Returns a tracker for the current target values """
         return self._target_stats_tracker.save()
+    
+    def export(self, path, mode):
+        if mode == 'Checkpoint':
+            self.export_checkpoint(path)
+        if mode == 'TFModel':
+            self.export_inference(path)
+    
+    def export_inference(self, path):
+        self._exporter.export_inference(path)
+    
+    def export_checkpoint(self, path):
+        self._exporter.export_checkpoint(path)
 
     def _get_datasets(self):
         """ Get the datasets from the data loader """
