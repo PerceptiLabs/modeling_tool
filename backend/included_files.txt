@@ -319,6 +319,7 @@ perceptilabs/modelrecommender/decoders/numerical.py
 # backend/perceptilabs/trainer/
 perceptilabs/trainer/__init__.py
 perceptilabs/trainer/base.py
+perceptilabs/trainer/losses.py
 
 # backend/perceptilabs/exporter/
 perceptilabs/exporter/base.py

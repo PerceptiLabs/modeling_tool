@@ -47,6 +47,21 @@ def training_settings():
 
     }
 
+@pytest.fixture()
+def training_settings_custom_loss():
+    yield {
+        'Epochs':10,
+        'Batch_size':2,
+        'Learning_rate':0.001,
+        'Beta1':0.9,
+        'Beta2':0.99,
+        'Momentum':0.0,
+        'Centered':False,
+        'Loss':'Dice',
+        'Optimizer':'SGD'
+
+    }
+
     
 @pytest.fixture()
 def graph_spec_few_epochs(csv_path):
@@ -251,6 +266,7 @@ def test_trainer_input_stats_available(script_factory_tf2x, data_loader, graph_s
     input_stats = trainer.get_input_stats()
     assert 'x1' in input_stats.sample_batch 
 
+
 @pytest.mark.tf2x
 def test_trainer_can_pause_and_unpause(script_factory_tf2x, data_loader, graph_spec_few_epochs, training_settings):
     trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs, training_settings)
@@ -262,6 +278,7 @@ def test_trainer_can_pause_and_unpause(script_factory_tf2x, data_loader, graph_s
     trainer.unpause()
     assert trainer.status != 'Paused'
 
+
 @pytest.mark.tf2x
 def test_trainer_can_stop(script_factory_tf2x, data_loader, graph_spec_few_epochs, training_settings):
     trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs, training_settings)
@@ -269,6 +286,7 @@ def test_trainer_can_stop(script_factory_tf2x, data_loader, graph_spec_few_epoch
     next(trainer.run_stepwise()) # Take the first training steps    
     trainer.stop()
     assert trainer.status == 'Finished'
+
 
 @pytest.mark.tf2x
 def test_trainer_can_pause_stop(script_factory_tf2x, data_loader, graph_spec_few_epochs, training_settings):
@@ -321,5 +339,19 @@ def test_trainer_export_pb_while_training(script_factory_tf2x, data_loader, grap
 
     assert 'saved_model.pb' not in os.listdir(temp_dir)
 
-    trainer.export(temp_dir, mode='TFModel')
-    assert 'saved_model.pb' in os.listdir(temp_dir)
+
+@pytest.mark.tf2x
+def test_trainer_custom_loss(script_factory_tf2x, data_loader, graph_spec_few_epochs, training_settings_custom_loss):
+    """ Tests if the trainer can finish a full training loop with a loss function not native to the Keras library, such as Dice. """
+    
+    trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs, training_settings_custom_loss)
+    step = trainer.run_stepwise()
+    next(step)  # Take the first training steps
+
+    initial_results = trainer.get_results()
+    assert initial_results is not None
+
+    for _ in step:  # Complete training
+        pass
+
+    

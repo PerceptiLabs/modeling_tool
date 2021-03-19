@@ -1813,11 +1813,11 @@ const mutations = {
     state.copyOrCutNetworkSnapshot = deepCloneNetwork(getters.GET_currentNetworkElementList);
   },
   set_trainingSettings(state, {currentNetwork, defaultTrainingSettings}) {
-    let settins = deepCopy(defaultTrainingSettings);
+    let settings = deepCopy(defaultTrainingSettings);
     
-    delete settins['OptimizerOptions'];
-    delete settins['LossOptions'];
-    Vue.set(currentNetwork.networkMeta, 'trainingSettings',  settins);
+    delete settings['OptimizerOptions'];
+    delete settings['LossOptions'];
+    Vue.set(currentNetwork.networkMeta, 'trainingSettings',  settings);
   },
   setModelRunSettingsMutation(state, {name, value, currentNetwork}) {
     currentNetwork.networkMeta.trainingSettings[name] = value;

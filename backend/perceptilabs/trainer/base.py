@@ -12,6 +12,7 @@ from perceptilabs.logconf import APPLICATION_LOGGER, USER_LOGGER
 from perceptilabs.layers.visualizer import PerceptiLabsVisualizer
 from perceptilabs.trainer.model import TrainingModel
 from perceptilabs.trainer.stats import SampleStatsTracker, SampleStats, GradientStatsTracker, GradientStats
+from perceptilabs.trainer.losses import weighted_crossentropy, dice
 from perceptilabs.logconf import APPLICATION_LOGGER
 
 
@@ -67,7 +68,7 @@ class Trainer:
 
 
         losses = {
-            layer_spec.feature_name: self._loss # TODO: get from training settings/output layers (story 1536)
+            layer_spec.feature_name: self._loss
             for layer_spec in self._graph_spec.layers
             if layer_spec.is_output_layer
         }
@@ -487,6 +488,8 @@ class Trainer:
             return tf.keras.losses.MeanSquaredError()
         elif loss == 'Cross_Entropy':
             return tf.keras.losses.CategoricalCrossentropy()
+        elif loss == 'Dice':
+            return dice
 
     
 

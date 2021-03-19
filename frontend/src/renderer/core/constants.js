@@ -80,7 +80,6 @@ export const defaultTrainingSettings = {
   LossOptions: [
     {text: 'Cross-Entropy', value: 'Cross-Entropy'},
     {text: 'Quadratic', value: 'Quadratic'},
-    {text: 'Weighted', value: 'Weighted'},
     {text: 'Dice', value: 'Dice'},
   ],
   Learning_rate: 0.001,
