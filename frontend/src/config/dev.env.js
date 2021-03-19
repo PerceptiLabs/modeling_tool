@@ -14,4 +14,5 @@ module.exports = merge(prodEnv, {
   PL_FILE_SERVING_TOKEN: '"12312"',
   ENABLE_TF2X: '"false"',
   ENABLE_DATA_WIZARD: '"false"',
+  ENABLE_GLOBAL_TRAINING_SETTINGS: '"false"'
 })

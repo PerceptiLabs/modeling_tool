@@ -12,10 +12,7 @@ $triangleWith: 10px;
 		.workspace_content & {
 			display: none;
 		}
-		&.tooltip--right {
-			transform: translateY(-50%);
-		}
-		&.tooltip--right-wrap-text {
+		&.tooltip--right, &.tooltip--right-wrap-text, &.tooltip--wrap-text {
 			transform: translateY(-50%);
 		}
 		&.tooltip--bottom {
@@ -122,6 +119,21 @@ $triangleWith: 10px;
 		transform: translate(50%,-50%) rotate(45deg);
 		background: linear-gradient(45deg, $popper-background-color 50%, rgba($popper-background-color,0) 58%);
 	}
+}
+.tooltip--wrap-text {
+  white-space: pre-wrap;
+  max-width: 380px;
+  top: 50%;
+  width: max-content;
+  right: calc(100% + 10px);
+  margin-left: $margin-tooltip;
+  transform: translateY(50%) rotateX(90deg);
+  &:before {
+    top: 50%;
+    left: calc(100% - 5px);
+    transform: translate(0,-50%) rotate(-135deg);
+    background: linear-gradient(45deg, $popper-background-color 50%, rgba($popper-background-color,0) 58%);
+  }
 }
 
 

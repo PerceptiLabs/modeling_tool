@@ -18,19 +18,19 @@ from perceptilabs.logconf import APPLICATION_LOGGER
 logger = logging.getLogger(APPLICATION_LOGGER)
 
 class Trainer:
-    def __init__(self, script_factory, data_loader, graph_spec, num_epochs=100):
+    def __init__(self, script_factory, data_loader, graph_spec, training_settings):
         self._script_factory = script_factory
         self._data_loader = data_loader
         self._graph_spec = graph_spec
         self._training_time = 0.0
-
-        self._training_model = TrainingModel(self._script_factory, self._graph_spec)
-        
+        self._num_epochs = int(training_settings['Epochs'])
+        self._batch_size = int(training_settings['Batch_size'])
         self._headless = False
-
+        self._optimizer = self._resolve_optimizer(training_settings)
+        self._loss = self._resolve_loss_function(training_settings)
         self._num_epochs_completed = 0        
-        self._num_epochs = num_epochs # TODO: read from spec (story 1535)
-        self._batch_size = 2 # TODO: read from spec (story 1535)
+        self._training_model = TrainingModel(script_factory, graph_spec)
+        
 
         self._reset_tracked_values()
         self._initialize_batch_counters(data_loader)
@@ -64,11 +64,10 @@ class Trainer:
         self._metric_validation_accuracy = tf.keras.metrics.CategoricalAccuracy()
         self._metric_validation_auc = tf.keras.metrics.AUC(curve='ROC')
 
-        # TODO: Implement different optimizers (story 1535)
-        optimizer = tf.keras.optimizers.SGD(learning_rate=0.01) #  TODO: fix learning rate (story 1535)
+
 
         losses = {
-            layer_spec.feature_name: tf.keras.losses.MeanSquaredError() # TODO: get from training settings/output layers (story 1536)
+            layer_spec.feature_name: self._loss # TODO: get from training settings/output layers (story 1536)
             for layer_spec in self._graph_spec.layers
             if layer_spec.is_output_layer
         }
@@ -87,7 +86,7 @@ class Trainer:
                 self._metric_training_auc,
                 self._set_num_training_batches_completed_this_epoch,
                 training=True,
-                optimizer=optimizer
+                optimizer=self._optimizer
             )
             time_paused_training = self._sleep_while_paused()
             if self.is_closed:
@@ -470,5 +469,27 @@ class Trainer:
         validation_set = self._data_loader.get_dataset(partition='validation').batch(self.batch_size)
         logger.info("Datasets collected")        
         return training_set, validation_set
+    
+    def _resolve_optimizer(self, training_settings):
+        optimizer = training_settings['Optimizer']
+        if optimizer == 'SGD':
+            return tf.keras.optimizers.SGD(learning_rate=training_settings['Learning_rate'], momentum=training_settings['Momentum'])
+        elif optimizer == 'ADAM':
+            return tf.keras.optimizers.Adam(learning_rate=training_settings['Learning_rate'], beta_1=training_settings['Beta1'], beta_2=training_settings['Beta2'])
+        elif optimizer == 'Adagrad':
+            return tf.keras.optimizers.Adagrad(learning_rate=training_settings['Learning_rate'])
+        elif optimizer == 'RMSprop':
+            return tf.keras.optimizers.RMSprop(learning_rate=training_settings['Learning_rate'], centered=training_settings['Centered'])
+
+    def _resolve_loss_function(self, training_settings):
+        loss = training_settings['Loss']
+        if loss == 'Quadratic':
+            return tf.keras.losses.MeanSquaredError()
+        elif loss == 'Cross_Entropy':
+            return tf.keras.losses.CategoricalCrossentropy()
+
+    
+
+
         
         

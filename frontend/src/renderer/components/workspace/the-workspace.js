@@ -27,6 +27,7 @@ import ExportNetwork          from "@/components/global-popups/export-network.vu
 import ExportNetworkGitHub    from "@/components/global-popups/export-network-git-hub.vue";
 import ImportModel            from "@/components/global-popups/import-model-popup.vue";
 import FilePickerPopup        from "@/components/global-popups/file-picker-popup.vue";
+import GlobalTrainingSettings        from "@/components/global-popups/global-training-settings.vue";
 import TheTesting             from "@/components/statistics/the-testing.vue";
 import TheViewBox             from "@/components/statistics/the-view-box";
 import StartTrainingSpinner   from '@/components/different/start-training-spinner.vue'
@@ -61,7 +62,8 @@ export default {
     ViewBoxBtnList, EmptyNavigation,
     ModelStatus,
     MiniMapNavigation,
-    ChartSpinner
+    ChartSpinner,
+    GlobalTrainingSettings
   },
   mounted() {
     window.addEventListener('resize', this.onResize);
@@ -152,6 +154,7 @@ export default {
       showExportNetworkToGitHubPopup:     state => state.globalView.globalPopup.showExportNetworkToGitHubPopup,
       showImportNetworkfromGitHubOrLocalPopup:     state => state.globalView.globalPopup.showImportNetworkfromGitHubOrLocalPopup,
       isMiniMapNavigatorOpened:   state => state.globalView.isMiniMapNavigatorOpened,
+      isGlobalTrainingSettingsPopupOpened: state => state.globalView.globalPopup.showGlobalTrainingSettingsPopup.isOpen
     }),
     
 

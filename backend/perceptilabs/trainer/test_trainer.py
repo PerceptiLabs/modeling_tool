@@ -32,6 +32,21 @@ def data_loader(csv_path):
     )
     yield dl
 
+@pytest.fixture()
+def training_settings():
+    yield {
+        'Epochs':10,
+        'Batch_size':2,
+        'Learning_rate':0.001,
+        'Beta1':0.9,
+        'Beta2':0.99,
+        'Momentum':0.0,
+        'Centered':False,
+        'Loss':'Quadratic',
+        'Optimizer':'SGD'
+
+    }
+
     
 @pytest.fixture()
 def graph_spec_few_epochs(csv_path):
@@ -66,16 +81,16 @@ def graph_spec_few_epochs(csv_path):
 
 
 @pytest.mark.tf2x
-def test_progress_reaches_one(script_factory_tf2x, data_loader, graph_spec_few_epochs):
-    trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs)
+def test_progress_reaches_one(script_factory_tf2x, data_loader, graph_spec_few_epochs, training_settings):
+    trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs, training_settings)
     assert trainer.progress == 0.0 and trainer.num_epochs_completed == 0
     trainer.run()
     assert trainer.progress == 1.0 and trainer.num_epochs_completed == trainer.num_epochs
     
 
 @pytest.mark.tf2x
-def test_trainer_has_all_statuses(script_factory_tf2x, data_loader, graph_spec_few_epochs):
-    trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs)
+def test_trainer_has_all_statuses(script_factory_tf2x, data_loader, graph_spec_few_epochs, training_settings):
+    trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs, training_settings)
 
     seen_statuses = [trainer.status]
 
@@ -93,8 +108,8 @@ def test_trainer_has_all_statuses(script_factory_tf2x, data_loader, graph_spec_f
     
     
 @pytest.mark.tf2x
-def test_num_completed_batches_are_ok(script_factory_tf2x, data_loader, graph_spec_few_epochs):
-    trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs)
+def test_num_completed_batches_are_ok(script_factory_tf2x, data_loader, graph_spec_few_epochs, training_settings):
+    trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs, training_settings)
     trainer.run()
 
     # Run some sanity checks
@@ -107,8 +122,8 @@ def test_num_completed_batches_are_ok(script_factory_tf2x, data_loader, graph_sp
 
 
 @pytest.mark.tf2x
-def test_layer_output_ok(script_factory_tf2x, csv_path, data_loader, graph_spec_few_epochs):
-    trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs)
+def test_layer_output_ok(script_factory_tf2x, csv_path, data_loader, graph_spec_few_epochs, training_settings):
+    trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs, training_settings)
     next(trainer.run_stepwise()) # Take the first training steps
 
     df = pd.read_csv(csv_path)
@@ -120,16 +135,16 @@ def test_layer_output_ok(script_factory_tf2x, csv_path, data_loader, graph_spec_
     
 
 @pytest.mark.tf2x
-def test_layer_weights_is_array(script_factory_tf2x, data_loader, graph_spec_few_epochs):
-    trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs)
+def test_layer_weights_is_array(script_factory_tf2x, data_loader, graph_spec_few_epochs, training_settings):
+    trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs, training_settings)
     next(trainer.run_stepwise()) # Take the first training steps
 
     value = trainer.get_layer_weights('1')
     assert isinstance(value, np.ndarray)
 
 @pytest.mark.tf2x
-def test_layer_bias_is_array(script_factory_tf2x, data_loader, graph_spec_few_epochs):
-    trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs)
+def test_layer_bias_is_array(script_factory_tf2x, data_loader, graph_spec_few_epochs, training_settings):
+    trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs, training_settings)
     next(trainer.run_stepwise()) # Take the first training steps
 
     value = trainer.get_layer_bias('1')
@@ -137,8 +152,8 @@ def test_layer_bias_is_array(script_factory_tf2x, data_loader, graph_spec_few_ep
     
 
 @pytest.mark.tf2x
-def test_layer_gradients_contain_exactly_one_float(script_factory_tf2x, data_loader, graph_spec_few_epochs):
-    trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs)
+def test_layer_gradients_contain_exactly_one_float(script_factory_tf2x, data_loader, graph_spec_few_epochs, training_settings):
+    trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs, training_settings)
     next(trainer.run_stepwise()) # Take the first training steps
 
     value = trainer.get_layer_weights('1')
@@ -146,8 +161,8 @@ def test_layer_gradients_contain_exactly_one_float(script_factory_tf2x, data_loa
 
 
 @pytest.mark.tf2x
-def test_layer_bias_is_array(script_factory_tf2x, data_loader, graph_spec_few_epochs):
-    trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs)
+def test_layer_bias_is_array(script_factory_tf2x, data_loader, graph_spec_few_epochs, training_settings):
+    trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs, training_settings)
     next(trainer.run_stepwise()) # Take the first training steps
 
     value = trainer.get_layer_bias('1')
@@ -155,8 +170,8 @@ def test_layer_bias_is_array(script_factory_tf2x, data_loader, graph_spec_few_ep
     
 
 @pytest.mark.tf2x
-def test_layer_gradients_contain_exactly_one_float(script_factory_tf2x, data_loader, graph_spec_few_epochs):
-    trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs)
+def test_layer_gradients_contain_exactly_one_float(script_factory_tf2x, data_loader, graph_spec_few_epochs, training_settings):
+    trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs, training_settings)
     next(trainer.run_stepwise()) # Take the first training steps
 
     minimum = trainer.get_layer_gradients('1', 'minimum')
@@ -169,8 +184,8 @@ def test_layer_gradients_contain_exactly_one_float(script_factory_tf2x, data_loa
     assert minimum[0] <= maximum[0]
 
 @pytest.mark.tf2x
-def test_layer_gradients_contain_exactly_one_float(script_factory_tf2x, data_loader, graph_spec_few_epochs):
-    trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs)
+def test_layer_gradients_contain_exactly_one_float(script_factory_tf2x, data_loader, graph_spec_few_epochs, training_settings):
+    trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs, training_settings)
     next(trainer.run_stepwise()) # Take the first training steps
 
     minimum = trainer.get_layer_gradients('1', 'minimum')
@@ -183,7 +198,7 @@ def test_layer_gradients_contain_exactly_one_float(script_factory_tf2x, data_loa
     assert minimum[0] <= maximum[0]
 
 @pytest.mark.tf2x
-def test_computed_results_do_not_change(script_factory_tf2x, data_loader, graph_spec_few_epochs):
+def test_computed_results_do_not_change(script_factory_tf2x, data_loader, graph_spec_few_epochs, training_settings):
     """ Once results have been computed, the Trainer shouldn't modify the structure.
 
     A simple way to test for that is to pickle the structure twice. 
@@ -191,7 +206,7 @@ def test_computed_results_do_not_change(script_factory_tf2x, data_loader, graph_
 
     Note: the results themselves should change
     """
-    trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs)
+    trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs, training_settings)
 
     step = trainer.run_stepwise()
     next(step)  # Take the first training steps
@@ -211,8 +226,8 @@ def test_computed_results_do_not_change(script_factory_tf2x, data_loader, graph_
     
 
 @pytest.mark.tf2x
-def test_trainer_target_stats_available(script_factory_tf2x, data_loader, graph_spec_few_epochs):
-    trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs)
+def test_trainer_target_stats_available(script_factory_tf2x, data_loader, graph_spec_few_epochs, training_settings):
+    trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs, training_settings)
     next(trainer.run_stepwise()) # Take the first training steps
 
     target_stats = trainer.get_target_stats()
@@ -220,8 +235,8 @@ def test_trainer_target_stats_available(script_factory_tf2x, data_loader, graph_
 
     
 @pytest.mark.tf2x
-def test_trainer_prediction_stats_available(script_factory_tf2x, data_loader, graph_spec_few_epochs):
-    trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs)
+def test_trainer_prediction_stats_available(script_factory_tf2x, data_loader, graph_spec_few_epochs, training_settings):
+    trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs, training_settings)
     next(trainer.run_stepwise()) # Take the first training steps
 
     prediction_stats = trainer.get_prediction_stats()
@@ -229,16 +244,16 @@ def test_trainer_prediction_stats_available(script_factory_tf2x, data_loader, gr
 
     
 @pytest.mark.tf2x
-def test_trainer_input_stats_available(script_factory_tf2x, data_loader, graph_spec_few_epochs):
-    trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs)
+def test_trainer_input_stats_available(script_factory_tf2x, data_loader, graph_spec_few_epochs, training_settings):
+    trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs, training_settings)
     next(trainer.run_stepwise()) # Take the first training steps
 
     input_stats = trainer.get_input_stats()
     assert 'x1' in input_stats.sample_batch 
 
 @pytest.mark.tf2x
-def test_trainer_can_pause_and_unpause(script_factory_tf2x, data_loader, graph_spec_few_epochs):
-    trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs)
+def test_trainer_can_pause_and_unpause(script_factory_tf2x, data_loader, graph_spec_few_epochs, training_settings):
+    trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs, training_settings)
     next(trainer.run_stepwise()) # Take the first training steps
     
     trainer.pause()
@@ -248,16 +263,16 @@ def test_trainer_can_pause_and_unpause(script_factory_tf2x, data_loader, graph_s
     assert trainer.status != 'Paused'
 
 @pytest.mark.tf2x
-def test_trainer_can_stop(script_factory_tf2x, data_loader, graph_spec_few_epochs):
-    trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs)
+def test_trainer_can_stop(script_factory_tf2x, data_loader, graph_spec_few_epochs, training_settings):
+    trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs, training_settings)
 
     next(trainer.run_stepwise()) # Take the first training steps    
     trainer.stop()
     assert trainer.status == 'Finished'
 
 @pytest.mark.tf2x
-def test_trainer_can_pause_stop(script_factory_tf2x, data_loader, graph_spec_few_epochs):
-    trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs)
+def test_trainer_can_pause_stop(script_factory_tf2x, data_loader, graph_spec_few_epochs, training_settings):
+    trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs, training_settings)
 
     step = trainer.run_stepwise()
     next(step) # Take the first training steps    
@@ -267,9 +282,9 @@ def test_trainer_can_pause_stop(script_factory_tf2x, data_loader, graph_spec_few
     assert trainer.status == 'Finished'
     
 @pytest.mark.tf2x
-def test_trainer_export_on_training_finish(script_factory_tf2x, data_loader, graph_spec_few_epochs):
+def test_trainer_export_on_training_finish(script_factory_tf2x, data_loader, graph_spec_few_epochs, training_settings):
     temp_dir = graph_spec_few_epochs.to_dict()['0']['checkpoint']['path']
-    trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs, num_epochs=1)
+    trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs, training_settings)
 
     step = trainer.run_stepwise()
     next(step)  # Take the first training steps
@@ -284,9 +299,9 @@ def test_trainer_export_on_training_finish(script_factory_tf2x, data_loader, gra
 
     
 @pytest.mark.tf2x
-def test_trainer_export_checkpoint_while_training(script_factory_tf2x, data_loader, graph_spec_few_epochs):
+def test_trainer_export_checkpoint_while_training(script_factory_tf2x, data_loader, graph_spec_few_epochs, training_settings):
     temp_dir = graph_spec_few_epochs.to_dict()['0']['checkpoint']['path']
-    trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs, num_epochs=1)
+    trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs, training_settings)
 
     step = trainer.run_stepwise()
     next(step)  # Take the first training steps
@@ -297,9 +312,9 @@ def test_trainer_export_checkpoint_while_training(script_factory_tf2x, data_load
     assert 'checkpoint' in os.listdir(temp_dir)
 
 @pytest.mark.tf2x
-def test_trainer_export_pb_while_training(script_factory_tf2x, data_loader, graph_spec_few_epochs):
+def test_trainer_export_pb_while_training(script_factory_tf2x, data_loader, graph_spec_few_epochs, training_settings):
     temp_dir = graph_spec_few_epochs.to_dict()['0']['checkpoint']['path']
-    trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs, num_epochs=1)
+    trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs, training_settings)
 
     step = trainer.run_stepwise()
     next(step)  # Take the first training steps

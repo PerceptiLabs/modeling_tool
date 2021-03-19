@@ -143,7 +143,7 @@
         v-if="showNewModelPopup"
         @close="onCloseSelectModelModal"
         )
-
+    global-training-settings(v-if="isGlobalTrainingSettingsPopupOpened")
 </template>
 
 <script src="./the-workspace.js"></script>

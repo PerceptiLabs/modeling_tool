@@ -29,11 +29,13 @@
             v-tooltip:bottom="'Run/Stop'"
             v-tooltip-interactive:bottom="interactiveInfo.runButton"
             :data-tutorial-target="'tutorial-workspace-start-training'"
-            @click="onOffBtn"
+            @click="onOffBtn(false)"
           )
             img(v-if="showSpinnerOnRun===true" src="static/img/spinner.gif" width="12px" style="margin-right: 5px")
             i.icon.icon-on-off(v-if="showSpinnerOnRun===false")
             span(v-html="statusTraining === 'training' || statusTraining === 'pause' ? 'Stop' : 'Run'")
+          button(v-if="modelTrainingSettings && isGlobalTrainingSettingEnabled" @click="onOffBtn(true)").btn-menu-bar.run-with-current-settings-btn
+            | Run with current settings
       .horizontal-separator
       ul.toolbar_list
         li(v-tooltip:bottom="'Press to go to the Statistics view'")
@@ -144,6 +146,7 @@ export default {
       workspaceModels:      state => state.mod_workspace.workspaceContent,
       currentNetworkIndex:  state => state.mod_workspace.currentNetwork,
       showNewModelPopup:    state => state.globalView.globalPopup.showNewModelPopup,
+      showGlobalTrainingSettingsPopup:    state => state.globalPopup.showGlobalTrainingSettingsPopup.isOpen
     }),
     ...mapGetters({
       interactiveInfoStatus:'mod_tutorials/getInteractiveInfo',
@@ -158,6 +161,7 @@ export default {
       isUsingModelWeights:  'mod_workspace/GET_currentNetworkModeWeightsState',
       networkHistory:       'mod_workspace-history/GET_currentNetHistory',
       isNotebookMode:       'mod_notebook/getNotebookMode',
+      modelTrainingSettings:'mod_workspace/GET_modelTrainingSetting'
     }),
     statusStartBtn() {
       return {
@@ -239,6 +243,9 @@ export default {
       // More accurate than the following because it gets set upon training (checkpoints could be deleted)
       // return Object.values(this.currentElList).some(el => el.checkpoint && el.checkpoint.length > 0);
       return typeof this.testIsOpen === 'boolean';
+    },
+    isGlobalTrainingSettingEnabled() {
+      return process.env.ENABLE_GLOBAL_TRAINING_SETTINGS === 'true';
     }
   },
   watch: {
@@ -288,32 +295,46 @@ export default {
       this.setNextStep({currentStep:'tutorial-workspace-notebook-view-toggle'});
       this.set_notebookMode(setNotebook);
     },
-    onOffBtn() {
+    
+    modalSettingsCb() {
+      this.showSpinnerOnRun = true;
+      this.setCurrentStatsIndex(this.currentNetworkIndex);
+
+      this.$store.dispatch('mod_api/API_scanCheckpoint', {
+        networkId: this.currentNetwork.networkID,
+        path: this.currentNetwork.apiMeta.location
+      })
+        .then(result => {
+          this.showSpinnerOnRun = false;
+
+          if (result.hasCheckpoint) {
+            this.trainStartWithCheckpoint();
+
+            this.$nextTick(() => {
+              this.setNextStep({currentStep:'tutorial-workspace-start-training'});
+              this.setCurrentView('tutorial-core-side-view');
+            });
+          } else {
+            this.trainStartWithoutCheckpoint();
+          }
+        });
+    },
+    
+    onOffBtn(runWithCurrentSettings) {
       if (this.statusLocalCore === 'online') {
         if(this.isTraining)  {
           this.trainStop();
         } else {
-          this.showSpinnerOnRun = true;
-          this.setCurrentStatsIndex(this.currentNetworkIndex);
-
-          this.$store.dispatch('mod_api/API_scanCheckpoint', { 
-            networkId: this.currentNetwork.networkID,
-            path: this.currentNetwork.apiMeta.location
-          })
-            .then(result => {
-              this.showSpinnerOnRun = false;
-
-              if (result.hasCheckpoint) {
-                this.trainStartWithCheckpoint();
-
-                this.$nextTick(() => {
-                  this.setNextStep({currentStep:'tutorial-workspace-start-training'});
-                  this.setCurrentView('tutorial-core-side-view');
-                });
-              } else {
-                this.trainStartWithoutCheckpoint();
-              }
-            });          
+          if(this.isGlobalTrainingSettingEnabled && !runWithCurrentSettings) {
+            // open setting modal
+            this.$store.dispatch('globalView/showGlobalTrainingSettingsAction', {
+              isOpen: true,
+              cb: this.modalSettingsCb,
+            }, { root: true });  
+            
+          } else {
+            this.modalSettingsCb()
+          }
         }
       } else {
         this.showInfoPopup('Kernel is not connected');
@@ -746,5 +767,8 @@ export default {
   }
   .ml-0 {
     margin-left: 0;
+  }
+  .run-with-current-settings-btn {
+    margin-left: 7px;
   }
 </style>

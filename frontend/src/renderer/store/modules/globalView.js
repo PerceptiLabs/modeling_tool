@@ -29,6 +29,10 @@ const state = {
     showNewModelPopup: false,
     showCreateIssuesPopup: false,
     showAppAbout: false,
+    showGlobalTrainingSettingsPopup: {
+      isOpen: false,
+      cb: () => null,
+    },
   },
   popupConfirmCancel: null,
   popupConfirmOk: null,
@@ -147,6 +151,12 @@ const mutations = {
     localStorage.setItem('isMiniMapNavigatorOpened', value);
     state.isMiniMapNavigatorOpened = value;
   },
+  showGlobalTrainingSettingsMutation(state, payload) {
+    state.globalPopup.showGlobalTrainingSettingsPopup = {
+      isOpen: payload.isOpen,
+      cb: payload.cb,
+    };
+  }
 };
 
 const actions = {
@@ -213,6 +223,10 @@ const actions = {
   },
   hideSidebarAction({commit}, value) {
     commit('SET_hideSidebar', value)
+  },
+  showGlobalTrainingSettingsAction(ctx, payload) {
+    ctx.dispatch('mod_workspace/checkForRunSettingsAction', null, { root: true })
+    ctx.commit('showGlobalTrainingSettingsMutation', payload);
   }
 };
 

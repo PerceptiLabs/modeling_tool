@@ -158,15 +158,11 @@ function sideCalculate(element, tooltip, side) {
   let zoom = isDraggable !== 'false' ? 1 : store.getters['mod_workspace/GET_currentNetworkZoom'];
 
   switch (side.arg) {
-    case 'right':
+    case 'right', 'right-wrap-text':
       tooltip.style.top = (elCoord.top + elCoord.height / 2) * zoom +'px';
       tooltip.style.left = (elCoord.left + elCoord.width + tooltipArrow) * zoom + 'px';
       break;
-    case 'right-wrap-text':
-      tooltip.style.top = (elCoord.top + elCoord.height / 2) * zoom +'px';
-      tooltip.style.left = (elCoord.left + elCoord.width + tooltipArrow) * zoom + 'px';
-      break;
-    case 'left':
+    case 'left', 'wrap-text':
       tooltip.style.top = (elCoord.top + elCoord.height / 2) * zoom +'px';
       tooltip.style.left = (elCoord.left - tooltipArrow) * zoom + 'px';
       break;

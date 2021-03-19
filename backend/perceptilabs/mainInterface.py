@@ -434,7 +434,8 @@ class Interface():
             
             self._core.set_running_mode('training')            
             model_id = int(value.get('modelId', None))
-            response = self._core.startCore(graph_spec, model_id)
+            training_settings = value['trainSettings']
+            response = self._core.startCore(graph_spec, model_id, training_settings)
             return response
 
         elif action == "startTest":

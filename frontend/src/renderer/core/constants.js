@@ -72,6 +72,31 @@ export const LOCAL_STORAGE_WORKSPACE_VIEW_TYPE_KEY  = 'mod_workspace_view_type'
 export const LOCAL_STORAGE_WORKSPACE_SHOW_MODEL_PREVIEWS  = 'show_model_previews'
 export const LOCAL_STORAGE_HIDE_DELETE_MODAL = 'hide_delete_modal'
 
+export const defaultTrainingSettings = {
+  Epochs: 100,
+  Batch_size: 128,
+  Shuffle: true,
+  Loss: 'Quadratic', //[Cross-Entropy, Quadratic, Weighted Cross-Entropy, Dice]
+  LossOptions: [
+    {text: 'Cross-Entropy', value: 'Cross-Entropy'},
+    {text: 'Quadratic', value: 'Quadratic'},
+    {text: 'Weighted', value: 'Weighted'},
+    {text: 'Dice', value: 'Dice'},
+  ],
+  Learning_rate: 0.001,
+  Optimizer: 'ADAM', // [ADAM,SGD,Adagrad,RMSprop]
+  OptimizerOptions: [
+    {text: 'ADAM', value: 'ADAM'},
+    {text: 'SGD', value: 'SGD'},
+    {text: 'Adagrad', value: 'Adagrad'},
+    {text: 'RMSprop', value: 'RMSprop'},
+  ],
+  Beta1: 0.9,
+  Beta2: 0.999,
+  Momentum: 0,
+  Centered: false,
+}
+
 export {
   isDevelopMode,
   trainingElements,

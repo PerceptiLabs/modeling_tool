@@ -8,4 +8,5 @@ module.exports = {
   KEYCLOACK_RELM: '"PerceptiLabs"',
   KEYCLOACK_CLIENT_ID: '"perceptilabs_tool"',
   GITHUB_CLIENT_ID: '"094271b0edb47c75dc24"',
+  ENABLE_GLOBAL_TRAINING_SETTINGS: '"false"'
 }

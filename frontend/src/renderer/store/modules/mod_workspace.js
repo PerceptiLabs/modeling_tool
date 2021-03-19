@@ -1,5 +1,12 @@
-import { generateID, calcLayerPosition, deepCloneNetwork, isLocalStorageAvailable, stringifyNetworkObjects }  from "@/core/helpers.js";
-import { widthElement, LOCAL_STORAGE_WORKSPACE_VIEW_TYPE_KEY, LOCAL_STORAGE_WORKSPACE_SHOW_MODEL_PREVIEWS } from '@/core/constants.js'
+import {
+  generateID,
+  calcLayerPosition,
+  deepCloneNetwork,
+  isLocalStorageAvailable,
+  stringifyNetworkObjects,
+  deepCopy
+} from "@/core/helpers.js";
+import { widthElement, LOCAL_STORAGE_WORKSPACE_VIEW_TYPE_KEY, LOCAL_STORAGE_WORKSPACE_SHOW_MODEL_PREVIEWS, defaultTrainingSettings } from '@/core/constants.js'
 import idb  from "@/core/helpers/idb-helper.js";
 import Vue    from 'vue'
 import router from '@/router'
@@ -337,7 +344,11 @@ const getters = {
   },
   GET_copyOrCutNetworkSnapshot(state) {
     return state.copyOrCutNetworkSnapshot;
-  }
+  },
+  GET_modelTrainingSetting: (state, getters) => {
+    const currentNetwork = getters.GET_currentNetwork;
+    return currentNetwork.networkMeta.trainingSettings
+  },
 };
 
 const mutations = {
@@ -1801,6 +1812,16 @@ const mutations = {
   SET_copyOrCutNetworkSnapshot(state, { getters }) {
     state.copyOrCutNetworkSnapshot = deepCloneNetwork(getters.GET_currentNetworkElementList);
   },
+  set_trainingSettings(state, {currentNetwork, defaultTrainingSettings}) {
+    let settins = deepCopy(defaultTrainingSettings);
+    
+    delete settins['OptimizerOptions'];
+    delete settins['LossOptions'];
+    Vue.set(currentNetwork.networkMeta, 'trainingSettings',  settins);
+  },
+  setModelRunSettingsMutation(state, {name, value, currentNetwork}) {
+    currentNetwork.networkMeta.trainingSettings[name] = value;
+  }
 };
 
 
@@ -2512,6 +2533,20 @@ const actions = {
   },
   copyOrCutNetworkSnapshotAction({commit, getters}) {
     commit('SET_copyOrCutNetworkSnapshot', { getters })
+  },
+  checkForRunSettingsAction({commit, getters}, payload ) {
+    let currentNetwork = getters.GET_currentNetwork;
+    // it will be set only once
+    if(!currentNetwork.networkMeta.hasOwnProperty('trainingSettings')) {
+      commit('set_trainingSettings', {currentNetwork, defaultTrainingSettings})
+    }
+    
+  },
+  setModelRunSettingsAction({commit, dispatch, getters}, payload) {
+    const currentNetwork = getters.GET_currentNetwork;
+    if(currentNetwork.networkMeta.trainingSettings.hasOwnProperty(payload.name)) {
+      commit('setModelRunSettingsMutation', {currentNetwork, name: payload.name, value: payload.value})
+    }
   },
 };
 

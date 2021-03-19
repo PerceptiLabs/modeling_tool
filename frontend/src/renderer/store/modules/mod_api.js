@@ -322,14 +322,19 @@ const actions = {
   //---------------
   API_startTraining({dispatch, getters, rootGetters}, { loadCheckpoint = false } = {}) {
     const network = rootGetters['mod_workspace/GET_currentNetwork'];
-
+    const trainSettings = rootGetters['mod_workspace/GET_modelTrainingSetting'];
+    const settingCollection = {}
+    if(process.env.ENABLE_GLOBAL_TRAINING_SETTINGS === 'true') {
+      settingCollection['trainSettings'] = trainSettings
+    }
     const theData = {
       receiver: rootGetters['mod_workspace/GET_currentNetworkId'],
       action: "Start",
       value: {
         modelId: rootGetters['mod_workspace/GET_currentNetworkId'],
         Layers: getters.GET_coreNetworkWithCheckpointConfig(loadCheckpoint),
-        'copyJson_path': network.apiMeta.location || ''
+        'copyJson_path': network.apiMeta.location || '',
+        ...settingCollection
       }
     };
     // console.log('API_startTraining', theData);
