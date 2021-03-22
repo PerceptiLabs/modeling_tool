@@ -1,6 +1,8 @@
 trigger:
 - none
+
 pool: Docker Build
+
 variables:
   # CommitId is passed in to the app_variables.json file
   BuildVariables.CommitId : $(Build.SourceVersion)
@@ -30,11 +32,11 @@ jobs:
     - task: FileTransform@2
       inputs:
         folderPath: '$(System.DefaultWorkingDirectory)/'
-        xmlTransformationRules: 
+        xmlTransformationRules:
         jsonTargetFiles: '**/app_variables.json'
 
     - task: UsePythonVersion@0
-      inputs: 
+      inputs:
         versionSpec: '3.6'
         architecture: 'x64'
         addToPath: true
@@ -51,3 +53,27 @@ jobs:
         command: 'buildAndPush'
         Dockerfile: 'build/docker/$(target)/Dockerfile'
 
+  - job: installation_files
+    dependsOn: dockerbuild
+    steps:
+
+    - task: CopyFiles@2
+      displayName: Copy installer to staging
+      inputs:
+        SourceFolder: 'docker/compose/'
+        Contents: 'install_perceptilabs_enterprise'
+        TargetFolder: '$(Build.ArtifactStagingDirectory)'
+
+    - task: CopyFiles@2
+      displayName: Copy docker-compose to staging
+      inputs:
+        SourceFolder: 'docker/compose/'
+        Contents: 'docker-compose.yml'
+        TargetFolder: '$(Build.ArtifactStagingDirectory)'
+
+    - task: PublishBuildArtifacts@1
+      displayName: Publish Build Artifacts
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        ArtifactName: 'installation'
+        publishLocation: 'Container'

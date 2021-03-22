@@ -1,0 +1,143 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- master
+
+
+jobs:
+  - job: checkvars
+    displayName: Check Variables
+    steps:
+      - task: Bash@3
+        condition: not(contains(variables['Build.SourceBranch'], 'refs/tags/'))
+        inputs:
+          targetType: 'inline'
+          script: |
+            echo "This pipeline should only be run on git tags"
+            fail
+
+      - task: CmdLine@2
+        displayName: Check BUILD_ID_TO_DEPLOY
+        condition: or(eq(variables.BUILD_ID_TO_DEPLOY, 'REQUIRED'), eq(variables.BUILD_ID_TO_DEPLOY, ''))
+        inputs:
+          script: |
+            echo BUILD_ID_TO_DEPLOY was not set
+            fail
+
+  - job: dockerrelease
+    displayName: Release Docker
+    dependsOn: checkvars
+    pool:
+      vmimage: ubuntu-latest
+    strategy:
+      matrix:
+        kernel:
+          repo: kernel
+        frontend:
+          repo: frontend
+        rygg:
+          repo: rygg
+    steps:
+      - task: docker@2
+        displayName: log in to perceptilabs
+        inputs:
+          containerregistry: 'perceptilabs'
+          command: 'login'
+          addpipelinedata: false
+
+      - task: Docker@2
+        displayName: pull from perceptilabs
+        inputs:
+          containerRegistry: 'perceptilabs'
+          repository: $(repo)
+          command: 'pull'
+          arguments: 'perceptilabs.azurecr.io/$(repo):$(BUILD_ID_TO_DEPLOY)'
+          addPipelineData: false
+
+      - task: Docker@2
+        displayName: retag for perceptilabsenterprise
+        inputs:
+          containerRegistry: 'perceptilabs'
+          repository: $(repo)
+          command: 'tag'
+          arguments: 'perceptilabs.azurecr.io/$(repo):$(BUILD_ID_TO_DEPLOY) perceptilabsenterprise.azurecr.io/$(repo):$(Build.SourceBranchName)'
+          addPipelineData: false
+
+      - task: Docker@2
+        displayName: log in to perceptilabsenterprise
+        inputs:
+          containerRegistry: 'perceptilabsenterprise'
+          command: 'login'
+
+      - task: Docker@2
+        displayName: push to perceptilabsenterprise
+        inputs:
+          containerRegistry: 'perceptilabsenterprise'
+          repository: '$(repo)'
+          command: 'push'
+          tags: '$(Build.SourceBranchName)'
+
+  - job: pushfiles
+    displayName: Publish files to Azure storage
+    dependsOn: checkvars
+    pool:
+      # has to be on Windows because the AzureFileCopy tasks below only work on windows hosts
+      vmImage: windows-latest
+    steps:
+
+      - task: DownloadBuildArtifacts@0
+        displayName: Download docker-compose.yml
+        inputs:
+          buildType: 'specific'
+          project: '54ade330-1468-4064-8c98-7fe751f97330'
+          pipeline: '16'
+          buildVersionToDownload: 'specific'
+          buildId: '$(BUILD_ID_TO_DEPLOY)'
+          downloadType: 'specific'
+          itemPattern: '**/docker-compose.yml'
+          downloadPath: '$(System.ArtifactsDirectory)'
+
+      - task: DownloadBuildArtifacts@0
+        inputs:
+          buildType: 'specific'
+          project: '54ade330-1468-4064-8c98-7fe751f97330'
+          pipeline: '16'
+          buildVersionToDownload: 'specific'
+          buildId: '$(BUILD_ID_TO_DEPLOY)'
+          downloadType: 'specific'
+          itemPattern: '**/install_perceptilabs_enterprise'
+          downloadPath: '$(System.ArtifactsDirectory)'
+
+      - task: Bash@3
+        displayName: Set the version in the installer
+        inputs:
+          targetType: 'inline'
+          script: |
+            cat install_perceptilabs_enterprise | sed "s/^VERSION=.*$/VERSION=$(Build.SourceBranchName)/g" > temp
+            mv temp install_perceptilabs_enterprise
+          workingDirectory: '$(System.ArtifactsDirectory)/installation'
+          failOnStderr: true
+
+      - task: AzureFileCopy@4
+        displayName: publish the docker-compose.yaml file
+        inputs:
+          SourcePath: '$(System.ArtifactsDirectory)/installation/docker-compose.yml'
+          azureSubscription: 'XSP72180|MICROSOFT|XSP72180|XSP524371(d9d6ebad-f86e-4961-9964-5665aa01fcfc)'
+          Destination: 'AzureBlob'
+          storage: 'perceptilabs'
+          ContainerName: 'enterprise'
+          BlobPrefix: '$(Build.SourceBranchName)/docker-compose.yaml'
+
+      - task: AzureFileCopy@4
+        displayName: publish the installer file
+        inputs:
+          SourcePath: '$(System.ArtifactsDirectory)/installation/install_perceptilabs_enterprise'
+          azureSubscription: 'XSP72180|MICROSOFT|XSP72180|XSP524371(d9d6ebad-f86e-4961-9964-5665aa01fcfc)'
+          Destination: 'AzureBlob'
+          storage: 'perceptilabs'
+          ContainerName: 'enterprise'
+          BlobPrefix: '$(Build.SourceBranchName)/install_perceptilabs_enterprise'
+

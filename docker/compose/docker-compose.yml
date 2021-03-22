@@ -1,4 +1,4 @@
-version: '2'
+version: '3.4'
 
 services:
   db:
@@ -11,10 +11,9 @@ services:
       POSTGRES_PASSWORD: rygg
 
   rygg:
-    image: perceptilabs.azurecr.io/rygg:$PL_IMG_TAG
+    image: ${CONTAINER_REGISTRY}/rygg:${PL_VERSION}
     environment:
-      PL_RYGG_LOG_LEVEL: ERROR
-      CORS_WHITELIST: "http://${PL_HOST}:8080"
+      FRONTEND_BASE_URL: http://${PL_SERVER_NAME}:8080
       DJANGO_DATABASE: postgres
       DB_NAME: rygg
       DB_HOST: db
@@ -26,12 +25,27 @@ services:
       - db
 
   frontend:
-    image: perceptilabs.azurecr.io/frontend:$PL_IMG_TAG
+    image: ${CONTAINER_REGISTRY}/frontend:${PL_VERSION}
     ports:
       - "8080:8080"
     depends_on:
       - rygg
+      - kernel
     environment:
-      PL_KERNEL_URL: "ws://${PL_HOST}:5000"
-      PL_FILESERVER_URL: "http://${PL_HOST}:8011"
-      PL_RYGG_URL: "http://${PL_HOST}:8000"
+      PL_KERNEL_URL: ws://${PL_SERVER_NAME}:5000
+      PL_FILESERVER_URL: http://${PL_SERVER_NAME}:8011
+      PL_RYGG_URL: http://${PL_SERVER_NAME}:8000
+
+  kernel:
+    image: ${CONTAINER_REGISTRY}/kernel:${PL_VERSION}
+    volumes:
+      - ./plabs:/perceptilabs/Documents/Perceptilabs
+    ports:
+      - "5000:5000"
+      - "8011:8011"
+
+    environment:
+      HOME: /perceptilabs
+      PL_FILE_SERVING_TOKEN: thetoken
+      PL_TUTORIALS_DATA: /opt/app-root/src/perceptilabs/tutorial_data
+      FRONTEND_BASE_URL: http://${PL_SERVER_NAME}:8080

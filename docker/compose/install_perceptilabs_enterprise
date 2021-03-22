@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+set -Eeo pipefail
+
+VERSION=INVALID
+DOCKER_USERNAME=perceptilabsenterprise
+CONTAINER_REGISTRY=perceptilabsenterprise.azurecr.io
+AZURE_BLOB_URL=https://perceptilabs.blob.core.windows.net/enterprise
+DOCKER_COMPOSE_URL=${AZURE_BLOB_URL}/${VERSION}/docker-compose.yaml
+
+###################################################################################################
+# Get User Input
+if [ -z "$PL_SERVER_NAME" ]; then
+  read -p "Enter the hostname you use to access this computer from the network [${HOSTNAME}] " PL_SERVER_NAME
+fi
+
+if [ -z "$PL_PASSWORD" ]; then
+  read -s -p "Enter the perceptilabs docker registry password: " PL_PASSWORD
+fi
+
+###################################################################################################
+# Install docker
+if [ "$(which docker | wc -l)" == "0" ]; then
+  curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+  sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+  sudo apt-get update
+  sudo apt install -y docker-ce docker-ce-cli containerd.io
+  sudo docker run -it hello-world | grep "Hello from Docker" -q
+fi
+
+###################################################################################################
+# Install docker-compose
+if [ "$(which docker-compose | wc -l)" == "0" ]; then
+  sudo curl -s -L "https://github.com/docker/compose/releases/download/1.28.5/docker-compose-$(uname -s)-$(uname -m)" -o /usr/bin/docker-compose
+  sudo chmod +x /usr/bin/docker-compose
+fi
+
+###################################################################################################
+# Install PerceptiLabs
+curl -s $DOCKER_COMPOSE_URL \
+  | sed "s/\${PL_SERVER_NAME}/$PL_SERVER_NAME/g" \
+  | sed "s/\${CONTAINER_REGISTRY}/$CONTAINER_REGISTRY/g" \
+  | sed "s/\${PL_VERSION}/$VERSION/g" \
+  > docker-compose.yaml
+
+mkdir -p plabs
+chmod 777 plabs
+sudo docker login ${CONTAINER_REGISTRY} --username ${DOCKER_USERNAME} --password "${PL_PASSWORD}"
+
+echo pulling images
+sudo docker-compose pull
+
+sudo docker-compose up -d
+echo The tool is ready at http://${PL_SERVER_NAME}:8080
