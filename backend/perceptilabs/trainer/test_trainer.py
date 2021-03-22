@@ -354,4 +354,14 @@ def test_trainer_custom_loss(script_factory_tf2x, data_loader, graph_spec_few_ep
     for _ in step:  # Complete training
         pass
 
-    
+
+@pytest.mark.tf2x
+def test_trainer_output_stats_available(script_factory_tf2x, data_loader, graph_spec_few_epochs, training_settings):
+    trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs, training_settings)
+    trainer.run() # Take the first training steps
+
+    output_stats = trainer.get_output_stats()
+
+    for layer_spec in graph_spec_few_epochs.output_layers:    
+        assert layer_spec.id_ in output_stats
+        x = output_stats['2']

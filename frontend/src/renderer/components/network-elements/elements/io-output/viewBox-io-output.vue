@@ -30,6 +30,32 @@
             :chart-data="chartData.Prediction.AveragePvG"
             :custom-color="colorList"
             )
+    .statistics-box_main.statistics-box_col(v-if="currentTab === 'Accuracy'")
+      chart-switch(
+        key="4"
+        chart-label="Accuracy during one epoch"
+        :chart-data="chartData.Accuracy.Current"
+        :custom-color="colorListAccuracy"
+      )
+      chart-switch(
+        key="5"
+        chart-label="Accuracy over all epochs"
+        :chart-data="chartData.Accuracy.Total"
+        :custom-color="colorListAccuracy"
+      )
+    .statistics-box_main.statistics-box_col(v-if="currentTab === 'Loss'")
+      chart-switch(
+        key="6"
+        chart-label="Loss during one epoch"
+        :chart-data="chartData.Loss.Current"
+        :custom-color="colorListAccuracy"
+      )
+      chart-switch(
+        key="7"
+        chart-label="Loss over all epochs"
+        :chart-data="chartData.Loss.Total"
+        :custom-color="colorListAccuracy"
+      )
 </template>
 
 <script>
@@ -45,6 +71,8 @@
       return {
         chartData: {
           Prediction: { Input: null, PvG: null, AveragePvG: null, Accuracy: null },
+          Accuracy:   { Current: null, Total: null },
+          Loss:       { Current: null, Total: null },
         },
         btnList: {
           'Prediction': {
@@ -52,6 +80,20 @@
             btnInteractiveInfo: {
               title: 'Prediction',
               text: 'View the input, current accuracy and <br/> output prediction vs ground truth/labels'
+            }
+          },
+          'Accuracy': {
+            btnId: 'tutorial_accuracy-tab',
+            btnInteractiveInfo: {
+              title: 'Accuracy',
+              text: 'View the accuracy.'
+            }
+          },
+          'Loss': {
+            btnId: 'tutorial_loss-tab',
+            btnInteractiveInfo: {
+              title: 'Loss',
+              text: 'View the loss.'
             }
           },
         },
@@ -76,6 +118,12 @@
         switch (this.currentTab) {
           case 'Prediction':
             this.chartRequest(this.statElementID, 'IoOutput', 'Prediction');
+            break;
+          case 'Accuracy':
+            this.chartRequest(this.statElementID, 'IoOutput', 'Accuracy');
+            break;
+          case 'Loss':
+            this.chartRequest(this.statElementID, 'IoOutput', 'Loss');
             break;
         }
       }

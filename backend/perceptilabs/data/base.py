@@ -19,7 +19,7 @@ class FeatureSpec:
 
 class DataLoader:
     def __init__(self, data_frame, feature_specs, partitions=None, base_directory=None):
-        partitions = partitions or {'training': 1.0, 'validation': 0.0, 'test': 0.0}
+        partitions = partitions or {'training': 0.7, 'validation': 0.3, 'test': 0.0}
         
         self._validate_partitions(partitions)
         self._validate_feature_specs(data_frame.columns, feature_specs)

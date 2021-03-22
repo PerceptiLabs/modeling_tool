@@ -331,3 +331,4 @@ perceptilabs/trainer/stats/__init__.py
 perceptilabs/trainer/stats/base.py
 perceptilabs/trainer/stats/sample.py
 perceptilabs/trainer/stats/gradients.py
+perceptilabs/trainer/stats/categorical.py

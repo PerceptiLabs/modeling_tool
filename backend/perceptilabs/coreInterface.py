@@ -1540,6 +1540,10 @@ class coreLogic():
             return self._get_stats_iooutput_viewbox(layer_id)            
         elif view == "Prediction":
             return self._get_stats_iooutput_prediction(layer_id)
+        elif view == "Accuracy":
+            return self._get_stats_iooutput_accuracy(layer_id)            
+        elif view == "Loss":
+            return self._get_stats_iooutput_loss(layer_id)            
 
     def _get_stats_iooutput_viewbox(self, layer_id):
         target_value = self.savedResultsDict['target_stats'].get_sample_by_layer_id(layer_id)
@@ -1548,6 +1552,7 @@ class coreLogic():
 
     def _get_stats_iooutput_prediction(self, layer_id):
         input_stats = self.savedResultsDict['input_stats']
+        output_stats = self.savedResultsDict['output_stats'][layer_id]
         pred_stats = self.savedResultsDict['prediction_stats']
         target_stats = self.savedResultsDict['target_stats']
         
@@ -1564,10 +1569,61 @@ class coreLogic():
             pred_vs_target_obj = createDataObject([pred_value, target_value], name_list=['Prediction', 'Ground Truth'])
             avg_pred_vs_target_obj = createDataObject([pred_batch_average, target_batch_average], name_list=['Prediction', 'Ground Truth'])
 
-            accuracy_list = [[('Accuracy', 0.0), ('Empty', 100.0)]]
+            accuracy = output_stats.get_accuracy_for_latest_step()
+            accuracy_list = [[('Accuracy', 100*accuracy), ('Empty', 100*(1.0-accuracy))]]
             accuracy_obj = createDataObject(accuracy_list, type_list=['pie'])  # TODO: add accuracy pie chart. Move elsewhere in the frontend? (story 1540)
 
             
             return {"Input": input_obj, "PvG": pred_vs_target_obj, "AveragePvG": avg_pred_vs_target_obj, "Accuracy": accuracy_obj} 
         else:
             return {}
+
+    def _get_stats_iooutput_accuracy(self, layer_id):        
+        output_stats = self.savedResultsDict['output_stats'][layer_id]
+
+        training_acc_over_steps = output_stats.get_accuracy_over_steps_in_latest_epoch(phase='training')
+        validation_acc_over_steps = output_stats.get_accuracy_over_steps_in_latest_epoch(phase='validation')
+        
+        validation_acc_over_steps = training_acc_over_steps + validation_acc_over_steps  # The frontend plots the training accuracy last, so this gives the effect that the validation curve is a continuation of the training curve.
+        
+        dataobj_acc_over_steps = createDataObject(
+            [validation_acc_over_steps, training_acc_over_steps],
+            type_list=['line', 'line'],
+            name_list=['Validation', 'Training']
+        )
+
+        training_acc_over_epochs = output_stats.get_average_accuracy_over_epochs(phase='training')
+        validation_acc_over_epochs = output_stats.get_average_accuracy_over_epochs(phase='validation')
+        dataobj_acc_over_epochs = createDataObject(
+            [validation_acc_over_epochs, training_acc_over_epochs],
+            type_list=['line', 'line'],
+            name_list=['Validation', 'Training']
+        )
+        
+        output = {"Current": dataobj_acc_over_steps, "Total": dataobj_acc_over_epochs}
+        return output
+        
+    def _get_stats_iooutput_loss(self, layer_id):        
+        output_stats = self.savedResultsDict['output_stats'][layer_id]
+
+        training_loss_over_steps = output_stats.get_loss_over_steps_in_latest_epoch(phase='training')
+        validation_loss_over_steps = output_stats.get_loss_over_steps_in_latest_epoch(phase='validation')
+        
+        validation_loss_over_steps = training_loss_over_steps + validation_loss_over_steps  # The frontend plots the training loss last, so this gives the effect that the validation curve is a continuation of the training curve.
+        
+        dataobj_loss_over_steps = createDataObject(
+            [validation_loss_over_steps, training_loss_over_steps],
+            type_list=['line', 'line'],
+            name_list=['Validation', 'Training']
+        )
+
+        training_loss_over_epochs = output_stats.get_average_loss_over_epochs(phase='training')
+        validation_loss_over_epochs = output_stats.get_average_loss_over_epochs(phase='validation')
+        dataobj_loss_over_epochs = createDataObject(
+            [validation_loss_over_epochs, training_loss_over_epochs],
+            type_list=['line', 'line'],
+            name_list=['Validation', 'Training']
+        )
+        
+        output = {"Current": dataobj_loss_over_steps, "Total": dataobj_loss_over_epochs}
+        return output
