@@ -10,11 +10,15 @@ from perceptilabs.modelrecommender.encoders import (
     ImageEncoderBlueprint
 )
 from perceptilabs.modelrecommender.decoders import (
-    NumericalDecoderBlueprint
+    NumericalDecoderBlueprint,
+    CategoricalDecoderBlueprint    
 )
 
 
 class ModelRecommender:
+    def __init__(self, data_loader=None):
+        self._data_loader = data_loader
+    
     def get_graph(self, feature_specs: Dict[str, FeatureSpec]) -> GraphSpec:
         """ Takes a dictionary of feature specs and generates a graph spec for it 
         Arguments:
@@ -58,28 +62,18 @@ class ModelRecommender:
     def _add_encoder(self, builder, feature_name, feature_spec):
         """ Encoder for a feature """
         if feature_spec.datatype == 'numerical':
-            return self._add_numerical_encoder(builder, feature_name, feature_spec)
+            return NumericalEncoderBlueprint().build(builder, feature_name, feature_spec, data_loader=self._data_loader)            
         elif feature_spec.datatype == 'image':
-            return self._add_image_encoder(builder, feature_name, feature_spec)
+            return ImageEncoderBlueprint().build(builder, feature_name, feature_spec, data_loader=self._data_loader)            
         else:
             raise NotImplementedError(f"No encoder found for datatype '{feature_spec.datatype}'")
 
     def _add_decoder(self, builder, feature_name, feature_spec):
         """ Decoder for a feature """                
         if feature_spec.datatype == 'numerical':
-            return self._add_numerical_decoder(builder, feature_name, feature_spec)
+            return NumericalDecoderBlueprint().build(builder, feature_name, feature_spec, data_loader=self._data_loader)
+        elif feature_spec.datatype == 'categorical':
+            return CategoricalDecoderBlueprint().build(builder, feature_name, feature_spec, data_loader=self._data_loader)            
         else:
             raise NotImplementedError(f"No decoder found for datatype '{feature_spec.datatype}'")
         
-    def _add_numerical_encoder(self, builder, feature_name, feature_spec):
-        """ Adds a numerical encoder """
-        return NumericalEncoderBlueprint().build(builder, feature_name, feature_spec)
-
-    def _add_image_encoder(self, builder, feature_name, feature_spec):
-        """ Adds a image encoder """
-        return ImageEncoderBlueprint().build(builder, feature_name, feature_spec)
-    
-    def _add_numerical_decoder(self, builder, feature_name, feature_spec):
-        """ Adds a numerical decoder """
-        return NumericalDecoderBlueprint().build(builder, feature_name, feature_spec)
-

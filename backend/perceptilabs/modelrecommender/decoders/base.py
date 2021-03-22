@@ -1,11 +1,11 @@
 from abc import ABC, abstractmethod
 from perceptilabs.graph.builder import GraphSpecBuilder
-from perceptilabs.data.base import FeatureSpec
-
+from perceptilabs.data.base import FeatureSpec, DataLoader
+# TODO: update docstrings w/ dataloader
 
 class DecoderBlueprint(ABC):
     @abstractmethod
-    def build(self, builder: GraphSpecBuilder, feature_name: str, feature_spec: FeatureSpec) -> str:
+    def build(self, builder: GraphSpecBuilder, feature_name: str, feature_spec: FeatureSpec, data_loader: DataLoader = None) -> str:
         """ Adds an decoder to the graph spec builder
         
         Arguments:

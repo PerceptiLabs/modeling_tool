@@ -1,7 +1,7 @@
 import tensorflow as tf
 
 
-def build_numerical_pipelines(self, feature_dataset: tf.data.Dataset = None) -> tf.keras.Model:
+def build_numerical_pipelines(feature_dataset: tf.data.Dataset = None) -> tf.keras.Model:
     """ Returns a keras model for preprocessing data
 
     Arguments:
@@ -12,7 +12,6 @@ def build_numerical_pipelines(self, feature_dataset: tf.data.Dataset = None) -> 
     
         (training_pipeline, validation_pipeline, postprocessing_pipeline)
     """
-    # TODO: update return docs
     class Pipeline(tf.keras.Model):
         def call(self, x):
             return tf.cast(x, dtype=tf.float32)

@@ -593,7 +593,8 @@ class Interface():
                 file_path=feature_info['csv_path']
             )
 
-        recommender = ModelRecommender()
+        data_loader = DataLoader.from_features(feature_specs)  # TODO(anton.k): REUSE THIS!
+        recommender = ModelRecommender(data_loader=data_loader)
         graph_spec = recommender.get_graph(feature_specs)
         json_network = graph_spec.to_dict()
         return json_network

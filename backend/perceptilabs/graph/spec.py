@@ -49,6 +49,10 @@ class GraphSpec(AbstractGraphSpec):
         return list(self.nodes_by_id.values())
 
     @property
+    def output_layers(self) -> List[LayerSpec]:
+        return [x for x in self.layers if x.is_output_layer]
+
+    @property
     def nodes(self) -> List[LayerSpec]:
         return self.layers
     

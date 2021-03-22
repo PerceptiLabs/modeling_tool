@@ -163,8 +163,10 @@ class DataLoader:
             return pipelines.build_numerical_pipelines
         elif feature_datatype == 'image':
             return pipelines.build_image_pipelines
+        elif feature_datatype == 'categorical':
+            return pipelines.build_categorical_pipelines
         else:
-            raise NotImplementedError(f"No preprocessing pipeline defined for type '{feature_datatype}'")
+            raise NotImplementedError(f"No pipeline defined for type '{feature_datatype}'")
 
     def get_dataset(self, partition='training'):
         """ Returns a TensorFlow dataset """
