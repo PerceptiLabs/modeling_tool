@@ -24,6 +24,8 @@
         :disable-header="disableHeader"
         :chart-data="imgData"
         :custom-color="customColor"
+        :chartIdx="chartIdx"
+        @chartIdxChange="handleChartIdxChange"
         :enableDrag="enableDrag"
       )
       .base-chart_info(v-if="chartPieInfo.length") {{ chartPieInfo }}
@@ -47,6 +49,10 @@
       chartLabel: {
         type: String,
         default: ''
+      },
+      chartIdx: {
+        type: [Number],
+        default: () => { 0 }
       },
       enableDrag: {
         type: Boolean,
@@ -181,6 +187,9 @@
         this.fullView = !this.fullView;
         //this.$nextTick(() => this.$refs.chart.resize());
       },
+      handleChartIdxChange(chartIdx) {
+        this.$emit('chartIdxChange', parseInt(chartIdx));
+      }
     }
   }
 </script>

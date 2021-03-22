@@ -279,7 +279,14 @@ class GetNetworkData(LW_interface_base):
                 sample_array = np.asarray(sample)
                 sample_layer_shape = sample_array.shape
                 layer_sample_data_points = int(np.prod(sample_layer_shape))
-                sample_data = [self._reduceTo2d(sample_array).squeeze()]
+
+                if layer_spec.type_ == 'DeepLearningConv':
+                    sample_data = list()
+                    if np.all(sample_array) != None:
+                        for idx in range(sample_array.shape[-1]):
+                            sample_data.append(sample_array[:,:,idx])
+                else:
+                    sample_data = [self._reduceTo2d(sample_array).squeeze()]
 
                 preview_content = {
                     'data': sample_data,

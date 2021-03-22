@@ -31,7 +31,7 @@
         .statistics-box_col(v-if="!testIsOpen")
           chart-switch(
             key="5"
-            chart-label="Real Inpput"
+            chart-label="Real Input"
             :chart-data="chartData.Images.Real_Input"
             :custom-color="colorListAccuracy"
           )

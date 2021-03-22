@@ -36,11 +36,15 @@ const state = {
   },
   isEnableCustomHotKey: true,
   isWorkspaceDragEvent: false,
+  isChartFeatureSliderDragEvent: false
 };
 
 const getters = {
   getIsWorkspaceDragEvent(state) {
     return state.isWorkspaceDragEvent;
+  },
+  getIsChartFeatureSliderDragEvent(state) {
+    return state.isChartFeatureSliderDragEvent;
   }
 }
 
@@ -83,6 +87,9 @@ const mutations = {
   },
   set_isWorkspaceDragEvent(state, value) {
     state.isWorkspaceDragEvent = value;
+  },
+  set_isChartFeatureSliderDragEvent(state, value) {
+    state.isChartFeatureSliderDragEvent = value;
   }
 };
 const actions = {

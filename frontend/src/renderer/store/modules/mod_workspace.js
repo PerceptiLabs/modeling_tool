@@ -1698,6 +1698,16 @@ const mutations = {
       Vue.set(state.workspaceContent[state.currentNetwork].networkElementList[layerId], 'chartData', payload);
     }
   },
+  SET_NetworkChartIdxMutation(state, { layerId, payload }) {
+
+    if (!state.workspaceContent[state.currentNetwork] ||
+        !state.workspaceContent[state.currentNetwork].networkElementList ||
+        !state.workspaceContent[state.currentNetwork].networkElementList[layerId]) { return; }
+
+    const el = state.workspaceContent[state.currentNetwork].networkElementList[layerId];
+    
+    Vue.set(state.workspaceContent[state.currentNetwork].networkElementList[layerId], 'chartIdx', payload);
+  },
   //---------------
   // INPUT / OUTPUT variables handlers
   //---------------
@@ -2459,6 +2469,9 @@ const actions = {
   },
   SET_NetworkChartData({ commit }, {layerId, payload}) {
     commit('SET_NetworkChartDataMutation', {layerId, payload});
+  },
+  SET_NetworkChartIdx({ commit }, {layerId, payload}) {
+    commit('SET_NetworkChartIdxMutation', {layerId, payload});
   },
 
   //---------------

@@ -17,6 +17,8 @@
           :disable-header="true"
           :chart-data="storeCurrentElement.chartData"
           :showInitiallyRequestSpinner="false"
+          :chartIdx="currentEl.chartIdx"
+          @chartIdxChange="handleChartIdxChange"
           :enableDrag="enableDrag"
         )
 
@@ -117,6 +119,12 @@ export default {
 
         })
     },
+    handleChartIdxChange(chartIdx) {
+      this.$store.dispatch('mod_workspace/SET_NetworkChartIdx', { 
+        layerId: this.layerId,
+        payload: chartIdx,
+      });
+    }
   }
 }
 </script>

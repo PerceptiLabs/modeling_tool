@@ -10,6 +10,8 @@
       v-show="isSettingPreviewVisible"
       :disable-header="true"
       :chart-data="storeCurrentElement.chartData"
+      :chartIdx="currentEl.chartIdx"
+      @chartIdxChange="handleChartIdxChange"
     )
 </template>
 
@@ -94,6 +96,12 @@ export default {
     // },
     haveData(){
       this.haveChartToDisplay = this.storeCurrentElement.chartData.series && this.storeCurrentElement.chartData.series[0].data !== '';
+    },
+    handleChartIdxChange(chartIdx) {
+      this.$store.dispatch('mod_workspace/SET_NetworkChartIdx', { 
+        layerId: this.layerId,
+        payload: chartIdx,
+      });
     }
   }
 }

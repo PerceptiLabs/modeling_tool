@@ -69,8 +69,6 @@ const viewBoxMixin = {
       this.getData();
     },
     chartRequest(layerId, layerType, view) {
-      console.log('chartRequest - meta', layerId, layerType, view);
-
       this.startRequest = new Date();
 
       if(!layerId || !layerType) return;
@@ -90,8 +88,6 @@ const viewBoxMixin = {
           if(data === 'Null' || data === null) {
             return
           }
-
-          console.log('chartRequest - response', data);
 
           // This launch an event to stop fetching statistics infinitely
           if(theData.action === 'getTestingStatistics') {

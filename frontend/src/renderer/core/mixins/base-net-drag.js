@@ -80,6 +80,10 @@ const baseNetDrag = {
       }
     },
     bodyDown(ev) {
+      if(this.getIsChartFeatureSliderDragEvent) {
+        return;
+      }
+
       if(!this.isCurrentItemSelected(this.dataEl.layerId)) {
         if (ev.shiftKey || ev.metaKey || ev.ctrlKey) {
           this.setElementSelectedAction({id: this.dataEl.layerId, setValue: true, resetOther: false})
@@ -270,8 +274,9 @@ const baseNetDrag = {
       }
     },
     ...mapGetters({
-      getIsWorkspaceDragEvent: 'mod_events/getIsWorkspaceDragEvent',
       networkElmentPositions:  'mod_workspace/GET_networkElmentPositions',
+      getIsWorkspaceDragEvent: 'mod_events/getIsWorkspaceDragEvent',
+      getIsChartFeatureSliderDragEvent: 'mod_events/getIsChartFeatureSliderDragEvent'
     }),
   },
 
