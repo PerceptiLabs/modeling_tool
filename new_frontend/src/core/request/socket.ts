@@ -16,7 +16,7 @@ export class SocketRequest {
     const url = await this._resolver;
     const ws = new WebSocket(url);
 
-    ws.onopen = ev => {
+    ws.onopen = (ev) => {
       this.onOpen(ev);
       ws.send(JSON.stringify(sendData));
     };

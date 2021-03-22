@@ -1,7 +1,5 @@
 <template>
   <div>
-    <p>
-      This is Model View.
-    </p>
+    <p>This is Model View.</p>
   </div>
 </template>

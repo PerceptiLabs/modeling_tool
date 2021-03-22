@@ -16,8 +16,10 @@ npm run build
 ```
 
 ### Lints and fixes files
+To fix linting issues with prettier, please use:
 ```
-npm run lint
+npm install -g prettier
+prettier --write 'src/**/*' --ignore-unknown
 ```
 
 ### Customize configuration

@@ -80,10 +80,7 @@ class AppInstance {
 
   private runApp(token: string, refreshToken: string) {
     this._appInstance = createApp(App);
-    this._appInstance
-      .use(store)
-      .use(router)
-      .mount("#app");
+    this._appInstance.use(store).use(router).mount("#app");
 
     this.setTokens(token, refreshToken);
 

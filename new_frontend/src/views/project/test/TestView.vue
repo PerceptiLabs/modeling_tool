@@ -1,7 +1,5 @@
 <template>
   <div>
-    <p>
-      This is Test View.
-    </p>
+    <p>This is Test View.</p>
   </div>
 </template>

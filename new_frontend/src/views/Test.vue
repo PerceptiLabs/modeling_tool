@@ -11,9 +11,7 @@
       >
         <div class="max-w-md mx-auto">
           <div class="divide-y divide-gray-200">
-            <h1 class="text-2xl font-bold">
-              Tailwind CSS Test
-            </h1>
+            <h1 class="text-2xl font-bold">Tailwind CSS Test</h1>
             <div
               class="py-8 text-base leading-6 space-y-4 text-gray-700 sm:text-lg sm:leading-7"
             >
