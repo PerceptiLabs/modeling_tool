@@ -1,6 +1,4 @@
-import pytest
 import os
-import pytest
 import pickle
 import tempfile
 from unittest.mock import MagicMock

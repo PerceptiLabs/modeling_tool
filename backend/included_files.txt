@@ -321,6 +321,7 @@ perceptilabs/modelrecommender/decoders/categorical.py
 perceptilabs/trainer/__init__.py
 perceptilabs/trainer/base.py
 perceptilabs/trainer/losses.py
+perceptilabs/trainer/model.py
 
 # backend/perceptilabs/exporter/
 perceptilabs/exporter/base.py
