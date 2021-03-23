@@ -59,6 +59,10 @@ jobs:
       submodules: recursive
       persistCredentials: true
 
+    - task: NodeTool@0
+      inputs:
+        versionSpec: '>=14.x'
+
     - task: FileTransform@2
       inputs:
         folderPath: '$(System.DefaultWorkingDirectory)/'
