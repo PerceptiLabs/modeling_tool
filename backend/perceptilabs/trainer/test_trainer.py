@@ -364,4 +364,3 @@ def test_trainer_output_stats_available(script_factory_tf2x, data_loader, graph_
 
     for layer_spec in graph_spec_few_epochs.output_layers:    
         assert layer_spec.id_ in output_stats
-        x = output_stats['2']

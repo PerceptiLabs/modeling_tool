@@ -8,8 +8,8 @@ import numpy as np
 import os
 import time
 import logging
-from perceptilabs.logconf import APPLICATION_LOGGER, USER_LOGGER
 
+from perceptilabs.logconf import APPLICATION_LOGGER, USER_LOGGER
 from perceptilabs.layers.visualizer import PerceptiLabsVisualizer
 from perceptilabs.trainer.model import TrainingModel
 from perceptilabs.trainer.stats import SampleStatsTracker, SampleStats, GradientStatsTracker, GradientStats, CategoricalOutputStatsTracker
@@ -114,7 +114,6 @@ class Trainer:
         self.export_inference(inference_export_path)
         self.export_checkpoint(ckpt_path)
         
-
 
     def _loop_over_dataset(self, model, losses, dataset, set_num_batches_completed_this_epoch, is_training=True, optimizer=None):
         """ Loop over all batches of data once """

@@ -197,4 +197,3 @@ def test_get_average_loss_for_epoch_validation(losses):
         assert actual == expected
 
         
-            

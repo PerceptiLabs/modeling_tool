@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Tuple
 import copy
-
+import numpy as np
 import tensorflow as tf
 
 from perceptilabs.graph.spec import GraphSpec
@@ -144,7 +144,6 @@ class CategoricalOutputStatsTracker(TrainingStatsTracker):
         self._prediction_matrices = []  # A list of list. Outer list is per epoch, inner list is per step within that epoch
         self._losses = []  # A list of list. Outer list is per epoch, inner list is per step within that epoch
 
-        
     def update(self, **kwargs):
         self._store_prediction_matrix(
             kwargs['predictions_batch'], kwargs['targets_batch'],
@@ -177,10 +176,9 @@ class CategoricalOutputStatsTracker(TrainingStatsTracker):
 
         # Convert to a tuple of tuples to make it immutable.
         pred_matrices = tuple([  
-            tuple(epoch_matrices)
-            for epoch_matrices in self._prediction_matrices
+            tuple(step_matrices)
+            for step_matrices in self._prediction_matrices
         ])
-
         losses = tuple([  
             tuple(epoch_losses)
             for epoch_losses in self._losses
