@@ -1,20 +1,18 @@
-
 <template lang="pug">
   div.questionnaire-block-wrapper
     h3 {{ q }}
 
     .content-groups
       .content-group
-        base-radio(group-name="group" :value-input="'tensorflow'" v-model="a.frameworkPreference")
-          span Tensorflow
-        base-radio(group-name="group" :value-input="'pytorch'" v-model="a.frameworkPreference")
-          span PyTorch
-        base-radio(group-name="group" :value-input="'keras'" v-model="a.frameworkPreference")
-          span Keras
-        base-radio(group-name="group" :value-input="'scikit-learn'" v-model="a.frameworkPreference")
-          span Sci-kit learn
-        base-radio(group-name="group" :value-input="'other'" v-model="a.frameworkPreference")
-          span Other:
+        base-radio(group-name="group" :value-input="'New to the field, using PerceptiLabs to learn'" v-model="a.DeepLearningExperience")
+          span New to the field, using PerceptiLabs to learn
+        base-radio(group-name="group" :value-input="'Intermediate'" v-model="a.DeepLearningExperience")
+          span Intermediate
+        base-radio(group-name="group" :value-input="'Experienced'" v-model="a.DeepLearningExperience")
+          span Experienced
+        base-radio(group-name="group" :value-input="'Other'" v-model="a.DeepLearningExperience")
+          span Other
+
 
       .content-group
         textarea(
@@ -26,20 +24,20 @@
 <script>
 
 export default {
-  name: 'Questionnaire-FrameworkPreference',
+  name: 'DeepLearningExperience',
   props: ['value'],
   data() {
     return {
-      q: 'Which ML framework do you prefer?',
+      q: 'What\'s your Deep Learning experience?',
       a: {
-        frameworkPreference: '',
+        DeepLearningExperience: '',
         optionalDetails: ''
       }
     }
   },
   mounted() {
     if (!this.value || !this.value.a) { return; }
-    
+
     for (const k of Object.keys(this.a)) {
       this.a[k] = this.value.a[k];
     }
@@ -47,7 +45,8 @@ export default {
   watch: {
     'a': {
       deep: true,
-      handler(newVal, oldVal) {
+      immediate: true,
+      handler(newVal) {
         if (!newVal) { return; }
 
         const payload = {
@@ -63,7 +62,3 @@ export default {
   }
 }
 </script>
-
-<style lang="scss" scoped>
-</style>
-

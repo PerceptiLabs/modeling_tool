@@ -13,26 +13,22 @@
             .step-button-dot(:class="{ 'active': nIdx === pageNumber }")
       
       .section-content
-        training-frequency(
+        type-of-model-you-build(
           v-if="pageNumber === 0"
-          v-model="questionnairePages['TrainingFrequency']")
-
-        reason-for-use(
+          v-model="questionnairePages['TypeOfModelYouBuild']")
+        deep-learning-experience(
           v-else-if="pageNumber === 1"
-          v-model="questionnairePages['ReasonForUse']")
-        
-        //- the last page shown depending on the answer on page 1
-        //- 'part-of-ml-team', 'develop-ml-tools', 'curious-about-ml' can be
-        //- found in the reason-for-use.vue file
-        team-size(
-          v-else-if="pageNumber > 1 && reasonForUseAnswer === 'part-of-ml-team'"
-          v-model="questionnairePages['TeamSize']")
-        framework-preference(
-          v-else-if="pageNumber > 1 && reasonForUseAnswer === 'develop-ml-tools'"
-          v-model="questionnairePages['FrameworkPreference']")
-        learning-resource(v-else-if="pageNumber > 1 && reasonForUseAnswer === 'curious-about-ml'"
-          v-model="questionnairePages['LearningResource']")
-
+          v-model="questionnairePages['DeepLearningExperience']")
+        intergalactic-journey(
+          v-else-if="pageNumber === 2"
+          v-model="questionnairePages['IntergalacticJourney']")
+        what-role-do-you-have(
+          v-else-if="pageNumber === 3"
+          v-model="questionnairePages['WhatRoleDoYouHave']")
+        what-are-you-looking-for(
+          v-else-if="pageNumber === 4"
+          v-model="questionnairePages['WhatAreYouLookingFor']")
+       
       .section-action
         .button-group
           button(type="button"
@@ -51,25 +47,31 @@
 <script>
 import { MODAL_PAGE_WHATS_NEW } from "@/core/constants";
 
-import TrainingFrequency from "@/components/questionnaire/training-frequency.vue";
-import ReasonForUse from "@/components/questionnaire/reason-for-use.vue";
-import TeamSize from "@/components/questionnaire/team-size.vue";
-import FrameworkPreference from "@/components/questionnaire/framework-preference.vue";
-import LearningResource from "@/components/questionnaire/learning-resource.vue";
+import TypeOfModelYouBuild from "@/components/questionnaire/type-of-model-you-build.vue";
+import DeepLearningExperience from "@/components/questionnaire/deep-learning-experience.vue";
+import IntergalacticJourney from "@/components/questionnaire/Intergalactic-journey.vue";
+import WhatRoleDoYouHave from "@/components/questionnaire/what-role-do-you-have.vue";
+import WhatAreYouLookingFor from "@/components/questionnaire/what-are-you-looking-for.vue";
 
 export default {
   name: 'PageQuestionnaire',
-  components: { TrainingFrequency, ReasonForUse, TeamSize, FrameworkPreference, LearningResource },
+  components: { 
+    TypeOfModelYouBuild,
+    DeepLearningExperience,
+    IntergalacticJourney,
+    WhatRoleDoYouHave,
+    WhatAreYouLookingFor,
+  },
   data() {
     return {
       pageNumber: 0,
-      numPages: 3,
+      numPages: 5,
       questionnairePages: {
-        'TrainingFrequency': {},
-        'ReasonForUse': {},
-        'TeamSize': {},
-        'FrameworkPreference': {},
-        'LearningResource': {}
+        'TypeOfModelYouBuild': {},
+        'DeepLearningExperience': {},
+        'IntergalacticJourney': {},
+        'WhatRoleDoYouHave': {},
+        'WhatAreYouLookingFor': {},
       },
     }
   },
@@ -86,8 +88,10 @@ export default {
       if (targetPageNumber > this.lastPageIndex) { return false; }
 
       // 0-indexed page numbers
-      if (targetPageNumber === 1 && !this.hasAnswerPage1) { return false; }
-      if (targetPageNumber === 2 && !this.hasAnswerPage2) { return false; }
+      if (targetPageNumber === 1 && !this.hasAnswerFor('TypeOfModelYouBuild')) { return false; }
+      if (targetPageNumber === 2 && !this.hasAnswerFor('DeepLearningExperience')) { return false; }
+      if (targetPageNumber === 3 && !this.hasAnswerFor('IntergalacticJourney')) { return false; }
+      if (targetPageNumber === 4 && !this.hasAnswerFor('WhatRoleDoYouHave')) { return false; }
 
       return true;
     },
@@ -116,17 +120,17 @@ export default {
     },
     onNext() {
       if (!this.isNavigationAllowed(this.pageNumber + 1)) { return; }
-      
       this.pageNumber++;
     },
     async onConfirm() {
       const qaPayload = Object.values(this.questionnairePages).filter(p => JSON.stringify(p) !== '{}');
-
+     
       // sending to MixPanel
       this.$store.dispatch('mod_tracker/EVENT_questionnaireSubmitted', { answers: qaPayload });
       
       // sending to KeyCloak
       await this.$store.dispatch('mod_questionnaire/sendQuestionnaireResponses', qaPayload);
+      
       this.exitQuestionnaire();
     },
     exitQuestionnaire() {      
@@ -135,37 +139,23 @@ export default {
       } else {
         this.$store.dispatch('modal_pages/closePageAction');
       }
-    }
+    },
+    hasAnswerFor(valueKey) {
+      const result = this.questionnairePages[valueKey];
+      if (!result || !result.a) { return false; }
+      return !!result.a[valueKey];
+    },
   },
   computed: {
     lastPageIndex() {
       return this.numPages - 1;
     },
-    hasAnswerPage1() {
-      const result = this.questionnairePages['TrainingFrequency'];
-      if (!result || !result.a) { return false; }
-
-      return !!result.a.trainingFrequency;
-    },
-    hasAnswerPage2() {
-      const result = this.questionnairePages['ReasonForUse'];
-      if (!result || !result.a) { return false; }
-
-      return !!result.a.reasonForUse;
-    },
-    reasonForUseAnswer() {
-      // what's shown on the 3rd page is decided by the choice on the 2nd.
-      const result = this.questionnairePages['ReasonForUse'];
-      if (!result || !result.a) { return false; }
-
-      return result.a.reasonForUse;
-    }
   }
 }
 </script>
 
 <style lang="scss" scoped>
-$questionnarie-background-picture: '/static/img/questionnarie/background1.png';
+$questionnaire-background-picture: '/static/img/questionnarie/background1.png';
 
 .wrapper {
   position: fixed;
@@ -173,7 +163,7 @@ $questionnarie-background-picture: '/static/img/questionnarie/background1.png';
   left: 50%;
   transform: translate(-50%, -50%);
   background: linear-gradient(-72.32deg, #383F50 -15.94%, #23252A 137.98%);
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
   border-radius: 2px;
   width: 38rem;
   height: 45rem;  
@@ -183,12 +173,9 @@ $questionnarie-background-picture: '/static/img/questionnarie/background1.png';
     flex-direction: column;
     justify-content: flex-start;
     align-items: center;
-    
-    background: url($questionnarie-background-picture);
-    background-position: right;
-    background-size: contain;
-    background-repeat: no-repeat;
 
+    background: url($questionnaire-background-picture) no-repeat right;
+    background-size: contain;
     width: 100%;
     height: 100%;
   }

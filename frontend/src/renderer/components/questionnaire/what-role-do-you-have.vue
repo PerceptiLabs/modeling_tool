@@ -1,19 +1,18 @@
-
 <template lang="pug">
   div.questionnaire-block-wrapper
     h3 {{ q }}
-
     .content-groups
       .content-group
-        base-checkbox.checkbox-group(v-model="a.university")
-          span University
-        base-checkbox.checkbox-group(v-model="a.onlineCourses")
-          span Online Courses
-        base-checkbox.checkbox-group(v-model="a.selfDirectedStudy")
-          span Self-directed Study
-        base-checkbox.checkbox-group(v-model="a.otherReason")
-          span Other:
-
+        base-radio(group-name="group" :value-input="'Data scientist'" v-model="a.WhatRoleDoYouHave")
+          span Data scientist
+        base-radio(group-name="group" :value-input="'Developer'" v-model="a.WhatRoleDoYouHave")
+          span Developer
+        base-radio(group-name="group" :value-input="'Researcher'" v-model="a.WhatRoleDoYouHave")
+          span Researcher
+        base-radio(group-name="group" :value-input="'Project Manager'" v-model="a.WhatRoleDoYouHave")
+          span Project Manager
+        base-radio(group-name="group" :value-input="'Other'" v-model="a.WhatRoleDoYouHave")
+          span Other
       .content-group
         textarea(
           v-model="a.optionalDetails"
@@ -24,23 +23,20 @@
 <script>
 
 export default {
-  name: 'Questionnaire-LearningResouce',
+  name: 'WhatRoleDoYouHave',
   props: ['value'],
   data() {
     return {
-      q: 'Where are you learning about ML?',
+      q: 'What role do you have?',
       a: {
-        university: false,
-        onlineCourses: false,
-        selfDirectedStudy: false,
-        otherReason: false,
+        WhatRoleDoYouHave: '',
         optionalDetails: ''
       }
     }
   },
   mounted() {
     if (!this.value || !this.value.a) { return; }
-    
+
     for (const k of Object.keys(this.a)) {
       this.a[k] = this.value.a[k];
     }
@@ -48,7 +44,8 @@ export default {
   watch: {
     'a': {
       deep: true,
-      handler(newVal, oldVal) {
+      immediate: true,
+      handler(newVal) {
         if (!newVal) { return; }
 
         const payload = {
@@ -64,7 +61,4 @@ export default {
   }
 }
 </script>
-
-<style lang="scss" scoped>
-</style>
 

@@ -1,20 +1,18 @@
-
 <template lang="pug">
   div.questionnaire-block-wrapper
     h3 {{ q }}
 
     .content-groups
       .content-group
-
-        base-radio(group-name="group" :value-input="'part-of-ml-team'" v-model="a.reasonForUse")
-          span I'm part of a team doing ML
-        base-radio(group-name="group" :value-input="'develop-ml-tools'" v-model="a.reasonForUse")
-          span I develop ML models
-        base-radio(group-name="group" :value-input="'curious-about-ml'" v-model="a.reasonForUse")
-          span I'm curious about ML
-        base-radio(group-name="group" :value-input="'other'" v-model="a.reasonForUse")
-          span Other:
-
+        base-radio(group-name="group" :value-input="'Computer vision'" v-model="a.TypeOfModelYouBuild")
+          span Computer vision
+        base-radio(group-name="group" :value-input="'Natural Language Processing'" v-model="a.TypeOfModelYouBuild")
+          span Natural Language Processing
+        base-radio(group-name="group" :value-input="'Generative models'" v-model="a.TypeOfModelYouBuild")
+          span Generative models (Maybe Timeseries based instead?)
+        base-radio(group-name="group" :value-input="'Other'" v-model="a.TypeOfModelYouBuild")
+          span Other
+          
       .content-group
         textarea(
           v-model="a.optionalDetails"
@@ -25,13 +23,13 @@
 <script>
 
 export default {
-  name: 'Questionnaire-ReasonForUse',
+  name: 'TypeOfModelYouBuild',
   props: ['value'],
   data() {
     return {
-      q: 'What brings you to PerceptiLabs?',
+      q: 'What type of models are you looking to build?',
       a: {
-        reasonForUse: '',
+        TypeOfModelYouBuild: '',
         optionalDetails: ''
       }
     }
@@ -46,7 +44,8 @@ export default {
   watch: {
     'a': {
       deep: true,
-      handler(newVal, oldVal) {
+      immediate: true,
+      handler(newVal) {
         if (!newVal) { return; }
 
         const payload = {
@@ -62,7 +61,3 @@ export default {
   }
 }
 </script>
-
-<style lang="scss" scoped>
-</style>
-

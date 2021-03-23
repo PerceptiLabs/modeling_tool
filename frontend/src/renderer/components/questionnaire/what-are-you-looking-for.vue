@@ -1,19 +1,16 @@
-
 <template lang="pug">
   div.questionnaire-block-wrapper
     h3 {{ q }}
-
     .content-groups
       .content-group
-        base-radio(group-name="group" :value-input="'1-5'" v-model="a.teamSize")
-          span 1-5
-        base-radio(group-name="group" :value-input="'5-10'" v-model="a.teamSize")
-          span 5-10
-        base-radio(group-name="group" :value-input="'10-30'" v-model="a.teamSize")
-          span 10-30
-        base-radio(group-name="group" :value-input="'30+'" v-model="a.teamSize")
-          span 30+
-
+        base-radio(group-name="group" :value-input="'Visually build and compare multiple models'" v-model="a.WhatAreYouLookingFor")
+          span Visually build and compare multiple models
+        base-radio(group-name="group" :value-input="'Rapid prototyping'" v-model="a.WhatAreYouLookingFor")
+          span Rapid prototyping
+        base-radio(group-name="group" :value-input="'Interpret and visualize models'" v-model="a.WhatAreYouLookingFor")
+          span Interpret and visualize models
+        base-radio(group-name="group" :value-input="'Other'" v-model="a.WhatAreYouLookingFor")
+          span Other
       .content-group
         textarea(
           v-model="a.optionalDetails"
@@ -24,20 +21,20 @@
 <script>
 
 export default {
-  name: 'Questionnaire-TeamSize',
+  name: 'WhatAreYouLookingFor',
   props: ['value'],
   data() {
     return {
-      q: 'How many people are training models in your team?',
+      q: 'What are you looking for in PerceptiLabs?',
       a: {
-        teamSize: '',
+        WhatAreYouLookingFor: '',
         optionalDetails: ''
       }
     }
   },
   mounted() {
     if (!this.value || !this.value.a) { return; }
-    
+
     for (const k of Object.keys(this.a)) {
       this.a[k] = this.value.a[k];
     }
@@ -45,7 +42,8 @@ export default {
   watch: {
     'a': {
       deep: true,
-      handler(newVal, oldVal) {
+      immediate: true,
+      handler(newVal) {
         if (!newVal) { return; }
 
         const payload = {
@@ -61,7 +59,4 @@ export default {
   }
 }
 </script>
-
-<style lang="scss" scoped>
-</style>
 
