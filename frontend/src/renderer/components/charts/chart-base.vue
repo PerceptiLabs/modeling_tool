@@ -71,7 +71,7 @@
     },
     methods: {
       createWWorker() {
-        this.wWorker = new Worker(`${pathWebWorkers}/calcChartBase.js`);
+        this.wWorker = new Worker(`${pathWebWorkers}/calcChartBase.js`, {type: 'module'});
         this.wWorker.addEventListener('message', this.drawChart, false);
       },
       sendDataToWWorker(dataWatch) {
