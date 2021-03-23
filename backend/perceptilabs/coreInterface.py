@@ -471,10 +471,10 @@ class coreLogic():
             logger.debug(f"Key Error in getStatus: {repr(e)}")
             return {}
 
-    def startTest(self, graph_spec, model_id):
+    def startTest(self, graph_spec, model_id, training_settings=None):
         if not self.isRunning()['content'] :
             self.set_running_mode('testing')
-            self.startCore(graph_spec, model_id)
+            self.startCore(graph_spec, model_id, training_settings)
             return {"content":"core started for testing"}
         else:
             return {"content":"test already running"}

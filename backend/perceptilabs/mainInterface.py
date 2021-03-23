@@ -434,16 +434,17 @@ class Interface():
             
             self._core.set_running_mode('training')            
             model_id = int(value.get('modelId', None))
-            training_settings = value['trainSettings']
+            training_settings = value.get('trainSettings', None)
             response = self._core.startCore(graph_spec, model_id, training_settings)
             return response
 
         elif action == "startTest":
             graph_spec = self._network_loader.load(value, as_spec=True)
             model_id = value.get('modelId', None)
+            training_settings = value.get('trainSettings', None)
             if model_id is not None:
                 model_id = int(model_id)
-            response = self._core.startTest(graph_spec, model_id)
+            response = self._core.startTest(graph_spec, model_id, training_settings)
             return response
 
 
