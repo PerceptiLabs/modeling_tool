@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+lines=$(cat included_files.txt)
+while read y
+do
+  if [[ ! $y =~ ^# ]] && [[ -n $y ]] && [[ ! $y =~ model_and_meta.pkl ]]; then
+    ls $y &> /dev/null || ( >&2 echo "$y is in included_files.txt but doesn't exist"; exit 1 )
+  fi
+done < included_files.txt
+echo "Success!!"

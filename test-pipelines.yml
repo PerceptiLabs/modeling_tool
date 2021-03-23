@@ -2,7 +2,19 @@ trigger:
 - none
 
 jobs:
+- job: checkincludedfiles
+  displayName: Check included_files.txt
+  steps:
+    - task: Bash@3
+      displayName: Check included_files.txt
+      inputs:
+        filePath: 'backend/check_included_files'
+        workingDirectory: '$(System.DefaultWorkingDirectory)/backend'
+        failOnStderr: true
+
+
 - job: test
+  dependsOn: checkincludedfiles
   strategy:
     matrix:
       linux_py3.6:

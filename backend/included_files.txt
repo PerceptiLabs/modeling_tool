@@ -128,7 +128,6 @@ perceptilabs/layers/processgrayscale/tf2x_template.j2
 perceptilabs/layers/mathargmax/spec.py
 perceptilabs/layers/mathargmax/imports.json
 perceptilabs/layers/mathargmax/template.j2
-perceptilabs/layers/mathargmax/tf2x_imports.json
 
 # perceptilabs/layers/mathsoftmax
 perceptilabs/layers/mathsoftmax/spec.py
