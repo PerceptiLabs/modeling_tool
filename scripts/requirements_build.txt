@@ -2,6 +2,7 @@ cython>=0.29.14
 packaging>=20.4
 pylint==2.4.3
 pytest==5.3.1
+pytest-azurepipelines==0.8.0
 pyinstaller==3.5; platform_system == "Darwin"
 pyinstaller==3.5; platform_system == "Linux"
 semver>=2.10
