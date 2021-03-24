@@ -4,7 +4,7 @@ import {
   FILESERVER_BASE_URL,
 } from "../../config/constants";
 import logger from "../logger";
-import { getCookie } from "../utility";
+import { getCookie } from "@/utility";
 import env from "@/config/env";
 
 export class FileServerRequest extends HttpRequest {
@@ -25,10 +25,10 @@ export class FileServerRequest extends HttpRequest {
 
   async isURLReachable(path: string): Promise<boolean> {
     try {
-      const res = await this.get<{ response_code: number }>(
+      const res = await this.get<{ responseCode: number }>(
         `/is_url_reachable?path=${path}`,
       );
-      return res.response_code === 200;
+      return res.responseCode === 200;
     } catch (err) {
       logger.error(`isURLReachable: ${path}`, err);
       return false;

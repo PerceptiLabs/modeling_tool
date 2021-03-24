@@ -1,7 +1,9 @@
 import { IUserProfile } from "@/types";
-import logger from "../logger";
+import logger from "@/core/logger";
 
 export * from "./cookie";
+export * from "./response";
+export * from "./vue-utils";
 
 export const parseJWT = (
   token: string,

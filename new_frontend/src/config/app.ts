@@ -2,7 +2,7 @@ import { App as VueApp, createApp } from "vue";
 import { getModule } from "vuex-module-decorators";
 import Keycloak from "keycloak-js";
 
-import { parseJWT } from "@/core/utility";
+import { parseJWT } from "@/utility";
 import logger from "@/core/logger";
 import request from "@/core/request";
 import App from "@/App.vue";
@@ -11,6 +11,10 @@ import store from "@/store";
 import UserModule from "@/store/modules/mod_user";
 import env from "./env";
 import { isDevelopMode, IS_VALID_KEYCLOACK_CHECKER_URL } from "./constants";
+
+// plugins
+import setupPlugins from "@/plugins";
+import setupDirectives from '@/directives';
 
 class AppInstance {
   private _appInstance: VueApp<Element> | null = null;
@@ -86,8 +90,8 @@ class AppInstance {
 
     this.setRefreshTokenWorker();
     this.setAppConfig();
-    this.setPlugins();
-    this.setDirectives();
+    setupPlugins(this._appInstance);
+    setupDirectives(this._appInstance);
   }
 
   private setTokens(token: string, refreshToken: string) {
@@ -126,12 +130,6 @@ class AppInstance {
     if (this._appInstance) {
       this._appInstance.config.performance = isDevelopMode;
     }
-  }
-  private setPlugins() {
-    logger.log("set Plugins");
-  }
-  private setDirectives() {
-    logger.log("set Directives");
   }
 }
 

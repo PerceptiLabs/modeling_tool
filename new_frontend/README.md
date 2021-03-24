@@ -1,14 +1,10 @@
-# new_frontend
+# PerceptiLabs Tool v1.0
 
-## Project setup
-```
-npm install
-```
+### Guides
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
+##### Style Guide
+
+Please refer to the [Style Guide](./guides/styles.md).
 
 ### Compiles and minifies for production
 ```

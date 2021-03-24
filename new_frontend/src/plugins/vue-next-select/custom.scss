@@ -1,0 +1,32 @@
+.vue-select {
+  @apply border-gray-300;
+
+  &:focus {
+    @apply border-gray-400;
+    .vue-dropdown {
+      @apply border-gray-400;
+    }
+  }
+
+  .vue-select-header {
+    .vue-input {
+      @apply -my-px;
+      @apply p-2;
+      input {
+        font-size: 1rem;
+      }
+    }
+    .arrow-downward {
+      @apply mr-3;
+    }
+  }
+  .vue-dropdown {
+    @apply border-gray-300;
+
+    .vue-dropdown-item {
+      &:hover {
+        background-color: #f8f9fa;
+      }
+    }
+  }
+}

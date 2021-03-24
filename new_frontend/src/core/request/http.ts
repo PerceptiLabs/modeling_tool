@@ -1,5 +1,6 @@
 import axios, { AxiosInstance } from "axios";
 import urlResolver from "../urlResolver";
+import { parseResponse } from "@/utility";
 
 export class HttpRequest {
   private _resolver: Promise<AxiosInstance>;
@@ -7,6 +8,8 @@ export class HttpRequest {
   constructor(configUrl: string, defaultUrl: string, token?: string) {
     this._resolver = urlResolver(configUrl, defaultUrl).then((url: string) => {
       const axiosInstance = axios.create();
+      axiosInstance.defaults.transformResponse = (data) =>
+        parseResponse(JSON.parse(data));
 
       axiosInstance.defaults.baseURL = url;
       axiosInstance.defaults.headers.common["Content-Type"] =
@@ -29,31 +32,31 @@ export class HttpRequest {
     axiosInstance.defaults.params[key] = value;
   }
 
-  async get<T extends {}>(path: string) {
+  async get<T extends unknown>(path: string) {
     const axiosInstance = await this._resolver;
     const result = await axiosInstance.get<T>(path);
     return result.data;
   }
 
-  async delete<T extends {}>(path: string) {
+  async delete<T extends unknown>(path: string) {
     const axiosInstance = await this._resolver;
     const result = await axiosInstance.delete<T>(path);
     return result.data;
   }
 
-  async post<T extends {}>(path: string, payload: unknown) {
+  async post<T extends unknown>(path: string, payload: unknown) {
     const axiosInstance = await this._resolver;
     const result = await axiosInstance.post<T>(path, payload);
     return result.data;
   }
 
-  async patch<T extends {}>(path: string, payload: unknown) {
+  async patch<T extends unknown>(path: string, payload: unknown) {
     const axiosInstance = await this._resolver;
     const result = await axiosInstance.patch<T>(path, payload);
     return result.data;
   }
 
-  async put<T extends {}>(path: string, payload: unknown) {
+  async put<T extends unknown>(path: string, payload: unknown) {
     const axiosInstance = await this._resolver;
     const result = await axiosInstance.put<T>(path, payload);
     return result.data;

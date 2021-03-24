@@ -1,6 +1,6 @@
 import { Module, Mutation, VuexModule } from "vuex-module-decorators";
 import { IUserProfile } from "@/types";
-import { parseJWT, setCookie } from "@/core/utility";
+import { parseJWT, setCookie } from "@/utility";
 
 @Module({
   name: "mod_user",
