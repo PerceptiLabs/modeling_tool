@@ -10,10 +10,6 @@ NGINX_CONF_URL=${AZURE_BLOB_URL}/${VERSION}/nginx.conf
 
 ###################################################################################################
 # Get User Input
-if [ -z "$PL_SERVER_NAME" ]; then
-  read -p "Enter the hostname you use to access this computer from the network [${HOSTNAME}] " PL_SERVER_NAME
-fi
-
 if [ -z "$PL_PASSWORD" ]; then
   read -s -p "Enter the perceptilabs docker registry password: " PL_PASSWORD
 fi
@@ -38,7 +34,6 @@ fi
 ###################################################################################################
 # Install PerceptiLabs
 curl -s $DOCKER_COMPOSE_URL \
-  | sed "s/\${PL_SERVER_NAME}/$PL_SERVER_NAME/g" \
   | sed "s/\${CONTAINER_REGISTRY}/$CONTAINER_REGISTRY/g" \
   | sed "s/\${PL_VERSION}/$VERSION/g" \
   > docker-compose.yaml
@@ -53,4 +48,4 @@ echo pulling images
 sudo docker-compose pull
 
 sudo docker-compose up -d
-echo The tool is ready at http://${PL_SERVER_NAME}
+echo PerceptiLabs is ready to use.
