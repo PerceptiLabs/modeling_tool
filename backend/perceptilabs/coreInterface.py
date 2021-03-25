@@ -170,27 +170,28 @@ class coreLogic():
         )
         return trainer
 
-    def _get_standard_trainer(self, script_factory, graph_spec, training_settings):
+    def _get_standard_trainer(self, script_factory, graph_spec, training_settings, dataset_settings):
         from perceptilabs.trainer import Trainer
 
         from perceptilabs.modelrecommender.base import ModelRecommender
         from perceptilabs.data.base import DataLoader, FeatureSpec    
         from perceptilabs.script import ScriptFactory
 
-        data_loader = DataLoader.from_graph_spec(graph_spec)
+        data_loader = DataLoader.from_dict(dataset_settings)
+        import pdb; pdb.set_trace()
         trainer = Trainer(script_factory, data_loader, graph_spec, training_settings)
         
         return trainer
 
-    def _get_trainer(self, script_factory, graph_spec, training_settings):
+    def _get_trainer(self, script_factory, graph_spec, training_settings, dataset_settings):
         if self._trainer == 'core_v2':
             return self._get_corev2_trainer(script_factory)
         elif self._trainer == 'standard':
-            return self._get_standard_trainer(script_factory, graph_spec, training_settings)
+            return self._get_standard_trainer(script_factory, graph_spec, training_settings, dataset_settings)
         else:
             raise ValueError(f"Unknown trainer choice: '{self._trainer}'")
 
-    def startCore(self, graph_spec, model_id, training_settings):
+    def startCore(self, graph_spec, model_id, training_settings, dataset_settings=None):
         try:
             self.Close()
         except:
@@ -215,7 +216,7 @@ class coreLogic():
             simple_message_bus=True,
             running_mode=self._running_mode
         )
-        trainer = self._get_trainer(script_factory, graph_spec, training_settings)
+        trainer = self._get_trainer(script_factory, graph_spec, training_settings, dataset_settings)
         
         self.core = CompatibilityCore(
             self.commandQ,

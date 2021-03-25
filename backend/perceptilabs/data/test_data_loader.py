@@ -78,7 +78,7 @@ def test_splitting():
         'x2': FeatureSpec('numerical', 'output'),
     }
     dl = DataLoader(
-        df, feature_specs, partitions={'training': 3/6, 'validation': 2/6, 'test': 1/6}
+        df, feature_specs, partitions={'training': 3/6, 'validation': 2/6, 'test': 1/6}, randomized_partitions=False
     )
     
     def validate_set(dataset, expected_size, expected_x1, expected_x2):
@@ -116,7 +116,7 @@ def test_splitting_rows_are_preserved():  # I.e., check that columns arent shuff
         'x2': FeatureSpec('numerical', 'output'),
     }
     dl = DataLoader(
-        df, feature_specs, partitions={'training': 3/6, 'validation': 2/6, 'test': 1/6}
+        df, feature_specs, partitions={'training': 3/6, 'validation': 2/6, 'test': 1/6}, randomized_partitions=False
     )
     
     def validate_set(dataset, expected_rows):
@@ -172,6 +172,7 @@ def test_instantiate_binary_string_data():
         assert inputs['x1'].dtype == tf.float32
         assert target['y1'].dtype == tf.float32
 
+        
 @pytest.mark.tf2x
 def test_instantiate_binary_integer_data():
     data = {'x1': [1, 0, 1, 0], 'y1': [1, 0, 1, 0]}
@@ -189,6 +190,7 @@ def test_instantiate_binary_integer_data():
         assert inputs['x1'].dtype == tf.float32
         assert target['y1'].dtype == tf.float32
 
+        
 @pytest.mark.tf2x
 def test_instantiate_binary_bool_data():
     data = {'x1': [True, False, True, False], 'y1': [1, 0, 1, 0]}
@@ -205,3 +207,39 @@ def test_instantiate_binary_bool_data():
     for inputs, target in dataset:
         assert inputs['x1'].dtype == tf.float32
         assert target['y1'].dtype == tf.float32
+
+    
+@pytest.mark.tf2x
+def test_randomized_partitioning_is_random():
+    n = 5
+    original_x1 = np.random.random((n,)).tolist()
+    original_y1 = np.random.random((n,)).tolist()
+
+    df = pd.DataFrame.from_dict({'x1': original_x1, 'y1': original_y1})
+    
+    feature_specs = {
+        'x1': FeatureSpec('numerical', 'input'),
+        'y1': FeatureSpec('numerical', 'output')
+    }
+    dl = DataLoader(df, feature_specs, randomized_partitions=True, randomized_partitions_seed=1234)
+
+    actual_x1 = []
+    actual_y1 = []
+
+    # Get all samples, make sure that the order is different.
+    for inputs, targets in dl.get_dataset(partition='training'):
+        actual_x1.append(inputs['x1'].numpy())
+        actual_y1.append(targets['y1'].numpy())
+        
+    for inputs, targets in dl.get_dataset(partition='validation'):
+        actual_x1.append(inputs['x1'].numpy())
+        actual_y1.append(targets['y1'].numpy())
+        
+    for inputs, targets in dl.get_dataset(partition='test'):
+        actual_x1.append(inputs['x1'].numpy())
+        actual_y1.append(targets['y1'].numpy())
+
+    assert not np.all(np.isclose(original_x1, actual_x1))
+    assert not np.all(np.isclose(original_y1, actual_y1))    
+
+

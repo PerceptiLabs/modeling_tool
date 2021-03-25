@@ -208,11 +208,14 @@ class Interface():
         else:
             return "No core called %s" %receiver
 
-    def create_lw_core(self, receiver, jsonNetwork, adapter=True):
+    def create_lw_core(self, receiver, jsonNetwork, adapter=True, dataset_settings=None):
         graph_spec = GraphSpec.from_dict(jsonNetwork)
 
         if self._trainer == 'standard':
-            data_loader = DataLoader.from_graph_spec(graph_spec)  # TODO(anton.k): REUSE THIS!
+            if not dataset_settings:
+                raise RuntimeError("When using the standard trainer, dataset settings must be set!")
+            
+            data_loader = DataLoader.from_dict(dataset_settings)  # TODO(anton.k): REUSE THIS!
         else:
             data_loader = None
         
@@ -429,14 +432,7 @@ class Interface():
             return response
 
         elif action == "Start":
-            CopyJsonModel(value['copyJson_path']).run()
-            graph_spec = self._network_loader.load(value, as_spec=True)
-            
-            self._core.set_running_mode('training')            
-            model_id = int(value.get('modelId', None))
-            training_settings = value.get('trainSettings', None)
-            response = self._core.startCore(graph_spec, model_id, training_settings)
-            return response
+            return self._create_response_start_training(value)
 
         elif action == "startTest":
             graph_spec = self._network_loader.load(value, as_spec=True)
@@ -546,12 +542,15 @@ class Interface():
         
     def _get_network_data(self, receiver, value):
         json_network = value["Network"]
-            
+        dataset_settings = value.get("datasetSettings", None)
+
         if logger.isEnabledFor(logging.DEBUG):
             logger.debug("_get_network_data input network: \n" + stringify(json_network))
         
         graph_spec = self._network_loader.load(json_network, as_spec=True)
-        lw_core, _, _ = self.create_lw_core(receiver, json_network, adapter=False)
+        lw_core, _, _ = self.create_lw_core(
+            receiver, json_network, dataset_settings=dataset_settings, adapter=False
+        )
         output = GetNetworkData(graph_spec, lw_core, self._settings_engine).run()
 
         if logger.isEnabledFor(logging.DEBUG):
@@ -585,18 +584,12 @@ class Interface():
         return self._core.set_headless(active=request_value)
 
     def _create_response_model_recommendation(self, request_value):
-        feature_specs = {}
+        dataset_settings = request_value
+        data_loader = DataLoader.from_dict(dataset_settings)
         
-        for feature_name, feature_info in request_value.items():
-            feature_specs[feature_name] = FeatureSpec(
-                datatype=feature_info['datatype'].lower(),
-                iotype=feature_info['iotype'].lower(),
-                file_path=feature_info['csv_path']
-            )
-
-        data_loader = DataLoader.from_features(feature_specs)  # TODO(anton.k): REUSE THIS!
         recommender = ModelRecommender(data_loader=data_loader)
-        graph_spec = recommender.get_graph(feature_specs)
+        graph_spec = recommender.get_graph(data_loader.feature_specs)
+        
         json_network = graph_spec.to_dict()
         return json_network
     
@@ -637,6 +630,24 @@ class Interface():
             return response
         else:
             return {'content':'The model is not trained.'}
+
+    def _create_response_start_training(self, request_value):
+        CopyJsonModel(request_value['copyJson_path']).run()
+        graph_spec = self._network_loader.load(request_value, as_spec=True)
+        
+        self._core.set_running_mode('training')            
+        model_id = int(request_value.get('modelId', None))
+
+        training_settings = request_value.get('trainSettings', None)        
+        dataset_settings = request_value.get('datasetSettings', None)
+        
+        response = self._core.startCore(
+            graph_spec,
+            model_id,
+            training_settings,
+            dataset_settings=dataset_settings
+        )
+        return response
 
     def _parse(self, path):
         frozen_pb_model = load_tf1x_frozen(path)

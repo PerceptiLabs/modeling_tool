@@ -322,6 +322,8 @@ const actions = {
   //---------------
   API_startTraining({dispatch, getters, rootGetters}, { loadCheckpoint = false } = {}) {
     const network = rootGetters['mod_workspace/GET_currentNetwork'];
+    const datasetSettings = rootGetters['mod_datasetSettings/getCurrentDatasetSettings']();
+
     const trainSettings = rootGetters['mod_workspace/GET_modelTrainingSetting'];
     const settingCollection = {}
     if(process.env.ENABLE_GLOBAL_TRAINING_SETTINGS === 'true') {
@@ -334,6 +336,7 @@ const actions = {
         modelId: rootGetters['mod_workspace/GET_currentNetworkId'],
         Layers: getters.GET_coreNetworkWithCheckpointConfig(loadCheckpoint),
         'copyJson_path': network.apiMeta.location || '',
+        'datasetSettings': datasetSettings,
         ...settingCollection
       }
     };
@@ -1035,11 +1038,15 @@ const actions = {
     for(let elId in payload) {
       net[elId]['getPreview'] = payload[elId] !== undefined;
     }
+    const datasetSettings = rootGetters['mod_datasetSettings/getCurrentDatasetSettings']();      
+
+      
     const theData = {
       receiver: '',
       action: 'getNetworkData',
       value: {
-        Network:  net,
+          Network:  net,
+	  datasetSettings: datasetSettings
       }
     };
 
@@ -1060,7 +1067,7 @@ const actions = {
         // );
         // console.log('previews', res.previews);
         // console.groupEnd();
-        if(Object.keys(res.newNetwork).length > 0) {
+        if(res.newNetwork && Object.keys(res.newNetwork).length > 0) {
           for( let ix in res.newNetwork) {
             const currentEl = networkList[ix];
             const saveSettings = {
@@ -1081,7 +1088,7 @@ const actions = {
           }, {root: true});
         } 
         
-        if(Object.keys(res.previews).length > 0) {
+        if(res.previews && Object.keys(res.previews).length > 0) {
           Object.keys(res.previews).map(previewKey => {
             dispatch('mod_workspace/SET_NetworkChartData', {
               layerId: previewKey,
@@ -1164,7 +1171,7 @@ const actions = {
           }, {root: true});
         } 
 
-        if(Object.keys(res.newNetwork).length > 0) {
+        if(res.newNetwork && Object.keys(res.newNetwork).length > 0) {
           for( let ix in res.newNetwork) {
             const currentEl = networkList[ix];
             const saveSettings = {
@@ -1178,7 +1185,7 @@ const actions = {
           }
         }
 
-        if(Object.keys(res.previews).length > 0) {
+        if(res.previews && Object.keys(res.previews).length > 0) {
           Object.keys(res.previews).map(previewKey => {
             dispatch('mod_workspace/SET_NetworkChartData', {
               layerId: previewKey,

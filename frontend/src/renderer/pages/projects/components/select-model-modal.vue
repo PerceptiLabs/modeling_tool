@@ -42,9 +42,11 @@
                         //-     img(src="./../../../../../static/img/search-models.svg")
                         //-     input(type='text' placeholder="Search")
                     .main-file-structure-contents
-                        .load-contents-group(v-if="!dataSet")
+                        .load-contents-group(v-if="!dataset")
                             button.action-button(@click="openFilePicker('setDataPath')") Load data
-                        csv-table(v-else :dataSet="dataSet" @update="handleCSVDataTypeUpdates")        
+                        .dataset-settings(v-if="dataset")
+                          base-checkbox.light-text(v-model="datasetSettings.randomizedPartitions") Randomized partitions
+                        csv-table(v-if="dataset" :dataSet="dataset" @update="handleCSVDataTypeUpdates")        
             .main-actions 
                 div  
                     h4.presets-text Name:
@@ -169,8 +171,11 @@ export default {
             showFilePickerPopup: false,
             hasChangedModelName: false,
             csvData: null, // parsed dataset and meta
-            dataSet: null,
-            dataSetPath: null,
+            dataset: null,
+            datasetPath: null,
+	          datasetSettings: {
+		            randomizedPartitions: true
+      	    },	
             filepickerOptions: {
                 popupTitle: '',
                 filePickerType: '',
@@ -212,7 +217,7 @@ export default {
     methods: {
         ...mapActions({
             addNetwork:                 'mod_workspace/ADD_network',
-			closeStatsTestViews:        'mod_workspace/SET_statisticsAndTestToClosed',
+            closeStatsTestViews:        'mod_workspace/SET_statisticsAndTestToClosed',
             createProjectModel:         'mod_project/createProjectModel',
             getModelMeta:               'mod_project/getModel',
             getProjects:                'mod_project/getProjects',
@@ -302,8 +307,18 @@ export default {
                 return;
             }
 
-            const payload = this.formatCSVTypesIntoKernelFormat()
-            const modelRecommendation = await this.getModelRecommendation(payload)
+            await this.$store.dispatch('mod_datasetSettings/setCurrentDataset', this.datasetPath);
+            const datasetSettings = {
+                'randomizedPartitions': this.datasetSettings.randomizedPartitions, 
+                'featureSpecs': this.formatCSVTypesIntoKernelFormat()
+             };
+             
+            await this.$store.dispatch('mod_datasetSettings/setDatasetSettings', {
+                datasetPath: this.datasetPath, 
+                settings: datasetSettings
+             });
+            const payload = this.$store.getters['mod_datasetSettings/getCurrentDatasetSettings']();
+            const modelRecommendation = await this.getModelRecommendation(payload);
             
             const inputData = convertModelRecommendationToVisNodeEdgeList(modelRecommendation);
             const network = createVisNetwork(inputData);
@@ -496,8 +511,8 @@ export default {
             const fileContents = await fileserver_getFileContent(`${dataPath[0].path}`);
 
             if (fileContents && fileContents.file_contents) {
-                this.dataSet = fileContents.file_contents;
-                this.dataSetPath = dataPath[0].path;
+                this.dataset = fileContents.file_contents;
+                this.datasetPath = dataPath[0].path;
                 this.autoPopulateName();
             }
 
@@ -512,9 +527,9 @@ export default {
             for(const [idx, val] of this.csvData.columnNames.entries()) {
                 const sanitizedVal=val.replace(/^\n|\n$/g, '')
                 payload[sanitizedVal]={}
-                payload[sanitizedVal]['csv_path']=this.dataSetPath
+                payload[sanitizedVal]['csv_path']=this.datasetPath
                 payload[sanitizedVal]['iotype']=this.csvData.ioTypes[idx],
-                    payload[sanitizedVal]['datatype']=this.csvData.dataTypes[idx]
+                payload[sanitizedVal]['datatype']=this.csvData.dataTypes[idx]
             }
             return payload
         },
@@ -718,6 +733,19 @@ export default {
 
             text-align: center;
             padding: 1.5rem;
+        }
+
+        & > .dataset-settings {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 1rem;
+            width: 100%;
+
+            .custom-checkbox {
+                display: flex;
+                justify-content: flex-end;
+                cursor: pointer;
+            } 
         }
 
     }

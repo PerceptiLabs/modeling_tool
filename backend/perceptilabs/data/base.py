@@ -18,8 +18,12 @@ class FeatureSpec:
 
 
 class DataLoader:
-    def __init__(self, data_frame, feature_specs, partitions=None, base_directory=None):
-        partitions = partitions or {'training': 0.7, 'validation': 0.3, 'test': 0.0}
+    def __init__(self, data_frame, feature_specs, partitions=None, base_directory=None, randomized_partitions=False, randomized_partitions_seed=None):
+        partitions = partitions or {'training': 0.7, 'validation': 0.2, 'test': 0.1}
+        self._feature_specs = feature_specs
+        
+        self._randomized_partitions = randomized_partitions
+        self._randomized_partitions_seed = randomized_partitions_seed
         
         self._validate_partitions(partitions)
         self._validate_feature_specs(data_frame.columns, feature_specs)
@@ -32,8 +36,30 @@ class DataLoader:
         )
 
     @classmethod
+    def from_dict(cls, dict_):
+        """ Creates a DataLoader given a settings dict """
+
+        feature_specs = {}
+
+        for feature_name, feature_dict in dict_['featureSpecs'].items():
+            feature_specs[feature_name] = FeatureSpec(
+                iotype=feature_dict['iotype'].lower(),
+                datatype=feature_dict['datatype'].lower(),
+                file_path=feature_dict['csv_path']
+            )
+        
+        data_loader = cls.from_features(
+            feature_specs=feature_specs,
+            randomized_partitions=dict_['randomizedPartitions']
+        )
+        return data_loader        
+
+    @classmethod
     def from_graph_spec(cls, graph_spec, partitions=None):
-        """ Derives a data loader from a graph spec """
+        """ Derives a data loader from a graph spec 
+        
+        NOTE: use from_dict instead!
+        """
         feature_specs = {}
         paths = []
         for layer_spec in graph_spec.get_ordered_layers():
@@ -52,7 +78,7 @@ class DataLoader:
         return cls.from_features(feature_specs, partitions=partitions)
         
     @classmethod
-    def from_features(cls, feature_specs, partitions=None) -> 'DataLoader':
+    def from_features(cls, feature_specs, partitions=None, randomized_partitions=False) -> 'DataLoader':
         """ Creates a DataLoader given set of features
 
         Arguments:
@@ -67,7 +93,14 @@ class DataLoader:
 
         path = next(iter(paths))
         df = pd.read_csv(path)
-        return cls(df, feature_specs, partitions=partitions, base_directory=os.path.dirname(path))
+        data_loader = cls(
+            df,
+            feature_specs,
+            partitions=partitions,
+            randomized_partitions=randomized_partitions,
+            base_directory=os.path.dirname(path)
+        )
+        return data_loader
 
     def _select_columns_by_iotype(self, df, feature_specs, iotype):
         """ Selects input or output components from the dataframe """
@@ -77,6 +110,11 @@ class DataLoader:
 
     def _create_datasets_and_pipelines_from_dataframe(self, df, feature_specs, partitions):
         """ Creates pre- and post-processing pipelines for the dataframe and then splits it into 3 tensorflow datasets """
+        if self._randomized_partitions:
+            df = df.sample(
+                frac=1, axis=0, random_state=self._randomized_partitions_seed
+            ).reset_index(drop=True)  
+        
         per_feature_training_sets = {}
         per_feature_validation_sets = {}
         per_feature_test_sets = {}
@@ -262,7 +300,7 @@ class DataLoader:
             if name not in columns:
                 raise ValueError(f"Feature '{name}' not in columns")
             
-            if spec.iotype == 'input':
+            if spec.iotype.lower() == 'input':
                 inputs.add(name)
             elif spec.iotype == 'output':
                 outputs.add(name)
@@ -271,3 +309,7 @@ class DataLoader:
             raise ValueError("No inputs specified!")
         if len(outputs) == 0:
             raise ValueError("No outputs specified!")
+
+    @property
+    def feature_specs(self):
+        return self._feature_specs
