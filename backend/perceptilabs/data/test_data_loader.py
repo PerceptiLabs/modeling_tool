@@ -10,7 +10,6 @@ from skimage.io import imsave
 from perceptilabs.data.base import DataLoader, FeatureSpec
 
 
-@pytest.mark.tf2x
 def test_basic_structure_ok():
     data = [[1.0, 2.0, 3.0, 4.0], [1.0, 2.0, 3.0, 4.0], [1.0, 2.0, 3.0, 4.0]]
     df = pd.DataFrame(data, columns=['x1', 'x2','y1', 'y2']) 
@@ -31,7 +30,6 @@ def test_basic_structure_ok():
         assert targets['y2'].numpy() == 4.0        
 
 
-@pytest.mark.tf2x
 def test_ints_are_converted_to_float():
     data = [[0, 0], [1, 1], [4, 4]]
     df = pd.DataFrame(data, columns=['x1', 'x2']) 
@@ -49,7 +47,6 @@ def test_ints_are_converted_to_float():
         assert targets['x2'].dtype == tf.float32        
 
         
-@pytest.mark.tf2x
 def test_image_data_is_loaded_correctly(temp_path):
     image = np.random.randint(0, 255, (32, 32, 3), dtype=np.uint8)
     expected_image = image.astype(np.float32)
@@ -72,7 +69,6 @@ def test_image_data_is_loaded_correctly(temp_path):
         assert np.all(np.isclose(actual_image, expected_image, atol=1))
 
         
-@pytest.mark.tf2x
 def test_splitting():
     data = [[1, -1], [1, -1], [1, -1], [2, -2], [2, -2], [3, -3]]
     df = pd.DataFrame(data, columns=['x1', 'x2']) 
@@ -111,7 +107,6 @@ def test_splitting():
     )
 
 
-@pytest.mark.tf2x
 def test_splitting_rows_are_preserved():  # I.e., check that columns arent shuffled differently
     data = [[1.0, 1.0], [2.0, 2.0], [3.0, 3.0], [4.0, 4.0], [5.0, 5.0], [6.0, 6.0]]
     df = pd.DataFrame(data, columns=['x1', 'x2']) 
@@ -143,7 +138,6 @@ def test_splitting_rows_are_preserved():  # I.e., check that columns arent shuff
     )
     
 
-@pytest.mark.tf2x
 def test_get_dataset_size():
     data = [[1, -1], [1, -1], [1, -1], [2, -2], [2, -2], [3, -3]]
     df = pd.DataFrame(data, columns=['x1', 'x2']) 

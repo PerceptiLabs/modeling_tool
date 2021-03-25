@@ -3,7 +3,6 @@ from perceptilabs.modelrecommender import ModelRecommender
 from perceptilabs.data.base import FeatureSpec
 
 
-@pytest.mark.tf2x    
 def test_single_numerical_input_and_output_gives_basic_network():
     feature_specs={
         'x1': FeatureSpec('numerical', 'input'),
@@ -23,7 +22,6 @@ def test_single_numerical_input_and_output_gives_basic_network():
     assert len(ordered_layers) > 2 # must have some form of encoder/decoder
     
 
-@pytest.mark.tf2x    
 def test_image_input_and_numerical_output_gives_basic_network():
     feature_specs={
         'x1': FeatureSpec('image', 'input'),

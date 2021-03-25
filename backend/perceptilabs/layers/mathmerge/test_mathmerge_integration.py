@@ -12,6 +12,7 @@ def script_factory():
     yield ScriptFactory()
 
 
+@pytest.mark.pre_datawizard
 def test_concat_vertically(script_factory):
     layer_spec = MathMergeSpec(
         id_='layer_id',
@@ -29,13 +30,13 @@ def test_concat_vertically(script_factory):
     y = tf.constant(np.random.random((16, 12, 3)))
     z = layer({'input1': x, 'input2': y})    
 
-    with tf.Session() as sess:
-        sess.run(tf.global_variables_initializer())
+    with tf.compat.v1.Session() as sess:
+        sess.run(tf.compat.v1.global_variables_initializer())
         output = sess.run(z)
     
     assert output['output'].shape == (16, 22, 3)
 
-@pytest.mark.tf2x
+    
 def test_tf2x_concat_horizontally(script_factory_tf2x):
     layer_spec = MathMergeSpec(
         id_='layer_id',
@@ -55,7 +56,7 @@ def test_tf2x_concat_horizontally(script_factory_tf2x):
 
     assert z['output'].shape == (32, 10, 3)
 
-@pytest.mark.tf2x
+    
 def test_tf2x_concat_vertically(script_factory_tf2x):
     layer_spec = MathMergeSpec(
         id_='layer_id',
@@ -75,7 +76,7 @@ def test_tf2x_concat_vertically(script_factory_tf2x):
 
     assert z['output'].shape == (16, 22, 3)
 
-@pytest.mark.tf2x
+    
 def test_tf2x_merge_add(script_factory_tf2x):
     layer_spec = MathMergeSpec(
         id_='layer_id',
@@ -98,7 +99,7 @@ def test_tf2x_merge_add(script_factory_tf2x):
     assert z['output'].shape == (16, 10, 3)
     assert np.isclose(z['output'], expected).all()
 
-@pytest.mark.tf2x
+    
 def test_tf2x_merge_subtract(script_factory_tf2x):
     layer_spec = MathMergeSpec(
         id_='layer_id',
@@ -121,7 +122,7 @@ def test_tf2x_merge_subtract(script_factory_tf2x):
     assert z['output'].shape == (16, 10, 3)
     assert np.isclose(z['output'], expected).all()
 
-@pytest.mark.tf2x
+    
 def test_tf2x_merge_multiply(script_factory_tf2x):
     layer_spec = MathMergeSpec(
         id_='layer_id',
@@ -145,7 +146,6 @@ def test_tf2x_merge_multiply(script_factory_tf2x):
     assert np.isclose(z['output'], expected).all()
 
 
-@pytest.mark.tf2x
 def test_tf2x_merge_divide(script_factory_tf2x):
     layer_spec = MathMergeSpec(
         id_='layer_id',

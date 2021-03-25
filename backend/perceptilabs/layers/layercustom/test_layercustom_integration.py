@@ -10,6 +10,7 @@ def script_factory():
     yield ScriptFactory()
 
 
+@pytest.mark.skip  # TODO(anton.k): remove marker in story 1779
 def test_default_returns_inputs(script_factory):
     layer_spec = LayerCustomSpec(
         id_='layer_id',

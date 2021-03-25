@@ -24,10 +24,8 @@ setup_sentry(COMMIT_ID)
 set_sentry_tag('error-type', 'startup-error')
 
 
-if utils.is_tf2x():
-    tf.enable_v2_behavior()
-else:
-    tf.disable_v2_behavior()    
+if utils.is_tf1x():
+    tf.compat.v1.disable_v2_behavior()    
 
     
 def get_input_args():

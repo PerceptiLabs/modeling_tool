@@ -68,7 +68,8 @@ def graph_spec_distr(make_graph_spec, temp_path, temp_path_checkpoints):
     )        
     yield graph_spec
 
-    
+
+@pytest.mark.pre_datawizard                
 def test_syntax(script_factory):
     layer_spec = TrainClassificationSpec(
         id_='layer_id',
@@ -87,8 +88,9 @@ def test_syntax(script_factory):
     except SyntaxError as e:
         pytest.fail("Raised syntax error: " + repr(e))
         raise
-    
 
+    
+@pytest.mark.pre_datawizard            
 def test_can_instantiate(script_factory):
     layer_spec = TrainClassificationSpec(
         id_='layer_id',
@@ -110,7 +112,8 @@ def test_can_instantiate(script_factory):
     except Exception as e:
         pytest.fail("Raised error on instantiation! " + repr(e))
 
-
+        
+@pytest.mark.pre_datawizard            
 def test_get_prediction_data_layer(script_factory, graph_spec):
     training_layer = graph_spec.training_layer        
     actual = training_layer.get_prediction_data_layer(graph_spec)
@@ -118,6 +121,7 @@ def test_get_prediction_data_layer(script_factory, graph_spec):
     assert actual == expected
 
     
+@pytest.mark.pre_datawizard                
 def test_get_target_data_layer(script_factory, graph_spec):
     training_layer = graph_spec.training_layer    
     actual = training_layer.get_target_data_layer(graph_spec)
@@ -125,6 +129,7 @@ def test_get_target_data_layer(script_factory, graph_spec):
     assert actual == expected
 
 
+@pytest.mark.pre_datawizard                
 def test_get_prediction_inner_layers(script_factory, graph_spec):
     training_layer = graph_spec.training_layer
     actual = training_layer.get_prediction_inner_layers(graph_spec)
@@ -132,13 +137,15 @@ def test_get_prediction_inner_layers(script_factory, graph_spec):
     assert actual == expected
 
     
+@pytest.mark.pre_datawizard            
 def test_get_target_inner_layers(script_factory, graph_spec):
     training_layer = graph_spec.training_layer    
     actual = training_layer.get_target_inner_layers(graph_spec)
     expected = []
     assert actual == expected
     
-        
+
+@pytest.mark.pre_datawizard    
 def test_can_yield(script_factory, graph_spec):
     graph = graph_spec_to_core_graph(script_factory, graph_spec)
 
@@ -148,7 +155,9 @@ def test_can_yield(script_factory, graph_spec):
         pytest.fail("Raised error on run!\n" + traceback_from_exception(e))
 
     #tf.reset_default_graph()
-        
+
+
+@pytest.mark.pre_datawizard        
 def test_convergence(script_factory, graph_spec):
     graph = graph_spec_to_core_graph(script_factory, graph_spec)
     
@@ -170,6 +179,7 @@ def test_convergence(script_factory, graph_spec):
     assert converged
 
     
+@pytest.mark.pre_datawizard        
 def test_save_model(script_factory, graph_spec, temp_path):
     graph = graph_spec_to_core_graph(script_factory, graph_spec)    
 
@@ -183,8 +193,9 @@ def test_save_model(script_factory, graph_spec, temp_path):
     training_layer.on_export(temp_path, mode='TFModel')
     assert os.path.isfile(target_path)
     #tf.reset_default_graph()    
+
     
-    
+@pytest.mark.pre_datawizard        
 def test_save_checkpoint(script_factory, graph_spec, temp_path_checkpoints):
     checkpoint_path = temp_path_checkpoints
     os.makedirs(checkpoint_path, exist_ok=True)
@@ -202,7 +213,9 @@ def test_save_checkpoint(script_factory, graph_spec, temp_path_checkpoints):
     #tf.reset_default_graph()
     shutil.rmtree(checkpoint_path)
 
+    
 @pytest.mark.skip
+@pytest.mark.pre_datawizard    
 def test_initial_weights_differ(make_graph_spec, script_factory, temp_path, temp_path_checkpoints):
     """ Check that the weights are DIFFERENT when creating two graphs. If not, it might not be meaningful to test loading a checkpoint """
     inputs_path = os.path.join(temp_path, '16x4_inputs.npy')
@@ -237,6 +250,7 @@ def test_initial_weights_differ(make_graph_spec, script_factory, temp_path, temp
     assert np.all(w1 != w2)
     
 
+@pytest.mark.pre_datawizard        
 def test_load_checkpoint(make_graph_spec, script_factory, temp_path, temp_path_checkpoints):
     checkpoint_path = os.path.join(temp_path, "checkpoint")
     
@@ -279,7 +293,7 @@ def test_load_checkpoint(make_graph_spec, script_factory, temp_path, temp_path_c
     #tf.reset_default_graph()
     assert np.all(w1 == w2)
     
-
+@pytest.mark.pre_datawizard    
 def test_syntax_distributed(script_factory):
     layer_spec = TrainClassificationSpec(
         id_='layer_id',
@@ -300,7 +314,9 @@ def test_syntax_distributed(script_factory):
         pytest.fail("Raised syntax error: " + repr(e))
         raise
     #tf.reset_default_graph()
-    
+
+
+@pytest.mark.pre_datawizard        
 def test_can_instantiate_distributed(script_factory):
     layer_spec = TrainClassificationSpec(
         id_='layer_id',
@@ -324,7 +340,8 @@ def test_can_instantiate_distributed(script_factory):
         pytest.fail("Raised error on instantiation! " + repr(e))
     #tf.reset_default_graph()
 
-    
+
+@pytest.mark.pre_datawizard            
 def test_can_yield_distributed(script_factory, graph_spec_distr):
     graph = graph_spec_to_core_graph(script_factory, graph_spec_distr)
 
@@ -334,7 +351,8 @@ def test_can_yield_distributed(script_factory, graph_spec_distr):
         pytest.fail("Raised error on run!\n" + traceback_from_exception(e))
     #tf.reset_default_graph()
 
-    
+
+@pytest.mark.pre_datawizard        
 def test_convergence_distributed(script_factory, graph_spec_distr):
     graph = graph_spec_to_core_graph(script_factory, graph_spec_distr)
     
@@ -356,6 +374,7 @@ def test_convergence_distributed(script_factory, graph_spec_distr):
     assert converged
 
     
+@pytest.mark.pre_datawizard        
 def test_save_model_distributed(script_factory, graph_spec_distr, temp_path):
     graph = graph_spec_to_core_graph(script_factory, graph_spec_distr)    
 
@@ -369,7 +388,8 @@ def test_save_model_distributed(script_factory, graph_spec_distr, temp_path):
     training_layer.on_export(temp_path, mode='TFModel')
     assert os.path.isfile(target_path)
 
-    
+
+@pytest.mark.pre_datawizard        
 def test_save_checkpoint_distributed(script_factory, graph_spec_distr, temp_path):
     graph = graph_spec_to_core_graph(script_factory, graph_spec_distr)
         
@@ -383,7 +403,8 @@ def test_save_checkpoint_distributed(script_factory, graph_spec_distr, temp_path
     assert any(x.startswith('model.ckpt') for x in os.listdir(temp_path))
 
 
-@pytest.mark.skip    
+@pytest.mark.skip
+@pytest.mark.pre_datawizard    
 def test_initial_weights_differ_distributed(make_graph_spec, script_factory, temp_path, temp_path_checkpoints):
     """ Check that the weights are DIFFERENT when creating two graphs. If not, it might not be meaningful to test loading a checkpoint """
     inputs_path = os.path.join(temp_path, '16x4_inputs.npy')
@@ -419,7 +440,8 @@ def test_initial_weights_differ_distributed(make_graph_spec, script_factory, tem
 
     assert np.all(w1 != w2)
 
-    
+
+@pytest.mark.pre_datawizard        
 def test_load_checkpoint_distributed(make_graph_spec, script_factory, temp_path, temp_path_checkpoints):
     inputs_path = os.path.join(temp_path, '16x4_inputs.npy')
     targets_path = os.path.join(temp_path, '16x4_targets.npy')
@@ -469,7 +491,6 @@ def test_can_convert_to_dict_and_back(graph_spec):
     assert dict_ == dict_1
 
 
-@pytest.mark.tf2x    
 def test_tf2x_syntax(script_factory_tf2x):
     layer_spec = TrainClassificationSpec(
         id_='layer_id',
@@ -490,7 +511,6 @@ def test_tf2x_syntax(script_factory_tf2x):
         raise
     
 
-@pytest.mark.tf2x    
 def test_tf2x_can_instantiate(script_factory_tf2x):
     layer_spec = TrainClassificationSpec(
         id_='layer_id',
@@ -513,7 +533,6 @@ def test_tf2x_can_instantiate(script_factory_tf2x):
         pytest.fail("Raised error on instantiation! " + repr(e))
 
 
-@pytest.mark.tf2x            
 def test_tf2x_can_yield(script_factory_tf2x, graph_spec):
     graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec, print_code=True)
 
@@ -523,7 +542,6 @@ def test_tf2x_can_yield(script_factory_tf2x, graph_spec):
         pytest.fail("Raised error on run!\n" + traceback_from_exception(e))
 
 
-@pytest.mark.tf2x            
 def test_tf2x_progress_reaches_status_training(script_factory_tf2x, graph_spec_few_epochs):
     graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec_few_epochs)
     
@@ -543,7 +561,6 @@ def test_tf2x_progress_reaches_status_training(script_factory_tf2x, graph_spec_f
     assert reached_condition
 
 
-@pytest.mark.tf2x            
 def test_tf2x_progress_reaches_status_finished(script_factory_tf2x, graph_spec_few_epochs):
     graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec_few_epochs)
     
@@ -564,7 +581,6 @@ def test_tf2x_progress_reaches_status_finished(script_factory_tf2x, graph_spec_f
     
         
 
-@pytest.mark.tf2x            
 def test_tf2x_progress_reaches_one(script_factory_tf2x, graph_spec_few_epochs):
     graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec_few_epochs)
     
@@ -584,7 +600,6 @@ def test_tf2x_progress_reaches_one(script_factory_tf2x, graph_spec_few_epochs):
     assert reached_one
 
     
-@pytest.mark.tf2x            
 def test_tf2x_layer_output_values_set(script_factory_tf2x, graph_spec_few_epochs):
     graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec_few_epochs)
     
@@ -602,7 +617,6 @@ def test_tf2x_layer_output_values_set(script_factory_tf2x, graph_spec_few_epochs
     assert values_set
 
 
-@pytest.mark.tf2x            
 def test_tf2x_layer_weights_and_biases_set(script_factory_tf2x, graph_spec_few_epochs):
     graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec_few_epochs)
     
@@ -625,7 +639,6 @@ def test_tf2x_layer_weights_and_biases_set(script_factory_tf2x, graph_spec_few_e
     assert values_set
 
 
-@pytest.mark.tf2x            
 def test_tf2x_layer_gradients_set(script_factory_tf2x, graph_spec_few_epochs):
     graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec_few_epochs)
     
@@ -648,7 +661,6 @@ def test_tf2x_layer_gradients_set(script_factory_tf2x, graph_spec_few_epochs):
     assert values_set
 
     
-@pytest.mark.tf2x            
 def test_tf2x_layer_metrics_set(script_factory_tf2x, graph_spec_few_epochs):
     graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec_few_epochs)
     
@@ -675,7 +687,6 @@ def test_tf2x_layer_metrics_set(script_factory_tf2x, graph_spec_few_epochs):
     assert values_set
 
     
-@pytest.mark.tf2x            
 def test_tf2x_convergence(script_factory_tf2x, graph_spec):
     graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec, print_code=True)
     
@@ -697,7 +708,6 @@ def test_tf2x_convergence(script_factory_tf2x, graph_spec):
     assert converged
 
 
-@pytest.mark.tf2x            
 def test_tf2x_policy_dict_is_not_empty(script_factory_tf2x, graph_spec):
     from perceptilabs.core_new.policies import policy_classification
     
@@ -727,7 +737,6 @@ def test_tf2x_policy_dict_is_not_empty(script_factory_tf2x, graph_spec):
     assert results
     
 
-@pytest.mark.tf2x            
 def test_tf2x_early_stopping_on_training_accuracy(script_factory_tf2x, graph_spec_early_stopping):
     graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec_early_stopping, print_code=True)
     
@@ -747,7 +756,6 @@ def test_tf2x_early_stopping_on_training_accuracy(script_factory_tf2x, graph_spe
     )
 
     
-@pytest.mark.tf2x            
 def test_tf2x_layer_auc_set(script_factory_tf2x, graph_spec_few_epochs):
     graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec_few_epochs)
     
@@ -773,7 +781,6 @@ def test_tf2x_layer_auc_set(script_factory_tf2x, graph_spec_few_epochs):
     assert values_set
 
     
-@pytest.mark.tf2x            
 def test_tf2x_export_tfmodel_can_load_and_predict(temp_path, script_factory_tf2x, graph_spec_few_epochs):
     graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec_few_epochs)
     
@@ -791,7 +798,6 @@ def test_tf2x_export_tfmodel_can_load_and_predict(temp_path, script_factory_tf2x
     assert isinstance(loaded_model.predict({'output': np.random.random((1, 4))}), np.ndarray)
 
 
-@pytest.mark.tf2x            
 def test_tf2x_save_weights_automatically(temp_path, script_factory_tf2x, graph_spec_few_epochs):
     graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec_few_epochs)
     
@@ -809,7 +815,6 @@ def test_tf2x_save_weights_automatically(temp_path, script_factory_tf2x, graph_s
     )
 
 
-@pytest.mark.tf2x            
 def test_tf2x_load_weights(temp_path, script_factory_tf2x, graph_spec_few_epochs):
     
     def has_equal_weights(tl1, tl2):
@@ -850,7 +855,6 @@ def test_tf2x_load_weights(temp_path, script_factory_tf2x, graph_spec_few_epochs
     assert has_equal_weights(training_layer2, training_layer1)
 
 
-@pytest.mark.tf2x            
 def test_tf2x_test_mode_yields_correct_number_of_outputs(script_factory_tf2x, graph_spec):
     graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec, print_code=True)
     
@@ -858,7 +862,6 @@ def test_tf2x_test_mode_yields_correct_number_of_outputs(script_factory_tf2x, gr
     assert n_yields == 2 # 10% of dataset
 
     
-@pytest.mark.tf2x            
 def test_tf2x_headless_mode_gives_empty_dicts(script_factory_tf2x, graph_spec):
     graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec)
     

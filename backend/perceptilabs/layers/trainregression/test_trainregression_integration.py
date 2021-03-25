@@ -23,6 +23,7 @@ from perceptilabs.graph.spec import GraphSpec
 def script_factory():
     yield ScriptFactory()
 
+    
 @pytest.fixture()
 def graph_spec(temp_path_100x1, temp_path_checkpoints):
     graph_spec = make_graph_spec(
@@ -97,6 +98,7 @@ def make_graph_spec(temp_path_checkpoints, inputs_path, targets_path, learning_r
     return graph_spec
 
 
+@pytest.mark.pre_datawizard            
 def test_syntax(script_factory):
     layer_spec = TrainRegressionSpec(
         id_='layer_id',
@@ -117,6 +119,7 @@ def test_syntax(script_factory):
         raise
     
 
+@pytest.mark.pre_datawizard                
 def test_can_instantiate(script_factory):
     layer_spec = TrainRegressionSpec(
         id_='layer_id',
@@ -138,7 +141,8 @@ def test_can_instantiate(script_factory):
     except Exception as e:
         pytest.fail("Raised error on instantiation! " + repr(e))
 
-        
+
+@pytest.mark.pre_datawizard                    
 def test_can_yield(script_factory, graph_spec):
     graph = graph_spec_to_core_graph(script_factory, graph_spec)
 
@@ -148,6 +152,7 @@ def test_can_yield(script_factory, graph_spec):
         pytest.fail("Raised error on run!\n" + traceback_from_exception(e))
 
 
+@pytest.mark.pre_datawizard                    
 def test_convergence(script_factory, graph_spec):
     graph = graph_spec_to_core_graph(script_factory, graph_spec)
     
@@ -172,7 +177,8 @@ def test_convergence(script_factory, graph_spec):
             
     assert converged
 
-
+    
+@pytest.mark.pre_datawizard            
 def test_save_model(script_factory, graph_spec, temp_path_100x1):
     graph = graph_spec_to_core_graph(script_factory, graph_spec)    
 
@@ -186,6 +192,8 @@ def test_save_model(script_factory, graph_spec, temp_path_100x1):
     training_layer.on_export(temp_path_100x1, mode='TFModel')
     assert os.path.isfile(target_path)  
 
+
+@pytest.mark.pre_datawizard                
 def test_save_checkpoint(script_factory, graph_spec, temp_path_100x1):
     graph = graph_spec_to_core_graph(script_factory, graph_spec)
         
@@ -199,7 +207,8 @@ def test_save_checkpoint(script_factory, graph_spec, temp_path_100x1):
     assert any(x.startswith('model.ckpt') for x in os.listdir(temp_path_100x1))
 
     
-@pytest.mark.skip    
+@pytest.mark.skip
+@pytest.mark.pre_datawizard            
 def test_initial_weights_differ(script_factory, temp_path_100x1, temp_path_checkpoints):
     """ Check that the weights are DIFFERENT when creating two graphs. If not, it might not be meaningful to test loading a checkpoint """
     inputs_path = os.path.join(temp_path_100x1, '100x1_inputs.npy')
@@ -233,7 +242,8 @@ def test_initial_weights_differ(script_factory, temp_path_100x1, temp_path_check
     
     assert np.all(w1 != w2)
 
-    
+
+@pytest.mark.pre_datawizard                
 def test_load_checkpoint(script_factory, temp_path_100x1, temp_path_checkpoints):
     inputs_path = os.path.join(temp_path_100x1, '100x1_inputs.npy')
     targets_path = os.path.join(temp_path_100x1, '100x1_outputs.npy')

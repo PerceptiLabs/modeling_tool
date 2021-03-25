@@ -8,7 +8,7 @@ from perceptilabs.layers.helper import LayerHelper
 from perceptilabs.layers.processonehot.spec import ProcessOneHotSpec
 from perceptilabs.layers.specbase import LayerConnection
 
-
+@pytest.mark.pre_datawizard
 def test_one_hot_sum_of_output_equals_number_of_samples(script_factory):
     n_classes = 3
     
@@ -24,14 +24,13 @@ def test_one_hot_sum_of_output_equals_number_of_samples(script_factory):
     x = np.array([[x+1] for x in range(n_classes)])
     y = layer({'input': tf.constant(x)})    
 
-    with tf.Session() as sess:        
+    with tf.compat.v1.Session() as sess:        
         actual = np.sum(sess.run(y)['output'])
         
     expected = len(x) - 1
     assert actual == expected
 
 
-@pytest.mark.tf2x    
 def test_tf2x_one_hot_sum_of_output_equals_number_of_samples(script_factory_tf2x):
     n_classes = 3
     

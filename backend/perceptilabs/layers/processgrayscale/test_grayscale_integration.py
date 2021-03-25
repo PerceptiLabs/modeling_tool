@@ -9,7 +9,6 @@ from perceptilabs.layers.processgrayscale.spec import ProcessGrayscaleSpec
 from perceptilabs.layers.specbase import LayerConnection
 
 
-@pytest.mark.tf2x
 def test_grayscale_8x8x3_to_8x8x1(script_factory_tf2x):
     layer_spec = ProcessGrayscaleSpec(
         id_='layer_id',
@@ -24,7 +23,7 @@ def test_grayscale_8x8x3_to_8x8x1(script_factory_tf2x):
     
     assert y['output'].shape == (8, 8, 1)
 
-@pytest.mark.tf2x
+    
 def test_grayscale_8x8x6_to_8x8x2(script_factory_tf2x):
     layer_spec = ProcessGrayscaleSpec(
         id_='layer_id',

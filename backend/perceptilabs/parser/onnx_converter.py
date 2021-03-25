@@ -5,7 +5,7 @@ import keras2onnx
 import sys
 import os
 from google.protobuf import text_format
-from tensorflow.graph_util import convert_variables_to_constants as freeze_graph
+from tensorflow.compat.v1.graph_util import convert_variables_to_constants as freeze_graph
 from tensorflow.python.platform import gfile
 
 

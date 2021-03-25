@@ -5,7 +5,6 @@ import tensorflow as tf
 from perceptilabs.data.pipelines import build_categorical_pipelines
 
 
-@pytest.mark.tf2x
 def test_categorical_preprocessing():
     values = ['cat', 'dog', 'car', 'car']
     expected = [
@@ -23,7 +22,6 @@ def test_categorical_preprocessing():
     assert actual == expected
 
     
-@pytest.mark.tf2x
 def test_categorical_preprocessing_when_values_are_numerical():
     values = [1, 2, 3, 3]
     expected = [
@@ -41,7 +39,6 @@ def test_categorical_preprocessing_when_values_are_numerical():
     assert actual == expected
 
 
-@pytest.mark.tf2x
 def test_categorical_postprocessing():
     expected = ['cat', 'dog', 'car', 'car']
     

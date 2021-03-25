@@ -2,7 +2,7 @@ import itertools
 import logging
 
 import numpy as np
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
 
 from perceptilabs.lwcore.results import LayerResults
 from perceptilabs.lwcore.strategies.base import JinjaLayerStrategy, TrainingStrategy
@@ -119,7 +119,7 @@ class Tf1xTrainingStrategy(TrainingStrategy):
     def _create_graph_and_run(self, layer_spec, graph_spec, line_offset):
         """ Create the graph object and run it """
         with tf.Graph().as_default() as tfgraph:
-            graph = self._create_graph(graph_spec)  
+            graph = self._create_graph(graph_spec)
             if graph is not None:
                 sample, shape, variables, strategy_error = self._run_training_layer(graph, layer_spec, line_offset)
             else:

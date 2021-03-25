@@ -15,7 +15,8 @@ from perceptilabs.layers.datarandom.spec import DataRandomSpec
 def script_factory():
     yield ScriptFactory()
 
-
+    
+@pytest.mark.pre_datawizard    
 def test_shape_is_ok(script_factory):
     expected_shape = (12, 34, 56)
     
@@ -31,6 +32,8 @@ def test_shape_is_ok(script_factory):
 
     assert actual_shape == expected_shape
 
+
+@pytest.mark.pre_datawizard    
 def test_make_generator_sequence_unaffected_by_numpy_seed_call(script_factory):
 
     layer_spec = DataRandomSpec(

@@ -49,16 +49,17 @@ def set_seeds():
 @pytest.fixture(autouse=True)
 def init_graph(request):
     #reference: https://stackoverflow.com/questions/56719066/reset-default-graph-upon-exiting-tf-session-in-unit-tests
-    tf.reset_default_graph()
-    tf.enable_v2_behavior()
-    
-    if 'tf2x' in request.keywords:
-        tf.enable_eager_execution()
-        yield
-    else:
-        tf.disable_eager_execution()        
+    if 'pre_datawizard' in request.keywords:
+        tf.compat.v1.disable_v2_behavior()
+        tf.compat.v1.disable_eager_execution()                
+        tf.compat.v1.reset_default_graph()
+
         with tf.Graph().as_default():
             yield
+    else:
+        tf.compat.v1.enable_v2_behavior()        
+        tf.compat.v1.enable_eager_execution()
+        yield
 
     
 @pytest.fixture(scope='function')

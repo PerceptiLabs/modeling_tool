@@ -5,7 +5,6 @@ import tensorflow as tf
 from perceptilabs.data.pipelines import build_numerical_pipelines
 
 
-@pytest.mark.tf2x
 def test_numerical_postprocessing():
     expected = [1.0, 2.0, 3.0]
     

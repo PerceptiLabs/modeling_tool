@@ -393,8 +393,8 @@ def run_cython_test():
 def run_pytest_tests():
     print("Running python tests")
     with pushd(BACKEND_SRC):
-        run_checked("python -m pytest -rfe -m tf2x", env={'PL_TF2X': '123'})
-        run_checked_arr(['python', '-m', 'pytest', '-rfe', '-m', """not tf2x"""])
+        run_checked_arr(['python', '-m', 'pytest', '-rfe', '-m', """not pre_datawizard"""], env={'PL_TF2X': '123'})
+        run_checked("python -m pytest -rfe -m pre_datawizard")  # Run pre-datawizard stuff in a separate process
 
 def run_django_tests():
     print("Running django tests")

@@ -29,7 +29,7 @@ def test_mathswitch_basic(script_factory):
     z = layer({'input1': x, 'input2': y})
     assert z['output'].shape == y.shape
 
-@pytest.mark.tf2x
+    
 def test_mathswitch_basic_tf2x(script_factory_tf2x):
     layer_spec = MathSwitchSpec(
         id_='layer_id',

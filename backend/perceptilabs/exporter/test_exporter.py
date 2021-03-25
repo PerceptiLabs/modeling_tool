@@ -68,7 +68,6 @@ def graph_spec_few_epochs(csv_path):
     return graph_spec
 
 
-@pytest.mark.tf2x
 def test_create_exporter_from_graph(script_factory_tf2x, graph_spec_few_epochs, temp_path):
     # Use data loader to feed data through the model
     training_model = TrainingModel(script_factory_tf2x, graph_spec_few_epochs)
@@ -76,7 +75,6 @@ def test_create_exporter_from_graph(script_factory_tf2x, graph_spec_few_epochs, 
     assert exporter is not None
 
 
-@pytest.mark.tf2x
 def test_save_training_model_weights(script_factory_tf2x, graph_spec_few_epochs, temp_path):
     # Use data loader to feed data through the model
     training_model = TrainingModel(script_factory_tf2x, graph_spec_few_epochs)

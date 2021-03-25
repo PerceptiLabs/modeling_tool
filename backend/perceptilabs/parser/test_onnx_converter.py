@@ -1,5 +1,5 @@
 import pytest
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
 from perceptilabs.parser.onnx_converter import create_onnx_from_tf1x, create_onnx_from_keras
 import os
 
@@ -22,7 +22,7 @@ def test_onnx_existence_tf2x():
 
 def test_onnx_existence_tf1x():
     onnx_model = None
-    with tf.compat.v1.Session() as sess:
+    with tf.Session() as sess:
         x = tf.placeholder(tf.float32, [2, 3], name="input")
         x_ = tf.add(x, x)
         _ = tf.identity(x_, name="output")

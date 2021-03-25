@@ -462,7 +462,7 @@
 
         trackable_variables = {}
         trackable_variables.update({x.name: x for x in tf.trainable_variables() if isinstance(x, Trackable)})
-        trackable_variables.update({k: v for k, v in locals().items() if isinstance(v, Trackable) and not isinstance(v, tf.python.data.ops.iterator_ops.Iterator)})
+        trackable_variables.update({k: v for k, v in locals().items() if isinstance(v, Trackable) and not isinstance(v, tf.compat.v1.data.Iterator)})
         self._checkpoint = tf.train.Checkpoint(**trackable_variables)
         
         sess.run(tf.global_variables_initializer())
@@ -844,8 +844,7 @@
                     if type(node) is dict:
                         nested_dict[variable] = reduce_per_replica(node)
                     else:
-                        tensors = [node.get(device) for device in node.devices \
-                                if node.get(device) is not None]
+                        tensors = node.values
                         nested_dict[variable] = tensors[0]
                 return nested_dict
 
@@ -854,7 +853,7 @@
                 layer_outputs_train, layer_weights_train, layer_biases_train, \
                 layer_gradients_train = strategy.experimental_run(train_step, train_iterator)
 
-            dist_loss_train = [dist_loss_train.get(device) for device in dist_loss_train.devices]
+            dist_loss_train = dist_loss_train.values
             loss_train = tf.reduce_sum(dist_loss_train)
 
             accuracy_train = tf.reduce_mean(accuracy_train.values)

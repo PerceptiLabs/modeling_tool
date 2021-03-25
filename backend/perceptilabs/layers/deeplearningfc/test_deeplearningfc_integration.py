@@ -8,7 +8,8 @@ from perceptilabs.layers.helper import LayerHelper
 from perceptilabs.layers.deeplearningfc.spec import DeepLearningFcSpec
 from perceptilabs.layers.specbase import LayerConnection
 
-    
+
+@pytest.mark.pre_datawizard    
 def test_fully_connected_1x1_should_be_normal_multiplication(script_factory):
     layer_spec = DeepLearningFcSpec(
         id_='layer_id',
@@ -24,8 +25,8 @@ def test_fully_connected_1x1_should_be_normal_multiplication(script_factory):
     x = 32*np.ones((1, 1))
     y = layer({'input': tf.constant(x)})
 
-    with tf.Session() as sess:    
-        sess.run(tf.global_variables_initializer())
+    with tf.compat.v1.Session() as sess:    
+        sess.run(tf.compat.v1.global_variables_initializer())
         w = sess.run(next(iter(layer.weights.values())))
         b = sess.run(next(iter(layer.biases.values())))
 
@@ -36,7 +37,7 @@ def test_fully_connected_1x1_should_be_normal_multiplication(script_factory):
 
     assert np.isclose(actual, expected)
 
-
+@pytest.mark.pre_datawizard
 def test_fully_connected_zero_keep_prob_equals_zero_output(script_factory):
     """ If the keep probability is low the expected output should be zero """
 
@@ -59,8 +60,8 @@ def test_fully_connected_zero_keep_prob_equals_zero_output(script_factory):
     n_fails = 0
     n_trials = 50
     for i in range(n_trials):
-        with tf.Session() as sess:    
-            sess.run(tf.global_variables_initializer())
+        with tf.compat.v1.Session() as sess:    
+            sess.run(tf.compat.v1.global_variables_initializer())
             output = sess.run(y)['output']
 
             if np.any(output != 0):
@@ -68,7 +69,8 @@ def test_fully_connected_zero_keep_prob_equals_zero_output(script_factory):
 
     assert n_fails/n_trials <= 1/50 # Allow 1/50 to be a failure
 
-
+    
+@pytest.mark.pre_datawizard
 def test_fully_connected_is_training_overrides_dropout(script_factory):
     layer_spec = DeepLearningFcSpec(
         id_='layer_id',
@@ -86,8 +88,8 @@ def test_fully_connected_is_training_overrides_dropout(script_factory):
 
 
     # To rule out chance: evaluate the layer several times and assert outputs are non-zero on average
-    with tf.Session() as sess:    
-        sess.run(tf.global_variables_initializer())
+    with tf.compat.v1.Session() as sess:    
+        sess.run(tf.compat.v1.global_variables_initializer())
         output = sess.run(y)['output']
         assert not np.allclose(output, 0)
 
@@ -117,7 +119,6 @@ def test_tf2x_fully_connected_1x1_should_be_normal_multiplication(script_factory
     assert np.isclose(actual, expected)
 
 
-@pytest.mark.tf2x                
 def test_tf2x_fully_connected_batch_norm_is_applied(script_factory_tf2x):
     layer_spec = DeepLearningFcSpec(
         id_='layer_id',
@@ -149,7 +150,6 @@ def test_tf2x_fully_connected_batch_norm_is_applied(script_factory_tf2x):
     assert np.all(np.isclose(actual, expected))
     
 
-@pytest.mark.tf2x                
 def test_tf2x_fully_connected_batch_norm_uses_initial_params_when_not_training(script_factory_tf2x):
     layer_spec = DeepLearningFcSpec(
         id_='layer_id',
@@ -181,7 +181,6 @@ def test_tf2x_fully_connected_batch_norm_uses_initial_params_when_not_training(s
     assert np.all(np.isclose(actual, expected, rtol=1e-03))
     
  
-@pytest.mark.tf2x                
 def test_tf2x_fully_connected_1x1_with_no_activation(script_factory_tf2x):
     layer_spec = DeepLearningFcSpec(
         id_='layer_id',
@@ -204,7 +203,6 @@ def test_tf2x_fully_connected_1x1_with_no_activation(script_factory_tf2x):
     assert np.isclose(actual, expected)
    
 
-@pytest.mark.tf2x                
 def test_tf2x_fully_connected_1x1_with_relu(script_factory_tf2x):
     layer_spec = DeepLearningFcSpec(
         id_='layer_id',
@@ -227,7 +225,6 @@ def test_tf2x_fully_connected_1x1_with_relu(script_factory_tf2x):
     assert np.isclose(actual, expected)
    
     
-@pytest.mark.tf2x                
 def test_tf2x_fully_connected_zero_keep_prob_equals_zero_output(script_factory_tf2x):
     """ If the keep probability is low the expected output should be zero """
 
@@ -248,7 +245,6 @@ def test_tf2x_fully_connected_zero_keep_prob_equals_zero_output(script_factory_t
     assert np.all(y['output'] == 0)
 
 
-@pytest.mark.tf2x                    
 def test_tf2x_fully_connected_is_training_overrides_dropout(script_factory_tf2x):
     layer_spec = DeepLearningFcSpec(
         id_='layer_id',

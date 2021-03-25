@@ -13,7 +13,6 @@ from perceptilabs.layers.ioinput.spec import InputLayerSpec
 from perceptilabs.data.base import FeatureSpec, DataLoader
 
 
-@pytest.mark.tf2x
 def test_tf2x_inner_result_has_shape(script_factory_tf2x, classification_spec_basic):
     layer_spec = classification_spec_basic['layer_fc']    
 
@@ -39,7 +38,6 @@ def test_tf2x_inner_result_has_shape(script_factory_tf2x, classification_spec_ba
     assert results.out_shape == expected
 
 
-@pytest.mark.tf2x
 def test_output_result_has_correct_value():
     df = pd.DataFrame({'x1': [123, 24, 13, 45], 'y1': [1, 2, 3, 4]})
     data_loader = DataLoader(
@@ -64,7 +62,7 @@ def test_output_result_has_correct_value():
     }
     assert results.sample == expected
 
-@pytest.mark.tf2x
+    
 def test_input_result_has_correct_value():
     df = pd.DataFrame({'x1': [123, 24, 13, 45], 'y1': [1, 2, 3, 4]})
     data_loader = DataLoader(

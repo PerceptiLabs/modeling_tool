@@ -23,6 +23,7 @@ def script_factory():
     yield ScriptFactory()
 
 
+@pytest.mark.pre_datawizard                
 def test_syntax(script_factory):
     layer_spec = TrainReinforceSpec(
         id_='layer_id',
@@ -34,6 +35,7 @@ def test_syntax(script_factory):
         pytest.fail("Raised syntax error!")
     
 
+@pytest.mark.pre_datawizard                    
 def test_can_instantiate(script_factory):
     layer_spec = TrainReinforceSpec(
         id_='layer_id',
@@ -44,7 +46,8 @@ def test_can_instantiate(script_factory):
     except Exception as e:
         pytest.fail("Raised error on instantiation! " + repr(e))
     
-        
+
+@pytest.mark.pre_datawizard                    
 def test_can_yield(script_factory, tutorial_data_path):
     # --- CONNECTIONS ---
     conn_inputs_to_grayscale = LayerConnection(src_id='layer_inputs', src_var='output', dst_id='layer_grayscale', dst_var='input')
@@ -99,6 +102,7 @@ def test_can_yield(script_factory, tutorial_data_path):
 # unity env in a separate window. This would in all likelihood cause the build pipeline to fail in any pull request, so for now, skip 
 # any unit tests relating to unity.
 @pytest.mark.skip
+@pytest.mark.pre_datawizard            
 def test_can_yield_unity_basic(script_factory, tutorial_data_path):
     # --- CONNECTIONS ---
     conn_inputs_to_fc = LayerConnection(src_id='layer_inputs', src_var='output', dst_id='layer_fc', dst_var='input')

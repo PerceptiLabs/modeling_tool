@@ -12,7 +12,7 @@ from perceptilabs.layers.specbase import LayerConnection
 def script_factory():
     yield ScriptFactory()
 
-@pytest.mark.tf2x
+    
 def test_inceptionv3_instantiation(script_factory_tf2x):
     layer_spec = PreTrainedInceptionV3Spec(
         id_='layer_id',
@@ -26,7 +26,6 @@ def test_inceptionv3_instantiation(script_factory_tf2x):
     assert layer is not None
 
 
-@pytest.mark.tf2x
 def test_inceptionv3_can_run(script_factory_tf2x):
     layer_spec = PreTrainedInceptionV3Spec(
         id_='layer_id',

@@ -13,7 +13,8 @@ from perceptilabs.layers.specbase import LayerConnection
 def script_factory():
     yield ScriptFactory()
 
-
+    
+@pytest.mark.pre_datawizard
 def test_conv2d_1x1_should_be_sum(script_factory):
     """ Inspired from answer in: https://datascience.stackexchange.com/questions/6107/what-are-deconvolutional-layers """
     
@@ -33,8 +34,8 @@ def test_conv2d_1x1_should_be_sum(script_factory):
     inputs = {'input': tf.constant(x)}
     outputs = layer(inputs)
     
-    with tf.Session() as sess:
-        sess.run(tf.global_variables_initializer())
+    with tf.compat.v1.Session() as sess:
+        sess.run(tf.compat.v1.global_variables_initializer())
 
         w = sess.run(next(iter(layer.weights.values())))
         b = sess.run(next(iter(layer.biases.values())))
@@ -45,8 +46,9 @@ def test_conv2d_1x1_should_be_sum(script_factory):
     expected = np.sum(w) + b
     
     assert (expected.squeeze() == actual.squeeze()).all()
-    
 
+    
+@pytest.mark.pre_datawizard
 def test_conv2d_zero_keep_prob_equals_zero_output(script_factory):
     """ If the keep probability is low the expected output should be zero """
 
@@ -67,12 +69,13 @@ def test_conv2d_zero_keep_prob_equals_zero_output(script_factory):
     x = np.ones((1, 2, 2, 1), dtype=np.float32)        
     y = layer({'input': tf.constant(x)})
 
-    with tf.Session() as sess:    
-        sess.run(tf.global_variables_initializer())
+    with tf.compat.v1.Session() as sess:    
+        sess.run(tf.compat.v1.global_variables_initializer())
         output = sess.run(y)['output']
         assert np.allclose(output, 0)
-    
+        
 
+@pytest.mark.pre_datawizard
 def test_conv2d_is_training_overrides_dropout(script_factory):
     """ If the keep probability is low the expected output should be zero """
 
@@ -91,16 +94,15 @@ def test_conv2d_is_training_overrides_dropout(script_factory):
     layer = LayerHelper(script_factory, layer_spec).get_instance()
 
     x = np.ones((1, 2, 2, 1), dtype=np.float32)        
-    y = layer({'input': tf.constant(x)}, is_training=tf.constant(False))
+    y = layer({'input': tf.compat.v1.constant(x)}, is_training=tf.constant(False))
 
-    with tf.Session() as sess:    
-        sess.run(tf.global_variables_initializer())
+    with tf.compat.v1.Session() as sess:    
+        sess.run(tf.compat.v1.global_variables_initializer())
         output = sess.run(y)['output']
         assert not np.allclose(output, 0)
 
 
 
-@pytest.mark.tf2x
 def test_tf2x_conv2d_1x1_should_be_sum(script_factory_tf2x):
     """ Inspired from answer in: https://datascience.stackexchange.com/questions/6107/what-are-deconvolutional-layers """
     
@@ -128,7 +130,6 @@ def test_tf2x_conv2d_1x1_should_be_sum(script_factory_tf2x):
     assert (expected.squeeze() == actual.squeeze()).all()
 
     
-@pytest.mark.tf2x
 def test_tf2x_conv2d_zero_keep_prob_equals_zero_output(script_factory_tf2x):
     """ If the keep probability is low the expected output should be zero """
 
@@ -153,7 +154,6 @@ def test_tf2x_conv2d_zero_keep_prob_equals_zero_output(script_factory_tf2x):
     assert np.allclose(output, 0)
 
     
-@pytest.mark.tf2x
 def test_tf2x_conv2d_is_training_overrides_dropout(script_factory_tf2x):
     """ If the keep probability is low the expected output should be zero """
 
@@ -178,7 +178,6 @@ def test_tf2x_conv2d_is_training_overrides_dropout(script_factory_tf2x):
     assert not np.allclose(output, 0)
 
 
-@pytest.mark.tf2x
 def test_tf2x_conv2d_batch_norm_gives_zero_mean_unit_variance(script_factory_tf2x):
     layer_spec = DeepLearningConvSpec(
         id_='layer_id',
@@ -202,7 +201,6 @@ def test_tf2x_conv2d_batch_norm_gives_zero_mean_unit_variance(script_factory_tf2
     assert np.isclose(np.var(output), 1, atol=0.1) # 0.9 <= var < 1.1
 
 
-@pytest.mark.tf2x
 def test_tf2x_conv2d_max_pooling_shape_ok(script_factory_tf2x):
     pool_size = 2
     stride = 3

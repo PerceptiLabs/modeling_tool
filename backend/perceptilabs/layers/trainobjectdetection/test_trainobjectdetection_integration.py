@@ -23,7 +23,8 @@ from perceptilabs.graph.spec import GraphSpec
 def script_factory():
     yield ScriptFactory()
 
-
+    
+@pytest.mark.pre_datawizard            
 def test_syntax(script_factory):
     layer_spec = TrainObjectDetectionSpec(
         id_='layer_id',
@@ -43,6 +44,7 @@ def test_syntax(script_factory):
         pytest.fail("Raised syntax error: " + repr(e))
     
 
+@pytest.mark.pre_datawizard                    
 def test_can_instantiate(script_factory):
     layer_spec = TrainObjectDetectionSpec(
         id_='layer_id',
@@ -66,7 +68,7 @@ def test_can_instantiate(script_factory):
         pytest.fail("Raised error on instantiation! " + repr(e))
 
 
-
+@pytest.mark.pre_datawizard            
 def test_can_yield(script_factory, tutorial_data_path):
     # --- CONNECTIONS ---
     conn_inputs_to_rescale = LayerConnection(src_id='layer_inputs', src_var='output', dst_id='layer_rescale', dst_var='input')

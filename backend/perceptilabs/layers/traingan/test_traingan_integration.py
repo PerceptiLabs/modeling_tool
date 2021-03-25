@@ -120,6 +120,7 @@ def make_graph_spec(temp_path_checkpoints, tutorial_data_path, learning_rate=0.3
     ])
     return graph_spec
 
+
 @pytest.fixture()
 def graph_spec(temp_path_checkpoints, tutorial_data_path):
     graph_spec = make_graph_spec(
@@ -128,6 +129,8 @@ def graph_spec(temp_path_checkpoints, tutorial_data_path):
     )        
     yield graph_spec
 
+    
+@pytest.mark.pre_datawizard            
 def test_syntax(script_factory):
     layer_spec = TrainGanSpec(
         id_='layer_id',
@@ -147,6 +150,7 @@ def test_syntax(script_factory):
         pytest.fail("Raised syntax error: " + repr(e))
     
 
+@pytest.mark.pre_datawizard
 def test_can_instantiate(script_factory):
     layer_spec = TrainGanSpec(
         id_='layer_id',
@@ -169,6 +173,8 @@ def test_can_instantiate(script_factory):
     except Exception as e:
         pytest.fail("Raised error on instantiation! " + repr(e))
 
+
+@pytest.mark.pre_datawizard        
 def test_can_yield(script_factory, graph_spec):
     graph = graph_spec_to_core_graph(script_factory, graph_spec)
 
@@ -178,6 +184,8 @@ def test_can_yield(script_factory, graph_spec):
         print(add_line_numbering(code['layer_train']))
         pytest.fail("Raised error on run!\n" + traceback_from_exception(e))
 
+        
+@pytest.mark.pre_datawizard                
 def test_save_model(script_factory, graph_spec):
     graph = graph_spec_to_core_graph(script_factory, graph_spec)
     import tempfile    
@@ -195,7 +203,8 @@ def test_save_model(script_factory, graph_spec):
     assert os.path.isfile(target_path)
 
     
-@pytest.mark.skip    
+@pytest.mark.skip
+@pytest.mark.pre_datawizard        
 def test_initial_weights_differ(temp_path_checkpoints, script_factory, tutorial_data_path):
     """ Check that the weights are DIFFERENT when creating two graphs. If not, it might not be meaningful to test loading a checkpoint """
     inputs_path = os.path.join(tutorial_data_path, 'gan_mnist.npy')
@@ -228,7 +237,8 @@ def test_initial_weights_differ(temp_path_checkpoints, script_factory, tutorial_
     
     assert np.all(w1 != w2)
 
-
+    
+@pytest.mark.pre_datawizard        
 def test_save_checkpoint(script_factory, graph_spec):
     temp_path = tempfile.mkdtemp().replace('\\', '/')
     graph1 = graph_spec_to_core_graph(script_factory, graph_spec)

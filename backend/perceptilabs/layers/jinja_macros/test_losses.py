@@ -3,7 +3,6 @@ import numpy as np
 import tensorflow.compat.v2 as tf
 
 
-@pytest.mark.tf2x
 def test_weighted_crossentropy_output(load_jinja_macro):
     class_weights = 1.0
     
@@ -44,7 +43,6 @@ def test_weighted_crossentropy_output(load_jinja_macro):
     assert np.isclose(actual, expected)
 
 
-@pytest.mark.tf2x
 def test_dice_output(load_jinja_macro):
     module = load_jinja_macro(
         'losses.j2',

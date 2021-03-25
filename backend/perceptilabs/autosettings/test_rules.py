@@ -290,6 +290,7 @@ def lw_core():
     yield LightweightCore()
     
 
+@pytest.mark.pre_datawizard
 def test_output_shape_from_labels(graph_spec, lw_core):
     rule = rules.DeepLearningFcOutputShapeFromLabels
     engine = SettingsEngine([rule], lw_core=lw_core)

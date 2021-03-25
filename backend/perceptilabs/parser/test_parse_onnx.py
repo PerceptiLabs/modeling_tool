@@ -29,6 +29,8 @@ def test_convert_reshape_onnx():
     layer_spec = Parser(onnx_model).parse()[-1]
     assert list(layer_spec.shape) == TARGET_SHAPE
 
+    
+@pytest.mark.pre_datawizard
 def test_convert_reshape_tf1x():
     onnx_model = None
     with tf.compat.v1.Session() as sess:

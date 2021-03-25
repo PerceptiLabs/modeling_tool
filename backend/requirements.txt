@@ -1,4 +1,4 @@
-tensorflow==1.15
+tensorflow==2.4.1
 onnx==1.6.0
 tf2onnx==1.7.2
 keras2onnx==1.7.0
@@ -20,7 +20,7 @@ gym[atari]; platform_system == "Linux"
 gym-unity>=0.20.0
 jinja2>=2.10.3
 jsonschema==3.2.0
-numpy>=1.18.5,<1.19.0
+numpy>=1.18.5,<=1.19.2
 opencv-python  # the build script will change this to opencv-python-headless for docker
 pandas>=0.25.0
 pillow==7.0.0
@@ -34,9 +34,9 @@ sentry-sdk==0.10.2; platform_system == "Darwin"
 sentry-sdk==0.10.2; platform_system == "Linux"
 sentry-sdk==0.14.3; platform_system == "Windows"
 six>=1.14.0
-tensorflow==1.15; platform_system == "Linux"
-tensorflow==1.15; platform_system == "Windows"
-tensorflow==1.15; platform_system == "Darwin"
+tensorflow==2.4.1; platform_system == "Linux"
+tensorflow==2.4.1; platform_system == "Windows"
+tensorflow==2.4.1; platform_system == "Darwin"
 websockets>=8.1
 mixpanel==4.7.0
 mlagents>=0.20.0    #adding these at the bottom as they install a tensorflow version

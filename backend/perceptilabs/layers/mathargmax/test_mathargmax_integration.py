@@ -12,7 +12,8 @@ from perceptilabs.layers.specbase import LayerConnection
 def script_factory():
     yield ScriptFactory()
 
-
+    
+@pytest.mark.pre_datawizard
 def test_argmax(script_factory):
     layer_spec = MathArgmaxSpec(
         id_='layer_id',
@@ -26,7 +27,7 @@ def test_argmax(script_factory):
 
     y = layer({'input': tf.constant(x)})    
 
-    with tf.Session() as sess:        
+    with tf.compat.v1.Session() as sess:        
         actual = sess.run(y)['output']
     
     expected = 2

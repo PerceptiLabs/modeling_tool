@@ -13,6 +13,7 @@ def script_factory():
     yield ScriptFactory()
 
 
+@pytest.mark.pre_datawizard
 def test_generator_output_content(script_factory):
     layer_spec = DataEnvironmentSpec(
         id_='layer_id',
@@ -33,6 +34,7 @@ def test_generator_output_content(script_factory):
 # unity env in a separate window. This would in all likelihood cause the build pipeline to fail in any pull request, so for now, skip 
 # any unit tests relating to unity.
 @pytest.mark.skip
+@pytest.mark.pre_datawizard
 def test_generator_output_content_unity_basic(script_factory):
     layer_spec = DataEnvironmentSpec(
         id_='layer_id',

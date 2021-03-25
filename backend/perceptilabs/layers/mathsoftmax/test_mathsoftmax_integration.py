@@ -12,7 +12,8 @@ from perceptilabs.layers.specbase import LayerConnection
 def script_factory():
     yield ScriptFactory()
 
-
+    
+@pytest.mark.pre_datawizard
 def test_softmax(script_factory):
     layer_spec = MathSoftmaxSpec(
         id_='layer_id',
@@ -26,7 +27,7 @@ def test_softmax(script_factory):
 
     y = layer({'input': tf.constant(x)})    
 
-    with tf.Session() as sess:        
+    with tf.compat.v1.Session() as sess:        
         actual = sess.run(y)['output']
 
     expected = np.array([0.03467109, 0.01275478, 0.25618663, 0.69638747])
