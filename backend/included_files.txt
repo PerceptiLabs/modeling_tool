@@ -299,6 +299,7 @@ perceptilabs/data/base.py
 perceptilabs/data/pipelines/__init__.py
 perceptilabs/data/pipelines/image.py
 perceptilabs/data/pipelines/numerical.py
+perceptilabs/data/pipelines/binary.py
 perceptilabs/data/pipelines/categorical.py
 
 # backend/perceptilabs/modelrecommender/
@@ -310,6 +311,7 @@ perceptilabs/modelrecommender/encoders/__init__.py
 perceptilabs/modelrecommender/encoders/base.py
 perceptilabs/modelrecommender/encoders/numerical.py
 perceptilabs/modelrecommender/encoders/image.py
+perceptilabs/modelrecommender/encoders/binary.py
 
 # backend/perceptilabs/modelrecommender/decoders/
 perceptilabs/modelrecommender/decoders/__init__.py

@@ -159,3 +159,55 @@ def test_get_dataset_size():
     assert dl.get_dataset_size(partition='training') == 3
     assert dl.get_dataset_size(partition='validation') == 2
     assert dl.get_dataset_size(partition='test') == 1    
+
+
+@pytest.mark.tf2x
+def test_instantiate_binary_string_data():
+    data = {'x1': ['True', 'False', 'True', 'False'], 'y1': [1, 0, 1, 0]}
+    df = pd.DataFrame(data)
+
+    feature_specs = {
+        'x1': FeatureSpec('binary', 'input'),
+        'y1': FeatureSpec('numerical', 'output')
+    }
+
+    dl = DataLoader(df, feature_specs)
+    dataset = dl.get_dataset()
+
+    for inputs, target in dataset:
+        assert inputs['x1'].dtype == tf.float32
+        assert target['y1'].dtype == tf.float32
+
+@pytest.mark.tf2x
+def test_instantiate_binary_integer_data():
+    data = {'x1': [1, 0, 1, 0], 'y1': [1, 0, 1, 0]}
+    df = pd.DataFrame(data)
+
+    feature_specs = {
+        'x1': FeatureSpec('binary', 'input'),
+        'y1': FeatureSpec('numerical', 'output')
+    }
+
+    dl = DataLoader(df, feature_specs)
+    dataset = dl.get_dataset()
+
+    for inputs, target in dataset:
+        assert inputs['x1'].dtype == tf.float32
+        assert target['y1'].dtype == tf.float32
+
+@pytest.mark.tf2x
+def test_instantiate_binary_bool_data():
+    data = {'x1': [True, False, True, False], 'y1': [1, 0, 1, 0]}
+    df = pd.DataFrame(data)
+
+    feature_specs = {
+        'x1': FeatureSpec('binary', 'input'),
+        'y1': FeatureSpec('numerical', 'output')
+    }
+
+    dl = DataLoader(df, feature_specs)
+    dataset = dl.get_dataset()
+
+    for inputs, target in dataset:
+        assert inputs['x1'].dtype == tf.float32
+        assert target['y1'].dtype == tf.float32

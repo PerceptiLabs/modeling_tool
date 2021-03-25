@@ -163,6 +163,8 @@ class DataLoader:
             return pipelines.build_numerical_pipelines
         elif feature_datatype == 'image':
             return pipelines.build_image_pipelines
+        elif feature_datatype == 'binary':
+            return pipelines.build_binary_pipelines
         elif feature_datatype == 'categorical':
             return pipelines.build_categorical_pipelines
         else:

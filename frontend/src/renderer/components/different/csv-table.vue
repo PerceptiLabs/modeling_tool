@@ -68,7 +68,7 @@ export default {
     return {
       delimiters: ',',
       ioOptions: ["Input", "Output"],
-      typeOptions: ["numerical", "image", "categorical"],
+      typeOptions: ["numerical", "image", "categorical", "binary"],
       selectedColumns: [],
       formattedDataset: {
         columnNames: [],

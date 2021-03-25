@@ -7,7 +7,8 @@ from perceptilabs.data.base import FeatureSpec
 
 from perceptilabs.modelrecommender.encoders import (
     NumericalEncoderBlueprint,
-    ImageEncoderBlueprint
+    ImageEncoderBlueprint,
+    BinaryEncoderBlueprint
 )
 from perceptilabs.modelrecommender.decoders import (
     NumericalDecoderBlueprint,
@@ -65,6 +66,8 @@ class ModelRecommender:
             return NumericalEncoderBlueprint().build(builder, feature_name, feature_spec, data_loader=self._data_loader)            
         elif feature_spec.datatype == 'image':
             return ImageEncoderBlueprint().build(builder, feature_name, feature_spec, data_loader=self._data_loader)            
+        elif feature_spec.datatype == 'binary':
+            return self._add_binary_encoder(builder, feature_name, feature_spec)
         else:
             raise NotImplementedError(f"No encoder found for datatype '{feature_spec.datatype}'")
 
@@ -77,3 +80,19 @@ class ModelRecommender:
         else:
             raise NotImplementedError(f"No decoder found for datatype '{feature_spec.datatype}'")
         
+    def _add_numerical_encoder(self, builder, feature_name, feature_spec):
+        """ Adds a numerical encoder """
+        return NumericalEncoderBlueprint().build(builder, feature_name, feature_spec)
+
+    def _add_image_encoder(self, builder, feature_name, feature_spec):
+        """ Adds a image encoder """
+        return ImageEncoderBlueprint().build(builder, feature_name, feature_spec)
+    
+    def _add_binary_encoder(self, builder, feature_name, feature_spec):
+        """ Adds a binary encoder """
+        return BinaryEncoderBlueprint().build(builder, feature_name, feature_spec)
+    
+    def _add_numerical_decoder(self, builder, feature_name, feature_spec):
+        """ Adds a numerical decoder """
+        return NumericalDecoderBlueprint().build(builder, feature_name, feature_spec)
+
