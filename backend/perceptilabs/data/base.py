@@ -18,8 +18,8 @@ class FeatureSpec:
 
 
 class DataLoader:
-    def __init__(self, data_frame, feature_specs, partitions=None, base_directory=None, randomized_partitions=False, randomized_partitions_seed=None):
-        partitions = partitions or {'training': 0.7, 'validation': 0.2, 'test': 0.1}
+    def __init__(self, data_frame, feature_specs, partitions=None, base_directory=None, randomized_partitions=False, randomized_partitions_seed=None, shuffle_seed=None):
+        partitions = partitions or {'training': 0.7, 'validation': 0.2, 'test': 0.1}        
         self._feature_specs = feature_specs
         
         self._randomized_partitions = randomized_partitions
@@ -31,14 +31,13 @@ class DataLoader:
         if base_directory is not None:
             data_frame = self._make_paths_absolute(data_frame, feature_specs, base_directory)
         
-        self._datasets, self._pipelines = self._build_datasets_and_pipelines(
+        self._unprocessed_datasets, self._pipelines = self._build_datasets_and_pipelines(
             data_frame, feature_specs, partitions
         )
 
     @classmethod
     def from_dict(cls, dict_):
         """ Creates a DataLoader given a settings dict """
-
         feature_specs = {}
 
         for feature_name, feature_dict in dict_['featureSpecs'].items():
@@ -154,10 +153,7 @@ class DataLoader:
         training_pipeline, inference_pipeline, postprocessing_pipeline = self._build_pipelines(
             feature_specs[feature_name].datatype, feature_training_set
         )
-        feature_training_set = feature_training_set.map(lambda x: training_pipeline(x))
-        feature_validation_set = feature_validation_set.map(lambda x: inference_pipeline(x))  
-        feature_test_set = feature_test_set.map(lambda x: inference_pipeline(x))
-
+        
         feature_datasets = (feature_training_set, feature_validation_set, feature_test_set)
         feature_pipelines = (training_pipeline, inference_pipeline, postprocessing_pipeline)
         
@@ -208,14 +204,21 @@ class DataLoader:
         else:
             raise NotImplementedError(f"No pipeline defined for type '{feature_datatype}'")
 
-    def get_dataset(self, partition='training'):
+    def get_dataset(self, partition='training', shuffle=False, shuffle_seed=None):
         """ Returns a TensorFlow dataset """
-        dataset = self._datasets[partition]
+        dataset = self._unprocessed_datasets[partition]
+
+        if shuffle:
+            size = self.get_dataset_size(partition=partition)
+            dataset = dataset.shuffle(buffer_size=size, seed=shuffle_seed) 
+
+        mode = 'training' if partition == 'training' else 'inference'
+        dataset = self._apply_pipelines(dataset, mode)
         return dataset
 
     def get_dataset_size(self, partition='training'):
         """ Returns size of a partition TensorFlow dataset """
-        size = len(list(self.get_dataset(partition=partition)))        
+        size = len(list(self._unprocessed_datasets[partition]))
         return size
 
     def get_preprocessing_pipeline(self, feature_name, mode='training'):
@@ -256,8 +259,37 @@ class DataLoader:
         pipelines = {}
         pipelines.update(input_pipelines)
         pipelines.update(target_pipelines)
-        
+
         return datasets, pipelines
+
+
+    def _apply_pipelines(self, dataset, mode):
+        
+        class Pipelines(tf.keras.Model):
+            def __init__(self, pipelines):
+                super().__init__()
+                self._pipelines = pipelines
+            
+            def __call__(self, x):
+                inputs, targets = x
+
+                processed_inputs = {}
+                for name, value in inputs.items():
+                    pipeline = self._pipelines[name][mode]
+                    processed_inputs[name] = pipeline(value)
+
+
+                processed_targets = {}
+                for name, value in targets.items():
+                    pipeline = self._pipelines[name][mode]                    
+                    processed_targets[name] = pipeline(value)
+                    
+                y = (processed_inputs, processed_targets)
+                return y
+
+        pipelines = Pipelines(self._pipelines)
+        dataset = dataset.map(lambda x, y: pipelines((x, y)))
+        return dataset
 
     def get_feature_shape(self, feature_name):
         """ Returns the shape of a feature. """

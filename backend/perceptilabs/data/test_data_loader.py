@@ -155,7 +155,6 @@ def test_get_dataset_size():
     assert dl.get_dataset_size(partition='test') == 1    
 
 
-@pytest.mark.tf2x
 def test_instantiate_binary_string_data():
     data = {'x1': ['True', 'False', 'True', 'False'], 'y1': [1, 0, 1, 0]}
     df = pd.DataFrame(data)
@@ -173,7 +172,6 @@ def test_instantiate_binary_string_data():
         assert target['y1'].dtype == tf.float32
 
         
-@pytest.mark.tf2x
 def test_instantiate_binary_integer_data():
     data = {'x1': [1, 0, 1, 0], 'y1': [1, 0, 1, 0]}
     df = pd.DataFrame(data)
@@ -191,7 +189,6 @@ def test_instantiate_binary_integer_data():
         assert target['y1'].dtype == tf.float32
 
         
-@pytest.mark.tf2x
 def test_instantiate_binary_bool_data():
     data = {'x1': [True, False, True, False], 'y1': [1, 0, 1, 0]}
     df = pd.DataFrame(data)
@@ -208,8 +205,7 @@ def test_instantiate_binary_bool_data():
         assert inputs['x1'].dtype == tf.float32
         assert target['y1'].dtype == tf.float32
 
-    
-@pytest.mark.tf2x
+
 def test_randomized_partitioning_is_random():
     n = 5
     original_x1 = np.random.random((n,)).tolist()
@@ -238,8 +234,40 @@ def test_randomized_partitioning_is_random():
     for inputs, targets in dl.get_dataset(partition='test'):
         actual_x1.append(inputs['x1'].numpy())
         actual_y1.append(targets['y1'].numpy())
-
+        
     assert not np.all(np.isclose(original_x1, actual_x1))
     assert not np.all(np.isclose(original_y1, actual_y1))    
 
 
+def test_shuffle_gives_random_data():
+    n = 5
+    original_x1 = np.random.random((n,)).tolist()
+    original_y1 = np.random.random((n,)).tolist()
+
+    df = pd.DataFrame.from_dict({'x1': original_x1, 'y1': original_y1})
+    
+    feature_specs = {
+        'x1': FeatureSpec('numerical', 'input'),
+        'y1': FeatureSpec('numerical', 'output')
+    }
+    dl = DataLoader(
+        df, feature_specs,
+        randomized_partitions=True, randomized_partitions_seed=1234
+    )
+
+    def dataset_to_list(dataset):
+        data_list = []
+        for inputs, outputs in dataset:
+            xy = (inputs['x1'].numpy(), outputs['y1'].numpy())
+            data_list.append(xy)
+        return data_list
+    
+    data_unshuffled_1 = dataset_to_list(dl.get_dataset(shuffle=False))
+    data_unshuffled_2 = dataset_to_list(dl.get_dataset(shuffle=False))    
+    data_shuffled_1 = dataset_to_list(dl.get_dataset(shuffle=True, shuffle_seed=123))
+    data_shuffled_2 = dataset_to_list(dl.get_dataset(shuffle=True, shuffle_seed=456))
+
+    assert data_unshuffled_1 == data_unshuffled_2
+    assert data_unshuffled_1 != data_shuffled_1
+    assert data_unshuffled_1 != data_shuffled_2
+    assert data_shuffled_1 != data_shuffled_2            

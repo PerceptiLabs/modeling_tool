@@ -637,7 +637,6 @@ class Interface():
         
         self._core.set_running_mode('training')            
         model_id = int(request_value.get('modelId', None))
-
         training_settings = request_value.get('trainSettings', None)        
         dataset_settings = request_value.get('datasetSettings', None)
         

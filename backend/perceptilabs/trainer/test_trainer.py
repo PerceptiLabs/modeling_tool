@@ -43,25 +43,21 @@ def training_settings():
         'Momentum':0.0,
         'Centered':False,
         'Loss':'Quadratic',
-        'Optimizer':'SGD'
-
+        'Optimizer':'SGD',
+        'Shuffle': False
     }
 
 @pytest.fixture()
-def training_settings_custom_loss():
-    yield {
-        'Epochs':10,
-        'Batch_size':2,
-        'Learning_rate':0.001,
-        'Beta1':0.9,
-        'Beta2':0.99,
-        'Momentum':0.0,
-        'Centered':False,
-        'Loss':'Dice',
-        'Optimizer':'SGD'
+def training_settings_custom_loss(training_settings):
+    training_settings['Loss'] = 'Dice'
+    yield training_settings
 
-    }
-
+    
+@pytest.fixture()
+def training_settings_shuffle_data(training_settings):
+    training_settings['Shuffle'] = True
+    yield training_settings
+    
     
 @pytest.fixture()
 def graph_spec_few_epochs(csv_path):
@@ -100,7 +96,7 @@ def test_progress_reaches_one(script_factory_tf2x, data_loader, graph_spec_few_e
     assert trainer.progress == 0.0 and trainer.num_epochs_completed == 0
     trainer.run()
     assert trainer.progress == 1.0 and trainer.num_epochs_completed == trainer.num_epochs
-    
+
 
 def test_trainer_has_all_statuses(script_factory_tf2x, data_loader, graph_spec_few_epochs, training_settings):
     trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs, training_settings)
@@ -133,6 +129,25 @@ def test_num_completed_batches_are_ok(script_factory_tf2x, data_loader, graph_sp
     assert trainer.num_batches_completed_this_epoch == trainer.num_batches_per_epoch
 
 
+def test_num_completed_batches_are_ok_even_if_batch_size_is_larger_than_dataset(script_factory_tf2x, data_loader, graph_spec_few_epochs, training_settings):
+    batch_size = 200
+    training_settings['Batch_size'] = batch_size
+
+    assert data_loader.get_dataset_size(partition='training') > 0 and data_loader.get_dataset_size(partition='training') < batch_size
+    assert data_loader.get_dataset_size(partition='validation') > 0 and data_loader.get_dataset_size(partition='validation') < batch_size    
+    
+    trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs, training_settings)
+    trainer.run()
+
+    # Run some sanity checks
+    assert trainer.num_batches_completed_all_epochs == trainer.num_batches_all_epochs
+    assert trainer.num_batches_per_epoch*trainer.num_epochs == trainer.num_batches_all_epochs
+    assert trainer.num_training_batches_completed_this_epoch > 0
+    assert trainer.num_validation_batches_completed_this_epoch > 0
+    assert trainer.num_training_batches_completed_this_epoch + trainer.num_validation_batches_completed_this_epoch == trainer.num_batches_completed_this_epoch
+    assert trainer.num_batches_completed_this_epoch == trainer.num_batches_per_epoch
+    
+
 def test_layer_output_ok(script_factory_tf2x, csv_path, data_loader, graph_spec_few_epochs, training_settings):
     trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs, training_settings)
     next(trainer.run_stepwise()) # Take the first training steps
@@ -152,6 +167,7 @@ def test_layer_weights_is_array(script_factory_tf2x, data_loader, graph_spec_few
     value = trainer.get_layer_weights('1')
     assert isinstance(value, np.ndarray)
 
+    
 def test_layer_bias_is_array(script_factory_tf2x, data_loader, graph_spec_few_epochs, training_settings):
     trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs, training_settings)
     next(trainer.run_stepwise()) # Take the first training steps
@@ -189,6 +205,7 @@ def test_layer_gradients_contain_exactly_one_float(script_factory_tf2x, data_loa
     assert isinstance(average, list) and len(average) == 1 and isinstance(average[0], np.float32)
     assert minimum[0] <= maximum[0]
 
+    
 def test_layer_gradients_contain_exactly_one_float(script_factory_tf2x, data_loader, graph_spec_few_epochs, training_settings):
     trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs, training_settings)
     next(trainer.run_stepwise()) # Take the first training steps
@@ -202,6 +219,7 @@ def test_layer_gradients_contain_exactly_one_float(script_factory_tf2x, data_loa
     assert isinstance(average, list) and len(average) == 1 and isinstance(average[0], np.float32)
     assert minimum[0] <= maximum[0]
 
+    
 def test_computed_results_do_not_change(script_factory_tf2x, data_loader, graph_spec_few_epochs, training_settings):
     """ Once results have been computed, the Trainer shouldn't modify the structure.
 
@@ -342,3 +360,21 @@ def test_trainer_output_stats_available(script_factory_tf2x, data_loader, graph_
 
     for layer_spec in graph_spec_few_epochs.output_layers:    
         assert layer_spec.id_ in output_stats
+
+        
+def test_shuffle_is_called_for_training_but_not_for_validation(script_factory_tf2x, csv_path, graph_spec_few_epochs, training_settings_shuffle_data):
+    data_loader = MagicMock()
+    data_loader.get_dataset_size.return_value = 10
+    
+    trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs, training_settings_shuffle_data)
+
+    step = trainer.run_stepwise()
+
+    for i, _ in enumerate(step):
+        _, kwargs = data_loader.get_dataset.call_args_list[i*2]  # Even calls are with training
+        assert kwargs['partition'] == 'training' and kwargs['shuffle']
+
+        _, kwargs = data_loader.get_dataset.call_args_list[i*2 + 1]  # Odd calls are with validation
+        assert kwargs['partition'] == 'validation' and 'shuffle' not in kwargs
+        
+

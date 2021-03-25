@@ -25,14 +25,16 @@ class Trainer:
         self._data_loader = data_loader
         self._graph_spec = graph_spec
         self._training_time = 0.0
+        
         self._num_epochs = int(training_settings['Epochs'])
         self._batch_size = int(training_settings['Batch_size'])
+        self._shuffle_training_set = training_settings['Shuffle']
+
         self._headless = False
         self._optimizer = self._resolve_optimizer(training_settings)
         self._loss = self._resolve_loss_function(training_settings)
         self._num_epochs_completed = 0        
         self._training_model = TrainingModel(script_factory, graph_spec)
-        
 
         self._reset_tracked_values()
         self._initialize_batch_counters(data_loader)
@@ -50,12 +52,7 @@ class Trainer:
         
     def run_stepwise(self):
         """ Take a training/validation step and yield """
-        logger.info("Initializing training")        
-        
         logger.info("Training model initialized")
-        
-        training_set, validation_set = self._get_datasets()
-
         # TODO: Implement different optimizers (story 1535)
         optimizer = tf.keras.optimizers.SGD(learning_rate=0.01) #  TODO: fix learning rate (story 1535)
 
@@ -69,7 +66,13 @@ class Trainer:
         self._num_epochs_completed = 0
         while self._num_epochs_completed < self.num_epochs and not self.is_closed:
             t0 = time.perf_counter()
+
             self._set_status('Training')
+            training_set = self._data_loader.get_dataset(
+                partition='training',
+                shuffle=self._shuffle_training_set
+            ).batch(self.batch_size)
+
             yield from self._loop_over_dataset(
                 self._training_model,
                 losses,
@@ -82,7 +85,8 @@ class Trainer:
             if self.is_closed:
                 break
             self._set_status('Validation')
-
+            validation_set = self._data_loader.get_dataset(partition='validation').batch(self.batch_size)
+            
             yield from self._loop_over_dataset(
                 self._training_model,
                 losses,
@@ -94,13 +98,15 @@ class Trainer:
             time_paused_validation = self._sleep_while_paused()
             if self.is_closed:
                 break
+
             self._num_epochs_completed += 1
             epoch_time = time.perf_counter() - t0 - time_paused_training - time_paused_validation
 
             logger.info(
                 f"Finished epoch {self._num_epochs_completed}/{self.num_epochs} - "
+                f"Epoch duration: {round(epoch_time, 3)} s - "
+                f"Num batches completed: {self.num_batches_completed_all_epochs}/{self.num_batches_all_epochs}"                
             )
-            logger.info(f"Epoch duration: {round(epoch_time, 3)} s")
             self._training_time += epoch_time
             yield 
             
@@ -289,10 +295,13 @@ class Trainer:
 
     def _initialize_batch_counters(self, data_loader):
         """ Initialize iteration/batch counters to keep track of progress """
-        dataset_size = data_loader.get_dataset_size(partition='training') + \
-                       data_loader.get_dataset_size(partition='validation')
+        training_size = data_loader.get_dataset_size(partition='training')
+        validation_size = data_loader.get_dataset_size(partition='validation')
 
-        self._num_batches_per_epoch = int(np.ceil(dataset_size / self.batch_size))
+        training_batches_per_epoch = int(np.ceil(training_size / self.batch_size))
+        validation_batches_per_epoch = int(np.ceil(validation_size / self.batch_size))        
+        
+        self._num_batches_per_epoch = training_batches_per_epoch + validation_batches_per_epoch
         self._num_batches_all_epochs = self._num_batches_per_epoch * self._num_epochs
         self._num_batches_completed_all_epochs = 0
 

@@ -178,7 +178,6 @@ class coreLogic():
         from perceptilabs.script import ScriptFactory
 
         data_loader = DataLoader.from_dict(dataset_settings)
-        import pdb; pdb.set_trace()
         trainer = Trainer(script_factory, data_loader, graph_spec, training_settings)
         
         return trainer
