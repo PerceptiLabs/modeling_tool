@@ -12,7 +12,8 @@ from perceptilabs.modelrecommender.encoders import (
 )
 from perceptilabs.modelrecommender.decoders import (
     NumericalDecoderBlueprint,
-    CategoricalDecoderBlueprint    
+    CategoricalDecoderBlueprint,
+    ImageDecoderBlueprint
 )
 
 
@@ -76,7 +77,9 @@ class ModelRecommender:
         if feature_spec.datatype == 'numerical':
             return NumericalDecoderBlueprint().build(builder, feature_name, feature_spec, data_loader=self._data_loader)
         elif feature_spec.datatype == 'categorical':
-            return CategoricalDecoderBlueprint().build(builder, feature_name, feature_spec, data_loader=self._data_loader)            
+            return CategoricalDecoderBlueprint().build(builder, feature_name, feature_spec, data_loader=self._data_loader)       
+        elif feature_spec.datatype == 'image':
+            return ImageDecoderBlueprint().build(builder, feature_name, feature_spec, data_loader=self._data_loader)   
         else:
             raise NotImplementedError(f"No decoder found for datatype '{feature_spec.datatype}'")
         

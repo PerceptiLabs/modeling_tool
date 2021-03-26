@@ -1564,7 +1564,7 @@ class coreLogic():
         target_batch_average = target_stats.get_batch_average(layer_id)
 
         chart_type = self.getPlot(pred_value)
-        if chart_type == "bar" or chart_type == "line" or chart_type == 'scatter':
+        if chart_type == "bar" or chart_type == "line" or chart_type == 'scatter' or chart_type == 'grayscale' or chart_type == 'RGB':
             input_obj = createDataObject([input_value])
             pred_vs_target_obj = createDataObject([pred_value, target_value], name_list=['Prediction', 'Ground Truth'])
             avg_pred_vs_target_obj = createDataObject([pred_batch_average, target_batch_average], name_list=['Prediction', 'Ground Truth'])

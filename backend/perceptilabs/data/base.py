@@ -310,6 +310,7 @@ class DataLoader:
             """ convert from <file_name> to <base_directory>/<file_name> """
             return str(base_directory + os.path.sep) + series  
 
+       
         df[path_cols] = df[path_cols].apply(make_absolute)
         return df
     

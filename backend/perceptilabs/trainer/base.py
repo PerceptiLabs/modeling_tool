@@ -53,8 +53,6 @@ class Trainer:
     def run_stepwise(self):
         """ Take a training/validation step and yield """
         logger.info("Training model initialized")
-        # TODO: Implement different optimizers (story 1535)
-        optimizer = tf.keras.optimizers.SGD(learning_rate=0.01) #  TODO: fix learning rate (story 1535)
 
         losses = {
             layer_spec.feature_name: self._loss
@@ -178,6 +176,7 @@ class Trainer:
                 predictions_batch[output_name],
                 tf.reshape(targets_batch[output_name], shape=predictions_batch[output_name].shape)
             )
+        
         return total_loss
 
     def _reset_tracked_values(self):
@@ -202,7 +201,6 @@ class Trainer:
         self._prediction_stats_tracker.update(graph_spec=self._graph_spec, sample_batch=predictions_batch)                
         self._target_stats_tracker.update(graph_spec=self._graph_spec, sample_batch=targets_batch)
         self._gradient_stats_tracker.update(gradients_by_layer=gradients_by_layer)
-
         for layer_spec in self._graph_spec.output_layers:
             tracker = self._output_trackers[layer_spec.id_]
             tracker.update(
@@ -458,7 +456,7 @@ class Trainer:
             'output_stats': self.get_output_stats()
         }
         t1 = time.perf_counter()
-        logger.debug(f"get_results finished. Duration: {t1 - t0}")        
+        logger.debug(f"get_results finished. Duration: {t1 - t0}")
         return dict_
 
     def get_target_stats(self) -> SampleStats:
