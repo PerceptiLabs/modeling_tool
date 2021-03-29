@@ -94,7 +94,10 @@ const mutations = {
 };
 const actions = {
   EVENT_IOGenerateAction(ctx){
-    ctx.commit('set_eventIOGenerate');
+    return new Promise(resolve => {
+      ctx.commit('set_eventIOGenerate');
+      resolve();
+    })
   },
   EVENT_calcArray({commit}) {
     commit('set_calcArray')

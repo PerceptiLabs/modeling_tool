@@ -1905,7 +1905,10 @@ const actions = {
   },
   ADD_existingNetworkToWorkspace({commit,dispatch}, { network } = {}) {
     if (!network) { return;}
-    commit('add_existingNetworkToWorkspace', { network });
+    return new Promise(resolve => {
+      commit('add_existingNetworkToWorkspace', { network });
+      resolve();
+    });
   },
   DELETE_network({commit, dispatch}, index) {
     return new Promise(resolve => {

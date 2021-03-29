@@ -77,20 +77,15 @@ export default {
     NetworkGrid
   },
   mixins: [NetworkDrag],
-  mounted() {
+  async mounted() {
     this.drawArrows();
-    if(!this.isViewMode) {
-      this.$store.dispatch('mod_events/EVENT_IOGenerateAction', null, {root: true})
-        .then(() => {
-          const networkID = this.currentNetwork.networkID;
-          if(!this.fetchedPreviewsNetworksIds.includes(networkID)) {
-            this.getAllPreviews();
-            this.$store.commit("mod_workspace/setFetchedPreviewsNetworksIds", networkID);
-          }
-        });
-    }
+    if(this.isViewMode) { return; }
+    
+    await this.$store.dispatch('mod_events/EVENT_IOGenerateAction', null, {root: true});
+     
+    await this.getAllPreviews();
 
-    this.lunchTheResizeObserver();
+    this.launchTheResizeObserver();
     setTimeout(this.calculateGridStyle(),0);
 
   },
@@ -861,7 +856,7 @@ export default {
         ...widthHeightStyle
       }
     },
-    lunchTheResizeObserver() {
+    launchTheResizeObserver() {
       resizeObservable = new ResizeObserver(() => {
         this.calcSvgSize(true)
         this.calculateGridStyle();
