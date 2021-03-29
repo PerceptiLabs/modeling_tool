@@ -13,7 +13,8 @@ jobs:
         failOnStderr: true
 
 
-- job: test
+- job: testpython
+  displayName: Test python
   dependsOn: checkincludedfiles
   strategy:
     matrix:
@@ -50,3 +51,18 @@ jobs:
       python build.py test
     displayName: 'Python tests'
 
+- job: testfrontend
+  displayName: Test frontend
+  steps:
+  - task: NodeTool@0
+    inputs:
+      versionSpec: '>=14.x'
+  - task: Npm@1
+    inputs:
+      command: 'install'
+      workingDir: 'frontend'
+  - task: Npm@1
+    inputs:
+      command: 'custom'
+      workingDir: 'frontend'
+      customCommand: 'run test:unit'
