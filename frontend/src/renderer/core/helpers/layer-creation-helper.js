@@ -1,4 +1,4 @@
-import { sleep }      from "@/core/helpers.js";
+import { sleep, calcLayerPosition }      from "@/core/helpers.js";
 import cloneDeep      from 'lodash.clonedeep';
 
 import IoInputSetting   from '@/components/network-elements/elements/io-input/set-io-input.vue';
@@ -176,10 +176,21 @@ const setupOutput = (componentName) => {
   }
   return outputs;
 }
+const getMaxLeftPadding = (layerPositions) => {
+  let maxLeftPadding = 0;
+  Object.values(layerPositions).map(l => {
+    if(l.x < maxLeftPadding) {
+      maxLeftPadding = l.x
+    }
+  })
+  return  Math.abs(maxLeftPadding)
+}
 
 const createLayers = async (coreNetwork, layerPositions) => {
   const newLayers = {};
 
+  const maxLeftPadding = getMaxLeftPadding(layerPositions);
+  
   // creating the layers
   for (const [k, v] of Object.entries(coreNetwork)) {
     const creationOptions = {
@@ -189,10 +200,9 @@ const createLayers = async (coreNetwork, layerPositions) => {
       componentName: v['Type'],
       layerSettings: v['Type'].startsWith('Io') ?  IoInputSetting.data().settings : null
     }
-
     if (layerPositions && layerPositions[k]) {
-      creationOptions['positionTop'] = layerPositions[k]['y'] + 200;
-      creationOptions['positionLeft'] = layerPositions[k]['x'] + 200;
+      creationOptions['positionTop'] = calcLayerPosition(layerPositions[k]['y'] + 60);
+      creationOptions['positionLeft'] = calcLayerPosition(layerPositions[k]['x'] + 60 + maxLeftPadding);
     }
 
     const newLayer = getDefaultLayerTemplate(creationOptions);
