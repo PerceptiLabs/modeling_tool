@@ -7,6 +7,7 @@ import * as Integrations from '@sentry/integrations';
 import VeeValidate  from 'vee-validate';
 import VueHotkey    from 'v-hotkey'
 import Keycloak from 'keycloak-js'
+import LogRocket from 'logrocket';
 
 import App    from './App'
 import NoInternetConnection from '@/pages/NoInternetConnection.vue'
@@ -37,6 +38,10 @@ Vue.config.performance = isDevelopMode;
 
 // set the parent(html,body) platform class one of => [is-web, is-electron]
 setAppTypeRootClasses();
+
+if (process.env.ENABLE_LOGROCKET) {
+  LogRocket.init(process.env.LOGROCKET_APP_ID);
+}
 
 //- Use plugin
 if (!Vue.config.devtools) {
@@ -83,7 +88,14 @@ function runApp(token, refreshToken){
   userProfile.lastName = userProfile.family_name
 
   store.dispatch('mod_user/SET_userProfile', userProfile, {root: true});
-  setTokens(store, token, refreshToken)
+  setTokens(store, token, refreshToken);
+
+  if (process.env.ENABLE_LOGROCKET) {
+    LogRocket.identify(userProfile.sub, {
+      name: `${userProfile.firstName} ${userProfile.lastName}`,
+      email: userProfile.email
+    });
+  }
 }
 
 function setTokens(store, token, refreshToken) {

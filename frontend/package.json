@@ -89,6 +89,7 @@
     "keycloak-js": "^11.0.2",
     "lodash.clonedeep": "4.5.0",
     "lodash.isequal": "4.5.0",
+    "logrocket": "^1.0.14",
     "mixpanel-browser": "^2.29.1",
     "monaco-editor": "^0.21.2",
     "moveable": "0.15.2",
