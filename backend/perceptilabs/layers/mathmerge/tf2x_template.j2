@@ -9,7 +9,7 @@ class {{layer_spec.sanitized_name}}Keras(tf.keras.layers.Layer):
         
         {% filter remove_lspaces(8) %}
             {% if layer_spec.merge_type == 'Concat' %}
-                y = tf.concat([inputs['input1'], inputs['input2']], {{layer_spec.merge_dim}})
+                y = tf.concat([inputs[f'input{i+1}'] for i in range({{layer_spec.input_count}})], {{layer_spec.merge_dim}})
             {% elif layer_spec.merge_type == 'Add' %}
                 y = inputs['input1'] + inputs['input2']
             {% elif layer_spec.merge_type == 'Sub' %}

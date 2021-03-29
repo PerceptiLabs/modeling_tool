@@ -56,7 +56,30 @@ def test_tf2x_concat_horizontally(script_factory_tf2x):
 
     assert z['output'].shape == (32, 10, 3)
 
+
+def test_tf2x_concat_horizontally_with_3_inputs(script_factory_tf2x):
+    layer_spec = MathMergeSpec(
+        id_='layer_id',
+        name='layer_name',
+        merge_type='Concat',
+        merge_dim=0,
+        input_count=3,
+        backward_connections=(
+            LayerConnection(dst_var='input1'),
+            LayerConnection(dst_var='input2'),
+            LayerConnection(dst_var='input3')            
+        )                
+    )
+
+    layer = LayerHelper(script_factory_tf2x, layer_spec).get_instance()
+    x = tf.constant(np.random.random((12, 10, 3)))
+    y = tf.constant(np.random.random((14, 10, 3)))
+    z = tf.constant(np.random.random((16, 10, 3)))    
+    w = layer({'input1': x, 'input2': y, 'input3': z})    
+
+    assert w['output'].shape == (12+14+16, 10, 3)
     
+
 def test_tf2x_concat_vertically(script_factory_tf2x):
     layer_spec = MathMergeSpec(
         id_='layer_id',

@@ -1754,7 +1754,7 @@ const mutations = {
   ADD_inputVariableMutation(state, payload) {
     let el = currentElement(payload.layerId)
     Vue.set(el.inputs, generateID(), {
-      name: "input",
+      name: payload.name || "input",
       reference_var_id: null,
       reference_layer_id: null,
     });
@@ -2658,7 +2658,7 @@ const componentsInputs = {
   DeepLearningRecurrent: ['input'],
 
   MathArgmax: ['input'],
-  MathMerge: ['input1', 'input2'],
+  MathMerge: ['input1'],
   MathSwitch: ['input1', 'input2'],
   MathSoftmax: ['input'],
 
