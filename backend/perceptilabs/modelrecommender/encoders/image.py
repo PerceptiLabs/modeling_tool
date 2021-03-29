@@ -21,8 +21,13 @@ class ImageEncoderBlueprint(EncoderBlueprint):
         id2 = builder.add_layer(
             'DeepLearningConv'
         )
+        id3 = builder.add_layer(
+            'DeepLearningFC',
+            settings={'n_neurons': 128, 'activation': 'ReLU'}
+        )
         builder.add_connection(id1, 'output', id2, 'input')
-        return id2
+        builder.add_connection(id2, 'output', id3, 'input')
+        return id3
         
     
     
