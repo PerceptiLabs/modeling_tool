@@ -158,6 +158,11 @@ export default {
   .data-settings_chart {
     border-radius:  0 0 4px 4px;
   }
+
+  .chart-container {
+    height: 14rem;
+  }
+
   .chart-spinner-wrapper {
     position: relative;
     background: #23252A;

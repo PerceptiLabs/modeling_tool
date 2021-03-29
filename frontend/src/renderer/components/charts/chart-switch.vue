@@ -221,6 +221,7 @@
   $border-color: rgba(97, 133, 238, 0.4);
 
   .base-chart {
+    height: 100%;
     width: 100%;
     display: flex;
     overflow: hidden;

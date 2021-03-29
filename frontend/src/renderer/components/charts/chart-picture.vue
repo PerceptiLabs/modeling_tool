@@ -136,6 +136,8 @@ export default {
     height: 100%;
     position: relative;
     width: 100%;
+    display: flex;
+    justify-content: center;
   }
 
   .left-arrow {
