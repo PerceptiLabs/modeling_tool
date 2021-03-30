@@ -11,7 +11,7 @@
       </div>
       <div class="absolute border -top-px -right-px bg-white">
         <router-link
-          :to="projectDetailLink"
+          :to="{ name: 'ModelsView', params: { projectId: project.projectId } }"
           class="rounded outline-none focus:outline-none p-2 hover:bg-gray-100"
         >
           <fa-icon icon="external-link-alt" />
@@ -51,7 +51,6 @@ export default defineComponent({
       projectUpdatedDate: computed(() =>
         dayjs(props.project.updated).format("YYYY-MM-DD"),
       ),
-      projectDetailLink: computed(() => `/projects/${props.project.projectId}`),
     };
   },
 });

@@ -1,7 +1,5 @@
 <template>
-  <div>
-    <h2>This is Main Layout.</h2>
-    <hr />
+  <div class="w-full">
     <router-view></router-view>
   </div>
 </template>

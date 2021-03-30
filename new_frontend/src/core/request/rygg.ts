@@ -1,13 +1,13 @@
 import { HttpRequest } from "./http";
 import { RYGG_BASE_URL, RYGG_URL_CONFIG_PATH } from "../../config/constants";
-import { IProject } from "@/types";
+import { IProject, IModel } from "@/types";
 
 export class RyggRequest extends HttpRequest {
   constructor() {
     super(RYGG_URL_CONFIG_PATH, RYGG_BASE_URL);
   }
 
-  // Projects CRUD
+  // Projects
   async getProjects(): Promise<Array<IProject>> {
     const res = await this.get<{
       count: number;
@@ -18,5 +18,24 @@ export class RyggRequest extends HttpRequest {
     return res.results;
   }
 
-  // async createProjects() {}
+  async getProject(projectId: number): Promise<IProject> {
+    const res = await this.get<IProject>(`/projects/${projectId}`);
+    return res;
+  }
+
+  // Models
+  async getModels(): Promise<Array<IModel>> {
+    const res = await this.get<{
+      count: number;
+      next: IModel;
+      previous: IModel;
+      results: Array<IModel>;
+    }>("/models");
+    return res.results;
+  }
+
+  async getModel(modelId: number): Promise<IModel> {
+    const res = await this.get<IModel>(`/models/${modelId}`);
+    return res;
+  }
 }

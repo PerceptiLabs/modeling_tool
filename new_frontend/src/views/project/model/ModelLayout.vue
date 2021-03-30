@@ -1,7 +1,5 @@
 <template>
-  <div>
-    <h3>This is Model Layout.</h3>
-    <hr />
+  <div class="w-full h-full">
     <router-view></router-view>
   </div>
 </template>

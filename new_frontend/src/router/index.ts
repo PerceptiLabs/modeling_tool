@@ -1,6 +1,6 @@
 import env from "@/config/env";
 import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
-import RootLayout from "@/views/Layout.vue";
+import RootLayout from "@/views/Layout/index.vue";
 import Page404 from "@/views/common/404.vue";
 import TestView from "@/views/Test.vue";
 

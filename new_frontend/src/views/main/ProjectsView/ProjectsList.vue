@@ -1,6 +1,10 @@
 <template>
   <div class="flex flex-wrap">
+    <span class="m-4" v-if="isLoading">
+      Loading All Projects...
+    </span>
     <project-overview
+      v-else
       v-for="project in projects"
       :key="project.projectId"
       :project="project"
@@ -10,7 +14,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
+import { computed, defineComponent, Ref, ref } from "vue";
 import { useStore } from "vuex";
 import { getModule } from "vuex-module-decorators";
 
@@ -23,12 +27,17 @@ export default defineComponent({
     ProjectOverview,
   },
 
-  async setup() {
+  setup() {
     const projectsStore = getModule(ProjectsModule, useStore());
+    const isLoading: Ref<boolean> = ref(false);
 
-    await projectsStore.getProjects();
+    (async () => {
+      isLoading.value = true;
+      await projectsStore.getProjects();
+      isLoading.value = false;
+    })();
 
-    return { projects: projectsStore.projects };
+    return { projects: computed(() => projectsStore.projects), isLoading };
   },
 });
 </script>

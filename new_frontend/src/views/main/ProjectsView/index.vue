@@ -22,14 +22,7 @@
     </div>
 
     <div class="-m-4">
-      <Suspense>
-        <template #default>
-          <projects-list />
-        </template>
-        <template #fallback>
-          <div class="mt-4">Loading...</div>
-        </template>
-      </Suspense>
+      <projects-list />
     </div>
   </div>
 </template>

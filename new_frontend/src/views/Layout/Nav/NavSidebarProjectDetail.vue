@@ -19,25 +19,49 @@
       <!-- Project specific links -->
       <router-link
         class="hover:bg-indigo-500 hover:bg-opacity-20 px-8 py-2 w-full"
-        :to="{ name: '' }"
-        >Data</router-link
+        :to="{ name: 'ModelsView' }"
       >
+        {{ projectName }}
+      </router-link>
       <router-link
         class="hover:bg-indigo-500 hover:bg-opacity-20 px-8 py-2 w-full"
-        :to="{ name: '' }"
-        >Test</router-link
+        :to="{ name: 'DataView' }"
       >
+        Data
+      </router-link>
       <router-link
         class="hover:bg-indigo-500 hover:bg-opacity-20 px-8 py-2 w-full"
-        :to="{ name: '' }"
-        >System</router-link
+        :to="{ name: 'TestView' }"
       >
+        Test
+      </router-link>
+      <router-link
+        class="hover:bg-indigo-500 hover:bg-opacity-20 px-8 py-2 w-full"
+        :to="{ name: 'SystemView' }"
+      >
+        System
+      </router-link>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
+import { computed, defineComponent } from "vue";
+import { useStore } from "vuex";
+import { useRoute } from "vue-router";
+import { getModule } from "vuex-module-decorators";
 
-export default defineComponent({});
+import ProjectsModule from "@/store/modules/mod_projects";
+
+export default defineComponent({
+  setup() {
+    const projectsStore = getModule(ProjectsModule, useStore());
+    const router = useRoute();
+    const projectId = router.params["projectId"].toString();
+
+    return {
+      projectName: computed(() => projectsStore.projects[projectId]?.name),
+    };
+  },
+});
 </script>

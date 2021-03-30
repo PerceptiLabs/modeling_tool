@@ -8,23 +8,24 @@
 import { defineComponent, ref, Ref, watch } from "vue";
 import { useRoute } from "vue-router";
 
+import { getNavbarComponentName } from "@/utility";
+
 import NavSidebarProjectOverView from "./NavSidebarProjectOverview.vue";
 import NavSidebarProjectDetail from "./NavSidebarProjectDetail.vue";
 
 export default defineComponent({
   components: { NavSidebarProjectOverView, NavSidebarProjectDetail },
+
   setup() {
     const route = useRoute();
-    const componentType: Ref<string> = ref("NavSidebarProjectOverView");
+    const componentType: Ref<string> = ref(
+      getNavbarComponentName(route.params),
+    );
 
     watch(
-      () => route.name,
+      () => route.params.projectId,
       () => {
-        if (route.name === "ModelsView") {
-          componentType.value = "NavSidebarProjectDetail";
-        } else {
-          componentType.value = "NavSidebarProjectOverView";
-        }
+        componentType.value = getNavbarComponentName(route.params);
       },
     );
 

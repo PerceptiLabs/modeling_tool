@@ -8,11 +8,12 @@
       >
         <router-link
           v-for="project in projects"
-          :key="project.id"
+          :key="project.projectId"
           class="cursor-pointer hover:bg-indigo-500 hover:bg-opacity-20 px-6 py-2 truncate w-full"
-          :to="{ name: 'ModelsView', params: { projectId: project.id } }"
-          >{{ project.name }}</router-link
+          :to="{ name: 'ModelsView', params: { projectId: project.projectId } }"
         >
+          {{ project.name }}
+        </router-link>
       </div>
 
       <!-- Create project -->
@@ -32,28 +33,17 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive } from "vue";
+import { computed, defineComponent } from "vue";
+import { useStore } from "vuex";
+import { getModule } from "vuex-module-decorators";
 
-// For testing purposes
-interface ProjectMeta {
-  id: number;
-  name: string;
-}
+import ProjectsModule from "@/store/modules/mod_projects";
 
 export default defineComponent({
   setup() {
-    // For testing purposes, will be populated from rygg
-    const projects = reactive<ProjectMeta[]>([]);
-    projects.push({
-      id: 1,
-      name: "Project 1",
-    });
-    projects.push({
-      id: 2,
-      name: "Project 123456789123456789",
-    });
+    const projectsStore = getModule(ProjectsModule, useStore());
 
-    return { projects };
+    return { projects: computed(() => projectsStore.projects) };
   },
 });
 </script>

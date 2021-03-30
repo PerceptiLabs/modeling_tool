@@ -1,6 +1,7 @@
 import axios, { AxiosInstance } from "axios";
 import urlResolver from "../urlResolver";
 import { parseResponse } from "@/utility";
+import logger from "../logger";
 
 export class HttpRequest {
   private _resolver: Promise<AxiosInstance>;

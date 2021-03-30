@@ -3,6 +3,7 @@ import logger from "@/core/logger";
 
 export * from "./cookie";
 export * from "./response";
+export * from "./route";
 export * from "./vue-utils";
 
 export const parseJWT = (
