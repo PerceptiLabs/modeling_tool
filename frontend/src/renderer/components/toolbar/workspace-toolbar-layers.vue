@@ -446,6 +446,17 @@ export default {
       } catch(err) {
         console.log('Deep Learning layers hidden');
       }
+    },
+    filterUnnecessaryLayers(){
+      if(process.env.ENABLE_DATA_WIZARD === 'true') {
+        let newArr = [];
+        this.layersbarList.map(obj => {
+          if(obj.id !== 'tutorial_data' && obj.id !== 'tutorial_training') {
+            newArr.push(obj);
+          }
+        })
+        this.layersbarList = newArr;
+      }
     }
   },
   computed: {
@@ -461,30 +472,31 @@ export default {
     }
   },
   mounted() {
+    this.filterUnnecessaryLayers();
     if (process.env.ENABLE_TF2X !== 'true') { return; }
 
     this.addPreTrainedLayersToDeepLearningDropDown();
 
-    const ioDropdown = {
-      tooltip: 'IO',
-      tooltip_interactive: {
-        title: 'IO',
-        text: 'IO components'
-      },
-      layerClass: 'net-element-custom',
-      iconClass: 'icon-train-group',
-      childListClass: '',
-      showEl: false,
-      networkElements: [ 'IoInput', 'IoOutput' ],
-      id:'tutorial_io',
-      color: 'rgba(204, 204, 204, 0.7)',
-      borderColor: 'rgba(204, 204, 204, 0.2)',
-      bottomColor: 'rgba(204, 204, 204, 0.4)'
-    }
-    
-    if (!this.layersbarList.some(listItem => listItem.tooltip === 'IO')) {
-      this.layersbarList.push(ioDropdown);
-    }
+    // const ioDropdown = {
+    //   tooltip: 'IO',
+    //   tooltip_interactive: {
+    //     title: 'IO',
+    //     text: 'IO components'
+    //   },
+    //   layerClass: 'net-element-custom',
+    //   iconClass: 'icon-train-group',
+    //   childListClass: '',
+    //   showEl: false,
+    //   networkElements: [ 'IoInput', 'IoOutput' ],
+    //   id:'tutorial_io',
+    //   color: 'rgba(204, 204, 204, 0.7)',
+    //   borderColor: 'rgba(204, 204, 204, 0.2)',
+    //   bottomColor: 'rgba(204, 204, 204, 0.4)'
+    // }
+    //
+    // if (!this.layersbarList.some(listItem => listItem.tooltip === 'IO')) {
+    //   this.layersbarList.push(ioDropdown);
+    // }
   }
 }
 </script>
