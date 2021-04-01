@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from typing import Dict
 import numpy as np
 
@@ -6,14 +5,15 @@ from perceptilabs.graph.spec import GraphSpec
 from perceptilabs.trainer.stats.base import TrainingStatsTracker
 
 
-@dataclass(frozen=True)
 class SampleStats:
     """ Used for tracking Input/Target/Prediction values. 
 
     There is one input value per IoInput layer and there is one target/prediction pair per IoOutput layer. This class contains utility methods to help accessing these values using the layer ID.
     """
-    graph_spec: GraphSpec
-    sample_batch: Dict[str, np.ndarray]  # Dict[feature_name, sample values]
+
+    def __init__(self, graph_spec, sample_batch):
+        self.graph_spec = graph_spec
+        self.sample_batch = sample_batch
 
     def get_sample_by_layer_id(self, layer_id: str):
         """ Return a sample from the batch for a given layer ID """        

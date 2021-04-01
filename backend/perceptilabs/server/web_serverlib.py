@@ -6,6 +6,7 @@ import io
 import os
 import logging
 import pprint
+import numpy as np
 
 from perceptilabs.utils import RateCounter
 from perceptilabs.logconf import APPLICATION_LOGGER
@@ -13,6 +14,10 @@ from perceptilabs.logconf import APPLICATION_LOGGER
 
 logger = logging.getLogger(APPLICATION_LOGGER)
 
+def convert(o):
+    if isinstance(o, np.int64):
+        return int(o)
+    raise TypeError
 
 
 class Message:
@@ -129,11 +134,11 @@ class Message:
             content={"content":content}
 
         response = {
-            "length": len(json.dumps(content)),
+            "length": len(json.dumps(content, default=convert)),
             "body": content
         }
 
-        response = json.dumps(response)
+        response = json.dumps(response, default=convert)
 
         await websocket.send(response)
         

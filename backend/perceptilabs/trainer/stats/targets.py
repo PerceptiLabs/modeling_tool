@@ -1,6 +1,5 @@
 # TODO: add to included files
 # TODO: docs
-from dataclasses import dataclass
 from typing import Dict
 import numpy as np
 
@@ -8,10 +7,10 @@ from perceptilabs.graph.spec import GraphSpec
 from perceptilabs.trainer.stats.base import TrainingStatsTracker
 
 
-@dataclass(frozen=True)
 class TargetStats:
-    graph_spec: GraphSpec
-    targets_batch: Dict[str, np.ndarray]  # Dict[feature_name, target values]
+    def __init__(self, graph_spec, targets_batch):
+        self.graph_spec = graph_spec
+        self.targets_batch = targets_batch
 
     def get_value_by_layer_id(self, layer_id: str):
         """ Return a sample from the batch for a given layer ID """

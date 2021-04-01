@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from typing import Tuple
 import copy
 import numpy as np
@@ -8,10 +7,10 @@ from perceptilabs.graph.spec import GraphSpec
 from perceptilabs.trainer.stats.base import TrainingStatsTracker
 
 
-@dataclass(frozen=True)
 class PredictionMatrix:
-    correct: int = 0  
-    incorrect: int = 0
+    def __init__(self, correct, incorrect):
+        self.correct = correct
+        self.incorrect = incorrect
 
     @property
     def total(self):
@@ -29,10 +28,10 @@ def return_on_failure(value):
     return decorate
 
     
-@dataclass(frozen=True)
 class CategoricalOutputStats:
-    prediction_matrices: Tuple[Tuple[Tuple[PredictionMatrix, bool]]] = ()  # [Epoch][Step] = (matrix, is_training)
-    losses: Tuple[Tuple[Tuple[float, bool]]] = () # [Epoch][Step] = (loss, is_training)
+    def __init__(self, prediction_matrices=None, losses=None):
+        self.prediction_matrices = prediction_matrices or []
+        self.losses = losses or []
 
     @return_on_failure(0.0)
     def get_average_accuracy_for_epoch(self, epoch, phase='training'):

@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from collections import defaultdict
 import copy
 from typing import Dict, List
@@ -9,11 +8,11 @@ from perceptilabs.graph.spec import GraphSpec
 from perceptilabs.trainer.stats.base import TrainingStatsTracker
 
 
-@dataclass(frozen=True)
 class GradientStats:
-    minimum_series: Dict[str, List[float]]
-    average_series: Dict[str, List[float]]
-    maximum_series: Dict[str, List[float]]
+    def __init__(self, minimum_series, average_series, maximum_series):
+        self.minimum_series = minimum_series
+        self.average_series = average_series
+        self.maximum_series = maximum_series
 
     def get_minimum_by_layer_id(self, layer_id):
         """ Get the series of minumum gradients of this layer """ 

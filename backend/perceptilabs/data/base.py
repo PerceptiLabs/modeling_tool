@@ -1,6 +1,5 @@
 import os
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
 
 import pandas as pd
 import numpy as np
@@ -10,11 +9,11 @@ from typing import Dict
 import perceptilabs.data.pipelines as pipelines
 
 
-@dataclass
 class FeatureSpec:
-    datatype: str
-    iotype: str
-    file_path: str = ''
+    def __init__(self, datatype, iotype, file_path=''):
+        self.datatype = datatype
+        self.iotype = iotype
+        self.file_path = file_path
 
 
 class DataLoader:
