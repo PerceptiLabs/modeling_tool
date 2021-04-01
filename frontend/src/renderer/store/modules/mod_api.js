@@ -1144,12 +1144,15 @@ const actions = {
         net[ix]['getPreview'] = false;
       }
     }
+
+    const datasetSettings = rootGetters['mod_datasetSettings/getCurrentDatasetSettings']();      
     
     const theData = {
       receiver: '',
       action: 'getNetworkData',
       value: {
-        Network:  net,
+          Network:  net,
+	  datasetSettings: datasetSettings	  
       }
     };
     return coreRequest(theData)
