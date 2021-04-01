@@ -53,32 +53,81 @@ jobs:
 
   - job: installation_files
     dependsOn: dockerbuild
+    pool: Docker Build
     steps:
-
     - task: CopyFiles@2
       displayName: Copy installer to staging
       inputs:
-        SourceFolder: 'docker/compose/'
-        Contents: 'install_perceptilabs_enterprise'
-        TargetFolder: '$(Build.ArtifactStagingDirectory)'
-
-    - task: CopyFiles@2
-      displayName: Copy docker-compose to staging
-      inputs:
-        SourceFolder: 'docker/compose/'
-        Contents: 'docker-compose.yml'
-        TargetFolder: '$(Build.ArtifactStagingDirectory)'
-
-    - task: CopyFiles@2
-      displayName: Copy nginx.conf to staging
-      inputs:
-        SourceFolder: 'docker/nginx/'
-        Contents: 'nginx.conf'
-        TargetFolder: '$(Build.ArtifactStagingDirectory)'
+        Contents: |
+          docker/compose/install_perceptilabs_enterprise
+          docker/compose/docker-compose.yml
+          docker/nginx/nginx.conf
+        TargetFolder: $(Build.ArtifactStagingDirectory)
+        flattenFolders: true
 
     - task: PublishBuildArtifacts@1
-      displayName: Publish Build Artifacts
+      displayName: Publish Build Artifacts for Release Version
       inputs:
-        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        PathtoPublish: $(Build.ArtifactStagingDirectory)
         ArtifactName: 'installation'
         publishLocation: 'Container'
+
+    - task: Bash@3
+      displayName: Create Installer for Development Version
+      inputs:
+        targetType: 'inline'
+        script: |
+          set -Eeuo pipefail
+
+          cat install_perceptilabs_enterprise | \
+            sed "s|^VERSION=.*$|VERSION=${BUILDNUM}|g" | \
+            sed "s|^DOCKER_USERNAME=.*$|DOCKER_USERNAME=${DOCKER_USERNAME}|g" | \
+            sed "s|^CONTAINER_REGISTRY=.*$|CONTAINER_REGISTRY=${CONTAINER_REGISTRY}|g" | \
+            sed "s|^AZURE_BLOB_URL=.*$|AZURE_BLOB_URL=${AZURE_BLOB_URL}|g" \
+            > temp
+
+          mv temp install_perceptilabs_enterprise
+          chmod +x install_perceptilabs_enterprise
+
+        workingDirectory: $(Build.ArtifactStagingDirectory)
+        failOnStderr: true
+      env:
+        BUILDNUM: $(Build.BuildId)
+        AZURE_BLOB_URL: https://perceptilabs.blob.core.windows.net/enterprisedev
+        DOCKER_USERNAME: perceptilabsreader
+        CONTAINER_REGISTRY: perceptilabs.azurecr.io
+
+    - task: PublishBuildArtifacts@1
+      displayName: Publish Build Artifacts for Development Version
+      inputs:
+        PathtoPublish: $(Build.ArtifactStagingDirectory)
+        ArtifactName: 'installation_dev'
+        publishLocation: 'Container'
+
+  - job: pushfiles
+    displayName: Publish files to Azure storage
+    dependsOn: installation_files
+    pool:
+      # has to be on Windows because the AzureFileCopy tasks below only work on windows hosts
+      vmImage: windows-latest
+    steps:
+
+      - task: DownloadBuildArtifacts@0
+        inputs:
+          buildType: 'current'
+          downloadType: 'specific'
+          itemPattern: |
+            installation_dev/docker-compose.yml
+            installation_dev/nginx.conf
+            installation_dev/install_perceptilabs_enterprise
+          downloadPath: '$(System.ArtifactsDirectory)'
+
+      - task: AzureFileCopy@4
+        displayName: publish the docker-compose.yaml file
+        inputs:
+          SourcePath: '$(System.ArtifactsDirectory)/installation_dev/**'
+          azureSubscription: 'XSP72180|MICROSOFT|XSP72180|XSP524371(d9d6ebad-f86e-4961-9964-5665aa01fcfc)'
+          Destination: 'AzureBlob'
+          storage: 'perceptilabs'
+          ContainerName: 'enterprisedev'
+          BlobPrefix: '$(Build.BuildId)/'

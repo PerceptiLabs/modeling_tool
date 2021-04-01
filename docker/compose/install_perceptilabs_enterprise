@@ -1,51 +1,239 @@
 #!/usr/bin/env bash
 set -Eeo pipefail
 
+###################################################################################################
+# Constants
 VERSION=INVALID
-DOCKER_USERNAME=perceptilabsenterprise
+DOCKER_USERNAME=enterpriseuser
 CONTAINER_REGISTRY=perceptilabsenterprise.azurecr.io
 AZURE_BLOB_URL=https://perceptilabs.blob.core.windows.net/enterprise
-DOCKER_COMPOSE_URL=${AZURE_BLOB_URL}/${VERSION}/docker-compose.yaml
+CONFIG_DIR="${HOME}/.perceptilabs"
+CONFIG_FILE="${CONFIG_DIR}/config"
+REQUIRED_NVIDIA_VERSION=450
+REQUIRED_DOCKER_VERSION=20
+DOCKER_COMPOSE_INSTALLER="https://github.com/docker/compose/releases/download/1.28.5/docker-compose-$(uname -s)-$(uname -m)"
+DOCKER_COMPOSE_URL=${AZURE_BLOB_URL}/${VERSION}/docker-compose.yml
 NGINX_CONF_URL=${AZURE_BLOB_URL}/${VERSION}/nginx.conf
 
 ###################################################################################################
 # Get User Input
-if [ -z "$PL_PASSWORD" ]; then
-  read -s -p "Enter the perceptilabs docker registry password: " PL_PASSWORD
-fi
+
+[ ! -d "${CONFIG_DIR}" ] && mkdir -p "${CONFIG_DIR}"
+
+call_stat(){
+  # figure out stat(1) flags based on OS
+  if [[ $(uname -s) == Linux ]]; then
+    flags='-c %a'
+  else
+    flags='-f %Lp'
+  fi
+  stat $flags "$1"
+}
+
+set_config_file_permissions(){
+  chmod 600 "$CONFIG_FILE"
+}
+
+source_config(){
+  if [ ! -f "${CONFIG_FILE}" ]; then
+    return 1
+  fi
+
+  if [ ! -O "${CONFIG_FILE}" ]; then
+    echo "This user doesn't own the config file ${CONFIG_FILE}. Skipping reading it"
+    return 1
+  fi
+
+  set_config_file_permissions
+  source "${CONFIG_FILE}"
+  return 0
+}
+
+maybe_get_password(){
+  if [ -z "${PL_PASSWORD}" ]; then
+    read -s -r -p "Enter the perceptilabs docker registry password: " PL_PASSWORD
+    echo
+    echo "PL_PASSWORD=${PL_PASSWORD}" >> "${CONFIG_FILE}"
+    set_config_file_permissions
+  fi
+}
+
+
+###################################################################################################
+# Install Latest NVIDIA drivers
+has_gpus(){
+  lspci -d 10de: | grep . -q
+  return $?
+}
+
+has_nvidia_driver(){
+  which nvidia-smi &>/dev/null
+  return $?
+}
+
+driver_version_current(){
+  has_nvidia_driver && {
+    version=$(nvidia-smi --query-gpu=driver_version --format=csv,noheader | cut --delimiter=. --fields=1)
+    test $version -ge $REQUIRED_NVIDIA_VERSION
+  }
+  return $?
+}
+
+maybe_install_drivers_tool(){
+  (which ubuntu-drivers &>/dev/null) || {
+    sudo apt update
+    sudo apt install -y ubuntu-drivers-common
+  }
+  return $?
+}
+
+find_latest_driver(){
+
+  driver_version=$(ubuntu-drivers devices | \
+    grep "nvidia-driver-.*-server" | \
+    sed "s/driver.*nvidia-driver-\(.*\)-server.*/\1/g" | \
+    sort --numeric | \
+    tail -n 1 )
+
+  if [ -n "${driver_version}" ]; then
+    echo "nvidia-driver-${driver_version}-server"
+  fi
+}
+
+install_latest_driver(){
+  maybe_install_drivers_tool
+
+  package=$(find_latest_driver)
+  if [ -z "${package}" ]; then
+    echo "Couldn't find an NVIDIA driver"
+    return 1
+  fi
+
+  read -r -p "Detected latest driver: ${package}. Press enter to install it "
+  sudo apt install -y ${package}
+  echo
+  echo "Installation of drivers is complete."
+  echo "This computer needs to reboot to continue the rest of the installation."
+  echo "After reboot, please rerun this script to resume installation."
+  read -r -p "Press enter to reboot"
+  sudo shutdown -r now
+}
+
+install_nvidia_drivers(){
+  ! has_gpus || \
+    driver_version_current || \
+    install_latest_driver
+  return $?
+}
 
 ###################################################################################################
 # Install docker
-if [ "$(which docker | wc -l)" == "0" ]; then
-  curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-  sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+has_docker(){
+  sudo which docker >/dev/null
+  return $?
+}
+
+docker_version_current(){
+  has_docker && {
+    version=$(sudo docker version --format "{{.Client.Version}}" | cut --delimiter=. --fields=1)
+    test $version -ge $REQUIRED_DOCKER_VERSION
+  }
+  return $?
+}
+
+install_docker(){
+  docker_version_current || {
+    echo "Installing docker..."
+    curl https://get.docker.com -s | sh
+    sudo systemctl --now enable docker
+  }
+
+  # grep to dev/null instead of -q because -q breaks the pipe
+  sudo docker run -it hello-world | grep "Hello from Docker" >/dev/null
+  return $?
+}
+
+
+###################################################################################################
+# Install nvidia-docker
+# from https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html
+test_nvidia_docker(){
+  sudo docker run -it --rm --gpus all registry.access.redhat.com/ubi8-minimal nvidia-smi | grep "NVIDIA-SMI" >/dev/null
+  return $?
+}
+
+install_nvidia_docker(){
+  distribution=$(. /etc/os-release;echo $ID$VERSION_ID) \
+     && curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | sudo apt-key add - \
+     && curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-docker.list
   sudo apt-get update
-  sudo apt install -y docker-ce docker-ce-cli containerd.io
-  sudo docker run -it hello-world | grep "Hello from Docker" -q
-fi
+  sudo apt-get install -y nvidia-docker2
+  sudo systemctl restart docker
+  return $?
+}
+
+install_nvidia_docker_support(){
+  ! has_nvidia_driver || {
+    test_nvidia_docker || {
+      install_nvidia_docker
+
+      # verify that it's working
+      test_nvidia_docker
+    }
+  }
+  return $?
+}
 
 ###################################################################################################
 # Install docker-compose
-if [ "$(which docker-compose | wc -l)" == "0" ]; then
-  sudo curl -s -L "https://github.com/docker/compose/releases/download/1.28.5/docker-compose-$(uname -s)-$(uname -m)" -o /usr/bin/docker-compose
-  sudo chmod +x /usr/bin/docker-compose
-fi
+install_docker_compose(){
+  which docker-compose &>/dev/null || {
+    sudo curl -s -L "${DOCKER_COMPOSE_INSTALLER}" -o /usr/bin/docker-compose
+    sudo chmod +x /usr/bin/docker-compose
+  }
+}
 
 ###################################################################################################
 # Install PerceptiLabs
-curl -s $DOCKER_COMPOSE_URL \
-  | sed "s/\${CONTAINER_REGISTRY}/$CONTAINER_REGISTRY/g" \
-  | sed "s/\${PL_VERSION}/$VERSION/g" \
-  > docker-compose.yaml
+remove_gpu_section(){
+  cat docker-compose.yml | \
+    sed "/^\s*deploy:/,/capabilities.*gpu/d" \
+    > tmp
+  mv tmp docker-compose.yml
+}
 
-wget $NGINX_CONF_URL
+install_perceptilabs(){
+  curl -s $DOCKER_COMPOSE_URL \
+    | sed "s/\${CONTAINER_REGISTRY}/$CONTAINER_REGISTRY/g" \
+    | sed "s/\${PL_VERSION}/$VERSION/g" \
+    > docker-compose.yml
 
-mkdir -p plabs
-chmod 777 plabs
-sudo docker login ${CONTAINER_REGISTRY} --username ${DOCKER_USERNAME} --password "${PL_PASSWORD}"
+  ! has_nvidia_driver && \
+     remove_gpu_section
 
-echo pulling images
-sudo docker-compose pull
+  curl -s -O $NGINX_CONF_URL
 
-sudo docker-compose up -d
-echo PerceptiLabs is ready to use.
+  mkdir -p plabs
+  chmod 777 plabs
+  sudo docker login ${CONTAINER_REGISTRY} --username ${DOCKER_USERNAME} --password-stdin <<< "${PL_PASSWORD}"
+
+  echo pulling images
+  sudo docker-compose pull
+
+  sudo docker-compose up -d
+}
+
+
+# Check that I can sudo
+sudo echo
+
+source_config || \
+  maybe_get_password
+
+install_nvidia_drivers
+install_docker
+install_nvidia_docker_support
+install_docker_compose
+install_perceptilabs
+
+echo PerceptiLabs is ready!

@@ -36,7 +36,7 @@ user_logger = logging.getLogger(USER_LOGGER)
 CoreCommand = collections.namedtuple('CoreCommand', ['type', 'parameters', 'allow_override'])
 
 
-CPU_GPU_POLICY = 'force-cpu' # {'use-spec', 'force-gpu', 'force-cpu'}
+CPU_GPU_POLICY = 'force-gpu' # {'use-spec', 'force-gpu', 'force-cpu'}
 
 
 class coreLogic():
