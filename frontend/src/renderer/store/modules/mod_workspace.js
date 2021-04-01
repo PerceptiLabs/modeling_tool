@@ -4,7 +4,8 @@ import {
   deepCloneNetwork,
   isLocalStorageAvailable,
   stringifyNetworkObjects,
-  deepCopy
+  deepCopy,
+  isEnvDataWizardEnabled
 } from "@/core/helpers.js";
 import { widthElement, LOCAL_STORAGE_WORKSPACE_VIEW_TYPE_KEY, LOCAL_STORAGE_WORKSPACE_SHOW_MODEL_PREVIEWS, defaultTrainingSettings } from '@/core/constants.js'
 import idb  from "@/core/helpers/idb-helper.js";
@@ -14,6 +15,7 @@ import {isElectron} from "@/core/helpers";
 import { deleteFolder as fileserver_deleteFolder } from '@/core/apiFileserver';
 import cloneDeep from 'lodash.clonedeep';
 import { saveModelJson as fileserver_saveModelJson } from '@/core/apiFileserver';
+import { lockedComponentsNames } from "@/core/constants.js";
 
 const namespaced = true;
 
@@ -993,7 +995,13 @@ const mutations = {
   },
   delete_element(state, {getters, dispatch}) {
 
-    let arrSelect = getters.GET_currentSelectedEl;
+    let arrSelect = cloneDeep(getters.GET_currentSelectedEl);
+    
+    // under feature flag
+    if(isEnvDataWizardEnabled()) {
+      arrSelect = arrSelect.filter(el => !lockedComponentsNames.includes(el.componentName))  
+    }
+    
     if(!arrSelect.length) return;
     let arrSelectID = [];
 

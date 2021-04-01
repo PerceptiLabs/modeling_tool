@@ -113,7 +113,7 @@
     import { convertModelRecommendationToVisNodeEdgeList, createVisNetwork } from '@/core/helpers/layer-positioning-helper';
     import { buildLayers } from '@/core/helpers/layer-creation-helper';
 
-    import { debounce } from '@/core/helpers'
+    import { debounce, isEnvDataWizardEnabled } from '@/core/helpers'
     import cloneDeep from 'lodash.clonedeep';
 
     import { doesDirExist as fileserver_doesDirExist } from '@/core/apiFileserver';
@@ -200,7 +200,7 @@ export default {
             return process.env.ENABLE_TF2X === 'true';
         },
         isDataWizardEnabled() {
-            return process.env.ENABLE_DATA_WIZARD === 'true';
+            return isEnvDataWizardEnabled()
         }
     },
     mounted() {
@@ -217,7 +217,7 @@ export default {
     methods: {
         ...mapActions({
             addNetwork:                 'mod_workspace/ADD_network',
-            closeStatsTestViews:        'mod_workspace/SET_statisticsAndTestToClosed',
+			      closeStatsTestViews:        'mod_workspace/SET_statisticsAndTestToClosed',
             createProjectModel:         'mod_project/createProjectModel',
             getModelMeta:               'mod_project/getModel',
             getProjects:                'mod_project/getProjects',

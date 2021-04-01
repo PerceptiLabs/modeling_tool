@@ -1,5 +1,5 @@
-
-import { deepCloneNetwork } from "@/core/helpers";
+import {deepCloneNetwork, isEnvDataWizardEnabled} from "@/core/helpers";
+import { lockedComponentsNames } from "@/core/constants";
 
 const namespaced = true;
 
@@ -18,8 +18,8 @@ const mutations = {
 };
 
 const actions = {
-  SET_buffer({commit}, value) {
-    commit('set_buffer', value)
+  SET_buffer({commit}, payload) {
+    commit('set_buffer', filterLockedComponents(payload))
   },
   CLEAR_buffer({commit}) {
     commit('set_buffer', null)
@@ -32,6 +32,12 @@ const actions = {
   }
 };
 
+function filterLockedComponents(payload) {
+  if(isEnvDataWizardEnabled()) {
+    payload = payload.filter(el => !lockedComponentsNames.includes(el.target.dataset.component))  
+  }
+  return payload
+}
 export default {
   namespaced,
   state,

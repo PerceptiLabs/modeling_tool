@@ -15,19 +15,25 @@
       :styleType="['network-view']"
       )
     .layerTitle(v-if="showTitle") {{ displayTitle }}
-
+    i.icon.icon-lock(v-if="isDataWizardEnabled")
 </template>
 
 <script>
   import mixinSet from '@/core/mixins/net-element-view-layer.js';
   import TextEditable       from '@/components/base/text-editable.vue';
   import mixinFocus     from '@/core/mixins/net-element-settings-input-focus.js';
+  import {isEnvDataWizardEnabled} from "@/core/helpers";
 export default {
   name: 'ViewIoOutput',
   mixins: [mixinSet, mixinFocus],
   components: { TextEditable },
   props: {
       withLayerTypeText: Boolean,
+  },
+  computed: {
+    isDataWizardEnabled() {
+      return isEnvDataWizardEnabled()
+    }
   },
   data() {
     return {
@@ -40,3 +46,9 @@ export default {
   }
 }
 </script>
+<style lang="scss" scoped>
+.icon-lock {
+  opacity: 0.3;
+  margin-left: 3px;
+}
+</style>

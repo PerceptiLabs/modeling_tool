@@ -96,6 +96,12 @@ export const defaultTrainingSettings = {
   Centered: false,
 }
 
+// those components can't be delete | copy | cut | paste
+export const lockedComponentsNames = [
+  'IoInput',
+  'IoOutput',
+]
+
 export {
   isDevelopMode,
   trainingElements,

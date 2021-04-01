@@ -227,6 +227,8 @@ const layerBgColor = function (componentName) {
     case 'DataData':
     case 'DataEnvironment':
     case 'DataRandom':
+    case 'IoInput':
+    case 'IoOutput':
       className = 'net-color-data';
       break;
     case 'DeepLearningFC':
@@ -253,7 +255,6 @@ const layerBgColor = function (componentName) {
     case 'TrainLoss':
     case 'TrainOptimizer':
     case 'TrainDetector':
-    case 'TrainGan':
     case 'TrainGan':
     case 'TrainRegression':
       className = 'net-color-train';
@@ -469,6 +470,10 @@ const eraseCookie = (name) => {
 }
 
 const sleep = m => new Promise(r => setTimeout(r, m));
+
+export const isEnvDataWizardEnabled = () => {
+  return process.env.ENABLE_DATA_WIZARD === 'true';
+}
 
 export {
   projectPathModel,
