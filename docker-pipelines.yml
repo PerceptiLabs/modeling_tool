@@ -123,7 +123,7 @@ jobs:
           downloadPath: '$(System.ArtifactsDirectory)'
 
       - task: AzureFileCopy@4
-        displayName: publish the docker-compose.yaml file
+        displayName: publish the docker-compose.yml file
         inputs:
           SourcePath: '$(System.ArtifactsDirectory)/installation_dev/**'
           azureSubscription: 'XSP72180|MICROSOFT|XSP72180|XSP524371(d9d6ebad-f86e-4961-9964-5665aa01fcfc)'
