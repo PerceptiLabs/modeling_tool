@@ -173,8 +173,8 @@ class Trainer:
         for output_name, loss_fn in losses.items():
             # TODO: weight the different losses (story 1542)
             total_loss += loss_fn(
-                predictions_batch[output_name],
-                tf.reshape(targets_batch[output_name], shape=predictions_batch[output_name].shape)
+                tf.reshape(targets_batch[output_name], shape=predictions_batch[output_name].shape),
+                predictions_batch[output_name]
             )
         
         return total_loss
@@ -505,7 +505,7 @@ class Trainer:
         loss = training_settings['Loss']
         if loss == 'Quadratic':
             return tf.keras.losses.MeanSquaredError()
-        elif loss == 'Cross_Entropy':
+        elif loss == 'Cross-Entropy':
             return tf.keras.losses.CategoricalCrossentropy()
         elif loss == 'Dice':
             return dice
