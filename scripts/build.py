@@ -667,7 +667,9 @@ if __name__ == "__main__":
             print(f"Invalid docker type: {dockertype}")
             print(USAGE)
             sys.exit(1)
-        print(f"\nTo run the docker build. cd into build/docker/{dockertype} and run `docker build .`")
+
+        if dockertype != "all":
+            print(f"\nTo run the docker build. cd into build/docker/{dockertype} and run `docker build .`")
     else:
         print(f"Invalid build type: {build_type}")
         print(USAGE)
