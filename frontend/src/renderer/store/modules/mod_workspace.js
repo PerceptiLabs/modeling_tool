@@ -2479,6 +2479,13 @@ const actions = {
     commit('set_historyStep', {value, dispatch});
   },
   SET_NetworkChartData({ commit }, {layerId, payload}) {
+    payload.series = payload.series.map(serie => {
+      if(serie.type === 'rgba') {
+        serie.data = JSON.stringify(serie.data);
+      }
+      return serie;
+    })
+    
     commit('SET_NetworkChartDataMutation', {layerId, payload});
   },
   SET_NetworkChartIdx({ commit }, {layerId, payload}) {
