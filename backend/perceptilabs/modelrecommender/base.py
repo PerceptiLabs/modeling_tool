@@ -8,7 +8,8 @@ from perceptilabs.data.base import FeatureSpec
 from perceptilabs.modelrecommender.encoders import (
     NumericalEncoderBlueprint,
     ImageEncoderBlueprint,
-    BinaryEncoderBlueprint
+    BinaryEncoderBlueprint,
+    CategoricalEncoderBlueprint
 )
 from perceptilabs.modelrecommender.decoders import (
     NumericalDecoderBlueprint,
@@ -69,6 +70,8 @@ class ModelRecommender:
             return ImageEncoderBlueprint().build(builder, feature_name, feature_spec, data_loader=self._data_loader)            
         elif feature_spec.datatype == 'binary':
             return self._add_binary_encoder(builder, feature_name, feature_spec)
+        elif feature_spec.datatype == 'categorical':
+            return self._add_categorical_encoder(builder, feature_name, feature_spec, data_loader=self._data_loader)
         else:
             raise NotImplementedError(f"No encoder found for datatype '{feature_spec.datatype}'")
 
@@ -94,6 +97,9 @@ class ModelRecommender:
     def _add_binary_encoder(self, builder, feature_name, feature_spec):
         """ Adds a binary encoder """
         return BinaryEncoderBlueprint().build(builder, feature_name, feature_spec)
+
+    def _add_categorical_encoder(self, builder, feature_name, feature_spec, data_loader):
+        return CategoricalEncoderBlueprint().build(builder, feature_name, feature_spec, data_loader)
     
     def _add_numerical_decoder(self, builder, feature_name, feature_spec):
         """ Adds a numerical decoder """

@@ -31,7 +31,9 @@ def build_categorical_pipelines(feature_dataset: tf.data.Dataset = None) -> tf.k
     n_categories = len(categories)
     init = tf.lookup.KeyValueTensorInitializer(categories_tensor, numericals_tensor)
     table = tf.lookup.StaticHashTable(init, default_value=-1)  # TODO(anton.k): the hash table approach should be removed w/ tf 2.4: keras preprocessing is better (and can be inverted easily)
-    
+            
+        
+
     class TrainingPipeline(tf.keras.Model):
         def __init__(self, lookup_table, n_categories):
             super().__init__()
@@ -40,7 +42,7 @@ def build_categorical_pipelines(feature_dataset: tf.data.Dataset = None) -> tf.k
         
         def call(self, x):
             x = self._lookup_table.lookup(x)
-            x = tf.one_hot(x, self.n_categories)            
+            x = tf.one_hot(x, self.n_categories)          
             return x
 
 
