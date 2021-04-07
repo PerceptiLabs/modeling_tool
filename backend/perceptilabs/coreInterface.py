@@ -14,7 +14,10 @@ import skimage
 import GPUtil
 import collections
 import math
+from typing import List
 
+from perceptilabs.core_new.compatibility import CompatibilityCore
+from perceptilabs.script import ScriptFactory
 from perceptilabs.logconf import APPLICATION_LOGGER, USER_LOGGER
 from perceptilabs.networkExporter import exportNetwork
 from perceptilabs.networkSaver import saveNetwork
@@ -25,9 +28,7 @@ from perceptilabs.CoreThread import CoreThread
 from perceptilabs.createDataObject import createDataObject
 from perceptilabs.messaging import MessageProducer
 from perceptilabs.aggregation import AggregationRequest, AggregationEngine
-from typing import List
 from perceptilabs.utils import is_tf1x
-
 from perceptilabs.license_checker import LicenseV2
 
 logger = logging.getLogger(APPLICATION_LOGGER)
@@ -190,7 +191,15 @@ class coreLogic():
         else:
             raise ValueError(f"Unknown trainer choice: '{self._trainer}'")
 
-    def startCore(self, graph_spec, model_id, training_settings, dataset_settings=None):
+    def start_core(self, graph_spec, model_id, training_settings=None, dataset_settings=None):
+        """ Spins up a core for training (or exporting in the pre-data wizard case)
+
+        Arguments:
+            graph_spec: the specification of the model being trained
+            model_id: the ID of the model
+            training_settings: only required for post-data wizard mode. A dict with things like number of epochs, type of optimizer, etc
+            dataset_settings: only required for post-data wizard mode. A dict with things like train/test/val split, column data types, etc
+        """
         try:
             self.Close()
         except:
@@ -205,10 +214,6 @@ class coreLogic():
                 json.dump(graph_spec.to_dict(), f, indent=4)
                 
         graph_spec = self._override_graph_spec(graph_spec)
-        # -----
-        from perceptilabs.core_new.compatibility import CompatibilityCore
-        from perceptilabs.script import ScriptFactory
-
         
         script_factory = ScriptFactory(
             mode='tf2x' if utils.is_tf2x() else 'tf1x',
@@ -386,7 +391,7 @@ class coreLogic():
 
         if graph_spec is not None and utils.is_tf1x():
             self.set_running_mode('exporting')
-            self.startCore(graph_spec, model_id)
+            self.start_core(graph_spec, model_id)
 
 
         self.commandQ.put(
@@ -474,7 +479,7 @@ class coreLogic():
     def startTest(self, graph_spec, model_id, training_settings=None):
         if not self.isRunning()['content'] :
             self.set_running_mode('testing')
-            self.startCore(graph_spec, model_id, training_settings)
+            self.start_core(graph_spec, model_id, training_settings)
             return {"content":"core started for testing"}
         else:
             return {"content":"test already running"}
