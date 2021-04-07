@@ -8,38 +8,65 @@ import skimage.io as sk
 from perceptilabs.data.pipelines import build_image_pipelines
 
 
-@pytest.mark.tf2x
-def test_image_preprocessing(temp_path):
-    expected = np.random.random((128,128,3)).astype(np.float32)
+def save_image_to_disk(image, directory, ext='.png', repeats=1):
     inputs = list()
 
+    plugin = None
+    if ext in ['.tif', '.tiff']:
+        plugin = 'tifffile'        
+    
     # Save images into a dataset
-    for i in range (1, 9):
-        file_name = str(i) + '.png'
-        path=os.path.join(temp_path, file_name)
+    for i in range(repeats):
+        path = os.path.join(directory, f'{i}{ext}')
 
-        assert file_name not in os.listdir(temp_path)
+        assert not os.path.exists(path)                
+        sk.imsave(path, image)
 
-        sk.imsave(path, expected)
-
+        saved_image = sk.imread(path, plugin=plugin)
+        assert np.all(saved_image == image)
+        assert os.path.exists(path)        
         inputs.append(path)
 
-        assert file_name in os.listdir(temp_path)
+    return tf.constant(inputs)
+    
 
+
+@pytest.mark.tf2x
+def test_image_preprocessing_for_png(temp_path):
+    image = np.random.randint(0, 255, size=(16, 16, 3)).astype(np.uint8)
+    expected = image.astype(np.float32) / 255.0
+        
     # Create the dataset
-    tensor_inputs = tf.constant(inputs)
+    tensor_inputs = save_image_to_disk(image, temp_path, ext='.png', repeats=9)
     dataset = tf.data.Dataset.from_tensor_slices(tensor_inputs)
 
     # Create the pipeline
     pipeline, _, _ = build_image_pipelines(dataset)
     processed_dataset = dataset.map(lambda x: pipeline(x))
+    
+    # See if the actual concrete value has the same shape as we expect
+    actual = next(iter(processed_dataset)).numpy()
+    
+    assert np.all(actual == expected)
 
+
+@pytest.mark.tf2x
+def test_image_preprocessing_for_tiff(temp_path):
+    image = np.random.randint(0, 255, size=(16, 16, 4)).astype(np.uint16)
+    expected = image.astype(np.float32) / 255.0
+        
+    # Create the dataset
+    tensor_inputs = save_image_to_disk(image, temp_path, ext='.tiff', repeats=9)
+    dataset = tf.data.Dataset.from_tensor_slices(tensor_inputs)
+
+    # Create the pipeline
+    pipeline, _, _ = build_image_pipelines(dataset)
+    processed_dataset = dataset.map(lambda x: pipeline(x))
+    
     # See if the actual concrete value has the same shape as we expect
     actual = next(iter(processed_dataset)).numpy()
 
-    assert actual.shape == expected.shape
-
-    
+    assert np.all(actual == expected)
 
 
     

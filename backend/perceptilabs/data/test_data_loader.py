@@ -49,7 +49,7 @@ def test_ints_are_converted_to_float():
         
 def test_image_data_is_loaded_correctly(temp_path):
     image = np.random.randint(0, 255, (32, 32, 3), dtype=np.uint8)
-    expected_image = image.astype(np.float32)
+    expected_image = image.astype(np.float32)/255
     
     image_path = os.path.join(temp_path, 'image.png')
     imsave(image_path, expected_image)

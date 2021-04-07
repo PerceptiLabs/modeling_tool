@@ -1,4 +1,8 @@
+import os
+import numpy as np
 import tensorflow as tf
+import skimage.io
+
 
 def build_image_pipelines(feature_dataset: tf.data.Dataset = None) -> tf.keras.Model:
     """ Returns a keras model for preprocessing data
@@ -14,11 +18,28 @@ def build_image_pipelines(feature_dataset: tf.data.Dataset = None) -> tf.keras.M
 
     # NOTE: Use the dataset directly to get the shape
     # Store the shape in the Pipeline 
-    tensor = next(iter(feature_dataset))
-    image_encoded = tf.io.read_file(tensor)
-    image_decoded = tf.io.decode_image(image_encoded)
-    shape = image_decoded.shape
+    image_path = next(iter(feature_dataset)).numpy().decode()
+    _, ext = os.path.splitext(image_path)
 
+    class Loader(tf.keras.Model):
+        def call(self, image_path):
+            if ext in ['.tiff', '.tif']:
+                image_decoded = tf.py_function(self.load_tiff, [image_path], tf.uint16)
+            else:
+                image_encoded = tf.io.read_file(image_path)
+                image_decoded = tf.io.decode_image(image_encoded)
+                
+            return image_decoded
+
+        def load_tiff(self, path_tensor):
+            path = path_tensor.numpy().decode()
+            image = np.atleast_3d(skimage.io.imread(path).astype(np.uint16))
+            image_tensor = tf.constant(image)
+            return image_tensor    
+        
+    loader = Loader()
+    image = loader(tf.constant(image_path))
+    shape = image.shape
 
     class Pipeline(tf.keras.Model):
         def __init__(self):
@@ -26,9 +47,9 @@ def build_image_pipelines(feature_dataset: tf.data.Dataset = None) -> tf.keras.M
             self.image_shape = shape
 
         def call(self, x):
-            x = tf.io.read_file(x)
-            x = tf.io.decode_image(x)
+            x = loader(x)
             x = tf.cast(x, dtype=tf.float32)
+            x = x / 255.0
             return x
 
     return Pipeline(), None, None
