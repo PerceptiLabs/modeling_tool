@@ -8,6 +8,10 @@ import subprocess
 import sys
 import time
 import platform
+import pkg_resources
+import zipfile
+import requests 
+import io
 
 PYTHON = sys.executable
 
@@ -176,6 +180,15 @@ class PortPoller:
                     print(f"{bcolors.PERCEPTILABS}PerceptiLabs:{bcolors.ENDC}    {s} on port {p}")
             time.sleep(interval_secs)
 
+
+def download_tutorial_data():
+    tutorial_data_path = pkg_resources.resource_filename('perceptilabs','tutorial_data')
+    if not os.path.isdir(os.path.join(tutorial_data_path,'mnist_data')):
+        request = requests.get('https://perceptilabs.blob.core.windows.net/data/mnist_data.zip')
+        file = zipfile.ZipFile(io.BytesIO(request.content))
+        file.extractall(tutorial_data_path)
+    return
+
 def start(verbosity):
     # give the handler closure the shared procs variable
     procs = []
@@ -188,6 +201,7 @@ def start(verbosity):
     try:
         check_for_atari()
         check_for_git()
+        download_tutorial_data()
         pipes = get_pipes(verbosity)
         do_migration(pipes)
         api_token = secrets.token_urlsafe()
