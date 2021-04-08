@@ -35,6 +35,9 @@ export const GITHUB_GET_TOKEN_BY_CODE_URL = 'https://ghsk.azurewebsites.net'
 
 export const IS_VALID_KEYCLOACK_CHECKER_URL = `${process.env.KEYCLOACK_BASE_URL}/auth/realms/${process.env.KEYCLOACK_RELM}/protocol/openid-connect/3p-cookies/step1.html`;
 
+export const PERCEPTILABS_DOCUMENTATION_URL = 'https://docs.perceptilabs.com/perceptilabs';
+export const PERCEPTILABS_VIDEO_TUTORIAL_URL = 'https://www.youtube.com/watch?v=IDC_uHfdpnw&list=PLhDSeRDt1gigF-8DrTBedYy3TMZ2OelqA';
+
 const widthElement = 60;
 const workspaceGrid = 30;
 export const SHIFT_HOLDING_CONNECT_COMPONENT_MAX_DISTANCE = 250;

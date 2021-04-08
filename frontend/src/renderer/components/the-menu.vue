@@ -35,7 +35,7 @@
 
 <script>
   import { mapGetters, mapMutations, mapActions, mapState } from 'vuex';
-  import { baseUrlSite, MODAL_PAGE_PROJECT } from '@/core/constants.js';
+  import {baseUrlSite, MODAL_PAGE_PROJECT, PERCEPTILABS_DOCUMENTATION_URL} from '@/core/constants.js';
   import { goToLink, isOsMacintosh } from '@/core/helpers.js'
  
 export default {
@@ -154,7 +154,7 @@ export default {
       this.goToLink(`${baseUrlSite}/about`);
     },
     goToHelpPageWeb() {
-       this.goToLink('https://www.perceptilabs.com/docs/overview');
+       this.goToLink(PERCEPTILABS_DOCUMENTATION_URL);
     },
     goToAboutPageWeb() {
       this.$store.commit('globalView/set_showAppAbout', true);
