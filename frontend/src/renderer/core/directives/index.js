@@ -58,6 +58,21 @@ Vue.directive("comingSoon", {
   }
 });
 
+Vue.directive('click-outside', {
+  bind: function (el, binding, vnode) {
+    el.clickOutsideEvent = function (event) {
+      const isClickedOutsideElement = !(el == event.target || el.contains(event.target));
+      if (isClickedOutsideElement) {
+        vnode.context[binding.expression](event); // call method from v-click-outside="methodToCall"
+      }
+    };
+    document.body.addEventListener('click', el.clickOutsideEvent)
+  },
+  unbind: function (el) {
+    document.body.removeEventListener('click', el.clickOutsideEvent)
+  },
+});
+
 function showComingSoonPopup() {
   store.dispatch("globalView/GP_ComingSoonPopup");
 }

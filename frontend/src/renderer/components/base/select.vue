@@ -3,6 +3,7 @@
     button.custom-select_view.input(type="button"
       :class="{'open-list': isOpenList, 'text-placeholder': !value.length}"
       @click="openList"
+      v-click-outside="closeList"
       )
       span.thin-font {{ labelText }}
       i.icon.icon-shevron.icon--open
