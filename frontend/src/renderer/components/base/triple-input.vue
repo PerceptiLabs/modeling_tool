@@ -1,5 +1,6 @@
 <template lang="pug">
   .triple-input
+    span.labels(v-if="withLabels") Training:
     input.triple-input_input(type="number"
       :disabled="disableEdit"
       v-model.number="value1"
@@ -13,6 +14,7 @@
       v-show="errors.has('field1')"
       ) {{ errors.first('field1') }}
     span.triple-input_separate {{ separateSign || 'X'}}
+    span.labels(v-if="withLabels") Validation:
     input.triple-input_input(type="number"
       :disabled="disableEdit"
       v-model.number="value2"
@@ -23,6 +25,7 @@
       @blur="$emit('handle-blur')"
     )
     span.triple-input_separate {{ separateSign || 'X' }}
+    span.labels(v-if="withLabels") Test:
     input.triple-input_input(type="number"
       :disabled="disableEdit"
       v-model.number="value3"
@@ -56,6 +59,10 @@ export default {
     validateMin: { type: Number, default: -9999 },
     validateMax: { type: Number, default: 10000 },
     validateSum: { type: Number, default: null },
+    withLabels: {
+      type: Boolean,
+      default: false,
+    }
   },
   computed: {
     isNotValidateSum() {

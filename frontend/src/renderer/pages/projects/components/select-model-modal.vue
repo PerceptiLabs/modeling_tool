@@ -42,11 +42,22 @@
                         //-     img(src="./../../../../../static/img/search-models.svg")
                         //-     input(type='text' placeholder="Search")
                     .main-file-structure-contents
+                        .dataset-settings(v-if="dataset")
+                          div.data-partition-wrapper
+                            h5 Data partition:
+                            triple-input(
+                              v-model="datasetSettings.partitions"
+                              separate-sign="%"
+                              :validate-min="1"
+                              :validate-max="98"
+                              :validate-sum="100"
+                              :withLabels="true"
+                            )
+                          base-checkbox.light-text(v-model="datasetSettings.randomizedPartitions") Randomized partitions
                         .load-contents-group(v-if="!dataset")
                             button.action-button(@click="openFilePicker('setDataPath')") Load data
-                        .dataset-settings(v-if="dataset")
-                          base-checkbox.light-text(v-model="datasetSettings.randomizedPartitions") Randomized partitions
-                        csv-table(v-if="dataset" :dataSet="dataset" @update="handleCSVDataTypeUpdates")        
+                        csv-table(v-if="dataset" :dataSet="dataset" @update="handleCSVDataTypeUpdates")
+                        
             .main-actions 
                 div  
                     h4.presets-text Name:
@@ -108,6 +119,7 @@
     import ganTemplate            from '@/core/basic-template/gan-template.js'
     import FilePickerPopup        from "@/components/global-popups/file-picker-popup.vue";
     import CsvTable               from "@/components/different/csv-table.vue";
+    import TripleInput        from "@/components/base/triple-input";
 
     import { mapActions, mapState, mapGetters } from 'vuex';
     import { convertModelRecommendationToVisNodeEdgeList, createVisNetwork } from '@/core/helpers/layer-positioning-helper';
@@ -124,7 +136,7 @@
 
 export default {
     name: 'SelectModelModal',
-    components: { FilePickerPopup, CsvTable },
+    components: { FilePickerPopup, CsvTable, TripleInput, },
     data: function() {
         return {
             basicTemplates: [
@@ -174,7 +186,8 @@ export default {
             dataset: null,
             datasetPath: null,
 	          datasetSettings: {
-		            randomizedPartitions: true
+		            randomizedPartitions: true,
+                partitions: [70,20,10]
       	    },	
             filepickerOptions: {
                 popupTitle: '',
@@ -309,13 +322,15 @@ export default {
 
             await this.$store.dispatch('mod_datasetSettings/setCurrentDataset', this.datasetPath);
             const datasetSettings = {
-                'randomizedPartitions': this.datasetSettings.randomizedPartitions, 
-                'featureSpecs': this.formatCSVTypesIntoKernelFormat()
+                randomizedPartitions: this.datasetSettings.randomizedPartitions,
+                partitions: this.datasetSettings.partitions,
+                featureSpecs: this.formatCSVTypesIntoKernelFormat(),
+                
              };
              
             await this.$store.dispatch('mod_datasetSettings/setDatasetSettings', {
                 datasetPath: this.datasetPath, 
-                settings: datasetSettings
+                settings: datasetSettings,
              });
             const payload = this.$store.getters['mod_datasetSettings/getCurrentDatasetSettings']();
             const modelRecommendation = await this.getModelRecommendation(payload);
@@ -735,19 +750,6 @@ export default {
             padding: 1.5rem;
         }
 
-        & > .dataset-settings {
-            display: flex;
-            justify-content: flex-end;
-            margin-bottom: 1rem;
-            width: 100%;
-
-            .custom-checkbox {
-                display: flex;
-                justify-content: flex-end;
-                cursor: pointer;
-            } 
-        }
-
     }
     .main-actions {
         display: flex;
@@ -896,5 +898,26 @@ export default {
     }
     .mode-path-wrapper {
         padding: 0 20px;
+    }
+    .data-partition-wrapper {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+      h5 {
+        font-size: 14px;
+        margin-right: 10px;
+        margin-bottom: 0;
+      }
+    }
+    .dataset-settings {
+      display: flex;
+      flex-direction: column;
+      //padding: 40px;
+      padding-bottom: 20px;
+
+      .custom-checkbox {
+        display: flex;
+        cursor: pointer;
+      }
     }
 </style>

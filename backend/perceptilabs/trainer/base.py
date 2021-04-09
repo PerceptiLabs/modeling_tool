@@ -100,11 +100,8 @@ class Trainer:
             self._num_epochs_completed += 1
             epoch_time = time.perf_counter() - t0 - time_paused_training - time_paused_validation
 
-            logger.info(
-                f"Finished epoch {self._num_epochs_completed}/{self.num_epochs} - "
-                f"Epoch duration: {round(epoch_time, 3)} s - "
-                f"Num batches completed: {self.num_batches_completed_all_epochs}/{self.num_batches_all_epochs}"                
-            )
+            self._log_epoch_summary(epoch_time)
+            
             self._training_time += epoch_time
             yield 
             
@@ -117,7 +114,13 @@ class Trainer:
         
         self.export_inference(inference_export_path)
         self.export_checkpoint(ckpt_path)
-        
+
+    def _log_epoch_summary(self, epoch_time):
+        logger.info(
+            f"Finished epoch {self._num_epochs_completed}/{self.num_epochs} - "
+            f"Epoch duration: {round(epoch_time, 3)} s - "
+            f"Num training (validation) batches completed : {self.num_training_batches_completed_this_epoch} ({self.num_validation_batches_completed_this_epoch})"                
+        )
 
     def _loop_over_dataset(self, model, losses, dataset, set_num_batches_completed_this_epoch, is_training=True, optimizer=None):
         """ Loop over all batches of data once """

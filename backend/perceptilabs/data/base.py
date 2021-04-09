@@ -45,10 +45,17 @@ class DataLoader:
                 datatype=feature_dict['datatype'].lower(),
                 file_path=feature_dict['csv_path']
             )
+
+        partitions = {
+            'training': dict_['partitions'][0]/100.0,
+            'validation': dict_['partitions'][1]/100.0,
+            'test': dict_['partitions'][2]/100.0,
+        }
         
         data_loader = cls.from_features(
             feature_specs=feature_specs,
-            randomized_partitions=dict_['randomizedPartitions']
+            randomized_partitions=dict_['randomizedPartitions'],
+            partitions=partitions
         )
         return data_loader        
 
