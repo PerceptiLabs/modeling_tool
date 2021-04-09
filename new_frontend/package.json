@@ -6,8 +6,7 @@
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
-    "storybook": "start-storybook  -s ./public -p 6006",
-    "build-storybook": "build-storybook"
+    "test:unit": "jest --passWithNoTests"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^1.2.34",
@@ -35,13 +34,8 @@
   },
   "devDependencies": {
     "@babel/core": "^7.13.10",
-    "@storybook/addon-actions": "^6.2.0-beta.11",
-    "@storybook/addon-essentials": "^6.2.0-beta.11",
-    "@storybook/addon-links": "^6.2.0-beta.11",
-    "@storybook/vue3": "^6.2.0-beta.11",
-    "@testing-library/vue": "^5.6.1",
+    "@testing-library/vue": "^6.4.0",
     "@types/axios": "^0.14.0",
-    "@types/change-case-object": "^2.0.0",
     "@typescript-eslint/eslint-plugin": "^2.33.0",
     "@typescript-eslint/parser": "^2.33.0",
     "@vue/cli-plugin-babel": "~4.5.0",
@@ -53,16 +47,21 @@
     "@vue/compiler-sfc": "^3.0.0",
     "@vue/eslint-config-prettier": "^6.0.0",
     "@vue/eslint-config-typescript": "^5.0.2",
+    "babel-jest": "^26.6.3",
     "babel-loader": "^8.2.2",
     "eslint": "^6.7.2",
+    "eslint-plugin-jest": "^24.3.4",
     "eslint-plugin-prettier": "^3.1.3",
     "eslint-plugin-vue": "^7.0.0-0",
+    "jest": "^26.6.3",
     "lint-staged": "^9.5.0",
     "node-sass": "^4.12.0",
     "prettier": "^1.19.1",
     "sass-loader": "^8.0.2",
+    "ts-jest": "^26.5.3",
     "typescript": "~3.9.3",
     "vue-cli-plugin-tailwind": "~2.0.6",
+    "vue-jest": "^5.0.0-alpha.8",
     "vue-loader": "^16.1.2",
     "vuex-module-decorators": "^1.0.1"
   },
@@ -74,5 +73,21 @@
       "vue-cli-service lint",
       "git add"
     ]
+  },
+  "jest": {
+    "moduleFileExtensions": [
+      "js",
+      "json",
+      "vue",
+      "ts"
+    ],
+    "transform": {
+      "^.+\\.js$": "babel-jest",
+      ".*\\.(vue)$": "vue-jest",
+      "^.+\\.[tj]s$": "ts-jest"
+    },
+    "moduleNameMapper": {
+      "@/(.*)$": "<rootDir>/src/$1"
+    }
   }
 }
