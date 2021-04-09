@@ -354,7 +354,7 @@ def test_trainer_custom_loss(script_factory_tf2x, data_loader, graph_spec_few_ep
 
 def test_trainer_output_stats_available(script_factory_tf2x, data_loader, graph_spec_few_epochs, training_settings):
     trainer = Trainer(script_factory_tf2x, data_loader, graph_spec_few_epochs, training_settings)
-    trainer.run() # Take the first training steps
+    trainer.run()
 
     output_stats = trainer.get_output_stats()
 

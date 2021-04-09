@@ -310,6 +310,7 @@ perceptilabs/modelrecommender/base.py
 perceptilabs/modelrecommender/encoders/__init__.py
 perceptilabs/modelrecommender/encoders/base.py
 perceptilabs/modelrecommender/encoders/numerical.py
+perceptilabs/modelrecommender/encoders/categorical.py
 perceptilabs/modelrecommender/encoders/image.py
 perceptilabs/modelrecommender/encoders/binary.py
 perceptilabs/modelrecommender/encoders/categorical.py
@@ -336,3 +337,9 @@ perceptilabs/trainer/stats/base.py
 perceptilabs/trainer/stats/sample.py
 perceptilabs/trainer/stats/gradients.py
 perceptilabs/trainer/stats/categorical.py
+perceptilabs/trainer/stats/image.py
+perceptilabs/trainer/stats/utils.py
+perceptilabs/trainer/stats/accuracy.py
+perceptilabs/trainer/stats/iou.py
+perceptilabs/trainer/stats/loss.py
+

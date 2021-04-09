@@ -3,6 +3,7 @@ import tensorflow as tf
 
 def get_categories_and_indices(feature_dataset):
     """ Loops over the dataset and maps values to an index (e.g., cat -> 0) """
+
     categories = []  # Categories
     numericals = []  # Numericals
     indices = []  # Indices
@@ -33,10 +34,11 @@ def get_categories_and_indices(feature_dataset):
     return n_categories, categories_tensor, indices_tensor
 
 
-def build_categorical_pipelines(feature_dataset: tf.data.Dataset = None) -> tf.keras.Model:
+def build_categorical_pipelines(feature_spec=None, feature_dataset: tf.data.Dataset = None) -> tf.keras.Model:
     """ Returns a keras model for preprocessing data
 
     Arguments:
+        feature_spec: information about the feature (e.g., preprocessing settings)
         feature_dataset: optional. Can be used for invoking .adapt() on keras preprocessing layers.
     Returns:
         Two pipelines (tf.keras.Model) for training and inference. One for postprocessing.
@@ -44,13 +46,11 @@ def build_categorical_pipelines(feature_dataset: tf.data.Dataset = None) -> tf.k
     
         (training_pipeline, validation_pipeline, postprocessing_pipeline)
     """
-
     n_categories, categories_tensor, indices_tensor = get_categories_and_indices(feature_dataset)
     
     init = tf.lookup.KeyValueTensorInitializer(categories_tensor, indices_tensor)
     table = tf.lookup.StaticHashTable(init, default_value=-1)  # TODO(anton.k): the hash table approach should be removed w/ tf 2.4: keras preprocessing is better (and can be inverted easily)
             
-        
 
     class TrainingPipeline(tf.keras.Model):
         def __init__(self, lookup_table, n_categories):

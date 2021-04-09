@@ -263,11 +263,13 @@ class Interface():
         try:
             response = self._create_response(receiver, action, value)
         except Exception as e:
-            with self._core.issue_handler.create_issue('Error in create_response', e) as issue:
+            message = f"Error in create_response (action='{action}')"
+            with self._core.issue_handler.create_issue(message, e) as issue:
                 self._core.issue_handler.put_warning(issue.frontend_message)
-                response = {'content': issue.frontend_message}                
+                response = {'content': issue.frontend_message}
                 logger.error(issue.internal_message)
 
+                
         if logger.isEnabledFor(logging.DEBUG):
             logger.debug("created response for action: {}. \nFull request:\n{}\nResponse:\n{}".format(
                 action,

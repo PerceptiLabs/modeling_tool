@@ -153,7 +153,7 @@ class DataLoader:
             feature_dataset, len(df), partitions
         )
         training_pipeline, inference_pipeline, postprocessing_pipeline = self._build_pipelines(
-            feature_specs[feature_name].datatype, feature_training_set
+            feature_specs[feature_name], feature_training_set
         )
         
         feature_datasets = (feature_training_set, feature_validation_set, feature_test_set)
@@ -173,17 +173,18 @@ class DataLoader:
 
         return training_set, validation_set, test_set
 
-    def _build_pipelines(self, feature_datatype, feature_training_set):
+    def _build_pipelines(self, feature_spec, feature_training_set):
         """ Build pipelines. 
         
         Returns:
             Two preprocessing pipelines: one for training and one for inference.
             One postprocessing pipeline.
         """
-        build_pipeline = self._get_pipeline_builder(feature_datatype)
+        build_pipeline = self._get_pipeline_builder(feature_spec.datatype)
         
         training_pipeline, inference_pipeline, postprocessing_pipeline = build_pipeline(
-            feature_training_set
+            feature_spec=feature_spec,
+            feature_dataset=feature_training_set
         )
         if inference_pipeline is None:
             inference_pipeline = training_pipeline

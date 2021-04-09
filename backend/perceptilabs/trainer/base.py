@@ -12,7 +12,7 @@ import logging
 from perceptilabs.logconf import APPLICATION_LOGGER, USER_LOGGER
 from perceptilabs.layers.visualizer import PerceptiLabsVisualizer
 from perceptilabs.trainer.model import TrainingModel
-from perceptilabs.trainer.stats import SampleStatsTracker, SampleStats, GradientStatsTracker, GradientStats, CategoricalOutputStatsTracker
+from perceptilabs.trainer.stats import SampleStatsTracker, SampleStats, GradientStatsTracker, GradientStats, CategoricalOutputStatsTracker, ImageOutputStatsTracker
 from perceptilabs.trainer.losses import weighted_crossentropy, dice
 from perceptilabs.logconf import APPLICATION_LOGGER
 
@@ -145,7 +145,8 @@ class Trainer:
                 )
             
             self._num_batches_completed_all_epochs += 1
-            set_num_batches_completed_this_epoch(steps_completed + 1)            
+            set_num_batches_completed_this_epoch(steps_completed + 1)
+            
             yield
 
     @tf.function
@@ -192,9 +193,14 @@ class Trainer:
 
         self._output_trackers = {}
         for layer_spec in self._graph_spec.output_layers:
-            # TODO: should discriminate by datatype (address in story 1615)
-            self._output_trackers[layer_spec.id_] = CategoricalOutputStatsTracker()
+            self._output_trackers[layer_spec.id_] = self._create_output_tracker(layer_spec.datatype)
 
+    def _create_output_tracker(self, datatype):
+        if os.getenv("PL_IOU"):  # TODO(anton.k): remove in story 1615
+            return ImageOutputStatsTracker()
+        else:
+            return CategoricalOutputStatsTracker()
+                
     def _update_tracked_values(self, trainables_by_layer, gradients_by_layer, final_and_intermediate_outputs_by_layer, inputs_batch, predictions_batch, targets_batch, total_loss, is_training, steps_completed):
         """ Take a snapshot of the current tensors (e.g., layer weights) """
         self._layer_outputs = final_and_intermediate_outputs_by_layer
@@ -440,7 +446,7 @@ class Trainer:
 
     def get_results(self):
         """ Return a dict for the coreInterface to derive plots from """
-        t0 = time.perf_counter()        
+        t0 = time.perf_counter()
         dict_ = {
             'iter': self.num_batches_completed_this_epoch,
             'maxIter': self.num_batches_per_epoch,
@@ -458,6 +464,7 @@ class Trainer:
             'target_stats': self.get_target_stats(),
             'output_stats': self.get_output_stats()
         }
+        #dict_ = {}
         t1 = time.perf_counter()
         logger.debug(f"get_results finished. Duration: {t1 - t0}")
         return dict_

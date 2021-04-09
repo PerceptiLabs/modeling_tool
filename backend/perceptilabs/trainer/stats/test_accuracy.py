@@ -1,10 +1,5 @@
 import pytest
-import numpy as np
-from unittest.mock import MagicMock
-
-
-from perceptilabs.trainer.stats.categorical import CategoricalOutputStats, PredictionMatrix
-
+from perceptilabs.trainer.stats.accuracy import AccuracyStats, PredictionMatrix
 
 @pytest.fixture
 def prediction_matrices():
@@ -25,21 +20,6 @@ def prediction_matrices():
     ]
     yield epochs
 
-    
-@pytest.fixture
-def losses():
-    losses = []
-
-    for epoch in range(3):
-        losses.append([])
-        
-        for batch in range(4):  # Training steps
-            losses[epoch].append((np.random.random(), True))
-
-        for batch in range(2):  # Validation steps
-            losses[epoch].append((np.random.random(), False))
-
-    return losses
         
 
 def compute_accuracy(steps, phase='both'):
@@ -56,7 +36,7 @@ def compute_accuracy(steps, phase='both'):
 
 
 def test_epoch_accuracy_correct(prediction_matrices):
-    stats = CategoricalOutputStats(prediction_matrices)
+    stats = AccuracyStats(prediction_matrices)
 
     # Training
     for epoch, epoch_matrices in enumerate(prediction_matrices):
@@ -81,7 +61,7 @@ def test_average_accuracy_over_epochs_training(prediction_matrices):
         acc = compute_accuracy(epoch_matrices, phase='training')
         expected.append(acc)
     
-    stats = CategoricalOutputStats(prediction_matrices)
+    stats = AccuracyStats(prediction_matrices)
     actual = stats.get_average_accuracy_over_epochs(phase='training')
 
     
@@ -91,12 +71,12 @@ def test_average_accuracy_over_epochs_validation(prediction_matrices):
         acc = compute_accuracy(epoch_matrices, phase='validation')
         expected.append(acc)
     
-    stats = CategoricalOutputStats(prediction_matrices)
+    stats = AccuracyStats(prediction_matrices)
     actual = stats.get_average_accuracy_over_epochs(phase='validation')
 
 
 def test_accuracy_for_step(prediction_matrices):
-    stats = CategoricalOutputStats(prediction_matrices)    
+    stats = AccuracyStats(prediction_matrices)    
 
     for epoch, epoch_matrices in enumerate(prediction_matrices):
         for step, (matrix, is_training) in enumerate(epoch_matrices):
@@ -108,7 +88,7 @@ def test_accuracy_for_step(prediction_matrices):
 
             
 def test_accuracy_over_steps_training(prediction_matrices):
-    stats = CategoricalOutputStats(prediction_matrices)    
+    stats = AccuracyStats(prediction_matrices)    
 
     for epoch, epoch_matrices in enumerate(prediction_matrices):
         expected = []            
@@ -122,7 +102,7 @@ def test_accuracy_over_steps_training(prediction_matrices):
 
         
 def test_accuracy_over_steps_validation(prediction_matrices):
-    stats = CategoricalOutputStats(prediction_matrices)    
+    stats = AccuracyStats(prediction_matrices)    
 
     for epoch, epoch_matrices in enumerate(prediction_matrices):
         expected = []            
@@ -133,67 +113,3 @@ def test_accuracy_over_steps_validation(prediction_matrices):
 
         actual = stats.get_accuracy_over_steps(epoch, phase='validation')
         assert actual == expected
-
-        
-def test_get_loss_for_step(losses):
-    stats = CategoricalOutputStats(losses=losses)    
-
-    for i, epoch_losses in enumerate(losses):
-        for j, batch_losses in enumerate(epoch_losses):
-            expected, _ = losses[i][j]
-            actual = stats.get_loss_for_step(epoch=i, step=j)
-            assert actual == expected
-
-            
-def test_get_loss_over_steps_training(losses):
-    stats = CategoricalOutputStats(losses=losses)    
-
-    for epoch, epoch_losses in enumerate(losses):
-        expected = [
-            loss
-            for loss, is_training in losses[epoch]
-            if is_training
-        ]
-        actual = stats.get_loss_over_steps(epoch, phase='training')
-        assert actual == expected
-
-
-def test_get_loss_over_steps_validation(losses):
-    stats = CategoricalOutputStats(losses=losses)    
-
-    for epoch, epoch_losses in enumerate(losses):
-        expected = [
-            loss
-            for loss, is_training in losses[epoch]
-            if not is_training
-        ]
-        actual = stats.get_loss_over_steps(epoch, phase='validation')
-        assert actual == expected
-
-
-def test_get_average_loss_for_epoch_training(losses):
-    stats = CategoricalOutputStats(losses=losses)    
-
-    for epoch, epoch_losses in enumerate(losses):
-        expected = np.average([
-            loss
-            for loss, is_training in losses[epoch]
-            if is_training
-        ])
-        actual = stats.get_average_loss_for_epoch(epoch, phase='training')
-        assert actual == expected
-
-        
-def test_get_average_loss_for_epoch_validation(losses):
-    stats = CategoricalOutputStats(losses=losses)    
-
-    for epoch, epoch_losses in enumerate(losses):
-        expected = np.average([
-            loss
-            for loss, is_training in losses[epoch]
-            if not is_training
-        ])
-        actual = stats.get_average_loss_for_epoch(epoch, phase='validation')
-        assert actual == expected
-
-        

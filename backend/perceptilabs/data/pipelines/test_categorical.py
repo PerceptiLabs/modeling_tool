@@ -15,7 +15,7 @@ def test_categorical_preprocessing_when_values_are_strings():
     ]
     
     dataset = tf.data.Dataset.from_tensor_slices(values)  
-    pipeline, _, _ = build_categorical_pipelines(dataset)
+    pipeline, _, _ = build_categorical_pipelines(feature_dataset=dataset)
     processed_dataset = dataset.map(lambda x: pipeline(x))
     actual = next(iter(processed_dataset.batch(4))).numpy().tolist()
     
@@ -32,7 +32,7 @@ def test_categorical_preprocessing_when_values_are_string_integers():
     ]
     
     dataset = tf.data.Dataset.from_tensor_slices(values)  
-    pipeline, _, _ = build_categorical_pipelines(dataset)
+    pipeline, _, _ = build_categorical_pipelines(feature_dataset=dataset)
     processed_dataset = dataset.map(lambda x: pipeline(x))
     actual = next(iter(processed_dataset.batch(4))).numpy().tolist()
     
@@ -50,7 +50,7 @@ def test_categorical_preprocessing_when_values_are_numerical():
     ]
     
     dataset = tf.data.Dataset.from_tensor_slices(values)  
-    pipeline, _, _ = build_categorical_pipelines(dataset)
+    pipeline, _, _ = build_categorical_pipelines(feature_dataset=dataset)
     processed_dataset = dataset.map(lambda x: pipeline(x))
     actual = next(iter(processed_dataset.batch(4))).numpy().tolist()
     
@@ -67,7 +67,7 @@ def test_categorical_preprocessing_when_values_are_numerical_but_unordered():
     ]
     
     dataset = tf.data.Dataset.from_tensor_slices(values)  
-    pipeline, _, _ = build_categorical_pipelines(dataset)
+    pipeline, _, _ = build_categorical_pipelines(feature_dataset=dataset)
     processed_dataset = dataset.map(lambda x: pipeline(x))
     actual = next(iter(processed_dataset.batch(4))).numpy().tolist()
     
@@ -79,7 +79,7 @@ def test_categorical_postprocessing():
     expected = ['cat', 'dog', 'car', 'car']
     
     dataset = tf.data.Dataset.from_tensor_slices(expected)  
-    preprocessing, _, postprocessing = build_categorical_pipelines(dataset)
+    preprocessing, _, postprocessing = build_categorical_pipelines(feature_dataset=dataset)
     
     processed_dataset = dataset.map(lambda x: preprocessing(x))
     

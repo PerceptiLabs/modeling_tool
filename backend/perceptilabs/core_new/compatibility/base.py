@@ -107,6 +107,7 @@ class CompatibilityCore:
         results = trainer.get_results()
 
         if results is not None:
+            self._result_queue.queue.clear()
             self._result_queue.put(results)
             self._print_result_dict_debug_info(results)
         

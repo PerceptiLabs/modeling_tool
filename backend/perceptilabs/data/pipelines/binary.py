@@ -1,10 +1,11 @@
 import tensorflow as tf
 
 
-def build_binary_pipelines(feature_dataset: tf.data.Dataset = None) -> tf.keras.Model:
+def build_binary_pipelines(feature_spec=None, feature_dataset: tf.data.Dataset = None) -> tf.keras.Model:
     """ Returns a keras model for preprocessing data of type binary
 
     Arguments:
+        feature_spec: information about the feature (e.g., preprocessing settings)
         feature_dataset: optional. Can be used for invoking .adapt() on keras preprocessing layers.
     Returns:
         Two pipelines (tf.keras.Model) for training and inference. One for postprocessing.

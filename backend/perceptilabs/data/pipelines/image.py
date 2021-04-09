@@ -3,11 +3,11 @@ import numpy as np
 import tensorflow as tf
 import skimage.io
 
-
-def build_image_pipelines(feature_dataset: tf.data.Dataset = None) -> tf.keras.Model:
+def build_image_pipelines(feature_spec=None, feature_dataset: tf.data.Dataset = None) -> tf.keras.Model:
     """ Returns a keras model for preprocessing data
 
     Arguments:
+        feature_spec: information about the feature (e.g., preprocessing settings)
         feature_dataset: optional. Can be used for invoking .adapt() on keras preprocessing layers.
     Returns:
         Two pipelines (tf.keras.Model) for training and inference. One for postprocessing.
@@ -49,7 +49,10 @@ def build_image_pipelines(feature_dataset: tf.data.Dataset = None) -> tf.keras.M
         def call(self, x):
             x = loader(x)
             x = tf.cast(x, dtype=tf.float32)
-            x = x / 255.0
+
+            if feature_spec and feature_spec.iotype == 'output':  # HACK TO NORMALIZE OUTPUT IMAGES
+                x = x / 255.0  # [0, 255] -> [0, 1]
+                
             return x
 
     return Pipeline(), None, None

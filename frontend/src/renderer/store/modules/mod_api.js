@@ -1144,7 +1144,6 @@ const actions = {
         net[ix]['getPreview'] = false;
       }
     }
-
     const datasetSettings = rootGetters['mod_datasetSettings/getCurrentDatasetSettings']();      
     
     const theData = {

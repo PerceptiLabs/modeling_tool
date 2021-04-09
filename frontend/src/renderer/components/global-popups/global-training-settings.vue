@@ -190,7 +190,7 @@
   }
 </style>
 <!--//Epochs: 100,-->
-<!--//Batch_size: 128,-->
+<!--//Batch_size: 16,-->
 <!--//Shuffle: true,-->
 <!--//Loss: '', //[Cross-Entropy, Quadratic, Weighted Cross-Entropy, Dice]-->
 <!--//LossOptions: [-->

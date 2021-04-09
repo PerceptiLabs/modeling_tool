@@ -1,17 +1,12 @@
+from dataclasses import dataclass
 from typing import Tuple
 
-from perceptilabs.graph.spec import GraphSpec
 from perceptilabs.trainer.stats.base import TrainingStatsTracker
-from perceptilabs.trainer.stats.accuracy import AccuracyStatsTracker, AccuracyStats
-from perceptilabs.trainer.stats.loss import LossStatsTracker, LossStats
 from perceptilabs.trainer.stats.utils import return_on_failure
 
-
-
-class CategoricalOutputStats:
-    def __init__(self, accuracy=None, losses=None):
-        self.accuracy = accuracy
-        self.losses = losses or []
+@dataclass(frozen=True)
+class LossStats:
+    losses: Tuple[Tuple[Tuple[float, bool]]] = () # [Epoch][Step] = (loss, is_training)
 
     @return_on_failure(0.0)    
     def get_loss_for_step(self, epoch, step):
@@ -62,21 +57,27 @@ class CategoricalOutputStats:
                 
         return averages
 
-
-class CategoricalOutputStatsTracker(TrainingStatsTracker):
+    
+class LossStatsTracker(TrainingStatsTracker):
     def __init__(self):
-        self._accuracy_tracker = AccuracyStatsTracker()
-        self._loss_tracker = LossStatsTracker()  
+        self._losses = []  # A list of list. Outer list is per epoch, inner list is per step within that epoch
 
     def update(self, **kwargs):
-        self._accuracy_tracker.update(**kwargs)
-        self._loss_tracker.update(**kwargs)
+        self._store_losses(kwargs['loss'], kwargs['epochs_completed'], kwargs['steps_completed'], kwargs['is_training'])
+        
+    def _store_losses(self, loss, epochs_completed, steps_completed, is_training):
+        if len(self._losses) <= epochs_completed:
+            self._losses.append(list())  # Create list to hold steps for epoch.
+            
+        self._losses[epochs_completed].append((loss.numpy(), is_training))        
         
     def save(self):
         """ Save the tracked values into a TrainingStats object """
-
-        accuracy = self._accuracy_tracker.save()
-        loss = self._loss_tracker.save()
         
-        return CategoricalOutputStats(accuracy, loss)
+        # Convert to a tuple of tuples to make it immutable.
+        losses = tuple([  
+            tuple(epoch_losses)
+            for epoch_losses in self._losses
+        ])
+        return LossStats(losses)
 
