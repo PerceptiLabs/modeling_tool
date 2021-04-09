@@ -1,6 +1,38 @@
 import tensorflow as tf
 
 
+def get_categories_and_indices(feature_dataset):
+    """ Loops over the dataset and maps values to an index (e.g., cat -> 0) """
+    categories = []  # Categories
+    numericals = []  # Numericals
+    indices = []  # Indices
+
+    idx = 0
+    for tensor in feature_dataset:
+        category = tensor.numpy()
+        category_dtype = tensor.dtype
+        
+        if category not in categories:
+            categories.append(category)
+            indices.append(idx)
+            try:
+                numericals.append(int(category))
+            except:
+                pass
+                
+            idx += 1
+
+    if len(numericals) == len(indices):
+        indices = numericals  # All values could be cast to numerical.
+
+    categories_tensor = tf.constant(categories, dtype=category_dtype)
+    indices_tensor = tf.constant(indices, dtype=tf.int32)
+
+    n_categories = len(categories)
+    
+    return n_categories, categories_tensor, indices_tensor
+
+
 def build_categorical_pipelines(feature_dataset: tf.data.Dataset = None) -> tf.keras.Model:
     """ Returns a keras model for preprocessing data
 
@@ -12,24 +44,10 @@ def build_categorical_pipelines(feature_dataset: tf.data.Dataset = None) -> tf.k
     
         (training_pipeline, validation_pipeline, postprocessing_pipeline)
     """
-    categories = []  # Categories
-    numericals = []  # Numericals
 
-    idx = 0
-    for tensor in feature_dataset:
-        category = tensor.numpy()
-        category_dtype = tensor.dtype
-        
-        if category not in categories:
-            categories.append(category)
-            numericals.append(idx)
-            idx += 1
-            
-    categories_tensor = tf.constant(categories, dtype=category_dtype)
-    numericals_tensor = tf.constant(numericals, dtype=tf.int32)    
-
-    n_categories = len(categories)
-    init = tf.lookup.KeyValueTensorInitializer(categories_tensor, numericals_tensor)
+    n_categories, categories_tensor, indices_tensor = get_categories_and_indices(feature_dataset)
+    
+    init = tf.lookup.KeyValueTensorInitializer(categories_tensor, indices_tensor)
     table = tf.lookup.StaticHashTable(init, default_value=-1)  # TODO(anton.k): the hash table approach should be removed w/ tf 2.4: keras preprocessing is better (and can be inverted easily)
             
         
@@ -46,9 +64,9 @@ def build_categorical_pipelines(feature_dataset: tf.data.Dataset = None) -> tf.k
             return x
 
 
-    init = tf.lookup.KeyValueTensorInitializer(numericals_tensor, categories_tensor)
+    init = tf.lookup.KeyValueTensorInitializer(indices_tensor, categories_tensor)
     inv_table = tf.lookup.StaticHashTable(
-        init, default_value=('<unknown>' if category_dtype is tf.string else -1)
+        init, default_value=('<unknown>' if categories_tensor.dtype is tf.string else -1)
     )  # TODO(anton.k): the hash table approach should be removed w/ tf 2.4: keras preprocessing is better (and can be inverted easily)
     
     class PostprocessingPipeline(tf.keras.Model):

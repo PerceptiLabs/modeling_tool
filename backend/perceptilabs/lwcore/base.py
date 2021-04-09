@@ -56,8 +56,10 @@ class LightweightCore:
         all_durations = {}
         all_used_cache = {}
 
+        data_batch = self._get_flat_data_batch()  
+
         for subgraph_spec in subgraph_specs:
-            subgraph_results, subgraph_durations, subgraph_used_cache = self._run_subgraph(subgraph_spec)
+            subgraph_results, subgraph_durations, subgraph_used_cache = self._run_subgraph(subgraph_spec, data_batch)
             all_results.update(subgraph_results)
             all_durations.update(subgraph_durations)
             all_used_cache.update(subgraph_used_cache)
@@ -68,12 +70,12 @@ class LightweightCore:
         
         return all_results
     
-    def _run_subgraph(self, subgraph_spec):
+    def _run_subgraph(self, subgraph_spec, data_batch):
         all_results = {}
         all_durations = {}
         all_used_cache = {}
         for layer_spec in subgraph_spec.get_ordered_layers():
-            layer_result, durations, used_cache = self._get_layer_results(layer_spec, subgraph_spec, all_results)
+            layer_result, durations, used_cache = self._get_layer_results(layer_spec, subgraph_spec, all_results, data_batch)
             
             if logger.isEnabledFor(logging.DEBUG) and layer_result.has_errors:
                 print_result_errors(layer_spec, layer_result)
@@ -85,12 +87,12 @@ class LightweightCore:
         assert len(all_results) == len(subgraph_spec)
         return all_results, all_durations, all_used_cache
 
-    def _get_layer_results(self, layer_spec, subgraph_spec, ancestor_results):
+    def _get_layer_results(self, layer_spec, subgraph_spec, ancestor_results, data_batch):
         """ Either fetched a cached result or Computes results of layer_spec using ancestor results """        
         t0 = time.perf_counter()        
         cached_result, layer_hash = self._get_cached_result(layer_spec, subgraph_spec)
         t1 = time.perf_counter()
-        layer_result = cached_result or self._compute_layer_results(layer_spec, subgraph_spec, ancestor_results)
+        layer_result = cached_result or self._compute_layer_results(layer_spec, subgraph_spec, ancestor_results, data_batch)
         t2 = time.perf_counter()
         self._maybe_put_results_in_cache(layer_spec, cached_result, layer_result, layer_hash)
         t3 = time.perf_counter()
@@ -120,14 +122,14 @@ class LightweightCore:
                 
         return cached_result, layer_hash
 
-    def _compute_layer_results(self, layer_spec, graph_spec, all_results):
+    def _compute_layer_results(self, layer_spec, graph_spec, all_results, data_batch):
         """ Find and invoke a strategy for computing the results of a layer """
         input_results = {
             from_id: all_results[from_id]
             for (from_id, to_id) in graph_spec.edges_by_id if to_id == layer_spec.id_
         }
         
-        strategy = self._get_layer_strategy(layer_spec, graph_spec, self._script_factory)
+        strategy = self._get_layer_strategy(layer_spec, data_batch, self._script_factory)
         
         try:
             results = strategy.run(layer_spec, graph_spec, input_results)
@@ -137,9 +139,9 @@ class LightweightCore:
         logger.debug(f"Computed results for layer {layer_spec.id_} [{layer_spec.type_}]")
         return results
 
-    def _get_layer_strategy(self, layer_spec, graph_spec=None, script_factory=None):
+    def _get_layer_strategy(self, layer_spec, data_batch, script_factory):
         if isinstance(layer_spec, IoLayerSpec):
-            strategy = IoLayerStrategy(self._data_loader)            
+            strategy = self._get_io_layer_strategy(layer_spec, data_batch)
         elif isinstance(layer_spec, TrainingLayerSpec) and is_tf1x():
             strategy = Tf1xTrainingStrategy(script_factory)
         elif isinstance(layer_spec, TrainingLayerSpec) and is_tf2x():
@@ -156,6 +158,23 @@ class LightweightCore:
             strategy = DefaultStrategy()
         return strategy
 
+    def _get_io_layer_strategy(self, layer_spec, data_batch):
+        feature_batch = data_batch[layer_spec.feature_name]
+        strategy = IoLayerStrategy(feature_batch)
+        return strategy
+            
+    def _get_flat_data_batch(self):
+        data_batch = {}        
+        if self._data_loader is not None:
+            dataset = self._data_loader.get_dataset(partition='training', shuffle=False)
+            inputs_batch, targets_batch = next(iter(dataset))
+
+            for feature_name, value in inputs_batch.items():
+                data_batch[feature_name] = value
+            for feature_name, value in targets_batch.items():
+                data_batch[feature_name] = value
+                
+        return data_batch
 
 class LightweightCoreAdapter:
     """ Compatibility with v1 core """

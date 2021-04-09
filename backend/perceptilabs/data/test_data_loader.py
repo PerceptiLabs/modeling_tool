@@ -136,6 +136,28 @@ def test_splitting_rows_are_preserved():  # I.e., check that columns arent shuff
         dl.get_dataset(partition='test'),
         expected_rows=[[6.0, 6.0]] 
     )
+
+    
+def test_splitting_rows_are_preserved_with_randomized_partitions():  # I.e., check that columns arent shuffled differently
+    data = [[1.0, -1.0], [2.0, -2.0], [3.0, -3.0], [4.0, -4.0], [5.0, -5.0], [6.0, -6.0]]
+    df = pd.DataFrame(data, columns=['x1', 'x2']) 
+
+    feature_specs = {
+        'x1': FeatureSpec('numerical', 'input'),
+        'x2': FeatureSpec('numerical', 'output'),
+    }
+    dl = DataLoader(
+        df, feature_specs, partitions={'training': 3/6, 'validation': 2/6, 'test': 1/6}, randomized_partitions=True
+    )
+    
+    def validate_set(dataset):
+        for inputs, targets in dataset:
+            x1, x2 = inputs['x1'].numpy(), targets['x2'].numpy()
+            assert x1 == -x2
+        
+    validate_set(dl.get_dataset(partition='training'))
+    validate_set(dl.get_dataset(partition='validation'))
+    validate_set(dl.get_dataset(partition='test'))
     
 
 def test_get_dataset_size():

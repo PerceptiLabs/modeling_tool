@@ -76,7 +76,7 @@ class DataLoader:
         return cls.from_features(feature_specs, partitions=partitions)
         
     @classmethod
-    def from_features(cls, feature_specs, partitions=None, randomized_partitions=False) -> 'DataLoader':
+    def from_features(cls, feature_specs, partitions=None, randomized_partitions=False, randomized_partitions_seed=None) -> 'DataLoader':
         """ Creates a DataLoader given set of features
 
         Arguments:
@@ -96,6 +96,7 @@ class DataLoader:
             feature_specs,
             partitions=partitions,
             randomized_partitions=randomized_partitions,
+            randomized_partitions_seed=randomized_partitions_seed,
             base_directory=os.path.dirname(path)
         )
         return data_loader
@@ -108,11 +109,6 @@ class DataLoader:
 
     def _create_datasets_and_pipelines_from_dataframe(self, df, feature_specs, partitions):
         """ Creates pre- and post-processing pipelines for the dataframe and then splits it into 3 tensorflow datasets """
-        if self._randomized_partitions:
-            df = df.sample(
-                frac=1, axis=0, random_state=self._randomized_partitions_seed
-            ).reset_index(drop=True)  
-        
         per_feature_training_sets = {}
         per_feature_validation_sets = {}
         per_feature_test_sets = {}
@@ -232,6 +228,11 @@ class DataLoader:
         return self._pipelines[feature_name]['postprocessing']        
         
     def _build_datasets_and_pipelines(self, df, feature_specs, partitions):
+        if self._randomized_partitions:
+            df = df.sample(
+                frac=1, axis=0, random_state=self._randomized_partitions_seed
+            ).reset_index(drop=True)  
+        
         input_dataframe = self._select_columns_by_iotype(df, feature_specs, 'input')
         target_dataframe = self._select_columns_by_iotype(df, feature_specs, 'output')
         
@@ -241,7 +242,7 @@ class DataLoader:
         target_datasets, target_pipelines = self._create_datasets_and_pipelines_from_dataframe(
             target_dataframe, feature_specs, partitions
         )
-        
+
         input_training_set, input_validation_set, input_test_set = input_datasets
         target_training_set, target_validation_set, target_test_set = target_datasets
 
@@ -345,3 +346,4 @@ class DataLoader:
     @property
     def feature_specs(self):
         return self._feature_specs
+

@@ -48,9 +48,17 @@ class GraphSpecBuilder:
         connection = LayerConnection(
             src_id=source_id, src_var=source_var,
             dst_id=dest_id, dst_var=dest_var
-        )        
-        self._connections[source_id].append(connection)
-        self._connections[dest_id].append(connection)
+        )
+        self.add_connection_object(connection)
+
+    def add_connection_object(self, connection):
+        """ Adds a connection between two layers
+        
+        Arguments:
+            connection: LayerConnection object
+        """
+        self._connections[connection.src_id].append(connection)
+        self._connections[connection.dst_id].append(connection)
 
     def _build_layer(self, layer_id):
         """ Build a layer """

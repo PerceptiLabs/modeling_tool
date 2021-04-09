@@ -93,6 +93,7 @@ class JinjaLayerStrategy(BaseStrategy):
             return None, 0, code_error, None
 
         if not layer_spec.is_fully_configured:  # E.g., required input connections aren't set..
+            logger.warning(f"Layer {layer_spec.name} is not fully configured")
             return None, 0, None, None
 
         layer_helper = LayerHelper(self._script_factory, layer_spec, graph_spec)
@@ -184,7 +185,7 @@ class TrainingStrategy(JinjaLayerStrategy):
     def _run_internal(self, layer_spec, graph_spec, layer_class, input_results, line_offset=None):
         sample, shape, variables, strategy_error = self._create_graph_and_run(
             layer_spec, graph_spec, line_offset=line_offset
-        )        
+        )
         results = LayerResults(
             sample=sample,
             out_shape=shape,
@@ -227,15 +228,15 @@ class TrainingStrategy(JinjaLayerStrategy):
 
 
 class IoLayerStrategy(BaseStrategy):
-    def __init__(self, data_loader):
-        self._dataset = data_loader.get_dataset()
+    def __init__(self, data_batch):
+        self._data_batch = data_batch
     
     def run(self, layer_spec, layer_class, input_results, line_offset=None):
         columns = []
         variables = {}
         
         try:
-            value = self._get_first_batch_from_dataset(layer_spec).numpy()
+            value = self._data_batch.numpy()
             output = {'output': value}
         except Exception as e:
             output = {'output': None}
@@ -257,16 +258,6 @@ class IoLayerStrategy(BaseStrategy):
             trained = False
         )
         return results
-
-    def _get_first_batch_from_dataset(self, layer_spec):
-        inputs_batch, targets_batch = next(iter(self._dataset))
-
-        if layer_spec.is_input_layer:
-            return inputs_batch[layer_spec.feature_name]
-        elif layer_spec.is_output_layer:
-            return targets_batch[layer_spec.feature_name]
-        else:
-            raise RuntimeError
 
 
         

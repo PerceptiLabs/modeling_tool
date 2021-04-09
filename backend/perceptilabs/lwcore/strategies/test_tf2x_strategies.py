@@ -47,7 +47,8 @@ def test_output_result_has_correct_value():
             'y1': FeatureSpec('numerical', 'output')            
         }
     )
-    strategy = IoLayerStrategy(data_loader)
+    inputs_batch, targets_batch = next(iter(data_loader.get_dataset()))
+    strategy = IoLayerStrategy(targets_batch['y1'])
     
     layer_spec = OutputLayerSpec(
         feature_name='y1'
@@ -72,7 +73,9 @@ def test_input_result_has_correct_value():
             'y1': FeatureSpec('numerical', 'output'),            
         }
     )
-    strategy = IoLayerStrategy(data_loader)
+    
+    inputs_batch, targets_batch = next(iter(data_loader.get_dataset()))
+    strategy = IoLayerStrategy(inputs_batch['x1'])
     
     layer_spec = InputLayerSpec(
         feature_name='x1'
