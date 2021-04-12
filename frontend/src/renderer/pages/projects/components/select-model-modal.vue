@@ -285,7 +285,8 @@ export default {
 
             if (this.isTF2XEnabled) {
                 const { modelName,  csvData} = this;
-                return (!csvData || !modelName);
+                const allColumnsAreSelected = csvData && csvData.ioTypes.filter(v => v !== undefined).length === csvData.ioTypes.length
+                return (!allColumnsAreSelected || !modelName);
             } else {
                 const { chosenTemplate, modelName, basicTemplates } = this;
                 return ((chosenTemplate === null) || !modelName);
