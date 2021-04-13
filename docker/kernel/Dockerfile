@@ -81,4 +81,7 @@ COPY tutorial_data /tutorial_data
 EXPOSE 5000
 EXPOSE 8011
 
+# feature flags
+ENV PL_KERNEL_TRAINER=standard
+
 CMD ["/opt/app-root/src/runner"]

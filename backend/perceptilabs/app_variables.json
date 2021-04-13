@@ -1,6 +1,6 @@
 {
     "BuildVariables":{
         "CommitId" : "Dev",
-	"Tf2x": false
+	"Tf2x": true
     }
 }
