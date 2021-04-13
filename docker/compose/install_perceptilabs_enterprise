@@ -230,7 +230,7 @@ sudo echo
 source_config || \
   maybe_get_password
 
-install_nvidia_drivers
+# install_nvidia_drivers
 install_docker
 install_nvidia_docker_support
 install_docker_compose
