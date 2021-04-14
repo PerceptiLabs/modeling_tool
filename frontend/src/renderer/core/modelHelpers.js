@@ -1,4 +1,5 @@
 import store from '@/store';
+import {deepCloneNetwork} from "@/core/helpers";
 
 
 export const connectComponentsWithArrow = (previousElemntId, currentElementId) => {
@@ -33,4 +34,28 @@ export const connectComponentsWithArrow = (previousElemntId, currentElementId) =
       store.dispatch('mod_api/API_getBatchPreviewSampleForElementDescendants', currentElement.layerId);
     });
   }
+}
+
+
+
+const testsValidationRules = {
+  'confusion_matrix': {
+    'inputs': ['numerical', 'image', 'categorical'],
+    'outputs': ['categorical']
+  }
+};
+
+export const isModelValidForTest = (model, testType) => {
+  if(!Object.keys(testsValidationRules).includes(testType)) {
+    throw new Error(`Test type: ${testType} is not valid`)
+  }
+  let networkList = [...Object.values(model.networkElementList)];
+  
+  const modelInputTypes = [...networkList.filter(x => x.layerType === 'IoInput').map(x => x.layerSettings.DataType)];
+  const modelOutputTypes = [...networkList.filter(x => x.layerType === 'IoOutput').map(x => x.layerSettings.DataType)];
+
+  let isInputsValid = modelInputTypes.some(x => testsValidationRules[testType]['inputs'].includes(x));
+  let isOutputsValid = modelOutputTypes.some(x => testsValidationRules[testType]['outputs'].includes(x)); 
+
+  return isInputsValid && isOutputsValid
 }

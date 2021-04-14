@@ -112,6 +112,12 @@ const actions = {
     await idb.deleteAllIds();
     await idb.deleteAllModels();
   },
+  async saveTestStatistic(ctx, payload) {
+    return await idb.saveTestStatistic(payload);
+  },
+  async getTestStatistic(ctx) {
+    return await idb.getTestStatistic();
+  }
 };
 
 export default {

@@ -57,6 +57,12 @@ from perceptilabs.lwInterface import (
     UploadKernelLogs
 )
 
+#Test interface
+from perceptilabs.testInterface import (
+    CreateTestCore,
+    GetTestResults
+)
+
 logger = logging.getLogger(APPLICATION_LOGGER)
 
 
@@ -73,10 +79,12 @@ class NetworkLoader:
     def load(self, json_network, as_spec=False, layers_only=True):
         """ to load the json network in a single location for easy debugging """
         network = json_network.copy()
+        if (layers_only or as_spec):
+            if 'Layers' in network:
+                network = network['Layers']
+            elif 'layers' in network:
+                network = network['layers']
         
-        if (layers_only or as_spec) and ('Layers' in network):
-            network = network['Layers']
-
         self._track_visits(network)
     
         if as_spec:
@@ -104,11 +112,11 @@ class NetworkLoader:
 
 
 class Interface():
-    def __init__(self, cores, dataDict, checkpointDict, lwDict, issue_handler, message_factory=None, session_id='default', allow_headless=False, trainer='core_v2', experiment_api=False):
+    def __init__(self, cores, testcore, dataDict, lwDict, issue_handler, message_factory=None, session_id='default', allow_headless=False, trainer='core_v2', experiment_api=False):
         self._allow_headless = allow_headless
-        self._network_loader = NetworkLoader()
+        self._network_loader = NetworkLoader() 
         self._cores=cores
-        self._checkpointDict = checkpointDict
+        self._testcore = testcore
         self._dataDict=dataDict
         self._lwDict=lwDict
         self._issue_handler = issue_handler
@@ -194,19 +202,33 @@ class Interface():
                 )
             )
 
+    def _set_testcore(self, receivers):
+        """
+        sets/creates the testcore with given receiver ids.
+        Args:
+            receivers (str): receiver id for request
+        """
+        self._testcore = CreateTestCore(receivers, self._issue_handler).run()
+
     def shutDown(self):
         for c in self._cores.values():
             c.Close()
-            del c
+            del c    
+        if self._testcore:
+            del self._testcore
         sys.exit(1)
+        
 
-    def close_core(self, receiver):
+    def close_core(self, receiver): 
         if receiver in self._cores:
             msg = self._cores[receiver].Close()
             del self._cores[receiver]
             return msg
+        elif receiver == 'tests':
+            del self._testcore
+            return
         else:
-            return "No core called %s" %receiver
+            return "No core called %s exists" %receiver
 
     def create_lw_core(self, receiver, jsonNetwork, adapter=True, dataset_settings=None):
         graph_spec = GraphSpec.from_dict(jsonNetwork)
@@ -258,7 +280,11 @@ class Interface():
             scope.set_extra("action",action)
             scope.set_extra("value",value)
 
-        self._setCore(receiver)
+        if receiver == 'tests':
+            receiver_ids = value.keys()
+            self._set_testcore(receiver_ids)
+        else:
+            self._setCore(receiver)
         
         try:
             response = self._create_response(receiver, action, value)
@@ -338,6 +364,7 @@ class Interface():
 
             output = GetNetworkInputDim(lw_core, graph_spec).run()
             return output
+        
         elif action == "getNetworkOutputDim":
             jsonNetwork = self._network_loader.load(value)
             lw_core, extras_reader, data_container = self.create_lw_core(receiver, jsonNetwork)
@@ -398,7 +425,7 @@ class Interface():
         elif action == "Close":  
             self.shutDown()
 
-        elif action == "closeCore":   
+        elif action == "closeCore": 
             return self.close_core(receiver)
 
         elif action == "updateResults":
@@ -445,18 +472,12 @@ class Interface():
             response = self._core.startTest(graph_spec, model_id, training_settings)
             return response
 
-
         elif action =="getTestStatus":
             response = self._core.getTestStatus()
             return response
 
         elif action == "nextStep":
             response = self._core.nextStep()
-            return response
-
-
-        elif action == "getEpoch":
-            response = self._core.getEpoch()
             return response
 
         elif action == "Stop":
@@ -524,9 +545,14 @@ class Interface():
             result_names = value
             response = self._core.getAggregationResults(result_names)
             return response
+        
         elif action == 'UploadKernelLogs':
             uploader = UploadKernelLogs(value, self._session_id)
             response = uploader.run()
+            return response
+
+        elif receiver == "tests":
+            response = self._create_response_tests(value, action)
             return response
         else:
             raise LookupError(f"The requested action '{action}' does not exist")
@@ -559,7 +585,7 @@ class Interface():
             logger.debug("_get_network_data output network: \n" + stringify(output))
             
         return output
-        
+    
     def _get_receiver_mode(self,receiver_id):
         """
         Requests to start testing contain 't' in receiver id.
@@ -658,7 +684,6 @@ class Interface():
         jsonNetwork = parser.save_json(layer_checkpoint_list[0])
         return jsonNetwork
 
-
     def _export_using_exporter(self, value, path, graph_spec):
         script_factory = ScriptFactory(
             mode='tf2x' if utils.is_tf2x() else 'tf1x',
@@ -672,3 +697,20 @@ class Interface():
         exporter.export_inference(export_path)
         return {"content": f"Exporting of model requested to the path {path}"}
 
+    def _create_response_tests(self, value, action):
+        models_info = {}
+        receiver_ids = value.keys()
+        for receiver in receiver_ids:
+            value_dict = value[receiver]
+            graph_spec = self._network_loader.load(value_dict, as_spec=True)
+            models_info[receiver] = {
+                'graph_spec': graph_spec, 
+                'model_path':value_dict['model_path'], 
+                'data_path':value_dict['data_path'],
+            } 
+        tests = action["tests"]
+        logger.info('List of tests %s have been requested for models %s', action['tests'], value.keys())
+        results = GetTestResults(models_info, self._testcore, tests).run()
+        response = {'action':action,'value':results}
+        return response
+    

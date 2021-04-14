@@ -17,7 +17,7 @@ class FeatureSpec:
 
 
 class DataLoader:
-    def __init__(self, data_frame, feature_specs, partitions=None, base_directory=None, randomized_partitions=False, randomized_partitions_seed=None, shuffle_seed=None):
+    def __init__(self, data_frame, feature_specs, partitions=None, base_directory=None, randomized_partitions=False, randomized_partitions_seed=1234, shuffle_seed=None):
         partitions = partitions or {'training': 0.7, 'validation': 0.2, 'test': 0.1}        
         self._feature_specs = feature_specs
         
@@ -318,7 +318,7 @@ class DataLoader:
             """ convert from <file_name> to <base_directory>/<file_name> """
             return str(base_directory + os.path.sep) + series  
 
-       
+
         df[path_cols] = df[path_cols].apply(make_absolute)
         return df
     

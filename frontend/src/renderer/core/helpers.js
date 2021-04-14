@@ -469,6 +469,11 @@ const eraseCookie = (name) => {
   document.cookie = name +'=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
 }
 
+export const arrayIncludeOrOmit = (array, value) => {
+  const ix = array.indexOf(value);
+  (ix !== -1) ? array.splice(ix, 1) : array.push(value);
+  return array;
+}
 const sleep = m => new Promise(r => setTimeout(r, m));
 
 export const isEnvDataWizardEnabled = () => {

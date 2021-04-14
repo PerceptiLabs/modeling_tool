@@ -55,6 +55,13 @@ function coreRequest(data, path, no, name) {
         function sendData(message) {
           //console.log('sent to core ', message);
 
+          // temporarly send like dict specific action.
+          const sendActionLikeObject = ['test']
+          if(sendActionLikeObject.some(val => val === message.action)) {
+            websocket.send(message);
+            return;
+          }
+
           const header = {
             "byteorder": 'little',
             "content-type": 'text/json',
@@ -183,8 +190,11 @@ function coreRequest(data, path, no, name) {
               //console.log('answer core data ', obgData);
               // let stopRequest = new Date();
               // calcTime(stopRequest, timeStartAnswer, 'transmitting', name);
-              // if(initialSentData.action !== 'checkCore' && process.env.NODE_ENV !== 'production')
-              // console.log('[CORE_REQ]:' + initialSentData.action, JSON.parse(JSON.stringify(initialSentData)), JSON.parse(JSON.stringify(obgData.content)));
+              if(initialSentData.action !== 'checkCore' && process.env.NODE_ENV !== 'production')
+                console.log('REQ:' + initialSentData.action,
+                  JSON.parse(JSON.stringify(initialSentData)),
+                  JSON.parse(JSON.stringify(obgData.content)),
+                );
               
               /* TOREMOVE
               delete obgData['consoleLogs']

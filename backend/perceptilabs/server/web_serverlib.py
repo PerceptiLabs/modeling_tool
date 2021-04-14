@@ -107,7 +107,6 @@ class Message:
                 content={"content":content, "consoleLogs":logList}
         
         if infoList:
-            print(infoList)
             if type(content) is dict and "content" in list(content.keys()):
                 content["generalLogs"]=infoList
             else:

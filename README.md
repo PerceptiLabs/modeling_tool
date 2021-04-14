@@ -112,6 +112,10 @@ python manage.py runserver
 cd ./fileserver
 python manage.py runserver 8011
 
+# Set up and run the static_file_server
+pip install --upgrade pip setuptools
+pip install -r requirements.txt
+python manage.py runserver
 ```
 
 In case of you are facing some issues with calling the rygg, run `python manage.py migrate` inside `rygg` and run `python manage.py runserver`.

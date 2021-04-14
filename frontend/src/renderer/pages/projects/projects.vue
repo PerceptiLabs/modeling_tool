@@ -164,19 +164,6 @@
                   :list="[{id: 1, name: user && user.firstName || '', img: null,}]"
                 )
               | {{ (model && model && model.updated) ? formatDate(model.updated) : ''}}
-
-
-    file-picker-popup(
-      v-if="showFilePickerPopup"
-      popupTitle="Load Network Folder"
-      :confirmCallback="onLoadNetworkConfirmed"
-    )
-    file-picker-popup(
-      v-if="showFilePickerPopup"
-      :filePickerType="showFilePickerPopup.filePickerType"
-      :fileTypeFilter="showFilePickerPopup.fileTypeFilter"
-      :popupTitle="showFilePickerPopup.popupTitle"
-      :confirmCallback="showFilePickerPopup.confirmCallback || showFilePickerPopup")
     select-model-modal(
       v-if="showNewModelPopup"
       @close="onCloseSelectModelModal"

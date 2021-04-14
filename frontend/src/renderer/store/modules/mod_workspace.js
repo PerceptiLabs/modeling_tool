@@ -235,6 +235,19 @@ const getters = {
       return false;
     }
 
+  }, 
+  GET_currentNetworkModeWeightsStateById: (state, getters) => (id) =>  { 
+    const net = getters.GET_networkByNetworkId(id);
+    if (!net) { return false; }
+
+    if (net.networkMeta && 
+        net.networkMeta.usingWeights &&
+        typeof net.networkMeta.usingWeights === 'boolean') {
+      return net.networkMeta.usingWeights;
+    } else {
+      return false;
+    }
+
   },
   GET_networkIsTraining(state, getters) {
     const coreStatus = getters.GET_networkCoreStatus;
@@ -332,6 +345,13 @@ const getters = {
     } else {
       return [];
     }
+  },
+  GET_models(state) {
+    return state.workspaceContent;
+  },
+  GET_modelName: (state, getters) => (id) => {
+    const model = getters.GET_networkByNetworkId(id);
+    return model && model.networkName || `Model ${id}`;
   },
   GET_networkElmentPositions(state, getters){
     const networkList = getters.GET_currentNetworkElementList;

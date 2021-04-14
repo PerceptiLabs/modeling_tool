@@ -23,6 +23,7 @@ perceptilabs/script.py
 perceptilabs/dataevents.py
 perceptilabs/mixpanel_handler.py
 perceptilabs/memorywatcher.py
+perceptilabs/testInterface.py
 
 # perceptilabs/messaging
 perceptilabs/messaging/base.py
@@ -342,4 +343,14 @@ perceptilabs/trainer/stats/utils.py
 perceptilabs/trainer/stats/accuracy.py
 perceptilabs/trainer/stats/iou.py
 perceptilabs/trainer/stats/loss.py
+
+# backend/perceptilabs/testcore/
+perceptilabs/testcore/__init__.py
+perceptilabs/testcore/base.py
+perceptilabs/testcore/tests.json
+
+# backend/perceptilabs/testcore/strategies/
+perceptilabs/testcore/strategies/teststrategies.py
+perceptilabs/testcore/strategies/modelstrategies.py
+perceptilabs/testcore/strategies/__init__.py
 

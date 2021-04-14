@@ -70,21 +70,20 @@ def main():
     from perceptilabs.server.appServer import Server
 
 
-
     logger.info("Reporting errors with commit id: " + str(COMMIT_ID))
 
+    
     cores=dict()
+    testcore=None
     dataDict=dict()
-    checkpointDict=dict()
     lwDict=dict()
     
-    core_interface = Interface(cores, dataDict, checkpointDict, lwDict, issue_handler, session_id=session_id, allow_headless=args.allow_headless, trainer=args.trainer)
+    core_interface = Interface(cores, testcore, dataDict, lwDict, issue_handler, session_id=session_id, allow_headless=args.allow_headless, trainer=args.trainer)
 
     from perceptilabs.memorywatcher import MemoryWatcher
     memory_watcher = MemoryWatcher(issue_handler=issue_handler, core_interfaces=cores)
     memory_watcher.initialize(asyncio.get_event_loop())
 
-    
     if args.error:
         raise Exception("Test error")
 

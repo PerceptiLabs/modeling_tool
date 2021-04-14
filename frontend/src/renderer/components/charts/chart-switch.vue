@@ -12,7 +12,7 @@
           @click="toggleFullView"
         )
           i.icon.icon-full-screen-graph
-    .base-chart_main
+    .base-chart_main(:style="styles.main")
       a.btn.save(type="button" ref="download" text="save" @click="saveChart")
         i.icon.icon-download
       chart-spinner(v-if="showRequestSpinner")
@@ -77,6 +77,14 @@
       showInitiallyRequestSpinner: {
         type: Boolean,
         default: true,
+      },
+      styles: {
+        type: Object,
+        default: function () {
+          return {
+            main: {},
+          };
+        },
       }
     },
     created() {

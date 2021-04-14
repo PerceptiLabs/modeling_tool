@@ -6,7 +6,10 @@
       the-menu
     
     .app-header-section.app-header-mid
-      h4(v-if="projectName").page-title <span class="page-route-title">{{routeHeaderAlias}} </span>
+      div(v-if="isOnTestPage").test-menu-header
+        router-link.test-menu-item(to="test-create") Create test
+        router-link.test-menu-item(to='test-dashboard') Dashboard
+      h4(v-else-if="projectName").page-title <span class="page-route-title">{{routeHeaderAlias}} </span>
       //- h4(v-if="projectName").page-title {{projectName}} / <span class="page-route-title">{{routeHeaderAlias}} </span>
 
     .app-header-section.app-header-right
@@ -89,6 +92,9 @@ export default {
       if(!currentProject) return '';
       let project = projectsList.filter(project => project.project_id === currentProject)[0];
       return project ? project.name : ''
+    },
+    isOnTestPage() {
+      return this.$route.name === 'test-create' || this.$route.name === 'test-dashboard';
     },
     routeHeaderAlias() {
       let theName = '';
@@ -331,6 +337,33 @@ export default {
         > .help-button-panel-content-item + .help-button-panel-content-item {
           margin-top: 1rem;
         }
+      }
+    }
+  }
+  .test-menu-header {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+  .test-menu-item {
+    margin: 0 15px;
+    padding: 5px 0;
+    font-size: 14px;
+    font-weight: bold;
+    color: #fff;
+    
+    position: relative;
+    &.router-link-active {
+      
+      color: #B6C7FB;
+      &:after {
+        content: '';
+        position: absolute;
+        height: 1px;
+        width: 100%;
+        background-color: #B6C7FB;
+        bottom: 0;
+        left: 0;
       }
     }
   }

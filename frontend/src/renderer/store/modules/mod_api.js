@@ -79,6 +79,53 @@ const getters = {
     }
     return layers;
   },
+  GET_coreNetworkById: (state, getters, rootState, rootGetters) => (id) => {
+    const network = rootGetters['mod_workspace/GET_networkByNetworkId'](id);
+    let layers = {};
+    
+    for(let layer in network.networkElementList) {
+      const el = network.networkElementList[layer];
+      if(el.componentName === 'LayerContainer') continue;
+
+      /*prepare checkpoint*/
+      const checkpointPath = {
+        'load_checkpoint': rootGetters['mod_workspace/GET_currentNetworkModeWeightsStateById'](id),
+        'path': ''
+      }; 
+
+      if(el.checkpoint.length >= 2) {
+        checkpointPath.path = el.checkpoint[1]
+        
+        if (checkpointPath.path.slice(-1) !== '/') {
+          checkpointPath.path += '/';
+        } else if (checkpointPath.path.slice(-1) !== '\\') {
+          checkpointPath.path += '\\';
+        }
+  
+        checkpointPath.path += 'checkpoint';
+      } else {
+        checkpointPath.path = network.apiMeta.location + '/checkpoint'
+      }
+
+      /*prepare elements*/
+      layers[el.layerId] = {
+        Name: el.layerName,
+        Type: el.componentName,
+        checkpoint: checkpointPath,
+        endPoints: el.endPoints,
+        Properties: el.layerSettings,
+        Code: el.layerCode,
+        backward_connections: el.backward_connections,
+        forward_connections: el.forward_connections,
+        visited: el.visited,
+        previewVariable: el.previewVariable
+      };
+
+    }
+    return layers;
+
+    
+  },
   GET_coreNetworkWithCheckpointConfig: (state, getters, rootState, rootGetters) => (loadCheckpoint = false) =>{
     const network = rootGetters['mod_workspace/GET_currentNetwork'];
     let layers = {};
@@ -320,6 +367,35 @@ const actions = {
   //---------------
   //  NETWORK TRAINING
   //---------------
+  API_getTestResults({dispatch, getters}, payload) {
+    const { modelIds, model_paths }  = payload;
+    
+    let value = {};
+
+    modelIds.forEach(id => {
+      value[id] = {};
+      value[id].layers = getters.GET_coreNetworkById(id);
+      value[id].data_path = payload.dataPath;
+      value[id].model_path = model_paths[id];
+    })
+    
+    const theData = {
+      receiver: 'tests',
+      action: {
+        tests: payload.testTypes
+      },
+      value,
+    }
+    console.log(theData);
+    return coreRequest(theData)
+      .then((data)=> {
+        dispatch('mod_test/setTestData', data.value, {root: true});
+        dispatch('mod_webstorage/saveTestStatistic', data.value, { root: true });
+      })
+      .catch((err)=> {
+        console.error(err);
+      });
+  },
   API_startTraining({dispatch, getters, rootGetters}, { loadCheckpoint = false } = {}) {
     const network = rootGetters['mod_workspace/GET_currentNetwork'];
     const datasetSettings = rootGetters['mod_datasetSettings/getCurrentDatasetSettings']();

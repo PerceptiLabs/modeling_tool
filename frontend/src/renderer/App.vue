@@ -4,7 +4,7 @@
       v-if="showMenuBar"
     )
     div.d-flex.app-page
-      project-sidebar
+      sidebar-menu
       router-view.flex-1
     update-popup(v-if="isElectron") 
     the-info-popup(v-if="showPopup")
@@ -15,6 +15,13 @@
     modal-pages-engine
     tutorials-checklist(v-if="showTutorialChecklist" :style="tutorialChecklistPosition")
     about-app-popup(v-if="showAppAboutPopUp")
+    file-picker-popup(
+      v-if="showFilePickerPopup"
+      :filePickerType="showFilePickerPopup.filePickerType"
+      :fileTypeFilter="showFilePickerPopup.fileTypeFilter"
+      :popupTitle="showFilePickerPopup.popupTitle"
+      :confirmCallback="showFilePickerPopup.confirmCallback || showFilePickerPopup"
+      :options="showFilePickerPopup.options")
     #tutorial-notifications(v-if="showTutorialNotifications")
       tutorial-notification(
         v-for="n in tutorialNotifications"
@@ -33,8 +40,11 @@
   import { fileserverAvailability } from '@/core/apiFileserver';
   import Analytics from '@/core/analytics';
   import { LOCAL_STORAGE_WORKSPACE_VIEW_TYPE_KEY, localStorageGridKey } from '@/core/constants.js'
-  import { mapMutations, mapActions, mapGetters } from 'vuex';
-  import ProjectSidebar         from '@/pages/layout/project-sidebar.vue';
+  import { mapMutations, mapActions, mapGetters, mapState } from 'vuex';
+  import SidebarMenu            from '@/pages/layout/sidebar-menu.vue';
+  // import HeaderLinux            from '@/components/header/header-linux.vue';
+  // import HeaderWin              from '@/components/header/header-win.vue';
+  // import HeaderMac              from '@/components/header/header-mac.vue';
   import AppHeader              from '@/components/app-header/app-header.vue';
   import UpdatePopup            from '@/components/global-popups/update-popup/update-popup.vue'
   import PiPyPopupUpdate        from "@/components/global-popups/update-popup/pipy-update-popup.vue";  
@@ -43,16 +53,18 @@
   import DeleteConfirmPopup     from "@/components/global-popups/delete-confirm-popup.vue";
   import ModalPagesEngine       from '@/components/modal-pages-engine.vue';
   import AboutAppPopup          from "@/components/global-popups/about-app-popup.vue";
+  import FilePickerPopup        from "@/components/global-popups/file-picker-popup.vue";
   import { MODAL_PAGE_PROJECT, MODAL_PAGE_WHATS_NEW, MODAL_PAGE_QUESTIONNAIRE, IS_VALID_KEYCLOACK_CHECKER_URL } from '@/core/constants.js';
   import { isUrlReachable } from '@/core/apiFileserver.js';
 
   export default {
     name: 'TheApp',
     components: {
-      ProjectSidebar,
+      SidebarMenu,
       ModalPagesEngine,
+      // HeaderLinux, HeaderWin, HeaderMac,
+      UpdatePopup, TheInfoPopup, ConfirmPopup, DeleteConfirmPopup, CreateIssuePopup, PiPyPopupUpdate, AboutAppPopup, FilePickerPopup,
       AppHeader,
-      UpdatePopup, TheInfoPopup, ConfirmPopup, DeleteConfirmPopup, CreateIssuePopup, PiPyPopupUpdate, AboutAppPopup,
       TutorialsChecklist, TutorialNotification
     },
     beforeCreate() {
@@ -161,6 +173,9 @@
       }
     },
     computed: {
+      ...mapState({
+        showFilePickerPopup:        state => state.globalView.globalPopup.showFilePickerPopup,
+      }),
       ...mapGetters({
         user:                   'mod_user/GET_userProfile',
         isDefaultProjectMode:   'mod_project/GET_isDefaultProjectMode',
@@ -206,7 +221,7 @@
       showMenuBar() {
 
         const GET_userIsLogin = this.$store.getters['mod_user/GET_userIsLogin']
-        if (GET_userIsLogin && ['home', 'app', 'projects', 'main-page', 'settings'].includes(this.$route.name)) { 
+        if (GET_userIsLogin && ['home', 'app', 'projects', 'main-page', 'settings', 'test-create', 'test-dashboard'].includes(this.$route.name)) { 
           return true; 
         }
 

@@ -81,14 +81,6 @@
         )
 
         the-toaster(:style="toasterRightPosition")
-
-      file-picker-popup(
-        v-if="showFilePickerPopup"
-        :filePickerType="showFilePickerPopup.filePickerType"
-        :fileTypeFilter="showFilePickerPopup.fileTypeFilter"
-        :popupTitle="showFilePickerPopup.popupTitle"
-        :confirmCallback="showFilePickerPopup.confirmCallback || showFilePickerPopup")
-      //- showFilePickerPopup container the callback function
     .hardware-metrics(
       v-show="showResourceView!=0 && statisticsIsOpen"
       ) 
@@ -127,13 +119,6 @@
     export-network(v-if="showExportNetworkPopup")
     export-network-git-hub(v-if="showExportNetworkToGitHubPopup")
     import-model(v-if="showImportNetworkfromGitHubOrLocalPopup")
-    file-picker-popup(
-      v-if="showFilePickerPopup"
-      :filePickerType="showFilePickerPopup.filePickerType"
-      :fileTypeFilter="showFilePickerPopup.fileTypeFilter"
-      :popupTitle="showFilePickerPopup.popupTitle"
-      :confirmCallback="showFilePickerPopup.confirmCallback || showFilePickerPopup")
-      //- showFilePickerPopup container the callback function
 
     .select-modal-wrapper(
       v-if="showNewModelPopup"

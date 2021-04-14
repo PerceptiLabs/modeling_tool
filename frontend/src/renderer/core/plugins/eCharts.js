@@ -262,7 +262,8 @@ ECharts.registerTheme('quantum', {
       "#6185EE",
       "#86A2F4",
       "#ABBEF9",
-      "#D0DBFF"
+      "#D0DBFF",
+      "transparent"
     ],
     textStyle: {
       color: '#e1e1e1'
@@ -526,7 +527,10 @@ ECharts.registerTheme('quantum', {
       }
     },
     progressive: 1000,
-    animation: false
+    animation: false,
+    inRange: {
+      color: ['#DD2000', '#009000' ]
+    }
   },
   "scatter3D": {
     "itemStyle": {

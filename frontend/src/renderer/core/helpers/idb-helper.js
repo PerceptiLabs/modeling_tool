@@ -1,5 +1,5 @@
 const DB_NAME = 'perceptilabs-idb';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 let _DB;
 
 const _getDb = async () => {
@@ -20,8 +20,13 @@ const _getDb = async () => {
     
     request.onupgradeneeded = e => {
       let db = e.target.result;
-      db.createObjectStore('models');
-      db.createObjectStore('ids');    
+      if (e.oldVersion < 1) {
+        db.createObjectStore('models');
+        db.createObjectStore('ids');
+      }
+      if (e.oldVersion < 2) {
+        db.createObjectStore('testStatistic');
+      }
     };
   });
 }
@@ -211,5 +216,39 @@ export default {
       store.clear();
     }); 
   }, 
+  
+  async saveTestStatistic(payload) {
+    let db = await _getDb();
+    
+    return new Promise(resolve => {
+      
+      let trans = db.transaction(['testStatistic'], 'readwrite');
+      trans.oncomplete = () => {
+        resolve();
+      };
+      let store = trans.objectStore('testStatistic');
+      store.put(payload, 'testStatistic');
+    })
+  },
+  async getTestStatistic() {
+    
+    let db = await _getDb();
+
+    return new Promise(resolve => {
+      let payload = {};
+      let trans = db.transaction(['testStatistic'], 'readonly');
+      trans.oncomplete = () => {
+        resolve(payload);
+      };
+      let store = trans.objectStore('testStatistic');
+
+      store.openCursor().onsuccess = e => {
+        let cursor = e.target.result;
+        if (!cursor) { return; }
+        payload = cursor.value;
+      }
+      
+    })
+  },
 
 }

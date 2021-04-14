@@ -23,7 +23,8 @@
             @click="closePopup()") Cancel
           button.btn.btn--primary.tutorial-relative(type="button"
             id="tutorial_run-test-button"
-            @click="runTest") Run test
+            @click="gotToTestPage") Go To Test
+          
 </template>
 
 <script>
@@ -53,15 +54,18 @@ export default {
     ...mapActions({
       setCurrentView:           'mod_tutorials/setCurrentView'
     }),
-    runTest() {
-      this.closePopup();
-      this.$store.dispatch('mod_workspace/SET_statusNetworkCoreStatusProgressClear');
-      this.$store.dispatch('mod_workspace/SET_elementUnselect');
-      this.$store.dispatch("mod_workspace/SET_currentTestIndex", this.currentNetworkIndex);      
-      this.$store.dispatch('mod_workspace/SET_openTest', true);
-      this.$store.dispatch('mod_workspace/setViewType', 'test');
-      this.setCurrentView('tutorial-test-view');
+    gotToTestPage(){
+      this.$router.push({name: 'test-create'});
     },
+    // runTest() {
+    //   this.closePopup();
+    //   this.$store.dispatch('mod_workspace/SET_statusNetworkCoreStatusProgressClear');
+    //   this.$store.dispatch('mod_workspace/SET_elementUnselect');
+    //   this.$store.dispatch("mod_workspace/SET_currentTestIndex", this.currentNetworkIndex);      
+    //   this.$store.dispatch('mod_workspace/SET_openTest', true);
+    //   this.$store.dispatch('mod_workspace/setViewType', 'test');
+    //   this.setCurrentView('tutorial-test-view');
+    // },
     closePopup() {
       this.$store.commit('globalView/HIDE_allGlobalPopups');
       this.$store.dispatch('mod_workspace/SET_netMode', 'edit');

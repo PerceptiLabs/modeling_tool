@@ -1,0 +1,14 @@
+{
+    "confusion_matrix": {
+            "Encoder": [
+                ],
+            "Decoder": [
+                ],
+            "Input": [
+                "numerical", "image", "categorical"
+                ],
+            "Output": [
+                "categorical"
+                ]
+            }
+}

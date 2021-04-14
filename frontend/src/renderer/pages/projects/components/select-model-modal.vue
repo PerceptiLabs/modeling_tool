@@ -482,7 +482,11 @@ export default {
         closePopup() {
             this.showFilePickerPopup = false;
         },
+        // closePopup() {
+        //     this.showFilePickerPopup = false;
+        // },
         updateModelPath(filepath) {
+            debugger;
             this.modelPath = filepath && filepath[0] ? filepath[0] : '';
             this.showFilePickerPopup = false;
         },

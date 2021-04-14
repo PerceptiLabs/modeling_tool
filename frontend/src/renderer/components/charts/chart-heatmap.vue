@@ -18,13 +18,8 @@ export default {
     return {
       defaultModel: {
         tooltip: {
-            show: true,
-            trigger: 'axis',
-            confine: true,
-            backgroundColor: '#475D9C',
-            textStyle: {
-              fontSize: 10
-            }
+          show: true,
+          backgroundColor: '#475D9C',
         },
         grid: {
           right: 50
