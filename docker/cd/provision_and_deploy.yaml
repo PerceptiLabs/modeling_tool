@@ -1,0 +1,162 @@
+---
+- name: spin up an ec2 server
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  vars:
+    interactive: true
+
+    # Override when choosing the instance type from the instance_types list.
+    # Order of precedence: instance_type, gpus, cpus
+    # Defaults to selecting
+    instance_type:
+    gpus:
+    cpus:
+
+    ###############################
+    # Uncomment one AMI
+    # image: {id: "ami-0ebc8f6f580a04647", description: "Ubuntu 16.04" }
+    image: { id: "ami-08962a4068733a2b6", description: "Ubuntu 20.04" }
+    ###############################
+
+    #################################
+    # Tagging info
+    group: enterprise
+    version:
+    release_env: "dev" # e.g. cd, demo, cloud, dev
+    # When version isn't specified, it'll just be the release_env
+    dns_subdomain: "{{ release_env }}{{ version }}"
+
+    ######################################################################################
+    # Some constants
+    disk_size_gb: 100  # 100 GB is enough to run training. 8 GB is enough just to test scripts
+    dns_domain: perceptilabshosting.com
+    aws_region: us-east-2
+    ttl: 60
+
+    instance_types:
+      - id: t2.micro
+        description: 1 vCPU, 1GB, low bandwidth 1.16¢/hr (tiny. For testing setup scripts)
+        gpus: 0
+        cpus: 1
+      - id: m5.xlarge
+        description: 4 vCPU, 16GiB, 4.7Gbps 19.2¢/hr (can run training with CPU only)
+        gpus: 0
+        cpus: 4
+      - id: p2.xlarge
+        description: 1 GPU, 4 vCPU, 61GiB, 90¢/hr high bandwidth (Can run training on GPU)
+        gpus: 1
+        cpus: 4
+
+    ansible_python_interpreter: python # we expect to run this in a virtualenv
+
+    ######################################################################################
+    # Logic for gettting the instance type id from the requested cpus and gpus
+    query_format: "[?%s==`%s`]"
+    instance_type_query: '{{ (instance_type and query_format % ("id", instance_type))
+                            or (cpus and gpus and "[?cpus==`%s` && gpus==`%s`]" % (cpus, gpus))
+                            or (gpus and "[?gpus==`%s`]" % gpus)
+                            or (cpus and "[?cpus==`%s`]" % cpus)
+                            or "[?cpus==`4` && gpus==`0`]"
+                          }}'
+    instance_type_dict: "{{ (instance_types | json_query(instance_type_query)).0 | mandatory }}"
+    instance_type_name: "{{ instance_type_dict.id }}"
+    instance_type_description: "{{ instance_type_dict.description }}"
+
+  tasks:
+    - name: Ask for input
+      when: interactive|bool
+      pause:
+        prompt: |
+          Starting a machine with the following parameters:
+            instance_type:   {{ instance_type_name }}:{{ instance_type_description }}
+            region:          {{ aws_region }}
+            disk size:       {{ disk_size_gb }} GB
+            ami:             {{ image.description }}
+            ssh_key_name:    {{ key_name | mandatory }}
+            subdomain:       {{ dns_subdomain | default('no value') }}
+            domain:          {{ dns_domain | default('no value') }}
+            ttl:             {{ ttl }}
+            instance_tags:
+              group: enterprise
+              subenv: "{{ release_env }}"
+              version: "{{ version | default('none') }}"
+              subdomain: "{{ release_env }}{{ version }}"
+          Press Enter to continue.
+
+    - import_role:
+        name: jonp.ansible_tools.provision_webserver
+        tasks_from: add
+      vars:
+        instance_type_id: "{{ instance_type_name }}"
+        ami:              "{{ image.id }}"
+        ssh_key_name:     "{{ key_name | mandatory }}"
+        disk_gb:          "{{ disk_size_gb }}"
+        subdomain:        "{{ dns_subdomain }}"
+        domain:           "{{ dns_domain }}"
+        dns_ttl:          "{{ ttl }}"
+        region:           "{{ aws_region }}"
+        instance_tags:
+          group: enterprise
+          subenv: "{{ release_env }}"
+          version: "{{ version | default('none') }}"
+          subdomain: "{{ release_env }}{{ version }}"
+
+    - name: add new server to group for deployment
+      add_host:
+        name: "{{ provision_webserver_new_instance.public_dns_name }}"
+        groups:
+          - newhosts
+        # We just provisioned it. It's host key won't be in known hosts
+        ansible_ssh_extra_args: '-o StrictHostKeyChecking=no'
+        ansible_user: ubuntu
+
+- name: Install To new server(s)
+  hosts: newhosts
+  vars:
+    channels:
+      prod:
+        blob: enterprise
+        version: latest
+        # this is ok to check in. It's read-only access to a user-facing registry
+        token: 3+qWUmIMK5jH74WP70EQmdLqHfnZ3u7t
+      dev:
+        blob: enterprisedev
+        version: latest
+        # this is ok to check in. It's read-only access to a user-facing registry
+        token: DV3cyllvT08ro/Y7Af2AXyI65DXnDX6A
+
+    ###################################################################################################
+    # Overrideable settings
+    channel: "dev" # override this to select the channel
+    channel_dict: "{{ channels[channel] }}"
+    blob: "{{ channel_dict.blob }}"
+    version: "{{ channel_dict.version }}"
+    docker_token: "{{ channel_dict.token }}"
+    installer_url: "https://perceptilabs.blob.core.windows.net/{{ blob }}/{{ version }}/install_perceptilabs_enterprise"
+
+  tasks:
+    - name: set the docker password
+      lineinfile:
+        create: yes
+        line: "PL_PASSWORD={{ docker_token }}"
+        mode: '0600'
+        path: "{{ ansible_env.HOME }}/.perceptilabs/config"
+        regexp: "^PL_PASSWORD="
+        state: present
+
+    - name: get the installer
+      get_url:
+        url: "{{ installer_url }}"
+        dest: "{{ ansible_env.HOME }}/install_perceptilabs_enterprise"
+        mode: '0500'
+
+    - name: Run the installer on the new server
+      command:
+        cmd: "{{ ansible_env.HOME }}/install_perceptilabs_enterprise --noreboot --headless --drivers allow"
+      async: 3600
+      poll: 15
+
+    - name: Installation of GPU drivers requires a reboot.
+      become: yes
+      reboot:

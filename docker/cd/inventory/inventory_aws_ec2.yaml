@@ -1,0 +1,25 @@
+---
+plugin: amazon.aws.aws_ec2
+regions:
+  - us-east-2
+filters:
+  tag-key: group
+  instance-state-name: running
+compose:
+  # these are variables that will be defined for each host in the inventory
+  aws_ec2_instance_id: instance_id
+  aws_ec2_region: "'us-east-2'"
+  aws_public_ip: public_ip_address
+keyed_groups:
+  - prefix: group
+    key: tags.group
+  - prefix: subenv
+    key: tags.subenv
+  - prefix: version
+    key: tags.version
+  - prefix: subdomain
+    key: tags.subdomain
+  - prefix: instance_id
+    key: instance_id
+  - prefix: instance_type
+    key: instance_type

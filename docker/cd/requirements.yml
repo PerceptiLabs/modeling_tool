@@ -1,0 +1,4 @@
+collections:
+  - name: https://github.com/jonp/ansible_tools.git
+    type: git
+    version: master

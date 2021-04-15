@@ -67,8 +67,8 @@ COPY --from=build --chown=1001 /out .
 RUN chmod +x runner && \
     rm requirements.txt
 
-# For some reason TF2.4 from PyPI is linked against libcusolver.so.10
-# Fake it out for now and see whether it works
+# https://github.com/tensorflow/tensorflow/issues/44777
+# Fake it out until TF supports libcusolver.so.11
 RUN ln -Ffs /usr/local/cuda-11.2/targets/x86_64-linux/lib/libcusolver.so.11 /usr/local/cuda-11.2/targets/x86_64-linux/lib/libcusolver.so.10
 
 USER 1001
@@ -81,5 +81,8 @@ COPY tutorial_data /tutorial_data
 EXPOSE 5000
 EXPOSE 8011
 
+# feature flags
 ENV PL_IOU=1
+ENV PL_KERNEL_TRAINER=standard
+
 CMD ["/opt/app-root/src/runner"]

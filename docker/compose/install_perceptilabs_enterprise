@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -Eeo pipefail
+set -x
 
 ###################################################################################################
 # Constants
@@ -24,7 +25,7 @@ should_install_drivers=0
 ###################################################################################################
 # Parse args
 
-USAGE="USAGE: $0 [--headless|-s] [--drivers|-d force|skip|allow] [--help|-h] [--pwd|-p password]"
+USAGE="USAGE: $0 [--headless|-s] [--drivers|-d force|skip|allow] [--help|-h] [--pwd|-p password] [--noreboot|-n]"
 
 # defaults
 opt_headless=0
@@ -91,6 +92,10 @@ esac
 # if we don't have an interactive shell, then it has to be headless
 tty -s || opt_headless=1
 
+if [ $opt_headless -eq 1 ]; then
+  logdate=$(date "+%Y%m%d%H%M%S")
+  exec &> installer_output.txt.$logdate
+fi
 
 ###################################################################################################
 # Get User Input

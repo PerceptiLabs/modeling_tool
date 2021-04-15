@@ -1,0 +1,17 @@
+---
+- name: stop pl_enterprise servers
+  hosts: all
+  gather_facts: no
+  vars:
+    ansible_python_interpreter: python
+
+  tasks:
+    - import_role:
+        name: jonp.ansible_tools.known_hosts
+        tasks_from: remove
+      vars:
+        domain: perceptilabshosting.com
+
+    - import_role:
+        name: jonp.ansible_tools.provision_webserver
+        tasks_from: remove

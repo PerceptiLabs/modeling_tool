@@ -1,0 +1,95 @@
+
+parameters:
+  - name: channel
+    displayName: Release Channel
+    type: string
+    default: dev
+    values:
+    - dev
+    - prod
+  - name: versionid
+    displayName: Requested Version
+    type: string
+    default: latest
+  - name: gpus
+    displayName: Requested GPU count
+    type: number
+    default: 0
+    values:
+      - 0
+      - 1
+  - name: cpus
+    displayName: Requested CPU count
+    type: number
+    default: 4
+    values:
+      - 1
+      - 4
+  - name: release_env
+    displayName: Release Environment
+    default: cd
+    type: string
+  - name: subdomain
+    displayName: DNS Subdomain
+    default: cd
+    type: string
+
+steps:
+
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: '3.x'
+    addToPath: true
+    architecture: 'x64'
+
+- task: DownloadSecureFile@1
+  name: sshkey
+  inputs:
+    secureFile: 'azurepipeline.pem'
+
+- task: Bash@3
+  displayName: Set the ssh key permissions
+  inputs:
+    targetType: 'inline'
+    script: |
+
+- task: Bash@3
+  displayName: Install pip, ansible, ansible roles
+  inputs:
+    targetType: 'inline'
+    workingDirectory: '$(Build.SourcesDirectory)/docker/cd'
+    script: |
+      # Set the ssh key's permissions
+      echo $(sshkey.secureFilePath)
+      chmod 400 $(sshkey.secureFilePath)
+
+      # install ansible and remote roles
+      python -m pip install --upgrade pip setuptools
+      python -m pip install -r requirements.txt
+      ansible-galaxy install -r requirements.yml
+
+- task: AWSShellScript@1
+  displayName: Provision a server
+  inputs:
+    awsCredentials: 'aws'
+    regionName: 'us-east-2'
+    scriptType: 'inline'
+    inlineScript:
+      ansible-playbook
+        --inventory localhost,
+        --extra-vars version=${{ parameters.versionid }}
+        --extra-vars release_env=${{ parameters.release_env }}
+        --extra-vars dns_subdomain=${{ parameters.subdomain }}
+        --extra-vars gpus=${{ parameters.gpus }}
+        --extra-vars cpus=${{ parameters.cpus }}
+        --extra-vars key_name=azurepipeline
+        --extra-vars channel=${{ parameters.channel }}
+        --extra-vars ansible_ssh_private_key_file=$(sshkey.secureFilePath)
+        --extra-vars interactive=false
+        provision_and_deploy.yaml
+        -vvv
+    disableAutoCwd: true
+    workingDirectory: '$(Build.SourcesDirectory)/docker/cd'
+    failOnStandardError: true
+
+# TODO: notify slack channel
