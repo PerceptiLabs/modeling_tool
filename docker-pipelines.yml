@@ -7,7 +7,19 @@ variables:
   BuildVariables.CommitId : $(Build.SourceVersion)
 
 jobs:
+  - job: startvm
+    displayName: Start Worker
+    steps:
+    - task: AWSShellScript@1
+      inputs:
+        awsCredentials: 'aws'
+        regionName: 'us-east-2'
+        scriptType: 'inline'
+        inlineScript: 'aws ec2 start-instances --instance-ids i-02d83a036ea61ccd1 --region us-east-2'
+        failOnStandardError: true
+
   - job: dockerbuild
+    dependsOn: startvm
     strategy:
       matrix:
         kernel:
@@ -131,3 +143,15 @@ jobs:
           storage: 'perceptilabs'
           ContainerName: 'enterprisedev'
           BlobPrefix: '$(Build.BuildId)/'
+
+  - job: stopvm
+    dependsOn: pushfiles
+    displayName: Stop the build machine
+    steps:
+    - task: AWSShellScript@1
+      inputs:
+        awsCredentials: 'aws'
+        regionName: 'us-east-2'
+        scriptType: 'inline'
+        inlineScript: 'aws ec2 stop-instances --instance-ids i-02d83a036ea61ccd1 --region us-east-2'
+        failOnStandardError: true
