@@ -228,7 +228,6 @@ const layerBgColor = function (componentName) {
     case 'DataEnvironment':
     case 'DataRandom':
     case 'IoInput':
-    case 'IoOutput':
       className = 'net-color-data';
       break;
     case 'DeepLearningFC':
@@ -257,6 +256,7 @@ const layerBgColor = function (componentName) {
     case 'TrainDetector':
     case 'TrainGan':
     case 'TrainRegression':
+    case 'IoOutput':
       className = 'net-color-train';
       break;
     case 'MathArgmax':
