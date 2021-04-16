@@ -81,4 +81,5 @@ COPY tutorial_data /tutorial_data
 EXPOSE 5000
 EXPOSE 8011
 
+ENV PL_IOU=1
 CMD ["/opt/app-root/src/runner"]
