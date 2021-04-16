@@ -16,6 +16,83 @@ DOCKER_COMPOSE_URL=${AZURE_BLOB_URL}/${VERSION}/docker-compose.yml
 NGINX_CONF_URL=${AZURE_BLOB_URL}/${VERSION}/nginx.conf
 
 ###################################################################################################
+# State
+
+needs_reboot=0
+should_install_drivers=0
+
+###################################################################################################
+# Parse args
+
+USAGE="USAGE: $0 [--headless|-s] [--drivers|-d force|skip|allow] [--help|-h] [--pwd|-p password]"
+
+# defaults
+opt_headless=0
+opt_noreboot=0
+opt_drivers=
+
+###################################################################################################
+#  Transform long options to short ones
+for arg in "$@"; do
+  shift
+  case "$arg" in
+    "--help")     set -- "$@" "-h" ;;
+    "--headless") set -- "$@" "-s" ;;
+    "--drivers")  set -- "$@" "-d" ;;
+    "--pwd")      set -- "$@" "-p" ;;
+    "--noreboot") set -- "$@" "-n" ;;
+    *)            set -- "$@" "$arg"
+  esac
+done
+
+###################################################################################################
+# parse short options
+while getopts ":hsd:p:n" arg; do
+  case ${arg} in
+    h )
+      echo "${USAGE}"
+      exit 0
+      ;;
+    d )
+      opt_drivers=${OPTARG}
+      ;;
+    s )
+      opt_headless=1
+      ;;
+    p )
+      PL_PASSWORD="${OPTARG}"
+      ;;
+    n )
+      opt_noreboot=1
+      ;;
+    : )
+      echo "Missing argument to ${OPTARG}" 1>&2
+      echo "${USAGE}" 1>&2
+      exit 1
+      ;;
+    \? )
+      echo "Invalid option: ${OPTARG}"
+      exit 1
+      ;;
+  esac
+done
+
+case ${opt_drivers} in
+  force|allow|skip )
+    ;;
+  '' )
+    ;;
+  *)
+    echo "Invalid parameter to -d: ${opt_drivers}"
+    echo "${USAGE}"
+    exit 1
+esac
+
+# if we don't have an interactive shell, then it has to be headless
+tty -s || opt_headless=1
+
+
+###################################################################################################
 # Get User Input
 
 [ ! -d "${CONFIG_DIR}" ] && mkdir -p "${CONFIG_DIR}"
@@ -35,7 +112,15 @@ set_config_file_permissions(){
 }
 
 source_config(){
+  if [ -n "${PL_PASSWORD}" ]; then
+    return 0
+  fi
+
   if [ ! -f "${CONFIG_FILE}" ]; then
+    if [ $opt_headless -eq 1 ]; then
+      echo "Config file is required in headless mode"
+      exit 1
+    fi
     return 1
   fi
 
@@ -51,6 +136,11 @@ source_config(){
 
 maybe_get_password(){
   if [ -z "${PL_PASSWORD}" ]; then
+    if [ $opt_headless -eq 1 ]; then
+      echo "Docker password isn't configured."
+      exit 1
+    fi
+
     read -s -r -p "Enter the perceptilabs docker registry password: " PL_PASSWORD
     echo
     echo "PL_PASSWORD=${PL_PASSWORD}" >> "${CONFIG_FILE}"
@@ -72,14 +162,14 @@ has_nvidia_driver(){
 }
 
 driver_version_current(){
-  has_nvidia_driver && {
-    version=$(nvidia-smi --query-gpu=driver_version --format=csv,noheader | cut --delimiter=. --fields=1)
-    test $version -ge $REQUIRED_NVIDIA_VERSION
-  }
+  has_nvidia_driver &&
+    version=$(nvidia-smi --query-gpu=driver_version --format=csv,noheader | cut --delimiter=. --fields=1) &&
+    echo "NVIDIA drivers version: ${version}" &&
+    test "${version}" -ge "$REQUIRED_NVIDIA_VERSION"
   return $?
 }
 
-maybe_install_drivers_tool(){
+ensure_drivers_tool_installed(){
   (which ubuntu-drivers &>/dev/null) || {
     sudo apt update
     sudo apt install -y ubuntu-drivers-common
@@ -101,7 +191,7 @@ find_latest_driver(){
 }
 
 install_latest_driver(){
-  maybe_install_drivers_tool
+  ensure_drivers_tool_installed
 
   package=$(find_latest_driver)
   if [ -z "${package}" ]; then
@@ -109,20 +199,36 @@ install_latest_driver(){
     return 1
   fi
 
-  read -r -p "Detected latest driver: ${package}. Press enter to install it "
+  if [ $opt_headless -eq 1 ] && [ -z "${opt_drivers}" ]; then
+    echo "Detected a needed driver. Rerun this script with a value in the --drivers command line option."
+    exit 1
+  fi
+
+  if [ $opt_headless -eq 0 ]; then
+    # TODO: detect non-interactive shell and fail
+    read -r -p "Detected latest driver: ${package}. Press enter to install it "
+    should_install_drivers=1
+  fi
+
+  needs_reboot=1
   sudo apt install -y ${package}
-  echo
-  echo "Installation of drivers is complete."
-  echo "This computer needs to reboot to continue the rest of the installation."
-  echo "After reboot, please rerun this script to resume installation."
-  read -r -p "Press enter to reboot"
-  sudo shutdown -r now
 }
 
 install_nvidia_drivers(){
-  ! has_gpus || \
-    driver_version_current || \
-    install_latest_driver
+  case "${opt_drivers}" in
+    force )
+      install_latest_driver
+      return $?
+      ;;
+    skip )
+      return 0
+      ;;
+    allow | '' )
+      ! has_gpus || \
+        driver_version_current || \
+        install_latest_driver
+      ;;
+  esac
   return $?
 }
 
@@ -149,7 +255,7 @@ install_docker(){
   }
 
   # grep to dev/null instead of -q because -q breaks the pipe
-  sudo docker run -it hello-world | grep "Hello from Docker" >/dev/null
+  sudo docker run --rm hello-world | grep "Hello from Docker" >/dev/null
   return $?
 }
 
@@ -158,7 +264,7 @@ install_docker(){
 # Install nvidia-docker
 # from https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html
 test_nvidia_docker(){
-  sudo docker run -it --rm --gpus all registry.access.redhat.com/ubi8-minimal nvidia-smi | grep "NVIDIA-SMI" >/dev/null
+  sudo docker run --rm --gpus all registry.access.redhat.com/ubi8-minimal nvidia-smi | grep "NVIDIA-SMI" >/dev/null
   return $?
 }
 
@@ -215,7 +321,7 @@ install_perceptilabs(){
 
   mkdir -p plabs
   chmod 777 plabs
-  sudo docker login ${CONTAINER_REGISTRY} --username ${DOCKER_USERNAME} --password-stdin <<< "${PL_PASSWORD}"
+  sudo docker login ${CONTAINER_REGISTRY} --username ${DOCKER_USERNAME} --password "${PL_PASSWORD}"
 
   echo pulling images
   sudo docker-compose pull
@@ -223,6 +329,21 @@ install_perceptilabs(){
   sudo docker-compose up -d
 }
 
+reboot_if_needed(){
+  if [ $needs_reboot -eq 1 ] && [ $opt_noreboot -eq 0 ]; then
+    echo
+    echo "Installation of drivers is complete."
+    echo "This computer needs to reboot to continue the rest of the installation."
+    echo "After reboot, please rerun this script to resume installation."
+    # TODO: detect non-interactive shell and fail
+    if [ $opt_headless -eq 0 ]; then
+      read -r -p "Press enter to reboot"
+    fi
+    sudo shutdown -r now
+  else
+    echo PerceptiLabs is ready!
+  fi
+}
 
 # Check that I can sudo
 sudo echo
@@ -235,5 +356,5 @@ install_docker
 install_nvidia_docker_support
 install_docker_compose
 install_perceptilabs
+reboot_if_needed
 
-echo PerceptiLabs is ready!
