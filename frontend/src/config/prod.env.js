@@ -8,7 +8,9 @@ module.exports = {
   KEYCLOACK_RELM: '"PerceptiLabs"',
   KEYCLOACK_CLIENT_ID: '"perceptilabs_tool"',
   GITHUB_CLIENT_ID: '"094271b0edb47c75dc24"',
+  ENABLE_TF2X: '"false"',
+  ENABLE_DATA_WIZARD: '"false"',
   ENABLE_LOGROCKET: '"true"',
   LOGROCKET_APP_ID: '"l2mogl/modeling-tool"',
-  ENABLE_GLOBAL_TRAINING_SETTINGS: '"false"'
+  ENABLE_GLOBAL_TRAINING_SETTINGS: '"false"',
 }

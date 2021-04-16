@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from typing import Tuple
 
 from perceptilabs.graph.spec import GraphSpec
@@ -8,11 +7,11 @@ from perceptilabs.trainer.stats.loss import LossStatsTracker, LossStats
 
 
 
-@dataclass(frozen=True)
 class ImageOutputStats:
-    iou: IouStats = None
-    loss: LossStats = None
-
+    def __init__(self, iou=None, loss=None):
+        self.iou = iou
+        self.loss = loss
+        
 
 class ImageOutputStatsTracker(TrainingStatsTracker):
     def __init__(self):

@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from typing import Tuple
 import tensorflow as tf
 
@@ -6,19 +5,19 @@ from perceptilabs.trainer.stats.base import TrainingStatsTracker
 from perceptilabs.trainer.stats.utils import return_on_failure
 
 
-@dataclass(frozen=True)
 class PredictionMatrix:
-    correct: int = 0  
-    incorrect: int = 0
+    def __init__(self, correct, incorrect):
+        self.correct = correct
+        self.incorrect = incorrect
 
     @property
     def total(self):
         return self.correct + self.incorrect
 
 
-@dataclass(frozen=True)
 class AccuracyStats:
-    prediction_matrices: Tuple[Tuple[Tuple[PredictionMatrix, bool]]] = ()  # [Epoch][Step] = (matrix, is_training)
+    def __init__(self, prediction_matrices=None):
+        self.prediction_matrices = prediction_matrices or ()
     
     @return_on_failure(0.0)
     def get_average_accuracy_for_epoch(self, epoch, phase='training'):

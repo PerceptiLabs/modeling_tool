@@ -1,6 +1,5 @@
 # NOTE: current implementation only supports binary segmentation.
 
-from dataclasses import dataclass
 from typing import Tuple
 import tensorflow as tf
 
@@ -8,17 +7,17 @@ from perceptilabs.trainer.stats.base import TrainingStatsTracker
 from perceptilabs.trainer.stats.utils import return_on_failure
 
 
-@dataclass(frozen=True)
 class ConfusionMatrix:
-    tp: int = 0
-    tn: int = 0
-    fp: int = 0
-    fn: int = 0
+    def __init__(self, tp, tn, fp, fn):
+        self.tp = tp
+        self.tn = tn
+        self.fp = fp
+        self.fn = fn
 
-
-@dataclass(frozen=True)
+        
 class IouStats:
-    prediction_matrices: Tuple[Tuple[Tuple[ConfusionMatrix, bool]]] = ()  # [Epoch][Step] = (matrix, is_training)
+    def __init__(self, prediction_matrices=None):
+        self.prediction_matrices = prediction_matrices or ()
     
     @return_on_failure(0.0)
     def get_average_iou_for_epoch(self, epoch, phase='training'):

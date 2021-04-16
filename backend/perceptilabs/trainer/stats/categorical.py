@@ -63,6 +63,7 @@ class CategoricalOutputStats:
         return averages
 
 
+    
 class CategoricalOutputStatsTracker(TrainingStatsTracker):
     def __init__(self):
         self._accuracy_tracker = AccuracyStatsTracker()

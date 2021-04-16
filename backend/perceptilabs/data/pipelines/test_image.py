@@ -36,21 +36,7 @@ def save_image_to_disk(image, directory, ext='.png', repeats=1):
 def test_image_preprocessing_for_png(temp_path):
     image = np.random.randint(0, 255, size=(16, 16, 3)).astype(np.uint8)
     expected = image.astype(np.float32)
-    inputs = list()
-
-    # Save images into a dataset
-    for i in range (1, 9):
-        file_name = str(i) + '.png'
-        path=os.path.join(temp_path, file_name)
-
-        assert file_name not in os.listdir(temp_path)
-
-        sk.imsave(path, expected)
-
-        inputs.append(path)
-
-        assert file_name in os.listdir(temp_path)
-
+        
     # Create the dataset
     tensor_inputs = save_image_to_disk(image, temp_path, ext='.png', repeats=9)
     dataset = tf.data.Dataset.from_tensor_slices(tensor_inputs)
@@ -85,7 +71,6 @@ def test_image_preprocessing_for_tiff(temp_path):
     actual = next(iter(processed_dataset)).numpy()
 
     assert np.all(actual == expected)
-
 
 
     

@@ -1,12 +1,12 @@
-from dataclasses import dataclass
 from typing import Tuple
 
 from perceptilabs.trainer.stats.base import TrainingStatsTracker
 from perceptilabs.trainer.stats.utils import return_on_failure
 
-@dataclass(frozen=True)
+
 class LossStats:
-    losses: Tuple[Tuple[Tuple[float, bool]]] = () # [Epoch][Step] = (loss, is_training)
+    def __init__(self, losses=None):
+        self.losses = losses or ()
 
     @return_on_failure(0.0)    
     def get_loss_for_step(self, epoch, step):

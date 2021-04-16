@@ -294,6 +294,7 @@ perceptilabs/api/experiment.py
 perceptilabs/tutorial_data/
 
 # backend/perceptilabs/data/
+perceptilabs/data/__init__.py
 perceptilabs/data/base.py
 
 # backend/perceptilabs/data/pipelines/
