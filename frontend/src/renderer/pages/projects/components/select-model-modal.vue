@@ -57,6 +57,7 @@
                         .load-contents-group(v-if="!dataset")
                             button.action-button(@click="openFilePicker('setDataPath')") Load data
                         csv-table(v-if="dataset" :dataSet="dataset" @update="handleCSVDataTypeUpdates")
+                        span.error(v-if="isAllIOTypesFilled() && !hasInputAndOutput()") Make sure to have at least one input and one output to proceed
                         
             .main-actions 
                 div  
@@ -281,17 +282,39 @@ export default {
 
             this.modelName = `${namePrefix} ${highestSuffix + 1}`
         },
+        isAllIOTypesFilled() {
+            if (this.isTF2XEnabled && this.isDataWizardEnabled) {
+                const {csvData} = this;
+                return csvData && (csvData.ioTypes.filter(v => v !== undefined).length === csvData.ioTypes.length)
+            } else {
+                return false;
+            }
+        },
+        hasInputAndOutput() {
+            if (this.isTF2XEnabled && this.isDataWizardEnabled) {
+                const {csvData} = this;
+                return csvData 
+                    && csvData.ioTypes.filter(v => v === 'Input').length > 0 
+                    && csvData.ioTypes.filter(v => v === 'Output').length > 0
+            } else {
+                return false;
+            }
+        },
         isDisableCreateAction() {
 
             if (this.isTF2XEnabled) {
                 const { modelName,  csvData} = this;
                 let allColumnsAreSelected = true;
+                let hasInputAndOutput = true;
                 
                 if(this.isDataWizardEnabled) {
-                   allColumnsAreSelected = csvData && csvData.ioTypes.filter(v => v !== undefined).length === csvData.ioTypes.length  
+                   allColumnsAreSelected = this.isAllIOTypesFilled();  
+                   hasInputAndOutput = this.hasInputAndOutput();
                 }
+
+
                 
-                return (!allColumnsAreSelected || !modelName);
+                return (!allColumnsAreSelected || !modelName || !hasInputAndOutput);
             } else {
                 const { chosenTemplate, modelName, basicTemplates } = this;
                 return ((chosenTemplate === null) || !modelName);
@@ -748,7 +771,7 @@ export default {
         padding: 0 30px;
         // margin-top: 33px;
         display: flex;
-        flex-wrap: wrap;
+        flex-direction: column;
         justify-content: center;
         align-items: center;
     
@@ -783,7 +806,9 @@ export default {
         line-height: 16px;
         color: #9E9E9E;
     }
-   
+    span.error {
+        color: red;
+    }
     .model-title-input-wrapper {
         // border-bottom: 1px solid #4D556A;
     }
