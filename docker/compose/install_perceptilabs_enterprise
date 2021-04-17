@@ -340,8 +340,6 @@ reboot_if_needed(){
       read -r -p "Press enter to reboot"
     fi
     sudo shutdown -r now
-  else
-    echo PerceptiLabs is ready!
   fi
 }
 
@@ -358,3 +356,5 @@ install_docker_compose
 install_perceptilabs
 reboot_if_needed
 
+echo PerceptiLabs is ready!
+exit 0
