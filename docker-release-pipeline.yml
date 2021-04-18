@@ -1,6 +1,11 @@
 trigger:
 - master
 
+parameters:
+  - name: build_id_to_deploy
+    displayName: Build ID to deploy
+    type: string
+  
 jobs:
   - job: checkvars
     displayName: Check Variables
@@ -14,11 +19,11 @@ jobs:
             fail
 
       - task: CmdLine@2
-        displayName: Check BUILD_ID_TO_DEPLOY
-        condition: or(eq(variables.BUILD_ID_TO_DEPLOY, 'REQUIRED'), eq(variables.BUILD_ID_TO_DEPLOY, ''))
+        displayName: Check build_id_to_deploy
+        condition: eq(${{ parameters.build_id_to_deploy }}, '')
         inputs:
           script: |
-            echo BUILD_ID_TO_DEPLOY was not set
+            echo build_id_to_deploy was not set
             fail
 
   - job: dockerrelease
@@ -48,7 +53,7 @@ jobs:
           containerRegistry: 'perceptilabs'
           repository: $(repo)
           command: 'pull'
-          arguments: 'perceptilabs.azurecr.io/$(repo):$(BUILD_ID_TO_DEPLOY)'
+          arguments: 'perceptilabs.azurecr.io/$(repo):${{ parameters.build_id_to_deploy }}'
           addPipelineData: false
 
       - task: Docker@2
@@ -57,7 +62,7 @@ jobs:
           containerRegistry: 'perceptilabs'
           repository: $(repo)
           command: 'tag'
-          arguments: 'perceptilabs.azurecr.io/$(repo):$(BUILD_ID_TO_DEPLOY) perceptilabsenterprise.azurecr.io/$(repo):$(Build.SourceBranchName)'
+          arguments: 'perceptilabs.azurecr.io/$(repo):${{ parameters.build_id_to_deploy }} perceptilabsenterprise.azurecr.io/$(repo):$(Build.SourceBranchName)'
           addPipelineData: false
 
       - task: Docker@2
@@ -89,32 +94,12 @@ jobs:
           project: '54ade330-1468-4064-8c98-7fe751f97330'
           pipeline: '16'
           buildVersionToDownload: 'specific'
-          buildId: '$(BUILD_ID_TO_DEPLOY)'
+          buildId: '${{ parameters.build_id_to_deploy }}'
           downloadType: 'specific'
-          itemPattern: '**/docker-compose.yml'
-          downloadPath: '$(System.ArtifactsDirectory)'
-
-      - task: DownloadBuildArtifacts@0
-        displayName: Download nginx.conf
-        inputs:
-          buildType: 'specific'
-          project: '54ade330-1468-4064-8c98-7fe751f97330'
-          pipeline: '16'
-          buildVersionToDownload: 'specific'
-          buildId: '$(BUILD_ID_TO_DEPLOY)'
-          downloadType: 'specific'
-          itemPattern: '**/nginx.conf'
-          downloadPath: '$(System.ArtifactsDirectory)'
-
-      - task: DownloadBuildArtifacts@0
-        inputs:
-          buildType: 'specific'
-          project: '54ade330-1468-4064-8c98-7fe751f97330'
-          pipeline: '16'
-          buildVersionToDownload: 'specific'
-          buildId: '$(BUILD_ID_TO_DEPLOY)'
-          downloadType: 'specific'
-          itemPattern: '**/install_perceptilabs_enterprise'
+          itemPattern: |
+            **/docker-compose.yml
+            **/nginx.conf
+            **/install_perceptilabs_enterprise
           downloadPath: '$(System.ArtifactsDirectory)'
 
       - task: Bash@3
@@ -128,32 +113,21 @@ jobs:
           failOnStderr: true
 
       - task: AzureFileCopy@4
-        displayName: publish the docker-compose.yml file
+        displayName: publish the installation files to $(Build.SourceBranchName)
         inputs:
-          SourcePath: '$(System.ArtifactsDirectory)/installation/docker-compose.yml'
+          SourcePath: '$(System.ArtifactsDirectory)/installation/**'
           azureSubscription: 'XSP72180|MICROSOFT|XSP72180|XSP524371(d9d6ebad-f86e-4961-9964-5665aa01fcfc)'
           Destination: 'AzureBlob'
           storage: 'perceptilabs'
           ContainerName: 'enterprise'
-          BlobPrefix: '$(Build.SourceBranchName)/docker-compose.yml'
+          BlobPrefix: '$(Build.SourceBranchName)/'
 
       - task: AzureFileCopy@4
-        displayName: publish the nginx.conf file
+        displayName: publish the installation files to latest
         inputs:
-          SourcePath: '$(System.ArtifactsDirectory)/installation/nginx.conf'
+          SourcePath: '$(System.ArtifactsDirectory)/installation/**'
           azureSubscription: 'XSP72180|MICROSOFT|XSP72180|XSP524371(d9d6ebad-f86e-4961-9964-5665aa01fcfc)'
           Destination: 'AzureBlob'
           storage: 'perceptilabs'
           ContainerName: 'enterprise'
-          BlobPrefix: '$(Build.SourceBranchName)/nginx.conf'
-
-      - task: AzureFileCopy@4
-        displayName: publish the installer file
-        inputs:
-          SourcePath: '$(System.ArtifactsDirectory)/installation/install_perceptilabs_enterprise'
-          azureSubscription: 'XSP72180|MICROSOFT|XSP72180|XSP524371(d9d6ebad-f86e-4961-9964-5665aa01fcfc)'
-          Destination: 'AzureBlob'
-          storage: 'perceptilabs'
-          ContainerName: 'enterprise'
-          BlobPrefix: '$(Build.SourceBranchName)/install_perceptilabs_enterprise'
-
+          BlobPrefix: 'latest/'

@@ -130,6 +130,7 @@ jobs:
     steps:
 
       - task: DownloadBuildArtifacts@0
+        displayName: Fetch artifacts from the previous job
         inputs:
           buildType: 'current'
           downloadType: 'specific'
@@ -140,7 +141,7 @@ jobs:
           downloadPath: '$(System.ArtifactsDirectory)'
 
       - task: AzureFileCopy@4
-        displayName: publish the docker-compose.yml file
+        displayName: publish the installation files to $(Build.BuildId)
         inputs:
           SourcePath: '$(System.ArtifactsDirectory)/installation_dev/**'
           azureSubscription: 'XSP72180|MICROSOFT|XSP72180|XSP524371(d9d6ebad-f86e-4961-9964-5665aa01fcfc)'
@@ -151,14 +152,14 @@ jobs:
 
       - task: AzureFileCopy@4
         condition: eq(${{ parameters.savetolatest }}, true)
-        displayName: publish the docker-compose.yml file
+        displayName: publish the installation files to latest
         inputs:
           SourcePath: '$(System.ArtifactsDirectory)/installation_dev/**'
           azureSubscription: 'XSP72180|MICROSOFT|XSP72180|XSP524371(d9d6ebad-f86e-4961-9964-5665aa01fcfc)'
           Destination: 'AzureBlob'
           storage: 'perceptilabs'
           ContainerName: 'enterprisedev'
-          BlobPrefix: 'latest'
+          BlobPrefix: 'latest/'
           CleanTargetBeforeCopy: true
 
   - job: stopvm
