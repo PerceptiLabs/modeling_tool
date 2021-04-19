@@ -1,6 +1,7 @@
 const namespaced = true;
 
 const state = {
+  startupFolder: null,
 };
 
 const getters = {
@@ -10,7 +11,11 @@ const getters = {
   }
 };
 
-const mutations = {};
+const mutations = {
+  SET_startupFolder(state, value) {
+    state.startupFolder = value;
+  }
+};
 
 const actions = {
   async setDatasetSettings(ctx, { datasetPath, settings }) {
@@ -18,6 +23,9 @@ const actions = {
   },
   async setCurrentDataset(ctx, datasetPath) {
     localStorage.setItem("currentDataset", datasetPath);
+  },
+  setStartupFolder({commit}, path) {
+    commit('SET_startupFolder', path);
   }
 };
 

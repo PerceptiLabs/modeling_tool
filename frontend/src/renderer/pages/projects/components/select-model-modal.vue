@@ -203,6 +203,7 @@ export default {
         ...mapState({
           currentProjectId:     state => state.mod_project.currentProject,  
           workspaces:           state => state.mod_workspace.workspaceContent,
+          startupDatasetPath:    state => state.mod_datasetSettings.startupFolder,
         }),
         ...mapGetters({
             currentProject:     'mod_project/GET_project',
@@ -503,7 +504,7 @@ export default {
             if (openFilePickerReason === 'setDataPath') {
                 this.filepickerOptions.popupTitle = 'Choose data to load';
                 this.filepickerOptions.filePickerType = 'multimode';
-                this.filepickerOptions.startupFolder = this.modelPath;
+                this.filepickerOptions.startupFolder = this.startupDatasetPath;
                 this.filepickerOptions.confirmCallback = this.handleDataPathUpdates;
             } else {    
                 this.filepickerOptions.popupTitle = 'Choose Model path';
@@ -568,6 +569,8 @@ export default {
                 this.showFilePickerPopup = false;
                 return;
             }
+
+            this.$store.dispatch('mod_datasetSettings/setStartupFolder', dataPath[0].path.match(/(.*)[\/\\]/)[1]||'');
 
             const fileContents = await fileserver_getFileContent(`${dataPath[0].path}`);
 
