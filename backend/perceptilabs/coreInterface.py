@@ -14,6 +14,8 @@ import skimage
 import GPUtil
 import collections
 import math
+import sys
+import tensorflow as tf
 from typing import List
 
 from perceptilabs.core_new.compatibility import CompatibilityCore
@@ -332,6 +334,14 @@ class coreLogic():
 
     def checkCore(self):
         return {"content":"Alive"}
+    
+    def checkVersions(self):
+        return {
+            "content": json.dumps({
+                "python": sys.version_info,
+                "tensorflow": tf.__version__,
+            })
+        }
 
     def isRunning(self):
         if self.cThread is not None and self.cThread.isAlive():

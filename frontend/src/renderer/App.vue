@@ -144,6 +144,7 @@
         });      
 
       this.$store.dispatch('mod_tutorials/activateNotification');
+      this.$store.dispatch('mod_api/checkCoreVersions', null, {root: true});
 
       this.updateOnlineStatus();
       this.SET_appVersion(process.env.PACKAGE_VERSION);

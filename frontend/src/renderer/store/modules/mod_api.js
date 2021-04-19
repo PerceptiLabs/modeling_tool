@@ -15,6 +15,7 @@ const state = {
   instanceId: null,
   statusLocalCore: 'offline', //online
   headlessState: [],
+  coreVersions: null,
 };
 
 const getters = {
@@ -218,6 +219,9 @@ const mutations = {
   },
   API_setAppInstanceMutation(state, payload) {
     state.instanceId = payload;
+  },
+  SET_coreVersions(state, value) {
+    state.coreVersions = value;
   }
 };
 
@@ -246,8 +250,27 @@ const actions = {
   },
   coreStatusWatcher({dispatch}) {  
     setInterval(() => {
-    dispatch('checkCoreAvailability')
-  }, 2000)
+      dispatch('checkCoreAvailability')
+    }, 2000)
+  },
+  checkCoreVersions({commit, dispatch, state}) {
+    const theData = {
+      action: 'checkVersions',
+      value: ''
+    };
+    return coreRequest(theData)
+      .then((data)=> {
+        const versions = JSON.parse(data);
+        commit('SET_coreVersions', {
+          python: versions.python.slice(0, 2).join('.'),
+          tensorflow: versions.tensorflow
+        })
+      })
+      .catch(()=> {
+        if(state.statusLocalCore === 'online') {
+          commit('SET_statusLocalCore', 'offline');
+        }
+      });
   },
   API_runServer({state, dispatch, commit, rootGetters}) {
     let timer;

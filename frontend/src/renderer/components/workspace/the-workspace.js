@@ -154,7 +154,8 @@ export default {
       showExportNetworkToGitHubPopup:     state => state.globalView.globalPopup.showExportNetworkToGitHubPopup,
       showImportNetworkfromGitHubOrLocalPopup:     state => state.globalView.globalPopup.showImportNetworkfromGitHubOrLocalPopup,
       isMiniMapNavigatorOpened:   state => state.globalView.isMiniMapNavigatorOpened,
-      isGlobalTrainingSettingsPopupOpened: state => state.globalView.globalPopup.showGlobalTrainingSettingsPopup.isOpen
+      isGlobalTrainingSettingsPopupOpened: state => state.globalView.globalPopup.showGlobalTrainingSettingsPopup.isOpen,
+      coreVersions:               state => state.mod_api.coreVersions || {}
     }),
     
 

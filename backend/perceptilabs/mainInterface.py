@@ -440,6 +440,10 @@ class Interface():
             response = self._core.checkCore()
             return response
 
+        elif action == "checkVersions":
+            response = self._core.checkVersions()
+            return response
+
         elif action == "headless":
             return self._create_response_headless(value)
 
