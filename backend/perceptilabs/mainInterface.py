@@ -9,6 +9,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 from perceptilabs.parser.onnx_converter import *
 from perceptilabs.parser.parse_onnx import LayerCheckpoint, Parser
+import perceptilabs.tracking as tracking
 
 #core interface
 from perceptilabs.extractVariables import extractCheckpointInfo
@@ -616,13 +617,20 @@ class Interface():
         return self._core.set_headless(active=request_value)
 
     def _create_response_model_recommendation(self, request_value):
-        dataset_settings = request_value
+        """ Loads the data and invokes the model recommender to return a graph spec. Also triggers a MixPanel event """
+        dataset_settings = request_value['datasetSettings']
         data_loader = DataLoader.from_dict(dataset_settings)
         
         recommender = ModelRecommender(data_loader=data_loader)
         graph_spec = recommender.get_graph(data_loader.feature_specs)
         
         json_network = graph_spec.to_dict()
+
+        tracking.send_model_recommended(
+            request_value['user_email'],
+            request_value['model_id'],
+            graph_spec
+        )       
         return json_network
     
     def _create_response_export(self, value, receiver):

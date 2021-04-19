@@ -208,7 +208,8 @@ export default {
             currentProject:     'mod_project/GET_project',
             projectPath:        'mod_project/GET_projectPath',
             currentNetworkId:   'mod_workspace/GET_currentNetworkId',
-            defaultTemplate:    'mod_workspace/GET_defaultNetworkTemplate'
+            defaultTemplate:    'mod_workspace/GET_defaultNetworkTemplate',
+            user:               'mod_user/GET_userProfile',
         }),
         isTF2XEnabled() {
             return process.env.ENABLE_TF2X === 'true';
@@ -349,33 +350,45 @@ export default {
                 return;
             }
 
+            // Creating the project/network entry in rygg
+            const apiMeta = await this.createProjectModel({
+              name: modelName,
+              project: this.currentProjectId,
+              location: `${this.modelPath}/${modelName}`,
+            });
+
             await this.$store.dispatch('mod_datasetSettings/setCurrentDataset', this.datasetPath);
             const datasetSettings = {
                 randomizedPartitions: this.datasetSettings.randomizedPartitions,
                 partitions: this.datasetSettings.partitions,
                 featureSpecs: this.formatCSVTypesIntoKernelFormat(),
-                
              };
-             
+            
             await this.$store.dispatch('mod_datasetSettings/setDatasetSettings', {
                 datasetPath: this.datasetPath, 
                 settings: datasetSettings,
              });
-            const payload = this.$store.getters['mod_datasetSettings/getCurrentDatasetSettings']();
-            const modelRecommendation = await this.getModelRecommendation(payload);
+            const fullDatasetSettings = this.$store.getters['mod_datasetSettings/getCurrentDatasetSettings']();
+	    const payload = {
+		datasetSettings: fullDatasetSettings,
+		user_email: this.user.email,
+		model_id: apiMeta.model_id,
+	    }
+	    
+            
+            const modelRecommendation = await this.getModelRecommendation(payload)
+              .then((res) => {
+                if(typeof(res) === "string" && res.indexOf('Internal error') !== -1) {
+                  this.$store.dispatch('mod_project/deleteModel', {model_id: apiMeta.model_id});
+                }
+                return res;
+              }); 
             
             const inputData = convertModelRecommendationToVisNodeEdgeList(modelRecommendation);
             const network = createVisNetwork(inputData);
 
             // Wait till the 'stabilized' event has fired
             await new Promise(resolve => network.on('stabilized', async (data) => resolve()));
-
-            // Creating the project/network entry in rygg
-            const apiMeta = await this.createProjectModel({
-                name: modelName,
-                project: this.currentProjectId,
-                location: `${this.modelPath}/${modelName}`,
-            });
             
             // Creating the networkElementList for the network
             var ids = inputData.nodes.getIds();
