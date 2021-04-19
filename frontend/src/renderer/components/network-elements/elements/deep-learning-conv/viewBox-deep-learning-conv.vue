@@ -24,7 +24,7 @@
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Gradients'")
       chart-switch(
         key="4"
-        chart-label="Bias"
+        chart-label="Gradients"
         :chart-data="chartData.Gradients.Gradients"
         :custom-color="colorList"
       )
@@ -41,14 +41,14 @@
     data() {
       return {
         chartData: {
-          'Weights&Output': {
+          'Weights & Output': {
             Weights: null,
             Output: null,
           },
-          Bias: {
+          'Bias': {
             Bias: null,
           },
-          Gradients: {
+          'Gradients': {
             Gradients: null,
           }},
         btnList: {'Weights & Output': null, 'Bias': null, 'Gradients': null},

@@ -3,7 +3,7 @@
 
 
 {% macro layer_pretrained_inceptionv3(layer_spec, graph_spec) %}
-class {{layer_spec.sanitized_name}}Keras(tf.keras.layers.Layer):
+class {{layer_spec.sanitized_name}}Keras(tf.keras.layers.Layer, PerceptiLabsVisualizer):
     def call(self, inputs, training=True):
         """ Takes a tensor and sends it as input to the pretrained InceptionV3 model."""
         {{ check_input_vars(layer_spec, ['input'])|indent(width=8) }}           
@@ -52,6 +52,17 @@ class {{layer_spec.sanitized_name}}Keras(tf.keras.layers.Layer):
             self.inception_v3.trainable = False
         {% endcall %}
 
+        {% call indented_if(layer_spec.include_top == True) %}
+            self.kernel = self.inception_v3.layers[-1].weights
+            self.bias = self.inception_v3.layers[-1].bias
+        {% endcall %}
+
+        """ Get the last layer in the model that holds weights and biases if include top is not true. In Inception, it's a Conv2D layer. """
+        {% call indented_if(layer_spec.include_top == False) %}
+            self.kernel = self.inception_v3.layers[-12].weights
+            self.bias = self.inception_v3.layers[-12].bias
+        {% endcall %}
+
     def get_config(self):
         """Any variables belonging to this layer that should be rendered in the frontend.
         
@@ -59,6 +70,11 @@ class {{layer_spec.sanitized_name}}Keras(tf.keras.layers.Layer):
             A dictionary with tensor names for keys and picklable for values.
         """
         return {}
+
+    @property
+    def visualized_trainables(self):
+        """ Returns two tf.Variables (weights, biases) to be visualized in the frontend """    
+        return self.kernel, self.bias
         
 
 class {{layer_spec.sanitized_name}}(Tf2xLayer):

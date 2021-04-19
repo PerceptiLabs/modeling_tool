@@ -3,7 +3,7 @@
 
 
 {% macro layer_pretrained_vgg16(layer_spec, graph_spec) %}
-class {{layer_spec.sanitized_name}}Keras(tf.keras.layers.Layer):
+class {{layer_spec.sanitized_name}}Keras(tf.keras.layers.Layer, PerceptiLabsVisualizer):
     def call(self, inputs, training=True):
         """ Takes a tensor and sends it as input to the pretrained VGG16 model."""
         {{ check_input_vars(layer_spec, ['input'])|indent(width=8) }}           
@@ -52,6 +52,16 @@ class {{layer_spec.sanitized_name}}Keras(tf.keras.layers.Layer):
             self.vgg16.trainable = False
         {% endcall %}
 
+        {% call indented_if(layer_spec.include_top == True) %}
+            self.kernel = self.vgg16.layers[-1].weights[0]
+            self.bias = self.vgg16.layers[-1].bias
+        {% endcall %}
+
+        {% call indented_if(layer_spec.include_top == False) %}
+            self.kernel = self.vgg16.layers[-2].weights[0]
+            self.bias = self.vgg16.layers[-2].bias
+        {% endcall %}
+
     def get_config(self):
         """Any variables belonging to this layer that should be rendered in the frontend.
         
@@ -59,7 +69,11 @@ class {{layer_spec.sanitized_name}}Keras(tf.keras.layers.Layer):
             A dictionary with tensor names for keys and picklable for values.
         """
         return {}
-        
+
+    @property
+    def visualized_trainables(self):
+        """ Returns two tf.Variables (weights, biases) to be visualized in the frontend """    
+        return self.kernel, self.bias
 
 class {{layer_spec.sanitized_name}}(Tf2xLayer):
     def __init__(self):

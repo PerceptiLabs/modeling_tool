@@ -4,7 +4,7 @@
 
 
 {% macro layer_tf2x_recurrent(layer_spec, graph_spec) %}
-class {{layer_spec.sanitized_name}}Keras(tf.keras.layers.Layer):
+class {{layer_spec.sanitized_name}}Keras(tf.keras.layers.Layer, PerceptiLabsVisualizer):
     def __init__(self):
         super().__init__()
         self._scope = '{{layer_spec.sanitized_name}}'
@@ -92,6 +92,11 @@ class {{layer_spec.sanitized_name}}Keras(tf.keras.layers.Layer):
             A dictionary with tensor names for keys and picklable for values.
         """
         return self._variables
+
+    @property
+    def visualized_trainables(self):
+        """ Returns two tf.Variables (weights, biases) to be visualized in the frontend """
+        return self.kernel, self.bias
         
 
 

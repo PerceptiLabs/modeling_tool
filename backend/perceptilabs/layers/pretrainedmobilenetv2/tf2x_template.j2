@@ -3,7 +3,7 @@
 
 
 {% macro layer_pretrained_mobilenetv2(layer_spec, graph_spec) %}
-class {{layer_spec.sanitized_name}}Keras(tf.keras.layers.Layer):
+class {{layer_spec.sanitized_name}}Keras(tf.keras.layers.Layer, PerceptiLabsVisualizer):
     def call(self, inputs, training=True):
         """ Takes a tensor and sends it as input to the pretrained MobileNetV2 model."""
         {{ check_input_vars(layer_spec, ['input'])|indent(width=8) }}           
@@ -67,6 +67,18 @@ class {{layer_spec.sanitized_name}}Keras(tf.keras.layers.Layer):
             self.mobilenetv2.trainable = False
         {% endcall %}
 
+        {% call indented_if(layer_spec.include_top == True) %}
+            self.kernel = self.mobilenetv2.layers[-1].weights
+            self.bias = self.mobilenetv2.layers[-1].bias
+        {% endcall %}
+
+        {% call indented_if(layer_spec.include_top == False) %}
+            self.kernel = self.mobilenetv2.layers[-3].weights
+            self.bias = self.mobilenetv2.layers[-3].bias
+        {% endcall %}
+
+
+
     def get_config(self):
         """Any variables belonging to this layer that should be rendered in the frontend.
         
@@ -74,7 +86,11 @@ class {{layer_spec.sanitized_name}}Keras(tf.keras.layers.Layer):
             A dictionary with tensor names for keys and picklable for values.
         """
         return {}
-        
+
+    @property
+    def visualized_trainables(self):
+        """ Returns two tf.Variables (weights, biases) to be visualized in the frontend """    
+        return self.kernel, self.bias
 
 class {{layer_spec.sanitized_name}}(Tf2xLayer):
     def __init__(self):

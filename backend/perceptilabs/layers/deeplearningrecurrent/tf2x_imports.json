@@ -8,6 +8,7 @@
         "import tensorflow.keras.backend as K"             
     ],
     "perceptilabs": [
+        "from perceptilabs.layers.visualizer import PerceptiLabsVisualizer",
         "from perceptilabs.core_new.utils import Picklable",
         "from perceptilabs.core_new.layers.base import Tf2xLayer",
         "from perceptilabs.core_new.serialization import can_serialize, serialize"            

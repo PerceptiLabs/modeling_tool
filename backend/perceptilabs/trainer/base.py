@@ -231,6 +231,8 @@ class Trainer:
                 trainables = {}
                 if isinstance(weights, tf.Variable):
                     trainables['weights'] = weights
+                elif isinstance(weights, list):
+                    trainables['weights'] = weights[0]
                 if isinstance(bias, tf.Variable):
                     trainables['bias'] = bias
                     

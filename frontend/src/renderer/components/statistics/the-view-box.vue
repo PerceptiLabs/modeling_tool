@@ -47,6 +47,10 @@
   import ProcessOneHot    from '@/components/network-elements/elements/process-one-hot/viewBox-process-one-hot.vue'
   import ProcessReshape   from '@/components/network-elements/elements/process-reshape/viewBox-process-reshape.vue'
   import ProcessRescale   from '@/components/network-elements/elements/process-rescale/viewBox-process-rescale.vue'
+  import PreTrainedResNet50 from '@/components/network-elements/elements/pretrained-resnet50/viewBox-pretrained-resnet50.vue'
+  import PreTrainedMobileNetV2 from '@/components/network-elements/elements/pretrained-mobilenetv2/viewBox-pretrained-mobilenetv2.vue'
+  import PreTrainedVGG16 from '@/components/network-elements/elements/pretrained-vgg16/viewBox-pretrained-vgg16.vue'
+  import PreTrainedInceptionV3 from '@/components/network-elements/elements/pretrained-inceptionv3/viewBox-pretrained-inceptionv3.vue'
   import MathArgmax   from '@/components/network-elements/elements/math-argmax/viewBox-math-argmax.vue'
   import MathMerge    from '@/components/network-elements/elements/math-merge/viewBox-math-merge.vue'
   import MathSwitch    from '@/components/network-elements/elements/math-switch/viewBox-math-switch.vue'
@@ -70,6 +74,7 @@ export default {
     // ProcessCrop,
     TrainNormal, TrainRegression, TrainGenetic, TrainDynamic, TrainReinforce, TrainDetector, TrainGan,
     // TrainLoss, TrainOptimizer, 
+    PreTrainedResNet50, PreTrainedMobileNetV2, PreTrainedVGG16, PreTrainedInceptionV3,
     MathArgmax, MathMerge, MathSoftmax, MathSwitch,
     // MathSplit,
     IoInput, IoOutput,

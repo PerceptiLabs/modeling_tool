@@ -48,9 +48,9 @@ class GradientStatsTracker(TrainingStatsTracker):
 
             min_element_of_weight = tf.reduce_min(grad_weight)
             max_element_of_weight = tf.reduce_max(grad_weight)            
-            avg_element_of_weight = tf.reduce_mean(grad_weight)
+            avg_element_of_weight = tf.reduce_mean(grad_weight)  
             
-            grad_bias = gradients_by_layer[layer_id]['bias']            
+            grad_bias = self._ensure_bias_has_value(gradients_by_layer[layer_id])
             min_element_of_bias = tf.reduce_min(grad_bias)
             max_element_of_bias = tf.reduce_max(grad_bias)            
             avg_element_of_bias = tf.reduce_mean(grad_bias)
@@ -72,3 +72,12 @@ class GradientStatsTracker(TrainingStatsTracker):
                 maximum_series=copy.deepcopy(self._maximum_gradient)            
             )
         return self._stats
+    
+    def _ensure_bias_has_value(self, layer_gradients):
+        """ Helper method to resolve the bias tensor in case the layer doesn't use it """
+        try:
+            grad_bias = layer_gradients['bias']
+        except:
+            grad_bias = tf.reshape((), (0, layer_gradients['weights'].shape[-1]))      
+
+        return grad_bias    

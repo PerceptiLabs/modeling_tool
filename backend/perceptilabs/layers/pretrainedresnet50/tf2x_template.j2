@@ -3,7 +3,7 @@
 
 
 {% macro layer_pretrained_resnet50(layer_spec, graph_spec) %}
-class {{layer_spec.sanitized_name}}Keras(tf.keras.layers.Layer):
+class {{layer_spec.sanitized_name}}Keras(tf.keras.layers.Layer, PerceptiLabsVisualizer):
     def call(self, inputs, training=True):
         """ Takes a tensor and sends it as input to the pretrained ResNet50 model."""
         {{ check_input_vars(layer_spec, ['input'])|indent(width=8) }}           
@@ -55,6 +55,16 @@ class {{layer_spec.sanitized_name}}Keras(tf.keras.layers.Layer):
             self.resnet50.trainable = False
         {% endcall %}
 
+        {% call indented_if(layer_spec.include_top == True) %}
+            self.kernel = self.resnet50.layers[-1].weights[0]
+            self.bias = self.resnet50.layers[-1].bias
+        {% endcall %}
+
+        {% call indented_if(layer_spec.include_top == False) %}
+            self.kernel = self.resnet50.layers[-10].weights[0]
+            self.bias = self.resnet50.layers[-10].weights[-1]
+        {% endcall %}
+
     def get_config(self):
         """Any variables belonging to this layer that should be rendered in the frontend.
         
@@ -63,6 +73,10 @@ class {{layer_spec.sanitized_name}}Keras(tf.keras.layers.Layer):
         """
         return {}
         
+    @property
+    def visualized_trainables(self):
+        """ Returns two tf.Variables (weights, biases) to be visualized in the frontend """    
+        return self.kernel, self.bias       
 
 class {{layer_spec.sanitized_name}}(Tf2xLayer):
     def __init__(self):

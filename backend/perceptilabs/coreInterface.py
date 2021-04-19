@@ -572,7 +572,6 @@ class coreLogic():
         layer_id = value["layerId"]
         layer_type = value["layerType"]
         view = value["view"]
-
         if not self.savedResultsDict:
             return {}
         
@@ -590,8 +589,6 @@ class coreLogic():
                 message += " savedResultsDict: " + pprint.pformat(self.savedResultsDict)
             logger.exception(message)
             return {}
-
-
         try:
             layer_statistics = self.getLayerStatistics(layer_id, layer_type, view)
             return layer_statistics
@@ -671,7 +668,7 @@ class coreLogic():
     
     def getLayerStatistics(self, layerId, layerType, view):
         logger.debug("getLayerStatistics for layer '{}' with type '{}' and view: '{}'".format(layerId, layerType, view))
-        
+
         if layerType=="DataEnvironment":
             state = self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})[-1,:,:,:3]
             dataObj = createDataObject([state])
@@ -766,34 +763,18 @@ class coreLogic():
             dataObject = {"Output": dataObject}
             return dataObject
 
-            # if view=="Weights&Bias":
-            #     # w=self.getStatistics({"layerId":layerId,"variable":"W","innervariable":""})
-            #     # w=np.average(w,axis=0)
-            #     w=np.array([])
-            #     # b=self.getStatistics({"layerId":layerId,"variable":"b","innervariable":""})
-            #     b=np.array([])
-                
-            #     dataObjectWeights = createDataObject([w], typeList=['line'])
-            #     dataObjectBias = createDataObject([b], typeList=['line'])
-                
-            #     output = {"Bias": dataObjectBias, "Weights": dataObjectWeights}
-            #     return output
-            # if view=="Gradients":
-            #     # minD=self.getStatistics({"layerId":layerId,"variable":"Gradient","innervariable":"Min"})
-            #     # maxD=self.getStatistics({"layerId":layerId,"variable":"Gradient","innervariable":"Max"})
-            #     # avD=self.getStatistics({"layerId":layerId,"variable":"Gradient","innervariable":"Average"})
-            #     minD=np.array([])
-            #     maxD=np.array([])
-            #     avD=np.array([])
+        elif layerType=="PreTrainedResNet50":
+            return self._get_viewbox_pretrained(layerId, view)
 
-            #     dataObj = createDataObject([minD, maxD, avD],
-            #                                typeList=3*['line'],
-            #                                nameList=['Min', 'Max', 'Average'],
-            #                                styleList=[{"color":"#83c1ff"},
-            #                                           {"color":"#0070d6"},
-            #                                           {"color":"#6b8ff7"}])
-            #     output = {"Gradients": dataObj}
-                # return output
+        elif layerType=="PreTrainedInceptionV3":
+            return self._get_viewbox_pretrained(layerId, view)
+
+        elif layerType=="PreTrainedMobileNetV2":
+            return self._get_viewbox_pretrained(layerId, view)
+
+        elif layerType=="PreTrainedVGG16":
+            return self._get_viewbox_pretrained(layerId, view)
+
         elif layerType=="MathMerge":
             D=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})[-1]
             if len(D.shape) == 3:
@@ -860,7 +841,7 @@ class coreLogic():
                         maxval = np.max(input_data) if np.max(input_data)>0 else 0
                         # line=[[minval, minval*output+bias], [maxval, maxval*output+bias]]
                         x = np.asarray([minval, maxval]).reshape(1,-1)
-                        # import pdb; pdb.set_trace()
+                        #  pdb.set_trace()
                         if(len(output) > 0 and len(bias) > 0):
                             y = x*output+bias
                         elif len(output) > 0 and len(bias) == 0:
@@ -1656,3 +1637,44 @@ class coreLogic():
         
         output = {"Current": dataobj_loss_over_steps, "Total": dataobj_loss_over_epochs}
         return output
+
+    def _get_viewbox_pretrained(self, layer_id, view):
+        if view=="Output":
+            D=self.getStatistics({"layerId":layer_id,"variable":"Y","innervariable":""})[-1]
+            dataObject = createDataObject([D])                
+            output = {"Output": dataObject}
+            return output
+        if view=="Weights&Bias":
+            w=self.getStatistics({"layerId":layer_id,"variable":"W","innervariable":""})
+            w=np.squeeze(w)
+            w_shape = w.shape
+            if len(w_shape) == 4:
+                w=w[-1,-1,:,:]
+            elif len(w_shape) == 3:
+                w=w[-1,:,:]
+            w=np.mean(w, axis=1)
+            dataObjectWeights = createDataObject([w], type_list=['line'])
+            
+            b=self.getStatistics({"layerId":layer_id,"variable":"b","innervariable":""})
+
+            if b is not None:
+                dataObjectBias = createDataObject([b], type_list=['line'])
+                output = {"Bias": dataObjectBias, "Weights": dataObjectWeights}
+            else:
+                output = {"Weights": dataObjectWeights}
+
+            return output
+        if view=="Gradients":
+            minD=self.getStatistics({"layerId":layer_id,"variable":"Gradient","innervariable":"Min"})
+            maxD=self.getStatistics({"layerId":layer_id,"variable":"Gradient","innervariable":"Max"})
+            avD=self.getStatistics({"layerId":layer_id,"variable":"Gradient","innervariable":"Average"})
+
+            dataObj = createDataObject([minD, maxD, avD],
+                                        type_list=3*['line'],
+                                        name_list=['Min', 'Max', 'Average'],
+                                        style_list=[{"color":"#83c1ff"},
+                                                    {"color":"#0070d6"},
+                                                    {"color":"#6b8ff7"}])
+
+            output = {"Gradients": dataObj}
+            return output

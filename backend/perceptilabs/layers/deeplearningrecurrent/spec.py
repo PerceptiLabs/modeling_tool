@@ -1,9 +1,10 @@
 from typing import Tuple, Dict, Any, Union
 
 from perceptilabs.layers.specbase import LayerSpec, InnerLayerSpec
+from perceptilabs.layers.mixins import MixinDeepLearning
 
 
-class DeepLearningRecurrentSpec(InnerLayerSpec):
+class DeepLearningRecurrentSpec(InnerLayerSpec, MixinDeepLearning):
     type_: str = 'DeepLearningRecurrent'
     n_neurons: Union[int, None] = 10
     version: str = 'RNN'
