@@ -1,7 +1,7 @@
 ###################################################################################################
 # Base
 # Create a common image with pip requirements installed
-FROM perceptilabs.azurecr.io/cuda11.2.2-cudnn8-devel-py36-ubi8 as base
+FROM perceptilabs.azurecr.io/cuda11.0.3-cudnn8-devel-py36-ubi8 as base
 
 USER 0
 
@@ -69,11 +69,11 @@ RUN chmod +x runner && \
 
 # https://github.com/tensorflow/tensorflow/issues/44777
 # Fake it out until TF supports libcusolver.so.11
-RUN ln -Ffs /usr/local/cuda-11.2/targets/x86_64-linux/lib/libcusolver.so.11 /usr/local/cuda-11.2/targets/x86_64-linux/lib/libcusolver.so.10
+RUN ln -Ffs /usr/local/cuda/targets/x86_64-linux/lib/libcusolver.so.11 /usr/local/cuda/targets/x86_64-linux/lib/libcusolver.so.10
 
 USER 1001
 
-ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/compat:/usr/local/cuda-11.2/targets/x86_64-linux/lib
+ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/compat:/usr/local/cuda/targets/x86_64-linux/lib
 
 COPY licenses /licenses
 COPY tutorial_data /tutorial_data
