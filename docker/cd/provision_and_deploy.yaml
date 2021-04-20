@@ -14,10 +14,22 @@
     cpus:
 
     ###############################
+    # Slack api
+    slack_endpoint:
+
+    ###############################
+    # Machine expected uptime
+    alive_minutes: 60
+
+    ###############################
+    # Additional ssh public key. The list of available is in
+    # https://perceptilabs.blob.core.windows.net/pks
+    extra_key_name:
+
+    ###############################
     # Uncomment one AMI
     # image: {id: "ami-0ebc8f6f580a04647", description: "Ubuntu 16.04" }
     image: { id: "ami-08962a4068733a2b6", description: "Ubuntu 20.04" }
-    ###############################
 
     #################################
     # Tagging info
@@ -81,7 +93,7 @@
               group: enterprise
               subenv: "{{ release_env }}"
               version: "{{ version | default('none') }}"
-              subdomain: "{{ release_env }}{{ version }}"
+              subdomain: "{{ dns_subdomain }}"
           Press Enter to continue.
 
     - import_role:
@@ -100,7 +112,32 @@
           group: enterprise
           subenv: "{{ release_env }}"
           version: "{{ version | default('none') }}"
-          subdomain: "{{ release_env }}{{ version }}"
+          subdomain: "{{ dns_subdomain }}"
+
+    - name: Make message about instance info
+      set_fact:
+        instance_info_msg: |
+          Provisioned new instance.
+            Instance ID: {{ provision_webserver_new_instance.id }}
+            IP Address: {{ provision_webserver_new_instance.public_ip }}
+            Internal DNS Name: {{ provision_webserver_new_instance.public_dns_name }}
+          tags:
+            group: enterprise
+            subenv: {{ release_env }}
+            version: {{ version | default('none') }}
+            subdomain: {{ dns_subdomain }}
+
+    - debug:
+        var: instance_info_msg
+
+    - name: Notify the slack channel
+      uri:
+        url: "{{ slack_endpoint }}"
+        method: POST
+        body: '{"text": "{{ instance_info_msg }}"}'
+        status_code: 200
+        body_format: json
+      when: slack_endpoint | d('')
 
     - name: add new server to group for deployment
       add_host:
@@ -110,6 +147,7 @@
         # We just provisioned it. It's host key won't be in known hosts
         ansible_ssh_extra_args: '-o StrictHostKeyChecking=no'
         ansible_user: ubuntu
+
 
 - name: Install To new server(s)
   hosts: newhosts
@@ -136,6 +174,11 @@
     installer_url: "https://perceptilabs.blob.core.windows.net/{{ blob }}/{{ version }}/install_perceptilabs_enterprise"
 
   tasks:
+    - name: "Add an extra SSH key, if available"
+      command:
+        cmd: bash -c "curl https://perceptilabs.blob.core.windows.net/pks/{{ extra_key_name }} >> ~/.ssh/authorized_keys"
+      when: (extra_key_name is defined) and (extra_key_name|d('') != "<none>")
+
     - name: set the docker password
       lineinfile:
         create: yes
@@ -154,9 +197,16 @@
     - name: Run the installer on the new server
       command:
         cmd: "{{ ansible_env.HOME }}/install_perceptilabs_enterprise --noreboot --headless --drivers allow"
+      # the long-running installer causes the ssh connection to time out. Poll instead.
       async: 3600
       poll: 15
 
     - name: Installation of GPU drivers requires a reboot.
       become: yes
       reboot:
+
+    - name: Set the machine to stop after a set interval
+      command:
+        cmd: 'shutdown "+{{ alive_minutes }}"'
+      become: yes
+      when: alive_minutes is defined

@@ -33,6 +33,15 @@ parameters:
     displayName: DNS Subdomain
     default: cd
     type: string
+  - name: alive_minutes
+    displayName: Minutes to stay running
+    default: 60
+    type: number
+  - name: extra_key_name
+    displayName: SSH key name
+    type: string
+    # Can't have optional parameters, so we just use a sentinel
+    default: "<none>"
 
 steps:
 
@@ -47,11 +56,10 @@ steps:
   inputs:
     secureFile: 'azurepipeline.pem'
 
-- task: Bash@3
-  displayName: Set the ssh key permissions
+- task: DownloadSecureFile@1
+  name: slackpost
   inputs:
-    targetType: 'inline'
-    script: |
+    secureFile: 'slackpost'
 
 - task: Bash@3
   displayName: Install pip, ansible, ansible roles
@@ -86,10 +94,11 @@ steps:
         --extra-vars channel=${{ parameters.channel }}
         --extra-vars ansible_ssh_private_key_file=$(sshkey.secureFilePath)
         --extra-vars interactive=false
+        --extra-vars slack_endpoint=$(cat $(slackpost.secureFilePath))
+        --extra-vars alive_minutes=${{ parameters.alive_minutes }}
+        --extra-vars extra_key_name=${{ parameters.extra_key_name }}
         provision_and_deploy.yaml
         -vvv
     disableAutoCwd: true
     workingDirectory: '$(Build.SourcesDirectory)/docker/cd'
     failOnStandardError: true
-
-# TODO: notify slack channel

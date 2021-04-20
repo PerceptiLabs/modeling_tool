@@ -3,8 +3,7 @@ plugin: amazon.aws.aws_ec2
 regions:
   - us-east-2
 filters:
-  tag-key: group
-  instance-state-name: running
+  tag:group: enterprise
 compose:
   # these are variables that will be defined for each host in the inventory
   aws_ec2_instance_id: instance_id
