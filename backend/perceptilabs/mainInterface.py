@@ -642,15 +642,16 @@ class Interface():
     def _create_response_export_tf2x(self, value, receiver):
         # first check if checkpoint exists if export is requested after training
         mode = self._get_receiver_mode(receiver)
+
+        model_id = value['modelId']
+        user_email = value['userEmail']        
+        
         if mode == 'export_while_training':                    
-            _model_id = value.get('modelId', None)
-            if _model_id is not None:
-                _model_id = int(_model_id)
-            response = self._core.exportNetwork(value, graph_spec=None, model_id=_model_id)
+            response = self._core.exportNetwork(value, graph_spec=None, model_id=model_id)
             return response
         elif mode == 'export_after_training':
             graph_spec = self._network_loader.load(value, as_spec=True)
-            response = self._export_using_exporter(value, path=value['Location'], graph_spec=graph_spec)
+            response = self._export_using_exporter(value, path=value['Location'], graph_spec=graph_spec, model_id=model_id, user_email=user_email)
             return response
         else:
             return {'content':'The model is not trained.'}
@@ -677,12 +678,14 @@ class Interface():
         
         self._core.set_running_mode('training')            
         model_id = int(request_value.get('modelId', None))
+        user_email = request_value.get('userEmail', None)      
         training_settings = request_value.get('trainSettings', None)        
         dataset_settings = request_value.get('datasetSettings', None)
         
         response = self._core.start_core(
             graph_spec,
             model_id,
+            user_email,
             training_settings,
             dataset_settings=dataset_settings
         )
@@ -696,13 +699,16 @@ class Interface():
         jsonNetwork = parser.save_json(layer_checkpoint_list[0])
         return jsonNetwork
 
-    def _export_using_exporter(self, value, path, graph_spec):
+    def _export_using_exporter(self, value, path, graph_spec, model_id, user_email):
         script_factory = ScriptFactory(
             mode='tf2x' if utils.is_tf2x() else 'tf1x',
             simple_message_bus=True,
         )
         try:
-            exporter = Exporter.from_disk(path, graph_spec, script_factory)
+            exporter = Exporter.from_disk(
+                path, graph_spec, script_factory,
+                model_id=model_id, user_email=user_email
+            )
         except:
             return {"content": f"Can't export a model that hasn't been trained yet."}
         export_path = os.path.join(path, value['name'])

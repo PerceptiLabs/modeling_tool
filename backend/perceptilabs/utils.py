@@ -8,6 +8,7 @@ import functools
 from concurrent.futures import Future, Executor
 from threading import Lock
 import pkg_resources
+import psutil
 
 
 import numpy as np
@@ -15,6 +16,15 @@ import pandas as pd
 from sys import getsizeof
 from typing import Set
 
+
+def get_memory_usage():
+    """ Return the fraction of memory used """
+    total_memory = psutil.virtual_memory().total # Deceptive naming (virtual memory), but OK according to docs: https://psutil.readthedocs.io/en/latest/
+    available_memory = psutil.virtual_memory().available
+        
+    fraction_used = (total_memory-available_memory)/total_memory
+    return fraction_used
+    
 
     
 def get_app_variables():

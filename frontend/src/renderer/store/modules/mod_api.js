@@ -422,7 +422,7 @@ const actions = {
   API_startTraining({dispatch, getters, rootGetters}, { loadCheckpoint = false } = {}) {
     const network = rootGetters['mod_workspace/GET_currentNetwork'];
     const datasetSettings = rootGetters['mod_datasetSettings/getCurrentDatasetSettings']();
-
+    const userEmail = rootGetters['mod_user/GET_userEmail'];
     const trainSettings = rootGetters['mod_workspace/GET_modelTrainingSetting'];
     const settingCollection = {}
     if(process.env.ENABLE_GLOBAL_TRAINING_SETTINGS === 'true') {
@@ -433,6 +433,7 @@ const actions = {
       action: "Start",
       value: {
         modelId: rootGetters['mod_workspace/GET_currentNetworkId'],
+        userEmail: userEmail,
         Layers: getters.GET_coreNetworkWithCheckpointConfig(loadCheckpoint),
         'copyJson_path': network.apiMeta.location || '',
         'datasetSettings': datasetSettings,
@@ -935,13 +936,14 @@ const actions = {
   },
 
   async API_exportData({rootGetters, getters, dispatch}, settings) {
-
     let theData;
+      
+    let payload = await makePayload.call(this, settings, true);
+    payload['userEmail'] = rootGetters['mod_user/GET_userEmail'];      
+    payload['modelId'] = rootGetters['mod_workspace/GET_currentNetworkId'];
     
     if (['Training', 'Validation', 'Paused'].includes(rootGetters['mod_workspace/GET_networkCoreStatus'])) {
-
-      let payload = await makePayload.call(this, settings, true);
-      delete payload['Layers'];
+      delete payload['Layers'];      
 
       theData = {
         receiver: rootGetters['mod_workspace/GET_currentNetworkId'],
@@ -952,7 +954,7 @@ const actions = {
       theData = {
         receiver: rootGetters['mod_workspace/GET_currentNetworkId'] + 'e',
         action: 'Export',
-        value: await makePayload.call(this, settings, true)
+        value: payload
       };
     };
     
@@ -993,7 +995,7 @@ const actions = {
           ...settings,
           Layers: getters.GET_coreNetworkWithCheckpointConfig(loadCheckpoints),
           path: rootGetters['mod_workspace/GET_currentNetwork'].apiMeta.location || '',
-          frontendNetwork: rootGetters['mod_workspace/GET_currentNetwork'].networkName,
+          frontendNetwork: rootGetters['mod_workspace/GET_currentNetwork'].networkName
         });
       }
   

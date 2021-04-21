@@ -359,3 +359,6 @@ perceptilabs/testcore/strategies/__init__.py
 perceptilabs/tracking/__init__.py
 perceptilabs/tracking/base.py
 perceptilabs/tracking/model_recommended.py
+perceptilabs/tracking/training_completed.py
+perceptilabs/tracking/training_stopped.py
+perceptilabs/tracking/model_exported.py

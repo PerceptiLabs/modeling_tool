@@ -32,7 +32,11 @@ from perceptilabs.messaging import MessageProducer
 from perceptilabs.aggregation import AggregationRequest, AggregationEngine
 from perceptilabs.utils import is_tf1x
 from perceptilabs.license_checker import LicenseV2
+from perceptilabs.trainer import Trainer
+from perceptilabs.modelrecommender.base import ModelRecommender
+from perceptilabs.data.base import DataLoader, FeatureSpec    
 
+        
 logger = logging.getLogger(APPLICATION_LOGGER)
 user_logger = logging.getLogger(USER_LOGGER)
 
@@ -173,32 +177,31 @@ class coreLogic():
         )
         return trainer
 
-    def _get_standard_trainer(self, script_factory, graph_spec, training_settings, dataset_settings):
-        from perceptilabs.trainer import Trainer
-
-        from perceptilabs.modelrecommender.base import ModelRecommender
-        from perceptilabs.data.base import DataLoader, FeatureSpec    
-        from perceptilabs.script import ScriptFactory
-
+    def _get_standard_trainer(self, script_factory, graph_spec, training_settings, dataset_settings, model_id, user_email):
+        """ Creates a Trainer for the IoInput/IoOutput workflow """        
         data_loader = DataLoader.from_dict(dataset_settings)
-        trainer = Trainer(script_factory, data_loader, graph_spec, training_settings)
-        
+        trainer = Trainer(
+            script_factory, data_loader, graph_spec, training_settings,
+            model_id=model_id,
+            user_email=user_email            
+        )        
         return trainer
 
-    def _get_trainer(self, script_factory, graph_spec, training_settings, dataset_settings):
+    def _get_trainer(self, script_factory, graph_spec, training_settings, dataset_settings, model_id, user_email):
         if self._trainer == 'core_v2':
             return self._get_corev2_trainer(script_factory)
         elif self._trainer == 'standard':
-            return self._get_standard_trainer(script_factory, graph_spec, training_settings, dataset_settings)
+            return self._get_standard_trainer(script_factory, graph_spec, training_settings, dataset_settings, model_id, user_email)
         else:
             raise ValueError(f"Unknown trainer choice: '{self._trainer}'")
 
-    def start_core(self, graph_spec, model_id, training_settings=None, dataset_settings=None):
+    def start_core(self, graph_spec, model_id, user_email, training_settings=None, dataset_settings=None):
         """ Spins up a core for training (or exporting in the pre-data wizard case)
 
         Arguments:
             graph_spec: the specification of the model being trained
             model_id: the ID of the model
+            user_email: the users email
             training_settings: only required for post-data wizard mode. A dict with things like number of epochs, type of optimizer, etc
             dataset_settings: only required for post-data wizard mode. A dict with things like train/test/val split, column data types, etc
         """
@@ -222,7 +225,7 @@ class coreLogic():
             simple_message_bus=True,
             running_mode=self._running_mode
         )
-        trainer = self._get_trainer(script_factory, graph_spec, training_settings, dataset_settings)
+        trainer = self._get_trainer(script_factory, graph_spec, training_settings, dataset_settings, model_id, user_email)
         
         self.core = CompatibilityCore(
             self.commandQ,

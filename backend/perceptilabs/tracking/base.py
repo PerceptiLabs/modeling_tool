@@ -23,6 +23,6 @@ def silence_exceptions(function):
     def func(*args, **kwargs):
         try:
             return function(*args, **kwargs)
-        except:
+        except Exception as e:
             pass
     return func

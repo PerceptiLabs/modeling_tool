@@ -15,12 +15,17 @@ from perceptilabs.trainer.model import TrainingModel
 from perceptilabs.trainer.stats import SampleStatsTracker, SampleStats, GradientStatsTracker, GradientStats, CategoricalOutputStatsTracker, ImageOutputStatsTracker
 from perceptilabs.trainer.losses import weighted_crossentropy, dice
 from perceptilabs.logconf import APPLICATION_LOGGER
+from perceptilabs.utils import get_memory_usage
+import perceptilabs.tracking as tracking
 
 
 logger = logging.getLogger(APPLICATION_LOGGER)
 
 class Trainer:
-    def __init__(self, script_factory, data_loader, graph_spec, training_settings):
+    def __init__(self, script_factory, data_loader, graph_spec, training_settings, model_id=None, user_email=None):
+        self._model_id = model_id
+        self._user_email = user_email
+        
         self._script_factory = script_factory
         self._data_loader = data_loader
         self._graph_spec = graph_spec
@@ -59,6 +64,8 @@ class Trainer:
             for layer_spec in self._graph_spec.layers
             if layer_spec.is_output_layer
         }
+
+        peak_memory_usage = get_memory_usage()
 
         logger.info("Entering training loop")       
         self._num_epochs_completed = 0
@@ -101,18 +108,34 @@ class Trainer:
             epoch_time = time.perf_counter() - t0 - time_paused_training - time_paused_validation
 
             self._log_epoch_summary(epoch_time)
-            
             self._training_time += epoch_time
-            yield 
+
+
+            current_memory_usage = get_memory_usage()
+            if current_memory_usage > peak_memory_usage:
+                peak_memory_usage = current_memory_usage
             
+            yield 
+
+        self._auto_export_model()           
         self._set_status('Finished')
         logger.info(f"Training completed. Total duration: {round(self._training_time, 3)} s")
 
+        if self._num_epochs_completed == self.num_epochs:        
+            tracking.send_training_completed(
+                self._user_email,
+                self._model_id,
+                self._graph_spec,
+                self._training_time,
+                0.0,  # TODO: Implement loss in story 1843
+                0.0,  # TODO: Implement loss in story 1843           
+                peak_memory_usage
+            )
+
+    def _auto_export_model(self):
+        """ Exports the model so that we can restore it between runs """
         ckpt_path = self._graph_spec.get_checkpoint_path()
         inference_export_path = os.path.dirname(ckpt_path)
-        
-        
-        self.export_inference(inference_export_path)
         self.export_checkpoint(ckpt_path)
 
     def _log_epoch_summary(self, epoch_time):
@@ -259,7 +282,10 @@ class Trainer:
 
     def _create_exporter(self):
         from perceptilabs.exporter.base import Exporter
-        exporter = Exporter(self._graph_spec, self._training_model)
+        exporter = Exporter(
+            self._graph_spec, self._training_model,
+            user_email=self._user_email, model_id=self._model_id
+        )
         return exporter
 
     @property
@@ -357,6 +383,17 @@ class Trainer:
 
     def stop(self):
         self._set_status('Finished')
+
+        tracking.send_training_stopped(
+            self._user_email,
+            self._model_id,
+            self._graph_spec,
+            self._training_time,
+            self.progress,            
+            0.0,  # TODO: Implement loss in story 1843
+            0.0,  # TODO: Implement loss in story 1843           
+        )                    
+        
     
     def headless_on(self):
         # TODO: implement (story 1545)

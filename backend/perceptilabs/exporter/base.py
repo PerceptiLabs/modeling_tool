@@ -12,13 +12,16 @@ from perceptilabs.data.base import DataLoader, FeatureSpec
 from perceptilabs.script import ScriptFactory
 from perceptilabs.data.base import DataLoader, FeatureSpec
 from perceptilabs.graph.builder import GraphSpecBuilder
+import perceptilabs.tracking as tracking
 
 
 class Exporter:
-    def __init__(self, graph_spec, training_model):
+    def __init__(self, graph_spec, training_model, model_id=None, user_email=None):
         self._graph_spec = graph_spec
         self._data_loader = DataLoader.from_graph_spec(self._graph_spec)
         self._training_model = training_model
+        self._model_id = model_id
+        self._user_email = user_email
 
     @staticmethod
     def get_path(graph_spec):
@@ -27,14 +30,14 @@ class Exporter:
         return path
 
     @staticmethod
-    def from_disk(path, graph_spec, script_factory):
+    def from_disk(path, graph_spec, script_factory, model_id=None, user_email=None):
         if graph_spec is not None and len(os.listdir(graph_spec.layers[0].checkpoint_path)) > 0:
             path = graph_spec.layers[0].checkpoint_path  
 
         training_model = TrainingModel(script_factory, graph_spec)
         weights_path = os.path.join(path, 'model_checkpoint')
         training_model.load_weights(filepath=weights_path)
-        return Exporter(graph_spec, training_model)
+        return Exporter(graph_spec, training_model, model_id=model_id, user_email=user_email)
 
     @property
     def data_loader(self):
@@ -44,18 +47,17 @@ class Exporter:
     def training_model(self):
         return self._training_model
     
-    def export_checkpoint(self, path):      
-        self.save_model_checkpoint(path)
-    
-    def export_inference(self, path):
-        model = self.get_inference_model()
-        model.save(path)
-
-    def save_model_checkpoint(self, path):
+    def export_checkpoint(self, path):
         """ Save the model weights """
         model = self._training_model
         file_path = os.path.join(path, 'model_checkpoint')
         model.save_weights(file_path)
+
+    def export_inference(self, path):
+        """ Export the inference model """
+        model = self.get_inference_model()
+        model.save(path)
+        tracking.send_model_exported(self._user_email, self._model_id)                
 
     def get_inference_model(self):
         """ Convert the Training Model to a simpler version (e.g., skip intermediate outputs)  """        

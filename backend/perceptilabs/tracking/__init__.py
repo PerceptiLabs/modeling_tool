@@ -1,1 +1,4 @@
 from perceptilabs.tracking.model_recommended import send_model_recommended
+from perceptilabs.tracking.training_completed import send_training_completed
+from perceptilabs.tracking.training_stopped import send_training_stopped
+from perceptilabs.tracking.model_exported import send_model_exported
