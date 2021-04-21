@@ -210,7 +210,7 @@ export default {
             projectPath:        'mod_project/GET_projectPath',
             currentNetworkId:   'mod_workspace/GET_currentNetworkId',
             defaultTemplate:    'mod_workspace/GET_defaultNetworkTemplate',
-            user:               'mod_user/GET_userProfile',
+            userEmail:          'mod_user/GET_userEmail',
         }),
         isTF2XEnabled() {
             return process.env.ENABLE_TF2X === 'true';
@@ -370,11 +370,11 @@ export default {
                 settings: datasetSettings,
              });
             const fullDatasetSettings = this.$store.getters['mod_datasetSettings/getCurrentDatasetSettings']();
-	    const payload = {
-		datasetSettings: fullDatasetSettings,
-		user_email: this.user.email,
-		model_id: apiMeta.model_id,
-	    }
+            const payload = {
+                datasetSettings: fullDatasetSettings,
+                user_email: this.userEmail,
+                model_id: apiMeta.model_id,
+            }
 	    
             
             const modelRecommendation = await this.getModelRecommendation(payload)
