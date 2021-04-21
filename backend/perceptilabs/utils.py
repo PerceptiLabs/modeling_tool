@@ -330,7 +330,14 @@ def format_logs_zipfile_name(session_id, issue_id=None):
     return filename
 
     
+def allow_memory_growth_on_gpus():
+    """ Prevents crashes for unnecessary resource allocation """
+    import tensorflow as tf
+    gpu_devices = tf.config.list_physical_devices('GPU')
+    for device in gpu_devices:
+        tf.config.experimental.set_memory_growth(device, True)
 
+    
 
 
     

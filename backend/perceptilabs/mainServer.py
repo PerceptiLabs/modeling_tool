@@ -25,8 +25,11 @@ set_sentry_tag('error-type', 'startup-error')
 
 
 if utils.is_tf1x():
-    tf.compat.v1.disable_v2_behavior()    
+    tf.compat.v1.disable_v2_behavior()
 
+    
+utils.allow_memory_growth_on_gpus()
+    
     
 def get_input_args():
     parser = argparse.ArgumentParser()
