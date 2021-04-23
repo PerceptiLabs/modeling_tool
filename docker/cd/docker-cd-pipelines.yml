@@ -55,26 +55,11 @@ steps:
   name: sshkey
   inputs:
     secureFile: 'azurepipeline.pem'
-- task: Bash@3
-  displayName: Debug the ssh key
-  inputs:
-    targetType: 'inline'
-    workingDirectory: '$(Build.SourcesDirectory)/docker/cd'
-    script: |
-      wc -c $(sshkey.secureFilePath)
 
 - task: DownloadSecureFile@1
   name: slackpost
   inputs:
     secureFile: 'slackpost'
-
-- task: Bash@3
-  displayName: Debug the slackpost path
-  inputs:
-    targetType: 'inline'
-    workingDirectory: '$(Build.SourcesDirectory)/docker/cd'
-    script: |
-      wc -c $(slackpost.secureFilePath)
 
 - task: Bash@3
   displayName: Install pip, ansible, ansible roles
@@ -90,25 +75,6 @@ steps:
       python -m pip install --upgrade pip setuptools
       python -m pip install -r requirements.txt
       ansible-galaxy install -r requirements.yml
-
-- task: Bash@3
-  displayName: Debug the provision_and_deploy.yaml file
-  inputs:
-    targetType: 'inline'
-    workingDirectory: '$(Build.SourcesDirectory)/docker/cd'
-    script: |
-      wc -c provision_and_deploy.yaml
-
-- task: AWSShellScript@1
-  displayName: validate that ansible is installed
-  inputs:
-    awsCredentials: 'aws'
-    regionName: 'us-east-2'
-    scriptType: 'inline'
-    inlineScript:
-      which ansible-playbook
-    workingDirectory: '$(Build.SourcesDirectory)/docker/cd'
-    failOnStandardError: true
 
 - task: AWSShellScript@1
   displayName: Provision a server
@@ -133,5 +99,6 @@ steps:
         --extra-vars extra_key_name=${{ parameters.extra_key_name }}
         provision_and_deploy.yaml
         -vvv
+    disableAutoCwd: true
     workingDirectory: '$(Build.SourcesDirectory)/docker/cd'
     failOnStandardError: true
