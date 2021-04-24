@@ -1,7 +1,7 @@
 
 parameters:
-  - name: instance_id
-    displayName: Instance ID
+  - name: subdomain
+    displayName: subdomain
     type: string
   - name: minutes_to_run
     displayName: Minutes to stay running
@@ -25,30 +25,19 @@ steps:
   inputs:
     awsCredentials: 'aws'
     regionName: 'us-east-2'
-    scriptType: 'inline'
-    inlineScript: |
-      set -Eeuo pipefail
-      set -x
+    arguments: '-s "${{ parameters.subdomain }}" -k "$(sshkey.secureFilePath)" -p "${{ parameters.key }}" -m "${{ parameters.minutes_to_run }}"'
+    scriptType: 'filePath'
+    filePath: 'docker/cd/start_machine'
+    failOnStandardError: true
+  condition: ne('${{ parameters.key }}', '<none>')
 
-      # start the machine and wait
-      aws ec2 start-instances --instance-ids ${{ parameters.instance_id }} > out
-      aws ec2 wait instance-running --instance-ids ${{ parameters.instance_id }}
-      
-      # get the machine's IP address
-      ip=$(aws ec2 describe-instances --instance-ids ${{ parameters.instance_id }} --query 'Reservations[0].Instances[0].NetworkInterfaces[0].Association.PublicIp')
-      ip=$(echo ${ip} | tr -d '"')
-      echo "Started ${ip}"
+- task: AWSShellScript@1
+  inputs:
+    awsCredentials: 'aws'
+    regionName: 'us-east-2'
+    arguments: '-s "${{ parameters.subdomain }}" -k "$(sshkey.secureFilePath)" -m "${{ parameters.minutes_to_run }}"'
+    scriptType: 'filePath'
+    filePath: 'docker/cd/start_machine'
+    failOnStandardError: true
+  condition: eq('${{ parameters.key }}', '<none>')
 
-      # set up for ssh connections
-      chmod 400 $(sshkey.secureFilePath)
-
-      # wait for sshd to start up
-      while ! ssh -i $(sshkey.secureFilePath) -o "StrictHostKeyChecking=no" ubuntu@${ip} exit; do echo polling ip ${ip}; done
-
-      # Add the key
-      if [ "${{ parameters.key }}" != "<none>" ]; then
-        ssh -i $(sshkey.secureFilePath) -o "StrictHostKeyChecking=no" ubuntu@${ip} 'curl https://perceptilabs.blob.core.windows.net/pks/${{ parameters.key }} >> ~/.ssh/authorized_keys'
-      fi
-
-      # Set the auto-shutdown
-      ssh -i $(sshkey.secureFilePath) -o "StrictHostKeyChecking=no" ubuntu@${ip} 'sudo shutdown -c; sudo shutdown "+${{ parameters.minutes_to_run }}"'

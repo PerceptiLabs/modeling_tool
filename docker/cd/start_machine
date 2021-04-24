@@ -1,0 +1,191 @@
+#!/usr/bin/env bash
+
+# do set -u later after parsing options
+set -Eeo pipefail
+
+#################################
+# constants
+DOMAIN=perceptilabshosting.com.
+SSH_USER=ubuntu
+DEFAULT_MINUTES_TO_RUN=60
+PKS_BASE_URL="https://perceptilabs.blob.core.windows.net/pks"
+
+#################################
+# options parsing
+USAGE_MSG="USAGE: $0 [-h] (-s <subdomain> | -i <instance-id>) -k <ssh key filename> [-m <minutes to run>] [-p <public key name>]"
+
+usage(){
+  if [ -n "$1" ]; then
+    echo "$1" >&2
+    echo "${USAGE_MSG}" >&2
+    exit 1
+  else
+    echo "${USAGE_MSG}"
+  fi
+}
+
+opt_minutes_to_run=${DEFAULT_MINUTES_TO_RUN}
+opt_public_key_name=''
+opt_subdomain=''
+opt_instanceid=''
+opt_ssh_key=''
+
+options='hs:k:m:i:p:a'
+while getopts $options option
+do
+  case "$option" in
+    h ) usage; exit;;
+    i ) opt_instanceid=$OPTARG;;
+    s ) opt_subdomain=$OPTARG;;
+    p ) opt_public_key_name=$OPTARG;;
+    k ) opt_ssh_key=$OPTARG;;
+    m ) opt_minutes_to_run=$OPTARG;;
+    \? ) usage "-${OPTARG}";;
+    *  ) usage "Unimplemented option: -$option";;
+  esac
+done
+
+[ -n "${opt_subdomain}${opt_instanceid}" ]              || { usage "Either -s or -i is required"; }
+([ -n "${opt_subdomain} ] && [ -n ${opt_instanceid}" ]) || { usage "-s and -i are mutually exclusive"; }
+[ -n "${opt_ssh_key}" ]                                 || { usage "Missing ssh key filename"; }
+[ -f "${opt_ssh_key}" ]                                 || { usage "ssh key file '${opt_ssh_key}' not found"; }
+[ "${opt_minutes_to_run}" -gt 0 ]                       || { usage "Minutes to run must be a positive number. Received '${opt_minutes_to_run}'."; }
+
+#################################
+
+# now that we've made sure all of the variables are set up, don't tolerate unset variables
+set -u
+# aws cli helpfully sends everything to 'less'. Make it stop.
+export AWS_PAGER=''
+
+# for debugging, we always work in us-east-2 when running interactively
+if tty -s ; then
+  export AWS_DEFAULT_REGION='us-east-2'
+fi
+
+run_ec2_query(){
+  aws ec2 describe-instances --query "$1" --output json | jq '.[]' -r
+  return $?
+}
+
+count_lines(){
+  echo "$1" | wc -l | tr -d ' '
+  return $?
+}
+
+assert_one(){
+  num=$(count_lines "$1")
+  if [ $num -gt 1 ]; then
+    echo "found more than one $2:"
+    echo "$1"
+    exit 1
+  fi
+}
+
+instance_for_domain(){
+  query="Reservations[].Instances[?Tags[?Key=='group' && Value=='enterprise'] && Tags[?Key=='subdomain' && Value=='$1']].InstanceId[]"
+  instances_with_subdomain=$(run_ec2_query "${query}")
+  assert_one "${instances_with_subdomain}" "instance"
+  echo "${instances_with_subdomain}" | head -n 1
+  return $?
+}
+
+start_instance_and_wait(){
+  echo -n "Starting instance $1..."
+  aws ec2 start-instances --instance-ids $1 > /dev/null
+  aws ec2 wait instance-running --instance-ids $1
+  echo "done"
+  return $?
+}
+
+get_instance_ip(){
+  aws ec2 describe-instances --instance-ids $1 --query "Reservations[0].Instances[0].NetworkInterfaces[0].Association.PublicIp" --output text
+  return $?
+}
+
+run_remote(){
+  ssh -i "${opt_ssh_key}" -o "StrictHostKeyChecking=no" ${SSH_USER}@$1 $2
+  return $?
+}
+
+accept_host_signature(){
+  echo -n "Adding $1 to known_hosts..."
+  # Send the key warning to /dev/null since we know it's not in known_hosts
+  run_remote $1 exit 2>/dev/null
+  echo done
+}
+
+wait_for_sshd(){
+  echo -n "Waiting for sshd at ${ip}..."
+  while ! run_remote $1 exit; do
+    echo -n "."
+    sleep 1
+  done
+  echo "done"
+}
+
+add_public_key_to_remote(){
+  if [ -z "$1" ]; then
+    return 0
+  fi
+
+  echo -n "Adding ssh key '$1' to $2..."
+  run_remote $2 "curl -s ${PKS_BASE_URL}/$1 >> ~/.ssh/authorized_keys"
+  echo "done"
+  return $?
+}
+
+update_route53(){
+  if [ -z "$1" ]; then
+    return 0
+  fi
+
+  batch=$( cat << EOF
+  {
+    "Comment": "UPSERT $1",
+    "Changes": [{
+      "Action": "UPSERT",
+      "ResourceRecordSet": {
+        "Name": "$1.${DOMAIN}",
+        "Type": "A",
+        "TTL": 300,
+        "ResourceRecords": [{ "Value": "$2"}]
+      }
+    }]
+  }
+EOF
+)
+
+  echo -n "Set $1.${DOMAIN} to point to ${ip}..."
+  pl_hosting_id=$(aws route53 list-hosted-zones --query "HostedZones[?Name=='${DOMAIN}'] | [0].Id" --output text)
+  aws route53 change-resource-record-sets --hosted-zone-id ${pl_hosting_id} --change-batch "$batch" --output json > /dev/null
+  echo "done"
+  return $?
+}
+
+set_shutdown(){
+  if [ -n "$1" ]; then
+    cmd="sudo shutdown -c; sudo shutdown \"+$1\""
+    echo -n "Setting $2 to shut down in $1 minutes..."
+    run_remote $2 "$cmd" 2>/dev/null || return 1
+    echo "done"
+  fi
+}
+
+# set up for ssh connections
+chmod 600 "${opt_ssh_key}"
+
+instance_id="${opt_instanceid}"
+if [ -z "${instance_id}" ]; then
+  echo -n "Getting instance(s) for domain $opt_subdomain.${DOMAIN}..."
+  instance_id=$(instance_for_domain "${opt_subdomain}")
+  echo "done"
+fi
+
+start_instance_and_wait ${instance_id}
+ip=$(get_instance_ip ${instance_id})
+accept_host_signature ${ip}
+wait_for_sshd ${ip}
+add_public_key_to_remote "${opt_public_key_name}" ${ip}
+update_route53 "${opt_subdomain}" ${ip}
+set_shutdown ${opt_minutes_to_run} ${ip}
