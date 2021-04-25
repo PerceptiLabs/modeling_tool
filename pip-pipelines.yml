@@ -112,7 +112,12 @@ jobs:
           mv **/*.whl topush
           cd topush
           rename 's/linux_x86_64/manylinux1_x86_64/' *.whl
-          pip install --upgrade pip
+          # TODO: remove 2>/dev/null from the next line when issues with new pip are resolved.
+          # It gives this warning:
+          #     WARNING: Value for scheme.headers does not match. Please report this to <https://github.com/pypa/pip/issues/9617>
+          #     distutils: /opt/hostedtoolcache/Python/3.9.4/x64/include/python3.9/UNKNOWN
+          #     sysconfig: /opt/hostedtoolcache/Python/3.9.4/x64/include/python3.9
+          pip install --upgrade pip 2>/dev/null
           pip install twine
           python -m twine upload --non-interactive -u __token__ --repository ${PYPI_REPO} *
         env:
