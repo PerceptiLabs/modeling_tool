@@ -47,6 +47,10 @@ const workspaceScale = {
           : this.decScale();
       }
     },
+    scale(zoomLevel) {
+      this.updateNetworkElementPositions({ zoom: zoomLevel });
+      this.set_statusNetworkZoom(zoomLevel);
+    },
     decScale() {
       const nextSmallest = this.scalingSteps.reduce((prev, curr) => {
         return (this.scaleNet <= curr) ? prev : curr;
@@ -54,8 +58,7 @@ const workspaceScale = {
 
       const zoomLevel = nextSmallest/100;
 
-      this.updateNetworkElementPositions({ zoom: zoomLevel });
-      this.set_statusNetworkZoom(zoomLevel);
+      this.scale(zoomLevel);
     },
     incScale () {
       const nextLargest = this.scalingSteps.reduce((prev, curr) => {
@@ -64,8 +67,7 @@ const workspaceScale = {
 
       const zoomLevel = nextLargest/100;
 
-      this.updateNetworkElementPositions({ zoom: zoomLevel });
-      this.set_statusNetworkZoom(zoomLevel);
+      this.scale(zoomLevel);
     },   
     filterNonNumber: function(event) {
       event = event || window.event;
@@ -91,7 +93,7 @@ const workspaceScale = {
       else if (this.tempZoomValue > largestVal) { numberToUse = largestVal; }
       else { numberToUse = this.tempZoomValue; }
 
-      this.set_statusNetworkZoom(numberToUse/100);
+      this.scale(numberToUse/100);
     }
   }
 };
