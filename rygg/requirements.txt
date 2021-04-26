@@ -6,7 +6,8 @@ curtsies>=0.3.1
 django-cors-headers>=3.2.1
 Django==3.2
 djangorestframework>=3.11.0
-django-request-logging>=0.7.2
+# django request framework isn't yet compatible with Django 3.2
+# django-request-logging>0.7.2
 greenlet>=0.4.15
 idna>=2.9
 importlib-metadata>=1.7.0

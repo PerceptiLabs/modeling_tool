@@ -62,7 +62,8 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    "request_logging.middleware.LoggingMiddleware",
+    # django request framework isn't yet compatible with Django 3.2
+    # "request_logging.middleware.LoggingMiddleware",
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.security.SecurityMiddleware',
