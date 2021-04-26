@@ -2,7 +2,7 @@ import pytest
 import numpy as np
 from unittest.mock import MagicMock
 
-from perceptilabs.trainer.stats.loss import LossStats
+from perceptilabs.stats.loss import LossStats
     
 @pytest.fixture
 def losses():

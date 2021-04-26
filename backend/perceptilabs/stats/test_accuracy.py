@@ -1,5 +1,5 @@
 import pytest
-from perceptilabs.trainer.stats.accuracy import AccuracyStats, PredictionMatrix
+from perceptilabs.stats.accuracy import AccuracyStats, PredictionMatrix
 
 @pytest.fixture
 def prediction_matrices():

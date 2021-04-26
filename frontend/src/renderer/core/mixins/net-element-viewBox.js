@@ -5,7 +5,8 @@ import {coreRequest }  from "@/core/apiWeb.js";
 
 const viewBoxMixin = {
   props: {
-    currentTab: {type: String, default: ''}
+    currentTab: {type: String, default: ''},
+    sectionTitle: { type: String, default: ''},
   },
   data() {
     return {
@@ -23,11 +24,11 @@ const viewBoxMixin = {
   },
   computed: {
     statElementID() {
-      let viewBoxEl = this.$store.getters['mod_workspace/GET_currentSelectedElementsInSnapshot'].find((element)=>element.layerType === 'Training' || element.layerType === 'IoOutput');
+      let viewBoxEl = this.$store.getters['mod_workspace/GET_currentSelectedElementsInSnapshot'].find((element)=>element.layerType === 'Training' || element.layerType === 'IoOutput' || element.layerType === "IoInput");
       return viewBoxEl === undefined ? undefined : viewBoxEl.layerId.toString()
     },
     boxElementID() {
-      let viewBoxEl = this.$store.getters['mod_workspace/GET_currentSelectedElementsInSnapshot'].find((element)=>element.layerType !== 'Training' && element.layerType !== 'IoOutput');
+      let viewBoxEl = this.$store.getters['mod_workspace/GET_currentSelectedElementsInSnapshot'].find((element)=>element.layerType !== 'Training' && element.layerType !== 'IoOutput' && element.layerType !== 'IoInput');
       return viewBoxEl === undefined ? undefined : viewBoxEl.layerId.toString()
     },
     currentNetworkID() {
@@ -68,10 +69,45 @@ const viewBoxMixin = {
     setTabAction() {
       this.getData();
     },
+    chartGlobalRequest() {
+      this.startRequest = new Date();
+
+      let theData = {
+        receiver: this.currentNetworIdForKernelRequests,
+        action: 'getGlobalTrainingStatistics',
+        value: { }
+      };
+      coreRequest(theData)
+        .then((data)=> {
+          if(data === 'Null' || data === null) {
+            return
+          }
+
+          // This launch an event to stop fetching statistics infinitely
+          if(theData.action === 'getTestingStatistics') {
+            this.$store.commit('mod_events/set_componentEvent_test_receiveData');
+          }
+          let prevData =  {};
+          Object.keys(this.chartData).map(key => {prevData[key] = this.chartData[key]})
+          
+          Object.keys(data).map(key => {
+            prevData[key] = data[key];
+          })
+         this.chartData = prevData;
+
+          let stopRequest = new Date();
+          let answerDelay = stopRequest - this.startRequest;
+          this.$store.dispatch('mod_workspace/CHECK_requestInterval', answerDelay);
+        })
+        .catch((err)=> {
+          console.error(err);
+        });
+    },
     chartRequest(layerId, layerType, view) {
       this.startRequest = new Date();
 
       if(!layerId || !layerType) return;
+
       let theData = {
         receiver: this.currentNetworIdForKernelRequests,
         action: this.$store.getters['mod_workspace/GET_testIsOpen']

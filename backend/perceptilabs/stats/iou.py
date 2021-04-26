@@ -3,8 +3,8 @@
 from typing import Tuple
 import tensorflow as tf
 
-from perceptilabs.trainer.stats.base import TrainingStatsTracker
-from perceptilabs.trainer.stats.utils import return_on_failure
+from perceptilabs.stats.base import TrainingStatsTracker
+from perceptilabs.stats.utils import return_on_failure
 
 
 class ConfusionMatrix:
@@ -68,7 +68,7 @@ class IouStats:
         return accuracies
 
     def get_iou_over_steps_in_latest_epoch(self, phase='training'):
-        """ Iou as a series over all steps in the latest epoch """                        
+        """ Iou as a series over all steps in the latest epoch """
         return self.get_iou_over_steps(
             epoch=len(self.prediction_matrices)-1,
             phase=phase

@@ -1,9 +1,9 @@
 from typing import Tuple
 
 from perceptilabs.graph.spec import GraphSpec
-from perceptilabs.trainer.stats.base import TrainingStatsTracker
-from perceptilabs.trainer.stats.iou import IouStatsTracker, IouStats
-from perceptilabs.trainer.stats.loss import LossStatsTracker, LossStats
+from perceptilabs.stats.base import TrainingStatsTracker
+from perceptilabs.stats.iou import IouStatsTracker, IouStats
+from perceptilabs.stats.loss import LossStatsTracker, LossStats
 
 
 

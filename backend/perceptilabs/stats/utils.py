@@ -4,6 +4,7 @@ def return_on_failure(value):
             try:
                 return f(*args,**kwargs)
             except Exception as e:
+                print(e)
                 return value
         return applicator
     return decorate

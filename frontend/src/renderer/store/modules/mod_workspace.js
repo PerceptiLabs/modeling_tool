@@ -371,6 +371,33 @@ const getters = {
     const currentNetwork = getters.GET_currentNetwork;
     return currentNetwork.networkMeta.trainingSettings
   },
+  GET_inputsAndOutputs: (state, getters) => {
+    let net = deepCloneNetwork(getters.GET_currentNetworkElementList);
+    let IOComponents = Object.values(net).filter(el => {
+      return el.layerType === 'IoInput' || el.layerType === 'IoOutput';
+    })
+    
+    let componentsTabs = IOComponents.map(el => ({
+        btnId: el.layerName,
+        name: el.layerName ,
+        layerId: el.layerId,
+        type: 'component',  // default | component
+        layerType: el.layerType,
+        btnInteractiveInfo: {
+          title: el.layerName,
+          text: 'View the global'
+      },
+    }))
+    componentsTabs.push({
+      btnId: "Global",
+      btnInteractiveInfo: {title: "Global", text: "Global"},
+      layerId: null,
+      layerType: null,
+      name: "Global",
+      type: "tab",
+    })
+    return componentsTabs;
+  }
 };
 
 const mutations = {

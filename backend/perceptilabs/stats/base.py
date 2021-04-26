@@ -1,8 +1,13 @@
 from abc import ABC, abstractmethod
 
 # TODO: docs
-# TODO: add to included
 
+class TrainingStats(ABC):
+    @abstractmethod
+    def get_data_objects(self):
+        raise NotImplementedError
+
+    
 class TrainingStatsTracker(ABC):
     @abstractmethod
     def update(self, **kwargs):

@@ -5,7 +5,7 @@ import numpy as np
 import tensorflow as tf
 
 from perceptilabs.graph.spec import GraphSpec
-from perceptilabs.trainer.stats.base import TrainingStatsTracker
+from perceptilabs.stats.base import TrainingStatsTracker
 
 
 class GradientStats:

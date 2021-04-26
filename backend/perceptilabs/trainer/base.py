@@ -12,7 +12,8 @@ import logging
 from perceptilabs.logconf import APPLICATION_LOGGER, USER_LOGGER
 from perceptilabs.layers.visualizer import PerceptiLabsVisualizer
 from perceptilabs.trainer.model import TrainingModel
-from perceptilabs.trainer.stats import SampleStatsTracker, SampleStats, GradientStatsTracker, GradientStats, CategoricalOutputStatsTracker, ImageOutputStatsTracker
+from perceptilabs.stats import SampleStatsTracker, SampleStats, GradientStatsTracker, GradientStats, ImageOutputStatsTracker, GlobalStatsTracker
+from perceptilabs.layers.iooutput.stats import OutputStatsTracker
 from perceptilabs.trainer.losses import weighted_crossentropy, dice
 from perceptilabs.logconf import APPLICATION_LOGGER
 from perceptilabs.utils import get_memory_usage
@@ -211,6 +212,7 @@ class Trainer:
     def _reset_tracked_values(self):
         self._layer_outputs = {}
         self._layer_trainables = {}
+        self._global_stats_tracker = GlobalStatsTracker()        
         self._input_stats_tracker = SampleStatsTracker()
         self._prediction_stats_tracker = SampleStatsTracker()                        
         self._target_stats_tracker = SampleStatsTracker()
@@ -218,18 +220,19 @@ class Trainer:
 
         self._output_trackers = {}
         for layer_spec in self._graph_spec.output_layers:
-            self._output_trackers[layer_spec.id_] = self._create_output_tracker(layer_spec.datatype)
+            self._output_trackers[layer_spec.id_] = OutputStatsTracker(layer_spec.datatype)
 
-    def _create_output_tracker(self, datatype):
-        if os.getenv("PL_IOU"):  # TODO(anton.k): remove in story 1615
-            return ImageOutputStatsTracker()
-        else:
-            return CategoricalOutputStatsTracker()
-                
     def _update_tracked_values(self, trainables_by_layer, gradients_by_layer, final_and_intermediate_outputs_by_layer, inputs_batch, predictions_batch, targets_batch, total_loss, is_training, steps_completed):
         """ Take a snapshot of the current tensors (e.g., layer weights) """
         self._layer_outputs = final_and_intermediate_outputs_by_layer
         self._layer_trainables = trainables_by_layer
+
+        self._global_stats_tracker.update(
+            loss=total_loss,
+            epochs_completed=self._num_epochs_completed,
+            steps_completed=steps_completed,
+            is_training=is_training
+        )
         
         self._input_stats_tracker.update(graph_spec=self._graph_spec, sample_batch=inputs_batch)
         self._prediction_stats_tracker.update(graph_spec=self._graph_spec, sample_batch=predictions_batch)                
@@ -240,7 +243,6 @@ class Trainer:
             tracker.update(
                 predictions_batch=predictions_batch[layer_spec.feature_name],
                 targets_batch=targets_batch[layer_spec.feature_name],
-                loss=total_loss,  # TODO: this should be the individual loss of this output (fix in story 1615)
                 epochs_completed=self._num_epochs_completed,
                 steps_completed=steps_completed,
                 is_training=is_training
@@ -503,12 +505,17 @@ class Trainer:
             'input_stats': self.get_input_stats(),
             'prediction_stats': self.get_prediction_stats(),
             'target_stats': self.get_target_stats(),
-            'output_stats': self.get_output_stats()
+            'output_stats': self.get_output_stats(),
+            'global_stats': self.get_global_stats()            
         }
         #dict_ = {}
         t1 = time.perf_counter()
         logger.debug(f"get_results finished. Duration: {t1 - t0}")
         return dict_
+
+    def get_global_stats(self):
+        """ Returns a stats object for the current global stats """
+        return self._global_stats_tracker.save()
 
     def get_target_stats(self) -> SampleStats:
         """ Returns a stats object for the current target values """

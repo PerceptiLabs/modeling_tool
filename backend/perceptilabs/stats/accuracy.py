@@ -1,8 +1,8 @@
 from typing import Tuple
 import tensorflow as tf
 
-from perceptilabs.trainer.stats.base import TrainingStatsTracker
-from perceptilabs.trainer.stats.utils import return_on_failure
+from perceptilabs.stats.base import TrainingStatsTracker
+from perceptilabs.stats.utils import return_on_failure
 
 
 class PredictionMatrix:

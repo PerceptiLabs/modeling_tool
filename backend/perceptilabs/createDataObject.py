@@ -250,8 +250,10 @@ def create_type_object(data_vec: np.ndarray, type_: str, normalize: bool = True,
     return type_object
 
 
-def createDataObject(data_list: list, type_list: list = None, style_list: list = None, 
-                     name_list: list = None, normalize: bool = True, subsample_ratio: int = 1):
+def create_data_object(
+        data_list: list, type_list: list = None, style_list: list = None, 
+        name_list: list = None, normalize: bool = True, subsample_ratio: int = 1
+):
     '''Create a data object to be utilized by frontend. If applicable, normalize and 
        subsample the incoming n-dimensional array
 
@@ -338,6 +340,17 @@ def subsample_data(subsample_data_info: dict, total_num_layer_components: int, t
         preview_content[layer_id] = createDataObject(sample_data, type_list=type_list, subsample_ratio=ratio)
     
     return preview_content
+
+
+def createDataObject(
+        data_list: list, type_list: list = None, style_list: list = None, 
+        name_list: list = None, normalize: bool = True, subsample_ratio: int = 1
+):
+    """Backwards compatibility alias for create_data_object. Don't use! """
+    return create_data_object(
+        data_list=data_list, type_list=type_list, style_list=style_list,
+        name_list=name_list, normalize=normalize, subsample_ratio=subsample_ratio
+    )
 
 
 if __name__ == "__main__":

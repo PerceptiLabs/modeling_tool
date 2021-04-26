@@ -2,7 +2,7 @@ from typing import Dict
 import numpy as np
 
 from perceptilabs.graph.spec import GraphSpec
-from perceptilabs.trainer.stats.base import TrainingStatsTracker
+from perceptilabs.stats.base import TrainingStatsTracker
 
 
 class SampleStats:

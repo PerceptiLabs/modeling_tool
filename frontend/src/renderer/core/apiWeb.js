@@ -191,10 +191,10 @@ function coreRequest(data, path, no, name) {
               // let stopRequest = new Date();
               // calcTime(stopRequest, timeStartAnswer, 'transmitting', name);
               if(initialSentData.action !== 'checkCore' && process.env.NODE_ENV !== 'production')
-                console.log('REQ:' + initialSentData.action,
-                  JSON.parse(JSON.stringify(initialSentData)),
-                  JSON.parse(JSON.stringify(obgData.content)),
-                );
+              console.log('REQ:' + initialSentData.action, 
+                 JSON.parse(JSON.stringify(initialSentData)),
+                JSON.parse(JSON.stringify(obgData.content)),
+              );
               
               /* TOREMOVE
               delete obgData['consoleLogs']

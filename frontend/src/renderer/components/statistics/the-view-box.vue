@@ -3,12 +3,13 @@
     //- .info-section_head(v-show="!testIsOpen")
     //-   h3 {{ sectionTitle }}
     view-box-btn-list(
-      v-if="layerMetrics && layerType !== 'Training' && layerType !== 'IoOutput'"
+      v-if="layerMetrics && layerType !== 'Training' && layerType !== 'IoOutput' && layerType !== 'IoInput'"
       v-show="!testIsOpen"
       :layerType="'ViewBox'"
       )
     .info-section_main(v-if="elData !== null")
       component(
+        :sectionTitle="sectionTitle"
         :is="elData.componentName"
         :element-data="elData.viewBox"
         :current-tab="selectedMetric"
@@ -130,7 +131,12 @@ export default {
   methods: {
     setBtnList(objList) {
       this.$store.commit('mod_statistics/setLayerMetrics', { layerType: this.layerType, layerMetrics: objList });
-      this.$store.commit('mod_statistics/setDefaultMetric', this.layerType);
+
+      const layerType = this.elData.layerType;
+      const isTrainingLayer = layerType === 'Training' || layerType === 'IoOutput' || layerType === 'IoInput';
+      if(!isTrainingLayer) {
+        this.$store.commit('mod_statistics/setDefaultMetric', this.layerType);
+      }
     },
     resetBtnInfo() {
       this.$store.commit('mod_statistics/setLayerMetrics', { layerType: this.layerType, layerMetrics: '' });

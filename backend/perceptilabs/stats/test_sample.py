@@ -3,7 +3,7 @@ from unittest.mock import MagicMock
 import numpy as np
 
 
-from perceptilabs.trainer.stats import SampleStats
+from perceptilabs.stats import SampleStats
 
 
 def test_get_sample_by_id():

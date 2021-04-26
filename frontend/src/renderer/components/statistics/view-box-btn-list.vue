@@ -7,7 +7,7 @@
     )
       button.btn.btn--tabs.statistics-box_btn.tutorial-relative(type="button"
         v-if="tabInfo"
-        @click="setCurrentTab(name, tabInfo.btnId)"
+        @click="setCurrentTab(name, tabInfo)"
         v-tooltip-interactive:bottom="tabInfo.btnInteractiveInfo"
         :class="[currentTab === name ?  'active' : '', tabInfo.btnClass]"
         :id="tabInfo.btnId"
@@ -46,10 +46,18 @@ export default {
     ...mapActions({
       setNextStep:      'mod_tutorials/setNextStep',
     }),
-    setCurrentTab(tab, id) {
+    setCurrentTab(tab, el) {
       // this.currentTab = tab;
       // this.$emit('set-current-btn', tab);
-      this.$store.commit('mod_statistics/setSelectedMetric', { layerType: this.layerType, selectedMetric: tab });
+      
+      // console.log(tab);
+      if(el && el.type === 'component') {
+        let net = this.$store.getters['mod_workspace/GET_currentSelectedElementsInSnapshot'];
+        let element = this.$store.getters['mod_workspace/GET_networkSnapshotElementById'](el.layerId);
+        this.$store.commit('mod_statistics/CHANGE_selectElArr', element)
+      } else {
+        this.$store.commit('mod_statistics/setSelectedMetric', { layerType: this.layerType, selectedMetric: tab });  
+      }
 
       this.$store.dispatch('mod_tracker/EVENT_viewboxMetricSelect', {
         view: this.testIsOpen ? 'Test' : 'Statistics', // can only be in Test or Statistics view

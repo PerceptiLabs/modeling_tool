@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 import tensorflow as tf
-from perceptilabs.trainer.stats.iou import IouStatsTracker
+from perceptilabs.stats.iou import IouStatsTracker
 
 
 

@@ -77,7 +77,7 @@ export const LOCAL_STORAGE_HIDE_DELETE_MODAL = 'hide_delete_modal'
 
 export const defaultTrainingSettings = {
   Epochs: 100,
-  Batch_size: 128,
+  Batch_size: 32,
   Shuffle: true,
   Loss: 'Quadratic', //[Cross-Entropy, Quadratic, Weighted Cross-Entropy, Dice]
   LossOptions: [

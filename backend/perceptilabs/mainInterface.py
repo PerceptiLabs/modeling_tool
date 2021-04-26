@@ -455,6 +455,10 @@ class Interface():
             response = self._core.getTrainingStatistics(value)
             return response
 
+        elif action == "getGlobalTrainingStatistics":
+            response = self._core.get_global_training_statistics()
+            return response
+        
         elif action == "getTestingStatistics":
             response = self._core.getTestingStatistics(value)
             return response
