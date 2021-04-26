@@ -316,7 +316,8 @@ export default {
 
           emitPayload = [
             ...payloadFolders,
-            ...payloadFiles];
+            ...payloadFiles
+          ];
         }
 
         this.$store.dispatch('globalView/SET_filePickerPopup', false);

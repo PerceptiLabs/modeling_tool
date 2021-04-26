@@ -521,9 +521,15 @@ export default {
         // closePopup() {
         //     this.showFilePickerPopup = false;
         // },
+        validDirPath(url) {
+            if (url.length > 3 && url.slice(-1) === '/' || url.slice(-1) === '\\') {
+                return url.slice(0, -1);
+            }
+            return url;
+        },
         updateModelPath(filepath) {
             debugger;
-            this.modelPath = filepath && filepath[0] ? filepath[0] : '';
+            this.modelPath = filepath && filepath[0] ? this.validDirPath(filepath[0]) : '';
             this.showFilePickerPopup = false;
         },
         convertToAbsolutePath(elementList, rootPath) {
