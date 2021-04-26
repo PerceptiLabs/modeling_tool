@@ -67,7 +67,9 @@ class Trainer:
 
         peak_memory_usage = get_memory_usage()
 
-        logger.info("Entering training loop")       
+        tracking.send_training_started(self._user_email, self._model_id, self._graph_spec)
+        logger.info("Entering training loop")
+        
         self._num_epochs_completed = 0
         while self._num_epochs_completed < self.num_epochs and not self.is_closed:
             t0 = time.perf_counter()
