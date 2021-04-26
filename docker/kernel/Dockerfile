@@ -73,7 +73,7 @@ RUN ln -Ffs /usr/local/cuda/targets/x86_64-linux/lib/libcusolver.so.11 /usr/loca
 
 USER 1001
 
-ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/compat:/usr/local/cuda/targets/x86_64-linux/lib
+ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/lib64:/usr/local/cuda/compat:/usr/local/cuda/targets/x86_64-linux/lib
 
 COPY licenses /licenses
 COPY tutorial_data /tutorial_data
