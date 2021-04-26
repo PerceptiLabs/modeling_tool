@@ -1,11 +1,28 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-lines=$(cat included_files.txt)
-while read y
-do
-  if [[ ! $y =~ ^# ]] && [[ -n $y ]] && [[ ! $y =~ model_and_meta.pkl ]]; then
-    ls $y &> /dev/null || ( >&2 echo "$y is in included_files.txt but doesn't exist"; exit 1 )
-  fi
-done < included_files.txt
-echo "Success!!"
+rm -f expected.txt
+rm -f present.txt
+cat included_files.txt | grep -v "^#" | grep -v "^$" | grep -v "tutorial_data" | sort > expected.txt
+git ls-tree --name-only -r HEAD | grep "^perceptilabs/" | grep -v "tutorial_data" | grep -v "test" | sort > present.txt
+
+rc=0
+extra_files=$(join -v 1 present.txt expected.txt | join -v 2 included_files_exceptions.txt -)
+if echo "${extra_files}" | grep -q .; then
+  echo "================================="
+  echo "Extra files:"
+  echo "${extra_files}"
+  rc=1
+fi
+
+missing_files=$(join -v 2 present.txt expected.txt | join -v 2 included_files_exceptions.txt -)
+if echo "${missing_files}" | grep -q .; then
+  echo "================================="
+  echo "Missing files:"
+  echo "${missing_files}"
+  rc=1
+fi
+
+rm expected.txt
+rm present.txt
+exit $rc
