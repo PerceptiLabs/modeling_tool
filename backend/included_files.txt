@@ -70,6 +70,7 @@ perceptilabs/layers/iooutput/spec.py
 perceptilabs/layers/iooutput/stats/tracker.py
 perceptilabs/layers/iooutput/stats/__init__.py
 perceptilabs/layers/iooutput/stats/categorical.py
+perceptilabs/layers/iooutput/stats/image.py
 
 # perceptilabs/layers/jinja_macros
 perceptilabs/layers/jinja_macros/controlflow.j2
