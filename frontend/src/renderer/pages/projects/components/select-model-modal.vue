@@ -376,7 +376,6 @@ export default {
                 model_id: apiMeta.model_id,
             }
 	    
-            
             const modelRecommendation = await this.getModelRecommendation(payload)
               .then((res) => {
                 if(typeof(res) === "string" && res.indexOf('Internal error') !== -1) {
