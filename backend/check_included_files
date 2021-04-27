@@ -1,13 +1,15 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-rm -f expected.txt
-rm -f present.txt
-cat included_files.txt | grep -v "^#" | grep -v "^$" | grep -v "tutorial_data" | sort > expected.txt
-git ls-tree --name-only -r HEAD | grep "^perceptilabs/" | grep -v "tutorial_data" | grep -v "test" | sort > present.txt
+expected=$(mktemp)
+present=$(mktemp)
+exceptions=$(mktemp)
+cat included_files_exceptions.txt | sort > "${exceptions}"
+cat included_files.txt | grep -v "^#" | grep -v "^$" | grep -v "tutorial_data" | sort > "${expected}"
+git ls-tree --name-only -r HEAD | grep "^perceptilabs/" | grep -v "tutorial_data" | grep -v "test" | sort > "${present}"
 
 rc=0
-extra_files=$(join -v 1 present.txt expected.txt | join -v 2 included_files_exceptions.txt -)
+extra_files=$(join -v 1 "${present}" "${expected}" | join -v 2 "${exceptions}" -)
 if echo "${extra_files}" | grep -q .; then
   echo "================================="
   echo "Extra files:"
@@ -15,7 +17,7 @@ if echo "${extra_files}" | grep -q .; then
   rc=1
 fi
 
-missing_files=$(join -v 2 present.txt expected.txt | join -v 2 included_files_exceptions.txt -)
+missing_files=$(join -v 2 "${present}" "${expected}" | join -v 2 "${exceptions}" -)
 if echo "${missing_files}" | grep -q .; then
   echo "================================="
   echo "Missing files:"
@@ -23,6 +25,6 @@ if echo "${missing_files}" | grep -q .; then
   rc=1
 fi
 
-rm expected.txt
-rm present.txt
+rm "${expected}" "${present}" "${exceptions}"
+
 exit $rc
