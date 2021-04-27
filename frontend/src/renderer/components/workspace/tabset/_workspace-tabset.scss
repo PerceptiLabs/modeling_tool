@@ -50,18 +50,14 @@
   
   cursor: pointer;
 
-  &.workspace_tab--active_network {
-    border-top: 2px solid $color-6;
+  &.workspace_tab--active_network, &.workspace_tab--active  {
     border-color: $color-6;
+    border-top: 2px solid $color-6;
+    background-color: $bg-toolbar-2;
   }
 
   &.workspace_tab--disable {
     pointer-events: none;
-  }
-
-  &.workspace_tab--active {
-    border-top: 2px solid $color-6;
-    background-color: $bg-toolbar-2;
   }
 
   &.tab_statistics,

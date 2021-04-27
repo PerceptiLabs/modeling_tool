@@ -411,14 +411,15 @@ export default {
             newNetwork.networkName = modelName;
             newNetwork.networkElementList = layers;
 
-            // Adding network to workspace
-            await this.addNetwork({ network: newNetwork,  apiMeta });
 
             // Swapping view so that the newly created model is shown
             // TODO: break apart this views
             await this.$store.dispatch('mod_workspace/SET_statisticsAndTestToClosed',{ networkId: this.currentNetworkId });
-            await this.$store.dispatch('mod_workspace/SET_currentModelIndexByNetworkId', apiMeta.model_id);
             await this.$store.dispatch('mod_workspace/setViewType', 'model');
+            await this.$store.dispatch('mod_workspace/SET_currentModelIndexByNetworkId', apiMeta.model_id);
+            
+            // Adding network to workspace
+            await this.addNetwork({ network: newNetwork,  apiMeta });
             
             this.$store.commit('mod_empty-navigation/set_emptyScreenMode', 0);
             this.setChecklistItemComplete({ itemId: 'createModel' });
