@@ -7,6 +7,7 @@ import tensorflow as tf
 from typing import Dict
 
 import perceptilabs.data.pipelines as pipelines
+import perceptilabs.data.utils as utils
 
 
 class FeatureSpec:
@@ -66,20 +67,15 @@ class DataLoader:
         NOTE: use from_dict instead!
         """
         feature_specs = {}
-        paths = []
         for layer_spec in graph_spec.get_ordered_layers():
             if layer_spec.is_input_layer or layer_spec.is_output_layer:
                 iotype = 'input' if layer_spec.is_input_layer else 'output'
-                paths.append(layer_spec.file_path)
                 
                 feature_specs[layer_spec.feature_name] = FeatureSpec(
                     iotype=iotype,
                     datatype=layer_spec.datatype,
                     file_path=layer_spec.file_path
                 )
-        if len(set(paths)) != 1:
-            raise NotImplementedError("Exactly one data file is supported!")
-
         return cls.from_features(feature_specs, partitions=partitions)
         
     @classmethod
@@ -89,14 +85,7 @@ class DataLoader:
         Arguments:
             feature_specs: the feature specs
         """
-        paths = set()
-        for spec in feature_specs.values():
-            paths.add(spec.file_path)
-
-        if len(paths) != 1:
-            raise ValueError(f"Feature specs must contain exactly _one_ CSV path. Got {len(paths)}")
-
-        path = next(iter(paths))
+        path = cls._resolve_file_path(feature_specs)
         df = pd.read_csv(path)
         data_loader = cls(
             df,
@@ -351,7 +340,27 @@ class DataLoader:
         if len(outputs) == 0:
             raise ValueError("No outputs specified!")
 
+    @staticmethod
+    def _resolve_file_path(feature_specs):
+        """ Resolves file path from feature specs """
+        paths = set()
+        for spec in feature_specs.values():
+            paths.add(spec.file_path)
+
+        if len(paths) != 1:
+            raise ValueError(f"Feature specs must contain exactly _one_ CSV path. Got {len(paths)}")
+
+        path = next(iter(paths))
+        return path
+
     @property
     def feature_specs(self):
+        """ Returns the feature specs used to instantiate this data loader"""
         return self._feature_specs
 
+    @property
+    def is_tutorial_data(self):
+        """ Returns true if the DataLoader was based on tutorial data"""
+        data_file = self._resolve_file_path(self.feature_specs)
+        return utils.is_tutorial_data_file(data_file)
+        

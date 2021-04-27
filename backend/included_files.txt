@@ -302,6 +302,7 @@ perceptilabs/tutorial_data/
 # backend/perceptilabs/data/
 perceptilabs/data/__init__.py
 perceptilabs/data/base.py
+perceptilabs/data/utils.py
 
 # backend/perceptilabs/data/pipelines/
 perceptilabs/data/pipelines/__init__.py

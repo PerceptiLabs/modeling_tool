@@ -627,14 +627,14 @@ class Interface():
         
         recommender = ModelRecommender(data_loader=data_loader)
         graph_spec = recommender.get_graph(data_loader.feature_specs)
-        
         json_network = graph_spec.to_dict()
-
+        
         tracking.send_model_recommended(
             request_value['user_email'],
             request_value['model_id'],
-            graph_spec
-        )       
+            graph_spec,
+            is_tutorial_data=data_loader.is_tutorial_data
+        )
         return json_network
     
     def _create_response_export(self, value, receiver):
