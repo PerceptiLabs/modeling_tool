@@ -3,3 +3,4 @@ from perceptilabs.tracking.training_completed import send_training_completed
 from perceptilabs.tracking.training_started import send_training_started
 from perceptilabs.tracking.training_stopped import send_training_stopped
 from perceptilabs.tracking.model_exported import send_model_exported
+from perceptilabs.tracking.data_selected import send_data_selected

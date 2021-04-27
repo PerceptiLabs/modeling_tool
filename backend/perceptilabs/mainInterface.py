@@ -357,6 +357,9 @@ class Interface():
             get_code = getCode(id_=id_, graph_spec=graph_spec)                            
             return get_code.run()
 
+        elif action == "dataSelected":
+            return self._create_response_data_selected(value)
+
         elif action == "getNetworkInputDim":
             graph_spec = self._network_loader.load(value, as_spec=True)
             json_network = graph_spec.to_dict()
@@ -736,3 +739,12 @@ class Interface():
         response = {'action':action,'value':results}
         return response
     
+    def _create_response_data_selected(self, request_value):
+        """ Sent when the users elects a data file """
+        # TODO(anton.k): compute data visualizations here
+        tracking.send_data_selected(
+            request_value['user_email'],
+            request_value['path']
+        )
+        return {}
+        

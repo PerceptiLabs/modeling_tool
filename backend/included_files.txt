@@ -371,3 +371,4 @@ perceptilabs/tracking/training_completed.py
 perceptilabs/tracking/training_stopped.py
 perceptilabs/tracking/training_started.py
 perceptilabs/tracking/model_exported.py
+perceptilabs/tracking/data_selected.py

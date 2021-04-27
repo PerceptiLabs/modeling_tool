@@ -116,6 +116,7 @@
         )
 </template>
 <script>
+    import { coreRequest }        from '@/core/apiWeb.js';
     import imageClassification    from '@/core/basic-template/image-classification.js'
     import reinforcementLearning  from '@/core/basic-template/reinforcement-learning.js'
     import linearRegression       from '@/core/basic-template/linear-regression.js'
@@ -589,6 +590,15 @@ export default {
             this.$store.dispatch('mod_datasetSettings/setStartupFolder', dataPath[0].path.match(/(.*)[\/\\]/)[1]||'');
 
             const fileContents = await fileserver_getFileContent(`${dataPath[0].path}`);
+
+            // here to request core
+            coreRequest({
+                action: 'dataSelected',
+                value: {
+                    user_email: this.userEmail,
+                    path: dataPath[0].path
+                }
+            });
 
             if (fileContents && fileContents.file_contents) {
                 this.dataset = fileContents.file_contents;
