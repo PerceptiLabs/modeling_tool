@@ -111,7 +111,7 @@ run_remote(){
 accept_host_signature(){
   echo -n "Adding $1 to known_hosts..."
   # Send the key warning to /dev/null since we know it's not in known_hosts
-  run_remote $1 exit 2>/dev/null
+  run_remote $1 exit
   echo done
 }
 
