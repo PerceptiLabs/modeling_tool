@@ -55,7 +55,10 @@
                             )
                           base-checkbox.light-text(v-model="datasetSettings.randomizedPartitions") Randomized partitions
                         .load-contents-group(v-if="!dataset")
-                            button.action-button(@click="openFilePicker('setDataPath')") Load data
+                            button.action-button(
+                                @click="openFilePicker('setDataPath')"
+                                :data-tutorial-target="'tutorial-data-wizard-load-csv'"
+                            ) Load data
                         csv-table(v-if="dataset" :dataSet="dataset" @update="handleCSVDataTypeUpdates")
                         span.error(v-if="isAllIOTypesFilled() && !hasInputAndOutput()") Make sure to have at least one input and one output to proceed
                         
@@ -226,6 +229,12 @@ export default {
         this.debouncedCreateModelFunction = debounce(_ => {
             this.createModel();
         }, 1000);
+
+        if (this.isTF2XEnabled && this.isDataWizardEnabled) {
+            this.setCurrentView('data-wizard-onboarding');
+        } else {
+            this.setCurrentView('tutorial-create-model-view')
+        }
     },
     beforeDestroy() {
         document.removeEventListener('keyup', this.handleKeyup);
@@ -240,6 +249,7 @@ export default {
             showErrorPopup:             'globalView/GP_errorPopup',
             setCurrentView:             'mod_tutorials/setCurrentView',
             setNextStep:                'mod_tutorials/setNextStep',
+            activateNotification:       'mod_tutorials/activateNotification',
             setChecklistItemComplete:   'mod_tutorials/setChecklistItemComplete',
             getModelRecommendation:     'mod_api/API_getModelRecommendation',
             
@@ -499,12 +509,12 @@ export default {
             });
         },
         openFilePicker(openFilePickerReason) {
-
             if (openFilePickerReason === 'setDataPath') {
                 this.filepickerOptions.popupTitle = 'Choose data to load';
                 this.filepickerOptions.filePickerType = 'multimode';
                 this.filepickerOptions.startupFolder = this.startupDatasetPath;
                 this.filepickerOptions.confirmCallback = this.handleDataPathUpdates;
+                this.setNextStep({currentStep: "tutorial-data-wizard-load-csv"});
             } else {    
                 this.filepickerOptions.popupTitle = 'Choose Model path';
                 this.filepickerOptions.filePickerType = 'folder';
@@ -586,6 +596,7 @@ export default {
             }
 
             this.showFilePickerPopup = false;
+            this.activateNotification();
         },
         handleCSVDataTypeUpdates(payload) {
             this.csvData = payload;

@@ -184,6 +184,7 @@ export default {
 <style lang="scss" scoped>
   @import "../../scss/base";
   .app-header {
+    z-index: 101;
     position: relative;
     display: flex;
     height: $h-header-win;

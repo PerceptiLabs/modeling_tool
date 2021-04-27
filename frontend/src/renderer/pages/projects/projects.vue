@@ -544,10 +544,6 @@
 
         // open modal
         this.popupNewModel(true);
-
-        this.$nextTick(() => {
-          this.setCurrentView('tutorial-create-model-view');
-        });
       },
       onCloseSelectModelModal() {
         this.popupNewModel(false);

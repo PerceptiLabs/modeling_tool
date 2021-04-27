@@ -6,7 +6,7 @@
     perfect-scrollbar
       table.table-wrapper(v-if="delimitedDataSet")
         thead
-          tr
+          tr(:data-tutorial-target="'tutorial-data-wizard-csv-explanation'")
             th(@click="clearSelectedColumns")
             th.table-column(
               v-for="numColumn in computedNumberOfColumns"
@@ -38,7 +38,7 @@
                 :value="formattedDataset.ioTypes[numColumn - 1]"
                 @input="setIOSelection($event, numColumn)"
               )
-          tr.table-row
+          tr.table-row(:data-tutorial-target="'tutorial-data-wizard-io-explanation'")
             td(@click="clearSelectedColumns")
               .label Type:
             td.table-column.no-padding(

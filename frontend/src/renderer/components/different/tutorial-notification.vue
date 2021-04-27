@@ -118,7 +118,7 @@ $arrow-size: 1rem;
 .tutorial-notification {
   color: $tutorial-tooltip-text-color;
   position: absolute;
-  z-index: 99;
+  z-index: 110;
   min-width: 15rem;
   max-width: 30rem;
   padding: 1rem 1rem;

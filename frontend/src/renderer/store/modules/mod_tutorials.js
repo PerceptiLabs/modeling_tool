@@ -214,6 +214,28 @@ const state = {
           arrowDirection: 'left'
         },
       ]
+    }, 
+    {
+      viewName: 'data-wizard-onboarding',
+      isCompleted: false,
+      currentStepCode: 'tutorial-data-wizard-load-csv',
+      steps: [
+        {
+          stepCode: 'tutorial-data-wizard-load-csv',
+          displayText: '<p style="text-align: center;">Load your CSV data here. Each column will represent one input or output feature.</p> <p style="text-align: center;">Here is an example of how Image Classification can look like.</p> <img src="/static/img/tutorial/load-csv.png" style="width: 80%;margin: 5px auto;display: block;">',
+          arrowDirection: 'left'
+        },
+        {
+          stepCode: 'tutorial-data-wizard-csv-explanation',
+          displayText: '<p style="text-align: center;">Here you can see a preview of the data which you have loaded. Make sure that the column names are at the top.</p>',
+          arrowDirection: 'left'
+        },
+        {
+          stepCode: 'tutorial-data-wizard-io-explanation',
+          displayText: '<p style="text-align: center;">Here you get to set if a column is an input or an output feature, as well as what type they are.<br/>Output features are your targets and Input features is the data you feed your model.</p> <p style="text-align:center;">Make sure to set the correct type so that your data will be treated properly.</p>',
+          arrowDirection: 'left'
+        }
+      ]
     }
   ],
   activeNotifications: []
@@ -527,8 +549,10 @@ const actions = {
     }
 
     const oldStep = getters.getCurrentStep;
+
     commit('setNextStep', currentStep);
     const newStep = getters.getCurrentStep;
+
 
     setTimeout(() => {
       // Adds ability to disable setup so certain triggers can work well:

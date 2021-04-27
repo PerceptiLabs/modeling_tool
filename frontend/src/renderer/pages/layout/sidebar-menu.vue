@@ -314,9 +314,7 @@
       toProjects() {
         this.$router.push({name: 'projects'});                          
         this.$nextTick(() => {
-          if (this.showNewModelPopup) {
-            this.setCurrentView('tutorial-create-model-view');
-          } else {
+          if (!this.showNewModelPopup) {
             this.setCurrentView('tutorial-model-hub-view');
           }
         });
@@ -385,9 +383,7 @@
           });
 
         this.$nextTick(() => {
-          if (this.showNewModelPopup) {
-            this.setCurrentView('tutorial-create-model-view');
-          } else {
+          if (!this.showNewModelPopup) {
             this.setCurrentView('tutorial-statistics-view');
           }
         });
@@ -443,9 +439,7 @@
         this.closeStatsTestViews({ networkId: this.currentNetwork.networkID });
 
         this.$nextTick(() => {
-          if (this.showNewModelPopup) {
-            this.setCurrentView('tutorial-create-model-view');
-          } else {
+          if (!this.showNewModelPopup) {
             this.setCurrentView('tutorial-workspace-view');
           }
         });
@@ -496,9 +490,7 @@
         this.SET_openTest(true);
 
         this.$nextTick(() => {
-          if (this.showNewModelPopup) {
-            this.setCurrentView('tutorial-create-model-view');
-          } else {
+          if (!this.showNewModelPopup) {
             this.setCurrentView('tutorial-test-view');
           }
         });

@@ -504,9 +504,7 @@ export default {
         }
 
         this.$nextTick(() => {
-          if (this.showNewModelPopup) {
-            this.setCurrentView('tutorial-create-model-view');
-          } else {
+          if (!this.showNewModelPopup) {
             this.setCurrentView('tutorial-statistics-view');
           }
         });

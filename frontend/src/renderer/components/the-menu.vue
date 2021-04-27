@@ -166,10 +166,6 @@ export default {
       }
 
       this.popupNewModel(true);
-
-      this.$nextTick(() => {
-        this.setCurrentView('tutorial-create-model-view');
-      });
     },
     openLoadModelPopup() {
       if(this.statusLocalCore!='online') {

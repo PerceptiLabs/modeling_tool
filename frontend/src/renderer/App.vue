@@ -255,12 +255,14 @@
         if (this.currentPage) { return false; }
         if (this.hasModalsOpenInWorkspace) { return false; }
 
-        // have check each screen because the proposal to separate each view
-        // into it's own component wasn't well received.
-        if (this.$route.name === 'projects') { return this.getShowTutorialTips; }
-        else if (this.viewType === 'model' && this.currentModelIndex === -1) { return false; }
-        else if (this.viewType === 'statistic' && this.currentStatsIndex === -1) { return false; }
-        else if (this.viewType === 'test' && this.currentTestIndex === -1) { return false; }
+        if (!this.$store.state.globalView.globalPopup.showNewModelPopup) {
+          // have check each screen because the proposal to separate each view
+          // into it's own component wasn't well received.
+          if (this.$route.name === 'projects') { return this.getShowTutorialTips; }
+          else if (this.viewType === 'model' && this.currentModelIndex === -1) { return false; }
+          else if (this.viewType === 'statistic' && this.currentStatsIndex === -1) { return false; }
+          else if (this.viewType === 'test' && this.currentTestIndex === -1) { return false; }
+        }
 
         return this.getIsTutorialMode && this.getShowTutorialTips;
       },
