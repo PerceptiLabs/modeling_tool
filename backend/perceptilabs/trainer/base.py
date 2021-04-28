@@ -13,7 +13,7 @@ from perceptilabs.logconf import APPLICATION_LOGGER, USER_LOGGER
 from perceptilabs.layers.visualizer import PerceptiLabsVisualizer
 from perceptilabs.trainer.model import TrainingModel
 from perceptilabs.stats import SampleStatsTracker, SampleStats, GradientStatsTracker, GradientStats, ImageOutputStatsTracker, GlobalStatsTracker
-from perceptilabs.layers.iooutput.stats import OutputStatsTracker
+from perceptilabs.layers.iooutput.stats.tracker import OutputStatsTracker
 from perceptilabs.trainer.losses import weighted_crossentropy, dice
 from perceptilabs.logconf import APPLICATION_LOGGER
 from perceptilabs.utils import get_memory_usage
