@@ -37,6 +37,9 @@
               li
                 .form_holder
                   base-checkbox.w-100(v-model="testTypes.confusion_matrix") Confusion matrix
+              li
+                .form_holder
+                  base-checkbox.w-100(v-model="testTypes.metrics_table") Metrics table
         .d-flex.flex-row-reverse
           .d-inline-block
             button.btn.btn--primary(
@@ -62,6 +65,7 @@ export default {
         inferobia: false,
         forward_prop: false,
         confusion_matrix: false,
+        metrics_table: false,
       },
     }
   },

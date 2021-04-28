@@ -2,11 +2,11 @@ import store from '@/store';
 import {deepCloneNetwork} from "@/core/helpers";
 
 
-export const connectComponentsWithArrow = (previousElemntId, currentElementId) => {
-  if(!previousElemntId || !currentElementId) { 
+export const connectComponentsWithArrow = (previousElementId, currentElementId) => {
+  if(!previousElementId || !currentElementId) { 
     return;
   }
-  const previousElement = store.getters['mod_workspace/GET_networkElementById'](previousElemntId);
+  const previousElement = store.getters['mod_workspace/GET_networkElementById'](previousElementId);
   const outputs = previousElement.outputs;
   const outputKey = Object.keys(outputs)[0];
   
@@ -42,7 +42,11 @@ const testsValidationRules = {
   'confusion_matrix': {
     'inputs': ['numerical', 'image', 'categorical'],
     'outputs': ['categorical']
-  }
+  },
+  'metrics_table': {
+    'inputs': ['numerical', 'image', 'categorical'],
+    'outputs': ['categorical']
+  },
 };
 
 export const isModelValidForTest = (model, testType) => {

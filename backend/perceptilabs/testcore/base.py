@@ -9,7 +9,7 @@ from perceptilabs.data.base import DataLoader, FeatureSpec
 from perceptilabs.graph.spec import GraphSpec
 from perceptilabs.logconf import APPLICATION_LOGGER, USER_LOGGER
 from perceptilabs.testcore.strategies.modelstrategies import LoadInferenceModel
-from perceptilabs.testcore.strategies.teststrategies import ConfusionMatrix
+from perceptilabs.testcore.strategies.teststrategies import ConfusionMatrix, MetricsTable
 
 logger = logging.getLogger(APPLICATION_LOGGER)
 user_logger = logging.getLogger(USER_LOGGER)
@@ -61,20 +61,28 @@ class TestCore():
                 compatible_layers[test] = self.get_compatible_output_layers(test, receiver_id)
             # all the results are being collected at once to not repeat the same computations for every test. 
             data_iterator = self._get_data_generator()
+            logger.info("Generating outputs for model %s.",  receiver_id)
             model_outputs = self._models[receiver_id].run_inference(data_iterator) #TODO(mukund): support inner layer outputs 
+            logger.info("Outputs generated for model %s.", receiver_id)
             results[receiver_id] = {}
             for test in tests:
+                logger.info("Starting test %s for model %s.",
+                            test, receiver_id)
                 results[receiver_id][test] = self._run_test(test, model_outputs, compatible_layers[test], receiver_id)
         return results
 
     def _run_test(self, test, model_outputs, compatible_output_layers, receiver_id): 
-        if test == 'confusion_matrix':
-            if len(compatible_output_layers):
+        if len(compatible_output_layers):
+            if test == 'confusion_matrix':
                 results = ConfusionMatrix().run(model_outputs, compatible_output_layers)
-                logger.debug("test %s completed for model %s.", test, receiver_id)
-            else: 
-                raise Exception(f"%s is not supported yet by the model %s.", test, receiver_id)
-        return results
+            elif test == 'metrics_table':
+                results = MetricsTable().run(model_outputs, compatible_output_layers)
+            logger.info("test %s completed for model %s.", test, receiver_id)
+            return results
+        else: 
+            raise Exception("%s is not supported yet by the model %s.", test, receiver_id)
+        
+        
 
     def get_compatible_output_layers(self, test, receiver_id):
         """
@@ -135,6 +143,8 @@ class ProcessResults():
     def run(self):
         if self._test == 'confusion_matrix':
             return self._process_confusionmatrix_output()
+        elif self._test == 'metrics_table':
+            return self._process_metrics_table_output()
         else:
             raise Exception(f"{self._test} is not supported yet.")
     
@@ -145,3 +155,5 @@ class ProcessResults():
             self._results[layer_name] = data_object
         return self._results
 
+    def _process_metrics_table_output(self):
+        return self._results

@@ -480,6 +480,11 @@ export const isEnvDataWizardEnabled = () => {
   return process.env.ENABLE_DATA_WIZARD === 'true';
 }
 
+export const getFirstElementFromObject = (data) => {
+  if(!data) throw new Error('No object passed');
+  return data[Object.keys(data)[0]];
+};
+
 export {
   projectPathModel,
   getDefaultProjectPathForOs,

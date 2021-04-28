@@ -47,9 +47,7 @@ class GetTestResults():
             self._testcore.load_model(
                 receiver_id, model_path=model_info['model_path'], graph_spec=model_info['graph_spec']
             )
-
         unprocessed_results = self._testcore.run_tests(tests=self._tests) #TODO(mukund): use corethread to run the tests.
-        
         for test in self._tests:
             results[test] = {}
             for receiver_id in unprocessed_results:

@@ -12,7 +12,7 @@ from perceptilabs.script import ScriptFactory
 from perceptilabs.graph.builder import GraphSpecBuilder
 from perceptilabs.exporter.base import Exporter
 from perceptilabs.testcore.base import TestCore
-from perceptilabs.testcore.strategies.teststrategies import ConfusionMatrix
+from perceptilabs.testcore.strategies.teststrategies import ConfusionMatrix, MetricsTable
 from perceptilabs.issues import IssueHandler
 
 
@@ -83,5 +83,19 @@ def test_confusion_matrix_computation(testcore, data_loader):
     confusion_matrix = ConfusionMatrix().run(model_outputs, compatible_output_layers)
     assert (confusion_matrix['y1'].numpy()==np.array([[0, 0],[1, 0]], dtype=np.int32)).all()                                                        
 
+def test_metrics_table_computation(testcore, data_loader): 
+    model_outputs = {
+        'outputs': [{'y1': np.array([[0.9, 0.1]], dtype=np.float32)},
+                    {'y1': np.array([[0.6, 0.4]], dtype=np.float32)}, 
+                    {'y1': np.array([[0.3, 0.7]], dtype=np.float32)},
+                    {'y1': np.array([[0.52, 0.48]], dtype=np.float32)}], 
+        'labels': [{'y1': tf.constant(np.array([[0., 1.]]), dtype=tf.float32)},
+                   {'y1': tf.constant(np.array([[1., 0.]]), dtype=tf.float32)}, 
+                   {'y1': tf.constant(np.array([[0., 1.]]), dtype=tf.float32)}, 
+                   {'y1': tf.constant(np.array([[1., 0.]]), dtype=tf.float32)}]
+    }
+    compatible_output_layers = ['y1']
+    metrics_table = MetricsTable().run(model_outputs, compatible_output_layers)
+    assert metrics_table == {'y1': {'categorical_accuracy': 0.75, 'top_k_categorical_accuracy': 1.0, 'precision': 0.75, 'recall': 0.75}}
 
 
