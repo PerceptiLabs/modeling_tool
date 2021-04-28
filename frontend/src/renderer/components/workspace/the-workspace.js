@@ -337,6 +337,10 @@ export default {
         if (!this.getShowTutorialTips) {
           this.deactivateCurrentStep();
           return;
+        } else if (newVal === 'tutorial-workspace-layer-data' && process.env.ENABLE_TF2X === 'true') {
+          this.setNextStep({
+            currentStep: 'tutorial-workspace-layer-data'
+          })
         }
       },
       immediate: true
@@ -369,6 +373,7 @@ export default {
       set_chartRequests:          'mod_workspace/SET_chartsRequestsIfNeeded',
       closeStatsTestViews:        'mod_workspace/SET_statisticsAndTestToClosed',
       activateCurrentStep:        'mod_tutorials/activateCurrentStep',
+      setNextStep:                'mod_tutorials/setNextStep',
       deactivateCurrentStep:      'mod_tutorials/deactivateCurrentStep',
       setChecklistItemComplete:   'mod_tutorials/setChecklistItemComplete',
       pushSnapshotToHistory:      'mod_workspace-history/PUSH_newSnapshot',

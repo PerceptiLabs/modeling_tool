@@ -6,13 +6,13 @@
       :style="{ 'border-color': layer.borderColor, 'border-bottom-color': layer.bottomColor }"
       @click.stop="toggleElList(idx)"
       @focusout="handleFocusOut"
+      :data-tutorial-target="'tutorial-workspace-layer-menu'"
       tabindex="0"
     )
 
       .layer-list-header(
         :class="[{'active': showElementsInLayer(layer)}]"
         :data-tutorial-marker="'LayerMenuItem_' + layer.tooltip"
-        :data-tutorial-target="layer.tooltip === 'Data' ? 'tutorial-workspace-layer-menu' : ''"
       )
         i.icon(:class="layer.iconClass")
         .layer-list-header-label {{ layer.tooltip }}
