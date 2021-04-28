@@ -22,7 +22,7 @@
             button.btn.btn--link.header-nav_sublist-btn(type="button"
               v-if="(!('visible' in subItem) || subItem.visible) && subItem.type !== 'separator'"
               :disabled="subItem.enabled === false"
-              @click="subItem.active"
+              @click="(ev) => subItem.active(ev, false)"
             )
               span.header-nav_btn-text {{ subItem.label }}
               span.text-disable.hotkey(
@@ -84,7 +84,7 @@ export default {
       this.navMenu.forEach((item) => {
         item.submenu.forEach((subItem) => {
           if(subItem.accelerator) {
-            this.dataKeymap[subItem.accelerator] = subItem.active
+            this.dataKeymap[subItem.accelerator] = (ev) => subItem.active(ev, true)
           }
         })
       });
@@ -240,6 +240,10 @@ export default {
         this.toPrevStepHistoryMutation();
       }
     },
+    onPaste(ev, triggeredByHotkey) {
+      ev.preventDefault();
+      this.HCPaste(triggeredByHotkey);
+    },
     toNextStepHistory(ev) {
       ev.preventDefault();
       if(!this.isDisabledNextStep) {
@@ -284,7 +288,7 @@ export default {
 
             {label: 'Cut',          accelerator: this.isMac ? 'meta+x' : 'ctrl+x',              role: 'cut',        enabled: this.openApp,        active: this.HCCut },
             {label: 'Copy',         accelerator: this.isMac ? 'meta+c' : 'ctrl+c',              role: 'copy',       enabled: this.openApp,        active: this.HCCopy },
-            {label: 'Paste',        accelerator: this.isMac ? 'meta+v' : 'ctrl+v',              role: 'paste',      enabled: this.openApp,        active: this.HCPaste },
+            {label: 'Paste',        accelerator: this.isMac ? 'meta+v' : 'ctrl+v',              role: 'paste',      enabled: this.openApp,        active: this.onPaste },
 
             {type:  'separator'},
             {label: 'Select all',   accelerator: this.isMac ? 'meta+a' : 'ctrl+a',              role: 'selectAll',  enabled: this.openApp,        active: this.HCSelectAll },

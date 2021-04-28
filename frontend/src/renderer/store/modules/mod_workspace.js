@@ -967,7 +967,7 @@ const mutations = {
   SET_elementName(state, value) {
     currentElement(value.id).layerName = value.setValue
   },
-  add_element(state, {getters, dispatch, event, setChangeToWorkspaceHistory}) {
+  add_element(state, {getters, dispatch, event, setChangeToWorkspaceHistory, triggeredByHotKey}) {
     let duplicatePositionIndent = 60;
     let cursorPosition = getters.GET_positionForCopyElement.cursor;
     let firstCopyPositionElement = getters.GET_positionForCopyElement.elementsPosition[0];
@@ -976,25 +976,23 @@ const mutations = {
       ? state.dragElement
       : createNetElement(event);
 
-    let top = newEl.layerMeta.position.top;
-    let left = newEl.layerMeta.position.left;
     let elementList = getters.GET_currentNetworkElementList;
 
-    newEl.layerMeta.position.top = event.offsetY;
-    newEl.layerMeta.position.left = event.offsetX;
-    let depth = checkPosition(newEl, elementList);
-
-    if(isCursorInsideWorkspace && firstCopyPositionElement) {
+    if (triggeredByHotKey && isCursorInsideWorkspace && firstCopyPositionElement) {
       // for copy/pasted components
-      newEl.layerMeta.position.top =  cursorPosition.y + (newEl.layerMeta.position.top /2) - firstCopyPositionElement.top;
-      newEl.layerMeta.position.left =  cursorPosition.x + (newEl.layerMeta.position.left / 2) - firstCopyPositionElement.left;
+      newEl.layerMeta.position.top =  cursorPosition.y + event.offsetY - firstCopyPositionElement.top;
+      newEl.layerMeta.position.left =  cursorPosition.x + event.offsetX - firstCopyPositionElement.left;
+    } else {
+      // for toolbar
+      newEl.layerMeta.position.top = event.offsetY;
+      newEl.layerMeta.position.left = event.offsetX;
     }
-    else {
-      // for components created from the layers toolbar
+
+    let depth = checkPosition(newEl, elementList);
+    if (depth > 0) {
       newEl.layerMeta.position.top = newEl.layerMeta.position.top + (duplicatePositionIndent * depth);
       newEl.layerMeta.position.left = newEl.layerMeta.position.left + (duplicatePositionIndent * depth);
     }
-    depth = 0;
 
     updateLayerName(newEl, elementList, 1);
     
@@ -2436,8 +2434,8 @@ const actions = {
       dispatch('mod_workspace-history/PUSH_newSnapshot', null, {root: true});
     }    
   },
-  ADD_element({commit, getters, dispatch}, { event, setChangeToWorkspaceHistory = true }) {
-    commit('add_element', {getters, dispatch, event, setChangeToWorkspaceHistory});
+  ADD_element({commit, getters, dispatch}, { event, setChangeToWorkspaceHistory = true, triggeredByHotKey }) {
+    commit('add_element', {getters, dispatch, event, setChangeToWorkspaceHistory, triggeredByHotKey});
 
     dispatch('mod_webstorage/saveNetwork', getters.GET_currentNetwork, {root: true});
     dispatch('mod_workspace-changes/updateUnsavedChanges', {

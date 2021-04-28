@@ -326,12 +326,12 @@ const actions = {
                 copyId: element.layerId,
                 copyContainerElement: true
               },
-              clientHeight: element.layerMeta.position.top * 2,
-              clientWidth: element.layerMeta.position.left * 2,
+              clientHeight: element.layerMeta.position.top,
+              clientWidth: element.layerMeta.position.left,
             },
             layerSettings: element.layerSettings,
-            offsetY: element.layerMeta.position.top * 2,
-            offsetX: element.layerMeta.position.left * 2
+            offsetY: element.layerMeta.position.top,
+            offsetX: element.layerMeta.position.left
           };
           arrBuf.push(newContainerEl)
         }
@@ -345,14 +345,14 @@ const actions = {
               component: el.componentName,
               copyId: el.layerId
             },
-            clientHeight: el.layerMeta.position.top * 2,
-            clientWidth: el.layerMeta.position.left * 2,
+            clientHeight: el.layerMeta.position.top,
+            clientWidth: el.layerMeta.position.left,
           },
           layerSettings: el.layerSettings,
           layerSettingsTabName: el.layerSettingsTabName,
           layerCode: el.layerCode,
-          offsetY: el.layerMeta.position.top * 2,
-          offsetX: el.layerMeta.position.left * 2,
+          offsetY: el.layerMeta.position.top,
+          offsetX: el.layerMeta.position.left,
           isSettingsLocked: el.isSettingsLocked || false,
         };
         arrBuf.push(newEl)
@@ -363,7 +363,7 @@ const actions = {
       dispatch('mod_buffer/SET_buffer', arrBuf, {root: true});
     }
   },
-  EVENT_hotKeyPaste({rootState, rootGetters, dispatch, commit}) {
+  EVENT_hotKeyPaste({rootState, rootGetters, dispatch, commit}, triggeredByHotKey) {
     if(rootState['mod_workspace-code-editor'].isInFocus) {
       return 0;
     }
@@ -380,7 +380,8 @@ const actions = {
     const addElementPromises = buffer.map(b => {
       dispatch('mod_workspace/ADD_element', { 
         event: b,  
-        setChangeToWorkspaceHistory: false 
+        setChangeToWorkspaceHistory: false,
+        triggeredByHotKey
       }, {root: true})
     })
     Promise.all(addElementPromises)

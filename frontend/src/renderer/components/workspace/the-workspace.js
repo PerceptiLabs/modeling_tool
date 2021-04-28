@@ -380,25 +380,30 @@ export default {
       this.popupNewModel(false);
     },
     startCursorListener (event) {
+      const networkFieldRect = document.getElementsByClassName('network-field')[0].getBoundingClientRect();
+      const workspaceRect = document.getElementById('networkWorkspace').getBoundingClientRect();
+
+      const eventX = event.x - networkFieldRect.left;
+      const eventY = event.y - networkFieldRect.top;
       const borderline = 15;
       const { x: oldX, y: oldY } = this.cursorPosition;
-      const newX = event.offsetX - (event.offsetX % 10);
-      const newY = event.offsetY  - (event.offsetY % 10);
+      const newX = eventX - (eventX % 10);
+      const newY = eventY  - (eventY % 10);
       
       if((oldX !== newX) || (oldY !== newY)) {
         this.debouncedCopyCursorPositionFn(newX, newY);
       }
 
-      if(event.offsetX <= borderline ||
-          event.offsetY <= borderline ||
-          event.offsetY >= event.target.clientHeight - borderline ||
-          event.offsetX >= event.target.clientWidth - borderline)
+      if(event.x <= workspaceRect.left + borderline ||
+          event.y <= workspaceRect.top + borderline ||
+          event.y >= workspaceRect.bottom - borderline ||
+          event.x >= workspaceRect.right - borderline)
       {
         if(this.isCursorInsideWorkspace)
-        this.set_cursorInsideWorkspace(false);
+          this.set_cursorInsideWorkspace(false);
       } else {
         if(!this.isCursorInsideWorkspace)
-        this.set_cursorInsideWorkspace(true);
+          this.set_cursorInsideWorkspace(true);
       }
     },
     setResourceView(value) {
