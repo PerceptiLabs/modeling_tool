@@ -779,7 +779,7 @@ export default {
       
       if (openFilePickerReason === "setDataPath") {
         this.filepickerOptions.popupTitle = "Choose data to load";
-        this.filepickerOptions.filePickerType = "multimode";
+        this.filepickerOptions.filePickerType = "file";
         this.filepickerOptions.startupFolder = this.startupDatasetPath;
         this.filepickerOptions.confirmCallback = this.handleDataPathUpdates;
         this.setNextStep({currentStep: "tutorial-data-wizard-load-csv"});

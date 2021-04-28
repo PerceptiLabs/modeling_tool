@@ -41,7 +41,7 @@
             img(src="/static/img/file-picker/folder.svg" class="svg-icon")
             span {{ directory }}
 
-          template(v-if="['file', 'multimode'].includes(filePickerType)")
+          template(v-if="['file', 'both', 'multimode'].includes(filePickerType)")
             .list-item(
               :class="{selected:isSelected(fileName)}"
               @dblclick="onFileDoubleClick(fileName)"
@@ -216,7 +216,7 @@ export default {
       this.scrollListToTop();
     },
     onFileDoubleClick(fileName) {
-      if (!['file', 'multimode'].includes(this.filePickerType)) { return; }
+      if (!['file', 'both', 'multimode'].includes(this.filePickerType)) { return; }
       this.selectedFiles = [fileName];
       this.onConfirm();
     },
@@ -225,7 +225,7 @@ export default {
       this.scrollListToTop();
     },
     toggleSelectedFile(fileName, event) {
-      if (!['file', 'multimode'].includes(this.filePickerType)) { return; }
+      if (!['file', 'both', 'multimode'].includes(this.filePickerType)) { return; }
 
       if (event.ctrlKey || event.metaKey) {
         if (this.selectedFiles.includes(fileName)) {
@@ -240,7 +240,7 @@ export default {
 
     },
     toggleSelectedDirectory(dirName) {
-      if (this.filePickerType == 'folder') {
+      if (this.filePickerType == 'folder' || this.filePickerType == 'both') {
         // ensuring that only one directory can be chosen
         this.selectedDirectories = [];
         this.selectedDirectories.push(dirName);
