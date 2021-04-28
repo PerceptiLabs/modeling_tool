@@ -2,20 +2,21 @@
   .component-wrapper(
     @blur="clearSelectedColumns"
     tabindex="0"
+    :class="{'isAnySelectOpened': isAnySelectOpened}"
     )
     perfect-scrollbar
       table.table-wrapper(v-if="delimitedDataSet")
         thead
           tr(:data-tutorial-target="'tutorial-data-wizard-csv-explanation'")
-            th(@click="clearSelectedColumns")
+            //- th(@click="clearSelectedColumns")
             th.table-column(
-              v-for="numColumn in computedNumberOfColumns"
+              v-for="numColumn in delimitedDataSet[0]"
               @click="addSelectedColumn($event, numColumn - 1)"
               :class="{'is-selected': selectedColumns.includes(numColumn - 1)}"
-              ) Column {{ numColumn }}
+              ) {{ numColumn }}
         tbody
-          tr.table-row(v-for="dataRow in delimitedDataSet")
-            td.no-border(@click="clearSelectedColumns")
+          tr.table-row.default-row(v-for="dataRow in delimitedDataSet.slice(1)")
+            //- td.no-border(@click="clearSelectedColumns")
             td.table-column(
               v-for="numColumn in computedNumberOfColumns"
               @click="addSelectedColumn($event, numColumn - 1)"
@@ -25,11 +26,16 @@
               
               span(v-else) 
 
-          //- Rows for io- and datatypes
+          //- Rows for io- and datatypes @TODO can be extracted as separate table on bottom of top one
+          
           tr.table-row
-            td(@click="clearSelectedColumns")
-              .label I/O:
-            td.table-column.no-padding(
+            td.space-cell(
+              v-for="numColumn in computedNumberOfColumns"
+            ) &nbsp;
+          tr.table-row  
+            //- td(@click="clearSelectedColumns")
+            //-   .label I/O:
+            td.table-column.no-padding.io-cell(
               v-for="numColumn in computedNumberOfColumns"
               :class="{'is-selected': selectedColumns.includes(numColumn - 1)}"
               )
@@ -37,11 +43,12 @@
                 :select-options="ioOptions"
                 :value="formattedDataset.ioTypes[numColumn - 1]"
                 @input="setIOSelection($event, numColumn)"
+                @isOpen="handleSelectIsOpen"
               )
           tr.table-row(:data-tutorial-target="'tutorial-data-wizard-io-explanation'")
-            td(@click="clearSelectedColumns")
-              .label Type:
-            td.table-column.no-padding(
+            //- td(@click="clearSelectedColumns")
+            //-   .label Type:
+            td.table-column.no-padding.io-cell(
               v-for="numColumn in computedNumberOfColumns"
               :class="{'is-selected': selectedColumns.includes(numColumn - 1)}"
               )
@@ -49,6 +56,7 @@
                 :select-options="typeOptions"
                 :value="formattedDataset.dataTypes[numColumn - 1]"
                 @input="setTypeSelection($event, numColumn)"
+                @isOpen="handleSelectIsOpen"
               )
     //- .delimiter-section
     //-   span Delimiters: 
@@ -74,7 +82,8 @@ export default {
         columnNames: [],
         ioTypes: [],
         dataTypes: []
-      }
+      },
+      isAnySelectOpened: false,
     }
   },
   computed: {
@@ -140,6 +149,9 @@ export default {
     },
     clearSelectedColumns() {
       this.selectedColumns = [];
+    },
+    handleSelectIsOpen(isSelectOpened) {
+      this.isAnySelectOpened = isSelectOpened;  
     }
   },
   watch: {
@@ -160,14 +172,18 @@ export default {
 <style lang="scss" scoped>
 
   .component-wrapper {
-    height: 100%;
+    // height: 100%;
     width: 100%;
     box-sizing: border-box;
-
-    & > .ps {
-        height: 100%;
-        width: 100%;
+    &.isAnySelectOpened {
+      .ps {
+        overflow: visible !important;
+      }
     }
+    // & > .ps {
+    //     height: 100%;
+    //     width: 100%;
+    // }
   }
 
   .table-wrapper {
@@ -176,6 +192,37 @@ export default {
     width: 100%;
 
     box-sizing: border-box;
+    thead {
+      .table-column {
+        color: #fff;
+        font-family: Roboto;
+        font-size: 14px;
+        line-height: 16px;
+        text-align: center;
+        font-weight: normal;
+        letter-spacing: 0.02em;
+
+        // background-color: rgba(#363E51, 0.8);
+        filter: brightness(75%);
+        // color: #FFFFFF;
+      }
+    }
+    tbody {
+      .default-row{
+        .table-column {
+          // background-color: #F7F7F7;
+          // color: #505050;
+          text-align: center;
+          font-size: 14px;
+        }
+      }
+    }
+    .io-cell {
+      // background-color: #fff;
+    }
+    .space-cell {
+      height: 20px;
+    }
   }
 
   th.table-column {
@@ -187,7 +234,6 @@ export default {
   }
 
   .table-column {
-    text-align: left;
     padding: 1rem;
     border: 1px solid #4D556A;
     

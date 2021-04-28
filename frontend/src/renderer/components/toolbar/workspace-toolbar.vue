@@ -260,6 +260,11 @@ export default {
           this.handleStatisticState(models);
         }
       },
+    '$store.state.mod_events.eventRunStatistic': {
+      handler() {
+       this.onOffBtn(true);
+      }
+    },
   },
   methods: {
     ...mapMutations({

@@ -141,6 +141,10 @@ export default {
       if(oldVal === null) return;
       this.$emit('input', newVal);
     },
+    isOpenList(newVal, oldVal) {
+      if(oldVal === null) return;
+      this.$emit('isOpen', newVal);
+    }
   },
   methods: {
     clickList() {

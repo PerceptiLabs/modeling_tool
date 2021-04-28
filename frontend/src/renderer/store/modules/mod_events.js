@@ -36,7 +36,8 @@ const state = {
   },
   isEnableCustomHotKey: true,
   isWorkspaceDragEvent: false,
-  isChartFeatureSliderDragEvent: false
+  isChartFeatureSliderDragEvent: false,
+  eventRunStatistic: 0,
 };
 
 const getters = {
@@ -90,7 +91,10 @@ const mutations = {
   },
   set_isChartFeatureSliderDragEvent(state, value) {
     state.isChartFeatureSliderDragEvent = value;
-  }
+  },
+  set_eventRunStatistic(state) {
+    state.eventRunStatistic++;
+  },
 };
 const actions = {
   EVENT_IOGenerateAction(ctx){
@@ -487,6 +491,9 @@ const actions = {
   },
   EVENT_componentEvent_model_resetSettingClick({commit}) {
     commit('set_componentEvent_model_resetSettingClick');
+  },
+  EVENT_set_eventRunStatistic({commit}) {
+    commit("set_eventRunStatistic");
   }
 };
 

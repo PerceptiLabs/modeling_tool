@@ -1,41 +1,41 @@
 <template lang="pug">
   .triple-input
-    span.labels(v-if="withLabels") Training:
-    input.triple-input_input(type="number"
-      :disabled="disableEdit"
-      v-model.number="value1"
-      name="field1"
-      :class="{'bg-error': errors.has('field1') || isNotValidateSum}"
-      v-validate="{required: true, between: [validateMin, validateMax]}"
-      @focus="$emit('handle-focus')"
-      @blur="$emit('handle-blur')"
-    )
-    //-p.text-error(
-      v-show="errors.has('field1')"
-      ) {{ errors.first('field1') }}
-    span.triple-input_separate {{ separateSign || 'X'}}
-    span.labels(v-if="withLabels") Validation:
-    input.triple-input_input(type="number"
-      :disabled="disableEdit"
-      v-model.number="value2"
-      name="field2"
-      :class="{'bg-error': errors.has('field2') || isNotValidateSum}"
-      v-validate="{required: true, between: [validateMin, validateMax]}"
-      @focus="$emit('handle-focus')"
-      @blur="$emit('handle-blur')"
-    )
-    span.triple-input_separate {{ separateSign || 'X' }}
-    span.labels(v-if="withLabels") Test:
-    input.triple-input_input(type="number"
-      :disabled="disableEdit"
-      v-model.number="value3"
-      name="field3"
-      :class="{'bg-error': errors.has('field3') || isNotValidateSum}"
-      v-validate="{required: true, between: [validateMin, validateMax]}"
-      @focus="$emit('handle-focus')"
-      @blur="$emit('handle-blur')"
-    )
-    span.triple-input_separate(v-if="separateSign") {{ separateSign }}
+    span.labels.first(v-if="withLabels") Training:
+    .triple-input-wrapper
+      input.triple-input_input(type="number"
+        :disabled="disableEdit"
+        v-model.number="value1"
+        name="field1"
+        :class="{'bg-error': errors.has('field1') || isNotValidateSum}"
+        v-validate="{required: true, between: [validateMin, validateMax]}"
+        @focus="$emit('handle-focus')"
+        @blur="$emit('handle-blur')"
+      )
+      span.triple-input_separate {{ separateSign || 'X'}}
+    .triple-input-wrapper
+      span.labels(v-if="withLabels") Validation:
+      input.triple-input_input(type="number"
+        :disabled="disableEdit"
+        v-model.number="value2"
+        name="field2"
+        :class="{'bg-error': errors.has('field2') || isNotValidateSum}"
+        v-validate="{required: true, between: [validateMin, validateMax]}"
+        @focus="$emit('handle-focus')"
+        @blur="$emit('handle-blur')"
+      )
+      span.triple-input_separate {{ separateSign || 'X' }}
+    .triple-input-wrapper
+      span.labels(v-if="withLabels") Test:
+      input.triple-input_input(type="number"
+        :disabled="disableEdit"
+        v-model.number="value3"
+        name="field3"
+        :class="{'bg-error': errors.has('field3') || isNotValidateSum}"
+        v-validate="{required: true, between: [validateMin, validateMax]}"
+        @focus="$emit('handle-focus')"
+        @blur="$emit('handle-blur')"
+      )
+      span.triple-input_separate(v-if="separateSign") {{ separateSign }}
 </template>
 
 <script>

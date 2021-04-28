@@ -128,6 +128,7 @@ $triangleWith: 10px;
   right: calc(100% + 10px);
   margin-left: $margin-tooltip;
   transform: translateY(50%) rotateX(90deg);
+  font-size: 14px;
   &:before {
     top: 50%;
     left: calc(100% - 5px);
