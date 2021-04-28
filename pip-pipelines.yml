@@ -118,7 +118,8 @@ jobs:
           #     distutils: /opt/hostedtoolcache/Python/3.9.4/x64/include/python3.9/UNKNOWN
           #     sysconfig: /opt/hostedtoolcache/Python/3.9.4/x64/include/python3.9
           pip install --upgrade pip 2>/dev/null
-          pip install twine
+          # TODO: remove 2>/dev/null from the next line when issues with new pip are resolved.
+          pip install twine 2>/dev/null
           python -m twine upload --non-interactive -u __token__ --repository ${PYPI_REPO} *
         env:
           TWINE_PASSWORD: $(TWINE_PASSWORD_SECRET)
