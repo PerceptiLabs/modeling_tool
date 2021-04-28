@@ -16,7 +16,7 @@ class {{layer_spec.sanitized_name}}Keras(tf.keras.layers.Layer, PerceptiLabsVisu
         input_ = inputs['input']
         
         flat_input = self.flatten(input_)
-        linear_output = tf.matmul(flat_input, self.kernel) + self.bias
+        linear_output = self.dense(flat_input)
         
         {% call indented_if(layer_spec.batch_norm) %}
             {{ activation_function(layer_spec.activation, input_var='linear_output', assigned_var='preview') | indent(8) }}            	
@@ -31,6 +31,10 @@ class {{layer_spec.sanitized_name}}Keras(tf.keras.layers.Layer, PerceptiLabsVisu
             output = self.dropout(output, training=training)
             preview = self.dropout(preview, training=training)	    
 	{% endcall %}	
+
+        self.kernel = self.dense.kernel
+        self.bias = self.dense.bias
+
         self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
 
         {{ build_output_dict(
@@ -46,27 +50,22 @@ class {{layer_spec.sanitized_name}}Keras(tf.keras.layers.Layer, PerceptiLabsVisu
         Args:
             input_shape: A dictionary with layer id and its tensor shape        
         """
-        flat_input_dim = int(np.product(input_shape['input'][1:])) # Excluding batch size
         self.flatten = tf.keras.layers.Flatten()
+        self.dense = tf.keras.layers.Dense(
+            units={{layer_spec.n_neurons}},
+            use_bias=True,
+            kernel_initializer='glorot_uniform',
+            bias_initializer='zeros', 
+            kernel_regularizer=None,
+            bias_regularizer=None,
+        )
         {% call indented_if(layer_spec.batch_norm) %}	
             self.batch_norm = tf.keras.layers.BatchNormalization()
 	{% endcall %}
 	{% call indented_if(layer_spec.dropout) %}
             self.dropout = tf.keras.layers.Dropout(rate={{layer_spec.dropout_rate}})
 	{% endcall %}
-        self.kernel = self.add_weight(
-            shape=(flat_input_dim, self._n_neurons),
-            initializer=tf.keras.initializers.TruncatedNormal(stddev=0.1),
-            dtype=tf.float32,
-            name='kernel'
-        )
-        self.bias = self.add_weight(
-            shape=(self._n_neurons,),
-            initializer=tf.keras.initializers.Constant(value=0.0),
-            dtype=tf.float32,
-            name='bias'
-        )
-
+        
     def get_config(self) -> Dict[str, Picklable]:
         """Any variables belonging to this layer that should be rendered in the frontend.
         
