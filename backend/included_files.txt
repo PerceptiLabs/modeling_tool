@@ -118,6 +118,7 @@ perceptilabs/layers/processreshape/tf2x_template.j2
 perceptilabs/layers/processrescale/spec.py
 perceptilabs/layers/processrescale/imports.json
 perceptilabs/layers/processrescale/tf2x_imports.json
+perceptilabs/layers/processrescale/tf2x_template.j2
 
 # perceptilabs/layers/processonehot
 perceptilabs/layers/processonehot/spec.py
