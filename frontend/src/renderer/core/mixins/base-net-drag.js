@@ -80,6 +80,7 @@ const baseNetDrag = {
       }
     },
     bodyDown(ev) {
+      console.log('body down')
       if(this.getIsChartFeatureSliderDragEvent) {
         return;
       }
@@ -89,6 +90,10 @@ const baseNetDrag = {
           this.setElementSelectedAction({id: this.dataEl.layerId, setValue: true, resetOther: false})
         } else {
           this.setElementSelectedAction({id: this.dataEl.layerId, setValue: true, resetOther: true})
+        }
+      } else {
+        if (ev.shiftKey || ev.metaKey || ev.ctrlKey) {
+          this.setElementSelectedAction({id: this.dataEl.layerId, setValue: false, resetOther: false})
         }
       }
      
