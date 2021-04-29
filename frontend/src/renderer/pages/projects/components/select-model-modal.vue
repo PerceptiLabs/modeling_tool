@@ -329,42 +329,43 @@
     :startupFolder="filepickerOptions.startupFolder",
     :confirmCallback="filepickerOptions.confirmCallback",
     :cancelCallback="closePopup"
+    :options="filepickerOptions.others"
   )
 </template>
 <script>
-import imageClassification from "@/core/basic-template/image-classification.js";
-import reinforcementLearning from "@/core/basic-template/reinforcement-learning.js";
-import linearRegression from "@/core/basic-template/linear-regression.js";
-import objectDetection from "@/core/basic-template/object-detection.js";
-import ganTemplate from "@/core/basic-template/gan-template.js";
-import FilePickerPopup from "@/components/global-popups/file-picker-popup.vue";
-import CsvTable from "@/components/different/csv-table.vue";
-import TripleInput from "@/components/base/triple-input";
-import InfoTooltip from '@/components/different/info-tooltip.vue';
-import { defaultTrainingSettings } from "@/core/constants";
-import { mapActions, mapState, mapGetters } from "vuex";
-import mixinFocus     from '@/core/mixins/net-element-settings-input-focus.js';
+import imageClassification                    from "@/core/basic-template/image-classification.js";
+import reinforcementLearning                  from "@/core/basic-template/reinforcement-learning.js";
+import linearRegression                       from "@/core/basic-template/linear-regression.js";
+import objectDetection                        from "@/core/basic-template/object-detection.js";
+import ganTemplate                            from "@/core/basic-template/gan-template.js";
+import FilePickerPopup                        from "@/components/global-popups/file-picker-popup.vue";
+import CsvTable                               from "@/components/different/csv-table.vue";
+import TripleInput                            from "@/components/base/triple-input";
+import InfoTooltip                            from "@/components/different/info-tooltip.vue";
+import { defaultTrainingSettings }            from "@/core/constants";
+import { mapActions, mapState, mapGetters }   from "vuex";
+import mixinFocus                             from "@/core/mixins/net-element-settings-input-focus.js";
 import {
   convertModelRecommendationToVisNodeEdgeList,
-  createVisNetwork,
-} from "@/core/helpers/layer-positioning-helper";
-import { buildLayers } from "@/core/helpers/layer-creation-helper";
+  createVisNetwork
+}                                             from "@/core/helpers/layer-positioning-helper";
+import { buildLayers }                        from "@/core/helpers/layer-creation-helper";
 
-import {debounce, deepCopy, isEnvDataWizardEnabled} from "@/core/helpers";
-import cloneDeep from "lodash.clonedeep";
+import { debounce, deepCopy, isEnvDataWizardEnabled }   from "@/core/helpers";
+import cloneDeep                                        from "lodash.clonedeep";
 
-import { doesDirExist as fileserver_doesDirExist } from "@/core/apiFileserver";
-import { getFolderContent as fileserver_getFolderContent } from "@/core/apiFileserver";
-import { getResolvedDir as fileserver_getResolvedDir } from "@/core/apiFileserver";
-import { getRootFolder as fileserver_getRootFolder } from "@/core/apiFileserver";
-import { getFileContent as fileserver_getFileContent } from "@/core/apiFileserver";
+import { doesDirExist as fileserver_doesDirExist }              from "@/core/apiFileserver";
+import { getFolderContent as fileserver_getFolderContent }      from "@/core/apiFileserver";
+import { getResolvedDir as fileserver_getResolvedDir }          from "@/core/apiFileserver";
+import { getRootFolder as fileserver_getRootFolder }            from "@/core/apiFileserver";
+import { getFileContent as fileserver_getFileContent }          from "@/core/apiFileserver";
 
 export default {
   name: "SelectModelModal",
   components: { FilePickerPopup, CsvTable, TripleInput, InfoTooltip },
   mixins: [mixinFocus],
-  
-  data: function () {
+
+  data: function() {
     return {
       basicTemplates: [
         {
@@ -373,36 +374,36 @@ export default {
           template: imageClassification,
           description:
             "This is a simple image classification template, perfect for datasets such as MNIST. The standard dataset included with this template is an MNIST dataset where the input is an array of 784 grayscale pixel values and 10 unique label values (integers 0-9). The model consists of a reshaping component, a convolutional layer, and a fully connected output layer with 10 neurons. Because of the reshaping component it requries the input data to be 784 or a form thereof (28x28, for example). The labels must be integers ranging from 0 to 9 to be compatible with the one hot encoding that is applied to the labels.",
-          screenshoot: "template_image_classification.png",
+          screenshoot: "template_image_classification.png"
         },
         {
           title: "Linear Regression",
           imgPath: "./static/img/project-page/linear-regression.png",
           template: linearRegression,
           description: `This is a template for linear regression, where it tries to create a line of best fit for the datapoints you load. The standard dataset is a one-dimensional input value and one-dimensional labels. The input data can be multidimensional, but our visualizations will display the data in one dimension. The labels data must be one-dimensional as they represent the value of the input data. The model is built as a single fully connected layer with one neuron as output.`,
-          screenshoot: "template_linear_regression.png",
+          screenshoot: "template_linear_regression.png"
         },
         {
           title: "DQN",
           imgPath: "./static/img/project-page/reinforcement-learning.png",
           template: reinforcementLearning,
           description: `This is a template for Reinforcement Learning consisting of one grayscale component, one convolutional layer and one fully connected layer as output. This template uses Q learning on Atari Gym games, where it is set up to play breakout. To play another game, you will change the neurons in the fully connected layer to match the number of possible actions in the actionspace, which you can see in the Environment component.`,
-          screenshoot: "template_dqn.png",
+          screenshoot: "template_dqn.png"
         },
         {
           title: "YOLO V1",
           imgPath: "./static/img/project-page/object-detection.png",
           template: objectDetection,
           description: `This is a template of the Object Detection model YOLO. It trains on a custom-built dataset containing different shapes as standard. Since it consists of only convolutional layers, any input data will work to train on, as long as the label data matches the input data.`,
-          screenshoot: "template_yolo.png",
+          screenshoot: "template_yolo.png"
         },
         {
           title: "GAN",
           imgPath: "./static/img/project-page/GAN.png",
           template: ganTemplate,
           description: `This is a template for a Generative Adversarial Network (GAN) where it trains on the MNIST data as a standard. The model consists of a generative network and a discriminative network, as well as a switch layer which switches between the generated image and real image.`,
-          screenshoot: "template_gan.png",
-        },
+          screenshoot: "template_gan.png"
+        }
       ],
       chosenTemplate: null,
       modelName: "",
@@ -415,13 +416,14 @@ export default {
       datasetPath: null,
       datasetSettings: {
         randomizedPartitions: true,
-        partitions: [70, 20, 10],
+        partitions: [70, 20, 10]
       },
       filepickerOptions: {
         popupTitle: "",
         filePickerType: "",
         startupFolder: "",
         confirmCallback: "",
+        others: {}
       },
       debouncedCreateModelFunction: null,
       onStep: 1,
@@ -430,36 +432,36 @@ export default {
   },
   computed: {
     ...mapState({
-      currentProjectId: (state) => state.mod_project.currentProject,
-      workspaces: (state) => state.mod_workspace.workspaceContent,
-      startupDatasetPath:    state => state.mod_datasetSettings.startupFolder,
+      currentProjectId: state => state.mod_project.currentProject,
+      workspaces: state => state.mod_workspace.workspaceContent,
+      startupDatasetPath: state => state.mod_datasetSettings.startupFolder
     }),
     ...mapGetters({
       currentProject: "mod_project/GET_project",
       projectPath: "mod_project/GET_projectPath",
       currentNetworkId: "mod_workspace/GET_currentNetworkId",
       defaultTemplate: "mod_workspace/GET_defaultNetworkTemplate",
-      userEmail: 'mod_user/GET_userEmail',
+      userEmail: "mod_user/GET_userEmail"
     }),
     isTF2XEnabled() {
       return process.env.ENABLE_TF2X === "true";
     },
     isDataWizardEnabled() {
       return isEnvDataWizardEnabled();
-    },
+    }
   },
   mounted() {
     this.modelPath = this.projectPath;
     document.addEventListener("keyup", this.handleKeyup);
 
-    this.debouncedCreateModelFunction = debounce((_) => {
+    this.debouncedCreateModelFunction = debounce(_ => {
       this.createModel();
     }, 1000);
 
     if (this.isTF2XEnabled && this.isDataWizardEnabled) {
-      this.setCurrentView('data-wizard-onboarding');
+      this.setCurrentView("data-wizard-onboarding");
     } else {
-      this.setCurrentView('tutorial-create-model-view')
+      this.setCurrentView("tutorial-create-model-view");
     }
   },
   beforeDestroy() {
@@ -477,7 +479,7 @@ export default {
       setNextStep: "mod_tutorials/setNextStep",
       activateNotification: "mod_tutorials/activateNotification",
       setChecklistItemComplete: "mod_tutorials/setChecklistItemComplete",
-      getModelRecommendation: "mod_api/API_getModelRecommendation",
+      getModelRecommendation: "mod_api/API_getModelRecommendation"
     }),
     closeModal(triggerViewChange = false) {
       this.$store.dispatch("globalView/SET_newModelPopup", false);
@@ -518,66 +520,69 @@ export default {
       }
 
       const highestSuffix = dirContents.dirs
-        .filter((d) => d.startsWith(namePrefix))
-        .map((d) => d.replace(`${namePrefix} `, ""))
-        .map((d) => parseInt(d))
-        .filter((suffixNum) => !isNaN(suffixNum))
+        .filter(d => d.startsWith(namePrefix))
+        .map(d => d.replace(`${namePrefix} `, ""))
+        .map(d => parseInt(d))
+        .filter(suffixNum => !isNaN(suffixNum))
         .reduce((max, curr) => Math.max(max, curr), 0);
 
-            this.modelName = `${namePrefix} ${highestSuffix + 1}`
-        },
-        isAllIOTypesFilled() {
-            if (this.isTF2XEnabled && this.isDataWizardEnabled) {
-                const {csvData} = this;
-                return csvData && (csvData.ioTypes.filter(v => v !== undefined).length === csvData.ioTypes.length)
-            } else {
-                return false;
-            }
-        },
-        hasInputAndOutput() {
-            if (this.isTF2XEnabled && this.isDataWizardEnabled) {
-                const {csvData} = this;
-                return csvData 
-                    && csvData.ioTypes.filter(v => v === 'Input').length > 0 
-                    && csvData.ioTypes.filter(v => v === 'Output').length > 0
-            } else {
-                return false;
-            }
-        },
-        isDisableCreateAction() {
+      this.modelName = `${namePrefix} ${highestSuffix + 1}`;
+    },
+    isAllIOTypesFilled() {
+      if (this.isTF2XEnabled && this.isDataWizardEnabled) {
+        const { csvData } = this;
+        return (
+          csvData &&
+          csvData.ioTypes.filter(v => v !== undefined).length ===
+            csvData.ioTypes.length
+        );
+      } else {
+        return false;
+      }
+    },
+    hasInputAndOutput() {
+      if (this.isTF2XEnabled && this.isDataWizardEnabled) {
+        const { csvData } = this;
+        return (
+          csvData &&
+          csvData.ioTypes.filter(v => v === "Input").length > 0 &&
+          csvData.ioTypes.filter(v => v === "Output").length > 0
+        );
+      } else {
+        return false;
+      }
+    },
+    isDisableCreateAction() {
+      if (this.isTF2XEnabled) {
+        const { modelName, csvData } = this;
+        let allColumnsAreSelected = true;
+        let hasInputAndOutput = true;
 
-            if (this.isTF2XEnabled) {
-                const { modelName,  csvData} = this;
-                let allColumnsAreSelected = true;
-                let hasInputAndOutput = true;
-                
-                if(this.isDataWizardEnabled) {
-                   allColumnsAreSelected = this.isAllIOTypesFilled();  
-                   hasInputAndOutput = this.hasInputAndOutput();
-                }
+        if (this.isDataWizardEnabled) {
+          allColumnsAreSelected = this.isAllIOTypesFilled();
+          hasInputAndOutput = this.hasInputAndOutput();
+        }
 
-
-                
-                return (!allColumnsAreSelected || !modelName || !hasInputAndOutput);
-            } else {
-                const { chosenTemplate, modelName, basicTemplates } = this;
-                return ((chosenTemplate === null) || !modelName);
-            }
-        },
-        async createModel() {
-            
-            if (this.isTF2XEnabled && this.isDataWizardEnabled) {
-                await this.createModelTF2X();
-            } else {
-                await this.createModelTF1X();
-            }
-        },
-        async createModelTF2X(runStatistics = false) {
-
-            if (!this.csvData) { return; }
+        return !allColumnsAreSelected || !modelName || !hasInputAndOutput;
+      } else {
+        const { chosenTemplate, modelName, basicTemplates } = this;
+        return chosenTemplate === null || !modelName;
+      }
+    },
+    async createModel() {
+      if (this.isTF2XEnabled && this.isDataWizardEnabled) {
+        await this.createModelTF2X();
+      } else {
+        await this.createModelTF1X();
+      }
+    },
+    async createModelTF2X(runStatistics = false) {
+      if (!this.csvData) {
+        return;
+      }
 
       const { modelName, modelPath } = this;
-      
+
       // Check validity
       if (!(await this.isValidModelName(modelName))) {
         // TODO: showErrorPopup closes all popups, need to change this logic for UX
@@ -595,48 +600,56 @@ export default {
         return;
       }
 
-            // Creating the project/network entry in rygg
-            const apiMeta = await this.createProjectModel({
-              name: modelName,
-              project: this.currentProjectId,
-              location: `${this.modelPath}/${modelName}`,
-            });
+      // Creating the project/network entry in rygg
+      const apiMeta = await this.createProjectModel({
+        name: modelName,
+        project: this.currentProjectId,
+        location: `${this.modelPath}/${modelName}`
+      });
 
-            await this.$store.dispatch('mod_datasetSettings/setCurrentDataset', this.datasetPath);
-            const datasetSettings = {
-                randomizedPartitions: this.datasetSettings.randomizedPartitions,
-                partitions: this.datasetSettings.partitions,
-                featureSpecs: this.formatCSVTypesIntoKernelFormat(),
-             };
-            
-            await this.$store.dispatch('mod_datasetSettings/setDatasetSettings', {
-                datasetPath: this.datasetPath, 
-                settings: datasetSettings,
-             });
-            const fullDatasetSettings = this.$store.getters['mod_datasetSettings/getCurrentDatasetSettings']();
-            const payload = {
-                datasetSettings: fullDatasetSettings,
-                user_email: this.userEmail,
-                model_id: apiMeta.model_id,
-            }
-	    
-            
-            const modelRecommendation = await this.getModelRecommendation(payload)
-              .then((res) => {
-                if(typeof(res) === "string" && res.indexOf('Internal error') !== -1) {
-                  this.$store.dispatch('mod_project/deleteModel', {model_id: apiMeta.model_id});
-                }
-                return res;
-              }); 
-            
-            const inputData = convertModelRecommendationToVisNodeEdgeList(modelRecommendation);
-            const network = createVisNetwork(inputData);
+      await this.$store.dispatch(
+        "mod_datasetSettings/setCurrentDataset",
+        this.datasetPath
+      );
+      const datasetSettings = {
+        randomizedPartitions: this.datasetSettings.randomizedPartitions,
+        partitions: this.datasetSettings.partitions,
+        featureSpecs: this.formatCSVTypesIntoKernelFormat()
+      };
+
+      await this.$store.dispatch("mod_datasetSettings/setDatasetSettings", {
+        datasetPath: this.datasetPath,
+        settings: datasetSettings
+      });
+      const fullDatasetSettings = this.$store.getters[
+        "mod_datasetSettings/getCurrentDatasetSettings"
+      ]();
+      const payload = {
+        datasetSettings: fullDatasetSettings,
+        user_email: this.userEmail,
+        model_id: apiMeta.model_id
+      };
+
+      const modelRecommendation = await this.getModelRecommendation(
+        payload
+      ).then(res => {
+        if (typeof res === "string" && res.indexOf("Internal error") !== -1) {
+          this.$store.dispatch("mod_project/deleteModel", {
+            model_id: apiMeta.model_id
+          });
+        }
+        return res;
+      });
+
+      const inputData = convertModelRecommendationToVisNodeEdgeList(
+        modelRecommendation
+      );
+      const network = createVisNetwork(inputData);
 
       // Wait till the 'stabilized' event has fired
-      await new Promise((resolve) =>
-        network.on("stabilized", async (data) => resolve())
+      await new Promise(resolve =>
+        network.on("stabilized", async data => resolve())
       );
-
 
       // Creating the networkElementList for the network
       var ids = inputData.nodes.getIds();
@@ -651,14 +664,13 @@ export default {
 
       // Adding network to workspace
       newNetwork.networkMeta.trainingSettings = deepCopy(this.settings);
-      await this.addNetwork({ network: newNetwork, apiMeta })
-        .then(() => {
-          if(runStatistics) {
-            setTimeout(() => {
-              this.$store.dispatch('mod_events/EVENT_set_eventRunStatistic');
-            }, 0);
-          }
-        });
+      await this.addNetwork({ network: newNetwork, apiMeta }).then(() => {
+        if (runStatistics) {
+          setTimeout(() => {
+            this.$store.dispatch("mod_events/EVENT_set_eventRunStatistic");
+          }, 0);
+        }
+      });
 
       // Swapping view so that the newly created model is shown
       // TODO: break apart this views
@@ -677,7 +689,6 @@ export default {
 
       this.$nextTick(() => {
         this.setCurrentView("tutorial-workspace-view");
-        
       });
       this.closeModal(false);
     },
@@ -687,12 +698,12 @@ export default {
 
       // TODO: test with isValidModelName
       // check if models name already exists
-      const promiseArray = this.currentProject.models.map((x) =>
+      const promiseArray = this.currentProject.models.map(x =>
         this.getModelMeta(x)
       );
       const modelMeta = await Promise.all(promiseArray);
       const rootPath = await fileserver_getRootFolder();
-      const modelNames = modelMeta.map((x) => x.name);
+      const modelNames = modelMeta.map(x => x.name);
       if (modelNames.indexOf(modelName) !== -1) {
         this.showErrorPopup(`The model name "${modelName}" already exists.`);
         this.setCurrentView("tutorial-model-hub-view");
@@ -717,9 +728,9 @@ export default {
       this.createProjectModel({
         name: modelName,
         project: this.currentProjectId,
-        location: `${this.modelPath}/${modelName}`,
+        location: `${this.modelPath}/${modelName}`
       })
-        .then((apiMeta) => {
+        .then(apiMeta => {
           newModelId = apiMeta.model_id;
 
           if (chosenTemplate === -1) {
@@ -748,10 +759,10 @@ export default {
             return this.addNetwork({ network: template, apiMeta });
           }
         })
-        .then((_) => {
+        .then(_ => {
           this.getProjects();
           this.$store.dispatch("mod_tracker/EVENT_modelCreation", modelType, {
-            root: true,
+            root: true
           });
 
           this.closeStatsTestViews({ networkId: this.currentNetworkId });
@@ -776,13 +787,13 @@ export default {
         });
     },
     openFilePicker(openFilePickerReason) {
-      
       if (openFilePickerReason === "setDataPath") {
         this.filepickerOptions.popupTitle = "Choose data to load";
         this.filepickerOptions.filePickerType = "multimode";
         this.filepickerOptions.startupFolder = this.startupDatasetPath;
         this.filepickerOptions.confirmCallback = this.handleDataPathUpdates;
-        this.setNextStep({currentStep: "tutorial-data-wizard-load-csv"});
+        this.filepickerOptions.others.showToTutotialDataFolder = true;
+        this.setNextStep({ currentStep: "tutorial-data-wizard-load-csv" });
       } else {
         this.filepickerOptions.popupTitle = "Choose Model path";
         this.filepickerOptions.filePickerType = "folder";
@@ -797,13 +808,14 @@ export default {
       this.showFilePickerPopup = false;
     },
     validDirPath(url) {
-      if (url.length > 3 && url.slice(-1) === '/' || url.slice(-1) === '\\') {
+      if ((url.length > 3 && url.slice(-1) === "/") || url.slice(-1) === "\\") {
         return url.slice(0, -1);
       }
       return url;
     },
     updateModelPath(filepath) {
-      this.modelPath =  filepath && filepath[0] ? this.validDirPath(filepath[0]) : '';
+      this.modelPath =
+        filepath && filepath[0] ? this.validDirPath(filepath[0]) : "";
       this.showFilePickerPopup = false;
     },
     convertToAbsolutePath(elementList, rootPath) {
@@ -817,7 +829,7 @@ export default {
         ) {
           if (elementList[el].layerSettings.accessProperties.Sources.length) {
             elementList[el].layerSettings.accessProperties.Sources.forEach(
-              (item) => {
+              item => {
                 item.path =
                   rootPath + suffix + "tutorial_data" + suffix + item.path;
               }
@@ -856,15 +868,20 @@ export default {
         return;
       }
 
-      this.$store.dispatch('mod_datasetSettings/setStartupFolder', dataPath[0].path.match(/(.*)[\/\\]/)[1]||'');
+      this.$store.dispatch(
+        "mod_datasetSettings/setStartupFolder",
+        dataPath[0].path.match(/(.*)[\/\\]/)[1] || ""
+      );
 
-      const fileContents = await fileserver_getFileContent(`${dataPath[0].path}`);
+      const fileContents = await fileserver_getFileContent(
+        `${dataPath[0].path}`
+      );
 
       if (fileContents && fileContents.file_contents) {
-          this.dataset = fileContents.file_contents;
-          this.datasetPath = dataPath[0].path;
-          this.toNextStep();
-          this.autoPopulateName();
+        this.dataset = fileContents.file_contents;
+        this.datasetPath = dataPath[0].path;
+        this.toNextStep();
+        this.autoPopulateName();
       }
 
       this.showFilePickerPopup = false;
@@ -890,11 +907,11 @@ export default {
         return;
       }
 
-      const promiseArray = this.currentProject.models.map((x) =>
+      const promiseArray = this.currentProject.models.map(x =>
         this.getModelMeta(x)
       );
       const modelMeta = await Promise.all(promiseArray);
-      const modelNames = modelMeta.map((x) => x.name);
+      const modelNames = modelMeta.map(x => x.name);
 
       // Making sure name is not already in the list
       return modelNames.indexOf(modelName) === -1;
@@ -906,19 +923,18 @@ export default {
 
       return !dirAlreadyExist;
     },
-    toNextStep(){
+    toNextStep() {
       this.onStep += 1;
     },
-    toPrevStep(){
+    toPrevStep() {
       this.onStep -= 1;
     },
     goToTrainingSettings() {
-      if(!this.isDisableCreateAction()) {
-        this.onStep += 1;  
+      if (!this.isDisableCreateAction()) {
+        this.onStep += 1;
       }
-
     }
-  },
+  }
 };
 </script>
 <style lang="scss" scoped>
@@ -1091,13 +1107,13 @@ span.error {
   justify-content: center;
   align-items: center;
 
-//   & > .load-contents-group > button {
-//     height: 100%;
-//     line-height: 100%;
+  //   & > .load-contents-group > button {
+  //     height: 100%;
+  //     line-height: 100%;
 
-//     text-align: center;
-//     padding: 1.5rem;
-//   }
+  //     text-align: center;
+  //     padding: 1.5rem;
+  //   }
 }
 .main-actions {
   display: flex;
@@ -1278,12 +1294,12 @@ span.error {
   display: flex;
   justify-content: center;
   align-content: center;
-  
+
   .load-dataset {
     height: 100%;
-     line-height: 100%;
-     text-align: center;
-     padding: 1.5rem;
+    line-height: 100%;
+    text-align: center;
+    padding: 1.5rem;
   }
 }
 .footer-actions {
@@ -1296,7 +1312,6 @@ span.error {
   button {
     max-width: 140px;
   }
-  
 }
 .default-text {
   font-family: Roboto;
@@ -1315,13 +1330,13 @@ span.error {
   display: flex;
   align-items: center;
   img {
-     margin-right: 20px;
+    margin-right: 20px;
   }
 }
 .next-to-settings-btn {
   border: none;
   background: transparent;
-  color: #6185EE;
+  color: #6185ee;
   font-size: 16px;
   white-space: nowrap;
   display: flex;
@@ -1334,7 +1349,9 @@ span.error {
     color: rgba(#ccc, 0.7);
     svg {
       margin-left: 20px;
-      path { fill: rgba(#ccc, 0.7); }
+      path {
+        fill: rgba(#ccc, 0.7);
+      }
     }
   }
 }
@@ -1344,7 +1361,7 @@ span.error {
   flex-direction: column;
   height: 100%;
 }
-.setting-form-wrapper{
+.setting-form-wrapper {
   width: 300px;
   .form-label {
     text-align: right;
@@ -1366,7 +1383,7 @@ span.error {
   margin-right: 15px;
 }
 .customize-btn {
-  background: #3F4C70;
+  background: #3f4c70;
 }
 .w-100 {
   width: 100%;
@@ -1380,6 +1397,5 @@ span.error {
   right: -90px;
   height: 32px;
   //width: 50px;
-  
 }
 </style>
