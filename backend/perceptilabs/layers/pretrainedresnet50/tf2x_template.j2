@@ -8,8 +8,12 @@ class {{layer_spec.sanitized_name}}Keras(tf.keras.layers.Layer, PerceptiLabsVisu
         """ Takes a tensor and sends it as input to the pretrained ResNet50 model."""
         {{ check_input_vars(layer_spec, ['input'])|indent(width=8) }}           
         input_ = inputs['input']
-        output = self.resnet50(input_)
-
+        {% call indented_if(not layer_spec.trainable) %}
+            output = self.resnet50(input_, training=False)
+        {% endcall %}
+        {% call indented_if(layer_spec.trainable) %}
+            output = self.resnet50(input_, training=training)
+        {% endcall %}
         {{ build_output_dict(
             'self._outputs',
             {'output': 'output', 'preview': 'output'},
