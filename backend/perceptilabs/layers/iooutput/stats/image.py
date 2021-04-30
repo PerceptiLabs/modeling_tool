@@ -16,8 +16,10 @@ class ImageOutputStats(TrainingStats):
         return average
 
     def _get_arbitrary_sample(self, type_='prediction'):
+        """always return last sample of the batch
+        """
         batch = self._predictions if type_ == 'prediction' else self._targets
-        sample = batch[0]
+        sample = batch[-1]
         return sample
 
     def get_data_objects(self):
