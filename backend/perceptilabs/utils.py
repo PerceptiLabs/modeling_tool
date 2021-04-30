@@ -33,6 +33,11 @@ def get_app_variables():
     return app_variables
 
 
+def is_dev():
+    app_variables = get_app_variables()
+    return app_variables['BuildVariables']['CommitId'] == 'Dev'
+
+
 def is_tf2x():
     """ When enabled, the tool will run TensorFlow 2.x """
     if os.getenv("PL_TF2X"):
