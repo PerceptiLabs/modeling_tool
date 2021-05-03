@@ -20,7 +20,18 @@ def prediction_matrices():
     ]
     yield epochs
 
-        
+    
+def flatten_matrices(prediction_matrices, phase='both'):
+    flattened = []
+    for epoch_matrices in prediction_matrices:
+        for matrix, is_training in epoch_matrices:
+            if (
+                    (is_training and phase in ['both', 'training']) or
+                    (not is_training and phase in ['both', 'validation'])
+            ):
+                flattened.append(matrix)
+    return flattened
+
 
 def compute_accuracy(steps, phase='both'):
     correct, total = 0, 0
@@ -113,3 +124,31 @@ def test_accuracy_over_steps_validation(prediction_matrices):
 
         actual = stats.get_accuracy_over_steps(epoch, phase='validation')
         assert actual == expected
+
+
+def test_accuracy_for_latest_step_both(prediction_matrices):
+    matrix = flatten_matrices(prediction_matrices)[-1]
+    expected = matrix.correct/matrix.total
+
+    stats = AccuracyStats(prediction_matrices)
+    actual = stats.get_accuracy_for_latest_step()
+    assert actual == expected
+
+    
+def test_accuracy_for_latest_step_training(prediction_matrices):
+    matrix = flatten_matrices(prediction_matrices, phase='training')[-1]
+    expected = matrix.correct/matrix.total
+    
+    stats = AccuracyStats(prediction_matrices)
+    actual = stats.get_accuracy_for_latest_step(phase='training')
+    assert actual == expected
+
+    
+def test_accuracy_for_latest_step_validation(prediction_matrices):
+    matrix = flatten_matrices(prediction_matrices, phase='validation')[-1]
+    expected = matrix.correct/matrix.total
+    
+    stats = AccuracyStats(prediction_matrices)
+    actual = stats.get_accuracy_for_latest_step(phase='validation')
+    assert actual == expected
+    

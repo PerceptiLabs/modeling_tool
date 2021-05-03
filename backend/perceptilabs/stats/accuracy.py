@@ -47,10 +47,12 @@ class AccuracyStats:
         matrix, _ = self.prediction_matrices[epoch][step]
         return matrix.correct/matrix.total
 
-    def get_accuracy_for_latest_step(self):
-        """ Accuracy of the latest a step """        
-        return self.get_accuracy_for_step(-1, -1)    
-
+    @return_on_failure(0.0)        
+    def get_accuracy_for_latest_step(self, phase='both'):  
+        """ Accuracy of the latest a step """
+        accuracy_list = self.get_accuracy_over_steps_in_latest_epoch(phase=phase)
+        return accuracy_list[-1]
+    
     @return_on_failure([0.0])    
     def get_accuracy_over_steps(self, epoch, phase='training'):
         """ Accuracy as a series over all steps in an epoch """                

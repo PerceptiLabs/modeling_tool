@@ -68,7 +68,9 @@ class Trainer:
 
         peak_memory_usage = get_memory_usage()
 
-        tracking.send_training_started(self._user_email, self._model_id, self._graph_spec)
+        if self._user_email:
+            tracking.send_training_started(self._user_email, self._model_id, self._graph_spec)
+            
         logger.info("Entering training loop")
         
         self._num_epochs_completed = 0
@@ -124,15 +126,14 @@ class Trainer:
         self._set_status('Finished')
         logger.info(f"Training completed. Total duration: {round(self._training_time, 3)} s")
 
-        if self._num_epochs_completed == self.num_epochs:        
+        if self._user_email and self._num_epochs_completed == self.num_epochs:
             tracking.send_training_completed(
                 self._user_email,
                 self._model_id,
                 self._graph_spec,
                 self._training_time,
-                0.0,  # TODO: Implement loss in story 1843
-                0.0,  # TODO: Implement loss in story 1843           
-                peak_memory_usage
+                peak_memory_usage,
+                self.get_output_stats_summaries()
             )
 
     def _auto_export_model(self):
@@ -148,12 +149,14 @@ class Trainer:
             f"Num training (validation) batches completed : {self.num_training_batches_completed_this_epoch} ({self.num_validation_batches_completed_this_epoch})"                
         )
 
-    def _loop_over_dataset(self, model, losses, dataset, set_num_batches_completed_this_epoch, is_training=True, optimizer=None):
+    def _loop_over_dataset(self, model, loss_functions, dataset, set_num_batches_completed_this_epoch, is_training=True, optimizer=None):
         """ Loop over all batches of data once """
         
         for steps_completed, (inputs_batch, targets_batch) in enumerate(dataset):
-            predictions_batch, trainables_by_layer, gradients_by_layer, final_and_intermediate_outputs_by_layer, total_loss = self._work_on_batch(
-                model, losses, inputs_batch, targets_batch, is_training, optimizer)
+            predictions_batch, trainables_by_layer, gradients_by_layer, final_and_intermediate_outputs_by_layer, \
+                total_loss, individual_losses = self._work_on_batch(
+                    model, loss_functions, inputs_batch, targets_batch, is_training, optimizer
+                )
             
             if self._headless:
                 self._reset_tracked_values()
@@ -166,6 +169,7 @@ class Trainer:
                     predictions_batch,
                     targets_batch,
                     total_loss,
+                    individual_losses,
                     is_training,
                     steps_completed
                 )
@@ -176,12 +180,12 @@ class Trainer:
             yield
 
     @tf.function
-    def _work_on_batch(self, model, losses, inputs_batch, targets_batch, is_training, optimizer):
+    def _work_on_batch(self, model, loss_functions, inputs_batch, targets_batch, is_training, optimizer):
         """ Train or validate on a batch of data """
 
         with tf.GradientTape() as tape:
             predictions_batch, final_and_intermediate_outputs = model(inputs_batch, training=is_training)
-            total_loss = self._compute_total_loss(predictions_batch, targets_batch, losses)
+            total_loss, individual_losses = self._compute_total_loss(predictions_batch, targets_batch, loss_functions)
 
         trainables_by_layer = self._collect_trainables_by_layer(model)
         gradients_by_layer, grads_and_vars = self._compute_gradients(tape, total_loss, trainables_by_layer, model.trainable_variables)
@@ -189,7 +193,7 @@ class Trainer:
         if is_training:
             optimizer.apply_gradients(grads_and_vars)
 
-        return predictions_batch, trainables_by_layer, gradients_by_layer, final_and_intermediate_outputs, total_loss
+        return predictions_batch, trainables_by_layer, gradients_by_layer, final_and_intermediate_outputs, total_loss, individual_losses
 
     def _compute_gradients(self, tape, total_loss, trainables_by_layer, flat_trainables):
         """ Compute the gradients. Return two variations, one structured by layer and one flat """
@@ -200,14 +204,18 @@ class Trainer:
     def _compute_total_loss(self, predictions_batch, targets_batch, losses):
         """ Compute the combined loss of all output layers """
         total_loss = tf.constant(0.0)
-        for output_name, loss_fn in losses.items():
-            # TODO: weight the different losses (story 1542)
-            total_loss += loss_fn(
-                tf.reshape(targets_batch[output_name], shape=predictions_batch[output_name].shape),
-                predictions_batch[output_name]
-            )
+        individual_losses = {}
         
-        return total_loss
+        for feature_name, loss_fn in losses.items():
+            # TODO: weight the different losses (story 1542)
+
+            individual_losses[feature_name] = loss_fn(
+                tf.reshape(targets_batch[feature_name], shape=predictions_batch[feature_name].shape),
+                predictions_batch[feature_name]
+            )
+            total_loss += individual_losses[feature_name]             
+        
+        return total_loss, individual_losses
 
     def _reset_tracked_values(self):
         self._layer_outputs = {}
@@ -222,7 +230,11 @@ class Trainer:
         for layer_spec in self._graph_spec.output_layers:
             self._output_trackers[layer_spec.id_] = OutputStatsTracker(layer_spec.datatype)
 
-    def _update_tracked_values(self, trainables_by_layer, gradients_by_layer, final_and_intermediate_outputs_by_layer, inputs_batch, predictions_batch, targets_batch, total_loss, is_training, steps_completed):
+    def _update_tracked_values(
+            self, trainables_by_layer, gradients_by_layer, final_and_intermediate_outputs_by_layer,
+            inputs_batch, predictions_batch, targets_batch,
+            total_loss, individual_losses, is_training, steps_completed
+    ):
         """ Take a snapshot of the current tensors (e.g., layer weights) """
         self._layer_outputs = final_and_intermediate_outputs_by_layer
         self._layer_trainables = trainables_by_layer
@@ -238,12 +250,14 @@ class Trainer:
         self._prediction_stats_tracker.update(graph_spec=self._graph_spec, sample_batch=predictions_batch)                
         self._target_stats_tracker.update(graph_spec=self._graph_spec, sample_batch=targets_batch)
         self._gradient_stats_tracker.update(gradients_by_layer=gradients_by_layer)
+        
         for layer_spec in self._graph_spec.output_layers:
             tracker = self._output_trackers[layer_spec.id_]
             tracker.update(
                 predictions_batch=predictions_batch[layer_spec.feature_name],
                 targets_batch=targets_batch[layer_spec.feature_name],
                 epochs_completed=self._num_epochs_completed,
+                loss=individual_losses[layer_spec.feature_name],
                 steps_completed=steps_completed,
                 is_training=is_training
             )
@@ -388,17 +402,16 @@ class Trainer:
     def stop(self):
         self._set_status('Finished')
 
-        tracking.send_training_stopped(
-            self._user_email,
-            self._model_id,
-            self._graph_spec,
-            self._training_time,
-            self.progress,            
-            0.0,  # TODO: Implement loss in story 1843
-            0.0,  # TODO: Implement loss in story 1843           
-        )                    
-        
-    
+        if self._user_email:
+            tracking.send_training_stopped(
+                self._user_email,
+                self._model_id,
+                self._graph_spec,
+                self._training_time,
+                self.progress,
+                self.get_output_stats_summaries()            
+            )
+
     def headless_on(self):
         # TODO: implement (story 1545)
         pass
@@ -541,6 +554,17 @@ class Trainer:
         }
         return output_stats
 
+    def get_output_stats_summaries(self):
+        """ Collect summary dicts from all output layers and add them to a list """
+        all_output_stats = self.get_output_stats()
+
+        all_summaries = []
+        for output_stats in all_output_stats.values():
+            summary = output_stats.get_summary()
+            all_summaries.append(summary)
+
+        return all_summaries    
+
     def _get_datasets(self):
         """ Get the datasets from the data loader """
         training_set = self._data_loader.get_dataset(partition='training').batch(self.batch_size)
@@ -567,32 +591,4 @@ class Trainer:
             return tf.keras.losses.CategoricalCrossentropy()
         elif loss == 'Dice':
             return dice
-
-    def _setup_metrics(self, datatype):
-        metrics = {'loss': tf.keras.metrics.Mean()}
-
-        if datatype == 'categorical':
-            metrics['accuracy'] = tf.keras.metrics.CategoricalAccuracy()
-            metrics['auc'] = tf.keras.metrics.AUC(curve='ROC')
-
-        return metrics
-
-    def _reset_metrics(self, metrics_by_feature):
-        for metrics in metrics_by_feature.values():
-            for metric in metrics.values():
-                metric.reset_states()
-        
-    def _update_metrics(self, metrics_by_feature, total_loss, predictions_batch, targets_batch):
-        def update(feature_name, metric_name, metric):
-            if metric_name == 'loss':
-                metric.update_state(total_loss)            
-            elif metric_name == 'accuracy':
-                metric.update_state(
-                    targets_batch[feature_name], predictions_batch[feature_name]
-                )
-            # TODO: implement auc metric (story 1541)                                
-        
-        for feature_name, metrics in metrics_by_feature.items():
-            for metric_name, metric in metrics.items():
-                update(feature_name, metric_name, metric)
 

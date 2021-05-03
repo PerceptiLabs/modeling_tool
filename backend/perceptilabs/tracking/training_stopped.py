@@ -1,10 +1,10 @@
 from perceptilabs.tracking.base import get_mixpanel, silence_exceptions
+from perceptilabs.tracking.utils import get_layer_counts, aggregate_summaries
 
 
-@silence_exceptions
+#@silence_exceptions
 def send_training_stopped(
-        user_email, model_id, graph_spec, training_duration, progress,
-        final_loss_training, final_loss_validation
+        user_email, model_id, graph_spec, training_duration, progress, all_output_summaries
 ):
     payload = {
         'user_email': user_email,
@@ -12,15 +12,11 @@ def send_training_stopped(
         'training_duration': training_duration,
         'progress': progress,
     }
-    def try_increment(key):
-        try:
-            payload[key] += 1
-        except KeyError:
-            payload[key] = 1    
-    
-    for layer_spec in graph_spec:
-        try_increment('num_layers_total')
-        try_increment(f'num_layers_{layer_spec.type_}')                            
+    layer_counts = get_layer_counts(graph_spec)    
+    payload.update(layer_counts)
+
+    aggregated_metrics = aggregate_summaries(all_output_summaries)
+    payload.update(aggregated_metrics)
 
     mp = get_mixpanel(user_email)
     mp.track(user_email, 'training-stopped', payload)

@@ -2,6 +2,7 @@ import tensorflow as tf
 
 from perceptilabs.stats.base import TrainingStatsTracker
 from perceptilabs.stats.accuracy import AccuracyStatsTracker
+from perceptilabs.stats.loss import LossStatsTracker
 from perceptilabs.stats.iou import IouStatsTracker
 from perceptilabs.layers.iooutput.stats.categorical import CategoricalOutputStats
 from perceptilabs.layers.iooutput.stats.image import ImageOutputStats
@@ -15,6 +16,8 @@ def should_use_categorical(datatype):
 class OutputStatsTracker(TrainingStatsTracker):
     def __init__(self, datatype):
         self._datatype = datatype
+
+        self._loss_tracker = LossStatsTracker()            
         
         if should_use_categorical(self._datatype):
             self._accuracy_tracker = AccuracyStatsTracker()
@@ -26,6 +29,8 @@ class OutputStatsTracker(TrainingStatsTracker):
             self._targets = tf.constant([0.0])
 
     def update(self, **kwargs):
+        self._loss_tracker.update(**kwargs)
+        
         if should_use_categorical(self._datatype):        
             self._accuracy_tracker.update(**kwargs)
             self._predictions = kwargs['predictions_batch']
@@ -40,11 +45,13 @@ class OutputStatsTracker(TrainingStatsTracker):
         if should_use_categorical(self._datatype):                
             return CategoricalOutputStats(
                 accuracy=self._accuracy_tracker.save(),
+                loss=self._loss_tracker.save(),                
                 predictions=self._predictions.numpy(),
                 targets=self._targets.numpy()                
             )
         elif self._datatype == 'image':
             return ImageOutputStats(
+                loss=self._loss_tracker.save(),                                
                 iou=self._iou_tracker.save(),
                 predictions=self._predictions.numpy(),
                 targets=self._targets.numpy()                

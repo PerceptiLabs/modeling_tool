@@ -1,11 +1,12 @@
 import numpy as np
 
 from perceptilabs.createDataObject import create_data_object
-from perceptilabs.stats.base import TrainingStats
+from perceptilabs.stats.base import OutputStats
 
 
-class CategoricalOutputStats(TrainingStats):
-    def __init__(self, accuracy=None, predictions=None, targets=None):
+class CategoricalOutputStats(OutputStats):
+    def __init__(self, accuracy=None, predictions=None, targets=None, loss=None):
+        self._loss = loss
         self._accuracy = accuracy
         self._predictions = predictions
         self._targets = targets
@@ -76,27 +77,16 @@ class CategoricalOutputStats(TrainingStats):
             name_list=['Validation', 'Training']
         )        
         return dataobj_acc_over_steps, dataobj_acc_over_epochs
-        
-    def _get_dataobj_loss(self):
-        # TODO: move to global
-        training_loss_over_steps = self._loss.get_loss_over_steps_in_latest_epoch(phase='training')
-        validation_loss_over_steps = self._loss.get_loss_over_steps_in_latest_epoch(phase='validation')
-        
-        validation_loss_over_steps = training_loss_over_steps + validation_loss_over_steps  # The frontend plots the training loss last, so this gives the effect that the validation curve is a continuation of the training curve.
-        
-        dataobj_loss_over_steps = create_data_object(
-            [validation_loss_over_steps, training_loss_over_steps],
-            type_list=['line', 'line'],
-            name_list=['Validation', 'Training']
-        )
 
-        training_loss_over_epochs = self._loss.get_average_loss_over_epochs(phase='training')
-        validation_loss_over_epochs = self._loss.get_average_loss_over_epochs(phase='validation')
-        dataobj_loss_over_epochs = create_data_object(
-            [validation_loss_over_epochs, training_loss_over_epochs],
-            type_list=['line', 'line'],
-            name_list=['Validation', 'Training']
-        )
-        return dataobj_loss_over_steps, dataobj_loss_over_epochs
+    def get_summary(self):
+        """ Gets the stats summary for this layer 
 
-    
+        Returns:
+            A dictionary with the final training/validation loss and accuracy
+        """        
+        return {
+            'loss_training': self._loss.get_loss_for_latest_step(phase='training'),
+            'loss_validation': self._loss.get_loss_for_latest_step(phase='validation'),
+            'accuracy_training': self._accuracy.get_accuracy_for_latest_step(phase='training'),
+            'accuracy_validation': self._accuracy.get_accuracy_for_latest_step(phase='validation')
+        }

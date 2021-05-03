@@ -19,6 +19,18 @@ def losses():
 
     return losses
 
+
+def flatten_losses(losses_, phase='both'):
+    flattened = []
+    for epoch_losses in losses_:
+        for value, is_training in epoch_losses:
+            if (
+                    (is_training and phase in ['both', 'training']) or
+                    (not is_training and phase in ['both', 'validation'])
+            ):
+                flattened.append(value)
+    return flattened
+
         
 def test_get_loss_for_step(losses):
     stats = LossStats(losses=losses)    
@@ -81,4 +93,28 @@ def test_get_average_loss_for_epoch_validation(losses):
         actual = stats.get_average_loss_for_epoch(epoch, phase='validation')
         assert actual == expected
 
+
+def test_loss_for_latest_step_both(losses):
+    expected = flatten_losses(losses)[-1]
+    
+    stats = LossStats(losses)
+    actual = stats.get_loss_for_latest_step()
+    assert actual == expected
         
+
+def test_loss_for_latest_step_training(losses):
+    expected = flatten_losses(losses, phase='training')[-1]
+    
+    stats = LossStats(losses)
+    actual = stats.get_loss_for_latest_step(phase='training')
+    assert actual == expected
+
+
+def test_loss_for_latest_step_validation(losses):
+    expected = flatten_losses(losses, phase='training')[-1]
+    
+    stats = LossStats(losses)
+    actual = stats.get_loss_for_latest_step(phase='training')
+    assert actual == expected
+    
+    

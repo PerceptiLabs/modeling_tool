@@ -1,14 +1,15 @@
 import numpy as np
 
 from perceptilabs.createDataObject import create_data_object
-from perceptilabs.stats.base import TrainingStats
+from perceptilabs.stats.base import OutputStats
 
 
-class ImageOutputStats(TrainingStats):
-    def __init__(self, iou=None, predictions=None, targets=None):
+class ImageOutputStats(OutputStats):
+    def __init__(self, iou=None, predictions=None, targets=None, loss=None):
         self._iou = iou
         self._predictions = predictions
         self._targets = targets
+        self._loss = loss
 
     def _get_average_sample(self, type_='prediction'):
         batch = self._predictions if type_ == 'prediction' else self._targets
@@ -77,3 +78,15 @@ class ImageOutputStats(TrainingStats):
         )        
         return dataobj_iou_over_steps, dataobj_iou_over_epochs
         
+    def get_summary(self):
+        """ Gets the stats summary for this layer 
+
+        Returns:
+            A dictionary with the final training/validation loss and iou
+        """        
+        return {
+            'loss_training': self._loss.get_loss_for_latest_step(phase='training'),
+            'loss_validation': self._loss.get_loss_for_latest_step(phase='validation'),
+            'iou_training': self._iou.get_iou_for_latest_step(phase='training'),
+            'iou_validation': self._iou.get_iou_for_latest_step(phase='validation')
+        }

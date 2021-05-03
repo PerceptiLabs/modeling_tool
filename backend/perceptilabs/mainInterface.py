@@ -688,7 +688,7 @@ class Interface():
         user_email = request_value.get('userEmail', None)      
         training_settings = request_value.get('trainSettings', None)        
         dataset_settings = request_value.get('datasetSettings', None)
-        
+
         response = self._core.start_core(
             graph_spec,
             model_id,

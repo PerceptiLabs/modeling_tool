@@ -1,9 +1,14 @@
 from mixpanel import Mixpanel
 import os
+import logging
 import datetime
 import functools
+
 from perceptilabs.mixpanel_handler import MIXPANEL_TOKEN_DEV, MIXPANEL_TOKEN_PROD
 from perceptilabs.utils import is_dev
+from perceptilabs.logconf import APPLICATION_LOGGER
+
+logger = logging.getLogger(APPLICATION_LOGGER)
 
 _DEFAULT_TOKEN = MIXPANEL_TOKEN_DEV if is_dev() else MIXPANEL_TOKEN_PROD
 _TOKEN = os.getenv("PL_MIXPANEL_TOKEN", _DEFAULT_TOKEN)
@@ -23,5 +28,6 @@ def silence_exceptions(function):
         try:
             return function(*args, **kwargs)
         except Exception as e:
-            pass
+            if is_dev:
+                logger.exception("Tracker crashed")
     return func

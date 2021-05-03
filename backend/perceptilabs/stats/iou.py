@@ -47,10 +47,6 @@ class IouStats:
         matrix, _ = self.prediction_matrices[epoch][step]
         return matrix.tp/(matrix.tp + matrix.fp + matrix.fn)
 
-    def get_iou_for_latest_step(self):
-        """ Iou of the latest a step """        
-        return self.get_iou_for_step(-1, -1)    
-
     @return_on_failure([0.0])    
     def get_iou_over_steps(self, epoch, phase='training'):
         """ Iou as a series over all steps in an epoch """                
@@ -74,6 +70,11 @@ class IouStats:
             phase=phase
         )
 
+    @return_on_failure(0.0)        
+    def get_iou_for_latest_step(self, phase='both'):  
+        """ IoU of the latest a step """
+        iou_list = self.get_iou_over_steps_in_latest_epoch(phase=phase)
+        return iou_list[-1]
 
     
 class IouStatsTracker(TrainingStatsTracker):

@@ -14,6 +14,12 @@ class LossStats:
         loss, _ = self.losses[epoch][step]
         return loss
 
+    @return_on_failure(0.0)        
+    def get_loss_for_latest_step(self, phase='both'): 
+        """ Loss of the latest a step """
+        loss_list = self.get_loss_over_steps_in_latest_epoch(phase=phase)
+        return loss_list[-1]
+
     @return_on_failure([0.0])    
     def get_loss_over_steps(self, epoch, phase='training'):
         """ Loss as a series over all steps in an epoch """                
