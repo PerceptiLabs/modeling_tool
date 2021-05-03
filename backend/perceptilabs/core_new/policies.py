@@ -443,7 +443,7 @@ def policy_classification(is_paused, graphs, sanitized_to_name, sanitized_to_id,
                 loss_val_iter = []
                 f1_val_iter = x
 
-                if utils.is_tf2x():
+                if utils.is_datawizard():
                     auc_trn_iter = []
                     auc_val_iter = []         
                 else:
@@ -454,13 +454,13 @@ def policy_classification(is_paused, graphs, sanitized_to_name, sanitized_to_id,
                 acc_trn_iter.append(trn_layer.accuracy_training)
                 loss_trn_iter.append(trn_layer.loss_training)
                 #f1_trn_iter.append(trn_layer.f1_score_training) # TODO: fix these two
-                if utils.is_tf2x():
+                if utils.is_datawizard():
                     auc_trn_iter.append(trn_layer.auc_training)
             if trn_layer.status == 'validation':
                 acc_val_iter.append(trn_layer.accuracy_validation)
                 loss_val_iter.append(trn_layer.loss_validation)
                 #f1_val_iter.append(trn_layer.f1_score_validation) # TODO: fix these two
-                if utils.is_tf2x():
+                if utils.is_datawizard():
                     auc_val_iter.append(trn_layer.auc_validation)
         # ---- Get the metrics from the end of each epoch
 
@@ -484,7 +484,7 @@ def policy_classification(is_paused, graphs, sanitized_to_name, sanitized_to_id,
             loss_val_epoch = []
             f1_val_epoch = x
 
-            if utils.is_tf2x():
+            if utils.is_datawizard():
                 auc_trn_epoch = []               
                 auc_val_epoch = []
             else:
@@ -501,12 +501,12 @@ def policy_classification(is_paused, graphs, sanitized_to_name, sanitized_to_id,
             if new_epoch and trn_layer.status == 'training':
                 loss_trn_epoch.append(trn_layer.loss_training)
                 acc_trn_epoch.append(trn_layer.accuracy_training)
-                if utils.is_tf2x():
+                if utils.is_datawizard():
                     auc_trn_epoch.append(trn_layer.auc_training)
             elif not new_epoch and trn_layer.status == 'training':
                 loss_trn_epoch[-1] = average(loss_trn_epoch, trn_layer.training_iteration, trn_layer.loss_training)
                 acc_trn_epoch[-1] = average(acc_trn_epoch, trn_layer.training_iteration, trn_layer.accuracy_training)
-                if utils.is_tf2x():
+                if utils.is_datawizard():
                     auc_trn_epoch[:-1].append(trn_layer.auc_training)
                     
             new_epoch = (trn_layer.validation_iteration == 0)
@@ -514,12 +514,12 @@ def policy_classification(is_paused, graphs, sanitized_to_name, sanitized_to_id,
             if new_epoch and (trn_layer.status == 'validation'):
                 loss_val_epoch.append(trn_layer.loss_validation)
                 acc_val_epoch.append(trn_layer.accuracy_validation)
-                if utils.is_tf2x():
+                if utils.is_datawizard():
                     auc_val_epoch.append(trn_layer.auc_validation)     
             elif (not new_epoch) and (trn_layer.status == 'validation'):
                 loss_val_epoch[-1] = average(loss_val_epoch, trn_layer.validation_iteration, trn_layer.loss_validation)
                 acc_val_epoch[-1] = average(acc_val_epoch, trn_layer.validation_iteration, trn_layer.accuracy_validation)
-                if utils.is_tf2x():
+                if utils.is_datawizard():
                     auc_val_epoch[:-1].append(trn_layer.auc_validation)             
 
             idx += 1

@@ -245,7 +245,7 @@ export default {
       return typeof this.testIsOpen === 'boolean';
     },
     isGlobalTrainingSettingEnabled() {
-      return process.env.ENABLE_GLOBAL_TRAINING_SETTINGS === 'true';
+      return process.env.ENABLE_DATAWIZARD === 'true';
     }
   },
   watch: {
@@ -348,7 +348,7 @@ export default {
     },
     trainStartWithCheckpoint() {
       googleAnalytics.trackCustomEvent('start-training');
-      if (process.env.ENABLE_TF2X !== 'true') {
+      if (process.env.ENABLE_DATAWIZARD !== 'true') {
         let valid = this.validateNetwork();
         if (!valid) return;
       }
@@ -356,7 +356,7 @@ export default {
     },
     trainStartWithoutCheckpoint() {
       googleAnalytics.trackCustomEvent('start-training');
-      if (process.env.ENABLE_TF2X !== 'true') {
+      if (process.env.ENABLE_DATAWIZARD !== 'true') {
         let valid = this.validateNetwork();
         if (!valid) return;
       }

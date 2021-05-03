@@ -32,7 +32,6 @@ def save_image_to_disk(image, directory, ext='.png', repeats=1):
     return tf.constant(inputs)    
 
 
-@pytest.mark.tf2x
 def test_image_preprocessing_for_png(temp_path):
     image = np.random.randint(0, 255, size=(16, 16, 3)).astype(np.uint8)
     expected = image.astype(np.float32)
@@ -54,7 +53,6 @@ def test_image_preprocessing_for_png(temp_path):
     assert pipeline.image_shape == expected.shape  # Verify that the pipeline records shape
 
 
-@pytest.mark.tf2x
 def test_image_preprocessing_for_tiff(temp_path):
     image = np.random.randint(0, 255, size=(16, 16, 4)).astype(np.uint16)
     expected = image.astype(np.float32) 

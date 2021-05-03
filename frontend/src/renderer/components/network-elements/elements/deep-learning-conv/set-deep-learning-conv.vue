@@ -255,7 +255,7 @@ export default {
       isTutorialMode:   'mod_tutorials/getIsTutorialMode',
     }),
     isTF2XEnabled() {
-      return process.env.ENABLE_TF2X === 'true';
+      return process.env.ENABLE_DATAWIZARD === 'true';
     },
     validConvolutionDimOptions() {
       const convType = this.settings.Conv_type;

@@ -68,16 +68,16 @@ def graph_spec_few_epochs(csv_path):
     return graph_spec
 
 
-def test_create_exporter_from_graph(script_factory_tf2x, graph_spec_few_epochs, temp_path):
+def test_create_exporter_from_graph(script_factory, graph_spec_few_epochs, temp_path):
     # Use data loader to feed data through the model
-    training_model = TrainingModel(script_factory_tf2x, graph_spec_few_epochs)
+    training_model = TrainingModel(script_factory, graph_spec_few_epochs)
     exporter = Exporter(graph_spec_few_epochs, training_model)
     assert exporter is not None
 
 
-def test_save_training_model_weights(script_factory_tf2x, graph_spec_few_epochs, temp_path):
+def test_save_training_model_weights(script_factory, graph_spec_few_epochs, temp_path):
     # Use data loader to feed data through the model
-    training_model = TrainingModel(script_factory_tf2x, graph_spec_few_epochs)
+    training_model = TrainingModel(script_factory, graph_spec_few_epochs)
     x = {'x1': np.array([1.0, 2.0, 3.0])}
     expected = training_model(x)
 
@@ -86,7 +86,7 @@ def test_save_training_model_weights(script_factory_tf2x, graph_spec_few_epochs,
     exporter.export_checkpoint(temp_path)
     assert len(os.listdir(temp_path)) > 0
 
-    exporter = Exporter.from_disk(temp_path, graph_spec_few_epochs, script_factory_tf2x)
+    exporter = Exporter.from_disk(temp_path, graph_spec_few_epochs, script_factory)
     assert exporter is not None
     
     loaded_training_model = exporter.training_model

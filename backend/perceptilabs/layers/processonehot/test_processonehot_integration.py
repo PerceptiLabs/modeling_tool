@@ -31,7 +31,7 @@ def test_one_hot_sum_of_output_equals_number_of_samples(script_factory):
     assert actual == expected
 
 
-def test_tf2x_one_hot_sum_of_output_equals_number_of_samples(script_factory_tf2x):
+def test_tf2x_one_hot_sum_of_output_equals_number_of_samples(script_factory):
     n_classes = 3
     
     layer_spec = ProcessOneHotSpec(
@@ -40,7 +40,7 @@ def test_tf2x_one_hot_sum_of_output_equals_number_of_samples(script_factory_tf2x
         n_classes=n_classes,
         backward_connections=(LayerConnection(dst_var='input'),)
     )
-    layer = LayerHelper(script_factory_tf2x, layer_spec).get_instance()
+    layer = LayerHelper(script_factory, layer_spec).get_instance()
 
 
     x = np.array([[x+1] for x in range(n_classes)])

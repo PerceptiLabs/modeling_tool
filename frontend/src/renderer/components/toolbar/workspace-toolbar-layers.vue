@@ -128,7 +128,7 @@ export default {
           iconClass: 'icon-data-group',
           childListClass: '',
           showEl: false,
-          networkElements: (process.env.ENABLE_TF2X === 'true') ? ['DataData', 'DataEnvironment', 'DataRandom', 'IoInput'] : ['DataData', 'DataEnvironment', 'DataRandom'],
+          networkElements: (process.env.ENABLE_DATAWIZARD === 'true') ? ['DataData', 'DataEnvironment', 'DataRandom', 'IoInput'] : ['DataData', 'DataEnvironment', 'DataRandom'],
           id:'tutorial_data',
           color: 'rgba(97, 133, 238, 0.7)',
           borderColor: 'rgba(97, 133, 238, 0.2)',
@@ -448,7 +448,7 @@ export default {
       }
     },
     filterUnnecessaryLayers(){
-      if(process.env.ENABLE_DATA_WIZARD === 'true') {
+      if(process.env.ENABLE_DATAWIZARD === 'true') {
         let newArr = [];
         this.layersbarList.map(obj => {
           if(obj.id !== 'tutorial_data' && obj.id !== 'tutorial_training') {
@@ -473,7 +473,7 @@ export default {
   },
   mounted() {
     this.filterUnnecessaryLayers();
-    if (process.env.ENABLE_TF2X !== 'true') { return; }
+    if (process.env.ENABLE_DATAWIZARD !== 'true') { return; }
 
     this.addPreTrainedLayersToDeepLearningDropDown();
 

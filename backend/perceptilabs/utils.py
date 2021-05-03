@@ -17,6 +17,9 @@ from sys import getsizeof
 from typing import Set
 
 
+PRE_DATAWIZARD_VARIABLE = "PL_PRE_DATAWIZARD"
+
+
 def get_memory_usage():
     """ Return the fraction of memory used """
     total_memory = psutil.virtual_memory().total # Deceptive naming (virtual memory), but OK according to docs: https://psutil.readthedocs.io/en/latest/
@@ -25,7 +28,6 @@ def get_memory_usage():
     fraction_used = (total_memory-available_memory)/total_memory
     return fraction_used
     
-
     
 def get_app_variables():
     with open(pkg_resources.resource_filename('perceptilabs', 'app_variables.json'), 'r') as f:
@@ -38,20 +40,21 @@ def is_dev():
     return app_variables['BuildVariables']['CommitId'] == 'Dev'
 
 
-def is_tf2x():
-    """ When enabled, the tool will run TensorFlow 2.x """
-    if os.getenv("PL_TF2X"):
-        return True
+def is_datawizard():
+    """ When enabled, the tool will run with the datawizard workflow """
+    return not is_pre_datawizard()
 
+
+def is_pre_datawizard():
+    """ When enabled, the tool will run the pre-datawizard workflow """    
+    if os.getenv(PRE_DATAWIZARD_VARIABLE, False):
+        return True
+    
     app_variables = get_app_variables()
-    if app_variables["BuildVariables"].get("Tf2x", False):
+    if app_variables["BuildVariables"].get("PreDatawizard", False):
         return True
 
     return False
-
-
-def is_tf1x():
-    return not is_tf2x()
     
 
 def deprecated(func):

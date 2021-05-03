@@ -10,7 +10,7 @@ import numpy as np
 from tempfile import NamedTemporaryFile
 from typing import Tuple, Dict, List
 
-from perceptilabs.utils import stringify, add_line_numbering, is_tf2x, is_tf1x
+from perceptilabs.utils import stringify, add_line_numbering, is_datawizard, is_pre_datawizard
 from perceptilabs.issues import UserlandError
 from perceptilabs.core_new.layers import BaseLayer, DataLayer, DataReinforce, DataSupervised, DataRandom, InnerLayer, Tf1xLayer, TrainingRandom, TrainingSupervised, TrainingReinforce, TrainingLayer, ClassificationLayer, ObjectDetectionLayer, RLLayer
 from perceptilabs.graph.splitter import GraphSplitter
@@ -46,7 +46,7 @@ class LightweightCore:
     def __init__(self, issue_handler=None, cache=None, data_loader=None):
         self._issue_handler = issue_handler
         self._cache = cache
-        self._script_factory = ScriptFactory(mode='tf2x' if is_tf2x() else 'tf1x')
+        self._script_factory = ScriptFactory()
         self._data_loader = data_loader
     
     def run(self, graph_spec):
@@ -142,17 +142,17 @@ class LightweightCore:
     def _get_layer_strategy(self, layer_spec, data_batch, script_factory):
         if isinstance(layer_spec, IoLayerSpec):
             strategy = self._get_io_layer_strategy(layer_spec, data_batch)
-        elif isinstance(layer_spec, TrainingLayerSpec) and is_tf1x():
+        elif isinstance(layer_spec, TrainingLayerSpec) and is_pre_datawizard():
             strategy = Tf1xTrainingStrategy(script_factory)
-        elif isinstance(layer_spec, TrainingLayerSpec) and is_tf2x():
+        elif isinstance(layer_spec, TrainingLayerSpec) and is_datawizard():
             strategy = Tf2xTrainingStrategy(script_factory)            
         elif isinstance(layer_spec, (DataDataSpec, DataRandomSpec)):
             strategy = DataSupervisedStrategy(script_factory)
         elif isinstance(layer_spec, DataEnvironmentSpec):
             strategy = DataReinforceStrategy(script_factory)
-        elif isinstance(layer_spec, InnerLayerSpec) and is_tf1x(): 
+        elif isinstance(layer_spec, InnerLayerSpec) and is_pre_datawizard(): 
             strategy = Tf1xInnerStrategy(script_factory)
-        elif isinstance(layer_spec, InnerLayerSpec) and is_tf2x(): 
+        elif isinstance(layer_spec, InnerLayerSpec) and is_datawizard(): 
             strategy = Tf2xInnerStrategy(script_factory)
         else:
             strategy = DefaultStrategy()

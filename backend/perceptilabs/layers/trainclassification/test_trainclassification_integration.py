@@ -21,10 +21,6 @@ def script_factory():
     yield ScriptFactory()
 
     
-@pytest.fixture(scope='module')
-def script_factory_tf2x():
-    yield ScriptFactory(mode='tf2x')
-    
 @pytest.fixture()
 def graph_spec(make_graph_spec, temp_path, temp_path_checkpoints):
     graph_spec = make_graph_spec(
@@ -491,7 +487,7 @@ def test_can_convert_to_dict_and_back(graph_spec):
     assert dict_ == dict_1
 
 
-def test_tf2x_syntax(script_factory_tf2x):
+def test_tf2x_syntax(script_factory):
     layer_spec = TrainClassificationSpec(
         id_='layer_id',
         name='layer_name',
@@ -502,7 +498,7 @@ def test_tf2x_syntax(script_factory_tf2x):
     
     try:
         code = LayerHelper(
-            script_factory_tf2x,
+            script_factory,
             layer_spec,
             graph_spec=graph_spec
         ).get_code(check_syntax=True, print_code=True)
@@ -511,7 +507,7 @@ def test_tf2x_syntax(script_factory_tf2x):
         raise
     
 
-def test_tf2x_can_instantiate(script_factory_tf2x):
+def test_tf2x_can_instantiate(script_factory):
     layer_spec = TrainClassificationSpec(
         id_='layer_id',
         name='layer_name',
@@ -525,7 +521,7 @@ def test_tf2x_can_instantiate(script_factory_tf2x):
     
     try:
         code = LayerHelper(
-            script_factory_tf2x,
+            script_factory,
             layer_spec,
             graph_spec=graph_spec
         ).get_instance()
@@ -533,8 +529,8 @@ def test_tf2x_can_instantiate(script_factory_tf2x):
         pytest.fail("Raised error on instantiation! " + repr(e))
 
 
-def test_tf2x_can_yield(script_factory_tf2x, graph_spec):
-    graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec, print_code=True)
+def test_tf2x_can_yield(script_factory, graph_spec):
+    graph = graph_spec_to_core_graph(script_factory, graph_spec, print_code=True)
 
     try:
         next(graph.run(mode='training'))        
@@ -542,8 +538,8 @@ def test_tf2x_can_yield(script_factory_tf2x, graph_spec):
         pytest.fail("Raised error on run!\n" + traceback_from_exception(e))
 
 
-def test_tf2x_progress_reaches_status_training(script_factory_tf2x, graph_spec_few_epochs):
-    graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec_few_epochs)
+def test_tf2x_progress_reaches_status_training(script_factory, graph_spec_few_epochs):
+    graph = graph_spec_to_core_graph(script_factory, graph_spec_few_epochs)
     
     training_layer = graph.active_training_node.layer
     iterator = training_layer.run(graph, mode = 'training') 
@@ -561,8 +557,8 @@ def test_tf2x_progress_reaches_status_training(script_factory_tf2x, graph_spec_f
     assert reached_condition
 
 
-def test_tf2x_progress_reaches_status_finished(script_factory_tf2x, graph_spec_few_epochs):
-    graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec_few_epochs)
+def test_tf2x_progress_reaches_status_finished(script_factory, graph_spec_few_epochs):
+    graph = graph_spec_to_core_graph(script_factory, graph_spec_few_epochs)
     
     training_layer = graph.active_training_node.layer
     iterator = training_layer.run(graph, mode = 'training') 
@@ -581,8 +577,8 @@ def test_tf2x_progress_reaches_status_finished(script_factory_tf2x, graph_spec_f
     
         
 
-def test_tf2x_progress_reaches_one(script_factory_tf2x, graph_spec_few_epochs):
-    graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec_few_epochs)
+def test_tf2x_progress_reaches_one(script_factory, graph_spec_few_epochs):
+    graph = graph_spec_to_core_graph(script_factory, graph_spec_few_epochs)
     
     training_layer = graph.active_training_node.layer
     iterator = training_layer.run(graph, mode = 'training') 
@@ -600,8 +596,8 @@ def test_tf2x_progress_reaches_one(script_factory_tf2x, graph_spec_few_epochs):
     assert reached_one
 
     
-def test_tf2x_layer_output_values_set(script_factory_tf2x, graph_spec_few_epochs):
-    graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec_few_epochs)
+def test_tf2x_layer_output_values_set(script_factory, graph_spec_few_epochs):
+    graph = graph_spec_to_core_graph(script_factory, graph_spec_few_epochs)
     
     training_layer = graph.active_training_node.layer
     iterator = training_layer.run(graph, mode='training') 
@@ -617,8 +613,8 @@ def test_tf2x_layer_output_values_set(script_factory_tf2x, graph_spec_few_epochs
     assert values_set
 
 
-def test_tf2x_layer_weights_and_biases_set(script_factory_tf2x, graph_spec_few_epochs):
-    graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec_few_epochs)
+def test_tf2x_layer_weights_and_biases_set(script_factory, graph_spec_few_epochs):
+    graph = graph_spec_to_core_graph(script_factory, graph_spec_few_epochs)
     
     fc_layer_id = graph.nodes[2].layer_id
     training_layer = graph.active_training_node.layer    
@@ -639,8 +635,8 @@ def test_tf2x_layer_weights_and_biases_set(script_factory_tf2x, graph_spec_few_e
     assert values_set
 
 
-def test_tf2x_layer_gradients_set(script_factory_tf2x, graph_spec_few_epochs):
-    graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec_few_epochs)
+def test_tf2x_layer_gradients_set(script_factory, graph_spec_few_epochs):
+    graph = graph_spec_to_core_graph(script_factory, graph_spec_few_epochs)
     
     fc_layer_id = graph.nodes[2].layer_id
     training_layer = graph.active_training_node.layer    
@@ -661,8 +657,8 @@ def test_tf2x_layer_gradients_set(script_factory_tf2x, graph_spec_few_epochs):
     assert values_set
 
     
-def test_tf2x_layer_metrics_set(script_factory_tf2x, graph_spec_few_epochs):
-    graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec_few_epochs)
+def test_tf2x_layer_metrics_set(script_factory, graph_spec_few_epochs):
+    graph = graph_spec_to_core_graph(script_factory, graph_spec_few_epochs)
     
     fc_layer_id = graph.nodes[2].layer_id
     training_layer = graph.active_training_node.layer    
@@ -687,8 +683,8 @@ def test_tf2x_layer_metrics_set(script_factory_tf2x, graph_spec_few_epochs):
     assert values_set
 
     
-def test_tf2x_convergence(script_factory_tf2x, graph_spec):
-    graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec, print_code=True)
+def test_tf2x_convergence(script_factory, graph_spec):
+    graph = graph_spec_to_core_graph(script_factory, graph_spec, print_code=True)
     
     training_layer = graph.active_training_node.layer
     iterator = training_layer.run(graph, mode='training') 
@@ -708,10 +704,10 @@ def test_tf2x_convergence(script_factory_tf2x, graph_spec):
     assert converged
 
 
-def test_tf2x_policy_dict_is_not_empty(script_factory_tf2x, graph_spec):
+def test_tf2x_policy_dict_is_not_empty(script_factory, graph_spec):
     from perceptilabs.core_new.policies import policy_classification
     
-    graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec, print_code=True)
+    graph = graph_spec_to_core_graph(script_factory, graph_spec, print_code=True)
 
     fn_is_paused = lambda: False
     fn_sanitized_to_name = lambda sanitized_name: graph_spec.get_layer_by_sanitized_name(sanitized_name).name
@@ -737,8 +733,8 @@ def test_tf2x_policy_dict_is_not_empty(script_factory_tf2x, graph_spec):
     assert results
     
 
-def test_tf2x_early_stopping_on_training_accuracy(script_factory_tf2x, graph_spec_early_stopping):
-    graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec_early_stopping, print_code=True)
+def test_tf2x_early_stopping_on_training_accuracy(script_factory, graph_spec_early_stopping):
+    graph = graph_spec_to_core_graph(script_factory, graph_spec_early_stopping, print_code=True)
     
     training_layer = graph.active_training_node.layer
     iterator = training_layer.run(graph, mode='training') 
@@ -756,8 +752,8 @@ def test_tf2x_early_stopping_on_training_accuracy(script_factory_tf2x, graph_spe
     )
 
     
-def test_tf2x_layer_auc_set(script_factory_tf2x, graph_spec_few_epochs):
-    graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec_few_epochs)
+def test_tf2x_layer_auc_set(script_factory, graph_spec_few_epochs):
+    graph = graph_spec_to_core_graph(script_factory, graph_spec_few_epochs)
     
     fc_layer_id = graph.nodes[2].layer_id
     training_layer = graph.active_training_node.layer
@@ -781,8 +777,8 @@ def test_tf2x_layer_auc_set(script_factory_tf2x, graph_spec_few_epochs):
     assert values_set
 
     
-def test_tf2x_export_tfmodel_can_load_and_predict(temp_path, script_factory_tf2x, graph_spec_few_epochs):
-    graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec_few_epochs)
+def test_tf2x_export_tfmodel_can_load_and_predict(temp_path, script_factory, graph_spec_few_epochs):
+    graph = graph_spec_to_core_graph(script_factory, graph_spec_few_epochs)
     
     fc_layer_id = graph.nodes[2].layer_id
     training_layer = graph.active_training_node.layer
@@ -798,8 +794,8 @@ def test_tf2x_export_tfmodel_can_load_and_predict(temp_path, script_factory_tf2x
     assert isinstance(loaded_model.predict({'output': np.random.random((1, 4))}), np.ndarray)
 
 
-def test_tf2x_save_weights_automatically(temp_path, script_factory_tf2x, graph_spec_few_epochs):
-    graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec_few_epochs)
+def test_tf2x_save_weights_automatically(temp_path, script_factory, graph_spec_few_epochs):
+    graph = graph_spec_to_core_graph(script_factory, graph_spec_few_epochs)
     
     fc_layer_id = graph.nodes[2].layer_id
     training_layer = graph.active_training_node.layer
@@ -815,7 +811,7 @@ def test_tf2x_save_weights_automatically(temp_path, script_factory_tf2x, graph_s
     )
 
 
-def test_tf2x_load_weights(temp_path, script_factory_tf2x, graph_spec_few_epochs):
+def test_tf2x_load_weights(temp_path, script_factory, graph_spec_few_epochs):
     
     def has_equal_weights(tl1, tl2):
         """ Check if two training layers have equal weights """
@@ -829,7 +825,7 @@ def test_tf2x_load_weights(temp_path, script_factory_tf2x, graph_spec_few_epochs
         return True        
 
     # Train the network once and export the weights 
-    graph1 = graph_spec_to_core_graph(script_factory_tf2x, graph_spec_few_epochs)
+    graph1 = graph_spec_to_core_graph(script_factory, graph_spec_few_epochs)
     training_layer1 = graph1.active_training_node.layer
     iterator = training_layer1.run(graph1, mode='training') 
     for _ in iterator:
@@ -841,7 +837,7 @@ def test_tf2x_load_weights(temp_path, script_factory_tf2x, graph_spec_few_epochs
     training_layer1.on_export(checkpoint_dir, 'checkpoint')
     
     # Train another network with the same specs
-    graph2 = graph_spec_to_core_graph(script_factory_tf2x, graph_spec_few_epochs)
+    graph2 = graph_spec_to_core_graph(script_factory, graph_spec_few_epochs)
     training_layer2 = graph2.active_training_node.layer
     iterator = training_layer2.run(graph2, mode='training') 
     for _ in iterator:
@@ -855,15 +851,15 @@ def test_tf2x_load_weights(temp_path, script_factory_tf2x, graph_spec_few_epochs
     assert has_equal_weights(training_layer2, training_layer1)
 
 
-def test_tf2x_test_mode_yields_correct_number_of_outputs(script_factory_tf2x, graph_spec):
-    graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec, print_code=True)
+def test_tf2x_test_mode_yields_correct_number_of_outputs(script_factory, graph_spec):
+    graph = graph_spec_to_core_graph(script_factory, graph_spec, print_code=True)
     
     n_yields = len(list(graph.run(mode='testing')))
     assert n_yields == 2 # 10% of dataset
 
     
-def test_tf2x_headless_mode_gives_empty_dicts(script_factory_tf2x, graph_spec):
-    graph = graph_spec_to_core_graph(script_factory_tf2x, graph_spec)
+def test_tf2x_headless_mode_gives_empty_dicts(script_factory, graph_spec):
+    graph = graph_spec_to_core_graph(script_factory, graph_spec)
     
     training_layer = graph.active_training_node.layer    
     iterator = training_layer.run(graph, mode='training') 

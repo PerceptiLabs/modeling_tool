@@ -35,7 +35,7 @@ def test_basics(script_factory):
     assert output['output'].shape == (16, 7)
 
     
-def test_basics_tf2x(script_factory_tf2x):
+def test_basics_tf2x(script_factory):
     layer_spec = DeepLearningRecurrentSpec(
         id_='layer_id',
         name='layer_name',
@@ -44,7 +44,7 @@ def test_basics_tf2x(script_factory_tf2x):
         version='RNN',
         backward_connections=(LayerConnection(dst_var='input'),)        
     )
-    layer = LayerHelper(script_factory_tf2x, layer_spec).get_instance()
+    layer = LayerHelper(script_factory, layer_spec).get_instance()
     x = tf.constant(np.random.random((16, 10, 3)).astype(np.float32)) # [batch, time, features]
 
     z = layer({'input': x})    

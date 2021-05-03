@@ -24,8 +24,8 @@ setup_sentry(COMMIT_ID)
 set_sentry_tag('error-type', 'startup-error')
 
 
-if utils.is_tf1x():
-    tf.compat.v1.disable_v2_behavior()
+if utils.is_pre_datawizard():
+    tf.compat.v1.disable_v2_behavior()    
 
     
 utils.allow_memory_growth_on_gpus()
@@ -35,7 +35,6 @@ def get_input_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('-l','--log-level', default=os.getenv("PL_KERNEL_LOG_LEVEL"), type=str, choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
                         help='Log level name.')
-    parser.add_argument('-t','--trainer', default=os.getenv("PL_KERNEL_TRAINER", "core_v2"), type=str, choices=['core_v2', 'standard'], help='Which trainer to use.')
     parser.add_argument('-k','--instantly-kill', default=False, type=bool,
                         help="Set this to instantly kill the core, for test purposes.")
     parser.add_argument('-u', '--user', default="dev@dev.com", type=str,
@@ -55,9 +54,6 @@ def main():
     session_id = uuid.uuid4().hex
     issue_handler = IssueHandler()
 
-    if args.trainer == 'standard' and not utils.is_tf2x():
-        raise RuntimeError("The standard trainer is currently only supported for tf2x")
-    
     perceptilabs.logconf.setup_application_logger(log_level=args.log_level)
     perceptilabs.logconf.setup_data_logger(is_dev=(COMMIT_ID == "Dev"))
     perceptilabs.logconf.set_session_id(session_id)
@@ -65,9 +61,6 @@ def main():
 
     logger = logging.getLogger(perceptilabs.logconf.APPLICATION_LOGGER)
     data_logger = logging.getLogger(perceptilabs.logconf.DATA_LOGGER)
-
-    if utils.is_tf2x():
-        logger.warning("Running TensorFlow version >= 2.0. Experimental support only!")
     
     from perceptilabs.mainInterface import Interface
     from perceptilabs.server.appServer import Server
@@ -81,7 +74,7 @@ def main():
     dataDict=dict()
     lwDict=dict()
     
-    core_interface = Interface(cores, testcore, dataDict, lwDict, issue_handler, session_id=session_id, allow_headless=args.allow_headless, trainer=args.trainer)
+    core_interface = Interface(cores, testcore, dataDict, lwDict, issue_handler, session_id=session_id, allow_headless=args.allow_headless)
 
     from perceptilabs.memorywatcher import MemoryWatcher
     memory_watcher = MemoryWatcher(issue_handler=issue_handler, core_interfaces=cores)

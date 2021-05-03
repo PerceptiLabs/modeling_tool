@@ -18,11 +18,6 @@ import perceptilabs.utils as utils
 logger = logging.getLogger(APPLICATION_LOGGER)
 
 
-def get_script_factory():
-    mode = 'tf2x' if utils.is_tf2x() else 'tf1x'
-    return ScriptFactory(mode=mode)
-
-
 class LW_interface_base(ABC):
     @abstractmethod
     def run(self):
@@ -95,7 +90,7 @@ class getNotebookRunscript(LW_interface_base):
 
     def run(self):
         graph_spec = GraphSpec.from_dict(self.jsonNetwork)
-        script_factory = get_script_factory()
+        script_factory = ScriptFactory()
         return script_factory.get_runscript(graph_spec)
 
     
@@ -105,7 +100,7 @@ class getNotebookImports(LW_interface_base):
 
     def run(self):
         graph_spec = GraphSpec.from_dict(self.jsonNetwork)
-        script_factory = get_script_factory()
+        script_factory = ScriptFactory()
         return script_factory.get_imports(graph_spec)
 
 
@@ -140,7 +135,7 @@ class getCode(LW_interface_base):
 
     def run(self):
         layer_spec = self._graph_spec.nodes_by_id[self._id]
-        script_factory = get_script_factory()
+        script_factory = ScriptFactory()
         
         code = script_factory.render_layer_code(
                 layer_spec,

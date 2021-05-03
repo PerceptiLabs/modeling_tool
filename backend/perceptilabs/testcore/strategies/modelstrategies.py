@@ -11,7 +11,6 @@ import perceptilabs.utils as utils
 class LoadInferenceModel():
     
     def __init__(self, model):
-        self._script_factory = ScriptFactory(mode='tf2x')
         self._model = model
         
     @classmethod
@@ -19,8 +18,7 @@ class LoadInferenceModel():
         """
         load model from checkpoint and graphspec
         """
-        script_factory = ScriptFactory(
-            mode='tf2x' if utils.is_tf2x() else 'tf1x', simple_message_bus=True)
+        script_factory = ScriptFactory()
         exporter = Exporter.from_disk(model_path, graph_spec, script_factory)
         model = exporter.training_model
         return cls(model)

@@ -8,12 +8,8 @@ from perceptilabs.layers.helper import LayerHelper
 from perceptilabs.layers.pretrainedvgg16.spec import PreTrainedVGG16Spec
 from perceptilabs.layers.specbase import LayerConnection
 
-@pytest.fixture(scope='module')
-def script_factory():
-    yield ScriptFactory()
 
-    
-def test_vgg16_instantiation(script_factory_tf2x):
+def test_vgg16_instantiation(script_factory):
     layer_spec = PreTrainedVGG16Spec(
         id_='layer_id',
         name='layer_name',
@@ -22,11 +18,11 @@ def test_vgg16_instantiation(script_factory_tf2x):
         trainable=False
     )
 
-    layer = LayerHelper(script_factory_tf2x, layer_spec).get_instance()
+    layer = LayerHelper(script_factory, layer_spec).get_instance()
     assert layer is not None
 
 
-def test_vgg16_can_run(script_factory_tf2x):
+def test_vgg16_can_run(script_factory):
     layer_spec = PreTrainedVGG16Spec(
         id_='layer_id',
         name='layer_name',
@@ -38,12 +34,12 @@ def test_vgg16_can_run(script_factory_tf2x):
 
     input_data = np.random.random((10, 224, 224, 3)) # [batch, time, features]
     x = tf.cast(input_data, tf.float32)
-    layer = LayerHelper(script_factory_tf2x, layer_spec).get_instance()
+    layer = LayerHelper(script_factory, layer_spec).get_instance()
     y = layer({'input': x})
     assert y['output'].shape == (10, 7, 7, 512)
     
 
-def test_vgg16_output_doesnot_change_in_training_mode_with_training_argument(script_factory_tf2x):
+def test_vgg16_output_doesnot_change_in_training_mode_with_training_argument(script_factory):
     layer_spec = PreTrainedVGG16Spec(
         id_='layer_id',
         name='layer_name',
@@ -54,13 +50,13 @@ def test_vgg16_output_doesnot_change_in_training_mode_with_training_argument(scr
     )
     input_data = np.random.random((1, 224, 224, 3))  # [batch, time, features]
     x = tf.cast(input_data, tf.float32)
-    layer = LayerHelper(script_factory_tf2x, layer_spec).get_instance()
+    layer = LayerHelper(script_factory, layer_spec).get_instance()
     y1 = layer({'input': x}, training=False)
     y2 = layer({'input': x}, training=True)
     assert (y1['output'].numpy() == y2['output'].numpy()).all() #vgg doesn't has dropouts
 
 
-def test_vgg16_output_doesnot_change_in_inference_mode_with_training_argument(script_factory_tf2x):
+def test_vgg16_output_doesnot_change_in_inference_mode_with_training_argument(script_factory):
     layer_spec = PreTrainedVGG16Spec(
         id_='layer_id',
         name='layer_name',
@@ -71,7 +67,7 @@ def test_vgg16_output_doesnot_change_in_inference_mode_with_training_argument(sc
     )
     input_data = np.random.random((1, 224, 224, 3))  # [batch, time, features]
     x = tf.cast(input_data, tf.float32)
-    layer = LayerHelper(script_factory_tf2x, layer_spec).get_instance()
+    layer = LayerHelper(script_factory, layer_spec).get_instance()
     y1 = layer({'input': x}, training=False)
     y2 = layer({'input': x}, training=True)
     assert (y1['output'].numpy() == y2['output'].numpy()).all()

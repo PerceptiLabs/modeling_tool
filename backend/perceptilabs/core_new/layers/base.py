@@ -526,7 +526,7 @@ class ClassificationLayer(TrainingSupervised):
     def auc_training(self) -> float:
         """Returns the current AUC score of the training phase"""
 
-        if utils.is_tf2x():
+        if utils.is_datawizard():
             raise NotImplementedError
         else:
             return -1.0
@@ -534,7 +534,7 @@ class ClassificationLayer(TrainingSupervised):
     @property
     def auc_validation(self) -> float:
         """Returns the current AUC score of the validation phase"""
-        if utils.is_tf2x():
+        if utils.is_datawizard():
             raise NotImplementedError
         else:
             return -1.0

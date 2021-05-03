@@ -30,7 +30,6 @@ from perceptilabs.CoreThread import CoreThread
 from perceptilabs.createDataObject import createDataObject
 from perceptilabs.messaging import MessageProducer
 from perceptilabs.aggregation import AggregationRequest, AggregationEngine
-from perceptilabs.utils import is_tf1x
 from perceptilabs.license_checker import LicenseV2
 from perceptilabs.trainer import Trainer
 from perceptilabs.modelrecommender.base import ModelRecommender
@@ -47,11 +46,10 @@ CPU_GPU_POLICY = 'force-gpu' # {'use-spec', 'force-gpu', 'force-cpu'}
 
 
 class coreLogic():
-    def __init__(self, networkName, issue_handler, session_id=None, trainer='core_v2'):
+    def __init__(self, networkName, issue_handler, session_id=None):
         logger.info(f"Created coreLogic for network '{networkName}'")
         self._session_id = session_id
         self._core_mode = 'v2'
-        self._trainer = trainer
         
         self.networkName=networkName
         self.cThread=None
@@ -188,12 +186,10 @@ class coreLogic():
         return trainer
 
     def _get_trainer(self, script_factory, graph_spec, training_settings, dataset_settings, model_id, user_email):
-        if self._trainer == 'core_v2':
-            return self._get_corev2_trainer(script_factory)
-        elif self._trainer == 'standard':
+        if utils.is_datawizard():            
             return self._get_standard_trainer(script_factory, graph_spec, training_settings, dataset_settings, model_id, user_email)
         else:
-            raise ValueError(f"Unknown trainer choice: '{self._trainer}'")
+            return self._get_corev2_trainer(script_factory)
 
     def start_core(self, graph_spec, model_id, user_email, training_settings=None, dataset_settings=None):
         """ Spins up a core for training (or exporting in the pre-data wizard case)
@@ -221,7 +217,6 @@ class coreLogic():
         graph_spec = self._override_graph_spec(graph_spec)
         
         script_factory = ScriptFactory(
-            mode='tf2x' if utils.is_tf2x() else 'tf1x',
             simple_message_bus=True,
             running_mode=self._running_mode
         )
@@ -397,12 +392,11 @@ class coreLogic():
 
 
         script_factory = ScriptFactory(
-            mode='tf2x' if utils.is_tf2x() else 'tf1x',
             simple_message_bus=True,
             running_mode=self._running_mode
         )
 
-        if graph_spec is not None and utils.is_tf1x():
+        if graph_spec is not None and utils.is_pre_datawizard():
             self.set_running_mode('exporting')
             self.start_core(graph_spec, model_id)
 

@@ -425,7 +425,7 @@ const actions = {
     const userEmail = rootGetters['mod_user/GET_userEmail'];
     const trainSettings = rootGetters['mod_workspace/GET_modelTrainingSetting'];
     const settingCollection = {}
-    if(process.env.ENABLE_GLOBAL_TRAINING_SETTINGS === 'true') {
+    if(process.env.ENABLE_DATAWIZARD === 'true') {
       settingCollection['trainSettings'] = trainSettings
     }
     const theData = {

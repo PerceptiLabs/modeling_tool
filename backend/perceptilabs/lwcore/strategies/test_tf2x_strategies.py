@@ -13,10 +13,10 @@ from perceptilabs.layers.ioinput.spec import InputLayerSpec
 from perceptilabs.data.base import FeatureSpec, DataLoader
 
 
-def test_tf2x_inner_result_has_shape(script_factory_tf2x, classification_spec_basic):
+def test_tf2x_inner_result_has_shape(script_factory, classification_spec_basic):
     layer_spec = classification_spec_basic['layer_fc']    
 
-    layer_helper = LayerHelper(script_factory_tf2x, layer_spec, classification_spec_basic)    
+    layer_helper = LayerHelper(script_factory, layer_spec, classification_spec_basic)    
     layer_class = layer_helper.get_class()
 
     layer_inputs_results = MagicMock()
@@ -25,7 +25,7 @@ def test_tf2x_inner_result_has_shape(script_factory_tf2x, classification_spec_ba
 
     graph_spec = MagicMock()
     
-    strategy = Tf2xInnerStrategy(script_factory_tf2x)
+    strategy = Tf2xInnerStrategy(script_factory)
     results = strategy.run(layer_spec, graph_spec, input_results)
 
     expected = {

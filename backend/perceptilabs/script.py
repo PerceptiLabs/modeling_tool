@@ -77,10 +77,7 @@ def is_syntax_ok(code):
 
 
 class ScriptFactory:
-    def __init__(self, mode='tf1x', max_time_run=None, simple_message_bus=False, running_mode = 'initializing'):
-
-        self._mode = mode
-        
+    def __init__(self, max_time_run=None, simple_message_bus=False, running_mode = 'initializing'):
         self._simple_message_bus = simple_message_bus
         
         self._engine = J2Engine(TEMPLATE_DIRECTORIES)
@@ -120,7 +117,7 @@ class ScriptFactory:
                 target_set.add(stmt)
 
 
-        layer_def = get_layer_definition(layer_spec.type_, tf2x=(self._mode=='tf2x'))
+        layer_def = get_layer_definition(layer_spec.type_)
         if layer_def is None:
             raise RuntimeError(f"No layer definition for '{layer_spec.type_}'. Check perceptilabs.layers.definitions module")
         
@@ -303,7 +300,7 @@ class ScriptFactory:
         else:
             # TODO(anton.k): exact path defined in layerspec instead?
             package_root = pkg_resources.resource_filename('perceptilabs', '.')
-            layer_def = get_layer_definition(layer_spec.type_, tf2x=(self._mode=='tf2x'))
+            layer_def = get_layer_definition(layer_spec.type_)
             if layer_def is None:
                 raise RuntimeError(f"No layer definition for '{layer_spec.type_}'. Check perceptilabs.layers.definitions module")
             

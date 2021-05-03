@@ -444,7 +444,7 @@ export default {
       userEmail: "mod_user/GET_userEmail"
     }),
     isTF2XEnabled() {
-      return process.env.ENABLE_TF2X === "true";
+      return process.env.ENABLE_DATAWIZARD === "true";
     },
     isDataWizardEnabled() {
       return isEnvDataWizardEnabled();

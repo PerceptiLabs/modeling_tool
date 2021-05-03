@@ -64,8 +64,8 @@ def graph_spec_few_epochs(csv_path):
     return graph_spec
 
 @pytest.fixture()
-def testcore(graph_spec_few_epochs, temp_path, script_factory_tf2x):
-    training_model = TrainingModel(script_factory_tf2x, graph_spec_few_epochs)
+def testcore(graph_spec_few_epochs, temp_path, script_factory):
+    training_model = TrainingModel(script_factory, graph_spec_few_epochs)
     exporter = Exporter(graph_spec_few_epochs, training_model)
     exporter.export_checkpoint(temp_path)
     testcore = TestCore([1], IssueHandler())

@@ -95,7 +95,7 @@ def test_fully_connected_is_training_overrides_dropout(script_factory):
 
     
 @pytest.mark.tf2x                
-def test_tf2x_fully_connected_1x1_should_be_normal_multiplication(script_factory_tf2x):
+def test_tf2x_fully_connected_1x1_should_be_normal_multiplication(script_factory):
     layer_spec = DeepLearningFcSpec(
         id_='layer_id',
         name='layer_name',
@@ -103,7 +103,7 @@ def test_tf2x_fully_connected_1x1_should_be_normal_multiplication(script_factory
         activation='Sigmoid',
         backward_connections=(LayerConnection(dst_var='input'),)        
     )
-    layer = LayerHelper(script_factory_tf2x, layer_spec).get_instance(print_code=True)
+    layer = LayerHelper(script_factory, layer_spec).get_instance(print_code=True)
 
     x = 32*np.ones((1, 1))
     y = layer({'input': tf.constant(x)})
@@ -119,7 +119,7 @@ def test_tf2x_fully_connected_1x1_should_be_normal_multiplication(script_factory
     assert np.isclose(actual, expected)
 
 
-def test_tf2x_fully_connected_batch_norm_is_applied(script_factory_tf2x):
+def test_tf2x_fully_connected_batch_norm_is_applied(script_factory):
     layer_spec = DeepLearningFcSpec(
         id_='layer_id',
         name='layer_name',
@@ -128,7 +128,7 @@ def test_tf2x_fully_connected_batch_norm_is_applied(script_factory_tf2x):
         batch_norm=True,
         backward_connections=(LayerConnection(dst_var='input'),)        
     )
-    layer = LayerHelper(script_factory_tf2x, layer_spec).get_instance(print_code=True)
+    layer = LayerHelper(script_factory, layer_spec).get_instance(print_code=True)
 
     x = 32*np.random.random((10, 1))
     y = layer({'input': tf.constant(x)})
@@ -150,7 +150,7 @@ def test_tf2x_fully_connected_batch_norm_is_applied(script_factory_tf2x):
     assert np.all(np.isclose(actual, expected))
     
 
-def test_tf2x_fully_connected_batch_norm_uses_initial_params_when_not_training(script_factory_tf2x):
+def test_tf2x_fully_connected_batch_norm_uses_initial_params_when_not_training(script_factory):
     layer_spec = DeepLearningFcSpec(
         id_='layer_id',
         name='layer_name',
@@ -159,7 +159,7 @@ def test_tf2x_fully_connected_batch_norm_uses_initial_params_when_not_training(s
         batch_norm=True,
         backward_connections=(LayerConnection(dst_var='input'),)        
     )
-    layer = LayerHelper(script_factory_tf2x, layer_spec).get_instance(print_code=True)
+    layer = LayerHelper(script_factory, layer_spec).get_instance(print_code=True)
 
     x = 32*np.random.random((10, 1))
     y = layer({'input': tf.constant(x)}, training=False)
@@ -181,7 +181,7 @@ def test_tf2x_fully_connected_batch_norm_uses_initial_params_when_not_training(s
     assert np.all(np.isclose(actual, expected, rtol=1e-03))
     
  
-def test_tf2x_fully_connected_1x1_with_no_activation(script_factory_tf2x):
+def test_tf2x_fully_connected_1x1_with_no_activation(script_factory):
     layer_spec = DeepLearningFcSpec(
         id_='layer_id',
         name='layer_name',
@@ -189,7 +189,7 @@ def test_tf2x_fully_connected_1x1_with_no_activation(script_factory_tf2x):
         activation='None',
         backward_connections=(LayerConnection(dst_var='input'),)        
     )
-    layer = LayerHelper(script_factory_tf2x, layer_spec).get_instance(print_code=True)
+    layer = LayerHelper(script_factory, layer_spec).get_instance(print_code=True)
 
     x = 32*np.ones((1, 1))
     y = layer({'input': tf.constant(x)})
@@ -203,7 +203,7 @@ def test_tf2x_fully_connected_1x1_with_no_activation(script_factory_tf2x):
     assert np.isclose(actual, expected)
    
 
-def test_tf2x_fully_connected_1x1_with_relu(script_factory_tf2x):
+def test_tf2x_fully_connected_1x1_with_relu(script_factory):
     layer_spec = DeepLearningFcSpec(
         id_='layer_id',
         name='layer_name',
@@ -211,7 +211,7 @@ def test_tf2x_fully_connected_1x1_with_relu(script_factory_tf2x):
         activation='ReLU',
         backward_connections=(LayerConnection(dst_var='input'),)        
     )
-    layer = LayerHelper(script_factory_tf2x, layer_spec).get_instance(print_code=True)
+    layer = LayerHelper(script_factory, layer_spec).get_instance(print_code=True)
 
     x = 32*np.ones((1, 1))
     y = layer({'input': tf.constant(x)})
@@ -225,7 +225,7 @@ def test_tf2x_fully_connected_1x1_with_relu(script_factory_tf2x):
     assert np.isclose(actual, expected)
    
     
-def test_tf2x_fully_connected_zero_keep_prob_equals_zero_output(script_factory_tf2x):
+def test_tf2x_fully_connected_zero_keep_prob_equals_zero_output(script_factory):
     """ If the keep probability is low the expected output should be zero """
 
     layer_spec = DeepLearningFcSpec(
@@ -237,7 +237,7 @@ def test_tf2x_fully_connected_zero_keep_prob_equals_zero_output(script_factory_t
         keep_prob=1e-7,
         backward_connections=(LayerConnection(dst_var='input'),)                
     )
-    layer = LayerHelper(script_factory_tf2x, layer_spec).get_instance()
+    layer = LayerHelper(script_factory, layer_spec).get_instance()
 
     x = 32*np.ones((10, 10))
     y = layer({'input': tf.constant(x)}, training=True)
@@ -245,7 +245,7 @@ def test_tf2x_fully_connected_zero_keep_prob_equals_zero_output(script_factory_t
     assert np.all(y['output'] == 0)
 
 
-def test_tf2x_fully_connected_is_training_overrides_dropout(script_factory_tf2x):
+def test_tf2x_fully_connected_is_training_overrides_dropout(script_factory):
     layer_spec = DeepLearningFcSpec(
         id_='layer_id',
         name='layer_name',
@@ -255,7 +255,7 @@ def test_tf2x_fully_connected_is_training_overrides_dropout(script_factory_tf2x)
         keep_prob=1e-7,
         backward_connections=(LayerConnection(dst_var='input'),)                
     )
-    layer = LayerHelper(script_factory_tf2x, layer_spec).get_instance()
+    layer = LayerHelper(script_factory, layer_spec).get_instance()
 
     x = 32*np.ones((10, 10))
     y = layer({'input': tf.constant(x)}, training=False)

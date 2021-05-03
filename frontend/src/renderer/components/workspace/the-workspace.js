@@ -337,7 +337,7 @@ export default {
         if (!this.getShowTutorialTips) {
           this.deactivateCurrentStep();
           return;
-        } else if (newVal === 'tutorial-workspace-layer-data' && process.env.ENABLE_TF2X === 'true') {
+        } else if (newVal === 'tutorial-workspace-layer-data' && process.env.ENABLE_DATAWIZARD === 'true') {
           this.setNextStep({
             currentStep: 'tutorial-workspace-layer-data'
           })

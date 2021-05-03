@@ -12,9 +12,7 @@ module.exports = merge(prodEnv, {
   KEYCLOACK_CLIENT_ID: '"vue-perceptilabs-client-id"',
   GITHUB_CLIENT_ID: '"094271b0edb47c75dc24"',
   PL_FILE_SERVING_TOKEN: '"12312"',
-  ENABLE_TF2X: '"false"',
-  ENABLE_DATA_WIZARD: '"false"',
   ENABLE_LOGROCKET: '"false"',
   LOGROCKET_APP_ID: '"l2mogl/modeling-tool"',
-  ENABLE_GLOBAL_TRAINING_SETTINGS: '"false"'
+  ENABLE_DATAWIZARD: '"true"'
 })

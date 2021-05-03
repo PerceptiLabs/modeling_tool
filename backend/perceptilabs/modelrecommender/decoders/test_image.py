@@ -8,7 +8,7 @@ from perceptilabs.graph.builder import GraphSpecBuilder
 
 from perceptilabs.modelrecommender.decoders.image import ImageDecoderBlueprint
 
-@pytest.mark.tf2x    
+
 def test_numerical_input_and_image_output_gives_correct_settings():
     builder = GraphSpecBuilder()
 

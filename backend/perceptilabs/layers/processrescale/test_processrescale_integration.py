@@ -50,7 +50,7 @@ def test_rescale_down(script_factory):
     assert y['output'].shape == (10,10,1)
 
     
-def test_rescale_up_tf2x(script_factory_tf2x):
+def test_rescale_up_tf2x(script_factory):
     layer_spec = ProcessRescaleSpec(
         id_='layer_id',
         name='layer_name',
@@ -58,13 +58,13 @@ def test_rescale_up_tf2x(script_factory_tf2x):
         height='256',
         backward_connections=(LayerConnection(dst_var='input'),)        
     )
-    layer = LayerHelper(script_factory_tf2x, layer_spec).get_instance()
+    layer = LayerHelper(script_factory, layer_spec).get_instance()
     x = np.random.random((1,10,1))
     y = layer({'input':x})
     assert y['output'].shape == (256,256,1)
 
     
-def test_rescale_down_tf2x(script_factory_tf2x):
+def test_rescale_down_tf2x(script_factory):
     layer_spec = ProcessRescaleSpec(
         id_='layer_id',
         name='layer_name',
@@ -73,7 +73,7 @@ def test_rescale_down_tf2x(script_factory_tf2x):
         backward_connections=(LayerConnection(dst_var='input'),)        
     )
 
-    layer = LayerHelper(script_factory_tf2x, layer_spec).get_instance()
+    layer = LayerHelper(script_factory, layer_spec).get_instance()
     
     x = np.random.random((1, 45, 1))
     y = layer({'input': x})

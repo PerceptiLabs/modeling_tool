@@ -103,7 +103,7 @@ def test_conv2d_is_training_overrides_dropout(script_factory):
 
 
 
-def test_tf2x_conv2d_1x1_should_be_sum(script_factory_tf2x):
+def test_tf2x_conv2d_1x1_should_be_sum(script_factory):
     """ Inspired from answer in: https://datascience.stackexchange.com/questions/6107/what-are-deconvolutional-layers """
     
     layer_spec = DeepLearningConvSpec(
@@ -116,7 +116,7 @@ def test_tf2x_conv2d_1x1_should_be_sum(script_factory_tf2x):
         activation='None',
         backward_connections=(LayerConnection(dst_var='input'),)
     )
-    layer = LayerHelper(script_factory_tf2x, layer_spec).get_instance(print_code=True)
+    layer = LayerHelper(script_factory, layer_spec).get_instance(print_code=True)
     x = np.ones((1, 2, 2, 1), dtype=np.float32)    
 
     y = layer({'input': x})
@@ -130,7 +130,7 @@ def test_tf2x_conv2d_1x1_should_be_sum(script_factory_tf2x):
     assert (expected.squeeze() == actual.squeeze()).all()
 
     
-def test_tf2x_conv2d_zero_keep_prob_equals_zero_output(script_factory_tf2x):
+def test_tf2x_conv2d_zero_keep_prob_equals_zero_output(script_factory):
     """ If the keep probability is low the expected output should be zero """
 
     layer_spec = DeepLearningConvSpec(
@@ -145,7 +145,7 @@ def test_tf2x_conv2d_zero_keep_prob_equals_zero_output(script_factory_tf2x):
         keep_prob=1e-7,
         backward_connections=(LayerConnection(dst_var='input'),)        
     )
-    layer = LayerHelper(script_factory_tf2x, layer_spec).get_instance()
+    layer = LayerHelper(script_factory, layer_spec).get_instance()
 
     x = np.ones((1, 2, 2, 1), dtype=np.float32)        
     y = layer({'input': x})
@@ -154,7 +154,7 @@ def test_tf2x_conv2d_zero_keep_prob_equals_zero_output(script_factory_tf2x):
     assert np.allclose(output, 0)
 
     
-def test_tf2x_conv2d_is_training_overrides_dropout(script_factory_tf2x):
+def test_tf2x_conv2d_is_training_overrides_dropout(script_factory):
     """ If the keep probability is low the expected output should be zero """
 
     layer_spec = DeepLearningConvSpec(
@@ -169,7 +169,7 @@ def test_tf2x_conv2d_is_training_overrides_dropout(script_factory_tf2x):
         keep_prob=1e-7,
         backward_connections=(LayerConnection(dst_var='input'),)        
     )
-    layer = LayerHelper(script_factory_tf2x, layer_spec).get_instance()
+    layer = LayerHelper(script_factory, layer_spec).get_instance()
 
     x = np.ones((1, 2, 2, 1), dtype=np.float32)        
     y = layer({'input': x}, training=False)
@@ -178,7 +178,7 @@ def test_tf2x_conv2d_is_training_overrides_dropout(script_factory_tf2x):
     assert not np.allclose(output, 0)
 
 
-def test_tf2x_conv2d_batch_norm_gives_zero_mean_unit_variance(script_factory_tf2x):
+def test_tf2x_conv2d_batch_norm_gives_zero_mean_unit_variance(script_factory):
     layer_spec = DeepLearningConvSpec(
         id_='layer_id',
         name='layer_name',
@@ -190,7 +190,7 @@ def test_tf2x_conv2d_batch_norm_gives_zero_mean_unit_variance(script_factory_tf2
         batch_norm=True,
         backward_connections=(LayerConnection(dst_var='input'),)
     )
-    layer = LayerHelper(script_factory_tf2x, layer_spec).get_instance(print_code=True)
+    layer = LayerHelper(script_factory, layer_spec).get_instance(print_code=True)
     np.random.seed(0)
     x = np.random.random((4, 2, 2, 3)).astype(np.float32)
 
@@ -201,7 +201,7 @@ def test_tf2x_conv2d_batch_norm_gives_zero_mean_unit_variance(script_factory_tf2
     assert np.isclose(np.var(output), 1, atol=0.1) # 0.9 <= var < 1.1
 
 
-def test_tf2x_conv2d_max_pooling_shape_ok(script_factory_tf2x):
+def test_tf2x_conv2d_max_pooling_shape_ok(script_factory):
     pool_size = 2
     stride = 3
     
@@ -219,7 +219,7 @@ def test_tf2x_conv2d_max_pooling_shape_ok(script_factory_tf2x):
         pool_stride=stride,
         backward_connections=(LayerConnection(dst_var='input'),)
     )
-    layer = LayerHelper(script_factory_tf2x, layer_spec).get_instance(print_code=True)
+    layer = LayerHelper(script_factory, layer_spec).get_instance(print_code=True)
     np.random.seed(0)
 
     input_size = 10

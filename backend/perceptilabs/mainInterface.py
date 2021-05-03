@@ -7,7 +7,7 @@ import threading
 from sentry_sdk import configure_scope
 from concurrent.futures import ThreadPoolExecutor
 
-from perceptilabs.parser.onnx_converter import *
+from perceptilabs.parser.onnx_converter import load_tf1x_frozen, create_onnx_from_tf1x
 from perceptilabs.parser.parse_onnx import LayerCheckpoint, Parser
 import perceptilabs.tracking as tracking
 
@@ -34,7 +34,7 @@ import perceptilabs.logconf
 import perceptilabs.autosettings.utils as autosettings_utils
 from perceptilabs.modelrecommender import ModelRecommender
 from perceptilabs.data.base import FeatureSpec, DataLoader
-from perceptilabs.utils import is_tf1x
+from perceptilabs.utils import is_pre_datawizard
 from perceptilabs.script import ScriptFactory
 
 #LW interface
@@ -67,7 +67,7 @@ from perceptilabs.testInterface import (
 logger = logging.getLogger(APPLICATION_LOGGER)
 
 
-USE_AUTO_SETTINGS = is_tf1x()  # TODO: enable for TF2 (story 1561)
+USE_AUTO_SETTINGS = is_pre_datawizard()  # TODO: enable for TF2 (story 1561)
 USE_LW_CACHING = True
 LW_CACHE_MAX_ITEMS = 25 
 AGGREGATION_ENGINE_MAX_WORKERS = 2
@@ -113,7 +113,7 @@ class NetworkLoader:
 
 
 class Interface():
-    def __init__(self, cores, testcore, dataDict, lwDict, issue_handler, message_factory=None, session_id='default', allow_headless=False, trainer='core_v2', experiment_api=False):
+    def __init__(self, cores, testcore, dataDict, lwDict, issue_handler, message_factory=None, session_id='default', allow_headless=False, experiment_api=False):
         self._allow_headless = allow_headless
         self._network_loader = NetworkLoader() 
         self._cores=cores
@@ -124,7 +124,6 @@ class Interface():
         self._session_id = session_id
         self._lw_cache_v2 = LightweightCache(max_size=LW_CACHE_MAX_ITEMS) if USE_LW_CACHING else None
         self._settings_engine = None
-        self._trainer = trainer
 
         if experiment_api:
             self._data_container = Exp_DataContainer()
@@ -188,7 +187,7 @@ class Interface():
         t.start()
 
     def _addCore(self, receiver):
-        core=coreLogic(receiver, self._issue_handler, self._session_id, trainer=self._trainer)
+        core = coreLogic(receiver, self._issue_handler, self._session_id)
         self._cores[receiver] = core
 
     def _setCore(self, receiver):
@@ -234,7 +233,7 @@ class Interface():
     def create_lw_core(self, receiver, jsonNetwork, adapter=True, dataset_settings=None):
         graph_spec = GraphSpec.from_dict(jsonNetwork)
 
-        if self._trainer == 'standard':
+        if utils.is_datawizard():
             if not dataset_settings:
                 raise RuntimeError("When using the standard trainer, dataset settings must be set!")
             
@@ -641,7 +640,7 @@ class Interface():
         return json_network
     
     def _create_response_export(self, value, receiver):
-        if utils.is_tf2x():
+        if utils.is_datawizard():
             return self._create_response_export_tf2x(value, receiver)
         else:
             return self._create_response_export_tf1x(value, receiver)
@@ -708,7 +707,6 @@ class Interface():
 
     def _export_using_exporter(self, value, path, graph_spec, model_id, user_email):
         script_factory = ScriptFactory(
-            mode='tf2x' if utils.is_tf2x() else 'tf1x',
             simple_message_bus=True,
         )
         try:

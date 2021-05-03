@@ -477,7 +477,7 @@ export const arrayIncludeOrOmit = (array, value) => {
 const sleep = m => new Promise(r => setTimeout(r, m));
 
 export const isEnvDataWizardEnabled = () => {
-  return process.env.ENABLE_DATA_WIZARD === 'true';
+  return process.env.ENABLE_DATAWIZARD === 'true';
 }
 
 export const getFirstElementFromObject = (data) => {
