@@ -143,15 +143,7 @@ export default {
       }
     },
     goToReport() {
-      this.setLoading(true);
-      fileserverAvailability().then(response => {
-        this.setLoading(false);
-        if (response === "AVAILABLE") {
-          this.$store.dispatch('globalView/SET_createIssuesPopup', true);
-        } else {
-          this.openErrorPopup("It seems PerceptiLabs Backend is not running so this feature can't be used. If you need support or want to manually report a bug you can visit <a style='color: #B6C7FB' href='https://forum.perceptilabs.com' target='_blank'>forum.perceptilabs.com</a>");
-        }
-      });
+      window.open('https://forum.perceptilabs.com');
     },
     toggleHelp(value = null) {
       this.showHelpPanel = !!value;
