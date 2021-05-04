@@ -45,8 +45,6 @@
 </template>
 
 <script>
-import { MODAL_PAGE_WHATS_NEW } from "@/core/constants";
-
 import TypeOfModelYouBuild from "@/components/questionnaire/type-of-model-you-build.vue";
 import DeepLearningExperience from "@/components/questionnaire/deep-learning-experience.vue";
 import IntergalacticJourney from "@/components/questionnaire/Intergalactic-journey.vue";
@@ -135,7 +133,7 @@ export default {
     },
     exitQuestionnaire() {      
       if (!this.$store.getters['mod_tutorials/getHasShownWhatsNew']) {
-        this.$store.dispatch('modal_pages/setActivePageAction', MODAL_PAGE_WHATS_NEW);
+        // this.$store.dispatch('modal_pages/setActivePageAction', MODAL_PAGE_WHATS_NEW);
       } else {
         this.$store.dispatch('modal_pages/closePageAction');
       }

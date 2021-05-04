@@ -29,7 +29,7 @@
           .help-button-panel-content
             .help-button-panel-content-item(@click="toggleTutorialTips") {{ hideTipsDisplayText }}
             .help-button-panel-content-item(@click="onActivateChecklist") Get started checklist
-            .help-button-panel-content-item(@click="goToWhatsNew") What's new
+            //- .help-button-panel-content-item(@click="goToWhatsNew") What's new
             .help-button-panel-content-item(@click="openVideoTutorials") 
               span Video tutorials
               svg(width="13" height="13" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg")
@@ -55,7 +55,7 @@
   import TheMenu from '@/components/the-menu.vue'
   import HeaderProfile from "@/components/app-header/header-profile";
   import { mapGetters, mapActions } from 'vuex';
-  import { MODAL_PAGE_WHATS_NEW, PERCEPTILABS_DOCUMENTATION_URL, PERCEPTILABS_VIDEO_TUTORIAL_URL } from "@/core/constants";
+  import { PERCEPTILABS_DOCUMENTATION_URL, PERCEPTILABS_VIDEO_TUTORIAL_URL } from "@/core/constants";
   import { fileserverAvailability } from '@/core/apiFileserver';
 
 export default {
@@ -65,7 +65,7 @@ export default {
     return {
       showHelpPanel: false,
       showProfile: !process.env.NO_KC,
-      MODAL_PAGE_WHATS_NEW,
+      // MODAL_PAGE_WHATS_NEW,
       isLoading: false
     }
   },
@@ -166,8 +166,8 @@ export default {
       this.trackHelpOption('Activate checklist');
     },
     goToWhatsNew() {
-      this.setActivePageAction(MODAL_PAGE_WHATS_NEW);
-      this.trackHelpOption('Go to Whats New');
+      // this.setActivePageAction(MODAL_PAGE_WHATS_NEW);
+      // this.trackHelpOption('Go to Whats New');
     },
     openVideoTutorials() {
       this.trackHelpOption('Go to Video Tutorials');

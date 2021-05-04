@@ -1,13 +1,13 @@
 <template lang="pug">
   div(v-if="isOpen")#modal-page-engine-wrapper.modal-page-engine-wrapper
     create-select-project(v-if="currentPage === MODAL_PAGE_PROJECT")
-    page-whats-new(v-else-if="currentPage === MODAL_PAGE_WHATS_NEW")
+    //- page-whats-new(v-else-if="currentPage === MODAL_PAGE_WHATS_NEW")
     page-questionnaire(v-else-if="currentPage === MODAL_PAGE_QUESTIONNAIRE")
 </template>
 <script>
   import { mapActions } from "vuex";
   import CreateSelectProject from "@/pages/create-select-project/create-select-project";
-  import { MODAL_PAGE_PROJECT, MODAL_PAGE_WHATS_NEW, MODAL_PAGE_QUESTIONNAIRE } from "@/core/constants";
+  import { MODAL_PAGE_PROJECT, MODAL_PAGE_QUESTIONNAIRE } from "@/core/constants";
   import PageWhatsNew from "@/pages/onboarding/whats-new.vue";
   import PageQuestionnaire from "@/pages/questionnaire/questionnaire.vue";
   
@@ -20,7 +20,7 @@
     data: function() {
       return {
         MODAL_PAGE_PROJECT,
-        MODAL_PAGE_WHATS_NEW,
+        // MODAL_PAGE_WHATS_NEW,
         MODAL_PAGE_QUESTIONNAIRE
       }
     },

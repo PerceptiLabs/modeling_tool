@@ -54,7 +54,7 @@
   import ModalPagesEngine       from '@/components/modal-pages-engine.vue';
   import AboutAppPopup          from "@/components/global-popups/about-app-popup.vue";
   import FilePickerPopup        from "@/components/global-popups/file-picker-popup.vue";
-  import { MODAL_PAGE_PROJECT, MODAL_PAGE_WHATS_NEW, MODAL_PAGE_QUESTIONNAIRE, IS_VALID_KEYCLOACK_CHECKER_URL } from '@/core/constants.js';
+  import { MODAL_PAGE_PROJECT, MODAL_PAGE_QUESTIONNAIRE, IS_VALID_KEYCLOACK_CHECKER_URL } from '@/core/constants.js';
   import { isUrlReachable } from '@/core/apiFileserver.js';
 
   export default {
@@ -137,7 +137,7 @@
             }
 
           } else if (!this.getHasShownWhatsNew) {
-            this.setActivePageAction(MODAL_PAGE_WHATS_NEW);
+            // this.setActivePageAction(MODAL_PAGE_WHATS_NEW);
           } else {
             this.initTutorialView();
           }

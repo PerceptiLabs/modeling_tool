@@ -39,7 +39,6 @@
 
 <script>
 import { mapActions } from "vuex";
-import { MODAL_PAGE_PROJECT, MODAL_PAGE_WHATS_NEW } from "@/core/constants";
 
 export default {
   name: 'PageWhatsNew',
@@ -115,8 +114,8 @@ export default {
     }
   },
   created() {
-    this.setActivePageAction(MODAL_PAGE_WHATS_NEW);
-    this.setCurrentView('tutorial-whats-new-view');
+    // this.setActivePageAction(MODAL_PAGE_WHATS_NEW);
+    // this.setCurrentView('tutorial-whats-new-view');
   }
 }
 </script>
