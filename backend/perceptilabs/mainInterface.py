@@ -732,8 +732,10 @@ class Interface():
                 'data_path':value_dict['data_path'],
             } 
         tests = action["tests"]
+        user_email = action['user_email']
+        
         logger.info('List of tests %s have been requested for models %s', action['tests'], value.keys())
-        results = GetTestResults(models_info, self._testcore, tests).run()
+        results = GetTestResults(models_info, self._testcore, tests).run(user_email=user_email)
         response = {'action':action,'value':results}
         return response
     

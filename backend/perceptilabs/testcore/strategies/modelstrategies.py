@@ -9,7 +9,6 @@ import perceptilabs.utils as utils
     
 
 class LoadInferenceModel():
-    
     def __init__(self, model):
         self._model = model
         

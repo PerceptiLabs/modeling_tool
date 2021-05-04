@@ -10,6 +10,7 @@ from perceptilabs.graph.spec import GraphSpec
 from perceptilabs.logconf import APPLICATION_LOGGER, USER_LOGGER
 from perceptilabs.testcore.strategies.modelstrategies import LoadInferenceModel
 from perceptilabs.testcore.strategies.teststrategies import ConfusionMatrix, MetricsTable
+import perceptilabs.tracking as tracking
 
 logger = logging.getLogger(APPLICATION_LOGGER)
 user_logger = logging.getLogger(USER_LOGGER)
@@ -48,42 +49,49 @@ class TestCore():
         self._data_loader = DataLoader.from_graph_spec(graph_spec, partitions)
         self._dataspecs = self._get_input_and_output_feature(self._data_loader)
 
-    def run_tests(self, tests):
+    def run_tests(self, tests, user_email=None):
         """
         Runs the list of tests for all models in the testcore.
+
+        Args:
+            user_email: the email of the user. Optional.
         Returns:
             A dictionary containing results of all the tests of all models
         """
         results = {}
-        for receiver_id in self._models:
+        for model_id in self._models:
             compatible_layers = {}
             for test in tests:
-                compatible_layers[test] = self.get_compatible_output_layers(test, receiver_id)
+                compatible_layers[test] = self.get_compatible_output_layers(test, model_id)
             # all the results are being collected at once to not repeat the same computations for every test. 
             data_iterator = self._get_data_generator()
-            logger.info("Generating outputs for model %s.",  receiver_id)
-            model_outputs = self._models[receiver_id].run_inference(data_iterator) #TODO(mukund): support inner layer outputs 
-            logger.info("Outputs generated for model %s.", receiver_id)
-            results[receiver_id] = {}
+
+            logger.info("Generating outputs for model %s.",  model_id)
+            model_outputs = self._models[model_id].run_inference(data_iterator) #TODO(mukund): support inner layer outputs 
+            logger.info("Outputs generated for model %s.", model_id)
+            results[model_id] = {}
             for test in tests:
                 logger.info("Starting test %s for model %s.",
-                            test, receiver_id)
-                results[receiver_id][test] = self._run_test(test, model_outputs, compatible_layers[test], receiver_id)
+                            test, model_id)
+                results[model_id][test] = self._run_test(test, model_outputs, compatible_layers[test], model_id, user_email)
         return results
 
-    def _run_test(self, test, model_outputs, compatible_output_layers, receiver_id): 
+    def _run_test(self, test, model_outputs, compatible_output_layers, model_id, user_email): 
         if len(compatible_output_layers):
             if test == 'confusion_matrix':
                 results = ConfusionMatrix().run(model_outputs, compatible_output_layers)
             elif test == 'metrics_table':
                 results = MetricsTable().run(model_outputs, compatible_output_layers)
-            logger.info("test %s completed for model %s.", test, receiver_id)
+            logger.info("test %s completed for model %s.", test, model_id)
+
+            if user_email:
+                tracking.send_testing_completed(user_email, model_id, test)            
+            
             return results
         else: 
-            raise Exception("%s is not supported yet by the model %s.", test, receiver_id)
+            raise Exception("%s is not supported yet by the model %s.", test, model_id)
         
         
-
     def get_compatible_output_layers(self, test, receiver_id):
         """
         checks the compatibility of the given test with the model. The rules to check the compatibility

@@ -14,6 +14,7 @@ perceptilabs/layers/processrescale/tf2x_template.j2
 perceptilabs/setup.py
 perceptilabs/tasks/executor.py
 perceptilabs/tasks/utils.py
+perceptilabs/tracking/testing_completed.py
 perceptilabs/testInterface.py
 perceptilabs/testcore/__init__.py
 perceptilabs/testcore/base.py

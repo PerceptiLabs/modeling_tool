@@ -390,7 +390,7 @@ const actions = {
   //---------------
   //  NETWORK TRAINING
   //---------------
-  API_getTestResults({dispatch, getters}, payload) {
+  API_getTestResults({dispatch, getters, rootGetters}, payload) {
     const { modelIds, model_paths }  = payload;
     
     let value = {};
@@ -405,7 +405,8 @@ const actions = {
     const theData = {
       receiver: 'tests',
       action: {
-        tests: payload.testTypes
+        tests: payload.testTypes,
+        user_email: rootGetters['mod_user/GET_userEmail']
       },
       value,
     }
