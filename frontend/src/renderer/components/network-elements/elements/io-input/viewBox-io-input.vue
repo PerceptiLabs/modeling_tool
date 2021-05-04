@@ -2,21 +2,21 @@
   .statistics-box
     .statistics-box_main.statistics-box_col(v-if="currentTab !== 'Global'")
       chart-switch(
+        key="1"
         chart-label="Data"
         :chart-data="chartData.Data"
       )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Global' && chartData.Loss")
       chart-switch(
-        key="6"
+        key="2"
         chart-label="Loss during one epoch"
-        :chart-data="chartData.Loss.OverEpochs"
+        :chart-data="chartData.Loss.OverSteps"
         :custom-color="colorListAccuracy"
       )
       chart-switch(
-        key="7"
-        v-if="chartData.Loss.OverSteps"
+        key="3"
         chart-label="Loss over all epochs"
-        :chart-data="chartData.Loss.OverSteps"
+        :chart-data="chartData.Loss.OverEpochs"
         :custom-color="colorListAccuracy"
       )
 </template>

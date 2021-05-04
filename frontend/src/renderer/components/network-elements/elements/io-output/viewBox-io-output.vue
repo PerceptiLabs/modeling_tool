@@ -5,13 +5,13 @@
         .statistics-box_main.statistics-box_col(v-if="chartData.hasOwnProperty('Accuracy')")
           .statistics-box_row
             chart-switch(
-              key="4"
+              key="1"
               chart-label="Accuracy during one epoch"
               :chart-data="chartData.Accuracy.OverSteps"
               :custom-color="colorListAccuracy"
             )
             chart-switch(
-              key="5"
+              key="2"
               chart-label="Accuracy over all epochs"
               :chart-data="chartData.Accuracy.OverEpochs"
               :custom-color="colorListAccuracy"
@@ -19,13 +19,13 @@
         .statistics-box_main.statistics-box_col(v-if="chartData.hasOwnProperty('PvG')")
           .statistics-box_row
             chart-switch(
-              key="6"
+              key="3"
               chart-label="Prediction vs Ground truth"
               :chart-data="chartData.PvG.Sample"
               :custom-color="colorList"
             )
             chart-switch(
-              key="7"
+              key="4"
               chart-label="Batch Average Prediction vs Ground truth"
               :chart-data="chartData.PvG.BatchAverage"
               :custom-color="colorList"
@@ -33,13 +33,13 @@
         .statistics-box_main.statistics-box_col(v-if="chartData.hasOwnProperty('IoU')")
           .statistics-box_row
             chart-switch(
-              key="4"
+              key="5"
               chart-label="IoU during one epoch"
               :chart-data="chartData.IoU.OverSteps"
               :custom-color="colorListAccuracy"
             )
             chart-switch(
-              key="5"
+              key="6"
               chart-label="IoU over all epochs"
               :chart-data="chartData.IoU.OverEpochs"
               :custom-color="colorListAccuracy"
@@ -48,7 +48,7 @@
         .statistics-box_main.statistics-box_col(v-if="chartData.hasOwnProperty('ViewBox')")
           .statistics-box_row
             chart-switch(
-              key="4"
+              key="7"
               chart-label="Output"
               :chart-data="chartData.ViewBox.Output"
               :custom-color="colorListAccuracy"
@@ -57,21 +57,21 @@
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Global' && chartData.Loss")
       template(v-if="sectionTitle === 'Statistics'")
         chart-switch(
-          key="6"
+          key="8"
           chart-label="Loss during one epoch"
-          :chart-data="chartData.Loss.OverEpochs"
+          :chart-data="chartData.Loss.OverSteps"
           :custom-color="colorListAccuracy"
         )
         chart-switch(
-          key="7"
+          key="9"
           v-if="chartData.Loss.OverSteps"
           chart-label="Loss over all epochs"
-          :chart-data="chartData.Loss.OverSteps"
+          :chart-data="chartData.Loss.OverEpochs"
           :custom-color="colorListAccuracy"
         )
       tempalate(v-else)
         chart-switch(
-          key="4"
+          key="10"
           chart-label="Output"
           :chart-data="chartData.ViewBox.Output"
           :custom-color="colorListAccuracy"
