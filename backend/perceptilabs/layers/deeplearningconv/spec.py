@@ -25,6 +25,7 @@ class DeepLearningConvSpec(InnerLayerSpec, MixinDeepLearning):
 
     @classmethod
     def _from_dict_internal(cls, id_: str, dict_: Dict[str, Any], params: Dict[str, Any]) -> LayerSpec:
+        """ Converts the frontend JSON into a Python class """        
         if 'Properties' in dict_ and dict_['Properties'] is not None:        
             params['dropout'] = dict_['Properties']['Dropout']                
             params['keep_prob'] = try_cast(dict_['Properties']['Keep_prob'], float)
@@ -40,8 +41,8 @@ class DeepLearningConvSpec(InnerLayerSpec, MixinDeepLearning):
             params['pool'] = dict_['Properties']['PoolBool']
             params['pooling'] = dict_['Properties']['Pooling']
             params['pool_padding'] = str(dict_['Properties']['Pool_padding'])
-            params['pool_area'] = dict_['Properties'].get('Pool_area')
-            params['pool_stride'] = dict_['Properties']['Pool_stride']
+            params['pool_area'] = try_cast(dict_['Properties'].get('Pool_area'), int)
+            params['pool_stride'] = try_cast(dict_['Properties'].get('Pool_stride'), int)
             
         return cls(**params)
 
