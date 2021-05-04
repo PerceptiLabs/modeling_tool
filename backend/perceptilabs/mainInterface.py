@@ -232,7 +232,6 @@ class Interface():
 
     def create_lw_core(self, receiver, jsonNetwork, adapter=True, dataset_settings=None):
         graph_spec = GraphSpec.from_dict(jsonNetwork)
-
         if utils.is_datawizard():
             if not dataset_settings:
                 raise RuntimeError("When using the standard trainer, dataset settings must be set!")
@@ -308,22 +307,7 @@ class Interface():
     def _create_response(self, receiver, action, value):
         #Parse the value and send it to the correct function
         if action == "getDataMeta":
-            Id = value['Id']
-            jsonNetwork = self._network_loader.load(value['Network'])
-            if "layerSettings" in value:
-                layerSettings = value["layerSettings"]
-                jsonNetwork[Id]["Properties"]=layerSettings
-
-            lw_core, extras_reader, data_container = self.create_lw_core(receiver, jsonNetwork)
-
-
-            get_data_meta = getDataMetaV2(
-                id_=Id, 
-                lw_core=lw_core, 
-                extras_reader=extras_reader
-            )
-
-            return get_data_meta.run()
+            return self._create_response_get_data_meta(value, receiver)
 
         elif action == "getSettingsRecommendation":
             #json_network = self._network_loader.load(value["Network"])
@@ -337,17 +321,7 @@ class Interface():
             return {}#new_json_network
                 
         elif action == "getPartitionSummary":
-            Id=value["Id"]
-            jsonNetwork = self._network_loader.load(value["Network"])
-            if "layerSettings" in value:
-                layerSettings = value["layerSettings"]
-                jsonNetwork[Id]["Properties"]=layerSettings
-
-            lw_core, extras_reader, data_container = self.create_lw_core(receiver, jsonNetwork)
-
-            return getPartitionSummary(id_=Id, 
-                                    lw_core=lw_core, 
-                                    data_container=data_container).run()
+            return self._create_response_get_partition_summary(value, receiver)
 
         elif action == "getCode":
             id_ = value['Id']            
@@ -747,4 +721,41 @@ class Interface():
             request_value['path']
         )
         return {}
+
+    def _create_response_get_partition_summary(self, request_value, receiver):
+            Id=request_value["Id"]
+            jsonNetwork = self._network_loader.load(request_value["Network"])
+            if "layerSettings" in request_value:
+                layerSettings = request_value["layerSettings"]
+                jsonNetwork[Id]["Properties"]=layerSettings
+            dataset_settings = request_value.get('datasetSettings', None)
+
+            lw_core, extras_reader, data_container = self.create_lw_core(receiver, jsonNetwork, dataset_settings=dataset_settings)
+
+            return getPartitionSummary(id_=Id, 
+                                    lw_core=lw_core, 
+                                    data_container=data_container).run()
+
+    def _create_response_get_data_meta(self, request_value, receiver):
+            Id = request_value['Id']
+            jsonNetwork = self._network_loader.load(request_value['Network'])
+            dataset_settings = None
+
+            if "layerSettings" in request_value:
+                layerSettings = request_value["layerSettings"]
+                jsonNetwork[Id]["Properties"]=layerSettings
+
+            if "datasetSettings" in request_value:
+                dataset_settings = request_value["datasetSettings"]
+
+            lw_core, extras_reader, data_container = self.create_lw_core(receiver, jsonNetwork, dataset_settings=dataset_settings)
+
+
+            get_data_meta = getDataMetaV2(
+                id_=Id, 
+                lw_core=lw_core, 
+                extras_reader=extras_reader
+            )
+
+            return get_data_meta.run()
         

@@ -849,13 +849,14 @@ const actions = {
   API_getPartitionSummary({getters, rootGetters},  {layerId, settings}) {
     const net = getters.GET_coreNetwork;
     if(settings) net[layerId].Properties = settings;
-
+    const datasetSettings = rootGetters['mod_datasetSettings/getCurrentDatasetSettings'](); 
     const theData = {
       receiver: rootGetters['mod_workspace/GET_currentNetworkId'],
       action: 'getPartitionSummary',
       value: {
         Id: layerId,
-        Network: net
+        Network: net,
+        datasetSettings: datasetSettings
       }
     };
     return coreRequest(theData)
@@ -868,13 +869,14 @@ const actions = {
   API_getDataMeta({getters, rootGetters}, {layerId, settings}) {
     const net = getters.GET_coreNetwork;
     if(settings) net[layerId].Properties = settings;
-
+    const datasetSettings = rootGetters['mod_datasetSettings/getCurrentDatasetSettings'](); 
     const theData = {
       receiver: rootGetters['mod_workspace/GET_currentNetworkId'],
       action: 'getDataMeta',
       value: {
         Id: layerId,
-        Network: net
+        Network: net,
+        datasetSettings: datasetSettings
       }
     };
     //console.log('API_getDataMeta', theData);
