@@ -2,10 +2,6 @@
   .data-file-settings
     .form_row.file-settings_title
       .form_label.heavy-text Files
-      .form_input.light-text
-        span Train
-        span Validate
-        span Test
     ul.file-settings_list
       li.file-list_item(
         style="overflow: hidden"
@@ -14,19 +10,8 @@
       )
         .form_row
           .form_label
-            button.btn.btn--icon.icon.icon-app-close(type="button" @click="deleteItem(i)")
             span(:title="file.path").file-item_path.heavy-text {{ file.path }}
             spinner-upload-file.spinner-upload-file(v-if="loadingFlag")
-          .form_input
-            triple-input.file-list-item_settings(
-              v-model="file.settings"
-              separate-sign="%"
-              :validate-min="1"
-              :validate-max="98"
-              :validate-sum="100"
-              @handle-focus="$emit('handle-focus')"
-              @handle-blur="$emit('handle-blur')"
-            )
 
     //- button.btn.btn--link.light-text(type="button" @click="addFile") + Add {{ nameAddItem }}
 
@@ -161,8 +146,8 @@ export default {
       align-items: stretch;
     }
     .form_label {
-      flex: 0 0 35%;
-      max-width: 35%;
+      flex: 0 0 100%;
+      max-width: 100%;
       display: flex;
       overflow-y: hidden;
       align-items: center;
@@ -176,7 +161,6 @@ export default {
 
   .file-item_path {
     color: $color-12;
-    max-width: 10rem;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;

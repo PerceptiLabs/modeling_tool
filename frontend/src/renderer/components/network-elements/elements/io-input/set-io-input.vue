@@ -39,31 +39,6 @@
             @handle-focus="setIsSettingInputFocused(true)"
             @handle-blur="setIsSettingInputFocused(false)"
             )
-          //
-        .form_row(v-if="settings.accessProperties.Sources.length > 1")
-          .form_label Summary:
-          .form_input
-            triple-input.file-list-item_settings(
-              v-model="Mix_settingsData_Partition_summary"
-              :disable-edit="true"
-              separate-sign="%"
-
-              )
-      .settings-layer_section.settings-layer_section--data
-        .form_row
-          base-checkbox.light-text(v-model="settings.accessProperties.Shuffle_data") Shuffle
-
-      .settings-layer_section.settings-layer_section--data
-          .form_row
-            .form_label Feature name:
-            .form_input
-              input.w-full(
-                type="text"
-                v-model="settings.FeatureName"
-                @focus="setIsSettingInputFocused(true)"
-                @blur="setIsSettingInputFocused(false)")
-
-
 
 </template>
 
