@@ -134,7 +134,7 @@ export default {
           this.chartGlobalRequest();
           break;
         default:
-          this.chartRequest(this.statElementID, 'IoOutput', '');
+          this.chartRequest(this.networkElement.layerId, 'IoOutput', '', );
           break;
       }
     },

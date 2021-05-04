@@ -16,7 +16,7 @@
     mixins: [viewBoxMixin],
     methods: {
       getData() {
-        this.chartRequest(this.boxElementID, 'MathSwitch', '')
+        this.chartRequest(this.networkElement.layerId, 'MathSwitch', '')
       }
     },
   }

@@ -16,7 +16,7 @@
     mixins: [viewBoxMixin],
     methods: {
       getData() {
-        this.chartRequest(this.boxElementID, 'DataCloud', '')
+        this.chartRequest(this.networkElement.layerId, 'DataCloud', '')
       }
     }
   }

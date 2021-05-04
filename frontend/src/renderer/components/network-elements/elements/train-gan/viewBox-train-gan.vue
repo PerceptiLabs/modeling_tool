@@ -114,16 +114,16 @@
       getData() {
         switch (this.computedCurrentTab) {
           case 'Generator_Loss':
-            this.chartRequest(this.statElementID, 'TrainGan', 'Generator_Loss');
+            this.chartRequest(this.networkElement.layerId, 'TrainGan', 'Generator_Loss');
             break;
           case 'Discriminator_Loss':
-            this.chartRequest(this.statElementID, 'TrainGan', 'Discriminator_Loss');
+            this.chartRequest(this.networkElement.layerId, 'TrainGan', 'Discriminator_Loss');
             break;
           case 'Samples':
-            this.chartRequest(this.statElementID, 'TrainGan', 'Images');
+            this.chartRequest(this.networkElement.layerId, 'TrainGan', 'Images');
             break;
           case 'Data_distribution':
-            this.chartRequest(this.statElementID, 'TrainGan', 'Data_distribution');
+            this.chartRequest(this.networkElement.layerId, 'TrainGan', 'Data_distribution');
             break;
         }
       }

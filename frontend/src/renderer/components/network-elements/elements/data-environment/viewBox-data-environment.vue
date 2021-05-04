@@ -16,7 +16,7 @@
     mixins: [viewBoxMixin],
     methods: {
       getData() {
-        this.chartRequest(this.boxElementID, 'DataEnvironment', '')
+        this.chartRequest(this.networkElement.layerId, 'DataEnvironment', '')
       }
     }
   }

@@ -7,6 +7,7 @@ const viewBoxMixin = {
   props: {
     currentTab: {type: String, default: ''},
     sectionTitle: { type: String, default: ''},
+    networkElement: {type: Object, default: function () { return {}}}
   },
   data() {
     return {
@@ -24,12 +25,12 @@ const viewBoxMixin = {
   },
   computed: {
     statElementID() {
-      let viewBoxEl = this.$store.getters['mod_workspace/GET_currentSelectedElementsInSnapshot'].find((element)=>element.layerType === 'Training' || element.layerType === 'IoOutput' || element.layerType === "IoInput");
-      return viewBoxEl === undefined ? undefined : viewBoxEl.layerId.toString()
+      let statisticElement = this.$store.state['mod_statistics'].selectedElArr.statistics;
+      return statisticElement.layerId.toString();
     },
     boxElementID() {
-      let viewBoxEl = this.$store.getters['mod_workspace/GET_currentSelectedElementsInSnapshot'].find((element)=>element.layerType !== 'Training' && element.layerType !== 'IoOutput' && element.layerType !== 'IoInput');
-      return viewBoxEl === undefined ? undefined : viewBoxEl.layerId.toString()
+      let statisticElement = this.$store.state['mod_statistics'].selectedElArr.viewBox;
+      return statisticElement.layerId.toString();
     },
     currentNetworkID() {
       return this.$store.getters['mod_workspace/GET_currentNetworkId']
@@ -105,8 +106,6 @@ const viewBoxMixin = {
     },
     chartRequest(layerId, layerType, view) {
       this.startRequest = new Date();
-
-      if(!layerId || !layerType) return;
 
       let theData = {
         receiver: this.currentNetworIdForKernelRequests,

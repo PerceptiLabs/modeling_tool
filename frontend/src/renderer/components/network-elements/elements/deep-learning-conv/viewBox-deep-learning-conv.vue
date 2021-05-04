@@ -45,6 +45,10 @@
             Weights: null,
             Output: null,
           },
+          'Weights&Output': {
+            Weights: null,
+            Output: null,
+          },
           'Bias': {
             Bias: null,
           },
@@ -59,13 +63,13 @@
       getData() {
         switch (this.currentTab) {
           case 'Weights & Output':
-            this.chartRequest(this.boxElementID, 'DeepLearningConv', 'Weights&Output');
+            this.chartRequest(this.networkElement.layerId, 'DeepLearningConv', 'Weights&Output');
             break;
           case 'Bias':
-            this.chartRequest(this.boxElementID, 'DeepLearningConv', 'Bias');
+            this.chartRequest(this.networkElement.layerId, 'DeepLearningConv', 'Bias');
             break;
           case 'Gradients':
-            this.chartRequest(this.boxElementID, 'DeepLearningConv', 'Gradients');
+            this.chartRequest(this.networkElement.layerId, 'DeepLearningConv', 'Gradients');
             break;
         }
       }

@@ -6,7 +6,7 @@ import mousedownOutside   from '@/core/mixins/mousedown-outside.js'
 import SettingsPreview  from "@/components/network-elements/elements-settings/setting-preview.vue";
 
 import {mapGetters, mapActions}       from 'vuex';
-import { calcLayerPosition } from '@/core/helpers.js'
+import {calcLayerPosition, deepCloneNetwork} from '@/core/helpers.js'
 import { SHIFT_HOLDING_CONNECT_COMPONENT_MAX_DISTANCE } from '@/core/constants';
 export default {
   name: 'NetBaseElement',
@@ -202,7 +202,9 @@ export default {
       if (!this.editIsOpen
         && !this.layerContainer
       ) {
-        this.$store.commit('mod_statistics/CHANGE_selectElArr', this.dataEl)
+        
+        this.$store.commit('mod_statistics/CHANGE_viewBoxSelectElArr', this.dataEl);
+        this.$store.commit('mod_statistics/setDefaultMetric', 'viewBoxTabs');
       }
     },
     switchDblclick(event) {

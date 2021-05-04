@@ -65,13 +65,13 @@
       getData() {
         switch (this.currentTab) {
           case 'Output':
-            this.chartRequest(this.boxElementID, 'DeepLearningRecurrent', 'Output');
+            this.chartRequest(this.networkElement.layerId, 'DeepLearningRecurrent', 'Output');
             break;
           case 'Weights & Bias':
-            this.chartRequest(this.boxElementID, 'DeepLearningRecurrent', 'Weights&Bias');
+            this.chartRequest(this.networkElement.layerId, 'DeepLearningRecurrent', 'Weights&Bias');
             break;
           case 'Gradients':
-            this.chartRequest(this.boxElementID, 'DeepLearningRecurrent', 'Gradients');
+            this.chartRequest(this.networkElement.layerId, 'DeepLearningRecurrent', 'Gradients');
             break;
         }
       }

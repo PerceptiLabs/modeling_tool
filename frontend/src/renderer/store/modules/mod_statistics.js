@@ -1,4 +1,5 @@
 import Vue    from 'vue'
+import {deepCloneNetwork} from "@/core/helpers";
 
 const namespaced = true;
 
@@ -20,80 +21,46 @@ const state = {
 
 const getters = {
   getSelectedMetric: (state) => (layerType) => {
-    if (layerType === 'Training' || layerType === 'IoOutput' || layerType === 'IoInput') {
-      return state.statisticsTabs.selectedMetric;  
-    } else {
-      return state.viewBoxTabs.selectedMetric;
-    }
+    isTabPlaceValid(layerType);
+    return state[layerType].selectedMetric;
   },
-  getLayerMetrics: (state) => (layerType) => {
-    if (layerType === 'Training' || layerType === 'IoOutput' || layerType === 'IoInput') {
-      return state.statisticsTabs.layerMetrics;  
-    } else {
-      return state.viewBoxTabs.layerMetrics;
-    }
+  getLayerMetrics: (state) => (sectionTitle) => {
+    isTabPlaceValid(sectionTitle);
+    return state[sectionTitle].layerMetrics;
   },
 }
 
 const mutations = {
   SET_selectedElArr (state, value) {
-    for (var keyId in value) {
-      if (value[keyId] && value[keyId].layerMeta) {
-        value[keyId].layerMeta.isSelected = true;
-      }
-    }
+    value.viewBox.layerMeta.isSelected = true; 
     state.statisticsTabs.selectedMetric = value.statistics.layerName
     state.selectedElArr = value;
   },
   SET_piePercents (state, value) {
     state.piePercents = value
   },
-  CHANGE_selectElArr(state, dataEl) {
-    // statisticsTabs
-    let elArr = state.selectedElArr;
-    if (dataEl.layerType === 'Training' || dataEl.layerType === 'IoOutput' || dataEl.layerType === 'IoInput') {
-      elArr.statistics.layerMeta.isSelected = false;
-      elArr.statistics = dataEl;
-      state.statisticsTabs.selectedMetric = dataEl.layerName;
-      elArr.statistics.layerMeta.isSelected = true;
-    }
-    else {
-      elArr.viewBox.layerMeta.isSelected = false;
-      elArr.viewBox = dataEl;
-      elArr.viewBox.layerMeta.isSelected = true;
-    }
-    if(dataEl.layerType === 'IoOutput') {
-      elArr.viewBox.layerMeta.isSelected = false;
-      elArr.viewBox = dataEl;
-      elArr.viewBox.layerMeta.isSelected = true;
-    }
-    
-  },
-  setDefaultMetric(state, layerType) {
-    let tabs = '';
-    if (layerType === 'Training' || layerType === 'IoOutput' || layerType === 'IoInput') {
-      tabs = state.statisticsTabs;
-    } else {
-      tabs = state.viewBoxTabs;
-    }
 
+  CHANGE_StatisticSelectedArr(state, dataEl) {
+    state.selectedElArr.statistics = dataEl;
+    state.statisticsTabs.selectedMetric = dataEl.layerName;
+  },
+  CHANGE_viewBoxSelectElArr(state, dataEl) {
+    state.selectedElArr.viewBox.layerMeta.isSelected = false;
+    state.selectedElArr.viewBox = dataEl;
+    state.selectedElArr.viewBox.layerMeta.isSelected = true;
+  },
+  setDefaultMetric(state, placeToBeChanged) {
+    isTabPlaceValid(placeToBeChanged);
+    let tabs = state[placeToBeChanged];
     const layerMetricsKeys = Object.keys(tabs.layerMetrics);
-    
-    if (layerMetricsKeys) {
-      Vue.set(tabs, 'selectedMetric', Object.keys(tabs.layerMetrics)[0]);
-    } else {
-      Vue.set(tabs, 'selectedMetric', '');
-    }
+    const value = layerMetricsKeys && Object.keys(tabs.layerMetrics)[0] || '';
+     
+    Vue.set(tabs, 'selectedMetric', value);
   },
-  setSelectedMetric(state, { layerType, selectedMetric }) {
-    let tabs = '';
-
-    if (layerType === 'Training' || layerType === 'IoOutput'  || layerType === 'IoInput') {
-      tabs = state.statisticsTabs;
-    } else {
-      tabs = state.viewBoxTabs;
-    }
-
+  setSelectedMetric(state, { placeToBeChanged, selectedMetric }) {
+    isTabPlaceValid(placeToBeChanged);
+    let tabs = state[placeToBeChanged];
+    
     const layerMetricsKeys = Object.keys(tabs.layerMetrics);
     if (layerMetricsKeys.includes(selectedMetric) || selectedMetric === "Global") {
       Vue.set(tabs, 'selectedMetric', selectedMetric);
@@ -103,12 +70,9 @@ const mutations = {
       Vue.set(tabs, 'selectedMetric', '');
     }
   },
-  setLayerMetrics(state, { layerType, layerMetrics }) {
-    if (layerType === 'Training' || layerType === 'IoOutput' || layerType === 'IoInput') {
-      Vue.set(state.statisticsTabs, 'layerMetrics', layerMetrics || {});
-    } else {
-      Vue.set(state.viewBoxTabs, 'layerMetrics', layerMetrics || {});
-    }   
+  setLayerMetrics(state, { placeToBeChanged, layerMetrics }) {
+    isTabPlaceValid(placeToBeChanged);
+    Vue.set(state[placeToBeChanged], 'layerMetrics', layerMetrics || {});
   },
 };
 
@@ -122,13 +86,16 @@ const actions = {
     let net = rootGetters['mod_workspace/GET_currentNetworkSnapshotElementList'];
     for(let el in net) {
       let item = net[el];
-      if(elArr.statistics !== null && elArr.viewBox !== null || elArr.layerType === "Container") {
+      
+      const areStatisticsAlreadySet = elArr.statistics !== null && elArr.viewBox !== null || elArr.layerType === "Container";
+      
+      if(areStatisticsAlreadySet) {
         continue
       }
-      if(elArr.statistics === null && (item.layerType === "Training" || item.layerType === 'IoOutput' || item.layerType === 'IoInput')) {
+      const isTrainingOrIOComponent = elArr.statistics === null && (item.layerType === "Training" || item.layerType === 'IoOutput' || item.layerType === 'IoInput');
+      if(isTrainingOrIOComponent) {
         elArr.statistics = item;
-      }
-      if(elArr.viewBox === null && item.layerType !== "Training" && item.layerType !== 'IoOutput' && item.layerType !== "IoInput") {
+      } else  {
         elArr.viewBox = item;
       }
     }
@@ -143,3 +110,10 @@ export default {
   mutations,
   actions
 }
+
+const isTabPlaceValid = (tabName) => {
+  const tabOptions = ['viewBoxTabs', 'statisticsTabs'];
+  if(!tabOptions.includes(tabName)) {
+    throw new Error(`${tabName} is not valid key`); 
+  }
+};

@@ -22,20 +22,12 @@
 
 <script>
 import { mapGetters, mapActions } from 'vuex';
+import { deepCloneNetwork } from '@/core/helpers.js'
 
 export default {
   name: "ViewBoxBtnList",
   props: {
     layerType: { type: String }
-  }, 
-  activated() {
-    console.log('activate');
-  },
-  mounted() {
-    // if(this.tabSet) {
-    //   const tabSetKeys = Object.keys(this.tabSet);
-    //   this.setCurrentTab(tabSetKeys[0]);
-    // }
   },
   data() {
     return {
@@ -47,16 +39,13 @@ export default {
       setNextStep:      'mod_tutorials/setNextStep',
     }),
     setCurrentTab(tab, el) {
-      // this.currentTab = tab;
-      // this.$emit('set-current-btn', tab);
-      
-      // console.log(tab);
       if(el && el.type === 'component') {
-        let net = this.$store.getters['mod_workspace/GET_currentSelectedElementsInSnapshot'];
         let element = this.$store.getters['mod_workspace/GET_networkSnapshotElementById'](el.layerId);
-        this.$store.commit('mod_statistics/CHANGE_selectElArr', element)
+        
+        this.$store.commit('mod_statistics/CHANGE_StatisticSelectedArr', deepCloneNetwork(element));
+        this.$store.commit('mod_statistics/setSelectedMetric', { placeToBeChanged: 'statisticsTabs', selectedMetric: tab });
       } else {
-        this.$store.commit('mod_statistics/setSelectedMetric', { layerType: this.layerType, selectedMetric: tab });  
+        this.$store.commit('mod_statistics/setSelectedMetric', { placeToBeChanged: this.tabsKeyToBeChanged, selectedMetric: tab });
       }
 
       this.$store.dispatch('mod_tracker/EVENT_viewboxMetricSelect', {
@@ -76,11 +65,14 @@ export default {
     ...mapGetters({
       getCurrentStepCode: 'mod_tutorials/getCurrentStepCode',
     }),
+    tabsKeyToBeChanged() {
+      return this.layerType === 'ViewBox' ? 'viewBoxTabs' : 'statisticsTabs';
+    },
     currentTab() {
-      return this.$store.getters['mod_statistics/getSelectedMetric'](this.layerType);
+      return this.$store.getters['mod_statistics/getSelectedMetric'](this.tabsKeyToBeChanged);
     },
     tabSet() {
-      return this.$store.getters['mod_statistics/getLayerMetrics'](this.layerType);
+      return this.$store.getters['mod_statistics/getLayerMetrics'](this.tabsKeyToBeChanged);
     },
     testIsOpen() {
       return this.$store.getters['mod_workspace/GET_testIsOpen'];

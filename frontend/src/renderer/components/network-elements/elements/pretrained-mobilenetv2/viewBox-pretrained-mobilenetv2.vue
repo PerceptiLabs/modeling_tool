@@ -40,10 +40,10 @@
       getData() {
         switch (this.currentTab) {
           case 'Output':
-            this.chartRequest(this.boxElementID, 'PreTrainedMobileNetV2', 'Output');
+            this.chartRequest(this.networkElement.layerId, 'PreTrainedMobileNetV2', 'Output');
             break;
           case 'Weights & Bias':
-            this.chartRequest(this.boxElementID, 'PreTrainedMobileNetV2', 'Weights&Bias');
+            this.chartRequest(this.networkElement.layerId, 'PreTrainedMobileNetV2', 'Weights&Bias');
             break;
         }
       }

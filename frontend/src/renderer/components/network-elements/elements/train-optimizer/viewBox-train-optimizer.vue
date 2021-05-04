@@ -180,19 +180,19 @@
       getData() {
         switch (this.currentTab) {
           case 'Prediction':
-            this.chartRequest(this.statElementID, 'TrainOptimizer', 'Prediction');
+            this.chartRequest(this.networkElement.layerId, 'TrainOptimizer', 'Prediction');
             break;
           case 'Accuracy':
-            this.chartRequest(this.statElementID, 'TrainOptimizer', 'Accuracy');
+            this.chartRequest(this.networkElement.layerId, 'TrainOptimizer', 'Accuracy');
             break;
           case 'Loss':
-            this.chartRequest(this.statElementID, 'TrainOptimizer', 'Loss');
+            this.chartRequest(this.networkElement.layerId, 'TrainOptimizer', 'Loss');
             break;
           case 'F1':
-            this.chartRequest(this.statElementID, 'TrainOptimizer', 'F1');
+            this.chartRequest(this.networkElement.layerId, 'TrainOptimizer', 'F1');
             break;
           case 'AUC':
-            this.chartRequest(this.statElementID, 'TrainOptimizer', 'AUC');
+            this.chartRequest(this.networkElement.layerId, 'TrainOptimizer', 'AUC');
             break;
         }
       }

@@ -1,7 +1,5 @@
 <template lang="pug">
   section.network_info-section
-    //- .info-section_head(v-show="!testIsOpen")
-    //-   h3 {{ sectionTitle }}
     view-box-btn-list(
       v-if="layerMetrics && layerType !== 'Training' && layerType !== 'IoOutput' && layerType !== 'IoInput'"
       v-show="!testIsOpen"
@@ -9,10 +7,12 @@
       )
     .info-section_main(v-if="elData !== null")
       component(
+        :key="elData.layerId + sectionTitle"
         :sectionTitle="sectionTitle"
         :is="elData.componentName"
         :element-data="elData.viewBox"
         :current-tab="selectedMetric"
+        :networkElement="elData" 
         @btn-list="setBtnList"
         )
 </template>
@@ -85,6 +85,7 @@ export default {
 },
   props: {
     sectionTitle: {type: String},
+    showTabButtons: { type: Boolean, default: true},
     elData: {
       type: Object,
       default: function () {
@@ -92,57 +93,43 @@ export default {
       }
     }
   },
-  data() {
-    return {
-      /*
-      * btnList model
-      *
-      * btnList: {
-      *   ButtonName: null,
-      *   ButtonName: {
-      *     btnId: 'string',
-      *     btnClass: 'string',
-      *     btnInteractiveInfo: {
-      *       title: 'string',
-      *       text: 'string'
-      *     }
-      *   },
-      * },
-      *
-      * */
-    }
-  },
   computed: {
     ...mapGetters({
       testIsOpen:     'mod_workspace/GET_testIsOpen',
     }),
+    tabsKeyToBeChanged() {
+      return this.sectionTitle === 'ViewBox' ? 'viewBoxTabs' : 'statisticsTabs';
+    },
     layerType() {
       return this.elData ? this.elData.layerType : '';
     },
     selectedMetric() {
-      return this.$store.getters['mod_statistics/getSelectedMetric'](this.layerType);
-    }
+      return this.$store.getters['mod_statistics/getSelectedMetric'](this.tabsKeyToBeChanged);
+    },
   },
   watch: {
     'elData.componentName': {
       handler() { this.resetBtnInfo() }
-    }
+    },
   },
   methods: {
-    setBtnList(objList) {
-      this.$store.commit('mod_statistics/setLayerMetrics', { layerType: this.layerType, layerMetrics: objList });
-
-      const layerType = this.elData.layerType;
-      const isTrainingLayer = layerType === 'Training' || layerType === 'IoOutput' || layerType === 'IoInput';
-      if(!isTrainingLayer) {
-        this.$store.commit('mod_statistics/setDefaultMetric', this.layerType);
-      }
+    setBtnList(tabList) {
+      this.$store.commit('mod_statistics/setLayerMetrics', {
+        placeToBeChanged: this.tabsKeyToBeChanged,
+        layerMetrics: tabList
+      });
+      
+      if(this.sectionTitle === 'ViewBox')
+      this.$store.commit('mod_statistics/setDefaultMetric', this.tabsKeyToBeChanged);
     },
     resetBtnInfo() {
-      this.$store.commit('mod_statistics/setLayerMetrics', { layerType: this.layerType, layerMetrics: '' });
+      this.$store.commit('mod_statistics/setLayerMetrics', {
+        placeToBeChanged: this.tabsKeyToBeChanged,
+        layerMetrics: ''
+      });
     },
     layerMetrics() {
-      return this.$store.getters['mod_statistics/getLayerMetrics'](this.layerType);
+      return this.$store.getters['mod_statistics/getLayerMetrics'](this.tabsKeyToBeChanged);
     }
   }
 }

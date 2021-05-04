@@ -16,7 +16,7 @@
     mixins: [viewBoxMixin],
     methods: {
       getData() {
-        this.chartRequest(this.boxElementID, 'ProcessRescale', '')
+        this.chartRequest(this.networkElement.layerId, 'ProcessRescale', '')
       }
     }
   }

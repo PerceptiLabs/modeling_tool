@@ -55,13 +55,13 @@
       getData() {
         switch (this.currentTab) {
           case 'Output':
-            this.chartRequest(this.boxElementID, 'PreTrainedVGG16', 'Output');
+            this.chartRequest(this.networkElement.layerId, 'PreTrainedVGG16', 'Output');
             break;
           case 'Weights & Bias':
-            this.chartRequest(this.boxElementID, 'PreTrainedVGG16', 'Weights&Bias');
+            this.chartRequest(this.networkElement.layerId, 'PreTrainedVGG16', 'Weights&Bias');
             break;
           case 'Gradients':
-            this.chartRequest(this.boxElementID, 'PreTrainedVGG16', 'Gradients');
+            this.chartRequest(this.networkElement.layerId, 'PreTrainedVGG16', 'Gradients');
             break;
         }
       }

@@ -16,7 +16,7 @@
     mixins: [viewBoxMixin],
     methods: {
       getData() {
-        this.chartRequest(this.boxElementID, 'MathArgmax', '')
+        this.chartRequest(this.networkElement.layerId, 'MathArgmax', '')
       }
     },
   }

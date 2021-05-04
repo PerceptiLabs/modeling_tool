@@ -113,13 +113,13 @@
       getData() {
         switch (this.computedCurrentTab) {
           case 'Prediction':
-            this.chartRequest(this.statElementID, 'TrainRegression', 'Prediction');
+            this.chartRequest(this.networkElement.layerId, 'TrainRegression', 'Prediction');
             break;
           case 'Loss':
-            this.chartRequest(this.statElementID, 'TrainRegression', 'Loss');
+            this.chartRequest(this.networkElement.layerId, 'TrainRegression', 'Loss');
             break;
           case 'R_Squared':
-            this.chartRequest(this.statElementID, 'TrainRegression', 'R_Squared');
+            this.chartRequest(this.networkElement.layerId, 'TrainRegression', 'R_Squared');
             break;
         }
       }

@@ -58,13 +58,13 @@
       getData() {
         switch (this.currentTab) {
           case 'Weights & Output':
-            this.chartRequest(this.boxElementID, 'DeepLearningDeconv', 'Weights&Output');
+            this.chartRequest(this.networkElement.layerId, 'DeepLearningDeconv', 'Weights&Output');
             break;
           case 'Bias':
-            this.chartRequest(this.boxElementID, 'DeepLearningDeconv', 'Bias');
+            this.chartRequest(this.networkElement.layerId, 'DeepLearningDeconv', 'Bias');
             break;
           case 'Gradients':
-            this.chartRequest(this.boxElementID, 'DeepLearningDeconv', 'Gradients');
+            this.chartRequest(this.networkElement.layerId, 'DeepLearningDeconv', 'Gradients');
             break;
         }
       }

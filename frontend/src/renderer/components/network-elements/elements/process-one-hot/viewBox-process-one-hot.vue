@@ -17,7 +17,7 @@
     mixins: [viewBoxMixin],
     methods: {
       getData() {
-        this.chartRequest(this.boxElementID, 'ProcessOneHot', '');
+        this.chartRequest(this.networkElement.layerId, 'ProcessOneHot', '');
       }
     }
   }

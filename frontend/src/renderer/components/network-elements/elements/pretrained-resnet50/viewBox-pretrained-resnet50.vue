@@ -55,13 +55,13 @@
       getData() {
         switch (this.currentTab) {
           case 'Output':
-            this.chartRequest(this.boxElementID, 'PreTrainedResNet50', 'Output');
+            this.chartRequest(this.networkElement.layerId, 'PreTrainedResNet50', 'Output');
             break;
           case 'Weights & Bias':
-            this.chartRequest(this.boxElementID, 'PreTrainedResNet50', 'Weights&Bias');
+            this.chartRequest(this.networkElement.layerId, 'PreTrainedResNet50', 'Weights&Bias');
             break;
           case 'Gradients':
-            this.chartRequest(this.boxElementID, 'PreTrainedResNet50', 'Gradients');
+            this.chartRequest(this.networkElement.layerId, 'PreTrainedResNet50', 'Gradients');
             break;
         }
       }

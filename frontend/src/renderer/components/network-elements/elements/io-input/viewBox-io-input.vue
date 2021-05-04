@@ -48,7 +48,7 @@
             this.chartGlobalRequest();
             break;
           default:
-            this.chartRequest(this.statElementID, 'IoInput', '');
+            this.chartRequest(this.networkElement.layerId, 'IoInput', '');
             break;
         }
       },

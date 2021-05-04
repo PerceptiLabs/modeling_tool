@@ -163,19 +163,19 @@
       getData() {
         switch (this.currentTab) {
           case 'Prediction':
-            this.chartRequest(this.statElementID, 'TrainNormal', 'Prediction');
+            this.chartRequest(this.networkElement.layerId, 'TrainNormal', 'Prediction');
             break;
           case 'Accuracy':
-            this.chartRequest(this.statElementID, 'TrainNormal', 'Accuracy');
+            this.chartRequest(this.networkElement.layerId, 'TrainNormal', 'Accuracy');
             break;
           case 'Loss':
-            this.chartRequest(this.statElementID, 'TrainNormal', 'Loss');
+            this.chartRequest(this.networkElement.layerId, 'TrainNormal', 'Loss');
             break;
           case 'F1':
-            this.chartRequest(this.statElementID, 'TrainNormal', 'F1');
+            this.chartRequest(this.networkElement.layerId, 'TrainNormal', 'F1');
             break;
           case 'AUC':
-            this.chartRequest(this.statElementID, 'TrainNormal', 'AUC');
+            this.chartRequest(this.networkElement.layerId, 'TrainNormal', 'AUC');
             break;
         }
       }

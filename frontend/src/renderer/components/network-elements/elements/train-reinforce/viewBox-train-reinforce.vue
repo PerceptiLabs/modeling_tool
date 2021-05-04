@@ -112,16 +112,16 @@
       getData() {
         switch (this.currentTab) {
           case 'Prediction':
-            this.chartRequest(this.statElementID, 'TrainReinforce', 'Prediction');
+            this.chartRequest(this.networkElement.layerId, 'TrainReinforce', 'Prediction');
             break;
           case 'Reward':
-            this.chartRequest(this.statElementID, 'TrainReinforce', 'Reward');
+            this.chartRequest(this.networkElement.layerId, 'TrainReinforce', 'Reward');
             break;
           case 'Loss':
-            this.chartRequest(this.statElementID, 'TrainReinforce', 'Loss');
+            this.chartRequest(this.networkElement.layerId, 'TrainReinforce', 'Loss');
             break;
           case 'Steps':
-            this.chartRequest(this.statElementID, 'TrainReinforce', 'Steps');
+            this.chartRequest(this.networkElement.layerId, 'TrainReinforce', 'Steps');
             break;
         }
       }

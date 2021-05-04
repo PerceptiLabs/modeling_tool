@@ -40,10 +40,10 @@
       getData() {
         switch (this.currentTab) {
           case 'Output':
-            this.chartRequest(this.boxElementID, 'PreTrainedInceptionV3', 'Output');
+            this.chartRequest(this.networkElement.layerId, 'PreTrainedInceptionV3', 'Output');
             break;
           case 'Weights & Bias':
-            this.chartRequest(this.boxElementID, 'PreTrainedInceptionV3', 'Weights&Bias');
+            this.chartRequest(this.networkElement.layerId, 'PreTrainedInceptionV3', 'Weights&Bias');
             break;
         }
       }

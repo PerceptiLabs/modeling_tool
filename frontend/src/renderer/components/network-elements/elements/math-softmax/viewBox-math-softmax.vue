@@ -16,7 +16,7 @@
     mixins: [viewBoxMixin],
     methods: {
       getData() {
-        this.chartRequest(this.boxElementID, 'MathSoftmax', '')
+        this.chartRequest(this.networkElement.layerId, 'MathSoftmax', '')
       }
     },
   }
