@@ -789,7 +789,7 @@ export default {
     openFilePicker(openFilePickerReason) {
       if (openFilePickerReason === "setDataPath") {
         this.filepickerOptions.popupTitle = "Choose data to load";
-        this.filepickerOptions.filePickerType = "multimode";
+        this.filepickerOptions.filePickerType = "file";
         this.filepickerOptions.startupFolder = this.startupDatasetPath;
         this.filepickerOptions.confirmCallback = this.handleDataPathUpdates;
         this.filepickerOptions.others.showToTutotialDataFolder = true;
@@ -863,23 +863,23 @@ export default {
       this.setNextStep({ currentStep: "tutorial-create-model-model-name" });
     },
     async handleDataPathUpdates(dataPath) {
-      if (!dataPath || !dataPath.length || dataPath[0].type !== "file") {
+      if (!dataPath || !dataPath.length || !dataPath[0]) {
         this.showFilePickerPopup = false;
         return;
       }
 
       this.$store.dispatch(
         "mod_datasetSettings/setStartupFolder",
-        dataPath[0].path.match(/(.*)[\/\\]/)[1] || ""
+        dataPath[0].match(/(.*)[\/\\]/)[1] || ""
       );
 
       const fileContents = await fileserver_getFileContent(
-        `${dataPath[0].path}`
+        `${dataPath[0]}`
       );
 
       if (fileContents && fileContents.file_contents) {
         this.dataset = fileContents.file_contents;
-        this.datasetPath = dataPath[0].path;
+        this.datasetPath = dataPath[0];
         this.toNextStep();
         this.autoPopulateName();
       }
