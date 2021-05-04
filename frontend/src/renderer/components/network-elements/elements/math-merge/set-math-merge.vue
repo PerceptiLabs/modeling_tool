@@ -124,11 +124,13 @@ export default {
         }
         
         const currentValue = parseInt(current, 10);
-        const isLessThenMin = currentValue < 1;
+        const isLessThenMin = currentValue < 2;
         if(isLessThenMin) {
-          this.settings.InputsCount = 1;
+          this.settings.InputsCount = 2;
         }
-        this.handleInputNumberChanged(currentValue)
+        if (current >= 2) {
+          this.handleInputNumberChanged(this.settings.InputsCount)
+        }
       }
     }
   }

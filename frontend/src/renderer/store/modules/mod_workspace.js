@@ -2721,7 +2721,7 @@ const componentsInputs = {
   DeepLearningRecurrent: ['input'],
 
   MathArgmax: ['input'],
-  MathMerge: ['input1'],
+  MathMerge: ['input1', 'input2'],
   MathSwitch: ['input1', 'input2'],
   MathSoftmax: ['input'],
 
