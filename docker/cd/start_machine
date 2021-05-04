@@ -59,6 +59,7 @@ set -u
 export AWS_PAGER=''
 
 # for debugging, we always work in us-east-2 when running interactively
+# otherwise it's likely to be running in an Azure pipeline, which has the region set
 if tty -s ; then
   export AWS_DEFAULT_REGION='us-east-2'
 fi
@@ -76,14 +77,14 @@ count_lines(){
 assert_one(){
   num=$(count_lines "$1")
   if [ $num -gt 1 ]; then
-    echo "found more than one $2:"
-    echo "$1"
+    echo "found more than one $2:" >&2
+    echo "$1" >&2
     exit 1
   fi
 }
 
 instance_for_domain(){
-  query="Reservations[].Instances[?Tags[?Key=='group' && Value=='enterprise'] && Tags[?Key=='subdomain' && Value=='$1']].InstanceId[]"
+  query="Reservations[].Instances[?contains(['pending','running','shutting-down','stopping','stopped'], State.Name) && Tags[?Key=='group' && Value=='enterprise'] && Tags[?Key=='subdomain' && Value=='$1']].InstanceId[]"
   instances_with_subdomain=$(run_ec2_query "${query}")
   assert_one "${instances_with_subdomain}" "instance"
   echo "${instances_with_subdomain}" | head -n 1
@@ -92,6 +93,14 @@ instance_for_domain(){
 
 start_instance_and_wait(){
   echo -n "Starting instance $1..."
+  cur_state=$(aws ec2 describe-instances --instance-id $1  --region us-east-2 --query "Reservations[0].Instances[0].State.Name" --output text)
+  if [ "${cur_state}" == "running" ]; then
+    echo "already running"
+    return 0
+  elif [ "${cur_state}" == "stopped" ]; then
+    echo "instance $1 is in state '${cur_state}' which isn't startable. Try again later." >&2
+    exit 1
+  fi
   aws ec2 start-instances --instance-ids $1 > /dev/null
   aws ec2 wait instance-running --instance-ids $1
   echo "done"
@@ -135,7 +144,7 @@ add_public_key_to_remote(){
   return $?
 }
 
-update_route53(){
+add_route53_record(){
   if [ -z "$1" ]; then
     return 0
   fi
@@ -179,13 +188,18 @@ instance_id="${opt_instanceid}"
 if [ -z "${instance_id}" ]; then
   echo -n "Getting instance(s) for domain $opt_subdomain.${DOMAIN}..."
   instance_id=$(instance_for_domain "${opt_subdomain}")
-  echo "done"
+  if [ -z "${instance_id}" ]; then
+    echo "couldn't get an instance for subdomain ${opt_subdomain}"
+    exit 1
+  fi
+  echo "done: got instance ${instance_id}"
 fi
 
+$(dirname $0)/purge_route53
 start_instance_and_wait ${instance_id}
 ip=$(get_instance_ip ${instance_id})
 accept_host_signature ${ip}
 wait_for_sshd ${ip}
 add_public_key_to_remote "${opt_public_key_name}" ${ip}
-update_route53 "${opt_subdomain}" ${ip}
+add_route53_record "${opt_subdomain}" ${ip}
 set_shutdown ${opt_minutes_to_run} ${ip}

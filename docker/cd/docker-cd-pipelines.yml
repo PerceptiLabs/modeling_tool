@@ -82,22 +82,25 @@ steps:
     awsCredentials: 'aws'
     regionName: 'us-east-2'
     scriptType: 'inline'
-    inlineScript:
-      ansible-playbook
-        --inventory localhost,
-        --extra-vars "version=${{ parameters.versionid }}"
-        --extra-vars "release_env=${{ parameters.release_env }}"
-        --extra-vars "dns_subdomain=${{ parameters.subdomain }}"
-        --extra-vars "gpus=${{ parameters.gpus }}"
-        --extra-vars "cpus=${{ parameters.cpus }}"
-        --extra-vars "key_name=azurepipeline"
-        --extra-vars "channel=${{ parameters.channel }}"
-        --extra-vars "ansible_ssh_private_key_file=$(sshkey.secureFilePath)"
-        --extra-vars "interactive=false"
-        --extra-vars "slack_endpoint=$(cat $(slackpost.secureFilePath))"
-        --extra-vars "alive_minutes=${{ parameters.alive_minutes }}"
-        --extra-vars "extra_key_name=${{ parameters.extra_key_name }}"
-        provision_and_deploy.yaml
+    inlineScript: |
+      overwrite=$([ "${{ parameters.subdomain }}"="cd" ] && echo "True" || echo "False")
+
+      ansible-playbook \
+        --inventory localhost, \
+        --extra-vars "version=${{ parameters.versionid }}" \
+        --extra-vars "release_env=${{ parameters.release_env }}" \
+        --extra-vars "dns_subdomain=${{ parameters.subdomain }}" \
+        --extra-vars "gpus=${{ parameters.gpus }}" \
+        --extra-vars "cpus=${{ parameters.cpus }}" \
+        --extra-vars "key_name=azurepipeline" \
+        --extra-vars "channel=${{ parameters.channel }}" \
+        --extra-vars "ansible_ssh_private_key_file=$(sshkey.secureFilePath)" \
+        --extra-vars "interactive=false" \
+        --extra-vars "slack_endpoint=$(cat $(slackpost.secureFilePath))" \
+        --extra-vars "alive_minutes=${{ parameters.alive_minutes }}" \
+        --extra-vars "extra_key_name=${{ parameters.extra_key_name }}" \
+        --extra-vars "{\"overwrite_domain\": ${overwrite} }" \
+        provision_and_deploy.yaml \
         -vvv
     disableAutoCwd: true
     workingDirectory: '$(Build.SourcesDirectory)/docker/cd'

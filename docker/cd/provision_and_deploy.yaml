@@ -96,6 +96,10 @@
               subdomain: "{{ dns_subdomain }}"
           Press Enter to continue.
 
+    - name: Clean up route53
+      script: "purge_route53 {{ aws_region }}"
+      delegate_to: localhost
+
     - import_role:
         name: jonp.ansible_tools.provision_webserver
         tasks_from: add
