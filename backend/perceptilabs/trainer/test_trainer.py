@@ -91,6 +91,40 @@ def graph_spec_few_epochs(csv_path):
     return graph_spec
 
 
+
+@pytest.fixture()
+def graph_spec_faulty(csv_path):
+    gsb = GraphSpecBuilder()
+    dirpath = tempfile.mkdtemp()
+    # Create the layers
+    id1 = gsb.add_layer(
+        'IoInput',
+        settings={'datatype': 'numerical', 'feature_name': 'x1', 'file_path': csv_path, 'checkpoint_path':dirpath}
+    )
+    id2 = gsb.add_layer(
+        'DeepLearningFC',
+        settings={'n_neurons': 112}
+    )
+    id3 = gsb.add_layer(
+        'IoOutput',
+        settings={'datatype': 'numerical', 'feature_name': 'y1', 'file_path': csv_path}
+    )
+
+    # Connect the layers
+    gsb.add_connection(
+        source_id=id1, source_var='output',
+        dest_id=id2, dest_var='input'
+    )
+    gsb.add_connection(
+        source_id=id2, source_var='output',
+        dest_id=id3, dest_var='input'
+    )
+
+    graph_spec = gsb.build()
+    return graph_spec
+
+
+
 def test_progress_reaches_one(script_factory, data_loader, graph_spec_few_epochs, training_settings):
     trainer = Trainer(script_factory, data_loader, graph_spec_few_epochs, training_settings)
     assert trainer.progress == 0.0 and trainer.num_epochs_completed == 0
@@ -378,3 +412,18 @@ def test_shuffle_is_called_for_training_but_not_for_validation(script_factory, c
         assert kwargs['partition'] == 'validation' and 'shuffle' not in kwargs
         
 
+
+def test_trainer_validate_raises_no_error(script_factory, data_loader, graph_spec_few_epochs, training_settings):
+    trainer = Trainer(script_factory, data_loader, graph_spec_few_epochs, training_settings)
+    trainer.validate()
+        
+
+def test_trainer_validate_raises_error_for_faulty_spec(script_factory, data_loader, graph_spec_faulty, training_settings):
+    trainer = Trainer(script_factory, data_loader, graph_spec_faulty, training_settings)
+
+    with pytest.raises(tf.errors.InvalidArgumentError):  # Expects an error since num neurons == 112, while output shape == 1
+        trainer.validate()
+
+    
+        
+    

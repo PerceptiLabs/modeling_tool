@@ -197,6 +197,9 @@ class Core:
     def has_client(self):
         return self._client is not None
 
+    def validate(self):
+        pass
+
     def _await_status(self, client_step, expected_states, sleep_interval=0.5, by_force_only=False):
         is_closed = lambda: self.is_closed_by_force if by_force_only else self.is_closed
 

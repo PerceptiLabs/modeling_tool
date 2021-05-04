@@ -221,19 +221,30 @@ class coreLogic():
             running_mode=self._running_mode
         )
         trainer = self._get_trainer(script_factory, graph_spec, training_settings, dataset_settings, model_id, user_email)
+
+        if not self._validate_trainer(trainer):
+            return None
         
-        self.core = CompatibilityCore(
+        core = self.core = CompatibilityCore(
             self.commandQ,
             self.resultQ,
             graph_spec,
             trainer,
             threaded=True,
             model_id=model_id
-        )            
+        )
+        self._start_training_thread(core)
+                
+        self.status = "Running"
+        self.graph_spec = graph_spec
             
+        return {"content":"core started"}
+
+    def _start_training_thread(self, core):
+        """ Spins up a thread for the trainer """
         try:
-            logger.debug("Starting core..." + repr(self.core))                                
-            self.cThread=CoreThread(self.core.run, self.issue_handler)
+            logger.debug("Starting core..." + repr(core))                                
+            self.cThread=CoreThread(core.run, self.issue_handler)
             self.cThread.daemon = True
             self.cThread.start_with_traces()
             # self.cThread.start()
@@ -244,11 +255,19 @@ class coreLogic():
                 logger.error(issue.internal_message)
         else:
             logger.info(f"Started core for network {self.networkName}. Mode: {self._running_mode}")
-                
-        self.status = "Running"
-        self.graph_spec = graph_spec
-            
-        return {"content":"core started"}
+
+    def _validate_trainer(self, trainer):
+        """ Calls the validate method of the trainer """
+        try:
+            trainer.validate() 
+        except Exception as e:
+            message = "Trainer raised an error on validation: " + repr(e)
+            with self.issue_handler.create_issue(message, exception=e, as_bug=False) as issue:
+                self.issue_handler.put_error(issue.frontend_message)
+                logger.error(issue.internal_message)
+            return False
+        else:
+            return True        
 
     def Pause(self):
         self.commandQ.put(

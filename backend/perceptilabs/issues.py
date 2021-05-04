@@ -21,9 +21,10 @@ def traceback_from_exception(exception):
 
 
 class Issue:
-    def __init__(self, message, exception=None):
+    def __init__(self, message, exception=None, as_bug=True):
         self._message = message
         self._exception = exception
+        self._as_bug = as_bug
         self.internal_message = None
         self.frontend_message = None
         
@@ -40,7 +41,8 @@ class Issue:
             self.internal_message += "\n" + traceback_from_exception(self._exception)
             self.frontend_message += "\n" + traceback_from_exception(self._exception)            
 
-        self.frontend_message += "\n\nThis will be reported as a bug."            
+        if self._as_bug:
+            self.frontend_message += "\n\nThis will be reported as a bug."            
         return self
     
     def __exit__(self, type, value, tb):
@@ -55,8 +57,8 @@ class IssueHandler:
         self._logs = queue.Queue()
 
     @staticmethod
-    def create_issue(message, exception=None):
-        return Issue(message, exception)
+    def create_issue(message, exception=None, as_bug=True):
+        return Issue(message, exception=exception, as_bug=as_bug)
 
     def put_log(self, message):
         self._logs.put(message)

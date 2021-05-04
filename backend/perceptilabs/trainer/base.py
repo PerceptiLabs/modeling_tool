@@ -38,7 +38,8 @@ class Trainer:
 
         self._headless = False
         self._optimizer = self._resolve_optimizer(training_settings)
-        self._loss = self._resolve_loss_function(training_settings)
+        self._loss_functions = self._setup_loss_functions(training_settings)
+        
         self._num_epochs_completed = 0        
         self._training_model = TrainingModel(script_factory, graph_spec)
 
@@ -48,8 +49,19 @@ class Trainer:
         self._exporter = self._create_exporter()
 
         self._set_status('Waiting')
-        
-        
+
+
+    def validate(self):
+        """ Compute the loss. If the model or data is faulty, we get a crash. 
+
+        Should be seen as a final error check
+        """
+        dataset = self._data_loader.get_dataset().batch(1)
+        inputs_batch, targets_batch = next(iter(dataset))
+
+        predictions_batch, final_and_intermediate_outputs = self._training_model(inputs_batch, training=False)        
+        self._compute_total_loss(predictions_batch, targets_batch, self._loss_functions)        
+
     def run(self, _=None, on_iterate=None, model_id=None):
         """ Run all training steps """
         # TODO: remove _, on_iterate and model_id when possible
@@ -59,13 +71,7 @@ class Trainer:
     def run_stepwise(self):
         """ Take a training/validation step and yield """
         logger.info("Training model initialized")
-
-        losses = {
-            layer_spec.feature_name: self._loss
-            for layer_spec in self._graph_spec.layers
-            if layer_spec.is_output_layer
-        }
-
+        
         peak_memory_usage = get_memory_usage()
 
         if self._user_email:
@@ -85,7 +91,7 @@ class Trainer:
 
             yield from self._loop_over_dataset(
                 self._training_model,
-                losses,
+                self._loss_functions,
                 training_set,
                 self._set_num_training_batches_completed_this_epoch,
                 is_training=True,
@@ -99,7 +105,7 @@ class Trainer:
             
             yield from self._loop_over_dataset(
                 self._training_model,
-                losses,
+                self._loss_functions,                
                 validation_set,
                 self._set_num_validation_batches_completed_this_epoch,
                 is_training=False
@@ -591,4 +597,15 @@ class Trainer:
             return tf.keras.losses.CategoricalCrossentropy()
         elif loss == 'Dice':
             return dice
+
+    def _setup_loss_functions(self, training_settings):
+        """ Creates a dict of losses, one per output """
+        loss_function = self._resolve_loss_function(training_settings)
+        
+        losses = {
+            layer_spec.feature_name: loss_function
+            for layer_spec in self._graph_spec.layers
+            if layer_spec.is_output_layer
+        }
+        return losses
 
