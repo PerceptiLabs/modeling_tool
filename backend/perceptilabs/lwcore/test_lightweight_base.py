@@ -68,6 +68,38 @@ def graph_spec(csv_path):
     return graph_spec
 
 
+@pytest.fixture()
+def graph_spec_faulty(csv_path):
+    gsb = GraphSpecBuilder()
+    dirpath = tempfile.mkdtemp()
+    # Create the layers
+    id1 = gsb.add_layer(
+        'IoInput',
+        settings={'datatype': 'numerical', 'feature_name': 'x1', 'file_path': csv_path, 'checkpoint_path':dirpath}
+    )
+    id2 = gsb.add_layer(
+        'DeepLearningFC',
+        settings={'n_neurons': 11}
+    )
+    id3 = gsb.add_layer(
+        'IoOutput',
+        settings={'datatype': 'numerical', 'feature_name': 'y1', 'file_path': csv_path}
+    )
+
+    # Connect the layers
+    gsb.add_connection(
+        source_id=id1, source_var='output',
+        dest_id=id2, dest_var='input'
+    )
+    gsb.add_connection(
+        source_id=id2, source_var='output',
+        dest_id=id3, dest_var='input'
+    )
+
+    graph_spec = gsb.build()
+    return graph_spec
+
+
 
 @pytest.fixture(scope='function')
 def graph_spec_pre_datawiz(temp_path_checkpoints):
@@ -639,4 +671,22 @@ def test_io_layer_samples_are_from_the_same_row(csv_path, graph_spec, x1, y1):
             break
 
     assert outputs_match_one_of_the_rows 
+    
+
+def test_output_layer_raises_error_if_inputs_shape_doesnt_match(csv_path, graph_spec_faulty, x1, y1):
+    data_loader = DataLoader.from_features(
+        {
+            'x1': FeatureSpec('numerical', 'input', csv_path),
+            'y1': FeatureSpec('numerical', 'output', csv_path)            
+        },
+        partitions={'training': 4/5, 'validation': 1/5, 'test': 0.0},
+        randomized_partitions=True,
+    )
+    
+    lw_core = LightweightCore(data_loader=data_loader)
+    results = lw_core.run(graph_spec_faulty)
+
+    assert results['2'].has_errors
+
+    
     

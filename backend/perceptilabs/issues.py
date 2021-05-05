@@ -95,7 +95,7 @@ class UserlandError:
     def __init__(self, layer_id, layer_type, line_number, message, code=None):
         self.layer_id = layer_id
         self.layer_type = layer_type
-        self.line_number = line_number
+        self.line_number = line_number or 0
         self.message = message
         self.code = code
 

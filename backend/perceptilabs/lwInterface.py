@@ -178,6 +178,7 @@ class GetNetworkInputDim(LW_interface_base):
 
         # Set the errors
         layer_results = lw_results[layer_spec.id_]
+
         if layer_spec.should_show_errors and layer_results.has_errors:
             error_type, error_info = list(layer_results.errors)[-1] # Get the last error
             content['Error'] = {'Message': error_info.message, 'Row': error_info.line_number}
@@ -294,7 +295,7 @@ class GetNetworkData(LW_interface_base):
 
             except:
                 logger.exception(f'Failed getting preview for layer {layer_spec}')
-            
+
         return dim_content, preview_content, layer_sample_data_points
 
     def _maybe_apply_autosettings(self, graph_spec):

@@ -365,8 +365,11 @@ class LayerSpec(ABC, MyBaseModel):
 
     
 class IoLayerSpec(LayerSpec):
-    pass
-
+    @property
+    def should_show_errors(self):
+        """ Always show errors for IoLayers """
+        return True
+    
 
 class InnerLayerSpec(LayerSpec):
     @property
