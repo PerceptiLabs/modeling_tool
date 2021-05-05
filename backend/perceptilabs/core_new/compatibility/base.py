@@ -40,7 +40,7 @@ class CompatibilityCore:
         if self._threaded:
             self._run_trainer_threaded(self._trainer, self._graph_spec)
         else:
-            self._run_trainer(self._trainer, self._graph_spec, on_iterate=[self._do_process_commands, self._do_process_results])
+            self._run_trainer(self._trainer, self._graph_spec, on_iterate=[self._do_process_commands])
 
     def _run_trainer_threaded(self, trainer, graph_spec):
         """ Starts two workers: one for processing frontend commands, one for training """
@@ -55,16 +55,22 @@ class CompatibilityCore:
             func(counter, self._trainer)    #One extra for good measure
 
         threading.Thread(target=worker, args=(self._do_process_commands, PROCESS_COMMANDS_DELAY), daemon=True).start()    
-        threading.Thread(target=worker, args=(self._do_process_results, PROCESS_RESULTS_DELAY), daemon=True).start()                  
         self._run_trainer(self._trainer, self._graph_spec)        
 
     def _run_trainer(self, trainer, graph_spec, on_iterate=None):
-        try:
-            trainer.run(self._graph_spec, on_iterate=on_iterate, model_id=self._model_id)
-            logger.info("Trainer.run() called from CompatibilityCore")
-        except:
-            self._set_running(False)
-            raise
+        t0 = time.time()
+        for _ in trainer.run_stepwise():
+            if time.time() - t0 > 1:
+                self._process_results(trainer)
+                t0 = time.time()
+
+    def _process_results(self, trainer):
+        """ Retrieves the resultDict from the Trainer """
+        results = trainer.get_results()
+        if results is not None:
+            self._result_queue.queue.clear()
+            self._result_queue.put(results)
+            self._print_result_dict_debug_info(results)
 
     def _set_running(self, status):
         self._running = status
@@ -102,15 +108,6 @@ class CompatibilityCore:
             text = stringify(result_dict, indent=4, sort=True)
             logger.debug("result_dict: \n" + text)
 
-    def _do_process_results(self, counter, trainer):
-        """ Retrieves the resultDict from the Trainer """
-        results = trainer.get_results()
-
-        if results is not None:
-            self._result_queue.queue.clear()
-            self._result_queue.put(results)
-            self._print_result_dict_debug_info(results)
-        
     def _do_process_commands(self, counter, trainer):
         """ Process user commands coming in from the frontend (e.g., pause/unpause) """
         commands = {}

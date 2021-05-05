@@ -145,7 +145,6 @@ class Trainer:
     def _auto_export_model(self):
         """ Exports the model so that we can restore it between runs """
         ckpt_path = self._graph_spec.get_checkpoint_path()
-        inference_export_path = os.path.dirname(ckpt_path)
         self.export_checkpoint(ckpt_path)
 
     def _log_epoch_summary(self, epoch_time):
