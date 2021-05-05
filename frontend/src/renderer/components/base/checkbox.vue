@@ -1,5 +1,5 @@
 <template lang="pug">
-  label.custom-checkbox(:class="{'v-2': isNewUi, 'is-mini-map': isMiniMap}")
+  label.custom-checkbox(:class="{'v-2': isNewUi, 'is-mini-map': isMiniMap, 'disabled': disabled}")
     .checkbox-text(v-if="labelPosition==='left'")
       slot
     input(type="checkbox"
@@ -156,6 +156,10 @@ export default {
       .checkbox-fake {
         background: #23252A;
       }
+    }
+    &.disabled {
+      pointer-events: none;
+      color: gray;
     }
     &.is-silver {
       input[type=checkbox] {

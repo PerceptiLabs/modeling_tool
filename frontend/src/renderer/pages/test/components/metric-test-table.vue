@@ -85,8 +85,8 @@ export default {
     border: 1px solid #4D556A;
   }
   .chart-container {
-    width: calc(50% - 40px);
-    margin: 20px;
+    width: calc(50% - 20px);
+    margin: 10px;
   }
   .wrap {
     width: 100%;

@@ -6,10 +6,7 @@
       the-menu
     
     .app-header-section.app-header-mid
-      div(v-if="isOnTestPage").test-menu-header
-        router-link.test-menu-item(to="test-create") Create test
-        router-link.test-menu-item(to='test-dashboard') Dashboard
-      h4(v-else-if="projectName").page-title <span class="page-route-title">{{routeHeaderAlias}} </span>
+      h4(v-if="projectName").page-title <span class="page-route-title">{{routeHeaderAlias}} </span>
       //- h4(v-if="projectName").page-title {{projectName}} / <span class="page-route-title">{{routeHeaderAlias}} </span>
 
     .app-header-section.app-header-right
@@ -92,9 +89,6 @@ export default {
       if(!currentProject) return '';
       let project = projectsList.filter(project => project.project_id === currentProject)[0];
       return project ? project.name : ''
-    },
-    isOnTestPage() {
-      return this.$route.name === 'test-create' || this.$route.name === 'test-dashboard';
     },
     routeHeaderAlias() {
       let theName = '';

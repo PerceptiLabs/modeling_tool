@@ -55,7 +55,7 @@ export default {
       setCurrentView:           'mod_tutorials/setCurrentView'
     }),
     gotToTestPage(){
-      this.$router.push({name: 'test-create'});
+      this.$router.push({name: 'test'});
     },
     // runTest() {
     //   this.closePopup();

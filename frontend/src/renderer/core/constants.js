@@ -120,3 +120,21 @@ export {
   filePickerStorageKey,
   localStorageGridKey,
 }
+
+export const TestTypes = {
+  confusion_matrix: {
+    default: false,
+    disabled: false,
+    text: 'Confusion Matrix'
+  },
+  metrics_table: {
+    default: false,
+    disabled: false,
+    text: 'Metrics Table'
+  },
+  forward_prop: {
+    default: false,
+    disabled: true,
+    text: 'Forward Prop'
+  }
+}

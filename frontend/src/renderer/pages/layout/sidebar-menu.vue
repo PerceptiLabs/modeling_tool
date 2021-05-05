@@ -48,7 +48,7 @@
     //-       clipPath(id="clip0")
     //-         rect(width="18" height="10" fill="white" transform="translate(12 21)")
     router-link.nav-link(:class="{'is-active-stroke': isOnTestPage()}"
-      :to="{name: 'test-create'}"
+      :to="{name: 'test'}"
       v-tooltip:right="'Test View'"
       )
       svg(xmlns="http://www.w3.org/2000/svg" width="42" height="42" viewBox="0 0 42 42" fill="none")
@@ -496,7 +496,7 @@
         });
       },
       isOnTestPage() {
-        return this.$route.name === 'test-create' || this.$route.name === 'test-dashboard';
+        return this.$route.name === 'test';
       },
     },
   }

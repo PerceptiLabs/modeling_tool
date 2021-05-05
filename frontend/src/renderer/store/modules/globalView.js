@@ -33,6 +33,7 @@ const state = {
       isOpen: false,
       cb: () => null,
     },
+    showTestConfigurationPopup: false,
   },
   popupConfirmCancel: null,
   popupConfirmOk: null,
@@ -156,6 +157,9 @@ const mutations = {
       isOpen: payload.isOpen,
       cb: payload.cb,
     };
+  },
+  showTestConfigurationPopupMutation(state, value) {
+    state.globalPopup.showTestConfigurationPopup = value;
   }
 };
 
@@ -227,6 +231,9 @@ const actions = {
   showGlobalTrainingSettingsAction(ctx, payload) {
     ctx.dispatch('mod_workspace/checkForRunSettingsAction', null, { root: true })
     ctx.commit('showGlobalTrainingSettingsMutation', payload);
+  },
+  showTestConfigurationPopupAction({commit}, value) {
+    commit('showTestConfigurationPopupMutation', value);
   }
 };
 

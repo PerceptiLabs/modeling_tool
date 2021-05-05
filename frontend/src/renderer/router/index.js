@@ -3,8 +3,7 @@ import Router from 'vue-router'
 import PageApp  from '@/pages/app/app.vue';
 import PageProjects from '@/pages/projects/projects.vue';
 import SettingPage from '@/pages/settings/setting-page.vue';
-import TestCreate from '@/pages/test-create/test-create.vue';
-import TestDashboard from '@/pages/test-dashboard/test-dashboard.vue';
+import Test from '@/pages/test/test.vue';
 
 import Analytics from '@/core/analytics';
 
@@ -15,8 +14,7 @@ const router = new Router({
   routes: [
     {path: '/',               name: 'main-page',      component: PageProjects},
     {path: '/app',            name: 'app',            component: PageApp},
-    {path: '/test-create',    name: 'test-create',    component: TestCreate},
-    {path: '/test-dashboard', name: 'test-dashboard', component: TestDashboard},
+    {path: '/test',           name: 'test',           component: Test},
     {path: '/projects',       name: 'projects',       component: PageProjects },
     {path: '/settings',       name: 'settings',       component: SettingPage },
     {path: '*', redirect: '/'}
