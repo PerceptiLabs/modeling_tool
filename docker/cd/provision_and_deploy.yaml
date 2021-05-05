@@ -177,6 +177,17 @@
     docker_token: "{{ channel_dict.token }}"
     installer_url: "https://perceptilabs.blob.core.windows.net/{{ blob }}/{{ version }}/install_perceptilabs_enterprise"
 
+    base_data_url: https://perceptilabs.blob.core.windows.net/data
+    data_zips: [
+      bloodcells_data.zip,
+      brain_tumor_dataset.zip,
+      #Combined_dataset.zip, # too big
+      Documents.zip,
+      face_ages.zip,
+      mnist_data.zip,
+    ]
+    data_dir: "{{ ansible_env.HOME }}/plabs/data"
+
   tasks:
     - name: "Add an extra SSH key, if available"
       command:
@@ -204,6 +215,29 @@
       # the long-running installer causes the ssh connection to time out. Poll instead.
       async: 3600
       poll: 15
+
+    - name: Install unzip
+      become: yes
+      apt:
+        name: unzip
+        state: present
+
+    - name: Create the data directory
+      become: yes
+      file:
+        path: "{{ data_dir }}"
+        state: directory
+        owner: "1001"
+        group: root
+        mode: 0755
+
+    - name: Download and unzip data
+      become: yes
+      ansible.builtin.unarchive:
+        src: "{{ base_data_url }}/{{ item }}"
+        dest: "{{ data_dir }}"
+        remote_src: yes
+      with_items: "{{ data_zips }}"
 
     - name: Installation of GPU drivers requires a reboot.
       become: yes
