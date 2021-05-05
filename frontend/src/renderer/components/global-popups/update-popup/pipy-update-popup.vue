@@ -7,8 +7,10 @@
         .message
           p.header The Best Upgrade Yet
           p.message-content Enter 
-            span "pip install  --upgrade perceptilabs" into Terminal
-          a.link(href="https://perceptilabs.com/docs/changelog" target="_blank") More info...
+            span "pip install  --upgrade perceptilabs" into the Terminal
+          p.message-content 
+            span Note: if you are upgrading to 0.12 for the first time there are some larger changes, click here to view them: 
+            a.link(href="https://perceptilabs.com/docs/changelog" target="_blank") More info...
         .buttons-group
           button.copy(type="button"
             @click="copyClipboard"
@@ -49,8 +51,8 @@ export default {
   
   .body-wrapper {
     position: absolute;
-    width: 340px;
-    height: 85px;
+    width: 440px;
+    height: 110px;
     top: 56px;
     right: 36px;
     z-index: 12;
@@ -60,8 +62,9 @@ export default {
 
   .content {
     background-image: url(../../../../../static/img/update-bg.png);
-    width: 340px;
-    height: 85px;
+    background-size: cover;
+    width: 440px;
+    height: 110px;
     position: relative;
     display: flex;
 
@@ -78,7 +81,7 @@ export default {
     }
 
     .message {
-      width: 200px;
+      width: 280px;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -109,8 +112,8 @@ export default {
     .copy {
       position: absolute;
       background: transparent;
-      width: 73px;
-      height: 42px;
+      width: 95px;
+      height: 55px;
       top: 0;
       right: 0;
       color: #B6C7FB;
@@ -124,8 +127,8 @@ export default {
     .dismiss {
       position: absolute;
       background: transparent;
-      width: 73px;
-      height: 42px;
+      width: 95px;
+      height: 55px;
       bottom: 0;
       right: 0;
       color: #B6C7FB;
@@ -139,8 +142,8 @@ export default {
 
   .popup-body{
     position: relative;
-    width: 340px;
-    height: 85px;
+    width: 440px;
+    height: 110px;
     background: transparent;
     color: #fff;
   }
