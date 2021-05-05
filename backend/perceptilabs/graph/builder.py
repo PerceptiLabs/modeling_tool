@@ -6,9 +6,30 @@ from perceptilabs.layers.specbase import LayerConnection, sanitize_name
 from perceptilabs.graph.spec import GraphSpec
 
 
+TYPE_TO_NAME_TABLE = {
+    'DeepLearningConv': 'Convolution',
+    'DeepLearningFC': 'Dense',
+    'DeepLearningRecurrent': 'Recurrent',
+    'ProcessReshape': 'Reshape',
+    'ProcessRescale': 'Rescale',
+    'ProcessOneHot': 'OneHot',
+    'MathSwitch': 'Switch',
+    'ProcessGrayscale': 'Grayscale',
+    'MathMerge': 'Merge',
+    'PreTrainedVGG16': 'VGG16',
+    'PreTrainedMobileNetV2': 'MobileNetV2',
+    'PreTrainedResNet50': 'ResNet50',
+    'PreTrainedInceptionV3': 'InceptionV3',
+    'IoInput': 'Input',
+    'IoOutput': 'Output',
+}
+
+
+
 class GraphSpecBuilder:
     def __init__(self):
-        self._counter = 0
+        self._name_counter = {}
+        self._id_counter = 0
         self._layers = {}
         self._connections = defaultdict(list)
         self._definitions = DEFINITION_TABLE        
@@ -25,6 +46,8 @@ class GraphSpecBuilder:
         """
         settings = settings or {}
         settings['type_'] = type_
+        if type_ not in self._name_counter:
+            self._name_counter[type_] = 1
 
         if 'name' not in settings:
             settings['name'] = self._next_name(type_)
@@ -33,7 +56,9 @@ class GraphSpecBuilder:
 
         id_ = settings['id_']
         self._layers[id_] = settings
-        self._counter += 1
+        self._name_counter[type_] += 1
+        self._id_counter += 1
+
         return id_
 
     def add_connection(self, source_id: str, source_var: str, dest_id: str, dest_var: str):
@@ -61,7 +86,11 @@ class GraphSpecBuilder:
         self._connections[connection.dst_id].append(connection)
 
     def _build_layer(self, layer_id):
-        """ Build a layer """
+        """ Build a layer 
+        
+        Arguments:
+            layer_id: str
+        """
         settings = self._layers[layer_id]
         settings['forward_connections'] = tuple([
             connection
@@ -93,11 +122,15 @@ class GraphSpecBuilder:
         
     def _next_name(self, type_):
         """ Generate a layer name """
-        return sanitize_name(f"{type_}_{self._counter}")
+        try:
+            clean_name = TYPE_TO_NAME_TABLE[type_]
+        except:
+            clean_name = type_
+        return f"{clean_name}_{self._name_counter[type_]}"
 
     def _next_id(self):
         """ Generate a layer ID """        
-        return str(self._counter)
+        return str(self._id_counter)
         
         
             
