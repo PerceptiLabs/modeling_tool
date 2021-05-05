@@ -304,7 +304,9 @@ export default {
     modalSettingsCb() {
       this.showSpinnerOnRun = true;
       this.setCurrentStatsIndex(this.currentNetworkIndex);
-
+      
+      this.$store.commit('mod_workspace/update_network_meta', {key: 'hideStatistics', networkID: this.currentNetwork.networkID, value: false});
+      
       this.$store.dispatch('mod_api/API_scanCheckpoint', {
         networkId: this.currentNetwork.networkID,
         path: this.currentNetwork.apiMeta.location
