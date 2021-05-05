@@ -7,6 +7,6 @@
     "core_new/layers/templates/*.j2",
     "layers/**/*.json",
     "layers/**/*.j2",      
-    "tutorial_data/*.npy"
+    "testcore/tests.json"
   ]
 }
