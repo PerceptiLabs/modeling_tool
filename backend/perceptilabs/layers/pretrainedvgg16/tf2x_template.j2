@@ -8,6 +8,7 @@ class {{layer_spec.sanitized_name}}Keras(tf.keras.layers.Layer, PerceptiLabsVisu
         """ Takes a tensor and sends it as input to the pretrained VGG16 model."""
         {{ check_input_vars(layer_spec, ['input'])|indent(width=8) }}           
         input_ = inputs['input']
+        input_ = self.preprocess_input(input_)
         {% call indented_if(not layer_spec.trainable) %}
             output = self.vgg16(input_, training=False)
         {% endcall %}
@@ -60,6 +61,8 @@ class {{layer_spec.sanitized_name}}Keras(tf.keras.layers.Layer, PerceptiLabsVisu
             self.kernel = self.vgg16.layers[-1].weights[0]
             self.bias = self.vgg16.layers[-1].bias
         {% endcall %}
+
+        self.preprocess_input = tf.keras.applications.vgg16.preprocess_input
 
         {% call indented_if(layer_spec.include_top == False) %}
             self.kernel = self.vgg16.layers[-2].weights[0]

@@ -8,6 +8,7 @@ class {{layer_spec.sanitized_name}}Keras(tf.keras.layers.Layer, PerceptiLabsVisu
         """ Takes a tensor and sends it as input to the pretrained InceptionV3 model."""
         {{ check_input_vars(layer_spec, ['input'])|indent(width=8) }}           
         input_ = inputs['input']
+        input_ = self.preprocess_input(input_)
         {% call indented_if(not layer_spec.trainable) %}
             output = self.inception_v3(input_, training=False)
         {% endcall %}
@@ -55,6 +56,8 @@ class {{layer_spec.sanitized_name}}Keras(tf.keras.layers.Layer, PerceptiLabsVisu
         {% call indented_if(not layer_spec.trainable) %}
             self.inception_v3.trainable = False
         {% endcall %}
+
+        self.preprocess_input = tf.keras.applications.inception_v3.preprocess_input
 
         {% call indented_if(layer_spec.include_top == True) %}
             self.kernel = self.inception_v3.layers[-1].weights
