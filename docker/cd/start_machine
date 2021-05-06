@@ -97,7 +97,7 @@ start_instance_and_wait(){
   if [ "${cur_state}" == "running" ]; then
     echo "already running"
     return 0
-  elif [ "${cur_state}" == "stopped" ]; then
+  elif [ "${cur_state}" != "stopped" ]; then
     echo "instance $1 is in state '${cur_state}' which isn't startable. Try again later." >&2
     exit 1
   fi
