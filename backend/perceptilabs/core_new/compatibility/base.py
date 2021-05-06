@@ -58,11 +58,14 @@ class CompatibilityCore:
         self._run_trainer(self._trainer, self._graph_spec)        
 
     def _run_trainer(self, trainer, graph_spec, on_iterate=None):
+        """runs the trainer in steps and fetches the results from trainer every 1 second and at the end of training.
+        """
         t0 = time.time()
         for _ in trainer.run_stepwise():
             if time.time() - t0 > 1:
                 self._process_results(trainer)
                 t0 = time.time()
+        self._process_results(trainer)
 
     def _process_results(self, trainer):
         """ Retrieves the resultDict from the Trainer """
