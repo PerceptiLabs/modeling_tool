@@ -608,6 +608,7 @@ class Interface():
         tracking.send_model_recommended(
             request_value['user_email'],
             request_value['model_id'],
+            request_value['skipped_workspace'],
             graph_spec,
             is_tutorial_data=data_loader.is_tutorial_data
         )

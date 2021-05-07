@@ -2,11 +2,13 @@ from perceptilabs.tracking.base import get_mixpanel, silence_exceptions
 
 
 @silence_exceptions
-def send_model_recommended(user_email, model_id, graph_spec, is_tutorial_data):
+def send_model_recommended(user_email, model_id, skipped_workspace, graph_spec, is_tutorial_data):
+    """ Sends a MixPanel event describing the model recommendation """
     payload = {
         'user_email': user_email,
         'model_id': model_id,
-        'is_tutorial_data': is_tutorial_data
+        'is_tutorial_data': is_tutorial_data,
+        'skipped_workspace': skipped_workspace
     }
 
     def try_increment(key):

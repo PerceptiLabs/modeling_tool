@@ -627,7 +627,8 @@ export default {
       const payload = {
         datasetSettings: fullDatasetSettings,
         user_email: this.userEmail,
-        model_id: apiMeta.model_id
+        model_id: apiMeta.model_id,
+        skipped_workspace: runStatistics  
       };
 
       const modelRecommendation = await this.getModelRecommendation(
