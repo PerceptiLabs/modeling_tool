@@ -333,6 +333,7 @@
   )
 </template>
 <script>
+import { coreRequest }                        from "@/core/apiWeb.js";
 import imageClassification                    from "@/core/basic-template/image-classification.js";
 import reinforcementLearning                  from "@/core/basic-template/reinforcement-learning.js";
 import linearRegression                       from "@/core/basic-template/linear-regression.js";
@@ -877,6 +878,14 @@ export default {
       const fileContents = await fileserver_getFileContent(
         `${dataPath[0]}`
       );
+
+      coreRequest({
+          action: 'dataSelected',
+          value: {
+              user_email: this.userEmail,
+              path: dataPath[0]
+          }
+      });
 
       if (fileContents && fileContents.file_contents) {
         this.dataset = fileContents.file_contents;
