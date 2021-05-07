@@ -1,4 +1,4 @@
-from unittest.mock import patch, Mock, MagicMock
+from unittest.mock import patch, Mock
 from django.test import TestCase
 import unittest
 from django_http_exceptions import HTTPExceptions
@@ -11,7 +11,6 @@ from fileserver.api.views.directory_view import (
 from fileserver.api.views.json_model_view import JsonModelView
 from fileserver.api.views.model_directory_view import (modeldirectory_tree, get_modeldirectory)
 from fileserver.api.views.github_view import (github_export, github_import)
-from fileserver.api.views.discourse_view import (discourse_issue)
 from fileserver.tests.utils import (
         temp_local_file,
         temp_local_dir,
@@ -292,21 +291,3 @@ class GithubExportTestCase(TestCaseBase):
 
             response = self.call_and_expect_code("post", f"?path={d}", 200, body=GithubExportTestCase.SIMPLE_BODY)
             self.assertEqual(response.content, b'{"sha": "2341234", "URL": "the_url"}')
-
-
-class DiscourseCreateIssue(TestCaseBase):
-    VIEW_CLASS = MethodViewWrapper(discourse_issue)
-
-    SIMPLE_BODY = {
-        "images": [],
-        "body" : "the_test_body", #can add a test case for 20 letters or more body lines
-        "title" : "the_test_title",
-        "username": "user",
-        "api_key" : "key"
-    }
-
-    def test_simple(self):
-        with patch("fileserver.api.views.discourse_view.connect_to_discourse", return_value=Mock()),\
-                patch("fileserver.api.views.discourse_view.create_topic", return_value=["1", "the_test_title"]):
-            response = self.call_and_expect_code("post", f"", 200, body=DiscourseCreateIssue.SIMPLE_BODY)
-            self.assertEqual(response.content, b'{"topic_id": "1", "topic_slug": "the_test_title"}')
