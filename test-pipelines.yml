@@ -5,13 +5,16 @@ jobs:
 - job: checkincludedfiles
   displayName: Check included_files.txt
   steps:
-    - task: Bash@3
-      displayName: Check included_files.txt
-      inputs:
-        filePath: 'backend/check_included_files'
-        workingDirectory: '$(System.DefaultWorkingDirectory)/backend'
-        failOnStderr: true
-
+  - task: Bash@3
+    inputs:
+      filePath: '$(System.DefaultWorkingDirectory)/scripts/check_included_files'
+      arguments: '$(System.DefaultWorkingDirectory)/backend'
+      failOnStderr: true
+  - task: Bash@3
+    inputs:
+      filePath: '$(System.DefaultWorkingDirectory)/scripts/check_included_files'
+      arguments: '$(System.DefaultWorkingDirectory)/fileserver'
+      failOnStderr: true
 
 - job: testpython
   displayName: Test python

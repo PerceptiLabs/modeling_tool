@@ -43,7 +43,7 @@ perceptilabs/autosettings/base.py
 perceptilabs/autosettings/rules.py
 perceptilabs/autosettings/utils.py
 
-# perceptilabs/parser 
+# perceptilabs/parser
 perceptilabs/parser/onnx_converter.py
 perceptilabs/parser/parse_onnx.py
 
@@ -298,7 +298,14 @@ perceptilabs/aggregation/aggregates.py
 perceptilabs/api/data_container.py
 perceptilabs/api/experiment.py
 
-perceptilabs/tutorial_data/
+# backend/perceptilabs/tutorial_data/
+perceptilabs/tutorial_data/classification_mnist_input.npy
+perceptilabs/tutorial_data/classification_mnist_labels.npy
+perceptilabs/tutorial_data/gan_mnist.npy
+perceptilabs/tutorial_data/linreg_input.npy
+perceptilabs/tutorial_data/linreg_labels.npy
+perceptilabs/tutorial_data/object_detection_input.npy
+perceptilabs/tutorial_data/object_detection_labels.npy
 
 # backend/perceptilabs/data/
 perceptilabs/data/__init__.py

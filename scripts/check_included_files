@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+if [ $# -ne 1 ]; then
+  echo "USAGE $0 <dir>"
+  exit 1
+fi
+
+dir=$1
+expected=$(mktemp)
+present=$(mktemp)
+exceptions=$(mktemp)
+COMMENT="^#"
+BLANK="^$"
+
+rc=0
+report_error(){
+  if echo "$1" | grep -q .; then
+    echo "================================="
+    echo $2
+    echo "$1"
+    rc=1
+  fi
+}
+
+pushd $dir > /dev/null
+# find mismatches between included_files.txt and actual files
+# exclude extras and missing that are listed as literals in the exceptions
+cat included_files_exceptions.txt | awk "/^literal:/" | sed "s/^literal://g" | sort > "${exceptions}"
+cat included_files.txt | grep -v "\(${COMMENT}\|${BLANK}\)" | sort > "${expected}"
+git ls-tree --name-only -r HEAD | sort > "${present}"
+
+# extra files are ones that are present and not expected and not in exclusions
+extra_files=$(join -v 1 "${present}" "${expected}" | join -v 2 "${exceptions}" -)
+# pare down the extra files by patterns in included_files_exceptions
+reject_patterns=$(cat included_files_exceptions.txt| awk "/^regex:/" | sed "s/regex://g")
+for l in $reject_patterns; do
+  extra_files=$(echo "$extra_files" | awk "$l") || true
+done
+report_error "${extra_files}" "Extra files:"
+
+missing_files=$(join -v 2 "${present}" "${expected}" | join -v 2 "${exceptions}" -)
+report_error "${missing_files}" "Missing files:"
+
+rm "${expected}" "${present}" "${exceptions}"
+
+popd > /dev/null
+exit $rc
