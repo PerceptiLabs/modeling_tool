@@ -33,7 +33,7 @@ class IouStats:
         return intersection/union
 
     @return_on_failure(0.0)
-    def get_average_iou_over_epochs(self, phase='training'):
+    def get_iou_over_epochs(self, phase='training'):
         """ Average iou as a series over all epochs """        
         accuracies = [
             self.get_average_iou_for_epoch(epoch, phase=phase)

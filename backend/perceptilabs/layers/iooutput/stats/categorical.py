@@ -68,8 +68,7 @@ class CategoricalOutputStats(OutputStats):
             name_list=['Validation', 'Training']
         )
 
-        training_acc_over_epochs = self._accuracy.get_average_accuracy_over_epochs(phase='training')
-        validation_acc_over_epochs = self._accuracy.get_average_accuracy_over_epochs(phase='validation')
+        training_acc_over_epochs, validation_acc_over_epochs = self.get_accuracy_over_epochs()
             
         dataobj_acc_over_epochs = create_data_object(
             [validation_acc_over_epochs, training_acc_over_epochs],
@@ -90,3 +89,26 @@ class CategoricalOutputStats(OutputStats):
             'accuracy_training': self._accuracy.get_accuracy_for_latest_step(phase='training'),
             'accuracy_validation': self._accuracy.get_accuracy_for_latest_step(phase='validation')
         }
+
+    def get_accuracy_over_epochs(self):
+        """
+        Returns lists of accuracies from all epochs.
+        """
+        training_acc_over_epochs = self._accuracy.get_accuracy_over_epochs(
+            phase='training')
+        validation_acc_over_epochs = self._accuracy.get_accuracy_over_epochs(
+            phase='validation')
+        return training_acc_over_epochs, validation_acc_over_epochs
+
+    def get_end_results(self):
+        """
+        Returns accuracy from final epoch for results summary after training ends.
+        """
+        # TODO: have separate metrics for numerical outputs such as R squared instead of accuracy
+        #TODO: Create separate class for Numerical outputs just like CategoricalOutputStats
+        training_acc_over_epochs, validation_acc_over_epochs = self.get_accuracy_over_epochs()
+        accuracy = {
+            'training': training_acc_over_epochs[-1]*100,
+            'validation': validation_acc_over_epochs[-1]*100,
+        }
+        return {'Accuracy':accuracy}

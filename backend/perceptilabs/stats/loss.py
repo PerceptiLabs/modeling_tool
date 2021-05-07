@@ -53,7 +53,7 @@ class LossStats:
         return average
 
     @return_on_failure(0.0)
-    def get_average_loss_over_epochs(self, phase='training'):
+    def get_loss_over_epochs(self, phase='training'):
         """ Average loss over all epochs epoch """
 
         averages = []

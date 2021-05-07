@@ -73,7 +73,7 @@ def test_average_accuracy_over_epochs_training(prediction_matrices):
         expected.append(acc)
     
     stats = AccuracyStats(prediction_matrices)
-    actual = stats.get_average_accuracy_over_epochs(phase='training')
+    actual = stats.get_accuracy_over_epochs(phase='training')
 
     
 def test_average_accuracy_over_epochs_validation(prediction_matrices):
@@ -83,7 +83,7 @@ def test_average_accuracy_over_epochs_validation(prediction_matrices):
         expected.append(acc)
     
     stats = AccuracyStats(prediction_matrices)
-    actual = stats.get_average_accuracy_over_epochs(phase='validation')
+    actual = stats.get_accuracy_over_epochs(phase='validation')
 
 
 def test_accuracy_for_step(prediction_matrices):

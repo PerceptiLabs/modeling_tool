@@ -33,7 +33,7 @@ class AccuracyStats:
         return correct/total
 
     @return_on_failure(0.0)
-    def get_average_accuracy_over_epochs(self, phase='training'):
+    def get_accuracy_over_epochs(self, phase='training'):
         """ Average accuracy as a series over all epochs """        
         accuracies = [
             self.get_average_accuracy_for_epoch(epoch, phase=phase)

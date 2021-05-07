@@ -653,44 +653,16 @@ class coreLogic():
     def getEndResults(self):
         #TODO: Show in frontend results for each end layer, not just for one.
         end_results={}
-        for id_, layer_spec in self.graph_spec.items():
-            if layer_spec.type_ == "TrainNormal":
-                acc_train=self.getStatistics({"layerId":id_, "variable":"acc_training_epoch","innervariable":""})
-                acc_val=self.getStatistics({"layerId":id_, "variable":"acc_validation_epoch","innervariable":""})
-                loss_train=self.getStatistics({"layerId":id_, "variable":"loss_training_epoch","innervariable":""})
-                loss_val=self.getStatistics({"layerId":id_, "variable":"loss_validation_epoch","innervariable":""})
-
-                acc_train_final = float(acc_train[-1]*100) if len(acc_train) > 0 else -1.0
-                loss_train_final = float(loss_train[-1]) if len(loss_train) > 0 else -1.0
-                acc_val_final = float(acc_val[-1]*100) if len(acc_val) > 0 else -1.0
-                loss_val_final = float(loss_val[-1]) if len(loss_val) > 0 else -1.0
-                
-                end_results.update({1:{"Training": {"Accuracy Training":acc_train_final, "Loss Training":loss_train_final}}, 2:{"Validation": {"Accuracy Validation":acc_val_final, "Loss Validation": loss_val_final}}})
-            elif layer_spec.type_ == "TrainDetector":
-                acc_train=self.getStatistics({"layerId":id_, "variable":"acc_training_epoch","innervariable":""})
-                acc_val=self.getStatistics({"layerId":id_, "variable":"acc_validation_epoch","innervariable":""})
-                loss_train=self.getStatistics({"layerId":id_, "variable":"loss_training_epoch","innervariable":""})
-                loss_val=self.getStatistics({"layerId":id_, "variable":"loss_validation_epoch","innervariable":""})
-                end_results.update({1:{"Training": {"Accuracy Training":float(acc_train[-1]*100), "Loss Training":float(loss_train[-1])}}, 2:{"Validation": {"Accuracy Validation":float(acc_val[-1]*100), "Loss Validation":float(loss_val[-1])}}})
-            elif layer_spec.type_ == "TrainReinforce":
-                loss_train=self.getStatistics({"layerId":id_, "variable":"loss_training_episode","innervariable":""})
-                reward_train=self.getStatistics({"layerId":id_, "variable":"reward_training_episode","innervariable":""})
-                end_results.update({1:{"Training": {"loss_train":float(loss_train[-1]), "reward_train":float(reward_train[-1])}}})
-            elif layer_spec.type_ == "TrainGan":
-                gen_loss_train=self.getStatistics({"layerId":id_, "variable":"gen_loss_training_epoch","innervariable":""})
-                gen_loss_val=self.getStatistics({"layerId":id_, "variable":"gen_loss_validation_epoch","innervariable":""})
-                dis_loss_train=self.getStatistics({"layerId":id_, "variable":"dis_loss_training_epoch","innervariable":""})
-                dis_loss_val=self.getStatistics({"layerId":id_, "variable":"dis_loss_validation_epoch","innervariable":""})
-                end_results.update({1:{"Training":{"Generator Loss Training":float(gen_loss_train[-1]), "Discriminator Loss Training":float(dis_loss_train[-1])}}, 2:{"Validation":{"Generator Loss Validation":float(gen_loss_val[-1]), "Discriminator Loss Validation":float(dis_loss_val[-1])}}})
-            elif layer_spec.type_ == "TrainRegression":
-                r_sq_train=self.getStatistics({"layerId":id_, "variable":"r_sq_train_epoch","innervariable":""})
-                r_sq_val=self.getStatistics({"layerId":id_, "variable":"r_sq_validation_epoch","innervariable":""})
-                loss_train=self.getStatistics({"layerId":id_, "variable":"loss_train_epoch","innervariable":""})
-                loss_val=self.getStatistics({"layerId":id_, "variable":"loss_validation_epoch","innervariable":""})
-                end_results.update({1: {"Training": {"R Squared Training":float(r_sq_train[-1]) * 100, "Loss Training":float(loss_train[-1])}}, 2: {"Validation":{"R Squared Validation":float(r_sq_val[-1]) * 100, "Loss Validation":float(loss_val[-1])}}})
+        #global stats                 
+        global_stats = self.savedResultsDict['global_stats']
+        end_results['global_stats'] = global_stats.get_end_results()
+        #layer specific stats
+        for layer_spec in self.graph_spec.layers:
+            if layer_spec.is_output_layer:
+                layer_stats = self.savedResultsDict['output_stats'][layer_spec.id_]
+                end_results[layer_spec.name] = layer_stats.get_end_results()
         return end_results
 
-    
     def getLayerStatistics(self, layerId, layerType, view):
         logger.debug("getLayerStatistics for layer '{}' with type '{}' and view: '{}'".format(layerId, layerType, view))
 
@@ -1473,13 +1445,6 @@ class coreLogic():
             t="scatter" #Just something which works for all
         return t
 
-    # def recursive_items(self,dictionary):
-    #     for key, value in dictionary.items():
-    #         if type(value) is dict:
-    #             yield from self.recursive_items(value)
-    #         else:
-    #             yield (key, value)
-
     def getStatistics(self,statSpec):
         layerId=statSpec["layerId"]
         variable=statSpec["variable"]
@@ -1559,6 +1524,8 @@ class coreLogic():
     def _get_stats_iooutput(self, layer_id, view):
         stats = self.savedResultsDict['output_stats'][layer_id]
         output = stats.get_data_objects()
+        if view:
+            output = output[view]
         return output
 
     def _get_viewbox_pretrained(self, layer_id, view):

@@ -68,8 +68,7 @@ class ImageOutputStats(OutputStats):
             name_list=['Validation', 'Training']
         )
 
-        training_iou_over_epochs = self._iou.get_average_iou_over_epochs(phase='training')
-        validation_iou_over_epochs = self._iou.get_average_iou_over_epochs(phase='validation')
+        training_iou_over_epochs, validation_iou_over_epochs = self.get_iou_over_epochs()
         
         dataobj_iou_over_epochs = create_data_object(
             [validation_iou_over_epochs, training_iou_over_epochs],
@@ -90,3 +89,24 @@ class ImageOutputStats(OutputStats):
             'iou_training': self._iou.get_iou_for_latest_step(phase='training'),
             'iou_validation': self._iou.get_iou_for_latest_step(phase='validation')
         }
+
+    def get_iou_over_epochs(self):
+        """
+        Returns lists of iou from all epochs.
+        """
+        training_iou_over_epochs = self._iou.get_iou_over_epochs(
+            phase='training')
+        validation_iou_over_epochs = self._iou.get_iou_over_epochs(
+            phase='validation')
+        return training_iou_over_epochs, validation_iou_over_epochs
+        
+    def get_end_results(self):
+        """
+        Returns IOU from final epoch for results summary after training ends.
+        """
+        training_iou_over_epochs, validation_iou_over_epochs = self.get_iou_over_epochs()
+        iou = {
+            'training': training_iou_over_epochs[-1],
+            'validation': validation_iou_over_epochs[-1],
+        }
+        return {'IOU': iou}

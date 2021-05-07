@@ -17,6 +17,10 @@ logger = logging.getLogger(APPLICATION_LOGGER)
 def convert(o):
     if isinstance(o, np.int64):
         return int(o)
+    elif isinstance(o, np.float64):
+        return float(o)
+    elif isinstance(o, np.float32):
+        return float(o)
     raise TypeError
 
 
