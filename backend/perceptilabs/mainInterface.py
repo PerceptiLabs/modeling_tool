@@ -377,12 +377,7 @@ class Interface():
             return getPreviewSample(layer_id, lw_core, graph_spec, variable).run()
 
         elif action == "getPreviewVariableList":
-            layer_id = value["Id"]
-            graph_spec = self._network_loader.load(value["Network"], as_spec=True)
-            json_network = graph_spec.to_dict()
-            lw_core, _, _ = self.create_lw_core(receiver, json_network, adapter=False)
-            
-            return getPreviewVariableList(layer_id, lw_core, graph_spec).run()
+            return self._create_response_get_preview_var_list(value, receiver)
 
         elif action == "Parse":     
             return self._parse(value[0])
@@ -759,4 +754,13 @@ class Interface():
             )
 
             return get_data_meta.run()
+
+    def _create_response_get_preview_var_list(self, request_value, receiver):
+        layer_id = request_value["Id"]
+        graph_spec = self._network_loader.load(request_value["Network"], as_spec=True)
+        json_network = graph_spec.to_dict()
+        dataset_settings = request_value["datasetSettings"]
+        lw_core, _, _ = self.create_lw_core(receiver, json_network, adapter=False, dataset_settings=dataset_settings)
+        
+        return getPreviewVariableList(layer_id, lw_core, graph_spec).run()
         

@@ -743,12 +743,14 @@ const actions = {
   },
 
   API_getPreviewVariableList({dispatch, getters, rootGetters}, layerId) {
+    const datasetSettings = rootGetters['mod_datasetSettings/getCurrentDatasetSettings'](); 
     const theData = {
       receiver: rootGetters['mod_workspace/GET_currentNetworkId'],
       action: 'getPreviewVariableList',
       value: {
         Id: layerId,
-        Network: getters.GET_coreNetwork
+        Network: getters.GET_coreNetwork,
+        datasetSettings: datasetSettings
       }
     };
     // console.log('getPreviewVariableList Request', theData);
