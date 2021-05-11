@@ -565,9 +565,6 @@ class DockerBuilder():
         copy_file(f"{SCRIPTS_DIR}/requirements_build.txt", f"{BUILD_DOCKER_KERNEL}/requirements_build.txt", update=True)
 
         # help the dockerfile keep the image size down: put the tutorial data where it will not be copied into the image with the code
-        rm_rf(f"{BUILD_DOCKER_KERNEL}/tutorial_data")
-        move(f"{BUILD_DOCKER_KERNEL}/perceptilabs/tutorial_data", BUILD_DOCKER_KERNEL)
-        mkdir_p(f"{BUILD_DOCKER_KERNEL}/perceptilabs/tutorial_data")
         FILES_FROM_DOCKER_DIR = "setup.cfg entrypoint.sh Dockerfile runner".split()
         for from_docker in FILES_FROM_DOCKER_DIR:
             copy_file( f"{PROJECT_ROOT}/docker/kernel/{from_docker}", f"{BUILD_DOCKER_KERNEL}/{from_docker}", update=True)

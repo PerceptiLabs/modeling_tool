@@ -38,6 +38,7 @@ WORKDIR /out
 ADD runner main.py setup.py setup.cfg package_data.json VERSION cython_roots.txt requirements.txt ./
 RUN rsync -a /src --files-from=/src/included_files.txt .
 RUN rm -rf /src
+RUN mv perceptilabs/tutorial_data /tutorial_data
 RUN mv main.py main.pyx
 RUN find . -name "__init__.py" -exec mv '{}' '{}x' \;
 RUN python setup.py build_ext --inplace --user
@@ -63,6 +64,7 @@ USER 0
 
 WORKDIR /opt/app-root/src
 COPY --from=build --chown=1001 /out .
+COPY --from=build --chown=1001 /tutorial_data /tutorial_data
 
 RUN chmod +x runner && \
     rm requirements.txt
@@ -76,7 +78,6 @@ USER 1001
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/lib64:/usr/local/cuda/compat:/usr/local/cuda/targets/x86_64-linux/lib
 
 COPY licenses /licenses
-COPY tutorial_data /tutorial_data
 
 EXPOSE 5000
 EXPOSE 8011
