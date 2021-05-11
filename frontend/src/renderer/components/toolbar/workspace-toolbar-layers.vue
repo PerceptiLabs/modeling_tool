@@ -38,7 +38,7 @@
 <script>
   import { trainingElements, deepLearnElements }  from '@/core/constants.js'
   import { mapActions, mapGetters }       from 'vuex';
-  import { generateID }  from "@/core/helpers.js";
+  import {generateID, isEnvDataWizardEnabled} from "@/core/helpers.js";
   
   import DataData             from '@/components/network-elements/elements/data-data/view-data-data.vue'
   import DataEnvironment      from '@/components/network-elements/elements/data-environment/view-data-environment.vue'
@@ -128,7 +128,7 @@ export default {
           iconClass: 'icon-data-group',
           childListClass: '',
           showEl: false,
-          networkElements: (process.env.ENABLE_DATAWIZARD === 'true') ? ['DataData', 'DataEnvironment', 'DataRandom', 'IoInput'] : ['DataData', 'DataEnvironment', 'DataRandom'],
+          networkElements: isEnvDataWizardEnabled() ? ['DataData', 'DataEnvironment', 'DataRandom', 'IoInput'] : ['DataData', 'DataEnvironment', 'DataRandom'],
           id:'tutorial_data',
           color: 'rgba(97, 133, 238, 0.7)',
           borderColor: 'rgba(97, 133, 238, 0.2)',
@@ -448,7 +448,7 @@ export default {
       }
     },
     filterUnnecessaryLayers(){
-      if(process.env.ENABLE_DATAWIZARD === 'true') {
+      if(isEnvDataWizardEnabled()) {
         let newArr = [];
         this.layersbarList.map(obj => {
           if(obj.id !== 'tutorial_data' && obj.id !== 'tutorial_training') {
@@ -473,7 +473,7 @@ export default {
   },
   mounted() {
     this.filterUnnecessaryLayers();
-    if (process.env.ENABLE_DATAWIZARD !== 'true') { return; }
+    if (!isEnvDataWizardEnabled()) { return; }
 
     this.addPreTrainedLayersToDeepLearningDropDown();
 

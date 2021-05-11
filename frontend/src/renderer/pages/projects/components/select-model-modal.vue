@@ -1,6 +1,6 @@
 <template lang="pug">
 .select-model-modal(:data-tutorial-target="'tutorial-create-model-new-model'")
-  tempalte(v-if="!isTF2XEnabled || !isDataWizardEnabled")
+  tempalte(v-if="!isDataWizardEnabled")
     .header 
       .close-cross(@click="closeModal(true)")
       span New Model
@@ -464,9 +464,6 @@ export default {
       defaultTemplate: "mod_workspace/GET_defaultNetworkTemplate",
       userEmail: "mod_user/GET_userEmail",
     }),
-    isTF2XEnabled() {
-      return process.env.ENABLE_DATAWIZARD === "true";
-    },
     isDataWizardEnabled() {
       return isEnvDataWizardEnabled();
     },
@@ -487,7 +484,7 @@ export default {
       this.createModel();
     }, 1000);
 
-    if (this.isTF2XEnabled && this.isDataWizardEnabled) {
+    if (this.isDataWizardEnabled) {
       this.setCurrentView("data-wizard-onboarding");
     } else {
       this.setCurrentView("tutorial-create-model-view");
@@ -558,7 +555,7 @@ export default {
       this.modelName = `${namePrefix} ${highestSuffix + 1}`;
     },
     isAllIOTypesFilled() {
-      if (this.isTF2XEnabled && this.isDataWizardEnabled) {
+      if (this.isDataWizardEnabled) {
         const { csvData } = this;
         return (
           csvData &&
@@ -570,7 +567,7 @@ export default {
       }
     },
     hasInputAndOutput() {
-      if (this.isTF2XEnabled && this.isDataWizardEnabled) {
+      if (this.isDataWizardEnabled) {
         const { csvData } = this;
         return (
           csvData &&
@@ -582,15 +579,13 @@ export default {
       }
     },
     isDisableCreateAction() {
-      if (this.isTF2XEnabled) {
+      if (this.isDataWizardEnabled) {
         const { modelName, csvData } = this;
         let allColumnsAreSelected = true;
         let hasInputAndOutput = true;
 
-        if (this.isDataWizardEnabled) {
-          allColumnsAreSelected = this.isAllIOTypesFilled();
-          hasInputAndOutput = this.hasInputAndOutput();
-        }
+        allColumnsAreSelected = this.isAllIOTypesFilled();
+        hasInputAndOutput = this.hasInputAndOutput();
 
         return !allColumnsAreSelected || !modelName || !hasInputAndOutput;
       } else {
@@ -599,7 +594,7 @@ export default {
       }
     },
     async createModel() {
-      if (this.isTF2XEnabled && this.isDataWizardEnabled) {
+      if (this.isDataWizardEnabled) {
         await this.createModelTF2X();
       } else {
         await this.createModelTF1X();

@@ -1,5 +1,5 @@
 import { coreRequest }  from "@/core/apiWeb.js";
-import { deepCopy, parseJWT, isWeb }   from "@/core/helpers.js";
+import {deepCopy, parseJWT, isWeb, isEnvDataWizardEnabled} from "@/core/helpers.js";
 import { createNotebookJson }   from "@/core/helpers/notebook-helper.js";
 import { pathSlash, sessionStorageInstanceIdKey }  from "@/core/constants.js";
 import { createCoreNetwork } from "@/core/helpers";
@@ -426,7 +426,7 @@ const actions = {
     const userEmail = rootGetters['mod_user/GET_userEmail'];
     const trainSettings = rootGetters['mod_workspace/GET_modelTrainingSetting'];
     const settingCollection = {}
-    if(process.env.ENABLE_DATAWIZARD === 'true') {
+    if(isEnvDataWizardEnabled()) {
       settingCollection['trainSettings'] = trainSettings
     }
     const theData = {

@@ -3,15 +3,7 @@ import saveNet    from './workspace-save-net.js'
 import scaleNet   from './workspace-scale.js'
 import spinnerNet from './workspace-spinner.js'
 import helpersNet from './workspace-helpers.js'
-import {debounce} from '@/core/helpers'
-import { 
-  TRACKER_SCREENNAME_WORKSPACE,
-  TRACKER_SCREENNAME_WORKSPACE_TRAINING,
-  TRACKER_SCREENNAME_STATISTICS,
-  TRACKER_SCREENNAME_STATISTICS_TRAINING,
-  TRACKER_SCREENNAME_TEST,
-  TRACKER_SCREENNAME_TEST_TRAINING } from "@/core/constants";
-import { trainingElements, deepLearnElements }  from '@/core/constants.js';
+import {debounce, isEnvDataWizardEnabled} from '@/core/helpers'
 
 import WorkspaceToolbar       from '../toolbar/workspace-toolbar.vue';
 import StatisticsToolbar      from '../toolbar/statistics-toolbar.vue';
@@ -337,7 +329,7 @@ export default {
         if (!this.getShowTutorialTips) {
           this.deactivateCurrentStep();
           return;
-        } else if (newVal === 'tutorial-workspace-layer-data' && process.env.ENABLE_DATAWIZARD === 'true') {
+        } else if (newVal === 'tutorial-workspace-layer-data' && isEnvDataWizardEnabled()) {
           this.setNextStep({
             currentStep: 'tutorial-workspace-layer-data'
           })

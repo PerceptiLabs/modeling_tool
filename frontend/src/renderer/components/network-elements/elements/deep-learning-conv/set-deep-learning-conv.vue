@@ -164,6 +164,7 @@ import mixinSetValidators from '@/core/mixins/net-element-settings-validators.js
 
 import { mapGetters, mapActions } from 'vuex';
 import isEqual from 'lodash.isequal';
+import {isEnvDataWizardEnabled} from "@/core/helpers";
 
 export default {
   name: 'SetDeepLearningConv',
@@ -255,7 +256,7 @@ export default {
       isTutorialMode:   'mod_tutorials/getIsTutorialMode',
     }),
     isTF2XEnabled() {
-      return process.env.ENABLE_DATAWIZARD === 'true';
+      return isEnvDataWizardEnabled();
     },
     validConvolutionDimOptions() {
       const convType = this.settings.Conv_type;

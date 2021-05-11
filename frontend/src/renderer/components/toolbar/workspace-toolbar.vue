@@ -104,7 +104,7 @@ import { mapGetters, mapActions, mapMutations, mapState } from 'vuex';
 import { googleAnalytics }        from '@/core/analytics';
 import { trainingElements }       from '@/core/constants.js';
 import { deepLearnElements }      from '@/core/constants.js';
-import { goToLink }               from '@/core/helpers.js';
+import {goToLink, isEnvDataWizardEnabled} from '@/core/helpers.js';
 import { removeChartData }        from '@/core/helpers.js';
 
 import LayersToolbar            from '@/components/toolbar/workspace-toolbar-layers.vue';
@@ -245,7 +245,7 @@ export default {
       return typeof this.testIsOpen === 'boolean';
     },
     isGlobalTrainingSettingEnabled() {
-      return process.env.ENABLE_DATAWIZARD === 'true';
+      return isEnvDataWizardEnabled();
     }
   },
   watch: {
@@ -350,7 +350,7 @@ export default {
     },
     trainStartWithCheckpoint() {
       googleAnalytics.trackCustomEvent('start-training');
-      if (process.env.ENABLE_DATAWIZARD !== 'true') {
+      if (!isEnvDataWizardEnabled()) {
         let valid = this.validateNetwork();
         if (!valid) return;
       }
@@ -358,7 +358,7 @@ export default {
     },
     trainStartWithoutCheckpoint() {
       googleAnalytics.trackCustomEvent('start-training');
-      if (process.env.ENABLE_DATAWIZARD !== 'true') {
+      if (!isEnvDataWizardEnabled()) {
         let valid = this.validateNetwork();
         if (!valid) return;
       }
