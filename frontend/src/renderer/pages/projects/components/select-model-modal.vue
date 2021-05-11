@@ -608,25 +608,14 @@ export default {
         location: `${this.modelPath}/${modelName}`
       });
 
-      await this.$store.dispatch(
-        "mod_datasetSettings/setCurrentDataset",
-        this.datasetPath
-      );
       const datasetSettings = {
         randomizedPartitions: this.datasetSettings.randomizedPartitions,
         partitions: this.datasetSettings.partitions,
         featureSpecs: this.formatCSVTypesIntoKernelFormat()
       };
 
-      await this.$store.dispatch("mod_datasetSettings/setDatasetSettings", {
-        datasetPath: this.datasetPath,
-        settings: datasetSettings
-      });
-      const fullDatasetSettings = this.$store.getters[
-        "mod_datasetSettings/getCurrentDatasetSettings"
-      ]();
       const payload = {
-        datasetSettings: fullDatasetSettings,
+        datasetSettings: datasetSettings,
         user_email: this.userEmail,
         model_id: apiMeta.model_id,
         skipped_workspace: runStatistics  
@@ -663,7 +652,7 @@ export default {
       newNetwork.networkID = apiMeta.model_id;
       newNetwork.networkName = modelName;
       newNetwork.networkElementList = layers;
-
+      newNetwork.networkMeta.datasetSettings = deepCopy(datasetSettings);
       // Adding network to workspace
       newNetwork.networkMeta.trainingSettings = deepCopy(this.settings);
       await this.addNetwork({ network: newNetwork, apiMeta }).then(() => {

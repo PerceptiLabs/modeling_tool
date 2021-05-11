@@ -4,13 +4,6 @@ const state = {
   startupFolder: null,
 };
 
-const getters = {
-  getCurrentDatasetSettings: state => () => {
-    const currentDatasetPath = localStorage.getItem("currentDataset");
-    return JSON.parse(localStorage.getItem(currentDatasetPath));
-  }
-};
-
 const mutations = {
   SET_startupFolder(state, value) {
     state.startupFolder = value;
@@ -18,12 +11,6 @@ const mutations = {
 };
 
 const actions = {
-  async setDatasetSettings(ctx, { datasetPath, settings }) {
-    localStorage.setItem(datasetPath, JSON.stringify(settings));
-  },
-  async setCurrentDataset(ctx, datasetPath) {
-    localStorage.setItem("currentDataset", datasetPath);
-  },
   setStartupFolder({commit}, path) {
     commit('SET_startupFolder', path);
   }
@@ -31,7 +18,6 @@ const actions = {
 
 export default {
   namespaced,
-  getters,
   state,
   mutations,
   actions

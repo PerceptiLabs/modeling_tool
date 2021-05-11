@@ -422,7 +422,7 @@ const actions = {
   },
   API_startTraining({dispatch, getters, rootGetters}, { loadCheckpoint = false } = {}) {
     const network = rootGetters['mod_workspace/GET_currentNetwork'];
-    const datasetSettings = rootGetters['mod_datasetSettings/getCurrentDatasetSettings']();
+    const datasetSettings = rootGetters['mod_workspace/GET_currentNetworkDatasetSettings'];
     const userEmail = rootGetters['mod_user/GET_userEmail'];
     const trainSettings = rootGetters['mod_workspace/GET_modelTrainingSetting'];
     const settingCollection = {}
@@ -851,7 +851,7 @@ const actions = {
   API_getPartitionSummary({getters, rootGetters},  {layerId, settings}) {
     const net = getters.GET_coreNetwork;
     if(settings) net[layerId].Properties = settings;
-    const datasetSettings = rootGetters['mod_datasetSettings/getCurrentDatasetSettings'](); 
+    const datasetSettings = rootGetters['mod_workspace/GET_currentNetworkDatasetSettings']; 
     const theData = {
       receiver: rootGetters['mod_workspace/GET_currentNetworkId'],
       action: 'getPartitionSummary',
@@ -871,7 +871,7 @@ const actions = {
   API_getDataMeta({getters, rootGetters}, {layerId, settings}) {
     const net = getters.GET_coreNetwork;
     if(settings) net[layerId].Properties = settings;
-    const datasetSettings = rootGetters['mod_datasetSettings/getCurrentDatasetSettings'](); 
+    const datasetSettings = rootGetters['mod_workspace/GET_currentNetworkDatasetSettings'];
     const theData = {
       receiver: rootGetters['mod_workspace/GET_currentNetworkId'],
       action: 'getDataMeta',
@@ -1144,15 +1144,14 @@ const actions = {
     for(let elId in payload) {
       net[elId]['getPreview'] = payload[elId] !== undefined;
     }
-    const datasetSettings = rootGetters['mod_datasetSettings/getCurrentDatasetSettings']();      
+    const datasetSettings = rootGetters['mod_workspace/GET_currentNetworkDatasetSettings'];
 
-      
     const theData = {
       receiver: '',
       action: 'getNetworkData',
       value: {
-          Network:  net,
-	  datasetSettings: datasetSettings
+        Network:  net,
+	      datasetSettings: datasetSettings
       }
     };
 
@@ -1250,14 +1249,14 @@ const actions = {
         net[ix]['getPreview'] = false;
       }
     }
-    const datasetSettings = rootGetters['mod_datasetSettings/getCurrentDatasetSettings']();      
+    const datasetSettings = rootGetters['mod_workspace/GET_currentNetworkDatasetSettings'];      
     
     const theData = {
       receiver: '',
       action: 'getNetworkData',
       value: {
-          Network:  net,
-	  datasetSettings: datasetSettings	  
+        Network:  net,
+	      datasetSettings: datasetSettings	  
       }
     };
     return coreRequest(theData)

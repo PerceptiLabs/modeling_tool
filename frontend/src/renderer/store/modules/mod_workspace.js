@@ -108,6 +108,11 @@ const getters = {
       : deepCloneNetwork(state.defaultModelTemplate) //{networkID: '1'} //for the close ap when the empty workspace
 
   },
+  GET_currentNetworkDatasetSettings(state, getters)  {
+    return getters.GET_networkIsNotEmpty
+      ? state.workspaceContent[state.currentNetwork].networkMeta.datasetSettings
+      : null
+  },
   GET_currentNetworkIndex(state, getters)  {
     return state.currentNetwork;
   },
@@ -1942,17 +1947,13 @@ const actions = {
   ADD_network({commit, dispatch}, { network, apiMeta = {}, focusOnNetwork = true } = {}) {
 
     return new Promise((resolve, reject) => {
-      if(isElectron()) {
-        commit('add_network', { network, apiMeta, dispatch, focusOnNetwork });
-      } else {
-        commit('add_network', { network, apiMeta, dispatch, focusOnNetwork });
-        const lastNetworkID = state.workspaceContent[state.currentNetwork].networkID;
+      commit('add_network', { network, apiMeta, dispatch, focusOnNetwork });
+      const lastNetworkID = state.workspaceContent[state.currentNetwork].networkID;
 
-        if (focusOnNetwork) {
-          commit('set_lastActiveTabInLocalStorage', lastNetworkID);
-        }
-        dispatch('mod_webstorage/updateWorkspaces', null, { root: true });
+      if (focusOnNetwork) {
+        commit('set_lastActiveTabInLocalStorage', lastNetworkID);
       }
+      dispatch('mod_webstorage/updateWorkspaces', null, { root: true });
       return resolve();
     });
   },
