@@ -52,7 +52,7 @@
   import TheMenu from '@/components/the-menu.vue'
   import HeaderProfile from "@/components/app-header/header-profile";
   import { mapGetters, mapActions } from 'vuex';
-  import { PERCEPTILABS_DOCUMENTATION_URL, PERCEPTILABS_VIDEO_TUTORIAL_URL } from "@/core/constants";
+  import { PERCEPTILABS_DOCUMENTATION_URL, PERCEPTILABS_YOUTUBE_VIDEO_TUTORIAL_URL } from "@/core/constants";
   import { fileserverAvailability } from '@/core/apiFileserver';
 
 export default {
@@ -157,7 +157,7 @@ export default {
     },
     openVideoTutorials() {
       this.trackHelpOption('Go to Video Tutorials');
-      window.open(PERCEPTILABS_VIDEO_TUTORIAL_URL, '_blank');
+      window.open(PERCEPTILABS_YOUTUBE_VIDEO_TUTORIAL_URL, '_blank');
     },
     goToDocumentation() {
       this.trackHelpOption('Go to Documentation');

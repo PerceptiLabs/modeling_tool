@@ -111,7 +111,8 @@ function insertTooltipInfo(event) {
 function insertStandardTooltip(event) {
   let openTooltipDelay = 500;
 
-  if (event.target.tooltipStandardBinding.arg === "networkElement")
+  if (event.target.tooltipStandardBinding.arg === "networkElement"
+  || event.target.tooltipStandardBinding.arg === "wrap-text")
     openTooltipDelay = 0;
 
   if (!store.getters["mod_tutorials/getInteractiveInfo"]) {

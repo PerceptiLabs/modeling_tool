@@ -1,5 +1,5 @@
 <template lang="pug">
-  .triple-input
+  .triple-input(:class="styleType")
     span.labels.first(v-if="withLabels") Training:
     .triple-input-wrapper
       input.triple-input_input(type="number"
@@ -62,7 +62,8 @@ export default {
     withLabels: {
       type: Boolean,
       default: false,
-    }
+    },
+    styleType: { type: String, default: '' }
   },
   computed: {
     isNotValidateSum() {

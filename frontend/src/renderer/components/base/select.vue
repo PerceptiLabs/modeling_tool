@@ -1,5 +1,5 @@
 <template lang="pug">
-  .custom-select
+  .custom-select(:class="styleType")
     button.custom-select_view.input(type="button"
       :class="{'open-list': isOpenList, 'text-placeholder': !value.length}"
       @click="openList"
@@ -80,6 +80,7 @@ export default {
       type: String,
       default: ''
     },
+    styleType: { type: String, default: '' }
   },
   created() {
     this.defaultModel();
@@ -195,6 +196,11 @@ export default {
     background: #363E51;
     height: 3.5rem; 
     border: 1px solid #363E51;
+    
+    .darken & {
+      background-color: #202532;
+      border: 1px solid #5E6F9F;
+    }
 
     .sidebar-setting-content & {
       // background: transparent;

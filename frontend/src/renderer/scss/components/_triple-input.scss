@@ -11,6 +11,11 @@
   padding-right: 30px;
   padding-left: .15em;
   border: 1px solid #4D556A;
+  
+  .darken & {
+    background-color: #191D27;
+    border: 1px solid #5E6F9F;
+  }
 }
 .triple-input_separate {
   // margin: 0 .5em;
@@ -28,6 +33,9 @@
   pointer-events: none;
   &:last-child {
     margin-right: 0;
+  }
+  .darken & {
+    border-color: #5E6F9F;
   }
 }
 .labels {

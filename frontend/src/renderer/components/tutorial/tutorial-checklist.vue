@@ -37,7 +37,7 @@
 
 <script>
 import { mapGetters, mapMutations, mapActions } from 'vuex';
-import {PERCEPTILABS_VIDEO_TUTORIAL_URL} from "@/core/constants";
+import {PERCEPTILABS_YOUTUBE_VIDEO_TUTORIAL_URL} from "@/core/constants";
 export default {
   name: 'TutorialChecklist',
   data() {
@@ -64,7 +64,7 @@ export default {
       this.setChecklistExpandedState(!this.isChecklistExpanded);
     },
     openVideoTutorials() {
-      window.open(PERCEPTILABS_VIDEO_TUTORIAL_URL, '_blank');
+      window.open(PERCEPTILABS_YOUTUBE_VIDEO_TUTORIAL_URL, '_blank');
     },
     skipChecklist() {
       this.trackSkipChecklist();

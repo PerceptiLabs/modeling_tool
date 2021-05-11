@@ -1,5 +1,5 @@
 <template lang="pug">
-  div.wrapper
+  div.wrapper(:class="styleType")
     div.svg-wrapper(
       v-tooltip:wrap-text="text"
     )
@@ -16,7 +16,8 @@ export default {
     text: {
       type: String,
       default: '',
-    }
+    },
+    styleType: {type: String, default: ''}
   },
 }
 </script>
@@ -29,4 +30,18 @@ export default {
   position: relative;
   margin-right: 5px;
 }
+svg {
+  cursor: pointer;
+  path {
+    fill: #B6C7FB;
+  }
+  &:hover {
+    background: white;
+    border-radius: 50%;
+    path {
+      fill: #131B30;
+    }
+  }
+}
+
 </style>

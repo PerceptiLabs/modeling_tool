@@ -128,18 +128,21 @@
   template(v-else)
     .header 
       .close-cross(@click="closeModal(true)")
-      span New Model
+      span {{getModalTitle}}
     .main-wrapper
       .main-file-structure-section
-        .main-file-structure-contents(v-if="onStep === 1")
-          .load-contents-group
-            button.action-button.load-dataset(
-              @click="openFilePicker('setDataPath')"
-              :data-tutorial-target="'tutorial-data-wizard-load-csv'"
-              ) Load data
+        template(v-if="onStep === 1")
+          .main-file-structure-contents
+            .load-contents-group
+              button.action-button.load-dataset(
+                @click="openFilePicker('setDataPath')"
+                :data-tutorial-target="'tutorial-data-wizard-load-csv'"
+              ) Load .CSV
+          div.find-out-message Find out starting guide 
+            span.guide-link(@click="openPLVideoTutorialPage") here.
         div(v-else)
           .dataset-settings(v-show="onStep === 2")
-            h5.default-text Define your dataset:
+            //h5.default-text Define your dataset:
             csv-table(
               v-if="dataset"
               :dataSet="dataset",
@@ -149,6 +152,7 @@
             .data-partition-wrapper
               h5.default-text Data partition:
               triple-input(
+                style-type="darken"
                 v-model="datasetSettings.partitions",
                 separate-sign="%",
                 :validate-min="1",
@@ -169,26 +173,29 @@
               button.reload-dataset-btn(@click="onStep -= 1")
                 img(src='./../../../../../static/img/arrow-back.svg')
                 | Reload dataset
-              button.next-to-settings-btn(
-                :class="{ 'disabled': isDisableCreateAction() }",
-                @click="goToTrainingSettings"
-                )
-                | Next
-                svg(width="10" height="8" viewBox="0 0 10 8" fill="none" xmlns="http://www.w3.org/2000/svg")
-                  path(
-                    fill-rule="evenodd"
-                    clip-rule="evenodd"
-                    d="M0.499999 4.00071C0.499999 3.85153 0.559263 3.70845 0.664752 3.60296C0.770241 3.49747 0.913315 3.43821 1.0625 3.43821L7.57962 3.43821L5.16425 1.02396C5.05863 0.918339 4.99929 0.775084 4.99929 0.625712C4.99929 0.476339 5.05863 0.333084 5.16425 0.227461C5.26987 0.121839 5.41313 0.0625009 5.5625 0.0625009C5.71187 0.0625009 5.85513 0.121839 5.96075 0.227462L9.33575 3.60246C9.38813 3.65471 9.42969 3.71679 9.45805 3.78512C9.48641 3.85346 9.501 3.92672 9.501 4.00071C9.501 4.0747 9.48641 4.14796 9.45805 4.2163C9.42969 4.28464 9.38813 4.34671 9.33575 4.39896L5.96075 7.77396C5.85513 7.87958 5.71187 7.93892 5.5625 7.93892C5.41313 7.93892 5.26987 7.87958 5.16425 7.77396C5.05863 7.66834 4.99929 7.52508 4.99929 7.37571C4.99929 7.22634 5.05863 7.08308 5.16425 6.97746L7.57962 4.56321L1.0625 4.56321C0.913315 4.56321 0.770241 4.50395 0.664752 4.39846C0.559263 4.29297 0.499999 4.1499 0.499999 4.00071Z"
-                    fill="#6185EE"
-                    )
+              div.d-flex.align-items-center
+                span.image-format-message *.jpg .png .jpeg .tiff only
+                button.next-to-settings-btn(
+                  :class="{ 'disabled': isDisableCreateAction() }",
+                  @click="goToTrainingSettings"
+                  )
+                  | Next
+                  svg(width="10" height="8" viewBox="0 0 10 8" fill="none" xmlns="http://www.w3.org/2000/svg")
+                    path(
+                      fill-rule="evenodd"
+                      clip-rule="evenodd"
+                      d="M0.499999 4.00071C0.499999 3.85153 0.559263 3.70845 0.664752 3.60296C0.770241 3.49747 0.913315 3.43821 1.0625 3.43821L7.57962 3.43821L5.16425 1.02396C5.05863 0.918339 4.99929 0.775084 4.99929 0.625712C4.99929 0.476339 5.05863 0.333084 5.16425 0.227461C5.26987 0.121839 5.41313 0.0625009 5.5625 0.0625009C5.71187 0.0625009 5.85513 0.121839 5.96075 0.227462L9.33575 3.60246C9.38813 3.65471 9.42969 3.71679 9.45805 3.78512C9.48641 3.85346 9.501 3.92672 9.501 4.00071C9.501 4.0747 9.48641 4.14796 9.45805 4.2163C9.42969 4.28464 9.38813 4.34671 9.33575 4.39896L5.96075 7.77396C5.85513 7.87958 5.71187 7.93892 5.5625 7.93892C5.41313 7.93892 5.26987 7.87958 5.16425 7.77396C5.05863 7.66834 4.99929 7.52508 4.99929 7.37571C4.99929 7.22634 5.05863 7.08308 5.16425 6.97746L7.57962 4.56321L1.0625 4.56321C0.913315 4.56321 0.770241 4.50395 0.664752 4.39846C0.559263 4.29297 0.499999 4.1499 0.499999 4.00071Z"
+                      fill="#6185EE"
+                      )
   
           div.model-run-settings-page(v-show="onStep === 3")
-            h5.default-text Training settings:
+            //h5.default-text Training settings:
             
             div.setting-form-wrapper.settings-layer_section
               .form_row
                 .form_label
                   info-tooltip(
+                    styleType="justify-content-end"
                     text="Model name"
                   ) Name:
                 .form_input(data-tutorial-hover-info)
@@ -201,6 +208,7 @@
               .form_row.relative
                 .form_label
                   info-tooltip(
+                    styleType="justify-content-end"
                     text="The location where your model directory will be saved."
                   ) Model Path:
                 .form_input
@@ -216,6 +224,7 @@
               .form_row
                 .form_label
                   info-tooltip(
+                    styleType="justify-content-end"
                     text="Number of times you want to run through the entire dataset. The more number of times, the better the model will learn you training data. Just be aware that training too long may overfit your model to your training data."
                   ) Epochs:
                 #tutorial_epochs.form_input(data-tutorial-hover-info)
@@ -226,6 +235,7 @@
               .form_row
                 .form_label
                   info-tooltip(
+                    styleType="justify-content-end"
                     text="Number of samples you want to train on at the same time. Higher value will cause the training to go quicker and may make your model generalize better. Too high value may cause your model not to learn the data well enough though."
                   ) Batch size:
                 .form_input
@@ -236,16 +246,19 @@
               .form_row
                 .form_label
                   info-tooltip(
+                    styleType="justify-content-end"
                     text="The loss function is how the error between the prediction and the labels is calculated and therefore what the models tries to optimize."
                   ) Loss:
                 .form_input
                   base-select(
+                    style-type='darken'
                     v-model="settings.Loss"
                     :select-options="settings.LossOptions"
                   )
               .form_row()
                 .form_label
                   info-tooltip(
+                    styleType="justify-content-end"
                     text="The higher the value, the quicker your model will learn. If it's too low it can easily get stuck in a poor local minima and it it's too high it can easily skip over good local minimas."
                   ) Learning rate:
                 #tutorial_learning_rate.form_input
@@ -253,9 +266,11 @@
                     type="number"
                     v-model="settings.Learning_rate")
               .form_row
-                .form_label Optimizer:
+                .form_label
+                  span.d-flex.justify-content-end Optimizer:
                 .form_input
                   base-select(
+                    style-type='darken'
                     v-model="settings.Optimizer"
                     :select-options="settings.OptimizerOptions"
                   )
@@ -264,6 +279,7 @@
                     .form_row
                       .form_label
                         info-tooltip(
+                          styleType="justify-content-end"
                           text="The exponential decay rate for the 1st moment estimates"
                         ) Beta1:
                       .form_input(data-tutorial-hover-info)
@@ -274,6 +290,7 @@
                     .form_row
                       .form_label
                         info-tooltip(
+                          styleType="justify-content-end"
                           text="The exponential decay rate for the 2nd moment estimates"
                         ) Beta2:
                       .form_input(data-tutorial-hover-info)
@@ -285,6 +302,7 @@
                     .form_row
                       .form_label
                         info-tooltip(
+                          styleType="justify-content-end"
                           text="Accelerates the gradient descent in the relevant direction and dampens oscillations"
                         ) Momentum:
                       .form_input(data-tutorial-hover-info)
@@ -295,6 +313,7 @@
                   div(v-if="settings.Optimizer === 'RMSprop'")
                     .form_row
                       info-tooltip(
+                        styleType="justify-content-end"
                         text="Setting this to True may help with training, but is slightly more expensive in terms of computation and memory"
                       )
                         base-checkbox(v-model="settings.Centered") Centered
@@ -303,6 +322,7 @@
                 .form_label
                 .form_input
                   info-tooltip(
+                    styleType="justify-content-end"
                     text="Select Yes if you want to re-shuffle the order of your dataset each epoch. Typically helps your model to generalize better."
                   )
                     base-checkbox(v-model="settings.Shuffle") Shuffle
@@ -343,7 +363,7 @@ import FilePickerPopup                        from "@/components/global-popups/f
 import CsvTable                               from "@/components/different/csv-table.vue";
 import TripleInput                            from "@/components/base/triple-input";
 import InfoTooltip                            from "@/components/different/info-tooltip.vue";
-import { defaultTrainingSettings }            from "@/core/constants";
+import {defaultTrainingSettings, PERCEPTILABS_VIDEO_TUTORIAL_URL} from "@/core/constants";
 import { mapActions, mapState, mapGetters }   from "vuex";
 import mixinFocus                             from "@/core/mixins/net-element-settings-input-focus.js";
 import {
@@ -442,14 +462,22 @@ export default {
       projectPath: "mod_project/GET_projectPath",
       currentNetworkId: "mod_workspace/GET_currentNetworkId",
       defaultTemplate: "mod_workspace/GET_defaultNetworkTemplate",
-      userEmail: "mod_user/GET_userEmail"
+      userEmail: "mod_user/GET_userEmail",
     }),
     isTF2XEnabled() {
       return process.env.ENABLE_DATAWIZARD === "true";
     },
     isDataWizardEnabled() {
       return isEnvDataWizardEnabled();
+    },
+    getModalTitle() {
+      switch (this.onStep){
+        case 1: return 'Load your dataset'; break;
+        case 2: return 'Define your dataset'; break;
+        case 3: return 'Training settings'; break;
+      }
     }
+    
   },
   mounted() {
     this.modelPath = this.projectPath;
@@ -480,7 +508,7 @@ export default {
       setNextStep: "mod_tutorials/setNextStep",
       activateNotification: "mod_tutorials/activateNotification",
       setChecklistItemComplete: "mod_tutorials/setChecklistItemComplete",
-      getModelRecommendation: "mod_api/API_getModelRecommendation"
+      getModelRecommendation: "mod_api/API_getModelRecommendation",
     }),
     closeModal(triggerViewChange = false) {
       this.$store.dispatch("globalView/SET_newModelPopup", false);
@@ -932,6 +960,9 @@ export default {
       if (!this.isDisableCreateAction()) {
         this.onStep += 1;
       }
+    },
+    openPLVideoTutorialPage() {
+      window.open(PERCEPTILABS_VIDEO_TUTORIAL_URL, '_blank');
     }
   }
 };
@@ -958,9 +989,10 @@ export default {
 }
 .header {
   position: relative;
-  height: 38px;
+  height: 64px;
   display: flex;
-  justify-content: center;
+  //justify-content: center;
+  padding-left: 30px;
   align-items: center;
 
   background-color: rgb(20, 28, 49);
@@ -970,7 +1002,7 @@ export default {
 
   font-size: 14px;
   line-height: 19px;
-  text-align: center;
+  //text-align: center;
   font-family: Nunito Sans;
   font-style: normal;
   font-weight: 600;
@@ -1052,84 +1084,43 @@ export default {
 .main-file-structure-section {
   box-sizing: border-box;
   width: 100%;
-  // padding-bottom: 120px;
 
-  background: linear-gradient(180deg, #363e51 0%, rgba(54, 62, 81, 0) 100%);
+  background: linear-gradient(180deg, #363E51 0%, #000000 225%);
   border: 1px solid rgba(97, 133, 238, 0.4);
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.25);
-  border-radius: 0;
-  min-height: 520px;
-  // border-right-width: 0;
-  border-bottom-left-radius: 2px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+  border-radius: 0 0 2px 2px;
+  min-height: 320px;
 }
-// .main-file-structure-header {
-//   padding: 23px 30px;
-//   display: flex;
-//   align-items: center;
-//   justify-content: space-around h3 {
-//     font-family: Nunito Sans;
-//     font-size: 16px;
-//     line-height: 22px;
-//     color: #e1e1e1;
-//   }
-//   .search-template {
-//     width: 100%;
-//     position: relative;
-//     margin-left: 140px;
-//     img {
-//       position: absolute;
-//       top: 50%;
-//       transform: translateY(-50%);
-//       left: 12px;
-//     }
-//     input {
-//       width: 100%;
-//       border: 1px solid #4d556a;
-//       box-sizing: border-box;
-//       border-radius: 2px;
-//       background: transparent;
-//       height: 30px;
-//       padding-left: 42px;
-//     }
-//   }
-// }
+
 span.error {
+  margin-top: 10px;
   color: red;
 }
 .main-file-structure-contents {
-  width: 100%;
-  height: 100%;
-  padding: 0 30px;
-  // margin-top: 33px;
+  margin: 24px 50px 0;
+  border: 1px dashed #5E6F9F;
+  border-radius: 2px;
+  height: 250px;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   align-items: center;
-
-  //   & > .load-contents-group > button {
-  //     height: 100%;
-  //     line-height: 100%;
-
-  //     text-align: center;
-  //     padding: 1.5rem;
-  //   }
 }
 .main-actions {
   display: flex;
   flex-direction: column;
-  width: 300px;
+  width: 330px;
 
   background: #363e51;
   border: 1px solid rgba(97, 133, 238, 0.4);
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.25);
-  // border-radius: 2px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
   border-bottom-right-radius: 2px;
 }
 
 .presets-text {
   padding: 20px 20px 0;
 
-  font-family: Nunito Sans;
+  font-family: Nunito Sans, sans-serif;
   font-style: normal;
   font-weight: 300;
   font-size: 12px;
@@ -1149,7 +1140,6 @@ span.error {
   border: 1px solid #4d556a;
   box-sizing: border-box;
   border-radius: 2px;
-  border-bottom: 1px solid #4d556a;
 }
 .main-actions-buttons {
   margin-top: auto;
@@ -1167,7 +1157,7 @@ span.error {
   border-radius: 2px;
   box-shadow: 0px 3px 5px rgba(0, 0, 0, 0.25);
 
-  font-family: Nunito Sans;
+  font-family: Nunito Sans, sans-serif;
   font-style: normal;
   font-weight: 600;
   font-size: 16px;
@@ -1177,7 +1167,6 @@ span.error {
 
   color: #ffffff;
   &.is-disabled {
-    // opacity: 0.3;
     background-color: rgb(120, 120, 120);
     cursor: not-allowed;
   }
@@ -1192,7 +1181,6 @@ span.error {
   margin-left: 5px;
 }
 .template-image {
-  margin-top: 10px;
   width: 50%;
   height: 50%;
   margin: 0 auto;
@@ -1202,7 +1190,7 @@ span.error {
   }
 }
 .template-name {
-  font-family: Nunito Sans;
+  font-family: Nunito Sans, sans-serif;
   font-weight: 300;
   font-size: 12px;
   line-height: 16px;
@@ -1211,15 +1199,16 @@ span.error {
 }
 .close-cross {
   position: absolute;
-  right: 10px;
-  top: 9px;
+  right: 26px;
+  top: 50%;
+  transform: translateY(-50%);
   width: 18px;
   height: 18px;
   cursor: pointer;
   &:after {
     content: "";
     position: absolute;
-    width: 12px;
+    width: 18px;
     height: 2px;
     background-color: #6185ee;
     left: 50%;
@@ -1230,7 +1219,7 @@ span.error {
   &:before {
     content: "";
     position: absolute;
-    width: 12px;
+    width: 18px;
     height: 2px;
     background-color: #6185ee;
     left: 50%;
@@ -1244,11 +1233,10 @@ span.error {
   margin-right: 5px;
 }
 .template-description {
-  margin: 0px 20px 40px;
-  font-family: Nunito Sans;
+  margin: 0 20px 40px;
+  font-family: Nunito Sans, sans-serif;
   font-style: normal;
   font-size: 12px;
-  line-height: 16px;
   min-height: 15rem;
   height: 16rem;
   font-weight: normal;
@@ -1256,8 +1244,7 @@ span.error {
   color: #c4c4c4;
 }
 .screenshoot-container {
-  margin: 0 20px;
-  margin-bottom: 20px;
+  margin: 0 20px 20px;
   background: #23252a;
 }
 .template-description-else {
@@ -1295,10 +1282,11 @@ span.error {
   align-content: center;
 
   .load-dataset {
-    height: 100%;
-    line-height: 100%;
-    text-align: center;
-    padding: 1.5rem;
+    padding: 10px;
+    height: auto;
+    background-color: #6185EE;
+    font-weight: 700;
+    font-size: 14px;
   }
 }
 .footer-actions {
@@ -1313,7 +1301,7 @@ span.error {
   }
 }
 .default-text {
-  font-family: Roboto;
+  font-family: Roboto, sans-serif;
   font-style: normal;
   font-weight: normal;
   font-size: 16px;
@@ -1355,15 +1343,20 @@ span.error {
   }
 }
 .model-run-settings-page {
-  padding: 30px;
+  padding: 35px 50px 50px 50px;
   display: flex;
   flex-direction: column;
   height: 100%;
 }
 .setting-form-wrapper {
-  width: 300px;
+  width: 330px;
   .form-label {
     text-align: right;
+  }
+  input {
+    background-color: #202532;
+    text-align: left;
+    border: 1px solid #5E6F9F;
   }
 }
 .normalize-inputs {
@@ -1397,4 +1390,22 @@ span.error {
   height: 32px;
   //width: 50px;
 }
+
+
+.find-out-message {
+  margin: 20px 0 50px 50px;
+  font-size: 14px;
+  color: #C4C4C4;
+}
+.guide-link {
+  cursor: pointer;
+  color: #B6C7FB;
+}
+.image-format-message {
+  margin-right: 10px;
+  font-size: 14px;
+  color: #fff;
+}
+
+
 </style>

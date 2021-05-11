@@ -24,7 +24,7 @@
               )
               span(v-if="numColumn <= computedNumberOfColumns") {{ dataRow[numColumn-1] }} 
               
-              span(v-else) 
+              span(v-else) utton.custom-select_view 
 
           //- Rows for io- and datatypes @TODO can be extracted as separate table on bottom of top one
           
@@ -203,7 +203,8 @@ export default {
         letter-spacing: 0.02em;
 
         // background-color: rgba(#363E51, 0.8);
-        filter: brightness(75%);
+        //filter: brightness(75%);
+        background-color: #242B3A;
         // color: #FFFFFF;
       }
     }
@@ -235,7 +236,7 @@ export default {
 
   .table-column {
     padding: 1rem;
-    border: 1px solid #4D556A;
+    border: 1px solid #5E6F9F;
     
     white-space: nowrap;
   }
@@ -272,10 +273,16 @@ export default {
 
   /deep/ button.custom-select_view {
     background-color: transparent;
+    height: 50px;
+    border-color: transparent;
   }
 
   .delimiter-section {
     margin: 1rem;
+  }
+  
+  .table-column {
+    height: 50px;
   }
 
 </style>
