@@ -113,15 +113,9 @@ get_instance_ip(){
 }
 
 run_remote(){
+  # Since the machine has a new address, we can't check the host key
   ssh -i "${opt_ssh_key}" -o "StrictHostKeyChecking=no" ${SSH_USER}@$1 $2
   return $?
-}
-
-accept_host_signature(){
-  echo -n "Adding $1 to known_hosts..."
-  # Send the key warning to /dev/null since we know it's not in known_hosts
-  run_remote $1 exit
-  echo done
 }
 
 wait_for_sshd(){
@@ -198,7 +192,6 @@ fi
 $(dirname $0)/purge_route53
 start_instance_and_wait ${instance_id}
 ip=$(get_instance_ip ${instance_id})
-accept_host_signature ${ip}
 wait_for_sshd ${ip}
 add_public_key_to_remote "${opt_public_key_name}" ${ip}
 add_route53_record "${opt_subdomain}" ${ip}
