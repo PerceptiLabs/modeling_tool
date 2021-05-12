@@ -1,7 +1,6 @@
 from typing import Tuple, Dict, Any, Union
 
 from perceptilabs.layers.specbase import LayerSpec
-import mlagents_envs.environment
 
 
 class DataEnvironmentSpec(LayerSpec):
