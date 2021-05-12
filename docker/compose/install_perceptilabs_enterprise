@@ -24,37 +24,47 @@ should_install_drivers=0
 ###################################################################################################
 # Parse args
 
-USAGE="USAGE: $0 [--headless|-s] [--drivers|-d force|skip|allow] [--help|-h] [--pwd|-p password] [--noreboot|-n]"
+USAGE="USAGE: $0 [--headless|-s] [--drivers|-d force|skip|allow] [--docker|-k force|skip|allow] [--help|-h] [--pwd|-p password] [--airgapped|-a <images-tarball>] [--noreboot|-n]"
 
 # defaults
 opt_headless=0
 opt_noreboot=0
 opt_drivers=
+opt_docker=
+opt_images_tarball=
 
 ###################################################################################################
 #  Transform long options to short ones
 for arg in "$@"; do
   shift
   case "$arg" in
-    "--help")     set -- "$@" "-h" ;;
-    "--headless") set -- "$@" "-s" ;;
-    "--drivers")  set -- "$@" "-d" ;;
-    "--pwd")      set -- "$@" "-p" ;;
-    "--noreboot") set -- "$@" "-n" ;;
-    *)            set -- "$@" "$arg"
+    "--help")      set -- "$@" "-h" ;;
+    "--headless")  set -- "$@" "-s" ;;
+    "--drivers")   set -- "$@" "-d" ;;
+    "--docker")    set -- "$@" "-k" ;;
+    "--pwd")       set -- "$@" "-p" ;;
+    "--noreboot")  set -- "$@" "-n" ;;
+    "--airgapped") set -- "$@" "-a" ;;
+    *)             set -- "$@" "$arg"
   esac
 done
 
 ###################################################################################################
 # parse short options
-while getopts ":hsd:p:n" arg; do
+while getopts ":hsd:k:p:na:" arg; do
   case ${arg} in
+    a )
+      opt_images_tarball="${OPTARG}"
+      ;;
     h )
       echo "${USAGE}"
       exit 0
       ;;
     d )
       opt_drivers=${OPTARG}
+      ;;
+    k )
+      opt_docker=${OPTARG}
       ;;
     s )
       opt_headless=1
@@ -87,6 +97,18 @@ case ${opt_drivers} in
     echo "${USAGE}"
     exit 1
 esac
+
+# If we're airgapped, then we're not going to do anything that tries to touch the internet
+if [ -n "${opt_images_tarball}" ]; then
+  opt_drivers=skip
+  opt_docker=skip
+  opt_noreboot=1
+
+  if [ ! -f $opt_images_tarball ]; then
+    echo "Images tarball '${opt_images_tarball}' doesn't exist"
+    exit 1
+  fi
+fi
 
 # if we don't have an interactive shell, then it has to be headless
 tty -s || opt_headless=1
@@ -139,7 +161,19 @@ source_config(){
 }
 
 maybe_get_password(){
+  # if we have a tarball, then we don't need a password
+  if [ -n "${opt_images_tarball}" ]; then
+    return 0
+  fi
+
+  # if we can get the password from config then we're done
+  source_config && return 0
+
   if [ -z "${PL_PASSWORD}" ]; then
+    if [ -n "${opt_images_tarball}" ]; then
+      return 0
+    fi
+
     if [ $opt_headless -eq 1 ]; then
       echo "Docker password isn't configured."
       exit 1
@@ -225,6 +259,7 @@ install_nvidia_drivers(){
       return $?
       ;;
     skip )
+      echo "Skipping installation of NVIDIA drivers"
       return 0
       ;;
     allow | '' )
@@ -251,15 +286,35 @@ docker_version_current(){
   return $?
 }
 
-install_docker(){
-  docker_version_current || {
-    echo "Installing docker..."
-    curl https://get.docker.com -s | sh
-    sudo systemctl --now enable docker
-  }
+install_latest_docker(){
+  echo "Installing docker..."
+  curl https://get.docker.com -s | sh
+  sudo systemctl --now enable docker
 
   # grep to dev/null instead of -q because -q breaks the pipe
   sudo docker run --rm hello-world | grep "Hello from Docker" >/dev/null
+
+  return $?
+}
+
+install_docker(){
+  case "${opt_docker}" in
+    force )
+      install_latest_docker
+      return $?
+      ;;
+    skip )
+      echo "Skipping installation of docker"
+      docker_version_current || {
+        echo "Perceptilabs enterprise requires docker version $REQUIRED_DOCKER_VERSION or higher to function"
+        return 1
+      }
+      ;;
+    allow | '' )
+      docker_version_current ||
+        install_latest_docker
+      ;;
+  esac
   return $?
 }
 
@@ -276,55 +331,110 @@ install_nvidia_docker(){
   distribution=$(. /etc/os-release;echo $ID$VERSION_ID) \
      && curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | sudo apt-key add - \
      && curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-docker.list
-  sudo apt-get update
-  sudo apt-get install -y nvidia-docker2
+  sudo apt update
+  sudo apt install -y nvidia-docker2
   sudo systemctl restart docker
   return $?
 }
 
 install_nvidia_docker_support(){
-  ! has_nvidia_driver || {
-    test_nvidia_docker || {
-      install_nvidia_docker
+  # skip if there's no nvidia driver to support
+  has_nvidia_driver || \
+    return 0
 
-      # verify that it's working
-      test_nvidia_docker
-    }
-  }
+  case "${opt_docker}" in
+    force )
+      install_nvidia_docker
+      ;;
+    skip )
+      echo "Skipping installation of NVIDIA support for docker"
+      has_nvidia_driver && \
+        test_nvidia_docker || \
+        echo "WARNING: Docker won't be able to use gpus unless nvidia-docker is installed" >&2
+      ;;
+    allow | '' )
+      test_nvidia_docker || {
+        install_nvidia_docker
+
+        # verify that it's working
+        test_nvidia_docker
+      }
+      ;;
+  esac
   return $?
 }
 
 ###################################################################################################
 # Install docker-compose
+assert_docker_compose_installed(){
+  which docker-compose &>/dev/null
+  return $?
+}
+
+force_install_docker_compose(){
+  sudo curl -s -L "${DOCKER_COMPOSE_INSTALLER}" -o /usr/bin/docker-compose
+  sudo chmod +x /usr/bin/docker-compose
+}
+
 install_docker_compose(){
-  which docker-compose &>/dev/null || {
-    sudo curl -s -L "${DOCKER_COMPOSE_INSTALLER}" -o /usr/bin/docker-compose
-    sudo chmod +x /usr/bin/docker-compose
-  }
+
+  case "${opt_docker}" in
+    force )
+      force_install_docker_compose
+      ;;
+    skip )
+      echo "Skipping installation of docker-compose"
+      assert_docker_compose_installed || \
+        echo "WARNING: This installer depends on docker-compose being installed"
+      ;;
+    allow | '' )
+      assert_docker_compose_installed || \
+        force_install_docker_compose
+      ;;
+  esac
+  return $?
 }
 
 ###################################################################################################
 # Install PerceptiLabs
 remove_gpu_section(){
-  cat docker-compose.yml | \
-    sed "/^\s*deploy:/,/capabilities.*gpu/d" \
-    > tmp
-  mv tmp docker-compose.yml
+  sed --in-place "/^\s*deploy:/,/capabilities.*gpu/d" docker-compose.yml
 }
 
-install_perceptilabs(){
-  curl -s $DOCKER_COMPOSE_URL \
-    | sed "s/\${CONTAINER_REGISTRY}/$CONTAINER_REGISTRY/g" \
-    | sed "s/\${PL_VERSION}/$VERSION/g" \
-    > docker-compose.yml
+edit_docker_compose_yml(){
+  sed --in-place "s/\${CONTAINER_REGISTRY}/$CONTAINER_REGISTRY/g" docker-compose.yml
+  sed --in-place "s/\${PL_VERSION}/$VERSION/g" docker-compose.yml
 
-  ! has_nvidia_driver && \
-     remove_gpu_section
+  has_nvidia_driver || \
+    remove_gpu_section
+}
 
-  curl -s -O $NGINX_CONF_URL
+install_perceptilabs_airgapped(){
+  if [ ! -f "${opt_images_tarball}" ]; then
+    echo "Images tar file "${opt_images_tarball}" doesn't exist" >&2
+    exit 1
+  fi
+
+  edit_docker_compose_yml
 
   mkdir -p plabs
   chmod 777 plabs
+
+  echo "Loading docker images"
+  sudo docker load --quiet --input "${opt_images_tarball}"
+
+  sudo docker-compose up -d
+}
+
+install_perceptilabs_online(){
+  curl -s -O $NGINX_CONF_URL
+  curl -s $DOCKER_COMPOSE_URL > docker-compose.yml
+
+  edit_docker_compose_yml
+
+  mkdir -p plabs
+  chmod 777 plabs
+
   sudo docker login ${CONTAINER_REGISTRY} --username ${DOCKER_USERNAME} --password "${PL_PASSWORD}"
 
   echo pulling images
@@ -333,13 +443,20 @@ install_perceptilabs(){
   sudo docker-compose up -d
 }
 
+install_perceptilabs(){
+  if [ -n "${opt_images_tarball}" ]; then
+    install_perceptilabs_airgapped
+  else
+    install_perceptilabs_online
+  fi
+}
+
 reboot_if_needed(){
   if [ $needs_reboot -eq 1 ] && [ $opt_noreboot -eq 0 ]; then
     echo
-    echo "Installation of drivers is complete."
-    echo "This computer needs to reboot to continue the rest of the installation."
-    echo "After reboot, please rerun this script to resume installation."
-    # TODO: detect non-interactive shell and fail
+    echo "Installation is complete."
+    echo "This computer needs to reboot to complete the installation of drivers."
+
     if [ $opt_headless -eq 0 ]; then
       read -r -p "Press enter to reboot"
     fi
@@ -350,8 +467,7 @@ reboot_if_needed(){
 # Check that I can sudo
 sudo echo
 
-source_config || \
-  maybe_get_password
+maybe_get_password
 
 install_nvidia_drivers
 install_docker

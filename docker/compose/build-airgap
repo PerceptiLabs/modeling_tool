@@ -1,65 +1,123 @@
 #!/usr/bin/env bash
-set -Eeuo pipefail
-
+set -Eeo pipefail
 if [ $# -lt 1 ]; then
-  echo "Missing parameter."
-  echo "USAGE: $0 <images tag>"
+  echo "USAGE $0 <version>"
   exit 1
 fi
 
-PL_IMG_TAG=$1
-PROJECT_ROOT=$(git rev-parse --show-toplevel)
-BUILD_OUTPUT=${PROJECT_ROOT}/build/docker/pl-airgapped
-TARBALL_NAME=pl-airgapped.${PL_IMG_TAG}.tar.gz
-DOCKER_COMPOSE_SRC=${PROJECT_ROOT}/docker/compose
-PERCEPTILABS_AB_TENANT=069b44e7-dd8e-4a34-ae4b-983f50242bff
+VERSION=$1
 
-az account show | grep -q ${PERCEPTILABS_AB_TENANT}
-if [ $? -ne 0 ]; then
-  echo -n "logging in ... "
-  az login --tenant ${PERCEPTILABS_AB_TENANT} --allow-no-subscriptions > /dev/null
-  echo "done"
-else
-  echo "Using existing login"
-fi
+# Perceptilabs AB
+AZURE_TENANT=069b44e7-dd8e-4a34-ae4b-983f50242bff
+RELEASE_SRC_BASE=https://perceptilabs.blob.core.windows.net/enterprise
+RELEASE_FILES=(
+  install_perceptilabs_enterprise
+  docker-compose.yml
+  nginx.conf
+)
+
+DEST_ACCOUNT=perceptilabs
+DEST_CONTAINER=pl-airgapped
+CONTAINER_REGISTRY=perceptilabsenterprise.azurecr.io
+REGISTRY_READER=enterpriseuser
+ZIP_NAME=perceptilabs-${VERSION}-airgapped.zip
 
 
-echo "Building deployment for tag ${PL_IMG_TAG}"
+####################################################################################################
+# Preflight installed apps
+REQUIRED_APPS=(
+  zip
+  az
+  docker
+  docker-compose
+)
+for app in "${REQUIRED_APPS[@]}"; do
+  which ${app} > /dev/null || {
+    echo "${app} isn't installed" >&2;
+    exit 1
+  }
+done
 
-mkdir -p ${BUILD_OUTPUT}
+# NOTES
 
-docker pull perceptilabs.azurecr.io/rygg:${PL_IMG_TAG}
-docker pull perceptilabs.azurecr.io/frontend:${PL_IMG_TAG}
-docker pull perceptilabs.azurecr.io/kernel:${PL_IMG_TAG}
-docker pull postgres:12
-echo
-echo "Images pulled. Exporting them..."
-echo
-docker save \
-  perceptilabs.azurecr.io/rygg:${PL_IMG_TAG} \
-  perceptilabs.azurecr.io/frontend:${PL_IMG_TAG} \
-  perceptilabs.azurecr.io/kernel:${PL_IMG_TAG} \
-  postgres:12 \
-  --output ${BUILD_OUTPUT}/images.tar
+# docker is installed with
+# curl https://get.docker.com -s | sh
+# sudo systemctl --now enable docker
 
-# put the right image number into the loader
-SED_STR="s/^PL_IMG_TAG=.*/PL_IMG_TAG=${PL_IMG_TAG}/g"
-sed ${SED_STR} ${DOCKER_COMPOSE_SRC}/perceptilabs-loader > ${BUILD_OUTPUT}/perceptilabs-loader
-chmod +x ${BUILD_OUTPUT}/perceptilabs-loader
+# az cli is installed with:
+# curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
 
-cp ${DOCKER_COMPOSE_SRC}/docker-compose.yml ${BUILD_OUTPUT}
+# docker-compose is installed with:
+# DOCKER_COMPOSE_INSTALLER="https://github.com/docker/compose/releases/download/1.28.5/docker-compose-$(uname -s)-$(uname -m)"
+# sudo curl -s -L "${DOCKER_COMPOSE_INSTALLER}" -o /usr/bin/docker-compose
+# sudo chmod +x /usr/bin/docker-compose
 
+# zip is from apt
+
+####################################################################################################
+
+# Ensure that we're logged into docker
+cat ~/.docker/config.json | jq ".auths.\"$CONTAINER_REGISTRY\"" | grep -q -v null || {
+  echo "Not logged into ${CONTAINER_REGISTRY}. Log in and restart." >&2
+  exit 1
+}
+
+# Ensure that we're logged in to Azure
+az account show | grep -q "${AZURE_TENANT}"
+
+echo "Checking sudo capability"
+sudo echo -n
+
+BUILD_OUTPUT=$(mktemp -d)
+DEST_ZIP=${BUILD_OUTPUT}/${ZIP_NAME}
+ZIP=${BUILD_OUTPUT}/${DEST_ZIP}
+DOCKER_COMPOSE_FILE=${BUILD_OUTPUT}/docker-compose.yml
+
+echo -n "Getting release files for version ${VERSION} ... "
+for SRC in ${RELEASE_FILES[@]}; do
+  curl -s $RELEASE_SRC_BASE/$VERSION/${SRC} > ${BUILD_OUTPUT}/${SRC}
+done
+echo "done"
+
+echo -n "Reconstituting the docker-compose file ..."
+sed --in-place "s/\${CONTAINER_REGISTRY}/$CONTAINER_REGISTRY/g" ${DOCKER_COMPOSE_FILE}
+sed --in-place "s/\${PL_VERSION}/$VERSION/g" ${DOCKER_COMPOSE_FILE}
+echo "done"
+
+set -x
+cat ${DOCKER_COMPOSE_FILE}
+echo "Pulling the images ..."
+sudo docker-compose --file ${DOCKER_COMPOSE_FILE} pull
+echo "Images pulled."
+
+# pull the images
+images=$(cat ${DOCKER_COMPOSE_FILE} \
+  | sed -n "/image:/p" \
+  | sed "s/^[[:blank:]]*image:[[:blank:]]*//" \
+)
+
+# save the images
+echo -n "Saving the images locally ..."
+sudo docker save ${images} --output ${BUILD_OUTPUT}/images.tar
+echo "done"
+
+# add the images to the zip
+echo -n "Adding the images to the release zip ..."
 pushd ${BUILD_OUTPUT}
-tar -czvf ${TARBALL_NAME} images.tar perceptilabs-loader docker-compose.yml
+sudo chown ${USER} images.tar
+sudo chgrp $(id -g -n ${USER}) images.tar
+zip -u ${DEST_ZIP} ${RELEASE_FILES[@]} images.tar
 popd
+echo "done"
 
-echo "uploading ..."
+echo -n "uploading ..."
 az storage blob upload \
-  --file ${BUILD_OUTPUT}/${TARBALL_NAME} \
-  --container-name pl-airgapped \
-  --name ${TARBALL_NAME} \
-  --account-name perceptilabs \
+  --file ${DEST_ZIP} \
+  --container-name ${DEST_CONTAINER} \
+  --name ${ZIP_NAME} \
+  --account-name ${DEST_ACCOUNT}
+echo "done"
 
-echo "Complete."
-echo "Users can now download the tarball from https://perceptilabs.blob.core.windows.net/pl-airgapped/pl-airgapped.${PL_IMG_TAG}.tar.gz"
-echo "They can unpack it and run perceptilabs-loader"
+echo -n "Removing build artifacts..."
+rm -rf ${BUILD_OUTPUT}
+echo "done"
