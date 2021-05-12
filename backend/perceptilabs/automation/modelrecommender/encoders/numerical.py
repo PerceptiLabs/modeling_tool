@@ -1,7 +1,7 @@
 # TODO: update docstrings w/ dataloader
 from perceptilabs.graph.builder import GraphSpecBuilder
 from perceptilabs.data.base import FeatureSpec, DataLoader  
-from perceptilabs.modelrecommender.encoders import EncoderBlueprint
+from perceptilabs.automation.modelrecommender.encoders import EncoderBlueprint
 
 
 class NumericalEncoderBlueprint(EncoderBlueprint):

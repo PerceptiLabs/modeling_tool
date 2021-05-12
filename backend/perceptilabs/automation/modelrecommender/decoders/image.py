@@ -1,6 +1,6 @@
 from perceptilabs.graph.builder import GraphSpecBuilder
 from perceptilabs.data.base import FeatureSpec, DataLoader
-from perceptilabs.modelrecommender.decoders import DecoderBlueprint
+from perceptilabs.automation.modelrecommender.decoders import DecoderBlueprint
 import numpy as np
 
 

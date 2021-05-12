@@ -3,7 +3,7 @@ import psutil
 from typing import Dict
 import numpy as np
 
-from perceptilabs.autosettings import InferenceRule
+from perceptilabs.automation.autosettings import InferenceRule
 from perceptilabs.graph.spec import GraphSpec
 from perceptilabs.layers.specbase import LayerSpec
 from perceptilabs.layers.utils import get_layer_builder
@@ -378,7 +378,7 @@ if __name__ == "__main__":
     }
     
     from perceptilabs.graph.spec import GraphSpec
-    from perceptilabs.autosettings import SettingsEngine
+    from perceptilabs.automation.autosettings import SettingsEngine
 
     graph_spec = GraphSpec.from_dict(json_network)    
     

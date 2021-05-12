@@ -409,8 +409,7 @@ def test_shuffle_is_called_for_training_but_not_for_validation(script_factory, c
         assert kwargs['partition'] == 'training' and kwargs['shuffle']
 
         _, kwargs = data_loader.get_dataset.call_args_list[i*2 + 1]  # Odd calls are with validation
-        assert kwargs['partition'] == 'validation' and 'shuffle' not in kwargs
-        
+        assert kwargs['partition'] == 'validation' and ('shuffle' not in kwargs or not kwargs['shuffle'])        
 
 
 def test_trainer_validate_raises_no_error(script_factory, data_loader, graph_spec_few_epochs, training_settings):

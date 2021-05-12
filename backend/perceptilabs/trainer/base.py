@@ -84,15 +84,11 @@ class Trainer:
             t0 = time.perf_counter()
 
             self._set_status('Training')
-            training_set = self._data_loader.get_dataset(
-                partition='training',
-                shuffle=self._shuffle_training_set
-            ).batch(self.batch_size)
 
             yield from self._loop_over_dataset(
                 self._training_model,
                 self._loss_functions,
-                training_set,
+                self._get_training_set(),
                 self._set_num_training_batches_completed_this_epoch,
                 is_training=True,
                 optimizer=self._optimizer
@@ -101,12 +97,12 @@ class Trainer:
             if self.is_closed:
                 break
             self._set_status('Validation')
-            validation_set = self._data_loader.get_dataset(partition='validation').batch(self.batch_size)
+
             
             yield from self._loop_over_dataset(
                 self._training_model,
                 self._loss_functions,                
-                validation_set,
+                self._get_validation_set(),
                 self._set_num_validation_batches_completed_this_epoch,
                 is_training=False
             )            
@@ -144,8 +140,11 @@ class Trainer:
 
     def _auto_export_model(self):
         """ Exports the model so that we can restore it between runs """
-        ckpt_path = self._graph_spec.get_checkpoint_path()
-        self.export_checkpoint(ckpt_path)
+        checkpoint_path = self._graph_spec.get_checkpoint_path()
+        if checkpoint_path:
+            self.export_checkpoint(checkpoint_path)
+        else:
+            logger.warning("Checkpoint path not set. Cannot auto export")
 
     def _log_epoch_summary(self, epoch_time):
         logger.info(
@@ -570,13 +569,6 @@ class Trainer:
 
         return all_summaries    
 
-    def _get_datasets(self):
-        """ Get the datasets from the data loader """
-        training_set = self._data_loader.get_dataset(partition='training').batch(self.batch_size)
-        validation_set = self._data_loader.get_dataset(partition='validation').batch(self.batch_size)
-        logger.info("Datasets collected")        
-        return training_set, validation_set
-    
     def _resolve_optimizer(self, training_settings):
         optimizer = training_settings['Optimizer']
         if optimizer == 'SGD':
@@ -607,4 +599,20 @@ class Trainer:
             if layer_spec.is_output_layer
         }
         return losses
+
+    def _get_training_set(self):
+        """ Gets a training set matching the training settings """
+        training_set = self._data_loader.get_dataset(
+            partition='training',
+            shuffle=self._shuffle_training_set
+        ).batch(self.batch_size)
+        return training_set
+        
+    def _get_validation_set(self):
+        """ Gets a validation set matching the training settings """
+        validation_set = self._data_loader.get_dataset(
+            partition='validation',
+            shuffle=False
+        ).batch(self.batch_size)
+        return validation_set
 

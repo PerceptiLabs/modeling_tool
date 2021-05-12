@@ -1,5 +1,5 @@
-from perceptilabs.autosettings.base import SettingsEngine, InferenceRule
-from perceptilabs.autosettings.rules import *
+from perceptilabs.automation.autosettings.base import SettingsEngine, InferenceRule
+from perceptilabs.automation.autosettings.rules import *
 
 
 DEFAULT_RULES = [

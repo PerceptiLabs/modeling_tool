@@ -32,7 +32,7 @@ from perceptilabs.messaging import MessageProducer
 from perceptilabs.aggregation import AggregationRequest, AggregationEngine
 from perceptilabs.license_checker import LicenseV2
 from perceptilabs.trainer import Trainer
-from perceptilabs.modelrecommender.base import ModelRecommender
+from perceptilabs.automation.modelrecommender.base import ModelRecommender
 from perceptilabs.data.base import DataLoader, FeatureSpec    
 
         

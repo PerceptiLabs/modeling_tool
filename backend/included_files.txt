@@ -37,11 +37,16 @@ perceptilabs/server/appServer.py
 perceptilabs/server/desktop_serverlib.py
 perceptilabs/server/web_serverlib.py
 
-# perceptilabs/autosettings
-perceptilabs/autosettings/__init__.py
-perceptilabs/autosettings/base.py
-perceptilabs/autosettings/rules.py
-perceptilabs/autosettings/utils.py
+# perceptilabs/automation/
+perceptilabs/automation/__init__.py
+perceptilabs/automation/utils.py
+
+
+# perceptilabs/automation/autosettings
+perceptilabs/automation/autosettings/__init__.py
+perceptilabs/automation/autosettings/base.py
+perceptilabs/automation/autosettings/rules.py
+perceptilabs/automation/autosettings/utils.py
 
 # perceptilabs/parser
 perceptilabs/parser/onnx_converter.py
@@ -319,25 +324,25 @@ perceptilabs/data/pipelines/numerical.py
 perceptilabs/data/pipelines/binary.py
 perceptilabs/data/pipelines/categorical.py
 
-# backend/perceptilabs/modelrecommender/
-perceptilabs/modelrecommender/__init__.py
-perceptilabs/modelrecommender/base.py
+# backend/perceptilabs/automation/modelrecommender/
+perceptilabs/automation/modelrecommender/__init__.py
+perceptilabs/automation/modelrecommender/base.py
 
-# backend/perceptilabs/modelrecommender/encoders/
-perceptilabs/modelrecommender/encoders/__init__.py
-perceptilabs/modelrecommender/encoders/base.py
-perceptilabs/modelrecommender/encoders/numerical.py
-perceptilabs/modelrecommender/encoders/categorical.py
-perceptilabs/modelrecommender/encoders/image.py
-perceptilabs/modelrecommender/encoders/binary.py
-perceptilabs/modelrecommender/encoders/categorical.py
+# backend/perceptilabs/automation/modelrecommender/encoders/
+perceptilabs/automation/modelrecommender/encoders/__init__.py
+perceptilabs/automation/modelrecommender/encoders/base.py
+perceptilabs/automation/modelrecommender/encoders/numerical.py
+perceptilabs/automation/modelrecommender/encoders/categorical.py
+perceptilabs/automation/modelrecommender/encoders/image.py
+perceptilabs/automation/modelrecommender/encoders/binary.py
+perceptilabs/automation/modelrecommender/encoders/categorical.py
 
-# backend/perceptilabs/modelrecommender/decoders/
-perceptilabs/modelrecommender/decoders/__init__.py
-perceptilabs/modelrecommender/decoders/base.py
-perceptilabs/modelrecommender/decoders/numerical.py
-perceptilabs/modelrecommender/decoders/categorical.py
-perceptilabs/modelrecommender/decoders/image.py
+# backend/perceptilabs/automation/modelrecommender/decoders/
+perceptilabs/automation/modelrecommender/decoders/__init__.py
+perceptilabs/automation/modelrecommender/decoders/base.py
+perceptilabs/automation/modelrecommender/decoders/numerical.py
+perceptilabs/automation/modelrecommender/decoders/categorical.py
+perceptilabs/automation/modelrecommender/decoders/image.py
 
 # backend/perceptilabs/trainer/
 perceptilabs/trainer/__init__.py

@@ -1,5 +1,5 @@
 import pytest
-from perceptilabs.modelrecommender import ModelRecommender
+from perceptilabs.automation.modelrecommender import ModelRecommender
 from perceptilabs.data.base import FeatureSpec
 
 

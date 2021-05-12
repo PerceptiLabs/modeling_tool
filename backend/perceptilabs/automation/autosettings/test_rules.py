@@ -4,8 +4,8 @@ import numpy as np
 
 from perceptilabs.lwcore import LightweightCore
 from perceptilabs.graph.spec import GraphSpec
-from perceptilabs.autosettings import SettingsEngine
-import perceptilabs.autosettings.rules as rules
+from perceptilabs.automation.autosettings import SettingsEngine
+import perceptilabs.automation.autosettings.rules as rules
 
 
 @pytest.fixture

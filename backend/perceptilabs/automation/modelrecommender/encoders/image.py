@@ -1,6 +1,6 @@
 from perceptilabs.graph.builder import GraphSpecBuilder
 from perceptilabs.data.base import FeatureSpec, DataLoader
-from perceptilabs.modelrecommender.encoders import EncoderBlueprint
+from perceptilabs.automation.modelrecommender.encoders import EncoderBlueprint
 
 # TODO: update docstrings w/ dataloader
 class ImageEncoderBlueprint(EncoderBlueprint):

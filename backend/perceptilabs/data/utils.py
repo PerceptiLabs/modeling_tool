@@ -3,7 +3,6 @@ import filecmp
 import pkg_resources
 
 
-
 def get_tutorial_data_directory():
     """ Retrieves the tutorial data directory """
     path = pkg_resources.resource_filename('perceptilabs', 'tutorial_data')
@@ -30,4 +29,15 @@ def is_tutorial_data_file(path):
     return False
 
 
+def get_mnist_loader():
+    from perceptilabs.data.base import DataLoader, FeatureSpec
     
+    path = os.path.join(get_tutorial_data_directory(), 'mnist_small', 'data.csv')
+
+    feature_specs = {
+        'image_path': FeatureSpec(datatype='image', iotype='input', file_path=path),
+        'target': FeatureSpec(datatype='categorical', iotype='output', file_path=path)        
+    }
+    
+    loader = DataLoader.from_features(feature_specs, file_path=path)
+    return loader

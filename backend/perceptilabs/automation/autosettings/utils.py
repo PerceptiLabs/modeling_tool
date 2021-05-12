@@ -2,7 +2,7 @@ import logging
 import copy
 
 import perceptilabs.utils as utils
-from perceptilabs.autosettings import DEFAULT_RULES, SettingsEngine
+from perceptilabs.automation.autosettings import DEFAULT_RULES, SettingsEngine
 from perceptilabs.graph.spec import GraphSpec
 from perceptilabs.layers.specbase import DummySpec
 from perceptilabs.layers import get_layer_builder

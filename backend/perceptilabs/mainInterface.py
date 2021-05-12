@@ -31,8 +31,8 @@ from perceptilabs.api.data_container import DataContainer as Exp_DataContainer
 from perceptilabs.messaging import MessageConsumer, MessagingFactory
 
 import perceptilabs.logconf
-import perceptilabs.autosettings.utils as autosettings_utils
-from perceptilabs.modelrecommender import ModelRecommender
+import perceptilabs.automation.autosettings.utils as autosettings_utils
+import perceptilabs.automation.utils as automation_utils
 from perceptilabs.data.base import FeatureSpec, DataLoader
 from perceptilabs.utils import is_pre_datawizard
 from perceptilabs.script import ScriptFactory
@@ -595,9 +595,8 @@ class Interface():
         """ Loads the data and invokes the model recommender to return a graph spec. Also triggers a MixPanel event """
         dataset_settings = request_value['datasetSettings']
         data_loader = DataLoader.from_dict(dataset_settings)
-        
-        recommender = ModelRecommender(data_loader=data_loader)
-        graph_spec = recommender.get_graph(data_loader.feature_specs)
+
+        graph_spec, training_settings = automation_utils.get_model_recommendation(data_loader)  # TODO(anton.k): in autosettings, send training settings back to frontend
         json_network = graph_spec.to_dict()
         
         tracking.send_model_recommended(

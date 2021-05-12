@@ -5,13 +5,13 @@ from perceptilabs.graph.spec import GraphSpec
 from perceptilabs.graph.builder import GraphSpecBuilder
 from perceptilabs.data.base import FeatureSpec
 
-from perceptilabs.modelrecommender.encoders import (
+from perceptilabs.automation.modelrecommender.encoders import (
     NumericalEncoderBlueprint,
     ImageEncoderBlueprint,
     BinaryEncoderBlueprint,
     CategoricalEncoderBlueprint
 )
-from perceptilabs.modelrecommender.decoders import (
+from perceptilabs.automation.modelrecommender.decoders import (
     NumericalDecoderBlueprint,
     CategoricalDecoderBlueprint,
     ImageDecoderBlueprint

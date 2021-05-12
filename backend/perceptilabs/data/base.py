@@ -79,21 +79,23 @@ class DataLoader:
         return cls.from_features(feature_specs, partitions=partitions)
         
     @classmethod
-    def from_features(cls, feature_specs, partitions=None, randomized_partitions=False, randomized_partitions_seed=None) -> 'DataLoader':
+    def from_features(cls, feature_specs, file_path=None, partitions=None, randomized_partitions=False, randomized_partitions_seed=None) -> 'DataLoader':
         """ Creates a DataLoader given set of features
 
         Arguments:
             feature_specs: the feature specs
         """
-        path = cls._resolve_file_path(feature_specs)
-        df = pd.read_csv(path)
+        if not file_path:
+            file_path = cls._resolve_file_path(feature_specs)
+
+        df = pd.read_csv(file_path)
         data_loader = cls(
             df,
             feature_specs,
             partitions=partitions,
             randomized_partitions=randomized_partitions,
             randomized_partitions_seed=randomized_partitions_seed,
-            base_directory=os.path.dirname(path)
+            base_directory=os.path.dirname(file_path)
         )
         return data_loader
 

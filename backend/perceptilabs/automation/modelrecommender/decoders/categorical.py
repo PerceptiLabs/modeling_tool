@@ -1,9 +1,9 @@
 from perceptilabs.graph.builder import GraphSpecBuilder
 from perceptilabs.data.base import FeatureSpec, DataLoader
-from perceptilabs.modelrecommender.decoders import DecoderBlueprint
-# TODO: update docstrings w/ dataloader
+from perceptilabs.automation.modelrecommender.decoders import DecoderBlueprint
 
-class NumericalDecoderBlueprint(DecoderBlueprint):
+# TODO: update docstrings w/ dataloader
+class CategoricalDecoderBlueprint(DecoderBlueprint):
     def build(self, builder: GraphSpecBuilder, feature_name: str, feature_spec: FeatureSpec, data_loader: DataLoader = None) -> str:
         """ Adds an decoder to the graph spec builder
         
@@ -15,9 +15,12 @@ class NumericalDecoderBlueprint(DecoderBlueprint):
             the ID of the decoders first layer
         """
 
+        preprocessing = data_loader.get_preprocessing_pipeline(feature_name, mode='training')
+        n_categories = preprocessing.n_categories
+        
         id1 = builder.add_layer(
                 'DeepLearningFC',
-                settings={'n_neurons': 1, 'activation': 'None'}
+                settings={'n_neurons': n_categories, 'activation': 'None'}
             )
         id2 = builder.add_layer(
             'IoOutput',

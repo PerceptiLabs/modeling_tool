@@ -218,8 +218,12 @@ class GraphSpec(AbstractGraphSpec):
         return start_nodes
     
     def get_checkpoint_path(self):
-        checkpoint_path = self.layers[0].checkpoint_path
-        return checkpoint_path
+        """ Resolves the checkpoint path. Returns None if not set """
+        try:
+            checkpoint_path = self.layers[0].checkpoint_path
+            return checkpoint_path
+        except:
+            return None
     
     def _get_connections(self, layer_specs):
         bw_cons = set()
