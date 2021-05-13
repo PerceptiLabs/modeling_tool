@@ -38,6 +38,7 @@ services:
       HOME: /perceptilabs
       PL_FILE_SERVING_TOKEN: thetoken
       PL_TUTORIALS_DATA: /tutorial_data
+      PL_FILE_UPLOAD_DIR: /perceptilabs/Documents/Perceptilabs/data
     deploy:
       resources:
         reservations:

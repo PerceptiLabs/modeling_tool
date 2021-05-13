@@ -3,6 +3,7 @@ from django.views.generic import TemplateView
 from django_http_exceptions import HTTPExceptions
 from rest_framework.decorators import api_view
 from django.http import HttpResponse
+from rest_framework.response import Response
 from static_file_server.settings import IS_CONTAINERIZED
 import os
 
@@ -39,9 +40,15 @@ def fileserver_url(request):
 def rygg_url(request):
     return HttpResponse(other_url(request, "PL_RYGG_URL", "rygg"))
 
+@api_view(["HEAD"])
+def is_enterprise(request):
+    code = 204 if IS_CONTAINERIZED else 404
+    return Response(status=code)
+
 urlpatterns = [
     re_path('kernel_url', kernel_url),
     re_path('fileserver_url', fileserver_url),
     re_path('rygg_url', rygg_url),
+    re_path('is_enterprise', is_enterprise),
     re_path('', TokenView.as_view()),
 ]

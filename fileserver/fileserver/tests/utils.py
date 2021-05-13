@@ -2,6 +2,7 @@ from contextlib import contextmanager
 import json
 import os
 from shutil import rmtree
+import tempfile
 
 @contextmanager
 def local_file_cleanup(name):
@@ -55,3 +56,14 @@ def temp_read_only(name):
 
 def cwd():
     return os.getcwd()
+
+@contextmanager
+def populated_tempfile(content_str):
+    content_bytes=bytearray(content_str.encode('utf-8'))
+
+    with tempfile.TemporaryDirectory() as td:
+        with tempfile.NamedTemporaryFile(mode="wb", delete=False, dir=td) as f:
+            f.write(content_bytes)
+            f.close()
+            yield f.name
+

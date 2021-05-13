@@ -20,6 +20,14 @@ class FileserverRest():
             raise Exception(f"Error status {resp.status_code} received. Content: {resp.content}")
         return None if not resp.content else resp.json()
 
+    def post_file(self, relpath, file_path, file_name, **urlparms):
+        files = {"file_uploaded": (file_name, open(file_path, "rb"), "application/octet-stream")}
+        url = self.build_query(relpath)
+        resp = requests.post(url, files=files, data={"token": self._token, **urlparms})
+        if not resp.ok:
+            raise Exception(f"Error status {resp.status_code} received. Content: {resp.content}")
+        return None if not resp.content else resp.json()
+
     def build_query(self, relpath, **parms):
         encoded_parms = urlencode({"token": self._token, **parms})
         return f"{self._base_url}{relpath}?{encoded_parms}"

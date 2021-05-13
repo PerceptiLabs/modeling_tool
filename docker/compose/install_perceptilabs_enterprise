@@ -417,8 +417,9 @@ install_perceptilabs_airgapped(){
 
   edit_docker_compose_yml
 
-  mkdir -p plabs
+  mkdir -p plabs/data
   chmod 777 plabs
+  chmod 777 plabs/data
 
   echo "Loading docker images"
   sudo docker load --quiet --input "${opt_images_tarball}"
@@ -432,9 +433,9 @@ install_perceptilabs_online(){
 
   edit_docker_compose_yml
 
-  mkdir -p plabs
+  mkdir -p plabs/data
   chmod 777 plabs
-
+  chmod 777 plabs/data
   sudo docker login ${CONTAINER_REGISTRY} --username ${DOCKER_USERNAME} --password "${PL_PASSWORD}"
 
   echo pulling images

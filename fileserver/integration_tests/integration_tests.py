@@ -1,6 +1,21 @@
+#!/usr/bin/env python
 import os
 import sys
 import rest
+import tempfile
+import json
+import platform
+from contextlib import contextmanager
+
+@contextmanager
+def populated_tempfile(content_str):
+    content_bytes=bytearray(content_str.encode('utf-8'))
+
+    with tempfile.TemporaryDirectory() as td:
+        with tempfile.NamedTemporaryFile(mode="wb", delete=False, dir=td) as f:
+            f.write(content_bytes)
+            f.close()
+            yield f.name
 
 usingDocker = False
 if len(sys.argv) < 2:
@@ -10,10 +25,11 @@ if len(sys.argv) < 2:
     sys.exit(1)
 
 if sys.argv[1] == 'local':
-    CMD = "PL_FILE_SERVING_TOKEN=thetoken PL_TUTORIALS_DATA=$(git rev-parse --show-toplevel)/backend/perceptilabs/tutorial_data python manage.py runserver 8011"
+    # uses "containe=1" to trick the server into thinking it's in a container
+    CMD = "PL_FILE_SERVING_TOKEN=thetoken PL_TUTORIALS_DATA=$(git rev-parse --show-toplevel)/backend/perceptilabs/tutorial_data container=1 python manage.py runserver 8011"
     host = "localhost"
     home = os.getenv("HOME")
-    platform = "Darwin"
+    platform = platform.system()
     TUTORIAL_DATA_RELPATH="../../backend/perceptilabs/tutorial_data"
     script_dir = os.path.dirname(os.path.abspath(__file__))
     tutorial_data = os.path.abspath(os.path.join(script_dir, TUTORIAL_DATA_RELPATH))
@@ -24,14 +40,18 @@ else:
     platform = "Linux"
     tutorial_data = "/tutorial_data"
 
-print("start the fileserver with the following:")
-print(CMD)
-input("Press enter to continue")
-
 rest = rest.FileserverRest(f"http://{host}:8011", "thetoken")
 
+while True:
+    try:
+        rest.check()
+        break
+    except:
+        print("start the fileserver with the following:")
+        print(CMD)
+        input("Press enter to continue")
+
 # check connectivity
-rest.check()
 assert rest.head("/files", path="manage.py")
 assert rest.get("/directories/resolved_dir", path="a") == {"path": "a"}
 
@@ -54,5 +74,30 @@ rest.post("/json_models", {"this": "is a jsonfile"},  path= f"{working_dir}/simp
 assert "model.json" in rest.get("/directories/get_folder_content", path=f"{working_dir}/simple_model")["files"]
 
 assert rest.get("/directories/tutorial_data") == {'path': tutorial_data}
+
+# upload a file
+
+content_str="""
+this is some
+text
+"""
+
+with populated_tempfile(content_str) as filename:
+    ret=rest.post_file("/upload", filename, "destfilename", overwrite=True)
+
+    expected = {
+        "name": "destfilename",
+        "size": len(content_str),
+        # yep, we're expecting what we got
+        # it'll fail if those fields are missing, and that's all we care about
+        "created": ret["created"],
+        "modified": ret["modified"],
+    }
+    assert ret == expected
+
+    # test that we can round-trip the data back out of the API
+    ret = rest.get("/upload", filename="destfilename")
+    assert ret == expected
+
 
 print("ok")

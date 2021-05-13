@@ -10,6 +10,8 @@ import re
 import subprocess
 import sys
 import tempfile
+import time
+import socket
 
 class Os(Enum):
     LINUX = auto()
@@ -401,6 +403,45 @@ def run_django_tests():
     with pushd(FILESERVER_DIR):
         run_checked_arr([PYTHON, "-m", "django", "test", "--settings", "fileserver.settings"])
 
+def run_integration_tests():
+    # TODO: Make integration tests work on windows
+    if OS == Os.WIN:
+        return
+
+    def is_port_live(port):
+        with socket.socket() as s:
+            rc = s.connect_ex(('127.0.0.1', port))
+            return rc == 0
+
+    def wait_for_port(port, interval_secs=1, timeout_secs=10):
+        count = 0
+        max_tries = timeout_secs / interval_secs
+        while True:
+            time.sleep(interval_secs)
+            if is_port_live(port):
+                return
+
+            count += 1
+            if count > max_tries:
+                raise Exception(f"Timeout while waiting for port {port}")
+
+    env={
+        "PL_FILE_SERVING_TOKEN": "thetoken",
+        "PL_TUTORIALS_DATA": os.path.join(BACKEND_SRC, "perceptilabs", "tutorial_data"),
+        "PL_FILE_UPLOAD_DIR": tempfile.gettempdir(),
+        "container": "any ol' string",
+    }
+
+    print("---------------------------------------------------------------------------------------------------")
+    print("Running fileserver integration tests")
+    with Popen([PYTHON, "manage.py", "runserver", "0.0.0.0:8011"], cwd=FILESERVER_DIR, env={**env, **os.environ}) as server_proc:
+        wait_for_port(8011, interval_secs=0.1)
+        run_checked_arr([PYTHON, os.path.join(FILESERVER_DIR, 'integration_tests', "integration_tests.py"), "local"])
+        server_proc.terminate()
+    print("Fileserver integration tests passed")
+    print("---------------------------------------------------------------------------------------------------")
+
+
 def which_cmd():
     if OS == Os.WIN:
         return "where"
@@ -502,10 +543,11 @@ def test():
     write_all_lines(f"{BUILD_TMP}/cython_roots.txt", ["perceptilabs\n", "rygg\n", "fileserver\n", "static_file_server\n"])
     run_pytest_tests()
     run_django_tests()
-    run_lint_test()    
+    run_integration_tests()
+    run_lint_test()
     run_cython_test()
 
-    
+
 class DockerBuilder():
     @staticmethod
     def all(do_clean=False):
@@ -564,7 +606,6 @@ class DockerBuilder():
         copy_file(f"{SCRIPTS_DIR}/setup.py", f"{BUILD_DOCKER_KERNEL}/setup.py", update=True)
         copy_file(f"{SCRIPTS_DIR}/requirements_build.txt", f"{BUILD_DOCKER_KERNEL}/requirements_build.txt", update=True)
 
-        # help the dockerfile keep the image size down: put the tutorial data where it will not be copied into the image with the code
         FILES_FROM_DOCKER_DIR = "setup.cfg entrypoint.sh Dockerfile runner".split()
         for from_docker in FILES_FROM_DOCKER_DIR:
             copy_file( f"{PROJECT_ROOT}/docker/kernel/{from_docker}", f"{BUILD_DOCKER_KERNEL}/{from_docker}", update=True)

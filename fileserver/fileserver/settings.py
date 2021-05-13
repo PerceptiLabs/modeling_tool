@@ -1,6 +1,7 @@
 from pathlib import Path
 import os
 import sys
+import uuid
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
@@ -35,6 +36,35 @@ API_TOKEN_REQUIRED = not DEBUG and not IS_CONTAINERIZED and not "test" in sys.ar
 if API_TOKEN_REQUIRED and not API_TOKEN:
     raise Exception("The PL_FILE_SERVING_TOKEN environment variable hasn't been set")
 
+def assert_dir_writable(dir, msg):
+    test_file = os.path.join(dir, "test_writable_file" + str(uuid.uuid1()))
+    try:
+        open(test_file, "a").close()
+    except:
+        raise Exception(msg)
+
+    os.remove(test_file)
+
+# Make sure FILE_UPLOAD_DIR is set
+FILE_UPLOAD_DIR=None
+if IS_CONTAINERIZED:
+    FILE_UPLOAD_DIR = os.getenv("PL_FILE_UPLOAD_DIR")
+    if not FILE_UPLOAD_DIR:
+        raise Exception("Required environment variable PL_FILE_UPLOAD_DIR is not set.")
+
+    if not os.path.isdir(FILE_UPLOAD_DIR):
+        raise Exception(f"PL_FILE_UPLOAD_DIR is set to '{FILE_UPLOAD_DIR}' but that directory doesn't exist")
+
+    assert_dir_writable(FILE_UPLOAD_DIR, f"PL_FILE_UPLOAD_DIR is set to '{dir}' but that directory isn't writable")
+
+
+FILE_UPLOAD_HANDLERS = [
+    # story 1588: turn off in-memory uploads
+    # 'django.core.files.uploadhandler.MemoryFileUploadHandler',
+    'django.core.files.uploadhandler.TemporaryFileUploadHandler',
+]
+
+FILE_UPLOAD_PERMISSIONS = 0o444
 
 INSTALLED_APPS = [
     "corsheaders",
