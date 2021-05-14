@@ -52,7 +52,7 @@ get_all_zone_records(){
   QUERY="ResourceRecordSets[?Type=='A'].{Name: Name, Ip: ResourceRecords[0].Value, TTL: TTL}"
   aws route53 list-resource-record-sets --hosted-zone-id ${pl_hosting_id} --query "${QUERY}" | \
     jq '.[] | [.Ip, .Name, .TTL] | @tsv' --raw-output | \
-    sort --numeric -k 2 -t$'\t' \
+    sort -k 2 -t$'\t' \
     > ${zones}
 }
 
@@ -60,7 +60,7 @@ get_active_ips(){
   QUERY="Reservations[].Instances[].PublicIpAddress"
   aws ec2 describe-instances --query "${QUERY}" --output json | \
     jq '.[]' -r | \
-    sort --numeric \
+    sort \
     > ${active}
 }
 
