@@ -90,11 +90,6 @@ export default {
         state.globalView.globalPopup.showTestConfigurationPopup
     })
   },
-  watch: {
-    testData(newValue) {
-      console.log('testData', newValue);
-    }
-  }, 
   methods: {
     runTest() {
       this.$store.dispatch(

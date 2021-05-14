@@ -377,6 +377,10 @@ export default {
       this.popupNewModel(false);
     },
     startCursorListener (event) {
+      // Not in the workspace view
+      if (!document.getElementById('networkWorkspace') || document.getElementsByClassName('network-field').length === 0) {
+        return;
+      }
       const networkFieldRect = document.getElementsByClassName('network-field')[0].getBoundingClientRect();
       const workspaceRect = document.getElementById('networkWorkspace').getBoundingClientRect();
 

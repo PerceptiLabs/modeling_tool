@@ -116,9 +116,11 @@ const actions = {
   },
   deleteModel(ctx, payload) {
     const { model_id, project } = payload;
+    
     return rygg.delete(`/models/${model_id}/`)
       .then(res => {
         ctx.dispatch('getProjects');
+        ctx.dispatch('mod_webstorage/deleteTestStatisticByModelId', [model_id], {root: true});
         return res.data
       })
   },

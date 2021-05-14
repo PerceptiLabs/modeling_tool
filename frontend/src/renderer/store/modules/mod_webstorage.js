@@ -117,6 +117,9 @@ const actions = {
   },
   async getTestStatistic(ctx) {
     return await idb.getTestStatistic();
+  },
+  async deleteTestStatisticByModelId(ctx, payload) {
+    return await idb.deleteTestByModelIds(payload);
   }
 };
 
