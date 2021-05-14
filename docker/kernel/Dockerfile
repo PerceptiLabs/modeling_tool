@@ -39,7 +39,6 @@ ADD runner main.py setup.py setup.cfg package_data.json VERSION cython_roots.txt
 RUN rsync -a /src --files-from=/src/included_files.txt .
 RUN mv perceptilabs/tutorial_data /tutorial_data
 RUN rm -rf /src
-RUN mv perceptilabs/tutorial_data /tutorial_data
 RUN mv main.py main.pyx
 RUN find . -name "__init__.py" -exec mv '{}' '{}x' \;
 RUN python setup.py build_ext --inplace --user
