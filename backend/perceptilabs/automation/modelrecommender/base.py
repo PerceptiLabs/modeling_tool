@@ -37,11 +37,11 @@ class ModelRecommender:
             if feature_spec.iotype == 'input':
                 end_node = self._add_encoder(builder, feature_name, feature_spec)
                 encoder_end_nodes.append(end_node)
-            elif feature_spec.iotype == 'output':
+            elif feature_spec.iotype == 'target':
                 start_node = self._add_decoder(builder, feature_name, feature_spec)
                 decoder_start_nodes.append(start_node)
             else:
-                raise ValueError(f"Feature {feature_name} must have iotype 'input' or 'output'")
+                raise ValueError(f"Feature {feature_name} must have iotype 'input' or 'target'")
 
         self._connect_encoders_and_decoders(builder, encoder_end_nodes, decoder_start_nodes)
         
@@ -49,7 +49,7 @@ class ModelRecommender:
         return graph_spec
 
     def _connect_encoders_and_decoders(self, builder, encoder_end_nodes, decoder_start_nodes):
-        """ Merges the encoders and feeds the merged output to the decoders. If single input/output, no merge layer is needed. """
+        """ Merges the encoders and feeds the merged target to the decoders. If single input/target, no merge layer is needed. """
         if len(encoder_end_nodes) == 1:
             combiner_id = encoder_end_nodes[0] 
         elif len(encoder_end_nodes) == 2:

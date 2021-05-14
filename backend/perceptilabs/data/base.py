@@ -68,8 +68,8 @@ class DataLoader:
         """
         feature_specs = {}
         for layer_spec in graph_spec.get_ordered_layers():
-            if layer_spec.is_input_layer or layer_spec.is_output_layer:
-                iotype = 'input' if layer_spec.is_input_layer else 'output'
+            if layer_spec.is_input_layer or layer_spec.is_target_layer:
+                iotype = 'input' if layer_spec.is_input_layer else 'target'
                 
                 feature_specs[layer_spec.feature_name] = FeatureSpec(
                     iotype=iotype,
@@ -101,7 +101,7 @@ class DataLoader:
 
     def _select_columns_by_iotype(self, df, feature_specs, iotype):
         """ Selects input or output components from the dataframe """
-        assert iotype in ['input', 'output']
+        assert iotype in ['input', 'target']
         column_names = [name for name, feature_spec in feature_specs.items() if feature_spec.iotype==iotype]        
         return df[column_names]
 
@@ -233,7 +233,7 @@ class DataLoader:
             ).reset_index(drop=True)  
         
         input_dataframe = self._select_columns_by_iotype(df, feature_specs, 'input')
-        target_dataframe = self._select_columns_by_iotype(df, feature_specs, 'output')
+        target_dataframe = self._select_columns_by_iotype(df, feature_specs, 'target')
         
         input_datasets, input_pipelines = self._create_datasets_and_pipelines_from_dataframe(
             input_dataframe, feature_specs, partitions
@@ -326,7 +326,7 @@ class DataLoader:
                 raise ValueError(f"Column '{column}' not in feature specs")
         
         inputs = set()
-        outputs = set()
+        targets = set()
         
         for name, spec in feature_specs.items():
             if name not in columns:
@@ -334,13 +334,13 @@ class DataLoader:
             
             if spec.iotype.lower() == 'input':
                 inputs.add(name)
-            elif spec.iotype == 'output':
-                outputs.add(name)
+            elif spec.iotype == 'target':
+                targets.add(name)
 
         if len(inputs) == 0:
             raise ValueError("No inputs specified!")
-        if len(outputs) == 0:
-            raise ValueError("No outputs specified!")
+        if len(targets) == 0:
+            raise ValueError("No targets specified!")
 
     @staticmethod
     def _resolve_file_path(feature_specs):

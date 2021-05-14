@@ -33,7 +33,7 @@ class TrainingModel(tf.keras.Model):
 
                 for connection in layer_spec.output_connections:
                     output_spec = self._graph_spec[connection.dst_id]
-                    if output_spec.is_output_layer:
+                    if output_spec.is_target_layer:
                         outputs[output_spec.feature_name] = outputs_by_layer[layer_spec.id_]['output']
 
         return (outputs, outputs_by_layer)

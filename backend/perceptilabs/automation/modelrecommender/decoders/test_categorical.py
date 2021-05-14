@@ -30,5 +30,5 @@ def test_decoder_shape_reflects_num_categories():
 
     graph_spec = builder.build()    
 
-    for layer_spec in graph_spec.get_predecessors(graph_spec.output_layers[0]):
+    for layer_spec in graph_spec.get_predecessors(graph_spec.target_layers[0]):
         assert layer_spec.n_neurons == expected

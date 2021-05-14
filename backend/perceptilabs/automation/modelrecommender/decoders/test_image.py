@@ -34,6 +34,6 @@ def test_numerical_input_and_image_output_gives_correct_settings():
 
     graph_spec = builder.build()    
 
-    for layer_spec in graph_spec.get_predecessors(graph_spec.output_layers[0]):
+    for layer_spec in graph_spec.get_predecessors(graph_spec.target_layers[0]):
         assert layer_spec.conv_type == expected_conv_type
         assert layer_spec.feature_maps == expected_shape

@@ -9,7 +9,7 @@ class OutputLayerSpec(IoLayerSpec):
     file_path: str = '' # TODO: Remove. Also ask for frontend to remove this. 
 
     @property
-    def is_output_layer(self):
+    def is_target_layer(self):
         return True
 
     @classmethod

@@ -658,7 +658,7 @@ class coreLogic():
         end_results['global_stats'] = global_stats.get_end_results()
         #layer specific stats
         for layer_spec in self.graph_spec.layers:
-            if layer_spec.is_output_layer:
+            if layer_spec.is_target_layer:
                 layer_stats = self.savedResultsDict['output_stats'][layer_spec.id_]
                 end_results[layer_spec.name] = layer_stats.get_end_results()
         return end_results

@@ -26,7 +26,7 @@ def data_loader(csv_path):
     dl = DataLoader.from_features(
         {
             'x1': FeatureSpec('numerical', 'input', csv_path),
-            'y1': FeatureSpec('numerical', 'output', csv_path)            
+            'y1': FeatureSpec('numerical', 'target', csv_path)            
         },
         partitions={'training': 4/5, 'validation': 1/5, 'test': 0.0}
     )
@@ -392,7 +392,7 @@ def test_trainer_output_stats_available(script_factory, data_loader, graph_spec_
 
     output_stats = trainer.get_output_stats()
 
-    for layer_spec in graph_spec_few_epochs.output_layers:    
+    for layer_spec in graph_spec_few_epochs.target_layers:    
         assert layer_spec.id_ in output_stats
 
         

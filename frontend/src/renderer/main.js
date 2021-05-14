@@ -95,6 +95,11 @@ function runApp(token, refreshToken){
       name: `${userProfile.firstName} ${userProfile.lastName}`,
       email: userProfile.email
     });
+    LogRocket.getSessionURL(sessionURL => {
+      Sentry.withScope(scope => {
+        scope.setExtra('sessionURL', sessionURL);
+      })
+    })
   }
 }
 

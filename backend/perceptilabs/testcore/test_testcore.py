@@ -27,7 +27,7 @@ def data_loader(csv_path):
     dl = DataLoader.from_features(
         {
             'x1': FeatureSpec('numerical', 'input', csv_path),
-            'y1': FeatureSpec('categorical', 'output', csv_path)            
+            'y1': FeatureSpec('categorical', 'target', csv_path)            
         }
     )
     yield dl

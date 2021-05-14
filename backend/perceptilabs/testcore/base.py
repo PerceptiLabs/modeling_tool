@@ -120,7 +120,7 @@ class TestCore():
                 continue
             elif not common_list:
                 return []
-            if layer_type == 'Output':
+            if layer_type == 'Target':
                 compatible_list = [
                     layer for layer in self._dataspecs 
                     if self._layer_has_compatible_output_datatype(layer, common_list)
@@ -128,7 +128,7 @@ class TestCore():
         return compatible_list
 
     def _layer_has_compatible_output_datatype(self, layer, common_list):
-        if self._dataspecs[layer].iotype == 'output':
+        if self._dataspecs[layer].iotype == 'target':
             if self._dataspecs[layer].datatype in common_list:
                 return True
         

@@ -231,7 +231,7 @@ class Trainer:
         self._gradient_stats_tracker = GradientStatsTracker()
 
         self._output_trackers = {}
-        for layer_spec in self._graph_spec.output_layers:
+        for layer_spec in self._graph_spec.target_layers:
             self._output_trackers[layer_spec.id_] = OutputStatsTracker(layer_spec.datatype)
 
     def _update_tracked_values(
@@ -255,7 +255,7 @@ class Trainer:
         self._target_stats_tracker.update(graph_spec=self._graph_spec, sample_batch=targets_batch)
         self._gradient_stats_tracker.update(gradients_by_layer=gradients_by_layer)
         
-        for layer_spec in self._graph_spec.output_layers:
+        for layer_spec in self._graph_spec.target_layers:
             tracker = self._output_trackers[layer_spec.id_]
             tracker.update(
                 predictions_batch=predictions_batch[layer_spec.feature_name],
@@ -596,7 +596,7 @@ class Trainer:
         losses = {
             layer_spec.feature_name: loss_function
             for layer_spec in self._graph_spec.layers
-            if layer_spec.is_output_layer
+            if layer_spec.is_target_layer
         }
         return losses
 

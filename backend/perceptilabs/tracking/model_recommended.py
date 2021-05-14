@@ -21,7 +21,7 @@ def send_model_recommended(user_email, model_id, skipped_workspace, graph_spec, 
         if layer_spec.is_input_layer:
             try_increment('num_inputs_total')
             try_increment(f'num_inputs_{layer_spec.datatype}')                            
-        elif layer_spec.is_output_layer:
+        elif layer_spec.is_target_layer:
             try_increment('num_outputs_total')
             try_increment(f'num_outputs_{layer_spec.datatype}')                            
 

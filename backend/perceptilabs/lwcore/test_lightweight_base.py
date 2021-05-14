@@ -654,7 +654,7 @@ def test_io_layer_samples_are_from_the_same_row(csv_path, graph_spec, x1, y1):
     data_loader = DataLoader.from_features(
         {
             'x1': FeatureSpec('numerical', 'input', csv_path),
-            'y1': FeatureSpec('numerical', 'output', csv_path)            
+            'y1': FeatureSpec('numerical', 'target', csv_path)            
         },
         partitions={'training': 4/5, 'validation': 1/5, 'test': 0.0},
         randomized_partitions=True,
@@ -677,7 +677,7 @@ def test_output_layer_raises_error_if_inputs_shape_doesnt_match(csv_path, graph_
     data_loader = DataLoader.from_features(
         {
             'x1': FeatureSpec('numerical', 'input', csv_path),
-            'y1': FeatureSpec('numerical', 'output', csv_path)            
+            'y1': FeatureSpec('numerical', 'target', csv_path)            
         },
         partitions={'training': 4/5, 'validation': 1/5, 'test': 0.0},
         randomized_partitions=True,

@@ -44,7 +44,7 @@ def test_output_result_has_correct_value():
         df,
         feature_specs={
             'x1': FeatureSpec('numerical', 'input'),
-            'y1': FeatureSpec('numerical', 'output')            
+            'y1': FeatureSpec('numerical', 'target')            
         }
     )
     inputs_batch, targets_batch = next(iter(data_loader.get_dataset()))
@@ -70,7 +70,7 @@ def test_input_result_has_correct_value():
         df,
         feature_specs={
             'x1': FeatureSpec('numerical', 'input'),
-            'y1': FeatureSpec('numerical', 'output'),            
+            'y1': FeatureSpec('numerical', 'target'),            
         }
     )
     

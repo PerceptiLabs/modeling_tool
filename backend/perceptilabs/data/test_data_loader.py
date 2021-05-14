@@ -17,8 +17,8 @@ def test_basic_structure_ok():
     feature_specs = {
         'x1': FeatureSpec('numerical', 'input'),
         'x2': FeatureSpec('numerical', 'input'),
-        'y1': FeatureSpec('numerical', 'output'),
-        'y2': FeatureSpec('numerical', 'output')
+        'y1': FeatureSpec('numerical', 'target'),
+        'y2': FeatureSpec('numerical', 'target')
     }
     dl = DataLoader(df, feature_specs)
     dataset = dl.get_dataset()
@@ -36,7 +36,7 @@ def test_ints_are_converted_to_float():
 
     feature_specs = {
         'x1': FeatureSpec('numerical', 'input'),
-        'x2': FeatureSpec('numerical', 'output')
+        'x2': FeatureSpec('numerical', 'target')
     }
     dl = DataLoader(df, feature_specs)
     dataset = dl.get_dataset()
@@ -59,7 +59,7 @@ def test_image_data_is_loaded_correctly(temp_path):
 
     feature_specs = {
         'x': FeatureSpec('image', 'input'),
-        'y': FeatureSpec('numerical', 'output')
+        'y': FeatureSpec('numerical', 'target')
     }
     dl = DataLoader(df, feature_specs)
     dataset = dl.get_dataset()
@@ -75,7 +75,7 @@ def test_splitting():
 
     feature_specs = {
         'x1': FeatureSpec('numerical', 'input'),
-        'x2': FeatureSpec('numerical', 'output'),
+        'x2': FeatureSpec('numerical', 'target'),
     }
     dl = DataLoader(
         df, feature_specs, partitions={'training': 3/6, 'validation': 2/6, 'test': 1/6}, randomized_partitions=False
@@ -113,7 +113,7 @@ def test_splitting_rows_are_preserved():  # I.e., check that columns arent shuff
 
     feature_specs = {
         'x1': FeatureSpec('numerical', 'input'),
-        'x2': FeatureSpec('numerical', 'output'),
+        'x2': FeatureSpec('numerical', 'target'),
     }
     dl = DataLoader(
         df, feature_specs, partitions={'training': 3/6, 'validation': 2/6, 'test': 1/6}, randomized_partitions=False
@@ -144,7 +144,7 @@ def test_splitting_rows_are_preserved_with_randomized_partitions():  # I.e., che
 
     feature_specs = {
         'x1': FeatureSpec('numerical', 'input'),
-        'x2': FeatureSpec('numerical', 'output'),
+        'x2': FeatureSpec('numerical', 'target'),
     }
     dl = DataLoader(
         df, feature_specs, partitions={'training': 3/6, 'validation': 2/6, 'test': 1/6}, randomized_partitions=True
@@ -166,7 +166,7 @@ def test_get_dataset_size():
 
     feature_specs = {
         'x1': FeatureSpec('numerical', 'input'),
-        'x2': FeatureSpec('numerical', 'output'),
+        'x2': FeatureSpec('numerical', 'target'),
     }
     dl = DataLoader(
         df, feature_specs, partitions={'training': 3/6, 'validation': 2/6, 'test': 1/6}
@@ -183,7 +183,7 @@ def test_instantiate_binary_string_data():
 
     feature_specs = {
         'x1': FeatureSpec('binary', 'input'),
-        'y1': FeatureSpec('numerical', 'output')
+        'y1': FeatureSpec('numerical', 'target')
     }
 
     dl = DataLoader(df, feature_specs)
@@ -200,7 +200,7 @@ def test_instantiate_binary_integer_data():
 
     feature_specs = {
         'x1': FeatureSpec('binary', 'input'),
-        'y1': FeatureSpec('numerical', 'output')
+        'y1': FeatureSpec('numerical', 'target')
     }
 
     dl = DataLoader(df, feature_specs)
@@ -217,7 +217,7 @@ def test_instantiate_binary_bool_data():
 
     feature_specs = {
         'x1': FeatureSpec('binary', 'input'),
-        'y1': FeatureSpec('numerical', 'output')
+        'y1': FeatureSpec('numerical', 'target')
     }
 
     dl = DataLoader(df, feature_specs)
@@ -237,7 +237,7 @@ def test_randomized_partitioning_is_random():
     
     feature_specs = {
         'x1': FeatureSpec('numerical', 'input'),
-        'y1': FeatureSpec('numerical', 'output')
+        'y1': FeatureSpec('numerical', 'target')
     }
     dl = DataLoader(df, feature_specs, randomized_partitions=True, randomized_partitions_seed=1234)
 
@@ -270,7 +270,7 @@ def test_shuffle_gives_random_data():
     
     feature_specs = {
         'x1': FeatureSpec('numerical', 'input'),
-        'y1': FeatureSpec('numerical', 'output')
+        'y1': FeatureSpec('numerical', 'target')
     }
     dl = DataLoader(
         df, feature_specs,

@@ -21,7 +21,7 @@ TYPE_TO_NAME_TABLE = {
     'PreTrainedResNet50': 'ResNet50',
     'PreTrainedInceptionV3': 'InceptionV3',
     'IoInput': 'Input',
-    'IoOutput': 'Output',
+    'IoOutput': 'Target',
 }
 
 

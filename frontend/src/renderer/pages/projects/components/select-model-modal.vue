@@ -148,7 +148,7 @@
               :dataSet="dataset",
               @update="handleCSVDataTypeUpdates"
             )
-            span.default-text.error(v-if="isAllIOTypesFilled() && !hasInputAndOutput()") Make sure to have at least one input and one output to proceed
+            span.default-text.error(v-if="isAllIOTypesFilled() && !hasInputAndTarget()") Make sure to have at least one input and one target to proceed
             .data-partition-wrapper
               h5.default-text Data partition:
               triple-input(
@@ -566,13 +566,13 @@ export default {
         return false;
       }
     },
-    hasInputAndOutput() {
+    hasInputAndTarget() {
       if (this.isDataWizardEnabled) {
         const { csvData } = this;
         return (
           csvData &&
           csvData.ioTypes.filter(v => v === "Input").length > 0 &&
-          csvData.ioTypes.filter(v => v === "Output").length > 0
+          csvData.ioTypes.filter(v => v === "Target").length > 0
         );
       } else {
         return false;
@@ -582,12 +582,12 @@ export default {
       if (this.isDataWizardEnabled) {
         const { modelName, csvData } = this;
         let allColumnsAreSelected = true;
-        let hasInputAndOutput = true;
-
-        allColumnsAreSelected = this.isAllIOTypesFilled();
-        hasInputAndOutput = this.hasInputAndOutput();
-
-        return !allColumnsAreSelected || !modelName || !hasInputAndOutput;
+        let hasInputAndTarget = true;
+        if (this.isDataWizardEnabled) {
+          allColumnsAreSelected = this.isAllIOTypesFilled();
+          hasInputAndTarget = this.hasInputAndTarget();
+        }
+        return !allColumnsAreSelected || !modelName || !hasInputAndTarget;
       } else {
         const { chosenTemplate, modelName, basicTemplates } = this;
         return chosenTemplate === null || !modelName;
