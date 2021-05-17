@@ -131,12 +131,14 @@ export default {
       
       this.exitQuestionnaire();
     },
-    exitQuestionnaire() {      
-      if (!this.$store.getters['mod_tutorials/getHasShownWhatsNew']) {
-        // this.$store.dispatch('modal_pages/setActivePageAction', MODAL_PAGE_WHATS_NEW);
-      } else {
-        this.$store.dispatch('modal_pages/closePageAction');
-      }
+    exitQuestionnaire() {
+      this.$store.dispatch('modal_pages/closePageAction');
+      // Was commented in case we want to enable back wat's new tips.
+      // if (!this.$store.getters['mod_tutorials/getHasShownWhatsNew']) {
+      //   this.$store.dispatch('modal_pages/setActivePageAction', MODAL_PAGE_WHATS_NEW);
+      // } else {
+      //   this.$store.dispatch('modal_pages/closePageAction');
+      // }
     },
     hasAnswerFor(valueKey) {
       const result = this.questionnairePages[valueKey];
