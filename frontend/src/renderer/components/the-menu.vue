@@ -62,9 +62,6 @@ export default {
     statusLocalCore() {
       return this.$store.state.mod_api.statusLocalCore;
     },    
-    appVersion() {
-      return this.$store.state.globalView.appVersion
-    },
     isTutorialActive() {
       return this.isTutorialMode || this.isStoryBoard;
     },

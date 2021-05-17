@@ -246,7 +246,6 @@
       ...mapState({
         currentProjectId:     state => state.mod_project.currentProject,
         showFilePickerPopup:  state => state.globalView.globalPopup.showFilePickerPopup,
-        appVersion:           state => state.globalView.appVersion,
         showNewModelPopup:    state => state.globalView.globalPopup.showNewModelPopup,
         hotKeyPressDelete:    state => state.mod_events.globalPressKey.del,
         showLoadSettingPopup: state => state.globalView.globalPopup.showLoadSettingPopup,

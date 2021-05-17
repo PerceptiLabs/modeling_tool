@@ -6,8 +6,8 @@
         img.pl-logo(src="./../../../../static/img/perceptilabs-logo-icon.svg" alt="logos")
         img.pl-text(src="./../../../../static/img/perceptilabs-logo-text.svg" alt="logos")
         p.text Version {{appVersion}}
-        p.text Last update 6/10/2020
-        p.text © 2020 PerceptiLabs.
+        p.text Last update {{appUpdateDate}}
+        p.text © 2021 PerceptiLabs.
         p.text All rights reserved.
         a.link.about-popup-link.terms-link(href="https://perceptilabs.com/terms" target="_blank") License Terms 
         a.about-popup-link(href="https://forum.perceptilabs.com/" target="_blank") Forum
@@ -15,10 +15,23 @@
 <script>
 export default {
   name: 'AboutAppPopup',
+  data: () => ({
+    releases: []
+  }),
   computed: {
     appVersion() {
       return this.$store.state.globalView.appVersion;
-    }
+    },
+    appUpdateDate() {
+      return this.releases[this.appVersion] && this.releases[this.appVersion][0].upload_time ? new Date(this.releases[this.appVersion] && this.releases[this.appVersion][0].upload_time).toLocaleDateString() : "";
+    },
+  },
+  mounted() {
+    fetch('https://pypi.org/pypi/perceptilabs/json')
+      .then((res) => res.json())
+      .then((res) => {
+        this.releases = res.releases
+      });
   },
   methods: {
     closeModal() {
