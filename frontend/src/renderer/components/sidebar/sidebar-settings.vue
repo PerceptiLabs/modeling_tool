@@ -8,7 +8,7 @@
       )
       .sidebar-setting-head-name Settings
       button.btn-menu-bar(
-        v-if="selectedEl !== null"
+        v-if="shouldShowOpenCodeBtn"
         @click="onOpenCodeButtonClick()"
         ) Open code
     perfect-scrollbar.sidebar-setting-content(
@@ -115,6 +115,9 @@ export default {
     isSettingPreviewVisible() {
       const hasData = this.selectedEl && this.selectedEl.chartData && this.selectedEl.chartData.series && this.selectedEl.chartData.series[0].data !== '';
       return hasData && this.$store.state.mod_workspace.isSettingPreviewVisible;
+    },
+    shouldShowOpenCodeBtn() {
+      return this.selectedEl !== null && this.selectedEl.layerType !== 'IoOutput' && this.selectedEl.layerType !== 'IoInput'
     }
   },
   watch: {

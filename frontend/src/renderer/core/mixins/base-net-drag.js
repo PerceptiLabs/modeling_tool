@@ -80,7 +80,6 @@ const baseNetDrag = {
       }
     },
     bodyDown(ev) {
-      console.log('body down')
       if(this.getIsChartFeatureSliderDragEvent) {
         return;
       }
