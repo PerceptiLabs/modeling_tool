@@ -2557,16 +2557,15 @@ const actions = {
   setViewType({dispatch, commit }, value) {
     return new Promise((resolve, reject) => {
 
-      const possibleValues = ['model', 'statistic', 'test'];
+      const possibleValues = ['model', 'statistic'];
       const isValidValue = possibleValues.includes(value);
-      if(!isValidValue) {console.error(`View type can't have ${value} it should have one of ['model', 'statistic', 'test']`)}
+      if(!isValidValue) {console.error(`View type can't have ${value} it should have one of ['model', 'statistic'']`)}
       //  should save it to local storage
       switch(value) {
         case 'model': 
           dispatch('globalView/hideSidebarAction', true, {root: true});
           break;
         case 'statistic':
-          case 'test': 
           dispatch('globalView/hideSidebarAction', false, {root: true});
           break;
         }

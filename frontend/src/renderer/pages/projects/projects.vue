@@ -123,7 +123,7 @@
             //-       :list="[{id: 1, name: user && user.firstName || '', img: null,}]"
             //-     )
             div.column-7
-              span(v-if="typeof model.networkMeta.openTest === 'boolean'" @click.stop="handleTestClick(index, model)") Run Test
+              router-link.test-link(v-if="typeof model.networkMeta.openTest === 'boolean'" :to="{name: 'test'}" ) Run Test
                 img(src="../../../../static/img/jump-icon.svg")
               span(v-else @click.stop="") -
             div.column-3
@@ -601,32 +601,6 @@
           this.showInfoPopup("The model does not have any statistics. Run this model to generate statistics.");
         }
       },
-      handleTestClick(index, model) {
-        if(this.statusLocalCore!='online') {
-          this.showInfoPopup("Kernel is offline");
-          return;
-        }
-
-        const { networkMeta: { openTest } } = model;
-
-
-        if (typeof openTest === 'boolean') {
-          this.$store.dispatch("mod_workspace/setViewType", 'test');
-
-          this.$router.push({name: 'app'}) 
-            .then(() => {
-              this.set_currentNetwork(index);
-              this.$store.commit('mod_empty-navigation/set_emptyScreenMode', 0);
-              
-              this.$store.dispatch("mod_workspace/SET_currentTestIndex", index);
-              this.$store.commit('mod_workspace/update_network_meta', {key: 'hideTest', networkID: model.networkID, value: false});
-              this.SET_openTest(true);
-            });
-        } else {
-          this.showInfoPopup("The model does not have any test. Run this model to generate test.");
-        }
-      },
-
       openContext(e, modelIndex) {
         const { pageX, pageY } = e;
         this.modelContextStyles = {
@@ -1144,5 +1118,8 @@
   }
   .model-list-scrollbar {
     max-height: calc(100vh - 130px);
+  }
+  .test-link {
+    color: #fff;
   }
 </style>

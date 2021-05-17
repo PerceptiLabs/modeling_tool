@@ -182,7 +182,6 @@ export default {
       this.calcScaleMap();
       return {
         'open-statistic': this.statisticsIsOpen,
-        'open-test': this.testIsOpen
       }
     },
     tabSetClass() {
@@ -501,25 +500,6 @@ export default {
         } else {
           this.SET_emptyScreenMode(2);
           this.$store.commit('mod_workspace/set_currentStatsIndex', -1);
-        }
-      }
-
-    },
-    hideTestTab(index) {
-      const networkID = this.workspace[index].networkID;
-      this.$store.commit('mod_workspace/update_network_meta', {key: 'hideTest', networkID: networkID, value: true});
-
-
-      if (this.currentTestIndex===index) {
-        const candidate = this.workspace.findIndex(item => typeof item.networkMeta.openTest === 'boolean' && item.networkMeta.hideTest!==true);
-
-        if (candidate > -1) {
-          this.$store.dispatch('mod_workspace/SET_currentNetwork', candidate);
-          this.$store.commit('mod_workspace/set_currentTestIndex', candidate);
-          this.set_openTest(true);
-        } else {
-          this.SET_emptyScreenMode(3);
-          this.$store.commit('mod_workspace/set_currentTestIndex', -1);
         }
       }
 

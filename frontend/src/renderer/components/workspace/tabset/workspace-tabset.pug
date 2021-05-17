@@ -49,23 +49,7 @@ ul.bookmark_tab-list
         @click.stop="hideStatsTab(i)"
       )
         i.icon.icon-close
-      //- i.icon(:class="{'icon-circle-o': trainingWaiting(i), 'icon-circle-o green-color-icon': trainingInProcess(i), 'icon-ellipse green-color-icon': trainingFinished(i) }")
     
-    li.bookmark_tab.workspace_tab(
-      v-if="(getViewType==='test') && (typeof tab.networkMeta.openTest === 'boolean') && !tab.networkMeta.hideTest"
-      :class="{'workspace_tab--active': currentTestIndex === i && tab.networkMeta.openTest, 'workspace_tab--active_network': indexCurrentNetwork === i, 'workspace_tab--disable': false}"
-      @click="openTest(i)"
-    )
-      text-editable.tab_name(
-        :text-title="tab.networkName"
-        @change-title="set_networkName"
-        )
-      button.btn.btn--icon.tab_close(type="button"
-        @mouseout="$event.target.classList.remove('hover')"
-        @mouseover="$event.target.classList.add('hover')"
-        @click.stop="hideTestTab(i)"
-      )
-        i.icon.icon-close
 
 .tab-arrow.right(
   v-show="tabArrows.show"

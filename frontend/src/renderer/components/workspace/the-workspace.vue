@@ -20,19 +20,14 @@
         :key="net.networkID"
         :class="networkClass"
       )
-        the-testing.the-testing(v-if="testIsOpen")
-        //-the-statistics.the-statistics(
-          v-if="statisticsIsOpen || testIsOpen"
-          /:el-data="statisticsElSelected.statistics"
-          )
         the-view-box#tutorial_statistics.the-statistics(
-          v-if="statisticsIsOpen || testIsOpen"
+          v-if="statisticsIsOpen"
           :el-data="statisticsElSelected.statistics"
           :data-tutorial-target="'tutorial-test-right-chart'"
           section-title="Statistics"
         )
         the-view-box#tutorial_view-box.the-view-box(
-          v-if="statisticsIsOpen  || testIsOpen"
+          v-if="statisticsIsOpen"
           :el-data="statisticsElSelected.viewBox"
           :data-tutorial-target="'tutorial-test-left-chart'"
           section-title="ViewBox"
@@ -40,7 +35,7 @@
         section.network_info-section.the-network-field(
           ref="networkWindow"
           )
-          .info-section_head(v-if="statisticsIsOpen || testIsOpen")
+          .info-section_head(v-if="statisticsIsOpen")
             h3 Map
           .spinner-container(v-if="showTrainingSpinner && isStatisticsOrTestOpened")
             chart-spinner
@@ -203,14 +198,6 @@
     &.open-statistic {
       grid-template-areas:  'the-statistics   the-statistics'
                             'network-field  view-box';
-    }
-    &.open-test {
-      grid-template-rows: auto 1fr 1fr;
-      grid-template-columns: 1fr 1fr;
-      grid-template-areas:  'the-testing   the-testing'
-                            'view-box   the-statistics'
-                            'network-field  network-field';
-
     }
   }
   .network--show-code {

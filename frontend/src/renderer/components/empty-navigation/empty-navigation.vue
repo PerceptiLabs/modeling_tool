@@ -62,49 +62,12 @@
 					button(v-if="getModelCount==0"
 						@click="popupNewModel(true)"
 					) Create New
-		.content.d-flex(v-else-if="emptyNavigationMode==3")
-			.row 
-				img.img-folder(src="static/img/test-empty.png")
-			.row
-				p.description(
-					v-if="getModelCount===0"
-					) It appears you have not built any models. <br/> Create a model to begin.
-				p.description(
-					v-if="getModelCount>0 && getAvailableTests.length===0"
-					)   It appears you have not run any models. Run a model <br/>from Modeling Tool or Model Hub to view statistics.
-				p.description(
-					v-if="getAvailableTests.length>0"
-					)   It appears you do not have any tests open.<br/> Following models can be opened:
-				ul(v-if="getAvailableTests.length>0")
-					.header Recently Opened
-					li(
-						v-for="model in getAvailableTests"
-						@click.stop="openTestID(model.networkID)"
-					) {{model.networkName}}
-				p.description(
-					v-if="getAvailableTests.length>0"
-					)   Or run a model to continue:
-					
-				.d-flex
-					button(
-						@click="goToModelView()"
-						v-if="getModelCount>0"
-					) Go to Modeling Tool
-					router-link.nav-link(
-						:to="{name: 'projects'}"
-						v-if="getModelCount>0"
-					) Go to Model Hub
-					button(v-if="getModelCount==0"
-						@click="popupNewModel(true)"
-					) Create New
 
 </template>
 
 <script>
 
-// import Vue from 'vue';
 import { mapActions, mapGetters } from 'vuex';
-import { stringifyNetworkObjects, promiseWithTimeout } from '@/core/helpers';
 
 export default {
 	name: 'EmptyNavigation',
@@ -148,26 +111,9 @@ export default {
 				this.SET_currentStatsIndex(index);
 			}
 		},		
-		openTestID(networkID) {
-			const index = this.workspaceContent.findIndex(wc => wc.networkID == networkID);
-			console.log("Selected Test index", index);
-			this.set_currentNetwork(index > 0 ? index : 0);
-			this.SET_openTest(true);
-			
-			this.SET_emptyScreenMode(0);
-			this.$store.commit('mod_workspace/update_network_meta', {key: 'hideTest', networkID: networkID, value: false});
-
-
-			if(index !== -1) {
-				this.$store.dispatch("mod_workspace/setViewType", 'test');
-				this.SET_currentTestIndex(index);
-			}
-		},		
 		goToModelView() {
 				this.$store.dispatch("mod_workspace/setViewType", 'model');
-				// this.SET_openStatistics(false);
-				// this.SET_openTest(false);
-        		this.closeStatsTestViews({ networkId: this.currentNetworkId });
+        this.closeStatsTestViews({ networkId: this.currentNetworkId });
 
 				this.$store.commit('mod_empty-navigation/set_emptyScreenMode', 0);
 		}
@@ -188,9 +134,6 @@ export default {
 		getAvailableStats() {
 			return this.workspaceContent.filter(wc => typeof wc.networkMeta.openStatistics === 'boolean');
 		},
-		getAvailableTests() {
-			return this.workspaceContent.filter(wc => typeof wc.networkMeta.openTest === 'boolean');
-		}
 	}
 }
 </script>
