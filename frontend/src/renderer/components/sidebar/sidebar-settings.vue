@@ -32,7 +32,7 @@
       :current-el="selectedEl"
       )
     button.reset-component-btn(
-      v-if="selectedEl !== null"
+      v-if="shouldShowResetComponentBtn"
       @click="resetComponentSettings"
       ) Reset Component
 </template>
@@ -117,6 +117,9 @@ export default {
       return hasData && this.$store.state.mod_workspace.isSettingPreviewVisible;
     },
     shouldShowOpenCodeBtn() {
+      return this.selectedEl !== null && this.selectedEl.layerType !== 'IoOutput' && this.selectedEl.layerType !== 'IoInput'
+    },
+    shouldShowResetComponentBtn() {
       return this.selectedEl !== null && this.selectedEl.layerType !== 'IoOutput' && this.selectedEl.layerType !== 'IoInput'
     }
   },
