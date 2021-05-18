@@ -316,6 +316,7 @@ perceptilabs/tutorial_data/object_detection_labels.npy
 perceptilabs/data/__init__.py
 perceptilabs/data/base.py
 perceptilabs/data/utils.py
+perceptilabs/data/type_inference.py
 
 # backend/perceptilabs/data/pipelines/
 perceptilabs/data/pipelines/__init__.py

@@ -70,6 +70,9 @@ export default {
     dataSet: {
       type: Array,
       default: []
+    },
+    dataSetTypes: {
+      type: Object,
     }
   },
   data() {
@@ -158,10 +161,12 @@ export default {
     computedNumberOfColumns: {
       handler(newVal) {
         if (!newVal) { return; }
-
+        let columnsTypes = Object.values(this.dataSetTypes);
+        
         this.formattedDataset.columnNames = this.delimitedDataSet[0];
         this.formattedDataset.ioTypes = new Array(newVal);
-        this.formattedDataset.dataTypes = new Array(newVal).fill('numerical');
+        
+        this.formattedDataset.dataTypes = columnsTypes;
       },
       immediate: true
     }

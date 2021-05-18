@@ -142,51 +142,53 @@
             span.guide-link(@click="openPLVideoTutorialPage") here.
         div(v-else)
           .dataset-settings(v-show="onStep === 2")
-            //h5.default-text Define your dataset:
-            csv-table(
-              v-if="dataset"
-              :dataSet="dataset",
-              @update="handleCSVDataTypeUpdates"
-            )
-            span.default-text.error(v-if="isAllIOTypesFilled() && !hasInputAndTarget()") Make sure to have at least one input and one target to proceed
-            .data-partition-wrapper
-              h5.default-text Data partition:
-              triple-input(
-                style-type="darken"
-                v-model="datasetSettings.partitions",
-                separate-sign="%",
-                :validate-min="1",
-                :validate-max="98",
-                :validate-sum="100",
-                :withLabels="true"
+            chart-spinner(v-if="showLoadingSpinner")
+            template(v-else)
+              csv-table(
+                v-if="dataset"
+                :dataSet="dataset",
+                :dataSetTypes="dataSetTypes"
+                @update="handleCSVDataTypeUpdates"
               )
-            div(style="display:flex")
-            
-              base-checkbox(
-                style="font-size: 14px; white-space:nowrap;"
-                v-model="datasetSettings.randomizedPartitions"
-              ) Randomize partition
-              info-tooltip(
-                text="Select random samples to place in each partition, good practice if your dataset is ordered"
-              )            
-            div.footer-actions
-              button.reload-dataset-btn(@click="onStep -= 1")
-                img(src='./../../../../../static/img/arrow-back.svg')
-                | Reload dataset
-              div.d-flex.align-items-center
-                span.image-format-message *.jpg .png .jpeg .tiff only
-                button.next-to-settings-btn(
-                  :class="{ 'disabled': isDisableCreateAction() }",
-                  @click="goToTrainingSettings"
-                  )
-                  | Next
-                  svg(width="10" height="8" viewBox="0 0 10 8" fill="none" xmlns="http://www.w3.org/2000/svg")
-                    path(
-                      fill-rule="evenodd"
-                      clip-rule="evenodd"
-                      d="M0.499999 4.00071C0.499999 3.85153 0.559263 3.70845 0.664752 3.60296C0.770241 3.49747 0.913315 3.43821 1.0625 3.43821L7.57962 3.43821L5.16425 1.02396C5.05863 0.918339 4.99929 0.775084 4.99929 0.625712C4.99929 0.476339 5.05863 0.333084 5.16425 0.227461C5.26987 0.121839 5.41313 0.0625009 5.5625 0.0625009C5.71187 0.0625009 5.85513 0.121839 5.96075 0.227462L9.33575 3.60246C9.38813 3.65471 9.42969 3.71679 9.45805 3.78512C9.48641 3.85346 9.501 3.92672 9.501 4.00071C9.501 4.0747 9.48641 4.14796 9.45805 4.2163C9.42969 4.28464 9.38813 4.34671 9.33575 4.39896L5.96075 7.77396C5.85513 7.87958 5.71187 7.93892 5.5625 7.93892C5.41313 7.93892 5.26987 7.87958 5.16425 7.77396C5.05863 7.66834 4.99929 7.52508 4.99929 7.37571C4.99929 7.22634 5.05863 7.08308 5.16425 6.97746L7.57962 4.56321L1.0625 4.56321C0.913315 4.56321 0.770241 4.50395 0.664752 4.39846C0.559263 4.29297 0.499999 4.1499 0.499999 4.00071Z"
-                      fill="#6185EE"
-                      )
+              span.default-text.error(v-if="isAllIOTypesFilled() && !hasInputAndTarget()") Make sure to have at least one input and one target to proceed
+              .data-partition-wrapper
+                h5.default-text Data partition:
+                triple-input(
+                  style-type="darken"
+                  v-model="datasetSettings.partitions",
+                  separate-sign="%",
+                  :validate-min="1",
+                  :validate-max="98",
+                  :validate-sum="100",
+                  :withLabels="true"
+                )
+              div(style="display:flex")
+              
+                base-checkbox(
+                  style="font-size: 14px; white-space:nowrap;"
+                  v-model="datasetSettings.randomizedPartitions"
+                ) Randomize partition
+                info-tooltip(
+                  text="Select random samples to place in each partition, good practice if your dataset is ordered"
+                )            
+              div.footer-actions
+                button.reload-dataset-btn(@click="onStep -= 1")
+                  img(src='./../../../../../static/img/arrow-back.svg')
+                  | Reload dataset
+                div.d-flex.align-items-center
+                  span.image-format-message *.jpg .png .jpeg .tiff only
+                  button.next-to-settings-btn(
+                    :class="{ 'disabled': isDisableCreateAction() }",
+                    @click="goToTrainingSettings"
+                    )
+                    | Next
+                    svg(width="10" height="8" viewBox="0 0 10 8" fill="none" xmlns="http://www.w3.org/2000/svg")
+                      path(
+                        fill-rule="evenodd"
+                        clip-rule="evenodd"
+                        d="M0.499999 4.00071C0.499999 3.85153 0.559263 3.70845 0.664752 3.60296C0.770241 3.49747 0.913315 3.43821 1.0625 3.43821L7.57962 3.43821L5.16425 1.02396C5.05863 0.918339 4.99929 0.775084 4.99929 0.625712C4.99929 0.476339 5.05863 0.333084 5.16425 0.227461C5.26987 0.121839 5.41313 0.0625009 5.5625 0.0625009C5.71187 0.0625009 5.85513 0.121839 5.96075 0.227462L9.33575 3.60246C9.38813 3.65471 9.42969 3.71679 9.45805 3.78512C9.48641 3.85346 9.501 3.92672 9.501 4.00071C9.501 4.0747 9.48641 4.14796 9.45805 4.2163C9.42969 4.28464 9.38813 4.34671 9.33575 4.39896L5.96075 7.77396C5.85513 7.87958 5.71187 7.93892 5.5625 7.93892C5.41313 7.93892 5.26987 7.87958 5.16425 7.77396C5.05863 7.66834 4.99929 7.52508 4.99929 7.37571C4.99929 7.22634 5.05863 7.08308 5.16425 6.97746L7.57962 4.56321L1.0625 4.56321C0.913315 4.56321 0.770241 4.50395 0.664752 4.39846C0.559263 4.29297 0.499999 4.1499 0.499999 4.00071Z"
+                        fill="#6185EE"
+                        )
   
           div.model-run-settings-page(v-show="onStep === 3")
             //h5.default-text Training settings:
@@ -363,6 +365,7 @@ import FilePickerPopup                        from "@/components/global-popups/f
 import CsvTable                               from "@/components/different/csv-table.vue";
 import TripleInput                            from "@/components/base/triple-input";
 import InfoTooltip                            from "@/components/different/info-tooltip.vue";
+import ChartSpinner                           from "@/components/charts/chart-spinner";
 import {defaultTrainingSettings, PERCEPTILABS_VIDEO_TUTORIAL_URL} from "@/core/constants";
 import { mapActions, mapState, mapGetters }   from "vuex";
 import mixinFocus                             from "@/core/mixins/net-element-settings-input-focus.js";
@@ -383,7 +386,7 @@ import { getFileContent as fileserver_getFileContent }          from "@/core/api
 
 export default {
   name: "SelectModelModal",
-  components: { FilePickerPopup, CsvTable, TripleInput, InfoTooltip },
+  components: { FilePickerPopup, CsvTable, TripleInput, InfoTooltip, ChartSpinner },
   mixins: [mixinFocus],
 
   data: function() {
@@ -435,6 +438,7 @@ export default {
       csvData: null, // parsed dataset and meta
       dataset: null,
       datasetPath: null,
+      dataSetTypes: [],
       datasetSettings: {
         randomizedPartitions: true,
         partitions: [70, 20, 10]
@@ -448,7 +452,8 @@ export default {
       },
       debouncedCreateModelFunction: null,
       onStep: 1,
-      settings: defaultTrainingSettings
+      settings: defaultTrainingSettings,
+      showLoadingSpinner: false,
     };
   },
   computed: {
@@ -891,12 +896,13 @@ export default {
         `${dataPath[0]}`
       );
 
-      coreRequest({
-          action: 'dataSelected',
-          value: {
-              user_email: this.userEmail,
-              path: dataPath[0]
-          }
+     
+      this.dataSetTypes = await coreRequest({
+        action: 'dataSelected',
+        value: {
+          user_email: this.userEmail,
+          path: dataPath[0]
+        }
       });
 
       if (fileContents && fileContents.file_contents) {
@@ -907,6 +913,7 @@ export default {
       }
 
       this.showFilePickerPopup = false;
+      this.handleShowLoadingSpinner(400);
       this.activateNotification();
     },
     handleCSVDataTypeUpdates(payload) {
@@ -958,6 +965,12 @@ export default {
     },
     openPLVideoTutorialPage() {
       window.open(PERCEPTILABS_VIDEO_TUTORIAL_URL, '_blank');
+    },
+    handleShowLoadingSpinner(time = 400){
+      this.showLoadingSpinner = true;
+      setTimeout(() => {
+        this.showLoadingSpinner = false;
+      }, time)
     }
   }
 };

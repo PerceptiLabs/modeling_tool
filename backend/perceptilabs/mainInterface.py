@@ -34,6 +34,7 @@ import perceptilabs.logconf
 import perceptilabs.automation.autosettings.utils as autosettings_utils
 import perceptilabs.automation.utils as automation_utils
 from perceptilabs.data.base import FeatureSpec, DataLoader
+from perceptilabs.data.type_inference import TypeInferrer
 from perceptilabs.utils import is_pre_datawizard
 from perceptilabs.script import ScriptFactory
 
@@ -710,12 +711,14 @@ class Interface():
     
     def _create_response_data_selected(self, request_value):
         """ Sent when the users elects a data file """
-        # TODO(anton.k): compute data visualizations here
+        inferrer = TypeInferrer()
+        datatypes = inferrer.infer_datatypes_from_csv(request_value['path'])
+
         tracking.send_data_selected(
             request_value['user_email'],
             request_value['path']
         )
-        return {}
+        return datatypes
 
     def _create_response_get_partition_summary(self, request_value, receiver):
             Id=request_value["Id"]
