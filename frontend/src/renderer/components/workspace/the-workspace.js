@@ -376,8 +376,8 @@ export default {
       this.popupNewModel(false);
     },
     startCursorListener (event) {
-      // Not in the workspace view
-      if (!document.getElementById('networkWorkspace') || document.getElementsByClassName('network-field').length === 0) {
+      if (document.getElementsByClassName('network-field').length === 0 || !document.getElementById('networkWorkspace')) {
+        window.removeEventListener('mousemove', this.startCursorListener);
         return;
       }
       const networkFieldRect = document.getElementsByClassName('network-field')[0].getBoundingClientRect();
