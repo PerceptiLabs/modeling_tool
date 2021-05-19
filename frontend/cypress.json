@@ -1,27 +1,12 @@
 {
+  "$schema": "https://raw.githubusercontent.com/cypress-io/cypress/develop/cli/schema/cypress.schema.json",
   "chromeWebSecurity": false,
   "viewportWidth": 1366,
   "viewportHeight": 768,
+  "baseUrl": "http://localhost:8080",
   "testFiles": [
-    "authorize.spec.js",
-    "skipLogInModal.spec.js",
-    "createImageClasification.spec.js",
-    "skypeTips.spec.js",
-    "addComponents.spec.js",
-    "connectComponents.spec.js",
-    "removeCommponent.spec.js",
-    "historyNavigation.spec.js",
-    "componentFocusAndBlur.spec.js",
-    "copyPasteComponent.spec.js",
-    "dragComponent.spec.js",
-    "toggleCodeWindow.spec.js",
-    "toggleSidebar.spec.js",
-    "componentInputAddRemove.spec.js",
-    "componentOutputAddRemove.spec.js",
-    "zoomInOut.spec.js",
-    "toggleMiniMap.spec.js",
-    "saveLoadModel.spec.js",
-    "openReportModal.spec.js",
-    "removeModels.spec.js"
+    "auth/*.*",
+    "model-hub/*.*",
+    "modeling-tool/*.*"
   ]
 }
