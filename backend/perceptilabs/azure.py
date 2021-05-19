@@ -13,14 +13,14 @@ logger = logging.getLogger(APPLICATION_LOGGER)
 
 
 AZURE_ACCOUNT_NAME_EU = 'uantumetdisks'
-AZURE_ACCOUNT_KEY_EU  = '65rzvvM8RGmELHhQy3PrJdIQH1fQFH0J9CIdJd5U0zNMwz2V7ifhbJNtub/jLaN0P+3lsYWQQg4wjVsXi/1RWQ=='
+AZURE_ACCOUNT_KEY_EU  = 'CPPtripRA5mLz+LxyssWqeeg8HLKUhPH+8RZ2va4BfDCMy5yx6FrLpK2MqrhAkdUGwuopmpalcW3EVT7du8JHw=='
 AZURE_CONTAINER_EU    = 'users'
-AZURE_CONNSTR_EU      = 'DefaultEndpointsProtocol=https;AccountName=uantumetdisks;AccountKey=65rzvvM8RGmELHhQy3PrJdIQH1fQFH0J9CIdJd5U0zNMwz2V7ifhbJNtub/jLaN0P+3lsYWQQg4wjVsXi/1RWQ==;EndpointSuffix=core.windows.net'
+AZURE_CONNSTR_EU      = 'DefaultEndpointsProtocol=https;AccountName=uantumetdisks;AccountKey=CPPtripRA5mLz+LxyssWqeeg8HLKUhPH+8RZ2va4BfDCMy5yx6FrLpK2MqrhAkdUGwuopmpalcW3EVT7du8JHw==;EndpointSuffix=core.windows.net'
     
 AZURE_ACCOUNT_NAME_US = 'quantumnetamerica'
-AZURE_ACCOUNT_KEY_US  = 'QyCugvLSHZo/AMsevEgU1LVqGA5UX2b7PxpKmM3Uco50v+krDpRnEJ3vtkia77XgR9OAdTwYrYhLs+KZmzn7tQ=='
+AZURE_ACCOUNT_KEY_US  = 'EAzrkBUJocKcbKD5RgHRZekT/tIVdwWsAS4yhq5BENKaICh4x2LDvbV98q/swUbvevSgZwRwcPCDy4JfaN08DQ=='
 AZURE_CONTAINER_US    = 'users'
-AZURE_CONNSTR_US     = 'DefaultEndpointsProtocol=https;AccountName=quantumnetamerica;AccountKey=QyCugvLSHZo/AMsevEgU1LVqGA5UX2b7PxpKmM3Uco50v+krDpRnEJ3vtkia77XgR9OAdTwYrYhLs+KZmzn7tQ==;EndpointSuffix=core.windows.net'
+AZURE_CONNSTR_US     = 'DefaultEndpointsProtocol=https;AccountName=quantumnetamerica;AccountKey=EAzrkBUJocKcbKD5RgHRZekT/tIVdwWsAS4yhq5BENKaICh4x2LDvbV98q/swUbvevSgZwRwcPCDy4JfaN08DQ==;EndpointSuffix=core.windows.net'
 
 EVENTHUB_NAME = 'pipkernelkpi'
 EVENTHUB_CONNECTION_STRING = 'Endpoint=sb://kernelstreams-ns.servicebus.windows.net/;SharedAccessKeyName=kernelStreamsSharedAccessKey;SharedAccessKey=N1rlZl+91nSiyD19GParplRI6jHECl/HB3PpE8gRRoU='
