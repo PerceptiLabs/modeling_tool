@@ -1216,6 +1216,8 @@ const actions = {
         console.error(e)
       }).finally(() => {
         dispatch('mod_workspace/setChartComponentLoadingState', { descendants: Object.keys(payload), value: false, networkId } , { root: true });
+        console.log('set network snapshot');
+        dispatch('mod_workspace/SET_networkSnapshot', {}, { root: true });
       });
   },
   API_getBatchPreviewSampleForElementDescendants({ getters, dispatch, rootGetters }, layerId) {
