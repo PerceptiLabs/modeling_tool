@@ -1,4 +1,5 @@
 from perceptilabs.tracking.base import get_mixpanel, silence_exceptions
+from perceptilabs.tracking.utils import get_tool_version
 
 
 @silence_exceptions
@@ -8,7 +9,8 @@ def send_model_recommended(user_email, model_id, skipped_workspace, graph_spec, 
         'user_email': user_email,
         'model_id': model_id,
         'is_tutorial_data': is_tutorial_data,
-        'skipped_workspace': skipped_workspace
+        'skipped_workspace': skipped_workspace,
+        'version': get_tool_version()
     }
 
     def try_increment(key):

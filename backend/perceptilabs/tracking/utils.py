@@ -2,6 +2,12 @@ import collections
 import numpy as np
 
 
+def get_tool_version():
+    """ Retrieves the version of the tool """
+    import perceptilabs
+    return perceptilabs.__version__
+
+
 def get_layer_counts(graph_spec):
     counts = {}
     
