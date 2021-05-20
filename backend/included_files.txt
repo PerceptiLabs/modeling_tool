@@ -161,6 +161,8 @@ perceptilabs/layers/mathmerge/tf2x_template.j2
 # perceptilabs/layers/layercustom
 perceptilabs/layers/layercustom/spec.py
 perceptilabs/layers/layercustom/imports.json
+perceptilabs/layers/layercustom/tf2x_imports.json
+perceptilabs/layers/layercustom/tf2x_template.j2
 
 # perceptilabs/layers/trainclassification
 perceptilabs/layers/trainclassification/spec.py

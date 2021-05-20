@@ -263,6 +263,12 @@ DEFINITION_TABLE_TF2X = {
         imports_path=None,
         macro_path=None,
         macro_name=None
-    )
+    ),
+    'LayerCustom': LayerMeta(
+        LayerCustomSpec,
+        'layers/layercustom/tf2x_imports.json',
+        'layers/layercustom/tf2x_template.j2',                
+        'layer_custom'
+    ),
 }
 
