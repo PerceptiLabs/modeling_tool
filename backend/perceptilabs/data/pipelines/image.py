@@ -38,8 +38,15 @@ def build_image_pipelines(feature_spec=None, feature_dataset: tf.data.Dataset = 
             return image_tensor    
         
     loader = Loader()
-    image = loader(tf.constant(image_path))
-    shape = image.shape
+    loaded_dataset = feature_dataset.map(lambda x: loader(x))  # File paths -> Image tensors
+    shape = next(iter(loaded_dataset)).shape  
+
+    if feature_spec and 'normalize' in feature_spec.preprocessing:
+        normalization = tf.keras.layers.experimental.preprocessing.Normalization()
+        normalization.adapt(loaded_dataset)
+    else:
+        normalization = None
+        
 
     class Pipeline(tf.keras.Model):
         def __init__(self):
@@ -50,8 +57,8 @@ def build_image_pipelines(feature_spec=None, feature_dataset: tf.data.Dataset = 
             x = loader(x)
             x = tf.cast(x, dtype=tf.float32)
 
-            if feature_spec and feature_spec.iotype == 'output':  # HACK TO NORMALIZE OUTPUT IMAGES
-                x = x / 255.0  # [0, 255] -> [0, 1]
+            if normalization:
+                x = normalization(x)
                 
             return x
 

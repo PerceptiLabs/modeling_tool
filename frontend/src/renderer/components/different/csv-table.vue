@@ -10,10 +10,20 @@
           tr(:data-tutorial-target="'tutorial-data-wizard-csv-explanation'")
             //- th(@click="clearSelectedColumns")
             th.table-column(
-              v-for="numColumn in delimitedDataSet[0]"
+              v-for="(numColumn, ix) in delimitedDataSet[0]"
+              :key="numColumn"
               @click="addSelectedColumn($event, numColumn - 1)"
               :class="{'is-selected': selectedColumns.includes(numColumn - 1)}"
-              ) {{ numColumn }}
+              )
+              div.d-flex.justify-content-between
+                span &nbsp;
+                span {{ numColumn }}
+                data-column-options(
+                  v-if="shouldShowDataColumnOptions(ix)"
+                  :index="ix"
+                  @handleChange="handleColumnPreprocessingChange"
+                )
+                span(v-else) &nbsp;
         tbody
           tr.table-row.default-row(v-for="dataRow in delimitedDataSet.slice(1)")
             //- td.no-border(@click="clearSelectedColumns")
@@ -64,8 +74,12 @@
 </template>
 
 <script>
+import DataColumnOptions from '@/components/different/data-column-options';
 export default {
   name: 'CSVTable',
+  components: {
+    DataColumnOptions,
+  },
   props: {
     dataSet: {
       type: Array,
@@ -84,7 +98,8 @@ export default {
       formattedDataset: {
         columnNames: [],
         ioTypes: [],
-        dataTypes: []
+        dataTypes: [],
+        preprocessingTypes: [],
       },
       isAnySelectOpened: false,
     }
@@ -132,6 +147,11 @@ export default {
       this.emitEvent();
     },
     setTypeSelection(event, numColumn) {
+      // binary and categorical can't have normalize option
+      if(event === 'binary' || event === 'categorical') {
+        this.formattedDataset.preprocessingTypes[numColumn - 1] = this.formattedDataset.preprocessingTypes[numColumn - 1].filter(word => word !== "normalize");
+      }
+      
       this.formattedDataset.dataTypes.splice(numColumn - 1, 1, event);
       this.emitEvent();
     },
@@ -155,6 +175,13 @@ export default {
     },
     handleSelectIsOpen(isSelectOpened) {
       this.isAnySelectOpened = isSelectOpened;  
+    },
+    handleColumnPreprocessingChange(numColumn, value){
+      this.formattedDataset.preprocessingTypes.splice(numColumn, 1, value);
+      this.emitEvent();
+    },
+    shouldShowDataColumnOptions(ix) {
+      return this.formattedDataset.dataTypes[ix] !== 'binary' &&  this.formattedDataset.dataTypes[ix] !== 'categorical'
     }
   },
   watch: {
@@ -165,8 +192,8 @@ export default {
         
         this.formattedDataset.columnNames = this.delimitedDataSet[0];
         this.formattedDataset.ioTypes = new Array(newVal);
-        
         this.formattedDataset.dataTypes = columnsTypes;
+        this.formattedDataset.preprocessingTypes = new Array(newVal).fill([]);
       },
       immediate: true
     }
@@ -177,7 +204,6 @@ export default {
 <style lang="scss" scoped>
 
   .component-wrapper {
-    // height: 100%;
     width: 100%;
     box-sizing: border-box;
     &.isAnySelectOpened {
@@ -185,10 +211,6 @@ export default {
         overflow: visible !important;
       }
     }
-    // & > .ps {
-    //     height: 100%;
-    //     width: 100%;
-    // }
   }
 
   .table-wrapper {
@@ -202,29 +224,22 @@ export default {
         color: #fff;
         font-family: Roboto;
         font-size: 14px;
-        line-height: 16px;
+        line-height: 24px;
         text-align: center;
         font-weight: normal;
         letter-spacing: 0.02em;
-
-        // background-color: rgba(#363E51, 0.8);
-        //filter: brightness(75%);
         background-color: #242B3A;
-        // color: #FFFFFF;
       }
     }
     tbody {
       .default-row{
         .table-column {
-          // background-color: #F7F7F7;
-          // color: #505050;
           text-align: center;
           font-size: 14px;
         }
       }
     }
     .io-cell {
-      // background-color: #fff;
     }
     .space-cell {
       height: 20px;
@@ -255,9 +270,6 @@ export default {
       background-color: rgba(97, 133, 238, 0.5);
     }
     
-    > *:first-of-type {
-      width: 5rem;
-    }
   }
 
   td {

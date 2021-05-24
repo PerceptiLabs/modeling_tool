@@ -67,7 +67,8 @@ class LightweightCore:
         t_total = time.perf_counter() - t0
         layers_that_used_cache = [layer_id for layer_id, used_cache in all_used_cache.items() if used_cache]        
         logger.info(f"Ran lightweight core. Duration: {t_total}s. Used cache for layers: "  + ", ".join(layers_that_used_cache))
-        
+
+        self._maybe_print_results(graph_spec, all_results)
         return all_results
     
     def _run_subgraph(self, subgraph_spec, data_batch):
@@ -175,6 +176,28 @@ class LightweightCore:
                 data_batch[feature_name] = value
                 
         return data_batch
+
+    def _maybe_print_results(self, graph_spec, all_results):
+        if not logger.isEnabledFor(logging.DEBUG):
+            return
+
+        text = 'Printing layer results\n'
+        for layer_id, results in all_results.items():
+            layer_spec = graph_spec[layer_id]
+            output = results.sample.get('output')
+            
+            text += f"---- Results for: {layer_spec.id_} [{layer_spec.type_}] ----\n"
+            text += f"has errors: {results.has_errors}\n"
+
+            if output is not None:
+                text += f"sample output max: {output.max()}\n"
+                text += f"sample output min: {output.min()}\n"
+                text += f"sample output shape: {output.shape}\n"
+            else:
+                text += "sample output is None"
+            
+        logger.debug(text)
+        
 
 class LightweightCoreAdapter:
     """ Compatibility with v1 core """

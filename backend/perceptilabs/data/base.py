@@ -11,10 +11,12 @@ import perceptilabs.data.utils as utils
 
 
 class FeatureSpec:
-    def __init__(self, datatype, iotype, file_path=''):
+    def __init__(self, datatype, iotype, file_path='', preprocessing=None):
         self.datatype = datatype
         self.iotype = iotype
+        self.preprocessing = preprocessing or []         
         self.file_path = file_path
+
 
 
 class DataLoader:
@@ -44,6 +46,7 @@ class DataLoader:
             feature_specs[feature_name] = FeatureSpec(
                 iotype=feature_dict['iotype'].lower(),
                 datatype=feature_dict['datatype'].lower(),
+                preprocessing=feature_dict['preprocessing'],                
                 file_path=feature_dict['csv_path']
             )
 

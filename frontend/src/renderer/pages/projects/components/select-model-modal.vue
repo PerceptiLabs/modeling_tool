@@ -924,10 +924,12 @@ export default {
 
       for (const [idx, val] of this.csvData.columnNames.entries()) {
         const sanitizedVal = val.replace(/^\n|\n$/g, "");
-        payload[sanitizedVal] = {};
-        payload[sanitizedVal]["csv_path"] = this.datasetPath;
-        (payload[sanitizedVal]["iotype"] = this.csvData.ioTypes[idx]),
-          (payload[sanitizedVal]["datatype"] = this.csvData.dataTypes[idx]);
+        payload[sanitizedVal] = {
+          csv_path: this.datasetPath,
+          iotype: this.csvData.ioTypes[idx],
+          datatype: this.csvData.dataTypes[idx],
+          preprocessing: this.csvData.preprocessingTypes[idx],
+        }
       }
       return payload;
     },

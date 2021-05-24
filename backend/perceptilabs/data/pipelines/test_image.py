@@ -3,6 +3,7 @@ import tensorflow as tf
 import numpy as np
 import os
 import skimage.io as sk
+from unittest.mock import MagicMock
 
 
 from perceptilabs.data.pipelines import build_image_pipelines
@@ -70,5 +71,29 @@ def test_image_preprocessing_for_tiff(temp_path):
 
     assert np.all(actual == expected)
 
+    
+def test_image_preprocessing_normalization_for_single_sample(temp_path):
+    image = np.random.randint(0, 255, size=(16, 16, 3)).astype(np.uint8)
+        
+    # Create the dataset
+    tensor_inputs = save_image_to_disk(image, temp_path, ext='.png', repeats=9)
+    dataset = tf.data.Dataset.from_tensor_slices(tensor_inputs)
+
+    # Create the pipeline
+    feature_spec = MagicMock()
+    feature_spec.preprocessing = ['normalize']
+    
+    pipeline, _, _ = build_image_pipelines(feature_spec=feature_spec, feature_dataset=dataset)
+    processed_dataset = dataset.map(lambda x: pipeline(x))
+    
+
+    processed_image = next(iter(processed_dataset)).numpy()
+    
+    # Since there's only one image, it should have zero mean and unit variance
+    assert np.isclose(processed_image.mean(), 0.0)
+    assert np.isclose(processed_image.std(), 1.0)    
+    
+
+    
 
     
