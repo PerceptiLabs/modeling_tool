@@ -534,8 +534,11 @@ export default {
       }
 
       const resolvedDir = await fileserver_getResolvedDir(this.modelPath);
-      const dirContents = await fileserver_getFolderContent(resolvedDir);
-
+      let dirContents = await fileserver_getFolderContent(resolvedDir);
+      // In case that  default PL folder doesn't exist dirs will be empty sting.
+      if(typeof dirContents.dirs === 'string') {
+        dirContents.dirs = [];
+      }
       let namePrefix = "";
       if (
         this.chosenTemplate && // null case for TF2X models
@@ -556,7 +559,6 @@ export default {
         .map(d => parseInt(d))
         .filter(suffixNum => !isNaN(suffixNum))
         .reduce((max, curr) => Math.max(max, curr), 0);
-
       this.modelName = `${namePrefix} ${highestSuffix + 1}`;
     },
     isAllIOTypesFilled() {
@@ -895,7 +897,6 @@ export default {
       const fileContents = await fileserver_getFileContent(
         `${dataPath[0]}`
       );
-
      
       this.dataSetTypes = await coreRequest({
         action: 'dataSelected',
