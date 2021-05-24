@@ -57,7 +57,7 @@ class TypeInferrer:
         def has_image_ext(value):
             if isinstance(value, str):
                 _, ext = os.path.splitext(value)
-                return ext in self.IMAGE_TYPES
+                return ext.lower() in (x.lower() for x in self.IMAGE_TYPES)
             else:
                 return False                
         
