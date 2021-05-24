@@ -9,19 +9,25 @@ def get_tool_version():
 
 
 def get_layer_counts(graph_spec):
-    counts = {}
-    
-    def try_increment(key):
-        try:
-            counts[key] += 1
-        except KeyError:
-            counts[key] = 1    
+    """ Counts the number of each layer that are in the graph"""    
+    counts = collections.defaultdict(int)    
     
     for layer_spec in graph_spec:
-        try_increment('num_layers_total')
-        try_increment(f'num_layers_{layer_spec.type_}')                            
+        counts['num_layers_total'] += 1
+        counts[f'num_layers_{layer_spec.type_}'] += 1                            
 
     return counts
+
+
+def get_preprocessing_counts(feature_specs):
+    """ Counts number of layers that use a specific type of preprocessing. """
+    counts = collections.defaultdict(int)
+
+    for feature_spec in feature_specs.values():
+        for preprocessing in feature_spec.preprocessing:
+            counts[f'num_features_with_{preprocessing}'] += 1
+
+    return dict(counts)
 
 
 def aggregate_summaries(all_summaries):

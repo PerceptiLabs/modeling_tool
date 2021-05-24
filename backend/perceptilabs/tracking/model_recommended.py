@@ -1,9 +1,11 @@
 from perceptilabs.tracking.base import get_mixpanel, silence_exceptions
-from perceptilabs.tracking.utils import get_tool_version
+from perceptilabs.tracking.utils import get_layer_counts, get_preprocessing_counts, get_tool_version
 
 
 @silence_exceptions
-def send_model_recommended(user_email, model_id, skipped_workspace, graph_spec, is_tutorial_data):
+def send_model_recommended(
+        user_email, model_id, skipped_workspace, feature_specs, graph_spec, is_tutorial_data
+):
     """ Sends a MixPanel event describing the model recommendation """
     payload = {
         'user_email': user_email,
@@ -12,21 +14,12 @@ def send_model_recommended(user_email, model_id, skipped_workspace, graph_spec, 
         'skipped_workspace': skipped_workspace,
         'version': get_tool_version()
     }
+    layer_counts = get_layer_counts(graph_spec)    
+    payload.update(layer_counts)
 
-    def try_increment(key):
-        try:
-            payload[key] += 1
-        except KeyError:
-            payload[key] = 1    
+    preprocessing_counts = get_preprocessing_counts(feature_specs)    
+    payload.update(preprocessing_counts)
     
-    for layer_spec in graph_spec:
-        if layer_spec.is_input_layer:
-            try_increment('num_inputs_total')
-            try_increment(f'num_inputs_{layer_spec.datatype}')                            
-        elif layer_spec.is_target_layer:
-            try_increment('num_outputs_total')
-            try_increment(f'num_outputs_{layer_spec.datatype}')                            
-
     mp = get_mixpanel(user_email)
     mp.track(user_email, 'model-recommended', payload)     
 
