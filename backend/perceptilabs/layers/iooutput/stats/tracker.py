@@ -10,7 +10,7 @@ from perceptilabs.layers.iooutput.stats.image import ImageOutputStats
 
 def should_use_categorical(datatype):
     # TODO: remove this method when we implement a separate view for numerical
-    return datatype in ['categorical', 'numerical']
+    return datatype in ['categorical', 'numerical', 'binary']
     
 
 class OutputStatsTracker(TrainingStatsTracker):
