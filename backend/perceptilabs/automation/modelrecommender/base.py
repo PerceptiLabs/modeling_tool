@@ -50,15 +50,17 @@ class ModelRecommender:
 
     def _connect_encoders_and_decoders(self, builder, encoder_end_nodes, decoder_start_nodes):
         """ Merges the encoders and feeds the merged target to the decoders. If single input/target, no merge layer is needed. """
-        if len(encoder_end_nodes) == 1:
+        num_encoders = len(encoder_end_nodes)
+        
+        if num_encoders == 1:
             combiner_id = encoder_end_nodes[0] 
-        elif len(encoder_end_nodes) == 2:
-            combiner_id = builder.add_layer('MathMerge')
+        else:
+            combiner_id = builder.add_layer(
+                'MathMerge', settings={'input_count': num_encoders}
+            )
             for i, layer_id in enumerate(encoder_end_nodes):
                 builder.add_connection(layer_id, 'output', combiner_id, f'input{i}')
-        else:
-            # TODO(anton.k): to support more inputs than 2, MathMerge must support more than 2 inputs (fix in story 1546)
-            raise NotImplementedError("A maximum of two input encoders are supported right now")                
+            
         for layer_id in decoder_start_nodes:
             builder.add_connection(combiner_id, 'output', layer_id, 'input')
             

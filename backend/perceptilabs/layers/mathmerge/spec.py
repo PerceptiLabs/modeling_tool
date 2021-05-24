@@ -1,7 +1,7 @@
 from typing import Tuple, Dict, Any, Union
 
 from perceptilabs.layers.specbase import LayerSpec, InnerLayerSpec
-
+from perceptilabs.layers.utils import try_cast
 
 class MathMergeSpec(InnerLayerSpec):
     type_: str = 'MathMerge'
@@ -14,9 +14,7 @@ class MathMergeSpec(InnerLayerSpec):
         if 'Properties' in dict_:
             params['input_count'] = dict_['Properties']['InputsCount']           
             params['merge_type'] = dict_['Properties']['Type']
-            
-            merge_dim = dict_['Properties']['Merge_dim'] 
-            params['merge_dim'] = int(merge_dim) if merge_dim  else None
+            params['merge_dim'] = try_cast(dict_['Properties']['Merge_dim'], int)
             
         return cls(**params)
 
