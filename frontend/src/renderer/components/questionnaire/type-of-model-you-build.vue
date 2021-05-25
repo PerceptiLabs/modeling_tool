@@ -9,7 +9,7 @@
         base-radio(group-name="group" :value-input="'Natural Language Processing'" v-model="a.TypeOfModelYouBuild")
           span Natural Language Processing
         base-radio(group-name="group" :value-input="'Generative models'" v-model="a.TypeOfModelYouBuild")
-          span Generative models (Maybe Timeseries based instead?)
+          span Generative models
         base-radio(group-name="group" :value-input="'Other'" v-model="a.TypeOfModelYouBuild")
           span Other
           
