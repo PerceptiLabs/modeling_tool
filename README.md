@@ -119,3 +119,12 @@ python manage.py runserver
 ```
 
 In case of you are facing some issues with calling the rygg, run `python manage.py migrate` inside `rygg` and run `python manage.py runserver`.
+
+# How to release
+
+## A Wheel
+
+To release 0.12.34 from the master branch do this:
+1. cd into scripts
+2. Run ./release_pip master 0.12.34 origin
+3. Follow the directions it prints about starting the pipeline

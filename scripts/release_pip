@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+[ $# -eq 2 ] || {
+  echo "USAGE: $0 <branch> <version> <remote-name>"
+  exit 1
+}
+
+BRANCH=$1
+VERSION=$2
+REMOTE=$3
+TAG=pip_$VERSION
+
+prep_git(){
+  if ! git remote | grep $REMOTE ; then
+    echo "Remote $REMOTE isn't set up. Check your parameters."
+    exit 1
+  fi
+
+  git fetch $REMOTE
+  git fetch --tags
+
+  if git show $TAG 2>/dev/null | grep -q . ; then
+    echo "Tag $TAG has already been set. You'll have to release manually."
+    exit 1
+  fi
+
+  if ! git show $REMOTE/$BRANCH | grep -q . ; then
+    echo "There's no branch '$BRANCH' in remote '$REMOTE'."
+    exit 1
+  fi
+}
+
+git_work(){
+  git checkout $BRANCH
+  git reset --hard $REMOTE/$BRANCH
+
+  if ! cat "${root_dir}/VERSION" | grep -v "${VERSION}" ; then
+    echo "VERSION file is already set to ${VERSION}. You'll have to release manually."
+    exit 1
+  fi
+
+  root_dir=$(git rev-parse --show-toplevel)
+
+  echo "${VERSION}" > "${root_dir}/VERSION"
+  git add VERSION
+  git commit -m "Bumped version to ${VERSION}"
+  git push $REMOTE HEAD
+  git tag $TAG
+  git push $REMOTE $TAG
+}
+
+
+prep_git
+git_work
+echo "Now run the PerceptiLabs Pip pipeline on tag $TAG with variables FORCE_PUBLISH=true and PACKAGE_NAME_OVERRIDE=perceptilabs"
