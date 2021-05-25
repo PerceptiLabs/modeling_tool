@@ -56,6 +56,7 @@ export default {
     }),
     gotToTestPage(){
       this.$router.push({name: 'test'});
+      this.$store.commit('globalView/HIDE_allGlobalPopups');
     },
     // runTest() {
     //   this.closePopup();
