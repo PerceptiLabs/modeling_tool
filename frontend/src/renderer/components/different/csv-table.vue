@@ -63,7 +63,7 @@
               :class="{'is-selected': selectedColumns.includes(numColumn - 1)}"
               )
               base-select(
-                :select-options="typeOptions"
+                :select-options="formattedDataset.columnOptions[numColumn - 1]"
                 :value="formattedDataset.dataTypes[numColumn - 1]"
                 @input="setTypeSelection($event, numColumn)"
                 @isOpen="handleSelectIsOpen"
@@ -93,12 +93,12 @@ export default {
     return {
       delimiters: ',',
       ioOptions: ["Input", "Target"],
-      typeOptions: ["numerical", "image", "categorical", "binary"],
       selectedColumns: [],
       formattedDataset: {
         columnNames: [],
         ioTypes: [],
         dataTypes: [],
+        columnOptions: [],
         preprocessingTypes: [],
       },
       isAnySelectOpened: false,
@@ -188,11 +188,15 @@ export default {
     computedNumberOfColumns: {
       handler(newVal) {
         if (!newVal) { return; }
-        let columnsTypes = Object.values(this.dataSetTypes);
+        
+        let columnDefaultTypes = Object.values(this.dataSetTypes).map(itm => itm[0][itm[1]]);
+        let columnAllowedTypes = Object.values(this.dataSetTypes).map(itm => itm[0]);
         
         this.formattedDataset.columnNames = this.delimitedDataSet[0];
         this.formattedDataset.ioTypes = new Array(newVal);
-        this.formattedDataset.dataTypes = columnsTypes;
+        
+        this.formattedDataset.dataTypes = columnDefaultTypes;
+        this.formattedDataset.columnOptions = columnAllowedTypes
         this.formattedDataset.preprocessingTypes = new Array(newVal).fill([]);
       },
       immediate: true

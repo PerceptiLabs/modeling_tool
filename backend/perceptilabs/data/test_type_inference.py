@@ -71,24 +71,25 @@ def test_identifies_image(df):
     
 def test_infer_types(df):
     inferrer = TypeInferrer(max_categories=3)
-    assert inferrer.infer_datatype(df['Gender']) == 'binary'
-    assert inferrer.infer_datatype(df['Age']) == 'numerical'
-    assert inferrer.infer_datatype(df['Height']) == 'numerical'
-    assert inferrer.infer_datatype(df['City']) == 'categorical'
-    assert inferrer.infer_datatype(df['Name']) == 'text'
-    assert inferrer.infer_datatype(df['Photo']) == 'image'           
-    
+    assert inferrer.get_default_datatype(df['Gender']) == 'binary'
+    assert inferrer.get_default_datatype(df['Age']) == 'numerical'
+    assert inferrer.get_default_datatype(df['Height']) == 'numerical'
+    assert inferrer.get_default_datatype(df['City']) == 'categorical'
+    assert inferrer.get_default_datatype(df['Name']) == 'text'
+    assert inferrer.get_default_datatype(df['Photo']) == 'image'           
 
-def test_infer_datatypes(df):
+
+def test_get_valid_and_default_datatypes(df):
     expected = {
-        'Gender': 'binary',
-        'Age': 'numerical',
-        'Height': 'numerical',
-        'City': 'categorical',
-        'Name': 'text',
-        'Photo': 'image'
+        'Name': (['text'], 0),
+        'City': (['categorical', 'text'], 0),
+        'Age': (['numerical'], 0),
+        'Height': (['numerical'], 0),
+        'Gender': (['binary', 'categorical', 'text'], 0),
+        'Photo': (['image', 'text'], 0)
     }
     inferrer = TypeInferrer(max_categories=3)
-    actual = inferrer.infer_datatypes(df)
+    actual = inferrer.get_valid_and_default_datatypes_for_dataframe(df)
     assert actual == expected
-    
+
+

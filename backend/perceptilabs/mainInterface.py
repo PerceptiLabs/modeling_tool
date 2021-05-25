@@ -713,7 +713,7 @@ class Interface():
     def _create_response_data_selected(self, request_value):
         """ Sent when the users elects a data file """
         inferrer = TypeInferrer()
-        datatypes = inferrer.infer_datatypes_from_csv(request_value['path'])
+        datatypes = inferrer.get_valid_and_default_datatypes_for_csv(request_value['path'])
 
         tracking.send_data_selected(
             request_value['user_email'],
