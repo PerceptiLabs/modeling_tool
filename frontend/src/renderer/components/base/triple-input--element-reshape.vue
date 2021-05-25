@@ -121,6 +121,7 @@ export default {
   @import "../../scss/components/triple-input";
   .triple-input_input {
     max-width: 2em;
+    padding: 0;
   }
   .triple-input_input-wrap {
     position: relative;
@@ -140,6 +141,9 @@ export default {
     padding: 2px 2px 3px 3px;
     letter-spacing: 1px;
     font-weight: 500;
+    position: relative;
+    margin: 0 1px;
+    pointer-events: auto;
   }
   .correct-input-reshape {
     right: 4rem;
