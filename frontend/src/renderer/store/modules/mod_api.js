@@ -1025,9 +1025,12 @@ const actions = {
   //---------------
   //  OTHER
   //---------------
-  API_getStatus({rootGetters, dispatch, commit}) {
+  API_getStatus({rootGetters, rootState, dispatch, commit}, payload) {
+    const networkId = payload && payload.networkIndex !== undefined 
+                        ? rootState.mod_workspace.workspaceContent[payload.networkIndex].networkID
+                        : rootGetters['mod_workspace/GET_currentNetworIdForKernelRequests'];
     const theData = {
-      receiver: rootGetters['mod_workspace/GET_currentNetworIdForKernelRequests'],
+      receiver: networkId,
       action: rootGetters['mod_workspace/GET_testIsOpen'] ? 'getTestStatus' :'getStatus',
       value: ''
     };
@@ -1037,7 +1040,11 @@ const actions = {
     coreRequest(theData)
       .then((data)=> {
         // console.log('API_getStatus res', data);
-        dispatch('mod_workspace/SET_statusNetworkCore', {...rootGetters['mod_workspace/GET_currentNetwork'].networkMeta.coreStatus, ...data}, {root: true})
+        dispatch('mod_workspace/SET_statusNetworkCoreDynamically', {modelId: networkId, ...data}, {root: true})
+
+        if (data.Status === 'Finished') {
+          dispatch('mod_workspace/EVENT_stopRequest', { networkId }, {root: true});
+        }
       })
       .catch((err)=> {
         if(!err.toString().match(/Error: connect ECONNREFUSED/)) {
@@ -1060,6 +1067,10 @@ const actions = {
           ...data,
           modelId: modelId,
         }, {root: true})
+
+        if (data.Status === 'Finished') {
+          dispatch('mod_workspace/EVENT_stopRequest', { networkId: modelId }, {root: true});
+        }
       })
       .catch((err)=> {
         if(!err.toString().match(/Error: connect ECONNREFUSED/)) {
@@ -1101,9 +1112,11 @@ const actions = {
       });
   },
 
-  API_updateResults({rootGetters}) {
+  API_updateResults({rootGetters, rootState}, payload) {
     const theData = {
-      receiver: rootGetters['mod_workspace/GET_currentNetworIdForKernelRequests'],
+      receiver: payload && payload.networkIndex !== undefined 
+                  ? rootState.mod_workspace.workspaceContent[payload.networkIndex].networkID
+                  : rootGetters['mod_workspace/GET_currentNetworIdForKernelRequests'],
       action: 'updateResults',
       value: ''
     };

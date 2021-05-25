@@ -131,10 +131,11 @@ function coreRequest(data, path, no, name) {
             else {
               // console.log(stringData);
               let obgData = JSON.parse(stringData);
+              const modelId = initialSentData.receiver === null || initialSentData.receiver === undefined ? store.getters['mod_workspace/GET_currentNetworkId'] : parseInt(initialSentData.receiver);
+
               if(obgData.errorMessage && obgData.errorMessage.length) {
 
                 if(initialSentData.action === "updateResults") {
-                  const modelId = parseInt(initialSentData.receiver);
                   let errorMessage = obgData.errorMessage[0];
                   // let startPosition =  errorMessage.indexOf(' This will be reported as a bug.');
                   // if(startPosition !== -1) {
@@ -148,7 +149,7 @@ function coreRequest(data, path, no, name) {
                 store.dispatch('mod_workspace/setViewType', 'model');
                 store.commit('mod_workspace/update_network_meta', 
                           {key: 'coreStatus', 
-                           networkID: store.getters['mod_workspace/GET_currentNetwork'].networkID,
+                           networkID: modelId,
                            value: {Status: 'Waiting'}
                           });
                 store.dispatch('mod_workspace/EVENT_startDoRequest', false);
@@ -160,7 +161,7 @@ function coreRequest(data, path, no, name) {
               if(obgData.warningMessage && obgData.warningMessage.length) {
                 for(const wm of obgData.warningMessage) {
                   store.dispatch('mod_workspace-notifications/addError', {
-                    networkId: store.getters['mod_workspace/GET_currentNetworkId'],
+                    networkId: modelId,
                     errorObject: ({
                       Message: wm,
                     }),
@@ -172,7 +173,7 @@ function coreRequest(data, path, no, name) {
               if(obgData.generalLogs && obgData.generalLogs.length) {
                 for(const wm of obgData.generalLogs) {
                   store.dispatch('mod_workspace-notifications/addWarning', {
-                    networkId: store.getters['mod_workspace/GET_currentNetworkId'],
+                    networkId: modelId,
                     warningObject: ({
                       Message: wm,
                     }),
@@ -183,18 +184,19 @@ function coreRequest(data, path, no, name) {
 
               if (obgData.consoleLogs) {
                 store.dispatch('mod_logs/addLogsForNetwork', {
-                  networkId: store.getters['mod_workspace/GET_currentNetworkId'],
+                  networkId: modelId,
                   logs: obgData.consoleLogs
                 });
               }
               //console.log('answer core data ', obgData);
               // let stopRequest = new Date();
               // calcTime(stopRequest, timeStartAnswer, 'transmitting', name);
-              if(initialSentData.action !== 'checkCore' && process.env.NODE_ENV !== 'production')
-              console.log('REQ:' + initialSentData.action, 
-                 JSON.parse(JSON.stringify(initialSentData)),
-                JSON.parse(JSON.stringify(obgData.content)),
-              );
+              if(initialSentData.action !== 'checkCore' && process.env.NODE_ENV !== 'production') {
+                console.log('REQ:' + initialSentData.action, 
+                  JSON.parse(JSON.stringify(initialSentData)),
+                  JSON.parse(JSON.stringify(obgData.content)),
+                );
+              }
               
               /* TOREMOVE
               delete obgData['consoleLogs']

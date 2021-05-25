@@ -898,7 +898,7 @@ const mutations = {
     const networkIndex = state.workspaceContent.findIndex(net => net.networkID === modelId);
     const payloadHaveValues = !!Object.keys(payload).length;
     if(networkIndex !== -1 && payloadHaveValues) {
-      Vue.set(state.workspaceContent[networkIndex].networkMeta, 'coreStatus', payload);
+      Vue.set(state.workspaceContent[networkIndex].networkMeta, 'coreStatus', {...state.workspaceContent[networkIndex].networkMeta.coreStatus, ...payload});
     }
   },
   set_statusNetworkCoreStatus(state, {getters, value}) {
@@ -934,21 +934,19 @@ const mutations = {
     }
   },
   set_charts_doRequest(state, {getters, networkIndex}) {
-    let currentDoRequestValue = getters.GET_currentNetwork.networkMeta.chartsRequest.doRequest + 1;
-
-    networkIndex
-      ? Vue.set(state.workspaceContent[networkIndex].networkMeta.chartsRequest, 'doRequest', currentDoRequestValue) //TODO проверить что счетчики идут паралельно в нескольких networks
-      : Vue.set(getters.GET_currentNetwork.networkMeta.chartsRequest, 'doRequest', currentDoRequestValue);
+    networkIndex !== undefined && networkIndex !== null
+      ? Vue.set(state.workspaceContent[networkIndex].networkMeta.chartsRequest, 'doRequest', state.workspaceContent[networkIndex].networkMeta.chartsRequest.doRequest + 1) //TODO проверить что счетчики идут паралельно в нескольких networks
+      : Vue.set(getters.GET_currentNetwork.networkMeta.chartsRequest, 'doRequest', getters.GET_currentNetwork.networkMeta.chartsRequest.doRequest + 1);
   },
   set_charts_showCharts(state, {getters, networkIndex}) {
-    let currentShowChartsValue = getters.GET_currentNetwork.networkMeta.chartsRequest.showCharts + 1;
-
-    networkIndex
-      ? Vue.set(state.workspaceContent[networkIndex].networkMeta.chartsRequest, 'showCharts', currentShowChartsValue)
-      : Vue.set(getters.GET_currentNetwork.networkMeta.chartsRequest, 'showCharts', currentShowChartsValue);
+    networkIndex !== undefined && networkIndex !== null
+      ? Vue.set(state.workspaceContent[networkIndex].networkMeta.chartsRequest, 'showCharts', state.workspaceContent[networkIndex].networkMeta.chartsRequest.showCharts + 1)
+      : Vue.set(getters.GET_currentNetwork.networkMeta.chartsRequest, 'showCharts', getters.GET_currentNetwork.networkMeta.chartsRequest.showCharts + 1);
   },
-  set_charts_timerID(state, {getters, timerId}) {
-    getters.GET_currentNetwork.networkMeta.chartsRequest.timerID = timerId;
+  set_charts_timerID(state, {getters, timerId, networkIndex}) {
+    networkIndex !== undefined && networkIndex !== null
+      ? Vue.set(state.workspaceContent[networkIndex].networkMeta.chartsRequest, 'timerID', timerId)
+      : Vue.set(getters.GET_currentNetwork.networkMeta.chartsRequest, 'timerID', timerId);
   },
   set_statusNetworkWaitGlobalEvent(state, {getters, value}) {
     Vue.set(getters.GET_currentNetwork.networkMeta.chartsRequest, 'waitGlobalEvent', value);
@@ -2353,22 +2351,37 @@ const actions = {
 
     dispatch('SET_statusNetworkWaitGlobalEvent', isStart);
     if(isStart) {
+      const networkIndex = getters.GET_currentNetworkIndex;
+      console.log('xxx - setInterval for ', networkIndex);
       let timerId = setInterval(()=> {
-        dispatch('EVENT_chartsRequest')
+        dispatch('EVENT_chartsRequest', { networkIndex });
       }, timeInterval);
       commit('set_charts_timerID', {getters, timerId});
     }
     else {
       clearInterval(currentMeta.chartsRequest.timerID);
+      commit('set_charts_timerID', {getters, timerId: null})
     }
   },
-  EVENT_chartsRequest({dispatch, commit, rootState, getters, state}) {
-    var networkIndex = state.currentNetwork;
+  EVENT_stopRequest({state, getters, commit}, { networkId }) {
+    const networkIndex = state.workspaceContent.findIndex(net => net.networkID === networkId);
+
+    if(networkIndex !== -1) {
+      const networkMeta = state.workspaceContent[networkIndex].networkMeta;
+
+      if (networkMeta.chartsRequest.timerID) {
+        clearInterval(networkMeta.chartsRequest.timerID);
+        commit('set_charts_timerID', {getters, timerId: null, networkIndex});
+      }
+    }
+  },
+  EVENT_chartsRequest({dispatch, commit, rootState, getters, state}, payload) {
+    var networkIndex = payload && payload.networkIndex !== undefined ? payload.networkIndex : state.currentNetwork;
     commit('set_charts_showCharts', {getters, networkIndex});
-    dispatch('mod_api/API_updateResults', null, {root: true})
+    dispatch('mod_api/API_updateResults', { networkIndex }, {root: true})
       .then(()=> {
         commit('set_charts_doRequest', {getters, networkIndex});
-        dispatch('mod_api/API_getStatus', null, {root: true});
+        dispatch('mod_api/API_getStatus', { networkIndex }, {root: true});
       });
   },
   EVENT_onceDoRequest({dispatch, commit, rootState, getters}, isStart) {
