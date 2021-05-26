@@ -1,29 +1,23 @@
-# Implementation Details
+# Implementation Summary
 -------------------------------
-## What was changed?
-*To be filled in*
+*Here you can write about how the change affect the users and/or the developers.*
+*You can also add details of **what** was changed, **why** it was changed and **how** it was changed.*
 
-## Why was it changed?
-*To be filled in*
-
-## How was it changed?
-*To be filled in*
-
-
-# How to review
+# [Optional] How to review
 -------------------------------
-*To be filled in*
+N/A
 
-# Please review the following files
+# [Optional] Please review the following files
 -------------------------------
-*To be filled in*
+N/A
 
 # What did you do to make the codebase a better place? How did you make the improvements durable
 -------------------------------
-*To be filled in*
+*Here you should describe what improvements you made to codebase while working on the ticket.*
+*Note that the improvements should be proportional in size to the main objective of the ticket*
 
 
-#Please also:
+# Please also:
 - [ ] Include any new files in included_files.txt
 - [ ] Update the story on the board
 - [ ] Announce changes that will affect everyone in #dev in slack
