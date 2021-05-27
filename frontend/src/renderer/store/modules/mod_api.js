@@ -411,9 +411,11 @@ const actions = {
       value,
     }
     console.log(theData);
+    dispatch('mod_test/testStart', null, {root: true});
     return coreRequest(theData)
       .then((data)=> {
         dispatch('mod_test/setTestData', data.value, {root: true});
+        dispatch('mod_test/testFinish', null, {root: true});
         dispatch('mod_webstorage/saveTestStatistic', data.value, { root: true });
       })
       .catch((err)=> {

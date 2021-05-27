@@ -38,6 +38,10 @@
       .no-test-view(v-else)
         p There are no test running at the moment.
         button.btn.btn--primary.run-test-button(type="button" @click="runTest()") Run Test
+    .test-overlay(v-if="isTestRunning")
+      .spinner
+        chart-spinner
+      span Test is running
     test-configuration-popup(v-if="isTestConfigurationPopupOpened")
 </template>
 
@@ -46,6 +50,7 @@ import { mapState, mapGetters } from "vuex";
 
 import TestConfigurationPopup   from "@/components/global-popups/test-configuration-popup";
 import ChartSwitch              from "@/components/charts/chart-switch";
+import ChartSpinner              from "@/components/charts/chart-spinner";
 import MetricTestTable          from "./components/metric-test-table";
 import { TestTypes }            from "@/core/constants";
 import { getFirstElementFromObject } from "@/core/helpers";
@@ -59,6 +64,7 @@ const chartStyles = {
 export default {
   components: {
     ChartSwitch,
+    ChartSpinner,
     MetricTestTable,
     TestConfigurationPopup
   },
@@ -83,7 +89,8 @@ export default {
   },
   computed: {
     ...mapGetters({
-      testData: "mod_test/GET_testData"
+      testData: "mod_test/GET_testData",
+      isTestRunning: "mod_test/GET_testRunning"
     }),
     ...mapState({
       isTestConfigurationPopupOpened: state =>
@@ -152,5 +159,29 @@ export default {
 }
 .form_input {
   width: 150px;
+}
+
+.test-overlay {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  background-color: rgba(35, 37, 42, 0.5);
+
+  span {
+    font-size: 16px;
+  }
+}
+.spinner {  
+  position: relative;
+  width: 20px;
+  height: 0;
+  overflow: visible;
+  margin-bottom: 40px;
 }
 </style>
