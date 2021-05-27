@@ -1,7 +1,7 @@
 <template lang="pug">
 .select-model-modal(:data-tutorial-target="'tutorial-create-model-new-model'")
   tempalte(v-if="!isDataWizardEnabled")
-    .header 
+    .header
       .close-cross(@click="closeModal(true)")
       span New Model
     .main-wrapper
@@ -56,8 +56,8 @@
             .template-image(v-if="temp.imgPath")
               img(:src="temp.imgPath", :alt="temp.title")
             span.template-name {{ temp.title }}
-      .main-actions 
-        div 
+      .main-actions
+        div
           h4.presets-text Name:
           .model-title-input-wrapper
             input.model-title-input(
@@ -92,7 +92,7 @@
           perfect-scrollbar.template-description(
             v-if="chosenTemplate !== null",
             :data-tutorial-target="'tutorial-create-model-description'"
-          ) 
+          )
             span(v-if="chosenTemplate > -1") {{ basicTemplates[chosenTemplate] && basicTemplates[chosenTemplate].description }}
             span(v-else) {{ 'This is an empty model which acts as a clean slate if you want to start from scratch' }}
           p.template-description-else(
@@ -126,7 +126,7 @@
               )
             | Create test
   template(v-else)
-    .header 
+    .header
       .close-cross(@click="closeModal(true)")
       span {{getModalTitle}}
     .main-wrapper
@@ -163,14 +163,14 @@
                   :withLabels="true"
                 )
               div(style="display:flex")
-              
+
                 base-checkbox(
                   style="font-size: 14px; white-space:nowrap;"
                   v-model="datasetSettings.randomizedPartitions"
                 ) Randomize partition
                 info-tooltip(
                   text="Select random samples to place in each partition, good practice if your dataset is ordered"
-                )            
+                )
               div.footer-actions
                 button.reload-dataset-btn(@click="onStep -= 1")
                   img(src='./../../../../../static/img/arrow-back.svg')
@@ -180,7 +180,7 @@
                   button.next-to-settings-btn(
                     :class="{ 'disabled': isDisableCreateAction() }",
                     @click="goToTrainingSettings"
-                    )
+                  )
                     | Next
                     svg(width="10" height="8" viewBox="0 0 10 8" fill="none" xmlns="http://www.w3.org/2000/svg")
                       path(
@@ -188,11 +188,11 @@
                         clip-rule="evenodd"
                         d="M0.499999 4.00071C0.499999 3.85153 0.559263 3.70845 0.664752 3.60296C0.770241 3.49747 0.913315 3.43821 1.0625 3.43821L7.57962 3.43821L5.16425 1.02396C5.05863 0.918339 4.99929 0.775084 4.99929 0.625712C4.99929 0.476339 5.05863 0.333084 5.16425 0.227461C5.26987 0.121839 5.41313 0.0625009 5.5625 0.0625009C5.71187 0.0625009 5.85513 0.121839 5.96075 0.227462L9.33575 3.60246C9.38813 3.65471 9.42969 3.71679 9.45805 3.78512C9.48641 3.85346 9.501 3.92672 9.501 4.00071C9.501 4.0747 9.48641 4.14796 9.45805 4.2163C9.42969 4.28464 9.38813 4.34671 9.33575 4.39896L5.96075 7.77396C5.85513 7.87958 5.71187 7.93892 5.5625 7.93892C5.41313 7.93892 5.26987 7.87958 5.16425 7.77396C5.05863 7.66834 4.99929 7.52508 4.99929 7.37571C4.99929 7.22634 5.05863 7.08308 5.16425 6.97746L7.57962 4.56321L1.0625 4.56321C0.913315 4.56321 0.770241 4.50395 0.664752 4.39846C0.559263 4.29297 0.499999 4.1499 0.499999 4.00071Z"
                         fill="#6185EE"
-                        )
-  
+                      )
+
           div.model-run-settings-page(v-show="onStep === 3")
             //h5.default-text Training settings:
-            
+
             div.setting-form-wrapper.settings-layer_section
               .form_row
                 .form_label
@@ -319,7 +319,7 @@
                         text="Setting this to True may help with training, but is slightly more expensive in terms of computation and memory"
                       )
                         base-checkbox(v-model="settings.Centered") Centered
-        
+
               .form_row
                 .form_label
                 .form_input
@@ -332,7 +332,7 @@
               button.reload-dataset-btn(@click="onStep -= 1")
                 img(src='./../../../../../static/img/arrow-back.svg')
                 | Edit dataset
-              
+
               div.d-flex
                 button.action-button.create-btn.customize-btn.mr-15(
                   @click="createModelTF2X(true)"
@@ -340,7 +340,7 @@
                 button.action-button.create-btn(
                   @click="createModelTF2X(false)"
                 ) Customize
-              
+
 
 
 
@@ -479,7 +479,7 @@ export default {
         case 3: return 'Training settings'; break;
       }
     }
-    
+
   },
   mounted() {
     this.modelPath = this.projectPath;
@@ -567,7 +567,7 @@ export default {
         return (
           csvData &&
           csvData.ioTypes.filter(v => v !== undefined).length ===
-            csvData.ioTypes.length
+          csvData.ioTypes.length
         );
       } else {
         return false;
@@ -648,7 +648,7 @@ export default {
         datasetSettings: datasetSettings,
         user_email: this.userEmail,
         model_id: apiMeta.model_id,
-        skipped_workspace: runStatistics  
+        skipped_workspace: runStatistics
       };
 
       const modelRecommendation = await this.getModelRecommendation(
@@ -889,32 +889,41 @@ export default {
         return;
       }
 
-      this.$store.dispatch(
-        "mod_datasetSettings/setStartupFolder",
-        dataPath[0].match(/(.*)[\/\\]/)[1] || ""
-      );
-
-      const fileContents = await fileserver_getFileContent(
-        `${dataPath[0]}`
-      );
-     
-      this.dataSetTypes = await coreRequest({
-        action: 'dataSelected',
-        value: {
-          user_email: this.userEmail,
-          path: dataPath[0]
-        }
-      });
-
-      if (fileContents && fileContents.file_contents) {
-        this.dataset = fileContents.file_contents;
-        this.datasetPath = dataPath[0];
+      try {
+        this.showLoadingSpinner = true;
+        this.showFilePickerPopup = false;
         this.toNextStep();
-        this.autoPopulateName();
+
+        this.$store.dispatch(
+          "mod_datasetSettings/setStartupFolder",
+          dataPath[0].match(/(.*)[\/\\]/)[1] || ""
+        );
+
+        const fileContents = await fileserver_getFileContent(
+          `${dataPath[0]}`
+        );
+
+        this.dataSetTypes = await coreRequest({
+          action: 'dataSelected',
+          value: {
+            user_email: this.userEmail,
+            path: dataPath[0]
+          }
+        });
+
+        if (fileContents && fileContents.file_contents) {
+          this.dataset = fileContents.file_contents;
+          this.datasetPath = dataPath[0];
+          this.autoPopulateName();
+        }
+      } catch {
+        this.showFilePickerPopup = true;
+        this.toPrevStep()
+      }
+      finally {
+        this.showLoadingSpinner = false;
       }
 
-      this.showFilePickerPopup = false;
-      this.handleShowLoadingSpinner(400);
       this.activateNotification();
     },
     handleCSVDataTypeUpdates(payload) {
@@ -969,12 +978,6 @@ export default {
     openPLVideoTutorialPage() {
       window.open(PERCEPTILABS_VIDEO_TUTORIAL_URL, '_blank');
     },
-    handleShowLoadingSpinner(time = 400){
-      this.showLoadingSpinner = true;
-      setTimeout(() => {
-        this.showLoadingSpinner = false;
-      }, time)
-    }
   }
 };
 </script>
