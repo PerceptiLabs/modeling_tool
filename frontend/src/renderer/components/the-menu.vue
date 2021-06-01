@@ -54,10 +54,12 @@ export default {
       networkHistory:             'mod_workspace-history/GET_currentNetHistory',
       isDefaultProjectMode:       'mod_project/GET_isDefaultProjectMode',
       isNotebookMode:             'mod_notebook/getNotebookMode',
+      currentModel:               'mod_workspace/GET_currentNetwork',
     }),
     ...mapState({
       currentProjectId:           state => state.mod_project.currentProject,
       isSettingInputFocused:      state => state.mod_workspace.isSettingInputFocused,
+      viewType:                   state => state.mod_workspace.viewType,
     }),
     statusLocalCore() {
       return this.$store.state.mod_api.statusLocalCore;
@@ -71,6 +73,7 @@ export default {
     openApp() {
       return this.$store.state.globalView.appIsOpen
     },
+
     isMac() {
       return isOsMacintosh();
     },
@@ -98,6 +101,12 @@ export default {
     hasNetworkWithUnsavedChanges() {
       return this.$store.getters['mod_workspace-changes/get_networksWithChanges'].length > 0;      
     },
+    isCurrentModelOpened() {
+      return this.currentModel && (
+        (this.viewType === 'model' && this.currentModel.networkMeta.hideModel === false) || 
+        (this.viewType === 'statistic' && this.currentModel.networkMeta.openStatistics === true && this.currentModel.networkMeta.hideStatistics === false)
+      )
+    }
   },
   methods: {
     ...mapMutations({
@@ -270,8 +279,8 @@ export default {
             {label: 'Save',         accelerator: this.isMac ? 'meta+s' : 'ctrl+s',              enabled: this.openApp && !this.isNotebookMode,  active: this.saveModel },
             {label: 'Save as',   accelerator: this.isMac ? 'meta+shift+s' : 'ctrl+shift+s',     enabled: this.openApp && !this.isNotebookMode,  active: this.saveModelAs },
             {type: 'separator'},
-            {label: 'Export',  active: this.exportModel,        enabled: this.openApp},
-            {label: 'Export to GitHub',  active: this.exportModelToGithub,        enabled: this.showExport, visible: this.showExport},
+            {label: 'Export',  active: this.exportModel,        enabled: this.isCurrentModelOpened && this.openApp},
+            {label: 'Export to GitHub',  active: this.exportModelToGithub,        enabled: this.isCurrentModelOpened && this.openApp && this.showExport, visible: this.showExport},
             {type: 'separator'},
             {label: 'Log out', active: this.logOut,             enabled: this.isLogin},
           ]
