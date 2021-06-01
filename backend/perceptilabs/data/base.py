@@ -14,7 +14,7 @@ class FeatureSpec:
     def __init__(self, datatype, iotype, file_path='', preprocessing=None):
         self.datatype = datatype
         self.iotype = iotype
-        self.preprocessing = preprocessing or []         
+        self.preprocessing = preprocessing or {}       
         self.file_path = file_path
 
 
@@ -174,9 +174,9 @@ class DataLoader:
             Two preprocessing pipelines: one for training and one for inference.
             One postprocessing pipeline.
         """
-        build_pipeline = self._get_pipeline_builder(feature_spec.datatype)
-        
-        training_pipeline, inference_pipeline, postprocessing_pipeline = build_pipeline(
+        pipeline_builder = self._get_pipeline_builder(feature_spec.datatype)
+
+        training_pipeline, inference_pipeline, postprocessing_pipeline = pipeline_builder.build(
             feature_spec=feature_spec,
             feature_dataset=feature_training_set
         )
@@ -191,13 +191,13 @@ class DataLoader:
     def _get_pipeline_builder(self, feature_datatype):
         """ Get pipeline builder """
         if feature_datatype == 'numerical':
-            return pipelines.build_numerical_pipelines
+            return pipelines.NumericalPipelineBuilder()
         elif feature_datatype == 'image':
-            return pipelines.build_image_pipelines
+            return pipelines.ImagePipelineBuilder()
         elif feature_datatype == 'binary':
-            return pipelines.build_binary_pipelines
+            return pipelines.BinaryPipelineBuilder()
         elif feature_datatype == 'categorical':
-            return pipelines.build_categorical_pipelines
+            return pipelines.CategoricalPipelineBuilder()
         else:
             raise NotImplementedError(f"No pipeline defined for type '{feature_datatype}'")
 
@@ -308,12 +308,11 @@ class DataLoader:
             if feature_spec.datatype in ['image']
         ]
 
-        def make_absolute(series):
+        def make_absolute(x):
             """ convert from <file_name> to <base_directory>/<file_name> """
-            return str(base_directory + os.path.sep) + series  
+            return os.path.join(base_directory, x.replace('\\', '/'))
 
-
-        df[path_cols] = df[path_cols].apply(make_absolute)
+        df[path_cols] = df[path_cols].applymap(make_absolute)
         return df
     
     def _validate_partitions(self, partitions):

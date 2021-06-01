@@ -19,11 +19,10 @@
                 span &nbsp;
                 span {{ numColumn }}
                 data-column-options(
-                  v-if="shouldShowDataColumnOptions(ix)"
+                  :columnSelectedType="formattedDataset.dataTypes"
                   :index="ix"
                   @handleChange="handleColumnPreprocessingChange"
                 )
-                span(v-else) &nbsp;
         tbody
           tr.table-row.default-row(v-for="dataRow in delimitedDataSet.slice(1)")
             //- td.no-border(@click="clearSelectedColumns")
@@ -147,11 +146,6 @@ export default {
       this.emitEvent();
     },
     setTypeSelection(event, numColumn) {
-      // binary and categorical can't have normalize option
-      if(event === 'binary' || event === 'categorical') {
-        this.formattedDataset.preprocessingTypes[numColumn - 1] = this.formattedDataset.preprocessingTypes[numColumn - 1].filter(word => word !== "normalize");
-      }
-      
       this.formattedDataset.dataTypes.splice(numColumn - 1, 1, event);
       this.emitEvent();
     },
@@ -180,9 +174,6 @@ export default {
       this.formattedDataset.preprocessingTypes.splice(numColumn, 1, value);
       this.emitEvent();
     },
-    shouldShowDataColumnOptions(ix) {
-      return this.formattedDataset.dataTypes[ix] !== 'binary' &&  this.formattedDataset.dataTypes[ix] !== 'categorical'
-    }
   },
   watch: {
     computedNumberOfColumns: {

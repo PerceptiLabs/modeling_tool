@@ -36,7 +36,7 @@ def get_mnist_loader():
 
     feature_specs = {
         'image_path': FeatureSpec(datatype='image', iotype='input', file_path=path),
-        'target': FeatureSpec(datatype='categorical', iotype='output', file_path=path)        
+        'target': FeatureSpec(datatype='categorical', iotype='target', file_path=path)        
     }
     
     loader = DataLoader.from_features(feature_specs, file_path=path)

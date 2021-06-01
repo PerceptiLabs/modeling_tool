@@ -3,14 +3,14 @@ import numpy as np
 import tensorflow as tf
 from unittest.mock import MagicMock
 
-from perceptilabs.data.pipelines import build_numerical_pipelines
+from perceptilabs.data.pipelines import NumericalPipelineBuilder
 
 
 def test_numerical_postprocessing():
     expected = [1.0, 2.0, 3.0]
     
     dataset = tf.data.Dataset.from_tensor_slices([int(x) for x in expected])  # Convert to ints
-    pipeline, _, _ = build_numerical_pipelines()
+    pipeline, _, _ = NumericalPipelineBuilder().build()
     processed_dataset = dataset.map(lambda x: pipeline(x))
 
     actual = [x.numpy() for x in iter(processed_dataset)]
@@ -22,9 +22,9 @@ def test_numerical_normalization():
     dataset = tf.data.Dataset.from_tensor_slices([i for i in range(n_samples)])
 
     feature_spec = MagicMock()
-    feature_spec.preprocessing = ['normalize']
+    feature_spec.preprocessing = {'normalize': True}
     
-    pipeline, _, _ = build_numerical_pipelines(feature_spec=feature_spec, feature_dataset=dataset)
+    pipeline, _, _ = NumericalPipelineBuilder().build(feature_spec=feature_spec, feature_dataset=dataset)
     processed_dataset = dataset.map(lambda x: pipeline(x))
 
     batch = next(iter(processed_dataset.batch(n_samples))).numpy()  # Get the full dataset in a batch

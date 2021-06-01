@@ -322,6 +322,7 @@ perceptilabs/data/type_inference.py
 
 # backend/perceptilabs/data/pipelines/
 perceptilabs/data/pipelines/__init__.py
+perceptilabs/data/pipelines/base.py
 perceptilabs/data/pipelines/image.py
 perceptilabs/data/pipelines/numerical.py
 perceptilabs/data/pipelines/binary.py
