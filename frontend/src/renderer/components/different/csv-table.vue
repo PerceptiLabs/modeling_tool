@@ -4,7 +4,7 @@
     tabindex="0"
     :class="{'isAnySelectOpened': isAnySelectOpened}"
     )
-    perfect-scrollbar
+    perfect-scrollbar.csv-table-scrollbar-wrapper
       table.table-wrapper(v-if="delimitedDataSet")
         thead
           tr(:data-tutorial-target="'tutorial-data-wizard-csv-explanation'")
@@ -49,6 +49,8 @@
               :class="{'is-selected': selectedColumns.includes(numColumn - 1)}"
               )
               base-select(
+                :style-type="`text-center ${lastTypeUnselected === numColumn - 1 ? 'active': ''}`"
+                selectPlaceholder="Select"
                 :select-options="ioOptions"
                 :value="formattedDataset.ioTypes[numColumn - 1]"
                 @input="setIOSelection($event, numColumn)"
@@ -62,6 +64,8 @@
               :class="{'is-selected': selectedColumns.includes(numColumn - 1)}"
               )
               base-select(
+                style-type="text-center"
+                selectPlaceholder="Select"
                 :select-options="formattedDataset.columnOptions[numColumn - 1]"
                 :value="formattedDataset.dataTypes[numColumn - 1]"
                 @input="setTypeSelection($event, numColumn)"
@@ -104,6 +108,15 @@ export default {
     }
   },
   computed: {
+    lastTypeUnselected() {
+      const arrLength = this.formattedDataset.ioTypes.length;
+
+      for(let i = 0; i < arrLength; i++) {
+        if(this.formattedDataset.ioTypes[i] === undefined) {
+          return i;
+        }
+      }
+    },
     computedNumberOfColumns() {
       if (!this.delimitedDataSet || !this.delimitedDataSet.length) { return 0; }
 
@@ -150,6 +163,7 @@ export default {
       this.emitEvent();
     },
     emitEvent() {
+      console.log(this.formattedDataset);
       this.$emit('update', this.formattedDataset);
     },
     addSelectedColumn(event, columnNumber) {
@@ -200,12 +214,15 @@ export default {
 
   .component-wrapper {
     width: 100%;
-    box-sizing: border-box;
+
     &.isAnySelectOpened {
       .ps {
         overflow: visible !important;
       }
     }
+  }
+  .csv-table-scrollbar-wrapper {
+    padding: 0 5px;
   }
 
   .table-wrapper {

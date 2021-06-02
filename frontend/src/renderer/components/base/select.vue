@@ -187,6 +187,31 @@ export default {
     width: 100%;
     position: relative;
     min-width: 100px;
+    transition: 3s;
+    &::after {
+      transition: 0.15s;
+      content: '';
+      position: absolute;
+      width: calc(100% + 10px);
+      height: calc(100% + 10px);
+      top: -5px;
+      left: -5px;
+      background-color: transparent;
+      pointer-events: none;
+      border: 0px solid rgba(#B6C7FB, .5);
+      border-radius: 2px;
+      z-index: 2;
+    }
+    &.active {
+      &::after {
+        border: 5px solid rgba(#B6C7FB, .5);
+      }
+      // .custom-select_view {
+      //   outline: 3px solid rgba(#B6C7FB, .7);  
+      //   // border-radius: 2px 1px 1px 1px;
+
+      // }
+    }
   }
   .custom-select_view {
     display: flex;
@@ -200,6 +225,10 @@ export default {
     .darken & {
       background-color: #202532;
       border: 1px solid #5E6F9F;
+    }
+
+    .text-center & {
+      text-align: center;
     }
 
     .sidebar-setting-content & {
@@ -228,6 +257,11 @@ export default {
     }
     .icon--open {
       flex: 0 0 auto;
+      transform-origin: 50% 50%;
+      .text-center & {
+        position: absolute;
+        right: 10px;
+      }
     }
 
     &:focus {
@@ -235,7 +269,7 @@ export default {
     }
 
     &.open-list {
-      border: 1px solid $color-6;
+      border: 1px solid #B6C7FB;
 
       .icon--open {
         transform: rotate(-180deg);
@@ -244,6 +278,7 @@ export default {
     &.text-placeholder {
       font-style: italic;
       font-weight: 300;
+      color: #C4C4C4;
     }
   }
   .custom-select_option-list {
@@ -253,11 +288,11 @@ export default {
     left: 0;
     max-height: 13.5rem;
     overflow: auto;
-    background-color: #363E51;
+    background-color: #3F4C70;
     border-top-left-radius: 0;
     border-top-right-radius: 0;
     border-style: solid;
-    border-color: $color-6;
+    border-color: #B6C7FB;
     border-width: 0 1px 1px 1px;
   }
   .custom-select_separator {
@@ -284,8 +319,18 @@ export default {
     .icon--open {
       margin-left: auto;
     }
-  }
+    .text-center & {
+      justify-content: center;
+    }
+    
+    text-align: center;
 
+  }
+  .action-list_btn-text {
+    .text-center & {
+      margin-right: 0;
+    }
+  }
   .action-list_input {
     position: absolute;
     left: -9999px;
