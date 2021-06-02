@@ -194,7 +194,6 @@ def test_image_preprocessing_vertical_flip(mnist_paths, mnist_images):
     actual = create_pipeline_and_get_sample(vertical_flip=True)
     
     assert (actual == expected).all()
-
     
 
 def test_image_preprocessing_horizontal_and_vertical_flip(mnist_paths, mnist_images):
@@ -247,7 +246,6 @@ def test_image_preprocessing_two_datasets_with_different_seed_are_not_flipped_un
     def apply_pipeline(dataset, seed):        
         feature_spec = MagicMock()
         feature_spec.preprocessing = {'random_flip': {'mode': 'both', 'seed': seed}}
-    
         pipeline, _, _ = ImagePipelineBuilder().build(feature_spec=feature_spec, feature_dataset=dataset)
         processed_dataset = dataset.map(lambda x: pipeline(x))
         return processed_dataset
@@ -296,7 +294,132 @@ def test_image_validation_pipeline_does_not_flip_images(mnist_paths, mnist_image
     assert not all(training_images_match_original) and all(validation_images_match_original)
     
     
+def test_image_validation_pipeline_does_not_flip_images(mnist_paths, mnist_images):
+    dataset = tf.data.Dataset.from_tensor_slices(mnist_paths)
+
+    def apply_validation_pipeline(dataset, flip, training):        
+        feature_spec = MagicMock()
+
+        if flip:
+            feature_spec.preprocessing = {'random_flip': {'mode': 'horizontal', 'seed': 123}}
+        else:
+            feature_spec.preprocessing = {}
+    
+        training_pipeline, validation_pipeline, _ = ImagePipelineBuilder().build(feature_spec=feature_spec, feature_dataset=dataset)
+        pipeline = training_pipeline if training else validation_pipeline
+        
+        processed_dataset = dataset.map(lambda x: pipeline(x))
+        return processed_dataset
+
+    processed1 = apply_validation_pipeline(dataset, flip=False, training=True)    
+    processed2 = apply_validation_pipeline(dataset, flip=True, training=True)
+    processed3 = apply_validation_pipeline(dataset, flip=True, training=False)
+
+    training_images_match_original = [
+        (sample1.numpy() == sample2.numpy()).all()
+        for sample1, sample2 in zip(processed1, processed2)
+    ]
+
+    validation_images_match_original = [
+        (sample1.numpy() == sample3.numpy()).all()
+        for sample1, sample3 in zip(processed1, processed3)
+    ]
+    
+    assert not all(training_images_match_original) and all(validation_images_match_original)
 
     
+def test_image_random_crop_has_correct_shape(mnist_paths):
+    dataset = tf.data.Dataset.from_tensor_slices(mnist_paths)
+
+    height = 10
+    width = 15
+    expected_shape = (height, width, 1)
+
+    feature_spec = MagicMock()
+    feature_spec.preprocessing = {'random_crop': {'height': height, 'width': width, 'seed': 1234}}
+
+    pipeline, _, _ = ImagePipelineBuilder().build(feature_spec=feature_spec, feature_dataset=dataset)
+    processed_dataset = dataset.map(lambda x: pipeline(x))
 
     
+    for sample in processed_dataset:
+        assert sample.shape == expected_shape
+
+    assert pipeline.image_shape == expected_shape  # Verify that the pipeline records shape    
+
+def test_image_random_crop_two_datasets_with_same_seed_are_cropped_uniformly(mnist_paths, mnist_images):
+    dataset1 = tf.data.Dataset.from_tensor_slices(mnist_paths)
+    dataset2 = tf.data.Dataset.from_tensor_slices(mnist_paths)    
+
+    height = 10
+    width = 15
+    
+    def apply_pipeline(dataset, seed):
+        feature_spec = MagicMock()
+        feature_spec.preprocessing = {'random_crop': {'height': height, 'width': width, 'seed': seed}}
+    
+        pipeline, _, _ = ImagePipelineBuilder().build(feature_spec=feature_spec, feature_dataset=dataset)
+        processed_dataset = dataset.map(lambda x: pipeline(x))
+        return processed_dataset
+
+    processed1 = apply_pipeline(dataset1, seed=1234)
+    processed2 = apply_pipeline(dataset2, seed=1234)
+
+    images_matches = [
+        (sample1.numpy() == sample2.numpy()).all()
+        for sample1, sample2 in zip(processed1, processed2)
+    ]
+    assert all(images_matches)
+
+    
+def test_image_random_crop_two_datasets_with_different_seed_are_not_cropped_uniformly(mnist_paths, mnist_images):
+    dataset1 = tf.data.Dataset.from_tensor_slices(mnist_paths)
+    dataset2 = tf.data.Dataset.from_tensor_slices(mnist_paths)    
+
+    height = 10
+    width = 15
+    
+    def apply_pipeline(dataset, seed):
+        feature_spec = MagicMock()
+        feature_spec.preprocessing = {'random_crop': {'height': height, 'width': width, 'seed': seed}}
+    
+        pipeline, _, _ = ImagePipelineBuilder().build(feature_spec=feature_spec, feature_dataset=dataset)
+        processed_dataset = dataset.map(lambda x: pipeline(x))
+        return processed_dataset
+
+    processed1 = apply_pipeline(dataset1, seed=1234)
+    processed2 = apply_pipeline(dataset2, seed=2000)
+
+    images_matches = [
+        (sample1.numpy() == sample2.numpy()).all()
+        for sample1, sample2 in zip(processed1, processed2)
+    ]
+    assert not all(images_matches)
+    
+
+def test_image_random_crop_raises_error_too_high(mnist_paths):
+    dataset = tf.data.Dataset.from_tensor_slices(mnist_paths)
+
+    height = 100
+    width = 15
+    
+    feature_spec = MagicMock()
+    feature_spec.preprocessing = {'random_crop': {'height': height, 'width': width, 'seed': 1234}}
+
+    with pytest.raises(ValueError):
+        pipeline, _, _ = ImagePipelineBuilder().build(feature_spec=feature_spec, feature_dataset=dataset)
+    
+
+def test_image_random_crop_raises_error_too_wide(mnist_paths):
+    dataset = tf.data.Dataset.from_tensor_slices(mnist_paths)
+
+    height = 100
+    width = 15
+    
+    feature_spec = MagicMock()
+    feature_spec.preprocessing = {'random_crop': {'height': height, 'width': width, 'seed': 1234}}
+
+    with pytest.raises(ValueError):
+        pipeline, _, _ = ImagePipelineBuilder().build(feature_spec=feature_spec, feature_dataset=dataset)
+    
+

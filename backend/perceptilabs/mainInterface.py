@@ -594,21 +594,26 @@ class Interface():
 
     def _create_response_model_recommendation(self, request_value):
         """ Loads the data and invokes the model recommender to return a graph spec. Also triggers a MixPanel event """
-        dataset_settings = request_value['datasetSettings']
-        data_loader = DataLoader.from_dict(dataset_settings)
+        response = None
+        try:
+            dataset_settings = request_value['datasetSettings']
+            data_loader = DataLoader.from_dict(dataset_settings)
 
-        graph_spec, training_settings = automation_utils.get_model_recommendation(data_loader)  # TODO(anton.k): in autosettings, send training settings back to frontend
-        json_network = graph_spec.to_dict()
-        
-        tracking.send_model_recommended(
-            request_value['user_email'],
-            request_value['model_id'],
-            request_value['skipped_workspace'],
-            data_loader.feature_specs,
-            graph_spec,
-            is_tutorial_data=data_loader.is_tutorial_data
-        )
-        return json_network
+            graph_spec, training_settings = automation_utils.get_model_recommendation(data_loader)  # TODO(anton.k): in autosettings, send training settings back to frontend
+            response = graph_spec.to_dict()
+        except Exception as e:
+            message = str(e)
+            with self._core.issue_handler.create_issue(message, exception=None, as_bug=False) as issue:
+                self._core.issue_handler.put_error(issue.frontend_message)
+        else:
+            tracking.send_model_recommended(
+                request_value['user_email'],
+                request_value['model_id'],
+                request_value['skipped_workspace'],
+                graph_spec,
+                is_tutorial_data=data_loader.is_tutorial_data
+            )
+        return response
     
     def _create_response_export(self, value, receiver):
         if utils.is_datawizard():

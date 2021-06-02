@@ -34,6 +34,23 @@
             .d-flex.flex-column
               label.form_label.text-left Seed:
               input.form_input(type="text" v-model="options.random_flip.seed")
+          base-checkbox(
+            :isNewUi="true"
+            v-model="options.random_crop.value"
+          ) Random Crop
+          div(
+            class="pl-25"
+            v-if="options.random_crop.value"
+            )
+            .d-flex.flex-column
+              label.form_label.text-left Seed:
+              input.form_input(type="text" v-model="options.random_crop.seed")
+            .d-flex.flex-column
+              label.form_label.text-left Width:
+              input.form_input(type="number" min="1" v-model="options.random_crop.width")
+            .d-flex.flex-column
+              label.form_label.text-left Height:
+              input.form_input(type="number" min="1" v-model="options.random_crop.height")
         footer.d-flex.justify-content-end
           button.btn.btn--primary(
             @click="onSave"
@@ -59,7 +76,8 @@ export default {
       isOpen: false,
       options: {
         normalize: { value: false, type: 'standardization' },
-        random_flip: { value: false, mode: 'both', seed: 123 }
+        random_flip: { value: false, mode: 'both', seed: 123 },
+        random_crop: { value: false, seed: 123, width: 32, height: 32 }
       }
     }
   },
@@ -71,8 +89,17 @@ export default {
   methods: {
     onSave(){
       const saveResponse = {};
-      if(this.dataTypeSelected === 'image' && this.options.random_flip.value) {
-        saveResponse['random_flip'] = this.options.random_flip;
+      if(this.dataTypeSelected === 'image') {
+        if(this.options.random_flip.value) {
+          saveResponse['random_flip'] = this.options.random_flip;  
+        }
+        if(this.options.random_crop.value) {
+          saveResponse['random_crop'] = {
+            seed: parseInt(this.options.random_crop.seed, 10),
+            width: parseInt(this.options.random_crop.width, 10),
+            height: parseInt(this.options.random_crop.height, 10),
+          }
+        }
       }
       if(this.showIfTypeIs(['image', 'numerical']) && this.options.normalize.value) {
         saveResponse['normalize'] = { type: this.options.normalize.type };
@@ -163,5 +190,8 @@ footer {
 }
 .text-left {
   text-align: left;
+}
+.pl-25 {
+  padding-left: 25px;
 }
 </style>

@@ -9,7 +9,6 @@ from perceptilabs.data.pipelines.base import PipelineBuilder
 class ImagePipelineBuilder(PipelineBuilder):
     def build(self, feature_spec=None, feature_dataset=None):
         """ Returns a keras model for preprocessing data
-    
         Arguments:
             feature_spec: information about the feature (e.g., preprocessing settings)
             feature_dataset: optional. Can be used for invoking .adapt() on keras preprocessing layers.
@@ -21,15 +20,24 @@ class ImagePipelineBuilder(PipelineBuilder):
         """
         loader = self._get_file_loader_pipeline(feature_dataset)
         loaded_dataset = feature_dataset.map(lambda x: loader(x))  # File paths -> Image tensors
-        shape = self._get_image_shape(loaded_dataset)
+        original_shape = self._get_image_shape(loaded_dataset)
 
-        normalization = self._get_normalization(feature_spec, loaded_dataset)
+        random_crop = self._get_random_crop(feature_spec, original_shape=original_shape)
+
+        if random_crop:
+            reshaped_dataset = loaded_dataset.map(lambda x: random_crop(x)) 
+            final_shape = self._get_image_shape(reshaped_dataset)
+        else:
+            reshaped_dataset = loaded_dataset            
+            final_shape = original_shape
+        
         random_flip = self._get_random_flip(feature_spec)
+        normalization = self._get_normalization(feature_spec, reshaped_dataset)
     
         class Pipeline(tf.keras.Model):
             def __init__(self, is_training_pipeline):
                 super().__init__()
-                self.image_shape = shape
+                self.image_shape = final_shape
                 self.is_training_pipeline = is_training_pipeline
     
             def call(self, x):
@@ -41,10 +49,38 @@ class ImagePipelineBuilder(PipelineBuilder):
     
                 if self.is_training_pipeline and random_flip:
                     x = random_flip(x)
+
+                if random_crop:
+                    x = random_crop(x)                
                     
                 return x
     
-        return Pipeline(is_training_pipeline=True), Pipeline(is_training_pipeline=False), None 
+        return Pipeline(is_training_pipeline=True), Pipeline(is_training_pipeline=False), None
+    
+
+    def _get_random_crop(self, feature_spec, original_shape):
+        if feature_spec is None:
+            return None
+        
+        if 'random_crop' not in feature_spec.preprocessing:
+            return None
+
+        seed = feature_spec.preprocessing['random_crop']['seed']        
+        height = feature_spec.preprocessing['random_crop']['height']
+        width = feature_spec.preprocessing['random_crop']['width']
+        original_height, original_width, n_channels = original_shape
+
+        
+        if height > original_height:
+            raise ValueError(f"Error in random cropping: Target height ({height}) cannot be greater than original height ({original_height})!")
+        if width > original_width:
+            raise ValueError(f"Error in random cropping: Target width ({width}) cannot be greater than original width ({original_width})!")        
+
+        def random_crop(x):
+            y = tf.image.random_crop(value=x, size=(height, width, n_channels), seed=seed)
+            return y
+        
+        return random_crop
         
     def _get_random_flip(self, feature_spec):
         if feature_spec is None:
@@ -117,4 +153,3 @@ class ImagePipelineBuilder(PipelineBuilder):
     def _get_image_shape(self, loaded_dataset):
         return next(iter(loaded_dataset)).shape  
 
-    

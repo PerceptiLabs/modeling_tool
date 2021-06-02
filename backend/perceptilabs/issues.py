@@ -33,13 +33,17 @@ class Issue:
         caller = inspect.getframeinfo(frame[0])
         module = inspect.getmodule(frame[0])
         location = f'{module.__name__}:{caller.lineno}'
-        
-        self.frontend_message = f"Internal error in {location}: " + self._message
+
+        self.frontend_message = ""
+        if self._as_bug:
+            self.frontend_message += f"Internal error in {location}: "
+            
+        self.frontend_message += self._message
         self.internal_message = self._message + f" (issue origin: {location})"
         
         if self._exception:
             self.internal_message += "\n" + traceback_from_exception(self._exception)
-            self.frontend_message += "\n" + traceback_from_exception(self._exception)            
+            self.frontend_message += "\n" + traceback_from_exception(self._exception)
 
         if self._as_bug:
             self.frontend_message += "\n\nThis will be reported as a bug."            
