@@ -17,12 +17,12 @@ def test_numerical_postprocessing():
     assert actual == expected
 
 
-def test_numerical_normalization():
+def test_normalization_standardization():
     n_samples = 10
     dataset = tf.data.Dataset.from_tensor_slices([i for i in range(n_samples)])
 
     feature_spec = MagicMock()
-    feature_spec.preprocessing = {'normalize': True}
+    feature_spec.preprocessing = {'normalize': {'type': 'standardization'}}    
     
     pipeline, _, _ = NumericalPipelineBuilder().build(feature_spec=feature_spec, feature_dataset=dataset)
     processed_dataset = dataset.map(lambda x: pipeline(x))
@@ -31,4 +31,20 @@ def test_numerical_normalization():
 
     assert np.isclose(batch.mean(), 0, atol=1e-05)
     assert np.isclose(batch.std(), 1, atol=1e-05)
+    
+
+def test_normalization_minmax():
+    n_samples = 10
+    dataset = tf.data.Dataset.from_tensor_slices([i for i in range(n_samples)])
+
+    feature_spec = MagicMock()
+    feature_spec.preprocessing = {'normalize': {'type': 'min-max'}}    
+    
+    pipeline, _, _ = NumericalPipelineBuilder().build(feature_spec=feature_spec, feature_dataset=dataset)
+    processed_dataset = dataset.map(lambda x: pipeline(x))
+
+    batch = next(iter(processed_dataset.batch(n_samples))).numpy()  # Get the full dataset in a batch
+    assert batch.max() == 1.0
+    assert batch.min() == 0.0
+    
     

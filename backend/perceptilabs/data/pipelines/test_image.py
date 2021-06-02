@@ -103,7 +103,7 @@ def test_image_preprocessing_for_tiff(temp_path):
     assert np.all(actual == expected)
 
     
-def test_image_preprocessing_normalization_for_single_sample(temp_path):
+def test_normalize_standard_norm_for_single_sample(temp_path):
     image = np.random.randint(0, 255, size=(16, 16, 3)).astype(np.uint8)
         
     # Create the dataset
@@ -112,7 +112,7 @@ def test_image_preprocessing_normalization_for_single_sample(temp_path):
 
     # Create the pipeline
     feature_spec = MagicMock()
-    feature_spec.preprocessing = {'normalize': True}
+    feature_spec.preprocessing = {'normalize': {'type': 'standardization'}}
     
     pipeline, _, _ = ImagePipelineBuilder().build(feature_spec=feature_spec, feature_dataset=dataset)
     processed_dataset = dataset.map(lambda x: pipeline(x))
@@ -125,6 +125,36 @@ def test_image_preprocessing_normalization_for_single_sample(temp_path):
     assert np.isclose(processed_image.std(), 1.0)    
     
 
+def test_normalize_minmax_norm_for_single_sample(temp_path):
+    max_value = 200
+    min_value = 100
+    
+    image = np.random.randint(min_value, max_value+1, size=(16, 16, 3)).astype(np.uint8)
+    
+    def normalize(x):
+        y = (x - min_value)/(max_value-min_value)
+        return y.astype(np.float32)
+
+    expected_image = normalize(image)
+    
+    # Create the dataset
+    tensor_inputs = save_image_to_disk(image, temp_path, ext='.png', repeats=9)
+    dataset = tf.data.Dataset.from_tensor_slices(tensor_inputs)
+
+    # Create the pipeline
+    feature_spec = MagicMock()
+    feature_spec.preprocessing = {'normalize': {'type': 'min-max'}}
+    
+    pipeline, _, _ = ImagePipelineBuilder().build(feature_spec=feature_spec, feature_dataset=dataset)
+    processed_dataset = dataset.map(lambda x: pipeline(x))
+    
+    actual_image = next(iter(processed_dataset)).numpy()
+
+    assert np.isclose(actual_image, normalize(image)).all()
+    assert actual_image.max() == 1.0  # Since there's only one image, it will contain the max value
+    assert actual_image.min() == 0.0  # Since there's only one image, it will contain the min value
+
+    
 def test_image_preprocessing_horizontal_flip(mnist_paths, mnist_images):
     dataset = tf.data.Dataset.from_tensor_slices(mnist_paths)
 
@@ -266,7 +296,6 @@ def test_image_validation_pipeline_does_not_flip_images(mnist_paths, mnist_image
     assert not all(training_images_match_original) and all(validation_images_match_original)
     
     
-
 
     
 

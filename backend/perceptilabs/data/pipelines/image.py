@@ -72,8 +72,21 @@ class ImagePipelineBuilder(PipelineBuilder):
         if not feature_spec.preprocessing.get('normalize', False):
             return None
 
-        normalization = tf.keras.layers.experimental.preprocessing.Normalization()
-        normalization.adapt(loaded_dataset)
+        normalization = None    
+        if feature_spec and 'normalize' in feature_spec.preprocessing:
+            type_ = feature_spec.preprocessing['normalize']['type']
+            if type_ == 'standardization':
+                normalization = tf.keras.layers.experimental.preprocessing.Normalization()
+                normalization.adapt(loaded_dataset)
+            elif type_ == 'min-max':
+                max_, min_ = 0, 255
+                for image in loaded_dataset:
+                    max_ = max(max_, tf.reduce_max(image).numpy())
+                    min_ = min(min_, tf.reduce_min(image).numpy())
+    
+                def normalization(x):
+                    y = (x - min_)/(max_ - min_)
+                    return y
         return normalization
         
     def _get_file_loader_pipeline(self, feature_dataset):

@@ -114,7 +114,7 @@ export default {
       if (!this.delimiters) { return this.dataSet.map(ds => [ds]); }
 
       const rows = [];
-      
+
       for (const ds of this.dataSet) {
         const subString = [];
         let fast = 0;
@@ -130,7 +130,7 @@ export default {
           }
         }
 
-        if (fast != slow) { 
+        if (fast != slow) {
           subString.push(ds.slice(slow, fast));
         }
 
@@ -168,7 +168,7 @@ export default {
       this.selectedColumns = [];
     },
     handleSelectIsOpen(isSelectOpened) {
-      this.isAnySelectOpened = isSelectOpened;  
+      this.isAnySelectOpened = isSelectOpened;
     },
     handleColumnPreprocessingChange(numColumn, value){
       this.formattedDataset.preprocessingTypes.splice(numColumn, 1, value);
