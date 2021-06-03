@@ -16,9 +16,9 @@ import perceptilabs.tracking as tracking
 
 
 class Exporter:
-    def __init__(self, graph_spec, training_model, model_id=None, user_email=None):
+    def __init__(self, graph_spec, training_model, data_loader, model_id=None, user_email=None):
         self._graph_spec = graph_spec
-        self._data_loader = DataLoader.from_graph_spec(self._graph_spec)
+        self._data_loader = data_loader
         self._training_model = training_model
         self._model_id = model_id
         self._user_email = user_email
@@ -30,14 +30,14 @@ class Exporter:
         return path
 
     @staticmethod
-    def from_disk(path, graph_spec, script_factory, model_id=None, user_email=None):
+    def from_disk(path, graph_spec, script_factory, data_loader, model_id=None, user_email=None):
         if graph_spec is not None and len(os.listdir(graph_spec.layers[0].checkpoint_path)) > 0:
             path = graph_spec.layers[0].checkpoint_path  
 
         training_model = TrainingModel(script_factory, graph_spec)
         weights_path = os.path.join(path, 'model_checkpoint')
         training_model.load_weights(filepath=weights_path)
-        return Exporter(graph_spec, training_model, model_id=model_id, user_email=user_email)
+        return Exporter(graph_spec, training_model, data_loader, model_id=model_id, user_email=user_email)
 
     @property
     def data_loader(self):

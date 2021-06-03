@@ -13,12 +13,12 @@ class LoadInferenceModel():
         self._model = model
         
     @classmethod
-    def from_checkpoint(cls, model_path, graph_spec):
+    def from_checkpoint(cls, model_path, graph_spec, data_loader):
         """
         load model from checkpoint and graphspec
         """
         script_factory = ScriptFactory()
-        exporter = Exporter.from_disk(model_path, graph_spec, script_factory)
+        exporter = Exporter.from_disk(model_path, graph_spec, script_factory, data_loader)
         model = exporter.training_model
         return cls(model)
     

@@ -32,7 +32,7 @@ class GetTestResults():
         self._testcore = testcore
         #TODO(mukund): load data for all the models at once once project hub is up
         
-    def run(self, user_email=None):
+    def run(self, data_loader, user_email=None):
         """
         Runs all the tests for all the models iteratively.
 
@@ -44,11 +44,9 @@ class GetTestResults():
         results = {}
         for receiver_id in self._models_info:
             model_info = self._models_info[receiver_id]
-            self._testcore.load_data(
-                model_info['graph_spec'], model_info['data_path'], method='graph_spec'
-            )
+            self._testcore.load_data(data_loader)
             self._testcore.load_model(
-                receiver_id, model_path=model_info['model_path'], graph_spec=model_info['graph_spec']
+                receiver_id, model_path=model_info['model_path'], graph_spec=model_info['graph_spec'], data_loader=data_loader
             )
 
         unprocessed_results = self._testcore.run_tests(tests=self._tests, user_email=user_email) #TODO(mukund): use corethread to run the tests.

@@ -626,14 +626,15 @@ class Interface():
         mode = self._get_receiver_mode(receiver)
 
         model_id = value['modelId']
-        user_email = value['userEmail']        
+        user_email = value['userEmail']
         
         if mode == 'export_while_training':                    
             response = self._core.exportNetwork(value, graph_spec=None, model_id=model_id)
             return response
         elif mode == 'export_after_training':
             graph_spec = self._network_loader.load(value, as_spec=True)
-            response = self._export_using_exporter(value, path=value['Location'], graph_spec=graph_spec, model_id=model_id, user_email=user_email)
+            dataset_settings = value['datasetSettings']
+            response = self._export_using_exporter(value, dataset_settings, path=value['Location'], graph_spec=graph_spec, model_id=model_id, user_email=user_email)
             return response
         else:
             return {'content':'The model is not trained.'}
@@ -681,13 +682,15 @@ class Interface():
         jsonNetwork = parser.save_json(layer_checkpoint_list[0])
         return jsonNetwork
 
-    def _export_using_exporter(self, value, path, graph_spec, model_id, user_email):
+    def _export_using_exporter(self, value, dataset_settings, path, graph_spec, model_id, user_email):
+        data_loader = DataLoader.from_dict(dataset_settings)
+        
         script_factory = ScriptFactory(
             simple_message_bus=True,
         )
         try:
             exporter = Exporter.from_disk(
-                path, graph_spec, script_factory,
+                path, graph_spec, script_factory, data_loader,
                 model_id=model_id, user_email=user_email
             )
         except:
@@ -709,9 +712,11 @@ class Interface():
             } 
         tests = action["tests"]
         user_email = action['user_email']
+        dataset_settings = action['datasetSettings']
+        data_loader = DataLoader.from_dict(dataset_settings)
         
         logger.info('List of tests %s have been requested for models %s', action['tests'], value.keys())
-        results = GetTestResults(models_info, self._testcore, tests).run(user_email=user_email)
+        results = GetTestResults(models_info, self._testcore, tests).run(data_loader, user_email=user_email)
         response = {'action':action,'value':results}
         return response
     

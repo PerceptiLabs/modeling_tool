@@ -65,13 +65,13 @@ def graph_spec_few_epochs(csv_path):
     return graph_spec
 
 @pytest.fixture()
-def testcore(graph_spec_few_epochs, temp_path, script_factory):
+def testcore(graph_spec_few_epochs, temp_path, script_factory, data_loader):
     training_model = TrainingModel(script_factory, graph_spec_few_epochs)
-    exporter = Exporter(graph_spec_few_epochs, training_model)
+    exporter = Exporter(graph_spec_few_epochs, training_model, data_loader)
     exporter.export_checkpoint(temp_path)
     testcore = TestCore([1], IssueHandler())
-    testcore.load_model(1, temp_path, graph_spec_few_epochs)
-    testcore.load_data(graph_spec_few_epochs, csv_path, method='graph_spec')
+    testcore.load_model(1, temp_path, graph_spec_few_epochs, data_loader)
+    testcore.load_data(data_loader)
     yield testcore
 
 def test_confusion_matrix_computation(testcore, data_loader): 

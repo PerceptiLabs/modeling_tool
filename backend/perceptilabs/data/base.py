@@ -64,24 +64,6 @@ class DataLoader:
         return data_loader        
 
     @classmethod
-    def from_graph_spec(cls, graph_spec, partitions=None):
-        """ Derives a data loader from a graph spec 
-        
-        NOTE: use from_dict instead!
-        """
-        feature_specs = {}
-        for layer_spec in graph_spec.get_ordered_layers():
-            if layer_spec.is_input_layer or layer_spec.is_target_layer:
-                iotype = 'input' if layer_spec.is_input_layer else 'target'
-                
-                feature_specs[layer_spec.feature_name] = FeatureSpec(
-                    iotype=iotype,
-                    datatype=layer_spec.datatype,
-                    file_path=layer_spec.file_path
-                )
-        return cls.from_features(feature_specs, partitions=partitions)
-        
-    @classmethod
     def from_features(cls, feature_specs, file_path=None, partitions=None, randomized_partitions=False, randomized_partitions_seed=None) -> 'DataLoader':
         """ Creates a DataLoader given set of features
 

@@ -634,18 +634,27 @@ def test_calls_cache_put_when_cached_entry_exists(graph_spec_pre_datawiz):
 
 def test_preview_available_for_input_layer(csv_path, x1):
     input_spec = InputLayerSpec(id_='123', feature_name='x1', file_path=csv_path, datatype='numerical')
-    output_spec = OutputLayerSpec(id_='456', feature_name='y1', file_path=csv_path, datatype='numerical')    
+    output_spec = OutputLayerSpec(id_='456', feature_name='y1', file_path=csv_path, datatype='numerical')
+    feature_specs = {
+        'x1': FeatureSpec(iotype='input', datatype='numerical', file_path=csv_path),
+        'y1': FeatureSpec(iotype='target', datatype='numerical', file_path=csv_path)        
+    }    
+    
     graph_spec = GraphSpec([input_spec, output_spec])    
-    lw_core = LightweightCore(data_loader=DataLoader.from_graph_spec(graph_spec))
+    lw_core = LightweightCore(data_loader=DataLoader.from_features(feature_specs))
     results = lw_core.run(graph_spec)
     assert results['123'].sample.get('output') == x1[0]
     
 
 def test_preview_available_for_output_layer(csv_path, y1):
     input_spec = InputLayerSpec(id_='123', feature_name='x1', file_path=csv_path, datatype='numerical')
-    output_spec = OutputLayerSpec(id_='456', feature_name='y1', file_path=csv_path, datatype='numerical')    
+    output_spec = OutputLayerSpec(id_='456', feature_name='y1', file_path=csv_path, datatype='numerical')
+    feature_specs = {
+        'x1': FeatureSpec(iotype='input', datatype='numerical', file_path=csv_path),
+        'y1': FeatureSpec(iotype='target', datatype='numerical', file_path=csv_path)        
+    }    
     graph_spec = GraphSpec([input_spec, output_spec])
-    lw_core = LightweightCore(data_loader=DataLoader.from_graph_spec(graph_spec))
+    lw_core = LightweightCore(data_loader=DataLoader.from_features(feature_specs))
     results = lw_core.run(graph_spec)
     assert results['456'].sample.get('output') == y1[0]    
     

@@ -305,7 +305,7 @@ class Trainer:
     def _create_exporter(self):
         from perceptilabs.exporter.base import Exporter
         exporter = Exporter(
-            self._graph_spec, self._training_model,
+            self._graph_spec, self._training_model, self._data_loader,
             user_email=self._user_email, model_id=self._model_id
         )
         return exporter

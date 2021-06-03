@@ -21,32 +21,23 @@ class TestCore():
         self._receivers = receivers
         self._models = {}
 
-    def load_model(self, receiver_id, model_path, graph_spec):
+    def load_model(self, receiver_id, model_path, graph_spec, data_loader):
         """
         loads model from exported model.pb file or using checkpoints.
         """
         try:
-            self._models[receiver_id] = LoadInferenceModel.from_checkpoint(model_path, graph_spec)
+            self._models[receiver_id] = LoadInferenceModel.from_checkpoint(model_path, graph_spec, data_loader)
             logger.info("model %s loaded successfully.", receiver_id)
         except Exception as e:
             with self._issue_handler.create_issue('Error while loading model', e) as issue:
                 logger.info(issue.internal_message)
                 raise Exception(issue.frontend_message)
 
-    def load_data(self, graph_spec, dataset_path, method):
-        if method == 'graph_spec':
-            self._load_data_from_graphspec(graph_spec, dataset_path)
-
-    def _load_data_from_graphspec(self, graph_spec, dataset_path):
+    def load_data(self, data_loader):
         """
-        Loads data using DataLoader from graph spec.
+        Loads data using DataLoader.
         """
-        partitions = {
-            'training': 0.7, 
-            'validation': 0.2, 
-            'test': 0.1,
-        }
-        self._data_loader = DataLoader.from_graph_spec(graph_spec, partitions)
+        self._data_loader = data_loader
         self._dataspecs = self._get_input_and_output_feature(self._data_loader)
 
     def run_tests(self, tests, user_email=None):

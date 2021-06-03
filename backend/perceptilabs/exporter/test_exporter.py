@@ -68,25 +68,36 @@ def graph_spec_few_epochs(csv_path):
     return graph_spec
 
 
-def test_create_exporter_from_graph(script_factory, graph_spec_few_epochs, temp_path):
+@pytest.fixture()
+def feature_specs(csv_path):
+    feature_specs = {
+        'x1': FeatureSpec(iotype='input', datatype='numerical', file_path=csv_path),
+        'y1': FeatureSpec(iotype='target', datatype='numerical', file_path=csv_path)        
+    }
+    return feature_specs
+
+
+def test_create_exporter_from_graph(script_factory, graph_spec_few_epochs, feature_specs, temp_path):
     # Use data loader to feed data through the model
+    data_loader = DataLoader.from_features(feature_specs)
     training_model = TrainingModel(script_factory, graph_spec_few_epochs)
-    exporter = Exporter(graph_spec_few_epochs, training_model)
+    exporter = Exporter(graph_spec_few_epochs, training_model, data_loader)
     assert exporter is not None
 
 
-def test_save_training_model_weights(script_factory, graph_spec_few_epochs, temp_path):
+def test_save_training_model_weights(script_factory, graph_spec_few_epochs, feature_specs, temp_path):
     # Use data loader to feed data through the model
+    data_loader = DataLoader.from_features(feature_specs)    
     training_model = TrainingModel(script_factory, graph_spec_few_epochs)
     x = {'x1': np.array([1.0, 2.0, 3.0])}
     expected = training_model(x)
 
-    exporter = Exporter(graph_spec_few_epochs, training_model)
+    exporter = Exporter(graph_spec_few_epochs, training_model, data_loader)
 
     exporter.export_checkpoint(temp_path)
     assert len(os.listdir(temp_path)) > 0
 
-    exporter = Exporter.from_disk(temp_path, graph_spec_few_epochs, script_factory)
+    exporter = Exporter.from_disk(temp_path, graph_spec_few_epochs, script_factory, data_loader)
     assert exporter is not None
     
     loaded_training_model = exporter.training_model

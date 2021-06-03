@@ -406,7 +406,8 @@ const actions = {
       receiver: 'tests',
       action: {
         tests: payload.testTypes,
-        user_email: rootGetters['mod_user/GET_userEmail']
+        user_email: rootGetters['mod_user/GET_userEmail'],
+	      datasetSettings: rootGetters['mod_workspace/GET_currentNetworkDatasetSettings']
       },
       value,
     }
@@ -948,7 +949,8 @@ const actions = {
     let payload = await makePayload.call(this, settings, true);
     payload['userEmail'] = rootGetters['mod_user/GET_userEmail'];      
     payload['modelId'] = rootGetters['mod_workspace/GET_currentNetworkId'];
-    
+    payload['datasetSettings'] = rootGetters['mod_workspace/GET_currentNetworkDatasetSettings'];
+      
     if (['Training', 'Validation', 'Paused'].includes(rootGetters['mod_workspace/GET_networkCoreStatus'])) {
       delete payload['Layers'];      
 
