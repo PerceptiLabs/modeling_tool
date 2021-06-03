@@ -1,8 +1,9 @@
 import os
+import collections
 import numpy as np
 import tensorflow as tf
 import skimage.io
-import collections
+import tensorflow_addons as tfa
 
 from perceptilabs.data.pipelines.base import PipelineBuilder
 
@@ -27,6 +28,7 @@ class ImagePipelineBuilder(PipelineBuilder):
         reshaped_dataset, final_shape = self._apply_shape_transformations(shape_transformations, shape_info['mode'], loaded_dataset)  # Things like normalization should be based on the new shape
         
         random_flip = self._get_random_flip(feature_spec)
+        random_rotation = self._get_random_rotation(feature_spec)        
         normalization = self._get_normalization(feature_spec, reshaped_dataset)
     
         class Pipeline(tf.keras.Model):
@@ -45,6 +47,9 @@ class ImagePipelineBuilder(PipelineBuilder):
                 if self.is_training_pipeline and random_flip:
                     x = random_flip(x)
 
+                if self.is_training_pipeline and random_rotation:
+                    x = random_rotation(x)
+                    
                 if normalization:
                     x = normalization(x)    
                     
@@ -123,6 +128,32 @@ class ImagePipelineBuilder(PipelineBuilder):
             return y
         
         return random_crop
+
+    def _get_random_rotation(self, feature_spec):
+        if feature_spec is None:
+            return None
+
+        if 'random_rotation' not in feature_spec.preprocessing:
+            return None
+        
+
+        seed = feature_spec.preprocessing['random_rotation']['seed']
+        factor = feature_spec.preprocessing['random_rotation']['factor']        
+        fill_mode = feature_spec.preprocessing['random_rotation']['fill_mode']
+        fill_value = feature_spec.preprocessing['random_rotation'].get('fill_value', 0.0)      
+        interpolation = 'bilinear'
+
+        number_generator = tf.random.Generator.from_seed(seed)
+
+        def random_rotation(x):
+            scalar_angle = factor * number_generator.normal([])
+            x = tfa.image.rotate(
+                x, angles=scalar_angle, interpolation=interpolation,
+                fill_mode=fill_mode, fill_value=fill_value
+            )                
+            return x
+        
+        return random_rotation
         
     def _get_random_flip(self, feature_spec):
         if feature_spec is None:

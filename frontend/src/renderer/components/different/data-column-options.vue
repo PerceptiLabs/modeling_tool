@@ -60,6 +60,29 @@
                   input.form_input(type="number" min="1" v-model="options.resize.height") 
           base-checkbox(
             :isNewUi="true"
+            v-model="options.random_rotation.value"
+          ) Random rotation
+          div(class="pl-20 d-flex flex-column" v-if="options.random_rotation.value")
+            base-radio(group-name="randomRotationTypeGroup" value-input="reflect" v-model="options.random_rotation.fill_mode")
+              span Reflect
+            base-radio(group-name="randomRotationTypeGroup" value-input="constant" v-model="options.random_rotation.fill_mode")
+              span Constant
+            base-radio(group-name="randomRotationTypeGroup" value-input="wrap" v-model="options.random_rotation.fill_mode")
+              span Wrap
+            base-radio(group-name="randomRotationTypeGroup" value-input="nearest" v-model="options.random_rotation.fill_mode")
+              span Nearest
+            .d-flex.flex-column(v-if="options.random_rotation.fill_mode === 'constant'")
+              label.form_label.text-left Fill value:
+              input.form_input(type="number" v-model="options.random_rotation.fill_value")
+
+            .d-flex.flex-column
+              label.form_label.text-left Factor:
+              input.form_input(type="number" v-model="options.random_rotation.factor")
+            .d-flex.flex-column
+              label.form_label.text-left Seed:
+              input.form_input(type="number" v-model="options.random_rotation.seed")
+          base-checkbox(
+            :isNewUi="true"
             v-model="options.random_crop.value"
           ) Random Crop
           div(
@@ -102,6 +125,7 @@ export default {
         normalize: { value: false, type: 'standardization' },
         random_flip: { value: false, mode: 'both', seed: 123 },
         random_crop: { value: false, seed: 123, width: 32, height: 32 },
+        random_rotation: { value: false, fill_mode: '', fill_value: 0, seed: 123, factor: 0}, // fill_value = reflect|constant - fill_value|wrap|nearest	  
         resize: { value: true, width: 32, height: 32, mode: 'automatic', type: 'mode' }	  
       }
     }
@@ -147,6 +171,18 @@ export default {
             seed: parseInt(this.options.random_crop.seed, 10),
             width: parseInt(this.options.random_crop.width, 10),
             height: parseInt(this.options.random_crop.height, 10),
+          }
+        }
+
+        // Random rotation
+        if(this.options.random_rotation.value) {
+          saveResponse['random_rotation'] = {
+            fill_mode: this.options.random_rotation.fill_mode,
+            seed: parseInt(this.options.random_rotation.seed, 10),
+            factor: parseFloat(this.options.random_rotation.factor),
+          }
+          if(this.options.random_rotation.fill_mode === 'constant') {
+            saveResponse['random_rotation']['fill_value'] = parseFloat(this.options.random_rotation.fill_value);
           }
         }
       }

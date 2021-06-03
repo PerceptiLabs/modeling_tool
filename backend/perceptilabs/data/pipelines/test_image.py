@@ -2,6 +2,7 @@ import pytest
 import tensorflow as tf
 import numpy as np
 import os
+import cv2
 import skimage.io as sk
 import tempfile
 from unittest.mock import MagicMock
@@ -536,6 +537,50 @@ def test_image_resize_automatic_has_max_shape(mnist_paths, cifar10_red_paths, mn
     assert pipeline.image_shape == expected_shape  # Verify that the pipeline records shape    
 
 
+def test_image_rotation_two_datasets_with_different_seed_are_not_rotated_uniformly(mnist_paths, mnist_images):
+    dataset1 = tf.data.Dataset.from_tensor_slices(mnist_paths)
+    dataset2 = tf.data.Dataset.from_tensor_slices(mnist_paths)    
+
+    def apply_pipeline(dataset, seed):        
+        feature_spec = MagicMock()
+        feature_spec.preprocessing = {'random_rotation': {'seed': seed, 'fill_mode': 'reflect', 'factor': 1.0}}
+    
+        pipeline, _, _ = ImagePipelineBuilder().build(feature_spec=feature_spec, feature_dataset=dataset)
+        processed_dataset = dataset.map(lambda x: pipeline(x))
+        return processed_dataset
+
+    processed1 = apply_pipeline(dataset1, seed=1000)
+    processed2 = apply_pipeline(dataset2, seed=2000)
+
+    images_matches = [
+        (sample1.numpy() == sample2.numpy()).all()
+        for sample1, sample2 in zip(processed1, processed2)
+    ]
+    assert not all(images_matches)
+    
+    
+def test_image_rotation_two_datasets_with_same_seed_are_rotated_uniformly(mnist_paths, mnist_images):
+    dataset1 = tf.data.Dataset.from_tensor_slices(mnist_paths)
+    dataset2 = tf.data.Dataset.from_tensor_slices(mnist_paths)    
+
+    def apply_pipeline(dataset, seed):        
+        feature_spec = MagicMock()
+        feature_spec.preprocessing = {'random_rotation': {'seed': seed, 'fill_mode': 'reflect', 'factor': 1.0}}
+    
+        pipeline, _, _ = ImagePipelineBuilder().build(feature_spec=feature_spec, feature_dataset=dataset)
+        processed_dataset = dataset.map(lambda x: pipeline(x))
+        return processed_dataset
+
+    processed1 = apply_pipeline(dataset1, seed=1234)
+    processed2 = apply_pipeline(dataset2, seed=1234)
+
+    images_matches = [
+        (sample1.numpy() == sample2.numpy()).all()
+        for sample1, sample2 in zip(processed1, processed2)
+    ]
+    assert all(images_matches)
+
+    
 def test_image_resize_automatic_has_min_shape(mnist_paths, cifar10_red_paths, mnist_images, cifar10_red_images):
     assert mnist_images[0].shape != cifar10_red_images[0].shape
 
@@ -608,4 +653,3 @@ def test_image_random_crop_raises_error_too_wide(mnist_paths):
     with pytest.raises(ValueError):
         pipeline, _, _ = ImagePipelineBuilder().build(feature_spec=feature_spec, feature_dataset=dataset)
     
-
