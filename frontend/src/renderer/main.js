@@ -61,6 +61,7 @@ import './core/filters'
 
 //- Use component
 import '@/core/plugins/eCharts.js'
+import '@/core/plugins/intercom.js'
 
 Vue.component('base-checkbox', BaseCheckbox);
 Vue.component('base-radio', BaseRadiobutton);

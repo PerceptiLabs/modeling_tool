@@ -10,5 +10,6 @@ module.exports = {
   GITHUB_CLIENT_ID: '"094271b0edb47c75dc24"',
   ENABLE_LOGROCKET: '"true"',
   LOGROCKET_APP_ID: '"l2mogl/modeling-tool"',
-  ENABLE_DATAWIZARD: '"true"'    
+  ENABLE_DATAWIZARD: '"true"',
+  INTERCOM_ID: '"ujvkp2qi"',
 }

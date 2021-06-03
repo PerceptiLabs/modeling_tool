@@ -14,5 +14,6 @@ module.exports = merge(prodEnv, {
   PL_FILE_SERVING_TOKEN: '"12312"',
   ENABLE_LOGROCKET: '"false"',
   LOGROCKET_APP_ID: '"l2mogl/modeling-tool"',
-  ENABLE_DATAWIZARD: '"true"'
+  ENABLE_DATAWIZARD: '"true"',
+  INTERCOM_ID: '"ujvkp2qi"',
 })

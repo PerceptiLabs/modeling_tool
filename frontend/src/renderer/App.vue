@@ -99,6 +99,10 @@
       
     },
     mounted() {
+      this.$intercom.boot({
+        hide_default_launcher: true
+      });
+
       this.getPyPiUpdate();
 
       if (this.isDefaultProjectMode) { 
@@ -179,6 +183,7 @@
       }),
       ...mapGetters({
         user:                   'mod_user/GET_userProfile',
+        email:                  'mod_user/GET_userEmail',
         isDefaultProjectMode:   'mod_project/GET_isDefaultProjectMode',
         currentProject:         'mod_project/GET_project',
         viewType:               'mod_workspace/GET_viewType',
@@ -350,6 +355,7 @@
           this.trackerCreateUser(newVal);
           this.trackerUpdateUser(newVal);
           this.trackerInitUser(newVal);
+          this.initIntercom();
         }, 5000);
       },
       currentProject: {
@@ -561,6 +567,13 @@
         } else if (viewType === 'test') {
           this.setCurrentView('tutorial-test-view');
         }
+      },
+
+      initIntercom() {
+        this.$intercom.update({
+          name: this.email,
+          email: this.email,
+        });
       }
     },
   }
