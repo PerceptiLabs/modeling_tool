@@ -155,7 +155,6 @@ class Trainer:
 
     def _loop_over_dataset(self, model, loss_functions, dataset, set_num_batches_completed_this_epoch, is_training=True, optimizer=None):
         """ Loop over all batches of data once """
-        
         for steps_completed, (inputs_batch, targets_batch) in enumerate(dataset):
             predictions_batch, trainables_by_layer, gradients_by_layer, final_and_intermediate_outputs_by_layer, \
                 total_loss, individual_losses = self._work_on_batch(
@@ -571,14 +570,30 @@ class Trainer:
 
     def _resolve_optimizer(self, training_settings):
         optimizer = training_settings['Optimizer']
+        learning_rate = training_settings['Learning_rate']
+        momentum = training_settings['Momentum']
+        beta_1 = training_settings['Beta1']
+        beta_2 = training_settings['Beta2']
+        centered = training_settings['Centered']
+
+
+        if isinstance(learning_rate, str):
+            learning_rate = float(learning_rate)
+        if isinstance(momentum, str):
+            momentum = float(momentum)
+        if isinstance(beta_1, str):
+            beta_1 = float(beta_1)
+        if isinstance(beta_2, str):
+            beta_2 = float(beta_2)
+
         if optimizer == 'SGD':
-            return tf.keras.optimizers.SGD(learning_rate=training_settings['Learning_rate'], momentum=training_settings['Momentum'])
+            return tf.keras.optimizers.SGD(learning_rate=learning_rate, momentum=momentum)
         elif optimizer == 'ADAM':
-            return tf.keras.optimizers.Adam(learning_rate=training_settings['Learning_rate'], beta_1=training_settings['Beta1'], beta_2=training_settings['Beta2'])
+            return tf.keras.optimizers.Adam(learning_rate=learning_rate, beta_1=beta_1, beta_2=beta_2)
         elif optimizer == 'Adagrad':
-            return tf.keras.optimizers.Adagrad(learning_rate=training_settings['Learning_rate'])
+            return tf.keras.optimizers.Adagrad(learning_rate=learning_rate)
         elif optimizer == 'RMSprop':
-            return tf.keras.optimizers.RMSprop(learning_rate=training_settings['Learning_rate'], centered=training_settings['Centered'])
+            return tf.keras.optimizers.RMSprop(learning_rate=learning_rate, centered=centered)
 
     def _resolve_loss_function(self, training_settings):
         loss = training_settings['Loss']
