@@ -35,6 +35,30 @@
               label.form_label.text-left Seed:
               input.form_input(type="text" v-model="options.random_flip.seed")
           base-checkbox(
+            v-model="options.resize.value" :isNewUi="true") Resize
+          div(class="pl-20" v-if="options.resize.value")
+            div.d-flex.flex-column
+              base-radio(group-name="resizeType" value-input="automatic" v-model="options.resize.mode")
+                span Automatic
+              div.pl-20.d-flex.flex-column(v-if="options.resize.mode === 'automatic'")
+                base-radio(group-name="resizeAutomaticType" value-input="mode" v-model="options.resize.type")
+                  span Dataset mode
+                base-radio(group-name="resizeAutomaticType" value-input="mean" v-model="options.resize.type")
+                  span Dataset mean
+                base-radio(group-name="resizeAutomaticType" value-input="max" v-model="options.resize.type")
+                  span Dataset max
+                base-radio(group-name="resizeAutomaticType" value-input="min" v-model="options.resize.type")
+                  span Dataset min
+              base-radio(group-name="resizeType" value-input="custom" v-model="options.resize.mode")
+                span Custom
+              div.pl-20.d-flex.flex-column(v-if="options.resize.mode === 'custom'")
+                .d-flex.flex-column
+                  label.form_label.text-left Width:
+                  input.form_input(type="number" min="1" v-model="options.resize.width")
+                .d-flex.flex-column
+                  label.form_label.text-left Height:
+                  input.form_input(type="number" min="1" v-model="options.resize.height") 
+          base-checkbox(
             :isNewUi="true"
             v-model="options.random_crop.value"
           ) Random Crop
@@ -77,7 +101,8 @@ export default {
       options: {
         normalize: { value: false, type: 'standardization' },
         random_flip: { value: false, mode: 'both', seed: 123 },
-        random_crop: { value: false, seed: 123, width: 32, height: 32 }
+        random_crop: { value: false, seed: 123, width: 32, height: 32 },
+        resize: { value: true, width: 32, height: 32, mode: 'automatic', type: 'mode' }	  
       }
     }
   },
@@ -86,6 +111,9 @@ export default {
       return this.columnSelectedType[this.index];
     }
   },
+  mounted() {
+    this.onSave();
+  },
   methods: {
     onSave(){
       const saveResponse = {};
@@ -93,6 +121,27 @@ export default {
         if(this.options.random_flip.value) {
           saveResponse['random_flip'] = this.options.random_flip;  
         }
+        if(this.options.resize.value) {
+
+          const isAutomaticType = this.options.resize.mode === 'automatic';
+          const isCustomType = this.options.resize.mode === 'custom';
+
+          if(isAutomaticType) {
+            saveResponse['resize'] = {
+              mode: this.options.resize.mode,
+              type: this.options.resize.type
+            }
+          }
+
+          if(isCustomType) {
+            saveResponse['resize'] = {
+              mode: this.options.resize.mode,
+              width: parseInt(this.options.resize.width, 10),
+              height: parseInt(this.options.resize.height, 10)
+            }
+          }
+          
+	      }
         if(this.options.random_crop.value) {
           saveResponse['random_crop'] = {
             seed: parseInt(this.options.random_crop.seed, 10),
@@ -186,6 +235,9 @@ footer {
   padding: 0 !important;
 }
 .image-random-option-select {
+  padding-left: 20px;
+}
+.pl-20 {
   padding-left: 20px;
 }
 .text-left {

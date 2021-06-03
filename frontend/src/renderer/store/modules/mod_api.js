@@ -407,7 +407,7 @@ const actions = {
       action: {
         tests: payload.testTypes,
         user_email: rootGetters['mod_user/GET_userEmail'],
-	      datasetSettings: rootGetters['mod_workspace/GET_currentNetworkDatasetSettings']
+        datasetSettings: rootGetters['mod_workspace/GET_currentNetworkDatasetSettings']
       },
       value,
     }
