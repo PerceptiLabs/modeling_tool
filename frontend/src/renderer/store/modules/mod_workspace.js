@@ -1962,37 +1962,9 @@ const actions = {
       resolve();
     });
   },
-  DELETE_network({commit, dispatch}, index) {
-    return new Promise(resolve => {
-
-      if(isElectron()) {
-        const networkID = state.workspaceContent[index].networkID;
-        commit('delete_network', index);
-        dispatch('mod_api/API_closeCore', networkID, { root: true });
-      } else {
-        // API_closeCore stops the process in the core
-        const network = state.workspaceContent[index];
-        dispatch('mod_api/API_closeCore', network.networkID, { root: true });
-
-        if (index === state.currentNetwork) {
-
-          if (state.workspaceContent.length === 1) {
-            commit('set_lastActiveTabInLocalStorage', '');
-          } else if (index === 0) {
-            commit('set_lastActiveTabInLocalStorage', state.workspaceContent[index + 1].networkID);
-          } else {
-            commit('set_lastActiveTabInLocalStorage', state.workspaceContent[index - 1].networkID);
-          }
-        }
-
-      }
-      const modelApiMeta = state.workspaceContent[index].apiMeta;
-      dispatch('mod_project/deleteModel', modelApiMeta, {root: true});
-      // call the delete model api
-      commit('delete_network', index);
-      dispatch('mod_webstorage/updateWorkspaces', null, { root: true });
-      resolve();
-    })
+  DELETE_network({dispatch}, index) {
+    const networkID = state.workspaceContent[index].networkID;
+    return dispatch('DELETE_networkById', networkID);
   },
   DELETE_networkById({commit, dispatch}, networkId) {
     return new Promise(resolve => {
