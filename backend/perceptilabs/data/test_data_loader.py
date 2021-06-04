@@ -293,3 +293,26 @@ def test_shuffle_gives_random_data():
     assert data_unshuffled_1 != data_shuffled_1
     assert data_unshuffled_1 != data_shuffled_2
     assert data_shuffled_1 != data_shuffled_2            
+
+
+def test_data_loader_from_dict_without_preprocessing(temp_path):
+    csv_path = os.path.join(temp_path, 'data.csv')
+    f = open(csv_path, "x")    
+    f.write("x,y\n")
+    f.write("123.0,0\n")
+    f.write("400.0,1\n")
+    f.close()
+
+    
+    data_loader = DataLoader.from_dict({
+        'featureSpecs': {
+            'x': {'iotype': 'input', 'datatype': 'numerical', 'csv_path': csv_path},
+            'y': {'iotype': 'target', 'datatype': 'categorical', 'csv_path': csv_path},
+        },
+        'partitions': [100.0, 0.0, 0.0],
+        'randomizedPartitions': False
+    })
+
+    feature_specs = data_loader.feature_specs
+    assert feature_specs['x'].preprocessing == {}
+    assert feature_specs['y'].preprocessing == {}    

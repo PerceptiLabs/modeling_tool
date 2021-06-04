@@ -46,7 +46,7 @@ class DataLoader:
             feature_specs[feature_name] = FeatureSpec(
                 iotype=feature_dict['iotype'].lower(),
                 datatype=feature_dict['datatype'].lower(),
-                preprocessing=feature_dict['preprocessing'],                
+                preprocessing=feature_dict.get('preprocessing'),                
                 file_path=feature_dict['csv_path']
             )
 
