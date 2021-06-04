@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-[ $# -eq 2 ] || {
+[ $# -eq 3 ] || {
   echo "USAGE: $0 <branch> <version> <remote-name>"
   exit 1
 }
@@ -12,13 +12,15 @@ REMOTE=$3
 TAG=pip_$VERSION
 
 prep_git(){
-  if ! git remote | grep $REMOTE ; then
+  if ! git remote | grep --quiet $REMOTE ; then
     echo "Remote $REMOTE isn't set up. Check your parameters."
     exit 1
   fi
 
+  echo "Fetching from $REMOTE"
   git fetch $REMOTE
-  git fetch --tags
+  git fetch $REMOTE --tags
+  echo "done fetching"
 
   if git show $TAG 2>/dev/null | grep -q . ; then
     echo "Tag $TAG has already been set. You'll have to release manually."
@@ -34,16 +36,18 @@ prep_git(){
 git_work(){
   git checkout $BRANCH
   git reset --hard $REMOTE/$BRANCH
+  root_dir=$(git rev-parse --show-toplevel)
 
-  if ! cat "${root_dir}/VERSION" | grep -v "${VERSION}" ; then
+  existing=$(cat "${root_dir}/VERSION")
+  if ! echo "${existing}" | grep --quiet -v "${VERSION}" ; then
     echo "VERSION file is already set to ${VERSION}. You'll have to release manually."
     exit 1
   fi
 
-  root_dir=$(git rev-parse --show-toplevel)
 
   echo "${VERSION}" > "${root_dir}/VERSION"
-  git add VERSION
+  echo "Set the VERSION file to ${VERSION}"
+  git add "${root_dir}/VERSION"
   git commit -m "Bumped version to ${VERSION}"
   git push $REMOTE HEAD
   git tag $TAG
