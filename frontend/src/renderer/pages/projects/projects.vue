@@ -416,7 +416,9 @@
           this.showInfoPopup("Kernel is offline");
           return;
         }
-
+        if(!this.isAtLeastOneItemSelected()) {
+          return;
+        }
         this.selectedListIds.forEach(id => {
           this.$store.commit('mod_workspace/update_network_meta', {key: 'hideModel', networkID: id, value: false});
           const index = this.workspaceContent.findIndex(wc => wc.networkID == id);
