@@ -138,7 +138,7 @@
                 @click="openFilePicker('setDataPath')"
                 :data-tutorial-target="'tutorial-data-wizard-load-csv'"
               ) Load .CSV
-          div.find-out-message Find out starting guide 
+          div.find-out-message Find our starting guide 
             span.guide-link(@click="openPLVideoTutorialPage") here.
         div(v-else)
           .dataset-settings(v-show="onStep === 2")
