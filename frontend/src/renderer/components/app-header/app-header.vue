@@ -130,6 +130,8 @@ export default {
       trackHelpOption:      'mod_tracker/TRACK_helpOption',
       setActivePageAction:  'modal_pages/setActivePageAction',
       openErrorPopup:       'globalView/GP_infoPopup',
+      trackQuestionMark:    'mod_tracker/TRACK_questionMark',
+      trackIntercom:        'mod_tracker/TRACK_toggleIntercom',
     }),
     setLoading(value) {
       this.isLoading = value;
@@ -145,6 +147,9 @@ export default {
     },
     toggleHelp(value = null) {
       this.showHelpPanel = !!value;
+      if (value) {
+        this.trackQuestionMark()
+      }
     },
     toggleTutorialTips() {
       this.setTips(!this.showTips);
@@ -169,8 +174,10 @@ export default {
     },
     onToggleIntercom() {
       if (this.$intercom.visible) {
+        this.trackIntercom({action: 'hide'});
         this.$intercom.hide();
       } else {
+        this.trackIntercom({action: 'show'});
         this.$intercom.show();
       }
     }

@@ -249,6 +249,14 @@ const actions = {
   EVENT_cloudError({}, data) {
     mixPanel.track('Cloud Error', data);
   },
+  
+  // Question mark and Intercom
+  TRACK_questionMark({}) {
+    mixPanel.track('Click question mark');
+  },
+  TRACK_toggleIntercom({}, data) {
+    mixPanel.track('Toggle Intercom', data);
+  }
 };
 
 export default {
