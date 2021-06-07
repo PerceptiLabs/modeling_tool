@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+MYDIR="$(pwd)"
+
+delete_existing(){
+  docker-compose down --remove-orphans
+  echo $MYDIR
+  rm -rf $(pwd)/* || {
+    echo "couldn't delete previous installation"
+      exit 1
+    }
+
+  [ ! -d "$(pwd)/plabsdb" ] || {
+    echo "plabsdb wasn't deleted"
+      exit 1
+    }
+}
+
+# we can fake an images tar for quick round-tripping with the tiny hello-world image
+# The installer will load that into docker and then run docker-compose, which will just use the images that were already therre
+# This way we can use the local migrations by just tarballing them and pretending they were dropped in by the airgapped package
+make_fake_images(){
+  docker save hello-world --output images.tar
+}
+
+tarball_system_migrations(){
+  REPO_ROOT=$(git rev-parse --show-toplevel)
+  pushd ${REPO_ROOT}/docker/compose
+  tar czvf "$MYDIR/system_migrations.tar.gz" system_migrations
+  cp install_perceptilabs_enterprise "$MYDIR"
+  popd
+}
+
+run_installer(){
+  sudo CONTAINER_REGISTRY=dev VERSION=latest KC_ROOT_USER=admin KC_ROOT_PWD=admin KC_FIRST_USER=a@a.aaa KC_INITIAL_PWD=x ./install_perceptilabs_enterprise -a images.tar
+}
+
+main(){
+  sudo -p "Sudo is required. Pleas enter the password: " echo -n ""
+  # To simulate an upgrade, just comment out the call to delete_existing
+  delete_existing
+  make_fake_images
+  tarball_system_migrations
+  run_installer
+}
+
+[ "${BASH_SOURCE[0]}" != "${0}" ] ||
+  main

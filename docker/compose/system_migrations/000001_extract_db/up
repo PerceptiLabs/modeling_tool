@@ -1,0 +1,175 @@
+#!/usr/bin/env bash
+set -euo pipefail
+. $(dirname $(dirname $0))/common
+
+finish_and_exit(){
+  mydir=$(dirname $0)
+
+  customize_docker_compose_file "${mydir}/docker-compose-after.yml"
+  cp ${mydir}/docker-compose-after.yml ${PL_ROOT_DIR}/docker-compose.yml
+
+  mkdir -p plabsdb
+
+  # TODO: can we give ownership to docker and not make it 777?
+  chmod -R 777 plabsdb
+  exit 0
+}
+
+finish_and_exit(){
+  mydir=$(dirname $0)
+  cp ${mydir}/docker-compose-after.yml ${PL_ROOT_DIR}/docker-compose.yml
+  mkdir -p plabsdb
+
+  # TODO: can we give ownership to docker and not make it 777?
+  chmod -R 777 plabsdb
+  exit 0
+}
+
+short_circuit(){
+  if ls plabsdb 2>/dev/null | grep -q .; then
+    echo "Export is already completed. Skipping."
+    exit 0
+  fi
+}
+
+get_db_service_name(){
+  db_service_name=$(docker-compose ps | grep _db_ |  cut -d' ' -f 1)
+
+  # If there's no db service, then it's safe to create the db directory
+  if [ -z "${db_service_name}" ]; then
+    return 0
+  fi
+
+  # Don't proceed if we can't pick one db.
+  num_db_services=$(echo "${db_service_name}" | wc -l | tr -d ' ')
+  if [ "${num_db_services}" -gt 1 ]; then
+    echo "There appears to be more than one PerceptiLabs database services. Manual intervention is required." >&2
+    exit 1
+  fi
+
+  echo ${db_service_name}
+  return 0
+}
+
+get_network_name(){
+  db_service=$1
+
+  NETWORK_NAME_TEMPLATE='{{range $k, $v := .NetworkSettings.Networks}}{{$k}}{{end}}'
+
+  # Get the docker network of the one db service
+  db_networks=$(docker inspect $db_service --format "${NETWORK_NAME_TEMPLATE}")
+
+  # Don't proceed if we didn't find exactly one network to join later.
+  num_networks=$(echo "${db_networks}" | wc -l | tr -d ' ')
+  if [ "${num_networks}" -lt 1 ]; then
+    echo "The PerceptiLabs database isn't on a docker network. Manual intervention is required." >&2
+    exit 1
+  elif [ "${num_networks}" -gt 1 ]; then
+    echo "The PerceptiLabs database is on more than one docker network. Manual intervention is required." >&2
+    exit 1
+  fi
+
+  echo "${db_networks}"
+  return 0
+}
+
+check_db_ready(){
+  network_name=$1
+  # If we find users w/ the system running on a different network, then they'll need to do things by hand.
+  sudo docker network ls --format "{{.Name}}" --filter "name=${network_name}" | grep -q "${network_name}" || {
+    echo "The docker network '${network_name}' doesn't exist. Assuming previous version wasn't installed."
+    finish_and_exit
+  }
+
+  sudo docker run -it \
+    --network ${network_name} \
+    -e "PGDATABASE=rygg" \
+    -e "PGUSER=rygg" \
+    -e "PGPASSWORD=rygg" \
+    -e "PGHOST=db" \
+    postgres:12 \
+    sh -c "pg_isready > /dev/null" \
+  || {
+    echo "Database isn't ready"
+    return 1
+  }
+}
+
+make_db_dump(){
+  network_name=$1
+
+  mkdir -p dbdump
+
+  echo -n "Making database dumpfile..."
+  # Do the db dump
+  sudo docker run -it \
+    --network ${network_name} \
+    -e "PGDATABASE=rygg" \
+    -e "PGUSER=rygg" \
+    -e "PGPASSWORD=rygg" \
+    -e "PGHOST=db" \
+    postgres:12 \
+    pg_dumpall > dbdump/dbdump.sql
+  green " done"
+}
+
+get_free_port(){
+  # We need a free port for talking to keycloak
+  ret=$1
+  while nc -z 127.0.0.1 $ret &>/dev/null; do
+    ret=$(($ret+1))
+  done
+  echo $ret
+  return 0
+}
+
+is_startup_complete(){
+  # use nc instead of curl since pg isn't an http service
+  nc -z 127.0.0.1 $1 &>/dev/null || return 1
+}
+
+# run the db with the dbdump mounted in docker-entrypoint-initdb.d so that it can be used to initialize the db
+# in a locally-accessible directory
+load_dump_into_mounted_dir(){
+  pgport=$(get_free_port 5432)
+  echo -n "Starting import into new db..."
+  sudo docker run -it \
+    --rm \
+    -v $(pwd)/dbdump:/docker-entrypoint-initdb.d \
+    -v $(pwd)/plabsdb:/var/lib/postgresql/data \
+    -e "PGDATA=/var/lib/postgresql/data/data" \
+    -e "POSTGRES_PASSWORD=rygg" \
+    -p ${pgport}:5432 \
+    --name upgrader \
+    --detach \
+    postgres:12 > /dev/null
+  green "running"
+
+  poll 100 2 "Waiting for migration to complete" is_startup_complete $pgport ||
+    error "Timed out"
+}
+
+stop_upgrader(){
+  sudo docker stop upgrader > /dev/null
+}
+
+main(){
+
+  assert_required_variables
+  short_circuit
+
+  db_service_name=$(get_db_service_name)
+  [ -n "${db_service_name}" ] ||
+    finish_and_exit
+
+  network_name=$(get_network_name ${db_service_name})
+
+  check_db_ready "${network_name}"
+  make_db_dump "${network_name}"
+  load_dump_into_mounted_dir
+  stop_upgrader
+  finish_and_exit
+}
+
+[ "${BASH_SOURCE[0]}" != "${0}" ] ||
+  main

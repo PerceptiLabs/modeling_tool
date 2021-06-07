@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+. $(dirname $0)/common
+
+is_perceptilabs_installed(){
+  [ -d "${PL_ROOT_DIR}/plabs" ]
+}
+
+run_migrations(){
+  if is_perceptilabs_installed; then
+    system_migrations/000001_extract_db/up
+    system_migrations/000002_named_network/up
+    system_migrations/000003_init_kc/up
+  else
+    system_migrations/all/up
+  fi
+}
+
+main(){
+  assert_required_variables
+  run_migrations
+  sudo docker-compose up -d
+}
+
+[ "${BASH_SOURCE[0]}" != "${0}" ] ||
+  main

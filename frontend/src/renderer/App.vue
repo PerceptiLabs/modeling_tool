@@ -54,8 +54,9 @@
   import ModalPagesEngine       from '@/components/modal-pages-engine.vue';
   import AboutAppPopup          from "@/components/global-popups/about-app-popup.vue";
   import FilePickerPopup        from "@/components/global-popups/file-picker-popup.vue";
-  import { MODAL_PAGE_PROJECT, MODAL_PAGE_QUESTIONNAIRE, IS_VALID_KEYCLOACK_CHECKER_URL } from '@/core/constants.js';
+  import { MODAL_PAGE_PROJECT, MODAL_PAGE_QUESTIONNAIRE } from '@/core/constants.js';
   import { isUrlReachable } from '@/core/apiFileserver.js';
+  import { isKeycloakReachable } from '@/core/apiKeyCloak.js';
 
   export default {
     name: 'TheApp',
@@ -135,8 +136,7 @@
       this.$store.dispatch('mod_tutorials/loadTutorialProgress')
         .then(async () => {
           if (this.isUserFirstLogin) {
-            const isKeycloackReachable = await isUrlReachable(IS_VALID_KEYCLOACK_CHECKER_URL);
-            if (!process.env.NO_KC && isKeycloackReachable){
+            if (!process.env.NO_KC && isKeycloakReachable()){
               this.setActivePageAction(MODAL_PAGE_QUESTIONNAIRE);
             }
 

@@ -14,7 +14,7 @@ import NoInternetConnection from '@/pages/NoInternetConnection.vue'
 import router from './router'
 import store  from './store'
 import { setAppTypeRootClasses, setCookie, getCookie } from "@/core/helpers";
-import { isDevelopMode, IS_VALID_KEYCLOACK_CHECKER_URL } from '@/core/constants.js'
+import { isDevelopMode } from '@/core/constants.js'
 
 //- Global components
 import BaseCheckbox     from '@/components/base/checkbox.vue'
@@ -30,6 +30,7 @@ import 'vue2-perfect-scrollbar/dist/vue2-perfect-scrollbar.css'
 import { parseJWT } from '@/core/helpers'
 import Analytics from '@/core/analytics';
 import { isUrlReachable } from '@/core/apiFileserver.js';
+import { keyCloak } from '@/core/apiKeyCloak.js';
 
 //Vue.http = Vue.prototype.$http = axios;
 Vue.config.devtools = isDevelopMode;
@@ -117,16 +118,12 @@ function setTokens(store, token, refreshToken) {
 
 export let keycloak;
 async function login(){
-  const isKeycloackReachable = await isUrlReachable(IS_VALID_KEYCLOACK_CHECKER_URL);
 
-  if(!isKeycloackReachable) {
-    demo();
-    return;
-  } 
+  let url = await keyCloak.url();
   let initOptions = {
-    url: `${process.env.KEYCLOACK_BASE_URL}/auth`, 
-    realm: `${process.env.KEYCLOACK_RELM}`, 
-    clientId: `${process.env.KEYCLOACK_CLIENT_ID}`, 
+    url: `${url}`,
+    realm: `${process.env.KEYCLOAK_REALM}`,
+    clientId: `${process.env.KEYCLOAK_CLIENT_ID}`, 
     onLoad:'login-required',
     checkLoginIframe: false // only true when onLoad is set to 'check-sso', causes errors when offline
   }
@@ -156,14 +153,12 @@ async function login(){
     });
 }
 
-
-// Allow running w/o login for a hard-coded user
-// TODO: this will be removed after creating a local docker-based keycloak login realm
+// Allow running w/o login for a hard-coded user when the frontend is built with NO_KC set to 'true'
 function demo(){
   const user = {
     given_name: "John",
     family_name: "Doe",
-    email: "a@a.test",
+    email: "modeler@perceptilabs.test",
     userId: 1,
   }
 
@@ -181,21 +176,19 @@ function renderNoInternetConnectionPage() {
   }).$mount('#app');
 }
 
-
 (async function main () {
   try {
     const loggedInUser = getCookie('loggedInUser');
-    const isKeycloackReachable = await isUrlReachable(IS_VALID_KEYCLOACK_CHECKER_URL);
-
+    const isKeycloakReachable = await keyCloak.isReachable();
     if (process.env.NO_KC == 'true') {
       demo();
-    } else if(isKeycloackReachable) {
+    } else if(isKeycloakReachable) {
       login();
-    } else if(loggedInUser && !isKeycloackReachable) {
+    } else if(loggedInUser && !isKeycloakReachable) {
       runApp(loggedInUser, 'placeholder');
     } else {
       renderNoInternetConnectionPage();
-    }    
+    }
   } catch(err){
     console.error(err)
   }

@@ -33,7 +33,7 @@ export const KERNEL_PORT = 5000
 export const GITHUB_AUTHORIZE_URL = `https://github.com/login/oauth/authorize?scope=public_repo,read:user&client_id=${process.env.GITHUB_CLIENT_ID}`;
 export const GITHUB_GET_TOKEN_BY_CODE_URL = 'https://ghsk.azurewebsites.net'
 
-export const IS_VALID_KEYCLOACK_CHECKER_URL = `${process.env.KEYCLOACK_BASE_URL}/auth/realms/${process.env.KEYCLOACK_RELM}/protocol/openid-connect/3p-cookies/step1.html`;
+export const KEYCLOAK_REALM_PATH = `/realms/${process.env.KEYCLOAK_REALM}`;
 
 export const PERCEPTILABS_DOCUMENTATION_URL = 'https://docs.perceptilabs.com/perceptilabs';
 export const PERCEPTILABS_YOUTUBE_VIDEO_TUTORIAL_URL = 'https://www.youtube.com/watch?v=IDC_uHfdpnw&list=PLhDSeRDt1gigF-8DrTBedYy3TMZ2OelqA';

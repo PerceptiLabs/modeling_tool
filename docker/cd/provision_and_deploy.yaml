@@ -210,8 +210,15 @@
         mode: '0500'
 
     - name: Run the installer on the new server
+      become: yes
       command:
         cmd: "{{ ansible_env.HOME }}/install_perceptilabs_enterprise --noreboot --headless --drivers allow"
+      environment:
+        KC_ROOT_USER: admin
+        KC_ROOT_PWD: admin
+        KC_FIRST_USER: first@user.test
+        KC_INITIAL_PWD: resetme
+        HOME: "{{ ansible_env.HOME }}"
       # the long-running installer causes the ssh connection to time out. Poll instead.
       async: 3600
       poll: 15

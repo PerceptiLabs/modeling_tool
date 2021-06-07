@@ -1,127 +1,136 @@
 #!/usr/bin/env bash
-set -Eeo pipefail
+set -euo pipefail
 
 ###################################################################################################
 # Constants
-VERSION=INVALID
+export CONTAINER_REGISTRY="${CONTAINER_REGISTRY:-INVALID_REGISTRY}"
+export PL_VERSION="${PL_VERSION:-INVALID_VERSION}"
 DOCKER_USERNAME=enterpriseuser
-CONTAINER_REGISTRY=perceptilabsenterprise.azurecr.io
 AZURE_BLOB_URL=https://perceptilabs.blob.core.windows.net/enterprise
-CONFIG_DIR="${HOME}/.perceptilabs"
-CONFIG_FILE="${CONFIG_DIR}/config"
+
 REQUIRED_NVIDIA_VERSION=450
 REQUIRED_DOCKER_VERSION=20
 DOCKER_COMPOSE_INSTALLER="https://github.com/docker/compose/releases/download/1.28.5/docker-compose-$(uname -s)-$(uname -m)"
-DOCKER_COMPOSE_URL=${AZURE_BLOB_URL}/${VERSION}/docker-compose.yml
-NGINX_CONF_URL=${AZURE_BLOB_URL}/${VERSION}/nginx.conf
+
+CONFIG_DIR="${HOME}/.perceptilabs"
+CONFIG_FILE="${CONFIG_DIR}/config"
+MIGRATIONS_URL=${AZURE_BLOB_URL}/${PL_VERSION}/system_migrations.tar.gz
+
+export PL_ROOT_DIR=$(pwd)
+MYDIR=$(realpath $(dirname $0))
 
 ###################################################################################################
 # State
 
 needs_reboot=0
-should_install_drivers=0
 
-###################################################################################################
-# Parse args
-
-USAGE="USAGE: $0 [--headless|-s] [--drivers|-d force|skip|allow] [--docker|-k force|skip|allow] [--help|-h] [--pwd|-p password] [--airgapped|-a <images-tarball>] [--noreboot|-n]"
-
-# defaults
 opt_headless=0
 opt_noreboot=0
 opt_drivers=
 opt_docker=
 opt_images_tarball=
 
-###################################################################################################
-#  Transform long options to short ones
-for arg in "$@"; do
-  shift
-  case "$arg" in
-    "--help")      set -- "$@" "-h" ;;
-    "--headless")  set -- "$@" "-s" ;;
-    "--drivers")   set -- "$@" "-d" ;;
-    "--docker")    set -- "$@" "-k" ;;
-    "--pwd")       set -- "$@" "-p" ;;
-    "--noreboot")  set -- "$@" "-n" ;;
-    "--airgapped") set -- "$@" "-a" ;;
-    *)             set -- "$@" "$arg"
-  esac
-done
+set_options(){
 
-###################################################################################################
-# parse short options
-while getopts ":hsd:k:p:na:" arg; do
-  case ${arg} in
-    a )
-      opt_images_tarball="${OPTARG}"
+  ###################################################################################################
+  # Parse args
+
+  USAGE="USAGE: $0 [--headless|-s] [--drivers|-d force|skip|allow] [--docker|-k force|skip|allow] [--help|-h] [--pwd|-p password] [--airgapped|-a <images-tarball>] [--noreboot|-n]"
+
+  # defaults
+
+  ###################################################################################################
+  #  Transform long options to short ones
+  for arg in "$@"; do
+    shift
+    case "$arg" in
+      "--help")      set -- "$@" "-h" ;;
+      "--headless")  set -- "$@" "-s" ;;
+      "--drivers")   set -- "$@" "-d" ;;
+      "--docker")    set -- "$@" "-k" ;;
+      "--pwd")       set -- "$@" "-p" ;;
+      "--noreboot")  set -- "$@" "-n" ;;
+      "--airgapped") set -- "$@" "-a" ;;
+      *)             set -- "$@" "$arg"
+    esac
+  done
+
+  ###################################################################################################
+  # parse short options
+  while getopts ":hsd:k:p:na:" arg; do
+    case ${arg} in
+      a )
+        opt_images_tarball="${OPTARG}"
+        ;;
+      h )
+        echo "${USAGE}"
+        exit 0
+        ;;
+      d )
+        opt_drivers=${OPTARG}
+        ;;
+      k )
+        opt_docker=${OPTARG}
+        ;;
+      s )
+        opt_headless=1
+        ;;
+      p )
+        PL_PASSWORD="${OPTARG}"
+        ;;
+      n )
+        opt_noreboot=1
+        ;;
+      : )
+        echo "Missing argument to ${OPTARG}" 1>&2
+        echo "${USAGE}" 1>&2
+        exit 1
+        ;;
+      \? )
+        echo "Invalid option: ${OPTARG}"
+        exit 1
+        ;;
+    esac
+  done
+
+  case ${opt_drivers} in
+    force|allow|skip )
       ;;
-    h )
+    '' )
+      ;;
+    *)
+      echo "Invalid parameter to -d: ${opt_drivers}"
       echo "${USAGE}"
-      exit 0
-      ;;
-    d )
-      opt_drivers=${OPTARG}
-      ;;
-    k )
-      opt_docker=${OPTARG}
-      ;;
-    s )
-      opt_headless=1
-      ;;
-    p )
-      PL_PASSWORD="${OPTARG}"
-      ;;
-    n )
-      opt_noreboot=1
-      ;;
-    : )
-      echo "Missing argument to ${OPTARG}" 1>&2
-      echo "${USAGE}" 1>&2
       exit 1
-      ;;
-    \? )
-      echo "Invalid option: ${OPTARG}"
-      exit 1
-      ;;
   esac
-done
 
-case ${opt_drivers} in
-  force|allow|skip )
-    ;;
-  '' )
-    ;;
-  *)
-    echo "Invalid parameter to -d: ${opt_drivers}"
-    echo "${USAGE}"
-    exit 1
-esac
+  # If we're airgapped, then we're not going to do anything that tries to touch the internet
+  if is_airgapped; then
+    opt_drivers=skip
+    opt_docker=skip
+    opt_noreboot=1
 
-# If we're airgapped, then we're not going to do anything that tries to touch the internet
-if [ -n "${opt_images_tarball}" ]; then
-  opt_drivers=skip
-  opt_docker=skip
-  opt_noreboot=1
-
-  if [ ! -f $opt_images_tarball ]; then
-    echo "Images tarball '${opt_images_tarball}' doesn't exist"
-    exit 1
+    if [ ! -f "${opt_images_tarball}" ]; then
+      echo "Images tar file "${opt_images_tarball}" doesn't exist" >&2
+      exit 1
+    fi
   fi
-fi
 
-# if we don't have an interactive shell, then it has to be headless
-tty -s || opt_headless=1
+  # if we don't have an interactive shell, then it has to be headless
+  tty -s || opt_headless=1
 
-if [ $opt_headless -eq 1 ]; then
-  logdate=$(date "+%Y%m%d%H%M%S")
-  exec &> installer_output.txt.$logdate
-fi
+  if [ $opt_headless -eq 1 ]; then
+    logdate=$(date "+%Y%m%d%H%M%S")
+    exec &> installer_output.txt.$logdate
+  fi
+}
 
 ###################################################################################################
 # Get User Input
 
-[ ! -d "${CONFIG_DIR}" ] && mkdir -p "${CONFIG_DIR}"
+make_config_dir(){
+  [ ! -d "${CONFIG_DIR}" ] && mkdir -p "${CONFIG_DIR}"
+}
 
 call_stat(){
   # figure out stat(1) flags based on OS
@@ -138,7 +147,7 @@ set_config_file_permissions(){
 }
 
 source_config(){
-  if [ -n "${PL_PASSWORD}" ]; then
+  if [ -n "${PL_PASSWORD:-}" ]; then
     return 0
   fi
 
@@ -150,27 +159,24 @@ source_config(){
     return 1
   fi
 
-  if [ ! -O "${CONFIG_FILE}" ]; then
-    echo "This user doesn't own the config file ${CONFIG_FILE}. Skipping reading it"
-    return 1
-  fi
-
   set_config_file_permissions
   source "${CONFIG_FILE}"
   return 0
 }
 
-maybe_get_password(){
+maybe_get_docker_password(){
+  [ ! -d "${CONFIG_DIR}" ] && mkdir -p "${CONFIG_DIR}"
+
   # if we have a tarball, then we don't need a password
-  if [ -n "${opt_images_tarball}" ]; then
+  if is_airgapped; then
     return 0
   fi
 
   # if we can get the password from config then we're done
   source_config && return 0
 
-  if [ -z "${PL_PASSWORD}" ]; then
-    if [ -n "${opt_images_tarball}" ]; then
+  if [ -z "${PL_PASSWORD:-}" ]; then
+    if is_airgapped; then
       return 0
     fi
 
@@ -186,6 +192,30 @@ maybe_get_password(){
   fi
 }
 
+get_user_input(){
+  maybe_get_docker_password
+
+  if [ -z "${KC_ROOT_USER:-}" ]; then
+    read -p "Enter the new keycloak master username [default: admin]: "
+    export KC_ROOT_USER="${REPLY:-admin}"
+  fi
+
+  while [ -z "${KC_ROOT_PWD:-}" ]; do
+    read -s -p "Enter the new keycloak master password: "
+    export KC_ROOT_PWD="${REPLY}"
+    echo
+  done
+
+  if [ -z "${KC_FIRST_USER:-}" ]; then
+    read -p "Enter the first PerceptiLabs user's email [default: first@user.test]: "
+    export KC_FIRST_USER="${REPLY:-first@user.test}"
+  fi
+
+  if [ -z "${KC_INITIAL_PWD:-}" ]; then
+    read -p "Enter the first Perceptilabs user's password [default: resetme]: "
+    export KC_INITIAL_PWD="${REPLY:-resetme}"
+  fi
+}
 
 ###################################################################################################
 # Install Latest NVIDIA drivers
@@ -201,9 +231,9 @@ has_nvidia_driver(){
 
 driver_version_current(){
   has_nvidia_driver &&
-    version=$(nvidia-smi --query-gpu=driver_version --format=csv,noheader | cut --delimiter=. --fields=1) &&
-    echo "NVIDIA drivers version: ${version}" &&
-    test "${version}" -ge "$REQUIRED_NVIDIA_VERSION"
+    nv_version=$(nvidia-smi --query-gpu=driver_version --format=csv,noheader | cut --delimiter=. --fields=1) &&
+    echo "NVIDIA drivers version: ${nv_version}" &&
+    test "${nv_version}" -ge "$REQUIRED_NVIDIA_VERSION"
   return $?
 }
 
@@ -243,9 +273,7 @@ install_latest_driver(){
   fi
 
   if [ $opt_headless -eq 0 ]; then
-    # TODO: detect non-interactive shell and fail
     read -r -p "Detected latest driver: ${package}. Press enter to install it "
-    should_install_drivers=1
   fi
 
   needs_reboot=1
@@ -280,8 +308,8 @@ has_docker(){
 
 docker_version_current(){
   has_docker && {
-    version=$(sudo docker version --format "{{.Client.Version}}" | cut --delimiter=. --fields=1)
-    test $version -ge $REQUIRED_DOCKER_VERSION
+    docker_version=$(sudo docker version --format "{{.Client.Version}}" | cut --delimiter=. --fields=1)
+    test $docker_version -ge $REQUIRED_DOCKER_VERSION
   }
   return $?
 }
@@ -397,59 +425,33 @@ install_docker_compose(){
 
 ###################################################################################################
 # Install PerceptiLabs
-remove_gpu_section(){
-  sed --in-place "/^\s*deploy:/,/capabilities.*gpu/d" docker-compose.yml
+is_airgapped(){
+  [ -n "${opt_images_tarball}" ]
 }
 
-edit_docker_compose_yml(){
-  sed --in-place "s/\${CONTAINER_REGISTRY}/$CONTAINER_REGISTRY/g" docker-compose.yml
-  sed --in-place "s/\${PL_VERSION}/$VERSION/g" docker-compose.yml
-
-  has_nvidia_driver || \
-    remove_gpu_section
-}
-
-install_perceptilabs_airgapped(){
-  if [ ! -f "${opt_images_tarball}" ]; then
-    echo "Images tar file "${opt_images_tarball}" doesn't exist" >&2
+download(){
+  code=$(curl -s -O --write-out "%{http_code}" $1)
+  [ "${code}" == "200" ] || {
+    echo "Downloading from $1 failed with code ${code}"
     exit 1
-  fi
-
-  edit_docker_compose_yml
-
-  mkdir -p plabs/data
-  chmod 777 plabs
-  chmod 777 plabs/data
-
-  echo "Loading docker images"
-  sudo docker load --quiet --input "${opt_images_tarball}"
-
-  sudo docker-compose up -d
+  }
 }
 
-install_perceptilabs_online(){
-  curl -s -O $NGINX_CONF_URL
-  curl -s $DOCKER_COMPOSE_URL > docker-compose.yml
-
-  edit_docker_compose_yml
-
-  mkdir -p plabs/data
-  chmod 777 plabs
-  chmod 777 plabs/data
-  sudo docker login ${CONTAINER_REGISTRY} --username ${DOCKER_USERNAME} --password "${PL_PASSWORD}"
-
-  echo pulling images
-  sudo docker-compose pull
-
-  sudo docker-compose up -d
-}
-
-install_perceptilabs(){
-  if [ -n "${opt_images_tarball}" ]; then
-    install_perceptilabs_airgapped
+prep_for_migrations(){
+  if is_airgapped; then
+    echo "Loading docker images"
+    sudo docker load --quiet --input "${opt_images_tarball}"
   else
-    install_perceptilabs_online
+    download $MIGRATIONS_URL
+
+    sudo docker login ${CONTAINER_REGISTRY} --username ${DOCKER_USERNAME} --password "${PL_PASSWORD}"
   fi
+
+  tar xvf system_migrations.tar.gz
+}
+
+start_pl(){
+  sudo docker-compose up -d
 }
 
 reboot_if_needed(){
@@ -465,17 +467,56 @@ reboot_if_needed(){
   fi
 }
 
-# Check that I can sudo
-sudo echo
+get_os(){
+  if [[ ${OSTYPE} =~ darwin ]]; then
+    echo "darwin"
+  elif [[ ${OSTYPE} =~ linux ]]; then
+    if cat /etc/*-release | grep -iq ubuntu; then
+      echo "ubuntu"
+    else
+      echo "linux"
+    fi
+  fi
+}
 
-maybe_get_password
+install_prerequisites(){
+  # we only install prereqs on ubuntu
+  [ "${OS}" == "ubuntu" ] || {
+    echo "OS is not ubuntu. Assuming prerequisites are installed."
+    return 0
+  }
 
-install_nvidia_drivers
-install_docker
-install_nvidia_docker_support
-install_docker_compose
-install_perceptilabs
-reboot_if_needed
+  install_nvidia_drivers
+  install_docker
+  install_nvidia_docker_support
+  install_docker_compose
+}
 
-echo PerceptiLabs is ready!
-exit 0
+main(){
+  OS=$(get_os)
+
+  # Make sure that we can sudo so we don't fail later
+  sudo -p "Sudo is required. Please enter the password: " echo -n ""
+
+  set_options $@
+
+  get_user_input
+  install_prerequisites
+
+  export HAS_GPU=
+  if has_nvidia_driver; then
+    export HAS_GPU=1
+  fi
+
+  prep_for_migrations
+  "${MYDIR}/system_migrations/migrate"
+
+  start_pl
+  reboot_if_needed
+
+  echo PerceptiLabs is ready!
+}
+
+
+[ "${BASH_SOURCE[0]}" != "${0}" ] ||
+  main $@

@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+set -Eeo pipefail
+
+MIGRATIONS_DIR=$(dirname $(dirname $0))
+. "${MIGRATIONS_DIR}/common"
+
+make_directories(){
+  mkdir -p plabsdb
+  chmod 777 plabsdb
+
+  mkdir -p plabs/data
+  chmod 777 plabs
+  chmod 777 plabs/data
+}
+
+install_config(){
+  # update the docker-compose file and restart to take the changes
+  mydir=$(dirname $0)
+  customize_docker_compose_file "${mydir}/docker-compose-after.yml"
+  cp "${mydir}/docker-compose-after.yml" "${PL_ROOT_DIR}/docker-compose.yml"
+  cp "${mydir}/nginx.conf" "${PL_ROOT_DIR}/nginx.conf"
+}
+
+main(){
+  # we can skip 001 and 002
+  make_directories
+  install_config
+
+  # All of the Keycloak init has to happen
+  "${MIGRATIONS_DIR}/000003_init_kc/up"
+}
+
+[ "${BASH_SOURCE[0]}" != "${0}" ] ||
+  main

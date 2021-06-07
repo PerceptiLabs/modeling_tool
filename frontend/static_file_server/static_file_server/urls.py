@@ -33,6 +33,11 @@ def kernel_url(request):
     return HttpResponse(other_url(request, "PL_KERNEL_URL", "core"))
 
 @api_view(["GET"])
+def keycloak_url(request):
+    ret = other_url(request, "PL_KEYCLOAK_URL", "")
+    return HttpResponse(ret)
+
+@api_view(["GET"])
 def fileserver_url(request):
     return HttpResponse(other_url(request, "PL_FILESERVER_URL", "fileserver"))
 
@@ -47,6 +52,7 @@ def is_enterprise(request):
 
 urlpatterns = [
     re_path('kernel_url', kernel_url),
+    re_path('keycloak_url', keycloak_url),
     re_path('fileserver_url', fileserver_url),
     re_path('rygg_url', rygg_url),
     re_path('is_enterprise', is_enterprise),

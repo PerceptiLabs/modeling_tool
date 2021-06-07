@@ -20,8 +20,6 @@ RUN yum -y update && \
     ln -sf $(which python3) $(dirname $(which python3))/python
     # Installing python3-devel can undo the link from the base image. Make sure it stays.
 
-# TODO: later images will want to squash so that they don't include all of the yum stuff
-
 # add source
 # do the build in here
 WORKDIR /src

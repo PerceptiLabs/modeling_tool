@@ -5,22 +5,22 @@ if [ $# -lt 1 ]; then
   exit 1
 fi
 
-VERSION=$1
+PL_VERSION=$1
 
 # Perceptilabs AB
 AZURE_TENANT=069b44e7-dd8e-4a34-ae4b-983f50242bff
 RELEASE_SRC_BASE=https://perceptilabs.blob.core.windows.net/enterprise
+
 RELEASE_FILES=(
   install_perceptilabs_enterprise
-  docker-compose.yml
-  nginx.conf
+  system_migrations.tar.gz
 )
 
 DEST_ACCOUNT=perceptilabs
 DEST_CONTAINER=pl-airgapped
 CONTAINER_REGISTRY=perceptilabsenterprise.azurecr.io
 REGISTRY_READER=enterpriseuser
-ZIP_NAME=perceptilabs-${VERSION}-airgapped.zip
+ZIP_NAME=perceptilabs-${PL_VERSION}-airgapped.zip
 
 
 ####################################################################################################
@@ -70,35 +70,28 @@ sudo echo -n
 
 BUILD_OUTPUT=$(mktemp -d)
 DEST_ZIP=${BUILD_OUTPUT}/${ZIP_NAME}
-ZIP=${BUILD_OUTPUT}/${DEST_ZIP}
-DOCKER_COMPOSE_FILE=${BUILD_OUTPUT}/docker-compose.yml
+SYSTEM_MIGRATIONS=${BUILD_OUTPUT}/system_migrations
 
-echo -n "Getting release files for version ${VERSION} ... "
+echo -n "Getting release files for version ${PL_VERSION} ... "
 for SRC in ${RELEASE_FILES[@]}; do
-  curl -s $RELEASE_SRC_BASE/$VERSION/${SRC} > ${BUILD_OUTPUT}/${SRC}
+  curl -s $RELEASE_SRC_BASE/$PL_VERSION/${SRC} > ${BUILD_OUTPUT}/${SRC}
 done
 echo "done"
 
-echo -n "Reconstituting the docker-compose file ..."
-sed --in-place "s/\${CONTAINER_REGISTRY}/$CONTAINER_REGISTRY/g" ${DOCKER_COMPOSE_FILE}
-sed --in-place "s/\${PL_VERSION}/$VERSION/g" ${DOCKER_COMPOSE_FILE}
-echo "done"
-
-set -x
-cat ${DOCKER_COMPOSE_FILE}
-echo "Pulling the images ..."
-sudo docker-compose --file ${DOCKER_COMPOSE_FILE} pull
-echo "Images pulled."
+docker_images=$(\
+  tar -x -f "${SYSTEM_MIGRATIONS}" -O --include="*docker-compose*.yml" | \
+  xargs grep image: | \
+  sed "s/.*image:[[:blank:]]*\(.*\)$/\1/g" | \
+  sed "s|\${CONTAINER_REGISTRY}|$CONTAINER_REGISTRY|g" | \
+  sed "s|\${PL_VERSION}|$PL_VERSION|g" | \
+  sort --unique)
 
 # pull the images
-images=$(cat ${DOCKER_COMPOSE_FILE} \
-  | sed -n "/image:/p" \
-  | sed "s/^[[:blank:]]*image:[[:blank:]]*//" \
-)
+echo "${docker_images}" | xargs -L 1 sudo docker pull
 
 # save the images
 echo -n "Saving the images locally ..."
-sudo docker save ${images} --output ${BUILD_OUTPUT}/images.tar
+sudo docker save ${docker_images} --output ${BUILD_OUTPUT}/images.tar
 echo "done"
 
 # add the images to the zip

@@ -1,0 +1,80 @@
+#!/usr/bin/env bash
+
+# sed on osx isn't what we want
+SED=$([[ ${OSTYPE} =~ darwin ]] && echo gsed || echo sed)
+
+assert_required_variables(){
+  set -u
+  echo ${PL_ROOT_DIR} > /dev/null
+  echo ${CONTAINER_REGISTRY} > /dev/null
+  echo ${PL_VERSION} > /dev/null
+  echo ${KC_ROOT_USER} > /dev/null
+  echo ${KC_ROOT_PWD} > /dev/null
+  echo ${HAS_GPU} > /dev/null
+}
+
+red(){
+  echo -n $'\e[1;31m'
+  echo -n "$1"
+  echo $'\e[0m'
+}
+
+green(){
+  echo -n $'\e[1;32m'
+  echo -n "$1"
+  echo $'\e[0m'
+}
+
+error(){
+  red "$1"
+  exit 1
+}
+
+poll(){
+  [ $# -ge 4 ] || exit 1
+  reps=$1
+  interval=$2
+  msg=$3
+  shift 3
+  echo -n "${msg} ..."
+  while ! $@; do
+    reps=$(($reps-1))
+    if [ $reps -eq 0 ]; then
+      return 1
+    fi
+    echo -n "."
+    sleep $interval
+  done
+  green " done"
+}
+
+check_sudo(){
+  # Make sure that we can sudo so we don't fail later
+  sudo -p "Sudo is required. Pleas enter the password: " echo -n ""
+}
+
+find_replace(){
+  var_to_find=$1
+  replacement=$2
+  file=$3
+
+  $SED --in-place "s|\${$var_to_find}|$replacement|g" "$file"
+}
+
+delete_range(){
+  start_pattern=$1
+  end_pattern=$2
+  file=$3
+  $SED --in-place "/${start_pattern}/,/${end_pattern}/d" "${file}"
+}
+
+customize_docker_compose_file(){
+  # replace the variables in the docker-compose file so the user can restart later w/o
+  # a ton of parameters or having to mess with their environment
+  find_replace "CONTAINER_REGISTRY" $CONTAINER_REGISTRY "$1"
+  find_replace "PL_VERSION" $PL_VERSION "$1"
+  find_replace "PL_ROOT_DIR" $PL_ROOT_DIR "$1"
+
+  [ -n "${HAS_GPU}" ] ||
+    delete_range "^\s*deploy:" "capabilities.*gpu" "$1"
+}

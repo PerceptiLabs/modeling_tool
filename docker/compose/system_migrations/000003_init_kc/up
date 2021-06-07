@@ -1,0 +1,128 @@
+#!/usr/bin/env bash
+set -euo pipefail
+. $(dirname $(dirname $0))/common
+
+PL_HOST=127.0.0.1
+KEYCLOAK_URL="http://${PL_HOST}/auth"
+KEYCLOAK_DB=keycloak
+MYDIR=$(realpath $(dirname $0))
+
+script=$(cat << EOF
+  tty -s && exit 1
+  echo -n 'waiting for db to be ready...'
+  while ! pg_isready >/dev/null; do
+    echo -n '.'
+    sleep 1
+  done
+
+  # wait for the rygg db to become available (not always as soon as the server is up).
+  while ! psql --username=rygg --command 'SELECT NULL;' > /dev/null; do
+    echo -n '.'
+    sleep 1
+  done
+  echo ' done'
+
+  ( psql --username rygg --tuples-only --no-align --command="select 1 from pg_database where datname='${KEYCLOAK_DB}'" | grep --quiet "1" &&  echo "Keycloak db found") ||
+    ( createdb --username rygg ${KEYCLOAK_DB} && echo "Created keycloak database" ) ||
+    echo 'The database wasn not found and could not be created'
+EOF
+)
+
+ensure_db_created(){
+  echo -n "Ensuring keycloak db is present ..."
+  sudo docker-compose up --detach db
+  sudo docker-compose exec -T db sh -c "${script}"
+}
+
+is_keycloak_service_in_docker_compose(){
+  sudo docker-compose config --services | grep --quiet keycloak ||
+    return 1
+}
+
+is_keycloak_responding(){
+  resp=$(curl --silent --write-out "%{http_code}" --max-time 20 ${KEYCLOAK_URL}/) ||
+    return 1
+
+  # if the code is 200 and the http talks about keycloak then we assume it's up
+  code=$(echo "${resp}" | tail -n 1) ||
+    return 1
+
+  [ "${code}" = "200" ] || return 1
+  echo "${resp}" | grep --quiet Keycloak ||
+    return 1
+
+  return 0
+}
+
+is_master_realm_available_in_cluster(){
+  curl ${KEYCLOAK_URL}/realms/master --silent --max-time 10 | \
+    grep --quiet --word-regexp master || \
+    return 1
+}
+
+wait_for_keycloak(){
+  poll 10 2 "Waiting for keycloak to respond" is_keycloak_responding ||
+    error "The keycloak service didn't start in a timely manner."
+
+  poll 10 2 "Waiting for master realm in the cluster" is_master_realm_available_in_cluster ||
+    error "The keycloak service didn't start in a timely manner."
+}
+
+ensure_keycloak_in_cluster(){
+  customize_docker_compose_file "${MYDIR}/docker-compose-after.yml"
+  cp "${MYDIR}/docker-compose-after.yml" "${PL_ROOT_DIR}/docker-compose.yml"
+  cp "${MYDIR}/nginx.conf" "${PL_ROOT_DIR}"
+
+  echo "-------------------------------------------------------"
+  echo "Restarting partial cluster to load new keycloak configuration"
+  sudo docker-compose down
+  sudo docker-compose up --detach db keycloak nginx
+  echo "Cluster restart complete"
+  echo "-------------------------------------------------------"
+
+  wait_for_keycloak
+}
+
+test_login(){
+  token_response=$(curl \
+    "${KEYCLOAK_URL}/realms/master/protocol/openid-connect/token" \
+    --request POST \
+    --silent \
+    --header "Content-Type: application/x-www-form-urlencoded" \
+    --data "username=${KC_ROOT_USER}" \
+    --data "password=${KC_ROOT_PWD}" \
+    --data 'grant_type=password' \
+    --data 'client_id=admin-cli')
+
+  echo "${token_response}" | grep --quiet --word-regexp 'access_token' || return 1
+}
+
+ensure_admin_user_present(){
+  test_login || {
+    sudo docker-compose exec -T keycloak /opt/jboss/keycloak/bin/add-user-keycloak.sh --user "${KC_ROOT_USER}" --password "${KC_ROOT_PWD}" #> /dev/null
+    echo "Added user ${KC_ROOT_USER} to master realm."
+
+    sudo docker-compose restart keycloak
+    wait_for_keycloak
+
+    test_login || {
+      error "Creating user ${KC_ROOT_USER} in the master realm failed."
+      exit 1
+    }
+  }
+}
+
+main(){
+  is_keycloak_service_in_docker_compose && is_keycloak_responding || {
+    ensure_db_created
+    ensure_keycloak_in_cluster
+  }
+
+  ensure_admin_user_present
+
+  # idempotent on its own, so not covered under previous short-circuit check
+  ${MYDIR}/ensure_realm_created
+}
+
+[ "${BASH_SOURCE[0]}" != "${0}" ] ||
+  main

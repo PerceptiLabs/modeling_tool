@@ -1,0 +1,207 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+. $(dirname $(dirname $0))/common
+MYDIR=$(dirname $0)
+
+PL_HOST=127.0.0.1
+KEYCLOAK_URL="http://${PL_HOST}/auth"
+REALM_NAME="perceptilabs"
+CLIENT_ID="perceptilabs-client-id"
+
+is_master_realm_available_in_cluster(){
+  curl ${KEYCLOAK_URL}/realms/master --silent --max-time 10 | \
+    grep --quiet --word-regexp master || \
+    return 1
+}
+
+wait_for_server(){
+  poll 10 2 "Waiting for cluster to respond" curl -s "${PL_HOST}" >/dev/null ||
+    error "The PerceptiLabs tool isn't running."
+
+  poll 10 2 "Waiting for cluster keycloak to respond" curl -s "${KEYCLOAK_URL}" >/dev/null ||
+    error "The keycloak service didn't start in a timely manner."
+
+  poll 10 2 "Waiting for master realm in the cluster" is_master_realm_available_in_cluster ||
+    error "The keycloak service didn't start in a timely manner."
+}
+
+login(){
+  token_response=$(curl \
+    --request POST \
+    "${KEYCLOAK_URL}/realms/master/protocol/openid-connect/token" \
+    --silent \
+    --header "Content-Type: application/x-www-form-urlencoded" \
+    --data "username=${KC_ROOT_USER}" \
+    --data "password=${KC_ROOT_PWD}" \
+    --data 'grant_type=password' \
+    --data 'client_id=admin-cli')
+
+  echo "$token_response" | sed 's/.*access_token":"//g' | sed 's/".*//g'
+}
+
+get(){
+  path=$1
+
+  url="${KEYCLOAK_URL}${path}"
+  resp=$(curl "${url}" \
+    --silent \
+    --write-out "\n%{http_code}" \
+    --header "Accept: application/json" \
+    --header "Authorization: bearer $TOKEN" )
+
+  # check for success
+  echo "${resp}" | tail -n 1 | grep -q 20. || return 1
+  echo "${resp}"
+  return 0
+}
+
+get_single_uuid(){
+  path=$1
+  plural_json=$(get ${path})
+  # Strip the record from the list
+  singular_json=$(echo $plural_json | sed 's/\[\(.*\)\][^]]*/\1/g')
+
+  # Extract the uuid from the record
+  uuid=$(echo ${singular_json} | sed 's/.*"id":"\([^"]*\)".*/\1/g')
+  echo ${uuid}
+}
+
+post_put(){
+  verb=$1
+  path=$2
+  resource=$3
+  data=$4
+
+  url="${KEYCLOAK_URL}${path}"
+  resp=$(curl "${url}" \
+    --silent \
+    --request ${verb} \
+    --header "Content-Type: application/json" \
+    --header "Accept: application/json" \
+    --header "Authorization: bearer $TOKEN"   \
+    --output /dev/null \
+    --write-out "%{http_code}" \
+    --data "${data}")
+
+  echo "${resp}" | grep -q 20. || {
+    action="Updating"
+    if [ "${verb}" == "POST" ]; then
+      action="Creating"
+    fi
+    echo "${action} ${resource} failed"
+    exit 1
+  }
+}
+
+copy_theme_directory(){
+  rm -rf "${PL_ROOT_DIR}/login_theme"
+  cp -R "${MYDIR}/login_theme" "${PL_ROOT_DIR}"
+}
+
+upsert_realm(){
+  if get "/admin/realms/${REALM_NAME}" > /dev/null; then
+    realm_path="/admin/realms/${REALM_NAME}"
+    realm_verb=PUT
+    realm_action=Updating
+  else
+    realm_path="/admin/realms"
+    realm_verb=POST
+    realm_action=Creating
+  fi
+
+  post_put ${realm_verb} ${realm_path} "${REALM_NAME} realm" "${REALM_JSON}"
+}
+
+upsert_client(){
+
+  path="/admin/realms/${REALM_NAME}/clients?clientId=${CLIENT_ID}"
+  uuid=$(get_single_uuid "${path}")
+
+  path="/admin/realms/${REALM_NAME}/clients"
+  if [ -z "${uuid}" ]; then
+    verb=POST
+  else
+    path="${path}/${uuid}"
+    verb=PUT
+  fi
+
+  post_put ${verb} ${path} "${CLIENT_ID} client" "${CLIENT_JSON}"
+}
+
+set_password(){
+
+  path="/admin/realms/${REALM_NAME}/users?email=${KC_FIRST_USER}"
+  uuid=$(get_single_uuid "${path}")
+
+  path="/admin/realms/${REALM_NAME}/users/${uuid}/reset-password"
+  post_put "PUT" "${path}" "password" "${PWD_JSON}"
+}
+
+create_user(){
+
+  path="/admin/realms/${REALM_NAME}/users/count?email=${KC_FIRST_USER}"
+  count_resp=$(get ${path})
+  echo "${count_resp}" | tail -n 1 | grep -q 200
+  count=$(echo "${count_resp}" | head -n 1)
+  if [ ${count} -gt 0 ]; then
+    return 0
+  fi
+
+  path="/admin/realms/${REALM_NAME}/users"
+  post_put "POST" "${path}" "${KC_FIRST_USER}" "${USER_JSON}"
+  set_password
+}
+
+REALM_JSON=$(cat <<EOF
+{
+  "realm": "${REALM_NAME}",
+  "displayName": "PerceptiLabs",
+  "enabled": "true",
+  "registrationEmailAsUsername": "true",
+  "loginTheme": "perceptilabs"
+}
+EOF
+)
+
+CLIENT_JSON=$(cat <<EOF
+{
+  "clientId": "${CLIENT_ID}",
+  "name": "PerceptiLabs",
+  "enabled": "true",
+  "redirectUris": [ "/*" ],
+  "publicClient": "true"
+}
+EOF
+)
+
+USER_JSON=$(cat <<EOF
+{
+  "email": "${KC_FIRST_USER}",
+  "enabled": "true",
+  "emailVerified": "true"
+}
+EOF
+)
+
+PWD_JSON=$(cat <<EOF
+{
+  "type": "password",
+  "temporary": true,
+  "value": "${KC_INITIAL_PWD}"
+}
+EOF
+)
+
+main(){
+  assert_required_variables
+  wait_for_server
+  TOKEN=$(login)
+  copy_theme_directory
+  upsert_realm
+  upsert_client
+  create_user
+}
+
+[ "${BASH_SOURCE[0]}" != "${0}" ] ||
+  main

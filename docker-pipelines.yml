@@ -72,13 +72,21 @@ jobs:
     dependsOn: dockerbuild
     pool: Docker Build
     steps:
+
+    - task: ArchiveFiles@2
+      inputs:
+        rootFolderOrFile: '$(System.DefaultWorkingDirectory)/docker/compose/system_migrations'
+        includeRootFolder: true
+        archiveType: 'tar'
+        archiveFile: '$(Build.ArtifactStagingDirectory)/system_migrations.tar.gz'
+        replaceExistingArchive: true
+
     - task: CopyFiles@2
       displayName: Copy installer to staging
       inputs:
         Contents: |
           docker/compose/install_perceptilabs_enterprise
-          docker/compose/docker-compose.yml
-          docker/nginx/nginx.conf
+          docker/compose/system_migrations.tar.gz
         TargetFolder: $(Build.ArtifactStagingDirectory)
         flattenFolders: true
 
@@ -96,14 +104,11 @@ jobs:
         script: |
           set -Eeuo pipefail
 
-          cat install_perceptilabs_enterprise | \
-            sed "s|^VERSION=.*$|VERSION=${BUILDNUM}|g" | \
-            sed "s|^DOCKER_USERNAME=.*$|DOCKER_USERNAME=${DOCKER_USERNAME}|g" | \
-            sed "s|^CONTAINER_REGISTRY=.*$|CONTAINER_REGISTRY=${CONTAINER_REGISTRY}|g" | \
-            sed "s|^AZURE_BLOB_URL=.*$|AZURE_BLOB_URL=${AZURE_BLOB_URL}|g" \
-            > temp
+          sed --in-place "s|INVALID_VERSION|${BUILDNUM}|g" install_perceptilabs_enterprise
+          sed --in-place "s|INVALID_REGISTRY|${CONTAINER_REGISTRY}|g" install_perceptilabs_enterprise
+          sed --in-place "s|^DOCKER_USERNAME=.*$|DOCKER_USERNAME=${DOCKER_USERNAME}|g" install_perceptilabs_enterprise
+          sed --in-place "s|^AZURE_BLOB_URL=.*$|AZURE_BLOB_URL=${AZURE_BLOB_URL}|g" install_perceptilabs_enterprise
 
-          mv temp install_perceptilabs_enterprise
           chmod +x install_perceptilabs_enterprise
 
         workingDirectory: $(Build.ArtifactStagingDirectory)
@@ -135,8 +140,7 @@ jobs:
           buildType: 'current'
           downloadType: 'specific'
           itemPattern: |
-            installation_dev/docker-compose.yml
-            installation_dev/nginx.conf
+            installation_dev/system_migrations.tar.gz
             installation_dev/install_perceptilabs_enterprise
           downloadPath: '$(System.ArtifactsDirectory)'
 

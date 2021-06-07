@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+. $(dirname $(dirname $0))/common
+
+finish_and_exit(){
+  # update the docker-compose file and restart to take the changes
+  mydir=$(dirname $0)
+  customize_docker_compose_file "${mydir}/docker-compose-after.yml"
+  cp "${mydir}/docker-compose-after.yml" "${PL_ROOT_DIR}/docker-compose.yml"
+  exit 0
+}
+
+get_db_service_name(){
+  db_service_name=$(docker-compose ps | grep _db_ |  cut -d' ' -f 1)
+  if [ -z "${db_service_name}" ]; then
+    return 0
+  fi
+
+  # Don't proceed if we can't pick one db.
+  num_db_services=$(echo "${db_service_name}" | wc -l | tr -d ' ')
+  if [ "${num_db_services}" -gt 1 ]; then
+    echo "There appears to be more than one PerceptiLabs database services. Manual intervention is required." >&2
+    exit 1
+  fi
+
+  echo ${db_service_name}
+  return 0
+}
+
+get_network_name(){
+  db_service_name=$(get_db_service_name)
+
+  [ -n "${db_service_name}" ] || {
+    echo "There's no db service. Assuming PerceptiLabs isn't installed yet."
+    return 0
+  }
+
+  NETWORK_NAME_TEMPLATE='{{range $k, $v := .NetworkSettings.Networks}}{{$k}}{{end}}'
+  db_networks=$(docker inspect $db_service_name --format "${NETWORK_NAME_TEMPLATE}")
+  num_networks=$(echo "${db_networks}" | wc -l | tr -d ' ')
+
+  if [ "${num_networks}" -lt 1 ]; then
+    error "The PerceptiLabs database isn't on a docker network. Manual intervention is required."
+  elif [ "${num_networks}" -gt 1 ]; then
+    error "The PerceptiLabs database is on more than one docker network. Manual intervention is required."
+  fi
+
+  echo "${db_networks}"
+  return 0
+}
+
+short_circuit(){
+  if get_network_name | grep -q perceptilabs; then
+    echo "The perceptilabs docker network has already been set up"
+    exit 0
+  fi
+}
+
+main(){
+  short_circuit
+  finish_and_exit
+}
+
+[ "${BASH_SOURCE[0]}" != "${0}" ] ||
+  main
