@@ -129,7 +129,7 @@ set_options(){
 # Get User Input
 
 make_config_dir(){
-  [ ! -d "${CONFIG_DIR}" ] && mkdir -p "${CONFIG_DIR}"
+  [ ! -d "${CONFIG_DIR}" ] || mkdir -p "${CONFIG_DIR}"
 }
 
 call_stat(){
