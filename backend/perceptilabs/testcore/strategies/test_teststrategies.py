@@ -69,9 +69,17 @@ def testcore(graph_spec_few_epochs, temp_path, script_factory, data_loader):
     training_model = TrainingModel(script_factory, graph_spec_few_epochs)
     exporter = Exporter(graph_spec_few_epochs, training_model, data_loader)
     exporter.export_checkpoint(temp_path)
-    testcore = TestCore([1], IssueHandler())
-    testcore.load_model(1, temp_path, graph_spec_few_epochs, data_loader)
-    testcore.load_data(data_loader)
+    models_info = {
+        1: {
+            'graph_spec': graph_spec_few_epochs,
+            'model_path': temp_path,
+            'data_path': csv_path,
+            'data_loader': data_loader
+        }
+    }
+    tests = []
+    testcore = TestCore([1], models_info, tests, IssueHandler())
+    testcore.load_models_and_data()
     yield testcore
 
 def test_confusion_matrix_computation(testcore, data_loader): 

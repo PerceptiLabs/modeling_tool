@@ -1,6 +1,7 @@
 import json
 import logging
 from typing import Any, Dict, Generator, List, overload
+import time
 
 import pkg_resources
 
@@ -15,130 +16,231 @@ import perceptilabs.tracking as tracking
 logger = logging.getLogger(APPLICATION_LOGGER)
 user_logger = logging.getLogger(USER_LOGGER)
 
-class TestCore():
-    def __init__(self, receivers, issue_handler):
-        self._issue_handler = issue_handler
-        self._receivers = receivers
-        self._models = {}
 
-    def load_model(self, receiver_id, model_path, graph_spec, data_loader):
+class TestCore():
+    def __init__(self, model_ids, models_info, tests, issue_handler, user_email=None):
+        self._issue_handler = issue_handler
+        self._model_ids = model_ids
+        self._models_info = models_info
+        self._tests = tests
+        self._user_email = user_email
+
+        self._models = {}
+        self._results = {}
+        self._stopped = False
+        self._data_loaders = {}
+        self._dataspecs = {}
+        self._status = 'Initializing'
+        self._model_number = 0
+        self._test_number = 0
+
+    def load_models_and_data(self):
+        ' loads the pretrained models and the data loaders for the testing to begin.'
+        for model_id in self._models_info:
+            model_info = self._models_info[model_id]
+            self.load_data(model_info['data_loader'], model_id)
+            self.load_model(
+                model_id, model_path=model_info['model_path'], graph_spec=model_info['graph_spec']
+            )
+
+    def load_model(self, model_id, model_path, graph_spec):
         """
         loads model from exported model.pb file or using checkpoints.
         """
         try:
-            self._models[receiver_id] = LoadInferenceModel.from_checkpoint(model_path, graph_spec, data_loader)
-            logger.info("model %s loaded successfully.", receiver_id)
+            self._models[model_id] = LoadInferenceModel.from_checkpoint(
+                model_path, graph_spec, self._data_loaders[model_id])
+            logger.info("model %s loaded successfully.", model_id)
         except Exception as e:
             with self._issue_handler.create_issue('Error while loading model', e) as issue:
                 logger.info(issue.internal_message)
                 raise Exception(issue.frontend_message)
 
-    def load_data(self, data_loader):
+    def load_data(self, data_loader, model_id):
         """
         Loads data using DataLoader.
         """
-        self._data_loader = data_loader
-        self._dataspecs = self._get_input_and_output_feature(self._data_loader)
+        self._data_loaders[model_id] = data_loader
+        self._dataspecs[model_id] = self._get_input_and_output_feature(data_loader)
 
-    def run_tests(self, tests, user_email=None):
+    def run(self):
         """
-        Runs the list of tests for all models in the testcore.
-
-        Args:
-            user_email: the email of the user. Optional.
-        Returns:
-            A dictionary containing results of all the tests of all models
+        Runs the list of tests for all models in the testcore and saves the results.
         """
-        results = {}
+        self._model_number = 0
         for model_id in self._models:
+            self._current_model_id = model_id
+            self._model_number += 1
             compatible_layers = {}
-            for test in tests:
+            for test in self._tests:
                 compatible_layers[test] = self.get_compatible_output_layers(test, model_id)
-            # all the results are being collected at once to not repeat the same computations for every test. 
-            data_iterator = self._get_data_generator()
-
+            # all the results are being collected at once to not repeat the same computations for every test.
+            data_iterator = self._get_data_generator(model_id)
             logger.info("Generating outputs for model %s.",  model_id)
-            model_outputs = self._models[model_id].run_inference(data_iterator) #TODO(mukund): support inner layer outputs 
+            self._status = 'Inference'
+            model_outputs = self._models[model_id].run_inference(data_iterator)
+            # TODO(mukund): support inner layer outputs
             logger.info("Outputs generated for model %s.", model_id)
-            results[model_id] = {}
-            for test in tests:
-                logger.info("Starting test %s for model %s.",
-                            test, model_id)
-                results[model_id][test] = self._run_test(test, model_outputs, compatible_layers[test], model_id, user_email)
-        return results
-
-    def _run_test(self, test, model_outputs, compatible_output_layers, model_id, user_email): 
+            self._results[model_id] = {}
+            self._test_number = 0
+            for test in self._tests:
+                logger.info("Starting test %s for model %s.", test, model_id)
+                self._status = 'Testing'
+                self._test_number += 1
+                self._results[model_id][test] = self._run_test(
+                    test, model_outputs, compatible_layers[test], model_id)
+        self._status = 'Completed'
+    
+    def _run_test(self, test, model_outputs, compatible_output_layers, model_id):
+        "runs the given test for a given model information."
         if len(compatible_output_layers):
             if test == 'confusion_matrix':
                 results = ConfusionMatrix().run(model_outputs, compatible_output_layers)
             elif test == 'metrics_table':
                 results = MetricsTable().run(model_outputs, compatible_output_layers)
             logger.info("test %s completed for model %s.", test, model_id)
-
-            if user_email:
-                tracking.send_testing_completed(user_email, model_id, test)            
-            
+            if self._user_email:
+                tracking.send_testing_completed(
+                    self._user_email, model_id, test)
             return results
-        else: 
-            raise Exception("%s is not supported yet by the model %s.", test, model_id)
-        
-        
-    def get_compatible_output_layers(self, test, receiver_id):
+        else:
+            raise Exception(
+                "%s is not supported yet by the model %s.", test, model_id)
+
+    def get_compatible_output_layers(self, test, model_id):
         """
         checks the compatibility of the given test with the model. The rules to check the compatibility
         are listed in tests.json file.
         Returns:
             list: list of compatible output layers 
         """
-        compatible_list = []
-        file = pkg_resources.resource_filename('perceptilabs', 'testcore/tests.json')
-        with open(file) as f:
-            compatibility_table = json.load(f)
-        try:
-            required_layer_info = compatibility_table[test]
-        except:
-            raise Exception(f'The test {test} is not yet supported.')
+        if not self._stopped:
+            compatible_list = []
+            data_specs = self._dataspecs[model_id]
+            file = pkg_resources.resource_filename(
+                'perceptilabs', 'testcore/tests.json')
+            with open(file) as f:
+                compatibility_table = json.load(f)
+            try:
+                required_layer_info = compatibility_table[test]
+            except:
+                raise Exception(f'The test {test} is not yet supported.')
 
-        #TODO(mukund): add support for checking encoders and decoders properly.
-        for layer_type in required_layer_info:
-            accepted_datatypes = required_layer_info[layer_type]
-            used_datatypes = [
-                self._dataspecs[layer].datatype for layer in self._dataspecs
-                if self._dataspecs[layer].iotype == layer_type.lower()
-            ]
-            common_list = list(set(accepted_datatypes) & set(used_datatypes))
-            if not accepted_datatypes:
-                continue
-            elif not common_list:
-                return []
-            if layer_type == 'Target':
-                compatible_list = [
-                    layer for layer in self._dataspecs 
-                    if self._layer_has_compatible_output_datatype(layer, common_list)
+            # TODO(mukund): add support for checking encoders and decoders properly.
+            for layer_type in required_layer_info:
+                accepted_datatypes = required_layer_info[layer_type]
+                used_datatypes = [
+                    data_specs[layer].datatype for layer in data_specs
+                    if data_specs[layer].iotype == layer_type.lower()
                 ]
-        return compatible_list
+                common_list = list(set(accepted_datatypes)
+                                    & set(used_datatypes))
+                if not accepted_datatypes:
+                    continue
+                elif not common_list:
+                    return []
+                if layer_type == 'Target':
+                    compatible_list = [
+                        layer for layer in data_specs
+                        if self._layer_has_compatible_output_datatype(layer, common_list, model_id)
+                    ]
+            return compatible_list
 
-    def _layer_has_compatible_output_datatype(self, layer, common_list):
-        if self._dataspecs[layer].iotype == 'target':
-            if self._dataspecs[layer].datatype in common_list:
+    def _layer_has_compatible_output_datatype(self, layer, common_list, model_id):
+        if self._dataspecs[model_id][layer].iotype == 'target':
+            if self._dataspecs[model_id][layer].datatype in common_list:
                 return True
-        
-    def _get_data_generator(self):
-        dataset_test_generator = self._data_loader.get_dataset(partition='test').batch(1) 
-        #TODO(mukund): test with different batch sizes possibly dynamic based on given tests for better performance. 
+
+    def _get_data_generator(self, model_id):
+        dataset_test_generator = self._data_loaders[model_id].get_dataset(
+            partition='test').batch(1)
+        # TODO(mukund): test with different batch sizes possibly dynamic based on given tests for better performance.
         return dataset_test_generator
 
     def _get_input_and_output_feature(self, data_loader):
         specs = data_loader._feature_specs
         return specs
 
+    def get_results(self):
+        'retrieves results for the current test request'
+        if self._status == 'Completed':
+            return self._results
+        else: 
+            return {}
+
+    def stop(self):
+        'sets some class variables to True so that testing will be stopped.'
+        self._stopped = True
+        self._status = 'Stopped'
+        for model_id in self._models:
+            self._models[model_id].stop()
+        return 'Testing stopped.'
+
+    @property
+    def num_models(self):
+        'Total number of models in the current test request.'
+        return len(self._models)
+
+    @property
+    def num_tests(self):
+        'Total number of tests in the current test request.'
+        return len(self._tests)
+
+    @property
+    def num_samples_inferred(self):
+        'number of samples inferred in the current model being tested.'
+        return self._models[self._current_model_id].num_samples_inferred
+
+    def get_status(self):
+        """
+        get_status computes the progress of the testcore.
+        Returns:
+            [dict]: returns the status in 3 key value pairs.
+            0: state of the testcore
+            1: progress of the model
+            2: progress of the test/inference
+        """
+        if self._status == 'Inference':
+            test_status = {
+                'status': self._status,
+                'update_line_1': "Testing {} out of {} models.".format(self._model_number, self.num_models),
+                'update_line_2': "Running inference on sample {}".format(self.num_samples_inferred)
+            }
+        elif self._status == 'Testing':
+            test_status = {
+                'status': self._status,
+                'update_line_1': "Testing {} out of {} models.".format(self._model_number, self.num_models),
+                'update_line_2': "Generating test {}/{}".format(self._test_number, self.num_tests)
+            }
+        elif self._status == 'Completed':
+            test_status = {
+                'status': self._status,
+                'update_line_1': "Testing completed.",
+                'update_line_2': ""
+            }
+        elif self._status == 'Stopped':
+            test_status = {
+                'status': self._status,
+                'update_line_1': "",
+                'update_line_2': ""
+            }
+        else:
+            test_status = {
+                'status': self._status,
+                'update_line_1': "Testing not started yet.",
+                'update_line_2': ""
+            }
+        return test_status
+
+
 class ProcessResults():
     """process results here.
     """
+
     def __init__(self, results, test):
         self._results = results
         self._test = test
-        
+
     def run(self):
         if self._test == 'confusion_matrix':
             return self._process_confusionmatrix_output()
@@ -146,11 +248,12 @@ class ProcessResults():
             return self._process_metrics_table_output()
         else:
             raise Exception(f"{self._test} is not supported yet.")
-    
+
     def _process_confusionmatrix_output(self):
         for layer_name in self._results:
             result = self._results[layer_name].numpy()
-            data_object = createDataObject(data_list=[result], type_list = ['heatmap'])
+            data_object = createDataObject(
+                data_list=[result], type_list=['heatmap'])
             self._results[layer_name] = data_object
         return self._results
 

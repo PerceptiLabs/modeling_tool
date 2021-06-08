@@ -2,6 +2,8 @@ const namespaced = true;
 
 const state = {
   isTestRunning: false,
+  testStatus: null,
+  testIntervalID: null,
   testData: []
 };
 
@@ -11,6 +13,9 @@ const getters = {
   },
   GET_testRunning(state) {
     return state.isTestRunning;
+  },
+  GET_testStatus(state) {
+    return state.testStatus;
   }
 };
 
@@ -20,6 +25,15 @@ const mutations = {
   },
   setTestRunningMutation(state, value) {
     state.isTestRunning = value;
+  },
+  setTestRunningMutation(state, value) {
+    state.isTestRunning = value;
+  },
+  setTestStatusMutation(state, value) {
+    state.testStatus = value;
+  },
+  setTestIntervalIDMutation(state, value) {
+    state.testIntervalID = value;
   }
 };
 
@@ -27,11 +41,24 @@ const actions = {
   setTestData(ctx, value){
     ctx.commit('setTestDataMutation', value)
   },
-  testStart({commit}) {
-    commit('setTestRunningMutation', true)
+  testStart({ dispatch, commit }) {
+    commit("setTestRunningMutation", true);
+
+    const intervalID = setInterval(() => {
+      dispatch('mod_api/API_getTestStatus', null, { root: true });
+    }, 1000);
+    commit('setTestIntervalIDMutation', intervalID);
   },
-  testFinish({commit}) {
-    commit('setTestRunningMutation', false)
+  testFinish({ commit, state }) {
+    commit("setTestStatusMutation", null);
+    commit("setTestRunningMutation", false);
+    if (state.testIntervalID) {
+      clearInterval(state.testIntervalID);
+    }
+    commit('setTestIntervalIDMutation', null);
+  },
+  setTestMessage({commit}, payload) {
+    commit("setTestStatusMutation", payload);
   }
 };
 

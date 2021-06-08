@@ -4,35 +4,35 @@ import numpy as np
 import tensorflow as tf
 import platform
 import shutil
+import threading
 
 from perceptilabs.logconf import APPLICATION_LOGGER, USER_LOGGER
 from perceptilabs.createDataObject import createDataObject, subsample_data
 import perceptilabs.logconf
 import perceptilabs.utils as utils
 from perceptilabs.testcore import TestCore, ProcessResults
+from perceptilabs.CoreThread import CoreThread
+
 
 logger = logging.getLogger(APPLICATION_LOGGER)
 user_logger = logging.getLogger(USER_LOGGER)
 
-class CreateTestCore():
-    def __init__(self, receivers, issue_handler):
-        self._issue_handler = issue_handler
-        self._receivers = receivers
-    
-    def run(self):
-        core = TestCore(self._receivers, self._issue_handler)
-        return core
 
-class GetTestResults():
+class TestLogic():
     """Main Class that does all the computations for the tests and returns the results
     """
-    def __init__(self, models_info, testcore, tests):
+
+    def __init__(self, issue_handler, model_ids):
+        self._issue_handler = issue_handler
+        self._model_ids = model_ids
+        self._stopped = False
+
+    def setup_test_interface(self, models_info, tests):
         self._models_info = models_info
         self._tests = tests
-        self._testcore = testcore
-        #TODO(mukund): load data for all the models at once once project hub is up
-        
-    def run(self, data_loader, user_email=None):
+        self._results = {}
+
+    def run(self, user_email=None):
         """
         Runs all the tests for all the models iteratively.
 
@@ -41,21 +41,45 @@ class GetTestResults():
         Returns:
             results: returns dict containing required test results in the appropriate format
         """
-        results = {}
-        for receiver_id in self._models_info:
-            model_info = self._models_info[receiver_id]
-            self._testcore.load_data(data_loader)
-            self._testcore.load_model(
-                receiver_id, model_path=model_info['model_path'], graph_spec=model_info['graph_spec'], data_loader=data_loader
-            )
+        self._core = TestCore(
+            model_ids=self._model_ids,
+            models_info=self._models_info,
+            tests=self._tests,
+            issue_handler=self._issue_handler,
+            user_email=user_email,
+        )
+        self._core.load_models_and_data()
+        self._start_testing_thread()
+        return "Testing started."
 
-        unprocessed_results = self._testcore.run_tests(tests=self._tests, user_email=user_email) #TODO(mukund): use corethread to run the tests.
+    def _start_testing_thread(self):
+        try:
+            threading.Thread(target=self._core.run, daemon=True).start()
+        except Exception as e:
+            message = "Could not boot up the new thread to run the computations on because of: " + \
+                str(e)
+            with self._issue_handler.create_issue(message, e) as issue:
+                self._issue_handler.put_error(issue.frontend_message)
+                logger.error(issue.internal_message)
+        else:
+            logger.info(
+                f"Started core for computing {self._tests} for {self._model_ids}")
+
+    def get_results(self):
+        if not self._stopped:
+            unprocessed_results = self._core.get_results()
+            self._update_results(unprocessed_results)
+            return self._results
+        else:
+            return 'tests were stopped.'
+
+    def _update_results(self, unprocessed_results):
         for test in self._tests:
-            results[test] = {}
-            for receiver_id in unprocessed_results:
-                processed_output = self._process_results(unprocessed_results[receiver_id][test], test)
-                results[test][receiver_id] = processed_output
-        return results
+            self._results[test] = {}
+            for model_id in unprocessed_results:
+                processed_output = self._process_results(
+                    unprocessed_results[model_id][test], test)
+                self._results[test][model_id] = processed_output
 
     def _process_results(self, results, test):
         """Process the results into required format for frontend
@@ -65,9 +89,24 @@ class GetTestResults():
         """
         processed_output = ProcessResults(results, test).run()
         return processed_output
-    
-    
-    
-    
-    
-    
+
+    def process_request(self, request, value=None):
+        if request == 'StartTest':
+            if value:
+                user_email = value['user_email']
+            return self.run(user_email)
+        elif request == 'Stop':
+            return self.stop()
+        elif request == 'GetResults':
+            return self.get_results()
+        elif request == 'GetStatus':
+            return self.get_status()
+        else:
+            pass
+
+    def get_status(self):
+        return self._core.get_status()
+
+    def stop(self):
+        self._stopped = True
+        return self._core.stop()

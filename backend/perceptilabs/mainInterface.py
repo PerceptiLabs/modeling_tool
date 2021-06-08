@@ -61,8 +61,7 @@ from perceptilabs.lwInterface import (
 
 #Test interface
 from perceptilabs.testInterface import (
-    CreateTestCore,
-    GetTestResults
+    TestLogic
 )
 
 logger = logging.getLogger(APPLICATION_LOGGER)
@@ -209,7 +208,7 @@ class Interface():
         Args:
             receivers (str): receiver id for request
         """
-        self._testcore = CreateTestCore(receivers, self._issue_handler).run()
+        self._testcore = TestLogic(receivers, self._issue_handler)
 
     def shutDown(self):
         for c in self._cores.values():
@@ -281,8 +280,10 @@ class Interface():
             scope.set_extra("value",value)
 
         if receiver == 'tests':
-            receiver_ids = value.keys()
-            self._set_testcore(receiver_ids)
+            model_ids = value.keys()
+            self._set_testcore(model_ids)
+        elif receiver == 'test_requests':
+            pass
         else:
             self._setCore(receiver)
         
@@ -431,9 +432,6 @@ class Interface():
             response = self._core.get_global_training_statistics()
             return response
         
-        elif action == "getTestingStatistics":
-            response = self._core.getTestingStatistics(value)
-            return response
 
         elif action == "getS3Keys":
             adapter = S3BucketAdapter(value['bucket'],
@@ -443,19 +441,6 @@ class Interface():
 
         elif action == "Start":
             return self._create_response_start_training(value)
-
-        elif action == "startTest":
-            graph_spec = self._network_loader.load(value, as_spec=True)
-            model_id = value.get('modelId', None)
-            training_settings = value.get('trainSettings', None)
-            if model_id is not None:
-                model_id = int(model_id)
-            response = self._core.startTest(graph_spec, model_id, training_settings)
-            return response
-
-        elif action =="getTestStatus":
-            response = self._core.getTestStatus()
-            return response
 
         elif action == "nextStep":
             response = self._core.nextStep()
@@ -534,6 +519,18 @@ class Interface():
 
         elif receiver == "tests":
             response = self._create_response_tests(value, action)
+            return response
+
+        elif action == "getTestResults":
+            response = self._testcore.process_request('GetResults')
+            return response
+
+        elif action == 'getTestStatus':
+            response = self._testcore.process_request('GetStatus')
+            return response
+
+        elif action == "StopTests":
+            response = self._testcore.process_request('Stop')
             return response
         else:
             raise LookupError(f"The requested action '{action}' does not exist")
@@ -702,23 +699,24 @@ class Interface():
 
     def _create_response_tests(self, value, action):
         models_info = {}
-        receiver_ids = value.keys()
-        for receiver in receiver_ids:
-            value_dict = value[receiver]
+        model_ids = value.keys()
+        for model_id in model_ids:
+            value_dict = value[model_id]
             graph_spec = self._network_loader.load(value_dict, as_spec=True)
-            models_info[receiver] = {
+            dataset_settings = action['datasetSettings'][model_id]
+            data_loader = DataLoader.from_dict(dataset_settings)
+            models_info[model_id] = {
                 'graph_spec': graph_spec, 
                 'model_path':value_dict['model_path'], 
                 'data_path':value_dict['data_path'],
+                'data_loader':data_loader,
             } 
         tests = action["tests"]
         user_email = action['user_email']
-        dataset_settings = action['datasetSettings']
-        data_loader = DataLoader.from_dict(dataset_settings)
-        
         logger.info('List of tests %s have been requested for models %s', action['tests'], value.keys())
-        results = GetTestResults(models_info, self._testcore, tests).run(data_loader, user_email=user_email)
-        response = {'action':action,'value':results}
+        self._testcore.setup_test_interface(models_info, tests)
+        response = self._testcore.process_request(
+            'StartTest', {'user_email':user_email})
         return response
     
     def _create_response_data_selected(self, request_value):

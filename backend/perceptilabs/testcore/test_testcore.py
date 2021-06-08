@@ -69,17 +69,25 @@ def testcore(graph_spec_few_epochs, temp_path, script_factory, data_loader):
     training_model = TrainingModel(script_factory, graph_spec_few_epochs)
     exporter = Exporter(graph_spec_few_epochs, training_model, data_loader)
     exporter.export_checkpoint(temp_path)
-    testcore = TestCore([1], IssueHandler())
-    testcore.load_model(1, temp_path, graph_spec_few_epochs, data_loader)
-    testcore.load_data(data_loader)
+    models_info = {
+        1: {
+            'graph_spec': graph_spec_few_epochs,
+            'model_path': temp_path,
+            'data_path': csv_path,
+            'data_loader': data_loader
+        }
+    }
+    tests = []
+    testcore = TestCore([1], models_info, tests, IssueHandler())
+    testcore.load_models_and_data()
     yield testcore
 
 def test_testcore_is_loading_data(testcore, data_loader):
-    assert type(testcore._data_loader).__name__ == 'DataLoader'
+    assert type(data_loader).__name__ == 'DataLoader'
     dataset_generator = data_loader.get_dataset(partition='test').batch(1) 
     for input_1, _ in dataset_generator:
         data1 = input_1
-    for input_2, _ in testcore._get_data_generator():
+    for input_2, _ in testcore._get_data_generator(1):
         data2 = input_2
     assert data1 == data2
 
@@ -87,15 +95,17 @@ def test_model_is_loaded_from_checkpoint(testcore):
     assert testcore._models[1]._model is not None
 
 def test_model_outputs_structure_is_accurate(testcore):
-    data_iterator = testcore._get_data_generator()
+    data_iterator = testcore._get_data_generator(1)
     model_outputs = testcore._models[1].run_inference(data_iterator)
     assert list(model_outputs.keys()) == ['outputs', 'labels']
     assert list(model_outputs['outputs'][0].keys()) == ['y1']
     assert list(model_outputs['labels'][0].keys()) == ['y1']
 
 def test_model_has_compatible_output_layers_for_confusionmatrix(testcore):
-    layers = testcore.get_compatible_output_layers('confusion_matrix', [1])
+    layers = testcore.get_compatible_output_layers('confusion_matrix', 1)
     assert layers == ['y1']
+
+
                                                      
 
 

@@ -106,7 +106,7 @@ export default {
     },
     run() {
       const selectedTestTypes = this.getSelectedTest(this.testTypes);
-      this.$store.dispatch('mod_api/API_getTestResults', {
+      this.$store.dispatch('mod_api/API_testStart', {
         dataPath: this.dataPath,
         model_paths: this.modelsFolderPaths,
         testTypes: selectedTestTypes,

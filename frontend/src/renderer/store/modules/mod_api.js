@@ -390,7 +390,7 @@ const actions = {
   //---------------
   //  NETWORK TRAINING
   //---------------
-  API_getTestResults({dispatch, getters, rootGetters}, payload) {
+  API_testStart({dispatch, getters, rootGetters}, payload) {
     const { modelIds, model_paths }  = payload;
     
     let value = {};
@@ -407,22 +407,60 @@ const actions = {
       action: {
         tests: payload.testTypes,
         user_email: rootGetters['mod_user/GET_userEmail'],
-        datasetSettings: rootGetters['mod_workspace/GET_currentNetworkDatasetSettings']
+        datasetSettings: modelIds.reduce((acc, id) => {
+          const network = rootGetters['mod_workspace/GET_networkByNetworkId'](id);
+          return { ...acc, [id]: network.networkMeta.datasetSettings };
+        }, {})
       },
       value,
     }
-    console.log(theData);
     dispatch('mod_test/testStart', null, {root: true});
-    return coreRequest(theData)
-      .then((data)=> {
-        dispatch('mod_test/setTestData', data.value, {root: true});
-        dispatch('mod_test/testFinish', null, {root: true});
-        dispatch('mod_webstorage/saveTestStatistic', data.value, { root: true });
-      })
-      .catch((err)=> {
-        console.error(err);
-      });
+    return coreRequest(theData).catch((err) => {
+      console.error(err);
+    })
   },
+  API_testStop({dispatch}) {
+    const theData = {
+      receiver: 'stop_tests',
+      action: 'StopTests'
+    }
+    return coreRequest(theData).then(() => {
+      dispatch('mod_test/testFinish', null, {root: true});
+    }).catch((err) => {
+      console.error(err);
+    })
+  },
+  API_getTestStatus({dispatch}) {
+    const theData = {
+      receiver: 'test_status',
+      action: 'getTestStatus',
+    }
+    return coreRequest(theData).then((data)=> {
+      if (data.status === 'Completed') {
+        dispatch('API_getTestResults');
+      } else {
+        dispatch('mod_test/setTestMessage', [data.update_line_1, data.update_line_2], {root: true})
+      }
+    })
+    .catch((err)=> {
+      console.error(err);
+    });
+  },
+  API_getTestResults({dispatch}) {
+    const theData = {
+      receiver: 'test_requests',
+      action: 'getTestResults',
+    }
+    return coreRequest(theData).then((data)=> {
+      dispatch('mod_test/setTestData', data, {root: true});
+      dispatch('mod_test/testFinish', null, {root: true});
+      dispatch('mod_webstorage/saveTestStatistic', data, { root: true });
+    })
+    .catch((err)=> {
+      console.error(err);
+    });
+  },
+
   API_startTraining({dispatch, getters, rootGetters}, { loadCheckpoint = false } = {}) {
     const network = rootGetters['mod_workspace/GET_currentNetwork'];
     const datasetSettings = rootGetters['mod_workspace/GET_currentNetworkDatasetSettings'];

@@ -436,18 +436,6 @@ class coreLogic():
         #Check if validation was skipped or not before returning message
         return {"content":"skipped validation"}
 
-    def getTestStatus(self):
-        try:
-            if self.savedResultsDict["maxTestIter"]!=0:
-                if self.status=="Running":
-                    return {"Status":self.savedResultsDict["trainingStatus"],"Iterations":self.testIter, "Progress": self.testIter/(self.savedResultsDict["maxTestIter"]-1)}
-                else:
-                    return {"Status":self.status,"Iterations":self.testIter, "Progress": self.testIter/(self.savedResultsDict["maxTestIter"])}
-            else:
-                return {"content":"Max Test Iterations are 0"}
-        except KeyError:
-            return {}
-
     def get_cpu_and_mem(self):
         cpu = psutil.cpu_percent()
         mem = dict(psutil.virtual_memory()._asdict())["percent"]
@@ -501,30 +489,6 @@ class coreLogic():
         except KeyError as e:
             logger.debug(f"Key Error in getStatus: {repr(e)}")
             return {}
-
-    def startTest(self, graph_spec, model_id, training_settings=None):
-        if not self.isRunning()['content'] :
-            self.set_running_mode('testing')
-            self.start_core(graph_spec, model_id, training_settings)
-            return {"content":"core started for testing"}
-        else:
-            return {"content":"test already running"}
-
-    def nextStep(self):
-        """Sends advance_testing request during testing.
-        """
-        if not (self.cThread and self.cThread.isAlive()):
-            return {'content': False}
-        else:
-            if self.cThread:
-                self.commandQ.put(
-                        CoreCommand(
-                            type='advance_testing',
-                            parameters={},
-                            allow_override=True
-                        )
-                    )
-        return {"content":"Current sample is: "+str(self.testIter)}
 
     def scheduleAggregations(self, engine: AggregationEngine, requests: List[AggregationRequest]):
         """ Schedules a batch of metric aggregations 
@@ -622,33 +586,6 @@ class coreLogic():
             if logger.isEnabledFor(logging.DEBUG):
                 message += " savedResultsDict: " + pprint.pformat(self.savedResultsDict)
             logger.exception(message)
-
-
-    def getTestingStatistics(self,value):
-        layer_id = value["layerId"]
-        layer_type = value["layerType"]
-        view = value["view"]
-        
-        try:
-            self.batch_size=1
-            self.resultDict=self.testList
-        except IndexError:
-            #TODO: There should never be able to be an index error here.
-            logger.exception("Error in getTestingStatistics")
-            return {}
-        except KeyError:
-            logger.exception("Error in getTestingStatistics")
-            return {}
-
-        try:
-            layer_statistics = self.getLayerStatistics(layer_id, layer_type, view)            
-            return layer_statistics
-        except:
-            message = f"Error in getTestingStatistics. layer_id = {layer_id}, layer_type = {layer_type}, view = {view}."            
-            if logger.isEnabledFor(logging.DEBUG):
-                message += " savedResultsDict: " + pprint.pformat(self.savedResultsDict)
-            if not self.resultQ.empty():
-                logger.exception(message)
 
     def getEndResults(self):
         #TODO: Show in frontend results for each end layer, not just for one.

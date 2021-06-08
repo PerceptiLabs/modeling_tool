@@ -13,7 +13,7 @@
           //-     )
           button.btn.btn--primary.new-test(@click="runTest()") + New Test
         .chart-wrapper
-          template(v-for="(testTypes, key) in testData")
+          template(v-for="(testTypes, key) in testData" v-if="!!testTypes")
             template(
               v-if="key === 'metrics_table'"
             )
@@ -41,7 +41,8 @@
     .test-overlay(v-if="isTestRunning")
       .spinner
         chart-spinner
-      span Test is running
+      p.text-center {{testStatus && testStatus[0]}}
+      p.text-center {{testStatus && testStatus[1]}}
     test-configuration-popup(v-if="isTestConfigurationPopupOpened")
 </template>
 
@@ -73,6 +74,9 @@ export default {
       this.$store.dispatch("mod_test/setTestData", res, { root: true });
     });
   },
+  destroyed() {
+    this.$store.dispatch('mod_api/API_testStop', null, { root: true });
+  },
   data() {
     return {
       chartStyles,
@@ -90,7 +94,8 @@ export default {
   computed: {
     ...mapGetters({
       testData: "mod_test/GET_testData",
-      isTestRunning: "mod_test/GET_testRunning"
+      isTestRunning: "mod_test/GET_testRunning",
+      testStatus: "mod_test/GET_testStatus"
     }),
     ...mapState({
       isTestConfigurationPopupOpened: state =>
@@ -110,7 +115,7 @@ export default {
     },
     getMetricTableFeatures(data) {
       const chartData = getFirstElementFromObject(data);
-      return Object.keys(chartData);
+      return chartData ? Object.keys(chartData) : [];
     }
   }
 };
@@ -167,13 +172,14 @@ export default {
   bottom: 0;
   right: 0;
   left: 0;
+  z-index: 11;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-direction: column;
   background-color: rgba(35, 37, 42, 0.5);
 
-  span {
+  p {
     font-size: 16px;
   }
 }

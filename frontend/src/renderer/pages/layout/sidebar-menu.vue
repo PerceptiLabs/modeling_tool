@@ -428,6 +428,7 @@
     width: 46px;
     height: 100%;
     background: #23252A;
+    z-index: 100;
     // border-right: 1px solid rgba(97, 133, 238, 0.4);
     // box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
   }
