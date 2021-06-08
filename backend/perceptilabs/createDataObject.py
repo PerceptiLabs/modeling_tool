@@ -10,6 +10,7 @@ MIN_IMAGE_SIZE = 10
 MIN_1D_SIZE = 1000
 
 TYPE_BAR       = "bar"
+TYPE_BAR_D     = "bar_detailed"
 TYPE_LINE      = "line"
 TYPE_GRAYSCALE = "grayscale"
 TYPE_RGBA      = "rgba"
@@ -110,6 +111,32 @@ def bar(data_vec: np.ndarray, ratio: int = 1):
     obj = {"x_data": x_data, "data": data}
     return obj
 
+def bar_detailed(data_vec: np.ndarray, ratio: int = 1):
+    '''Subsamples n-dimensional array into bar format'''
+    _, y_data = subsample(data_vec, ratio)
+    x_data = list(range(len(y_data)))
+    data = convertToList(y_data)
+    series_data = list()
+
+    # Gets indiviudal bar stacks and appends them to a list
+    for i in range(len(data)):
+        series_data.append(
+            {
+                'name': str(i),
+                'type': 'bar', 
+                'stack': 'total', 
+                'label': {'show': True},
+                'emphasis': {'focus': 'series'}, 
+                'data': data[i]
+            }
+        )
+    
+    obj = {
+        "x_data": x_data,
+        "data": series_data
+    }
+
+    return obj
 
 def line(data_vec: np.ndarray, ratio: int = 1):
     '''Subsamples n-dimensional array into line format'''
@@ -124,7 +151,6 @@ def heatmap(data_vec: np.ndarray, ratio: int = 1):
     '''Subsamples n-dimensional array into heatmap format'''
     x_data, y_data = subsample(data_vec, ratio)
     data = convertToList(y_data)
-    
     new_data = []
     for i in range(len(data)):
         for j in range(len(data[0])):
@@ -188,12 +214,15 @@ def pie(data_vec: np.ndarray):
     return output
 
 
-def getType(data_vec: np.ndarray):
+def getType(data_vec: np.ndarray, type_: str = None):
     '''Given an n-dimensional array, find its type'''
     data_vec = np.asarray(data_vec)
 
     shape = data_vec.shape
     dims = len(shape)
+
+    if type_ == 'bar_detailed':
+        return TYPE_BAR_D
 
     if dims == 0:
         if data_vec == 0:
@@ -232,6 +261,8 @@ def create_type_object(data_vec: np.ndarray, type_: str, normalize: bool = True,
 
     if type_ == TYPE_BAR:
         type_object = bar(data_vec, ratio=subsample_ratio)
+    elif type_ == TYPE_BAR_D:
+        type_object = bar_detailed(data_vec, ratio=subsample_ratio)
     elif type_ == TYPE_LINE:
         type_object = line(data_vec, ratio=subsample_ratio)
     elif type_ == TYPE_RGBA:
@@ -286,7 +317,10 @@ def create_data_object(
     
     # Assert that each data vector has a type.
     for i in range(len(type_list), len(data_list)):
-        type_ = getType(data_list[i])
+        if 'bar_detailed' in type_list:
+            type_ = getType(data_list[i], 'bar_detailed')
+        else:
+            type_ = getType(data_list[i])
         type_list.append(type_)
 
     for data_vec, type_, style, name in itertools.zip_longest(data_list, type_list, style_list, name_list):
@@ -301,13 +335,19 @@ def create_data_object(
 
         if style:
             series_entry['linestyle'] = style
+        
             
         series_entry.update(type_object)        
         series_list.append(series_entry)
 
     data_object = dict()
-    data_object["xLength"] = data_list[0].size
-    data_object["series"]  = series_list
+
+    if type_=='bar_detailed':
+        data_object["xLength"] = len(data_list[0])
+        data_object["series"] = type_object["data"]
+    else:
+        data_object["xLength"] = data_list[0].size
+        data_object["series"]  = series_list
 
     if name_list:
         data_object["legend"] = {"data": [n for n in name_list]}

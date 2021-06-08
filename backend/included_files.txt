@@ -367,6 +367,7 @@ perceptilabs/stats/image.py
 perceptilabs/stats/utils.py
 perceptilabs/stats/accuracy.py
 perceptilabs/stats/iou.py
+perceptilabs/stats/multiclass_matrix.py
 perceptilabs/stats/loss.py
 
 # backend/perceptilabs/testcore/

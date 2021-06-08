@@ -9,12 +9,19 @@ const chartsMixin = {
     customColor: {
       type: Array
     },
+    chartOptions: {
+      type: Object,
+      default: function(){ return {} }
+    },
   },
   
   created() {
+    Object.keys(this.chartOptions).map(optionKey => {
+      this.defaultModel[optionKey] = this.chartOptions[optionKey];
+    })
+    
     this.chartModel = this.defaultModel;
   },
-
   beforeMount() {
     if(this.isNotPicture) {
       this.applyCustomColor();

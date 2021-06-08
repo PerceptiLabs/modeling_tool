@@ -16,6 +16,34 @@
               :chart-data="chartData.Accuracy.OverEpochs"
               :custom-color="colorListAccuracy"
             )
+        .statistics-box_main.statistics-box_col(v-if="chartData.hasOwnProperty('LossAndAccuracy')")
+          .statistics-box_row
+            chart-switch(
+              key="1"
+              chart-label="Loss over all epochs"
+              :chart-data="chartData.LossAndAccuracy.LossOverEpochs"
+              :custom-color="colorListAccuracy"
+            )
+            chart-switch(
+              key="2"
+              chart-label="Accuracy over all epochs"
+              :chart-data="chartData.LossAndAccuracy.AccOverEpochs"
+              :custom-color="colorListAccuracy"
+            )
+        .statistics-box_main.statistics-box_col(v-if="chartData.hasOwnProperty('PvGAndConfusionMatrix')")
+          .statistics-box_row
+            chart-switch(
+              key="3"
+              chart-label="Prediction vs Ground truth"
+              :chart-data="chartData.PvGAndConfusionMatrix.Sample"
+              :custom-color="colorList"
+            )
+            chart-switch(
+              key="4"
+              chart-label="Predictions for Each Class"
+              :chart-data="chartDataPvGAndConfusionMatrixLastEpoch(chartData.PvGAndConfusionMatrix.LastEpoch)"
+              :custom-color="colorList"
+            )
         .statistics-box_main.statistics-box_col(v-if="chartData.hasOwnProperty('PvG')")
           .statistics-box_row
             chart-switch(
@@ -138,6 +166,10 @@ export default {
           break;
       }
     },
+    chartDataPvGAndConfusionMatrixLastEpoch(data) {
+      data.legend.data = [];
+      return data;
+    }
   }
 }
 </script>

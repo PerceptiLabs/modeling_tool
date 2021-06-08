@@ -23,6 +23,7 @@
         :chart-label="chartLabel"
         :disable-header="disableHeader"
         :chart-data="imgData"
+        :chartOptions="chartOptions",
         :custom-color="customColor"
         :chartIdx="chartIdx"
         @chartIdxChange="handleChartIdxChange"
@@ -85,7 +86,11 @@
             main: {},
           };
         },
-      }
+      },
+      chartOptions: {
+        type: Object,
+        default: function(){ return {} }
+  }
     },
     created() {
       this.imgType = '';
