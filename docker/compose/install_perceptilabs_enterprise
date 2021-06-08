@@ -165,7 +165,7 @@ source_config(){
 }
 
 maybe_get_docker_password(){
-  [ ! -d "${CONFIG_DIR}" ] && mkdir -p "${CONFIG_DIR}"
+  make_config_dir
 
   # if we have a tarball, then we don't need a password
   if is_airgapped; then

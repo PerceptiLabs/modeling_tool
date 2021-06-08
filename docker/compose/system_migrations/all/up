@@ -6,11 +6,10 @@ MIGRATIONS_DIR=$(dirname $(dirname $0))
 
 make_directories(){
   mkdir -p plabsdb
-  chmod 777 plabsdb
+  sudo chmod -R 777 plabsdb
 
   mkdir -p plabs/data
-  chmod 777 plabs
-  chmod 777 plabs/data
+  sudo chmod -R 777 plabs/data
 }
 
 install_config(){

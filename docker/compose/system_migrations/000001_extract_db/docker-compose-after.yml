@@ -3,7 +3,7 @@ version: '3.4'
 services:
   db:
     image: postgres:12
-    restart: always
+    restart: unless-stopped
     volumes:
       - ${PL_ROOT_DIR}/plabsdb:/var/lib/postgresql/data
     environment:
@@ -14,7 +14,7 @@ services:
 
   rygg:
     image: ${CONTAINER_REGISTRY}/rygg:${PL_VERSION}
-    restart: always
+    restart: unless-stopped
     environment:
       DJANGO_DATABASE: postgres
       DB_NAME: rygg
@@ -26,14 +26,14 @@ services:
 
   frontend:
     image: ${CONTAINER_REGISTRY}/frontend:${PL_VERSION}
-    restart: always
+    restart: unless-stopped
     depends_on:
       - rygg
       - kernel
 
   kernel:
     image: ${CONTAINER_REGISTRY}/kernel:${PL_VERSION}
-    restart: always
+    restart: unless-stopped
     volumes:
       - ${PL_ROOT_DIR}/plabs:/perceptilabs/Documents/Perceptilabs
     environment:
@@ -49,7 +49,7 @@ services:
 
   nginx:
     image: nginx
-    restart: always
+    restart: unless-stopped
     ports:
       - "80:80"
     volumes:
