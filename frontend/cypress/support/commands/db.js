@@ -1,3 +1,0 @@
-Cypress.Commands.add('resetAll', () => {
-    
-});

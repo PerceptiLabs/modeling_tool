@@ -1,7 +1,7 @@
-const kcRoot = 'https://keycloak.dev.perceptilabs.com:8443';
-const kcRealm = 'vue-perceptilabs';
-const kcClient = 'vue-perceptilabs-client-id';
-const kcRedirectUri = 'http://localhost:8080/';
+const kcRoot = Cypress.env('KEYCLOACK_BASE_URL');
+const kcRealm = Cypress.env('KEYCLOACK_RELM');
+const kcClient = Cypress.env('KEYCLOACK_CLIENT_ID');
+const kcRedirectUri = Cypress.env('APP_URL');
 
 Cypress.Commands.add('kcLogin', (username, password) => {
   const loginPageRequest = {

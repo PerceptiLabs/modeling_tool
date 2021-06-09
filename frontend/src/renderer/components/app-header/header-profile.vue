@@ -1,7 +1,7 @@
 <template lang="pug">
   div.profile-wrapper
     div.profile-item
-      .profile-item-Avatar.with-border.f-nunito(
+      .profile-item-Avatar.with-border.f-nunito#user-avatar(
         :data-tutorial-target="'tutorial-model-hub-user-gravatar'"
       )
         | {{user && user.email && user.email[0].toUpperCase()}}

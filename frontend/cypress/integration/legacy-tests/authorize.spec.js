@@ -1,5 +1,5 @@
 it('Should authorize the user', () => {
-  cy.visit('http://localhost:8080/');
+  cy.visit('/');
   if(!sessionStorage.getItem("fileserver_token")) {
     cy.location('pathname', {timeout: 30000});
     cy.fixture('userCredentials').then((user)  => {
