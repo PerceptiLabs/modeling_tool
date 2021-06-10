@@ -23,7 +23,7 @@ jobs:
     matrix:
       linux_py3.6:
         artifact: linux_3.6_wheel
-        image: 'ubuntu-16.04'
+        image: 'ubuntu-latest'
         pyver: '3.6'
       osx_py3.6:
         artifact: osx_3.6_wheel
