@@ -196,22 +196,38 @@ get_user_input(){
   maybe_get_docker_password
 
   if [ -z "${KC_ROOT_USER:-}" ]; then
+    if [ $opt_headless -eq 1 ]; then
+      echo "KC_ROOT_USER must be set to run in headless mode"
+      exit 1
+    fi
     read -p "Enter the new keycloak master username [default: admin]: "
     export KC_ROOT_USER="${REPLY:-admin}"
   fi
 
   while [ -z "${KC_ROOT_PWD:-}" ]; do
+    if [ $opt_headless -eq 1 ]; then
+      echo "KC_ROOT_PWD must be set to run in headless mode"
+      exit 1
+    fi
     read -s -p "Enter the new keycloak master password: "
     export KC_ROOT_PWD="${REPLY}"
     echo
   done
 
   if [ -z "${KC_FIRST_USER:-}" ]; then
+    if [ $opt_headless -eq 1 ]; then
+      echo "KC_FIRST_USER must be set to run in headless mode"
+      exit 1
+    fi
     read -p "Enter the first PerceptiLabs user's email [default: first@user.test]: "
     export KC_FIRST_USER="${REPLY:-first@user.test}"
   fi
 
   if [ -z "${KC_INITIAL_PWD:-}" ]; then
+    if [ $opt_headless -eq 1 ]; then
+      echo "KC_INITIAL_PWD must be set to run in headless mode"
+      exit 1
+    fi
     read -p "Enter the first Perceptilabs user's password [default: resetme]: "
     export KC_INITIAL_PWD="${REPLY:-resetme}"
   fi
