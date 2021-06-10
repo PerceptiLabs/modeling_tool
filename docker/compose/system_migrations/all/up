@@ -9,7 +9,7 @@ make_directories(){
   sudo chmod -R 777 plabsdb
 
   mkdir -p plabs/data
-  sudo chmod -R 777 plabs/data
+  sudo chmod -R 777 plabs
 }
 
 install_config(){
