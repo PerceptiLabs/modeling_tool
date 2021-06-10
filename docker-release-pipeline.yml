@@ -5,7 +5,7 @@ parameters:
   - name: build_id_to_deploy
     displayName: Build ID to deploy
     type: string
-  
+
 jobs:
   - job: checkvars
     displayName: Check Variables
@@ -106,10 +106,19 @@ jobs:
         inputs:
           targetType: 'inline'
           script: |
-            cat install_perceptilabs_enterprise | sed "s/^VERSION=.*$/VERSION=$(Build.SourceBranchName)/g" > temp
-            mv temp install_perceptilabs_enterprise
+            set -eu
+            sed --in-place "s|^AZURE_BLOB_URL=.*$|AZURE_BLOB_URL=${AZURE_BLOB_URL}|g" install_perceptilabs_enterprise
+            sed --in-place "s|^export CONTAINER_REGISTRY=.*|export CONTAINER_REGISTRY=\"\${CONTAINER_REGISTRY:-${CONTAINER_REGISTRY}}\"|g" install_perceptilabs_enterprise
+            sed --in-place "s|^DOCKER_USERNAME=.*$|DOCKER_USERNAME=${DOCKER_USERNAME}|g" install_perceptilabs_enterprise
+            sed --in-place "s|^export PL_VERSION=.*|export PL_VERSION=\"\${PL_VERSION:-${PL_VERSION}}\"|g" install_perceptilabs_enterprise
           workingDirectory: '$(System.ArtifactsDirectory)/installation'
           failOnStderr: true
+        env:
+          AZURE_BLOB_URL: https://perceptilabs.blob.core.windows.net/enterprise
+          CONTAINER_REGISTRY: perceptilabsenterprise.azurecr.io
+          DOCKER_USERNAME: enterpriseuser
+          PL_VERSION: $(Build.SourceBranchName)
+
 
       - task: AzureFileCopy@4
         displayName: publish the installation files to $(Build.SourceBranchName)
