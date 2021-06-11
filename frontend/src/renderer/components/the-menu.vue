@@ -53,7 +53,6 @@ export default {
       isLogin:                    'mod_user/GET_userIsLogin',
       networkHistory:             'mod_workspace-history/GET_currentNetHistory',
       isDefaultProjectMode:       'mod_project/GET_isDefaultProjectMode',
-      isNotebookMode:             'mod_notebook/getNotebookMode',
       currentModel:               'mod_workspace/GET_currentNetwork',
     }),
     ...mapState({
@@ -276,8 +275,8 @@ export default {
               [{label: "View Projects", active: this.setActivePage},]
             ),
             {type: 'separator'},
-            {label: 'Save',         accelerator: this.isMac ? 'meta+s' : 'ctrl+s',              enabled: this.openApp && !this.isNotebookMode,  active: this.saveModel },
-            {label: 'Save as',   accelerator: this.isMac ? 'meta+shift+s' : 'ctrl+shift+s',     enabled: this.openApp && !this.isNotebookMode,  active: this.saveModelAs },
+            {label: 'Save',         accelerator: this.isMac ? 'meta+s' : 'ctrl+s',              enabled: this.openApp,  active: this.saveModel },
+            {label: 'Save as',   accelerator: this.isMac ? 'meta+shift+s' : 'ctrl+shift+s',     enabled: this.openApp,  active: this.saveModelAs },
             {type: 'separator'},
             {label: 'Export',  active: this.exportModel,        enabled: this.isCurrentModelOpened && this.openApp},
             {label: 'Export to GitHub',  active: this.exportModelToGithub,        enabled: this.isCurrentModelOpened && this.openApp && this.showExport, visible: this.showExport},

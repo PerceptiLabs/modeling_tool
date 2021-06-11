@@ -2,7 +2,6 @@
   button.toggle-button(
     :class="{'is-open': isClosed}"
     @click="toggleSidebar()"
-    v-if="!isNotebookMode"
     data-testing-target="sidebar-tootle-btn"
     )
     svg.toggle-icon(
@@ -26,9 +25,6 @@ export default {
     isClosed() {
       return this.$store.state.globalView.hideSidebar
     },
-    ...mapGetters({
-      isNotebookMode:       'mod_notebook/getNotebookMode',
-    })
    },
    methods: {
      ...mapActions({

@@ -19,14 +19,13 @@ import ExportNetwork          from "@/components/global-popups/export-network.vu
 import ExportNetworkGitHub    from "@/components/global-popups/export-network-git-hub.vue";
 import ImportModel            from "@/components/global-popups/import-model-popup.vue";
 import FilePickerPopup        from "@/components/global-popups/file-picker-popup.vue";
-import GlobalTrainingSettings        from "@/components/global-popups/global-training-settings.vue";
+import GlobalTrainingSettings from "@/components/global-popups/global-training-settings.vue";
 import TheTesting             from "@/components/statistics/the-testing.vue";
 import TheViewBox             from "@/components/statistics/the-view-box";
 import StartTrainingSpinner   from '@/components/different/start-training-spinner.vue'
 import TheMiniMap             from '@/components/different/the-mini-map.vue'
 import TheToaster             from '@/components/different/the-toaster.vue'
 import TheSidebar             from '@/components/the-sidebar.vue'
-import Notebook               from '@/components/notebooks/notebook-container.vue';
 import CodeWindow             from '@/components/workspace/code-window/workspace-code-window.vue';
 import InformationPanel       from '@/components/workspace/information-panel/information-panel.vue';
 import EmptyNavigation        from '@/components/empty-navigation/empty-navigation.vue';
@@ -50,7 +49,7 @@ export default {
     TheTesting, TheViewBox, StartTrainingSpinner,
     TheToaster, TheMiniMap, FilePickerPopup, TheSidebar,
     CodeWindow, InformationPanel,
-    Notebook, ResourceMonitor, SelectModelModal,
+    ResourceMonitor, SelectModelModal,
     ViewBoxBtnList, EmptyNavigation,
     ModelStatus,
     MiniMapNavigation,
@@ -121,7 +120,6 @@ export default {
       isTutorialMode:     'mod_tutorials/getIsTutorialMode',
       getShowTutorialTips:'mod_tutorials/getShowTutorialTips',
       getCurrentStepCode: 'mod_tutorials/getCurrentStepCode',
-      isNotebookMode:     'mod_notebook/getNotebookMode',
       emptyNavigationMode:'mod_empty-navigation/getEmptyScreenMode',
       isTraining:         'mod_workspace/GET_networkIsTraining',
       currentNetwork:     'mod_workspace/GET_currentNetwork',
@@ -481,7 +479,6 @@ export default {
           } else {
             parent.SET_emptyScreenMode(1);
             parent.$store.commit('mod_workspace/set_currentModelIndex', -1);
-            parent.$store.dispatch('mod_notebook/SET_notebookMode', false);
           }
         }
       }

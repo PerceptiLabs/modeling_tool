@@ -76,23 +76,6 @@
             span Preview
             .ring-icon
           
-        div.horizontal-separator
-        
-        .button-container(v-tooltip:bottom="'Press to enter Modeling view'")
-          button.button-model-type.ml-0(
-            type="button"
-            :class="{'active': !isNotebookMode}"
-            @click="switchNotebookMode(false)" 
-          )
-            span Modeling
-        .button-container(v-tooltip:bottom="'Press to enter Notebook view'")
-          button.button-model-type.ml-0(
-            type="button"
-            :class="{'active': isNotebookMode}"
-            @click="switchNotebookMode(true)"
-            :data-tutorial-target="'tutorial-workspace-notebook-view-toggle'"          
-          )
-            span Notebook
         sidebar-toggle-button
     .layers-toolbar(v-if="!statisticsIsOpen && !testIsOpen")
       layers-toolbar
@@ -160,7 +143,6 @@ export default {
       networkIsOpen:        'mod_workspace/GET_networkIsOpen',
       isUsingModelWeights:  'mod_workspace/GET_currentNetworkModeWeightsState',
       networkHistory:       'mod_workspace-history/GET_currentNetHistory',
-      isNotebookMode:       'mod_notebook/getNotebookMode',
       modelTrainingSettings:'mod_workspace/GET_modelTrainingSetting'
     }),
     statusStartBtn() {
@@ -282,7 +264,6 @@ export default {
       skipValidTraining:    'mod_api/API_skipValidTraining',
       removeTooltip:        'mod_tutorials/removeTooltip',
       set_netMode:          'mod_workspace/SET_netMode',
-      set_notebookMode:     'mod_notebook/SET_notebookMode',
       toPrevStepHistory:    'mod_workspace-history/TO_prevStepHistory',
       toNextStepHistory:    'mod_workspace-history/TO_nextStepHistory',
       setCurrentView:       'mod_tutorials/setCurrentView',
@@ -295,12 +276,6 @@ export default {
     switchTutorialMode() {
       this.$refs.tutorialComponent.switchTutorialMode()
     },
-    switchNotebookMode(setNotebook) {
-      this.$store.dispatch('mod_tracker/EVENT_toolbarNotebookButtonToggle', setNotebook);
-      this.setNextStep({currentStep:'tutorial-workspace-notebook-view-toggle'});
-      this.set_notebookMode(setNotebook);
-    },
-    
     modalSettingsCb() {
       this.showSpinnerOnRun = true;
       this.setCurrentStatsIndex(this.currentNetworkIndex);

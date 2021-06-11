@@ -10,7 +10,7 @@
       include ./tabset/workspace-tabset.pug
     component.blue-left-border(:is="toolbarType" v-if="emptyNavigationMode==0")
     .workspace_content.bookmark_content.js-workspace.blue-border(
-      v-show="!isNotebookMode && emptyNavigationMode==0"  
+      v-show="emptyNavigationMode==0"  
       ref="workspaceNet"
       :class="{'workspace-relative' : showTrainingSpinner, 'open-statistics': statisticsIsOpen, 'is-drag-active': getIsWorkspaceDragEvent}"
       )
@@ -101,10 +101,9 @@
           span GPU
 
     .workspace_footer(
-      v-if="!isNotebookMode && emptyNavigationMode===0"
+      v-if="emptyNavigationMode===0"
       )
       include ./footer/workspace-footer.pug
-    notebook(v-if="isNotebookMode")
 
     workspace-save-network(
       v-if="showSaveNetworkPopup"

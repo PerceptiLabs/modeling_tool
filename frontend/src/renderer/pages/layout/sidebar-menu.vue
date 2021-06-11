@@ -210,13 +210,6 @@
         },
         immediate: true
       },
-      GET_viewType: {
-        handler(value) {
-          if (value === 'statistic' || value === 'test') {
-            this.$store.dispatch('mod_notebook/SET_notebookMode', false);
-          }
-        }
-      }
     },
     methods: {
       ...mapActions({
