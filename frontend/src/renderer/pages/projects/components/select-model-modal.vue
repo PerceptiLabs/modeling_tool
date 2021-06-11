@@ -269,6 +269,10 @@
                     v-model="settings.Learning_rate")
               .form_row
                 .form_label
+                .form_input
+                  base-checkbox(v-model="settings.AutoCheckpoint") Save checkpoint every epoch
+              .form_row
+                .form_label
                   span.d-flex.justify-content-end Optimizer:
                 .form_input
                   base-select(

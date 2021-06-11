@@ -2,9 +2,6 @@ import tensorflow as tf
 from perceptilabs.layers.helper import LayerHelper
 
 
-
-
-
 class TrainingModel(tf.keras.Model):
     def __init__(self, script_factory, graph_spec):
         super().__init__()
@@ -15,7 +12,11 @@ class TrainingModel(tf.keras.Model):
         self._layers_by_id = {}
         for layer_spec in self._graph_spec.get_ordered_layers():
             if layer_spec.is_inner_layer:                    
-                self._layers_by_id[layer_spec.id_] = self._get_layer_from_spec(layer_spec)    
+                self._layers_by_id[layer_spec.id_] = self._get_layer_from_spec(layer_spec)
+
+    @property
+    def graph_spec(self):
+        return self._graph_spec                   
             
     def call(self, inputs, training=False):
         outputs = {}

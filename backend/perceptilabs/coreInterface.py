@@ -31,9 +31,10 @@ from perceptilabs.createDataObject import createDataObject
 from perceptilabs.messaging import MessageProducer
 from perceptilabs.aggregation import AggregationRequest, AggregationEngine
 from perceptilabs.license_checker import LicenseV2
-from perceptilabs.trainer import Trainer
+from perceptilabs.trainer import Trainer, TrainingModel
 from perceptilabs.automation.modelrecommender.base import ModelRecommender
-from perceptilabs.data.base import DataLoader, FeatureSpec    
+from perceptilabs.data.base import DataLoader, FeatureSpec
+from perceptilabs.exporter.base import Exporter    
 
         
 logger = logging.getLogger(APPLICATION_LOGGER)
@@ -178,8 +179,17 @@ class coreLogic():
     def _get_standard_trainer(self, script_factory, graph_spec, training_settings, dataset_settings, model_id, user_email):
         """ Creates a Trainer for the IoInput/IoOutput workflow """        
         data_loader = DataLoader.from_dict(dataset_settings)
+        training_model = TrainingModel(script_factory, graph_spec)
+        exporter = Exporter(
+            graph_spec, training_model, data_loader,
+            model_id=model_id, user_email=user_email
+        )
+        
         trainer = Trainer(
-            script_factory, data_loader, graph_spec, training_settings,
+            data_loader,
+            training_model,
+            training_settings,
+            exporter=exporter,
             model_id=model_id,
             user_email=user_email            
         )        

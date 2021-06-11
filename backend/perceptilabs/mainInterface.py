@@ -628,11 +628,13 @@ class Interface():
         
         if mode == 'export_while_training':                    
             response = self._core.exportNetwork(value, graph_spec=None, model_id=model_id)
+            logger.info("Created export response while training")            
             return response
         elif mode == 'export_after_training':
             graph_spec = self._network_loader.load(value, as_spec=True)
             dataset_settings = value['datasetSettings']
             response = self._export_using_exporter(value, dataset_settings, path=value['Location'], graph_spec=graph_spec, model_id=model_id, user_email=user_email)
+            logger.info("Created export response after training")                        
             return response
         else:
             return {'content':'The model is not trained.'}

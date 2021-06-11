@@ -10,7 +10,8 @@ import pandas as pd
 
 from perceptilabs.data.base import DataLoader, FeatureSpec
 from perceptilabs.graph.builder import GraphSpecBuilder
-from perceptilabs.trainer import Trainer
+from perceptilabs.trainer import Trainer, TrainingModel
+from perceptilabs.exporter.base import Exporter    
 
 
 @pytest.fixture()
@@ -44,7 +45,8 @@ def training_settings():
         'Centered':False,
         'Loss':'Quadratic',
         'Optimizer':'SGD',
-        'Shuffle': False
+        'Shuffle': False,
+        'AutoCheckpoint': False
     }
 
 @pytest.fixture()
@@ -60,7 +62,7 @@ def training_settings_shuffle_data(training_settings):
     
     
 @pytest.fixture()
-def graph_spec_few_epochs(csv_path):
+def graph_spec(csv_path):
     gsb = GraphSpecBuilder()
     dirpath = tempfile.mkdtemp()
     # Create the layers
@@ -124,16 +126,33 @@ def graph_spec_faulty(csv_path):
     return graph_spec
 
 
+@pytest.fixture
+def training_model(graph_spec, script_factory):
+    training_model = TrainingModel(script_factory, graph_spec)    
+    yield training_model
 
-def test_progress_reaches_one(script_factory, data_loader, graph_spec_few_epochs, training_settings):
-    trainer = Trainer(script_factory, data_loader, graph_spec_few_epochs, training_settings)
+
+@pytest.fixture
+def training_model_faulty(graph_spec_faulty, script_factory):
+    training_model = TrainingModel(script_factory, graph_spec_faulty)        
+    yield training_model
+
+
+@pytest.fixture
+def exporter(graph_spec, training_model, data_loader):
+    exporter = Exporter(graph_spec, training_model, data_loader)
+    yield exporter
+
+
+def test_progress_reaches_one(data_loader, training_model, training_settings):
+    trainer = Trainer(data_loader, training_model, training_settings)
     assert trainer.progress == 0.0 and trainer.num_epochs_completed == 0
     trainer.run()
     assert trainer.progress == 1.0 and trainer.num_epochs_completed == trainer.num_epochs
 
 
-def test_trainer_has_all_statuses(script_factory, data_loader, graph_spec_few_epochs, training_settings):
-    trainer = Trainer(script_factory, data_loader, graph_spec_few_epochs, training_settings)
+def test_trainer_has_all_statuses(data_loader, training_model, training_settings):
+    trainer = Trainer(data_loader, training_model, training_settings)
 
     seen_statuses = [trainer.status]
 
@@ -150,8 +169,8 @@ def test_trainer_has_all_statuses(script_factory, data_loader, graph_spec_few_ep
     assert seen_statuses == ['Waiting', 'Training', 'Validation', 'Finished']
     
     
-def test_num_completed_batches_are_ok(script_factory, data_loader, graph_spec_few_epochs, training_settings):
-    trainer = Trainer(script_factory, data_loader, graph_spec_few_epochs, training_settings)
+def test_num_completed_batches_are_ok(data_loader, training_model, training_settings):
+    trainer = Trainer(data_loader, training_model, training_settings)
     trainer.run()
 
     # Run some sanity checks
@@ -163,14 +182,14 @@ def test_num_completed_batches_are_ok(script_factory, data_loader, graph_spec_fe
     assert trainer.num_batches_completed_this_epoch == trainer.num_batches_per_epoch
 
 
-def test_num_completed_batches_are_ok_even_if_batch_size_is_larger_than_dataset(script_factory, data_loader, graph_spec_few_epochs, training_settings):
+def test_num_completed_batches_are_ok_even_if_batch_size_is_larger_than_dataset(data_loader, training_model, training_settings):
     batch_size = 200
     training_settings['Batch_size'] = batch_size
 
     assert data_loader.get_dataset_size(partition='training') > 0 and data_loader.get_dataset_size(partition='training') < batch_size
     assert data_loader.get_dataset_size(partition='validation') > 0 and data_loader.get_dataset_size(partition='validation') < batch_size    
     
-    trainer = Trainer(script_factory, data_loader, graph_spec_few_epochs, training_settings)
+    trainer = Trainer(data_loader, training_model, training_settings)
     trainer.run()
 
     # Run some sanity checks
@@ -182,8 +201,8 @@ def test_num_completed_batches_are_ok_even_if_batch_size_is_larger_than_dataset(
     assert trainer.num_batches_completed_this_epoch == trainer.num_batches_per_epoch
     
 
-def test_layer_output_ok(script_factory, csv_path, data_loader, graph_spec_few_epochs, training_settings):
-    trainer = Trainer(script_factory, data_loader, graph_spec_few_epochs, training_settings)
+def test_layer_output_ok(csv_path, data_loader, training_model, training_settings):
+    trainer = Trainer(data_loader, training_model, training_settings)
     next(trainer.run_stepwise()) # Take the first training steps
 
     df = pd.read_csv(csv_path)
@@ -194,40 +213,40 @@ def test_layer_output_ok(script_factory, csv_path, data_loader, graph_spec_few_e
     assert np.all(actual == expected)
     
 
-def test_layer_weights_is_array(script_factory, data_loader, graph_spec_few_epochs, training_settings):
-    trainer = Trainer(script_factory, data_loader, graph_spec_few_epochs, training_settings)
+def test_layer_weights_is_array(data_loader, training_model, training_settings):
+    trainer = Trainer(data_loader, training_model, training_settings)
     next(trainer.run_stepwise()) # Take the first training steps
 
     value = trainer.get_layer_weights('1')
     assert isinstance(value, np.ndarray)
 
     
-def test_layer_bias_is_array(script_factory, data_loader, graph_spec_few_epochs, training_settings):
-    trainer = Trainer(script_factory, data_loader, graph_spec_few_epochs, training_settings)
+def test_layer_bias_is_array(data_loader, training_model, training_settings):
+    trainer = Trainer(data_loader, training_model, training_settings)
     next(trainer.run_stepwise()) # Take the first training steps
 
     value = trainer.get_layer_bias('1')
     assert isinstance(value, np.ndarray)
     
 
-def test_layer_gradients_contain_exactly_one_float(script_factory, data_loader, graph_spec_few_epochs, training_settings):
-    trainer = Trainer(script_factory, data_loader, graph_spec_few_epochs, training_settings)
+def test_layer_gradients_contain_exactly_one_float(data_loader, training_model, training_settings):
+    trainer = Trainer(data_loader, training_model, training_settings)
     next(trainer.run_stepwise()) # Take the first training steps
 
     value = trainer.get_layer_weights('1')
     assert isinstance(value, np.ndarray)
 
 
-def test_layer_bias_is_array(script_factory, data_loader, graph_spec_few_epochs, training_settings):
-    trainer = Trainer(script_factory, data_loader, graph_spec_few_epochs, training_settings)
+def test_layer_bias_is_array(data_loader, training_model, training_settings):
+    trainer = Trainer(data_loader, training_model, training_settings)
     next(trainer.run_stepwise()) # Take the first training steps
 
     value = trainer.get_layer_bias('1')
     assert isinstance(value, np.ndarray)
     
 
-def test_layer_gradients_contain_exactly_one_float(script_factory, data_loader, graph_spec_few_epochs, training_settings):
-    trainer = Trainer(script_factory, data_loader, graph_spec_few_epochs, training_settings)
+def test_layer_gradients_contain_exactly_one_float(data_loader, training_model, training_settings):
+    trainer = Trainer(data_loader, training_model, training_settings)
     next(trainer.run_stepwise()) # Take the first training steps
 
     minimum = trainer.get_layer_gradients('1', 'minimum')
@@ -240,8 +259,8 @@ def test_layer_gradients_contain_exactly_one_float(script_factory, data_loader, 
     assert minimum[0] <= maximum[0]
 
     
-def test_layer_gradients_contain_exactly_one_float(script_factory, data_loader, graph_spec_few_epochs, training_settings):
-    trainer = Trainer(script_factory, data_loader, graph_spec_few_epochs, training_settings)
+def test_layer_gradients_contain_exactly_one_float(data_loader, training_model, training_settings):
+    trainer = Trainer(data_loader, training_model, training_settings)
     next(trainer.run_stepwise()) # Take the first training steps
 
     minimum = trainer.get_layer_gradients('1', 'minimum')
@@ -254,7 +273,7 @@ def test_layer_gradients_contain_exactly_one_float(script_factory, data_loader, 
     assert minimum[0] <= maximum[0]
 
     
-def test_computed_results_do_not_change(script_factory, data_loader, graph_spec_few_epochs, training_settings):
+def test_computed_results_do_not_change(data_loader, training_model, training_settings):
     """ Once results have been computed, the Trainer shouldn't modify the structure.
 
     A simple way to test for that is to pickle the structure twice. 
@@ -262,7 +281,7 @@ def test_computed_results_do_not_change(script_factory, data_loader, graph_spec_
 
     Note: the results themselves should change
     """
-    trainer = Trainer(script_factory, data_loader, graph_spec_few_epochs, training_settings)
+    trainer = Trainer(data_loader, training_model, training_settings)
 
     step = trainer.run_stepwise()
     next(step)  # Take the first training steps
@@ -281,32 +300,32 @@ def test_computed_results_do_not_change(script_factory, data_loader, graph_spec_
     assert repickled_initial_results == pickled_initial_results  # But the initial results shouldn't change.
     
 
-def test_trainer_target_stats_available(script_factory, data_loader, graph_spec_few_epochs, training_settings):
-    trainer = Trainer(script_factory, data_loader, graph_spec_few_epochs, training_settings)
+def test_trainer_target_stats_available(data_loader, training_model, training_settings):
+    trainer = Trainer(data_loader, training_model, training_settings)
     next(trainer.run_stepwise()) # Take the first training steps
 
     target_stats = trainer.get_target_stats()
     assert 'y1' in target_stats.sample_batch 
 
     
-def test_trainer_prediction_stats_available(script_factory, data_loader, graph_spec_few_epochs, training_settings):
-    trainer = Trainer(script_factory, data_loader, graph_spec_few_epochs, training_settings)
+def test_trainer_prediction_stats_available(data_loader, training_model, training_settings):
+    trainer = Trainer(data_loader, training_model, training_settings)
     next(trainer.run_stepwise()) # Take the first training steps
 
     prediction_stats = trainer.get_prediction_stats()
     assert 'y1' in prediction_stats.sample_batch 
 
     
-def test_trainer_input_stats_available(script_factory, data_loader, graph_spec_few_epochs, training_settings):
-    trainer = Trainer(script_factory, data_loader, graph_spec_few_epochs, training_settings)
+def test_trainer_input_stats_available(data_loader, training_model, training_settings):
+    trainer = Trainer(data_loader, training_model, training_settings)
     next(trainer.run_stepwise()) # Take the first training steps
 
     input_stats = trainer.get_input_stats()
     assert 'x1' in input_stats.sample_batch 
 
 
-def test_trainer_can_pause_and_unpause(script_factory, data_loader, graph_spec_few_epochs, training_settings):
-    trainer = Trainer(script_factory, data_loader, graph_spec_few_epochs, training_settings)
+def test_trainer_can_pause_and_unpause(data_loader, training_model, training_settings):
+    trainer = Trainer(data_loader, training_model, training_settings)
     next(trainer.run_stepwise()) # Take the first training steps
     
     trainer.pause()
@@ -316,16 +335,16 @@ def test_trainer_can_pause_and_unpause(script_factory, data_loader, graph_spec_f
     assert trainer.status != 'Paused'
 
 
-def test_trainer_can_stop(script_factory, data_loader, graph_spec_few_epochs, training_settings):
-    trainer = Trainer(script_factory, data_loader, graph_spec_few_epochs, training_settings)
+def test_trainer_can_stop(data_loader, training_model, training_settings):
+    trainer = Trainer(data_loader, training_model, training_settings)
 
     next(trainer.run_stepwise()) # Take the first training steps    
     trainer.stop()
     assert trainer.status == 'Finished'
 
 
-def test_trainer_can_pause_stop(script_factory, data_loader, graph_spec_few_epochs, training_settings):
-    trainer = Trainer(script_factory, data_loader, graph_spec_few_epochs, training_settings)
+def test_trainer_can_pause_stop(data_loader, training_model, training_settings):
+    trainer = Trainer(data_loader, training_model, training_settings)
 
     step = trainer.run_stepwise()
     next(step) # Take the first training steps    
@@ -333,10 +352,12 @@ def test_trainer_can_pause_stop(script_factory, data_loader, graph_spec_few_epoc
     next(step)
     trainer.stop()
     assert trainer.status == 'Finished'
+
     
-def test_trainer_export_on_training_finish(script_factory, data_loader, graph_spec_few_epochs, training_settings):
-    temp_dir = graph_spec_few_epochs.to_dict()['0']['checkpoint']['path']
-    trainer = Trainer(script_factory, data_loader, graph_spec_few_epochs, training_settings)
+def test_trainer_export_checkpoints_atleast_once(graph_spec, data_loader, training_model, training_settings, exporter):
+    training_settings['AutoCheckpoint'] = False  # Even if no auto checkpoint, it should be saved
+    temp_dir = graph_spec.to_dict()['0']['checkpoint']['path']
+    trainer = Trainer(data_loader, training_model, training_settings, exporter=exporter)
 
     step = trainer.run_stepwise()
     next(step)  # Take the first training steps
@@ -350,9 +371,9 @@ def test_trainer_export_on_training_finish(script_factory, data_loader, graph_sp
     assert 'checkpoint' in os.listdir(temp_dir)
 
     
-def test_trainer_export_checkpoint_while_training(script_factory, data_loader, graph_spec_few_epochs, training_settings):
-    temp_dir = graph_spec_few_epochs.to_dict()['0']['checkpoint']['path']
-    trainer = Trainer(script_factory, data_loader, graph_spec_few_epochs, training_settings)
+def test_trainer_export_checkpoint_while_training(graph_spec, data_loader, training_model, training_settings, exporter):
+    temp_dir = graph_spec.to_dict()['0']['checkpoint']['path']
+    trainer = Trainer(data_loader, training_model, training_settings, exporter=exporter)
 
     step = trainer.run_stepwise()
     next(step)  # Take the first training steps
@@ -362,9 +383,10 @@ def test_trainer_export_checkpoint_while_training(script_factory, data_loader, g
     trainer.export(temp_dir, mode='Checkpoint')
     assert 'checkpoint' in os.listdir(temp_dir)
 
-def test_trainer_export_pb_while_training(script_factory, data_loader, graph_spec_few_epochs, training_settings):
-    temp_dir = graph_spec_few_epochs.to_dict()['0']['checkpoint']['path']
-    trainer = Trainer(script_factory, data_loader, graph_spec_few_epochs, training_settings)
+    
+def test_trainer_export_pb_while_training(graph_spec, data_loader, training_model, training_settings, exporter):
+    temp_dir = graph_spec.to_dict()['0']['checkpoint']['path']
+    trainer = Trainer(data_loader, training_model, training_settings, exporter=exporter)
 
     step = trainer.run_stepwise()
     next(step)  # Take the first training steps
@@ -372,10 +394,10 @@ def test_trainer_export_pb_while_training(script_factory, data_loader, graph_spe
     assert 'saved_model.pb' not in os.listdir(temp_dir)
 
 
-def test_trainer_custom_loss(script_factory, data_loader, graph_spec_few_epochs, training_settings_custom_loss):
+def test_trainer_custom_loss(data_loader, training_model, training_settings_custom_loss):
     """ Tests if the trainer can finish a full training loop with a loss function not native to the Keras library, such as Dice. """
     
-    trainer = Trainer(script_factory, data_loader, graph_spec_few_epochs, training_settings_custom_loss)
+    trainer = Trainer(data_loader, training_model, training_settings_custom_loss)
     step = trainer.run_stepwise()
     next(step)  # Take the first training steps
 
@@ -386,21 +408,21 @@ def test_trainer_custom_loss(script_factory, data_loader, graph_spec_few_epochs,
         pass
 
 
-def test_trainer_output_stats_available(script_factory, data_loader, graph_spec_few_epochs, training_settings):
-    trainer = Trainer(script_factory, data_loader, graph_spec_few_epochs, training_settings)
+def test_trainer_output_stats_available(graph_spec, data_loader, training_model, training_settings):
+    trainer = Trainer(data_loader, training_model, training_settings)
     trainer.run()
 
     output_stats = trainer.get_output_stats()
 
-    for layer_spec in graph_spec_few_epochs.target_layers:    
+    for layer_spec in graph_spec.target_layers:    
         assert layer_spec.id_ in output_stats
 
         
-def test_shuffle_is_called_for_training_but_not_for_validation(script_factory, csv_path, graph_spec_few_epochs, training_settings_shuffle_data):
+def test_shuffle_is_called_for_training_but_not_for_validation(csv_path, training_model, training_settings_shuffle_data):
     data_loader = MagicMock()
     data_loader.get_dataset_size.return_value = 10
     
-    trainer = Trainer(script_factory, data_loader, graph_spec_few_epochs, training_settings_shuffle_data)
+    trainer = Trainer(data_loader, training_model, training_settings_shuffle_data)
 
     step = trainer.run_stepwise()
 
@@ -412,17 +434,23 @@ def test_shuffle_is_called_for_training_but_not_for_validation(script_factory, c
         assert kwargs['partition'] == 'validation' and ('shuffle' not in kwargs or not kwargs['shuffle'])        
 
 
-def test_trainer_validate_raises_no_error(script_factory, data_loader, graph_spec_few_epochs, training_settings):
-    trainer = Trainer(script_factory, data_loader, graph_spec_few_epochs, training_settings)
+def test_trainer_validate_raises_no_error(data_loader, training_model, training_settings):
+    trainer = Trainer(data_loader, training_model, training_settings)
     trainer.validate()
-        
 
-def test_trainer_validate_raises_error_for_faulty_spec(script_factory, data_loader, graph_spec_faulty, training_settings):
-    trainer = Trainer(script_factory, data_loader, graph_spec_faulty, training_settings)
+    
+def test_trainer_validate_raises_error_for_faulty_spec(data_loader, training_model_faulty, training_settings):
+    trainer = Trainer(data_loader, training_model_faulty, training_settings)
 
     with pytest.raises(tf.errors.InvalidArgumentError):  # Expects an error since num neurons == 112, while output shape == 1
         trainer.validate()
-
-    
         
     
+def test_trainer_calls_export_checkpoint_once_per_epoch(graph_spec, data_loader, training_model, training_settings):
+    training_settings['AutoCheckpoint'] = True    
+    exporter = MagicMock()
+
+    trainer = Trainer(data_loader, training_model, training_settings, exporter=exporter)
+    step = trainer.run()
+
+    exporter.export_checkpoint.call_count == training_settings['Epochs']

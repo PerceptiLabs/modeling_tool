@@ -98,6 +98,7 @@ export const defaultTrainingSettings = {
   Beta2: 0.999,
   Momentum: 0,
   Centered: false,
+  AutoCheckpoint: false,
 }
 
 // those components can't be delete | copy | cut | paste

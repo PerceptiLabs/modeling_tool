@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 
 
 from perceptilabs.data.base import DataLoader
-from perceptilabs.trainer.base import Trainer
+from perceptilabs.trainer.base import Trainer, TrainingModel
 from perceptilabs.script import ScriptFactory
 import perceptilabs.automation.utils as automation_utils
 
@@ -25,7 +25,8 @@ class BenchmarkSuite(ABC):
             raise ValueError("Data loader must be instantiated")
 
         graph_spec, training_settings = automation_utils.get_model_recommendation(self.data_loader)
-        trainer = Trainer(script_factory, self.data_loader, graph_spec, training_settings)
+        training_model = TrainingModel(script_factory, graph_spec)
+        trainer = Trainer(self.data_loader, training_model, training_settings)
 
         t0 = time.perf_counter()        
         trainer.run()

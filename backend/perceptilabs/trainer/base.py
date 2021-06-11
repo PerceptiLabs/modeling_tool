@@ -23,13 +23,18 @@ import perceptilabs.tracking as tracking
 logger = logging.getLogger(APPLICATION_LOGGER)
 
 class Trainer:
-    def __init__(self, script_factory, data_loader, graph_spec, training_settings, model_id=None, user_email=None):
+    def __init__(self, data_loader, training_model, training_settings, exporter=None, model_id=None, user_email=None):
         self._model_id = model_id
         self._user_email = user_email
         
-        self._script_factory = script_factory
         self._data_loader = data_loader
-        self._graph_spec = graph_spec
+        self._training_model = training_model
+        self._graph_spec = training_model.graph_spec
+        self._exporter = exporter
+
+        self._auto_checkpoint_every_epoch, self._auto_checkpoint_dir = \
+            self._resolve_auto_checkpoint(training_settings, training_model)
+        
         self._training_time = 0.0
         
         self._num_epochs = int(training_settings['Epochs'])
@@ -41,13 +46,9 @@ class Trainer:
         self._loss_functions = self._setup_loss_functions(training_settings)
         
         self._num_epochs_completed = 0        
-        self._training_model = TrainingModel(script_factory, graph_spec)
-
         self._reset_tracked_values()
         self._initialize_batch_counters(data_loader)
-
-        self._exporter = self._create_exporter()
-
+        
         self._set_status('Waiting')
 
 
@@ -70,8 +71,6 @@ class Trainer:
         
     def run_stepwise(self):
         """ Take a training/validation step and yield """
-        logger.info("Training model initialized")
-        
         peak_memory_usage = get_memory_usage()
 
         if self._user_email:
@@ -111,20 +110,24 @@ class Trainer:
             if self.is_closed:
                 break
 
+            if self._auto_checkpoint_every_epoch:
+                self._auto_save_checkpoint(epoch=self._num_epochs_completed)
+                
             self._num_epochs_completed += 1
             epoch_time = time.perf_counter() - t0 - time_paused_training - time_paused_validation
 
             self._log_epoch_summary(epoch_time)
             self._training_time += epoch_time
 
-
             current_memory_usage = get_memory_usage()
             if current_memory_usage > peak_memory_usage:
                 peak_memory_usage = current_memory_usage
-            
+
             yield 
 
-        self._auto_export_model()           
+        if not self._auto_checkpoint_every_epoch:
+            self._auto_save_checkpoint()
+                    
         self._set_status('Finished')
         logger.info(f"Training completed. Total duration: {round(self._training_time, 3)} s")
 
@@ -138,13 +141,17 @@ class Trainer:
                 self.get_output_stats_summaries()
             )
 
-    def _auto_export_model(self):
+    def _auto_save_checkpoint(self, epoch=None):
         """ Exports the model so that we can restore it between runs """
-        checkpoint_path = self._graph_spec.get_checkpoint_path()
-        if checkpoint_path:
-            self.export_checkpoint(checkpoint_path)
-        else:
-            logger.warning("Checkpoint path not set. Cannot auto export")
+        if self._exporter is None:
+            logger.warning("Exporter not set. Cannot auto export")
+            return
+
+        if self._auto_checkpoint_dir is None:
+            logger.warning("Auto checkpoint dir not set. Cannot auto export")            
+            return
+
+        self.export_checkpoint(self._auto_checkpoint_dir, epoch=epoch)
 
     def _log_epoch_summary(self, epoch_time):
         logger.info(
@@ -300,14 +307,6 @@ class Trainer:
         if value not in ['Waiting', 'Paused', 'Training', 'Validation', 'Finished']:
             raise ValueError(f"Cannot set status to '{value}'")
         self._status = value
-
-    def _create_exporter(self):
-        from perceptilabs.exporter.base import Exporter
-        exporter = Exporter(
-            self._graph_spec, self._training_model, self._data_loader,
-            user_email=self._user_email, model_id=self._model_id
-        )
-        return exporter
 
     @property
     def status(self):
@@ -544,10 +543,16 @@ class Trainer:
             self.export_inference(path)
     
     def export_inference(self, path):
-        self._exporter.export_inference(path)
+        if self._exporter is not None:
+            self._exporter.export_inference(path)
+        else:
+            logger.warning("Exporter not set, couldn't export inference model!")
     
-    def export_checkpoint(self, path):
-        self._exporter.export_checkpoint(path)
+    def export_checkpoint(self, path, epoch=None):
+        if self._exporter is not None:        
+            self._exporter.export_checkpoint(path, epoch=epoch)
+        else:
+            logger.warning("Exporter not set, couldn't export checkpoint!")        
 
     def get_output_stats(self) -> Dict:
         """ Returns a stats object representing the current state of the outputs """
@@ -631,3 +636,12 @@ class Trainer:
         ).batch(self.batch_size)
         return validation_set
 
+    def _resolve_auto_checkpoint(self, training_settings, training_model):
+        auto_ckpt_dir = training_model.graph_spec.get_checkpoint_path()  # TODO(anton.k): This shouldn't be deduced from model...        
+        auto_ckpt = training_settings.get('AutoCheckpoint', False) and auto_ckpt_dir is not None
+        
+        if auto_ckpt:
+            logger.info(f"Auto checkpointing every epoch to {auto_ckpt_dir}")
+
+        return auto_ckpt, auto_ckpt_dir
+    

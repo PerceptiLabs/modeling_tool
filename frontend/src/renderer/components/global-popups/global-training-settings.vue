@@ -54,6 +54,10 @@
             @focus="setIsSettingInputFocused(true)"
             @blur="setIsSettingInputFocused(false)")
       .form_row
+        .form_label
+        .form_row.ml-10
+          base-checkbox(:value="settings.AutoCheckpoint" @input="handleCheckboxAndSelectChange($event, 'AutoCheckpoint')") Save checkpoint every epoch  
+      .form_row
         .form_label Optimizer:
         .form_input
           base-select(
@@ -187,6 +191,9 @@
     .popup_foot {
       padding: 0 25px 15px;
     }
+  }
+  .ml-10 {
+    margin-left: 10px;
   }
 </style>
 <!--//Epochs: 100,-->

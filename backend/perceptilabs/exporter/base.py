@@ -12,6 +12,7 @@ from perceptilabs.data.base import DataLoader, FeatureSpec
 from perceptilabs.script import ScriptFactory
 from perceptilabs.data.base import DataLoader, FeatureSpec
 from perceptilabs.graph.builder import GraphSpecBuilder
+from perceptilabs.utils import sanitize_path
 import perceptilabs.tracking as tracking
 
 
@@ -29,15 +30,17 @@ class Exporter:
             path = graph_spec.layers[0].checkpoint_path  
         return path
 
-    @staticmethod
-    def from_disk(path, graph_spec, script_factory, data_loader, model_id=None, user_email=None):
+    @classmethod
+    def from_disk(cls, path, graph_spec, script_factory, data_loader, model_id=None, user_email=None):
         if graph_spec is not None and len(os.listdir(graph_spec.layers[0].checkpoint_path)) > 0:
-            path = graph_spec.layers[0].checkpoint_path  
-
+            path = graph_spec.layers[0].checkpoint_path
+            
+        path = sanitize_path(path)
+        weights_path = tf.train.latest_checkpoint(path)
+            
         training_model = TrainingModel(script_factory, graph_spec)
-        weights_path = os.path.join(path, 'model_checkpoint')
         training_model.load_weights(filepath=weights_path)
-        return Exporter(graph_spec, training_model, data_loader, model_id=model_id, user_email=user_email)
+        return cls(graph_spec, training_model, data_loader, model_id=model_id, user_email=user_email)
 
     @property
     def data_loader(self):
@@ -47,16 +50,16 @@ class Exporter:
     def training_model(self):
         return self._training_model
     
-    def export_checkpoint(self, path):
+    def export_checkpoint(self, path, epoch=None):
         """ Save the model weights """
         model = self._training_model
-        file_path = os.path.join(path, 'model_checkpoint')
-        model.save_weights(file_path)
+        file_path = os.path.join(path, self.format_checkpoint_prefix(epoch=epoch))
+        model.save_weights(sanitize_path(file_path))
 
     def export_inference(self, path):
         """ Export the inference model """
         model = self.get_inference_model()
-        model.save(path)
+        model.save(sanitize_path(path))
         tracking.send_model_exported(self._user_email, self._model_id)                
 
     def get_inference_model(self):
@@ -80,4 +83,10 @@ class Exporter:
         inference_model = tf.keras.Model(inputs=inputs, outputs=outputs)
         return inference_model
 
-        
+    @staticmethod
+    def format_checkpoint_prefix(epoch=None):
+        if epoch is not None:
+            return f"checkpoint-{epoch:04d}.ckpt"
+        else:
+            return "checkpoint.ckpt"
+
