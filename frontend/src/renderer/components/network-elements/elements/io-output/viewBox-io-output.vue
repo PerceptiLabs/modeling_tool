@@ -1,6 +1,6 @@
 <template lang="pug">
   .statistics-box
-    .statistics-box_main.statistics-box_col(v-if="currentTab !== 'Global'")
+    .statistics-box_main.statistics-box_col(v-if="currentTab !== 'Global Loss'")
       template(v-if="sectionTitle === 'Statistics'")
         .statistics-box_main.statistics-box_col(v-if="chartData.hasOwnProperty('Accuracy')")
           .statistics-box_row
@@ -82,7 +82,7 @@
               :custom-color="colorListAccuracy"
             )
         
-    .statistics-box_main.statistics-box_col(v-if="currentTab === 'Global' && chartData.Loss")
+    .statistics-box_main.statistics-box_col(v-if="currentTab === 'Global Loss' && chartData.Loss")
       template(v-if="sectionTitle === 'Statistics'")
         chart-switch(
           key="8"
@@ -158,7 +158,7 @@ export default {
   methods: {
     getData() {
       switch (this.currentTab) {
-        case 'Global':
+        case 'Global Loss':
           this.chartGlobalRequest();
           break;
         default:

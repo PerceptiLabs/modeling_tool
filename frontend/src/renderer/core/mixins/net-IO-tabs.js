@@ -5,14 +5,6 @@ const netIOTabs = {
     this.inputsAndOutputs.map(el => {
       this.btnList[el.btnId] = el;
     });
-    this.btnList['Global'] = {
-      btnId: "Global",
-      btnInteractiveInfo: {title: "Global", text: "Global"},
-      layerId: null,
-      layerType: null,
-      name: "Global",
-      type: "tab",
-    }
   },
   data() {
     return {

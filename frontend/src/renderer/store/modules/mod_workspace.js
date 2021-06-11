@@ -394,11 +394,11 @@ const getters = {
       },
     }))
     componentsTabs.push({
-      btnId: "Global",
-      btnInteractiveInfo: {title: "Global", text: "Global"},
+      btnId: "Global Loss",
+      btnInteractiveInfo: {title: "Global Loss", text: "Global Loss"},
       layerId: null,
       layerType: null,
-      name: "Global",
+      name: "Global Loss",
       type: "tab",
     })
     return componentsTabs;

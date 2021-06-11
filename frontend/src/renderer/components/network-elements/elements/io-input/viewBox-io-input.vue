@@ -1,12 +1,12 @@
 <template lang="pug">
   .statistics-box
-    .statistics-box_main.statistics-box_col(v-if="currentTab !== 'Global'")
+    .statistics-box_main.statistics-box_col(v-if="currentTab !== 'Global Loss'")
       chart-switch(
         key="1"
         chart-label="Data"
         :chart-data="chartData.Data"
       )
-    .statistics-box_main.statistics-box_col(v-if="currentTab === 'Global' && chartData.Loss")
+    .statistics-box_main.statistics-box_col(v-if="currentTab === 'Global Loss' && chartData.Loss")
       chart-switch(
         key="2"
         chart-label="Loss during one epoch"
@@ -44,7 +44,7 @@
     methods: {
       getData() {
         switch (this.currentTab) {
-          case 'Global':
+          case 'Global Loss':
             this.chartGlobalRequest();
             break;
           default:
