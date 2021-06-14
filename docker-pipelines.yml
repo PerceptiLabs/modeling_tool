@@ -3,7 +3,7 @@ trigger:
 
 parameters:
   - name: savetolatest
-    default: true
+    default: false
     displayName: Save to Latest
     type: boolean
 
