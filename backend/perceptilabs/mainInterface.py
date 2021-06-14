@@ -602,6 +602,7 @@ class Interface():
             message = str(e)
             with self._core.issue_handler.create_issue(message, exception=None, as_bug=False) as issue:
                 self._core.issue_handler.put_error(issue.frontend_message)
+            logger.exception("Error in model recommendation")
         else:
             tracking.send_model_recommended(
                 request_value['user_email'],

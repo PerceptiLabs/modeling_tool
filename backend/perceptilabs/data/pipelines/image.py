@@ -202,7 +202,7 @@ class ImagePipelineBuilder(PipelineBuilder):
         # NOTE: Use the dataset directly to get the shape
         # Store the shape in the Pipeline 
         image_path = next(iter(feature_dataset)).numpy().decode()
-        _, ext = os.path.splitext(image_path)
+        _, ext = os.path.splitext(image_path.lower())
 
         class Loader(tf.keras.Model):
             def call(self, image_path):
@@ -212,6 +212,8 @@ class ImagePipelineBuilder(PipelineBuilder):
                 elif ext in ['.jpg', '.jpeg', '.png']:
                     image_encoded = tf.io.read_file(image_path)
                     image_decoded = tf.image.decode_image(image_encoded, expand_animations=False)  # animated images give no shape: https://stackoverflow.com/questions/44942729/tensorflowvalueerror-images-contains-no-shape
+                else:
+                    raise NotImplementedError(f"Cannot decode files of type {ext}")
 
                 image_decoded = image_decoded[:, :, :3]  # DISCARD ALPHA CHANNEL                    
                 return image_decoded
