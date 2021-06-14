@@ -68,11 +68,6 @@ const mutations = {
 const actions = {
   SET_userToken({commit, dispatch}, tokens) {
     commit('set_userToken', tokens);
-    if(process.env.BUILD_TARGET !== 'web') {
-      tokens
-        ? dispatch('mod_api/API_runServer', null, {root: true})
-        : dispatch('mod_api/API_CLOSE_core', null, {root: true});
-    }
   },
   SET_userTokenLocal({commit, dispatch}, tokens) {
     if (!isLocalStorageAvailable()) { return; }

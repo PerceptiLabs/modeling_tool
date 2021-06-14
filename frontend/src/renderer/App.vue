@@ -156,7 +156,6 @@
       document.body.style.overflow = 'hidden';
       document.addEventListener('keydown', this.disableHotKeys);
      
-      this.$store.dispatch('mod_api/API_runServer', null, {root: true});
       // this.$store.dispatch('mod_workspace/GET_workspacesFromLocalStorage');
 
       if(!this.user) this.cloud_userGetProfile();
