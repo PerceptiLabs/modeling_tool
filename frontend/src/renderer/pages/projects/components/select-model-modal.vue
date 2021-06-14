@@ -151,6 +151,7 @@
                 @update="handleCSVDataTypeUpdates"
               )
               span.default-text.error(v-if="isAllIOTypesFilled() && !hasInputAndTarget()") Make sure to have at least one input and one target to proceed
+              span.default-text.error(v-else-if="isAllIOTypesFilled() && !hasOneTarget()") Make sure to have only one target to proceed
               .data-partition-wrapper
                 h5.default-text Data partition:
                 triple-input(
@@ -589,16 +590,29 @@ export default {
         return false;
       }
     },
+    hasOneTarget() {
+      if (this.isDataWizardEnabled) {
+        const { csvData } = this;
+        return (
+          csvData &&
+          csvData.ioTypes.filter(v => v === "Target").length === 1
+        );
+      } else {
+        return false;
+      }
+    },
     isDisableCreateAction() {
       if (this.isDataWizardEnabled) {
         const { modelName, csvData } = this;
         let allColumnsAreSelected = true;
         let hasInputAndTarget = true;
+        let hasOneTarget = true;
         if (this.isDataWizardEnabled) {
           allColumnsAreSelected = this.isAllIOTypesFilled();
           hasInputAndTarget = this.hasInputAndTarget();
+          hasOneTarget = this.hasOneTarget();
         }
-        return !allColumnsAreSelected || !modelName || !hasInputAndTarget;
+        return !allColumnsAreSelected || !modelName || !hasInputAndTarget || !hasOneTarget;
       } else {
         const { chosenTemplate, modelName, basicTemplates } = this;
         return chosenTemplate === null || !modelName;
