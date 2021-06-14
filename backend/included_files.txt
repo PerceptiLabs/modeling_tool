@@ -327,6 +327,7 @@ perceptilabs/data/pipelines/image.py
 perceptilabs/data/pipelines/numerical.py
 perceptilabs/data/pipelines/binary.py
 perceptilabs/data/pipelines/categorical.py
+perceptilabs/data/pipelines/text.py
 
 # backend/perceptilabs/automation/modelrecommender/
 perceptilabs/automation/modelrecommender/__init__.py
@@ -340,6 +341,7 @@ perceptilabs/automation/modelrecommender/encoders/categorical.py
 perceptilabs/automation/modelrecommender/encoders/image.py
 perceptilabs/automation/modelrecommender/encoders/binary.py
 perceptilabs/automation/modelrecommender/encoders/categorical.py
+perceptilabs/automation/modelrecommender/encoders/text.py
 
 # backend/perceptilabs/automation/modelrecommender/decoders/
 perceptilabs/automation/modelrecommender/decoders/__init__.py

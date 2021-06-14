@@ -180,6 +180,8 @@ class DataLoader:
             return pipelines.BinaryPipelineBuilder()
         elif feature_datatype == 'categorical':
             return pipelines.CategoricalPipelineBuilder()
+        elif feature_datatype == 'text':
+            return pipelines.TextPipelineBuilder()
         else:
             raise NotImplementedError(f"No pipeline defined for type '{feature_datatype}'")
 

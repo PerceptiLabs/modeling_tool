@@ -9,7 +9,8 @@ from perceptilabs.automation.modelrecommender.encoders import (
     NumericalEncoderBlueprint,
     ImageEncoderBlueprint,
     BinaryEncoderBlueprint,
-    CategoricalEncoderBlueprint
+    CategoricalEncoderBlueprint,
+    TextEncoderBlueprint    
 )
 from perceptilabs.automation.modelrecommender.decoders import (
     NumericalDecoderBlueprint,
@@ -67,7 +68,9 @@ class ModelRecommender:
     def _add_encoder(self, builder, feature_name, feature_spec):
         """ Encoder for a feature """
         if feature_spec.datatype == 'numerical':
-            return NumericalEncoderBlueprint().build(builder, feature_name, feature_spec, data_loader=self._data_loader)            
+            return NumericalEncoderBlueprint().build(builder, feature_name, feature_spec, data_loader=self._data_loader)
+        if feature_spec.datatype == 'text':
+            return TextEncoderBlueprint().build(builder, feature_name, feature_spec, data_loader=self._data_loader)            
         elif feature_spec.datatype == 'image':
             return ImageEncoderBlueprint().build(builder, feature_name, feature_spec, data_loader=self._data_loader)            
         elif feature_spec.datatype == 'binary':

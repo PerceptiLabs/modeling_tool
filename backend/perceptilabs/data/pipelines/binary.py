@@ -17,13 +17,15 @@ class BinaryPipelineBuilder(PipelineBuilder):
             (training_pipeline, validation_pipeline, postprocessing_pipeline)
         """
         class Pipeline(tf.keras.Model):
+            n_categories = 1
+            
             def call(self, x):
                 init = None
     
                 # Build out valid keys and corresponding values depending on input type
                 if x.dtype == tf.string:
-                    keys_tensor = tf.constant(['True', 'true', 'False', 'false'])
-                    values_tensor = tf.constant([1.0, 1.0, 0.0, 0.0])
+                    keys_tensor = tf.constant(['True', 'true', 'Spam', 'spam', 'False', 'false', 'Ham', 'ham'])
+                    values_tensor = tf.constant([1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0])
                     init = tf.lookup.KeyValueTensorInitializer(keys_tensor, values_tensor)
                 elif x.dtype == tf.int32 or x.dtype == tf.bool:
                     x = tf.cast(x, tf.int32)
