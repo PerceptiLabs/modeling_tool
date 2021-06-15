@@ -545,7 +545,8 @@
 
            }
         }
-
+        
+        this.$store.commit('mod_workspace/get_lastActiveTabFromLocalStorage');
         // Commented out because addNetwork already calls updateWorkspaces
         // this.updateWorkspaces();
       },

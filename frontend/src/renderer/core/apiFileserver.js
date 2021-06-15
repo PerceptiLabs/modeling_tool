@@ -77,16 +77,11 @@ export const exportAsGithubRepository = (data) => {
 }
 
 export const doesDirExist = (path) => {
-   whenHaveFileserverToken()
-    .then(fs => {
-      return fs.head(`/directories?path=${path}`);
-    })
+  return whenHaveFileserverToken()
+    .then(fs => fs.head(`/directories?path=${path}`))
     .then(res => {
       return (res.status === 200);
     })
-    .catch(e => {
-      return Promise.reject(e)
-    });
 }
 
 export const getFolderContent = (path) => {
@@ -129,6 +124,13 @@ export const saveModelJson = (model) => {
   const modelAsString = stringifyNetworkObjects(model)
   return whenHaveFileserverToken()
     .then(fs => fs.post(`/json_models?path=${path}`, modelAsString))
+}
+
+export const updateModelMeta = async (model) => {
+  const path = model.apiMeta.location;
+  const updatedPcModel = await getModelJson(path);
+  updatedPcModel.networkMeta = model.networkMeta;
+  await saveModelJson(updatedPcModel);
 }
 
 export const doesFileExist = (path) => {

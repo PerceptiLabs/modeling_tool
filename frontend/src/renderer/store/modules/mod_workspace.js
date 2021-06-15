@@ -14,8 +14,9 @@ import router from '@/router'
 import {isElectron} from "@/core/helpers";
 import { deleteFolder as fileserver_deleteFolder } from '@/core/apiFileserver';
 import cloneDeep from 'lodash.clonedeep';
-import { saveModelJson as fileserver_saveModelJson } from '@/core/apiFileserver';
+import { saveModelJson as fileserver_saveModelJson, updateModelMeta } from '@/core/apiFileserver';
 import { lockedComponentsNames } from "@/core/constants.js";
+import store from '@/store';
 
 const namespaced = true;
 
@@ -422,7 +423,9 @@ const mutations = {
   update_network_meta(state, {networkID, key, value}){
     const modelIndex = state.workspaceContent.findIndex(network => network.networkID === networkID);
     if(modelIndex !== -1) {
-      Vue.set(state.workspaceContent[modelIndex].networkMeta, key, value)
+      Vue.set(state.workspaceContent[modelIndex].networkMeta, key, value);
+      store.dispatch('mod_webstorage/saveNetwork', state.workspaceContent[modelIndex])
+      updateModelMeta(state.workspaceContent[modelIndex]);
     }
   },
   cleanupUnnecessaryArrowsMutation(state, { getters }){
@@ -743,7 +746,7 @@ const mutations = {
     const netIndex = findNetId(network, workspace);
     if (netIndex > -1) {
       workspace.splice(netIndex, 1, network);
-      state.currentNetwork = netIndex;
+      // state.currentNetwork = netIndex;
     } else {
       // find position to insert 
       // (can be done with binary search but no gains with < 10 models) 
@@ -754,7 +757,7 @@ const mutations = {
       }
       
       workspace.splice(currIdx, 0, deepCloneNetwork(network));
-      state.currentNetwork = currIdx;
+      // state.currentNetwork = currIdx;
     }
 
     function findNetId(newNet, netList) {

@@ -102,6 +102,7 @@ const actions = {
         ctx.dispatch('mod_workspace/ADD_existingNetworkToWorkspace', { network }, {root: true});
 
       }
+      ctx.commit('mod_workspace/get_lastActiveTabFromLocalStorage', null, { root: true });
       resolve();
     });
   },

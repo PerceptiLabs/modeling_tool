@@ -1271,7 +1271,7 @@ const actions = {
         console.error(e)
       }).finally(() => {
         dispatch('mod_workspace/setChartComponentLoadingState', { descendants: Object.keys(payload), value: false, networkId } , { root: true });
-        console.log('set network snapshot');
+        dispatch('mod_events/EVENT_calcArray', null, {root: true});
         dispatch('mod_workspace/SET_networkSnapshot', {}, { root: true });
       });
   },

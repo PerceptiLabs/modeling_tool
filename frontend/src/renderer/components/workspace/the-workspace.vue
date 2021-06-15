@@ -15,7 +15,7 @@
       :class="{'workspace-relative' : showTrainingSpinner, 'open-statistics': statisticsIsOpen, 'is-drag-active': getIsWorkspaceDragEvent}"
       )
       .network(
-        v-if="indexCurrentNetwork === i"
+        v-if="currentNetworkIndex === i"
         v-for="(net, i) in workspace"
         :key="net.networkID"
         :class="networkClass"

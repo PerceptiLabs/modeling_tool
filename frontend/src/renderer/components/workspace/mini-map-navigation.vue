@@ -14,7 +14,7 @@
       network-field(
         ref="networkField"
         :scaleNet="1"
-        :key="this.indexCurrentNetwork"
+        :key="this.currentNetworkIndex"
         :style="workspaceMiniMapStyle"
         :isViewMode="true"
       )
@@ -46,7 +46,7 @@
         currentNetworkList: 'mod_workspace/GET_currentNetworkElementList',
       }),
       ...mapState({
-        indexCurrentNetwork: state => state.mod_workspace.currentNetwork,
+        currentNetworkIndex: state => state.mod_workspace.currentNetwork,
         workspace: state => state.mod_workspace.workspaceContent,
         isMiniMapNavigatorOpened: state => state.globalView.isMiniMapNavigatorOpened,
         sidebarState:             state => state.globalView.hideSidebar,

@@ -128,7 +128,7 @@ export default {
     ...mapState({
       showNewModelPopup:          state => state.globalView.globalPopup.showNewModelPopup,
       workspace:                  state => state.mod_workspace.workspaceContent,
-      indexCurrentNetwork:        state => state.mod_workspace.currentNetwork,
+      currentNetworkIndex:        state => state.mod_workspace.currentNetwork,
       dragBoxContainer:           state => state.mod_workspace.dragBoxContainer,
       isCursorInsideWorkspace:    state => state.mod_workspace.positionForCopyElement.cursorInsideWorkspace,
       cursorPosition:             state => state.mod_workspace.positionForCopyElement.cursor,
@@ -183,7 +183,7 @@ export default {
       }
     },
     tabSetClass() {
-      return {'bookmark_tab--active': indexCurrentNetwork === i}
+      return {'bookmark_tab--active': this.currentNetworkIndex === i}
     },
     toolbarType() {
 
@@ -196,18 +196,18 @@ export default {
       return this.$store.getters['mod_workspace/GET_currentNetworkId'];
     },
     showCodeWindow() {
-      return this.$store.getters['mod_workspace-code-editor/getCodeWindowState'](this.workspace[this.indexCurrentNetwork].networkID);
+      return this.$store.getters['mod_workspace-code-editor/getCodeWindowState'](this.workspace[this.currentNetworkIndex].networkID);
     },
     showNotificationWindow() {
-      return this.$store.getters['mod_workspace-notifications/getNotificationWindowState'](this.workspace[this.indexCurrentNetwork].networkID);
+      return this.$store.getters['mod_workspace-notifications/getNotificationWindowState'](this.workspace[this.currentNetworkIndex].networkID);
     },
     getNotificationWindowSelectedTab() {
 
-      if (!this.workspace[this.indexCurrentNetwork]) {
+      if (!this.workspace[this.currentNetworkIndex]) {
         return '';
       }
 
-      return this.$store.getters['mod_workspace-notifications/getNotificationWindowSelectedTab'](this.workspace[this.indexCurrentNetwork].networkID);
+      return this.$store.getters['mod_workspace-notifications/getNotificationWindowSelectedTab'](this.workspace[this.currentNetworkIndex].networkID);
     },
     workspaceErrors() {
       return this.$store.getters['mod_workspace-notifications/getErrors'](this.currentNetworkId).length;
@@ -524,7 +524,7 @@ export default {
       let tab =  !state ? '' : selectedTab;
 
       this.setNotificationWindowState({
-        networkId: this.workspace[this.indexCurrentNetwork].networkID,
+        networkId: this.workspace[this.currentNetworkIndex].networkID,
         value: state,
         selectedTab: tab,
       });
@@ -701,12 +701,12 @@ export default {
     },
     addErrorNotification() {
       // used for test purposes 
-      const networkId = this.workspace[this.indexCurrentNetwork].networkID;
+      const networkId = this.workspace[this.currentNetworkIndex].networkID;
       this.$store.dispatch('mod_workspace-notifications/addError', { networkId, addToast: true });
     },
     addWarningNotification() {
       // used for test purposes 
-      const networkId = this.workspace[this.indexCurrentNetwork].networkID;
+      const networkId = this.workspace[this.currentNetworkIndex].networkID;
       this.$store.dispatch('mod_workspace-notifications/addWarning', { networkId, addToast: true });
     },
     openTerminalConsole() {

@@ -35,26 +35,26 @@ export default {
   computed: {
     ...mapState({
       workspace:                  state => state.mod_workspace.workspaceContent,
-      indexCurrentNetwork:        state => state.mod_workspace.currentNetwork,
+      currentNetworkIndex:        state => state.mod_workspace.currentNetwork,
     }),
     currentNetworkId() {
       return this.$store.getters['mod_workspace/GET_currentNetworkId'];
     },
     getNotificationWindowSelectedTab() {
-      return this.$store.getters['mod_workspace-notifications/getNotificationWindowSelectedTab'](this.workspace[this.indexCurrentNetwork].networkID);
+      return this.$store.getters['mod_workspace-notifications/getNotificationWindowSelectedTab'](this.workspace[this.currentNetworkIndex].networkID);
     },
     componentType() {
       return this.getNotificationWindowSelectedTab || 'ErrorInfoPanel';
     },
     workspaceErrors() {
-      return this.$store.getters['mod_workspace-notifications/getErrors'](this.workspace[this.indexCurrentNetwork].networkID).length;
+      return this.$store.getters['mod_workspace-notifications/getErrors'](this.workspace[this.currentNetworkIndex].networkID).length;
     },
   },
   methods: {
     onTabClick(tabName) {
       this.$store.dispatch("mod_workspace-notifications/setSelectedTabAction", {
         tabName,
-        networkId: this.workspace[this.indexCurrentNetwork].networkID,
+        networkId: this.workspace[this.currentNetworkIndex].networkID,
       });
     },
     closeWindow() {

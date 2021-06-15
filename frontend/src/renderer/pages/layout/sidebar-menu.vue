@@ -175,7 +175,7 @@
           if (selectedTab === 'model') {
             this.$store.dispatch("mod_workspace/setViewType", 'model');
             if (modelCandidate >= 0) {
-              this.$store.dispatch("mod_workspace/SET_currentNetwork", modelCandidate);
+              // this.$store.dispatch("mod_workspace/SET_currentNetwork", modelCandidate);
               this.$store.commit('mod_empty-navigation/set_emptyScreenMode', 0);
             } else {
               this.$store.commit('mod_empty-navigation/set_emptyScreenMode', 1);
