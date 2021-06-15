@@ -125,7 +125,7 @@ const getters = {
     return network;
   },
   GET_currentNetworkId(state, getters) {
-    return getters.GET_networkIsNotEmpty
+    return getters.GET_networkIsNotEmpty && state.workspaceContent[state.currentNetwork]
       ? state.workspaceContent[state.currentNetwork].networkID
       : 0
   },
@@ -305,7 +305,7 @@ const getters = {
     }
   },
   GET_networkShowCharts(state, getters) {
-    if(getters.GET_networkIsNotEmpty) {
+    if(getters.GET_networkIsNotEmpty && getters.GET_currentNetwork) {
       return getters.GET_currentNetwork.networkMeta.chartsRequest.showCharts;
     }
   },

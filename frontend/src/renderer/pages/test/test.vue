@@ -91,10 +91,16 @@ export default {
       }))
     };
   },
+  mounted() {
+    if (this.testData && Object.keys(this.testData).length === 0 && this.models.length > 0) {
+      this.runTest();
+    }
+  },
   computed: {
     ...mapGetters({
       testData: "mod_test/GET_testData",
       isTestRunning: "mod_test/GET_testRunning",
+      models: "mod_workspace/GET_models",
       testStatus: "mod_test/GET_testStatus"
     }),
     ...mapState({

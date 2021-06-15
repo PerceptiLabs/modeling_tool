@@ -3,6 +3,9 @@ import store from "@/store";
 
 Vue.directive("tooltip", {
   bind: function(el, binding, vnode) {
+    if (binding.arg === "wrap-text" && !binding.value) {
+      return; 
+    }
     el.tooltipStandardBinding = binding;
     el.classList.add("tooltip-wrap");
     el.addEventListener("mouseenter", insertStandardTooltip);

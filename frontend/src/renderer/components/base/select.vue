@@ -13,7 +13,8 @@
       )
       template(v-if="selectMultiple")
         li.custom-select_option
-          button.action-list_btn(type="button" @click="selectAllBtn.action")
+          base-checkbox.select_checkbox(v-if="showCheckbox && selectMultiple" @input="selectAllBtn.action" :value="selectAllBtn.selectStatus") SelectAll
+          button.action-list_btn(v-else type="button" @click="selectAllBtn.action")
             span.action-list_icon.icon(:class="selectAllBtn.iconClass")
             span.action-list_btn-text Select All
         li.custom-select_separator
@@ -45,7 +46,12 @@
                 .action-list_bg
                 span.action-list_btn-text {{ subOption.text }}
         template(v-else)
-          label.action-list_btn(@click.stop="clickList")
+          base-checkbox.select_checkbox(
+            v-if="showCheckbox && selectMultiple" 
+            :value="checkedOptions.includes(option.value)"
+            @input="toggleItem(option)"
+          ) {{option.text}}
+          label.action-list_btn(v-else @click.stop="clickList")
             input.action-list_input(
               :type="typeSelectList"
               :name="uniqName"
@@ -79,6 +85,10 @@ export default {
     selectPlaceholder: {
       type: String,
       default: ''
+    },
+    showCheckbox: {
+      type: Boolean,
+      default: false,
     },
     styleType: { type: String, default: '' }
   },
@@ -131,10 +141,11 @@ export default {
     selectAllBtn() {
       let all = this.trueModel.length || 0;
       let check = this.checkedOptions.length;
-      if(all === check)             return {iconClass: 'icon-app-minimize',  action: ()=> this.defaultModel()};
-      if(all > check && check > 0)  return {iconClass: 'icon-app-close',     action: ()=> this.defaultModel()};
-      if(check === 0)               return {iconClass: 'icon-check-mark',   action: ()=> this.enableAll()};
-      return {iconClass: 'icon-check-mark',   action: ()=> this.defaultModel()};
+
+      if(all === check)             return {iconClass: 'icon-app-minimize', selectStatus: true,  action: ()=> this.defaultModel()};
+      if(all > check && check > 0)  return {iconClass: 'icon-app-close',    selectStatus: true, action: ()=> this.defaultModel()};
+      if(check === 0)               return {iconClass: 'icon-check-mark',   selectStatus: false, action: ()=> this.enableAll()};
+      return {iconClass: 'icon-check-mark',  selectStatus: false, action: ()=> this.defaultModel()};
     }
   },
   watch: {
@@ -162,6 +173,21 @@ export default {
     },
     closeList() {
       this.isOpenList = false;
+    },
+    toggleItem(option) {
+      if (!this.selectMultiple) {
+        return;
+      }
+      if (this.checkedOptions && this.checkedOptions.includes(option.value)) {
+        this.checkedOptions = this.checkedOptions.filter((v) => v !== option.value);
+      } else {
+        if (this.checkedOptions) {
+          this.checkedOptions = [...this.checkedOptions, option.value];
+        } else {
+          this.checkedOptions = [option.value];
+        }
+      }
+      this.openList();
     },
     openSubList(index) {
       this.openIndexSublist === index
@@ -310,6 +336,11 @@ export default {
     }
     &:last-of-type {
       border-radius: 0 0 $bdrs $bdrs;
+    }
+
+    .select_checkbox {
+      width: 100%;
+      padding: 0 20px;
     }
   }
 

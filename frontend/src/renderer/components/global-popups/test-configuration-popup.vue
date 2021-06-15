@@ -23,9 +23,12 @@
         .form_input.flex-vertical
           base-select(
             :select-multiple="true"
+            :show-checkbox="true"
             :select-options="availableModels"
             v-model="selectedModels"
           )
+          info-tooltip.warning
+            span Select multiple models to compare
       .form_row
         .form_label.text-right Select tests:
         .form_input.checkbox-group
@@ -35,8 +38,6 @@
             v-model="testTypes[key]" 
             :disabled="!isTestAvailable(key)"
           ) {{testType.text}}
-      .warning 
-        span Warning: if your model or test dataset is large, the test may fail. We are working on a fix for this.
     template(slot="action")
       button.btn.btn--primary.btn--disabled(type="button"  @click="closeModal") Cancel
       button.btn.btn--primary(type="button" @click="run()" :disabled="!canTestBeRun()") Run Test
@@ -188,8 +189,9 @@ export default {
 }
 .warning {
   margin-top: 1rem;
-  font-size: 1.2rem;
-  color: $col-warning;
+  svg {
+    cursor: default !important;
+  }
 }
 
 .settings-layer_section >
