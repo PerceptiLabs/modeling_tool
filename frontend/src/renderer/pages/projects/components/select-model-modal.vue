@@ -192,159 +192,160 @@
                       )
 
           div.model-run-settings-page(v-show="onStep === 3")
-            //h5.default-text Training settings:
-
-            div.setting-form-wrapper.settings-layer_section
-              .form_row
-                .form_label
-                  info-tooltip(
-                    styleType="justify-content-end"
-                    text="Model name"
-                  ) Name:
-                .form_input(data-tutorial-hover-info)
-                  input.normalize-inputs(
-                    type="text",
-                    v-model="modelName",
-                    @keyup="onModelNameKeyup",
-                    :data-tutorial-target="'tutorial-create-model-model-name'"
-                  )
-              .form_row.relative
-                .form_label
-                  info-tooltip(
-                    styleType="justify-content-end"
-                    text="The location where your model directory will be saved."
-                  ) Model Path:
-                .form_input
-                  input.normalize-inputs(
-                    type="text",
-                    v-model="modelPath",
-                    :data-tutorial-target="'tutorial-create-model-model-path'"
-                  )
-                  button.btn.btn--dark-blue-rev.browse-path-button(
-                    type="button",
-                    @click="openFilePicker"
-                  ) Browse
-              .form_row
-                .form_label
-                  info-tooltip(
-                    styleType="justify-content-end"
-                    text="Number of times you want to run through the entire dataset. The more number of times, the better the model will learn you training data. Just be aware that training too long may overfit your model to your training data."
-                  ) Epochs:
-                #tutorial_epochs.form_input(data-tutorial-hover-info)
-                  input.normalize-inputs(
-                    type="number"
-                    name="Epochs"
-                    v-model="settings.Epochs")
-              .form_row
-                .form_label
-                  info-tooltip(
-                    styleType="justify-content-end"
-                    text="Number of samples you want to train on at the same time. Higher value will cause the training to go quicker and may make your model generalize better. Too high value may cause your model not to learn the data well enough though."
-                  ) Batch size:
-                .form_input
-                  input.normalize-inputs(
-                    type="number"
-                    name="Batch_size"
-                    v-model="settings.Batch_size")
-              .form_row
-                .form_label
-                  info-tooltip(
-                    styleType="justify-content-end"
-                    text="The loss function is how the error between the prediction and the labels is calculated and therefore what the models tries to optimize."
-                  ) Loss:
-                .form_input
-                  base-select(
-                    style-type='darken'
-                    v-model="settings.Loss"
-                    :select-options="settings.LossOptions"
-                  )
-              .form_row()
-                .form_label
-                  info-tooltip(
-                    styleType="justify-content-end"
-                    text="The higher the value, the quicker your model will learn. If it's too low it can easily get stuck in a poor local minima and it it's too high it can easily skip over good local minimas."
-                  ) Learning rate:
-                #tutorial_learning_rate.form_input
-                  input.normalize-inputs(
-                    type="number"
-                    v-model="settings.Learning_rate")
-              .form_row
-                .form_label
-                .form_input
-                  base-checkbox(v-model="settings.AutoCheckpoint") Save checkpoint every epoch
-              .form_row
-                .form_label
-                  span.d-flex.justify-content-end Optimizer:
-                .form_input
-                  base-select(
-                    style-type='darken'
-                    v-model="settings.Optimizer"
-                    :select-options="settings.OptimizerOptions"
-                  )
-                  br
-                  div(v-if="settings.Optimizer === 'ADAM'")
-                    .form_row
-                      .form_label
+            template(v-if="isCreateModelLoading")
+              chart-spinner(text="Building preprocessing pipelines...")
+            template(v-else)
+              div.setting-form-wrapper.settings-layer_section
+                .form_row
+                  .form_label
+                    info-tooltip(
+                      styleType="justify-content-end"
+                      text="Model name"
+                    ) Name:
+                  .form_input(data-tutorial-hover-info)
+                    input.normalize-inputs(
+                      type="text",
+                      v-model="modelName",
+                      @keyup="onModelNameKeyup",
+                      :data-tutorial-target="'tutorial-create-model-model-name'"
+                    )
+                .form_row.relative
+                  .form_label
+                    info-tooltip(
+                      styleType="justify-content-end"
+                      text="The location where your model directory will be saved."
+                    ) Model Path:
+                  .form_input
+                    input.normalize-inputs(
+                      type="text",
+                      v-model="modelPath",
+                      :data-tutorial-target="'tutorial-create-model-model-path'"
+                    )
+                    button.btn.btn--dark-blue-rev.browse-path-button(
+                      type="button",
+                      @click="openFilePicker"
+                    ) Browse
+                .form_row
+                  .form_label
+                    info-tooltip(
+                      styleType="justify-content-end"
+                      text="Number of times you want to run through the entire dataset. The more number of times, the better the model will learn you training data. Just be aware that training too long may overfit your model to your training data."
+                    ) Epochs:
+                  #tutorial_epochs.form_input(data-tutorial-hover-info)
+                    input.normalize-inputs(
+                      type="number"
+                      name="Epochs"
+                      v-model="settings.Epochs")
+                .form_row
+                  .form_label
+                    info-tooltip(
+                      styleType="justify-content-end"
+                      text="Number of samples you want to train on at the same time. Higher value will cause the training to go quicker and may make your model generalize better. Too high value may cause your model not to learn the data well enough though."
+                    ) Batch size:
+                  .form_input
+                    input.normalize-inputs(
+                      type="number"
+                      name="Batch_size"
+                      v-model="settings.Batch_size")
+                .form_row
+                  .form_label
+                    info-tooltip(
+                      styleType="justify-content-end"
+                      text="The loss function is how the error between the prediction and the labels is calculated and therefore what the models tries to optimize."
+                    ) Loss:
+                  .form_input
+                    base-select(
+                      style-type='darken'
+                      v-model="settings.Loss"
+                      :select-options="settings.LossOptions"
+                    )
+                .form_row()
+                  .form_label
+                    info-tooltip(
+                      styleType="justify-content-end"
+                      text="The higher the value, the quicker your model will learn. If it's too low it can easily get stuck in a poor local minima and it it's too high it can easily skip over good local minimas."
+                    ) Learning rate:
+                  #tutorial_learning_rate.form_input
+                    input.normalize-inputs(
+                      type="number"
+                      v-model="settings.Learning_rate")
+                .form_row
+                  .form_label
+                  .form_input
+                    base-checkbox(v-model="settings.AutoCheckpoint") Save checkpoint every epoch
+                .form_row
+                  .form_label
+                    span.d-flex.justify-content-end Optimizer:
+                  .form_input
+                    base-select(
+                      style-type='darken'
+                      v-model="settings.Optimizer"
+                      :select-options="settings.OptimizerOptions"
+                    )
+                    br
+                    div(v-if="settings.Optimizer === 'ADAM'")
+                      .form_row
+                        .form_label
+                          info-tooltip(
+                            styleType="justify-content-end"
+                            text="The exponential decay rate for the 1st moment estimates"
+                          ) Beta1:
+                        .form_input(data-tutorial-hover-info)
+                          input.normalize-inputs(
+                            type="number"
+                            name="Beta1"
+                            v-model="settings.Beta1")
+                      .form_row
+                        .form_label
+                          info-tooltip(
+                            styleType="justify-content-end"
+                            text="The exponential decay rate for the 2nd moment estimates"
+                          ) Beta2:
+                        .form_input(data-tutorial-hover-info)
+                          input.normalize-inputs(
+                            type="number"
+                            name="Beta2"
+                            v-model="settings.Beta2")
+                    div(v-if="settings.Optimizer === 'SGD'")
+                      .form_row
+                        .form_label
+                          info-tooltip(
+                            styleType="justify-content-end"
+                            text="Accelerates the gradient descent in the relevant direction and dampens oscillations"
+                          ) Momentum:
+                        .form_input(data-tutorial-hover-info)
+                          input.normalize-inputs(
+                            type="number"
+                            name="Momentum"
+                            v-model="settings.Momentum")
+                    div(v-if="settings.Optimizer === 'RMSprop'")
+                      .form_row
                         info-tooltip(
                           styleType="justify-content-end"
-                          text="The exponential decay rate for the 1st moment estimates"
-                        ) Beta1:
-                      .form_input(data-tutorial-hover-info)
-                        input.normalize-inputs(
-                          type="number"
-                          name="Beta1"
-                          v-model="settings.Beta1")
-                    .form_row
-                      .form_label
-                        info-tooltip(
-                          styleType="justify-content-end"
-                          text="The exponential decay rate for the 2nd moment estimates"
-                        ) Beta2:
-                      .form_input(data-tutorial-hover-info)
-                        input.normalize-inputs(
-                          type="number"
-                          name="Beta2"
-                          v-model="settings.Beta2")
-                  div(v-if="settings.Optimizer === 'SGD'")
-                    .form_row
-                      .form_label
-                        info-tooltip(
-                          styleType="justify-content-end"
-                          text="Accelerates the gradient descent in the relevant direction and dampens oscillations"
-                        ) Momentum:
-                      .form_input(data-tutorial-hover-info)
-                        input.normalize-inputs(
-                          type="number"
-                          name="Momentum"
-                          v-model="settings.Momentum")
-                  div(v-if="settings.Optimizer === 'RMSprop'")
-                    .form_row
-                      info-tooltip(
-                        styleType="justify-content-end"
-                        text="Setting this to True may help with training, but is slightly more expensive in terms of computation and memory"
-                      )
-                        base-checkbox(v-model="settings.Centered") Centered
-
-              .form_row
-                .form_label
-                .form_input
-                  info-tooltip(
-                    styleType="justify-content-end"
-                    text="Select Yes if you want to re-shuffle the order of your dataset each epoch. Typically helps your model to generalize better."
-                  )
-                    base-checkbox(v-model="settings.Shuffle") Shuffle
-            div.footer-actions
-              button.reload-dataset-btn(@click="onStep -= 1")
-                img(src='./../../../../../static/img/arrow-back.svg')
-                | Edit dataset
-
-              div.d-flex
-                button.action-button.create-btn.customize-btn.mr-15(
-                  @click="createModelTF2X(true)"
-                ) Run&nbsp;model
-                button.action-button.create-btn(
-                  @click="createModelTF2X(false)"
-                ) Customize
+                          text="Setting this to True may help with training, but is slightly more expensive in terms of computation and memory"
+                        )
+                          base-checkbox(v-model="settings.Centered") Centered
+  
+                .form_row
+                  .form_label
+                  .form_input
+                    info-tooltip(
+                      styleType="justify-content-end"
+                      text="Select Yes if you want to re-shuffle the order of your dataset each epoch. Typically helps your model to generalize better."
+                    )
+                      base-checkbox(v-model="settings.Shuffle") Shuffle
+              div.footer-actions
+                button.reload-dataset-btn(@click="onStep -= 1")
+                  img(src='./../../../../../static/img/arrow-back.svg')
+                  | Edit dataset
+  
+                div.d-flex
+                  button.action-button.create-btn.customize-btn.mr-15(
+                    @click="createModelTF2X(true)"
+                  ) Run&nbsp;model
+                  button.action-button.create-btn(
+                    @click="createModelTF2X(false)"
+                  ) Customize
 
 
 
@@ -459,6 +460,7 @@ export default {
       onStep: 1,
       settings: defaultTrainingSettings,
       showLoadingSpinner: false,
+      isCreateModelLoading: false,
     };
   },
   computed: {
@@ -629,7 +631,7 @@ export default {
       if (!this.csvData) {
         return;
       }
-
+      this.isCreateModelLoading = true;
       const { modelName, modelPath } = this;
 
       // Check validity
@@ -729,6 +731,7 @@ export default {
       this.$nextTick(() => {
         this.setCurrentView("tutorial-workspace-view");
       });
+      this.isCreateModelLoading = false;
       this.closeModal(false);
     },
     async createModelTF1X() {

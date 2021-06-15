@@ -1,12 +1,19 @@
 <template lang="pug">
   .chart-spinner-box
     .chart-spinner
+    .text(v-show="text") {{text}}
 </template>
 
 <script>
 
 export default {
   name: "ChartSpinner",
+  props: {
+    text: {
+      type: String,
+      default: '',
+    }
+  }
 }
 </script>
 
@@ -25,6 +32,12 @@ export default {
     background-color: rgba($bg-workspace, .5);;
   }
 
+  .text {
+    position: absolute;
+    top: calc(50% + 40px);
+    z-index: 3;
+    font-size: 14px;
+  }
   .chart-spinner {
     margin: 0 auto;
     font-size: .9rem;
