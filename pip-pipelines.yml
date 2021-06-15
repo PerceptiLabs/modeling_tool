@@ -20,6 +20,10 @@ jobs:
           artifact: linux_3.7_wheel
           image: 'ubuntu-latest'
           pyver: '3.7'
+        linux_py3.8:
+          artifact: linux_3.8_wheel
+          image: 'ubuntu-latest'
+          pyver: '3.8'
         osx_py3.6:
           artifact: osx_3.6_wheel
           image: 'macOS-10.14'
@@ -28,6 +32,10 @@ jobs:
           artifact: osx_3.7_wheel
           image: 'macOS-10.14'
           pyver: '3.7'
+        osx_py3.8:
+          artifact: osx_3.8_wheel
+          image: 'macOS-10.14'
+          pyver: '3.8'
         win_py3.6:
           artifact: windows_3.6_wheel
           image: "vs2017-win2016"
@@ -36,6 +44,10 @@ jobs:
           artifact: windows_3.7_wheel
           image: "vs2017-win2016"
           pyver: '3.7'
+        win_py3.8:
+          artifact: windows_3.8_wheel
+          image: "vs2017-win2016"
+          pyver: '3.8'
 
     pool:
         vmImage: $(image)

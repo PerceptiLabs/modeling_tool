@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from distutils.dir_util import copy_tree
 from distutils.file_util import copy_file
 from enum import Enum, auto
@@ -34,7 +36,7 @@ def get_os():
 
 OS = get_os()
 PYTHON = sys.executable
-VALID_PYTHON_VERSION_PATTERN = "python 3\.[67][^\d]"
+VALID_PYTHON_VERSION_PATTERN = "python 3\.[678][^\d]"
 
 # this depends on pwd being in the scripts directory
 SCRIPTS_DIR = os.path.dirname(os.path.abspath(__file__))
