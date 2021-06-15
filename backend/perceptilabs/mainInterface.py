@@ -20,6 +20,7 @@ from perceptilabs.coreInterface import coreLogic
 from perceptilabs.graph.spec import GraphSpec
 from perceptilabs.exporter.base import Exporter
 from perceptilabs.utils import stringify
+from perceptilabs import __version__
 from perceptilabs.core_new.errors import LightweightErrorHandler
 from perceptilabs.core_new.extras import LayerExtrasReader
 from perceptilabs.logconf import APPLICATION_LOGGER, set_user_email
@@ -413,6 +414,9 @@ class Interface():
         elif action == "checkCore":
             response = self._core.checkCore()
             return response
+        
+        elif action == "version":
+            return __version__
 
         elif action == "checkVersions":
             response = self._core.checkVersions()

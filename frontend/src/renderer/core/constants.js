@@ -18,13 +18,16 @@ const baseHost = window.location.hostname
 export const KEYCLOAK_URL_CONFIG_PATH = 'keycloak_url';
 
 export const FILESERVER_URL_CONFIG_PATH = 'fileserver_url';
+export const FILESERVER_VERSION_CONFIG_PATH = 'fileserver_version';
 export const FILESERVER_BASE_URL = `http://${baseHost}:8011`
 
 export const RYGG_URL_CONFIG_PATH = 'rygg_url';
+export const RYGG_VERSION_CONFIG_PATH = 'rygg_version';
 export const RYGG_BASE_URL = `http://${baseHost}:8000`
 export const RYGG_MIXPANEL_ENDPOINT = '/mixpanel'; // MixPanel proxy functions
 
 export const KERNEL_URL_CONFIG_PATH = 'kernel_url';
+export const KERNEL_VERSION_CONFIG_PATH = 'kernel_version';
 export const KERNEL_BASE_URL = `ws://${baseHost}:5000`
 // for legacy stuff in apiCore
 export const KERNEL_HOST = baseHost

@@ -52,6 +52,7 @@ BUILD_OUT = os.path.join(BUILD_DIR, "out")
 
 BUILD_DOCKER = os.path.join(BUILD_DIR, "docker")
 BUILD_DOCKER_FRONTEND = os.path.join(BUILD_DOCKER, "frontend")
+BUILD_DOCKER_FRONTEND_STATIC_FILESERVER = os.path.join(BUILD_DOCKER_FRONTEND, "static_file_server")
 BUILD_DOCKER_RYGG = os.path.join(BUILD_DOCKER, "rygg")
 BUILD_DOCKER_KERNEL = os.path.join(BUILD_DOCKER, "kernel")
 
@@ -287,6 +288,10 @@ def set_perceptilabs_inner_version(rootDir, versions: Versions):
 
 def set_fileserver_inner_version(rootDir, versions: Versions):
     init_py = os.path.join(rootDir, "fileserver", "__init__.py")
+    sed_i(init_py, "^__version__ *=.*", f"__version__='{versions.as_pep440}'")
+
+def set_staticfileserver_inner_version(rootDir, versions: Versions):
+    init_py = os.path.join(rootDir, "static_file_server", "__init__.py")
     sed_i(init_py, "^__version__ *=.*", f"__version__='{versions.as_pep440}'")
 
 
@@ -546,10 +551,10 @@ def test():
     run_pytest_tests()
     run_django_tests()
     run_integration_tests()
-    run_lint_test()
+    run_lint_test()    
     run_cython_test()
 
-
+    
 class DockerBuilder():
     @staticmethod
     def all(do_clean=False):
@@ -637,6 +642,7 @@ class DockerBuilder():
         for from_docker in FILES_FROM_DOCKER_DIR:
             copy_file(f"{PROJECT_ROOT}/docker/Frontend/{from_docker}", f"{BUILD_DOCKER_FRONTEND}/{from_docker}", update=True)
 
+        set_staticfileserver_inner_version(BUILD_DOCKER_FRONTEND_STATIC_FILESERVER, versions)
         DockerBuilder._set_dockerfile_version_label(BUILD_DOCKER_FRONTEND, versions)
         set_frontend_version(f"{BUILD_DOCKER_FRONTEND}/package.json", versions)
 

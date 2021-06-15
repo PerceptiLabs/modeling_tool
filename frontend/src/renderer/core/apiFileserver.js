@@ -4,10 +4,12 @@ import { stringifyNetworkObjects, getCookie }   from "@/core/helpers.js";
 
 import { FILESERVER_BASE_URL } from '@/core/constants'
 import { FILESERVER_URL_CONFIG_PATH }   from "@/core/constants";
+import { FILESERVER_VERSION_CONFIG_PATH }   from "@/core/constants";
 import { whenUrlIsResolved } from '@/core/urlResolver';
+import { whenVersionIsResolved } from '@/core/versionResolver';
 
-const whenFileserverReady = whenUrlIsResolved(FILESERVER_URL_CONFIG_PATH, FILESERVER_BASE_URL)
-  .then(url => {
+const whenFileserverReady = Promise.all([whenUrlIsResolved(FILESERVER_URL_CONFIG_PATH, FILESERVER_BASE_URL), whenVersionIsResolved(`${FILESERVER_VERSION_CONFIG_PATH}?token=${process.env.PL_FILE_SERVING_TOKEN}`)])
+  .then(([url]) => {
     let ret = axios.create();
     ret.defaults.baseURL = url
     ret.defaults.headers.common["Content-Type"] = `application/json`;

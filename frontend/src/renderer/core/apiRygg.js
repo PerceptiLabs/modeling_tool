@@ -4,10 +4,12 @@ import axios            from 'axios'
 
 import { RYGG_BASE_URL } from '@/core/constants'
 import { RYGG_URL_CONFIG_PATH }   from "@/core/constants";
+import { RYGG_VERSION_CONFIG_PATH } from "@/core/constants";
 import { whenUrlIsResolved } from '@/core/urlResolver';
+import { whenVersionIsResolved } from '@/core/versionResolver';
 
-const whenRyggReady = whenUrlIsResolved(RYGG_URL_CONFIG_PATH, RYGG_BASE_URL)
-  .then(url => {
+const whenRyggReady = Promise.all([whenUrlIsResolved(RYGG_URL_CONFIG_PATH, RYGG_BASE_URL), whenVersionIsResolved(RYGG_VERSION_CONFIG_PATH)])
+  .then(([url]) =>{
     let ret = axios.create();
     ret.defaults.baseURL = url
     ret.defaults.headers.common["Content-Type"] = `application/json`;
