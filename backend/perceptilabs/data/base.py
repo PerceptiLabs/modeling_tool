@@ -20,12 +20,12 @@ class FeatureSpec:
 
 
 class DataLoader:
-    def __init__(self, data_frame, feature_specs, partitions=None, base_directory=None, randomized_partitions=False, randomized_partitions_seed=1234, shuffle_seed=None):
+    def __init__(self, data_frame, feature_specs, partitions=None, base_directory=None, randomized_partitions=False, randomized_partitions_seed=None, shuffle_seed=None):
         partitions = partitions or {'training': 0.7, 'validation': 0.2, 'test': 0.1}        
         self._feature_specs = feature_specs
         
         self._randomized_partitions = randomized_partitions
-        self._randomized_partitions_seed = randomized_partitions_seed
+        self._randomized_partitions_seed = randomized_partitions_seed or 1234
         
         self._validate_partitions(partitions)
         self._validate_feature_specs(data_frame.columns, feature_specs)

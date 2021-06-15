@@ -93,3 +93,19 @@ def test_get_valid_and_default_datatypes(df):
     assert actual == expected
 
 
+
+def test_get_valid_and_default_datatypes_always_allow_categorical(df):
+    expected = {
+        'Name': (['categorical', 'text'], 1),
+        'City': (['categorical', 'text'], 0),
+        'Age': (['categorical', 'numerical'], 1),
+        'Height': (['categorical', 'numerical'], 1),
+        'Gender': (['binary', 'categorical', 'text'], 0),
+        'Photo': (['categorical', 'image', 'text'], 1)
+    }
+    inferrer = TypeInferrer(max_categories=3, always_allow_categorical=True)
+    actual = inferrer.get_valid_and_default_datatypes_for_dataframe(df)
+    assert actual == expected
+
+
+    

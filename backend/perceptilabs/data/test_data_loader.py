@@ -261,6 +261,82 @@ def test_randomized_partitioning_is_random():
     assert not np.all(np.isclose(original_y1, actual_y1))    
 
 
+def test_randomized_partitioning_with_same_seed_are_equal():
+    n = 5
+    x = np.random.random((n,)).tolist()
+    y = np.random.random((n,)).tolist()
+
+    df = pd.DataFrame.from_dict({'x': x, 'y': y})
+    
+    feature_specs = {
+        'x': FeatureSpec('numerical', 'input'),
+        'y': FeatureSpec('numerical', 'target')
+    }
+    dl1 = DataLoader(df, feature_specs, randomized_partitions=True, randomized_partitions_seed=100)
+    dl2 = DataLoader(df, feature_specs, randomized_partitions=True, randomized_partitions_seed=100)
+
+    def datasets_are_equal(set1, set2):
+        for (x1, y1), (x2, y2) in zip(set1, set2):
+            equal = (
+                np.isclose(x1['x'].numpy(), x2['x'].numpy()) and 
+                np.isclose(y1['y'].numpy(), y2['y'].numpy())
+            )
+            if not equal:
+                return False
+        return True
+
+    assert datasets_are_equal(
+        dl1.get_dataset(partition='training'),
+        dl2.get_dataset(partition='training')
+    )
+    assert datasets_are_equal(
+        dl1.get_dataset(partition='validation'),
+        dl2.get_dataset(partition='validation')
+    )
+    assert datasets_are_equal(
+        dl1.get_dataset(partition='test'),
+        dl2.get_dataset(partition='test')
+    )
+
+
+def test_randomized_partitioning_with_diff_seed_are_unequal():
+    n = 5
+    x = np.random.random((n,)).tolist()
+    y = np.random.random((n,)).tolist()
+
+    df = pd.DataFrame.from_dict({'x': x, 'y': y})
+    
+    feature_specs = {
+        'x': FeatureSpec('numerical', 'input'),
+        'y': FeatureSpec('numerical', 'target')
+    }
+    dl1 = DataLoader(df, feature_specs, randomized_partitions=True, randomized_partitions_seed=123)
+    dl2 = DataLoader(df, feature_specs, randomized_partitions=True, randomized_partitions_seed=100)
+
+    def datasets_are_equal(set1, set2):
+        for (x1, y1), (x2, y2) in zip(set1, set2):
+            equal = (
+                np.isclose(x1['x'].numpy(), x2['x'].numpy()) and 
+                np.isclose(y1['y'].numpy(), y2['y'].numpy())
+            )
+            if not equal:
+                return False
+        return True
+
+    assert not datasets_are_equal(
+        dl1.get_dataset(partition='training'),
+        dl2.get_dataset(partition='training')
+    )
+    assert not datasets_are_equal(
+        dl1.get_dataset(partition='validation'),
+        dl2.get_dataset(partition='validation')
+    )
+    assert not datasets_are_equal(
+        dl1.get_dataset(partition='test'),
+        dl2.get_dataset(partition='test')
+    )
+
+
 def test_shuffle_gives_random_data():
     n = 5
     original_x1 = np.random.random((n,)).tolist()

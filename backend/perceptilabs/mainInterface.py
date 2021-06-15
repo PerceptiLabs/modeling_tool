@@ -724,7 +724,7 @@ class Interface():
     
     def _create_response_data_selected(self, request_value):
         """ Sent when the users elects a data file """
-        inferrer = TypeInferrer()
+        inferrer = TypeInferrer(always_allow_categorical=True)
         datatypes = inferrer.get_valid_and_default_datatypes_for_csv(request_value['path'])
 
         tracking.send_data_selected(
