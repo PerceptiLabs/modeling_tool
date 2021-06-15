@@ -73,6 +73,7 @@
   import BaseGlobalPopup  from "@/components/global-popups/base-global-popup";
   import { createIssueInGithub } from '@/core/apiFileserver';
   import ViewLoading from '@/components/different/view-loading.vue'
+  import { PERCEPTILABS_FORUM_URL } from "@/core/constants";
 
   export default {
     name: "CreateIssuesPopup",
@@ -94,7 +95,7 @@
         issueBody: '',
         issueType: 'anonymous',
         popupTitle: ['Report to PerceptiLabs'],
-        forumLink: 'http://forum.perceptilabs.com',
+        forumLink: PERCEPTILABS_FORUM_URL,
         gitHubIssuesUrl: 'https://github.com/PerceptiLabs/PerceptiLabs/issues/',
         gitHubIssueNumber: '',
         isRequesting: false,

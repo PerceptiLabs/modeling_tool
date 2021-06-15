@@ -38,6 +38,10 @@ export const KEYCLOAK_REALM_PATH = `/realms/${process.env.KEYCLOAK_REALM}`;
 export const PERCEPTILABS_DOCUMENTATION_URL = 'https://docs.perceptilabs.com/perceptilabs';
 export const PERCEPTILABS_YOUTUBE_VIDEO_TUTORIAL_URL = 'https://www.youtube.com/watch?v=IDC_uHfdpnw&list=PLhDSeRDt1gigF-8DrTBedYy3TMZ2OelqA';
 export const PERCEPTILABS_VIDEO_TUTORIAL_URL = 'https://docs.perceptilabs.com/perceptilabs/getting-started/video-tutorials';
+export const PERCEPTILABS_YOUTUBE_URL = 'https://www.youtube.com/channel/UCYAWJ3u8N6E6OI7GjIUe-Iw';
+export const PERCEPTILABS_SLACK_URL = 'https://join.slack.com/t/perceptilabs-com/shared_invite/zt-mxohtpkm-lQI_0nT~tBeUd2RtZIfe4g'
+export const PERCEPTILABS_FORUM_URL = 'https://forum.perceptilabs.com/';
+export const PERCEPTILABS_BLOGS_URL = 'https://blog.perceptilabs.com/';
 
 const widthElement = 60;
 const workspaceGrid = 30;

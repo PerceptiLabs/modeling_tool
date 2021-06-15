@@ -10,13 +10,16 @@
         p.text © 2021 PerceptiLabs.
         p.text All rights reserved.
         a.link.about-popup-link.terms-link(href="https://perceptilabs.com/terms" target="_blank") License Terms 
-        a.about-popup-link(href="https://forum.perceptilabs.com/" target="_blank") Forum
+        a.about-popup-link(:href="forumUrl" target="_blank") Forum
 </template>
 <script>
+import { PERCEPTILABS_FORUM_URL } from "@/core/constants";
+
 export default {
   name: 'AboutAppPopup',
   data: () => ({
-    releases: []
+    releases: [],
+    forumUrl: PERCEPTILABS_FORUM_URL
   }),
   computed: {
     appVersion() {
