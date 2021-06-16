@@ -41,7 +41,7 @@
             chart-switch(
               key="4"
               chart-label="Predictions for Each Class"
-              :chart-data="chartDataPvGAndConfusionMatrixLastEpoch(chartData.PvGAndConfusionMatrix.LastEpoch)"
+              :chart-data="chartData.PvGAndConfusionMatrix.LastEpoch"
               :custom-color="colorList"
             )
         .statistics-box_main.statistics-box_col(v-if="chartData.hasOwnProperty('PvG')")
@@ -166,10 +166,6 @@ export default {
           break;
       }
     },
-    chartDataPvGAndConfusionMatrixLastEpoch(data) {
-      data.legend.data = [];
-      return data;
-    }
   }
 }
 </script>

@@ -125,7 +125,7 @@ def bar_detailed(data_vec: np.ndarray, ratio: int = 1):
                 'name': str(i),
                 'type': 'bar', 
                 'stack': 'total', 
-                'label': {'show': True},
+                'label': {'show': False},
                 'emphasis': {'focus': 'series'}, 
                 'data': data[i]
             }
@@ -345,13 +345,15 @@ def create_data_object(
     if type_=='bar_detailed':
         data_object["xLength"] = len(data_list[0])
         data_object["series"] = type_object["data"]
+        names = [str(i) for i in range(len(data_list[0]))]
+        data_object["legend"] = {"data": names}
     else:
         data_object["xLength"] = data_list[0].size
         data_object["series"]  = series_list
 
+ 
     if name_list:
         data_object["legend"] = {"data": [n for n in name_list]}
-
     return data_object
 
 def subsample_data(subsample_data_info: dict, total_num_layer_components: int, total_data_points: int):

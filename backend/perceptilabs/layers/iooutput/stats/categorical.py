@@ -87,13 +87,10 @@ class CategoricalOutputStats(OutputStats):
 
     def _get_data_obj_confusion_matrix(self):
         summed_matrix = self._multiclass_matrix.get_total_matrix_for_latest_epoch(phase='training')
-
-        names = [str(i) for i in range(len(summed_matrix))]
         dataobj_cm_in_latest_epoch = create_data_object(
             [       
                 summed_matrix
             ],
-            name_list=[names],
             type_list=['bar_detailed']
         )
 
