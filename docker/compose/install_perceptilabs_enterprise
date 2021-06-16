@@ -470,6 +470,21 @@ start_pl(){
   sudo docker-compose up -d
 }
 
+prune(){
+  prune=x
+  if [ $opt_headless -eq 1 ]; then
+    prune=y
+  fi
+
+  while [[ ! $prune =~ ^$|[ynYN] ]]; do
+    read -r -p "Do you want to prune obsolete docker objects from your system? [Y/n] " prune
+  done
+
+  if [[ $prune =~ ^$|[yY] ]]; then
+    sudo docker system prune --force
+  fi
+}
+
 reboot_if_needed(){
   if [ $needs_reboot -eq 1 ] && [ $opt_noreboot -eq 0 ]; then
     echo
@@ -519,6 +534,7 @@ main(){
   get_user_input
   install_prerequisites
 
+  # Set HAS_GPU for migrations
   export HAS_GPU=
   if has_nvidia_driver; then
     export HAS_GPU=1
@@ -528,6 +544,7 @@ main(){
   "${MYDIR}/system_migrations/migrate"
 
   start_pl
+  prune
   reboot_if_needed
 
   echo PerceptiLabs is ready!
