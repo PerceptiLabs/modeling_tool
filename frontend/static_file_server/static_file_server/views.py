@@ -1,4 +1,3 @@
-
 from static_file_server import __version__
 from django.urls import path, re_path
 from django.views.generic import TemplateView
@@ -9,6 +8,7 @@ from django.http import HttpResponse
 from static_file_server.settings import IS_CONTAINERIZED
 import os, requests, json
 from websocket import create_connection
+from rest_framework.response import Response
 
 def _make_header_sentinel(header_as_utf):
     header_len = len(header_as_utf)

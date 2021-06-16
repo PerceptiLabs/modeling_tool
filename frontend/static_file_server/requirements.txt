@@ -20,3 +20,4 @@ urllib3==1.25.10 #pinning this to 1.25.10 to avoid installation errors for the p
 wrapt>=1.12.1
 django-cors-headers>=3.2.1
 pypiwin32>=223; platform_system == "Windows"
+websocket-client>=1.1.0
