@@ -94,9 +94,8 @@ Do the following steps inside `backend`, `rygg`, and `fileserver` to setup envir
 6. Activate the proper environment: `conda activate pl_rygg` (`pl_rygg` for rygg, `pl_backend` for backend, `pl_fileserver` for fileserver)
 7. Update setuptools: `pip install --upgrade pip setuptools`
 8. Install all dependencies: `pip install -r requirements.txt`
-9. [Only for backend(kernel)] Install gym by following this: https://github.com/rybskej/atari-py up to and including the 3rd step and then `pip install "gym[atari]"` and `pip install -U git+https://github.com/Kojoley/atari-py.git`
 
-Now you have setup 3 environments, Now run the following to start services
+Now you have set up 3 environments, Now run the following to start services
 
 ```sh
 

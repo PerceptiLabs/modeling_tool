@@ -16,8 +16,6 @@ flask>=1.1.1
 fsspec>=0.6.0
 gputil>=1.4.0
 h5py==2.10.0
-gym[atari]; platform_system == "Darwin"
-gym[atari]; platform_system == "Linux"
 gym-unity>=0.20.0
 jinja2>=2.10.3
 jsonschema==3.2.0

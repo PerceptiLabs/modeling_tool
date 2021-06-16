@@ -64,20 +64,6 @@ SERVICE_CMDS = [
 ]
 
 
-def check_for_atari():
-    if not IS_WIN:
-        return
-
-    spec = importlib.util.find_spec("atari_py")
-    if spec:
-        return
-
-    print(f"{bcolors.WARNING}PerceptiLabs:{bcolors.ENDC} Your environment does not have atari_py installed, so some functionality may not be available")
-    print(f"{bcolors.WARNING}PerceptiLabs:{bcolors.ENDC} To install it, please follow the directions at https://github.com/Kojoley/atari-py and then install gym through 'pip install gym[atari]'")
-
-    # give the user a chance to read the message
-    time.sleep(1)
-
 def which_cmd():
     return "where" if IS_WIN else "which"
 
@@ -199,7 +185,6 @@ def start(verbosity):
         sys.exit(0)
 
     try:
-        check_for_atari()
         check_for_git()
         download_tutorial_data()
         pipes = get_pipes(verbosity)

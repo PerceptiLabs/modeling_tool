@@ -249,10 +249,6 @@ def install_prereqs():
 
     run_checked("python -m pip install --upgrade pip setuptools wheel")
 
-    if OS == Os.WIN:
-        run_unchecked('pip install gym[atari]')
-        run_unchecked("pip install -U git+https://github.com/Kojoley/atari-py.git")
-
     run_checked(f"pip install -r {BACKEND_SRC}/requirements.txt")
     run_checked(f"pip install -r {RYGG_DIR}/requirements.txt")
     run_checked(f"pip install -r {FILESERVER_DIR}/requirements.txt")
