@@ -513,7 +513,7 @@ def wheel():
     copy_files(f"{PROJECT_ROOT}/fileserver", BUILD_TMP,  list_path=f"{PROJECT_ROOT}/fileserver/included_files.txt")
     copy_files(f"{PROJECT_ROOT}/perceptilabs_runner", f"{BUILD_TMP}/perceptilabs_runner/",  list_path=f"{PROJECT_ROOT}/perceptilabs_runner/included_files.txt")
     copy_file(f"{WHEELFILES_DIR}/setup.cfg", f"{BUILD_TMP}/setup.cfg", update=True)
-    combine_requirements_files("backend rygg fileserver".split(), f"{BUILD_TMP}/requirements.txt")
+    combine_requirements_files("backend rygg fileserver frontend/static_file_server".split(), f"{BUILD_TMP}/requirements.txt")
     copy_file(f"{SCRIPTS_DIR}/setup.py", f"{BUILD_TMP}/setup.py", update=True)
     assemble_package_datas(
             ["backend", "rygg", "fileserver", "frontend", "perceptilabs_runner"],
