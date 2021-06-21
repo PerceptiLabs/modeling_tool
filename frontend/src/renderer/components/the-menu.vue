@@ -246,7 +246,10 @@ export default {
       }
     },
     onPaste(ev, triggeredByHotkey) {
-      ev.preventDefault();
+      if (!Array.from(document.activeElement.classList).includes('inputarea')) {
+        ev.preventDefault();
+      }
+      
       this.HCPaste(triggeredByHotkey);
     },
     toNextStepHistory(ev) {
