@@ -1,4 +1,6 @@
 import numpy as np
+import cv2
+import math
 
 from perceptilabs.createDataObject import create_data_object
 from perceptilabs.stats.base import OutputStats
@@ -25,36 +27,56 @@ class ImageOutputStats(OutputStats):
 
     def get_data_objects(self):
         # TODO: docs
-        iou_over_steps, iou_over_epochs = self._get_dataobj_iou()
+        _, iou_over_epochs = self._get_dataobj_iou()
+        loss_over_epochs = self._get_dataobj_loss()
 
         pred_value = self._get_arbitrary_sample(type_='prediction')
         target_value = self._get_arbitrary_sample(type_='target')
-        pred_vs_target_obj = create_data_object(
-            [pred_value, target_value],
-            name_list=['Prediction', 'Ground Truth']
-        )
 
-        pred_batch_average = self._get_average_sample(type_='prediction')
-        target_batch_average = self._get_average_sample(type_='target')
-        avg_pred_vs_target_obj = create_data_object(
-            [pred_batch_average, target_batch_average],
-            name_list=['Prediction', 'Ground Truth']
-        )
+        if pred_value.shape[-1] <= 1:
+            # Add color channels to the grayscale predictions and targets so they can be overlayed with each other
+            pred_value_rgb = cv2.cvtColor(pred_value, cv2.COLOR_GRAY2RGB)
+            target_value_rgb = cv2.cvtColor(target_value, cv2.COLOR_GRAY2RGB)
+            white_lo = np.array([10,10,10])
+            white = np.array([255,255,255])
+            
+            mask = cv2.inRange(target_value_rgb, white_lo, white)
+
+            target_value_rgb[mask>0] = (255,0,0)
+            
+            blended = cv2.addWeighted(pred_value_rgb, 0.9, target_value_rgb, 0.1, 0)
+            data_obj_overlayed_image = create_data_object([blended], normalize=False)
+
+        else:
+            overlayed_image = cv2.addWeighted(target_value, 0.7, pred_value, 0.3, 0)
+
+            data_obj_overlayed_image = create_data_object([overlayed_image])
         
         data_objects = {
-            'IoU': {  # TODO: rename to IOU when frontend is updated
-                'OverSteps': iou_over_steps,
-                'OverEpochs': iou_over_epochs
+            'IoUAndLoss': { 
+                'LossOverEpochs': loss_over_epochs,
+                'IoUOverEpochs': iou_over_epochs
             },
-            'PvG': {
-                'Sample': pred_vs_target_obj,
-                'BatchAverage': avg_pred_vs_target_obj
+            'PvGAndImage': {
+                'Sample': data_obj_overlayed_image,
+                'Prediction': create_data_object([pred_value])
             },
             'ViewBox': {
                 'Output': create_data_object([target_value])
             }
         }
         return data_objects
+
+    def _get_dataobj_loss(self):
+        training_loss_over_epochs, validation_loss_over_epochs = self.get_loss_over_epochs()
+
+        dataobj_loss_over_epochs = create_data_object(
+            [validation_loss_over_epochs, training_loss_over_epochs],
+            type_list=['line', 'line'],
+            name_list=['Validation', 'Training']
+        )
+
+        return dataobj_loss_over_epochs
 
     def _get_dataobj_iou(self):
         training_iou_over_steps = self._iou.get_iou_over_steps_in_latest_epoch(phase='training')
@@ -91,6 +113,16 @@ class ImageOutputStats(OutputStats):
         }
 
     def get_iou_over_epochs(self):
+        """
+        Returns lists of iou from all epochs.
+        """
+        training_iou_over_epochs = self._iou.get_iou_over_epochs(
+            phase='training')
+        validation_iou_over_epochs = self._iou.get_iou_over_epochs(
+            phase='validation')
+        return training_iou_over_epochs, validation_iou_over_epochs
+
+    def get_loss_over_epochs(self):
         """
         Returns lists of iou from all epochs.
         """

@@ -18,6 +18,12 @@ TYPE_HEATMAP   = "heatmap"
 TYPE_SCATTER   = "scatter"
 TYPE_PIE       = "pie"
 
+def normalization(image, from_min, from_max, to_min, to_max):
+
+    from_range = from_max - from_min
+    to_range = to_max - to_min
+    scaled = np.array((image - from_min) / float(from_range), dtype=float)
+    return to_min + (scaled * to_range)
 
 def RGB2RGBa(data: np.ndarray, normalize: bool):
     '''Converts RGB to RGBa'''
@@ -29,7 +35,9 @@ def RGB2RGBa(data: np.ndarray, normalize: bool):
         normalizedData = np.around((data/data.max(0).max(0))*255)
         newData[:, :, 0:3] = normalizedData
     else:
-        newData[:, :, 0:3] = data
+        # De-Normalize because we normalized during preprocessing
+        denormalizedData = normalization(data, 0.0, 1.0, 0, 255)
+        newData[:, :, 0:3] = denormalizedData
     
     newData[:,:,3] = 255
     flatData = np.reshape(newData,-1)
@@ -183,7 +191,7 @@ def rgb(data_vec: np.ndarray, normalize: bool, ratio: int = 1):
     x_data, y_data = subsample(data_vec, ratio)    
     height, width = y_data.shape[0:2]
     y_data = RGB2RGBa(y_data, normalize)
-    
+        
     obj = {
         "x_data": x_data,
         "data": convertToList(y_data),

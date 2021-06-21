@@ -58,6 +58,20 @@
               :chart-data="chartData.PvG.BatchAverage"
               :custom-color="colorList"
             )
+        .statistics-box_main.statistics-box_col(v-if="chartData.hasOwnProperty('PvGAndImage')")
+          .statistics-box_row
+            chart-switch(
+              key="3"
+              chart-label="Prediction overlayed with Ground truth"
+              :chart-data="chartData.PvGAndImage.Sample"
+              :custom-color="colorList"
+            )
+            chart-switch(
+              key="4"
+              chart-label="Predicted image"
+              :chart-data="chartData.PvGAndImage.Prediction"
+              :custom-color="colorList"
+            )
         .statistics-box_main.statistics-box_col(v-if="chartData.hasOwnProperty('IoU')")
           .statistics-box_row
             chart-switch(
@@ -70,6 +84,20 @@
               key="6"
               chart-label="IoU over all epochs"
               :chart-data="chartData.IoU.OverEpochs"
+              :custom-color="colorListAccuracy"
+            ) 
+        .statistics-box_main.statistics-box_col(v-if="chartData.hasOwnProperty('IoUAndLoss')")
+          .statistics-box_row
+            chart-switch(
+              key="5"
+              chart-label="Loss over all epochs"
+              :chart-data="chartData.IoUAndLoss.LossOverEpochs"
+              :custom-color="colorListAccuracy"
+            )
+            chart-switch(
+              key="6"
+              chart-label="IoU over all epochs"
+              :chart-data="chartData.IoUAndLoss.IoUOverEpochs"
               :custom-color="colorListAccuracy"
             ) 
       template(v-else)
