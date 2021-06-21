@@ -1,27 +1,32 @@
 #!/usr/bin/env bash
-
 # purges route53 of any "A" records for perceptilabshosting.com that don't point to active EC2 instances
 
-if [ $# -ne 1 ] && [ -z "${AWS_DEFAULT_REGION}" ]; then
-  echo "USAGE $0 <aws-region>"
-  exit 1
-elif [ $# -eq 1 ]; then
-  export AWS_DEFAULT_REGION=$1
-
-# implied else: AWS_DEFAULT_REGION is already set
-fi
-
 DOMAIN=perceptilabshosting.com.
-
 # AWS cli defaults stdout to 'less', which isn't what you want in a script
 export AWS_PAGER=''
 
-set -Eeou pipefail
+PL_HOSTING_ID=
+get_hosting_id(){
+  if [ -z "${PL_HOSTING_ID:-}" ]; then
+    PL_HOSTING_ID=$(aws route53 list-hosted-zones --query "HostedZones[?Name=='${DOMAIN}'] | [0].Id" --output text)
+  fi
+  echo "${PL_HOSTING_ID}"
+}
 
-pl_hosting_id=$(aws route53 list-hosted-zones --query "HostedZones[?Name=='${DOMAIN}'] | [0].Id" --output text)
+get_region(){
+  if [ $# -ne 1 ] && [ -z "${AWS_DEFAULT_REGION:-}" ]; then
+    echo "USAGE $0 <aws-region>"
+    exit 1
+  elif [ $# -eq 1 ]; then
+    export AWS_DEFAULT_REGION=$1
+
+  # implied else: AWS_DEFAULT_REGION is already set
+  fi
+}
+
 remove_route53_record(){
   if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]; then
-    echo "Integration error"
+    echo "Integration error. Received parameters: Active: '$1', Zones: '$2', To Remove: '$3'"
     exit 1
   fi
 
@@ -42,46 +47,50 @@ EOF
 )
 
   aws route53 change-resource-record-sets \
-    --hosted-zone-id ${pl_hosting_id} \
+    --hosted-zone-id $(get_hosting_id) \
     --change-batch "$batch" \
     --output json \
     > /dev/null
 }
 
 get_all_zone_records(){
+  # the grep -wv "os[[:digit:]]\+" filter is to skip over openshift clusters
   QUERY="ResourceRecordSets[?Type=='A'].{Name: Name, Ip: ResourceRecords[0].Value, TTL: TTL}"
-  aws route53 list-resource-record-sets --hosted-zone-id ${pl_hosting_id} --query "${QUERY}" | \
-    jq '.[] | [.Ip, .Name, .TTL] | @tsv' --raw-output | \
-    sort -k 1 -t$'\t' \
-    > ${zones}
+  aws route53 list-resource-record-sets --hosted-zone-id $(get_hosting_id) --query "${QUERY}" \
+    | jq '.[] | [.Ip, .Name, .TTL] | @tsv' --raw-output \
+    | grep -wv "os[[:digit:]]\+" \
+    | sort -k 1 -t$'\t'
 }
 
 get_active_ips(){
   QUERY="Reservations[].Instances[].PublicIpAddress"
-  aws ec2 describe-instances --query "${QUERY}" --output json | \
-    jq '.[]' -r | \
-    sort \
-    > ${active}
+  aws ec2 describe-instances --query "${QUERY}" --output json \
+    | jq '.[]' -r \
+    | sort
 }
 
-zones=$(mktemp)
-active=$(mktemp)
-to_remove=$(mktemp)
+get_records_to_remove(){
+  join -11 -21 -v1 <(get_all_zone_records) <(get_active_ips)
+}
 
-get_all_zone_records
-get_active_ips
+main(){
+  get_region "$@"
 
-join -11 -21 -v1 ${zones} ${active} > ${to_remove}
+  to_remove=$(get_records_to_remove)
+  if [ -z "${to_remove}" ]; then
+    echo "No records to remove"
+    exit 0
+  fi
 
-if [ -s ${to_remove} ]; then
   echo "Removing these records:"
-  cat ${to_remove}
-fi
+  echo "${to_remove}"
 
+  while IFS=' ' read -r ip name ttl; do
+    remove_route53_record "$name" "$ip" "$ttl"
+  done < <(echo "${to_remove}")
+}
 
-while IFS=' ' read -r ip name ttl; do
-  remove_route53_record $name $ip $ttl
-done < ${to_remove}
-
-rm -f ${active} ${zones} ${to_remove}
-
+[ "${BASH_SOURCE[0]}" != "${0}" ] || {
+  set -Eeou pipefail
+  main "$@"
+}
