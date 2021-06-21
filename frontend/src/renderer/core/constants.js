@@ -141,9 +141,9 @@ export const TestTypes = {
     disabled: false,
     text: 'Metrics Table'
   },
-  forward_prop: {
-    default: false,
-    disabled: true,
-    text: 'Forward Prop'
-  }
+  // forward_prop: {
+  //   default: false,
+  //   disabled: true,
+  //   text: 'Forward Prop'
+  // }
 }

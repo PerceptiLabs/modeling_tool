@@ -226,6 +226,7 @@ class Interface():
             del self._cores[receiver]
             return msg
         elif receiver == 'tests':
+            self._testcore.close()
             del self._testcore
             return
         else:
@@ -536,6 +537,10 @@ class Interface():
         elif action == "StopTests":
             response = self._testcore.process_request('Stop')
             return response
+        
+        elif action == "CloseTests":
+            response = self._testcore.process_request('Close')
+            return response
         else:
             raise LookupError(f"The requested action '{action}' does not exist")
 
@@ -710,13 +715,22 @@ class Interface():
         for model_id in model_ids:
             value_dict = value[model_id]
             graph_spec = self._network_loader.load(value_dict, as_spec=True)
-            dataset_settings = action['datasetSettings'][model_id]
-            data_loader = DataLoader.from_dict(dataset_settings)
+            
+            try:
+                dataset_settings = action['datasetSettings'][model_id]
+                data_loader = DataLoader.from_dict(dataset_settings)
+            except Exception as e:
+                message = str(e)
+                with self._issue_handler.create_issue(message, exception=None, as_bug=False) as issue:
+                    self._issue_handler.put_error("Error while loading dataset.")
+                    logger.info(issue.internal_message)
+                    return 
             models_info[model_id] = {
                 'graph_spec': graph_spec, 
-                'model_path':value_dict['model_path'], 
-                'data_path':value_dict['data_path'],
-                'data_loader':data_loader,
+                'model_path': value_dict['model_path'], 
+                'data_path': value_dict['data_path'],
+                'data_loader': data_loader,
+                'model_name': value_dict['model_name'],
             } 
         tests = action["tests"]
         user_email = action['user_email']

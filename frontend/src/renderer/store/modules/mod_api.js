@@ -396,8 +396,11 @@ const actions = {
     let value = {};
 
     modelIds.forEach(id => {
+      const network = rootGetters['mod_workspace/GET_networkByNetworkId'](id);
+
       value[id] = {};
       value[id].layers = getters.GET_coreNetworkById(id);
+      value[id].model_name = network.networkName;
       value[id].data_path = payload.dataPath;
       value[id].model_path = model_paths[id];
     })
@@ -414,16 +417,30 @@ const actions = {
       },
       value,
     }
-    dispatch('mod_test/testStart', null, {root: true});
+    dispatch('mod_test/testStart', payload, {root: true});
+
     return coreRequest(theData).catch((err) => {
       console.error(err);
     })
   },
   API_testStop({dispatch}) {
     const theData = {
-      receiver: 'stop_tests',
+      receiver: 'test_requests',
       action: 'StopTests'
     }
+    dispatch('mod_test/setTestMessage', ['Stopping Tests...'], {root: true});
+    return coreRequest(theData).then(() => {
+      dispatch('mod_test/testFinish', null, {root: true});
+    }).catch((err) => {
+      console.error(err);
+    })
+  },
+  API_closeTest({dispatch}) {
+    const theData = {
+      receiver: 'test_requests',
+      action: 'CloseTests'
+    }
+    dispatch('mod_test/setTestMessage', ['Stopping Tests...'], {root: true});
     return coreRequest(theData).then(() => {
       dispatch('mod_test/testFinish', null, {root: true});
     }).catch((err) => {
@@ -432,12 +449,15 @@ const actions = {
   },
   API_getTestStatus({dispatch}) {
     const theData = {
-      receiver: 'test_status',
+      receiver: 'test_requests',
       action: 'getTestStatus',
     }
     return coreRequest(theData).then((data)=> {
       if (data.status === 'Completed') {
         dispatch('API_getTestResults');
+      } else if (data.status === 'Error') {
+        dispatch('API_closeTest');
+        dispatch('globalView/GP_errorPopup', data.update_line_1, {root: true});
       } else {
         dispatch('mod_test/setTestMessage', [data.update_line_1, data.update_line_2], {root: true})
       }
@@ -452,15 +472,15 @@ const actions = {
       action: 'getTestResults',
     }
     return coreRequest(theData).then((data)=> {
+      dispatch('API_closeTest');
       dispatch('mod_test/setTestData', data, {root: true});
-      dispatch('mod_test/testFinish', null, {root: true});
-      dispatch('mod_webstorage/saveTestStatistic', data, { root: true });
+      dispatch('mod_test/setTestMessage', null, {root: true});
     })
     .catch((err)=> {
       console.error(err);
     });
   },
-
+  
   API_startTraining({dispatch, getters, rootGetters}, { loadCheckpoint = false } = {}) {
     const network = rootGetters['mod_workspace/GET_currentNetwork'];
     const datasetSettings = rootGetters['mod_workspace/GET_currentNetworkDatasetSettings'];

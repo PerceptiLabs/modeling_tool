@@ -11,7 +11,6 @@ from perceptilabs.data.base import DataLoader, FeatureSpec
 from perceptilabs.script import ScriptFactory
 from perceptilabs.graph.builder import GraphSpecBuilder
 from perceptilabs.exporter.base import Exporter
-from perceptilabs.testcore.base import TestCore
 from perceptilabs.testcore.strategies.teststrategies import ConfusionMatrix, MetricsTable
 from perceptilabs.issues import IssueHandler
 
@@ -64,25 +63,7 @@ def graph_spec_few_epochs(csv_path):
     graph_spec = gsb.build()
     return graph_spec
 
-@pytest.fixture()
-def testcore(graph_spec_few_epochs, temp_path, script_factory, data_loader):
-    training_model = TrainingModel(script_factory, graph_spec_few_epochs)
-    exporter = Exporter(graph_spec_few_epochs, training_model, data_loader)
-    exporter.export_checkpoint(temp_path)
-    models_info = {
-        1: {
-            'graph_spec': graph_spec_few_epochs,
-            'model_path': temp_path,
-            'data_path': csv_path,
-            'data_loader': data_loader
-        }
-    }
-    tests = []
-    testcore = TestCore([1], models_info, tests, IssueHandler())
-    testcore.load_models_and_data()
-    yield testcore
-
-def test_confusion_matrix_computation(testcore, data_loader): 
+def test_confusion_matrix_computation(data_loader): 
     model_outputs = {
         'outputs': [{'y1': np.array([[9.5598471e-01, 3.6293268e-04]], dtype=np.float32)}], 
         'labels': [{'y1': tf.constant(np.array([[0., 1.]]), dtype=tf.float32)}]
@@ -91,7 +72,7 @@ def test_confusion_matrix_computation(testcore, data_loader):
     confusion_matrix = ConfusionMatrix().run(model_outputs, compatible_output_layers)
     assert (confusion_matrix['y1'].numpy()==np.array([[0, 0],[1, 0]], dtype=np.int32)).all()                                                        
 
-def test_metrics_table_computation(testcore, data_loader): 
+def test_metrics_table_computation(data_loader): 
     model_outputs = {
         'outputs': [{'y1': np.array([[0.9, 0.1]], dtype=np.float32)},
                     {'y1': np.array([[0.6, 0.4]], dtype=np.float32)}, 

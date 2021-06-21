@@ -4,7 +4,7 @@ const state = {
   isTestRunning: false,
   testStatus: null,
   testIntervalID: null,
-  testData: []
+  testData: null
 };
 
 const getters = {
@@ -38,26 +38,28 @@ const mutations = {
 };
 
 const actions = {
-  setTestData(ctx, value){
-    ctx.commit('setTestDataMutation', value)
+  setTestData(ctx, value) {
+    ctx.commit("setTestDataMutation", value);
+    ctx.dispatch("mod_webstorage/saveTestStatistic", value, { root: true });
   },
   testStart({ dispatch, commit }) {
     commit("setTestRunningMutation", true);
+    dispatch("setTestData", null);
+    dispatch("setTestMessage", ['Loading Data...']);
 
     const intervalID = setInterval(() => {
-      dispatch('mod_api/API_getTestStatus', null, { root: true });
+      dispatch("mod_api/API_getTestStatus", null, { root: true });
     }, 1000);
-    commit('setTestIntervalIDMutation', intervalID);
+    commit("setTestIntervalIDMutation", intervalID);
   },
   testFinish({ commit, state }) {
-    commit("setTestStatusMutation", null);
     commit("setTestRunningMutation", false);
     if (state.testIntervalID) {
       clearInterval(state.testIntervalID);
     }
-    commit('setTestIntervalIDMutation', null);
+    commit("setTestIntervalIDMutation", null);
   },
-  setTestMessage({commit}, payload) {
+  setTestMessage({ commit }, payload) {
     commit("setTestStatusMutation", payload);
   }
 };
@@ -68,4 +70,4 @@ export default {
   getters,
   mutations,
   actions
-}
+};

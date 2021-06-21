@@ -48,7 +48,6 @@ class TestLogic():
             issue_handler=self._issue_handler,
             user_email=user_email,
         )
-        self._core.load_models_and_data()
         self._start_testing_thread()
         return "Testing started."
 
@@ -91,6 +90,7 @@ class TestLogic():
         return processed_output
 
     def process_request(self, request, value=None):
+        logger.debug("{} request is being processed in the testcore.".format(request))
         if request == 'StartTest':
             if value:
                 user_email = value['user_email']
@@ -101,12 +101,26 @@ class TestLogic():
             return self.get_results()
         elif request == 'GetStatus':
             return self.get_status()
+        elif request == 'Close':
+            return self.close()
         else:
-            pass
+            logger.info('Unknown request {} sent.'.format(request))
 
     def get_status(self):
-        return self._core.get_status()
+        return self._core.get_testcore_status()
 
     def stop(self):
         self._stopped = True
-        return self._core.stop()
+        try:
+            self._core.stop()
+        except Exception as e:
+            with self._issue_handler.create_issue('Error while stopping model', e) as issue:
+                logger.exception(issue.internal_message)
+
+    def close(self):
+        try:
+            self._core.stop()
+            del self._core
+        except Exception as e:
+            with self._issue_handler.create_issue('Error while closing model', e) as issue:
+                logger.exception(issue.internal_message)

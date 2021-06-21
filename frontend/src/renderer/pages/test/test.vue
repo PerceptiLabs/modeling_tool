@@ -31,7 +31,7 @@
                     v-if="key === 'confusion_matrix'"
                     :disableHeader="false"
                     :key="featureName"
-                    :chart-label="`${modelName(chartId) } - ${featureName} ${testTypesPretty[key]}`"
+                    :chart-label="`${modelName(chartId) } - ${featureName} ${TestTypes[key].text}`"
                     :chart-data="feature"
                     :styles="chartStyles"
                   )
@@ -41,19 +41,20 @@
     .test-overlay(v-if="isTestRunning")
       .spinner
         chart-spinner
-      p.text-center {{testStatus && testStatus[0]}}
-      p.text-center {{testStatus && testStatus[1]}}
+      p.text-center(v-if="testStatus && testStatus[0]") {{testStatus && testStatus[0]}}
+      p.text-center(v-if="testStatus && testStatus[1]") {{testStatus && testStatus[1]}}
+      button.btn.btn--dark-blue-rev.new-test(@click="stopTest()") Stop Test
     test-configuration-popup(v-if="isTestConfigurationPopupOpened")
 </template>
 
 <script>
 import { mapState, mapGetters } from "vuex";
 
-import TestConfigurationPopup   from "@/components/global-popups/test-configuration-popup";
-import ChartSwitch              from "@/components/charts/chart-switch";
-import ChartSpinner              from "@/components/charts/chart-spinner";
-import MetricTestTable          from "./components/metric-test-table";
-import { TestTypes }            from "@/core/constants";
+import TestConfigurationPopup from "@/components/global-popups/test-configuration-popup";
+import ChartSwitch from "@/components/charts/chart-switch";
+import ChartSpinner from "@/components/charts/chart-spinner";
+import MetricTestTable from "./components/metric-test-table";
+import { TestTypes } from "@/core/constants";
 import { getFirstElementFromObject } from "@/core/helpers";
 
 const chartStyles = {
@@ -74,21 +75,17 @@ export default {
       this.$store.dispatch("mod_test/setTestData", res, { root: true });
     });
   },
-  destroyed() {
-    this.$store.dispatch('mod_api/API_testStop', null, { root: true });
-  },
   data() {
     return {
       chartStyles,
-      testTypesPretty: {
-        confusion_matrix: "Confusion matrix",
-        metrics_table: "Metrics Table"
-      },
       testDataset: "",
-      testTypeOptions: Object.keys(TestTypes).filter(key => !TestTypes[key].disabled).map((key) => ({
-        text: TestTypes[key].text,
-        value: key,
-      }))
+      testTypeOptions: Object.keys(TestTypes)
+        .filter(key => !TestTypes[key].disabled)
+        .map(key => ({
+          text: TestTypes[key].text,
+          value: key
+        })),
+        TestTypes
     };
   },
   mounted() {
@@ -116,12 +113,18 @@ export default {
         { root: true }
       );
     },
+    stopTest() {
+      this.$store.dispatch("mod_api/API_testStop", null, { root: true });
+    },
     modelName(id) {
       return this.$store.getters["mod_workspace/GET_modelName"](id);
     },
     getMetricTableFeatures(data) {
       const chartData = getFirstElementFromObject(data);
       return chartData ? Object.keys(chartData) : [];
+    },
+    reset() {
+      this.$store.dispatch("mod_test/reset", null, { root: true });
     }
   }
 };
@@ -133,13 +136,13 @@ export default {
   border-bottom: 1px solid #b6c7fb;
 }
 .test-wrapper {
-  background: linear-gradient(180deg, #363E51 0%, #000000 225%);
+  background: linear-gradient(180deg, #363e51 0%, #000000 225%);
   display: flex;
   flex-direction: column;
 }
 .test-view {
   padding: 12px 20px;
-  flex: 1;  
+  flex: 1;
   position: relative;
 }
 .chart-wrapper {
@@ -178,7 +181,7 @@ export default {
   bottom: 0;
   right: 0;
   left: 0;
-  z-index: 11;
+  z-index: 101;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -189,7 +192,7 @@ export default {
     font-size: 16px;
   }
 }
-.spinner {  
+.spinner {
   position: relative;
   width: 20px;
   height: 0;

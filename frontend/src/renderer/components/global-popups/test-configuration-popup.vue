@@ -77,7 +77,9 @@ export default {
       return this.$store.getters["mod_workspace/GET_modelTrainingSetting"];
     },
     availableModels() {
-      return this.models.map((model) => ({
+      return this.models.filter((model) => {
+        return Object.keys(this.testTypes).every((testType) => this.testTypes[testType] === false || isModelValidForTest(model, testType))
+      }).map((model) => ({
         text: model.networkName,
         value: model.networkID
       }))
@@ -128,8 +130,6 @@ export default {
     canTestBeRun() {
       const isSomeModelsSelected = this.selectedModels.length > 0;
       const isSomeTestSelected = Object.values(this.testTypes).some(x => x === true);
-      console.log('this.selectedModels', this.selectedModels);
-      console.log('this.testTypes', this.testTypes)
       return isSomeModelsSelected && isSomeTestSelected;
     },
     isTestAvailable(testType) {
@@ -163,6 +163,7 @@ export default {
 }
 .global-training-settings {
   .settings-layer_section {
+    width: 500px !important;
     padding: 25px;
   }
   .popup_foot {

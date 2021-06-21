@@ -485,6 +485,14 @@ export const getFirstElementFromObject = (data) => {
   return data[Object.keys(data)[0]];
 };
 
+export const removeKeysFromObject = (obj, removeKeys) => {
+  return Object.keys(obj).reduce((acc, key) => ( removeKeys.includes(key) ? acc : {...acc, [key]: obj[key]} ), {});
+}
+
+export const isEmptyObject = (obj) => {
+  return !obj || Object.keys(obj).length === 0;
+}
+
 export {
   projectPathModel,
   getDefaultProjectPathForOs,
