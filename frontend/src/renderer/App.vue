@@ -32,7 +32,7 @@
 </template>
 
 <script>
-  import { isWeb, isElectron, isOsMacintosh } from "@/core/helpers";
+  import { isWeb, isElectron, isOsMacintosh, isBrowserChromeOrFirefox} from "@/core/helpers";
   import CreateIssuePopup         from '@/components/global-popups/create-issues-popup.vue';
   import TutorialsChecklist       from '@/components/tutorial/tutorial-checklist.vue';
   import TutorialNotification from "@/components/different/tutorial-notification.vue";
@@ -72,6 +72,9 @@
       this.$store.dispatch('mod_api/API_setAppInstance');
     },
     created() {
+      if(!isBrowserChromeOrFirefox()) {
+        this.$store.dispatch('globalView/GP_infoPopup', 'PerceptiLabs works best in FireFox and Chrome, we suggest you use the tool there instead for the best experience.'); 
+      }
       window.addEventListener("beforeunload", (e) => {
         let networksHaveChanges = this.networksWithChanges.some(id=> this.getWorkspacesIds.includes(id));
         if(networksHaveChanges) { 
