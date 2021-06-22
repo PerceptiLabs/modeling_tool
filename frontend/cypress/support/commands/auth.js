@@ -1,11 +1,11 @@
-const kcRoot = Cypress.env('KEYCLOACK_BASE_URL');
-const kcRealm = Cypress.env('KEYCLOACK_RELM');
-const kcClient = Cypress.env('KEYCLOACK_CLIENT_ID');
+const kcRoot = Cypress.env('KEYCLOAK_BASE_URL');
+const kcRealm = Cypress.env('KEYCLOAK_REALM');
+const kcClient = Cypress.env('KEYCLOAK_CLIENT_ID');
 const kcRedirectUri = Cypress.env('APP_URL');
 
 Cypress.Commands.add('kcLogin', (username, password) => {
   const loginPageRequest = {
-    url: `${kcRoot}/auth/realms/${kcRealm}/protocol/openid-connect/auth`,
+    url: `${kcRoot}/realms/${kcRealm}/protocol/openid-connect/auth`,
     qs: {
       client_id: kcClient,
       redirect_uri: kcRedirectUri,
@@ -58,7 +58,7 @@ Cypress.Commands.add('kcLogin', (username, password) => {
 
 Cypress.Commands.add('kcLogout', () => {
   return cy.request({
-    url: `${kcRoot}/auth/realms/${kcRealm}/protocol/openid-connect/logout`,
+    url: `${kcRoot}/realms/${kcRealm}/protocol/openid-connect/logout`,
     qs: {
       redirect_uri: kcRedirectUri
     }

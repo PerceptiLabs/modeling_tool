@@ -5,7 +5,7 @@ describe('authentication', () => {
   it('should login with correct credentials', () => {
     cy.visit('/');
 
-    cy.location('origin', { timeout: 20 * 1000 }).should('eq', Cypress.env('KEYCLOACK_BASE_URL'));
+    cy.location('origin', { timeout: 20 * 1000 }).should('eq', Cypress.env('KEYCLOAK_BASE_URL'));
 
     cy.fixture('userCredentials').then((user) => {
       cy.get('#username').type(user.email);
@@ -20,7 +20,7 @@ describe('authentication', () => {
   it('should fail with incorrect credentials', () => {
     cy.visit('/');
 
-    cy.location('origin', { timeout: 20 * 1000 }).should('eq', Cypress.env('KEYCLOACK_BASE_URL'));
+    cy.location('origin', { timeout: 20 * 1000 }).should('eq', Cypress.env('KEYCLOAK_BASE_URL'));
 
     cy.fixture('userCredentials').then((user) => {
       cy.get('#username').type(user.email);

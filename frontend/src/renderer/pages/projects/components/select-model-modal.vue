@@ -180,6 +180,7 @@
                   span.image-format-message *.jpg .png .jpeg .tiff only
                   button.next-to-settings-btn(
                     :class="{ 'disabled': isDisableCreateAction() }",
+                    :disabled="isDisableCreateAction()"
                     @click="goToTrainingSettings"
                   )
                     | Next

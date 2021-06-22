@@ -83,6 +83,9 @@ export const doesDirExist = (path) => {
     .then(fs => fs.head(`/directories?path=${path}`))
     .then(res => {
       return (res.status === 200);
+    }).catch((err) => {
+      console.error(err);
+      return false;
     })
 }
 
@@ -140,6 +143,9 @@ export const doesFileExist = (path) => {
     .then(fs => fs.head(`/files?path=${path}`))
     .then(res => {
       return (res.status === 200);
+    }).catch((err) => {
+      console.error(err);
+      return false;
     })
 }
 

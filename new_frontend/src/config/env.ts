@@ -6,11 +6,11 @@ export default {
     (process.env["VUE_APP_GOOGLE_ANALYTICS_ID"] as string) || "",
   FORCE_DEFAULT_PROJECT:
     (process.env["VUE_APP_FORCE_DEFAULT_PROJECT"] as string) || "",
-  KEYCLOACK_BASE_URL:
-    (process.env["VUE_APP_KEYCLOACK_BASE_URL"] as string) || "",
-  KEYCLOACK_RELM: (process.env["VUE_APP_KEYCLOACK_RELM"] as string) || "",
-  KEYCLOACK_CLIENT_ID:
-    (process.env["VUE_APP_KEYCLOACK_CLIENT_ID"] as string) || "",
+  KEYCLOAK_BASE_URL:
+    (process.env["VUE_APP_KEYCLOAK_BASE_URL"] as string) || "",
+  KEYCLOAK_REALM: (process.env["VUE_APP_KEYCLOAK_REALM"] as string) || "",
+  KEYCLOAK_CLIENT_ID:
+    (process.env["VUE_APP_KEYCLOAK_CLIENT_ID"] as string) || "",
   GITHUB_CLIENT_ID: (process.env["VUE_APP_GITHUB_CLIENT_ID"] as string) || "",
   PL_FILE_SERVING_TOKEN:
     (process.env["VUE_APP_PL_FILE_SERVING_TOKEN"] as string) || "",

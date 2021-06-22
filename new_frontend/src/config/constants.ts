@@ -42,7 +42,7 @@ export const KERNEL_BASE_URL = `ws://${baseHost}:5000`;
 export const GITHUB_AUTHORIZE_URL = `https://github.com/login/oauth/authorize?scope=public_repo,read:user&client_id=${env.GITHUB_CLIENT_ID}`;
 export const GITHUB_GET_TOKEN_BY_CODE_URL = "https://ghsk.azurewebsites.net";
 
-export const IS_VALID_KEYCLOACK_CHECKER_URL = `${env.KEYCLOACK_BASE_URL}/auth/realms/${env.KEYCLOACK_RELM}/protocol/openid-connect/3p-cookies/step1.html`;
+export const IS_VALID_KEYCLOAK_CHECKER_URL = `${env.KEYCLOAK_BASE_URL}/auth/realms/${env.KEYCLOAK_REALM}/protocol/openid-connect/3p-cookies/step1.html`;
 
 export const widthElement = 60;
 export const workspaceGrid = 30;

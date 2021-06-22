@@ -16,7 +16,7 @@ describe("logout", () => {
 
     cy.location("origin", { timeout: 20 * 1000 }).should(
       "eq",
-      `${Cypress.env("KEYCLOACK_BASE_URL")}`
+      `${Cypress.env("KEYCLOAK_BASE_URL")}`
     );
   });
 });

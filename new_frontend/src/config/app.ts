@@ -10,7 +10,7 @@ import router from "@/router";
 import store from "@/store";
 import UserModule from "@/store/modules/mod_user";
 import env from "./env";
-import { isDevelopMode, IS_VALID_KEYCLOACK_CHECKER_URL } from "./constants";
+import { isDevelopMode, IS_VALID_KEYCLOAK_CHECKER_URL } from "./constants";
 
 // plugins
 import setupPlugins from "@/plugins";
@@ -21,9 +21,9 @@ class AppInstance {
   private _keycloak: Keycloak.KeycloakInstance | null = null;
 
   private readonly _initOptions = {
-    url: `${env.KEYCLOACK_BASE_URL}/auth`,
-    realm: `${env.KEYCLOACK_RELM}`,
-    clientId: `${env.KEYCLOACK_CLIENT_ID}`,
+    url: `${env.KEYCLOAK_BASE_URL}/auth`,
+    realm: `${env.KEYCLOAK_REALM}`,
+    clientId: `${env.KEYCLOAK_CLIENT_ID}`,
     onLoad: "login-required" as Keycloak.KeycloakOnLoad,
     checkLoginIframe: false, // only true when onLoad is set to 'check-sso', causes errors when offline
   };
@@ -39,7 +39,7 @@ class AppInstance {
   async initialize() {
     try {
       const isKeycloackReachable = await request.fileServer.isURLReachable(
-        IS_VALID_KEYCLOACK_CHECKER_URL,
+        IS_VALID_KEYCLOAK_CHECKER_URL,
       );
 
       if (env.NO_KC == true) {

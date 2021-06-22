@@ -9,6 +9,7 @@
       i.icon.icon-shevron.icon--open
 
     perfect-scrollbar(tag="ul").custom-select_option-list.action-list(
+      :class="{'open': isOpenList}"
       v-show="isOpenList"
       )
       template(v-if="selectMultiple")

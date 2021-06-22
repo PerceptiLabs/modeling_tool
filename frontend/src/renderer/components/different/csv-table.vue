@@ -41,7 +41,9 @@
             td.space-cell(
               v-for="numColumn in computedNumberOfColumns"
             ) &nbsp;
-          tr.table-row  
+          tr.table-row(
+            test-id="io-selection-row"
+          )
             //- td(@click="clearSelectedColumns")
             //-   .label I/O:
             td.table-column.no-padding.io-cell(

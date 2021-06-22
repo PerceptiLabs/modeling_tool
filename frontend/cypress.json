@@ -4,16 +4,13 @@
   "viewportWidth": 1366,
   "viewportHeight": 768,
   "baseUrl": "http://localhost:8080",
-  "testFiles": [
-    "auth/*.*",
-    "model-hub/*.*",
-    "modeling-tool/*.*",
-    "*.*"
-  ],
+  "ignoreTestFiles": "**/legacy-tests/*.*",
+  "defaultCommandTimeout": 10000,
+  "requestTimeout": 10000,
   "env": {
-    "KEYCLOACK_BASE_URL": "https://keycloak.dev.perceptilabs.com:8443",
-    "KEYCLOACK_RELM": "vue-perceptilabs",
-    "KEYCLOACK_CLIENT_ID": "vue-perceptilabs-client-id",
+    "KEYCLOAK_BASE_URL": "https://keycloak.dev.perceptilabs.com:8443/auth",
+    "KEYCLOAK_REALM": "vue-perceptilabs",
+    "KEYCLOAK_CLIENT_ID": "vue-perceptilabs-client-id",
     "PL_FILE_SERVING_TOKEN": "12312",
     "FILE_SERVER_URL": "http://localhost:8011",
     "RYGG_URL": "http://localhost:8000",
