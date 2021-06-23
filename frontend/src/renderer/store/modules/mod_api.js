@@ -1,4 +1,5 @@
 import { coreRequest }  from "@/core/apiWeb.js";
+import { renderingKernel }  from "@/core/apiRenderingKernel.js";
 import {deepCopy, parseJWT, isWeb, isEnvDataWizardEnabled} from "@/core/helpers.js";
 import { createNotebookJson }   from "@/core/helpers/notebook-helper.js";
 import { pathSlash, sessionStorageInstanceIdKey }  from "@/core/constants.js";
@@ -828,19 +829,8 @@ const actions = {
     const net = getters.GET_coreNetwork;
     if(settings) net[layerId].Properties = settings;
 
-    const theData = {
-      receiver: rootGetters['mod_workspace/GET_currentNetworkId'],
-      action: 'getCode',
-      value: {
-        Id: layerId,
-        Network: net
-      }
-    };
-
-    // console.log('getCode', theData);
-    // console.log('getCode - payload', theData);
-    // console.log('getCode - layerId', layerId);
-    return coreRequest(theData)
+     // console.log('getCode - layerId', layerId);
+     return renderingKernel.getCode(net, layerId)
       .then((data)=> {
         // console.log('getCode - response', data);
         // console.log('getCode - layerId', layerId);
@@ -1221,15 +1211,6 @@ const actions = {
     }
     const datasetSettings = rootGetters['mod_workspace/GET_currentNetworkDatasetSettings'];
 
-    const theData = {
-      receiver: '',
-      action: 'getNetworkData',
-      value: {
-        Network:  net,
-	      datasetSettings: datasetSettings
-      }
-    };
-
     // console.log(
     //   'API_getBatchPreviewSample req',
     //   theData
@@ -1237,7 +1218,7 @@ const actions = {
     
     dispatch('mod_workspace/setChartComponentLoadingState', { descendants: Object.keys(payload), value: true, networkId } , { root: true });
 
-    return coreRequest(theData)
+    return renderingKernel.getNetworkData(net, datasetSettings)      
       .then(res => {
         // console.group('getNetworkData');
         // console.log(
@@ -1328,15 +1309,7 @@ const actions = {
     }
     const datasetSettings = rootGetters['mod_workspace/GET_currentNetworkDatasetSettings'];      
     
-    const theData = {
-      receiver: '',
-      action: 'getNetworkData',
-      value: {
-        Network:  net,
-	      datasetSettings: datasetSettings	  
-      }
-    };
-    return coreRequest(theData)
+    return renderingKernel.getNetworkData(net, datasetSettings)
       .then(res => {
         // console.group('API_getBatchPreviewSampleForElementDescendants');
         // console.log(
@@ -1418,15 +1391,6 @@ const actions = {
     return coreRequest(theData)
   },
 
-  API_getModelRecommendation (ctx, payload) {
-    const theData = {
-      receiver: '',
-      action: 'getModelRecommendation',
-      value: payload
-    };
-    
-    return coreRequest(theData)
-  },
   API_setAppInstance({commit}) {
     let instanceKey = sessionStorage.getItem(sessionStorageInstanceIdKey);
     if(instanceKey === null) {

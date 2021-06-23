@@ -391,6 +391,8 @@ import { getResolvedDir as fileserver_getResolvedDir }          from "@/core/api
 import { getRootFolder as fileserver_getRootFolder }            from "@/core/apiFileserver";
 import { getFileContent as fileserver_getFileContent }          from "@/core/apiFileserver";
 
+import { renderingKernel }              from "@/core/apiRenderingKernel";
+
 export default {
   name: "SelectModelModal",
   components: { FilePickerPopup, CsvTable, TripleInput, InfoTooltip, ChartSpinner },
@@ -518,7 +520,6 @@ export default {
       setNextStep: "mod_tutorials/setNextStep",
       activateNotification: "mod_tutorials/activateNotification",
       setChecklistItemComplete: "mod_tutorials/setChecklistItemComplete",
-      getModelRecommendation: "mod_api/API_getModelRecommendation",
     }),
     closeModal(triggerViewChange = false) {
       this.$store.dispatch("globalView/SET_newModelPopup", false);
@@ -628,6 +629,12 @@ export default {
         await this.createModelTF1X();
       }
     },
+    deleteModelWithErrorPopup(modelId, errorMessage) {
+      this.$store.dispatch("mod_project/deleteModel", {
+        model_id: modelId
+      });
+      this.showErrorPopup(errorMessage);
+    },
     async createModelTF2X(runStatistics = false) {
       if (!this.csvData) {
         return;
@@ -665,24 +672,28 @@ export default {
         featureSpecs: this.formatCSVTypesIntoKernelFormat()
       };
 
-      const payload = {
-        datasetSettings: datasetSettings,
-        user_email: this.userEmail,
-        model_id: apiMeta.model_id,
-        skipped_workspace: runStatistics
-      };
-
-      const modelRecommendation = await this.getModelRecommendation(
-        payload
-      ).then(res => {
-        if (typeof res === "string" && res.indexOf("Internal error") !== -1) {
-          this.$store.dispatch("mod_project/deleteModel", {
-            model_id: apiMeta.model_id
-          });
+      const modelRecommendation = await renderingKernel.getModelRecommendation(
+        datasetSettings,
+        this.userEmail,
+        apiMeta.model_id,
+        runStatistics
+      )   
+      .then(res => {
+        if ("errorMessage" in res) {
+          this.deleteModelWithErrorPopup(
+            apiMeta.model_id,
+            "Couldn't get model recommendation due to: " + res["errorMessage"]
+          );
         }
         return res;
-      });
-
+      })
+     .catch(err => {
+       this.deleteModelWithErrorPopup(
+         apiMeta.model_id,
+         "Couldn't get model recommendation due to: " + err
+       );
+      });         
+        
       const inputData = convertModelRecommendationToVisNodeEdgeList(
         modelRecommendation
       );
@@ -925,13 +936,12 @@ export default {
           `${dataPath[0]}`
         );
 
-        this.dataSetTypes = await coreRequest({
-          action: 'dataSelected',
-          value: {
-            user_email: this.userEmail,
-            path: dataPath[0]
-          }
-        });
+        try {
+          this.dataSetTypes = await renderingKernel.getDataTypes(dataPath[0], this.userEmail);
+        } catch (err) {
+          console.error(err);         
+          this.showErrorPopup("Error: Couldn't infer data types");
+        }           
 
         if (fileContents && fileContents.file_contents) {
           this.dataset = fileContents.file_contents;

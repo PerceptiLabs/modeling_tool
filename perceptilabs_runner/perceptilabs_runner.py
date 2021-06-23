@@ -47,6 +47,7 @@ HOST = "127.0.0.1"
 
 PORTS = {
             "kernel": 5000,
+            "rendering-kernel": 5001,    
             "rygg": 8000,
             "fileserver": 8011,
             "frontend": 8080,
@@ -56,7 +57,8 @@ PORTS = {
 # fmt: off
 MIGRATION_CMD = [PYTHON, "-m", "django", "migrate", "--settings", "rygg.settings"]
 SERVICE_CMDS = [
-    [PYTHON, "-c", "from perceptilabs.mainServer import main; main()"],
+    [PYTHON, "-m", "perceptilabs"],
+    [PYTHON, "-m", "perceptilabs", "--mode", "rendering"],    
     [PYTHON, "-m", "django", "runserver", f"{HOST}:{PORTS['rygg']}", "--settings", "rygg.settings", "--noreload"],
     [PYTHON, "-m", "django", "runserver", f"{HOST}:{PORTS['fileserver']}", "--settings", "fileserver.settings", "--noreload"],
     [PYTHON, "-m", "django", "runserver", f"{HOST}:{PORTS['frontend']}", "--settings", "static_file_server.settings", "--noreload"],

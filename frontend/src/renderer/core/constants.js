@@ -33,6 +33,9 @@ export const KERNEL_BASE_URL = `ws://${baseHost}:5000`
 export const KERNEL_HOST = baseHost
 export const KERNEL_PORT = 5000
 
+export const RENDERING_KERNEL_URL_CONFIG_PATH = 'rendering_kernel_url';
+export const RENDERING_KERNEL_BASE_URL = `http://${baseHost}:5001`
+
 export const GITHUB_AUTHORIZE_URL = `https://github.com/login/oauth/authorize?scope=public_repo,read:user&client_id=${process.env.GITHUB_CLIENT_ID}`;
 export const GITHUB_GET_TOKEN_BY_CODE_URL = 'https://ghsk.azurewebsites.net'
 

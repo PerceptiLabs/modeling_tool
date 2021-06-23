@@ -51,6 +51,8 @@ BUILD_TMP = os.path.join(BUILD_DIR, "tmp")
 BUILD_OUT = os.path.join(BUILD_DIR, "out")
 
 BUILD_DOCKER = os.path.join(BUILD_DIR, "docker")
+BUILD_DOCKER_COMPOSE = os.path.join(BUILD_DOCKER, "compose")
+BUILD_DOCKER_FILESERVER = os.path.join(BUILD_DOCKER, "fileserver")
 BUILD_DOCKER_FRONTEND = os.path.join(BUILD_DOCKER, "frontend")
 BUILD_DOCKER_FRONTEND_STATIC_FILESERVER = os.path.join(BUILD_DOCKER_FRONTEND, "static_file_server")
 BUILD_DOCKER_RYGG = os.path.join(BUILD_DOCKER, "rygg")
@@ -554,13 +556,32 @@ def test():
 class DockerBuilder():
     @staticmethod
     def all(do_clean=False):
+        DockerBuilder.assembleCompose(do_clean=do_clean)
+        DockerBuilder.assembleFileserver(do_clean=do_clean)
         DockerBuilder.assembleKernel(do_clean=do_clean)
         DockerBuilder.assembleFrontend(do_clean=do_clean)
         DockerBuilder.assembleRygg(do_clean=do_clean)
         DockerBuilder.build_kernel()
         DockerBuilder.build_frontend()
         DockerBuilder.build_rygg()
+        DockerBuilder.build_fileserver()
 
+
+    @staticmethod
+    def assembleCompose(do_clean=False):
+        if do_clean:
+            rm_rf(BUILD_DOCKER_COMPOSE)
+
+        mkdir_p(BUILD_DOCKER_COMPOSE)
+        DockerBuilder._assemble_docker_compose()
+
+    def assembleFileserver(do_clean=False):
+        if do_clean:
+            rm_rf(BUILD_DOCKER_KERNEL)
+
+        mkdir_p(BUILD_DOCKER_FILESERVER)
+        versionString = calc_version()
+        DockerBuilder._assemble_fileserver_docker(versionString)
 
     @staticmethod
     def assembleKernel(do_clean=False):
@@ -601,6 +622,23 @@ class DockerBuilder():
                  dest.write(src.read())
 
     @staticmethod
+    def _assemble_docker_compose():
+        copy_tree(f"{PROJECT_ROOT}/docker/compose/system_migrations/", f"{BUILD_DOCKER_COMPOSE}/system_migrations/", update=True)
+        copy_file(f"{PROJECT_ROOT}/docker/compose/install_perceptilabs_enterprise", f"{BUILD_DOCKER_COMPOSE}", update=True)
+
+
+    @staticmethod
+    def _assemble_fileserver_docker(versions: Versions):
+        copy_files(f"{FILESERVER_DIR}/", f"{BUILD_DOCKER_FILESERVER}", list_path=f"{FILESERVER_DIR}/included_files.txt")
+        copy_file(f"{FILESERVER_DIR}/requirements.txt", f"{BUILD_DOCKER_FILESERVER}/requirements.txt", update=True)
+        copy_file(f"{FILESERVER_DIR}/Dockerfile", f"{BUILD_DOCKER_FILESERVER}/Dockerfile", update=True)
+        copy_tree(f"{BACKEND_SRC}/perceptilabs/tutorial_data/", f"{BUILD_DOCKER_FILESERVER}/tutorial_data/", update=True)
+        copy_tree(f"{PROJECT_ROOT}/licenses/", f"{BUILD_DOCKER_FILESERVER}/licenses/", update=True)
+        set_fileserver_inner_version(BUILD_DOCKER_FILESERVER, versions)
+        DockerBuilder._set_dockerfile_version_label(BUILD_DOCKER_FILESERVER, versions)
+
+
+    @staticmethod
     def _assemble_kernel_docker(versions: Versions):
         rm_rf(f"{BACKEND_SRC}/upstream")
         rm_rf(f"{BACKEND_SRC}/downstream")
@@ -609,19 +647,12 @@ class DockerBuilder():
         copy_file(f"{SCRIPTS_DIR}/setup.py", f"{BUILD_DOCKER_KERNEL}/setup.py", update=True)
         copy_file(f"{SCRIPTS_DIR}/requirements_build.txt", f"{BUILD_DOCKER_KERNEL}/requirements_build.txt", update=True)
 
-        FILES_FROM_DOCKER_DIR = "setup.cfg entrypoint.sh Dockerfile runner".split()
+        FILES_FROM_DOCKER_DIR = "setup.cfg entrypoint.sh Dockerfile".split()
         for from_docker in FILES_FROM_DOCKER_DIR:
             copy_file( f"{PROJECT_ROOT}/docker/kernel/{from_docker}", f"{BUILD_DOCKER_KERNEL}/{from_docker}", update=True)
         set_perceptilabs_inner_version(BUILD_DOCKER_KERNEL, versions)
         sed_i(f"{BUILD_DOCKER_KERNEL}/requirements.txt", "^opencv-python.*$", "opencv-python-headless")
 
-
-        # add fileserver stuff to the kernel dir
-        copy_files(f"{FILESERVER_DIR}/", f"{BUILD_DOCKER_KERNEL}", list_path=f"{FILESERVER_DIR}/included_files.txt")
-        copy_file(f"{FILESERVER_DIR}/requirements.txt", f"{BUILD_DOCKER_KERNEL}/requirements_fileserver.txt", update=True)
-        DockerBuilder._append_to(f"{FILESERVER_DIR}/requirements.txt", f"{BUILD_DOCKER_KERNEL}/requirements.txt")
-        DockerBuilder._append_to(f"{FILESERVER_DIR}/included_files.txt", f"{BUILD_DOCKER_KERNEL}/included_files.txt")
-        set_fileserver_inner_version(BUILD_DOCKER_KERNEL, versions)
 
         write_all_lines(f"{BUILD_DOCKER_KERNEL}/cython_roots.txt", ["perceptilabs\n", "fileserver\n"])
 
@@ -654,28 +685,33 @@ class DockerBuilder():
     @staticmethod
     def build_kernel():
         with pushd(BUILD_DOCKER_KERNEL):
-            run_checked("docker build . --tag=kernel_dev")
+            run_checked("docker build . --tag=dev/kernel:latest")
         # TODO: run a sanity check on the kernel
 
     @staticmethod
     def build_frontend():
         with pushd(BUILD_DOCKER_FRONTEND):
-            run_checked("docker build . --tag=frontend_dev")
+            run_checked("docker build . --tag=dev/frontend:latest")
         # TODO: run a sanity check on the frontend
 
     @staticmethod
     def build_rygg():
         with pushd(BUILD_DOCKER_RYGG):
-            run_checked("docker build . --tag=rygg_dev")
+            run_checked("docker build . --tag=dev/rygg:latest")
         # TODO: get rygg to build with obfuscation like the kernel does
         # TODO: run a sanity check on rygg
+
+    @staticmethod
+    def build_fileserver():
+        with pushd(BUILD_DOCKER_FILESERVER):
+            run_checked("docker build . --tag=dev/fileserver:latest")
 
 
 def clean():
     rm_rf(BUILD_DIR)
 
 if __name__ == "__main__":
-    USAGE = f"USAGE: {__file__} (clean|wheel|test|docker (kernel|frontend|rygg))"
+    USAGE = f"USAGE: {__file__} (clean|wheel|test|docker (kernel|frontend|rygg|fileserver|all|compose))"
 
     if len(sys.argv) < 2:
         print(USAGE)
@@ -697,8 +733,12 @@ if __name__ == "__main__":
         do_clean = ('--clean' in sys.argv)
 
         dockertype = sys.argv[2]
-        if dockertype == "kernel":
+        if dockertype == "compose":
+            DockerBuilder.assembleCompose(do_clean=do_clean)
+        elif dockertype == "kernel":
             DockerBuilder.assembleKernel(do_clean=do_clean)
+        elif dockertype == "fileserver":
+            DockerBuilder.assembleFileserver(do_clean=do_clean)
         elif dockertype == "frontend":
             DockerBuilder.assembleFrontend(do_clean=do_clean)
         elif dockertype == "rygg":
@@ -710,7 +750,7 @@ if __name__ == "__main__":
             print(USAGE)
             sys.exit(1)
 
-        if dockertype != "all":
+        if not dockertype in ["all", "compose"]:
             print(f"\nTo run the docker build. cd into build/docker/{dockertype} and run `docker build .`")
     else:
         print(f"Invalid build type: {build_type}")

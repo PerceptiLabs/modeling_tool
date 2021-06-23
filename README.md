@@ -38,10 +38,10 @@ python build.py docker all
 popd
 
 # run it
-cd docker/compose
-docker-compose up
+cd build/docker/compose
+../../../scripts/dev_install
 
-# point your browser at http://localhost:8080
+# point your browser at http://localhost
 ```
 
 # How to run the frontend

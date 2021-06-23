@@ -1,7 +1,0 @@
-#!/usr/bin/env sh
-echo -n "Starting fileserver..."
-python3.6 -m django runserver 0.0.0.0:8011 --settings fileserver.settings &
-echo "done"
-
-
-python3.6 -u main.py -p=browser

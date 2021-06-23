@@ -76,6 +76,8 @@ def github_import(request):
         raise HTTPExceptions.BAD_REQUEST.with_content(e)
     except UserError as e:
         raise HTTPExceptions.UNPROCESSABLE_ENTITY.with_content(e.message)
+    except Exception as e:
+        raise HTTPExceptions.INTERNAL_SERVER_ERROR.with_content(e.message)
 
 
 @api_view(['POST'])

@@ -1,5 +1,9 @@
 import os
+import time
+import logging
 from abc import ABC, abstractmethod
+
+
 
 import pandas as pd
 import numpy as np
@@ -8,6 +12,10 @@ from typing import Dict
 
 import perceptilabs.data.pipelines as pipelines
 import perceptilabs.data.utils as utils
+from perceptilabs.logconf import APPLICATION_LOGGER
+
+
+logger = logging.getLogger(APPLICATION_LOGGER)
 
 
 class FeatureSpec:
@@ -32,7 +40,7 @@ class DataLoader:
         
         if base_directory is not None:
             data_frame = self._make_paths_absolute(data_frame, feature_specs, base_directory)
-        
+
         self._unprocessed_datasets, self._pipelines = self._build_datasets_and_pipelines(
             data_frame, feature_specs, partitions
         )
@@ -214,6 +222,8 @@ class DataLoader:
         return self._pipelines[feature_name]['postprocessing']        
         
     def _build_datasets_and_pipelines(self, df, feature_specs, partitions):
+        t0 = time.perf_counter()
+        
         if self._randomized_partitions:
             df = df.sample(
                 frac=1, axis=0, random_state=self._randomized_partitions_seed
@@ -246,6 +256,9 @@ class DataLoader:
         pipelines.update(input_pipelines)
         pipelines.update(target_pipelines)
 
+        t = time.perf_counter()
+        logger.info(f"Building dataset pipelines took {t - t0} seconds")
+        
         return datasets, pipelines
 
 

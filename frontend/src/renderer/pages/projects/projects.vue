@@ -534,10 +534,6 @@
 
       },
       handleAddNetworkModal() {
-        if(this.statusLocalCore!='online') {
-          this.showInfoPopup("Kernel is offline");
-          return;
-        }
         this.setNextStep({
           currentStep:'tutorial-model-hub-new-button',
           activateNextStep: false // or extra notification will appear

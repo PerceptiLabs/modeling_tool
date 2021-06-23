@@ -1,4 +1,5 @@
 perceptilabs/__init__.py
+perceptilabs/__main__.py
 perceptilabs/app_variables.json
 perceptilabs/mainServer.py
 perceptilabs/azure.py
@@ -393,3 +394,17 @@ perceptilabs/tracking/training_started.py
 perceptilabs/tracking/model_exported.py
 perceptilabs/tracking/testing_completed.py
 perceptilabs/tracking/data_selected.py
+
+# backend/perceptilabs/endpoints/
+perceptilabs/endpoints/base.py
+perceptilabs/endpoints/__init__.py
+perceptilabs/endpoints/model_recommendations/__init__.py
+perceptilabs/endpoints/model_recommendations/base.py
+perceptilabs/endpoints/network_data/__init__.py
+perceptilabs/endpoints/network_data/base.py
+perceptilabs/endpoints/type_inference/__init__.py
+perceptilabs/endpoints/type_inference/base.py
+perceptilabs/endpoints/layer_code/__init__.py
+perceptilabs/endpoints/layer_code/base.py
+
+

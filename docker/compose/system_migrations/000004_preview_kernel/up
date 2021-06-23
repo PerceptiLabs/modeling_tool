@@ -4,14 +4,6 @@ set -Eeo pipefail
 MIGRATIONS_DIR=$(dirname $(dirname $0))
 . "${MIGRATIONS_DIR}/common"
 
-make_directories(){
-  mkdir -p plabsdb
-  sudo chmod -R 777 plabsdb
-
-  mkdir -p plabs/data
-  sudo chmod -R 777 plabs
-}
-
 install_config(){
   # update the docker-compose file and restart to take the changes
   mydir=$(dirname $0)
@@ -20,15 +12,15 @@ install_config(){
   cp "${mydir}/nginx.conf" "${PL_ROOT_DIR}/nginx.conf"
 }
 
+short_circuit(){
+  if docker-compose ps --services | grep --quiet render; then
+    echo "The render service has already been set up."
+    exit 0
+  fi
+}
+
 main(){
-  # we can skip 001 and 002 since they're baked into later migrations
-  make_directories
-
-  # All of the Keycloak init has to happen
-  echo "Starting addition of keycloak"
-  "${MIGRATIONS_DIR}/000003_init_kc/up"
-
-  # use the final migration
+  short_circuit
   install_config
 }
 

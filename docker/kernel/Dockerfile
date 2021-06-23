@@ -9,6 +9,7 @@ WORKDIR /src
 ADD requirements.txt ./
 RUN pip install --upgrade pip setuptools
 RUN pip install -r requirements.txt
+RUN rm requirements.txt
 
 # ###################################################################################################
 # build
@@ -25,7 +26,6 @@ RUN yum -y update && \
 WORKDIR /src
 ADD included_files.txt requirements_build.txt ./
 ADD perceptilabs ./perceptilabs
-ADD fileserver ./fileserver
 
 RUN pip install -r requirements_build.txt
 
@@ -35,7 +35,7 @@ RUN python train_model.py data_1579288530.csv
 
 WORKDIR /out
 # Set up the out dir for the build
-ADD runner main.py setup.py setup.cfg package_data.json VERSION cython_roots.txt requirements.txt ./
+ADD main.py setup.py setup.cfg package_data.json VERSION cython_roots.txt requirements.txt ./
 RUN rsync -a /src --files-from=/src/included_files.txt .
 RUN mv perceptilabs/tutorial_data /tutorial_data
 RUN rm -rf /src
@@ -66,9 +66,6 @@ WORKDIR /opt/app-root/src
 COPY --from=build --chown=1001 /out .
 COPY --from=build --chown=1001 /tutorial_data /tutorial_data
 
-RUN chmod +x runner && \
-    rm requirements.txt
-
 # https://github.com/tensorflow/tensorflow/issues/44777
 # Fake it out until TF supports libcusolver.so.11
 RUN ln -Ffs /usr/local/cuda/targets/x86_64-linux/lib/libcusolver.so.11 /usr/local/cuda/targets/x86_64-linux/lib/libcusolver.so.10
@@ -79,11 +76,8 @@ ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/lib64:/usr/local
 
 COPY licenses /licenses
 
-EXPOSE 5000
-EXPOSE 8011
-
 # feature flags
 ENV PL_IOU=1
 ENV PL_KERNEL_TRAINER=standard
 
-CMD ["/opt/app-root/src/runner"]
+CMD ["python3.6", "-u", "main.py", "-p=browser"]

@@ -1,0 +1,88 @@
+{
+    "0": {
+        "Code": null,
+        "Name": "Input_1",
+        "Properties": {
+            "DataType": "numerical",
+            "FeatureName": "x1",
+            "FilePath": "perceptilabs/endpoints/model_recommendations/test_data.csv"
+        },
+        "Type": "IoInput",
+        "backward_connections": [],
+        "checkpoint": {
+            "load_checkpoint": true,
+            "path": null
+        },
+        "endPoints": [],
+        "forward_connections": [
+            {
+                "dst_id": "1",
+                "dst_var": "input",
+                "src_var": "output"
+            }
+        ],
+        "getPreview": false,
+        "previewVariable": "",
+        "visited": false
+    },
+    "1": {
+        "Code": null,
+        "Name": "Dense_1",
+        "Properties": {
+            "Activation_function": "None",
+            "Batch_norm": false,
+            "Dropout": false,
+            "Keep_prob": 0.0,
+            "Neurons": 1
+        },
+        "Type": "DeepLearningFC",
+        "backward_connections": [
+            {
+                "dst_var": "input",
+                "src_id": "0",
+                "src_var": "output"
+            }
+        ],
+        "checkpoint": {
+            "load_checkpoint": true,
+            "path": null
+        },
+        "endPoints": [],
+        "forward_connections": [
+            {
+                "dst_id": "2",
+                "dst_var": "input",
+                "src_var": "output"
+            }
+        ],
+        "getPreview": false,
+        "previewVariable": "",
+        "visited": false
+    },
+    "2": {
+        "Code": null,
+        "Name": "Target_1",
+        "Properties": {
+            "DataType": "numerical",
+            "FeatureName": "y1",
+            "FilePath": "perceptilabs/endpoints/model_recommendations/test_data.csv"
+        },
+        "Type": "IoOutput",
+        "backward_connections": [
+            {
+                "dst_var": "input",
+                "src_id": "1",
+                "src_var": "output"
+            }
+        ],
+        "checkpoint": {
+            "load_checkpoint": true,
+            "path": null
+        },
+        "endPoints": [],
+        "forward_connections": [],
+        "getPreview": false,
+        "previewVariable": "",
+        "visited": false
+    }
+}

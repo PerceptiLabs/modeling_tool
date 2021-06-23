@@ -101,6 +101,10 @@ class TokenView(TemplateView):
         return ret
 
 @api_view(["GET"])
+def rendering_kernel_url(request):
+    return HttpResponse(other_url(request, "PL_RENDERING_KERNEL_URL", "core"))
+    
+@api_view(["GET"])
 def kernel_url(request):
     return HttpResponse(other_url(request, "PL_KERNEL_URL", "core"))
 

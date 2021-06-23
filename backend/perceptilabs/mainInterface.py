@@ -35,7 +35,6 @@ import perceptilabs.logconf
 import perceptilabs.automation.autosettings.utils as autosettings_utils
 import perceptilabs.automation.utils as automation_utils
 from perceptilabs.data.base import FeatureSpec, DataLoader
-from perceptilabs.data.type_inference import TypeInferrer
 from perceptilabs.utils import is_pre_datawizard
 from perceptilabs.script import ScriptFactory
 
@@ -47,14 +46,12 @@ from perceptilabs.lwInterface import (
     getDataMeta,
     getDataMetaV2,
     getPartitionSummary,
-    getCode,
     GetNetworkInputDim,
     getNetworkOutputDim,
     getPreviewSample,
     getPreviewBatchSample,
     getPreviewVariableList,
     Parse,
-    GetNetworkData,
     ScanCheckpoint,
     CopyJsonModel,
     UploadKernelLogs
@@ -268,7 +265,7 @@ class Interface():
         action = request.get('action')
         value = request.get('value')
         if action != 'checkCore':
-            logger.debug(f"Frontend receiver: {receiver} , Frontend request: {action}")
+            logger.info(f"Frontend receiver: {receiver} , Frontend request: {action}")
         
         if logger.isEnabledFor(logging.DEBUG):
             logger.debug("creating response for action: {}. \nFull request:\n{}".format(
@@ -327,16 +324,6 @@ class Interface():
         elif action == "getPartitionSummary":
             return self._create_response_get_partition_summary(value, receiver)
 
-        elif action == "getCode":
-            id_ = value['Id']            
-            graph_spec = self._network_loader.load(value['Network'], as_spec=True)
-            
-            get_code = getCode(id_=id_, graph_spec=graph_spec)                            
-            return get_code.run()
-
-        elif action == "dataSelected":
-            return self._create_response_data_selected(value)
-
         elif action == "getNetworkInputDim":
             graph_spec = self._network_loader.load(value, as_spec=True)
             json_network = graph_spec.to_dict()
@@ -364,10 +351,6 @@ class Interface():
             previews, trained_layers_info = getPreviewBatchSample(lw_core, graph_spec, json_network).run()
 
             return {"previews":previews, "outputDims": outputDims, "trainedLayers": trained_layers_info}
-
-        elif action == "getNetworkData":
-            return self._get_network_data(receiver, value)
-        
         elif action == "getPreviewSample":
             layer_id = value["Id"]
             json_network = self._network_loader.load(value["Network"])
@@ -425,9 +408,6 @@ class Interface():
 
         elif action == "headless":
             return self._create_response_headless(value)
-
-        elif action == "getModelRecommendation":
-            return self._create_response_model_recommendation(value)
 
         elif action == "getTrainingStatistics":
             response = self._core.getTrainingStatistics(value)
@@ -555,24 +535,6 @@ class Interface():
         
         return "User has been set to " + value
         
-    def _get_network_data(self, receiver, value):
-        json_network = value["Network"]
-        dataset_settings = value.get("datasetSettings", None)
-
-        if logger.isEnabledFor(logging.DEBUG):
-            logger.debug("_get_network_data input network: \n" + stringify(json_network))
-        
-        graph_spec = self._network_loader.load(json_network, as_spec=True)
-        lw_core, _, _ = self.create_lw_core(
-            receiver, json_network, dataset_settings=dataset_settings, adapter=False
-        )
-        output = GetNetworkData(graph_spec, lw_core, self._settings_engine).run()
-
-        if logger.isEnabledFor(logging.DEBUG):
-            logger.debug("_get_network_data output network: \n" + stringify(output))
-            
-        return output
-    
     def _get_receiver_mode(self,receiver_id):
         """
         Requests to start testing contain 't' in receiver id.
@@ -740,17 +702,6 @@ class Interface():
             'StartTest', {'user_email':user_email})
         return response
     
-    def _create_response_data_selected(self, request_value):
-        """ Sent when the users elects a data file """
-        inferrer = TypeInferrer(always_allow_categorical=True)
-        datatypes = inferrer.get_valid_and_default_datatypes_for_csv(request_value['path'])
-
-        tracking.send_data_selected(
-            request_value['user_email'],
-            request_value['path']
-        )
-        return datatypes
-
     def _create_response_get_partition_summary(self, request_value, receiver):
             Id=request_value["Id"]
             jsonNetwork = self._network_loader.load(request_value["Network"])

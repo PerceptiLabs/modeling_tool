@@ -30,11 +30,14 @@ EOF
 
 ensure_db_created(){
   echo -n "Ensuring keycloak db is present ..."
-  sudo docker-compose up --detach db
+  sudo docker-compose up --detach db rygg
   sudo docker-compose exec -T db sh -c "${script}"
 }
 
 is_keycloak_service_in_docker_compose(){
+  [ -f docker-compose.yml ] ||
+    return 1
+
   sudo docker-compose config --services | grep --quiet keycloak ||
     return 1
 }
@@ -69,10 +72,6 @@ wait_for_keycloak(){
 }
 
 ensure_keycloak_in_cluster(){
-  customize_docker_compose_file "${MYDIR}/docker-compose-after.yml"
-  cp "${MYDIR}/docker-compose-after.yml" "${PL_ROOT_DIR}/docker-compose.yml"
-  cp "${MYDIR}/nginx.conf" "${PL_ROOT_DIR}"
-
   echo "-------------------------------------------------------"
   echo "Restarting partial cluster to load new keycloak configuration"
   sudo docker-compose down
@@ -81,6 +80,13 @@ ensure_keycloak_in_cluster(){
   echo "-------------------------------------------------------"
 
   wait_for_keycloak
+}
+
+install_config(){
+  # update the docker-compose file and restart to take the changes
+  customize_docker_compose_file "${MYDIR}/docker-compose-after.yml"
+  cp "${MYDIR}/docker-compose-after.yml" "${PL_ROOT_DIR}/docker-compose.yml"
+  cp "${MYDIR}/nginx.conf" "${PL_ROOT_DIR}/nginx.conf"
 }
 
 test_login(){
@@ -114,6 +120,7 @@ ensure_admin_user_present(){
 
 main(){
   is_keycloak_service_in_docker_compose && is_keycloak_responding || {
+    install_config
     ensure_db_created
     ensure_keycloak_in_cluster
   }

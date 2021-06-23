@@ -1,0 +1,72 @@
+{
+    "newNetwork": {},
+    "outputDims": {
+        "0": {
+            "Dim": "1",
+            "Error": null
+        },
+        "1": {
+            "Dim": "3",
+            "Error": null
+        },
+        "2": {
+            "Dim": "3",
+            "Error": null
+        }
+    },
+    "previews": {
+        "0": {
+            "series": [
+                {
+                    "data": [
+                        3.700000047683716
+                    ],
+                    "type": "bar",
+                    "x_data": null
+                }
+            ],
+            "xLength": 1
+        },
+        "1": {
+            "series": [
+                {
+                    "data": [
+                        1.4914449453353882,
+                        -0.5346620082855225,
+                        -1.333342432975769
+                    ],
+                    "type": "bar",
+                    "x_data": [
+                        0,
+                        1,
+                        2
+                    ]
+                }
+            ],
+            "xLength": 3
+        },
+        "2": {
+            "series": [
+                {
+                    "data": [
+                        0.0,
+                        1.0,
+                        0.0
+                    ],
+                    "type": "bar",
+                    "x_data": [
+                        0,
+                        1,
+                        2
+                    ]
+                }
+            ],
+            "xLength": 3
+        }
+    },
+    "trainedLayers": {
+        "0": false,
+        "1": false,
+        "2": false
+    }
+}

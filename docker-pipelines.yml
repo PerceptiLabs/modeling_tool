@@ -30,6 +30,9 @@ jobs:
         kernel:
           target: kernel
           repository: kernel
+        fileserver:
+          target: fileserver
+          repository: fileserver
         frontend:
           target: frontend
           repository: frontend

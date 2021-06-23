@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-MYDIR="$(pwd)"
-
 delete_existing(){
-  docker-compose down --remove-orphans
-  echo $MYDIR
+  if [ -f docker-compose.yml ]; then
+    docker-compose down --remove-orphans
+  fi
+
   rm -rf $(pwd)/* || {
     echo "couldn't delete previous installation"
       exit 1
@@ -26,6 +26,7 @@ make_fake_images(){
 
 tarball_system_migrations(){
   REPO_ROOT=$(git rev-parse --show-toplevel)
+  MYDIR="$PWD"
   pushd ${REPO_ROOT}/docker/compose
   tar czvf "$MYDIR/system_migrations.tar.gz" system_migrations
   cp install_perceptilabs_enterprise "$MYDIR"
@@ -33,7 +34,10 @@ tarball_system_migrations(){
 }
 
 run_installer(){
-  sudo CONTAINER_REGISTRY=dev VERSION=latest KC_ROOT_USER=admin KC_ROOT_PWD=admin KC_FIRST_USER=a@a.aaa KC_INITIAL_PWD=x ./install_perceptilabs_enterprise -a images.tar
+  CONTAINER_REGISTRY=dev PL_VERSION=latest KC_ROOT_USER=admin KC_ROOT_PWD=admin KC_FIRST_USER=a@a.aaa KC_INITIAL_PWD=a ./install_perceptilabs_enterprise --airgapped images.tar --docker skip --drivers skip
+  echo "PerceptiLabs is running at http://localhost"
+  echo "The username/pwd of the first user is a@a.aaa/a"
+  echo "The username/pwd of the keycloak admin user is admin/admin, available at http://localhost/auth"
 }
 
 main(){

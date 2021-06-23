@@ -173,5 +173,9 @@ LOGGING = {
             'level': os.getenv('PL_FILESERVER_LOG_LEVEL', 'WARNING'),
             "propagate": False,
         },
+        'fileserver': {
+            'handlers': ['console'],
+            'level': os.getenv('PL_FILESERVER_LOG_LEVEL', 'WARNING'),
+        },
     },
 }

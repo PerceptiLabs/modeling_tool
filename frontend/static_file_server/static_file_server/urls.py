@@ -11,15 +11,18 @@ from static_file_server.views import (
     kernel_version, 
     rygg_version, 
     rygg_url, 
-    kernel_url, 
+    kernel_url,
+    rendering_kernel_url,
     fileserver_url,
     keycloak_url,
     is_enterprise,
     TokenView
     )
 
+
 urlpatterns = [
     re_path('kernel_url', kernel_url),
+    re_path('rendering_kernel_url', rendering_kernel_url),
     re_path('keycloak_url', keycloak_url),
     re_path('fileserver_url', fileserver_url),
     re_path('rygg_url', rygg_url),

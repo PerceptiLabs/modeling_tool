@@ -1,6 +1,6 @@
 FROM registry.access.redhat.com/ubi8/python-36
 
-# Define db ENV varibale to select database 
+# Define db ENV varibale to select database
 ENV DB_HOST="" \
     DB_PORT="5432" \
     DB_USER="" \
@@ -26,10 +26,10 @@ COPY manage.py requirements.txt wait-for-db.py start.sh /app/
 RUN pip install --upgrade pip && \
     pip install -r requirements.txt
 
-EXPOSE 8000
+HEALTHCHECK \
+  --interval=5s \
+  --timeout=2s \
+  CMD curl --fail localhost:8000/app/version/ || exit 1
+# TODO: add some healthcheck endpoint instead of version
 
 CMD ["sh", "/app/start.sh"]
-
-# Running following command after docker Run
-# Docker build command -- docker build -t rygg .
-# Docker run command -- docker run --rm --name=rygg -p 8000:8000 -v "$PWD":/app -e DB=postgres rygg:latest

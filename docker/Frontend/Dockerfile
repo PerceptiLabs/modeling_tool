@@ -38,6 +38,4 @@ RUN pip install --upgrade pip && \
 
 COPY --from=build_npm /app/src/dist/ /app/static_file_server/dist/
 
-EXPOSE 8080
-
 CMD ["python", "-m", "django", "runserver", "0.0.0.0:8080", "--settings", "static_file_server.settings", "--noreload"]
