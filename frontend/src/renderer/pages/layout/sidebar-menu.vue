@@ -1,7 +1,7 @@
 <template lang="pug">
   div.wrapper.project-sidebar
     div.nav-link(
-      :class="{'is-active': this.$route.name === 'projects'}"
+      :class="{'is-active': this.$route.name === 'projects' || this.$route.name === 'main-page'}"
       @click="toProjects"
       v-tooltip:right="'Model Hub'"
       )
@@ -277,12 +277,7 @@
         return this.$route.name === 'app' && this.currentNetwork.networkMeta.openStatistics !== null
       },
       toProjects() {
-        this.$router.push({name: 'projects'});                          
-        this.$nextTick(() => {
-          if (!this.showNewModelPopup) {
-            this.setCurrentView('tutorial-model-hub-view');
-          }
-        });
+        this.$router.push({name: 'projects'});
       },
       toSettings() {
         this.$router.push({name: 'settings'});

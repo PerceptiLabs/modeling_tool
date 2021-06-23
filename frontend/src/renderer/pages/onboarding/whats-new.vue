@@ -107,8 +107,6 @@ export default {
           // Making sure people don't see this more than once
           this.setHasShownWhatsNew(true);
 
-          this.setCurrentView('tutorial-model-hub-view');
-
           this.$router.push({ name:'projects' }).catch(err => {});
         });
     }

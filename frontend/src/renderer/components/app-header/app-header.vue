@@ -155,7 +155,6 @@ export default {
     }),
     toProjectPage() {
       if(this.$route.name === 'app') {
-        this.setCurrentView('tutorial-model-hub-view');
         this.$router.push({name: 'projects'})
       }
     },

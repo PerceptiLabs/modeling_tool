@@ -562,7 +562,6 @@
 
         // for the tutorial
         if (this.$route.name === 'projects') { 
-          this.setCurrentView('tutorial-model-hub-view');
         } else if (viewType === 'model') {
           this.setCurrentView('tutorial-workspace-view');
         } else if (viewType === 'statistic') {
