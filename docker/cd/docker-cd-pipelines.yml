@@ -35,7 +35,7 @@ parameters:
     type: string
   - name: alive_minutes
     displayName: Minutes to stay running
-    default: 60
+    default: 1440
     type: number
   - name: extra_key_name
     displayName: SSH key name
