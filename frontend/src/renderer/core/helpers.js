@@ -1,5 +1,5 @@
 import cloneDeep from 'lodash.clonedeep';
-
+import isJS from 'is_js';
 import {
   workspaceGrid,
   pathSlash,
