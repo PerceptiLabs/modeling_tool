@@ -1,7 +1,13 @@
 
 parameters:
-  - name: subdomain
-    displayName: subdomain
+  - name: start_type
+    displayName: How to pick the machine
+    type: string
+    values:
+      - subdomain
+      - instance_id
+  - name: machine
+    displayName: machine (either subdomain or instance_id)
     type: string
   - name: minutes_to_run
     displayName: Minutes to stay running
@@ -12,6 +18,17 @@ parameters:
     type: string
     default: '<none>'
 
+variables:
+- name: machine_param
+  ${{ if eq( parameters.start_type, 'subdomain') }}:
+    value: '-s'
+  ${{ if eq( parameters.start_type, 'instance_id') }}:
+    value: '-i'
+- name: key_param
+  ${{ if eq( parameters.key, '<none>') }}:
+    value: ''
+  ${{ if ne( parameters.key, '<none>') }}:
+    value: "-p ${{ parameters.key }}"
 
 steps:
 
@@ -22,20 +39,10 @@ steps:
     secureFile: 'azurepipeline.pem'
 
 - task: AWSShellScript@1
+  displayName: Run start_machine
   inputs:
     awsCredentials: 'aws'
     regionName: 'us-east-2'
-    arguments: '-s "${{ parameters.subdomain }}" -k "$(sshkey.secureFilePath)" -p "${{ parameters.key }}" -m "${{ parameters.minutes_to_run }}"'
+    arguments: ${{ variables['machine_param'] }} "${{ parameters.machine }}" -k "$(sshkey.secureFilePath)" ${{ variables['key_param'] }} -m "${{ parameters.minutes_to_run }}"
     scriptType: 'filePath'
     filePath: 'docker/cd/start_machine'
-  condition: ne('${{ parameters.key }}', '<none>')
-
-- task: AWSShellScript@1
-  inputs:
-    awsCredentials: 'aws'
-    regionName: 'us-east-2'
-    arguments: '-s "${{ parameters.subdomain }}" -k "$(sshkey.secureFilePath)" -m "${{ parameters.minutes_to_run }}"'
-    scriptType: 'filePath'
-    filePath: 'docker/cd/start_machine'
-  condition: eq('${{ parameters.key }}', '<none>')
-

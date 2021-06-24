@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+# for filter syntax see https://docs.aws.amazon.com/cli/latest/userguide/cli-usage-filter.html
+set +e
+read -r -d '' QUERY << EOF
+  sort_by(Reservations[].Instances[], &LaunchTime)[].{
+    InstanceID: InstanceId,
+    IP: NetworkInterfaces[].Association[].PublicIp | [0]
+    InstanceType: InstanceType,
+    Name: Tags[?Key=='Name'].Value | [0],
+    State: State.Name,
+    Group: Tags[?Key=='group'].Value | [0],
+    Subenv: Tags[?Key=='subenv'].Value | [0],
+    Subdomain: Tags[?Key=='subdomain'].Value | [0],
+    Version: Tags[?Key=='version'].Value | [0],
+    LaunchTime: LaunchTime
+  }
+EOF
+set -e
+
+AWS_PAGER="" aws ec2 describe-instances \
+  --region us-east-2 \
+  --query "${QUERY}" \
+  --filters Name=tag:group,Values=enterprise Name=instance-state-name,Values=pending,running,stopping,stopped \
+  --output table
