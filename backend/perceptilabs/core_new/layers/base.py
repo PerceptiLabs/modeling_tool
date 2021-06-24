@@ -525,19 +525,12 @@ class ClassificationLayer(TrainingSupervised):
     @property
     def auc_training(self) -> float:
         """Returns the current AUC score of the training phase"""
-
-        if utils.is_datawizard():
-            raise NotImplementedError
-        else:
-            return -1.0
+        raise NotImplementedError
             
     @property
     def auc_validation(self) -> float:
         """Returns the current AUC score of the validation phase"""
-        if utils.is_datawizard():
-            raise NotImplementedError
-        else:
-            return -1.0
+        raise NotImplementedError
     
     @property
     @abstractmethod    

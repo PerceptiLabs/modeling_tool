@@ -83,6 +83,7 @@ def create_server(messaging_factory, topic_gn, topic_sn, graph=None, snapshot_bu
     return server
 
 
+@pytest.mark.skip
 def test_sends_state_ready(messaging_factory, topic_gn, topic_sn, consumer):
     server = create_server(messaging_factory, topic_gn, topic_sn)
     step = server.run_stepwise()
@@ -98,7 +99,8 @@ def test_sends_state_ready(messaging_factory, topic_gn, topic_sn, consumer):
     finally:
         server.shutdown()
 
-    
+
+@pytest.mark.skip        
 def test_can_stop_when_ready(messaging_factory, topic_gn, topic_sn, consumer, producer):
     server = create_server(messaging_factory, topic_gn, topic_sn)
     step = server.run_stepwise()
@@ -125,6 +127,7 @@ def test_can_stop_when_ready(messaging_factory, topic_gn, topic_sn, consumer, pr
         server.shutdown()
 
 
+@pytest.mark.skip        
 def test_can_start_when_ready(messaging_factory, topic_gn, topic_sn, consumer, producer):
     n_training_steps_taken = 0
     
@@ -165,6 +168,7 @@ def test_can_start_when_ready(messaging_factory, topic_gn, topic_sn, consumer, p
         server.shutdown()
         
 
+@pytest.mark.skip        
 def test_state_changes_to_paused_after_iteration(messaging_factory, topic_gn, topic_sn, consumer, producer):
     n_testing_steps_to_take = 3
     n_snapshots_received = 0
@@ -207,7 +211,8 @@ def test_state_changes_to_paused_after_iteration(messaging_factory, topic_gn, to
     finally:
         server.shutdown()
 
-        
+
+@pytest.mark.skip        
 def test_can_resume_when_paused(messaging_factory, topic_gn, topic_sn, consumer, producer):
     n_training_steps_taken = 0
     
@@ -255,7 +260,8 @@ def test_can_resume_when_paused(messaging_factory, topic_gn, topic_sn, consumer,
     finally:
         server.shutdown()
         
-    
+
+@pytest.mark.skip        
 def test_calls_graph_stop_when_requested(messaging_factory, topic_gn, topic_sn, consumer, producer):
     graph = MagicMock()
 

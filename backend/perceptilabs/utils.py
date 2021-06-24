@@ -17,8 +17,6 @@ from sys import getsizeof
 from typing import Set
 
 
-PRE_DATAWIZARD_VARIABLE = "PL_PRE_DATAWIZARD"
-
 
 def get_memory_usage():
     """ Return the fraction of memory used """
@@ -39,23 +37,6 @@ def is_dev():
     app_variables = get_app_variables()
     return app_variables['BuildVariables']['CommitId'] == 'Dev'
 
-
-def is_datawizard():
-    """ When enabled, the tool will run with the datawizard workflow """
-    return not is_pre_datawizard()
-
-
-def is_pre_datawizard():
-    """ When enabled, the tool will run the pre-datawizard workflow """    
-    if os.getenv(PRE_DATAWIZARD_VARIABLE, False):
-        return True
-    
-    app_variables = get_app_variables()
-    if app_variables["BuildVariables"].get("PreDatawizard", False):
-        return True
-
-    return False
-    
 
 def deprecated(func):
     """This is a decorator which can be used to mark functions

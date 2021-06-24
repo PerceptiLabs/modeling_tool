@@ -25,10 +25,6 @@ setup_sentry(COMMIT_ID)
 set_sentry_tag('error-type', 'startup-error')
 
 
-if utils.is_pre_datawizard():
-    tf.compat.v1.disable_v2_behavior()    
-
-    
 utils.allow_memory_growth_on_gpus()
     
     

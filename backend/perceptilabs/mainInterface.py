@@ -35,7 +35,6 @@ import perceptilabs.logconf
 import perceptilabs.automation.autosettings.utils as autosettings_utils
 import perceptilabs.automation.utils as automation_utils
 from perceptilabs.data.base import FeatureSpec, DataLoader
-from perceptilabs.utils import is_pre_datawizard
 from perceptilabs.script import ScriptFactory
 
 #LW interface
@@ -65,7 +64,7 @@ from perceptilabs.testInterface import (
 logger = logging.getLogger(APPLICATION_LOGGER)
 
 
-USE_AUTO_SETTINGS = is_pre_datawizard()  # TODO: enable for TF2 (story 1561)
+USE_AUTO_SETTINGS = False  # TODO: enable for TF2 (story 1561)
 USE_LW_CACHING = True
 LW_CACHE_MAX_ITEMS = 25 
 AGGREGATION_ENGINE_MAX_WORKERS = 2
@@ -231,13 +230,10 @@ class Interface():
 
     def create_lw_core(self, receiver, jsonNetwork, adapter=True, dataset_settings=None):
         graph_spec = GraphSpec.from_dict(jsonNetwork)
-        if utils.is_datawizard():
-            if not dataset_settings:
-                raise RuntimeError("When using the standard trainer, dataset settings must be set!")
+        if not dataset_settings:
+            raise RuntimeError("Dataset settings must be set!")
             
-            data_loader = DataLoader.from_dict(dataset_settings)  # TODO(anton.k): REUSE THIS!
-        else:
-            data_loader = None
+        data_loader = DataLoader.from_dict(dataset_settings)  # TODO(anton.k): REUSE THIS!
         
         if adapter:
             extras_reader = LayerExtrasReader()
@@ -584,14 +580,8 @@ class Interface():
                 is_tutorial_data=data_loader.is_tutorial_data
             )
         return response
-    
-    def _create_response_export(self, value, receiver):
-        if utils.is_datawizard():
-            return self._create_response_export_tf2x(value, receiver)
-        else:
-            return self._create_response_export_tf1x(value, receiver)
 
-    def _create_response_export_tf2x(self, value, receiver):
+    def _create_response_export(self, value, receiver):
         # first check if checkpoint exists if export is requested after training
         mode = self._get_receiver_mode(receiver)
 

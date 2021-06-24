@@ -10,7 +10,7 @@ import numpy as np
 from tempfile import NamedTemporaryFile
 from typing import Tuple, Dict, List
 
-from perceptilabs.utils import stringify, add_line_numbering, is_datawizard, is_pre_datawizard
+from perceptilabs.utils import stringify, add_line_numbering
 from perceptilabs.issues import UserlandError
 from perceptilabs.core_new.layers import BaseLayer, DataLayer, DataReinforce, DataSupervised, DataRandom, InnerLayer, Tf1xLayer, TrainingRandom, TrainingSupervised, TrainingReinforce, TrainingLayer, ClassificationLayer, ObjectDetectionLayer, RLLayer
 from perceptilabs.graph.splitter import GraphSplitter
@@ -143,17 +143,13 @@ class LightweightCore:
     def _get_layer_strategy(self, layer_spec, data_batch, script_factory):
         if isinstance(layer_spec, IoLayerSpec):
             strategy = self._get_io_layer_strategy(layer_spec, data_batch)
-        elif isinstance(layer_spec, TrainingLayerSpec) and is_pre_datawizard():
-            strategy = Tf1xTrainingStrategy(script_factory)
-        elif isinstance(layer_spec, TrainingLayerSpec) and is_datawizard():
+        elif isinstance(layer_spec, TrainingLayerSpec):
             strategy = Tf2xTrainingStrategy(script_factory)            
         elif isinstance(layer_spec, (DataDataSpec, DataRandomSpec)):
             strategy = DataSupervisedStrategy(script_factory)
         elif isinstance(layer_spec, DataEnvironmentSpec):
             strategy = DataReinforceStrategy(script_factory)
-        elif isinstance(layer_spec, InnerLayerSpec) and is_pre_datawizard(): 
-            strategy = Tf1xInnerStrategy(script_factory)
-        elif isinstance(layer_spec, InnerLayerSpec) and is_datawizard(): 
+        elif isinstance(layer_spec, InnerLayerSpec): 
             strategy = Tf2xInnerStrategy(script_factory)
         else:
             strategy = DefaultStrategy()

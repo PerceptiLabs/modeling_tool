@@ -30,17 +30,3 @@ def test_convert_reshape_onnx():
     assert list(layer_spec.shape) == TARGET_SHAPE
 
     
-@pytest.mark.pre_datawizard
-def test_convert_reshape_tf1x():
-    onnx_model = None
-    with tf.compat.v1.Session() as sess:
-        x = tf.compat.v1.placeholder(tf.float32, INPUT_SHAPE, name="input")
-        y = tf.reshape(x, shape=TARGET_SHAPE, name="reshape")
-        _ = tf.identity(y, name="output")
-        
-    
-        _, onnx_model = create_onnx_from_tf1x(sess.graph)
-        assert onnx_model is not None
-    
-        layer_spec = Parser(onnx_model).parse()[-1]
-        assert list(layer_spec.shape) == TARGET_SHAPE

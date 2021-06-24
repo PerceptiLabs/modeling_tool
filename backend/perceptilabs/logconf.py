@@ -9,7 +9,6 @@ import platform
 import re
 
 import perceptilabs
-from perceptilabs.utils import is_datawizard
 
 APPLICATION_LOGGER = 'perceptilabs.applogger'
 APPLICATION_LOG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)),'kernel.log')
@@ -155,7 +154,7 @@ _global_context = {
     'user_email': 'notset@perceptilabs.com',
     'commit_id': '',
     'system': platform.system(),
-    'tf2x': is_datawizard()
+    'tf2x': True
 }
 
 

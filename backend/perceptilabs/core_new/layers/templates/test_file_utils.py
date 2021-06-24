@@ -134,52 +134,71 @@ def run_macro():
     
     yield closure
 
-    
+
+@pytest.mark.skip        
 def test_npy_sample_shape_ok(run_macro, npy_3000x784):
     module, _ = run_macro('load_npy', macro_parameters={'path': npy_3000x784, 'tag': '123'})
 
     shape = next(module.generator_123(0, 3000)).shape    
     assert shape == (784,)
 
+
+@pytest.mark.skip        
 def test_npy_dir_lazy_sample_shape_ok(run_macro, npy_directory_3000x784):
     module,_ = run_macro('load_npy_directory', macro_parameters={ 'path':npy_directory_3000x784, 'tag':'123', 'lazy': True})
 
     shape = next(module.generator_123(0, 3000)).shape
     assert shape == (784,)
-    
+
+
+@pytest.mark.skip        
 def test_csv_sample_shape_ok(run_macro, csv_3000x784):
     module, _ = run_macro('load_csv', macro_parameters={'path': csv_3000x784, 'tag': '123', 'lazy': False})
 
     shape = next(module.generator_123(0, 3000)).shape
     assert shape == (784,)
-    
+
+
+@pytest.mark.skip        
 def test_csv_lazy_sample_shape_ok(run_macro, csv_3000x784):
     module, _ = run_macro('load_csv', macro_parameters={'path': csv_3000x784, 'tag': '123', 'lazy': True})
     shape = next(module.generator_123(0, 3000)).shape
     assert shape == (784,)
-  
+
+
+@pytest.mark.skip        
 def test_npy_dataset_size_ok(run_macro, npy_3000x784):
     module, _ = run_macro('load_npy', macro_parameters={'path': npy_3000x784, 'tag': '123'})
     assert module.size_123 == 3000
 
+
+@pytest.mark.skip        
 def test_npy_dir_lazy_dataset_size_ok(run_macro, npy_directory_3000x784):
     module, _ = run_macro('load_npy_directory', macro_parameters={'path': npy_directory_3000x784, 'tag': '123', 'lazy': True})
     assert module.size_123 == 9000
-    
+
+
+@pytest.mark.skip        
 def test_csv_dataset_size_ok(run_macro, csv_3000x784):
     module, _ = run_macro('load_csv', macro_parameters={'path': csv_3000x784, 'tag': '123', 'lazy': False})
     assert module.size_123 == 3000
-    
+
+
+@pytest.mark.skip        
 def test_npy_slice_generator(run_macro, npy_ordered):
     module, _ = run_macro('load_npy', macro_parameters={'path': npy_ordered, 'tag': '123'})
     x = next(module.generator_123(1000, 3000))
     assert x == 1000
-    
+
+
+@pytest.mark.skip        
 def test_npy_dir_lazy_slice_generator(run_macro, npy_directory_ordered):
     module, _ = run_macro('load_npy_directory', macro_parameters={'path': npy_directory_ordered, 'tag': '123', 'lazy': True})
     x = next(module.generator_123(1000, 3000))
     assert x == 1000
-  
+
+
+@pytest.mark.skip        
 def test_csv_slice_generator(run_macro, csv_ordered):
     module, _ = run_macro('load_csv', macro_parameters={'path': csv_ordered, 'tag': '123'})
     x = next(module.generator_123(1000, 3000))
@@ -189,51 +208,63 @@ def test_csv_lazy_slice_generator(run_macro, csv_ordered):
     module, _ = run_macro('load_csv', macro_parameters={'path': csv_ordered, 'tag': '123', 'lazy': True})
     x = next(module.generator_123(1000, 3000))
     assert x == 1000
-   
+
+
+@pytest.mark.skip        
 def test_npy_all_data(run_macro, npy_3000x784):
     module, _ = run_macro('load_npy', macro_parameters={'path': npy_3000x784, 'tag': '123'})
     assert len(list(module.generator_123(0, 3000))) == 3000
 
+
+@pytest.mark.skip        
 def test_npy_dir_lazy_all_data(run_macro, npy_directory_3000x784):
     module, _ = run_macro('load_npy_directory', macro_parameters={'path': npy_directory_3000x784, 'tag': '123', 'lazy': True})
     assert len(list(module.generator_123(0, 3000))) == 3000
-   
+
+
+@pytest.mark.skip        
 def test_csv_all_data(run_macro, csv_3000x784):
     module, _ = run_macro('load_csv', macro_parameters={'path': csv_3000x784, 'tag': '123', 'lazy': False})
     assert len(list(module.generator_123(0, 3000))) == 3000
 
-    
+
+@pytest.mark.skip        
 def test_csv_lazy_all_data_1_partition(run_macro, csv_3000x784):
     module, _ = run_macro('load_csv', macro_parameters={'path': csv_3000x784, 'tag': '123', 'lazy': True})
     assert module.df_123.npartitions == 1
     assert len(list(module.generator_123(0, 3000))) == 3000
 
-    
+
+@pytest.mark.skip
 def test_csv_lazy_all_data_2_partition(run_macro, csv_3000x784):
     module, _ = run_macro('load_csv', macro_parameters={'path': csv_3000x784, 'tag': '123', 'lazy': True, 'blocksize': '32MB'})
     
     assert module.df_123.npartitions == 2
     assert len(list(module.generator_123(0, 3000))) == 3000
 
-    
+
+@pytest.mark.skip    
 def test_img_dir_all_data(run_macro, img_5x32x32x3):
     module, _ = run_macro('load_img_dir', macro_parameters={'path': img_5x32x32x3, 'tag': '123', 'lazy': False})
     assert len(list(module.generator_123(0, 5))) == 5
 
-    
+
+@pytest.mark.skip    
 def test_img_dir_slice_generator(run_macro, img_5x32x32x3):
     module, _ = run_macro('load_img_dir', macro_parameters={'path': img_5x32x32x3, 'tag': '123', 'lazy': False})
     x = next(module.generator_123(1, 3))
     target = skimage.io.imread(os.path.join(img_5x32x32x3, '1.png')).astype(np.float32)
     assert np.all(x == target)
 
-    
+
+@pytest.mark.skip    
 def test_img_dir_shape_ok(run_macro, img_5x32x32x3):
     module, _ = run_macro('load_img_dir', macro_parameters={'path': img_5x32x32x3, 'tag': '123', 'lazy': False})
     x = next(module.generator_123(0, 5))
     assert x.shape == (32, 32, 3)
 
-    
+
+@pytest.mark.skip    
 def test_csv_column_selection(run_macro, csv_30x784):
     module, _ = run_macro('load_csv', macro_parameters={'path': csv_30x784, 'tag': '123', 'lazy': False, 'selected_columns': [1, 3]})
     x = next(module.generator_123(0, 30))
@@ -242,7 +273,8 @@ def test_csv_column_selection(run_macro, csv_30x784):
     target = np.hstack([matrix[0, 1], matrix[0, 3]])
     assert np.all(x == target)
 
-    
+
+@pytest.mark.skip    
 def test_csv_lazy_column_selection(run_macro, csv_30x784):
     module, _ = run_macro('load_csv', macro_parameters={'path': csv_30x784, 'tag': '123', 'lazy': True, 'selected_columns': [1, 3]})
 
@@ -253,12 +285,14 @@ def test_csv_lazy_column_selection(run_macro, csv_30x784):
     target = np.hstack([matrix[0, 1], matrix[0, 3]])
     assert np.all(x == target)
 
-    
+
+@pytest.mark.skip    
 def test_csv_columns_ok(run_macro, csv_30x784):
     module, _ = run_macro('load_csv', macro_parameters={'path': csv_30x784, 'tag': '123', 'lazy': False})
     assert module.columns_123 == [str(x) for x in range(784)]
 
-    
+
+@pytest.mark.skip    
 def test_csv_lazy_columns_ok(run_macro, csv_30x784):
     module, _ = run_macro('load_csv', macro_parameters={'path': csv_30x784, 'tag': '123', 'lazy': True})
     assert module.columns_123 == [str(x) for x in range(784)]

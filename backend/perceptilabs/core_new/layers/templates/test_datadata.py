@@ -103,7 +103,8 @@ def img_5x32x32x3():
             skimage.io.imsave(path, matrix)
         yield fix_path(dir_path)
 
-        
+
+@pytest.mark.skip        
 def test_npy_shape_1d_ok(script_factory, npy_30x784):
     layer_spec = DataDataSpec(
         id_='123', name='layer123', type_='DataData', 
@@ -116,6 +117,7 @@ def test_npy_shape_1d_ok(script_factory, npy_30x784):
     assert layer.sample['output'].shape == (784,)
 
 
+@pytest.mark.skip    
 def test_npy_shape_2d_ok(script_factory, npy_30x28x28):
     layer_spec = DataDataSpec(
         id_='123', name='layer123', type_='DataData', 
@@ -128,6 +130,7 @@ def test_npy_shape_2d_ok(script_factory, npy_30x28x28):
     assert layer.sample['output'].shape == (28, 28)
     
 
+@pytest.mark.skip    
 def test_npy_shape_3d_ok(script_factory, npy_30x28x28x3):
     layer_spec = DataDataSpec(
         id_='123', name='layer123', type_='DataData', 
@@ -138,6 +141,7 @@ def test_npy_shape_3d_ok(script_factory, npy_30x28x28x3):
     assert layer.sample['output'].shape == (28, 28, 3)
 
 
+@pytest.mark.skip    
 def test_csv_shape_ok(script_factory, csv_30x784):
     sources = [{'type': 'file', 'path': csv_30x784, 'ext': '.csv'}]
 
@@ -151,7 +155,8 @@ def test_csv_shape_ok(script_factory, csv_30x784):
 
     assert layer.sample['output'].shape == (784,)
 
-    
+
+@pytest.mark.skip    
 def test_csv_columns_ok(script_factory, csv_30x784):
     sources = [{'type': 'file', 'path': csv_30x784, 'ext': '.csv'}]
 
@@ -183,6 +188,7 @@ def test_csv_columns_ok_lazy(script_factory, csv_30x784):
     assert layer.columns == expected_columns
 
 
+@pytest.mark.skip    
 def test_csv_columns_ok_when_selected(script_factory, csv_30x784):
     sources = [{'type': 'file', 'path': csv_30x784, 'ext': '.csv'}]
     layer_spec = DataDataSpec(
@@ -197,7 +203,7 @@ def test_csv_columns_ok_when_selected(script_factory, csv_30x784):
     expected_columns = ['col_' + str(x) for x in range(784)]
     assert layer.sample['output'].shape == (2,)    
 
-
+@pytest.mark.skip
 def test_csv_columns_ok_when_selected_lazy(script_factory, csv_30x784):
     sources = [{'type': 'file', 'path': csv_30x784, 'ext': '.csv'}]
 
@@ -214,7 +220,8 @@ def test_csv_columns_ok_when_selected_lazy(script_factory, csv_30x784):
     expected_columns = ['col_' + str(x) for x in range(784)]
     assert layer.sample['output'].shape == (2,)    
 
-    
+
+@pytest.mark.skip    
 def test_npy_shape_1d_ok_lazy(script_factory, npy_30x784):
     layer_spec = DataDataSpec(
         id_='123', name='layer123', type_='DataData', 
@@ -228,6 +235,7 @@ def test_npy_shape_1d_ok_lazy(script_factory, npy_30x784):
     assert layer.sample['output'].shape == (784,)
 
 
+@pytest.mark.skip    
 def test_npy_shape_2d_ok_lazy(script_factory, npy_30x28x28):
     layer_spec = DataDataSpec(
         id_='123', name='layer123', type_='DataData', 
@@ -240,7 +248,7 @@ def test_npy_shape_2d_ok_lazy(script_factory, npy_30x28x28):
 
     assert layer.sample['output'].shape == (28, 28)
     
-
+@pytest.mark.skip
 def test_npy_shape_3d_ok_lazy(script_factory, npy_30x28x28x3):
     layer_spec = DataDataSpec(
         id_='123', name='layer123', type_='DataData', 
@@ -252,7 +260,7 @@ def test_npy_shape_3d_ok_lazy(script_factory, npy_30x28x28x3):
     assert layer.sample['output'].shape == (28, 28, 3)
 
 
-
+@pytest.mark.skip    
 def test_csv_shape_ok_lazy(script_factory, csv_30x784):
     sources = [{'type': 'file', 'path': csv_30x784, 'ext': '.csv'}]
 
@@ -268,6 +276,7 @@ def test_csv_shape_ok_lazy(script_factory, csv_30x784):
     assert layer.sample['output'].shape == (784,)
 
 
+@pytest.mark.skip    
 def test_npy_samples_appear_in_order(script_factory, npy_30x784):
     layer_spec = DataDataSpec(
         id_='123', name='layer123', type_='DataData', 
@@ -295,6 +304,7 @@ def test_npy_samples_appear_in_order(script_factory, npy_30x784):
     assert np.all(x == x_)
 
 
+@pytest.mark.skip        
 def test_csv_samples_appear_in_order(script_factory, csv_30x784):
     layer_spec = DataDataSpec(
         id_='123', name='layer123', type_='DataData', 
@@ -321,6 +331,7 @@ def test_csv_samples_appear_in_order(script_factory, csv_30x784):
     assert np.all(x == x_)
     
 
+@pytest.mark.skip        
 def test_npy_and_csv_samples_appear_interleaved(script_factory, npy_30x784, csv_30x784):
     layer_spec = DataDataSpec(
         id_='123', name='layer123', type_='DataData', 
@@ -359,7 +370,8 @@ def test_npy_and_csv_samples_appear_interleaved(script_factory, npy_30x784, csv_
     assert np.all(x_tst[0:3] == mat1[27:30])
     assert np.all(x_tst[3:6] == mat2[27:30])    
 
-    
+
+@pytest.mark.skip        
 def test_npy_samples_appear_in_order_lazy(script_factory, npy_30x784):
     layer_spec = DataDataSpec(
         id_='123', name='layer123', type_='DataData', 
@@ -387,7 +399,8 @@ def test_npy_samples_appear_in_order_lazy(script_factory, npy_30x784):
     x_ = np.load(npy_30x784).astype(np.float32)
     assert np.all(x == x_)
 
-    
+
+@pytest.mark.skip        
 def test_csv_samples_appear_in_order_lazy(script_factory, csv_30x784):
     layer_spec = DataDataSpec(
         id_='123', name='layer123', type_='DataData', 
@@ -415,6 +428,7 @@ def test_csv_samples_appear_in_order_lazy(script_factory, csv_30x784):
     assert np.all(x == x_)
     
 
+@pytest.mark.skip        
 def test_npy_and_csv_samples_appear_interleaved_lazy(script_factory, npy_30x784, csv_30x784):
     layer_spec = DataDataSpec(
         id_='123', name='layer123', type_='DataData', 

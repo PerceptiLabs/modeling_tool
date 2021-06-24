@@ -155,28 +155,8 @@ class coreLogic():
     def set_running_mode(self, mode):
         self._running_mode = mode
         logger.info(f"Running mode {mode} set for coreLogic w\ network '{self.networkName}'")
-
-    def _get_corev2_trainer(self, script_factory):
-        from perceptilabs.core_new.core2 import Core
-        from perceptilabs.messaging.zmq_wrapper import ZmqMessagingFactory  
-        from perceptilabs.messaging.simple import SimpleMessagingFactory          
-        from perceptilabs.core_new.graph.builder import GraphBuilder
-        from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP
         
-        messaging_factory = SimpleMessagingFactory()#ZmqMessagingFactory()
-        replica_by_name = {repl_cls.__name__: repl_cls for repl_cls in BASE_TO_REPLICA_MAP.values()}                        
-        graph_builder = GraphBuilder(replica_by_name)
-        trainer = Core(
-            graph_builder,
-            script_factory,
-            messaging_factory,
-            self.issue_handler,
-            running_mode=self._running_mode,
-            use_sentry=True
-        )
-        return trainer
-
-    def _get_standard_trainer(self, script_factory, graph_spec, training_settings, dataset_settings, model_id, user_email):
+    def _get_trainer(self, script_factory, graph_spec, training_settings, dataset_settings, model_id, user_email):
         """ Creates a Trainer for the IoInput/IoOutput workflow """        
         data_loader = DataLoader.from_dict(dataset_settings)
         training_model = TrainingModel(script_factory, graph_spec)
@@ -194,12 +174,6 @@ class coreLogic():
             user_email=user_email            
         )        
         return trainer
-
-    def _get_trainer(self, script_factory, graph_spec, training_settings, dataset_settings, model_id, user_email):
-        if utils.is_datawizard():            
-            return self._get_standard_trainer(script_factory, graph_spec, training_settings, dataset_settings, model_id, user_email)
-        else:
-            return self._get_corev2_trainer(script_factory)
 
     def start_core(self, graph_spec, model_id, user_email, training_settings=None, dataset_settings=None):
         """ Spins up a core for training (or exporting in the pre-data wizard case)
@@ -424,11 +398,6 @@ class coreLogic():
             simple_message_bus=True,
             running_mode=self._running_mode
         )
-
-        if graph_spec is not None and utils.is_pre_datawizard():
-            self.set_running_mode('exporting')
-            self.start_core(graph_spec, model_id)
-
 
         self.commandQ.put(
             CoreCommand(

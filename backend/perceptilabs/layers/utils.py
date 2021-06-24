@@ -2,7 +2,6 @@ import os
 import logging
 
 from perceptilabs.logconf import APPLICATION_LOGGER
-from perceptilabs.utils import is_datawizard
 
 
 logger = logging.getLogger(APPLICATION_LOGGER)
@@ -10,12 +9,8 @@ logger = logging.getLogger(APPLICATION_LOGGER)
 
 def get_layer_definition(type_: str):
     assert isinstance(type_, str)
-    from perceptilabs.layers.definitions import DEFINITION_TABLE, DEFINITION_TABLE_TF2X
-
-    if is_datawizard():
-        return DEFINITION_TABLE_TF2X.get(type_, None)
-    else:
-        return DEFINITION_TABLE.get(type_, None)    
+    from perceptilabs.layers.definitions import DEFINITION_TABLE_TF2X
+    return DEFINITION_TABLE_TF2X.get(type_, None)
 
 
 def get_layer_builder(type_: str):

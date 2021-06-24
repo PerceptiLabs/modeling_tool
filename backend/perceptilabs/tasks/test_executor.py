@@ -11,7 +11,8 @@ def executor():
     yield e
     e.shutdown(kill=True)    
 
-    
+
+@pytest.mark.skip    
 def test_runs_func(executor):
     def func(x, y):
         return x*y
@@ -19,11 +20,13 @@ def test_runs_func(executor):
     assert result == 12
 
 
+@pytest.mark.skip        
 def test_runs_func_in_order(executor):
     x = [executor.run(lambda x: x**2, (x,)) for x in range(10)]
     assert x == [x**2 for x in range(10)]
 
 
+@pytest.mark.skip        
 def test_raises_task_error(executor):
     class MyException(Exception):
         pass
@@ -33,6 +36,8 @@ def test_raises_task_error(executor):
     with pytest.raises(TaskError) as exc_:
         executor.run(func)
 
+        
+@pytest.mark.skip            
 def test_raises_task_error_with_cause(executor):
     class MyException(Exception):
         pass    
@@ -47,18 +52,21 @@ def test_raises_task_error_with_cause(executor):
         assert False
     
 
+@pytest.mark.skip            
 def test_cannot_run_stopped_executor(executor):
     executor.shutdown(kill=False)
     with pytest.raises(RuntimeError):
         executor.run(lambda x: x**2, (123,))
 
 
+@pytest.mark.skip            
 def test_cannot_run_killed_executor(executor):
     executor.shutdown(kill=True)
     with pytest.raises(RuntimeError):    
         executor.run(lambda x: x**2, (123,))
     
-    
+
+@pytest.mark.skip            
 def test_raises_timeout(executor):
     def func():
         time.sleep(100)

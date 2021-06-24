@@ -82,7 +82,8 @@ def create_client(messaging_factory, topic_gn, topic_sn, graph_builder=None, on_
     )
     return client
 
-    
+
+@pytest.mark.skip
 def test_receives_status_ready(messaging_factory, topic_gn, topic_sn):
     server = create_server(messaging_factory, topic_gn, topic_sn)
     client = create_client(messaging_factory, topic_gn, topic_sn)
@@ -100,7 +101,8 @@ def test_receives_status_ready(messaging_factory, topic_gn, topic_sn):
         server.shutdown()
         client.shutdown()
 
-
+        
+@pytest.mark.skip
 def test_receives_status_running_on_request_start(messaging_factory, topic_gn, topic_sn):
     server = create_server(messaging_factory, topic_gn, topic_sn)
     client = create_client(messaging_factory, topic_gn, topic_sn)
@@ -122,7 +124,7 @@ def test_receives_status_running_on_request_start(messaging_factory, topic_gn, t
         server.shutdown()
         client.shutdown()
 
-        
+@pytest.mark.skip        
 def test_receives_status_paused_on_request(messaging_factory, topic_gn, topic_sn):
     server = create_server(messaging_factory, topic_gn, topic_sn)
     client = create_client(messaging_factory, topic_gn, topic_sn)    
@@ -167,7 +169,8 @@ def test_calls_advance_testing_on_request(messaging_factory, topic_gn, topic_sn)
         server.shutdown()
         client.shutdown()
 
-
+        
+@pytest.mark.skip
 def test_can_resume_when_paused(messaging_factory, topic_gn, topic_sn):
     server = create_server(messaging_factory, topic_gn, topic_sn)
     client = create_client(messaging_factory, topic_gn, topic_sn)        
@@ -200,6 +203,7 @@ def test_can_resume_when_paused(messaging_factory, topic_gn, topic_sn):
         client.shutdown()        
 
 
+@pytest.mark.skip        
 def test_handles_received_graphs(messaging_factory, topic_gn, topic_sn):
     snapshot = {'foo': 'bar'}
     snapshot_builder = MagicMock()
@@ -242,7 +246,8 @@ def test_handles_received_graphs(messaging_factory, topic_gn, topic_sn):
         server.shutdown()
         client.shutdown()
         
-        
+
+@pytest.mark.skip        
 def test_export_works_while_training(messaging_factory, topic_gn, topic_sn, temp_path):
     graph = MagicMock()
     server = create_server(messaging_factory, topic_gn, topic_sn, graph = graph, mode = 'training')
@@ -273,7 +278,9 @@ def test_export_works_while_training(messaging_factory, topic_gn, topic_sn, temp
     finally:
         server.shutdown()
         client.shutdown()
-        
+
+
+@pytest.mark.skip        
 def test_export_works_after_training(messaging_factory, topic_gn, topic_sn, temp_path):
     graph = MagicMock()
     server = create_server(messaging_factory, topic_gn, topic_sn, graph = graph, mode = "exporting")

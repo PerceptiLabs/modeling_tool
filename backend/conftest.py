@@ -15,7 +15,6 @@ from perceptilabs.core_new.layers.templates import J2Engine
 from perceptilabs.core_new.layers.templates.utils import render_and_execute_macro
 from perceptilabs.script import TEMPLATE_DIRECTORIES
 from perceptilabs.layers.helper import load_code_as_module
-from perceptilabs.utils import PRE_DATAWIZARD_VARIABLE
 
 log = logging.getLogger(__name__)
 
@@ -44,22 +43,9 @@ def set_seeds():
     
 @pytest.fixture(autouse=True)
 def init_graph(request):
-    #reference: https://stackoverflow.com/questions/56719066/reset-default-graph-upon-exiting-tf-session-in-unit-tests
-    if 'pre_datawizard' in request.keywords:
-        os.environ[PRE_DATAWIZARD_VARIABLE] = '123'        
-        tf.compat.v1.disable_v2_behavior()
-        tf.compat.v1.disable_eager_execution()                
-        tf.compat.v1.reset_default_graph()
-
-        with tf.Graph().as_default():
-            yield
-    else:
-        if PRE_DATAWIZARD_VARIABLE in os.environ:
-            del os.environ[PRE_DATAWIZARD_VARIABLE]
-            
-        tf.compat.v1.enable_v2_behavior()        
-        tf.compat.v1.enable_eager_execution()
-        yield
+    tf.compat.v1.enable_v2_behavior()        
+    tf.compat.v1.enable_eager_execution()
+    yield
 
     
 @pytest.fixture(scope='function')
