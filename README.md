@@ -99,22 +99,28 @@ Now you have set up 3 environments, Now run the following to start services
 
 ```sh
 
-# run backend
-cd ./backend
+PL_ROOT=$(git rev-parse--show-toplevel)
+
+# run kernel
+cd backend
 python main.py
 
+# run the rendering kernel
+cd "$PL_ROOT/backend"
+python main.py --mode=rendering --debug
+
 # run rygg
-cd ./rygg
+cd $PL_ROOT/rygg
 python manage.py runserver
 
 # run fileserver
-cd ./fileserver
-python manage.py runserver 8011
+cd $PL_ROOT/fileserver
+PL_FILE_SERVING_TOKEN=thetoken PL_TUTORIALS_DATA=$PL_ROOT/backend/perceptilabs/tutorial_data PL_FILE_UPLOAD_DIR=$(pwd) container=a python manage.py runserver 0.0.0.0:8011
 
 # Set up and run the static_file_server
 pip install --upgrade pip setuptools
 pip install -r requirements.txt
-python manage.py runserver
+PL_FILE_SERVING_TOKEN=thetoken PL_KERNEL_URL=/kernel/ PL_FILESERVER_URL=/fileserver/ PL_RYGG_URL=/rygg/ PL_KEYCLOAK_URL=/auth/ python manage.py runserver 8080
 ```
 
 In case of you are facing some issues with calling the rygg, run `python manage.py migrate` inside `rygg` and run `python manage.py runserver`.
