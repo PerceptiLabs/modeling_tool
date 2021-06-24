@@ -791,6 +791,7 @@
     &.is-disable {
       color: #818181;
       cursor: default;
+      pointer-events: none;
     }
     &:hover {
       background: #383F50;
@@ -1093,6 +1094,7 @@
       &.is-disable {
         cursor: default;
         opacity: 0.4;
+        pointer-events: none;
       }
     }
   .github-button-icon {
