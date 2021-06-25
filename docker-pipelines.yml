@@ -1,15 +1,16 @@
 trigger:
 - none
 
-parameters:
-  - name: savetolatest
-    default: false
-    displayName: Save to Latest
-    type: boolean
-
 variables:
   # CommitId is passed in to the app_variables.json file
-  BuildVariables.CommitId : $(Build.SourceVersion)
+- name: BuildVariables.CommitId
+  value: $(Build.SourceVersion)
+- name: savetolatest
+  ${{ if eq( variables['Build.SourceBranch'], 'refs/heads/master') }}:
+    value: true
+  ${{ if ne( variables['Build.SourceBranch'], 'refs/heads/master') }}:
+    value: false
+ 
 
 jobs:
   - job: startvm
@@ -158,7 +159,7 @@ jobs:
           BlobPrefix: '$(Build.BuildId)/'
 
       - task: AzureFileCopy@4
-        condition: eq(${{ parameters.savetolatest }}, true)
+        condition: eq(${{ variables['savetolatest'] }}, true)
         displayName: publish the installation files to latest
         inputs:
           SourcePath: '$(System.ArtifactsDirectory)/installation_dev/**'

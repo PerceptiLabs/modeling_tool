@@ -43,6 +43,13 @@ parameters:
     # Can't have optional parameters, so we just use a sentinel
     default: "<none>"
 
+variables:
+- name: version_to_install
+  ${{ if and(eq( variables['Build.Reason'], 'BuildCompletion'), eq( variables['Build.TriggeredBy.DefinitionId'], 16)) }}:
+    value: ${{ variables['Build.TriggeredBy.BuildId'] }}
+  ${{ if not(and(eq( variables['Build.Reason'], 'BuildCompletion'), eq( variables['Build.TriggeredBy.DefinitionId'], 16))) }}:
+    value: ${{ parameters.versionid }}
+
 steps:
 
 - task: UsePythonVersion@0
@@ -87,7 +94,7 @@ steps:
 
       ansible-playbook \
         --inventory localhost, \
-        --extra-vars "version=${{ parameters.versionid }}" \
+        --extra-vars "version=${{ variables['version_to_install'] }}" \
         --extra-vars "release_env=${{ parameters.release_env }}" \
         --extra-vars "dns_subdomain=${{ parameters.subdomain }}" \
         --extra-vars "gpus=${{ parameters.gpus }}" \
