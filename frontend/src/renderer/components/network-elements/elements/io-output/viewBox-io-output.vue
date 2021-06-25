@@ -30,6 +30,20 @@
               :chart-data="chartData.LossAndAccuracy.AccOverEpochs"
               :custom-color="colorListAccuracy"
             )
+        .statistics-box_main.statistics-box_col(v-if="chartData.hasOwnProperty('LossAndRSquared')")
+          .statistics-box_row
+            chart-switch(
+              key="1"
+              chart-label="Loss over all epochs"
+              :chart-data="chartData.LossAndRSquared.LossOverEpochs"
+              :custom-color="colorListAccuracy"
+            )
+            chart-switch(
+              key="2"
+              chart-label="R Squared over all epochs"
+              :chart-data="chartData.LossAndRSquared.RSquaredOverEpochs"
+              :custom-color="colorListAccuracy"
+            )
         .statistics-box_main.statistics-box_col(v-if="chartData.hasOwnProperty('PvGAndConfusionMatrix')")
           .statistics-box_row
             chart-switch(
@@ -42,6 +56,20 @@
               key="4"
               chart-label="Predictions for Each Class"
               :chart-data="chartData.PvGAndConfusionMatrix.LastEpoch"
+              :custom-color="colorList"
+            )
+        .statistics-box_main.statistics-box_col(v-if="chartData.hasOwnProperty('PvGAndMAE')")
+          .statistics-box_row
+            chart-switch(
+              key="3"
+              chart-label="Mean Absolute Error over all Epochs"
+              :chart-data="chartData.PvGAndMAE.MAEOverEpochs"
+              :custom-color="colorList"
+            )
+            chart-switch(
+              key="4"
+              chart-label="Prediction vs Ground truth"
+              :chart-data="chartData.PvGAndMAE.Sample"
               :custom-color="colorList"
             )
         .statistics-box_main.statistics-box_col(v-if="chartData.hasOwnProperty('PvG')")
