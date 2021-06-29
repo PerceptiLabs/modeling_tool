@@ -111,4 +111,3 @@ steps:
         -vvv
     disableAutoCwd: true
     workingDirectory: '$(Build.SourcesDirectory)/docker/cd'
-    failOnStandardError: true
