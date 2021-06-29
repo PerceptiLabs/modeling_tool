@@ -68,7 +68,7 @@ def graph_spec(csv_path):
     # Create the layers
     id1 = gsb.add_layer(
         'IoInput',
-        settings={'datatype': 'numerical', 'feature_name': 'x1', 'file_path': csv_path, 'checkpoint_path':dirpath}
+        settings={'datatype': 'numerical', 'feature_name': 'x1', 'file_path': csv_path}
     )
     id2 = gsb.add_layer(
         'DeepLearningFC',
@@ -101,7 +101,7 @@ def graph_spec_faulty(csv_path):
     # Create the layers
     id1 = gsb.add_layer(
         'IoInput',
-        settings={'datatype': 'numerical', 'feature_name': 'x1', 'file_path': csv_path, 'checkpoint_path':dirpath}
+        settings={'datatype': 'numerical', 'feature_name': 'x1', 'file_path': csv_path}
     )
     id2 = gsb.add_layer(
         'DeepLearningFC',
@@ -354,44 +354,40 @@ def test_trainer_can_pause_stop(data_loader, training_model, training_settings):
     assert trainer.status == 'Finished'
 
     
-def test_trainer_export_checkpoints_atleast_once(graph_spec, data_loader, training_model, training_settings, exporter):
-    training_settings['AutoCheckpoint'] = False  # Even if no auto checkpoint, it should be saved
-    temp_dir = graph_spec.to_dict()['0']['checkpoint']['path']
-    trainer = Trainer(data_loader, training_model, training_settings, exporter=exporter)
+def test_trainer_export_checkpoints_atleast_once(graph_spec, data_loader, training_model, training_settings, exporter, temp_path):
+    trainer = Trainer(data_loader, training_model, training_settings, checkpoint_directory=temp_path, exporter=exporter)
 
     step = trainer.run_stepwise()
     next(step)  # Take the first training steps
 
-    assert 'checkpoint' not in os.listdir(temp_dir)
+    assert 'checkpoint' not in os.listdir(temp_path)
 
     for _ in step:  # Complete training
         pass
 
-    assert len(os.listdir(temp_dir)) > 0
-    assert 'checkpoint' in os.listdir(temp_dir)
+    assert len(os.listdir(temp_path)) > 0
+    assert 'checkpoint' in os.listdir(temp_path)
 
     
-def test_trainer_export_checkpoint_while_training(graph_spec, data_loader, training_model, training_settings, exporter):
-    temp_dir = graph_spec.to_dict()['0']['checkpoint']['path']
-    trainer = Trainer(data_loader, training_model, training_settings, exporter=exporter)
+def test_trainer_export_checkpoint_while_training(graph_spec, data_loader, training_model, training_settings, exporter, temp_path):
+    trainer = Trainer(data_loader, training_model, training_settings, exporter=exporter, checkpoint_directory=temp_path)
 
     step = trainer.run_stepwise()
     next(step)  # Take the first training steps
 
-    assert 'checkpoint' not in os.listdir(temp_dir)
+    assert 'checkpoint' not in os.listdir(temp_path)
 
-    trainer.export(temp_dir, mode='Checkpoint')
-    assert 'checkpoint' in os.listdir(temp_dir)
+    trainer.export(temp_path, mode='Checkpoint')
+    assert 'checkpoint' in os.listdir(temp_path)
 
     
-def test_trainer_export_pb_while_training(graph_spec, data_loader, training_model, training_settings, exporter):
-    temp_dir = graph_spec.to_dict()['0']['checkpoint']['path']
-    trainer = Trainer(data_loader, training_model, training_settings, exporter=exporter)
+def test_trainer_export_pb_while_training(graph_spec, data_loader, training_model, training_settings, exporter, temp_path):
+    trainer = Trainer(data_loader, training_model, training_settings, exporter=exporter, checkpoint_directory=temp_path)
 
     step = trainer.run_stepwise()
     next(step)  # Take the first training steps
 
-    assert 'saved_model.pb' not in os.listdir(temp_dir)
+    assert 'saved_model.pb' not in os.listdir(temp_path)
 
 
 def test_trainer_custom_loss(data_loader, training_model, training_settings_custom_loss):
@@ -446,11 +442,11 @@ def test_trainer_validate_raises_error_for_faulty_spec(data_loader, training_mod
         trainer.validate()
         
     
-def test_trainer_calls_export_checkpoint_once_per_epoch(graph_spec, data_loader, training_model, training_settings):
-    training_settings['AutoCheckpoint'] = True    
+def test_trainer_calls_export_checkpoint_once_per_epoch(graph_spec, data_loader, training_model, training_settings, temp_path):
+    training_settings['AutoCheckpoint'] = True
     exporter = MagicMock()
 
-    trainer = Trainer(data_loader, training_model, training_settings, exporter=exporter)
+    trainer = Trainer(data_loader, training_model, training_settings, exporter=exporter, checkpoint_directory=temp_path)
     step = trainer.run()
 
-    exporter.export_checkpoint.call_count == training_settings['Epochs']
+    assert exporter.export_checkpoint.call_count == training_settings['Epochs']

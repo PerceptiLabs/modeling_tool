@@ -53,9 +53,6 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
             graph, self._dataset_train.element_spec,
             input_layer_id, label_layer_id, prediction_layer_id, target_layer_id, prediction_var_name, target_var_name
         )
-        {% call indented_if(layer_spec.load_checkpoint) %}
-            self.load_weights('{{layer_spec.checkpoint_path}}')        
-        {% endcall %}
         
         self._metric_training_loss = tf.keras.metrics.Mean()
         self._metric_training_accuracy = tf.keras.metrics.CategoricalAccuracy()
@@ -123,7 +120,6 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
             {% endfilter %}
             
         self._status = 'finished'
-        self.on_export('{{layer_spec.checkpoint_path}}', 'checkpoint')           
         yield YieldLevel.SNAPSHOT
 
     def _set_training_iteration(self, value):
@@ -210,7 +206,6 @@ class {{layer_spec.sanitized_name}}(ClassificationLayer):
     def on_stop(self) -> None:
         """Called when the save model button is clicked in the frontend. 
         It is up to the implementing layer to save the model to disk."""
-        self.on_export('{{layer_spec.checkpoint_path}}', 'checkpoint')                   
         self._stopped = True
 
     def on_headless_activate(self) -> None:

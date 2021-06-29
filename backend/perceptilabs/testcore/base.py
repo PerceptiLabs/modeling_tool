@@ -44,20 +44,20 @@ class TestCore():
             model_info = self._models_info[model_id]
             self.load_data(model_info['data_loader'], model_id)
             self.load_model(
-                model_id, model_path=model_info['model_path'], graph_spec=model_info['graph_spec']
+                model_id, checkpoint_directory=model_info['checkpoint_directory'], graph_spec=model_info['graph_spec']
             )
 
-    def load_model(self, model_id, model_path, graph_spec):
+    def load_model(self, model_id, checkpoint_directory, graph_spec):
         """
         loads model from exported model.pb file or using checkpoints.
         """
         try:
             self._models[model_id] = LoadInferenceModel.from_checkpoint(
-                model_path, graph_spec, self._data_loaders[model_id])
+                checkpoint_directory, graph_spec, self._data_loaders[model_id])
             logger.info("model %s loaded successfully.", model_id)
         except Exception as e:
             self._found_error(
-                f"Unable to load the {self._current_model_name} model from {model_path}")
+                f"Unable to load the {self._current_model_name} using checkpoint from {checkpoint_directory}")
             with self._issue_handler.create_issue('Error while loading model', e) as issue:
                 raise Exception(issue.frontend_message)
 

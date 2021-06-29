@@ -5,7 +5,8 @@ import {
   isLocalStorageAvailable,
   stringifyNetworkObjects,
   deepCopy,
-  isEnvDataWizardEnabled
+  isEnvDataWizardEnabled,
+  checkpointDirFromProject
 } from "@/core/helpers.js";
 import { widthElement, LOCAL_STORAGE_WORKSPACE_VIEW_TYPE_KEY, LOCAL_STORAGE_WORKSPACE_SHOW_MODEL_PREVIEWS, defaultTrainingSettings } from '@/core/constants.js'
 import idb  from "@/core/helpers/idb-helper.js";
@@ -112,6 +113,11 @@ const getters = {
   GET_currentNetworkDatasetSettings(state, getters)  {
     return getters.GET_networkIsNotEmpty
       ? state.workspaceContent[state.currentNetwork].networkMeta.datasetSettings
+      : null
+  },
+  GET_currentNetworkCheckpointDirectory(state, getters)  {
+    return getters.GET_networkIsNotEmpty
+	  ? checkpointDirFromProject(state.workspaceContent[state.currentNetwork].apiMeta.location)
       : null
   },
   GET_currentNetworkIndex(state, getters)  {

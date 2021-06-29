@@ -379,6 +379,7 @@ def test_tf2x_export_tfmodel_can_load_and_predict(temp_path, script_factory, gra
     assert isinstance(loaded_model.predict({'output': np.random.random((1, 4))}), np.ndarray)
 
 
+@pytest.mark.skip    
 def test_tf2x_save_weights_automatically(temp_path, script_factory, graph_spec_few_epochs):
     graph = graph_spec_to_core_graph(script_factory, graph_spec_few_epochs)
     

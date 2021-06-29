@@ -72,7 +72,7 @@ def testcore(graph_spec_few_epochs, temp_path, script_factory, data_loader):
     models_info = {
         1: {
             'graph_spec': graph_spec_few_epochs,
-            'model_path': temp_path,
+            'checkpoint_directory': temp_path,
             'data_path': csv_path,
             'data_loader': data_loader,
             'model_name': 'unit test'

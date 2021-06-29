@@ -288,7 +288,7 @@
       },
       toModelStatistic() {
         if(this.statusLocalCore!='online') {
-          this.showInfoPopup("Kernel is offline");
+          this.showInfoPopup("Kernel is offline when calling 'toModelStatistic'");
           return;
         }        
         // setStatisticsAvailability calls isTrained for each networks
@@ -364,7 +364,7 @@
       },
       toModelingTool() {
         if(this.statusLocalCore!='online') {
-          this.showInfoPopup("Kernel is offline");
+          this.showInfoPopup("Kernel is offline when calling 'toModelingTool'");
           return;
         }
 

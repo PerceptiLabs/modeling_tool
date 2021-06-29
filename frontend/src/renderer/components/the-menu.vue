@@ -166,7 +166,7 @@ export default {
     },
     newModel() {
       if(this.statusLocalCore!='online') {
-        this.infoPopup("Kernel is offline");
+        this.infoPopup("Kernel is offline when calling 'newModel'");
         return;
       }
 
@@ -174,7 +174,7 @@ export default {
     },
     openLoadModelPopup() {
       if(this.statusLocalCore!='online') {
-        this.infoPopup("Kernel is offline");
+        this.infoPopup("Kernel is offline when calling 'openLoadModelPopup'");
         return;
       }
       
@@ -182,7 +182,7 @@ export default {
     },
     openLoadPbPopup() {
       if(this.statusLocalCore!='online') {
-        this.infoPopup("Kernel is offline");
+        this.infoPopup("Kernel is offline when calling 'openLoadPbPopup'");
         return;
       }
       
@@ -197,7 +197,7 @@ export default {
     },
     saveModel() {
       if(this.statusLocalCore!='online') {
-        this.infoPopup("Kernel is offline");
+        this.infoPopup("Kernel is offline when calling 'saveModel'");
         return;
       }
 
@@ -205,23 +205,18 @@ export default {
     },
     saveModelAs() {
       if(this.statusLocalCore!='online') {
-        this.infoPopup("Kernel is offline");
+        this.infoPopup("Kernel is offline when calling 'saveModelAs'");
         return;
       }
 
       this.saveNetworkAs();
     },
     exportModel() {
-      if(this.statusLocalCore!='online') {
-        this.infoPopup("Kernel is offline");
-        return;
-      }
-
       this.$store.dispatch('globalView/SET_exportNetworkPopup', true);
     },
     exportModelToGithub() {
       if(this.statusLocalCore!='online') {
-        this.infoPopup("Kernel is offline");
+        this.infoPopup("Kernel is offline when calling 'exportModelToGithub'");
         return;
       }
 

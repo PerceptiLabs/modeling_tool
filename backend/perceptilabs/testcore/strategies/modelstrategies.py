@@ -14,19 +14,13 @@ class LoadInferenceModel():
         self._stopped = False
         
     @classmethod
-    def from_checkpoint(cls, model_path, graph_spec, data_loader):
+    def from_checkpoint(cls, checkpoint_directory, graph_spec, data_loader):
         """
         load model from checkpoint and graphspec
         """
         script_factory = ScriptFactory()
-        exporter = Exporter.from_disk(model_path, graph_spec, script_factory, data_loader)
+        exporter = Exporter.from_disk(checkpoint_directory, graph_spec, script_factory, data_loader)
         model = exporter.training_model
-        return cls(model)
-    
-    @classmethod
-    def from_saved_model(cls, model_path):
-        """ load model from saved model"""
-        model = tf.keras.models.load_model(model_path, None, None)
         return cls(model)
     
     def run_inference(self, data_iterator):

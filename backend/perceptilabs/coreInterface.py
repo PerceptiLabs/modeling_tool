@@ -155,27 +155,37 @@ class coreLogic():
     def set_running_mode(self, mode):
         self._running_mode = mode
         logger.info(f"Running mode {mode} set for coreLogic w\ network '{self.networkName}'")
-        
-    def _get_trainer(self, script_factory, graph_spec, training_settings, dataset_settings, model_id, user_email):
+
+    def _get_trainer(self, script_factory, graph_spec, training_settings, dataset_settings, checkpoint_directory, load_checkpoint, model_id, user_email):
         """ Creates a Trainer for the IoInput/IoOutput workflow """        
         data_loader = DataLoader.from_dict(dataset_settings)
-        training_model = TrainingModel(script_factory, graph_spec)
-        exporter = Exporter(
-            graph_spec, training_model, data_loader,
-            model_id=model_id, user_email=user_email
-        )
+
+        if load_checkpoint:
+            exporter = Exporter.from_disk(
+                checkpoint_directory, graph_spec, script_factory, data_loader,
+                model_id=model_id, user_email=user_email
+            )
+            training_model = exporter.training_model
+            logger.info(f"Loaded training model from disk via latest checkpoint at: {checkpoint_directory}")
+        else:
+            training_model = TrainingModel(script_factory, graph_spec)
+            exporter = Exporter(
+                graph_spec, training_model, data_loader,
+                model_id=model_id, user_email=user_email
+            )
         
         trainer = Trainer(
             data_loader,
             training_model,
             training_settings,
+            checkpoint_directory=checkpoint_directory,
             exporter=exporter,
             model_id=model_id,
             user_email=user_email            
         )        
         return trainer
 
-    def start_core(self, graph_spec, model_id, user_email, training_settings=None, dataset_settings=None):
+    def start_core(self, graph_spec, model_id, user_email, training_settings, dataset_settings, checkpoint_directory, load_checkpoint):
         """ Spins up a core for training (or exporting in the pre-data wizard case)
 
         Arguments:
@@ -184,6 +194,8 @@ class coreLogic():
             user_email: the users email
             training_settings: only required for post-data wizard mode. A dict with things like number of epochs, type of optimizer, etc
             dataset_settings: only required for post-data wizard mode. A dict with things like train/test/val split, column data types, etc
+            checkpoint_directory: where the trainer should look for checkpoints
+            load_checkpoint: if true, the training model will be loaded from an existing checkpoint
         """
         try:
             self.Close()
@@ -204,7 +216,7 @@ class coreLogic():
             simple_message_bus=True,
             running_mode=self._running_mode
         )
-        trainer = self._get_trainer(script_factory, graph_spec, training_settings, dataset_settings, model_id, user_email)
+        trainer = self._get_trainer(script_factory, graph_spec, training_settings, dataset_settings, checkpoint_directory, load_checkpoint, model_id, user_email)
 
         if not self._validate_trainer(trainer):
             return None
@@ -355,16 +367,6 @@ class coreLogic():
             (self._core_mode == 'v2' and self.core is not None and self.resultDict is not None)
         )
         return {"content": is_trained}
-    
-    def exportNetwork(self,value, graph_spec, model_id):
-        logger.debug(f"exportNetwork called. Value = {pprint.pformat(value)}")
-
-        # Keys in 'value' : 
-        # ['Location', 'Type', 'Compressed', 'frontendNetwork', 'NotebookJson']
-
-        if value["Type"] == 'ipynb':
-            return self.saveIpynbToDisk(value)
-        return self.exportNetworkV2(value, graph_spec, model_id)            
 
     def saveIpynbToDisk(self, value):
         path = value.get('Location')
@@ -382,23 +384,15 @@ class coreLogic():
         
         return {"content":"Export success!\nSaved as:\n" + filepath}
 
-    def exportNetworkV2(self, value, graph_spec = None, model_id = None):
-        path = os.path.join(value["Location"], value.get('frontendNetwork', self.networkName))
+    def export_network(self, settings):
+        path = os.path.join(settings["Location"], settings["name"])
         path = os.path.abspath(path)
         mode = 'TFModel' # Default mode. # TODO: perhaps all export modes should be exposed to frontend?
-        if value["Quantized"]:
+        if settings["Quantized"]:
             mode = 'TFQuantized'         
-        elif value['Compressed']:
+        elif settings['Compressed']:
             mode = 'TFLite'
-
-        from perceptilabs.script import ScriptFactory
-
-
-        script_factory = ScriptFactory(
-            simple_message_bus=True,
-            running_mode=self._running_mode
-        )
-
+            
         self.commandQ.put(
             CoreCommand(
                 type='export',

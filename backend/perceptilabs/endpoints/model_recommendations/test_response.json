@@ -9,10 +9,6 @@
         },
         "Type": "IoInput",
         "backward_connections": [],
-        "checkpoint": {
-            "load_checkpoint": true,
-            "path": null
-        },
         "endPoints": [],
         "forward_connections": [
             {
@@ -43,10 +39,6 @@
                 "src_var": "output"
             }
         ],
-        "checkpoint": {
-            "load_checkpoint": true,
-            "path": null
-        },
         "endPoints": [],
         "forward_connections": [
             {
@@ -75,10 +67,6 @@
                 "src_var": "output"
             }
         ],
-        "checkpoint": {
-            "load_checkpoint": true,
-            "path": null
-        },
         "endPoints": [],
         "forward_connections": [],
         "getPreview": false,

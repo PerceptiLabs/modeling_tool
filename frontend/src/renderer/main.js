@@ -190,6 +190,7 @@ function renderNoInternetConnectionPage() {
       renderNoInternetConnectionPage();
     }
   } catch(err){
+    demo();
     console.error(err)
   }
 })();

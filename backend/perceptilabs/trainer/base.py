@@ -23,7 +23,7 @@ import perceptilabs.tracking as tracking
 logger = logging.getLogger(APPLICATION_LOGGER)
 
 class Trainer:
-    def __init__(self, data_loader, training_model, training_settings, exporter=None, model_id=None, user_email=None):
+    def __init__(self, data_loader, training_model, training_settings, checkpoint_directory=None, exporter=None, model_id=None, user_email=None):
         self._model_id = model_id
         self._user_email = user_email
         
@@ -32,9 +32,9 @@ class Trainer:
         self._graph_spec = training_model.graph_spec
         self._exporter = exporter
 
-        self._auto_checkpoint_every_epoch, self._auto_checkpoint_dir = \
-            self._resolve_auto_checkpoint(training_settings, training_model)
-        
+        self._checkpoint_directory = checkpoint_directory
+        self._auto_checkpoint = training_settings.get('AutoCheckpoint', False)
+
         self._training_time = 0.0
         
         self._num_epochs = int(training_settings['Epochs'])
@@ -51,7 +51,6 @@ class Trainer:
         
         self._set_status('Waiting')
 
-
     def validate(self):
         """ Compute the loss. If the model or data is faulty, we get a crash. 
 
@@ -61,7 +60,7 @@ class Trainer:
         inputs_batch, targets_batch = next(iter(dataset))
 
         predictions_batch, final_and_intermediate_outputs = self._training_model(inputs_batch, training=False)        
-        self._compute_total_loss(predictions_batch, targets_batch, self._loss_functions)        
+        self._compute_total_loss(predictions_batch, targets_batch, self._loss_functions)
 
     def run(self, _=None, on_iterate=None, model_id=None):
         """ Run all training steps """
@@ -77,6 +76,9 @@ class Trainer:
             tracking.send_training_started(self._user_email, self._model_id, self._graph_spec)
             
         logger.info("Entering training loop")
+        
+        if self._checkpoint_directory is not None:
+            logger.info(f"Checkpoints will be saved to {self._checkpoint_directory}")        
         
         self._num_epochs_completed = 0
         while self._num_epochs_completed < self.num_epochs and not self.is_closed:
@@ -110,7 +112,7 @@ class Trainer:
             if self.is_closed:
                 break
 
-            if self._auto_checkpoint_every_epoch:
+            if self._auto_checkpoint:
                 self._auto_save_checkpoint(epoch=self._num_epochs_completed)
                 
             self._num_epochs_completed += 1
@@ -123,11 +125,11 @@ class Trainer:
             if current_memory_usage > peak_memory_usage:
                 peak_memory_usage = current_memory_usage
 
-            yield 
+            yield
 
-        if not self._auto_checkpoint_every_epoch:
-            self._auto_save_checkpoint()
-                    
+        if not self._auto_checkpoint:
+            self._auto_save_checkpoint()            
+
         self._set_status('Finished')
         logger.info(f"Training completed. Total duration: {round(self._training_time, 3)} s")
 
@@ -144,14 +146,14 @@ class Trainer:
     def _auto_save_checkpoint(self, epoch=None):
         """ Exports the model so that we can restore it between runs """
         if self._exporter is None:
-            logger.warning("Exporter not set. Cannot auto export")
+            logger.error("Exporter not set. Cannot auto export")
             return
 
-        if self._auto_checkpoint_dir is None:
-            logger.warning("Auto checkpoint dir not set. Cannot auto export")            
+        if self._checkpoint_directory is None:
+            logger.error("Auto checkpoint dir not set. Cannot auto export")            
             return
 
-        self.export_checkpoint(self._auto_checkpoint_dir, epoch=epoch)
+        self.export_checkpoint(self._checkpoint_directory, epoch=epoch)
 
     def _log_epoch_summary(self, epoch_time):
         logger.info(
@@ -636,12 +638,3 @@ class Trainer:
         ).batch(self.batch_size)
         return validation_set
 
-    def _resolve_auto_checkpoint(self, training_settings, training_model):
-        auto_ckpt_dir = training_model.graph_spec.get_checkpoint_path()  # TODO(anton.k): This shouldn't be deduced from model...        
-        auto_ckpt = training_settings.get('AutoCheckpoint', False) and auto_ckpt_dir is not None
-        
-        if auto_ckpt:
-            logger.info(f"Auto checkpointing every epoch to {auto_ckpt_dir}")
-
-        return auto_ckpt, auto_ckpt_dir
-    

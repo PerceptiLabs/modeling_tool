@@ -1,5 +1,6 @@
 import os
 import pickle
+import logging
 import tempfile
 from unittest.mock import MagicMock
 
@@ -14,6 +15,10 @@ from perceptilabs.data.base import DataLoader, FeatureSpec
 from perceptilabs.graph.builder import GraphSpecBuilder
 from perceptilabs.utils import sanitize_path
 import perceptilabs.tracking as tracking
+from perceptilabs.logconf import APPLICATION_LOGGER
+
+
+logger = logging.getLogger(APPLICATION_LOGGER)
 
 
 class Exporter:
@@ -24,22 +29,13 @@ class Exporter:
         self._model_id = model_id
         self._user_email = user_email
 
-    @staticmethod
-    def get_path(graph_spec):
-        if graph_spec is not None:
-            path = graph_spec.layers[0].checkpoint_path  
-        return path
-
     @classmethod
-    def from_disk(cls, path, graph_spec, script_factory, data_loader, model_id=None, user_email=None):
-        if graph_spec is not None and len(os.listdir(graph_spec.layers[0].checkpoint_path)) > 0:
-            path = graph_spec.layers[0].checkpoint_path
-            
-        path = sanitize_path(path)
-        weights_path = tf.train.latest_checkpoint(path)
-            
+    def from_disk(cls, checkpoint_directory, graph_spec, script_factory, data_loader, model_id=None, user_email=None):
+        checkpoint_directory = sanitize_path(checkpoint_directory)
+        weights_path = tf.train.latest_checkpoint(checkpoint_directory)
         training_model = TrainingModel(script_factory, graph_spec)
         training_model.load_weights(filepath=weights_path)
+        logger.info(f"Loaded weights from {weights_path}")        
         return cls(graph_spec, training_model, data_loader, model_id=model_id, user_email=user_email)
 
     @property

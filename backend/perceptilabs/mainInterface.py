@@ -18,7 +18,6 @@ from perceptilabs.aggregation import AggregationRequest, AggregationEngine
 from perceptilabs.coreInterface import coreLogic
 
 from perceptilabs.graph.spec import GraphSpec
-from perceptilabs.exporter.base import Exporter
 from perceptilabs.utils import stringify
 from perceptilabs import __version__
 from perceptilabs.core_new.errors import LightweightErrorHandler
@@ -51,8 +50,6 @@ from perceptilabs.lwInterface import (
     getPreviewBatchSample,
     getPreviewVariableList,
     Parse,
-    ScanCheckpoint,
-    CopyJsonModel,
     UploadKernelLogs
 )
 
@@ -456,9 +453,6 @@ class Interface():
             response = self._core.saveNetwork(value)
             return response
 
-        elif action == "ScanCheckpoint":
-            return ScanCheckpoint(path = value).run()
-
         elif action == "getEndResults":
             # time.sleep(3)
             response = self._core.getEndResults()
@@ -531,25 +525,6 @@ class Interface():
         
         return "User has been set to " + value
         
-    def _get_receiver_mode(self,receiver_id):
-        """
-        Requests to start testing contain 't' in receiver id.
-        Some requests to export model contain 'e' in receiver id.
-        Args:
-            receiver_id (string): receiver id for the request
-        """
-        if receiver_id is not None:
-            if 'e' not in receiver_id:
-                mode = 'export_while_training'
-            elif 'e' in receiver_id:
-                mode = 'export_after_training'
-            elif 't' in receiver_id:
-                mode = 'testing'
-        else:
-            return None
-                
-        return mode
-
     def _create_response_headless(self, request_value):
         """ Toggles headless mode on/off. Returns None if successful """
         if not self._allow_headless:
@@ -580,45 +555,13 @@ class Interface():
                 is_tutorial_data=data_loader.is_tutorial_data
             )
         return response
-
-    def _create_response_export(self, value, receiver):
-        # first check if checkpoint exists if export is requested after training
-        mode = self._get_receiver_mode(receiver)
-
-        model_id = value['modelId']
-        user_email = value['userEmail']
-        
-        if mode == 'export_while_training':                    
-            response = self._core.exportNetwork(value, graph_spec=None, model_id=model_id)
-            logger.info("Created export response while training")            
-            return response
-        elif mode == 'export_after_training':
-            graph_spec = self._network_loader.load(value, as_spec=True)
-            dataset_settings = value['datasetSettings']
-            response = self._export_using_exporter(value, dataset_settings, path=value['Location'], graph_spec=graph_spec, model_id=model_id, user_email=user_email)
-            logger.info("Created export response after training")                        
-            return response
-        else:
-            return {'content':'The model is not trained.'}
-
-    def _create_response_export_tf1x(self, value, receiver):
-        mode = self._get_receiver_mode(receiver)
-        if mode == 'export_while_training':
-            if (ScanCheckpoint(path = value['path']).run() or value["Type"] == 'ipynb'):
-                model_id = value.get('modelId', None)
-                if model_id is not None:
-                    model_id = int(model_id)
-                response = self._core.exportNetwork(value, graph_spec=None, model_id=model_id)
-                return response
-        elif mode == 'export_after_training':
-            graph_spec = self._network_loader.load(value, as_spec=True)
-            response = self._core.exportNetwork(value, graph_spec, model_id=None)
-            return response
-        else:
-            return {'content':'The model is not trained.'}
-
+    
+    def _create_response_export(self, export_settings, receiver):
+        response = self._core.export_network(export_settings)
+        logger.info("Created export response while training")            
+        return response
+    
     def _create_response_start_training(self, request_value):
-        CopyJsonModel(request_value['copyJson_path']).run()
         graph_spec = self._network_loader.load(request_value, as_spec=True)
         
         self._core.set_running_mode('training')            
@@ -626,13 +569,17 @@ class Interface():
         user_email = request_value.get('userEmail', None)      
         training_settings = request_value.get('trainSettings', None)        
         dataset_settings = request_value.get('datasetSettings', None)
-
+        checkpoint_directory = request_value.get('checkpointDirectory', None)
+        load_checkpoint = request_value.get('loadCheckpoint', False)
+        
         response = self._core.start_core(
             graph_spec,
             model_id,
             user_email,
             training_settings,
-            dataset_settings=dataset_settings
+            dataset_settings,
+            checkpoint_directory,
+            load_checkpoint
         )
         return response
 
@@ -643,23 +590,6 @@ class Interface():
         layer_checkpoint_list = parser.parse()
         jsonNetwork = parser.save_json(layer_checkpoint_list[0])
         return jsonNetwork
-
-    def _export_using_exporter(self, value, dataset_settings, path, graph_spec, model_id, user_email):
-        data_loader = DataLoader.from_dict(dataset_settings)
-        
-        script_factory = ScriptFactory(
-            simple_message_bus=True,
-        )
-        try:
-            exporter = Exporter.from_disk(
-                path, graph_spec, script_factory, data_loader,
-                model_id=model_id, user_email=user_email
-            )
-        except:
-            return {"content": f"Can't export a model that hasn't been trained yet."}
-        export_path = os.path.join(path, value['name'])
-        exporter.export_inference(export_path)
-        return {"content": f"Exporting of model requested to the path {path}"}
 
     def _create_response_tests(self, value, action):
         models_info = {}
@@ -679,7 +609,7 @@ class Interface():
                     return 
             models_info[model_id] = {
                 'graph_spec': graph_spec, 
-                'model_path': value_dict['model_path'], 
+                'checkpoint_directory': value_dict['checkpoint_directory'], 
                 'data_path': value_dict['data_path'],
                 'data_loader': data_loader,
                 'model_name': value_dict['model_name'],

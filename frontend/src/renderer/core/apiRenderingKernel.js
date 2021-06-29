@@ -17,6 +17,30 @@ const whenRenderingKernelReady = whenUrlIsResolved(RENDERING_KERNEL_URL_CONFIG_P
 
 export const renderingKernel = {
 
+  async hasCheckpoint(directory) {
+    return whenRenderingKernelReady     
+      .then(rk => rk.get(`/has_checkpoint?directory=${directory}`))
+      .then(res => {
+        return (res.status === 200) ? res.data : null;
+      })
+  },
+
+  async exportModel(exportSettings, datasetSettings, userEmail, modelId, network, checkpointDirectory) {
+    const payload = {
+      exportSettings: exportSettings,
+      datasetSettings: datasetSettings,
+      network: network,
+      checkpointDirectory: checkpointDirectory, 
+      userEmail: userEmail,
+      modelId: modelId,
+    };
+    return whenRenderingKernelReady
+      .then(rk => rk.post('/export', payload))
+      .then(res => {
+        return (res.status === 200) ? res.data : null;
+      })
+  },
+
   async getCode(network, layerId) {
     const payload = {
       network: network,

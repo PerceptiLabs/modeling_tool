@@ -1,6 +1,6 @@
 import { coreRequest }  from "@/core/apiWeb.js";
 import { renderingKernel }  from "@/core/apiRenderingKernel.js";
-import {deepCopy, parseJWT, isWeb, isEnvDataWizardEnabled} from "@/core/helpers.js";
+import {deepCopy, parseJWT, isWeb, isEnvDataWizardEnabled, checkpointDirFromProject} from "@/core/helpers.js";
 import { createNotebookJson }   from "@/core/helpers/notebook-helper.js";
 import { pathSlash, sessionStorageInstanceIdKey }  from "@/core/constants.js";
 import { createCoreNetwork } from "@/core/helpers";
@@ -392,7 +392,7 @@ const actions = {
   //  NETWORK TRAINING
   //---------------
   API_testStart({dispatch, getters, rootGetters}, payload) {
-    const { modelIds, model_paths }  = payload;
+    const { modelIds, checkpoint_paths }  = payload;
     
     let value = {};
 
@@ -403,7 +403,7 @@ const actions = {
       value[id].layers = getters.GET_coreNetworkById(id);
       value[id].model_name = network.networkName;
       value[id].data_path = payload.dataPath;
-      value[id].model_path = model_paths[id];
+      value[id].checkpoint_directory = checkpoint_paths[id];
     })
     
     const theData = {
@@ -487,6 +487,7 @@ const actions = {
     const datasetSettings = rootGetters['mod_workspace/GET_currentNetworkDatasetSettings'];
     const userEmail = rootGetters['mod_user/GET_userEmail'];
     const trainSettings = rootGetters['mod_workspace/GET_modelTrainingSetting'];
+    const checkpointDirectory = rootGetters['mod_workspace/GET_currentNetworkCheckpointDirectory'];
     const settingCollection = {}
     if(isEnvDataWizardEnabled()) {
       settingCollection['trainSettings'] = trainSettings
@@ -498,7 +499,8 @@ const actions = {
         modelId: rootGetters['mod_workspace/GET_currentNetworkId'],
         userEmail: userEmail,
         Layers: getters.GET_coreNetworkWithCheckpointConfig(loadCheckpoint),
-        'copyJson_path': network.apiMeta.location || '',
+        'checkpointDirectory': checkpointDirectory,
+        'loadCheckpoint': loadCheckpoint,
         'datasetSettings': datasetSettings,
         ...settingCollection
       }
@@ -992,87 +994,46 @@ const actions = {
   },
 
   async API_exportData({rootGetters, getters, dispatch}, settings) {
-    let theData;
-      
-    let payload = await makePayload.call(this, settings, true);
-    payload['userEmail'] = rootGetters['mod_user/GET_userEmail'];      
-    payload['modelId'] = rootGetters['mod_workspace/GET_currentNetworkId'];
-    payload['datasetSettings'] = rootGetters['mod_workspace/GET_currentNetworkDatasetSettings'];
-      
-    if (['Training', 'Validation', 'Paused'].includes(rootGetters['mod_workspace/GET_networkCoreStatus'])) {
-      delete payload['Layers'];      
+    const userEmail = rootGetters['mod_user/GET_userEmail'];      
+    const modelId = rootGetters['mod_workspace/GET_currentNetworkId'];
+    const datasetSettings = rootGetters['mod_workspace/GET_currentNetworkDatasetSettings'];      
 
-      theData = {
-        receiver: rootGetters['mod_workspace/GET_currentNetworkId'],
-        action: 'Export',
-        value: payload
-      };
-    } else {
-      theData = {
-        receiver: rootGetters['mod_workspace/GET_currentNetworkId'] + 'e',
-        action: 'Export',
-        value: payload
-      };
+    const isTraining = ['Training', 'Validation', 'Paused'].includes(rootGetters['mod_workspace/GET_networkCoreStatus']);
+
+    async function exportClosure() {
+      if (isTraining) {
+        const theData = {
+	  receiver: rootGetters['mod_workspace/GET_currentNetworkId'],
+          action: 'Export',
+          value: settings
+        };
+        return coreRequest(theData);
+      } else {
+          const network = getters.GET_coreNetwork;
+          const checkpointDirectory = rootGetters['mod_workspace/GET_currentNetworkCheckpointDirectory'];       
+          return renderingKernel.exportModel(settings, datasetSettings, userEmail, modelId, network, checkpointDirectory)
+      }
     };
-    
-    console.log('API_exportData', theData);
+
     const trackerData = {
       result: '',
       network: getters.GET_coreNetwork,
       settings
     };
-    coreRequest(theData)
-      .then((data)=> {
-        const thePath = data.substring(data.indexOf('/'));
-        const { apiMeta } = rootGetters['mod_workspace/GET_currentNetwork'];
-        dispatch('mod_workspace/SET_model_saved_version_location', thePath, {root: true});
-        dispatch('mod_project/updateModel', {
-          ...apiMeta,
-          saved_version_location: thePath
-        }, {root: true});
-        
-        dispatch('globalView/GP_infoPopup', data, {root: true});
-        trackerData.result = 'success';
-      })
-      .catch((err)=> {
-        console.error(err);
-        if(settings.Type !== 'ipynb') {
-          dispatch('globalView/GP_errorPopup', 'Kernel is not connected', {root: true});
-        }
-        // dispatch('globalView/GP_errorPopup', err, {root: true});
-        trackerData.result = 'error';
-      })
-      .finally(()=> {
-        dispatch('mod_tracker/EVENT_modelExport', trackerData, {root: true});
-      })
 
-    async function makePayload(settings = null, loadCheckpoints = false) {
-      if (!settings || settings.Type === 'TFModel') {
-        return ({
-          ...settings,
-          Layers: getters.GET_coreNetworkWithCheckpointConfig(loadCheckpoints),
-          path: rootGetters['mod_workspace/GET_currentNetwork'].apiMeta.location || '',
-          frontendNetwork: rootGetters['mod_workspace/GET_currentNetwork'].networkName
-        });
-      }
-  
-      if (settings.Type === 'ipynb') {
-        // current 'this' is the Vuex store object
-        try {
-          const payload = await createNotebookJson(this);
-          return ({
-            ...settings,
-            Layers: getters.GET_coreNetworkWithCheckpointConfig(loadCheckpoints),
-            path: rootGetters['mod_workspace/GET_currentNetwork'].apiMeta.location || '',
-            frontendNetwork: settings.name,
-            NotebookJson: payload,
-          });
-        } 
-        catch(err) {
-          dispatch('globalView/GP_errorPopup', 'Kernel is not connected', {root: true});
-        }
-      }
-    }
+    exportClosure()
+      .then((data) => {
+        dispatch('globalView/GP_infoPopup', data, {root: true});
+        trackerData.result = 'success';  
+      })
+      .catch((err) => {
+        console.error(err);
+        dispatch('globalView/GP_errorPopup', err, {root: true});
+        trackerData.result = 'error';
+      })	  
+      .finally(() => {
+        dispatch('mod_tracker/EVENT_modelExport', trackerData, {root: true});
+      });
   },
   //---------------
   //  OTHER
@@ -1359,11 +1320,6 @@ const actions = {
       });
   },
   async API_scanCheckpoint (ctx, { networkId, path }) {
-    const theData = {
-      receiver: networkId,
-      action: 'ScanCheckpoint',
-      value: path
-    };
     const isDirExist = await fileserver_doesDirExist(path);
     if(!isDirExist) {
        return ({
@@ -1371,7 +1327,7 @@ const actions = {
         hasCheckpoint: false 
       });
     }
-    return coreRequest(theData)
+    return renderingKernel.hasCheckpoint(checkpointDirFromProject(path))
       .then(res => {
         return ({
           networkId,

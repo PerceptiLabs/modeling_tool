@@ -106,9 +106,6 @@ class LayerSpec(ABC, MyBaseModel):
     forward_connections: Tuple[LayerConnection, ...] = ()
     visited: bool = False
     custom_code: Union[str, None] = None
-    checkpoint_path: Union[str, None] = None 
-    load_checkpoint: bool = True   
-    scan_checkpoint: bool = False
     end_points: Union[Tuple[str, ...], None] = ()
 
     class Config:
@@ -210,9 +207,6 @@ class LayerSpec(ABC, MyBaseModel):
             'preview_variable': dict_.get('previewVariable', ''),
             'get_preview': dict_.get('getPreview', False),                        
             'end_points': tuple(dict_.get('endPoints', ())),
-            'checkpoint_path': cls.resolve_checkpoint_path(dict_), 
-            'load_checkpoint': dict_['checkpoint']['load_checkpoint'],
-            'scan_checkpoint': cls.scan_checkpoint_folder(dict_),
             'backward_connections': resolve_bw_cons(dict_),
             'forward_connections': resolve_fw_cons(dict_),
             'custom_code': resolve_custom_code(dict_)
@@ -234,8 +228,6 @@ class LayerSpec(ABC, MyBaseModel):
         dict_['previewVariable'] = self.preview_variable
         dict_['getPreview'] = self.get_preview        
         dict_['endPoints'] = list(self.end_points)
-
-        dict_['checkpoint'] = {'path':self.checkpoint_path, 'load_checkpoint':self.load_checkpoint }  #TODO: hack to make it work with mysterious frontend behavior. Ask for refactor when this causes trouble. 
 
         dict_['backward_connections'] = [
             {
@@ -275,49 +267,6 @@ class LayerSpec(ABC, MyBaseModel):
     def __repr__(self):
         return str(self) + '\n' + stringify(self.to_dict())
     
-    @classmethod
-    def resolve_checkpoint_path(cls, dict_):
-        """ Method returns the modified checkpoint_path so that it works with the OS being used. 
-        Args:
-            dict_ : network dict corresponding to particular layer
-        Returns:
-            checkpoint_path: refactored checkpoint path according to the OS.
-        """
-        import platform
-        ckpt_path = dict_['checkpoint']['path']  
-        if '//' in ckpt_path:
-            if platform.system() == 'Windows':
-                ckpt_path = ckpt_path.split('//')[1]
-            else:
-                new_ckpt_path = os.path.sep+ckpt_path.split(2*os.path.sep)[1] # Sometimes frontend repeats the directory path. /<dir-path>//<dir-path>/model.ckpt-1
-                logger.warning(
-                    f"Splitting malformed checkpoint path: '{ckpt_path}'. "
-                    f"New path: '{new_ckpt_path}'"
-                )
-                ckpt_path = new_ckpt_path
-        
-        ckpt_path = ckpt_path.replace('\\', '/')
-        if os.path.basename(os.path.normpath(ckpt_path)) != 'checkpoint':
-            logger.error(f"The given path '{ckpt_path}' is not a valid checkpoint path.")
-        return ckpt_path      
-
-    @classmethod
-    def scan_checkpoint_folder(self, dict_):
-        """Method checks for the checkpoint files in the directory. It creates the directory if it doesn't exist.
-        Args:
-            dict_ : network dict corresponding to particular layer
-        Returns:
-            has_checkpoint: bool which returns TRUE if there are checkpoint files in the checkpoint folder.
-        """
-        has_checkpoint = False
-        ckpt_path = dict_['checkpoint']['path'] 
-        if not os.path.isdir(ckpt_path):
-            os.makedirs(ckpt_path, exist_ok=True)
-        elif 'checkpoint' in os.listdir(ckpt_path):
-            has_checkpoint = True
-        return has_checkpoint      
-
-        
     @property
     def should_show_errors(self):
         """ Returns true if the user has configured the component.

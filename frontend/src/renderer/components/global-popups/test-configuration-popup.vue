@@ -50,6 +50,7 @@ import InfoTooltip                      from "@/components/different/info-toolti
 import mixinFocus                       from "@/core/mixins/net-element-settings-input-focus.js";
 import { isModelValidForTest }          from '@/core/modelHelpers';
 import { TestTypes }                    from '@/core/constants';
+import { checkpointDirFromProject }     from '@/core/helpers.js';
 
 export default {
   name: "GlobalTrainingSettings",
@@ -84,13 +85,13 @@ export default {
         value: model.networkID
       }))
     },
-    modelsFolderPaths(){
-      let modelsPaths = {}
+    checkpointFolderPaths(){
+      let checkpointPaths = {}
       this.models.map(model => {
         const { apiMeta: { model_id: id, location, saved_version_location }} = model;
-        modelsPaths[id] = saved_version_location || location;
+        checkpointPaths[id] = checkpointDirFromProject(saved_version_location || location);
       });
-      return modelsPaths;
+      return checkpointPaths;
     }
   },
   created() {
@@ -111,7 +112,7 @@ export default {
       const selectedTestTypes = this.getSelectedTest(this.testTypes);
       this.$store.dispatch('mod_api/API_testStart', {
         dataPath: this.dataPath,
-        model_paths: this.modelsFolderPaths,
+        checkpoint_paths: this.checkpointFolderPaths,
         testTypes: selectedTestTypes,
         modelIds: this.selectedModels,
       });

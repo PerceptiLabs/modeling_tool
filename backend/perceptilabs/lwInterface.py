@@ -367,34 +367,6 @@ class Parse(LW_interface_base):
         return content
 
 
-class ScanCheckpoint(LW_interface_base):
-    def __init__(self, path):
-        self._path = path
-
-    def run(self):
-        response = False
-        if 'checkpoint' in os.listdir(self._path):
-            for filename in os.listdir(os.path.join(self._path,'checkpoint')):
-                if filename == 'checkpoint':
-                    response = True
-                    break
-        return response
-
-
-class CopyJsonModel(LW_interface_base):
-    def __init__(self, folder_path):
-        self._folder_path = folder_path
-    def run(self):
-        import time
-        file_path = os.path.join(self._folder_path, 'model.json')
-        copy_path = os.path.join(self._folder_path, 'checkpoint','checkpoint_model.json')
-        if not os.path.isdir(os.path.join(self._folder_path,'checkpoint')):
-            os.mkdir(os.path.join(self._folder_path,'checkpoint'))
-            time.sleep(.0000000000000001) #Force your computer to do a clock cycle to avoid Windows issues
-        shutil.copy2(file_path, copy_path)
-        time.sleep(.0000000000000001) #Force your computer to do a clock cycle to avoid Windows issues        
-
-
 class UploadKernelLogs(LW_interface_base):
     """ Uploads the Kernel logs to Azure and associates them to a GitHub issue"""
     def __init__(self, content, session_id):

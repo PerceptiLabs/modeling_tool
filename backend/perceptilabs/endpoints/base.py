@@ -2,16 +2,18 @@ import time
 import logging
 
 from flask_compress import Compress
-from flask import Flask, request, g
+from flask import Flask, request, g, jsonify
 
 from perceptilabs.endpoints.network_data.base import NetworkData
 from perceptilabs.endpoints.model_recommendations.base import ModelRecommendations
 from perceptilabs.endpoints.type_inference.base import TypeInference
 from perceptilabs.endpoints.layer_code.base import LayerCode
+from perceptilabs.endpoints.export.base import Export
 from perceptilabs.logconf import APPLICATION_LOGGER
+import perceptilabs.endpoints.utils as utils
+
 
 logger = logging.getLogger(APPLICATION_LOGGER)
-
 app = Flask(__name__)
 
 compress = Compress()
@@ -46,15 +48,23 @@ app.add_url_rule(
 )
 
 
+app.add_url_rule(
+    '/export',
+    methods=['POST'],
+    view_func=Export().as_view('export')
+)
+
+
+@app.route('/healthy', methods=['GET'])
 def healthy():
     return '{"healthy": "true"}'
 
 
-app.add_url_rule(
-    '/health',
-    methods=['GET'],
-    view_func=healthy
-)
+@app.route('/has_checkpoint', methods=['GET'])
+def has_checkpoint():
+    directory = request.args.get('directory')
+    return jsonify(utils.is_valid_checkpoint_directory(directory))
+
 
 @app.before_request
 def before_request():
