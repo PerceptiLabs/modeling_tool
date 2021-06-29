@@ -936,12 +936,19 @@ export default {
           `${dataPath[0]}`
         );
 
-        try {
-          this.dataSetTypes = await renderingKernel.getDataTypes(dataPath[0], this.userEmail);
-        } catch (err) {
+        this.dataSetTypes = await renderingKernel.getDataTypes(dataPath[0], this.userEmail)
+        .then(res => {
+          if ("errorMessage" in res) {
+            this.showErrorPopup(
+              "Couldn't get model recommendation due to: " + res["errorMessage"]
+            );
+          }
+          return res;
+        })
+        .catch(err => {  
           console.error(err);         
           this.showErrorPopup("Error: Couldn't infer data types");
-        }           
+        });           
 
         if (fileContents && fileContents.file_contents) {
           this.dataset = fileContents.file_contents;

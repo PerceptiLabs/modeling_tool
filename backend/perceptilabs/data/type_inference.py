@@ -66,6 +66,9 @@ class TypeInferrer:
         Returns:
             a mapping from a column to a tuple: (<list of valid types>, <index of default value>)
         """
+        if len(df) == 0:
+            raise ValueError("Data is empty!")
+        
         datatypes = {
             name: self.get_valid_and_default_datatypes(series)
             for name, series in df.items()            

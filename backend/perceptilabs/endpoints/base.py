@@ -2,7 +2,8 @@ import time
 import logging
 
 from flask_compress import Compress
-from flask import Flask, request, g, jsonify
+from flask import Flask, request, g, jsonify, abort
+from werkzeug.exceptions import HTTPException
 import sentry_sdk
 from sentry_sdk.integrations.flask import FlaskIntegration
 from sentry_sdk.integrations.logging import LoggingIntegration
@@ -13,9 +14,9 @@ from perceptilabs.endpoints.type_inference.base import TypeInference
 from perceptilabs.endpoints.layer_code.base import LayerCode
 from perceptilabs.endpoints.export.base import Export
 from perceptilabs.logconf import APPLICATION_LOGGER
+from perceptilabs.issues import traceback_from_exception
 import perceptilabs.utils as utils
 import perceptilabs.endpoints.utils as endpoint_utils
-
 
 
 logger = logging.getLogger(APPLICATION_LOGGER)
@@ -103,5 +104,15 @@ def after_request(response):
     logger.info(f"Request to endpoint '{request.endpoint}' took {duration}s")    
     
     return response
+
+
+@app.errorhandler(Exception)
+def handle_endpoint_error(e):
+    if isinstance(e, HTTPException):
+        return e # pass through HTTP errors
+    else:
+        message = traceback_from_exception(e)
+        logger.error(f"Error in request '{request.endpoint}'")
+        abort(500, description=message)
 
 

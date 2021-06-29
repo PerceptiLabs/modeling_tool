@@ -34,7 +34,7 @@ class DataLoader:
         
         self._randomized_partitions = randomized_partitions
         self._randomized_partitions_seed = randomized_partitions_seed or 1234
-        
+
         self._validate_partitions(partitions)
         self._validate_feature_specs(data_frame.columns, feature_specs)
         

@@ -23,9 +23,8 @@ class ModelRecommendations(View):
             
             graph_spec, training_settings = automation_utils.get_model_recommendation(data_loader)
             response = graph_spec.to_dict()
-        except:
-            logger.exception("Error getting model recommendation!")
-            raise
+        except ValueError as e:
+            return jsonify({"errorMessage": str(e)})            
         else:
             self._maybe_send_tracking(json_data, data_loader, graph_spec)
             return jsonify(response)
