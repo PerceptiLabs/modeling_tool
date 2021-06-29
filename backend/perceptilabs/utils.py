@@ -1,4 +1,5 @@
 import os
+import sys
 import json
 import bisect
 import time
@@ -44,6 +45,10 @@ def is_dev():
 
 def is_prod():
     return not is_dev()
+
+
+def is_pytest():
+    return "pytest" in sys.modules
 
 
 def deprecated(func):
