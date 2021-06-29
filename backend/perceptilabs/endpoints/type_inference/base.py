@@ -8,7 +8,10 @@ from perceptilabs.data.type_inference import TypeInferrer
 class TypeInference(View):
     def dispatch_request(self):
         """ Sent when the users selects a data file """        
-        inferrer = TypeInferrer(always_allow_categorical=True)
+        inferrer = TypeInferrer(
+            always_allowed=['categorical'],
+            never_allowed=['binary']
+        )
         datatypes = inferrer.get_valid_and_default_datatypes_for_csv(request.args['path'])
 
         if 'user_email' in request.args:

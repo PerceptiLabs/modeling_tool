@@ -5,14 +5,16 @@ import pandas as pd
 class TypeInferrer:
     IMAGE_TYPES = ('.jpg', '.jpeg', '.png', '.tif', '.tiff')
 
-    def __init__(self, max_categories=50, always_allow_categorical=False):
+    def __init__(self, max_categories=50, always_allowed=None, never_allowed=None):
         """
         Args:
             max_categories: cannot be categorical type if the number of uniques exceed this number
-            always_allow_categorical: makes sure categorical is always selectable
+            always_allowed: list of variables that are always allowed
+            never_allowed: list of variables that are never allowed
         """
         self.max_categories = max_categories
-        self.always_allow_categorical = always_allow_categorical
+        self.always_allowed = always_allowed or list()
+        self.never_allowed = never_allowed or list()
 
     def get_valid_and_default_datatypes(self, series):
         """ Get the datatypes that are valid for this series. Also returns the index of the default one"""
@@ -29,8 +31,13 @@ class TypeInferrer:
             if is_valid_as_datatype(series):
                 valid_datatypes.append(datatype)
 
-        if self.always_allow_categorical and 'categorical' not in valid_datatypes:
-            valid_datatypes.append('categorical')
+        for type_ in self.always_allowed:
+            if type_ not in valid_datatypes:
+                valid_datatypes.append(type_)
+
+        for type_ in self.never_allowed:
+            if type_ in valid_datatypes:
+                valid_datatypes.remove(type_)                
 
         default_type = valid_datatypes[0]
         valid_datatypes.sort()
