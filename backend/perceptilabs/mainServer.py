@@ -21,8 +21,6 @@ PORT_RENDERING_KERNEL = 5001
 APP_VARIABLES = utils.get_app_variables()        
 COMMIT_ID = APP_VARIABLES["BuildVariables"]["CommitId"]
 
-setup_sentry(COMMIT_ID)
-set_sentry_tag('error-type', 'startup-error')
 
 
 utils.allow_memory_growth_on_gpus()
@@ -65,10 +63,12 @@ def main():
     from perceptilabs.mainInterface import Interface
     from perceptilabs.server.appServer import Server
 
-    logger.info("Started kernel in mode '{args.mode}'")
+    logger.info(f"Started kernel in mode '{args.mode}'")
 
 
     if args.mode == 'training':
+        setup_sentry(COMMIT_ID)
+        set_sentry_tag('error-type', 'startup-error')
     
         logger.info("Reporting errors with commit id: " + str(COMMIT_ID))
     

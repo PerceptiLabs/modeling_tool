@@ -3,6 +3,9 @@ import logging
 
 from flask_compress import Compress
 from flask import Flask, request, g, jsonify
+import sentry_sdk
+from sentry_sdk.integrations.flask import FlaskIntegration
+from sentry_sdk.integrations.logging import LoggingIntegration
 
 from perceptilabs.endpoints.network_data.base import NetworkData
 from perceptilabs.endpoints.model_recommendations.base import ModelRecommendations
@@ -10,10 +13,30 @@ from perceptilabs.endpoints.type_inference.base import TypeInference
 from perceptilabs.endpoints.layer_code.base import LayerCode
 from perceptilabs.endpoints.export.base import Export
 from perceptilabs.logconf import APPLICATION_LOGGER
-import perceptilabs.endpoints.utils as utils
+import perceptilabs.utils as utils
+import perceptilabs.endpoints.utils as endpoint_utils
+
 
 
 logger = logging.getLogger(APPLICATION_LOGGER)
+
+sentry_logging = LoggingIntegration(
+    level=logging.INFO,        # Capture info and above as breadcrumbs
+    event_level=logging.ERROR  # Send errors as events
+)
+
+SENTRY_ENVIRONMENT = "production" if utils.is_prod() else "development"
+SENTRY_RELEASE = utils.get_version() if utils.is_prod() else sentry_sdk.utils.get_default_release()
+
+sentry_sdk.init(
+    dsn="https://095ae2c447ec4da8809174aa9ce55906@o283802.ingest.sentry.io/5838672",
+    integrations=[FlaskIntegration(), sentry_logging],
+    environment=SENTRY_ENVIRONMENT,
+    release=SENTRY_RELEASE    
+)
+logger.info(f"Initialized sentry for environment '{SENTRY_ENVIRONMENT}' and release '{SENTRY_RELEASE}'")
+
+
 app = Flask(__name__)
 
 compress = Compress()
@@ -63,7 +86,7 @@ def healthy():
 @app.route('/has_checkpoint', methods=['GET'])
 def has_checkpoint():
     directory = request.args.get('directory')
-    return jsonify(utils.is_valid_checkpoint_directory(directory))
+    return jsonify(endpoint_utils.is_valid_checkpoint_directory(directory))
 
 
 @app.before_request

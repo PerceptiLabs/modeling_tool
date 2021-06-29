@@ -33,9 +33,17 @@ def get_app_variables():
     return app_variables
 
 
+def get_version():
+    from perceptilabs import __version__
+    return __version__
+    
+
 def is_dev():
-    app_variables = get_app_variables()
-    return app_variables['BuildVariables']['CommitId'] == 'Dev'
+    return get_version() == "development"
+
+
+def is_prod():
+    return not is_dev()
 
 
 def deprecated(func):
