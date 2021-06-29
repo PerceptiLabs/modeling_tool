@@ -447,7 +447,7 @@ is_airgapped(){
 
 download(){
   code=$(curl -s -O --write-out "%{http_code}" $1)
-  [ "${code}" == "200" ] || {
+  [ "${code}" = "200" ] || {
     echo "Downloading from $1 failed with code ${code}"
     exit 1
   }

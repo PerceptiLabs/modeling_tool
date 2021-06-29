@@ -64,7 +64,7 @@ is_master_realm_available_in_cluster(){
 }
 
 wait_for_keycloak(){
-  poll 10 2 "Waiting for keycloak to respond" is_keycloak_responding ||
+  poll 30 2 "Waiting for keycloak to respond" is_keycloak_responding ||
     error "The keycloak service didn't start in a timely manner."
 
   poll 10 2 "Waiting for master realm in the cluster" is_master_realm_available_in_cluster ||
