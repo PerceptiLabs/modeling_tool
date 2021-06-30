@@ -1,5 +1,5 @@
 <template lang="pug">
-  label.custom-checkbox(:class="{'v-2': isNewUi, 'is-mini-map': isMiniMap, 'disabled': disabled}")
+  label.custom-checkbox(:class="{'v-2': isNewUi, 'is-mini-map': isMiniMap, 'disabled': disabled, 'type-secondary': styleTypeSecondary}")
     .checkbox-text(v-if="labelPosition==='left'")
       slot
     input(type="checkbox"
@@ -37,6 +37,10 @@ export default {
       default: false,
     },
     isMiniMap: {
+      type: Boolean,
+      default: false,
+    },
+    styleTypeSecondary: {
       type: Boolean,
       default: false,
     }
@@ -150,6 +154,26 @@ export default {
         height: 13px;
         background: #383F50;
         border-radius: 2px;
+      }
+    }
+    &.type-secondary {
+      .checkbox-fake {
+        flex: 0 0 18px;
+        width: 18px;
+        height: 18px;
+        background: transparent;
+        border-radius: 2px;
+        border: 1px solid #B6C7FB;
+      }
+      input[type=checkbox] {
+        &:checked + .checkbox-fake {
+          background-color: #B6C7FB;
+        }
+      }
+      .checkbox-text {
+        color: #fff;
+        font-size: 14px;
+        font-family: 'Roboto', sans-serif;
       }
     }
     &.is-mini-map {

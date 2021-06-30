@@ -150,6 +150,15 @@
                 :dataSetTypes="dataSetTypes"
                 @update="handleCSVDataTypeUpdates"
               )
+              
+              data-column-option-sidebar(
+                :key="index"
+                v-for="index in csvData && csvData.dataTypes.length"
+                :columnSelectedType="csvData && csvData.dataTypes"
+                :columnNames="csvData && csvData.columnNames"
+                @handleChange="updatePreprocessingTypes"
+                :elementIndex="index - 1"
+              )
               span.default-text.error(v-if="isAllIOTypesFilled() && !hasInputAndTarget()") Make sure to have at least one input and one target to proceed
               span.default-text.error(v-else-if="isAllIOTypesFilled() && !hasOneTarget()") Make sure to have only one target to proceed
               .data-partition-wrapper
@@ -376,6 +385,7 @@ import ChartSpinner                           from "@/components/charts/chart-sp
 import {defaultTrainingSettings, PERCEPTILABS_VIDEO_TUTORIAL_URL} from "@/core/constants";
 import { mapActions, mapState, mapGetters }   from "vuex";
 import mixinFocus                             from "@/core/mixins/net-element-settings-input-focus.js";
+import DataColumnOptionSidebar                from '@/components/different/data-column-option-sidebar';
 import {
   convertModelRecommendationToVisNodeEdgeList,
   createVisNetwork
@@ -395,7 +405,7 @@ import { renderingKernel }              from "@/core/apiRenderingKernel";
 
 export default {
   name: "SelectModelModal",
-  components: { FilePickerPopup, CsvTable, TripleInput, InfoTooltip, ChartSpinner },
+  components: { FilePickerPopup, CsvTable, TripleInput, InfoTooltip, ChartSpinner, DataColumnOptionSidebar },
   mixins: [mixinFocus],
 
   data: function() {
@@ -1016,6 +1026,9 @@ export default {
     },
     openPLVideoTutorialPage() {
       window.open(PERCEPTILABS_VIDEO_TUTORIAL_URL, '_blank');
+    },
+    updatePreprocessingTypes(numColumn, value){
+      this.csvData.preprocessingTypes.splice(numColumn, 1, value);
     },
   }
 };

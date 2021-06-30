@@ -21,7 +21,6 @@
                 data-column-options(
                   :columnSelectedType="formattedDataset.dataTypes"
                   :index="ix"
-                  @handleChange="handleColumnPreprocessingChange"
                 )
         tbody
           tr.table-row.default-row(v-for="dataRow in delimitedDataSet.slice(1)")
@@ -205,6 +204,7 @@ export default {
         this.formattedDataset.dataTypes = columnDefaultTypes;
         this.formattedDataset.columnOptions = columnAllowedTypes
         this.formattedDataset.preprocessingTypes = new Array(newVal).fill([]);
+        this.$emit('update', this.formattedDataset);
       },
       immediate: true
     }
