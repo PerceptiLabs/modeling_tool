@@ -194,11 +194,19 @@ export default {
     computedNumberOfColumns: {
       handler(newVal) {
         if (!newVal) { return; }
+        let columnDefaultTypes = []
+        let columnAllowedTypes = []
+        let columnNames = this.delimitedDataSet[0];
+        columnNames = columnNames.map((name, ix) => {
+          name = name.replace(/(\r\n|\n|\r)/gm,"");
+          const itm = this.dataSetTypes[name];
+          columnDefaultTypes[ix] = itm[0][itm[1]]
+          columnAllowedTypes[ix] = itm[0];
+          return name;
+        })
+       
         
-        let columnDefaultTypes = Object.values(this.dataSetTypes).map(itm => itm[0][itm[1]]);
-        let columnAllowedTypes = Object.values(this.dataSetTypes).map(itm => itm[0]);
-        
-        this.formattedDataset.columnNames = this.delimitedDataSet[0];
+        this.formattedDataset.columnNames = columnNames;
         this.formattedDataset.ioTypes = new Array(newVal);
         
         this.formattedDataset.dataTypes = columnDefaultTypes;
