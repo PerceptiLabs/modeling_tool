@@ -120,7 +120,7 @@ def test_image_preprocessing_for_tiff(temp_path):
 
     assert np.all(actual == expected)
 
-    
+
 def test_normalize_standard_norm_for_single_sample(temp_path):
     image = np.random.randint(0, 255, size=(16, 16, 3)).astype(np.uint8)
         
@@ -135,12 +135,11 @@ def test_normalize_standard_norm_for_single_sample(temp_path):
     pipeline, _, _ = ImagePipelineBuilder().build(feature_spec=feature_spec, feature_dataset=dataset)
     processed_dataset = dataset.map(lambda x: pipeline(x))
     
-
     processed_image = next(iter(processed_dataset)).numpy()
-    
+
     # Since there's only one image, it should have zero mean and unit variance
-    assert np.isclose(processed_image.mean(), 0.0)
-    assert np.isclose(processed_image.std(), 1.0)    
+    assert np.isclose(processed_image.mean(), 0.0, atol=1e-05)
+    assert np.isclose(processed_image.std(), 1.0, atol=1e-05)    
     
 
 def test_normalize_minmax_norm_for_single_sample(temp_path):

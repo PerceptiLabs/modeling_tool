@@ -190,9 +190,23 @@ class ImagePipelineBuilder(PipelineBuilder):
         normalization = None    
         if feature_spec and 'normalize' in feature_spec.preprocessing:
             type_ = feature_spec.preprocessing['normalize']['type']
-            if type_ == 'standardization':
-                normalization = tf.keras.layers.experimental.preprocessing.Normalization()
-                normalization.adapt(loaded_dataset)
+            if type_ == 'standardization':  
+                running_sum = 0.0
+                running_squares_sum = 0.0
+                count = 0
+                for tensor in loaded_dataset:
+                    value = tensor.numpy().astype(np.float32)
+                    running_sum += value.sum()
+                    running_squares_sum += (value**2).sum()
+                    count += np.prod(value.shape)
+
+                mean = running_sum/count
+                std = np.sqrt( running_squares_sum/count - mean**2)
+                
+                def normalization(x):
+                    y = (x - mean)/(std + 0.00000001)
+                    return y
+                
             elif type_ == 'min-max':
                 max_, min_ = 0, 255
                 for image in loaded_dataset:

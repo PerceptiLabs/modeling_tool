@@ -1,4 +1,4 @@
-tensorflow==2.4.1
+tensorflow==2.5.0
 onnx==1.9.0
 tf2onnx==1.7.2
 keras2onnx==1.7.0
@@ -15,7 +15,7 @@ dask[dataframe]==2.6.0
 flask>=1.1.1
 fsspec>=0.6.0
 gputil>=1.4.0
-h5py==2.10.0
+h5py==3.1.0
 gym-unity>=0.20.0
 jinja2>=2.10.3
 jsonschema==3.2.0
@@ -34,9 +34,9 @@ sentry-sdk>=0.10.2; platform_system == "Linux"
 sentry-sdk>=0.14.3; platform_system == "Windows"
 sentry-sdk[flask]>=1.1.0
 six>=1.14.0
-tensorflow==2.4.1; platform_system == "Linux"
-tensorflow==2.4.1; platform_system == "Windows"
-tensorflow==2.4.1; platform_system == "Darwin"
+tensorflow==2.5.0; platform_system == "Linux"
+tensorflow==2.5.0; platform_system == "Windows"
+tensorflow==2.5.0; platform_system == "Darwin"
 tensorflow-addons==0.13.0
 websockets>=8.1
 mixpanel==4.7.0
