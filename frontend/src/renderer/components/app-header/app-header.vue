@@ -51,8 +51,9 @@
 
         .help-button-panel(v-if="showHelpPanel")
           .help-button-panel-content
-            .help-button-panel-content-item(@click="toggleTutorialTips") {{ hideTipsDisplayText }}
-            .help-button-panel-content-item(@click="onActivateChecklist") Get started checklist
+            .help-button-panel-content-item(@click="startUserFlow") Get Started
+            //.help-button-panel-content-item(@click="toggleTutorialTips") {{ hideTipsDisplayText }}
+            //.help-button-panel-content-item(@click="onActivateChecklist") Get started checklist
             //- .help-button-panel-content-item(@click="goToWhatsNew") What's new
             hr.help-button-panel-content-item
             .help-button-panel-content-item(@click="openVideoTutorials") 
@@ -76,9 +77,9 @@
   import TheMenu from '@/components/the-menu.vue'
   import HeaderProfile from "@/components/app-header/header-profile";
   import { mapGetters, mapActions } from 'vuex';
-  import { PERCEPTILABS_DOCUMENTATION_URL, PERCEPTILABS_YOUTUBE_VIDEO_TUTORIAL_URL, PERCEPTILABS_YOUTUBE_URL, PERCEPTILABS_SLACK_URL, PERCEPTILABS_FORUM_URL, PERCEPTILABS_BLOGS_URL } from "@/core/constants";
+  import { PERCEPTILABS_DOCUMENTATION_URL, PERCEPTILABS_YOUTUBE_VIDEO_TUTORIAL_URL, PERCEPTILABS_YOUTUBE_URL, PERCEPTILABS_SLACK_URL, PERCEPTILABS_FORUM_URL, PERCEPTILABS_BLOGS_URL, USER_FLOW_CONTENT_ID } from "@/core/constants";
   import { fileserverAvailability } from '@/core/apiFileserver';
-
+  import userflow from "userflow.js";
 export default {
   name: "HeaderWin",
   components: {HeaderProfile, TheMenu},
@@ -212,6 +213,9 @@ export default {
     onOpenBlogs() {
       window.open(PERCEPTILABS_BLOGS_URL, '_blank');
     },
+    startUserFlow(){
+      userflow.start(USER_FLOW_CONTENT_ID);
+    }
   }
 }
 </script>

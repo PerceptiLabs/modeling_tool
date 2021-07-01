@@ -19,12 +19,12 @@ import Vue    from 'vue';
  ***************************************************************************/
 
 const namespaced = true;
-
+// @todo was set to false for disabling it 
 const state = {
-  isTutorialMode: true, // controls both checklist and tips
-  isChecklistExpanded: true,
-  showTips: true,
-  showChecklist: true,
+  isTutorialMode: false, // controls both checklist and tips
+  isChecklistExpanded: false,
+  showTips: false,
+  showChecklist: false,
   hasShownWhatsNew: false,
   checklistItems: [
     {
@@ -469,14 +469,16 @@ const mutations = {
     }
   },
 };
-
+// @todo was set early return for disabling it
 const actions = {
   activateChecklist({commit, dispatch}) {
+    return;
     commit('setTutorialMode', true);
     commit('setChecklistExpandedState', true);
     dispatch('activateCurrentStep');
   },
   activateCurrentStep({dispatch, getters}) {
+    return;
     // Check if no notifications, delegate the last one
     if (getters.getShowTutorialTips && getters.getActiveNotifications.length === 0) {
       // console.log('activateCurrentStep', getters.getCurrentStepCode);
@@ -487,6 +489,7 @@ const actions = {
     }
   },
   deactivateCurrentStep({dispatch, getters}) {
+    return;
     const step =  getters.getStep(getters.getCurrentStepCode);
 
     setTimeout(() => {
@@ -494,13 +497,16 @@ const actions = {
     }, 0);
   },
   setChecklistItemComplete({commit, dispatch, getters}, { itemId = '' }) {
+    return;
     commit('setChecklistItemComplete', { itemId });
     commit('setChecklistStateClosedIfAllItemsComplete', { itemId });
   },
   setShowChecklist({commit, dispatch, getters}, value = true) {
+    return;
     commit('setShowChecklist', value);
   },
   setTutorialMode({commit, dispatch, getters}, value = false) {
+    return;
     commit('setTutorialMode', value);
 
     if (value === false) {
@@ -508,10 +514,12 @@ const actions = {
     }
   },
   setHasShownWhatsNew({commit, dispatch, getters}, value = true) {
+    return;
     commit('setHasShownWhatsNew', value);
     dispatch('saveTutorialProgress');
   },
   setTutorialNotificationsState({commit, dispatch, getters}, value = false) {
+    return;
     commit('setTutorialNotificationsState', value);
 
     if (value) {
@@ -530,6 +538,7 @@ const actions = {
    * Setup view/next step and the delegating function
    ***************************************************************************/
   setCurrentView({commit, dispatch, getters}, value = '') {
+    return;
     // if (!getters.getShowTutorialTips) { return; }
     
     dispatch('removeAllNotifications');
@@ -539,6 +548,7 @@ const actions = {
     dispatch('activateNotification');
   },
   setNextStep({commit, dispatch, getters}, {currentStep = '', activateNextStep = true}) {
+    return;
     if (!getters.getShowTutorialTips) { return; }
 
     if (currentStep !== '' && currentStep !== getters.getCurrentStepCode) {
@@ -567,6 +577,7 @@ const actions = {
     }, 0);
   },
   setupDelegator({commit, dispatch, getters}, { step }) {
+    return;
     if (!getters.getShowTutorialTips) { return; }
     if (!step) { return; }
 
@@ -580,6 +591,7 @@ const actions = {
     }
   },
   teardownDelegator({commit, dispatch, getters}, { step }) {
+    return;
     if (!step) { return; }
 
     if (step.overrideActions && step.overrideActions.teardown) {
@@ -596,6 +608,7 @@ const actions = {
    * Activate/remove notifications
    ***************************************************************************/
   activateNotification({commit, dispatch, getters}) {
+    return;
     // Used when a view gets toggled:
     // For instance: Mode lHub -> Created model -> Model Hub
     // Without this action, the unclicked notification will not be shown
@@ -605,6 +618,7 @@ const actions = {
     }, 0);
   },
   removeAllNotifications({commit, dispatch, getters}) {
+    return;
     if (!getters.getActiveNotifications || getters.getActiveNotifications.length === 0) { return; }
     
     const notificationsCopy = getters.getActiveNotifications;
@@ -623,9 +637,11 @@ const actions = {
    * Tutorial progress
    ***************************************************************************/
   saveTutorialProgress({commit}) {
+    return;
     commit('saveTutorialProgress');
   },
   loadTutorialProgress({commit}) {
+    return;
     return new Promise((resolve, reject) => {
       commit('loadTutorialProgress');
       resolve();
@@ -636,6 +652,7 @@ const actions = {
    * Common setup/teardown actions
    ***************************************************************************/
   commonNotificationSetup({commit, dispatch, getters}, { stepCode, arrowDirection = 'left' }) {
+    return;
 
     try {
       let tutorialTarget = document.querySelector(`*[data-tutorial-target="${stepCode}"]`);
@@ -652,6 +669,7 @@ const actions = {
 
   },
   commonNotificationTeardown({commit, dispatch, getters}, { stepCode }) {
+    return;
 
     commit('removeNotification', {
       stepCode: stepCode
@@ -666,6 +684,7 @@ const actions = {
    * Step specific actions
    ***************************************************************************/
   ['tutorial-model-hub-new-button-setup']({commit, dispatch, getters}) {
+    return;
 
     if (getters.getCurrentStepCode !== 'tutorial-model-hub-new-button') { return; }
   
@@ -687,6 +706,7 @@ const actions = {
 
   },
   ['tutorial-model-hub-new-button-teardown']({commit, dispatch, getters}) {
+    return;
 
     let fileMenuElement;
 
@@ -704,6 +724,7 @@ const actions = {
 
   },
   ['tutorial-workspace-layer-data-setup']({commit, dispatch, getters}) {
+    return;
 
     try {
       const layerMenuItemElement = document.querySelector('.layer-list-header[data-tutorial-marker="LayerMenuItem_Data"]');
@@ -722,6 +743,7 @@ const actions = {
 
   },
   ['tutorial-workspace-layer-data-teardown']({commit, dispatch, getters}) {
+    return;
 
     try {
       const layerMenuItemElement = document.querySelector('.layer-list-header[data-tutorial-marker="LayerMenuItem_Data"]');
@@ -739,6 +761,7 @@ const actions = {
 
   },
   ['tutorial-workspace-settings-setup']({commit, dispatch, getters}) {
+    return;
 
     try {
       commit('setChecklistExpandedState', false);
@@ -753,6 +776,7 @@ const actions = {
 
   },
   ['tutorial-statistics-tabs-setup']({commit, rootGetters, getters}) {
+    return;
 
     const statisticsTabs = document.querySelector('.statistics-tabs[data-tutorial-target="tutorial-statistics-tabs"]');
     const isSpinnerActive = rootGetters['mod_workspace/GET_showStartTrainingSpinner'];

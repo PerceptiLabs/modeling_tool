@@ -12,4 +12,5 @@ module.exports = {
   LOGROCKET_APP_ID: '"l2mogl/modeling-tool"',
   ENABLE_DATAWIZARD: '"true"',
   INTERCOM_ID: '"ujvkp2qi"',
+  USERFLOW_KEY: '"ct_ertrpr7nzfc5himsrvqpz4kota"',
 }

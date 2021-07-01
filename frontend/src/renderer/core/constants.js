@@ -49,6 +49,8 @@ export const PERCEPTILABS_SLACK_URL = 'https://join.slack.com/t/perceptilabs-com
 export const PERCEPTILABS_FORUM_URL = 'https://forum.perceptilabs.com/';
 export const PERCEPTILABS_BLOGS_URL = 'https://blog.perceptilabs.com/';
 
+export const USER_FLOW_CONTENT_ID ='31837726-6d95-47ba-9361-6a6cd15012a8';
+
 const widthElement = 60;
 const workspaceGrid = 30;
 export const SHIFT_HOLDING_CONNECT_COMPONENT_MAX_DISTANCE = 250;
