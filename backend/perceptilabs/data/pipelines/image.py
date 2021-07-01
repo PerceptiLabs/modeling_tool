@@ -96,6 +96,12 @@ class ImagePipelineBuilder(PipelineBuilder):
         elif mode == 'custom':
             height = feature_spec.preprocessing['resize']['height']
             width = feature_spec.preprocessing['resize']['width']
+
+            if height == 0:
+                raise ValueError("Target height cannot be 0")
+            if width == 0:
+                raise ValueError("Target width cannot be 0")
+            
         else:
             raise ValueError(f"Unknown resize mode {mode}")
             
