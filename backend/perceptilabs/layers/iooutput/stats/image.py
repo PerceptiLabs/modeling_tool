@@ -70,33 +70,59 @@ class ImageOutputStats(OutputStats):
     def _get_dataobj_loss(self):
         training_loss_over_epochs, validation_loss_over_epochs = self.get_loss_over_epochs()
 
-        dataobj_loss_over_epochs = create_data_object(
-            [validation_loss_over_epochs, training_loss_over_epochs],
-            type_list=['line', 'line'],
-            name_list=['Validation', 'Training']
-        )
+        if len(training_loss_over_epochs) > 1 and len(validation_loss_over_epochs) > 1:
+            dataobj_loss_over_epochs = create_data_object(
+                [validation_loss_over_epochs, training_loss_over_epochs],
+                type_list=['line', 'line'],
+                name_list=['Validation', 'Training']
+            )
+        else:
+             dataobj_loss_over_epochs = create_data_object(
+                [validation_loss_over_epochs, training_loss_over_epochs],
+                type_list=['scatter', 'scatter'],
+                name_list=['Validation', 'Training']
+            )           
 
         return dataobj_loss_over_epochs
 
     def _get_dataobj_iou(self):
         training_iou_over_steps = self._iou.get_iou_over_steps_in_latest_epoch(phase='training')
         validation_iou_over_steps = self._iou.get_iou_over_steps_in_latest_epoch(phase='validation')
-        
-        validation_iou_over_steps = training_iou_over_steps + validation_iou_over_steps  # The frontend plots the training iou last, so this gives the effect that the validation curve is a continuation of the training curve.
-        
-        dataobj_iou_over_steps = create_data_object(
-            [validation_iou_over_steps, training_iou_over_steps],
-            type_list=['line', 'line'],
-            name_list=['Validation', 'Training']
-        )
 
         training_iou_over_epochs, validation_iou_over_epochs = self.get_iou_over_epochs()
         
-        dataobj_iou_over_epochs = create_data_object(
-            [validation_iou_over_epochs, training_iou_over_epochs],
-            type_list=['line', 'line'],
-            name_list=['Validation', 'Training']
-        )        
+        validation_iou_over_steps = training_iou_over_steps + validation_iou_over_steps  # The frontend plots the training iou last, so this gives the effect that the validation curve is a continuation of the training curve.
+        
+        if len(validation_iou_over_steps) > 1 and len(training_iou_over_steps) > 1:
+            
+            dataobj_iou_over_steps = create_data_object(
+                [validation_iou_over_steps, training_iou_over_steps],
+                type_list=['line', 'line'],
+                name_list=['Validation', 'Training']
+            )
+        else:
+            dataobj_iou_over_steps = create_data_object(
+                [validation_iou_over_steps, training_iou_over_steps],
+                type_list=['scatter', 'scatter'],
+                name_list=['Validation', 'Training']
+            )
+
+        if len(validation_iou_over_epochs) > 1 and len(training_iou_over_epochs) > 1:
+
+            dataobj_iou_over_epochs = create_data_object(
+                [validation_iou_over_epochs, training_iou_over_epochs],
+                type_list=['line', 'line'],
+                name_list=['Validation', 'Training']
+            )  
+
+        else:
+            dataobj_iou_over_epochs = create_data_object(
+                [validation_iou_over_epochs, training_iou_over_epochs],
+                type_list=['scatter', 'scatter'],
+                name_list=['Validation', 'Training']
+            )      
+
+        
         return dataobj_iou_over_steps, dataobj_iou_over_epochs
         
     def get_summary(self):

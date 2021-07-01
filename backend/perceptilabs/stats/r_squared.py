@@ -79,6 +79,10 @@ class RSquaredStatsTracker(TrainingStatsTracker):
         if len(self._r_squared_values) <= epochs_completed:
             self._r_squared_values.append(list())  # Create list to hold steps for epoch.
 
+        if len(targets_batch.shape) == 1 or len(predictions_batch.shape) == 1:
+            targets_batch = tf.reshape(targets_batch, (-1,1))
+            predictions_batch = tf.reshape(predictions_batch, (-1,1))
+            
         r_squared = r2_score(targets_batch, predictions_batch)
         self._r_squared_values[epochs_completed].append((r_squared, is_training))        
         

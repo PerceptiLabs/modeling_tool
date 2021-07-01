@@ -61,13 +61,21 @@ class CategoricalOutputStats(OutputStats):
     def _get_dataobj_loss(self):
         training_loss_over_epochs, validation_loss_over_epochs = self.get_loss_over_epochs()
 
-        dataobj_loss_over_steps = create_data_object(
-            [validation_loss_over_epochs, training_loss_over_epochs],
-            type_list=['line', 'line'],
-            name_list=['Validation', 'Training']
-        )
+        if len(training_loss_over_epochs) > 1 and len(validation_loss_over_epochs) > 1:
+            dataobj_loss_over_epochs = create_data_object(
+                [validation_loss_over_epochs, training_loss_over_epochs],
+                type_list=['line', 'line'],
+                name_list=['Validation', 'Training']
+            )
+        else:
+            dataobj_loss_over_epochs = create_data_object(
+                [validation_loss_over_epochs, training_loss_over_epochs],
+                type_list=['scatter', 'scatter'],
+                name_list=['Validation', 'Training']
+            )
+        return dataobj_loss_over_epochs
 
-        return dataobj_loss_over_steps
+        
 
     def _get_dataobj_accuracy(self):
         training_acc_over_steps = self._accuracy.get_accuracy_over_steps_in_latest_epoch(phase='training')
@@ -77,13 +85,22 @@ class CategoricalOutputStats(OutputStats):
     
 
         training_acc_over_epochs, validation_acc_over_epochs = self.get_accuracy_over_epochs()
-            
-        dataobj_acc_over_epochs = create_data_object(
-            [validation_acc_over_epochs, training_acc_over_epochs],
-            type_list=['line', 'line'],
-            name_list=['Validation', 'Training']
-        )        
+
+        if len(training_acc_over_epochs) > 1 and len(validation_acc_over_epochs) > 1:
+            dataobj_acc_over_epochs = create_data_object(
+                [validation_acc_over_epochs, training_acc_over_epochs],
+                type_list=['line', 'line'],
+                name_list=['Validation', 'Training']
+            )        
+        else:
+            dataobj_acc_over_epochs = create_data_object(
+                [validation_acc_over_epochs, training_acc_over_epochs],
+                type_list=['scatter', 'scatter'],
+                name_list=['Validation', 'Training']
+            )
         return dataobj_acc_over_epochs
+
+        
 
     def _get_data_obj_confusion_matrix(self):
         summed_matrix = self._multiclass_matrix.get_total_matrix_for_latest_epoch(phase='training')

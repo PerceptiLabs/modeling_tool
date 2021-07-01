@@ -60,33 +60,56 @@ class NumericalOutputStats(OutputStats):
     def _get_dataobj_mae(self):
         training_mae_over_epochs, validation_mae_over_epochs = self.get_mae_over_epochs()
 
-        dataobj_mae_over_steps = create_data_object(
-            [validation_mae_over_epochs, training_mae_over_epochs],
-            type_list=['line', 'line'],
-            name_list=['Validation', 'Training']
-        )
+        if len(training_mae_over_epochs) > 1 and len(validation_mae_over_epochs) > 1:
+            dataobj_mae_over_steps = create_data_object(
+                [validation_mae_over_epochs, training_mae_over_epochs],
+                type_list=['line', 'line'],
+                name_list=['Validation', 'Training']
+            )
+        else:
+            dataobj_mae_over_steps = create_data_object(
+                [validation_mae_over_epochs, training_mae_over_epochs],
+                type_list=['scatter', 'scatter'],
+                name_list=['Validation', 'Training']
+            )
 
         return dataobj_mae_over_steps
 
     def _get_dataobj_loss(self):
         training_loss_over_epochs, validation_loss_over_epochs = self.get_loss_over_epochs()
 
-        dataobj_loss_over_steps = create_data_object(
-            [validation_loss_over_epochs, training_loss_over_epochs],
-            type_list=['line', 'line'],
-            name_list=['Validation', 'Training']
-        )
+        if len(training_loss_over_epochs) > 1 and len(validation_loss_over_epochs) > 1:
+            dataobj_loss_over_steps = create_data_object(
+                [validation_loss_over_epochs, training_loss_over_epochs],
+                type_list=['line', 'line'],
+                name_list=['Validation', 'Training']
+            )
+        else:
+            dataobj_loss_over_steps = create_data_object(
+                [validation_loss_over_epochs, training_loss_over_epochs],
+                type_list=['scatter', 'scatter'],
+                name_list=['Validation', 'Training']
+            )
 
         return dataobj_loss_over_steps
 
     def _get_dataobj_r_squared(self):
         training_r_sq_over_epochs, validation_r_sq_over_epochs = self.get_r_sq_over_epochs()
-        dataobj_loss_over_steps = create_data_object(
-            [validation_r_sq_over_epochs, training_r_sq_over_epochs],
-            type_list=['line', 'line'],
-            name_list=['Validation', 'Training']
-        )
-        return dataobj_loss_over_steps
+
+        if len(training_r_sq_over_epochs) > 1 and len(validation_r_sq_over_epochs) > 1:
+            dataobj_r_sq_over_steps = create_data_object(
+                [validation_r_sq_over_epochs, training_r_sq_over_epochs],
+                type_list=['line', 'line'],
+                name_list=['Validation', 'Training']
+            )
+        else:
+            dataobj_r_sq_over_steps = create_data_object(
+                [validation_r_sq_over_epochs, training_r_sq_over_epochs],
+                type_list=['scatter', 'scatter'],
+                name_list=['Validation', 'Training']
+            )
+
+        return dataobj_r_sq_over_steps
 
 
     def get_summary(self):
