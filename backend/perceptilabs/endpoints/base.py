@@ -2,7 +2,7 @@ import time
 import logging
 
 from flask_compress import Compress
-from flask import Flask, request, g, jsonify, abort
+from flask import Flask, request, g, jsonify, abort, make_response
 from werkzeug.exceptions import HTTPException
 import sentry_sdk
 from sentry_sdk.integrations.flask import FlaskIntegration
@@ -109,11 +109,8 @@ def after_request(response):
 
 @app.errorhandler(Exception)
 def handle_endpoint_error(e):
-    if isinstance(e, HTTPException):
-        return e # pass through HTTP errors
-    else:
-        message = traceback_from_exception(e)
-        logger.error(f"Error in request '{request.endpoint}'")
-        abort(500, description=message)
+    message = traceback_from_exception(e)
+    logger.error(f"Error in request '{request.endpoint}'")
+    return make_response(message), 500
 
 
