@@ -1,7 +1,7 @@
 <template lang="pug">
   base-global-popup(
     :tab-set="popupTitle"
-    class="global-training-settings"
+    class="test-configuration-popup"
   )
     template(:slot="popupTitle[0] + '-content'")
       .form_row
@@ -162,7 +162,7 @@ export default {
   width: 100% !important;
   height: 32px !important;
 }
-.global-training-settings {
+.test-configuration-popup {
   .settings-layer_section {
     width: 500px !important;
     padding: 25px;
