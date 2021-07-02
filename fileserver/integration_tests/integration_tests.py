@@ -10,7 +10,11 @@ from contextlib import contextmanager
 @contextmanager
 def populated_tempfile(content_str):
     content_bytes=bytearray(content_str.encode('utf-8'))
+    with populated_bin_tempfile(content_bytes) as f:
+        yield f
 
+@contextmanager
+def populated_bin_tempfile(content_bytes):
     with tempfile.TemporaryDirectory() as td:
         with tempfile.NamedTemporaryFile(mode="wb", delete=False, dir=td) as f:
             f.write(content_bytes)
@@ -75,19 +79,20 @@ assert "model.json" in rest.get("/directories/get_folder_content", path=f"{worki
 
 assert rest.get("/directories/tutorial_data") == {'path': tutorial_data}
 
-# upload a file
-
+# upload a UTF-8 file with a BOM
 content_str="""
 this is some
 text
 """
+bin_file=bytearray([0xef, 0xbb, 0xbf])
+bin_file.extend(content_str.encode("ascii"))
 
-with populated_tempfile(content_str) as filename:
+with populated_bin_tempfile(bin_file) as filename:
     ret=rest.post_file("/upload", filename, "destfilename", overwrite=True)
 
     expected = {
         "name": "destfilename",
-        "size": len(content_str),
+        "size": len(bin_file),
         # yep, we're expecting what we got
         # it'll fail if those fields are missing, and that's all we care about
         "created": ret["created"],
@@ -99,5 +104,8 @@ with populated_tempfile(content_str) as filename:
     ret = rest.get("/upload", filename="destfilename")
     assert ret == expected
 
+    # Response should match (except for some newlines)
+    expected = {'file_contents': [l+"\n" for l in content_str.split('\n')][:-1]}
+    assert rest.get("/files/get_file_content", path=filename) == expected
 
 print("ok")

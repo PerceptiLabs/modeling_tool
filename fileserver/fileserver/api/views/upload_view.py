@@ -52,7 +52,6 @@ class UploadView(APIView):
         if not settings.FILE_UPLOAD_DIR:
             return HttpResponseNotFound("This server isn't configured to allow uploads")
 
-        print(request.FILES)
         file_uploaded = request.FILES.get('file_uploaded')
         if not file_uploaded:
             raise HTTPExceptions.UNPROCESSABLE_ENTITY.with_content("A file wasn't uploaded")

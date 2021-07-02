@@ -1,6 +1,7 @@
 from django.http import HttpResponse
 from django_http_exceptions import HTTPExceptions
 from fileserver.api.models.directory import resolve_dir
+import chardet
 import json
 import os
 import platform
@@ -70,6 +71,11 @@ def get_paged_iter(seq, request):
 
     return (page, get_page(seq, page=page, per=per))
 
+def get_encoding(file_path):
+    with open(file_path, 'rb') as file:
+        raw = file.read(32) # at most 32 bytes are returned
+        return chardet.detect(raw)['encoding']
+
 def make_file_content_response(request, file_path):
 
     num_rows = get_optional_param(request, "num_rows", 4) #5 rows, 0 indexed
@@ -79,8 +85,10 @@ def make_file_content_response(request, file_path):
 
     row_contents = []
 
+    encoding=get_encoding(file_path)
+
     try:
-        with open(file_path, 'r') as reader:
+        with open(file_path, 'r', encoding=encoding) as reader:
             line = reader.readline()
             while line != '' and row_count < num_rows:
                 row_contents.append(line)
