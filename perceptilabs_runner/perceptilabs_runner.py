@@ -169,12 +169,15 @@ class PortPoller:
             time.sleep(interval_secs)
 
 
-def download_tutorial_data():
+def download_tutorial_datasets():
+    datasets = ['mnist_data', 'Wildfires']
     tutorial_data_path = pkg_resources.resource_filename('perceptilabs','tutorial_data')
-    if not os.path.isdir(os.path.join(tutorial_data_path,'mnist_data')):
-        request = requests.get('https://perceptilabs.blob.core.windows.net/data/mnist_data.zip')
-        file = zipfile.ZipFile(io.BytesIO(request.content))
-        file.extractall(tutorial_data_path)
+    for dataset in datasets:
+        if not os.path.isdir(os.path.join(tutorial_data_path, dataset)):
+            path = 'https://perceptilabs.blob.core.windows.net/data/'+dataset+'.zip'
+            request = requests.get(path)
+            file = zipfile.ZipFile(io.BytesIO(request.content))
+            file.extractall(tutorial_data_path)
     return
 
 def start(verbosity):
@@ -188,7 +191,7 @@ def start(verbosity):
 
     try:
         check_for_git()
-        download_tutorial_data()
+        download_tutorial_datasets()
         pipes = get_pipes(verbosity)
         do_migration(pipes)
         api_token = secrets.token_urlsafe()

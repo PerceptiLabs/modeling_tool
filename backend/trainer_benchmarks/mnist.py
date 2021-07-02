@@ -9,7 +9,7 @@ class MnistSuite(BenchmarkSuite):
     def __init__(self):
         self.data_loader = data_utils.get_mnist_loader()
 
-    def _get_recommended_results(self, trainer, training_settings, training_duration):
+    def _get_trainer_results(self, trainer, training_settings, training_duration):
         """ Formats the results summary of a PerceptiLabs recommended model. The output dict should match the baseline 
 
         Arguments:
