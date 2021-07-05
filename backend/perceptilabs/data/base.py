@@ -57,7 +57,7 @@ class DataLoader:
                 preprocessing=feature_dict.get('preprocessing'),                
                 file_path=feature_dict['csv_path']
             )
-
+            
         partitions = {
             'training': dict_['partitions'][0]/100.0,
             'validation': dict_['partitions'][1]/100.0,

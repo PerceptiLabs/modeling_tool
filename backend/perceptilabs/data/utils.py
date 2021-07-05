@@ -68,3 +68,54 @@ def get_wildfire_loader():
 
     loader = DataLoader.from_features(feature_specs, randomized_partitions=True, file_path=path)
     return loader
+
+
+def get_humanactivity_loader():
+    from perceptilabs.data.base import DataLoader, FeatureSpec
+
+    path = os.path.join(get_tutorial_data_directory(),
+                        'HumanActivity', 'data.csv')
+
+    feature_specs = {
+        'images': FeatureSpec(
+            datatype='image',
+            iotype='input',
+            preprocessing={},
+            file_path=path
+        ),
+        'labels': FeatureSpec(
+            datatype='categorical',
+            iotype='target',
+            preprocessing={},
+            file_path=path
+        )
+    }
+
+    loader = DataLoader.from_features(feature_specs, randomized_partitions=True, file_path=path)
+    return loader
+
+
+def get_covid19_loader():
+    from perceptilabs.data.base import DataLoader, FeatureSpec
+
+    path = os.path.join(get_tutorial_data_directory(),
+                        'Covid-19', 'data.csv')
+
+    feature_specs = {
+        'images': FeatureSpec(
+            datatype='image',
+            iotype='input',
+            preprocessing={},
+            file_path=path
+        ),
+        'labels': FeatureSpec(
+            datatype='categorical',
+            iotype='target',
+            preprocessing={},
+            file_path=path
+        )
+    }
+
+    loader = DataLoader.from_features(
+        feature_specs, randomized_partitions=True, file_path=path)
+    return loader

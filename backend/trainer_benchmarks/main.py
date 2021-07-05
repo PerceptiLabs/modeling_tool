@@ -4,10 +4,14 @@ from prettytable import PrettyTable
 
 from trainer_benchmarks.mnist import MnistSuite
 from trainer_benchmarks.wildfires import WildfiresSuite
+from trainer_benchmarks.humanactivity import HumanActivitySuite
+from trainer_benchmarks.covid19 import CovidXraySuite
 
 BENCHMARK_SUITES = {
     'mnist': MnistSuite,
     'wildfires': WildfiresSuite,
+    'humanactivity': HumanActivitySuite,
+    'covid19': CovidXraySuite
 }
 
 

@@ -170,7 +170,7 @@ class PortPoller:
 
 
 def download_tutorial_datasets():
-    datasets = ['mnist_data', 'Wildfires']
+    datasets = ['mnist_data', 'Wildfires', 'HumanActivity', 'Covid-19']
     tutorial_data_path = pkg_resources.resource_filename('perceptilabs','tutorial_data')
     for dataset in datasets:
         if not os.path.isdir(os.path.join(tutorial_data_path, dataset)):
