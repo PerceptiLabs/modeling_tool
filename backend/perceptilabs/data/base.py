@@ -81,6 +81,10 @@ class DataLoader:
         if not file_path:
             file_path = cls._resolve_file_path(feature_specs)
 
+        for feature_name in list(feature_specs):
+            if feature_specs[feature_name].iotype == "do not use":
+                del feature_specs[feature_name]
+    
         df = pd.read_csv(file_path)
         data_loader = cls(
             df,
@@ -319,11 +323,8 @@ class DataLoader:
             raise ValueError("Partitions must sum to 1.0!")        
 
     def _validate_feature_specs(self, columns, feature_specs):
-        """ Assert that the there is a one-to-one mapping between the columns and feature specs. Also, that atleast one input and one output is specified """
-        for column in columns:
-            if column not in feature_specs:
-                raise ValueError(f"Column '{column}' not in feature specs")
-        
+        """ Assert that atleast one input and one output is specified """
+
         inputs = set()
         targets = set()
         

@@ -11,8 +11,8 @@ from perceptilabs.data.base import DataLoader, FeatureSpec
 
 
 def test_basic_structure_ok():
-    data = [[1.0, 2.0, 3.0, 4.0], [1.0, 2.0, 3.0, 4.0], [1.0, 2.0, 3.0, 4.0]]
-    df = pd.DataFrame(data, columns=['x1', 'x2','y1', 'y2']) 
+    data = [[1.0, 2.0, 3.0, 4.0, 5.0], [1.0, 2.0, 3.0, 4.0, 5.0], [1.0, 2.0, 3.0, 4.0, 5.0]]
+    df = pd.DataFrame(data, columns=['x1', 'x2','y1', 'y2', 'z1']) 
 
     feature_specs = {
         'x1': FeatureSpec('numerical', 'input'),

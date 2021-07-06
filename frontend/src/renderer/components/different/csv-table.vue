@@ -96,7 +96,7 @@ export default {
   data() {
     return {
       delimiters: ',',
-      ioOptions: ["Input", "Target"],
+      ioOptions: ["Input", "Target", "Do not use"],
       selectedColumns: [],
       formattedDataset: {
         columnNames: [],
