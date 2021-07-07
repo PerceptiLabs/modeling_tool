@@ -18,10 +18,9 @@ class CategoricalDecoderBlueprint(DecoderBlueprint):
         preprocessing = data_loader.get_preprocessing_pipeline(feature_name, mode='training')
         n_categories = preprocessing.n_categories
         
-        id1 = builder.add_layer(
-                'DeepLearningFC',
-                settings={'n_neurons': n_categories, 'activation': 'None'}
-            )
+
+        id1 = builder.add_layer('DeepLearningFC',
+                                settings={'n_neurons': n_categories, 'activation': 'Softmax'})
         id2 = builder.add_layer(
             'IoOutput',
             settings={'feature_name': feature_name, 'file_path': feature_spec.file_path, 'datatype': feature_spec.datatype}                
