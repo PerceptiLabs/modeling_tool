@@ -204,6 +204,7 @@ def send_request(request):
 
     return main_interface.create_response(request)
 
+@pytest.mark.skip
 def test_getGraphOrder(temp_path_checkpoints):
     receiver = 0000
     action = "getGraphOrder"
