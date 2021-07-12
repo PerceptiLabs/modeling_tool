@@ -5,7 +5,7 @@ import {
   projectPathModel,
   eraseCookie,
 } from "@/core/helpers";
-import { getModelJson as fileserver_getModelJson } from '@/core/apiFileserver';
+import { getModelJson as rygg_getModelJson } from '@/core/apiRygg';
 
 const namespaced = true;
 
@@ -116,7 +116,7 @@ const actions = {
       pathIndex = localProjectsList.findIndex((proj)=> proj.pathProject === pathProject);
     }
 
-    fileserver_getModelJson(pathFile)
+    rygg_getModelJson(pathFile)
       .then(async (model) => {
 
         //validate model

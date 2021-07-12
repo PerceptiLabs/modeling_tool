@@ -12,7 +12,6 @@
     "KEYCLOAK_REALM": "vue-perceptilabs",
     "KEYCLOAK_CLIENT_ID": "vue-perceptilabs-client-id",
     "PL_FILE_SERVING_TOKEN": "12312",
-    "FILE_SERVER_URL": "http://localhost:8011",
     "RYGG_URL": "http://localhost:8000",
     "APP_URL": "http://localhost:8080/"
   }

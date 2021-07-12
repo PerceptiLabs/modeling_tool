@@ -1,3 +1,0 @@
-regex:!/test_/
-regex:!/^fileserver\/tests\//
-regex:/^fileserver\//

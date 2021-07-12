@@ -71,7 +71,7 @@
 
 <script>
   import BaseGlobalPopup  from "@/components/global-popups/base-global-popup";
-  import { createIssueInGithub } from '@/core/apiFileserver';
+  import { createIssueInGithub } from '@/core/apiRygg';
   import ViewLoading from '@/components/different/view-loading.vue'
   import { PERCEPTILABS_FORUM_URL } from "@/core/constants";
 

@@ -96,9 +96,9 @@
   import { generateID, getDefaultProjectPathForOs } from "@/core/helpers";
   import { coreRequest } from '@/core/apiWeb.js';
   import cloneDeep from 'lodash.clonedeep';
-  import { getFolderContent as fileserver_getFolderContent } from '@/core/apiFileserver';
-  import { getModelJson as fileserver_getModelJson } from '@/core/apiFileserver';
-  import { createFolder as fileserver_createFolder } from '@/core/apiFileserver';
+  import { getFolderContent as rygg_getFolderContent } from '@/core/apiRygg';
+  import { getModelJson as rygg_getModelJson } from '@/core/apiRygg';
+  import { createFolder as rygg_createFolder } from '@/core/apiRygg';
 
   export default {
     name: 'CreateSelectProject',
@@ -245,7 +245,7 @@
 
         const newFolderPath = this.newProjectLocation + '/' + this.newProjectName
 
-        fileserver_createFolder(newFolderPath)
+        rygg_createFolder(newFolderPath)
         .then(createFolderRes => {
           if (createFolderRes !== '') {
             let createProjectReq = {
@@ -372,7 +372,7 @@
 
         this.selectedFiles = [];
         try {
-          const { dirs, current_path} = await fileserver_getFolderContent(processedFilePath);
+          const { dirs, current_path} = await rygg_getFolderContent(processedFilePath);
           const haveDirectories = dirs.length > 0;
           if(!haveDirectories) {
             // cerate project only with that dir
@@ -387,7 +387,7 @@
             const modelPaths = dirs.map(dirPath => current_path + '/' + dirPath);
           
             const promiseArray = 
-              modelPaths.map(modelPath => fileserver_getModelJson(modelPath + '/model.json'));
+              modelPaths.map(modelPath => rygg_getModelJson(modelPath + '/model.json'));
             
             let localModelsData = await Promise.all(promiseArray);
             localModelsData = localModelsData.filter(model => model);

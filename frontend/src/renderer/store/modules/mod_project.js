@@ -1,6 +1,6 @@
 import { requestCloudApi } from "@/core/apiCloud";
 import {generateID} from "@/core/helpers";
-import { createFolder as fileserver_createFolder } from '@/core/apiFileserver';
+import { createFolder as rygg_createFolder } from '@/core/apiRygg';
 import { rygg } from '@/core/apiRygg.js';
 const namespaced = true;
 
@@ -147,7 +147,7 @@ const actions = {
       });
   },
   prepareDefaultProjectDirectory(ctx) {
-    return fileserver_createFolder('~/Documents/Perceptilabs/Default')
+    return rygg_createFolder('~/Documents/Perceptilabs/Default')
       .then(createFolderRes => {
         if (!createFolderRes) { throw new Error('Problem while creating project directory'); }
 

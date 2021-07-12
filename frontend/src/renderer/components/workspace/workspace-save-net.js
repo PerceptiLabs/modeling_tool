@@ -3,8 +3,8 @@ import { generateID }  from "@/core/helpers.js";
 
 import { mapGetters, mapMutations, mapActions } from "vuex";
 import cloneDeep from 'lodash.clonedeep';
-import { doesDirExist as fileserver_doesDirExist } from '@/core/apiFileserver';
-import { saveModelJson as fileserver_saveModelJson } from '@/core/apiFileserver';
+import { doesDirExist as rygg_doesDirExist } from '@/core/apiRygg';
+import { saveModelJson as rygg_saveModelJson } from '@/core/apiRygg';
 
 const workspaceSaveNet = {
   created() {
@@ -94,7 +94,7 @@ const workspaceSaveNet = {
       this.askSaveFilePopup()
         .then(async (answer)=> {
           if(answer) {
-            const isFolderAlreadyExist = await fileserver_doesDirExist(answer.networkPath);
+            const isFolderAlreadyExist = await rygg_doesDirExist(answer.networkPath);
             
             if(isFolderAlreadyExist) {
               this.$store.dispatch('globalView/GP_confirmPopup', {
@@ -155,7 +155,7 @@ const workspaceSaveNet = {
             ...networkJson,
             networkElementList: healthNetworkElementList
           }
-          return fileserver_saveModelJson(healthNetworkJson)
+          return rygg_saveModelJson(healthNetworkJson)
             .catch((e) => {
               console.log(e)
               Promise.reject(e)
@@ -176,7 +176,7 @@ const workspaceSaveNet = {
             ...networkJson,
             networkElementList: healthNetworkElementList
           }
-          fileserver_saveModelJson(healthNetworkJson)
+          rygg_saveModelJson(healthNetworkJson)
             .catch((e) => {
               console.log(e)
             });

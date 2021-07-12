@@ -21,15 +21,17 @@ WORKDIR /app
 # Copying directory inside docker
 ADD rygg /app/rygg
 ADD licenses /licenses
-COPY manage.py requirements.txt wait-for-db.py start.sh /app/
+COPY requirements.txt wait-for-db.py start.sh /app/
 
 RUN pip install --upgrade pip && \
-    pip install -r requirements.txt
+    pip install -r requirements.txt && \
+    rm requirements.txt
+
+USER 1001
 
 HEALTHCHECK \
   --interval=5s \
   --timeout=2s \
   CMD curl --fail localhost:8000/app/version/ || exit 1
-# TODO: add some healthcheck endpoint instead of version
 
 CMD ["sh", "/app/start.sh"]

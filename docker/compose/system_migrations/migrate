@@ -17,6 +17,8 @@ run_migrations(){
     system_migrations/000003_init_kc/up
     echo "Performing system migration 4: add preview kernel"
     system_migrations/000004_preview_kernel/up
+    echo "Performing system migration 5: remove deprecated fileserver"
+    system_migrations/000005_remove_fileserver/up
   else
     echo "Performing initial system migration"
     system_migrations/all/up

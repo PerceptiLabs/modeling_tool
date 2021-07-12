@@ -37,7 +37,7 @@
 <script>
 import { isWeb } from "@/core/helpers";
 import BaseGlobalPopup  from "@/components/global-popups/base-global-popup";
-import { doesFileExist as fileserver_doesFileExist } from '@/core/apiFileserver';
+import { doesFileExist as rygg_doesFileExist } from '@/core/apiRygg';
 
 export default {
   name: "ExportNetwork",
@@ -89,7 +89,7 @@ export default {
     async ok() {
       if(this.settings.Location !== '' && this.settings.Type === 'ipynb') {
         const fileName = this.settings.Location + `/${this.settings.name}.ipynb`;
-        const doesFileExist = await fileserver_doesFileExist(fileName);
+        const doesFileExist = await rygg_doesFileExist(fileName);
        
        if(doesFileExist) {
           this.$store.dispatch('globalView/GP_confirmPopup', {

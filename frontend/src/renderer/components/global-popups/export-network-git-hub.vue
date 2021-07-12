@@ -47,7 +47,7 @@ import BaseAccordion    from "@/components/base/accordion.vue"
 import ViewLoading from '@/components/different/view-loading.vue'
 import axios from 'axios'
 
-import { exportAsGithubRepository as fileserver_exportAsGithubRepository } from '@/core/apiFileserver';
+import { exportAsGithubRepository as rygg_exportAsGithubRepository } from '@/core/apiRygg';
 
 export default {
   name: "ExportNetworkGitHub",
@@ -130,7 +130,7 @@ export default {
       let githubRepoUrl = '';
       let isExportSuccessful = false;
 
-      fileserver_exportAsGithubRepository(reqData)
+      rygg_exportAsGithubRepository(reqData)
         .then(url => {
           const haveRepoNameSpaces = this.settings.name.indexOf(' ') !== -1;
 

@@ -133,4 +133,3 @@ STATIC_ROOT = "static/"
 
 KERNEL_URL = os.getenv('PL_KERNEL_URL')
 RYGG_URL = os.getenv('PL_RYGG_URL')
-FILESERVER_URL = os.getenv('PL_FILESERVER_URL')

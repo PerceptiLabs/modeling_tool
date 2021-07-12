@@ -11,23 +11,12 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
 import os
+import sys
+import uuid
 import pathlib
 
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-DB_LOCATION = os.environ.get("PERCEPTILABS_DB") or os.path.join(pathlib.Path.home(), ".perceptilabs/db.sqlite3")
-db_dir=os.path.dirname(DB_LOCATION)
-os.makedirs(db_dir, exist_ok=True)
-
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '-nj5*1agd@#(1*gcm2kd2q!*ui!kg2*yew=ata$n!sj-nnl&a7'
-
-# SECURITY WARNING: don't run with debug turned on in production!
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
+BASE_DIR = pathlib.Path(__file__).resolve(strict=True).parent.parent
 
 def is_docker():
     try:
@@ -41,6 +30,21 @@ def is_podman():
     return os.getenv("container") is not None
 
 IS_CONTAINERIZED = is_docker() or is_podman()
+
+DB_LOCATION=None
+if not IS_CONTAINERIZED:
+    DB_LOCATION = os.environ.get("PERCEPTILABS_DB") or os.path.join(pathlib.Path.home(), ".perceptilabs/db.sqlite3")
+    db_dir=os.path.dirname(DB_LOCATION)
+    os.makedirs(db_dir, exist_ok=True)
+
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = False
+
+# Quick-start development settings - unsuitable for production
+# See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
+
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = '-nj5*1agd@#(1*gcm2kd2q!*ui!kg2*yew=ata$n!sj-nnl&a7'
 
 ALLOWED_HOSTS = ['*'] if IS_CONTAINERIZED else ["localhost", "127.0.0.1"]
 
@@ -73,6 +77,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "django_http_exceptions.middleware.ExceptionHandlerMiddleware",
+    "django_http_exceptions.middleware.ThreadLocalRequestMiddleware",
+    "rygg.middleware.token_middleware",
 ]
 
 ROOT_URLCONF = 'rygg.urls'
@@ -134,8 +141,6 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
-
-
 # Internationalization
 # https://docs.djangoproject.com/en/3.0/topics/i18n/
 
@@ -194,3 +199,42 @@ GITHUB_API_ENDPOINT = os.environ.get('GITHUB_API_ENDPOINT', '')
 
 # Endpoint to fetch current machine's external IP address
 EXTERNAL_IP_RESOLVER_ENDPOINT = 'https://api.ipify.org'
+
+# Enforcement of the token
+API_TOKEN = os.getenv("PL_FILE_SERVING_TOKEN")
+API_TOKEN_REQUIRED = not DEBUG and not IS_CONTAINERIZED and not "test" in sys.argv
+
+if API_TOKEN_REQUIRED and not API_TOKEN:
+    raise Exception("The PL_FILE_SERVING_TOKEN environment variable hasn't been set")
+
+def assert_dir_writable(dir, msg):
+    test_file = os.path.join(dir, "test_writable_file" + str(uuid.uuid1()))
+    try:
+        open(test_file, "a").close()
+    except:
+        raise Exception(msg)
+
+    os.remove(test_file)
+
+# Make sure FILE_UPLOAD_DIR is set
+FILE_UPLOAD_DIR=None
+if IS_CONTAINERIZED:
+    FILE_UPLOAD_DIR = os.getenv("PL_FILE_UPLOAD_DIR")
+    if not FILE_UPLOAD_DIR:
+        raise Exception("Required environment variable PL_FILE_UPLOAD_DIR is not set.")
+
+    if not os.path.isdir(FILE_UPLOAD_DIR):
+        raise Exception(f"PL_FILE_UPLOAD_DIR is set to '{FILE_UPLOAD_DIR}' but that directory doesn't exist")
+
+    assert_dir_writable(FILE_UPLOAD_DIR, f"PL_FILE_UPLOAD_DIR is set to '{dir}' but that directory isn't writable")
+
+
+FILE_UPLOAD_HANDLERS = [
+    # story 1588: turn off in-memory uploads
+    # 'django.core.files.uploadhandler.MemoryFileUploadHandler',
+    'django.core.files.uploadhandler.TemporaryFileUploadHandler',
+]
+
+FILE_UPLOAD_PERMISSIONS = 0o444
+
+

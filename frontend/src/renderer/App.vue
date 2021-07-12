@@ -36,8 +36,8 @@
   import CreateIssuePopup         from '@/components/global-popups/create-issues-popup.vue';
   import TutorialsChecklist       from '@/components/tutorial/tutorial-checklist.vue';
   import TutorialNotification from "@/components/different/tutorial-notification.vue";
-  import { getModelJson as fileserver_getModelJson } from '@/core/apiFileserver';
-  import { fileserverAvailability } from '@/core/apiFileserver';
+  import { getModelJson as rygg_getModelJson } from '@/core/apiRygg';
+  import { ryggAvailability } from '@/core/apiRygg';
   import Analytics from '@/core/analytics';
   import { LOCAL_STORAGE_WORKSPACE_VIEW_TYPE_KEY, localStorageGridKey } from '@/core/constants.js'
   import { mapMutations, mapActions, mapGetters, mapState } from 'vuex';
@@ -55,7 +55,7 @@
   import AboutAppPopup          from "@/components/global-popups/about-app-popup.vue";
   import FilePickerPopup        from "@/components/global-popups/file-picker-popup.vue";
   import { MODAL_PAGE_PROJECT, MODAL_PAGE_QUESTIONNAIRE } from '@/core/constants.js';
-  import { isUrlReachable } from '@/core/apiFileserver.js';
+  import { isUrlReachable } from '@/core/apiRygg.js';
   import { isKeycloakReachable } from '@/core/apiKeyCloak.js';
 
   export default {
@@ -89,7 +89,7 @@
       window.addEventListener('offline', this.updateOnlineStatus);
       this.trackerInit();
       this.readUserInfo();
-      this.checkFileserverAvailability();
+      this.checkRyggAvailability();
       
       // from webstorage
       this.loadWorkspacesFromWebStorage()
@@ -445,8 +445,8 @@
       updateOnlineStatus() {
         this.SET_onlineStatus(navigator.onLine);
       },
-      checkFileserverAvailability() {
-        fileserverAvailability().then(resp => {
+      checkRyggAvailability() {
+        ryggAvailability().then(resp => {
           if (resp === "UNAVAILABLE") {
             this.openErrorPopup("The file server isn't available");
           } else if (resp === "BAD_TOKEN") {
@@ -492,7 +492,7 @@
             .filter(x => !this.networksWithChanges.includes(x.model_id));
 
         for (const fm of filteredMetas) {
-          promiseArray.push(fileserver_getModelJson(fm.location + '/model.json'));
+          promiseArray.push(rygg_getModelJson(fm.location + '/model.json'));
         }
         
         // console.log('fetchAllNetworkJsons filteredMetas', filteredMetas);
@@ -516,7 +516,7 @@
         let unparsedModels = [];
 
         modelMetas.forEach(async (model) => {
-          const modelJson = await fileserver_getModelJson(model.location + '/model.json');
+          const modelJson = await rygg_getModelJson(model.location + '/model.json');
           if(!modelJson) {
             unparsedModels.push(model);
             

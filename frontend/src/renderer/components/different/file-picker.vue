@@ -75,7 +75,7 @@
 import { coreRequest } from '@/core/apiWeb.js';
 import { filePickerStorageKey } from '@/core/constants.js';
 import { mapGetters } from "vuex";
-import { getFolderContent as fileserver_getFolderContent } from '@/core/apiFileserver';
+import { getFolderContent as rygg_getFolderContent } from '@/core/apiRygg';
 import mixinFocus from '@/core/mixins/net-element-settings-input-focus.js';
 const breadcrumbCharacterLength = 58;
 
@@ -252,7 +252,7 @@ export default {
       this.selectedFiles = [];
 
       try {
-        const jsonData = await fileserver_getFolderContent(path);
+        const jsonData = await rygg_getFolderContent(path);
         this.setOsSpecifics(jsonData.platform);
 
         const pathNotFound = jsonData.current_path === "";

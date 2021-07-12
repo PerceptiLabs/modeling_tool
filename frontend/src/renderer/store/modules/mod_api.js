@@ -4,7 +4,7 @@ import {deepCopy, parseJWT, isWeb, isEnvDataWizardEnabled, checkpointDirFromProj
 import { createNotebookJson }   from "@/core/helpers/notebook-helper.js";
 import { pathSlash, sessionStorageInstanceIdKey }  from "@/core/constants.js";
 import { createCoreNetwork } from "@/core/helpers";
-import { getModelJson as fileserver_getModelJson, doesDirExist as fileserver_doesDirExist } from '@/core/apiFileserver';
+import { getModelJson as rygg_getModelJson, doesDirExist as rygg_doesDirExist } from '@/core/apiRygg';
 import cloneDeep from 'lodash.clonedeep';
 import { v4 as uuidv4  } from 'uuid';
 
@@ -624,7 +624,7 @@ const actions = {
     // Can actually remove this since it's not used in the createCoreNetwork call below
     const currentNetworkUsingWeights = rootGetters['mod_workspace/GET_currentNetworkModeWeightsState'];
 
-    return fileserver_getModelJson(currentNetwork.apiMeta.location + '/checkpoint/checkpoint_model.json')
+    return rygg_getModelJson(currentNetwork.apiMeta.location + '/checkpoint/checkpoint_model.json')
       .then(resultCheckpointJson => {
         const coreResultCheckpointJson = createCoreNetwork(resultCheckpointJson, currentNetworkUsingWeights);
         if (!coreResultCheckpointJson) { return; }
@@ -1320,7 +1320,7 @@ const actions = {
       });
   },
   async API_scanCheckpoint (ctx, { networkId, path }) {
-    const isDirExist = await fileserver_doesDirExist(path);
+    const isDirExist = await rygg_doesDirExist(path);
     if(!isDirExist) {
        return ({
         networkId,

@@ -395,11 +395,11 @@ import { buildLayers }                        from "@/core/helpers/layer-creatio
 import { debounce, deepCopy, isEnvDataWizardEnabled }   from "@/core/helpers";
 import cloneDeep                                        from "lodash.clonedeep";
 
-import { doesDirExist as fileserver_doesDirExist }              from "@/core/apiFileserver";
-import { getFolderContent as fileserver_getFolderContent }      from "@/core/apiFileserver";
-import { getResolvedDir as fileserver_getResolvedDir }          from "@/core/apiFileserver";
-import { getRootFolder as fileserver_getRootFolder }            from "@/core/apiFileserver";
-import { getFileContent as fileserver_getFileContent }          from "@/core/apiFileserver";
+import { doesDirExist as rygg_doesDirExist }              from "@/core/apiRygg";
+import { getFolderContent as rygg_getFolderContent }      from "@/core/apiRygg";
+import { getResolvedDir as rygg_getResolvedDir }          from "@/core/apiRygg";
+import { getRootFolder as rygg_getRootFolder }            from "@/core/apiRygg";
+import { getFileContent as rygg_getFileContent }          from "@/core/apiRygg";
 
 import { renderingKernel }              from "@/core/apiRenderingKernel";
 
@@ -552,8 +552,8 @@ export default {
         return;
       }
 
-      const resolvedDir = await fileserver_getResolvedDir(this.modelPath);
-      let dirContents = await fileserver_getFolderContent(resolvedDir);
+      const resolvedDir = await rygg_getResolvedDir(this.modelPath);
+      let dirContents = await rygg_getFolderContent(resolvedDir);
       // In case that  default PL folder doesn't exist dirs will be empty sting.
       if(typeof dirContents.dirs === 'string') {
         dirContents.dirs = [];
@@ -766,7 +766,7 @@ export default {
         this.getModelMeta(x)
       );
       const modelMeta = await Promise.all(promiseArray);
-      const rootPath = await fileserver_getRootFolder();
+      const rootPath = await rygg_getRootFolder();
       const modelNames = modelMeta.map(x => x.name);
       if (modelNames.indexOf(modelName) !== -1) {
         this.showErrorPopup(`The model name "${modelName}" already exists.`);
@@ -775,7 +775,7 @@ export default {
       }
 
       // TODO: test with isValidDirName
-      const dirAlreadyExist = await fileserver_doesDirExist(
+      const dirAlreadyExist = await rygg_doesDirExist(
         `${this.modelPath}/${modelName}`
       );
       if (dirAlreadyExist) {
@@ -942,7 +942,7 @@ export default {
           dataPath[0].match(/(.*)[\/\\]/)[1] || ""
         );
 
-        const fileContents = await fileserver_getFileContent(
+        const fileContents = await rygg_getFileContent(
           `${dataPath[0]}`
         );
 
@@ -1007,7 +1007,7 @@ export default {
       return modelNames.indexOf(modelName) === -1;
     },
     async isValidDirName(modelName, modelPath) {
-      const dirAlreadyExist = await fileserver_doesDirExist(
+      const dirAlreadyExist = await rygg_doesDirExist(
         `${modelPath}/${modelName}`
       );
 

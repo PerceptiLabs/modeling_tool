@@ -37,8 +37,6 @@ jobs:
           repo: kernel
         frontend:
           repo: frontend
-        fileserver:
-          repo: fileserver
         rygg:
           repo: rygg
     steps:

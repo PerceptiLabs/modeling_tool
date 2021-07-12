@@ -10,7 +10,7 @@ import time
 import platform
 import pkg_resources
 import zipfile
-import requests 
+import requests
 import io
 
 PYTHON = sys.executable
@@ -47,24 +47,24 @@ HOST = "127.0.0.1"
 
 PORTS = {
             "kernel": 5000,
-            "rendering-kernel": 5001,    
+            "rendering-kernel": 5001,
             "rygg": 8000,
-            "fileserver": 8011,
             "frontend": 8080,
         }
-# fmt: on
 
-# fmt: off
 MIGRATION_CMD = [PYTHON, "-m", "django", "migrate", "--settings", "rygg.settings"]
 SERVICE_CMDS = [
     [PYTHON, "-m", "perceptilabs"],
-    [PYTHON, "-m", "perceptilabs", "--mode", "rendering"],    
+    [PYTHON, "-m", "perceptilabs", "--mode", "rendering"],
     [PYTHON, "-m", "django", "runserver", f"{HOST}:{PORTS['rygg']}", "--settings", "rygg.settings", "--noreload"],
-    [PYTHON, "-m", "django", "runserver", f"{HOST}:{PORTS['fileserver']}", "--settings", "fileserver.settings", "--noreload"],
     [PYTHON, "-m", "django", "runserver", f"{HOST}:{PORTS['frontend']}", "--settings", "static_file_server.settings", "--noreload"],
     [PYTHON, "-c", "from static_file_server import website_launcher; website_launcher.launchAndKeepAlive()"],
 ]
 
+TUTORIAL_DATA_PATH = pkg_resources.resource_filename('perceptilabs', 'tutorial_data')
+# TODO: move hard-coded dataset URL and names out of the code base
+SAMPLE_DATASETS_URL = 'https://perceptilabs.blob.core.windows.net/data/'
+DATASET_NAMES=['mnist_data', 'Wildfires', 'HumanActivity', 'Covid-19']
 
 def which_cmd():
     return "where" if IS_WIN else "which"
@@ -86,8 +86,10 @@ def check_for_git():
 
     time.sleep(1)
 
-def do_migration(pipes):
-    migtate_proc = subprocess.run(MIGRATION_CMD, **pipes)
+def do_migration(pipes, api_token):
+    env = os.environ.copy()
+    env["PL_FILE_SERVING_TOKEN"] = api_token
+    migtate_proc = subprocess.run(MIGRATION_CMD, env=env, **pipes)
     if migtate_proc.returncode != 0:
         print(f"{bcolors.ERROR}Error:{bcolors.ENDC} Unable to upgrade your perceptilabs database.", file=sys.stderr)
         sys.exit(1)
@@ -169,16 +171,26 @@ class PortPoller:
             time.sleep(interval_secs)
 
 
+def download_one_dataset(dataset):
+    if os.path.isdir(os.path.join(TUTORIAL_DATA_PATH, dataset)):
+        return
+
+    path = SAMPLE_DATASETS_URL + dataset + '.zip'
+
+    print(f"Downloading {dataset} tutorial dataset ... ", end='')
+    sys.stdout.flush()
+    try:
+        request = requests.get(path)
+        file = zipfile.ZipFile(io.BytesIO(request.content))
+        file.extractall(TUTORIAL_DATA_PATH)
+        print("done")
+    except:
+        print("failed")
+
+
 def download_tutorial_datasets():
-    datasets = ['mnist_data', 'Wildfires', 'HumanActivity', 'Covid-19']
-    tutorial_data_path = pkg_resources.resource_filename('perceptilabs','tutorial_data')
-    for dataset in datasets:
-        if not os.path.isdir(os.path.join(tutorial_data_path, dataset)):
-            path = 'https://perceptilabs.blob.core.windows.net/data/'+dataset+'.zip'
-            request = requests.get(path)
-            file = zipfile.ZipFile(io.BytesIO(request.content))
-            file.extractall(tutorial_data_path)
-    return
+    for dataset in DATASET_NAMES:
+        download_one_dataset(dataset)
 
 def start(verbosity):
     # give the handler closure the shared procs variable
@@ -193,8 +205,8 @@ def start(verbosity):
         check_for_git()
         download_tutorial_datasets()
         pipes = get_pipes(verbosity)
-        do_migration(pipes)
         api_token = secrets.token_urlsafe()
+        do_migration(pipes, api_token)
         procs = list([start_one(cmd, pipes, api_token) for cmd in SERVICE_CMDS])
         print(f"{bcolors.PERCEPTILABS}PerceptiLabs:{bcolors.ENDC} Starting")
         PortPoller.wait_for_ports()

@@ -29,7 +29,7 @@ import 'vue2-perfect-scrollbar/dist/vue2-perfect-scrollbar.css'
 //- Global directives
 import { parseJWT } from '@/core/helpers'
 import Analytics from '@/core/analytics';
-import { isUrlReachable } from '@/core/apiFileserver.js';
+import { isUrlReachable } from '@/core/apiRygg.js';
 import { keyCloak } from '@/core/apiKeyCloak.js';
 
 //Vue.http = Vue.prototype.$http = axios;

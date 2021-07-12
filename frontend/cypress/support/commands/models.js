@@ -5,7 +5,7 @@ Cypress.Commands.add("deleteModel", (modelId) => {
     const model = modelResponse.body;
 
     // delete model directory
-    cy.fileServerRequest(`/directories`, "DELETE", {
+    cy.ryggRequest(`/directories`, "DELETE", {
       path: model.location,
     });
 
@@ -40,7 +40,7 @@ Cypress.Commands.add("createMnistModel", (modelName) => {
 
         const modelInfo = getModelContent(model, dataCSVPath);
 
-        cy.fileServerRequest(
+        cy.ryggRequest(
           "/json_models",
           "POST",
           {

@@ -186,7 +186,7 @@
   import { mapActions, mapMutations, mapState, mapGetters } from 'vuex';
   import { isWeb, stringifyNetworkObjects } from "@/core/helpers";
   import cloneDeep from 'lodash.clonedeep';
-  import { getModelJson as fileserver_getModelJson } from '@/core/apiFileserver';
+  import { getModelJson as rygg_getModelJson } from '@/core/apiRygg';
   import { LOCAL_STORAGE_HIDE_DELETE_MODAL } from '@/core/constants.js'
 
   const mockModelList = [
@@ -350,7 +350,7 @@
         this.$store.commit("globalView/set_filePickerPopup", true);
       },
       openTemplate(path) {
-        fileserver_getModelJson(path)
+        rygg_getModelJson(path)
       },
       onSortByChanged(valueSelected) {
         let modelList = [...this.modelList];

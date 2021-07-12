@@ -36,7 +36,7 @@ import ModelStatus            from '@/components/different/model-status.vue';
 import MiniMapNavigation      from '@/components/workspace/mini-map-navigation.vue';
 import ChartSpinner           from '@/components/charts/chart-spinner';
 
-import { saveModelJson as fileserver_saveModelJson } from '@/core/apiFileserver';
+import { saveModelJson as rygg_saveModelJson } from '@/core/apiRygg';
 
 export default {
   name: 'WorkspaceContent',
@@ -469,7 +469,7 @@ export default {
         // console.log('hiding', parent.currentModelIndex, index);
 
         parent.saveNetwork(parent.workspace[index]);
-        fileserver_saveModelJson(parent.workspace[index]);
+        rygg_saveModelJson(parent.workspace[index]);
 
         if (parent.currentModelIndex===index) {
           const candidate = parent.workspace.findIndex(item => item.networkMeta.hideModel!=true);

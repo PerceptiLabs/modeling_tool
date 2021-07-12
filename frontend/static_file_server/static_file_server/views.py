@@ -56,14 +56,9 @@ def check_version(request, variable_name, replacement_str, api_url):
     
     if not piece_url and replacement_str == "rygg":
         piece_url = settings.RYGG_URL
-    url = f"{piece_url}/{api_url}"
-    
-    if replacement_str == "fileserver":
-        if not piece_url:
-            piece_url = settings.FILESERVER_URL
-        token = request.query_params.get('token')
-        url = f"{piece_url}/{api_url}?token={token}"
-    
+    token = request.query_params.get('token')
+    url = f"{piece_url}/{api_url}?token={token}"
+
     response = requests.get(url, headers={}, data={})
     json_response = json.loads(response.content)
 
@@ -109,10 +104,6 @@ def kernel_url(request):
     return HttpResponse(other_url(request, "PL_KERNEL_URL", "core"))
 
 @api_view(["GET"])
-def fileserver_url(request):
-    return HttpResponse(other_url(request, "PL_FILESERVER_URL", "fileserver"))
-
-@api_view(["GET"])
 def rygg_url(request):
     return HttpResponse(other_url(request, "PL_RYGG_URL", "rygg"))
 
@@ -124,10 +115,6 @@ def rygg_version(request):
 def keycloak_url(request):
     ret = other_url(request, "PL_KEYCLOAK_URL", "")
     return HttpResponse(ret)
-
-@api_view(["GET"])
-def fileserver_version(request):
-    return check_version(request, "PL_FILESERVER_URL", "fileserver", "version")
 
 @api_view(["GET"])
 def kernel_version(request):

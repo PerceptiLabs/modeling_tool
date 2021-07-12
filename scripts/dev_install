@@ -41,7 +41,7 @@ run_installer(){
 }
 
 main(){
-  sudo -p "Sudo is required. Pleas enter the password: " echo -n ""
+  sudo -p "Sudo is required. Please enter the password: " echo -n ""
   # To simulate an upgrade, just comment out the call to delete_existing
   delete_existing
   make_fake_images

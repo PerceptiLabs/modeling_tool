@@ -1,0 +1,7 @@
+regex:!/test_/
+regex:!/tests\/utils.py/
+regex:/^rygg\//
+# exclude all migrations since they're already added by directory
+regex:!/\/files\/migrations\//
+regex:!/\/mixpanel_proxy\/migrations\//
+regex:!/\/integration_tests\//

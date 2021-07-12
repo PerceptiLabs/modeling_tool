@@ -78,7 +78,6 @@
   import HeaderProfile from "@/components/app-header/header-profile";
   import { mapGetters, mapActions } from 'vuex';
   import { PERCEPTILABS_DOCUMENTATION_URL, PERCEPTILABS_YOUTUBE_VIDEO_TUTORIAL_URL, PERCEPTILABS_YOUTUBE_URL, PERCEPTILABS_SLACK_URL, PERCEPTILABS_FORUM_URL, PERCEPTILABS_BLOGS_URL, USER_FLOW_CONTENT_ID } from "@/core/constants";
-  import { fileserverAvailability } from '@/core/apiFileserver';
   import userflow from "userflow.js";
 export default {
   name: "HeaderWin",

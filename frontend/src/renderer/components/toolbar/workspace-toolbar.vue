@@ -93,7 +93,7 @@ import { removeChartData }        from '@/core/helpers.js';
 import LayersToolbar            from '@/components/toolbar/workspace-toolbar-layers.vue';
 import SidebarToggleButton      from '@/components/toolbar/sidebar-toggle-button.vue';
 
-import { saveModelJson as fileserver_saveModelJson } from '@/core/apiFileserver';
+import { saveModelJson as rygg_saveModelJson } from '@/core/apiRygg';
 
 export default {
   name: 'WorkspaceToolbar',
@@ -347,7 +347,7 @@ export default {
       let streamLinedNetwork = this.currentNetwork;
       streamLinedNetwork = removeChartData(streamLinedNetwork);
 
-      fileserver_saveModelJson(streamLinedNetwork)
+      rygg_saveModelJson(streamLinedNetwork)
         .then(_ => this.$store.dispatch('mod_webstorage/saveNetwork', this.currentNetwork))
         .then(_ => {
           this.$store.dispatch('mod_api/API_startTraining', { loadCheckpoint: false });

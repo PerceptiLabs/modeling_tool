@@ -23,6 +23,12 @@ services:
       DB_HOST: db
       DB_USER: rygg
       DB_PASS: rygg
+      HOME: /perceptilabs
+      PL_FILE_SERVING_TOKEN: thetoken
+      PL_TUTORIALS_DATA: /tutorial_data
+      PL_FILE_UPLOAD_DIR: /perceptilabs/Documents/Perceptilabs/data
+    volumes:
+      - ${PL_ROOT_DIR}/plabs:/perceptilabs/Documents/Perceptilabs
     depends_on:
       - db
     networks:

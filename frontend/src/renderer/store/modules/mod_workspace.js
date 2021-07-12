@@ -13,9 +13,9 @@ import idb  from "@/core/helpers/idb-helper.js";
 import Vue    from 'vue'
 import router from '@/router'
 import {isElectron} from "@/core/helpers";
-import { deleteFolder as fileserver_deleteFolder } from '@/core/apiFileserver';
+import { deleteFolder as rygg_deleteFolder } from '@/core/apiRygg';
 import cloneDeep from 'lodash.clonedeep';
-import { saveModelJson as fileserver_saveModelJson, updateModelMeta } from '@/core/apiFileserver';
+import { saveModelJson as rygg_saveModelJson, updateModelMeta } from '@/core/apiRygg';
 import { lockedComponentsNames } from "@/core/constants.js";
 import store from '@/store';
 
@@ -641,7 +641,7 @@ const mutations = {
       router.replace({name: 'app'});
     }
 
-    fileserver_saveModelJson(newNetwork)
+    rygg_saveModelJson(newNetwork)
     dispatch('mod_events/EVENT_IOGenerateAction', null, {root: true});
     function findNetId(newNet, netList) {
       let indexId = netList.findIndex((el)=> el.networkID === newNet.networkID);
@@ -774,7 +774,7 @@ const mutations = {
   async delete_network(state, index) {
 
     const path = state.workspaceContent[index].apiMeta.location.replace('/', '\\');
-    await fileserver_deleteFolder(path)
+    await rygg_deleteFolder(path)
 
 
     if(state.currentNetwork >= index) {
@@ -792,7 +792,7 @@ const mutations = {
     const path = state.workspaceContent[networkIndex].apiMeta.location;
     state.workspaceContent.splice(networkIndex, 1);
 
-    await fileserver_deleteFolder(path)
+    await rygg_deleteFolder(path)
   },
   //---------------
   //  LOADER FOR TRAINING

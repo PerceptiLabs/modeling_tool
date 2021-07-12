@@ -30,7 +30,7 @@
 
 <script>
 import { mapState, mapGetters, mapMutations, mapActions } from 'vuex';
-import { saveModelJson as fileserver_saveModelJson } from '@/core/apiFileserver';
+import { saveModelJson as rygg_saveModelJson } from '@/core/apiRygg';
 import { removeChartData }        from '@/core/helpers.js';
 
 export default {
@@ -92,7 +92,7 @@ export default {
       streamLinedNetwork = removeChartData(streamLinedNetwork);
 
       this.$store.commit('mod_events/set_saveNetwork');
-      fileserver_saveModelJson(streamLinedNetwork) // model.json
+      rygg_saveModelJson(streamLinedNetwork) // model.json
         .then(_ => this.SET_networkSnapshot()) // snapshot for the network in stats/test views
         .then(_ => this.saveNetwork(this.currentNetwork)) // webstorage
         .then(_ => {

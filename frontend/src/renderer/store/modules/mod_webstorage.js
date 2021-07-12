@@ -1,6 +1,6 @@
 import idb from '@/core/helpers/idb-helper.js';
 import cloneDeep from 'lodash.clonedeep';
-import { doesFileExist as fileserver_doesFileExist } from '@/core/apiFileserver';
+import { doesFileExist as rygg_doesFileExist } from '@/core/apiRygg';
 
 const namespaced = true;
 
@@ -67,7 +67,7 @@ const actions = {
 
     return new Promise(async (resolve) => {
       for(const network of networks) {
-        const doesFileExist = await fileserver_doesFileExist(network.apiMeta.location + '/model.json');
+        const doesFileExist = await rygg_doesFileExist(network.apiMeta.location + '/model.json');
         if(!doesFileExist) {
            ctx.dispatch('deleteId', network.apiMeta.model_id);
            ctx.dispatch('deleteNetwork', network.apiMeta.model_id);

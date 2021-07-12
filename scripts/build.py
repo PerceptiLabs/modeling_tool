@@ -44,7 +44,6 @@ PROJECT_ROOT = os.path.dirname(SCRIPTS_DIR)
 BACKEND_SRC = os.path.join(PROJECT_ROOT, "backend")
 FRONTEND_SRC_ROOT = os.path.join(PROJECT_ROOT, "frontend")
 RYGG_DIR = os.path.join(PROJECT_ROOT, "rygg")
-FILESERVER_DIR = os.path.join(PROJECT_ROOT, "fileserver")
 WHEELFILES_DIR = os.path.join(PROJECT_ROOT, "wheelfiles")
 BUILD_DIR = os.path.join(PROJECT_ROOT, "build")
 BUILD_TMP = os.path.join(BUILD_DIR, "tmp")
@@ -52,7 +51,6 @@ BUILD_OUT = os.path.join(BUILD_DIR, "out")
 
 BUILD_DOCKER = os.path.join(BUILD_DIR, "docker")
 BUILD_DOCKER_COMPOSE = os.path.join(BUILD_DOCKER, "compose")
-BUILD_DOCKER_FILESERVER = os.path.join(BUILD_DOCKER, "fileserver")
 BUILD_DOCKER_FRONTEND = os.path.join(BUILD_DOCKER, "frontend")
 BUILD_DOCKER_FRONTEND_STATIC_FILESERVER = os.path.join(BUILD_DOCKER_FRONTEND, "static_file_server")
 BUILD_DOCKER_RYGG = os.path.join(BUILD_DOCKER, "rygg")
@@ -201,7 +199,7 @@ def mkdir_p(dirname):
 
 
 def generate_included_files_common():
-    projects = "perceptilabs_runner rygg fileserver backend".split()
+    projects = "perceptilabs_runner rygg backend".split()
     for p in projects:
         for line in all_lines(f"{PROJECT_ROOT}/{p}/included_files.txt"):
             stripped = line.strip()
@@ -253,7 +251,6 @@ def install_prereqs():
 
     run_checked(f"pip install -r {BACKEND_SRC}/requirements.txt")
     run_checked(f"pip install -r {RYGG_DIR}/requirements.txt")
-    run_checked(f"pip install -r {FILESERVER_DIR}/requirements.txt")
     run_unchecked("pip install -r requirements_build.txt")
 
 def install_docker_host_prereqs():
@@ -284,10 +281,6 @@ def set_perceptilabs_inner_version(rootDir, versions: Versions):
     sed_i(init_py, "^__version__ *=.*", f"__version__='{versions.as_pep440}'")
 
 
-def set_fileserver_inner_version(rootDir, versions: Versions):
-    init_py = os.path.join(rootDir, "fileserver", "__init__.py")
-    sed_i(init_py, "^__version__ *=.*", f"__version__='{versions.as_pep440}'")
-
 def set_staticfileserver_inner_version(rootDir, versions: Versions):
     init_py = os.path.join(rootDir, "static_file_server", "__init__.py")
     sed_i(init_py, "^__version__ *=.*", f"__version__='{versions.as_pep440}'")
@@ -305,7 +298,6 @@ def set_wheel_version(versions: Versions):
     print(f"setting wheel version to {versions.as_pep440}")
     write_version_file(BUILD_TMP, versions)
     set_perceptilabs_inner_version(BUILD_TMP, versions)
-    set_fileserver_inner_version(BUILD_TMP, versions)
     set_rygg_inner_version(BUILD_TMP, versions)
 
 # update the version field in the package.json file
@@ -400,12 +392,12 @@ def run_cython_test():
 def run_pytest_tests():
     print("Running python tests")
     with pushd(BACKEND_SRC):
-        run_checked("python -m pytest -rfe") 
+        run_checked("python -m pytest -rfe")
 
 def run_django_tests():
     print("Running django tests")
-    with pushd(FILESERVER_DIR):
-        run_checked_arr([PYTHON, "-m", "django", "test", "--settings", "fileserver.settings"])
+    with pushd(RYGG_DIR):
+        run_checked_arr([PYTHON, "-m", "django", "test", "--settings", "rygg.settings"])
 
 def run_integration_tests():
     # TODO: Make integration tests work on windows
@@ -437,12 +429,12 @@ def run_integration_tests():
     }
 
     print("---------------------------------------------------------------------------------------------------")
-    print("Running fileserver integration tests")
-    with Popen([PYTHON, "manage.py", "runserver", "0.0.0.0:8011"], cwd=FILESERVER_DIR, env={**env, **os.environ}) as server_proc:
-        wait_for_port(8011, interval_secs=0.1)
-        run_checked_arr([PYTHON, os.path.join(FILESERVER_DIR, 'integration_tests', "integration_tests.py"), "local"])
+    print("Running rygg integration tests")
+    with Popen([PYTHON, "manage.py", "runserver", "0.0.0.0:8000"], cwd=RYGG_DIR, env={**env, **os.environ}) as server_proc:
+        wait_for_port(8000, interval_secs=0.1)
+        run_checked_arr([PYTHON, os.path.join(RYGG_DIR, 'integration_tests', "integration_tests.py"), "local"])
         server_proc.terminate()
-    print("Fileserver integration tests passed")
+    print("rygg integration tests passed")
     print("---------------------------------------------------------------------------------------------------")
 
 
@@ -511,15 +503,14 @@ def wheel():
     copy_tree(f"{PROJECT_ROOT}/licenses/", f"{BUILD_TMP}/licenses/", update=True)
     copy_files(f"{PROJECT_ROOT}/backend", BUILD_TMP, list_path= f"{PROJECT_ROOT}/backend/included_files.txt")
     copy_files(f"{PROJECT_ROOT}/rygg", BUILD_TMP,  list_path=f"{PROJECT_ROOT}/rygg/included_files.txt")
-    copy_files(f"{PROJECT_ROOT}/fileserver", BUILD_TMP,  list_path=f"{PROJECT_ROOT}/fileserver/included_files.txt")
     copy_files(f"{PROJECT_ROOT}/perceptilabs_runner", f"{BUILD_TMP}/perceptilabs_runner/",  list_path=f"{PROJECT_ROOT}/perceptilabs_runner/included_files.txt")
     copy_file(f"{WHEELFILES_DIR}/setup.cfg", f"{BUILD_TMP}/setup.cfg", update=True)
-    combine_requirements_files("backend rygg fileserver frontend/static_file_server".split(), f"{BUILD_TMP}/requirements.txt")
+    combine_requirements_files("backend rygg frontend/static_file_server".split(), f"{BUILD_TMP}/requirements.txt")
     copy_file(f"{SCRIPTS_DIR}/setup.py", f"{BUILD_TMP}/setup.py", update=True)
     assemble_package_datas(
-            ["backend", "rygg", "fileserver", "frontend", "perceptilabs_runner"],
+            ["backend", "rygg", "frontend", "perceptilabs_runner"],
            f"{BUILD_TMP}/package_data.json")
-    write_all_lines(f"{BUILD_TMP}/cython_roots.txt", ["perceptilabs\n", "rygg\n", "fileserver\n", "static_file_server\n"])
+    write_all_lines(f"{BUILD_TMP}/cython_roots.txt", ["perceptilabs\n", "rygg\n", "static_file_server\n"])
     with included_files_common() as inc:
         copy_file(inc, f"{BUILD_TMP}/included_files.txt", update=True)
 
@@ -540,30 +531,27 @@ def test():
     mkdir_p(BUILD_TMP)
     copy_files(f"{PROJECT_ROOT}/backend", BUILD_TMP, list_path= f"{PROJECT_ROOT}/backend/included_files.txt")
     copy_files(f"{PROJECT_ROOT}/rygg", BUILD_TMP,  list_path=f"{PROJECT_ROOT}/rygg/included_files.txt")
-    copy_files(f"{PROJECT_ROOT}/fileserver", BUILD_TMP,  list_path=f"{PROJECT_ROOT}/fileserver/included_files.txt")
     copy_files(f"{PROJECT_ROOT}/perceptilabs_runner", f"{BUILD_TMP}/perceptilabs_runner/",  list_path=f"{PROJECT_ROOT}/perceptilabs_runner/included_files.txt")
-    combine_requirements_files("backend rygg fileserver".split(), f"{BUILD_TMP}/requirements.txt")
+    combine_requirements_files("backend rygg".split(), f"{BUILD_TMP}/requirements.txt")
     copy_file(f"{SCRIPTS_DIR}/setup.py", f"{BUILD_TMP}/setup.py", update=True)
-    write_all_lines(f"{BUILD_TMP}/cython_roots.txt", ["perceptilabs\n", "rygg\n", "fileserver\n", "static_file_server\n"])
+    write_all_lines(f"{BUILD_TMP}/cython_roots.txt", ["perceptilabs\n", "rygg\n", "static_file_server\n"])
     run_pytest_tests()
     run_django_tests()
     run_integration_tests()
-    run_lint_test()    
+    run_lint_test()
     run_cython_test()
 
-    
+
 class DockerBuilder():
     @staticmethod
     def all(do_clean=False):
         DockerBuilder.assembleCompose(do_clean=do_clean)
-        DockerBuilder.assembleFileserver(do_clean=do_clean)
         DockerBuilder.assembleKernel(do_clean=do_clean)
         DockerBuilder.assembleFrontend(do_clean=do_clean)
         DockerBuilder.assembleRygg(do_clean=do_clean)
         DockerBuilder.build_kernel()
         DockerBuilder.build_frontend()
         DockerBuilder.build_rygg()
-        DockerBuilder.build_fileserver()
 
 
     @staticmethod
@@ -573,14 +561,6 @@ class DockerBuilder():
 
         mkdir_p(BUILD_DOCKER_COMPOSE)
         DockerBuilder._assemble_docker_compose()
-
-    def assembleFileserver(do_clean=False):
-        if do_clean:
-            rm_rf(BUILD_DOCKER_KERNEL)
-
-        mkdir_p(BUILD_DOCKER_FILESERVER)
-        versionString = calc_version()
-        DockerBuilder._assemble_fileserver_docker(versionString)
 
     @staticmethod
     def assembleKernel(do_clean=False):
@@ -627,17 +607,6 @@ class DockerBuilder():
 
 
     @staticmethod
-    def _assemble_fileserver_docker(versions: Versions):
-        copy_files(f"{FILESERVER_DIR}/", f"{BUILD_DOCKER_FILESERVER}", list_path=f"{FILESERVER_DIR}/included_files.txt")
-        copy_file(f"{FILESERVER_DIR}/requirements.txt", f"{BUILD_DOCKER_FILESERVER}/requirements.txt", update=True)
-        copy_file(f"{FILESERVER_DIR}/Dockerfile", f"{BUILD_DOCKER_FILESERVER}/Dockerfile", update=True)
-        copy_tree(f"{BACKEND_SRC}/perceptilabs/tutorial_data/", f"{BUILD_DOCKER_FILESERVER}/tutorial_data/", update=True)
-        copy_tree(f"{PROJECT_ROOT}/licenses/", f"{BUILD_DOCKER_FILESERVER}/licenses/", update=True)
-        set_fileserver_inner_version(BUILD_DOCKER_FILESERVER, versions)
-        DockerBuilder._set_dockerfile_version_label(BUILD_DOCKER_FILESERVER, versions)
-
-
-    @staticmethod
     def _assemble_kernel_docker(versions: Versions):
         rm_rf(f"{BACKEND_SRC}/upstream")
         rm_rf(f"{BACKEND_SRC}/downstream")
@@ -653,7 +622,7 @@ class DockerBuilder():
         sed_i(f"{BUILD_DOCKER_KERNEL}/requirements.txt", "^opencv-python.*$", "opencv-python-headless")
 
 
-        write_all_lines(f"{BUILD_DOCKER_KERNEL}/cython_roots.txt", ["perceptilabs\n", "fileserver\n"])
+        write_all_lines(f"{BUILD_DOCKER_KERNEL}/cython_roots.txt", ["perceptilabs\n"])
 
         DockerBuilder._set_dockerfile_version_label(BUILD_DOCKER_KERNEL, versions)
         write_version_file(BUILD_DOCKER_KERNEL, versions)
@@ -673,9 +642,15 @@ class DockerBuilder():
         set_frontend_version(f"{BUILD_DOCKER_FRONTEND}/package.json", versions)
 
 
+
     @staticmethod
     def _assemble_rygg_docker(versions: Versions):
-        copy_tree(f"{RYGG_DIR}/", f"{BUILD_DOCKER_RYGG}", update=True)
+        copy_files(f"{RYGG_DIR}/", f"{BUILD_DOCKER_RYGG}", list_path=f"{RYGG_DIR}/included_files.txt")
+        copy_file(f"{RYGG_DIR}/requirements.txt", f"{BUILD_DOCKER_RYGG}/requirements.txt", update=True)
+        copy_file(f"{RYGG_DIR}/start.sh", f"{BUILD_DOCKER_RYGG}/start.sh", update=True)
+        copy_file(f"{RYGG_DIR}/wait-for-db.py", f"{BUILD_DOCKER_RYGG}/wait-for-db.py", update=True)
+        copy_file(f"{RYGG_DIR}/Dockerfile", f"{BUILD_DOCKER_RYGG}/Dockerfile", update=True)
+        copy_tree(f"{BACKEND_SRC}/perceptilabs/tutorial_data/", f"{BUILD_DOCKER_RYGG}/tutorial_data/", update=True)
         copy_tree(f"{PROJECT_ROOT}/licenses/", f"{BUILD_DOCKER_RYGG}/licenses/", update=True)
         set_rygg_inner_version(BUILD_DOCKER_RYGG, versions)
         DockerBuilder._set_dockerfile_version_label(BUILD_DOCKER_RYGG, versions)
@@ -700,17 +675,11 @@ class DockerBuilder():
         # TODO: get rygg to build with obfuscation like the kernel does
         # TODO: run a sanity check on rygg
 
-    @staticmethod
-    def build_fileserver():
-        with pushd(BUILD_DOCKER_FILESERVER):
-            run_checked("docker build . --tag=dev/fileserver:latest")
-
-
 def clean():
     rm_rf(BUILD_DIR)
 
 if __name__ == "__main__":
-    USAGE = f"USAGE: {__file__} (clean|wheel|test|docker (kernel|frontend|rygg|fileserver|all|compose))"
+    USAGE = f"USAGE: {__file__} (clean|wheel|test|docker (kernel|frontend|rygg|all|compose))"
 
     if len(sys.argv) < 2:
         print(USAGE)
@@ -736,8 +705,6 @@ if __name__ == "__main__":
             DockerBuilder.assembleCompose(do_clean=do_clean)
         elif dockertype == "kernel":
             DockerBuilder.assembleKernel(do_clean=do_clean)
-        elif dockertype == "fileserver":
-            DockerBuilder.assembleFileserver(do_clean=do_clean)
         elif dockertype == "frontend":
             DockerBuilder.assembleFrontend(do_clean=do_clean)
         elif dockertype == "rygg":
