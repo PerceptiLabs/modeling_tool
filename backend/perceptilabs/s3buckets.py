@@ -53,17 +53,3 @@ class S3BucketAdapter:
                 continue
             os.remove(path)
 
-    
-
-
-if __name__ == "__main__":
-    id_ = None
-    secret = None
-    id_ = "AKIAZYLA7ETUIOS73NHX"
-    secret = "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"
-    bucket = "perceptitest"
-
-    adapter = S3BucketAdapter(bucket, None, id_, secret)
-    print(adapter.get_keys())
-
-    

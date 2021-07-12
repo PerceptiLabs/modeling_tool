@@ -249,12 +249,7 @@ def upload_logs(zip_name):
 
     logger = logging.getLogger(APPLICATION_LOGGER)
 
-    from perceptilabs.azure import AzureUploader, AZURE_CONNSTR_EU, AZURE_CONTAINER_EU, AZURE_CONNSTR_US, AZURE_CONTAINER_US
-
-    data_uploaders = [
-        AzureUploader(AZURE_CONNSTR_EU, AZURE_CONTAINER_EU),
-        AzureUploader(AZURE_CONNSTR_US, AZURE_CONTAINER_US)
-    ]
+    from perceptilabs.azure import AzureUploader
 
     try:
         directory_path = tempfile.mkdtemp(prefix='perceptilabs_logs_')
@@ -265,17 +260,15 @@ def upload_logs(zip_name):
             shutil.copy(source_file, dest_file)
 
         make_temp_copy(APPLICATION_LOG_FILE, directory_path)
-        make_temp_copy(DATA_LOG_FILE, directory_path)        
-        
+        make_temp_copy(DATA_LOG_FILE, directory_path)
+
         zip_path_no_ext = os.path.join(archives_path, zip_name)
         zip_full_path = zip_path_no_ext + '.zip'
 
         shutil.make_archive(zip_path_no_ext, 'zip', root_dir=directory_path)
         shutil.copyfile(zip_full_path, os.path.join(os.path.dirname(os.path.abspath(__file__)),'bundle.zip')) # TODO: only in debug mode??
 
-        for uploader in data_uploaders:
-            uploader.upload(zip_full_path)
-            logger.info(f"Ran uploader {uploader}. File path: {zip_full_path}")
+        AzureUploader.upload(zip_full_path)
     finally:
         if os.path.exists(directory_path):
             shutil.rmtree(directory_path)
