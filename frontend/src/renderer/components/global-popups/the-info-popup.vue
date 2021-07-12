@@ -91,7 +91,15 @@
           .catch((err)=> { this.styleClipboard['text-error'] = true })
       },
       closePopup() {
-        this.$store.commit('globalView/HIDE_allGlobalPopups');
+        if (this.infoPopup) {
+          this.$store.commit('globalView/gp_infoPopup', false);
+        }
+        if (this.errorPopup) {
+          this.$store.commit('globalView/gp_errorPopup', false);
+        }
+        if (this.comingSoonPopup) {
+          this.$store.commit('globalView/gp_ComingSoonPopup', false);
+        }
       },
     }
   }

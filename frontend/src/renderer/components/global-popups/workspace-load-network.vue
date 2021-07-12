@@ -1,6 +1,7 @@
 <template lang="pug">
   base-global-popup(
     :tab-set="popupTitle"
+    @closePopup="closePopup"
     )
     template(slot="Choose what to load-content")
       .settings-layer_section
@@ -40,7 +41,10 @@ export default {
   },
   methods: {
     closePopup() {
-      this.$store.commit('globalView/HIDE_allGlobalPopups');
+      this.$store.commit('globalView/set_loadSettingPopup', {
+        visible: false,
+        ok: null
+      });
     },
     ok() {
       this.okAction(this.isLoadTrainedModel);

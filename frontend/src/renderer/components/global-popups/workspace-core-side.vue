@@ -60,7 +60,7 @@ export default {
   },
   methods: {
     ...mapMutations({
-      closePopup:               'globalView/HIDE_allGlobalPopups',
+      GP_showCoreSideSettings:               'globalView/GP_showCoreSideSettings',
       set_showTrainingSpinner:  'mod_workspace/SET_showStartTrainingSpinner',
       updateCheckpointPaths:    'mod_workspace/updateCheckpointPaths',
       setCurrentStatsIndex:     'mod_workspace/set_currentStatsIndex'
@@ -76,6 +76,9 @@ export default {
       setCurrentView:           'mod_tutorials/setCurrentView',
       setChecklistItemComplete: 'mod_tutorials/setChecklistItemComplete',
     }),
+    closePopup() {
+      this.GP_showCoreSideSettings(false);
+    },
     setTab(i) {
       this.tabSelected = i;
     },

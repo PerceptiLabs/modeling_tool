@@ -1,6 +1,7 @@
 <template lang="pug">
   base-global-popup(
     :tab-set="popupTitle"
+    @closePopup="closePopup"
     )
     template(slot="Choose what to save-content")
       .settings-layer_section(v-if="!popupSettings.isFreezeInfo")

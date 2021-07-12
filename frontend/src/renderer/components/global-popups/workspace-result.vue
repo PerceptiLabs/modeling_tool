@@ -56,7 +56,7 @@ export default {
     }),
     gotToTestPage(){
       this.$router.push({name: 'test'});
-      this.$store.commit('globalView/HIDE_allGlobalPopups');
+      this.$store.commit('globalView/GP_showNetResult', false);
     },
     // runTest() {
     //   this.closePopup();
@@ -68,7 +68,7 @@ export default {
     //   this.setCurrentView('tutorial-test-view');
     // },
     closePopup() {
-      this.$store.commit('globalView/HIDE_allGlobalPopups');
+      this.$store.commit('globalView/GP_showNetResult', false);
       this.$store.dispatch('mod_workspace/SET_netMode', 'edit');
     },
     toFixedWithMaxDigits(value, maxDigits) {

@@ -68,7 +68,7 @@ export default {
   methods: {
     closePopup() {
       if (!this.cancelCallback || typeof this.cancelCallback !== 'function') {
-        this.$store.commit('globalView/HIDE_allGlobalPopups');
+        this.$store.commit('globalView/set_filePickerPopup', false);
       } else {
         this.cancelCallback();
       }

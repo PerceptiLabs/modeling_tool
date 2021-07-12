@@ -1,5 +1,5 @@
 <template lang="pug">
-  base-global-popup(:tab-set="popupTitle")
+  base-global-popup(:tab-set="popupTitle" @closePopup="cancel")
     //- This is the form
     //- The confirmation is below
     template(v-if="isForm")
@@ -151,7 +151,7 @@
         this.closePopup();
       },
       closePopup() {
-        this.$store.commit('globalView/HIDE_allGlobalPopups');
+        this.$store.commit('globalView/set_createIssuesPopup', false);
       }
     }
   }

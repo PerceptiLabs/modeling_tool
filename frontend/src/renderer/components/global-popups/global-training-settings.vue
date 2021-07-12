@@ -2,6 +2,7 @@
   base-global-popup(
     :tab-set="popupTitle"
     class="global-training-settings"
+    @closePopup="closeModal"
   )
     template(:slot="popupTitle[0] + '-content'")
       .form_row

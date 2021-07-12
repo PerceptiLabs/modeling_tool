@@ -1,5 +1,5 @@
 <template lang="pug">
-  base-global-popup(:tab-set="popupTitle")
+  base-global-popup(:tab-set="popupTitle" @closePopup="closePopup")
     template(slot="Parser-content")
       .form_row
         .form_label Trainable:
@@ -81,7 +81,7 @@ export default {
         .catch(()=> {})
     },
     closePopup() {
-      this.$store.commit('globalView/HIDE_allGlobalPopups');
+      this.$store.commit('globalView/GP_showWorkspaceBeforeImport', false);
     },
     choosePbFile() {
       this.$store.dispatch('globalView/SET_filePickerPopup', 

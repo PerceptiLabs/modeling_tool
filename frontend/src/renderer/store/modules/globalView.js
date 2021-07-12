@@ -40,6 +40,7 @@ const state = {
   pageTitle: '',
   isGridEnabled: false,
   isMiniMapNavigatorOpened: false,
+  shouldCloseAllGlobalPopups: false,
 };
 const getters = {
   GET_appPath(state) {
@@ -121,7 +122,7 @@ const mutations = {
     state.popupConfirmOk = value.ok;
   },
   gp_deleteConfirmPopup(state, value) {
-    state.globalPopup.showDeleteConfirmPopup = true;
+    state.globalPopup.showDeleteConfirmPopup = value.show === undefined ? true : value.show;
     state.popupConfirmCancel = value.cancel;
     state.popupConfirmOk = value.ok;
   },

@@ -1,5 +1,5 @@
 <template lang="pug">
-  base-global-popup(:tab-set="popupTitle")
+  base-global-popup(:tab-set="popupTitle" @closePopup="closePopup")
     template(slot="Export-content")
       .settings-layer_section
         .form_holder
@@ -84,7 +84,7 @@ export default {
       this.$store.dispatch('globalView/SET_filePickerPopup', {confirmCallback: this.setExportPath});
     },
     closePopup() {
-      this.$store.commit('globalView/HIDE_allGlobalPopups');
+      this.$store.commit('globalView/set_exportNetworkPopup', false);
     },
     async ok() {
       if(this.settings.Location !== '' && this.settings.Type === 'ipynb') {

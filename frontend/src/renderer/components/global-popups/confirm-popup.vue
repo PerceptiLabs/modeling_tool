@@ -36,7 +36,7 @@
       },
       isShowPopup() {
         return this.infoPopup.length
-      },
+      }
     },
     methods: {
       ok() {
@@ -48,7 +48,11 @@
         this.closePopup();
       },
       closePopup() {
-        this.$store.commit('globalView/HIDE_allGlobalPopups');
+        this.$store.commit('globalView/gp_confirmPopup', {
+          text: false,
+          ok: null,
+          cancel: null,
+        });
       }
     }
   }

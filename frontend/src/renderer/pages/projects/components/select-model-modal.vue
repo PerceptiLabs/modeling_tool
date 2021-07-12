@@ -644,6 +644,7 @@ export default {
         model_id: modelId
       });
       this.showErrorPopup(errorMessage);
+      this.isCreateModelLoading = false;
     },
     async createModelTF2X(runStatistics = false) {
       if (!this.csvData) {
@@ -657,7 +658,7 @@ export default {
         // TODO: showErrorPopup closes all popups, need to change this logic for UX
         // Annoying to have to type everything in again
         this.showErrorPopup(`The model name "${modelName}" already exists.`);
-        this.setCurrentView("tutorial-model-hub-view");
+        this.isCreateModelLoading = false;
         return;
       }
 
@@ -665,7 +666,7 @@ export default {
         this.showErrorPopup(
           `The "${modelName}" folder already exists at "${modelPath}".`
         );
-        this.setCurrentView("tutorial-model-hub-view");
+        this.isCreateModelLoading = false;
         return;
       }
 
@@ -770,7 +771,7 @@ export default {
       const modelNames = modelMeta.map(x => x.name);
       if (modelNames.indexOf(modelName) !== -1) {
         this.showErrorPopup(`The model name "${modelName}" already exists.`);
-        this.setCurrentView("tutorial-model-hub-view");
+        this.isCreateModelLoading = false;
         return;
       }
 
@@ -782,7 +783,7 @@ export default {
         this.showErrorPopup(
           `The "${modelName}" folder already exists at "${this.modelPath}".`
         );
-        this.setCurrentView("tutorial-model-hub-view");
+        this.isCreateModelLoading = false;
         return;
       }
 
@@ -952,12 +953,14 @@ export default {
             this.showErrorPopup(
               "Couldn't get model recommendation due to: " + res["errorMessage"]
             );
+            this.showLoadingSpinner = false;
           }
           return res;
         })
         .catch(err => {  
           console.error(err);         
           this.showErrorPopup("Error: Couldn't infer data types");
+          this.showLoadingSpinner = false;
         });           
 
         if (fileContents && fileContents.file_contents) {

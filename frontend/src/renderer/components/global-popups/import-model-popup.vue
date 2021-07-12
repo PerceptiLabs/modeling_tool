@@ -1,5 +1,5 @@
 <template lang="pug">
-  base-global-popup(:tab-set="popupTitle")
+  base-global-popup(:tab-set="popupTitle" @closePopup="closePopup")
     template(slot="Import from-content")
       div.padding-fix
         div.import-model-tabs-wrapper
@@ -94,7 +94,7 @@ export default {
       this.currentTab = tabType;
     },
     closePopup() {
-      this.$store.commit('globalView/HIDE_allGlobalPopups');
+      this.$store.commit('globalView/set_showImportNetworkfromGitHubOrLocalPopup', false);
     },
     openLoadGithubLocation() {
       this.$store.dispatch('globalView/SET_filePickerPopup', {confirmCallback: this.setGithubModelLocationPath});

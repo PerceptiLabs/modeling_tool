@@ -56,7 +56,11 @@
         this.closePopup();
       },
       closePopup() {
-        this.$store.commit('globalView/HIDE_allGlobalPopups');
+        this.$store.commit('globalView/gp_deleteConfirmPopup', {
+          show: false,
+          ok: null,
+          cancel: null
+        });
       }
     }
   }

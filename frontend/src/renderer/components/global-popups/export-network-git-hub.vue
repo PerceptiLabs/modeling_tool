@@ -1,5 +1,5 @@
 <template lang="pug">
-  base-global-popup(:tab-set="popupTitle" v-if="isGithubTokenSetted")
+  base-global-popup(:tab-set="popupTitle" v-if="isGithubTokenSetted" @closePopup="closePopup")
     template(slot="Export to GitHub-content")
       div
         .settings-layer_section
@@ -92,7 +92,7 @@ export default {
   },
   methods: {
     closePopup() {
-      this.$store.commit('globalView/HIDE_allGlobalPopups');
+      this.$store.commit('globalView/set_exportNetworkToGitHubPopup', false);
     },
     getDataComponentsFilePaths() {
       const networkElementList = this.currentModel.networkElementList

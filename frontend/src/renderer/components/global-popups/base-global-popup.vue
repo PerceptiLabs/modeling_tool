@@ -59,7 +59,7 @@ export default {
       this.tabSelected = name;
     },
     closePopup() {
-      this.$store.commit('globalView/HIDE_allGlobalPopups');
+      this.$emit('closePopup');
     }
   }
 }
