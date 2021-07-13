@@ -111,7 +111,7 @@ python main.py --mode=rendering --debug
 
 # run rygg
 cd $PL_ROOT/rygg
-PL_FILE_SERVING_TOKEN=thetoken PL_TUTORIALS_DATA=$PL_ROOT/backend/perceptilabs/tutorial_data PL_FILE_UPLOAD_DIR=$(pwd) container=a python manage.py runserver 0.0.0.0:8000
+PL_FILE_SERVING_TOKEN=12312 PL_TUTORIALS_DATA=$PL_ROOT/backend/perceptilabs/tutorial_data PL_FILE_UPLOAD_DIR=$(pwd) python manage.py runserver 0.0.0.0:8000
 
 
 # Set up and run the static_file_server
@@ -123,7 +123,7 @@ mv src/dist static_file_server/static_file_server/
 cd static_file_server
 pip install --upgrade pip setuptools
 pip install -r requirements.txt
-PL_FILE_SERVING_TOKEN=thetoken PL_KERNEL_URL=/kernel/ PL_RYGG_URL=/rygg/ PL_KEYCLOAK_URL=/auth/ python manage.py runserver 8080
+PL_FILE_SERVING_TOKEN=12312 PL_KERNEL_URL=/kernel/ PL_RYGG_URL=/rygg/ PL_KEYCLOAK_URL=/auth/ python manage.py runserver 8080
 ```
 
 In case of you are facing some issues with calling rygg, run `python manage.py migrate` inside `rygg` and run `python manage.py runserver`.
