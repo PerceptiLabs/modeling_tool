@@ -62,6 +62,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rygg.api',
+    'rygg.files',
     'rygg.mixpanel_proxy',
 ]
 

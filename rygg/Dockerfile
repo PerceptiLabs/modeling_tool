@@ -16,6 +16,7 @@ LABEL name="PerceptiLabs-rygg-app" \
       summary="A component of the PerceptiLabs modeling platform." \
       description="This image works in the background to support operations of the PerceptiLabs modeling platform."
 
+USER 0
 WORKDIR /app
 
 # Copying directory inside docker
