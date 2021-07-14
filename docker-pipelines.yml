@@ -5,12 +5,6 @@ variables:
   # CommitId is passed in to the app_variables.json file
 - name: BuildVariables.CommitId
   value: $(Build.SourceVersion)
-- name: savetolatest
-  ${{ if eq( variables['Build.SourceBranch'], 'refs/heads/master') }}:
-    value: true
-  ${{ if ne( variables['Build.SourceBranch'], 'refs/heads/master') }}:
-    value: false
- 
 
 jobs:
   - job: startvm
@@ -154,18 +148,6 @@ jobs:
           storage: 'perceptilabs'
           ContainerName: 'enterprisedev'
           BlobPrefix: '$(Build.BuildId)/'
-
-      - task: AzureFileCopy@4
-        condition: eq(${{ variables['savetolatest'] }}, true)
-        displayName: publish the installation files to latest
-        inputs:
-          SourcePath: '$(System.ArtifactsDirectory)/installation_dev/**'
-          azureSubscription: 'XSP72180|MICROSOFT|XSP72180|XSP524371(d9d6ebad-f86e-4961-9964-5665aa01fcfc)'
-          Destination: 'AzureBlob'
-          storage: 'perceptilabs'
-          ContainerName: 'enterprisedev'
-          BlobPrefix: 'latest/'
-          CleanTargetBeforeCopy: true
 
   - job: stopvm
     dependsOn: pushfiles

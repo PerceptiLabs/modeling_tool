@@ -10,7 +10,6 @@ parameters:
   - name: versionid
     displayName: Requested Version
     type: string
-    default: latest
   - name: gpus
     displayName: Requested GPU count
     type: number
