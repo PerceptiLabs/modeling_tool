@@ -1,4 +1,4 @@
-export const getModelContent = (model, filepath) => ({
+export const getModelContent = (model, filepath, location) => ({
   networkName: model.name,
   networkID: model.model_id,
   networkMeta: {
@@ -417,7 +417,7 @@ export const getModelContent = (model, filepath) => ({
     created: "2021-05-30T15:24:48.584438Z",
     updated: "2021-05-30T15:24:48.584438Z",
     saved_by: "",
-    location: "C:\\Users\\Eric\\Documents\\Perceptilabs\\Default/Model 3",
+    location: location,
     saved_version_location: "",
   },
 });

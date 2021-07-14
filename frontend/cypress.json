@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/cypress-io/cypress/develop/cli/schema/cypress.schema.json",
   "chromeWebSecurity": false,
-  "viewportWidth": 1366,
+  "viewportWidth": 1440,
   "viewportHeight": 768,
   "baseUrl": "http://localhost:8080",
   "ignoreTestFiles": "**/legacy-tests/*.*",

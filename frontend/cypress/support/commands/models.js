@@ -15,7 +15,7 @@ Cypress.Commands.add("deleteModel", (modelId) => {
 });
 
 Cypress.Commands.add("deleteAllModels", () => {
-  return cy.ryggRequest("/projects").then((projectResponse) => {
+  return cy.ryggRequest("/projects/").then((projectResponse) => {
     const projects = projectResponse.body.results;
 
     projects.forEach((project) => {
@@ -27,18 +27,19 @@ Cypress.Commands.add("deleteAllModels", () => {
 });
 
 Cypress.Commands.add("createMnistModel", (modelName) => {
-  cy.ryggRequest("/projects").then((projectResponse) => {
+  cy.ryggRequest("/projects/").then((projectResponse) => {
     const project = projectResponse.body.results[0];
+    const location = project.default_directory + "/" + modelName;
 
     cy.fixture("modelConfig").then(({ dataCSVPath }) => {
-      cy.ryggRequest("/models/", "POST", {
+      cy.ryggRequest("/models/", "POST", {}, {
         name: modelName,
         project: project.project_id,
-        location: project.default_directory + "/" + modelName,
+        location: location,
       }).then((modelResponse) => {
         const model = modelResponse.body;
 
-        const modelInfo = getModelContent(model, dataCSVPath);
+        const modelInfo = getModelContent(model, dataCSVPath, location);
 
         cy.ryggRequest(
           "/json_models",

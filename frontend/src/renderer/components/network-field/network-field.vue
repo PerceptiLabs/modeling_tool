@@ -51,6 +51,7 @@
           :d="arrow.positionArrow.path.arrow"
           :style="arrowStyle"
           style="pointer-events: all"
+          tabindex="0"
           )
           //inline styles need for sreenshot
 
