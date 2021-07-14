@@ -40,12 +40,16 @@ const state = {
   pageTitle: '',
   isGridEnabled: false,
   isMiniMapNavigatorOpened: false,
+  isEnterpriseApp: false,
   shouldCloseAllGlobalPopups: false,
 };
 const getters = {
   GET_appPath(state) {
     return state.appPath
   },
+  get_isEnterpriseApp(state) {
+    return state.isEnterpriseApp;
+  }
 };
 
 const mutations = {
@@ -161,6 +165,9 @@ const mutations = {
   },
   showTestConfigurationPopupMutation(state, value) {
     state.globalPopup.showTestConfigurationPopup = value;
+  },
+  set_isEnterpriseApp(state, isEnterpriseAppValue) {
+    state.isEnterpriseApp = isEnterpriseAppValue;
   }
 };
 

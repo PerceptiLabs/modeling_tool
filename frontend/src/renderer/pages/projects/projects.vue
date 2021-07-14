@@ -8,6 +8,18 @@
     div(v-show="!showNewModelPopup").project-wrapper
       div.header-controls
         div.left-side
+          .button-container.mr-20(
+            v-if="isEnterpriseMode"
+            v-tooltip:bottom="'Load Dataset'"
+            )
+            span.header-action-button-wrapper(
+              @click="loadDataset"
+              :data-tutorial-target="'tutorial-model-hub-new-button'"
+            )
+              span.btn-round-icon.btn-rounded-new(:class="{'high-lighted': isNewUser}")
+                img.btn-rounded-new-image(src="../../../../static/img/project-page/plus.svg")
+              span.left-header-btn-text Load Dataset
+              
           .button-container(v-tooltip:bottom="'Import Model'")
             span.header-action-button-wrapper.import-button-container(
               @click="openLoadModelPopup()"
@@ -186,7 +198,7 @@
   import { mapActions, mapMutations, mapState, mapGetters } from 'vuex';
   import { isWeb, stringifyNetworkObjects } from "@/core/helpers";
   import cloneDeep from 'lodash.clonedeep';
-  import { getModelJson as rygg_getModelJson } from '@/core/apiRygg';
+  import { getModelJson as rygg_getModelJson, uploadDatasetToFileserver } from '@/core/apiRygg';
   import { LOCAL_STORAGE_HIDE_DELETE_MODAL } from '@/core/constants.js'
 
   const mockModelList = [
@@ -242,6 +254,7 @@
         user:                 'mod_user/GET_userProfile',
         currentProject:       'mod_project/GET_project',
         getCurrentStepCode:   'mod_tutorials/getCurrentStepCode',
+        isEnterpriseMode:     'globalView/get_isEnterpriseApp',
       }),
       ...mapState({
         currentProjectId:     state => state.mod_project.currentProject,
@@ -702,7 +715,17 @@
         const modelId = this.selectedListIds[0];
         this.goToNetworkView(modelId);
         this.$store.dispatch('globalView/SET_exportNetworkToGithubPopup', true);
-      }
+      },
+      loadDataset() {
+        const fileInput = document.createElement('input');
+        fileInput.setAttribute('type', 'file');
+        fileInput.setAttribute('accept', '.csv,.zip');
+        fileInput.addEventListener('change', (e) => {
+          const file = e.target.files[0];
+          uploadDatasetToFileserver(file)
+        })
+        fileInput.click();
+      },
     },
     mounted() {
     },
@@ -1116,4 +1139,7 @@
   .test-link {
     color: #fff;
   }
+  .mr-20 {
+     margin-right: 20px;
+   }
 </style>

@@ -57,7 +57,8 @@
   import { MODAL_PAGE_PROJECT, MODAL_PAGE_QUESTIONNAIRE } from '@/core/constants.js';
   import { isUrlReachable } from '@/core/apiRygg.js';
   import { isKeycloakReachable } from '@/core/apiKeyCloak.js';
-
+  import isEnterprise from "@/core/isEnterprise";
+  
   export default {
     name: 'TheApp',
     components: {
@@ -100,7 +101,10 @@
         });
 
       this.$store.commit('mod_project/setIsDefaultProjectMode');
-      
+      isEnterprise()
+        .then(isEnterpriseAppValue => {
+          this.$store.commit('globalView/set_isEnterpriseApp', isEnterpriseAppValue)
+        })
     },
     mounted() {
       this.$intercom.boot({

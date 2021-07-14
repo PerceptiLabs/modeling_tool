@@ -120,8 +120,7 @@ def keycloak_url(request):
 def kernel_version(request):
     return check_kernel_version(request, "PL_KERNEL_URL", "kernel")
 
-@api_view(["HEAD"])
+@api_view(["GET"])
 def is_enterprise(request):
-    code = 204 if IS_CONTAINERIZED else 404
-    return Response(status=code)
+    return Response(json.dumps({"is_enterprise": IS_CONTAINERIZED}), content_type="application/json")
 

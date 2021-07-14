@@ -187,6 +187,19 @@ export const isUrlReachable = async (path) => {
   }
 }
 
+export const uploadDatasetToFileserver = async (file, overwrite = false) => {
+  try {
+    const data = new FormData();
+    data.append('file_uploaded', file);
+    data.append('name', file.name);
+    data.append('overwrite', overwrite ? 'true': 'false');
+    const fs = await whenHaveFileservingToken();
+    return await fs.post('/upload', data);
+  } catch(e) {
+    console.error(e);
+  }
+}
+
 export const rygg = {
 
   get(path) {
