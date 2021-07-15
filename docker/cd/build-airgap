@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -Eeo pipefail
+set -x
 if [ $# -lt 1 ]; then
   echo "USAGE $0 <version>"
   exit 1
@@ -70,7 +71,7 @@ sudo echo -n
 
 BUILD_OUTPUT=$(mktemp -d)
 DEST_ZIP=${BUILD_OUTPUT}/${ZIP_NAME}
-SYSTEM_MIGRATIONS=${BUILD_OUTPUT}/system_migrations
+SYSTEM_MIGRATIONS=${BUILD_OUTPUT}/system_migrations.tar.gz
 
 echo -n "Getting release files for version ${PL_VERSION} ... "
 for SRC in ${RELEASE_FILES[@]}; do
@@ -78,15 +79,18 @@ for SRC in ${RELEASE_FILES[@]}; do
 done
 echo "done"
 
+SED=$([[ ${OSTYPE} =~ darwin ]] && echo gsed || echo sed)
 docker_images=$(\
   tar -x -f "${SYSTEM_MIGRATIONS}" -O --include="*docker-compose*.yml" | \
-  xargs grep image: | \
-  sed "s/.*image:[[:blank:]]*\(.*\)$/\1/g" | \
-  sed "s|\${CONTAINER_REGISTRY}|$CONTAINER_REGISTRY|g" | \
-  sed "s|\${PL_VERSION}|$PL_VERSION|g" | \
+  grep image: | \
+  grep -v fileserver | \
+  $SED "s/.*image:[[:blank:]]*\(.*\)$/\1/g" | \
+  $SED "s|\${CONTAINER_REGISTRY}|$CONTAINER_REGISTRY|g" | \
+  $SED "s|\${PL_VERSION}|$PL_VERSION|g" | \
   sort --unique)
 
 # pull the images
+echo "${docker_images}"
 echo "${docker_images}" | xargs -L 1 sudo docker pull
 
 # save the images
