@@ -47,9 +47,9 @@ def RGB2RGBa(data: np.ndarray, normalize: bool):
 
 def grayscale2RGBA(data: np.ndarray):
     '''Converts grayscale to RGBA'''
-    data = np.squeeze(data)
-    if len(np.shape(data)) < 2:
-        data = np.expand_dims(data, axis=0)
+    # method accepts only 2 dimensional arrays or 3 dimensional arrays with final dimension = 1.
+    if len(np.shape(data)) > 2:
+        data = np.squeeze(data, axis=2)
     
     (w, h) = np.shape(data)
     newData = np.empty((w, h, 4))
@@ -323,15 +323,16 @@ def create_data_object(
     if size > 1:
         data_list = [vec[0:size] for vec in data_list] 
     
+    type_list_new = type_list
     # Assert that each data vector has a type.
     for i in range(len(type_list), len(data_list)):
         if 'bar_detailed' in type_list:
             type_ = getType(data_list[i], 'bar_detailed')
         else:
             type_ = getType(data_list[i])
-        type_list.append(type_)
+        type_list_new.append(type_)
 
-    for data_vec, type_, style, name in itertools.zip_longest(data_list, type_list, style_list, name_list):
+    for data_vec, type_, style, name in itertools.zip_longest(data_list, type_list_new, style_list, name_list):
         if data_vec is None:
             break
         

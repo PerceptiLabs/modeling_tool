@@ -34,9 +34,9 @@ class NetworkData(View):
 
         for layer_id, layer_results in lw_results.items():            
             layer_spec = graph_spec[layer_id]
-            dim, preview, layer_data_points = self._get_layer_content(layer_spec, layer_results, auto_updated_layers)
+            dimensions, preview, layer_data_points = self._get_layer_content(layer_spec, layer_results, auto_updated_layers)
             trained_layers_info[layer_id] = layer_results.trained
-            dim_content[layer_id] = dim
+            dim_content[layer_id] = dimensions
 
             if preview is not None:
                 subsample_data_info[layer_id] = preview
@@ -60,7 +60,7 @@ class NetworkData(View):
     def _get_layer_content(self, layer_spec, layer_results, auto_updated_layers):
         sample = layer_results.sample.get(layer_spec.preview_variable)
         shape = np.atleast_1d(sample).shape if sample is not None else ()
-        
+
         dim_str = "x".join(str(d) for d in shape)
         dim_content = {"Dim": dim_str}
 

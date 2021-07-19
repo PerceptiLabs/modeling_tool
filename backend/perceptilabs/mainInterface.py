@@ -23,7 +23,7 @@ from perceptilabs import __version__
 from perceptilabs.core_new.errors import LightweightErrorHandler
 from perceptilabs.core_new.extras import LayerExtrasReader
 from perceptilabs.logconf import APPLICATION_LOGGER, set_user_email
-from perceptilabs.lwcore import LightweightCoreAdapter, LightweightCore, LightweightCache
+from perceptilabs.lwcore import LightweightCore, LightweightCache
 import perceptilabs.utils as utils
 import perceptilabs.dataevents as dataevents
 from perceptilabs.messaging.zmq_wrapper import ZmqMessagingFactory, ZmqMessageConsumer
@@ -231,18 +231,8 @@ class Interface():
             raise RuntimeError("Dataset settings must be set!")
             
         data_loader = DataLoader.from_dict(dataset_settings)  # TODO(anton.k): REUSE THIS!
-        
-        if adapter:
-            extras_reader = LayerExtrasReader()
-            error_handler = LightweightErrorHandler()
-            data_dict = {}
-            
-
-            lw_core = LightweightCoreAdapter(graph_spec, extras_reader, error_handler, self._core.issue_handler, self._lw_cache_v2, data_dict, data_loader=data_loader)
-            return lw_core, extras_reader, data_dict
-        else:
-            lw_core = self._create_lw_core_internal(data_loader)
-            return lw_core, None, None
+        lw_core = self._create_lw_core_internal(data_loader)
+        return lw_core, None, None
 
     def _create_lw_core_internal(self, data_loader, use_issue_handler=True):
         lw_core = LightweightCore(

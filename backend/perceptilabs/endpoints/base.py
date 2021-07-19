@@ -110,7 +110,7 @@ def after_request(response):
 @app.errorhandler(Exception)
 def handle_endpoint_error(e):
     message = traceback_from_exception(e)
-    logger.error(f"Error in request '{request.endpoint}'")
+    logger.exception(f"Error in request '{request.endpoint}'")
     return make_response(message), 500
 
 
