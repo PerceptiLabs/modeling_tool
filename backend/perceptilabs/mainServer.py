@@ -21,10 +21,8 @@ PORT_RENDERING_KERNEL = 5001
 APP_VARIABLES = utils.get_app_variables()        
 COMMIT_ID = APP_VARIABLES["BuildVariables"]["CommitId"]
 
+utils.allow_memory_growth_on_gpus()        
 
-
-utils.allow_memory_growth_on_gpus()
-    
     
 def get_input_args():
     parser = argparse.ArgumentParser()
@@ -67,6 +65,7 @@ def main():
 
 
     if args.mode == 'training':
+        utils.allow_memory_growth_on_gpus()        
         setup_sentry(COMMIT_ID)
         set_sentry_tag('error-type', 'startup-error')
     
@@ -103,14 +102,25 @@ def main():
             perceptilabs.logconf.upload_logs(zip_name)
             
     elif args.mode == 'rendering':
-        from perceptilabs.endpoints.base import app
+        utils.disable_gpus()  # Rendering and training kernels will compete for resources when running on the same machine. 
+        from perceptilabs.endpoints.base import create_app
 
         # TODO: put constants in config
         
         if args.debug:
+            app = create_app(
+                data_metadata_cache={}
+            )            
             app.run(port=PORT_RENDERING_KERNEL, debug=True)
         else:
             from waitress import serve
+            from concurrent.futures import ThreadPoolExecutor
+
+            app = create_app(
+                data_metadata_cache={},
+                executor=ThreadPoolExecutor()
+            )
+            
             serve(app, host="0.0.0.0", port=PORT_RENDERING_KERNEL)            
         
 

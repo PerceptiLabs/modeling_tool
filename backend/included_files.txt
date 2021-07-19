@@ -320,16 +320,23 @@ perceptilabs/tutorial_data/object_detection_labels.npy
 perceptilabs/data/__init__.py
 perceptilabs/data/base.py
 perceptilabs/data/utils.py
+perceptilabs/data/settings.py
 perceptilabs/data/type_inference.py
 
 # backend/perceptilabs/data/pipelines/
 perceptilabs/data/pipelines/__init__.py
 perceptilabs/data/pipelines/base.py
-perceptilabs/data/pipelines/image.py
 perceptilabs/data/pipelines/numerical.py
 perceptilabs/data/pipelines/binary.py
 perceptilabs/data/pipelines/categorical.py
 perceptilabs/data/pipelines/text.py
+
+# backend/perceptilabs/data/pipelines/image/
+perceptilabs/data/pipelines/image/base.py
+perceptilabs/data/pipelines/image/__init__.py
+perceptilabs/data/pipelines/image/loader.py
+perceptilabs/data/pipelines/image/augmenter.py
+perceptilabs/data/pipelines/image/preprocessing.py
 
 # backend/perceptilabs/automation/modelrecommender/
 perceptilabs/automation/modelrecommender/__init__.py
@@ -402,14 +409,28 @@ perceptilabs/tracking/data_selected.py
 # backend/perceptilabs/endpoints/
 perceptilabs/endpoints/base.py
 perceptilabs/endpoints/__init__.py
+
+# backend/perceptilabs/endpoints/data/
+perceptilabs/endpoints/data/__init__.py
+perceptilabs/endpoints/data/base.py
+
+# backend/perceptilabs/endpoints/model_recommendations/
 perceptilabs/endpoints/model_recommendations/__init__.py
 perceptilabs/endpoints/model_recommendations/base.py
+
+# backend/perceptilabs/endpoints/network_data/
 perceptilabs/endpoints/network_data/__init__.py
 perceptilabs/endpoints/network_data/base.py
+
+# backend/perceptilabs/endpoints/type_inference/
 perceptilabs/endpoints/type_inference/__init__.py
 perceptilabs/endpoints/type_inference/base.py
+
+# backend/perceptilabs/endpoints/layer_code/
 perceptilabs/endpoints/layer_code/__init__.py
 perceptilabs/endpoints/layer_code/base.py
+
+# backend/perceptilabs/endpoints/export/
 perceptilabs/endpoints/export/__init__.py
 perceptilabs/endpoints/export/base.py
 perceptilabs/endpoints/utils.py

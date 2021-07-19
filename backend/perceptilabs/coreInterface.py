@@ -46,6 +46,22 @@ CoreCommand = collections.namedtuple('CoreCommand', ['type', 'parameters', 'allo
 CPU_GPU_POLICY = 'force-gpu' # {'use-spec', 'force-gpu', 'force-cpu'}
 
 
+def get_num_data_repeats(settings_dict):
+    """ Repeat data once per enabled augmentation setting. 
+
+    Temporary until we have a frontend solution
+    """
+    augmentations = set(['random_flip', 'random_crop', 'random_rotation'])
+    
+    count = 0
+    for spec_dict in settings_dict['featureSpecs'].values():
+        for preprocessing in spec_dict['preprocessing'].keys():
+            if preprocessing in augmentations:
+                count += 1
+                
+    return count + 1  
+
+
 class coreLogic():
     def __init__(self, networkName, issue_handler, session_id=None):
         logger.info(f"Created coreLogic for network '{networkName}'")
@@ -157,8 +173,9 @@ class coreLogic():
         logger.info(f"Running mode {mode} set for coreLogic w\ network '{self.networkName}'")
 
     def _get_trainer(self, script_factory, graph_spec, training_settings, dataset_settings, checkpoint_directory, load_checkpoint, model_id, user_email):
-        """ Creates a Trainer for the IoInput/IoOutput workflow """        
-        data_loader = DataLoader.from_dict(dataset_settings)
+        """ Creates a Trainer for the IoInput/IoOutput workflow """
+        num_repeats = get_num_data_repeats(dataset_settings)   #TODO (anton.k): remove when frontend solution exists
+        data_loader = DataLoader.from_dict(dataset_settings, num_repeats=num_repeats) 
 
         if load_checkpoint:
             exporter = Exporter.from_disk(
@@ -218,8 +235,8 @@ class coreLogic():
         )
         trainer = self._get_trainer(script_factory, graph_spec, training_settings, dataset_settings, checkpoint_directory, load_checkpoint, model_id, user_email)
 
-        if not self._validate_trainer(trainer):
-            return None
+        #if not self._validate_trainer(trainer):  # TODO(anton.k): uncomment once metadata caching is fixed
+        #    return None
         
         core = self.core = CompatibilityCore(
             self.commandQ,

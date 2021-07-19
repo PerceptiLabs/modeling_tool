@@ -46,7 +46,7 @@ class MnistSuite(BenchmarkSuite):
         validation_set = self.data_loader.get_dataset(partition='validation').map(convert_dataset).batch(32)
 
         input_shape = self.data_loader.get_feature_shape('image_path')
-        preprocessing = self.data_loader.get_preprocessing_pipeline('target', mode='training')
+        preprocessing = self.data_loader.get_preprocessing_pipeline('target')
         n_categories = preprocessing.n_categories
         
         model = tf.keras.Sequential(

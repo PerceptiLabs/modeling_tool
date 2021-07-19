@@ -14,7 +14,7 @@ class CategoricalEncoderBlueprint(EncoderBlueprint):
         Returns:
             the ID of the encoders final layer
         """
-        preprocessing = data_loader.get_preprocessing_pipeline(feature_name, mode='training')
+        preprocessing = data_loader.get_preprocessing_pipeline(feature_name)
         n_categories = preprocessing.n_categories
         id1 = builder.add_layer(
             'IoInput',

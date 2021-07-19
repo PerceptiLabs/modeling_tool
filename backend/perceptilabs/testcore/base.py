@@ -198,7 +198,7 @@ class TestCore():
         return dataset_test_generator
 
     def _get_input_and_output_feature(self, data_loader):
-        specs = data_loader._feature_specs
+        specs = data_loader.feature_specs
         return specs
 
     def set_status(self, status):

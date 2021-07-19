@@ -1,45 +1,48 @@
 import tensorflow as tf
 
-from perceptilabs.data.pipelines.base import PipelineBuilder
+from perceptilabs.data.pipelines.base import PipelineBuilder, BasePipeline
+
+
+class PreprocessingStep(BasePipeline):
+    def call(self, x):
+        if x.dtype in [tf.int32, tf.bool]:
+            return self.lookup_number(x)
+        elif x.dtype == tf.string:
+            return self.lookup_string(x)
+        else:
+            raise ValueError("Invalid Binary inputs")                
+
+    def build(self, tensor_shape):
+        self.lookup_string = self._build_string_lookup()
+        self.lookup_number = self._build_number_lookup()
+
+    def _build_number_lookup(self):
+        return lambda x: tf.cast(x, tf.float32)
+        
+    def _build_string_lookup(self):
+        positives = ['true', 'spam']
+        negatives = ['false', 'ham']
+        
+        keys = tf.constant(positives + negatives)
+        values = tf.constant([1.0 for _ in range(len(positives))] + [0.0 for _ in range(len(negatives))])
+            
+        init = tf.lookup.KeyValueTensorInitializer(keys, values)
+        self.table = tf.lookup.StaticHashTable(init, default_value=0)
+                                 
+        def func(x):
+            x = tf.strings.lower(x)
+            x = self.table.lookup(x)
+            return x                
+
+        return func    
 
 
 class BinaryPipelineBuilder(PipelineBuilder):
-    def build(self, feature_spec=None, feature_dataset=None):    
-        """ Returns a keras model for preprocessing data of type binary
+    _loader_class = None
+    _augmenter_class = None
+    _preprocessing_class = PreprocessingStep
+    _postprocessing_class = None
+
+    def _compute_processing_metadata(self, preprocessing, dataset):
+        return {'n_categories': 1}, {}
     
-        Arguments:
-            feature_spec: information about the feature (e.g., preprocessing settings)
-            feature_dataset: optional. Can be used for invoking .adapt() on keras preprocessing layers.
-        Returns:
-            Two pipelines (tf.keras.Model) for training and inference. One for postprocessing.
-            I.e., a tuple of the following format:
-        
-            (training_pipeline, validation_pipeline, postprocessing_pipeline)
-        """
-        class Pipeline(tf.keras.Model):
-            n_categories = 1
-            
-            def call(self, x):
-                init = None
-    
-                # Build out valid keys and corresponding values depending on input type
-                if x.dtype == tf.string:
-                    keys_tensor = tf.constant(['True', 'true', 'Spam', 'spam', 'False', 'false', 'Ham', 'ham'])
-                    values_tensor = tf.constant([1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0])
-                    init = tf.lookup.KeyValueTensorInitializer(keys_tensor, values_tensor)
-                elif x.dtype == tf.int32 or x.dtype == tf.bool:
-                    x = tf.cast(x, tf.int32)
-                    keys_tensor = tf.constant([1, 0])
-                    values_tensor = tf.constant([1.0, 0.0])
-                    init = tf.lookup.KeyValueTensorInitializer(keys_tensor, values_tensor)
-                else:
-                    raise ValueError("Invalid Binary inputs")
-    
-                # Look up values that matches the input
-                table = tf.lookup.StaticHashTable(init, default_value=0)
-                x = table.lookup(x)
-    
-                return x
-    
-        return Pipeline(), None, None
-        

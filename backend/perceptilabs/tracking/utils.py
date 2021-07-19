@@ -19,14 +19,14 @@ def get_layer_counts(graph_spec):
     return counts
 
 
-def get_preprocessing_counts(feature_specs):
+def get_preprocessing_counts(settings_dict):
     """ Counts number of layers that use a specific type of preprocessing. """
     counts = collections.defaultdict(int)
 
-    for feature_spec in feature_specs.values():
-        for preprocessing in feature_spec.preprocessing:
-            counts[f'num_features_with_{preprocessing}'] += 1
-
+    for spec_dict in settings_dict['featureSpecs'].values():
+        for preprocessing in spec_dict['preprocessing'].keys():
+            counts[f"num_features_with_{preprocessing}"] += 1
+    
     return dict(counts)
 
 

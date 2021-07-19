@@ -682,7 +682,21 @@ export default {
         partitions: this.datasetSettings.partitions,
         featureSpecs: this.formatCSVTypesIntoKernelFormat()
       };
-
+      
+      const datasetHash = await renderingKernel.putData(datasetSettings);
+	
+      const waitForDataReady = async function () {
+          let isReady = await renderingKernel.isDataReady(datasetHash);
+          while (!isReady) {
+              await new Promise(resolve => {
+                setTimeout(resolve, 1000);
+            });
+            isReady = await renderingKernel.isDataReady(datasetHash);
+          }
+          return isReady;
+      };
+      await waitForDataReady();
+        
       const modelRecommendation = await renderingKernel.getModelRecommendation(
         datasetSettings,
         this.userEmail,
@@ -693,7 +707,7 @@ export default {
         if ("errorMessage" in res) {
           this.deleteModelWithErrorPopup(
             apiMeta.model_id,
-            "Couldn't get model recommendation due to: " + res["errorMessage"]
+            "Couldn't get model recommendation because the Kernel responded with an error: " + res["errorMessage"]
           );
         }
         return res;
@@ -701,7 +715,7 @@ export default {
      .catch(err => {
        this.deleteModelWithErrorPopup(
          apiMeta.model_id,
-         "Couldn't get model recommendation due to: " + err
+         "Couldn't get model recommendation due to an exception: " + err
        );
       });         
         
@@ -951,7 +965,7 @@ export default {
         .then(res => {
           if ("errorMessage" in res) {
             this.showErrorPopup(
-              "Couldn't get model recommendation due to: " + res["errorMessage"]
+              "Couldn't get data types because the Kernel responded with an error: " + res["errorMessage"]
             );
             this.showLoadingSpinner = false;
           }
@@ -959,7 +973,7 @@ export default {
         })
         .catch(err => {  
           console.error(err);         
-          this.showErrorPopup("Error: Couldn't infer data types");
+          this.showErrorPopup("Error: Couldn't infer data types due to an exception: " + err);
           this.showLoadingSpinner = false;
         });           
 

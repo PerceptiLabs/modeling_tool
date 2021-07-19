@@ -3,7 +3,7 @@ import pytest
 import json
 
 
-from perceptilabs.endpoints.base import app
+from perceptilabs.endpoints.base import create_app
 from perceptilabs.graph.spec import GraphSpec
 from perceptilabs.trainer.model import TrainingModel
 from perceptilabs.data.base import DataLoader
@@ -12,6 +12,7 @@ from perceptilabs.exporter.base import Exporter
 
 @pytest.fixture
 def client():
+    app = create_app()
     app.config['TESTING'] = True
     with app.test_client() as client:
         yield client
@@ -30,7 +31,7 @@ def export_settings(temp_path):
 
 @pytest.fixture
 def dataset_settings():
-    yield {
+    settings = {
         "randomizedPartitions": True,
         "partitions": [
             70,
@@ -45,8 +46,8 @@ def dataset_settings():
                 "preprocessing": {
                     "resize": {
                         "mode": "automatic",
-                        "type": "mode"
-                    }
+                        "type": "mode"                        
+                    }                             
                 }
             },
             "y1": {
@@ -57,6 +58,7 @@ def dataset_settings():
             }
         }
     }
+    yield settings
 
 @pytest.fixture
 def network():
@@ -173,7 +175,7 @@ def create_model_checkpoint(dataset_settings, network, checkpoint_directory, scr
         
 def test_basic(client, basic_request, dataset_settings, network, checkpoint_directory, script_factory):
     create_model_checkpoint(dataset_settings, network, checkpoint_directory, script_factory)
-    
+
     response = client.post('/export', json=basic_request)
     assert response.json.startswith("Model exported to ")
 

@@ -6,7 +6,7 @@ from collections import namedtuple
 
 from pydantic import BaseModel, validator
 
-from perceptilabs.utils import stringify
+from perceptilabs.utils import stringify, MyPydanticBaseModel
 from perceptilabs.logconf import APPLICATION_LOGGER
 import perceptilabs.layers.specutils as specutils
 from perceptilabs.graph import AbstractGraphSpec
@@ -20,52 +20,7 @@ def sanitize_name(name):
     return name
 
 
-# -------------------- CYTHON WORKAROUND --------------------
-#
-# Cython doesn't yet play well with annotations (required for Pydantic).
-# See https://github.com/cython/cython/issues/3776
-#
-# There is also an issue with Pydantic and Cython. See below. 
-#
-# This workaround BREAKS type checking for the compiled version, so therefore
-# this workaround should be removed as soon as these issues are fixed.
-
-
-import pydantic.main
-
-class MyModelMetaclass(pydantic.main.ModelMetaclass):
-    # Cython has not caught up with Python 3.7. So we have to create __annotations__ manually
-    # for Pydantic to work.
-    
-    def __new__(mcs, name, bases, namespace, **kwargs):
-        if '__annotations__' not in namespace:
-            untouched_types = pydantic.main.UNTOUCHED_TYPES
-            
-            annotations = {}
-            for var_name, value in namespace.items():
-                if pydantic.main.is_valid_field(var_name) and not isinstance(value, untouched_types):
-                    annotations[var_name] = Any
-                    
-            namespace['__annotations__'] = annotations
-            
-        return super().__new__(mcs, name, bases, namespace, **kwargs)
-
-    
-def dummy_func():
-    pass
-
-
-class MyBaseModel(BaseModel, metaclass=MyModelMetaclass):
-    # Pydantic does not know how to ignore Cython functions, so we have to configure that explicitly
-    
-    class Config:
-        arbitrary_types_allowed = True
-        keep_untouched = (type(dummy_func),)
-
-# -------------------- END OF CYTHON WORKAROUND --------------------
-
-
-class LayerConnection(MyBaseModel):
+class LayerConnection(MyPydanticBaseModel):
     src_id: str = None
     src_var: str = None
     dst_id: str = None
@@ -96,7 +51,7 @@ class LayerConnection(MyBaseModel):
         return layer.sanitized_name if layer is not None else None
     
     
-class LayerSpec(ABC, MyBaseModel):
+class LayerSpec(ABC, MyPydanticBaseModel):
     id_: str = None
     name: str = None
     type_: str = None

@@ -39,40 +39,49 @@ def get_mnist_loader():
         'image_path': FeatureSpec(datatype='image', iotype='input', file_path=path),
         'target': FeatureSpec(datatype='categorical', iotype='target', file_path=path)
     }
-
     loader = DataLoader.from_features(feature_specs, file_path=path)
     return loader
 
 
 def get_wildfire_loader():
-    from perceptilabs.data.base import DataLoader, FeatureSpec
+    from perceptilabs.data.base import DataLoader
+    from perceptilabs.data.settings import DatasetSettings, FeatureSpec, ImagePreprocessingSpec, Partitions
 
     path = os.path.join(get_tutorial_data_directory(),
                         'Wildfires', 'data.csv')
-
     feature_specs = {
         'images': FeatureSpec(
             datatype='image',
             iotype='input',
-            preprocessing={'resize': {
-                'mode': 'custom', 'width': 224, 'height': 224}},
+            preprocessing=ImagePreprocessingSpec(
+                resize=True,
+                resize_mode='custom',
+                resize_height=224,
+                resize_width=224
+            ),
             file_path=path
         ),
         'labels': FeatureSpec(
             datatype='categorical',
             iotype='target',
-            preprocessing={},
             file_path=path
         )
     }
+    partitions = Partitions(randomized=True)
+    settings = DatasetSettings(
+        file_path=path,
+        feature_specs=feature_specs,
+        partitions=partitions
+    )
 
-    loader = DataLoader.from_features(feature_specs, randomized_partitions=True, file_path=path)
+    loader = DataLoader.from_settings(settings)
     return loader
 
 
 def get_humanactivity_loader():
-    from perceptilabs.data.base import DataLoader, FeatureSpec
-
+    from perceptilabs.data.base import DataLoader
+    from perceptilabs.data.settings import DatasetSettings, FeatureSpec, Partitions
+    
     path = os.path.join(get_tutorial_data_directory(),
                         'HumanActivity', 'data.csv')
 
@@ -80,23 +89,28 @@ def get_humanactivity_loader():
         'images': FeatureSpec(
             datatype='image',
             iotype='input',
-            preprocessing={},
             file_path=path
         ),
         'labels': FeatureSpec(
             datatype='categorical',
             iotype='target',
-            preprocessing={},
             file_path=path
         )
     }
 
-    loader = DataLoader.from_features(feature_specs, randomized_partitions=True, file_path=path)
+    partitions = Partitions(randomized=True)
+    settings = DatasetSettings(
+        file_path=path,
+        feature_specs=feature_specs,
+        partitions=partitions
+    )
+    loader = DataLoader.from_settings(settings)    
     return loader
 
 
 def get_covid19_loader():
-    from perceptilabs.data.base import DataLoader, FeatureSpec
+    from perceptilabs.data.base import DataLoader
+    from perceptilabs.data.settings import DatasetSettings, FeatureSpec, Partitions    
 
     path = os.path.join(get_tutorial_data_directory(),
                         'Covid-19', 'data.csv')
@@ -105,17 +119,20 @@ def get_covid19_loader():
         'images': FeatureSpec(
             datatype='image',
             iotype='input',
-            preprocessing={},
             file_path=path
         ),
         'labels': FeatureSpec(
             datatype='categorical',
             iotype='target',
-            preprocessing={},
             file_path=path
         )
     }
 
-    loader = DataLoader.from_features(
-        feature_specs, randomized_partitions=True, file_path=path)
+    partitions = Partitions(randomized=True)
+    settings = DatasetSettings(
+        file_path=path,
+        feature_specs=feature_specs,
+        partitions=partitions
+    )
+    loader = DataLoader.from_settings(settings)    
     return loader

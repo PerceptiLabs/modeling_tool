@@ -72,6 +72,40 @@ export const renderingKernel = {
         return (res.status === 200) ? res.data : null;
       })
   },
+
+  async putData(datasetSettings) {
+    const payload = {
+      datasetSettings: datasetSettings
+    };
+    return whenRenderingKernelReady
+      .then(rk => rk.put('/data', payload))
+      .then(res => {
+        return (res.status === 200) ? res.data : null;
+      })
+  },
+
+  async putData(datasetSettings) {
+    const payload = {
+      datasetSettings: datasetSettings
+    };
+    return whenRenderingKernelReady
+      .then(rk => rk.put('/data', payload))
+      .then(res => {
+        return (res.status === 200) ? res.data["datasetHash"] : null;
+      })
+  },    
+
+
+  async isDataReady(datasetHash) {
+    return whenRenderingKernelReady
+    .then(rk => rk.get(`/data?dataset_hash=${datasetHash}`))
+    .then(res => {
+      return (res.status === 200);
+    }).catch((err) => {
+      console.error(err);
+      return false;
+    })
+  },    
     
   async getModelRecommendation(datasetSettings, userEmail, modelId, skippedWorkspace) {
     const payload = {

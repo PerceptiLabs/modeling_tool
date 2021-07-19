@@ -10,54 +10,37 @@ import numpy as np
 import pandas as pd
 
 from perceptilabs.trainer.model import TrainingModel
-from perceptilabs.data.base import DataLoader, FeatureSpec    
 from perceptilabs.script import ScriptFactory
-from perceptilabs.data.base import DataLoader, FeatureSpec
+from perceptilabs.data.base import DataLoader
+from perceptilabs.data.settings import FeatureSpec, DatasetSettings
 from perceptilabs.graph.builder import GraphSpecBuilder
 from perceptilabs.exporter.base import Exporter
 
 
 @pytest.fixture()
-def x1():
-    yield [123.0, 24.0, 13.0, 45.0, 20.0, 200.0]
-
-    
-@pytest.fixture()    
-def y1():    
-    yield [1.0, 2.0, 3.0, 4.0, 5.0, 6.0]
-    
-
-@pytest.fixture()
-def csv_path(temp_path, x1, y1):
-    file_path = os.path.join(temp_path, 'data.csv')
+def data_loader():
+    x1 = [123.0, 24.0, 13.0, 45.0, 20.0, 200.0]    
+    y1 = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0]
     df = pd.DataFrame({'x1': x1, 'y1': y1})
-    df.to_csv(file_path, index=False)    
-    yield file_path
-
-
-@pytest.fixture()
-def feature_specs(csv_path):
+    
     feature_specs = {
-        'x1': FeatureSpec(iotype='input', datatype='numerical', file_path=csv_path),
-        'y1': FeatureSpec(iotype='target', datatype='numerical', file_path=csv_path)        
+        'x1': FeatureSpec(iotype='input', datatype='numerical'),
+        'y1': FeatureSpec(iotype='target', datatype='numerical')        
     }
-    return feature_specs
 
-
-@pytest.fixture()
-def data_loader(feature_specs):
-    dl = DataLoader.from_features(feature_specs)
+    dataset_settings = DatasetSettings(feature_specs=feature_specs)
+    dl = DataLoader(df, dataset_settings)
     yield dl
 
     
 @pytest.fixture()
-def graph_spec_few_epochs(csv_path):
+def graph_spec_few_epochs():
     gsb = GraphSpecBuilder()
     dirpath = tempfile.mkdtemp()
     # Create the layers
     id1 = gsb.add_layer(
         'IoInput',
-        settings={'datatype': 'numerical', 'feature_name': 'x1', 'file_path': csv_path, 'checkpoint_path':dirpath}
+        settings={'datatype': 'numerical', 'feature_name': 'x1'}
     )
     id2 = gsb.add_layer(
         'DeepLearningFC',
@@ -65,7 +48,7 @@ def graph_spec_few_epochs(csv_path):
     )
     id3 = gsb.add_layer(
         'IoOutput',
-        settings={'datatype': 'numerical', 'feature_name': 'y1', 'file_path': csv_path}
+        settings={'datatype': 'numerical', 'feature_name': 'y1'}
     )
 
     # Connect the layers
@@ -213,9 +196,8 @@ def test_loading_different_checkpoints_consistent_results(script_factory, graph_
     assert not equal_training_model_outputs(expected_output_epoch_0, expected_output_epoch_1)
     
     
-def test_restore_model_from_disk(script_factory, graph_spec_few_epochs, feature_specs, temp_path):
+def test_restore_model_from_disk(script_factory, graph_spec_few_epochs, data_loader, temp_path):
     # Use data loader to feed data through the model
-    data_loader = DataLoader.from_features(feature_specs)    
     training_model = TrainingModel(script_factory, graph_spec_few_epochs)
     x = {'x1': np.array([1.0, 2.0, 3.0])}
     expected = training_model(x)  

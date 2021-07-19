@@ -12,7 +12,8 @@ from perceptilabs.graph.spec import GraphSpec
 from perceptilabs.layers.iooutput.spec import OutputLayerSpec
 from perceptilabs.layers.ioinput.spec import InputLayerSpec
 from perceptilabs.layers.iooutput.spec import OutputLayerSpec
-from perceptilabs.data.base import DataLoader, FeatureSpec
+from perceptilabs.data.base import DataLoader
+from perceptilabs.data.settings import FeatureSpec, DatasetSettings, Partitions
 from perceptilabs.graph.builder import GraphSpecBuilder
 from perceptilabs.layers.datadata.spec import DataSource
 from perceptilabs.layers.specbase import LayerConnection
@@ -633,41 +634,42 @@ def test_calls_cache_put_when_cached_entry_exists(graph_spec_pre_datawiz):
 
 
 def test_preview_available_for_input_layer(csv_path, x1):
-    input_spec = InputLayerSpec(id_='123', feature_name='x1', file_path=csv_path, datatype='numerical')
-    output_spec = OutputLayerSpec(id_='456', feature_name='y1', file_path=csv_path, datatype='numerical')
+    input_spec = InputLayerSpec(id_='123', feature_name='x1', datatype='numerical')
+    output_spec = OutputLayerSpec(id_='456', feature_name='y1', datatype='numerical')
     feature_specs = {
-        'x1': FeatureSpec(iotype='input', datatype='numerical', file_path=csv_path),
-        'y1': FeatureSpec(iotype='target', datatype='numerical', file_path=csv_path)        
-    }    
+        'x1': FeatureSpec(iotype='input', datatype='numerical'),
+        'y1': FeatureSpec(iotype='target', datatype='numerical')        
+    }
+    dataset_settings = DatasetSettings(file_path=csv_path, feature_specs=feature_specs)    
     
     graph_spec = GraphSpec([input_spec, output_spec])    
-    lw_core = LightweightCore(data_loader=DataLoader.from_features(feature_specs))
+    lw_core = LightweightCore(data_loader=DataLoader.from_settings(dataset_settings))
     results = lw_core.run(graph_spec)
     assert results['123'].sample.get('output') == x1[0]
     
 
 def test_preview_available_for_output_layer(csv_path, y1):
-    input_spec = InputLayerSpec(id_='123', feature_name='x1', file_path=csv_path, datatype='numerical')
-    output_spec = OutputLayerSpec(id_='456', feature_name='y1', file_path=csv_path, datatype='numerical')
+    input_spec = InputLayerSpec(id_='123', feature_name='x1', datatype='numerical')
+    output_spec = OutputLayerSpec(id_='456', feature_name='y1', datatype='numerical')
     feature_specs = {
-        'x1': FeatureSpec(iotype='input', datatype='numerical', file_path=csv_path),
-        'y1': FeatureSpec(iotype='target', datatype='numerical', file_path=csv_path)        
-    }    
+        'x1': FeatureSpec(iotype='input', datatype='numerical'),
+        'y1': FeatureSpec(iotype='target', datatype='numerical')        
+    }
+    dataset_settings = DatasetSettings(file_path=csv_path, feature_specs=feature_specs)    
+    
     graph_spec = GraphSpec([input_spec, output_spec])
-    lw_core = LightweightCore(data_loader=DataLoader.from_features(feature_specs))
+    lw_core = LightweightCore(data_loader=DataLoader.from_settings(dataset_settings))
     results = lw_core.run(graph_spec)
     assert results['456'].sample.get('output') == y1[0]    
     
 
 def test_io_layer_samples_are_from_the_same_row(csv_path, graph_spec, x1, y1):
-    data_loader = DataLoader.from_features(
-        {
-            'x1': FeatureSpec('numerical', 'input', csv_path),
-            'y1': FeatureSpec('numerical', 'target', csv_path)            
-        },
-        partitions={'training': 4/5, 'validation': 1/5, 'test': 0.0},
-        randomized_partitions=True,
-    )
+    feature_specs = {
+            'x1': FeatureSpec(datatype='numerical', iotype='input'),
+            'y1': FeatureSpec(datatype='numerical', iotype='target')            
+    }
+    dataset_settings = DatasetSettings(file_path=csv_path, feature_specs=feature_specs, partitions=Partitions(randomized=True, training_rate=4/5, validation_rate=1/5, test_rate=0))
+    data_loader = DataLoader.from_settings(dataset_settings)
     
     lw_core = LightweightCore(data_loader=data_loader)
     results = lw_core.run(graph_spec)
@@ -683,14 +685,12 @@ def test_io_layer_samples_are_from_the_same_row(csv_path, graph_spec, x1, y1):
     
 
 def test_output_layer_raises_error_if_inputs_shape_doesnt_match(csv_path, graph_spec_faulty, x1, y1):
-    data_loader = DataLoader.from_features(
-        {
-            'x1': FeatureSpec('numerical', 'input', csv_path),
-            'y1': FeatureSpec('numerical', 'target', csv_path)            
-        },
-        partitions={'training': 4/5, 'validation': 1/5, 'test': 0.0},
-        randomized_partitions=True,
-    )
+    feature_specs = {
+            'x1': FeatureSpec(datatype='numerical', iotype='input'),
+            'y1': FeatureSpec(datatype='numerical', iotype='target')            
+    }
+    dataset_settings = DatasetSettings(file_path=csv_path, feature_specs=feature_specs, partitions=Partitions(randomized=True, training_rate=4/5, validation_rate=1/5, test_rate=0))
+    data_loader = DataLoader.from_settings(dataset_settings)
     
     lw_core = LightweightCore(data_loader=data_loader)
     results = lw_core.run(graph_spec_faulty)

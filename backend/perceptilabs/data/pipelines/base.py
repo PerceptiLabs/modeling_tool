@@ -1,21 +1,125 @@
 from abc import ABC, abstractmethod
+import time
+import tensorflow as tf
+import logging
+from perceptilabs.logconf import APPLICATION_LOGGER
+
+logger = logging.getLogger(APPLICATION_LOGGER)
+
+
+class BasePipeline(tf.keras.Model):
+    def __init__(self, preprocessing=None, metadata=None):
+        super().__init__()
+
+        self.preprocessing = preprocessing
+        self.metadata = metadata or {}
+
+    def get_config(self):
+        return {
+            'preprocessing': self.preprocessing,
+            'metadata': self.metadata                
+        }
+
+    @classmethod
+    def from_config(cls, config):
+        return cls(
+            preprocessing=config['preprocessing'],
+            metadata=config['metadata']
+        )    
+
+
+class IdentityPipeline(BasePipeline):
+    def call(self, x):
+        return x
+
+    
+class DefaultAugmenter(BasePipeline):
+    def call(self, x):
+        index, value = x
+        return value    
 
 
 class PipelineBuilder(ABC):
-    def build(self, feature_spec=None, feature_dataset=None):
-        """ Returns a keras model for preprocessing data
+    def load_from_metadata(self, preprocessing, metadata):
+        """ Returns (loader_step, augmenter_step, preprocessing_step, postprocessing_step) """
+        
+        loader_step = self._get_loader_step(preprocessing, metadata.get('loader'))
+        augmenter_step = self._get_augmenter_step(preprocessing, metadata.get('augmenter'))
+        preprocessing_step = self._get_preprocessing_step(preprocessing, metadata.get('preprocessing'))
+        postprocessing_step = self._get_postprocessing_step(preprocessing, metadata.get('postprocessing'))
+        return (loader_step, augmenter_step, preprocessing_step, postprocessing_step)
 
-        Arguments:
-            feature_spec: information about the feature (e.g., preprocessing settings)
-            feature_dataset: optional. Can be used for invoking .adapt() on keras preprocessing layers.
-        Returns:
-            Two pipelines (tf.keras.Model) for training and inference. One for postprocessing.
-            I.e., a tuple of the following format:
+    def build_from_dataset(self, preprocessing, dataset):
+        """ Use for testing only """
+        dataset_size = len(dataset)        
+        indices = tf.data.Dataset.from_tensor_slices(tf.range(dataset_size))
+        indexed_dataset = tf.data.Dataset.zip((indices, dataset))  # This helps us map samples back
+        return self.build_from_indexed_dataset(preprocessing, indexed_dataset)
+
+    def build_from_indexed_dataset(self, preprocessing, indexed_dataset):
+        t0 = time.perf_counter()
+        loader_metadata = self._compute_loader_metadata(preprocessing, indexed_dataset.map(lambda index, value: value, num_parallel_calls=tf.data.AUTOTUNE))
+        loader_step = self._get_loader_step(preprocessing, loader_metadata)
+        loaded_dataset = indexed_dataset.map(lambda index, value: (index, loader_step(value)), num_parallel_calls=tf.data.AUTOTUNE)
+
+        t1 = time.perf_counter()
+        augmenter_metadata = self._compute_augmenter_metadata(preprocessing, loaded_dataset)
+        augmenter_step = self._get_augmenter_step(preprocessing, augmenter_metadata)
+        augmented_dataset = loaded_dataset.map(lambda index, value: augmenter_step((index, value)), num_parallel_calls=tf.data.AUTOTUNE)
+
+        t2 = time.perf_counter()
+        preprocessing_metadata, postprocessing_metadata = self._compute_processing_metadata(preprocessing, augmented_dataset)
+        preprocessing_step = self._get_preprocessing_step(preprocessing, preprocessing_metadata)
+        postprocessing_step = self._get_postprocessing_step(preprocessing, postprocessing_metadata)
+        
+        t3 = time.perf_counter()
+        logger.info(f"Built pipelines. Durations for loader={t1-t0:.3f}s, augmenter={t2-t1:.3f}s, pre- and post-processing={t3-t2:.3f}s")        
+        
+        return (loader_step, augmenter_step, preprocessing_step, postprocessing_step)
+
+    def _get_loader_step(self, preprocessing, metadata):
+        cls = self._loader_class or IdentityPipeline
+        return cls(preprocessing=preprocessing, metadata=metadata)
+
+    def _get_augmenter_step(self, preprocessing, metadata):
+        cls = self._augmenter_class or DefaultAugmenter
+        return cls(preprocessing=preprocessing, metadata=metadata)
+
+    def _get_preprocessing_step(self, preprocessing, metadata):
+        cls = self._preprocessing_class or IdentityPipeline
+        return cls(preprocessing=preprocessing, metadata=metadata)
     
-            (training_pipeline, validation_pipeline, postprocessing_pipeline)
-        """
+    def _get_postprocessing_step(self, preprocessing, metadata):
+        cls = self._postprocessing_class or IdentityPipeline
+        return cls(preprocessing=preprocessing, metadata=metadata)    
+    
+    @property
+    @abstractmethod    
+    def _loader_class(self):
+        raise NotImplementedError        
+
+    @property
+    @abstractmethod
+    def _augmenter_class(self):
         raise NotImplementedError
 
+    @property
+    @abstractmethod
+    def _preprocessing_class(self):
+        raise NotImplementedError
 
+    @property
+    @abstractmethod
+    def _postprocessing_class(self):
+        raise NotImplementedError    
     
-        
+    def _compute_loader_metadata(self, preprocessing, dataset):
+        return {}
+
+    def _compute_augmenter_metadata(self, preprocessing, indexed_dataset):
+        return {}
+
+    def _compute_processing_metadata(self, preprocessing, dataset):
+        return {}, {}
+    
+    

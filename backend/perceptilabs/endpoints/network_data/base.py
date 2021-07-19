@@ -4,6 +4,7 @@ from flask import request, jsonify
 from flask.views import View
 
 from perceptilabs.data.base import DataLoader
+from perceptilabs.data.settings import DatasetSettings
 from perceptilabs.graph.spec import GraphSpec
 from perceptilabs.lwcore import LightweightCore, LightweightCache
 from perceptilabs.logconf import APPLICATION_LOGGER
@@ -18,11 +19,18 @@ lw_cache = LightweightCache(max_size=25)
 
 
 class NetworkData(View):
+    def __init__(self, data_metadata_cache=None):
+        self._data_metadata_cache = data_metadata_cache   
+    
     def dispatch_request(self):
         json_data = request.get_json()
         
-        graph_spec = GraphSpec.from_dict(json_data['network'])        
-        data_loader = DataLoader.from_dict(json_data['datasetSettings'])
+        graph_spec = GraphSpec.from_dict(json_data['network'])
+
+        dataset_settings = DatasetSettings.from_dict(json_data['datasetSettings'])
+        data_metadata = self._data_metadata_cache.get(dataset_settings.compute_hash()) if self._data_metadata_cache else None 
+        data_loader = DataLoader.from_settings(dataset_settings, metadata=data_metadata)
+        
         lw_core = LightweightCore(data_loader=data_loader, cache=lw_cache)
 
         graph_spec, auto_updated_layers = self._maybe_apply_autosettings(graph_spec, settings_engine=None)

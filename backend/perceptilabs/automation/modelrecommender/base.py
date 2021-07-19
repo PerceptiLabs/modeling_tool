@@ -3,7 +3,6 @@ from typing import Dict
 
 from perceptilabs.graph.spec import GraphSpec
 from perceptilabs.graph.builder import GraphSpecBuilder
-from perceptilabs.data.base import FeatureSpec
 
 from perceptilabs.automation.modelrecommender.encoders import (
     NumericalEncoderBlueprint,
@@ -23,7 +22,7 @@ class ModelRecommender:
     def __init__(self, data_loader=None):
         self._data_loader = data_loader
     
-    def get_graph(self, feature_specs: Dict[str, FeatureSpec]) -> GraphSpec:
+    def get_graph(self, feature_specs):
         """ Takes a dictionary of feature specs and generates a graph spec for it 
         Arguments:
             feature_specs: Mapping from feature name to feature spec

@@ -1,12 +1,12 @@
 import pytest
 from perceptilabs.automation.modelrecommender import ModelRecommender
-from perceptilabs.data.base import FeatureSpec
+from perceptilabs.data.settings import FeatureSpec
 
 
 def test_single_numerical_input_and_output_gives_basic_network():
     feature_specs={
-        'x1': FeatureSpec('numerical', 'input'),
-        'y1': FeatureSpec('numerical', 'target'),
+        'x1': FeatureSpec(datatype='numerical', iotype='input', file_path=''),
+        'y1': FeatureSpec(datatype='numerical', iotype='target', file_path=''),
     }
 
     recommender = ModelRecommender()
@@ -24,8 +24,8 @@ def test_single_numerical_input_and_output_gives_basic_network():
 
 def test_image_input_and_numerical_output_gives_basic_network():
     feature_specs={
-        'x1': FeatureSpec('image', 'input'),
-        'y1': FeatureSpec('numerical', 'target'),
+        'x1': FeatureSpec(datatype='numerical', iotype='input', file_path=''),
+        'y1': FeatureSpec(datatype='numerical', iotype='target', file_path=''),
     }
     recommender = ModelRecommender()
     graph_spec = recommender.get_graph(feature_specs)

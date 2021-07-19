@@ -16,8 +16,8 @@ class ImageDecoderBlueprint(DecoderBlueprint):
             the ID of the decoders first layer
         """
         
-        preprocessing = data_loader.get_preprocessing_pipeline(feature_name, mode='training')
-        target_shape = preprocessing.image_shape
+        preprocessing = data_loader.get_preprocessing_pipeline(feature_name)
+        target_shape = preprocessing.metadata['image_shape']
         num_feature_maps = target_shape[-1] # The number of feature maps should be equal to the number of channels 
         n_neurons = np.prod(target_shape)
 

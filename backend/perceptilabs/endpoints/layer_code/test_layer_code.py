@@ -1,10 +1,11 @@
 import pytest
 import json
-from perceptilabs.endpoints.base import app
+from perceptilabs.endpoints.base import create_app
 
 
 @pytest.fixture
 def client():
+    app = create_app()    
     app.config['TESTING'] = True
     with app.test_client() as client:
         yield client

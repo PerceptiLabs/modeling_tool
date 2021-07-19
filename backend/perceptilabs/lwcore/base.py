@@ -56,10 +56,11 @@ class LightweightCore:
         all_durations = {}
         all_used_cache = {}
 
-        data_batch = self._get_flat_data_batch()  
+        data_batch = self._get_flat_data_batch()
+        dataset_hash = self._data_loader.settings.compute_hash() if self._data_loader else ''
 
         for subgraph_spec in subgraph_specs:
-            subgraph_results, subgraph_durations, subgraph_used_cache = self._run_subgraph(subgraph_spec, data_batch)
+            subgraph_results, subgraph_durations, subgraph_used_cache = self._run_subgraph(subgraph_spec, data_batch, dataset_hash)
             all_results.update(subgraph_results)
             all_durations.update(subgraph_durations)
             all_used_cache.update(subgraph_used_cache)
@@ -71,12 +72,12 @@ class LightweightCore:
         self._maybe_print_results(graph_spec, all_results)
         return all_results
     
-    def _run_subgraph(self, subgraph_spec, data_batch):
+    def _run_subgraph(self, subgraph_spec, data_batch, dataset_hash):
         all_results = {}
         all_durations = {}
         all_used_cache = {}
         for layer_spec in subgraph_spec.get_ordered_layers():
-            layer_result, durations, used_cache = self._get_layer_results(layer_spec, subgraph_spec, all_results, data_batch)
+            layer_result, durations, used_cache = self._get_layer_results(layer_spec, subgraph_spec, all_results, data_batch, dataset_hash)
             
             if logger.isEnabledFor(logging.DEBUG) and layer_result.has_errors:
                 print_result_errors(layer_spec, layer_result)
@@ -88,27 +89,27 @@ class LightweightCore:
         assert len(all_results) == len(subgraph_spec)
         return all_results, all_durations, all_used_cache
 
-    def _get_layer_results(self, layer_spec, subgraph_spec, ancestor_results, data_batch):
+    def _get_layer_results(self, layer_spec, subgraph_spec, ancestor_results, data_batch, dataset_hash):
         """ Either fetched a cached result or Computes results of layer_spec using ancestor results """        
         t0 = time.perf_counter()        
-        cached_result, layer_hash = self._get_cached_result(layer_spec, subgraph_spec)
+        cached_result, layer_hash = self._get_cached_result(layer_spec, subgraph_spec, dataset_hash)
         t1 = time.perf_counter()
         layer_result = cached_result or self._compute_layer_results(layer_spec, subgraph_spec, ancestor_results, data_batch)
         t2 = time.perf_counter()
-        self._maybe_put_results_in_cache(layer_spec, cached_result, layer_result, layer_hash)
+        self._maybe_put_results_in_cache(layer_spec, cached_result, layer_result, layer_hash, dataset_hash)
         t3 = time.perf_counter()
 
         used_cache = cached_result is not None
         durations = {'t_cache_lookup': t1 - t0, 't_compute': t2 - t1, 't_cache_insert': t3 - t2, 'used_cache': used_cache, 'type': layer_spec.type_}
         return layer_result, durations, used_cache
 
-    def _maybe_put_results_in_cache(self, layer_spec, cached_result, layer_result, layer_hash):
+    def _maybe_put_results_in_cache(self, layer_spec, cached_result, layer_result, layer_hash, dataset_hash):
         """ Try to put new results in cache """        
         if cached_result is None and self._cache is not None and layer_hash is not None:                        
-            self._cache.put(layer_hash, layer_result)
+            self._cache.put(str(layer_hash) + dataset_hash, layer_result)
             logger.debug(f"Cached computed results for layer {layer_spec.id_} [{layer_spec.type_}]. Hash: {layer_hash}")
 
-    def _get_cached_result(self, layer_spec, subgraph_spec):
+    def _get_cached_result(self, layer_spec, subgraph_spec, dataset_hash):
         """ Computes layer hash and retrieves cached result if available. """
         cached_result = None
         layer_hash = None
@@ -118,7 +119,7 @@ class LightweightCore:
             logger.debug(f"Computed hash for layer {layer_spec.id_} [{layer_spec.type_}]. Hash: {layer_hash}")
             
             if layer_hash in self._cache:
-                cached_result = self._cache.get(layer_hash)
+                cached_result = self._cache.get(str(layer_hash) + dataset_hash)
                 logger.debug(f"Retrieved cached results for layer {layer_spec.id_} [{layer_spec.type_}]. Hash: {layer_hash}")
                 
         return cached_result, layer_hash

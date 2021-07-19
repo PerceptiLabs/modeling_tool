@@ -1,59 +1,69 @@
+import numpy as np
 import tensorflow as tf
 import numpy as np
 
-from perceptilabs.data.pipelines.base import PipelineBuilder
+from perceptilabs.data.pipelines.base import PipelineBuilder, BasePipeline, IdentityPipeline, DefaultAugmenter
+
+class PreprocessingStep(BasePipeline):
+    def call(self, x):
+        x = tf.cast(x, dtype=tf.float32)
+        if self.normalize:
+            x = self.normalize(x)                
+        return x
+
+    def build(self, input_shape):
+        self.normalize = self._build_normalize()
+            
+    def _build_normalize(self):
+        if self.preprocessing and self.preprocessing.normalize:
+            norm = self.preprocessing.normalize_mode
+
+            if norm == 'standardization':
+                stddev = self.metadata['stddev']
+                mean = self.metadata['mean']
+                return lambda x: (x - mean)/stddev
+            elif norm == 'min-max':
+                min_value = self.metadata['min']
+                max_value = self.metadata['max']                    
+                return lambda x: (x - min_value)/(max_value - min_value)
+
+        return None
 
 
 class NumericalPipelineBuilder(PipelineBuilder):
-    def build(self, feature_spec=None, feature_dataset=None):
-        """ Returns a keras model for preprocessing data
-
-            Arguments:
-                feature_spec: information about the feature (e.g., preprocessing settings)
-                feature_dataset: optional. Can be used for invoking .adapt() on keras preprocessing layers.
-            Returns:
-                Two pipelines (tf.keras.Model) for training and inference. One for postprocessing.
-                I.e., a tuple of the following format:
+    _loader_class = None
+    _augmenter_class = None
+    _preprocessing_class = PreprocessingStep
+    _postprocessing_class = None
     
-            (training_pipeline, validation_pipeline, postprocessing_pipeline)
-        """
+    def _compute_processing_metadata(self, preprocessing, dataset):        
+        metadata = {}
+        if preprocessing and preprocessing.normalize:
+            max_, min_ = 0, 2**32
+            running_sum = 0
+            running_squared_sum = 0
 
-        normalization = None    
-        if feature_spec and 'normalize' in feature_spec.preprocessing:
-            type_ = feature_spec.preprocessing['normalize']['type']
-            if type_ == 'standardization':
-                running_sum = 0.0
-                running_squares_sum = 0.0
-                count = 0
-                for tensor in feature_dataset:
-                    value = tensor.numpy()
-                    running_sum += value
-                    running_squares_sum += value**2
-                    count += 1
+            count = 0
+            for x in dataset:
+                value = x.numpy()
 
-                mean = running_sum/count
-                std = np.sqrt( running_squares_sum/count - mean**2)
+                if value < min_:
+                    min_ = value
 
-                def normalization(x):
-                    y = (x - mean)/(std + 0.00000001)
-                    return y
-                
-            elif type_ == 'min-max':
-                max_, min_ = 0, 255
-                for image in feature_dataset:
-                    max_ = max(max_, tf.reduce_max(image).numpy())
-                    min_ = min(min_, tf.reduce_min(image).numpy())
+                if value > max_:
+                    max_ = value
+
+                running_sum += value
+                running_squared_sum += value**2
+                count += 1
+
+            mean = running_sum/count  # watch for overflow
+            squared_mean = running_squared_sum / count  # watch for overflow
+            
+            metadata['mean'] = mean
+            metadata['stddev'] = np.sqrt(squared_mean - mean**2)
+            metadata['max'] = max_
+            metadata['min'] = min_
+
+        return metadata, {}
     
-                def normalization(x):
-                    y = (x - min_)/(max_ - min_)
-                    return y
-        
-        class Pipeline(tf.keras.Model):
-            def call(self, x):
-                x = tf.cast(x, dtype=tf.float32)
-                if normalization:
-                    x = normalization(x)                
-                return x
-    
-        return Pipeline(), None, None        
-        

@@ -8,7 +8,8 @@ import tensorflow as tf
 import numpy as np
 import pandas as pd
 
-from perceptilabs.data.base import DataLoader, FeatureSpec
+from perceptilabs.data.base import DataLoader
+from perceptilabs.data.settings import FeatureSpec, Partitions, DatasetSettings
 from perceptilabs.graph.builder import GraphSpecBuilder
 from perceptilabs.trainer import Trainer, TrainingModel
 from perceptilabs.exporter.base import Exporter    
@@ -24,13 +25,15 @@ def csv_path(temp_path):
     
 @pytest.fixture()
 def data_loader(csv_path):
-    dl = DataLoader.from_features(
-        {
-            'x1': FeatureSpec('numerical', 'input', csv_path),
-            'y1': FeatureSpec('numerical', 'target', csv_path)            
+    settings = DatasetSettings(
+        file_path=csv_path,
+        feature_specs={
+            'x1': FeatureSpec(datatype='numerical', iotype='input'),
+            'y1': FeatureSpec(datatype='numerical', iotype='target')            
         },
-        partitions={'training': 4/5, 'validation': 1/5, 'test': 0.0}
+        partitions=Partitions(training_ratio=4/5, validation_ratio=1/5, test_ratio=0.0)
     )
+    dl = DataLoader.from_settings(settings)
     yield dl
 
 @pytest.fixture()

@@ -7,6 +7,7 @@ from flask.views import View
 
 from perceptilabs.graph.spec import GraphSpec
 from perceptilabs.data.base import DataLoader
+from perceptilabs.data.settings import DatasetSettings
 from perceptilabs.script import ScriptFactory
 from perceptilabs.exporter.base import Exporter
 from perceptilabs.logconf import APPLICATION_LOGGER
@@ -17,6 +18,9 @@ logger = logging.getLogger(APPLICATION_LOGGER)
 
 class Export(View):
     script_factory = ScriptFactory()
+
+    def __init__(self, data_metadata_cache=None):
+        self._data_metadata_cache = data_metadata_cache
     
     def dispatch_request(self):
         """ Renders the code for a layer """
@@ -29,7 +33,10 @@ class Export(View):
         try:
             export_settings = json_data['exportSettings']
             graph_spec = GraphSpec.from_dict(json_data['network'])
-            data_loader = DataLoader.from_dict(json_data['datasetSettings'])
+
+            dataset_settings = DatasetSettings.from_dict(json_data['datasetSettings'])
+            data_metadata = self._data_metadata_cache.get(dataset_settings.compute_hash()) if self._data_metadata_cache else None 
+            data_loader = DataLoader.from_settings(dataset_settings, metadata=data_metadata)
             
             model_id = json_data.get('modelId')
             user_email = json_data.get('userEmail')        

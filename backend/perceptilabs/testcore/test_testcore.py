@@ -7,7 +7,8 @@ import numpy as np
 import pandas as pd
 
 from perceptilabs.trainer.model import TrainingModel
-from perceptilabs.data.base import DataLoader, FeatureSpec    
+from perceptilabs.data.base import DataLoader
+from perceptilabs.data.settings import DatasetSettings, FeatureSpec
 from perceptilabs.script import ScriptFactory
 from perceptilabs.graph.builder import GraphSpecBuilder
 from perceptilabs.exporter.base import Exporter
@@ -21,16 +22,20 @@ def csv_path(temp_path):
     df = pd.DataFrame({'x1': [123.0, 24.0, 13.0, 46, 52, 56, 3, 67, 32, 94], 'y1': [1, 0, 1, 0, 0, 0, 1, 1, 0, 0]})
     df.to_csv(file_path, index=False)    
     yield file_path
-    
+
+
 @pytest.fixture()
 def data_loader(csv_path):
-    dl = DataLoader.from_features(
-        {
-            'x1': FeatureSpec('numerical', 'input', csv_path),
-            'y1': FeatureSpec('categorical', 'target', csv_path)            
-        }
+    settings = DatasetSettings(
+        file_path=csv_path,
+        feature_specs={
+            'x1': FeatureSpec(datatype='numerical', iotype='input'),
+            'y1': FeatureSpec(datatype='categorical', iotype='target')            
+        },
     )
+    dl = DataLoader.from_settings(settings)
     yield dl
+
     
 @pytest.fixture()
 def graph_spec_few_epochs(csv_path):

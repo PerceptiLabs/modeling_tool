@@ -3,12 +3,12 @@ from collections import namedtuple
 from typing import Tuple, Dict, Any, List, Union
 from pydantic import BaseModel, validator
 
-from perceptilabs.layers.specbase import LayerSpec, DataLayerSpec, MyBaseModel
+from perceptilabs.layers.specbase import LayerSpec, DataLayerSpec
 from perceptilabs.layers.utils import try_cast
+from perceptilabs.utils import MyPydanticBaseModel
 
 
-
-class DataSource(MyBaseModel):
+class DataSource(MyPydanticBaseModel):
     type_: str = ''
     path: str = ''
     ext: str = ''

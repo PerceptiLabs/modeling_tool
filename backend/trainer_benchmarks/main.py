@@ -1,11 +1,17 @@
 import sys
 import argparse
+import logging
 from prettytable import PrettyTable
 
 from trainer_benchmarks.mnist import MnistSuite
 from trainer_benchmarks.wildfires import WildfiresSuite
 from trainer_benchmarks.humanactivity import HumanActivitySuite
 from trainer_benchmarks.covid19 import CovidXraySuite
+
+logger = logging.getLogger('perceptilabs.applogger')
+logger.setLevel(logging.INFO)
+logger.addHandler(logging.StreamHandler())
+
 
 BENCHMARK_SUITES = {
     'mnist': MnistSuite,
@@ -36,9 +42,10 @@ def get_input_args():
 
 def main():
     args = get_input_args()
-    suites = set(args.suites if 'all' not in args.suites else BENCHMARK_SUITES)
+    suites = list(args.suites if 'all' not in args.suites else BENCHMARK_SUITES)
     model_type = args.modeltype
     for suite_name in suites:
+        print(f"Running suite '{suite_name}' with type '{model_type}'")
         suite = BENCHMARK_SUITES[suite_name]()
         results = suite.get_results(which=model_type)
         print_results(results, suite_name)

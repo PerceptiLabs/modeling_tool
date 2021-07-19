@@ -1,30 +1,30 @@
+import os
 import pytest
 import numpy as np
 import tensorflow as tf
 from unittest.mock import MagicMock
 
 from perceptilabs.data.pipelines import NumericalPipelineBuilder
+from perceptilabs.data.settings import NumericalPreprocessingSpec
 
 
-def test_numerical_postprocessing():
-    expected = [1.0, 2.0, 3.0]
-    
-    dataset = tf.data.Dataset.from_tensor_slices([int(x) for x in expected])  # Convert to ints
-    pipeline, _, _ = NumericalPipelineBuilder().build()
-    processed_dataset = dataset.map(lambda x: pipeline(x))
+def test_normalization_without_preprocessing_is_float():
+    n_samples = 10
+    dataset = tf.data.Dataset.from_tensor_slices([i+2 for i in range(n_samples)])
 
-    actual = [x.numpy() for x in iter(processed_dataset)]
-    assert actual == expected
+    _, _, preprocessing_step, _ = NumericalPipelineBuilder().build_from_dataset({}, dataset)
+    processed_dataset = dataset.map(lambda x: preprocessing_step(x))
 
+    for sample1, sample2 in tf.data.Dataset.zip((dataset, processed_dataset)):
+        assert sample1.numpy() == float(sample2.numpy())
 
 def test_normalization_standardization():
     n_samples = 10
     dataset = tf.data.Dataset.from_tensor_slices([i for i in range(n_samples)])
 
-    feature_spec = MagicMock()
-    feature_spec.preprocessing = {'normalize': {'type': 'standardization'}}    
+    preprocessing = NumericalPreprocessingSpec(normalize=True, normalize_mode='standardization')
     
-    pipeline, _, _ = NumericalPipelineBuilder().build(feature_spec=feature_spec, feature_dataset=dataset)
+    _, _, pipeline, _ = NumericalPipelineBuilder().build_from_dataset(preprocessing, dataset)
     processed_dataset = dataset.map(lambda x: pipeline(x))
 
     batch = next(iter(processed_dataset.batch(n_samples))).numpy()  # Get the full dataset in a batch
@@ -37,14 +37,31 @@ def test_normalization_minmax():
     n_samples = 10
     dataset = tf.data.Dataset.from_tensor_slices([i for i in range(n_samples)])
 
-    feature_spec = MagicMock()
-    feature_spec.preprocessing = {'normalize': {'type': 'min-max'}}    
+    preprocessing = NumericalPreprocessingSpec(normalize=True, normalize_mode='min-max')    
     
-    pipeline, _, _ = NumericalPipelineBuilder().build(feature_spec=feature_spec, feature_dataset=dataset)
+    _, _, pipeline, _ = NumericalPipelineBuilder().build_from_dataset(preprocessing, dataset)
     processed_dataset = dataset.map(lambda x: pipeline(x))
 
     batch = next(iter(processed_dataset.batch(n_samples))).numpy()  # Get the full dataset in a batch
     assert batch.max() == 1.0
     assert batch.min() == 0.0
+    
+    
+def test_build_from_metadata_gives_same_results():
+    n_samples = 10
+    dataset = tf.data.Dataset.from_tensor_slices([i for i in range(n_samples)])
+
+    preprocessing = NumericalPreprocessingSpec(normalize=True, normalize_mode='min-max')    
+    _, _, built_pipeline, _ = NumericalPipelineBuilder().build_from_dataset(preprocessing, dataset)
+
+    
+    metadata = {'preprocessing': built_pipeline.metadata}
+    _, _, loaded_pipeline, _ = NumericalPipelineBuilder().load_from_metadata(preprocessing, metadata)
+    
+    dataset1 = dataset.map(lambda x: built_pipeline(x))
+    dataset2 = dataset.map(lambda x: loaded_pipeline(x))        
+
+    for sample1, sample2 in tf.data.Dataset.zip((dataset1, dataset2)):
+        assert sample1.numpy() == float(sample2.numpy())
     
     

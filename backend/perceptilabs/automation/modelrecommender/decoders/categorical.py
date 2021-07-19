@@ -15,7 +15,7 @@ class CategoricalDecoderBlueprint(DecoderBlueprint):
             the ID of the decoders first layer
         """
 
-        preprocessing = data_loader.get_preprocessing_pipeline(feature_name, mode='training')
+        preprocessing = data_loader.get_preprocessing_pipeline(feature_name)
         n_categories = preprocessing.n_categories
         
 

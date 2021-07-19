@@ -15,7 +15,7 @@ import psutil
 import numpy as np
 import pandas as pd
 from sys import getsizeof
-from typing import Set
+from typing import Set, Any
 
 
 
@@ -349,7 +349,57 @@ def allow_memory_growth_on_gpus():
     for device in gpu_devices:
         tf.config.experimental.set_memory_growth(device, True)
 
+
+def disable_gpus():
+    import tensorflow as tf
+    tf.config.set_visible_devices([], 'GPU')
+
+
+# -------------------- PYDANTIC CYTHON WORKAROUND --------------------
+#
+# Cython doesn't yet play well with annotations (required for Pydantic).
+# See https://github.com/cython/cython/issues/3776
+#
+# There is also an issue with Pydantic and Cython. See below. 
+#
+# This workaround BREAKS type checking for the compiled version, so therefore
+# this workaround should be removed as soon as these issues are fixed.
+
+
+import pydantic.main
+from pydantic import BaseModel, validator
+
+class MyModelMetaclass(pydantic.main.ModelMetaclass):
+    # Cython has not caught up with Python 3.7. So we have to create __annotations__ manually
+    # for Pydantic to work.
     
+    def __new__(mcs, name, bases, namespace, **kwargs):
+        if '__annotations__' not in namespace:
+            untouched_types = pydantic.main.UNTOUCHED_TYPES
+            
+            annotations = {}
+            for var_name, value in namespace.items():
+                if pydantic.main.is_valid_field(var_name) and not isinstance(value, untouched_types):
+                    annotations[var_name] = Any
+                    
+            namespace['__annotations__'] = annotations
+            
+        return super().__new__(mcs, name, bases, namespace, **kwargs)
+
+    
+def dummy_func():
+    pass
+
+
+class MyPydanticBaseModel(BaseModel, metaclass=MyModelMetaclass):
+    # Pydantic does not know how to ignore Cython functions, so we have to configure that explicitly
+    
+    class Config:
+        arbitrary_types_allowed = True
+        keep_untouched = (type(dummy_func),)
+
+# -------------------- END OF PYDANTIC CYTHON WORKAROUND --------------------
+        
 
 
     

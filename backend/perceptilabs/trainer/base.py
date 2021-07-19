@@ -47,9 +47,15 @@ class Trainer:
         
         self._num_epochs_completed = 0        
         self._reset_tracked_values()
-        self._initialize_batch_counters(data_loader)
-        
         self._set_status('Waiting')
+
+        self._num_batches_per_epoch = 1
+        self._num_batches_all_epochs = 1
+        self._num_batches_completed_all_epochs = 0
+
+        self._set_num_training_batches_completed_this_epoch(0)
+        self._set_num_validation_batches_completed_this_epoch(0)
+        
 
     def validate(self):
         """ Compute the loss. If the model or data is faulty, we get a crash. 
@@ -70,6 +76,8 @@ class Trainer:
         
     def run_stepwise(self):
         """ Take a training/validation step and yield """
+        self._data_loader.ensure_initialized()
+        self._initialize_batch_counters(self._data_loader)
         peak_memory_usage = get_memory_usage()
 
         if self._user_email:
