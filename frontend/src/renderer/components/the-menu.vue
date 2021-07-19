@@ -165,27 +165,12 @@ export default {
       this.$store.commit('globalView/set_showAppAbout', true);
     },
     newModel() {
-      if(this.statusLocalCore!='online') {
-        this.infoPopup("Kernel is offline when calling 'newModel'");
-        return;
-      }
-
       this.popupNewModel(true);
     },
     openLoadModelPopup() {
-      if(this.statusLocalCore!='online') {
-        this.infoPopup("Kernel is offline when calling 'openLoadModelPopup'");
-        return;
-      }
-      
       this.$store.dispatch('globalView/SET_showImportNetworkfromGitHubOrLocalPopup', true);
     },
     openLoadPbPopup() {
-      if(this.statusLocalCore!='online') {
-        this.infoPopup("Kernel is offline when calling 'openLoadPbPopup'");
-        return;
-      }
-      
       this.$store.dispatch('globalView/SET_filePickerPopup', {
         filePickerType: 'file',
         confirmCallback: this.onLoadPbComplete
@@ -196,30 +181,15 @@ export default {
       this.$store.dispatch('mod_api/API_parse', path);
     },
     saveModel() {
-      if(this.statusLocalCore!='online') {
-        this.infoPopup("Kernel is offline when calling 'saveModel'");
-        return;
-      }
-
       this.saveNetwork();
     },
     saveModelAs() {
-      if(this.statusLocalCore!='online') {
-        this.infoPopup("Kernel is offline when calling 'saveModelAs'");
-        return;
-      }
-
       this.saveNetworkAs();
     },
     exportModel() {
       this.$store.dispatch('globalView/SET_exportNetworkPopup', true);
     },
     exportModelToGithub() {
-      if(this.statusLocalCore!='online') {
-        this.infoPopup("Kernel is offline when calling 'exportModelToGithub'");
-        return;
-      }
-
       this.$store.dispatch('globalView/SET_exportNetworkToGithubPopup', true);
     },
     HC_delete() {

@@ -153,13 +153,6 @@ export default {
         //'bg-error': this.statusTraining === 'finish',
       }
     },
-    kernelLabel() {
-      if(this.statusLocalCore !== "online") {
-        return "Kernel is not connected";
-      } else {
-        return "Kernel is connected";
-      }
-    },
     statusTraining() {
       switch (this.statusNetworkCore) {
         case 'Training':
@@ -318,8 +311,6 @@ export default {
             this.modalSettingsCb()
           }
         }
-      } else {
-        this.showInfoPopup('Kernel is not connected');
       }
     
     },

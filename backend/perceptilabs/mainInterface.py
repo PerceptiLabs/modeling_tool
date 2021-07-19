@@ -247,8 +247,7 @@ class Interface():
         receiver = str(request.get('receiver'))
         action = request.get('action')
         value = request.get('value')
-        if action != 'checkCore':
-            logger.info(f"Frontend receiver: {receiver} , Frontend request: {action}")
+        logger.info(f"Frontend receiver: {receiver} , Frontend request: {action}")
         
         if logger.isEnabledFor(logging.DEBUG):
             logger.debug("creating response for action: {}. \nFull request:\n{}".format(
@@ -378,10 +377,6 @@ class Interface():
             response = self._core.isRunning()
             return response
 
-        elif action == "checkCore":
-            response = self._core.checkCore()
-            return response
-        
         elif action == "version":
             return __version__
 

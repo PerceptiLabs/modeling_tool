@@ -232,7 +232,7 @@ const actions = {
   //---------------
   checkCoreAvailability({commit, dispatch, state}) {
       const theData = {
-        action: 'checkCore',
+        action: 'isRunning',
         value: ''
       };
       return coreRequest(theData)
@@ -282,7 +282,6 @@ const actions = {
 
     function startCore() {
         dispatch('checkCoreAvailability');
-        dispatch("coreStatusWatcher");
     }
     function waitOnlineCore() {
       timer = setInterval(()=> {
@@ -301,7 +300,7 @@ const actions = {
     }
     function getCoreRequest() {
       const theData = {
-        action: 'checkCore',
+        action: 'isRunning',
         value: ''
       };
       coreRequest(theData)
@@ -316,7 +315,7 @@ const actions = {
     }
     function getCoreRequest() {
       const theData = {
-        action: 'checkCore',
+        action: 'isRunning',
         value: ''
       };
       coreRequest(theData)

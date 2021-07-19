@@ -387,8 +387,7 @@ def subsample_data(subsample_data_info: dict, total_num_layer_components: int, t
     for layer_id, preview in subsample_data_info.items():
         sample_data = preview.get('data', None)
         type_list = preview.get('type_list', None)
-
-        preview_content[layer_id] = createDataObject(sample_data, type_list=type_list, subsample_ratio=ratio)
+        preview_content[layer_id] = create_data_object(sample_data, type_list=type_list, subsample_ratio=ratio)
     
     return preview_content
 

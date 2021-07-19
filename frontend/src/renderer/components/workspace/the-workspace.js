@@ -165,13 +165,6 @@ export default {
     statusLocalCore() {
       return this.$store.state.mod_api.statusLocalCore;
     },
-    kernelLabel() {
-      if(this.statusLocalCore !== "online") {
-        return "Kenerl is not connected";
-      } else {
-        return "Kenerl is connected";
-      }
-    },
     // currentNet() {
     //   this.scale = this.$store.getters['mod_workspace/GET_currentNetworkZoom'];
     //   return this.$store.getters['mod_workspace/GET_currentNetworkElementList']

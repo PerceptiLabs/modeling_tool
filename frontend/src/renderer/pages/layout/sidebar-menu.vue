@@ -287,10 +287,6 @@
         });
       },
       toModelStatistic() {
-        if(this.statusLocalCore!='online') {
-          this.showInfoPopup("Kernel is offline when calling 'toModelStatistic'");
-          return;
-        }        
         // setStatisticsAvailability calls isTrained for each networks
         // The result determines if the kernel has info about the stats views
         // In other words, "false" sets openStatistics to null
@@ -363,11 +359,6 @@
         return this.$route.name === 'app';
       },
       toModelingTool() {
-        if(this.statusLocalCore!='online') {
-          this.showInfoPopup("Kernel is offline when calling 'toModelingTool'");
-          return;
-        }
-
         // console.group('---------- MODEL SIDEBUTTON CLICKED ----------');
         // console.log("ModelingIndex", this.GET_currentModelIndex);
         // console.log("StatsIndex", this.GET_currentStatsIndex);

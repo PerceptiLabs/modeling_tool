@@ -344,9 +344,6 @@ class coreLogic():
             )
         )
         return {"content":"Stopping"}
-
-    def checkCore(self):
-        return {"content":"Alive"}
     
     def checkVersions(self):
         return {

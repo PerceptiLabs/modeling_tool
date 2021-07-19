@@ -285,11 +285,6 @@
         this.onSortByChanged(this.isSelectedSortType);
       },
       hotKeyPressDelete() {
-        if(this.statusLocalCore!='online') {
-          this.showInfoPopup("Kernel is offline when calling 'hotKeyPressDelete'");
-          return;
-        }
-
         if (!this.projects) { return; }
 
         const indexCheckedProj = this.projects.findIndex((el)=> el.isChecked === true);
@@ -400,11 +395,6 @@
         return this.selectedListIds.length < 2;
       },
       toggleItemSelection(modelId) {
-        if(this.statusLocalCore!='online') {
-          this.showInfoPopup("Kernel is offline when calling 'toggleItemSelection'");
-          return;
-        }
-
         modelId = parseInt(modelId);
         let itmPosition = this.selectedListIds.indexOf(modelId);
         if (itmPosition === -1) {
@@ -420,10 +410,6 @@
         return this.selectedListIds.length === 1;
       },
       openItems() {
-        if(this.statusLocalCore!='online') {
-          this.showInfoPopup("Kernel is offline when calling 'openItems'");
-          return;
-        }
         if(!this.isAtLeastOneItemSelected()) {
           return;
         }
@@ -439,11 +425,6 @@
       },
       async removeItems() {
         if(!this.selectedListIds.length) return; // prevent removing modal when no item are selected
-        if(this.statusLocalCore!='online') {
-          this.showInfoPopup("Kernel is offline when calling 'removeItems'");
-          return;
-        }
-
         if(localStorage.getItem(LOCAL_STORAGE_HIDE_DELETE_MODAL)) {
           for (const networkId of this.selectedListIds) {
             this.$store.dispatch('mod_tracker/EVENT_modelDeletion');
@@ -472,11 +453,6 @@
         }
       },
       toggleFavoriteItems() {
-        if(this.statusLocalCore!='online') {
-          this.showInfoPopup("Kernel is offline when calling 'toggleFavoriteItems'");
-          return;
-        }
-
         let newModelList = [...this.workspaceContent];
         if (this.isAllItemSelectedFavorite()) {
           newModelList = newModelList.map((item, index) => {
@@ -498,11 +474,6 @@
         this.updateInitialModelListData();
       },
       setFavoriteValue(index, value) {
-        if(this.statusLocalCore!='online') {
-          this.showInfoPopup("Kernel is offline when calling 'setFavoriteValue'");
-          return;
-        }
-
         this.UPDATE_MODE_ACTION({index, field: 'isFavorite', value});
       },
       isAllItemSelectedFavorite() {
@@ -517,11 +488,6 @@
         return this.selectedListIds.length === this.workspaceContent.length && this.workspaceContent.length !== 0;
       },
       toggleSelectedItems() {
-        if(this.statusLocalCore!='online') {
-          this.showInfoPopup("Kernel is offline when calling 'toggleSelectedItems'");
-          return;
-        }
-
         const soemItemsAreSelected = this.selectedListIds.length !== this.workspaceContent.length;
         if(this.isAllItemsSelected()) {
           this.selectedListIds = [];
@@ -564,10 +530,6 @@
       },
       openLoadModelPopup() {
         // this.$store.dispatch('globalView/SET_filePickerPopup', {confirmCallback: this.onLoadNetworkConfirmed});
-        if(this.statusLocalCore!='online') {
-          this.showInfoPopup("Kernel is offline when calling 'openLoadModelPopup'");
-          return;
-        }
         this.$store.dispatch('globalView/SET_showImportNetworkfromGitHubOrLocalPopup', true);
       },
       onLoadNetworkConfirmed(path) {
@@ -581,11 +543,6 @@
         this.$store.commit("globalView/HIDE_allGlobalPopups");
       },
       handleStatisticClick(index, e, model) {
-        if(this.statusLocalCore!='online') {
-          this.showInfoPopup("Kernel is offline when calling 'handleStatisticClick'");
-          return;
-        }
-
         const { networkMeta: { openStatistics } } = model;
 
 
@@ -622,21 +579,11 @@
         this.isContextOpened = false
       },
       handleContextOpenModel() {
-        if(this.statusLocalCore!='online') {
-          this.showInfoPopup("Kernel is offline when calling 'handleContetOpenModel'");
-          return;
-        }
-
         this.goToNetworkView(this.workspaceContent[this.contextModelIndex].networkID);
         this.closeContext();
       },
 
       async handleContextRemoveModel() {
-        if(this.statusLocalCore!='online') {
-          this.showInfoPopup("Kernel is offline when calling 'handleContextRemoveModel'");
-          return;
-        }
-
         const modelIndex = this.contextModelIndex;
 
         if(localStorage.getItem(LOCAL_STORAGE_HIDE_DELETE_MODAL)) {
@@ -654,11 +601,6 @@
         this.closeContext();
       },
       onClickDeletedModel(model, index) {
-        if(this.statusLocalCore!='online') {
-          this.showInfoPopup("Kernel is offline when calling 'onClickDeletedModel'");
-          return;
-        }
-
         this.popupConfirm({
             text: `Are you sure you want to remove ${model.name} from Model Hub since it is no longer connected to the Project?`,
             ok: () => {
@@ -673,11 +615,6 @@
 
       // Rename Module
       handleContextRenameModel() {
-        if(this.statusLocalCore!='online') {
-          this.showInfoPopup("Kernel is offline when calling 'handleContextRenameModel'");
-          return;
-        }
-
         this.renameIndex = this.contextModelIndex;
         this.renameValue = this.workspaceContent[this.renameIndex].networkName;
 
