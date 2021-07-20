@@ -36,7 +36,7 @@
                     :styles="chartStyles"
                   )
       .no-test-view(v-else)
-        p There are no test running at the moment.
+        p There are no tests running at the moment.
         button.btn.btn--primary.run-test-button(type="button" @click="runTest()") Run Test
     .test-overlay(v-if="isTestRunning")
       .spinner
