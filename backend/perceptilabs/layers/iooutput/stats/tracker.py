@@ -19,8 +19,10 @@ def should_use_categorical(datatype):
     
 
 class OutputStatsTracker(TrainingStatsTracker):
-    def __init__(self, datatype):
+    def __init__(self, datatype, data_loader, feature_name):
         self._datatype = datatype
+        self._data_loader = data_loader
+        self._feature_name = feature_name
 
         self._loss_tracker = LossStatsTracker()            
         
@@ -65,7 +67,9 @@ class OutputStatsTracker(TrainingStatsTracker):
                 loss=self._loss_tracker.save(),                
                 predictions=self._predictions.numpy(),
                 multiclass_matrix=self._multiclass_matrix_tracker.save(),
-                targets=self._targets.numpy()                
+                targets=self._targets.numpy(),
+                data_loader=self._data_loader, 
+                feature_name=self._feature_name              
             )
         elif self._datatype == 'image':
             return ImageOutputStats(

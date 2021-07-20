@@ -94,8 +94,8 @@ const viewBoxMixin = {
           Object.keys(data).map(key => {
             prevData[key] = data[key];
           })
-         this.chartData = prevData;
-
+          this.chartData = prevData;
+          
           let stopRequest = new Date();
           let answerDelay = stopRequest - this.startRequest;
           this.$store.dispatch('mod_workspace/CHECK_requestInterval', answerDelay);
@@ -128,6 +128,17 @@ const viewBoxMixin = {
           if(theData.action === 'getTestingStatistics') {
             this.$store.commit('mod_events/set_componentEvent_test_receiveData');
           }
+
+                    
+          //  Think that this should be returned by kernel
+          
+          if (data.PvGAndConfusionMatrix && data.PvGAndConfusionMatrix.LastEpoch) {
+            data.PvGAndConfusionMatrix.LastEpoch.xAxis = {
+              type: 'category',
+              data: data.PvGAndConfusionMatrix.LastEpoch.nameList
+            };
+          }
+
           
           Vue.nonreactive(data);
           if(view.length && this && this.chartData) {

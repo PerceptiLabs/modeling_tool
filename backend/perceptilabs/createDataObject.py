@@ -119,26 +119,40 @@ def bar(data_vec: np.ndarray, ratio: int = 1):
     obj = {"x_data": x_data, "data": data}
     return obj
 
-def bar_detailed(data_vec: np.ndarray, ratio: int = 1):
+def bar_detailed(data_vec: np.ndarray, name_list: list = None, ratio: int = 1):
     '''Subsamples n-dimensional array into bar format'''
     _, y_data = subsample(data_vec, ratio)
     x_data = list(range(len(y_data)))
     data = convertToList(y_data)
     series_data = list()
-
     # Gets indiviudal bar stacks and appends them to a list
     for i in range(len(data)):
-        series_data.append(
-            {
-                'name': str(i),
-                'type': 'bar', 
-                'stack': 'total', 
-                'label': {'show': False},
-                'emphasis': {'focus': 'series'}, 
-                'data': data[i]
-            }
-        )
-    
+        if name_list is not None and len(name_list) > 0:
+            series_data.append(
+                {
+                    'name': name_list[i],
+                    'type': 'bar', 
+                    'stack': 'total', 
+                    'label': {'show': False},
+                    'emphasis': {'focus': 'series'}, 
+                    'data': data[i]
+                }
+            )
+        else:
+            series_data.append(
+                {
+                    'name': str(i),
+                    'type': 'bar', 
+                    'stack': 'total', 
+                    'label': {'show': False},
+                    'emphasis': {'focus': 'series'}, 
+                    'data': data[i]
+                }
+            )
+
+    if name_list is not None and len(name_list) > 0:
+        x_data = name_list
+
     obj = {
         "x_data": x_data,
         "data": series_data
@@ -253,7 +267,7 @@ def getType(data_vec: np.ndarray, type_: str = None):
         return TYPE_SCATTER   
 
 
-def create_type_object(data_vec: np.ndarray, type_: str, normalize: bool = True, subsample_ratio: int = 1):
+def create_type_object(data_vec: np.ndarray, type_: str, name_list: list, normalize: bool = True, subsample_ratio: int = 1):
     '''Create data object based on type
 
     Args:
@@ -270,7 +284,7 @@ def create_type_object(data_vec: np.ndarray, type_: str, normalize: bool = True,
     if type_ == TYPE_BAR:
         type_object = bar(data_vec, ratio=subsample_ratio)
     elif type_ == TYPE_BAR_D:
-        type_object = bar_detailed(data_vec, ratio=subsample_ratio)
+        type_object = bar_detailed(data_vec, name_list, ratio=subsample_ratio)
     elif type_ == TYPE_LINE:
         type_object = line(data_vec, ratio=subsample_ratio)
     elif type_ == TYPE_RGBA:
@@ -309,12 +323,12 @@ def create_data_object(
     '''
     if np.any(np.asarray(data_list).ravel() is None):
         return {}
-    if not type_list:
-        type_list = []
-    if not style_list:
-        style_list = []
-    if not name_list:
-        name_list = []    
+    if type_list is None:
+        type_list = list()
+    if style_list is None:
+        style_list = list()
+    if name_list is None:
+        name_list = list()   
 
     data_list = [np.asarray(vec) for vec in data_list]    # if not array, convert
     size = max(map(np.size, data_list))                  # used to make sure all arrays are equal length
@@ -336,7 +350,7 @@ def create_data_object(
         if data_vec is None:
             break
         
-        type_object = create_type_object(data_vec, type_, normalize, subsample_ratio)
+        type_object = create_type_object(data_vec, type_, name_list, normalize, subsample_ratio)
         series_entry = dict(type=type_)
 
         if name:
@@ -351,18 +365,17 @@ def create_data_object(
 
     data_object = dict()
 
-    if type_=='bar_detailed':
+    if 'bar_detailed' in type_list:
         data_object["xLength"] = len(data_list[0])
         data_object["series"] = type_object["data"]
-        names = [str(i) for i in range(len(data_list[0]))]
-        data_object["legend"] = {"data": names}
+        data_object["nameList"] = name_list
     else:
         data_object["xLength"] = data_list[0].size
         data_object["series"]  = series_list
+        
+        if name_list:
+            data_object["legend"] = {"data": [n for n in name_list]}
 
- 
-    if name_list:
-        data_object["legend"] = {"data": [n for n in name_list]}
     return data_object
 
 def subsample_data(subsample_data_info: dict, total_num_layer_components: int, total_data_points: int):

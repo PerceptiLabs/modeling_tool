@@ -30,8 +30,11 @@ self.addEventListener('message', function(message) {
       const series = model.series && model.series.length > 0 ? model.series[0] : {};
       const isSubsampled = isChartDataSubsampled(series, xLength);
 
-      createXAxis(model, xLength, isSubsampled);
-      filteredSeriesData(model, isSubsampled);
+      // if xAxis data is not given
+      if (!model.xAxis.data || model.xAxis.data.length === 0) {
+        createXAxis(model, xLength, isSubsampled);
+        filteredSeriesData(model, isSubsampled);
+      }
 
       postMessage(model);
   }

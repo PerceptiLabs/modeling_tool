@@ -97,7 +97,6 @@ class MultiClassMatrixStatsTracker(TrainingStatsTracker):
         
         
         target_value_indices, predicted_value_indices = count_where()
-        # Update the prediction matrix
 
         if (
                 (isinstance(target_value_indices, list) and isinstance(predicted_value_indices, list)) or

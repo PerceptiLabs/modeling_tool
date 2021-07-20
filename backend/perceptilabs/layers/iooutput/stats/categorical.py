@@ -1,16 +1,24 @@
 import numpy as np
+import tensorflow as tf
 
 from perceptilabs.createDataObject import create_data_object
 from perceptilabs.stats.base import OutputStats
+from perceptilabs.data.base import FeatureSpec, DataLoader
 
 
 class CategoricalOutputStats(OutputStats):
-    def __init__(self, accuracy=None, predictions=None, multiclass_matrix=None, targets=None, loss=None):
+    def __init__(
+        self, accuracy=None, predictions=None, multiclass_matrix=None, 
+        targets=None, loss=None, data_loader=None, feature_name=None
+    ):
         self._loss = loss
         self._accuracy = accuracy
         self._predictions = predictions
         self._multiclass_matrix = multiclass_matrix
         self._targets = targets
+        self._data_loader = data_loader
+        self._feature_name = feature_name
+        
 
     def _get_average_sample(self, type_='prediction'):
         batch = self._predictions if type_ == 'prediction' else self._targets
@@ -24,6 +32,23 @@ class CategoricalOutputStats(OutputStats):
         batch = self._predictions if type_ == 'prediction' else self._targets
         sample = batch[-1]
         return sample
+
+    def _apply_postprocessing_pipeline(self):
+        postprocessing = self._data_loader.get_postprocessing_pipeline(self._feature_name)
+        num_categories = postprocessing.n_categories
+        indices = postprocessing(np.eye(num_categories)).numpy()
+        decoded_categories = list()
+
+        def _categories_need_decoding():
+            if isinstance(indices[-1], bytes):
+                return True        
+            return False
+
+        if _categories_need_decoding():
+            for index in indices:
+                decoded_categories.append(index.decode("utf-8"))
+
+        return decoded_categories
 
     def get_data_objects(self):
         """
@@ -56,6 +81,7 @@ class CategoricalOutputStats(OutputStats):
                 'Output': create_data_object([target_value])
             }
         }
+
         return data_objects
 
     def _get_dataobj_loss(self):
@@ -103,13 +129,15 @@ class CategoricalOutputStats(OutputStats):
         
 
     def _get_data_obj_confusion_matrix(self):
+        categories = self._apply_postprocessing_pipeline()
         summed_matrix = self._multiclass_matrix.get_total_matrix_for_latest_epoch(phase='training')
         dataobj_cm_in_latest_epoch = create_data_object(
-            [       
-                summed_matrix
-            ],
-            type_list=['bar_detailed']
-        )
+                [       
+                    summed_matrix
+                ],
+                type_list=['bar_detailed'],
+                name_list=categories
+            )
 
         return dataobj_cm_in_latest_epoch
 
@@ -150,8 +178,6 @@ class CategoricalOutputStats(OutputStats):
         """
         Returns accuracy from final epoch for results summary after training ends.
         """
-        # TODO: have separate metrics for numerical outputs such as R squared instead of accuracy
-        #TODO: Create separate class for Numerical outputs just like CategoricalOutputStats
         training_acc_over_epochs, validation_acc_over_epochs = self.get_accuracy_over_epochs()
         accuracy = {
             'training': training_acc_over_epochs[-1]*100,

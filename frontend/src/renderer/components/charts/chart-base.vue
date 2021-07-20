@@ -83,7 +83,10 @@
         }
         let model = {...this.defaultModel, ...data};
         let typeChart = model.series[0].type;
-        if(typeChart === 'bar') model.xAxis.boundaryGap = true;
+        if(typeChart === 'bar') {
+          model.xAxis.boundaryGap = true;
+          model.legend.type = "scroll";
+        }
         this.wWorker.postMessage({
           model,
           xLength: data.xLength

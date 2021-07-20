@@ -248,7 +248,7 @@ class Trainer:
 
         self._output_trackers = {}
         for layer_spec in self._graph_spec.target_layers:
-            self._output_trackers[layer_spec.id_] = OutputStatsTracker(layer_spec.datatype)
+            self._output_trackers[layer_spec.id_] = OutputStatsTracker(layer_spec.datatype, self._data_loader, layer_spec.feature_name)
 
     def _update_tracked_values(
             self, trainables_by_layer, gradients_by_layer, final_and_intermediate_outputs_by_layer,
