@@ -8,7 +8,7 @@ parameters:
     - dev
     - prod
   - name: versionid
-    displayName: Requested Version
+    displayName: Requested Version (enter "latest" to get the last build for master)
     type: string
     default: latest
   - name: gpus
