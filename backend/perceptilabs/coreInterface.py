@@ -59,7 +59,7 @@ def get_num_data_repeats(settings_dict):
             if preprocessing in augmentations:
                 count += 1
                 
-    return count + 1  
+    return count + 1
 
 
 class coreLogic():
@@ -182,26 +182,31 @@ class coreLogic():
                 checkpoint_directory, graph_spec, script_factory, data_loader,
                 model_id=model_id, user_email=user_email
             )
-            training_model = exporter.training_model
-            logger.info(f"Loaded training model from disk via latest checkpoint at: {checkpoint_directory}")
+            trainer = Trainer.restore_latest_epoch(
+                data_loader,
+                training_settings,
+                exporter,
+                model_id=model_id,
+                user_email=user_email            
+            )
+            return trainer
         else:
             training_model = TrainingModel(script_factory, graph_spec)
             exporter = Exporter(
                 graph_spec, training_model, data_loader,
                 model_id=model_id, user_email=user_email
             )
-        
-        trainer = Trainer(
-            data_loader,
-            training_model,
-            training_settings,
-            checkpoint_directory=checkpoint_directory,
-            exporter=exporter,
-            model_id=model_id,
-            user_email=user_email            
-        )        
-        return trainer
-
+            trainer = Trainer(
+                data_loader,
+                training_model,
+                training_settings,
+                checkpoint_directory=checkpoint_directory,
+                exporter=exporter,
+                model_id=model_id,
+                user_email=user_email            
+            )
+            return trainer
+    
     def start_core(self, graph_spec, model_id, user_email, training_settings, dataset_settings, checkpoint_directory, load_checkpoint):
         """ Spins up a core for training (or exporting in the pre-data wizard case)
 

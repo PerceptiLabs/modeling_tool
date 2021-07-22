@@ -1,2 +1,4 @@
-from perceptilabs.layers.iooutput.stats.tracker import OutputStatsTracker
+from perceptilabs.layers.iooutput.stats.numerical import NumericalOutputStatsTracker
+from perceptilabs.layers.iooutput.stats.image import ImageOutputStatsTracker
+from perceptilabs.layers.iooutput.stats.categorical import CategoricalOutputStatsTracker
 

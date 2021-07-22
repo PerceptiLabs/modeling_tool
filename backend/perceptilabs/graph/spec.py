@@ -51,6 +51,10 @@ class GraphSpec(AbstractGraphSpec):
     @property
     def target_layers(self) -> List[LayerSpec]:
         return [x for x in self.layers if x.is_target_layer]
+
+    @property
+    def io_layers(self) -> List[LayerSpec]:
+        return [x for x in self.layers if (x.is_target_layer or x.is_input_layer)]
     
     @property
     def nodes(self) -> List[LayerSpec]:

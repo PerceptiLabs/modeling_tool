@@ -453,3 +453,27 @@ def test_trainer_calls_export_checkpoint_once_per_epoch(graph_spec, data_loader,
     step = trainer.run()
 
     assert exporter.export_checkpoint.call_count == training_settings['Epochs']
+
+
+def test_trainer_load_from_initial_gives_equal_results(graph_spec, data_loader, training_model, training_settings):
+    trainer1 = Trainer(data_loader, training_model, training_settings)
+
+    step = trainer1.run_stepwise()    
+    for _ in range(3):
+        next(step)        
+
+    saved_state = trainer1.save_state()
+    trainer2 = Trainer(data_loader, training_model, training_settings, initial_state=saved_state)
+    trainer2.ensure_data_initialized()  # Without this, some data dependent results may be wrong
+
+    results1 = trainer1.get_results()
+    results2 = trainer2.get_results()
+
+    for key in results1:
+        assert results1[key] == results2[key]
+    
+
+
+    
+
+    

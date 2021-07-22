@@ -22,12 +22,13 @@ logger = logging.getLogger(APPLICATION_LOGGER)
 
 
 class Exporter:
-    def __init__(self, graph_spec, training_model, data_loader, model_id=None, user_email=None):
+    def __init__(self, graph_spec, training_model, data_loader, model_id=None, user_email=None, checkpoint_file=None):
         self._graph_spec = graph_spec
         self._data_loader = data_loader
         self._training_model = training_model
         self._model_id = model_id
         self._user_email = user_email
+        self._checkpoint_file = checkpoint_file
 
     @classmethod
     def from_disk(cls, checkpoint_directory, graph_spec, script_factory, data_loader, model_id=None, user_email=None):
@@ -35,8 +36,12 @@ class Exporter:
         weights_path = tf.train.latest_checkpoint(checkpoint_directory)
         training_model = TrainingModel(script_factory, graph_spec)
         training_model.load_weights(filepath=weights_path)
-        logger.info(f"Loaded weights from {weights_path}")        
-        return cls(graph_spec, training_model, data_loader, model_id=model_id, user_email=user_email)
+        logger.info(f"Loaded weights from {weights_path}")
+        return cls(graph_spec, training_model, data_loader, model_id=model_id, user_email=user_email, checkpoint_file=weights_path)
+
+    @property
+    def checkpoint_file(self):
+        return self._checkpoint_file
 
     @property
     def data_loader(self):

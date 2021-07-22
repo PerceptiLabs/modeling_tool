@@ -1,5 +1,10 @@
 import numpy as np
+import tensorflow as tf
 
+from perceptilabs.stats.base import TrainingStatsTracker
+from perceptilabs.stats.loss import LossStatsTracker
+from perceptilabs.stats.r_squared import RSquaredStatsTracker
+from perceptilabs.stats.mae import MeanAbsoluteErrorStatsTracker
 from perceptilabs.createDataObject import create_data_object
 from perceptilabs.stats.base import OutputStats
 
@@ -11,6 +16,35 @@ class NumericalOutputStats(OutputStats):
         self._mae = mae
         self._predictions = predictions
         self._targets = targets
+
+    @property
+    def loss(self):
+        return self._loss
+
+    @property
+    def r_squared(self):
+        return self._r_squared
+
+    @property
+    def predictions(self):
+        return self._predictions
+
+    @property
+    def mae(self):
+        return self._mae
+
+    @property
+    def targets(self):
+        return self._targets
+    
+    def __eq__(self, other):
+        return (
+            self.loss == other.loss and
+            self.r_squared == other.r_squared and
+            self.mae == other.mae and
+            np.all(self.predictions == other.predictions) and            
+            np.all(self.targets == other.targets)             
+        )
 
     def _get_average_sample(self, type_='prediction'):
         batch = self._predictions if type_ == 'prediction' else self._targets
@@ -163,3 +197,59 @@ class NumericalOutputStats(OutputStats):
             'validation': validation_r_sq_over_epochs[-1]
         }
         return {'R Squared':r_sq}
+
+
+class NumericalOutputStatsTracker(TrainingStatsTracker):
+    def __init__(self):
+        self._datatype = 'numerical'
+        self._loss_tracker = LossStatsTracker()            
+        self._r_squared_tracker = RSquaredStatsTracker()
+        self._mae_tracker = MeanAbsoluteErrorStatsTracker()
+        self._predictions = tf.constant([0.0])
+        self._targets = tf.constant([0.0])
+
+    def update(self, **kwargs):
+        self._loss_tracker.update(**kwargs)
+        self._r_squared_tracker.update(**kwargs)
+        self._mae_tracker.update(**kwargs)
+        self._predictions = kwargs['predictions_batch']
+        self._targets = kwargs['targets_batch']
+            
+    def save(self):
+        """ Save the tracked values into a TrainingStats object """
+        return NumericalOutputStats(
+            loss=self._loss_tracker.save(),                                
+            r_squared=self._r_squared_tracker.save(),
+            mae=self._mae_tracker.save(),
+            predictions=self._predictions.numpy(),
+            targets=self._targets.numpy()                
+        )
+    
+    @property
+    def loss_tracker(self):
+        return self._loss_tracker
+
+    @property
+    def r_squared_tracker(self):
+        return self._r_squared_tracker
+
+    @property
+    def mae_tracker(self):
+        return self._mae_tracker
+
+    @property
+    def predictions(self):
+        return self._predictions
+
+    @property
+    def targets(self):
+        return self._targets
+    
+    def __eq__(self, other):
+        return (
+            self.loss_tracker == other.loss_tracker and
+            self.r_squared_tracker == other.r_squared_tracker and
+            self.mae_tracker == other.mae_tracker and
+            np.all(self.predictions == other.predictions) and            
+            np.all(self.targets == other.targets)             
+        )

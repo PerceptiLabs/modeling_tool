@@ -5,10 +5,10 @@ import numpy as np
 import tensorflow as tf
 
 from perceptilabs.graph.spec import GraphSpec
-from perceptilabs.stats.base import TrainingStatsTracker
+from perceptilabs.stats.base import TrainingStatsTracker, TrainingStats
 
 
-class GradientStats:
+class GradientStats(TrainingStats):
     def __init__(self, minimum_series, average_series, maximum_series):
         self.minimum_series = minimum_series
         self.average_series = average_series
@@ -25,6 +25,14 @@ class GradientStats:
     def get_maximum_by_layer_id(self, layer_id):
         """ Get the series of maximum gradients of this layer """                 
         return self.maximum_series[layer_id]
+
+
+    def __eq__(self, other):
+        return (
+            self.minimum_series == other.minimum_series and
+            self.average_series == other.average_series and
+            self.maximum_series == other.maximum_series 
+        )
 
     
 class GradientStatsTracker(TrainingStatsTracker):
@@ -81,3 +89,22 @@ class GradientStatsTracker(TrainingStatsTracker):
             grad_bias = tf.reshape((), (0, layer_gradients['weights'].shape[-1]))      
 
         return grad_bias    
+
+    @property
+    def minimum_gradient(self):
+        return self._minimum_gradient.copy()
+
+    @property
+    def average_gradient(self):
+        return self._average_gradient.copy()
+
+    @property
+    def maximum_gradient(self):
+        return self._maximum_gradient.copy()    
+
+    def __eq__(self, other):
+        return (
+            self.minimum_gradient == other.minimum_gradient and \
+            self.average_gradient == other.average_gradient and \
+            self.maximum_gradient == other.maximum_gradient 
+        )

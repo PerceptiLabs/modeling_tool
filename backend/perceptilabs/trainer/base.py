@@ -5,25 +5,30 @@ from typing import Dict
 
 import tensorflow as tf
 import numpy as np
+import pickle
 import os
+import json
 import time
 import logging
 
 from perceptilabs.logconf import APPLICATION_LOGGER, USER_LOGGER
 from perceptilabs.layers.visualizer import PerceptiLabsVisualizer
 from perceptilabs.trainer.model import TrainingModel
-from perceptilabs.stats import SampleStatsTracker, SampleStats, GradientStatsTracker, GradientStats, ImageOutputStatsTracker, GlobalStatsTracker
-from perceptilabs.layers.iooutput.stats.tracker import OutputStatsTracker
+from perceptilabs.stats import SampleStatsTracker, SampleStats, GradientStatsTracker, GradientStats, GlobalStatsTracker, TrainingStatsTracker
+from perceptilabs.layers.iooutput.stats import ImageOutputStatsTracker, NumericalOutputStatsTracker, CategoricalOutputStatsTracker
 from perceptilabs.trainer.losses import weighted_crossentropy, dice
 from perceptilabs.logconf import APPLICATION_LOGGER
-from perceptilabs.utils import get_memory_usage
+from perceptilabs.utils import get_memory_usage, sanitize_path
 import perceptilabs.tracking as tracking
 
 
 logger = logging.getLogger(APPLICATION_LOGGER)
 
 class Trainer:
-    def __init__(self, data_loader, training_model, training_settings, checkpoint_directory=None, exporter=None, model_id=None, user_email=None):
+    def __init__(self, data_loader, training_model, training_settings, checkpoint_directory=None, exporter=None, model_id=None, user_email=None, initial_state=None):
+        self._initial_state = initial_state
+        self._training_settings = training_settings.copy()
+        
         self._model_id = model_id
         self._user_email = user_email
         
@@ -32,30 +37,107 @@ class Trainer:
         self._graph_spec = training_model.graph_spec
         self._exporter = exporter
 
+        self._optimizer = self._resolve_optimizer(self._training_settings)
+        self._loss_functions = self._setup_loss_functions(self._training_settings)
+        
         self._checkpoint_directory = checkpoint_directory
         self._auto_checkpoint = training_settings.get('AutoCheckpoint', False)
 
-        self._training_time = 0.0
-        
-        self._num_epochs = int(training_settings['Epochs'])
-        self._batch_size = int(training_settings['Batch_size'])
-        self._shuffle_training_set = training_settings['Shuffle']
+        self._initialize_results()
+        self._data_initialized = False        
 
+    @classmethod
+    def restore_latest_epoch(cls, data_loader, training_settings, exporter, model_id=None, user_email=None):
+        ckpt_dir, ckpt_file = os.path.split(exporter.checkpoint_file)
+        state_file = ckpt_file.replace('checkpoint', 'state').replace('.ckpt', '.pkl')  # This is extremely brittle but will have to do for now.
+        state_path = os.path.join(ckpt_dir, state_file)
+
+        if os.path.isfile(state_path):
+            with open(state_path, 'rb') as f:
+                initial_state = pickle.load(f)
+                
+            logger.info(f"Restoring trainer from checkpoint {exporter.checkpoint_file} and state {state_path}")
+        else:
+            initial_state = None
+            logger.warning(f"Restoring trainer from checkpoint {exporter.checkpoint_file}, but no state file found at {state_path}")            
+
+        trainer = cls(
+            data_loader,
+            exporter.training_model,
+            training_settings,
+            checkpoint_directory=ckpt_dir,
+            exporter=exporter,
+            model_id=model_id,
+            user_email=user_email,
+            initial_state=initial_state            
+        )
+        return trainer
+
+    def _initialize_results(self):
+        self._num_epochs = int(self._training_settings['Epochs'])
+        self._batch_size = int(self._training_settings['Batch_size'])
+        self._shuffle_training_set = self._training_settings['Shuffle']
         self._headless = False
-        self._optimizer = self._resolve_optimizer(training_settings)
-        self._loss_functions = self._setup_loss_functions(training_settings)
-        
-        self._num_epochs_completed = 0        
-        self._reset_tracked_values()
-        self._set_status('Waiting')
 
-        self._num_batches_per_epoch = 1
-        self._num_batches_all_epochs = 1
-        self._num_batches_completed_all_epochs = 0
+        self._num_batches_per_epoch = -1  # Not known until data loader is ran
+        self._num_batches_all_epochs = -1  # Not known until data loader is ran
 
-        self._set_num_training_batches_completed_this_epoch(0)
-        self._set_num_validation_batches_completed_this_epoch(0)
+        if self._initial_state is None:
+            self._set_status('Waiting')
+            self._training_time = 0.0
+            self._num_epochs_completed = 0
+            self._num_batches_completed_all_epochs = 0
+            self._set_num_training_batches_completed_this_epoch(0)
+            self._set_num_validation_batches_completed_this_epoch(0)
+        else:
+            initial_state = self._initial_state
+            self._set_status(self._initial_state['status'])
+            self._training_time = initial_state['training_time']
+            self._num_epochs_completed = initial_state['num_epochs_completed']
+            self._num_batches_completed_all_epochs = initial_state['num_batches_completed_all_epochs']
+            self._set_num_training_batches_completed_this_epoch(
+                initial_state['num_training_batches_completed_this_epoch'])
+            self._set_num_validation_batches_completed_this_epoch(
+                initial_state['num_validation_batches_completed_this_epoch'])
         
+        self._reset_tracked_values(self._initial_state)                
+
+    def ensure_data_initialized(self):
+        if self._data_initialized:
+            return
+        
+        self._data_loader.ensure_initialized()
+        training_size = self._data_loader.get_dataset_size(partition='training')
+        validation_size = self._data_loader.get_dataset_size(partition='validation')
+
+        training_batches_per_epoch = int(np.ceil(training_size / self._batch_size))
+        validation_batches_per_epoch = int(np.ceil(validation_size / self._batch_size))        
+        
+        self._num_batches_per_epoch = training_batches_per_epoch + validation_batches_per_epoch
+        self._num_batches_all_epochs = self._num_batches_per_epoch * self._num_epochs
+        self._data_initialized = True
+
+    def save_state(self):
+        state = {
+            'status': self._status,
+            'training_time': self._training_time,
+            'num_epochs_completed': self._num_epochs_completed,
+            'num_batches_completed_all_epochs': self._num_batches_completed_all_epochs,            
+            'num_training_batches_completed_this_epoch': self._num_training_batches_completed_this_epoch,
+            'num_validation_batches_completed_this_epoch': self._num_validation_batches_completed_this_epoch,
+            'layer_outputs': self._layer_outputs,
+            'layer_trainables': self._layer_trainables,
+            'global_stats_tracker': self._global_stats_tracker,
+            'input_stats_tracker': self._input_stats_tracker,
+            'prediction_stats_tracker': self._prediction_stats_tracker,
+            'target_stats_tracker': self._target_stats_tracker,
+            'gradient_stats_tracker': self._gradient_stats_tracker,
+            'output_trackers': {
+                layer_id: tracker
+                for layer_id, tracker in self._output_trackers.items()
+            }            
+        }
+        return state
 
     def validate(self):
         """ Compute the loss. If the model or data is faulty, we get a crash. 
@@ -73,22 +155,24 @@ class Trainer:
         # TODO: remove _, on_iterate and model_id when possible
         for _ in self.run_stepwise():
             pass
-        
+
     def run_stepwise(self):
         """ Take a training/validation step and yield """
-        self._data_loader.ensure_initialized()
-        self._initialize_batch_counters(self._data_loader)
+        self.ensure_data_initialized()
         peak_memory_usage = get_memory_usage()
 
         if self._user_email:
             tracking.send_training_started(self._user_email, self._model_id, self._graph_spec)
-            
-        logger.info("Entering training loop")
-        
+
+        if self._num_epochs_completed == 0:            
+            logger.info("Entering training loop")
+        else:
+            logger.info(f"Entering training loop (starting from epoch {self._num_epochs_completed}/{self.num_epochs})")
+
         if self._checkpoint_directory is not None:
             logger.info(f"Checkpoints will be saved to {self._checkpoint_directory}")        
-        
-        self._num_epochs_completed = 0
+
+        self._set_status('Training')            
         while self._num_epochs_completed < self.num_epochs and not self.is_closed:
             t0 = time.perf_counter()
 
@@ -121,7 +205,7 @@ class Trainer:
                 break
 
             if self._auto_checkpoint:
-                self._auto_save_checkpoint(epoch=self._num_epochs_completed)
+                self._auto_save_epoch(epoch=self._num_epochs_completed)
                 
             self._num_epochs_completed += 1
             epoch_time = time.perf_counter() - t0 - time_paused_training - time_paused_validation
@@ -136,7 +220,7 @@ class Trainer:
             yield
 
         if not self._auto_checkpoint:
-            self._auto_save_checkpoint()            
+            self._auto_save_epoch()            
 
         self._set_status('Finished')
         logger.info(f"Training completed. Total duration: {round(self._training_time, 3)} s")
@@ -151,7 +235,7 @@ class Trainer:
                 self.get_output_stats_summaries()
             )
 
-    def _auto_save_checkpoint(self, epoch=None):
+    def _auto_save_epoch(self, epoch=None):
         """ Exports the model so that we can restore it between runs """
         if self._exporter is None:
             logger.error("Exporter not set. Cannot auto export")
@@ -162,7 +246,19 @@ class Trainer:
             return
 
         self.export_checkpoint(self._checkpoint_directory, epoch=epoch)
+        self._save_state_to_disk(self._checkpoint_directory, epoch)
 
+    def _save_state_to_disk(self, checkpoint_directory, epoch):
+        state_dict = self.save_state()
+        
+        if epoch is None:
+            path = os.path.join(self._checkpoint_directory, f"state.pkl")
+        else:
+            path = os.path.join(self._checkpoint_directory, f"state-{epoch:04d}.pkl")
+
+        with open(path, 'wb') as f:
+            pickle.dump(state_dict, f)            
+        
     def _log_epoch_summary(self, epoch_time):
         logger.info(
             f"Finished epoch {self._num_epochs_completed}/{self.num_epochs} - "
@@ -237,18 +333,40 @@ class Trainer:
         
         return total_loss, individual_losses
 
-    def _reset_tracked_values(self):
-        self._layer_outputs = {}
-        self._layer_trainables = {}
-        self._global_stats_tracker = GlobalStatsTracker()        
-        self._input_stats_tracker = SampleStatsTracker()
-        self._prediction_stats_tracker = SampleStatsTracker()                        
-        self._target_stats_tracker = SampleStatsTracker()
-        self._gradient_stats_tracker = GradientStatsTracker()
+    def _reset_tracked_values(self, initial_state=None):
+        if initial_state is None:
+            self._layer_outputs = {}
+            self._layer_trainables = {}
+            self._global_stats_tracker = GlobalStatsTracker()
+            self._input_stats_tracker = SampleStatsTracker()
+            self._prediction_stats_tracker = SampleStatsTracker()                        
+            self._target_stats_tracker = SampleStatsTracker()
+            self._gradient_stats_tracker = GradientStatsTracker()
+        else:
+            self._layer_outputs = initial_state['layer_outputs']
+            self._layer_trainables = initial_state['layer_trainables']
+            self._global_stats_tracker = initial_state['global_stats_tracker']
+            self._input_stats_tracker = initial_state['input_stats_tracker']
+            self._prediction_stats_tracker = initial_state['prediction_stats_tracker']
+            self._target_stats_tracker = initial_state['target_stats_tracker']
+            self._gradient_stats_tracker = initial_state['gradient_stats_tracker']
 
         self._output_trackers = {}
         for layer_spec in self._graph_spec.target_layers:
-            self._output_trackers[layer_spec.id_] = OutputStatsTracker(layer_spec.datatype, self._data_loader, layer_spec.feature_name)
+            if initial_state is None:
+                self._output_trackers[layer_spec.id_] = self._get_output_stats_tracker(layer_spec.datatype, layer_spec.feature_name)
+            else:
+                self._output_trackers[layer_spec.id_] = initial_state['output_trackers'][layer_spec.id_]
+                
+    def _get_output_stats_tracker(self, datatype, feature_name):
+        if datatype == 'numerical':
+            return NumericalOutputStatsTracker()
+        elif datatype == 'categorical':
+            return CategoricalOutputStatsTracker()
+        elif datatype == 'binary':
+            return CategoricalOutputStatsTracker()            
+        elif datatype == 'image':
+            return ImageOutputStatsTracker()                                
 
     def _update_tracked_values(
             self, trainables_by_layer, gradients_by_layer, final_and_intermediate_outputs_by_layer,
@@ -256,28 +374,49 @@ class Trainer:
             total_loss, individual_losses, is_training, steps_completed
     ):
         """ Take a snapshot of the current tensors (e.g., layer weights) """
-        self._layer_outputs = final_and_intermediate_outputs_by_layer
-        self._layer_trainables = trainables_by_layer
 
+        self._layer_outputs = {}
+        for layer_id in final_and_intermediate_outputs_by_layer.keys():
+            self._layer_outputs[layer_id] = {
+                name: tensor.numpy()
+                for name, tensor in final_and_intermediate_outputs_by_layer[layer_id].items()
+            }
+
+        self._layer_trainables = {}
+        for layer_id in trainables_by_layer.keys():
+            self._layer_trainables[layer_id] = {
+                name: tensor.numpy()
+                for name, tensor in trainables_by_layer[layer_id].items()
+            }            
+        
         self._global_stats_tracker.update(
             loss=total_loss,
             epochs_completed=self._num_epochs_completed,
             steps_completed=steps_completed,
             is_training=is_training
         )
+
+        id_to_feature = {
+            layer_spec.id_: layer_spec.feature_name
+            for layer_spec in self._graph_spec.io_layers
+        }        
         
-        self._input_stats_tracker.update(graph_spec=self._graph_spec, sample_batch=inputs_batch)
-        self._prediction_stats_tracker.update(graph_spec=self._graph_spec, sample_batch=predictions_batch)                
-        self._target_stats_tracker.update(graph_spec=self._graph_spec, sample_batch=targets_batch)
+        self._input_stats_tracker.update(id_to_feature=id_to_feature, sample_batch=inputs_batch)
+        self._prediction_stats_tracker.update(id_to_feature=id_to_feature, sample_batch=predictions_batch)                
+        self._target_stats_tracker.update(id_to_feature=id_to_feature, sample_batch=targets_batch)
         self._gradient_stats_tracker.update(gradients_by_layer=gradients_by_layer)
         
-        for layer_spec in self._graph_spec.target_layers:
+        for layer_spec in self._graph_spec.target_layers:                    
             tracker = self._output_trackers[layer_spec.id_]
+            postprocessing = self._data_loader.get_postprocessing_pipeline(
+                layer_spec.feature_name)
+            
             tracker.update(
                 predictions_batch=predictions_batch[layer_spec.feature_name],
                 targets_batch=targets_batch[layer_spec.feature_name],
                 epochs_completed=self._num_epochs_completed,
                 loss=individual_losses[layer_spec.feature_name],
+                postprocessing=postprocessing,
                 steps_completed=steps_completed,
                 is_training=is_training
             )
@@ -358,21 +497,6 @@ class Trainer:
     def num_validation_batches_completed_this_epoch(self):
         return self._num_validation_batches_completed_this_epoch
 
-    def _initialize_batch_counters(self, data_loader):
-        """ Initialize iteration/batch counters to keep track of progress """
-        training_size = data_loader.get_dataset_size(partition='training')
-        validation_size = data_loader.get_dataset_size(partition='validation')
-
-        training_batches_per_epoch = int(np.ceil(training_size / self.batch_size))
-        validation_batches_per_epoch = int(np.ceil(validation_size / self.batch_size))        
-        
-        self._num_batches_per_epoch = training_batches_per_epoch + validation_batches_per_epoch
-        self._num_batches_all_epochs = self._num_batches_per_epoch * self._num_epochs
-        self._num_batches_completed_all_epochs = 0
-
-        self._set_num_training_batches_completed_this_epoch(0)
-        self._set_num_validation_batches_completed_this_epoch(0)
-
     @property
     def progress(self) -> float:
         return self.num_batches_completed_all_epochs / self.num_batches_all_epochs
@@ -445,7 +569,7 @@ class Trainer:
             A numpy array (or None if the layer/variable doesnt exist)            
         """
         try:
-            output_batch = self._layer_outputs[layer_id][output_variable].numpy()
+            output_batch = self._layer_outputs[layer_id][output_variable]
             return output_batch
         except KeyError as e:
             return None
@@ -453,15 +577,15 @@ class Trainer:
     def get_layer_weights(self, layer_id):
         """ Get the weights associated with a layer """
         try:
-            value = self._layer_trainables[layer_id]['weights'].numpy()
+            value = self._layer_trainables[layer_id]['weights']
             return value
         except KeyError as e:
             return None
 
     def get_layer_bias(self, layer_id):
-        """ Get the bias associated with a layer """        
+        """ Get the bias associated with a layer """
         try:
-            value = self._layer_trainables[layer_id]['bias'].numpy()
+            value = self._layer_trainables[layer_id]['bias']
             return value
         except KeyError as e:
             return None

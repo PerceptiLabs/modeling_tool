@@ -14,10 +14,21 @@ class ConfusionMatrix:
         self.fp = fp
         self.fn = fn
 
+    def __eq__(self, other):
+        return (
+            self.tp == other.tp and
+            self.tn == other.tn and
+            self.fp == other.fp and
+            self.fn == other.fn
+        )
+
         
 class IouStats:
     def __init__(self, prediction_matrices=None):
         self.prediction_matrices = prediction_matrices or ()
+
+    def __eq__(self, other):
+        return self.prediction_matrices == other.prediction_matrices
     
     @return_on_failure(0.0)
     def get_average_iou_for_epoch(self, epoch, phase='training'):
@@ -123,3 +134,10 @@ class IouStatsTracker(TrainingStatsTracker):
         ])
         return IouStats(pred_matrices)
     
+    @property
+    def prediction_matrices(self):
+        return self._prediction_matrices
+    
+    def __eq__(self, other):
+        return self.prediction_matrices == other.prediction_matrices
+        

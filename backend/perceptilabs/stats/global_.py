@@ -9,9 +9,14 @@ class GlobalStats(TrainingStats):
     def __init__(self, loss=None):
         self._loss = loss
 
-    def get_data_objects(self):
-        # TODO: docs
+    @property
+    def loss(self):
+        return self._loss
 
+    def __eq__(self, other):
+        return self.loss == other.loss
+
+    def get_data_objects(self):
         training_loss_over_steps, validation_loss_over_steps = self.get_loss_over_steps_in_latest_epoch()
         # The frontend plots the training loss last, so this gives the effect that the validation curve is a continuation of the training curve.
         validation_loss_over_steps = training_loss_over_steps + validation_loss_over_steps
@@ -67,6 +72,7 @@ class GlobalStats(TrainingStats):
             'validation': validation_loss_over_steps[-1],
         }
         return {'Global_Loss':loss}
+    
 
 class GlobalStatsTracker(TrainingStatsTracker):
     def __init__(self):
@@ -78,3 +84,11 @@ class GlobalStatsTracker(TrainingStatsTracker):
     def save(self):
         """ Save the tracked values into a TrainingStats object """
         return GlobalStats(loss=self._loss_tracker.save())
+
+    @property
+    def loss_tracker(self):
+        return self._loss_tracker
+
+    def __eq__(self, other):
+        return self.loss_tracker == other.loss_tracker
+    

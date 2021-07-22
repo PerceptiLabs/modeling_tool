@@ -1,12 +1,16 @@
 from typing import Tuple
 
-from perceptilabs.stats.base import TrainingStatsTracker
+from perceptilabs.stats.base import TrainingStatsTracker, TrainingStats
 from perceptilabs.stats.utils import return_on_failure
 
 
-class LossStats:
+class LossStats(TrainingStats):
     def __init__(self, losses=None):
         self.losses = losses or ()
+
+
+    def __eq__(self, other):
+        return self.losses == other.losses               
 
     @return_on_failure(0.0)    
     def get_loss_for_step(self, epoch, step):
@@ -87,3 +91,10 @@ class LossStatsTracker(TrainingStatsTracker):
         ])
         return LossStats(losses)
 
+    @property
+    def losses(self):
+        return self._losses
+
+    def __eq__(self, other):
+        return self.losses == other.losses
+    

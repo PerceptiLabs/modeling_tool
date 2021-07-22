@@ -1,7 +1,13 @@
 import numpy as np
 import cv2
 import math
+    
+import tensorflow as tf
 
+from perceptilabs.stats.base import TrainingStatsTracker
+from perceptilabs.stats.accuracy import AccuracyStatsTracker
+from perceptilabs.stats.loss import LossStatsTracker
+from perceptilabs.stats.iou import IouStatsTracker
 from perceptilabs.createDataObject import create_data_object
 from perceptilabs.stats.base import OutputStats
 
@@ -12,6 +18,30 @@ class ImageOutputStats(OutputStats):
         self._predictions = predictions
         self._targets = targets
         self._loss = loss
+
+    @property
+    def loss(self):
+        return self._loss
+
+    @property
+    def iou(self):
+        return self._iou
+
+    @property
+    def predictions(self):
+        return self._predictions
+
+    @property
+    def targets(self):
+        return self._targets
+    
+    def __eq__(self, other):
+        return (
+            self.loss == other.loss and
+            self.iou == other.iou and
+            np.all(self.predictions == other.predictions) and            
+            np.all(self.targets == other.targets)             
+        )
 
     def _get_average_sample(self, type_='prediction'):
         batch = self._predictions if type_ == 'prediction' else self._targets
@@ -168,3 +198,50 @@ class ImageOutputStats(OutputStats):
             'validation': validation_iou_over_epochs[-1],
         }
         return {'IOU': iou}
+
+
+class ImageOutputStatsTracker(TrainingStatsTracker):
+    def __init__(self):
+        self._loss_tracker = LossStatsTracker()            
+        self._iou_tracker = IouStatsTracker()
+        self._predictions = tf.constant([0.0])
+        self._targets = tf.constant([0.0])
+
+    def update(self, **kwargs):
+        self._loss_tracker.update(**kwargs)
+        self._iou_tracker.update(**kwargs)
+        self._predictions = kwargs['predictions_batch']
+        self._targets = kwargs['targets_batch']
+            
+    def save(self):
+        """ Save the tracked values into a TrainingStats object """
+        return ImageOutputStats(
+            loss=self._loss_tracker.save(),                                
+            iou=self._iou_tracker.save(),
+            predictions=self._predictions.numpy(),
+            targets=self._targets.numpy()                
+        )
+    
+    @property
+    def loss_tracker(self):
+        return self._loss_tracker
+
+    @property
+    def iou_tracker(self):
+        return self._iou_tracker
+
+    @property
+    def predictions(self):
+        return self._predictions
+
+    @property
+    def targets(self):
+        return self._targets
+    
+    def __eq__(self, other):
+        return (
+            self.loss_tracker == other.loss_tracker and
+            self.iou_tracker == other.iou_tracker and
+            np.all(self.predictions == other.predictions) and            
+            np.all(self.targets == other.targets)             
+        )

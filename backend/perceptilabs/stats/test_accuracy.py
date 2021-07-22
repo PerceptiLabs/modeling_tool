@@ -1,5 +1,8 @@
 import pytest
-from perceptilabs.stats.accuracy import AccuracyStats, PredictionMatrix
+import tensorflow as tf
+
+
+from perceptilabs.stats.accuracy import AccuracyStats, PredictionMatrix, AccuracyStatsTracker
 
 @pytest.fixture
 def prediction_matrices():
@@ -151,4 +154,66 @@ def test_accuracy_for_latest_step_validation(prediction_matrices):
     stats = AccuracyStats(prediction_matrices)
     actual = stats.get_accuracy_for_latest_step(phase='validation')
     assert actual == expected
+
+
+def test_stats_objects_are_equal_when_args_are_equal():
+    pm1 = [[
+        (PredictionMatrix(correct=10, incorrect=12), True),
+        (PredictionMatrix(correct=12, incorrect=9), True)
+    ]]
+    pm2 = [[
+        (PredictionMatrix(correct=10, incorrect=12), True),
+        (PredictionMatrix(correct=12, incorrect=9), True)
+    ]]
+    pm3 = [[
+        (PredictionMatrix(correct=10, incorrect=11), True),
+        (PredictionMatrix(correct=12, incorrect=9), True)
+    ]]
+    
+
+    obj1 = AccuracyStats(prediction_matrices=pm1)
+    obj2 = AccuracyStats(prediction_matrices=pm2)
+    obj3 = AccuracyStats(prediction_matrices=pm3)    
+    assert obj1 == obj2 != obj3
+
+    
+def test_trackers_are_equal_when_both_are_updated():
+    tracker1 = AccuracyStatsTracker()
+    tracker2 = AccuracyStatsTracker()    
+    assert tracker1 == tracker2
+    assert tracker1.save() == tracker2.save()    
+
+    tracker1.update(
+        predictions_batch=tf.constant([[0, 0.1, 0.9], [1, 0, 0]]),
+        targets_batch=tf.constant([[0, 1, 0], [1, 0, 0]]),
+        epochs_completed=0,
+        steps_completed=0,
+        is_training=True
+    )
+    assert tracker1 != tracker2
+    assert tracker1.save() != tracker2.save()    
+    
+    tracker2.update(
+        predictions_batch=tf.constant([[0, 0.1, 0.9], [1, 0, 0]]),
+        targets_batch=tf.constant([[0, 1, 0], [1, 0, 0]]),
+        epochs_completed=0,
+        steps_completed=0,
+        is_training=True
+    )
+    assert tracker1 == tracker2
+    assert tracker1.save() == tracker2.save()   
+
+    
+def test_serialized_trackers_are_equal():
+    tracker1 = AccuracyStatsTracker()
+    tracker1.update(
+        predictions_batch=tf.constant([[0, 0.1, 0.9], [1, 0, 0]]),
+        targets_batch=tf.constant([[0, 1, 0], [1, 0, 0]]),
+        epochs_completed=0,
+        steps_completed=0,
+        is_training=True
+    )
+    data = tracker1.serialize()
+    tracker2 = AccuracyStatsTracker.deserialize(data)
+    assert tracker1 == tracker2
     

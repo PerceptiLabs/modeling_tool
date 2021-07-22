@@ -1,13 +1,17 @@
 from abc import ABC, abstractmethod
+import pickle
 
 # TODO: docs
 
 class TrainingStats(ABC):
-    @abstractmethod
     def get_data_objects(self):
         raise NotImplementedError
 
+    @abstractmethod
+    def __eq__(self, other):
+        raise NotImplementedError
 
+    
 class OutputStats(TrainingStats):
     @abstractmethod
     def get_summary(self):
@@ -28,5 +32,14 @@ class TrainingStatsTracker(ABC):
     def save(self):
         raise NotImplementedError
 
+    @abstractmethod
+    def __eq__(self, other):
+        raise NotImplementedError
 
+    def serialize(self):
+        return pickle.dumps(self)
+
+    @staticmethod
+    def deserialize(data):
+        return pickle.loads(data)
     

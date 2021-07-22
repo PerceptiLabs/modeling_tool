@@ -15,9 +15,16 @@ class MultiClassMatrix:
         """ Return the total number of predictions in the prediction matrix. Should equal the batch size. """
         return np.sum(self.prediction_matrix)
 
+    def __eq__(self, other):
+        return self.prediction_matrix == other.prediction_matrix
+    
+
 class MultiClassMatrixStats:
     def __init__(self, prediction_matrices=None):
         self.prediction_matrices = prediction_matrices or ()
+
+    def __eq__(self, other):
+        return self.prediction_matrices == other.prediction_matrices
     
     def get_total_matrix_for_latest_epoch(self, phase='training'):
         matrices = self.get_matrices_for_latest_epoch(phase=phase)
@@ -120,3 +127,11 @@ class MultiClassMatrixStatsTracker(TrainingStatsTracker):
         ])
 
         return MultiClassMatrixStats(pred_matrices)
+
+    @property
+    def prediction_matrices(self):
+        return self._prediction_matrices
+
+    def __eq__(self, other):
+        return self.prediction_matrices == other.prediction_matrices
+ 

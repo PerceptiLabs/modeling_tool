@@ -1,6 +1,10 @@
 import numpy as np
 import tensorflow as tf
 
+from perceptilabs.stats.base import TrainingStatsTracker
+from perceptilabs.stats.accuracy import AccuracyStatsTracker
+from perceptilabs.stats.loss import LossStatsTracker
+from perceptilabs.stats.multiclass_matrix import MultiClassMatrixStatsTracker
 from perceptilabs.createDataObject import create_data_object
 from perceptilabs.stats.base import OutputStats
 from perceptilabs.data.base import FeatureSpec, DataLoader
@@ -9,16 +13,48 @@ from perceptilabs.data.base import FeatureSpec, DataLoader
 class CategoricalOutputStats(OutputStats):
     def __init__(
         self, accuracy=None, predictions=None, multiclass_matrix=None, 
-        targets=None, loss=None, data_loader=None, feature_name=None
+        targets=None, loss=None, categories=None
     ):
         self._loss = loss
         self._accuracy = accuracy
         self._predictions = predictions
         self._multiclass_matrix = multiclass_matrix
         self._targets = targets
-        self._data_loader = data_loader
-        self._feature_name = feature_name
-        
+        self._categories = categories        
+
+    @property
+    def loss(self):
+        return self._loss
+
+    @property
+    def accuracy(self):
+        return self._accuracy
+
+    @property
+    def predictions(self):
+        return self._predictions
+
+    @property
+    def multiclass_matrix(self):
+        return self._multiclass_matrix
+
+    @property
+    def targets(self):
+        return self._targets
+
+    @property
+    def categories(self):
+        return self._categories
+
+    def __eq__(self, other):
+        return (
+            self.loss == other.loss and
+            self.accuracy == other.accuracy and
+            self.multiclass_matrix == other.multiclass_matrix and
+            self.categories == other.categories and            
+            np.all(self.predictions == other.predictions) and            
+            np.all(self.targets == other.targets)             
+        )
 
     def _get_average_sample(self, type_='prediction'):
         batch = self._predictions if type_ == 'prediction' else self._targets
@@ -32,23 +68,6 @@ class CategoricalOutputStats(OutputStats):
         batch = self._predictions if type_ == 'prediction' else self._targets
         sample = batch[-1]
         return sample
-
-    def _apply_postprocessing_pipeline(self):
-        postprocessing = self._data_loader.get_postprocessing_pipeline(self._feature_name)
-        num_categories = postprocessing.n_categories
-        indices = postprocessing(np.eye(num_categories)).numpy()
-        decoded_categories = list()
-
-        def _categories_need_decoding():
-            if isinstance(indices[-1], bytes):
-                return True        
-            return False
-
-        if _categories_need_decoding():
-            for index in indices:
-                decoded_categories.append(index.decode("utf-8"))
-
-        return decoded_categories
 
     def get_data_objects(self):
         """
@@ -126,17 +145,14 @@ class CategoricalOutputStats(OutputStats):
             )
         return dataobj_acc_over_epochs
 
-        
-
     def _get_data_obj_confusion_matrix(self):
-        categories = self._apply_postprocessing_pipeline()
         summed_matrix = self._multiclass_matrix.get_total_matrix_for_latest_epoch(phase='training')
         dataobj_cm_in_latest_epoch = create_data_object(
                 [       
                     summed_matrix
                 ],
                 type_list=['bar_detailed'],
-                name_list=categories
+                name_list=self._categories
             )
 
         return dataobj_cm_in_latest_epoch
@@ -184,3 +200,82 @@ class CategoricalOutputStats(OutputStats):
             'validation': validation_acc_over_epochs[-1]*100,
         }
         return {'Accuracy':accuracy}
+
+
+class CategoricalOutputStatsTracker(TrainingStatsTracker):
+    def __init__(self):
+        self._loss_tracker = LossStatsTracker()            
+        self._accuracy_tracker = AccuracyStatsTracker()
+        self._multiclass_matrix_tracker = MultiClassMatrixStatsTracker()   
+        self._predictions = tf.constant([0.0])
+        self._targets = tf.constant([0.0])
+        self._categories = []
+
+    def update(self, **kwargs):
+        self._loss_tracker.update(**kwargs)
+        self._accuracy_tracker.update(**kwargs)
+        self._multiclass_matrix_tracker.update(**kwargs)
+        self._predictions = kwargs['predictions_batch']
+        self._targets = kwargs['targets_batch']
+        self._categories = self._get_categories(kwargs['postprocessing'])
+
+    def _get_categories(self, postprocessing):
+        num_categories = postprocessing.n_categories
+        indices = postprocessing(np.eye(num_categories)).numpy()
+        decoded_categories = list()
+
+        def _categories_need_decoding():
+            if isinstance(indices[-1], bytes):
+                return True        
+            return False        
+
+        if _categories_need_decoding():
+            for index in indices:
+                decoded_categories.append(index.decode("utf-8"))
+
+        return decoded_categories        
+            
+    def save(self):
+        """ Save the tracked values into a TrainingStats object """
+        return CategoricalOutputStats(
+            accuracy=self._accuracy_tracker.save(),
+            loss=self._loss_tracker.save(),                
+            predictions=self._predictions.numpy(),
+            multiclass_matrix=self._multiclass_matrix_tracker.save(),
+            targets=self._targets.numpy(),
+            categories=self._categories
+        )
+    
+    @property
+    def loss_tracker(self):
+        return self._loss_tracker
+
+    @property
+    def accuracy_tracker(self):
+        return self._accuracy_tracker
+
+    @property
+    def multiclass_matrix_tracker(self):
+        return self._multiclass_matrix_tracker
+
+    @property
+    def predictions(self):
+        return self._predictions
+
+    @property
+    def targets(self):
+        return self._targets
+
+    @property
+    def categories(self):
+        return self._categories
+    
+    def __eq__(self, other):
+        return (
+            self.loss_tracker == other.loss_tracker and
+            self.accuracy_tracker == other.accuracy_tracker and
+            self.multiclass_matrix_tracker == other.multiclass_matrix_tracker and
+            self.categories == other.categories and            
+            np.all(self.predictions == other.predictions) and            
+            np.all(self.targets == other.targets)
+        )

@@ -10,6 +10,9 @@ class MeanAbsoluteErrorStats:
     def __init__(self, losses=None):
         self.losses = losses or ()
 
+    def __eq__(self, other):
+        return self.losses == other.losses
+
     @return_on_failure(0.0)    
     def get_loss_for_step(self, epoch, step):
         """ Mean Absolute Error of a step/batch """         # TODO: rename step/steps -> batch/batches everywhere?
@@ -65,12 +68,14 @@ class MeanAbsoluteErrorStats:
                 
         return averages
 
+    
 class MeanAbsoluteErrorStatsTracker(TrainingStatsTracker):
     def __init__(self):
         self._loss_values = []  # A list of list. Outer list is per epoch, inner list is per step within that epoch
 
     def update(self, **kwargs):
-        self._store_loss_values(kwargs['predictions_batch'], kwargs['targets_batch'],
+        self._store_loss_values(
+            kwargs['predictions_batch'], kwargs['targets_batch'],
             kwargs['loss'], kwargs['epochs_completed'], kwargs['steps_completed'],
             kwargs['is_training'],
         )
@@ -91,3 +96,10 @@ class MeanAbsoluteErrorStatsTracker(TrainingStatsTracker):
             for epoch_loss_values in self._loss_values
         ])
         return MeanAbsoluteErrorStats(loss_values)
+
+    @property
+    def loss_values(self):
+        return self._loss_values
+
+    def __eq__(self, other):
+        return self.loss_values == other.loss_values

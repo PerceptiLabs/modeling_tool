@@ -10,6 +10,9 @@ class RSquaredStats:
     def __init__(self, r_squared_values=None):
         self.r_squared_values = r_squared_values or ()
 
+    def __eq__(self, other):
+        return self.r_squared_values == other.r_squared_values
+
     @return_on_failure(0.0)    
     def get_r_squared_for_step(self, epoch, step):
         """ R Squared of a step/batch """         # TODO: rename step/steps -> batch/batches everywhere?
@@ -95,3 +98,10 @@ class RSquaredStatsTracker(TrainingStatsTracker):
             for epoch_r_squared_values in self._r_squared_values
         ])
         return RSquaredStats(r_squared_values)
+
+    @property
+    def r_squared_values(self):
+        return self._r_squared_values
+    
+    def __eq__(self, other):
+        return self.r_squared_values == other.r_squared_values

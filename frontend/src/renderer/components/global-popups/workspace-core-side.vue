@@ -5,13 +5,13 @@
       .popup-background
         .popup_tab-set
           .popup_header.disable
-            h3 Use weights?
+            h3 Resume training?
         .popup_tab-body
           .popup_body(
             :class="{'active': tabSelected == 0}"
           )
             .settings-layer_section.text-center
-              p.big-text Start training with weights?
+              p.big-text Start training from latest epoch?
             .settings-layer_foot
               button.btn.btn--primary.btn--disabled(type="button"
                 @click="startTraining(false)"

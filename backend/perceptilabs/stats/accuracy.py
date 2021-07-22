@@ -1,7 +1,7 @@
 from typing import Tuple
 import tensorflow as tf
 
-from perceptilabs.stats.base import TrainingStatsTracker
+from perceptilabs.stats.base import TrainingStatsTracker, TrainingStats
 from perceptilabs.stats.utils import return_on_failure
 
 
@@ -14,10 +14,22 @@ class PredictionMatrix:
     def total(self):
         return self.correct + self.incorrect
 
+    def __eq__(self, other):
+        return self.correct == other.correct and self.incorrect == other.incorrect
+    
 
-class AccuracyStats:
+class AccuracyStats(TrainingStats):
     def __init__(self, prediction_matrices=None):
         self.prediction_matrices = prediction_matrices or ()
+
+    def __eq__(self, other):
+        if len(self.prediction_matrices) != len(other.prediction_matrices):
+            return False
+        
+        for m1, m2 in zip(self.prediction_matrices, other.prediction_matrices):
+            if m1 != m2:
+                return False
+        return True        
     
     @return_on_failure(0.0)
     def get_average_accuracy_for_epoch(self, epoch, phase='training'):
@@ -110,4 +122,19 @@ class AccuracyStatsTracker(TrainingStatsTracker):
             for step_matrices in self._prediction_matrices
         ])
         return AccuracyStats(pred_matrices)
+
+    @property
+    def prediction_matrices(self):
+        return self._prediction_matrices
+
+    def __eq__(self, other):
+        if len(self.prediction_matrices) != len(other.prediction_matrices):
+            return False
+        
+        for m1, m2 in zip(self.prediction_matrices, other.prediction_matrices):
+            if m1 != m2:
+                return False
+        return True        
+        
+    
     

@@ -1,8 +1,10 @@
 import pytest
+import tensorflow as tf
 import numpy as np
 from unittest.mock import MagicMock
 
-from perceptilabs.stats.loss import LossStats
+from perceptilabs.stats.loss import LossStats, LossStatsTracker
+
     
 @pytest.fixture
 def losses():
@@ -116,5 +118,55 @@ def test_loss_for_latest_step_validation(losses):
     stats = LossStats(losses)
     actual = stats.get_loss_for_latest_step(phase='training')
     assert actual == expected
+
+    
+def test_stats_objects_equality():
+    loss1 = [[(0.1, True), (0.2, True)]]
+    loss2 = [[(0.1, True), (0.2, True)]]
+    loss3 = [[(0.1, True), (0.4, True)]]        
+
+    obj1 = LossStats(loss1)
+    obj2 = LossStats(loss2)
+    obj3 = LossStats(loss3)    
+    assert obj1 == obj2 != obj3
+    
+
+def test_trackers_are_equal_when_both_are_updated():
+    tracker1 = LossStatsTracker()
+    tracker2 = LossStatsTracker()    
+    assert tracker1 == tracker2
+    assert tracker1.save() == tracker2.save()    
+
+    tracker1.update(
+        loss=tf.constant(123.0),        
+        epochs_completed=0,
+        steps_completed=0,
+        is_training=True
+    )
+    assert tracker1 != tracker2
+    assert tracker1.save() != tracker2.save()    
+    
+    tracker2.update(
+        loss=tf.constant(123.0),
+        epochs_completed=0,
+        steps_completed=0,
+        is_training=True
+    )
+    assert tracker1 == tracker2
+    assert tracker1.save() == tracker2.save()   
+
+    
+def test_serialized_trackers_are_equal():
+    tracker1 = LossStatsTracker()
+    tracker1.update(
+        loss=tf.constant(123.0),        
+        epochs_completed=0,
+        steps_completed=0,
+        is_training=True
+    )
+    data = tracker1.serialize()
+    tracker2 = LossStatsTracker.deserialize(data)
+    assert tracker1 == tracker2
+    
     
     
