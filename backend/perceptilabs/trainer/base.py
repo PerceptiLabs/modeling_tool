@@ -24,14 +24,15 @@ import perceptilabs.tracking as tracking
 
 logger = logging.getLogger(APPLICATION_LOGGER)
 
+
 class Trainer:
     def __init__(self, data_loader, training_model, training_settings, checkpoint_directory=None, exporter=None, model_id=None, user_email=None, initial_state=None):
         self._initial_state = initial_state
         self._training_settings = training_settings.copy()
-        
+
         self._model_id = model_id
         self._user_email = user_email
-        
+
         self._data_loader = data_loader
         self._training_model = training_model
         self._graph_spec = training_model.graph_spec
@@ -39,12 +40,12 @@ class Trainer:
 
         self._optimizer = self._resolve_optimizer(self._training_settings)
         self._loss_functions = self._setup_loss_functions(self._training_settings)
-        
+
         self._checkpoint_directory = checkpoint_directory
         self._auto_checkpoint = training_settings.get('AutoCheckpoint', False)
 
         self._initialize_results()
-        self._data_initialized = False        
+        self._data_initialized = False
 
     @classmethod
     def restore_latest_epoch(cls, data_loader, training_settings, exporter, model_id=None, user_email=None):
@@ -55,11 +56,11 @@ class Trainer:
         if os.path.isfile(state_path):
             with open(state_path, 'rb') as f:
                 initial_state = pickle.load(f)
-                
+
             logger.info(f"Restoring trainer from checkpoint {exporter.checkpoint_file} and state {state_path}")
         else:
             initial_state = None
-            logger.warning(f"Restoring trainer from checkpoint {exporter.checkpoint_file}, but no state file found at {state_path}")            
+            logger.warning(f"Restoring trainer from checkpoint {exporter.checkpoint_file}, but no state file found at {state_path}")
 
         trainer = cls(
             data_loader,
@@ -69,7 +70,7 @@ class Trainer:
             exporter=exporter,
             model_id=model_id,
             user_email=user_email,
-            initial_state=initial_state            
+            initial_state=initial_state
         )
         return trainer
 
@@ -99,20 +100,20 @@ class Trainer:
                 initial_state['num_training_batches_completed_this_epoch'])
             self._set_num_validation_batches_completed_this_epoch(
                 initial_state['num_validation_batches_completed_this_epoch'])
-        
-        self._reset_tracked_values(self._initial_state)                
+
+        self._reset_tracked_values(self._initial_state)
 
     def ensure_data_initialized(self):
         if self._data_initialized:
             return
-        
+
         self._data_loader.ensure_initialized()
         training_size = self._data_loader.get_dataset_size(partition='training')
         validation_size = self._data_loader.get_dataset_size(partition='validation')
 
         training_batches_per_epoch = int(np.ceil(training_size / self._batch_size))
-        validation_batches_per_epoch = int(np.ceil(validation_size / self._batch_size))        
-        
+        validation_batches_per_epoch = int(np.ceil(validation_size / self._batch_size))
+
         self._num_batches_per_epoch = training_batches_per_epoch + validation_batches_per_epoch
         self._num_batches_all_epochs = self._num_batches_per_epoch * self._num_epochs
         self._data_initialized = True
@@ -122,7 +123,7 @@ class Trainer:
             'status': self._status,
             'training_time': self._training_time,
             'num_epochs_completed': self._num_epochs_completed,
-            'num_batches_completed_all_epochs': self._num_batches_completed_all_epochs,            
+            'num_batches_completed_all_epochs': self._num_batches_completed_all_epochs,
             'num_training_batches_completed_this_epoch': self._num_training_batches_completed_this_epoch,
             'num_validation_batches_completed_this_epoch': self._num_validation_batches_completed_this_epoch,
             'layer_outputs': self._layer_outputs,
@@ -135,20 +136,22 @@ class Trainer:
             'output_trackers': {
                 layer_id: tracker
                 for layer_id, tracker in self._output_trackers.items()
-            }            
+            }
         }
         return state
 
     def validate(self):
-        """ Compute the loss. If the model or data is faulty, we get a crash. 
+        """ Compute the loss. If the model or data is faulty, we get a crash.
 
         Should be seen as a final error check
         """
         dataset = self._data_loader.get_dataset().batch(1)
         inputs_batch, targets_batch = next(iter(dataset))
 
-        predictions_batch, final_and_intermediate_outputs = self._training_model(inputs_batch, training=False)        
-        self._compute_total_loss(predictions_batch, targets_batch, self._loss_functions)
+        predictions_batch, final_and_intermediate_outputs = self._training_model(
+            inputs_batch, training=False)
+        self._compute_total_loss(
+            predictions_batch, targets_batch, self._loss_functions)
 
     def run(self, _=None, on_iterate=None, model_id=None):
         """ Run all training steps """
@@ -164,15 +167,15 @@ class Trainer:
         if self._user_email:
             tracking.send_training_started(self._user_email, self._model_id, self._graph_spec)
 
-        if self._num_epochs_completed == 0:            
+        if self._num_epochs_completed == 0:
             logger.info("Entering training loop")
         else:
             logger.info(f"Entering training loop (starting from epoch {self._num_epochs_completed}/{self.num_epochs})")
 
         if self._checkpoint_directory is not None:
-            logger.info(f"Checkpoints will be saved to {self._checkpoint_directory}")        
+            logger.info(f"Checkpoints will be saved to {self._checkpoint_directory}")
 
-        self._set_status('Training')            
+        self._set_status('Training')
         while self._num_epochs_completed < self.num_epochs and not self.is_closed:
             t0 = time.perf_counter()
 
@@ -191,14 +194,13 @@ class Trainer:
                 break
             self._set_status('Validation')
 
-            
             yield from self._loop_over_dataset(
                 self._training_model,
-                self._loss_functions,                
+                self._loss_functions,
                 self._get_validation_set(),
                 self._set_num_validation_batches_completed_this_epoch,
                 is_training=False
-            )            
+            )
 
             time_paused_validation = self._sleep_while_paused()
             if self.is_closed:
@@ -206,9 +208,10 @@ class Trainer:
 
             if self._auto_checkpoint:
                 self._auto_save_epoch(epoch=self._num_epochs_completed)
-                
+
             self._num_epochs_completed += 1
-            epoch_time = time.perf_counter() - t0 - time_paused_training - time_paused_validation
+            epoch_time = time.perf_counter() - t0 - time_paused_training - \
+                time_paused_validation
 
             self._log_epoch_summary(epoch_time)
             self._training_time += epoch_time
@@ -220,10 +223,11 @@ class Trainer:
             yield
 
         if not self._auto_checkpoint:
-            self._auto_save_epoch()            
+            self._auto_save_epoch()
 
         self._set_status('Finished')
-        logger.info(f"Training completed. Total duration: {round(self._training_time, 3)} s")
+        logger.info(
+            f"Training completed. Total duration: {round(self._training_time, 3)} s")
 
         if self._user_email and self._num_epochs_completed == self.num_epochs:
             tracking.send_training_completed(
@@ -242,7 +246,7 @@ class Trainer:
             return
 
         if self._checkpoint_directory is None:
-            logger.error("Auto checkpoint dir not set. Cannot auto export")            
+            logger.error("Auto checkpoint dir not set. Cannot auto export")
             return
 
         self.export_checkpoint(self._checkpoint_directory, epoch=epoch)
@@ -250,20 +254,20 @@ class Trainer:
 
     def _save_state_to_disk(self, checkpoint_directory, epoch):
         state_dict = self.save_state()
-        
+
         if epoch is None:
             path = os.path.join(self._checkpoint_directory, f"state.pkl")
         else:
             path = os.path.join(self._checkpoint_directory, f"state-{epoch:04d}.pkl")
 
         with open(path, 'wb') as f:
-            pickle.dump(state_dict, f)            
-        
+            pickle.dump(state_dict, f)
+
     def _log_epoch_summary(self, epoch_time):
         logger.info(
             f"Finished epoch {self._num_epochs_completed}/{self.num_epochs} - "
             f"Epoch duration: {round(epoch_time, 3)} s - "
-            f"Num training (validation) batches completed : {self.num_training_batches_completed_this_epoch} ({self.num_validation_batches_completed_this_epoch})"                
+            f"Num training (validation) batches completed : {self.num_training_batches_completed_this_epoch} ({self.num_validation_batches_completed_this_epoch})"
         )
 
     def _loop_over_dataset(self, model, loss_functions, dataset, set_num_batches_completed_this_epoch, is_training=True, optimizer=None):
@@ -273,7 +277,7 @@ class Trainer:
                 total_loss, individual_losses = self._work_on_batch(
                     model, loss_functions, inputs_batch, targets_batch, is_training, optimizer
                 )
-            
+
             if self._headless:
                 self._reset_tracked_values()
             else:
@@ -289,10 +293,10 @@ class Trainer:
                     is_training,
                     steps_completed
                 )
-            
+
             self._num_batches_completed_all_epochs += 1
             set_num_batches_completed_this_epoch(steps_completed + 1)
-            
+
             yield
 
     @tf.function
@@ -300,12 +304,15 @@ class Trainer:
         """ Train or validate on a batch of data """
 
         with tf.GradientTape() as tape:
-            predictions_batch, final_and_intermediate_outputs = model(inputs_batch, training=is_training)
-            total_loss, individual_losses = self._compute_total_loss(predictions_batch, targets_batch, loss_functions)
+            predictions_batch, final_and_intermediate_outputs = model(
+                inputs_batch, training=is_training)
+            total_loss, individual_losses = self._compute_total_loss(
+                predictions_batch, targets_batch, loss_functions)
 
         trainables_by_layer = self._collect_trainables_by_layer(model)
-        gradients_by_layer, grads_and_vars = self._compute_gradients(tape, total_loss, trainables_by_layer, model.trainable_variables)
-        
+        gradients_by_layer, grads_and_vars = self._compute_gradients(
+            tape, total_loss, trainables_by_layer, model.trainable_variables)
+
         if is_training:
             optimizer.apply_gradients(grads_and_vars)
 
@@ -313,24 +320,26 @@ class Trainer:
 
     def _compute_gradients(self, tape, total_loss, trainables_by_layer, flat_trainables):
         """ Compute the gradients. Return two variations, one structured by layer and one flat """
-        gradients_by_layer, flat_gradients = tape.gradient(total_loss, (trainables_by_layer, flat_trainables))
+        gradients_by_layer, flat_gradients = tape.gradient(
+            total_loss, (trainables_by_layer, flat_trainables))
         grads_and_vars = zip(flat_gradients, flat_trainables)
-        return gradients_by_layer, grads_and_vars    
+        return gradients_by_layer, grads_and_vars
 
     def _compute_total_loss(self, predictions_batch, targets_batch, losses):
         """ Compute the combined loss of all output layers """
         total_loss = tf.constant(0.0)
         individual_losses = {}
-        
+
         for feature_name, loss_fn in losses.items():
             # TODO: weight the different losses (story 1542)
 
             individual_losses[feature_name] = loss_fn(
-                tf.reshape(targets_batch[feature_name], shape=predictions_batch[feature_name].shape),
+                tf.reshape(targets_batch[feature_name],
+                           shape=predictions_batch[feature_name].shape),
                 predictions_batch[feature_name]
             )
-            total_loss += individual_losses[feature_name]             
-        
+            total_loss += individual_losses[feature_name]
+
         return total_loss, individual_losses
 
     def _reset_tracked_values(self, initial_state=None):
@@ -339,7 +348,7 @@ class Trainer:
             self._layer_trainables = {}
             self._global_stats_tracker = GlobalStatsTracker()
             self._input_stats_tracker = SampleStatsTracker()
-            self._prediction_stats_tracker = SampleStatsTracker()                        
+            self._prediction_stats_tracker = SampleStatsTracker()
             self._target_stats_tracker = SampleStatsTracker()
             self._gradient_stats_tracker = GradientStatsTracker()
         else:
@@ -357,16 +366,16 @@ class Trainer:
                 self._output_trackers[layer_spec.id_] = self._get_output_stats_tracker(layer_spec.datatype, layer_spec.feature_name)
             else:
                 self._output_trackers[layer_spec.id_] = initial_state['output_trackers'][layer_spec.id_]
-                
+
     def _get_output_stats_tracker(self, datatype, feature_name):
         if datatype == 'numerical':
             return NumericalOutputStatsTracker()
         elif datatype == 'categorical':
             return CategoricalOutputStatsTracker()
         elif datatype == 'binary':
-            return CategoricalOutputStatsTracker()            
+            return CategoricalOutputStatsTracker()
         elif datatype == 'image':
-            return ImageOutputStatsTracker()                                
+            return ImageOutputStatsTracker()
 
     def _update_tracked_values(
             self, trainables_by_layer, gradients_by_layer, final_and_intermediate_outputs_by_layer,
@@ -387,8 +396,8 @@ class Trainer:
             self._layer_trainables[layer_id] = {
                 name: tensor.numpy()
                 for name, tensor in trainables_by_layer[layer_id].items()
-            }            
-        
+            }
+
         self._global_stats_tracker.update(
             loss=total_loss,
             epochs_completed=self._num_epochs_completed,
@@ -399,18 +408,18 @@ class Trainer:
         id_to_feature = {
             layer_spec.id_: layer_spec.feature_name
             for layer_spec in self._graph_spec.io_layers
-        }        
-        
+        }
+
         self._input_stats_tracker.update(id_to_feature=id_to_feature, sample_batch=inputs_batch)
-        self._prediction_stats_tracker.update(id_to_feature=id_to_feature, sample_batch=predictions_batch)                
+        self._prediction_stats_tracker.update(id_to_feature=id_to_feature, sample_batch=predictions_batch)
         self._target_stats_tracker.update(id_to_feature=id_to_feature, sample_batch=targets_batch)
         self._gradient_stats_tracker.update(gradients_by_layer=gradients_by_layer)
-        
-        for layer_spec in self._graph_spec.target_layers:                    
+
+        for layer_spec in self._graph_spec.target_layers:
             tracker = self._output_trackers[layer_spec.id_]
             postprocessing = self._data_loader.get_postprocessing_pipeline(
                 layer_spec.feature_name)
-            
+
             tracker.update(
                 predictions_batch=predictions_batch[layer_spec.feature_name],
                 targets_batch=targets_batch[layer_spec.feature_name],
@@ -427,7 +436,7 @@ class Trainer:
         for layer_id, layer in model.layers_by_id.items():
             if isinstance(layer, PerceptiLabsVisualizer):
                 weights, bias = layer.visualized_trainables
-                
+
                 trainables = {}
                 if isinstance(weights, tf.Variable):
                     trainables['weights'] = weights
@@ -435,13 +444,14 @@ class Trainer:
                     trainables['weights'] = weights[0]
                 if isinstance(bias, tf.Variable):
                     trainables['bias'] = bias
-                    
+
                 if trainables:
                     trainables_by_layer[layer_id] = trainables
-                
+
             elif len(layer.trainable_variables) > 0:
-                logger.warning("Layer {layer_id} has trainable variables but does not implement the PerceptiLabsVisualizer abstract class. Weights, biases and derived quantities such as gradients will not be visualized correctly.")
-                
+                logger.warning(
+                    "Layer {layer_id} has trainable variables but does not implement the PerceptiLabsVisualizer abstract class. Weights, biases and derived quantities such as gradients will not be visualized correctly.")
+
         return trainables_by_layer
 
     def _set_num_training_batches_completed_this_epoch(self, value):
@@ -449,7 +459,7 @@ class Trainer:
         self._num_training_batches_completed_this_epoch = value
 
     def _set_num_validation_batches_completed_this_epoch(self, value):
-        """ The number of iterations completed in the _current_ epoch """        
+        """ The number of iterations completed in the _current_ epoch """
         self._num_validation_batches_completed_this_epoch = value
 
     def _set_status(self, value):
@@ -461,7 +471,7 @@ class Trainer:
     def status(self):
         """ The current training status """
         return self._status
-        
+
     @property
     def batch_size(self):
         return self._batch_size
@@ -489,6 +499,7 @@ class Trainer:
     @property
     def num_batches_completed_this_epoch(self):
         return self.num_training_batches_completed_this_epoch + self.num_validation_batches_completed_this_epoch
+
     @property
     def num_training_batches_completed_this_epoch(self):
         return self._num_training_batches_completed_this_epoch
@@ -512,7 +523,7 @@ class Trainer:
     @property
     def is_paused(self):
         return self.status == 'Paused'
-    
+
     def _sleep_while_paused(self):
         t0 = time.perf_counter()
         while self.is_paused:
@@ -525,12 +536,12 @@ class Trainer:
             self._prev_status = 'Training'
         if self.status == 'Validation':
             self._prev_status = 'Validation'
-        
+
     def pause(self):
         self._store_prev_status()
         self._set_status('Paused')
         logger.info(f"Trainer is in state Paused")
-        
+
     def unpause(self):
         self._set_status(self._prev_status)
         logger.info(f"Trainer is in state %s", self._prev_status)
@@ -545,28 +556,28 @@ class Trainer:
                 self._graph_spec,
                 self._training_time,
                 self.progress,
-                self.get_output_stats_summaries()            
+                self.get_output_stats_summaries()
             )
 
     def headless_on(self):
         # TODO: implement (story 1545)
         pass
-    
+
     def headless_off(self):
         # TODO: implement (story 1545)
-        pass        
+        pass
 
     def close(self):
-        self.stop()     
+        self.stop()
 
     def get_layer_output(self, layer_id, output_variable='output'):
-        """ Gets the output batch of a layer 
-        
+        """ Gets the output batch of a layer
+
         Arguments:
             layer_id: the layer id
             output_variable: which variable to fetch from the output dict
         Returns:
-            A numpy array (or None if the layer/variable doesnt exist)            
+            A numpy array (or None if the layer/variable doesnt exist)
         """
         try:
             output_batch = self._layer_outputs[layer_id][output_variable]
@@ -593,18 +604,18 @@ class Trainer:
     def get_target_stats(self) -> SampleStats:
         """ Returns a stats object for the current target values """
         return self._target_stats_tracker.save()
-        
+
     def get_prediction_stats(self) -> SampleStats:
         """ Returns a stats object for the current prediction values """
         return self._prediction_stats_tracker.save()
-        
+
     def get_input_stats(self) -> SampleStats:
         """ Returns a stats object for the current input values """
         return self._input_stats_tracker.save()
 
     def get_layer_gradients(self, layer_id, aggregation):
         """ Get the gradients of a layer
-        
+
         Arguments:
             layer_id: the layer id
             aggregation: one of minimum, maximum and average
@@ -613,23 +624,23 @@ class Trainer:
         if aggregation == 'minimum':
             return stats.get_minimum_by_layer_id(layer_id)
         elif aggregation == 'average':
-            return stats.get_average_by_layer_id(layer_id)            
+            return stats.get_average_by_layer_id(layer_id)
         elif aggregation == 'maximum':
-            return stats.get_maximum_by_layer_id(layer_id)                        
-        
+            return stats.get_maximum_by_layer_id(layer_id)
+
     def _get_train_dict(self):
         dict_ = {}
         for layer_spec in self._graph_spec.layers:
             # TODO: implement auc metric (story 1541)
             # TODO: implement loss (story 1571)
-            
+
             dict_[layer_spec.id_] = {
                 'X': {'input1': {'Y': 123}}, # TODO: fix [this is only used in training layer] (story 1566)
                 'Y': self.get_layer_output(layer_spec.id_),
                 'W': self.get_layer_weights(layer_spec.id_),
                 'b': self.get_layer_bias(layer_spec.id_),
-                'Gradient': { 
-                    'Min': self.get_layer_gradients(layer_spec.id_, 'minimum'), 
+                'Gradient': {
+                    'Min': self.get_layer_gradients(layer_spec.id_, 'minimum'),
                     'Max': self.get_layer_gradients(layer_spec.id_, 'maximum'),
                     'Average': self.get_layer_gradients(layer_spec.id_, 'average')
                 }
@@ -648,14 +659,14 @@ class Trainer:
             'trainingIterations': self.num_training_batches_completed_this_epoch,
             'trainDict': self._get_train_dict(),
             'trainingStatus': self.status,
-            'progress': self.progress, 
+            'progress': self.progress,
             'status': 'Paused' if self.is_paused else 'Running',
             'training_duration': self._training_time,
             'input_stats': self.get_input_stats(),
             'prediction_stats': self.get_prediction_stats(),
             'target_stats': self.get_target_stats(),
             'output_stats': self.get_output_stats(),
-            'global_stats': self.get_global_stats()            
+            'global_stats': self.get_global_stats()
         }
         #dict_ = {}
         t1 = time.perf_counter()
@@ -669,24 +680,25 @@ class Trainer:
     def get_target_stats(self) -> SampleStats:
         """ Returns a stats object for the current target values """
         return self._target_stats_tracker.save()
-    
-    def export(self, path, mode):
+
+    def export(self, path, mode='Standard'):
         if mode == 'Checkpoint':
             self.export_checkpoint(path)
-        if mode == 'TFModel':
-            self.export_inference(path)
-    
-    def export_inference(self, path):
+        if mode == 'Standard':
+            self.export_inference(path, mode)
+
+    def export_inference(self, path, mode):
         if self._exporter is not None:
-            self._exporter.export_inference(path)
+            self._exporter.export(path, mode)
         else:
-            logger.warning("Exporter not set, couldn't export inference model!")
-    
+            logger.warning(
+                "Exporter not set, couldn't export inference model!")
+
     def export_checkpoint(self, path, epoch=None):
-        if self._exporter is not None:        
+        if self._exporter is not None:
             self._exporter.export_checkpoint(path, epoch=epoch)
         else:
-            logger.warning("Exporter not set, couldn't export checkpoint!")        
+            logger.warning("Exporter not set, couldn't export checkpoint!")
 
     def get_output_stats(self) -> Dict:
         """ Returns a stats object representing the current state of the outputs """
@@ -705,7 +717,7 @@ class Trainer:
             summary = output_stats.get_summary()
             all_summaries.append(summary)
 
-        return all_summaries    
+        return all_summaries
 
     def _resolve_optimizer(self, training_settings):
         optimizer = training_settings['Optimizer']
@@ -714,7 +726,6 @@ class Trainer:
         beta_1 = training_settings['Beta1']
         beta_2 = training_settings['Beta2']
         centered = training_settings['Centered']
-
 
         if isinstance(learning_rate, str):
             learning_rate = float(learning_rate)
@@ -746,7 +757,7 @@ class Trainer:
     def _setup_loss_functions(self, training_settings):
         """ Creates a dict of losses, one per output """
         loss_function = self._resolve_loss_function(training_settings)
-        
+
         losses = {
             layer_spec.feature_name: loss_function
             for layer_spec in self._graph_spec.layers
@@ -761,7 +772,7 @@ class Trainer:
             shuffle=self._shuffle_training_set
         ).batch(self.batch_size)
         return training_set
-        
+
     def _get_validation_set(self):
         """ Gets a validation set matching the training settings """
         validation_set = self._data_loader.get_dataset(
@@ -769,4 +780,3 @@ class Trainer:
             shuffle=False
         ).batch(self.batch_size)
         return validation_set
-

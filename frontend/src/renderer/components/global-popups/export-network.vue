@@ -106,10 +106,31 @@ export default {
       }
 
       function exportData(settings = null) {
-        this.$store.dispatch('mod_api/API_exportData', this.settings);
+        let exportType = this.getSettingExportType(this.settings);
+        
+        const payload = {
+          name: this.settings.name,
+          Location: this.settings.Location,
+          Type: exportType,
+        };
+        this.$store.dispatch('mod_api/API_exportData', payload);
         this.closePopup();
       }
     },
+    getSettingExportType(settings) {
+      if(settings.Type === 'ipynb') {
+        return settings.Type;
+      }
+      
+      let exportType = 'Standard';
+      if(settings.Compressed) {
+        exportType = 'Compressed';
+      } else if(settings.Quantized) {
+        exportType = 'Quantized';
+      }
+      
+      return exportType;
+    }
    }
 }
 </script>

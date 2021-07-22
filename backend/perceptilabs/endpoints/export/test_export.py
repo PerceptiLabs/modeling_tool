@@ -17,14 +17,11 @@ def client():
     with app.test_client() as client:
         yield client
 
-        
-@pytest.fixture
-def export_settings(temp_path):
-    yield {
-        "Location": temp_path,
-        "Type": "TFModel",
-        "Compressed": False,
-        "Quantized": False,
+
+def export_settings(path, type_):
+    return {
+        "Location": path,
+        "Type": type_,
         "name": "Model 36"
     }
 
@@ -46,12 +43,12 @@ def dataset_settings():
                 "preprocessing": {
                     "resize": {
                         "mode": "automatic",
-                        "type": "mode"                        
-                    }                             
+                        "type": "mode"
+                    }
                 }
             },
             "y1": {
-                "csv_path": "perceptilabs/endpoints/export/test_data.csv",                
+                "csv_path": "perceptilabs/endpoints/export/test_data.csv",
                 "iotype": "Target",
                 "datatype": "numerical",
                 "preprocessing": {}
@@ -148,20 +145,20 @@ def network():
             "getPreview": True
         }
     }
-    
+
 
 @pytest.fixture
 def checkpoint_directory(temp_path):
     yield os.path.join(temp_path, 'checkpoint')
 
 
-@pytest.fixture
-def basic_request(export_settings, dataset_settings, network, checkpoint_directory):
+@pytest.fixture(scope="function", params=["Standard", "Compressed"])
+def basic_request(request, dataset_settings, temp_path, network, checkpoint_directory):
     yield {
-        "exportSettings": export_settings,
+        "exportSettings": export_settings(temp_path, request.param),
         "datasetSettings": dataset_settings,
         "network": network,
-        "checkpointDirectory": checkpoint_directory        
+        "checkpointDirectory": checkpoint_directory
     }
 
 
@@ -171,11 +168,10 @@ def create_model_checkpoint(dataset_settings, network, checkpoint_directory, scr
     training_model = TrainingModel(script_factory, graph_spec)
     exporter = Exporter(graph_spec, training_model, data_loader)
     exporter.export_checkpoint(checkpoint_directory)
-        
-        
+
+
 def test_basic(client, basic_request, dataset_settings, network, checkpoint_directory, script_factory):
     create_model_checkpoint(dataset_settings, network, checkpoint_directory, script_factory)
-
     response = client.post('/export', json=basic_request)
     assert response.json.startswith("Model exported to ")
 
