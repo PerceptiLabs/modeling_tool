@@ -12,7 +12,9 @@ function calcTime(stop, start, name, nameComp) {
   console.log(`${name}`, `${nameComp}` , `${time}ms`);
 }
 
-const kernelUrlPromise = whenUrlIsResolved(KERNEL_URL_CONFIG_PATH, KERNEL_BASE_URL);
+const kernelUrlPromise = Promise.all([whenUrlIsResolved(KERNEL_URL_CONFIG_PATH, KERNEL_BASE_URL), whenVersionIsResolved(KERNEL_VERSION_CONFIG_PATH)]).then(([kernel_url]) => {
+  return kernel_url;
+})
 
 function coreRequest(data, path, no, name) {
     data.instanceId = store.state.mod_api.instanceId

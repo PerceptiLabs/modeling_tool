@@ -16,6 +16,7 @@ const baseUrlSite   = 'https://perceptilabs.com';
 const baseHost = window.location.hostname
 
 export const KEYCLOAK_URL_CONFIG_PATH = 'keycloak_url';
+export const IS_ENTERPRISE_CONFIG_PATH = 'is_enterprise';
 
 export const RYGG_URL_CONFIG_PATH = 'rygg_url';
 export const RYGG_VERSION_CONFIG_PATH = 'rygg_version';
