@@ -254,7 +254,17 @@ class DataLoader:
         validation_set = test_val_set.take(validation_size)        
         test_set = test_val_set.skip(validation_size)        
 
-        logger.info(f"Partitioned dataset into training ({training_size}), validation ({validation_size}) and test ({test_size}). Duration: {time.perf_counter() - t0:.3f}s")        
+        if partitions.randomized:
+            logger.info(
+                f"Partitioned dataset into training ({training_size}), validation ({validation_size}) " 
+                f"and test ({test_size}) with randomization and seed {partitions.seed}. "
+                f"Duration: {time.perf_counter() - t0:.3f}s")            
+        else:
+            logger.info(
+                f"Partitioned dataset into training ({training_size}), validation ({validation_size}) " 
+                f"and test ({test_size}) without randomization. "
+                f"Duration: {time.perf_counter() - t0:.3f}s"
+            )            
         return training_set, validation_set, test_set
 
     @staticmethod

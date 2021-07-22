@@ -9,7 +9,7 @@ from perceptilabs.utils import MyPydanticBaseModel
 
 class Partitions(MyPydanticBaseModel):
     randomized: bool = False
-    seed: Union[int, None] = None
+    seed: Union[int, None] = 123
     training_ratio: float = 0.7
     validation_ratio: float = 0.2
     test_ratio: float = 0.1

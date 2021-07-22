@@ -57,7 +57,7 @@ def test_settings_from_dict(settings_dict):
     settings = DatasetSettings.from_dict(settings_dict)
 
     assert settings.partitions.randomized
-    assert settings.partitions.seed is None
+    assert settings.partitions.seed == 123
     assert settings.partitions.training_ratio == 0.7
     assert settings.partitions.validation_ratio == 0.2
     assert settings.partitions.test_ratio == 0.1
