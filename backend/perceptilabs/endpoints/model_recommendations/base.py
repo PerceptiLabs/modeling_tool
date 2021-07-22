@@ -1,4 +1,5 @@
 import logging
+import sentry_sdk
 from flask import request, jsonify
 from flask.views import View
 
@@ -7,6 +8,7 @@ from perceptilabs.data.settings import DatasetSettings
 from perceptilabs.logconf import APPLICATION_LOGGER
 import perceptilabs.tracking as tracking
 import perceptilabs.automation.utils as automation_utils
+import perceptilabs.utils as utils
 
 
 logger = logging.getLogger(APPLICATION_LOGGER)
@@ -25,10 +27,13 @@ class ModelRecommendations(View):
             dataset_settings = DatasetSettings.from_dict(json_data['datasetSettings'])
             data_metadata = self._data_metadata_cache.get(dataset_settings.compute_hash()) if self._data_metadata_cache else None 
             data_loader = DataLoader.from_settings(dataset_settings, metadata=data_metadata)
-            
+
             graph_spec, training_settings = automation_utils.get_model_recommendation(data_loader)
             response = graph_spec.to_dict()
-        except ValueError as e:
+        except Exception as e:
+            if utils.is_prod():
+                sentry_sdk.capture_exception(e)
+            
             return jsonify({"errorMessage": str(e)})            
         else:
             self._maybe_send_tracking(json_data, data_loader, graph_spec, json_data['datasetSettings'])
