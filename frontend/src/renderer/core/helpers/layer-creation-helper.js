@@ -100,7 +100,6 @@ const componentsInputs = {
   MathArgmax: ['input'],
   MathMerge: ['input1', 'input2'],
   MathSwitch: ['input1', 'input2'],
-  MathSoftmax: ['input'],
 
   TrainNormal: ['predictions', 'labels'],
   TrainRegression: ['predictions', 'labels'],
@@ -131,7 +130,6 @@ const componentsOutputs = {
   MathArgmax: ['output'],
   MathMerge: ['output'],
   MathSwitch: ['output'],
-  MathSoftmax: ['output'],
   LayerCustom: ['output'],
 
   TrainNormal: [],

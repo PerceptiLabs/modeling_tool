@@ -55,7 +55,6 @@
   import MathArgmax   from '@/components/network-elements/elements/math-argmax/viewBox-math-argmax.vue'
   import MathMerge    from '@/components/network-elements/elements/math-merge/viewBox-math-merge.vue'
   import MathSwitch    from '@/components/network-elements/elements/math-switch/viewBox-math-switch.vue'
-  import MathSoftmax  from '@/components/network-elements/elements/math-softmax/viewBox-math-softmax.vue'
   import MathSplit    from '@/components/network-elements/elements/math-split/viewBox-math-split.vue'
   import LayerCustom          from '@/components/network-elements/elements/layer-custom/viewBox-layer-custom.vue'
   import IoInput          from '@/components/network-elements/elements/io-input/viewBox-io-input.vue'
@@ -76,7 +75,7 @@ export default {
     TrainNormal, TrainRegression, TrainGenetic, TrainDynamic, TrainReinforce, TrainDetector, TrainGan,
     // TrainLoss, TrainOptimizer, 
     PreTrainedResNet50, PreTrainedMobileNetV2, PreTrainedVGG16, PreTrainedInceptionV3,
-    MathArgmax, MathMerge, MathSoftmax, MathSwitch,
+    MathArgmax, MathMerge, MathSwitch,
     // MathSplit,
     IoInput, IoOutput,
     LayerCustom,

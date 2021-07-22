@@ -57,7 +57,6 @@ import ProcessRescale   from '@/components/network-elements/elements/process-res
 import MathArgmax   from '@/components/network-elements/elements/math-argmax/set-math-argmax.vue'
 import MathMerge    from '@/components/network-elements/elements/math-merge/set-math-merge.vue'
 import MathSwitch    from '@/components/network-elements/elements/math-switch/set-math-switch.vue'
-import MathSoftmax  from '@/components/network-elements/elements/math-softmax/set-math-softmax.vue'
 import MathSplit    from '@/components/network-elements/elements/math-split/set-math-split.vue'
 
 import TrainNormal          from '@/components/network-elements/elements/train-normal/set-train-normal.vue'
@@ -93,7 +92,7 @@ export default {
     DataData, DataEnvironment, DataRandom, DataCloud,
     DeepLearningFC, DeepLearningConv, DeepLearningRecurrent,
     ProcessCrop, ProcessEmbed, ProcessGrayscale, ProcessOneHot, ProcessReshape, ProcessRescale,
-    MathArgmax, MathMerge, MathSwitch, MathSoftmax, MathSplit,
+    MathArgmax, MathMerge, MathSwitch, MathSplit,
     TrainNormal, TrainRegression, TrainGenetic, TrainDynamic, TrainReinforce, TrainLoss, TrainOptimizer, TrainGan, TrainDetector,
     IoInput, IoOutput,
     LayerCustom,

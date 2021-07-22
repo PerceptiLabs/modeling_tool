@@ -27,7 +27,6 @@ import TrainGan       from '@/components/network-elements/elements/train-gan/tra
 import MathArgmax           from '@/components/network-elements/elements/math-argmax/math-argmax.vue'
 import MathSwitch           from '@/components/network-elements/elements/math-switch/math-switch.vue'
 import MathMerge            from '@/components/network-elements/elements/math-merge/math-merge.vue'
-import MathSoftmax          from '@/components/network-elements/elements/math-softmax/math-softmax.vue'
 import MathSplit            from '@/components/network-elements/elements/math-split/math-split.vue'
 
 import ClassicMLDbscans     from '@/components/network-elements/elements/classic-ml-dbscans/classic-ml-dbscans.vue'
@@ -66,7 +65,7 @@ export default {
     // ProcessCrop,
     TrainNormal, TrainRegression, TrainGenetic, TrainDynamic, TrainReinforce, TrainDetector, TrainGan,
     // TrainLoss, TrainOptimizer, 
-    MathArgmax, MathMerge, MathSoftmax, MathSwitch,
+    MathArgmax, MathMerge, MathSwitch,
     // MathSplit,
 
     // ClassicMLDbscans, ClassicMLKMeans, ClassicMLKNN, ClassicMLRandomForest, ClassicMLSVM,

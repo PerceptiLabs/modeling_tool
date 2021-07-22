@@ -266,7 +266,6 @@ const layerBgColor = function (componentName) {
     case 'MathArgmax':
     case 'MathMerge':
     case 'MathSplit':
-    case 'MathSoftmax':
     case 'MathSwitch':
       className = 'net-color-math';
       break;
@@ -322,7 +321,6 @@ const layerBgColorTransparent = function (componentName) {
     case 'MathArgmax':
     case 'MathMerge':
     case 'MathSplit':
-    case 'MathSoftmax':
       className = 'net-element-math';
       break;
     case 'ClassicMLDbscans':

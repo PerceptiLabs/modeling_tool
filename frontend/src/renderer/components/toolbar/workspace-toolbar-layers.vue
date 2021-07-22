@@ -69,7 +69,6 @@
   import MathArgmax           from '@/components/network-elements/elements/math-argmax/view-math-argmax.vue'
   import MathMerge            from '@/components/network-elements/elements/math-merge/view-math-merge.vue'
   import MathSwitch           from '@/components/network-elements/elements/math-switch/view-math-switch.vue'
-  import MathSoftmax          from '@/components/network-elements/elements/math-softmax/view-math-softmax.vue'
   import MathSplit            from '@/components/network-elements/elements/math-split/view-math-split.vue'
 
   import ClassicMLDbscans     from '@/components/network-elements/elements/classic-ml-dbscans/view-classic-ml-dbscans.vue'
@@ -98,7 +97,7 @@ export default {
     DeepLearningFC, DeepLearningConv, DeepLearningRecurrent,
     ProcessEmbed, ProcessGrayscale, ProcessOneHot, ProcessReshape, ProcessRescale,
     TrainNormal, TrainRegression, TrainGenetic, TrainDynamic, TrainReinforce, TrainDetector, TrainGan,
-    MathArgmax, MathMerge, MathSoftmax, MathSwitch,
+    MathArgmax, MathMerge, MathSwitch,
     LayerCustom,
     PreTrainedVGG16, PreTrainedInceptionV3, PreTrainedResNet50, PreTrainedMobileNetV2, 
     IoInput, IoOutput
@@ -176,7 +175,7 @@ export default {
           iconClass: 'icon-math-group',
           childListClass: '',
           showEl: false,
-          networkElements: ['MathArgmax', 'MathMerge', 'MathSwitch', 'MathSoftmax'],
+          networkElements: ['MathArgmax', 'MathMerge', 'MathSwitch'],
           id:'tutorial_mathematics',
           color: 'rgba(0, 123, 239, 0.7)',
           borderColor: 'rgba(0, 123, 239, 0.2)',
