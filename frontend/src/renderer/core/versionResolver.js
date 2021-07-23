@@ -5,7 +5,7 @@ import { whenInEnterprise } from '@/core/isEnterprise';
 export const whenVersionIsResolved = (urlPath) => {
     return new Promise((resolve, reject) => {
       whenInEnterprise().then((isEnterprise) => {
-        if(isEnterprise){  
+        if(false){
           fetch(urlPath)
           .then(response => response.text())
           .then(result => {
