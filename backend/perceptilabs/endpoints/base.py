@@ -9,6 +9,7 @@ import sentry_sdk
 from sentry_sdk.integrations.flask import FlaskIntegration
 from sentry_sdk.integrations.logging import LoggingIntegration
 
+from perceptilabs.endpoints.version.base import Version
 from perceptilabs.endpoints.network_data.base import NetworkData
 from perceptilabs.endpoints.data.base import PutData, IsDataReady
 from perceptilabs.endpoints.model_recommendations.base import ModelRecommendations
@@ -80,6 +81,12 @@ def create_app(data_metadata_cache=None, executor=None):
         '/type_inference',
         methods=['GET'],
         view_func=TypeInference.as_view('type_inference')
+    )
+
+    app.add_url_rule(
+        '/version',
+        methods=['GET'],
+        view_func=Version.as_view('version')
     )
 
     app.add_url_rule(

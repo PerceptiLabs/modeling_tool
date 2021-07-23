@@ -366,14 +366,6 @@ class coreLogic():
             )
         )
         return {"content":"Stopping"}
-    
-    def checkVersions(self):
-        return {
-            "content": json.dumps({
-                "python": sys.version_info,
-                "tensorflow": tf.__version__,
-            })
-        }
 
     def isRunning(self):
         if self.cThread is not None and self.cThread.isAlive():

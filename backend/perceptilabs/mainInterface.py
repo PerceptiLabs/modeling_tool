@@ -3,6 +3,7 @@ import os
 import logging
 import pprint
 import time
+import json
 import threading
 from sentry_sdk import configure_scope
 from concurrent.futures import ThreadPoolExecutor
@@ -379,10 +380,6 @@ class Interface():
 
         elif action == "version":
             return __version__
-
-        elif action == "checkVersions":
-            response = self._core.checkVersions()
-            return response
 
         elif action == "headless":
             return self._create_response_headless(value)

@@ -256,14 +256,13 @@ const actions = {
   },
   checkCoreVersions({commit, dispatch, state}) {
     const theData = {
-      action: 'checkVersions',
+      action: 'version',
       value: ''
     };
-    return coreRequest(theData)
-      .then((data)=> {
-        const versions = JSON.parse(data);
+    return renderingKernel.getVersion()
+      .then((versions)=> {
         commit('SET_coreVersions', {
-          python: versions.python.slice(0, 2).join('.'),
+          python: versions.python.split('.').slice(0,2).join('.'),
           tensorflow: versions.tensorflow
         })
       })

@@ -429,6 +429,10 @@ perceptilabs/endpoints/type_inference/base.py
 perceptilabs/endpoints/layer_code/__init__.py
 perceptilabs/endpoints/layer_code/base.py
 
+# backend/perceptilabs/endpoints/version/
+perceptilabs/endpoints/version/__init__.py
+perceptilabs/endpoints/version/base.py
+
 # backend/perceptilabs/endpoints/export/
 perceptilabs/endpoints/export/__init__.py
 perceptilabs/endpoints/export/base.py

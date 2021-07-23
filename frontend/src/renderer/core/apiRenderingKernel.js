@@ -93,8 +93,15 @@ export const renderingKernel = {
       .then(res => {
         return (res.status === 200) ? res.data["datasetHash"] : null;
       })
-  },    
-
+  }, 
+     
+  async getVersion() {
+    return whenRenderingKernelReady
+      .then(rk => rk.get(`/version`))
+      .then(res => {
+        return (res.status === 200) ? res.data : null;
+      })
+  },
 
   async isDataReady(datasetHash) {
     return whenRenderingKernelReady
@@ -119,7 +126,8 @@ export const renderingKernel = {
       .then(res => {
         return (res.status === 200) ? res.data : null;
       })
-  }      
-}
+  },      
 
+
+}
 
