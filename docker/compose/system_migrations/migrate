@@ -7,18 +7,19 @@ is_perceptilabs_installed(){
   [ -d "${PL_ROOT_DIR}/plabs" ]
 }
 
+migrate_one(){
+  migration=$1
+  description=$(cat system_migrations/${migration}/description.txt)
+  echo "Performing system migration $migration : $description"
+  system_migrations/${migration}/up
+}
+
 run_migrations(){
   if is_perceptilabs_installed; then
-    echo "Performing system migration 1: extract db from image"
-    system_migrations/000001_extract_db/up
-    echo "Performing system migration 2: name the docker network"
-    system_migrations/000002_named_network/up
-    echo "Performing system migration 3: add keycloak"
-    system_migrations/000003_init_kc/up
-    echo "Performing system migration 4: add preview kernel"
-    system_migrations/000004_preview_kernel/up
-    echo "Performing system migration 5: remove deprecated fileserver"
-    system_migrations/000005_remove_fileserver/up
+    all_migrations=$(ls system_migrations | grep "[[:digit:]]" | sort)
+    echo "${all_migrations}" | while read migration; do
+      migrate_one $migration
+    done
   else
     echo "Performing initial system migration"
     system_migrations/all/up
