@@ -57,7 +57,7 @@
   import { MODAL_PAGE_PROJECT, MODAL_PAGE_QUESTIONNAIRE } from '@/core/constants.js';
   import { isUrlReachable } from '@/core/apiRygg.js';
   import { isKeycloakReachable } from '@/core/apiKeyCloak.js';
-  import isEnterprise from "@/core/isEnterprise";
+  import { whenInEnterprise } from "@/core/isEnterprise";
   
   export default {
     name: 'TheApp',
@@ -101,7 +101,7 @@
         });
 
       this.$store.commit('mod_project/setIsDefaultProjectMode');
-      isEnterprise()
+      whenInEnterprise()
         .then(isEnterpriseAppValue => {
           this.$store.commit('globalView/set_isEnterpriseApp', isEnterpriseAppValue)
         })

@@ -49,8 +49,8 @@ export const ryggAvailability = () => {
       throw reject;
     })
     .catch(err => {
-      if (err.response && !!err.response.data){ console.log(err.response.data) }
-      return (err.response && err.response.status === 400)? "BAD_TOKEN" : "UNAVAILABLE"
+      if (err && err.response && !!err.response.data){ console.log(err.response.data) }
+      return (err && err.response && err.response.status === 400)? "BAD_TOKEN" : "UNAVAILABLE"
     })
 }
 
