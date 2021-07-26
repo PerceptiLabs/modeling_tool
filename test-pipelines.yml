@@ -57,6 +57,7 @@ jobs:
       addToPath: true
 
   - bash: |
+      export PL_REDIS_URL="redis://redis:6379"
       cd scripts/
       python build.py test
     displayName: 'Python tests'
