@@ -1,6 +1,13 @@
 trigger:
 - none
 
+resources:
+  containers:
+    - container: redis
+      image: redis
+      ports:
+        - 6379
+
 jobs:
 - job: checkincludedfiles
   displayName: Check included_files.txt
