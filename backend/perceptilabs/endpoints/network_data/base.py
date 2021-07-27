@@ -3,8 +3,7 @@ import numpy as np
 from flask import request, jsonify
 from flask.views import View
 
-from perceptilabs.data.base import DataLoader
-from perceptilabs.data.settings import DatasetSettings
+from perceptilabs.endpoints.base_view import BaseView
 from perceptilabs.graph.spec import GraphSpec
 from perceptilabs.lwcore import LightweightCore, LightweightCache
 from perceptilabs.logconf import APPLICATION_LOGGER
@@ -18,21 +17,16 @@ logger = logging.getLogger(APPLICATION_LOGGER)
 lw_cache = LightweightCache(max_size=25)
 
 
-class NetworkData(View):
+class NetworkData(BaseView):
     def __init__(self, data_metadata_cache=None):
         self._data_metadata_cache = data_metadata_cache   
     
     def dispatch_request(self):
         json_data = request.get_json()
-        
         graph_spec = GraphSpec.from_dict(json_data['network'])
-
-        dataset_settings = DatasetSettings.from_dict(json_data['datasetSettings'])
-        data_metadata = self._data_metadata_cache.get(dataset_settings.compute_hash()) if self._data_metadata_cache else None 
-        data_loader = DataLoader.from_settings(dataset_settings, metadata=data_metadata)
+        data_loader = self._get_data_loader(json_data['datasetSettings'], json_data.get('userEmail'))            
         
         lw_core = LightweightCore(data_loader=data_loader, cache=lw_cache)
-
         graph_spec, auto_updated_layers = self._maybe_apply_autosettings(graph_spec, settings_engine=None)
         
         dim_content, preview_content, trained_layers_info, subsample_data_info = {}, {}, {}, {}

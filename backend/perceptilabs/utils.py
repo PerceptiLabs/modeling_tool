@@ -10,6 +10,7 @@ from concurrent.futures import Future, Executor
 from threading import Lock
 import pkg_resources
 import psutil
+from abc import ABC, abstractmethod
 
 
 import numpy as np
@@ -399,13 +400,24 @@ class MyPydanticBaseModel(BaseModel, metaclass=MyModelMetaclass):
         keep_untouched = (type(dummy_func),)
 
 # -------------------- END OF PYDANTIC CYTHON WORKAROUND --------------------
-        
 
 
+def get_num_data_repeats(settings_dict):  
+    """ Repeat data once per enabled augmentation setting. 
+
+    Temporary until we have a frontend solution
+    """
+    augmentations = set(['random_flip', 'random_crop', 'random_rotation'])
     
-        
-        
-            
+    count = 0
+    for spec_dict in settings_dict['featureSpecs'].values():
+        for preprocessing in spec_dict['preprocessing'].keys():
+            if preprocessing in augmentations:
+                count += 1
+
+    return count + 1  
+
+
 if __name__ == "__main__":
     rc = RateCounter(1)
     import pdb; pdb.set_trace()

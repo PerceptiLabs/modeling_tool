@@ -1164,6 +1164,7 @@ const actions = {
 
     const networkList = getters.GET_coreNetworkElementList;
     const networkId = rootGetters['mod_workspace/GET_currentNetworkId'];
+    const userEmail = rootGetters['mod_user/GET_userEmail'];
     let net = cloneDeep(getters.GET_coreNetwork);
     for(let elId in payload) {
       net[elId]['getPreview'] = payload[elId] !== undefined;
@@ -1177,7 +1178,7 @@ const actions = {
     
     dispatch('mod_workspace/setChartComponentLoadingState', { descendants: Object.keys(payload), value: true, networkId } , { root: true });
 
-    return renderingKernel.getNetworkData(net, datasetSettings)      
+    return renderingKernel.getNetworkData(net, datasetSettings, userEmail)      
       .then(res => {
         // console.group('getNetworkData');
         // console.log(
@@ -1239,6 +1240,7 @@ const actions = {
     const networkList = getters.GET_coreNetworkElementList;
     const pivotLayer = networkList[layerId];
     let descendants = getDescendants(pivotLayer, []);
+    const userEmail = rootGetters['mod_user/GET_userEmail'];
     const networkId = rootGetters['mod_workspace/GET_currentNetworkId'];
     let net = cloneDeep(getters.GET_coreNetwork);
     
@@ -1268,7 +1270,7 @@ const actions = {
     }
     const datasetSettings = rootGetters['mod_workspace/GET_currentNetworkDatasetSettings'];      
     
-    return renderingKernel.getNetworkData(net, datasetSettings)
+    return renderingKernel.getNetworkData(net, datasetSettings, userEmail)
       .then(res => {
         // console.group('API_getBatchPreviewSampleForElementDescendants');
         // console.log(

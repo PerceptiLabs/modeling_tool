@@ -221,13 +221,12 @@ class DatasetSettings(MyPydanticBaseModel):
         }
 
     def compute_hash(self):
-        hasher = hashlib.sha256()
+        hasher = hashlib.md5()
         hasher.update(str(self.file_path).encode())
         hasher.update(self.partitions.compute_hash().encode())
 
         for name, spec in self.feature_specs.items():
             hasher.update(name.encode())            
             hasher.update(spec.compute_hash().encode())
-
         return hasher.hexdigest()
 

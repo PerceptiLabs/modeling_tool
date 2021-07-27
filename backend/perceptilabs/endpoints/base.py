@@ -56,25 +56,25 @@ def create_app(data_metadata_cache=None, executor=None):
     app.add_url_rule(
         '/data',
         methods=['PUT'],
-        view_func=PutData.as_view('put_data', executor, data_metadata_cache=data_metadata_cache)
+        view_func=PutData.as_view('put_data', executor, data_metadata_cache=data_metadata_cache) 
     )
 
     app.add_url_rule(
         '/data',
         methods=['GET'],
         view_func=IsDataReady.as_view('is_data_ready', data_metadata_cache=data_metadata_cache)
-    )
+    ) 
 
     app.add_url_rule(
         '/model_recommendations',
         methods=['POST'],
-        view_func=ModelRecommendations.as_view('model_recommendations', data_metadata_cache=data_metadata_cache)
+        view_func=ModelRecommendations.as_view('model_recommendations', data_metadata_cache=data_metadata_cache)  
     )
 
     app.add_url_rule(
         '/network_data',
         methods=['POST'],
-        view_func=NetworkData.as_view('network_data', data_metadata_cache=data_metadata_cache)
+        view_func=NetworkData.as_view('network_data', data_metadata_cache=data_metadata_cache) 
     )
 
     app.add_url_rule(
@@ -98,7 +98,7 @@ def create_app(data_metadata_cache=None, executor=None):
     app.add_url_rule(
         '/export',
         methods=['POST'],
-        view_func=Export.as_view('export', data_metadata_cache=data_metadata_cache)                
+        view_func=Export.as_view('export', data_metadata_cache=data_metadata_cache)
     )
 
     @app.route('/healthy', methods=['GET'])
@@ -114,7 +114,6 @@ def create_app(data_metadata_cache=None, executor=None):
     
     @app.before_request
     def before_request():
-        logger.info(f"Request to endpoint '{request.endpoint}")            
         g.request_started = time.perf_counter()
         
     
@@ -129,6 +128,7 @@ def create_app(data_metadata_cache=None, executor=None):
     @app.errorhandler(Exception)
     def handle_endpoint_error(e):
         message = traceback_from_exception(e)
+        print(message)
         logger.exception(f"Error in request '{request.endpoint}'")
         return make_response(message), 500
     

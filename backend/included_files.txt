@@ -25,6 +25,7 @@ perceptilabs/dataevents.py
 perceptilabs/mixpanel_handler.py
 perceptilabs/memorywatcher.py
 perceptilabs/testInterface.py
+perceptilabs/cache_utils.py
 
 # perceptilabs/messaging
 perceptilabs/messaging/base.py
@@ -407,6 +408,7 @@ perceptilabs/tracking/data_selected.py
 
 # backend/perceptilabs/endpoints/
 perceptilabs/endpoints/base.py
+perceptilabs/endpoints/base_view.py
 perceptilabs/endpoints/__init__.py
 
 # backend/perceptilabs/endpoints/data/

@@ -682,16 +682,17 @@ export default {
         partitions: this.datasetSettings.partitions,
         featureSpecs: this.formatCSVTypesIntoKernelFormat()
       };
-      
-      const datasetHash = await renderingKernel.putData(datasetSettings);
+
+      const userEmail = this.userEmail;
+      const datasetHash = await renderingKernel.putData(datasetSettings, userEmail);
 	
       const waitForDataReady = async function () {
-          let isReady = await renderingKernel.isDataReady(datasetHash);
+          let isReady = await renderingKernel.isDataReady(datasetHash, userEmail);
           while (!isReady) {
               await new Promise(resolve => {
                 setTimeout(resolve, 1000);
             });
-            isReady = await renderingKernel.isDataReady(datasetHash);
+            isReady = await renderingKernel.isDataReady(datasetHash, userEmail);
           }
           return isReady;
       };

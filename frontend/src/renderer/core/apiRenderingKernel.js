@@ -61,10 +61,11 @@ export const renderingKernel = {
       })
   },      
 
-  async getNetworkData(network, datasetSettings) {
+  async getNetworkData(network, datasetSettings, userEmail) {
     const payload = {
       network: network,
-      datasetSettings: datasetSettings
+      datasetSettings: datasetSettings,
+      userEmail: userEmail	
     };
     return whenRenderingKernelReady
       .then(rk => rk.post('/network_data', payload))
@@ -73,20 +74,10 @@ export const renderingKernel = {
       })
   },
 
-  async putData(datasetSettings) {
+  async putData(datasetSettings, userEmail) {
     const payload = {
-      datasetSettings: datasetSettings
-    };
-    return whenRenderingKernelReady
-      .then(rk => rk.put('/data', payload))
-      .then(res => {
-        return (res.status === 200) ? res.data : null;
-      })
-  },
-
-  async putData(datasetSettings) {
-    const payload = {
-      datasetSettings: datasetSettings
+      datasetSettings: datasetSettings,
+      userEmail: userEmail	
     };
     return whenRenderingKernelReady
       .then(rk => rk.put('/data', payload))
@@ -103,9 +94,9 @@ export const renderingKernel = {
       })
   },
 
-  async isDataReady(datasetHash) {
+  async isDataReady(datasetHash, userEmail) {
     return whenRenderingKernelReady
-    .then(rk => rk.get(`/data?dataset_hash=${datasetHash}`))
+    .then(rk => rk.get(`/data?dataset_hash=${datasetHash}&user_email=${userEmail}`))
     .then(res => {
       return (res.status === 200);
     }).catch((err) => {

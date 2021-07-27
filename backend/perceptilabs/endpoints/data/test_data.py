@@ -2,11 +2,12 @@ import os
 import json
 import pytest
 from perceptilabs.endpoints.base import create_app
+from perceptilabs.cache_utils import DictCache
 
 
 @pytest.fixture(scope='function')
 def metadata_cache():
-    yield {}
+    yield DictCache()
 
 @pytest.fixture
 def client(metadata_cache):

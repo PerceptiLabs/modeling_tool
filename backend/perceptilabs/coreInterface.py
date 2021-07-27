@@ -34,8 +34,9 @@ from perceptilabs.license_checker import LicenseV2
 from perceptilabs.trainer import Trainer, TrainingModel
 from perceptilabs.automation.modelrecommender.base import ModelRecommender
 from perceptilabs.data.base import DataLoader, FeatureSpec
+from perceptilabs.data.settings import DatasetSettings
 from perceptilabs.exporter.base import Exporter    
-
+import perceptilabs.cache_utils as cache_utils
         
 logger = logging.getLogger(APPLICATION_LOGGER)
 user_logger = logging.getLogger(USER_LOGGER)
@@ -44,22 +45,6 @@ CoreCommand = collections.namedtuple('CoreCommand', ['type', 'parameters', 'allo
 
 
 CPU_GPU_POLICY = 'force-gpu' # {'use-spec', 'force-gpu', 'force-cpu'}
-
-
-def get_num_data_repeats(settings_dict):
-    """ Repeat data once per enabled augmentation setting. 
-
-    Temporary until we have a frontend solution
-    """
-    augmentations = set(['random_flip', 'random_crop', 'random_rotation'])
-    
-    count = 0
-    for spec_dict in settings_dict['featureSpecs'].values():
-        for preprocessing in spec_dict['preprocessing'].keys():
-            if preprocessing in augmentations:
-                count += 1
-                
-    return count + 1
 
 
 class coreLogic():
@@ -83,6 +68,7 @@ class coreLogic():
         self._save_counter = 0
         
         self.headless_state = False
+        self._data_metadata_cache = cache_utils.get_data_metadata_cache()
 
     def setupLogic(self):
         #self.warningQueue=queue.Queue()
@@ -172,10 +158,18 @@ class coreLogic():
         self._running_mode = mode
         logger.info(f"Running mode {mode} set for coreLogic w\ network '{self.networkName}'")
 
-    def _get_trainer(self, script_factory, graph_spec, training_settings, dataset_settings, checkpoint_directory, load_checkpoint, model_id, user_email):
+    def _get_trainer(self, script_factory, graph_spec, training_settings, dataset_settings_dict, checkpoint_directory, load_checkpoint, model_id, user_email):
         """ Creates a Trainer for the IoInput/IoOutput workflow """
-        num_repeats = get_num_data_repeats(dataset_settings)   #TODO (anton.k): remove when frontend solution exists
-        data_loader = DataLoader.from_dict(dataset_settings, num_repeats=num_repeats) 
+        num_repeats = utils.get_num_data_repeats(dataset_settings_dict)   #TODO (anton.k): remove when frontend solution exists
+
+        dataset_settings = DatasetSettings.from_dict(dataset_settings_dict)                
+        dataset_hash = cache_utils.format_key(['pipelines', user_email, dataset_settings.compute_hash()])        
+        data_metadata = self._data_metadata_cache.get(dataset_hash) if self._data_metadata_cache else None
+
+        if data_metadata is not None:
+            logger.info(f"Found metadata for dataset with hash {dataset_hash}")            
+        
+        data_loader = DataLoader.from_settings(dataset_settings, num_repeats=num_repeats, metadata=data_metadata) 
 
         if load_checkpoint:
             exporter = Exporter.from_disk(

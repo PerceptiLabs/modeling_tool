@@ -6,7 +6,8 @@ import logging
 from perceptilabs.data.base import DataLoader
 from perceptilabs.data.settings import DatasetSettings
 from perceptilabs.logconf import APPLICATION_LOGGER
-
+import perceptilabs.utils as utils
+import perceptilabs.cache_utils as cache_utils
 
 logger = logging.getLogger(APPLICATION_LOGGER)
 
@@ -17,13 +18,18 @@ class PutData(View):
         self._data_metadata_cache = data_metadata_cache
 
     def dispatch_request(self):
-        json_data = request.get_json()        
-        dataset_settings = DatasetSettings.from_dict(json_data['datasetSettings'])        
-        dataset_hash = dataset_settings.compute_hash()
+        json_data = request.get_json()
+        settings_dict = json_data['datasetSettings']
+        user_email = json_data.get('userEmail')
         
+        num_repeats = utils.get_num_data_repeats(settings_dict)
+        dataset_settings = DatasetSettings.from_dict(settings_dict)
+        dataset_hash = cache_utils.format_key(['pipelines', user_email, dataset_settings.compute_hash()])
+                                              
         def on_submit(dataset_settings, metadata_cache):
             df = pd.read_csv(dataset_settings.file_path)            
-            metadata = DataLoader.compute_metadata(df, dataset_settings)
+            metadata = DataLoader.compute_metadata(
+                df, dataset_settings, num_repeats=num_repeats)
 
             metadata_cache[dataset_hash] = metadata
             logger.info(f"Inserted metadata with hash '{dataset_hash}'")            
@@ -49,6 +55,7 @@ class IsDataReady(View):
         else:
             return make_response('', 204)
 
-
+        
+        
 
     
