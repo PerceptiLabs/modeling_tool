@@ -3,6 +3,7 @@ import logging
 from abc import ABC, abstractmethod
 from typing import Tuple, Dict, Type, Any, List, Union
 from collections import namedtuple
+import hashlib
 
 from pydantic import BaseModel, validator
 
@@ -38,6 +39,14 @@ class LayerConnection(MyPydanticBaseModel):
     def __hash__(self):
         return hash(self.src_id + self.src_var + self.dst_id + self.dst_var)
 
+    def compute_hash(self):
+        hasher = hashlib.sha256()
+        hasher.update(str(self.src_id).encode())
+        hasher.update(str(self.src_var).encode())
+        hasher.update(str(self.dst_id).encode())
+        hasher.update(str(self.dst_var).encode())                        
+        return hasher.hexdigest()        
+    
     def get_src_sanitized_name(self, graph_spec: AbstractGraphSpec) -> str:
         """ Looks up the 'sanitized name' of the source layer """
         return self._get_sanitized_name(self.src_id, graph_spec)        
@@ -99,11 +108,11 @@ class LayerSpec(ABC, MyPydanticBaseModel):
             prefer_custom_code: if true, the hash will be based on that only. 
         """
         ignored_fields = ['id_', 'name', 'visited', 'preview_variable', 'get_preview']
-
+        hasher = hashlib.sha256()
+        
         if prefer_custom_code and self.custom_code is not None:
-            return hash(self.custom_code)
+            return hasher.update(str(self.custom_code).encode())
         else:
-            field_hashes = 0
             for field_name in self.field_names:
                 if field_name in ignored_fields:
                     continue
@@ -112,11 +121,17 @@ class LayerSpec(ABC, MyPydanticBaseModel):
 
                 field_value = getattr(self, field_name)
                 try:
-                    field_hashes += hash(field_name+str(hash(field_value)))
+                    hasher.update(str(field_name).encode())
+                    hasher.update(str(field_name).encode())                    
+
+                    if hasattr(field_value, 'compute_hash'):
+                        hasher.update(field_value.compute_hash().encode())
+                    else:
+                        hasher.update(str(field_value).encode())
                 except TypeError:
                     logger.exception(f"Failed hashing field {field_name} with type {type(field_value)} in layer {self.id_} [{self.type_}]")
                     raise     
-            return hash(field_hashes)
+            return hasher.hexdigest()
         
     @classmethod
     def from_dict(cls, id_: str, dict_: Dict[str, Any]):

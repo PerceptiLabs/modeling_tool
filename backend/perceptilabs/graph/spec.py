@@ -2,6 +2,7 @@ import logging
 import networkx as nx
 from collections import namedtuple
 from typing import List, Dict, Tuple, Set
+import hashlib
 
 
 from perceptilabs.graph import AbstractGraphSpec
@@ -105,8 +106,11 @@ class GraphSpec(AbstractGraphSpec):
         if logger.isEnabledFor(logging.DEBUG):            
             logger.debug(f"Computing field hash of layer {layer_spec.id_} [{layer_spec.type_}] based on layers {[x.id_ for x in included_specs]}")        
 
-        total_hash = hash(tuple([s.compute_field_hash()**2 for s in included_specs]))
-        return total_hash
+        hasher = hashlib.md5()        
+        for spec in included_specs:
+            hasher.update(str(spec.compute_field_hash()).encode())
+        
+        return hasher.hexdigest()
 
     def get_ordered_ids(self) -> List[str]:
         """ Returns the layers in terms of execution order 

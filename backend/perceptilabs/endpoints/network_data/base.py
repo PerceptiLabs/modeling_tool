@@ -5,7 +5,7 @@ from flask.views import View
 
 from perceptilabs.endpoints.base_view import BaseView
 from perceptilabs.graph.spec import GraphSpec
-from perceptilabs.lwcore import LightweightCore, LightweightCache
+from perceptilabs.lwcore import LightweightCore
 from perceptilabs.logconf import APPLICATION_LOGGER
 import perceptilabs.tracking as tracking
 import perceptilabs.automation.utils as automation_utils
@@ -14,19 +14,18 @@ from perceptilabs.createDataObject import subsample_data
 
 logger = logging.getLogger(APPLICATION_LOGGER)
 
-lw_cache = LightweightCache(max_size=25)
-
 
 class NetworkData(BaseView):
-    def __init__(self, data_metadata_cache=None):
-        self._data_metadata_cache = data_metadata_cache   
+    def __init__(self, data_metadata_cache=None, preview_cache=None):
+        self._data_metadata_cache = data_metadata_cache
+        self._preview_cache = preview_cache
     
     def dispatch_request(self):
         json_data = request.get_json()
         graph_spec = GraphSpec.from_dict(json_data['network'])
         data_loader = self._get_data_loader(json_data['datasetSettings'], json_data.get('userEmail'))            
         
-        lw_core = LightweightCore(data_loader=data_loader, cache=lw_cache)
+        lw_core = LightweightCore(data_loader=data_loader, cache=self._preview_cache)
         graph_spec, auto_updated_layers = self._maybe_apply_autosettings(graph_spec, settings_engine=None)
         
         dim_content, preview_content, trained_layers_info, subsample_data_info = {}, {}, {}, {}

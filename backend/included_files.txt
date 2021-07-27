@@ -27,6 +27,10 @@ perceptilabs/memorywatcher.py
 perceptilabs/testInterface.py
 perceptilabs/cache_utils.py
 
+# perceptilabs/caching
+perceptilabs/caching/base.py
+perceptilabs/caching/utils.py
+
 # perceptilabs/messaging
 perceptilabs/messaging/base.py
 perceptilabs/messaging/zmq_wrapper.py

@@ -1,10 +1,6 @@
 import logging
-from typing import Any
-import hashlib
-import numpy as np
-import networkx as nx
-from collections import namedtuple
 
+from perceptilabs.caching.base import BaseCache
 from perceptilabs.logconf import APPLICATION_LOGGER
 
 
@@ -74,7 +70,7 @@ class DoublyLinkedList:
         return new_entry
         
             
-class LightweightCache:
+class LightweightCache(BaseCache):
     """ Uses LRU for pruning """
     
     def __init__(self, max_size=None):
@@ -127,14 +123,11 @@ class LightweightCache:
             if dropped is not None:
                 del self._map[dropped.key]
 
-        #print_order(self._list, self._map)                                
-
     @property
     def size(self):
+        return len(self)
+
+    def __len__(self):
         return len(self._map)
-
-
-if __name__ == "__main__":
-    cache = LightweightCache()
 
 

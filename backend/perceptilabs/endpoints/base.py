@@ -43,7 +43,7 @@ if utils.is_prod() and not utils.is_pytest():
     logger.info(f"Initialized sentry for environment '{SENTRY_ENVIRONMENT}' and release '{SENTRY_RELEASE}'")
 
 
-def create_app(data_metadata_cache=None, executor=None):
+def create_app(data_metadata_cache=None, preview_cache=None, executor=None):
     if executor is None:
         executor = utils.DummyExecutor()        
     
@@ -74,7 +74,8 @@ def create_app(data_metadata_cache=None, executor=None):
     app.add_url_rule(
         '/network_data',
         methods=['POST'],
-        view_func=NetworkData.as_view('network_data', data_metadata_cache=data_metadata_cache) 
+        view_func=NetworkData.as_view(
+            'network_data', data_metadata_cache=data_metadata_cache, preview_cache=preview_cache)
     )
 
     app.add_url_rule(

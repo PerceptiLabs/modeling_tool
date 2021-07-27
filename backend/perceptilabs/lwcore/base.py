@@ -1,5 +1,6 @@
 import os
 import logging
+import hashlib
 import copy
 import json
 import time
@@ -29,6 +30,7 @@ from perceptilabs.lwcore.utils import exception_to_error, format_exception
 from perceptilabs.lwcore.cache import LightweightCache
 from perceptilabs.lwcore.strategies import DefaultStrategy, DataSupervisedStrategy, DataReinforceStrategy, Tf1xInnerStrategy, Tf1xTrainingStrategy, Tf2xInnerStrategy, Tf2xTrainingStrategy, IoLayerStrategy
 from perceptilabs.lwcore.results import LayerResults
+import perceptilabs.caching.utils as cache_utils
 import perceptilabs.dataevents as dataevents
 
 
@@ -92,37 +94,46 @@ class LightweightCore:
     def _get_layer_results(self, layer_spec, subgraph_spec, ancestor_results, data_batch, dataset_hash):
         """ Either fetched a cached result or Computes results of layer_spec using ancestor results """        
         t0 = time.perf_counter()        
-        cached_result, layer_hash = self._get_cached_result(layer_spec, subgraph_spec, dataset_hash)
+        cached_result, full_layer_hash = self._get_cached_result(layer_spec, subgraph_spec, dataset_hash)
         t1 = time.perf_counter()
         layer_result = cached_result or self._compute_layer_results(layer_spec, subgraph_spec, ancestor_results, data_batch)
         t2 = time.perf_counter()
-        self._maybe_put_results_in_cache(layer_spec, cached_result, layer_result, layer_hash, dataset_hash)
+        self._maybe_put_results_in_cache(layer_spec, cached_result, layer_result, full_layer_hash)
         t3 = time.perf_counter()
 
         used_cache = cached_result is not None
         durations = {'t_cache_lookup': t1 - t0, 't_compute': t2 - t1, 't_cache_insert': t3 - t2, 'used_cache': used_cache, 'type': layer_spec.type_}
         return layer_result, durations, used_cache
 
-    def _maybe_put_results_in_cache(self, layer_spec, cached_result, layer_result, layer_hash, dataset_hash):
-        """ Try to put new results in cache """        
-        if cached_result is None and self._cache is not None and layer_hash is not None:                        
-            self._cache.put(str(layer_hash) + dataset_hash, layer_result)
-            logger.debug(f"Cached computed results for layer {layer_spec.id_} [{layer_spec.type_}]. Hash: {layer_hash}")
+    def _maybe_put_results_in_cache(self, layer_spec, cached_result, layer_result, full_layer_hash):
+        """ Try to put new results in cache """
+        if cached_result is None and self._cache is not None and full_layer_hash is not None:                        
+            self._cache.put(full_layer_hash, layer_result)
+            logger.info(f"Cached computed results for layer {layer_spec.id_} [{layer_spec.type_}]. Hash: {full_layer_hash}")
 
     def _get_cached_result(self, layer_spec, subgraph_spec, dataset_hash):
         """ Computes layer hash and retrieves cached result if available. """
         cached_result = None
         layer_hash = None
+        full_hash = None
+
+        def get_full_hash(layer_hash, dataset_hash):
+            hasher = hashlib.md5()
+            hasher.update(str(layer_hash).encode())
+            hasher.update(dataset_hash.encode())
+            key = cache_utils.format_key(['previews', hasher.hexdigest()])
+            return key
         
         if self._cache is not None:
             layer_hash = subgraph_spec.compute_field_hash(layer_spec, include_ancestors=True)
-            logger.debug(f"Computed hash for layer {layer_spec.id_} [{layer_spec.type_}]. Hash: {layer_hash}")
+            full_hash = get_full_hash(layer_hash, dataset_hash)            
+            logger.debug(f"Computed hash for layer {layer_spec.id_} [{layer_spec.type_}]. Hash: {full_hash}")
             
-            if layer_hash in self._cache:
-                cached_result = self._cache.get(str(layer_hash) + dataset_hash)
-                logger.debug(f"Retrieved cached results for layer {layer_spec.id_} [{layer_spec.type_}]. Hash: {layer_hash}")
+            if full_hash in self._cache:
+                cached_result = self._cache.get(full_hash)
+                logger.info(f"Retrieved cached results for layer {layer_spec.id_} [{layer_spec.type_}]. Hash: {full_hash}")
                 
-        return cached_result, layer_hash
+        return cached_result, full_hash
 
     def _compute_layer_results(self, layer_spec, graph_spec, all_results, data_batch):
         """ Find and invoke a strategy for computing the results of a layer """

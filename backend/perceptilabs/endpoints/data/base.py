@@ -7,7 +7,7 @@ from perceptilabs.data.base import DataLoader
 from perceptilabs.data.settings import DatasetSettings
 from perceptilabs.logconf import APPLICATION_LOGGER
 import perceptilabs.utils as utils
-import perceptilabs.cache_utils as cache_utils
+import perceptilabs.caching.utils as cache_utils
 
 logger = logging.getLogger(APPLICATION_LOGGER)
 

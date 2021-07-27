@@ -36,7 +36,7 @@ from perceptilabs.automation.modelrecommender.base import ModelRecommender
 from perceptilabs.data.base import DataLoader, FeatureSpec
 from perceptilabs.data.settings import DatasetSettings
 from perceptilabs.exporter.base import Exporter    
-import perceptilabs.cache_utils as cache_utils
+import perceptilabs.caching.utils as cache_utils
         
 logger = logging.getLogger(APPLICATION_LOGGER)
 user_logger = logging.getLogger(USER_LOGGER)
