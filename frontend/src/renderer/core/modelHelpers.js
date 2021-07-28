@@ -41,11 +41,15 @@ export const connectComponentsWithArrow = (previousElementId, currentElementId) 
 const testsValidationRules = {
   'confusion_matrix': {
     'inputs': ['numerical', 'image', 'categorical'],
-    'outputs': ['categorical']
+    'outputs': ['categorical'],
   },
-  'metrics_table': {
+  'classification_metrics': {
     'inputs': ['numerical', 'image', 'categorical'],
-    'outputs': ['categorical']
+    'outputs': ['categorical'],
+  },
+  'segmentation_metrics': {
+    'inputs': ['image'],
+    'outputs': ['image'],
   },
 };
 

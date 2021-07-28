@@ -25,13 +25,13 @@ from perceptilabs.layers.pretrainedinceptionv3.spec import PreTrainedInceptionV3
 from perceptilabs.layers.pretrainedmobilenetv2.spec import PreTrainedMobileNetV2Spec
 from perceptilabs.layers.iooutput.spec import OutputLayerSpec
 from perceptilabs.layers.ioinput.spec import InputLayerSpec
-
+from perceptilabs.layers.unet.spec import UNetSpec
 
 LayerMeta = namedtuple(
     'LayerMeta', [
         'spec_class',
         'imports_path',
-        'macro_path',        
+        'macro_path',
         'macro_name',
     ]
 )
@@ -40,124 +40,124 @@ DEFINITION_TABLE = {
     'DataData': LayerMeta(
         DataDataSpec,
         'layers/datadata/imports.json',
-        'core_new/layers/templates/datadata.j2',        
+        'core_new/layers/templates/datadata.j2',
         'layer_datadata'
     ),
     'DataEnvironment': LayerMeta(
         DataEnvironmentSpec,
         'layers/dataenvironment/imports.json',
-        'core_new/layers/templates/dataenv.j2',        
+        'core_new/layers/templates/dataenv.j2',
         'layer_dataenvironment'
     ),
     'DataRandom': LayerMeta(
         DataRandomSpec,
         'layers/datarandom/imports.json',
-        'core_new/layers/templates/datarandom.j2',        
+        'core_new/layers/templates/datarandom.j2',
         'layer_datarandom'
     ),
     'DeepLearningFC': LayerMeta(
         DeepLearningFcSpec,
         'layers/deeplearningfc/imports.json',
-        'core_new/layers/templates/tf1x.j2',        
+        'core_new/layers/templates/tf1x.j2',
         'layer_tf1x_fully_connected'
     ),
     'DeepLearningConv': LayerMeta(
         DeepLearningConvSpec,
         'layers/deeplearningconv/imports.json',
-        'core_new/layers/templates/tf1x.j2',        
+        'core_new/layers/templates/tf1x.j2',
         'layer_tf1x_conv'
     ),
     'DeepLearningRecurrent': LayerMeta(
         DeepLearningRecurrentSpec,
         'layers/deeplearningrecurrent/imports.json',
-        'core_new/layers/templates/tf1x.j2',        
+        'core_new/layers/templates/tf1x.j2',
         'layer_tf1x_recurrent'
     ),
     'ProcessOneHot': LayerMeta(
         ProcessOneHotSpec,
         'layers/processonehot/imports.json',
-        'core_new/layers/templates/tf1x.j2',        
+        'core_new/layers/templates/tf1x.j2',
         'layer_tf1x_one_hot'
     ),
     'ProcessReshape': LayerMeta(
         ProcessReshapeSpec,
         'layers/processreshape/imports.json',
-        'core_new/layers/templates/tf1x.j2',        
+        'core_new/layers/templates/tf1x.j2',
         'layer_tf1x_reshape'
     ),
     'ProcessRescale': LayerMeta(
         ProcessRescaleSpec,
         'layers/processrescale/imports.json',
-        'core_new/layers/templates/tf1x.j2',        
+        'core_new/layers/templates/tf1x.j2',
         'layer_tf1x_image_reshape'
     ),
     'ProcessGrayscale': LayerMeta(
         ProcessGrayscaleSpec,
         'layers/processreshape/imports.json',
-        'core_new/layers/templates/tf1x.j2',        
+        'core_new/layers/templates/tf1x.j2',
         'layer_tf1x_grayscale'
     ),
     'MathArgmax': LayerMeta(
         MathArgmaxSpec,
         'layers/mathargmax/imports.json',
-        'layers/mathargmax/template.j2',        
+        'layers/mathargmax/template.j2',
         'layer_tf1x_argmax'
     ),
     'MathSoftmax': LayerMeta(
         MathSoftmaxSpec,
         'layers/mathsoftmax/imports.json',
-        'layers/mathsoftmax/template.j2',        
+        'layers/mathsoftmax/template.j2',
         'layer_tf1x_softmax'
     ),
     'MathSwitch': LayerMeta(
         MathSwitchSpec,
         'layers/mathswitch/imports.json',
-        'core_new/layers/templates/tf1x.j2',        
+        'core_new/layers/templates/tf1x.j2',
         'layer_tf1x_switch'
     ),
     'MathMerge': LayerMeta(
         MathMergeSpec,
         'layers/mathmerge/imports.json',
-        'core_new/layers/templates/tf1x.j2',        
+        'core_new/layers/templates/tf1x.j2',
         'layer_tf1x_merge'
     ),
     'LayerCustom': LayerMeta(
         LayerCustomSpec,
         'layers/layercustom/imports.json',
-        'core_new/layers/templates/custom.j2',        
+        'core_new/layers/templates/custom.j2',
         'layer_custom_inner'
     ),
     'TrainNormal': LayerMeta(
         TrainClassificationSpec,
         'layers/trainclassification/imports.json',
-        'core_new/layers/templates/tf1x_classification.j2',        
+        'core_new/layers/templates/tf1x_classification.j2',
         'layer_tf1x_classification'
     ),
     'TrainRegression': LayerMeta(
         TrainRegressionSpec,
         'layers/trainregression/imports.json',
-        'core_new/layers/templates/tf1x_regression.j2',        
+        'core_new/layers/templates/tf1x_regression.j2',
         'layer_tf1x_regression'
-    ),        
+    ),
     'TrainReinforce': LayerMeta(
         TrainReinforceSpec,
         'layers/trainreinforce/imports.json',
-        'core_new/layers/templates/tf1x_rl.j2',        
+        'core_new/layers/templates/tf1x_rl.j2',
         'layer_tf1x_rl'
     ),
     'TrainDetector': LayerMeta(
         TrainObjectDetectionSpec,
         'layers/trainobjectdetection/imports.json',
-        'core_new/layers/templates/tf1x_object_detection.j2',        
+        'core_new/layers/templates/tf1x_object_detection.j2',
         'layer_tf1x_object_detection'
     ),
     'TrainGan': LayerMeta(
         TrainGanSpec,
         'layers/traingan/imports.json',
-        'core_new/layers/templates/tf1x_gan.j2',        
+        'core_new/layers/templates/tf1x_gan.j2',
         'layer_tf1x_gan'
-    )        
-    
+    )
+
 }
 
 
@@ -165,31 +165,31 @@ DEFINITION_TABLE_TF2X = {
     'DataData': LayerMeta(
         DataDataSpec,
         'layers/datadata/imports.json',
-        'core_new/layers/templates/datadata.j2',        
+        'core_new/layers/templates/datadata.j2',
         'layer_datadata'
     ),
     'DeepLearningConv': LayerMeta(
         DeepLearningConvSpec,
         'layers/deeplearningconv/tf2x_imports.json',
-        'layers/deeplearningconv/tf2x_template.j2',        
+        'layers/deeplearningconv/tf2x_template.j2',
         'layer_tf2x_conv'
-    ),    
+    ),
     'DeepLearningFC': LayerMeta(
         DeepLearningFcSpec,
         'layers/deeplearningfc/tf2x_imports.json',
-        'layers/deeplearningfc/tf2x_template.j2',        
+        'layers/deeplearningfc/tf2x_template.j2',
         'layer_tf2x_fully_connected'
     ),
     'DeepLearningRecurrent': LayerMeta(
         DeepLearningRecurrentSpec,
         'layers/deeplearningrecurrent/tf2x_imports.json',
-        'layers/deeplearningrecurrent/tf2x_template.j2',        
+        'layers/deeplearningrecurrent/tf2x_template.j2',
         'layer_tf2x_recurrent'
     ),
     'ProcessReshape': LayerMeta(
         ProcessReshapeSpec,
         'layers/processreshape/tf2x_imports.json',
-        'layers/processreshape/tf2x_template.j2',        
+        'layers/processreshape/tf2x_template.j2',
         'layer_tf2x_reshape'
     ),
     'ProcessRescale': LayerMeta(
@@ -201,13 +201,13 @@ DEFINITION_TABLE_TF2X = {
     'ProcessOneHot': LayerMeta(
         ProcessOneHotSpec,
         'layers/processonehot/tf2x_imports.json',
-        'layers/processonehot/tf2x_template.j2',        
+        'layers/processonehot/tf2x_template.j2',
         'layer_tf2x_one_hot'
     ),
     'MathSwitch': LayerMeta(
         MathSwitchSpec,
         'layers/mathswitch/tf2x_imports.json',
-        'layers/mathswitch/tf2x_template.j2',        
+        'layers/mathswitch/tf2x_template.j2',
         'layer_tf2x_switch'
     ),
     'ProcessGrayscale': LayerMeta(
@@ -225,39 +225,45 @@ DEFINITION_TABLE_TF2X = {
     'TrainNormal': LayerMeta(
         TrainClassificationSpec,
         'layers/trainclassification/tf2x_imports.json',
-        'layers/trainclassification/tf2x_template.j2',        
+        'layers/trainclassification/tf2x_template.j2',
         'layer_tf2x_classification'
-    ),    
+    ),
     'PreTrainedVGG16': LayerMeta(
         PreTrainedVGG16Spec,
         'layers/pretrainedvgg16/tf2x_imports.json',
-        'layers/pretrainedvgg16/tf2x_template.j2',        
+        'layers/pretrainedvgg16/tf2x_template.j2',
         'layer_pretrained_vgg16'
     ),
     'PreTrainedMobileNetV2': LayerMeta(
         PreTrainedMobileNetV2Spec,
         'layers/pretrainedmobilenetv2/tf2x_imports.json',
-        'layers/pretrainedmobilenetv2/tf2x_template.j2',        
+        'layers/pretrainedmobilenetv2/tf2x_template.j2',
         'layer_pretrained_mobilenetv2'
     ),
     'PreTrainedResNet50': LayerMeta(
         PreTrainedResNet50Spec,
         'layers/pretrainedresnet50/tf2x_imports.json',
-        'layers/pretrainedresnet50/tf2x_template.j2',        
+        'layers/pretrainedresnet50/tf2x_template.j2',
         'layer_pretrained_resnet50'
     ),
     'PreTrainedInceptionV3': LayerMeta(
         PreTrainedInceptionV3Spec,
         'layers/pretrainedinceptionv3/tf2x_imports.json',
-        'layers/pretrainedinceptionv3/tf2x_template.j2',        
+        'layers/pretrainedinceptionv3/tf2x_template.j2',
         'layer_pretrained_inceptionv3'
+    ),
+    'UNet': LayerMeta(
+        UNetSpec,
+        'layers/unet/tf2x_imports.json',
+        'layers/unet/tf2x_template.j2',
+        'layer_u_net'
     ),
     'IoOutput': LayerMeta(
         OutputLayerSpec,
         imports_path=None,
         macro_path=None,
         macro_name=None
-    ),    
+    ),
     'IoInput': LayerMeta(
         InputLayerSpec,
         imports_path=None,
@@ -267,7 +273,7 @@ DEFINITION_TABLE_TF2X = {
     'LayerCustom': LayerMeta(
         LayerCustomSpec,
         'layers/layercustom/tf2x_imports.json',
-        'layers/layercustom/tf2x_template.j2',                
+        'layers/layercustom/tf2x_template.j2',
         'layer_custom'
     ),
 }

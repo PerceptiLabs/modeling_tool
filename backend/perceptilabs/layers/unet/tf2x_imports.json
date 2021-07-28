@@ -4,7 +4,8 @@
     ],
     "third_party": [
         "import tensorflow as tf",
-        "import numpy as np"
+        "import numpy as np",
+        "from keras_unet_collection import models as unet_models"
     ],
     "perceptilabs": [
         "from perceptilabs.layers.visualizer import PerceptiLabsVisualizer",

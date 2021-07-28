@@ -73,8 +73,9 @@ import LayerCustom          from '@/components/network-elements/elements/layer-c
 
 import PreTrainedVGG16        from '@/components/network-elements/elements/pretrained-vgg16/set-pretrained-vgg16.vue'
 import PreTrainedMobileNetV2  from '@/components/network-elements/elements/pretrained-mobilenetv2/set-pretrained-mobilenetv2.vue'
-import PreTrainedResNet50  from '@/components/network-elements/elements/pretrained-resnet50/set-pretrained-resnet50.vue'
+import PreTrainedResNet50     from '@/components/network-elements/elements/pretrained-resnet50/set-pretrained-resnet50.vue'
 import PreTrainedInceptionV3  from '@/components/network-elements/elements/pretrained-inceptionv3/set-pretrained-inceptionv3.vue'
+import UNet                   from '@/components/network-elements/elements/unet/set-unet.vue'
 
 import IoInput            from '@/components/network-elements/elements/io-input/set-io-input.vue'
 import IoOutput             from '@/components/network-elements/elements/io-output/set-io-output.vue'
@@ -96,7 +97,7 @@ export default {
     TrainNormal, TrainRegression, TrainGenetic, TrainDynamic, TrainReinforce, TrainLoss, TrainOptimizer, TrainGan, TrainDetector,
     IoInput, IoOutput,
     LayerCustom,
-    PreTrainedVGG16, PreTrainedInceptionV3, PreTrainedMobileNetV2, PreTrainedResNet50,
+    PreTrainedVGG16, PreTrainedInceptionV3, PreTrainedMobileNetV2, PreTrainedResNet50, UNet,
     SidebarLockedSettingsWrapper,
     SidebarAutoSettingInfo
   }, 

@@ -2729,6 +2729,7 @@ const componentsInputs = {
   PreTrainedResNet50: ['input'],
   PreTrainedVGG16: ['input'],
   PreTrainedInceptionV3: ['input'],
+  UNet: ['input'],
   
   IoInput: [],
   IoOutput: ['input']
@@ -2764,6 +2765,7 @@ const componentsOutputs = {
   PreTrainedVGG16: ['output'],
   PreTrainedInceptionV3: ['output'],
   PreTrainedResNet50: ['output'],
+  UNet: ['output'],
   
   IoInput: ['output'],
   IoOutput: []

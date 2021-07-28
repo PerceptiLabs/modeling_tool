@@ -100,7 +100,7 @@ class TestCore():
                 self._test_number += 1
                 self._results[model_id][test] = self._run_test(
                     test, model_outputs, compatible_layers[test])
-        
+
     def _run_test(self, test, model_outputs, compatible_output_layers):
         "runs the given test for a given model information."
         model_id = self._current_model_id
@@ -108,7 +108,9 @@ class TestCore():
             if len(compatible_output_layers):
                 if test == 'confusion_matrix':
                     results = ConfusionMatrix().run(model_outputs, compatible_output_layers)
-                elif test == 'metrics_table':
+                elif test == 'segmentation_metrics':
+                    results = MetricsTable().run(model_outputs, compatible_output_layers)
+                elif test == 'classification_metrics':
                     results = MetricsTable().run(model_outputs, compatible_output_layers)
                 logger.info("test %s completed for model %s.", test, model_id)
                 if self._user_email and not self._stopped:
@@ -150,11 +152,11 @@ class TestCore():
         checks the compatibility of the given test with the model. The rules to check the compatibility
         are listed in tests.json file.
         Returns:
-            list: list of compatible output layers
+            dict: dict of compatible output layers and thier datatypes.
         """
         if model_id is None:
             model_id = self._current_model_id
-        compatible_list = []
+        compatible_dict = {}
         data_specs = self._dataspecs[model_id]
         file = pkg_resources.resource_filename(
             'perceptilabs', 'testcore/tests.json')
@@ -180,11 +182,11 @@ class TestCore():
             elif not common_list:
                 return []
             if layer_type == 'Target':
-                compatible_list = [
-                    layer for layer in data_specs
+                compatible_dict = {
+                    layer: data_specs[layer].datatype for layer in data_specs
                     if self._layer_has_compatible_output_datatype(layer, common_list, model_id)
-                ]
-        return compatible_list
+                }
+        return compatible_dict
 
     def _layer_has_compatible_output_datatype(self, layer, common_list, model_id):
         if self._dataspecs[model_id][layer].iotype == 'target':
@@ -212,7 +214,7 @@ class TestCore():
         for model_id in self._models:
             self._models[model_id].stop()
         return 'Testing stopped.'
-    
+
     def _found_error(self, message=''):
         self.set_status('Error')
         self._error_message = message
@@ -303,7 +305,7 @@ class ProcessResults():
     def run(self):
         if self._test == 'confusion_matrix':
             return self._process_confusionmatrix_output()
-        elif self._test == 'metrics_table':
+        elif self._test in ['segmentation_metrics', 'classification_metrics']:
             return self._process_metrics_table_output()
         else:
             raise Exception(f"{self._test} is not supported yet.")

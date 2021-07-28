@@ -1,6 +1,6 @@
 <template lang="pug">
   div
-    div.head {{testFeature}}  Metrics Table
+    div.head {{testFeature}} {{name}}
     div.body
       table
         thead
@@ -19,6 +19,8 @@ const tableColumnNamePretty =  {
   top_k_categorical_accuracy: 'Top K categorical Accuracy',
   precision: 'Precision',
   recall: 'Recall',
+  dice_coefficient: 'Dice coefficient',
+  IoU: 'Intersection over Union',
 }
 
 export default {
@@ -36,6 +38,10 @@ export default {
       default: {}
     },
     testFeature: {
+      type: String,
+      default: '',
+    },
+    name: {
       type: String,
       default: '',
     }

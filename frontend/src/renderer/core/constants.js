@@ -6,7 +6,17 @@ const trainingElements  = ['TrainNormal', 'TrainRegression', 'TrainReinforce', '
   //'TrainLoss', 
   //'TrainOptimizer', 
 ];
-const deepLearnElements = ['DeepLearningFC', 'DeepLearningConv', 'DeepLearningRecurrent'];
+const deepLearnElements = [
+  'DeepLearningFC',
+  'DeepLearningConv',
+  'DeepLearningRecurrent',
+  'PreTrainedVGG16',
+  'PreTrainedResNet50',
+  'PreTrainedInceptionV3',
+  'PreTrainedMobileNetV2',
+  'UNet',
+];
+
 
 const pathWebWorkers = './static/webworkers';
 
@@ -138,11 +148,16 @@ export const TestTypes = {
     disabled: false,
     text: 'Confusion Matrix'
   },
-  metrics_table: {
+  classification_metrics: {
     default: false,
     disabled: false,
-    text: 'Metrics Table'
+    text: 'Classification Metrics',
   },
+  segmentation_metrics: {
+    default: false,
+    disable: false,
+    text: 'Segmentation Metrics',
+  }
   // forward_prop: {
   //   default: false,
   //   disabled: true,

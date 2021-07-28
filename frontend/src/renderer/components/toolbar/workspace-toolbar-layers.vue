@@ -86,12 +86,13 @@
   import PreTrainedMobileNetV2  from '@/components/network-elements/elements/pretrained-mobilenetv2/view-pretrained-mobilenetv2.vue'
   import PreTrainedInceptionV3  from '@/components/network-elements/elements/pretrained-inceptionv3/view-pretrained-inceptionv3.vue'
   import PreTrainedResNet50   from '@/components/network-elements/elements/pretrained-resnet50/view-pretrained-resnet50.vue'
+  import UNet                  from '@/components/network-elements/elements/unet/view-unet'; 
 
   import { calcLayerPosition } from '@/core/helpers.js';
   import { connectComponentsWithArrow } from '@/core/modelHelpers.js'
 
 export default {
-  name: 'TheLayersbar',
+  name: 'WorkspaceToolbarLayers',
   components: {
     DataData, DataEnvironment, DataRandom,
     DeepLearningFC, DeepLearningConv, DeepLearningRecurrent,
@@ -100,7 +101,8 @@ export default {
     MathArgmax, MathMerge, MathSwitch,
     LayerCustom,
     PreTrainedVGG16, PreTrainedInceptionV3, PreTrainedResNet50, PreTrainedMobileNetV2, 
-    IoInput, IoOutput
+    IoInput, IoOutput,
+    UNet
   },
   created(){
     document.addEventListener('keyup', this.handleShiftKeyState);
@@ -425,27 +427,6 @@ export default {
       const isShiftPressed = event.shiftKey;
       this.$store.dispatch('mod_addComponent/setShiftKey', isShiftPressed);
     },
-    addPreTrainedLayersToDeepLearningDropDown() {
-      try {
-        const dlObject = this.layersbarList.find(l => l.tooltip === 'Deep Learning');
-
-        if (!dlObject.networkElements.includes('PreTrainedVGG16')) {
-          dlObject.networkElements.push('PreTrainedVGG16');
-        }
-        if (!dlObject.networkElements.includes('PreTrainedResNet50')) {
-          dlObject.networkElements.push('PreTrainedResNet50');
-        }
-        if (!dlObject.networkElements.includes('PreTrainedInceptionV3')) {
-          dlObject.networkElements.push('PreTrainedInceptionV3');
-        }
-        if (!dlObject.networkElements.includes('PreTrainedMobileNetV2')) {
-          dlObject.networkElements.push('PreTrainedMobileNetV2');
-        }
-        
-      } catch(err) {
-        console.log('Deep Learning layers hidden');
-      }
-    },
     filterUnnecessaryLayers(){
       if(isEnvDataWizardEnabled()) {
         let newArr = [];
@@ -474,7 +455,6 @@ export default {
     this.filterUnnecessaryLayers();
     if (!isEnvDataWizardEnabled()) { return; }
 
-    this.addPreTrainedLayersToDeepLearningDropDown();
 
     // const ioDropdown = {
     //   tooltip: 'IO',

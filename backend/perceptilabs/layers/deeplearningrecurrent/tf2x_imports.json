@@ -3,14 +3,14 @@
         "from typing import Dict"
     ],
     "third_party": [
-        "import tensorflow.compat.v2 as tf",
+        "import tensorflow as tf",
         "import numpy as np",
-        "import tensorflow.keras.backend as K"             
+        "import tensorflow.keras.backend as K"
     ],
     "perceptilabs": [
         "from perceptilabs.layers.visualizer import PerceptiLabsVisualizer",
         "from perceptilabs.core_new.utils import Picklable",
         "from perceptilabs.core_new.layers.base import Tf2xLayer",
-        "from perceptilabs.core_new.serialization import can_serialize, serialize"            
+        "from perceptilabs.core_new.serialization import can_serialize, serialize"
     ]
 }

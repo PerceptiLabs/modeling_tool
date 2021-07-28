@@ -14,7 +14,7 @@
         ]
     },
 
-    "metrics_table": {
+    "classification_metrics": {
         "Encoder": [
 
         ],
@@ -27,5 +27,20 @@
         "Target": [
              "categorical"
         ]
+    },
+    "segmentation_metrics": {
+        "Encoder": [
+
+        ],
+        "Decoder": [
+
+        ],
+        "Input": [
+            "image"
+        ],
+        "Target": [
+             "image"
+        ]
     }
+
 }

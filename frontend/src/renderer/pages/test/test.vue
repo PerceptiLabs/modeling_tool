@@ -14,13 +14,19 @@
           button.btn.btn--primary.new-test(@click="runTest()") + New Test
         .chart-wrapper
           template(v-for="(testTypes, key) in testData" v-if="!!testTypes")
-            template(
-              v-if="key === 'metrics_table'"
-            )
+            template(v-if="key === 'classification_metrics'")
               template(v-for="(testFeature) in getMetricTableFeatures(testTypes)")
                 metric-test-table.chart-container(
                   :testFeature="testFeature"
                   :testData="testTypes"
+                  name="Classification Metrics Table"
+                )
+            template(v-if="key === 'segmentation_metrics'")
+              template(v-for="(testFeature) in getMetricTableFeatures(testTypes)")
+                metric-test-table.chart-container(
+                  :testFeature="testFeature"
+                  :testData="testTypes"
+                  name="Segmentation Metrics Table"
                 )
             template(v-else)
               template(v-for="(testFeature, chartId) in testTypes")

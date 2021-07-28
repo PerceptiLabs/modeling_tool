@@ -5,9 +5,9 @@
         "from typing import Dict, List, Generator"
     ],
     "third_party": [
-        "import GPUtil",	
+        "import GPUtil",
         "from tensorflow.python.training.tracking.base import Trackable",
-        "import tensorflow.compat.v2 as tf",
+        "import tensorflow as tf",
         "import numpy as np",
         "import time",
         "import itertools",

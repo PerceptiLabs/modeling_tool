@@ -20,7 +20,7 @@ from perceptilabs.issues import IssueHandler
 def csv_path(temp_path):
     file_path = os.path.join(temp_path, 'data.csv')
     df = pd.DataFrame({'x1': [123.0, 24.0, 13.0, 46, 52, 56, 3, 67, 32, 94], 'y1': [1, 0, 1, 0, 0, 0, 1, 1, 0, 0]})
-    df.to_csv(file_path, index=False)    
+    df.to_csv(file_path, index=False)
     yield file_path
 
 
@@ -30,13 +30,13 @@ def data_loader(csv_path):
         file_path=csv_path,
         feature_specs={
             'x1': FeatureSpec(datatype='numerical', iotype='input'),
-            'y1': FeatureSpec(datatype='categorical', iotype='target')            
+            'y1': FeatureSpec(datatype='categorical', iotype='target')
         },
     )
     dl = DataLoader.from_settings(settings)
     yield dl
 
-    
+
 @pytest.fixture()
 def graph_spec_few_epochs(csv_path):
     gsb = GraphSpecBuilder()
@@ -90,7 +90,7 @@ def testcore(graph_spec_few_epochs, temp_path, script_factory, data_loader):
 
 def test_testcore_is_loading_data(testcore, data_loader):
     assert type(data_loader).__name__ == 'DataLoader'
-    dataset_generator = data_loader.get_dataset(partition='test').batch(1) 
+    dataset_generator = data_loader.get_dataset(partition='test').batch(1)
     for input_1, _ in dataset_generator:
         data1 = input_1
     for input_2, _ in testcore._get_data_generator(1):
@@ -109,14 +109,14 @@ def test_model_outputs_structure_is_accurate(testcore):
 
 def test_model_has_compatible_output_layers_for_confusionmatrix(testcore):
     layers = testcore.get_compatible_output_layers('confusion_matrix', 1)
-    assert layers == ['y1']
-
-
-                                                     
+    assert layers == {'y1':'categorical'}
 
 
 
 
 
-    
-    
+
+
+
+
+

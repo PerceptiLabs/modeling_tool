@@ -20,23 +20,23 @@ from perceptilabs.issues import IssueHandler
 def csv_path(temp_path):
     file_path = os.path.join(temp_path, 'data.csv')
     df = pd.DataFrame({'x1': [123.0, 24.0, 13.0, 46, 52, 56, 3, 67, 32, 94], 'y1': [1, 0, 1, 0, 0, 0, 1, 1, 0, 0]})
-    df.to_csv(file_path, index=False)    
+    df.to_csv(file_path, index=False)
     yield file_path
 
-    
+
 @pytest.fixture()
 def data_loader(csv_path):
     settings = DatasetSettings(
         file_path=csv_path,
         feature_specs={
             'x1': FeatureSpec(datatype='numerical', iotype='input'),
-            'y1': FeatureSpec(datatype='categorical', iotype='target')            
+            'y1': FeatureSpec(datatype='categorical', iotype='target')
         },
     )
     dl = DataLoader.from_settings(settings)
     yield dl
 
-    
+
 @pytest.fixture()
 def graph_spec_few_epochs(csv_path):
     gsb = GraphSpecBuilder()
@@ -68,28 +68,43 @@ def graph_spec_few_epochs(csv_path):
     graph_spec = gsb.build()
     return graph_spec
 
-def test_confusion_matrix_computation(data_loader): 
+def test_confusion_matrix_computation(data_loader):
     model_outputs = {
-        'outputs': [{'y1': np.array([[9.5598471e-01, 3.6293268e-04]], dtype=np.float32)}], 
+        'outputs': [{'y1': np.array([[9.5598471e-01, 3.6293268e-04]], dtype=np.float32)}],
         'labels': [{'y1': tf.constant(np.array([[0., 1.]]), dtype=tf.float32)}]
     }
     compatible_output_layers = ['y1']
     confusion_matrix = ConfusionMatrix().run(model_outputs, compatible_output_layers)
-    assert (confusion_matrix['y1'].numpy()==np.array([[0, 0],[1, 0]], dtype=np.int32)).all()                                                        
+    assert (confusion_matrix['y1'].numpy()==np.array([[0, 0],[1, 0]], dtype=np.int32)).all()
 
-def test_metrics_table_computation(data_loader): 
+def test_categorical_metrics_table_computation(data_loader):
     model_outputs = {
         'outputs': [{'y1': np.array([[0.9, 0.1]], dtype=np.float32)},
-                    {'y1': np.array([[0.6, 0.4]], dtype=np.float32)}, 
+                    {'y1': np.array([[0.6, 0.4]], dtype=np.float32)},
                     {'y1': np.array([[0.3, 0.7]], dtype=np.float32)},
-                    {'y1': np.array([[0.52, 0.48]], dtype=np.float32)}], 
+                    {'y1': np.array([[0.52, 0.48]], dtype=np.float32)}],
         'labels': [{'y1': tf.constant(np.array([[0., 1.]]), dtype=tf.float32)},
-                   {'y1': tf.constant(np.array([[1., 0.]]), dtype=tf.float32)}, 
-                   {'y1': tf.constant(np.array([[0., 1.]]), dtype=tf.float32)}, 
+                   {'y1': tf.constant(np.array([[1., 0.]]), dtype=tf.float32)},
+                   {'y1': tf.constant(np.array([[0., 1.]]), dtype=tf.float32)},
                    {'y1': tf.constant(np.array([[1., 0.]]), dtype=tf.float32)}]
     }
-    compatible_output_layers = ['y1']
+    compatible_output_layers = {'y1':'categorical'}
     metrics_table = MetricsTable().run(model_outputs, compatible_output_layers)
     assert metrics_table == {'y1': {'categorical_accuracy': 0.75, 'top_k_categorical_accuracy': 1.0, 'precision': 0.75, 'recall': 0.75}}
 
 
+def test_image_metrics_table_computation():
+    m1 = np.array([[0.6,0.7],[0.4, 0.9]]).astype(np.float32)
+    m2 = np.array([[0.4, 0.1],[0.2, 0.6]]).astype(np.float32)
+
+    p1 = np.array([[1,0],[0,1]])
+    p2 = np.array([[0,0],[1,1]])
+    model_outputs = {
+        'outputs': [{'y1': m1},
+                    {'y1': m2}],
+        'labels': [{'y1': tf.constant(p1, dtype=tf.float32)},
+                   {'y1': tf.constant(p2, dtype=tf.float32)}]
+    }
+    compatible_output_layers = {'y1':'image'}
+    metrics_table = MetricsTable().run(model_outputs, compatible_output_layers)
+    assert {'y1':{'IoU': 0.6, 'dice_coefficient': 0.72}} ==  metrics_table

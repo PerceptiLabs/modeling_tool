@@ -59,6 +59,7 @@
   import LayerCustom          from '@/components/network-elements/elements/layer-custom/viewBox-layer-custom.vue'
   import IoInput          from '@/components/network-elements/elements/io-input/viewBox-io-input.vue'
   import IoOutput         from '@/components/network-elements/elements/io-output/viewBox-io-output.vue'
+  import UNet             from '@/components/network-elements/elements/unet/viewBox-unet.vue';
 
   import ViewBoxBtnList from '@/components/statistics/view-box-btn-list.vue'
 
@@ -80,7 +81,8 @@ export default {
     IoInput, IoOutput,
     LayerCustom,
     // ClassicMLDbscans, ClassicMLKMeans, ClassicMLKNN, ClassicMLRandomForest, ClassicMLSVM,
-  ViewBoxBtnList
+    ViewBoxBtnList,
+    UNet,
 },
   props: {
     sectionTitle: {type: String},
