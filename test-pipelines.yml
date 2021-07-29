@@ -34,6 +34,14 @@ jobs:
     redis: redis
 
   steps:
+- task: Bash@3
+  displayName: Test redis connection
+  inputs:
+    targetType: 'inline'
+    script: |
+      set -x
+      nc -v localhost 6379 <<< "SET a 3" | head -n 1 | grep "OK"
+      nc -v localhost 6379 <<< "GET a" | head -n 2 | tail -n 1 | grep "3"
   - task: UsePythonVersion@0
     inputs:
       versionSpec: '3.8'
