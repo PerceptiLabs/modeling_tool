@@ -15,9 +15,11 @@ from perceptilabs.endpoints.data.base import PutData, IsDataReady
 from perceptilabs.endpoints.model_recommendations.base import ModelRecommendations
 from perceptilabs.endpoints.type_inference.base import TypeInference
 from perceptilabs.endpoints.layer_code.base import LayerCode
+from perceptilabs.endpoints.session.base import SessionStart, ActiveSessions, SessionProxy
 from perceptilabs.endpoints.export.base import Export
 from perceptilabs.logconf import APPLICATION_LOGGER
 from perceptilabs.issues import traceback_from_exception
+from perceptilabs.endpoints.session.threaded_executor import ThreadedExecutor 
 import perceptilabs.utils as utils
 import perceptilabs.endpoints.utils as endpoint_utils
 
@@ -43,9 +45,12 @@ if utils.is_prod() and not utils.is_pytest():
     logger.info(f"Initialized sentry for environment '{SENTRY_ENVIRONMENT}' and release '{SENTRY_RELEASE}'")
 
 
-def create_app(data_metadata_cache=None, preview_cache=None, executor=None):
-    if executor is None:
-        executor = utils.DummyExecutor()        
+def create_app(data_metadata_cache=None, preview_cache=None, data_executor=None, session_executor=None):
+    if data_executor is None:
+        data_executor = utils.DummyExecutor()
+
+    if session_executor is None:
+        session_executor = ThreadedExecutor(single_threaded=True)
     
     app = Flask(__name__)
     cors = CORS(app, resorces={r'/d/*': {"origins": '*'}})
@@ -56,7 +61,7 @@ def create_app(data_metadata_cache=None, preview_cache=None, executor=None):
     app.add_url_rule(
         '/data',
         methods=['PUT'],
-        view_func=PutData.as_view('put_data', executor, data_metadata_cache=data_metadata_cache) 
+        view_func=PutData.as_view('put_data', data_executor, data_metadata_cache=data_metadata_cache) 
     )
 
     app.add_url_rule(
@@ -97,6 +102,24 @@ def create_app(data_metadata_cache=None, preview_cache=None, executor=None):
     )
 
     app.add_url_rule(
+        '/session/start',
+        methods=['POST'],
+        view_func=SessionStart.as_view('session_start', session_executor)
+    )
+
+    app.add_url_rule(
+        '/session/list',
+        methods=['GET'],
+        view_func=ActiveSessions.as_view('active_sessions', session_executor)
+    )
+
+    app.add_url_rule(
+        '/session/proxy',
+        methods=['POST'],
+        view_func=SessionProxy.as_view('session_proxy', session_executor)
+    )
+
+    app.add_url_rule(
         '/export',
         methods=['POST'],
         view_func=Export.as_view('export', data_metadata_cache=data_metadata_cache)
@@ -122,9 +145,7 @@ def create_app(data_metadata_cache=None, preview_cache=None, executor=None):
     def after_request(response):
         duration = time.perf_counter() - g.request_started
         logger.info(f"Request to endpoint '{request.endpoint}' took {duration:.4f}s")    
-        
         return response
-    
     
     @app.errorhandler(Exception)
     def handle_endpoint_error(e):

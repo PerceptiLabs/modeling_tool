@@ -12,6 +12,7 @@ from perceptilabs.logconf import APPLICATION_LOGGER, USER_LOGGER
 from perceptilabs.testcore.strategies.modelstrategies import LoadInferenceModel
 from perceptilabs.testcore.strategies.teststrategies import ConfusionMatrix, MetricsTable
 import perceptilabs.tracking as tracking
+import perceptilabs.utils as utils
 
 logger = logging.getLogger(APPLICATION_LOGGER)
 user_logger = logging.getLogger(USER_LOGGER)

@@ -1,10 +1,12 @@
 import logging
+import socket
 import os
 import sys
 import shutil
 import logging
 
 from perceptilabs.logconf import APPLICATION_LOGGER
+import perceptilabs.settings as settings
 
 logger = logging.getLogger(APPLICATION_LOGGER)
 
@@ -61,25 +63,56 @@ class Server():
         finally:
             logger.info("Closing selector")        
             sel.close()
-            logger.info("All closed")        
+            logger.info("All closed")
 
-    def serve_web(self, interface, instantly_kill=False): 
+    def find_free_port(self, hostname, min_port, max_port):
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        port = min_port
+        while port <= max_port:
+            try:
+                sock.bind((hostname, port))
+                sock.close()
+                return port
+            except OSError:
+                port += 1
+            raise IOError('no free ports')
+
+    def serve_web(self, interface, instantly_kill=False, port=5000, on_server_started=None): 
         import websockets
         import asyncio
         from perceptilabs.server.web_serverlib import Message
 
         path='0.0.0.0'
-        port=5000
-        interface=Message(interface)
-        start_server = websockets.serve(interface.interface, path, port)
+        port = port or self.find_free_port(
+            path, settings.TRAINING_PORT_MIN, settings.TRAINING_PORT_MAX)
+            
+        message = Message(interface)
+
+        if on_server_started:
+            on_server_started(path, port)
+
+        async def stop():
+            while message.interface.has_remaining_work:
+                await asyncio.sleep(1)
+        
+            duration = 2 if message.interface.has_failed else 15
+            logger.info(f"MainInterface indicated no work remaining. Shutting down Kernel in {duration} seconds")
+            await asyncio.sleep(duration)                
+
+        async def start_server(stop):
+            async with websockets.serve(message.on_message, path, port):
+                await stop()
+
         logger.info("Trying to listen to: " + str(path) + " " + str(port))
         connected=False
+
         while not connected:
             try:
                 if instantly_kill:
                     break
-                asyncio.get_event_loop().run_until_complete(start_server)
-                asyncio.get_event_loop().run_forever()
+                
+                loop = asyncio.new_event_loop()
+                loop.run_until_complete(start_server(stop))
                 logger.info("Connected")
                 connected=True
             except KeyboardInterrupt:

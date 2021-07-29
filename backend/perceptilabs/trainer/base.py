@@ -20,6 +20,7 @@ from perceptilabs.trainer.losses import weighted_crossentropy, dice
 from perceptilabs.logconf import APPLICATION_LOGGER
 from perceptilabs.utils import get_memory_usage, sanitize_path
 import perceptilabs.tracking as tracking
+import perceptilabs.utils as utils
 
 
 logger = logging.getLogger(APPLICATION_LOGGER)
@@ -178,7 +179,6 @@ class Trainer:
         self._set_status('Training')
         while self._num_epochs_completed < self.num_epochs and not self.is_closed:
             t0 = time.perf_counter()
-
             self._set_status('Training')
 
             yield from self._loop_over_dataset(

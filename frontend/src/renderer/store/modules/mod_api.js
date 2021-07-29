@@ -392,33 +392,34 @@ const actions = {
   API_testStart({dispatch, getters, rootGetters}, payload) {
     const { modelIds, checkpoint_paths }  = payload;
     
-    let value = {};
+    let models = {};
 
     modelIds.forEach(id => {
       const network = rootGetters['mod_workspace/GET_networkByNetworkId'](id);
 
-      value[id] = {};
-      value[id].layers = getters.GET_coreNetworkById(id);
-      value[id].model_name = network.networkName;
-      value[id].data_path = payload.dataPath;
-      value[id].checkpoint_directory = checkpoint_paths[id];
+      models[id] = {};
+      models[id].layers = getters.GET_coreNetworkById(id);
+      models[id].model_name = network.networkName;
+      models[id].data_path = payload.dataPath;
+      models[id].checkpoint_directory = checkpoint_paths[id];
     })
     
     const theData = {
-      receiver: 'tests',
-      action: {
+      action: 'startTests',
+      receiver: 'test_requests',
+      value: {
+	models: models,
         tests: payload.testTypes,
-        user_email: rootGetters['mod_user/GET_userEmail'],
+        userEmail: rootGetters['mod_user/GET_userEmail'],	
         datasetSettings: modelIds.reduce((acc, id) => {
           const network = rootGetters['mod_workspace/GET_networkByNetworkId'](id);
           return { ...acc, [id]: network.networkMeta.datasetSettings };
         }, {})
-      },
-      value,
+      }
     }
     dispatch('mod_test/testStart', payload, {root: true});
 
-    return coreRequest(theData).catch((err) => {
+    return renderingKernel.startSession(theData).catch((err) => {
       console.error(err);
     })
   },
@@ -504,7 +505,7 @@ const actions = {
       }
     };
     // console.log('API_startTraining', theData);
-    coreRequest(theData)
+    renderingKernel.startSession(theData)
       .then((data)=> {
         dispatch('mod_workspace/EVENT_startDoRequest', true, {root: true});
         dispatch('mod_tracker/EVENT_trainingStart', theData.value, {root: true});
@@ -1046,11 +1047,11 @@ const actions = {
       value: ''
     };
 
-    // console.log('API_getStatus req', theData);
+    console.log('API_getStatus req', theData);
 
     coreRequest(theData)
       .then((data)=> {
-        // console.log('API_getStatus res', data);
+        console.log('API_getStatus res', data);
         dispatch('mod_workspace/SET_statusNetworkCoreDynamically', {modelId: networkId, ...data}, {root: true})
 
         if (data.Status === 'Finished') {

@@ -32,7 +32,7 @@ class TestLogic():
         self._tests = tests
         self._results = {}
 
-    def run(self, user_email=None):
+    def run(self, on_finished, user_email=None):
         """
         Runs all the tests for all the models iteratively.
 
@@ -48,12 +48,23 @@ class TestLogic():
             issue_handler=self._issue_handler,
             user_email=user_email,
         )
-        self._start_testing_thread()
+        self._start_testing_thread(on_finished)
         return "Testing started."
 
-    def _start_testing_thread(self):
+    def _start_testing_thread(self, on_finished):
+        def run():
+            try:
+                self._core.run()
+            except:
+                failed = True
+                raise
+            else:
+                failed = False
+            finally:
+                on_finished(failed)
+        
         try:
-            threading.Thread(target=self._core.run, daemon=True).start()
+            threading.Thread(target=run, daemon=True).start()
         except Exception as e:
             message = "Could not boot up the new thread to run the computations on because of: " + \
                 str(e)
@@ -89,12 +100,13 @@ class TestLogic():
         processed_output = ProcessResults(results, test).run()
         return processed_output
 
-    def process_request(self, request, value=None):
+    def process_request(self, request, on_finished=None, value=None):
         logger.debug("{} request is being processed in the testcore.".format(request))
+        print(request, self)
         if request == 'StartTest':
             if value:
                 user_email = value['user_email']
-            return self.run(user_email)
+            return self.run(on_finished, user_email=user_email)
         elif request == 'Stop':
             return self.stop()
         elif request == 'GetResults':

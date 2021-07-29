@@ -296,20 +296,18 @@ export default {
     },
     
     onOffBtn(runWithCurrentSettings) {
-      if (this.statusLocalCore === 'online') {
-        if(this.isTraining)  {
-          this.trainStop();
+      if(this.isTraining)  {
+        this.trainStop();
+      } else {
+        if(this.isGlobalTrainingSettingEnabled && !runWithCurrentSettings) {
+          // open setting modal
+          this.$store.dispatch('globalView/showGlobalTrainingSettingsAction', {
+            isOpen: true,
+            cb: this.modalSettingsCb,
+          }, { root: true });  
+          
         } else {
-          if(this.isGlobalTrainingSettingEnabled && !runWithCurrentSettings) {
-            // open setting modal
-            this.$store.dispatch('globalView/showGlobalTrainingSettingsAction', {
-              isOpen: true,
-              cb: this.modalSettingsCb,
-            }, { root: true });  
-            
-          } else {
-            this.modalSettingsCb()
-          }
+          this.modalSettingsCb()
         }
       }
     

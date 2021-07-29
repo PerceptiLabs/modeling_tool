@@ -218,7 +218,6 @@ def patch_net_connections(original_network):
     
 
 class DummyExecutor(Executor):
-
     def __init__(self):
         self._shutdown = False
         self._shutdownLock = Lock()
@@ -401,6 +400,12 @@ class MyPydanticBaseModel(BaseModel, metaclass=MyModelMetaclass):
 
 # -------------------- END OF PYDANTIC CYTHON WORKAROUND --------------------
 
+def random_exception(prob=0.5, message="Random error! Disable this method in production!!"):
+    import random
+    if random.random() <= prob:
+        raise RuntimeError(message)        
+        
+            
 
 def get_num_data_repeats(settings_dict):  
     """ Repeat data once per enabled augmentation setting. 

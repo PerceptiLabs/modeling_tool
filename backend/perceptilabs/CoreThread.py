@@ -12,11 +12,12 @@ logger = logging.getLogger(APPLICATION_LOGGER)
 
 
 class CoreThread(threading.Thread):
-   def __init__(self, func, issue_handler):
+   def __init__(self, func, issue_handler, on_finished):
       super(CoreThread,self).__init__()
       self.func = func
       self.issue_handler = issue_handler
       self.killed = False
+      self._on_finished = on_finished
 
    def start_with_traces(self):
       self.__run_backup = self.run 
@@ -39,6 +40,11 @@ class CoreThread(threading.Thread):
             # self.issue_handler.put_error(issue.frontend_message)
             logger.error(issue.internal_message)
             sentry_sdk.capture_message(str(e))
+         failed = True
+      else:
+         failed = False
+      finally:
+         self._on_finished(failed)
             
    def globaltrace(self, frame, event, arg): 
       if event == 'call': 

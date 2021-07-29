@@ -85,40 +85,11 @@ class Message:
             self.request = data
             logger.info("received" + str(self.jsonheader["content-type"]) + " request from")
 
-    def _add_errors_and_warnings(self, content, issue_handler):
-        errorList = issue_handler.pop_errors()
-        warningList = issue_handler.pop_warnings()
-        logList = issue_handler.pop_logs()
-        infoList = issue_handler.pop_info()
-        
-        if errorList:
-            self._interface.close_core(self.request.get("receiver"))
-            if type(content) is dict and "content" in list(content.keys()):
-                content["errorMessage"]=errorList
-            else:
-                content={"content":content, "errorMessage":errorList}
+    @property
+    def interface(self):
+        return self._interface
 
-        if warningList:
-            if type(content) is dict and "content" in list(content.keys()):
-                content["warningMessage"]=warningList
-            else:
-                content={"content":content, "warningMessage":warningList}
-
-        if logList:
-            if type(content) is dict and "content" in list(content.keys()):
-                content["consoleLogs"]=logList
-            else:
-                content={"content":content, "consoleLogs":logList}
-        
-        if infoList:
-            if type(content) is dict and "content" in list(content.keys()):
-                content["generalLogs"]=infoList
-            else:
-                content={"content":content, "generalLogs":infoList}
-        
-        return content
-
-    async def interface(self, websocket, path):
+    async def on_message(self, websocket, path):
         self.request = await websocket.recv()
 
         if logger.isEnabledFor(logging.DEBUG):                
@@ -128,8 +99,7 @@ class Message:
         self.process_jsonheader()
         self.process_request()
 
-        response, issue_handler = self._interface.create_response(self.request)
-        content = self._add_errors_and_warnings(response, issue_handler)
+        content = self._interface.create_response_with_errors(self.request)
 
         if type(content) is not dict:
             content={"content":content}

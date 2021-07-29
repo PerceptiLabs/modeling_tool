@@ -124,7 +124,22 @@ class Interface():
             self._data_container = Exp_DataContainer()
             self._aggregation_engine = self._setup_aggregation_engine(self._data_container)
             self._start_experiment_thread(message_factory)
-    
+
+        self._mode = 'ephemeral'
+        self._has_remaining_work = True
+        self._failed = False
+
+    @property
+    def has_failed(self):
+        return self._failed
+
+    @property
+    def has_remaining_work(self):
+        if self._mode == 'ephemeral':
+            return self._has_remaining_work            
+        else:
+            return True
+
     def _setup_consumer(self, message_factory: MessagingFactory = None) -> MessageConsumer:
         '''Creates consumer for incoming experiment data
         
@@ -197,13 +212,13 @@ class Interface():
                 )
             )
 
-    def _set_testcore(self, receivers):
+    def _set_testcore(self, model_ids):
         """
         sets/creates the testcore with given receiver ids.
         Args:
             receivers (str): receiver id for request
         """
-        self._testcore = TestLogic(receivers, self._issue_handler)
+        self._testcore = TestLogic(self._issue_handler, model_ids)
 
     def shutDown(self):
         for c in self._cores.values():
@@ -219,9 +234,9 @@ class Interface():
             msg = self._cores[receiver].Close()
             del self._cores[receiver]
             return msg
-        elif receiver == 'tests':
-            self._testcore.close()
-            del self._testcore
+        elif receiver == 'test_requests':
+            #self._testcore.close()
+            #del self._testcore
             return
         else:
             return "No core called %s exists" %receiver
@@ -237,14 +252,36 @@ class Interface():
 
     def _create_lw_core_internal(self, data_loader, use_issue_handler=True):
         lw_core = LightweightCore(
-            issue_handler=(self._core.issue_handler if use_issue_handler else None),
+            issue_handler=(self._issue_handler if use_issue_handler else None),
             cache=self._lw_cache_v2,
             data_loader=data_loader
         )
         return lw_core
-        
 
-    def create_response(self, request):
+    def create_response_with_errors(self, request, is_retry=False, on_finished=None):
+        content, issue_handler = self.create_response(
+            request, is_retry=is_retry, on_finished=on_finished)
+        response = {'content': content}
+
+        error_list = issue_handler.pop_errors()
+        if error_list:
+            response['errorMessage'] = error_list
+
+        warning_list = issue_handler.pop_warnings()
+        if warning_list:
+            response['warningMessage'] = warning_list
+
+        log_list = issue_handler.pop_logs()
+        if log_list:
+            response['consoleLogs'] = log_list
+
+        info_list = issue_handler.pop_info()
+        if info_list:
+            response['generalLogs'] = info_list
+        
+        return response
+
+    def create_response(self, request, is_retry=False, on_finished=None):
         receiver = str(request.get('receiver'))
         action = request.get('action')
         value = request.get('value')
@@ -261,20 +298,19 @@ class Interface():
             scope.set_extra("action",action)
             scope.set_extra("value",value)
 
-        if receiver == 'tests':
-            model_ids = value.keys()
-            self._set_testcore(model_ids)
-        elif receiver == 'test_requests':
-            pass
+        if receiver == 'test_requests':
+            if action == 'startTests':
+                model_ids = value['models'].keys()
+                self._set_testcore(model_ids)
         else:
             self._setCore(receiver)
         
         try:
-            response = self._create_response(receiver, action, value)
+            response = self._create_response(receiver, action, value, is_retry, on_finished)
         except Exception as e:
             message = f"Error in create_response (action='{action}')"
-            with self._core.issue_handler.create_issue(message, e) as issue:
-                self._core.issue_handler.put_warning(issue.frontend_message)
+            with self._issue_handler.create_issue(message, e) as issue:
+                self._issue_handler.put_warning(issue.frontend_message)
                 response = {'content': issue.frontend_message}
                 logger.error(issue.internal_message)
 
@@ -286,9 +322,9 @@ class Interface():
                 stringify(response)
             ))
 
-        return response, self._core.issue_handler
+        return response, self._issue_handler
 
-    def _create_response(self, receiver, action, value):
+    def _create_response(self, receiver, action, value, is_retry, on_finished):
         #Parse the value and send it to the correct function
         if action == "getDataMeta":
             return self._create_response_get_data_meta(value, receiver)
@@ -400,7 +436,7 @@ class Interface():
             return response
 
         elif action == "Start":
-            return self._create_response_start_training(value)
+            return self._create_response_start_training(value, is_retry, on_finished)
 
         elif action == "nextStep":
             response = self._core.nextStep()
@@ -474,8 +510,8 @@ class Interface():
             response = uploader.run()
             return response
 
-        elif receiver == "tests":
-            response = self._create_response_tests(value, action)
+        elif action == "startTests":
+            response = self._create_response_tests(value, on_finished)
             return response
 
         elif action == "getTestResults":
@@ -518,7 +554,7 @@ class Interface():
         logger.info("Created export response while training")            
         return response
     
-    def _create_response_start_training(self, request_value):
+    def _create_response_start_training(self, request_value, is_retry, on_finished):
         graph_spec = self._network_loader.load(request_value, as_spec=True)
         
         self._core.set_running_mode('training')            
@@ -536,7 +572,9 @@ class Interface():
             training_settings,
             dataset_settings,
             checkpoint_directory,
-            load_checkpoint
+            load_checkpoint,
+            on_finished=on_finished,
+            is_retry=is_retry
         )
         return response
 
@@ -548,15 +586,15 @@ class Interface():
         jsonNetwork = parser.save_json(layer_checkpoint_list[0])
         return jsonNetwork
 
-    def _create_response_tests(self, value, action):
+    def _create_response_tests(self, value, on_finished):
         models_info = {}
-        model_ids = value.keys()
+        model_ids = value['models'].keys()
         for model_id in model_ids:
-            value_dict = value[model_id]
+            value_dict = value['models'][model_id]
             graph_spec = self._network_loader.load(value_dict, as_spec=True)
             
             try:
-                dataset_settings = action['datasetSettings'][model_id]
+                dataset_settings = value['datasetSettings'][model_id]
                 data_loader = DataLoader.from_dict(dataset_settings)
             except Exception as e:
                 message = str(e)
@@ -571,12 +609,12 @@ class Interface():
                 'data_loader': data_loader,
                 'model_name': value_dict['model_name'],
             } 
-        tests = action["tests"]
-        user_email = action['user_email']
-        logger.info('List of tests %s have been requested for models %s', action['tests'], value.keys())
+        tests = value["tests"]
+        user_email = value['userEmail']
+        logger.info('List of tests %s have been requested for models %s', value['tests'], value.keys())
         self._testcore.setup_test_interface(models_info, tests)
         response = self._testcore.process_request(
-            'StartTest', {'user_email':user_email})
+            'StartTest', on_finished=on_finished, value={'user_email':user_email})
         return response
     
     def _create_response_get_partition_summary(self, request_value, receiver):

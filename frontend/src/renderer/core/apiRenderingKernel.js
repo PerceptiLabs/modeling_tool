@@ -117,8 +117,37 @@ export const renderingKernel = {
       .then(res => {
         return (res.status === 200) ? res.data : null;
       })
-  },      
+  },
 
+  async startSession(payload) {
+    return whenRenderingKernelReady
+      .then(rk => rk.post('/session/start', payload))
+      .then(res => {
+        return (res.status === 200) ? res.data : null;
+      })
+  },
 
+  async getTrainingUrl(receiver, userEmail) {
+    return whenRenderingKernelReady
+      .then(rk => rk.get(`/session/url?receiver=${receiver}&user_email=${userEmail}`))
+      .then(res => {
+        return (res.status === 200) ? res.data["url"] : null;
+      })
+  },
+
+  async sessionProxy(action, receiver, userEmail, data) {
+    const payload = {
+      action: action,
+      receiver: receiver,
+      user_email: userEmail,
+      data: data
+    };
+    return whenRenderingKernelReady
+      .then(rk => rk.post('/session/proxy', payload))
+      .then(res => {
+        return (res.status === 200) ? res.data : null;
+      })
+  },        
 }
+
 

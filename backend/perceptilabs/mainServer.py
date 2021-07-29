@@ -106,12 +106,13 @@ def main():
     elif args.mode == 'rendering':
         utils.disable_gpus()  # Rendering and training kernels will compete for resources when running on the same machine. 
         from perceptilabs.endpoints.base import create_app
+        import perceptilabs.endpoints.session.utils as session_utils
 
-        # TODO: put constants in config
-        
         if args.debug:
             app = create_app(
-                preview_cache=cache_utils.get_preview_cache(),                
+                data_executor=utils.DummyExecutor(),
+                preview_cache=cache_utils.get_preview_cache(),                                
+                session_executor=session_utils.get_session_executor(),
                 data_metadata_cache=cache_utils.get_data_metadata_cache()
             )            
             app.run(port=PORT_RENDERING_KERNEL, debug=True)
@@ -120,12 +121,17 @@ def main():
             from concurrent.futures import ThreadPoolExecutor
 
             app = create_app(
-                data_metadata_cache=cache_utils.get_data_metadata_cache(),
-                preview_cache=cache_utils.get_preview_cache(),
-                executor=ThreadPoolExecutor()
+                data_executor=ThreadPoolExecutor(),                
+                preview_cache=cache_utils.get_preview_cache(),                
+                session_executor=session_utils.get_session_executor(),
+                data_metadata_cache=cache_utils.get_data_metadata_cache()
             )
-            
-            serve(app, host="0.0.0.0", port=PORT_RENDERING_KERNEL)            
+            serve(
+                app,
+                host="0.0.0.0",
+                port=PORT_RENDERING_KERNEL,
+                expose_tracebacks=True
+            )            
         
 
 if __name__ == "__main__":

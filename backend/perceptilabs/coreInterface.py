@@ -159,8 +159,42 @@ class coreLogic():
         self._running_mode = mode
         logger.info(f"Running mode {mode} set for coreLogic w\ network '{self.networkName}'")
 
-    def _get_trainer(self, script_factory, graph_spec, training_settings, dataset_settings_dict, checkpoint_directory, load_checkpoint, model_id, user_email):
+    def _get_restored_trainer(self, data_loader, script_factory, graph_spec, training_settings, checkpoint_directory, load_checkpoint, model_id, user_email):
+        exporter = Exporter.from_disk(
+            checkpoint_directory, graph_spec, script_factory, data_loader,
+            model_id=model_id, user_email=user_email
+        )
+        trainer = Trainer.restore_latest_epoch(
+            data_loader,
+            training_settings,
+            exporter,
+            model_id=model_id,
+            user_email=user_email            
+        )
+        logger.info("Created trainer from disk successfully")                                
+        return trainer
+
+    def _get_new_trainer(self, data_loader, script_factory, graph_spec, training_settings, checkpoint_directory, load_checkpoint, model_id, user_email):
+        training_model = TrainingModel(script_factory, graph_spec)
+        exporter = Exporter(
+            graph_spec, training_model, data_loader,
+            model_id=model_id, user_email=user_email
+        )
+        trainer = Trainer(
+            data_loader,
+            training_model,
+            training_settings,
+            checkpoint_directory=checkpoint_directory,
+            exporter=exporter,
+            model_id=model_id,
+            user_email=user_email            
+        )
+        logger.info("Created new trainer")                                        
+        return trainer
+
+    def _get_trainer(self, script_factory, graph_spec, training_settings, dataset_settings_dict, checkpoint_directory, load_checkpoint, model_id, user_email, is_retry):
         """ Creates a Trainer for the IoInput/IoOutput workflow """
+
         num_repeats = utils.get_num_data_repeats(dataset_settings_dict)   #TODO (anton.k): remove when frontend solution exists
 
         dataset_settings = DatasetSettings.from_dict(dataset_settings_dict)
@@ -172,37 +206,21 @@ class coreLogic():
 
         data_loader = DataLoader.from_settings(dataset_settings, num_repeats=num_repeats, metadata=data_metadata)
 
-        if load_checkpoint:
-            exporter = Exporter.from_disk(
-                checkpoint_directory, graph_spec, script_factory, data_loader,
-                model_id=model_id, user_email=user_email
-            )
-            trainer = Trainer.restore_latest_epoch(
-                data_loader,
-                training_settings,
-                exporter,
-                model_id=model_id,
-                user_email=user_email
-            )
-            return trainer
-        else:
-            training_model = TrainingModel(script_factory, graph_spec)
-            exporter = Exporter(
-                graph_spec, training_model, data_loader,
-                model_id=model_id, user_email=user_email
-            )
-            trainer = Trainer(
-                data_loader,
-                training_model,
-                training_settings,
-                checkpoint_directory=checkpoint_directory,
-                exporter=exporter,
-                model_id=model_id,
-                user_email=user_email
-            )
-            return trainer
-
-    def start_core(self, graph_spec, model_id, user_email, training_settings, dataset_settings, checkpoint_directory, load_checkpoint):
+        if load_checkpoint or is_retry:
+            logger.info(f"Restoring trainer from disk (load_checkpoint={load_checkpoint} and is_retry={is_retry})")            
+            try:
+                trainer = self._get_restored_trainer(
+                    data_loader, script_factory, graph_spec, training_settings, 
+                    checkpoint_directory, load_checkpoint, model_id, user_email
+                )
+                return trainer
+            except:
+                logger.exception(f"Tried to restore trainer from disk but failed (load_checkpoint={load_checkpoint} and is_retry={is_retry})")
+                
+        return self._get_new_trainer(
+            data_loader, script_factory, graph_spec, training_settings, checkpoint_directory, load_checkpoint, model_id, user_email)
+    
+    def start_core(self, graph_spec, model_id, user_email, training_settings, dataset_settings, checkpoint_directory, load_checkpoint, on_finished, is_retry):
         """ Spins up a core for training (or exporting in the pre-data wizard case)
 
         Arguments:
@@ -233,7 +251,7 @@ class coreLogic():
             simple_message_bus=True,
             running_mode=self._running_mode
         )
-        trainer = self._get_trainer(script_factory, graph_spec, training_settings, dataset_settings, checkpoint_directory, load_checkpoint, model_id, user_email)
+        trainer = self._get_trainer(script_factory, graph_spec, training_settings, dataset_settings, checkpoint_directory, load_checkpoint, model_id, user_email, is_retry)
 
         #if not self._validate_trainer(trainer):  # TODO(anton.k): uncomment once metadata caching is fixed
         #    return None
@@ -246,18 +264,17 @@ class coreLogic():
             threaded=True,
             model_id=model_id
         )
-        self._start_training_thread(core)
-
+        self._start_training_thread(core, on_finished)
         self.status = "Running"
         self.graph_spec = graph_spec
 
         return {"content":"core started"}
 
-    def _start_training_thread(self, core):
+    def _start_training_thread(self, core, on_finished):
         """ Spins up a thread for the trainer """
         try:
-            logger.debug("Starting core..." + repr(core))
-            self.cThread=CoreThread(core.run, self.issue_handler)
+            logger.debug("Starting core..." + repr(core))                                
+            self.cThread=CoreThread(core.run, self.issue_handler, on_finished)
             self.cThread.daemon = True
             self.cThread.start_with_traces()
             # self.cThread.start()

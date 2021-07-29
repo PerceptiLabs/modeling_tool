@@ -3,6 +3,7 @@ perceptilabs/__main__.py
 perceptilabs/app_variables.json
 perceptilabs/mainServer.py
 perceptilabs/azure.py
+perceptilabs/settings.py
 perceptilabs/logconf.py
 perceptilabs/main_setup.py
 perceptilabs/mainInterface.py
@@ -418,6 +419,14 @@ perceptilabs/tracking/data_selected.py
 perceptilabs/endpoints/base.py
 perceptilabs/endpoints/base_view.py
 perceptilabs/endpoints/__init__.py
+
+# backend/perceptilabs/endpoints/session/
+perceptilabs/endpoints/session/__init__.py
+perceptilabs/endpoints/session/base.py
+perceptilabs/endpoints/session/base_executor.py
+perceptilabs/endpoints/session/celery_executor.py
+perceptilabs/endpoints/session/threaded_executor.py
+perceptilabs/endpoints/session/utils.py
 
 # backend/perceptilabs/endpoints/data/
 perceptilabs/endpoints/data/__init__.py
