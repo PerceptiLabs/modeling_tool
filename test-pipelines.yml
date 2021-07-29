@@ -8,6 +8,9 @@ resources:
       ports:
         - 6379
 
+services:
+  redis: redis
+
 jobs:
 - job: checkincludedfiles
   displayName: Check included_files.txt
