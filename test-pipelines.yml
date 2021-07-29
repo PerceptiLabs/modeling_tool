@@ -8,9 +8,6 @@ resources:
       ports:
         - 6379:6379
 
-services:
-  redis: redis
-
 jobs:
 - job: checkincludedfiles
   displayName: Check included_files.txt
@@ -36,6 +33,7 @@ jobs:
   services:
     redis: redis
 
+  steps:
   - task: UsePythonVersion@0
     inputs:
       versionSpec: '3.8'
@@ -62,6 +60,7 @@ jobs:
   pool:
     vmImage: $(image)
 
+  steps:
   - task: UsePythonVersion@0
     inputs:
       versionSpec: $(pyver)
