@@ -1,6 +1,16 @@
 trigger:
 - none
 
+resources:
+  containers:
+    - container: redis
+      image: redis
+      ports:
+        - 6379:6379
+
+services:
+  redis: redis
+
 jobs:
 - job: checkincludedfiles
   displayName: Check included_files.txt
@@ -16,32 +26,41 @@ jobs:
       arguments: '$(System.DefaultWorkingDirectory)/rygg'
       failOnStderr: true
 
+- job: testpython_linux
+  displayName: Test python on linux
+  dependsOn: checkincludedfiles
+
+  pool:
+    vmImage: ubuntu-latest
+  
+  services:
+    redis: redis
+
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.8'
+      architecture: 'x64'
+      addToPath: true
+
+  - bash: |
+      cd scripts/
+      python build.py test
+    displayName: 'Python tests'
+
 - job: testpython
   displayName: Test python
   dependsOn: checkincludedfiles
   strategy:
     matrix:
-      linux_py3.8:
-        artifact: linux_3.8_wheel
-        image: 'ubuntu-latest'
-        pyver: '3.8'
       osx_py3.8:
-        artifact: osx_3.8_wheel
         image: 'macOS-latest'
         pyver: '3.8'
       win_py3.8:
-        artifact: windows_3.8_wheel
         image: "windows-latest"
         pyver: '3.8'
 
   pool:
     vmImage: $(image)
-
-  steps:
-  - checkout: self
-    clean: true
-    submodules: recursive
-    persistCredentials: true
 
   - task: UsePythonVersion@0
     inputs:
@@ -50,7 +69,6 @@ jobs:
       addToPath: true
 
   - bash: |
-      export PL_REDIS_URL="redis://redis:6379"
       cd scripts/
       python build.py test
     displayName: 'Python tests'
