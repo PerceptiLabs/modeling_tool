@@ -34,11 +34,11 @@ jobs:
         pyver: '3.8'
       osx_py3.8:
         artifact: osx_3.8_wheel
-        image: 'macOS-10.14'
+        image: 'macOS-latest'
         pyver: '3.8'
       win_py3.8:
         artifact: windows_3.8_wheel
-        image: "vs2017-win2016"
+        image: "windows-latest"
         pyver: '3.8'
 
   pool:
