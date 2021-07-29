@@ -118,6 +118,18 @@ export const renderingKernel = {
         return (res.status === 200) ? res.data : null;
       })
   },
+  
+  async waitForDataReady(datasetSettings, userEmail) {
+    const datasetHash = await renderingKernel.putData(datasetSettings, userEmail);
+	
+    await (async function () {
+      while(!await renderingKernel.isDataReady(datasetHash, userEmail)) {
+        await new Promise(resolve => {
+          setTimeout(resolve, 1000);
+        });
+      }
+    })();
+  },
 
   async startSession(payload) {
     return whenRenderingKernelReady

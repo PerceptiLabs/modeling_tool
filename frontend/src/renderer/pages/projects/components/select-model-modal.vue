@@ -402,6 +402,7 @@ import { getRootFolder as rygg_getRootFolder }            from "@/core/apiRygg";
 import { getFileContent as rygg_getFileContent }          from "@/core/apiRygg";
 
 import { renderingKernel }              from "@/core/apiRenderingKernel";
+import { formatCSVTypesIntoKernelFormat } from "@/core/helpers/model-helper";
 
 export default {
   name: "SelectModelModal",
@@ -680,23 +681,11 @@ export default {
       const datasetSettings = {
         randomizedPartitions: this.datasetSettings.randomizedPartitions,
         partitions: this.datasetSettings.partitions,
-        featureSpecs: this.formatCSVTypesIntoKernelFormat()
+        featureSpecs: formatCSVTypesIntoKernelFormat(this.datasetPath, this.csvData)
       };
-
       const userEmail = this.userEmail;
-      const datasetHash = await renderingKernel.putData(datasetSettings, userEmail);
-	
-      const waitForDataReady = async function () {
-          let isReady = await renderingKernel.isDataReady(datasetHash, userEmail);
-          while (!isReady) {
-              await new Promise(resolve => {
-                setTimeout(resolve, 1000);
-            });
-            isReady = await renderingKernel.isDataReady(datasetHash, userEmail);
-          }
-          return isReady;
-      };
-      await waitForDataReady();
+      
+      await renderingKernel.waitForDataReady(datasetSettings, userEmail);
         
       const modelRecommendation = await renderingKernel.getModelRecommendation(
         datasetSettings,
@@ -995,20 +984,6 @@ export default {
     },
     handleCSVDataTypeUpdates(payload) {
       this.csvData = payload;
-    },
-    formatCSVTypesIntoKernelFormat() {
-      const payload = {};
-
-      for (const [idx, val] of this.csvData.columnNames.entries()) {
-        const sanitizedVal = val.replace(/^\n|\n$/g, "");
-        payload[sanitizedVal] = {
-          csv_path: this.datasetPath,
-          iotype: this.csvData.ioTypes[idx],
-          datatype: this.csvData.dataTypes[idx],
-          preprocessing: this.csvData.preprocessingTypes[idx],
-        }
-      }
-      return payload;
     },
     async isValidModelName(modelName) {
       if (!modelName) {

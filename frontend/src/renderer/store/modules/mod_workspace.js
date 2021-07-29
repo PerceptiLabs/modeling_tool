@@ -18,6 +18,7 @@ import cloneDeep from 'lodash.clonedeep';
 import { saveModelJson as rygg_saveModelJson, updateModelMeta } from '@/core/apiRygg';
 import { lockedComponentsNames } from "@/core/constants.js";
 import store from '@/store';
+import { removeChartData } from "@/core/helpers";
 
 const namespaced = true;
 
@@ -570,6 +571,14 @@ const mutations = {
   },
   set_networkRootFolder(state, {getters, value}) {
     getters.GET_currentNetwork.networkRootFolder = value
+  },
+  update_network(state, {networkId, newNetwork}) {
+    const networkIndex = state.workspaceContent.findIndex(w => w.networkID == networkId);
+
+    if (networkIndex > -1) {
+      Vue.set(state.workspaceContent, networkIndex, newNetwork);
+      rygg_saveModelJson(removeChartData(newNetwork))
+    }
   },
   add_network (state, { network , apiMeta, dispatch, focusOnNetwork }) {
     let workspace = state.workspaceContent;
@@ -1964,6 +1973,16 @@ const actions = {
       return resolve();
     });
   },
+  UPDATE_currentNetwork({ commit, dispatch, getters }, newNetwork) {
+    return new Promise((resolve) => {
+      const currentNetworkId = getters.GET_currentNetworkId;
+      commit('update_network', { networkId: currentNetworkId, newNetwork });
+      
+      dispatch('mod_webstorage/saveNetwork', newNetwork, { root: true });
+
+      return resolve();
+    })
+  },
   ADD_existingNetworkToWorkspace({commit,dispatch}, { network } = {}) {
     if (!network) { return;}
     return new Promise(resolve => {
@@ -2618,6 +2637,15 @@ const actions = {
       commit('setModelRunSettingsMutation', {currentNetwork, name: payload.name, value: payload.value})
     }
   },
+  UPDATE_all_previews({getters, dispatch}) {
+    const fullNetworkElementList = getters['GET_currentNetworkElementList'];
+    let payload = {};
+    for(let id in fullNetworkElementList) {
+      payload[id] = fullNetworkElementList[id].previewVariable;
+    }
+
+    return dispatch('mod_api/API_getBatchPreviewSample', payload, { root: true });
+  }
 };
 
 export default {

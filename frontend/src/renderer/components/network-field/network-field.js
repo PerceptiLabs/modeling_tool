@@ -816,12 +816,7 @@ export default {
     getAllPreviews() {
       if (this.viewType !== 'model') { return; }
 
-      let payload = {};
-      for(let id in this.fullNetworkElementList) {
-        const el = this.fullNetworkElementList[id];
-        payload[id] = el.previewVariable;
-      }
-      this.$store.dispatch('mod_api/API_getBatchPreviewSample', payload);
+      this.$store.dispatch('mod_workspace/UPDATE_all_previews');
     },
     calculateGridStyle() {
       let widthHeightStyle = {};

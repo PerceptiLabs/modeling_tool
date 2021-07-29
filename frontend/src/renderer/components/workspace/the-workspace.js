@@ -35,8 +35,10 @@ import ViewBoxBtnList         from '@/components/statistics/view-box-btn-list.vu
 import ModelStatus            from '@/components/different/model-status.vue';
 import MiniMapNavigation      from '@/components/workspace/mini-map-navigation.vue';
 import ChartSpinner           from '@/components/charts/chart-spinner';
+import DatasetSettingsPopup   from '@/components/workspace/dataset-settings-popup';
 
 import { saveModelJson as rygg_saveModelJson } from '@/core/apiRygg';
+import { removeChartData } from "@/core/helpers";
 
 export default {
   name: 'WorkspaceContent',
@@ -54,7 +56,7 @@ export default {
     ModelStatus,
     MiniMapNavigation,
     ChartSpinner,
-    GlobalTrainingSettings
+    GlobalTrainingSettings, DatasetSettingsPopup
   },
   mounted() {
     window.addEventListener('resize', this.onResize);
@@ -127,6 +129,7 @@ export default {
     }),
     ...mapState({
       showNewModelPopup:          state => state.globalView.globalPopup.showNewModelPopup,
+      showDatasetSettingsPopup:   state => state.globalView.globalPopup.showDatasetSettingsPopup,
       workspace:                  state => state.mod_workspace.workspaceContent,
       currentNetworkIndex:        state => state.mod_workspace.currentNetwork,
       dragBoxContainer:           state => state.mod_workspace.dragBoxContainer,
@@ -462,7 +465,7 @@ export default {
         // console.log('hiding', parent.currentModelIndex, index);
 
         parent.saveNetwork(parent.workspace[index]);
-        rygg_saveModelJson(parent.workspace[index]);
+        rygg_saveModelJson(removeChartData(parent.workspace[index]));
 
         if (parent.currentModelIndex===index) {
           const candidate = parent.workspace.findIndex(item => item.networkMeta.hideModel!=true);

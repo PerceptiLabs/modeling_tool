@@ -123,6 +123,7 @@
         @close="onCloseSelectModelModal"
         )
     global-training-settings(v-if="isGlobalTrainingSettingsPopupOpened")
+    dataset-settings-popup(v-if="showDatasetSettingsPopup")
 </template>
 
 <script src="./the-workspace.js"></script>

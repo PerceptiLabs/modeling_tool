@@ -123,15 +123,7 @@ const actions = {
       dispatch('mod_webstorage/saveNetwork', getters.GET_currentNetwork, {root: true});
 
       // calculating all preview vars here, can potentially refactor here:
-      const fullNetworkElementList = rootGetters['mod_workspace/GET_currentNetworkElementList'];
-      let payload = {};
-      for(let id in fullNetworkElementList) {
-        payload[id] = fullNetworkElementList[id].previewVariable;
-      }
-
-      setTimeout(() => {
-        dispatch('mod_api/API_getBatchPreviewSample', payload, {root: true});
-      }, 0);
+      dispatch('mod_workspace/UPDATE_all_previews', null, {root: true});
     }
   },
   TO_nextStepHistory({commit, getters, rootGetters, dispatch}) {
@@ -142,15 +134,7 @@ const actions = {
       dispatch('mod_webstorage/saveNetwork', getters.GET_currentNetwork, {root: true});
 
       // calculating all preview vars here, can potentially refactor here:
-      const fullNetworkElementList = rootGetters['mod_workspace/GET_currentNetworkElementList'];
-      let payload = {};
-      for(let id in fullNetworkElementList) {
-        payload[id] = fullNetworkElementList[id].previewVariable;
-      }
-
-      setTimeout(() => {
-        dispatch('mod_api/API_getBatchPreviewSample', payload, {root: true});
-      }, 0);
+      dispatch('mod_workspace/UPDATE_all_previews', null, {root: true});
     }
   },
 };

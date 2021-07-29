@@ -29,6 +29,7 @@ const state = {
     showNewModelPopup: false,
     showCreateIssuesPopup: false,
     showAppAbout: false,
+    showDatasetSettingsPopup: false,
     showGlobalTrainingSettingsPopup: {
       isOpen: false,
       cb: () => null,
@@ -166,6 +167,9 @@ const mutations = {
   showTestConfigurationPopupMutation(state, value) {
     state.globalPopup.showTestConfigurationPopup = value;
   },
+  SET_datasetSettingsPopupMutation(state, value) {
+    state.globalPopup.showDatasetSettingsPopup = value;
+  },
   set_isEnterpriseApp(state, isEnterpriseAppValue) {
     state.isEnterpriseApp = isEnterpriseAppValue;
   }
@@ -242,6 +246,9 @@ const actions = {
   },
   showTestConfigurationPopupAction({commit}, value) {
     commit('showTestConfigurationPopupMutation', value);
+  },
+  SET_datasetSettingsPopupAction({commit}, value) {
+    commit('SET_datasetSettingsPopupMutation', value);
   }
 };
 

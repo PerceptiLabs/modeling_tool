@@ -127,6 +127,10 @@ export default {
     elementIndex: {
       type: Number,
       default: null,
+    },
+    preprocessingTypes: {
+      type: Array,
+      default: null,
     }
   },
   data() {
@@ -156,7 +160,17 @@ export default {
     }
   },
   mounted() {
-    this.onSave();
+    if (!this.preprocessingTypes) {
+      this.onSave();
+    } else {
+      Object.keys(this.preprocessingTypes[this.elementIndex]).forEach((optionKey) => {
+        this.options[optionKey] = {
+          ...this.options[optionKey],
+          ...this.preprocessingTypes[this.elementIndex][optionKey],
+          value: true
+        };
+      })
+    }
   },
   methods: {
     onSave(){

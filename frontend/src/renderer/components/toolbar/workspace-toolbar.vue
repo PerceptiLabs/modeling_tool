@@ -58,6 +58,12 @@
           )
             i.icon.icon-box
       .toolbar_settings
+        .button-container(v-tooltip:bottom="'Press to open data settings'")
+          button.btn-menu-bar(
+              type="button"
+              @click="openDataSettings"
+            )
+              span Data Settings
         .button-container(v-tooltip:bottom="networkHasCheckpoint?'Press this to load your most recent checkpoint':'You do not have any checkpoints, run a model to create some'")
           button.btn-menu-bar(
               type="button"
@@ -423,12 +429,7 @@ export default {
       this.$store.dispatch('mod_workspace/toggleModelWeightsState');
 
       // Should refactor this
-      const fullNetworkElementList = this.$store.getters['mod_workspace/GET_currentNetworkElementList'];
-      let payload = {};
-      for(let id in fullNetworkElementList) {
-        payload[id] = fullNetworkElementList[id].previewVariable;
-      }
-      this.$store.dispatch('mod_api/API_getBatchPreviewSample', payload);
+      this.$store.dispatch('mod_workspace/UPDATE_all_previews');
     },
     isModelPageAndNetworkHasStatistic() {
       return this.$route.name === 'app' && this.currentNetwork.networkMeta.openStatistics !== null
@@ -490,6 +491,9 @@ export default {
     isOnModelToolPage(){
       return this.$route.name === 'app';
     },
+    openDataSettings() {
+      this.$store.dispatch('globalView/SET_datasetSettingsPopupAction', true);
+    }
   },
 }
 </script>

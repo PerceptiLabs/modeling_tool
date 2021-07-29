@@ -2,11 +2,12 @@
   .custom-select(:class="styleType")
     button.custom-select_view.input(type="button"
       :class="{'open-list': isOpenList, 'text-placeholder': !value.length}"
+      :disabled="disabled"
       @click="openList"
       v-click-outside="closeList"
       )
       span.thin-font {{ labelText }}
-      i.icon.icon-shevron.icon--open
+      i.icon.icon-shevron.icon--open(v-if="!disabled")
 
     perfect-scrollbar(tag="ul").custom-select_option-list.action-list(
       :class="{'open': isOpenList}"
@@ -91,7 +92,11 @@ export default {
       type: Boolean,
       default: false,
     },
-    styleType: { type: String, default: '' }
+    styleType: { type: String, default: '' },
+    disabled: {
+      type: Boolean,
+      default: false,
+    },
   },
   created() {
     this.defaultModel();
@@ -306,6 +311,10 @@ export default {
       font-style: italic;
       font-weight: 300;
       color: #C4C4C4;
+    }
+
+    &:disabled {
+      background: #171B25;
     }
   }
   .custom-select_option-list {

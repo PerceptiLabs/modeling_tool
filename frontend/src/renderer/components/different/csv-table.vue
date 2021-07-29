@@ -50,6 +50,7 @@
               :class="{'is-selected': selectedColumns.includes(numColumn - 1)}"
               )
               base-select(
+                v-if="!locked || !elementToFeatures"
                 :style-type="`text-center ${lastTypeUnselected === numColumn - 1 ? 'active': ''}`"
                 selectPlaceholder="Select"
                 :select-options="ioOptions"
@@ -57,6 +58,7 @@
                 @input="setIOSelection($event, numColumn)"
                 @isOpen="handleSelectIsOpen"
               )
+              div.text-center(v-else) {{ elementToFeatures[datasetFields[numColumn - 1]].layerName }}
           tr.table-row(:data-tutorial-target="'tutorial-data-wizard-io-explanation'")
             //- td(@click="clearSelectedColumns")
             //-   .label Type:
@@ -91,6 +93,15 @@ export default {
     },
     dataSetTypes: {
       type: Object,
+    },
+    locked: {
+      type: Boolean,
+      default: false,
+    },
+    elementToFeatures: {
+      type: Object,
+      required: false,
+      default: () => ({})
     }
   },
   data() {
@@ -152,6 +163,9 @@ export default {
       }
 
       return rows;
+    },
+    datasetFields() {
+      return this.delimitedDataSet[0].map((s) => s.trim());
     }
   },
   methods: {
@@ -164,7 +178,6 @@ export default {
       this.emitEvent();
     },
     emitEvent() {
-      console.log(this.formattedDataset);
       this.$emit('update', this.formattedDataset);
     },
     addSelectedColumn(event, columnNumber) {
@@ -197,21 +210,22 @@ export default {
         let columnDefaultTypes = []
         let columnAllowedTypes = []
         let columnNames = this.delimitedDataSet[0];
+
         columnNames = columnNames.map((name, ix) => {
           name = name.replace(/(\r\n|\n|\r)/gm,"");
           const itm = this.dataSetTypes[name];
-          columnDefaultTypes[ix] = itm[0][itm[1]]
+          columnDefaultTypes[ix] = this.elementToFeatures[name] && this.elementToFeatures[name].dataType ? this.elementToFeatures[name].dataType : itm[0][itm[1]]
           columnAllowedTypes[ix] = itm[0];
           return name;
         })
        
-        
         this.formattedDataset.columnNames = columnNames;
         this.formattedDataset.ioTypes = new Array(newVal);
         
+
         this.formattedDataset.dataTypes = columnDefaultTypes;
         this.formattedDataset.columnOptions = columnAllowedTypes
-        this.formattedDataset.preprocessingTypes = new Array(newVal).fill([]);
+        this.formattedDataset.preprocessingTypes = new Array(newVal).fill({});
         this.$emit('update', this.formattedDataset);
       },
       immediate: true

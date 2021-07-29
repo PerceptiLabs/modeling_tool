@@ -1231,6 +1231,7 @@ const actions = {
       })
       .catch(e => {
         console.error(e)
+        return e;
       }).finally(() => {
         dispatch('mod_workspace/setChartComponentLoadingState', { descendants: Object.keys(payload), value: false, networkId } , { root: true });
         dispatch('mod_events/EVENT_calcArray', null, {root: true});
