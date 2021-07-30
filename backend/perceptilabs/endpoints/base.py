@@ -3,7 +3,8 @@ import logging
 
 from flask_cors import CORS
 from flask_compress import Compress
-from flask import Flask, request, g, jsonify, abort, make_response
+from flask import Flask as _Flask, request, g, jsonify, abort, make_response, json
+from flask.json import JSONEncoder as _JSONEncoder
 from werkzeug.exceptions import HTTPException
 import sentry_sdk
 from sentry_sdk.integrations.flask import FlaskIntegration
@@ -44,6 +45,11 @@ if utils.is_prod() and not utils.is_pytest():
     )
     logger.info(f"Initialized sentry for environment '{SENTRY_ENVIRONMENT}' and release '{SENTRY_RELEASE}'")
 
+class JSONEncoder(_JSONEncoder):
+    def default(self, obj):
+        return utils.convert(obj)        
+class Flask(_Flask):
+    json_encoder = JSONEncoder
 
 def create_app(data_metadata_cache=None, preview_cache=None, data_executor=None, session_executor=None):
     if data_executor is None:

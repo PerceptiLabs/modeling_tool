@@ -27,7 +27,16 @@ def get_memory_usage():
         
     fraction_used = (total_memory-available_memory)/total_memory
     return fraction_used
-    
+
+def convert(obj):
+    """ Converts datatypes which can't be jsonified to a type which can """
+    if isinstance(obj, np.int64) or isinstance(obj, np.int32):
+        return int(obj)
+    if isinstance(obj, np.float64) or isinstance(obj, np.float32):
+        return float(obj)
+    if np.iscomplexobj(obj):
+        return abs(obj)
+    return json.JSONEncoder.default(obj)
     
 def get_app_variables():
     with open(pkg_resources.resource_filename('perceptilabs', 'app_variables.json'), 'r') as f:

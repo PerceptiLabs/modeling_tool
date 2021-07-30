@@ -11,7 +11,6 @@ import perceptilabs.utils as utils
 
 logger = logging.getLogger(APPLICATION_LOGGER)
 
-
 class ModelRecommendations(BaseView):
     def __init__(self, data_metadata_cache=None):
         self._data_metadata_cache = data_metadata_cache

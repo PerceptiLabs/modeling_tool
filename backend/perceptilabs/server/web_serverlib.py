@@ -10,18 +10,10 @@ import numpy as np
 
 from perceptilabs.utils import RateCounter
 from perceptilabs.logconf import APPLICATION_LOGGER
+import perceptilabs.utils as utils
 
 
 logger = logging.getLogger(APPLICATION_LOGGER)
-
-def convert(o):
-    if isinstance(o, np.int64):
-        return int(o)
-    elif isinstance(o, np.float64):
-        return float(o)
-    elif isinstance(o, np.float32):
-        return float(o)
-    raise TypeError
 
 
 class Message:
@@ -107,11 +99,11 @@ class Message:
             content={"content":content}
 
         response = {
-            "length": len(json.dumps(content, default=convert)),
+            "length": len(json.dumps(content, default=utils.convert)),
             "body": content
         }
 
-        response = json.dumps(response, default=convert)
+        response = json.dumps(response, default=utils.convert)
 
         await websocket.send(response)
         
