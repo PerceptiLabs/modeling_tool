@@ -1,5 +1,6 @@
 from datetime import datetime
 from django.http import HttpResponseNotFound
+from django.http import HttpResponse
 from django_http_exceptions import HTTPExceptions
 from rygg import settings
 from rygg.files.exceptions import UserError
@@ -7,7 +8,9 @@ from rest_framework.response import Response
 from rest_framework.serializers import Serializer, FileField, CharField, BooleanField
 from rest_framework.views import APIView
 import json
+import time
 import os, shutil
+from rygg.files.tasks import unzipTask
 
 class UploadSerializer(Serializer):
     file_uploaded = FileField()
@@ -75,6 +78,11 @@ class UploadView(APIView):
         open(file_uploaded.temporary_file_path(), "wb").close()
 
         content_type = file_uploaded.content_type
+
+        if (open(dest_file, "rb").read(4) == b'PK\x03\x04'):
+            task = unzipTask.delay(dest_file)
+            return Response({"task_id": task.id})
+
         response = _get_file_info(dest_file)
         return Response(response, 201)
 

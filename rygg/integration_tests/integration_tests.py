@@ -2,9 +2,11 @@
 import os
 import sys
 import rest
+from retrying import retry
 import tempfile
-import json
+import json, time
 import platform
+import zipfile
 from contextlib import contextmanager
 
 @contextmanager
@@ -21,7 +23,6 @@ def populated_bin_tempfile(content_bytes):
             f.close()
             yield f.name
 
-usingDocker = False
 if len(sys.argv) < 2:
     print(f"USAGE: {sys.argv[0]} <docker-tag>|local")
     print(f"Example: {sys.argv[0]} 1234")
@@ -107,5 +108,32 @@ with populated_bin_tempfile(bin_file) as filename:
     # Response should match (except for some newlines)
     expected = {'file_contents': [l+"\n" for l in content_str.split('\n')][:-1]}
     assert rest.get("/files/get_file_content", path=filename) == expected
+
+SAMPLE_ZIP = os.path.join(os.path.dirname(__file__), "Archive.zip")
+EXPECTED_FILES = ["destfilename.zip", "1.txt", "2.txt"]
+
+# we need the UPLOAD_PATH if we're using docker
+UPLOAD_PATH=os.getenv("PL_FILE_UPLOAD_DIR")
+usingDocker = rest.get("/app/is_enterprise")["is_enterprise"]
+if usingDocker:
+    assert UPLOAD_PATH and os.path.isdir(UPLOAD_PATH)
+
+# make sure the directory is clean
+for f in [os.path.join(UPLOAD_PATH, fn) for fn in EXPECTED_FILES]:
+    try:
+        os.remove(f)
+    except FileNotFoundError:
+        pass
+
+ret = rest.post_file("/upload", SAMPLE_ZIP, "destfilename.zip", overwrite=True)
+
+assert ret["task_id"]
+
+@retry(stop_max_delay=10000, wait_fixed=1000)
+def get_unzipped_files():
+    got = rest.get("/directories/get_folder_content", path=UPLOAD_PATH)
+    assert set(EXPECTED_FILES) <= set(got["files"])
+
+get_unzipped_files()
 
 print("ok")

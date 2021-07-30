@@ -51,3 +51,8 @@ def get_version(request):
 def get_updates_available(request):
     json_str = json.dumps({"newer_versions": updates_available()})
     return HttpResponse(json_str, content_type="application/json")
+
+@api_view(["GET"])
+def is_enterprise(request):
+    json_str = json.dumps({"is_enterprise": settings.IS_CONTAINERIZED})
+    return HttpResponse(json_str, content_type="application/json")

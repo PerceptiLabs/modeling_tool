@@ -45,3 +45,5 @@ rygg/middleware.py
 rygg/settings.py
 rygg/urls.py
 rygg/wsgi.py
+rygg/celery.py
+rygg/files/tasks.py

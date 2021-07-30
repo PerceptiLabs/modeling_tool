@@ -31,8 +31,9 @@ def is_podman():
 
 IS_CONTAINERIZED = is_docker() or is_podman()
 
-DB_LOCATION=None
-if not IS_CONTAINERIZED:
+
+DB_LOCATION = os.environ.get("PERCEPTILABS_DB")
+if DB_LOCATION or not IS_CONTAINERIZED:
     DB_LOCATION = os.environ.get("PERCEPTILABS_DB") or os.path.join(pathlib.Path.home(), ".perceptilabs/db.sqlite3")
     db_dir=os.path.dirname(DB_LOCATION)
     os.makedirs(db_dir, exist_ok=True)
@@ -203,7 +204,7 @@ EXTERNAL_IP_RESOLVER_ENDPOINT = 'https://api.ipify.org'
 
 # Enforcement of the token
 API_TOKEN = os.getenv("PL_FILE_SERVING_TOKEN")
-API_TOKEN_REQUIRED = not DEBUG and not IS_CONTAINERIZED and not "test" in sys.argv
+API_TOKEN_REQUIRED = not DEBUG and not IS_CONTAINERIZED and "runserver" in sys.argv
 
 if API_TOKEN_REQUIRED and not API_TOKEN:
     raise Exception("The PL_FILE_SERVING_TOKEN environment variable hasn't been set")
@@ -238,4 +239,10 @@ FILE_UPLOAD_HANDLERS = [
 
 FILE_UPLOAD_PERMISSIONS = 0o444
 
-
+CELERY_BROKER_URL = os.environ.get("PL_REDIS_URL", "redis://127.0.0.1:6379")
+CELERY_RESULT_BACKEND = os.environ.get("PL_REDIS_URL", "redis://127.0.0.1:6379")
+CELERY_ACCEPT_CONTENT = ["application/json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_TIMEZONE = "UTC"
+CELERY_ENABLED = True

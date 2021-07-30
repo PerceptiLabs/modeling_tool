@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+set -Eeo pipefail
+
+MIGRATIONS_DIR=$(dirname $(dirname $0))
+. "${MIGRATIONS_DIR}/common"
+
+install_config(){
+  # update the docker-compose file and restart to take the changes
+  mydir=$(dirname $0)
+  customize_docker_compose_file "${mydir}/docker-compose-after.yml"
+  cp "${mydir}/docker-compose-after.yml" "${PL_ROOT_DIR}/docker-compose.yml"
+}
+
+short_circuit(){
+  if docker-compose ps --services | grep --quiet rygg_worker; then
+    echo "The rygg_worker service has already been set up"
+    exit 0
+  fi
+}
+
+main(){
+  short_circuit
+  install_config
+}
+
+[ "${BASH_SOURCE[0]}" != "${0}" ] ||
+  main

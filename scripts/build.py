@@ -1,19 +1,20 @@
 #!/usr/bin/env python
 
+from contextlib import contextmanager
 from distutils.dir_util import copy_tree
 from distutils.file_util import copy_file
 from enum import Enum, auto
 from shutil import rmtree, move
 from subprocess import Popen, PIPE, CalledProcessError
-import contextlib
+from urllib.parse import urlparse
 import glob
 import os
 import re
+import socket
 import subprocess
 import sys
 import tempfile
 import time
-import socket
 
 class Os(Enum):
     LINUX = auto()
@@ -88,7 +89,7 @@ class Versions():
     def as_pep440(self):
         return str(self._as_pep440)
 
-@contextlib.contextmanager
+@contextmanager
 def pushd(new_dir):
     previous_dir = os.getcwd()
     os.chdir(new_dir)
@@ -210,7 +211,7 @@ def generate_included_files_common():
 
             yield f"{p}/{stripped}"
 
-@contextlib.contextmanager
+@contextmanager
 def included_files_common():
     lines = [l+'\n' for l in generate_included_files_common()]
     with tempfile.NamedTemporaryFile(mode="w", delete=False) as tmp:
@@ -400,40 +401,65 @@ def run_django_tests():
         run_checked_arr([PYTHON, "-m", "django", "test", "--settings", "rygg.settings"])
 
 def run_integration_tests():
-    # TODO: Make integration tests work on windows
-    if OS == Os.WIN:
+    # Integration tests only work on linux since OSX and Win build agents can't run docker
+    if OS != Os.LINUX:
         return
 
-    def is_port_live(port):
+    redis_url = os.getenv("PL_REDIS_URL", "redis://127.0.0.1:6379")
+    parsed_redis_url = urlparse(redis_url)
+    redis_host = parsed_redis_url.hostname
+    redis_port = parsed_redis_url.port
+
+    def is_port_live(host, port):
         with socket.socket() as s:
-            rc = s.connect_ex(('127.0.0.1', port))
+            rc = s.connect_ex((host, port))
             return rc == 0
 
-    def wait_for_port(port, interval_secs=1, timeout_secs=10):
+    def wait_for_port(host, port, interval_secs=1, timeout_secs=10):
         count = 0
         max_tries = timeout_secs / interval_secs
         while True:
             time.sleep(interval_secs)
-            if is_port_live(port):
+            if is_port_live(host, port):
                 return
 
             count += 1
             if count > max_tries:
                 raise Exception(f"Timeout while waiting for port {port}")
 
+    @contextmanager
+    def popen_with_terminate(*args, **kwargs):
+        with Popen(*args, **kwargs) as p:
+            try:
+                yield p
+            finally:
+                p.terminate()
+
+    if not is_port_live(redis_host, redis_port):
+        raise Exception("Redis needs to be running")
+
+
+    upload_dir = tempfile.gettempdir()
     env={
         "PL_FILE_SERVING_TOKEN": "thetoken",
         "PL_TUTORIALS_DATA": os.path.join(BACKEND_SRC, "perceptilabs", "tutorial_data"),
-        "PL_FILE_UPLOAD_DIR": tempfile.gettempdir(),
+        "PL_FILE_UPLOAD_DIR": upload_dir,
+        "PERCEPTILABS_DB": os.path.join(os.getcwd(), "db.sqlite3"),
         "container": "any ol' string",
+        **os.environ
     }
+    integration_tests_path = os.path.join(RYGG_DIR, 'integration_tests', "integration_tests.py")
 
     print("---------------------------------------------------------------------------------------------------")
     print("Running rygg integration tests")
-    with Popen([PYTHON, "manage.py", "runserver", "0.0.0.0:8000"], cwd=RYGG_DIR, env={**env, **os.environ}) as server_proc:
-        wait_for_port(8000, interval_secs=0.1)
-        run_checked_arr([PYTHON, os.path.join(RYGG_DIR, 'integration_tests', "integration_tests.py"), "local"])
-        server_proc.terminate()
+    with Popen([PYTHON, "manage.py", "migrate"], cwd=RYGG_DIR, env=env) as migrator_proc:
+        migrator_proc.wait(timeout=30)
+
+    with popen_with_terminate([PYTHON, "manage.py", "runserver", "0.0.0.0:8000"], cwd=RYGG_DIR, env=env) as server_proc:
+        wait_for_port('127.0.0.1', 8000, interval_secs=1)
+        with popen_with_terminate(["celery", "-A", "rygg", "worker", "-l", "INFO"], cwd=RYGG_DIR, env=env) as server_proc_c:
+            run_checked_arr([PYTHON, integration_tests_path, "local"], {"PL_FILE_UPLOAD_DIR": upload_dir})
+
     print("rygg integration tests passed")
     print("---------------------------------------------------------------------------------------------------")
 

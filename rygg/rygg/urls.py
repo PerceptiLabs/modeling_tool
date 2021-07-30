@@ -49,6 +49,7 @@ urlpatterns = [
     path("", (include(router.urls))),
     path(r"app/version/", api_views.get_version),
     path(r"app/updates_available/", api_views.get_updates_available),
+    path(r"app/is_enterprise/", api_views.is_enterprise),
     path('mixpanel/track/', mixpanel_views.track),
     path('mixpanel/decide/', mixpanel_views.decide),
     path('mixpanel/engage/', mixpanel_views.engage),
