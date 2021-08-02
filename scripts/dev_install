@@ -23,6 +23,11 @@ check_prereqs(){
       echo "The coreutils package isn't installed. Run 'brew install coreutils' to get set up."
       exit 1
     }
+
+    which gsed > /dev/null || {
+      echo "The gnu-sed package isn't installed. Run 'brew install gnu-sed' to get set up."
+      exit 1
+    }
   fi
 }
 
