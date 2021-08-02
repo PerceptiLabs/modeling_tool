@@ -66,11 +66,12 @@ class GlobalStats(TrainingStats):
         """
         Returns the global metrics from final epoch for results summary after training ends.
         """
+        loss = dict()
         training_loss_over_steps, validation_loss_over_steps = self.get_loss_over_steps_in_latest_epoch()
-        loss = {
-            'training': training_loss_over_steps[-1],
-            'validation': validation_loss_over_steps[-1],
-        }
+
+        loss['training'] = training_loss_over_steps[-1] if len(training_loss_over_steps) > 0 else 0.0
+        loss['validation'] = validation_loss_over_steps[-1] if len(validation_loss_over_steps) > 0 else 0.0
+
         return {'Global_Loss':loss}
     
 
@@ -92,3 +93,4 @@ class GlobalStatsTracker(TrainingStatsTracker):
     def __eq__(self, other):
         return self.loss_tracker == other.loss_tracker
     
+
