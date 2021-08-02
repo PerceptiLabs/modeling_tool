@@ -17,6 +17,15 @@ delete_existing(){
     }
 }
 
+check_prereqs(){
+  if [[ $OSTYPE =~ darwin ]]; then
+    which realpath > /dev/null || {
+      echo "The coreutils package isn't installed. Run 'brew install coreutils' to get set up."
+      exit 1
+    }
+  fi
+}
+
 # we can fake an images tar for quick round-tripping with the tiny hello-world image
 # The installer will load that into docker and then run docker-compose, which will just use the images that were already therre
 # This way we can use the local migrations by just tarballing them and pretending they were dropped in by the airgapped package
@@ -43,6 +52,7 @@ run_installer(){
 main(){
   sudo -p "Sudo is required. Please enter the password: " echo -n ""
   # To simulate an upgrade, just comment out the call to delete_existing
+  check_prereqs
   delete_existing
   make_fake_images
   tarball_system_migrations
