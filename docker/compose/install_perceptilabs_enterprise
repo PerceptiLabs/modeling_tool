@@ -532,7 +532,12 @@ main(){
   set_options $@
 
   get_user_input
-  install_prerequisites
+
+  if is_airgapped; then
+    echo "Airgapped installation. Assuming prerequisites exist."
+  else
+    install_prerequisites
+  fi
 
   # Set HAS_GPU for migrations
   export HAS_GPU=

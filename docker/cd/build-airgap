@@ -64,7 +64,10 @@ cat ~/.docker/config.json | jq ".auths.\"$CONTAINER_REGISTRY\"" | grep -q -v nul
 }
 
 # Ensure that we're logged in to Azure
-az account show | grep -q "${AZURE_TENANT}"
+az account show | grep -q "${AZURE_TENANT}" || {
+  echo "Not logged into PerceptiLabs AB Azure account"
+  exit 1
+}
 
 echo "Checking sudo capability"
 sudo echo -n
