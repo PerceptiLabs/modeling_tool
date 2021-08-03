@@ -2,6 +2,38 @@
   div
     .settings-layer_section
       .form_row(v-tooltip-interactive:right="interactiveInfo.neurons")
+        .form_label Attention:
+        .form_input
+          base-radio(group-name="attention" :value-input="true"  v-model="settings.attention")
+            span Yes
+          base-radio(group-name="attention" :value-input="false"  v-model="settings.attention")
+            span No
+    template(v-if="settings.attention")
+      .settings-layer_section
+        .form_row(v-tooltip-interactive:right="interactiveInfo.neurons")
+          .form_label Attention Type:
+          .form_input
+            .form_input(data-tutorial-hover-info)
+              base-radio(group-name="atten_type" :value-input="'add'"  v-model="settings.atten_type")
+                span add
+              base-radio(group-name="atten_type" :value-input="'multiply'"  v-model="settings.atten_type")
+                span multiply
+      .settings-layer_section
+        .form_row
+          .form_label Attention Activation:
+          .form_input(data-tutorial-hover-info)
+            base-radio(group-name="atten_activation" value-input="ReLU"  v-model="settings.atten_activation")
+              span Relu
+            base-radio(group-name="atten_activation" value-input="Softmax"  v-model="settings.atten_activation")
+              span Softmax
+            base-radio(group-name="atten_activation" value-input="LeakyReLU"  v-model="settings.atten_activation")
+              span Leaky ReLu
+            base-radio(group-name="atten_activation" value-input="Snake"  v-model="settings.atten_activation")
+              span Snake
+            base-radio(group-name="atten_activation" value-input="GELU"  v-model="settings.atten_activation")
+              span Gelu
+    .settings-layer_section
+      .form_row(v-tooltip-interactive:right="interactiveInfo.neurons")
         .form_label N labels:
         .form_input
           input(
@@ -172,6 +204,9 @@ export default {
         backbone_weights: true,
         freeze_backbone: true,
         freeze_batch_norm: true,
+        attention: false, //  bool
+        atten_activation: 'ReLU',
+        atten_type: 'add', // add | multiply
       },
       interactiveInfo: {
         convolutionType: {

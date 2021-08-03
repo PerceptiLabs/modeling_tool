@@ -74,13 +74,30 @@ class {{layer_spec.sanitized_name}}Keras(tf.keras.layers.Layer, PerceptiLabsVisu
         {% call indented_if(not layer_spec.backbone) %}
             freeze_batch_norm = False
         {% endcall %}
+        {% call indented_if(layer_spec.attention) %}
+            atten_activation = '{{layer_spec.atten_activation}}'
+            atten_type = '{{layer_spec.atten_type}}'
+        {% endcall %}
+        
         name = '{{layer_spec.name}}'
 
-        self.unet = unet_models.unet_2d(input_size=input_shape_, filter_num=filter_num, n_labels=n_labels,
-                                       stack_num_down=stack_num_down, stack_num_up=stack_num_up, activation=activation,
-                                       output_activation=output_activation, batch_norm=False, pool=pool,
-                                       unpool=unpool, backbone=backbone, weights=backbone_weights,
-                                       freeze_backbone=freeze_backbone, freeze_batch_norm=freeze_batch_norm, name='unet')
+        {% call indented_if(not layer_spec.attention) %}
+            self.unet = unet_models.unet_2d(input_size=input_shape_, filter_num=filter_num, n_labels=n_labels,
+                                        stack_num_down=stack_num_down, stack_num_up=stack_num_up, activation=activation,
+                                        output_activation=output_activation, batch_norm=batch_norm, pool=pool,
+                                        unpool=unpool, backbone=backbone, weights=backbone_weights,
+                                        freeze_backbone=freeze_backbone, freeze_batch_norm=freeze_batch_norm, name='unet')
+        {% endcall %}
+
+        {% call indented_if(layer_spec.attention) %}
+            self.unet = unet_models.att_unet_2d(input_size=input_shape_, filter_num=filter_num, n_labels=n_labels, 
+                                    stack_num_down=stack_num_down, stack_num_up=stack_num_up, activation=activation, 
+                                    atten_activation=atten_activation, attention=atten_type, output_activation=output_activation, 
+                                    batch_norm=batch_norm, pool=pool, unpool=unpool, 
+                                    backbone=backbone, weights=backbone_weights, 
+                                    freeze_backbone=freeze_backbone, freeze_batch_norm=freeze_batch_norm, 
+                                    name='attunet')
+        {% endcall %}
 
         {% call indented_if(not layer_spec.output_activation) %}
             self.kernel = self.unet.layers[-1].weights[0]

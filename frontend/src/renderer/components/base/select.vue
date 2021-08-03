@@ -71,7 +71,7 @@ export default {
   name: "BaseSelect",
   props: {
     value: {
-      type: [String, Array],
+      type: [String, Array, Boolean],
       default: ''
     },
     selectOptions: {

@@ -18,6 +18,9 @@ class UNetSpec(InnerLayerSpec):
     backbone_weights: Union[bool, None, str] = 'imagenet'
     freeze_backbone: bool = False
     freeze_batch_norm: bool = False
+    attention: bool = False
+    atten_type: Union[str] = 'add'
+    atten_activation: Union[str] = 'ReLU'
     name = 'UNet'
 
     @classmethod
@@ -36,6 +39,9 @@ class UNetSpec(InnerLayerSpec):
             params['backbone_weights'] = dict_['Properties']['backbone_weights']
             params['freeze_backbone'] = dict_['Properties']['freeze_backbone']
             params['freeze_batch_norm'] = dict_['Properties']['freeze_batch_norm']
+            params['attention'] = dict_['Properties']['attention']
+            params['atten_type'] = dict_['Properties']['atten_type']
+            params['atten_activation'] = dict_['Properties']['atten_activation']
         return cls(**params)
 
     def _to_dict_internal(self, dict_: Dict[str, Any]) -> Dict[str, Any]:
@@ -55,6 +61,9 @@ class UNetSpec(InnerLayerSpec):
         props['backbone_weights'] = self.backbone_weights
         props['freeze_backbone'] = self.freeze_backbone
         props['freeze_batch_norm'] = self.freeze_batch_norm
+        props['attention'] = self.attention
+        props['atten_type'] = self.atten_type
+        props['atten_activation'] = self.atten_activation
 
         dict_['Properties'] = props
 
