@@ -28,6 +28,18 @@
                   :testData="testTypes"
                   name="Segmentation Metrics Table"
                 )
+            template(v-if="key === 'outputs_visualization'")
+              div.chart-container.w-50(v-for="(testFeature, chartId) in testTypes")
+                chart-switch(
+                  :disableHeader="false"
+                  :key="key"
+                  :chart-label="`${modelName(chartId) } - ${TestTypes[key].text}`"
+                  :chart-data="testFeature"
+                  :styles="chartStyles"
+                  :chartIdx="getImageIndex(key, chartId)"
+                  @chartIdxChange="handleChartIdxChange($event, key, chartId)"
+                )
+                
             template(v-else)
               template(v-for="(testFeature, chartId) in testTypes")
                 div.chart-container.w-50(
@@ -91,7 +103,10 @@ export default {
           text: TestTypes[key].text,
           value: key
         })),
-        TestTypes
+        TestTypes,
+        imageChartImages: {
+          outputs_visualization: { }
+        }
     };
   },
   mounted() {
@@ -131,6 +146,15 @@ export default {
     },
     reset() {
       this.$store.dispatch("mod_test/reset", null, { root: true });
+    },
+    handleChartIdxChange(imageIdx, testName, modelId) {
+      if(!this.imageChartImages[testName].hasOwnProperty(modelId)) {
+        this.$set(this.imageChartImages[testName], modelId, imageIdx);
+      }
+      this.$set(this.imageChartImages[testName], modelId, imageIdx);
+    },
+    getImageIndex(testName, modelId) {
+      return this.imageChartImages[testName][modelId] || 0;
     }
   }
 };

@@ -1,16 +1,17 @@
 import json
 import logging
-from typing import Any, Dict, Generator, List, overload
-import time
+import numpy as np
+
+import matplotlib
+matplotlib.use('agg')
+import matplotlib.pyplot as plt
 
 import pkg_resources
 
-from perceptilabs.createDataObject import createDataObject
-from perceptilabs.data.base import DataLoader, FeatureSpec
-from perceptilabs.graph.spec import GraphSpec
+from perceptilabs.createDataObject import createDataObject, subsample
 from perceptilabs.logconf import APPLICATION_LOGGER, USER_LOGGER
 from perceptilabs.testcore.strategies.modelstrategies import LoadInferenceModel
-from perceptilabs.testcore.strategies.teststrategies import ConfusionMatrix, MetricsTable
+from perceptilabs.testcore.strategies.teststrategies import ConfusionMatrix, MetricsTable, OutputVisualization
 import perceptilabs.tracking as tracking
 import perceptilabs.utils as utils
 
@@ -85,14 +86,14 @@ class TestCore():
             self._model_number += 1
             compatible_layers = self.get_compatible_layers_for_tests()
             # all the results are being collected at once to not repeat the same computations for every test.
-            model_outputs = self._get_model_outputs()
+            model_inputs, model_outputs = self._get_model_outputs()
             self._results[model_id] = {}
             self._test_number = 0
-            self._run_tests(model_id, model_outputs, compatible_layers)
+            self._run_tests(model_id, compatible_layers, model_outputs, model_inputs)
         if not self._stopped:
             self.set_status('Completed')
 
-    def _run_tests(self, model_id, model_outputs, compatible_layers):
+    def _run_tests(self, model_id, compatible_layers, model_outputs, model_inputs=None):
         "runs all the tests for a given model information."
         for test in self._tests:
             if not self._stopped:
@@ -100,9 +101,9 @@ class TestCore():
                 self.set_status('Testing')
                 self._test_number += 1
                 self._results[model_id][test] = self._run_test(
-                    test, model_outputs, compatible_layers[test])
+                    test, compatible_layers[test], model_outputs, model_inputs)
 
-    def _run_test(self, test, model_outputs, compatible_output_layers):
+    def _run_test(self, test, compatible_output_layers, model_outputs, model_inputs=None):
         "runs the given test for a given model information."
         model_id = self._current_model_id
         if not self._stopped:
@@ -113,6 +114,8 @@ class TestCore():
                     results = MetricsTable().run(model_outputs, compatible_output_layers)
                 elif test == 'classification_metrics':
                     results = MetricsTable().run(model_outputs, compatible_output_layers)
+                elif test == 'outputs_visualization':
+                    results = OutputVisualization().run(model_inputs, model_outputs, compatible_output_layers)
                 logger.info("test %s completed for model %s.", test, model_id)
                 if self._user_email and not self._stopped:
                     tracking.send_testing_completed(
@@ -127,14 +130,15 @@ class TestCore():
     def _get_model_outputs(self):
         model_id = self._current_model_id
         data_iterator = self._get_data_generator(model_id)
-        logger.info("Generating outputs for model %s.",  model_id)
+        logger.info("Generating outputs for model %s.", model_id)
         self.set_status('Inference')
+        return_inputs = True if "outputs_visualization" in self._tests else False
         try:
-            model_outputs = self._models[model_id].run_inference(data_iterator)
+            model_inputs, model_outputs = self._models[model_id].run_inference(data_iterator, return_inputs)
             # TODO(mukund): support inner layer outputs
             if not self._stopped:
                 logger.info("Outputs generated for model %s.", model_id)
-                return model_outputs
+                return model_inputs, model_outputs
         except Exception as e:
             self._found_error(
                 f"Error while running inference on {self._current_model_name} model.")
@@ -308,6 +312,8 @@ class ProcessResults():
             return self._process_confusionmatrix_output()
         elif self._test in ['segmentation_metrics', 'classification_metrics']:
             return self._process_metrics_table_output()
+        elif self._test == 'outputs_visualization':
+            return self._process_outputs_visualization_output()
         else:
             raise Exception(f"{self._test} is not supported yet.")
 
@@ -321,3 +327,62 @@ class ProcessResults():
 
     def _process_metrics_table_output(self):
         return self._results
+
+    def _process_outputs_visualization_output(self):
+        """
+        input, target, prediction, heatmap will be concatenated into a single image for each sample.
+        Returns:
+            conv layer like output from workspace
+        """
+        for layer_name in self._results:
+            
+            result = self._results[layer_name]
+            inputs = result['inputs']
+            targets = result['targets']
+            predictions = result['predictions']
+            losses = result['losses']
+            # getting segmentations and generating concatenated images
+            images = []
+
+            #subsampling
+            MAX_SIZE = 200
+            image_largest_axis = np.max(inputs[0].shape)
+            subsample_ratio = max(image_largest_axis/MAX_SIZE,1)
+            #inspired from https://github.com/yingkaisha/keras-unet-collection/blob/main/examples/human-seg_atten-unet-backbone_coco.ipynb
+            for i in range(len(inputs)):
+                predicted_segmentation = np.round(predictions[i])
+                if inputs[i].shape[-1]==3:
+                    tmp = np.random.random((*predicted_segmentation.shape[0:-1], 3))
+                    for k in range(3):
+                        tmp[..., k] = predicted_segmentation[..., -1]
+                    predicted_segmentation = tmp
+                mask = (predicted_segmentation == 0)
+                predicted_segmentation[mask] = inputs[i][mask]
+
+                fig, axs = plt.subplots(2, 2, tight_layout=True, figsize=(3,3))
+                fig.suptitle("Loss: "+str(losses[i]), fontsize=11)
+
+                axs[0,0].pcolormesh(subsample(np.squeeze(np.mean(inputs[i], axis=-1)), subsample_ratio)[1], cmap=plt.get_cmap('gray'))
+                axs[0,0].axis('off')
+                axs[0,0].set_title('Input', fontsize=9)
+                axs[1,1].pcolormesh(subsample(np.squeeze(predictions[i]), subsample_ratio)[1], cmap=plt.get_cmap('jet'))
+                axs[1,1].axis('off')
+                axs[1,1].set_title('Prediction', fontsize=9)
+                axs[0,1].pcolormesh(subsample(np.squeeze(targets[i]), subsample_ratio)[1], cmap=plt.get_cmap('jet'))
+                axs[0,1].axis('off')
+                axs[0,1].set_title('Target', fontsize=9)
+                axs[1,0].pcolormesh(subsample(np.squeeze(np.mean(predicted_segmentation, axis=-1)), subsample_ratio)[1])
+                axs[1,0].axis('off')
+                axs[1,0].set_title('Prediction on Input', fontsize=9)
+
+                plt.gca().invert_yaxis()
+                plt.gca().invert_xaxis()
+                fig.canvas.draw()
+                
+                data = np.frombuffer(fig.canvas.tostring_rgb(), dtype=np.uint8)
+                image = data.reshape(fig.canvas.get_width_height()[::-1] + (3,))
+                images.append(image)
+
+            #create data object
+            data_object = createDataObject(data_list=images, normalize=True)
+        return data_object

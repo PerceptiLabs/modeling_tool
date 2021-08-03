@@ -158,7 +158,12 @@ export const TestTypes = {
     default: false,
     disable: false,
     text: 'Segmentation Metrics',
-  }
+  },
+  outputs_visualization: {
+    default: false,
+    disable: false,
+    text: 'Output Visualization',
+  },
   // forward_prop: {
   //   default: false,
   //   disabled: true,

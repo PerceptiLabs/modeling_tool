@@ -41,6 +41,20 @@
         "Target": [
              "image"
         ]
+    },
+    "outputs_visualization": {
+        "Encoder": [
+
+        ],
+        "Decoder": [
+
+        ],
+        "Input": [
+            "image"
+        ],
+        "Target": [
+             "image"
+        ]
     }
 
 }

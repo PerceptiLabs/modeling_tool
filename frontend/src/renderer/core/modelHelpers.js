@@ -51,6 +51,10 @@ const testsValidationRules = {
     'inputs': ['image'],
     'outputs': ['image'],
   },
+  'outputs_visualization': {
+    'inputs': ['image'],
+    'outputs': ['image'],
+  }
 };
 
 export const isModelValidForTest = (model, testType) => {

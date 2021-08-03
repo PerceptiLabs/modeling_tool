@@ -12,7 +12,7 @@ from perceptilabs.data.settings import DatasetSettings, FeatureSpec
 from perceptilabs.script import ScriptFactory
 from perceptilabs.graph.builder import GraphSpecBuilder
 from perceptilabs.exporter.base import Exporter
-from perceptilabs.testcore.strategies.teststrategies import ConfusionMatrix, MetricsTable
+from perceptilabs.testcore.strategies.teststrategies import ConfusionMatrix, MetricsTable, OutputVisualization
 from perceptilabs.issues import IssueHandler
 
 
@@ -71,7 +71,7 @@ def graph_spec_few_epochs(csv_path):
 def test_confusion_matrix_computation(data_loader):
     model_outputs = {
         'outputs': [{'y1': np.array([[9.5598471e-01, 3.6293268e-04]], dtype=np.float32)}],
-        'labels': [{'y1': tf.constant(np.array([[0., 1.]]), dtype=tf.float32)}]
+        'targets': [{'y1': tf.constant(np.array([[0., 1.]]), dtype=tf.float32)}]
     }
     compatible_output_layers = ['y1']
     confusion_matrix = ConfusionMatrix().run(model_outputs, compatible_output_layers)
@@ -83,7 +83,7 @@ def test_categorical_metrics_table_computation(data_loader):
                     {'y1': np.array([[0.6, 0.4]], dtype=np.float32)},
                     {'y1': np.array([[0.3, 0.7]], dtype=np.float32)},
                     {'y1': np.array([[0.52, 0.48]], dtype=np.float32)}],
-        'labels': [{'y1': tf.constant(np.array([[0., 1.]]), dtype=tf.float32)},
+        'targets': [{'y1': tf.constant(np.array([[0., 1.]]), dtype=tf.float32)},
                    {'y1': tf.constant(np.array([[1., 0.]]), dtype=tf.float32)},
                    {'y1': tf.constant(np.array([[0., 1.]]), dtype=tf.float32)},
                    {'y1': tf.constant(np.array([[1., 0.]]), dtype=tf.float32)}]
@@ -91,7 +91,6 @@ def test_categorical_metrics_table_computation(data_loader):
     compatible_output_layers = {'y1':'categorical'}
     metrics_table = MetricsTable().run(model_outputs, compatible_output_layers)
     assert metrics_table == {'y1': {'categorical_accuracy': 0.75, 'top_k_categorical_accuracy': 1.0, 'precision': 0.75, 'recall': 0.75}}
-
 
 def test_image_metrics_table_computation():
     m1 = np.array([[0.6,0.7],[0.4, 0.9]]).astype(np.float32)
@@ -102,9 +101,32 @@ def test_image_metrics_table_computation():
     model_outputs = {
         'outputs': [{'y1': m1},
                     {'y1': m2}],
-        'labels': [{'y1': tf.constant(p1, dtype=tf.float32)},
+        'targets': [{'y1': tf.constant(p1, dtype=tf.float32)},
                    {'y1': tf.constant(p2, dtype=tf.float32)}]
     }
     compatible_output_layers = {'y1':'image'}
     metrics_table = MetricsTable().run(model_outputs, compatible_output_layers)
-    assert {'y1':{'IoU': 0.6, 'dice_coefficient': 0.72, 'keras_dice_coefficient': 0.58}} ==  metrics_table
+    assert metrics_table == {'y1':{'IoU': 0.6, 'dice_coefficient': 0.72, 'keras_dice_coefficient': 0.58}}
+
+def test_outputs_visualization_computation():
+    model_outputs = {
+        'outputs': 5*[{'y1': np.random.random((512,512,1)).astype(np.float32)},
+                    {'y1': np.random.random((512,512,1)).astype(np.float32)},
+                    {'y1': np.random.random((512,512,1)).astype(np.float32)},
+                    {'y1': np.random.random((512,512,1)).astype(np.float32)}],
+        'targets': 5*[{'y1': tf.constant(np.random.randint(2, size=(512,512,1)), dtype=tf.float32)},
+                   {'y1': tf.constant(np.random.randint(2, size=(512,512,1)), dtype=tf.float32)},
+                   {'y1': tf.constant(np.random.randint(2, size=(512,512,1)), dtype=tf.float32)},
+                   {'y1': tf.constant(np.random.randint(2, size=(512,512,1)), dtype=tf.float32)}]
+    }
+    model_inputs = 5*[{'x1': np.random.random((512,512,3)).astype(np.float32)},
+                    {'x1': np.random.random((512,512,3)).astype(np.float32)},
+                    {'x1': np.random.random((512,512,3)).astype(np.float32)},
+                    {'x1': np.random.random((512,512,3)).astype(np.float32)}]
+
+    compatible_output_layers = {'y1':'image'}
+    
+    results = OutputVisualization().run(model_inputs, model_outputs, compatible_output_layers)
+    assert set(results['y1'].keys()) == {'inputs', 'targets', 'predictions', 'losses'}
+    assert len(results['y1']['inputs']) == len(results['y1']['targets']) == len(results['y1']['targets']) == 10
+    assert type(results['y1']['inputs'][0]) is np.ndarray

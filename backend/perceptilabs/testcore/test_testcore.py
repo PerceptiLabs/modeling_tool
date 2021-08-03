@@ -102,10 +102,10 @@ def test_model_is_loaded_from_checkpoint(testcore):
 
 def test_model_outputs_structure_is_accurate(testcore):
     data_iterator = testcore._get_data_generator(1)
-    model_outputs = testcore._models[1].run_inference(data_iterator)
-    assert list(model_outputs.keys()) == ['outputs', 'labels']
+    model_inputs, model_outputs = testcore._models[1].run_inference(data_iterator)
+    assert list(model_outputs.keys()) == ['outputs', 'targets']
     assert list(model_outputs['outputs'][0].keys()) == ['y1']
-    assert list(model_outputs['labels'][0].keys()) == ['y1']
+    assert list(model_outputs['targets'][0].keys()) == ['y1']
 
 def test_model_has_compatible_output_layers_for_confusionmatrix(testcore):
     layers = testcore.get_compatible_output_layers('confusion_matrix', 1)

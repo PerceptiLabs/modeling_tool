@@ -26,9 +26,6 @@ const mutations = {
   setTestRunningMutation(state, value) {
     state.isTestRunning = value;
   },
-  setTestRunningMutation(state, value) {
-    state.isTestRunning = value;
-  },
   setTestStatusMutation(state, value) {
     state.testStatus = value;
   },
