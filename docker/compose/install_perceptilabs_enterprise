@@ -457,6 +457,11 @@ prep_for_migrations(){
   if is_airgapped; then
     echo "Loading docker images"
     sudo docker load --quiet --input "${opt_images_tarball}"
+
+    # Give docker some breathing room after adding some heavy images
+    export DOCKER_CLIENT_TIMEOUT=120
+    export COMPOSE_HTTP_TIMEOUT=120
+    sudo systemctl restart docker
   else
     download $MIGRATIONS_URL
 
