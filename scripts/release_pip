@@ -22,12 +22,12 @@ prep_git(){
   git fetch $REMOTE --tags
   echo "done fetching"
 
-  if git show $TAG 2>/dev/null | grep -q . ; then
+  if git show $TAG >/dev/null ; then
     echo "Tag $TAG has already been set. You'll have to release manually."
     exit 1
   fi
 
-  if ! git show $REMOTE/$BRANCH | grep -q . ; then
+  if ! git show $REMOTE/$BRANCH >/dev/null ; then
     echo "There's no branch '$BRANCH' in remote '$REMOTE'."
     exit 1
   fi
