@@ -182,11 +182,11 @@ class ImageOutputStats(OutputStats):
         """
         Returns lists of iou from all epochs.
         """
-        training_iou_over_epochs = self._iou.get_iou_over_epochs(
+        training_loss_over_epochs = self._loss.get_loss_over_epochs(
             phase='training')
-        validation_iou_over_epochs = self._iou.get_iou_over_epochs(
+        validation_loss_over_epochs = self._loss.get_loss_over_epochs(
             phase='validation')
-        return training_iou_over_epochs, validation_iou_over_epochs
+        return training_loss_over_epochs, validation_loss_over_epochs
         
     def get_end_results(self):
         """

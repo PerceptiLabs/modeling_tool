@@ -46,11 +46,11 @@ class IouStats:
     @return_on_failure(0.0)
     def get_iou_over_epochs(self, phase='training'):
         """ Average iou as a series over all epochs """        
-        accuracies = [
+        iou_values = [
             self.get_average_iou_for_epoch(epoch, phase=phase)
             for epoch in range(len(self.prediction_matrices))
         ]
-        return accuracies
+        return iou_values
 
     @return_on_failure(0.0)    
     def get_iou_for_step(self, epoch, step):
@@ -61,7 +61,7 @@ class IouStats:
     @return_on_failure([0.0])    
     def get_iou_over_steps(self, epoch, phase='training'):
         """ Iou as a series over all steps in an epoch """                
-        accuracies = []
+        iou_values = []
         for step in range(len(self.prediction_matrices[epoch])):
             _, is_training = self.prediction_matrices[epoch][step]
             
@@ -69,10 +69,10 @@ class IouStats:
                     (is_training and phase in ['both', 'training']) or
                     (not is_training and phase in ['both', 'validation'])
             ):
-                acc = self.get_iou_for_step(epoch, step)
-                accuracies.append(acc)
+                iou = self.get_iou_for_step(epoch, step)
+                iou_values.append(iou)
                 
-        return accuracies
+        return iou_values
 
     def get_iou_over_steps_in_latest_epoch(self, phase='training'):
         """ Iou as a series over all steps in the latest epoch """

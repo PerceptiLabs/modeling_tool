@@ -1,5 +1,6 @@
 import tensorflow as tf
 import tensorflow.keras.backend as K
+from keras_unet_collection import losses
 
 
 def weighted_crossentropy(class_weights):
@@ -28,3 +29,9 @@ def dice_coefficient(y_true, y_pred, eps=1e-5):
     union = tf.reduce_sum(tf.multiply(y_pred, y_pred)) + tf.reduce_sum(tf.multiply(y_true, y_true))
     dice_coef = (2 * intersection + eps)/(union + eps)
     return dice_coef
+
+def keras_unet_dice(y_true, y_pred):
+    return losses.dice(y_true, y_pred)
+
+def keras_unet_dice_coef(y_true, y_pred):
+    return losses.dice_coef(y_true, y_pred)
