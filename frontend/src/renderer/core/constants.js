@@ -104,6 +104,7 @@ export const defaultTrainingSettings = {
     {text: 'Cross-Entropy', value: 'Cross-Entropy'},
     {text: 'Quadratic', value: 'Quadratic'},
     {text: 'Dice', value: 'Dice'},
+    {text: 'Keras-Dice', value: 'Keras-Dice'},
   ],
   Learning_rate: 0.001,
   Optimizer: 'ADAM', // [ADAM,SGD,Adagrad,RMSprop]

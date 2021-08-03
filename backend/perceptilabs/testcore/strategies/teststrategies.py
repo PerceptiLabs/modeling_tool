@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 import numpy as np
 import tensorflow as tf
 import time
-from perceptilabs.trainer.losses import dice_coefficient
+from perceptilabs.trainer.losses import dice_coefficient, keras_dice_coef
 from perceptilabs.stats.iou import IouStatsTracker, IouStats
 class BaseStrategy(ABC):
     @abstractmethod
@@ -71,6 +71,7 @@ class MetricsTable(BaseStrategy):
     def _run_image_metrics(self, layer, model_outputs, metrics_tables):
         metrics = {
             'dice_coefficient': dice_coefficient,
+            'keras_dice_coefficient': keras_dice_coef,
             'IoU': IouStatsTracker(),
         }
         metrics_tables[layer] = {}
@@ -82,4 +83,5 @@ class MetricsTable(BaseStrategy):
         iou_stats = metrics['IoU'].save()
         metrics_tables[layer]['IoU'] = float(iou_stats.get_iou_for_latest_step())
         metrics_tables[layer]['dice_coefficient'] =round(float(dice_coefficient(outputs, labels).numpy()),2) #pytest was failing without the conversions
+        metrics_tables[layer]['keras_dice_coefficient'] =round(float(keras_dice_coef(outputs, labels).numpy()),2) #pytest was failing without the conversions
         return metrics_tables

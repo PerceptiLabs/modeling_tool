@@ -16,7 +16,7 @@ from perceptilabs.layers.visualizer import PerceptiLabsVisualizer
 from perceptilabs.trainer.model import TrainingModel
 from perceptilabs.stats import SampleStatsTracker, SampleStats, GradientStatsTracker, GradientStats, GlobalStatsTracker, TrainingStatsTracker
 from perceptilabs.layers.iooutput.stats import ImageOutputStatsTracker, NumericalOutputStatsTracker, CategoricalOutputStatsTracker
-from perceptilabs.trainer.losses import weighted_crossentropy, dice
+from perceptilabs.trainer.losses import weighted_crossentropy, dice, keras_dice
 from perceptilabs.logconf import APPLICATION_LOGGER
 from perceptilabs.utils import get_memory_usage, sanitize_path
 import perceptilabs.tracking as tracking
@@ -753,6 +753,8 @@ class Trainer:
             return tf.keras.losses.CategoricalCrossentropy()
         elif loss == 'Dice':
             return dice
+        elif loss == 'Keras-Dice':
+            return keras_dice
 
     def _setup_loss_functions(self, training_settings):
         """ Creates a dict of losses, one per output """

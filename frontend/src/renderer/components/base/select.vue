@@ -139,7 +139,7 @@ export default {
 
       function addSelectedText(selectVal, arr, out) {
         arr.forEach((item)=> {
-          if(selectVal.includes(item.value)) out.push(item.text);
+          if(selectVal === item.value) out.push(item.text);
           if(item.sublist) addSelectedText(selectVal, item.sublist, out);
         })
       }
