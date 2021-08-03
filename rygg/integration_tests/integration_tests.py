@@ -129,7 +129,7 @@ ret = rest.post_file("/upload", SAMPLE_ZIP, "destfilename.zip", overwrite=True)
 
 assert ret["task_id"]
 
-@retry(stop_max_delay=10000, wait_fixed=1000)
+@retry(stop_max_delay=60000, wait_fixed=1000)
 def get_unzipped_files():
     got = rest.get("/directories/get_folder_content", path=UPLOAD_PATH)
     assert set(EXPECTED_FILES) <= set(got["files"])
