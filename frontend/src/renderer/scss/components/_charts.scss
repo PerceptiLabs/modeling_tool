@@ -19,3 +19,12 @@
   min-height: 140px;
   // border: none;
 }
+
+// right sidebar settings menu fixed preview height
+.sidebar-settings-preview-wrapper {
+  canvas {
+    height: 160px !important;
+    max-height: 160px !important;
+    min-height: 160px !important;
+  }  
+}

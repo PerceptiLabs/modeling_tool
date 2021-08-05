@@ -26,7 +26,6 @@
           :currentEl="selectedEl"
           ref="componentSettings"
           )
-
     sidebar-setting-preview.setting-chart-wrapper(
       v-if="selectedEl !== null"
       :current-el="selectedEl"
@@ -121,14 +120,14 @@ export default {
     },
     shouldShowResetComponentBtn() {
       return this.selectedEl !== null && this.selectedEl.layerType !== 'IoOutput' && this.selectedEl.layerType !== 'IoInput'
-    }
+    },
   },
   watch: {
     'selectedEl.layerId'(el) {
        if(el) {
          this.$refs.sidebarSettingWrapper.$el.scrollTop = 0;
        }
-    }
+    },
   },
   methods: {
     ...mapActions({
@@ -213,9 +212,6 @@ export default {
     background: #7397FE;
   }
 }
-.setting-values-wrapper {
-  // padding: 10px 15px;
-}
 .setting-chart-wrapper {
   position: absolute;
   width: 250px;
@@ -225,17 +221,15 @@ export default {
 }
 // also .sidebar-setting-content are used in _forms.scss for stylize sidebar setting inputs
 .sidebar-setting-content {
-  // padding: 10px;
   background-color: #23252A;
   height: calc(65vh - 99px);
   overflow-x: scroll;
   
   &.sidebar-setting-content-with-component {
-    height: calc(65vh - 123px);
+    height: calc(65vh - 153px);
     padding-bottom: 30px;
-
     &.closed-preview {
-      height: calc(65vh - 263px);
+      height: calc(65vh - 313px);
     }
   }
 }
