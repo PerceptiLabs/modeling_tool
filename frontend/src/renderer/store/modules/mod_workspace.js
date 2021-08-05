@@ -2122,13 +2122,15 @@ const actions = {
         const setStatisticsPromises = [];
 
         for (const r of results) {
-          const setStatisticsPromise = dispatch('SET_openStatisticsByNetworkId', 
-          {
-            networkId: r.receiver,
-            value: r.result && r.result.content ? r.result.content : false
-          });
-
-          setStatisticsPromises.push(setStatisticsPromise);
+          if (r) {
+            const setStatisticsPromise = dispatch('SET_openStatisticsByNetworkId', 
+            {
+              networkId: r.receiver,
+              value: r.result && r.result.content ? r.result.content : false
+            });
+  
+            setStatisticsPromises.push(setStatisticsPromise);
+          }
         }
 
         return Promise.all(setStatisticsPromises)

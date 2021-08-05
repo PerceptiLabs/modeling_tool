@@ -5,10 +5,10 @@
   "viewportHeight": 768,
   "baseUrl": "http://localhost:8080",
   "ignoreTestFiles": "**/legacy-tests/*.*",
-  "defaultCommandTimeout": 10000,
+  "defaultCommandTimeout": 20000,
   "requestTimeout": 10000,
   "env": {
-    "KEYCLOAK_BASE_URL": "https://keycloak.dev.perceptilabs.com:8443/auth",
+    "KEYCLOAK_BASE_URL": "https://keycloak.dev.perceptilabs.com:8443",
     "KEYCLOAK_REALM": "vue-perceptilabs",
     "KEYCLOAK_CLIENT_ID": "vue-perceptilabs-client-id",
     "PL_FILE_SERVING_TOKEN": "12312",

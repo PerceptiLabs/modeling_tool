@@ -8,8 +8,6 @@ describe("logout", () => {
   it("should logout with correct credentials", () => {
     cy.visit("/");
 
-    cy.wait(10 * 1000);
-
     cy.get(".profile-item-drop-down").invoke("show");
 
     cy.get(".profile-item-drop-down .sign-out-all").click();

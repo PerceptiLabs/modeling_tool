@@ -5,7 +5,7 @@ const kcRedirectUri = Cypress.env('APP_URL');
 
 Cypress.Commands.add('kcLogin', (username, password) => {
   const loginPageRequest = {
-    url: `${kcRoot}/realms/${kcRealm}/protocol/openid-connect/auth`,
+    url: `${kcRoot}/auth/realms/${kcRealm}/protocol/openid-connect/auth`,
     qs: {
       client_id: kcClient,
       redirect_uri: kcRedirectUri,
@@ -58,7 +58,7 @@ Cypress.Commands.add('kcLogin', (username, password) => {
 
 Cypress.Commands.add('kcLogout', () => {
   return cy.request({
-    url: `${kcRoot}/realms/${kcRealm}/protocol/openid-connect/logout`,
+    url: `${kcRoot}/auth/realms/${kcRealm}/protocol/openid-connect/logout`,
     qs: {
       redirect_uri: kcRedirectUri
     }

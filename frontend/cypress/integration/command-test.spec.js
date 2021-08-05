@@ -9,7 +9,6 @@ describe('commands', () => {
         cy.deleteAllModels();
         
         cy.visit('/');
-        cy.wait(10 * 1000);
         
         cy.get('.models-list').should('be.visible');
         cy.get('.models-list-row.model-list-item').should('not.exist');
@@ -21,7 +20,6 @@ describe('commands', () => {
         cy.createMnistModel('Model 3');
 
         cy.visit('/');
-        cy.wait(10 * 1000);
 
         cy.get('.models-list').should('be.visible');
         cy.get('.models-list-row.model-list-item').should('have.length', 3);
