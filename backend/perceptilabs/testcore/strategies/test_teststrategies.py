@@ -125,7 +125,7 @@ def test_outputs_visualization_computation():
                     {'x1': np.random.random((512,512,3)).astype(np.float32)}]
 
     compatible_output_layers = {'y1':'image'}
-    
+
     results = OutputVisualization().run(model_inputs, model_outputs, compatible_output_layers)
     assert set(results['y1'].keys()) == {'inputs', 'targets', 'predictions', 'losses'}
     assert len(results['y1']['inputs']) == len(results['y1']['targets']) == len(results['y1']['targets']) == 10

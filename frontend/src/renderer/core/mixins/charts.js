@@ -13,6 +13,10 @@ const chartsMixin = {
       type: Object,
       default: function(){ return {} }
     },
+    isFullView: {
+      type: Boolean,
+      default: false
+    }
   },
   
   created() {

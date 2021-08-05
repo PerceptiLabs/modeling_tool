@@ -3,7 +3,6 @@ const namespaced = true;
 const state = {
   isTestRunning: false,
   testStatus: null,
-  testIntervalID: null,
   testData: null
 };
 
@@ -44,17 +43,10 @@ const actions = {
     dispatch("setTestData", null);
     dispatch("setTestMessage", ['Loading Data...']);
 
-    const intervalID = setInterval(() => {
-      dispatch("mod_api/API_getTestStatus", null, { root: true });
-    }, 1000);
-    commit("setTestIntervalIDMutation", intervalID);
+    dispatch("mod_api/API_getTestStatus", null, { root: true });
   },
   testFinish({ commit, state }) {
     commit("setTestRunningMutation", false);
-    if (state.testIntervalID) {
-      clearInterval(state.testIntervalID);
-    }
-    commit("setTestIntervalIDMutation", null);
   },
   setTestMessage({ commit }, payload) {
     commit("setTestStatusMutation", payload);

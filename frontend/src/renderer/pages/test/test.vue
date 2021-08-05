@@ -29,17 +29,17 @@
                   name="Segmentation Metrics Table"
                 )
             template(v-if="key === 'outputs_visualization'")
-              div.chart-container.w-50(v-for="(testFeature, chartId) in testTypes")
-                chart-switch(
-                  :disableHeader="false"
-                  :key="key"
-                  :chart-label="`${modelName(chartId) } - ${TestTypes[key].text}`"
-                  :chart-data="testFeature"
-                  :styles="chartStyles"
-                  :chartIdx="getImageIndex(key, chartId)"
-                  @chartIdxChange="handleChartIdxChange($event, key, chartId)"
-                )
-                
+              template(v-for="(testFeature, chartId) in testTypes" v-if="!!testTypes")
+                div.chart-container.w-50(v-for="(feature, featureName) in testFeature")
+                  chart-switch(
+                    :disableHeader="false"
+                    :key="key"
+                    :chart-label="`${modelName(chartId) } - ${featureName} ${TestTypes[key].text}`"
+                    :chart-data="feature"
+                    :styles="chartStyles"
+                    :chartIdx="getImageIndex(key, chartId)"
+                    @chartIdxChange="handleChartIdxChange($event, key, chartId)"
+                  )
             template(v-else)
               template(v-for="(testFeature, chartId) in testTypes")
                 div.chart-container.w-50(

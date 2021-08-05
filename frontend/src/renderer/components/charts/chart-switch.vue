@@ -28,6 +28,7 @@
         :chartIdx="chartIdx"
         @chartIdxChange="handleChartIdxChange"
         :enableDrag="enableDrag"
+        :isFullView="fullView"
       )
       .base-chart_info(v-if="chartPieInfo.length") {{ chartPieInfo }}
 

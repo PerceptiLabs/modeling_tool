@@ -37,6 +37,7 @@ class TestLogic():
         Runs all the tests for all the models iteratively.
 
         Args:
+            on_finished: utils function that sets global variables
             user_email: the email of the user. Optional.
         Returns:
             results: returns dict containing required test results in the appropriate format
@@ -62,7 +63,7 @@ class TestLogic():
                 failed = False
             finally:
                 on_finished(failed)
-        
+
         try:
             threading.Thread(target=run, daemon=True).start()
         except Exception as e:

@@ -408,7 +408,7 @@ const actions = {
       action: 'startTests',
       receiver: 'test_requests',
       value: {
-	models: models,
+	      models: models,
         tests: payload.testTypes,
         userEmail: rootGetters['mod_user/GET_userEmail'],	
         datasetSettings: modelIds.reduce((acc, id) => {
@@ -417,9 +417,12 @@ const actions = {
         }, {})
       }
     }
-    dispatch('mod_test/testStart', payload, {root: true});
 
-    return renderingKernel.startSession(theData).catch((err) => {
+    return renderingKernel.startSession(theData)
+    .then((res) => {
+      dispatch('mod_test/testStart', payload, {root: true});
+    })
+    .catch((err) => {
       console.error(err);
     })
   },
@@ -448,17 +451,30 @@ const actions = {
     })
   },
   API_getTestStatus({dispatch}) {
+    let startTime = new Date().getTime();
     const theData = {
       receiver: 'test_requests',
       action: 'getTestStatus',
     }
     return coreRequest(theData).then((data)=> {
+      if(!data) { 
+        setTimeout(() => {
+          dispatch('API_getTestStatus');
+        }, 1000);
+        return;}
+      let endTime = new Date().getTime();
+      const responseDuration = endTime - startTime;
+      const delay = responseDuration >= 1000 ? 0 : 1000 - responseDuration;
       if (data.status === 'Completed') {
         dispatch('API_getTestResults');
+
       } else if (data.status === 'Error') {
         dispatch('API_closeTest');
         dispatch('globalView/GP_errorPopup', data.update_line_1, {root: true});
       } else {
+        setTimeout(() => {
+          dispatch('API_getTestStatus');
+        }, delay)
         dispatch('mod_test/setTestMessage', [data.update_line_1, data.update_line_2], {root: true})
       }
     })

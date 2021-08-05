@@ -19,7 +19,7 @@
         .selector-btn
         .selector-tooltip
           span {{ chartIdx + 1}}
-    canvas.chart-img(ref="canvas")
+    canvas.chart-img(ref="canvas" :class="{'is-full-view': isFullView}")
 </template>
 
 <script>
@@ -35,7 +35,7 @@ export default {
       default: function () {
         return 0
       }
-    }
+    },
   },
   data() {
     return {
@@ -242,6 +242,9 @@ export default {
     object-fit: contain;
     width: 100%;
     height: 100%;
+    &.is-full-view {
+      max-height: 100vh;
+    }
   }
 
   .shadow {

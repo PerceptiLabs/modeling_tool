@@ -21,6 +21,8 @@ user_logger = logging.getLogger(USER_LOGGER)
 
 class TestCore():
     def __init__(self, model_ids, models_info, tests, issue_handler, user_email=None):
+        self._status = None
+        self.set_status('Initializing')
         self._issue_handler = issue_handler
         self._model_ids = model_ids
         self._models_info = models_info
@@ -30,13 +32,12 @@ class TestCore():
         self._models = {}
         self._results = {}
         self._stopped = False
-        self._status = None
         self._data_loaders = {}
         self._dataspecs = {}
         self._dataset_sizes = {}
         self._model_number = 0
         self._test_number = 0
-        self.set_status('Initializing')
+
 
     def load_models_and_data(self):
         """
@@ -44,6 +45,7 @@ class TestCore():
         """
         for model_id in self._models_info:
             model_info = self._models_info[model_id]
+            self._current_model_name = model_info['model_name']
             self.load_data(model_info['data_loader'], model_id)
             self.load_model(
                 model_id, checkpoint_directory=model_info['checkpoint_directory'], graph_spec=model_info['graph_spec']
@@ -335,7 +337,6 @@ class ProcessResults():
             conv layer like output from workspace
         """
         for layer_name in self._results:
-            
             result = self._results[layer_name]
             inputs = result['inputs']
             targets = result['targets']
@@ -360,29 +361,41 @@ class ProcessResults():
                 predicted_segmentation[mask] = inputs[i][mask]
 
                 fig, axs = plt.subplots(2, 2, tight_layout=True, figsize=(3,3))
-                fig.suptitle("Loss: "+str(losses[i]), fontsize=11)
+                fig.suptitle("Loss: "+str(losses[i]), fontsize=8, color='white')
 
                 axs[0,0].pcolormesh(subsample(np.squeeze(np.mean(inputs[i], axis=-1)), subsample_ratio)[1], cmap=plt.get_cmap('gray'))
                 axs[0,0].axis('off')
-                axs[0,0].set_title('Input', fontsize=9)
-                axs[1,1].pcolormesh(subsample(np.squeeze(predictions[i]), subsample_ratio)[1], cmap=plt.get_cmap('jet'))
-                axs[1,1].axis('off')
-                axs[1,1].set_title('Prediction', fontsize=9)
-                axs[0,1].pcolormesh(subsample(np.squeeze(targets[i]), subsample_ratio)[1], cmap=plt.get_cmap('jet'))
-                axs[0,1].axis('off')
-                axs[0,1].set_title('Target', fontsize=9)
-                axs[1,0].pcolormesh(subsample(np.squeeze(np.mean(predicted_segmentation, axis=-1)), subsample_ratio)[1])
-                axs[1,0].axis('off')
-                axs[1,0].set_title('Prediction on Input', fontsize=9)
-
+                axs[0,0].set_title('Input', {'fontname':'Roboto'}, fontsize=7, color='white')
                 plt.gca().invert_yaxis()
                 plt.gca().invert_xaxis()
+
+                axs[1,1].pcolormesh(subsample(np.squeeze(predictions[i]), subsample_ratio)[1], cmap=plt.get_cmap('jet'))
+                axs[1,1].axis('off')
+                axs[1,1].set_title('Prediction', {'fontname':'Roboto'}, fontsize=7, color='white')
+                plt.gca().invert_yaxis()
+                plt.gca().invert_xaxis()
+
+                axs[0,1].pcolormesh(subsample(np.squeeze(targets[i]), subsample_ratio)[1], cmap=plt.get_cmap('jet'))
+                axs[0,1].axis('off')
+                axs[0,1].set_title('Target', {'fontname':'Roboto'}, fontsize=7, color='white')
+                plt.gca().invert_yaxis()
+                plt.gca().invert_xaxis()
+
+                axs[1,0].pcolormesh(subsample(np.squeeze(np.mean(predicted_segmentation, axis=-1)), subsample_ratio)[1])
+                axs[1,0].axis('off')
+                axs[1,0].set_title('Prediction on Input', {'fontname':'Roboto'}, fontsize=7, color='white')
+                plt.gca().invert_yaxis()
+                plt.gca().invert_xaxis()
+
+                rect = fig.patch
+                rect.set_facecolor('#23252A')
                 fig.canvas.draw()
-                
+
                 data = np.frombuffer(fig.canvas.tostring_rgb(), dtype=np.uint8)
                 image = data.reshape(fig.canvas.get_width_height()[::-1] + (3,))
                 images.append(image)
 
             #create data object
             data_object = createDataObject(data_list=images, normalize=True)
-        return data_object
+            self._results[layer_name] = data_object
+        return  self._results
