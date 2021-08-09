@@ -32,8 +32,8 @@ class Export(BaseView):
         try:
             export_settings = json_data['exportSettings']
             graph_spec = GraphSpec.from_dict(json_data['network'])
-            data_loader = self._get_data_loader(json_data['datasetSettings'], json_data.get('userEmail'))            
-            
+            data_loader = self._get_data_loader(json_data['datasetSettings'], json_data.get('userEmail'))
+
             model_id = json_data.get('modelId')
             user_email = json_data.get('userEmail')
 
@@ -43,8 +43,12 @@ class Export(BaseView):
             )
             export_path = os.path.join(
                 export_settings['Location'], export_settings['name'])
-            exporter.export(export_path, export_settings['Type'])
-            return jsonify(f"Model exported to '{export_path}'")
+            output = exporter.export(export_path, export_settings['Type'])
+            # standard output is none. Output will be a string only if the model has compatibility problem
+            if output:
+                return jsonify(f"Model not compatible.")
+            else:
+                return jsonify(f"Model exported to '{export_path}'")
         except:
             logging.exception("Model export failed")
             return jsonify(f"Model export failed")

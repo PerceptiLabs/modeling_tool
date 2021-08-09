@@ -61,15 +61,17 @@ class Exporter:
     def export(self, export_path, mode):
         """calls the export functions based on export mode"""
         if mode == 'Standard':
-            self._export_training_model(export_path)
+            return self._export_training_model(export_path)
         elif mode == 'Compressed':
-            self._export_compressed_model(export_path)
-        tracking.send_model_exported(self._user_email, self._model_id)
+            return self._export_compressed_model(export_path)
+        elif mode == 'Quantized':
+            return self._export_quantized_model(export_path)
 
     def _export_training_model(self, path):
         """ Export the inference model """
         model = self.get_inference_model()
         model.save(sanitize_path(path))
+        tracking.send_model_exported(self._user_email, self._model_id)
 
     def _export_compressed_model(self, path):
         """ Export the compressed model """
@@ -82,6 +84,45 @@ class Exporter:
         tflite_model = converter.convert()
         with open(frozen_path, "wb") as f:
             f.write(tflite_model)
+        tracking.send_model_exported(self._user_email, self._model_id)
+
+
+    def _export_quantized_model(self, path):
+        """ Export the quantized model """
+        # checking the number of input layers in the dataset
+        feature_specs = self._data_loader.feature_specs
+        num_input_layers = 0
+        for layer in feature_specs:
+            if feature_specs[layer].iotype == 'input':
+                num_input_layers += 1
+        if num_input_layers > 1:
+            return "Not compatible"
+        model = self.get_inference_model()
+
+        def representative_data_gen():
+            data_size = min(100, int(self._data_loader.get_dataset_size()/5))
+            for input_value,_ in self._data_loader.get_dataset(partition='training').batch(1).take(data_size):
+                yield [list(input_value.values())[0]]
+
+        converter = tf.lite.TFLiteConverter.from_keras_model(model)
+        converter.optimizations = [tf.lite.Optimize.DEFAULT]
+        converter.representative_dataset = representative_data_gen
+        # Ensure that if any ops can't be quantized, the converter throws an error
+        converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8]
+        # Set the input and output tensors to uint8 (APIs added in r2.3)
+        converter.inference_input_type = tf.uint8
+        converter.inference_output_type = tf.uint8
+        try:
+            tflite_model = converter.convert()
+        except Exception as e:
+            logger.exception(e)
+            return "Not compatible"
+        frozen_path = os.path.join(path, 'quantized_model.tflite')
+        if not os.path.exists(path):
+            os.mkdir(path)
+        with open(frozen_path, "wb") as f:
+            f.write(tflite_model)
+        tracking.send_model_exported(self._user_email, self._model_id)
 
     def get_inference_model(self):
         """ Convert the Training Model to a simpler version (e.g., skip intermediate outputs)  """

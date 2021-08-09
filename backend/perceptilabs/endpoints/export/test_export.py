@@ -152,7 +152,7 @@ def checkpoint_directory(temp_path):
     yield os.path.join(temp_path, 'checkpoint')
 
 
-@pytest.fixture(scope="function", params=["Standard", "Compressed"])
+@pytest.fixture(scope="function", params=["Standard", "Compressed", 'Quantized'])
 def basic_request(request, dataset_settings, temp_path, network, checkpoint_directory):
     yield {
         "exportSettings": export_settings(temp_path, request.param),
@@ -173,7 +173,7 @@ def create_model_checkpoint(dataset_settings, network, checkpoint_directory, scr
 def test_basic(client, basic_request, dataset_settings, network, checkpoint_directory, script_factory):
     create_model_checkpoint(dataset_settings, network, checkpoint_directory, script_factory)
     response = client.post('/export', json=basic_request)
-    assert response.json.startswith("Model exported to ")
+    assert (response.json.startswith("Model exported to ") or response.json.startswith("Model not compatible"))
 
 
 def test_try_to_export_without_training(client, basic_request, dataset_settings, network, checkpoint_directory, script_factory):

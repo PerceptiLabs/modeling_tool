@@ -19,8 +19,8 @@ from perceptilabs.exporter.base import Exporter
 
 @pytest.fixture()
 def data_loader():
-    x1 = [123.0, 24.0, 13.0, 45.0, 20.0, 200.0]
-    y1 = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0]
+    x1 = [123.0, 24.0, 13.0, 45.0, 20.0, 200.0, 421.0, 300.0, 254.0, 217.0, 363.0, 500.0]
+    y1 = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0]
     df = pd.DataFrame({'x1': x1, 'y1': y1})
 
     feature_specs = {
@@ -130,10 +130,20 @@ def test_export_compressed_model(script_factory, graph_spec_few_epochs, data_loa
 
     assert os.path.isfile(os.path.join(target_dir, 'model.tflite'))
 
-def test_export_checkpoint_creates_files(script_factory, graph_spec_few_epochs, data_loader, temp_path):
+
+def test_export_quantized_model(script_factory, graph_spec_few_epochs, data_loader, temp_path):
     training_model = TrainingModel(script_factory, graph_spec_few_epochs)
     exporter = Exporter(graph_spec_few_epochs, training_model, data_loader)
 
+    target_dir = os.path.join(temp_path, 'inference_model')
+    assert not os.path.isdir(target_dir)
+
+    output = exporter.export(target_dir, mode='Quantized')
+    assert (os.path.isfile(os.path.join(target_dir, 'quantized_model.tflite')) or output)
+
+def test_export_checkpoint_creates_files(script_factory, graph_spec_few_epochs, data_loader, temp_path):
+    training_model = TrainingModel(script_factory, graph_spec_few_epochs)
+    exporter = Exporter(graph_spec_few_epochs, training_model, data_loader)
     target_dir = os.path.join(temp_path, 'checkpoint_dir')
     assert not os.path.isdir(target_dir)
     assert tf.train.latest_checkpoint(target_dir) is None
