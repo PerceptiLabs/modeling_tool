@@ -27,10 +27,17 @@ class TestLogic():
         self._model_ids = model_ids
         self._stopped = False
 
-    def setup_test_interface(self, models_info, tests):
+    def setup_test_interface(self, models_info, tests, user_email):
         self._models_info = models_info
         self._tests = tests
         self._results = {}
+        self._core = TestCore(
+            model_ids=self._model_ids,
+            models_info=self._models_info,
+            tests=self._tests,
+            issue_handler=self._issue_handler,
+            user_email=user_email,
+        )
 
     def run(self, on_finished, user_email=None):
         """
@@ -42,13 +49,7 @@ class TestLogic():
         Returns:
             results: returns dict containing required test results in the appropriate format
         """
-        self._core = TestCore(
-            model_ids=self._model_ids,
-            models_info=self._models_info,
-            tests=self._tests,
-            issue_handler=self._issue_handler,
-            user_email=user_email,
-        )
+
         self._start_testing_thread(on_finished)
         return "Testing started."
 

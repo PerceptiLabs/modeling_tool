@@ -34,7 +34,9 @@ from perceptilabs.messaging import MessageConsumer, MessagingFactory
 import perceptilabs.logconf
 import perceptilabs.automation.autosettings.utils as autosettings_utils
 import perceptilabs.automation.utils as automation_utils
+import perceptilabs.cache_utils as cache_utils
 from perceptilabs.data.base import FeatureSpec, DataLoader
+from perceptilabs.data.settings import DatasetSettings
 from perceptilabs.script import ScriptFactory
 
 #LW interface
@@ -119,6 +121,7 @@ class Interface():
         self._session_id = session_id
         self._lw_cache_v2 = LightweightCache(max_size=LW_CACHE_MAX_ITEMS) if USE_LW_CACHING else None
         self._settings_engine = None
+        self._data_metadata_cache = cache_utils.get_data_metadata_cache()
 
         if experiment_api:
             self._data_container = Exp_DataContainer()
@@ -585,17 +588,24 @@ class Interface():
         layer_checkpoint_list = parser.parse()
         jsonNetwork = parser.save_json(layer_checkpoint_list[0])
         return jsonNetwork
-
-    def _create_response_tests(self, value, on_finished):
+    
+    def _create_testinterface(self, value):
         models_info = {}
         model_ids = value['models'].keys()
+        tests = value["tests"]
+        user_email = value['userEmail']
         for model_id in model_ids:
             value_dict = value['models'][model_id]
-            graph_spec = self._network_loader.load(value_dict, as_spec=True)
-            
+            graph_spec = self._network_loader.load(value_dict, as_spec=True)  
             try:
-                dataset_settings = value['datasetSettings'][model_id]
-                data_loader = DataLoader.from_dict(dataset_settings)
+                dataset_settings_dict = value['datasetSettings'][model_id]
+                num_repeats = utils.get_num_data_repeats(dataset_settings_dict)   #TODO (adil): remove when frontend solution exists
+                dataset_settings = DatasetSettings.from_dict(dataset_settings_dict)
+                dataset_hash = cache_utils.format_key(['pipelines', user_email, dataset_settings.compute_hash()])
+                data_metadata = self._data_metadata_cache.get(dataset_hash) if self._data_metadata_cache else None
+                if data_metadata is not None:
+                    logger.info(f"Found metadata for dataset with hash {dataset_hash}")
+                data_loader = DataLoader.from_settings(dataset_settings, num_repeats=num_repeats, metadata=data_metadata)
             except Exception as e:
                 message = str(e)
                 with self._issue_handler.create_issue(message, exception=None, as_bug=False) as issue:
@@ -609,10 +619,14 @@ class Interface():
                 'data_loader': data_loader,
                 'model_name': value_dict['model_name'],
             } 
-        tests = value["tests"]
-        user_email = value['userEmail']
+        
+        
         logger.info('List of tests %s have been requested for models %s', value['tests'], value.keys())
-        self._testcore.setup_test_interface(models_info, tests)
+        self._testcore.setup_test_interface(models_info, tests, user_email)
+
+    def _create_response_tests(self, value, on_finished):
+        user_email = value['userEmail']
+        self._create_testinterface(value)
         response = self._testcore.process_request(
             'StartTest', on_finished=on_finished, value={'user_email':user_email})
         return response
