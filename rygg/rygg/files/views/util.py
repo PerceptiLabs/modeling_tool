@@ -6,6 +6,9 @@ import json
 import os
 import platform
 
+import logging
+logger = logging.getLogger(__name__)
+
 def get_required_param(request, param):
     qp = request.query_params
     if not qp.__contains__(param):
@@ -43,7 +46,7 @@ def request_as_dict(request):
         ret = json.loads(request.body, encoding="utf-8")
         as_utf8 = request.body.decode("utf-8")
         ret = json.loads(as_utf8, encoding="utf-8")
-        
+
         return ret
     except:
         raise HTTPExceptions.BAD_REQUEST.with_content("Invalid json request")
@@ -95,6 +98,7 @@ def make_file_content_response(request, file_path):
                 line = reader.readline()
                 row_count += 1
     except Exception as err:
-        raise('Error when reading file contents')
+        logger.exception(err)
+        raise Exception('Error when reading file contents')
 
     return json_response({"file_contents": row_contents})
