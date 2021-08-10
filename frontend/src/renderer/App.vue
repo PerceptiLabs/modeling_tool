@@ -56,7 +56,7 @@
   import FilePickerPopup        from "@/components/global-popups/file-picker-popup.vue";
   import { MODAL_PAGE_PROJECT, MODAL_PAGE_QUESTIONNAIRE } from '@/core/constants.js';
   import { isUrlReachable } from '@/core/apiRygg.js';
-  import { isKeycloakReachable } from '@/core/apiKeyCloak.js';
+  import { keyCloak } from '@/core/apiKeyCloak.js';
   import { whenInEnterprise } from "@/core/isEnterprise";
   
   export default {
