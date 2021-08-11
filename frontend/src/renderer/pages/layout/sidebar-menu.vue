@@ -42,6 +42,13 @@
         defs
           clipPath(id="clip0")
             rect(width="18" height="10" fill="white" transform="translate(12 21)")
+    router-link.nav-link(:class="{'is-active-stroke': isExportPageOpened}"
+      :to="{name: 'export'}"
+      v-tooltip:right="'Export View'"
+    )
+      svg(xmlns="http://www.w3.org/2000/svg" width="30" height="27" viewBox="0 0 30 27" fill="none")
+        path(class="test-borders" d="M19.2839 8.5285L15.0001 3.74023L10.7162 8.5285L15.0001 3.74023V18.5566" stroke="#C4C4C4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round")
+        path(class="test-borders" d="M11.1777 12.2002H6.58756C6.43026 12.2013 6.27474 12.2331 6.1299 12.2937C5.98507 12.3543 5.85377 12.4425 5.74355 12.5533C5.63333 12.6642 5.54635 12.7954 5.4876 12.9395C5.42885 13.0836 5.39949 13.2377 5.40119 13.393V22.0664C5.40006 22.2214 5.42984 22.375 5.48885 22.5186C5.54785 22.6622 5.63492 22.7929 5.74509 22.9033C5.85525 23.0137 5.98636 23.1015 6.13091 23.1619C6.27546 23.2222 6.43063 23.2538 6.58756 23.2549H23.4124C23.7275 23.2494 24.0277 23.1215 24.2481 22.8991C24.4684 22.6767 24.5913 22.3776 24.5901 22.0664V13.393C24.5913 13.2375 24.5614 13.0833 24.5022 12.9391C24.4429 12.795 24.3556 12.6638 24.245 12.5531C24.1344 12.4423 24.0028 12.3541 23.8578 12.2936C23.7127 12.233 23.557 12.2013 23.3995 12.2002H18.943" stroke="#C4C4C4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round")
 
     div.nav-link(
       :class="{'is-active': this.$route.name === 'settings'}"
@@ -102,6 +109,9 @@
       }),
       statusLocalCore() {
         return this.$store.state.mod_api.statusLocalCore;
+      },
+      isExportPageOpened() {
+        return this.$route.name === 'export';
       },
       isStatisticsOrTestOpened() {
         const currentItemNetwork = this.$store.getters['mod_workspace/GET_currentNetwork'];

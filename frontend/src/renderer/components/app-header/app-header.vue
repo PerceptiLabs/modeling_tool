@@ -120,6 +120,7 @@ export default {
         case 'main-page': theName = 'Model Hub'; break;
         case 'projects': theName = 'Model Hub'; break;
         case 'settings': theName = 'Settings'; break;
+        case 'export': theName = 'Export'; break;
         case 'app':  {
           if(this.currentViewType==='statistic') {
             theName = 'Statistics View';

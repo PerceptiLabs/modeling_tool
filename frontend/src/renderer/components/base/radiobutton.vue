@@ -1,5 +1,5 @@
 <template lang="pug">
-  label.custom-radio
+  label.custom-radio(:class="{'type-secondary': styleTypeSecondary}")
     input(type="radio"
       :name="groupName"
       :value="valueInput"
@@ -27,6 +27,10 @@ export default {
     },
     value: {type: [Boolean, String]},
     valueInput: {String},
+    styleTypeSecondary: {
+      type: Boolean,
+      value: false,
+    }
   },
   data() {
     return {
@@ -54,7 +58,46 @@ export default {
     display: inline-flex;
     align-items: center;
     padding: .5em 1em .5em 0;
-
+    &.type-secondary {
+      .radio-fake {
+        position: relative;
+        background: transparent;
+        flex: 0 0 18px;
+        width: 18px;
+        height: 18px;
+        border: 1px solid #B6C7FB;
+        box-sizing: content-box;
+      }
+      .radio-text {
+        font-size: 14px;
+        font-family: Roboto, sans-serif;
+      }
+      input[type='radio'] {
+        &:checked {
+          + .radio-fake {
+            background: transparent;
+            border: 1px solid #B6C7FB;
+            box-sizing: content-box;
+            &:after {
+              content: '';
+              position: absolute;
+              width: 12px;
+              height: 12px;
+              top: 50%;
+              left: 50%;
+              transform: translate(-50%, -50%);
+              background-color: #B6C7FB;
+              border-radius: 50%;
+            }
+          }
+          ~ .radio-text {
+            //color: #fff;
+            font-size: 14px;
+          }
+        }
+      }
+    }
+    
     .sidebar-setting-content & {
       font-size: 11px;
     }

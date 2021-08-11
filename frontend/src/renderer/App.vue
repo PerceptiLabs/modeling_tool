@@ -231,13 +231,8 @@
         return this.errorPopup.length || (this.infoPopup && this.infoPopup.length);
       },
       showMenuBar() {
-
         const GET_userIsLogin = this.$store.getters['mod_user/GET_userIsLogin']
-        if (GET_userIsLogin && ['home', 'app', 'projects', 'main-page', 'settings', 'test'].includes(this.$route.name)) { 
-          return true; 
-        }
-
-        return false;
+        return GET_userIsLogin && ['home', 'app', 'projects', 'main-page', 'settings', 'test', 'export'].includes(this.$route.name);
       },
       showCreateIssuesPopup() {
         return this.$store.state.globalView.globalPopup.showCreateIssuesPopup;
@@ -285,8 +280,6 @@
           this.$store.state.globalView.globalPopup.showFilePickerPopup ||
           this.$store.state.globalView.globalPopup.showLoadSettingPopup ||
           this.$store.state.globalView.globalPopup.showSaveNetworkPopup ||
-          this.$store.state.globalView.globalPopup.showExportNetworkPopup ||
-          this.$store.state.globalView.globalPopup.showExportNetworkPopup ||
           this.$store.state.globalView.globalPopup.showExportNetworkToGitHubPopup ||
           this.$store.state.globalView.globalPopup.showImportNetworkfromGitHubOrLocalPopup ||
           this.showCreateIssuesPopup ||

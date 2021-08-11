@@ -111,25 +111,28 @@ const getters = {
       : deepCloneNetwork(state.defaultModelTemplate) //{networkID: '1'} //for the close ap when the empty workspace
 
   },
-  GET_currentNetworkDatasetSettings(state, getters)  {
+  GET_currentNetworkDatasetSettings(state, getters) {
     return getters.GET_networkIsNotEmpty
       ? state.workspaceContent[state.currentNetwork].networkMeta.datasetSettings
       : null
   },
-  GET_currentNetworkCheckpointDirectory(state, getters)  {
+  GET_currentNetworkDatasetSettingsByModelId: (state, getters) => (modelId = null) =>  {
+    return getters.GET_networkByNetworkId(modelId).networkMeta.datasetSettings
+  },
+  GET_currentNetworkCheckpointDirectory(state, getters) {
     return getters.GET_networkIsNotEmpty
-	  ? checkpointDirFromProject(state.workspaceContent[state.currentNetwork].apiMeta.location)
+      ? checkpointDirFromProject(state.workspaceContent[state.currentNetwork].apiMeta.location)
       : null
+  },
+  GET_currentNetworkCheckpointDirectoryByModelId:(state, getters) => (modelId = null) => {
+    return checkpointDirFromProject(getters.GET_networkByNetworkId(modelId).apiMeta.location) || null;
   },
   GET_currentNetworkIndex(state, getters)  {
     return state.currentNetwork;
   },
-  GET_networkByNetworkId: (state, getters) => (networkId) =>  {
-    if (!networkId) { return null; }
-
-    const network = state.workspaceContent.find(wc => wc.networkID == networkId);
-    
-    return network;
+  GET_networkByNetworkId: (state, getters) => (modelId) =>  {
+    if (!modelId) { return null; }
+    return state.workspaceContent.find(wc => parseInt(wc.networkID, 10) === parseInt(modelId, 10));
   },
   GET_currentNetworkId(state, getters) {
     return getters.GET_networkIsNotEmpty && state.workspaceContent[state.currentNetwork]
@@ -181,6 +184,9 @@ const getters = {
     return getters.GET_networkIsNotEmpty
       ? getters.GET_currentNetwork.networkMeta.coreStatus.Status
       : null
+  },
+  GET_networkCoreStatusByModelId:(state, getters) => (modelId = null) => {
+    return getters.GET_networkByNetworkId(modelId).networkMeta.coreStatus.Status;
   },
   GET_currentSelectedEl(state, getters) {
     let selectedIndex = [];

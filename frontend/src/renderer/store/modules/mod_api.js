@@ -1010,42 +1010,44 @@ const actions = {
 
   async API_exportData({rootGetters, getters, dispatch}, settings) {
     const userEmail = rootGetters['mod_user/GET_userEmail'];      
-    const modelId = rootGetters['mod_workspace/GET_currentNetworkId'];
-    const datasetSettings = rootGetters['mod_workspace/GET_currentNetworkDatasetSettings'];      
+    const modelId = settings.modelId;
+    const datasetSettings = rootGetters['mod_workspace/GET_currentNetworkDatasetSettingsByModelId'](settings.modelId);
 
-    const isTraining = ['Training', 'Validation', 'Paused'].includes(rootGetters['mod_workspace/GET_networkCoreStatus']);
+    const isTraining = ['Training', 'Validation', 'Paused'].includes(rootGetters['mod_workspace/GET_networkCoreStatusByModelId'](settings.modelId));
 
     async function exportClosure() {
       if (isTraining) {
         const theData = {
-	  receiver: rootGetters['mod_workspace/GET_currentNetworkId'],
+	        receiver: settings.modelId,
           action: 'Export',
           value: settings
         };
         return coreRequest(theData);
       } else {
-          const network = getters.GET_coreNetwork;
-          const checkpointDirectory = rootGetters['mod_workspace/GET_currentNetworkCheckpointDirectory'];       
+          const network = getters.GET_coreNetworkById(settings.modelId);
+          const checkpointDirectory = rootGetters['mod_workspace/GET_currentNetworkCheckpointDirectoryByModelId'](settings.modelId);       
           return renderingKernel.exportModel(settings, datasetSettings, userEmail, modelId, network, checkpointDirectory)
       }
-    };
+    }
 
     const trackerData = {
       result: '',
-      network: getters.GET_coreNetwork,
+      network: getters.GET_coreNetworkById(settings.modelId),
       settings
     };
 
-    exportClosure()
+    return exportClosure()
       .then((data) => {
-        dispatch('globalView/GP_infoPopup', data, {root: true});
-        trackerData.result = 'success';  
+        // dispatch('globalView/GP_infoPopup', data, {root: true});
+        trackerData.result = 'success';
+        return Promise.resolve();
       })
       .catch((err) => {
         console.error(err);
         dispatch('globalView/GP_errorPopup', err, {root: true});
         trackerData.result = 'error';
-      })	  
+        return Promise.reject();
+      })
       .finally(() => {
         dispatch('mod_tracker/EVENT_modelExport', trackerData, {root: true});
       });

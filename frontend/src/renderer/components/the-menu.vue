@@ -186,9 +186,6 @@ export default {
     saveModelAs() {
       this.saveNetworkAs();
     },
-    exportModel() {
-      this.$store.dispatch('globalView/SET_exportNetworkPopup', true);
-    },
     exportModelToGithub() {
       this.$store.dispatch('globalView/SET_exportNetworkToGithubPopup', true);
     },
@@ -246,7 +243,6 @@ export default {
             {label: 'Save',         accelerator: this.isMac ? 'meta+s' : 'ctrl+s',              enabled: this.openApp,  active: this.saveModel },
             {label: 'Save as',   accelerator: this.isMac ? 'meta+shift+s' : 'ctrl+shift+s',     enabled: this.openApp,  active: this.saveModelAs },
             {type: 'separator'},
-            {label: 'Export',  active: this.exportModel,        enabled: this.isCurrentModelOpened && this.openApp},
             {label: 'Export to GitHub',  active: this.exportModelToGithub,        enabled: this.isCurrentModelOpened && this.openApp && this.showExport, visible: this.showExport},
             {type: 'separator'},
             {label: 'Log out', active: this.logOut,             enabled: this.isLogin},

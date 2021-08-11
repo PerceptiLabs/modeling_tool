@@ -110,7 +110,6 @@
       ref="saveNetworkPopup"
       :popup-settings="saveNetworkPopup"
       )
-    export-network(v-if="showExportNetworkPopup")
     export-network-git-hub(v-if="showExportNetworkToGitHubPopup")
     import-model(v-if="showImportNetworkfromGitHubOrLocalPopup")
 

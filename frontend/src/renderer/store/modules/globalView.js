@@ -23,7 +23,6 @@ const state = {
     showFilePickerPopup: false,
     showLoadSettingPopup: false,
     showSaveNetworkPopup: false,
-    showExportNetworkPopup: false,
     showExportNetworkToGitHubPopup: false,
     showImportNetworkfromGitHubOrLocalPopup: false,
     showNewModelPopup: false,
@@ -108,9 +107,6 @@ const mutations = {
   },
   set_newModelPopup(state, value) {
     state.globalPopup.showNewModelPopup = value;
-  },
-  set_exportNetworkPopup(state, value) {
-    state.globalPopup.showExportNetworkPopup = value;
   },
   set_exportNetworkToGitHubPopup(state, value) {
     state.globalPopup.showExportNetworkToGitHubPopup = value;
@@ -206,9 +202,6 @@ const actions = {
   },
   SET_newModelPopup({commit}, value) {
     commit('set_newModelPopup', value);
-  },
-  SET_exportNetworkPopup({commit}, value) {
-    commit('set_exportNetworkPopup', value);
   },
   SET_exportNetworkToGithubPopup({commit}, value) {
     commit('set_exportNetworkToGitHubPopup', value);

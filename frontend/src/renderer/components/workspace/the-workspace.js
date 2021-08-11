@@ -15,7 +15,6 @@ import SelectCoreSide         from "@/components/global-popups/workspace-core-si
 import WorkspaceBeforeImport  from "@/components/global-popups/workspace-before-import";
 import WorkspaceSaveNetwork   from "@/components/global-popups/workspace-save-network.vue";
 import WorkspaceLoadNetwork   from "@/components/global-popups/workspace-load-network.vue";
-import ExportNetwork          from "@/components/global-popups/export-network.vue";
 import ExportNetworkGitHub    from "@/components/global-popups/export-network-git-hub.vue";
 import ImportModel            from "@/components/global-popups/import-model-popup.vue";
 import FilePickerPopup        from "@/components/global-popups/file-picker-popup.vue";
@@ -47,7 +46,7 @@ export default {
     WorkspaceToolbar, StatisticsToolbar,
     NetworkField, TextEditable,
     GeneralResult, SelectCoreSide,
-    WorkspaceBeforeImport, WorkspaceSaveNetwork, WorkspaceLoadNetwork, ExportNetwork, ExportNetworkGitHub, ImportModel,
+    WorkspaceBeforeImport, WorkspaceSaveNetwork, WorkspaceLoadNetwork, ExportNetworkGitHub, ImportModel,
     TheTesting, TheViewBox, StartTrainingSpinner,
     TheToaster, TheMiniMap, FilePickerPopup, TheSidebar,
     CodeWindow, InformationPanel,
@@ -143,7 +142,6 @@ export default {
       showFilePickerPopup:        state => state.globalView.globalPopup.showFilePickerPopup,
       showLoadSettingPopup:       state => state.globalView.globalPopup.showLoadSettingPopup,
       showSaveNetworkPopup:       state => state.globalView.globalPopup.showSaveNetworkPopup,
-      showExportNetworkPopup:     state => state.globalView.globalPopup.showExportNetworkPopup,
       showExportNetworkToGitHubPopup:     state => state.globalView.globalPopup.showExportNetworkToGitHubPopup,
       showImportNetworkfromGitHubOrLocalPopup:     state => state.globalView.globalPopup.showImportNetworkfromGitHubOrLocalPopup,
       isMiniMapNavigatorOpened:   state => state.globalView.isMiniMapNavigatorOpened,

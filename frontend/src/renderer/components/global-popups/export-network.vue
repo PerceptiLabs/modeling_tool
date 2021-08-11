@@ -55,11 +55,13 @@ export default {
         Compressed: false,
         Quantized: false,
         name: '',
+        modelId: null,
       }
     }
   },
   mounted() {
     this.settings.name = this.$store.getters['mod_workspace/GET_currentNetwork'].networkName;
+    this.settings.modelId = this.$store.getters['mod_workspace/GET_currentNetwork'].networkID
   },
   watch: {
     'settings.Quantized'(value) {
@@ -94,27 +96,30 @@ export default {
        if(doesFileExist) {
           this.$store.dispatch('globalView/GP_confirmPopup', {
             text: 'That file already exists. Are you sure you want to overwrite it?',
-            ok: () => {
-              exportData.call(this, this.settings)
+            ok: async () => {
+              await exportData.call(this, this.settings)
             }
           })
         } else {
-          exportData.call(this, this.settings)
+          await exportData.call(this, this.settings)
         }
       } else {
-        exportData.call(this, this.settings)
+        await exportData.call(this, this.settings)
       }
 
-      function exportData(settings = null) {
+      async function exportData(settings = null) {
+        this.closePopup();
         let exportType = this.getSettingExportType(this.settings);
-        
+
         const payload = {
           name: this.settings.name,
           Location: this.settings.Location,
+          modelId: this.settings.modelId,
           Type: exportType,
         };
-        this.$store.dispatch('mod_api/API_exportData', payload);
-        this.closePopup();
+        await this.$store.dispatch('mod_api/API_exportData', payload);
+        this.$store.dispatch('globalView/GP_infoPopup', 'Exported with success.')
+        
       }
     },
     getSettingExportType(settings) {
