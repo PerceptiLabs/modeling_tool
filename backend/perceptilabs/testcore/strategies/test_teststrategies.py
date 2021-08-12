@@ -106,7 +106,7 @@ def test_image_metrics_table_computation():
     }
     compatible_output_layers = {'y1':'image'}
     metrics_table = MetricsTable().run(model_outputs, compatible_output_layers)
-    assert metrics_table == {'y1':{'IoU': 0.6, 'dice_coefficient': 0.72, 'keras_dice_coefficient': 0.58}}
+    assert metrics_table == {'y1':{'IoU': 0.6, 'dice_coefficient': 0.58}}
 
 def test_outputs_visualization_computation():
     model_outputs = {
