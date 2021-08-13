@@ -45,24 +45,27 @@ missing_files=$(join -v 2 "${present}" "${expected}" | join -v 2 "${exceptions}"
 # add / to each missing file
 without_slash=$(echo "${missing_files}" | sed 's/^\(.*[^\/]\)$/\1/g')
 
-pruned_extra_file=$(mktemp)
+pruned_extra="${extra_files}"
+
 pruned_missing_file=$(mktemp)
 # for each file in missing, see if we find it as a prefix n the list of extras. Yes it's O(n^2)
+
 for line in "${without_slash}"; do
   if echo "${extra_files}" | grep -q "^${line}/"; then
-    echo "${extra_files}" | grep -v "^${line}/" >> "${pruned_extra_file}" || true
+    tmp=$(echo "${pruned_extra}" | grep -v "^${line}/") || true
+    pruned_extra=${tmp:-""}
   else
     echo "${line}" >> "${pruned_missing_file}"
   fi
+
 done
 
-pruned_extra="$(cat ${pruned_extra_file})"
 report_error "${pruned_extra}" "Extra files:"
 
 pruned_missing=$(cat "${pruned_missing_file}")
 report_error "${pruned_missing}" "Missing files:"
 
-rm "${expected}" "${present}" "${exceptions}" "${pruned_extra_file}" "${pruned_missing_file}"
+rm "${expected}" "${present}" "${exceptions}" "${pruned_missing_file}"
 
 popd > /dev/null
 exit $rc
