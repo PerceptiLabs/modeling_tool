@@ -64,6 +64,7 @@ import './core/filters'
 import '@/core/plugins/eCharts.js'
 import '@/core/plugins/intercom.js'
 import userflow from "userflow.js";
+import {renderingKernel} from '@/core/apiRenderingKernel';
 
 Vue.component('base-checkbox', BaseCheckbox);
 Vue.component('base-radio', BaseRadiobutton);
@@ -143,7 +144,11 @@ async function login(){
       }
 
       runApp(keycloak.token, keycloak.refreshToken);
-
+      
+      // Set user email
+      const { email } = parseJWT(keycloak.token);
+      renderingKernel.set_user(email);
+      
       setInterval(() =>{
         keycloak.updateToken(1).success((refreshed)=>{
           if (refreshed) {

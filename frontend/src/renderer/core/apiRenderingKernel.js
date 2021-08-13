@@ -159,7 +159,14 @@ export const renderingKernel = {
       .then(res => {
         return (res.status === 200) ? res.data : null;
       })
-  },        
+  },
+  async set_user(userEmail) {
+    const payload = {
+      userEmail,
+    };
+    return whenRenderingKernelReady
+      .then(rk => rk.post(`/set_user`, payload));
+  },
 }
 
 

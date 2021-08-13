@@ -18,9 +18,10 @@ from perceptilabs.endpoints.type_inference.base import TypeInference
 from perceptilabs.endpoints.layer_code.base import LayerCode
 from perceptilabs.endpoints.session.base import SessionStart, ActiveSessions, SessionProxy
 from perceptilabs.endpoints.export.base import Export
+from perceptilabs.endpoints.set_user.base import SetUser
 from perceptilabs.logconf import APPLICATION_LOGGER
 from perceptilabs.issues import traceback_from_exception
-from perceptilabs.endpoints.session.threaded_executor import ThreadedExecutor 
+from perceptilabs.endpoints.session.threaded_executor import ThreadedExecutor
 import perceptilabs.utils as utils
 import perceptilabs.endpoints.utils as endpoint_utils
 
@@ -41,13 +42,13 @@ if utils.is_prod() and not utils.is_pytest():
         dsn="https://095ae2c447ec4da8809174aa9ce55906@o283802.ingest.sentry.io/5838672",
         integrations=[FlaskIntegration(), sentry_logging],
         environment=SENTRY_ENVIRONMENT,
-        release=SENTRY_RELEASE    
+        release=SENTRY_RELEASE
     )
     logger.info(f"Initialized sentry for environment '{SENTRY_ENVIRONMENT}' and release '{SENTRY_RELEASE}'")
 
 class JSONEncoder(_JSONEncoder):
     def default(self, obj):
-        return utils.convert(obj)        
+        return utils.convert(obj)
 class Flask(_Flask):
     json_encoder = JSONEncoder
 
@@ -57,29 +58,35 @@ def create_app(data_metadata_cache=None, preview_cache=None, data_executor=None,
 
     if session_executor is None:
         session_executor = ThreadedExecutor(single_threaded=True)
-    
+
     app = Flask(__name__)
     cors = CORS(app, resorces={r'/d/*': {"origins": '*'}})
-    
+
     compress = Compress()
     compress.init_app(app)
 
     app.add_url_rule(
+        '/set_user',
+        methods=['POST'],
+        view_func=SetUser.as_view('set_user')
+    )
+
+    app.add_url_rule(
         '/data',
         methods=['PUT'],
-        view_func=PutData.as_view('put_data', data_executor, data_metadata_cache=data_metadata_cache) 
+        view_func=PutData.as_view('put_data', data_executor, data_metadata_cache=data_metadata_cache)
     )
 
     app.add_url_rule(
         '/data',
         methods=['GET'],
         view_func=IsDataReady.as_view('is_data_ready', data_metadata_cache=data_metadata_cache)
-    ) 
+    )
 
     app.add_url_rule(
         '/model_recommendations',
         methods=['POST'],
-        view_func=ModelRecommendations.as_view('model_recommendations', data_metadata_cache=data_metadata_cache)  
+        view_func=ModelRecommendations.as_view('model_recommendations', data_metadata_cache=data_metadata_cache)
     )
 
     app.add_url_rule(
@@ -134,30 +141,30 @@ def create_app(data_metadata_cache=None, preview_cache=None, data_executor=None,
     @app.route('/healthy', methods=['GET'])
     def healthy():
         return '{"healthy": "true"}'
-    
-    
+
+
     @app.route('/has_checkpoint', methods=['GET'])
     def has_checkpoint():
         directory = request.args.get('directory')
         return jsonify(endpoint_utils.is_valid_checkpoint_directory(directory))
-    
-    
+
+
     @app.before_request
     def before_request():
         g.request_started = time.perf_counter()
-        
-    
+
+
     @app.after_request
     def after_request(response):
         duration = time.perf_counter() - g.request_started
-        logger.info(f"Request to endpoint '{request.endpoint}' took {duration:.4f}s")    
+        logger.info(f"Request to endpoint '{request.endpoint}' took {duration:.4f}s")
         return response
-    
+
     @app.errorhandler(Exception)
     def handle_endpoint_error(e):
         message = traceback_from_exception(e)
         print(message)
         logger.exception(f"Error in request '{request.endpoint}'")
         return make_response(message), 500
-    
+
     return app
