@@ -79,7 +79,10 @@ export default {
       return this.$store.getters["mod_workspace/GET_modelTrainingSetting"];
     },
     availableModels() {
-      return this.models.filter((model) => {
+      return this.models
+      .filter((model) => {
+        return model.networkMeta.coreStatus.Status === 'Finished' || model.networkMeta.coreStatus.Status === 'Stop';
+      }).filter((model) => {
         return Object.keys(this.testTypes).every((testType) => this.testTypes[testType] === false || isModelValidForTest(model, testType))
       }).map((model) => ({
         text: model.networkName,
