@@ -1098,7 +1098,7 @@ const actions = {
           modelId: modelId,
         }, {root: true})
 
-        if (data.Status === 'Finished') {
+        if (data && data.Status === 'Finished') {
           dispatch('mod_workspace/EVENT_stopRequest', { networkId: modelId }, {root: true});
         }
       })

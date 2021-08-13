@@ -39,10 +39,10 @@ class SessionProxy(View):
     
     def dispatch_request(self):
         json_data = request.get_json()
-        action = json_data['action']        
-        receiver = json_data['receiver']
-        user_email = json_data['user_email']
-        data = json_data['data']        
+        action = json_data.get('action')
+        receiver = json_data.get('receiver')
+        user_email = json_data.get('user_email')
+        data = json_data.get('data')        
         info = self._executor.get_task_info(user_email, receiver)
         
         try:
