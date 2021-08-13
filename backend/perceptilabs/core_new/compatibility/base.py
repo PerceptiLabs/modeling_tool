@@ -117,7 +117,7 @@ class CompatibilityCore:
         count = {}
 
         while not self._trainer.is_ready:
-            time.sleep(0.3)   
+            time.sleep(PROCESS_COMMANDS_DELAY)
             
         while not self._command_queue.empty():
             command = self._command_queue.get()

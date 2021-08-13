@@ -88,11 +88,13 @@ services:
     environment:
       HOME: /perceptilabs
       PL_KERNEL_MODE: training
+    # with gpu
     deploy:
       resources:
         reservations:
           devices:
           - capabilities: [gpu]
+    # end with gpu
     networks:
       - perceptilabs
 

@@ -445,9 +445,9 @@
       checkRyggAvailability() {
         ryggAvailability().then(resp => {
           if (resp === "UNAVAILABLE") {
-            this.openErrorPopup("The file server isn't available");
+            this.openErrorPopup("The app service isn't available");
           } else if (resp === "BAD_TOKEN") {
-            this.openErrorPopup("Unable to talk to the file server. Did you use the correct token to load this page?");
+            this.openErrorPopup("Unable to talk to the app service. Did you use the correct token to load this page?");
           }
         })
       },

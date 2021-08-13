@@ -16,7 +16,7 @@ from perceptilabs.endpoints.data.base import PutData, IsDataReady
 from perceptilabs.endpoints.model_recommendations.base import ModelRecommendations
 from perceptilabs.endpoints.type_inference.base import TypeInference
 from perceptilabs.endpoints.layer_code.base import LayerCode
-from perceptilabs.endpoints.session.base import SessionStart, ActiveSessions, SessionProxy
+from perceptilabs.endpoints.session.base import SessionStart, ActiveSessions, SessionProxy, SessionCancel
 from perceptilabs.endpoints.export.base import Export
 from perceptilabs.endpoints.set_user.base import SetUser
 from perceptilabs.logconf import APPLICATION_LOGGER
@@ -49,6 +49,7 @@ if utils.is_prod() and not utils.is_pytest():
 class JSONEncoder(_JSONEncoder):
     def default(self, obj):
         return utils.convert(obj)
+
 class Flask(_Flask):
     json_encoder = JSONEncoder
 
@@ -118,6 +119,12 @@ def create_app(data_metadata_cache=None, preview_cache=None, data_executor=None,
         '/session/start',
         methods=['POST'],
         view_func=SessionStart.as_view('session_start', session_executor)
+    )
+
+    app.add_url_rule(
+        '/session',
+        methods=['DELETE'],
+        view_func=SessionCancel.as_view('session_delete', session_executor)
     )
 
     app.add_url_rule(

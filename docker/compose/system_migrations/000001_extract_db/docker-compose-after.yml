@@ -47,11 +47,13 @@ services:
       PL_FILE_SERVING_TOKEN: thetoken
       PL_TUTORIALS_DATA: /tutorial_data
       PL_FILE_UPLOAD_DIR: /perceptilabs/Documents/Perceptilabs/data
+    # with gpu
     deploy:
       resources:
         reservations:
           devices:
           - capabilities: [gpu]
+    # end with gpu
 
   nginx:
     image: nginx

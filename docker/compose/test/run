@@ -1,0 +1,89 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+######################
+# Constants
+TESTING_LOCAL=${TESTING_LOCAL:-1}
+
+if [ $TESTING_LOCAL -eq 1 ]; then
+  CHECKPOINT_DIR=$(realpath $(dirname $0))
+  DATA_PATH="${CHECKPOINT_DIR}/test_data.csv"
+  # TODO: modify local request to use local paths
+  api="http://localhost:5001"
+else
+  DATA_PATH="/perceptilabs/Documents/Perceptilabs/data/test_data.csv"
+  CHECKPOINT_DIR="/perceptilabs/Documents/Perceptilabs/Default"
+  api="http://localhost/render"
+  # TODO: upload the test csv to docker
+fi
+REQUEST_JSON_FILE=test_request.json
+REQUEST_JSON=$(cat $REQUEST_JSON_FILE \
+  | sed "s|DATA_PATH_PLACEHOLDER|${DATA_PATH}|g" \
+  | sed "s|CHECKPOINT_DIRECTORY_PLACEHOLDER|${CHECKPOINT_DIR}|g")
+EMAIL=$(echo "$REQUEST_JSON" | jq -r .value.userEmail)
+
+
+
+######################
+# helpers
+poll(){
+  [ $# -ge 4 ] || exit 1
+  reps=$1
+  interval=$2
+  msg=$3
+  shift 3
+  echo -n "${msg} ..."
+  while ! $@; do
+    reps=$(($reps-1))
+    if [ $reps -eq 0 ]; then
+      return 1
+    fi
+    echo -n "."
+    sleep $interval
+  done
+  echo " done"
+}
+
+
+start_session(){
+  curl -s -XPOST ${api}/session/start -H"Content-Type: application/json" -d "$REQUEST_JSON"
+}
+
+get_task_ids_for_email(){
+  curl -s ${api}/session/list\?user_email\=$EMAIL -H"Content-Type: application/json" \
+    | jq '. | keys[0]' -r
+}
+
+get_tasks_for_model(){
+  curl -s ${api}/session/list\?user_email\=$EMAIL\&model_id\=$model_id -H"Content-Type: application/json" \
+    | jq '. | keys[0]' -r
+}
+
+
+######################
+# tests
+resp=$(start_session) || {
+  echo "Failed to start task"
+  exit 1
+}
+echo "Started task."
+session_id=$(echo "${resp}" | jq .session_id -r)
+model_id=$(echo "${resp}" | jq .model_id -r)
+
+is_session_active(){
+  [ "$(get_task_ids_for_email)" == "${session_id}" ]
+}
+
+poll 30 2 "Waiting for session for $EMAIL to be active" is_session_active
+
+echo -n "Looking up details for user $EMAIL, model $model_id ..."
+model_session_received=$(get_tasks_for_model)
+if [ "${model_session_received}" == "${session_id}" ]; then
+  echo "done"
+else
+  echo "failed"
+  exit 1
+fi
+
+
+# TODO: wait for completion and check for success

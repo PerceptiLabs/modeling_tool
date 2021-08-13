@@ -76,5 +76,5 @@ customize_docker_compose_file(){
   find_replace "PL_ROOT_DIR" $PL_ROOT_DIR "$1"
 
   [ -n "${HAS_GPU}" ] ||
-    delete_range "^\s*deploy:" "capabilities.*gpu" "$1"
+    delete_range "^\s*# with gpu" "# end with gpu" "$1"
 }

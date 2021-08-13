@@ -1,0 +1,172 @@
+{
+    "receiver": 615,
+    "action": "Start",
+    "value": {
+        "modelId": 615,
+        "userEmail": "anton.k@perceptilabs.com",
+        "Layers": {
+            "0": {
+                "Name": "Input_1",
+                "Type": "IoInput",
+                "checkpoint": {
+                    "load_checkpoint": false,
+                    "path": ""
+                },
+                "endPoints": [],
+                "Properties": {
+                    "Type": "IoInput",
+                    "FeatureName": "x1",
+                    "FilePath": "DATA_PATH_PLACEHOLDER",
+                    "DataType": "numerical",
+                    "testInfoIsInput": true,
+                    "accessProperties": {
+                        "Sources": []
+                    }
+                },
+                "Code": null,
+                "backward_connections": [],
+                "forward_connections": [
+                    {
+                        "src_var": "output",
+                        "dst_id": "1",
+                        "dst_var": "input"
+                    }
+                ],
+                "visited": false,
+                "previewVariable": "output"
+            },
+            "1": {
+                "Name": "Dense_1",
+                "Type": "DeepLearningFC",
+                "checkpoint": {
+                    "load_checkpoint": false,
+                    "path": ""
+                },
+                "endPoints": [],
+                "Properties": {
+                    "Activation_function": "None",
+                    "Batch_norm": false,
+                    "Dropout": false,
+                    "Keep_prob": 0,
+                    "Neurons": 1
+                },
+                "Code": null,
+                "backward_connections": [
+                    {
+                        "src_id": "0",
+                        "src_var": "output",
+                        "dst_var": "input"
+                    }
+                ],
+                "forward_connections": [
+                    {
+                        "src_var": "output",
+                        "dst_id": "2",
+                        "dst_var": "input"
+                    }
+                ],
+                "visited": false,
+                "previewVariable": "output"
+            },
+            "2": {
+                "Name": "Target_1",
+                "Type": "IoOutput",
+                "checkpoint": {
+                    "load_checkpoint": false,
+                    "path": ""
+                },
+                "endPoints": [],
+                "Properties": {
+                    "Type": "IoInput",
+                    "FeatureName": "y1",
+                    "FilePath": "DATA_PATH_PLACEHOLDER",
+                    "DataType": "numerical",
+                    "testInfoIsInput": true,
+                    "accessProperties": {
+                        "Sources": []
+                    }
+                },
+                "Code": null,
+                "backward_connections": [
+                    {
+                        "src_id": "1",
+                        "src_var": "output",
+                        "dst_var": "input"
+                    }
+                ],
+                "forward_connections": [],
+                "visited": false,
+                "previewVariable": "output"
+            }
+        },
+        "checkpointDirectory": "CHECKPOINT_DIRECTORY_PLACEHOLDER",
+        "loadCheckpoint": false,
+        "datasetSettings": {
+            "randomizedPartitions": true,
+            "partitions": [
+                70,
+                20,
+                10
+            ],
+            "featureSpecs": {
+                "x1": {
+                    "csv_path": "DATA_PATH_PLACEHOLDER",
+                    "iotype": "Input",
+                    "datatype": "numerical",
+                    "preprocessing": {}
+                },
+                "y1": {
+                    "csv_path": "DATA_PATH_PLACEHOLDER",
+                    "iotype": "Target",
+                    "datatype": "numerical",
+                    "preprocessing": {}
+                }
+            }
+        },
+        "trainSettings": {
+            "Epochs": 4,
+            "Batch_size": 2,
+            "Shuffle": true,
+            "Loss": "Quadratic",
+            "LossOptions": [
+                {
+                    "text": "Cross-Entropy",
+                    "value": "Cross-Entropy"
+                },
+                {
+                    "text": "Quadratic",
+                    "value": "Quadratic"
+                },
+                {
+                    "text": "Dice",
+                    "value": "Dice"
+                }
+            ],
+            "Learning_rate": 0.001,
+            "Optimizer": "ADAM",
+            "OptimizerOptions": [
+                {
+                    "text": "ADAM",
+                    "value": "ADAM"
+                },
+                {
+                    "text": "SGD",
+                    "value": "SGD"
+                },
+                {
+                    "text": "Adagrad",
+                    "value": "Adagrad"
+                },
+                {
+                    "text": "RMSprop",
+                    "value": "RMSprop"
+                }
+            ],
+            "Beta1": 0.9,
+            "Beta2": 0.999,
+            "Momentum": 0,
+            "Centered": false,
+            "AutoCheckpoint": false
+        }
+    }
+}

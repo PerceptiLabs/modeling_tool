@@ -7,10 +7,14 @@ class BaseExecutor(ABC):
         raise NotImplementedError
 
     @abstractmethod
+    def cancel_task(self, user_email, model_id):
+        raise NotImplementedError
+
+    @abstractmethod
     def get_task_info(self, user_email, model_id):
         raise NotImplementedError
 
-    @abstractmethod    
+    @abstractmethod
     def get_active_tasks(self, user_email):
-        raise NotImplementedError        
-    
+        raise NotImplementedError
+
