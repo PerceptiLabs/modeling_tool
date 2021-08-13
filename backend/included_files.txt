@@ -414,6 +414,7 @@ perceptilabs/tracking/training_started.py
 perceptilabs/tracking/model_exported.py
 perceptilabs/tracking/testing_completed.py
 perceptilabs/tracking/data_selected.py
+perceptilabs/tracking/user_email_set.py
 
 # backend/perceptilabs/endpoints/
 perceptilabs/endpoints/base.py
