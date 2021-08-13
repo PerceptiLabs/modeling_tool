@@ -23,6 +23,7 @@ jsonschema==3.2.0
 keras2onnx==1.7.0
 mixpanel==4.7.0
 numpy>=1.18.5,<=1.19.2
+matplotlib<=3.4.2 # 3.4.3 introduced an incompatibility with numpy
 onnx==1.9.0
 opencv-python  # the build script will change this to opencv-python-headless for docker
 pandas>=0.25.0
