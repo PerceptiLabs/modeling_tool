@@ -101,7 +101,11 @@ def run_kernel(start_payload, on_server_started=None, is_retry=False, cancel_tok
         # hack to leave the thread running until the frontend can get the last updates from the api
         # The correct way would be to call all of the endpoints from which the frontend will  need final information
         if cancel_token:
-            ret = cancel_token.wait(timeout=60)
+            # the cancel_token is thread-based instead of asyncio, so we can't just call wait(timeout=60) without halting the webserver we're running in this thread
+            for _ in range(60):
+                if cancel_token.wait(timeout=0.01):
+                    break
+                await asyncio.sleep(1)
         else:
             await asyncio.sleep(60)
 

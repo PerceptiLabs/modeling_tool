@@ -79,6 +79,9 @@ class TaskCache:
                 return None
             meta = task.get_metadata()
 
+            if not meta:
+                return None
+
             if "exception" in meta:
                 raise meta["exception"]
 
