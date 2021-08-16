@@ -137,11 +137,14 @@
               button.action-button.load-dataset(
                 @click="openFilePicker('setDataPath')"
                 :data-tutorial-target="'tutorial-data-wizard-load-csv'"
-              ) Load .CSV
+              ) Upload .CSV
+              p(v-if="isPublicDatasetEnabled").choose-public-datasets
+                | or choose from 
+                a(@click="goToPublicDatasets") Public Datasets
           div.find-out-message Find our starting guide 
             span.guide-link(@click="openPLVideoTutorialPage") here.
-        div(v-else)
-          .dataset-settings(v-show="onStep === 2")
+        template(v-else-if="onStep === 2")
+          .dataset-settings
             chart-spinner(v-if="showLoadingSpinner")
             template(v-else)
               csv-table(
@@ -201,7 +204,8 @@
                         fill="#6185EE"
                       )
 
-          div.model-run-settings-page(v-show="onStep === 3")
+        template(v-else-if="onStep === 3")
+          div.model-run-settings-page
             template(v-if="isCreateModelLoading")
               chart-spinner(text="Building preprocessing pipelines...")
             template(v-else)
@@ -356,7 +360,12 @@
                   button.action-button.create-btn(
                     @click="createModelTF2X(false)"
                   ) Customize
-
+        template(v-else-if="onStep === 4")
+          public-datasets-list(
+            @goBack="onStep = 1"
+          )
+        template(v-else)
+          | Error
 
 
 
@@ -392,7 +401,7 @@ import {
 }                                             from "@/core/helpers/layer-positioning-helper";
 import { buildLayers }                        from "@/core/helpers/layer-creation-helper";
 
-import { debounce, deepCopy, isEnvDataWizardEnabled }   from "@/core/helpers";
+import { debounce, deepCopy, isEnvDataWizardEnabled, isPublicDatasetEnabled }   from "@/core/helpers";
 import cloneDeep                                        from "lodash.clonedeep";
 
 import { doesDirExist as rygg_doesDirExist }              from "@/core/apiRygg";
@@ -404,9 +413,11 @@ import { getFileContent as rygg_getFileContent }          from "@/core/apiRygg";
 import { renderingKernel }              from "@/core/apiRenderingKernel";
 import { formatCSVTypesIntoKernelFormat } from "@/core/helpers/model-helper";
 
+import PublicDatasetsList from './public-datasets-list.vue'
+
 export default {
   name: "SelectModelModal",
-  components: { FilePickerPopup, CsvTable, TripleInput, InfoTooltip, ChartSpinner, DataColumnOptionSidebar },
+  components: { FilePickerPopup, CsvTable, TripleInput, InfoTooltip, ChartSpinner, DataColumnOptionSidebar, PublicDatasetsList },
   mixins: [mixinFocus],
 
   data: function() {
@@ -490,6 +501,9 @@ export default {
       defaultTemplate: "mod_workspace/GET_defaultNetworkTemplate",
       userEmail: "mod_user/GET_userEmail",
     }),
+    isPublicDatasetEnabled() {
+      return isPublicDatasetEnabled();
+    },
     isDataWizardEnabled() {
       return isEnvDataWizardEnabled();
     },
@@ -498,6 +512,7 @@ export default {
         case 1: return 'Load your dataset'; break;
         case 2: return 'Define your dataset'; break;
         case 3: return 'Training settings'; break;
+        case 4: return 'Load dataset'; break;
       }
     }
 
@@ -505,6 +520,8 @@ export default {
   mounted() {
     this.modelPath = this.projectPath;
     document.addEventListener("keyup", this.handleKeyup);
+
+    console.log(process.env);
 
     this.debouncedCreateModelFunction = debounce(_ => {
       this.createModel();
@@ -627,7 +644,7 @@ export default {
           hasInputAndTarget = this.hasInputAndTarget();
           hasOneTarget = this.hasOneTarget();
         }
-        return !allColumnsAreSelected || !modelName || !hasInputAndTarget || !hasOneTarget;
+        return !allColumnsAreSelected || !hasInputAndTarget || !hasOneTarget;
       } else {
         const { chosenTemplate, modelName, basicTemplates } = this;
         return chosenTemplate === null || !modelName;
@@ -1017,6 +1034,9 @@ export default {
         this.onStep += 1;
       }
     },
+    goToPublicDatasets() {
+      this.onStep = 4;
+    },
     openPLVideoTutorialPage() {
       window.open(PERCEPTILABS_VIDEO_TUTORIAL_URL, '_blank');
     },
@@ -1337,15 +1357,29 @@ span.error {
 
 .load-contents-group {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-content: center;
+  align-items: center;
 
   .load-dataset {
     padding: 10px;
+    width: auto;
     height: auto;
     background-color: #6185EE;
     font-weight: 700;
     font-size: 14px;
+  }
+
+  .choose-public-datasets {
+    font-size: 14px;
+    margin: 10px;
+
+    a {
+      text-decoration: underline;
+      color: #7397FE;
+      cursor: pointer;
+    }
   }
 }
 .footer-actions {

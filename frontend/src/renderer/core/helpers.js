@@ -482,6 +482,10 @@ export const isEnvDataWizardEnabled = () => {
   return process.env.ENABLE_DATAWIZARD === 'true';
 }
 
+export const isPublicDatasetEnabled = () => {
+  return process.env.ENABLE_PUBLIC_DATASET === 'true';
+}
+
 export const getFirstElementFromObject = (data) => {
   if(!data) throw new Error('No object passed');
   return data[Object.keys(data)[0]];
