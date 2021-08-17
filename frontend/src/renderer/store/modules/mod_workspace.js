@@ -2360,7 +2360,6 @@ const actions = {
     dispatch('SET_statusNetworkWaitGlobalEvent', isStart);
     if(isStart) {
       const networkIndex = getters.GET_currentNetworkIndex;
-      console.log('xxx - setInterval for ', networkIndex);
       let timerId = setInterval(()=> {
         dispatch('EVENT_chartsRequest', { networkIndex });
       }, timeInterval);

@@ -1065,11 +1065,8 @@ const actions = {
       value: ''
     };
 
-    console.log('API_getStatus req', theData);
-
     coreRequest(theData)
       .then((data)=> {
-        console.log('API_getStatus res', data);
         dispatch('mod_workspace/SET_statusNetworkCoreDynamically', {modelId: networkId, ...data}, {root: true})
 
         if (data.Status === 'Finished') {
