@@ -42,14 +42,11 @@ const netElementSettings = {
   watch: {
     'computedSettings': {
       handler(newVal, oldVal) {
-        if(this.isSettedFromCore) {
-          this.isSettedFromCore = false;
-        } else {
-          if(!isEqual(JSON.parse(JSON.stringify(newVal)), JSON.parse(JSON.stringify(oldVal)))) {
-            // Note that the "saveSettings" function called is the one in the layer.
-            // Not the one in this file.
-            this.debouncedSaveSettings();
-          }
+        // 
+        if(!isEqual(JSON.parse(JSON.stringify(newVal)), JSON.parse(JSON.stringify(oldVal)))) {
+          // Note that the "saveSettings" function called is the one in the layer.
+          // Not the one in this file.
+          this.debouncedSaveSettings();
         }
       },
       deep: true,
