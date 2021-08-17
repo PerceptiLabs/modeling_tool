@@ -15,7 +15,7 @@
       )
       template(v-if="selectMultiple")
         li.custom-select_option
-          base-checkbox.select_checkbox(v-if="showCheckbox && selectMultiple" @input="selectAllBtn.action" :value="selectAllBtn.selectStatus") SelectAll
+          base-checkbox.select_checkbox(v-if="showCheckbox && selectMultiple" @input="selectAllBtn.action" :value="selectAllBtn.selectStatus") Select All
           button.action-list_btn(v-else type="button" @click="selectAllBtn.action")
             span.action-list_icon.icon(:class="selectAllBtn.iconClass")
             span.action-list_btn-text Select All

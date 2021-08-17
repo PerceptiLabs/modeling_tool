@@ -8,7 +8,6 @@ import { getModelJson as rygg_getModelJson, doesDirExist as rygg_doesDirExist } 
 import cloneDeep from 'lodash.clonedeep';
 import { v4 as uuidv4  } from 'uuid';
 
-
 const namespaced = true;
 //let pauseAction = 'Pause';
 

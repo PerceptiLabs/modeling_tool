@@ -26,8 +26,9 @@ class Export(BaseView):
         json_data = request.get_json()
         checkpoint_directory = json_data['checkpointDirectory']
 
-        if not endpoints_utils.is_valid_checkpoint_directory(checkpoint_directory):
-            return jsonify("Cannot export an untrained model. Make sure to run training first.")
+        if json_data['exportSettings']['Type'] != 'Checkpoint':
+            if not endpoints_utils.is_valid_checkpoint_directory(checkpoint_directory):
+                return jsonify("Cannot export an untrained model. Make sure to run training first.")
 
         try:
             export_settings = json_data['exportSettings']

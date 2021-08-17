@@ -28,7 +28,12 @@ export const getModelContent = (model, filepath, location) => ({
           csv_path: filepath,
           iotype: "Input",
           datatype: "image",
-          preprocessing: {},
+          preprocessing: {
+            resize: {
+              mode: "automatic",
+              type: "mode",
+            },
+          },
         },
         target: {
           csv_path: filepath,
@@ -81,6 +86,7 @@ export const getModelContent = (model, filepath, location) => ({
       Beta2: 0.999,
       Momentum: 0,
       Centered: false,
+      AutoCheckpoint: false,
     },
   },
   networkElementList: {
@@ -289,11 +295,11 @@ export const getModelContent = (model, filepath, location) => ({
       layerName: "Dense_2",
       layerType: "DeepLearningFC",
       layerSettings: {
+        Activation_function: "Softmax",
+        Batch_norm: false,
         Dropout: false,
         Keep_prob: 0,
         Neurons: 10,
-        Activation_function: "None",
-        Batch_norm: false,
       },
       layerSettingsTabName: null,
       layerCode: null,
@@ -412,7 +418,7 @@ export const getModelContent = (model, filepath, location) => ({
   networkRootFolder: "",
   apiMeta: {
     model_id: model.model_id,
-    project: 3,
+    project: 1,
     name: model.name,
     created: "2021-05-30T15:24:48.584438Z",
     updated: "2021-05-30T15:24:48.584438Z",

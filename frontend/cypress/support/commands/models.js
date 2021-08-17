@@ -32,11 +32,16 @@ Cypress.Commands.add("createMnistModel", (modelName) => {
     const location = project.default_directory + "/" + modelName;
 
     cy.fixture("modelConfig").then(({ dataCSVPath }) => {
-      cy.ryggRequest("/models/", "POST", {}, {
-        name: modelName,
-        project: project.project_id,
-        location: location,
-      }).then((modelResponse) => {
+      cy.ryggRequest(
+        "/models/",
+        "POST",
+        {},
+        {
+          name: modelName,
+          project: project.project_id,
+          location: location,
+        }
+      ).then((modelResponse) => {
         const model = modelResponse.body;
 
         const modelInfo = getModelContent(model, dataCSVPath, location);
@@ -52,4 +57,24 @@ Cypress.Commands.add("createMnistModel", (modelName) => {
       });
     });
   });
+});
+
+Cypress.Commands.add("trainModel", (modelName) => {
+  cy.visit("/");
+
+  // Click Model
+  cy.get(".models-list .models-list-row.model-list-item")
+    .contains(modelName)
+    .click();
+
+  // Run with current settings
+  cy.get(".main_toolbar button")
+    .contains("Run with current settings")
+    .click();
+
+  cy.get(".page_toolbar .toolbar-section .training-complete-text", {
+    timeout: 10 * 60 * 1000,
+  });
+
+  cy.wait(1 * 1000);
 });

@@ -36,6 +36,7 @@
           base-checkbox.checkbox(
             v-for="(testType, key) in TestTypes"
             :key="key"
+            :id="key"
             v-model="testTypes[key]" 
             :disabled="!isTestAvailable(key)"
           ) {{testType.text}}

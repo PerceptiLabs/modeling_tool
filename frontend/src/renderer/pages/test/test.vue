@@ -61,7 +61,7 @@
         chart-spinner
       p.text-center(v-if="testStatus && testStatus[0]") {{testStatus && testStatus[0]}}
       p.text-center(v-if="testStatus && testStatus[1]") {{testStatus && testStatus[1]}}
-      button.btn.btn--dark-blue-rev.new-test(@click="stopTest()") Stop Test
+      button.btn.btn--dark-blue-rev.stop-test(@click="stopTest()") Stop Test
     test-configuration-popup(v-if="isTestConfigurationPopupOpened")
 </template>
 

@@ -11,3 +11,14 @@ Cypress.Commands.add('ryggRequest', (url, method = 'GET', qs = {}, data = {}) =>
 
     return cy.request(request);
 });
+
+Cypress.Commands.add('kernelRequest', (url, method = 'GET', qs = {}, data = {}) => {
+    const request = {
+        url: `${Cypress.env('KERNEL_URL')}${url}`,
+        method,
+        qs,
+        body: data
+    };
+
+    return cy.request(request);
+});
