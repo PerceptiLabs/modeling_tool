@@ -5,6 +5,7 @@ import logging
 from abc import ABC, abstractmethod
 
 from perceptilabs.logconf import APPLICATION_LOGGER, USER_LOGGER
+import perceptilabs.settings as settings
 
 logger = logging.getLogger(APPLICATION_LOGGER)
 
@@ -48,10 +49,9 @@ class DictCache(BaseCache):
 
 
 class RedisCache(BaseCache):
-    def __init__(self, password=None):
+    def __init__(self):
         self._conn = redis.Redis(
             'localhost',
-            password=password,
             port=6379,
             db=0
         )
@@ -80,11 +80,11 @@ class RedisCache(BaseCache):
 
     
 def get_data_metadata_cache():
-    redis_password = os.getenv("PL_KERNEL_REDIS_PASSWORD", None)
+    redis_url = settings.REDIS_URL
 
-    if redis_password is not None:
+    if redis_url is not None:
         logger.info("Using 'Redis' cache for pipeline metadata...")
-        return RedisCache(password=redis_password)
+        return RedisCache()
     else:
         logger.info("Using 'Dict' cache for pipeline metadata...")        
         return DictCache()

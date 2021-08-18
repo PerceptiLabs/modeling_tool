@@ -3,9 +3,12 @@ import redis
 import pickle
 import logging
 
+import perceptilabs.settings as settings
+
 from perceptilabs.caching.base import BaseCache
 from perceptilabs.lwcore import LightweightCache    
 from perceptilabs.logconf import APPLICATION_LOGGER, USER_LOGGER
+
 
 logger = logging.getLogger(APPLICATION_LOGGER)
 
@@ -31,10 +34,9 @@ class DictCache(BaseCache):
 
 
 class RedisCache(BaseCache):
-    def __init__(self, password=None):
+    def __init__(self):
         self._conn = redis.Redis(
             'localhost',
-            password=password,
             port=6379,
             db=0
         )
@@ -63,21 +65,21 @@ class RedisCache(BaseCache):
 
     
 def get_data_metadata_cache():
-    redis_password = os.getenv("PL_KERNEL_REDIS_PASSWORD", None)
+    redis_url = settings.REDIS_URL
 
-    if redis_password is not None:
+    if redis_url is not None:
         logger.info("Using 'Redis' cache for pipeline metadata...")
-        return RedisCache(password=redis_password)
+        return RedisCache()
     else:
         logger.info("Using 'Dict' cache for pipeline metadata...")        
         return DictCache()
     
 def get_preview_cache():
-    redis_password = os.getenv("PL_KERNEL_REDIS_PASSWORD", None)
+    redis_url = settings.REDIS_URL
 
-    if redis_password is not None:
+    if redis_url is not None:
         logger.info("Using 'Redis' cache for previews...")
-        return RedisCache(password=redis_password)
+        return RedisCache()
     else:
         logger.info("Using 'Lightweight' cache for previews...")        
         return LightweightCache(max_size=25)
