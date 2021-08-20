@@ -65,6 +65,7 @@
 import { mapState, mapGetters } from "vuex";
 import { doesFileExist as rygg_doesFileExist } from '@/core/apiRygg';
 import ChartSpinner from '@/components/charts/chart-spinner';
+import { isModelTrained }          from '@/core/modelHelpers';
 
 export default {
   name: 'ExportPage',
@@ -137,25 +138,7 @@ export default {
       if(!this.models.length) {
         this.trainedModels = [];
       }
-      const promises = this.models.map(m => this.$store.dispatch('mod_api/API_checkTrainedNetwork', m.networkID))
-      Promise.allSettled(promises)
-        .then(results => {
-          const tempArrayWithTrainedModels = [];
-          results.map(res => {
-            if(res.value.result.content) {
-              tempArrayWithTrainedModels.push(parseInt(res.value.receiver, 10))
-            }
-          })
-
-          let filteredModels = this.models.filter(model => {
-            return tempArrayWithTrainedModels.some(id => model.networkID === id);
-          })
-          filteredModels = filteredModels.map(m => {
-            this.$set(m, 'isChecked', false);
-            return m;
-          })
-          this.trainedModels = filteredModels;
-        });
+      this.trainedModels = this.models.filter((model) => isModelTrained(model));
     },
     async exportModels() {
       const selectedModels = this.trainedModels.filter(m => m.isChecked);

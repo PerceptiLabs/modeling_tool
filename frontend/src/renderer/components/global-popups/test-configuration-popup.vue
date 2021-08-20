@@ -50,7 +50,7 @@ import { mapState, mapGetters }         from "vuex";
 import BaseGlobalPopup                  from "@/components/global-popups/base-global-popup";
 import InfoTooltip                      from "@/components/different/info-tooltip.vue";
 import mixinFocus                       from "@/core/mixins/net-element-settings-input-focus.js";
-import { isModelValidForTest }          from '@/core/modelHelpers';
+import { isModelValidForTest, isModelTrained }          from '@/core/modelHelpers';
 import { TestTypes }                    from '@/core/constants';
 import { checkpointDirFromProject }     from '@/core/helpers.js';
 
@@ -81,9 +81,8 @@ export default {
     },
     availableModels() {
       return this.models
+      .filter((model) => isModelTrained(model))
       .filter((model) => {
-        return model.networkMeta.coreStatus.Status === 'Finished' || model.networkMeta.coreStatus.Status === 'Stop';
-      }).filter((model) => {
         return Object.keys(this.testTypes).every((testType) => this.testTypes[testType] === false || isModelValidForTest(model, testType))
       }).map((model) => ({
         text: model.networkName,
