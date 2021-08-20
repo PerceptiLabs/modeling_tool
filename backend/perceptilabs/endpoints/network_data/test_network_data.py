@@ -17,13 +17,13 @@ def basic_request():
     with open('perceptilabs/endpoints/network_data/test_request.json') as f:
         payload = json.load(f)
     yield payload
-    
-    
+
+
 @pytest.fixture
 def basic_response():
     with open('perceptilabs/endpoints/network_data/test_response.json') as f:
         response = json.load(f)
-    yield response    
+    yield response
 
 
 def test_basic(client, basic_request, basic_response):

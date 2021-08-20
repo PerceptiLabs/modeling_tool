@@ -2,7 +2,7 @@ import pytest
 import numpy as np
 
 
-from perceptilabs.lwcore.cache import LightweightCache
+from perceptilabs.caching.lightweight_cache import LightweightCache
 
 
 @pytest.fixture(scope='function')

@@ -12,21 +12,20 @@ def completion_event():
 
 
 @pytest.fixture(scope='function')
-def executor(celery_app, celery_worker, completion_event, monkeypatch):
-    # monkeypatch.setattr(perceptilabs.endpoints.session.celery_executor, 'kernel_celery_app', celery_app)
+def executor(celery_worker, completion_event, monkeypatch):
+    # monkeypatch.setattr(perceptilabs.endpoints.session.celery_executor, 'celery_app', celery_app)
 
     def fake_run_kernel(*args, **kwargs):
-        kwargs["on_server_started"]("nohost", 00000)
+        kwargs["on_server_started"](00000)
         completion_event.wait(10)
 
     monkeypatch.setattr(perceptilabs.endpoints.session.utils, 'run_kernel', fake_run_kernel)
 
-    ret = CeleryExecutor(app=celery_app)
+    ret = CeleryExecutor(app=celery_worker.app)
 
     # workaround from https://github.com/celery/celery/issues/3642#issuecomment-369057682
     # in which the tasks aren't registered in the worker
     celery_worker.reload()
-
 
     return ret
 
@@ -51,7 +50,9 @@ def wait_for_active_task(executor):
 
 
 # TODO: the celery pytest plugin doesn't work because the task metadata cache is not shared between worker and main threads
+# Find a way around that so we can get a working test
 @pytest.mark.skip
+@pytest.mark.celery(task_always_eager=True)
 def test_get_task_info_with_matching_email(executor, celery_worker, completion_event):
     executor.start_task("a@b", 123, {})
 

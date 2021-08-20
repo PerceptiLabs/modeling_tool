@@ -54,6 +54,13 @@ class ActiveSessions(View):
             tasks_dict = self._executor.get_active_tasks(user_email)
         return jsonify(tasks_dict)
 
+class SessionWorkers(View):
+    def __init__(self, executor):
+        self._executor = executor
+
+    def dispatch_request(self):
+        workers = self._executor.get_workers()
+        return jsonify(workers)
 
 class SessionProxy(View):
     def __init__(self, executor):
@@ -64,21 +71,7 @@ class SessionProxy(View):
         action = json_data.get('action')
         receiver = json_data.get('receiver')
         user_email = json_data.get('user_email')
-        data = json_data.get('data')        
+        data = json_data.get('data')
 
-        info = self._executor.get_task_info(user_email, receiver)
-
-        if not info:
-            return jsonify({})
-
-        try:
-            port = info['port']
-            # TODO jon: get host from session. If threaded then localhost if celery, then from the task info.
-            path = f'http://localhost:{port}/'
-            response = requests.post(path, json=data, timeout=5)  # Forward request to worker
-            return jsonify(response.json())
-        except requests.exceptions.ReadTimeout as e:
-            return abort(500, f"Timeout while waiting for the result of action '{action}' from the training thread. Request: {request}")
-        except Exception as e:
-            logger.exception(e)
-            return abort(500)
+        resp = self._executor.send_request(user_email, receiver, action, data)
+        return jsonify(resp)

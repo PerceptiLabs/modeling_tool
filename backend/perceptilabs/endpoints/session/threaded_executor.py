@@ -1,9 +1,14 @@
 from concurrent.futures import ThreadPoolExecutor
 from threading import Lock, Event
+import logging
+import requests
 
 from perceptilabs.endpoints.session.base_executor import BaseExecutor
-import perceptilabs.endpoints.session.utils as session_utils
+from perceptilabs.logconf import APPLICATION_LOGGER
 from perceptilabs.utils import DummyExecutor
+import perceptilabs.endpoints.session.utils as session_utils
+
+logger = logging.getLogger(APPLICATION_LOGGER)
 
 class ThreadedTask:
     def __init__(self, make_future):
@@ -114,8 +119,8 @@ class ThreadedExecutor(BaseExecutor):
 
         def run_task(cancel_token):
             try:
-                def on_server_started(hostname, port):
-                    self._task_cache.set_metadata(task_id, port=port, hostname=hostname)
+                def on_server_started(port):
+                    self._task_cache.set_metadata(task_id, port=port, hostname='localhost')
 
                 session_utils.run_kernel(payload, on_server_started=on_server_started, cancel_token=cancel_token)
                 self._task_cache.set_complete(task_id)
@@ -131,9 +136,39 @@ class ThreadedExecutor(BaseExecutor):
             "session_id": task_id,
         }
 
+    def get_workers(self):
+        return [{"host": "-"}]
+
     def cancel_task(self, user_email, model_id):
+        try:
+            # try to send an initial stop request.
+            self.send_request(user_email, model_id, "Stop", {"action": "Stop"})
+        except:
+            pass
+
         task_id = self._format_task_id(user_email, model_id)
         self._task_cache.cancel_task(task_id)
+
+    def send_request(self, user_email, model_id, action, data):
+
+        metadata = self.get_task_info(user_email, model_id)
+        if not metadata:
+            return {}
+
+        try:
+            host = metadata['hostname']
+            port = metadata['port']
+            url = f'http://{host}:{port}/'
+            response = requests.post(url, json=data, timeout=5)  # Forward request to worker
+            if response.ok:
+                return response.json()
+            else:
+                raise Exception(f"Received status code {response.status_code} from {url}")
+        except requests.exceptions.ReadTimeout as e:
+            raise Exception(f"Timeout while waiting for the result of action '{action}' from the training thread. Request: {data}")
+        except Exception as e:
+            logger.exception(e)
+            raise e
 
     def get_task_info(self, user_email, model_id):
         task_id = self._format_task_id(user_email, model_id)

@@ -3,6 +3,7 @@ import numpy as np
 from flask import request, jsonify
 from flask.views import View
 
+from perceptilabs.caching.utils import NullCache
 from perceptilabs.endpoints.base_view import BaseView
 from perceptilabs.graph.spec import GraphSpec
 from perceptilabs.lwcore import LightweightCore
@@ -16,24 +17,24 @@ logger = logging.getLogger(APPLICATION_LOGGER)
 
 
 class NetworkData(BaseView):
-    def __init__(self, data_metadata_cache=None, preview_cache=None):
+    def __init__(self, data_metadata_cache=NullCache(), preview_cache=NullCache()):
         self._data_metadata_cache = data_metadata_cache
         self._preview_cache = preview_cache
-    
+
     def dispatch_request(self):
         json_data = request.get_json()
         graph_spec = GraphSpec.from_dict(json_data['network'])
-        data_loader = self._get_data_loader(json_data['datasetSettings'], json_data.get('userEmail'))            
-        
+        data_loader = self._get_data_loader(json_data['datasetSettings'], json_data.get('userEmail'))
+
         lw_core = LightweightCore(data_loader=data_loader, cache=self._preview_cache)
         graph_spec, auto_updated_layers = self._maybe_apply_autosettings(graph_spec, settings_engine=None)
-        
+
         dim_content, preview_content, trained_layers_info, subsample_data_info = {}, {}, {}, {}
-        lw_results = lw_core.run(graph_spec) 
+        lw_results = lw_core.run(graph_spec)
         total_num_layer_components = 0
         total_data_points = 0
 
-        for layer_id, layer_results in lw_results.items():            
+        for layer_id, layer_results in lw_results.items():
             layer_spec = graph_spec[layer_id]
             dimensions, preview, layer_data_points = self._get_layer_content(layer_spec, layer_results, auto_updated_layers)
             trained_layers_info[layer_id] = layer_results.trained
@@ -41,14 +42,14 @@ class NetworkData(BaseView):
 
             if preview is not None:
                 subsample_data_info[layer_id] = preview
-            
+
             if layer_data_points:
                 total_data_points += layer_data_points
-            
+
             total_num_layer_components += 1
 
         preview_content = subsample_data(subsample_data_info, total_num_layer_components, total_data_points)
-        
+
         output = {
             "previews": preview_content,  # TODO(anton.k): the best way to do this is probably to send file URLs w/ the images. That's a lot easier to debug. See: https://stackoverflow.com/questions/33279153/rest-api-file-ie-images-processing-best-practices
             "outputDims": dim_content,
@@ -57,7 +58,7 @@ class NetworkData(BaseView):
         }
 
         return output
-    
+
     def _get_layer_content(self, layer_spec, layer_results, auto_updated_layers):
         sample = layer_results.sample.get(layer_spec.preview_variable)
         shape = np.atleast_1d(sample).shape if sample is not None else ()
@@ -118,7 +119,7 @@ class NetworkData(BaseView):
             return dict_[variable]
         except:
             return ""
-        
+
     def _reduce_to_2d(self, data):
         data_shape = np.shape(np.squeeze(data))
 
@@ -130,4 +131,4 @@ class NetworkData(BaseView):
             return data
         else:
             return self._reduce_to_2d(data[..., -1])
-    
+

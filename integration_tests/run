@@ -1,0 +1,170 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+######################
+# Constants
+REDIS_HOST=localhost
+REDIS_PORT=6379
+
+# Timeout for waiting for workers to list
+MAX_WORKER_LIST_TIME=5
+
+TESTING_LOCAL=${TESTING_LOCAL:-1}
+TESTING_CELERY=${TESTING_CELERY:-1}
+
+if [ $TESTING_LOCAL -eq 1 ]; then
+
+  api="http://localhost:5001"
+
+  CHECKPOINT_DIR=$(realpath $(dirname $0))
+  DATA_PATH="${CHECKPOINT_DIR}/test_data.csv"
+
+else
+  host=localhost
+  api="http://${host}/render"
+
+  # upload the test csv to docker
+  curl -F 'file_uploaded=@test_data.csv' "${host}/rygg/upload?token=12312"
+
+  CHECKPOINT_DIR="/perceptilabs/Documents/Perceptilabs/Default"
+  DATA_PATH="/perceptilabs/Documents/Perceptilabs/data/test_data.csv"
+fi
+
+
+REQUEST_JSON_FILE=test_request.json
+REQUEST_JSON=$(cat $REQUEST_JSON_FILE \
+  | sed "s|DATA_PATH_PLACEHOLDER|${DATA_PATH}|g" \
+  | sed "s|CHECKPOINT_DIRECTORY_PLACEHOLDER|${CHECKPOINT_DIR}|g")
+EMAIL=$(echo "$REQUEST_JSON" | jq -r .value.userEmail)
+
+
+
+######################
+# helpers
+poll(){
+  [ $# -ge 4 ] || exit 1
+  reps=$1
+  interval=$2
+  msg=$3
+  shift 3
+  echo -n "${msg} ..."
+  while ! $@; do
+    reps=$(($reps-1))
+    if [ $reps -eq 0 ]; then
+      return 1
+    fi
+    echo -n "."
+    sleep $interval
+  done
+  echo " done"
+}
+
+is_redis_up(){
+  nc -v "${REDIS_HOST}" ${REDIS_PORT} <<< "PING" 2>&1 | grep -q PONG
+}
+
+is_renderer_up(){
+  curl "${api}/healthy" -s -o /dev/null -w "%{http_code}" | grep -wq 200
+}
+
+is_worker_up(){
+  resp=$(curl -s --max-time $MAX_WORKER_LIST_TIME "${api}/session/workers" ) || {
+    echo "Timeout while getting worker list"
+    exit 1
+  }
+  num_workers=$(echo "${resp}" | jq '. | length')
+  [ $num_workers -gt 0 ]
+}
+
+set_up(){
+  # Start redis
+  if [ ${TESTING_CELERY} -eq 1 ] && [ ${TESTING_LOCAL} -eq 1 ]; then
+    if ! is_redis_up; then
+      echo "redis is down"
+      exit 1
+    fi
+  fi
+
+  # Start renderer
+  if ! is_renderer_up; then
+    echo "Renderer isn't running"
+    echo "Run it with 'PL_KERNEL_CELERY="${TESTING_CELERY}" PL_REDIS_URL="redis://${REDIS_HOST}:${REDIS_PORT}" python main.py --mode=rendering'"
+    exit 1
+  fi
+
+  # Start worker
+  if ! is_worker_up; then
+    echo "No workers are running"
+    exit 1
+  fi
+}
+
+
+start_session(){
+  curl -s -XPOST ${api}/session/start -H"Content-Type: application/json" -d "$REQUEST_JSON"
+}
+
+get_task_ids_for_email(){
+  curl -s ${api}/session/list\?user_email\=$EMAIL -H"Content-Type: application/json" \
+    | jq '. | keys[0]' -r
+}
+
+get_tasks_for_model(){
+  curl -s ${api}/session/list\?user_email\=$EMAIL\&model_id\=$model_id -H"Content-Type: application/json" \
+    | jq '. | keys[0]' -r
+}
+
+
+######################
+# tests
+set_up
+
+echo -n "Starting task ... "
+resp=$(start_session) || {
+  echo "failed. Resp: ${resp}"
+  exit 1
+}
+echo "ok"
+
+session_id=$(echo "${resp}" | jq .session_id -r)
+model_id=$(echo "${resp}" | jq .model_id -r)
+
+is_session_active(){
+  [ "$(get_task_ids_for_email)" == "${session_id}" ]
+}
+
+poll 30 2 "Waiting for session for $EMAIL to be active" is_session_active
+
+echo -n "Looking up details for user $EMAIL, model $model_id ..."
+model_session_received=$(get_tasks_for_model)
+if [ "${model_session_received}" == "${session_id}" ]; then
+  echo "done"
+else
+  echo "failed"
+  exit 1
+fi
+
+
+# check that we can talk to the worker
+request_json=$(cat <<EOF
+{"action": "updateResults", "receiver": "${model_id}", "user_email": "${EMAIL}", "data": {"action": "updateResults"}}
+EOF
+)
+
+echo -n "Making sure we can talk to the worker via the proxy ... "
+resp=$(curl -s -XPOST -H"Content-Type: application/json" -H"Accept: application/json" "${api}/session/proxy" -d"${request_json}")
+echo "${resp}" | grep -q "Results saved" || {
+  echo "failed. Got response: ${resp}"
+  exit 1
+}
+echo "ok"
+
+# stop the task
+echo -n "Canceling the task ... "
+curl -s -XDELETE "${api}/session?user_email=${EMAIL}&receiver=${model_id}" | grep -q canceled || {
+  echo "failed"
+  exit 1
+}
+echo "ok"
+
+# TODO: ensure that the task is actually stopped

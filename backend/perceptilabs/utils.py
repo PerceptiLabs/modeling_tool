@@ -11,6 +11,7 @@ from threading import Lock
 import pkg_resources
 import psutil
 from abc import ABC, abstractmethod
+from contextlib import contextmanager
 
 
 import numpy as np
@@ -430,6 +431,35 @@ def get_num_data_repeats(settings_dict):
                 count += 1
 
     return count + 1  
+
+
+class Timer:
+    def __init__(self):
+        self._times = {}
+
+    def mark(self, name):
+        self._times[name] = time.perf_counter()
+
+    @contextmanager
+    def wrap(self, name):
+        self.mark("pre_"+name)
+        yield
+        self.mark("post_"+name)
+
+    @property
+    def raw(self):
+        return self._times
+
+    def calc(self, **kwargs):
+        def t(k1, k2):
+            v1 = self._times.get(k1)
+            v2 = self._times.get(k2)
+            if v1 is None or v2 is None:
+                return None
+            else:
+                return v2 - v1
+
+        return {key: t(*val) for key,val in kwargs.items()}
 
 
 if __name__ == "__main__":

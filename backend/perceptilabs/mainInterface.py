@@ -24,7 +24,8 @@ from perceptilabs import __version__
 from perceptilabs.core_new.errors import LightweightErrorHandler
 from perceptilabs.core_new.extras import LayerExtrasReader
 from perceptilabs.logconf import APPLICATION_LOGGER, set_user_email
-from perceptilabs.lwcore import LightweightCore, LightweightCache
+from perceptilabs.lwcore import LightweightCore
+from perceptilabs.caching.lightweight_cache import LightweightCache
 import perceptilabs.utils as utils
 import perceptilabs.dataevents as dataevents
 from perceptilabs.messaging.zmq_wrapper import ZmqMessagingFactory, ZmqMessageConsumer
@@ -34,7 +35,7 @@ from perceptilabs.messaging import MessageConsumer, MessagingFactory
 import perceptilabs.logconf
 import perceptilabs.automation.autosettings.utils as autosettings_utils
 import perceptilabs.automation.utils as automation_utils
-import perceptilabs.cache_utils as cache_utils
+from perceptilabs.caching.utils import get_data_metadata_cache
 from perceptilabs.data.base import FeatureSpec, DataLoader
 from perceptilabs.data.settings import DatasetSettings
 from perceptilabs.script import ScriptFactory
@@ -66,7 +67,7 @@ logger = logging.getLogger(APPLICATION_LOGGER)
 
 USE_AUTO_SETTINGS = False  # TODO: enable for TF2 (story 1561)
 USE_LW_CACHING = True
-LW_CACHE_MAX_ITEMS = 25 
+LW_CACHE_MAX_ITEMS = 25
 AGGREGATION_ENGINE_MAX_WORKERS = 2
 
 
@@ -82,9 +83,9 @@ class NetworkLoader:
                 network = network['Layers']
             elif 'layers' in network:
                 network = network['layers']
-        
+
         self._track_visits(network)
-    
+
         if as_spec:
             network = GraphSpec.from_dict(network)
 
@@ -99,7 +100,7 @@ class NetworkLoader:
         for id_ in network:
             if 'visited' not in network[id_]:
                 continue
-            
+
             if network[id_]['visited']:
                 self._visited_layers.add(id_)
             elif id_ in self._visited_layers:
@@ -112,7 +113,7 @@ class NetworkLoader:
 class Interface():
     def __init__(self, cores, testcore, dataDict, lwDict, issue_handler, message_factory=None, session_id='default', allow_headless=False, experiment_api=False):
         self._allow_headless = allow_headless
-        self._network_loader = NetworkLoader() 
+        self._network_loader = NetworkLoader()
         self._cores=cores
         self._testcore = testcore
         self._dataDict=dataDict
@@ -121,7 +122,7 @@ class Interface():
         self._session_id = session_id
         self._lw_cache_v2 = LightweightCache(max_size=LW_CACHE_MAX_ITEMS) if USE_LW_CACHING else None
         self._settings_engine = None
-        self._data_metadata_cache = cache_utils.get_data_metadata_cache()
+        self._data_metadata_cache = get_data_metadata_cache()
 
         if experiment_api:
             self._data_container = Exp_DataContainer()
@@ -139,13 +140,13 @@ class Interface():
     @property
     def has_remaining_work(self):
         if self._mode == 'ephemeral':
-            return self._has_remaining_work            
+            return self._has_remaining_work
         else:
             return True
 
     def _setup_consumer(self, message_factory: MessagingFactory = None) -> MessageConsumer:
         '''Creates consumer for incoming experiment data
-        
+
         Returns:
             consumer: Consumer object to consume experiment data
         '''
@@ -162,10 +163,10 @@ class Interface():
 
     def _setup_aggregation_engine(self, data_container: Exp_DataContainer) -> AggregationEngine:
         '''Creates Aggregations Engine
-        
+
         Args:
             data_container: DataContainer object that stores experiment data
-        
+
         Returns:
             agg_engine: AggregationEngine class to query data
         '''
@@ -175,10 +176,10 @@ class Interface():
             aggregates={}
         )
         return agg_engine
-    
+
     def _start_experiment_thread(self, message_factory: MessagingFactory):
         '''Creates a thread to continuously get data from experiment API
-        
+
         Args:
             consumer: A MessageConsumer object to be created
         '''
@@ -192,7 +193,7 @@ class Interface():
 
                 for raw_message in raw_messages:
                     self._data_container.process_message(raw_message)
-                
+
                 time.sleep(2)
 
         t = threading.Thread(target=_get_experiment_data)
@@ -226,13 +227,13 @@ class Interface():
     def shutDown(self):
         for c in self._cores.values():
             c.Close()
-            del c    
+            del c
         if self._testcore:
             del self._testcore
         sys.exit(1)
-        
 
-    def close_core(self, receiver): 
+
+    def close_core(self, receiver):
         if receiver in self._cores:
             msg = self._cores[receiver].Close()
             del self._cores[receiver]
@@ -248,7 +249,7 @@ class Interface():
         graph_spec = GraphSpec.from_dict(jsonNetwork)
         if not dataset_settings:
             raise RuntimeError("Dataset settings must be set!")
-            
+
         data_loader = DataLoader.from_dict(dataset_settings)  # TODO(anton.k): REUSE THIS!
         lw_core = self._create_lw_core_internal(data_loader)
         return lw_core, None, None
@@ -281,7 +282,7 @@ class Interface():
         info_list = issue_handler.pop_info()
         if info_list:
             response['generalLogs'] = info_list
-        
+
         return response
 
     def create_response(self, request, is_retry=False, on_finished=None):
@@ -289,7 +290,7 @@ class Interface():
         action = request.get('action')
         value = request.get('value')
         logger.info(f"Frontend receiver: {receiver} , Frontend request: {action}")
-        
+
         if logger.isEnabledFor(logging.DEBUG):
             logger.debug("creating response for action: {}. \nFull request:\n{}".format(
                 action,
@@ -307,7 +308,7 @@ class Interface():
                 self._set_testcore(model_ids)
         else:
             self._setCore(receiver)
-        
+
         try:
             response = self._create_response(receiver, action, value, is_retry, on_finished)
         except Exception as e:
@@ -317,7 +318,7 @@ class Interface():
                 response = {'content': issue.frontend_message}
                 logger.error(issue.internal_message)
 
-                
+
         if logger.isEnabledFor(logging.DEBUG):
             logger.debug("created response for action: {}. \nFull request:\n{}\nResponse:\n{}".format(
                 action,
@@ -334,7 +335,7 @@ class Interface():
 
         elif action == "getSettingsRecommendation":
             #json_network = self._network_loader.load(value["Network"])
-            
+
             #if self._settings_engine is not None:
             #    new_json_network = autosettings_utils.get_recommendation(json_network, self._settings_engine)#
             #else:
@@ -342,24 +343,24 @@ class Interface():
             #    logger.warning("Settings engine is not set. Cannot make recommendations")
 
             return {}#new_json_network
-                
+
         elif action == "getPartitionSummary":
             return self._create_response_get_partition_summary(value, receiver)
 
         elif action == "getNetworkInputDim":
             graph_spec = self._network_loader.load(value, as_spec=True)
             json_network = graph_spec.to_dict()
-            
+
             lw_core, _, _ = self.create_lw_core(receiver, json_network, adapter=False)
 
             output = GetNetworkInputDim(lw_core, graph_spec).run()
             return output
-        
+
         elif action == "getNetworkOutputDim":
             jsonNetwork = self._network_loader.load(value)
             lw_core, extras_reader, data_container = self.create_lw_core(receiver, jsonNetwork)
 
-            return getNetworkOutputDim(lw_core=lw_core, 
+            return getNetworkOutputDim(lw_core=lw_core,
                                     extras_reader=extras_reader).run()
 
         elif action == "getBatchPreviewSample":
@@ -378,9 +379,9 @@ class Interface():
             json_network = self._network_loader.load(value["Network"])
             variable = value["Variable"]
             if variable == '(sample)' or variable is None:
-                variable = 'output' # WORKAROUND 
+                variable = 'output' # WORKAROUND
 
-            graph_spec = GraphSpec.from_dict(json_network)            
+            graph_spec = GraphSpec.from_dict(json_network)
             lw_core, _, _ = self.create_lw_core(receiver, json_network, adapter=False)
 
             return getPreviewSample(layer_id, lw_core, graph_spec, variable).run()
@@ -388,25 +389,25 @@ class Interface():
         elif action == "getPreviewVariableList":
             return self._create_response_get_preview_var_list(value, receiver)
 
-        elif action == "Parse":     
+        elif action == "Parse":
             return self._parse(value[0])
 
         elif action == "getGraphOrder":
             jsonNetwork = self._network_loader.load(value)
-            return getGraphOrder(jsonNetwork=jsonNetwork).run()       
+            return getGraphOrder(jsonNetwork=jsonNetwork).run()
 
         elif action == "getNotebookImports":
             jsonNetwork = self._network_loader.load(value)
-            return getNotebookImports(jsonNetwork=jsonNetwork).run()          
+            return getNotebookImports(jsonNetwork=jsonNetwork).run()
 
         elif action == "getNotebookRunscript":
             jsonNetwork = self._network_loader.load(value)
             return getNotebookRunscript(jsonNetwork=jsonNetwork).run()
 
-        elif action == "Close":  
+        elif action == "Close":
             self.shutDown()
 
-        elif action == "closeCore": 
+        elif action == "closeCore":
             return self.close_core(receiver)
 
         elif action == "updateResults":
@@ -430,7 +431,7 @@ class Interface():
         elif action == "getGlobalTrainingStatistics":
             response = self._core.get_global_training_statistics()
             return response
-        
+
 
         elif action == "getS3Keys":
             adapter = S3BucketAdapter(value['bucket'],
@@ -470,7 +471,7 @@ class Interface():
             response = {'result':result, 'receiver':receiver}
             return response
 
-        elif action == "SaveTrained":  
+        elif action == "SaveTrained":
             response = self._core.saveNetwork(value)
             return response
 
@@ -486,7 +487,7 @@ class Interface():
         elif action == "setUser":
             response = self.on_set_user(value)
             return response
-        
+
         elif action == "scheduleAggregations":
             requests = [
                 AggregationRequest(
@@ -507,7 +508,7 @@ class Interface():
             result_names = value
             response = self._core.getAggregationResults(result_names)
             return response
-        
+
         elif action == 'UploadKernelLogs':
             uploader = UploadKernelLogs(value, self._session_id)
             response = uploader.run()
@@ -528,7 +529,7 @@ class Interface():
         elif action == "StopTests":
             response = self._testcore.process_request('Stop')
             return response
-        
+
         elif action == "CloseTests":
             response = self._testcore.process_request('Close')
             return response
@@ -543,31 +544,31 @@ class Interface():
         perceptilabs.logconf.set_user_email(user)
         logger.info("User has been set to %s" % str(value))
         dataevents.on_user_email_set()
-        
+
         return "User has been set to " + value
-        
+
     def _create_response_headless(self, request_value):
         """ Toggles headless mode on/off. Returns None if successful """
         if not self._allow_headless:
-            return None        
+            return None
         return self._core.set_headless(active=request_value)
 
     def _create_response_export(self, export_settings, receiver):
         response = self._core.export_network(export_settings)
-        logger.info("Created export response while training")            
+        logger.info("Created export response while training")
         return response
-    
+
     def _create_response_start_training(self, request_value, is_retry, on_finished):
         graph_spec = self._network_loader.load(request_value, as_spec=True)
-        
-        self._core.set_running_mode('training')            
+
+        self._core.set_running_mode('training')
         model_id = int(request_value.get('modelId', None))
-        user_email = request_value.get('userEmail', None)      
-        training_settings = request_value.get('trainSettings', None)        
+        user_email = request_value.get('userEmail', None)
+        training_settings = request_value.get('trainSettings', None)
         dataset_settings = request_value.get('datasetSettings', None)
         checkpoint_directory = request_value.get('checkpointDirectory', None)
         load_checkpoint = request_value.get('loadCheckpoint', False)
-        
+
         response = self._core.start_core(
             graph_spec,
             model_id,
@@ -588,7 +589,7 @@ class Interface():
         layer_checkpoint_list = parser.parse()
         jsonNetwork = parser.save_json(layer_checkpoint_list[0])
         return jsonNetwork
-    
+
     def _create_testinterface(self, value):
         models_info = {}
         model_ids = value['models'].keys()
@@ -596,31 +597,31 @@ class Interface():
         user_email = value['userEmail']
         for model_id in model_ids:
             value_dict = value['models'][model_id]
-            graph_spec = self._network_loader.load(value_dict, as_spec=True)  
+            graph_spec = self._network_loader.load(value_dict, as_spec=True)
             try:
                 dataset_settings_dict = value['datasetSettings'][model_id]
                 num_repeats = utils.get_num_data_repeats(dataset_settings_dict)   #TODO (adil): remove when frontend solution exists
                 dataset_settings = DatasetSettings.from_dict(dataset_settings_dict)
-                dataset_hash = cache_utils.format_key(['pipelines', user_email, dataset_settings.compute_hash()])
-                data_metadata = self._data_metadata_cache.get(dataset_hash) if self._data_metadata_cache else None
-                if data_metadata is not None:
-                    logger.info(f"Found metadata for dataset with hash {dataset_hash}")
+
+                key = ['pipelines', user_email, dataset_settings.compute_hash()]
+                data_metadata = self._data_metadata_cache.get(key)
+
                 data_loader = DataLoader.from_settings(dataset_settings, num_repeats=num_repeats, metadata=data_metadata)
             except Exception as e:
                 message = str(e)
                 with self._issue_handler.create_issue(message, exception=None, as_bug=False) as issue:
                     self._issue_handler.put_error("Error while loading dataset.")
                     logger.info(issue.internal_message)
-                    return 
+                    return
             models_info[model_id] = {
-                'graph_spec': graph_spec, 
-                'checkpoint_directory': value_dict['checkpoint_directory'], 
+                'graph_spec': graph_spec,
+                'checkpoint_directory': value_dict['checkpoint_directory'],
                 'data_path': value_dict['data_path'],
                 'data_loader': data_loader,
                 'model_name': value_dict['model_name'],
-            } 
-        
-        
+            }
+
+
         logger.info('List of tests %s have been requested for models %s', value['tests'], value.keys())
         self._testcore.setup_test_interface(models_info, tests, user_email)
 
@@ -630,7 +631,7 @@ class Interface():
         response = self._testcore.process_request(
             'StartTest', on_finished=on_finished, value={'user_email':user_email})
         return response
-    
+
     def _create_response_get_partition_summary(self, request_value, receiver):
             Id=request_value["Id"]
             jsonNetwork = self._network_loader.load(request_value["Network"])
@@ -641,8 +642,8 @@ class Interface():
 
             lw_core, extras_reader, data_container = self.create_lw_core(receiver, jsonNetwork, dataset_settings=dataset_settings)
 
-            return getPartitionSummary(id_=Id, 
-                                    lw_core=lw_core, 
+            return getPartitionSummary(id_=Id,
+                                    lw_core=lw_core,
                                     data_container=data_container).run()
 
     def _create_response_get_data_meta(self, request_value, receiver):
@@ -661,8 +662,8 @@ class Interface():
 
 
             get_data_meta = getDataMetaV2(
-                id_=Id, 
-                lw_core=lw_core, 
+                id_=Id,
+                lw_core=lw_core,
                 extras_reader=extras_reader
             )
 
@@ -674,6 +675,6 @@ class Interface():
         json_network = graph_spec.to_dict()
         dataset_settings = request_value["datasetSettings"]
         lw_core, _, _ = self.create_lw_core(receiver, json_network, adapter=False, dataset_settings=dataset_settings)
-        
+
         return getPreviewVariableList(layer_id, lw_core, graph_spec).run()
-        
+

@@ -1,6 +1,7 @@
 from celery.result import AsyncResult
-import celery
+from celery import Celery, shared_task
 import logging
+import requests
 
 from perceptilabs.endpoints.session.base_executor import BaseExecutor
 from perceptilabs.logconf import APPLICATION_LOGGER
@@ -9,10 +10,10 @@ import perceptilabs.settings as settings
 
 logger = logging.getLogger(APPLICATION_LOGGER)
 
-celery_app = celery.Celery(
+celery_app = Celery(
     'training',
-    backend=settings.REDIS_URL,
-    broker=settings.REDIS_URL,
+    backend=settings.CELERY_REDIS_URL,
+    broker=settings.CELERY_REDIS_URL,
     imports=('perceptilabs',),
     task_routes={
         'perceptilabs.endpoints.session.celery_executor': {
@@ -21,7 +22,7 @@ celery_app = celery.Celery(
     }
 )
 
-@celery_app.task(bind=True,
+@shared_task(bind=True,
           name="session_task",
           autoretry_for=(Exception,),
           default_retry_delay=5,
@@ -29,10 +30,10 @@ celery_app = celery.Celery(
 )
 def session_task(self, user_email, receiver, start_payload):
 
-    def on_server_started(hostname, port):
+    def on_server_started(port):
         self.update_state(
             state='STARTED',
-            meta={'hostname': self.request.hostname, 'port': port, 'ip': hostname, 'user_email': user_email, 'receiver': receiver},
+            meta={'hostname': self.request.hostname, 'port': port, 'user_email': user_email, 'receiver': receiver},
         )
 
     # TODO: start a thread that polls for cancelation
@@ -66,14 +67,49 @@ class CeleryExecutor(BaseExecutor):
             "session_id": task.id,
         }
 
+    def get_workers(self):
+        def worker_hostname(celery_worker_name):
+            if not celery_worker_name:
+                return celery_worker_name
+
+            return celery_worker_name.split("@")[-1]
+
+        insp = self._app.control.inspect().ping()
+        if not insp:
+            return [];
+
+        return [{"host": worker_hostname(k)} for k in insp.keys()]
+
+
     def cancel_task(self, user_email, model_id):
-        celery_task = self._get_celery_task(user_email, model_id)
+        self.send_request(user_email, model_id, "Stop", {"action": "Stop"})
 
-        if not celery_task:
-            return None
+    def send_request(self, user_email, model_id, action, data):
 
-        # TODO
-        pass
+        info = self.get_task_info(user_email, model_id)
+
+        if not info:
+            return {}
+
+        try:
+            celery_host = info['hostname']
+            if not celery_host:
+                raise Exception(f"Unknown host for task for {user_email}/{model_id}")
+
+            hostname = celery_host.split("@")[-1]
+
+            port = info['port']
+            url = f'http://{hostname}:{port}/'
+            response = requests.post(url, json=data, timeout=5)  # Forward request to worker
+            if response.ok:
+                return response.json()
+            else:
+                raise Exception(f"Received status code {response.status_code} from {url}")
+        except requests.exceptions.ReadTimeout as e:
+            raise Exception(f"Timeout while waiting for the result of action '{action}' from the training thread. Request: {data}")
+        except Exception as e:
+            logger.exception(e)
+            raise e
 
     def get_task_info(self, task_id, model_id):
         celery_task = self._get_celery_task(task_id, model_id)
@@ -101,7 +137,9 @@ class CeleryExecutor(BaseExecutor):
                 yield result
 
     def _active_celery_results(self):
+        active_method = self._inspect_tasks().active
         active = self._inspect_tasks().active() or {}
+        insp = self._app.control.inspect()
 
         for tasks in active.values():
             for task in tasks:

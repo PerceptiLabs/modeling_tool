@@ -16,7 +16,7 @@ import perceptilabs.utils as utils
 from perceptilabs.main_setup import setup_sentry, set_sentry_tag
 from perceptilabs.messaging.zmq_wrapper import get_message_bus
 from perceptilabs.issues import IssueHandler
-import perceptilabs.caching.utils as cache_utils
+from perceptilabs.caching.utils import get_preview_cache, get_data_metadata_cache
 
 
 PORT_RENDERING_KERNEL = 5001
@@ -111,9 +111,9 @@ def main():
         if args.debug:
             app = create_app(
                 data_executor=utils.DummyExecutor(),
-                preview_cache=cache_utils.get_preview_cache(),                                
+                preview_cache=get_preview_cache(),                                
                 session_executor=session_utils.get_session_executor(),
-                data_metadata_cache=cache_utils.get_data_metadata_cache()
+                data_metadata_cache=get_data_metadata_cache()
             )            
             app.run(port=PORT_RENDERING_KERNEL, debug=True)
         else:
@@ -122,9 +122,9 @@ def main():
 
             app = create_app(
                 data_executor=ThreadPoolExecutor(),                
-                preview_cache=cache_utils.get_preview_cache(),                
+                preview_cache=get_preview_cache(),                
                 session_executor=session_utils.get_session_executor(),
-                data_metadata_cache=cache_utils.get_data_metadata_cache()
+                data_metadata_cache=get_data_metadata_cache()
             )
             serve(
                 app,

@@ -133,6 +133,13 @@ services:
     environment:
       HOME: /perceptilabs
       PL_REDIS_URL: redis://redis
+    # with gpu
+    deploy:
+      resources:
+        reservations:
+          devices:
+          - capabilities: [gpu]
+    # end with gpu
     networks:
       - perceptilabs
 
@@ -146,6 +153,7 @@ services:
     environment:
       HOME: /perceptilabs
       PL_REDIS_URL: redis://redis
+      PL_KERNEL_CELERY: 1
       PL_KERNEL_MODE: rendering
     healthcheck:
       test: curl --fail localhost:5001/healthy || exit 1
@@ -153,13 +161,6 @@ services:
       timeout: 10s
       retries: 10
       start_period: 1m
-    # with gpu
-    deploy:
-      resources:
-        reservations:
-          devices:
-          - capabilities: [gpu]
-    # end with gpu
     networks:
       - perceptilabs
 

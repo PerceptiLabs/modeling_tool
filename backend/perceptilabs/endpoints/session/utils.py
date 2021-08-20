@@ -78,17 +78,16 @@ def run_kernel(start_payload, on_server_started=None, is_retry=False, cancel_tok
     app.router.add_post('/', handle_request)
 
     async def run():
-        # TODO jon: this isn't always localhost.
-        hostname = 'localhost'
         port = find_free_port_in_range(
-            settings.TRAINING_PORT_MIN, settings.TRAINING_PORT_MAX)
+            settings.TRAINING_PORT_MIN,
+            settings.TRAINING_PORT_MAX)
 
         runner = aiohttp.web.AppRunner(app)
         await runner.setup()
         site = aiohttp.web.TCPSite(runner, port=port)
         await site.start()
 
-        on_server_started(hostname, port)
+        on_server_started(port)
 
         global has_finished, has_failed
 

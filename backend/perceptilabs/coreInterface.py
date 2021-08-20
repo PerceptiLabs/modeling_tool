@@ -37,7 +37,7 @@ from perceptilabs.data.base import DataLoader, FeatureSpec
 
 from perceptilabs.data.settings import DatasetSettings
 from perceptilabs.exporter.base import Exporter
-import perceptilabs.cache_utils as cache_utils
+from perceptilabs.caching.utils import get_data_metadata_cache
 
 logger = logging.getLogger(APPLICATION_LOGGER)
 user_logger = logging.getLogger(USER_LOGGER)
@@ -69,7 +69,7 @@ class coreLogic():
         self._save_counter = 0
 
         self.headless_state = False
-        self._data_metadata_cache = cache_utils.get_data_metadata_cache()
+        self._data_metadata_cache = get_data_metadata_cache().for_compound_keys()
 
     def setupLogic(self):
         #self.warningQueue=queue.Queue()
@@ -169,9 +169,9 @@ class coreLogic():
             training_settings,
             exporter,
             model_id=model_id,
-            user_email=user_email            
+            user_email=user_email
         )
-        logger.info("Created trainer from disk successfully")                                
+        logger.info("Created trainer from disk successfully")
         return trainer
 
     def _get_new_trainer(self, data_loader, script_factory, graph_spec, training_settings, checkpoint_directory, load_checkpoint, model_id, user_email):
@@ -187,9 +187,9 @@ class coreLogic():
             checkpoint_directory=checkpoint_directory,
             exporter=exporter,
             model_id=model_id,
-            user_email=user_email            
+            user_email=user_email
         )
-        logger.info("Created new trainer")                                        
+        logger.info("Created new trainer")
         return trainer
 
     def _get_trainer(self, script_factory, graph_spec, training_settings, dataset_settings_dict, checkpoint_directory, load_checkpoint, model_id, user_email, is_retry):
@@ -198,28 +198,29 @@ class coreLogic():
         num_repeats = utils.get_num_data_repeats(dataset_settings_dict)   #TODO (anton.k): remove when frontend solution exists
 
         dataset_settings = DatasetSettings.from_dict(dataset_settings_dict)
-        dataset_hash = cache_utils.format_key(['pipelines', user_email, dataset_settings.compute_hash()])
-        data_metadata = self._data_metadata_cache.get(dataset_hash) if self._data_metadata_cache else None
+        key = ['pipelines', user_email, dataset_settings.compute_hash()]
+
+        data_metadata = self._data_metadata_cache.get(key)
 
         if data_metadata is not None:
-            logger.info(f"Found metadata for dataset with hash {dataset_hash}")
+            logger.info(f"Found metadata for dataset with key {key}")
 
         data_loader = DataLoader.from_settings(dataset_settings, num_repeats=num_repeats, metadata=data_metadata)
 
         if load_checkpoint or is_retry:
-            logger.info(f"Restoring trainer from disk (load_checkpoint={load_checkpoint} and is_retry={is_retry})")            
+            logger.info(f"Restoring trainer from disk (load_checkpoint={load_checkpoint} and is_retry={is_retry})")
             try:
                 trainer = self._get_restored_trainer(
-                    data_loader, script_factory, graph_spec, training_settings, 
+                    data_loader, script_factory, graph_spec, training_settings,
                     checkpoint_directory, load_checkpoint, model_id, user_email
                 )
                 return trainer
             except:
                 logger.exception(f"Tried to restore trainer from disk but failed (load_checkpoint={load_checkpoint} and is_retry={is_retry})")
-                
+
         return self._get_new_trainer(
             data_loader, script_factory, graph_spec, training_settings, checkpoint_directory, load_checkpoint, model_id, user_email)
-    
+
     def start_core(self, graph_spec, model_id, user_email, training_settings, dataset_settings, checkpoint_directory, load_checkpoint, on_finished, is_retry):
         """ Spins up a core for training (or exporting in the pre-data wizard case)
 
@@ -273,7 +274,7 @@ class coreLogic():
     def _start_training_thread(self, core, on_finished):
         """ Spins up a thread for the trainer """
         try:
-            logger.debug("Starting core..." + repr(core))                                
+            logger.debug("Starting core..." + repr(core))
             self.cThread=CoreThread(core.run, self.issue_handler, on_finished)
             self.cThread.daemon = True
             self.cThread.start_with_traces()

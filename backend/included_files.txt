@@ -26,11 +26,11 @@ perceptilabs/dataevents.py
 perceptilabs/mixpanel_handler.py
 perceptilabs/memorywatcher.py
 perceptilabs/testInterface.py
-perceptilabs/cache_utils.py
 
 # perceptilabs/caching
 perceptilabs/caching/base.py
 perceptilabs/caching/utils.py
+perceptilabs/caching/lightweight_cache.py
 
 # perceptilabs/messaging
 perceptilabs/messaging/base.py
@@ -236,7 +236,6 @@ perceptilabs/core_new/policies.py
 # perceptilabs/lwcore
 perceptilabs/lwcore/__init__.py
 perceptilabs/lwcore/base.py
-perceptilabs/lwcore/cache.py
 perceptilabs/lwcore/results.py
 perceptilabs/lwcore/utils.py
 

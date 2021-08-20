@@ -16,7 +16,6 @@ from perceptilabs.logconf import APPLICATION_LOGGER
 #    print('-- -- --')
 
 
-
 logger = logging.getLogger(APPLICATION_LOGGER)
 
 

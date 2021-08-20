@@ -10,13 +10,14 @@ import sentry_sdk
 from sentry_sdk.integrations.flask import FlaskIntegration
 from sentry_sdk.integrations.logging import LoggingIntegration
 
+from perceptilabs.caching.utils import NullCache
 from perceptilabs.endpoints.version.base import Version
 from perceptilabs.endpoints.network_data.base import NetworkData
 from perceptilabs.endpoints.data.base import PutData, IsDataReady
 from perceptilabs.endpoints.model_recommendations.base import ModelRecommendations
 from perceptilabs.endpoints.type_inference.base import TypeInference
 from perceptilabs.endpoints.layer_code.base import LayerCode
-from perceptilabs.endpoints.session.base import SessionStart, ActiveSessions, SessionProxy, SessionCancel
+from perceptilabs.endpoints.session.base import SessionStart, ActiveSessions, SessionProxy, SessionCancel, SessionWorkers
 from perceptilabs.endpoints.export.base import Export
 from perceptilabs.endpoints.set_user.base import SetUser
 from perceptilabs.logconf import APPLICATION_LOGGER
@@ -53,12 +54,11 @@ class JSONEncoder(_JSONEncoder):
 class Flask(_Flask):
     json_encoder = JSONEncoder
 
-def create_app(data_metadata_cache=None, preview_cache=None, data_executor=None, session_executor=None):
-    if data_executor is None:
-        data_executor = utils.DummyExecutor()
+def create_app(data_metadata_cache = NullCache(),
+               preview_cache = NullCache(),
+               data_executor = utils.DummyExecutor(),
+               session_executor = ThreadedExecutor(single_threaded=True)):
 
-    if session_executor is None:
-        session_executor = ThreadedExecutor(single_threaded=True)
 
     app = Flask(__name__)
     cors = CORS(app, resorces={r'/d/*': {"origins": '*'}})
@@ -113,6 +113,12 @@ def create_app(data_metadata_cache=None, preview_cache=None, data_executor=None,
         '/layer_code',
         methods=['POST'],
         view_func=LayerCode.as_view('layer_code')
+    )
+
+    app.add_url_rule(
+        '/session/workers',
+        methods=['GET'],
+        view_func=SessionWorkers.as_view('active_workers', session_executor)
     )
 
     app.add_url_rule(
