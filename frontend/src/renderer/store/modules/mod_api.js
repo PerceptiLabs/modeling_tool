@@ -272,63 +272,7 @@ const actions = {
       });
   },
   API_runServer({state, dispatch, commit, rootGetters}) {
-    let timer;
-    let coreIsStarting = false;
-    var path = rootGetters['globalView/GET_appPath'];
-    let userEmail = rootGetters['mod_user/GET_userEmail'];
-    startCore();
-
-    function startCore() {
-        dispatch('checkCoreAvailability');
-    }
-    function waitOnlineCore() {
-      timer = setInterval(()=> {
-        let status = state.statusLocalCore;
-        if(status === 'offline') {
-          if(isWeb()) {
-            dispatch('checkCoreAvailability');
-          } else {
-            getCoreRequest();
-          }
-        }
-        else {
-          clearInterval(timer);
-        }
-      }, 5001);
-    }
-    function getCoreRequest() {
-      const theData = {
-        action: 'isRunning',
-        value: ''
-      };
-      coreRequest(theData)
-        .then((data)=> {
-          //console.log('checkCore', data);
-          commit('SET_statusLocalCore', 'online')
-        })
-        .catch((err)=> { if(isWeb()) {coreOffline()}  });
-    }
-    function coreOffline() {
-      commit('SET_statusLocalCore', 'offline');
-    }
-    function getCoreRequest() {
-      const theData = {
-        action: 'isRunning',
-        value: ''
-      };
-      coreRequest(theData)
-        .then((data)=> {
-          //console.log('checkCore', data);
-          commit('SET_statusLocalCore', 'online');
-          if(isWeb()) {
-            dispatch('API_setUserInCore');
-          }
-        })
-        .catch((err)=> {  });
-    }
-    function coreOffline() {
-      commit('SET_statusLocalCore', 'offline');
-    }
+        dispatch('coreStatusWatcher');
   },
 
   API_closeCore(context, receiver) {
@@ -1076,7 +1020,6 @@ const actions = {
         if(!err.toString().match(/Error: connect ECONNREFUSED/)) {
           console.error(err);
         }
-        commit('SET_statusLocalCore', 'offline')
       });
   },
   API_getModelStatus({rootGetters, dispatch, commit}, modelId) {
@@ -1102,7 +1045,6 @@ const actions = {
         if(!err.toString().match(/Error: connect ECONNREFUSED/)) {
           console.error(err);
         }
-        commit('SET_statusLocalCore', 'offline')
       });
   },
 
