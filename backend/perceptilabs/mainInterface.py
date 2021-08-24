@@ -122,7 +122,7 @@ class Interface():
         self._session_id = session_id
         self._lw_cache_v2 = LightweightCache(max_size=LW_CACHE_MAX_ITEMS) if USE_LW_CACHING else None
         self._settings_engine = None
-        self._data_metadata_cache = get_data_metadata_cache()
+        self._data_metadata_cache = get_data_metadata_cache().for_compound_keys()
 
         if experiment_api:
             self._data_container = Exp_DataContainer()
