@@ -58,7 +58,7 @@ services:
 
   rygg_worker:
     image: ${CONTAINER_REGISTRY}/rygg:${PL_VERSION}
-    command: python -m celery -A rygg worker
+    command: python -m celery -A rygg worker --queues=rygg
     restart: unless-stopped
     environment:
       DJANGO_DATABASE: postgres
@@ -126,7 +126,7 @@ services:
 
   training:
     image: ${CONTAINER_REGISTRY}/kernel:${PL_VERSION}
-    command: python -m celery -A perceptilabs.endpoints.session.celery_executor worker --hostname=training
+    command: python -m celery -A perceptilabs.endpoints.session.celery_executor worker --hostname=training --queues=training
     restart: unless-stopped
     volumes:
       - ${PL_ROOT_DIR}/plabs:/perceptilabs/Documents/Perceptilabs

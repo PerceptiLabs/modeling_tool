@@ -16,7 +16,7 @@ celery_app = Celery(
     broker=settings.CELERY_REDIS_URL,
     imports=('perceptilabs',),
     task_routes={
-        'perceptilabs.endpoints.session.celery_executor': {
+        'session_task': {
             'queue': 'training'
         }
     }
@@ -39,6 +39,7 @@ def session_task(self, user_email, receiver, start_payload):
     # TODO: start a thread that polls for cancelation
     # when detected, trigger the cancel_token
 
+    logger.info(f"Received session_task for {user_email}/{receiver}")
     session_utils.run_kernel(
         start_payload,
         on_server_started=on_server_started,
@@ -49,6 +50,8 @@ class CeleryExecutor(BaseExecutor):
     def __init__(self, app=celery_app):
         self._app = app
         self._session_task = app.tasks["session_task"]
+        assert self._app
+        assert self._session_task
 
     def is_available(self):
         result = self._inspect_tasks().ping()

@@ -25,6 +25,12 @@ class SessionStart(View):
             **task_start_info
         })
 
+def get_required_arg(request, name):
+    arg = request.args.get(name)
+    if not arg:
+        abort(400, f"Missing {name} parameter")
+
+    return arg
 
 class SessionCancel(View):
     def __init__(self, executor):
@@ -32,13 +38,8 @@ class SessionCancel(View):
 
     def dispatch_request(self):
         """ Cancels a training/testing session"""
-        if not request.args.get('user_email'):
-            abort(400, "Missing user_email parameter")
-        if not request.args.get('receiver'):
-            abort(400, "Missing receiver parameter")
-
-        user_email = request.args['user_email']
-        receiver = request.args['receiver']
+        user_email = get_required_arg(request, 'user_email')
+        receiver = get_required_arg(request, 'receiver')
         task_start_info = self._executor.cancel_task(user_email, receiver)
         return jsonify({ "content": "Session canceled", })
 
@@ -49,9 +50,8 @@ class ActiveSessions(View):
 
     def dispatch_request(self):
         """ Lists active training/testing sessions """
-        if request.args.get('user_email'):
-            user_email = request.args['user_email']
-            tasks_dict = self._executor.get_active_tasks(user_email)
+        user_email = get_required_arg(request, 'user_email')
+        tasks_dict = self._executor.get_active_tasks(user_email)
         return jsonify(tasks_dict)
 
 class SessionWorkers(View):

@@ -6,7 +6,7 @@ from celery.decorators import task
 import logging
 logger = logging.getLogger(__name__)
 
-@task
+@task(name="unzip")
 def unzipTask(filepath):
     dir_path = os.path.dirname(filepath)
 
