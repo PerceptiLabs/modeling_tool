@@ -2323,9 +2323,10 @@ const actions = {
       });
     }    
   },
-  SET_statusNetworkCoreDynamically({commit, getters}, value) {
+  SET_statusNetworkCoreDynamically({commit, getters, dispatch}, value) {
     const { modelId, ...payload} = value;
     commit('set_statusNetworkCoreDynamically', {getters, modelId, payload})
+    dispatch('saveModelAction', modelId);
   },
   SET_statusNetworkCoreStatus({commit, getters}, value) {
     commit('set_statusNetworkCoreStatus', {getters, value})
@@ -2652,6 +2653,32 @@ const actions = {
     }
 
     return dispatch('mod_api/API_getBatchPreviewSample', payload, { root: true });
+  },
+  saveCurrentModelAction({dispatch, getters}) {
+    const currentNetwork = getters['GET_currentNetwork'];
+    let streamLinedNetwork = currentNetwork;
+    streamLinedNetwork = removeChartData(streamLinedNetwork);
+
+    dispatch('mod_events/EVENT_saveNetwork', null, {root: true});
+    return rygg_saveModelJson(streamLinedNetwork)
+      .then(_ => {
+        dispatch('SET_networkSnapshot'); // snapshot for the network in stats/test views
+      }) 
+      .then(_ => {
+        dispatch('mod_webstorage/saveNetwork', currentNetwork, {root: true}); // webstorage
+      });
+  },
+  saveModelAction({dispatch, state}, modelId) {
+    const networkIndex = state.workspaceContent.findIndex(net => net.networkID === modelId);
+    const network = state.workspaceContent[networkIndex];
+    let streamLinedNetwork = network;
+    streamLinedNetwork = removeChartData(streamLinedNetwork);
+
+    dispatch('mod_events/EVENT_saveNetwork', null, {root: true});
+    return rygg_saveModelJson(streamLinedNetwork)
+      .then(_ => {
+        dispatch('mod_webstorage/saveNetwork', network, {root: true}); // webstorage
+      });
   }
 };
 
