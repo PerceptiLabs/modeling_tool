@@ -521,8 +521,6 @@ export default {
     this.modelPath = this.projectPath;
     document.addEventListener("keyup", this.handleKeyup);
 
-    console.log(process.env);
-
     this.debouncedCreateModelFunction = debounce(_ => {
       this.createModel();
     }, 1000);

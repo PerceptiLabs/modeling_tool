@@ -148,7 +148,6 @@ services:
     command: python main.py --mode=rendering
     restart: unless-stopped
     volumes:
-      # TODO: This should be mounted read-only once we figure out how to render w/o writing checkpoints
       - ${PL_ROOT_DIR}/plabs:/perceptilabs/Documents/Perceptilabs
     environment:
       HOME: /perceptilabs
