@@ -563,7 +563,8 @@ def test():
     write_all_lines(f"{BUILD_TMP}/cython_roots.txt", ["perceptilabs\n", "rygg\n", "static_file_server\n"])
     run_pytest_tests()
     run_django_tests()
-    run_integration_tests()
+    #TODO jon: reinstate this when integration tests are rewritten for story 2210
+    #run_integration_tests()
     run_lint_test()
     run_cython_test()
 
