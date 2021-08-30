@@ -376,6 +376,7 @@ perceptilabs/trainer/model.py
 
 # backend/perceptilabs/exporter/
 perceptilabs/exporter/base.py
+perceptilabs/exporter/fastapi_utils.py
 
 # backend/perceptilabs/stats/
 perceptilabs/stats/__init__.py

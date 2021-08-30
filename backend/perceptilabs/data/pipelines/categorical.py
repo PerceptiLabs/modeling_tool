@@ -33,7 +33,7 @@ class PostprocessingStep(BasePipeline):
         )
 
     def call(self, x):
-        x = tf.argmax(x) # Convert from one-hot encoded values
+        x = tf.argmax(x, axis=-1) # Convert from one-hot encoded values
         x = tf.cast(x, tf.int32)
         x = self._lookup_table.lookup(x)
         return x
@@ -51,18 +51,27 @@ class CategoricalPipelineBuilder(PipelineBuilder):
 
     def _compute_processing_metadata(self, preprocessing, dataset):
         """ Loops over the dataset and maps values to an index (e.g., cat -> 0) """
+        dtypes = set()
         unique_values = set()
         for tensor in dataset:
             value = tensor.numpy()
+            
             if isinstance(value, bytes):
                 value = value.decode()
+            else:
+                value = value.item()  # Convert to native python type
             
             unique_values.add(value)
+            dtypes.add(type(value))
+
+        if len(dtypes) > 1:
+            raise RuntimeError(f"Dataset has more than one type: {dtypes}")
             
         mapping = {
             value: idx
             for idx, value in enumerate(sorted(unique_values))
         }
-        metadata = {'mapping': mapping}
+
+        metadata = {'mapping': mapping, 'dtype': next(iter(dtypes))}
         return metadata, metadata
 

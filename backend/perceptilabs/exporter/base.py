@@ -1,4 +1,5 @@
 import os
+import json
 import pickle
 import logging
 import tempfile
@@ -14,11 +15,15 @@ from perceptilabs.script import ScriptFactory
 from perceptilabs.data.base import DataLoader, FeatureSpec
 from perceptilabs.graph.builder import GraphSpecBuilder
 from perceptilabs.utils import sanitize_path
-import perceptilabs.tracking as tracking
 from perceptilabs.logconf import APPLICATION_LOGGER
-
+import perceptilabs.exporter.fastapi_utils as fastapi_utils
+import perceptilabs.tracking as tracking
 
 logger = logging.getLogger(APPLICATION_LOGGER)
+
+
+class CompatibilityError(Exception):
+    pass
 
 
 class Exporter:
@@ -61,31 +66,80 @@ class Exporter:
     def export(self, export_path, mode):
         """calls the export functions based on export mode"""
         if mode == 'Standard':
-            return self._export_training_model(export_path)
+            self._export_inference_model(export_path)
         elif mode == 'Compressed':
-            return self._export_compressed_model(export_path)
+            self._export_compressed_model(export_path)
         elif mode == 'Quantized':
-            return self._export_quantized_model(export_path)
+            self._export_quantized_model(export_path)
+        elif mode == 'FastAPI':
+            self._export_fastapi_service(export_path)
+        else:
+            raise NotImplementedError(f"Unknown export mode '{mode}'")
 
-    def _export_training_model(self, path):
+        tracking.send_model_exported(self._user_email, self._model_id)        
+        
+    def _export_inference_model(self, path, model=None):
         """ Export the inference model """
-        model = self.get_inference_model()
-        model.save(sanitize_path(path))
-        tracking.send_model_exported(self._user_email, self._model_id)
+        if model is None:
+            model = self.get_inference_model()
 
+        model.save(sanitize_path(path))
+
+    def _export_fastapi_service(self, path):
+        """ Export the inference model wrapped in a REST endpoint script """
+        model = self.get_inference_model()
+        self._export_inference_model(path, model=model)
+
+
+        dataset = self._data_loader.get_dataset(
+            partition='training', apply_pipelines='loader').batch(1)
+        inputs_batch, _ = next(iter(dataset))
+        
+        example_data = {
+            feature_name: tensor.numpy().tolist()
+            for feature_name, tensor in inputs_batch.items()            
+        }
+
+        def convert(obj):
+            if isinstance(obj, bytes):
+                return obj.decode('utf-8')
+            else:
+                return obj
+        
+        with open(os.path.join(path, 'example.json'), 'w') as f:
+            json.dump(example_data, f, default=convert, indent=4)
+
+        for partition in ['test', 'validation', 'training']:
+            df = self._data_loader.get_data_frame(partition=partition).head(10)  # keep N first rows
+            if len(df) > 0:
+                break            
+        df.to_csv(os.path.join(path, fastapi_utils.EXAMPLE_CSV_FILE), index=False)
+
+        fastapi_utils.render_fastapi_requirements(path)
+        fastapi_utils.render_fastapi_example_requirements(path)                    
+        fastapi_utils.render_fastapi_example_script(path, self._data_loader.feature_specs)
+        fastapi_utils.render_fastapi_script(
+            path, model, self._graph_spec, self._data_loader.metadata)
+        
     def _export_compressed_model(self, path):
         """ Export the compressed model """
-        model = self.get_inference_model()
+        model = self.get_inference_model(include_preprocessing=False)
         frozen_path = os.path.join(path, 'model.tflite')
+        
         if not os.path.exists(path):
             os.mkdir(path)
+
         converter = tf.lite.TFLiteConverter.from_keras_model(model)
         converter.post_training_quantize = True
+
+        converter.target_spec.supported_ops = [
+            tf.lite.OpsSet.TFLITE_BUILTINS, # enable TensorFlow Lite ops.
+            tf.lite.OpsSet.SELECT_TF_OPS # enable TensorFlow ops.
+        ]
+        
         tflite_model = converter.convert()
         with open(frozen_path, "wb") as f:
             f.write(tflite_model)
-        tracking.send_model_exported(self._user_email, self._model_id)
-
 
     def _export_quantized_model(self, path):
         """ Export the quantized model """
@@ -96,8 +150,9 @@ class Exporter:
             if feature_specs[layer].iotype == 'input':
                 num_input_layers += 1
         if num_input_layers > 1:
-            return "Not compatible"
-        model = self.get_inference_model()
+            raise CompatibilityError("Number of input layers cannot be greater than 1")
+
+        model = self.get_inference_model(include_preprocessing=False)
 
         def representative_data_gen():
             data_size = min(100, int(self._data_loader.get_dataset_size()/5))
@@ -116,34 +171,49 @@ class Exporter:
             tflite_model = converter.convert()
         except Exception as e:
             logger.exception(e)
-            return "Not compatible"
+            raise CompatibilityError from e
+
         frozen_path = os.path.join(path, 'quantized_model.tflite')
         if not os.path.exists(path):
             os.mkdir(path)
         with open(frozen_path, "wb") as f:
             f.write(tflite_model)
-        tracking.send_model_exported(self._user_email, self._model_id)
 
-    def get_inference_model(self):
+
+    def get_inference_model(self, include_preprocessing=True):
         """ Convert the Training Model to a simpler version (e.g., skip intermediate outputs)  """
-        # TODO: add option to include pre- and post-processing pipelines (story 1609)
+        dataset = self._data_loader.get_dataset(apply_pipelines='loader') # Deduce types from loaded data (i.e., image tensors and not image paths)
+        inputs_batch, _ = next(iter(dataset))       
+        
         inputs = {}
-        for layer_spec in self._graph_spec:
-            if not layer_spec.is_input_layer:
-                continue
-            shape = self._data_loader.get_feature_shape(
-                layer_spec.feature_name)
-
+        for layer_spec in self._graph_spec.input_layers:
+            shape = inputs_batch[layer_spec.feature_name].shape
+            dtype = inputs_batch[layer_spec.feature_name].dtype
+            
             if shape.rank == 0:
                 shape = tf.TensorShape([1])
 
             inputs[layer_spec.feature_name] = tf.keras.Input(
                 shape=shape,
+                dtype=dtype,
                 name=layer_spec.feature_name # Giving the input a name allows us to pass dicts in. https://github.com/tensorflow/tensorflow/issues/34114#issuecomment-588574494
             )
 
-        outputs, _ = self._training_model(inputs)
-        inference_model = tf.keras.Model(inputs=inputs, outputs=outputs)
+        if include_preprocessing:
+            preprocessed_inputs = {
+                feature_name: self._data_loader.get_preprocessing_pipeline(feature_name)(tensor)
+                for feature_name, tensor in inputs.items()
+            }            
+            raw_outputs, _ = self._training_model(preprocessed_inputs)
+
+            outputs = {}
+            for feature_name, tensor in raw_outputs.items():
+                postprocessing = self._data_loader.get_postprocessing_pipeline(feature_name)
+                outputs[feature_name] = postprocessing(tensor)
+        else:
+            outputs, _ = self._training_model(inputs)
+
+        inference_model = tf.keras.Model(inputs=inputs, outputs=outputs)            
         return inference_model
 
     @staticmethod

@@ -9,18 +9,18 @@ from perceptilabs.layers.deeplearningfc.spec import DeepLearningFcSpec
 from perceptilabs.layers.specbase import LayerConnection
 
 
-
-def test_tf2x_fully_connected_1x1_should_be_normal_multiplication(script_factory):
+@pytest.mark.parametrize("n_neurons", [1, 2])
+def test_fully_connected_1x1_should_be_normal_multiplication(n_neurons, script_factory):
     layer_spec = DeepLearningFcSpec(
         id_='layer_id',
         name='layer_name',
-        n_neurons=1,
+        n_neurons=n_neurons,
         activation='Sigmoid',
         backward_connections=(LayerConnection(dst_var='input'),)        
     )
     layer = LayerHelper(script_factory, layer_spec).get_instance(print_code=True)
 
-    x = 32*np.ones((1, 1))
+    x = 32*np.ones((n_neurons, 1))
     y = layer({'input': tf.constant(x)})
     
     w = next(iter(layer.weights.values())).numpy()
@@ -31,21 +31,40 @@ def test_tf2x_fully_connected_1x1_should_be_normal_multiplication(script_factory
     sigmoid = lambda x: 1/(1+np.exp(-x))
     expected = sigmoid(w*x + b)
 
-    assert np.isclose(actual, expected)
+    assert np.isclose(actual, expected).all()
 
 
-def test_tf2x_fully_connected_batch_norm_is_applied(script_factory):
+def test_is_squeezed_when_num_neurons_is_one(script_factory):
+    n_neurons = 1
     layer_spec = DeepLearningFcSpec(
         id_='layer_id',
         name='layer_name',
-        n_neurons=1,
+        n_neurons=n_neurons,
+        activation='Sigmoid',
+        backward_connections=(LayerConnection(dst_var='input'),)        
+    )
+    layer = LayerHelper(script_factory, layer_spec).get_instance(print_code=True)
+
+    x = 32*np.ones((n_neurons, 1))
+    y = layer({'input': tf.constant(x)})
+    shape = y['output'].numpy().shape
+    assert n_neurons == 1
+    assert shape == (1,)
+
+
+@pytest.mark.parametrize("n_neurons", [1, 7])
+def test_fully_connected_batch_norm_is_applied(n_neurons, script_factory):
+    layer_spec = DeepLearningFcSpec(
+        id_='layer_id',
+        name='layer_name',
+        n_neurons=n_neurons,
         activation='Sigmoid',
         batch_norm=True,
         backward_connections=(LayerConnection(dst_var='input'),)        
     )
     layer = LayerHelper(script_factory, layer_spec).get_instance(print_code=True)
 
-    x = 32*np.random.random((10, 1))
+    x = 32*np.random.random((n_neurons, 1))
     y = layer({'input': tf.constant(x)})
     
     w = next(iter(layer.weights.values())).numpy()
@@ -64,19 +83,19 @@ def test_tf2x_fully_connected_batch_norm_is_applied(script_factory):
 
     assert np.all(np.isclose(actual, expected))
     
-
-def test_tf2x_fully_connected_batch_norm_uses_initial_params_when_not_training(script_factory):
+@pytest.mark.parametrize("n_neurons", [1, 7])
+def test_fully_connected_batch_norm_uses_initial_params_when_not_training(n_neurons, script_factory):
     layer_spec = DeepLearningFcSpec(
         id_='layer_id',
         name='layer_name',
-        n_neurons=1,
+        n_neurons=n_neurons,
         activation='Sigmoid',
         batch_norm=True,
         backward_connections=(LayerConnection(dst_var='input'),)        
     )
     layer = LayerHelper(script_factory, layer_spec).get_instance(print_code=True)
 
-    x = 32*np.random.random((10, 1))
+    x = 32*np.random.random((n_neurons, 1))
     y = layer({'input': tf.constant(x)}, training=False)
     
     w = next(iter(layer.weights.values())).numpy()
@@ -96,7 +115,7 @@ def test_tf2x_fully_connected_batch_norm_uses_initial_params_when_not_training(s
     assert np.all(np.isclose(actual, expected, rtol=1e-03))
     
  
-def test_tf2x_fully_connected_1x1_with_no_activation(script_factory):
+def test_fully_connected_1x1_with_no_activation(script_factory):
     layer_spec = DeepLearningFcSpec(
         id_='layer_id',
         name='layer_name',
@@ -118,7 +137,7 @@ def test_tf2x_fully_connected_1x1_with_no_activation(script_factory):
     assert np.isclose(actual, expected)
    
 
-def test_tf2x_fully_connected_1x1_with_relu(script_factory):
+def test_fully_connected_1x1_with_relu(script_factory):
     layer_spec = DeepLearningFcSpec(
         id_='layer_id',
         name='layer_name',
@@ -140,7 +159,7 @@ def test_tf2x_fully_connected_1x1_with_relu(script_factory):
     assert np.isclose(actual, expected)
    
     
-def test_tf2x_fully_connected_zero_keep_prob_equals_zero_output(script_factory):
+def test_fully_connected_zero_keep_prob_equals_zero_output(script_factory):
     """ If the keep probability is low the expected output should be zero """
 
     layer_spec = DeepLearningFcSpec(
@@ -160,7 +179,7 @@ def test_tf2x_fully_connected_zero_keep_prob_equals_zero_output(script_factory):
     assert np.all(y['output'] == 0)
 
 
-def test_tf2x_fully_connected_is_training_overrides_dropout(script_factory):
+def test_fully_connected_is_training_overrides_dropout(script_factory):
     layer_spec = DeepLearningFcSpec(
         id_='layer_id',
         name='layer_name',

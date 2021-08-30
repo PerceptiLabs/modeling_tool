@@ -22,6 +22,13 @@ from perceptilabs.logconf import APPLICATION_LOGGER
 logger = logging.getLogger(APPLICATION_LOGGER)
 
 
+def validate_pipeline_arg(arg):
+    valid_pipelines = ('all', 'loader')
+    if arg not in valid_pipelines and arg is not None:
+        raise ValueError(
+            "Pipeline argument must be 'None' or one of: " + ", ".join(valid_pipelines) + f". Got: {arg}")
+    
+    
 class DataLoader:
     def __init__(self, data_frame, dataset_settings, metadata=None, num_repeats=1):
         self._dataset_settings = dataset_settings
@@ -161,7 +168,6 @@ class DataLoader:
 
             loader_pipeline, augmenter_pipeline, preprocessing_pipeline, postprocessing_pipeline = \
                 pipeline_builder.build_from_indexed_dataset(feature_spec.preprocessing, feature_training_set)
-            
             loader_pipelines[feature_name] = loader_pipeline
             augmenter_pipelines[feature_name] = augmenter_pipeline            
             preprocessing_pipelines[feature_name] = preprocessing_pipeline
@@ -290,11 +296,15 @@ class DataLoader:
             return self._validation_set
         elif partition == 'test':
             return self._test_set
+        elif partition == 'all':
+            return self._training_set.concatenate(self._validation_set).concatenate(self._test_set)
         else:
             raise ValueError(f"Invalid partition '{partition}'. Should be 'training', 'validation' or 'test'")
 
-    def get_dataset(self, partition='training', shuffle=False, shuffle_seed=None, drop_index=True):
+    def get_dataset(self, partition='training', shuffle=False, shuffle_seed=None, drop_index=True, apply_pipelines='all'):
         """ Returns a TensorFlow dataset """
+        validate_pipeline_arg(apply_pipelines)
+        
         self.ensure_initialized()        
         dataset = self._get_dataset_partition(partition)
 
@@ -302,13 +312,44 @@ class DataLoader:
             size = self.get_dataset_size(partition=partition)
             dataset = dataset.shuffle(buffer_size=size, seed=shuffle_seed)
 
-        preprocessed_dataset = self._apply_pipelines(dataset)
-        split_dataset = self._split_inputs_and_targets(preprocessed_dataset)
+        preprocessed_dataset = self._apply_pipelines(dataset, which=apply_pipelines)
+        split_dataset = self._split_inputs_and_targets(preprocessed_dataset)            
 
         if drop_index: 
             split_dataset = split_dataset.map(lambda index, inputs, targets: (inputs, targets), num_parallel_calls=tf.data.AUTOTUNE)
         
         return split_dataset
+
+    def get_example_batch(self, batch_size=None, output_type='tensor', partition='training', shuffle=False, shuffle_seed=None, drop_index=True, apply_pipelines='all'):
+        if output_type not in ('tensor', 'list', 'numpy', 'shape'):
+            raise ValueError("Output type must be 'tensor', 'list', 'numpy', 'shape'")
+        
+        dataset = self.get_dataset(
+            partition=partition,
+            shuffle=shuffle,
+            shuffle_seed=shuffle_seed,
+            drop_index=drop_index,
+            apply_pipelines=apply_pipelines
+        )
+
+        if batch_size:
+            dataset = dataset.repeat().batch(batch_size)
+        
+        inputs_batch, targets_batch = next(iter(dataset))
+
+        if output_type in ('list', 'numpy', 'shape'):
+            def eval_fn(x):
+                x = x.numpy()
+                if output_type == 'list':
+                    x = x.tolist()
+                elif output_type == 'shape':
+                    x = x.shape
+                return x
+            
+            inputs_batch = {k: eval_fn(v) for k, v in inputs_batch.items()}
+            targets_batch = {k: eval_fn(v) for k, v in targets_batch.items()}
+            
+        return inputs_batch, targets_batch
 
     def get_dataset_size(self, partition='training'):
         """ Returns size of a partition TensorFlow dataset """
@@ -337,23 +378,32 @@ class DataLoader:
         self.ensure_initialized()                
         return self._postprocessing_pipelines[feature_name]
 
-    def _apply_pipelines(self, dataset):
+    def _apply_pipelines(self, dataset, which='all'):
         """ Applies preprocessing pipelines to the data
         
         Expects and returns a dataset with structure: (row, dict[feature_name]) 
         """
+        validate_pipeline_arg(which)
+        
         t0 = time.perf_counter()
         def func(index, values):
             preprocessed_data = {}
             for feature_name, feature_tensor in values.items():
-                loader = self._loader_pipelines[feature_name]
-                loaded_tensor = loader(feature_tensor)
+                if which in ('all', 'loader'):
+                    loader = self._loader_pipelines[feature_name]
+                    loaded_tensor = loader(feature_tensor)
+                else:
+                    loaded_tensor = feature_tensor
 
-                augmenter = self._augmenter_pipelines[feature_name]
-                augmented_tensor = augmenter((index, loaded_tensor))
-                
-                preprocessing = self._preprocessing_pipelines[feature_name]
-                preprocessed_data[feature_name] = preprocessing(augmented_tensor)                
+                if which == 'all':
+                    augmenter = self._augmenter_pipelines[feature_name]
+                    augmented_tensor = augmenter((index, loaded_tensor))
+                    
+                    preprocessing = self._preprocessing_pipelines[feature_name]
+                    preprocessed_data[feature_name] = preprocessing(augmented_tensor)
+                else:
+                    preprocessed_data[feature_name] = loaded_tensor
+
             return (index, preprocessed_data)
 
         preprocessed_dataset = dataset.map(func, num_parallel_calls=tf.data.AUTOTUNE)
@@ -445,3 +495,18 @@ class DataLoader:
     def metadata(self):
         self.ensure_initialized()                
         return copy.deepcopy(self._metadata)
+
+    def get_data_frame(self, partition='original'):
+        """ Reconstructs the data frame. The option 'all' is a potentially shuffled version of 'original' """
+        self.ensure_initialized()                        
+        partitions = ['original', 'all', 'training', 'validation', 'test']
+        if partition not in partitions:
+            raise ValueError("partition must be one of " + ", ".join(partitions))
+
+        if partition == 'original':
+            return self._data_frame.copy()  # Defensive copy
+        else:
+            dataset = self._get_dataset_partition(partition=partition)
+            indices = [original_row for original_row, data in dataset]
+            return self._data_frame.iloc[indices]
+            

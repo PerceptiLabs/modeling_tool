@@ -1,10 +1,20 @@
 from abc import ABC, abstractmethod
+import pickle
 import time
 import tensorflow as tf
 import logging
+import codecs
 from perceptilabs.logconf import APPLICATION_LOGGER
 
 logger = logging.getLogger(APPLICATION_LOGGER)
+
+
+def serialize(obj):
+    return codecs.encode(pickle.dumps(obj), "base64").decode()
+
+
+def deserialize(pickled):
+    return pickle.loads(codecs.decode(pickled.encode(), "base64"))
 
 
 class BasePipeline(tf.keras.Model):
@@ -16,15 +26,15 @@ class BasePipeline(tf.keras.Model):
 
     def get_config(self):
         return {
-            'preprocessing': self.preprocessing,
-            'metadata': self.metadata                
+            'preprocessing': serialize(self.preprocessing),
+            'metadata': serialize(self.metadata)
         }
 
     @classmethod
     def from_config(cls, config):
         return cls(
-            preprocessing=config['preprocessing'],
-            metadata=config['metadata']
+            preprocessing=deserialize(config['preprocessing']),
+            metadata=deserialize(config['metadata'])
         )    
 
 

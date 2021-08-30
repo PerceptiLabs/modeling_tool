@@ -30,8 +30,11 @@ class {{layer_spec.sanitized_name}}Keras(tf.keras.layers.Layer, PerceptiLabsVisu
 	{% call indented_if(layer_spec.dropout) %}
             output = self.dropout(output, training=training)
             preview = self.dropout(preview, training=training)	    
-	{% endcall %}	
-
+	{% endcall %}
+	{% call indented_if(layer_spec.n_neurons == 1) %}
+            output = tf.squeeze(output, axis=1)
+	{% endcall %}
+	
         self.kernel = self.dense.kernel
         self.bias = self.dense.bias
 

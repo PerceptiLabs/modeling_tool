@@ -230,3 +230,5 @@ class DatasetSettings(MyPydanticBaseModel):
             hasher.update(spec.compute_hash().encode())
         return hasher.hexdigest()
 
+    def __getitem__(self, feature_name):
+        return self.feature_specs[feature_name]

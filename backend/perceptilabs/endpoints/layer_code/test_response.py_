@@ -18,7 +18,6 @@ class DeepLearningFC_Dense_1Keras(tf.keras.layers.Layer, PerceptiLabsVisualizer)
 
         preview = output
 	
-
         self.kernel = self.dense.kernel
         self.bias = self.dense.bias
 

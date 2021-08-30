@@ -1028,4 +1028,93 @@ def test_loading_with_metadata_gives_same_data(temp_path):
         dl2.get_dataset(partition='test')
     )
     
+
+@pytest.mark.parametrize("random_partitions", [False, True])
+def test_get_dataframe_equals_original(random_partitions):
+    n_rows = 60
+    ratios = {'training': 3/6, 'validation': 2/6, 'test': 1/6}
+    
+    data = {
+        'x1': [x for x in range(n_rows)],
+        'x2': [x**2 for x in range(n_rows)]
+    }
+    df = pd.DataFrame(data) 
+
+    feature_specs = {
+        'x1': FeatureSpec(datatype='numerical', iotype='input'),
+        'x2': FeatureSpec(datatype='numerical', iotype='target'),
+    }
+    partitions = Partitions(
+        training_ratio=ratios['training'],
+        validation_ratio=ratios['validation'],
+        test_ratio=ratios['test'],
+        randomized=random_partitions
+    )
+    dataset_settings = DatasetSettings(
+        feature_specs=feature_specs,
+        partitions=partitions
+    )
+    dl = DataLoader(df, dataset_settings)
+
+    assert dl.get_data_frame().equals(df)
+    assert dl.get_data_frame(partition='original').equals(df)
+    assert len(dl.get_data_frame(partition='all')) == n_rows
+
+    for partition, ratio in ratios.items():
+        partition_df = dl.get_data_frame(partition=partition)
+        assert len(partition_df) == ratio*n_rows
+    
+    
+@pytest.mark.parametrize("random_partitions", [False, True])
+def test_get_dataframe_partition_matches_loader_partition(random_partitions):
+    n_rows = 60
+    ratios = {'training': 3/6, 'validation': 2/6, 'test': 1/6}
+    
+    data = {
+        'x1': [x for x in range(n_rows)],
+        'x2': [x**2 for x in range(n_rows)]
+    }
+    df = pd.DataFrame(data) 
+
+    feature_specs = {
+        'x1': FeatureSpec(datatype='numerical', iotype='input'),
+        'x2': FeatureSpec(datatype='numerical', iotype='target'),
+    }
+    partitions = Partitions(
+        training_ratio=ratios['training'],
+        validation_ratio=ratios['validation'],
+        test_ratio=ratios['test'],
+        randomized=random_partitions
+    )
+    dataset_settings = DatasetSettings(
+        feature_specs=feature_specs,
+        partitions=partitions
+    )
+    dl = DataLoader(df, dataset_settings).ensure_initialized()
+
+    def datasets_are_equal(set1, set2):
+        for (x1, y1), (x2, y2) in zip(set1, set2):
+            equal = (
+                np.isclose(x1['x1'].numpy(), x2['x1'].numpy()) and 
+                np.isclose(y1['x2'].numpy(), y2['x2'].numpy())
+            )
+            if not equal:
+                return False
+        return True
+
+    for partition in list(ratios.keys()) + ['all']:
+        # Create a new loader based on training/validation/test dataframe ONLY.
+        # its content should be an exact copy of the original training/validation/test datasets
+        
+        partition_settings = DatasetSettings(
+            feature_specs=feature_specs,
+            partitions=Partitions(randomized=False)
+        )                
+        partition_df = dl.get_data_frame(partition=partition)
+        partition_dl = DataLoader(partition_df, partition_settings)
+        assert datasets_are_equal(
+            partition_dl.get_dataset(partition='all', shuffle=False),
+            dl.get_dataset(partition=partition, shuffle=False)
+        )
+
     

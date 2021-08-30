@@ -8,7 +8,7 @@ from flask.views import View
 from perceptilabs.graph.spec import GraphSpec
 from perceptilabs.endpoints.base_view import BaseView
 from perceptilabs.script import ScriptFactory
-from perceptilabs.exporter.base import Exporter
+from perceptilabs.exporter.base import Exporter, CompatibilityError
 from perceptilabs.logconf import APPLICATION_LOGGER
 import perceptilabs.endpoints.utils as endpoints_utils
 
@@ -42,14 +42,13 @@ class Export(BaseView):
                 checkpoint_directory, graph_spec, self.script_factory, data_loader,
                 model_id=model_id, user_email=user_email
             )
-            export_path = os.path.join(
-                export_settings['Location'], export_settings['name'])
-            output = exporter.export(export_path, export_settings['Type'])
-            # standard output is none. Output will be a string only if the model has compatibility problem
-            if output:
-                return jsonify(f"Model not compatible.")
-            else:
-                return jsonify(f"Model exported to '{export_path}'")
+            export_path = os.path.join(export_settings['Location'], export_settings['name'])
+            exporter.export(export_path, export_settings['Type'])
+            
+        except CompatibilityError:
+            return jsonify(f"Model not compatible.")            
         except:
             logging.exception("Model export failed")
             return jsonify(f"Model export failed")
+        else:
+            return jsonify(f"Model exported to '{export_path}'")            

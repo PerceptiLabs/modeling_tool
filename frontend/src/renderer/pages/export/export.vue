@@ -45,6 +45,8 @@
                   span TensorFlow Model
                 base-radio(:styleTypeSecondary="true" group-name="resizeAutomaticType" value-input="ipynb" v-model="settings.Type")
                   span Jupyter Notebook
+                base-radio(:styleTypeSecondary="true" group-name="resizeAutomaticType" value-input="FastAPI" v-model="settings.Type")
+                  span FastAPI Server
             div.w-120
               template(v-if="settings.Type === 'TFModel'")
                 h1 Compress
@@ -80,7 +82,8 @@ export default {
       trainedModels: [],
       selectOptions: [
         { text: 'TensorFlow Model',         value: 'TFModel' },
-        { text: 'Jupyter Notebook (ipynb)', value: 'ipynb' }
+        { text: 'Jupyter Notebook (ipynb)', value: 'ipynb' },
+        { text: 'FastAPI Server',           value: 'FastAPI' }	
       ],
       settings: {
         Location: '',

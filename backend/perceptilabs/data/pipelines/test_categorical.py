@@ -24,6 +24,9 @@ def test_categorical_preprocessing_when_values_are_strings():
     
     assert actual == expected
 
+    assert set(pipeline.metadata.get('mapping').keys()) == {'cat', 'dog', 'zebra'}
+    assert pipeline.metadata.get('dtype') == str
+    
 
 def test_categorical_preprocessing_when_values_are_string_integers():
     values = ['2', '1', '0', '0']
@@ -38,9 +41,10 @@ def test_categorical_preprocessing_when_values_are_string_integers():
     _, _, pipeline, _ = CategoricalPipelineBuilder().build_from_dataset({}, dataset)    
     processed_dataset = dataset.map(lambda x: pipeline(x))
     actual = next(iter(processed_dataset.batch(4))).numpy().tolist()
-    
-    assert actual == expected
 
+    assert actual == expected
+    assert set(pipeline.metadata.get('mapping').keys()) == {'0', '1', '2'}
+    assert pipeline.metadata.get('dtype') == str
     
     
 def test_categorical_preprocessing_when_values_are_numerical():
@@ -58,7 +62,9 @@ def test_categorical_preprocessing_when_values_are_numerical():
     actual = next(iter(processed_dataset.batch(4))).numpy().tolist()
     
     assert actual == expected
-
+    assert set(pipeline.metadata.get('mapping').keys()) == {0, 1, 2}
+    assert pipeline.metadata.get('dtype') == int
+    
 
 def test_categorical_preprocessing_when_values_are_numerical_but_unordered():
     values = [0, 2, 1, 2]
