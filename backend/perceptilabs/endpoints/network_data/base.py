@@ -76,7 +76,7 @@ class NetworkData(BaseView):
         preview_content = None
         layer_sample_data_points = None
 
-        if layer_spec.get_preview or layer_spec.id_ in auto_updated_layers:
+        if (layer_spec.get_preview or layer_spec.id_ in auto_updated_layers) and (not layer_results.has_errors):
             try:
                 sample_array = np.asarray(sample)
                 sample_layer_shape = sample_array.shape
