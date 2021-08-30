@@ -27,15 +27,14 @@ describe("Test view", () => {
       .get(".custom-select")
       .click();
 
-    cy.wait(1000);
-
     // check dropdown list
     const dropdownOptions = [
       "Select All",
       "Trained Classification Model 1",
       "Trained Classification Model 2",
     ];
-    cy.get(".custom-select_option")
+    cy.get(".test-configuration-popup")
+      .get(".custom-select_option")
       .its("length")
       .should("eq", dropdownOptions.length);
     cy.get(".test-configuration-popup")

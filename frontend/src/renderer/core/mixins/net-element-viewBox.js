@@ -120,7 +120,7 @@ const viewBoxMixin = {
       };
       coreRequest(theData)
         .then((data)=> {
-          if(data === 'Null' || data === null || data === undefined) {
+          if(data === 'Null' || data === null) {
             return
           }
 

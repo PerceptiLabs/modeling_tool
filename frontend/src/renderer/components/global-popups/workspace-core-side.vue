@@ -30,6 +30,8 @@
 
 <script>
 import { mapState, mapGetters, mapMutations, mapActions } from 'vuex';
+import { saveModelJson as rygg_saveModelJson } from '@/core/apiRygg';
+import { removeChartData }        from '@/core/helpers.js';
 
 export default {
   name: "SelectCoreSide",
@@ -88,7 +90,14 @@ export default {
       this.closePopup();
       this.updateCheckpointPaths();
 
-      this.$store.dispatch('mod_workspace/saveCurrentModelAction')
+      // To minimize model.json and checkpoint_model.json sizes
+      let streamLinedNetwork = this.currentNetwork;
+      streamLinedNetwork = removeChartData(streamLinedNetwork);
+
+      this.$store.commit('mod_events/set_saveNetwork');
+      rygg_saveModelJson(streamLinedNetwork) // model.json
+        .then(_ => this.SET_networkSnapshot()) // snapshot for the network in stats/test views
+        .then(_ => this.saveNetwork(this.currentNetwork)) // webstorage
         .then(_ => {
           this.API_startTraining({ loadCheckpoint: withWeights });
           this.setCurrentStatsIndex(this.currentNetworkIndex);

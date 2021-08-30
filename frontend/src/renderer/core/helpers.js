@@ -405,8 +405,6 @@ const removeChartData = (inputNetwork) => {
   
   network = cleanNetworkElementListChartData(network);
   network = cleanNetworkSnapshotsChartData(network);
-  if (network.networkMeta && network.networkMeta.chartsRequest)
-    network.networkMeta.chartsRequest.timerID = null;
 
   return network;
 

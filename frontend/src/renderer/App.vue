@@ -427,7 +427,6 @@
 
         reset_network:            'mod_workspace/RESET_network',
         addNetwork:               'mod_workspace/ADD_network',
-        chartRequestIfNeeded:     'mod_workspace/SET_chartsRequestsIfNeeded',
         setUnparsedModels:        'mod_workspace/SET_unparsedModels',
         setStatisticsAvailability:'mod_workspace/setStatisticsAvailability',
         setCheckpointAvailability:'mod_workspace/setCheckpointAvailability',
@@ -500,10 +499,6 @@
             this.addNetworksToWorkspace(models, modelMetas);
             models.forEach(model => {
               if (model) {
-                const coreStatus = model.networkMeta.coreStatus.Status;
-                if (coreStatus === 'Training' || coreStatus === "Validation") {
-                  this.chartRequestIfNeeded(model.networkID);
-                }
                 this.API_getModelStatus(model.networkID);
               }
             });

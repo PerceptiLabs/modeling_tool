@@ -36,6 +36,9 @@ import MiniMapNavigation      from '@/components/workspace/mini-map-navigation.v
 import ChartSpinner           from '@/components/charts/chart-spinner';
 import DatasetSettingsPopup   from '@/components/workspace/dataset-settings-popup';
 
+import { saveModelJson as rygg_saveModelJson } from '@/core/apiRygg';
+import { removeChartData } from "@/core/helpers";
+
 export default {
   name: 'WorkspaceContent',
   mixins: [saveNet, scaleNet, spinnerNet, helpersNet],
@@ -256,8 +259,8 @@ export default {
         // user journey tracking
         this.$store.dispatch('mod_tracker/EVENT_trainingCompleted', 'Finished training');
 
-        this.$store.dispatch('mod_workspace/saveCurrentModelAction');
-          
+        const currentNetwork = this.$store.getters['mod_workspace/GET_currentNetwork'];
+        this.$store.dispatch('mod_webstorage/saveNetwork', currentNetwork, {root: true});
         this.net_trainingDone();
         this.event_startDoRequest(false);
         this.setChecklistItemComplete({ itemId: 'finishTraining' });
@@ -448,27 +451,28 @@ export default {
                 value: false
               });
 
-              hideProcess();
+              hideProcess(this);
             }
           });
       } else {
-        hideProcess();
+        hideProcess(this);
       }
 
-      const hideProcess = (parent) => {
-        this.$store.commit('mod_workspace/update_network_meta', {key: 'hideModel', networkID: networkID, value: true});
+      function hideProcess(parent) {
+        parent.$store.commit('mod_workspace/update_network_meta', {key: 'hideModel', networkID: networkID, value: true});
         // console.log('hiding', parent.currentModelIndex, index);
 
-        this.$store.dispatch('mod_workspace/saveCurrentModelAction');
+        parent.saveNetwork(parent.workspace[index]);
+        rygg_saveModelJson(removeChartData(parent.workspace[index]));
 
-        if (this.currentModelIndex===index) {
-          const candidate = this.workspace.findIndex(item => item.networkMeta.hideModel!=true);
+        if (parent.currentModelIndex===index) {
+          const candidate = parent.workspace.findIndex(item => item.networkMeta.hideModel!=true);
   
           if (candidate > -1) {
-            this.setTabNetwork(candidate);
+            parent.setTabNetwork(candidate);
           } else {
-            this.SET_emptyScreenMode(1);
-            this.$store.commit('mod_workspace/set_currentModelIndex', -1);
+            parent.SET_emptyScreenMode(1);
+            parent.$store.commit('mod_workspace/set_currentModelIndex', -1);
           }
         }
       }

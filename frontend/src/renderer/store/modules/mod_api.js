@@ -528,7 +528,6 @@ const actions = {
       .then((data)=> {
         dispatch('mod_workspace/SET_statusNetworkCoreStatus', 'Stop', {root: true});
         dispatch('mod_workspace/EVENT_startDoRequest', false, {root: true});
-        dispatch('mod_workspace/saveCurrentModelAction', null, {root: true});
         dispatch('API_getStatus');
         dispatch('mod_tracker/EVENT_trainingCompleted', 'User stopped', {root: true});
       })
@@ -1011,8 +1010,6 @@ const actions = {
 
     coreRequest(theData)
       .then((data)=> {
-        if (!data) return;
-        
         dispatch('mod_workspace/SET_statusNetworkCoreDynamically', {modelId: networkId, ...data}, {root: true})
 
         if (data.Status === 'Finished') {
