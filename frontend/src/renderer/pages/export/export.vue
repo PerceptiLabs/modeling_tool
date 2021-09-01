@@ -36,7 +36,11 @@
             .form_label.export-label Save to:
             .form_row
               input.form_input.export-input(type="text" v-model="settings.Location" readonly)
-              button.btn.btn--dark-blue-rev.btn-medium(type="button" @click="saveLoadFile") Browse
+              button.btn.btn--dark-blue-rev.btn-medium.click-me(
+                type="button"
+                @click="saveLoadFile"
+                :class="{'flash-button': !wasSavePathChoosen}"
+              ) Browse
           div.d-flex
             div
               h1 Format
@@ -93,6 +97,7 @@ export default {
         name: '',
       },
       loadingMessage: '',
+      wasSavePathChoosen: false,
     };
   },
   mounted() {
@@ -146,6 +151,12 @@ export default {
     async exportModels() {
       const selectedModels = this.trainedModels.filter(m => m.isChecked);
       if(selectedModels.length === 0) {
+        this.$store.dispatch('globalView/GP_infoPopup', "Select model to export.", {root: true});
+        return;
+      }
+      
+      if(!this.wasSavePathChoosen) { 
+        this.$store.dispatch('globalView/GP_infoPopup', "Chose where to save the model.", {root: true});
         return;
       }
       try {
@@ -186,6 +197,7 @@ export default {
     setExportPath(value) {
       if (value && Array.isArray(value) && value.length > 0) {
         this.settings.Location = value[0];
+        this.wasSavePathChoosen = true;
       }
       this.$store.dispatch('globalView/SET_filePickerPopup', false);
     },
@@ -211,6 +223,22 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@keyframes clickMeFrame {
+  0% {
+    box-shadow: 0 0 3px #6185EE;
+  }
+  50% {
+    box-shadow: 0 0 10px #6185EE;
+  }
+  100% {
+    box-shadow: 0 0 3px #6185EE;
+  }
+}
+.flash-button {
+  animation-name: clickMeFrame;
+  animation-duration: 1.3s;
+  animation-iteration-count: infinite;
+}
 .export-label {
   margin-right: 30px;
   font-size: 14px;
