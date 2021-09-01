@@ -149,6 +149,7 @@ export default {
         return;
       }
       try {
+        let retMessage = '';
         for(const model of selectedModels) {
           this.loadingMessage = `Exporting model: ${model.networkName}..`;
           const theSettings = {...this.settings};
@@ -162,29 +163,25 @@ export default {
               await this.$store.dispatch('globalView/GP_confirmPopup', {
                 text: `That file '${fileName}' already exists. Are you sure you want to overwrite it?`,
                 ok: async () => {
-                  await exportData.call(this, theSettings)
+                 retMessage = await exportData.call(this, theSettings)
                 }
               })
             } else {
-              await exportData.call(this, theSettings)
+              retMessage = await exportData.call(this, theSettings)
             }
           } else {
-            await exportData.call(this, theSettings)
+             retMessage = await exportData.call(this, theSettings)
           }
         }
-        this.$store.dispatch('globalView/GP_infoPopup', "Exported with success.", {root: true});
+        this.$store.dispatch('globalView/GP_infoPopup', retMessage , {root: true});
       } catch (e) {
         this.$store.dispatch('globalView/GP_errorPopup', "Something went wrong.", {root: true});
         this.loadingMessage = ``;
       }
-      
       this.loadingMessage = ``;
-      
-      
       async function exportData(settings = null) {
-        await this.$store.dispatch('mod_api/API_exportData', settings);
+       return await this.$store.dispatch('mod_api/API_exportData', settings);
       }
-     
     },
     setExportPath(value) {
       if (value && Array.isArray(value) && value.length > 0) {

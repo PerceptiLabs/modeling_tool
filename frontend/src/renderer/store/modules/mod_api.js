@@ -952,7 +952,7 @@ const actions = {
   },
 
   async API_exportData({rootGetters, getters, dispatch}, settings) {
-    const userEmail = rootGetters['mod_user/GET_userEmail'];      
+    const userEmail = rootGetters['mod_user/GET_userEmail'];
     const modelId = settings.modelId;
     const datasetSettings = rootGetters['mod_workspace/GET_currentNetworkDatasetSettingsByModelId'](settings.modelId);
 
@@ -968,7 +968,7 @@ const actions = {
         return coreRequest(theData);
       } else {
           const network = getters.GET_coreNetworkById(settings.modelId);
-          const checkpointDirectory = rootGetters['mod_workspace/GET_currentNetworkCheckpointDirectoryByModelId'](settings.modelId);       
+          const checkpointDirectory = rootGetters['mod_workspace/GET_currentNetworkCheckpointDirectoryByModelId'](settings.modelId);
           return renderingKernel.exportModel(settings, datasetSettings, userEmail, modelId, network, checkpointDirectory)
       }
     }
@@ -983,13 +983,13 @@ const actions = {
       .then((data) => {
         // dispatch('globalView/GP_infoPopup', data, {root: true});
         trackerData.result = 'success';
-        return Promise.resolve();
+        return Promise.resolve(data);
       })
       .catch((err) => {
         console.error(err);
         dispatch('globalView/GP_errorPopup', err, {root: true});
         trackerData.result = 'error';
-        return Promise.reject();
+        return Promise.reject(err);
       })
       .finally(() => {
         dispatch('mod_tracker/EVENT_modelExport', trackerData, {root: true});
