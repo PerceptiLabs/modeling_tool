@@ -486,6 +486,10 @@ export const isPublicDatasetEnabled = () => {
   return process.env.ENABLE_PUBLIC_DATASET === 'true';
 }
 
+export const isFastApiServerEnabled = () => {
+  return process.env.ENABLE_FAST_API_SERVER === 'true';
+};
+
 export const getFirstElementFromObject = (data) => {
   if(!data) throw new Error('No object passed');
   return data[Object.keys(data)[0]];

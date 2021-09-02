@@ -49,8 +49,9 @@
                   span TensorFlow Model
                 base-radio(:styleTypeSecondary="true" group-name="resizeAutomaticType" value-input="ipynb" v-model="settings.Type")
                   span Jupyter Notebook
-                base-radio(:styleTypeSecondary="true" group-name="resizeAutomaticType" value-input="FastAPI" v-model="settings.Type")
-                  span FastAPI Server
+                template(v-if="isFastApiServerEnabled")
+                  base-radio(:styleTypeSecondary="true" group-name="resizeAutomaticType" value-input="FastAPI" v-model="settings.Type")
+                    span FastAPI Server
             div.w-120
               template(v-if="settings.Type === 'TFModel'")
                 h1 Compress
@@ -72,6 +73,7 @@ import { mapState, mapGetters } from "vuex";
 import { doesFileExist as rygg_doesFileExist } from '@/core/apiRygg';
 import ChartSpinner from '@/components/charts/chart-spinner';
 import { isModelTrained }          from '@/core/modelHelpers';
+import { isFastApiServerEnabled } from '@/core/helpers.js';
 
 export default {
   name: 'ExportPage',
@@ -121,6 +123,9 @@ export default {
         checkedModelsLength: this.checkedModelsLength,
       });
       return trainedModelsLength ===  this.checkedModelsLength;
+    },
+    isFastApiServerEnabled() {
+      return isFastApiServerEnabled();
     }
   },
   watch: {
