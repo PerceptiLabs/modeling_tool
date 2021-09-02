@@ -74,5 +74,5 @@ export const isModelValidForTest = (model, testType) => {
 
 export const isModelTrained = (model) => {
   const networkStatus = model.networkMeta.coreStatus.Status;
-  return networkStatus === 'Finished' || networkStatus === 'Testing' || networkStatus === 'Stopped';
+  return networkStatus === 'Finished' || networkStatus === 'Testing' || networkStatus === 'Validation' || networkStatus === 'Stopped' || model.networkMeta.coreStatus.Epoch > 0;
 }
