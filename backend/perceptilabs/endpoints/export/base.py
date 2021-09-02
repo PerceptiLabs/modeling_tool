@@ -43,12 +43,26 @@ class Export(BaseView):
                 model_id=model_id, user_email=user_email
             )
             export_path = os.path.join(export_settings['Location'], export_settings['name'])
-            exporter.export(export_path, export_settings['Type'])
-            
+            mode = self._get_export_mode(export_settings)
+            exporter.export(export_path, mode = mode)
+
         except CompatibilityError:
-            return jsonify(f"Model not compatible.")            
+            return jsonify(f"Model not compatible.")
         except:
             logging.exception("Model export failed")
             return jsonify(f"Model export failed")
         else:
-            return jsonify(f"Model exported to '{export_path}'")            
+            return jsonify(f"Model exported to '{export_path}'")
+
+    def _get_export_mode(self, export_settings):
+        type_ = export_settings['Type']
+        if type_== 'TFModel':
+            if export_settings['Compressed']:
+                mode = 'Compressed'
+            elif export_settings['Quantized']:
+                mode = 'Quantized'
+            else:
+                mode = 'Standard'
+        else:
+            mode = type_
+        return mode

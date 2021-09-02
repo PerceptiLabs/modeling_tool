@@ -76,8 +76,8 @@ class Exporter:
         else:
             raise NotImplementedError(f"Unknown export mode '{mode}'")
 
-        tracking.send_model_exported(self._user_email, self._model_id)        
-        
+        tracking.send_model_exported(self._user_email, self._model_id)
+
     def _export_inference_model(self, path, model=None):
         """ Export the inference model """
         if model is None:
@@ -94,10 +94,10 @@ class Exporter:
         dataset = self._data_loader.get_dataset(
             partition='training', apply_pipelines='loader').batch(1)
         inputs_batch, _ = next(iter(dataset))
-        
+
         example_data = {
             feature_name: tensor.numpy().tolist()
-            for feature_name, tensor in inputs_batch.items()            
+            for feature_name, tensor in inputs_batch.items()
         }
 
         def convert(obj):
@@ -105,27 +105,27 @@ class Exporter:
                 return obj.decode('utf-8')
             else:
                 return obj
-        
+
         with open(os.path.join(path, 'example.json'), 'w') as f:
             json.dump(example_data, f, default=convert, indent=4)
 
         for partition in ['test', 'validation', 'training']:
             df = self._data_loader.get_data_frame(partition=partition).head(10)  # keep N first rows
             if len(df) > 0:
-                break            
+                break
         df.to_csv(os.path.join(path, fastapi_utils.EXAMPLE_CSV_FILE), index=False)
 
         fastapi_utils.render_fastapi_requirements(path)
-        fastapi_utils.render_fastapi_example_requirements(path)                    
+        fastapi_utils.render_fastapi_example_requirements(path)
         fastapi_utils.render_fastapi_example_script(path, self._data_loader.feature_specs)
         fastapi_utils.render_fastapi_script(
             path, model, self._graph_spec, self._data_loader.metadata)
-        
+
     def _export_compressed_model(self, path):
         """ Export the compressed model """
         model = self.get_inference_model(include_preprocessing=False)
         frozen_path = os.path.join(path, 'model.tflite')
-        
+
         if not os.path.exists(path):
             os.mkdir(path)
 
@@ -136,7 +136,7 @@ class Exporter:
             tf.lite.OpsSet.TFLITE_BUILTINS, # enable TensorFlow Lite ops.
             tf.lite.OpsSet.SELECT_TF_OPS # enable TensorFlow ops.
         ]
-        
+
         tflite_model = converter.convert()
         with open(frozen_path, "wb") as f:
             f.write(tflite_model)
@@ -183,13 +183,13 @@ class Exporter:
     def get_inference_model(self, include_preprocessing=True):
         """ Convert the Training Model to a simpler version (e.g., skip intermediate outputs)  """
         dataset = self._data_loader.get_dataset(apply_pipelines='loader') # Deduce types from loaded data (i.e., image tensors and not image paths)
-        inputs_batch, _ = next(iter(dataset))       
-        
+        inputs_batch, _ = next(iter(dataset))
+
         inputs = {}
         for layer_spec in self._graph_spec.input_layers:
             shape = inputs_batch[layer_spec.feature_name].shape
             dtype = inputs_batch[layer_spec.feature_name].dtype
-            
+
             if shape.rank == 0:
                 shape = tf.TensorShape([1])
 
@@ -203,7 +203,7 @@ class Exporter:
             preprocessed_inputs = {
                 feature_name: self._data_loader.get_preprocessing_pipeline(feature_name)(tensor)
                 for feature_name, tensor in inputs.items()
-            }            
+            }
             raw_outputs, _ = self._training_model(preprocessed_inputs)
 
             outputs = {}
@@ -213,7 +213,7 @@ class Exporter:
         else:
             outputs, _ = self._training_model(inputs)
 
-        inference_model = tf.keras.Model(inputs=inputs, outputs=outputs)            
+        inference_model = tf.keras.Model(inputs=inputs, outputs=outputs)
         return inference_model
 
     @staticmethod
