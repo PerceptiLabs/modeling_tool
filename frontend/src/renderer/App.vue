@@ -143,9 +143,9 @@
       this.$store.dispatch('mod_tutorials/loadTutorialProgress')
         .then(async () => {
           if (this.isUserFirstLogin) {
-            if (!process.env.NO_KC && keyCloak.isReachable()){
-              this.setActivePageAction(MODAL_PAGE_QUESTIONNAIRE);
-            }
+            // if (!process.env.NO_KC && keyCloak.isReachable()){
+              // this.setActivePageAction(MODAL_PAGE_QUESTIONNAIRE);
+            // }
 
           } else if (!this.getHasShownWhatsNew) {
             // this.setActivePageAction(MODAL_PAGE_WHATS_NEW);
