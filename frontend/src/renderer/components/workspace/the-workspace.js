@@ -436,34 +436,13 @@ export default {
     hideModelTab(index) {
       const networkID = this.workspace[index].networkID;
       let hasUnsavedChanges = this.hasUnsavedChanges(networkID);
-
-      if (hasUnsavedChanges) {
-        this.popupConfirm(
-          {
-            text: `${this.workspace[index].networkName} has unsaved changes`,
-            cancel: () => { return; },
-            ok: () => {
-              this.updateUnsavedChanges({
-                networkId: this.workspace[index].networkID, 
-                value: false
-              });
-
-              hideProcess();
-            }
-          });
-      } else {
-        hideProcess();
-      }
-
-      const hideProcess = (parent) => {
+      
+      const hideProcess = () => {
         this.$store.commit('mod_workspace/update_network_meta', {key: 'hideModel', networkID: networkID, value: true});
-        // console.log('hiding', parent.currentModelIndex, index);
-
         this.$store.dispatch('mod_workspace/saveCurrentModelAction');
 
         if (this.currentModelIndex===index) {
           const candidate = this.workspace.findIndex(item => item.networkMeta.hideModel!=true);
-  
           if (candidate > -1) {
             this.setTabNetwork(candidate);
           } else {
@@ -471,6 +450,22 @@ export default {
             this.$store.commit('mod_workspace/set_currentModelIndex', -1);
           }
         }
+      };
+
+      if (hasUnsavedChanges) {
+        this.popupConfirm({
+          text: `${this.workspace[index].networkName} has unsaved changes`,
+          cancel: () => { return; },
+          ok: () => {
+            this.updateUnsavedChanges({
+              networkId: this.workspace[index].networkID, 
+              value: false,
+            });
+            hideProcess();
+          }
+        });
+      } else {
+        hideProcess();
       }
     },
     hideStatsTab(index) {
