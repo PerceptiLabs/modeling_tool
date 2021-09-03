@@ -836,14 +836,14 @@ const mutations = {
     // This is used for setting which networks have been trained.
 
     const network = getters.GET_networkByNetworkId(networkId);
+
     if (!network) { return; }
 
-    // Adds network.networkMeta.openStatistics !== true condition
-    // to not close the tab on new requests
-    if(!value) {
-      network.networkMeta.openStatistics = null;
-    } else if (network.networkMeta.openStatistics !== true) {
-      network.networkMeta.openStatistics = false;
+    network.networkMeta.openStatistics = value;
+
+    if(value === true) {
+      dispatch('mod_statistics/STAT_defaultSelect', null, {root: true});
+      dispatch('SET_chartsRequestsIfNeeded', network.networkID)
     }
   },
   set_openTest(state, {dispatch, getters, value}) {
@@ -2124,7 +2124,6 @@ const actions = {
 
     return Promise.all(isTrainedPromises)
       .then(results => {
-
         const setStatisticsPromises = [];
 
         for (const r of results) {
@@ -2137,6 +2136,10 @@ const actions = {
   
             setStatisticsPromises.push(setStatisticsPromise);
           }
+        }
+
+        if (Array.from(results).some((r) => r && r.result && r.result.content)) {
+          dispatch('mod_empty-navigation/SET_emptyScreenMode', 0, {root: true})
         }
 
         return Promise.all(setStatisticsPromises)
@@ -2196,6 +2199,7 @@ const actions = {
 
     const network = state.workspaceContent.find(network => network.networkID === networkID);
 
+    console.log('SET_chartsRequestsIfNeeded', networkID, network);
     // console.group('SET_chartsRequestsIfNeeded');
     // console.log('stats tab', network.networkMeta.openStatistics);
     // console.log('test tab', network.networkMeta.openTest);
@@ -2323,9 +2327,10 @@ const actions = {
       });
     }    
   },
-  SET_statusNetworkCoreDynamically({commit, getters}, value) {
+  SET_statusNetworkCoreDynamically({commit, getters, dispatch}, value) {
     const { modelId, ...payload} = value;
     commit('set_statusNetworkCoreDynamically', {getters, modelId, payload})
+    dispatch('saveModelAction', modelId);
   },
   SET_statusNetworkCoreStatus({commit, getters}, value) {
     commit('set_statusNetworkCoreStatus', {getters, value})
@@ -2652,6 +2657,31 @@ const actions = {
     }
 
     return dispatch('mod_api/API_getBatchPreviewSample', payload, { root: true });
+  },
+  saveCurrentModelAction({dispatch, getters}) {
+    const currentNetwork = getters['GET_currentNetwork'];
+    let streamLinedNetwork = currentNetwork;
+    streamLinedNetwork = removeChartData(streamLinedNetwork);
+
+    dispatch('mod_events/EVENT_saveNetwork', null, {root: true});
+    return rygg_saveModelJson(streamLinedNetwork)
+      .then(_ => {
+        dispatch('SET_networkSnapshot'); // snapshot for the network in stats/test views
+      }) 
+      .then(_ => {
+        dispatch('mod_webstorage/saveNetwork', currentNetwork, {root: true}); // webstorage
+      });
+  },
+  saveModelAction({dispatch, state}, modelId) {
+    const networkIndex = state.workspaceContent.findIndex(net => net.networkID === modelId);
+    const network = state.workspaceContent[networkIndex];
+    let streamLinedNetwork = network;
+    streamLinedNetwork = removeChartData(streamLinedNetwork);
+
+    return rygg_saveModelJson(streamLinedNetwork)
+      .then(_ => {
+        dispatch('mod_webstorage/saveNetwork', network, {root: true}); // webstorage
+      });
   }
 };
 

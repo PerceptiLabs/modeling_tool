@@ -357,36 +357,6 @@
           this.initIntercom();
         }, 5000);
       },
-      currentProject: {
-        immediate: true,
-        deep: true,
-        handler(newVal, oldVal) {
-          // Used to have an if statement to not load if there are unsaved changes,
-          // this is now use but filtering out the networksWithChanges in the
-          // fetchAllNetworkJsons function
-
-          if (this.isDefaultProjectMode && (!newVal || !newVal.name || newVal.name !== 'Default')) { return; }
-          // using this function because the watcher can be aggressive with changes
-          if(!isSameProject(newVal,oldVal)) {
-            this.reset_network();
-            this.deleteAllIds();
-            this.fetchNetworkMetas(newVal);
-          }
-
-          function isSameProject(project1, project2) {
-            if (!project1 && !project2) { return true; }
-            if (project1 && !project2) { return false; }
-            if (!project1 && project2) { return false; }
-            if (project1.name !== project2.name)  { return false; }
-            // if (project1.models.length !== project2.models.length)  { return false; }
-            // if (
-            //   project1.models.every(p1 => !project2.models.includes(p1)) ||
-            //   project2.models.every(p2 => !project1.models.includes(p2)))  { return false; }
-
-            return true;
-          }
-        }
-      },
     },
     methods: {
       ...mapMutations({
@@ -427,6 +397,7 @@
 
         reset_network:            'mod_workspace/RESET_network',
         addNetwork:               'mod_workspace/ADD_network',
+        chartRequestIfNeeded:     'mod_workspace/SET_chartsRequestsIfNeeded',
         setUnparsedModels:        'mod_workspace/SET_unparsedModels',
         setStatisticsAvailability:'mod_workspace/setStatisticsAvailability',
         setCheckpointAvailability:'mod_workspace/setCheckpointAvailability',
@@ -499,6 +470,10 @@
             this.addNetworksToWorkspace(models, modelMetas);
             models.forEach(model => {
               if (model) {
+                const coreStatus = model.networkMeta.coreStatus.Status;
+                if (coreStatus === 'Training' || coreStatus === "Validation") {
+                  this.chartRequestIfNeeded(model.networkID);
+                }
                 this.API_getModelStatus(model.networkID);
               }
             });

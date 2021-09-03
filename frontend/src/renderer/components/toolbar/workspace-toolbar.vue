@@ -94,12 +94,9 @@ import { googleAnalytics }        from '@/core/analytics';
 import { trainingElements }       from '@/core/constants.js';
 import { deepLearnElements }      from '@/core/constants.js';
 import {goToLink, isEnvDataWizardEnabled} from '@/core/helpers.js';
-import { removeChartData }        from '@/core/helpers.js';
 
 import LayersToolbar            from '@/components/toolbar/workspace-toolbar-layers.vue';
 import SidebarToggleButton      from '@/components/toolbar/sidebar-toggle-button.vue';
-
-import { saveModelJson as rygg_saveModelJson } from '@/core/apiRygg';
 
 export default {
   name: 'WorkspaceToolbar',
@@ -337,13 +334,8 @@ export default {
 
       // Refactor this and the core in workspace-core-side
       this.$store.commit('mod_workspace/updateCheckpointPaths');
-      this.$store.dispatch('mod_workspace/SET_networkSnapshot')
-      
-      let streamLinedNetwork = this.currentNetwork;
-      streamLinedNetwork = removeChartData(streamLinedNetwork);
 
-      rygg_saveModelJson(streamLinedNetwork)
-        .then(_ => this.$store.dispatch('mod_webstorage/saveNetwork', this.currentNetwork))
+      this.$store.dispatch('mod_workspace/saveCurrentModelAction')
         .then(_ => {
           this.$store.dispatch('mod_api/API_startTraining', { loadCheckpoint: false });
 
