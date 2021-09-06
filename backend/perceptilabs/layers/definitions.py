@@ -11,7 +11,6 @@ from perceptilabs.layers.processrescale.spec import ProcessRescaleSpec
 from perceptilabs.layers.processgrayscale.spec import ProcessGrayscaleSpec
 from perceptilabs.layers.mathargmax.spec import MathArgmaxSpec
 from perceptilabs.layers.mathsoftmax.spec import MathSoftmaxSpec
-from perceptilabs.layers.mathswitch.spec import MathSwitchSpec
 from perceptilabs.layers.mathmerge.spec import MathMergeSpec
 from perceptilabs.layers.layercustom.spec import LayerCustomSpec
 from perceptilabs.layers.trainclassification.spec import TrainClassificationSpec
@@ -109,12 +108,6 @@ DEFINITION_TABLE = {
         'layers/mathsoftmax/template.j2',
         'layer_tf1x_softmax'
     ),
-    'MathSwitch': LayerMeta(
-        MathSwitchSpec,
-        'layers/mathswitch/imports.json',
-        'core_new/layers/templates/tf1x.j2',
-        'layer_tf1x_switch'
-    ),
     'MathMerge': LayerMeta(
         MathMergeSpec,
         'layers/mathmerge/imports.json',
@@ -203,12 +196,6 @@ DEFINITION_TABLE_TF2X = {
         'layers/processonehot/tf2x_imports.json',
         'layers/processonehot/tf2x_template.j2',
         'layer_tf2x_one_hot'
-    ),
-    'MathSwitch': LayerMeta(
-        MathSwitchSpec,
-        'layers/mathswitch/tf2x_imports.json',
-        'layers/mathswitch/tf2x_template.j2',
-        'layer_tf2x_switch'
     ),
     'ProcessGrayscale': LayerMeta(
         ProcessGrayscaleSpec,

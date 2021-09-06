@@ -13,7 +13,6 @@ TYPE_TO_NAME_TABLE = {
     'ProcessReshape': 'Reshape',
     'ProcessRescale': 'Rescale',
     'ProcessOneHot': 'OneHot',
-    'MathSwitch': 'Switch',
     'ProcessGrayscale': 'Grayscale',
     'MathMerge': 'Merge',
     'PreTrainedVGG16': 'VGG16',

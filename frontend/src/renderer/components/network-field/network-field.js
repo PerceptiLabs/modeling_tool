@@ -1,13 +1,11 @@
 import DataData             from '@/components/network-elements/elements/data-data/data-data.vue'
 import DataEnvironment      from '@/components/network-elements/elements/data-environment/data-environment.vue'
-import DataCloud            from '@/components/network-elements/elements/data-cloud/data-cloud.vue'
 import DataRandom           from '@/components/network-elements/elements/data-random/data-random.vue'
 
 import DeepLearningFC       from '@/components/network-elements/elements/deep-learning-fc/deep-learning-fc.vue'
 import DeepLearningConv     from '@/components/network-elements/elements/deep-learning-conv/deep-learning-conv.vue'
 import DeepLearningRecurrent from '@/components/network-elements/elements/deep-learning-recurrent/deep-learning-recurrent.vue'
 
-import ProcessCrop          from '@/components/network-elements/elements/process-crop/process-crop.vue'
 import ProcessEmbed         from '@/components/network-elements/elements/process-embed/process-embed.vue'
 import ProcessGrayscale     from '@/components/network-elements/elements/process-grayscale/process-grayscale.vue'
 import ProcessOneHot        from '@/components/network-elements/elements/process-one-hot/process-one-hot.vue'
@@ -16,18 +14,12 @@ import ProcessRescale       from '@/components/network-elements/elements/process
 
 import TrainNormal          from '@/components/network-elements/elements/train-normal/train-normal.vue'
 import TrainRegression          from '@/components/network-elements/elements/train-regression/train-regression.vue'
-import TrainGenetic         from '@/components/network-elements/elements/train-genetic/train-genetic.vue'
-import TrainDynamic         from '@/components/network-elements/elements/train-dynamic/train-dynamic.vue'
 import TrainReinforce       from '@/components/network-elements/elements/train-reinforce/train-reinforce.vue'
-import TrainLoss            from '@/components/network-elements/elements/train-loss/train-loss.vue'
-import TrainOptimizer       from '@/components/network-elements/elements/train-optimizer/train-optimizer.vue'
 import TrainDetector       from '@/components/network-elements/elements/train-detector/train-detector.vue'
 import TrainGan       from '@/components/network-elements/elements/train-gan/train-gan.vue'
 
 import MathArgmax           from '@/components/network-elements/elements/math-argmax/math-argmax.vue'
-import MathSwitch           from '@/components/network-elements/elements/math-switch/math-switch.vue'
 import MathMerge            from '@/components/network-elements/elements/math-merge/math-merge.vue'
-import MathSplit            from '@/components/network-elements/elements/math-split/math-split.vue'
 
 import ClassicMLDbscans     from '@/components/network-elements/elements/classic-ml-dbscans/classic-ml-dbscans.vue'
 import ClassicMLKMeans      from '@/components/network-elements/elements/classic-ml-k-means/classic-ml-k-means.vue'
@@ -52,7 +44,6 @@ import SettingsArrow        from '@/components/network-elements/elements-setting
 import NetworkDrag    from '@/components/network-field/network-drag.js'
 import NetworkGrid    from '@/components/network-field/network-grid.vue'
 import { mapGetters, mapMutations, mapActions } from 'vuex';
-import { deepCopy } from "@/core/helpers.js";
 
 let resizeObservable = null;
 
@@ -64,9 +55,9 @@ export default {
     DeepLearningFC, DeepLearningConv, DeepLearningRecurrent,
     ProcessEmbed, ProcessGrayscale, ProcessOneHot, ProcessReshape, ProcessRescale,
     // ProcessCrop,
-    TrainNormal, TrainRegression, TrainGenetic, TrainDynamic, TrainReinforce, TrainDetector, TrainGan,
+    TrainNormal, TrainRegression, TrainReinforce, TrainDetector, TrainGan,
     // TrainLoss, TrainOptimizer, 
-    MathArgmax, MathMerge, MathSwitch,
+    MathArgmax, MathMerge,
     // MathSplit,
 
     // ClassicMLDbscans, ClassicMLKMeans, ClassicMLKNN, ClassicMLRandomForest, ClassicMLSVM,

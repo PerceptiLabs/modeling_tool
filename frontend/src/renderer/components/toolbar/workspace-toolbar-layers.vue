@@ -42,14 +42,12 @@
   
   import DataData             from '@/components/network-elements/elements/data-data/view-data-data.vue'
   import DataEnvironment      from '@/components/network-elements/elements/data-environment/view-data-environment.vue'
-  import DataCloud            from '@/components/network-elements/elements/data-cloud/view-data-cloud.vue'
   import DataRandom           from '@/components/network-elements/elements/data-random/view-data-random.vue'
 
   import DeepLearningFC       from '@/components/network-elements/elements/deep-learning-fc/view-deep-learning-fc.vue'
   import DeepLearningConv     from '@/components/network-elements/elements/deep-learning-conv/view-deep-learning-conv.vue'
   import DeepLearningRecurrent from '@/components/network-elements/elements/deep-learning-recurrent/view-deep-learning-recurrent.vue'
 
-  import ProcessCrop          from '@/components/network-elements/elements/process-crop/view-process-crop.vue'
   import ProcessEmbed         from '@/components/network-elements/elements/process-embed/view-process-embed.vue'
   import ProcessGrayscale     from '@/components/network-elements/elements/process-grayscale/view-process-grayscale.vue'
   import ProcessOneHot        from '@/components/network-elements/elements/process-one-hot/view-process-one-hot.vue'
@@ -57,19 +55,13 @@
   import ProcessRescale       from '@/components/network-elements/elements/process-rescale/view-process-rescale.vue'
 
   import TrainNormal          from '@/components/network-elements/elements/train-normal/view-train-normal.vue'
-  import TrainRegression      from '@/components/network-elements/elements/train-regression/view-train-regression.vue'
-  import TrainGenetic         from '@/components/network-elements/elements/train-genetic/view-train-genetic.vue'
-  import TrainDynamic         from '@/components/network-elements/elements/train-dynamic/view-train-dynamic.vue'
-  import TrainReinforce       from '@/components/network-elements/elements/train-reinforce/view-train-reinforce.vue'
-  import TrainLoss            from '@/components/network-elements/elements/train-loss/view-train-loss.vue'
-  import TrainOptimizer       from '@/components/network-elements/elements/train-optimizer/view-train-optimizer.vue'
-  import TrainGan             from '@/components/network-elements/elements/train-gan/view-train-gan.vue'
+  import TrainRegression      from '@/components/network-elements/elements/train-regression/view-train-regression.vue';
+  import TrainReinforce       from '@/components/network-elements/elements/train-reinforce/view-train-reinforce.vue';
+  import TrainGan             from '@/components/network-elements/elements/train-gan/view-train-gan.vue';
   import TrainDetector        from '@/components/network-elements/elements/train-detector/view-train-detector.vue'
 
   import MathArgmax           from '@/components/network-elements/elements/math-argmax/view-math-argmax.vue'
   import MathMerge            from '@/components/network-elements/elements/math-merge/view-math-merge.vue'
-  import MathSwitch           from '@/components/network-elements/elements/math-switch/view-math-switch.vue'
-  import MathSplit            from '@/components/network-elements/elements/math-split/view-math-split.vue'
 
   import ClassicMLDbscans     from '@/components/network-elements/elements/classic-ml-dbscans/view-classic-ml-dbscans.vue'
   import ClassicMLKMeans      from '@/components/network-elements/elements/classic-ml-k-means/view-classic-ml-k-means.vue'
@@ -97,8 +89,8 @@ export default {
     DataData, DataEnvironment, DataRandom,
     DeepLearningFC, DeepLearningConv, DeepLearningRecurrent,
     ProcessEmbed, ProcessGrayscale, ProcessOneHot, ProcessReshape, ProcessRescale,
-    TrainNormal, TrainRegression, TrainGenetic, TrainDynamic, TrainReinforce, TrainDetector, TrainGan,
-    MathArgmax, MathMerge, MathSwitch,
+    TrainNormal, TrainRegression, TrainReinforce, TrainDetector, TrainGan,
+    MathArgmax, MathMerge,
     LayerCustom,
     PreTrainedVGG16, PreTrainedInceptionV3, PreTrainedResNet50, PreTrainedMobileNetV2, 
     IoInput, IoOutput,
@@ -177,7 +169,7 @@ export default {
           iconClass: 'icon-math-group',
           childListClass: '',
           showEl: false,
-          networkElements: ['MathArgmax', 'MathMerge', 'MathSwitch'],
+          networkElements: ['MathArgmax', 'MathMerge'],
           id:'tutorial_mathematics',
           color: 'rgba(0, 123, 239, 0.7)',
           borderColor: 'rgba(0, 123, 239, 0.2)',

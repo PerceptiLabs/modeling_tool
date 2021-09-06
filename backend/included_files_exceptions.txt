@@ -9,7 +9,6 @@ literal:perceptilabs/insights/csv_ram_estimator/make_data.py
 literal:perceptilabs/insights/csv_ram_estimator/model_and_meta.pkl
 literal:perceptilabs/insights/csv_ram_estimator/train_model.py
 literal:perceptilabs/layers/README.md
-literal:perceptilabs/layers/mathswitch/tf2x_template.j2
 literal:perceptilabs/layers/processrescale/tf2x_template.j2
 literal:perceptilabs/setup.py
 literal:perceptilabs/tasks/executor.py

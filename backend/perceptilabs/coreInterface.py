@@ -713,7 +713,7 @@ class coreLogic():
             else:
                 output = createDataObject([np.squeeze(D).astype(np.float32)])
             return {"Output":output}
-        elif layerType in ["MathSoftmax", "MathArgmax", "MathSwitch", "ProcessOneHot", "ProcessCrop", "ProcessReshape", "ProcessRescale"]:
+        elif layerType in ["MathSoftmax", "MathArgmax", "ProcessOneHot", "ProcessCrop", "ProcessReshape", "ProcessRescale"]:
             D=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})[-1]
             output = createDataObject([np.squeeze(D).astype(np.float32)])
             return {"Output":output}

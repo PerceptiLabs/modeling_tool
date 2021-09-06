@@ -155,11 +155,6 @@ perceptilabs/layers/mathsoftmax/spec.py
 perceptilabs/layers/mathsoftmax/imports.json
 perceptilabs/layers/mathsoftmax/template.j2
 
-# perceptilabs/layers/mathswitch
-perceptilabs/layers/mathswitch/spec.py
-perceptilabs/layers/mathswitch/imports.json
-perceptilabs/layers/mathswitch/tf2x_imports.json
-
 # perceptilabs/layers/mathmerge
 perceptilabs/layers/mathmerge/spec.py
 perceptilabs/layers/mathmerge/imports.json

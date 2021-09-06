@@ -168,22 +168,6 @@ DEFINITION_TABLE = {
             'from perceptilabs.core_new.serialization import can_serialize, serialize'
         ]
     ),
-    'MathSwitch' : LayerDef(
-        Tf1xLayer,
-        'tf1x.j2',
-        'layer_tf1x_switch',
-        {
-            'selected_layer': lambda specs: sanitize_layer_name(specs['Properties']['selected_layer']),
-        },
-        import_statements=[
-            'import tensorflow as tf',
-            'import numpy as np',
-            'from typing import Dict',
-            'from perceptilabs.core_new.utils import Picklable',
-            'from perceptilabs.core_new.layers.base import Tf1xLayer',
-            'from perceptilabs.core_new.serialization import can_serialize, serialize'            
-        ]
-    ),
     'DataEnvironment': LayerDef(
         DataReinforce,
         'dataenv.j2',

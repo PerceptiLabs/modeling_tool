@@ -40,13 +40,11 @@
 import DataData       from '@/components/network-elements/elements/data-data/set-data-data.vue'
 import DataRandom         from '@/components/network-elements/elements/data-random/set-data-random.vue'
 import DataEnvironment    from '@/components/network-elements/elements/data-environment/set-data-environment.vue'
-import DataCloud          from '@/components/network-elements/elements/data-cloud/set-data-cloud.vue'
 
 import DeepLearningFC        from '@/components/network-elements/elements/deep-learning-fc/set-deep-learning-fc.vue'
 import DeepLearningConv      from '@/components/network-elements/elements/deep-learning-conv/set-deep-learning-conv.vue'
 import DeepLearningRecurrent from '@/components/network-elements/elements/deep-learning-recurrent/set-deep-learning-recurrent.vue'
 
-import ProcessCrop      from '@/components/network-elements/elements/process-crop/set-process-crop.vue'
 import ProcessEmbed     from '@/components/network-elements/elements/process-embed/set-process-embed.vue'
 import ProcessGrayscale from '@/components/network-elements/elements/process-grayscale/set-process-grayscale.vue'
 import ProcessOneHot    from '@/components/network-elements/elements/process-one-hot/set-process-one-hot.vue'
@@ -55,16 +53,10 @@ import ProcessRescale   from '@/components/network-elements/elements/process-res
 
 import MathArgmax   from '@/components/network-elements/elements/math-argmax/set-math-argmax.vue'
 import MathMerge    from '@/components/network-elements/elements/math-merge/set-math-merge.vue'
-import MathSwitch    from '@/components/network-elements/elements/math-switch/set-math-switch.vue'
-import MathSplit    from '@/components/network-elements/elements/math-split/set-math-split.vue'
 
 import TrainNormal          from '@/components/network-elements/elements/train-normal/set-train-normal.vue'
 import TrainRegression      from '@/components/network-elements/elements/train-regression/set-train-regression.vue'
-import TrainGenetic         from '@/components/network-elements/elements/train-genetic/set-train-genetic.vue'
-import TrainDynamic         from '@/components/network-elements/elements/train-dynamic/set-train-dynamic.vue'
 import TrainReinforce       from '@/components/network-elements/elements/train-reinforce/set-train-reinforce.vue'
-import TrainLoss            from '@/components/network-elements/elements/train-loss/set-train-loss.vue'
-import TrainOptimizer       from '@/components/network-elements/elements/train-optimizer/set-train-optimizer.vue'
 import TrainGan             from '@/components/network-elements/elements/train-gan/set-train-gan.vue'
 import TrainDetector        from '@/components/network-elements/elements/train-detector/set-train-detector.vue'
 
@@ -89,11 +81,11 @@ export default {
   name: 'SidebarSettings',
   components: { 
     SidebarSettingPreview,
-    DataData, DataEnvironment, DataRandom, DataCloud,
+    DataData, DataEnvironment, DataRandom,
     DeepLearningFC, DeepLearningConv, DeepLearningRecurrent,
-    ProcessCrop, ProcessEmbed, ProcessGrayscale, ProcessOneHot, ProcessReshape, ProcessRescale,
-    MathArgmax, MathMerge, MathSwitch, MathSplit,
-    TrainNormal, TrainRegression, TrainGenetic, TrainDynamic, TrainReinforce, TrainLoss, TrainOptimizer, TrainGan, TrainDetector,
+    ProcessEmbed, ProcessGrayscale, ProcessOneHot, ProcessReshape, ProcessRescale,
+    MathArgmax, MathMerge,
+    TrainNormal, TrainRegression, TrainReinforce, TrainGan, TrainDetector,
     IoInput, IoOutput,
     LayerCustom,
     PreTrainedVGG16, PreTrainedInceptionV3, PreTrainedMobileNetV2, PreTrainedResNet50, UNet,
@@ -136,7 +128,6 @@ export default {
     }),
     onOpenCodeButtonClick() {
       if (this.codeWindowState && this.hasUnsavedChanges) {
-        
         this.popupConfirm(
           {
             text: 'You have unsaved changes. Are you sure you want to load the selected component\'s code?',
