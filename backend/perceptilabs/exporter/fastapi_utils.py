@@ -2,14 +2,14 @@ import os
 import pkg_resources
 import tensorflow as tf
 
-
+SERVER_PORT = 8181
 SCRIPT_FILE = "fastapi_server.py"
 REQUIREMENTS_FILE = "fastapi_requirements.txt"
 EXAMPLE_JSON_FILE = "example.json"
 EXAMPLE_SCRIPT_FILE = "fastapi_example.py"
 EXAMPLE_CSV_FILE = "example.csv"
 EXAMPLE_REQUIREMENTS_FILE = "fastapi_example_requirements.txt"
-PORT = 8181
+
 
 
 STANDARD_LIBRARY_IMPORTS = [
@@ -171,7 +171,7 @@ def render_fastapi_script(path, model, graph_spec, feature_metadata):
     code  = _render_imports_snippet()
     code += _render_data_model_snippet(model, graph_spec, feature_metadata)
     code += _render_create_app_snippet()
-    code += _render_main_snippet(port=PORT)
+    code += _render_main_snippet(SERVER_PORT)
 
     with open(os.path.join(path, SCRIPT_FILE), 'w') as f:
         f.write(code)
@@ -250,7 +250,8 @@ def render_fastapi_example_script(path, feature_specs):
 
     code += "if __name__ == '__main__':\n"
     code += "    data = make_payload()\n"
-    code += "    response = requests.post('http://localhost:{port}/predict', json=data)\n".format(port=PORT)
+    code += "    response = requests.post('http://localhost:{port}/predict', json=data)\n".format(
+        port=SERVER_PORT)
     code += "    pprint(response.json())\n"
 
     with open(os.path.join(path, EXAMPLE_SCRIPT_FILE), 'w') as f:    
