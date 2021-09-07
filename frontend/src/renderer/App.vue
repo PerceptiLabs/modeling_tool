@@ -115,19 +115,26 @@
 
       if (this.isDefaultProjectMode) { 
         // in the free version, the user is locked to a single project
-        this.getDefaultModeProject();
+        this.getDefaultModeProject().then((defaultProject) => {
+          this.fetchNetworkMetas(defaultProject);
+        });
       }
       else if(localStorage.hasOwnProperty('targetProject')) {
         const targetProjectId = parseInt(localStorage.getItem('targetProject'));
         
         // this.loadProjectFromLocalStorage(targetProjectId)
-        this.getProjects();
-          // .then(({data: { results: projects }}) => {
-          //   if(targetProjectId) {
-          //     const targetProject = projects.filter(project => project.project_id === targetProjectId)[0];
-          //     this.setPageTitleMutation(`${targetProject.name} / Models`);
-          //   }
-          // })
+        this.getProjects()
+          .then(({data: { results: projects }}) => {
+            if(targetProjectId) {
+              const targetProject = projects.find(project => project.project_id === targetProjectId);
+              if (targetProject) {
+                console.log('targetProject', targetProject);
+                this.fetchNetworkMetas(targetProject);
+              }
+              // this.reset_network();
+              // this.deleteAllIds();
+            }
+          })
       } else {
         this.getProjects();
         if(localStorage.hasOwnProperty('currentUser')) {
