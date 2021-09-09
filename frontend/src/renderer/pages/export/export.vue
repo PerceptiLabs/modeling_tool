@@ -16,12 +16,11 @@
             span Runtime
         li.model-list(v-for="model in trainedModels")
           div.w-170
-            base-checkbox(
+            base-checkbox.export-checkbox(
               @input="handleModelSelect($event, model.networkID)"
               :styleTypeSecondary="true"
               :value="model.isChecked"
-              ).export-checkbox
-                | {{model.networkName}}
+            ) {{model.networkName}}
           div.w-130
             span -
           div.w-130
@@ -47,8 +46,6 @@
               .form_holder
                 base-radio(:styleTypeSecondary="true" group-name="resizeAutomaticType" value-input="TFModel" v-model="settings.Type")
                   span TensorFlow Model
-                base-radio(:styleTypeSecondary="true" group-name="resizeAutomaticType" value-input="ipynb" v-model="settings.Type")
-                  span Jupyter Notebook
                 template(v-if="isFastApiServerEnabled")
                   base-radio(:styleTypeSecondary="true" group-name="resizeAutomaticType" value-input="FastAPI" v-model="settings.Type")
                     span FastAPI Server
@@ -69,10 +66,9 @@
 </template>
 
 <script>
-import { mapState, mapGetters } from "vuex";
-import { doesFileExist as rygg_doesFileExist } from '@/core/apiRygg';
 import ChartSpinner from '@/components/charts/chart-spinner';
-import { isModelTrained }          from '@/core/modelHelpers';
+import { mapState, mapGetters } from "vuex";
+import { isModelTrained } from '@/core/modelHelpers';
 import { isFastApiServerEnabled } from '@/core/helpers.js';
 
 export default {
@@ -87,9 +83,8 @@ export default {
     return {
       trainedModels: [],
       selectOptions: [
-        { text: 'TensorFlow Model',         value: 'TFModel' },
-        { text: 'Jupyter Notebook (ipynb)', value: 'ipynb' },
-        { text: 'FastAPI Server',           value: 'FastAPI' }	
+        { text: 'TensorFlow Model', value: 'TFModel' },
+        { text: 'FastAPI Server', value: 'FastAPI' },
       ],
       settings: {
         Location: '',
@@ -101,8 +96,6 @@ export default {
       loadingMessage: '',
       wasSavePathChoosen: false,
     };
-  },
-  mounted() {
   },
   computed: {
     ...mapGetters({
@@ -118,15 +111,11 @@ export default {
     },
     isAllModelsChecked() {
       const trainedModelsLength = this.trainedModels.length;
-      console.log({
-        trainedModelsLength,
-        checkedModelsLength: this.checkedModelsLength,
-      });
       return trainedModelsLength ===  this.checkedModelsLength;
     },
     isFastApiServerEnabled() {
       return isFastApiServerEnabled();
-    }
+    },
   },
   watch: {
     'models'() {
@@ -135,17 +124,17 @@ export default {
     'settings.Quantized'(value) {
       if(value) {
         this.settings.Compressed = false;
-      }
+      };
     },
     'settings.Compressed'(value) {
       if(value) {
         this.settings.Quantized = false;
-      }
+      };
     },
   },
   methods: {
     isModelTrained() {
-      return this.$store.dispatch('mod_api/API_checkTrainedNetwork')
+      return this.$store.dispatch('mod_api/API_checkTrainedNetwork');
     },
     filterTrainedModels() {
       if(!this.models.length) {
@@ -155,39 +144,23 @@ export default {
     },
     async exportModels() {
       const selectedModels = this.trainedModels.filter(m => m.isChecked);
-      if(selectedModels.length === 0) {
+      if (selectedModels.length === 0) {
         this.$store.dispatch('globalView/GP_infoPopup', "Select model to export.", {root: true});
         return;
-      }
+      };
       
-      if(!this.wasSavePathChoosen) { 
+      if (!this.wasSavePathChoosen) { 
         this.$store.dispatch('globalView/GP_infoPopup', "Chose where to save the model.", {root: true});
         return;
-      }
+      };
       try {
         let retMessage = '';
-        for(const model of selectedModels) {
+        for (const model of selectedModels) {
           this.loadingMessage = `Exporting model: ${model.networkName}..`;
           const theSettings = {...this.settings};
           theSettings.modelId = model.networkID;
           theSettings.name = model.networkName;
-          if(this.settings.Location !== '' && this.settings.Type === 'ipynb') {
-            const fileName = this.settings.Location + `/${model.networkName}.ipynb`;
-            const doesFileExist = await rygg_doesFileExist(fileName);
-
-            if(doesFileExist) {
-              await this.$store.dispatch('globalView/GP_confirmPopup', {
-                text: `That file '${fileName}' already exists. Are you sure you want to overwrite it?`,
-                ok: async () => {
-                 retMessage = await exportData.call(this, theSettings)
-                }
-              })
-            } else {
-              retMessage = await exportData.call(this, theSettings)
-            }
-          } else {
-             retMessage = await exportData.call(this, theSettings)
-          }
+          retMessage = await exportData.call(this, theSettings);
         }
         this.$store.dispatch('globalView/GP_infoPopup', retMessage , {root: true});
       } catch (e) {
@@ -203,7 +176,7 @@ export default {
       if (value && Array.isArray(value) && value.length > 0) {
         this.settings.Location = value[0];
         this.wasSavePathChoosen = true;
-      }
+      };
       this.$store.dispatch('globalView/SET_filePickerPopup', false);
     },
     saveLoadFile() {
@@ -211,18 +184,17 @@ export default {
     },
     handleModelSelect(isChecked, modelId) {
       let modelIndex = null;
-      for(let i = 0; i < this.trainedModels.length; i++) {
+      for (let i = 0; i < this.trainedModels.length; i++) {
         this.$set(this.trainedModels[i], 'isChecked', false);
-        if(modelId === this.trainedModels[i].networkID) {
+        if (modelId === this.trainedModels[i].networkID) {
           modelIndex = i;
-        }
-      }
+        };
+      };
       
       if(isChecked) {
         this.$set(this.trainedModels[modelIndex], 'isChecked', true);
-      }
-      
-    }
+      };
+    },
   }
 };
 </script>
