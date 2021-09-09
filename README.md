@@ -44,17 +44,43 @@ cd build/docker/compose
 # point your browser at http://localhost
 ```
 
-# How to run the frontend
+# How to run a development environment
+1. Redis server
+    ```
+    docker run -it -p 6379:6379 redis
+    ```
+1. Rendering kernel
+    ```
+    cd backend
+    PL_KERNEL_CELERY="1" PL_REDIS_URL="redis://localhost" python main.py --mode=rendering
+    ```
+1. Training worker
+    ```
+    cd backend
+    PL_REDIS_URL="redis://localhost" celery -A perceptilabs.endpoints.session.celery_executor worker --loglevel=debug --queues=training
+    ```
+1. Flower (optional)
+    ```
+    cd backend
+    PL_REDIS_URL="redis://localhost" celery -A perceptilabs.endpoints.session.celery_executor flower --loglevel=debug
+    ```
+1. Rygg server
+    ```
+    cd rygg
+    PL_FILE_SERVING_TOKEN=12312 PL_TUTORIALS_DATA=$(git rev-parse --show-toplevel)/backend/perceptilabs/tutorial_data PL_FILE_UPLOAD_DIR=$(pwd) PERCEPTILABS_DB=./db.sqlite3 container=xyz python -m django runserver 0.0.0.0:8000 --settings rygg.settings
+    ```
+1. Rygg worker
+    ```
+    cd rygg
+    PL_FILE_SERVING_TOKEN=12312 PL_TUTORIALS_DATA=$(git rev-parse --show-toplevel)/backend/perceptilabs/tutorial_data PL_FILE_UPLOAD_DIR=$(pwd) PERCEPTILABS_DB=./db.sqlite3 container=a celery -A rygg worker -l INFO --queues=rygg
+    ```
+1. Frontend
+    ```
+    cd frontend
+    npm install
+    npm run-script start:web
+    ```
 
-## Dev Mode
-
-For when you really need auto-reload capability.
-
-```
-cd frontend
-npm install
-npm run-script start:web
-```
 
 ## Local Build
 
