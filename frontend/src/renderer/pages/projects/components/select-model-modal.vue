@@ -747,6 +747,7 @@ export default {
       newNetwork.networkMeta.datasetSettings = deepCopy(datasetSettings);
       // Adding network to workspace
       newNetwork.networkMeta.trainingSettings = deepCopy(this.settings);
+      await this.$store.dispatch('mod_workspace/setViewType', 'model');
       await this.addNetwork({ network: newNetwork, apiMeta }).then(() => {
         if (runStatistics) {
           setTimeout(() => {
