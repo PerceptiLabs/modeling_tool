@@ -14,19 +14,21 @@
             span Loss
           div.w-130
             span Runtime
-        li.model-list(v-for="model in trainedModels")
-          div.w-170
-            base-checkbox.export-checkbox(
-              @input="handleModelSelect($event, model.networkID)"
-              :styleTypeSecondary="true"
-              :value="model.isChecked"
-            ) {{model.networkName}}
-          div.w-130
-            span -
-          div.w-130
-            span -
-          div.w-130
-            span {{ model && model.networkMeta && model.networkMeta.coreStatus && model.networkMeta.coreStatus.Training_Duration ? model.networkMeta.coreStatus.Training_Duration.toFixed(2) + 's' : '-' }}
+        perfect-scrollbar(tag="div").export-view-model-list 
+          li.model-list(v-for="model in trainedModels")
+            div.w-170
+              base-checkbox(
+                @input="handleModelSelect($event, model.networkID)"
+                :styleTypeSecondary="true"
+                :value="model.isChecked"
+                ).export-checkbox
+                  | {{model.networkName}}
+            div.w-130
+              span -
+            div.w-130
+              span -
+            div.w-130
+              span {{ model && model.networkMeta && model.networkMeta.coreStatus && model.networkMeta.coreStatus.Training_Duration ? model.networkMeta.coreStatus.Training_Duration.toFixed(2) + 's' : '-' }}
     div.padded-box
       .export-settings-wrapper
         h1.section-title 2. Choose Export Settings
@@ -290,4 +292,8 @@ export default {
 .mb-20 {
   margin-bottom: 20px;
 }
+.export-view-model-list {
+  max-height: calc(100vh - 640px);
+  overflow: scroll;
+};
 </style>
