@@ -7,6 +7,7 @@ import { createCoreNetwork } from "@/core/helpers";
 import { getModelJson as rygg_getModelJson, doesDirExist as rygg_doesDirExist } from '@/core/apiRygg';
 import cloneDeep from 'lodash.clonedeep';
 import { v4 as uuidv4  } from 'uuid';
+import router from '@/router'
 
 const namespaced = true;
 //let pauseAction = 'Pause';
@@ -1083,7 +1084,7 @@ const actions = {
       });
   },
 
-  API_updateResults({rootGetters, rootState}, payload) {
+  API_updateResults({rootGetters, dispatch, commit, rootState}, payload) {
     const theData = {
       receiver: payload && payload.networkIndex !== undefined 
                   ? rootState.mod_workspace.workspaceContent[payload.networkIndex].networkID
@@ -1091,10 +1092,18 @@ const actions = {
       action: 'updateResults',
       value: ''
     };
+    console.log('API_updateResults')
     return coreRequest(theData)
-      .then((data)=> data)
+      .then((data)=> {
+        return data;
+      })
       .catch((err)=> {
-        console.error(err);
+        // if error stop update results req
+        dispatch('mod_workspace/EVENT_startDoRequest', false, {root: true});
+        commit('mod_empty-navigation/set_emptyScreenMode', 0, {root: true});
+        dispatch("mod_workspace/setViewType", 'model', {root: true});
+        dispatch("mod_workspace/SET_statisticsAndTestToClosed", { networkId: rootGetters['mod_workspace/GET_currentNetwork'].networkID }, { root: true });
+        dispatch('globalView/GP_errorPopup', err.response.data, {root: true});
       });
   },
 
