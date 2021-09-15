@@ -208,6 +208,7 @@
           div.model-run-settings-page
             template(v-if="isCreateModelLoading")
               chart-spinner(text="Building preprocessing pipelines...")
+              error-cta.cta-container(v-if="isShowCTA")
             template(v-else)
               div.setting-form-wrapper.settings-layer_section
                 .form_row
@@ -395,6 +396,7 @@ import {defaultTrainingSettings, PERCEPTILABS_VIDEO_TUTORIAL_URL} from "@/core/c
 import { mapActions, mapState, mapGetters }   from "vuex";
 import mixinFocus                             from "@/core/mixins/net-element-settings-input-focus.js";
 import DataColumnOptionSidebar                from '@/components/different/data-column-option-sidebar';
+import ErrorCta                               from '@/components/error-cta';
 import {
   convertModelRecommendationToVisNodeEdgeList,
   createVisNetwork
@@ -417,7 +419,7 @@ import PublicDatasetsList from './public-datasets-list.vue'
 
 export default {
   name: "SelectModelModal",
-  components: { FilePickerPopup, CsvTable, TripleInput, InfoTooltip, ChartSpinner, DataColumnOptionSidebar, PublicDatasetsList },
+  components: { FilePickerPopup, CsvTable, TripleInput, InfoTooltip, ChartSpinner, DataColumnOptionSidebar, PublicDatasetsList, ErrorCta },
   mixins: [mixinFocus],
 
   data: function() {
@@ -486,6 +488,7 @@ export default {
       settings: defaultTrainingSettings,
       showLoadingSpinner: false,
       isCreateModelLoading: false,
+      isShowCTA: false,
     };
   },
   computed: {
@@ -669,6 +672,11 @@ export default {
       this.isCreateModelLoading = true;
       const { modelName, modelPath } = this;
 
+      this.isShowCTA = false;
+      const timerId = setTimeout(() => {
+        this.isShowCTA = true;
+      }, 3 * 60 * 1000);
+
       // Check validity
       if (!(await this.isValidModelName(modelName))) {
         // TODO: showErrorPopup closes all popups, need to change this logic for UX
@@ -775,6 +783,7 @@ export default {
         this.setCurrentView("tutorial-workspace-view");
       });
       this.isCreateModelLoading = false;
+      clearTimeout(timerId);
       this.closeModal(false);
     },
     async createModelTF1X() {
@@ -1499,5 +1508,9 @@ span.error {
   color: #fff;
 }
 
-
+.cta-container {
+  position: absolute;
+  bottom: 30px;
+  z-index: 3;
+}
 </style>
