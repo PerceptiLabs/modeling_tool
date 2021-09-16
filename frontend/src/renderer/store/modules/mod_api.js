@@ -81,6 +81,10 @@ const getters = {
     }
     return layers;
   },
+  GET_networkNameById: (state, getters, rootState, rootGetters) => (id) => {
+    const network = rootGetters['mod_workspace/GET_networkByNetworkId'](id);
+    return network.networkName;
+  },
   GET_coreNetworkById: (state, getters, rootState, rootGetters) => (id) => {
     const network = rootGetters['mod_workspace/GET_networkByNetworkId'](id);
     let layers = {};
@@ -970,8 +974,15 @@ const actions = {
         return coreRequest(theData);
       } else {
           const network = getters.GET_coreNetworkById(settings.modelId);
-          const checkpointDirectory = rootGetters['mod_workspace/GET_currentNetworkCheckpointDirectoryByModelId'](settings.modelId);
-          return renderingKernel.exportModel(settings, datasetSettings, userEmail, modelId, network, checkpointDirectory)
+	  const networkName = getters.GET_networkNameById(modelId)	
+          const checkpointDirectory = rootGetters['mod_workspace/GET_currentNetworkCheckpointDirectoryByModelId'](settings.modelId);       
+
+	if (settings.Type != "Serve Gradio") {  // TODO: serving TEMPORARILY falls under export
+	  return renderingKernel.exportModel(settings, datasetSettings, userEmail, modelId, network, checkpointDirectory)
+        } else {
+	  const url = renderingKernel.waitForServedModelReady("gradio", datasetSettings, userEmail, modelId, network, checkpointDirectory, networkName)
+	  return url;
+	}
       }
     }
 

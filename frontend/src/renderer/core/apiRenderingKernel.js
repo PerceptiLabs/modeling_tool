@@ -41,6 +41,53 @@ export const renderingKernel = {
       })
   },
 
+  async serveModel(type, datasetSettings, userEmail, modelId, network, checkpointDirectory, modelName) {
+    const payload = {
+      type: type,
+      payload: {
+        datasetSettings: datasetSettings,
+        network: network,
+        checkpointDirectory: checkpointDirectory,
+	userEmail: userEmail,
+	modelName: modelName
+      },
+      userEmail: userEmail,
+      modelId: modelId,
+    };
+    return whenRenderingKernelReady
+      .then(rk => rk.post('/serving/start', payload))
+      .then(res => {
+        return (res.status === 200) ? res.data : null;
+      })
+  },
+
+  async isServedModelReady(modelId, userEmail) {
+    return whenRenderingKernelReady
+    .then(rk => rk.get(`/serving/model?model_id=${modelId}&user_email=${userEmail}`))
+    .then(res => {
+      return res.data;
+    }).catch((err) => {
+      console.error(err);
+      return null;
+    })
+  },
+
+  async waitForServedModelReady(type, datasetSettings, userEmail, modelId, network, checkpointDirectory, modelName) {
+    await renderingKernel.serveModel(type, datasetSettings, userEmail, modelId, network, checkpointDirectory, modelName);
+	
+    return await (async function () {
+      let url = await renderingKernel.isServedModelReady(modelId, userEmail);
+      
+      while(!url) {
+        await new Promise(resolve => {
+          setTimeout(resolve, 1000);
+        });
+	url = await renderingKernel.isServedModelReady(modelId, userEmail);
+      }
+      return url      
+    })();
+  },
+
   async getCode(network, layerId) {
     const payload = {
       network: network,

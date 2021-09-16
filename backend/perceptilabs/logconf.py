@@ -9,6 +9,7 @@ import platform
 import re
 
 import perceptilabs
+from perceptilabs.utils import is_docker
 
 APPLICATION_LOGGER = 'perceptilabs.applogger'
 APPLICATION_LOG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)),'kernel.log')
@@ -70,11 +71,6 @@ class QueueHandler(logging.Handler):
             log = message
         return log
 
-def is_docker():
-    try:
-        return os.path.isfile("/.dockerenv")
-    except:
-        return False
 
 def is_podman():
     # see https://github.com/containers/podman/issues/3586

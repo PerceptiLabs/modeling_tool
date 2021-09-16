@@ -16,6 +16,8 @@ from perceptilabs.data.base import DataLoader, FeatureSpec
 from perceptilabs.graph.builder import GraphSpecBuilder
 from perceptilabs.utils import sanitize_path
 from perceptilabs.logconf import APPLICATION_LOGGER
+from perceptilabs.resources.checkpoints import CheckpointAccess
+from perceptilabs.resources.models import ModelAccess
 import perceptilabs.exporter.fastapi_utils as fastapi_utils
 import perceptilabs.tracking as tracking
 
@@ -37,12 +39,16 @@ class Exporter:
 
     @classmethod
     def from_disk(cls, checkpoint_directory, graph_spec, script_factory, data_loader, model_id=None, user_email=None):
-        checkpoint_directory = sanitize_path(checkpoint_directory)
-        weights_path = tf.train.latest_checkpoint(checkpoint_directory)
-        training_model = TrainingModel(script_factory, graph_spec)
-        training_model.load_weights(filepath=weights_path)
-        logger.info(f"Loaded weights from {weights_path}")
-        return cls(graph_spec, training_model, data_loader, model_id=model_id, user_email=user_email, checkpoint_file=weights_path)
+        checkpoint_path = CheckpointAccess().get_path(checkpoint_directory)
+        
+        training_model = ModelAccess(script_factory).get_training_model(
+            graph_spec, checkpoint_path=checkpoint_path)
+
+        exporter = cls(
+            graph_spec, training_model, data_loader,
+            model_id=model_id, user_email=user_email, checkpoint_file=checkpoint_path
+        )
+        return exporter
 
     @property
     def checkpoint_file(self):
@@ -179,41 +185,11 @@ class Exporter:
         with open(frozen_path, "wb") as f:
             f.write(tflite_model)
 
-
     def get_inference_model(self, include_preprocessing=True):
         """ Convert the Training Model to a simpler version (e.g., skip intermediate outputs)  """
-        dataset = self._data_loader.get_dataset(apply_pipelines='loader') # Deduce types from loaded data (i.e., image tensors and not image paths)
-        inputs_batch, _ = next(iter(dataset))
+        inference_model = self._training_model.as_inference_model(
+            self._data_loader, include_preprocessing=include_preprocessing)
 
-        inputs = {}
-        for layer_spec in self._graph_spec.input_layers:
-            shape = inputs_batch[layer_spec.feature_name].shape
-            dtype = inputs_batch[layer_spec.feature_name].dtype
-
-            if shape.rank == 0:
-                shape = tf.TensorShape([1])
-
-            inputs[layer_spec.feature_name] = tf.keras.Input(
-                shape=shape,
-                dtype=dtype,
-                name=layer_spec.feature_name # Giving the input a name allows us to pass dicts in. https://github.com/tensorflow/tensorflow/issues/34114#issuecomment-588574494
-            )
-
-        if include_preprocessing:
-            preprocessed_inputs = {
-                feature_name: self._data_loader.get_preprocessing_pipeline(feature_name)(tensor)
-                for feature_name, tensor in inputs.items()
-            }
-            raw_outputs, _ = self._training_model(preprocessed_inputs)
-
-            outputs = {}
-            for feature_name, tensor in raw_outputs.items():
-                postprocessing = self._data_loader.get_postprocessing_pipeline(feature_name)
-                outputs[feature_name] = postprocessing(tensor)
-        else:
-            outputs, _ = self._training_model(inputs)
-
-        inference_model = tf.keras.Model(inputs=inputs, outputs=outputs)
         return inference_model
 
     @staticmethod

@@ -19,7 +19,17 @@ class SessionStart(View):
         json_data = request.get_json()
         receiver = json_data.get('receiver')
         user_email = json_data.get('value').get('userEmail')
-        task_start_info = self._executor.start_task(user_email, receiver, json_data)
+
+        action = json_data.get('action')
+        if action == "Start":
+            task_type = 'start-training'
+        elif action == "startTests":
+            task_type = 'start-testing'
+        else:
+            raise ValueError("Unknown action to session start! Got: " + action)        
+        
+        task_start_info = self._executor.start_task(task_type, user_email, receiver, json_data)
+
         return jsonify({
             "content": "core started",
             **task_start_info

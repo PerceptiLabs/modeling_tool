@@ -51,10 +51,18 @@ class Loader(BasePipeline):  # TODO: move out and add to included files
     def compute_metadata(cls, dataset, preprocessing):
         has_tiff = cls._has_tiff(dataset)        
         target_shape = cls._get_target_shape(dataset, preprocessing, has_tiff)
+        n_channels = cls._get_n_channels(dataset, has_tiff)
+
         metadata = {
-            "target_shape": target_shape, "has_tiff": has_tiff
+            "target_shape": target_shape, "has_tiff": has_tiff, "n_channels": n_channels
         }
-        return metadata        
+        return metadata
+
+    @classmethod
+    def _get_n_channels(cls, dataset, has_tiff):
+        path = next(iter(dataset))
+        height, width, channels = cls._load_image(path, has_tiff).shape
+        return channels    
 
     @staticmethod
     def _has_tiff(dataset):
@@ -68,12 +76,17 @@ class Loader(BasePipeline):  # TODO: move out and add to included files
 
     @classmethod
     def _get_target_shape(cls, dataset, preprocessing, has_tiff):
+        def get_first_image_shape():
+            path = next(iter(dataset))
+            height, width, channels = cls._load_image(path, has_tiff).shape
+            return (height, width)
+        
         if preprocessing is None:
-            return None
+            return get_first_image_shape()
         
         if not preprocessing.resize:
-            return None
-    
+            return get_first_image_shape()
+        
         if preprocessing.resize_mode == 'custom':
             height = preprocessing.resize_height
             width = preprocessing.resize_width

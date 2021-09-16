@@ -48,6 +48,13 @@ def get_app_variables():
 def get_version():
     from perceptilabs import __version__
     return __version__
+
+
+def is_docker():
+    try:
+        return os.path.isfile("/.dockerenv")
+    except:
+        return False
     
 
 def is_dev():

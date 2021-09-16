@@ -1,13 +1,16 @@
-import aiohttp
-import aiohttp.web
 import asyncio
 import logging
-import numpy as np
+import socket
+from abc import ABC, abstractmethod
+from contextlib import closing
+
 import threading
 import time
 import json
-import socket
-from contextlib import closing
+
+import numpy as np
+import aiohttp
+import aiohttp.web
 
 
 import perceptilabs.settings as settings
@@ -45,73 +48,126 @@ def find_free_port_in_range(min_port, max_port):
     raise IOError('no free ports')
 
 
-def run_kernel(start_payload, on_server_started=None, is_retry=False, cancel_token=None):
-    from perceptilabs.mainInterface import Interface
-    from perceptilabs.issues import IssueHandler
-    from flask import Flask, request, jsonify
+class Session(ABC):
+    @abstractmethod
+    def on_request_received(self, payload):
+        raise NotImplementedError
 
-    issue_handler = IssueHandler()
-    cores = dict()
-    testcore = None
-    dataDict = dict()
-    lwDict = dict()
-    interface = Interface(cores, testcore, dataDict, lwDict, issue_handler, session_id='123', allow_headless=False)
+    @abstractmethod
+    def on_start_called(self, payload, is_retry):
+        raise NotImplementedError
 
-    global has_finished, has_failed
-    has_finished = False
-    has_failed = False
+    def start(self, start_payload, is_retry, on_task_started, cancel_token):
+        self.on_start_called(start_payload, is_retry)
+        
+        async def handle_request(request):
+            request_data = await request.json()
 
-    def on_finished(failed=False):
-        global has_finished, has_failed
-        has_finished = True
-        has_failed = failed
+            response_data = self.on_request_received(request_data)
+            return aiohttp.web.json_response(
+                response_data, dumps=lambda x: json.dumps(x, default=convert))
+    
+        app = aiohttp.web.Application()
+        app.router.add_post('/', handle_request)
+    
+        async def run():
+            port = find_free_port_in_range(
+                settings.TRAINING_PORT_MIN,
+                settings.TRAINING_PORT_MAX)
+    
+            runner = aiohttp.web.AppRunner(app)
+            await runner.setup()
+            site = aiohttp.web.TCPSite(runner, port=port)
+            await site.start()
 
-    interface.create_response(start_payload, is_retry=is_retry, on_finished=on_finished)  # Start training
-
-    async def handle_request(request):
-        request_data = await request.json()
-        response_data = interface.create_response_with_errors(request_data)
-        return aiohttp.web.json_response(
-            response_data, dumps=lambda x: json.dumps(x, default=convert))
-
-    app = aiohttp.web.Application()
-    app.router.add_post('/', handle_request)
-
-    async def run():
-        port = find_free_port_in_range(
-            settings.TRAINING_PORT_MIN,
-            settings.TRAINING_PORT_MAX)
-
-        runner = aiohttp.web.AppRunner(app)
-        await runner.setup()
-        site = aiohttp.web.TCPSite(runner, port=port)
-        await site.start()
-
-        on_server_started(port)
-
-        global has_finished, has_failed
-
-        while not has_finished:
-            await asyncio.sleep(1)
-
-        if has_failed:
-            raise RuntimeError("Task failed!")
-
-        # hack to leave the thread running until the frontend can get the last updates from the api
-        # The correct way would be to call all of the endpoints from which the frontend will  need final information
-        if cancel_token:
-            # the cancel_token is thread-based instead of asyncio, so we can't just call wait(timeout=60) without halting the webserver we're running in this thread
-            for _ in range(60):
-                if cancel_token.wait(timeout=0.01):
-                    break
+            if on_task_started:
+                on_task_started(port)
+    
+            while not self.has_finished:
                 await asyncio.sleep(1)
+    
+            if self.has_failed:
+                raise RuntimeError("Task failed!")
+    
+            # hack to leave the thread running until the frontend can get the last updates from the api
+            # The correct way would be to call all of the endpoints from which the frontend will  need final information
+            if cancel_token:
+                # the cancel_token is thread-based instead of asyncio, so we can't just call wait(timeout=60) without halting the webserver we're running in this thread
+                for _ in range(60):
+                    if cancel_token.wait(timeout=0.01):
+                        break
+                    await asyncio.sleep(1)
+            else:
+                await asyncio.sleep(60)
+    
+            logging.info("Shutting down task http server...")
+    
+        loop = asyncio.new_event_loop()
+        loop.run_until_complete(run())
+        
+    @property
+    def has_finished(self):
+        return False
+
+    @property
+    def has_failed(self):
+        return False
+    
+    @staticmethod
+    def from_type(task_type):
+        if task_type == 'start-training':
+            return TrainingSession()
+        elif task_type == 'start-testing':
+            return TestingSession()
+        elif task_type == 'serve-gradio':
+            from perceptilabs.serving.gradio_serving import GradioSession
+            return GradioSession()
         else:
-            await asyncio.sleep(60)
+            raise ValueError("Unknown task type: " + str(task_type))
 
-        logging.info("Shutting down task http server...")
 
-    loop = asyncio.new_event_loop()
-    loop.run_until_complete(run())
+# TODO: move TestingSession&TrainingSession into some better location
+        
+from perceptilabs.mainInterface import Interface
+from perceptilabs.issues import IssueHandler
+
+class TestingSession(Session):
+    def __init__(self):
+        self._has_finished = False
+        self._has_failed = False
+
+        issue_handler = IssueHandler()
+        cores = dict()
+        testcore = None
+        data_dict = dict()
+        lw_dict = dict()
+        
+        self._main_interface = Interface(
+            cores, testcore, data_dict, lw_dict, issue_handler,
+            session_id='123', allow_headless=False)
+    
+    def on_request_received(self, request):
+        response = self._main_interface.create_response_with_errors(request)        
+        return response
+    
+    def on_start_called(self, start_payload, is_retry):
+        def on_finished(failed=False):
+            self._has_finished = True
+            self._has_failed = failed
+
+        self._main_interface.create_response(
+            start_payload, is_retry=is_retry, on_finished=on_finished)  # Start training/testing
+
+    @property
+    def has_finished(self):
+        return self._has_finished
+
+    @property
+    def has_failed(self):
+        return self._has_failed
+        
+        
+TrainingSession = TestingSession  # TODO(anton.k): decouple and simplify!
 
 
 def get_threaded_session_executor():

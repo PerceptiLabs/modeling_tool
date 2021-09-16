@@ -45,4 +45,42 @@ class TrainingModel(tf.keras.Model):
 
     def _get_layer_from_spec(self, layer_spec):
         return LayerHelper(self._script_factory, layer_spec, self._graph_spec).get_instance().keras_layer
+
+    def as_inference_model(self, data_loader, include_preprocessing=True):
+        if include_preprocessing:
+            dataset = data_loader.get_dataset(apply_pipelines='loader') # Model expects data to be loaded but NOT preprocessed
+        else:
+            dataset = data_loader.get_dataset(apply_pipelines='all')  # Model expects data to be loaded AND preprocessed
+            
+        inputs_batch, _ = next(iter(dataset))       
+
+        inputs = {}
+        for layer_spec in self._graph_spec.input_layers:
+            shape = inputs_batch[layer_spec.feature_name].shape
+            dtype = inputs_batch[layer_spec.feature_name].dtype
+
+            inputs[layer_spec.feature_name] = tf.keras.Input(
+                shape=shape,
+                dtype=dtype,
+                name=layer_spec.feature_name # Giving the input a name allows us to pass dicts in. https://github.com/tensorflow/tensorflow/issues/34114#issuecomment-588574494
+            )
+
+        processed_inputs = inputs.copy()  # Maybe do additional processing before feeding the model
+
+        if include_preprocessing:
+            processed_inputs = {
+                feature_name: data_loader.get_preprocessing_pipeline(feature_name)(tensor)
+                for feature_name, tensor in processed_inputs.items()
+            }
+
+        outputs, _ = self.__call__(processed_inputs)
+
+        if include_preprocessing:        
+            for feature_name, tensor in outputs.items():
+                postprocessing = data_loader.get_postprocessing_pipeline(feature_name)
+                outputs[feature_name] = postprocessing(tensor)
+
+        inference_model = tf.keras.Model(inputs=inputs, outputs=outputs)
+        return inference_model
+        
     

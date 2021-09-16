@@ -18,6 +18,7 @@ from perceptilabs.endpoints.model_recommendations.base import ModelRecommendatio
 from perceptilabs.endpoints.type_inference.base import TypeInference
 from perceptilabs.endpoints.layer_code.base import LayerCode
 from perceptilabs.endpoints.session.base import SessionStart, ActiveSessions, SessionProxy, SessionCancel, SessionWorkers
+from perceptilabs.endpoints.serving.base import ServingStart, IsServedModelReady
 from perceptilabs.endpoints.export.base import Export
 from perceptilabs.endpoints.set_user.base import SetUser
 from perceptilabs.logconf import APPLICATION_LOGGER
@@ -58,7 +59,6 @@ def create_app(data_metadata_cache = NullCache(),
                preview_cache = NullCache(),
                data_executor = utils.DummyExecutor(),
                session_executor = ThreadedExecutor(single_threaded=True)):
-
 
     app = Flask(__name__)
     cors = CORS(app, resorces={r'/d/*': {"origins": '*'}})
@@ -143,6 +143,18 @@ def create_app(data_metadata_cache = NullCache(),
         '/session/proxy',
         methods=['POST'],
         view_func=SessionProxy.as_view('session_proxy', session_executor)
+    )
+
+    app.add_url_rule(
+        '/serving/start',
+        methods=['POST'], 
+        view_func=ServingStart.as_view('serving_start', session_executor)
+    )
+
+    app.add_url_rule(
+        '/serving/model',
+        methods=['GET'],
+        view_func=IsServedModelReady.as_view('is_served_model_ready', session_executor)
     )
 
     app.add_url_rule(

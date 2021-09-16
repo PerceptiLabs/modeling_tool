@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 
 class BaseExecutor(ABC):
     @abstractmethod
-    def start_task(self, user_email, model_id, payload):
+    def start_task(self, task_type, user_email, model_id, payload):
         raise NotImplementedError
 
     @abstractmethod

@@ -114,18 +114,26 @@ class ThreadedExecutor(BaseExecutor):
             self._task_cache.dispose()
             self._task_cache = None
 
-    def start_task(self, user_email, model_id, payload):
+    def start_task(self, task_type, user_email, model_id, payload):
         task_id = self._format_task_id(user_email, model_id)
+
+        def on_task_started(port):
+            self._task_cache.set_metadata(
+                task_id, task_type=task_type, port=port, hostname='localhost')
 
         def run_task(cancel_token):
             try:
-                def on_server_started(port):
-                    self._task_cache.set_metadata(task_id, port=port, hostname='localhost')
-
-                session_utils.run_kernel(payload, on_server_started=on_server_started, cancel_token=cancel_token)
+                session = session_utils.Session.from_type(task_type)
+                session.start(
+                    payload,
+                    on_task_started=on_task_started,
+                    is_retry=False,
+                    cancel_token=cancel_token
+                )
                 self._task_cache.set_complete(task_id)
             except Exception as e:
                 self._task_cache.set_exception(task_id, e)
+                logger.exception("Exception when starting task")
 
         run_with_token = lambda token: self._pool.submit(run_task, token)
         self._task_cache.add(task_id, run_with_token)

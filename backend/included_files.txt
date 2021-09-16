@@ -411,10 +411,22 @@ perceptilabs/tracking/testing_completed.py
 perceptilabs/tracking/data_selected.py
 perceptilabs/tracking/user_email_set.py
 
+# backend/perceptilabs/resources/
+perceptilabs/resources/models.py
+perceptilabs/resources/checkpoints.py
+
 # backend/perceptilabs/endpoints/
 perceptilabs/endpoints/base.py
 perceptilabs/endpoints/base_view.py
 perceptilabs/endpoints/__init__.py
+
+# backend/perceptilabs/serving/
+perceptilabs/serving/__init__.py
+perceptilabs/serving/gradio_serving.py
+
+# backend/perceptilabs/endpoints/serving/
+perceptilabs/endpoints/serving/__init__.py
+perceptilabs/endpoints/serving/base.py
 
 # backend/perceptilabs/endpoints/session/
 perceptilabs/endpoints/session/__init__.py

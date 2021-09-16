@@ -48,9 +48,13 @@
               .form_holder
                 base-radio(:styleTypeSecondary="true" group-name="resizeAutomaticType" value-input="TFModel" v-model="settings.Type")
                   span TensorFlow Model
-                template(v-if="isFastApiServerEnabled")
+                base-radio(:styleTypeSecondary="true" group-name="resizeAutomaticType" value-input="ipynb" v-model="settings.Type")
+                  span Jupyter Notebook
+                template(v-if="isServingEnabled")
                   base-radio(:styleTypeSecondary="true" group-name="resizeAutomaticType" value-input="FastAPI" v-model="settings.Type")
                     span FastAPI Server
+                  base-radio(:styleTypeSecondary="true" group-name="resizeAutomaticType" value-input="Serve Gradio" v-model="settings.Type")
+                    span Serve Gradio
             div.w-120
               template(v-if="settings.Type === 'TFModel'")
                 h1 Compress
@@ -72,6 +76,7 @@ import ChartSpinner from '@/components/charts/chart-spinner';
 import { mapState, mapGetters } from "vuex";
 import { isModelTrained } from '@/core/modelHelpers';
 import { isFastApiServerEnabled } from '@/core/helpers.js';
+import { isServingEnabled } from '@/core/helpers.js';
 
 export default {
   name: 'ExportPage',
@@ -85,8 +90,9 @@ export default {
     return {
       trainedModels: [],
       selectOptions: [
-        { text: 'TensorFlow Model', value: 'TFModel' },
-        { text: 'FastAPI Server', value: 'FastAPI' },
+        { text: 'TensorFlow Model',         value: 'TFModel' },
+        { text: 'FastAPI Server',           value: 'FastAPI' },
+        { text: 'Serve Gradio',             value: 'Serve Gradio' }		
       ],
       settings: {
         Location: '',
@@ -115,9 +121,9 @@ export default {
       const trainedModelsLength = this.trainedModels.length;
       return trainedModelsLength ===  this.checkedModelsLength;
     },
-    isFastApiServerEnabled() {
-      return isFastApiServerEnabled();
-    },
+    isServingEnabled() {
+      return isServingEnabled();
+    }
   },
   watch: {
     'models'() {

@@ -488,8 +488,8 @@ export const isPublicDatasetEnabled = () => {
   return process.env.ENABLE_PUBLIC_DATASET === 'true';
 }
 
-export const isFastApiServerEnabled = () => {
-  return process.env.ENABLE_FAST_API_SERVER === 'true';
+export const isServingEnabled = () => {
+  return process.env.ENABLE_SERVING === 'true';
 };
 
 export const getFirstElementFromObject = (data) => {

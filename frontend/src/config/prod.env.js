@@ -14,5 +14,5 @@ module.exports = {
   INTERCOM_ID: '"ujvkp2qi"',
   USERFLOW_KEY: '"ct_ertrpr7nzfc5himsrvqpz4kota"',
   ENABLE_PUBLIC_DATASET: '"false"',
-  ENABLE_FAST_API_SERVER: '"false"',
+  ENABLE_SERVING: '"false"',
 }

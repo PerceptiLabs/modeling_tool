@@ -29,7 +29,7 @@ def test_image_data_is_loaded_correctly(temp_path, ext):
     assert len(actual_image.shape) == 3  # Always 3 dim
     assert actual_image.shape[-1] == 3  # No alpha channel
 
-    
+
 @pytest.mark.parametrize("ext", ['.png', '.tiff'])
 def test_rank_two_image_is_rank_three_tensor(temp_path, ext):
     image_path, image = random_image((32, 32), temp_path, ext)    
@@ -49,7 +49,21 @@ def test_grayscale_image_is_rank_three_tensor(temp_path, ext):
     loader = Loader.from_data(dataset)
 
     loaded_image = loader(image_path)
-    assert loaded_image.shape == [32, 32, 1]    
+    assert loaded_image.shape == [32, 32, 1]
+
+
+@pytest.mark.parametrize("ext", ['.png', '.tiff'])    
+@pytest.mark.parametrize("shape_and_channels", [((32, 32, 1), 1), ((32, 32), 1), ((32, 32, 3), 3), ((32, 32, 4), 3)])
+def test_image_has_correct_num_channels(temp_path, ext, shape_and_channels):
+    image_shape, expected_channels = shape_and_channels    
+    image_path, image = random_image(image_shape, temp_path, ext)    
+
+    dataset = tf.data.Dataset.from_tensor_slices([image_path, image_path, image_path])
+    loader = Loader.from_data(dataset)
+    
+    loaded_image = loader(image_path)
+    assert loaded_image.shape[2] == expected_channels
+    assert loader.metadata['n_channels'] == expected_channels    
 
 
 @pytest.mark.parametrize("ext", ['.png', '.tiff'])
@@ -66,6 +80,26 @@ def test_image_data_is_loaded_with_custom_size(temp_path, ext):
     image = loader(image_path)
     assert image.shape == (expected_height, expected_width, 3)
 
+
+@pytest.mark.parametrize(
+    "preprocessing",
+    [
+        None,
+        ImagePreprocessingSpec(resize=False),
+        ImagePreprocessingSpec(resize=True, resize_mode='custom'),
+        ImagePreprocessingSpec(resize=True, resize_mode='automatic', resize_automatic_mode='min'),
+        ImagePreprocessingSpec(resize=True, resize_mode='automatic', resize_automatic_mode='max'),
+        ImagePreprocessingSpec(resize=True, resize_mode='automatic', resize_automatic_mode='mode'),               
+    ]
+)
+def test_loader_has_target_shape(temp_path, preprocessing):
+    image_path, _ = random_image((32, 32, 3), temp_path, '.png')        
+
+    dataset = tf.data.Dataset.from_tensor_slices([image_path, image_path, image_path])
+    loader = Loader.from_data(dataset, preprocessing=preprocessing)
+
+    assert len(loader.metadata['target_shape']) == 2
+    
 
 @pytest.mark.parametrize("ext", ['.png', '.tiff'])
 def test_image_data_is_loaded_with_automatic_shape_min(temp_path, ext):
@@ -91,7 +125,6 @@ def test_image_data_is_loaded_with_automatic_shape_min(temp_path, ext):
 
 @pytest.mark.parametrize("ext", ['.png', '.tiff'])
 def test_image_data_is_loaded_with_automatic_shape_max(temp_path, ext):
-
     path1, _ = random_image((64, 32, 3), temp_path, ext)
     path2, _ = random_image((16, 8, 3), temp_path, ext)
     path3, _ = random_image((4, 48, 3), temp_path, ext)

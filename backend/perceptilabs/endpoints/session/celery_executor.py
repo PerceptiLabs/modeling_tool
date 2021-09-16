@@ -28,22 +28,25 @@ celery_app = Celery(
           default_retry_delay=5,
           max_retries=3,
 )
-def session_task(self, user_email, receiver, start_payload):
+def session_task(self, task_type, user_email, receiver, start_payload):
 
-    def on_server_started(port):
+    def on_task_started(port):
         self.update_state(
             state='STARTED',
-            meta={'hostname': self.request.hostname, 'port': port, 'user_email': user_email, 'receiver': receiver},
+            meta={'hostname': self.request.hostname, 'port': port, 'user_email': user_email, 'receiver': receiver, 'task_type': task_type},
         )
 
     # TODO: start a thread that polls for cancelation
     # when detected, trigger the cancel_token
 
     logger.info(f"Received session_task for {user_email}/{receiver}")
-    session_utils.run_kernel(
+
+
+    session = session_utils.Session.from_type(task_type)
+    session.start(
         start_payload,
-        on_server_started=on_server_started,
-        is_retry=(self.request.retries > 0)
+        is_retry=(self.request.retries > 0),        
+        on_task_started=on_task_started
     )
 
 class CeleryExecutor(BaseExecutor):
@@ -57,12 +60,12 @@ class CeleryExecutor(BaseExecutor):
         result = self._inspect_tasks().ping()
         return result is not None
 
-    def start_task(self, user_email, model_id, payload):
+    def start_task(self, task_type, user_email, model_id, payload):
         existing = self._get_celery_task(user_email, model_id)
         if existing is not None:
             existing.revoke(terminate=True)
 
-        task = self._session_task.delay(user_email, model_id, payload)
+        task = self._session_task.delay(task_type, user_email, model_id, payload)
         logger.info(f"Enqueued task for {user_email}, model {model_id}")
         return {
             "model_id": model_id,

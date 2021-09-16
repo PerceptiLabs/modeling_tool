@@ -15,11 +15,12 @@ def completion_event():
 def executor(celery_worker, completion_event, monkeypatch):
     # monkeypatch.setattr(perceptilabs.endpoints.session.celery_executor, 'celery_app', celery_app)
 
-    def fake_run_kernel(*args, **kwargs):
-        kwargs["on_server_started"](00000)
+    def fake_start(*args, **kwargs):
+        kwargs["on_task_started"](00000)
         completion_event.wait(10)
 
-    monkeypatch.setattr(perceptilabs.endpoints.session.utils, 'run_kernel', fake_run_kernel)
+    monkeypatch.setattr(
+        perceptilabs.endpoints.session.utils.Session, 'start', fake_start)
 
     ret = CeleryExecutor(app=celery_worker.app)
 
@@ -54,7 +55,7 @@ def wait_for_active_task(executor):
 @pytest.mark.skip
 @pytest.mark.celery(task_always_eager=True)
 def test_get_task_info_with_matching_email(executor, celery_worker, completion_event):
-    executor.start_task("a@b", 123, {})
+    executor.start_task("task-type", "a@b", 123, {})
 
     try:
         wait_for_active_task(executor)

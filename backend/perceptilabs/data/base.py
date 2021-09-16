@@ -340,7 +340,10 @@ class DataLoader:
         if output_type in ('list', 'numpy', 'shape'):
             def eval_fn(x):
                 x = x.numpy()
-                if output_type == 'list':
+
+                if output_type == 'list' and isinstance(x, bytes):
+                    x = x.decode()
+                elif output_type == 'list':
                     x = x.tolist()
                 elif output_type == 'shape':
                     x = x.shape
