@@ -1,10 +1,11 @@
 from django.conf import settings
-from django.http import HttpResponse, HttpResponseServerError
+from django.http import HttpResponse, HttpResponseServerError, HttpResponseNotFound
 from django_http_exceptions import HTTPExceptions
 from rest_framework import permissions
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.decorators import api_view
+from rest_framework.response import Response
 from rygg import __version__
 from rygg.api.app import updates_available
 from rygg.api.models import Project, Model, Notebook, Dataset
@@ -134,3 +135,22 @@ def get_updates_available(request):
 def is_enterprise(request):
     json_str = json.dumps({"is_enterprise": settings.IS_CONTAINERIZED})
     return HttpResponse(json_str, content_type="application/json")
+
+from rygg.celery import app as celery_app
+from celery.result import AsyncResult
+
+class TaskViewSet(viewsets.GenericViewSet):
+    def retrieve(self, request, pk=None):
+        task = AsyncResult(pk, app=celery_app)
+        if not task.info:
+            return HttpResponseNotFound()
+
+        return Response({"state": task.state, **task.info})
+
+    def destroy(self, request, pk=None):
+        task = AsyncResult(pk, app=celery_app)
+        if not task.info:
+            return HttpResponseNotFound()
+
+        celery_app.control.terminate(pk)
+        return Response()

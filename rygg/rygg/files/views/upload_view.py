@@ -11,7 +11,7 @@ import json
 import time
 import os, shutil
 from rygg.api.models import Dataset
-from rygg.files.tasks import unzipTask
+from rygg.files.tasks import unzip_async
 from rest_framework.decorators import api_view
 from rygg.files.views.util import json_response
 
@@ -100,8 +100,8 @@ class UploadView(APIView):
         content_type = file_uploaded.content_type
 
         if (open(dest_file, "rb").read(4) == b'PK\x03\x04'):
-            task = unzipTask.delay(dest_file)
-            return Response({"task_id": task.id})
+            task_id = unzip_async(dest_file)
+            return Response({"task_id": task_id})
 
         response = _get_file_info(dest_file)
         return Response(response, 201)

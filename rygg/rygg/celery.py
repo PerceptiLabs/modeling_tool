@@ -8,9 +8,8 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'rygg.settings')
 app = Celery(
     'rygg',
     task_routes={
-        "unzip": {
-            "queue": "rygg"
-        }
+        "unzip": { "queue": "rygg" },
+        "delete_path_task": { "queue": "rygg" },
     }
 )
 

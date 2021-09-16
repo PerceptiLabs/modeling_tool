@@ -68,6 +68,8 @@ def test_upload_zip(rest):
 
     # Make sure that the upload started a task
     assert ret["task_id"]
+    task = rest.get(f"/tasks/{ret['task_id']}/")
+    assert task["state"] in ["PENDING", "COMPLETED"]
 
     # Wait for the files to show up
     assert_eventually(has_expected_files, EXPECTED_FILES, stop_max_delay=60000, wait_fixed=1000)

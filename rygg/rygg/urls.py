@@ -28,6 +28,7 @@ router.register(r"models", api_views.ModelViewSet)
 router.register(r"datasets", api_views.DatasetViewSet)
 router.register(r"notebooks", api_views.NotebookViewSet)
 router.register(r"issues", api_views.IssuesViewSet, basename='Issues')
+router.register(r"tasks", api_views.TaskViewSet, basename="task")
 
 urlpatterns = [
     path("", (include(router.urls))),

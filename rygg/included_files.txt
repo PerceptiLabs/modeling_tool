@@ -33,6 +33,8 @@ rygg/files/models/directory.py
 rygg/files/models/github.py
 rygg/files/models/model_directory.py
 rygg/files/tasks.py
+rygg/files/utils/__init__.py
+rygg/files/utils/unzipper.py
 rygg/files/views/__init__.py
 rygg/files/views/directory_view.py
 rygg/files/views/file_view.py
