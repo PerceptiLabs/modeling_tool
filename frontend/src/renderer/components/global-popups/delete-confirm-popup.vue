@@ -9,7 +9,7 @@
       .popup_tab-set
         //.popup_header.active
       .popup_body
-          p.message This action cannot be undone. <br/> Are you sure you want to continue?
+          p.message This action cannot be undone. You are about<br/> to remove the physical copy of your model. <br/> Are you sure you want to continue?
           .d-flex.align-items-center(style="padding: 0 30px 15px 30px")
             base-checkbox.is-silver.w-100(v-model="dontShowThisAgain" :isNewUi="true")
               span.dont-show-text(style="color: #C4C4C4;") Do not show this again
