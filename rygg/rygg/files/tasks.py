@@ -1,6 +1,4 @@
-from __future__ import absolute_import, unicode_literals
 import zipfile, os
-from django.http import HttpResponse
 from celery.decorators import task
 
 import logging
@@ -16,4 +14,5 @@ def unzipTask(filepath):
     with zipfile.ZipFile(filepath, 'r') as zip:
         zip.extractall(dir_path)
         files_extracted = zip.namelist()
-        logger.info("file 1:", os.path.join(dir_path, files_extracted[0]))
+        if files_extracted:
+            logger.info(f"unzipped {len(files_extracted)} file(s). First one: {os.path.join(dir_path, files_extracted[0])}")

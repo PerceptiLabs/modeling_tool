@@ -143,9 +143,7 @@ class CeleryExecutor(BaseExecutor):
                 yield result
 
     def _active_celery_results(self):
-        active_method = self._inspect_tasks().active
         active = self._inspect_tasks().active() or {}
-        insp = self._app.control.inspect()
 
         for tasks in active.values():
             for task in tasks:

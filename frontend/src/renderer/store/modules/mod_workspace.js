@@ -9,10 +9,8 @@ import {
   checkpointDirFromProject
 } from "@/core/helpers.js";
 import { widthElement, LOCAL_STORAGE_WORKSPACE_VIEW_TYPE_KEY, LOCAL_STORAGE_WORKSPACE_SHOW_MODEL_PREVIEWS, defaultTrainingSettings } from '@/core/constants.js'
-import idb  from "@/core/helpers/idb-helper.js";
 import Vue    from 'vue'
 import router from '@/router'
-import {isElectron} from "@/core/helpers";
 import { deleteFolder as rygg_deleteFolder } from '@/core/apiRygg';
 import cloneDeep from 'lodash.clonedeep';
 import { saveModelJson as rygg_saveModelJson, updateModelMeta } from '@/core/apiRygg';
@@ -416,7 +414,7 @@ const getters = {
       type: "tab",
     })
     return componentsTabs;
-  }
+  },
 };
 
 const mutations = {

@@ -36,15 +36,17 @@
   import CreateIssuePopup         from '@/components/global-popups/create-issues-popup.vue';
   import TutorialsChecklist       from '@/components/tutorial/tutorial-checklist.vue';
   import TutorialNotification from "@/components/different/tutorial-notification.vue";
-  import { getModelJson as rygg_getModelJson } from '@/core/apiRygg';
+  import { 
+    getModelJson as rygg_getModelJson,
+    loadDataset as rygg_createDataset,
+    attachModelsToDataset as rygg_attachModelsToDataset,
+  } from '@/core/apiRygg';
   import { ryggAvailability } from '@/core/apiRygg';
   import Analytics from '@/core/analytics';
   import { LOCAL_STORAGE_WORKSPACE_VIEW_TYPE_KEY, localStorageGridKey } from '@/core/constants.js'
   import { mapMutations, mapActions, mapGetters, mapState } from 'vuex';
+  import { getModelDatasetPath } from '@/core/modelHelpers.js';
   import SidebarMenu            from '@/pages/layout/sidebar-menu.vue';
-  // import HeaderLinux            from '@/components/header/header-linux.vue';
-  // import HeaderWin              from '@/components/header/header-win.vue';
-  // import HeaderMac              from '@/components/header/header-mac.vue';
   import AppHeader              from '@/components/app-header/app-header.vue';
   import UpdatePopup            from '@/components/global-popups/update-popup/update-popup.vue'
   import PiPyPopupUpdate        from "@/components/global-popups/update-popup/pipy-update-popup.vue";  
@@ -55,9 +57,8 @@
   import AboutAppPopup          from "@/components/global-popups/about-app-popup.vue";
   import FilePickerPopup        from "@/components/global-popups/file-picker-popup.vue";
   import { MODAL_PAGE_PROJECT, MODAL_PAGE_QUESTIONNAIRE } from '@/core/constants.js';
-  import { isUrlReachable } from '@/core/apiRygg.js';
+  import { isUrlReachable, isEnterpriseApp } from '@/core/apiRygg.js';
   import { keyCloak } from '@/core/apiKeyCloak.js';
-  import { whenInEnterprise } from "@/core/isEnterprise";
   
   export default {
     name: 'TheApp',
@@ -72,7 +73,7 @@
     beforeCreate() {
       this.$store.dispatch('mod_api/API_setAppInstance');
     },
-    created() {
+    async created() {
       if(!isBrowserChromeOrFirefox()) {
         this.$store.dispatch('globalView/GP_infoPopup', 'PerceptiLabs works best in FireFox and Chrome, we suggest you use the tool there instead for the best experience.'); 
       }
@@ -101,10 +102,11 @@
         });
 
       this.$store.commit('mod_project/setIsDefaultProjectMode');
-      whenInEnterprise()
+      await isEnterpriseApp()
         .then(isEnterpriseAppValue => {
-          this.$store.commit('globalView/set_isEnterpriseApp', isEnterpriseAppValue)
-        })
+          return this.$store.commit('globalView/set_isEnterpriseApp', isEnterpriseAppValue);
+        });
+      await this.$store.dispatch('mod_datasets/getDatasets');
     },
     mounted() {
       this.$intercom.boot({
@@ -211,7 +213,11 @@
         getShowTutorialTips:    'mod_tutorials/getShowTutorialTips',
         getHasShownWhatsNew:    'mod_tutorials/getHasShownWhatsNew', 
         emptyNavigationMode:    'mod_empty-navigation/getEmptyScreenMode',
+        allModelsDatasets:      'mod_datasets/GET_datasets',
       }),
+      workspaceContent() {
+        return this.$store.state['mod_workspace'].workspaceContent;
+      },
       showNotAvailable() {
         return this.$store.state.mod_autoUpdate.showNotAvailable
       },
@@ -472,8 +478,7 @@
         
         // console.log('fetchAllNetworkJsons filteredMetas', filteredMetas);
         Promise.all(promiseArray)
-          .then(models => {
-            // console.log('fetchAllNetworkJsons models', models);
+          .then(async (models) => {  
             this.addNetworksToWorkspace(models, modelMetas);
             models.forEach(model => {
               if (model) {
@@ -489,7 +494,47 @@
               this.setStatisticsAvailability();
               this.setCheckpointAvailability();
             });
+            return models;
+          })
+          .then(this.handleCreateDatasets)
+          .then(this.handleAttachDatasetsToModel);
+      },
+      // migration for creating datasets
+      async handleCreateDatasets(models) {
+        const alreadyCreatedDatasetsPaths = this.allModelsDatasets.map(x => x.location);
+        const notExistingDatasets = models.filter(x => (x !== null)).map(model => {
+          const datasetPath = getModelDatasetPath(model);
+          let ret = null;
+          if(!alreadyCreatedDatasetsPaths.includes(datasetPath)) {
+            ret = {
+              modelId: model.apiMeta.model_id,
+              datasetPath,
+            };
+          }
+          return ret;
+        }).filter(x => x !== null);
+
+        notExistingDatasets.map(async (data) => {
+          // creating datasets
+          await rygg_createDataset({
+            project: 1,
+            name: data.datasetPath,
+            location: data.datasetPath,
           });
+        })
+        await this.$store.dispatch('mod_datasets/getDatasets');
+        return models;
+      },
+      // migration for attaching datasets to models
+      async handleAttachDatasetsToModel(models) {
+        const arrOfLocations = this.allModelsDatasets.map(x => x.location);
+        await this.workspaceContent.map(async (workspaceModel) => {
+          if (workspaceModel.apiMeta.datasets.length === 0) {
+            const datasetPath = getModelDatasetPath(workspaceModel);
+            const modelDataset = this.allModelsDatasets[arrOfLocations.indexOf(datasetPath)];
+            await rygg_attachModelsToDataset(modelDataset.dataset_id, [...modelDataset.models, workspaceModel.apiMeta.model_id]);
+          }
+        });
       },
       async fetchUnparsedModels(modelMetas){
         let unparsedModels = [];

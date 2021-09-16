@@ -15,8 +15,8 @@
           .train-progress-wrapper
             .train-progress-bars(:style="progressStyle") 
           
-          .progres-in-percent(v-if="!showError()") {{ statusData.Status === 'Waiting' ? '' : isNaN(parseInt(statusData.Progress * 100, 10)) ? '' : `${parseInt(statusData.Progress * 100, 10)}%`}}
-          div.svg-warrning-wrapper(v-else v-tooltip:right-wrap-text="coreError.errorMessage")
+          .progress-in-percent(v-if="!showError()") {{ statusData.Status === 'Waiting' ? '' : isNaN(parseInt(statusData.Progress * 100, 10)) ? '' : `${parseInt(statusData.Progress * 100, 10)}%`}}
+          div.svg-warning-wrapper(v-else v-tooltip:right-wrap-text="coreError.errorMessage")
             svg(width='12' height='12' viewbox='0 0 12 12' fill='none' xmlns='http://www.w3.org/2000/svg')
               circle(cx='6' cy='6' r='6' fill='#E48B23')
               g(filter='url(#filter0_d)')
@@ -68,17 +68,17 @@ export default {
   },
   watch: {
     'statusData.Progress': function () {
-      this.getProgres();
+      this.getProgress();
     }
   },
   created(){
-    this.getProgres();
+    this.getProgress();
   },
   methods: {
     showError() {
       return !!(this.coreError.hasOwnProperty('Status') || this.coreError.hasOwnProperty('errorMessage')) && Object.keys(this.statusData).length === 0;
     },
-    getProgres() {
+    getProgress() {
       let progress = 0;
       let color = '#73FEBB';  // green - #73FEBB  orange - #E48B23  blue - #7397FE
       if(this.showError()) {
@@ -99,10 +99,10 @@ export default {
 </script>
 <style lang="scss" scoped>
   .name {
-    font-family: Nunito Sans;
+    font-family: 'Roboto', sans-serif;
     font-style: normal;
     font-weight: normal;
-    font-size: 12px;
+    font-size: 16px;
     line-height: 19px;
     color: #fff;
   }
@@ -114,12 +114,12 @@ export default {
     width: 100px;
     height: 10px
   }
-  .progres-in-percent {
+  .progress-in-percent {
     margin-left: 7px;
-    font-family: Nunito Sans;
+    font-family: 'Roboto', sans-serif;
     font-style: normal;
     font-weight: bold;
-    font-size: 12px;
+    font-size: 16px;
     line-height: 16px;
     vertical-align: bottom;
   }
@@ -130,7 +130,7 @@ export default {
   .training-complete-text {
     margin-left: 5px;
   }
-  .svg-warrning-wrapper {
+  .svg-warning-wrapper {
     margin-left: 7px;
     height: 14px;
   }

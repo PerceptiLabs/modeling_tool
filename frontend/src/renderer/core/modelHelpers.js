@@ -72,7 +72,12 @@ export const isModelValidForTest = (model, testType) => {
   return isInputsValid && isOutputsValid
 }
 
+
+export const getModelDatasetPath = (model) => {
+  return Object.values(model.networkMeta.datasetSettings.featureSpecs)[0].csv_path; 
+};
+
 export const isModelTrained = (model) => {
   const networkStatus = model.networkMeta.coreStatus.Status;
   return networkStatus === 'Finished' || networkStatus === 'Testing' || networkStatus === 'Validation' || networkStatus === 'Stopped' || model.networkMeta.coreStatus.Epoch > 0;
-}
+};

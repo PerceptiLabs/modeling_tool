@@ -95,6 +95,9 @@ export const LOCAL_STORAGE_WORKSPACE_VIEW_TYPE_KEY  = 'mod_workspace_view_type'
 export const LOCAL_STORAGE_WORKSPACE_SHOW_MODEL_PREVIEWS  = 'show_model_previews'
 export const LOCAL_STORAGE_HIDE_DELETE_MODAL = 'hide_delete_modal'
 
+// export const ENTERPRISE_DATASET_FOLDER_PREFIX = '/Users/dred/PL_FILES/';
+export const ENTERPRISE_DATASET_FOLDER_PREFIX = '/perceptilabs/Documents/Perceptilabs/data/';
+
 export const defaultTrainingSettings = {
   Epochs: 100,
   Batch_size: 32,

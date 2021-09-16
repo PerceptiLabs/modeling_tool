@@ -12,8 +12,8 @@ class RyggRest():
     def check(self):
         self.get("/app/version")["version"]
 
-    def post(self, relpath, doc, **urlparams):
-        payload = json.dumps(doc)
+    def post(self, relpath, body_dict, **urlparams):
+        payload = json.dumps(body_dict)
         query = self.build_query(relpath, **urlparams)
         resp = requests.post(query, data=payload, headers=headers)
         if not resp.ok:

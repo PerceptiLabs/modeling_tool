@@ -16,6 +16,13 @@ class FileView(APIView):
             raise HTTPExceptions.NO_CONTENT
         return make_path_response(full_path)
 
+    def delete(self, request, format=None):
+        full_path = get_path_param(request)
+        if not os.path.isfile(full_path):
+            raise HTTPExceptions.NO_CONTENT
+        os.remove(full_path)
+        return make_path_response(full_path)
+
 @api_view(["GET"])
 def get_file_content(request):
     full_path = get_required_param(request, "path")

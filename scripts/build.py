@@ -155,9 +155,14 @@ def copy_files(src_root, dest_root, list_path=None):
     elif os.path.isdir(src_root):
         copytree(src_root, dest_root)
 
-def run_checked_arr(arr, env=None):
-    inner={} if not env else {"env":{**env, **os.environ}}
-    with Popen(arr, stdout=PIPE, bufsize=1, universal_newlines=True, **inner) as p:
+def run_checked_arr(arr, **popen_kwargs):
+    kwargs = {
+        "stdout": PIPE,
+        "bufsize": 1,
+        "universal_newlines": True,
+        **popen_kwargs
+    }
+    with Popen(arr, **kwargs) as p:
         for line in p.stdout:
             print(line, end="")  # process line here
 
@@ -165,10 +170,10 @@ def run_checked_arr(arr, env=None):
         raise CalledProcessError(p.returncode, p.args)
 
 
-def run_checked(cmd, env=None):
+def run_checked(cmd, **popen_kwargs):
     print(f"$ {cmd}")
     as_arr = cmd.split()
-    run_checked_arr(as_arr, env=env)
+    run_checked_arr(as_arr, **popen_kwargs)
 
 
 def run_unchecked(cmd):
@@ -448,7 +453,7 @@ def run_integration_tests():
         "container": "any ol' string",
         **os.environ
     }
-    integration_tests_path = os.path.join(RYGG_DIR, 'integration_tests', "integration_tests.py")
+    integration_tests_path = os.path.join(RYGG_DIR, 'integration_tests')
 
     print("---------------------------------------------------------------------------------------------------")
     print("Running rygg integration tests")
@@ -458,7 +463,7 @@ def run_integration_tests():
     with popen_with_terminate([PYTHON, "manage.py", "runserver", "0.0.0.0:8000"], cwd=RYGG_DIR, env=env) as server_proc:
         wait_for_port('127.0.0.1', 8000, interval_secs=1)
         with popen_with_terminate(["celery", "-A", "rygg", "worker", "-l", "INFO"], cwd=RYGG_DIR, env=env) as server_proc_c:
-            run_checked_arr([PYTHON, integration_tests_path, "local"], {"PL_FILE_UPLOAD_DIR": upload_dir})
+            run_checked_arr([PYTHON, "-m", "pytest", "--host", "localhost", "-vv"], cwd=integration_tests_path, env={**env, **os.environ})
 
     print("rygg integration tests passed")
     print("---------------------------------------------------------------------------------------------------")
@@ -563,8 +568,7 @@ def test():
     write_all_lines(f"{BUILD_TMP}/cython_roots.txt", ["perceptilabs\n", "rygg\n", "static_file_server\n"])
     run_pytest_tests()
     run_django_tests()
-    #TODO jon: reinstate this when integration tests are rewritten for story 2210
-    #run_integration_tests()
+    run_integration_tests()
     run_lint_test()
     run_cython_test()
 

@@ -21,6 +21,7 @@ import BaseCheckbox     from '@/components/base/checkbox.vue'
 import BaseRadiobutton  from '@/components/base/radiobutton.vue'
 import BaseSelect       from '@/components/base/select.vue'
 import BaseRange        from '@/components/base/range.vue'
+import BaseButton       from '@/components/base/base-button.vue'
 import FilePickerPopup  from '@/components/global-popups/file-picker-popup.vue'
 import PerfectScrollBar from 'vue2-perfect-scrollbar';
 
@@ -70,6 +71,7 @@ Vue.component('base-checkbox', BaseCheckbox);
 Vue.component('base-radio', BaseRadiobutton);
 Vue.component('base-select', BaseSelect);
 Vue.component('base-range', BaseRange);
+Vue.component('base-button', BaseButton)
 Vue.component('file-picker-popup', FilePickerPopup)
       
 // analytics

@@ -7,6 +7,7 @@ rygg/api/migrations
 rygg/api/models.py
 rygg/api/serializers.py
 rygg/api/services.py
+rygg/api/tasks.py
 rygg/api/tests.py
 rygg/api/views.py
 rygg/asgi.py
@@ -31,6 +32,7 @@ rygg/files/models/__init__.py
 rygg/files/models/directory.py
 rygg/files/models/github.py
 rygg/files/models/model_directory.py
+rygg/files/tasks.py
 rygg/files/views/__init__.py
 rygg/files/views/directory_view.py
 rygg/files/views/file_view.py
@@ -45,4 +47,3 @@ rygg/settings.py
 rygg/urls.py
 rygg/wsgi.py
 rygg/celery.py
-rygg/files/tasks.py

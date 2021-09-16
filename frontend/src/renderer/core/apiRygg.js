@@ -187,18 +187,109 @@ export const isUrlReachable = async (path) => {
   }
 }
 
-export const uploadDatasetToFileserver = async (file, overwrite = false) => {
+/**
+ * @param file
+ * @param {boolean} overwrite Overwrite the file
+ * @returns {Promise<AxiosResponse<any>>}
+ */
+export const uploadFile = async (file, overwrite = false) => {
   try {
     const data = new FormData();
     data.append('file_uploaded', file);
     data.append('name', file.name);
     data.append('overwrite', overwrite ? 'true': 'false');
     const fs = await whenHaveFileservingToken();
-    return await fs.post('/upload', data);
+    return await fs.post('upload', data);
+  } catch(e) {
+    return Promise.reject(e);
+  }
+};
+
+export const getFile = async (filename) => {
+  try {
+    const fs = await whenHaveFileservingToken();
+    return await fs.get(`upload?filename=${filename}`);
+  } catch(e) {
+    return Promise.reject(e);
+  }
+};
+
+/**
+ * 
+ * @param {Object} payload
+ * @param {number} payload.project
+ * @param {string} payload.name
+ * @param {string} payload.location
+ * @returns {Promise<AxiosResponse<any>>}
+ */
+export const loadDataset = async (payload) => {
+  try {
+    const fs = await whenHaveFileservingToken();
+    return await fs.post('datasets/', payload);
   } catch(e) {
     console.error(e);
   }
+};
+/**
+ * 
+ * @param {string} filename
+ * @returns {Promise<AxiosResponse<any>>}
+ */
+export const getDatasets = async (filename) => {
+  try {
+    const fs = await whenHaveFileservingToken();
+    return await fs.get(`datasets/?filename=${filename}`);
+  } catch(e) {
+    return Promise.reject(e);
+  }
+};
+/**
+ * 
+ * @param {number} id
+ * @returns {Promise<AxiosResponse<any>>}
+ */
+export const getDataset = async (id) => {
+  try {
+    const fs = await whenHaveFileservingToken();
+    return await fs.get(`datasets/${id}/`);
+  } catch (e) {
+    return Promise.reject(e);
+  }
+};
+
+/**
+ * 
+ * @param {number} id
+ * @returns {Promise<AxiosResponse<any>>}
+ */
+export const removeDataset = async (id) => {
+  try {
+    const fs = await whenHaveFileservingToken();
+    return await fs.delete(`datasets/${id}/`);
+  } catch (e) {
+    return Promise.reject(e);
+  }
 }
+
+export const attachModelsToDataset = async (id, models) => {
+  const payload = {
+    models,
+  }
+  try  {
+    const fs = await whenHaveFileservingToken();
+    return await fs.patch(`datasets/${id}/`, payload);
+  } catch (e) {
+    return Promise.reject(e);
+  }
+}
+
+
+
+export const isEnterpriseApp = async () => {
+  const fs = await whenHaveFileservingToken();
+  const { data } = await fs.get('app/is_enterprise/');
+  return data.is_enterprise;
+};
 
 export const rygg = {
 

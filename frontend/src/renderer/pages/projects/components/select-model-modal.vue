@@ -411,9 +411,13 @@ import { getFolderContent as rygg_getFolderContent }      from "@/core/apiRygg";
 import { getResolvedDir as rygg_getResolvedDir }          from "@/core/apiRygg";
 import { getRootFolder as rygg_getRootFolder }            from "@/core/apiRygg";
 import { getFileContent as rygg_getFileContent }          from "@/core/apiRygg";
-
+import { loadDataset  as rygg_createDataset }             from "@/core/apiRygg";
+import { getDatasets  as rygg_getDataset }                from "@/core/apiRygg";
+import { uploadFile as rygg_uploadFile }                  from "@/core/apiRygg";
+import { getFile as rygg_getFile }                        from "@/core/apiRygg";
 import { renderingKernel }              from "@/core/apiRenderingKernel";
 import { formatCSVTypesIntoKernelFormat } from "@/core/helpers/model-helper";
+import { ENTERPRISE_DATASET_FOLDER_PREFIX } from '@/core/constants.js';
 
 import PublicDatasetsList from './public-datasets-list.vue'
 
@@ -421,7 +425,19 @@ export default {
   name: "SelectModelModal",
   components: { FilePickerPopup, CsvTable, TripleInput, InfoTooltip, ChartSpinner, DataColumnOptionSidebar, PublicDatasetsList, ErrorCta },
   mixins: [mixinFocus],
-
+  async created() {
+    const showNewModelPopup = this.showNewModelPopup;
+    if(typeof showNewModelPopup === 'object' && showNewModelPopup !== null &&  showNewModelPopup.hasOwnProperty('datasetId')) {
+      let datasetPath = '';
+      const allDatasets = this.$store.getters['mod_datasets/GET_datasets'];
+      allDatasets.forEach(dataset => {
+        if(dataset.dataset_id === showNewModelPopup.datasetId) {
+           datasetPath = dataset.location;
+        }
+      })
+      this.handleDataPathUpdates([datasetPath]);
+    }
+  },
   data: function() {
     return {
       basicTemplates: [
@@ -488,6 +504,7 @@ export default {
       settings: defaultTrainingSettings,
       showLoadingSpinner: false,
       isCreateModelLoading: false,
+      createdFromDatasetId: null,
       isShowCTA: false,
     };
   },
@@ -495,7 +512,8 @@ export default {
     ...mapState({
       currentProjectId: state => state.mod_project.currentProject,
       workspaces: state => state.mod_workspace.workspaceContent,
-      startupDatasetPath: state => state.mod_datasetSettings.startupFolder
+      startupDatasetPath: state => state.mod_datasetSettings.startupFolder,
+      showNewModelPopup:    state => state.globalView.globalPopup.showNewModelPopup,
     }),
     ...mapGetters({
       currentProject: "mod_project/GET_project",
@@ -503,6 +521,7 @@ export default {
       currentNetworkId: "mod_workspace/GET_currentNetworkId",
       defaultTemplate: "mod_workspace/GET_defaultNetworkTemplate",
       userEmail: "mod_user/GET_userEmail",
+      isEnterpriseMode:     'globalView/get_isEnterpriseApp',
     }),
     isPublicDatasetEnabled() {
       return isPublicDatasetEnabled();
@@ -698,7 +717,8 @@ export default {
       const apiMeta = await this.createProjectModel({
         name: modelName,
         project: this.currentProjectId,
-        location: `${this.modelPath}/${modelName}`
+        location: `${this.modelPath}/${modelName}`,
+        datasets: [this.createdFromDatasetId],
       });
 
       const datasetSettings = {
@@ -882,21 +902,27 @@ export default {
     },
     openFilePicker(openFilePickerReason) {
       if (openFilePickerReason === "setDataPath") {
-        this.filepickerOptions.popupTitle = "Choose data to load";
-        this.filepickerOptions.filePickerType = "file";
-        this.filepickerOptions.startupFolder = this.startupDatasetPath;
-        this.filepickerOptions.confirmCallback = this.handleDataPathUpdates;
-        this.filepickerOptions.others.showToTutotialDataFolder = true;
-        this.setNextStep({ currentStep: "tutorial-data-wizard-load-csv" });
+        if (this.isEnterpriseMode) {
+          this.loadDataset();
+        } else {
+          this.filepickerOptions.popupTitle = "Choose data to load";
+          this.filepickerOptions.filePickerType = "file";
+          this.filepickerOptions.startupFolder = this.startupDatasetPath;
+          this.filepickerOptions.confirmCallback = this.handleDataPathUpdates;
+          this.filepickerOptions.others.showToTutotialDataFolder = true;
+          this.setNextStep({ currentStep: "tutorial-data-wizard-load-csv" });
+          this.showFilePickerPopup = true;
+        }
+        
       } else {
         this.filepickerOptions.popupTitle = "Choose Model path";
         this.filepickerOptions.filePickerType = "folder";
         this.filepickerOptions.startupFolder = this.modelPath;
         this.filepickerOptions.confirmCallback = this.updateModelPath;
-
+        this.showFilePickerPopup = true;
         this.setNextStep({ currentStep: "tutorial-create-model-model-path" });
       }
-      this.showFilePickerPopup = true;
+    
     },
     closePopup() {
       this.showFilePickerPopup = false;
@@ -966,17 +992,37 @@ export default {
         this.showLoadingSpinner = true;
         this.showFilePickerPopup = false;
         this.toNextStep();
-
-        this.$store.dispatch(
+        if(this.isEnterpriseMode) {
+          this.$store.dispatch("mod_datasetSettings/setStartupFolder", ENTERPRISE_DATASET_FOLDER_PREFIX);
+        } else {
+          this.$store.dispatch(
           "mod_datasetSettings/setStartupFolder",
           dataPath[0].match(/(.*)[\/\\]/)[1] || ""
         );
+        }
+        
+        
+        // create Dataset or User existing one
+        await this.$store.dispatch('mod_datasets/getDatasets');
+        const allDatasets = this.$store.getters['mod_datasets/GET_datasets'];
+        const datasetIndex = allDatasets.map(x => x.location).indexOf(dataPath[0]);
+        if (datasetIndex !== -1) {
+          console.log(allDatasets[datasetIndex].dataset_id);
+          this.createdFromDatasetId = allDatasets[datasetIndex].dataset_id;
+        } else {
+          const createDataset = await rygg_createDataset({
+            project: 1,
+            name: dataPath[0],
+            location: dataPath[0],
+          });
+          this.$store.dispatch('mod_datasets/getDatasets');
+          this.createdFromDatasetId = createDataset.data.dataset_id;
+        } 
+        
+        const getFileContentPath = this.isEnterpriseMode ? `${ENTERPRISE_DATASET_FOLDER_PREFIX}${dataPath[0]}` : dataPath[0]
+        const fileContents = await rygg_getFileContent(getFileContentPath);
 
-        const fileContents = await rygg_getFileContent(
-          `${dataPath[0]}`
-        );
-
-        this.dataSetTypes = await renderingKernel.getDataTypes(dataPath[0], this.userEmail)
+        this.dataSetTypes = await renderingKernel.getDataTypes(getFileContentPath, this.userEmail)
         .then(res => {
           if ("errorMessage" in res) {
             this.showErrorPopup(
@@ -994,7 +1040,7 @@ export default {
 
         if (fileContents && fileContents.file_contents) {
           this.dataset = fileContents.file_contents;
-          this.datasetPath = dataPath[0];
+          this.datasetPath = getFileContentPath;
           this.autoPopulateName();
         }
       } catch (e) {
@@ -1051,6 +1097,26 @@ export default {
     updatePreprocessingTypes(numColumn, value){
       this.csvData.preprocessingTypes.splice(numColumn, 1, value);
     },
+    loadDataset() {
+        const fileInput = document.createElement('input');
+        fileInput.setAttribute('type', 'file');
+        fileInput.setAttribute('accept', '.csv,.zip');
+        fileInput.addEventListener('change', (e) => {
+          const file = e.target.files[0];
+          const location = `${ENTERPRISE_DATASET_FOLDER_PREFIX}${file.name}`;
+          rygg_uploadFile(file, false)
+            .then(async () => {
+              this.handleDataPathUpdates([file.name]);
+            })
+            .catch(async (e) => {
+              if (e.response.data === `File ${file.name} exists and overwrite is false`) {
+                this.handleDataPathUpdates([file.name]);
+
+              }
+            })
+        })
+        fileInput.click();
+      },
   }
 };
 </script>

@@ -10,7 +10,10 @@ from rest_framework.views import APIView
 import json
 import time
 import os, shutil
+from rygg.api.models import Dataset
 from rygg.files.tasks import unzipTask
+from rest_framework.decorators import api_view
+from rygg.files.views.util import json_response
 
 class UploadSerializer(Serializer):
     file_uploaded = FileField()
@@ -31,6 +34,10 @@ def _get_file_info(filename):
         'created': iso_from_utc_timestamp(stat.st_ctime),
         'modified': iso_from_utc_timestamp(stat.st_mtime),
     }
+
+@api_view(["GET"])
+def get_upload_dir(request):
+    return json_response({"path": settings.FILE_UPLOAD_DIR})
 
 class UploadView(APIView):
     serializer_class = UploadSerializer
@@ -66,6 +73,15 @@ class UploadView(APIView):
         if dest_file_name == "file_uploaded":
             raise HTTPExceptions.UNPROCESSABLE_ENTITY.with_content("Internal error")
 
+        dataset_id = request.POST.get('dataset_id')
+        dataset = dataset_id and Dataset.available_objects.get(pk=dataset_id)
+
+        if dataset_id and not dataset:
+            raise HTTPExceptions.NOT_FOUND(f"Dataset {dataset_id} not found")
+
+        if dataset and dataset.location != dest_file_name:
+            raise HTTPExceptions.BAD_REQUEST.with_content(f"file upload for dataset {dataset_id} must match dataset location.")
+
         overwrite = request.POST.get('overwrite') in ['true', 'True', 1]
 
         dest_file = os.path.join(settings.FILE_UPLOAD_DIR, dest_file_name)
@@ -73,6 +89,10 @@ class UploadView(APIView):
             raise HTTPExceptions.UNPROCESSABLE_ENTITY.with_content(f"File {dest_file_name} exists and overwrite is false")
 
         shutil.move(file_uploaded.temporary_file_path(), dest_file)
+
+        if dataset:
+            dataset.status = "uploaded"
+            dataset.save()
 
         # we just moved a file out from under the temp file. Now touch the original location so it has something to delete and doesn't throw spurious errors
         open(file_uploaded.temporary_file_path(), "wb").close()

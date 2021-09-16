@@ -1,20 +1,3 @@
-"""rygg URL Configuration
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/3.0/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
-# from django.contrib import admin
-
 from django.urls import include, path
 from rest_framework import routers
 from rygg.api import views as api_views
@@ -36,12 +19,13 @@ from rygg.files.views.json_model_view import JsonModelView
 from rygg.files.views.model_directory_view import (modeldirectory_tree, get_modeldirectory)
 from rygg.files.views.github_view import (github_export, github_import, github_issue)
 from rygg.files.views.url_reachable import is_url_reachable
-from rygg.files.views.upload_view import UploadView
+from rygg.files.views.upload_view import UploadView, get_upload_dir
 
 
 router = routers.DefaultRouter()
 router.register(r"projects", api_views.ProjectViewSet)
 router.register(r"models", api_views.ModelViewSet)
+router.register(r"datasets", api_views.DatasetViewSet)
 router.register(r"notebooks", api_views.NotebookViewSet)
 router.register(r"issues", api_views.IssuesViewSet, basename='Issues')
 
@@ -69,4 +53,5 @@ urlpatterns = [
     path(r"github/issue", github_issue),
     path("is_url_reachable", is_url_reachable),
     path(r"upload", UploadView.as_view()),
+    path(r"upload_dir", get_upload_dir),
 ]

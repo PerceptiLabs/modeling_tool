@@ -23,7 +23,6 @@
     span Python {{coreVersions.python}} - TensorFlow {{coreVersions.tensorflow}}
     span.btn.python-status(
       :class="{'connected': statusLocalCore === 'online', 'disconnected': statusLocalCore === 'offline'}"
-      v-tooltip:up="statusLocalCore"
     )
   .x-space-20
   .workspace_meta-action

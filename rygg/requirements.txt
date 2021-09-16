@@ -5,9 +5,10 @@ chardet>=3.0.4
 curtsies>=0.3.1
 Deprecated>=1.2.10
 django-cors-headers>=3.2.1
+django-extensions>=3.1.3
 django-http-exceptions>=1.3.1
-# django request framework isn't yet compatible with Django 3.2
-# django-request-logging>0.7.2
+django-model-utils>=4.1.1
+django-request-logging>0.7.2
 Django==3.2
 djangorestframework>=3.11.1
 gitdb>=4.0.5

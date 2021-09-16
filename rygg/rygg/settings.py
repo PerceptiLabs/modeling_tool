@@ -31,7 +31,6 @@ def is_podman():
 
 IS_CONTAINERIZED = is_docker() or is_podman()
 
-
 DB_LOCATION = os.environ.get("PERCEPTILABS_DB")
 if DB_LOCATION or not IS_CONTAINERIZED:
     DB_LOCATION = os.environ.get("PERCEPTILABS_DB") or os.path.join(pathlib.Path.home(), ".perceptilabs/db.sqlite3")
@@ -65,11 +64,11 @@ INSTALLED_APPS = [
     'rygg.api',
     'rygg.files',
     'rygg.mixpanel_proxy',
+    "django_extensions",
 ]
 
 MIDDLEWARE = [
-    # django request framework isn't yet compatible with Django 3.2
-    # "request_logging.middleware.LoggingMiddleware",
+    "request_logging.middleware.LoggingMiddleware",
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.security.SecurityMiddleware',
@@ -188,6 +187,10 @@ LOGGING = {
             'level': os.getenv('PL_RYGG_LOG_LEVEL', 'WARNING'),
             "propagate": False,
         },
+        'django.db.backends': {
+            "handlers": ["console"],
+            'level': os.getenv('PL_RYGG_LOG_LEVEL', 'WARNING'),
+        },
         'rygg': {
             'handlers': ['console'],
             'level': os.getenv('RYGG_LOG_LEVEL', 'WARNING'),
@@ -202,9 +205,11 @@ GITHUB_API_ENDPOINT = os.environ.get('GITHUB_API_ENDPOINT', '')
 # Endpoint to fetch current machine's external IP address
 EXTERNAL_IP_RESOLVER_ENDPOINT = 'https://api.ipify.org'
 
+IS_SERVING = "runserver" in sys.argv
+
 # Enforcement of the token
 API_TOKEN = os.getenv("PL_FILE_SERVING_TOKEN")
-API_TOKEN_REQUIRED = not DEBUG and not IS_CONTAINERIZED and "runserver" in sys.argv
+API_TOKEN_REQUIRED = not DEBUG and not IS_CONTAINERIZED and IS_SERVING
 
 if API_TOKEN_REQUIRED and not API_TOKEN:
     raise Exception("The PL_FILE_SERVING_TOKEN environment variable hasn't been set")
@@ -220,7 +225,7 @@ def assert_dir_writable(dir, msg):
 
 # Make sure FILE_UPLOAD_DIR is set
 FILE_UPLOAD_DIR=None
-if IS_CONTAINERIZED:
+if IS_CONTAINERIZED and IS_SERVING:
     FILE_UPLOAD_DIR = os.getenv("PL_FILE_UPLOAD_DIR")
     if not FILE_UPLOAD_DIR:
         raise Exception("Required environment variable PL_FILE_UPLOAD_DIR is not set.")
