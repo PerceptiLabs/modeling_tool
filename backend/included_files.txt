@@ -84,6 +84,7 @@ perceptilabs/layers/iooutput/stats/__init__.py
 perceptilabs/layers/iooutput/stats/categorical.py
 perceptilabs/layers/iooutput/stats/image.py
 perceptilabs/layers/iooutput/stats/numerical.py
+perceptilabs/layers/iooutput/stats/mask.py
 
 # perceptilabs/layers/jinja_macros
 perceptilabs/layers/jinja_macros/controlflow.j2
@@ -114,6 +115,7 @@ perceptilabs/layers/deeplearningconv/spec.py
 perceptilabs/layers/deeplearningconv/imports.json
 perceptilabs/layers/deeplearningconv/tf2x_imports.json
 perceptilabs/layers/deeplearningconv/tf2x_template.j2
+perceptilabs/layers/deeplearningconv/stats.py
 
 # perceptilabs/layers/deeplearningrecurrent
 perceptilabs/layers/deeplearningrecurrent/spec.py
@@ -213,6 +215,7 @@ perceptilabs/layers/pretrainedinceptionv3/tf2x_imports.json
 perceptilabs/layers/unet/spec.py
 perceptilabs/layers/unet/tf2x_template.j2
 perceptilabs/layers/unet/tf2x_imports.json
+perceptilabs/layers/unet/stats.py
 
 # perceptilabs/layers/ioinput
 perceptilabs/layers/ioinput/spec.py
@@ -362,6 +365,13 @@ perceptilabs/automation/modelrecommender/decoders/base.py
 perceptilabs/automation/modelrecommender/decoders/numerical.py
 perceptilabs/automation/modelrecommender/decoders/categorical.py
 perceptilabs/automation/modelrecommender/decoders/image.py
+perceptilabs/automation/modelrecommender/decoders/mask.py
+
+# backend/perceptilabs/automation/modelrecommender/siso_models/
+perceptilabs/automation/modelrecommender/siso_models/__init__.py
+perceptilabs/automation/modelrecommender/siso_models/base.py
+perceptilabs/automation/modelrecommender/siso_models/segmentation.py
+
 
 # backend/perceptilabs/trainer/
 perceptilabs/trainer/__init__.py

@@ -19,11 +19,12 @@ class TypeInferrer:
     def get_valid_and_default_datatypes(self, series):
         """ Get the datatypes that are valid for this series. Also returns the index of the default one"""
         types_by_priority = {
-            'binary': self.is_valid_binary,            
-            'image': self.is_valid_image,        
+            'binary': self.is_valid_binary,
+            'image': self.is_valid_image,
+            'mask': self.is_valid_image,
             'categorical': self.is_valid_categorical,
-            'numerical': self.is_valid_numerical,            
-            'text': self.is_valid_text
+            'numerical': self.is_valid_numerical,
+            'text': self.is_valid_text,
         }
 
         valid_datatypes = []
@@ -37,7 +38,7 @@ class TypeInferrer:
 
         for type_ in self.never_allowed:
             if type_ in valid_datatypes:
-                valid_datatypes.remove(type_)                
+                valid_datatypes.remove(type_)
 
         default_type = valid_datatypes[0]
         valid_datatypes.sort()
@@ -53,7 +54,7 @@ class TypeInferrer:
             return None
 
     def get_valid_and_default_datatypes_for_csv(self, path):
-        """ Get the datatypes that are valid for each column in the csv """                
+        """ Get the datatypes that are valid for each column in the csv """
         df = pd.read_csv(path)
         return self.get_valid_and_default_datatypes_for_dataframe(df)
 
@@ -68,10 +69,10 @@ class TypeInferrer:
         """
         if len(df) == 0:
             raise ValueError("Data is empty!")
-        
+
         datatypes = {
             name: self.get_valid_and_default_datatypes(series)
-            for name, series in df.items()            
+            for name, series in df.items()
         }
         return datatypes
 
@@ -82,8 +83,8 @@ class TypeInferrer:
         return series.nunique() <= self.max_categories
 
     def is_valid_binary(self, series):
-        return series.nunique() == 2    
-    
+        return series.nunique() == 2
+
     def is_valid_numerical(self, series):
         return (
             series.apply(type).eq(float).all() or
@@ -96,15 +97,15 @@ class TypeInferrer:
                 _, ext = os.path.splitext(value)
                 return ext.lower() in (x.lower() for x in self.IMAGE_TYPES)
             else:
-                return False                
-        
+                return False
+
         return series.apply(has_image_ext).all()
 
-    
-    
-            
-        
-        
 
 
-    
+
+
+
+
+
+

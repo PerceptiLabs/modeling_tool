@@ -107,6 +107,7 @@ const componentsInputs = {
   TrainGan: ['input'],
   TrainDetector: ['predictions', 'labels'],
   LayerCustom: ['input'],
+  UNet: ['input'],
 
   IoInput: [],
   IoOutput: ['input']
@@ -137,6 +138,7 @@ const componentsOutputs = {
   TrainReinforce: [],
   TrainGan: [],
   TrainDetector: [],
+  UNet: ['output'],
 
   IoInput: ['output'],
   IoOutput: []

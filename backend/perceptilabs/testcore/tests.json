@@ -39,7 +39,7 @@
             "image"
         ],
         "Target": [
-             "image"
+             "mask"
         ]
     },
     "outputs_visualization": {
@@ -53,7 +53,7 @@
             "image"
         ],
         "Target": [
-             "image"
+             "mask"
         ]
     }
 

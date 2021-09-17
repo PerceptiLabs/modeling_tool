@@ -17,6 +17,7 @@ TYPE_RGBA      = "rgba"
 TYPE_HEATMAP   = "heatmap"
 TYPE_SCATTER   = "scatter"
 TYPE_PIE       = "pie"
+TYPE_MASK      = "mask"
 
 def normalization(image, from_min, from_max, to_min, to_max):
 
@@ -38,7 +39,7 @@ def RGB2RGBa(data: np.ndarray, normalize: bool):
         # De-Normalize because we normalized during preprocessing
         denormalizedData = normalization(data, 0.0, 1.0, 0, 255)
         newData[:, :, 0:3] = denormalizedData
-    
+
     newData[:,:,3] = 255
     flatData = np.reshape(newData,-1)
 
@@ -50,10 +51,10 @@ def grayscale2RGBA(data: np.ndarray):
     # method accepts only 2 dimensional arrays or 3 dimensional arrays with final dimension = 1.
     if len(np.shape(data)) > 2:
         data = np.squeeze(data, axis=2)
-    
+
     (w, h) = np.shape(data)
     newData = np.empty((w, h, 4))
-        
+
     if data.max()!=0:
         normalizedData = np.around((data/data.max())*255)
     else:
@@ -67,11 +68,11 @@ def grayscale2RGBA(data: np.ndarray):
 
 def subsample(sample: np.ndarray, ratio: int = 1):
     """ Subsamples a n-dimensional array according to ratio
-    
+
     Args:
         sample (np.ndarray): Preview sample
         ratio (int): Ratio to subsample
-    
+
     Return:
         x_data (list): Data of x-coordinates
         y_data (np.ndarray): Data of y-coordinates
@@ -84,7 +85,7 @@ def subsample(sample: np.ndarray, ratio: int = 1):
 
         if length < MIN_1D_SIZE:
             ratio = 1
-        
+
         x_data = [i for i in range(0, length, int(ratio))]
         y_data = sample[::int(ratio)]
 
@@ -95,7 +96,7 @@ def subsample(sample: np.ndarray, ratio: int = 1):
             y_data = sample
         else:
             y_data = sample[::int(np.ceil(ratio)), ::int(np.ceil(ratio))]
-            
+
     else:
         y_data = sample
 
@@ -106,16 +107,16 @@ def convertToList(npy: np.ndarray):
     '''Converts an np.ndarray into a list'''
     if np.any(npy.ravel() == None):
         return ""
-    
+
     npy = np.atleast_1d(npy).tolist()
     return npy
-    
+
 
 def bar(data_vec: np.ndarray, ratio: int = 1):
     '''Subsamples n-dimensional array into bar format'''
     x_data, y_data = subsample(data_vec, ratio)
     data = convertToList(y_data)
-    
+
     obj = {"x_data": x_data, "data": data}
     return obj
 
@@ -131,10 +132,10 @@ def bar_detailed(data_vec: np.ndarray, name_list: list = None, ratio: int = 1):
             series_data.append(
                 {
                     'name': name_list[i],
-                    'type': 'bar', 
-                    'stack': 'total', 
+                    'type': 'bar',
+                    'stack': 'total',
                     'label': {'show': False},
-                    'emphasis': {'focus': 'series'}, 
+                    'emphasis': {'focus': 'series'},
                     'data': data[i]
                 }
             )
@@ -142,10 +143,10 @@ def bar_detailed(data_vec: np.ndarray, name_list: list = None, ratio: int = 1):
             series_data.append(
                 {
                     'name': str(i),
-                    'type': 'bar', 
-                    'stack': 'total', 
+                    'type': 'bar',
+                    'stack': 'total',
                     'label': {'show': False},
-                    'emphasis': {'focus': 'series'}, 
+                    'emphasis': {'focus': 'series'},
                     'data': data[i]
                 }
             )
@@ -164,7 +165,7 @@ def line(data_vec: np.ndarray, ratio: int = 1):
     '''Subsamples n-dimensional array into line format'''
     x_data, y_data = subsample(data_vec, ratio)
     data = convertToList(y_data)
-    
+
     obj = {"x_data": x_data, "data": data}
     return obj
 
@@ -178,17 +179,17 @@ def heatmap(data_vec: np.ndarray, ratio: int = 1):
         for j in range(len(data[0])):
             new_point = [i, j, data[i][j]]
             new_data.append(new_point)
-            
+
     obj = {"x_data": x_data, "data": new_data}
     return obj
 
 
 def grayscale(data_vec: np.ndarray, ratio: int = 1):
     '''Subsamples n-dimensional array into greyscale format'''
-    x_data, y_data = subsample(data_vec, ratio)    
+    x_data, y_data = subsample(data_vec, ratio)
     height, width = y_data.shape[0:2]
     data = grayscale2RGBA(y_data)
-    
+
     obj = {
         "x_data": x_data,
         "data": convertToList(data),
@@ -202,10 +203,10 @@ def grayscale(data_vec: np.ndarray, ratio: int = 1):
 
 def rgb(data_vec: np.ndarray, normalize: bool, ratio: int = 1):
     '''Subsamples n-dimensional array into RGB format'''
-    x_data, y_data = subsample(data_vec, ratio)    
+    x_data, y_data = subsample(data_vec, ratio)
     height, width = y_data.shape[0:2]
     y_data = RGB2RGBa(y_data, normalize)
-        
+
     obj = {
         "x_data": x_data,
         "data": convertToList(y_data),
@@ -221,7 +222,7 @@ def scatter(data_vec: np.ndarray, ratio: int = 1):
     '''Subsamples n-dimensional array into scatter format'''
     x_data, y_data = subsample(data_vec, ratio)
     data = convertToList(y_data)
-    
+
     obj = {"x_data": x_data, "data": data}
     return obj
 
@@ -235,6 +236,11 @@ def pie(data_vec: np.ndarray):
     output = {"data": list_}
     return output
 
+def mask(data_vec: np.ndarray, ratio: int = 1):
+    #TODO(mukund): generate color images instead of greyscale
+    if len(data_vec.shape) == 3:
+        data_vec = np.argmax(data_vec, axis=2) #getting class values
+    return grayscale(data_vec, ratio)
 
 def getType(data_vec: np.ndarray, type_: str = None):
     '''Given an n-dimensional array, find its type'''
@@ -245,6 +251,9 @@ def getType(data_vec: np.ndarray, type_: str = None):
 
     if type_ == 'bar_detailed':
         return TYPE_BAR_D
+
+    if type_ == 'mask':
+        return TYPE_MASK
 
     if dims == 0:
         if data_vec == 0:
@@ -258,13 +267,13 @@ def getType(data_vec: np.ndarray, type_: str = None):
     elif dims == 2:
         return TYPE_GRAYSCALE
     elif dims == 3 and shape[-1] == 1:
-        return TYPE_GRAYSCALE        
+        return TYPE_GRAYSCALE
     elif dims == 3 and shape[-1] == 3:
         return TYPE_RGBA
     elif dims == 3:
-        return TYPE_HEATMAP        
+        return TYPE_HEATMAP
     else:
-        return TYPE_SCATTER   
+        return TYPE_SCATTER
 
 
 def create_type_object(data_vec: np.ndarray, type_: str, name_list: list, normalize: bool = True, subsample_ratio: int = 1):
@@ -275,7 +284,7 @@ def create_type_object(data_vec: np.ndarray, type_: str, name_list: list, normal
         type_ (str): Type to create
         normalize (bool): State to normalize data
         subsample_ratio (int): Ratio to subsample the n-dimensional array
-    
+
     Returns:
         type_object (dict): Dictionary containing object information
     '''
@@ -297,17 +306,19 @@ def create_type_object(data_vec: np.ndarray, type_: str, name_list: list, normal
         type_object = scatter(data_vec, ratio=subsample_ratio)
     elif type_ == TYPE_PIE:
         type_object = pie(data_vec)
+    elif type_ == TYPE_MASK:
+        type_object = mask(data_vec, ratio=subsample_ratio)
     else:
         raise ValueError("Unknown type: " + type_)
-    
+
     return type_object
 
 
 def create_data_object(
-        data_list: list, type_list: list = None, style_list: list = None, 
+        data_list: list, type_list: list = None, style_list: list = None,
         name_list: list = None, normalize: bool = True, subsample_ratio: int = 1
 ):
-    '''Create a data object to be utilized by frontend. If applicable, normalize and 
+    '''Create a data object to be utilized by frontend. If applicable, normalize and
        subsample the incoming n-dimensional array
 
     Args:
@@ -317,7 +328,7 @@ def create_data_object(
         name_list (list): List of names of n-dimensional arrays
         normalize (bool): State to normalize data
         subsample_ratio (int): Ratio to subsample the n-dimensional arrays
-    
+
     Returns:
         data_object (dict): Dictionary describing the n-dimensional arrays
     '''
@@ -328,20 +339,22 @@ def create_data_object(
     if style_list is None:
         style_list = list()
     if name_list is None:
-        name_list = list()   
+        name_list = list()
 
     data_list = [np.asarray(vec) for vec in data_list]    # if not array, convert
     size = max(map(np.size, data_list))                  # used to make sure all arrays are equal length
     series_list = []
 
     if size > 1:
-        data_list = [vec[0:size] for vec in data_list] 
-    
+        data_list = [vec[0:size] for vec in data_list]
+
     type_list_new = type_list
     # Assert that each data vector has a type.
     for i in range(len(type_list), len(data_list)):
         if 'bar_detailed' in type_list:
             type_ = getType(data_list[i], 'bar_detailed')
+        elif 'mask' in type_list:
+            type_ = getType(data_list[i], 'mask')
         else:
             type_ = getType(data_list[i])
         type_list_new.append(type_)
@@ -349,7 +362,7 @@ def create_data_object(
     for data_vec, type_, style, name in itertools.zip_longest(data_list, type_list_new, style_list, name_list):
         if data_vec is None:
             break
-        
+
         type_object = create_type_object(data_vec, type_, name_list, normalize, subsample_ratio)
         series_entry = dict(type=type_)
 
@@ -358,9 +371,9 @@ def create_data_object(
 
         if style:
             series_entry['linestyle'] = style
-        
-            
-        series_entry.update(type_object)        
+
+
+        series_entry.update(type_object)
         series_list.append(series_entry)
 
     data_object = dict()
@@ -372,7 +385,7 @@ def create_data_object(
     else:
         data_object["xLength"] = data_list[0].size
         data_object["series"]  = series_list
-        
+
         if name_list:
             data_object["legend"] = {"data": [n for n in name_list]}
 
@@ -380,12 +393,12 @@ def create_data_object(
 
 def subsample_data(subsample_data_info: dict, total_num_layer_components: int, total_data_points: int):
     '''Given total data points, subsample each layer component equally according to max threshold
-    
+
     Args:
         subsample_data_info (dict): Dictionary containing layer information
         total_num_layer_components (int): Total number of layer components on the modeling view
         total_data_points (int): Total number of data points across all layers
-    
+
     Return:
         preview_content (dict): Dictionary of data objects
     '''
@@ -395,18 +408,18 @@ def subsample_data(subsample_data_info: dict, total_num_layer_components: int, t
     if total_data_points <= MAX_DATA_POINTS:
         ratio = 1
     else:
-        ratio = round(total_data_points / MAX_DATA_POINTS) 
-    
+        ratio = round(total_data_points / MAX_DATA_POINTS)
+
     for layer_id, preview in subsample_data_info.items():
         sample_data = preview.get('data', None)
         type_list = preview.get('type_list', None)
         preview_content[layer_id] = create_data_object(sample_data, type_list=type_list, subsample_ratio=ratio)
-    
+
     return preview_content
 
 
 def createDataObject(
-        data_list: list, type_list: list = None, style_list: list = None, 
+        data_list: list, type_list: list = None, style_list: list = None,
         name_list: list = None, normalize: bool = True, subsample_ratio: int = 1
 ):
     """Backwards compatibility alias for create_data_object. Don't use! """
@@ -419,22 +432,22 @@ def createDataObject(
 if __name__ == "__main__":
     a=createDataObject([1])
     b=createDataObject([np.asarray([[1,2], [3,4]])])
-    X = np.zeros((24, 24))    
+    X = np.zeros((24, 24))
     bb=createDataObject([X])
-    
+
     X = np.zeros((3, 3, 2))
     cc=createDataObject([X])
 
-    
+
     import pdb; pdb.set_trace()
 
 
 
-    
-    
 
-    
-    
-    
-    
-    
+
+
+
+
+
+
+

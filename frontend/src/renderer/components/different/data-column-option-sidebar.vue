@@ -1,6 +1,5 @@
 <template lang="pug">
   header(
-    v-if="showIfTypeIs(['image', 'numerical'])"
     :class="{'is-open': isOpen}"
   )
     div.overlay(@click="onCancel")
@@ -21,7 +20,7 @@
                 span Standardization
               base-radio(:group-name="'normalizeTypeGroup' + elementIndex" value-input="min-max" v-model="options.normalize.type")
                 span Min Max
-          template(v-if="showIfTypeIs(['image'])")
+          template(v-if="showIfTypeIs(['image', 'mask'])")
             div.mb-20
               base-checkbox(
                 v-model="options.random_flip.value" :styleTypeSecondary="true") Random Flip
@@ -172,10 +171,30 @@ export default {
       })
     }
   },
+  watch: {
+    'dataTypeSelected': {
+      handler(typeSelected) {
+        this.onTypeChange(typeSelected);
+        this.onSave();
+      },
+    },
+  },
   methods: {
+    onTypeChange(type) {
+      if(type === 'mask') {
+        this.options.resize.width = 224;
+        this.options.resize.height = 224;
+        this.options.resize.mode = 'custom';
+      }
+      if(type === 'image') {
+        this.options.resize.width = 32;
+        this.options.resize.height = 32;
+        this.options.resize.mode = 'automatic';
+      }
+    },
     onSave(){
       const saveResponse = {};
-      if(this.dataTypeSelected === 'image') {
+      if(this.showIfTypeIs(['image', 'mask'])) {
         if(this.options.random_flip.value) {
           saveResponse['random_flip'] = this.options.random_flip;
         }
@@ -223,7 +242,9 @@ export default {
       if(this.showIfTypeIs(['image', 'numerical']) && this.options.normalize.value) {
         saveResponse['normalize'] = { type: this.options.normalize.type };
       }
-
+      if (this.showIfTypeIs(['mask'])) {
+        saveResponse['mask'] = true;
+      }
       this.$emit('handleChange', this.elementIndex, saveResponse);
       this.onCancel();
     },

@@ -15,7 +15,7 @@ from perceptilabs.logconf import APPLICATION_LOGGER, USER_LOGGER
 from perceptilabs.layers.visualizer import PerceptiLabsVisualizer
 from perceptilabs.trainer.model import TrainingModel
 from perceptilabs.stats import SampleStatsTracker, SampleStats, GradientStatsTracker, GradientStats, GlobalStatsTracker, TrainingStatsTracker
-from perceptilabs.layers.iooutput.stats import ImageOutputStatsTracker, NumericalOutputStatsTracker, CategoricalOutputStatsTracker
+from perceptilabs.layers.iooutput.stats import ImageOutputStatsTracker, NumericalOutputStatsTracker, CategoricalOutputStatsTracker, MaskOutputStatsTracker
 from perceptilabs.trainer.losses import weighted_crossentropy, dice
 from perceptilabs.logconf import APPLICATION_LOGGER
 from perceptilabs.utils import get_memory_usage, sanitize_path
@@ -376,6 +376,8 @@ class Trainer:
             return CategoricalOutputStatsTracker()
         elif datatype == 'image':
             return ImageOutputStatsTracker()
+        elif datatype == 'mask':
+            return MaskOutputStatsTracker()
 
     def _update_tracked_values(
             self, trainables_by_layer, gradients_by_layer, final_and_intermediate_outputs_by_layer,
@@ -421,6 +423,7 @@ class Trainer:
                 layer_spec.feature_name)
 
             tracker.update(
+                inputs_batch=inputs_batch,
                 predictions_batch=predictions_batch[layer_spec.feature_name],
                 targets_batch=targets_batch[layer_spec.feature_name],
                 epochs_completed=self._num_epochs_completed,

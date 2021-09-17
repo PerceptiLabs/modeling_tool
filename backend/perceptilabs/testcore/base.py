@@ -351,14 +351,8 @@ class ProcessResults():
             subsample_ratio = max(image_largest_axis/MAX_SIZE,1)
             #inspired from https://github.com/yingkaisha/keras-unet-collection/blob/main/examples/human-seg_atten-unet-backbone_coco.ipynb
             for i in range(len(inputs)):
-                predicted_segmentation = np.round(predictions[i])
-                if inputs[i].shape[-1]==3:
-                    tmp = np.random.random((*predicted_segmentation.shape[0:-1], 3))
-                    for k in range(3):
-                        tmp[..., k] = predicted_segmentation[..., -1]
-                    predicted_segmentation = tmp
-                mask = (predicted_segmentation == 0)
-                predicted_segmentation[mask] = inputs[i][mask]
+                predicted_segmentation = np.argmax(predictions[i], axis=3)
+                target_segmentation = np.argmax(targets[i], axis=3)
 
                 fig, axs = plt.subplots(2, 2, tight_layout=True, figsize=(3,3))
                 fig.suptitle("Loss: "+str(losses[i]), fontsize=8, color='white')
@@ -366,26 +360,23 @@ class ProcessResults():
                 axs[0,0].pcolormesh(subsample(np.squeeze(np.mean(inputs[i], axis=-1)), subsample_ratio)[1], cmap=plt.get_cmap('gray'))
                 axs[0,0].axis('off')
                 axs[0,0].set_title('Input', {'fontname':'Roboto'}, fontsize=7, color='white')
-                plt.gca().invert_yaxis()
-                plt.gca().invert_xaxis()
+                axs[0,0].invert_yaxis()
 
-                axs[1,1].pcolormesh(subsample(np.squeeze(predictions[i]), subsample_ratio)[1], cmap=plt.get_cmap('jet'))
+                axs[1,1].pcolormesh(subsample(np.squeeze(predicted_segmentation, axis=0), subsample_ratio)[1], cmap=plt.get_cmap('jet'))
                 axs[1,1].axis('off')
                 axs[1,1].set_title('Prediction', {'fontname':'Roboto'}, fontsize=7, color='white')
-                plt.gca().invert_yaxis()
-                plt.gca().invert_xaxis()
+                axs[1,1].invert_yaxis()
 
-                axs[0,1].pcolormesh(subsample(np.squeeze(targets[i]), subsample_ratio)[1], cmap=plt.get_cmap('jet'))
+                axs[0,1].pcolormesh(subsample(np.squeeze(target_segmentation), subsample_ratio)[1], cmap=plt.get_cmap('jet'))
                 axs[0,1].axis('off')
                 axs[0,1].set_title('Target', {'fontname':'Roboto'}, fontsize=7, color='white')
-                plt.gca().invert_yaxis()
-                plt.gca().invert_xaxis()
+                axs[0,1].invert_yaxis()
 
-                axs[1,0].pcolormesh(subsample(np.squeeze(np.mean(predicted_segmentation, axis=-1)), subsample_ratio)[1])
+                axs[1,0].pcolormesh(subsample(np.squeeze(np.mean(inputs[i], axis=-1)), subsample_ratio)[1], cmap=plt.get_cmap('gray'))
+                axs[1,0].pcolormesh(subsample(np.mean(predicted_segmentation, axis=0), subsample_ratio)[1], cmap=plt.get_cmap('jet'), alpha=0.2)
                 axs[1,0].axis('off')
                 axs[1,0].set_title('Prediction on Input', {'fontname':'Roboto'}, fontsize=7, color='white')
-                plt.gca().invert_yaxis()
-                plt.gca().invert_xaxis()
+                axs[1,0].invert_yaxis()
 
                 rect = fig.patch
                 rect.set_facecolor('#23252A')

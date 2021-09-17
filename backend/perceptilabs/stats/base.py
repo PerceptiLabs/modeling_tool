@@ -11,18 +11,20 @@ class TrainingStats(ABC):
     def __eq__(self, other):
         raise NotImplementedError
 
-    
+
 class OutputStats(TrainingStats):
     @abstractmethod
     def get_summary(self):
-        """ Gets the stats summary for this layer 
+        """ Gets the stats summary for this layer
 
         Returns:
             A dictionary with metric names and values (floats)
-        """        
+        """
         raise NotImplementedError
-    
-    
+
+class PreviewStats(ABC):
+    def get_preview_content(self):
+        raise NotImplementedError
 class TrainingStatsTracker(ABC):
     @abstractmethod
     def update(self, **kwargs):
@@ -42,4 +44,4 @@ class TrainingStatsTracker(ABC):
     @staticmethod
     def deserialize(data):
         return pickle.loads(data)
-    
+

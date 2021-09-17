@@ -31,8 +31,8 @@ class GraphSpecBuilder:
         self._id_counter = 0
         self._layers = {}
         self._connections = defaultdict(list)
-        self._definitions = DEFINITION_TABLE        
-    
+        self._definitions = DEFINITION_TABLE
+
     def add_layer(self, type_: str, settings: Dict[str, Any] = None):
         """ Add a layer to the graph
 
@@ -62,7 +62,7 @@ class GraphSpecBuilder:
 
     def add_connection(self, source_id: str, source_var: str, dest_id: str, dest_var: str):
         """ Adds a connection between two layers
-        
+
         Arguments:
             source_id: the source layer
             source_var: the source variable
@@ -77,7 +77,7 @@ class GraphSpecBuilder:
 
     def add_connection_object(self, connection):
         """ Adds a connection between two layers
-        
+
         Arguments:
             connection: LayerConnection object
         """
@@ -85,8 +85,8 @@ class GraphSpecBuilder:
         self._connections[connection.dst_id].append(connection)
 
     def _build_layer(self, layer_id):
-        """ Build a layer 
-        
+        """ Build a layer
+
         Arguments:
             layer_id: str
         """
@@ -94,31 +94,31 @@ class GraphSpecBuilder:
         settings['forward_connections'] = tuple([
             connection
             for connection in self._connections[layer_id]
-            if connection.src_id == layer_id           
+            if connection.src_id == layer_id
         ])
         settings['backward_connections'] = tuple([
             connection
             for connection in self._connections[layer_id]
-            if connection.dst_id == layer_id           
+            if connection.dst_id == layer_id
         ])
-        
+
         type_ = settings['type_']
         layer_spec = self._definitions[type_].spec_class(**settings)
         return layer_spec
 
     def build(self) -> GraphSpec:
-        """ Builds the specified graph. 
+        """ Builds the specified graph.
 
         Returns:
             A graph spec
-        """ 
+        """
         layer_specs = [
             self._build_layer(layer_id)
             for layer_id in self._layers
         ]
         graph_spec = GraphSpec(layer_specs)
         return graph_spec
-        
+
     def _next_name(self, type_):
         """ Generate a layer name """
         try:
@@ -128,9 +128,9 @@ class GraphSpecBuilder:
         return f"{clean_name}_{self._name_counter[type_]}"
 
     def _next_id(self):
-        """ Generate a layer ID """        
+        """ Generate a layer ID """
         return str(self._id_counter)
-        
-        
-            
-        
+
+
+
+

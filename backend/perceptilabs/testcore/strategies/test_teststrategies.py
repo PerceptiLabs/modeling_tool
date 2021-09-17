@@ -92,32 +92,75 @@ def test_categorical_metrics_table_computation(data_loader):
     metrics_table = MetricsTable().run(model_outputs, compatible_output_layers)
     assert metrics_table == {'y1': {'categorical_accuracy': 0.75, 'top_k_categorical_accuracy': 1.0, 'precision': 0.75, 'recall': 0.75}}
 
-def test_image_metrics_table_computation():
-    m1 = np.array([[0.6,0.7],[0.4, 0.9]]).astype(np.float32)
-    m2 = np.array([[0.4, 0.1],[0.2, 0.6]]).astype(np.float32)
+def test_mask_metrics_table_computation():
+    m1 = np.array([[[0.2412495 , 0.83666475],
+        [0.30661757, 0.59654527],
+        [0.78450131, 0.91794937]],
 
-    p1 = np.array([[1,0],[0,1]])
-    p2 = np.array([[0,0],[1,1]])
+       [[0.31110491, 0.46811666],
+        [0.29512606, 0.64884238],
+        [0.17605837, 0.49840279]],
+
+       [[0.24303247, 0.55772874],
+        [0.05028308, 0.16463649],
+        [0.22710065, 0.35942886]]]).astype(np.float32)
+
+    m2 = np.array([[[0.82587713, 0.5699772 ],
+        [0.69942757, 0.24960149],
+        [0.5972876 , 0.02862286]],
+
+       [[0.78421312, 0.23850777],
+        [0.36668609, 0.50462539],
+        [0.80519893, 0.19569316]],
+
+       [[0.13873495, 0.67771867],
+        [0.04883246, 0.90895341],
+        [0.54264496, 0.65211129]]]).astype(np.float32)
+
+    p1 = np.array([[[1, 0],
+        [1, 0],
+        [1, 0]],
+
+       [[1, 0],
+        [1, 0],
+        [0, 1]],
+
+       [[0, 1],
+        [0, 1],
+        [0, 1]]]).astype(np.float32)
+
+    p2 = np.array([[[0, 1],
+        [1, 0],
+        [0, 1]],
+
+       [[0, 0],
+        [0, 1],
+        [1, 1]],
+
+       [[0, 1],
+        [0, 1],
+        [0, 1]]]).astype(np.float32)
+
     model_outputs = {
         'outputs': [{'y1': m1},
                     {'y1': m2}],
         'targets': [{'y1': tf.constant(p1, dtype=tf.float32)},
                    {'y1': tf.constant(p2, dtype=tf.float32)}]
     }
-    compatible_output_layers = {'y1':'image'}
+    compatible_output_layers = {'y1':'mask'}
     metrics_table = MetricsTable().run(model_outputs, compatible_output_layers)
-    assert metrics_table == {'y1':{'IoU': 0.6, 'dice_coefficient': 0.58}}
+    assert metrics_table == {'y1':{'IoU': 0.35, 'loss': 0.49}}
 
 def test_outputs_visualization_computation():
     model_outputs = {
-        'outputs': 5*[{'y1': np.random.random((512,512,1)).astype(np.float32)},
-                    {'y1': np.random.random((512,512,1)).astype(np.float32)},
-                    {'y1': np.random.random((512,512,1)).astype(np.float32)},
-                    {'y1': np.random.random((512,512,1)).astype(np.float32)}],
-        'targets': 5*[{'y1': tf.constant(np.random.randint(2, size=(512,512,1)), dtype=tf.float32)},
-                   {'y1': tf.constant(np.random.randint(2, size=(512,512,1)), dtype=tf.float32)},
-                   {'y1': tf.constant(np.random.randint(2, size=(512,512,1)), dtype=tf.float32)},
-                   {'y1': tf.constant(np.random.randint(2, size=(512,512,1)), dtype=tf.float32)}]
+        'outputs': 5*[{'y1': np.random.random((512,512,10)).astype(np.float32)},
+                    {'y1': np.random.random((512,512,10)).astype(np.float32)},
+                    {'y1': np.random.random((512,512,10)).astype(np.float32)},
+                    {'y1': np.random.random((512,512,10)).astype(np.float32)}],
+        'targets': 5*[{'y1': tf.constant(np.random.randint(2, size=(512,512,10)), dtype=tf.float32)},
+                   {'y1': tf.constant(np.random.randint(2, size=(512,512,10)), dtype=tf.float32)},
+                   {'y1': tf.constant(np.random.randint(2, size=(512,512,10)), dtype=tf.float32)},
+                   {'y1': tf.constant(np.random.randint(2, size=(512,512,10)), dtype=tf.float32)}]
     }
     model_inputs = 5*[{'x1': np.random.random((512,512,3)).astype(np.float32)},
                     {'x1': np.random.random((512,512,3)).astype(np.float32)},

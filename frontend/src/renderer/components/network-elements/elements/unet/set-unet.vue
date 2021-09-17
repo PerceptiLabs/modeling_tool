@@ -124,7 +124,6 @@
             v-model="settings.backbone"
             :select-options="backboneOptions"
           )
-
     template(v-if="settings.backbone !== false")
       .settings-layer_section
         .form_row
@@ -165,6 +164,15 @@ export default {
   mixins: [mixinSet, mixinSetValidators],
   mounted() {
     this.saveSettingsToStore("Settings");
+  },
+  watch: {
+    'settings.backbone': {
+      handler(currentValue) {
+        if (currentValue === null) {
+          this.settings.backbone = false;
+        };
+      },
+    },
   },
   data() {
     return {

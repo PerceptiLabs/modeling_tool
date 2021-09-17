@@ -13,7 +13,7 @@ class PreprocessingStep(BasePipeline):
 
     def call(self, x):
         x = self._lookup_table.lookup(x)
-        x = tf.one_hot(x, self.n_categories)          
+        x = tf.one_hot(x, self.n_categories)
         return x
 
     @property
@@ -25,7 +25,7 @@ class PostprocessingStep(BasePipeline):
     def build(self, tensor_shape):
         categories_tensor = tf.constant(list(self.metadata['mapping'].keys()))
         indices_tensor = tf.constant(list(self.metadata['mapping'].values()))
-        
+
         init = tf.lookup.KeyValueTensorInitializer(indices_tensor, categories_tensor)
         self._lookup_table = tf.lookup.StaticHashTable(
             init,
@@ -40,7 +40,7 @@ class PostprocessingStep(BasePipeline):
 
     @property
     def n_categories(self):
-        return len(self.metadata['mapping'])    
+        return len(self.metadata['mapping'])
 
 
 class CategoricalPipelineBuilder(PipelineBuilder):
@@ -55,18 +55,16 @@ class CategoricalPipelineBuilder(PipelineBuilder):
         unique_values = set()
         for tensor in dataset:
             value = tensor.numpy()
-            
+
             if isinstance(value, bytes):
                 value = value.decode()
             else:
                 value = value.item()  # Convert to native python type
-            
             unique_values.add(value)
             dtypes.add(type(value))
 
         if len(dtypes) > 1:
             raise RuntimeError(f"Dataset has more than one type: {dtypes}")
-            
         mapping = {
             value: idx
             for idx, value in enumerate(sorted(unique_values))

@@ -32,8 +32,8 @@ class MetricsTable(BaseStrategy):
     def run(self, model_outputs, compatible_output_layers):
         metrics_tables = {}
         for layer in compatible_output_layers:
-            if compatible_output_layers[layer] == 'image':
-                metrics_tables = self._run_image_metrics(layer, model_outputs, metrics_tables)
+            if compatible_output_layers[layer] == 'mask':
+                metrics_tables = self._run_mask_metrics(layer, model_outputs, metrics_tables)
             elif compatible_output_layers[layer] == 'categorical':
                 metrics_tables = self._run_categorical_metrics(layer, model_outputs, metrics_tables)
         return metrics_tables
@@ -68,10 +68,11 @@ class MetricsTable(BaseStrategy):
         return metrics_tables
 
 
-    def _run_image_metrics(self, layer, model_outputs, metrics_tables):
+    def _run_mask_metrics(self, layer, model_outputs, metrics_tables):
         metrics = {
-            'dice_coefficient': dice_coefficient,
             'IoU': IouStatsTracker(),
+            'dice': dice,
+            'cross_entropy': tf.keras.losses.CategoricalCrossentropy(),
         }
         metrics_tables[layer] = {}
         targets = np.asarray([x[layer].numpy()
@@ -80,8 +81,11 @@ class MetricsTable(BaseStrategy):
                                 for x in model_outputs['outputs']])
         metrics['IoU'].update(predictions_batch=outputs, targets_batch=targets, epochs_completed=0, is_training=False, steps_completed=0, threshold=0.5)
         iou_stats = metrics['IoU'].save()
-        metrics_tables[layer]['IoU'] = float(iou_stats.get_iou_for_latest_step())
-        metrics_tables[layer]['dice_coefficient'] =round(float(dice_coefficient(outputs, targets).numpy()),2) #pytest was failing without the conversions
+        metrics_tables[layer]['IoU'] = round(float(iou_stats.get_iou_for_latest_step()),2)
+        if targets.shape[-1] <= 2:
+            metrics_tables[layer]['loss'] = round(float(dice(outputs, targets).numpy()),2) #pytest was failing without the conversions
+        else:
+            metrics_tables[layer]['loss'] = round(float(metrics['cross_entropy'](outputs, targets).numpy()),2)
         return metrics_tables
 
 
@@ -105,7 +109,8 @@ class OutputVisualization(BaseStrategy):
             targets = [x[layer].numpy() for x in model_outputs['targets']]
             inputs = [list(x.values())[0] for x in model_inputs] #TODO: need to fix this for multi input/output
             for target, prediction  in zip(targets, predictions):
-                loss = dice(target, prediction).numpy()
+                loss_fn = tf.keras.losses.CategoricalCrossentropy()
+                loss = loss_fn(target, prediction).numpy()
                 losses.append(loss)
             sorted_loss_indices = sorted(range(len(losses)), key=lambda i: losses[i])
             n = min(5, int(len(inputs)/2))

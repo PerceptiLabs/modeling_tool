@@ -49,11 +49,11 @@ const testsValidationRules = {
   },
   'segmentation_metrics': {
     'inputs': ['image'],
-    'outputs': ['image'],
+    'outputs': ['image', 'mask'],
   },
   'outputs_visualization': {
     'inputs': ['image'],
-    'outputs': ['image'],
+    'outputs': ['image', 'mask'],
   }
 };
 

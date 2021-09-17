@@ -1,6 +1,6 @@
 <template lang="pug">
   header(
-    v-if="showIfTypeIs(['image', 'numerical'])"
+    v-if="showIfTypeIs(['image', 'numerical', 'mask'])"
     :class="{'is-open': selectedIndex === index}"
   )
     div.svg-wrapper(@click="toggle()")

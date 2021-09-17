@@ -11,7 +11,9 @@ from perceptilabs.logconf import APPLICATION_LOGGER
 import perceptilabs.tracking as tracking
 import perceptilabs.automation.utils as automation_utils
 from perceptilabs.createDataObject import subsample_data
-
+from perceptilabs.layers.deeplearningconv.stats import ConvPreviewStats
+from perceptilabs.layers.unet.stats import UnetPreviewStats
+from perceptilabs.layers.iooutput.stats.mask import MaskPreviewStats
 
 logger = logging.getLogger(APPLICATION_LOGGER)
 
@@ -78,26 +80,29 @@ class NetworkData(BaseView):
 
         if (layer_spec.get_preview or layer_spec.id_ in auto_updated_layers) and (not layer_results.has_errors):
             try:
-                sample_array = np.asarray(sample)
-                sample_layer_shape = sample_array.shape
-                layer_sample_data_points = int(np.prod(sample_layer_shape))
-
                 if layer_spec.type_ == 'DeepLearningConv':
-                    sample_data = list()
-                    if np.all(sample_array) != None:
-                        for idx in range(sample_array.shape[-1]):
-                            sample_data.append(sample_array[:,:,idx])
+                    sample_data, sample_layer_shape, layer_sample_data_points, type_list = ConvPreviewStats().get_preview_content(sample)
+                elif layer_spec.type_ == 'UNet':
+                    sample_data, sample_layer_shape, layer_sample_data_points, type_list = UnetPreviewStats().get_preview_content(sample)
+                elif layer_spec.type_ == 'IoOutput' and layer_spec.datatype == 'mask':
+                    sample_data, sample_layer_shape, layer_sample_data_points, type_list = MaskPreviewStats().get_preview_content(sample)
                 else:
+                    sample_array = np.asarray(sample)
+                    sample_layer_shape = sample_array.shape
+                    layer_sample_data_points = int(np.prod(sample_layer_shape))
+                    type_list = None
                     sample_data = [self._reduce_to_2d(sample_array).squeeze()]
+
+                if layer_spec.to_dict().get('previewVariable') == 'W' and len(sample_array.shape) >= 2:
+                    type_list = ['heatmap']
 
                 preview_content = {
                     'data': sample_data,
                     'data_shape': sample_layer_shape,
-                    'data_points': layer_sample_data_points
+                    'data_points': layer_sample_data_points,
                 }
-
-                if layer_spec.to_dict().get('previewVariable') == 'W' and len(sample_array.shape) >= 2:
-                    preview_content['type_list'] = ['heatmap']
+                if type_list:
+                    preview_content['type_list']= type_list
 
             except:
                 logger.exception(f'Failed getting preview for layer {layer_spec}')

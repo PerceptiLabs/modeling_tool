@@ -650,7 +650,7 @@ class coreLogic():
 
                 output = {"Gradients": dataObj}
                 return output
-        elif layerType=="DeepLearningConv" or layerType=="UNet":
+        elif layerType=="DeepLearningConv":
             if view=="Weights&Output":
                 weights=self.getStatistics({"layerId":layerId,"variable":"W","innervariable":""})
                 Wshapes=weights.shape
@@ -729,8 +729,40 @@ class coreLogic():
             else:
                 output = createDataObject([D])
             return {"Output":output}
+        elif layerType == "UNet":
+            if view=="Weights&Output":
+                weights=self.getStatistics({"layerId":layerId,"variable":"W","innervariable":""})
+                Wshapes=weights.shape
+                if len(Wshapes)==3:
+                    weights=np.expand_dims(np.average(weights[:,:,-1],1),axis=0)
+                elif len(Wshapes)==4:
+                    weights=np.average(weights[:,:,:,-1],2)
+                elif len(Wshapes)==5:
+                    weights=np.average(weights[:,:,:,:,-1],3)
+                outputs=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})[-1]
+                dataObjWeights = createDataObject([weights], type_list=['heatmap'])
+                dataObjOutput = createDataObject([outputs], type_list=['mask'])
 
+                obj = {"Weights":dataObjWeights, "Output": dataObjOutput}
+                return obj
+            if view=="Bias":
+                b=self.getStatistics({"layerId":layerId,"variable":"b","innervariable":""})
+                dataObj = createDataObject([b], type_list=['line'])
+                output = {"Bias": dataObj}
+                return output
+            if view=="Gradients":
+                minD=self.getStatistics({"layerId":layerId,"variable":"Gradient","innervariable":"Min"})
+                maxD=self.getStatistics({"layerId":layerId,"variable":"Gradient","innervariable":"Max"})
+                avD=self.getStatistics({"layerId":layerId,"variable":"Gradient","innervariable":"Average"})
 
+                dataObj = createDataObject([minD, maxD, avD],
+                                            type_list=3*['line'],
+                                            name_list=['Min', 'Max', 'Average'],
+                                            style_list=[{"color":"#83c1ff"},
+                                                        {"color":"#0070d6"},
+                                                        {"color":"#6b8ff7"}])
+                output = {"Gradients": dataObj}
+                return output
         else:
             return "FieldError: Does not recognize the layerType. " + layerType + " is not in [Train, Fc, Conv, Argmax, Softmax, Merge, OneHot, Crop, Reshape, Grayscale]"
 

@@ -6,7 +6,7 @@ from perceptilabs.automation.modelrecommender.encoders import EncoderBlueprint
 class ImageEncoderBlueprint(EncoderBlueprint):
     def build(self, builder: GraphSpecBuilder, feature_name: str, feature_spec: FeatureSpec, data_loader: DataLoader = None) -> str:
         """ Adds an encoder to the graph spec builder
-        
+
         Arguments:
             builder: the entity used to construct the final graph
             feature_name: name of the current feature
@@ -16,7 +16,7 @@ class ImageEncoderBlueprint(EncoderBlueprint):
         """
         id1 = builder.add_layer(
             'IoInput',
-            settings={'feature_name': feature_name, 'file_path': feature_spec.file_path, 'datatype': feature_spec.datatype}                
+            settings={'feature_name': feature_name, 'file_path': feature_spec.file_path, 'datatype': feature_spec.datatype}
         )
         id2 = builder.add_layer(
             'DeepLearningConv'
@@ -28,7 +28,7 @@ class ImageEncoderBlueprint(EncoderBlueprint):
         builder.add_connection(id1, 'output', id2, 'input')
         builder.add_connection(id2, 'output', id3, 'input')
         return id3
-        
-    
-    
-    
+
+
+
+
