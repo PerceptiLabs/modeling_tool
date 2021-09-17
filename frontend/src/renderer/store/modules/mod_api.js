@@ -771,7 +771,7 @@ const actions = {
   },
 
   API_getPreviewVariableList({dispatch, getters, rootGetters}, layerId) {
-    const datasetSettings = rootGetters['mod_datasetSettings/getCurrentDatasetSettings'](); 
+    const datasetSettings = rootGetters['mod_workspace/GET_currentNetworkDatasetSettings']; 
     const theData = {
       receiver: rootGetters['mod_workspace/GET_currentNetworkId'],
       action: 'getPreviewVariableList',

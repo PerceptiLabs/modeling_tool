@@ -12,7 +12,7 @@ const netElementSettings = {
   },
   components: { SettingsCode, NetBaseSettings },
   beforeMount() {
-    this.isSettedFromCore = true;
+    this.isSetFromCore = true;
     if(this.currentEl.layerSettings) {
       this.settings = deepCopy(this.currentEl.layerSettings);
     } else {
@@ -33,27 +33,31 @@ const netElementSettings = {
   },
   data() {
     return {
-      isSettedFromCore: false,
+      isSetFromCore: false,
       settings: {},
       coreCode: null,
       debouncedSaveSettings: null,
+      isFirstSettingChange: true,
     }
   },
   watch: {
     'computedSettings': {
       handler(newVal, oldVal) {
-        // 
         if(!isEqual(JSON.parse(JSON.stringify(newVal)), JSON.parse(JSON.stringify(oldVal)))) {
           // Note that the "saveSettings" function called is the one in the layer.
           // Not the one in this file.
-          this.debouncedSaveSettings();
+          if(this.isFirstSettingChange) {
+            this.isFirstSettingChange = false;
+          } else {
+            this.debouncedSaveSettings();
+          }
         }
       },
       deep: true,
     },
     resetSettingClicker : {
       handler() {
-        this.isSettedFromCore = true;
+        this.isSetFromCore = true;
         this.settings = cloneDeep(this.currentEl.layerSettings);
       }
     }
@@ -96,18 +100,10 @@ const netElementSettings = {
       };
       this.$store.dispatch('mod_workspace/SET_elementSettings', {settings: deepCopy(saveSettings), pushOntoHistory});
       this.$store.dispatch('mod_api/API_getBatchPreviewSampleForElementDescendants', this.currentEl.layerId);
-      // this.$store.dispatch('mod_api/API_getPreviewSample',  {layerId: this.currentEl.layerId, varData: 'output'}).then((data)=> {
-      //   this.$store.dispatch('mod_workspace/SET_NetworkChartData', { 
-      //     layerId: this.currentEl.layerId,
-      //     payload: data,
-      //   });
-      //   this.$store.dispatch('mod_events/EVENT_calcArray');
-      // });
       this.$store.dispatch('mod_tracker/EVENT_applyLayerSettings', {
         componentName: this.currentEl.componentName, 
         tabName
       }, {root: true});
-      // this.$store.dispatch('mod_api/API_updateNetworkSetting', this.currentEl.layerId);
     },
     confirmSettings() {
       this.hideAllWindow();
