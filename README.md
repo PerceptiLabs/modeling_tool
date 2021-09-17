@@ -67,6 +67,7 @@ cd build/docker/compose
 1. Rygg server
     ```
     cd rygg
+    PL_FILE_SERVING_TOKEN=12312 PL_TUTORIALS_DATA=$(git rev-parse --show-toplevel)/backend/perceptilabs/tutorial_data PL_FILE_UPLOAD_DIR=$(pwd) PERCEPTILABS_DB=./db.sqlite3 container=xyz python -m django migrate --settings rygg.settings
     PL_FILE_SERVING_TOKEN=12312 PL_TUTORIALS_DATA=$(git rev-parse --show-toplevel)/backend/perceptilabs/tutorial_data PL_FILE_UPLOAD_DIR=$(pwd) PERCEPTILABS_DB=./db.sqlite3 container=xyz python -m django runserver 0.0.0.0:8000 --settings rygg.settings
     ```
 1. Rygg worker
