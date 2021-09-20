@@ -36,6 +36,8 @@
               :class="styleClipboard"
               @click="copyClipboard")
       .popup_foot
+        .error-cta-container
+          error-cta(v-if="!isInfo")
         button.btn-info-popup(type="button"
         @click="closePopup") Ok
 
@@ -44,8 +46,10 @@
 <script>
   import { goToLink }    from '@/core/helpers.js'
   import {isWeb} from "@/core/helpers";
+  import ErrorCta from '@/components/error-cta.vue'
   export default {
     name: "TheInfoPopup",
+    components: {ErrorCta},
     data() {
       return {
         styleClipboard: {
@@ -131,6 +135,8 @@
     width: 100%;
     max-width: 30rem;
     user-select: text;
+    word-break: break-word;
+
     * {
       user-select: inherit;
     }
@@ -142,9 +148,12 @@
     font-size: 1.6rem;
   }
   .popup_foot {
-    justify-content: flex-end;
+    justify-content: space-between;
   }
   .popup-state-svg {
     min-width: 22px;
+  }
+  .popup_foot {
+    padding-left: 20px;
   }
 </style>
