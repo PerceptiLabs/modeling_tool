@@ -60,3 +60,7 @@ class CompoundCache(BaseCache):
 
     def __len__(self):
         return self._wrapped.len()
+
+    def make_key(self, key):
+        return self._make_key(key)        
+        

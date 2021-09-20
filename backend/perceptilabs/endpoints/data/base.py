@@ -34,14 +34,14 @@ class PutData(View):
                 dataset_settings,
                 num_repeats=num_repeats)
 
-            dataset_hash = self._data_metadata_cache.put(dataset_key, metadata)
+            self._data_metadata_cache.put(dataset_key, metadata)
 
             logger.info(f"Inserted metadata with hash '{dataset_hash}'")
             return dataset_hash
 
         future = self._executor.submit(on_submit, dataset_settings)
-        dataset_hash = future.result()
-
+        dataset_hash = self._data_metadata_cache.make_key(dataset_key)
+        
         return jsonify({"datasetHash": dataset_hash})
 
 
