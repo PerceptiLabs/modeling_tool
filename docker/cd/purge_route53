@@ -55,10 +55,12 @@ EOF
 
 get_all_zone_records(){
   # the grep -wv "os[[:digit:]]\+" filter is to skip over openshift clusters
+  # also the 07
   QUERY="ResourceRecordSets[?Type=='A'].{Name: Name, Ip: ResourceRecords[0].Value, TTL: TTL}"
   aws route53 list-resource-record-sets --hosted-zone-id $(get_hosting_id) --query "${QUERY}" \
     | jq '.[] | [.Ip, .Name, .TTL] | @tsv' --raw-output \
     | grep -wv "os[[:digit:]]\+" \
+    | grep -wv "07" \
     | sort -k 1 -t$'\t'
 }
 
