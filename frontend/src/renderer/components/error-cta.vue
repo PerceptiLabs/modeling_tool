@@ -26,7 +26,12 @@ export default {
 </script>
 <style scoped>
 .error-cta {
+  line-height: 1.5;
   font-size: 16px;
+}
+
+.error-cta.small {
+  font-size: 12px;
 }
 
 .cta {

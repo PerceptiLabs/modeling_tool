@@ -12,6 +12,7 @@
         )
           span(@click="onTabClick('ConsoleInfoPanel')") Console
       div 
+        error-cta.small(v-if="workspaceErrors")
         i(
           @click="closeWindow"
           type="button"
@@ -27,11 +28,11 @@
 import { mapState, mapActions } from 'vuex'
 import ErrorInfoPanel   from '@/components/workspace/information-panel/information-panel-errors.vue'
 import ConsoleInfoPanel from '@/components/workspace/information-panel/information-panel-console.vue'
-
+import ErrorCta         from '@/components/error-cta.vue'
 
 export default {
   name: "InformationPanel",
-  components: { ErrorInfoPanel, ConsoleInfoPanel },
+  components: { ErrorInfoPanel, ConsoleInfoPanel, ErrorCta },
   computed: {
     ...mapState({
       workspace:                  state => state.mod_workspace.workspaceContent,
