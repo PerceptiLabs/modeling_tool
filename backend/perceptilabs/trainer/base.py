@@ -21,6 +21,7 @@ from perceptilabs.logconf import APPLICATION_LOGGER
 from perceptilabs.utils import get_memory_usage, sanitize_path
 import perceptilabs.tracking as tracking
 import perceptilabs.utils as utils
+import perceptilabs.settings as settings
 
 
 logger = logging.getLogger(APPLICATION_LOGGER)
@@ -771,16 +772,36 @@ class Trainer:
 
     def _get_training_set(self):
         """ Gets a training set matching the training settings """
-        training_set = self._data_loader.get_dataset(
-            partition='training',
-            shuffle=self._shuffle_training_set
-        ).batch(self.batch_size)
-        return training_set
+        return self._get_dataset('training', shuffle=self._shuffle_training_set)        
 
     def _get_validation_set(self):
         """ Gets a validation set matching the training settings """
-        validation_set = self._data_loader.get_dataset(
-            partition='validation',
-            shuffle=False
-        ).batch(self.batch_size)
-        return validation_set
+        return self._get_dataset('validation', shuffle=False)
+
+    def _get_dataset(self, partition, shuffle):
+        indexed_dataset = self._data_loader.get_dataset(
+            partition=partition,
+            shuffle=shuffle,
+            drop_index=False  # Drop the index manually so we can inspect the rows used
+        )
+
+        if settings.TRAINING_DUMP_ROWS is not None:
+            self._dump_dataset_rows(partition, indexed_dataset)
+
+        dataset = self._data_loader \
+                      .drop_dataset_index(indexed_dataset) \
+                      .batch(self.batch_size)
+        return dataset
+        
+
+    def _dump_dataset_rows(self, partition, indexed_dataset):
+        indices = [row.numpy() for row, _, _, in indexed_dataset]
+
+        df = self._data_loader.get_data_frame(partition='original')
+        df = df.iloc[indices]
+
+        path = f"data_epoch_{self._num_epochs_completed}_{partition}.csv"
+        df.to_csv(path, index=True)
+        logger.info(f"Saved data dump to {path}")
+        
+        

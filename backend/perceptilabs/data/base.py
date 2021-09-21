@@ -316,9 +316,16 @@ class DataLoader:
         split_dataset = self._split_inputs_and_targets(preprocessed_dataset)
 
         if drop_index:
-            split_dataset = split_dataset.map(lambda index, inputs, targets: (inputs, targets), num_parallel_calls=tf.data.AUTOTUNE)
-
+            split_dataset = self.drop_dataset_index(split_dataset)
+        
         return split_dataset
+
+    @staticmethod
+    def drop_dataset_index(indexed_dataset):
+        dataset = indexed_dataset.map(
+            lambda index, inputs, targets: (inputs, targets), num_parallel_calls=tf.data.AUTOTUNE)
+        
+        return dataset
 
     def get_example_batch(self, batch_size=None, output_type='tensor', partition='training', shuffle=False, shuffle_seed=None, drop_index=True, apply_pipelines='all'):
         if output_type not in ('tensor', 'list', 'numpy', 'shape'):
