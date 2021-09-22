@@ -5,3 +5,4 @@ regex:/^rygg\//
 regex:!/\/files\/migrations\//
 regex:!/\/mixpanel_proxy\/migrations\//
 regex:!/\/integration_tests\//
+regex:!/\/simple_archive.zip$/

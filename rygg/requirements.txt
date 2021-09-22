@@ -1,5 +1,6 @@
 asgiref>=3.3.2
 blessings>=1.7
+celery>=5.1.0
 certifi>=2020.6.20
 chardet>=3.0.4
 curtsies>=0.3.1
@@ -11,8 +12,8 @@ django-model-utils>=4.1.1
 django-request-logging>0.7.2
 Django==3.2
 djangorestframework>=3.11.1
-gitdb>=4.0.5
 flower>=1.0.0
+gitdb>=4.0.5
 GitPython>=3.1.8
 greenlet>=0.4.15
 idna>=2.10
@@ -29,6 +30,7 @@ pyparsing>=2.4.7
 pypiwin32>=223; platform_system == "Windows"
 python-dateutil>=2.8.1
 pytz>=2020.1
+redis>=3.5.3
 requests-oauthlib>=1.2.0
 requests>=2.24.0
 retrying>=1.3.3
@@ -39,5 +41,3 @@ sqlparse>=0.3.1
 urllib3==1.25.10 #pinning this to 1.25.10 to avoid installation errors for the packages 'requests' and 'botocore'
 wcwidth>=0.1.9
 zipp>=3.1.0
-celery>=5.1.0
-redis>=3.5.3

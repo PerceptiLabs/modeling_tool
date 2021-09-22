@@ -1,6 +1,16 @@
 from django.urls import include, path
 from rest_framework import routers
-from rygg.api import views as api_views
+from rygg.api.views import (
+    get_version,
+    get_updates_available,
+    is_enterprise,
+)
+from rygg.api.views.projects import ProjectViewSet
+from rygg.api.views.models import ModelViewSet
+from rygg.api.views.datasets import DatasetViewSet
+from rygg.api.views.notebooks import NotebookViewSet
+from rygg.api.views.issues import IssuesViewSet
+from rygg.api.views.tasks import TaskViewSet
 from rygg.mixpanel_proxy import views as mixpanel_views
 
 from rygg.files.views.file_view import (
@@ -23,18 +33,18 @@ from rygg.files.views.upload_view import UploadView, get_upload_dir
 
 
 router = routers.DefaultRouter()
-router.register(r"projects", api_views.ProjectViewSet)
-router.register(r"models", api_views.ModelViewSet)
-router.register(r"datasets", api_views.DatasetViewSet)
-router.register(r"notebooks", api_views.NotebookViewSet)
-router.register(r"issues", api_views.IssuesViewSet, basename='Issues')
-router.register(r"tasks", api_views.TaskViewSet, basename="task")
+router.register(r"projects", ProjectViewSet)
+router.register(r"models", ModelViewSet)
+router.register(r"datasets", DatasetViewSet)
+router.register(r"notebooks", NotebookViewSet)
+router.register(r"issues", IssuesViewSet, basename='Issues')
+router.register(r"tasks", TaskViewSet, basename="task")
 
 urlpatterns = [
     path("", (include(router.urls))),
-    path(r"app/version/", api_views.get_version),
-    path(r"app/updates_available/", api_views.get_updates_available),
-    path(r"app/is_enterprise/", api_views.is_enterprise),
+    path(r"app/version/", get_version),
+    path(r"app/updates_available/", get_updates_available),
+    path(r"app/is_enterprise/", is_enterprise),
     path('mixpanel/track/', mixpanel_views.track),
     path('mixpanel/decide/', mixpanel_views.decide),
     path('mixpanel/engage/', mixpanel_views.engage),

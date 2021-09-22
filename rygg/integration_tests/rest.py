@@ -2,6 +2,7 @@ import json
 import requests
 from urllib.parse import urlencode
 
+
 headers = {"content-type": "application/json", "accept": "application/json"}
 
 class RyggRest():
@@ -10,7 +11,8 @@ class RyggRest():
         self._token = token
 
     def check(self):
-        self.get("/app/version")["version"]
+        self.get("/app/version/")["version"]
+        return True
 
     def post(self, relpath, body_dict, **urlparams):
         payload = json.dumps(body_dict)
@@ -34,7 +36,7 @@ class RyggRest():
 
     def assert_success(self, resp):
         if not resp.ok:
-            raise Exception(f"Error status {resp.status_code} received")
+            raise Exception(f"Error status {resp.status_code} received. Text: {resp.text}")
 
     def head(self, relpath, **parms):
         query = self.build_query(relpath, **parms)
@@ -51,7 +53,8 @@ class RyggRest():
 
     def patch(self, relpath, **kwargs):
         payload = json.dumps(kwargs)
-        resp = requests.patch(f"{self._base_url}{relpath}", data=payload, headers=headers)
+        query = self.build_query(relpath)
+        resp = requests.patch(query, data=payload, headers=headers)
         self.assert_success(resp)
         return None if not resp.content else resp.json()
 
@@ -60,3 +63,6 @@ class RyggRest():
         resp = requests.delete(query, headers=headers)
         self.assert_success(resp)
         return None if not resp.content else resp.json()
+
+    def is_enterprise(self):
+        return self.get("/app/is_enterprise")["is_enterprise"]

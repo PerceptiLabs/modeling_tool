@@ -23,7 +23,7 @@ def host(request):
 
 @pytest.fixture(scope='session')
 def rest(host):
-    ret = RyggRest(f"http://{host}:8000", "thetoken")
+    ret = RyggRest(f"http://{host}:8000", "12312")
     assert_eventually(ret.check, stop_max_delay=60000, wait_fixed=1000)
     return ret
 
@@ -32,13 +32,6 @@ def rest(host):
 def working_dir(rest):
     assert isinstance(rest, RyggRest)
     return rest.get("/directories/resolved_dir", path="~/Documents/Perceptilabs")["path"]
-
-
-@pytest.fixture(scope='session')
-def rest(host):
-    rest = RyggRest(f"http://{host}:8000", "thetoken")
-    rest.check()
-    return rest
 
 
 @pytest.fixture
@@ -55,6 +48,8 @@ def tmp_model(rest, tmp_project):
 
 @pytest.fixture
 def tmp_file(tmpdir):
+    assert tmpdir
+    assert os.path.isdir(tmpdir)
     filename = "filename-" + uuid.uuid4().hex
     local_path = os.path.join(tmpdir, filename)
     Path(local_path).touch()
@@ -83,6 +78,9 @@ def tmp_utf8_file(tmp_file):
 
 @pytest.fixture
 def tmp_dataset(tmp_text_file, rest, tmp_project):
-    filename = os.path.basename(tmp_text_file)
+    if rest.is_enterprise():
+        filename = os.path.basename(tmp_text_file)
+    else:
+        filename = tmp_text_file
     with DatasetClient.make(rest, name=filename, location=filename, project=tmp_project.id) as dataset:
         yield dataset

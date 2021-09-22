@@ -10,6 +10,7 @@ app = Celery(
     task_routes={
         "unzip": { "queue": "rygg" },
         "delete_path_task": { "queue": "rygg" },
+        "download": { "queue": "rygg" },
     }
 )
 

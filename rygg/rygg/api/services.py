@@ -1,8 +1,10 @@
 import requests
 
+from rygg import settings
+
 class GitHubService():
 
-    def __init__(self, settings):
+    def __init__(self):
         self.apiKey = settings.GITHUB_API_KEY
         self.apiEndpoint = settings.GITHUB_API_ENDPOINT
 

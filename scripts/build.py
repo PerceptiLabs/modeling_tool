@@ -462,7 +462,7 @@ def run_integration_tests():
 
     with popen_with_terminate([PYTHON, "manage.py", "runserver", "0.0.0.0:8000"], cwd=RYGG_DIR, env=env) as server_proc:
         wait_for_port('127.0.0.1', 8000, interval_secs=1)
-        with popen_with_terminate(["celery", "-A", "rygg", "worker", "-l", "INFO"], cwd=RYGG_DIR, env=env) as server_proc_c:
+        with popen_with_terminate(["celery", "-A", "rygg", "worker", "-l", "DEBUG", "--queues=rygg"], cwd=RYGG_DIR, env=env) as server_proc_c:
             run_checked_arr([PYTHON, "-m", "pytest", "--host", "localhost", "-vv"], cwd=integration_tests_path, env={**env, **os.environ})
 
     print("rygg integration tests passed")

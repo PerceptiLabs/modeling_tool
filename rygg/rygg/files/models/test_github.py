@@ -1,3 +1,4 @@
+from rygg.test_utils.timeout_decorator import timeout
 from django.test import TestCase
 from unittest.mock import patch, Mock
 from rygg.files.tests.utils import (
@@ -12,6 +13,8 @@ from rygg.files.models.github import (
 import os
 
 class BuildExportTests(TestCase):
+    # TODO: this is sending requests to github. Stub that out or move to integration tests
+    @timeout(3)
     def test_simple(self):
         mock = Mock()
         with temp_local_dir("the_dir") as d:
@@ -22,6 +25,8 @@ class BuildExportTests(TestCase):
                     }
             mock.add_files.assert_called_once_with(expected, "msg")
 
+    # TODO: this is sending requests to github. Stub that out or move to integration tests
+    @timeout(3)
     def test_advanced(self):
         mock = Mock()
         with temp_local_dir("the_dir") as d:
@@ -36,6 +41,7 @@ class BuildExportTests(TestCase):
 
 
 class BuildImportTests(TestCase):
+    @timeout(0.1)
     def test_simple(self):
         with temp_local_dir("the_dir") as d,\
              patch("rygg.files.models.github.RepoImporterAPI") as api_class_mock:

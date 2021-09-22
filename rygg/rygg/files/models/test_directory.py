@@ -1,3 +1,4 @@
+from rygg.test_utils.timeout_decorator import timeout
 from django.test import TestCase
 import unittest
 from rygg.files.models.directory import (
@@ -22,6 +23,7 @@ BLANK_RESPONSE = {
         }
 
 class FolderContentsTest(TestCase):
+    @timeout(0.1)
     def test_simple_case(self):
         with temp_local_dir("first") as fd, \
              temp_local_dir(os.path.join(fd, "second")) as sd, \
@@ -34,16 +36,19 @@ class FolderContentsTest(TestCase):
                     'files': ['file_in_second.txt'],
                     'platform': platform.system()})
 
+    @timeout(0.1)
     def test_missing_dir(self):
         r = get_folder_content("nonexistent_dir")
         self.assertDictEqual(BLANK_RESPONSE, r)
 
+    @timeout(0.1)
     def test_non_dir(self):
         with temp_local_file(f"f.txt", "abc") as f:
             r = get_folder_content(f)
             self.assertEqual(BLANK_RESPONSE, r)
 
     @unittest.skipIf(platform.system() == "Windows", "Skipping non-windows test")
+    @timeout(0.1)
     def test_current_dir(self):
         r = get_folder_content('.')
         self.maxDiff=None
@@ -53,26 +58,31 @@ class FolderContentsTest(TestCase):
 
 class GetDrivesTests(TestCase):
     @unittest.skipIf(platform.system() != "Windows", "Skipping windows test")
+    @timeout(0.1)
     def test_windows(self):
         resolved = get_drives()
         self.assertIn("C:", resolved)
 
     @unittest.skipIf(platform.system() == "Windows", "Skipping non-windows test")
+    @timeout(0.1)
     def test_posix(self):
         resolved = get_drives()
         self.assertIsNone(resolved)
 
 class ResolveDirTests(TestCase):
     @unittest.skipIf(platform.system() == "Windows", "Skipping non-windows test")
+    @timeout(0.1)
     def test_posix(self):
         resolved = resolve_dir("~/some/dir")
         self.assertTrue(resolved.endswith("/some/dir"))
         self.assertNotIn("~",  resolved)
 
 class TutorialDataTests(TestCase):
+    @timeout(0.1)
     def test_without_tutorials(self):
         self.assertIsNone(get_tutorial_data())
 
+    @timeout(0.1)
     def test_with_tutorials(self):
         with temp_local_dir("perceptilabs") as p,\
              temp_local_dir(os.path.join(p, "tutorial_data")) as t:

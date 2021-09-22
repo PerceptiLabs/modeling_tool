@@ -1,3 +1,4 @@
+import os
 import pytest
 import time
 
@@ -18,9 +19,14 @@ def test_project_delete_also_deletes_model(rest):
     with pytest.raises(Exception, match="404"):
         model.fetch()
 
-def test_project_delete_also_deletes_dataset(rest):
+def test_project_delete_also_deletes_dataset(rest, tmp_text_file):
+    if rest.is_enterprise():
+        filename = os.path.basename(tmp_text_file)
+    else:
+        filename = tmp_text_file
+
     with ProjectClient.make(rest, name="test project") as project:
-        dataset = DatasetClient.make(rest, name="some file", location="filename", project=project.id, models=[])
+        dataset = DatasetClient.make(rest, name="some file", location=filename, project=project.id, models=[])
 
     with pytest.raises(Exception, match="404"):
         dataset.fetch()

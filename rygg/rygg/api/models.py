@@ -96,5 +96,7 @@ class Dataset(SoftDeletableModel, StatusModel, TimeStampedModel):
 def dataset_deleted(sender, **kwargs):
     ds = kwargs["instance"]
     if ds.is_removed:
-        file_path = os.path.join(FILE_UPLOAD_DIR, ds.location)
-        delete_path(file_path)
+        # Only delete the file when we're in enterprise mode. We don't own the files in local mode
+        if IS_CONTAINERIZED:
+            file_path = os.path.join(FILE_UPLOAD_DIR, ds.location)
+            delete_path(file_path)
