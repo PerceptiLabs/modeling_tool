@@ -49,21 +49,17 @@ textarea {
 .input.new-ui,
 input.new-ui,
 textarea.new-ui {
-	background: #383F50;
-	border: 1px solid #4B4D52;
-	box-sizing: border-box;
-	border-radius: 20px;
-	height: 40px;
-	padding-left: 20px;
-	padding-right: 20px;
-
-	font-family: Nunito Sans;
-	font-style: normal;
-	font-weight: 300;
-	font-size: 12px;
-	line-height: 16px;
-
-	color: #fff;
+  background: #222736;
+  border-radius: 2px;
+  border: 1px solid #5E6F9F;
+  height: 36px;
+  font-family: Roboto, 'sans-serif';
+  font-size: 14px;
+  line-height: 16px;
+  letter-spacing: 0.02em;
+  color: #E1E1E1;
+  padding-left: 10px;
+  transition: 0.3s;
 
 	&::placeholder {
 		color: #C4C4C4;
@@ -72,6 +68,8 @@ textarea.new-ui {
 		border: 1px solid #6185EE;
 	}
 }
+
+
 
 input[type='number'] {
 	width: 4.5em;

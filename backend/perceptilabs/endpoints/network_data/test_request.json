@@ -99,6 +99,7 @@
     },
     "datasetSettings": {
         "randomizedPartitions": true,
+        "randomSeed": 123,
         "partitions": [
             70,
             20,

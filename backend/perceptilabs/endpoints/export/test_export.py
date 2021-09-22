@@ -30,6 +30,7 @@ def export_settings(path, type_):
 def dataset_settings():
     settings = {
         "randomizedPartitions": True,
+        "randomSeed": 123,
         "partitions": [
             70,
             20,

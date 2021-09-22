@@ -176,7 +176,6 @@
                   :withLabels="true"
                 )
               div(style="display:flex")
-
                 base-checkbox(
                   style="font-size: 14px; white-space:nowrap;"
                   v-model="datasetSettings.randomizedPartitions"
@@ -184,6 +183,9 @@
                 info-tooltip(
                   text="Select random samples to place in each partition, good practice if your dataset is ordered"
                 )
+              div.randome-seed-input-wrapper
+                h5.default-text Seed:
+                input.random-seed-input.new-ui(type="text" v-model="datasetSettings.randomSeed")
               div.footer-actions
                 button.reload-dataset-btn(@click="onStep -= 1")
                   img(src='./../../../../../static/img/arrow-back.svg')
@@ -490,7 +492,8 @@ export default {
       dataSetTypes: [],
       datasetSettings: {
         randomizedPartitions: true,
-        partitions: [70, 20, 10]
+        partitions: [70, 20, 10],
+        randomSeed: '123',
       },
       filepickerOptions: {
         popupTitle: "",
@@ -724,6 +727,7 @@ export default {
       const datasetSettings = {
         randomizedPartitions: this.datasetSettings.randomizedPartitions,
         partitions: this.datasetSettings.partitions,
+        randomSeed: this.datasetSettings.randomSeed,
         featureSpecs: formatCSVTypesIntoKernelFormat(this.datasetPath, this.csvData)
       };
       const userEmail = this.userEmail;
@@ -1573,7 +1577,17 @@ span.error {
   font-size: 14px;
   color: #fff;
 }
-
+.random-seed-input {
+  max-width: 135px;
+}
+.randome-seed-input-wrapper {
+  display: flex;
+  align-items: center;
+  padding: 10px 0;
+  .default-text {
+    margin: 0 10px 0 0;
+  }
+}
 .cta-container {
   position: absolute;
   bottom: 30px;

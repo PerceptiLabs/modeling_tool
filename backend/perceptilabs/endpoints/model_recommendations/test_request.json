@@ -1,24 +1,25 @@
 {
-    "datasetSettings": {
-        "featureSpecs": {
-            "x1": {
-                "iotype": "input",
-                "datatype": "numerical",
-                "csv_path": "perceptilabs/endpoints/model_recommendations/test_data.csv",
-                "preprocessing": {}
-            },
-            "y1": {
-                "iotype": "target",
-                "datatype": "numerical",
-                "csv_path": "perceptilabs/endpoints/model_recommendations/test_data.csv",
-                "preprocessing": {}
-            }
-        },
-        "partitions": [
-            70,
-            20,
-            10
-        ],
-        "randomizedPartitions": true
-    }
+  "datasetSettings": {
+    "featureSpecs": {
+      "x1": {
+        "iotype": "input",
+        "datatype": "numerical",
+        "csv_path": "perceptilabs/endpoints/model_recommendations/test_data.csv",
+        "preprocessing": {}
+      },
+      "y1": {
+        "iotype": "target",
+        "datatype": "numerical",
+        "csv_path": "perceptilabs/endpoints/model_recommendations/test_data.csv",
+        "preprocessing": {}
+      }
+    },
+    "partitions": [
+      70,
+      20,
+      10
+    ],
+    "randomizedPartitions": true,
+    "randomSeed": 123
+  }
 }
