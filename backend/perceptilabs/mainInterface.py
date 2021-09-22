@@ -8,19 +8,14 @@ import threading
 from sentry_sdk import configure_scope
 from concurrent.futures import ThreadPoolExecutor
 
-from perceptilabs.parser.onnx_converter import load_tf1x_frozen, create_onnx_from_tf1x
-from perceptilabs.parser.parse_onnx import LayerCheckpoint, Parser
 import perceptilabs.tracking as tracking
 
 #core interface
 from perceptilabs.extractVariables import extractCheckpointInfo
-from perceptilabs.s3buckets import S3BucketAdapter
-from perceptilabs.aggregation import AggregationRequest, AggregationEngine
 from perceptilabs.coreInterface import coreLogic
 
 from perceptilabs.graph.spec import GraphSpec
 from perceptilabs.utils import stringify
-from perceptilabs import __version__
 from perceptilabs.core_new.errors import LightweightErrorHandler
 from perceptilabs.core_new.extras import LayerExtrasReader
 from perceptilabs.logconf import APPLICATION_LOGGER, set_user_email
@@ -29,7 +24,6 @@ from perceptilabs.caching.lightweight_cache import LightweightCache
 import perceptilabs.utils as utils
 import perceptilabs.dataevents as dataevents
 from perceptilabs.messaging.zmq_wrapper import ZmqMessagingFactory, ZmqMessageConsumer
-from perceptilabs.api.data_container import DataContainer as Exp_DataContainer
 from perceptilabs.messaging import MessageConsumer, MessagingFactory
 
 import perceptilabs.logconf
@@ -42,9 +36,6 @@ from perceptilabs.script import ScriptFactory
 
 #LW interface
 from perceptilabs.lwInterface import (
-    getNotebookImports,
-    getNotebookRunscript,
-    getGraphOrder,
     getDataMeta,
     getDataMetaV2,
     getPartitionSummary,
@@ -52,9 +43,7 @@ from perceptilabs.lwInterface import (
     getNetworkOutputDim,
     getPreviewSample,
     getPreviewBatchSample,
-    getPreviewVariableList,
-    Parse,
-    UploadKernelLogs
+    getPreviewVariableList
 )
 
 #Test interface
@@ -68,7 +57,6 @@ logger = logging.getLogger(APPLICATION_LOGGER)
 USE_AUTO_SETTINGS = False  # TODO: enable for TF2 (story 1561)
 USE_LW_CACHING = True
 LW_CACHE_MAX_ITEMS = 25
-AGGREGATION_ENGINE_MAX_WORKERS = 2
 
 
 class NetworkLoader:
@@ -111,7 +99,7 @@ class NetworkLoader:
 
 
 class Interface():
-    def __init__(self, cores, testcore, dataDict, lwDict, issue_handler, message_factory=None, session_id='default', allow_headless=False, experiment_api=False):
+    def __init__(self, cores, testcore, dataDict, lwDict, issue_handler, message_factory=None, session_id='default', allow_headless=False):
         self._allow_headless = allow_headless
         self._network_loader = NetworkLoader()
         self._cores=cores
@@ -123,11 +111,6 @@ class Interface():
         self._lw_cache_v2 = LightweightCache(max_size=LW_CACHE_MAX_ITEMS) if USE_LW_CACHING else None
         self._settings_engine = None
         self._data_metadata_cache = get_data_metadata_cache().for_compound_keys()
-
-        if experiment_api:
-            self._data_container = Exp_DataContainer()
-            self._aggregation_engine = self._setup_aggregation_engine(self._data_container)
-            self._start_experiment_thread(message_factory)
 
         self._mode = 'ephemeral'
         self._has_remaining_work = True
@@ -143,62 +126,6 @@ class Interface():
             return self._has_remaining_work
         else:
             return True
-
-    def _setup_consumer(self, message_factory: MessagingFactory = None) -> MessageConsumer:
-        '''Creates consumer for incoming experiment data
-
-        Returns:
-            consumer: Consumer object to consume experiment data
-        '''
-        if message_factory:
-            topic_data = 'generic-experiment'
-            consumer = message_factory.make_consumer([topic_data])
-
-            return consumer
-        else:
-            topic_data = f'generic-experiment'.encode()
-            zmq_consumer = ZmqMessagingFactory().make_consumer([topic_data])
-
-            return zmq_consumer
-
-    def _setup_aggregation_engine(self, data_container: Exp_DataContainer) -> AggregationEngine:
-        '''Creates Aggregations Engine
-
-        Args:
-            data_container: DataContainer object that stores experiment data
-
-        Returns:
-            agg_engine: AggregationEngine class to query data
-        '''
-        agg_engine = AggregationEngine(
-            ThreadPoolExecutor(max_workers=AGGREGATION_ENGINE_MAX_WORKERS),
-            data_container,
-            aggregates={}
-        )
-        return agg_engine
-
-    def _start_experiment_thread(self, message_factory: MessagingFactory):
-        '''Creates a thread to continuously get data from experiment API
-
-        Args:
-            consumer: A MessageConsumer object to be created
-        '''
-        def _get_experiment_data():
-            '''Creates consumer object and gets experiment data from consumer object'''
-            self._dc_consumer = self._setup_consumer(message_factory=message_factory)
-            self._dc_consumer.start()
-
-            while True:
-                raw_messages = self._dc_consumer.get_messages()
-
-                for raw_message in raw_messages:
-                    self._data_container.process_message(raw_message)
-
-                time.sleep(2)
-
-        t = threading.Thread(target=_get_experiment_data)
-        t.daemon = True
-        t.start()
 
     def _addCore(self, receiver):
         core = coreLogic(receiver, self._issue_handler, self._session_id)
@@ -333,17 +260,6 @@ class Interface():
         if action == "getDataMeta":
             return self._create_response_get_data_meta(value, receiver)
 
-        elif action == "getSettingsRecommendation":
-            #json_network = self._network_loader.load(value["Network"])
-
-            #if self._settings_engine is not None:
-            #    new_json_network = autosettings_utils.get_recommendation(json_network, self._settings_engine)#
-            #else:
-            #    new_json_network = {}
-            #    logger.warning("Settings engine is not set. Cannot make recommendations")
-
-            return {}#new_json_network
-
         elif action == "getPartitionSummary":
             return self._create_response_get_partition_summary(value, receiver)
 
@@ -389,21 +305,6 @@ class Interface():
         elif action == "getPreviewVariableList":
             return self._create_response_get_preview_var_list(value, receiver)
 
-        elif action == "Parse":
-            return self._parse(value[0])
-
-        elif action == "getGraphOrder":
-            jsonNetwork = self._network_loader.load(value)
-            return getGraphOrder(jsonNetwork=jsonNetwork).run()
-
-        elif action == "getNotebookImports":
-            jsonNetwork = self._network_loader.load(value)
-            return getNotebookImports(jsonNetwork=jsonNetwork).run()
-
-        elif action == "getNotebookRunscript":
-            jsonNetwork = self._network_loader.load(value)
-            return getNotebookRunscript(jsonNetwork=jsonNetwork).run()
-
         elif action == "Close":
             self.shutDown()
 
@@ -418,9 +319,6 @@ class Interface():
             response = self._core.isRunning()
             return response
 
-        elif action == "version":
-            return __version__
-
         elif action == "headless":
             return self._create_response_headless(value)
 
@@ -430,13 +328,6 @@ class Interface():
 
         elif action == "getGlobalTrainingStatistics":
             response = self._core.get_global_training_statistics()
-            return response
-
-
-        elif action == "getS3Keys":
-            adapter = S3BucketAdapter(value['bucket'],
-                                value['aws_access_key_id'], value['aws_secret_access_key'])
-            response = adapter.get_keys(value['delimiter'], value['prefix'])
             return response
 
         elif action == "Start":
@@ -471,47 +362,12 @@ class Interface():
             response = {'result':result, 'receiver':receiver}
             return response
 
-        elif action == "SaveTrained":
-            response = self._core.saveNetwork(value)
-            return response
-
         elif action == "getEndResults":
-            # time.sleep(3)
             response = self._core.getEndResults()
             return response
 
         elif action == "getStatus":
             response = self._core.getStatus()
-            return response
-
-        elif action == "setUser":
-            response = self.on_set_user(value)
-            return response
-
-        elif action == "scheduleAggregations":
-            requests = [
-                AggregationRequest(
-                    result_name=raw_request['result_name'],
-                    aggregate_name=raw_request['aggregate_name'],
-                    experiment_name=raw_request['experiment_name'],
-                    metric_names=raw_request['metric_names'],
-                    start=raw_request['start'],
-                    end=raw_request['end'],
-                    aggregate_kwargs=raw_request['aggregate_kwargs']
-                )
-                for raw_request in value
-            ]
-            response = self._core.scheduleAggregations(self._aggregation_engine, requests)
-            return response
-
-        elif action == "getAggregationResults":
-            result_names = value
-            response = self._core.getAggregationResults(result_names)
-            return response
-
-        elif action == 'UploadKernelLogs':
-            uploader = UploadKernelLogs(value, self._session_id)
-            response = uploader.run()
             return response
 
         elif action == "startTests":
@@ -535,17 +391,6 @@ class Interface():
             return response
         else:
             raise LookupError(f"The requested action '{action}' does not exist")
-
-    def on_set_user(self, value):
-        user = value
-        with configure_scope() as scope:
-            scope.user = {"email" : user}
-
-        perceptilabs.logconf.set_user_email(user)
-        logger.info("User has been set to %s" % str(value))
-        dataevents.on_user_email_set()
-
-        return "User has been set to " + value
 
     def _create_response_headless(self, request_value):
         """ Toggles headless mode on/off. Returns None if successful """
@@ -581,14 +426,6 @@ class Interface():
             is_retry=is_retry
         )
         return response
-
-    def _parse(self, path):
-        frozen_pb_model = load_tf1x_frozen(path)
-        _, onnx_model = create_onnx_from_tf1x(frozen_pb_model)
-        parser = Parser(onnx_model)
-        layer_checkpoint_list = parser.parse()
-        jsonNetwork = parser.save_json(layer_checkpoint_list[0])
-        return jsonNetwork
 
     def _create_testinterface(self, value):
         models_info = {}

@@ -17,7 +17,6 @@ perceptilabs/functionParser.py
 perceptilabs/networkExporter.py
 perceptilabs/networkSaver.py
 perceptilabs/parse_pb.py
-perceptilabs/s3buckets.py
 perceptilabs/utils.py
 perceptilabs/license_checker.py
 perceptilabs/issues.py
@@ -304,15 +303,6 @@ perceptilabs/dataschema/graph_spec.json
 perceptilabs/dataschema/dc_memory_used.json
 perceptilabs/dataschema/memory_limit_exceeded.json
 perceptilabs/dataschema/lwcore_finished.json
-
-# backend/perceptilabs/aggregation/
-perceptilabs/aggregation/__init__.py
-perceptilabs/aggregation/base.py
-perceptilabs/aggregation/aggregates.py
-
-# backend/perceptilabs/api/
-perceptilabs/api/data_container.py
-perceptilabs/api/experiment.py
 
 # backend/perceptilabs/tutorial_data/
 perceptilabs/tutorial_data/classification_mnist_input.npy

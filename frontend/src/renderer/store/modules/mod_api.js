@@ -301,39 +301,6 @@ const actions = {
       .then((data)=> { return })
       .catch((err)=> { console.error(err) });
   },
-
-  //---------------
-  //  NETWORK SETTING UPDATING
-  //---------------
-  // API_updateNetworkSetting({getters, dispatch}, layerId) {
-  //   const theData = {
-  //     action: 'getSettingsRecommendation',
-  //     value: {
-  //       Id: layerId,
-  //       Network: getters.GET_coreNetwork,
-  //     }
-  //   };
-
-
-  //   coreRequest(theData)
-  //     .then((data)=> {
-  //       console.warn(data);
-  //       if (data) {
-  //         for (var el in data) {
-  //           const saveSettings = {
-  //             'elId': el,
-  //             'set': data[el].Properties,
-  //             'code': data[el].Code
-  //           };
-            
-  //           dispatch('mod_workspace/SET_elementSettings', deepCopy(saveSettings), {root: true});      
-  //         }
-  //       }
-  //     })
-  //     .catch((err)=> {
-  //       console.log("Calling getSettingsRecommendation", err)
-  //     })
-  // },
   //---------------
   //  NETWORK TRAINING
   //---------------
@@ -690,19 +657,8 @@ const actions = {
       });
   },
 
-  API_saveTrainedNetwork({dispatch, getters, rootGetters}, {Location, frontendNetwork, networkName}) {
-    const theData = {
-      receiver: rootGetters['mod_workspace/GET_currentNetworkId'],
-      action: "SaveTrained",
-      value:  {Location, frontendNetwork, networkName}
-    };
-    //console.log('SaveTrained', theData);
-    return coreRequest(theData)
-      .then((data)=> data)
-      .catch((err)=> {
-        console.error('SaveTrained answer', err);
-        return Promise.reject();
-      });
+  API_saveTrainedNetwork({dispatch, getters, rootGetters}, {Location, frontendNetwork, networkName})  {
+    console.error('API_saveTrainedNetwork is deprecated!')    
   },
 
   //---------------
@@ -809,60 +765,15 @@ const actions = {
   },
 
   API_getGraphOrder({ rootGetters }, jsonNetwork) {
-
-    const theData = {
-      receiver: rootGetters['mod_workspace/GET_currentNetworkId'],
-      action: 'getGraphOrder',
-      value: jsonNetwork
-    };
-
-    return coreRequest(theData)
-      .then((data)=> {
-        // console.log('API_getGraphOrder data', data);
-        return data;
-      })
-      .catch((err)=> {
-        // console.log('API_getGraphOrder error');
-        console.error(err);
-      });
+    console.error('API_getGraphOrder is deprecated!')
   },
 
   API_getNotebookImports({ rootGetters }, jsonNetwork) {
-
-    const theData = {
-      receiver: rootGetters['mod_workspace/GET_currentNetworkId'],
-      action: 'getNotebookImports',
-      value: jsonNetwork
-    };
-
-    return coreRequest(theData)
-      .then((data)=> {
-        // console.log('API_getNotebookImports data', data);
-        return data;
-      })
-      .catch((err)=> {
-        // console.log('API_getNotebookImports error');
-        console.error(err);
-      });
+    console.error('API_getNotebookImports is deprecated!')
   },
 
   API_getNotebookRunscript({ rootGetters }, jsonNetwork) {
-
-    const theData = {
-      receiver: rootGetters['mod_workspace/GET_currentNetworkId'],
-      action: 'getNotebookRunscript',
-      value: jsonNetwork
-    };
-
-    return coreRequest(theData)
-      .then((data)=> {
-        // console.log('API_getNotebookRunscript data', data);
-        return data;
-      })
-      .catch((err)=> {
-        // console.log('API_getNotebookRunscript error');
-        console.error(err);
-      });
+    console.error('API_getNotebookRunscript is deprecated!')
   },
 
   API_getPartitionSummary({getters, rootGetters},  {layerId, settings}) {
@@ -912,49 +823,7 @@ const actions = {
   //  IMPORT/EXPORT
   //---------------
   API_parse({dispatch, getters, rootState, rootGetters}, path) {
-    const theData = {
-      receiver: rootGetters['mod_workspace/GET_currentNetworkId'],
-      action: "Parse",
-      value: path
-    };
-    return coreRequest(theData)
-      .then((data)=> {
-        let networkId;
-
-        dispatch('mod_project/createProjectModel', {
-          name: data.network.networkName,
-          project: rootState.mod_project.currentProject,
-          location: `${rootGetters['mod_project/GET_projectPath']}/${data.network.networkName}`,
-        }, {root: true})
-        .then(apiMeta => {
-          networkId = apiMeta.model_id;
-
-          for(let key in data.network.networkElementList) {
-            // data.network.networkElementList[key].backward_connections=[]
-            // data.network.networkElementList[key].forward_connections=[]
-            data.network.networkElementList[key].inputs={"16100284150430":{"name":"input","reference_var_id":null,"reference_layer_id":null,"isDefault":true}}
-            data.network.networkElementList[key].outputs={"16100286360500":{"name":"output","reference_var":"output"}}
-          }
-
-
-          data.network.networkMeta={
-            chartsRequest: {timerID: null, waitGlobalEvent: false, doRequest: 0, showCharts: 0},
-            coreStatus: {Status: "Waiting"},
-            netMode: "edit",
-            openStatistics: null,
-            openTest: null,
-            zoom: 1
-          }
-          return dispatch('mod_workspace/ADD_network', {network: data.network, apiMeta}, {root: true});
-        })
-        .then(_ => {
-          dispatch('mod_workspace/SET_currentModelIndexByNetworkId', networkId, {root: true});
-        });
-
-      })
-      .catch((err)=> {
-        console.error('Parse answer', err);
-      });
+    console.error('API_parse is deprecated!');
   },
 
   async API_exportData({rootGetters, getters, dispatch}, settings) {
@@ -1119,24 +988,7 @@ const actions = {
   },
 
   API_setUserInCore({}) {
-    const haveNotToken = (token) => ((token === 'undefined') || (token === null));
-    let userToken = sessionStorage.getItem('currentUser');
-    if (haveNotToken(userToken)) {
-      userToken = localStorage.getItem('currentUser');
-    }
-    if (haveNotToken(userToken)) { return; }
-    const userObject = parseJWT(userToken);
-
-    const theData = {
-      receiver: '',
-      action: 'setUser',
-      value: userObject.email
-    };
-    return coreRequest(theData)
-      .then((data)=> data)
-      .catch((err)=> {
-        console.error(err);
-      });
+    console.error('API_setUserInCore is deprecated!')        
   },
   // @param {object} payload | { networkId: variableName } 
   API_getBatchPreviewSample({ getters, dispatch, rootGetters }, payload) {
@@ -1319,13 +1171,7 @@ const actions = {
   },
   
   API_UploadKernelLogs (ctx, payload) {
-    const theData = {
-      // receiver: networkId,
-      action: 'UploadKernelLogs',
-      value: payload
-    };
-    
-    return coreRequest(theData)
+    console.error('API_UploadKernelLogs is deprecated!')    
   },
 
   API_setAppInstance({commit}) {

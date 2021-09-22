@@ -21,6 +21,8 @@ class SessionStart(View):
         user_email = json_data.get('value').get('userEmail')
 
         action = json_data.get('action')
+        logger.info(f"Session proxy called with action {action}")
+        
         if action == "Start":
             task_type = 'start-training'
         elif action == "startTests":

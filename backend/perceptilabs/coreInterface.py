@@ -27,12 +27,10 @@ from perceptilabs.logconf import APPLICATION_LOGGER, USER_LOGGER
 from perceptilabs.networkExporter import exportNetwork
 from perceptilabs.networkSaver import saveNetwork
 import perceptilabs.utils as utils
-from perceptilabs.api.data_container import DataContainer
 from perceptilabs.core_new.errors import CoreErrorHandler
 from perceptilabs.CoreThread import CoreThread
 from perceptilabs.createDataObject import createDataObject
 from perceptilabs.messaging import MessageProducer
-from perceptilabs.aggregation import AggregationRequest, AggregationEngine
 from perceptilabs.license_checker import LicenseV2
 from perceptilabs.trainer import Trainer, TrainingModel
 from perceptilabs.automation.modelrecommender.base import ModelRecommender
@@ -64,8 +62,6 @@ class coreLogic():
 
         self.setupLogic()
         self.plLicense = LicenseV2()
-
-        self._aggregation_futures = []
 
         self.issue_handler = issue_handler
         self._running_mode = None
@@ -421,22 +417,6 @@ class coreLogic():
         )
         return {"content": is_trained}
 
-    def saveIpynbToDisk(self, value):
-        path = value.get('Location')
-        if path is None or not path:
-            return {"content": 'Location not specified'}
-
-        notebook_json = value.get('NotebookJson')
-        if notebook_json is None or not notebook_json:
-            return {"content": 'Cannot export empty network'}
-
-        filepath = os.path.abspath(path + '/' + value.get("frontendNetwork") + '.ipynb')
-
-        with open(filepath, 'w') as json_file:
-            json.dump(notebook_json, json_file)
-
-        return {"content":"Export success!\nSaved as:\n" + filepath}
-
     def export_network(self, settings):
         path = os.path.join(settings["Location"], settings["name"])
         path = os.path.abspath(path)
@@ -516,45 +496,6 @@ class coreLogic():
             logger.debug(f"Key Error in getStatus: {repr(e)}")
             return {}
 
-    def scheduleAggregations(self, engine: AggregationEngine, requests: List[AggregationRequest]):
-        """ Schedules a batch of metric aggregations
-
-        Args:
-            engine: Aggregation Engine to compute
-            requests: A list of AggregationRequests to computate
-        """
-        future = engine.request_batch(requests)
-        self._aggregation_futures.append(future)
-
-        def prune_futures(future):
-            """ Retain only the most recently completed future (and not-yet-completed futures) """
-            while len(self._aggregation_futures) >= 2 and self._aggregation_futures[1].done():
-                del self._aggregation_futures[0]
-
-        future.add_done_callback(prune_futures)
-
-    def getAggregationResults(self, result_names: list) -> dict:
-        """ Retrieve results of scheduled aggregations
-
-        Args:
-            result_names: names of the results to get from Aggregation Engine once computation is finished
-
-        Returns:
-            retrieved: a dictionary of by result_names queried
-        """
-        if len(self._aggregation_futures) == 0:
-            return {}
-
-        future = self._aggregation_futures[0]
-        if not future.done():
-            return {}
-
-        retrieved = {}
-        results, _, _ = future.result()
-        for result_name in result_names:
-            value, _, _ = results.get(result_name, (None, None, None))
-            retrieved[result_name] = value
-        return retrieved
 
     def updateResults(self):
         #TODO: Look from the back and go forward if we find a test instead of going through all of them
