@@ -22,7 +22,6 @@ def test_image_input_and_mask_output_gives_correct_settings():
 
     feature_spec = MagicMock()
     feature_spec.datatype = 'mask'
-    feature_spec.file_path = '/tmp/tmp.csv'
 
     blueprint = MaskDecoderBlueprint()
     blueprint.build(

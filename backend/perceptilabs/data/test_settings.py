@@ -7,6 +7,7 @@ from perceptilabs.data.settings import DatasetSettings, FeatureSpec, Partitions,
 @pytest.fixture(scope='function')
 def settings_dict():
     settings = {
+        "filePath": "~/test_data.csv",        
         "randomizedPartitions": True,
         "randomSeed": 789,        
         "partitions": [
@@ -16,7 +17,6 @@ def settings_dict():
         ],
         "featureSpecs": {
             "x1": {
-                "csv_path": "~/test_data.csv",
                 "iotype": "Input",
                 "datatype": "image",
                 "preprocessing": {
@@ -34,13 +34,11 @@ def settings_dict():
                 }
             },
             "x2": {
-                "csv_path": "~/test_data.csv",
                 "iotype": "Do not use",
                 "datatype": "numerical",
                 "preprocessing": {}
             },
             "y1": {
-                "csv_path": "~/test_data.csv",
                 "iotype": "Target",
                 "datatype": "numerical",
                 "preprocessing": {

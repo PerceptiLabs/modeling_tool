@@ -23,7 +23,7 @@ class CategoricalDecoderBlueprint(DecoderBlueprint):
                                 settings={'n_neurons': n_categories, 'activation': 'Softmax'})
         id2 = builder.add_layer(
             'IoOutput',
-            settings={'feature_name': feature_name, 'file_path': feature_spec.file_path, 'datatype': feature_spec.datatype}                
+            settings={'feature_name': feature_name, 'datatype': feature_spec.datatype}                
         ) 
         builder.add_connection(id1, 'output', id2, 'input')
         return id1

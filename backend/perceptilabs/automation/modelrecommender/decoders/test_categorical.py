@@ -18,7 +18,6 @@ def test_decoder_shape_reflects_num_categories():
 
     feature_spec = MagicMock()
     feature_spec.datatype = 'categorical'
-    feature_spec.file_path = '/tmp/tmp.csv'    
     
     blueprint = CategoricalDecoderBlueprint()
     blueprint.build(

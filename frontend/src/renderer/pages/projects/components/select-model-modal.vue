@@ -727,8 +727,9 @@ export default {
       const datasetSettings = {
         randomizedPartitions: this.datasetSettings.randomizedPartitions,
         partitions: this.datasetSettings.partitions,
-        randomSeed: this.datasetSettings.randomSeed,
-        featureSpecs: formatCSVTypesIntoKernelFormat(this.datasetPath, this.csvData)
+        featureSpecs: formatCSVTypesIntoKernelFormat(this.csvData),
+        filePath: this.datasetPath,
+        randomSeed: this.datasetSettings.randomSeed
       };
       const userEmail = this.userEmail;
       

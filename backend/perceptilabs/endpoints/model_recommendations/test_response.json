@@ -4,8 +4,7 @@
         "Name": "Input_1",
         "Properties": {
             "DataType": "numerical",
-            "FeatureName": "x1",
-            "FilePath": "perceptilabs/endpoints/model_recommendations/test_data.csv"
+            "FeatureName": "x1"
         },
         "Type": "IoInput",
         "backward_connections": [],
@@ -56,8 +55,7 @@
         "Name": "Target_1",
         "Properties": {
             "DataType": "numerical",
-            "FeatureName": "y1",
-            "FilePath": "perceptilabs/endpoints/model_recommendations/test_data.csv"
+            "FeatureName": "y1"
         },
         "Type": "IoOutput",
         "backward_connections": [

@@ -21,7 +21,7 @@ class SegmentationModel(SISOModelBlueprint):
 
         id1 = builder.add_layer(
             'IoInput',
-            settings={'feature_name': input_feature_name, 'file_path': input_feature_spec.file_path, 'datatype': input_feature_spec.datatype}
+            settings={'feature_name': input_feature_name, 'datatype': input_feature_spec.datatype}
         )
         id2 = builder.add_layer(
             'UNet',
@@ -29,7 +29,7 @@ class SegmentationModel(SISOModelBlueprint):
         )
         id3 = builder.add_layer(
             'IoOutput',
-            settings={'feature_name': target_feature_name, 'file_path': target_feature_spec.file_path, 'datatype': target_feature_spec.datatype}
+            settings={'feature_name': target_feature_name, 'datatype': target_feature_spec.datatype}
         )
 
         builder.add_connection(id1, 'output', id2, 'input')

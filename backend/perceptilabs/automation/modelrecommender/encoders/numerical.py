@@ -17,7 +17,7 @@ class NumericalEncoderBlueprint(EncoderBlueprint):
         """
         id_ = builder.add_layer(
             'IoInput',
-            settings={'feature_name': feature_name, 'file_path': feature_spec.file_path, 'datatype': feature_spec.datatype}
+            settings={'feature_name': feature_name, 'datatype': feature_spec.datatype}
         ) 
         return id_
         

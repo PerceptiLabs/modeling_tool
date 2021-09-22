@@ -468,5 +468,6 @@ perceptilabs/endpoints/set_user/base.py
 # backend/perceptilabs/resources/
 perceptilabs/resources/models.py
 perceptilabs/resources/epochs.py
+perceptilabs/resources/files.py
 
 

@@ -36,8 +36,8 @@ def get_mnist_loader():
                         'mnist_small', 'data.csv')
 
     feature_specs = {
-        'image_path': FeatureSpec(datatype='image', iotype='input', file_path=path),
-        'target': FeatureSpec(datatype='categorical', iotype='target', file_path=path)
+        'image_path': FeatureSpec(datatype='image', iotype='input'),
+        'target': FeatureSpec(datatype='categorical', iotype='target')
     }
     loader = DataLoader.from_features(feature_specs, file_path=path)
     return loader
@@ -59,12 +59,10 @@ def get_wildfire_loader():
                 resize_height=224,
                 resize_width=224
             ),
-            file_path=path
         ),
         'labels': FeatureSpec(
             datatype='categorical',
             iotype='target',
-            file_path=path
         )
     }
     partitions = Partitions(randomized=True)
@@ -89,12 +87,10 @@ def get_humanactivity_loader():
         'images': FeatureSpec(
             datatype='image',
             iotype='input',
-            file_path=path
         ),
         'labels': FeatureSpec(
             datatype='categorical',
             iotype='target',
-            file_path=path
         )
     }
 
@@ -119,12 +115,10 @@ def get_covid19_loader():
         'images': FeatureSpec(
             datatype='image',
             iotype='input',
-            file_path=path
         ),
         'labels': FeatureSpec(
             datatype='categorical',
             iotype='target',
-            file_path=path
         )
     }
 

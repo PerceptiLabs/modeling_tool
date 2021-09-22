@@ -234,10 +234,8 @@ export default {
         const datasetSettings = {
           randomizedPartitions: this.datasetSettings.randomizedPartitions,
           partitions: this.datasetSettings.partitions,
-          featureSpecs: formatCSVTypesIntoKernelFormat(
-            this.datasetPath,
-            this.csvData
-          )
+          featureSpecs: formatCSVTypesIntoKernelFormat(this.csvData),
+          filePath: this.datasetPath
         };
 
         await renderingKernel.waitForDataReady(datasetSettings);

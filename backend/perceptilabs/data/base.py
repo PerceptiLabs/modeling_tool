@@ -16,6 +16,7 @@ from perceptilabs.data.settings import DatasetSettings
 import perceptilabs.data.pipelines as pipelines
 import perceptilabs.data.utils as utils
 from perceptilabs.data.settings import FeatureSpec
+from perceptilabs.resources.files import FileAccess
 from perceptilabs.logconf import APPLICATION_LOGGER
 
 
@@ -36,6 +37,7 @@ class DataLoader:
         self._metadata = metadata
         self._num_repeats = num_repeats
         self._initialized = False
+        self._file_access = FileAccess(os.path.dirname(dataset_settings.file_path))
 
     def ensure_initialized(self):
         if self._initialized:
@@ -202,7 +204,10 @@ class DataLoader:
     @classmethod
     def from_settings(cls, dataset_settings, metadata=None, num_repeats=1):
         """ Creates a DataLoader given a settings dict """
-        data_frame = pd.read_csv(dataset_settings.file_path)
+        file_access = FileAccess(os.path.dirname(dataset_settings.file_path))        
+        file_path = file_access.get_local_path(file_id=dataset_settings.file_path)  # TODO: send file ID from F/E instead
+        data_frame = pd.read_csv(file_path)
+        
         data_loader = cls(
             data_frame,
             dataset_settings,
@@ -450,19 +455,17 @@ class DataLoader:
     @staticmethod
     def _make_paths_absolute(df, dataset_settings):
         """ Converts relative paths in the dataframe to absolute paths"""
-        base_directory = os.path.dirname(dataset_settings.file_path)
-
         path_cols = [
             feature_name
             for feature_name, feature_spec in dataset_settings.used_feature_specs.items()
             if feature_spec.datatype in ['image', 'mask']
         ]
 
-        def make_absolute(x):
-            """ convert from <file_name> to <base_directory>/<file_name> """
-            return os.path.join(base_directory, x.replace('\\', '/'))
+        file_access = FileAccess(os.path.dirname(dataset_settings.file_path))        
 
-        df[path_cols] = df[path_cols].applymap(make_absolute)
+        df[path_cols] = df[path_cols].applymap(
+            lambda x: file_access.get_local_path(x))
+        
         return df
 
     @staticmethod

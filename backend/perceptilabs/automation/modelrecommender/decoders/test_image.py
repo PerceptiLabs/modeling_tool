@@ -22,7 +22,6 @@ def test_numerical_input_and_image_output_gives_correct_settings():
     expected_conv_type = 'Transpose'
     feature_spec = MagicMock()
     feature_spec.datatype = 'image'
-    feature_spec.file_path = '/tmp/tmp.csv'    
     
     blueprint = ImageDecoderBlueprint()
     blueprint.build(

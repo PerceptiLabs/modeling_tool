@@ -36,9 +36,9 @@ def dataset_settings():
             20,
             10
         ],
+        "filePath": "perceptilabs/endpoints/network_data/test_data.csv",        
         "featureSpecs": {
             "x1": {
-                "csv_path": "perceptilabs/endpoints/export/test_data.csv",
                 "iotype": "Input",
                 "datatype": "numerical",
                 "preprocessing": {
@@ -49,7 +49,6 @@ def dataset_settings():
                 }
             },
             "y1": {
-                "csv_path": "perceptilabs/endpoints/export/test_data.csv",
                 "iotype": "Target",
                 "datatype": "numerical",
                 "preprocessing": {}
@@ -68,7 +67,6 @@ def network():
             "Properties": {
                 "Type": "IoInput",
                 "FeatureName": "x1",
-                "FilePath": "perceptilabs/endpoints/network_data/test_data.csv",
                 "DataType": "numerical",
                 "testInfoIsInput": True,
                 "accessProperties": {
@@ -125,7 +123,6 @@ def network():
             "Properties": {
                 "Type": "IoInput",
                 "FeatureName": "y1",
-                "FilePath": "perceptilabs/endpoints/network_data/test_data.csv",
                 "DataType": "categorical",
                 "testInfoIsInput": True,
                 "accessProperties": {

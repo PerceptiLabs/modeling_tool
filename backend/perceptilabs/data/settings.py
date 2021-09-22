@@ -149,7 +149,6 @@ class ImagePreprocessingSpec(PreprocessingSpec):
 class FeatureSpec(MyPydanticBaseModel):
     datatype: str = None
     iotype: str = None
-    file_path: str = None
     preprocessing: PreprocessingSpec = None
 
     @classmethod
@@ -165,14 +164,12 @@ class FeatureSpec(MyPydanticBaseModel):
             iotype=dict_['iotype'].lower(),
             datatype=datatype,
             preprocessing=preprocessing,
-            file_path=dict_['csv_path']
         )
 
     def compute_hash(self):
         hasher = hashlib.sha256()
         hasher.update(str(self.datatype).encode())
         hasher.update(str(self.iotype).encode())
-        hasher.update(str(self.file_path).encode())
 
         if self.preprocessing:
             hasher.update(self.preprocessing.compute_hash().encode())
@@ -193,28 +190,13 @@ class DatasetSettings(MyPydanticBaseModel):
         }
         partitions = Partitions.from_dict(dict_)
 
-        file_path = dict_.get('file_path')
-        if not file_path:
-            file_path = cls._resolve_file_path(feature_specs)
+        file_path = dict_['filePath']
 
         return cls(
             file_path=file_path,
             partitions=partitions,
             feature_specs=feature_specs
         )
-
-    @staticmethod
-    def _resolve_file_path(feature_specs):
-        """ Resolves file path from feature specs """
-        paths = set()
-        for spec in feature_specs.values():
-            paths.add(spec.file_path)
-
-        if len(paths) == 0:
-            return None
-        else:
-            path = next(iter(paths))
-            return path
 
     @property
     def used_feature_specs(self):

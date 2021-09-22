@@ -10,13 +10,11 @@ export const getDatasetPath = (datasetSettings) => {
   }
 }
 
-export const formatCSVTypesIntoKernelFormat = (datasetPath, csvData) => {
+export const formatCSVTypesIntoKernelFormat = (csvData) => {
   const payload = {};
-  // payload.csv_path = datasetPath;
   for (const [idx, val] of csvData.columnNames.entries()) {
     const sanitizedVal = val.replace(/^\n|\n$/g, "");
     payload[sanitizedVal] = {
-      csv_path: datasetPath,
       iotype: csvData.ioTypes[idx],
       datatype: csvData.dataTypes[idx],
       preprocessing: csvData.preprocessingTypes[idx],
