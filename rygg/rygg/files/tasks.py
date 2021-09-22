@@ -103,6 +103,7 @@ def unzip_task(self, filepath):
 
 # Caller-side interface with Celery and/or threading
 def unzip_async(filepath):
+    assert os.path.exists(filepath)
     task = celery_app.tasks["unzip"].delay(filepath)
     celery_app.backend.store_result(task.id, {"message": f"Queued unzip task for {filepath}"}, "PENDING")
     return task.id

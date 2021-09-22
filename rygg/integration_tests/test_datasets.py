@@ -113,7 +113,7 @@ def test_new_dataset_round_trips_fields(rest, tmp_project, tmp_model, tmp_text_f
         assert refetched.models == [tmp_model.as_dict]
 
 
-@pytest.mark.timeout(0.5)
+@pytest.mark.timeout(5)
 def test_deleting_dataset_deletes_file(rest, tmp_text_file, tmp_project):
     if not rest.is_enterprise():
         return
@@ -130,6 +130,7 @@ def test_deleting_dataset_deletes_file(rest, tmp_text_file, tmp_project):
 
         # Just for kicks, check that the upload worked
         assert has_expected_files(rest, [filename], None)
+        assert os.path.exists(expected_upload_dest)
 
     # leaving the with block will remove the dataset
     def dataset_is_removed():
@@ -139,12 +140,15 @@ def test_deleting_dataset_deletes_file(rest, tmp_text_file, tmp_project):
         except:
             return True
 
-    assert_eventually(dataset_is_removed, stop_max_delay=1000, wait_fixed=50)
+    assert_eventually(dataset_is_removed, stop_max_delay=5000, wait_fixed=50)
 
     def path_is_removed():
-        return os.path.exists(expected_upload_dest)
+        ret = os.path.exists(expected_upload_dest)
+        return not ret
 
-    assert_eventually(path_is_removed, stop_max_delay=1000, wait_fixed=50)
+    # Local rygg won't delete the files
+    if rest.is_enterprise():
+        assert_eventually(path_is_removed, stop_max_delay=5000, wait_fixed=50)
 
 
 @pytest.mark.timeout(1)

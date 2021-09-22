@@ -80,7 +80,7 @@ def test_upload_file(rest, tmp_text_file):
         assert_is_subdict(ret, expected)
 
 
-@pytest.mark.timeout(10)
+@pytest.mark.timeout(30)
 def test_upload_zip(rest):
     if not rest.is_enterprise():
         return
@@ -91,9 +91,9 @@ def test_upload_zip(rest):
         ret = rest.post_file("/upload", SAMPLE_ZIP, "destfilename.zip", overwrite=True)
 
         # wait for the zip to show up
-        assert_eventually(has_expected_files, rest, ["destfilename.zip"], None, stop_max_delay=5000, wait_fixed=50)
+        assert_eventually(has_expected_files, rest, ["destfilename.zip"], None, stop_max_delay=5000, wait_fixed=100)
 
         # wait for unzip to complete
-        assert_eventually(task_is_complete, rest, ret["task_id"], stop_max_delay=5000, wait_fixed=50)
+        assert_eventually(task_is_complete, rest, ret["task_id"], stop_max_delay=5000, wait_fixed=100)
 
         assert has_expected_files(rest, SAMPLE_ZIP_FILES, "destfilename")

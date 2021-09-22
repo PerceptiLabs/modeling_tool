@@ -35,9 +35,15 @@ def _get_file_info(filename):
         'modified': iso_from_utc_timestamp(stat.st_mtime),
     }
 
+def abs_upload_dir():
+    ret = os.path.abspath(settings.FILE_UPLOAD_DIR)
+    if not os.path.isdir(ret):
+        raise HTTPExceptions.UNPROCESSABLE_ENTITY.with_content("File upload base directory isn't configured correctly")
+    return ret
+
 @api_view(["GET"])
 def get_upload_dir(request):
-    return json_response({"path": settings.FILE_UPLOAD_DIR})
+    return json_response({"path": abs_upload_dir()})
 
 class UploadView(APIView):
     serializer_class = UploadSerializer
@@ -51,7 +57,7 @@ class UploadView(APIView):
         if not filename:
             raise HTTPExceptions.UNPROCESSABLE_ENTITY.with_content("Parameter 'filename' is required")
 
-        file_path = os.path.join(settings.FILE_UPLOAD_DIR, filename)
+        file_path = os.path.join(abs_upload_dir(), filename)
         try:
             response = _get_file_info(file_path)
             return Response(response)
@@ -84,7 +90,7 @@ class UploadView(APIView):
 
         overwrite = request.POST.get('overwrite') in ['true', 'True', 1]
 
-        dest_file = os.path.join(settings.FILE_UPLOAD_DIR, dest_file_name)
+        dest_file = os.path.join(abs_upload_dir(), dest_file_name)
         if os.path.exists(dest_file) and not bool(overwrite):
             raise HTTPExceptions.UNPROCESSABLE_ENTITY.with_content(f"File {dest_file_name} exists and overwrite is false")
 
