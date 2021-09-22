@@ -1,0 +1,6 @@
+#!/bin/bash
+
+ROOT_PATH=$(git rev-parse --show-toplevel)
+cd ${ROOT_PATH}/rygg
+source ${ROOT_PATH}/rygg/.venv/bin/activate
+./manage.py dev_celery_worker

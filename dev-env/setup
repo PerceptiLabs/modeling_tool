@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+venv_new(){
+	pushd "$1"
+	pyenv local 3.8.11
+	pyenv exec python -m venv .venv
+	source .venv/bin/activate
+	pip install --upgrade pip setuptools
+
+	if [ -f requirements.txt ]; then
+		pip install -r requirements.txt
+	fi
+	popd
+}
+
+ROOT_PATH=$(git rev-parse --show-toplevel)
+
+venv_new "${ROOT_PATH}/backend"
+venv_new "${ROOT_PATH}/rygg"
+venv_new "${ROOT_PATH}/dev-env"
+
+pushd "${ROOT_PATH}/frontend"
+npm install
+popd

@@ -45,6 +45,14 @@ cd build/docker/compose
 ```
 
 # How to run a development environment
+0. To just run everything (with pyenv, venv, and pip on osx or linux):
+    ```
+    cd dev-env
+    ./setup
+    honcho start -f Procfile -e .env
+    ```
+   .... or run the following steps
+
 1. Redis server
     ```
     docker run -it -p 6379:6379 redis

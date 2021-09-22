@@ -1,0 +1,5 @@
+#!/bin/bash
+
+ROOT_PATH=$(git rev-parse --show-toplevel)
+cd ${ROOT_PATH}/frontend
+PORT=8080 npm run serve

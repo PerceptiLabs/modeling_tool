@@ -1,0 +1,7 @@
+redis: redis-server
+render: ./render
+train: ./train
+rygg_api: ./serve_rygg
+rygg_worker: ./run_rygg_worker
+frontend: ./run_frontend
+flower: ./run_flower
