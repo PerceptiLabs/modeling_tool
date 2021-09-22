@@ -1,12 +1,11 @@
 import collections
+import os
 import time
 import logging
 from typing import Dict
 
 import tensorflow as tf
 import numpy as np
-import pickle
-import os
 import json
 import time
 import logging
@@ -14,6 +13,7 @@ import logging
 from perceptilabs.logconf import APPLICATION_LOGGER, USER_LOGGER
 from perceptilabs.layers.visualizer import PerceptiLabsVisualizer
 from perceptilabs.trainer.model import TrainingModel
+from perceptilabs.resources.epochs import EpochsAccess
 from perceptilabs.stats import SampleStatsTracker, SampleStats, GradientStatsTracker, GradientStats, GlobalStatsTracker, TrainingStatsTracker
 from perceptilabs.layers.iooutput.stats import ImageOutputStatsTracker, NumericalOutputStatsTracker, CategoricalOutputStatsTracker, MaskOutputStatsTracker
 from perceptilabs.trainer.losses import weighted_crossentropy, dice
@@ -48,33 +48,6 @@ class Trainer:
 
         self._initialize_results()
         self._data_initialized = False
-
-    @classmethod
-    def restore_latest_epoch(cls, data_loader, training_settings, exporter, model_id=None, user_email=None):
-        ckpt_dir, ckpt_file = os.path.split(exporter.checkpoint_file)
-        state_file = ckpt_file.replace('checkpoint', 'state').replace('.ckpt', '.pkl')  # This is extremely brittle but will have to do for now.
-        state_path = os.path.join(ckpt_dir, state_file)
-
-        if os.path.isfile(state_path):
-            with open(state_path, 'rb') as f:
-                initial_state = pickle.load(f)
-
-            logger.info(f"Restoring trainer from checkpoint {exporter.checkpoint_file} and state {state_path}")
-        else:
-            initial_state = None
-            logger.warning(f"Restoring trainer from checkpoint {exporter.checkpoint_file}, but no state file found at {state_path}")
-
-        trainer = cls(
-            data_loader,
-            exporter.training_model,
-            training_settings,
-            checkpoint_directory=ckpt_dir,
-            exporter=exporter,
-            model_id=model_id,
-            user_email=user_email,
-            initial_state=initial_state
-        )
-        return trainer
 
     def _initialize_results(self):
         self._num_epochs = int(self._training_settings['Epochs'])
@@ -223,8 +196,9 @@ class Trainer:
 
             yield
 
-        if not self._auto_checkpoint:
-            self._auto_save_epoch()
+        if not self._auto_checkpoint:  # At least save the final one.
+            self._auto_save_epoch(epoch=self._num_epochs_completed)            
+
 
         self._set_status('Finished')
         logger.info(
@@ -240,7 +214,7 @@ class Trainer:
                 self.get_output_stats_summaries()
             )
 
-    def _auto_save_epoch(self, epoch=None):
+    def _auto_save_epoch(self, epoch):
         """ Exports the model so that we can restore it between runs """
         if self._exporter is None:
             logger.error("Exporter not set. Cannot auto export")
@@ -250,20 +224,16 @@ class Trainer:
             logger.error("Auto checkpoint dir not set. Cannot auto export")
             return
 
-        self.export_checkpoint(self._checkpoint_directory, epoch=epoch)
-        self._save_state_to_disk(self._checkpoint_directory, epoch)
+        epochs_access = EpochsAccess()
+        checkpoint_path = epochs_access.get_checkpoint_path(
+            training_session_id=self._checkpoint_directory,
+            epoch_id=epoch
+        )
+        self._exporter.export_checkpoint(checkpoint_path)
 
-    def _save_state_to_disk(self, checkpoint_directory, epoch):
         state_dict = self.save_state()
-
-        if epoch is None:
-            path = os.path.join(self._checkpoint_directory, f"state.pkl")
-        else:
-            path = os.path.join(self._checkpoint_directory, f"state-{epoch:04d}.pkl")
-
-        with open(path, 'wb') as f:
-            pickle.dump(state_dict, f)
-
+        epochs_access.save_state_dict(self._checkpoint_directory, epoch, state_dict)
+        
     def _log_epoch_summary(self, epoch_time):
         logger.info(
             f"Finished epoch {self._num_epochs_completed}/{self.num_epochs} - "
@@ -685,11 +655,16 @@ class Trainer:
         """ Returns a stats object for the current target values """
         return self._target_stats_tracker.save()
 
-    def export(self, path, mode='Standard'):
+    def export(self, export_directory, mode='Standard'):
+        if self._exporter is None:
+            logger.warning("Exporter not set, couldn't export!")
+            return
+        
         if mode == 'Checkpoint':
-            self.export_checkpoint(path)
-        if mode == 'Standard':
-            self.export_inference(path, mode)
+            self._exporter.export_checkpoint(
+                os.path.join(export_directory, 'checkpoint.ckpt'))
+        else:
+            self._exporter.export(export_directory)
 
     def export_inference(self, path, mode):
         if self._exporter is not None:
@@ -698,9 +673,10 @@ class Trainer:
             logger.warning(
                 "Exporter not set, couldn't export inference model!")
 
-    def export_checkpoint(self, path, epoch=None):
+    def export_checkpoint(self, path):
         if self._exporter is not None:
-            self._exporter.export_checkpoint(path, epoch=epoch)
+            path = os.path.join(path, 'checkpoint.ckpt')
+            self._exporter.export_checkpoint(path)
         else:
             logger.warning("Exporter not set, couldn't export checkpoint!")
 

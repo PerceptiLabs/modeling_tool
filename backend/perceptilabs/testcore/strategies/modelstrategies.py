@@ -4,7 +4,8 @@ import os
 from abc import ABC, abstractmethod
 from perceptilabs.script import ScriptFactory
 from perceptilabs.trainer.model import TrainingModel
-from perceptilabs.exporter.base import Exporter
+from perceptilabs.resources.models import ModelAccess
+from perceptilabs.resources.epochs import EpochsAccess
 import perceptilabs.utils as utils
 
 
@@ -19,9 +20,23 @@ class LoadInferenceModel():
         load model from checkpoint and graphspec
         """
         script_factory = ScriptFactory()
-        exporter = Exporter.from_disk(checkpoint_directory, graph_spec, script_factory, data_loader)
-        model = exporter.training_model
-        return cls(model)
+
+        epochs_access = EpochsAccess()                
+        epoch_id = epochs_access.get_latest(
+            training_session_id=checkpoint_directory,  # TODO: Frontend needs to send ID
+            require_checkpoint=True,
+            require_trainer_state=False
+        )
+
+        checkpoint_path = epochs_access.get_checkpoint_path(
+            training_session_id=checkpoint_directory,
+            epoch_id=epoch_id
+        )
+        
+        training_model = ModelAccess(script_factory).get_training_model(
+            graph_spec, checkpoint_path=checkpoint_path)
+
+        return cls(training_model)
 
     def run_inference(self, data_iterator, return_inputs=False):
         """Runs inference through all the samples

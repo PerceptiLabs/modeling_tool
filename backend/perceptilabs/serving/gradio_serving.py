@@ -8,7 +8,7 @@ import numpy as np
 import gradio as gr
 
 
-from perceptilabs.resources.checkpoints import CheckpointAccess
+from perceptilabs.resources.epochs import EpochsAccess
 from perceptilabs.resources.models import ModelAccess
 from perceptilabs.script import ScriptFactory
 from perceptilabs.graph.spec import GraphSpec
@@ -28,12 +28,12 @@ def is_file_type(obj):
 
 
 class GradioLauncher:
-    def __init__(self, model_access, checkpoint_access):
+    def __init__(self, model_access, epochs_access):
         self._thread = None
         self._stop_event = threading.Event()
 
         self._model_access = model_access
-        self._checkpoint_access = checkpoint_access
+        self._epochs_access = epochs_access
 
         self._url_dict = dict()  # multiprocessing.Manager().dict()  # So we can pass url between processes
         self._url_dict['url'] = None
@@ -121,8 +121,14 @@ class GradioLauncher:
         interface.close()
         
     def _get_inference_model(self, graph_spec, data_loader, checkpoint_directory):
-        checkpoint_path = self._checkpoint_access.get_path(
-            checkpoint_id=checkpoint_directory)
+        epoch_id = self._epochs_access.get_latest(
+            training_session_id=checkpoint_directory,  # TODO: F/E should send ID
+            require_checkpoint=True,
+            require_trainer_state=False
+        )
+
+        checkpoint_path = self._epochs_access.get_checkpoint_path(
+            training_session_id=checkpoint_directory, epoch_id=epoch_id)  # TODO: F/E should send ID
 
         model = self._model_access \
             .get_training_model(model_id=graph_spec, checkpoint_path=checkpoint_path) \
@@ -172,7 +178,7 @@ class GradioSession(Session):
 
         self._launcher = GradioLauncher(
             ModelAccess(script_factory),
-            CheckpointAccess()
+            EpochsAccess()
         )
     
     def on_request_received(self, request):

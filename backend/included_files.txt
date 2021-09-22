@@ -421,10 +421,6 @@ perceptilabs/tracking/testing_completed.py
 perceptilabs/tracking/data_selected.py
 perceptilabs/tracking/user_email_set.py
 
-# backend/perceptilabs/resources/
-perceptilabs/resources/models.py
-perceptilabs/resources/checkpoints.py
-
 # backend/perceptilabs/endpoints/
 perceptilabs/endpoints/base.py
 perceptilabs/endpoints/base_view.py
@@ -473,11 +469,14 @@ perceptilabs/endpoints/version/base.py
 # backend/perceptilabs/endpoints/export/
 perceptilabs/endpoints/export/__init__.py
 perceptilabs/endpoints/export/base.py
-perceptilabs/endpoints/utils.py
-
 
 # backend/perceptilabs/endpoints/set_user/
 perceptilabs/endpoints/set_user/__init__.py
 perceptilabs/endpoints/set_user/base.py
+
+
+# backend/perceptilabs/resources/
+perceptilabs/resources/models.py
+perceptilabs/resources/epochs.py
 
 

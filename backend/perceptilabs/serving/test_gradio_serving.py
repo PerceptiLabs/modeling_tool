@@ -10,7 +10,7 @@ import skimage.io as sk
 from perceptilabs.trainer.model import TrainingModel
 from perceptilabs.script import ScriptFactory
 from perceptilabs.resources.models import ModelAccess
-from perceptilabs.resources.checkpoints import CheckpointAccess
+from perceptilabs.resources.epochs import EpochsAccess
 from perceptilabs.data.base import DataLoader
 from perceptilabs.data.settings import FeatureSpec, DatasetSettings, Partitions
 from perceptilabs.graph.builder import GraphSpecBuilder
@@ -48,7 +48,7 @@ def test_launcher_starts_endpoint():
     
     launcher = GradioLauncher(
         model_access=model_access,
-        checkpoint_access=MagicMock()
+        epochs_access=MagicMock()
     )
 
     launcher.start(
@@ -211,7 +211,7 @@ def make_graph_spec(data_loader):
 def test_predictions_endpoint(script_factory, data_loader):
     launcher = GradioLauncher(
         model_access=ModelAccess(script_factory),
-        checkpoint_access=CheckpointAccess()
+        epochs_access=EpochsAccess()
     )
     
     launcher.start(

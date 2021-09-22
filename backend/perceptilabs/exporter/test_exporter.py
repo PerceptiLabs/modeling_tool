@@ -257,7 +257,8 @@ def test_export_checkpoint_creates_files(script_factory, data_loader, temp_path)
     assert not os.path.isdir(target_dir)
     assert tf.train.latest_checkpoint(target_dir) is None
 
-    exporter.export_checkpoint(target_dir)
+    checkpoint_path = os.path.join(target_dir, 'checkpoint.ckpt')
+    exporter.export_checkpoint(checkpoint_path)
     ckpt = tf.train.latest_checkpoint(target_dir)
     assert ckpt is not None
     training_model.load_weights(ckpt).assert_consumed()
@@ -272,12 +273,15 @@ def test_export_checkpoint_creates_multiple_files(script_factory, data_loader, t
     assert not os.path.isdir(target_dir)
     assert tf.train.latest_checkpoint(target_dir) is None
 
-    exporter.export_checkpoint(target_dir, epoch=0)
+
+    exporter.export_checkpoint(
+        os.path.join(target_dir, 'checkpoint-0000.ckpt'))
     first_ckpt = tf.train.latest_checkpoint(target_dir)
     assert first_ckpt is not None
     training_model.load_weights(first_ckpt).assert_consumed()
 
-    exporter.export_checkpoint(target_dir, epoch=1)
+    exporter.export_checkpoint(
+        os.path.join(target_dir, 'checkpoint-0001.ckpt'))    
     second_ckpt = tf.train.latest_checkpoint(target_dir)
     assert second_ckpt is not None
     assert second_ckpt != first_ckpt
@@ -297,7 +301,8 @@ def test_loading_different_checkpoints_consistent_results(script_factory, data_l
 
     # Infer and export for epoch 0
     expected_output_epoch_0 = training_model(inputs)
-    exporter.export_checkpoint(target_dir, epoch=0)
+    exporter.export_checkpoint(
+        os.path.join(target_dir, 'checkpoint-0000.ckpt'))    
     ckpt_epoch_0 = tf.train.latest_checkpoint(target_dir)
 
     # Update the weights with random values to simulate a new epoch
@@ -307,7 +312,8 @@ def test_loading_different_checkpoints_consistent_results(script_factory, data_l
 
     # Infer and export for epoch 1
     expected_output_epoch_1 = training_model(inputs)
-    exporter.export_checkpoint(target_dir, epoch=1)
+    exporter.export_checkpoint(
+        os.path.join(target_dir, 'checkpoint-0001.ckpt'))    
     ckpt_epoch_1 = tf.train.latest_checkpoint(target_dir)
 
     # Check that two different checkpoints exist
@@ -330,32 +336,6 @@ def test_loading_different_checkpoints_consistent_results(script_factory, data_l
     assert not equal_training_model_outputs(expected_output_epoch_0, expected_output_epoch_1)
 
 
-def test_restore_model_from_disk(script_factory, data_loader, temp_path):
-    graph_spec = make_graph_spec(data_loader)
-    # Use data loader to feed data through the model
-    training_model = TrainingModel(script_factory, graph_spec)
-    x = {'x1': np.array([1.0, 2.0, 3.0])}
-    expected = training_model(x)
-
-    exporter = Exporter(graph_spec, training_model, data_loader)
-
-    exporter.export_checkpoint(temp_path)
-    assert len(os.listdir(temp_path)) > 0
-
-    # Create an equivalent model using the checkpoint
-    exporter = Exporter.from_disk(
-        temp_path, graph_spec, script_factory, data_loader)
-    assert exporter is not None
-
-    loaded_training_model = exporter.training_model
-    assert loaded_training_model != training_model
-
-    actual = loaded_training_model(x)
-    assert (actual[0]['y1'] == expected[0]['y1']).numpy().all()
-    assert (actual[1]['1']['output'] == \
-            expected[1]['1']['output']).numpy().all()
-
-    
 def test_inference_outputs_numerical(script_factory, data_loader_numerical):
     graph_spec = make_graph_spec(data_loader_numerical)
     training_model = TrainingModel(script_factory, graph_spec)

@@ -73,7 +73,8 @@ def graph_spec_few_epochs(csv_path):
 def testcore(graph_spec_few_epochs, temp_path, script_factory, data_loader):
     training_model = TrainingModel(script_factory, graph_spec_few_epochs)
     exporter = Exporter(graph_spec_few_epochs, training_model, data_loader)
-    exporter.export_checkpoint(temp_path)
+    checkpoint_path = os.path.join(temp_path, 'checkpoint-0000.ckpt')
+    exporter.export_checkpoint(checkpoint_path)
     models_info = {
         1: {
             'graph_spec': graph_spec_few_epochs,

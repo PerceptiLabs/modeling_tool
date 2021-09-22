@@ -363,13 +363,15 @@ def test_trainer_export_checkpoints_atleast_once(graph_spec, data_loader, traini
     step = trainer.run_stepwise()
     next(step)  # Take the first training steps
 
-    assert 'checkpoint' not in os.listdir(temp_path)
+    file_name = 'checkpoint-0010.ckpt.index'
+    assert file_name not in os.listdir(temp_path)
 
     for _ in step:  # Complete training
         pass
 
     assert len(os.listdir(temp_path)) > 0
-    assert 'checkpoint' in os.listdir(temp_path)
+    assert file_name in os.listdir(temp_path)
+
 
     
 def test_trainer_export_checkpoint_while_training(graph_spec, data_loader, training_model, training_settings, exporter, temp_path):

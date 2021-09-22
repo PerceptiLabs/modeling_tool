@@ -18,6 +18,9 @@ import sys
 import tensorflow as tf
 from typing import List
 
+
+from perceptilabs.resources.models import ModelAccess
+from perceptilabs.resources.epochs import EpochsAccess
 from perceptilabs.core_new.compatibility import CompatibilityCore
 from perceptilabs.script import ScriptFactory
 from perceptilabs.logconf import APPLICATION_LOGGER, USER_LOGGER
@@ -160,18 +163,43 @@ class coreLogic():
         logger.info(f"Running mode {mode} set for coreLogic w\ network '{self.networkName}'")
 
     def _get_restored_trainer(self, data_loader, script_factory, graph_spec, training_settings, checkpoint_directory, load_checkpoint, model_id, user_email):
-        exporter = Exporter.from_disk(
-            checkpoint_directory, graph_spec, script_factory, data_loader,
-            model_id=model_id, user_email=user_email
+
+        epochs_access = EpochsAccess()        
+        epoch_id = epochs_access.get_latest(
+            training_session_id=checkpoint_directory,  # TODO: Frontend needs to send ID
+            require_checkpoint=True,
+            require_trainer_state=True
         )
-        trainer = Trainer.restore_latest_epoch(
+
+        checkpoint_path = epochs_access.get_checkpoint_path(
+            training_session_id=checkpoint_directory,
+            epoch_id=epoch_id
+        )
+        
+        training_model = ModelAccess(script_factory).get_training_model(
+            graph_spec, checkpoint_path=checkpoint_path)
+
+        exporter = Exporter(
+            graph_spec, training_model, data_loader, model_id=model_id, user_email=user_email)
+
+        initial_state = epochs_access.load_state_dict(epoch_id)
+
+        if initial_state:
+            logger.info(f"Restoring trainer from epoch ID {epoch_id}")
+        else:
+            logger.warning(f"Restoring trainer from epoch ID {epoch_id}, but no state data found")
+
+        trainer = Trainer(
             data_loader,
+            exporter.training_model,
             training_settings,
-            exporter,
+            checkpoint_directory=os.path.dirname(exporter.checkpoint_file),
+            exporter=exporter,
             model_id=model_id,
-            user_email=user_email
+            user_email=user_email,
+            initial_state=initial_state
         )
-        logger.info("Created trainer from disk successfully")
+        logger.info("Restored trainer successfully")
         return trainer
 
     def _get_new_trainer(self, data_loader, script_factory, graph_spec, training_settings, checkpoint_directory, load_checkpoint, model_id, user_email):
@@ -180,6 +208,7 @@ class coreLogic():
             graph_spec, training_model, data_loader,
             model_id=model_id, user_email=user_email
         )
+        
         trainer = Trainer(
             data_loader,
             training_model,

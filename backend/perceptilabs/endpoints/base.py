@@ -24,8 +24,8 @@ from perceptilabs.endpoints.set_user.base import SetUser
 from perceptilabs.logconf import APPLICATION_LOGGER
 from perceptilabs.issues import traceback_from_exception
 from perceptilabs.endpoints.session.threaded_executor import ThreadedExecutor
+from perceptilabs.resources.epochs import EpochsAccess
 import perceptilabs.utils as utils
-import perceptilabs.endpoints.utils as endpoint_utils
 
 
 logger = logging.getLogger(APPLICATION_LOGGER)
@@ -65,6 +65,8 @@ def create_app(data_metadata_cache = NullCache(),
 
     compress = Compress()
     compress.init_app(app)
+
+    epochs_access = EpochsAccess()
 
     app.add_url_rule(
         '/set_user',
@@ -170,8 +172,12 @@ def create_app(data_metadata_cache = NullCache(),
 
     @app.route('/has_checkpoint', methods=['GET'])
     def has_checkpoint():
-        directory = request.args.get('directory')
-        return jsonify(endpoint_utils.is_valid_checkpoint_directory(directory))
+        checkpoint_directory = request.args.get('directory')  # TODO: frontend should send ID
+
+        has_checkpoint = epochs_access.has_saved_epoch(
+            checkpoint_directory, require_trainer_state=False)
+        
+        return jsonify(has_checkpoint)
 
 
     @app.before_request

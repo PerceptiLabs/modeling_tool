@@ -16,8 +16,6 @@ from perceptilabs.data.base import DataLoader, FeatureSpec
 from perceptilabs.graph.builder import GraphSpecBuilder
 from perceptilabs.utils import sanitize_path
 from perceptilabs.logconf import APPLICATION_LOGGER
-from perceptilabs.resources.checkpoints import CheckpointAccess
-from perceptilabs.resources.models import ModelAccess
 import perceptilabs.exporter.fastapi_utils as fastapi_utils
 import perceptilabs.tracking as tracking
 
@@ -29,30 +27,12 @@ class CompatibilityError(Exception):
 
 
 class Exporter:
-    def __init__(self, graph_spec, training_model, data_loader, model_id=None, user_email=None, checkpoint_file=None):
+    def __init__(self, graph_spec, training_model, data_loader, model_id=None, user_email=None):
         self._graph_spec = graph_spec
         self._data_loader = data_loader
         self._training_model = training_model
         self._model_id = model_id
         self._user_email = user_email
-        self._checkpoint_file = checkpoint_file
-
-    @classmethod
-    def from_disk(cls, checkpoint_directory, graph_spec, script_factory, data_loader, model_id=None, user_email=None):
-        checkpoint_path = CheckpointAccess().get_path(checkpoint_directory)
-        
-        training_model = ModelAccess(script_factory).get_training_model(
-            graph_spec, checkpoint_path=checkpoint_path)
-
-        exporter = cls(
-            graph_spec, training_model, data_loader,
-            model_id=model_id, user_email=user_email, checkpoint_file=checkpoint_path
-        )
-        return exporter
-
-    @property
-    def checkpoint_file(self):
-        return self._checkpoint_file
 
     @property
     def data_loader(self):
@@ -62,23 +42,21 @@ class Exporter:
     def training_model(self):
         return self._training_model
 
-    def export_checkpoint(self, path, epoch=None):
-        """ Save the model weights """
-        model = self._training_model
-        file_path = os.path.join(
-            path, self.format_checkpoint_prefix(epoch=epoch))
-        model.save_weights(sanitize_path(file_path))
+    def export_checkpoint(self, checkpoint_path):
+        """ Save the model weights using the full checkpoint path"""
+        checkpoint_path = sanitize_path(checkpoint_path)
+        self._training_model.save_weights(checkpoint_path)        
 
-    def export(self, export_path, mode):
+    def export(self, export_directory, mode):
         """calls the export functions based on export mode"""
         if mode == 'Standard':
-            self._export_inference_model(export_path)
+            self._export_inference_model(export_directory)
         elif mode == 'Compressed':
-            self._export_compressed_model(export_path)
+            self._export_compressed_model(export_directory)
         elif mode == 'Quantized':
-            self._export_quantized_model(export_path)
+            self._export_quantized_model(export_directory)
         elif mode == 'FastAPI':
-            self._export_fastapi_service(export_path)
+            self._export_fastapi_service(export_directory)
         else:
             raise NotImplementedError(f"Unknown export mode '{mode}'")
 
@@ -192,9 +170,3 @@ class Exporter:
 
         return inference_model
 
-    @staticmethod
-    def format_checkpoint_prefix(epoch=None):
-        if epoch is not None:
-            return f"checkpoint-{epoch:04d}.ckpt"
-        else:
-            return "checkpoint.ckpt"

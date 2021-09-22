@@ -167,8 +167,10 @@ def create_model_checkpoint(dataset_settings, network, checkpoint_directory, scr
     data_loader = DataLoader.from_dict(dataset_settings)
     graph_spec = GraphSpec.from_dict(network)
     training_model = TrainingModel(script_factory, graph_spec)
+
+    checkpoint_path = os.path.join(checkpoint_directory, "checkpoint-0001.ckpt")
     exporter = Exporter(graph_spec, training_model, data_loader)
-    exporter.export_checkpoint(checkpoint_directory)
+    exporter.export_checkpoint(checkpoint_path)
 
 
 def test_basic(client, basic_request, dataset_settings, network, checkpoint_directory, script_factory):
