@@ -334,7 +334,7 @@ const actions = {
     }
 
     return renderingKernel.startSession(theData)
-    .then((res) => {
+    .then(() => {
       dispatch('mod_test/testStart', payload, {root: true});
     })
     .catch((err) => {
@@ -437,12 +437,13 @@ const actions = {
     };
     // console.log('API_startTraining', theData);
     renderingKernel.startSession(theData)
-      .then((data)=> {
+      .then(()=> {
         dispatch('mod_workspace/EVENT_startDoRequest', true, {root: true});
         dispatch('mod_tracker/EVENT_trainingStart', theData.value, {root: true});
         setTimeout(()=> dispatch('mod_workspace/EVENT_chartsRequest', null, {root: true}), 500)
       })
       .catch((err)=> {
+        dispatch('mod_workspace/SET_statusNetworkCoreStatus', 'Failed', {root: true});
         console.error(err);
       });
   },

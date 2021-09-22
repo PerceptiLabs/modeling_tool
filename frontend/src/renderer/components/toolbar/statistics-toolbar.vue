@@ -36,6 +36,7 @@
       )
     .toolbar-section
       //- used for easily centering the training bar
+      error-cta(v-if="isTrainingFailed")
       
     
 </template>
@@ -43,12 +44,13 @@
 <script>
 
 import ModelStatus  from '@/components/different/model-status.vue';
+import ErrorCta     from '@/components/error-cta.vue';
 
 import { mapGetters, mapActions, mapMutations, mapState } from 'vuex';
 
 export default {
   name: 'StatisticsToolbar',
-  components: { ModelStatus },
+  components: { ModelStatus, ErrorCta },
   data() {
     return {
       isTrainingStopped: false, 
@@ -79,19 +81,8 @@ export default {
     isPlayPauseButtonEnabled() {
       return !(this.statusNetworkCore === 'Waiting' || this.statusNetworkCore === 'Created') ;
     },
-    statusTraining() {
-      switch (this.statusNetworkCore) {
-        case 'Training':
-        case 'Validation':
-          return 'training';
-          break;
-        case 'Paused':
-          return 'pause';
-          break;
-        case 'Finished':
-          return 'finish';
-          break;
-      }
+    isTrainingFailed() {
+      return this.statusNetworkCore === 'Failed';
     },
     statusLocalCore() {
       return this.$store.state.mod_api.statusLocalCore;

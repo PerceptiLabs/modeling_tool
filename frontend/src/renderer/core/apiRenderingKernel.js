@@ -182,7 +182,9 @@ export const renderingKernel = {
     return whenRenderingKernelReady
       .then(rk => rk.post('/session/start', payload))
       .then(res => {
-        return (res.status === 200) ? res.data : null;
+        if (res.status !== 200) {
+          throw new Error('Failed to start session');
+        }
       })
   },
 
