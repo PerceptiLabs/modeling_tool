@@ -42,11 +42,12 @@ def csv_files_from_model_json(json_file):
     return [f for f in strings if os.path.exists(f)]
 
 
-def populate_existing_datasets(app, _schema_editor):
+def populate_existing_datasets(app, schema_editor):
     Model = app.get_model("api", "Model")
     Dataset = app.get_model("api", "Dataset")
+    db_alias = schema_editor.connection.alias
 
-    for m in Model.objects.all():
+    for m in Model.objects.using(db_alias).all():
         json_file = os.path.join(m.location, "model.json")
         if not os.path.exists(json_file):
             logger.debug(f"Skipping model {m.model_id}. {json_file} doesn't exist")
@@ -59,7 +60,7 @@ def populate_existing_datasets(app, _schema_editor):
 
         # upsert dataset records for the csv files in the model's project
         for dataset_file in csv_files:
-            ds, created = Dataset.objects.update_or_create(
+            ds, created = Dataset.objects.using(db_alias).update_or_create(
                 location = dataset_file,
                 project_id = m.project_id,
                 defaults = {
