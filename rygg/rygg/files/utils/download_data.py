@@ -5,7 +5,6 @@ import requests
 import zipfile
 
 from rygg.files.utils.subprocesses import CanceledError, cancelable_sequence
-from rygg.files.utils.sequences import observe_progress, on_first
 
 logger = logging.getLogger(__name__)
 
@@ -31,14 +30,12 @@ def get_data_chunks(url):
         raise DownloadFailedError(url, r.status_code, r.text)
 
     num_bytes = int(r.headers.get("Content-Length", "0"))
-    chunk_count = num_bytes / DOWNLOAD_CHUNK_SIZE + 1 if num_bytes else None
+    chunk_count = int(num_bytes / DOWNLOAD_CHUNK_SIZE) + 1 if num_bytes else None
     all_chunks = r.iter_content(chunk_size=DOWNLOAD_CHUNK_SIZE)
     non_empty_chunks = (chunk for chunk in all_chunks if chunk)
     return chunk_count, non_empty_chunks
 
 def write_chunks(chunks, file_path):
-    # when we get the first chunk make the containing folder
-    # to_write = on_first(chunks, os.makedirs, dest_folder, exist_ok=True)
 
     @contextmanager
     def open_with_flush():

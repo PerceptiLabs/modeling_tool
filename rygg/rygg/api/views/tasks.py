@@ -4,7 +4,7 @@ from rest_framework.response import Response
 
 from rygg.celery import app as celery_app
 from rygg.settings import IS_CONTAINERIZED
-from rygg.files.tasks import get_task_status, cancel_task
+from rygg.tasks import get_task_status, cancel_task
 
 class TaskViewSet(viewsets.GenericViewSet):
     def retrieve(self, request, pk=None):

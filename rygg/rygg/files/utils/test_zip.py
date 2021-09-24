@@ -18,7 +18,7 @@ class ZipTest(TestCase):
 
     def tearDown(self):
         # Remove the directory after the test
-        shutil.rmtree(self.test_dir)
+        shutil.rmtree(self.test_dir, ignore_errors=True)
 
     def assert_files(self, got, expected):
         got_set = set()

@@ -16,7 +16,7 @@ class DownloadTest(TestCase):
 
     def tearDown(self):
         # Remove the directory after the test
-        shutil.rmtree(self.test_dir)
+        shutil.rmtree(self.test_dir, ignore_errors=True)
 
     @timeout(0.1)
     def test_rejects_bad_url(self):

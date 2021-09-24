@@ -163,10 +163,9 @@ def test_cant_upload_to_filename_that_doesnt_match_dataset(rest, tmp_text_file, 
 
 @pytest.mark.timeout(1)
 def test_remote_list(rest):
-    response = rest.get("/datasets/list_remote")
-    names = map(lambda x: x[0], response)
-    # eventually check for more fields
-    assert "mnist_data.zip" in names
+    response = rest.get("/datasets/remote")
+    is_mnist = lambda record: record.get("Name") == "mnist_data.zip"
+    assert filter(is_mnist, response)
 
 
 @pytest.mark.timeout(10)
@@ -174,12 +173,20 @@ def test_create_dataset_from_remote(rest, tmpdir):
     resp = rest.post('/datasets/create_from_remote/', {}, id="mnist_data.zip", destination=tmpdir)
     task_id = resp.get("task_id")
 
+    def progress_is_midway():
+        resp = rest.get(f"/tasks/{task_id}/")
+        assert resp
+        return resp.get("state") == "STARTED" \
+                and resp.get("so_far") > 1
+
     def state_is_completed():
         resp = rest.get(f"/tasks/{task_id}/")
         assert resp
-        state = resp.get("state")
-        return state == "SUCCESS"
+        return resp.get("state") == "SUCCESS" \
+                and resp.get("so_far") == resp.get("expected")
 
-    assert_eventually(state_is_completed, stop_max_delay=10000, wait_fixed=50)
+    if os.getenv("USER"):
+        assert_eventually(progress_is_midway, stop_max_delay=10000, wait_fixed=50)
+    assert_eventually(state_is_completed, stop_max_delay=10000, wait_fixed=1000)
 
     # TODO check the download

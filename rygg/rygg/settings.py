@@ -254,4 +254,4 @@ CELERY_ENABLED = True
 
 # Azure blob
 DATA_BLOB = os.getenv('PL_DATA_BLOB', "https://perceptilabs.blob.core.windows.net/data")
-DATA_LIST = os.getenv('PL_DATA_LIST', DATA_BLOB + "/index.csv")
+DATA_LIST = os.getenv('PL_DATA_LIST', DATA_BLOB + "/dataset-list.csv")

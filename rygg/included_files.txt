@@ -39,7 +39,7 @@ rygg/files/tests/__init__.py
 rygg/files/utils/__init__.py
 rygg/files/utils/download_data.py
 rygg/files/utils/sequences.py
-rygg/files/utils/subprocess.py
+rygg/files/utils/subprocesses.py
 rygg/files/utils/unzipper.py
 rygg/files/utils/zip.py
 rygg/files/views/__init__.py
@@ -62,6 +62,10 @@ rygg/mixpanel_proxy/utils.py
 rygg/mixpanel_proxy/views.py
 rygg/settings.py
 rygg/settings.py
+rygg/tasks/__init__.py
+rygg/tasks/celery.py
+rygg/tasks/threaded.py
+rygg/tasks/util.py
 rygg/urls.py
 rygg/urls.py
 rygg/wsgi.py

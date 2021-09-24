@@ -5,12 +5,26 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 import csv
 import urllib
+import urllib.request
 
 from rygg.api.models import Dataset, Model
 from rygg.api.serializers import DatasetSerializer, ModelSerializer
 from rygg.files.tasks import download_async
 from rygg.files.views.util import request_as_dict, get_required_param
 
+def lines_from_url(url):
+    with urllib.request.urlopen(url) as res:
+        for l in res.readlines():
+            yield l.decode('utf-8')
+
+def csv_lines_to_dict(lines):
+    reader = csv.reader(lines)
+    first = None
+    for row in reader:
+        if first is None:
+            first = row
+        else:
+            yield dict(zip(first, row))
 
 class DatasetViewSet(viewsets.ModelViewSet):
     queryset = Dataset.available_objects.filter(project__is_removed=False).order_by("-dataset_id")
@@ -53,16 +67,10 @@ class DatasetViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     @action(detail=False, methods=['GET'])
-    def list_remote(self, request):
-        res = urllib.request.urlopen(settings.DATA_LIST)
-        lines = [l.decode('utf-8') for l in res.readlines()]
-        cr = csv.reader(lines)
-
-        # name, size, category, description
-        #TODO: add description and other columns in file and here
-        rows = [[row[0], row[2], row[3]] for row in cr]
-
-        return Response(rows, 201)
+    def remote(self, request):
+        lines = lines_from_url(settings.DATA_LIST)
+        entries = list(csv_lines_to_dict(lines))
+        return Response(entries, 201)
 
 
     @action(detail=False, methods=['POST'])
