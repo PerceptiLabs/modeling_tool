@@ -33,23 +33,8 @@ from perceptilabs.caching.utils import get_data_metadata_cache
 from perceptilabs.data.base import FeatureSpec, DataLoader
 from perceptilabs.data.settings import DatasetSettings
 from perceptilabs.script import ScriptFactory
+from perceptilabs.testInterface import TestLogic
 
-#LW interface
-from perceptilabs.lwInterface import (
-    getDataMeta,
-    getDataMetaV2,
-    getPartitionSummary,
-    GetNetworkInputDim,
-    getNetworkOutputDim,
-    getPreviewSample,
-    getPreviewBatchSample,
-    getPreviewVariableList
-)
-
-#Test interface
-from perceptilabs.testInterface import (
-    TestLogic
-)
 
 logger = logging.getLogger(APPLICATION_LOGGER)
 
@@ -256,56 +241,7 @@ class Interface():
         return response, self._issue_handler
 
     def _create_response(self, receiver, action, value, is_retry, on_finished):
-        #Parse the value and send it to the correct function
-        if action == "getDataMeta":
-            return self._create_response_get_data_meta(value, receiver)
-
-        elif action == "getPartitionSummary":
-            return self._create_response_get_partition_summary(value, receiver)
-
-        elif action == "getNetworkInputDim":
-            graph_spec = self._network_loader.load(value, as_spec=True)
-            json_network = graph_spec.to_dict()
-
-            lw_core, _, _ = self.create_lw_core(receiver, json_network, adapter=False)
-
-            output = GetNetworkInputDim(lw_core, graph_spec).run()
-            return output
-
-        elif action == "getNetworkOutputDim":
-            jsonNetwork = self._network_loader.load(value)
-            lw_core, extras_reader, data_container = self.create_lw_core(receiver, jsonNetwork)
-
-            return getNetworkOutputDim(lw_core=lw_core,
-                                    extras_reader=extras_reader).run()
-
-        elif action == "getBatchPreviewSample":
-            json_network = self._network_loader.load(value["Network"])
-            lw_core, extras_reader, data_container = self.create_lw_core(receiver, json_network)
-            outputDims = getNetworkOutputDim(lw_core, extras_reader).run()
-
-            graph_spec = GraphSpec.from_dict(json_network)
-            lw_core, _, _ = self.create_lw_core(receiver, json_network, adapter=False)
-
-            previews, trained_layers_info = getPreviewBatchSample(lw_core, graph_spec, json_network).run()
-
-            return {"previews":previews, "outputDims": outputDims, "trainedLayers": trained_layers_info}
-        elif action == "getPreviewSample":
-            layer_id = value["Id"]
-            json_network = self._network_loader.load(value["Network"])
-            variable = value["Variable"]
-            if variable == '(sample)' or variable is None:
-                variable = 'output' # WORKAROUND
-
-            graph_spec = GraphSpec.from_dict(json_network)
-            lw_core, _, _ = self.create_lw_core(receiver, json_network, adapter=False)
-
-            return getPreviewSample(layer_id, lw_core, graph_spec, variable).run()
-
-        elif action == "getPreviewVariableList":
-            return self._create_response_get_preview_var_list(value, receiver)
-
-        elif action == "Close":
+        if action == "Close":
             self.shutDown()
 
         elif action == "closeCore":
@@ -469,49 +405,4 @@ class Interface():
             'StartTest', on_finished=on_finished, value={'user_email':user_email})
         return response
 
-    def _create_response_get_partition_summary(self, request_value, receiver):
-            Id=request_value["Id"]
-            jsonNetwork = self._network_loader.load(request_value["Network"])
-            if "layerSettings" in request_value:
-                layerSettings = request_value["layerSettings"]
-                jsonNetwork[Id]["Properties"]=layerSettings
-            dataset_settings = request_value.get('datasetSettings', None)
-
-            lw_core, extras_reader, data_container = self.create_lw_core(receiver, jsonNetwork, dataset_settings=dataset_settings)
-
-            return getPartitionSummary(id_=Id,
-                                    lw_core=lw_core,
-                                    data_container=data_container).run()
-
-    def _create_response_get_data_meta(self, request_value, receiver):
-            Id = request_value['Id']
-            jsonNetwork = self._network_loader.load(request_value['Network'])
-            dataset_settings = None
-
-            if "layerSettings" in request_value:
-                layerSettings = request_value["layerSettings"]
-                jsonNetwork[Id]["Properties"]=layerSettings
-
-            if "datasetSettings" in request_value:
-                dataset_settings = request_value["datasetSettings"]
-
-            lw_core, extras_reader, data_container = self.create_lw_core(receiver, jsonNetwork, dataset_settings=dataset_settings)
-
-
-            get_data_meta = getDataMetaV2(
-                id_=Id,
-                lw_core=lw_core,
-                extras_reader=extras_reader
-            )
-
-            return get_data_meta.run()
-
-    def _create_response_get_preview_var_list(self, request_value, receiver):
-        layer_id = request_value["Id"]
-        graph_spec = self._network_loader.load(request_value["Network"], as_spec=True)
-        json_network = graph_spec.to_dict()
-        dataset_settings = request_value["datasetSettings"]
-        lw_core, _, _ = self.create_lw_core(receiver, json_network, adapter=False, dataset_settings=dataset_settings)
-
-        return getPreviewVariableList(layer_id, lw_core, graph_spec).run()
-
+    

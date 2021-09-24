@@ -106,9 +106,36 @@ export const renderingKernel = {
       .then(res => {
         return (res.status === 200) ? res.data : null;
       })
-  },      
+  },
+
+  async getPreviews(network, datasetSettings, userEmail) {
+    const payload = {
+      network: network,
+      datasetSettings: datasetSettings,
+      userEmail: userEmail	
+    };
+    return whenRenderingKernelReady
+      .then(rk => rk.post('/previews', payload))
+      .then(res => {
+        return (res.status === 200) ? res.data : null;
+      })
+  },
+
+  async getPreview(network, datasetSettings, layerId, userEmail) {
+    const payload = {
+      network: network,
+      datasetSettings: datasetSettings,
+      userEmail: userEmail	
+    };
+    return whenRenderingKernelReady
+      .then(rk => rk.post(`/previews/${layerId}`, payload))
+      .then(res => {
+        return (res.status === 200) ? res.data : null;
+      })
+  },
 
   async getNetworkData(network, datasetSettings, userEmail) {
+    // overlaps with getPreviews, but will eventually get deprecated
     const payload = {
       network: network,
       datasetSettings: datasetSettings,

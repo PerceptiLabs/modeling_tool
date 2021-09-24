@@ -33,3 +33,49 @@ def test_basic(client, basic_request, basic_response):
     )
     assert response.json == basic_response
 
+
+def test_previews_basic(client, basic_request):
+    response = client.post(
+        '/previews',
+        json=basic_request
+    )
+
+    expected = {
+        '0': {
+            'Error': None,
+            'VariableList': ['output'],
+            'VariableName': 'output',
+            'inShape': '[]'
+        },
+        '1': {
+            'Error': None,
+            'VariableList': ['output', 'W', 'b', 'preview'],
+            'VariableName': 'output',
+            'inShape': '[]'
+        },
+        '2': {
+            'Error': None,
+            'VariableList': ['output'],
+            'VariableName': 'output',
+            'inShape': '3'
+        }
+    }
+    
+    assert response.json == expected
+
+
+def test_previews_basic(client, basic_request):
+    response = client.post(
+        '/previews/1',
+        json=basic_request
+    )
+
+    expected = {
+        'Error': None,
+        'VariableList': ['output', 'W', 'b', 'preview'],
+        'VariableName': 'output',
+        'inShape': '[]'
+    }
+
+    assert response.json == expected
+    

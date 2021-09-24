@@ -8,7 +8,6 @@ perceptilabs/logconf.py
 perceptilabs/main_setup.py
 perceptilabs/mainInterface.py
 perceptilabs/coreInterface.py
-perceptilabs/lwInterface.py
 perceptilabs/CoreThread.py
 perceptilabs/createDataObject.py
 perceptilabs/extractVariables.py

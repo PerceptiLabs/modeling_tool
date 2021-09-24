@@ -2,6 +2,7 @@ import logging
 import numpy as np
 from flask import request, jsonify
 from flask.views import View
+from abc import abstractmethod
 
 from perceptilabs.caching.utils import NullCache
 from perceptilabs.endpoints.base_view import BaseView
@@ -137,3 +138,92 @@ class NetworkData(BaseView):
         else:
             return self._reduce_to_2d(data[..., -1])
 
+
+class BasePreviews(BaseView):  # TODO: this endpoint should replace network_data         
+    def __init__(self, data_metadata_cache=NullCache(), preview_cache=NullCache()):
+        self._data_metadata_cache = data_metadata_cache
+        self._preview_cache = preview_cache
+
+    @abstractmethod
+    def dispatch_request(self):
+        raise NotImplementedError
+
+    def _get_lw_results(self):
+        json_data = request.get_json()
+        graph_spec = GraphSpec.from_dict(json_data['network'])
+        data_loader = self._get_data_loader(json_data['datasetSettings'], json_data.get('userEmail'))
+        lw_core = LightweightCore(data_loader=data_loader, cache=self._preview_cache)
+        lw_results = lw_core.run(graph_spec)
+        return lw_results
+    
+    def _get_layer_content(self, layer_spec, lw_results):
+        # Set the preview shape
+
+        shape_str = self._get_input_shape(layer_spec, lw_results)
+        variable_list = self._get_output_variables(layer_spec, lw_results)
+        
+        content = {
+            "inShape": shape_str,
+            "VariableList": variable_list,
+            "VariableName": "output"
+        }        
+
+        # Set the errors
+        layer_results = lw_results[layer_spec.id_]
+
+        if layer_spec.should_show_errors and layer_results.has_errors:
+            error_type, error_info = list(layer_results.errors)[-1] # Get the last error
+            content['Error'] = {'Message': error_info.message, 'Row': error_info.line_number}
+        else:
+            content['Error'] = None
+
+        return content
+
+    def _get_output_variables(self, layer_spec, lw_results):
+        sample = lw_results[layer_spec.id_].sample
+        return list(sample.keys())
+        
+    def _get_input_shape(self, layer_spec, lw_results):
+        shape_str = '[]' # Default
+        if len(layer_spec.backward_connections) > 0:
+            conn = layer_spec.backward_connections[0]
+            input_results = lw_results.get(conn.src_id).sample
+
+            if input_results is not None:
+                sample = input_results.get(conn.src_var)
+                shape = np.squeeze(sample.shape).tolist() if sample is not None else []
+                shape_str = str(shape)
+                
+        return shape_str
+        
+
+class PreviewsAll(BasePreviews):
+    def dispatch_request(self):
+        json_data = request.get_json()
+        graph_spec = GraphSpec.from_dict(json_data['network'])
+        data_loader = self._get_data_loader(json_data['datasetSettings'], json_data.get('userEmail'))
+        lw_core = LightweightCore(data_loader=data_loader, cache=self._preview_cache)
+        lw_results = lw_core.run(graph_spec)
+
+        content = {
+            layer_spec.id_: self._get_layer_content(layer_spec, lw_results)
+            for layer_spec in graph_spec.layers
+        }
+        return content
+
+    
+class PreviewsOne(BasePreviews):
+    def dispatch_request(self, layer_id):
+
+        json_data = request.get_json()
+        graph_spec = GraphSpec.from_dict(json_data['network'])
+        data_loader = self._get_data_loader(json_data['datasetSettings'], json_data.get('userEmail'))
+        lw_core = LightweightCore(data_loader=data_loader, cache=self._preview_cache)
+        lw_results = lw_core.run(graph_spec)
+
+        layer_spec = graph_spec[layer_id]
+        
+        content = self._get_layer_content(layer_spec, lw_results)
+        return content
+
+    

@@ -12,7 +12,7 @@ from sentry_sdk.integrations.logging import LoggingIntegration
 
 from perceptilabs.caching.utils import NullCache
 from perceptilabs.endpoints.version.base import Version
-from perceptilabs.endpoints.network_data.base import NetworkData
+from perceptilabs.endpoints.network_data.base import NetworkData, PreviewsOne, PreviewsAll
 from perceptilabs.endpoints.data.base import PutData, IsDataReady
 from perceptilabs.endpoints.model_recommendations.base import ModelRecommendations
 from perceptilabs.endpoints.type_inference.base import TypeInference
@@ -99,6 +99,21 @@ def create_app(data_metadata_cache = NullCache(),
             'network_data', data_metadata_cache=data_metadata_cache, preview_cache=preview_cache)
     )
 
+    app.add_url_rule(
+        '/previews',
+        methods=['POST'],
+        view_func=PreviewsAll.as_view(
+            'previews_all', data_metadata_cache=data_metadata_cache, preview_cache=preview_cache)
+    )
+
+    app.add_url_rule(
+        '/previews/<layer_id>',
+        methods=['POST'],
+        view_func=PreviewsOne.as_view(
+            'previews_one', data_metadata_cache=data_metadata_cache, preview_cache=preview_cache)
+    )
+    
+    
     app.add_url_rule(
         '/type_inference',
         methods=['GET'],
@@ -188,7 +203,14 @@ def create_app(data_metadata_cache = NullCache(),
     @app.after_request
     def after_request(response):
         duration = time.perf_counter() - g.request_started
-        logger.info(f"Request to endpoint '{request.endpoint}' took {duration:.4f}s")
+
+        if request.endpoint == 'session_proxy':
+            action = (request.get_json() or {}).get('action')
+            logger.info(
+                f"Request to endpoint '{request.endpoint}' took {duration:.4f}s. Action: '{action}'")
+        else:
+            logger.info(f"Request to endpoint '{request.endpoint}' took {duration:.4f}s")
+            
         return response
 
     @app.errorhandler(Exception)

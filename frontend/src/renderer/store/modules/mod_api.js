@@ -666,13 +666,11 @@ const actions = {
   //  ELEMENT SETTINGS
   //---------------
   API_getInputDim({dispatch, getters, rootGetters}) {
-    const theData = {
-      receiver: rootGetters['mod_workspace/GET_currentNetworkId'],
-      action: "getNetworkInputDim",
-      value: getters.GET_coreNetwork
-    };
+    const net = getters.GET_coreNetwork;
+    const datasetSettings = rootGetters['mod_workspace/GET_currentNetworkDatasetSettings'];
+    const userEmail = rootGetters['mod_user/GET_userEmail'];    
 
-    return coreRequest(theData)
+    return renderingKernel.getPreviews(net, datasetSettings, userEmail)
       .then((data)=> {
         if(data) return dispatch('mod_workspace/SET_elementInputDim', data, {root: true});
       })
@@ -683,63 +681,20 @@ const actions = {
   },
 
   API_getOutputDim({dispatch, getters, rootGetters}) {
-    // const theData = {
-    //   receiver: rootGetters['mod_workspace/GET_currentNetworkId'],
-    //   action: "getNetworkOutputDim",
-    //   value: getters.GET_coreNetwork
-    // };
-    // //console.log('API_getOutputDim');
-    // // @todo -- this request are not longer used instead is used  ->>>> mod_api/API_getBatchPreviewSample
-    // return coreRequest(theData)
-    //   .then((data)=> {
-    //     //console.log('API_getOutputDim answer', data);
-    //     if(data){
-    //       dispatch('mod_workspace/SET_elementOutputDim', data, {root: true});
-    //       dispatch('mod_workspace-notifications/setNotifications', {
-    //         networkId:rootGetters['mod_workspace/GET_currentNetworkId'],
-    //         kernelResponses: data
-    //       }, {root: true});
-    //     }
-    //     return true;
-    //   })
-    //   .catch((err)=> {
-    //     console.error(err);
-    //   });
+    console.error("API_getOutputDim is deprecated!")
   },
 
   API_getPreviewSample({dispatch, getters, rootGetters}, {layerId, varData}) {
-    const theData = {
-      receiver: rootGetters['mod_workspace/GET_currentNetworkId'],
-      action: "getPreviewSample",
-      value: {
-        Id: layerId,
-        Network: getters.GET_coreNetwork,
-        Variable: varData
-      }
-    };
-    // console.log('getPreviewSample', theData);
-    return coreRequest(theData)
-      .then((data)=> {
-        return data
-      })
-      .catch((err)=> {
-        console.error(err);
-      });
+    console.error("API_getPreviewSample is deprecated!")    
   },
 
   API_getPreviewVariableList({dispatch, getters, rootGetters}, layerId) {
-    const datasetSettings = rootGetters['mod_workspace/GET_currentNetworkDatasetSettings']; 
-    const theData = {
-      receiver: rootGetters['mod_workspace/GET_currentNetworkId'],
-      action: 'getPreviewVariableList',
-      value: {
-        Id: layerId,
-        Network: getters.GET_coreNetwork,
-        datasetSettings: datasetSettings
-      }
-    };
+    const net = getters.GET_coreNetwork;
+    const datasetSettings = rootGetters['mod_workspace/GET_currentNetworkDatasetSettings'];
+    const userEmail = rootGetters['mod_user/GET_userEmail'];    
+
     // console.log('getPreviewVariableList Request', theData);
-    return coreRequest(theData)
+    return renderingKernel.getPreview(net, datasetSettings, layerId, userEmail)    
       .then((data)=> {
         return data
       })
@@ -778,47 +733,11 @@ const actions = {
   },
 
   API_getPartitionSummary({getters, rootGetters},  {layerId, settings}) {
-    const net = getters.GET_coreNetwork;
-    if(settings) net[layerId].Properties = settings;
-    const datasetSettings = rootGetters['mod_workspace/GET_currentNetworkDatasetSettings']; 
-    const theData = {
-      receiver: rootGetters['mod_workspace/GET_currentNetworkId'],
-      action: 'getPartitionSummary',
-      value: {
-        Id: layerId,
-        Network: net,
-        datasetSettings: datasetSettings
-      }
-    };
-    return coreRequest(theData)
-      .then((data)=> data)
-      .catch((err)=> {
-        console.error(err);
-      });
+    console.error("API_getPartitionSummary is deprecated!")    
   },
 
   API_getDataMeta({getters, rootGetters}, {layerId, settings}) {
-    const net = getters.GET_coreNetwork;
-    if(settings) net[layerId].Properties = settings;
-    const datasetSettings = rootGetters['mod_workspace/GET_currentNetworkDatasetSettings'];
-    const theData = {
-      receiver: rootGetters['mod_workspace/GET_currentNetworkId'],
-      action: 'getDataMeta',
-      value: {
-        Id: layerId,
-        Network: net,
-        datasetSettings: datasetSettings
-      }
-    };
-    //console.log('API_getDataMeta', theData);
-    return coreRequest(theData)
-      .then((data)=> {
-        //console.log('API_getDataMeta ans', data);
-        return data
-      })
-      .catch((err)=> {
-        console.error(err);
-      });
+    console.error("API_getDataMeta is deprecated!")    
   },
   //---------------
   //  IMPORT/EXPORT
