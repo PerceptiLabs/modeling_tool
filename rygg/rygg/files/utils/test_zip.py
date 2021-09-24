@@ -7,7 +7,7 @@ import sys
 import tempfile
 
 from rygg.files.tests import SIMPLE_ARCHIVE_PATH, SIMPLE_ARCHIVE_NAME, SIMPLE_ARCHIVE_FILES
-from rygg.files.utils.subprocess import CanceledError
+from rygg.files.utils.subprocesses import CanceledError
 import rygg.files.tests as tests_module
 import rygg.files.utils.zip as target
 

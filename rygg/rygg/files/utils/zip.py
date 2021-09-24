@@ -1,5 +1,5 @@
 from more_itertools import nth, consume
-from rygg.files.utils.subprocess import run_and_terminate, CanceledError
+from rygg.files.utils.subprocesses import run_and_terminate, CanceledError
 from zipfile import ZipFile
 import os
 import re

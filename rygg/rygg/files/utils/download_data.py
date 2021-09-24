@@ -4,7 +4,7 @@ import os
 import requests
 import zipfile
 
-from rygg.files.utils.subprocess import CanceledError, cancelable_sequence
+from rygg.files.utils.subprocesses import CanceledError, cancelable_sequence
 from rygg.files.utils.sequences import observe_progress, on_first
 
 logger = logging.getLogger(__name__)

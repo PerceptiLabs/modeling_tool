@@ -5,7 +5,7 @@ import os
 import requests
 import shutil, tempfile
 
-from rygg.files.utils.subprocess import CanceledError
+from rygg.files.utils.subprocesses import CanceledError
 import rygg.files.utils.download_data as target
 
 

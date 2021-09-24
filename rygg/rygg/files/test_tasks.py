@@ -1,7 +1,7 @@
 from rygg.test_utils.timeout_decorator import timeout
 from django.test import TestCase
 from unittest.mock import Mock, call
-from rygg.files.utils.subprocess import CanceledError
+from rygg.files.utils.subprocesses import CanceledError
 import os
 from unittest.mock import patch
 import rygg.files.tasks as target

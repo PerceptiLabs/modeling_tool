@@ -1,7 +1,7 @@
 from rygg.test_utils.timeout_decorator import timeout
 from django.test import TestCase
 from threading import Event
-import rygg.files.utils.subprocess as target
+import rygg.files.utils.subprocesses as target
 
 def gen(*arr):
     return (x for x in arr)
