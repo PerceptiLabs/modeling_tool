@@ -13,9 +13,12 @@ import logging
 from perceptilabs.logconf import APPLICATION_LOGGER, USER_LOGGER
 from perceptilabs.layers.visualizer import PerceptiLabsVisualizer
 from perceptilabs.trainer.model import TrainingModel
-from perceptilabs.resources.epochs import EpochsAccess
 from perceptilabs.stats import SampleStatsTracker, SampleStats, GradientStatsTracker, GradientStats, GlobalStatsTracker, TrainingStatsTracker
+from perceptilabs.resources.epochs import EpochsAccess
 from perceptilabs.layers.iooutput.stats import ImageOutputStatsTracker, NumericalOutputStatsTracker, CategoricalOutputStatsTracker, MaskOutputStatsTracker
+from perceptilabs.layers.inner_layer_stats import InnerLayersStatsTracker
+
+
 from perceptilabs.trainer.losses import weighted_crossentropy, dice
 from perceptilabs.logconf import APPLICATION_LOGGER
 from perceptilabs.utils import get_memory_usage, sanitize_path
@@ -101,17 +104,15 @@ class Trainer:
             'num_batches_completed_all_epochs': self._num_batches_completed_all_epochs,
             'num_training_batches_completed_this_epoch': self._num_training_batches_completed_this_epoch,
             'num_validation_batches_completed_this_epoch': self._num_validation_batches_completed_this_epoch,
-            'layer_outputs': self._layer_outputs,
-            'layer_trainables': self._layer_trainables,
             'global_stats_tracker': self._global_stats_tracker,
             'input_stats_tracker': self._input_stats_tracker,
             'prediction_stats_tracker': self._prediction_stats_tracker,
             'target_stats_tracker': self._target_stats_tracker,
-            'gradient_stats_tracker': self._gradient_stats_tracker,
             'output_trackers': {
                 layer_id: tracker
                 for layer_id, tracker in self._output_trackers.items()
-            }
+            },
+            'inner_layers_stats_tracker': self._inner_layers_stats_tracker
         }
         return state
 
@@ -197,7 +198,7 @@ class Trainer:
             yield
 
         if not self._auto_checkpoint:  # At least save the final one.
-            self._auto_save_epoch(epoch=self._num_epochs_completed)            
+            self._auto_save_epoch(epoch=self._num_epochs_completed)
 
 
         self._set_status('Finished')
@@ -233,7 +234,7 @@ class Trainer:
 
         state_dict = self.save_state()
         epochs_access.save_state_dict(self._checkpoint_directory, epoch, state_dict)
-        
+
     def _log_epoch_summary(self, epoch_time):
         logger.info(
             f"Finished epoch {self._num_epochs_completed}/{self.num_epochs} - "
@@ -315,21 +316,18 @@ class Trainer:
 
     def _reset_tracked_values(self, initial_state=None):
         if initial_state is None:
-            self._layer_outputs = {}
-            self._layer_trainables = {}
             self._global_stats_tracker = GlobalStatsTracker()
             self._input_stats_tracker = SampleStatsTracker()
             self._prediction_stats_tracker = SampleStatsTracker()
             self._target_stats_tracker = SampleStatsTracker()
-            self._gradient_stats_tracker = GradientStatsTracker()
+            inner_layers = self._get_inner_layer_ids_and_types()
+            self._inner_layers_stats_tracker = InnerLayersStatsTracker(inner_layers)
         else:
-            self._layer_outputs = initial_state['layer_outputs']
-            self._layer_trainables = initial_state['layer_trainables']
             self._global_stats_tracker = initial_state['global_stats_tracker']
             self._input_stats_tracker = initial_state['input_stats_tracker']
             self._prediction_stats_tracker = initial_state['prediction_stats_tracker']
             self._target_stats_tracker = initial_state['target_stats_tracker']
-            self._gradient_stats_tracker = initial_state['gradient_stats_tracker']
+            self._inner_layers_stats_tracker = initial_state['inner_layers_stats_tracker']
 
         self._output_trackers = {}
         for layer_spec in self._graph_spec.target_layers:
@@ -337,6 +335,12 @@ class Trainer:
                 self._output_trackers[layer_spec.id_] = self._get_output_stats_tracker(layer_spec.datatype, layer_spec.feature_name)
             else:
                 self._output_trackers[layer_spec.id_] = initial_state['output_trackers'][layer_spec.id_]
+
+    def _get_inner_layer_ids_and_types(self):
+        inner_layers = {}
+        for layer_spec in self._graph_spec.inner_layers:
+            inner_layers[layer_spec.id_] = layer_spec.type_
+        return inner_layers
 
     def _get_output_stats_tracker(self, datatype, feature_name):
         if datatype == 'numerical':
@@ -356,20 +360,10 @@ class Trainer:
             total_loss, individual_losses, is_training, steps_completed
     ):
         """ Take a snapshot of the current tensors (e.g., layer weights) """
-
-        self._layer_outputs = {}
-        for layer_id in final_and_intermediate_outputs_by_layer.keys():
-            self._layer_outputs[layer_id] = {
-                name: tensor.numpy()
-                for name, tensor in final_and_intermediate_outputs_by_layer[layer_id].items()
-            }
-
-        self._layer_trainables = {}
-        for layer_id in trainables_by_layer.keys():
-            self._layer_trainables[layer_id] = {
-                name: tensor.numpy()
-                for name, tensor in trainables_by_layer[layer_id].items()
-            }
+        self._inner_layers_stats_tracker.update(
+            outputs=final_and_intermediate_outputs_by_layer,
+            trainables_by_layer=trainables_by_layer,
+            gradients_by_layer=gradients_by_layer)
 
         self._global_stats_tracker.update(
             loss=total_loss,
@@ -386,7 +380,6 @@ class Trainer:
         self._input_stats_tracker.update(id_to_feature=id_to_feature, sample_batch=inputs_batch)
         self._prediction_stats_tracker.update(id_to_feature=id_to_feature, sample_batch=predictions_batch)
         self._target_stats_tracker.update(id_to_feature=id_to_feature, sample_batch=targets_batch)
-        self._gradient_stats_tracker.update(gradients_by_layer=gradients_by_layer)
 
         for layer_spec in self._graph_spec.target_layers:
             tracker = self._output_trackers[layer_spec.id_]
@@ -544,36 +537,6 @@ class Trainer:
     def close(self):
         self.stop()
 
-    def get_layer_output(self, layer_id, output_variable='output'):
-        """ Gets the output batch of a layer
-
-        Arguments:
-            layer_id: the layer id
-            output_variable: which variable to fetch from the output dict
-        Returns:
-            A numpy array (or None if the layer/variable doesnt exist)
-        """
-        try:
-            output_batch = self._layer_outputs[layer_id][output_variable]
-            return output_batch
-        except KeyError as e:
-            return None
-
-    def get_layer_weights(self, layer_id):
-        """ Get the weights associated with a layer """
-        try:
-            value = self._layer_trainables[layer_id]['weights']
-            return value
-        except KeyError as e:
-            return None
-
-    def get_layer_bias(self, layer_id):
-        """ Get the bias associated with a layer """
-        try:
-            value = self._layer_trainables[layer_id]['bias']
-            return value
-        except KeyError as e:
-            return None
 
     def get_target_stats(self) -> SampleStats:
         """ Returns a stats object for the current target values """
@@ -587,39 +550,8 @@ class Trainer:
         """ Returns a stats object for the current input values """
         return self._input_stats_tracker.save()
 
-    def get_layer_gradients(self, layer_id, aggregation):
-        """ Get the gradients of a layer
-
-        Arguments:
-            layer_id: the layer id
-            aggregation: one of minimum, maximum and average
-        """
-        stats = self._gradient_stats_tracker.save()
-        if aggregation == 'minimum':
-            return stats.get_minimum_by_layer_id(layer_id)
-        elif aggregation == 'average':
-            return stats.get_average_by_layer_id(layer_id)
-        elif aggregation == 'maximum':
-            return stats.get_maximum_by_layer_id(layer_id)
-
-    def _get_train_dict(self):
-        dict_ = {}
-        for layer_spec in self._graph_spec.layers:
-            # TODO: implement auc metric (story 1541)
-            # TODO: implement loss (story 1571)
-
-            dict_[layer_spec.id_] = {
-                'X': {'input1': {'Y': 123}}, # TODO: fix [this is only used in training layer] (story 1566)
-                'Y': self.get_layer_output(layer_spec.id_),
-                'W': self.get_layer_weights(layer_spec.id_),
-                'b': self.get_layer_bias(layer_spec.id_),
-                'Gradient': {
-                    'Min': self.get_layer_gradients(layer_spec.id_, 'minimum'),
-                    'Max': self.get_layer_gradients(layer_spec.id_, 'maximum'),
-                    'Average': self.get_layer_gradients(layer_spec.id_, 'average')
-                }
-            }
-        return dict_
+    def get_inner_layers_stats(self):
+        return self._inner_layers_stats_tracker.save()
 
     def get_results(self):
         """ Return a dict for the coreInterface to derive plots from """
@@ -631,7 +563,7 @@ class Trainer:
             'maxEpochs': self.num_epochs,
             'batch_size': self.batch_size,
             'trainingIterations': self.num_training_batches_completed_this_epoch,
-            'trainDict': self._get_train_dict(),
+            'inner_layers_stats': self.get_inner_layers_stats(),
             'trainingStatus': self.status,
             'progress': self.progress,
             'status': 'Paused' if self.is_paused else 'Running',
@@ -651,15 +583,11 @@ class Trainer:
         """ Returns a stats object for the current global stats """
         return self._global_stats_tracker.save()
 
-    def get_target_stats(self) -> SampleStats:
-        """ Returns a stats object for the current target values """
-        return self._target_stats_tracker.save()
-
     def export(self, export_directory, mode='Standard'):
         if self._exporter is None:
             logger.warning("Exporter not set, couldn't export!")
             return
-        
+
         if mode == 'Checkpoint':
             self._exporter.export_checkpoint(
                 os.path.join(export_directory, 'checkpoint.ckpt'))
@@ -748,7 +676,7 @@ class Trainer:
 
     def _get_training_set(self):
         """ Gets a training set matching the training settings """
-        return self._get_dataset('training', shuffle=self._shuffle_training_set)        
+        return self._get_dataset('training', shuffle=self._shuffle_training_set)
 
     def _get_validation_set(self):
         """ Gets a validation set matching the training settings """
@@ -768,7 +696,7 @@ class Trainer:
                       .drop_dataset_index(indexed_dataset) \
                       .batch(self.batch_size)
         return dataset
-        
+
 
     def _dump_dataset_rows(self, partition, indexed_dataset):
         indices = [row.numpy() for row, _, _, in indexed_dataset]
@@ -779,5 +707,5 @@ class Trainer:
         path = f"data_epoch_{self._num_epochs_completed}_{partition}.csv"
         df.to_csv(path, index=True)
         logger.info(f"Saved data dump to {path}")
-        
-        
+
+

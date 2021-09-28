@@ -1,18 +1,17 @@
 import numpy as np
 import tensorflow as tf
 
-from perceptilabs.stats.base import TrainingStatsTracker
+from perceptilabs.stats.base import TrainingStatsTracker, OutputStats
 from perceptilabs.stats.accuracy import AccuracyStatsTracker
 from perceptilabs.stats.loss import LossStatsTracker
 from perceptilabs.stats.multiclass_matrix import MultiClassMatrixStatsTracker
 from perceptilabs.createDataObject import create_data_object
-from perceptilabs.stats.base import OutputStats
 from perceptilabs.data.base import FeatureSpec, DataLoader
 
 
 class CategoricalOutputStats(OutputStats):
     def __init__(
-        self, accuracy=None, predictions=None, multiclass_matrix=None, 
+        self, accuracy=None, predictions=None, multiclass_matrix=None,
         targets=None, loss=None, categories=None
     ):
         self._loss = loss
@@ -20,7 +19,7 @@ class CategoricalOutputStats(OutputStats):
         self._predictions = predictions
         self._multiclass_matrix = multiclass_matrix
         self._targets = targets
-        self._categories = categories        
+        self._categories = categories
 
     @property
     def loss(self):
@@ -51,9 +50,9 @@ class CategoricalOutputStats(OutputStats):
             self.loss == other.loss and
             self.accuracy == other.accuracy and
             self.multiclass_matrix == other.multiclass_matrix and
-            self.categories == other.categories and            
-            np.all(self.predictions == other.predictions) and            
-            np.all(self.targets == other.targets)             
+            self.categories == other.categories and
+            np.all(self.predictions == other.predictions) and
+            np.all(self.targets == other.targets)
         )
 
     def _get_average_sample(self, type_='prediction'):
@@ -71,9 +70,9 @@ class CategoricalOutputStats(OutputStats):
 
     def get_data_objects(self):
         """
-            Gets the data objects for categorical outputs. There are graphs for loss over all epochs, 
+            Gets the data objects for categorical outputs. There are graphs for loss over all epochs,
             Acc over epochs, and a bar chart representing confusion matrix metrics in their total quantity
-            at the latest epoch. 
+            at the latest epoch.
 
         """
         acc_over_epochs = self._get_dataobj_accuracy()
@@ -86,7 +85,7 @@ class CategoricalOutputStats(OutputStats):
             [pred_value, target_value],
             name_list=['Prediction', 'Ground Truth']
         )
-        
+
         data_objects = {
             'LossAndAccuracy': {
                 'LossOverEpochs':loss_over_epochs,
@@ -120,14 +119,14 @@ class CategoricalOutputStats(OutputStats):
             )
         return dataobj_loss_over_epochs
 
-        
+
 
     def _get_dataobj_accuracy(self):
         training_acc_over_steps = self._accuracy.get_accuracy_over_steps_in_latest_epoch(phase='training')
         validation_acc_over_steps = self._accuracy.get_accuracy_over_steps_in_latest_epoch(phase='validation')
-        
+
         validation_acc_over_steps = training_acc_over_steps + validation_acc_over_steps  # The frontend plots the training accuracy last, so this gives the effect that the validation curve is a continuation of the training curve.
-    
+
 
         training_acc_over_epochs, validation_acc_over_epochs = self.get_accuracy_over_epochs()
 
@@ -136,7 +135,7 @@ class CategoricalOutputStats(OutputStats):
                 [validation_acc_over_epochs, training_acc_over_epochs],
                 type_list=['line', 'line'],
                 name_list=['Validation', 'Training']
-            )        
+            )
         else:
             dataobj_acc_over_epochs = create_data_object(
                 [validation_acc_over_epochs, training_acc_over_epochs],
@@ -148,7 +147,7 @@ class CategoricalOutputStats(OutputStats):
     def _get_data_obj_confusion_matrix(self):
         summed_matrix = self._multiclass_matrix.get_total_matrix_for_latest_epoch(phase='training')
         dataobj_cm_in_latest_epoch = create_data_object(
-                [       
+                [
                     summed_matrix
                 ],
                 type_list=['bar_detailed'],
@@ -158,11 +157,11 @@ class CategoricalOutputStats(OutputStats):
         return dataobj_cm_in_latest_epoch
 
     def get_summary(self):
-        """ Gets the stats summary for this layer 
+        """ Gets the stats summary for this layer
 
         Returns:
             A dictionary with the final training/validation loss and accuracy
-        """        
+        """
         return {
             'loss_training': self._loss.get_loss_for_latest_step(phase='training'),
             'loss_validation': self._loss.get_loss_for_latest_step(phase='validation'),
@@ -204,9 +203,9 @@ class CategoricalOutputStats(OutputStats):
 
 class CategoricalOutputStatsTracker(TrainingStatsTracker):
     def __init__(self):
-        self._loss_tracker = LossStatsTracker()            
+        self._loss_tracker = LossStatsTracker()
         self._accuracy_tracker = AccuracyStatsTracker()
-        self._multiclass_matrix_tracker = MultiClassMatrixStatsTracker()   
+        self._multiclass_matrix_tracker = MultiClassMatrixStatsTracker()
         self._predictions = tf.constant([0.0])
         self._targets = tf.constant([0.0])
         self._categories = []
@@ -226,26 +225,26 @@ class CategoricalOutputStatsTracker(TrainingStatsTracker):
 
         def _categories_need_decoding():
             if isinstance(indices[-1], bytes):
-                return True        
-            return False        
+                return True
+            return False
 
         if _categories_need_decoding():
             for index in indices:
                 decoded_categories.append(index.decode("utf-8"))
 
-        return decoded_categories        
-            
+        return decoded_categories
+
     def save(self):
         """ Save the tracked values into a TrainingStats object """
         return CategoricalOutputStats(
             accuracy=self._accuracy_tracker.save(),
-            loss=self._loss_tracker.save(),                
+            loss=self._loss_tracker.save(),
             predictions=self._predictions.numpy(),
             multiclass_matrix=self._multiclass_matrix_tracker.save(),
             targets=self._targets.numpy(),
             categories=self._categories
         )
-    
+
     @property
     def loss_tracker(self):
         return self._loss_tracker
@@ -269,13 +268,13 @@ class CategoricalOutputStatsTracker(TrainingStatsTracker):
     @property
     def categories(self):
         return self._categories
-    
+
     def __eq__(self, other):
         return (
             self.loss_tracker == other.loss_tracker and
             self.accuracy_tracker == other.accuracy_tracker and
             self.multiclass_matrix_tracker == other.multiclass_matrix_tracker and
-            self.categories == other.categories and            
-            np.all(self.predictions == other.predictions) and            
+            self.categories == other.categories and
+            np.all(self.predictions == other.predictions) and
             np.all(self.targets == other.targets)
         )

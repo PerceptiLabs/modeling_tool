@@ -71,10 +71,7 @@ class coreLogic():
         self._data_metadata_cache = get_data_metadata_cache().for_compound_keys()
 
     def setupLogic(self):
-        #self.warningQueue=queue.Queue()
-
         self.commandQ=queue.Queue()
-        # self.resultQ=queue.LifoQueue()
         self.resultQ=queue.Queue()
 
         self.trainResults=None
@@ -84,10 +81,6 @@ class coreLogic():
         self.status="Created"
         self.headlessFlag=False
         self.core=None
-
-        self.testIter=0
-        self.maxTestIter=0
-        self.testList= None
 
         self.savedResultsDict={}
 
@@ -434,8 +427,6 @@ class coreLogic():
             )
         )
 
-        return {"content": f"Exporting of model requested to the path {path}"}
-
     def skipValidation(self):
         self.commandQ.put("skip")
         logger.warning('skipValidation called... incompatible with core v2')
@@ -502,14 +493,6 @@ class coreLogic():
         tmp=None
         while not self.resultQ.empty():
             tmp = self.resultQ.get()
-
-            if 'testDict' in tmp:
-                self.testList = tmp["testDict"]
-                self.maxTestIter = tmp['maxTestIter']
-                if self.testIter != self.maxTestIter-1:
-                    self.testIter += 1
-                else:
-                    self.testIter = 1
         if tmp:
             self.savedResultsDict.update(tmp)
 
@@ -538,7 +521,7 @@ class coreLogic():
             self.maxEpochs=self.savedResultsDict["maxEpochs"]
             self.batch_size=self.savedResultsDict["batch_size"]
             self.trainingIterations=self.savedResultsDict["trainingIterations"]
-            self.resultDict=self.savedResultsDict["trainDict"]
+            self.resultDict=self.savedResultsDict["inner_layers_stats"]
         except KeyError:
             message = "Error in getTrainingStatistics."
             if logger.isEnabledFor(logging.DEBUG):
@@ -570,268 +553,19 @@ class coreLogic():
     def getLayerStatistics(self, layerId, layerType, view):
         logger.debug("getLayerStatistics for layer '{}' with type '{}' and view: '{}'".format(layerId, layerType, view))
 
-        if layerType=="DataEnvironment":
-            state = self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})[-1,:,:,:3]
-            dataObj = createDataObject([state])
-            return {"Data":dataObj}
-        elif layerType=="DataData":
-            D=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})
-            dataObj = createDataObject([D[-1]])
-            return {"Data":dataObj}
-        elif layerType=="DataRandom":
-            D=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})
-            dataObj = createDataObject([D[-1]])
-            return {"Data":dataObj}
-        elif layerType == 'IoInput':
+        if layerType == 'IoInput':
             return self._get_stats_ioinput(layerId)
         elif layerType == 'IoOutput':
             return self._get_stats_iooutput(layerId, view)
-        elif layerType=="LayerCustom":
-            D=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})
-            dataObj = createDataObject([D[-1]])
-            return {"Output":dataObj}
-        elif layerType=="DeepLearningFC":
-            if view=="Output":
-                D=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})[-1]
-                dataObject = createDataObject([D])
-                output = {"Output": dataObject}
-                return output
-            if view=="Weights&Bias":
-                w=self.getStatistics({"layerId":layerId,"variable":"W","innervariable":""})
-                w=np.average(w,axis=0)
-                dataObjectWeights = createDataObject([w], type_list=['line'])
-
-                b=self.getStatistics({"layerId":layerId,"variable":"b","innervariable":""})
-                dataObjectBias = createDataObject([b], type_list=['line'])
-
-                output = {"Bias": dataObjectBias, "Weights": dataObjectWeights}
-                return output
-            if view=="Gradients":
-                minD=self.getStatistics({"layerId":layerId,"variable":"Gradient","innervariable":"Min"})
-                maxD=self.getStatistics({"layerId":layerId,"variable":"Gradient","innervariable":"Max"})
-                avD=self.getStatistics({"layerId":layerId,"variable":"Gradient","innervariable":"Average"})
-
-                dataObj = createDataObject([minD, maxD, avD],
-                                            type_list=3*['line'],
-                                            name_list=['Min', 'Max', 'Average'],
-                                            style_list=[{"color":"#83c1ff"},
-                                                        {"color":"#0070d6"},
-                                                        {"color":"#6b8ff7"}])
-
-                output = {"Gradients": dataObj}
-                return output
-        elif layerType=="DeepLearningConv":
-            if view=="Weights&Output":
-                weights=self.getStatistics({"layerId":layerId,"variable":"W","innervariable":""})
-                Wshapes=weights.shape
-                if len(Wshapes)==3:
-                    weights=np.expand_dims(np.average(weights[:,:,-1],1),axis=0)
-                elif len(Wshapes)==4:
-                    weights=np.average(weights[:,:,:,-1],2)
-                elif len(Wshapes)==5:
-                    weights=np.average(weights[:,:,:,:,-1],3)
-                outputs=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})[-1]
-
-
-                dataObjWeights = createDataObject([weights], type_list=['heatmap'])
-                dataObjOutput = self._process_conv_layer_output(outputs)
-
-                obj = {"Weights":dataObjWeights, "Output": dataObjOutput}
-                return obj
-            if view=="Bias":
-                b=self.getStatistics({"layerId":layerId,"variable":"b","innervariable":""})
-                dataObj = createDataObject([b], type_list=['line'])
-                output = {"Bias": dataObj}
-                return output
-            if view=="Gradients":
-                minD=self.getStatistics({"layerId":layerId,"variable":"Gradient","innervariable":"Min"})
-                maxD=self.getStatistics({"layerId":layerId,"variable":"Gradient","innervariable":"Max"})
-                avD=self.getStatistics({"layerId":layerId,"variable":"Gradient","innervariable":"Average"})
-
-                dataObj = createDataObject([minD, maxD, avD],
-                                            type_list=3*['line'],
-                                            name_list=['Min', 'Max', 'Average'],
-                                            style_list=[{"color":"#83c1ff"},
-                                                        {"color":"#0070d6"},
-                                                        {"color":"#6b8ff7"}])
-                output = {"Gradients": dataObj}
-                return output
-        elif layerType=="DeepLearningRecurrent":
-
-            # if view=="Output":
-            D=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})[-1]
-            dataObject = createDataObject([D])
-            dataObject = {"Output": dataObject}
-            return dataObject
-
-        elif layerType=="PreTrainedResNet50":
-            return self._get_viewbox_pretrained(layerId, view)
-
-        elif layerType=="PreTrainedInceptionV3":
-            return self._get_viewbox_pretrained(layerId, view)
-
-        elif layerType=="PreTrainedMobileNetV2":
-            return self._get_viewbox_pretrained(layerId, view)
-
-        elif layerType=="PreTrainedVGG16":
-            return self._get_viewbox_pretrained(layerId, view)
-
-        elif layerType=="MathMerge":
-            D=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})[-1]
-            if len(D.shape) == 3:
-                output = self._process_conv_layer_output(D)
-            else:
-                output = createDataObject([np.squeeze(D).astype(np.float32)])
-            return {"Output":output}
-        elif layerType in ["MathSoftmax", "MathArgmax", "ProcessOneHot", "ProcessCrop", "ProcessReshape", "ProcessRescale"]:
-            D=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})[-1]
-            output = createDataObject([np.squeeze(D).astype(np.float32)])
-            return {"Output":output}
-        elif layerType == "ProcessGrayscale":
-            D=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})[-1]
-            if len(D.shape) == 3:
-                if D.shape[-1] == 1:
-                    output = createDataObject([D])
-                else:
-                    output = createDataObject([D[:,:,0]])
-            elif len(D.shape)>3:
-                output = createDataObject([D[0]])
-            else:
-                output = createDataObject([D])
-            return {"Output":output}
-        elif layerType == "UNet":
-            if view=="Weights&Output":
-                weights=self.getStatistics({"layerId":layerId,"variable":"W","innervariable":""})
-                Wshapes=weights.shape
-                if len(Wshapes)==3:
-                    weights=np.expand_dims(np.average(weights[:,:,-1],1),axis=0)
-                elif len(Wshapes)==4:
-                    weights=np.average(weights[:,:,:,-1],2)
-                elif len(Wshapes)==5:
-                    weights=np.average(weights[:,:,:,:,-1],3)
-                outputs=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})[-1]
-                dataObjWeights = createDataObject([weights], type_list=['heatmap'])
-                dataObjOutput = createDataObject([outputs], type_list=['mask'])
-
-                obj = {"Weights":dataObjWeights, "Output": dataObjOutput}
-                return obj
-            if view=="Bias":
-                b=self.getStatistics({"layerId":layerId,"variable":"b","innervariable":""})
-                dataObj = createDataObject([b], type_list=['line'])
-                output = {"Bias": dataObj}
-                return output
-            if view=="Gradients":
-                minD=self.getStatistics({"layerId":layerId,"variable":"Gradient","innervariable":"Min"})
-                maxD=self.getStatistics({"layerId":layerId,"variable":"Gradient","innervariable":"Max"})
-                avD=self.getStatistics({"layerId":layerId,"variable":"Gradient","innervariable":"Average"})
-
-                dataObj = createDataObject([minD, maxD, avD],
-                                            type_list=3*['line'],
-                                            name_list=['Min', 'Max', 'Average'],
-                                            style_list=[{"color":"#83c1ff"},
-                                                        {"color":"#0070d6"},
-                                                        {"color":"#6b8ff7"}])
-                output = {"Gradients": dataObj}
-                return output
         else:
-            return "FieldError: Does not recognize the layerType. " + layerType + " is not in [Train, Fc, Conv, Argmax, Softmax, Merge, OneHot, Crop, Reshape, Grayscale]"
-
-    def getPlot(self,D):
-        shape=np.squeeze(D).shape
-        if len(shape)==0:
-            t="scatter"
-        elif len(shape)==1:
-            if shape[0]<25:
-                t="bar"
-            else:
-                t="line"
-        elif len(shape)==2:
-            t="grayscale"
-        elif len(shape)==3:
-            if shape[-1]==1:
-                t="grayscale"
-            elif shape[-1]==3:
-                t="RGB"    #Assume RGB, Replace with a button later on
-            # elif np.shape(np.squeeze(self.variables[self.currentView]["input"]))[0]==np.shape(np.squeeze(self.variables[self.currentView]["input"]))[1]==np.shape(np.squeeze(self.variables[self.currentView]["input"]))[2]:
-            #     pass
-            else:
-                t="heatmap"
-            #     self.plot1.imshow(self.variables[self.currentView]["input"][:,:,0])
-        else:
-            t="scatter" #Just something which works for all
-        return t
-
-    def getStatistics(self,statSpec):
-        layerId=statSpec["layerId"]
-        variable=statSpec["variable"]
-        innervariable=statSpec["innervariable"]
-        return self._get_layer_statistics_internal(layerId, variable, innervariable)
-
-    def _get_layer_statistics_internal(self, layerId, variable="", innervariable=""):
-        if self.resultDict is not None:
-            logger.debug(f"ResultDict has entries for layers {list(self.resultDict.keys())}")
-
-        logger.debug("getStatistics for layer {}, variable {}, innervariable {}".format(
-            layerId,
-            variable,
-            innervariable
-        ))
-
-        if self.resultDict is None:
-            return np.array([])
-        elif layerId != "" and variable != "" and innervariable != "":
-            result = self.resultDict.get(layerId, {}).get(variable, {}).get(innervariable, [])
-            if not isinstance(result, dict):
-                result = np.asarray(result)
-            return result
-        elif layerId != "" and variable != "":
-            result = self.resultDict.get(layerId, {}).get(variable, [])
-            if not isinstance(result, dict):
-                result = np.asarray(result)
-            return result
-        elif layerId != "":
-            result = self.resultDict.get(layerId, [])
-            if not isinstance(result, dict):
-                result = np.asarray(result)
-            return result
-        else:
-            return np.array([])
-
-    def _get_statistics_debug_info(self, layer_id, variable, innervariable, result):
-        layer_type = self.graph_spec[layer_id].type_
-        layer_name = self.graph_spec[layer_id].name
-
-        message =   f"getStatistics called with:\n" \
-                    f"    layerId       = '{layer_id}' [{layer_name}: {layer_type}]\n"\
-                    f"    variable      = '{variable}'\n"\
-                    f"    innervariable = '{innervariable}'\n "
-
-        if isinstance(result, np.ndarray):
-            message += f"output: ndarray of shape {result.shape} and dtype {result.dtype}"
-        elif isinstance(result, dict):
-            type_map = {k: type(v) for k, v in result.items()}
-            message += f"output: dict with keys and types: {type_map}"
-        elif isinstance(result, list):
-            len_ = len(result)
-            type_ = type(result[0]) if len_ > 0 else '<unknown>'
-            message += f"output: list with length {len_} and types: {type_}"
-        else:
-            message += f"output: {type(result)}"
-
-        logger.debug(message)
-
-    def _process_conv_layer_output(self, output):
-        if len(output.shape) != 2:
-            output=output[:, :, 0]
-
-        processed_output = createDataObject([output])
-
-        return processed_output
+            stats = self.savedResultsDict['inner_layers_stats'][layerId]
+            output = stats.get_data_objects(view)
+            return output
 
     def _get_stats_ioinput(self, layer_id):
-        output_batch = self._get_layer_statistics_internal(layer_id, variable="Y")
         try:
-            output_value = output_batch[-1]
+            stats = self.savedResultsDict['input_stats']
+            output_value = stats.get_sample_by_layer_id(layer_id)
         except:
             output_value = 0.0  # Default value
         data_object = createDataObject([output_value])
@@ -843,45 +577,3 @@ class coreLogic():
         if view:
             output = output[view]
         return output
-
-    def _get_viewbox_pretrained(self, layer_id, view):
-        if view=="Output":
-            D=self.getStatistics({"layerId":layer_id,"variable":"Y","innervariable":""})[-1]
-            dataObject = createDataObject([D])
-            output = {"Output": dataObject}
-            return output
-        if view=="Weights&Bias":
-            w=self.getStatistics({"layerId":layer_id,"variable":"W","innervariable":""})
-            w=np.squeeze(w)
-            w_shape = w.shape
-            if len(w_shape) == 4:
-                w=w[-1,-1,:,:]
-            elif len(w_shape) == 3:
-                w=w[-1,:,:]
-            w=np.mean(w, axis=1)
-            dataObjectWeights = createDataObject([w], type_list=['line'])
-
-            b=self.getStatistics({"layerId":layer_id,"variable":"b","innervariable":""})
-
-            if b is not None:
-                dataObjectBias = createDataObject([b], type_list=['line'])
-                output = {"Bias": dataObjectBias, "Weights": dataObjectWeights}
-            else:
-                output = {"Weights": dataObjectWeights}
-
-            return output
-        if view=="Gradients":
-            minD=self.getStatistics({"layerId":layer_id,"variable":"Gradient","innervariable":"Min"})
-            maxD=self.getStatistics({"layerId":layer_id,"variable":"Gradient","innervariable":"Max"})
-            avD=self.getStatistics({"layerId":layer_id,"variable":"Gradient","innervariable":"Average"})
-
-            dataObj = createDataObject([minD, maxD, avD],
-                                        type_list=3*['line'],
-                                        name_list=['Min', 'Max', 'Average'],
-                                        style_list=[{"color":"#83c1ff"},
-                                                    {"color":"#0070d6"},
-                                                    {"color":"#6b8ff7"}])
-
-            output = {"Gradients": dataObj}
-            return output
-

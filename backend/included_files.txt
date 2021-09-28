@@ -72,6 +72,7 @@ perceptilabs/layers/specutils.py
 perceptilabs/layers/definitions.py
 perceptilabs/layers/mixins.py
 perceptilabs/layers/visualizer.py
+perceptilabs/layers/inner_layer_stats.py
 
 # perceptilabs/layers/iooutput
 perceptilabs/layers/iooutput/spec.py
@@ -107,6 +108,8 @@ perceptilabs/layers/deeplearningfc/spec.py
 perceptilabs/layers/deeplearningfc/imports.json
 perceptilabs/layers/deeplearningfc/tf2x_imports.json
 perceptilabs/layers/deeplearningfc/tf2x_template.j2
+perceptilabs/layers/deeplearningfc/__init__.py
+perceptilabs/layers/deeplearningfc/stats.py
 
 # perceptilabs/layers/deeplearningconv
 perceptilabs/layers/deeplearningconv/spec.py
@@ -114,58 +117,77 @@ perceptilabs/layers/deeplearningconv/imports.json
 perceptilabs/layers/deeplearningconv/tf2x_imports.json
 perceptilabs/layers/deeplearningconv/tf2x_template.j2
 perceptilabs/layers/deeplearningconv/stats.py
+perceptilabs/layers/deeplearningconv/__init__.py
 
 # perceptilabs/layers/deeplearningrecurrent
 perceptilabs/layers/deeplearningrecurrent/spec.py
 perceptilabs/layers/deeplearningrecurrent/imports.json
 perceptilabs/layers/deeplearningrecurrent/tf2x_template.j2
 perceptilabs/layers/deeplearningrecurrent/tf2x_imports.json
+perceptilabs/layers/deeplearningrecurrent/__init__.py
+perceptilabs/layers/deeplearningrecurrent/stats.py
 
 # perceptilabs/layers/processreshape
 perceptilabs/layers/processreshape/spec.py
 perceptilabs/layers/processreshape/imports.json
 perceptilabs/layers/processreshape/tf2x_imports.json
 perceptilabs/layers/processreshape/tf2x_template.j2
+perceptilabs/layers/processreshape/__init__.py
+perceptilabs/layers/processreshape/stats.py
 
 # perceptilabs/layers/processrescale
 perceptilabs/layers/processrescale/spec.py
 perceptilabs/layers/processrescale/imports.json
 perceptilabs/layers/processrescale/tf2x_imports.json
 perceptilabs/layers/processrescale/tf2x_template.j2
+perceptilabs/layers/processrescale/__init__.py
+perceptilabs/layers/processrescale/stats.py
 
 # perceptilabs/layers/processonehot
 perceptilabs/layers/processonehot/spec.py
 perceptilabs/layers/processonehot/imports.json
 perceptilabs/layers/processonehot/tf2x_imports.json
 perceptilabs/layers/processonehot/tf2x_template.j2
+perceptilabs/layers/processonehot/__init__.py
+perceptilabs/layers/processonehot/stats.py
 
 # perceptilabs/layers/processgrayscale
 perceptilabs/layers/processgrayscale/spec.py
 perceptilabs/layers/processgrayscale/imports.json
 perceptilabs/layers/processgrayscale/tf2x_imports.json
 perceptilabs/layers/processgrayscale/tf2x_template.j2
+perceptilabs/layers/processgrayscale/__init__.py
+perceptilabs/layers/processgrayscale/stats.py
 
 # perceptilabs/layers/mathargmax
 perceptilabs/layers/mathargmax/spec.py
 perceptilabs/layers/mathargmax/imports.json
 perceptilabs/layers/mathargmax/template.j2
+perceptilabs/layers/mathargmax/__init__.py
+perceptilabs/layers/mathargmax/stats.py
+
 
 # perceptilabs/layers/mathsoftmax
 perceptilabs/layers/mathsoftmax/spec.py
 perceptilabs/layers/mathsoftmax/imports.json
 perceptilabs/layers/mathsoftmax/template.j2
+perceptilabs/layers/mathsoftmax/__init__.py
+perceptilabs/layers/mathsoftmax/stats.py
 
 # perceptilabs/layers/mathmerge
 perceptilabs/layers/mathmerge/spec.py
 perceptilabs/layers/mathmerge/imports.json
 perceptilabs/layers/mathmerge/tf2x_imports.json
 perceptilabs/layers/mathmerge/tf2x_template.j2
+perceptilabs/layers/mathmerge/__init__.py
+perceptilabs/layers/mathmerge/stats.py
 
 # perceptilabs/layers/layercustom
 perceptilabs/layers/layercustom/spec.py
 perceptilabs/layers/layercustom/imports.json
 perceptilabs/layers/layercustom/tf2x_imports.json
 perceptilabs/layers/layercustom/tf2x_template.j2
+perceptilabs/layers/layercustom/stats.py
 
 # perceptilabs/layers/trainclassification
 perceptilabs/layers/trainclassification/spec.py
@@ -193,27 +215,36 @@ perceptilabs/layers/trainregression/imports.json
 perceptilabs/layers/pretrainedvgg16/spec.py
 perceptilabs/layers/pretrainedvgg16/tf2x_template.j2
 perceptilabs/layers/pretrainedvgg16/tf2x_imports.json
+perceptilabs/layers/pretrainedvgg16/__init__.py
+perceptilabs/layers/pretrainedvgg16/stats.py
 
 # perceptilabs/layers/pretrainedmobilenetv2
 perceptilabs/layers/pretrainedmobilenetv2/spec.py
 perceptilabs/layers/pretrainedmobilenetv2/tf2x_template.j2
 perceptilabs/layers/pretrainedmobilenetv2/tf2x_imports.json
+perceptilabs/layers/pretrainedmobilenetv2/__init__.py
+perceptilabs/layers/pretrainedmobilenetv2/stats.py
 
 # perceptilabs/layers/pretrainedresnet50
 perceptilabs/layers/pretrainedresnet50/spec.py
 perceptilabs/layers/pretrainedresnet50/tf2x_template.j2
 perceptilabs/layers/pretrainedresnet50/tf2x_imports.json
+perceptilabs/layers/pretrainedresnet50/__init__.py
+perceptilabs/layers/pretrainedresnet50/stats.py
 
 # perceptilabs/layers/pretrainedinceptionv3
 perceptilabs/layers/pretrainedinceptionv3/spec.py
 perceptilabs/layers/pretrainedinceptionv3/tf2x_template.j2
 perceptilabs/layers/pretrainedinceptionv3/tf2x_imports.json
+perceptilabs/layers/pretrainedinceptionv3/__init__.py
+perceptilabs/layers/pretrainedinceptionv3/stats.py
 
 # perceptilabs/layers/unet
 perceptilabs/layers/unet/spec.py
 perceptilabs/layers/unet/tf2x_template.j2
 perceptilabs/layers/unet/tf2x_imports.json
 perceptilabs/layers/unet/stats.py
+perceptilabs/layers/unet/__init__.py
 
 # perceptilabs/layers/ioinput
 perceptilabs/layers/ioinput/spec.py
@@ -468,5 +499,4 @@ perceptilabs/endpoints/set_user/base.py
 perceptilabs/resources/models.py
 perceptilabs/resources/epochs.py
 perceptilabs/resources/files.py
-
 

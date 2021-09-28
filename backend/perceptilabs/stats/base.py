@@ -11,7 +11,6 @@ class TrainingStats(ABC):
     def __eq__(self, other):
         raise NotImplementedError
 
-
 class OutputStats(TrainingStats):
     @abstractmethod
     def get_summary(self):

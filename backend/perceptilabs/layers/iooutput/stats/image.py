@@ -1,16 +1,14 @@
 import numpy as np
 import cv2
 import math
-    
+
 import tensorflow as tf
 
-from perceptilabs.stats.base import TrainingStatsTracker
+from perceptilabs.stats.base import TrainingStatsTracker, OutputStats
 from perceptilabs.stats.accuracy import AccuracyStatsTracker
 from perceptilabs.stats.loss import LossStatsTracker
 from perceptilabs.stats.iou import IouStatsTracker
 from perceptilabs.createDataObject import create_data_object
-from perceptilabs.stats.base import OutputStats
-
 
 class ImageOutputStats(OutputStats):
     def __init__(self, iou=None, predictions=None, targets=None, loss=None):
@@ -34,13 +32,13 @@ class ImageOutputStats(OutputStats):
     @property
     def targets(self):
         return self._targets
-    
+
     def __eq__(self, other):
         return (
             self.loss == other.loss and
             self.iou == other.iou and
-            np.all(self.predictions == other.predictions) and            
-            np.all(self.targets == other.targets)             
+            np.all(self.predictions == other.predictions) and
+            np.all(self.targets == other.targets)
         )
 
     def _get_average_sample(self, type_='prediction'):
@@ -69,11 +67,11 @@ class ImageOutputStats(OutputStats):
             target_value_rgb = cv2.cvtColor(target_value, cv2.COLOR_GRAY2RGB)
             white_lo = np.array([10,10,10])
             white = np.array([255,255,255])
-            
+
             mask = cv2.inRange(target_value_rgb, white_lo, white)
 
             target_value_rgb[mask>0] = (255,0,0)
-            
+
             blended = cv2.addWeighted(pred_value_rgb, 0.9, target_value_rgb, 0.1, 0)
             data_obj_overlayed_image = create_data_object([blended], normalize=False)
 
@@ -81,9 +79,9 @@ class ImageOutputStats(OutputStats):
             overlayed_image = cv2.addWeighted(target_value, 0.7, pred_value, 0.3, 0)
 
             data_obj_overlayed_image = create_data_object([overlayed_image])
-        
+
         data_objects = {
-            'IoUAndLoss': { 
+            'IoUAndLoss': {
                 'LossOverEpochs': loss_over_epochs,
                 'IoUOverEpochs': iou_over_epochs
             },
@@ -111,7 +109,7 @@ class ImageOutputStats(OutputStats):
                 [validation_loss_over_epochs, training_loss_over_epochs],
                 type_list=['scatter', 'scatter'],
                 name_list=['Validation', 'Training']
-            )           
+            )
 
         return dataobj_loss_over_epochs
 
@@ -120,11 +118,11 @@ class ImageOutputStats(OutputStats):
         validation_iou_over_steps = self._iou.get_iou_over_steps_in_latest_epoch(phase='validation')
 
         training_iou_over_epochs, validation_iou_over_epochs = self.get_iou_over_epochs()
-        
+
         validation_iou_over_steps = training_iou_over_steps + validation_iou_over_steps  # The frontend plots the training iou last, so this gives the effect that the validation curve is a continuation of the training curve.
-        
+
         if len(validation_iou_over_steps) > 1 and len(training_iou_over_steps) > 1:
-            
+
             dataobj_iou_over_steps = create_data_object(
                 [validation_iou_over_steps, training_iou_over_steps],
                 type_list=['line', 'line'],
@@ -143,24 +141,24 @@ class ImageOutputStats(OutputStats):
                 [validation_iou_over_epochs, training_iou_over_epochs],
                 type_list=['line', 'line'],
                 name_list=['Validation', 'Training']
-            )  
+            )
 
         else:
             dataobj_iou_over_epochs = create_data_object(
                 [validation_iou_over_epochs, training_iou_over_epochs],
                 type_list=['scatter', 'scatter'],
                 name_list=['Validation', 'Training']
-            )      
+            )
 
-        
+
         return dataobj_iou_over_steps, dataobj_iou_over_epochs
-        
+
     def get_summary(self):
-        """ Gets the stats summary for this layer 
+        """ Gets the stats summary for this layer
 
         Returns:
             A dictionary with the final training/validation loss and iou
-        """        
+        """
         return {
             'loss_training': self._loss.get_loss_for_latest_step(phase='training'),
             'loss_validation': self._loss.get_loss_for_latest_step(phase='validation'),
@@ -187,7 +185,7 @@ class ImageOutputStats(OutputStats):
         validation_loss_over_epochs = self._loss.get_loss_over_epochs(
             phase='validation')
         return training_loss_over_epochs, validation_loss_over_epochs
-        
+
     def get_end_results(self):
         """
         Returns IOU from final epoch for results summary after training ends.
@@ -202,7 +200,7 @@ class ImageOutputStats(OutputStats):
 
 class ImageOutputStatsTracker(TrainingStatsTracker):
     def __init__(self):
-        self._loss_tracker = LossStatsTracker()            
+        self._loss_tracker = LossStatsTracker()
         self._iou_tracker = IouStatsTracker()
         self._predictions = tf.constant([0.0])
         self._targets = tf.constant([0.0])
@@ -212,16 +210,16 @@ class ImageOutputStatsTracker(TrainingStatsTracker):
         self._iou_tracker.update(**kwargs)
         self._predictions = kwargs['predictions_batch']
         self._targets = kwargs['targets_batch']
-            
+
     def save(self):
         """ Save the tracked values into a TrainingStats object """
         return ImageOutputStats(
-            loss=self._loss_tracker.save(),                                
+            loss=self._loss_tracker.save(),
             iou=self._iou_tracker.save(),
             predictions=self._predictions.numpy(),
-            targets=self._targets.numpy()                
+            targets=self._targets.numpy()
         )
-    
+
     @property
     def loss_tracker(self):
         return self._loss_tracker
@@ -237,11 +235,11 @@ class ImageOutputStatsTracker(TrainingStatsTracker):
     @property
     def targets(self):
         return self._targets
-    
+
     def __eq__(self, other):
         return (
             self.loss_tracker == other.loss_tracker and
             self.iou_tracker == other.iou_tracker and
-            np.all(self.predictions == other.predictions) and            
-            np.all(self.targets == other.targets)             
+            np.all(self.predictions == other.predictions) and
+            np.all(self.targets == other.targets)
         )

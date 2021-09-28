@@ -25,7 +25,7 @@ class GraphSpec(AbstractGraphSpec):
             dict_[id_] = node.to_dict()
         return dict_
 
-    @classmethod 
+    @classmethod
     def from_dict(cls, dict_):
         if 'Layers' in dict_:
             dict_ = dict_['Layers']
@@ -61,38 +61,42 @@ class GraphSpec(AbstractGraphSpec):
     def io_layers(self) -> List[LayerSpec]:
         return [x for x in self.layers if (x.is_target_layer or x.is_input_layer)]
 
+    @property
+    def inner_layers(self) -> List[LayerSpec]:
+        return [x for x in self.layers if x not in self.io_layers]
+
     def get_layer_by_feature_name(self, name):
         for layer_spec in self.io_layers:
             if layer_spec.feature_name == name:
                 return layer_spec
         return None
-    
+
     @property
     def nodes(self) -> List[LayerSpec]:
         return self.layers
-    
+
     @property
-    def edges(self) -> List[Tuple[str, str]]:    
+    def edges(self) -> List[Tuple[str, str]]:
         return list(self._nx_graph.edges)
-    
+
     def __getitem__(self, key):
         if key not in self.nodes_by_id and key not in self.nodes_by_name:
             ids = list(self.nodes_by_id.keys())
             raise ValueError(f"No layer with id {key}. Available layers are: {ids}")
         if key in self.nodes_by_sanitized_name:
             return self.nodes_by_name.get(key)
-        
+
         return self.nodes_by_id[key]
 
     def get_layer_by_sanitized_name(self, sanitized_name):
         return self.nodes_by_sanitized_name[sanitized_name]
 
     def get_successors(self, layer_spec: LayerSpec):
-        """ Get all nodes directly connected from layer_spec """                
+        """ Get all nodes directly connected from layer_spec """
         return [self.__getitem__(id_) for id_ in self._nx_graph.successors(layer_spec.id_)]
-                
+
     def get_predecessors(self, layer_spec: LayerSpec):
-        """ Get all nodes directly connected to layer_spec """        
+        """ Get all nodes directly connected to layer_spec """
         return [self.__getitem__(id_) for id_ in self._nx_graph.predecessors(layer_spec.id_)]
 
     def get_ancestors(self, layer_spec: LayerSpec):
@@ -101,10 +105,10 @@ class GraphSpec(AbstractGraphSpec):
             self.__getitem__(id_)
             for id_ in nx.algorithms.dag.ancestors(self._nx_graph, layer_spec.id_)
         ]
-    
+
     def compute_field_hash(self, layer_spec, include_ancestors=True):
         """ Computes a hash based on the fields (and maybe ancestors) of the layer
-        
+
         Args:
             include_ancestors: compute the hashes of the ancestors as well
         """
@@ -113,17 +117,17 @@ class GraphSpec(AbstractGraphSpec):
         if include_ancestors:
             included_specs += self.get_ancestors(layer_spec)
 
-        if logger.isEnabledFor(logging.DEBUG):            
-            logger.debug(f"Computing field hash of layer {layer_spec.id_} [{layer_spec.type_}] based on layers {[x.id_ for x in included_specs]}")        
+        if logger.isEnabledFor(logging.DEBUG):
+            logger.debug(f"Computing field hash of layer {layer_spec.id_} [{layer_spec.type_}] based on layers {[x.id_ for x in included_specs]}")
 
-        hasher = hashlib.md5()        
+        hasher = hashlib.md5()
         for spec in included_specs:
             hasher.update(str(spec.compute_field_hash()).encode())
-        
+
         return hasher.hexdigest()
 
     def get_ordered_ids(self) -> List[str]:
-        """ Returns the layers in terms of execution order 
+        """ Returns the layers in terms of execution order
 
         Returns:
             A list of ID strings
@@ -133,8 +137,8 @@ class GraphSpec(AbstractGraphSpec):
         return ordered_ids
 
     def get_ordered_layers(self) -> List[LayerSpec]:
-        """ Returns the layers in terms of execution order. 
-        
+        """ Returns the layers in terms of execution order.
+
         Returns:
             A list of LayerSpecs
         """
@@ -142,12 +146,12 @@ class GraphSpec(AbstractGraphSpec):
 
     def get_ordered_nodes(self):
         """ Returns the layers in terms of execution order. Alias for 'get_ordered_layers'
-        
+
         Returns:
             A list of LayerSpecs
-        """        
+        """
         return self.get_ordered_layers()
-    
+
     def __eq__(self, other):
         return len(self.difference(other)) == 0
 
@@ -169,12 +173,12 @@ class GraphSpec(AbstractGraphSpec):
 
     @property
     def nodes_by_name(self):
-        return {layer_spec.name: layer_spec for layer_spec in self.nodes}        
+        return {layer_spec.name: layer_spec for layer_spec in self.nodes}
 
     @property
     def nodes_by_sanitized_name(self):
         return {layer_spec.sanitized_name: layer_spec for layer_spec in self.nodes}
-    
+
     @property
     def node_ids(self):
         return self.layer_ids
@@ -182,21 +186,21 @@ class GraphSpec(AbstractGraphSpec):
     @property
     def layer_ids(self):
         return list(self.nodes_by_id.keys())
-    
+
     @property
     def edges_by_id(self):
         return [(src_id, dst_id) for src_id, dst_id in self._nx_graph.edges()]
 
     def get_subgraph(self, layer_ids):
         nx_graph = self._nx_graph.subgraph(layer_ids)
-        
+
         nodes = [self.nodes_by_id[id_] for id_ in nx_graph.nodes]
         edges = [(self.nodes_by_id[id1], self.nodes_by_id[id2]) for id1, id2 in nx_graph.edges]
         return GraphSpec(list(nodes), list(edges))
 
     def split(self, splitter):
         subgraph_topologies = splitter.split(self.layer_ids, self.edges_by_id)
-        
+
         subgraphs = []
         for subgraph_node_ids, subgraph_edges_by_id in subgraph_topologies:
             subgraph_nodes = [self.nodes_by_id[id_] for id_ in subgraph_node_ids]
@@ -225,7 +229,7 @@ class GraphSpec(AbstractGraphSpec):
             for conn_spec in self._get_connections(self.nodes)
         }
         nx.draw_networkx_edge_labels(self._nx_graph, pos, edge_labels=edge_labels, font_color='red')
-        
+
         plt.show()
 
     def items(self):
@@ -234,11 +238,11 @@ class GraphSpec(AbstractGraphSpec):
     def get_start_nodes(self):
         start_nodes = [node for node in self.nodes if len(node.backward_connections) == 0]
         return start_nodes
-    
+
     def _get_connections(self, layer_specs):
         bw_cons = set()
         fw_cons = set()
-        for layer_spec in layer_specs:            
+        for layer_spec in layer_specs:
             for conn_spec in layer_spec.backward_connections:
                 bw_cons.add(conn_spec)
             for conn_spec in layer_spec.forward_connections:
@@ -246,7 +250,7 @@ class GraphSpec(AbstractGraphSpec):
 
         if bw_cons != fw_cons:
             bw_cons_extra = bw_cons.difference(fw_cons)
-            fw_cons_extra = fw_cons.difference(bw_cons)            
+            fw_cons_extra = fw_cons.difference(bw_cons)
 
             text = "Mismatch between backwards/forward connections."
             if len(bw_cons_extra) > 0:
@@ -254,23 +258,23 @@ class GraphSpec(AbstractGraphSpec):
             if len(fw_cons_extra) > 0:
                 text += f"\nConnections {fw_cons_extra} in forwards, but not in backwards."
             raise RuntimeError(text)
-        
+
         return bw_cons
-    
+
     def _create_networkx_graph(self, layer_specs):
         nx_graph = nx.DiGraph()
-        
+
         connections = self._get_connections(layer_specs)
         edges_by_id = [(conn_spec.src_id, conn_spec.dst_id) for conn_spec in connections]
-        
+
         nx_graph.add_edges_from(edges_by_id)
-        nx_graph.add_nodes_from([l.id_ for l in layer_specs])            
+        nx_graph.add_nodes_from([l.id_ for l in layer_specs])
         return nx_graph
 
     @property
     def training_layer(self) -> LayerSpec:
         """ Get the training layer of this graph. Assumes there's only one.
-        
+
         Returns:
             The training layer.
         """
@@ -281,30 +285,30 @@ class GraphSpec(AbstractGraphSpec):
 
     def difference(self, other: 'GraphSpec') -> Set[str]:
         """ Gets the IDs of layers that are different between two graphs
-        
+
         Args:
             other: another GraphSpec
 
         Returns:
-            a set of layer ids         
+            a set of layer ids
         """
 
         if type(self) != type(other):
             return set()
-        
+
         different_layers = set()
         for node1, node2 in zip(self.get_ordered_nodes(), other.get_ordered_nodes()):
             if node1 != node2:
                 different_layers.add(node1.id_)
-            
-        return different_layers
-        
 
-    
-    
+        return different_layers
+
+
+
+
 if __name__ == "__main__":
 
-    n_classes = 10    
+    n_classes = 10
     inputs_path = "/home/anton/Data/mnist_split/mnist_input.npy"
     labels_path = "/home/anton/Data/mnist_split/mnist_labels.npy"
 
@@ -318,7 +322,7 @@ if __name__ == "__main__":
                         "Sources": [{"type": "file", "path": inputs_path}],
                         "Partition_list": [[70, 20, 10]],
                         "Shuffle_data": False,
-                        "Columns": []                        
+                        "Columns": []
                     },
                 },
                 "backward_connections": [],
@@ -350,7 +354,7 @@ if __name__ == "__main__":
                     {
                         "src_var": "output",
                         "dst_id": "6",
-                        "dst_name": "one_hot",                        
+                        "dst_name": "one_hot",
                         "dst_var": "input"
                     }
                 ],
@@ -359,7 +363,7 @@ if __name__ == "__main__":
             },
             "3": {
                 "Name": "reshape",
-                "Type": "ProcessReshape",                
+                "Type": "ProcessReshape",
                 "Properties": {
                     "Shape": [28, 28, 1],
                     "Permutation": [0, 1, 2]
@@ -367,7 +371,7 @@ if __name__ == "__main__":
                 "backward_connections": [
                     {
                         "src_id": "1",
-                        "src_name": "data_inputs",                        
+                        "src_name": "data_inputs",
                         "src_var": "output",
                         "dst_var": "input"
                     }
@@ -376,7 +380,7 @@ if __name__ == "__main__":
                     {
                         "src_var": "output",
                         "dst_id": "4",
-                        "dst_name": "rescale",                                                
+                        "dst_name": "rescale",
                         "dst_var": "input"
                     }
                 ],
@@ -385,7 +389,7 @@ if __name__ == "__main__":
             },
             "4": {
                 "Name": "rescale",
-                "Type": "ProcessRescale",                
+                "Type": "ProcessRescale",
                 "Properties": {
                     "width":"56",
                     "height":"56"
@@ -393,7 +397,7 @@ if __name__ == "__main__":
                 "backward_connections": [
                     {
                         "src_id": "3",
-                        "src_name": "reshape",                        
+                        "src_name": "reshape",
                         "src_var": "output",
                         "dst_var": "input"
                     }
@@ -402,7 +406,7 @@ if __name__ == "__main__":
                     {
                         "src_var": "output",
                         "dst_id": "5",
-                        "dst_name": "fc",                                                
+                        "dst_name": "fc",
                         "dst_var": "input"
                     }
                 ],
@@ -412,7 +416,7 @@ if __name__ == "__main__":
 
             "5": {
                 "Name": "fc",
-                "Type": "DeepLearningFC",                
+                "Type": "DeepLearningFC",
                 "Properties": {
                     "Neurons": str(n_classes),
                     "Activation_function" : "Sigmoid",
@@ -423,7 +427,7 @@ if __name__ == "__main__":
                 "backward_connections": [
                     {
                         "src_id": "4",
-                        "src_name": "rescale",                                                
+                        "src_name": "rescale",
                         "src_var": "output",
                         "dst_var": "input"
                     }
@@ -457,7 +461,7 @@ if __name__ == "__main__":
                     {
                         "src_var": "output",
                         "dst_id": "7",
-                        "dst_name": "training",                        
+                        "dst_name": "training",
                         "dst_var": "labels"
                     }
                 ],
@@ -478,25 +482,25 @@ if __name__ == "__main__":
                     "Momentum": "0.9",
                     "Decay_steps": "100000",
                     "Decay_rate": "0.96",
-                    "Batch_size": 10,                    
+                    "Batch_size": 10,
                     "Learning_rate": "0.05",
                     "Distributed": False
                 },
                 "backward_connections": [
                     {
                         "src_id": "5",
-                        "src_name": "fc",                        
+                        "src_name": "fc",
                         "src_var": "output",
                         "dst_var": "predictions"
                     },
                     {
                         "src_id": "6",
-                        "src_name": "one_hot",                        
+                        "src_name": "one_hot",
                         "src_var": "output",
                         "dst_var": "labels"
                     }
                 ],
-                "forward_connections": [],                
+                "forward_connections": [],
                 "Code": None,
                 "checkpoint": []
             }
@@ -523,13 +527,13 @@ if __name__ == "__main__":
     t0 = time.perf_counter()
     for i in range(n):
         ll = graph_spec.nodes_by_id['5'].activation
-        #ll.activation        
+        #ll.activation
     t1 = time.perf_counter()
     dt2 = (t1-t0)/n
 
 
     print('old/new: ', dt1/dt2)
 
-    
+
     import pdb; pdb.set_trace()
 
