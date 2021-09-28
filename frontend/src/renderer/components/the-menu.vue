@@ -167,10 +167,10 @@ export default {
     newModel() {
       this.popupNewModel(true);
     },
-    openLoadModelPopup() {
+    openLoadModelPopup() {      
       this.$store.dispatch('globalView/SET_showImportNetworkfromGitHubOrLocalPopup', true);
     },
-    openLoadPbPopup() {
+    openLoadPbPopup() {      
       this.$store.dispatch('globalView/SET_filePickerPopup', {
         filePickerType: 'file',
         confirmCallback: this.onLoadPbComplete
@@ -292,7 +292,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  @import "../scss/base";
   .app-header_nav {
     height: 100%;
     -webkit-app-region: no-drag;
@@ -311,7 +310,6 @@ export default {
     height: 100%;
     > .header-nav_item {
       font-size: 14px;
-      color: $col-txt;
       color: #CDD8F8;
       display: flex;
       align-items: center;

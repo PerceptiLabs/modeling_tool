@@ -1,12 +1,14 @@
 <template lang="pug">
   v-chart(
     :auto-resize="true"
-    theme="quantum"
+    :theme="currentTheme"
     :options="chartData"
   )
 </template>
 
 <script>
+import { mapState } from 'vuex';
+  import { THEME_DARK, THEME_LIGHT } from '@/core/constants.js';
 export default {
   name: "ChartD3",
   props: {
@@ -20,6 +22,21 @@ export default {
         return {}
       }
     },
+    invert: {
+      type: Boolean,
+      default: false
+    }
+  },
+  computed: {
+    ...mapState({
+      theme:                      state => state.globalView.theme
+    }),
+    currentTheme () {
+      if( this.invert ) {
+        return this.theme === THEME_DARK ? THEME_LIGHT : THEME_DARK
+      }
+      return this.theme;
+    }
   },
   data() {
     return {

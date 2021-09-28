@@ -22,13 +22,13 @@
         @mouseover="handlehover"
         @mouseleave="handleleave"
       )
-      div.variable-list(
-        v-if="isVariableListOpen && outputId === variableListId"
-      )
-        button.variable-list-button(
-          v-for="(variable) in outputsVariables"
-          @click.stop.prevent="assignVariable(variable)"
-        ) {{variable}}
+      //- div.variable-list(
+      //-   v-if="isVariableListOpen && outputId === variableListId"
+      //- )
+      //-   button.variable-list-button(
+      //-     v-for="(variable) in outputsVariables"
+      //-     @click.stop.prevent="assignVariable(variable)"
+      //-   ) {{variable}}
       
       
       div.output-context(
@@ -199,40 +199,42 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
+
 .output-container {
   position: relative;
   width: 55px;
   padding: 4px;
   border-radius: 1px;
-  border: 1px solid rgba(97, 133, 238, 0.4);
-  background: #131B30;
+  text-align: right;
+  // border: 1px solid rgba(97, 133, 238, 0.4);
+  // background: #131B30;
   margin: 4px 19px 4px 0;
-  &::after {
-    content: '';
-    position: absolute;
-    right: 3px;
-    top: 8px;
-    border-top: 4px solid #ccc;
-    border-left: 4px solid transparent;
-    border-right: 4px solid transparent;
-  }
-  &.is-opened-variable-list {
-    &::after {
-      content: '';
-      position: absolute;
-      right: 3px;
-      top: 8px;
-      border-top: 0px solid transparent;
-      border-bottom: 4px solid #ccc;
-      border-left: 4px solid transparent;
-      border-right: 4px solid transparent;
-    }
-  }
+  color: theme-var($neutral-8);
+  // &::after {
+  //   content: '';
+  //   position: absolute;
+  //   right: 3px;
+  //   top: 8px;
+  //   border-top: 4px solid #ccc;
+  //   border-left: 4px solid transparent;
+  //   border-right: 4px solid transparent;
+  // }
+  // &.is-opened-variable-list {
+  //   &::after {
+  //     content: '';
+  //     position: absolute;
+  //     right: 3px;
+  //     top: 8px;
+  //     border-top: 0px solid transparent;
+  //     border-bottom: 4px solid #ccc;
+  //     border-left: 4px solid transparent;
+  //     border-right: 4px solid transparent;
+  //   }
+  // }
 }
 .output-text {
   overflow: hidden;
   display: block;
-  max-width: 35px;
 }
 .output-dot {
   position: absolute;
@@ -245,7 +247,7 @@ export default {
   border-radius: 50%;
 
   &:hover {
-    background-color: rgba(255, 255, 255, 0.3);
+    background-color: rgba(0, 0, 0, 0.3);
   }
 
 }
@@ -253,7 +255,7 @@ export default {
 .circle-dot {
   width: 5px;
   height: 5px;
-  border: 1px solid white;
+  border: 1px solid $color-6;
   border-radius: 50%;
   position: absolute;
   right: -13px;
@@ -261,7 +263,7 @@ export default {
   transform: translateY(-50%);
 
   &.connect {
-    background: #B6C7FB;
+    background: #6185EE;
   }
 }
 
@@ -312,7 +314,7 @@ export default {
 .variable-list {
   position: absolute;
   z-index: 200;
-  background: #0B0D13;
+  // background: #0B0D13;
   border: 1px solid #363E51;
   border-top: 0;
   box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);

@@ -1,77 +1,80 @@
 <template lang="pug">
-  .data-settings-modal
-    .header
-      span Data Settings
-      .close-cross(@click="closeModal()")
-    .main-wrapper
-      chart-spinner(v-if="isLoadingDataset")
-      template(v-else)
-        chart-spinner(v-if="isUpdatingDataset")
-        .current-dataset
-          h5.default-text Current dataset:
-          input.dataset-location(disabled :value="datasetPath")
-          button.btn.btn--primary.btn--disabled(
-            @click="replaceDataset"
-          ) Replace
-        csv-table(
-          v-if="dataset"
-          :dataSet="dataset",
-          :dataSetTypes="dataSetTypes"
-          :elementToFeatures="elementToFeatures"
-          :locked="true"
-          @update="handleCSVDataTypeUpdates"
-        )
-        data-column-option-sidebar(
-          :key="index"
-          v-for="index in csvData && csvData.dataTypes.length"
-          :columnSelectedType="csvData && csvData.dataTypes"
-          :columnNames="csvData && csvData.columnNames"
-          :preprocessingTypes="csvData && csvData.preprocessingTypes"
-          @handleChange="updatePreprocessingTypes"
-          :saveOnMount="false"
-          :elementIndex="index - 1"
-        )
+  base-global-popup(
+    :title="popupTitle"
+    title-align="text-center"
+     @closePopup="closeModal"
+  )
+    template(:slot="popupTitle + '-content'")
+      .main-wrapper.data-settings-modal
+        chart-spinner(v-if="isLoadingDataset")
+        template(v-else)
+          chart-spinner(v-if="isUpdatingDataset")
+          .current-dataset
+            .form_row
+              h5.default-text Current dataset:
+              input.dataset-location(disabled :value="datasetPath")
+              button.btn.btn--secondary(
+                @click="replaceDataset"
+              ) Replace
+          csv-table(
+            v-if="dataset"
+            :dataSet="dataset",
+            :dataSetTypes="dataSetTypes"
+            :elementToFeatures="elementToFeatures"
+            :locked="true"
+            @update="handleCSVDataTypeUpdates"
+          )
+          data-column-option-sidebar(
+            :key="index"
+            v-for="index in csvData && csvData.dataTypes.length"
+            :columnSelectedType="csvData && csvData.dataTypes"
+            :columnNames="csvData && csvData.columnNames"
+            :preprocessingTypes="csvData && csvData.preprocessingTypes"
+            @handleChange="updatePreprocessingTypes"
+            :saveOnMount="false"
+            :elementIndex="index - 1"
+          )
 
-        //- span.default-text.error(v-if="isAllIOType1sFilled() && !hasInputAndTarget()") Make sure to have at least one input and one target to proceed
-        //- span.default-text.error(v-else-if="isAllIOTypesFilled() && !hasOneTarget()") Make sure to have only one target to proceed
-        .data-partition-wrapper
-          h5.default-text Data partitions:
-          triple-input(
-            style-type="darken"
-            v-model="datasetSettings.partitions",
-            separate-sign="%",
-            :validate-min="1",
-            :validate-max="98",
-            :validate-sum="100",
-            :withLabels="true"
-          )
-        div(style="display:flex")
-          base-checkbox(
-            style="font-size: 14px; white-space:nowrap;"
-            v-model="datasetSettings.randomizedPartitions"
-          ) Randomize partition
-          info-tooltip(
-            text="Select random samples to place in each partition, good practice if your dataset is ordered"
-          )
-        div.footer-actions
-          button.btn.btn--primary.btn--disabled(
-            @click="closeModal()"
-          ) Cancel
-          | &nbsp;&nbsp;
-          button.btn.btn--primary(
-            @click="updateDataset()"
-            :disabled="!isDatasetAvailable"
-          )
-            | Save
-    file-picker-popup(
-      v-if="showFilePickerPopup",
-      popupTitle="Choose data to load",
-      filePickerType="file",
-      :startupFolder="startupDatasetPath",
-      :confirmCallback="handleDataPathUpdates",
-      :cancelCallback="closePopup"
-      :options="filePickerOptions"
-    )
+          //- span.default-text.error(v-if="isAllIOType1sFilled() && !hasInputAndTarget()") Make sure to have at least one input and one target to proceed
+          //- span.default-text.error(v-else-if="isAllIOTypesFilled() && !hasOneTarget()") Make sure to have only one target to proceed
+          .data-partition-wrapper
+            h5.default-text Data partitions:
+            triple-input(
+              v-model="datasetSettings.partitions",
+              separate-sign="%",
+              :validate-min="1",
+              :validate-max="98",
+              :validate-sum="100",
+              :withLabels="true"
+            )
+          div(style="display:flex")
+            base-checkbox(
+              style="font-size: 14px; white-space:nowrap;"
+              v-model="datasetSettings.randomizedPartitions"
+            ) Randomize partition
+            info-tooltip(
+              text="Select random samples to place in each partition, good practice if your dataset is ordered"
+            )
+
+    template(slot="action" v-if="!isLoadingDataset")
+      button.btn.btn--primary.btn--disabled(
+        @click="closeModal()"
+      ) Cancel
+      button.btn.btn--primary(
+        @click="updateDataset()"
+        :disabled="!isDatasetAvailable"
+      )
+        | Save
+      file-picker-popup(
+        v-if="showFilePickerPopup",
+        popupTitle="Choose data to load",
+        filePickerType="file",
+        :startupFolder="startupDatasetPath",
+        :confirmCallback="handleDataPathUpdates",
+        :cancelCallback="closePopup"
+        :options="filePickerOptions"
+      )
+    
 </template>
 <script>
 import { mapState, mapGetters, mapActions } from "vuex";
@@ -85,6 +88,7 @@ import TripleInput from "@/components/base/triple-input";
 import InfoTooltip from "@/components/different/info-tooltip.vue";
 import ChartSpinner from "@/components/charts/chart-spinner";
 import DataColumnOptionSidebar from "@/components/different/data-column-option-sidebar";
+import BaseGlobalPopup  from "@/components/global-popups/base-global-popup";
 
 import {
   getDatasetPath,
@@ -99,7 +103,8 @@ export default {
     TripleInput,
     InfoTooltip,
     ChartSpinner,
-    DataColumnOptionSidebar
+    DataColumnOptionSidebar,
+    BaseGlobalPopup
   },
   data: () => ({
     dataset: null,
@@ -114,7 +119,8 @@ export default {
       showToTutotialDataFolder: true
     },
     elementToFeatures: {},
-    isDatasetAvailable: true
+    isDatasetAvailable: true,
+    popupTitle: 'Data Settings',
   }),
   computed: {
     ...mapState({
@@ -313,10 +319,6 @@ export default {
 </script>
 <style lang="scss" scoped>
 .data-settings-modal {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
   min-width: 800px;
   max-width: 80vw;
 }
@@ -376,15 +378,7 @@ export default {
 }
 
 .main-wrapper {
-  padding: 20px 50px 50px;
-
-  background: linear-gradient(180deg, #363e51 0%, rgba(54, 62, 81, 0.8) 100%);
-  border: 1px solid rgba(97, 133, 238, 0.4);
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.25);
-  border-radius: 0;
-  min-height: 520px;
   // border-right-width: 0;
-  border-bottom-left-radius: 2px;
 }
 .btn.btn--primary {
   height: auto;
@@ -411,12 +405,12 @@ h5 {
 
 .data-partition-wrapper {
   // display: flex;
-  padding: 20px 0;
+  padding-top: 20px;
   align-items: center;
   margin-bottom: 10px;
 
   h5 {
-    margin-bottom: 20px;
+    margin-bottom: 10px;
   }
 }
 .dataset-settings {
@@ -435,14 +429,31 @@ h5 {
   display: flex;
   align-items: center;
   margin-bottom: 20px;
+  .form_row { 
+    width: 100%;
+  }
 
   .dataset-location {
-    width: 50%;
-    height: 36px;
-    background: #232837;
-    border: 1px solid #5e6f9f;
-    border-radius: 2px;
+    // width: 100%;
     margin-right: 12px;
   }
+  // .dataset-location {
+  //   width: 50%;
+  //   height: 36px;
+  //   background: #232837;
+  //   border: 1px solid #5e6f9f;
+  //   border-radius: 2px;
+  //   margin-right: 12px;
+  // }
+}
+
+.default-text {
+  font-family: Roboto, sans-serif;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 16px;
+  line-height: 19px;
+  white-space: nowrap;
+  // color: #000000;
 }
 </style>

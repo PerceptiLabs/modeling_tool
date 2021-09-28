@@ -171,7 +171,7 @@
   }
 </script>
 <style lang="scss" scoped>
-  @import "../../../../scss/base";
+  
   .layer-container_box {
     position: absolute;
     border-radius: $bdrs;

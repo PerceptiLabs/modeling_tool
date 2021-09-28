@@ -1,6 +1,6 @@
 <template lang="pug">
   .triple-input.correct-input-reshape
-    button.triple-input_separate.btn(type="button" @click="swap13")
+    button.btn.triple-input_separate(type="button" @click="swap13")
       <
       //i.icon.icon-shevron-right
     .triple-input_input-wrap
@@ -117,7 +117,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  @import "../../scss/base";
   @import "../../scss/components/triple-input";
   .triple-input_input {
     max-width: 2em;
@@ -136,7 +135,7 @@ export default {
 
   }
   button.triple-input_separate {
-    background: $bg-grad-blue;
+    // background: $bg-grad-blue;
     font-size: 1.2rem;
     padding: 2px 2px 3px 3px;
     letter-spacing: 1px;
@@ -144,6 +143,14 @@ export default {
     position: relative;
     margin: 0 1px;
     pointer-events: auto;
+    border-radius: 4px;
+
+    &:first-child {
+      border-radius: 4px 0 0 4px;
+    }
+    &:last-child {
+      border-radius: 0 4px 4px 0;
+    }
   }
   .correct-input-reshape {
     right: 4rem;

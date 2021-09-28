@@ -33,9 +33,9 @@ textarea {
 	background-color: $bg-input;
 	box-shadow: none;
   &:focus {
-    background: $bg-grad-blue;
+    // background: $bg-grad-blue;
   &::selection {
-    background-color: $color-5;
+    // background-color: $color-5;
   }
     @include placeholder {
 		color: $col-placeholder;
@@ -85,20 +85,17 @@ input[type='number'] {
 	.sidebar-setting-content & {
 		height: 17px;
 		width: 70px;
-		font-family: Nunito Sans;
 		font-style: normal;
 		font-weight: 300;
 		font-size: 11px;
 		line-height: 15px;
-		color: #FFFFFF;
-		background: rgba(54, 62, 81, 0.4);
 		border: 0.5px solid #3F4C70;
 	}
 }
 
 
 select {
-	color: $col-txt;
+	color: theme-var($text-normal);
 	width: 100%;
 	height: $input-height;
 	padding: .45rem;
@@ -115,7 +112,7 @@ select {
 }
 
 textarea {
-	color: $col-txt;
+	color: theme-var($text-normal);
 	min-height: $input-height*2;
 	resize: vertical;
 	vertical-align: top;
@@ -177,6 +174,7 @@ input[type='submit'] {
 .form_row {
 	display: flex;
 	align-items: center;
+	
 	.form_row {
 		.form_label {
 			font-size: 1rem;
@@ -195,21 +193,18 @@ input[type='submit'] {
 	//  //margin-left: 2rem;
 	//}
 	input {
-		background: #363E51;
-		border: 1px solid #4B4D52;
-		border-radius: 2px;
-		height: 2rem;
+		background: theme-var($neutral-7);
+		border: $border-1;
+		border-radius: 5px;
+		height: 42px;
+		font-size: 14px;
 		.sidebar-setting-content & {
 			height: 17px;
 			width: 70px;
-			font-family: Nunito Sans;
 			font-style: normal;
 			font-weight: 300;
 			font-size: 11px;
 			line-height: 15px;
-			color: #FFFFFF;
-			background: rgba(54, 62, 81, 0.4);
-			border: 0.5px solid #3F4C70;
 		}
 		&:focus {
 			border: 1px solid $color-6;
@@ -231,5 +226,34 @@ input[type='submit'] {
 	.form_label,
 	.form_input {
 		display: table-cell;
+	}
+}
+
+.input_group {
+	display: flex;
+
+	& > input, div, label {
+		border-radius: 4px;
+		border: $border-1;
+		margin-left: 0px !important;
+	}
+
+	& > button {
+		margin-left: 0px !important;
+	}
+	
+	& > input:first-child,
+	& > div:first-child,
+	& > label:first-child,
+	& > button:first-child {
+		border-radius: 4px 0px 0px 4px;
+		border-right: 0px;
+	}
+	& > input:last-child,
+	& > div:last-child,
+	& > label:last-child,
+	& > button:last-child  {
+		border-radius: 0px 4px 4px 0px;
+		// border-left: 0px;
 	}
 }

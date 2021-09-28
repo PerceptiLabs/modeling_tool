@@ -31,7 +31,7 @@ export default {
         right: 0;
         bottom: 0;
         left: 0;
-        background: #181A1E;
+        background: theme-var($neutral-7);
         opacity: 0.9;
         backdrop-filter: blur(4px);
       }

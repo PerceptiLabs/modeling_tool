@@ -85,21 +85,22 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  @import "../scss/base";
   .sidebar-top-empty-space {
     height: 31px;
     min-height: 30px;
     width: 100%;
-    background-color: #23252A;
+    background-color: $bg-toolbar-2;
   }
   .page_sidebar {
+    position: relative;
     display: flex;
     flex-direction: column;
     max-width: $w-sidebar;
     grid-area: sidebar;
     transition: max-width .3s;
-    padding-top: 30px;
-    background-color: #23252A;
+    background-color: $bg-toolbar-2;
+    border: $border-1;
+    height: calc(100vh - #{$remaining});
     &.page_sidebar--hide {
       max-width: 0;
     }

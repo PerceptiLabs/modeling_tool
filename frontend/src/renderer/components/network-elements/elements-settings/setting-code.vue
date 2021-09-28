@@ -113,7 +113,7 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
-  @import "../../../scss/base";
+  
   .bookmark_head {
     display: flex;
     align-items: center;

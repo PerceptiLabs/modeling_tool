@@ -1,5 +1,5 @@
 <template lang="pug">
-  label.custom-radio(:class="{'type-secondary': styleTypeSecondary}")
+  label.custom-radio
     input(type="radio"
       :name="groupName"
       :value="valueInput"
@@ -27,10 +27,6 @@ export default {
     },
     value: {type: [Boolean, String]},
     valueInput: {String},
-    styleTypeSecondary: {
-      type: Boolean,
-      value: false,
-    }
   },
   data() {
     return {
@@ -52,52 +48,12 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  @import "../../scss/base";
   .custom-radio {
-    font-size: 1.2rem;
+    font-size: 14px;
     display: inline-flex;
     align-items: center;
-    padding: .5em 1em .5em 0;
-    &.type-secondary {
-      .radio-fake {
-        position: relative;
-        background: transparent;
-        flex: 0 0 18px;
-        width: 18px;
-        height: 18px;
-        border: 1px solid #B6C7FB;
-        box-sizing: content-box;
-      }
-      .radio-text {
-        font-size: 14px;
-        font-family: Roboto, sans-serif;
-      }
-      input[type='radio'] {
-        &:checked {
-          + .radio-fake {
-            background: transparent;
-            border: 1px solid #B6C7FB;
-            box-sizing: content-box;
-            &:after {
-              content: '';
-              position: absolute;
-              width: 12px;
-              height: 12px;
-              top: 50%;
-              left: 50%;
-              transform: translate(-50%, -50%);
-              background-color: #B6C7FB;
-              border-radius: 50%;
-            }
-          }
-          ~ .radio-text {
-            //color: #fff;
-            font-size: 14px;
-          }
-        }
-      }
-    }
-    
+    padding: .25em 1em .25em 0;
+
     .sidebar-setting-content & {
       font-size: 11px;
     }
@@ -110,26 +66,23 @@ export default {
       height: 1px;
       &:checked {
         + .radio-fake {
-          background: #fff;
-          border: 1px solid #4D556A;
-        }
-        ~ .radio-text {
-          color: #fff;
+          background: $color-6;
         }
       }
     }
     .radio-fake {
       position: relative;
-      flex: 0 0 7px;
-      width: 7px;
-      height: 7px;
+      flex: 0 0 14px;
+      width: 14px;
+      height: 14px;
       cursor: pointer;
       border-radius: 50%;
-      background-color: #4D556A;
+      border: 2px solid #D9E2FF;
+      background-color: theme-var($neutral-8);
     }
     .radio-text {
       font-size: inherit;
-      color: #C4C4C4;
+      color: theme-var($text-highlight);
       margin-left: .75em;
     }
   }

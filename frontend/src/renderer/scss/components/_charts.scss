@@ -20,11 +20,15 @@
   // border: none;
 }
 
+.sidebar-data-settings_chart {
+  min-height: $preview-content;
+}
+
 // right sidebar settings menu fixed preview height
 .sidebar-settings-preview-wrapper {
   canvas {
-    height: 160px !important;
-    max-height: 160px !important;
-    min-height: 160px !important;
+    height: $preview-content !important;
+    max-height: $preview-content !important;
+    min-height: $preview-content !important;
   }  
 }

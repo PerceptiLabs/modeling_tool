@@ -4,17 +4,12 @@
 //  align-items: flex-end;
 //}
 ul.bookmark_tab-list {
-  padding: 0 0 0 2em;
+  // padding: 0 0 0 2em;
   margin: 0;
   list-style: none;
   display: flex;
 }
 .bookmark_tab  {
-  height: 2.5rem;
-  background-color: #2A303D;
-  border-radius: 1rem 1rem 0 0;
-  padding-left: .8em;
-  padding-right: .8em;
   margin-right: 1em;
 }
 .bookmark_tab--active {

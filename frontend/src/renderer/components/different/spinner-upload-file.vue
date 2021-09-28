@@ -10,7 +10,6 @@
 </script>
 
 <style lang="scss" scoped>
-  @import "../../scss/base";
   // Progress Bar
   .progress {
     .is-electron & {

@@ -134,7 +134,7 @@ $prevBreakPoint: '4k';
    ---------------------------------------------------------*/
 
 .text-default {
-  color: $col-txt;
+  color: theme-var($text-normal);
 }
 .text-disable {
   color: $disable-txt;
@@ -177,6 +177,7 @@ $prevBreakPoint: '4k';
 }
 .bg-error {
   background-color: $col-error !important;
+  border: 1px solid $col-error !important;
 }
 /* ---------------------------------------------------------
    3. Background decoration
@@ -434,4 +435,8 @@ $soc-list: (
   &:before {
     right: 0;
   }
+}
+
+.rotate-180 {
+  transform: rotate(180deg);
 }

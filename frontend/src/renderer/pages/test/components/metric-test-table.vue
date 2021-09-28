@@ -1,11 +1,11 @@
 <template lang="pug">
-  div
+  div.wrapper
     div.head {{testFeature}} {{name}}
     div.body
       table
         thead
           tr
-            td(v-for="name in columnsNames") {{ name }}
+            th(v-for="name in columnsNames") {{ name }}
         tbody
           tr(v-for="(data, modelId) in testData")
             td {{modelName(modelId)}}
@@ -64,38 +64,38 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
+  
+  .wrapper {
+    background: theme-var($neutral-8);
+    padding: 20px 25px;
+    border: $border-1;
+    border-radius: 4px;
+  }
+
   .head {
     display: flex;
     align-items: center;
     flex: 0 0 auto;
-    justify-content: space-between;
+    justify-content: space-between;    
     width: 100%;
-    height: 2.5rem;
-    padding: 0 1rem 0 1rem;
-    border: 1px solid rgba(97, 133, 238, 0.4);
-    border-radius: 2px 2px 0 0;
-    background: #3F4C70;
+    color: $color-6;
+    font-size: 14px;
   }
   .body {
-    background: #212839;
-    padding: 20px;
-    
+    margin-top: 20px;    
   }
   table {
     font-size: 14px;
     width: 100%;
     text-align: center;
   }
+  th {    
+    padding: 10px 5px;
+    border: $border-1;
+    background: theme-var($neutral-7);
+  }
   td {
     padding: 10px 5px;
-    border: 1px solid #4D556A;
-  }
-  .chart-container {
-    width: calc(50% - 20px);
-    margin: 10px;
-  }
-  .wrap {
-    width: 100%;
-    display: flex;
+    border: $border-1;
   }
 </style>

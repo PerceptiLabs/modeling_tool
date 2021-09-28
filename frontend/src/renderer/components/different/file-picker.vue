@@ -373,7 +373,6 @@ export default {
 
 
 <style lang="scss" scoped>
-@import "../../scss/base";
 @import "../../scss/common/info-popup";
 
 .filepicker {
@@ -390,8 +389,9 @@ export default {
 .directory-breadcrumb {
   display: flex;
   padding: 1rem;
-  border-top: 0.1rem solid $color-8;
-  border-bottom: 0.1rem solid $color-8;
+  background: theme-var($neutral-7);
+  border: $border-1;
+  border-radius: 4px 4px 0px 0px;
 
   .breadcrumb {
 
@@ -422,10 +422,14 @@ export default {
     }
 
     .svg-icon {
-      height: 1rem;
-      filter: brightness(0) invert(1);
+      height: 10px;
+      // filter: brightness(0) invert(1);
     }
   }
+}
+.ps.ps--active-y {  
+  border: $border-1;
+  border-radius: 0px 0px 4px 4px;
 }
 
 .selectable-list {
@@ -447,22 +451,30 @@ export default {
       overflow: hidden;
       white-space: nowrap;
       text-overflow: ellipsis;
+      font-size: 14px;
     }
 
     .svg-icon {
-      height: 1rem;
+      height: 14px;
       width: 1rem;
       margin: 0 1rem 0 2rem;
-      filter: invert(100%);
+      // filter: invert(100%);
+      .dark-theme & {
+        filter: invert(100%);
+      }
     }
 
     &.selected {
-      background-color: $bg-toolbar;
+      background-color: $color-6;
+      color: white;
+      .svg-icon {
+        filter: invert(100%);
+      }
     }
 
     &:hover {
       // background-color: $col-primary2;
-      background-color: rgba(#6185EE, .5);
+      background-color: rgba(#6185EE, .5);      
     }
   }
 
@@ -487,7 +499,6 @@ export default {
 .button-group {
   display: flex;
   align-items: center;
-  border-top: 0.1rem solid $color-8;
 
   padding: 1rem;
 
@@ -503,6 +514,7 @@ export default {
 .settings-layer_section {
   margin-top: 0;
   justify-content: space-between;
+  margin-bottom:8px;
 }
 
 .search-input-box {
@@ -521,7 +533,7 @@ export default {
   text-align: center;
   line-height: 10px;
   border-radius: 50%;
-  background-color: #5C6680;
+  background-color: theme-var($neutral-8);
 }
 .search-input-box .icon-search {
   cursor: pointer;
@@ -531,13 +543,12 @@ export default {
   transform: translateY(-50%);
 }
 .search-input {
-  width: 150px;
-  height: 20px;
+    height: 35px;
+    width: 250px;
   padding-left: 9px;
   padding-right: 15px;
-  border: 1px solid #5C6680;
-  background: #363E51;
-  color: #B6C7FB;
+  border: $border-1;
+  background: theme-var($neutral-8);
   border-radius: 5px;
 
   font-family: Nunito Sans;

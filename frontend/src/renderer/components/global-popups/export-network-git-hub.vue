@@ -1,12 +1,17 @@
 <template lang="pug">
-  base-global-popup(:tab-set="popupTitle" v-if="isGithubTokenSetted" @closePopup="closePopup")
+  base-global-popup(
+    :title="popupTitle" 
+    title-align="text-center" 
+    v-if="isGithubTokenSetted" 
+    @closePopup="closePopup"
+  )
     template(slot="Export to GitHub-content")
       div
         .settings-layer_section
           .name-wrapper
             .form_label.mr-10 Save as:
             .form_row.w-75
-              input.form_input.input-black(type="text" v-model="settings.name")
+              input.form_input(type="text" v-model="settings.name")
         .horozontal-separator
         .settings-layer_section
           .form_holder
@@ -56,7 +61,7 @@ export default {
     return {
       isLoading: false,
       GITHUB_AUTHORIZE_URL,
-      popupTitle: ['Export to GitHub'],
+      popupTitle: 'Export to GitHub',
       settings: {
         name: '',
         includeTensorflowFiles: false,
@@ -185,12 +190,9 @@ export default {
   height: 1px;
   width: calc(100% + 20px);
   margin-left: -10px;
-  background-color: #3F4C70;
+  background-color: theme-var($border-color);
+  margin-top: 10px;
   margin-bottom: 10px;
-}
-.input-black {
-  background-color: #202330;
-  border: none;
 }
 .mb-0 {
   margin-bottom: 0;

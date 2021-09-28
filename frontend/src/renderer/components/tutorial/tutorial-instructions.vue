@@ -212,7 +212,7 @@ export default {
 
 </script>
 <style lang="scss">
-  @import "../../scss/base";
+  
   @import "../../scss/directives/tooltip";
   $color-text-instructions:#AEAEAE;
   $color-schematic-element: #3185aa;
@@ -262,7 +262,7 @@ export default {
   }
   .header_arrows-top {
     transform: rotate(-180deg);
-    color: $col-txt;
+    color: theme-var($text-normal);
     background: $col-txt2;
     height: 100%;
     display: flex;

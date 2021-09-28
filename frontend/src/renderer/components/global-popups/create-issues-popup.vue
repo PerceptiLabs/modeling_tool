@@ -1,5 +1,9 @@
 <template lang="pug">
-  base-global-popup(:tab-set="popupTitle" @closePopup="cancel")
+  base-global-popup(
+    :title="popupTitle"
+    title-align="text-center"
+    @closePopup="closePopup"
+  )
     //- This is the form
     //- The confirmation is below
     template(v-if="isForm")
@@ -94,7 +98,7 @@
         issueTitle: '',
         issueBody: '',
         issueType: 'anonymous',
-        popupTitle: ['Report to PerceptiLabs'],
+        popupTitle: 'Report to PerceptiLabs',
         forumLink: PERCEPTILABS_FORUM_URL,
         gitHubIssuesUrl: 'https://github.com/PerceptiLabs/PerceptiLabs/issues/',
         gitHubIssueNumber: '',
@@ -158,7 +162,7 @@
 </script>
 
 <style scoped lang="scss">
-  @import "../../scss/base";
+  
   @import "../../scss/common/info-popup";
 
   /deep/ .popup_header {
@@ -235,7 +239,7 @@
     font-size: 12px;
     line-height: 16px;
 
-    color: #FFFFFF;
+    color: theme-var($neutral-8);
 
     &.left-indent {
       margin-left: 2rem;

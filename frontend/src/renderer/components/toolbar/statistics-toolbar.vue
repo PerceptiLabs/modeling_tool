@@ -34,7 +34,11 @@
         v-if="statisticsIsOpen"
         :statusData="currentNetwork.networkMeta.coreStatus"
       )
-    .toolbar-section
+    .toolbar-section.last-section
+      view-box-btn-list.statistics-tabs(
+        v-if="statisticsIsOpen && !testIsOpen"
+        :data-tutorial-target="'tutorial-statistics-tabs'"
+        :layerType="'Training'")
       //- used for easily centering the training bar
       error-cta(v-if="isTrainingFailed")
       
@@ -44,13 +48,14 @@
 <script>
 
 import ModelStatus  from '@/components/different/model-status.vue';
+import ViewBoxBtnList         from '@/components/statistics/view-box-btn-list.vue'
 import ErrorCta     from '@/components/error-cta.vue';
 
 import { mapGetters, mapActions, mapMutations, mapState } from 'vuex';
 
 export default {
   name: 'StatisticsToolbar',
-  components: { ModelStatus, ErrorCta },
+  components: { ModelStatus, ViewBoxBtnList, ErrorCta },
   data() {
     return {
       isTrainingStopped: false, 
@@ -151,18 +156,15 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@import "../../scss/base";
+
 
 .page_toolbar {
   display: flex;
   align-items: center;
-  padding: 5px 2rem 5px 0;
-  background-color: $bg-toolbar-2;
-  border: 1px solid rgba(97, 133, 238, 0.2);
-  border-radius: 2px 2px 0px 0px;
+  padding: 10px 1rem 0px 0;
   position: relative;
   grid-area: toolbar;
-  z-index: 2;
+  // z-index: 2;
   max-height: $h-toolbar;
 }
 
@@ -178,6 +180,10 @@ export default {
   &:last-of-type() {
     justify-content: flex-end;
   }
+  
+  &.last-section {
+    justify-content: flex-end;
+  }
 
   &:first-child > div {
     margin-right: auto;
@@ -189,7 +195,7 @@ export default {
 }
 
 .toolbar-button-group {
-  padding-left:2rem;
+  padding-left: 3rem;
   list-style: none;
   display: flex;
 
@@ -221,17 +227,12 @@ export default {
   position: relative;
   margin-left: 8px;
   // margin-right: 20px;
-  height:  23px;
   background: transparent;
-  border: 1px solid #5E6F9F;
-  border-radius: 2px;
-  font-family: Nunito Sans;
-  font-size: 11px;
-  line-height: 15px;
-  color: #B6C7FB;
+  font-size: 14px;
+  line-height: 16px;
+  color: $color-6;
   display: flex;
   align-items: center;
-  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
   i {
     margin-right: 5px;
   }
@@ -245,18 +246,16 @@ export default {
     transform: translateY(-50%);
     right: -12px;
   }
-  &:hover {
-    background-color: #6185EE;
-    border-color: #6185EE;
-    color: white;
-  }
-  &:active:hover {
-    background: #7397FE;
-  }
 }
 .btn-menu-bar {
   padding: 5px 5px;
-  margin-right: 3px;
+  margin-right: 8px;
+  
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  
+  filter: none;
 }
 .btn-menu-bar .icon {
   display: block;

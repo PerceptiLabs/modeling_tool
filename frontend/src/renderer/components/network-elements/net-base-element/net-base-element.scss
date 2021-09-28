@@ -12,7 +12,7 @@ $clip-path_indent: $arrows-start_size/2;
   }
   .btn--layersbar {
     width: 150px;
-    height: 20px;
+    height: 40px;
     border-radius: 2px 2px 0 0;
   }
 }
@@ -37,8 +37,8 @@ $clip-path_indent: $arrows-start_size/2;
   z-index: 3;
   margin: 0;
   padding: 0;
-  background-color: transparent;
-  background-color: #23252A;
+  background-color: $bg-setting-layer;
+  border-radius: 4px 4px 0 0;
   // box-shadow: $layer-shad;
 }
 
@@ -51,6 +51,7 @@ $clip-path_indent: $arrows-start_size/2;
   transform: translateX(-50%);
   white-space: nowrap;
   background-color: transparent;
+  // display: none;
 }
 .net-element_checkpoint-icon {
   position: absolute;

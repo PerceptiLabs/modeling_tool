@@ -9,7 +9,7 @@
         :outputsVariables="storeCurrentElement.previewVariableList"
       )
     .chart-spinner-wrapper(v-if="showLoadingSpinner")
-      chart-spinner
+      chart-spinner(:invert="true")
     .chart-container(v-if="!showLoadingSpinner" style="overflow: hidden")
       transition(name="slide-fade")
         chart-switch.data-settings_chart(
@@ -20,6 +20,7 @@
           :chartIdx="currentEl.chartIdx"
           @chartIdxChange="handleChartIdxChange"
           :enableDrag="enableDrag"
+          :invert-theme="true"
         )
 
 </template>
@@ -129,7 +130,7 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
-  @import "../../../scss/base";
+  
   .settings-layer_foot {
     justify-content: flex-end;
     .btn + .btn {
@@ -147,7 +148,7 @@ export default {
   .network-component-footer-wrapper {
     display: flex;
     justify-content: space-between;
-    background: #23252A;
+    background: $bg-setting-layer;
     border-bottom: 1px solid #3F4C70;
     &.no-preview {
       border-bottom: 1px solid transparent;
@@ -165,7 +166,7 @@ export default {
 
   .chart-spinner-wrapper {
     position: relative;
-    background: #23252A;
+    background: $bg-setting-layer;
     min-height: 140px;
     .chart-spinner-box {
       background: transparent;

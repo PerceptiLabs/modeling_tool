@@ -1,9 +1,9 @@
 <template lang="pug">
   div
     .setting-page
-      .setting-tabs-wrapper
-        ul.tab-list
-          li.tab-item.active Profile
+      //- .setting-tabs-wrapper
+      //-   ul.tab-list
+      //-     li.tab-item.active Profile
           //- li.tab-item.tab-item-disabled Account
           //- li.tab-item.tab-item-disabled Teams
       .setting-content
@@ -19,12 +19,10 @@ export default {
 </script>
 <style lang="scss" scoped>
 .setting-page {
-  margin-top: 5px;
-  margin-right: 5px;
-  background: linear-gradient(180deg, #363E51 0%, rgba(54, 62, 81, 0) 100%);
-  border: 1px solid rgba(97, 133, 238, 0.4);
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.25);
-  min-height: calc(100vh - 50px);
+  min-height: calc(100vh - 50px);  
+  background-color: theme-var($neutral-7);
+  border-radius: 15px 0px 0px 0px;
+  padding: 10px 20px;
 }
 .setting-tabs-wrapper {
   margin: 30px 15px 45px;
@@ -61,7 +59,7 @@ export default {
   cursor: default;
 }
 .setting-content {
-  margin-left: 45px;
-  margin-right: 45px;
+  // margin-left: 45px;
+  // margin-right: 45px;
 }
 </style>

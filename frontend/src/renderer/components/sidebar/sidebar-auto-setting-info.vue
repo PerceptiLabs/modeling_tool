@@ -57,17 +57,18 @@ export default {
   }
 }
 </script>
-<style lang="scss">
+<style lang="scss" scoped>
 .sidebar-auto-setting-info {
   position: absolute;
   width: 230px;
   left: -252px;
   top: 0;
   padding: 10px 15px;
-  background: #131B30;
+  background: theme-var($neutral-8);
   border: 1px solid rgba(97, 133, 238, 0.4);
   box-sizing: border-box;
   border-radius: 1px;
+  z-index: 6;
   &:after {
     content: '';
     position: absolute;
@@ -76,17 +77,15 @@ export default {
     display: block;
     width: 10px;
     height: 10px;
-    background: #131B30;
+    background: theme-var($neutral-8);
     border-top: 1px solid rgba(97, 133, 238, 0.4);
     border-right: 1px solid rgba(97, 133, 238, 0.4);
     transform: rotate(45deg);
   }
 }
 .message {
-  font-family: Nunito Sans;
   font-size: 12px;
   line-height: 14px;
-  color: #B6C7FB;
 }
 .dismiss-btn {
   font-family: Nunito Sans;

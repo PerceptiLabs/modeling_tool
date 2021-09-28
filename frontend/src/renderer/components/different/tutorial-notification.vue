@@ -107,11 +107,9 @@ export default {
 
 
 <style lang="scss" scoped>
-@import '../../scss/base/_variables.scss';
-
 $tutorial-tooltip-bg: #23252A;
 $tutorial-tooltip-background-picture: '/static/img/tutorial/tutorial-background.png';
-$tutorial-tooltip-text-color: #FFFFFF;
+$tutorial-tooltip-text-color: theme-var($neutral-8);
 $arrow-size: 1rem;
 
 

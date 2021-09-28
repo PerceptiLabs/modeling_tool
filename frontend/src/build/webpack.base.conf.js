@@ -87,5 +87,5 @@ module.exports = {
 		new MonacoWebpackPlugin({
 			languages: ['python', 'javascript', 'css']
 		})
-	]
+	],
 }

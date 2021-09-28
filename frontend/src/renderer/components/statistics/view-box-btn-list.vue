@@ -5,18 +5,18 @@
       v-for="(tabInfo, name, i) in tabSet"
       :key="name"
     )
-      button.btn.btn--tabs.statistics-box_btn.tutorial-relative(type="button"
+      button.btn.tutorial-relative(type="button"
         v-if="tabInfo"
         @click="setCurrentTab(name, tabInfo)"
         v-tooltip-interactive:bottom="tabInfo.btnInteractiveInfo"
-        :class="[currentTab === name ?  'active' : '', tabInfo.btnClass]"
+        :class="[currentTab === name ?  'btn--primary' : 'btn--secondary', tabInfo.btnClass]"
         :id="tabInfo.btnId"
       ) {{ name }}
 
-      button.btn.btn--tabs.statistics-box_btn(type="button"
+      button.btn.btn--small(type="button"
         v-else
         @click="setCurrentTab(name)"
-        :class="{'active': currentTab === name}"
+        :class="currentTab === name ? 'btn--primary' : 'btn--secondary'"
       ) {{ name }}
 </template>
 
@@ -82,12 +82,12 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  @import "../../scss/base";
+  
 
   .statistics-box_tabset {
-    position: absolute;
-    z-index:10;
-    right: 11px;
+    // position: absolute;
+    // z-index:10;
+    // right: 11px;
     display: flex;
     flex-wrap: nowrap;
     flex: 0 0 auto;
@@ -106,28 +106,29 @@ export default {
   #tutorial_view-box {
     .statistics-box_tabset {
       position: static;
-      background-color: #090f19;
-      border-top: 2px solid rgba(97, 133, 238, 0.4);
-      border-bottom: 1px solid rgba(97, 133, 238, 0.4);
-      min-height: 2.5rem;
+      // background-color: #090f19;
+      // border-top: 1px solid rgba(97, 133, 238, 0.4);
+      // border-bottom: 1px solid rgba(97, 133, 238, 0.4);
+      min-height: 3.0rem;
+      margin-bottom: 1rem;
 
       h5 {
         display: block;
         font-size: 11px;
         padding-left: 1rem;
         margin-right: auto;
-        margin-top: 5px;
         margin-bottom: 0px;
         font-family: Nunito Sans;
         font-style: normal;
         font-weight: 600;
+        line-height: 2.8rem;
       }
     }
   }
   .statistics-box_tab {
     display: flex;
     + .statistics-box_tab {
-      padding-left: .1rem;
+      padding-left: 1rem;
     }
   }
   .statistics-box_btn {

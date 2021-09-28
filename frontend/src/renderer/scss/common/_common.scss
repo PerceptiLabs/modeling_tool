@@ -14,6 +14,12 @@ img {
 	vertical-align: middle;
 }
 
+.link {
+  font-weight: 500;
+  color: $color-6;
+  cursor: pointer;
+}
+
 * {
 	&:not([draggable='true']) {
 		-webkit-user-select: none;

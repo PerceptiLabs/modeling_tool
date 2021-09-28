@@ -1,9 +1,16 @@
 <template lang="pug">
   main.test-wrapper
-    h1.test-header Test
+    div.test-header
+      h1.bold Evaluate    
+      button.btn.btn--primary(
+        v-if="testData && Object.keys(testData).length > 0"
+        @click="runTest()"
+      ) 
+        img(src="/static/img/add-button.svg")
+        | New Test
     .test-view
       div(v-if="testData && Object.keys(testData).length > 0")
-        .toolbar
+        //- .toolbar
           //- .form_row
           //-   .form_label.text-right Current display
           //-   .form_input
@@ -11,10 +18,11 @@
           //-       :select-options="testTypeOptions"
           //-       v-model="testDataset"
           //-     )
-          button.btn.btn--primary.new-test(@click="runTest()") + New Test
         .chart-wrapper
           template(v-for="(testTypes, key) in testData" v-if="!!testTypes")
-            template(v-if="key === 'classification_metrics'")
+            template(
+              v-if="key === 'classification_metrics'"
+            )
               template(v-for="(testFeature) in getMetricTableFeatures(testTypes)")
                 metric-test-table.chart-container(
                   :testFeature="testFeature"
@@ -54,14 +62,22 @@
                     :styles="chartStyles"
                   )
       .no-test-view(v-else)
-        p There are no tests running at the moment.
+        p.bold There are no tests running at the moment.
         button.btn.btn--primary.run-test-button(type="button" @click="runTest()") Run Test
+
+        .test-no-item
+          .no-item-mark
+            svg(xmlns='http://www.w3.org/2000/svg' width='50' height='61' viewbox='0 0 50 61' fill='none')
+              path(d="M49.1058 51.3252L32.4488 24.4199V3.98337H33.9155C34.9581 3.98337 35.8035 3.13799 35.8035 2.09539V1.88798C35.8035 0.845089 34.9581 0 33.9155 0H16.0844C15.0419 0 14.1965 0.84538 14.1965 1.88798V2.09539C14.1965 3.13799 15.0419 3.98337 16.0844 3.98337H17.5512V24.4199L0.894118 51.3252C-0.245193 53.1651 -0.298794 55.389 0.751086 57.2732C1.87204 59.2856 4.0589 60.5356 6.45842 60.5356H43.5418C45.941 60.5356 48.1282 59.2856 49.2492 57.2732C50.2987 55.389 50.2451 53.1654 49.1058 51.3252ZM20.4643 25.2487V5.43991H29.536V25.2487L35.4577 34.8138H14.5423L20.4643 25.2487Z" fill="#828282")
+
+          h3 Create Your First Test
+
     .test-overlay(v-if="isTestRunning")
       .spinner
         chart-spinner
       p.text-center(v-if="testStatus && testStatus[0]") {{testStatus && testStatus[0]}}
       p.text-center(v-if="testStatus && testStatus[1]") {{testStatus && testStatus[1]}}
-      button.btn.btn--dark-blue-rev.stop-test(@click="stopTest()") Stop Test
+      button.btn.btn--secondary.stop-test(@click="stopTest()") Stop Test
     test-configuration-popup(v-if="isTestConfigurationPopupOpened")
 </template>
 
@@ -97,6 +113,20 @@ export default {
     return {
       chartStyles,
       testDataset: "",
+      // testData: {
+      //     metrics_table: [ [{
+      //       categorical_accuracy: 4,
+      //       top_k_categorical_accuracy: 5.4,
+      //       precision: 4,
+      //       recall: 5.4
+      //     }],
+      //     [{
+      //       categorical_accuracy: 4,
+      //       top_k_categorical_accuracy: 5.4,
+      //       precision: 4,
+      //       recall: 5.4
+      //     }]]
+      // },
       testTypeOptions: Object.keys(TestTypes)
         .filter(key => !TestTypes[key].disabled)
         .map(key => ({
@@ -161,17 +191,29 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.test-header {
-  padding: 12px 20px;
-  border-bottom: 1px solid #b6c7fb;
-}
+
+  
 .test-wrapper {
-  background: linear-gradient(180deg, #363e51 0%, #000000 225%);
+  background-color: theme-var($neutral-7);
+  border-radius: 15px 0px 0px 0px;
+  padding: 10px 20px;
   display: flex;
   flex-direction: column;
 }
+.test-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
 .test-view {
-  padding: 12px 20px;
+  background: theme-var($neutral-8);
+  border: $border-1;
+  box-sizing: border-box;
+  border-radius: 4px;
+  height: calc(100vh - 130px);
+
+  padding: 45px 30px;
   flex: 1;
   position: relative;
 }
@@ -186,7 +228,9 @@ export default {
   margin: 10px;
 }
 .no-test-view {
+  position: relative;
   font-size: 14px;
+  height: 100%;
 }
 .toolbar {
   display: flex;
@@ -196,7 +240,6 @@ export default {
 }
 .run-test-button {
   font-size: 1.5rem;
-  padding: 1.2em;
 }
 .form_label {
   margin-right: 1em;
@@ -206,20 +249,23 @@ export default {
 }
 
 .test-overlay {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  right: 0;
-  left: 0;
+  position: absolute;  
+	top: $h-header-win;
+	right: 0;
+	bottom: 0;
+	left: $w-sidemenu;
+	border-radius: 15px 0px 0px 0px;
+	// background-color: theme-var($neutral-7);
+	background-color: rgba(35, 37, 42, 100);
   z-index: 101;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-direction: column;
-  background-color: rgba(35, 37, 42, 0.5);
 
   p {
     font-size: 16px;
+    color: white;
   }
 }
 .spinner {
@@ -229,4 +275,28 @@ export default {
   overflow: visible;
   margin-bottom: 40px;
 }
+
+  .test-no-item {
+    color: theme-var($neutral-1);
+    text-align: center;
+
+    position: absolute;  
+    top: 50%; 
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+    & .no-item-mark {
+      display: flex;
+      justify-content: center;
+      align-items: center;      
+      margin-left: auto;
+      margin-right: auto;
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      background: theme-var($neutral-7);
+      margin-bottom: 20px;
+    }
+  }
+
 </style>

@@ -31,6 +31,7 @@
           zIndex: totalCollaborators - ix,
           // backgroundColor: `#${colorIndex + (colorIndex*10) + (colorIndex*100)}`,
           backgroundColor: '#FE7373',
+          color: '#FFFFFF'
         };
       }
     }

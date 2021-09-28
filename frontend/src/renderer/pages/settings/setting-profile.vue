@@ -1,5 +1,6 @@
 <template lang="pug">
-  div(v-if="user")
+  div.profile-wrapper(v-if="user")
+    .profile-title.bold Profile
     .contnet-caption Review your personal information here
     .profile-box
       .profile-preview {{user && user.email[0].toUpperCase()}}
@@ -22,8 +23,8 @@
         data-vv-scope="formEmail"
       )
         .input-wrapper
-          label Email
-          .form_row
+          label.bold Email
+          .form_row.justify-left
             input.email-disabled(@input="editEmail" name="new email" disabled readonly v-validate="'required|email'"  type="text" :value="user.email" )
           p.text-error(
               v-show="errors.has('formEmail.new email')") {{ errors.first('formEmail.new email') }}    
@@ -37,7 +38,8 @@
       //- .change-password-actions
       //-   button.change-password-modal-btn.blue(@click="handleSaveProfile") Save
       //-   button.change-password-modal-btn(@click="resetChangedValues") Cancel
-  
+
+    div.link(v-if="isViewBilling" @click="toPricing") VIEW BILLING
     div(v-if="isChangePasswordOpened")
       div.popup-new-ui 
         div.popup-new-ui-header Change password
@@ -104,7 +106,10 @@ export default {
   computed: {
     ...mapGetters({
       user: 'mod_user/GET_userProfile',
-    })
+    }),
+    isViewBilling() {
+      return process.env.ENABLE_BILLING_LINK === 'true';
+    }
   },
   beforeDestroy() {
      document.removeEventListener('click', this.closePasswordModal, true)
@@ -201,52 +206,56 @@ export default {
           return result 
         })
     },
-    
+    toPricing() {
+      this.$router.push({name: 'pricing'});
+    }
   }
 }
 </script>
 <style lang="scss" scoped>
-
-.contnet-caption {
-  font-family: Nunito Sans;
-  font-size: 16px;
-  line-height: 22px;
-  color: #C4C4C4;
+  
+.profile-wrapper {
+  background: theme-var($neutral-8);
+  border: $border-1;
+  box-sizing: border-box;
+  border-radius: 4px;
+  padding: 16px;
+  height: calc(100vh - 130px);
 }
-.profile-box {
-  width: 365px;
-  margin-top: 17px;
-  padding: 35px 40px 30px 30px;
-  border: 1px solid #4D556A;
-  border-radius: 2px;
+.profile-title {
+  font-size: 16px;
+  line-height: 19px;
+  margin-bottom: 4px;
+}
+.contnet-caption {
+  font-size: 12px;
+  line-height: 14px;
+  color: #92929D;
+  margin-bottom: 10px;
 }
 .profile-preview {
-  width: 60px;
-  height: 60px;
-  margin-bottom: 32px;
-  background: #EE6161;
+  width: 55px;
+  height: 55px;
+  margin-bottom: 20px;
+  background: #FE7373;
   border-radius: 50%;
   text-align: center;
-  line-height: 60px;
-  font-family: Nunito Sans;
+  line-height: 55px;
   font-weight: bold;
-  font-size: 30px;
-  color: #FFFFFF;
+  font-size: 36px;
+  color: $white;
 }
 .input-wrapper {
-  margin-bottom: 20px;
+  margin-bottom: 78px;
   label {
     display: inline-block;
-    margin-bottom: 8px;
-    font-family: Nunito Sans;
-    font-size: 16px;
-    line-height: 22px;
-    color: #9E9E9E;
+    margin-bottom: 5px;
+    font-size: 14px;
+    line-height: 16px;
   }
 }
 .password-star {
   margin-bottom: 0px;
-  font-family: Nunito Sans;
   font-weight: 600;
   font-size: 16px;
   line-height: 22px;
@@ -281,15 +290,31 @@ export default {
   font-size: 14px;
   line-height: 19px;
 
-  color: #FFFFFF;
+  color: theme-var($neutral-8);
 
   &.blue {
     margin-left: 10px;
     background: #6185EE;
   }
 }
-.email-disabled {
-    background: #4B4D52;
-    opacity: 0.7;
+
+.input-wrapper {
+  input {
+    background: theme-var($neutral-7);
+    border: $border-1;
+    border-radius: 5px;
+    max-width: 320px;
+    padding: 11px 15px;
   }
+}
+.email-disabled {
+    opacity: 0.7;
+}
+
+.link {
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 14px;
+  text-transform: uppercase;
+}
 </style>

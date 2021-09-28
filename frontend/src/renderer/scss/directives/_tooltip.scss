@@ -1,13 +1,14 @@
-$popper-background-color: #2E3A5A;
-$tutorial-tooltip-bg: #23252A;
+$popper-background-color: theme-var($neutral-8);
+$tutorial-tooltip-bg: theme-var($neutral-8);
 $tutorial-tooltip-background-picture: '/static/img/tutorial/tutorial-background.png';
-$tutorial-tooltip-text-color: #FFFFFF;
+$tutorial-tooltip-text-color: theme-var($text-normal);
 $arrow-size: 1rem;
 $margin-tooltip: .65rem;
 $triangleWith: 10px;
 
 .tooltip-wrap {
 	position: relative;
+	font-size: 14px;
 	&:hover .tooltip {
 		.workspace_content & {
 			display: none;
@@ -29,17 +30,17 @@ $triangleWith: 10px;
 
 .tooltip {
 	font-size: 1rem;
-	color: $col-txt;
+	color: theme-var($text-normal);
 	position: absolute;
 	z-index: 20;
 	min-width: 3rem;
 	max-width: 30rem;
-	padding: .8rem .6rem;
+	padding: 1.2rem 1.8rem;
 	transform: translate(-50%, 0%) rotateY(90deg);
 	white-space: nowrap;
 	border-radius: $bdrs;
 	background-color: $popper-background-color;
-	box-shadow: $icon-shad;
+	box-shadow: $tooltip-shad;
 	pointer-events: none;
 	&:before {
 		content: '';
@@ -66,13 +67,13 @@ $triangleWith: 10px;
 	left: 50%;
 	margin-top: $margin-tooltip;
 	transform: translate(-50%, 0%) rotateY(90deg);
-	box-shadow: 0 -1px 1px rgba(#000, .5);
+	// box-shadow: 0 -1px 1px rgba(#000, .5);
 	&:before {
 		bottom: 100%;
 		left: 50%;
 		transform: translate(-50%, 50%) rotate(45deg);
 		background: linear-gradient(135deg, $popper-background-color 50%, rgba($popper-background-color,0) 58%);
-		box-shadow: -1px -1px 1px rgba(#000, .5);
+		// box-shadow: -1px -1px 1px rgba(#000, .5);
 	}
 }
 .tooltip--up {
@@ -80,13 +81,13 @@ $triangleWith: 10px;
 	left: 50%;
 	margin-top: $margin-tooltip;
 	transform: translate(-50%, 0%) rotateY(90deg);
-	box-shadow: 0 1px 1px rgba(#000, .5);
+	// box-shadow: 0 1px 1px rgba(#000, .5);
 	&:before {
 		top: 100%;
 		left: 50%;
 		transform: translate(-50%, -50%) rotate(225deg);
 		background: linear-gradient(135deg, $popper-background-color 50%, rgba($popper-background-color,0) 58%);
-		box-shadow: -1px -1px 1px rgba(#000, .5);
+		// box-shadow: -1px -1px 1px rgba(#000, .5);
 	}
 }
 
@@ -95,13 +96,13 @@ $triangleWith: 10px;
 	left: 50%;
 	margin-top: $margin-tooltip;
 	transform: translate(-50%, 0%) rotateY(90deg);
-	box-shadow: 0 -1px 1px rgba(#000, .5);
+	// box-shadow: 0 -1px 1px rgba(#000, .5);
 	&:before {
 		bottom: 100%;
 		left: 50%;
 		transform: translate(-50%, 50%) rotate(45deg);
 		background: linear-gradient(135deg, $popper-background-color 50%, rgba($popper-background-color,0) 58%);
-		box-shadow: -1px -1px 1px rgba(#000, .5);
+		// box-shadow: -1px -1px 1px rgba(#000, .5);
 	}
 }
 .tooltip--right-wrap-text {
@@ -149,7 +150,7 @@ $triangleWith: 10px;
   white-space: nowrap;
   background: url($tutorial-tooltip-background-picture);
   background-size: cover; 
-  box-shadow: $icon-shad;
+  box-shadow: $tooltip-shad;
   pointer-events: none;
   font-family: $base-font-sans-serif;
   text-align: left;

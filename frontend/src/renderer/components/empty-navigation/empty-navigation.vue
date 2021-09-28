@@ -1,8 +1,8 @@
 <template lang="pug">
 	.empty-navigation
-		.content.d-flex(v-if="emptyNavigationMode==1")
-			.row 
-				img.img-folder(src="static/img/model-empty.png")
+		.content(v-if="emptyNavigationMode==1")
+			.circle
+				img.img-folder(src="static/img/model-empty.svg")
 			.row
 				p.description(
 					v-if="getModelCount===0"
@@ -16,17 +16,17 @@
 						v-for="model in workspaceContent"
 						@click.stop="openModelID(model.networkID)"
 					) {{model.networkName}}
-				.d-flex
-					router-link.nav-link(
+				.d-flex.content-center
+					router-link.btn.btn--secondary.mr-3(
 						:to="{name: 'projects'}"
 						v-if="getModelCount>0"
 					) Go to Model Hub
-					button(
+					button.btn.btn--primary(
 						@click="popupNewModel(true)"
 					) Create New
-		.content.d-flex(v-else-if="emptyNavigationMode==2")
-			.row 
-				img.img-folder(src="static/img/stats-empty.png")
+		.content(v-else-if="emptyNavigationMode==2")
+			.circle
+				img.img-folder(src="static/img/stats-empty.svg")
 			.row
 				p.description(
 					v-if="getModelCount===0"
@@ -50,16 +50,16 @@
 				p.description(
 					v-if="getAvailableStats.length>0"
 					)   Or run a model to continue:
-				.d-flex
-					button(
+				.d-flex.content-center
+					button.btn.btn--primary.mr-3(
 						@click="goToModelView()"
 						v-if="getModelCount>0"
 					) Go to Modeling Tool
-					router-link.nav-link(
+					router-link.btn.btn--secondary.mr-3(
 						:to="{name: 'projects'}"
 						v-if="getModelCount>0"
 					) Go to Model Hub
-					button(v-if="getModelCount==0"
+					button.btn.btn--primary(v-if="getModelCount==0"
 						@click="popupNewModel(true)"
 					) Create New
 
@@ -129,7 +129,7 @@ export default {
 			return this.$store.getters['mod_workspace/GET_currentNetworkId'];
 		},
 		getModelCount() {
-				return this.workspaceContent.length;
+			return this.workspaceContent.length;
 		},
 		getAvailableStats() {
 			return this.workspaceContent.filter(wc => typeof wc.networkMeta.openStatistics === 'boolean');
@@ -142,15 +142,25 @@ export default {
     .empty-navigation {
         width: 100%;
         height: 100%;
-        background: rgba(0, 0, 0, 0.25);
-        opacity: 0.8;
-        color: #B6C7FB;
-        display: flex;
-        justify-content: center;
-        align-items: center;
+        // background: rgba(0, 0, 0, 0.25);
+        // opacity: 0.8;
 
-        .content {
-            align-items: center;            
+		.circle {
+			width: 150px;
+			height: 150px;
+			border-radius: 50%;
+			margin-bottom: 20px;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			background: theme-var($neutral-7);
+		}
+        .content {  
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			flex-direction: column;
+			height: 100%;
 
             .row {
                 width: 50%;
@@ -168,58 +178,31 @@ export default {
             font-size: 16px;
             line-height: 22px;
             margin-bottom: 20px;
-        }
-
-        button, .nav-link {
-            background: rgba(54, 68, 106, 0.25);
-            height: 25px;
-            border: 1px solid rgba(182, 199, 251, 0.5);
-            box-sizing: border-box;
-            border-radius: 2px;
-            font-family: Nunito Sans;
-            font-weight: 600;
-            font-size: 12px;
-            line-height: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #B6C7FB;
-            margin-right: 10px;
-            padding: 10px;
-            // box-shadow: 0px 3px rgba(0,0,0,0.3);
-
-            &:hover {
-                background-color: #6185EE;
-                color: white;
-            }
+			text-align: center;
         }
 
         ul {
-            max-height: 130px;
+            max-height: 220px;
             padding: 0;
             margin-bottom: 35px;
             overflow: hidden;
+			width: 335px;
+
+			margin-right: auto;
+			margin-left: auto;
 
             li, .header {
-                padding-left: 30px;
-                border-bottom: 1px solid #363E51;
+                padding: 12px 0px 12px 30px;
+                border-bottom: 1px solid #3A485A;
                 list-style: none;
                 font-family: Nunito Sans;
                 font-weight: normal;
-                font-size: 12px;
-                line-height: 16px;
-                color: #C4C4C4;
-                width: 335px;
-                height: 26px;
+                font-size: 16px;
                 display: flex;
                 align-items: center;
             }
-            li {
-                color: #E1E1E1;
-            }
             li:hover {
-                background: #6185EE;
-                color:white;
+				background: theme-var($neutral-6);
             }
         }
     }
@@ -230,5 +213,11 @@ export default {
 		}
 		.fz-14 {
 			font-size: 14px;
+		}
+		.mr-3 {
+			margin-right: 16px;
+		}
+		.content-center {
+			justify-content: center;
 		}
 </style>

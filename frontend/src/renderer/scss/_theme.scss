@@ -1,0 +1,13 @@
+
+.light-theme {
+    @include spread-map($theme-map-light);
+}
+.dark-theme {
+    @include spread-map($theme-map-dark);
+}
+
+.theme-transition,
+.theme-transition * {
+    transition: background-color 500ms !important;
+    transition-delay: 0s !important;
+}

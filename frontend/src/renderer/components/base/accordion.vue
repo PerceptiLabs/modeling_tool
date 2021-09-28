@@ -67,7 +67,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  @import "../../scss/base";
   $acc-left-indent: 2rem;
   $acc-top-indent: 1.5rem;
   .accordion {

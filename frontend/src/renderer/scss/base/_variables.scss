@@ -26,20 +26,16 @@ $black: #000;
 
 $col-primary: #22DDE5;
 $col-primary2: #6E92FA;
-$col-txt: #E1E1E1;
 $col-txt2: #383F50;
 $disable-txt: #8B8B9C;
 
-$bg-window: #383F50;
-$bg-workspace: #23252A; //checkbox
-$bg-workspace-2: #3C3C4C;
-$bg-workspace-3: #212839; // new background for components in stats window
-$bg-toolbar: #4D556A;
-$bg-toolbar-2: #3F4C70;
+//$bg-window: #383F50;
+//$bg-window: #FFFFFF;
+//$bg-workspace: #FFFFFF; //checkbox
+//$bg-workspace-2: #FFFFFF;
+//$bg-workspace-3: #FFFFFF; // new background for components in stats window
 
 // $bg-scroll: #989FB0;
-$bg-scroll: #6E778C;
-$bg-input: #5B657B;
 $toolbar-border: #333343;
 $toolbar-separator-color: #5E6F9F;
 $toolbar-button-border: #B6C7FB;
@@ -62,15 +58,11 @@ $color-11: #282d39;
 
 $color-12: #C4C4C4;
 
-$bg-grad-cyan: linear-gradient($color-1, $color-2);
-$bg-grad-blue: linear-gradient($color-5, $color-6);
-$bg-grad-disable: linear-gradient($color-9, $color-8);
-$bg-grad-black: linear-gradient(90deg, $bg-window -41.67%, #2F3238 151.67%, #23252A 151.67%);
-
-
 $box-shad: 0 2px 7px 0px rgba(#000, .3);
 $icon-shad: 0 4px 4px rgba(#000, .25);
 $layer-shad: 0 0 6px rgba(#000, .7);
+
+$tooltip-shad: 0px 4px 18px rgba(0, 0, 0, 0.2);
 
 $font-path: './../../static/fonts';
 
@@ -78,7 +70,7 @@ $font-path: './../../static/fonts';
 $col-border: #d9d9d9;
 //$col-focus: #7f7f7f;
 $col-error: #EE6161;
-$col-warning: #e48b19;
+$col-warning: #ff0000;
 $col-success: #bad76d;
 $col-placeholder: #8B8B9C;
 $default-border: 2px solid $col-border;
@@ -91,22 +83,22 @@ $form-indent: 1rem;
 $bdrs: .2rem;
 $w-layersbar: 7.1rem; //80px
 
+$w-sidemenu: 174px; //174px
+
 $h-sidebar-layers-item: 3.357rem; //33px
 $h-sidebar-layers-indent: 1rem; //14px
 $sidebar-first-tab-indent: 1.5rem; //14px
 $w-sidebar: 25rem; //250px
 // $h-toolbar: 4rem; //56px
-$h-toolbar: 31px;
-$h-header-win: 38px;
-$h-header-mac: 22px;
-$h-header-linux: 51px;
+$h-toolbar: 55px;
+$h-header-win: 64px;
+$h-header-mac: 64px;
+$h-header-linux: 64px;
 
 /*----- Font -----*/
 $base-font-sans-serif: 'Nunito Sans', 'roboto', 'Helvetica',  'Arial', sans-serif;
 
 /*----- Body -----*/
-$base-text-color: $col-txt;
-$base-background-color: $white;
 $global-font-size: 10px;
 $line-height-base: 1.2;
 $base-font-family: $base-font-sans-serif ;
@@ -118,8 +110,77 @@ $base-min-height: 600px;
 $animation-speed: .3s; // for mixin
 
 /*----- Popup -----*/
-$popup-indent-top: 2rem;
+$popup-indent-top: 1rem;
 $popup-indent-left: 1rem;
 
 
+$remaining: 240px;
+$preview-header: 42px;
+$preview-content: 160px;
+$reset-btn: 24px;
+$components-header: 50px;
+$settings-header: 72px;
 
+$remaining-normal: $remaining + $reset-btn + $settings-header;
+
+$neutral-1: --neutral-1;
+$neutral-2: --neutral-2;
+$neutral-3: --neutral-3;
+$neutral-4: --neutral-4;
+$neutral-5: --neutral-5;
+$neutral-6: --neutral-6;
+$neutral-7: --neutral-7;
+$neutral-8: --neutral-8;
+$text-highlight: --neutral-highlight;
+$text-normal: --neutral-normal;
+$border-color: --border-color;
+$shadow-color: --shadow-color;
+
+// Default theme
+$theme-map-light: (
+  $neutral-1: #171725,
+  $neutral-5: #EFEFEF,
+  $neutral-6: #F0F3FE,
+  $neutral-7: #FAFAFB,
+  $neutral-8: #FFFFFF,
+  $text-highlight: #44444F,
+  $text-normal: #5D5D64,
+  $shadow-color: #D0D0D0,
+  $border-color: #E2E2EA,
+);
+
+// Override the default light theme
+$theme-map-dark: (
+  $neutral-1: #FFFFFF,
+  $neutral-5: #2B2C31,
+  $neutral-6: #333438,
+  $neutral-7: #202125,
+  $neutral-8: #2B2C31,
+  $text-highlight: #FFFFFF,
+  // $text-normal: #6e6565,
+  $text-normal: #FFFFFF,
+  $shadow-color: #303030,
+  $border-color: #494A4F,
+);
+
+$bg-window: theme-var($neutral-5);
+$bg-workspace: theme-var($neutral-8);
+$bg-workspace-2: theme-var($neutral-8);
+$bg-workspace-3: theme-var($neutral-8);
+$bg-toolbar: theme-var($neutral-7);
+$bg-toolbar-2: theme-var($neutral-7);
+
+$bg-grad-cyan: linear-gradient($color-1, $color-2);
+$bg-grad-blue: linear-gradient($color-5, $color-6);
+$bg-grad-disable: linear-gradient($color-9, $color-8);
+$bg-grad-black: linear-gradient(90deg, $bg-window -41.67%, #2F3238 151.67%, #23252A 151.67%);
+
+$color-bold: theme-var($text-highlight);
+$color-danger: #F26565;
+
+$border-1: 1px solid theme-var($border-color);
+
+$bg-setting-layer: theme-var($text-highlight);
+
+$bg-scroll: #6E778C;
+$bg-input: theme-var($neutral-8);

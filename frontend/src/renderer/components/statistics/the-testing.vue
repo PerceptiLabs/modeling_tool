@@ -108,7 +108,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  @import "../../scss/base";
+  
 
   .testing-head {
     border-top: 1px solid $color-10;

@@ -1,9 +1,10 @@
 <template lang="pug">
   base-global-popup(
-    :tab-set="popupTitle"
+    :title="popupTitle"
+    title-align="text-center"
     @closePopup="closePopup"
     )
-    template(slot="Choose what to save-content")
+    template(:slot="popupTitle + '-content'")
       .settings-layer_section(v-if="!popupSettings.isFreezeInfo")
         .form_row
           .form_label Model name:
@@ -16,20 +17,20 @@
       .settings-layer_section(v-if="!popupSettings.isFreezeInfo")
         .form_holder
           .form_label Model path:
-          .form_row
+          .form_row.input_group
             input.ellipsis.form_input(type="text"
             v-model="settings.networkPath"
             :class="{'bg-error': !settings.networkPath}"
             data-testing-target="save-model-as-path"
             )
-            button.btn.btn--dark-blue-rev(
+            button.btn.btn--primary(
               type="button"
               @click="openFilePicker"
               data-testing-target="save-model-as-browse"
               ) Browse
 
     template(slot="action")
-      button.btn.btn--primary.btn--disabled(type="button"
+      button.btn.btn--secondary(type="button"
         @click="closePopup") Cancel
       button.btn.btn--primary(type="button"
         :disabled="!settings.networkPath.length"
@@ -64,7 +65,7 @@ export default {
   },
   data() {
     return {
-      popupTitle: ['Choose what to save'],
+      popupTitle: 'Choose what to save',
       settings: {
         networkName: '',
         networkPath: '',

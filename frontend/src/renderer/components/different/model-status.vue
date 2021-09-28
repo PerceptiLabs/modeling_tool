@@ -1,7 +1,7 @@
 <template lang="pug">
-    div
+    div.relative
       div(v-if="statusData.Status === 'Finished'").d-flex.align-items-center
-        img(src="./../../../../static/img/model-status-complete.svg")
+        img(src="./../../../../static/img/model-status-complete-white.svg")
         span.training-complete-text Training Complete
       div(
         :class="{'show-status-inline': options.styleInlineLabel}"
@@ -9,7 +9,7 @@
         )
         
         .name.warn-color(v-if="showError()") Error
-        .name(v-else :class="{'warn-color': showError()}") {{statusData.Status ? statusData.Status === 'Stop' ? 'Stopped' : statusData.Status : 'Untrained'}}
+        .name(v-else :class="{'warn-color': showError(), 'have-progress': !isNaN(parseInt(statusData.Progress * 100, 10))}") {{statusData.Status ? statusData.Status === 'Stop' ? 'Stopped' : statusData.Status : 'Untrained'}}
         
         div.d-flex.align-items-center(v-if="showProgress")
           .train-progress-wrapper
@@ -80,39 +80,47 @@ export default {
     },
     getProgress() {
       let progress = 0;
-      let color = '#73FEBB';  // green - #73FEBB  orange - #E48B23  blue - #7397FE
+      let color = '#6185EE';  // green - #73FEBB  orange - #E48B23  blue - #7397FE
       if(this.showError()) {
         color = '#E48B23'
       }
-      const svg = `<svg width="3" height="8" viewBox="0 0 1 8" xmlns="http://www.w3.org/2000/svg"><rect width="1" height="8" rx="0.5" fill="${color}"/></svg>`;
+      const svg = `<svg width="3" height="14" viewBox="0 0 1 14" xmlns="http://www.w3.org/2000/svg"><rect width="1" height="14" rx="0.5" fill="${color}"/></svg>`;
       const encodedSvg = `url(data:image/svg+xml;base64,${window.btoa(svg)}`
       if(this.statusData.Status === 'Stop' || this.statusData.Status === 'Training' || this.statusData.Status === 'Validation' || this.statusData.Status === 'Paused') {
         progress = parseInt(this.statusData.Progress * 100, 10);
       }
       this.progressStyle = {
         width: `${progress}px` ,
-        backgroundImage: encodedSvg,
+        borderRadius: '55px',
+        background: color,
       }
     },
   }
 }
 </script>
 <style lang="scss" scoped>
+  .relative {
+    position: relative;
+  }
   .name {
     font-family: 'Roboto', sans-serif;
     font-style: normal;
     font-weight: normal;
     font-size: 16px;
     line-height: 19px;
-    color: #fff;
+    &.have-progress {
+      position: absolute;
+      left: 0;
+      top: -21px;
+    }
   }
   .train-progress-wrapper {
-    background: #363E51;
-    border: 1px solid #4D556A;
     box-sizing: border-box;
-    border-radius: 1px;
     width: 100px;
-    height: 10px
+    height: 12px;
+    background: #D9E3FF;
+    border-radius: 55px;
+    border: 1px solid #D9E3FF;
   }
   .progress-in-percent {
     margin-left: 7px;
@@ -124,7 +132,7 @@ export default {
     vertical-align: bottom;
   }
   .train-progress-bars {
-    height: 8px;
+    height: 10px;
     background-repeat: repeat-x;
   }
   .training-complete-text {
@@ -132,7 +140,7 @@ export default {
   }
   .svg-warning-wrapper {
     margin-left: 7px;
-    height: 14px;
+    height: 10px;
   }
  
   .warn-color {

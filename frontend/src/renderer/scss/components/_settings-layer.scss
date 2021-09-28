@@ -13,7 +13,7 @@
 }
 
 .settings-layer_section {
-  padding: $popup-indent-top/2 $popup-indent-left;
+   padding: $popup-indent-top/2 $popup-indent-left;
 
 	> .form_row {
 		.form_label {
@@ -26,7 +26,7 @@
     }
     
     > .form_label {
-			align-self: flex-start;
+			align-self: flex-end;
 			margin-top: .5rem;
 			margin-bottom: .5rem;;
 		}

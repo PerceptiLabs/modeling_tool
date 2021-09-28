@@ -41,7 +41,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  @import "../../scss/base";
   .switcher_tab-set {
     font-size: 1.4rem;
     display: flex;

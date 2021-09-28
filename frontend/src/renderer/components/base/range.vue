@@ -1129,7 +1129,6 @@
 </script>
 
 <style lang="scss">
-  @import "../../scss/base";
   .custom-range-component-wrap {
     display: flex;
     align-items: center;

@@ -71,7 +71,7 @@
 </script>
 
 <style lang="scss" scoped>
-  @import "../../../../scss/base";
+  
   .settings-layer_section {
     position: relative;
   }

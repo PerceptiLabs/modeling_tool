@@ -3,13 +3,15 @@
     ref="chart"
     :auto-resize="true"
     :options="chartModel"
-    theme="quantum"
+    :theme="currentTheme"
   )
 </template>
 
 <script>
   import {pathWebWorkers}     from '@/core/constants.js'
   import chartMixin           from "@/core/mixins/charts.js";
+  import { mapState } from 'vuex';
+  import { THEME_DARK, THEME_LIGHT } from '@/core/constants.js';
 
   export default {
     name: "ChartBase",
@@ -37,7 +39,7 @@
           grid: {
             left: '3%',
             bottom: '7%',
-            top: '15%',
+            top: '30px',
             right: '3%',
             containLabel: true
           },
@@ -67,6 +69,21 @@
       enableDrag: {
         type: Boolean,
         default: true
+      },
+      invert: {
+        type: Boolean,
+        default: false
+      }
+    },
+    computed: {
+      ...mapState({
+        theme:                      state => state.globalView.theme
+      }),
+      currentTheme () {
+        if( this.invert ) {
+          return this.theme === THEME_DARK ? THEME_LIGHT : THEME_DARK
+        }
+        return this.theme;
       }
     },
     methods: {

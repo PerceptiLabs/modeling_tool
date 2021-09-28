@@ -21,6 +21,8 @@ import BaseCheckbox     from '@/components/base/checkbox.vue'
 import BaseRadiobutton  from '@/components/base/radiobutton.vue'
 import BaseSelect       from '@/components/base/select.vue'
 import BaseRange        from '@/components/base/range.vue'
+import BaseToggleButton from '@/components/base/toggle.vue'
+import BaseToggleExpandButton from '@/components/base/toggle-expand.vue'
 import BaseButton       from '@/components/base/base-button.vue'
 import FilePickerPopup  from '@/components/global-popups/file-picker-popup.vue'
 import PerfectScrollBar from 'vue2-perfect-scrollbar';
@@ -71,6 +73,8 @@ Vue.component('base-checkbox', BaseCheckbox);
 Vue.component('base-radio', BaseRadiobutton);
 Vue.component('base-select', BaseSelect);
 Vue.component('base-range', BaseRange);
+Vue.component('base-toggle', BaseToggleButton);
+Vue.component('base-toggle-expand', BaseToggleExpandButton);
 Vue.component('base-button', BaseButton)
 Vue.component('file-picker-popup', FilePickerPopup)
       
@@ -146,7 +150,7 @@ async function login(){
       }
 
       runApp(keycloak.token, keycloak.refreshToken);
-      
+
       // Set user email
       const { email } = parseJWT(keycloak.token);
       renderingKernel.set_user(email);
@@ -195,6 +199,7 @@ function renderNoInternetConnectionPage() {
   try {
     const loggedInUser = getCookie('loggedInUser');
     const isKeycloakReachable = await keyCloak.isReachable();
+
     if (process.env.NO_KC == 'true') {
       demo();
     } else if(isKeycloakReachable) {

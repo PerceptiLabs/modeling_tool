@@ -80,7 +80,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  @import "../../../scss/base";
+  
   .settings-arrow {
     position: absolute;
     z-index: 3;

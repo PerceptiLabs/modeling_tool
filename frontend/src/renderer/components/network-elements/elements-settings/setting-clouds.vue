@@ -66,7 +66,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  @import "../../../scss/base";
+  
   .clouds-component_head {
     display: flex;
     justify-content: space-between;
@@ -87,7 +87,7 @@ export default {
       box-shadow: $icon-shad;
     }
     &.active {
-      color: $col-txt;
+      color: theme-var($text-normal);
       border: none;
       background: $bg-grad-blue;
     }

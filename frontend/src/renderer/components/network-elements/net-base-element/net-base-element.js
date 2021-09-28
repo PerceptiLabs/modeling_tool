@@ -120,8 +120,9 @@ export default {
         let closestElId = null;
         let distance = null;
         const el = document.getElementById('networkWorkspace') || {scrollLeft: 0, scrollTop: 0};
-        const mousePositionX = x + 46 + el.scrollLeft;
-        const mousePositionY = y - 130 + el.scrollTop;
+        const mousePositionX = x - 147 + el.scrollLeft;
+        const mousePositionY = y - 170 + el.scrollTop;
+
         if(isShiftPressed && isFirstComponentDragged) {
           Object.keys(this.networkElmentPositions).map(elId => {
             const elPositionX = calcLayerPosition(this.networkElmentPositions[elId].left, this.wsZoom) +  75 * this.wsZoom;

@@ -31,14 +31,14 @@
        
       .section-action
         .button-group
-          button(type="button"
+          button.btn.btn--secondary(type="button"
             @click="onCancel"
             ) Cancel
-          button.cta(v-if="pageNumber < lastPageIndex"
+          button.btn.btn--primary(v-if="pageNumber < lastPageIndex"
             type="button"
             @click="onNext"
             ) Next
-          button.cta(v-else
+          button.btn.btn--primary(v-else
             type="button"
             @click="onConfirm"
             ) Confirm
@@ -162,11 +162,12 @@ $questionnaire-background-picture: '/static/img/questionnarie/background1.png';
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background: linear-gradient(-72.32deg, #383F50 -15.94%, #23252A 137.98%);
+  // background: linear-gradient(-72.32deg, #383F50 -15.94%, #23252A 137.98%);
+  background: theme-var($neutral-8);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
   border-radius: 2px;
   width: 38rem;
-  height: 45rem;  
+  height: 46rem;  
 
   > section {
     display: flex;
@@ -309,31 +310,31 @@ $questionnaire-background-picture: '/static/img/questionnarie/background1.png';
   justify-content: flex-end;
 
   .button-group {
-    
+    display: flex;
     button {
-      width: 10.5rem;
-      height: 3.5rem;
+      // width: 10.5rem;
+      // height: 3.5rem;
 
-      box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
-      border-radius: 2px;
+      // box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+      // border-radius: 2px;
 
-      background: #363E51;
-      color: #E1E1E1;
+      // background: #363E51;
+      // color: #E1E1E1;
 
-      font-family: Nunito Sans;
-      font-style: normal;
-      font-weight: normal;
-      font-size: 14px;
-      line-height: 19px;
+      // font-family: Nunito Sans;
+      // font-style: normal;
+      // font-weight: normal;
+      // font-size: 14px;
+      // line-height: 19px;
 
       + button {
         margin-left: 1rem;
       }
 
-      &.cta {
-        background: #6185EE;
-        border: 1px solid #6185EE;
-      }
+      // &.cta {
+      //   background: #6185EE;
+      //   border: 1px solid #6185EE;
+      // }
     }
   }
 }

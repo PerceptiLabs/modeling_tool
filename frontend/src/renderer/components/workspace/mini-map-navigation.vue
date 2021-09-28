@@ -131,7 +131,7 @@
           // display: this.isMiniMapNavigatorOpened ? 'block' : 'none',
           cursor: !!this.isMouseDown ? 'grab' : 'pointer',
           position: 'absolute',
-          zIndex: 2,
+          zIndex: 6,
           bottom: '20px',
           left: '20px',
         }
@@ -144,9 +144,8 @@
           width: (width * w) + 'px',
           // backgroundColor: 'rgba(0, 0, 0, 0.9)',
           boxSizing: 'content-box',
-          border: '1px solid #383F50',
+          border: '1px solid #7397fe',
           borderTopWidth: '16px',
-          background: '#23252A',
         }
       },
       updateWorkspaceMiniMapStyles() {
@@ -239,6 +238,8 @@
   .mini-map-relative-wrapper {
     width: 160px;
     height: 100px;
+
+    background: theme-var($neutral-7);
 
     position: relative;
     &:after {

@@ -74,7 +74,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  @import "../../scss/base";
   .mini-map-wrap {
   }
   .mini-map-wrap_toggle {

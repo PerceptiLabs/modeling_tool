@@ -11,7 +11,6 @@
 </script>
 
 <style lang="scss" scoped>
-  @import "../../scss/base";
   .wrapper-training-loader {
     position: absolute;
     width: 100%;

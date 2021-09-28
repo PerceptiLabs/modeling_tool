@@ -88,11 +88,12 @@
 <script  src="./network-field.js"></script>
 
 <style lang="scss" scoped>
-  @import "../../scss/base";
+  
   .network-field {
     position: relative;
     flex: 1 1 100%;
     z-index: 1;
+    filter: drop-shadow(0px 1px 3px rgba(0, 0, 0, 0.25));
     &.isViewMode {
       &::after {
         content: '';
@@ -137,7 +138,7 @@
     }
   }
   .svg-arrow_line {
-    stroke: $arrow-color; //inline styles for the canvas plagin
+    stroke: #6185EE; //inline styles for the canvas plagin
     stroke-width: 3;
     fill: transparent;
     &:hover {

@@ -5,7 +5,6 @@ chart-spinner(v-if="isLoading")
     span Show public datasets for &nbsp;
     .form_input.select
       base-select(
-        style-type="darken",
         v-model="category",
         :select-options="categories"
       )
@@ -23,8 +22,8 @@ chart-spinner(v-if="isLoading")
         tr
           td(span=5)
   .footer-actions
-    button.go-back-btn(@click="goBack()")
-      img(src="./../../../../../static/img/arrow-back.svg")
+    button.btn.btn--secondary(@click="goBack()")
+      img(src="./../../../../../static/img/back-arrow.svg")
       | Upload .CSV
 </template>
 
@@ -82,7 +81,7 @@ export default {
 
 <style lang="scss" scoped>
 .public-datasets-page {
-  padding: 30px;
+  padding: 0px;
 
   .header {
     display: flex;
@@ -107,14 +106,13 @@ export default {
   font-size: 16px;
   line-height: 32px;
 
-  color: #e1e1e1;
-
   thead {
-    background-color: #202634;
-    border-bottom: 1px solid #5e6f9f;
+    background: theme-var($neutral-7);
+    border: $border-1;
   }
   tbody {
     tr {
+          border: 1px solid white !important;
       &.disabled {
         pointer-events: none;
         filter: grayscale(1);
@@ -124,7 +122,8 @@ export default {
       }
 
       &.loading {
-        background-color: #1d253d;
+        background: theme-var($neutral-6);
+        border: 1px solid #6185EE;
         position: relative;
 
         &:after {
@@ -142,7 +141,8 @@ export default {
         }
       }
       &.loaded {
-        background-color: #1d253d;
+        background: theme-var($neutral-6);
+        border: 1px solid #6185EE;
         position: relative;
 
         .action-button {
@@ -162,7 +162,8 @@ export default {
         display: none;
       }
       &:hover {
-        background-color: #1d253d;
+        background: theme-var($neutral-6);
+        border: 1px solid #6185EE;
         .action-button {
           display: block;
         }
@@ -204,7 +205,7 @@ export default {
   background: #6185ee;
   box-sizing: border-box;
   border-radius: 2px;
-  box-shadow: 0px 3px 5px rgba(0, 0, 0, 0.25);
+  box-shadow: none !important;
 
   font-family: Nunito Sans, sans-serif;
   font-style: normal;

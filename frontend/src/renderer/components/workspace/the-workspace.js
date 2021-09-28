@@ -5,6 +5,8 @@ import spinnerNet from './workspace-spinner.js'
 import helpersNet from './workspace-helpers.js'
 import {debounce, isEnvDataWizardEnabled} from '@/core/helpers'
 
+import { googleAnalytics }        from '@/core/analytics';
+
 import WorkspaceToolbar       from '../toolbar/workspace-toolbar.vue';
 import StatisticsToolbar      from '../toolbar/statistics-toolbar.vue';
 
@@ -30,7 +32,6 @@ import InformationPanel       from '@/components/workspace/information-panel/inf
 import EmptyNavigation        from '@/components/empty-navigation/empty-navigation.vue';
 import ResourceMonitor        from "@/components/charts/resource-monitor.vue";
 import SelectModelModal       from '@/pages/projects/components/select-model-modal.vue';
-import ViewBoxBtnList         from '@/components/statistics/view-box-btn-list.vue'
 import ModelStatus            from '@/components/different/model-status.vue';
 import MiniMapNavigation      from '@/components/workspace/mini-map-navigation.vue';
 import ChartSpinner           from '@/components/charts/chart-spinner';
@@ -48,7 +49,7 @@ export default {
     TheToaster, TheMiniMap, FilePickerPopup, TheSidebar,
     CodeWindow, InformationPanel,
     ResourceMonitor, SelectModelModal,
-    ViewBoxBtnList, EmptyNavigation,
+    EmptyNavigation,
     ModelStatus,
     MiniMapNavigation,
     ChartSpinner,
@@ -95,7 +96,21 @@ export default {
       },
       buffer: {},
       isCreateModelModalOpen: false,
-      debouncedCopyCursorPositionFn: null,
+      debouncedCopyCursorPositionFn: null,      
+      interactiveInfo: {
+        edit:     {title: 'Edit',     text: `Use this to being able to drag & ,<br/> drop, select, edit, etc`},
+        arrow:    {title: 'Arrow',    text: `Use this to connect the <br/>layers and define the dataflow`},
+        undo:     {title: 'Undo',     text: `Use this to connect the <br/>Undo`},
+        redo:     {title: 'Redo',     text: `Redo`},
+        runButton:{title: 'Run/Stop', text: `Start training/Stop training`},
+        pause:    {title: 'Pause',    text: `Pause training/Unpause training`},
+        skip:     {title: 'Skip',     text: `Skip validation`},
+        hyperparameters: {title: 'Generate Hyperparameters',text: `Auto-generate the hyperparameters`},
+        blackBox: {title: 'BlackBox', text: `Load the data and let our algorithm </br> build a model for you and train it`},
+        interactiveDoc: {title: 'Interactive documentation', text: `Use this to find out what all </br> different operations and functions do`},
+        tutorial: {title: 'Tutorial', text: `Choose an interactive tutorial`}
+      },      
+      showSpinnerOnRun: false
     }
   },
   created() {
@@ -122,6 +137,8 @@ export default {
       isTraining:         'mod_workspace/GET_networkIsTraining',
       currentNetwork:     'mod_workspace/GET_currentNetwork',
       getIsWorkspaceDragEvent: 'mod_events/getIsWorkspaceDragEvent',
+      
+      modelTrainingSettings:'mod_workspace/GET_modelTrainingSetting'
     }),
     ...mapState({
       showNewModelPopup:          state => state.globalView.globalPopup.showNewModelPopup,
@@ -162,6 +179,20 @@ export default {
     },
     statusLocalCore() {
       return this.$store.state.mod_api.statusLocalCore;
+    },    
+    statusTraining() {
+      switch (this.statusNetworkCore) {
+        case 'Training':
+        case 'Validation':
+          return 'training';
+          break;
+        case 'Paused':
+          return 'pause';
+          break;
+        case 'Finished':
+          return 'finish';
+          break;
+      }
     },
     // currentNet() {
     //   this.scale = this.$store.getters['mod_workspace/GET_currentNetworkZoom'];
@@ -193,7 +224,6 @@ export default {
       return this.$store.getters['mod_workspace-notifications/getNotificationWindowState'](this.workspace[this.currentNetworkIndex].networkID);
     },
     getNotificationWindowSelectedTab() {
-
       if (!this.workspace[this.currentNetworkIndex]) {
         return '';
       }
@@ -205,7 +235,7 @@ export default {
     },
     toasterRightPosition() {
 
-      let rightValueRm = 1;
+      let rightValueRm = 3;
 
       if (this.$store.state.globalView.hideSidebar) {
         rightValueRm += 25; // hardcoded in the-sidebar.vue file
@@ -233,6 +263,17 @@ export default {
       },
       set(value) {
         this.setGridValue(value);
+      }
+    },
+    isGlobalTrainingSettingEnabled() {
+      return isEnvDataWizardEnabled();
+    },   
+    statusStartBtn() {
+      return {
+        // 'bg-error':   this.statusTraining === 'training',
+        // 'bg-warning': this.statusTraining === 'pause',
+        // 'bg-success': this.statusTraining === 'finish',
+        //'bg-error': this.statusTraining === 'finish',
       }
     },
   },
@@ -324,6 +365,25 @@ export default {
         }
       },
       immediate: true
+    },
+    statusTraining() {
+      switch (this.statusNetworkCore) {
+        case 'Training':
+        case 'Validation':
+          return 'training';
+          break;
+        case 'Paused':
+          return 'pause';
+          break;
+        case 'Finished':
+          return 'finish';
+          break;
+      }
+    },    
+    '$store.state.mod_events.eventRunStatistic': {
+      handler() {
+       this.onOffBtn(true);
+      }
     }
   },
   methods: {
@@ -338,6 +398,8 @@ export default {
       setLayerMetrics:          'mod_statistics/setLayerMetrics',
       setMiniMapNavigationMutation:   'globalView/setMiniMapNavigationMutation',
       setGridValue:             'globalView/setGridStateMutation',
+      setCurrentStatsIndex:     'mod_workspace/set_currentStatsIndex',
+      saveNetworkEvent:              'mod_events/set_saveNetwork',
     }),
     ...mapActions({
       popupConfirm:               'globalView/GP_confirmPopup',
@@ -359,7 +421,11 @@ export default {
       pushSnapshotToHistory:      'mod_workspace-history/PUSH_newSnapshot',
       setNotificationWindowState: 'mod_workspace-notifications/setNotificationWindowState',
       popupNewModel:              'globalView/SET_newModelPopup',
-      SET_emptyScreenMode:        'mod_empty-navigation/SET_emptyScreenMode',
+      SET_emptyScreenMode:        'mod_empty-navigation/SET_emptyScreenMode',      
+      pauseTraining:              'mod_api/API_pauseTraining',
+      stopTraining:               'mod_api/API_stopTraining',
+      skipValidTraining:          'mod_api/API_skipValidTraining',
+      showInfoPopup:              'globalView/GP_infoPopup',
     }),
     onCloseSelectModelModal() {
       this.popupNewModel(false);
@@ -702,6 +768,133 @@ export default {
     },
     preventEvent(e) {
       e.preventDefault();
+    },    
+    trainStop() {
+      this.stopTraining();
+      
+      this.$store.dispatch('mod_tracker/EVENT_trainingCompleted', 'User stopped');
+    },
+    trainPause() {
+      this.pauseTraining();
+    },
+    onOffBtn(runWithCurrentSettings) {
+      if(this.isTraining)  {
+        this.trainStop();
+      } else {
+        if(this.isGlobalTrainingSettingEnabled && !runWithCurrentSettings) {
+          // open setting modal
+          this.$store.dispatch('globalView/showGlobalTrainingSettingsAction', {
+            isOpen: true,
+            cb: this.modalSettingsCb,
+          }, { root: true });  
+          
+        } else {
+          this.modalSettingsCb()
+        }
+      }
+    
+    },
+    
+    modalSettingsCb() {
+      this.showSpinnerOnRun = true;
+      this.setCurrentStatsIndex(this.currentNetworkIndex);
+      
+      this.$store.commit('mod_workspace/update_network_meta', {key: 'hideStatistics', networkID: this.currentNetwork.networkID, value: false});
+      
+      this.$store.dispatch('mod_api/API_scanCheckpoint', {
+        networkId: this.currentNetwork.networkID,
+        path: this.currentNetwork.apiMeta.location
+      })
+        .then(result => {
+          this.showSpinnerOnRun = false;
+
+          if (result.hasCheckpoint) {
+            this.trainStartWithCheckpoint();
+
+            this.$nextTick(() => {
+              this.setNextStep({currentStep:'tutorial-workspace-start-training'});
+              this.setCurrentView('tutorial-core-side-view');
+            });
+          } else {
+            this.trainStartWithoutCheckpoint();
+          }
+        });
+    },
+    
+    trainStartWithCheckpoint() {
+      googleAnalytics.trackCustomEvent('start-training');
+      if (!isEnvDataWizardEnabled()) {
+        let valid = this.validateNetwork();
+        if (!valid) return;
+      }
+      this.GP_showCoreSideSettings(true);
+    },
+    trainStartWithoutCheckpoint() {
+      googleAnalytics.trackCustomEvent('start-training');
+      if (!isEnvDataWizardEnabled()) {
+        let valid = this.validateNetwork();
+        if (!valid) return;
+      }
+      // if toggle off
+      // start directly
+
+      // Refactor this and the core in workspace-core-side
+      this.$store.commit('mod_workspace/updateCheckpointPaths');
+      
+      this.$store.dispatch('mod_workspace/saveCurrentModelAction')
+        .then(_ => {
+          this.$store.dispatch('mod_api/API_startTraining', { loadCheckpoint: false });
+
+          this.$store.dispatch('mod_workspace/SET_openStatistics', true);
+          this.$store.dispatch('mod_workspace/setViewType', 'statistic');
+          this.$store.dispatch('mod_workspace/SET_openTest', null);
+          this.$store.commit('mod_workspace/SET_showStartTrainingSpinner', true);
+          this.$store.dispatch('globalView/hideSidebarAction', false);
+
+          if (!this.$store.getters['mod_workspace-notifications/getHasErrors'](this.currentNetwork.networkID)) {
+            this.$store.dispatch('mod_tutorials/setChecklistItemComplete', { itemId: 'startTraining' });
+          }
+          this.$store.dispatch('mod_tutorials/setCurrentView', 'tutorial-statistics-view');
+
+          this.$nextTick(() => {
+            this.setNextStep({currentStep:'tutorial-workspace-start-training'});
+            this.setCurrentView('tutorial-statistics-view');
+          });
+        });
+    },
+    validateNetwork() {
+      let net;
+      if(this.currentElList) net = Object.values(this.currentElList);
+      else {
+        this.showInfoPopup('You cannot Run without a Data element and a Training element');
+        return false;
+      }
+
+      let typeData = net.find((element)=> element.layerType === 'Data');
+      if(typeData === undefined) {
+        this.showInfoPopup('Data element missing');
+        return false
+      }
+
+      let typeTraining = net.find((element)=> element.layerType === 'Training');
+      if(typeTraining === undefined) {
+        this.showInfoPopup('Classic Machine Learning or Training element missing');
+        return false
+      }
+      let trainingIncluded = net.find(element => trainingElements.includes(element.componentName));
+      let deepLearnIncluded = true;
+      if (trainingIncluded) {
+        deepLearnIncluded = net.find(element => deepLearnElements.includes(element.componentName));
+      }
+      if(deepLearnIncluded === undefined) {
+        this.showInfoPopup('If you use the Training elements, you must use the Deep Learn elements');
+        return false
+      }
+
+      return true;
+    },    
+    openDataSettings() {
+      this.$store.dispatch('globalView/SET_datasetSettingsPopupAction', true);
     }
   }
 }

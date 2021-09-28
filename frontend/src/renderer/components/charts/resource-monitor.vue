@@ -1,12 +1,15 @@
 <template lang="pug">
   v-chart.pc-chart_chart(
     :auto-resize="true"
-    theme="quantum"
+    :theme="theme"
     :options="optionChart"
   )
 </template>
 
 <script>
+  import { mapState } from 'vuex';
+  import { THEME_DARK } from '@/core/constants.js';
+
   const xAxisMax = 8;
   export default {
     name: "ResourceMonitor",
@@ -19,12 +22,16 @@
         type: Object,
       },
     },
+    computed: {
+      ...mapState({
+        theme:                      state => state.globalView.theme
+      }),
+    },
     data() {
       return {
         requestsNum: 0,
         optionChart: {
           color: ['#FE7373', '#F7D081', '#73FEBB'],
-          backgroundColor: "#222939",
           grid: { top: '10', bottom: '10', right: '10', left: '35' },
           dataZoom: [{ type: 'slider', show: false, realtime: true, startValue: 0, endValue: xAxisMax }],
           xAxis: {

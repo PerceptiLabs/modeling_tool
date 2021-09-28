@@ -25,12 +25,13 @@ html {
 	max-height: 1000000px;
 }
 
-body {
+body,
+#app {
 	font-family: $base-font-sans-serif;
 	font-weight: normal;
 	line-height: $line-height-base;
-	color: $base-text-color;
-	background: $base-background-color;
+	color: theme-var($text-normal);
+	background: $bg-window;
 
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;

@@ -82,7 +82,7 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
-  @import "../../../scss/base";
+  
   $file-list-indent: .5rem;
 
   .heavy-text {      
@@ -114,11 +114,10 @@ export default {
     }
   }
   .file-settings_title {   
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
 
     .form_label {
       font-size: 1.2rem;
-      color: $white;
     }
     .form_input {
       display: flex;
@@ -135,13 +134,14 @@ export default {
     margin-bottom: .5rem;
     border-radius: $bdrs;
 
-    background: #363E51;
+    background: theme-var($neutral-7);
     border: 1px solid $bg-toolbar-2;
   }
   .file-list_item {
     padding: $file-list-indent;
     border-bottom: 1px solid $bg-toolbar;
     overflow: hidden;
+    background: theme-var($neutral-7);
     .form_row {
       align-items: stretch;
     }

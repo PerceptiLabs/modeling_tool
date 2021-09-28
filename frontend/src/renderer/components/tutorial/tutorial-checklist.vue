@@ -75,7 +75,7 @@ export default {
 
 </script>
 <style lang="scss" scoped>
-// @import "../../scss/base";
+// 
 // @import "../../scss/directives/tooltip";
 
 $medium-separation: 1.8rem;

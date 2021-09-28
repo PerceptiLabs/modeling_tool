@@ -1,5 +1,5 @@
 <template lang="pug">
-  #app
+  #app.theme-transition(:class="`${theme}-theme`")
     app-header.app-header(
       v-if="showMenuBar"
     )
@@ -13,7 +13,7 @@
     PiPyPopupUpdate(v-if="showPiPyNotification")
     create-issue-popup(v-if="showCreateIssuesPopup")
     modal-pages-engine
-    tutorials-checklist(v-if="showTutorialChecklist" :style="tutorialChecklistPosition")
+    tutorials-checklist(:style="tutorialChecklistPosition")
     about-app-popup(v-if="showAppAboutPopUp")
     file-picker-popup(
       v-if="showFilePickerPopup"
@@ -22,6 +22,7 @@
       :popupTitle="showFilePickerPopup.popupTitle"
       :confirmCallback="showFilePickerPopup.confirmCallback || showFilePickerPopup"
       :options="showFilePickerPopup.options")
+    add-card-popup(v-if="showAddCardPopup")
     #tutorial-notifications(v-if="showTutorialNotifications")
       tutorial-notification(
         v-for="n in tutorialNotifications"
@@ -43,7 +44,7 @@
   } from '@/core/apiRygg';
   import { ryggAvailability } from '@/core/apiRygg';
   import Analytics from '@/core/analytics';
-  import { LOCAL_STORAGE_WORKSPACE_VIEW_TYPE_KEY, localStorageGridKey } from '@/core/constants.js'
+  import { LOCAL_STORAGE_WORKSPACE_VIEW_TYPE_KEY, localStorageGridKey, THEME_LIGHT, THEME_DARK } from '@/core/constants.js'
   import { mapMutations, mapActions, mapGetters, mapState } from 'vuex';
   import { getModelDatasetPath } from '@/core/modelHelpers.js';
   import SidebarMenu            from '@/pages/layout/sidebar-menu.vue';
@@ -56,17 +57,19 @@
   import ModalPagesEngine       from '@/components/modal-pages-engine.vue';
   import AboutAppPopup          from "@/components/global-popups/about-app-popup.vue";
   import FilePickerPopup        from "@/components/global-popups/file-picker-popup.vue";
+  import AddCardPopup           from "@/components/global-popups/add-card-popup.vue";
   import { MODAL_PAGE_PROJECT, MODAL_PAGE_QUESTIONNAIRE } from '@/core/constants.js';
   import { isUrlReachable, isEnterpriseApp } from '@/core/apiRygg.js';
   import { keyCloak } from '@/core/apiKeyCloak.js';
   
+
   export default {
     name: 'TheApp',
     components: {
       SidebarMenu,
       ModalPagesEngine,
       // HeaderLinux, HeaderWin, HeaderMac,
-      UpdatePopup, TheInfoPopup, ConfirmPopup, DeleteConfirmPopup, CreateIssuePopup, PiPyPopupUpdate, AboutAppPopup, FilePickerPopup,
+      UpdatePopup, TheInfoPopup, ConfirmPopup, DeleteConfirmPopup, CreateIssuePopup, PiPyPopupUpdate, AboutAppPopup, FilePickerPopup, AddCardPopup,
       AppHeader,
       TutorialsChecklist, TutorialNotification
     },
@@ -146,7 +149,8 @@
       if(localStorage.hasOwnProperty(localStorageGridKey)) {
         const gridValue = localStorage.getItem(localStorageGridKey) === 'true';
         this.$store.commit('globalView/setGridStateMutation', gridValue);
-      }
+      }      
+      
       this.$store.commit('mod_workspace-changes/get_workspaceChangesInLocalStorage');
 
       this.$store.dispatch('mod_tutorials/loadTutorialProgress')
@@ -169,7 +173,7 @@
       this.updateOnlineStatus();
       this.SET_appVersion(process.env.PACKAGE_VERSION);
       this.$store.dispatch('mod_api/API_runServer', null, {root: true});
-      document.body.style.overflow = 'hidden';
+      // document.body.style.overflow = 'hidden';
       document.addEventListener('keydown', this.disableHotKeys);
      
       // this.$store.dispatch('mod_workspace/GET_workspacesFromLocalStorage');
@@ -195,6 +199,7 @@
     computed: {
       ...mapState({
         showFilePickerPopup:        state => state.globalView.globalPopup.showFilePickerPopup,
+        theme:                      state => state.globalView.theme
       }),
       ...mapGetters({
         user:                   'mod_user/GET_userProfile',
@@ -242,10 +247,10 @@
       },
       showPopup() {
         return this.errorPopup.length || (this.infoPopup && this.infoPopup.length);
-      },
+      },      
       showMenuBar() {
         const GET_userIsLogin = this.$store.getters['mod_user/GET_userIsLogin']
-        return GET_userIsLogin && ['home', 'app', 'projects', 'main-page', 'settings', 'test', 'export'].includes(this.$route.name);
+        return GET_userIsLogin && ['home', 'app', 'projects', 'main-page', 'settings', 'test', 'export', 'pricing'].includes(this.$route.name);
       },
       showCreateIssuesPopup() {
         return this.$store.state.globalView.globalPopup.showCreateIssuesPopup;
@@ -351,6 +356,9 @@
       },
       showAppAboutPopUp() {
         return this.$store.state.globalView.globalPopup.showAppAbout;
+      },
+      showAddCardPopup() {
+        return this.$store.state.globalView.globalPopup.showAddCardPopup;
       },
       getWorkspacesIds() {
         return this.$store.state['mod_workspace'].workspaceContent.map(workspace => workspace.networkID.toString());
@@ -614,7 +622,7 @@
     grid-template-rows: auto 1fr;
     grid-template-columns: 1fr;
     overflow: hidden;
-    background: #27292F;
+    background: $bg-window;
     position: relative;
   }
   .app-header {
@@ -633,5 +641,8 @@
   
   .flex-1 {
     flex: 1;
+    
+    background-color: theme-var($neutral-7);
+    border-radius: 15px 0px 0px 0px;
   }
 </style>

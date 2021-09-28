@@ -1,11 +1,10 @@
 <template lang="pug">
   .popup-global
     .popup-global_overlay(@click="closePopup()")
-    section.popup
+    section.popup.popup-small
       .popup-background
-        .popup_tab-set
-          .popup_header.disable
-            h3 Result
+        h1.popup-title.bold(class="text-center") Result
+        
         .popup_body
           .settings-layer_section
             .chart-spinner-wrapper(v-if="isLoading")

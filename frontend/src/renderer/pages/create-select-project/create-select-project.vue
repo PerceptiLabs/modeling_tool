@@ -446,8 +446,6 @@
   }
   .projectContext {
     position: fixed;
-    background: #1C1C1E;
-    border: 1px solid #363E51;
     box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
     border-radius: 2px;
     display: flex;
@@ -455,8 +453,7 @@
     z-index: 12;
     padding: 5px 8px;
 
-    background: #131B30;
-    border: 1px solid #363E51;
+    background: white;
     box-sizing: border-box;
     box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
     border-radius: 2px;
@@ -475,14 +472,14 @@
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    background-color: transparent;
+    background-color: theme-var($neutral-7);
+    border-radius: 15px 0px 0px 0px;
+    padding: 10px 20px;
   }
   .project-box {
     min-width: 680px;
     min-height: 500px;
 
-    background: linear-gradient(180deg, #363E51 0%, rgba(54, 62, 81, 0) 100%);
-    border: 1px solid rgba(97, 133, 238, 0.4);
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.25);
     border-radius: 2px;
     &.set-project-name {
@@ -678,7 +675,7 @@
     font-weight: 600;
     font-size: 14px;
     line-height: 19px;
-    color: #FFFFFF;
+    color: theme-var($neutral-8);
 
     + .set-project-text-label {
       margin-top: 2rem;
@@ -701,7 +698,7 @@
     font-weight: 600;
     font-size: 14px;
     line-height: 19px;
-    color: #FFFFFF;
+    color: theme-var($neutral-8);
     &.disabled {
       opacity: 0.5;
     }

@@ -1,5 +1,9 @@
 <template lang="pug">
-  base-global-popup(:tab-set="popupTitle" @closePopup="closePopup")
+  base-global-popup(
+    :title="popupTitle"
+    title-align="text-center"
+     @closePopup="closePopup"
+  )
     template(slot="Parser-content")
       .form_row
         .form_label Trainable:
@@ -24,7 +28,7 @@
             :class="{'bg-error': !settings.Pb.length}"
             @click="choosePbFile"
             )
-      .form_row
+      .form_row.mb-footer
         .form_label Checkpoint:
         .form_input
           input.ellipsis--right(type="text" readonly="true"
@@ -34,7 +38,7 @@
 
 
     template(slot="action")
-      button.btn.btn--primary.btn--disabled(type="button"
+      button.btn.btn--secondary(type="button"
         @click="closePopup"
         ) Cancel
       button.btn.btn--primary(type="button"
@@ -54,7 +58,7 @@ export default {
   components: {BaseGlobalPopup},
   data() {
     return {
-      popupTitle: ['Parser'],
+      popupTitle: 'Parser',
       trainLayers: [
         { text: 'All', value: 'All' },
         { text: 'Last', value: 'Last' },

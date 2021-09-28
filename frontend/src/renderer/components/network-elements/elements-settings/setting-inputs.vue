@@ -129,6 +129,7 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
+
 .input-wrapper {
   width: 66px;
   //  *** For Training component with are bigger to fit input names ***
@@ -148,11 +149,12 @@ export default {
   font-weight: 600;
   font-size: 10px;
   line-height: 22px;
+  color: theme-var($neutral-8);
 
-  color: #FFFFFF;
+  // color: #FFFFFF;
   padding: 0 2px;
   &.is-editable {
-    background: rgba(54, 62, 81, 0.4);
+    // background: rgba(54, 62, 81, 0.4);
     border: 1px solid #3F4C70;
     box-sizing: border-box;
     border-radius: 1px;
@@ -169,13 +171,13 @@ export default {
   border-radius: 50%;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.3)
+    background: rgba(0, 0, 0, 0.3)
   }
 }
 .circle-dot {
   width: 5px;
   height: 5px;
-  border: 1px solid white;
+  border: 1px solid $color-6;
   border-radius: 50%;
   position: absolute;
   left: -13px;
@@ -183,7 +185,7 @@ export default {
   transform: translateY(-50%);
 
   &.connect {
-    background: #B6C7FB;
+    background: #6185EE;
   }
 }
 .setting-input-edit {

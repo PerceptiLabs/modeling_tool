@@ -6,7 +6,7 @@
     )
     perfect-scrollbar.csv-table-scrollbar-wrapper
       table.table-wrapper(v-if="delimitedDataSet")
-        thead
+        thead.bold
           tr(:data-tutorial-target="'tutorial-data-wizard-csv-explanation'")
             //- th(@click="clearSelectedColumns")
             th.table-column(
@@ -15,9 +15,8 @@
               @click="addSelectedColumn($event, numColumn - 1)"
               :class="{'is-selected': selectedColumns.includes(numColumn - 1)}"
               )
-              div.d-flex.justify-content-between
-                span &nbsp;
-                span {{ numColumn }}
+              div.d-flex.justify-between
+                div {{ numColumn }}
                 data-column-options(
                   :columnSelectedType="formattedDataset.dataTypes"
                   :index="ix"
@@ -25,7 +24,7 @@
         tbody
           tr.table-row.default-row(v-for="dataRow in delimitedDataSet.slice(1)")
             //- td.no-border(@click="clearSelectedColumns")
-            td.table-column(
+            td.table-column.justify-left(
               v-for="numColumn in computedNumberOfColumns"
               @click="addSelectedColumn($event, numColumn - 1)"
               :class="{'is-selected': selectedColumns.includes(numColumn - 1)}"
@@ -249,6 +248,10 @@ export default {
     padding: 0 5px;
   }
 
+  .justify-between {
+    justify-content: space-between;
+  }
+
   .table-wrapper {
     display: table;
 
@@ -257,22 +260,25 @@ export default {
     box-sizing: border-box;
     thead {
       .table-column {
-        color: #fff;
         font-family: Roboto;
         font-size: 14px;
         line-height: 24px;
-        text-align: center;
+        text-align: left;
         font-weight: normal;
         letter-spacing: 0.02em;
-        background-color: #242B3A;
+        background: theme-var($neutral-7);
       }
     }
     tbody {
       .default-row{
         .table-column {
-          text-align: center;
+          text-align: left;
           font-size: 14px;
         }
+      }
+
+      &:last-child {
+        border-radius: 4px;
       }
     }
     .io-cell {
@@ -292,7 +298,7 @@ export default {
 
   .table-column {
     padding: 1rem;
-    border: 1px solid #5E6F9F;
+    border: $border-1;
     
     white-space: nowrap;
   }

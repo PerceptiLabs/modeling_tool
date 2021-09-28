@@ -1,10 +1,11 @@
 <template lang="pug">
   base-global-popup(
-    :tab-set="popupTitle"
+    :title="popupTitle"
+    title-align="text-center"
     class="global-training-settings"
     @closePopup="closeModal"
   )
-    template(:slot="popupTitle[0] + '-content'")
+    template(:slot="popupTitle + '-content'")
       .form_row
         .form_label
           info-tooltip(
@@ -56,7 +57,7 @@
             @blur="setIsSettingInputFocused(false)")
       .form_row
         .form_label
-        .form_row.ml-10
+        .form_input.ml-10
           base-checkbox(:value="settings.AutoCheckpoint" @input="handleCheckboxAndSelectChange($event, 'AutoCheckpoint')") Save checkpoint every epoch  
       .form_row
         .form_label Optimizer:
@@ -66,54 +67,53 @@
             @input="handleCheckboxAndSelectChange($event, 'Optimizer')"
             :select-options="defaultTrainingSettings.OptimizerOptions"
           )
-          br
-          div(v-if="settings.Optimizer === 'ADAM'")
-            .form_row
-              .form_label
-                info-tooltip(
-                  text="The exponential decay rate for the 1st moment estimates"
-                ) Beta1:
-              .form_input(data-tutorial-hover-info)
-                input.normalize-inputs(
-                  type="number"
-                  name="Beta1"
-                  :value="settings.Beta1"
-                  @input="handleInputChange"
-                  @focus="setIsSettingInputFocused(true)"
-                  @blur="setIsSettingInputFocused(false)")
-            .form_row
-              .form_label
-                info-tooltip(
-                  text="The exponential decay rate for the 2nd moment estimates"
-                ) Beta2:
-              .form_input(data-tutorial-hover-info)
-                input.normalize-inputs(
-                  type="number"
-                  name="Beta2"
-                  :value="settings.Beta2"
-                  @input="handleInputChange"
-                  @focus="setIsSettingInputFocused(true)"
-                  @blur="setIsSettingInputFocused(false)")
-          div(v-if="settings.Optimizer === 'SGD'")
-            .form_row
-              .form_label
-                info-tooltip(
-                  text="Accelerates the gradient descent in the relevant direction and dampens oscillations"
-                ) Momentum:
-              .form_input(data-tutorial-hover-info)
-                input.normalize-inputs(
-                  type="number"
-                  name="Momentum"
-                  :value="settings.Momentum"
-                  @input="handleInputChange"
-                  @focus="setIsSettingInputFocused(true)"
-                  @blur="setIsSettingInputFocused(false)")
-          div(v-if="settings.Optimizer === 'RMSprop'")
-            .form_row
-              info-tooltip(
-                text="Setting this to True may help with training, but is slightly more expensive in terms of computation and memory"
-              ) 
-                base-checkbox(:value="settings.Centered" @input="handleCheckboxAndSelectChange($event, 'Centered')") Centered
+          
+      .form_row(v-if="settings.Optimizer === 'ADAM'")
+        .form_label
+          info-tooltip(
+            text="The exponential decay rate for the 1st moment estimates"
+          ) Beta1:
+        .form_input(data-tutorial-hover-info)
+          input.normalize-inputs(
+            type="number"
+            name="Beta1"
+            :value="settings.Beta1"
+            @input="handleInputChange"
+            @focus="setIsSettingInputFocused(true)"
+            @blur="setIsSettingInputFocused(false)")
+      .form_row(v-if="settings.Optimizer === 'ADAM'")
+        .form_label
+          info-tooltip(
+            text="The exponential decay rate for the 2nd moment estimates"
+          ) Beta2:
+        .form_input(data-tutorial-hover-info)
+          input.normalize-inputs(
+            type="number"
+            name="Beta2"
+            :value="settings.Beta2"
+            @input="handleInputChange"
+            @focus="setIsSettingInputFocused(true)"
+            @blur="setIsSettingInputFocused(false)")
+
+      .form_row(v-if="settings.Optimizer === 'SGD'")
+        .form_label
+          info-tooltip(
+            text="Accelerates the gradient descent in the relevant direction and dampens oscillations"
+          ) Momentum:
+        .form_input(data-tutorial-hover-info)
+          input.normalize-inputs(
+            type="number"
+            name="Momentum"
+            :value="settings.Momentum"
+            @input="handleInputChange"
+            @focus="setIsSettingInputFocused(true)"
+            @blur="setIsSettingInputFocused(false)")
+
+      .form_row(v-if="settings.Optimizer === 'RMSprop'")
+        info-tooltip(
+          text="Setting this to True may help with training, but is slightly more expensive in terms of computation and memory"
+        ) 
+          base-checkbox(:value="settings.Centered" @input="handleCheckboxAndSelectChange($event, 'Centered')") Centered
       
       .form_row(v-tooltip-interactive:right="interactiveInfo.learningRate")
         .form_label
@@ -140,7 +140,7 @@
     data() {
       return {
         defaultTrainingSettings,
-        popupTitle: ['Model training settings'],
+        popupTitle: 'Model training settings',
         interactiveInfo: {
           learningRate: '',
         },
@@ -179,14 +179,20 @@
     }
   }
 </script>
-<style lang="scss">
+<style lang="scss" scoped>
 
   .normalize-inputs {
      width: 100% !important;
     height: 32px !important;
   }
+  
+  .form_row input {
+      text-align: left;
+      padding-left: 10px;
+  }
   .global-training-settings {
     .settings-layer_section {
+      width: 100%;
       padding: 25px;
     }
     .popup_foot {
@@ -195,6 +201,15 @@
   }
   .ml-10 {
     margin-left: 10px;
+  }
+
+  .form_row {
+    justify-content: center;
+  }
+  
+  .settings-layer_section > .form_row .form_label {
+      flex: 0 0 40%;
+      max-width: 20%;
   }
 </style>
 <!--//Epochs: 100,-->

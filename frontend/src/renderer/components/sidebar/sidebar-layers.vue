@@ -1,8 +1,9 @@
 <template lang="pug">
   section.sidebar_layers
-    .layers_title.d-flex.sidebar_content-padding--small
-      h3 Components
-    perfect-scrollbar(tag='ul').layers_body(ref="layersItemList")
+    .layers_title.bold.d-flex.sidebar_content-padding--small
+      span Components
+      base-toggle-expand.primary(:value="showComponents" :onClick="toggleShowComponents")
+    perfect-scrollbar(tag='ul').layers_body(ref="layersItemList" v-if="showComponents")
       sidebar-layers-item(
         v-for="item in networkElementList"
         :key="item.layerId"
@@ -27,7 +28,8 @@ export default {
     ...mapGetters({
       workspace: 'mod_workspace/GET_currentNetwork',
       currentSelectedList: 'mod_workspace/GET_currentSelectedEl',
-      networkElementListLength: 'mod_workspace/GET_currentNetworkElementListLength',
+      networkElementListLength: 'mod_workspace/GET_currentNetworkElementListLength',      
+      showComponents: 'mod_workspace/GET_showComponents',
     }),
     networkElementList() {
       let currentNet = this.$store.getters['mod_workspace/GET_currentNetworkElementList'];
@@ -64,45 +66,44 @@ export default {
   },
   methods: {
     ...mapMutations({
-      setGridValue: 'globalView/setGridStateMutation'
+      setGridValue: 'globalView/setGridStateMutation',
+      setShowComponents: 'mod_workspace/setShowComponentsMutation'
     }),
+    toggleShowComponents () {
+      this.setShowComponents(!this.showComponents)
+    }
   }
 }
 </script>
 
 <style lang="scss" scoped>
-  @import "../../scss/base";
+  
   .sidebar_layers {
     display: flex;
     flex-direction: column;
-    flex-grow: 1;
-    max-height: 35vh;
+    // flex-grow: 1;
+    max-height: 25vh;
     overflow: hidden;
     // background-color: $bg-toolbar;
-    background-color: #23252A;
     box-sizing: border-box;
-    border: 1px solid $toolbar-separator-color;
+    // border: 1px solid $toolbar-separator-color;
     border-radius: 2px;
     &.training {
       max-height: calc(100vh - 600px);
-    }    
+    }   
+    
+    border-bottom: $border-1;
+    padding-top: 8px;
+    padding-bottom: 8px;
   }
   .layers_title {
-    background-color: #363E51;
+    display: flex;
     align-items: center;
     flex: 0 0 auto;
+    justify-content: space-between;
     height: $h-sidebar-layers-item;
-    h3 {
-      font-size: 12px;
-      margin: 0;
-      color: $color-12;
-
-      font-family: Nunito Sans;
-      font-style: normal;
-      font-weight: normal;
-      font-size: 12px;
-      line-height: 16px;
-      color: #B6C7FB;
+    span {
+      font-size: 16px;
     }
   }
   .layers_body {
@@ -140,5 +141,8 @@ export default {
   }
   .form_row {
     padding: 10px 15px;
+  }
+  .primary {
+    margin-left: 16px;
   }
 </style>

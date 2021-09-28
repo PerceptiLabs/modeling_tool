@@ -6,81 +6,102 @@
       button(@click="handleContextRenameModel()") Rename
       button(@click="handleContextRemoveModel()") Delete
     div(v-show="!showNewModelPopup").project-wrapper
-      //- h1.project-name Project_Name
       div.header-controls
-        div.left-side
-          base-button(
-            @click.native="handleLoadDataClick"
-          )
-            svg(width="18" height="19" viewBox="0 0 18 19" fill="none" xmlns="http://www.w3.org/2000/svg")
-              path(d="M0.5625 11.6367C0.711684 11.6367 0.854758 11.696 0.960248 11.8015C1.06574 11.907 1.125 12.05 1.125 12.1992V15.0117C1.125 15.3101 1.24353 15.5962 1.4545 15.8072C1.66548 16.0182 1.95163 16.1367 2.25 16.1367H15.75C16.0484 16.1367 16.3345 16.0182 16.5455 15.8072C16.7565 15.5962 16.875 15.3101 16.875 15.0117V12.1992C16.875 12.05 16.9343 11.907 17.0398 11.8015C17.1452 11.696 17.2883 11.6367 17.4375 11.6367C17.5867 11.6367 17.7298 11.696 17.8352 11.8015C17.9407 11.907 18 12.05 18 12.1992V15.0117C18 15.6085 17.7629 16.1808 17.341 16.6027C16.919 17.0247 16.3467 17.2617 15.75 17.2617H2.25C1.65326 17.2617 1.08097 17.0247 0.65901 16.6027C0.237053 16.1808 0 15.6085 0 15.0117V12.1992C0 12.05 0.0592632 11.907 0.164752 11.8015C0.270242 11.696 0.413316 11.6367 0.5625 11.6367Z" fill="white")
-              path(d="M8.60246 1.79026C8.65471 1.73787 8.71678 1.69631 8.78512 1.66795C8.85346 1.6396 8.92672 1.625 9.00071 1.625C9.0747 1.625 9.14796 1.6396 9.2163 1.66795C9.28464 1.69631 9.34671 1.73787 9.39896 1.79026L12.774 5.16526C12.8796 5.27088 12.9389 5.41413 12.9389 5.56351C12.9389 5.71288 12.8796 5.85613 12.774 5.96176C12.6683 6.06738 12.5251 6.12672 12.3757 6.12672C12.2263 6.12672 12.0831 6.06738 11.9775 5.96176L9.56321 3.54638V13.4385C9.56321 13.5877 9.50395 13.7308 9.39846 13.8363C9.29297 13.9417 9.1499 14.001 9.00071 14.001C8.85153 14.001 8.70845 13.9417 8.60296 13.8363C8.49747 13.7308 8.43821 13.5877 8.43821 13.4385V3.54638L6.02396 5.96176C5.97166 6.01405 5.90957 6.05554 5.84124 6.08384C5.77291 6.11215 5.69967 6.12672 5.62571 6.12672C5.55175 6.12672 5.47851 6.11215 5.41018 6.08384C5.34185 6.05554 5.27976 6.01405 5.22746 5.96176C5.17516 5.90946 5.13368 5.84737 5.10537 5.77904C5.07707 5.71071 5.0625 5.63747 5.0625 5.56351C5.0625 5.48954 5.07707 5.41631 5.10537 5.34797C5.13368 5.27964 5.17516 5.21755 5.22746 5.16526L8.60246 1.79026Z" fill="white")
-            | Upload data
-      //-- MODELS RENDERING --//
+        div.left-side        
+          .button-container.mr-20(
+            v-if="isEnterpriseMode"
+            )            
+            button.btn.btn--primary(
+              @click="loadDataset"
+              :data-tutorial-target="'tutorial-model-hub-new-button'"
+              )
+              span.btn-round-icon(:class="{'high-lighted': isNewUser}")
+                img(src="/static/img/add-button.svg")
+                //- img.btn-rounded-new-image(src="../../../../static/img/add-icon.svg")
+                div(v-if="isNewUser").create-first-model Create your first model
+              span.left-header-btn-text Load Dataset
+
+          .button-container
+            button.btn.btn--primary(
+              @click="handleAddNetworkModal"
+              :data-tutorial-target="'tutorial-model-hub-new-button'"
+              )
+              span.btn-round-icon(:class="{'high-lighted': isNewUser}")
+                img(src="/static/img/add-button.svg")
+
+                //- img.btn-rounded-new-image(src="../../../../static/img/add-icon.svg")
+                div(v-if="isNewUser").create-first-model Create your first model
+              span.left-header-btn-text Create Project
+          //- div.search-input
+          //-   img(src="../../../../static/img/search-models.svg")
+          //-   input(
+          //-     type="text"
+          //-     placeholder="Search dataset or model"
+          //-     v-model="searchValue"
+          //-   )
+        div.right-side
+      // List
       div.models-list
-        //-- MODELS HEADER --//
-        div.models-list-row.model-list-header
+        div.models-list-row.model-list-header.bold
           div.column-1 
-            span.btn-round-icon.check-model-button(@click="toggleSelectedItems()" v-tooltip:bottom="'Select All'")
-              img(v-if="isAllItemsSelected()" src="../../../../static/img/project-page/checked.svg")
+            div(@click="toggleSelectedItems()")
+              base-checkbox.btn-checkbox(:value="isAllItemsSelected()" :onClick="() => toggleSelectedItems()")            
             | All datasets
           div.column-2
-          div.column-3
-          div.column-4 Status
-          div.column-5 Duration
-          div.column-6 Modified
-          div.column-7
+          div.column-3 Training Status
+          div.column-4 Duration
+          div.column-5 Test Available
+          div.column-6 Last Modified
+          div.column-7.d-flex.justify-content-between.justify-content-center
+            div 
             div.d-flex.flex-row-reverse.align-items-center
               .button-container(v-tooltip:bottom="'Delete'")
-                span.img-button.pt-4(:class="{ 'disabledIconButton': !isAtLeastOneItemSelected() }" @click="removeItems()")
-                  img(src="../../../../static/img/project-page/remove.svg")
-              base-button(
-                @click="openItems"
-                type="transparent"
-                :disabled="!isAtLeastOneItemSelected()"
-              ) Open
-        //-- MODELS BODY --//
+                span.img-button(:class="{ 'disabledIconButton': !isAtLeastOneItemSelected() }" @click="removeItems()")
+                  img(src="../../../../static/img/project-page/remove-red.svg")
+          
+        
         perfect-scrollbar.model-list-scrollbar
           div(v-for="dataset in allDatasets" :key="dataset.dataset_id")
             //-- DATASET ROW --//
             div.models-list-row.model-list-item.model-list-item-dataset
               div.column-1
-                span(
-                  @click="toggleDataSetAllModels(dataset.dataset_id)"
-                ).btn-round-icon.check-model-button
-                  img(v-if="areAllDataSetItemsChecked(dataset.dataset_id)"  src="../../../../static/img/project-page/checked.svg")
-  
-                .editable-field.model-name-wrapper.text-rtl
-                  span.model-name(
-                  )
-                  img.dataset-chevron(v-if="isDatasetOpened(dataset.dataset_id)" @click="toggleDataSetModels(dataset.dataset_id)" src="../../../../static/img/chevron-down.svg" alt="chevron-down")
-                  img.dataset-chevron(v-else @click="toggleDataSetModels(dataset.dataset_id)" src="../../../../static/img/chevron-right.svg" alt="chevron-right")
-                  bdi {{dataset.name}}
+                base-checkbox.btn-checkbox(
+                  :value="areAllDataSetItemsChecked(dataset.dataset_id)"
+                  :onClick="() => toggleDataSetAllModels(dataset.dataset_id)"
+                )
+                svg.dataset-chevron(v-if="isDatasetOpened(dataset.dataset_id)" @click="toggleDataSetModels(dataset.dataset_id)" width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg")
+                  path(fill-rule="evenodd" clip-rule="evenodd" d="M1.85178 5.22678C1.90403 5.17439 1.9661 5.13283 2.03444 5.10448C2.10278 5.07612 2.17604 5.06152 2.25003 5.06152C2.32402 5.06152 2.39728 5.07612 2.46562 5.10448C2.53396 5.13283 2.59603 5.17439 2.64828 5.22678L9.00003 11.5797L15.3518 5.22678C15.4041 5.17448 15.4662 5.13299 15.5345 5.10469C15.6028 5.07639 15.6761 5.06182 15.75 5.06182C15.824 5.06182 15.8972 5.07639 15.9656 5.10469C16.0339 5.13299 16.096 5.17448 16.1483 5.22678C16.2006 5.27908 16.2421 5.34117 16.2704 5.4095C16.2987 5.47783 16.3132 5.55107 16.3132 5.62503C16.3132 5.69899 16.2987 5.77223 16.2704 5.84056C16.2421 5.90889 16.2006 5.97098 16.1483 6.02328L9.39828 12.7733C9.34603 12.8257 9.28395 12.8672 9.21562 12.8956C9.14728 12.9239 9.07402 12.9385 9.00003 12.9385C8.92604 12.9385 8.85278 12.9239 8.78444 12.8956C8.7161 12.8672 8.65403 12.8257 8.60178 12.7733L1.85178 6.02328C1.7994 5.97103 1.75783 5.90895 1.72948 5.84062C1.70112 5.77228 1.68652 5.69902 1.68652 5.62503C1.68652 5.55104 1.70112 5.47778 1.72948 5.40944C1.75783 5.3411 1.7994 5.27903 1.85178 5.22678Z" fill="#fff")
+                
+                svg.dataset-chevron(v-else @click="toggleDataSetModels(dataset.dataset_id)" width="18" height="19" viewBox="0 0 18 19" fill="none" xmlns="http://www.w3.org/2000/svg")
+                  path(fill-rule="evenodd" clip-rule="evenodd" d="M5.22776 16.6472C5.17537 16.595 5.13381 16.5329 5.10545 16.4646C5.0771 16.3962 5.0625 16.323 5.0625 16.249C5.0625 16.175 5.0771 16.1017 5.10545 16.0334C5.13381 15.9651 5.17537 15.903 5.22776 15.8507L11.5806 9.49899L5.22775 3.14724C5.17546 3.09495 5.13397 3.03286 5.10567 2.96453C5.07736 2.89619 5.06279 2.82296 5.06279 2.74899C5.06279 2.67503 5.07736 2.6018 5.10567 2.53346C5.13397 2.46513 5.17546 2.40304 5.22775 2.35074C5.28005 2.29845 5.34214 2.25696 5.41047 2.22866C5.4788 2.20035 5.55204 2.18578 5.626 2.18578C5.69997 2.18578 5.7732 2.20035 5.84154 2.22866C5.90987 2.25696 5.97196 2.29845 6.02425 2.35074L12.7743 9.10074C12.8266 9.153 12.8682 9.21507 12.8966 9.28341C12.9249 9.35175 12.9395 9.42501 12.9395 9.49899C12.9395 9.57298 12.9249 9.64624 12.8966 9.71458C12.8682 9.78292 12.8266 9.84499 12.7743 9.89724L6.02426 16.6472C5.972 16.6996 5.90993 16.7412 5.84159 16.7695C5.77325 16.7979 5.69999 16.8125 5.62601 16.8125C5.55202 16.8125 5.47876 16.7979 5.41042 16.7695C5.34208 16.7412 5.28001 16.6996 5.22776 16.6472Z" fill="white")
+                div.editable-field.model-name-wrapper
+                  bdi {{dataset.name | datasetformat}}
+                  
               div.column-2
-              div.column-4
-              div.column-7
               div.column-3
+              div.column-4
+              div.column-5
               div.column-6
-              div.column-7
-                div.d-flex.flex-row-reverse(
+              div.column-7.d-flex.flex-row-reverse
+                div.new-model-btn(
                   @click="createModelWithCurrentDataSetPath(dataset.dataset_id)"
                 )
-                  | + New Model
+                  div + New Model
             //-- MODELS BELONG TO DATASET --//
             template(v-if="isDatasetOpened(dataset.dataset_id)")  
               div.models-list-row.model-list-item.model-list-item-child(
                 v-for="(model, index) in getModelsByDataSetId(dataset.dataset_id)"
-                @click="toggleItemSelection(model.networkID)"
                 @contextmenu.stop.prevent="openContext($event, index)"
                 :key="'Valid_' + model.networkID"
                 :class="{'is-selected': isItemSelected(model.networkID)}")
                 div.column-1
-                  span.btn-round-icon.check-model-button
-                    img(v-if="isItemSelected(model.networkID)" src="../../../../static/img/project-page/checked.svg")
-    
+                  base-checkbox.btn-checkbox(
+                    :value="isItemSelected(model.networkID)"
+                    :onClick="() => toggleItemSelection(model.networkID)"
+                  )
                   .editable-field.model-name-wrapper
                     span.model-name(
-                      title="model.networkName}"
+                      :title="model.networkName"
                       v-if="!isRenamingItem(index)" 
                       v-tooltip:bottom="'Click to open Model'" 
                       @click.stop="goToNetworkView(model.networkID)"
@@ -100,16 +121,21 @@
                 div.column-2
                   |
                 div.column-3
-                  |
-                div.column-4
                   model-status(
                     :statusData="model.networkMeta.coreStatus"
                     :coreError="model.networkMeta.coreError"
                   )
-                div.column-5
+                div.column-4
                   span(@click.stop="") {{ model && model.networkMeta && model.networkMeta.coreStatus && model.networkMeta.coreStatus.Training_Duration ? model.networkMeta.coreStatus.Training_Duration.toFixed(2) + 's' : '-' }}
+                div.column-5
+                  router-link.test-link(v-if="typeof model.networkMeta.openTest === 'boolean'" :to="{name: 'test'}" ) Run Test
+                    svg(width="14" height="14" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg")
+                      path(d="M19.375 1.25V6.875C19.375 7.22047 19.0955 7.5 18.75 7.5C18.4045 7.5 18.125 7.22047 18.125 6.875V2.75875L9.19187 11.6919C9.06984 11.8139 8.90984 11.875 8.75 11.875C8.59016 11.875 8.43016 11.8139 8.30813 11.6919C8.06391 11.4477 8.06391 11.0522 8.30813 10.8081L17.2413 1.875H13.125C12.7795 1.875 12.5 1.59547 12.5 1.25C12.5 0.904531 12.7795 0.625 13.125 0.625H18.75C19.0955 0.625 19.375 0.904531 19.375 1.25ZM16.875 17.5V10C16.875 9.65453 16.5955 9.375 16.25 9.375C15.9045 9.375 15.625 9.65453 15.625 10V17.5C15.625 17.8448 15.3448 18.125 15 18.125H2.5C2.15516 18.125 1.875 17.8448 1.875 17.5V5C1.875 4.65516 2.15516 4.375 2.5 4.375H10C10.3455 4.375 10.625 4.09547 10.625 3.75C10.625 3.40453 10.3455 3.125 10 3.125H2.5C1.46609 3.125 0.625 3.96609 0.625 5V17.5C0.625 18.5339 1.46609 19.375 2.5 19.375H15C16.0339 19.375 16.875 18.5339 16.875 17.5Z" fill="none")
                 div.column-6
-                  | {{ (model && model.apiMeta && model.apiMeta.updated) ? formatDate(model.apiMeta.updated)  : ''}}
+                  collaborator-avatar(v-if="showUser"
+                    :list="[{id: 1, name: user && user.email || '', img: null,}]"
+                  )
+                  span {{ (model && model.apiMeta && model.apiMeta.updated) ? formatDate(model.apiMeta.updated)  : ''}}&nbsp;
                 div.column-7(@click.stop="")
           //-- DELETED MODELS --//
           div.models-list-row.model-list-item(
@@ -133,6 +159,23 @@
                   :list="[{id: 1, name: user && user.firstName || '', img: null,}]"
                 )
               | {{ (model && model && model.updated) ? formatDate(model.updated) : ''}}
+
+
+        
+          //- div.models-list-row.model-no-item(
+          //-   v-if="workspaceContent.length === 0 && unparsedModels.length === 0"
+          //-   )
+          //-   div.no-item-mark
+          //-     svg(xmlns='http://www.w3.org/2000/svg' width='55' height='33' viewbox='0 0 55 33' fill='none')
+          //-       rect(x="6.6001" y="4.4043" width="15.4" height="4.4" fill="#828282")
+          //-       rect(x="22" width="33" height="13.2" rx="1" fill="#828282")
+          //-       rect(x="6.6001" y="24.2031" width="15.4" height="4.4" fill="#828282")
+          //-       rect(x="22" y="19.7988" width="33" height="13.2" rx="1" fill="#828282")
+          //-       circle(cx="4.4" cy="6.60215" r="4.4" fill="#828282")
+          //-       circle(cx="4.4" cy="26.401" r="4.4" fill="#828282")
+
+          //-   h3 Create Your First Project
+            
     select-model-modal(
       v-if="showNewModelPopup"
       @close="onCloseSelectModelModal"
@@ -141,6 +184,7 @@
     workspace-load-network(
       v-if="showLoadSettingPopup"
     )
+
 </template>
 
 <script>
@@ -151,13 +195,15 @@
   import WorkspaceLoadNetwork   from "@/components/global-popups/workspace-load-network.vue";
   import ImportModel    from "@/components/global-popups/import-model-popup.vue";
 
-  import { mapActions, mapState, mapGetters } from 'vuex';
-  import { arrayIncludeOrOmit } from "@/core/helpers";
-  import {
-    getModelJson as rygg_getModelJson,
-  } from '@/core/apiRygg';
+  import { mapActions, mapMutations, mapState, mapGetters } from 'vuex';
+  import { isWeb, stringifyNetworkObjects } from "@/core/helpers";
+  import cloneDeep from 'lodash.clonedeep';  
+  import { getModelJson as rygg_getModelJson, uploadDatasetToFileserver } from '@/core/apiRygg';
   import { LOCAL_STORAGE_HIDE_DELETE_MODAL } from '@/core/constants.js'
+  import { arrayIncludeOrOmit } from "@/core/helpers";
 
+  const mockModelList = [];
+  
   export default {
     name: "pageProjects",
     components: {
@@ -170,12 +216,24 @@
     },
     data: function () {
       return {
+        isSelectedSortType: 0,
+        // searchValue: '',
         isNewUser: false,
+        sortOptions: [
+          {name: 'Name', value: 1},
+          {name: 'Date Last Opened', value: 2},
+          {name: 'Date Last Modified', value: 3},
+          {name: 'Date Created', value: 4},
+          {name: 'Size', value: 5},
+        ],
+        initialModelList: mockModelList,
+        modelList: mockModelList,
         selectedListIds: [],
         isImportModelsOpen: false,
         contextModelIndex: null,
         isContextOpened: false,
         modelContextStyles: {},
+
         // for renaming models
         renameIndex: null,
         renameValue: null,
@@ -188,6 +246,7 @@
         user:                 'mod_user/GET_userProfile',
         currentProject:       'mod_project/GET_project',
         getCurrentStepCode:   'mod_tutorials/getCurrentStepCode',
+        isEnterpriseMode:     'globalView/get_isEnterpriseApp',
         allDatasets: 'mod_datasets/GET_datasets',
       }),
       ...mapState({
@@ -203,17 +262,26 @@
       statusLocalCore() {
         return this.$store.state.mod_api.statusLocalCore;
       },
-      isCoreOffline() {
-        return this.$store.state.mod_api.statusLocalCore !== 'online';
-      },
+      // filteredWorkspaceContent() {
+      //   let initialModelList = [...this.workspaceContent];
+      //   return initialModelList.filter(model => model.networkName.toLowerCase().indexOf(this.searchValue.toLowerCase()) !== -1);
+      // }
+      // workspaceContent() {
+      //   return this.$store.state.mod_workspace.workspaceContent;
+      // },
     },
     watch: {
+      // searchValue: function (newValue) {
+      //   let initialModelList = [...this.initialModelList];
+      //   initialModelList = initialModelList.filter(model => model.name.toLocaleLowerCase().indexOf(newValue.toLowerCase()) !== -1);
+      //   let initialModelListIds = initialModelList.map(model => model.id);
+      //   this.selectedListIds = this.selectedListIds.filter(id => initialModelListIds.indexOf(id) !== -1);
+        
+      //   console.log(initialModelList)
+      //   this.modelList = initialModelList;
+      //   this.onSortByChanged(this.isSelectedSortType);
+      // },
       hotKeyPressDelete() {
-        if(this.isCoreOffline) {
-          this.showInfoPopup("Kernel is offline when calling 'hotKeyPressDelete'");
-          return;
-        }
-
         if (!this.projects) { return; }
 
         const indexCheckedProj = this.projects.findIndex((el)=> el.isChecked === true);
@@ -259,8 +327,10 @@
         closeStatsTestViews:  'mod_workspace/SET_statisticsAndTestToClosed',
         setCurrentView:       'mod_tutorials/setCurrentView',
         setNextStep:          'mod_tutorials/setNextStep',
+
         SET_openStatistics:   'mod_workspace/SET_openStatistics',
         SET_openTest:         'mod_workspace/SET_openTest',
+
         setNetworkNameAction: 'mod_workspace/SET_networkName',
         updateWorkspaces:     'mod_webstorage/updateWorkspaces',
         deleteAllIds:         'mod_webstorage/deleteAllIds',        
@@ -299,11 +369,6 @@
         return this.selectedListIds.indexOf(itemId) !== -1;
       },
       toggleItemSelection(modelId) {
-        if(this.isCoreOffline) {
-          this.showInfoPopup("Kernel is offline when calling 'toggleItemSelection'");
-          return;
-        }
-
         modelId = parseInt(modelId);
         let itmPosition = this.selectedListIds.indexOf(modelId);
         if (itmPosition === -1) {
@@ -338,11 +403,7 @@
       },
       async removeItems() {
         if(!this.selectedListIds.length) return; // prevent removing modal when no item are selected
-        if(this.isCoreOffline) {
-          this.showInfoPopup("Kernel is offline when calling 'removeItems'");
-          return;
-        }
-
+        
         if(localStorage.getItem(LOCAL_STORAGE_HIDE_DELETE_MODAL)) {
           for (const networkId of this.selectedListIds) {
             this.$store.dispatch('mod_tracker/EVENT_modelDeletion');
@@ -367,6 +428,7 @@
               this.updateWorkspaces();
             }
           });
+
         }
       },
       isAllItemsSelected() {
@@ -426,13 +488,7 @@
         this.$store.commit("globalView/HIDE_allGlobalPopups");
       },
       handleStatisticClick(index, e, model) {
-        if(this.isCoreOffline) {
-          this.showInfoPopup("Kernel is offline when calling 'handleStatisticClick'");
-          return;
-        }
-
         const { networkMeta: { openStatistics } } = model;
-
 
         if (typeof openStatistics === 'boolean') {
           this.$store.dispatch("mod_workspace/setViewType", 'statistic');
@@ -467,16 +523,12 @@
         this.isContextOpened = false
       },
       handleContextOpenModel() {
-        if(this.isCoreOffline) {
-          this.showInfoPopup("Kernel is offline when calling 'handleContetOpenModel'");
-          return;
-        }
-
         this.goToNetworkView(this.workspaceContent[this.contextModelIndex].networkID);
         this.closeContext();
       },
+
       async handleContextRemoveModel() {
-        if(this.isCoreOffline) {
+         if(this.isCoreOffline) {
           this.showInfoPopup("Kernel is offline when calling 'handleContextRemoveModel'");
           return;
         }
@@ -498,11 +550,6 @@
         this.closeContext();
       },
       onClickDeletedModel(model, index) {
-        if(this.isCoreOffline) {
-          this.showInfoPopup("Kernel is offline when calling 'onClickDeletedModel'");
-          return;
-        }
-
         this.popupConfirm({
             text: `Are you sure you want to remove ${model.name} from Model Hub since it is no longer connected to the Project?`,
             ok: () => {
@@ -514,18 +561,25 @@
             }
           })
       },
+
+      // Rename Module
       handleContextRenameModel() {
         if(this.isCoreOffline) {
           this.showInfoPopup("Kernel is offline when calling 'handleContextRenameModel'");
           return;
         }
-
         this.renameIndex = this.contextModelIndex;
         this.renameValue = this.workspaceContent[this.renameIndex].networkName;
+
+        // setTimeout(() => {
+        //   this.$refs.titleInput.focus();
+        // }, 1000);
       },
+
       isRenamingItem(index) {
         return this.renameIndex === index;
       },
+
       renameModel() {
         // this.setNetworkNameAction(text);
         if (this.renameIndex !== null) {
@@ -539,7 +593,7 @@
       formatDate (dateString) {
         if(!dateString) { return ''; }
         let date = new Date(dateString);
-        return `${date.toLocaleDateString(navigator.language)}`;
+        return `${date.toLocaleDateString(navigator.language)} ${date.toLocaleTimeString([], {hour12: false})}`;
       },
       hasUnsavedChanges(networkId) {
         return this.$store.getters['mod_workspace-changes/get_hasUnsavedChanges'](networkId);
@@ -552,7 +606,6 @@
         this.goToNetworkView(modelId);
         this.$store.dispatch('globalView/SET_exportNetworkToGithubPopup', true);
       },
-      
       handleLoadDataClick() {
         this.handleAddNetworkModal()
       },
@@ -612,6 +665,16 @@
         })
         this.dataSetIsOpenedStateArray = temp;
       },
+      loadDataset() {
+        const fileInput = document.createElement('input');
+        fileInput.setAttribute('type', 'file');
+        fileInput.setAttribute('accept', '.csv,.zip');
+        fileInput.addEventListener('change', (e) => {
+          const file = e.target.files[0];
+          uploadDatasetToFileserver(file)
+        })
+        fileInput.click();
+      },
     },
     created() {
       // Adding this because of reloads on this page 
@@ -620,29 +683,38 @@
       // following in the router.
       this.setCurrentView('tutorial-model-hub-view');
       this.expandDatasetsModels();
+    },
+    filters: {
+      datasetformat(val) {
+        let lestSlashIx = val.lastIndexOf('/');
+        const datasetName = val.substring(lestSlashIx + 1);
+        const folderName = val.substring(val.substring(0, lestSlashIx).lastIndexOf('/') + 1, lestSlashIx);
+        return `${folderName[0].toUpperCase() + folderName.substring(1)} - ${datasetName}`;
+      }
     }
   }
 </script>
 
 <style lang="scss" scoped>
+
+  $header-height: 60px;
+
+  * {
+    font-family: "Roboto";
+  }
   .project-wrapper {
     height: 100%;
-    background: linear-gradient(180deg, #363E51 0%, rgba(54, 62, 81, 0) 100%);
-    border-left: 1px solid rgba(97, 133, 238, 0.4);
-    box-sizing: border-box;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.25);
-    padding: 30px 30px 50px;
+    box-sizing: border-box;    
+    background-color: theme-var($neutral-7);
+    border-radius: 15px 0px 0px 0px;
+    padding: 10px 20px;
   }
   .header-controls {
-    //padding: 7px 16px 7px 40px;
-    //border-bottom: 1px solid #464D5F;
-    margin-bottom: 30px;
     display: flex;
     .left-side {
       display: flex;
 
-      padding-top: 0.5rem;
-      padding-bottom: 0.5rem;
+      margin-bottom: 10px;
 
       .import-button-container {
         display: flex;
@@ -652,10 +724,16 @@
         cursor: pointer;
       }
     }
+    .right-side {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+    }
   }
   .search-input {
     position: relative;
-    width: 333px;
+    width: 210px;
+    margin-left: 16px;
     img {
       cursor: pointer;
       position: absolute;
@@ -664,11 +742,11 @@
       left: 10px;
     }
     input {
-      padding-left: 44px;
-      background-color: transparent;
-      border: 1px solid #4D556A;
-      border-radius: 2px;
-      height: 29px;
+      padding-left: 36px;
+      height: 100%;
+      border: $border-1;
+      border-radius: 4px;
+      font-size: 14px;
     }
   }
   .text-button {
@@ -694,23 +772,17 @@
     cursor: pointer;
     margin: 0 10px 0 10px;
     &.disabledIconButton {
-      opacity: 0.4;
+      // opacity: 0.4;
+      filter: grayscale(100%);
       cursor: default;
     }
   }
   .btn-round-icon {
     cursor: pointer;
     // margin-right: 35px;
-    width: 19px;
-    height: 19px;
-    border: 1px solid #fff;
-    border-radius: 2px;
-    display: flex;
-    justify-content: center;
-    align-self: center;    
     &.high-lighted {
       position: relative;
-      box-shadow: 0 0 10px #FFFFFF;
+      box-shadow: 0 0 10px theme-var($neutral-8);
     }
   }
   .btn-rounded-new {
@@ -722,18 +794,20 @@
   .pl-40 {
     padding-left: 40px;
   }
-  .models-list {
-    background: #23252A;
+
+  .models-list {    
+    background: theme-var($neutral-8);
+    border: $border-1;
+    box-sizing: border-box;
     border-radius: 4px;
-    height: calc(100% - 80px);
-    padding: 20px;
-    overflow-y: hidden;
+    min-height: calc(100% - #{$header-height});
   }
+  
   .models-list-row {
     .column-1 {
       position: relative;
       margin-right: auto;
-      padding-left: 58px;
+      padding-left: 80px;
       max-width: 300px;
       min-width: 300px;
       width: 300px;
@@ -752,11 +826,15 @@
       min-width: 170px;
     }
     .column-6 {
-      min-width: 170px;
+      min-width: 190px;
+      max-width: 190px;
     }
     .column-7 {
-      min-width: 210px;
+      min-width: 180px;
       cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
 
       img {
         margin-left: 10px;
@@ -768,75 +846,72 @@
     display: flex;
     height: 43px;
     font-size: 16px;
-    font-weight: 500;
-    border-bottom: 1px solid #4D556A;
     align-items: center;
-    padding-bottom: 10px;
+    border-radius: 4px 4px 0px 0px;
+    background: theme-var($neutral-7);
+    border-bottom: $border-1;
+    // padding-right: 20px;
+    // padding: 0px 40px;
+
     .column-1 {
-      .btn-round-icon {
+      .btn-checkbox {
         position: absolute;
-        left: 20px;
+        left: 41px;
         top: 50%;
         transform: translateY(-50%)
       }
     }
-    .column-7 {
-      padding-left: 20px;
+    .column-6 {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
   }
   .model-list-item {
     display: flex;
+    height: 56px;
     font-size: 16px;
-    padding: 20px;
     font-weight: 400;
-    border-bottom: 1px solid #363E51;
     align-items: center;
-    margin-bottom: 10px;
-    border: 1px solid transparent;
     border-radius: 4px;
-    &:first-of-type {
-      margin-top: 10px;
-    }
-    &.is-selected {
-      background: rgba(97, 133, 238, 0.1);
-      border: 1px solid #6185EE;
-      border-radius: 4px;
-    }
-    &:hover {
-       background: rgba(97, 133, 238, 0.75);
-       box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+    margin: 10px 0px;
+    border: 1px solid transparent;
+
+    &:hover:not(.is-selected) {
+      // background: rgba(97, 133, 238, 0.75);
+      // box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+      background: $color-6;
+      color: white;
       .is-favorite{
         path {
           fill: #E1E1E1;
         }
       }
-    }
-    &.model-list-item-dataset {
-      //border-bottom: none;
-      .column-1 {
-        padding-left: 76px;
-        .btn-round-icon {
-          left: 0;
+
+      & .model-unsaved_changes_indicator {
+        color: $color-6;
+      }
+      
+      & .test-link {
+        color: white;
+        & path {
+          fill: white;
         }
       }
     }
-    &.model-list-item-child {
-      //border-bottom: none;
-      .column-1 {
-        padding-left: 76px;
-        .btn-round-icon {
-          left: 38px;
-        }
-      }
+
+    &.is-selected {
+      background: theme-var($neutral-6);
+      border: 1px solid $color-6;
     }
-    
+
     .column-1 {
       display: flex;
       justify-content: flex-start;
       width: 100%;
-      .btn-round-icon {
+      .btn-checkbox {
         position: absolute;
-        left: 20px;
+        left: 41px;
         top: 50%;
         transform: translateY(-50%)
       }
@@ -861,12 +936,14 @@
       }
       .model-name {
         cursor: pointer;
+        font-size: 16px;
       }
     }
     .column-6 {
       display: flex;
       .collaboratorWrapper {
         width: 30px;
+        margin-right: 8px;
       }
     }
 
@@ -877,10 +954,12 @@
       align-items: center;
 
       width: 8rem;
+      min-width: 8rem;
       height: 2rem;
 
-      background: #3F4C70;
-      border-radius: 1px;
+      background: theme-var($neutral-8);
+      border-radius: 45px;
+      border: 1px solid $color-6;
 
       margin-left: 2rem;
 
@@ -901,6 +980,23 @@
         margin-left: 0.5rem;
       }
     }
+    &.model-list-item-child {
+      //border-bottom: none;
+      .column-1 {
+        .btn-checkbox {
+          position: absolute;
+          left: 81px;
+          top: 50%;
+          transform: translateY(-50%)
+        }
+      }
+      .column-1 {
+        padding-left: 120px;
+        .btn-round-icon {
+          left: 38px;
+        }
+      }
+    }
   }
   .fav-icon-action {
     &:hover {
@@ -914,6 +1010,30 @@
   .pt-4 {
     padding-top: 4px;
   }
+
+  .model-no-item {
+    color: theme-var($neutral-1);
+    text-align: center;    
+
+    position: absolute;  
+    top: 50%; 
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+    & .no-item-mark {
+      display: flex;
+      justify-content: center;
+      align-items: center;      
+      margin-left: auto;
+      margin-right: auto;
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      background: theme-var($neutral-7);
+      margin-bottom: 20px;
+    }
+  }
+
   .create-first-model {
     z-index: 10;
     top: 31px;
@@ -951,32 +1071,17 @@
     box-shadow: 0 0 6px rgba(0, 0, 0, 0.7);
   }
   .check-model-button {
-    position: relative;
-    &:before {
-      content: '';
-      position: absolute;
-      width: 0px;
-      height: 0px;
-      transition: 0.1s;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      border-radius: 50%;
-      border: 0 solid rgba(196, 196, 196, 0.3);
-      box-sizing: content-box;
-    }
-    &:hover {
-      &:before {
-        width: 0px;
-        height: 0px;
-        border: 20px solid rgba(196, 196, 196, 0.3);
-      }
-    }
+    width: 18px;
+    height: 18px;
+    background: theme-var($neutral-8);
+    border: $border-1;
+    box-sizing: border-box;
+    border-radius: 2px;
+
   }
   .modelContext {
     position: fixed;
-    background: #1C1C1E;
-    border: 1px solid #363E51;
+    background: theme-var($neutral-8);
     box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
     border-radius: 2px;
     display: flex;
@@ -984,19 +1089,16 @@
     z-index: 12;
     padding: 5px 8px;
 
-    background: #131B30;
-    border: 1px solid #363E51;
-    box-sizing: border-box;
-    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
-    border-radius: 2px;
-
-
     button {
       font-family: 'Nunito Sans';
       padding: 5px 8px;
       background: none;
       font-size: 16px;;
       text-align: left;
+
+      &:hover {
+        color: $color-6;
+      }
     }
   }
   .isTextButtonDisabled {
@@ -1009,8 +1111,7 @@
   .left-header-btn-text {
     display: inline-block;
     margin-left: 8px;
-    font-weight: 600;
-    color: #E1E1E1;
+    font-weight: 400;
     font-size: 14px;
   }
   .header-action-button-wrapper {
@@ -1039,38 +1140,43 @@
     color: #E1E1E1;
   }
   .model-name-wrapper {
-    text-overflow: ellipsis;
+    // text-overflow: ellipsis;
     overflow: hidden;
-    max-width: 25vw;
-    height: 1.2em;
+    min-width: 100%;
+    // height: 1.2em;
     white-space: nowrap;
     padding-right: 15px;
   }
   .model-list-scrollbar {
-    max-height: calc(100% + 40px);
+    height: calc(100vh - 212px);
+    max-height: calc(100vh - 212px);
   }
   .test-link {
-    color: #fff;
+    display: flex;
+    align-items: center;
+    color: theme-var($text-highlight);
+    & svg {
+      margin-left: 8px;
+      path {
+        fill: $color-6;
+      }
+    }
+  }
+  .align-center {
+    display: flex;
+    align-items: center;
   }
   .mr-20 {
      margin-right: 20px;
-   }
-  .project-name {
-    font-family: Roboto;
-    font-size: 24px;
-    line-height: 28px;
-    letter-spacing: 0.02em;
-    color: #FFFFFF;
-    margin-bottom: 30px;
   }
   .dataset-chevron {
-    cursor: pointer;
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    left: 38px
+    margin-right: 20px;
+    min-width: 18px;
+    path {
+      fill: theme-var($text-highlight)
+    }
   }
-  .text-rtl {
-    direction: rtl;
+  .new-model-btn {
+    margin-right: 20px;
   }
 </style>

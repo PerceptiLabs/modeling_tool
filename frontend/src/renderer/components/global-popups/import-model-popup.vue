@@ -1,47 +1,47 @@
 <template lang="pug">
-  base-global-popup(:tab-set="popupTitle" @closePopup="closePopup")
+  base-global-popup(
+    :title="popupTitle"
+    title-align="text-center"
+    @closePopup="closePopup"
+  )
     template(slot="Import from-content")
       div.padding-fix
-        div.import-model-tabs-wrapper
-          button.import-model-tabs-button(
-            :class="{'is-active': currentTab === 'local'}"
-            @click="setTabType('local')"
-            ) Local
-          button.import-model-tabs-button(
-            :class="{'is-active': currentTab === 'github'}"
-            @click="setTabType('github')"
-            ) GitHub
+        div.import-model-tabs-wrapper          
+          div.bold Local
+          base-toggle.toggle(:value="isGithub" :isOne="false" styling="large" :onClick="() => {this.isGithub = !this.isGithub}")
+          div.bold GitHub
+          
         div.import-model-box-with-border(slot="Import from-content" v-if="currentTab === 'local'")
           .form_holder
-            .form_label Path:
-            .form_row
+            .form_label.bold Path:
+            .form_input.input_group.form_row
               input.form_input(
                 type="text"
                 v-model="saveModelLocation"
                 readonly
                 data-testing-target="import-model-path"
                 )
-              button.btn.btn--dark-blue-rev(type="button" @click="openLoadModelPopup") Browse
+              button.btn.btn--primary(type="button" @click="openLoadModelPopup") Browse
         div(slot="Import from-content" v-if="currentTab === 'github'")
           view-loading(:isLoading="isFetching" )
           div.import-model-box-with-border
             .form_holder
               .form_label Enter a Git Repository containing your model.json:
-              .form_holder.github-url-input
+              .form_input.input_group.form_row
                 .pre-input-label url
                 input.form_input(type="text" v-model="githubRepositoryUrl")
           div.import-model-box-with-border
             .form_holder
               .form_label Save to:
-              .form_row
+              .form_input.input_group.form_row
                 input.form_input(type="text" v-model="saveGithubModelLocation" readonly)
-                button.btn.btn--dark-blue-rev(type="button" @click="openLoadGithubLocation") Browse
+                button.btn.btn--primary(type="button" @click="openLoadGithubLocation") Browse
             div.info-box
               img.info-image(src="static/img/info.png")
               span.fz-14 If your repository contains data, it will be added <br/> to your local model folder
 
     template(slot="action")
-      button.btn.btn--primary.btn--disabled(type="button"
+      button.btn.btn--secondary(type="button"
         @click="closePopup") Cancel
       button.btn.btn--primary(type="button"
         @click="onImportHandleType") Import
@@ -61,8 +61,9 @@ export default {
   components: { BaseGlobalPopup, BaseAccordion, ViewLoading },
   data() {
     return {
-      popupTitle: ['Import from'],
-      currentTab: 'local', // local or github
+      popupTitle: 'Import from',
+      isGithub: false,
+      // currentTab: 'local', // local or github
       settings: {
         name: '',
         includeTensorflowFiles: true,
@@ -80,7 +81,10 @@ export default {
     }),
     ...mapGetters({
       projectPath: 'mod_project/GET_projectPath',
-    })
+    }),
+    currentTab () {
+      return this.isGithub ? 'github' : 'local'
+    }
   },
   mounted() {
     this.settings.name = this.$store.getters['mod_workspace/GET_currentNetwork'].networkName
@@ -159,7 +163,8 @@ export default {
 
 <style lang="scss" scoped>
 .padding-fix {
-  margin: -1rem;
+  // margin: -1rem;
+  margin-top: 30px;
 }
 .name-wrapper {
   display: flex;
@@ -181,70 +186,34 @@ export default {
   width: 75%;
 }
 .import-model-tabs-wrapper {
-
-}
-.import-model-tabs-button {
-  width: 50%;
-  background: rgba(54, 62, 81, 0.4);
-  border: 1px solid #3F4C70;
-  line-height: 23px;
-  font-family: Nunito Sans;
-  font-style: normal;
-  font-weight: normal;
-  font-size: 12px;
-  color: #B6C7FB;
-  background-blend-mode: multiply;
-  
-  &.is-active {
-    background: transparent;
-  }
-
-  &:not(.is-active) {
-    background: #2A2F3A;
-  }
+  display: flex;  
+  justify-content: center;
+  align-items: center;
+  font-size: 16px;
+  margin-bottom: 10px;
 }
 .import-model-box-with-border {
   padding: 15px;
   padding-bottom: 10px; 
-  border-bottom: 1px solid #3F4C70;
+  border-bottom: $border-1;
   margin-bottom: 20px;
-}
-.github-url-input {
-  position: relative; 
-  input {
-    background: #202430;
-    border-radius: 1px;
-    height: 19px;
-    line-height: 19px;
-    padding-left: 45px;
-    font-family: Nunito Sans;
-    font-size: 12px;
-
-    color: #E1E1E1;
-  }
-  .pre-input-label {
-    position: absolute;
-    top: 0;
-    left: 0;
-    border: 1px solid #3F4C70;
-    box-sizing: border-box;
-    border-radius: 2px 0px 0px 2px;
-    height: 19px;
-    font-family: Nunito Sans;
-    font-size: 12px;
-    line-height: 19px;
-    padding: 0 10px;
-    color: #C4C4C4;
-    background: rgba(54, 62, 81, 0.4);
-    background-blend-mode: multiply;
-  }
 }
 .info-box {
   display: flex;
   align-items: center;
-  color: #B6C7FB;
   .info-image {
     margin-right: 12px;
   }
+}
+.toggle {
+  margin: 0 10px;
+}
+.pre-input-label {
+  width: 40px;
+  height: 38px;
+  font-size: 16px;
+  line-height: 38px;
+  text-align: center;
+  border-right: $border-1 !important;
 }
 </style>

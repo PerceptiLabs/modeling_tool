@@ -15,7 +15,7 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
-  @import "../../scss/base";
+  
   .loading-status {
     opacity: 0;
     margin-bottom: 1rem;

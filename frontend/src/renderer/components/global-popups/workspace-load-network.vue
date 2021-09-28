@@ -1,10 +1,11 @@
 <template lang="pug">
   base-global-popup(
-    :tab-set="popupTitle"
+    :title="popupTitle"
+    title-align="text-center"
     @closePopup="closePopup"
     )
-    template(slot="Choose what to load-content")
-      .settings-layer_section
+    template(:slot="popupTitle + '-content'")
+      .settings-layer_section.mb-footer
         .form_row
           .form_label Load settings:
           .form_input
@@ -14,7 +15,7 @@
               span Load trained model
 
     template(slot="action")
-      button.btn.btn--primary.btn--disabled(type="button"
+      button.btn.btn--secondary(type="button"
         @click="closePopup") Cancel
       button.btn.btn--primary(type="button"
         @click="ok") Continue
@@ -30,7 +31,7 @@ export default {
   components: {BaseGlobalPopup},
   data() {
     return {
-      popupTitle: ['Choose what to load'],
+      popupTitle: 'Choose what to load',
       isLoadTrainedModel: true
     }
   },
@@ -40,7 +41,7 @@ export default {
     }
   },
   methods: {
-    closePopup() {
+    closePopup() {      
       this.$store.commit('globalView/set_loadSettingPopup', {
         visible: false,
         ok: null

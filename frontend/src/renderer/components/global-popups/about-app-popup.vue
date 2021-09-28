@@ -84,7 +84,7 @@ export default {
   font-family: Nunito Sans;
   font-size: 12px;
   line-height: 16px;
-  color: #FFFFFF;
+  color: theme-var($neutral-8);
   margin-bottom: 2px;
 }
 .terms-link {

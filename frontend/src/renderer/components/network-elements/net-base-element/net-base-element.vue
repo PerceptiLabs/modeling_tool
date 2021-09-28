@@ -37,12 +37,12 @@
 <script src="./net-base-element.js"></script>
 
 <style lang="scss" scoped>
-  @import "../../../scss/base";
+  
   @import "./net-base-element";
   .variable-area {
     height: 31px;
-    background: #23252A;
-    border: 1px solid #3F4C70;
+    background: theme-var($neutral-8);
+    border: $border-1;
     border-radius: 0px 0px 2px 2px
   }
 </style>

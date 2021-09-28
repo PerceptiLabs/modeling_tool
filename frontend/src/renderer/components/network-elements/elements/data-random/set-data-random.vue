@@ -95,7 +95,7 @@
 
 
 <style scoped lang="scss">
-  @import "../../../../scss/base";
+  
   .action_space {
     position: relative;
     background: $col-txt2;

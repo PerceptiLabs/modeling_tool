@@ -6,15 +6,24 @@
         :key="selectedEl.layerId"
         :selectedEl="selectedEl"
       )
-      .sidebar-setting-head-name Settings
-      button.btn-menu-bar(
+      .sidebar-setting-head-name.bold 
+        | Settings   
+      base-toggle-expand.primary(:value="isShowSettings" :onClick="toggleShowSettings")      
+    
+    .sidebar-setting-head2
+    
+      button.no-border(
         v-if="shouldShowOpenCodeBtn"
         @click="onOpenCodeButtonClick()"
-        ) Open code
+        class="btn btn--secondary"
+      ) 
+        | Open Code &nbsp;
+        img(src="/static/img/code.svg")
     perfect-scrollbar.sidebar-setting-content(
       :data-tutorial-target="'tutorial-workspace-settings'"
-      :class="{'sidebar-setting-content-with-component': selectedEl !== null, 'closed-preview': isSettingPreviewVisible}"
+      :class="{'sidebar-setting-content-with-component': showComponents, 'closed-preview': isSettingPreviewVisible}"
       ref="sidebarSettingWrapper"
+      v-if="isShowSettings"
       )
       sidebar-locked-settings-wrapper(
         :selectedEl="selectedEl"
@@ -26,11 +35,12 @@
           :currentEl="selectedEl"
           ref="componentSettings"
           )
+
     sidebar-setting-preview.setting-chart-wrapper(
       v-if="selectedEl !== null"
       :current-el="selectedEl"
       )
-    button.reset-component-btn(
+    button.btn.btn--outline-primary.reset-component-btn.no-border(
       v-if="shouldShowResetComponentBtn"
       @click="resetComponentSettings"
       ) Reset Component
@@ -92,10 +102,16 @@ export default {
     SidebarLockedSettingsWrapper,
     SidebarAutoSettingInfo
   }, 
+  data () {
+    return {
+      isShowSettings: true
+    }
+  },
   computed: {
     ...mapGetters({
       selectedEl: 'mod_workspace/GET_selectedElement', // {} or null
       currentNetworkId: 'mod_workspace/GET_currentNetworkId',
+      showComponents: 'mod_workspace/GET_showComponents', // {} or null
     }),
     codeWindowState() {
       return this.$store.getters['mod_workspace-code-editor/getCodeWindowState'](this.currentNetworkId);
@@ -152,11 +168,15 @@ export default {
     resetComponentSettings() {
       this.$store.dispatch("mod_workspace/resetNetworkElementSettings", { layerId: this.selectedEl.layerId });
     },
+    toggleShowSettings () {
+      this.isShowSettings = !this.isShowSettings
+    }
   }
   
 }
 </script>
 <style lang="scss" scoped>
+
 
 .sidebar-setting-head {
   position: relative;
@@ -164,22 +184,19 @@ export default {
   align-items: center;
   justify-content: space-between;
 
-  padding-left: 15px;
-  padding-right: 3px;
-
-  background: #363E51;
-  border: 1px solid #475D9C;
+  padding: 8px 15px 8px 15px;
   box-sizing: border-box;
-  height: 31px;
+  // height: 31px;
 }
-.sidebar-setting-head-name {
 
-  font-family: Nunito Sans;
-  font-style: normal;
-  font-weight: normal;
-  font-size: 12px;
-  line-height: 16px;
-  color: #B6C7FB;
+.sidebar-setting-head2 {  
+  padding: 0px 15px;
+}
+
+.sidebar-setting-head-name {
+  display: flex;
+  align-items: center;
+  font-size: 16px;
 }
 .sidebar-setting-head-open-code {
   cursor: pointer;
@@ -203,24 +220,38 @@ export default {
     background: #7397FE;
   }
 }
+.setting-values-wrapper {
+  padding: 10px 15px;
+}
 .setting-chart-wrapper {
   position: absolute;
   width: 250px;
-  border-top: 2px solid #5D5E60;
-  bottom: 23px;   
+  // border-top: 2px solid #5D5E60;
+  bottom: $reset-btn;   
   z-index: 10;
 }
+
+
 // also .sidebar-setting-content are used in _forms.scss for stylize sidebar setting inputs
 .sidebar-setting-content {
-  background-color: #23252A;
-  height: calc(65vh - 99px);
+  // padding: 10px;  
+  // background-color: $bg-toolbar-2;
+  // border: $border-1;
+  // height: calc(65vh - 99px);
+  height: calc(100vh - #{$remaining-normal + $components-header + $preview-header});
   overflow-x: scroll;
   
+  
+  &.closed-preview {      
+    height: calc(100vh - #{$remaining-normal + $preview-header + $preview-content + $components-header});
+  }
+  
   &.sidebar-setting-content-with-component {
-    height: calc(65vh - 153px);
+    height: calc(75vh - #{$remaining-normal});
     padding-bottom: 30px;
-    &.closed-preview {
-      height: calc(65vh - 313px);
+
+    &.closed-preview {      
+      height: calc(75vh - #{$remaining-normal + $preview-header + $preview-content});
     }
   }
 }
@@ -228,14 +259,17 @@ export default {
   position: absolute;
   bottom: 0;
   margin-top: auto;
-  border-top: 1px solid #5D5E60;
-  background: #131B30;
-  border-radius: 1px;
-  font-family: Nunito Sans;
   font-size: 11px;
   line-height: 18px;
-  color: rgba(182, 199, 251, 0.75);
   width: 250px;
   height: 24px;
+}
+
+.primary {
+  margin-left: 16px;
+}
+
+.no-border {
+  border-width: 0px !important;
 }
 </style>

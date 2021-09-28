@@ -83,9 +83,7 @@
 .tab_close {
   position: relative;
 
-  margin-right: 1.25rem;
-  font-size: .5em;
-  color: $bg-scroll;
+  font-size: 12px;
   &:disabled {
     opacity: 0;
   }
@@ -101,7 +99,7 @@
   margin-right: 1rem;
   flex: 1;
 
-  width: 10rem;
+  width: 6rem;
 
   text-overflow: ellipsis;
   overflow: hidden;
@@ -123,13 +121,10 @@
 .unsaved-changes-indicator {
   height: 0.8rem;
   width: 0.8rem;
-
+  margin-right: 1.5rem;
+  
   border-radius: 50%;
-  background-color: #E1E1E1;
-
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  background-color: $color-danger;
 
   &.hover {
     opacity: 0;

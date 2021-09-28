@@ -49,8 +49,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@import '../../scss/base/_variables.scss';
-
 $cell-left-gutter: 6.6rem;
 
 .cell-contents {

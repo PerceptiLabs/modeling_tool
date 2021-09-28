@@ -3,8 +3,9 @@ import Router from 'vue-router'
 import PageApp  from '@/pages/app/app.vue';
 import PageProjects from '@/pages/projects/projects.vue';
 import SettingPage from '@/pages/settings/setting-page.vue';
+import PricingPage from '@/pages/settings/setting-pricing.vue';
+import Export from '@/pages/export/export.vue';
 import Test from '@/pages/test/test.vue';
-import ExportPage from '@/pages/export/export.vue';
 
 import Analytics from '@/core/analytics';
 
@@ -18,7 +19,8 @@ const router = new Router({
     {path: '/test',           name: 'test',           component: Test},
     {path: '/projects',       name: 'projects',       component: PageProjects },
     {path: '/settings',       name: 'settings',       component: SettingPage },
-    {path: '/export',         name: 'export',         component: ExportPage },
+    {path: '/pricing',        name: 'pricing',        component: PricingPage },
+    {path: '/export',         name: 'export',         component: Export },
     {path: '*', redirect: '/'}
   ],
 });

@@ -6,16 +6,16 @@ $layers-sidebar: (
   'learn-deep': rgba(241, 100, 100, 0.4),
   'train': rgba(101, 213, 163, 0.4),
   'math': rgba(0, 123, 239, 0.4),
-  'learn-class': linear-gradient(#e273fe, #b061ee),
-  'custom': linear-gradient(#697592, #4D556A),
-  'layercontainer': linear-gradient(#e8f551, #9af142),
+  'learn-class': #e273fe, // linear-gradient(#e273fe, #b061ee),
+  'custom': #3a4357, //linear-gradient(#697592, #4D556A),
+  'layercontainer': #e8f551, // linear-gradient(#e8f551, #9af142),
 );
 
 @each $name, $color in $layers-sidebar {
   .net-element-#{$name} {
     @include multi-transition(opacity);
-
-    background: $color;
+    border-top: 6px solid $color;
+    // background: $color;
   }
 }
 $layers-sidebar: (
@@ -34,9 +34,9 @@ $layers-sidebar: (
 @each $name, $border-color in $layers-sidebar {
   .net-element-#{$name} {
     @include multi-transition(opacity);
-    border-width: 1px;
-    border-style: solid;
-    border-color: $border-color;
+    // border-width: 1px;
+    // border-style: solid;
+    // border-color: $border-color;
   }
 }
 
@@ -53,6 +53,7 @@ $layers-sidebar: (
 @each $name, $color in $layers-sidebar {
   .net-color-#{$name} {
     background: $color;
+    // border-color: $color;
   }
 }
 
@@ -69,76 +70,83 @@ $layers-sidebar-active: (
   'layercontainer': linear-gradient(#a0a839, #6aa32d),
 );
 
-// @each $name, $color in $layers-sidebar-active {
-//   .net-element-#{$name} {
-//     &:hover,
-//     &.active,
-//     .net-element_btn:hover &,
-//     .net-element_arrows-start:hover ~ .net-element_btn & {
-//       background: $color;
-//     }
-//   }
-// }
+@each $name, $color in $layers-sidebar-active {
+  .net-element-#{$name} {
+    &:hover,
+    &.active,
+    .net-element_btn:hover &,
+    .net-element_arrows-start:hover ~ .net-element_btn & {
+      border-color: $color;
+    }
+  }
+}
 .net-element {
   .btn--layersbar {
     position: relative;
-    border: 3px solid transparent !important; // fix for jumping comntent
+    // border: 3px solid transparent !important; // fix for jumping comntent
 
     // after and before is a fix for transparent border when component is hovered or active
-    &:after {
-      position: absolute;
-      width: 3px;
-      height: 6px;
-      left: -3px;
-      bottom: -6px;
-      background-color: #1473e6;
-    }
-    &:before {
-      position: absolute;
-      width: 3px;
-      height: 6px;
-      right: -3px;
-      bottom: -6px;
-      background-color: #1473e6;
-    }
+    // &:after {
+    //   position: absolute;
+    //   width: 3px;
+    //   height: 6px;
+    //   left: -3px;
+    //   bottom: -6px;
+    //   background-color: #1473e6;
+    // }
+    // &:before {
+    //   position: absolute;
+    //   width: 3px;
+    //   height: 6px;
+    //   right: -3px;
+    //   bottom: -6px;
+    //   background-color: #1473e6;
+    // }
   }
   .settings-layer {
     border-top-width: 0 !important;
 
-    .base-chart.data-settings_chart{
-      border: 3px solid #3F4C70 !important;
-      border-top: 1px solid #3F4C70 !important;
-    }
+    // .base-chart.data-settings_chart{
+    //   border: 3px solid #3F4C70 !important;
+    //   border-top: 1px solid #3F4C70 !important;
+    // }
 
     .chart-container {
       margin-top: -3px;
     }
     .chart-spinner-wrapper {
-      border: 3px solid #3F4C70;
-      border-top: 1px solid #3F4C70;
+      // border: 3px solid #3F4C70;
+      // border-top: 1px solid #3F4C70;
       border-radius: 0 0 3px 3px;
       margin-top: -3px;
     }
     .network-component-footer-wrapper {
-      border-left: 3px solid #3F4C70 !important;
-      border-right: 3px solid #3F4C70 !important;
-      border-bottom: 3px solid #3F4C70 !important;
+      // border-left: 3px solid #3F4C70 !important;
+      // border-right: 3px solid #3F4C70 !important;
+      // border-bottom: 3px solid #3F4C70 !important;
 
       &.no-preview {
       }
     }
   }
   &.net-element--active {
+
+    & .layer-type,
+    & .icon {
+      color: white;
+    }
+
     @each $name, $color in $layers-sidebar-active {
       .net-element-#{$name} {
-        background: $color;
+        border-color: $color;
+        background-color: $color;
       }
     }
     
   }
 }
 
-.net-element-custom {
+.net-element-custom {  
 	&:after {
 		display: none;
 	}
@@ -149,10 +157,15 @@ $layers-sidebar-active: (
 	opacity: .4;
 }
 
+.net-element .settings-layer {
+  & .base-chart_main {
+    background-color: $bg-setting-layer;
+  }
+}
 .net-element {
   &:hover {
     .btn--layersbar {
-      border:  3px solid #1473e6 !important; ;
+      // border:  3px solid #1473e6 !important; ;
       border-bottom-color: transparent !important;
       &:after {
         content: '';
@@ -163,92 +176,97 @@ $layers-sidebar-active: (
     }
     .settings-layer {
       .base-chart.data-settings_chart{
-        border: 3px solid #1473e6 !important;
-        border-top: 1px solid #3F4C70 !important;
+        // border: 3px solid #1473e6 !important;
+        // border-top: 1px solid #3F4C70 !important;
         position: relative;
 
-        &:after {
-          content: '';
-          position: absolute;
-          top: -2px;
-          right: 0;
-          bottom: 0;
-          left: 0;
-          background: rgba(#B6C7FB, 0.5);
-          // background: #B6C7FB;
-          mix-blend-mode: soft-light;
-          pointer-events: none;
-        }
+        // &:after {
+        //   content: '';
+        //   position: absolute;
+        //   top: -2px;
+        //   right: 0;
+        //   bottom: 0;
+        //   left: 0;
+        //   background: rgba(#B6C7FB, 0.5);
+        //   // background: #B6C7FB;
+        //   mix-blend-mode: soft-light;
+        //   pointer-events: none;
+        // }
       }
 
       .chart-spinner-wrapper {
-        border: 3px solid #1473e6;
-        border-top: 1px solid #3F4C70;
-        border-radius: 0 0 3px 3px;
+        // border: 3px solid #1473e6;
+        // border-top: 1px solid #3F4C70;
+        // border-radius: 0 0 3px 3px;
         margin-top: -3px;
       }
     
       .network-component-footer-wrapper {
         position: relative;
-        border-left: 3px solid #1473e6 !important;
-        border-right: 3px solid #1473e6 !important;
-        border-bottom: 3px solid #1473e6 !important;
+        // border-left: 3px solid #1473e6 !important;
+        // border-right: 3px solid #1473e6 !important;
+        // border-bottom: 3px solid #1473e6 !important;
 
         &.no-preview {
         }
 
-        &:after {
-          content: '';
-          position: absolute;
-          top: -2px;
-          right: 0;
-          bottom: 0;
-          left: 0;
-          background: rgba(#B6C7FB, 0.5);
-          // background: #B6C7FB;
-          mix-blend-mode: soft-light;
-          pointer-events: none;
-        }
+        // &:after {
+        //   content: '';
+        //   position: absolute;
+        //   top: -2px;
+        //   right: 0;
+        //   bottom: 0;
+        //   left: 0;
+        //   background: rgba(#B6C7FB, 0.5);
+        //   // background: #B6C7FB;
+        //   mix-blend-mode: soft-light;
+        //   pointer-events: none;
+        // }
       }
   
-      border-top-color: transparent !important;
+      // border-top-color: transparent !important;
       position: relative;
     }
   
   }
   .btn--layersbar .icon {
     font-size: 12px;
+    display: none;
+
+    &.icon-lock {
+      display: block;
+    }
   }
 }
 .net-element--active, .net-element--selecting  {
   .btn--layersbar {
-    border: 3px solid #1473e6 !important;
+    // border: 3px solid #1473e6 !important;
   }
   .settings-layer {
     .base-chart.data-settings_chart{
-      border: 3px solid #1473e6 !important;
-      border-top: 1px solid #3F4C70 !important;
+      // border: 3px solid #1473e6 !important;
+      // border-top: 1px solid #3F4C70 !important;
     }
 
     .chart-spinner-wrapper {
-      border: 3px solid #1473e6;
-      border-top: 1px solid #3F4C70;
-      border-radius: 0 0 3px 3px;
+      // border: 3px solid #1473e6;
+      // border-top: 1px solid #3F4C70;
+      // border-radius: 0 0 3px 3px;
       margin-top: -3px;
     }
 
     .network-component-footer-wrapper {
-      border-left: 3px solid #1473e6 !important;
-      border-right: 3px solid #1473e6 !important;
-      border-bottom: 3px solid #1473e6 !important;
+      // border-left: 3px solid #1473e6 !important;
+      // border-right: 3px solid #1473e6 !important;
+      // border-bottom: 3px solid #1473e6 !important;
 
       &.no-preview {
       }
     }
-    border-top-color: transparent !important;
+    // border-top-color: transparent !important;
   }
   .btn--layersbar {
-    border-bottom-color: transparent !important;
+    // border-bottom-color: transparent !important;
     &:after {
       content: '';
     }
@@ -258,15 +276,14 @@ $layers-sidebar-active: (
   }
 }
 .layer-type {
-  font-family: "Nunito Sans";
   font-style: normal;
-  font-weight: 600;
-  font-size: 11px;
-  line-height: 15px;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 16px;
   display: flex;
   align-items: center;
 
-  color: #FFFFFF;
+  color: theme-var($neutral-8);
   margin-left: 5px;
 
   white-space: nowrap;                   

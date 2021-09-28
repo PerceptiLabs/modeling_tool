@@ -47,7 +47,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  @import '../../../scss/base';
   
   .body-wrapper {
     position: absolute;

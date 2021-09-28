@@ -350,7 +350,7 @@
   }
 </script>
 <style lang="scss">
-  @import "../../../../scss/base";
+  
   .settings-layer_section.settings-layer_section--data {
     input {
       background-color: #6E778C;

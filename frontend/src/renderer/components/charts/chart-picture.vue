@@ -19,7 +19,7 @@
         .selector-btn
         .selector-tooltip
           span {{ chartIdx + 1}}
-    canvas.chart-img(ref="canvas" :class="{'is-full-view': isFullView}")
+    canvas.chart-img(ref="canvas" :class="{'is-full-view': isFullView, 'invert': invert}")
 </template>
 
 <script>
@@ -36,6 +36,10 @@ export default {
         return 0
       }
     },
+    invert: {
+      type: Boolean,
+      default: false
+    }
   },
   data() {
     return {
@@ -131,7 +135,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  @import "../../scss/base";
   .chart-wrapper {
     height: 100%;
     position: relative;
@@ -221,12 +224,17 @@ export default {
       }
 
       .selector-tooltip {
-        background: #171a21;
-        border: 1px solid #3F4C70;
+        background: $color-6;
         box-sizing: border-box;
-        border-radius: 1px;
+        border-radius: 50%;
+        width: 18px;
+        height: 18px;
+        text-align: center;
+        line-height: 18px;
+        font-size: 14px;
+        color: white;
         left: 50%;
-        padding: 0.3rem;
+        // padding: 0.3rem;
         pointer-events: none;
         position: absolute;
         transform: translateX(-50%);
@@ -236,7 +244,10 @@ export default {
   }
 
   .chart-img {
-    background: $bg-workspace;
+    
+    &.invert {
+      background: $bg-setting-layer;
+    }
     display: block;
     max-height: 40vh;
     object-fit: contain;

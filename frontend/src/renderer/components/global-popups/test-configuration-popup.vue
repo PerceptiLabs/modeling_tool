@@ -1,12 +1,13 @@
 <template lang="pug">
   base-global-popup(
-    :tab-set="popupTitle"
+    :title="popupTitle"
+    title-align="text-center"
     class="test-configuration-popup"
     @closePopup="closeModal"
   )
-    template(:slot="popupTitle[0] + '-content'")
+    template(:slot="popupTitle + '-content'")
       .form_row
-        .form_label.text-right Test dataset:
+        .form_label.bold Test dataset:
         .form_input.flex-vertical
           base-radio(
             group-name="test-dataset"
@@ -20,18 +21,19 @@
           //-   :disabled="true"
           //- ) Use other dataset
       .form_row
-        .form_label.text-right Selected model(s):
+        .form_label.bold Selected model(s):
         .form_input.flex-vertical
           base-select(
             :select-multiple="true"
             :show-checkbox="true"
             :select-options="availableModels"
+            select-placeholder="none selected"
             v-model="selectedModels"
           )
           info-tooltip.warning
             span Select multiple models to compare
       .form_row
-        .form_label.text-right Select tests:
+        .form_label.bold Select tests:
         .form_input.checkbox-group
           base-checkbox.checkbox(
             v-for="(testType, key) in TestTypes"
@@ -41,7 +43,7 @@
             :disabled="!isTestAvailable(key)"
           ) {{testType.text}}
     template(slot="action")
-      button.btn.btn--primary.btn--disabled(type="button"  @click="closeModal") Cancel
+      button.btn.btn--secondary(type="button"  @click="closeModal") Cancel
       button.btn.btn--primary(type="button" @click="run()" :disabled="!canTestBeRun()") Run Test
 </template>
 <script>
@@ -61,7 +63,7 @@ export default {
   data() {
     return {
       dataPath: null,
-      popupTitle: ["Test Configuration"],
+      popupTitle: "Test Configuration",
       testDataset: 'partitioned-dataset', // or other-dataset
       selectedModels: [],
       testTypes: {},
@@ -160,7 +162,7 @@ export default {
 };
 </script>
 <style lang="scss">
-@import "../../scss/base";
+
 
 .normalize-inputs {
   width: 100% !important;
@@ -168,15 +170,9 @@ export default {
 }
 .test-configuration-popup {
   .settings-layer_section {
-    width: 500px !important;
-    padding: 25px;
+    width: 100%;
+    padding: 25px 0px;
   }
-  .popup_foot {
-    padding: 0 25px 15px;
-  }
-}
-.text-right {
-  text-align: right;
 }
 .flex-vertical {
   display: flex;
@@ -200,6 +196,13 @@ export default {
   }
 }
 
+.form_row {
+  justify-content: center;
+  
+}
+.justify-left {
+	justify-content: start;
+}
 .settings-layer_section >
 .form_row .form_label {
   flex: 0 0 30%;

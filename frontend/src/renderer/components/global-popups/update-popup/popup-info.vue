@@ -72,7 +72,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  @import '../../../scss/base';
   @import '../../../scss/components/update-popup';
 </style>
 

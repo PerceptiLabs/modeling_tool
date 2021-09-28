@@ -9,6 +9,7 @@ import cloneDeep from 'lodash.clonedeep';
 import { v4 as uuidv4  } from 'uuid';
 import router from '@/router'
 
+
 const namespaced = true;
 //let pauseAction = 'Pause';
 
@@ -277,7 +278,7 @@ const actions = {
       });
   },
   API_runServer({state, dispatch, commit, rootGetters}) {
-        dispatch('coreStatusWatcher');
+    dispatch('coreStatusWatcher');
   },
 
   API_closeCore(context, receiver) {
@@ -382,7 +383,6 @@ const actions = {
       const delay = responseDuration >= 1000 ? 0 : 1000 - responseDuration;
       if (data.status === 'Completed') {
         dispatch('API_getTestResults');
-
       } else if (data.status === 'Error') {
         dispatch('API_closeTest');
         dispatch('globalView/GP_errorPopup', data.update_line_1, {root: true});
@@ -930,7 +930,7 @@ const actions = {
     
     dispatch('mod_workspace/setChartComponentLoadingState', { descendants: Object.keys(payload), value: true, networkId } , { root: true });
 
-    return renderingKernel.getNetworkData(net, datasetSettings, userEmail)      
+    return renderingKernel.getNetworkData(net, datasetSettings, userEmail)     
       .then(res => {
         // console.group('getNetworkData');
         // console.log(

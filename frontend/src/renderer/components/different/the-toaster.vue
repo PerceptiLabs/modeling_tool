@@ -4,14 +4,15 @@
       .toast(
         :key="t.networkId + t.type"
         v-if="t.count > 0"
+        :class="t.type"
         @click="onToastClick(t)")
 
         template(v-if="t.type === 'error'")
           .toast-header
             .toast-header-icon
-              svg(width="17" height="16" viewBox="0 0 17 16" fill="none" xmlns="http://www.w3.org/2000/svg")
-                path(d="M7.18629 1.38376C7.75651 0.349089 9.24349 0.34909 9.81371 1.38376L16.3676 13.276C16.9186 14.2757 16.1954 15.5 15.0539 15.5H1.9461C0.804634 15.5 0.0814483 14.2757 0.632393 13.276L7.18629 1.38376Z" fill="#FE7373")
-                path(d="M7.72977 5.94L9.26977 5.95L8.87977 10.88H8.11977L7.72977 5.94ZM9.19977 11.62V13H7.79977V11.62H9.19977Z" fill="#23252A")
+              svg(width="16" height="14" viewBox="0 0 16 14" fill="none" xmlns="http://www.w3.org/2000/svg")
+                path(d="M8.00005 0.666504L0.300049 13.9998H15.7L8.00005 0.666504ZM8.66671 5.99984L8.42671 8.99984H7.60672L7.36672 5.99984H8.66671ZM8.00005 11.3332C7.87874 11.3332 7.76016 11.2972 7.6593 11.2298C7.55844 11.1624 7.47982 11.0666 7.4334 10.9545C7.38698 10.8425 7.37483 10.7192 7.3985 10.6002C7.42217 10.4812 7.48058 10.3719 7.56636 10.2861C7.65213 10.2004 7.76142 10.142 7.88039 10.1183C7.99937 10.0946 8.12269 10.1068 8.23476 10.1532C8.34683 10.1996 8.44262 10.2782 8.51002 10.3791C8.57741 10.4799 8.61338 10.5985 8.61338 10.7198C8.61338 10.8825 8.54876 11.0385 8.43374 11.1535C8.31872 11.2686 8.16271 11.3332 8.00005 11.3332Z" fill="#FE7373")
+
             .toast-header-label Error
             .toast-header-close-button(@click.stop="onClose(t)")
               svg(width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg")
@@ -20,9 +21,9 @@
         template(v-else)
           .toast-header
             .toast-header-icon
-              svg(width="17" height="16" viewBox="0 0 17 16" fill="none" xmlns="http://www.w3.org/2000/svg")
-                path(d="M7.18629 1.38376C7.75651 0.349089 9.24349 0.34909 9.81371 1.38376L16.3676 13.276C16.9186 14.2757 16.1954 15.5 15.0539 15.5H1.9461C0.804634 15.5 0.0814483 14.2757 0.632393 13.276L7.18629 1.38376Z" fill="#FECF73")
-                path(d="M7.72977 5.94L9.26977 5.95L8.87977 10.88H8.11977L7.72977 5.94ZM9.19977 11.62V13H7.79977V11.62H9.19977Z" fill="#23252A")
+              svg(width="16" height="14" viewBox="0 0 16 14" fill="none" xmlns="http://www.w3.org/2000/svg")
+                path(d="M8.00005 0.666504L0.300049 13.9998H15.7L8.00005 0.666504ZM8.66671 5.99984L8.42671 8.99984H7.60672L7.36672 5.99984H8.66671ZM8.00005 11.3332C7.87874 11.3332 7.76016 11.2972 7.6593 11.2298C7.55844 11.1624 7.47982 11.0666 7.4334 10.9545C7.38698 10.8425 7.37483 10.7192 7.3985 10.6002C7.42217 10.4812 7.48058 10.3719 7.56636 10.2861C7.65213 10.2004 7.76142 10.142 7.88039 10.1183C7.99937 10.0946 8.12269 10.1068 8.23476 10.1532C8.34683 10.1996 8.44262 10.2782 8.51002 10.3791C8.57741 10.4799 8.61338 10.5985 8.61338 10.7198C8.61338 10.8825 8.54876 11.0385 8.43374 11.1535C8.31872 11.2686 8.16271 11.3332 8.00005 11.3332Z" fill="#6185EE")
+
             .toast-header-label Warning
             .toast-header-close-button(@click.stop="onClose(t)")
               svg(width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg")
@@ -71,15 +72,13 @@ export default {
 
 
 <style lang="scss" scoped>
-
-$height-status-bar: 3rem;
+$height-status-bar: 5.5rem;
 
 .toaster-container {
   position: fixed;
   transition:all 200ms ease;
 
   bottom: $height-status-bar;
-  right: 1rem;
 
   z-index: 10;
 }
@@ -89,25 +88,26 @@ $height-status-bar: 3rem;
   min-height: 6rem;
   max-height: 12rem;
 
-  background: #363E51;
-  border: 1px solid #5E6F9F;
+  background: theme-var($neutral-8);
+  border: 1px solid $color-6;
   box-sizing: border-box;
-  border-radius: 2px;
-
-  padding: 0.5rem;
+  border-radius: 5px;
+  padding: 10px 16px; 
 
   cursor: pointer;
 
   .toast-header {
     display: flex;
     align-items: center;
+    margin-bottom: 0.5rem;
 
     .toast-header-icon {
       margin-right: 0.5rem;
     }
 
     .toast-header-label {
-      font-size: 1.2rem;
+      font-size: 1.4rem;
+      color: $color-6;
     }
 
     .toast-header-close-button {
@@ -126,10 +126,19 @@ $height-status-bar: 3rem;
     }
   }
 
+
+  &.error {
+    border: 1px solid $color-danger;
+    .toast-header-label {
+      color: $color-danger;
+    }
+  }
+
   .toast-message {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    font-size: 1.2rem;
   }
 }
 

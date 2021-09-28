@@ -3,7 +3,6 @@
     .layer-list(
       v-for="(layer, idx) in layersbarList"
       :key="idx"
-      :style="{ 'border-color': layer.borderColor, 'border-bottom-color': layer.bottomColor }"
       @click.stop="toggleElList(idx)"
       @focusout="handleFocusOut"
       :data-tutorial-target="'tutorial-workspace-layer-menu'"
@@ -14,8 +13,9 @@
         :class="[{'active': showElementsInLayer(layer)}]"
         :data-tutorial-marker="'LayerMenuItem_' + layer.tooltip"
       )
-        i.icon(:class="layer.iconClass")
-        .layer-list-header-label {{ layer.tooltip }}
+        .layer-list-header-label.bold {{ layer.tooltip }}
+        svg(width="9" height="6" viewBox="0 0 9 6" fill="none" xmlns="http://www.w3.org/2000/svg")
+          path.bold(d="M3.91611 5.72652L0.193542 1.32977C-0.245778 0.812461 0.111266 2.94913e-07 0.778007 2.94913e-07H8.22315C8.37237 -0.000131902 8.51846 0.0441823 8.64393 0.127636C8.7694 0.211091 8.86893 0.330147 8.9306 0.470548C8.99227 0.610949 9.01347 0.766743 8.99166 0.919273C8.96985 1.0718 8.90595 1.2146 8.80762 1.33057L5.08505 5.72572C5.01219 5.81187 4.92235 5.88091 4.82154 5.92822C4.72073 5.97552 4.6113 6 4.50058 6C4.38986 6 4.28043 5.97552 4.17962 5.92822C4.07881 5.88091 3.98897 5.81187 3.91611 5.72572V5.72652Z")
 
       ul.layer_child-list(
         v-if="layer.networkElements"
@@ -27,7 +27,6 @@
           @mouseenter="mouseOver(element)"
           @mouseleave="mouseOut"
           @mousedown="onLayerClick($event, element)"
-          :style="[calcLayerItemStyle(element, layer.color)]"
           :data-tutorial-target="element === 'DataData' ? 'tutorial-workspace-layer-data' : ''"
           ref="referenceMenuItem"
         )
@@ -357,6 +356,8 @@ export default {
         const labelElement = this.clonedElement.childNodes[2];
 
         iconElement.style.fontSize = '1.3rem';
+        iconElement.style.visibility = 'hidden';
+
         labelElement.style.marginLeft = '1rem';
         labelElement.style.fontFamily = 'Nunito Sans';
         labelElement.style.fontStyle = 'normal';
@@ -373,7 +374,7 @@ export default {
       }
     },
     setupClickDropFunctionality() {
-      document.body.appendChild(this.clonedElement);
+      document.getElementById("app").appendChild(this.clonedElement);
       document.addEventListener('mousemove', this.startComponentPositionUpdates);
       this.clonedElement.addEventListener('mouseup', this.stopComponentPositionUpdates);
       document.addEventListener('contextmenu', this.handleCancelEvents);
@@ -387,7 +388,7 @@ export default {
       document.removeEventListener('keyup', this.handleEscKeypress);
 
       if(this.clonedElement) {
-        document.body.removeChild(this.clonedElement);
+        document.getElementById("app").removeChild(this.clonedElement);
       }
       this.previousAddedElementId = null;
       this.clickedElementName = null;
@@ -447,7 +448,6 @@ export default {
     this.filterUnnecessaryLayers();
     if (!isEnvDataWizardEnabled()) { return; }
 
-
     // const ioDropdown = {
     //   tooltip: 'IO',
     //   tooltip_interactive: {
@@ -473,7 +473,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  @import "../../scss/base";
+  
   $indent: 0.5rem;
   $icon-size: 1.3rem;
   $toolbar-size: 2.6rem;
@@ -483,7 +483,6 @@ export default {
     display: flex;
     justify-content: space-evenly;
     height: $toolbar-size;
-    width: 100%;
     margin: 0;
     padding: 0;
     list-style: none;
@@ -495,16 +494,7 @@ export default {
   }
 
   .layer-list {
-    height: 100%;
-    width: 100%;
-
-    box-sizing: border-box;
-    background: #23252A;
-    border-width: 1px;
-    border-bottom-width: 3px;
-    border-style: solid;
-    border-color: rgba(77, 85, 106, 0.8);
-    border-radius: 0px;
+    margin-right: 30px;
   }
 
   .layer {
@@ -526,22 +516,20 @@ export default {
     box-sizing: border-box;
 
     cursor: pointer;
+  .active {
 
+    box-shadow: 0px 4px 4px  rgba(theme-var($shadow-color), 0.35);
+  }
     * + * {
       margin-left: 1rem;
     }
 
     .icon {
-      font-size: 1.3rem
+      margin-left: 6px;
     }
 
     .layer-list-header-label {
-      font-family: Nunito Sans;
-      font-style: normal;
-      font-weight: 600;
-      font-size: 1.2rem;
-      line-height: 1.6rem;
-
+      font-size: 16px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -552,16 +540,17 @@ export default {
     @include multi-transition (transform, opacity, visibility);
     position: relative;
     top: 2px;
-    opacity: 0;
     visibility: hidden;
+    opacity: 0;
 
     box-sizing: border-box;
-    border: 1px solid #3F4C70;
     border-radius: 0px 0px 2px 2px;
     
     width: inherit; 
 
-    background: #23252A;
+    background: theme-var($neutral-8);
+    box-shadow: 0px 4px 4px  rgba(100, 100, 100, 0.36);
+    
 
     .layer_child-list-item {
       
@@ -569,8 +558,9 @@ export default {
       flex-direction: row;
       justify-content: center;
       align-items: center;
-
-      height: $toolbar-size;
+      
+      // height: $toolbar-size;
+      padding: 20px 10px; 
       width: 100%; 
 
       position: relative;
@@ -598,8 +588,7 @@ export default {
 
         .layerTitle {
           white-space: pre;
-          font-size: 12px;
-          font-family: Nunito Sans;
+          font-size: 14px;
         }
       }
 

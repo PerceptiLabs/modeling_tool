@@ -8,42 +8,44 @@
         li
           button.btn.btn--toolbar(type="button"
             @click="toPrevStepHistory"
-            :disabled="isDisabledPrevStep"
-            v-tooltip:bottom="'Prev step'"
-            v-tooltip-interactive:bottom="interactiveInfo.undo"
+            :disabled="isDisabledPrevStep"            
           )
-            i.icon.icon-step-prev
+            svg(width="10" height="9" viewBox="0 0 10 9" fill="none" xmlns="http://www.w3.org/2000/svg")
+              path(d="M3.125 3.46154H6.875C7.90875 3.46154 8.75 4.39338 8.75 5.53846C8.75 6.68354 7.90875 7.61539 6.875 7.61539H3.125V9H6.875C8.59813 9 10 7.44715 10 5.53846C10 3.62977 8.59813 2.07692 6.875 2.07692H3.125V0L0 2.76923L3.125 5.53846V3.46154Z")
+
         li
           button.btn.btn--toolbar(type="button"
             @click="toNextStepHistory"
             :disabled="isDisabledNextStep"
-            v-tooltip:bottom="'Next step'"
-            v-tooltip-interactive:bottom="interactiveInfo.redo"
           )
-            i.icon.icon-step-next
-      .horizontal-separator
-      ul.toolbar_list
-        li(:class="{'tutorial-active': activeStepStoryboard === 4}")
-          button#tutorial_run-training-button.btn-menu-bar(type="button"
-            :class="statusStartBtn"
-            v-tooltip:bottom="'Run/Stop'"
-            v-tooltip-interactive:bottom="interactiveInfo.runButton"
-            :data-tutorial-target="'tutorial-workspace-start-training'"
-            @click="onOffBtn(false)"
-          )
-            img(v-if="showSpinnerOnRun===true" src="static/img/spinner.gif" width="12px" style="margin-right: 5px")
-            i.icon.icon-on-off(v-if="showSpinnerOnRun===false")
-            span(v-html="statusTraining === 'training' || statusTraining === 'pause' ? 'Stop' : 'Run'")
-          button(v-if="modelTrainingSettings && isGlobalTrainingSettingEnabled" @click="onOffBtn(true)").btn-menu-bar.run-with-current-settings-btn
-            | Run with current settings
-      .horizontal-separator
-      ul.toolbar_list
-        li(v-tooltip:bottom="'Press to go to the Statistics view'")
-          button#tutorial_run-training-button.btn-menu-bar(type="button"
-            :class="{'disabled': !networkIsTrained , 'active': statisticsIsOpen && isOnModelToolPage()}"
-            @click="toModelStatistic"
-          )
-            | Go to statistics
+            svg(width="10" height="9" viewBox="0 0 10 9" fill="none" xmlns="http://www.w3.org/2000/svg")
+              path(d="M6.875 3.46154H3.125C2.09125 3.46154 1.25 4.39338 1.25 5.53846C1.25 6.68354 2.09125 7.61539 3.125 7.61539H6.875V9H3.125C1.40187 9 0 7.44715 0 5.53846C0 3.62977 1.40187 2.07692 3.125 2.07692H6.875V0L10 2.76923L6.875 5.53846V3.46154Z")
+
+      .layers-toolbar(v-if="!statisticsIsOpen && !testIsOpen")
+        layers-toolbar
+      //- ul.toolbar_list
+      //-   li(:class="{'tutorial-active': activeStepStoryboard === 4}")
+      //-     button#tutorial_run-training-button.btn-menu-bar(type="button"
+      //-       :class="statusStartBtn"
+      //-       v-tooltip:bottom="'Run/Stop'"
+      //-       v-tooltip-interactive:bottom="interactiveInfo.runButton"
+      //-       :data-tutorial-target="'tutorial-workspace-start-training'"
+      //-       @click="onOffBtn(false)"
+      //-     )
+      //-       img(v-if="showSpinnerOnRun===true" src="static/img/spinner.gif" width="12px" style="margin-right: 5px")
+      //-       i.icon.icon-on-off(v-if="showSpinnerOnRun===false")
+      //-       span(v-html="statusTraining === 'training' || statusTraining === 'pause' ? 'Stop' : 'Run'")
+      //-     button(v-if="modelTrainingSettings && isGlobalTrainingSettingEnabled" @click="onOffBtn(true)").btn-menu-bar.run-with-current-settings-btn
+      //-       | Run with current settings
+
+      //- ul.toolbar_list
+      //-   li(v-tooltip:bottom="'Press to go to the Statistics view'")
+      //-     button#tutorial_run-training-button.btn-menu-bar(type="button"
+      //-       :class="{'disabled': !networkIsTrained , 'active': statisticsIsOpen && isOnModelToolPage()}"
+      //-       @click="toModelStatistic"
+      //-     )
+      //-       | Go to statistics
+
       //ul.toolbar_list
         li
           button.btn.btn--toolbar(type="button"
@@ -58,41 +60,23 @@
           )
             i.icon.icon-box
       .toolbar_settings
-        .button-container(v-tooltip:bottom="'Press to open data settings'")
-          button.btn-menu-bar(
-              type="button"
-              @click="openDataSettings"
-            )
-              span Data Settings
-        .button-container(v-tooltip:bottom="networkHasCheckpoint?'Press this to load your most recent checkpoint':'You do not have any checkpoints, run a model to create some'")
-          button.btn-menu-bar(
-              type="button"
-              :class="{'active': modelWeightsActive, 'disabled': !networkHasCheckpoint}"
-              @click="toggleModelWeights"
-            )
-              span Weights
-              .ring-icon
-        .button-container(v-tooltip:bottom="'Press to toggle the Preview'")
-          button.btn-menu-bar(
-            type="button"
-            :class="{'active': showModelPreviews}"
-            @click="toggleModelPreviews"    
-            :data-tutorial-target="'tutorial-workspace-preview-toggle'"
-          )
-            span Preview
-            .ring-icon
+        base-toggle.toggle(
+          :value="modelWeightsActive"
+          :disabled="!networkHasCheckpoint" 
+          :onClick="toggleModelWeights")
+          span.bold Weights
+
+        base-toggle.toggle(
+          :value="showModelPreviews" 
+          :onClick="toggleModelPreviews")
+          span.bold Preview
           
-        sidebar-toggle-button
-    .layers-toolbar(v-if="!statisticsIsOpen && !testIsOpen")
-      layers-toolbar
+        sidebar-toggle-button.toggle
 </template>
 
 <script>
 import { mapGetters, mapActions, mapMutations, mapState } from 'vuex';
 
-import { googleAnalytics }        from '@/core/analytics';
-import { trainingElements }       from '@/core/constants.js';
-import { deepLearnElements }      from '@/core/constants.js';
 import {goToLink, isEnvDataWizardEnabled} from '@/core/helpers.js';
 
 import LayersToolbar            from '@/components/toolbar/workspace-toolbar-layers.vue';
@@ -108,23 +92,9 @@ export default {
     return {
       x: null,
       y: null,
-      interactiveInfo: {
-        edit:     {title: 'Edit',     text: `Use this to being able to drag & ,<br/> drop, select, edit, etc`},
-        arrow:    {title: 'Arrow',    text: `Use this to connect the <br/>layers and define the dataflow`},
-        undo:     {title: 'Undo',     text: `Use this to connect the <br/>Undo`},
-        redo:     {title: 'Redo',     text: `Redo`},
-        runButton:{title: 'Run/Stop', text: `Start training/Stop training`},
-        pause:    {title: 'Pause',    text: `Pause training/Unpause training`},
-        skip:     {title: 'Skip',     text: `Skip validation`},
-        hyperparameters: {title: 'Generate Hyperparameters',text: `Auto-generate the hyperparameters`},
-        blackBox: {title: 'BlackBox', text: `Load the data and let our algorithm </br> build a model for you and train it`},
-        interactiveDoc: {title: 'Interactive documentation', text: `Use this to find out what all </br> different operations and functions do`},
-        tutorial: {title: 'Tutorial', text: `Choose an interactive tutorial`}
-      },
       reportLink: 'https://join.slack.com/t/perceptilabs-com/shared_invite/enQtODQ5NzAwNDkxOTExLWUxODAwZDk0MzA1MmM4OTViNWE4MmVjYjc2OTQwMTQ4N2NmM2ZlYmI5NjZjOWRiYjBkYjBjMTMzNjEyMDNiNDk',
       haveAtLeastOneItemStatistic: false,
       statisticItemIndex: null,
-      showSpinnerOnRun: false
     }
   },
   computed: {
@@ -148,29 +118,13 @@ export default {
       networkHistory:       'mod_workspace-history/GET_currentNetHistory',
       modelTrainingSettings:'mod_workspace/GET_modelTrainingSetting'
     }),
-    statusStartBtn() {
-      return {
-        // 'bg-error':   this.statusTraining === 'training',
-        // 'bg-warning': this.statusTraining === 'pause',
-        // 'bg-success': this.statusTraining === 'finish',
-        //'bg-error': this.statusTraining === 'finish',
+    kernelLabel() {
+      if(this.statusLocalCore !== "online") {
+        return "Kernel is not connected";
+      } else {
+        return "Kernel is connected";
       }
     },
-    statusTraining() {
-      switch (this.statusNetworkCore) {
-        case 'Training':
-        case 'Validation':
-          return 'training';
-          break;
-        case 'Paused':
-          return 'pause';
-          break;
-        case 'Finished':
-          return 'finish';
-          break;
-      }
-    },
-
     hideLayers () {
       return this.$store.state.globalView.hideLayers
     },
@@ -221,9 +175,6 @@ export default {
       // More accurate than the following because it gets set upon training (checkpoints could be deleted)
       // return Object.values(this.currentElList).some(el => el.checkpoint && el.checkpoint.length > 0);
       return typeof this.testIsOpen === 'boolean';
-    },
-    isGlobalTrainingSettingEnabled() {
-      return isEnvDataWizardEnabled();
     }
   },
   watch: {
@@ -238,26 +189,17 @@ export default {
           this.handleStatisticState(models);
         }
       },
-    '$store.state.mod_events.eventRunStatistic': {
-      handler() {
-       this.onOffBtn(true);
-      }
-    },
   },
   methods: {
     ...mapMutations({
       setInteractiveInfo:     'mod_tutorials/SET_interactiveInfo',
       set_showTrainingSpinner:'mod_workspace/SET_showStartTrainingSpinner',
-      setCurrentStatsIndex:   'mod_workspace/set_currentStatsIndex',
       set_hideLayers:         'globalView/SET_hideLayers',
       GP_showCoreSideSettings:'globalView/GP_showCoreSideSettings',
     }),
     ...mapActions({
       popupConfirm:         'globalView/GP_confirmPopup',
       showInfoPopup:        'globalView/GP_infoPopup',
-      pauseTraining:        'mod_api/API_pauseTraining',
-      stopTraining:         'mod_api/API_stopTraining',
-      skipValidTraining:    'mod_api/API_skipValidTraining',
       removeTooltip:        'mod_tutorials/removeTooltip',
       set_netMode:          'mod_workspace/SET_netMode',
       toPrevStepHistory:    'mod_workspace-history/TO_prevStepHistory',
@@ -271,98 +213,6 @@ export default {
     }),
     switchTutorialMode() {
       this.$refs.tutorialComponent.switchTutorialMode()
-    },
-    modalSettingsCb() {
-      this.showSpinnerOnRun = true;
-      this.setCurrentStatsIndex(this.currentNetworkIndex);
-      
-      this.$store.commit('mod_workspace/update_network_meta', {key: 'hideStatistics', networkID: this.currentNetwork.networkID, value: false});
-      
-      this.$store.dispatch('mod_api/API_scanCheckpoint', {
-        networkId: this.currentNetwork.networkID,
-        path: this.currentNetwork.apiMeta.location
-      })
-        .then(result => {
-          this.showSpinnerOnRun = false;
-
-          if (result.hasCheckpoint) {
-            this.trainStartWithCheckpoint();
-
-            this.$nextTick(() => {
-              this.setNextStep({currentStep:'tutorial-workspace-start-training'});
-              this.setCurrentView('tutorial-core-side-view');
-            });
-          } else {
-            this.trainStartWithoutCheckpoint();
-          }
-        });
-    },
-    
-    onOffBtn(runWithCurrentSettings) {
-      if(this.isTraining)  {
-        this.trainStop();
-      } else {
-        if(this.isGlobalTrainingSettingEnabled && !runWithCurrentSettings) {
-          // open setting modal
-          this.$store.dispatch('globalView/showGlobalTrainingSettingsAction', {
-            isOpen: true,
-            cb: this.modalSettingsCb,
-          }, { root: true });  
-          
-        } else {
-          this.modalSettingsCb()
-        }
-      }
-    
-    },
-    trainStartWithCheckpoint() {
-      googleAnalytics.trackCustomEvent('start-training');
-      if (!isEnvDataWizardEnabled()) {
-        let valid = this.validateNetwork();
-        if (!valid) return;
-      }
-      this.GP_showCoreSideSettings(true);
-    },
-    trainStartWithoutCheckpoint() {
-      googleAnalytics.trackCustomEvent('start-training');
-      if (!isEnvDataWizardEnabled()) {
-        let valid = this.validateNetwork();
-        if (!valid) return;
-      }
-      // if toggle off
-      // start directly
-
-      // Refactor this and the core in workspace-core-side
-      this.$store.commit('mod_workspace/updateCheckpointPaths');
-
-      this.$store.dispatch('mod_workspace/saveCurrentModelAction')
-        .then(_ => {
-          this.$store.dispatch('mod_api/API_startTraining', { loadCheckpoint: false });
-
-          this.$store.dispatch('mod_workspace/SET_openStatistics', true);
-          this.$store.dispatch('mod_workspace/setViewType', 'statistic');
-          this.$store.dispatch('mod_workspace/SET_openTest', null);
-          this.$store.commit('mod_workspace/SET_showStartTrainingSpinner', true);
-          this.$store.dispatch('globalView/hideSidebarAction', false);
-
-          if (!this.$store.getters['mod_workspace-notifications/getHasErrors'](this.currentNetwork.networkID)) {
-            this.$store.dispatch('mod_tutorials/setChecklistItemComplete', { itemId: 'startTraining' });
-          }
-          this.$store.dispatch('mod_tutorials/setCurrentView', 'tutorial-statistics-view');
-
-          this.$nextTick(() => {
-            this.setNextStep({currentStep:'tutorial-workspace-start-training'});
-            this.setCurrentView('tutorial-statistics-view');
-          });
-        });
-    },
-    trainStop() {
-      this.stopTraining();
-      
-      this.$store.dispatch('mod_tracker/EVENT_trainingCompleted', 'User stopped');
-    },
-    trainPause() {
-      this.pauseTraining();
     },
     skipValid() {
       this.skipValidTraining();
@@ -482,26 +332,24 @@ export default {
     },
     isOnModelToolPage(){
       return this.$route.name === 'app';
-    },
-    openDataSettings() {
-      this.$store.dispatch('globalView/SET_datasetSettingsPopupAction', true);
     }
   },
 }
 </script>
 
 <style lang="scss" scoped>
-  @import "../../scss/base";
+  
   .main_toolbar {
     display: flex;
     align-items: center;
     padding: 5px 29px 5px 0;
+    
     background-color: $bg-toolbar-2;
-    border: 1px solid rgba(97, 133, 238, 0.4);
-    border-radius: 0px;
+    border-bottom: $border-1;
     position: relative;
     grid-area: toolbar;
-    z-index: 12;
+    z-index: 10;
+    border-radius: 4px 4px 0 0;
     height: $h-toolbar;
   }
   .toggle-wrap {
@@ -529,8 +377,9 @@ export default {
     margin: 0;
     // padding: 0 .7143rem;
     list-style: none;
+    margin-right: 32px;
     > li + li {
-      margin-left: .3571rem;
+      margin-left: 20px;
     }
     // + .toolbar_list {
     //   border-left: 1px solid $toolbar-separator-color;
@@ -606,12 +455,12 @@ export default {
     align-items: center;
     margin-left: auto;
     > * + * {
-      margin-left: .4rem;
-      margin-right: .4rem;
+      margin-left: 15px;
+      margin-right: 15px;
     }
 
     > *:last-child {
-      margin-left: .4rem;
+      margin-left: 15px;
       margin-right: 0;
     }
   }
@@ -735,5 +584,9 @@ export default {
   }
   .run-with-current-settings-btn {
     margin-left: 7px;
+  }
+
+  .toggle {
+    font-size: 16px;
   }
 </style>

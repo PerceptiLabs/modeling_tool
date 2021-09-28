@@ -1,21 +1,21 @@
 <template lang="pug">
   .custom-select(:class="styleType")
     button.custom-select_view.input(type="button"
-      :class="{'open-list': isOpenList, 'text-placeholder': !value.length}"
+      :class="{'open-list': isOpenList, 'text-placeholder': !value.length}"      
       :disabled="disabled"
       @click="openList"
       v-click-outside="closeList"
       )
       span.thin-font {{ labelText }}
       i.icon.icon-shevron.icon--open(v-if="!disabled")
-
+      
     perfect-scrollbar(tag="ul").custom-select_option-list.action-list(
       :class="{'open': isOpenList}"
       v-show="isOpenList"
       )
       template(v-if="selectMultiple")
         li.custom-select_option
-          base-checkbox.select_checkbox(v-if="showCheckbox && selectMultiple" @input="selectAllBtn.action" :value="selectAllBtn.selectStatus") Select All
+          base-checkbox.select_checkbox(v-if="showCheckbox && selectMultiple" @input="selectAllBtn.action" :value="selectAllBtn.selectStatus") SelectAll
           button.action-list_btn(v-else type="button" @click="selectAllBtn.action")
             span.action-list_icon.icon(:class="selectAllBtn.iconClass")
             span.action-list_btn-text Select All
@@ -71,7 +71,7 @@ export default {
   name: "BaseSelect",
   props: {
     value: {
-      type: [String, Array, Boolean],
+      type: [String, Array],
       default: ''
     },
     selectOptions: {
@@ -96,7 +96,7 @@ export default {
     disabled: {
       type: Boolean,
       default: false,
-    },
+    }
   },
   created() {
     this.defaultModel();
@@ -139,7 +139,7 @@ export default {
 
       function addSelectedText(selectVal, arr, out) {
         arr.forEach((item)=> {
-          if(selectVal === item.value) out.push(item.text);
+          if(selectVal.includes(item.value)) out.push(item.text);
           if(item.sublist) addSelectedText(selectVal, item.sublist, out);
         })
       }
@@ -205,8 +205,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  @import "../../scss/base";
-
   .thin-font {
     font-family: Nunito Sans;
     font-style: normal;
@@ -224,19 +222,19 @@ export default {
       transition: 0.15s;
       content: '';
       position: absolute;
-      width: calc(100% + 10px);
-      height: calc(100% + 10px);
-      top: -5px;
-      left: -5px;
+      width: calc(100% + 4px);
+      height: calc(100% + 4px);
+      top: -2px;
+      left: -2px;
       background-color: transparent;
       pointer-events: none;
-      border: 0px solid rgba(#B6C7FB, .5);
+      border: 0px solid $color-6;
       border-radius: 2px;
       z-index: 2;
     }
     &.active {
       &::after {
-        border: 5px solid rgba(#B6C7FB, .5);
+        border: 2px solid $color-6;
       }
       // .custom-select_view {
       //   outline: 3px solid rgba(#B6C7FB, .7);  
@@ -250,9 +248,11 @@ export default {
     align-items: center;
     cursor: default;
     text-align: left;
-    background: #363E51;
+    border: $border-1;
+    box-sizing: border-box;
+    border-radius: 4px;
+    background: theme-var($neutral-8);
     height: 3.5rem; 
-    border: 1px solid #363E51;
     
     .darken & {
       background-color: #202532;
@@ -274,7 +274,7 @@ export default {
       height: 17px;
       width: 55px;
       margin-left: 40px;
-      background: #131B30;
+      background: theme-var($neutral-8);
       border: 1px solid rgba(97, 133, 238, 0.4);
       border-radius: 1px;
       font-size: 10px;
@@ -301,7 +301,7 @@ export default {
     }
 
     &.open-list {
-      border: 1px solid #B6C7FB;
+      border: $border-1;
 
       .icon--open {
         transform: rotate(-180deg);
@@ -310,11 +310,11 @@ export default {
     &.text-placeholder {
       font-style: italic;
       font-weight: 300;
-      color: #C4C4C4;
+      color: #7397fe;
     }
-
+    
     &:disabled {
-      background: #171B25;
+      background: theme-var($neutral-1);
     }
   }
   .custom-select_option-list {
@@ -324,11 +324,11 @@ export default {
     left: 0;
     max-height: 13.5rem;
     overflow: auto;
-    background-color: #3F4C70;
+    background-color: theme-var($neutral-8);
     border-top-left-radius: 0;
     border-top-right-radius: 0;
     border-style: solid;
-    border-color: #B6C7FB;
+    border-color: theme-var($border-color);
     border-width: 0 1px 1px 1px;
   }
   .custom-select_separator {

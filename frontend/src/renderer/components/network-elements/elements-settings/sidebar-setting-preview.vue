@@ -2,10 +2,8 @@
 .sidebar-setting-preview(v-if="havePreview")
   .preview-handler(@click="toggleSettingPreviewVisibility()")
     h4.sidebar-setting-preview-title Preview
-    i.icon(
-      :class="isSettingPreviewVisible ? 'icon-shevron-up' : 'icon-shevron'"
-    )
-  chart-switch.data-settings_chart(
+    base-toggle-expand.primary(:value="isSettingPreviewVisible" :onClick="toggleSettingPreviewVisibility")      
+  chart-switch.sidebar-data-settings_chart(
     v-show="isSettingPreviewVisible",
     :disable-header="true",
     :chart-data="storeCurrentElement.chartData",
@@ -99,34 +97,20 @@ export default {
 };
 </script>
 <style lang="scss" scoped>
-@import "../../../scss/base";
-.preview-handler {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 10px;
-  border-bottom: 1px solid #5d5e60;
-  background: #23252a;
-}
-.sidebar-setting-preview-title {
-  cursor: pointer;
-  font-family: Nunito Sans;
-  font-style: normal;
-  font-weight: 300;
-  font-size: 12px;
-  line-height: 12px;
-  margin-bottom: 0;
-}
-.preview-chevron {
-  cursor: pointer;
-  border-top: 4px solid #ccc;
-  border-left: 4px solid transparent;
-  border-right: 4px solid transparent;
-  &.is-open {
-    border-top: none;
-    border-bottom: 4px solid #ccc;
-    border-left: 4px solid transparent;
-    border-right: 4px solid transparent;
+
+  .preview-handler {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 10px;
+    border: $border-1;
+    background: theme-var($neutral-7);
   }
-}
+  .sidebar-setting-preview-title {
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 16px;
+    margin-bottom: 0;
+  }
+
 </style>

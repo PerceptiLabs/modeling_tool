@@ -141,7 +141,7 @@ export default {
 </script>
 
 <style lang="scss">
-  @import "../../scss/base";
+  
   @import "../../scss/components/color-picker";
 
   // .layer-item-wrap {
@@ -153,31 +153,40 @@ export default {
     display: flex;
     align-items: center;
     height: $h-sidebar-layers-item;
-    padding-right: $h-sidebar-layers-indent;
-    padding-left: $h-sidebar-layers-indent;
+    margin-right: $h-sidebar-layers-indent;
+    margin-left: $h-sidebar-layers-indent;
     border: 1px solid transparent;
-    border-top: 1px solid #363E51;
     padding-left: 1.5rem;
-    box-sizing: border-box;
+    box-sizing: border-box;    
+    border-radius: 4px;
     &:hover {
-      color: white;
+      background: rgba(#D9E2FF, 0.5);
+
+      .dark-theme & {
+        background: #333438;
+        border: 1px solid #ffffff;
+      }
     }
     &.selected {
-      color: white;
+      color: $color-6;
       font-weight: bold;
-      border-top: 1px solid #5D5E60;
-      border-bottom: 1px solid #5D5E60;
-      &::after {
-        content: "";
-        position: absolute;
-        left: -2px;
-        top: 0;
-        bottom: 0;
-        width: 3px;
-        border-top-right-radius: 2px;
-        border-bottom-right-radius: 2px;
-        background:#6185EE;
+      background: #D9E2FF;
+
+      .dark-theme & {
+        background: #333438;
+        border: 1px solid #ffffff;
       }
+      // &::after {
+      //   content: "";
+      //   position: absolute;
+      //   left: -2px;
+      //   top: 0;
+      //   bottom: 0;
+      //   width: 3px;
+      //   border-top-right-radius: 2px;
+      //   border-bottom-right-radius: 2px;
+      //   background:#6185EE;
+      // }
     }
     .icon {
       display: block;

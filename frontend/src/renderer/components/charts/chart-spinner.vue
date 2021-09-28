@@ -1,5 +1,5 @@
 <template lang="pug">
-  .chart-spinner-box
+  .chart-spinner-box(:class="{'invert':invert}")
     .chart-spinner
     .text(v-show="text") {{text}}
 </template>
@@ -12,13 +12,16 @@ export default {
     text: {
       type: String,
       default: '',
+    },
+    invert: {
+      type: Boolean,
+      default: false
     }
   }
 }
 </script>
 
 <style lang="scss" scoped>
-  @import "../../scss/base";
   .chart-spinner-box {
     position: absolute;
     top: 0;
@@ -29,7 +32,12 @@ export default {
     align-items: center;
     justify-content: center;
     z-index: 2;
-    background-color: rgba($bg-workspace, .5);;
+    border-radius: 15px;
+    background-color: rgba($bg-workspace, .5);    
+
+    &.invert {
+      background-color: rgba($bg-setting-layer, .5);
+    }
   }
 
   .text {

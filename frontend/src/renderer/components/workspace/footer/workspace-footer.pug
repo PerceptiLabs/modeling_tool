@@ -1,5 +1,7 @@
 .workspace_scale
-  .worksapce-scale-info.mr-10 Zoom
+  .worksapce-scale-info.mr-10 
+  img(src="../../../../static/img/zoom-in.svg" style="margin-right: 10px")
+  | Zoom
   button.btn.btn--icon.workspace-scale_btn(type="button" @click="decScale()")
     i.icon.icon-minus
   .workspace-scale_input
@@ -10,9 +12,9 @@
     span %
   button.btn.btn--icon.workspace-scale_btn(type="button" @click="incScale()")
     i.icon.icon-zoom-plus
-  base-checkbox( :isMiniMap="true" :isNewUi="true" :value="isMiniMapNavigatorOpened" @input="setMiniMapNavigationMutation"  data-testing-target="mini-map-checkbox") Map
-  base-checkbox( :isMiniMap="true" :isNewUi="true" v-model="isGridEnabled") Grid
-.workspace-meta-right-box
+  base-checkbox( :value="isMiniMapNavigatorOpened" @input="setMiniMapNavigationMutation"  data-testing-target="mini-map-checkbox") Map
+  base-checkbox( v-model="isGridEnabled") Grid
+.workspace-meta-box
   model-status(
     v-if="(currentNetwork.networkMeta.coreStatus.Status !== 'Waiting') && !statisticsIsOpen"
     :options="{styleInlineLabel: true}"
@@ -24,26 +26,22 @@
     span.btn.python-status(
       :class="{'connected': statusLocalCore === 'online', 'disconnected': statusLocalCore === 'offline'}"
     )
-  .x-space-20
+.workspace-meta-right-box
   .workspace_meta-action
-
-    div.btn-menu-bottom-group-bars
-      button.btn-menu-bar.size-xs(
-        :class="{'active': getNotificationWindowSelectedTab === 'ErrorInfoPanel' && showNotificationWindow}"
-        @click="notificationWindowStateHandlerNew('ErrorInfoPanel')"
-      ) {{ workspaceErrors }} Problems
-        span.btn.python-status(
-        :class="{'connected': workspaceErrors === 0, 'disconnected': workspaceErrors > 0}")
-      button.btn-menu-bar.size-xs(
-        :class="{'active': getNotificationWindowSelectedTab === 'ConsoleInfoPanel' && showNotificationWindow}"
-        @click="notificationWindowStateHandlerNew('ConsoleInfoPanel')"
-        ) Console
+    button.btn(
+      :class="(getNotificationWindowSelectedTab === 'ErrorInfoPanel' && showNotificationWindow) ? 'btn--primary' : 'btn--secondary'"
+      @click="notificationWindowStateHandlerNew('ErrorInfoPanel')"
+    ) {{ workspaceErrors }} Problems
+      span.btn.python-status(
+      :class="{'connected': workspaceErrors === 0, 'disconnected': workspaceErrors > 0}")
+    button.btn(
+      :class="(getNotificationWindowSelectedTab === 'ConsoleInfoPanel' && showNotificationWindow) ? 'btn--primary' : 'btn--secondary'"
+      @click="notificationWindowStateHandlerNew('ConsoleInfoPanel')"
+      ) Console
       
-  .x-space-10
-  
-  button.btn-menu-bar.size-xs(
-    v-if="statisticsIsOpen"
-    type="button" 
-    :class="{clicked: showResourceView!=0, 'active': showResourceView != 0}"
-    @click="setResourceView(1)"
-    ) Hardware
+    button.btn(
+      v-if="statisticsIsOpen"
+      type="button" 
+      :class="{'clicked': showResourceView!=0, 'btn--primary': showResourceView!=0, 'btn--secondary': showResourceView==0}"
+      @click="setResourceView(1)"
+      ) Hardware

@@ -4,14 +4,18 @@
   )
     div.overlay(@click="onCancel")
     main
+      .header
+        .pre-processing-text.bold Pre-processing for {{columnNames[index]}}
+        .popup-close(@click="onCancel")
+          svg(width="8" height="8" viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg")
+            path(fill-rule="evenodd" clip-rule="evenodd" d="M0.165255 0.165255C0.217507 0.112872 0.279579 0.0713107 0.347917 0.0429534C0.416256 0.0145962 0.489517 0 0.563505 0C0.637493 0 0.710755 0.0145962 0.779093 0.0429534C0.847431 0.0713107 0.909504 0.112872 0.961755 0.165255L3.93851 3.14313L6.91526 0.165255C6.96755 0.112956 7.02964 0.0714704 7.09797 0.0431664C7.16631 0.0148624 7.23954 0.000294507 7.31351 0.000294507C7.38747 0.000294507 7.4607 0.0148624 7.52904 0.0431664C7.59737 0.0714704 7.65946 0.112956 7.71176 0.165255C7.76405 0.217554 7.80554 0.279642 7.83384 0.347974C7.86215 0.416306 7.87672 0.489543 7.87672 0.563505C7.87672 0.637467 7.86215 0.710705 7.83384 0.779037C7.80554 0.847369 7.76405 0.909456 7.71176 0.961755L4.73388 3.93851L7.71176 6.91526C7.76405 6.96755 7.80554 7.02964 7.83384 7.09797C7.86215 7.16631 7.87672 7.23954 7.87672 7.31351C7.87672 7.38747 7.86215 7.4607 7.83384 7.52904C7.80554 7.59737 7.76405 7.65946 7.71176 7.71176C7.65946 7.76405 7.59737 7.80554 7.52904 7.83384C7.4607 7.86215 7.38747 7.87672 7.31351 7.87672C7.23954 7.87672 7.16631 7.86215 7.09797 7.83384C7.02964 7.80554 6.96755 7.76405 6.91526 7.71176L3.93851 4.73388L0.961755 7.71176C0.909456 7.76405 0.847369 7.80554 0.779037 7.83384C0.710705 7.86215 0.637467 7.87672 0.563505 7.87672C0.489543 7.87672 0.416306 7.86215 0.347974 7.83384C0.279642 7.80554 0.217554 7.76405 0.165255 7.71176C0.112956 7.65946 0.0714704 7.59737 0.0431664 7.52904C0.0148624 7.4607 0.000294507 7.38747 0.000294507 7.31351C0.000294507 7.23954 0.0148624 7.16631 0.0431664 7.09797C0.0714704 7.02964 0.112956 6.96755 0.165255 6.91526L3.14313 3.93851L0.165255 0.961755C0.112872 0.909504 0.0713107 0.847431 0.0429534 0.779093C0.0145962 0.710755 0 0.637493 0 0.563505C0 0.489517 0.0145962 0.416256 0.0429534 0.347917C0.0713107 0.279579 0.112872 0.217507 0.165255 0.165255Z")
+
       perfect-scrollbar
-        h4.pre-processing-text Pre-processing for {{columnNames[index]}}
         .main-content
           div.mb-20
-            base-checkbox(
+            base-checkbox.bold.size-16(
               v-if="showIfTypeIs(['image', 'numerical'])"
               v-model="options.normalize.value"
-              :styleTypeSecondary="true"
               ) Normalize
             div.mt-10(
               v-if="options.normalize.value"
@@ -22,9 +26,9 @@
                 span Min Max
           template(v-if="showIfTypeIs(['image', 'mask'])")
             div.mb-20
-              base-checkbox(
-                v-model="options.random_flip.value" :styleTypeSecondary="true") Random Flip
-              div.mt-10(
+              base-checkbox.bold.size-16(
+                v-model="options.random_flip.value") Random Flip
+              div.mt-10.settings-layer_section(
                 v-if="options.random_flip.value"
                 class="image-random-option-select d-flex flex-column")
                 base-radio.mb-5(:group-name="'randomFlipTypeGroup' + elementIndex" value-input="vertical" v-model="options.random_flip.mode")
@@ -33,12 +37,12 @@
                   span Horizontal
                 base-radio.mb-5(:group-name="'randomFlipTypeGroup' + elementIndex" value-input="both" v-model="options.random_flip.mode")
                   span Both
-                .d-flex.align-items-center
-                  label.form_label.mr-10.input-label Seed:
-                  input.form_input.w-150(type="text" v-model="options.random_flip.seed")
+                .form_row
+                  label.form_label Seed:
+                  input.form_input(type="text" v-model="options.random_flip.seed")
             div.mb-20
-              base-checkbox(
-                v-model="options.resize.value" :styleTypeSecondary="true") Resize
+              base-checkbox.bold.size-16(
+                v-model="options.resize.value") Resize
               div.pl-20.mt-10(v-if="options.resize.value")
                 div.d-flex.flex-column
                   base-radio.mb-5(:group-name="'resizeType' + elementIndex" value-input="automatic" v-model="options.resize.mode")
@@ -54,19 +58,18 @@
                       span Dataset min
                   base-radio.mb-5(:group-name="'resizeType' + elementIndex" value-input="custom" v-model="options.resize.mode")
                     span Custom
-                  div.pl-20.d-flex.flex-column(v-if="options.resize.mode === 'custom'")
-                    .d-flex.align-items-center.mb-10
-                      label.form_label.mr-10.input-label Width:
-                      input.form_input.w-150.text-left(type="number" min="1" v-model="options.resize.width")
-                    .d-flex.align-items-center
-                      label.form_label.mr-10.input-label Height:
-                      input.form_input.w-150.text-left(type="number" min="1" v-model="options.resize.height")
+                  div.settings-layer_section.pl-20.d-flex.flex-column(v-if="options.resize.mode === 'custom'")
+                    .form_row
+                      label.form_label Width:
+                      input.form_input(type="number" min="1" v-model="options.resize.width")
+                    .form_row
+                      label.form_label Height:
+                      input.form_input(type="number" min="1" v-model="options.resize.height")
             div.mb-20
-              base-checkbox(
-                :styleTypeSecondary="true"
+              base-checkbox.bold.size-16(
                 v-model="options.random_rotation.value"
               ) Random rotation
-              div.mt-10(class="pl-20 d-flex flex-column" v-if="options.random_rotation.value")
+              div.settings-layer_section.mt-10(class="pl-20 d-flex flex-column" v-if="options.random_rotation.value")
                 base-radio.mb-5(:group-name="'randomRotationTypeGroup' + elementIndex" value-input="reflect" v-model="options.random_rotation.fill_mode")
                   span Reflect
                 base-radio.mb-5(:group-name="'randomRotationTypeGroup' + elementIndex" value-input="constant" v-model="options.random_rotation.fill_mode")
@@ -75,35 +78,34 @@
                   span Wrap
                 base-radio.mb-5(:group-name="'randomRotationTypeGroup' + elementIndex" value-input="nearest" v-model="options.random_rotation.fill_mode")
                   span Nearest
-                .d-flex.align-items-center.mb-10(v-if="options.random_rotation.fill_mode === 'constant'")
-                  label.form_label.mr-10.input-label Fill:
-                  input.form_input.w-150.text-left(type="number" v-model="options.random_rotation.fill_value")
+                .form_row(v-if="options.random_rotation.fill_mode === 'constant'")
+                  label.form_label Fill:
+                  input.form_input(type="number" v-model="options.random_rotation.fill_value")
     
-                .d-flex.align-items-center.mb-10
-                  label.form_label.mr-10.input-label Factor:
-                  input.form_input.w-150.text-left(type="number" v-model="options.random_rotation.factor")
-                .d-flex.align-items-center.mb-10
-                  label.form_label.mr-10.input-label Seed:
-                  input.form_input.w-150.text-left(type="number" v-model="options.random_rotation.seed")
+                .form_row
+                  label.form_label Factor:
+                  input.form_input(type="number" v-model="options.random_rotation.factor")
+                .form_row
+                  label.form_label Seed:
+                  input.form_input(type="number" v-model="options.random_rotation.seed")
             div.mb-20
-              base-checkbox(
-                :styleTypeSecondary="true"
+              base-checkbox.bold.size-16(
                 v-model="options.random_crop.value"
               ) Random Crop
-              div.mt-10.pl-25(
+              div.settings-layer_section.mt-10.pl-25(
                 v-if="options.random_crop.value"
               )
-                .d-flex.align-items-center.mb-10
-                  label.form_label.mr-10.input-label Seed:
+                .form_row
+                  label.form_label Seed:
                   input.form_input.w-150(type="text" v-model="options.random_crop.seed")
-                .d-flex.align-items-center.mb-10
-                  label.form_label.mr-10.input-label Width:
+                .form_row
+                  label.form_label Width:
                   input.form_input.w-150.text-left(type="number" min="1" v-model="options.random_crop.width")
-                .d-flex.align-items-center.mb-10
-                  label.form_label.mr-10.input-label Height:
+                .form_row
+                  label.form_label Height:
                   input.form_input.w-150.text-left(type="number" min="1" v-model="options.random_crop.height")
-      footer.d-flex.justify-content-end
-        button.btn.btn-menu-bar.mr-10(
+      footer.d-flex.justify-content-between
+        button.btn.btn--secondary(
           @click="onCancel"
         ) Cancel
         button.btn.btn--primary(
@@ -260,6 +262,7 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
+
 header {
   &.is-open {
     main {
@@ -275,27 +278,22 @@ main {
   display: none;
   position: absolute;
   right: 0;
-  background: linear-gradient(180deg, #363E51 0%, #000000 225%);
-  border-left: 1px solid rgba(97, 133, 238, 0.4);
-  border-bottom: 1px solid rgba(97, 133, 238, 0.4);
   top: 0;
   z-index: 10;
-  margin-top: 65px;
-  height: calc(100% - 65px);
+  // margin-top: 65px;
+  // height: calc(100% - 65px);
+  height: 100%;
   width: 350px;
+  background: theme-var($neutral-8);
+  border-radius: 0 15px 15px 0;
 }
 .main-content {
-  padding: 20px;
+  padding: 30px 25px 25px;
 }
 
 footer {
   margin-top: auto;
-  padding: 40px 50px;
-  .btn {
-    min-width: auto;
-    width: 51px;
-    height: 25px;
-  }
+  padding: 20px;
 }
 .custom-radio {
   padding: 0 !important;
@@ -303,37 +301,51 @@ footer {
 .image-random-option-select {
   padding-left: 20px;
 }
-.input-label {
-  font-family: 'Roboto', sans-serif;
-  font-size: 14px;
-  color: #E1E1E1;
-  width: 50px;
+.form_label {
+  font-size: 16px;
 }
-.form_input {
-  background: #222736;
-  border-radius: 2px;
-  border: 1px solid #5E6F9F;
-  height: 36px;
-  font-family: Roboto, 'sans-serif';
-  font-size: 14px;
-  line-height: 16px;
-  letter-spacing: 0.02em;
-  color: #E1E1E1;
-  padding-left: 10px;
-  transition: 0.3s;
-  &:focus {
-    border: 1px solid #B6C7FB;
+
+.settings-layer_section {
+  // padding: $popup-indent-top/2 $popup-indent-left;
+
+	> .form_row {
+		.form_label {
+			flex: 0 0 30%;
+			max-width: 30%;
+		}
+    
+    .form_input {
+      max-width: 70%;
+    }
   }
 }
+// .form_input {
+//   background: #222736;
+//   border-radius: 2px;
+//   border: 1px solid #5E6F9F;
+//   height: 36px;
+//   font-family: Roboto, 'sans-serif';
+//   font-size: 14px;
+//   line-height: 16px;
+//   letter-spacing: 0.02em;
+//   color: #E1E1E1;
+//   padding-left: 10px;
+//   transition: 0.3s;
+//   &:focus {
+//     border: 1px solid #B6C7FB;
+//   }
+// }
+.header {
+  padding: 25px;
+  background: theme-var($neutral-7);
+  border: $border-1; 
+  border-radius: 0 15px 0 0;
+}
 .pre-processing-text {
-  padding: 20px;
   font-family: Roboto, 'sans-serif';
   font-weight: 500;
-  font-size: 14px;
-  line-height: 16px;
-  color: #B6C7FB;
-  border-bottom: 1px solid #5E6F9F;
-  
+  font-size: 16px;
+  line-height: 19px;
 }
 .pl-20 {
   padding-left: 20px;
@@ -365,13 +377,23 @@ footer {
 .overlay {
   display: none;
   position: absolute;
-  top: 65px;
-  right: 350px;
+  // top: 65px;
+  // right: 350px;
+  top: 0px;
+  right: 0px;
   bottom: 0;
   left: 0;
   background: #000000;
   mix-blend-mode: multiply;
   opacity: 0.3;
   z-index: 2;
+  border-radius: 15px;
+}
+.size-16 {
+  font-size: 16px;
+  white-space: nowrap;
+}
+input[type='number'] {
+  text-align: left;
 }
 </style>

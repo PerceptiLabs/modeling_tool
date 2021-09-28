@@ -4,6 +4,8 @@
 
 <script>
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
+import { mapState } from 'vuex';
+import { THEME_DARK } from '@/core/constants.js';
 
 export default {
   name: 'CodeEditor',
@@ -27,6 +29,11 @@ export default {
       default: true
     },
   },
+  computed: {
+    ...mapState({
+      theme:                      state => state.globalView.theme
+    }),
+  },
   data() {
     return {
       editorInstance: null,
@@ -38,7 +45,7 @@ export default {
       this.editorInstance = monaco.editor.create(this.$refs['code-editor'], {
         value: '',
         language: 'python',
-        theme: 'vs-dark',
+        theme: this.theme === THEME_DARK ? 'vs-dark' : 'vs-light',
         readOnly: this.readOnly,
         scrollBeyondLastLine: this.scrollBeyondLastLine,
         scrollbar: {
@@ -142,6 +149,11 @@ export default {
 
       },
       immediate: true
+    },
+    theme: {
+      handler(value) {
+        monaco.editor.setTheme(value === THEME_DARK ? 'vs-dark' : 'vs-light')
+      }
     }
   }
 }
@@ -150,11 +162,11 @@ export default {
 <style lang="scss" scoped>
 .editor {
   position: relative;
-  width: calc(100% - 2rem);
+  width: calc(100% - 4rem);
   height: 100%;
 
   box-sizing: border-box;
-  background: #1E1E1E;
+  background: theme-var($neutral-8);
 
   margin: 1rem;
 }

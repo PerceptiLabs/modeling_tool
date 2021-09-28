@@ -1,7 +1,7 @@
 <template lang="pug">
   .page(ref="layersbar")
     the-workspace.workspace
-    the-sidebar(v-if="getViewMode==='model' && getEmptyScreenMode===0")
+    // the-sidebar(v-if="getViewMode==='model' && getEmptyScreenMode===0")
 
 </template>
 
@@ -128,12 +128,14 @@
 </script>
 
 <style lang="scss" scoped>
-  @import "../../scss/base";
+  
   .page {
     background-color: $bg-window;
 
     display: flex;
-    max-width: calc(100vw - 46px);
+    max-width: calc(100vw -  #{$w-sidemenu});
+
+    // border-radius: 15px 0 0 0;
     
     /deep/ .wrapper {
       position: static;

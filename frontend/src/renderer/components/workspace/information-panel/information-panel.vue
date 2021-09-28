@@ -2,15 +2,19 @@
   .information-panel-container
     .information-panel-header
       div.information-panel-header-wrapper
-        .information-panel-header-tab(
-          :class="{'is-active': getNotificationWindowSelectedTab === 'ErrorInfoPanel'}"
+        .btn.btn--small(
+          @click="onTabClick('ErrorInfoPanel')"
+          :class="getNotificationWindowSelectedTab === 'ErrorInfoPanel' ? 'btn--primary' : 'btn--secondary'"
+          :style={marginRight: '20px', fontSize: '14px'}
         )
-          span(@click="onTabClick('ErrorInfoPanel')") Errors
+          span Problems
           span.count-label {{workspaceErrors}}
-        .information-panel-header-tab(
-          :class="{'is-active': getNotificationWindowSelectedTab === 'ConsoleInfoPanel'}"
+        .btn.btn--small(
+          @click="onTabClick('ConsoleInfoPanel')"
+          :class="getNotificationWindowSelectedTab === 'ConsoleInfoPanel' ? 'btn--primary' : 'btn--secondary'"
+          :style={fontSize: '14px'}
         )
-          span(@click="onTabClick('ConsoleInfoPanel')") Console
+          span() Console
       div 
         error-cta.small(v-if="workspaceErrors")
         i(
@@ -69,11 +73,11 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
-  @import "../../../scss/base";
   
-  $information-panel-header-height: 2rem;
+  
+  $information-panel-header-height: 30px;
 
-  $information-panel-height: 30%;
+  $information-panel-height: 40%;
   $information-panel-width: 70rem;
 
   $information-panel-font-size: 1.2rem;
@@ -83,6 +87,9 @@ export default {
     width: 0.8rem;
   }
 
+  .icon-app-minimize {
+    color: $color-6;
+  }
   .clickable-icon {
     cursor: pointer;
   }
@@ -94,20 +101,22 @@ export default {
     width: $information-panel-width;
     z-index: 6;
 
-    background: #1E1E1E;
+    background: theme-var($neutral-8);
 
-    border: 1px solid #475D9C;
+    border: $border-1;
+    border-radius: 4px;
     box-sizing: border-box;
 
     right: 0;
     bottom: 0;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
 
     overflow: hidden;
   }
 
   .information-panel-header {
-    // background: #3F4C70;
-    border-bottom: 1px solid #475D9C;
+    background: theme-var($neutral-7);
+    border-bottom: $border-1;
 
     display: flex;
     align-items: center;
@@ -134,29 +143,6 @@ export default {
         margin-right: 1rem;
       }
     }
-
-    .information-panel-header-tab {
-      cursor: pointer;
-      position: relative;
-      color: #C4C4C4;
-      & + .information-panel-header-tab {
-        margin-left: 2rem;
-      }
-      &.is-active {
-        color: #fff;
-        font-weight: bold;
-        &:after {
-          content: '';
-          position: absolute;
-          width: 100%;
-          height: 1px;
-          background-color: #fff;
-          bottom: -3.5px;
-          left: 0;
-          font-size: 9px;
-        }
-      }
-    }
   }
 
   .perfect-scrollbar-padding-container {
@@ -165,16 +151,19 @@ export default {
   }
   .count-label {
     display: inline-block;
-    width: 14px;
-    height: 14px;
-    background-color: #363E51;
+    width: 25px;
+    height: 25px;
+    background-color: #D9E2FF;
+    border: 1px solid $color-6;
     margin-left: 3px;
     border-radius: 50%;
     text-align: center;
-    font-size: 9px;
-    line-height: 14px;
+    color: $color-6;
+    font-size: 14px;
+    line-height: 25px;
   }
   .information-panel-header-wrapper {
     padding: 10px;
+    display: none;
   }
 </style>

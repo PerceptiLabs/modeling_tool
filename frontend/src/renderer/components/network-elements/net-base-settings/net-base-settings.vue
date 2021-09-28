@@ -121,7 +121,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  @import "../../../scss/base";
+  
   .popup {
     min-width: 29rem;
     box-shadow: $layer-shad;

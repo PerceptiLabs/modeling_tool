@@ -28,7 +28,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  @import "../../scss/base";
+  
   .layer-item-color-block {
     width: 8px;
     height: 8px;

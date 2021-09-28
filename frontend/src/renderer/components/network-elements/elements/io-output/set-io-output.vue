@@ -266,7 +266,7 @@
   }
 </script>
 <style lang="scss" scoped>
-  @import "../../../../scss/base";
+  
 
   .section-data-select {
     font-size: 1.4rem;

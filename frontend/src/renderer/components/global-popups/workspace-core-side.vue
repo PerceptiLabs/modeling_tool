@@ -1,11 +1,10 @@
 <template lang="pug">
   .popup-global
     .popup-global_overlay(@click="cancelTraining()")
-    section.popup
+    section.popup.popup-small
       .popup-background
-        .popup_tab-set
-          .popup_header.disable
-            h3 Resume training?
+        h1.popup-title.bold(class="text-center") Resume training?
+        
         .popup_tab-body
           .popup_body(
             :class="{'active': tabSelected == 0}"
@@ -73,7 +72,7 @@ export default {
       setViewType:              'mod_workspace/setViewType',
       setCurrentView:           'mod_tutorials/setCurrentView',
       setChecklistItemComplete: 'mod_tutorials/setChecklistItemComplete',
-    }),
+    }),    
     closePopup() {
       this.GP_showCoreSideSettings(false);
     },

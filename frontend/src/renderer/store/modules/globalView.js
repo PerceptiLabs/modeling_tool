@@ -1,5 +1,8 @@
 const namespaced = true;
-import { localStorageGridKey } from '@/core/constants.js';
+import { localStorageGridKey, localStorageThemeKey, THEME_LIGHT } from '@/core/constants.js';
+
+const savedTheme = localStorage.getItem(localStorageThemeKey)
+
 const state = {
   onlineStatus: true,
   hideLayers: true,
@@ -29,6 +32,7 @@ const state = {
     showCreateIssuesPopup: false,
     showAppAbout: false,
     showDatasetSettingsPopup: false,
+    showAddCardPopup: false,
     showGlobalTrainingSettingsPopup: {
       isOpen: false,
       cb: () => null,
@@ -42,6 +46,7 @@ const state = {
   isMiniMapNavigatorOpened: false,
   isEnterpriseApp: false,
   shouldCloseAllGlobalPopups: false,
+  theme: savedTheme ? savedTheme : THEME_LIGHT // 'light' or 'dark'
 };
 const getters = {
   GET_appPath(state) {
@@ -117,6 +122,9 @@ const mutations = {
   set_createIssuesPopup(state, value) {
     state.globalPopup.showCreateIssuesPopup = value;
   },
+  set_addCardPopup(state, value) {
+    state.globalPopup.showAddCardPopup = value;
+  },
   gp_confirmPopup(state, value) {
     state.globalPopup.showConfirmPopup = value.text;
     state.popupConfirmCancel = value.cancel;
@@ -168,6 +176,10 @@ const mutations = {
   },
   set_isEnterpriseApp(state, isEnterpriseAppValue) {
     state.isEnterpriseApp = isEnterpriseAppValue;
+  },  
+  set_theme(state, value) {    
+    localStorage.setItem(localStorageThemeKey, value);
+    state.theme = value;
   }
 };
 
@@ -211,6 +223,9 @@ const actions = {
   },
   SET_createIssuesPopup({commit}, value) {
     commit('set_createIssuesPopup', value);
+  },  
+  SET_addCardPopup({commit}, value) {
+    commit('set_addCardPopup', value);
   },  
   GP_confirmPopup({commit}, value) {
     commit('gp_confirmPopup', value);

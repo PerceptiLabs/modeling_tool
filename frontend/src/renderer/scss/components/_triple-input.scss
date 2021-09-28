@@ -10,19 +10,18 @@
   width: 100px;
   padding-right: 30px;
   padding-left: .15em;
-  border: 1px solid #4D556A;
-  
-  .darken & {
-    background-color: #191D27;
-    border: 1px solid #5E6F9F;
-  }
+  border: $border-1;
+  border-radius: 4px;
 }
 .triple-input_separate {
   // margin: 0 .5em;
   right: 0;
   top: 0;
   width: 30px;
-  border-left: 1px solid #4D556A;
+  color: theme-var($neutral-1);
+  border: 1px solid theme-var($border-color);;
+  border-radius: 0 4px 4px 0;
+  background: theme-var($neutral-6);
   text-align: center;
   height: 100%;
   position: absolute;
@@ -33,9 +32,6 @@
   pointer-events: none;
   &:last-child {
     margin-right: 0;
-  }
-  .darken & {
-    border-color: #5E6F9F;
   }
 }
 .labels {

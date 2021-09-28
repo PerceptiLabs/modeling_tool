@@ -1,12 +1,16 @@
 <template lang="pug">
-  base-global-popup(:tab-set="popupTitle" @closePopup="closePopup")
+  base-global-popup(
+    :title="popupTitle"
+    title-align="text-center"
+     @closePopup="closePopup"
+  )
     template(slot="Export-content")
       .settings-layer_section
         .form_holder
           .form_label Path:
-          .form_row
+          .form_row.input_group
             input.form_input(type="text" v-model="settings.Location" readonly)
-            button.btn.btn--dark-blue-rev(type="button" @click="saveLoadFile") Browse
+            button.btn.btn--primary(type="button" @click="saveLoadFile") Browse
         .form_holder
           .form_label Export as:
           .form_row
@@ -44,7 +48,7 @@ export default {
   components: {BaseGlobalPopup},
   data() {
     return {
-      popupTitle: ['Export'],
+      popupTitle: 'Export',
       selectOptions: [
         { text: 'TensorFlow Model',         value: 'TFModel' },
         { text: 'Jupyter Notebook (ipynb)', value: 'ipynb' }
@@ -119,7 +123,6 @@ export default {
         };
         await this.$store.dispatch('mod_api/API_exportData', payload);
         this.$store.dispatch('globalView/GP_infoPopup', 'Exported with success.')
-        
       }
     },
     getSettingExportType(settings) {

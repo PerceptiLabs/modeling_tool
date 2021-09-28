@@ -82,6 +82,7 @@ const state = {
   showModelPreviews: localStorage.hasOwnProperty(LOCAL_STORAGE_WORKSPACE_SHOW_MODEL_PREVIEWS) ? localStorage.getItem(LOCAL_STORAGE_WORKSPACE_SHOW_MODEL_PREVIEWS) === 'true' : true,
   fetchedPreviewsNetworksIds: [],
   copyOrCutNetworkSnapshot: [],
+  showComponents: false
 };
 
 const getters = {
@@ -415,6 +416,9 @@ const getters = {
     })
     return componentsTabs;
   },
+  GET_showComponents() {    
+    return state.showComponents;
+  }
 };
 
 const mutations = {
@@ -1909,6 +1913,9 @@ const mutations = {
   },
   setModelRunSettingsMutation(state, {name, value, currentNetwork}) {
     currentNetwork.networkMeta.trainingSettings[name] = value;
+  },
+  setShowComponentsMutation(state, value) {
+    state.showComponents = value;
   }
 };
 

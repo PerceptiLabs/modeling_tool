@@ -15,12 +15,12 @@ h6,
 .h {
 	font-weight: normal;
 	color: inherit;
-	margin: 0 0 .5em;
+	margin: 0;
 }
 
 h1,
 .h1 {
-	font-size: 1.75rem;
+	font-size: 2rem;
 }
 
 h2,
@@ -31,13 +31,13 @@ h2,
 h3,
 .h3,
 .big-text {
-	font-size: 1.4rem;
+	font-size: 1.8rem;
 }
 
 h4,
 .h4,
 .middle-text {
-	font-size: 1.2rem;
+	font-size: 1.6rem;
 }
 
 h5,
@@ -67,6 +67,32 @@ a {
 	}
 }
 
+.bold {
+	font-weight: bold;
+	color: $color-bold;
+	fill: $color-bold;
+}
+
+.normal {
+	font-weight: 400;
+	color: theme-var($text-normal);
+}
+
+.black {
+	color: $black;
+}
+
+.white {
+	color: $white;
+}
+
+.text-center {
+	text-align: center;
+}
+
+.text-right {
+	text-align: right;
+}
 //a,
 //button,
 //img {
@@ -77,3 +103,7 @@ a {
 //		}
 //	}
 //}
+
+h1 {
+	line-height: 2.8rem;
+}

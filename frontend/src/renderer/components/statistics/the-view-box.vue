@@ -125,7 +125,7 @@ export default {
 </script>
 
 <style lang="scss">
-  @import "../../scss/base";
+  
   .open-statistic .the-view-box .info-section_main {
     padding-left: 0;
   }

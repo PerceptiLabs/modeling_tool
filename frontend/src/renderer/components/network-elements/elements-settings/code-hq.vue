@@ -228,7 +228,7 @@
   }
 </script>
 <style lang="scss">
-  @import "../../../scss/base";
+  
   @import "../../../scss/components/vscode-theme-dark_plus";
   @import "~codemirror/lib/codemirror.css";
   

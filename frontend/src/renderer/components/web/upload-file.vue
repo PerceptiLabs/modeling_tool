@@ -57,7 +57,7 @@
 </script>
 
 <style lang="scss" scoped>
-  @import "../../scss/base";
+  
   .upload-file {
     margin-bottom: 1rem;
   }

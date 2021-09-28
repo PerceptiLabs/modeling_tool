@@ -15,7 +15,7 @@
       :styleType="['network-view']"
       )
     .layerTitle(v-if="showTitle") {{ displayTitle }}
-    i.icon.icon-lock(v-if="isDataWizardEnabled")
+    img.icon-lock(src="../../../../../../static/img/lock2.svg" v-if="isDataWizardEnabled")
 </template>
 
 <script>
@@ -47,8 +47,19 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
+.btn--layersbar .icon-lock {
+  text-shadow: none;
+}
 .icon-lock {
-  opacity: 0.3;
-  margin-left: 3px;
+  // opacity: 0.7;
+  margin-left: 8px;
+
+  .dark-theme & {
+    filter: invert(80%);
+  }  
+  
+  .net-element--active & {
+    filter: none;
+  }
 }
 </style>
