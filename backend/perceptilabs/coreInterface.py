@@ -1,22 +1,13 @@
-import json
 import queue
 import numpy as np
 import time
 import psutil
-import shutil
-import copy
-import traceback
 import os
-import threading
 import pprint
 import logging
-import skimage
 import GPUtil
 import collections
 import math
-import sys
-import tensorflow as tf
-from typing import List
 
 
 from perceptilabs.resources.models import ModelAccess
@@ -24,29 +15,22 @@ from perceptilabs.resources.epochs import EpochsAccess
 from perceptilabs.core_new.compatibility import CompatibilityCore
 from perceptilabs.script import ScriptFactory
 from perceptilabs.logconf import APPLICATION_LOGGER, USER_LOGGER
-from perceptilabs.networkExporter import exportNetwork
-from perceptilabs.networkSaver import saveNetwork
-import perceptilabs.utils as utils
-from perceptilabs.core_new.errors import CoreErrorHandler
 from perceptilabs.CoreThread import CoreThread
 from perceptilabs.createDataObject import createDataObject
-from perceptilabs.messaging import MessageProducer
 from perceptilabs.license_checker import LicenseV2
 from perceptilabs.trainer import Trainer, TrainingModel
-from perceptilabs.automation.modelrecommender.base import ModelRecommender
-from perceptilabs.data.base import DataLoader, FeatureSpec
-
+from perceptilabs.data.base import DataLoader
 from perceptilabs.data.settings import DatasetSettings
 from perceptilabs.exporter.base import Exporter
 from perceptilabs.caching.utils import get_data_metadata_cache
+import perceptilabs.utils as utils
+
 
 logger = logging.getLogger(APPLICATION_LOGGER)
 user_logger = logging.getLogger(USER_LOGGER)
 
+
 CoreCommand = collections.namedtuple('CoreCommand', ['type', 'parameters', 'allow_override'])
-
-
-CPU_GPU_POLICY = 'force-gpu' # {'use-spec', 'force-gpu', 'force-cpu'}
 
 
 class coreLogic():
@@ -123,25 +107,6 @@ class coreLogic():
 
         return True
 
-    def _override_graph_spec(self, graph_spec):
-        """ Returns a new GraphSpec with certain settings modified """
-        gpus = self.gpu_list()
-        distributed = self.isDistributable(gpus)
-
-        assert CPU_GPU_POLICY in {'use-spec', 'force-gpu', 'force-cpu'}
-
-        network = graph_spec.to_dict()
-        for _id, layer in network.items():
-            if 'Train' in layer['Type']:
-                if CPU_GPU_POLICY == 'force-cpu':
-                    layer['Properties']['Use_CPU'] = True
-                if CPU_GPU_POLICY == 'force-gpu':
-                    layer['Properties']['Use_CPU'] = False
-
-            if layer['Type'] == 'TrainNormal':
-                layer['Properties']['Distributed'] = distributed
-
-        return graph_spec.from_dict(network)
 
     @property
     def running_mode(self):
@@ -182,7 +147,7 @@ class coreLogic():
             data_loader,
             exporter.training_model,
             training_settings,
-            checkpoint_directory=os.path.dirname(exporter.checkpoint_file),
+            checkpoint_directory=os.path.dirname(checkpoint_path),
             exporter=exporter,
             model_id=model_id,
             user_email=user_email,
@@ -256,15 +221,6 @@ class coreLogic():
         except:
             pass
         self.setupLogic()
-
-        logger.debug('printing network .......\n')
-
-        if logger.isEnabledFor(logging.DEBUG) and os.access(os.getcwd(), os.W_OK):
-            import json
-            with open('net.json_', 'w') as f:
-                json.dump(graph_spec.to_dict(), f, indent=4)
-
-        graph_spec = self._override_graph_spec(graph_spec)
 
         script_factory = ScriptFactory(
             simple_message_bus=True,

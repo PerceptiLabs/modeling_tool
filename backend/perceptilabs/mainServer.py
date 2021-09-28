@@ -76,10 +76,11 @@ def main():
         
         cores=dict()
         testcore=None
-        dataDict=dict()
-        lwDict=dict()
         
-        core_interface = Interface(cores, testcore, dataDict, lwDict, issue_handler, session_id=session_id, allow_headless=args.allow_headless)
+        core_interface = Interface(
+            cores, testcore, issue_handler,
+            session_id=session_id, allow_headless=args.allow_headless
+        )
     
         from perceptilabs.memorywatcher import MemoryWatcher
         memory_watcher = MemoryWatcher(issue_handler=issue_handler, core_interfaces=cores)

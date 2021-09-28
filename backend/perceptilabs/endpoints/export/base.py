@@ -20,9 +20,10 @@ logger = logging.getLogger(APPLICATION_LOGGER)
 class Export(BaseView):
     script_factory = ScriptFactory()
 
-    def __init__(self, data_metadata_cache=None):
+    def __init__(self, model_access, epochs_access, data_metadata_cache=None):
         self._data_metadata_cache = data_metadata_cache
-        self._epochs_access = EpochsAccess()  # TODO: inject
+        self._model_access = model_access
+        self._epochs_access = epochs_access
 
     def dispatch_request(self):
         """ Renders the code for a layer """
@@ -36,7 +37,9 @@ class Export(BaseView):
 
         try:
             export_settings = json_data['exportSettings']
-            graph_spec = GraphSpec.from_dict(json_data['network'])
+            graph_spec = self._model_access.get_graph_spec(
+                model_id=json_data['network']) #TODO: F/E should send an ID
+            
             data_loader = self._get_data_loader(
                 json_data['datasetSettings'], json_data.get('userEmail'))
 
@@ -53,8 +56,10 @@ class Export(BaseView):
                 training_session_id=checkpoint_directory,
                 epoch_id=epoch_id
             )
-            training_model = ModelAccess(self.script_factory).get_training_model(
-                graph_spec, checkpoint_path=checkpoint_path)
+            training_model = self._model_access.get_training_model(
+                graph_spec.to_dict(),  # TODO. f/e should send an ID
+                checkpoint_path=checkpoint_path
+            )
             
             exporter = Exporter(
                 graph_spec, training_model, data_loader, model_id=model_id, user_email=user_email)

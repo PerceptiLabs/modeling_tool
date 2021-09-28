@@ -131,8 +131,10 @@ class GradioLauncher:
             training_session_id=checkpoint_directory, epoch_id=epoch_id)  # TODO: F/E should send ID
 
         model = self._model_access \
-            .get_training_model(model_id=graph_spec, checkpoint_path=checkpoint_path) \
-            .as_inference_model(data_loader, include_preprocessing=True)
+            .get_training_model(
+                model_id=graph_spec.to_dict(),  # TODO: frontend should send a model ID
+                checkpoint_path=checkpoint_path
+            ).as_inference_model(data_loader, include_preprocessing=True)
 
         return model
         
@@ -174,10 +176,10 @@ class GradioLauncher:
     
 class GradioSession(Session):
     def __init__(self):
-        script_factory = ScriptFactory()
-
+        self._model_access = ModelAccess(ScriptFactory())
+        
         self._launcher = GradioLauncher(
-            ModelAccess(script_factory),
+            self._model_access,
             EpochsAccess()
         )
     
@@ -189,7 +191,7 @@ class GradioSession(Session):
             return self._launcher.get_url()
 
     def on_start_called(self, payload, is_retry):
-        graph_spec = GraphSpec.from_dict(payload['network'])
+        graph_spec = self._model_access.get_graph_spec(payload['network'])  # TODO: F/E should send ID
         checkpoint_directory = payload['checkpointDirectory']
         user_email = payload['userEmail']
         model_name = payload['modelName']                

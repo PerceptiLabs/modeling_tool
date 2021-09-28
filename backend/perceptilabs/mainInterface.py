@@ -1,105 +1,41 @@
 import sys
-import os
 import logging
 import pprint
-import time
-import json
-import threading
 from sentry_sdk import configure_scope
-from concurrent.futures import ThreadPoolExecutor
 
-import perceptilabs.tracking as tracking
 
-#core interface
-from perceptilabs.extractVariables import extractCheckpointInfo
 from perceptilabs.coreInterface import coreLogic
-
-from perceptilabs.graph.spec import GraphSpec
 from perceptilabs.utils import stringify
-from perceptilabs.core_new.errors import LightweightErrorHandler
-from perceptilabs.core_new.extras import LayerExtrasReader
 from perceptilabs.logconf import APPLICATION_LOGGER, set_user_email
-from perceptilabs.lwcore import LightweightCore
-from perceptilabs.caching.lightweight_cache import LightweightCache
-import perceptilabs.utils as utils
-import perceptilabs.dataevents as dataevents
-from perceptilabs.messaging.zmq_wrapper import ZmqMessagingFactory, ZmqMessageConsumer
-from perceptilabs.messaging import MessageConsumer, MessagingFactory
-
-import perceptilabs.logconf
-import perceptilabs.automation.autosettings.utils as autosettings_utils
-import perceptilabs.automation.utils as automation_utils
 from perceptilabs.caching.utils import get_data_metadata_cache
-from perceptilabs.data.base import FeatureSpec, DataLoader
+from perceptilabs.data.base import DataLoader
 from perceptilabs.data.settings import DatasetSettings
-from perceptilabs.script import ScriptFactory
 from perceptilabs.testInterface import TestLogic
+from perceptilabs.script import ScriptFactory
+from perceptilabs.resources.models import ModelAccess
+from perceptilabs.testInterface import TestLogic
+import perceptilabs.utils as utils
 
 
 logger = logging.getLogger(APPLICATION_LOGGER)
 
 
-USE_AUTO_SETTINGS = False  # TODO: enable for TF2 (story 1561)
-USE_LW_CACHING = True
-LW_CACHE_MAX_ITEMS = 25
-
-
-class NetworkLoader:
-    def __init__(self):
-        self._visited_layers = set()
-
-    def load(self, json_network, as_spec=False, layers_only=True):
-        """ to load the json network in a single location for easy debugging """
-        network = json_network.copy()
-        if (layers_only or as_spec):
-            if 'Layers' in network:
-                network = network['Layers']
-            elif 'layers' in network:
-                network = network['layers']
-
-        self._track_visits(network)
-
-        if as_spec:
-            network = GraphSpec.from_dict(network)
-
-        if logger.isEnabledFor(logging.DEBUG):
-            logger.debug("loading json network:" + pprint.pformat(network))
-
-        return network
-
-    def _track_visits(self, network):
-        """ Sanity check to ensure we haven't gone from visited to not visited. """
-        reverted_visits = set()
-        for id_ in network:
-            if 'visited' not in network[id_]:
-                continue
-
-            if network[id_]['visited']:
-                self._visited_layers.add(id_)
-            elif id_ in self._visited_layers:
-                reverted_visits.add(id_)
-
-        if reverted_visits:
-            logger.warning(f"Layers {','.join(reverted_visits)} changed from visited to not visited")
-
-
 class Interface():
-    def __init__(self, cores, testcore, dataDict, lwDict, issue_handler, message_factory=None, session_id='default', allow_headless=False):
+    def __init__(self, cores, testcore, issue_handler, message_factory=None, session_id='default', allow_headless=False):
         self._allow_headless = allow_headless
-        self._network_loader = NetworkLoader()
         self._cores=cores
         self._testcore = testcore
-        self._dataDict=dataDict
-        self._lwDict=lwDict
         self._issue_handler = issue_handler
         self._session_id = session_id
-        self._lw_cache_v2 = LightweightCache(max_size=LW_CACHE_MAX_ITEMS) if USE_LW_CACHING else None
+        
         self._settings_engine = None
         self._data_metadata_cache = get_data_metadata_cache().for_compound_keys()
 
         self._mode = 'ephemeral'
         self._has_remaining_work = True
         self._failed = False
+
+        self._model_access = ModelAccess(ScriptFactory())
 
     @property
     def has_failed(self):
@@ -120,13 +56,6 @@ class Interface():
         if receiver not in self._cores:
             self._addCore(receiver)
         self._core = self._cores[receiver]
-        if USE_AUTO_SETTINGS:
-            self._settings_engine = autosettings_utils.setup_engine(
-                self._create_lw_core_internal(
-                    data_loader=None, # TODO: set data loader for TF2 (story 1561)
-                    use_issue_handler=False
-                )
-            )
 
     def _set_testcore(self, model_ids):
         """
@@ -156,23 +85,6 @@ class Interface():
             return
         else:
             return "No core called %s exists" %receiver
-
-    def create_lw_core(self, receiver, jsonNetwork, adapter=True, dataset_settings=None):
-        graph_spec = GraphSpec.from_dict(jsonNetwork)
-        if not dataset_settings:
-            raise RuntimeError("Dataset settings must be set!")
-
-        data_loader = DataLoader.from_dict(dataset_settings)  # TODO(anton.k): REUSE THIS!
-        lw_core = self._create_lw_core_internal(data_loader)
-        return lw_core, None, None
-
-    def _create_lw_core_internal(self, data_loader, use_issue_handler=True):
-        lw_core = LightweightCore(
-            issue_handler=(self._issue_handler if use_issue_handler else None),
-            cache=self._lw_cache_v2,
-            data_loader=data_loader
-        )
-        return lw_core
 
     def create_response_with_errors(self, request, is_retry=False, on_finished=None):
         content, issue_handler = self.create_response(
@@ -340,8 +252,9 @@ class Interface():
         return response
 
     def _create_response_start_training(self, request_value, is_retry, on_finished):
-        graph_spec = self._network_loader.load(request_value, as_spec=True)
-
+        graph_dict = request_value['Layers']
+        graph_spec = self._model_access.get_graph_spec(model_id=graph_dict)  # TODO: f/e should send an ID
+        
         self._core.set_running_mode('training')
         model_id = int(request_value.get('modelId', None))
         user_email = request_value.get('userEmail', None)
@@ -370,7 +283,9 @@ class Interface():
         user_email = value['userEmail']
         for model_id in model_ids:
             value_dict = value['models'][model_id]
-            graph_spec = self._network_loader.load(value_dict, as_spec=True)
+
+            graph_dict = value_dict['layers']
+            graph_spec = self._model_access.get_graph_spec(model_id=graph_dict)  # TODO: f/e should send an ID
             try:
                 dataset_settings_dict = value['datasetSettings'][model_id]
                 num_repeats = utils.get_num_data_repeats(dataset_settings_dict)   #TODO (adil): remove when frontend solution exists

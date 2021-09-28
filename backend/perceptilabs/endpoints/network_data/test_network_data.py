@@ -34,7 +34,8 @@ def test_basic(client, basic_request, basic_response):
     assert response.json == basic_response
 
 
-def test_previews_basic(client, basic_request):
+
+def test_previews_all_basic(client, basic_request):
     response = client.post(
         '/previews',
         json=basic_request
@@ -64,7 +65,7 @@ def test_previews_basic(client, basic_request):
     assert response.json == expected
 
 
-def test_previews_basic(client, basic_request):
+def test_previews_one_basic(client, basic_request):
     response = client.post(
         '/previews/1',
         json=basic_request

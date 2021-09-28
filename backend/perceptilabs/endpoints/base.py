@@ -10,9 +10,11 @@ import sentry_sdk
 from sentry_sdk.integrations.flask import FlaskIntegration
 from sentry_sdk.integrations.logging import LoggingIntegration
 
+from perceptilabs.resources.models import ModelAccess
+from perceptilabs.script import ScriptFactory
 from perceptilabs.caching.utils import NullCache
 from perceptilabs.endpoints.version.base import Version
-from perceptilabs.endpoints.network_data.base import NetworkData, PreviewsOne, PreviewsAll
+from perceptilabs.endpoints.network_data.base import NetworkData, Previews
 from perceptilabs.endpoints.data.base import PutData, IsDataReady
 from perceptilabs.endpoints.model_recommendations.base import ModelRecommendations
 from perceptilabs.endpoints.type_inference.base import TypeInference
@@ -66,6 +68,7 @@ def create_app(data_metadata_cache = NullCache(),
     compress = Compress()
     compress.init_app(app)
 
+    model_access = ModelAccess(ScriptFactory())
     epochs_access = EpochsAccess()
 
     app.add_url_rule(
@@ -96,23 +99,22 @@ def create_app(data_metadata_cache = NullCache(),
         '/network_data',
         methods=['POST'],
         view_func=NetworkData.as_view(
-            'network_data', data_metadata_cache=data_metadata_cache, preview_cache=preview_cache)
+            'network_data',
+            model_access,
+            data_metadata_cache=data_metadata_cache, preview_cache=preview_cache
+        )
     )
 
-    app.add_url_rule(
-        '/previews',
-        methods=['POST'],
-        view_func=PreviewsAll.as_view(
-            'previews_all', data_metadata_cache=data_metadata_cache, preview_cache=preview_cache)
+    previews_view = Previews.as_view(
+        'previews',
+        model_access,
+        data_metadata_cache=data_metadata_cache,
+        preview_cache=preview_cache
     )
-
     app.add_url_rule(
-        '/previews/<layer_id>',
-        methods=['POST'],
-        view_func=PreviewsOne.as_view(
-            'previews_one', data_metadata_cache=data_metadata_cache, preview_cache=preview_cache)
-    )
-    
+        '/previews', methods=['POST'], defaults={'layer_id': None}, view_func=previews_view)
+    app.add_url_rule(
+        '/previews/<layer_id>', methods=['POST'], view_func=previews_view)
     
     app.add_url_rule(
         '/type_inference',
@@ -129,7 +131,7 @@ def create_app(data_metadata_cache = NullCache(),
     app.add_url_rule(
         '/layer_code',
         methods=['POST'],
-        view_func=LayerCode.as_view('layer_code')
+        view_func=LayerCode.as_view('layer_code', model_access)
     )
 
     app.add_url_rule(
@@ -177,7 +179,7 @@ def create_app(data_metadata_cache = NullCache(),
     app.add_url_rule(
         '/export',
         methods=['POST'],
-        view_func=Export.as_view('export', data_metadata_cache=data_metadata_cache)
+        view_func=Export.as_view('export', model_access, epochs_access, data_metadata_cache=data_metadata_cache)
     )
 
     @app.route('/healthy', methods=['GET'])

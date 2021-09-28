@@ -139,11 +139,9 @@ class TestingSession(Session):
         issue_handler = IssueHandler()
         cores = dict()
         testcore = None
-        data_dict = dict()
-        lw_dict = dict()
         
         self._main_interface = Interface(
-            cores, testcore, data_dict, lw_dict, issue_handler,
+            cores, testcore, issue_handler,
             session_id='123', allow_headless=False)
     
     def on_request_received(self, request):

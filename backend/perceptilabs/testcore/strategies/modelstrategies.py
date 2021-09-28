@@ -34,7 +34,9 @@ class LoadInferenceModel():
         )
         
         training_model = ModelAccess(script_factory).get_training_model(
-            graph_spec, checkpoint_path=checkpoint_path)
+            graph_spec.to_dict(),  # TODO: F/E needs to send ID
+            checkpoint_path=checkpoint_path
+        )
 
         return cls(training_model)
 

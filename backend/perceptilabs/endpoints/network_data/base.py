@@ -2,7 +2,6 @@ import logging
 import numpy as np
 from flask import request, jsonify
 from flask.views import View
-from abc import abstractmethod
 
 from perceptilabs.caching.utils import NullCache
 from perceptilabs.endpoints.base_view import BaseView
@@ -20,13 +19,14 @@ logger = logging.getLogger(APPLICATION_LOGGER)
 
 
 class NetworkData(BaseView):
-    def __init__(self, data_metadata_cache=NullCache(), preview_cache=NullCache()):
+    def __init__(self, model_access, data_metadata_cache=NullCache(), preview_cache=NullCache()):
+        self._model_access = model_access        
         self._data_metadata_cache = data_metadata_cache
         self._preview_cache = preview_cache
 
     def dispatch_request(self):
         json_data = request.get_json()
-        graph_spec = GraphSpec.from_dict(json_data['network'])
+        graph_spec = self._model_access.get_graph_spec(model_id=json_data['network']) #TODO: F/E should send an ID        
         data_loader = self._get_data_loader(json_data['datasetSettings'], json_data.get('userEmail'))
 
         lw_core = LightweightCore(data_loader=data_loader, cache=self._preview_cache)
@@ -139,18 +139,33 @@ class NetworkData(BaseView):
             return self._reduce_to_2d(data[..., -1])
 
 
-class BasePreviews(BaseView):  # TODO: this endpoint should replace network_data         
-    def __init__(self, data_metadata_cache=NullCache(), preview_cache=NullCache()):
+class Previews(BaseView):  # TODO: this endpoint should replace network_data         
+    def __init__(self, model_access, data_metadata_cache=NullCache(), preview_cache=NullCache()):
+        self._model_access = model_access
         self._data_metadata_cache = data_metadata_cache
         self._preview_cache = preview_cache
 
-    @abstractmethod
-    def dispatch_request(self):
-        raise NotImplementedError
+    def dispatch_request(self, layer_id):
+        json_data = request.get_json()
+        graph_spec = self._model_access.get_graph_spec(model_id=json_data['network']) #TODO: F/E should send an ID                
+        data_loader = self._get_data_loader(json_data['datasetSettings'], json_data.get('userEmail'))
+        lw_core = LightweightCore(data_loader=data_loader, cache=self._preview_cache)
+        lw_results = lw_core.run(graph_spec)
+
+        if layer_id is not None:
+            layer_spec = graph_spec[layer_id]
+            content = self._get_layer_content(layer_spec, lw_results)
+        else:
+            content = {
+                layer_spec.id_: self._get_layer_content(layer_spec, lw_results)
+                for layer_spec in graph_spec.layers
+            }            
+        
+        return content
 
     def _get_lw_results(self):
         json_data = request.get_json()
-        graph_spec = GraphSpec.from_dict(json_data['network'])
+        graph_spec = self._model_access.get_graph_spec(model_id=json_data['network']) #TODO: F/E should send an ID                
         data_loader = self._get_data_loader(json_data['datasetSettings'], json_data.get('userEmail'))
         lw_core = LightweightCore(data_loader=data_loader, cache=self._preview_cache)
         lw_results = lw_core.run(graph_spec)
@@ -197,33 +212,3 @@ class BasePreviews(BaseView):  # TODO: this endpoint should replace network_data
         return shape_str
         
 
-class PreviewsAll(BasePreviews):
-    def dispatch_request(self):
-        json_data = request.get_json()
-        graph_spec = GraphSpec.from_dict(json_data['network'])
-        data_loader = self._get_data_loader(json_data['datasetSettings'], json_data.get('userEmail'))
-        lw_core = LightweightCore(data_loader=data_loader, cache=self._preview_cache)
-        lw_results = lw_core.run(graph_spec)
-
-        content = {
-            layer_spec.id_: self._get_layer_content(layer_spec, lw_results)
-            for layer_spec in graph_spec.layers
-        }
-        return content
-
-    
-class PreviewsOne(BasePreviews):
-    def dispatch_request(self, layer_id):
-
-        json_data = request.get_json()
-        graph_spec = GraphSpec.from_dict(json_data['network'])
-        data_loader = self._get_data_loader(json_data['datasetSettings'], json_data.get('userEmail'))
-        lw_core = LightweightCore(data_loader=data_loader, cache=self._preview_cache)
-        lw_results = lw_core.run(graph_spec)
-
-        layer_spec = graph_spec[layer_id]
-        
-        content = self._get_layer_content(layer_spec, lw_results)
-        return content
-
-    

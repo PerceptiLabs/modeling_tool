@@ -72,7 +72,7 @@ class SettingsEngine:
                 # Build a new graph spec
                 current_graph_dict = current_graph_spec.to_dict()
                 current_graph_dict[current_layer_spec.id_] = current_layer_spec.to_dict()
-                current_graph_spec = GraphSpec.from_dict(current_graph_dict)
+                current_graph_spec = GraphSpec.from_dict(current_graph_dict)  
 
         if current_graph_spec != graph_spec:
             return current_graph_spec
