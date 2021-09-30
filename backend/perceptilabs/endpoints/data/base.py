@@ -28,13 +28,17 @@ class PutData(View):
         dataset_key = ['pipelines', user_email, dataset_settings.compute_hash()]
 
         def on_submit(dataset_settings):
-            df = pd.read_csv(dataset_settings.file_path)
-            metadata = DataLoader.compute_metadata(
-                df,
-                dataset_settings,
-                num_repeats=num_repeats)
-
-            self._data_metadata_cache.put(dataset_key, metadata)
+            try:
+                df = pd.read_csv(dataset_settings.file_path)
+                metadata = DataLoader.compute_metadata(
+                    df,
+                    dataset_settings,
+                    num_repeats=num_repeats)
+                
+                self._data_metadata_cache.put(dataset_key, metadata)
+            except:
+                logger.exception("Exception while computing metadata")
+                raise
 
             logger.info(f"Inserted metadata with hash '{dataset_hash}'")
             return dataset_hash

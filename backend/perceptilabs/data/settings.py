@@ -18,7 +18,7 @@ class Partitions(MyPydanticBaseModel):
     def from_dict(cls, dict_):
         return cls(
             randomized=dict_['randomizedPartitions'],
-            seed=dict_['randomSeed'],            
+            seed=int(dict_['randomSeed']),            
             training_ratio=dict_['partitions'][0]/100.0,
             validation_ratio=dict_['partitions'][1]/100.0,
             test_ratio=dict_['partitions'][2]/100.0
