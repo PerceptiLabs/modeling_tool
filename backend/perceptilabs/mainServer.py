@@ -107,7 +107,7 @@ def main():
     elif args.mode == 'rendering':
         # utils.disable_gpus()  # Rendering and training kernels will compete for resources when running on the same machine. 
         from perceptilabs.endpoints.base import create_app
-        import perceptilabs.endpoints.session.utils as session_utils
+        import perceptilabs.session.utils as session_utils
 
         if args.debug:
             app = create_app(

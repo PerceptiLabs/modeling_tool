@@ -2,16 +2,17 @@ import os
 import json
 import pytest
 from perceptilabs.endpoints.base import create_app
-from perceptilabs.endpoints.session.threaded_executor import ThreadedExecutor
+from perceptilabs.session.utils import get_threaded_session_executor
 from retrying import retry
 
 
 @pytest.fixture(scope='function')
 def executor():
-    ret = ThreadedExecutor()
+    ret = get_threaded_session_executor()
     yield ret
     ret.dispose()
 
+    
 @pytest.fixture
 def client(executor):
     app = create_app(session_executor=executor)
@@ -38,6 +39,7 @@ def test_sessions_list_is_empty_by_default(client):
 def wait_for_active_task(client):
     response = client.get('/session/list?user_email=anton.k@perceptilabs.com')
     assert response.json != {}
+
 
 @pytest.mark.skip(reason="does not return")
 def test_session_start_returns_success(client, basic_request):

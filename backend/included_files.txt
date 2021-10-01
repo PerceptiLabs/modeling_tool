@@ -457,10 +457,12 @@ perceptilabs/endpoints/serving/base.py
 # backend/perceptilabs/endpoints/session/
 perceptilabs/endpoints/session/__init__.py
 perceptilabs/endpoints/session/base.py
-perceptilabs/endpoints/session/base_executor.py
-perceptilabs/endpoints/session/celery_executor.py
-perceptilabs/endpoints/session/threaded_executor.py
-perceptilabs/endpoints/session/utils.py
+
+# backend/perceptilabs/session/
+perceptilabs/session/base.py
+perceptilabs/session/celery_executor.py
+perceptilabs/session/threaded_executor.py
+perceptilabs/session/utils.py
 
 # backend/perceptilabs/endpoints/data/
 perceptilabs/endpoints/data/__init__.py

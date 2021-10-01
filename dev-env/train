@@ -3,4 +3,4 @@
 ROOT_PATH=$(git rev-parse --show-toplevel)
 cd ${ROOT_PATH}/backend
 source ${ROOT_PATH}/backend/.venv/bin/activate
-python -m celery -A perceptilabs.endpoints.session.celery_executor worker --loglevel=debug --hostname=jonwork.local --queues=training
+python -m celery -A perceptilabs.session.celery_executor worker --loglevel=debug --hostname=jonwork.local --queues=training

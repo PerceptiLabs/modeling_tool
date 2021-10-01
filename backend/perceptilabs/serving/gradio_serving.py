@@ -14,7 +14,7 @@ from perceptilabs.script import ScriptFactory
 from perceptilabs.graph.spec import GraphSpec
 from perceptilabs.data.base import DataLoader
 from perceptilabs.data.settings import DatasetSettings
-from perceptilabs.endpoints.session.utils import Session
+from perceptilabs.session.utils import Session
 from perceptilabs.caching.utils import get_data_metadata_cache
 from perceptilabs.logconf import APPLICATION_LOGGER
 

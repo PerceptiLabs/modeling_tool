@@ -1,6 +1,7 @@
 import os
 import sys
 import json
+import socket
 import bisect
 import time
 import copy
@@ -11,7 +12,7 @@ from threading import Lock
 import pkg_resources
 import psutil
 from abc import ABC, abstractmethod
-from contextlib import contextmanager
+from contextlib import contextmanager, closing
 
 
 import numpy as np
@@ -29,15 +30,17 @@ def get_memory_usage():
     fraction_used = (total_memory-available_memory)/total_memory
     return fraction_used
 
+
 def convert(obj):
     """ Converts datatypes which can't be jsonified to a type which can """
-    if isinstance(obj, np.int64) or isinstance(obj, np.int32):
+    if isinstance(obj, (np.int64, np.int32)):
         return int(obj)
-    if isinstance(obj, np.float64) or isinstance(obj, np.float32):
+    if isinstance(obj, (np.float64, np.float32)):
         return float(obj)
     if np.iscomplexobj(obj):
         return abs(obj)
     return json.JSONEncoder.default(obj)
+
     
 def get_app_variables():
     with open(pkg_resources.resource_filename('perceptilabs', 'app_variables.json'), 'r') as f:
@@ -48,6 +51,10 @@ def get_app_variables():
 def get_version():
     from perceptilabs import __version__
     return __version__
+
+
+def is_azure_pipelines():
+    return os.getenv("TF_BUILD")  # Set to true if being ran by a build task. See https://docs.microsoft.com/en-us/azure/devops/pipelines/build/variables?view=azure-devops&tabs=yaml
 
 
 def is_docker():
@@ -469,6 +476,23 @@ class Timer:
         return {key: t(*val) for key,val in kwargs.items()}
 
 
-if __name__ == "__main__":
-    rc = RateCounter(1)
-    import pdb; pdb.set_trace()
+def find_free_port():
+    with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
+        s.bind(('', 0))
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        return s.getsockname()[1]
+
+
+def find_free_port_in_range(min_port, max_port):
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    port = min_port
+    while port <= max_port:
+        try:
+            sock.bind(('', port))
+            sock.close()
+            return port
+        except OSError:
+            port += 1
+    raise IOError('no free ports')
+
+

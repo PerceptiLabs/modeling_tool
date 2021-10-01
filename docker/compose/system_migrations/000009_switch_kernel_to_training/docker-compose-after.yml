@@ -114,7 +114,7 @@ services:
 
   flower:
     image: ${CONTAINER_REGISTRY}/kernel:${PL_VERSION}
-    command: python -m celery -A perceptilabs.endpoints.session.celery_executor flower --url_prefix=queues
+    command: python -m celery -A perceptilabs.session.celery_executor flower --url_prefix=queues
     restart: unless-stopped
     volumes:
       - ${PL_ROOT_DIR}/plabs:/perceptilabs/Documents/Perceptilabs
@@ -126,7 +126,7 @@ services:
 
   training:
     image: ${CONTAINER_REGISTRY}/kernel:${PL_VERSION}
-    command: python -m celery -A perceptilabs.endpoints.session.celery_executor worker --hostname=training --queues=training --pool=threads
+    command: python -m celery -A perceptilabs.session.celery_executor worker --hostname=training --queues=training --pool=threads
     restart: unless-stopped
     volumes:
       - ${PL_ROOT_DIR}/plabs:/perceptilabs/Documents/Perceptilabs

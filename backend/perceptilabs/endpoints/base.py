@@ -20,14 +20,15 @@ from perceptilabs.endpoints.model_recommendations.base import ModelRecommendatio
 from perceptilabs.endpoints.type_inference.base import TypeInference
 from perceptilabs.endpoints.layer_code.base import LayerCode
 from perceptilabs.endpoints.session.base import SessionStart, ActiveSessions, SessionProxy, SessionCancel, SessionWorkers
-from perceptilabs.endpoints.serving.base import ServingStart, IsServedModelReady
+from perceptilabs.endpoints.serving.base import ServingStart, IsServedModelReady, Models
 from perceptilabs.endpoints.export.base import Export
 from perceptilabs.endpoints.set_user.base import SetUser
 from perceptilabs.logconf import APPLICATION_LOGGER
 from perceptilabs.issues import traceback_from_exception
-from perceptilabs.endpoints.session.threaded_executor import ThreadedExecutor
+from perceptilabs.session.threaded_executor import ThreadedExecutor
 from perceptilabs.resources.epochs import EpochsAccess
 import perceptilabs.utils as utils
+import perceptilabs.session.utils as session_utils
 
 
 logger = logging.getLogger(APPLICATION_LOGGER)
@@ -57,11 +58,12 @@ class JSONEncoder(_JSONEncoder):
 class Flask(_Flask):
     json_encoder = JSONEncoder
 
-def create_app(data_metadata_cache = NullCache(),
-               preview_cache = NullCache(),
-               data_executor = utils.DummyExecutor(),
-               session_executor = ThreadedExecutor(single_threaded=True)):
-
+def create_app(
+        data_metadata_cache = NullCache(),
+        preview_cache = NullCache(),
+        data_executor = utils.DummyExecutor(),
+        session_executor = session_utils.get_threaded_session_executor(single_threaded=True)
+):
     app = Flask(__name__)
     cors = CORS(app, resorces={r'/d/*': {"origins": '*'}})
 
@@ -135,31 +137,31 @@ def create_app(data_metadata_cache = NullCache(),
     )
 
     app.add_url_rule(
-        '/session/workers',
+        '/session/workers',   # TODO: split into training and testing
         methods=['GET'],
         view_func=SessionWorkers.as_view('active_workers', session_executor)
     )
 
     app.add_url_rule(
-        '/session/start',
+        '/session/start',  # TODO: split into training and testing
         methods=['POST'],
         view_func=SessionStart.as_view('session_start', session_executor)
     )
 
     app.add_url_rule(
-        '/session',
+        '/session',  # TODO: split into training and testing
         methods=['DELETE'],
         view_func=SessionCancel.as_view('session_delete', session_executor)
     )
 
     app.add_url_rule(
-        '/session/list',
+        '/session/list', # TODO: split into training and testing
         methods=['GET'],
         view_func=ActiveSessions.as_view('active_sessions', session_executor)
     )
 
     app.add_url_rule(
-        '/session/proxy',
+        '/session/proxy', 
         methods=['POST'],
         view_func=SessionProxy.as_view('session_proxy', session_executor)
     )
@@ -171,10 +173,16 @@ def create_app(data_metadata_cache = NullCache(),
     )
 
     app.add_url_rule(
-        '/serving/model',
+        '/serving/model',  # TODO. use the serving/models/<id> endpoint instead
         methods=['GET'],
         view_func=IsServedModelReady.as_view('is_served_model_ready', session_executor)
     )
+
+    models_view = Models.as_view('models', session_executor)
+    app.add_url_rule(
+        '/serving/models', methods=['GET'], view_func=models_view, defaults={'model_id': None})
+    app.add_url_rule(
+        '/serving/models/<model_id>', methods=['GET'], view_func=models_view)
 
     app.add_url_rule(
         '/export',

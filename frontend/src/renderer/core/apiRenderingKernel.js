@@ -48,8 +48,9 @@ export const renderingKernel = {
         datasetSettings: datasetSettings,
         network: network,
         checkpointDirectory: checkpointDirectory,
-	userEmail: userEmail,
-	modelName: modelName
+        userEmail: userEmail,
+        modelName: modelName,
+        modelId: modelId,
       },
       userEmail: userEmail,
       modelId: modelId,
@@ -212,14 +213,6 @@ export const renderingKernel = {
         if (res.status !== 200) {
           throw new Error('Failed to start session');
         }
-      })
-  },
-
-  async getTrainingUrl(receiver, userEmail) {
-    return whenRenderingKernelReady
-      .then(rk => rk.get(`/session/url?receiver=${receiver}&user_email=${userEmail}`))
-      .then(res => {
-        return (res.status === 200) ? res.data["url"] : null;
       })
   },
 

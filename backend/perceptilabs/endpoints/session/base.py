@@ -1,11 +1,11 @@
 import json
 import logging
 import requests
-from flask import request, jsonify, abort
+from flask import request, jsonify, abort, make_response
 from flask.views import View
 
 from perceptilabs.logconf import APPLICATION_LOGGER
-import perceptilabs.endpoints.session.utils as session_utils
+import perceptilabs.session.utils as session_utils
 
 
 logger = logging.getLogger(APPLICATION_LOGGER)
@@ -24,18 +24,16 @@ class SessionStart(View):
         logger.info(f"Session proxy called with action {action}")
         
         if action == "Start":
-            task_type = 'start-training'
+            task_type = 'training-session'
         elif action == "startTests":
-            task_type = 'start-testing'
+            task_type = 'testing-session'
         else:
             raise ValueError("Unknown action to session start! Got: " + action)        
-        
-        task_start_info = self._executor.start_task(task_type, user_email, receiver, json_data)
 
-        return jsonify({
-            "content": "core started",
-            **task_start_info
-        })
+        session_id = self._executor.start_session(task_type, json_data)
+        
+        return jsonify({"content": "core started"})
+    
 
 def get_required_arg(request, name):
     arg = request.args.get(name)
@@ -43,6 +41,7 @@ def get_required_arg(request, name):
         abort(400, f"Missing {name} parameter")
 
     return arg
+
 
 class SessionCancel(View):
     def __init__(self, executor):
@@ -52,7 +51,17 @@ class SessionCancel(View):
         """ Cancels a training/testing session"""
         user_email = get_required_arg(request, 'user_email')
         receiver = get_required_arg(request, 'receiver')
-        task_start_info = self._executor.cancel_task(user_email, receiver)
+
+        def predicate(session_id, metadata):
+            return (
+                metadata['type'] in ['training-session', 'testing-session'] and
+                metadata['payload']['value']['userEmail'] == user_email and
+                str(metadata['payload']['receiver']) == str(receiver)
+            )
+
+        sessions_dict = self._executor.get_sessions(predicate=predicate)
+        session_id = list(sessions_dict.keys())[0]
+        self._executor.cancel_session(session_id, payload={'action': 'closeCore'})
         return jsonify({ "content": "Session canceled", })
 
 
@@ -63,9 +72,17 @@ class ActiveSessions(View):
     def dispatch_request(self):
         """ Lists active training/testing sessions """
         user_email = get_required_arg(request, 'user_email')
-        tasks_dict = self._executor.get_active_tasks(user_email)
-        return jsonify(tasks_dict)
 
+        def predicate(session_id, metadata):
+            return (
+                metadata['type'] in ['training-session', 'testing-session'] and                
+                metadata['payload']['value']['userEmail'] == user_email 
+            )
+        
+        sessions_dict = self._executor.get_sessions(predicate=predicate)
+        return jsonify(sessions_dict)
+
+    
 class SessionWorkers(View):
     def __init__(self, executor):
         self._executor = executor
@@ -74,6 +91,7 @@ class SessionWorkers(View):
         workers = self._executor.get_workers()
         return jsonify(workers)
 
+    
 class SessionProxy(View):
     def __init__(self, executor):
         self._executor = executor
@@ -85,5 +103,18 @@ class SessionProxy(View):
         user_email = json_data.get('user_email')
         data = json_data.get('data')
 
-        resp = self._executor.send_request(user_email, receiver, action, data)
-        return jsonify(resp)
+        def predicate(session_id, metadata):
+            return (
+                metadata['type'] in ['training-session', 'testing-session'] and                
+                metadata['payload']['value']['userEmail'] == user_email and
+                str(metadata['payload']['receiver']) == str(receiver)
+            )
+
+        sessions_dict = self._executor.get_sessions(predicate=predicate)
+
+        if sessions_dict:
+            session_id = list(sessions_dict.keys())[0]
+            resp = self._executor.send_request(session_id, data)
+            return jsonify(resp)
+        else:
+            return jsonify({})

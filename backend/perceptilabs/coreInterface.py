@@ -338,7 +338,7 @@ class coreLogic():
             )
         )
         time.sleep(1.5) # Give the Core some time to close the training server before killing the thread...
-
+        
         if self.cThread and self.cThread.isAlive():
             self.cThread.kill()
         return {"content":"closed core %s" % str(self.networkName)}
