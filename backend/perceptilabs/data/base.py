@@ -11,12 +11,11 @@ import numpy as np
 import tensorflow as tf
 from typing import Dict
 
-from perceptilabs.data.pipelines.base import IdentityPipeline
-from perceptilabs.data.settings import DatasetSettings
 import perceptilabs.data.pipelines as pipelines
 import perceptilabs.data.utils as utils
+from perceptilabs.data.pipelines.base import IdentityPipeline
+from perceptilabs.data.settings import DatasetSettings
 from perceptilabs.data.settings import FeatureSpec
-from perceptilabs.resources.files import FileAccess
 from perceptilabs.logconf import APPLICATION_LOGGER
 
 
@@ -37,7 +36,6 @@ class DataLoader:
         self._metadata = metadata
         self._num_repeats = num_repeats
         self._initialized = False
-        self._file_access = FileAccess(os.path.dirname(dataset_settings.file_path))
 
     def ensure_initialized(self):
         if self._initialized:
@@ -72,9 +70,6 @@ class DataLoader:
     @classmethod
     def _build_and_partition_data(cls, data_frame, dataset_settings, num_repeats):
         cls._validate_feature_specs(data_frame.columns, dataset_settings.used_feature_specs)
-
-        if dataset_settings.file_path is not None:
-            data_frame = cls._make_paths_absolute(data_frame, dataset_settings)
 
         full_dataset, full_dataset_size = cls._create_indexed_dataset(data_frame, dataset_settings)
 
@@ -194,34 +189,19 @@ class DataLoader:
         return pipelines, metadata
 
     @classmethod
-    def from_dict(cls, dict_, metadata=None, num_repeats=1):
+    def from_csv(cls, file_access, file_id, dataset_settings, metadata=None, num_repeats=1):
         """ Creates a DataLoader given a settings dict """
-        dataset_settings = DatasetSettings.from_dict(dict_)
-        return cls.from_settings(
-            dataset_settings, metadata=metadata, num_repeats=num_repeats
-        )
+        file_path = file_access.get_local_path(file_id)  # TODO: send file ID from F/E instead
+        df = pd.read_csv(file_path)
+        df = utils.localize_file_based_features(df, dataset_settings, file_access)
 
-    @classmethod
-    def from_settings(cls, dataset_settings, metadata=None, num_repeats=1):
-        """ Creates a DataLoader given a settings dict """
-        file_access = FileAccess(os.path.dirname(dataset_settings.file_path))        
-        file_path = file_access.get_local_path(file_id=dataset_settings.file_path)  # TODO: send file ID from F/E instead
-        data_frame = pd.read_csv(file_path)
-        
         data_loader = cls(
-            data_frame,
+            df,
             dataset_settings,
             metadata=metadata,
             num_repeats=num_repeats
         )
         return data_loader
-
-    @classmethod
-    def from_features(cls, feature_specs, file_path, metadata=None, num_repeats=1):
-        dataset_settings = DatasetSettings(feature_specs=feature_specs, file_path=file_path)
-        return cls.from_settings(
-            dataset_settings, metadata=metadata, num_repeats=num_repeats
-        )
 
     def _select_columns_by_iotype(self, df, feature_specs, iotype):
         """ Selects input or output components from the dataframe """
@@ -453,22 +433,6 @@ class DataLoader:
         return shape
 
     @staticmethod
-    def _make_paths_absolute(df, dataset_settings):
-        """ Converts relative paths in the dataframe to absolute paths"""
-        path_cols = [
-            feature_name
-            for feature_name, feature_spec in dataset_settings.used_feature_specs.items()
-            if feature_spec.datatype in ['image', 'mask']
-        ]
-
-        file_access = FileAccess(os.path.dirname(dataset_settings.file_path))        
-
-        df[path_cols] = df[path_cols].applymap(
-            lambda x: file_access.get_local_path(x))
-        
-        return df
-
-    @staticmethod
     def _validate_feature_specs(columns, feature_specs):
         """ Assert that atleast one input and one output is specified """
 
@@ -499,12 +463,6 @@ class DataLoader:
         return self._dataset_settings
 
     @property
-    def is_tutorial_data(self):
-        """ Returns true if the DataLoader was based on tutorial data"""
-        data_file = self._dataset_settings.file_path
-        return utils.is_tutorial_data_file(data_file)
-
-    @property
     def metadata(self):
         self.ensure_initialized()
         return copy.deepcopy(self._metadata)
@@ -523,3 +481,5 @@ class DataLoader:
             indices = [original_row for original_row, data in dataset]
             return self._data_frame.iloc[indices]
 
+        
+        

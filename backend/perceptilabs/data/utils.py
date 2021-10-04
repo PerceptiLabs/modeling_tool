@@ -1,7 +1,27 @@
 import os
 import filecmp
 import pkg_resources
+from perceptilabs.resources.files import FileAccess
 
+
+def is_file_based_feature(datatype):
+    return datatype in ['image', 'mask']
+
+
+def localize_file_based_features(df, dataset_settings, file_access):
+    """ Converts relative paths in the dataframe to absolute paths"""
+    
+    path_cols = [
+        feature_name
+        for feature_name, feature_spec in dataset_settings.used_feature_specs.items()
+        if is_file_based_feature(feature_spec.datatype)
+    ]        
+    
+    df[path_cols] = df[path_cols].applymap(
+        lambda file_id: file_access.get_local_path(file_id))
+    
+    return df
+    
 
 def get_tutorial_data_directory():
     """ Retrieves the tutorial data directory """
@@ -31,6 +51,7 @@ def is_tutorial_data_file(path):
 
 def get_mnist_loader():
     from perceptilabs.data.base import DataLoader, FeatureSpec
+    from perceptilabs.data.settings import DatasetSettings
 
     path = os.path.join(get_tutorial_data_directory(),
                         'mnist_small', 'data.csv')
@@ -39,7 +60,10 @@ def get_mnist_loader():
         'image_path': FeatureSpec(datatype='image', iotype='input'),
         'target': FeatureSpec(datatype='categorical', iotype='target')
     }
-    loader = DataLoader.from_features(feature_specs, file_path=path)
+
+    settings = DatasetSettings(feature_specs=feature_specs)
+    file_access = FileAccess(os.path.dirname(path))
+    loader = DataLoader.from_csv(file_access, path, settings)
     return loader
 
 
@@ -67,12 +91,12 @@ def get_wildfire_loader():
     }
     partitions = Partitions(randomized=True)
     settings = DatasetSettings(
-        file_path=path,
         feature_specs=feature_specs,
         partitions=partitions
     )
 
-    loader = DataLoader.from_settings(settings)
+    file_access = FileAccess(os.path.dirname(path))
+    loader = DataLoader.from_csv(file_access, path, settings)
     return loader
 
 
@@ -96,11 +120,12 @@ def get_humanactivity_loader():
 
     partitions = Partitions(randomized=True)
     settings = DatasetSettings(
-        file_path=path,
         feature_specs=feature_specs,
         partitions=partitions
     )
-    loader = DataLoader.from_settings(settings)    
+    
+    file_access = FileAccess(os.path.dirname(path))
+    loader = DataLoader.from_csv(file_access, path, settings)
     return loader
 
 
@@ -124,9 +149,10 @@ def get_covid19_loader():
 
     partitions = Partitions(randomized=True)
     settings = DatasetSettings(
-        file_path=path,
         feature_specs=feature_specs,
         partitions=partitions
     )
-    loader = DataLoader.from_settings(settings)    
+    
+    file_access = FileAccess(os.path.dirname(path))
+    loader = DataLoader.from_csv(file_access, path, settings)
     return loader

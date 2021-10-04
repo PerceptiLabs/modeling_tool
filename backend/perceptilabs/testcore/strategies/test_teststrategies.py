@@ -14,7 +14,13 @@ from perceptilabs.graph.builder import GraphSpecBuilder
 from perceptilabs.exporter.base import Exporter
 from perceptilabs.testcore.strategies.teststrategies import ConfusionMatrix, MetricsTable, OutputVisualization
 from perceptilabs.issues import IssueHandler
+from perceptilabs.resources.files import FileAccess
 
+
+@pytest.fixture()
+def file_access(temp_path):
+    return FileAccess(temp_path)
+    
 
 @pytest.fixture()
 def csv_path(temp_path):
@@ -25,15 +31,14 @@ def csv_path(temp_path):
 
 
 @pytest.fixture()
-def data_loader(csv_path):
+def data_loader(file_access, csv_path):
     settings = DatasetSettings(
-        file_path=csv_path,
         feature_specs={
             'x1': FeatureSpec(datatype='numerical', iotype='input'),
             'y1': FeatureSpec(datatype='categorical', iotype='target')
         },
     )
-    dl = DataLoader.from_settings(settings)
+    dl = DataLoader.from_csv(file_access, csv_path, settings)
     yield dl
 
 

@@ -7,7 +7,9 @@ from perceptilabs.endpoints.base import create_app
 from perceptilabs.graph.spec import GraphSpec
 from perceptilabs.trainer.model import TrainingModel
 from perceptilabs.data.base import DataLoader
+from perceptilabs.data.settings import DatasetSettings
 from perceptilabs.exporter.base import Exporter
+from perceptilabs.resources.files import FileAccess
 
 
 @pytest.fixture
@@ -27,7 +29,7 @@ def export_settings(path, type_):
 
 
 @pytest.fixture
-def dataset_settings():
+def dataset_settings_dict():
     settings = {
         "randomizedPartitions": True,
         "randomSeed": 123,
@@ -151,17 +153,21 @@ def checkpoint_directory(temp_path):
 
 
 @pytest.fixture(scope="function", params=["Standard", "Compressed", 'Quantized'])
-def basic_request(request, dataset_settings, temp_path, network, checkpoint_directory):
+def basic_request(request, dataset_settings_dict, temp_path, network, checkpoint_directory):
     yield {
         "exportSettings": export_settings(temp_path, request.param),
-        "datasetSettings": dataset_settings,
+        "datasetSettings": dataset_settings_dict,
         "network": network,
         "checkpointDirectory": checkpoint_directory
     }
 
 
-def create_model_checkpoint(dataset_settings, network, checkpoint_directory, script_factory):
-    data_loader = DataLoader.from_dict(dataset_settings)
+def create_model_checkpoint(dataset_settings_dict, network, checkpoint_directory, script_factory):
+    csv_path = dataset_settings_dict['filePath']  # TODO: move one level up
+    file_access = FileAccess(os.path.dirname(csv_path)) 
+    
+    dataset_settings = DatasetSettings.from_dict(dataset_settings_dict)    
+    data_loader = DataLoader.from_csv(file_access, csv_path, dataset_settings)
     graph_spec = GraphSpec.from_dict(network)
     training_model = TrainingModel(script_factory, graph_spec)
 
@@ -170,13 +176,13 @@ def create_model_checkpoint(dataset_settings, network, checkpoint_directory, scr
     exporter.export_checkpoint(checkpoint_path)
 
 
-def test_basic(client, basic_request, dataset_settings, network, checkpoint_directory, script_factory):
-    create_model_checkpoint(dataset_settings, network, checkpoint_directory, script_factory)
+def test_basic(client, basic_request, dataset_settings_dict, network, checkpoint_directory, script_factory):
+    create_model_checkpoint(dataset_settings_dict, network, checkpoint_directory, script_factory)
     response = client.post('/export', json=basic_request)
     assert (response.json.startswith("Model exported to ") or response.json.startswith("Model not compatible"))
 
 
-def test_try_to_export_without_training(client, basic_request, dataset_settings, network, checkpoint_directory, script_factory):
+def test_try_to_export_without_training(client, basic_request, dataset_settings_dict, network, checkpoint_directory, script_factory):
     response = client.post('/export', json=basic_request)
     assert response.json == "Cannot export an untrained model. Make sure to run training first."
 

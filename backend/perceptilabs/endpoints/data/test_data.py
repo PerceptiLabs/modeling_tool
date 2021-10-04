@@ -42,7 +42,7 @@ def test_data_is_available_in_cache(client, basic_request, metadata_cache):
     )
 
     assert response.status_code == 200
-    dataset_hash = response.json["datasetHash"]
+    dataset_hash = response.json["datasetHash"]    
 
     response = client.get(f"/data?dataset_hash={dataset_hash}")    
     assert response.status_code == 200

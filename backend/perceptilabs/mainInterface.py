@@ -1,3 +1,4 @@
+import os
 import sys
 import logging
 import pprint
@@ -13,6 +14,7 @@ from perceptilabs.data.settings import DatasetSettings
 from perceptilabs.testInterface import TestLogic
 from perceptilabs.script import ScriptFactory
 from perceptilabs.resources.models import ModelAccess
+from perceptilabs.resources.files import FileAccess
 from perceptilabs.testInterface import TestLogic
 import perceptilabs.utils as utils
 
@@ -294,7 +296,13 @@ class Interface():
                 key = ['pipelines', user_email, dataset_settings.compute_hash()]
                 data_metadata = self._data_metadata_cache.get(key)
 
-                data_loader = DataLoader.from_settings(dataset_settings, num_repeats=num_repeats, metadata=data_metadata)
+                csv_path = value['datasetSettings'][model_id]['filePath']
+                file_access = FileAccess(os.path.dirname(csv_path)) 
+                
+                data_loader = DataLoader.from_csv(
+                    file_access, csv_path, dataset_settings,
+                    num_repeats=num_repeats, metadata=data_metadata
+                )
             except Exception as e:
                 message = str(e)
                 with self._issue_handler.create_issue(message, exception=None, as_bug=False) as issue:

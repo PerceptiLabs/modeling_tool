@@ -7,6 +7,7 @@ from perceptilabs.logconf import APPLICATION_LOGGER
 import perceptilabs.tracking as tracking
 import perceptilabs.automation.utils as automation_utils
 import perceptilabs.utils as utils
+import perceptilabs.data.utils as data_utils
 
 
 logger = logging.getLogger(APPLICATION_LOGGER)
@@ -35,11 +36,13 @@ class ModelRecommendations(BaseView):
 
     def _maybe_send_tracking(self, json_data, data_loader, graph_spec, settings_dict):
         if 'user_email' in json_data:
+            is_tutorial_data = data_utils.is_tutorial_data_file(json_data['datasetSettings']['filePath'])
+            
             tracking.send_model_recommended(
                 json_data.get('user_email'),
                 json_data.get('model_id'),
                 json_data.get('skipped_workspace'),
                 settings_dict,
                 graph_spec,
-                is_tutorial_data=data_loader.is_tutorial_data
+                is_tutorial_data=is_tutorial_data
             )

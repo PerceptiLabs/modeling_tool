@@ -12,6 +12,7 @@ import math
 
 from perceptilabs.resources.models import ModelAccess
 from perceptilabs.resources.epochs import EpochsAccess
+from perceptilabs.resources.files import FileAccess
 from perceptilabs.core_new.compatibility import CompatibilityCore
 from perceptilabs.script import ScriptFactory
 from perceptilabs.logconf import APPLICATION_LOGGER, USER_LOGGER
@@ -181,15 +182,23 @@ class coreLogic():
         num_repeats = utils.get_num_data_repeats(dataset_settings_dict)   #TODO (anton.k): remove when frontend solution exists
 
         dataset_settings = DatasetSettings.from_dict(dataset_settings_dict)
-        key = ['pipelines', user_email, dataset_settings.compute_hash()]
-
+        csv_file = dataset_settings_dict['filePath']  # TODO: move one level up
+        
+        key = ['pipelines', user_email, csv_file, dataset_settings.compute_hash()]
         data_metadata = self._data_metadata_cache.get(key)
 
         if data_metadata is not None:
             logger.info(f"Found metadata for dataset with key {key}")
 
-        data_loader = DataLoader.from_settings(dataset_settings, num_repeats=num_repeats, metadata=data_metadata)
-
+        file_access = FileAccess(os.path.dirname(csv_file))        
+        data_loader = DataLoader.from_csv(
+            file_access,
+            csv_file,
+            dataset_settings,
+            num_repeats=num_repeats,
+            metadata=data_metadata
+        )
+        
         if load_checkpoint or is_retry:
             logger.info(f"Restoring trainer from disk (load_checkpoint={load_checkpoint} and is_retry={is_retry})")
             try:

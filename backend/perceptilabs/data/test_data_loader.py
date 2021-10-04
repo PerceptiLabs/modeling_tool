@@ -9,6 +9,7 @@ import pandas as pd
 from skimage.io import imsave
 from unittest.mock import MagicMock
 
+from perceptilabs.resources.files import FileAccess
 from perceptilabs.data.base import DataLoader
 from perceptilabs.data.settings import FeatureSpec, DatasetSettings, Partitions, NumericalPreprocessingSpec, ImagePreprocessingSpec
 

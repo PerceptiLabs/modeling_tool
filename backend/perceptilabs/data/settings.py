@@ -180,7 +180,6 @@ class FeatureSpec(MyPydanticBaseModel):
 class DatasetSettings(MyPydanticBaseModel):
     feature_specs: Dict[str, FeatureSpec] = {}
     partitions: Partitions = Partitions()
-    file_path: str = ''
 
     @classmethod
     def from_dict(cls, dict_):
@@ -190,10 +189,7 @@ class DatasetSettings(MyPydanticBaseModel):
         }
         partitions = Partitions.from_dict(dict_)
 
-        file_path = dict_['filePath']
-
         return cls(
-            file_path=file_path,
             partitions=partitions,
             feature_specs=feature_specs
         )
@@ -202,12 +198,11 @@ class DatasetSettings(MyPydanticBaseModel):
     def used_feature_specs(self):
         return {
             name: spec for name, spec in self.feature_specs.items()
-            if spec.iotype in ["target", "input"]
+            if spec.iotype in ["target", "input"]  # I.e., skip "do not use"
         }
 
     def compute_hash(self):
         hasher = hashlib.md5()
-        hasher.update(str(self.file_path).encode())
         hasher.update(self.partitions.compute_hash().encode())
 
         for name, spec in self.feature_specs.items():

@@ -14,7 +14,8 @@ from perceptilabs.resources.epochs import EpochsAccess
 from perceptilabs.data.base import DataLoader
 from perceptilabs.data.settings import FeatureSpec, DatasetSettings, Partitions
 from perceptilabs.graph.builder import GraphSpecBuilder
-
+from perceptilabs.resources.files import FileAccess
+import perceptilabs.data.utils as data_utils
 
 import pytest
 from unittest.mock import MagicMock
@@ -159,9 +160,10 @@ def make_data_loader(data, working_dir):
     dataset_settings = DatasetSettings(
         feature_specs=feature_specs,
         partitions=partitions,
-        file_path=os.path.join(working_dir, 'data.csv')
     )
-    
+
+    file_access = FileAccess(working_dir)    
+    df = data_utils.localize_file_based_features(df, dataset_settings, file_access)
     dl = DataLoader(df, dataset_settings)
     return dl
 

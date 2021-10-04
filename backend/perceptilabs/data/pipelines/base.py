@@ -132,4 +132,7 @@ class PipelineBuilder(ABC):
     def _compute_processing_metadata(self, preprocessing, dataset):
         return {}, {}
     
+    @property
+    def has_loader(self):
+        return self._loader_class is not None
     

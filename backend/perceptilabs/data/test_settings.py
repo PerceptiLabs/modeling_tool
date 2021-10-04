@@ -162,12 +162,6 @@ def test_equal_settings_have_equal_hash(settings_dict):
     assert s1.compute_hash() == s2.compute_hash()
 
 
-def test_settings_hash_depend_on_file_path():
-    a = DatasetSettings(file_path='abc')
-    b = DatasetSettings(file_path='xyz')
-    assert a.compute_hash() != b.compute_hash()
-
-
 def test_settings_hash_depend_on_partitions():
     p1 = Partitions(randomized=True)
     p2 = Partitions(randomized=False)

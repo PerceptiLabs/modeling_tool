@@ -1,3 +1,4 @@
+import os
 from flask import request, jsonify, make_response
 from flask.views import View
 import pandas as pd
@@ -7,7 +8,9 @@ from perceptilabs.caching.utils import NullCache
 from perceptilabs.data.base import DataLoader
 from perceptilabs.data.settings import DatasetSettings
 from perceptilabs.logconf import APPLICATION_LOGGER
+from perceptilabs.resources.files import FileAccess
 import perceptilabs.utils as utils
+import perceptilabs.data.utils as data_utils            
 
 logger = logging.getLogger(APPLICATION_LOGGER)
 
@@ -24,16 +27,22 @@ class PutData(View):
 
         num_repeats = utils.get_num_data_repeats(settings_dict)
         dataset_settings = DatasetSettings.from_dict(settings_dict)
+        csv_file = settings_dict['filePath']  # TODO. move one level up
+        
+        dataset_key = ['pipelines', user_email, csv_file, dataset_settings.compute_hash()]
 
-        dataset_key = ['pipelines', user_email, dataset_settings.compute_hash()]
-
-        def on_submit(dataset_settings):
+        def on_submit(csv_file, dataset_settings):
             try:
-                df = pd.read_csv(dataset_settings.file_path)
+                file_access = FileAccess(os.path.dirname(csv_file))                            
+
+                df = pd.read_csv(csv_file)
+                df = data_utils.localize_file_based_features(df, dataset_settings, file_access)
+            
                 metadata = DataLoader.compute_metadata(
                     df,
                     dataset_settings,
-                    num_repeats=num_repeats)
+                    num_repeats=num_repeats
+                )
                 
                 self._data_metadata_cache.put(dataset_key, metadata)
             except:
@@ -43,9 +52,9 @@ class PutData(View):
             logger.info(f"Inserted metadata with hash '{dataset_hash}'")
             return dataset_hash
 
-        future = self._executor.submit(on_submit, dataset_settings)
+        future = self._executor.submit(on_submit, csv_file, dataset_settings)
         dataset_hash = self._data_metadata_cache.make_key(dataset_key)
-        
+
         return jsonify({"datasetHash": dataset_hash})
 
 

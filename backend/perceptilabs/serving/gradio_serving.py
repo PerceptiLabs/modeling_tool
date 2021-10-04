@@ -10,6 +10,7 @@ import gradio as gr
 
 from perceptilabs.resources.epochs import EpochsAccess
 from perceptilabs.resources.models import ModelAccess
+from perceptilabs.resources.files import FileAccess
 from perceptilabs.script import ScriptFactory
 from perceptilabs.graph.spec import GraphSpec
 from perceptilabs.data.base import DataLoader
@@ -194,14 +195,20 @@ class GradioSession(Session):
         graph_spec = self._model_access.get_graph_spec(payload['network'])  # TODO: F/E should send ID
         checkpoint_directory = payload['checkpointDirectory']
         user_email = payload['userEmail']
-        model_name = payload['modelName']                
+        model_name = payload['modelName']
+        
+
         dataset_settings = DatasetSettings.from_dict(payload['datasetSettings'])
-        data_loader = self._get_data_loader(dataset_settings, user_email)
+
+        csv_path = payload['datasetSettings']['filePath']  # TODO: move one level up        
+        data_loader = self._get_data_loader(csv_path, dataset_settings, user_email)
         self._launcher.start(graph_spec, data_loader, checkpoint_directory, model_name)
 
-    def _get_data_loader(self, dataset_settings, user_email):
+    def _get_data_loader(self, csv_path, dataset_settings, user_email):
         key = ['pipelines', user_email, dataset_settings.compute_hash()]
         cache = get_data_metadata_cache().for_compound_keys()        
         data_metadata = cache.get(key)
-        data_loader = DataLoader.from_settings(dataset_settings, metadata=data_metadata)        
+
+        file_access = FileAccess(os.path.dirname(csv_path))         
+        data_loader = DataLoader.from_csv(file_access, csv_path, dataset_settings, metadata=data_metadata)        
         return data_loader

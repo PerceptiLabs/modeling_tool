@@ -5,8 +5,8 @@ from unittest.mock import MagicMock
 
 def test_single_numerical_input_and_output_gives_basic_network():
     feature_specs={
-        'x1': FeatureSpec(datatype='numerical', iotype='input', file_path=''),
-        'y1': FeatureSpec(datatype='numerical', iotype='target', file_path=''),
+        'x1': FeatureSpec(datatype='numerical', iotype='input'),
+        'y1': FeatureSpec(datatype='numerical', iotype='target'),
     }
 
     recommender = ModelRecommender()
@@ -24,8 +24,8 @@ def test_single_numerical_input_and_output_gives_basic_network():
 
 def test_image_input_and_numerical_output_gives_basic_network():
     feature_specs={
-        'x1': FeatureSpec(datatype='numerical', iotype='input', file_path=''),
-        'y1': FeatureSpec(datatype='numerical', iotype='target', file_path=''),
+        'x1': FeatureSpec(datatype='numerical', iotype='input'),
+        'y1': FeatureSpec(datatype='numerical', iotype='target'),
     }
     recommender = ModelRecommender()
     graph_spec = recommender.get_graph(feature_specs)
@@ -39,8 +39,8 @@ def test_image_input_and_numerical_output_gives_basic_network():
 
 def test_image_input_and_mask_output_gives_basic_network():
     feature_specs={
-        'x1': FeatureSpec(datatype='image', iotype='input', file_path=''),
-        'y1': FeatureSpec(datatype='mask', iotype='target', file_path=''),
+        'x1': FeatureSpec(datatype='image', iotype='input'),
+        'y1': FeatureSpec(datatype='mask', iotype='target'),
     }
     data_loader = MagicMock()
     recommender = ModelRecommender(data_loader)

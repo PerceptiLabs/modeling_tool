@@ -14,7 +14,9 @@ from perceptilabs.data.base import DataLoader
 from perceptilabs.data.settings import FeatureSpec, DatasetSettings, Partitions
 from perceptilabs.graph.builder import GraphSpecBuilder
 from perceptilabs.exporter.base import Exporter
+from perceptilabs.resources.files import FileAccess
 import perceptilabs.exporter.fastapi_utils as fastapi_utils
+import perceptilabs.data.utils as data_utils
 
 
 data0 = {
@@ -71,7 +73,7 @@ def make_data_loader(data, working_dir):
             image = np.random.randint(0, 255, data['x1']['shape'], dtype=np.uint8)
             sk.imsave(os.path.join(working_dir, path), image)
 
-    df = pd.DataFrame({'x1': data['x1']['values'], 'y1': data['y1']['values']})
+
 
     feature_specs = {
         'x1': FeatureSpec(iotype='input', datatype=data['x1']['type']),
@@ -82,8 +84,11 @@ def make_data_loader(data, working_dir):
     dataset_settings = DatasetSettings(
         feature_specs=feature_specs,
         partitions=partitions,
-        file_path=os.path.join(working_dir, 'data.csv')
     )
+
+    file_access = FileAccess(working_dir)
+    df = pd.DataFrame({'x1': data['x1']['values'], 'y1': data['y1']['values']})    
+    df = data_utils.localize_file_based_features(df, dataset_settings, file_access)
     
     dl = DataLoader(df, dataset_settings)
     return dl
