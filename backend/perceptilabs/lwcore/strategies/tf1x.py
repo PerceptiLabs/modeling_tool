@@ -5,7 +5,7 @@ import numpy as np
 import tensorflow.compat.v1 as tf
 
 from perceptilabs.lwcore.results import LayerResults
-from perceptilabs.lwcore.strategies.base import JinjaLayerStrategy, TrainingStrategy
+from perceptilabs.lwcore.strategies.base import JinjaLayerStrategy
 from perceptilabs.layers.utils import resolve_checkpoint_path
 from perceptilabs.lwcore.utils import exception_to_error
 from perceptilabs.logconf import APPLICATION_LOGGER
@@ -115,18 +115,3 @@ class Tf1xInnerStrategy(JinjaLayerStrategy):
                                 break
                             
 
-class Tf1xTrainingStrategy(TrainingStrategy):
-    def _create_graph_and_run(self, layer_spec, graph_spec, line_offset):
-        """ Create the graph object and run it """
-        with tf.Graph().as_default() as tfgraph:
-            graph = self._create_graph(graph_spec)
-            if graph is not None:
-                sample, shape, variables, strategy_error = self._run_training_layer(graph, layer_spec, line_offset)
-            else:
-                sample = shape = {'output': None}
-                variables = {}                
-                strategy_error = None
-
-        return sample, shape, variables, strategy_error
-
-    

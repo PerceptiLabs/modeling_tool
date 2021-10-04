@@ -6,8 +6,8 @@
         "import tensorflow as tf"
     ],
     "perceptilabs": [
-        "from perceptilabs.core_new.utils import Picklable",
-        "from perceptilabs.core_new.layers.base import Tf2xLayer",
-        "from perceptilabs.core_new.serialization import can_serialize, serialize"            
+        "from perceptilabs.layers.legacy import Picklable",
+        "from perceptilabs.layers.legacy import Tf2xLayer",
+        "from perceptilabs.layers.legacy import can_serialize, serialize"            
     ]
 }

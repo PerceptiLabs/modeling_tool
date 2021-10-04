@@ -1,18 +1,6 @@
 import logging
-import copy
 import time
-import pprint
-import logging
 import threading
-import numpy as np
-
-
-from perceptilabs.messaging import MessagingFactory, ZmqMessagingFactory, SimpleMessagingFactory
-from perceptilabs.core_new.graph.utils import sanitize_layer_name
-from perceptilabs.core_new.core2 import Core
-from perceptilabs.core_new.layers import *
-from perceptilabs.core_new.layers.replicas import NotReplicatedError
-
 
 from perceptilabs.logconf import APPLICATION_LOGGER
 

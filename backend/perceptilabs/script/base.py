@@ -11,9 +11,7 @@ from typing import Dict
 
 from perceptilabs.utils import stringify
 from perceptilabs.utils import add_line_numbering
-from perceptilabs.core_new.graph import Graph
-from perceptilabs.core_new.layers.templates import J2Engine
-from perceptilabs.core_new.graph.utils import sanitize_layer_name
+from perceptilabs.script.engine import J2Engine
 from perceptilabs.layers.utils import get_layer_definition
 from perceptilabs.logconf import APPLICATION_LOGGER
 
@@ -22,7 +20,6 @@ from perceptilabs.logconf import APPLICATION_LOGGER
 mk_abs = lambda x: pkg_resources.resource_filename('perceptilabs', x) # Make absolute path
 
 TEMPLATE_DIRECTORIES = [ # Relative to the package root directory
-    mk_abs('core_new/layers/templates/'),
     mk_abs('layers/jinja_macros/')
 ]
 
@@ -37,10 +34,6 @@ TOP_LEVEL_IMPORTS = {
     'third_party': [
     ],
     'perceptilabs': [
-        'from perceptilabs.core_new.graph.builder import GraphBuilder, SnapshotBuilder',
-        'from perceptilabs.core_new.communication import TrainingServer',
-        'from perceptilabs.messaging import ZmqMessagingFactory, SimpleMessagingFactory',
-        'from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP, REPLICATED_PROPERTIES_TABLE'                    
     ]
 }
 
@@ -328,37 +321,4 @@ class ScriptFactory:
             return code
     
         
-    
-        
-        
-if __name__ == "__main__":
-    from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP
-    from perceptilabs.core_new.graph.builder import GraphBuilder
-    from perceptilabs.core_new.graph import Graph
-    import json
-
-    with open('net.json_', 'r') as f:
-        graph_spec = json.load(f)
-    
-    script_factory = ScriptFactory()
-    graph_builder = GraphBuilder()    
-
-    graph = graph_builder.build_from_spec(graph_spec)
-
-    import_code = script_factory.get_imports(graph)
-    layer_code, _ = script_factory._create_layers_snippet(graph)    
-    run_code = script_factory.get_runscript(graph)    
-
-
-    code  = import_code
-    code += layer_code
-    code += run_code
-
-
-    with open('test_code.py', 'w') as f:
-        f.write(code)
-        
-    
-    
-
     

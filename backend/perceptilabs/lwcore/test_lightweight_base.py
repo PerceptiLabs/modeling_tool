@@ -146,16 +146,6 @@ def graph_spec_pre_datawiz(temp_path_checkpoints):
     builder.add_layer('ProcessOneHot', settings={'id_': '5'})
     builder.add_connection('2', 'output', '5', 'input')
 
-    # Merge into Training Layer
-    conn1 = LayerConnection(src_id='4', src_var='output', dst_id='6', dst_var='predictions')
-    conn2 = LayerConnection(src_id='5', src_var='output', dst_id='6', dst_var='labels')
-
-    builder.add_layer('TrainNormal', settings={
-        'id_': '6', 'connection_predictions': conn1, 'connection_labels': conn2
-    })
-    builder.add_connection_object(conn1)
-    builder.add_connection_object(conn2)
-
     graph_spec = builder.build()
     yield graph_spec
 
@@ -198,16 +188,6 @@ def graph_spec_partial_pre_datawiz(temp_path_checkpoints):
 
     # Branch 2 (Labels)
     builder.add_layer('ProcessOneHot', settings={'id_': '5'})
-
-    # Merge into Training Layer
-    conn1 = LayerConnection(src_id='4', src_var='output', dst_id='6', dst_var='predictions')
-    conn2 = LayerConnection(src_id='5', src_var='output', dst_id='6', dst_var='labels')
-
-    builder.add_layer('TrainNormal', settings={
-        'id_': '6', 'connection_predictions': conn1, 'connection_labels': conn2
-    })
-    builder.add_connection_object(conn1)
-    builder.add_connection_object(conn2)
 
     graph_spec = builder.build()
     yield graph_spec
@@ -257,16 +237,6 @@ def graph_spec_syntax_error(temp_path_checkpoints):
     builder.add_layer('ProcessOneHot', settings={'id_': '5'})
     builder.add_connection('2', 'output', '5', 'input')
 
-    # Merge into Training Layer
-    conn1 = LayerConnection(src_id='4', src_var='output', dst_id='6', dst_var='predictions')
-    conn2 = LayerConnection(src_id='5', src_var='output', dst_id='6', dst_var='labels')
-
-    builder.add_layer('TrainNormal', settings={
-        'id_': '6', 'connection_predictions': conn1, 'connection_labels': conn2
-    })
-    builder.add_connection_object(conn1)
-    builder.add_connection_object(conn2)
-
     graph_spec = builder.build()
     yield graph_spec
     f1.close()
@@ -315,80 +285,13 @@ def graph_spec_runtime_error(temp_path_checkpoints):
     builder.add_layer('ProcessOneHot', settings={'id_': '5'})
     builder.add_connection('2', 'output', '5', 'input')
 
-    # Merge into Training Layer
-    conn1 = LayerConnection(src_id='4', src_var='output', dst_id='6', dst_var='predictions')
-    conn2 = LayerConnection(src_id='5', src_var='output', dst_id='6', dst_var='labels')
-
-    builder.add_layer('TrainNormal', settings={
-        'id_': '6', 'connection_predictions': conn1, 'connection_labels': conn2
-    })
-    builder.add_connection_object(conn1)
-    builder.add_connection_object(conn2)
-
     graph_spec = builder.build()
     yield graph_spec
 
     f1.close()
     f2.close()
 
-@pytest.fixture(scope='function')
-def graph_spec_runtime_error_training(temp_path_checkpoints):
-    n_classes = 10
-    n_samples = 30
-
-    #f1 = tempfile.NamedTemporaryFile(mode='w', suffix='.npy', delete=False)
-    #mat = np.random.random((n_samples, 28*28*1))
-    #np.save(f1.name, mat)
-
-    f1 = tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False)
-    mat = np.random.random((n_samples, 784))
-    df = pd.DataFrame.from_records(mat, columns=['col_'+str(x) for x in range(784)])
-    df.to_csv(f1.name, index=False)
-
-    f2 = tempfile.NamedTemporaryFile(mode='w', suffix='.npy', delete=False)
-    mat = np.random.randint(0, n_classes, (n_samples,))
-    np.save(f2.name, mat)
-
-    inputs_path = sanitize_path(f1.name)
-    labels_path = sanitize_path(f2.name)
-
-    input_data = DataSource(type_='file', path=inputs_path, ext='.csv')
-    label_data = DataSource(type_='file', path=labels_path, ext='.npy')
-
-    builder = GraphSpecBuilder()
-
-    # Branch 1 (Inputs)
-    builder.add_layer('DataData', settings={'id_': '1', 'sources': (input_data,)})
-    builder.add_layer('ProcessReshape', settings={'id_': '3', 'shape': (28, 28, 1)})
-    builder.add_layer('ProcessReshape', settings={'id_': '3', 'shape': (28, 28, 1)})
-    builder.add_layer('DeepLearningFC', settings={'id_': '4'})
-    builder.add_connection('1', 'output', '3', 'input')
-    builder.add_connection('3', 'output', '4', 'input')
-
-    # Branch 2 (Labels)
-    builder.add_layer('DataData', settings={'id_': '2', 'sources': (label_data,)})
-    builder.add_layer('ProcessOneHot', settings={'id_': '5'})
-    builder.add_connection('2', 'output', '5', 'input')
-
-    # Merge into Training Layer
-    conn1 = LayerConnection(src_id='4', src_var='output', dst_id='6', dst_var='predictions')
-    conn2 = LayerConnection(src_id='5', src_var='output', dst_id='6', dst_var='labels')
-
-    builder.add_layer('TrainNormal', settings={
-        'id_': '6', 'connection_predictions': conn1, 'connection_labels': conn2,
-        'custom_code': "print('hello')\n1/0"  # Causes Runtime error by zero division
-
-    })
-    builder.add_connection_object(conn1)
-    builder.add_connection_object(conn2)
-
-    graph_spec = builder.build()
-    yield graph_spec
-
-    f1.close()
-    f2.close()
-
-
+    
 @pytest.fixture(scope='function')
 def graph_spec_pre_datawiz_with_strings(temp_path_checkpoints):
     n_classes = 10
@@ -429,16 +332,6 @@ def graph_spec_pre_datawiz_with_strings(temp_path_checkpoints):
     builder.add_layer('DataData', settings={'id_': '2', 'sources': (label_data,)})
     builder.add_layer('ProcessOneHot', settings={'id_': '5'})
     builder.add_connection('2', 'output', '5', 'input')
-
-    # Merge into Training Layer
-    conn1 = LayerConnection(src_id='4', src_var='output', dst_id='6', dst_var='predictions')
-    conn2 = LayerConnection(src_id='5', src_var='output', dst_id='6', dst_var='labels')
-
-    builder.add_layer('TrainNormal', settings={
-        'id_': '6', 'connection_predictions': conn1, 'connection_labels': conn2
-    })
-    builder.add_connection_object(conn1)
-    builder.add_connection_object(conn2)
 
     graph_spec = builder.build()
     yield graph_spec
@@ -482,15 +375,6 @@ def graph_spec_pre_datawiz_3d(temp_path_checkpoints):
     builder.add_layer('ProcessOneHot', settings={'id_': '5'})
     builder.add_connection('2', 'output', '5', 'input')
 
-    # Merge into Training Layer
-    conn1 = LayerConnection(src_id='4', src_var='output', dst_id='6', dst_var='predictions')
-    conn2 = LayerConnection(src_id='5', src_var='output', dst_id='6', dst_var='labels')
-
-    builder.add_layer('TrainNormal', settings={
-        'id_': '6', 'connection_predictions': conn1, 'connection_labels': conn2
-    })
-    builder.add_connection_object(conn1)
-    builder.add_connection_object(conn2)
 
     graph_spec = builder.build()
     yield graph_spec
@@ -509,7 +393,6 @@ def test_out_shapes_ok_basic(graph_spec_pre_datawiz):
     assert results['3'].out_shape['output'] == (28, 28, 1) # Reshape
     assert results['4'].out_shape['output'] == (10,) # FC
     assert results['5'].out_shape['output'] == (10,) # One hot
-    assert results['6'].out_shape['output'] == (1,)
 
 
 def test_columns_ok_lw(graph_spec_pre_datawiz):
@@ -545,7 +428,6 @@ def test_out_shapes_ok_for_3d_samples(graph_spec_pre_datawiz_3d):
     assert results['3'].out_shape['output'] == (2352, 1, 1) # Reshape
     assert results['4'].out_shape['output'] == (10,) # FC
     assert results['5'].out_shape['output'] == (10,) # One hot
-    assert results['6'].out_shape['output'] == (1,) # Train normal
 
 
 def test_out_shapes_ok_partial_pre_datawiz_graph(graph_spec_partial_pre_datawiz):
@@ -557,7 +439,6 @@ def test_out_shapes_ok_partial_pre_datawiz_graph(graph_spec_partial_pre_datawiz)
     assert results['3'].out_shape['output'] == (28, 28, 1) # Reshape
     assert results['4'].out_shape['output'] == (10,) # FC
     assert results['5'].out_shape == {} # One hot
-    assert results['6'].out_shape['output'] == None # Train normal
 
 
 def test_out_shapes_ok_with_syntax_error(graph_spec_syntax_error):
@@ -569,7 +450,6 @@ def test_out_shapes_ok_with_syntax_error(graph_spec_syntax_error):
     assert results['3'].out_shape == {} # Reshape
     assert results['4'].out_shape == {} # FC
     assert results['5'].out_shape['output'] == (10,) # One hot
-    assert results['6'].out_shape['output'] == None  # Train normal
 
 
 def test_errors_ok_with_syntax_error(graph_spec_syntax_error):
@@ -588,7 +468,6 @@ def test_out_shapes_ok_with_runtime_error(graph_spec_runtime_error):
     assert results['3'].out_shape == {} # Reshape
     assert results['4'].out_shape == {} # FC
     assert results['5'].out_shape['output'] == (10,) # One hot
-    assert results['6'].out_shape['output'] == None
 
 
 def test_errors_ok_with_runtime_error(graph_spec_runtime_error):
@@ -597,14 +476,6 @@ def test_errors_ok_with_runtime_error(graph_spec_runtime_error):
 
     assert "ZeroDivisionError" in results['3'].instantiation_error.message
     assert results['3'].instantiation_error.line_number == 2
-
-
-def test_errors_detected_in_training_layer(graph_spec_runtime_error_training):
-    lw_core = LightweightCore()
-    results = lw_core.run(graph_spec_runtime_error_training)
-
-    assert "ZeroDivisionError" in results['6'].instantiation_error.message
-    assert results['6'].instantiation_error.line_number == 2
 
 
 def test_load_checkpoints_ok(graph_spec_pre_datawiz):
@@ -616,7 +487,6 @@ def test_load_checkpoints_ok(graph_spec_pre_datawiz):
     assert results['3'].trained == False
     assert results['4'].trained == False
     assert results['5'].trained == False
-    assert results['6'].trained == False
 
 
 def test_tries_to_use_cached_value(graph_spec_pre_datawiz):

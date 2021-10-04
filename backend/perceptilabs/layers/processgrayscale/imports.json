@@ -7,7 +7,7 @@
         "import numpy as np"          
     ],
     "perceptilabs": [
-        "from perceptilabs.core_new.utils import Picklable",
+        "from perceptilabs.layers.legacy import Picklable",
         "from perceptilabs.core_new.layers.base import Tf1xLayer",
         "from perceptilabs.core_new.serialization import can_serialize, serialize"            
     ]

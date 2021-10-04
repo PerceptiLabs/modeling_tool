@@ -5,6 +5,6 @@
     ],
     "perceptilabs": [
         "from perceptilabs.layers.visualizer import PerceptiLabsVisualizer",			
-        "from perceptilabs.core_new.layers.base import Tf2xLayer"
+        "from perceptilabs.layers.legacy import Tf2xLayer"
     ]
 }

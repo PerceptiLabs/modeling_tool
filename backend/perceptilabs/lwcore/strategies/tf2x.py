@@ -4,7 +4,7 @@ import numpy as np
 import tensorflow as tf
 
 from perceptilabs.lwcore.results import LayerResults
-from perceptilabs.lwcore.strategies.base import JinjaLayerStrategy, TrainingStrategy
+from perceptilabs.lwcore.strategies.base import JinjaLayerStrategy
 from perceptilabs.lwcore.utils import exception_to_error
 
 from perceptilabs.logconf import APPLICATION_LOGGER
@@ -97,18 +97,3 @@ class Tf2xInnerStrategy(JinjaLayerStrategy):
         else:
             return layer_instance
             
-        
-class Tf2xTrainingStrategy(TrainingStrategy):
-    def _create_graph_and_run(self, layer_spec, graph_spec, line_offset):
-        """ Create the graph object and run it """
-        graph = self._create_graph(graph_spec)  
-        if graph is not None:
-            sample, shape, variables, strategy_error = self._run_training_layer(graph, layer_spec, line_offset)
-        else:
-            sample = shape = {'output': None}
-            variables = {}                
-            strategy_error = None
-
-        return sample, shape, variables, strategy_error
-
-

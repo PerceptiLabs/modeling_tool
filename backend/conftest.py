@@ -11,9 +11,9 @@ import numpy as np
 import pandas as pd
 
 
-from perceptilabs.core_new.layers.templates import J2Engine
-from perceptilabs.core_new.layers.templates.utils import render_and_execute_macro
-from perceptilabs.script import TEMPLATE_DIRECTORIES
+from perceptilabs.script.engine import J2Engine
+from perceptilabs.script.utils import render_and_execute_macro
+from perceptilabs.script.base import TEMPLATE_DIRECTORIES
 from perceptilabs.layers.helper import load_code_as_module
 
 log = logging.getLogger(__name__)

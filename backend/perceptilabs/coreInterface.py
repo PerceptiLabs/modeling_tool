@@ -12,8 +12,8 @@ import math
 
 from perceptilabs.resources.models import ModelAccess
 from perceptilabs.resources.epochs import EpochsAccess
+from perceptilabs.compatibility import CompatibilityCore
 from perceptilabs.resources.files import FileAccess
-from perceptilabs.core_new.compatibility import CompatibilityCore
 from perceptilabs.script import ScriptFactory
 from perceptilabs.logconf import APPLICATION_LOGGER, USER_LOGGER
 from perceptilabs.CoreThread import CoreThread

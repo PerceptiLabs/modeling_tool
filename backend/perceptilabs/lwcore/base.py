@@ -13,22 +13,17 @@ from typing import Tuple, Dict, List
 
 from perceptilabs.utils import stringify, add_line_numbering, Timer
 from perceptilabs.issues import UserlandError
-from perceptilabs.core_new.layers import BaseLayer, DataLayer, DataReinforce, DataSupervised, DataRandom, InnerLayer, Tf1xLayer, TrainingRandom, TrainingSupervised, TrainingReinforce, TrainingLayer, ClassificationLayer, ObjectDetectionLayer, RLLayer
 from perceptilabs.graph.splitter import GraphSplitter
-from perceptilabs.core_new.graph.utils import get_json_net_topology
-from perceptilabs.core_new.graph.builder import GraphBuilder, SnapshotBuilder
-from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP, REPLICATED_PROPERTIES_TABLE
 from perceptilabs.script import ScriptFactory
-from perceptilabs.core_new.graph.utils import sanitize_layer_name
 from perceptilabs.layers.helper import LayerHelper
-from perceptilabs.layers.specbase import TrainingLayerSpec, InnerLayerSpec, IoLayerSpec
+from perceptilabs.layers.specbase import InnerLayerSpec, IoLayerSpec
 from perceptilabs.layers.datadata.spec import DataDataSpec
 from perceptilabs.layers.datarandom.spec import DataRandomSpec
 from perceptilabs.layers.dataenvironment.spec import DataEnvironmentSpec
 from perceptilabs.logconf import APPLICATION_LOGGER
 from perceptilabs.lwcore.utils import exception_to_error, format_exception
 from perceptilabs.caching.lightweight_cache import LightweightCache
-from perceptilabs.lwcore.strategies import DefaultStrategy, DataSupervisedStrategy, DataReinforceStrategy, Tf1xInnerStrategy, Tf1xTrainingStrategy, Tf2xInnerStrategy, Tf2xTrainingStrategy, IoLayerStrategy
+from perceptilabs.lwcore.strategies import DefaultStrategy, DataSupervisedStrategy, DataReinforceStrategy, Tf1xInnerStrategy, Tf2xInnerStrategy, IoLayerStrategy
 from perceptilabs.lwcore.results import LayerResults
 from perceptilabs.caching.utils import NullCache
 import perceptilabs.dataevents as dataevents
@@ -141,8 +136,6 @@ class LightweightCore:
     def _get_layer_strategy(self, layer_spec, data_batch, script_factory):
         if isinstance(layer_spec, IoLayerSpec):
             strategy = self._get_io_layer_strategy(layer_spec, data_batch)
-        elif isinstance(layer_spec, TrainingLayerSpec):
-            strategy = Tf2xTrainingStrategy(script_factory)
         elif isinstance(layer_spec, (DataDataSpec, DataRandomSpec)):
             strategy = DataSupervisedStrategy(script_factory)
         elif isinstance(layer_spec, DataEnvironmentSpec):
@@ -191,55 +184,6 @@ class LightweightCore:
                 text += "sample output is None"
 
         logger.debug(text)
-
-
-if __name__ == "__main__":
-    import json
-
-
-    with open('net.json_', 'r') as f:
-        dd = json.load(f)
-
-    from perceptilabs.core_new.extras import LayerExtrasReader
-
-    lw = LightweightCore()
-
-    import time
-    t0 = time.time()
-
-    x = lw.run(dd)
-
-    print('columns', x['1564399775664'].columns)
-
-
-    import pdb; pdb.set_trace()
-
-    #t1 = time.time()
-
-    #y = lw.run(dd)
-
-    #t2 = time.time()
-
-
-
-
-    #print('2nd, 1st',t2-t1, t1-t0)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

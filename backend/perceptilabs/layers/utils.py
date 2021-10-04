@@ -93,34 +93,3 @@ def resolve_tf1x_stop_cond(specs):
     return stop_condition
 
 
-def graph_spec_to_core_graph(script_factory, graph_spec, preamble=None, print_code=False):
-    from perceptilabs.layers.helper import LayerHelper    
-    from perceptilabs.core_new.graph.builder import GraphBuilder
-
-    if preamble is None:
-        preamble  = 'import logging\n'
-        preamble += 'log = logging.getLogger(__name__)\n\n'
-
-    code = {}
-    layers = {}
-    edges = set()
-    connections = {}
-    for layer_spec in graph_spec:
-        helper = LayerHelper(script_factory, layer_spec, graph_spec=graph_spec)
-        layers[layer_spec.sanitized_name] = helper.get_instance(preamble=preamble, print_code=print_code)
-        
-        for conn_spec in layer_spec.forward_connections:
-            dest_spec = graph_spec[conn_spec.dst_id]
-
-            edges.add((layer_spec.sanitized_name, dest_spec.sanitized_name))
-
-            key = layer_spec.sanitized_name + ':' + dest_spec.sanitized_name
-            if not key in connections:
-                connections[key] = []
-            connections[key].append((conn_spec.src_var, conn_spec.dst_var))
-
-    graph_builder = GraphBuilder()
-    graph = graph_builder.build_from_layers_and_edges(layers, list(edges), connections=connections)
-
-    return graph
-
