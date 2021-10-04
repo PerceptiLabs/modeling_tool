@@ -1,6 +1,5 @@
 import numpy as np
 import tensorflow as tf
-import skimage.io
 import tensorflow_addons as tfa
 
 from perceptilabs.data.pipelines.base import PipelineBuilder, BasePipeline

@@ -12,6 +12,7 @@ from unittest.mock import MagicMock
 from perceptilabs.resources.files import FileAccess
 from perceptilabs.data.base import DataLoader
 from perceptilabs.data.settings import FeatureSpec, DatasetSettings, Partitions, NumericalPreprocessingSpec, ImagePreprocessingSpec
+from perceptilabs.data.utils.builder import DatasetBuilder
 
 
 def random_image(shape, temp_path, ext):
@@ -23,24 +24,26 @@ def random_image(shape, temp_path, ext):
 
 
 def test_basic_structure_ok():
-    data = [[1.0, 2.0, 3.0, 4.0], [1.0, 2.0, 3.0, 4.0], [1.0, 2.0, 3.0, 4.0]]
-    df = pd.DataFrame(data, columns=['x1', 'x2','y1', 'y2']) 
+    builder = DatasetBuilder.from_features({
+        'x1': {'datatype': 'numerical', 'iotype': 'input'},
+        'x2': {'datatype': 'numerical', 'iotype': 'input'},
+        'y1': {'datatype': 'numerical', 'iotype': 'target'},
+        'y2': {'datatype': 'numerical', 'iotype': 'target'}        
+    })
+    
+    num_samples = 4
+    with builder:
+        for _ in range(num_samples):
+            builder.add_row({'x1': 1.0, 'x2': 2.0, 'y1': 3.0, 'y2': 4.0})
+            
+        dataset = builder.get_data_loader().get_dataset(partition='all')
 
-    feature_specs = {
-        'x1': FeatureSpec(datatype='numerical', iotype='input'),
-        'x2': FeatureSpec(datatype='numerical', iotype='input'),
-        'y1': FeatureSpec(datatype='numerical', iotype='target'),
-        'y2': FeatureSpec(datatype='numerical', iotype='target')
-    }
-    dataset_settings = DatasetSettings(feature_specs=feature_specs)
-    dl = DataLoader(df, dataset_settings)
-    dataset = dl.get_dataset()
-
-    for inputs, targets in dataset:
-        assert inputs['x1'].numpy() == 1.0
-        assert inputs['x2'].numpy() == 2.0
-        assert targets['y1'].numpy() == 3.0
-        assert targets['y2'].numpy() == 4.0        
+        assert len(dataset) == num_samples
+        for inputs, targets in dataset:
+            assert inputs['x1'].numpy() == 1.0
+            assert inputs['x2'].numpy() == 2.0
+            assert targets['y1'].numpy() == 3.0
+            assert targets['y2'].numpy() == 4.0        
 
 
 def test_skips_unused_features():
@@ -106,28 +109,31 @@ def test_ints_are_converted_to_float():
 
         
 def test_image_data_is_loaded_correctly(temp_path):
-    image = np.random.randint(0, 255, (32, 32, 3), dtype=np.uint8)
-    expected_image = image.astype(np.float32)
-    
-    image_path = os.path.join(temp_path, 'image.png')
-    imsave(image_path, expected_image)
-    
-    data = [[image_path, 0], [image_path, 1], [image_path, 4]]
-    df = pd.DataFrame(data, columns=['x', 'y']) 
 
-    feature_specs = {
+    builder = DatasetBuilder.from_features({
         'x': FeatureSpec(datatype='image', iotype='input'),
         'y': FeatureSpec(datatype='numerical', iotype='target')
-    }
-    dataset_settings = DatasetSettings(feature_specs=feature_specs)
-    dl = DataLoader(df, dataset_settings)
-    dataset = dl.get_dataset()
+    })
 
-    for inputs, targets in dataset:
-        actual_image = inputs['x'].numpy()
-        assert np.all(np.isclose(actual_image, expected_image, atol=1))
 
+    expected_image = np.random.randint(0, 255, (32, 32, 3), dtype=np.uint8)    
+
+    n_samples = 3
+    with builder:
+        for i in range(n_samples):
+            with builder.create_row() as row:
+                row.file_data['x'] = expected_image
+                row.file_type['x'] = '.png'                      
+                row.literals['y'] = i
         
+        dataset = builder.get_data_loader().get_dataset(partition='all')
+        assert len(dataset) == n_samples
+        
+        for inputs, targets in dataset:
+            actual_image = inputs['x'].numpy()
+            assert np.all(np.isclose(actual_image, expected_image))
+
+
 def test_splitting():
     data = [[1, -1], [1, -1], [1, -1], [2, -2], [2, -2], [3, -3]]
     df = pd.DataFrame(data, columns=['x1', 'x2']) 
