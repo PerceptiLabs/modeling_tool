@@ -14,17 +14,18 @@ from rygg.api.views.tasks import TaskViewSet
 from rygg.mixpanel_proxy import views as mixpanel_views
 
 from rygg.files.views.file_view import (
-        FileView,
-        get_file_content
+    FileView,
+    get_file_content,
+    pick_file,
 )
 from rygg.files.views.directory_view import (
-        DirectoryView,
-        get_tutorial_data,
-        get_drives,
-        get_folder_content,
-        get_resolved_dir,
-        get_root_path,
-        )
+    DirectoryView,
+    get_tutorial_data,
+    get_drives,
+    get_folder_content,
+    get_resolved_dir,
+    get_root_path,
+)
 from rygg.files.views.json_model_view import JsonModelView
 from rygg.files.views.model_directory_view import (modeldirectory_tree, get_modeldirectory)
 from rygg.files.views.github_view import (github_export, github_import, github_issue)
@@ -50,6 +51,7 @@ urlpatterns = [
     path('mixpanel/engage/', mixpanel_views.engage),
     path("files", FileView.as_view()),
     path("files/get_file_content", get_file_content),
+    path("files/pick_file", pick_file),
     path("json_models", JsonModelView.as_view()),
     path("directories", DirectoryView.as_view()),
     path("directories/tutorial_data", get_tutorial_data),

@@ -38,6 +38,8 @@ rygg/files/tasks.py
 rygg/files/tests/__init__.py
 rygg/files/utils/__init__.py
 rygg/files/utils/download_data.py
+rygg/files/utils/file_choosing.py
+rygg/files/utils/procs.py
 rygg/files/utils/sequences.py
 rygg/files/utils/subprocesses.py
 rygg/files/utils/unzipper.py

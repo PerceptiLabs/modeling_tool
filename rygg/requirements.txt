@@ -26,6 +26,7 @@ psycopg2-binary>=2.8.5
 PyGithub>=1.53
 pygments>=2.6.1
 PyJWT>=1.7.1
+pyobjc; platform_system == "Darwin"
 pyparsing>=2.4.7
 pypiwin32>=223; platform_system == "Windows"
 python-dateutil>=2.8.1
