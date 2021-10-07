@@ -80,16 +80,16 @@ def make_data_loader(data, working_dir):
         'y1': FeatureSpec(iotype='target', datatype=data['y1']['type'])
     }
     partitions = Partitions(training_ratio=1.0, validation_ratio=0.0, test_ratio=0.0)
-    
+
     dataset_settings = DatasetSettings(
         feature_specs=feature_specs,
         partitions=partitions,
     )
 
     file_access = FileAccess(working_dir)
-    df = pd.DataFrame({'x1': data['x1']['values'], 'y1': data['y1']['values']})    
+    df = pd.DataFrame({'x1': data['x1']['values'], 'y1': data['y1']['values']})
     df = data_utils.localize_file_based_features(df, dataset_settings, file_access)
-    
+
     dl = DataLoader(df, dataset_settings)
     return dl
 
@@ -98,26 +98,26 @@ def make_data_loader(data, working_dir):
 def data_loader(request, temp_path):
     yield make_data_loader(request.param, temp_path)
 
-    
+
 @pytest.fixture(params=[data0, data1])
 def data_loader_except_image(request, temp_path):
     yield make_data_loader(request.param, temp_path)
-    
+
 
 @pytest.fixture()
 def data_loader_numerical(temp_path):
     yield make_data_loader(data0, temp_path)
 
-    
+
 @pytest.fixture()
 def data_loader_categorical(temp_path):
-    yield make_data_loader(data1, temp_path)    
+    yield make_data_loader(data1, temp_path)
 
 
 @pytest.fixture()
 def data_loader_image(temp_path):
-    yield make_data_loader(data2, temp_path)    
-    
+    yield make_data_loader(data2, temp_path)
+
 
 def make_graph_spec(data_loader):
     gsb = GraphSpecBuilder()
@@ -192,18 +192,18 @@ def equal_training_model_outputs(all1, all2):
 def has_inference_model(target_dir):
     return (
         os.path.isfile(os.path.join(target_dir, 'saved_model.pb')) and
-        os.path.isdir(os.path.join(target_dir, 'variables')) and 
+        os.path.isdir(os.path.join(target_dir, 'variables')) and
         os.path.isdir(os.path.join(target_dir, 'assets'))
     )
 
 
 def module_from_path(module_path, module_name='my_module'):
-    import sys    
+    import sys
     import importlib
-    
+
     spec = importlib.util.spec_from_file_location(module_name, module_path)
     module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module 
+    sys.modules[spec.name] = module
     spec.loader.exec_module(module)
     return module
 
@@ -217,7 +217,7 @@ def test_create_exporter_from_graph(script_factory, data_loader, temp_path):
 
 
 def test_export_inference_model(script_factory, data_loader, temp_path):
-    graph_spec = make_graph_spec(data_loader)    
+    graph_spec = make_graph_spec(data_loader)
     training_model = TrainingModel(script_factory, graph_spec)
     exporter = Exporter(graph_spec, training_model, data_loader)
 
@@ -228,9 +228,9 @@ def test_export_inference_model(script_factory, data_loader, temp_path):
 
     assert has_inference_model(target_dir)
 
-    
+
 def test_export_compressed_model(script_factory, data_loader, temp_path):
-    graph_spec = make_graph_spec(data_loader)        
+    graph_spec = make_graph_spec(data_loader)
     training_model = TrainingModel(script_factory, graph_spec)
     exporter = Exporter(graph_spec, training_model, data_loader)
 
@@ -253,7 +253,7 @@ def test_export_quantized_model(script_factory, data_loader_numerical, temp_path
     output = exporter.export(target_dir, mode='Quantized')
     assert (os.path.isfile(os.path.join(target_dir, 'quantized_model.tflite')) or output)
 
-    
+
 def test_export_checkpoint_creates_files(script_factory, data_loader, temp_path):
     graph_spec = make_graph_spec(data_loader)
     training_model = TrainingModel(script_factory, graph_spec)
@@ -286,7 +286,7 @@ def test_export_checkpoint_creates_multiple_files(script_factory, data_loader, t
     training_model.load_weights(first_ckpt).assert_consumed()
 
     exporter.export_checkpoint(
-        os.path.join(target_dir, 'checkpoint-0001.ckpt'))    
+        os.path.join(target_dir, 'checkpoint-0001.ckpt'))
     second_ckpt = tf.train.latest_checkpoint(target_dir)
     assert second_ckpt is not None
     assert second_ckpt != first_ckpt
@@ -307,7 +307,7 @@ def test_loading_different_checkpoints_consistent_results(script_factory, data_l
     # Infer and export for epoch 0
     expected_output_epoch_0 = training_model(inputs)
     exporter.export_checkpoint(
-        os.path.join(target_dir, 'checkpoint-0000.ckpt'))    
+        os.path.join(target_dir, 'checkpoint-0000.ckpt'))
     ckpt_epoch_0 = tf.train.latest_checkpoint(target_dir)
 
     # Update the weights with random values to simulate a new epoch
@@ -318,7 +318,7 @@ def test_loading_different_checkpoints_consistent_results(script_factory, data_l
     # Infer and export for epoch 1
     expected_output_epoch_1 = training_model(inputs)
     exporter.export_checkpoint(
-        os.path.join(target_dir, 'checkpoint-0001.ckpt'))    
+        os.path.join(target_dir, 'checkpoint-0001.ckpt'))
     ckpt_epoch_1 = tf.train.latest_checkpoint(target_dir)
 
     # Check that two different checkpoints exist
@@ -351,7 +351,7 @@ def test_inference_outputs_numerical(script_factory, data_loader_numerical):
     y = inference_model(x)
 
     assert y['y1'].dtype == tf.float32
-    assert y['y1'].shape == (3,)
+    assert y['y1'].shape == (3,1)
 
 
 def test_inference_retains_batch_size(script_factory, data_loader_except_image):
@@ -363,13 +363,13 @@ def test_inference_retains_batch_size(script_factory, data_loader_except_image):
     for batch_size in range(1, 4):
         inputs_batch, targets_batch = data_loader_except_image \
             .get_example_batch(batch_size, apply_pipelines=None)
-        
-        assert targets_batch['y1'].shape[0] == inputs_batch['x1'].shape[0]        
-        
+
+        assert targets_batch['y1'].shape[0] == inputs_batch['x1'].shape[0]
+
         outputs_batch = inference_model(inputs_batch)
         assert outputs_batch['y1'].shape[0] == inputs_batch['x1'].shape[0]
 
-    
+
 def test_inference_outputs_categorical(script_factory, data_loader_categorical):
     graph_spec = make_graph_spec(data_loader_categorical)
     training_model = TrainingModel(script_factory, graph_spec)
@@ -395,7 +395,7 @@ def test_inference_takes_matrix_input(script_factory, data_loader_image):
     for prediction in y['y1'].numpy():  # Loop over each prediction in batch
         assert prediction in [b'animal', b'non-animal']
 
-        
+
 def test_export_fastapi_files_are_present(script_factory, data_loader, temp_path):
     graph_spec = make_graph_spec(data_loader)
     training_model = TrainingModel(script_factory, graph_spec)
@@ -406,18 +406,18 @@ def test_export_fastapi_files_are_present(script_factory, data_loader, temp_path
         fastapi_utils.SCRIPT_FILE,
         fastapi_utils.REQUIREMENTS_FILE,
         fastapi_utils.EXAMPLE_REQUIREMENTS_FILE,
-        fastapi_utils.EXAMPLE_JSON_FILE,        
+        fastapi_utils.EXAMPLE_JSON_FILE,
         fastapi_utils.EXAMPLE_SCRIPT_FILE,
         fastapi_utils.EXAMPLE_CSV_FILE
     ]
-    
-    assert not has_inference_model(temp_path)        
+
+    assert not has_inference_model(temp_path)
     for file_name in required_files:
         assert not os.path.isfile(os.path.join(temp_path, file_name))
-        
+
     exporter.export(temp_path, mode='FastAPI')
 
-    assert has_inference_model(temp_path)        
+    assert has_inference_model(temp_path)
     for file_name in required_files:
         assert os.path.isfile(os.path.join(temp_path, file_name))
 
@@ -444,8 +444,8 @@ def test_export_fastapi_endpoint_predict(data, script_factory, temp_path):
     training_model = TrainingModel(script_factory, graph_spec)
     exporter = Exporter(graph_spec, training_model, data_loader)
     exporter.export(temp_path, mode='FastAPI')
-    
-    
+
+
     module = module_from_path(os.path.join(temp_path, fastapi_utils.SCRIPT_FILE))
     app = module.create_app()
     client = TestClient(app)
@@ -460,7 +460,7 @@ def test_export_fastapi_endpoint_predict(data, script_factory, temp_path):
 
             payload[feature] = [f(x) for x in tensor.numpy().tolist()]
         return payload
-    
+
     inference_model = exporter.get_inference_model()
     for batch_size in [1, 3]:
         x, _ = data_loader.get_example_batch(batch_size=batch_size, apply_pipelines='loader')
@@ -468,11 +468,11 @@ def test_export_fastapi_endpoint_predict(data, script_factory, temp_path):
 
         response = client.post("/predict", json=make_payload(x))
         y_actual = response.json()
-        
+
         assert response.status_code == 200
         assert y_actual == y_expected
 
-        
+
 @pytest.mark.parametrize("data", [data0, data1, data2, data3])
 def test_export_fastapi_endpoint_predict_using_example_script(data, script_factory, temp_path):
     data_loader = make_data_loader(data, temp_path)
@@ -488,12 +488,12 @@ def test_export_fastapi_endpoint_predict_using_example_script(data, script_facto
     example_module = module_from_path(os.path.join(temp_path, fastapi_utils.EXAMPLE_SCRIPT_FILE))
     data = example_module.make_payload()
     response = client.post("/predict", json=data).json()
-    
+
     batch_size = len(next(iter(data.values())))  #  length of arbitrary feature vector
     _, targets = data_loader.get_example_batch(batch_size=batch_size, apply_pipelines='loader')
 
     for feature_name in response.keys():
         assert np.shape(response[feature_name]) == np.shape(targets[feature_name])
-    
 
-    
+
+

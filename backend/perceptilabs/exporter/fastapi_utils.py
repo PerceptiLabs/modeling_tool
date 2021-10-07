@@ -65,7 +65,7 @@ def _resolve_field(tensor, layer_spec, metadata):
     elif layer_spec.datatype == 'text':
         return 'List[str]', 'A list of strings'    
     elif layer_spec.datatype == 'numerical':
-        return 'List[float]', 'A list of numerical values'
+        return 'List[List[float]]', 'A list of numerical values'
     elif layer_spec.datatype == 'image':
 
         def make_sample_type(shape):
@@ -238,11 +238,12 @@ def render_fastapi_example_script(path, feature_specs):
         if spec.iotype != 'input':
             continue
 
-        if spec.datatype != 'image':
-            code += "        '{feature_name}': df['{feature_name}'].tolist(),\n".format(feature_name=name)
-        else:
+        if spec.datatype == 'numerical':
+            code += "        '{feature_name}': [[i] for i in df['{feature_name}'].tolist()],\n".format(feature_name=name)
+        elif spec.datatype == 'image':
             code += "        '{feature_name}': [load_image(path) for path in df['{feature_name}']],\n".format(feature_name=name)
-            
+        else:
+            code += "        '{feature_name}': df['{feature_name}'].tolist(),\n".format(feature_name=name)
     code += "    }\n"
     code += "    return data\n"    
     code += "\n"                            

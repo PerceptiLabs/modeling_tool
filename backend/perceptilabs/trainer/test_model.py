@@ -12,7 +12,7 @@ from perceptilabs.data.base import DataLoader
 from perceptilabs.data.settings import FeatureSpec, DatasetSettings, Partitions
 from perceptilabs.graph.builder import GraphSpecBuilder
 from perceptilabs.resources.files import FileAccess
-import perceptilabs.data.utils as data_utils            
+import perceptilabs.data.utils as data_utils
 
 data0 = {
     'x1': {
@@ -72,16 +72,16 @@ def make_data_loader(data, working_dir):
         'y1': FeatureSpec(iotype='target', datatype=data['y1']['type'])
     }
     partitions = Partitions(training_ratio=1.0, validation_ratio=0.0, test_ratio=0.0)
-    
+
     dataset_settings = DatasetSettings(
         feature_specs=feature_specs,
         partitions=partitions,
     )
 
-    file_access = FileAccess(working_dir)            
+    file_access = FileAccess(working_dir)
     df = pd.DataFrame({'x1': data['x1']['values'], 'y1': data['y1']['values']})
     df = data_utils.localize_file_based_features(df, dataset_settings, file_access)
-    
+
     dl = DataLoader(df, dataset_settings)
     return dl
 
@@ -126,12 +126,12 @@ def make_graph_spec(data_loader):
 
     graph_spec = gsb.build()
     return graph_spec
-    
+
 
 @pytest.mark.parametrize("batch_size", [1, 8])
 def test_training_model_can_predict(script_factory, data_loader, batch_size):
     x, y_true = data_loader.get_example_batch(batch_size=batch_size)
-    
+
     graph_spec = make_graph_spec(data_loader)
     training_model = TrainingModel(script_factory, graph_spec)
 
@@ -141,7 +141,7 @@ def test_training_model_can_predict(script_factory, data_loader, batch_size):
         assert target in y_pred
         assert y_pred[target].dtype == y_true[target].dtype
         assert y_pred[target].shape == y_true[target].shape
-        
+
 
 @pytest.mark.parametrize("batch_size", [1, 8])
 def test_inference_model_can_predict_with_loaded_and_preprocessed_data(script_factory, data_loader, batch_size):
@@ -149,7 +149,7 @@ def test_inference_model_can_predict_with_loaded_and_preprocessed_data(script_fa
         batch_size=batch_size,
         apply_pipelines='all'  # load and preprocess
     )
-    
+
     graph_spec = make_graph_spec(data_loader)
     inference_model = TrainingModel(script_factory, graph_spec) \
         .as_inference_model(
@@ -163,7 +163,7 @@ def test_inference_model_can_predict_with_loaded_and_preprocessed_data(script_fa
         assert target in y_pred
         assert y_pred[target].dtype == y_true[target].dtype
         assert y_pred[target].shape == y_true[target].shape
-        
+
 
 @pytest.mark.parametrize("batch_size", [1, 8])
 def test_inference_model_can_predict_with_loaded_but_not_preprocessed_data(script_factory, data_loader, batch_size):
@@ -173,7 +173,7 @@ def test_inference_model_can_predict_with_loaded_but_not_preprocessed_data(scrip
     )
 
     graph_spec = make_graph_spec(data_loader)
-    
+
     inference_model = TrainingModel(script_factory, graph_spec) \
         .as_inference_model(
             data_loader,
@@ -186,5 +186,5 @@ def test_inference_model_can_predict_with_loaded_but_not_preprocessed_data(scrip
         assert target in y_pred
         assert y_pred[target].dtype == y_true[target].dtype
         assert y_pred[target].shape == y_true[target].shape
-        
+
 

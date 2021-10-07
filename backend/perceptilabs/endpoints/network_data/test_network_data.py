@@ -52,7 +52,7 @@ def test_previews_all_basic(client, basic_request):
             'Error': None,
             'VariableList': ['output', 'W', 'b', 'preview'],
             'VariableName': 'output',
-            'inShape': '[]'
+            'inShape': '1'
         },
         '2': {
             'Error': None,
@@ -61,7 +61,7 @@ def test_previews_all_basic(client, basic_request):
             'inShape': '3'
         }
     }
-    
+
     assert response.json == expected
 
 
@@ -75,8 +75,8 @@ def test_previews_one_basic(client, basic_request):
         'Error': None,
         'VariableList': ['output', 'W', 'b', 'preview'],
         'VariableName': 'output',
-        'inShape': '[]'
+        'inShape': '1'
     }
 
     assert response.json == expected
-    
+

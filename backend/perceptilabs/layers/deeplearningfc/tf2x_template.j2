@@ -31,9 +31,6 @@ class {{layer_spec.sanitized_name}}Keras(tf.keras.layers.Layer, PerceptiLabsVisu
             output = self.dropout(output, training=training)
             preview = self.dropout(preview, training=training)	    
 	{% endcall %}
-	{% call indented_if(layer_spec.n_neurons == 1) %}
-            output = tf.squeeze(output, axis=1)
-	{% endcall %}
 	
         self.kernel = self.dense.kernel
         self.bias = self.dense.bias
@@ -84,7 +81,7 @@ class {{layer_spec.sanitized_name}}Keras(tf.keras.layers.Layer, PerceptiLabsVisu
 
 
 class {{layer_spec.sanitized_name}}(Tf2xLayer):
-    # TODO: deprecate this part! (see work item 1534)
+    {# # TODO: deprecate this part! (see work item 1534) #}
     def __init__(self):
         super().__init__(
             keras_class={{layer_spec.sanitized_name}}Keras

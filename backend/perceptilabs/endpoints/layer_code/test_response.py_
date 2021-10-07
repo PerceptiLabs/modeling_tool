@@ -65,7 +65,6 @@ class DeepLearningFC_Dense_1Keras(tf.keras.layers.Layer, PerceptiLabsVisualizer)
 
 
 class DeepLearningFC_Dense_1(Tf2xLayer):
-    # TODO: deprecate this part! (see work item 1534)
     def __init__(self):
         super().__init__(
             keras_class=DeepLearningFC_Dense_1Keras

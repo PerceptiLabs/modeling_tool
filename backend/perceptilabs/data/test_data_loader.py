@@ -28,14 +28,14 @@ def test_basic_structure_ok():
         'x1': {'datatype': 'numerical', 'iotype': 'input'},
         'x2': {'datatype': 'numerical', 'iotype': 'input'},
         'y1': {'datatype': 'numerical', 'iotype': 'target'},
-        'y2': {'datatype': 'numerical', 'iotype': 'target'}        
+        'y2': {'datatype': 'numerical', 'iotype': 'target'}
     })
-    
+
     num_samples = 4
     with builder:
         for _ in range(num_samples):
             builder.add_row({'x1': 1.0, 'x2': 2.0, 'y1': 3.0, 'y2': 4.0})
-            
+
         dataset = builder.get_data_loader().get_dataset(partition='all')
 
         assert len(dataset) == num_samples
@@ -43,12 +43,12 @@ def test_basic_structure_ok():
             assert inputs['x1'].numpy() == 1.0
             assert inputs['x2'].numpy() == 2.0
             assert targets['y1'].numpy() == 3.0
-            assert targets['y2'].numpy() == 4.0        
+            assert targets['y2'].numpy() == 4.0
 
 
 def test_skips_unused_features():
     data = [[1.0, 2.0, 3.0, 4.0], [1.0, 2.0, 3.0, 4.0], [1.0, 2.0, 3.0, 4.0]]
-    df = pd.DataFrame(data, columns=['x1', 'x2','y1', 'y2']) 
+    df = pd.DataFrame(data, columns=['x1', 'x2','y1', 'y2'])
 
     feature_specs = {
         'x1': FeatureSpec(datatype='numerical', iotype='input'),
@@ -63,14 +63,14 @@ def test_skips_unused_features():
     for inputs, targets in dataset:
         assert inputs['x1'].numpy() == 1.0
         assert targets['y1'].numpy() == 3.0
-        
-        assert 'x2' not in inputs        
+
+        assert 'x2' not in inputs
         assert 'y2' not in targets
 
 
 def test_skips_columns_without_feature_spec():
     data = [[1.0, 2.0, 3.0, 4.0, 5.0], [1.0, 2.0, 3.0, 4.0, 5.0], [1.0, 2.0, 3.0, 4.0, 5.0]]
-    df = pd.DataFrame(data, columns=['x1', 'x2','y1', 'y2', 'z1']) 
+    df = pd.DataFrame(data, columns=['x1', 'x2','y1', 'y2', 'z1'])
 
     feature_specs = {
         'x1': FeatureSpec(datatype='numerical', iotype='input'),
@@ -85,15 +85,15 @@ def test_skips_columns_without_feature_spec():
     for inputs, targets in dataset:
         assert inputs['x1'].numpy() == 1.0
         assert targets['y1'].numpy() == 3.0
-        
-        assert 'x2' not in inputs        
+
+        assert 'x2' not in inputs
         assert 'y2' not in targets
         assert 'z1' not in inputs and 'z1' not in targets
-        
+
 
 def test_ints_are_converted_to_float():
     data = [[0, 0], [1, 1], [4, 4]]
-    df = pd.DataFrame(data, columns=['x1', 'x2']) 
+    df = pd.DataFrame(data, columns=['x1', 'x2'])
 
     feature_specs = {
         'x1': FeatureSpec(datatype='numerical', iotype='input'),
@@ -105,9 +105,9 @@ def test_ints_are_converted_to_float():
 
     for inputs, targets in dataset:
         assert inputs['x1'].dtype == tf.float32
-        assert targets['x2'].dtype == tf.float32        
+        assert targets['x2'].dtype == tf.float32
 
-        
+
 def test_image_data_is_loaded_correctly(temp_path):
 
     builder = DatasetBuilder.from_features({
@@ -116,19 +116,19 @@ def test_image_data_is_loaded_correctly(temp_path):
     })
 
 
-    expected_image = np.random.randint(0, 255, (32, 32, 3), dtype=np.uint8)    
+    expected_image = np.random.randint(0, 255, (32, 32, 3), dtype=np.uint8)
 
     n_samples = 3
     with builder:
         for i in range(n_samples):
             with builder.create_row() as row:
                 row.file_data['x'] = expected_image
-                row.file_type['x'] = '.png'                      
+                row.file_type['x'] = '.png'
                 row.literals['y'] = i
-        
+
         dataset = builder.get_data_loader().get_dataset(partition='all')
         assert len(dataset) == n_samples
-        
+
         for inputs, targets in dataset:
             actual_image = inputs['x'].numpy()
             assert np.all(np.isclose(actual_image, expected_image))
@@ -136,7 +136,7 @@ def test_image_data_is_loaded_correctly(temp_path):
 
 def test_splitting():
     data = [[1, -1], [1, -1], [1, -1], [2, -2], [2, -2], [3, -3]]
-    df = pd.DataFrame(data, columns=['x1', 'x2']) 
+    df = pd.DataFrame(data, columns=['x1', 'x2'])
 
     feature_specs = {
         'x1': FeatureSpec(datatype='numerical', iotype='input'),
@@ -145,7 +145,7 @@ def test_splitting():
     partitions = Partitions(
         training_ratio=3/6,
         validation_ratio=2/6,
-        test_ratio=1/6,        
+        test_ratio=1/6,
         randomized=False
     )
     dataset_settings = DatasetSettings(
@@ -159,7 +159,7 @@ def test_splitting():
         for inputs, targets in dataset:
             assert inputs['x1'].numpy() == expected_x1
             assert targets['x2'].numpy() == expected_x2
-            
+
     validate_set(
         dl.get_dataset(partition='training'),
         expected_size=3,
@@ -182,7 +182,7 @@ def test_splitting():
 
 def test_splitting_rows_are_preserved():  # I.e., check that columns arent shuffled differently
     data = [[1.0, 1.0], [2.0, 2.0], [3.0, 3.0], [4.0, 4.0], [5.0, 5.0], [6.0, 6.0]]
-    df = pd.DataFrame(data, columns=['x1', 'x2']) 
+    df = pd.DataFrame(data, columns=['x1', 'x2'])
 
     feature_specs = {
         'x1': FeatureSpec(datatype='numerical', iotype='input'),
@@ -191,7 +191,7 @@ def test_splitting_rows_are_preserved():  # I.e., check that columns arent shuff
     partitions = Partitions(
         training_ratio=3/6,
         validation_ratio=2/6,
-        test_ratio=1/6,        
+        test_ratio=1/6,
         randomized=False
     )
     dataset_settings = DatasetSettings(
@@ -199,12 +199,12 @@ def test_splitting_rows_are_preserved():  # I.e., check that columns arent shuff
         partitions=partitions
     )
     dl = DataLoader(df, dataset_settings)
-    
+
     def validate_set(dataset, expected_rows):
         for inputs, targets in dataset:
             actual_row = [inputs['x1'].numpy(), targets['x2'].numpy()]
             assert actual_row in expected_rows
-        
+
     validate_set(
         dl.get_dataset(partition='training'),
         expected_rows=[[1.0, 1.0], [2.0, 2.0], [3.0, 3.0]]
@@ -215,13 +215,13 @@ def test_splitting_rows_are_preserved():  # I.e., check that columns arent shuff
     )
     validate_set(
         dl.get_dataset(partition='test'),
-        expected_rows=[[6.0, 6.0]] 
+        expected_rows=[[6.0, 6.0]]
     )
 
-    
+
 def test_splitting_rows_are_preserved_with_randomized_partitions():  # I.e., check that columns arent shuffled differently
     data = [[1.0, -1.0], [2.0, -2.0], [3.0, -3.0], [4.0, -4.0], [5.0, -5.0], [6.0, -6.0]]
-    df = pd.DataFrame(data, columns=['x1', 'x2']) 
+    df = pd.DataFrame(data, columns=['x1', 'x2'])
 
 
     feature_specs = {
@@ -231,7 +231,7 @@ def test_splitting_rows_are_preserved_with_randomized_partitions():  # I.e., che
     partitions = Partitions(
         training_ratio=3/6,
         validation_ratio=2/6,
-        test_ratio=1/6,        
+        test_ratio=1/6,
         randomized=True
     )
     dataset_settings = DatasetSettings(
@@ -239,20 +239,20 @@ def test_splitting_rows_are_preserved_with_randomized_partitions():  # I.e., che
         partitions=partitions
     )
     dl = DataLoader(df, dataset_settings)
-    
+
     def validate_set(dataset):
         for inputs, targets in dataset:
             x1, x2 = inputs['x1'].numpy(), targets['x2'].numpy()
             assert x1 == -x2
-        
+
     validate_set(dl.get_dataset(partition='training'))
     validate_set(dl.get_dataset(partition='validation'))
     validate_set(dl.get_dataset(partition='test'))
-    
+
 
 def test_get_dataset_size():
     data = [[1, -1], [1, -1], [1, -1], [2, -2], [2, -2], [3, -3]]
-    df = pd.DataFrame(data, columns=['x1', 'x2']) 
+    df = pd.DataFrame(data, columns=['x1', 'x2'])
 
 
     feature_specs = {
@@ -262,7 +262,7 @@ def test_get_dataset_size():
     partitions = Partitions(
         training_ratio=3/6,
         validation_ratio=2/6,
-        test_ratio=1/6,        
+        test_ratio=1/6,
     )
 
     dataset_settings = DatasetSettings(
@@ -273,7 +273,7 @@ def test_get_dataset_size():
 
     assert dl.get_dataset_size(partition='training') == 3
     assert dl.get_dataset_size(partition='validation') == 2
-    assert dl.get_dataset_size(partition='test') == 1    
+    assert dl.get_dataset_size(partition='test') == 1
 
 
 def test_instantiate_binary_string_data():
@@ -292,7 +292,7 @@ def test_instantiate_binary_string_data():
         assert inputs['x1'].dtype == tf.float32
         assert target['y1'].dtype == tf.float32
 
-        
+
 def test_instantiate_binary_integer_data():
     data = {'x1': [1, 0, 1, 0], 'y1': [1, 0, 1, 0]}
     df = pd.DataFrame(data)
@@ -309,7 +309,7 @@ def test_instantiate_binary_integer_data():
         assert inputs['x1'].dtype == tf.float32
         assert target['y1'].dtype == tf.float32
 
-        
+
 def test_instantiate_binary_bool_data():
     data = {'x1': [True, False, True, False], 'y1': [1, 0, 1, 0]}
     df = pd.DataFrame(data)
@@ -333,7 +333,7 @@ def test_randomized_partitioning_is_random():
     original_y1 = np.random.random((n,)).tolist()
 
     df = pd.DataFrame.from_dict({'x1': original_x1, 'y1': original_y1})
-    
+
     feature_specs = {
         'x1': FeatureSpec(datatype='numerical', iotype='input'),
         'y1': FeatureSpec(datatype='numerical', iotype='target')
@@ -342,7 +342,7 @@ def test_randomized_partitioning_is_random():
     partitions = Partitions(
         training_ratio=3/6,
         validation_ratio=2/6,
-        test_ratio=1/6,        
+        test_ratio=1/6,
         randomized=True,
         seed=1234
     )
@@ -359,17 +359,17 @@ def test_randomized_partitioning_is_random():
     for inputs, targets in dl.get_dataset(partition='training'):
         actual_x1.append(inputs['x1'].numpy())
         actual_y1.append(targets['y1'].numpy())
-        
+
     for inputs, targets in dl.get_dataset(partition='validation'):
         actual_x1.append(inputs['x1'].numpy())
         actual_y1.append(targets['y1'].numpy())
-        
+
     for inputs, targets in dl.get_dataset(partition='test'):
         actual_x1.append(inputs['x1'].numpy())
         actual_y1.append(targets['y1'].numpy())
-        
+
     assert not np.all(np.isclose(original_x1, actual_x1))
-    assert not np.all(np.isclose(original_y1, actual_y1))    
+    assert not np.all(np.isclose(original_y1, actual_y1))
 
 
 def test_randomized_partitioning_with_same_seed_are_equal():
@@ -378,7 +378,7 @@ def test_randomized_partitioning_with_same_seed_are_equal():
     y = np.random.random((n,)).tolist()
 
     df = pd.DataFrame.from_dict({'x': x, 'y': y})
-    
+
     feature_specs = {
         'x': FeatureSpec(datatype='numerical', iotype='input'),
         'y': FeatureSpec(datatype='numerical', iotype='target')
@@ -386,7 +386,7 @@ def test_randomized_partitioning_with_same_seed_are_equal():
     partitions = Partitions(
         training_ratio=3/6,
         validation_ratio=2/6,
-        test_ratio=1/6,        
+        test_ratio=1/6,
         randomized=True,
         seed=1234
     )
@@ -395,12 +395,12 @@ def test_randomized_partitioning_with_same_seed_are_equal():
         partitions=partitions
     )
     dl1 = DataLoader(df, dataset_settings)
-    dl2 = DataLoader(df, dataset_settings)    
-    
+    dl2 = DataLoader(df, dataset_settings)
+
     def datasets_are_equal(set1, set2):
         for (x1, y1), (x2, y2) in zip(set1, set2):
             equal = (
-                np.isclose(x1['x'].numpy(), x2['x'].numpy()) and 
+                np.isclose(x1['x'].numpy(), x2['x'].numpy()) and
                 np.isclose(y1['y'].numpy(), y2['y'].numpy())
             )
             if not equal:
@@ -427,7 +427,7 @@ def test_randomized_partitioning_with_diff_seed_are_unequal():
     y = np.random.random((n,)).tolist()
 
     df = pd.DataFrame.from_dict({'x': x, 'y': y})
-    
+
     feature_specs = {
         'x': FeatureSpec(datatype='numerical', iotype='input'),
         'y': FeatureSpec(datatype='numerical', iotype='target')
@@ -435,7 +435,7 @@ def test_randomized_partitioning_with_diff_seed_are_unequal():
     partitions1 = Partitions(
         training_ratio=3/6,
         validation_ratio=2/6,
-        test_ratio=1/6,        
+        test_ratio=1/6,
         randomized=True,
         seed=1234
     )
@@ -448,7 +448,7 @@ def test_randomized_partitioning_with_diff_seed_are_unequal():
     partitions2 = Partitions(
         training_ratio=3/6,
         validation_ratio=2/6,
-        test_ratio=1/6,        
+        test_ratio=1/6,
         randomized=True,
         seed=100
     )
@@ -461,7 +461,7 @@ def test_randomized_partitioning_with_diff_seed_are_unequal():
     def datasets_are_equal(set1, set2):
         for (x1, y1), (x2, y2) in zip(set1, set2):
             equal = (
-                np.isclose(x1['x'].numpy(), x2['x'].numpy()) and 
+                np.isclose(x1['x'].numpy(), x2['x'].numpy()) and
                 np.isclose(y1['y'].numpy(), y2['y'].numpy())
             )
             if not equal:
@@ -488,7 +488,7 @@ def test_shuffle_gives_random_data():
     original_y1 = np.random.random((n,)).tolist()
 
     df = pd.DataFrame.from_dict({'x1': original_x1, 'y1': original_y1})
-    
+
     feature_specs = {
         'x1': FeatureSpec(datatype='numerical', iotype='input'),
         'y1': FeatureSpec(datatype='numerical', iotype='target')
@@ -503,23 +503,23 @@ def test_shuffle_gives_random_data():
         partitions=partitions
     )
     dl = DataLoader(df, dataset_settings)
-    
+
     def dataset_to_list(dataset):
         data_list = []
         for inputs, outputs in dataset:
             xy = (inputs['x1'].numpy(), outputs['y1'].numpy())
             data_list.append(xy)
         return data_list
-    
+
     data_unshuffled_1 = dataset_to_list(dl.get_dataset(shuffle=False))
-    data_unshuffled_2 = dataset_to_list(dl.get_dataset(shuffle=False))    
+    data_unshuffled_2 = dataset_to_list(dl.get_dataset(shuffle=False))
     data_shuffled_1 = dataset_to_list(dl.get_dataset(shuffle=True, shuffle_seed=123))
     data_shuffled_2 = dataset_to_list(dl.get_dataset(shuffle=True, shuffle_seed=456))
 
     assert data_unshuffled_1 == data_unshuffled_2
     assert data_unshuffled_1 != data_shuffled_1
     assert data_unshuffled_1 != data_shuffled_2
-    assert data_shuffled_1 != data_shuffled_2            
+    assert data_shuffled_1 != data_shuffled_2
 
 
 def test_image_data_is_augmented_consistently(temp_path):
@@ -529,7 +529,7 @@ def test_image_data_is_augmented_consistently(temp_path):
         image_paths.append(path)
 
     data = [[img, 0] for img in image_paths]  # Image, label
-    df = pd.DataFrame(data, columns=['x', 'y']) 
+    df = pd.DataFrame(data, columns=['x', 'y'])
 
     feature_specs = {
         'x': FeatureSpec(
@@ -546,12 +546,12 @@ def test_image_data_is_augmented_consistently(temp_path):
     dataset_settings = DatasetSettings(feature_specs=feature_specs)
 
     dl1 = DataLoader(df, dataset_settings)
-    dl2 = DataLoader(df, dataset_settings)    
-    
+    dl2 = DataLoader(df, dataset_settings)
+
     def datasets_are_equal(set1, set2):
         for (x1, y1), (x2, y2) in zip(set1, set2):
             equal = (
-                np.allclose(x1['x'].numpy(), x2['x'].numpy()) and 
+                np.allclose(x1['x'].numpy(), x2['x'].numpy()) and
                 np.allclose(y1['y'].numpy(), y2['y'].numpy())
             )
             if not equal:
@@ -579,7 +579,7 @@ def test_image_data_with_diff_seed_is_not_augmented_consistently(temp_path):
         image_paths.append(path)
 
     data = [[img, 0] for img in image_paths]  # Image, label
-    df = pd.DataFrame(data, columns=['x', 'y']) 
+    df = pd.DataFrame(data, columns=['x', 'y'])
 
     fs1 = {
         'x': FeatureSpec(
@@ -608,14 +608,14 @@ def test_image_data_with_diff_seed_is_not_augmented_consistently(temp_path):
         'y': FeatureSpec(datatype='numerical', iotype='target')
     }
     ds2 = DatasetSettings(feature_specs=fs2)
-    
+
     dl1 = DataLoader(df, ds1)
-    dl2 = DataLoader(df, ds2)    
+    dl2 = DataLoader(df, ds2)
 
     def datasets_are_equal(set1, set2):
         for (x1, y1), (x2, y2) in zip(set1, set2):
             equal = (
-                np.allclose(x1['x'].numpy(), x2['x'].numpy()) and 
+                np.allclose(x1['x'].numpy(), x2['x'].numpy()) and
                 np.allclose(y1['y'].numpy(), y2['y'].numpy())
             )
             if not equal:
@@ -635,7 +635,7 @@ def test_image_data_with_diff_seed_is_not_augmented_consistently(temp_path):
         dl2.get_dataset(partition='test')
     )
 
-    
+
 def test_image_data_is_augmented_consistently_for_repeated_calls(temp_path):
     image_paths = []
     for _ in range(20):
@@ -643,7 +643,7 @@ def test_image_data_is_augmented_consistently_for_repeated_calls(temp_path):
         image_paths.append(path)
 
     data = [[img, 0] for img in image_paths]  # Image, label
-    df = pd.DataFrame(data, columns=['x', 'y']) 
+    df = pd.DataFrame(data, columns=['x', 'y'])
 
     feature_specs = {
         'x': FeatureSpec(
@@ -660,11 +660,11 @@ def test_image_data_is_augmented_consistently_for_repeated_calls(temp_path):
     dataset_settings = DatasetSettings(feature_specs=feature_specs)
 
     dl = DataLoader(df, dataset_settings)
-    
+
     def datasets_are_equal(set1, set2):
         for (x1, y1), (x2, y2) in zip(set1, set2):
             equal = (
-                np.allclose(x1['x'].numpy(), x2['x'].numpy()) and 
+                np.allclose(x1['x'].numpy(), x2['x'].numpy()) and
                 np.allclose(y1['y'].numpy(), y2['y'].numpy())
             )
             if not equal:
@@ -684,7 +684,7 @@ def test_image_data_is_augmented_consistently_for_repeated_calls_with_shuffle(te
         image_paths.append(path)
 
     data = [[img, idx] for idx, img in enumerate(image_paths)]  # Image, label
-    df = pd.DataFrame(data, columns=['x', 'y']) 
+    df = pd.DataFrame(data, columns=['x', 'y'])
 
     feature_specs = {
         'x': FeatureSpec(
@@ -701,10 +701,10 @@ def test_image_data_is_augmented_consistently_for_repeated_calls_with_shuffle(te
     dataset_settings = DatasetSettings(feature_specs=feature_specs)
 
     dl = DataLoader(df, dataset_settings)
-    
+
     def datasets_are_equivalent(set1, set2):  # I.e., order doesn't matter
-        dataset1 = {y['y'].numpy(): x['x'].numpy() for x, y in set1}
-        dataset2 = {y['y'].numpy(): x['x'].numpy() for x, y in set2}
+        dataset1 = {y['y'].numpy()[0]: x['x'].numpy() for x, y in set1}
+        dataset2 = {y['y'].numpy()[0]: x['x'].numpy() for x, y in set2}
 
         if len(dataset1) != len(dataset2):
             return False
@@ -713,7 +713,7 @@ def test_image_data_is_augmented_consistently_for_repeated_calls_with_shuffle(te
             if not np.allclose(dataset1[idx], dataset2[idx]):
                 return False
         return True
-        
+
 
     assert datasets_are_equivalent(
         dl.get_dataset(shuffle=True, shuffle_seed=123),
@@ -728,7 +728,7 @@ def test_image_data_is_augmented_consistently_with_flip_and_crop(temp_path):
         image_paths.append(path)
 
     data = [[img, 0] for img in image_paths]  # Image, label
-    df = pd.DataFrame(data, columns=['x', 'y']) 
+    df = pd.DataFrame(data, columns=['x', 'y'])
 
     feature_specs = {
         'x': FeatureSpec(
@@ -749,12 +749,12 @@ def test_image_data_is_augmented_consistently_with_flip_and_crop(temp_path):
     dataset_settings = DatasetSettings(feature_specs=feature_specs)
 
     dl1 = DataLoader(df, dataset_settings)
-    dl2 = DataLoader(df, dataset_settings)    
-    
+    dl2 = DataLoader(df, dataset_settings)
+
     def datasets_are_equal(set1, set2):
         for (x1, y1), (x2, y2) in zip(set1, set2):
             equal = (
-                np.allclose(x1['x'].numpy(), x2['x'].numpy()) and 
+                np.allclose(x1['x'].numpy(), x2['x'].numpy()) and
                 np.allclose(y1['y'].numpy(), y2['y'].numpy())
             )
             if not equal:
@@ -776,7 +776,7 @@ def test_image_data_is_augmented_consistently_with_flip_and_crop(temp_path):
         dl1.get_dataset(partition='test'),
         dl2.get_dataset(partition='test')
     )
-    
+
 
 def test_image_data_is_augmented_consistently_with_flip_crop_and_rotate(temp_path):
     image_paths = []
@@ -785,7 +785,7 @@ def test_image_data_is_augmented_consistently_with_flip_crop_and_rotate(temp_pat
         image_paths.append(path)
 
     data = [[img, 0] for img in image_paths]  # Image, label
-    df = pd.DataFrame(data, columns=['x', 'y']) 
+    df = pd.DataFrame(data, columns=['x', 'y'])
 
     feature_specs = {
         'x': FeatureSpec(
@@ -811,12 +811,12 @@ def test_image_data_is_augmented_consistently_with_flip_crop_and_rotate(temp_pat
     dataset_settings = DatasetSettings(feature_specs=feature_specs)
 
     dl1 = DataLoader(df, dataset_settings)
-    dl2 = DataLoader(df, dataset_settings)    
-    
+    dl2 = DataLoader(df, dataset_settings)
+
     def datasets_are_equal(set1, set2):
         for (x1, y1), (x2, y2) in zip(set1, set2):
             equal = (
-                np.allclose(x1['x'].numpy(), x2['x'].numpy()) and 
+                np.allclose(x1['x'].numpy(), x2['x'].numpy()) and
                 np.allclose(y1['y'].numpy(), y2['y'].numpy())
             )
             if not equal:
@@ -840,7 +840,7 @@ def test_image_data_is_augmented_consistently_with_flip_crop_and_rotate(temp_pat
     )
 
 
-@pytest.mark.parametrize("ext", ['.png', '.tiff'])    
+@pytest.mark.parametrize("ext", ['.png', '.tiff'])
 def test_image_data_resize_has_correct_shape(temp_path, ext):
     image_paths = []
     for _ in range(3):
@@ -851,9 +851,9 @@ def test_image_data_resize_has_correct_shape(temp_path, ext):
         path, data = random_image((24, 32, 3), temp_path, ext)
         image_paths.append(path)
 
-        
+
     data = [[img, 0] for img in image_paths]  # Image, label
-    df = pd.DataFrame(data, columns=['x', 'y']) 
+    df = pd.DataFrame(data, columns=['x', 'y'])
 
     feature_specs = {
         'x': FeatureSpec(
@@ -864,7 +864,7 @@ def test_image_data_resize_has_correct_shape(temp_path, ext):
                 resize_mode='custom',
                 resize_height=32,
                 resize_width=8
-                
+
             )
         ),
         'y': FeatureSpec(datatype='numerical', iotype='target')
@@ -887,9 +887,9 @@ def test_image_data_resize_has_correct_shape_mixed_extensions(temp_path):
         path, data = random_image((24, 32, 3), temp_path, '.tiff')
         image_paths.append(path)
 
-        
+
     data = [[img, 0] for img in image_paths]  # Image, label
-    df = pd.DataFrame(data, columns=['x', 'y']) 
+    df = pd.DataFrame(data, columns=['x', 'y'])
 
     feature_specs = {
         'x': FeatureSpec(
@@ -900,7 +900,7 @@ def test_image_data_resize_has_correct_shape_mixed_extensions(temp_path):
                 resize_mode='custom',
                 resize_height=32,
                 resize_width=8
-                
+
             )
         ),
         'y': FeatureSpec(datatype='numerical', iotype='target')
@@ -911,7 +911,7 @@ def test_image_data_resize_has_correct_shape_mixed_extensions(temp_path):
 
     for inputs, targets in dl.get_dataset():
         assert inputs['x'].shape == (32, 8, 3)
-        
+
 
 def test_repeated_dataset_ok():
     df = pd.DataFrame.from_dict(
@@ -952,7 +952,7 @@ def test_repeated_dataset_ok():
     assert y == [-8.0, -9.0]
 
     i, x, y = dataset_to_lists(dl.get_dataset(partition='test', drop_index=False))
-    assert i == [9]    
+    assert i == [9]
     assert x == [10.0]
     assert y == [-10.0]
 
@@ -964,7 +964,7 @@ def test_compute_metadata_is_identical(temp_path):
         image_paths.append(path)
 
     data = [[img, 0] for img in image_paths]  # Image, label
-    df = pd.DataFrame(data, columns=['x', 'y']) 
+    df = pd.DataFrame(data, columns=['x', 'y'])
 
     feature_specs = {
         'x': FeatureSpec(
@@ -984,7 +984,7 @@ def test_compute_metadata_is_identical(temp_path):
     metadata = DataLoader.compute_metadata(df, dataset_settings)
 
     assert metadata == dl1.metadata
-    
+
 
 def test_loading_with_metadata_gives_same_data(temp_path):
     image_paths = []
@@ -993,7 +993,7 @@ def test_loading_with_metadata_gives_same_data(temp_path):
         image_paths.append(path)
 
     data = [[img, 0] for img in image_paths]  # Image, label
-    df = pd.DataFrame(data, columns=['x', 'y']) 
+    df = pd.DataFrame(data, columns=['x', 'y'])
 
     feature_specs = {
         'x': FeatureSpec(
@@ -1010,12 +1010,12 @@ def test_loading_with_metadata_gives_same_data(temp_path):
     dataset_settings = DatasetSettings(feature_specs=feature_specs)
 
     dl1 = DataLoader(df, dataset_settings)
-    dl2 = DataLoader(df, dataset_settings, metadata=dl1.metadata)    
-    
+    dl2 = DataLoader(df, dataset_settings, metadata=dl1.metadata)
+
     def datasets_are_equal(set1, set2):
         for (x1, y1), (x2, y2) in zip(set1, set2):
             equal = (
-                np.allclose(x1['x'].numpy(), x2['x'].numpy()) and 
+                np.allclose(x1['x'].numpy(), x2['x'].numpy()) and
                 np.allclose(y1['y'].numpy(), y2['y'].numpy())
             )
             if not equal:
@@ -1034,18 +1034,18 @@ def test_loading_with_metadata_gives_same_data(temp_path):
         dl1.get_dataset(partition='test'),
         dl2.get_dataset(partition='test')
     )
-    
+
 
 @pytest.mark.parametrize("random_partitions", [False, True])
 def test_get_dataframe_equals_original(random_partitions):
     n_rows = 60
     ratios = {'training': 3/6, 'validation': 2/6, 'test': 1/6}
-    
+
     data = {
         'x1': [x for x in range(n_rows)],
         'x2': [x**2 for x in range(n_rows)]
     }
-    df = pd.DataFrame(data) 
+    df = pd.DataFrame(data)
 
     feature_specs = {
         'x1': FeatureSpec(datatype='numerical', iotype='input'),
@@ -1070,18 +1070,18 @@ def test_get_dataframe_equals_original(random_partitions):
     for partition, ratio in ratios.items():
         partition_df = dl.get_data_frame(partition=partition)
         assert len(partition_df) == ratio*n_rows
-    
-    
+
+
 @pytest.mark.parametrize("random_partitions", [False, True])
 def test_get_dataframe_partition_matches_loader_partition(random_partitions):
     n_rows = 60
     ratios = {'training': 3/6, 'validation': 2/6, 'test': 1/6}
-    
+
     data = {
         'x1': [x for x in range(n_rows)],
         'x2': [x**2 for x in range(n_rows)]
     }
-    df = pd.DataFrame(data) 
+    df = pd.DataFrame(data)
 
     feature_specs = {
         'x1': FeatureSpec(datatype='numerical', iotype='input'),
@@ -1102,7 +1102,7 @@ def test_get_dataframe_partition_matches_loader_partition(random_partitions):
     def datasets_are_equal(set1, set2):
         for (x1, y1), (x2, y2) in zip(set1, set2):
             equal = (
-                np.isclose(x1['x1'].numpy(), x2['x1'].numpy()) and 
+                np.isclose(x1['x1'].numpy(), x2['x1'].numpy()) and
                 np.isclose(y1['x2'].numpy(), y2['x2'].numpy())
             )
             if not equal:
@@ -1112,11 +1112,11 @@ def test_get_dataframe_partition_matches_loader_partition(random_partitions):
     for partition in list(ratios.keys()) + ['all']:
         # Create a new loader based on training/validation/test dataframe ONLY.
         # its content should be an exact copy of the original training/validation/test datasets
-        
+
         partition_settings = DatasetSettings(
             feature_specs=feature_specs,
             partitions=Partitions(randomized=False)
-        )                
+        )
         partition_df = dl.get_data_frame(partition=partition)
         partition_dl = DataLoader(partition_df, partition_settings)
         assert datasets_are_equal(
@@ -1124,4 +1124,4 @@ def test_get_dataframe_partition_matches_loader_partition(random_partitions):
             dl.get_dataset(partition=partition, shuffle=False)
         )
 
-    
+

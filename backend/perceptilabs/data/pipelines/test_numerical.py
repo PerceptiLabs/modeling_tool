@@ -23,45 +23,57 @@ def test_normalization_standardization():
     dataset = tf.data.Dataset.from_tensor_slices([i for i in range(n_samples)])
 
     preprocessing = NumericalPreprocessingSpec(normalize=True, normalize_mode='standardization')
-    
-    _, _, pipeline, _ = NumericalPipelineBuilder().build_from_dataset(preprocessing, dataset)
-    processed_dataset = dataset.map(lambda x: pipeline(x))
+
+    loader, _, pipeline, _ = NumericalPipelineBuilder().build_from_dataset(preprocessing, dataset)
+    processed_dataset = dataset.map(lambda x: pipeline(loader(x)))
 
     batch = next(iter(processed_dataset.batch(n_samples))).numpy()  # Get the full dataset in a batch
 
     assert np.isclose(batch.mean(), 0, atol=1e-05)
     assert np.isclose(batch.std(), 1, atol=1e-05)
-    
+
 
 def test_normalization_minmax():
     n_samples = 10
     dataset = tf.data.Dataset.from_tensor_slices([i for i in range(n_samples)])
 
-    preprocessing = NumericalPreprocessingSpec(normalize=True, normalize_mode='min-max')    
-    
-    _, _, pipeline, _ = NumericalPipelineBuilder().build_from_dataset(preprocessing, dataset)
-    processed_dataset = dataset.map(lambda x: pipeline(x))
+    preprocessing = NumericalPreprocessingSpec(normalize=True, normalize_mode='min-max')
+
+    loader, _, pipeline, _ = NumericalPipelineBuilder().build_from_dataset(preprocessing, dataset)
+    processed_dataset = dataset.map(lambda x: pipeline(loader(x)))
 
     batch = next(iter(processed_dataset.batch(n_samples))).numpy()  # Get the full dataset in a batch
     assert batch.max() == 1.0
     assert batch.min() == 0.0
-    
-    
+
+
 def test_build_from_metadata_gives_same_results():
     n_samples = 10
     dataset = tf.data.Dataset.from_tensor_slices([i for i in range(n_samples)])
 
-    preprocessing = NumericalPreprocessingSpec(normalize=True, normalize_mode='min-max')    
-    _, _, built_pipeline, _ = NumericalPipelineBuilder().build_from_dataset(preprocessing, dataset)
+    preprocessing = NumericalPreprocessingSpec(normalize=True, normalize_mode='min-max')
+    built_loader, _, built_pipeline, _ = NumericalPipelineBuilder().build_from_dataset(preprocessing, dataset)
 
-    
+
     metadata = {'preprocessing': built_pipeline.metadata}
-    _, _, loaded_pipeline, _ = NumericalPipelineBuilder().load_from_metadata(preprocessing, metadata)
-    
-    dataset1 = dataset.map(lambda x: built_pipeline(x))
-    dataset2 = dataset.map(lambda x: loaded_pipeline(x))        
+    loaded_loader, _, loaded_pipeline, _ = NumericalPipelineBuilder().load_from_metadata(preprocessing, metadata)
+
+    dataset1 = dataset.map(lambda x: built_pipeline(built_loader(x)))
+    dataset2 = dataset.map(lambda x: loaded_pipeline(loaded_loader(x)))
 
     for sample1, sample2 in tf.data.Dataset.zip((dataset1, dataset2)):
         assert sample1.numpy() == float(sample2.numpy())
-    
-    
+
+
+
+def test_data_has_atleast_one_dimension():
+    n_samples = 10
+    dataset = tf.data.Dataset.from_tensor_slices([i for i in range(n_samples)])
+
+    preprocessing = NumericalPreprocessingSpec(normalize=True, normalize_mode='standardization')
+
+    loader, _, pipeline, _ = NumericalPipelineBuilder().build_from_dataset(preprocessing, dataset)
+    processed_dataset = dataset.map(lambda x: pipeline(loader(x)))
+
+    sample = next(iter(processed_dataset.batch(1)))
+    assert sample.shape == [1,1] #batch size and sample shape
