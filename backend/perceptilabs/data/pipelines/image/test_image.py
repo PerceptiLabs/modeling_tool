@@ -71,7 +71,11 @@ def test_build_from_metadata_gives_same_results(mnist_paths):
     dataset = tf.data.Dataset.from_tensor_slices(mnist_paths)
 
     preprocessing = ImagePreprocessingSpec(normalize=True, normalize_mode='min-max')        
-    loader1, augmenter1, preprocessing1, _ = ImagePipelineBuilder().build_from_dataset(preprocessing, dataset)
+    loader1, augmenter1, preprocessing1, _ = ImagePipelineBuilder().build_from_dataset(
+                                                        preprocessing, 
+                                                        dataset,
+                                                        feature_name=None, 
+                                                        on_status_updated=None)    
 
     metadata = {'loader': loader1.metadata, 'augmenter': augmenter1.metadata, 'preprocessing': preprocessing1.metadata}
     loader2, augmenter2, preprocessing2, _ = ImagePipelineBuilder().load_from_metadata(preprocessing, metadata)

@@ -15,7 +15,11 @@ def test_text_preprocessing():
     ]     
     dataset = tf.data.Dataset.from_tensor_slices(docs)
 
-    _, _, pipeline, _ = TextPipelineBuilder().build_from_dataset({}, dataset)
+    _, _, pipeline, _ = TextPipelineBuilder().build_from_dataset(
+        {}, 
+        dataset, 
+        feature_name=None, 
+        on_status_updated=None) 
     processed_dataset = dataset.map(lambda x: pipeline(x))
 
     assert pipeline.num_words == 10
@@ -36,12 +40,20 @@ def test_build_from_metadata_gives_same_results():
     ]     
     dataset = tf.data.Dataset.from_tensor_slices(docs)
 
-    _, _, built_pipeline, _ = TextPipelineBuilder().build_from_dataset({}, dataset)
+    _, _, built_pipeline, _ = TextPipelineBuilder().build_from_dataset(
+        {}, 
+        dataset, 
+        feature_name=None, 
+        on_status_updated=None) 
     
     metadata = {
         'preprocessing': built_pipeline.metadata,
     }
-    _, _, loaded_pipeline, _ = TextPipelineBuilder().load_from_metadata({}, metadata)
+    _, _, loaded_pipeline, _ = TextPipelineBuilder().build_from_dataset(
+        {}, 
+        dataset, 
+        feature_name=None, 
+        on_status_updated=None) 
     
     for x in dataset:
         y_built = built_pipeline(x)

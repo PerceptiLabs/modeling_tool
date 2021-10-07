@@ -94,7 +94,7 @@ div
               input.random-seed-input(type="text" v-model="datasetSettings.randomSeed")
         div.d-flex.justify-content-center(v-show="onStep === STEP.TRAINING")
           template(v-if="isCreateModelLoading")
-            chart-spinner(text="Building preprocessing pipelines...")
+            chart-spinner(:text="buildingPreProcessingStatus")
             error-cta.cta-container(v-if="isShowCTA")
           template(v-else)
             div.setting-form-wrapper.settings-layer_section
@@ -343,7 +343,7 @@ const mockClassList = [
 
 export default {
   name: "SelectModelModal",
-  components: { BaseGlobalPopup, FilePickerPopup, CsvTable, TripleInput, InfoTooltip, ChartSpinner, DataColumnOptionSidebar, PublicDatasetsList },
+  components: { BaseGlobalPopup, FilePickerPopup, CsvTable, TripleInput, InfoTooltip, ChartSpinner, DataColumnOptionSidebar, PublicDatasetsList, ErrorCta },
   mixins: [mixinFocus],
   async created() {
     const showNewModelPopup = this.showNewModelPopup;
@@ -452,6 +452,7 @@ export default {
       isCreateModelLoading: false,
       createdFromDatasetId: null,
       isShowCTA: false,
+      buildingPreProcessingStatus: 'Building preprocessing pipelines...',
       createdFromDatasetId: null,
     };
   },
@@ -642,7 +643,7 @@ export default {
       const { modelName, modelPath } = this;
 
       this.isShowCTA = false;
-      const timerId = setTimeout(() => {
+      const watchTimerId = setTimeout(() => {
         this.isShowCTA = true;
       }, 3 * 60 * 1000);
       
@@ -680,7 +681,9 @@ export default {
       };
       const userEmail = this.userEmail;
       
-      await renderingKernel.waitForDataReady(datasetSettings, userEmail);
+      await renderingKernel.waitForDataReady(datasetSettings, userEmail, (message) => {
+        this.buildingPreProcessingStatus = message;
+      });
         
       const modelRecommendation = await renderingKernel.getModelRecommendation(
         datasetSettings,
@@ -755,6 +758,7 @@ export default {
         this.setCurrentView("tutorial-workspace-view");
       });
       this.isCreateModelLoading = false;
+      clearTimeout(watchTimerId);
       this.closeModal(false);
     },
     async createModelTF1X() {

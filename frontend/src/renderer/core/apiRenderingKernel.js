@@ -173,7 +173,7 @@ export const renderingKernel = {
     return whenRenderingKernelReady
     .then(rk => rk.get(`/data?dataset_hash=${datasetHash}&user_email=${userEmail}`))
     .then(res => {
-      return (res.status === 200);
+      return (res.status === 200) ? res.data : false;
     }).catch((err) => {
       console.error(err);
       return false;
@@ -194,11 +194,18 @@ export const renderingKernel = {
       })
   },
   
-  async waitForDataReady(datasetSettings, userEmail) {
+  async waitForDataReady(datasetSettings, userEmail, cb) {
     const datasetHash = await renderingKernel.putData(datasetSettings, userEmail);
 	
     await (async function () {
-      while(!await renderingKernel.isDataReady(datasetHash, userEmail)) {
+      while(1) {
+        const res = await renderingKernel.isDataReady(datasetHash, userEmail);
+        if (res && res.is_complete) {
+          break;
+        }
+        if (res && res.message && cb) {
+          cb(res.message);
+        }
         await new Promise(resolve => {
           setTimeout(resolve, 1000);
         });

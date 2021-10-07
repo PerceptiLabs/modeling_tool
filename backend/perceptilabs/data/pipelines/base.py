@@ -38,6 +38,8 @@ class BasePipeline(tf.keras.Model):
         )    
 
 
+
+
 class IdentityPipeline(BasePipeline):
     def call(self, x):
         return x
@@ -59,29 +61,65 @@ class PipelineBuilder(ABC):
         postprocessing_step = self._get_postprocessing_step(preprocessing, metadata.get('postprocessing'))
         return (loader_step, augmenter_step, preprocessing_step, postprocessing_step)
 
-    def build_from_dataset(self, preprocessing, dataset):
+    def build_from_dataset(self, preprocessing, dataset, feature_name=None, on_status_updated=None):
         """ Use for testing only """
         dataset_size = len(dataset)        
         indices = tf.data.Dataset.from_tensor_slices(tf.range(dataset_size))
         indexed_dataset = tf.data.Dataset.zip((indices, dataset))  # This helps us map samples back
-        return self.build_from_indexed_dataset(preprocessing, indexed_dataset)
+        return self.build_from_indexed_dataset(preprocessing, indexed_dataset, feature_name, on_status_updated)
 
-    def build_from_indexed_dataset(self, preprocessing, indexed_dataset):
+    def build_from_indexed_dataset(self, preprocessing, indexed_dataset, feature_name=None, on_status_updated=None):
+        def count_processing_steps():
+            count = 0
+            if self._loader_class:
+                count += 1
+            if self._preprocessing_class:
+                count += 1
+            if self._augmenter_class:
+                count += 1
+            if self._postprocessing_class:
+                count += 1
+            return count
+
+        total_steps = count_processing_steps()
+        curr_processing_step = 0
+
         t0 = time.perf_counter()
         loader_metadata = self._compute_loader_metadata(preprocessing, indexed_dataset.map(lambda index, value: value, num_parallel_calls=tf.data.AUTOTUNE))
+        
+        if on_status_updated and self._loader_class:
+            curr_processing_step += 1
+            on_status_updated("loader", feature_name, total_steps, curr_processing_step)
+
         loader_step = self._get_loader_step(preprocessing, loader_metadata)
         loaded_dataset = indexed_dataset.map(lambda index, value: (index, loader_step(value)), num_parallel_calls=tf.data.AUTOTUNE)
 
+
         t1 = time.perf_counter()
         augmenter_metadata = self._compute_augmenter_metadata(preprocessing, loaded_dataset)
+        
+        if on_status_updated and self._augmenter_class:
+            curr_processing_step += 1
+            on_status_updated("augmenter", feature_name, total_steps, curr_processing_step)
+        
         augmenter_step = self._get_augmenter_step(preprocessing, augmenter_metadata)
         augmented_dataset = loaded_dataset.map(lambda index, value: augmenter_step((index, value)), num_parallel_calls=tf.data.AUTOTUNE)
+        
 
         t2 = time.perf_counter()
         preprocessing_metadata, postprocessing_metadata = self._compute_processing_metadata(preprocessing, augmented_dataset)
-        preprocessing_step = self._get_preprocessing_step(preprocessing, preprocessing_metadata)
-        postprocessing_step = self._get_postprocessing_step(preprocessing, postprocessing_metadata)
         
+        if on_status_updated and self._preprocessing_class:
+            curr_processing_step += 1
+            on_status_updated("preprocessing", feature_name, total_steps, curr_processing_step)
+        preprocessing_step = self._get_preprocessing_step(preprocessing, preprocessing_metadata)
+        
+        if on_status_updated and self._postprocessing_class:
+            curr_processing_step += 1
+            on_status_updated("postprocessing", feature_name, total_steps, curr_processing_step)
+        postprocessing_step = self._get_postprocessing_step(preprocessing, postprocessing_metadata)
+
+
         t3 = time.perf_counter()
         logger.info(f"Built pipelines. Durations for loader={t1-t0:.3f}s, augmenter={t2-t1:.3f}s, pre- and post-processing={t3-t2:.3f}s")        
         

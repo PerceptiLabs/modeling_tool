@@ -44,13 +44,28 @@ def test_data_is_available_in_cache(client, basic_request, metadata_cache):
     assert response.status_code == 200
     dataset_hash = response.json["datasetHash"]    
 
-    response = client.get(f"/data?dataset_hash={dataset_hash}")    
+    response = client.get(f"/data?dataset_hash={dataset_hash}")   
     assert response.status_code == 200
-    assert response.json == {"is_ready": "true"}
+    assert response.json['is_complete']
     
 
 def test_data_is_unavailable_in_cache(client):
     response = client.get("/data?dataset_hash=abc")
     assert response.status_code == 204
+
+def test_build_message_is_inserted_to_cache(client, basic_request, metadata_cache):
+    assert len(metadata_cache) == 0
+
+    response = client.put(
+        '/data',
+        json=basic_request
+    )
+
+    assert response.status_code == 200
+    dataset_hash = response.json["datasetHash"]
+
+    response = client.get(f"/data?dataset_hash={dataset_hash}")   
+    assert response.status_code == 200
+    assert 'complete' in response.json['message']
 
     

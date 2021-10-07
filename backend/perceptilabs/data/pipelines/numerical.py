@@ -45,14 +45,12 @@ class NumericalPipelineBuilder(PipelineBuilder):
             max_, min_ = 0, 2**32
             running_sum = 0
             running_squared_sum = 0
-
             count = 0
             for x in dataset:
                 value = x[0].numpy()
 
                 if value < min_:
                     min_ = value
-
                 if value > max_:
                     max_ = value
 

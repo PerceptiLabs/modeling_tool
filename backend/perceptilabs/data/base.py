@@ -60,12 +60,13 @@ class DataLoader:
         return self
 
     @classmethod
-    def compute_metadata(cls, data_frame, dataset_settings, num_repeats=1):
+    def compute_metadata(cls, data_frame, dataset_settings, num_repeats=1, on_status_updated=None):
         training_set, _, _ = cls._build_and_partition_data(
             data_frame, dataset_settings, num_repeats
         )
-        _, metadata = cls._build_pipelines(dataset_settings, training_set)
-        return metadata
+        
+        _, metadata = cls._build_pipelines(dataset_settings, training_set, on_status_updated=on_status_updated)
+        return metadata        
 
     @classmethod
     def _build_and_partition_data(cls, data_frame, dataset_settings, num_repeats):
@@ -129,8 +130,8 @@ class DataLoader:
 
         for feature_name, feature_spec in feature_specs.items():
             builder = cls._get_pipeline_builder(feature_spec.datatype)
-            feature_metadata = metadata[feature_name]
-
+            feature_metadata = metadata['metadata'][feature_name] if 'metadata' in metadata else metadata[feature_name]
+ 
             loader, augmenter, preprocessing, postprocessing = \
                 builder.load_from_metadata(feature_spec.preprocessing, feature_metadata)
 
@@ -143,7 +144,7 @@ class DataLoader:
         return pipelines
 
     @classmethod
-    def _build_pipelines(cls, dataset_settings, training_set):
+    def _build_pipelines(cls, dataset_settings, training_set, on_status_updated=None):
         feature_specs = dataset_settings.used_feature_specs
 
         import time
@@ -154,6 +155,7 @@ class DataLoader:
         augmenter_pipelines = {}
         preprocessing_pipelines = {}
         postprocessing_pipelines = {}
+        
 
         for feature_name, feature_spec in feature_specs.items():
             t0 = time.perf_counter()
@@ -162,9 +164,12 @@ class DataLoader:
                 num_parallel_calls=tf.data.AUTOTUNE
             )
             pipeline_builder = cls._get_pipeline_builder(feature_spec.datatype)
-
             loader_pipeline, augmenter_pipeline, preprocessing_pipeline, postprocessing_pipeline = \
-                pipeline_builder.build_from_indexed_dataset(feature_spec.preprocessing, feature_training_set)
+                pipeline_builder.build_from_indexed_dataset(
+                    feature_spec.preprocessing, 
+                    feature_training_set,
+                    feature_name,
+                    on_status_updated)
             loader_pipelines[feature_name] = loader_pipeline
             augmenter_pipelines[feature_name] = augmenter_pipeline
             preprocessing_pipelines[feature_name] = preprocessing_pipeline

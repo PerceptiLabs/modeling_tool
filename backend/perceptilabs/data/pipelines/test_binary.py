@@ -6,10 +6,13 @@ import tensorflow as tf
 
 from perceptilabs.data.pipelines import BinaryPipelineBuilder
 
-
 def test_binary_preprocessing_ints():
     dataset = tf.data.Dataset.from_tensor_slices([1, 0])
-    _, _, pipeline, _ = BinaryPipelineBuilder().build_from_dataset({}, dataset)
+    _, _, pipeline, _ = BinaryPipelineBuilder().build_from_dataset(
+        {}, 
+        dataset, 
+        feature_name=None, 
+        on_status_updated=None)
 
     assert pipeline(1) == 1.0
     assert pipeline(0) == 0.0    
@@ -17,7 +20,11 @@ def test_binary_preprocessing_ints():
 
 def test_binary_preprocessing_bool():
     dataset = tf.data.Dataset.from_tensor_slices([True, False])
-    _, _, pipeline, _ = BinaryPipelineBuilder().build_from_dataset({}, dataset)    
+    _, _, pipeline, _ = BinaryPipelineBuilder().build_from_dataset(
+        {}, 
+        dataset,  
+        feature_name=None, 
+        on_status_updated=None)   
 
     assert pipeline(tf.constant(True)) == 1.0
     assert pipeline(tf.constant(False)) == 0.0    
@@ -25,7 +32,11 @@ def test_binary_preprocessing_bool():
 
 def test_binary_preprocessing_strings():
     dataset = tf.data.Dataset.from_tensor_slices(['true', 'True'])
-    _, _, pipeline, _ = BinaryPipelineBuilder().build_from_dataset({}, dataset)    
+    _, _, pipeline, _ = BinaryPipelineBuilder().build_from_dataset(
+        {}, 
+        dataset, 
+        feature_name=None, 
+        on_status_updated=None)    
 
     assert pipeline(tf.constant('true')) == 1.0
     assert pipeline(tf.constant('false')) == 0.0    
@@ -37,7 +48,11 @@ def test_binary_preprocessing_strings():
 
 def test_binary_preprocessing_spam_ham():
     dataset = tf.data.Dataset.from_tensor_slices(['Ham', 'spam'])
-    _, _, pipeline, _ = BinaryPipelineBuilder().build_from_dataset({}, dataset)    
+    _, _, pipeline, _ = BinaryPipelineBuilder().build_from_dataset(
+        {}, 
+        dataset, 
+        feature_name=None, 
+        on_status_updated=None)   
     
     assert pipeline(tf.constant('spam')) == 1.0
     assert pipeline(tf.constant('ham')) == 0.0    
@@ -49,13 +64,21 @@ def test_binary_preprocessing_spam_ham():
     
 def test_binary_preprocessing_num_categories():
     dataset = tf.data.Dataset.from_tensor_slices(['Ham', 'spam'])
-    _, _, pipeline, _ = BinaryPipelineBuilder().build_from_dataset({}, dataset)    
+    _, _, pipeline, _ = BinaryPipelineBuilder().build_from_dataset(
+        {}, 
+        dataset, 
+        feature_name=None, 
+        on_status_updated=None)   
     pipeline.metadata['n_categories'] == 1
 
 
 def test_build_from_metadata_gives_same_results():
     dataset = tf.data.Dataset.from_tensor_slices(['Ham', 'spam'])
-    _, _, built_pipeline, _ = BinaryPipelineBuilder().build_from_dataset({}, dataset)    
+    _, _, built_pipeline, _ = BinaryPipelineBuilder().build_from_dataset(
+        {}, 
+        dataset, 
+        feature_name=None, 
+        on_status_updated=None)   
 
     metadata = {'preprocessing': built_pipeline.metadata}
     _, _, loaded_pipeline, _ = BinaryPipelineBuilder().load_from_metadata({}, metadata)

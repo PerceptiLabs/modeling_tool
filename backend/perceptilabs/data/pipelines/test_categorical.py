@@ -18,7 +18,11 @@ def test_categorical_preprocessing_when_values_are_strings():
     ]
     
     dataset = tf.data.Dataset.from_tensor_slices(values)  
-    _, _, pipeline, _ = CategoricalPipelineBuilder().build_from_dataset({}, dataset)
+    _, _, pipeline, _ = CategoricalPipelineBuilder().build_from_dataset(
+        {}, 
+        dataset,  
+        feature_name=None, 
+        on_status_updated=None)    
     processed_dataset = dataset.map(lambda x: pipeline(x))
     actual = next(iter(processed_dataset.batch(4))).numpy().tolist()
     
@@ -38,7 +42,11 @@ def test_categorical_preprocessing_when_values_are_string_integers():
     ]
     
     dataset = tf.data.Dataset.from_tensor_slices(values)
-    _, _, pipeline, _ = CategoricalPipelineBuilder().build_from_dataset({}, dataset)    
+    _, _, pipeline, _ = CategoricalPipelineBuilder().build_from_dataset(
+        {}, 
+        dataset, 
+        feature_name=None, 
+        on_status_updated=None)        
     processed_dataset = dataset.map(lambda x: pipeline(x))
     actual = next(iter(processed_dataset.batch(4))).numpy().tolist()
 
@@ -57,7 +65,11 @@ def test_categorical_preprocessing_when_values_are_numerical():
     ]
     
     dataset = tf.data.Dataset.from_tensor_slices(values)
-    _, _, pipeline, _ = CategoricalPipelineBuilder().build_from_dataset({}, dataset)        
+    _, _, pipeline, _ = CategoricalPipelineBuilder().build_from_dataset(
+        {}, 
+        dataset, 
+        feature_name=None, 
+        on_status_updated=None)           
     processed_dataset = dataset.map(lambda x: pipeline(x))
     actual = next(iter(processed_dataset.batch(4))).numpy().tolist()
     
@@ -76,7 +88,11 @@ def test_categorical_preprocessing_when_values_are_numerical_but_unordered():
     ]
     
     dataset = tf.data.Dataset.from_tensor_slices(values)
-    _, _, pipeline, _ = CategoricalPipelineBuilder().build_from_dataset({}, dataset)            
+    _, _, pipeline, _ = CategoricalPipelineBuilder().build_from_dataset(
+        {}, 
+        dataset, 
+        feature_name=None, 
+        on_status_updated=None)               
     processed_dataset = dataset.map(lambda x: pipeline(x))
     actual = next(iter(processed_dataset.batch(4))).numpy().tolist()
     
@@ -87,7 +103,11 @@ def test_categorical_postprocessing():
     expected = ['cat', 'dog', 'car', 'car']
     
     dataset = tf.data.Dataset.from_tensor_slices(expected)
-    _, _, preprocessing, postprocessing = CategoricalPipelineBuilder().build_from_dataset({}, dataset)
+    _, _, preprocessing, postprocessing = CategoricalPipelineBuilder().build_from_dataset(
+        {}, 
+        dataset, 
+        feature_name=None, 
+        on_status_updated=None)    
     processed_dataset = dataset.map(lambda x: preprocessing(x))
     
     processed_dataset = processed_dataset.map(lambda x: postprocessing(x))    
@@ -98,7 +118,11 @@ def test_categorical_postprocessing():
 
 def test_unseen_value_has_default_preprocessed_value():
     dataset = tf.data.Dataset.from_tensor_slices(['cat', 'dog', 'zebra'])  
-    _, _, pipeline, _ = CategoricalPipelineBuilder().build_from_dataset({}, dataset)                
+    _, _, pipeline, _ = CategoricalPipelineBuilder().build_from_dataset(
+        {}, 
+        dataset, 
+        feature_name=None, 
+        on_status_updated=None)                    
     actual = pipeline(tf.constant('elephant')).numpy()
     expected = [0.0, 0.0, 0.0]
     assert (actual == expected).all()
@@ -106,7 +130,11 @@ def test_unseen_value_has_default_preprocessed_value():
 
 def test_unseen_string_has_default_postprocessed_value():
     dataset = tf.data.Dataset.from_tensor_slices(['cat', 'dog', 'zebra'])
-    _, _, _, pipeline = CategoricalPipelineBuilder().build_from_dataset({}, dataset)            
+    _, _, _, pipeline = CategoricalPipelineBuilder().build_from_dataset(
+        {}, 
+        dataset, 
+        feature_name=None, 
+        on_status_updated=None)               
 
     value = pipeline([0.0, 0.0, 0.0, 1.0]).numpy()  # add an extra category
     assert value == b'<unknown>'
@@ -114,7 +142,11 @@ def test_unseen_string_has_default_postprocessed_value():
 
 def test_unseen_numerical_has_default_postprocessed_value():
     dataset = tf.data.Dataset.from_tensor_slices([10, 15, 20])
-    _, _, _, pipeline = CategoricalPipelineBuilder().build_from_dataset({}, dataset)                
+    _, _, _, pipeline = CategoricalPipelineBuilder().build_from_dataset(
+        {}, 
+        dataset, 
+        feature_name=None, 
+        on_status_updated=None)       
 
     value = pipeline([0.0, 0.0, 0.0, 1.0]).numpy()  # add an extra category
     assert value == -1
@@ -123,7 +155,11 @@ def test_unseen_numerical_has_default_postprocessed_value():
 def test_build_from_metadata_gives_same_results():
     dataset = tf.data.Dataset.from_tensor_slices(['cat', 'dog', 'zebra'])    
 
-    _, _, built_preprocessing, built_postprocessing = CategoricalPipelineBuilder().build_from_dataset({}, dataset)
+    _, _, built_preprocessing, built_postprocessing = CategoricalPipelineBuilder().build_from_dataset(
+        {}, 
+        dataset, 
+        feature_name=None, 
+        on_status_updated=None)
 
     
     metadata = {

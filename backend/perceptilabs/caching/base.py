@@ -53,6 +53,10 @@ class CompoundCache(BaseCache):
         k = self._make_key(key)
         self._wrapped.put(k, value)
         return k
+    
+    def make_key(self, key):
+        return self._make_key(key)
+
 
     def __contains__(self, key):
         k = self._make_key(key)
