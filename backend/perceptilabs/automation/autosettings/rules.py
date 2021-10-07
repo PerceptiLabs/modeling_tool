@@ -99,11 +99,7 @@ class DataDataShouldUseLazy(InferenceRule):
         return True
 
     def _estimate_ram_size(self, path):
-        estimator = lambda path: 2*os.path.getsize(path) # Default to arbitrary safety margin        
-        if path.endswith('csv'):
-            import perceptilabs.insights.csv_ram_estimator as csv_ram_estimator
-            estimator = csv_ram_estimator.get_instance()
-
+        estimator = lambda path: 2*os.path.getsize(path) # Default to arbitrary safety margin
         return estimator(path)
 
     def apply(self, graph_spec: GraphSpec, layer_spec: LayerSpec, lw_results: Dict[str, LayerResults]) -> LayerSpec:

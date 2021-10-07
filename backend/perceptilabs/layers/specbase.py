@@ -245,14 +245,6 @@ class LayerSpec(ABC, MyPydanticBaseModel):
         return self.visited
 
     @property
-    def is_training_layer(self):
-        return False
-
-    @property
-    def is_data_layer(self):
-        return False
-
-    @property
     def is_inner_layer(self):
         return False
 
@@ -299,26 +291,6 @@ class InnerLayerSpec(LayerSpec):
     @property
     def is_inner_layer(self):
         return True
-
-
-class TrainingLayerSpec(InnerLayerSpec):
-    @property
-    def is_training_layer(self):
-        return True
-    
-    @property
-    def is_inner_layer(self):
-        return False
-
-    
-class DataLayerSpec(InnerLayerSpec):
-    @property
-    def is_data_layer(self):
-        return True
-
-    @property
-    def is_inner_layer(self):
-        return False
 
     
 class DummySpec(LayerSpec):

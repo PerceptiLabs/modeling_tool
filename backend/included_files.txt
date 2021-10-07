@@ -2,7 +2,6 @@ perceptilabs/__init__.py
 perceptilabs/__main__.py
 perceptilabs/app_variables.json
 perceptilabs/mainServer.py
-perceptilabs/azure.py
 perceptilabs/compatibility.py
 perceptilabs/settings.py
 perceptilabs/logconf.py
@@ -11,17 +10,10 @@ perceptilabs/mainInterface.py
 perceptilabs/coreInterface.py
 perceptilabs/CoreThread.py
 perceptilabs/createDataObject.py
-perceptilabs/extractVariables.py
-perceptilabs/funclib.py
-perceptilabs/functionParser.py
-perceptilabs/networkSaver.py
-perceptilabs/parse_pb.py
 perceptilabs/utils.py
 perceptilabs/license_checker.py
 perceptilabs/issues.py
-perceptilabs/dataevents.py
 perceptilabs/mixpanel_handler.py
-perceptilabs/memorywatcher.py
 perceptilabs/testInterface.py
 
 # perceptilabs/script
@@ -30,28 +22,14 @@ perceptilabs/script/base.py
 perceptilabs/script/engine.py
 perceptilabs/script/utils.py
 
-
 # perceptilabs/caching
 perceptilabs/caching/base.py
 perceptilabs/caching/utils.py
 perceptilabs/caching/lightweight_cache.py
 
-# perceptilabs/messaging
-perceptilabs/messaging/base.py
-perceptilabs/messaging/zmq_wrapper.py
-perceptilabs/messaging/simple.py
-perceptilabs/messaging/__init__.py
-
-# perceptilabs/server
-perceptilabs/server/__init__.py
-perceptilabs/server/appServer.py
-perceptilabs/server/desktop_serverlib.py
-perceptilabs/server/web_serverlib.py
-
 # perceptilabs/automation/
 perceptilabs/automation/__init__.py
 perceptilabs/automation/utils.py
-
 
 # perceptilabs/automation/autosettings
 perceptilabs/automation/autosettings/__init__.py
@@ -99,20 +77,6 @@ perceptilabs/layers/jinja_macros/activations.j2
 perceptilabs/layers/jinja_macros/optimizers.j2
 perceptilabs/layers/jinja_macros/file_utils.j2
 perceptilabs/layers/jinja_macros/tf1x_utils.j2
-
-# perceptilabs/layers/datadata
-perceptilabs/layers/datadata/spec.py
-perceptilabs/layers/datadata/imports.json
-perceptilabs/layers/datadata/template.j2
-
-
-# perceptilabs/layers/dataenvironment
-perceptilabs/layers/dataenvironment/spec.py
-perceptilabs/layers/dataenvironment/imports.json
-
-# perceptilabs/layers/datarandom
-perceptilabs/layers/datarandom/spec.py
-perceptilabs/layers/datarandom/imports.json
 
 # perceptilabs/layers/deeplearningfc
 perceptilabs/layers/deeplearningfc/spec.py
@@ -200,28 +164,6 @@ perceptilabs/layers/layercustom/tf2x_imports.json
 perceptilabs/layers/layercustom/tf2x_template.j2
 perceptilabs/layers/layercustom/stats.py
 
-# perceptilabs/layers/trainclassification
-perceptilabs/layers/trainclassification/spec.py
-perceptilabs/layers/trainclassification/imports.json
-perceptilabs/layers/trainclassification/tf2x_imports.json
-perceptilabs/layers/trainclassification/tf2x_template.j2
-
-# perceptilabs/layers/trainobjectdetection
-perceptilabs/layers/trainobjectdetection/spec.py
-perceptilabs/layers/trainobjectdetection/imports.json
-
-# perceptilabs/layers/traingan
-perceptilabs/layers/traingan/spec.py
-perceptilabs/layers/traingan/imports.json
-
-# perceptilabs/layers/trainreinforce
-perceptilabs/layers/trainreinforce/spec.py
-perceptilabs/layers/trainreinforce/imports.json
-
-# perceptilabs/layers/trainregression
-perceptilabs/layers/trainregression/spec.py
-perceptilabs/layers/trainregression/imports.json
-
 # perceptilabs/layers/pretrainedvgg16
 perceptilabs/layers/pretrainedvgg16/spec.py
 perceptilabs/layers/pretrainedvgg16/tf2x_template.j2
@@ -270,26 +212,7 @@ perceptilabs/lwcore/utils.py
 # perceptilabs/lwcore
 perceptilabs/lwcore/strategies/__init__.py
 perceptilabs/lwcore/strategies/base.py
-perceptilabs/lwcore/strategies/tf1x.py
 perceptilabs/lwcore/strategies/tf2x.py
-
-# perceptilabs/insights/csv_ram_estimator/
-perceptilabs/insights/__init__.py
-perceptilabs/insights/csv_ram_estimator/__init__.py
-perceptilabs/insights/csv_ram_estimator/base.py
-perceptilabs/insights/dataset.py
-perceptilabs/insights/csv_ram_estimator/model_and_meta.pkl
-
-# perceptilabs/dataschema/
-perceptilabs/dataschema/master.json
-perceptilabs/dataschema/user_email_set.json
-perceptilabs/dataschema/training_started.json
-perceptilabs/dataschema/training_ended.json
-perceptilabs/dataschema/nth_iteration_ended.json
-perceptilabs/dataschema/graph_spec.json
-perceptilabs/dataschema/dc_memory_used.json
-perceptilabs/dataschema/memory_limit_exceeded.json
-perceptilabs/dataschema/lwcore_finished.json
 
 # backend/perceptilabs/tutorial_data/
 perceptilabs/tutorial_data/classification_mnist_input.npy

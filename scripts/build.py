@@ -238,11 +238,6 @@ def assert_python_version():
         )
 
 
-def train_models():
-    with pushd(f"{BACKEND_SRC}/perceptilabs/insights/csv_ram_estimator"):
-        run_checked("python train_model.py data_1579288530.csv")
-
-
 def install_prereqs():
     if OS == Os.LINUX:
         run_checked("bash set_up_linux.bash")
@@ -530,7 +525,7 @@ def wheel():
 
     mkdir_p(BUILD_TMP)
     assemble_build_dirs_frontend(version)
-    train_models()
+
     copy_tree(f"{PROJECT_ROOT}/licenses/", f"{BUILD_TMP}/licenses/", update=True)
     copy_files(f"{PROJECT_ROOT}/backend", BUILD_TMP, list_path= f"{PROJECT_ROOT}/backend/included_files.txt")
     copy_files(f"{PROJECT_ROOT}/rygg", BUILD_TMP,  list_path=f"{PROJECT_ROOT}/rygg/included_files.txt")
@@ -556,8 +551,6 @@ def test():
     assert_python_version()
     install_prereqs()
     print_environment()
-
-    train_models()
 
     mkdir_p(BUILD_TMP)
     copy_files(f"{PROJECT_ROOT}/backend", BUILD_TMP, list_path= f"{PROJECT_ROOT}/backend/included_files.txt")

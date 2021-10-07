@@ -2,7 +2,6 @@ import onnx
 import tensorflow as tf
 from onnx import shape_inference
 from perceptilabs.parser.onnx_converter import create_onnx_from_tf1x, load_tf1x_model, load_tf1x_frozen
-from perceptilabs import funclib
 from perceptilabs.graph.spec import GraphSpec 
 from perceptilabs.layers.specbase import LayerSpec, InnerLayerSpec
 from perceptilabs.layers.processreshape.spec import ProcessReshapeSpec

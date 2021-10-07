@@ -17,16 +17,12 @@ from perceptilabs.graph.splitter import GraphSplitter
 from perceptilabs.script import ScriptFactory
 from perceptilabs.layers.helper import LayerHelper
 from perceptilabs.layers.specbase import InnerLayerSpec, IoLayerSpec
-from perceptilabs.layers.datadata.spec import DataDataSpec
-from perceptilabs.layers.datarandom.spec import DataRandomSpec
-from perceptilabs.layers.dataenvironment.spec import DataEnvironmentSpec
 from perceptilabs.logconf import APPLICATION_LOGGER
 from perceptilabs.lwcore.utils import exception_to_error, format_exception
 from perceptilabs.caching.lightweight_cache import LightweightCache
-from perceptilabs.lwcore.strategies import DefaultStrategy, DataSupervisedStrategy, DataReinforceStrategy, Tf1xInnerStrategy, Tf2xInnerStrategy, IoLayerStrategy
+from perceptilabs.lwcore.strategies import DefaultStrategy, Tf2xInnerStrategy, IoLayerStrategy
 from perceptilabs.lwcore.results import LayerResults
 from perceptilabs.caching.utils import NullCache
-import perceptilabs.dataevents as dataevents
 
 
 logger = logging.getLogger(APPLICATION_LOGGER)
@@ -40,7 +36,7 @@ def print_result_errors(layer_spec, results):
 
 
 class LightweightCore:
-    def __init__(self, issue_handler=None, cache=NullCache(), data_loader=None):
+    def __init__(self, data_loader, issue_handler=None, cache=NullCache()):
         self._issue_handler = issue_handler
         self._cache = cache.for_compound_keys()
         self._script_factory = ScriptFactory()
@@ -135,33 +131,24 @@ class LightweightCore:
 
     def _get_layer_strategy(self, layer_spec, data_batch, script_factory):
         if isinstance(layer_spec, IoLayerSpec):
-            strategy = self._get_io_layer_strategy(layer_spec, data_batch)
-        elif isinstance(layer_spec, (DataDataSpec, DataRandomSpec)):
-            strategy = DataSupervisedStrategy(script_factory)
-        elif isinstance(layer_spec, DataEnvironmentSpec):
-            strategy = DataReinforceStrategy(script_factory)
+            feature_batch = data_batch[layer_spec.feature_name]
+            strategy = IoLayerStrategy(feature_batch)
         elif isinstance(layer_spec, InnerLayerSpec):
             strategy = Tf2xInnerStrategy(script_factory)
         else:
             strategy = DefaultStrategy()
         return strategy
 
-    def _get_io_layer_strategy(self, layer_spec, data_batch):
-        feature_batch = data_batch[layer_spec.feature_name]
-        strategy = IoLayerStrategy(feature_batch)
-        return strategy
-
     def _get_flat_data_batch(self):
         data_batch = {}
-        if self._data_loader is not None:
-            dataset = self._data_loader.get_dataset(partition='training', shuffle=False)
-            inputs_batch, targets_batch = next(iter(dataset))
-
-            for feature_name, value in inputs_batch.items():
-                data_batch[feature_name] = value
-            for feature_name, value in targets_batch.items():
-                data_batch[feature_name] = value
-
+        inputs_batch, targets_batch = self._data_loader.get_example_batch(
+            partition='training', shuffle=False)
+        
+        for feature_name, value in inputs_batch.items():
+            data_batch[feature_name] = value
+        for feature_name, value in targets_batch.items():
+            data_batch[feature_name] = value
+                
         return data_batch
 
     def _maybe_print_results(self, graph_spec, all_results):

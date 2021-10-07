@@ -3,7 +3,6 @@ import json
 import logging
 import datetime
 import pkg_resources
-import jsonschema
 import tensorflow as tf
 import platform
 import re
@@ -19,10 +18,6 @@ APPLICATION_LOG_LEVEL = logging.INFO
 USER_LOGGER = 'perceptilabs.consolelogger'
 USER_LOG_FORMAT = '%(asctime)s - %(message)s'
 USER_LOG_LEVEL = logging.INFO
-
-DATA_LOGGER = 'perceptilabs.datalogger'
-DATA_LOG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)),'data.log')
-DATA_LOGGER_MAX_LENGTH_DEV = 1500 # Only show the first N characters in dev console
 
 class PackageFilter(logging.Filter):
     def filter(self, record):
@@ -145,129 +140,3 @@ def setup_console_logger(queue, log_level = None):
     application_logger.addHandler(application_log_handler)
 
     
-_global_context = {
-    'session_id': '',
-    'user_email': 'notset@perceptilabs.com',
-    'commit_id': '',
-    'system': platform.system(),
-    'tf2x': True
-}
-
-
-def set_session_id(session_id):
-    global _global_context
-    _global_context['session_id'] = session_id
-
-
-def set_user_email(email):
-    global _global_context
-    _global_context['user_email'] = email
-
-    
-def set_commit_id(commit_id):
-    global _global_context
-    _global_context['commit_id'] = commit_id
-    
-
-class DataFormatter(logging.Formatter):
-    def __init__(self, max_length=None): 
-        self._max_length = max_length
-        super().__init__()
-
-        with open(pkg_resources.resource_filename('perceptilabs', 'dataschema/master.json'), 'r') as f:
-            master_schema = json.load(f)
-
-        schema_path = 'file:///{0}/'.format(pkg_resources.resource_filename('perceptilabs', 'dataschema').replace("\\", "/"))
-        resolver = jsonschema.RefResolver(schema_path, None)
-        self.validator = jsonschema.Draft7Validator(master_schema, resolver=resolver)
-
-    def format(self, record):
-        dict_ = {
-            'time_event': datetime.datetime.utcnow().isoformat(),
-            'session_id': _global_context.get('session_id', ''),
-            'user_email': _global_context.get('user_email', 'dev@perceptilabs.com'),
-            'version': perceptilabs.__version__,
-            'commit': _global_context.get('commit_id', ''),
-            'system': _global_context.get('system', ''),
-            'tf2x': _global_context.get('tf2x', ''),            
-            record.msg: record.namespace
-        }
-
-        try:
-            self.validator.validate(dict_)
-            text = json.dumps(dict_)
-        except Exception as e:
-            import pprint
-            pprint.pprint(dict_)
-            logging.getLogger(APPLICATION_LOGGER).exception(f'Data log formatter failed for event {record.msg}')
-            text = ''
-
-        if self._max_length is None:
-            return text
-        else:
-            return f"{text[:self._max_length]} ... message truncated, only showing first {self._max_length} characters"
-
-
-def setup_data_logger(is_dev=True):
-    logger = logging.getLogger(DATA_LOGGER)
-    logger.setLevel(logging.DEBUG)
-
-    formatter = DataFormatter()
-
-    if should_log_to_file():
-        file_handler = logging.FileHandler(DATA_LOG_FILE, mode='w')
-        file_handler.setFormatter(formatter)
-        logger.addHandler(file_handler)
-
-    if is_dev:
-        dev_formatter = DataFormatter(max_length=DATA_LOGGER_MAX_LENGTH_DEV)
-        stream_handler = logging.StreamHandler()
-        stream_handler.setFormatter(dev_formatter)
-        # logger.addHandler(stream_handler)
-    else:
-        from perceptilabs.azure import AzureHandler
-        azure_handler = AzureHandler.get_default()
-        azure_handler.setFormatter(formatter)        
-        logger.addHandler(azure_handler)
-
-        from perceptilabs.mixpanel_handler import MixPanelHandler        
-        mixpanel_handler = MixPanelHandler()
-        mixpanel_handler.setFormatter(formatter)
-        logger.addHandler(mixpanel_handler)
-        
-
-def upload_logs(zip_name):
-    import os
-    import time
-    import uuid
-    import shutil
-    import tempfile
-
-    logger = logging.getLogger(APPLICATION_LOGGER)
-
-    from perceptilabs.azure import AzureUploader
-
-    try:
-        directory_path = tempfile.mkdtemp(prefix='perceptilabs_logs_')
-        archives_path = tempfile.mkdtemp(prefix='perceptilabs_archives_')
-
-        def make_temp_copy(source_file, temp_dir):
-            dest_file = os.path.join(temp_dir, os.path.basename(source_file))
-            shutil.copy(source_file, dest_file)
-
-        make_temp_copy(APPLICATION_LOG_FILE, directory_path)
-        make_temp_copy(DATA_LOG_FILE, directory_path)
-
-        zip_path_no_ext = os.path.join(archives_path, zip_name)
-        zip_full_path = zip_path_no_ext + '.zip'
-
-        shutil.make_archive(zip_path_no_ext, 'zip', root_dir=directory_path)
-        shutil.copyfile(zip_full_path, os.path.join(os.path.dirname(os.path.abspath(__file__)),'bundle.zip')) # TODO: only in debug mode??
-
-        AzureUploader.upload(zip_full_path)
-    finally:
-        if os.path.exists(directory_path):
-            shutil.rmtree(directory_path)
-        if os.path.exists(archives_path):
-            shutil.rmtree(archives_path)
-

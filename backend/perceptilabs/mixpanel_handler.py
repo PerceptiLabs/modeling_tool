@@ -67,17 +67,7 @@ def event_training_started(event_full, event_namespace):
     for node in event_namespace['graph_spec']['nodes']:
         type_ = node['type']
 
-        if type_ == 'TrainNormal':
-            payload['Has train classification'] = True
-        elif type_ == 'TrainDetector':
-            payload['Has train objectdetection'] = True
-        elif type_ == 'TrainRegression':            
-            payload['Has train regression'] = True
-        elif type_ == 'TrainGan':            
-            payload['Has train GAN'] = True
-        elif type_ == 'TrainReinforce':            
-            payload['Has train RL'] = True
-        elif type_ == 'DataData':            
+        if type_ == 'DataData':            
             payload['Has DataData'] = True
             
             for ext in node['namespace']['extensions']:

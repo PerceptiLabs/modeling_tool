@@ -14,31 +14,6 @@ from perceptilabs.data.base import DataLoader
 from perceptilabs.data.settings import FeatureSpec, DatasetSettings
 
 
-def test_tf2x_inner_result_has_shape(script_factory, classification_spec_basic):
-    layer_spec = classification_spec_basic['layer_fc']    
-
-    layer_helper = LayerHelper(script_factory, layer_spec, classification_spec_basic)    
-    layer_class = layer_helper.get_class()
-
-    layer_inputs_results = MagicMock()
-    layer_inputs_results.sample = {'output': np.array([1, 2, 3, 4], dtype=np.float32)}
-    input_results = {'layer_inputs': layer_inputs_results}
-
-    graph_spec = MagicMock()
-    
-    strategy = Tf2xInnerStrategy(script_factory)
-    results = strategy.run(layer_spec, graph_spec, input_results)
-
-    expected = {
-        'output': (3,),
-        'preview': (3,),        
-        'W': (4, 3),
-        'b': (3,)        
-    }
-    
-    assert results.out_shape == expected
-
-
 def test_output_result_has_correct_value():
     df = pd.DataFrame({'x1': [123, 24, 13, 45], 'y1': [1, 2, 3, 4]})
     dataset_settings = DatasetSettings(feature_specs={

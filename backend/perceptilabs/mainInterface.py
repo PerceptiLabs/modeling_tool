@@ -7,7 +7,7 @@ from sentry_sdk import configure_scope
 
 from perceptilabs.coreInterface import coreLogic
 from perceptilabs.utils import stringify
-from perceptilabs.logconf import APPLICATION_LOGGER, set_user_email
+from perceptilabs.logconf import APPLICATION_LOGGER
 from perceptilabs.caching.utils import get_data_metadata_cache
 from perceptilabs.data.base import DataLoader
 from perceptilabs.data.settings import DatasetSettings

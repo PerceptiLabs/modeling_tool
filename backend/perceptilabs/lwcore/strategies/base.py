@@ -112,66 +112,6 @@ class JinjaLayerStrategy(BaseStrategy):
         return layer_class, layer_code_offset, None, None
 
 
-class DataSupervisedStrategy(JinjaLayerStrategy):
-    def _run_internal(self, layer_spec, graph_spec, layer_class, input_results, line_offset=None):
-        try:
-            layer_instance = layer_class()
-            columns = layer_instance.columns        
-            output = layer_instance.sample
-            variables = layer_instance.variables.copy()
-        except Exception as e:
-            output = {'output': None}
-            shape = {'output': None}
-            variables = {}
-            columns = []
-            strategy_error = exception_to_error(layer_spec.id_, layer_spec.type_, e, line_offset=line_offset)
-            logger.debug(f"Layer {layer_spec.id_} raised an error when calling sample property")                        
-        else:
-            shape = {name: np.atleast_1d(value).shape for name, value in output.items()}
-            strategy_error = None
-
-        results = LayerResults(
-            sample=output,
-            out_shape=shape,
-            variables=variables,
-            columns=columns,
-            code_error=None,
-            instantiation_error=None,
-            strategy_error=strategy_error,
-            trained = False
-        )
-        return results
-
-    
-class DataReinforceStrategy(JinjaLayerStrategy):
-    def _run_internal(self, layer_spec, graph_spec, layer_class, input_results, line_offset=None):
-        layer_instance = layer_class()
-        try:
-            y = layer_instance.sample
-        except Exception as e:
-            y = None
-            shape = None
-            strategy_error = exception_to_error(layer_spec.id_, layer_spec.type_, e, line_offset=line_offset)
-            logger.debug(f"Layer {layer_spec.id_} raised an error when calling sample property")                        
-        else:
-            shape = np.atleast_1d(y).shape
-            strategy_error=None
-
-        variables = layer_instance.variables.copy()
-        
-        results = LayerResults(
-            sample=y,
-            out_shape=shape,
-            variables=variables,
-            columns = [],
-            code_error=None,
-            instantiation_error=None,
-            strategy_error=strategy_error,
-            trained = False
-        )
-        return results
-
-
 class IoLayerStrategy(BaseStrategy):
     def __init__(self, data_batch):
         self._data_batch = data_batch
@@ -194,8 +134,6 @@ class IoLayerStrategy(BaseStrategy):
 
             shape_error = self._validate_shapes(layer_spec, input_results, shape)
             if shape_error:
-                output = {'output': None}
-                shape = {'output': None}
                 strategy_error = UserlandError(layer_spec.id_, layer_spec.type_, None, shape_error)
 
         results = LayerResults(

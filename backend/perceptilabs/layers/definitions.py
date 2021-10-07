@@ -1,7 +1,4 @@
 from collections import namedtuple
-from perceptilabs.layers.datadata.spec import DataDataSpec
-from perceptilabs.layers.dataenvironment.spec import DataEnvironmentSpec
-from perceptilabs.layers.datarandom.spec import DataRandomSpec
 from perceptilabs.layers.deeplearningfc.spec import DeepLearningFcSpec
 from perceptilabs.layers.deeplearningconv.spec import DeepLearningConvSpec
 from perceptilabs.layers.deeplearningrecurrent.spec import DeepLearningRecurrentSpec
@@ -13,11 +10,6 @@ from perceptilabs.layers.mathargmax.spec import MathArgmaxSpec
 from perceptilabs.layers.mathsoftmax.spec import MathSoftmaxSpec
 from perceptilabs.layers.mathmerge.spec import MathMergeSpec
 from perceptilabs.layers.layercustom.spec import LayerCustomSpec
-from perceptilabs.layers.trainclassification.spec import TrainClassificationSpec
-from perceptilabs.layers.trainregression.spec import TrainRegressionSpec
-from perceptilabs.layers.trainreinforce.spec import TrainReinforceSpec
-from perceptilabs.layers.trainobjectdetection.spec import TrainObjectDetectionSpec
-from perceptilabs.layers.traingan.spec import TrainGanSpec
 from perceptilabs.layers.pretrainedvgg16.spec import PreTrainedVGG16Spec
 from perceptilabs.layers.pretrainedresnet50.spec import PreTrainedResNet50Spec
 from perceptilabs.layers.pretrainedinceptionv3.spec import PreTrainedInceptionV3Spec
@@ -36,12 +28,6 @@ LayerMeta = namedtuple(
 )
 
 DEFINITION_TABLE_TF2X = {
-    'DataData': LayerMeta(
-        DataDataSpec,
-        'layers/datadata/imports.json',
-        'layers/datadata/template.j2',
-        'layer_datadata'
-    ),
     'DeepLearningConv': LayerMeta(
         DeepLearningConvSpec,
         'layers/deeplearningconv/tf2x_imports.json',
@@ -89,12 +75,6 @@ DEFINITION_TABLE_TF2X = {
         'layers/mathmerge/tf2x_imports.json',
         'layers/mathmerge/tf2x_template.j2',
         'layer_tf2x_merge'
-    ),
-    'TrainNormal': LayerMeta(
-        TrainClassificationSpec,
-        'layers/trainclassification/tf2x_imports.json',
-        'layers/trainclassification/tf2x_template.j2',
-        'layer_tf2x_classification'
     ),
     'PreTrainedVGG16': LayerMeta(
         PreTrainedVGG16Spec,
