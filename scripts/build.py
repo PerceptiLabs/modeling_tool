@@ -675,7 +675,6 @@ class DockerBuilder():
         copy_file(f"{RYGG_DIR}/start.sh", f"{BUILD_DOCKER_RYGG}/start.sh", update=True)
         copy_file(f"{RYGG_DIR}/wait-for-db.py", f"{BUILD_DOCKER_RYGG}/wait-for-db.py", update=True)
         copy_file(f"{RYGG_DIR}/Dockerfile", f"{BUILD_DOCKER_RYGG}/Dockerfile", update=True)
-        copy_tree(f"{BACKEND_SRC}/perceptilabs/tutorial_data/", f"{BUILD_DOCKER_RYGG}/tutorial_data/", update=True)
         copy_tree(f"{PROJECT_ROOT}/licenses/", f"{BUILD_DOCKER_RYGG}/licenses/", update=True)
         set_rygg_inner_version(BUILD_DOCKER_RYGG, versions)
         DockerBuilder._set_dockerfile_version_label(BUILD_DOCKER_RYGG, versions)
