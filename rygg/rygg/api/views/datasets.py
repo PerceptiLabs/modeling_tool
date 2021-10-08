@@ -10,7 +10,7 @@ import urllib.request
 from rygg.api.models import Dataset, Model
 from rygg.api.serializers import DatasetSerializer, ModelSerializer
 from rygg.files.tasks import download_async
-from rygg.files.views.util import request_as_dict, get_required_param
+from rygg.files.views.util import request_as_dict, get_required_param, get_optional_param
 
 def lines_from_url(url):
     with urllib.request.urlopen(url) as res:
@@ -79,9 +79,23 @@ class DatasetViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['GET'])
     def remote_with_categories(self, request):
         lines = lines_from_url(settings.DATA_LIST)
+        remote_datasets = list(csv_lines_to_dict(lines))
+
+        # Make a table of datasets that have been downloaded from our remote
+        # Sort the query by dataset_id so that the newest ones end up being the representatives in the lists
+        datasets_from_remote_query = Dataset.objects.filter(source_url__startswith = settings.DATA_BLOB).order_by('dataset_id')
+        prefix_len = len(settings.DATA_BLOB) + 1 # +1 for the slash "/"
+        datasets_from_remote = {d.source_url[prefix_len:] : d.dataset_id for d in datasets_from_remote_query}
+
+        # update the response with the newest dataset's id, if any
+        for dataset in remote_datasets:
+            id = datasets_from_remote.get(dataset['UniqueName'])
+            if id:
+                dataset["localDatasetID"] = id
+
         response = {
             "categories": self.fetch_remote_categories(),
-            "datasets": list(csv_lines_to_dict(lines)),
+            "datasets": remote_datasets,
         }
         return Response(response, 201)
 
@@ -94,10 +108,19 @@ class DatasetViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['POST'])
     def create_from_remote(self, request):
-        d = request_as_dict(request)
-        name = get_required_param(request, "id")
+        ds_name = get_optional_param(request, "name", f"New Dataset")
+        remote_name = get_required_param(request, "id")
+        data_url = f"{settings.DATA_BLOB}/{remote_name}"
+        project_id = get_required_param(request, "project_id")
         dest_path = get_required_param(request, "destination")
-        data_url = f"{settings.DATA_BLOB}/{name}"
-        task_id = download_async(data_url, dest_path)
-        return Response({"task_id": task_id}, 201)
+
+        dataset = Dataset(project_id=project_id, name=ds_name, source_url=data_url, location=dest_path)
+        dataset.save()
+
+        task_id = download_async(dataset.dataset_id)
+        response = {
+            "task_id": task_id,
+            "dataset_id": dataset.dataset_id,
+        }
+        return Response(response, 201)
 

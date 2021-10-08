@@ -79,6 +79,7 @@ class DatasetSerializer(serializers.ModelSerializer):
                   "location",
                   "status",
                   "models",
+                  "source_url",
                   ]
 
 class ModelSerializer(serializers.ModelSerializer):

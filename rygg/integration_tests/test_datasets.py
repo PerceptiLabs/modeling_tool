@@ -173,17 +173,22 @@ def test_remote_list(rest):
     assert filter(is_mnist, response["datasets"])
 
 @pytest.mark.timeout(1)
+
+
+def get_mnist_record(rest):
+    resp = rest.get("/datasets/remote_with_categories")
+    for dataset in resp["datasets"]:
+        if dataset.get("UniqueName") == "mnist_data.zip":
+            return dataset
+    return None
+
+
+@pytest.mark.timeout(1)
 def test_remote_list(rest):
-    response = rest.get("/datasets/remote")
-    is_mnist = lambda record: record.get("Name") == "mnist_data.zip"
-    assert filter(is_mnist, response)
+    assert get_mnist_record(rest)
 
 
-@pytest.mark.timeout(10)
-def test_create_dataset_from_remote(rest, tmpdir):
-    resp = rest.post('/datasets/create_from_remote/', {}, id="mnist_data.zip", destination=tmpdir)
-    task_id = resp.get("task_id")
-
+def assert_task_progresses(rest, task_id):
     def progress_is_midway():
         resp = rest.get(f"/tasks/{task_id}/")
         assert resp
@@ -197,7 +202,38 @@ def test_create_dataset_from_remote(rest, tmpdir):
                 and resp.get("so_far") == resp.get("expected")
 
     if os.getenv("USER"):
+        # poll frequently to try to catch it in the midway state
         assert_eventually(progress_is_midway, stop_max_delay=10000, wait_fixed=50)
+
     assert_eventually(state_is_completed, stop_max_delay=10000, wait_fixed=1000)
+
+
+@pytest.mark.timeout(10)
+def test_create_dataset_from_remote(rest, tmpdir, tmp_project):
+    # don't try this if mnist is already linked to the dataset, which means that we're working on a non-test system
+    mnist_record = get_mnist_record(rest)
+    assert mnist_record
+
+
+    resp = rest.post('/datasets/create_from_remote/', {}, id="mnist_data.zip", destination=tmpdir, project_id=tmp_project.id)
+    assert "task_id" in resp
+    assert "dataset_id" in resp
+
+    task_id = resp["task_id"]
+    dataset_id = resp["dataset_id"]
+
+    assert_task_progresses(rest, task_id)
+
+    dataset = rest.get(f"/datasets/{dataset_id}/")
+    assert dataset
+
+    # Check that the new dataset points to the remote dataset
+    source_url = dataset["source_url"]
+    mnist_url_ending = mnist_record["UniqueName"]
+    assert source_url.endswith(mnist_url_ending)
+
+    # check that remote datasets response now points to the new dataset
+    mnist_record = get_mnist_record(rest)
+    assert mnist_record["localDatasetID"] == dataset_id
 
     # TODO check the download

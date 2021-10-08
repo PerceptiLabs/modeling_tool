@@ -81,7 +81,8 @@ class Dataset(SoftDeletableModel, StatusModel, TimeStampedModel):
     )
     dataset_id = dj_models.AutoField(primary_key=True)
     name = dj_models.CharField(max_length=1000, blank=False)
-    location = dj_models.CharField(max_length=1000, blank=True, validators=[validate_file_name, validate_file_exists])
+    location = dj_models.TextField(blank=True, validators=[validate_file_name, validate_file_exists])
+    source_url = dj_models.TextField(blank=True)
 
     def __str__(self):
         return f"{self.name} ({self.dataset_id})"
