@@ -29,10 +29,6 @@ ADD perceptilabs ./perceptilabs
 
 RUN pip install -r requirements_build.txt
 
-# Train the ram estimator
-WORKDIR /src/perceptilabs/insights/csv_ram_estimator
-RUN python train_model.py data_1579288530.csv
-
 WORKDIR /out
 # Set up the out dir for the build
 ADD main.py setup.py setup.cfg package_data.json VERSION cython_roots.txt requirements.txt ./
