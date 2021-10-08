@@ -162,6 +162,17 @@ def test_cant_upload_to_filename_that_doesnt_match_dataset(rest, tmp_text_file, 
 
 
 @pytest.mark.timeout(1)
+def test_remote_categories(rest):
+    response = rest.get("/datasets/remote_categories")
+    assert "kaggle" in response
+
+@pytest.mark.timeout(1)
+def test_remote_list(rest):
+    response = rest.get("/datasets/remote_with_categories")
+    is_mnist = lambda record: record.get("Name") == "mnist_data.zip"
+    assert filter(is_mnist, response["datasets"])
+
+@pytest.mark.timeout(1)
 def test_remote_list(rest):
     response = rest.get("/datasets/remote")
     is_mnist = lambda record: record.get("Name") == "mnist_data.zip"

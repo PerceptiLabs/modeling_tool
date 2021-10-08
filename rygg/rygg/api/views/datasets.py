@@ -66,6 +66,25 @@ class DatasetViewSet(viewsets.ModelViewSet):
         serializer = ModelSerializer(models, many=True)
         return Response(serializer.data)
 
+    def fetch_remote_categories(self):
+        lines = lines_from_url(settings.DATA_CATEGORY_LIST)
+        entries = list(csv_lines_to_dict(lines))
+        return {d["name"]: d for d in entries}
+
+
+    @action(detail=False, methods=['GET'])
+    def remote_categories(self, request):
+        return Response(self.fetch_remote_categories(), 201)
+
+    @action(detail=False, methods=['GET'])
+    def remote_with_categories(self, request):
+        lines = lines_from_url(settings.DATA_LIST)
+        response = {
+            "categories": self.fetch_remote_categories(),
+            "datasets": list(csv_lines_to_dict(lines)),
+        }
+        return Response(response, 201)
+
     @action(detail=False, methods=['GET'])
     def remote(self, request):
         lines = lines_from_url(settings.DATA_LIST)
