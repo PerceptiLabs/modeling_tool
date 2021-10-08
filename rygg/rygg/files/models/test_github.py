@@ -14,7 +14,7 @@ import os
 
 class BuildExportTests(TestCase):
     # TODO: this is sending requests to github. Stub that out or move to integration tests
-    @timeout(3)
+    @timeout(10)
     def test_simple(self):
         mock = Mock()
         with temp_local_dir("the_dir") as d:
@@ -26,7 +26,7 @@ class BuildExportTests(TestCase):
             mock.add_files.assert_called_once_with(expected, "msg")
 
     # TODO: this is sending requests to github. Stub that out or move to integration tests
-    @timeout(3)
+    @timeout(10)
     def test_advanced(self):
         mock = Mock()
         with temp_local_dir("the_dir") as d:

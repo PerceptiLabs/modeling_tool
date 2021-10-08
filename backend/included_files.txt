@@ -214,15 +214,6 @@ perceptilabs/lwcore/strategies/__init__.py
 perceptilabs/lwcore/strategies/base.py
 perceptilabs/lwcore/strategies/tf2x.py
 
-# backend/perceptilabs/tutorial_data/
-perceptilabs/tutorial_data/classification_mnist_input.npy
-perceptilabs/tutorial_data/classification_mnist_labels.npy
-perceptilabs/tutorial_data/gan_mnist.npy
-perceptilabs/tutorial_data/linreg_input.npy
-perceptilabs/tutorial_data/linreg_labels.npy
-perceptilabs/tutorial_data/object_detection_input.npy
-perceptilabs/tutorial_data/object_detection_labels.npy
-
 # backend/perceptilabs/data/
 perceptilabs/data/__init__.py
 perceptilabs/data/base.py
