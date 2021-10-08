@@ -109,9 +109,9 @@ class LayerSpec(ABC, MyPydanticBaseModel):
         """
         ignored_fields = ['id_', 'name', 'visited', 'preview_variable', 'get_preview']
         hasher = hashlib.sha256()
-        
         if prefer_custom_code and self.custom_code is not None:
-            return hasher.update(str(self.custom_code).encode())
+            hasher.update(str(self.custom_code).encode())
+            return hasher.hexdigest()
         else:
             for field_name in self.field_names:
                 if field_name in ignored_fields:
